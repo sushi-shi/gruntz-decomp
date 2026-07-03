@@ -46,8 +46,8 @@ static char g_errorText[0x100]; // error message buffer
 
 // CGruntzApp - the game's CGameApp subclass, defined once in <Gruntz/GruntzApp.h>.
 // The matched methods touch only BASE CGameApp fields: ShowError reads m_c
-// (hInstance @+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail
-// (@+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
+// (hInstance @+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail (error detail
+// @+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
 #include <Gruntz/GruntzApp.h>
 
 // ---------------------------------------------------------------------------

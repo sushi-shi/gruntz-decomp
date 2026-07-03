@@ -1,8 +1,9 @@
 // CDDScreen.cpp - three methods of the big tiled-DirectDraw display manager
 // (the CDDPageMgr bring-up class behind 0x17c040; members run out to ~0x86a4).
 // Homed together because 0x17cc80/0x17cdf0/0x17cfc0 are adjacent methods of the
-// same object. Field names are placeholders; only offsets + emitted bytes are
-// load-bearing (campaign doctrine).
+// same object. Field names recovered from usage; offsets + emitted bytes are
+// load-bearing. A few fields only touched once (m_20/m_28/m_50c/m_514/m_86a0)
+// keep their offset names - role unproven from these three methods.
 //
 //   HandleError (0x17cc80) - release the owned surfaces/DDraw interfaces and, when
 //       still partway up, black the primary surface (ROP-blackness blit, falling
@@ -78,7 +79,7 @@ public:
 // nodes Configure allocates for the explicit-blit case. _RezAlloc (named, rel32).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 
-// A blit rectangle (left/top/right/bottom). m_534 points at one of these.
+// A blit rectangle (left/top/right/bottom). m_destRect points at one of these.
 struct DDRect {
     i32 left;   // +0x0
     i32 top;    // +0x4
@@ -93,12 +94,12 @@ struct DDPoint {
     u32 y; // +0x4
 };
 
-// The tile-size descriptor m_10 points at (only the tile width/height are read;
+// The tile-size descriptor m_tileInfo points at (only the tile width/height are read;
 // unsigned so the validation/divide lower to `ja`/`div`).
 struct CTileInfo {
-    i32 m_0; // +0x0
-    u32 m_4; // +0x4  tile width
-    u32 m_8; // +0x8  tile height
+    i32 m_0;      // +0x0
+    u32 m_width;  // +0x4  tile width
+    u32 m_height; // +0x8  tile height
 };
 
 class CDDScreen {
@@ -110,30 +111,30 @@ public:
     void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
 
     char m_pad00[0x0c];
-    i32 m_0c;        // +0x0c
-    CTileInfo* m_10; // +0x10  tile-size descriptor
-    IDDObj* m_14;    // +0x14  IDirectDraw2
-    IDDObj* m_18;    // +0x18  IDirectDraw
-    IDDObj* m_1c;    // +0x1c  primary surface
-    IDDObj* m_20;    // +0x20  primary surface (raw)
-    IDDObj* m_24;    // +0x24  surface
-    IDDObj* m_28;    // +0x28  surface
-    IDDObj* m_2c;    // +0x2c  palette
+    i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
+    CTileInfo* m_tileInfo; // +0x10
+    IDDObj* m_dd2;         // +0x14   IDirectDraw2
+    IDDObj* m_dd;          // +0x18   IDirectDraw
+    IDDObj* m_primary;     // +0x1c   primary surface
+    IDDObj* m_20;          // +0x20   surface (only Release'd here; role unproven)
+    IDDObj* m_srcSurf;     // +0x24   blit source surface
+    IDDObj* m_28;          // +0x28   surface (only Release'd here; role unproven)
+    IDDObj* m_palette;     // +0x2c
     char m_pad30[0x50c - 0x30];
-    i32 m_50c; // +0x50c
+    i32 m_50c; // +0x50c   reset to 0 by Configure
     char m_pad510[0x514 - 0x510];
-    i32 m_514;     // +0x514
-    u32 m_518;     // +0x518  screen width
-    u32 m_51c;     // +0x51c  screen height
-    i32 m_520;     // +0x520  bpp
-    i32 m_524;     // +0x524  tiles across
-    i32 m_528;     // +0x528  tiles down
-    i32 m_52c;     // +0x52c  origin x
-    i32 m_530;     // +0x530  origin y
-    DDRect* m_534; // +0x534  explicit dest rect (or 0)
-    i32 m_538;     // +0x538  force-single-row flag
+    i32 m_514;            // +0x514  set in mode-2 fallback (unproven)
+    u32 m_screenWidth;    // +0x518
+    u32 m_screenHeight;   // +0x51c
+    i32 m_bpp;            // +0x520
+    i32 m_tilesAcross;    // +0x524
+    i32 m_tilesDown;      // +0x528
+    i32 m_originX;        // +0x52c
+    i32 m_originY;        // +0x530
+    DDRect* m_destRect;   // +0x534  explicit dest rect (or 0)
+    i32 m_forceSingleRow; // +0x538
     char m_pad53c[0x86a0 - 0x53c];
-    i32 m_86a0; // +0x86a0
+    i32 m_86a0; // +0x86a0   reset to 0 by Configure
 };
 
 // ===========================================================================
@@ -142,84 +143,84 @@ public:
 // ===========================================================================
 RVA(0x0017cc80, 0x109)
 void CDDScreen::HandleError() {
-    if (m_24) {
-        m_24->vtbl->Release(m_24);
-        m_24 = 0;
+    if (m_srcSurf) {
+        m_srcSurf->vtbl->Release(m_srcSurf);
+        m_srcSurf = 0;
     }
     if (m_28) {
         m_28->vtbl->Release(m_28);
         m_28 = 0;
     }
-    if (m_520 == 8) {
+    if (m_bpp == 8) {
         ((CSurfacePalette*)this)->ResetPalette();
     }
-    if (m_1c) {
+    if (m_primary) {
         DDBLTFX_ fx;
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
-        void* rc = (void*)m_1c->vtbl->Blt(m_1c, 0, 0, 0, 0x1020000, &fx);
+        void* rc = (void*)m_primary->vtbl->Blt(m_primary, 0, 0, 0, 0x1020000, &fx);
         if (rc) {
             memset(&fx, 0, sizeof(fx));
             fx.dwSize = 0x64;
             fx.dwFillColor = 0;
-            m_1c->vtbl->Blt(m_1c, 0, 0, 0, 0x1000400, &fx);
+            m_primary->vtbl->Blt(m_primary, 0, 0, 0, 0x1000400, &fx);
         }
     }
     if (m_0c == 0) {
-        if (m_2c) {
-            m_2c->vtbl->Release(m_2c);
-            m_2c = 0;
+        if (m_palette) {
+            m_palette->vtbl->Release(m_palette);
+            m_palette = 0;
         }
-        if (m_1c) {
-            m_1c->vtbl->Release(m_1c);
-            m_1c = 0;
+        if (m_primary) {
+            m_primary->vtbl->Release(m_primary);
+            m_primary = 0;
         }
         if (m_20) {
             m_20->vtbl->Release(m_20);
             m_20 = 0;
         }
-        if (m_14) {
-            m_14->vtbl->RestoreDisplayMode(m_14);
-            m_14->vtbl->Release(m_14);
-            m_14 = 0;
+        if (m_dd2) {
+            m_dd2->vtbl->RestoreDisplayMode(m_dd2);
+            m_dd2->vtbl->Release(m_dd2);
+            m_dd2 = 0;
         }
-        if (m_18) {
-            m_18->vtbl->Release(m_18);
-            m_18 = 0;
+        if (m_dd) {
+            m_dd->vtbl->Release(m_dd);
+            m_dd = 0;
         }
     }
 }
 
 // ===========================================================================
 // 0x17cdf0 - BlitRegion: blit the (col,row,nCols,nRows) tile region from the
-// source surface (m_24) onto the primary (m_1c). Single 1x1 untiled grids use
-// BltFast; everything else (or an explicit dest rect at m_534) uses Blt. On
+// source surface (m_srcSurf) onto the primary (m_primary). Single 1x1 untiled grids use
+// BltFast; everything else (or an explicit dest rect at m_destRect) uses Blt. On
 // DDERR_SURFACELOST restore the lost surface(s) (re-attaching the palette on the
 // 8bpp primary) and retry; any other HRESULT is returned.
 // ===========================================================================
 // @early-stop
 // instruction-scheduling wall (~90.8%): everything outside the dest-rect setup is
 // byte-exact (incl. the BltFast/Blt vtable dispatch, the SURFACELOST restore-retry
-// loop and the cross-jumped 8bpp SetPalette tail). In the m_534==0 branch retail
-// keeps m_524 in eax / m_528 in ecx across the left/top stores and computes
-// nCols*m_524 / nRows*m_528 lazily afterwards; cl groups the two products of each
+// loop and the cross-jumped 8bpp SetPalette tail). In the m_destRect==0 branch retail
+// keeps m_tilesAcross in eax / m_tilesDown in ecx across the left/top stores and computes
+// nCols*m_tilesAcross / nRows*m_tilesDown lazily afterwards; cl groups the two products of each
 // shared operand and hoists them early (folding nCols as a memory operand). A pure
 // MSVC5 /O2 scheduler coin-flip with no source lever (tile-dim locals regress it to
 // 90.2%); deferred to the final sweep.
 RVA(0x0017cdf0, 0x1c6)
 i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     DDRect dst, src;
-    if (m_534) {
-        dst.left = m_534->left;
-        dst.top = m_534->top;
-        dst.right = m_534->right;
-        dst.bottom = m_534->bottom;
+    if (m_destRect) {
+        dst.left = m_destRect->left;
+        dst.top = m_destRect->top;
+        dst.right = m_destRect->right;
+        dst.bottom = m_destRect->bottom;
     } else {
-        dst.left = col * m_524 + m_52c;
-        dst.top = row * m_528 + m_530;
-        dst.right = nCols * m_524 + dst.left;
-        dst.bottom = nRows * m_528 + dst.top;
+        dst.left = col * m_tilesAcross + m_originX;
+        dst.top = row * m_tilesDown + m_originY;
+        dst.right = nCols * m_tilesAcross + dst.left;
+        dst.bottom = nRows * m_tilesDown + dst.top;
     }
     src.left = col;
     src.top = row;
@@ -228,42 +229,44 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 
     for (;;) {
         i32 hr;
-        if (m_524 == 1 && m_528 == 1 && m_534 == 0) {
-            hr = m_1c->vtbl->BltFast(m_1c, dst.left, dst.top, m_24, &src, 0x10);
+        if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == 0) {
+            hr = m_primary->vtbl->BltFast(m_primary, dst.left, dst.top, m_srcSurf, &src, 0x10);
             if (hr != 0x887601c2) {
                 return hr;
             }
-            if (m_1c->vtbl->IsLost(m_1c) == 0x887601c2 && m_1c->vtbl->Restore(m_1c) == 0) {
-                if (m_520 == 8) {
-                    m_1c->vtbl->SetPalette(m_1c, m_2c);
+            if (m_primary->vtbl->IsLost(m_primary) == 0x887601c2
+                && m_primary->vtbl->Restore(m_primary) == 0) {
+                if (m_bpp == 8) {
+                    m_primary->vtbl->SetPalette(m_primary, m_palette);
                     UploadPalette();
                 }
             } else {
-                hr = m_24->vtbl->IsLost(m_24);
+                hr = m_srcSurf->vtbl->IsLost(m_srcSurf);
                 if (hr != 0x887601c2) {
                     return hr;
                 }
-                hr = m_24->vtbl->Restore(m_24);
+                hr = m_srcSurf->vtbl->Restore(m_srcSurf);
                 if (hr != 0) {
                     return hr;
                 }
             }
         } else {
-            hr = m_1c->vtbl->Blt(m_1c, &dst, m_24, &src, 0x1000000, 0);
+            hr = m_primary->vtbl->Blt(m_primary, &dst, m_srcSurf, &src, 0x1000000, 0);
             if (hr != 0x887601c2) {
                 return hr;
             }
-            if (m_1c->vtbl->IsLost(m_1c) == 0x887601c2 && m_1c->vtbl->Restore(m_1c) == 0) {
-                if (m_520 == 8) {
-                    m_1c->vtbl->SetPalette(m_1c, m_2c);
+            if (m_primary->vtbl->IsLost(m_primary) == 0x887601c2
+                && m_primary->vtbl->Restore(m_primary) == 0) {
+                if (m_bpp == 8) {
+                    m_primary->vtbl->SetPalette(m_primary, m_palette);
                     UploadPalette();
                 }
             } else {
-                hr = m_24->vtbl->IsLost(m_24);
+                hr = m_srcSurf->vtbl->IsLost(m_srcSurf);
                 if (hr != 0x887601c2) {
                     return hr;
                 }
-                hr = m_24->vtbl->Restore(m_24);
+                hr = m_srcSurf->vtbl->Restore(m_srcSurf);
                 if (hr != 0) {
                     return hr;
                 }
@@ -273,10 +276,10 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 }
 
 // ===========================================================================
-// 0x17cfc0 - Configure: derive the tile grid (m_524 across / m_528 down) and the
-// scroll origin (m_52c/m_530) for a layout `mode` (0..3), validating the caller's
-// optional origin point and clip rect against the screen extents (m_518/m_51c)
-// first. Modes 2/3 may pin an explicit dest rect at m_534 (RezAlloc'd). m_538
+// 0x17cfc0 - Configure: derive the tile grid (m_tilesAcross across / m_tilesDown down) and the
+// scroll origin (m_originX/m_originY) for a layout `mode` (0..3), validating the caller's
+// optional origin point and clip rect against the screen extents (m_screenWidth/m_screenHeight)
+// first. Modes 2/3 may pin an explicit dest rect at m_destRect (RezAlloc'd). m_forceSingleRow
 // forces a single tile row; m_50c/m_86a0 are reset. Returns 1 / 0 on rejection.
 // ===========================================================================
 // @early-stop
@@ -291,10 +294,10 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 RVA(0x0017cfc0, 0x2dd)
 i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
     if (origin) {
-        if (origin->x > m_518) {
+        if (origin->x > m_screenWidth) {
             return 0;
         }
-        if (origin->y > m_51c) {
+        if (origin->y > m_screenHeight) {
             return 0;
         }
     }
@@ -305,17 +308,17 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
         if (rect->top > rect->bottom) {
             return 0;
         }
-        if ((u32)rect->right > m_518) {
+        if ((u32)rect->right > m_screenWidth) {
             return 0;
         }
-        if ((u32)rect->bottom > m_51c) {
+        if ((u32)rect->bottom > m_screenHeight) {
             return 0;
         }
     }
-    if (m_10->m_4 > m_518) {
+    if (m_tileInfo->m_width > m_screenWidth) {
         return 0;
     }
-    if (m_10->m_8 > m_51c) {
+    if (m_tileInfo->m_height > m_screenHeight) {
         return 0;
     }
     if (!CheckGrid()) {
@@ -324,70 +327,71 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
 
     switch (mode) {
         case 0:
-            m_524 = m_518 / m_10->m_4;
-            m_528 = m_51c / m_10->m_8;
+            m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
+            m_tilesDown = m_screenHeight / m_tileInfo->m_height;
             if (flags & 0x10) {
                 if (!origin) {
                     return 0;
                 }
-                m_52c = origin->x;
-                m_530 = origin->y;
+                m_originX = origin->x;
+                m_originY = origin->y;
             } else {
-                m_52c = (m_518 - m_524 * m_10->m_4) >> 1;
-                m_530 = (m_51c - m_528 * m_10->m_8) >> 1;
+                m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
+                m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
             }
             break;
         case 1:
-            m_524 = 1;
-            m_528 = 1;
+            m_tilesAcross = 1;
+            m_tilesDown = 1;
             if (flags & 0x10) {
                 if (!origin) {
                     return 0;
                 }
-                m_52c = origin->x;
-                m_530 = origin->y;
+                m_originX = origin->x;
+                m_originY = origin->y;
             } else {
-                m_52c = (m_518 - m_10->m_4) >> 1;
-                m_530 = (m_51c - m_10->m_8) >> 1;
+                m_originX = (m_screenWidth - m_tileInfo->m_width) >> 1;
+                m_originY = (m_screenHeight - m_tileInfo->m_height) >> 1;
             }
             break;
         case 2:
-            if (m_518 % m_10->m_4 == 0 && m_51c % m_10->m_8 == 0) {
-                m_524 = m_518 / m_10->m_4;
-                m_528 = m_51c / m_10->m_8;
+            if (m_screenWidth % m_tileInfo->m_width == 0
+                && m_screenHeight % m_tileInfo->m_height == 0) {
+                m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
+                m_tilesDown = m_screenHeight / m_tileInfo->m_height;
                 if (flags & 0x10) {
                     if (!origin) {
                         return 0;
                     }
-                    m_52c = origin->x;
-                    m_530 = origin->y;
+                    m_originX = origin->x;
+                    m_originY = origin->y;
                 } else {
-                    m_52c = (m_518 - m_524 * m_10->m_4) >> 1;
-                    m_530 = (m_51c - m_528 * m_10->m_8) >> 1;
+                    m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
+                    m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
                 }
             } else {
-                m_524 = 1;
-                m_528 = 1;
-                m_52c = 0;
-                m_530 = 0;
-                m_534 = (DDRect*)RezAlloc(0x10);
-                m_534->top = 0;
-                m_534->left = 0;
-                m_534->bottom = m_51c;
-                m_534->right = m_518;
+                m_tilesAcross = 1;
+                m_tilesDown = 1;
+                m_originX = 0;
+                m_originY = 0;
+                m_destRect = (DDRect*)RezAlloc(0x10);
+                m_destRect->top = 0;
+                m_destRect->left = 0;
+                m_destRect->bottom = m_screenHeight;
+                m_destRect->right = m_screenWidth;
                 m_514 = 1;
             }
             break;
         case 3: {
-            m_524 = 1;
-            m_528 = 1;
-            m_52c = 0;
-            m_530 = 0;
+            m_tilesAcross = 1;
+            m_tilesDown = 1;
+            m_originX = 0;
+            m_originY = 0;
             if (!rect) {
                 return 0;
             }
             DDRect* r = (DDRect*)RezAlloc(0x10);
-            m_534 = r;
+            m_destRect = r;
             r->left = rect->left;
             r->top = rect->top;
             r->right = rect->right;
@@ -398,8 +402,8 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
             return 0;
     }
 
-    if (m_538 != 0) {
-        m_528 = 1;
+    if (m_forceSingleRow != 0) {
+        m_tilesDown = 1;
     }
     m_50c = 0;
     m_86a0 = 0;

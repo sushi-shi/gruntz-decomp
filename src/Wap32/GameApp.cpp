@@ -24,7 +24,7 @@ RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_4 = 0;
     m_8 = 0;
-    m_hAccel = 0; // the optimiser schedules the +0x10 store before +0x0c
+    m_10 = 0; // the optimiser schedules the +0x10 store before +0x0c
     m_c = 0;
     m_appActive = 0;
     m_errorReported = 0;
@@ -38,9 +38,9 @@ CGameApp::CGameApp() {
 // Frees the accelerator table then deletes the two resource objects.
 RVA(0x0013d8c0, 0x42)
 void CGameApp::CloseResources() {
-    if (m_hAccel) {
-        DestroyAcceleratorTable(m_hAccel);
-        m_hAccel = 0;
+    if (m_10) {
+        DestroyAcceleratorTable(m_10);
+        m_10 = 0;
     }
     if (m_8) {
         delete m_8;
@@ -58,12 +58,12 @@ void CGameApp::CloseResources() {
 RVA(0x0013dc20, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
-        if (m_hAccel) {
-            DestroyAcceleratorTable(m_hAccel);
-            m_hAccel = 0;
+        if (m_10) {
+            DestroyAcceleratorTable(m_10);
+            m_10 = 0;
         }
-        m_hAccel = LoadAcceleratorsA(m_c, lpTable);
-        return m_hAccel != 0;
+        m_10 = LoadAcceleratorsA(m_c, lpTable);
+        return m_10 != 0;
     }
     return 0;
 }
@@ -80,7 +80,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     if (m_4 && ((CGameWnd*)m_4)->m_closeGuard == 0) {
         PostMessageA((HWND)((CGameWnd*)m_4)->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
     }
-    m_244 = 0;
+    m_running = 0;
     m_errorCode = (i32)wParam;
     m_errorDetail = (i32)lParam;
 }
@@ -89,7 +89,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 // CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
 // dispatches here). Reads the OS HWND off m_4->m_hwnd; if there is no window,
 // return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
-// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
+// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_10
 // (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
 // (return ignored); always TranslateMessage + DispatchMessageA; when the queue
 // is empty, call the idle virtual (vtbl +0x20) and loop.
@@ -108,8 +108,8 @@ i32 CGameApp::RunMessageLoop() {
                 if (msg.message == 0x12 /*WM_QUIT*/) {
                     return 1;
                 }
-                if (m_hAccel && msg.hwnd == hwnd) {
-                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
+                if (m_10 && msg.hwnd == hwnd) {
+                    TranslateAcceleratorA(hwnd, m_10, &msg);
                 }
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
@@ -302,7 +302,7 @@ i32 CGameApp::VirtualUnknownMethod02(
         goto Fail;
     }
 
-    m_244 = 1;
+    m_running = 1;
     m_errorReported = 0;
     m_errorCode = 0;
     m_errorDetail = 0;
@@ -371,13 +371,13 @@ Fail:
 // CGameApp::VirtualUnknownMethod09 - vtbl slot +0x20.
 // The per-frame idle virtual the message pump calls on an empty queue
 // (RunMessageLoop dispatches `call [vtbl+0x20]`). When the app is active -
-// both gate words m_appActive and m_244 set - it tail-calls the game manager's
+// both gate words m_appActive and m_running set - it tail-calls the game manager's
 // per-frame tick (m_8->vtbl +0x10, the 5th vtable slot). The tail call emits
 // `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
 // neither gate-load disturbs a callee-saved reg).
 RVA(0x0013dc70, 0x1d)
 void CGameApp::VirtualUnknownMethod09() {
-    if (m_appActive && m_244) {
+    if (m_appActive && m_running) {
         m_8->PerFrameTick();
     }
 }

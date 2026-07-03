@@ -39,10 +39,10 @@ struct CRect {
 
 // The global text renderer g_textObj (DAT_0064ead8) is a FontRenderer (the WAP32
 // font-render object; full class in <Font/Font.h>). Partial view: current font/color
-// + the draw worker. SetFont/SetColor store m_00/m_04. All reloc-masked externs.
+// + the draw worker. SetFont/SetColor store m_font/m_color. All reloc-masked externs.
 struct FontRenderer {
-    Font* m_00;                                                             // +0x00  current font
-    i32 m_04;                                                               // +0x04  current color
+    Font* m_font;                                                           // +0x00  current font
+    i32 m_color;                                                            // +0x04  current color
     void SetFont(Font* f);                                                  // 0x179c10
     void SetColor(i32 c);                                                   // 0x179c20
     void RenderText(CString s, void* drawFn, CRect r, i32 a, i32 b, i32 c); // 0x17a460

@@ -241,54 +241,54 @@ struct DDPageArr {
 };
 SIZE_UNKNOWN(DDPageArr);
 struct CDDPageMgr {
-    i32 m_0;         // +0x00
-    i32 m_4;         // +0x04
-    i32 m_8;         // +0x08
-    i32 m_c;         // +0x0c
-    i32 m_10;        // +0x10
-    u32 m_14;        // +0x14
-    i32 m_18[0x43];  // +0x18 .. +0x123
-    DDPageSub m_124; // +0x124
-    i32 m_128;       // +0x128
+    i32 m_initialized; // +0x00  init-once guard
+    i32 m_4;           // +0x04
+    i32 m_8;           // +0x08
+    i32 m_c;           // +0x0c
+    i32 m_10;          // +0x10
+    u32 m_count;       // +0x14  entry count (bounds the 1-based index)
+    i32 m_18[0x43];    // +0x18 .. +0x123
+    DDPageSub m_sub;   // +0x124  embedded polymorphic sub-object
+    i32 m_128;         // +0x128
     i32 _12c[(0x134 - 0x12c) / 4];
-    i32 m_134;       // +0x134
-    DDPageArr m_138; // +0x138
-    i32* m_13c;      // +0x13c
-    i32 Init();      // 0x17b510
-    void Close();    // 0x17b570
-    i32 Free();      // 0x17b5a0
-    i32 Lookup(u32); // 0x17b840
+    i32 m_134;           // +0x134
+    DDPageArr m_pageArr; // +0x138  CObArray-like page store
+    i32* m_slots;        // +0x13c  index table
+    i32 Init();          // 0x17b510
+    void Close();        // 0x17b570
+    i32 Free();          // 0x17b5a0
+    i32 Lookup(u32);     // 0x17b840
 };
 
 RVA(0x0017b510, 0x55)
 i32 CDDPageMgr::Init() {
-    if (m_0) {
+    if (m_initialized) {
         return 0;
     }
     m_4 = 0;
     m_8 = 0;
-    m_138.RemoveAt(0, -1);
-    memset(&m_c, 0, 12); // m_c, m_10, m_14
+    m_pageArr.RemoveAt(0, -1);
+    memset(&m_c, 0, 12); // m_c, m_10, m_count
     memset(m_18, 0, sizeof(m_18));
     m_134 = 0;
-    m_0 = 1;
+    m_initialized = 1;
     return 1;
 }
 
 RVA(0x0017b570, 0x24)
 void CDDPageMgr::Close() {
-    if (!m_0) {
+    if (!m_initialized) {
         return;
     }
     Free();
-    m_138.RemoveAt(0, -1);
-    m_0 = 0;
+    m_pageArr.RemoveAt(0, -1);
+    m_initialized = 0;
 }
 
 RVA(0x0017b5a0, 0x48)
 i32 CDDPageMgr::Free() {
-    if (m_0 && (m_4 || m_8)) {
-        m_124.v21();
+    if (m_initialized && (m_4 || m_8)) {
+        m_sub.v21();
         m_4 = 0;
         m_8 = 0;
         m_134 = 0;
@@ -299,9 +299,9 @@ i32 CDDPageMgr::Free() {
 
 RVA(0x0017b840, 0x53)
 i32 CDDPageMgr::Lookup(u32 idx) {
-    if (m_4 && m_0 && idx <= m_14 && idx != 0) {
-        i32* slot = &m_13c[idx - 1];
-        if (m_124.v12(*slot, 0) == *slot) {
+    if (m_4 && m_initialized && idx <= m_count && idx != 0) {
+        i32* slot = &m_slots[idx - 1];
+        if (m_sub.v12(*slot, 0) == *slot) {
             return m_128;
         }
     }
@@ -379,8 +379,8 @@ struct SndDevice {
     i32 _0[0x78 / 4];
     void* m_78; // +0x78
     i32 _7c[(0x84 - 0x7c) / 4];
-    ISndBuf* m_84; // +0x84
-    i32 Probe();   // 0x137260
+    ISndBuf* m_buffer; // +0x84
+    i32 Probe();       // 0x137260
     i32 Restore();
 };
 SIZE_UNKNOWN(SndDevice);
@@ -392,7 +392,7 @@ i32 SndDevice::Restore() {
     if (!Probe()) {
         return 0;
     }
-    i32 ok = m_84->vtbl->Restore(m_84, 0, 0, 1) != 0;
+    i32 ok = m_buffer->vtbl->Restore(m_buffer, 0, 0, 1) != 0;
     if (ok) {
         SndErr("C:\\Proj\\Dsndmgr\\DSNDMGR.CPP", 0x68b, ok);
         return 0;
@@ -562,14 +562,14 @@ Node38* CNodeFactory::Create(i32 a, i32 b) {
 
 // ---------------------------------------------------------------------------
 // 0x1509c0 - CWwdGameObject visibility test: derive the four edges from the
-// object's centre (m_5c/m_60) and half-extents (m_198->m_18/m_1c), then bounds-check
-// against either the camera rect (+0x40 of m_c->m_24->m_5c, flag 0x40000 set) or the
-// grid extents (m_c->m_4->m_10). __thiscall, 0 args.
+// object's centre (m_centerX/m_centerY) and half-extents (m_extent->m_halfW/m_halfH),
+// then bounds-check against either the camera rect (+0x40 of m_ctx->m_camera->m_5c,
+// flag 0x40000 set) or the grid extents (m_ctx->m_grid->m_limits). __thiscall, 0 args.
 // ---------------------------------------------------------------------------
 struct WwdExtent {
     i32 _0[0x18 / 4];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
+    i32 m_halfW; // +0x18  half-width
+    i32 m_halfH; // +0x1c  half-height
 };
 SIZE_UNKNOWN(WwdExtent);
 struct WwdCamRect {
@@ -586,52 +586,52 @@ struct WwdCamHolder {
 SIZE_UNKNOWN(WwdCamHolder);
 struct WwdGridLim {
     i32 _0[0x10 / 4];
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
+    i32 m_width;  // +0x10
+    i32 m_height; // +0x14
 };
 SIZE_UNKNOWN(WwdGridLim);
 struct WwdGridHolder {
     i32 _0[0x10 / 4];
-    WwdGridLim* m_10; // +0x10
+    WwdGridLim* m_limits; // +0x10
 };
 SIZE_UNKNOWN(WwdGridHolder);
 struct WwdCtx {
-    i32 _0[1];          // +0x00
-    WwdGridHolder* m_4; // +0x04
+    i32 _0[1];             // +0x00
+    WwdGridHolder* m_grid; // +0x04
     i32 _8[(0x24 - 0x8) / 4];
-    WwdCamHolder* m_24; // +0x24
+    WwdCamHolder* m_camera; // +0x24
 };
 SIZE_UNKNOWN(WwdCtx);
 struct CWwdObj1509 {
-    i32 _0[2];   // +0x00
-    u32 m_8;     // +0x08 flags
-    WwdCtx* m_c; // +0x0c
+    i32 _0[2];     // +0x00
+    u32 m_flags;   // +0x08
+    WwdCtx* m_ctx; // +0x0c
     i32 _10[(0x5c - 0x10) / 4];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_centerX; // +0x5c
+    i32 m_centerY; // +0x60
     i32 _64[(0x198 - 0x64) / 4];
-    WwdExtent* m_198; // +0x198
+    WwdExtent* m_extent; // +0x198
     i32 Test();
 };
 SIZE_UNKNOWN(CWwdObj1509);
 // @early-stop
 // regalloc wall (~73%): the four derived edges (right/left/top/bottom) +
-// m_198/m_c/m_8 need 4 callee-saved regs in this reconstruction where retail packs
-// them into 3 (ebx/esi/edi) by keeping m_198 in edi and testing m_8 directly from
-// memory. No source spelling reproduces retail's exact edge-register assignment;
+// m_extent/m_ctx/m_flags need 4 callee-saved regs in this reconstruction where retail
+// packs them into 3 (ebx/esi/edi) by keeping m_extent in edi and testing m_flags
+// directly from memory. No source spelling reproduces retail's exact edge-register assignment;
 // logic (both the camera-rect and grid-extent bounds checks) complete.
 RVA(0x001509c0, 0xab)
 i32 CWwdObj1509::Test() {
-    WwdExtent* e = m_198;
+    WwdExtent* e = m_extent;
     if (!e) {
         return 0;
     }
-    i32 right = m_5c + e->m_18;
-    i32 left = m_5c - e->m_18;
-    i32 top = m_60 - e->m_1c;
-    i32 bottom = m_60 + e->m_1c;
-    if (m_8 & 0x40000) {
-        WwdCamRect* r = (WwdCamRect*)(m_c->m_24->m_5c + 0x40);
+    i32 right = m_centerX + e->m_halfW;
+    i32 left = m_centerX - e->m_halfW;
+    i32 top = m_centerY - e->m_halfH;
+    i32 bottom = m_centerY + e->m_halfH;
+    if (m_flags & 0x40000) {
+        WwdCamRect* r = (WwdCamRect*)(m_ctx->m_camera->m_5c + 0x40);
         if (right < r->a) {
             return 0;
         }
@@ -643,17 +643,17 @@ i32 CWwdObj1509::Test() {
         }
         return top <= r->d;
     } else {
-        WwdGridLim* g = m_c->m_4->m_10;
+        WwdGridLim* g = m_ctx->m_grid->m_limits;
         if (right < 0) {
             return 0;
         }
-        if (left >= g->m_10) {
+        if (left >= g->m_width) {
             return 0;
         }
         if (bottom < 0) {
             return 0;
         }
-        return top < g->m_14;
+        return top < g->m_height;
     }
 }
 
@@ -690,8 +690,8 @@ i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x13a530 - CSymTab remove-entry: shrink the running size (m_10) by the entry's
-// span (m_c), unlink it via the +0x24 helper (0x184ab0), run the entry's own
+// 0x13a530 - CSymTab remove-entry: shrink the running size (m_size) by the entry's
+// span (m_span), unlink it via the +0x24 helper (0x184ab0), run the entry's own
 // teardown (0x1397a0), drop it from the list (0x13c210) and clear the list's count.
 // __thiscall, 2 args.
 // ---------------------------------------------------------------------------
@@ -701,7 +701,7 @@ struct SymHelper24 {
 SIZE_UNKNOWN(SymHelper24);
 struct SymEntry2 {
     i32 _0[0xc / 4];
-    i32 m_c; // +0x0c span
+    i32 m_span; // +0x0c
     i32 _10[(0x1c - 0x10) / 4];
     i32 m_1c;        // +0x1c
     void Teardown(); // 0x1397a0
@@ -714,25 +714,25 @@ struct SymEntry1 {
 SIZE_UNKNOWN(SymEntry1);
 struct SymList18 {
     i32 _0[2];
-    i32 m_8;            // +0x08
+    i32 m_count;        // +0x08
     void Drop(void* p); // 0x13c210
 };
 SIZE_UNKNOWN(SymList18);
 struct CSymTab13a530 {
     i32 _0[4];
-    i32 m_10;        // +0x10
-    i32 _14;         // +0x14
-    SymList18* m_18; // +0x18
+    i32 m_size;        // +0x10  running total span
+    i32 _14;           // +0x14
+    SymList18* m_list; // +0x18
     i32 Remove(SymEntry1* a1, SymEntry2* a2);
 };
 SIZE_UNKNOWN(CSymTab13a530);
 RVA(0x0013a530, 0x47)
 i32 CSymTab13a530::Remove(SymEntry1* a1, SymEntry2* a2) {
-    m_10 -= a2->m_c;
+    m_size -= a2->m_span;
     a1->m_24.Unlink(&a2->m_1c);
     a2->Teardown();
-    m_18->Drop(a2);
-    m_18->m_8 = 0;
+    m_list->Drop(a2);
+    m_list->m_count = 0;
     return 1;
 }
 
@@ -758,8 +758,8 @@ void __stdcall Destroy17e230(DBuf17e230 b) {
 struct CPalObj143950 {
     i32 _0[0x53c / 4];
     u8 m_pal[256][4]; // +0x53c
-    i32 m_93c;        // +0x93c
-    i32 m_940;        // +0x940
+    i32 m_dirty;      // +0x93c
+    i32 m_tag;        // +0x940
     i32 SetPalette(const u8* src, i32 tag);
 };
 SIZE_UNKNOWN(CPalObj143950);
@@ -782,8 +782,8 @@ i32 CPalObj143950::SetPalette(const u8* src, i32 tag) {
         dst += 4;
         src += 3;
     }
-    m_93c = 1;
-    m_940 = tag;
+    m_dirty = 1;
+    m_tag = tag;
     return 1;
 }
 

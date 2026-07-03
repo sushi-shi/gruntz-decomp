@@ -382,9 +382,9 @@ struct Killable1 {
 };
 SIZE_UNKNOWN(Killable1);
 struct Node166810 {
-    Node166810* m_0; // 0x0 link
+    Node166810* m_next; // 0x0 link
     char _4[4];
-    Killable1* m_8; // 0x8 payload
+    Killable1* m_payload; // 0x8 payload
 };
 SIZE_UNKNOWN(Node166810);
 struct Arr1dc {
@@ -393,19 +393,19 @@ struct Arr1dc {
 SIZE_UNKNOWN(Arr1dc);
 struct B_166810 {
     char _0[0x1dc];
-    Arr1dc m_1dc;      // 0x1dc
-    Node166810* m_1e0; // 0x1e0
+    Arr1dc m_1dc;       // 0x1dc
+    Node166810* m_head; // 0x1e0
     void Clear();
 };
 SIZE_UNKNOWN(B_166810);
 RVA(0x00166810, 0x32)
 void B_166810::Clear() {
-    Node166810* n = m_1e0;
+    Node166810* n = m_head;
     while (n) {
         Node166810* cur = n;
-        n = n->m_0;
-        if (cur->m_8) {
-            cur->m_8->Destroy(1);
+        n = n->m_next;
+        if (cur->m_payload) {
+            cur->m_payload->Destroy(1);
         }
     }
     m_1dc.RemoveAll();
@@ -418,8 +418,8 @@ extern "C" i32 RezItmProbe(void* h);  // 0x125b50
 extern "C" i32 RezDirLookup(void* h); // 0x18ccd0
 
 // ---------------------------------------------------------------------------
-// 0x13c8a0 - CRezItm scan retry loop: probe m_10; if it yields, ask the +0xc
-// owner's vtbl[2] whether to keep retrying. __thiscall.
+// 0x13c8a0 - CRezItm scan retry loop: probe m_handle; if it yields, ask the
+// +0xc owner's vtbl[2] whether to keep retrying. __thiscall.
 // ---------------------------------------------------------------------------
 struct RezOwner {
     virtual void v0();
@@ -429,8 +429,8 @@ struct RezOwner {
 SIZE_UNKNOWN(RezOwner);
 struct RezItm {
     char _0[0xc];
-    RezOwner* m_c; // 0xc
-    void* m_10;    // 0x10
+    RezOwner* m_owner; // 0xc
+    void* m_handle;    // 0x10  resource handle (RezItmProbe)
     char _14[0x20 - 0x14];
     i32 m_20; // 0x20
     i32 Scan();
@@ -439,14 +439,14 @@ SIZE_UNKNOWN(RezItm);
 RVA(0x0013c8a0, 0x45)
 i32 RezItm::Scan() {
     m_20 = -1;
-    if (m_10) {
+    if (m_handle) {
         i32 found;
         do {
-            if (RezItmProbe(m_10) == 0) {
+            if (RezItmProbe(m_handle) == 0) {
                 found = 1;
             } else {
                 found = 0;
-                if (m_c->v2() == 0) {
+                if (m_owner->v2() == 0) {
                     return 0;
                 }
             }
@@ -677,7 +677,7 @@ struct ImgOwned {
     virtual void v9();
     virtual void v10(); // slot 10 (+0x28)
     char _4[0x10 - 0x4];
-    Blk6c m_10; // 0x10 (0x6c bytes)
+    Blk6c m_transform; // 0x10 (0x6c-byte transform descriptor)
     i32 Apply(i32 mode, const void* src);
     i32 Forward(i32 a0, const void* a1);
     i32 Commit(i32 a0, const void* a1);
@@ -686,7 +686,7 @@ SIZE_UNKNOWN(ImgOwned);
 RVA(0x0013e0a0, 0x27)
 i32 ImgOwned::Apply(i32 mode, const void* src) {
     if (src) {
-        m_10 = *(const Blk6c*)src;
+        m_transform = *(const Blk6c*)src;
     }
     return v8(mode);
 }

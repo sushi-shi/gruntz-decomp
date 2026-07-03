@@ -21,7 +21,7 @@ extern "C" void EngStr_RenderText(
     i32 a8
 ); // 0x115930
 
-// The render config the forwarder fetches: arg0->m_04->m_10 is the config; its
+// The render config the forwarder fetches: arg0->m_sub->m_10 is the config; its
 // +0x2c is the font draw-method pointer injected as the 4th render arg.
 struct EngStrRenderCfg {
     char m_pad00[0x2c]; // +0x00
@@ -32,12 +32,12 @@ struct EngStrRenderSub {
     EngStrRenderCfg* m_cfg; // +0x10
 };
 struct EngStrRenderObj {
-    void* m_00;            // +0x00  (foreign object's first field / vptr; layout only)
-    EngStrRenderSub* m_04; // +0x04
+    void* m_00;             // +0x00  (foreign object's first field / vptr; layout only)
+    EngStrRenderSub* m_sub; // +0x04
 };
 
 // EngStr text-draw forwarder (__cdecl). Fetches the render config off
-// obj->m_04->m_10; when present, forwards eight caller args to the text-render
+// obj->m_sub->m_10; when present, forwards eight caller args to the text-render
 // worker with the config's font draw-method pointer spliced in as the 4th arg.
 // 0x115440.
 // @early-stop
@@ -57,7 +57,7 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    EngStrRenderCfg* cfg = obj->m_04->m_cfg;
+    EngStrRenderCfg* cfg = obj->m_sub->m_cfg;
     if (cfg == 0) {
         return;
     }

@@ -2787,7 +2787,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (m_curState->Vslot09(oldId) == 0 && m_curState->Vslot06() == 0) {
         return 0;
     }
-    ((CGameApp*)m_8)->m_244 = 1;
+    ((CGameApp*)m_8)->m_running = 1;
     PostSwitchHook();
     return 1;
 }
@@ -3224,7 +3224,7 @@ void CGruntzMgr::OnCheckpointReached() {
 // CGruntzMgr::DelayedQuit (0x08f530; the PostMessageA-wrapping delayed shutdown).
 // One-shot (guarded by m_a4): resolve the world's "MENU_ACTIVATE" menu node to a base
 // timestamp (its +0x10->+0x28 plus 0x1f4), busy-wait via timeGetTime until that
-// deadline passes, clear the app's resume flag (m_244), then PostMessageA WM_CLOSE to
+// deadline passes, clear the app's resume flag (m_running), then PostMessageA WM_CLOSE to
 // the game window.
 // @early-stop
 // zero-register-pinning wall (~3.5%): logic + control flow are structurally byte-for-
@@ -3253,7 +3253,7 @@ void CGruntzMgr::DelayedQuit() {
     while (tgt() < deadline) {
     }
     if (m_8) {
-        ((CGameApp*)m_8)->m_244 = 0;
+        ((CGameApp*)m_8)->m_running = 0;
     }
     if (m_4) {
         g_pPostMessageA((i32)((CGameWnd*)m_4)->m_hwnd, 0x10, 0, 0);
