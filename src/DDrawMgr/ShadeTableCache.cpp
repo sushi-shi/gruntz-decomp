@@ -58,18 +58,15 @@ extern "C" i32 __cdecl CompareLuma(const void* a, const void* b);      // 0x14ed
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// The CString / CMemFile temps the AddFrom* loaders build (ctor/dtor external,
-// reloc-masked). Modeled as tiny holders so the __thiscall ctor/dtor calls and
-// the element load calls bind by shape.
+// The CString temp AddFromArray builds over the name (ctor 0x1b9ba3 / dtor
+// 0x1b9cde external, reloc-masked). Modeled as a tiny holder so the __thiscall
+// ctor/dtor calls and the element Load call bind by shape. (AddFromFile builds no
+// such temp: its LoadFile -> CDataBuffer::LoadFromMem wraps the raw buffer in its
+// own CMemFile internally, so no client-side CMemFile is constructed here.)
 struct CStr {
     char* m_p;
     CStr(const char* s); // 0x1b9ba3
     ~CStr();             // 0x1b9cde
-};
-struct CMemFile {
-    char m_buf[0x2c];
-    CMemFile(u8* data, i32 size); // 0x1cce4f (+ Attach 0x1cced7)
-    ~CMemFile();                  // 0x1ccf14
 };
 
 // ===========================================================================
@@ -720,13 +717,16 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
 }
 
 // ===========================================================================
-// 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a CMemFile
-// over the (buffer,size) args via the element's file loader (0x150330). The
-// element-array growth is again inlined. EH frame. @early-stop
+// 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a raw (buffer,
+// size) memory blob via the element's LoadFile (0x150330 = CDataBuffer::
+// LoadFromMem), which builds its own CMemFile internally. The element-array
+// growth is again inlined. EH frame.
 // ===========================================================================
 // @early-stop
-// EH-frame + inlined-MFC-SetSize wall (see AddFromArray): plus a CMemFile temp
-// instead of CString; logic complete, scheduling parks it.
+// EH-frame + inlined-MFC-SetSize wall (see AddFromArray): the array-grow algorithm
+// is open-coded inline rather than the out-of-line SetSizeGrow, and the /GX
+// EH-state numbering around `new CShadeTable` doesn't reproduce; logic complete,
+// scheduling parks it.
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     CShadeTable* t = new CShadeTable;
@@ -772,8 +772,7 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    CMemFile mf((u8*)name, size);
-    if (!t->LoadFile(&mf, size, 0)) {
+    if (!t->LoadFile((void*)name, size, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -882,4 +881,3 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
 // mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
 SIZE_UNKNOWN(Hsv);
 SIZE_UNKNOWN(CStr);
-SIZE_UNKNOWN(CMemFile); // MFC-library modeling view (opaque holder)

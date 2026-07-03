@@ -36,9 +36,13 @@ struct CShadeTable {
     void Free();              // 0x150190
     i32 Alloc(i32 sz, i32 k); // 0x1501a0 -> bool
     void Destroy();           // 0x1503c0
-    // The two AddFrom* element loaders (sibling element TU, reloc-masked).
-    i32 Load(struct CStr& s, i32 key);                 // 0x150250
-    i32 LoadFile(struct CMemFile* f, i32 size, i32 k); // 0x150330
+    // The two AddFrom* element loaders (sibling element TU, reloc-masked). These
+    // are really CDataBuffer::LoadFromFile / LoadFromMem: Load takes a filesystem
+    // path (via a CString temp the caller builds), LoadFile a raw (buf,len,id)
+    // memory blob - it wraps the buffer in its OWN CMemFile internally, so the
+    // caller passes the raw pointer, not a CMemFile.
+    i32 Load(struct CStr& s, i32 key);        // 0x150250  CDataBuffer::LoadFromFile
+    i32 LoadFile(void* buf, i32 size, i32 k); // 0x150330  CDataBuffer::LoadFromMem
 };
 
 // The growable element-array subobject (lives at cache +0x04). ALL-VTABLES phase:

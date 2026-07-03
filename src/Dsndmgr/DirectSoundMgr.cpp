@@ -141,82 +141,6 @@ SIZE_UNKNOWN(DSoundCloneList); // {head,tail} list-head view
 void* operator new(u32);
 void operator delete(void*);
 
-// The clone-instance ctor (0x136180, __thiscall ret 0xc => 3 args): chains the
-// base DirectSoundMgr ctor (0x1351d0), stamps the clone vtbl (0x5ef6c0), seeds the
-// clone back-pointer (m_4c=self), the original-buffer back-ptr (m_reacquireOwner), m_50=1,
-// the copied param block (sample/reacquire/rate fields) and ComputeDuration (0x1359a0).
-// External, reloc-masked (its /GX EH frame lives there); modeled as a tiny helper
-// so the placement-new `mov ecx,alloc; push ...; call` falls out.
-struct DSoundCloneCtor {
-    inline DSoundCloneCtor(
-        IDirectSoundBufferZ* buf,
-        DirectSoundMgr* owner,
-        DirectSoundMgr* original
-    );
-    inline void* operator new(u32);
-
-    DSoundCloneCtor* Construct(
-        IDirectSoundBufferZ* buf,
-        DirectSoundMgr* owner,
-        DirectSoundMgr* original
-    ); // 0x136180
-
-    // The base DirectSoundMgr ctor (0x1351d0), chained as a foreign (reloc-masked)
-    // call so the shell struct need not derive from the polymorphic base.
-    void ChainBaseCtor(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
-
-    char _pad[0x58]; // shell; real object is 0x58 B (the new(0x58) operand)
-};
-SIZE(DSoundCloneCtor, 0x58); // measured: new(0x58) -> ctor 0x136180
-
-inline DSoundCloneCtor::DSoundCloneCtor(
-    IDirectSoundBufferZ* buf,
-    DirectSoundMgr* owner,
-    DirectSoundMgr* original
-) {
-    Construct(buf, owner, original);
-}
-
-inline void* DSoundCloneCtor::operator new(u32) {
-    return ::operator new(0x58);
-}
-
-// DSoundCloneCtor::Construct (0x136180) - the DirectSoundMgr clone-instance ctor,
-// re-homed from src/Stub/MallocConstructors (was MallocCtor_136180). Confirmed by
-// xref: the sole caller is DirectSoundMgr::Clone (0x135c20), which `new`s it. Chains
-// the DirectSoundMgr base ctor (0x1351d0), seeds the clone back-ptr (m_4c=self), the
-// original DirectSoundMgr (m_54), m_50=1, copies the param block +0x2c..+0x38 from
-// the original, and runs ComputeDuration (0x1359a0). Defining it here resolves the
-// Clone->Construct reloc that was previously dangling (the body lived in the stub
-// bucket under a different name).
-// @early-stop
-// vptr/EH wall: the retail ctor also (a) carries a /GX ctor-in-flight frame for the
-// destructible DirectSoundMgr base and (b) re-stamps ??_7DSoundBaseSub (0x5ef6c0)
-// after the base ctor. The shell struct can't emit the base's /GX frame and can't
-// reference the VTBL(DSoundBaseSub)-bound vtable without a dup-DATA conflict, so
-// those two are the residual; the base-ctor call, field seeds and ComputeDuration
-// are byte-faithful. Final-sweep: model it as a real DirectSoundMgr-derived class.
-RVA(0x00136180, 0x86)
-DSoundCloneCtor* DSoundCloneCtor::Construct(
-    IDirectSoundBufferZ* buf,
-    DirectSoundMgr* owner,
-    DirectSoundMgr* original
-) {
-    ChainBaseCtor(buf, owner);
-    char* self = (char*)this;
-    *(DSoundCloneCtor**)(self + 0x4c) = this;
-    *(DirectSoundMgr**)(self + 0x54) = original;
-    *(i32*)(self + 0x50) = 1;
-    char* src = (char*)original;
-    *(i32*)(self + 0x2c) = *(i32*)(src + 0x2c);
-    *(i32*)(self + 0x30) = *(i32*)(src + 0x30);
-    *(i32*)(self + 0x34) = *(i32*)(src + 0x34);
-    *(i32*)(self + 0x3c) = *(i32*)(src + 0x3c);
-    *(i32*)(self + 0x38) = *(i32*)(src + 0x38);
-    ((DirectSoundMgr*)this)->ComputeDuration();
-    return this;
-}
-
 // ---------------------------------------------------------------------------
 // The two-level DirectSoundMgr-derived clone hierarchy (ALL-VTABLES phase: real
 // polymorphic). DSoundBaseSub chains the DirectSoundMgr base ctor + cl-stamps the
@@ -227,7 +151,15 @@ DSoundCloneCtor* DSoundCloneCtor::Construct(
 // clone-then-base order so cl keeps the out-of-line `call 0x136230`.
 class DSoundBaseSub : public DirectSoundMgr {
 public:
-    DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner);
+    DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x136230
+    // Clone/duplicate ctor (0x136180): as the 2-arg ctor, plus records the source
+    // manager (m_reacquireOwner=original), copies its sample/reacquire/rate block,
+    // and recomputes the duration - the object Clone() news for a duplicated buffer.
+    DSoundBaseSub(
+        IDirectSoundBufferZ* buf,
+        DirectSoundMgr* owner,
+        DirectSoundMgr* original
+    );                // 0x136180
     ~DSoundBaseSub(); // 0x136260  base-subobject dtor (implicit vptr reset + chain)
 };
 SIZE_UNKNOWN(DSoundBaseSub);     // DirectSoundMgr-derived; retail clone alloc 0x58 (< C++ sizeof)
@@ -700,16 +632,23 @@ DSoundCloneInst::~DSoundCloneInst() {
 // the clone's m_buffer; on failure reports via GetErrorString(0x217) and returns 0.
 // On success links the clone's anchor (m_node44) into this->m_cloneHead list,
 // stamps the play key (clone->m_50) and returns the clone.
+// @early-stop
+// merged-class size artifact (99.99%): `new DSoundBaseSub` emits `push
+// sizeof(DSoundBaseSub)` = 0x90, but retail pushes 0x58 - the real clone/buffer
+// wrapper is a 0x58 base, whereas this TU merges it with the 0x90 device manager
+// into one DirectSoundMgr class (the two this-shapes share offsets). Every other
+// byte is exact; closing this last byte needs splitting the buffer-wrapper base
+// from the device manager (a multi-method re-home, deferred to the final sweep).
 RVA(0x00135c20, 0xf6)
 DirectSoundMgr* DirectSoundMgr::Clone(i32 a) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    DSoundCloneCtor* clone = new DSoundCloneCtor(m_buffer, m_owner, (DirectSoundMgr*)this);
+    DSoundBaseSub* clone = new DSoundBaseSub(m_buffer, m_owner, this);
     if (clone == 0) {
         return 0;
     }
-    DirectSoundMgr* c = (DirectSoundMgr*)clone;
+    DirectSoundMgr* c = clone;
     IDirectSoundZ* dev = m_owner->m_device;
     i32 hr = dev->DuplicateSoundBuffer(m_buffer, &c->m_buffer) != 0;
     if (hr) {
@@ -845,6 +784,32 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, DirectSoundMgr* owner)
     m_node44.m_inst = (DirectSoundMgr*)this;
     m_reacquireOwner = (DirectSoundMgr*)this;
     m_playKey = 1;
+}
+
+// ---------------------------------------------------------------------------
+// DSoundBaseSub clone/duplicate ctor (0x136180, __thiscall). The object Clone()
+// news for a duplicated sound buffer. Chains the DirectSoundMgr base ctor; cl
+// auto-stamps ??_7DSoundBaseSub@@6B@ (0x5ef6c0). Records this clone's back-pointer
+// (m_node44.m_inst) and the source manager (m_reacquireOwner=original), copies the
+// original's sample/reacquire/rate parameter block, then recomputes the duration.
+// The trailing ComputeDuration() call over the destructible DirectSoundMgr base is
+// what gives this ctor a /GX ctor-in-flight EH frame (the 2-arg ctor has none).
+RVA(0x00136180, 0x86)
+DSoundBaseSub::DSoundBaseSub(
+    IDirectSoundBufferZ* buf,
+    DirectSoundMgr* owner,
+    DirectSoundMgr* original
+)
+    : DirectSoundMgr(buf, owner) {
+    m_node44.m_inst = (DirectSoundMgr*)this;
+    m_reacquireOwner = original;
+    m_playKey = 1;
+    m_sampleCount = original->m_sampleCount;
+    m_reacquireCb = original->m_reacquireCb;
+    m_reacquireCtx = original->m_reacquireCtx;
+    m_sampleRate = original->m_sampleRate;
+    m_rateBase = original->m_rateBase;
+    ComputeDuration();
 }
 
 // ---------------------------------------------------------------------------

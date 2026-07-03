@@ -10,6 +10,7 @@
 // <Gruntz/ActNameRegistry.h> view of the registry globals without colliding with
 // the stub TU's class model.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
@@ -34,37 +35,12 @@ struct CStatusBarSpriteActEntry {
 };
 SIZE_UNKNOWN(CStatusBarSpriteActEntry);
 
-// The class's activation-coordinate registry singleton (@0x64e670). Same
-// [2000,2010] fixed-range CLeafActReg shape as the sibling tile triggers, built by
-// the shared registry ctor (0x408710). ResolveEntry folds the VActLookup archetype
-// inline; the slow Insert is __thiscall on m_coll2.
-struct CStatusBarSpriteActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The class's activation-coordinate registry singleton (@0x64e670), built over the
+// fixed [2000,2010] range by the shared registry ctor (0x408710). Was a per-file
+// duplicate of the <Gruntz/ActReg.h> CActReg archetype (layout + ResolveEntry); now
+// derives from it, keeping its own placeholder name so the DATA-pinned global is
+// unchanged.
+struct CStatusBarSpriteActReg : public CActReg {};
 SIZE_UNKNOWN(CStatusBarSpriteActReg);
 DATA(0x0024e670)
 extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670

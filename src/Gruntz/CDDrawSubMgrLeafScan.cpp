@@ -65,12 +65,6 @@ public:
 // (below), so its grand-base dtor vtable (0x5e8cb4) is the cl-emitted
 // ??_7LeafElementBase - the manual g_wapObjectDtorVtbl stamp is gone from this TU.
 
-// VM18 (0x157ae0) on the existing CDDrawSubMgrLeaf TU: clears the +0x10 map and
-// zeroes +0x2c. Reloc-masked external __thiscall call from the dtor.
-class LeafScanVM18Sink {
-public:
-    void VM18(); // 0x157ae0
-};
 
 // ----- The throttled per-asset refresh (RefreshAsset_114120) -----
 // The map value, when refreshed, is a draw-cue record: its +0x10 player drives
@@ -764,7 +758,6 @@ SIZE_UNKNOWN(LeafScanSoundArg);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
 SIZE_UNKNOWN(CParseSource);
-SIZE_UNKNOWN(LeafScanVM18Sink);
 VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
 // ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / ClassWithUnknownVTable42).
 // cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is
