@@ -236,7 +236,7 @@ struct CSbiPtrCollection {
 };
 SIZE_UNKNOWN(CSbiPtrCollection);
 
-// The gauge notifier (m_218/m_21c): the value sink carries m_44 (set to the gauge
+// The gauge notifier (m_gaugeNotify/m_gaugeSink): the value sink carries m_44 (set to the gauge
 // reading) and a refresh slot at vtable index 0x28 (slot 10).
 class CSbiGaugeNotify {
 public:
@@ -472,30 +472,30 @@ public:
     CSbiPtrList m_listD4; // +0xd4  trailing hit-test list (head at +0xd8)
     char m_paddc[0x10c - 0xdc];
     i32 m_activeTab;              // +0x10c  active tab index
-    i32 m_110;                    // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
+    i32 m_itemKind;               // +0x110  item-kind tag (LoadBattlezItemConfig sets 5)
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
-    CSbiSprite* m_1c8;            // +0x1c8  per-tab sprite widgets (cleared by
-    CSbiSprite* m_1cc;            // +0x1cc  ClearTabSprites in declaration order)
-    CSbiSprite* m_1d0;            // +0x1d0
-    CSbiSprite* m_1d4;            // +0x1d4
-    CSbiSprite* m_1d8;            // +0x1d8
-    CSbiSprite* m_1dc;            // +0x1dc
-    CSbiSprite* m_1e0;            // +0x1e0
-    CSbiSprite* m_1e4;            // +0x1e4
-    CSbiSprite* m_1e8;            // +0x1e8
-    CSbiSprite* m_1ec;            // +0x1ec
-    CSbiSprite* m_1f0;            // +0x1f0
-    CSbiSprite* m_1f4;            // +0x1f4
-    CSbiSprite* m_1f8;            // +0x1f8
-    CSbiSprite* m_1fc;            // +0x1fc
-    CSbiSprite* m_200;            // +0x200
+    CSbiSprite* m_tabSprite0;     // +0x1c8  per-tab sprite widgets (cleared by
+    CSbiSprite* m_tabSprite1;     // +0x1cc  ClearTabSprites in declaration order)
+    CSbiSprite* m_tabSprite2;     // +0x1d0
+    CSbiSprite* m_tabSprite3;     // +0x1d4
+    CSbiSprite* m_tabSprite4;     // +0x1d8
+    CSbiSprite* m_tabSprite5;     // +0x1dc
+    CSbiSprite* m_tabSprite6;     // +0x1e0
+    CSbiSprite* m_tabSprite7;     // +0x1e4
+    CSbiSprite* m_tabSprite8;     // +0x1e8
+    CSbiSprite* m_tabSprite9;     // +0x1ec
+    CSbiSprite* m_tabSprite10;    // +0x1f0
+    CSbiSprite* m_tabSprite11;    // +0x1f4
+    CSbiSprite* m_tabSprite12;    // +0x1f8
+    CSbiSprite* m_tabSprite13;    // +0x1fc
+    CSbiSprite* m_tabSprite14;    // +0x200
     CSbiSlotPtr* m_slotNotify[1]; // +0x204  slot pointer array (4-byte stride)
     char m_pad208[0x218 - 0x208];
-    CSbiGaugeNotify* m_218; // +0x218  gauge notifier (vfunc 0x28)
-    CSbiGaugeNotify* m_21c; // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
-    CSbiSlot m_slots[1];    // +0x220  24-byte slot records
+    CSbiGaugeNotify* m_gaugeNotify; // +0x218  gauge notifier (vfunc 0x28)
+    CSbiGaugeNotify* m_gaugeSink;   // +0x21c  gauge value sink (m_44 = gauge; vfunc 0x28)
+    CSbiSlot m_slots[1];            // +0x220  24-byte slot records
     char m_pad238[0x298 - (0x220 + 0x18)];
     i32 m_gauge;       // +0x298  gauge current
     i32 m_gaugeTarget; // +0x29c  gauge target
@@ -509,23 +509,23 @@ public:
     char m_pad314[0x318 - 0x314];
     i32 m_hudRectB_x;          // +0x318  HUD-rect group B (x0)
     i32 m_hudRectB_y;          // +0x31c  (y0)
-    i32 m_320;                 // +0x320  (latched dword from g_dat645588)
-    i32 m_324;                 // +0x324
+    i32 m_hudRectB_clock;      // +0x320  (latched dword from g_dat645588)
+    i32 m_hudRectB_clockHi;    // +0x324
     i32 m_hudRectB_z;          // +0x328
-    i32 m_32c;                 // +0x32c
+    i32 m_hudRectB_zHi;        // +0x32c
     i32 m_hudRectA_x;          // +0x330  HUD-rect group A (x0)
     i32 m_hudRectA_y;          // +0x334  (y0)
-    i32 m_338;                 // +0x338
-    i32 m_33c;                 // +0x33c
+    i32 m_hudRectA_clock;      // +0x338
+    i32 m_hudRectA_clockHi;    // +0x33c
     i32 m_hudRectA_z;          // +0x340
-    i32 m_344;                 // +0x344
+    i32 m_hudRectA_zHi;        // +0x344
     CSbiMachineDisplay* m_348; // +0x348  rez-machine snooze display object
     i32 m_34c;                 // +0x34c
     i32 m_350;                 // +0x350
     i32 m_hitTestDisabled;     // +0x354  hit-test disable flag
-    i32 m_358;                 // +0x358  tab-widgets-built flag
+    i32 m_tabsBuilt;           // +0x358  tab-widgets-built flag
     i32 m_activeSlot;          // +0x35c  active-slot index (-1 = none)
-    i32 m_360;                 // +0x360  pending highlight row index (-1 none)
+    i32 m_pendingHlRow;        // +0x360  pending highlight row index (-1 none)
     CSbiSlotPtr* m_notify0;    // +0x364  notify targets (slot 0x28)
     CSbiSlotPtr* m_notify1;    // +0x368
     CSbiSlotPtr* m_notify2;    // +0x36c
@@ -533,50 +533,50 @@ public:
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];      // +0x378  3 groups x 4 highlight rows (24B each)
     CSbiSlotPtr* m_hlNotify[12]; // +0x498  3 groups x 4 notify pointers
-    i32 m_4c8;                   // +0x4c8  (set to 1 by InitTabRects)
+    i32 m_machinePhase;          // +0x4c8  (set to 1 by InitTabRects)
     i32 m_extraNotifyArg0;       // +0x4cc  arg for (*m_extraNotify0)->Notify
     i64 m_beltLast;              // +0x4d0  belt-drop timer last draw-clock (64-bit)
     i64 m_beltInterval;          // +0x4d8  belt-drop timer interval (64-bit)
     CSbiSlotPtr* m_extraNotify0; // +0x4e0
     char m_pad4e4[0x4e8 - 0x4e4];
-    i32 m_4e8;                   // +0x4e8  falling-item active flag
+    i32 m_fallActive;            // +0x4e8  falling-item active flag
     i32 m_extraNotifyArg1;       // +0x4ec  arg for (*m_extraNotify1)->Notify
-    i32 m_4f0;                   // +0x4f0  falling-item rect base = g_dat645588
-    i32 m_4f4;                   // +0x4f4
-    i32 m_4f8;                   // +0x4f8  falling-item config delay
-    i32 m_4fc;                   // +0x4fc
+    i32 m_fallLast;              // +0x4f0  falling-item timer last draw-clock = g_dat645588
+    i32 m_fallLastHi;            // +0x4f4
+    i32 m_fallDelay;             // +0x4f8  falling-item config delay
+    i32 m_fallDelayHi;           // +0x4fc
     CSbiSlotPtr* m_extraNotify1; // +0x500
-    i32 m_504;                   // +0x504  falling-item rect A (relative)
-    i32 m_508;                   // +0x508
-    i32 m_50c;                   // +0x50c
-    i32 m_510;                   // +0x510
-    i32 m_514;                   // +0x514  streamed rect block (report origin)
-    i32 m_518;                   // +0x518
-    i32 m_51c;                   // +0x51c
-    i32 m_520;                   // +0x520
-    i32 m_524;                   // +0x524
-    i32 m_528;                   // +0x528  rez-machine snooze/wake active flag
-    i32 m_52c;                   // +0x52c  rez-machine wake tick counter
-    CSbiPtrCollection m_530;     // +0x530  pooled-ptr collection (RemoveAll on teardown)
+    i32 m_fallRectL;             // +0x504  falling-item rect A (relative)
+    i32 m_fallRectT;             // +0x508
+    i32 m_fallRectR;             // +0x50c
+    i32 m_fallRectB;             // +0x510
+    i32 m_itemRectL;             // +0x514  streamed rect block (report origin)
+    i32 m_itemRectT;             // +0x518
+    i32 m_itemRectR;             // +0x51c
+    i32 m_itemRectB;             // +0x520
+    i32 m_itemBaseX;             // +0x524
+    i32 m_rezActive;             // +0x528  rez-machine snooze/wake active flag
+    i32 m_rezTick;               // +0x52c  rez-machine wake tick counter
+    CSbiPtrCollection m_ptrPool; // +0x530  pooled-ptr collection (RemoveAll on teardown)
     void** m_ptrTable;           // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
     i32 m_ptrCount;              // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
-    i32 m_548;                 // +0x548
-    void* m_54c;               // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
-    i32 m_550;                 // +0x550  toggle-mode active flag
-    i32 m_554;                 // +0x554  toggle-mode tab handle
-    i32 m_558;                 // +0x558
+    i32 m_hlBusy;              // +0x548
+    void* m_retabNotify;       // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
+    i32 m_toggleActive;        // +0x550  toggle-mode active flag
+    i32 m_toggleHandle;        // +0x554  toggle-mode tab handle
+    i32 m_destructWarnActive;  // +0x558
     i32 m_modeState;           // +0x55c
-    i32 m_560;                 // +0x560  destruct-warning last draw-clock
-    i32 m_564;                 // +0x564
-    i32 m_568;                 // +0x568  destruct-warning delay (config)
-    i32 m_56c;                 // +0x56c
+    i32 m_destructWarnLast;    // +0x560  destruct-warning last draw-clock
+    i32 m_destructWarnLastHi;  // +0x564
+    i32 m_destructWarnDelay;   // +0x568  destruct-warning delay (config)
+    i32 m_destructWarnDelayHi; // +0x56c
     CSbiSlotPtr* m_modeNotify; // +0x570  notify target
     i32 m_modeArmed;           // +0x574
     i32 m_578;                 // +0x578  (cleared on multiplayer/battlez reset)
     i32 m_battlezPct[38];      // +0x57c  running-sum item-percent table (battlez cfg)
-    i32 m_614;                 // +0x614  main-status-bar frame gate
-    void* m_618;               // +0x618  destruct-button display object
+    i32 m_barFrameGate;        // +0x614  main-status-bar frame gate
+    void* m_destructButton;    // +0x618  destruct-button display object
     i32 m_61c[4];              // +0x61c  trailing dword block (cleared on reset)
     i32 m_tabCycle;            // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
 };
@@ -937,7 +937,7 @@ void CSBI_RectOnly::Reset() {
     UpdateRezMachineSnoozeStatusBar();
     RebuildGroupA();
     m_modeState = 1;
-    m_558 = 0;
+    m_destructWarnActive = 0;
 }
 
 // Toggle stat[idx]: if already set, clear it; else set it on.
@@ -987,16 +987,16 @@ void CSBI_RectOnly::ResetGroupA() {
 // Latch HUD-rect group A from three args + a global dword.
 // @early-stop
 // scheduling wall: logic byte-correct, but MSVC defers the m_hudRectA_x store and
-// reorders the m_33c/m_338 zero+global pair vs retail; ~72%, not steerable from
+// reorders the m_hudRectA_clockHi/m_hudRectA_clock zero+global pair vs retail; ~72%, not steerable from
 // C (see docs/patterns/u64-store-clock-hi-zero.md, statement-schedule-faithful).
 RVA(0x001066f0, 0x3b)
 void CSBI_RectOnly::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_hudRectA_y = y0;
     m_hudRectA_x = x0;
     m_hudRectA_z = z;
-    m_344 = 0;
-    m_338 = g_dat645588;
-    m_33c = 0;
+    m_hudRectA_zHi = 0;
+    m_hudRectA_clock = g_dat645588;
+    m_hudRectA_clockHi = 0;
 }
 
 // Latch HUD-rect group B from three args + a global dword.
@@ -1007,9 +1007,9 @@ void CSBI_RectOnly::SetHudRectB(i32 y0, i32 x0, i32 z) {
     m_hudRectB_y = y0;
     m_hudRectB_x = x0;
     m_hudRectB_z = z;
-    m_32c = 0;
-    m_320 = g_dat645588;
-    m_324 = 0;
+    m_hudRectB_zHi = 0;
+    m_hudRectB_clock = g_dat645588;
+    m_hudRectB_clockHi = 0;
 }
 
 // Commit the active slot: either re-arm it, or push the cooked commit level and
@@ -1342,11 +1342,11 @@ i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
             g_freeList = node;
         }
     }
-    m_530.RemoveAll(0, -1);
+    m_ptrPool.RemoveAll(0, -1);
 
     i32 count = 0;
     s->Read(&count, 4);
-    m_530.RemoveAll(count, -1);
+    m_ptrPool.RemoveAll(count, -1);
     for (u32 n = 0; n < (u32)count; n++) {
         char* head = (char*)g_freeList;
         void* node = 0;
@@ -1361,14 +1361,14 @@ i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
 }
 
 // Periodic highlight-cursor tick (RVA-ascending). Bail while the suppress flag
-// (m_548) is set or the game is over (g_gameReg->m_134==1). If this is the
+// (m_hlBusy) is set or the game is over (g_gameReg->m_134==1). If this is the
 // subtype-2 cursor item, refresh its state first. When the active tab is not the
 // gauge tab (4), latch it inactive (SetTabState(4,3)) and Deactivate; otherwise
 // advance the 4-state cursor (forward wraps 4->0; the `reverse` path only guards
 // the signed-overflow wrap), then refresh the widgets and re-arm.
 RVA(0x0010b4f0, 0xaa)
 void CSBI_RectOnly::AdvanceTab(i32 reverse) {
-    if (m_548 != 0) {
+    if (m_hlBusy != 0) {
         return;
     }
     if (g_gameReg->m_134 == 1) {
@@ -1431,7 +1431,7 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
                     }
                 }
             }
-            m_360 = row;
+            m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
             return 1;
@@ -1467,7 +1467,7 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
                     }
                 }
             }
-            m_360 = row;
+            m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
             return 1;
@@ -1502,7 +1502,7 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
                     }
                 }
             }
-            m_360 = row;
+            m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
             return 1;
@@ -1517,7 +1517,7 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
 // (no outer `!=`) so the equal case folds into the jge/jle pair like retail and the
 // two inc/dec branches share one store, not an extra top `je`.
 // @early-stop
-// ~95.7%: byte-exact except a 1-instr regalloc coin-flip in the m_21c->m_44 store
+// ~95.7%: byte-exact except a 1-instr regalloc coin-flip in the m_gaugeSink->m_44 store
 // block (retail keeps the gauge value in eax + loads the vtable into edx; the
 // recompile uses edx for the value). Not steerable from C; deferred.
 RVA(0x00105480, 0x7d)
@@ -1542,10 +1542,10 @@ noChange:;
         }
     }
     if (changed) {
-        if (m_21c && m_218) {
-            m_218->v28();
-            m_21c->m_44 = m_gauge;
-            m_21c->v28();
+        if (m_gaugeSink && m_gaugeNotify) {
+            m_gaugeNotify->v28();
+            m_gaugeSink->m_44 = m_gauge;
+            m_gaugeSink->v28();
         }
     }
 }
@@ -1566,54 +1566,54 @@ i32 CSBI_RectOnly::FindReadySlot() {
 RVA(0x00101420, 0x110)
 i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
     if (idx == -1 || idx == 0) {
-        if (m_1c8) {
-            m_1c8->Release();
+        if (m_tabSprite0) {
+            m_tabSprite0->Release();
         }
-        if (m_1d0) {
-            m_1d0->Release();
+        if (m_tabSprite2) {
+            m_tabSprite2->Release();
         }
-        if (m_1cc) {
-            m_1cc->Release();
+        if (m_tabSprite1) {
+            m_tabSprite1->Release();
         }
-        if (m_1d4) {
-            m_1d4->Release();
+        if (m_tabSprite3) {
+            m_tabSprite3->Release();
         }
-        if (m_1d8) {
-            m_1d8->Release();
+        if (m_tabSprite4) {
+            m_tabSprite4->Release();
         }
     }
     if (idx == 5 || idx == -1) {
-        if (m_1dc) {
-            m_1dc->Release();
+        if (m_tabSprite5) {
+            m_tabSprite5->Release();
         }
-        if (m_1e0) {
-            m_1e0->Release();
+        if (m_tabSprite6) {
+            m_tabSprite6->Release();
         }
-        if (m_1e4) {
-            m_1e4->Release();
+        if (m_tabSprite7) {
+            m_tabSprite7->Release();
         }
-        if (m_1e8) {
-            m_1e8->Release();
+        if (m_tabSprite8) {
+            m_tabSprite8->Release();
         }
-        if (m_1ec) {
-            m_1ec->Release();
+        if (m_tabSprite9) {
+            m_tabSprite9->Release();
         }
-        if (m_1f0) {
-            m_1f0->Release();
+        if (m_tabSprite10) {
+            m_tabSprite10->Release();
         }
     }
     if (idx == 6 || idx == -1) {
-        if (m_1f4) {
-            m_1f4->Release();
+        if (m_tabSprite11) {
+            m_tabSprite11->Release();
         }
-        if (m_1f8) {
-            m_1f8->Release();
+        if (m_tabSprite12) {
+            m_tabSprite12->Release();
         }
-        if (m_1fc) {
-            m_1fc->Release();
+        if (m_tabSprite13) {
+            m_tabSprite13->Release();
         }
-        if (m_200) {
-            m_200->Release();
+        if (m_tabSprite14) {
+            m_tabSprite14->Release();
         }
     }
     return 1;
@@ -1684,12 +1684,12 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
         }
     }
     m_listB8.RemoveAll();
-    m_1dc = 0;
-    m_1e0 = 0;
-    m_1e4 = 0;
-    m_1e8 = 0;
-    m_1ec = 0;
-    m_1f0 = 0;
+    m_tabSprite5 = 0;
+    m_tabSprite6 = 0;
+    m_tabSprite7 = 0;
+    m_tabSprite8 = 0;
+    m_tabSprite9 = 0;
+    m_tabSprite10 = 0;
     m_activeTab = tab;
     if (!TabRefresh()) {
         g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
@@ -1720,7 +1720,7 @@ void CSBI_RectOnly::Teardown() {
             g_freeList = node;
         }
     }
-    m_530.RemoveAll(0, -1);
+    m_ptrPool.RemoveAll(0, -1);
 }
 
 // Activate the rect-only item; gate on the offset-0 subtype tag and a probe.
@@ -1747,7 +1747,7 @@ RVA(0x0010bb90, 0x3f)
 void CSBI_RectOnly::SetMode(i32 mode) {
     m_modeArmed = 1;
     if (mode && m_modeState != 7) {
-        m_558 = 0;
+        m_destructWarnActive = 0;
         m_modeState = 1;
         if (m_modeNotify) {
             m_modeNotify->Notify(1);
@@ -1808,13 +1808,13 @@ void CSBI_RectOnly::InitTabRects() {
         ClearHlCell(1, i);
         ClearHlCell(2, i);
     }
-    m_4c8 = 1;
+    m_machinePhase = 1;
     m_extraNotifyArg0 = 0;
     *(i32*)((char*)this + 0x4e8) = 0;
     m_extraNotifyArg1 = 0;
     SetRect((LPRECT)((char*)this + 0x504), 0, 0, 1, 1);
     SetRect((LPRECT)((char*)this + 0x514), 0x49, 0xd7, 0x61, 0xef);
-    m_360 = -1;
+    m_pendingHlRow = -1;
 }
 
 // Group-A click handler: hit-test the lists; if no rect, drop the tab sprites.
@@ -1848,7 +1848,7 @@ i32 CSBI_RectOnly::ClickToggle(i32 x, i32 y, i32 z) {
             ClearTabSprites(5);
         }
     }
-    if (m_550) {
+    if (m_toggleActive) {
         if (r->m_tab == 6) {
             SetTabState(cmd, 2);
             return 1;
@@ -1901,21 +1901,21 @@ void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
             h->m_8 |= 0x10000;
         }
     }
-    m_1c8 = 0;
-    m_1cc = 0;
-    m_1d0 = 0;
-    m_1d4 = 0;
-    m_1d8 = 0;
-    m_1dc = 0;
-    m_1e0 = 0;
-    m_1e4 = 0;
-    m_1e8 = 0;
-    m_1ec = 0;
-    m_1f0 = 0;
-    m_1f4 = 0;
-    m_1f8 = 0;
-    m_1fc = 0;
-    m_200 = 0;
+    m_tabSprite0 = 0;
+    m_tabSprite1 = 0;
+    m_tabSprite2 = 0;
+    m_tabSprite3 = 0;
+    m_tabSprite4 = 0;
+    m_tabSprite5 = 0;
+    m_tabSprite6 = 0;
+    m_tabSprite7 = 0;
+    m_tabSprite8 = 0;
+    m_tabSprite9 = 0;
+    m_tabSprite10 = 0;
+    m_tabSprite11 = 0;
+    m_tabSprite12 = 0;
+    m_tabSprite13 = 0;
+    m_tabSprite14 = 0;
     m_8 = 0;
     i32 i;
     for (i = 0; i < 15; i++) {
@@ -1950,8 +1950,8 @@ void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
     m_notify3 = 0;
     m_notify1 = 0;
     *(i32*)(B + 0x348) = 0;
-    m_218 = 0;
-    m_21c = 0;
+    m_gaugeNotify = 0;
+    m_gaugeSink = 0;
     *(i32*)(B + 0x358) = 0;
 }
 
@@ -1961,7 +1961,7 @@ void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
 // the hit-test flag; finish through Deactivate.
 RVA(0x0010b210, 0xc5)
 void CSBI_RectOnly::ExitMode() {
-    if (m_550 == 0) {
+    if (m_toggleActive == 0) {
         return;
     }
     CSbiNotifyNode* n = m_listD4.m_head;
@@ -1973,12 +1973,12 @@ void CSBI_RectOnly::ExitMode() {
         }
     }
     m_listD4.RemoveAll();
-    i32 handle = m_554;
-    m_1f4 = 0;
-    m_1f8 = 0;
-    m_1fc = 0;
-    m_200 = 0;
-    m_548 = 0;
+    i32 handle = m_toggleHandle;
+    m_tabSprite11 = 0;
+    m_tabSprite12 = 0;
+    m_tabSprite13 = 0;
+    m_tabSprite14 = 0;
+    m_hlBusy = 0;
     if (handle == 0 && g_gameReg->m_134 != 1) {
         if (*(i32*)this == 2) {
             TabRefresh();
@@ -1991,8 +1991,8 @@ void CSBI_RectOnly::ExitMode() {
     } else {
         m_hitTestDisabled = 0;
     }
-    m_550 = 0;
-    m_554 = 0;
+    m_toggleActive = 0;
+    m_toggleHandle = 0;
     Deactivate();
 }
 
@@ -2022,12 +2022,12 @@ void CSBI_RectOnly::ClearTabGroup() {
     ((CSbiPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
     switch (m_activeTab) {
         case 1:
-            m_1dc = 0;
-            m_1e0 = 0;
-            m_1e4 = 0;
-            m_1e8 = 0;
-            m_1ec = 0;
-            m_1f0 = 0;
+            m_tabSprite5 = 0;
+            m_tabSprite6 = 0;
+            m_tabSprite7 = 0;
+            m_tabSprite8 = 0;
+            m_tabSprite9 = 0;
+            m_tabSprite10 = 0;
             m_modeNotify = 0;
             break;
         case 2: {
@@ -2051,8 +2051,8 @@ void CSBI_RectOnly::ClearTabGroup() {
             p[2] = 0;
             p[3] = 0;
             p[4] = 0;
-            m_218 = 0;
-            m_21c = 0;
+            m_gaugeNotify = 0;
+            m_gaugeSink = 0;
             break;
         }
         case 5: {
@@ -2140,173 +2140,174 @@ i32 CSBI_RectOnly::ConfigureRect(
 
 // Drive the tab-selection sprites: require the five bank-A sprites all present,
 // then switch on the tab id to Show the selected sprite (with flag) and Hide the
-// rest, gated per case by m_548 (busy => early-return 1). Banks A (1-5), B
+// rest, gated per case by m_hlBusy (busy => early-return 1). Banks A (1-5), B
 // (0x1f4-0x1fa), C (0x324/0x325), D (0x327/0x328). `state` is the sprite index arg.
 // @early-stop
 // ~85.5% (1305 B): the 5-sprite guard, both jump-table dispatches and every
 // Show/Hide sequence are byte-correct; the residual is the shared-tail merging
-// retail performs across adjacent cases (the `jmp` convergence at the m_1d4/m_1d8
+// retail performs across adjacent cases (the `jmp` convergence at the m_tabSprite3/m_tabSprite4
 // and bank-B tails) which the recompile duplicates per case instead. A
 // scheduling/tail-merge wall on a big switch; not steerable from C. Deferred.
 RVA(0x00100d70, 0x519)
 i32 CSBI_RectOnly::SetTabState(i32 tab, i32 state) {
-    if (m_1c8 == 0 || m_1cc == 0 || m_1d0 == 0 || m_1d4 == 0 || m_1d8 == 0) {
+    if (m_tabSprite0 == 0 || m_tabSprite1 == 0 || m_tabSprite2 == 0 || m_tabSprite3 == 0
+        || m_tabSprite4 == 0) {
         return 0;
     }
     switch (tab) {
         case 1:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1c8->Show(state, 1);
-            m_1d0->Hide(state);
-            m_1cc->Hide(state);
-            m_1d4->Hide(state);
-            m_1d8->Hide(state);
+            m_tabSprite0->Show(state, 1);
+            m_tabSprite2->Hide(state);
+            m_tabSprite1->Hide(state);
+            m_tabSprite3->Hide(state);
+            m_tabSprite4->Hide(state);
             return 1;
         case 2:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1c8->Hide(state);
-            m_1d0->Show(state, 1);
-            m_1cc->Hide(state);
-            m_1d4->Hide(state);
-            m_1d8->Hide(state);
+            m_tabSprite0->Hide(state);
+            m_tabSprite2->Show(state, 1);
+            m_tabSprite1->Hide(state);
+            m_tabSprite3->Hide(state);
+            m_tabSprite4->Hide(state);
             return 1;
         case 3:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1c8->Hide(state);
-            m_1d0->Hide(state);
-            m_1cc->Show(state, 1);
-            m_1d4->Hide(state);
-            m_1d8->Hide(state);
+            m_tabSprite0->Hide(state);
+            m_tabSprite2->Hide(state);
+            m_tabSprite1->Show(state, 1);
+            m_tabSprite3->Hide(state);
+            m_tabSprite4->Hide(state);
             return 1;
         case 4:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1c8->Hide(state);
-            m_1d0->Hide(state);
-            m_1cc->Hide(state);
-            m_1d4->Show(state, 1);
-            m_1d8->Hide(state);
+            m_tabSprite0->Hide(state);
+            m_tabSprite2->Hide(state);
+            m_tabSprite1->Hide(state);
+            m_tabSprite3->Show(state, 1);
+            m_tabSprite4->Hide(state);
             return 1;
         case 5:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1c8->Hide(state);
-            m_1d0->Hide(state);
-            m_1cc->Hide(state);
-            m_1d4->Hide(state);
-            m_1d8->Show(state, 1);
+            m_tabSprite0->Hide(state);
+            m_tabSprite2->Hide(state);
+            m_tabSprite1->Hide(state);
+            m_tabSprite3->Hide(state);
+            m_tabSprite4->Show(state, 1);
             return 1;
         case 0x1f4:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Show(state, 1);
-            m_1e0->Hide(state);
-            m_1e4->Hide(state);
-            m_1e8->Hide(state);
-            m_1ec->Hide(state);
-            m_1f0->Hide(state);
+            m_tabSprite5->Show(state, 1);
+            m_tabSprite6->Hide(state);
+            m_tabSprite7->Hide(state);
+            m_tabSprite8->Hide(state);
+            m_tabSprite9->Hide(state);
+            m_tabSprite10->Hide(state);
             return 1;
         case 0x1f5:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Hide(state);
-            m_1e0->Show(state, 1);
-            m_1e4->Hide(state);
-            m_1e8->Hide(state);
-            m_1ec->Hide(state);
-            m_1f0->Hide(state);
+            m_tabSprite5->Hide(state);
+            m_tabSprite6->Show(state, 1);
+            m_tabSprite7->Hide(state);
+            m_tabSprite8->Hide(state);
+            m_tabSprite9->Hide(state);
+            m_tabSprite10->Hide(state);
             return 1;
         case 0x1f6:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Hide(state);
-            m_1e0->Hide(state);
-            m_1e4->Show(state, 1);
-            m_1e8->Hide(state);
-            m_1ec->Hide(state);
-            m_1f0->Hide(state);
+            m_tabSprite5->Hide(state);
+            m_tabSprite6->Hide(state);
+            m_tabSprite7->Show(state, 1);
+            m_tabSprite8->Hide(state);
+            m_tabSprite9->Hide(state);
+            m_tabSprite10->Hide(state);
             return 1;
         case 0x1f7:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Hide(state);
-            m_1e0->Hide(state);
-            m_1e4->Hide(state);
-            m_1e8->Show(state, 1);
-            m_1ec->Hide(state);
-            m_1f0->Hide(state);
+            m_tabSprite5->Hide(state);
+            m_tabSprite6->Hide(state);
+            m_tabSprite7->Hide(state);
+            m_tabSprite8->Show(state, 1);
+            m_tabSprite9->Hide(state);
+            m_tabSprite10->Hide(state);
             return 1;
         case 0x1f8:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Hide(state);
-            m_1e0->Hide(state);
-            m_1e4->Hide(state);
-            m_1e8->Hide(state);
-            m_1ec->Show(state, 1);
-            m_1f0->Hide(state);
+            m_tabSprite5->Hide(state);
+            m_tabSprite6->Hide(state);
+            m_tabSprite7->Hide(state);
+            m_tabSprite8->Hide(state);
+            m_tabSprite9->Show(state, 1);
+            m_tabSprite10->Hide(state);
             return 1;
         case 0x1f9:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1dc->Hide(state);
-            m_1e0->Hide(state);
-            m_1e4->Hide(state);
-            m_1e8->Hide(state);
-            m_1ec->Hide(state);
-            m_1f0->Show(state, 1);
+            m_tabSprite5->Hide(state);
+            m_tabSprite6->Hide(state);
+            m_tabSprite7->Hide(state);
+            m_tabSprite8->Hide(state);
+            m_tabSprite9->Hide(state);
+            m_tabSprite10->Show(state, 1);
             return 1;
         case 0x1fa:
-            if (m_548) {
+            if (m_hlBusy) {
                 return 1;
             }
-            m_1f0->Show(state, 1);
+            m_tabSprite10->Show(state, 1);
             return 1;
         case 0x324:
-            if (m_1f4) {
-                m_1f4->Show(state, 1);
+            if (m_tabSprite11) {
+                m_tabSprite11->Show(state, 1);
             }
-            m_1f8->Hide(state);
+            m_tabSprite12->Hide(state);
             return 1;
         case 0x325:
-            if (m_1f4) {
-                m_1f4->Hide(state);
+            if (m_tabSprite11) {
+                m_tabSprite11->Hide(state);
             }
-            m_1f8->Show(state, 1);
+            m_tabSprite12->Show(state, 1);
             return 1;
         case 0x327:
-            m_1fc->Show(state, 1);
-            m_200->Hide(state);
+            m_tabSprite13->Show(state, 1);
+            m_tabSprite14->Hide(state);
             return 1;
         case 0x328:
-            m_1fc->Hide(state);
-            m_200->Show(state, 1);
+            m_tabSprite13->Hide(state);
+            m_tabSprite14->Show(state, 1);
             return 1;
     }
     return 1;
 }
 
-// Enter a highlight handle at the pending row m_360: pick the group from arg1's
-// range, then either (arg0 != 0) clear the group's row m_360 and shift every set
+// Enter a highlight handle at the pending row m_pendingHlRow: pick the group from arg1's
+// range, then either (arg0 != 0) clear the group's row m_pendingHlRow and shift every set
 // row below it down by one (inserting at the top), or (arg0 == 0) just latch the
-// handle into row m_360's cell. Always re-notify and reset m_360.
+// handle into row m_pendingHlRow's cell. Always re-notify and reset m_pendingHlRow.
 RVA(0x00106820, 0xa8)
 void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
-    if (m_360 == -1) {
+    if (m_pendingHlRow == -1) {
         return;
     }
     i32 group;
@@ -2316,8 +2317,8 @@ void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
         group = (key >= 0x17);
     }
     if (shift != 0) {
-        ClearHlCell(group, m_360);
-        for (i32 row = m_360 - 1; row >= 0; row--) {
+        ClearHlCell(group, m_pendingHlRow);
+        for (i32 row = m_pendingHlRow - 1; row >= 0; row--) {
             CSbiHlRow* cell = &m_hlGrid[row + group * 4];
             if (cell->m_state == 1) {
                 m_hlGrid[row + group * 4 + 1].m_state = 1;
@@ -2327,10 +2328,10 @@ void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
             }
         }
     } else {
-        m_hlGrid[m_360 + group * 4].m_handle = key;
+        m_hlGrid[m_pendingHlRow + group * 4].m_handle = key;
     }
     NotifyAllSlots();
-    m_360 = -1;
+    m_pendingHlRow = -1;
 }
 
 // Group-A highlight click: hit-test the rect under (x,y); dispatch its slot-7
@@ -2426,7 +2427,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
 RVA(0x00107920, 0xb7)
 i32 CSBI_RectOnly::SetFallRect(i32 x, i32 y, i32 item) {
     char* B = (char*)this;
-    if (m_360 == -1) {
+    if (m_pendingHlRow == -1) {
         return 0;
     }
     CSbiRect* r = HitTestRects(x, y);
@@ -2565,14 +2566,14 @@ struct CSbiFreeNode {
 };
 SIZE_UNKNOWN(CSbiFreeNode);
 
-// 0xfe3e0 - SetState(state): if the mode gate (m_548) is up, no-op (return 1);
+// 0xfe3e0 - SetState(state): if the mode gate (m_hlBusy) is up, no-op (return 1);
 // if already in `state`, return 1. For the subtype-2 cursor state, run the
 // activation probe (bail 0 on failure) and mirror the subtype tag into m_4;
 // otherwise fire the plain notify. Then latch the new state into slot 0 and tell
 // the highlight sub-manager (new, old). Returns 1.
 RVA(0x000fe3e0, 0x55)
 i32 CSBI_RectOnly::SetState(i32 state) {
-    if (m_548 != 0) {
+    if (m_hlBusy != 0) {
         return 1;
     }
     i32 old = *(i32*)this;
@@ -2593,14 +2594,14 @@ i32 CSBI_RectOnly::SetState(i32 state) {
     return 1;
 }
 
-// 0xfe520 - place the rect-only HUD panel: gated on the mode (m_548) and the
+// 0xfe520 - place the rect-only HUD panel: gated on the mode (m_hlBusy) and the
 // offset-0 subtype tag; pre-teardown notify, set the right-anchored 0xa0-wide
 // full-height rect (+0x10) from the view width (g_gameReg->m_8c), notify, refresh
 // the highlight sub-manager, then probe-and-apply (m_10c). On probe failure log
 // the placement error and bail. Returns 1.
 RVA(0x000fe520, 0xa9)
 i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
-    if (m_548 != 0) {
+    if (m_hlBusy != 0) {
         return 1;
     }
     if (*(i32*)this == 0) {
@@ -2624,12 +2625,12 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
     return 1;
 }
 
-// 0xfe670 - RefreshState: gated on m_548 (return 1) and the subtype-2 tag
+// 0xfe670 - RefreshState: gated on m_hlBusy (return 1) and the subtype-2 tag
 // (return 1 when not cursor); for the cursor subtype, tail-call the armed (m_4==1)
 // or idle refresh path.
 RVA(0x000fe670, 0x2b)
 i32 CSBI_RectOnly::RefreshState() {
-    if (m_548 != 0) {
+    if (m_hlBusy != 0) {
         return 1;
     }
     if (*(i32*)this != 2) {
@@ -2679,7 +2680,7 @@ i32 CSBI_RectOnly::HitTestLayer(i32 x, i32 y) {
 }
 
 // 0x108410 - InsertPtr(a, b): pull a node off the engine free-list, fill it with
-// (a, b), then insert it into the m_530 pooled-ptr collection - at the first slot
+// (a, b), then insert it into the m_ptrPool pooled-ptr collection - at the first slot
 // whose key (m_4) exceeds b, or appended at the end. Returns 1.
 // @early-stop
 // ~75.9%: every operation/offset is byte-correct; the residual is regalloc + block
@@ -2704,14 +2705,14 @@ i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
         do {
             CSbiFreeNode* e = *t;
             if (e != 0 && b < e->m_4) {
-                ((CSbiPtrColl2*)&m_530)->InsertAt(i, node, 1);
+                ((CSbiPtrColl2*)&m_ptrPool)->InsertAt(i, node, 1);
                 return 1;
             }
             i++;
             t++;
         } while (i < n);
     }
-    ((CSbiPtrColl2*)&m_530)->Append(m_ptrCount, node);
+    ((CSbiPtrColl2*)&m_ptrPool)->Append(m_ptrCount, node);
     return 1;
 }
 
@@ -2831,15 +2832,15 @@ struct CTabList {
 SIZE_UNKNOWN(CTabList);
 
 // 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
-// MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_358 gate). Each
+// MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_tabsBuilt gate). Each
 // widget is heap-allocated, its retail vtable + type tag stamped, then Setup/
 // Configure'd from the tab base coords (m_10/m_14) + a per-widget geometry rect
 // (and, for the tabs, an asset key + type code); on success it is appended to the
-// +0x2c list and stashed in its per-tab slot (m_1c8..m_1d8). Built under a /GX EH
+// +0x2c list and stashed in its per-tab slot (m_tabSprite0..m_tabSprite4). Built under a /GX EH
 // frame (a just-created item is deleted if its setup throws / returns 0). The
 // MULTIPLAYER tab gets a mode-specific configure in a battlez game (m_134==1).
 // Finishes with three validity probes; returns 0 on any failure, else latches
-// m_358 = 1 and returns 1.
+// m_tabsBuilt = 1 and returns 1.
 // @early-stop
 // /GX EH-frame wall - identical archetype to StatusBarGameMenu::BuildGameMenu (also
 // @early-stop ~37%). The dominant residual is structural: retail carries a /GX frame +
@@ -2853,7 +2854,7 @@ SIZE_UNKNOWN(CTabList);
 // the CSBI_* item ctors land and the frame can be reproduced).
 RVA(0x000ffde0, 0x5b1)
 i32 CSBI_RectOnly::BuildStatusBarTabs() {
-    if (m_358 != 0) {
+    if (m_tabsBuilt != 0) {
         return 1;
     }
     if (m_c == 0) {
@@ -2920,7 +2921,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
-    m_1c8 = (CSbiSprite*)it;
+    m_tabSprite0 = (CSbiSprite*)it;
 
     // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
@@ -2935,7 +2936,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
-    m_1d0 = (CSbiSprite*)it;
+    m_tabSprite2 = (CSbiSprite*)it;
 
     // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
@@ -2950,7 +2951,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
-    m_1cc = (CSbiSprite*)it;
+    m_tabSprite1 = (CSbiSprite*)it;
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
@@ -2965,7 +2966,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
-    m_1d4 = (CSbiSprite*)it;
+    m_tabSprite3 = (CSbiSprite*)it;
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
         mp->m_34 = 4;
@@ -2994,7 +2995,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CTabList*)((char*)this + 0x2c))->AddTail(it);
-    m_1d8 = (CSbiSprite*)it;
+    m_tabSprite4 = (CSbiSprite*)it;
 
     if (Probe2e69() == 0) {
         return 0;
@@ -3005,7 +3006,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     if (Probe41a1() == 0) {
         return 0;
     }
-    m_358 = 1;
+    m_tabsBuilt = 1;
     return 1;
 }
 
@@ -3066,7 +3067,7 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
             void** node = (void**)((char*)p - g_freeListNodeBias);
             *node = g_freeList;
             g_freeList = node;
-            ((CSbiPtrColl2*)&m_530)->RemoveAt(0, 1);
+            ((CSbiPtrColl2*)&m_ptrPool)->RemoveAt(0, 1);
         } else {
             result = 0;
             if (m_extraNotify0) {
@@ -3154,21 +3155,21 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
         }
     }
     m_extraNotifyArg1 = result;
-    m_4c8 = 1;
-    SetRect((LPRECT)&m_514, 0x49, 0xd7, 0x61, 0xef);
+    m_machinePhase = 1;
+    SetRect((LPRECT)&m_itemRectL, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
         i32 x = m_10;
         i32 y = m_rect14.m_0;
-        m_extraNotify0->m_rect14[0] = m_514 + x;
-        m_extraNotify0->m_rect14[1] = m_518 + y;
-        m_extraNotify0->m_rect14[2] = m_51c + x;
-        m_extraNotify0->m_rect14[3] = m_520 + y;
+        m_extraNotify0->m_rect14[0] = m_itemRectL + x;
+        m_extraNotify0->m_rect14[1] = m_itemRectT + y;
+        m_extraNotify0->m_rect14[2] = m_itemRectR + x;
+        m_extraNotify0->m_rect14[3] = m_itemRectB + y;
     }
     RefreshFallRect();
-    i32 c = m_52c;
-    m_528 = 0;
+    i32 c = m_rezTick;
+    m_rezActive = 0;
     if (c > 0) {
-        m_52c = c - 1;
+        m_rezTick = c - 1;
         FallItemTick();
     }
     return 1;
@@ -3199,18 +3200,18 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_rect14.m_c = 0;
     m_24 = vx - 0x45;
     m_28 = vy - 0x30;
-    m_110 = 5;
+    m_itemKind = 5;
     m_tabCycle = g_644c54;
     ResetTabWidgets2b44();
     if (RectProbe() == 0) {
         return 0;
     }
     m_activeSlot = -1;
-    m_360 = -1;
-    m_528 = 0;
-    m_52c = 0;
-    m_550 = 0;
-    m_554 = 0;
+    m_pendingHlRow = -1;
+    m_rezActive = 0;
+    m_rezTick = 0;
+    m_toggleActive = 0;
+    m_toggleHandle = 0;
     m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
     m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
     m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
@@ -3292,7 +3293,7 @@ SIZE_UNKNOWN(CSbiMainBarCfg);
 void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x153790
 
 // 0xfe6b0 - drive the main status-bar sprite. For the non-cursor subtype, when the
-// countdown (+0x20) is live, tick it; if the frame gate (m_614) exceeds the screen
+// countdown (+0x20) is live, tick it; if the frame gate (m_barFrameGate) exceeds the screen
 // height push the current rect to the game-manager's setup chain; look up
 // GAME_STATUSBAR_MAINBAR and, on the resolved frame, draw it at the item's origin. Then
 // fire the +0x30 and active-tab notify lists (slot 0x14) and refresh the +0x54c object.
@@ -3312,7 +3313,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     if (*(i32*)this != kSubtypeTag) {
         if (m_rect14.m_c > 0) {
             m_rect14.m_c--;
-            i32 v = m_614;
+            i32 v = m_barFrameGate;
             if (v > 0x1e0) {
                 CSbiMainSetup* tgt = (*(CSbiMainL1**)((char*)g_gameReg->m_30 + 4))->m_14->m_2c;
                 struct {
@@ -3355,8 +3356,8 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
                 ((CSbiNotifyPayload*)cur->m_payload)->Slot14();
             }
         }
-        if (m_54c) {
-            ((CSbiMode54c*)m_54c)->Refresh();
+        if (m_retabNotify) {
+            ((CSbiMode54c*)m_retabNotify)->Refresh();
         }
     }
 
@@ -3570,7 +3571,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             return 1;
 
         case 5:
-            if (m_550 != 0) {
+            if (m_toggleActive != 0) {
                 return 1;
             }
             switch (cmd) {
@@ -3619,18 +3620,21 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     HiCueLookup();
                     {
                         CSbiSubMgr* sm = g_gameReg->m_2c;
-                        if (m_558 == 0) {
-                            m_558 = 1;
+                        if (m_destructWarnActive == 0) {
+                            m_destructWarnActive = 1;
                             m_modeState = 2;
-                            m_568 = g_buteMgr
-                                        .GetIntDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                            m_56c = 0;
-                            m_560 = g_dat645588;
-                            m_564 = 0;
+                            m_destructWarnDelay = g_buteMgr.GetIntDef(
+                                "StatusBar",
+                                "DestructButtonWarningDelay",
+                                0x32
+                            );
+                            m_destructWarnDelayHi = 0;
+                            m_destructWarnLast = g_dat645588;
+                            m_destructWarnLastHi = 0;
                             sm->PostWarn(1, 0xbb7);
                         } else {
                             CSbiSlotPtr* n = m_modeNotify;
-                            m_558 = 0;
+                            m_destructWarnActive = 0;
                             m_modeState = 1;
                             if (n) {
                                 n->Notify(1);
@@ -3695,7 +3699,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 }
 
 // 0xffb20 - build (or release) the DESTRUCT button display object. Only touches it
-// while the presence gate (g_gameReg->m_10) is up: when the mode is armed (m_558!=0)
+// while the presence gate (g_gameReg->m_10) is up: when the mode is armed (m_destructWarnActive!=0)
 // and not held (m_574==0), and the object is not yet built, look up GAME_DESTRUCT and
 // build+configure it; otherwise release any existing object. Then refresh the host and
 // fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
@@ -3708,8 +3712,8 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 RVA(0x000ffb20, 0x13a)
 i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_10 != 0) {
-        if (m_558 != 0 && m_modeArmed == 0) {
-            if (m_618 == 0) {
+        if (m_destructWarnActive != 0 && m_modeArmed == 0) {
+            if (m_destructButton == 0) {
                 CSbiMusicHost* host = g_gameReg->m_30->m_28;
                 void* found = 0;
                 ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_DESTRUCT", &found);
@@ -3717,7 +3721,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
                         void* obj = f->Build();
-                        m_618 = obj;
+                        m_destructButton = obj;
                         if (obj) {
                             ((CSbiDisplayObj*)obj)->Configure(g_gameReg->m_11c, 0, 0, 1);
                         }
@@ -3725,9 +3729,9 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                 }
             }
         } else {
-            if (m_618) {
-                ((CSbiDisplayObj*)m_618)->Release();
-                m_618 = 0;
+            if (m_destructButton) {
+                ((CSbiDisplayObj*)m_destructButton)->Release();
+                m_destructButton = 0;
             }
         }
     }
@@ -3758,8 +3762,8 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
             ((CSbiNotifyPayload*)cur->m_payload)->Slot10(arg);
         }
     }
-    if (m_54c) {
-        ((CSbiMode54c*)m_54c)->Notify0(arg);
+    if (m_retabNotify) {
+        ((CSbiMode54c*)m_retabNotify)->Notify0(arg);
         TabCommit();
     }
     return 1;
@@ -3777,10 +3781,10 @@ void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
     if (show && m_activeTab != 5) {
         RectApply(5, 3);
     }
-    if (m_1dc) {
-        m_1dc->Configure("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
+    if (m_tabSprite5) {
+        m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         TabCommit();
-        m_1dc->Refresh();
+        m_tabSprite5->Refresh();
     }
     m_hitTestDisabled = 1;
 }
@@ -3789,17 +3793,17 @@ void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
 // it with the PAUSE asset key, commit, and refresh it. Clear the show-RESUME gate.
 RVA(0x00102200, 0x37)
 void CSBI_RectOnly::BuildGameTabPauseButton() {
-    if (m_1dc) {
-        m_1dc->Configure("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
+    if (m_tabSprite5) {
+        m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         TabCommit();
-        m_1dc->Refresh();
+        m_tabSprite5->Refresh();
     }
     m_hitTestDisabled = 0;
 }
 
 // 0x1055b0 - build the GOOCOOKING1 status-bar sprite for stat slot `idx`. Bails (0)
 // if the slot is already active; when the game is running (m_134==1) and the mode
-// gate is down (m_548==0), refresh the subtype-2 cursor, apply the (2,3) rect off the
+// gate is down (m_hlBusy==0), refresh the subtype-2 cursor, apply the (2,3) rect off the
 // gauge tab, and commit. Latch the gauge span for slot idx+0x17 (base g_dat645588, hi
 // 0x7fffffff); then, on the gauge tab and not the cursor subtype, play the
 // GAME_GOOCOOKING1 cue on the draw-clock window if the music gate is free. Returns 1.
@@ -3816,7 +3820,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != 0) {
         return 0;
     }
-    if (g_gameReg->m_134 == 1 && m_548 == 0) {
+    if (g_gameReg->m_134 == 1 && m_hlBusy == 0) {
         if (*(i32*)this == kSubtypeTag) {
             TabSubtypeRefresh();
         }
@@ -3883,7 +3887,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
                         ph->m_last = (u32)g_dat645588;
-                        ReportLog(m_extraNotifyArg0, m_514 + 0xc, m_518 + 0xc);
+                        ReportLog(m_extraNotifyArg0, m_itemRectL + 0xc, m_itemRectT + 0xc);
                         ConveyorReturn();
                     }
                 }
@@ -3904,7 +3908,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
                         ph->m_last = (u32)g_dat645588;
-                        m_4c8 = 8;
+                        m_machinePhase = 8;
                         m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
                         m_beltLast = (u32)g_dat645588;
                     }
@@ -4044,7 +4048,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                         s->m_value = 1;
                         s++;
                     }
-                    m_4c8 = 2;
+                    m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = (u32)g_dat645588;
                     if (m_activeTab == 3 && *(i32*)this != 2) {
@@ -4175,13 +4179,13 @@ void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
     if (m_348) {
         m_348->Update(m_hudRectA_y, m_hudRectB_y);
     }
-    m_528 = 0;
-    m_52c = 0;
+    m_rezActive = 0;
+    m_rezTick = 0;
 }
 
-// 0x106bb0 - drive the chip-machine status bar: a 7-phase (m_4c8 = 2..8) switch on a
+// 0x106bb0 - drive the chip-machine status bar: a 7-phase (m_machinePhase = 2..8) switch on a
 // single 64-bit belt timer (+0x4d0). Each phase accumulates the NextItem/FallingItem
-// speed/delay config into the rect-corner running sums (m_514/m_518/m_51c/m_520),
+// speed/delay config into the rect-corner running sums (m_itemRectL/m_itemRectT/m_itemRectR/m_itemRectB),
 // advances the phase on span thresholds, plays CHIPLAND/CHIPFALLOUT cues on the gauge
 // tab, and picks a machine column from m_4cc. A rect-write flag and a refresh flag are
 // latched per phase; the tail pushes the composed rect into the falling-item notifier
@@ -4194,18 +4198,18 @@ RVA(0x00106bb0, 0x7bc)
 void CSBI_RectOnly::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
-    switch (m_4c8) {
+    switch (m_machinePhase) {
         case 2:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_514 += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_51c += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRectL += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRectR += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = (u32)g_dat645588;
             }
-            if (m_514 >= 0x6d) {
-                m_514 = 0x6d;
-                m_51c = 0x84;
-                m_4c8 = 3;
+            if (m_itemRectL >= 0x6d) {
+                m_itemRectL = 0x6d;
+                m_itemRectR = 0x84;
+                m_machinePhase = 3;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemInMachineTime", 0x7d0);
                 m_beltLast = (u32)g_dat645588;
             }
@@ -4218,14 +4222,14 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     6,
                     g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
                 );
-                m_4c8 = 4;
+                m_machinePhase = 4;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemWaitTime", 0x1f4);
                 m_beltLast = (u32)g_dat645588;
             }
             break;
         case 4:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_4c8 = 5;
+                m_machinePhase = 5;
                 if (m_activeTab == 3 && *(i32*)this != 2) {
                     CSbiMusicHost* host = g_gameReg->m_30->m_28;
                     if (host->m_30 == 0) {
@@ -4247,14 +4251,14 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             break;
         case 5:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_518 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_520 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = (u32)g_dat645588;
             }
-            if (m_520 >= 0x11c) {
-                m_520 = 0x11c;
-                m_518 = 0x104;
+            if (m_itemRectB >= 0x11c) {
+                m_itemRectB = 0x11c;
+                m_itemRectT = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && *(i32*)this != 2) {
                     CSbiMusicHost* host = g_gameReg->m_30->m_28;
@@ -4271,29 +4275,29 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                         }
                     }
                 }
-                m_4c8 = 7;
+                m_machinePhase = 7;
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = (u32)g_dat645588;
                 if (m_extraNotifyArg0 >= 0x22) {
-                    m_524 = 0x6d;
+                    m_itemBaseX = 0x6d;
                 } else if (m_extraNotifyArg0 >= 0x17) {
-                    m_524 = 0x45;
+                    m_itemBaseX = 0x45;
                 } else {
-                    m_524 = 0x1d;
+                    m_itemBaseX = 0x1d;
                 }
             }
             refreshFlag = 1;
             break;
         case 7:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_514 -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_51c -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRectL -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
+                m_itemRectR -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = (u32)g_dat645588;
             }
-            if (m_514 <= m_524) {
-                m_514 = m_524;
-                m_51c = m_524 + 0x17;
+            if (m_itemRectL <= m_itemBaseX) {
+                m_itemRectL = m_itemBaseX;
+                m_itemRectR = m_itemBaseX + 0x17;
                 rectFlag = 1;
                 ChipNotify27f7();
                 SetStatBar(
@@ -4301,14 +4305,14 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     4,
                     g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64)
                 );
-                m_4c8 = 1;
+                m_machinePhase = 1;
             }
             refreshFlag = 1;
             break;
         case 8: {
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                m_518 += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_520 += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
+                m_itemRectT += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
+                m_itemRectB += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
                 m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
                 m_beltLast = (u32)g_dat645588;
             }
@@ -4325,7 +4329,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     break;
                 }
             }
-            if (m_518 >= row * 0x20 + 0x13e) {
+            if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && *(i32*)this != 2) {
                     CSbiMusicHost* host = g_gameReg->m_30->m_28;
                     if (host->m_30 == 0) {
@@ -4351,10 +4355,10 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
 
     if (m_extraNotify0) {
         if (rectFlag) {
-            m_extraNotify0->m_rect14[0] = m_514 + m_10;
-            m_extraNotify0->m_rect14[1] = m_518 + m_rect14.m_0;
-            m_extraNotify0->m_rect14[2] = m_51c + m_10;
-            m_extraNotify0->m_rect14[3] = m_520 + m_rect14.m_0;
+            m_extraNotify0->m_rect14[0] = m_itemRectL + m_10;
+            m_extraNotify0->m_rect14[1] = m_itemRectT + m_rect14.m_0;
+            m_extraNotify0->m_rect14[2] = m_itemRectR + m_10;
+            m_extraNotify0->m_rect14[3] = m_itemRectB + m_rect14.m_0;
         }
         if (refreshFlag) {
             RefreshFallRect();
@@ -4364,7 +4368,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
 
 // 0x107590 - configure the falling-item HUD gauge from a center point (a2,a3). Latch
 // the notify arg + active flag, pull the FallingItemDelay config, seed the rect base
-// from g_dat645588, build the relative +/-0xc rect (m_504 block), and - if the notify
+// from g_dat645588, build the relative +/-0xc rect (m_fallRectL block), and - if the notify
 // object exists - write the absolute rect (offset by the item base coords m_10/m_14)
 // into its +0x14 slot. Finish with the fall-rect refresh helper.
 // @early-stop
@@ -4377,20 +4381,20 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
 RVA(0x00107590, 0xc4)
 i32 CSBI_RectOnly::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
-    m_4e8 = 1;
-    m_4f8 = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
-    m_4fc = 0;
-    m_4f0 = g_dat645588;
-    m_4f4 = 0;
+    m_fallActive = 1;
+    m_fallDelay = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
+    m_fallDelayHi = 0;
+    m_fallLast = g_dat645588;
+    m_fallLastHi = 0;
     CSbiSlotPtr* n = m_extraNotify1;
     i32 l = a2 - 0xc;
     i32 t = a3 - 0xc;
     i32 rr = a2 + 0xc;
     i32 b = a3 + 0xc;
-    m_504 = l;
-    m_508 = t;
-    m_50c = rr;
-    m_510 = b;
+    m_fallRectL = l;
+    m_fallRectT = t;
+    m_fallRectR = rr;
+    m_fallRectB = b;
     if (n) {
         i32 x = m_10;
         n->m_rect14[0] = l + x;
@@ -4408,21 +4412,21 @@ i32 CSBI_RectOnly::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
 // delay, feed the stat bar (slot 9,2), latch the state and return 1. On later passes
 // just bump the wake tick counter and return 1.
 // @early-stop
-// ~96%: byte-exact except the `m_528 = 1; return 1;` tail - retail stores the
+// ~96%: byte-exact except the `m_rezActive = 1; return 1;` tail - retail stores the
 // immediate directly (mov [esi+0x528],1) then loads eax=1 separately, while MSVC5
 // here reuses eax (mov eax,1; mov [esi+0x528],eax). A store-imm-vs-register-reuse
 // regalloc coin-flip on the shared return constant; no C-level lever. Deferred.
 RVA(0x00107a10, 0x62)
 i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
-    if (m_528 == 0) {
+    if (m_rezActive == 0) {
         if (m_extraNotifyArg0 == 0) {
             return 0;
         }
         SetStatBar(9, 2, g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 100));
-        m_528 = 1;
+        m_rezActive = 1;
         return 1;
     }
-    m_52c++;
+    m_rezTick++;
     return 1;
 }
 
@@ -4435,7 +4439,7 @@ i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
 // @early-stop
 // ~90.5%: the prologue, tab-force, memset, both config loops, and the free-list return
 // loop are byte-exact (the free-loop matched once m_ptrTable was typed void**). Residual:
-// (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_54c load / m_548
+// (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_retabNotify load / m_hlBusy
 // store (a store-vs-load MSVC scheduling coin-flip; an explicit-temp rewrite was neutral)
 // and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
 // source-steerable; deferred to the final sweep.
@@ -4478,15 +4482,15 @@ void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
             g_freeList = node;
         }
     }
-    m_530.RemoveAll(0, -1);
+    m_ptrPool.RemoveAll(0, -1);
     m_2b0 = 0;
     m_2b8 = 0;
     m_2b4 = 0;
     m_2bc = 0;
-    m_548 = 0;
-    if (m_54c) {
-        free(m_54c);
-        m_54c = 0;
+    m_hlBusy = 0;
+    if (m_retabNotify) {
+        free(m_retabNotify);
+        m_retabNotify = 0;
     }
     FinishReset1f6e();
     m_578 = 0;
