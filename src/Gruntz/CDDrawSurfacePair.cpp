@@ -21,21 +21,9 @@
 #include <Gruntz/CDDrawSurfacePair.h>
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
 
-// ---------------------------------------------------------------------------
-// The locked-surface pixel geometry view: byte-pitch @+0x20 and bytes-per-pixel
-// @+0xb0 of the held CDDSurface, plus its IDirectDrawSurface @+0x08 (for Unlock).
-// A layout-compatible view onto CDDSurface so the pixel math lowers to direct
-// [surface+0x20]/[surface+0xb0] loads (the offsets are load-bearing).
-// ---------------------------------------------------------------------------
-class DrawSurfaceView {
-public:
-    char m_pad00[0x08 - 0x00]; // +0x00..+0x07
-    IDirectDrawSurfaceZ* m_8;  // +0x08  held IDirectDrawSurface (Unlock)
-    char m_pad0c[0x20 - 0x0c]; // +0x0c..+0x1f
-    i32 m_pitch;               // +0x20  byte pitch (bytes per row)
-    char m_pad24[0xb0 - 0x24]; // +0x24..+0xaf
-    i32 m_bpp;                 // +0xb0  bytes per pixel
-};
+// The locked-surface pixel geometry is read straight off the held CDDSurface:
+// its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
+// its held IDirectDrawSurface (m_8 @+0x08, for Unlock). No facet view needed.
 
 // ---------------------------------------------------------------------------
 // 0x03a1d0: BltFast `src`'s held surface onto ours at (0,0) with the source's
@@ -99,7 +87,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    i32* rect = (i32*)m_srcRect;
+    i32* rect = m_srcRect;
     rect[0] = 0;
     rect[1] = 0;
     rect[2] = w;
@@ -205,7 +193,7 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (base == 0) {
         return;
     }
-    DrawSurfaceView* sv = (DrawSurfaceView*)m_surface;
+    CDDSurface* sv = m_surface;
     u8 c = (u8)color;
     i32 w = right - left + 1;
 
@@ -213,17 +201,17 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (m_bpp == 0x10) {
         i32 n = 2 * w;
         if (n > 0) {
-            memset(base + sv->m_bpp * left + sv->m_pitch * top, c, n);
+            memset(base + sv->m_b0 * left + sv->m_pitch * top, c, n);
         }
         if (n > 0) {
-            memset(base + sv->m_bpp * left + sv->m_pitch * bottom, c, n);
+            memset(base + sv->m_b0 * left + sv->m_pitch * bottom, c, n);
         }
     } else {
         if (w > 0) {
-            memset(base + sv->m_bpp * left + sv->m_pitch * top, c, w);
+            memset(base + sv->m_b0 * left + sv->m_pitch * top, c, w);
         }
         if (w > 0) {
-            memset(base + sv->m_bpp * left + sv->m_pitch * bottom, c, w);
+            memset(base + sv->m_b0 * left + sv->m_pitch * bottom, c, w);
         }
     }
 
@@ -232,16 +220,16 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
     if (h > 0) {
         for (i32 y = 0; y < h; ++y) {
             if (m_bpp == 0x10) {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_bpp * left;
+                i32 lo = (top + y) * sv->m_pitch + sv->m_b0 * left;
                 base[lo] = c;
                 base[lo + 1] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_bpp * right;
+                i32 ro = (top + y) * sv->m_pitch + sv->m_b0 * right;
                 base[ro] = c;
                 base[ro + 1] = c;
             } else {
-                i32 lo = (top + y) * sv->m_pitch + sv->m_bpp * left;
+                i32 lo = (top + y) * sv->m_pitch + sv->m_b0 * left;
                 base[lo] = c;
-                i32 ro = (top + y) * sv->m_pitch + sv->m_bpp * right;
+                i32 ro = (top + y) * sv->m_pitch + sv->m_b0 * right;
                 base[ro] = c;
             }
         }
@@ -282,7 +270,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (base == 0) {
         return;
     }
-    i32 off = ((DrawSurfaceView*)m_surface)->m_bpp * x + ((DrawSurfaceView*)m_surface)->m_pitch * y;
+    i32 off = m_surface->m_b0 * x + m_surface->m_pitch * y;
 
     // horizontal arm (0), centre pixel skipped
     i32 i;
@@ -298,17 +286,17 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     // vertical arm up (0xff)
     i32 up = off;
     for (i = 0; i < 3; ++i) {
-        up -= ((DrawSurfaceView*)m_surface)->m_pitch;
+        up -= m_surface->m_pitch;
         base[up] = (char)0xff;
     }
     // vertical arm down (0xff)
     i32 down = off;
     for (i = 0; i < 3; ++i) {
-        down += ((DrawSurfaceView*)m_surface)->m_pitch;
+        down += m_surface->m_pitch;
         base[down] = (char)0xff;
     }
 
-    DrawSurfaceView* sv = (DrawSurfaceView*)m_surface;
+    CDDSurface* sv = m_surface;
     sv->m_8->Unlock(0);
 }
 
@@ -319,18 +307,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 // in mgr->m_lastError (only if not already set): 0x80e9..0x80ed for the five pool error
 // codes, 0xbb9 for an unresolved/zero pool error, 0xbba for an attach/validate miss.
 // ---------------------------------------------------------------------------
-// A minimal vtable view of the attached surface (slot 5 @+0x14 = the readiness
-// predicate). Declared-only virtuals fix the slot; never instantiated here.
-class CDDAttachedSurface {
-public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual i32 IsReady(); // slot 5 (@0x14)
-};
-
+// The attached surface's readiness predicate is CDDSurface::IsValid (slot 5, @0x14).
 // @early-stop
 // ~87.4%: the prologue, the mode/fullscreen branches, the pool call, and all seven
 // error blocks (the five 0x80e9..0x80ed switch cases + both 0xbb9 + the 0xbba) are
@@ -418,7 +395,7 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
     }
     CDDSurface* surf = pool->AttachMode(amode);
     m_surface = surf;
-    if (surf != 0 && ((CDDAttachedSurface*)surf)->IsReady()) {
+    if (surf != 0 && surf->IsValid()) {
         return 1;
     }
     CDDrawSurfaceMgr* m3 = m_mgr;
@@ -444,6 +421,3 @@ i32 CDDrawSurfacePair::Probe_164660() {
     return m_surface == 0 || (m_surface->m_8 != 0 && m_surface->m_8->IsLost() == 0)
            || m_surface->m_8->Restore() == 0 || m_surface->m_8->Restore() == 0;
 }
-
-SIZE_UNKNOWN(CDDAttachedSurface);
-SIZE_UNKNOWN(DrawSurfaceView);

@@ -28,6 +28,13 @@ struct CStatusBarSurface {
 };
 SIZE_UNKNOWN(CStatusBarSurface);
 
+// Intrusive list link embedded in each item at +0x44.
+struct SBLink {
+    void* m_0;
+    void* m_4;
+};
+SIZE_UNKNOWN(SBLink);
+
 // The pooled DirectSound buffer wrapper GetItem manages / ConfigureItem drives (the
 // real DSNDMGR buffer, src/Dsndmgr/DirectSoundMgr.cpp); every method is external
 // (no body) so its __thiscall `call rel32` reloc-masks.
@@ -43,17 +50,12 @@ public:
     i32 SetField3(i32); // 0x135510  (ret 4, result ignored)
     i32 Finalize();     // 0x136270  (ret 0)
 
-    char m_pad0[0x50];
-    i32 m_50; // +0x50  play key
+    char m_pad0[0x44];         // +0x00..0x43
+    SBLink m_link44;           // +0x44  intrusive list link (Unlink/Append)
+    char m_pad4c[0x50 - 0x4c]; // +0x4c..0x4f
+    i32 m_50;                  // +0x50  play key
 };
 SIZE_UNKNOWN(CStatusBarItem2);
-
-// Intrusive list link embedded in each item at +0x44.
-struct SBLink {
-    void* m_0;
-    void* m_4;
-};
-SIZE_UNKNOWN(SBLink);
 
 // Traversal node: next @+0, item @+8.
 struct SBNode {

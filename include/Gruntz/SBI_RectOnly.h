@@ -612,9 +612,11 @@ SIZE_UNKNOWN(CSbiCuePlayer);
 // The music host chain: g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}
 // (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
-    void* FindCue(char* key); // 0x2cca (ecx=host, returns the record directly)
-    char m_pad0[0x30];
-    void* m_30; // +0x30  gate (non-null => skip the cue play)
+    void* FindCue(char* key);  // 0x2cca (ecx=host, returns the record directly)
+    char m_pad0[0x10];         // +0x00..0x0f
+    CSbiLookupMap m_map10;     // +0x10  cue lookup map (CMapStringToOb view)
+    char m_pad11[0x30 - 0x11]; // +0x11..0x2f
+    i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip the cue play)
 };
 SIZE_UNKNOWN(CSbiMusicHost);
 

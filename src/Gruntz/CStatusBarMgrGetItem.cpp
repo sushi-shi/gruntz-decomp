@@ -55,7 +55,7 @@ CStatusBarItem2* CSoundCueMgr::GetItem() {
             return found;
         }
     }
-    m_58.Unlink((SBLink*)((char*)found + 0x44));
-    m_58.Append((SBLink*)((char*)found + 0x44));
+    m_58.Unlink(&found->m_link44);
+    m_58.Append(&found->m_link44);
     return found;
 }

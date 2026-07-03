@@ -24,17 +24,17 @@ public:
     i32 Deserialize_15ca70(CWwdArchive* ar);
     i32 Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
 
-    char m_pad00[0x0c];         // +0x00 .. +0x0b
-    CDDrawBlitWorker* m_worker; // +0x0c
-    i32 m_10;                   // +0x10
-    i32 m_srcRef;               // +0x14
-    char* m_element;            // +0x18  current element (transient; not serialized)
-    i32 m_index;                // +0x1c
-    i32 m_20;                   // +0x20
-    i32 m_24;                   // +0x24
-    i32 m_28;                   // +0x28
-    i32 m_2c;                   // +0x2c
-    i32 m_30;                   // +0x30
-    i32 m_34;                   // +0x34
-    float m_scale;              // +0x38
+    char m_pad00[0x0c];           // +0x00 .. +0x0b
+    CDDrawBlitWorker* m_worker;   // +0x0c
+    i32 m_10;                     // +0x10
+    CDDrawBlitParamSrc* m_srcRef; // +0x14  the resolved source (map value)
+    char* m_element;              // +0x18  current element (transient; not serialized)
+    i32 m_index;                  // +0x1c
+    i32 m_20;                     // +0x20
+    i32 m_24;                     // +0x24
+    i32 m_28;                     // +0x28
+    i32 m_2c;                     // +0x2c
+    i32 m_30;                     // +0x30
+    i32 m_34;                     // +0x34
+    float m_scale;                // +0x38
 };

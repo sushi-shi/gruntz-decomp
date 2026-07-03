@@ -168,7 +168,7 @@ i32 CSBI_MenuItem::InitItem(
     if (host == 0 || cfg == 0) {
         return 0;
     }
-    m_2c = (void*)cfg;
+    m_2c = (CMiTabHost*)cfg;
     m_24 = (CSbiConfigHost*)host;
     m_10 = r0;
     m_8 = 2;
@@ -265,7 +265,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_34 == 3) {
         return 1;
     }
-    CMiTabHost* host = (CMiTabHost*)m_2c;
+    CMiTabHost* host = m_2c;
     if (state == 3) {
         host->TabBegin();
         host->m_10c = m_c;
@@ -285,7 +285,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
                     CMiCue* p = found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                         p->m_14 = g_6bf3c0;
-                        ((CMiCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                        p->m_10->ConfigureItem(item, 0, 0, 0);
                     }
                 }
             }
@@ -396,23 +396,22 @@ i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
     if (mgr == 0) {
         return 0;
     }
-    char* B = (char*)this;
     switch (kind) {
         case 7:
-            ar->Read(B + 0x4, 4);
-            ar->Read(B + 0x8, 4);
-            ar->Read(B + 0xc, 4);
-            ar->Read(B + 0x10, 4);
-            ar->Read(B + 0x14, 0x10);
-            ar->Read(B + 0x28, 4);
+            ar->Read(&m_4, 4);
+            ar->Read(&m_8, 4);
+            ar->Read(&m_c, 4);
+            ar->Read(&m_10, 4);
+            ar->Read(&m_14, 0x10);
+            ar->Read(&m_28, 4);
             break;
         case 4:
-            ar->Write(B + 0x4, 4);
-            ar->Write(B + 0x8, 4);
-            ar->Write(B + 0xc, 4);
-            ar->Write(B + 0x10, 4);
-            ar->Write(B + 0x14, 0x10);
-            ar->Write(B + 0x28, 4);
+            ar->Write(&m_4, 4);
+            ar->Write(&m_8, 4);
+            ar->Write(&m_c, 4);
+            ar->Write(&m_10, 4);
+            ar->Write(&m_14, 0x10);
+            ar->Write(&m_28, 4);
             break;
     }
     return 1;

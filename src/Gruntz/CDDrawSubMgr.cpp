@@ -256,7 +256,7 @@ public:
 };
 class CDDrawBlitLabelSource {
 public:
-    CString GetLabel_152d30(i32 a);
+    CString GetLabel_152d30(CDDrawBlitParamSrc* a);
     char m_pad00[0x10];       // +0x00..+0x0f
     CBlitLabelMap m_labelMap; // +0x10 label -> worker map
 };
@@ -616,7 +616,7 @@ RVA(0x0015c2d0, 0x45)
 void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
     char* e;
     i32 v;
-    m_srcRef = (i32)src;
+    m_srcRef = src;
     if (!src) {
         return;
     }
@@ -673,7 +673,7 @@ i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
 // `a1` is set).  Reads e = src->m_count > 0 ? *src->m_elements : 0, then v = *(e+0x1c).
 RVA(0x0015c320, 0x40)
 void CDDrawBlitParam::Recompute_15c320(i32 a1) {
-    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)m_srcRef;
+    CDDrawBlitParamSrc* src = m_srcRef;
     if (src == 0) {
         return;
     }
@@ -809,9 +809,9 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CWwdArchive* ar) {
     } else {
         void* out = 0;
         m_worker->m_labelSource->m_labelMap.Lookup(buf, &out);
-        m_srcRef = (i32)out;
+        m_srcRef = (CDDrawBlitParamSrc*)out;
     }
-    CDDrawBlitParamSrc* w = (CDDrawBlitParamSrc*)m_srcRef;
+    CDDrawBlitParamSrc* w = m_srcRef;
     if (w != 0) {
         char* e;
         if (m_index >= 0 && m_index < w->m_count) {
@@ -899,7 +899,7 @@ class CWwdGameObject;
 // CWwdObjMgr+0x14 (= m_10.m_pNodeHead).
 struct CWwdNode {
     CWwdNode* m_next;  // +0x00
-    void* m_prev;      // +0x04
+    CWwdNode* m_prev;  // +0x04  (CPtrList node pPrev; not walked here)
     CWwdObject* m_obj; // +0x08
 };
 

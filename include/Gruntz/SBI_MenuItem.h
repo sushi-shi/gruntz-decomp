@@ -30,11 +30,12 @@ struct CSbiConfigHost;
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval).
+struct CMiCuePlayer; // defined below
 struct CMiCue {
     char m_pad0[0x10];
-    void* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;   // +0x14  last draw-clock
-    i32 m_18;   // +0x18  interval
+    CMiCuePlayer* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;           // +0x14  last draw-clock
+    i32 m_18;           // +0x18  interval
 };
 SIZE_UNKNOWN(CMiCue);
 struct CMiCuePlayer {
@@ -58,7 +59,7 @@ SIZE_UNKNOWN(CMiCueMap);
 // identical CSbiMusicHost is deferred (see report).
 struct CMiMusicHost {
     char m_pad0[0x30];
-    void* m_30; // +0x30  gate (non-null => skip)
+    i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip)
 };
 SIZE_UNKNOWN(CMiMusicHost);
 
@@ -168,10 +169,13 @@ public:
     i32 m_20;             // +0x20  rect y1
     CSbiConfigHost* m_24; // +0x24  config host
     i32 m_28;             // +0x28  counter / subtype
-    void* m_2c;           // +0x2c  owning rect-only host (CSBI_Image-like)
-    i32 m_30;             // +0x30  resolved frame handle
+    CMiTabHost* m_2c;     // +0x2c  owning rect-only host (CSBI_Image-like, tab-state view)
+    i32 m_30;             // +0x30  resolved frame handle (CImage* stored as DWORD)
     i32 m_34;             // +0x34  menu state tag
-    void* m_38;           // +0x38  resolved cue/config record
+    // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores a CSbiConfigRecord*,
+    // Serialize (case 7) stores the CSprite the image registry yields. Same physical
+    // shape, distinct modeled classes reached on different code paths -> kept void*.
+    void* m_38; // +0x38  resolved cue/config record (config-record | sprite)
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
 

@@ -10,7 +10,6 @@
 // HWND comes from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC).
 #include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <Win32.h>
-typedef i32 intptr_t; // VC5 predates <stdint.h>; the one HP_Callback cast below needs it.
 
 class CDDrawSubMgrItem {
 public:
@@ -18,20 +17,47 @@ public:
     i32 m_height; // +0x14  current surface height
 };
 
+// The owned child managers: polymorphic engine objects with the scalar-deleting
+// destructor at vtable slot 1 (`mov eax,[child]; push 1; call [eax+4]`). Modeling
+// that as a real virtual folds the former per-slot delete-view casts.
 class CDDrawSubMgr {
 public:
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (dispatch view, declared-only)
-    virtual void Slot04();
-    virtual void FUN_004028ec(); // [2] 0x0028ec
-    virtual void FUN_0040106e(); // [3] 0x00106e
-    virtual void FUN_00404034(); // [4] 0x004034
-    virtual i32 Vfunc14();       // [5] readiness predicate (dispatched)
+    virtual void FUN_005bef01();     // [0] 0x1bef01 (dispatch view, declared-only)
+    virtual void Destroy(u32 flags); // [1] scalar-deleting destructor
+    virtual void FUN_004028ec();     // [2] 0x0028ec
+    virtual void FUN_0040106e();     // [3] 0x00106e
+    virtual void FUN_00404034();     // [4] 0x004034
+    virtual i32 Vfunc14();           // [5] readiness predicate (dispatched)
 
-    void* m_04;
+    i32 m_04;
     CDDrawSubMgrItem* m_item; // +0x10  surface-dimensions item
 };
 
-struct CDDrawSubMgrLeafScan; // defined below; m_leafScan points at one
+// The +0x20 sound stream is a foreign Dsndmgr object: its scalar-deleting dtor is at
+// vtable slot 0 (`call [eax]`); Free (0x137a80) is a non-virtual __thiscall method.
+struct SoundStream {
+    virtual void Destroy(u32 flags); // [0] scalar-deleting destructor
+    void Free();                     // 0x137a80
+};
+
+// The +0x28 leaf-scan child: a polymorphic submgr (vptr@+0, scalar-delete at slot 1),
+// with a non-virtual ClearMap and an inner SoundStream at +0x2c.
+struct CDDrawSubMgrLeafScan {
+    virtual void Slot00();
+    virtual void Destroy(u32 flags); // [1] scalar-deleting destructor
+    void ClearMap();
+    char m_pad04[0x2c - 0x4];
+    SoundStream* m_inner; // +0x2c  inner (Free'd on context teardown)
+};
+
+// The +0x24 resolution submgr is a CDDrawSubMgr subtype (CDDrawResolveSubMgr /
+// CGameLevel); SetCoords is reached by the base->derived view downcast at its site.
+struct CDDrawResolveSubMgr : public CDDrawSubMgr {
+    i32 SetCoords(i32 x, i32 y);
+};
+
+// The +0x3c callback slot: a __cdecl function pointer invoked with (this, arg1..arg4).
+typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 // The CObject grand base is Wap::CObject (vtable @0x5e8cb4; Wap32/CObject.h): the
 // implicit vptr @+0x00 + the 5-slot CObject interface, with the scalar-deleting dtor
@@ -69,14 +95,14 @@ public:
     CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
     CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
     CDDrawPtrCollections* m_ptrColl;  // +0x1c
-    void* m_soundStream;              // +0x20  SoundStream (foreign Dsndmgr; delete-view only)
+    SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream
     CDDrawSubMgr* m_resolveSubMgr;    // +0x24  resolution submgr (CDDrawResolveSubMgr / CGameLevel)
     CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
     CDDrawSubMgr* m_leaf;             // +0x2c  CDDrawSubMgrLeaf
     HWND m_hWnd;                      // +0x30
     i32 m_flags;                      // +0x34
     i32 m_initError;                  // +0x38
-    i32 m_callback;                   // +0x3c
+    HP_Callback m_callback;           // +0x3c
 };
 
 DATA(0x002bf3c0)
@@ -84,18 +110,9 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc; // draw-delta mirror
 
-// Polymorphic-delete views for the owned children torn down by Cleanup_155e20.
-// Most children carry the engine scalar-deleting destructor at vtable slot 1
-// (`mov eax,[child]; push 1; call [eax+4]`); the SoundStream at +0x20 has
-// it at slot 0 (`call [eax]`). The CDDrawPtrCollections at +0x1c is a heap object with a
-// non-virtual __thiscall dtor + an explicit RezFree.
-struct DDChildSlot1 {
-    virtual void Slot00();
-    virtual void Destroy(u32 flags); // slot 1: scalar-deleting destructor
-};
-struct DDChildSlot0 {
-    virtual void Destroy(u32 flags); // slot 0: scalar-deleting destructor
-};
+// The CDDrawPtrCollections at +0x1c is a heap object with a non-virtual __thiscall
+// dtor + an explicit RezFree (the other owned children delete through their slot-1
+// (slot-0 for the sound stream) scalar-deleting destructor, now real virtuals).
 struct CDDrawPtrCollections {
     void Dtor(); // 0x141d50, __thiscall /GX destructor
 };
@@ -155,43 +172,43 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 RVA(0x00155e20, 0xd1)
 void CDDrawSurfaceMgr::Cleanup_155e20() {
     if (m_resolveSubMgr) {
-        ((DDChildSlot1*)m_resolveSubMgr)->Destroy(1);
+        m_resolveSubMgr->Destroy(1);
         m_resolveSubMgr = 0;
     }
     if (m_leafScan) {
-        ((DDChildSlot1*)m_leafScan)->Destroy(1);
+        m_leafScan->Destroy(1);
         m_leafScan = 0;
     }
     if (m_soundStream) {
-        ((DDChildSlot0*)m_soundStream)->Destroy(1);
+        m_soundStream->Destroy(1);
         m_soundStream = 0;
     }
     if (m_pages) {
-        ((DDChildSlot1*)m_pages)->Destroy(1);
+        m_pages->Destroy(1);
         m_pages = 0;
     }
     if (m_childGroup) {
-        ((DDChildSlot1*)m_childGroup)->Destroy(1);
+        m_childGroup->Destroy(1);
         m_childGroup = 0;
     }
     if (m_workerList) {
-        ((DDChildSlot1*)m_workerList)->Destroy(1);
+        m_workerList->Destroy(1);
         m_workerList = 0;
     }
     if (m_surfaceDesc) {
-        ((DDChildSlot1*)m_surfaceDesc)->Destroy(1);
+        m_surfaceDesc->Destroy(1);
         m_surfaceDesc = 0;
     }
     if (m_workerCache) {
-        ((DDChildSlot1*)m_workerCache)->Destroy(1);
+        m_workerCache->Destroy(1);
         m_workerCache = 0;
     }
     if (m_workerMap) {
-        ((DDChildSlot1*)m_workerMap)->Destroy(1);
+        m_workerMap->Destroy(1);
         m_workerMap = 0;
     }
     if (m_leaf) {
-        ((DDChildSlot1*)m_leaf)->Destroy(1);
+        m_leaf->Destroy(1);
         m_leaf = 0;
     }
     CDDrawPtrCollections* ptrColl = m_ptrColl;
@@ -237,22 +254,11 @@ fail:
     return 0;
 }
 
-// Helper structs for __thiscall external functions. Both the m_soundStream stream
-// and the CDDrawSubMgrLeafScan +0x2c inner are the same SoundStream (Free @0x137a80).
-struct SoundStream {
-    void Free();
-};
-struct CDDrawSubMgrLeafScan {
-    void ClearMap();
-    char m_pad00[0x2c];
-    SoundStream* m_inner; // +0x2c  inner (Free'd on context teardown)
-};
+// External context helpers (SoundStream / CDDrawSubMgrLeafScan / CDDrawResolveSubMgr /
+// HP_Callback are defined above the class). Both the m_soundStream stream and the
+// CDDrawSubMgrLeafScan +0x2c inner are the same SoundStream (Free @0x137a80).
 extern void __cdecl RelayHwnd(void* hWnd);
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
-struct CDDrawResolveSubMgr {
-    i32 SetCoords(i32 x, i32 y);
-};
-typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::FreeContext()
@@ -267,7 +273,7 @@ void CDDrawSurfaceMgr::FreeContext() {
         m_leafScan->ClearMap();
     }
     if (m_soundStream != 0) {
-        ((SoundStream*)m_soundStream)->Free();
+        m_soundStream->Free();
     }
 }
 
@@ -310,7 +316,7 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
     if (!m_callback) {
         return 0;
     }
-    return ((HP_Callback)(intptr_t)m_callback)(this, arg1, arg2, arg3, arg4) != 0;
+    return m_callback(this, arg1, arg2, arg3, arg4) != 0;
 }
 
 // Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
@@ -371,8 +377,6 @@ void CDDrawSurfaceMgr::Init() {}
 
 SIZE_UNKNOWN(CDDrawSubMgrItem);
 SIZE_UNKNOWN(Wap::CObject);
-SIZE_UNKNOWN(DDChildSlot0);
-SIZE_UNKNOWN(DDChildSlot1);
 SIZE_UNKNOWN(CDDrawPtrCollections);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 SIZE_UNKNOWN(CDDrawResolveSubMgr);

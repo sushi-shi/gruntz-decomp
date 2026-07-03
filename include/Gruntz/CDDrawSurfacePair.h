@@ -126,12 +126,12 @@ public:
     i32 Probe_164660(); // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
-    i32 m_width;                 // +0x10  width
-    i32 m_height;                // +0x14  height
-    i32 m_bpp;                   // +0x18  bits-per-pixel (8/16/24/32)
-    char m_srcRect[0x2c - 0x1c]; // +0x1c  x/y offset window {x,y,w,h} (src RECT)
-    CDDSurface* m_surface;       // +0x2c  the held surface (CPoolItemA)
-    i32 m_ownsSurface;           // +0x30  "owns surface" flag (free on teardown)
+    i32 m_width;           // +0x10  width
+    i32 m_height;          // +0x14  height
+    i32 m_bpp;             // +0x18  bits-per-pixel (8/16/24/32)
+    i32 m_srcRect[4];      // +0x1c  x/y offset window {x,y,w,h} (src RECT)
+    CDDSurface* m_surface; // +0x2c  the held surface (CPoolItemA)
+    i32 m_ownsSurface;     // +0x30  "owns surface" flag (free on teardown)
 };
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

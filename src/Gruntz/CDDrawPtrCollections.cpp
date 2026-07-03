@@ -118,9 +118,9 @@ public:
     virtual i32 v20();                                 // slot 8  0x13e2e0
 
     // implicit vptr        // +0x00
-    void* m_pos; // +0x04 - cached CPtrList POSITION
-    i32 m_08;    // +0x08
-    i32 m_0c;    // +0x0c
+    POSITION m_pos; // +0x04 - cached CPtrList POSITION
+    i32 m_08;       // +0x08
+    i32 m_0c;       // +0x0c
     char _10[0x7c - 0x10];
     i32 m_7c; // +0x7c
     char _80[0x94 - 0x80];
@@ -208,13 +208,13 @@ struct CPoolItemB {
     i32
     Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840 (__thiscall) - 3-param init, returns success
 
-    void* m_pos; // +0x00 cached POSITION
-    i32 m_04;    // +0x04
-    i32 m_08;    // +0x08
-    i32 m_0c;    // +0x0c
-    i32 m_10;    // +0x10
-    i32 m_14;    // +0x14
-    i32 m_18;    // +0x18
+    POSITION m_pos; // +0x00 cached POSITION
+    i32 m_04;       // +0x04
+    i32 m_08;       // +0x08
+    i32 m_0c;       // +0x0c
+    i32 m_10;       // +0x10
+    i32 m_14;       // +0x14
+    i32 m_18;       // +0x18
     char _1c[0x2c - 0x1c];
     i32 m_2c; // +0x2c
     i32 m_30; // +0x30
@@ -343,7 +343,7 @@ void CDDrawPtrCollections::EmptyPoolA() {
 // ---------------------------------------------------------------------------
 RVA(0x00142160, 0x24)
 void CDDrawPtrCollections::RemoveItemA(CPoolItemBase* item) {
-    m_poolA.RemoveAt((POSITION)item->m_pos);
+    m_poolA.RemoveAt(item->m_pos);
     delete item;
 }
 
@@ -641,7 +641,7 @@ void CDDrawPtrCollections::EmptyPoolB() {
 // ---------------------------------------------------------------------------
 RVA(0x00142f10, 0x2b)
 void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
-    m_poolB.RemoveAt((POSITION)item->m_pos);
+    m_poolB.RemoveAt(item->m_pos);
     if (item) {
         item->Teardown();
         RezFree(item);

@@ -666,7 +666,7 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
             CSbiMusicHost* host = g_gameReg->m_world->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                CSbiLookupMap* map = &host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", &found);
                 if (found) {
                     i32 gate = g_61ab20;
@@ -702,7 +702,7 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
             CSbiMusicHost* host = g_gameReg->m_world->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                CSbiLookupMap* map = &host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", &found);
                 if (found) {
                     i32 gate = g_61ab20;
@@ -737,7 +737,7 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
             CSbiMusicHost* host = g_gameReg->m_world->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                CSbiLookupMap* map = &host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", &found);
                 if (found) {
                     i32 gate = g_61ab20;
@@ -1600,7 +1600,7 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
         CSbiMusicHost* host = g_gameReg->m_world->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            CSbiLookupMap* map = &host->m_map10;
             map->Lookup("GAME_TABHIGHLIGHT1", &found);
             if (found) {
                 i32 gate = g_61ab20;
@@ -1635,7 +1635,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
             CSbiMusicHost* host = g_gameReg->m_world->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+                CSbiLookupMap* map = &host->m_map10;
                 map->Lookup("GAME_STATZTABTOGGLE", &found);
                 if (found) {
                     i32 gate = g_61ab20;
@@ -1723,7 +1723,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         CSbiMusicHost* host = g_gameReg->m_world->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            CSbiLookupMap* map = &host->m_map10;
             map->Lookup("GAME_TABHIGHLIGHT1", &found);
             if (found) {
                 i32 gate = g_61ab20;
@@ -1753,7 +1753,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
     CSbiMusicHost* host = g_gameReg->m_world->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
-        CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+        CSbiLookupMap* map = &host->m_map10;
         map->Lookup("GAME_TABHIGHLIGHT1", &found);
         if (found) {
             i32 gate = g_61ab20;
@@ -2382,10 +2382,11 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 // packs the 0x14 frame differently than retail (the statement-schedule wall shared with
 // Setup); the three notify walks + the config lookup are byte-faithful. Residual is that
 // scheduling plus the g_gameReg / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
-// NEIGHBOR TRIGGER: adding the LoadBattlezItemConfig/Rez/Chip bodies to this TU
-// reshuffled this function's MainBarDrawFrame arg-block register allocation (the
-// documented MSVC5 cross-function codegen leak), dropping the byte-match 95.6%->88.6%
-// with NO source change here; the frame-draw args are still byte-content-correct.
+// NEIGHBOR TRIGGER: the sibling cue functions (HlClickGroup*/HiCue*), and now the
+// CSbiMusicHost::m_map10 real-member de-cast, reshuffle this function's
+// MainBarDrawFrame arg-block register allocation (the documented MSVC5 cross-function
+// codegen leak), dropping the byte-match 95.6%->88.6% with NO source change here; the
+// frame-draw args are still byte-content-correct. Accepted per the de-cast mandate.
 RVA(0x000fe6b0, 0x145)
 i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     if (*(i32*)this != kSubtypeTag) {
@@ -2478,7 +2479,7 @@ static __inline void HiCueLookup() {
     CSbiMusicHost* host = g_gameReg->m_world->m_28;
     if (host->m_30 == 0) {
         void* out = 0;
-        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &out);
+        (&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", &out);
         if (out) {
             ((CSbiCueRecord*)out)->PlayNow(g_61ab24, 0, 0, 0);
         }
@@ -2490,7 +2491,7 @@ static __inline void HiCueTimed() {
     CSbiMusicHost* host = g_gameReg->m_world->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
-        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &found);
+        (&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", &found);
         if (found && g_61ab20 != 0) {
             i32 item = g_61ab24;
             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -2778,7 +2779,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
             if (m_destructButton == 0) {
                 CSbiMusicHost* host = g_gameReg->m_world->m_28;
                 void* found = 0;
-                ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_DESTRUCT", &found);
+                (&host->m_map10)->Lookup("GAME_DESTRUCT", &found);
                 if (found) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
@@ -2901,7 +2902,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
         CSbiMusicHost* host = g_gameReg->m_world->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = (CSbiLookupMap*)((char*)host + 0x10);
+            CSbiLookupMap* map = &host->m_map10;
             map->Lookup("GAME_GOOCOOKING1", &found);
             if (found) {
                 i32 gate = g_61ab20;
@@ -2990,8 +2991,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         CSbiMusicHost* host = g_gameReg->m_world->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CSbiLookupMap*)((char*)host + 0x10))
-                                ->Lookup("GAME_REZBELTRETURN", &found);
+                            (&host->m_map10)->Lookup("GAME_REZBELTRETURN", &found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3011,8 +3011,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         CSbiMusicHost* host = g_gameReg->m_world->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CSbiLookupMap*)((char*)host + 0x10))
-                                ->Lookup("GAME_REZBELTBACKUP", &found);
+                            (&host->m_map10)->Lookup("GAME_REZBELTBACKUP", &found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3117,8 +3116,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                         CSbiMusicHost* host = g_gameReg->m_world->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            ((CSbiLookupMap*)((char*)host + 0x10))
-                                ->Lookup("GAME_REZMACHINE", &found);
+                            (&host->m_map10)->Lookup("GAME_REZMACHINE", &found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3175,8 +3173,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                             CSbiMusicHost* host = g_gameReg->m_world->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                ((CSbiLookupMap*)((char*)host + 0x10))
-                                    ->Lookup("GAME_REZBELTRETRACT", &fnd);
+                                (&host->m_map10)->Lookup("GAME_REZBELTRETRACT", &fnd);
                                 if (fnd && g_61ab20 != 0) {
                                     i32 item = g_61ab24;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
@@ -3194,8 +3191,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                             CSbiMusicHost* host = g_gameReg->m_world->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                ((CSbiLookupMap*)((char*)host + 0x10))
-                                    ->Lookup("GAME_REZBELTDROP", &fnd);
+                                (&host->m_map10)->Lookup("GAME_REZBELTDROP", &fnd);
                                 if (fnd && g_61ab20 != 0) {
                                     i32 item = g_61ab24;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
@@ -3296,7 +3292,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = g_gameReg->m_world->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPFALLOUT", &found);
+                        (&host->m_map10)->Lookup("GAME_CHIPFALLOUT", &found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3326,7 +3322,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = g_gameReg->m_world->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                        (&host->m_map10)->Lookup("GAME_CHIPLAND", &found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3396,7 +3392,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = g_gameReg->m_world->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        ((CSbiLookupMap*)((char*)host + 0x10))->Lookup("GAME_CHIPLAND", &found);
+                        (&host->m_map10)->Lookup("GAME_CHIPLAND", &found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;

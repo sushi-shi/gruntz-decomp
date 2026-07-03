@@ -70,6 +70,7 @@ public:
 // The map value, when refreshed, is a draw-cue record: its +0x10 player drives
 // ConfigureItem (0x1360d0); +0x14 is the last draw-clock, +0x18 the throttle
 // interval. Same shape as the CSBI_MenuItem cue path. Externals are reloc-masked.
+struct LeafCuePlayer;
 struct LeafCue {
     // 0x1f940: gated forward to the player's ConfigureItem when the throttle
     // interval has elapsed (the cue's own play entry; the same throttle the
@@ -77,9 +78,9 @@ struct LeafCue {
     i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
 
     char m_pad0[0x10];
-    void* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;   // +0x14  last draw-clock
-    i32 m_18;   // +0x18  interval
+    LeafCuePlayer* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;            // +0x14  last draw-clock
+    i32 m_18;            // +0x18  interval
 };
 struct LeafCuePlayer {
     i32 ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
@@ -309,7 +310,7 @@ i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
     }
     if (g_6bf3c0 - (u32)m_14 >= (u32)m_18) {
         m_14 = g_6bf3c0;
-        return ((LeafCuePlayer*)m_10)->ConfigureItem(a0, a1, a2, a3);
+        return m_10->ConfigureItem(a0, a1, a2, a3);
     }
     return 0;
 }
@@ -343,7 +344,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     // return 0 via the trailing `xor eax,eax` exit, success is the fall-through).
     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
         p->m_14 = g_6bf3c0;
-        return ((LeafCuePlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+        return p->m_10->ConfigureItem(item, 0, 0, 0);
     }
     return 0;
 }

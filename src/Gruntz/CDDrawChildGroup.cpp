@@ -106,8 +106,11 @@ public:
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_parent;              // +0x0c  parent/root handle
-    char m_pad10[0x14 - 0x10]; // +0x10..0x13
-    CDDrawGroupNode* m_head;   // +0x14  intrusive-list head
+    char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
+    CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
+    char m_pad18[0x2c - 0x18]; // +0x18..0x2b (rest of the +0x10 CObList)
+    CMapStringToOb m_map2c;    // +0x2c
+    CMapStringToOb m_map48;    // +0x48
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
@@ -255,8 +258,8 @@ void CDDrawChildGroup::Stub_1591f0() {
         }
     }
     ((CObList*)((char*)this + 0x10))->RemoveAll();
-    ((CMapStringToOb*)((char*)this + 0x2c))->RemoveAll();
-    ((CMapStringToOb*)((char*)this + 0x48))->RemoveAll();
+    m_map2c.RemoveAll();
+    m_map48.RemoveAll();
 }
 
 // NOTE: 0x159a70 (vtable slot 9, the per-frame kill-cue tick) is reconstructed as
