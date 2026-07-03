@@ -17,9 +17,8 @@
 #include <rva.h>
 #include <Globals.h>
 
-// Global operator new (engine NAFXCW); external/no-body so the `push 0x5c;
-// call ??2; add esp,4` shape falls out reloc-masked.
-void* operator new(u32 n);
+// Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);
+// the `push 0x5c; call ??2; add esp,4` shape falls out reloc-masked.
 
 // The shared default-attribute descriptor pointer the stream ctor takes (the
 // value stored at 0x5f03e0 is pushed as the 3rd ctor arg).

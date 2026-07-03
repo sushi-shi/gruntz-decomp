@@ -20,12 +20,10 @@
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 
 // ---------------------------------------------------------------------------
-// Global operator new / delete (the NAFXCW heap).
-// External / no-body so their `call rel32` displacements reloc-mask in objdiff.
-//   operator new(unsigned int)
-//   operator delete(void*)
+// Global operator delete (the NAFXCW heap). External / no-body so its
+// `call rel32` displacement reloc-masks in objdiff. The matching global scalar
+// operator new (NAFXCW ??2@YAPAXI@Z) is declared by <Mfc.h> below.
 // ---------------------------------------------------------------------------
-void* operator new(u32 n);
 void operator delete(void* p);
 
 // ---------------------------------------------------------------------------

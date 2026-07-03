@@ -34,6 +34,8 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
+#include <new> // global scalar operator new / delete (NAFXCW ??2@YAPAXI@Z / ??3@YAXPAX@Z)
+
 // DInput SDK constants (real <dinput.h> names/values; the full header isn't
 // included because its hand-rolled COM interfaces / GUIDs here are matched by
 // shape - see IDirectInputZ above). Same immediates, so matching-neutral.
@@ -96,10 +98,8 @@ extern "C" i32 g_thirdEnabled; // 0x653ab0
 DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// The engine allocator / deallocator (global operator new / delete) - reloc-
-// masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
-void* operator new(u32);
-void operator delete(void*);
+// The engine allocator / deallocator (global operator new / delete) is declared
+// by <new>; reloc-masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
 
 // The three device-config vtables (0x5ef628 keyboard / 0x5ef640 mouse / 0x5ef658
 // joystick) and their two base-subobject vtables (0x5ef680 / 0x5ef670) are now

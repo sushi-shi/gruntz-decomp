@@ -49,9 +49,8 @@
 #include <rva.h>
 #include <Globals.h>
 
-// Global operator new (engine NAFXCW); external/no-body so the
-// `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
-void* operator new(u32 n);
+// Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);
+// the `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
 
 // The node-ctor descriptor. Reloc-masked file-scope address.
 extern i32 g_nodeDescriptor;

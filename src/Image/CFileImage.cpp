@@ -19,9 +19,8 @@
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Globals.h>
 
-// Engine allocator/freer (reloc-masked rel32). operator new @0x1b9b46 (NAFXCW),
-// _RezFree @0x1b9b82.
-void* operator new(u32 n);
+// Engine allocator/freer (reloc-masked rel32). operator new @0x1b9b46 (NAFXCW)
+// is declared by <Mfc.h>; _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
 
 // DecodeSrc (the DecodeRun run-length source header) and BmpFileHeader / TgaHeader (the

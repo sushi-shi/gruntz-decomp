@@ -26,8 +26,7 @@
 extern void* g_freeList;       // ?g_freeList@@3PAXA        @0x645544
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA  @0x64554c
 
-// operator new / operator delete (static CRT, reloc-masked).
-void* operator new(u32);
+// operator delete (static CRT, reloc-masked); operator new comes from <Mfc.h>.
 void operator delete(void*);
 
 // The (x,y) pair the +0x174/+0x178 origin accessor writes out.

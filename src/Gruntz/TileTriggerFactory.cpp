@@ -15,10 +15,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-
-// The Rez heap throwing new / nothrow free (0x1b9b46 / 0x1b9b82, both __cdecl).
-void* operator new(u32 size);  // 0x1b9b46
-void operator delete(void* p); // 0x1b9b82
+#include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82, both __cdecl)
 
 // The serialized reader the type id is read off: vtable slot 11 (+0x2c) is a
 // Read(void* buf, i32 n). Modeled polymorphically so `mov eax,[r]; call [eax+0x2c]`

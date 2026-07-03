@@ -19,8 +19,7 @@
 #include <string.h> // memcpy (inlined to rep movs)
 
 // The engine allocator/deallocator (reloc-masked rel32). Global operator new
-// @0x1b9b46 (NAFXCW), _RezFree @0x1b9b82.
-void* operator new(u32 n);
+// @0x1b9b46 (NAFXCW) is declared by <Mfc.h> (via FileStream.h); _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------

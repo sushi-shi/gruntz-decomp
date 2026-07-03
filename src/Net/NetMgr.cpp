@@ -2784,9 +2784,9 @@ static i32 __stdcall EnumProviderCb(void* guid, char* name, u32 major, u32 minor
     return self->AddGroupNode(guid, name) != 0;
 }
 
-// The global throwing operator new (NAFXCW, 0x1b9b46 == RezAlloc) + placement new;
-// used to build the group node in place. Reloc-masked.
-void* operator new(u32 size);
+// The global throwing operator new (NAFXCW, 0x1b9b46 == RezAlloc) is declared by
+// <Mfc.h> (via NetMgr.h); placement new (used to build the group node in place)
+// is declared here. Reloc-masked.
 inline void* operator new(u32, void* p) {
     return p;
 }

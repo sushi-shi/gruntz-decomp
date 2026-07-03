@@ -16,8 +16,8 @@
 // the OFFSETS + code bytes are the load-bearing facts.
 
 // The engine block allocator (0x1b9b46 = operator new); __cdecl, caller-cleans.
-void* RezAlloc(i32 size);  // 0x1b9b46
-void* operator new(u32 n); // engine _RezAlloc @0x1b9b46 (throwing global operator new)
+// The throwing global operator new (_RezAlloc @0x1b9b46) is declared by <Mfc.h>.
+void* RezAlloc(i32 size); // 0x1b9b46
 
 // The built status-bar item: a REAL polymorphic CSBI_SideTab child (0x5c bytes).
 // `new CSBI_SideTab` (operator new == RezAlloc) makes MSVC auto-stamp the retail
