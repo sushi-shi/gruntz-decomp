@@ -19,6 +19,7 @@
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
@@ -78,7 +79,7 @@ CTileTriggerTransition::~CTileTriggerTransition() {}
 // ---------------------------------------------------------------------------
 RVA(0x00011730, 0x6)
 i32 CTileTriggerTransition::GetTypeTag() {
-    return 0x405;
+    return LOGIC_TILETRIGGERTRANSITION; // 0x405
 }
 
 // ---------------------------------------------------------------------------

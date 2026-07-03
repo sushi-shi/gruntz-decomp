@@ -5,6 +5,7 @@
 // the real class TU once identified. Each is the 6-byte `mov eax,<id>; ret`
 // archetype shared with CBehindCandy::GetTypeTag (0x00fb70). Owner hints (nearest
 // reconstructed neighbor) noted per entry.
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 
 // 0xfa40 (id 0x3ef): eyecandy leaf between CSimpleAnimation and CBehindCandy.
@@ -14,7 +15,7 @@ public:
 };
 RVA(0x0000fa40, 0x6)
 i32 CTileLogicTag3ef::GetTypeTag() {
-    return 0x3ef;
+    return LOGIC_TAG_3EF; // 0x3ef
 }
 
 // 0x10f00 (id 0x429): tile-logic leaf after CFortressFlag.
@@ -24,7 +25,7 @@ public:
 };
 RVA(0x00010f00, 0x6)
 i32 CTileLogicTag429::GetTypeTag() {
-    return 0x429;
+    return LOGIC_TAG_429; // 0x429
 }
 
 // 0x11bf0 (id 0x428): HUD/sprite leaf near CCursorSnapSprite.
@@ -34,7 +35,7 @@ public:
 };
 RVA(0x00011bf0, 0x6)
 i32 CTileLogicTag428::GetTypeTag() {
-    return 0x428;
+    return LOGIC_TAG_428; // 0x428
 }
 
 // 0x12ff0 (id 0x41d): tile-logic leaf between CRollingBall and CKitchenSlime.
@@ -44,7 +45,7 @@ public:
 };
 RVA(0x00012ff0, 0x6)
 i32 CTileLogicTag41d::GetTypeTag() {
-    return 0x41d;
+    return LOGIC_TAG_41D; // 0x41d
 }
 
 SIZE_UNKNOWN(CTileLogicTag3ef);

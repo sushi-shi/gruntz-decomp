@@ -951,7 +951,7 @@ cattract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	1	a3550bea47f9	0x14630
 cattract	?Vslot07@CAttract@@UAEHXZ	100.0000	100.0000	1	91fafb3898fd	0x147b0
 cattract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	c31e32cae312	0x14770
 cbehindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
-cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	1	32ed38245a17	0xfb70
+cbehindcandy	?GetTypeTag@CBehindCandy@@QAEHXZ	100.0000	100.0000	2	d16b4b3f142d	0xfb70
 cbehindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	f4c855a7d8db	0x100f0
 cbehindcandyani	?AdvanceAnim@CBehindCandyAni@@QAEHXZ	100.0000	100.0000	1	4d7ee7a13f73	0xadbb0
 cbehindcandyani	?InitActReg@CBehindCandyAni@@SAXXZ	100.0000	100.0000	1	0d9455b8c944	0xad7d0
@@ -1227,7 +1227,7 @@ cdirectdrawmgr	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	3	e98f23a4cd
 cdirectdrawmgr	?SetupCaps@CDirectDrawMgr@@QAEXXZ	80.9730	80.9730	3	35e682412d56	0x143240
 cdonothing	??0CDoNothing@@QAE@PAUCGameObject@@@Z	90.1709	90.1709	2	8b63b2dc3450	0xac1d0
 cdonothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
-cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	1	6ca2183a4b81	0xf6b0
+cdonothing	?GetTypeTag@CDoNothing@@QAEHXZ	100.0000	100.0000	2	468eae96a0f4	0xf6b0
 cdonothingnormaldtor	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	9d57e19fe32a	0xf8a0
 cdonothingnormallogic	?HandlerA9E00@@YAHPAUOwner@@@Z	97.5269	97.5269	1	b78315bd0f11	0xa9e00
 cdroppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	88.1269	88.1269	2	c3f44162ba6b	0xc68b0
@@ -1240,11 +1240,11 @@ cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	6	490395e38568	0x3ecf0
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
-cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	1	c68ad601ed76	0x10870
+cexittrigger	?GetTypeTag@CExitTrigger@@QAEHXZ	100.0000	100.0000	2	08a05e6c83a4	0x10870
 cexplosion	??0CExplosion@@QAE@PAUCGameObject@@@Z	91.6837	91.6837	2	e820adb94a26	0x470e0
 cexplosion	??1CExplosion@@UAE@XZ	100.0000	100.0000	1	937d43f67fbf	0x12ec0
 ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
-ceyecandy	?GetTypeTag@CEyeCandy@@QAEHXZ	100.0000	100.0000	1	77b6788a5a6a	0xfca0
+ceyecandy	?GetTypeTag@CEyeCandy@@QAEHXZ	100.0000	100.0000	2	0a3a5401340b	0xfca0
 ceyecandyani	??0CEyeCandyAni@@QAE@PAUCGameObject@@@Z	92.2797	92.2797	2	cd547d4d4bfc	0xac870
 cfader	??0CFader17e940@@QAE@XZ	100.0000	100.0000	1	406fed16569b	0x17e940
 cfader	??0CFader17f9a0@@QAE@XZ	100.0000	100.0000	1	20a5e8d10656	0x17f9a0
@@ -1328,7 +1328,7 @@ cgruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	2
 cgruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	84.8485	84.8485	5	4769e0215607	0x7e9f0
 cgruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	100.0000	100.0000	1	5ffcecb6cc17	0x12070
 cgruntstaminasprite	?GetStaminaTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	1	a1a55c19ab81	0x7fbb0
-cgruntstaminasprite	?GetTypeTag@CGruntStaminaSprite@@QAEHXZ	100.0000	100.0000	1	7751a50cef8a	0x12020
+cgruntstaminasprite	?GetTypeTag@CGruntStaminaSprite@@QAEHXZ	100.0000	100.0000	2	df637ccaeee3	0x12020
 cgruntstartingpoint	??0CGruntStartingPoint@@QAE@PAUCGameObject@@@Z	95.9596	95.9596	2	4c9f38ff57af	0x3df30
 cgruntstartingpoint	??1CGruntStartingPoint@@UAE@XZ	100.0000	100.0000	1	ff7f150cc53c	0x10670
 cgrunttilemgr	?CombatCue@CGruntTileMgr@@QAEHHHHHH@Z	82.3978	82.3978	4	390ce47d48d3	0x7b930
@@ -1339,7 +1339,7 @@ cgrunttoysprite	?SetCell@CGruntToySprite@@QAEHHH@Z	100.0000	100.0000	2	791f7fd4a
 cgrunttoysprite	?Update@CGruntToySprite@@QAEHXZ	99.3000	99.3000	5	04af981f85fa	0x7f960
 cgrunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	1	dd4570bd359a	0x12130
 cgruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	45cfd716baa5	0x121f0
-cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	1	05a69356373a	0x121a0
+cgruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@QAEHXZ	100.0000	100.0000	2	0f9d93743253	0x121a0
 cgruntwingztimesprite	?GetWingzTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	1	eb3b32cf6214	0x7fd90
 cgruntzmapmgr	??1CGruntzMapMgr@@UAE@XZ	100.0000	100.0000	2	b34a5dba3d20	0x85d10
 cgruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	29.7155	29.7155	4	7a4b98859731	0x862f0
@@ -1536,7 +1536,7 @@ cpathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
 cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	7	42a31a37c784	0xb4640
 cpathhazard	?BeginLeg@CPathHazard@@UAEHXZ	84.2358	84.2358	2	86d3254bc880	0xb47e0
 cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0xb5070
-cpathhazard	?GetTypeTag@CPathHazard@@QAEHXZ	100.0000	100.0000	1	3d6c6e5939e1	0x132f0
+cpathhazard	?GetTypeTag@CPathHazard@@QAEHXZ	100.0000	100.0000	2	250f213f6a44	0x132f0
 cpathhazard	?SiblingTick@CLightningHazard@@QAEHXZ	86.0469	86.0469	6	64e35179ae5b	0xb43f0
 cpathhazard	?Tick@CPathHazard@@UAEHXZ	94.8794	94.8794	2	b733f7718b7f	0xb4020
 cplay	?AddLevelGruntz@CPlay@@QAEHXZ	79.4107	79.4107	3	3b3372435aa9	0xd5960
@@ -1945,10 +1945,10 @@ engstr	??1CContainerErr@@UAE@XZ	100.0000	100.0000	1	3f16bd44dc2b	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	3	5e4fe0732acf	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
 engstrrendertext	_EngStr_RenderText	53.0916	53.0916	3	47307c0994c0	0x115930
-eyecandytypetags	?GetTypeTag@CTileLogicTag3ef@@QAEHXZ	100.0000	100.0000	1	b3a74c5cac45	0xfa40
-eyecandytypetags	?GetTypeTag@CTileLogicTag41d@@QAEHXZ	100.0000	100.0000	1	295ea9c5b0b5	0x12ff0
-eyecandytypetags	?GetTypeTag@CTileLogicTag428@@QAEHXZ	100.0000	100.0000	1	8dd0fe603a69	0x11bf0
-eyecandytypetags	?GetTypeTag@CTileLogicTag429@@QAEHXZ	100.0000	100.0000	1	a1b467d86c3d	0x10f00
+eyecandytypetags	?GetTypeTag@CTileLogicTag3ef@@QAEHXZ	100.0000	100.0000	2	1681de6560ba	0xfa40
+eyecandytypetags	?GetTypeTag@CTileLogicTag41d@@QAEHXZ	100.0000	100.0000	2	cefc4b4fe13f	0x12ff0
+eyecandytypetags	?GetTypeTag@CTileLogicTag428@@QAEHXZ	100.0000	100.0000	2	c36c1ded7b17	0x11bf0
+eyecandytypetags	?GetTypeTag@CTileLogicTag429@@QAEHXZ	100.0000	100.0000	2	7a6aea5a4941	0x10f00
 faderradial	?Build@CFaderRadial@@QAEHPAUFrConfig@@@Z	63.2690	63.2690	4	801c9c13fc39	0x17fa40
 fadersetup	?Apply@CFaderElem@@QAEHPAUFaderArg@@@Z	89.7442	89.7442	2	56e869c54d7f	0x17f5e0
 fadershapesetup	?Setup@CFaderShape@@QAEHPAUFInit@@@Z	40.6732	40.6732	4	5b7bd36ff2b5	0x1817e0
@@ -2160,7 +2160,7 @@ gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	
 gameobjectctors	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	026136a434a3	0xb49b0
 gameobjectctors	??0CUFO@@QAE@PAUCGameObject@@@Z	81.0227	81.0227	2	ee6607153f0f	0xb4a90
 gameobjectctors	?GetToyTime@@YGHPAUCToyTimeHost@@@Z	100.0000	100.0000	2	9b101c411c25	0x7fca0
-gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@QAEHXZ	100.0000	100.0000	1	3f4adcb11671	0x120e0
+gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@QAEHXZ	100.0000	100.0000	2	256a2f2f24dc	0x120e0
 gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	e328f3778feb	0xb4d30
 gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	1	8d61c8fad5bf	0xa3b0
 gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	2	d6d95d44e3a1	0xd170
@@ -3464,7 +3464,7 @@ tiletriggerlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	5	94795c513302	0
 tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.9390	94.9390	2	b56eab925c1a	0x10faf0
 tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
 tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	3	76d461c490ed	0x110070
-tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	f7fb68523138	0x11730
+tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	2	c4371034206a	0x11730
 tiletriggertransition	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.9130	1	4572c8a8da4b	0x10fe70
 tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	2	d0f78f34d671	0x10fc90
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	7ba829d0b632	0x10d150
@@ -3654,8 +3654,8 @@ userlogic	??1CTileTriggerSwitch@@UAE@XZ	100.0000	100.0000	1	dab625badc7c	0x110f0
 userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	2	6d1a80fde174	0x42150
 userlogic	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	2	c71d8cd2b654	0x10d8c0
 userlogic	?GetScreenPos@CUserLogic@@QAEXPAUScreenPoint@1@@Z	100.0000	100.0000	3	429b56dbb6c2	0x29a50
-userlogic	?GetTypeTag@CParticlez@@QAEHXZ	100.0000	100.0000	1	baaa72e449e6	0x12cd0
-userlogic	?GetTypeTag@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	1	e0609022f56e	0x133b0
+userlogic	?GetTypeTag@CParticlez@@QAEHXZ	100.0000	100.0000	2	e9ae8655cdb8	0x12cd0
+userlogic	?GetTypeTag@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	2	208cd5472f25	0x133b0
 userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	2f0eeda3c0d0	0x420d0
 userlogic	?InitActReg@CSingleAnimation@@SAXXZ	100.0000	100.0000	1	883823c700b9	0xae9a0
 userlogic	?InitActReg@CTileSecretTrigger@@SAXXZ	100.0000	100.0000	1	ad921b52d1d3	0x10f160

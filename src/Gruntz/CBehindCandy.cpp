@@ -8,13 +8,14 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CBehindCandy.h>
+#include <Gruntz/LogicTypeId.h>
 
 // CBehindCandy::GetTypeTag @0x00fb70 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x0000fb70, 0x6)
 i32 CBehindCandy::GetTypeTag() {
-    return 0x3f0;
+    return LOGIC_BEHINDCANDY; // 0x3f0
 }
 
 // CBehindCandy::~CBehindCandy @0x00fc30 - the leaf adds no destructible members

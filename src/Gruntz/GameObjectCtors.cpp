@@ -17,6 +17,7 @@
 // Functions are defined in ascending-RVA order.
 #include <Bute/ButeTree.h>      // canonical CButeTree (one shape)
 #include <Gruntz/CPathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
+#include <Gruntz/LogicTypeId.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -137,7 +138,7 @@ public:
 // plain dtor (@0x12130) lives in the engine_discovered stub unit.
 RVA(0x000120e0, 0x6)
 i32 CGruntToyTimeSprite::GetTypeTag() {
-    return 0x411;
+    return LOGIC_GRUNTTOYTIMESPRITE; // 0x411
 }
 
 // @confidence: high

@@ -9,13 +9,14 @@
 // recovered engine identities.
 #include <Gruntz/CExitTrigger.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/LogicTypeId.h>
 
 // CExitTrigger::GetTypeTag @0x010870 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x00010870, 0x6)
 i32 CExitTrigger::GetTypeTag() {
-    return 0x3f7;
+    return LOGIC_EXITTRIGGER; // 0x3f7
 }
 
 // CExitTrigger::~CExitTrigger @0x0108c0 - the leaf adds no destructible members

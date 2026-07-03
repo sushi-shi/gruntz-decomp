@@ -15,6 +15,7 @@
 #include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CTrigger.h>           // shared point-probe result object
 #include <Gruntz/CViewport.h>          // shared world->screen transform
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
@@ -641,7 +642,7 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // 6-byte `mov eax,<id>; ret` archetype (plain dtor @0x13400 still a Boundary stub).
 RVA(0x000133b0, 0x6)
 i32 CVoiceTrigger::GetTypeTag() {
-    return 0x426;
+    return LOGIC_VOICETRIGGER; // 0x426
 }
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
@@ -832,7 +833,7 @@ CParticlez::~CParticlez() {}
 // 6-byte `mov eax,<id>; ret` archetype.
 RVA(0x00012cd0, 0x6)
 i32 CParticlez::GetTypeTag() {
-    return 0x41c;
+    return LOGIC_PARTICLEZ; // 0x41c
 }
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {

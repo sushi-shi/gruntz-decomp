@@ -8,13 +8,14 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/CDoNothing.h>
+#include <Gruntz/LogicTypeId.h>
 
 // CDoNothing::GetTypeTag @0x00f6b0 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
 // GetTypeTag (0x011730).
 RVA(0x0000f6b0, 0x6)
 i32 CDoNothing::GetTypeTag() {
-    return 0x3ec;
+    return LOGIC_DONOTHING; // 0x3ec
 }
 
 // CDoNothing::~CDoNothing @0x00f770 - the leaf adds no destructible members beyond

@@ -4,13 +4,14 @@
 // <Gruntz/UserLogic.h>). Only offsets / code bytes are load-bearing; names are
 // placeholders for the recovered engine identities.
 #include <Gruntz/CGruntStaminaSprite.h>
+#include <Gruntz/LogicTypeId.h>
 
 // CGruntStaminaSprite::GetTypeTag @0x00012020 - return the class's logic-type id.
 // The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
 // (0x00fb70); precedes the [scalar @0x12040, plain @0x12070] dtor pair.
 RVA(0x00012020, 0x6)
 i32 CGruntStaminaSprite::GetTypeTag() {
-    return 0x410;
+    return LOGIC_GRUNTSTAMINASPRITE; // 0x410
 }
 
 // CGruntStaminaSprite::~CGruntStaminaSprite @0x00012070 - the leaf adds no

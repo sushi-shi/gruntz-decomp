@@ -13,6 +13,7 @@
 // identities.
 #include <Gruntz/CPathHazard.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 
 // sqrt inlines to fsqrt at /O2; the (int)double casts lower to __ftol.
@@ -116,7 +117,7 @@ CLightningHazard::~CLightningHazard() {}
 // dtor pair, the canonical [GetTypeTag][scalar-dtor][plain-dtor] per-class layout.
 RVA(0x000132f0, 0x6)
 i32 CPathHazard::GetTypeTag() {
-    return 0x425;
+    return LOGIC_PATHHAZARD; // 0x425
 }
 
 // CPathHazard::~CPathHazard @0x013340 - the leaf adds no destructible members
