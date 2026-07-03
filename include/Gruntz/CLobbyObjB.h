@@ -35,7 +35,7 @@ public:
     void Body_c0bb0();                    // ~CLobbySlot body call (out-of-line)
 
     char m_pad00_0c[0xc];
-    CLobbySlotMgr* m_c; // +0x0c  inner manager
+    CLobbySlotMgr* m_mgr; // +0x0c  inner manager
     char m_pad10_20[0x20 - 0x10];
     CLobbySlotInner m_20; // +0x20  EH-destructible member
     char m_pad24_64[0x64 - 0x24];

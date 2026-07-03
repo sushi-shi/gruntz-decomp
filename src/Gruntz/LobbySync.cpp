@@ -12,8 +12,8 @@
 extern "C" void* memcpy(void* d, const void* s, unsigned int n);
 extern "C" void* memset(void* d, int c, unsigned int n);
 
-// --- The networking endpoint reached through CNetMgr::m_18.  Its dispatch table
-// at +0 holds __stdcall fn ptrs (the object is the explicit 1st arg). ----------
+// --- The networking endpoint reached through CNetMgr::m_endpoint.  Its dispatch
+// table at +0 holds __stdcall fn ptrs (the object is the explicit 1st arg). ------
 struct CNetEndpoint;
 struct CNetEndpointVtbl {
     char pad00[0x44];
@@ -28,11 +28,11 @@ struct CNetEndpoint {
 // --- CNetMgr (only the slots we call) ------------------------------------------
 struct CNetMgr {
     char pad00[0x18];
-    CNetEndpoint* m_18;                             // +0x18 endpoint
+    CNetEndpoint* m_endpoint;                       // +0x18 endpoint
     i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x178fc0
 };
 
-// --- A per-channel serializable grunt object (m_1b0 table element). -----------
+// --- A per-channel serializable grunt object (idMap table element). -----------
 struct CSyncObj {
     virtual void v0();
     virtual void v1();
@@ -53,39 +53,41 @@ extern CPtrList g_pool; // 0x64aca8
 
 // The "[end]"-tagged broadcast scratch buffer for the receive loop (0x800 B).
 
-// --- The per-slot descriptor pointed to by m_0c --------------------------------
+// --- The per-slot player descriptor (CCluster0c::m_desc / CLobbySync::m_localDesc).
+// Its +0x04 is the DirectPlay player id (SetData `a` / Recv+Read channel), its
+// +0x18 is the peer/target id shipped as SetData `b`. --------------------------
 struct SlotInfo {
     char pad00[4];
-    i32 m_04; // +0x04
+    i32 m_playerId; // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
     char pad08[0x18 - 0x08];
-    i32 m_18; // +0x18
+    i32 m_netId; // +0x18 peer/target id (SetData `b`)
     char pad1c[0x2c - 0x1c];
-    i32 m_2c; // +0x2c
+    i32 m_dirty; // +0x2c set on slot re-init
 };
 
 // --- A grunt record in the +0x3b0 table (stride 0x410) -------------------------
 struct GruntRec {
-    i32 m_00;           // +0x00
-    i32 m_04;           // +0x04
-    unsigned char m_08; // +0x08
+    i32 m_seq;             // +0x00 sequence number
+    i32 m_checksum;        // +0x04 state checksum
+    unsigned char m_count; // +0x08 grunts serialized into this record
     char pad09[3];
-    i32 m_0c;                // +0x0c payload length
-    char m_10[0x410 - 0x10]; // +0x10 payload
+    i32 m_payloadLen;             // +0x0c payload length
+    char m_payload[0x410 - 0x10]; // +0x10 payload
 };
 
 // --- The per-channel slot (0x64 bytes); full model lives in Cluster0c.cpp. ----
 struct CCluster0c {
-    i32 m_00;       // +0x00 slot type (3 = active)
-    i32 m_04;       // +0x04 flag (0 = local)
-    i32 m_08;       // +0x08 counter / CNetMgr* (overloaded)
-    SlotInfo* m_0c; // +0x0c descriptor
-    i32 m_10;       // +0x10
-    i32 m_14;       // +0x14
-    i32 m_18;       // +0x18
-    i32 m_1c;       // +0x1c
+    i32 m_state;      // +0x00 slot state (3 = active)
+    i32 m_isRemote;   // +0x04 flag (0 = local)
+    i32 m_08;         // +0x08 counter / CNetMgr* (overloaded)
+    SlotInfo* m_desc; // +0x0c descriptor
+    i32 m_timer;      // +0x10 activity timer
+    i32 m_baseSeq;    // +0x14 base sequence for the ack windows
+    i32 m_sentSeq;    // +0x18 highest sequence sent
+    i32 m_1c;         // +0x1c
     char pad20[0x4c - 0x20];
-    char m_4c[0x58 - 0x4c]; // +0x4c sub-object
-    char m_58[0x5c - 0x58]; // +0x58 sub-object
+    char m_4c[0x58 - 0x4c]; // +0x4c sub-object (ack window)
+    char m_58[0x5c - 0x58]; // +0x58 sub-object (ack window)
     char pad5c[0x64 - 0x5c];
 
     void Init();                        // 0xc0c20 (CCluster0c::Init)
@@ -100,15 +102,15 @@ struct CCluster0c {
     void InitNeg(void* p); // 0xc10a0 (3 dwords of *p = -1)
 };
 
-// --- The game/session manager pointed to by CLobbySync::m_04. This is NOT the
-// WAP32::CGameMgr base class (0x2c) nor a full CGruntzMgr view - it is a partial
-// net/session sink whose reloc-masked callees live in the 0xba000+ net-game code
-// (LoadMenuSelectSprite etc.). Named distinctly so it does not masquerade as the
-// engine base CGameMgr; only the +0x564 offset + the reloc-masked call shapes are
-// load-bearing. -----------------------------------------------------------------
+// --- The game/session manager pointed to by CLobbySync::m_session. This is NOT
+// the WAP32::CGameMgr base class (0x2c) nor a full CGruntzMgr view - it is a
+// partial net/session sink whose reloc-masked callees live in the 0xba000+
+// net-game code (LoadMenuSelectSprite etc.). Named distinctly so it does not
+// masquerade as the engine base CGameMgr; only the +0x564 offset + the
+// reloc-masked call shapes are load-bearing. ----------------------------------
 struct CSessionMgr {
     char pad000[0x564];
-    i32 m_564;                            // +0x564 net busy flag
+    i32 m_busy;                           // +0x564 net busy flag
     void LoadMenuSelectSprite(void* m);   // 0xba620
     void OnPlayerLeft(void* p);           // 0xba3b0
     void ResetPlayerCommands(void* p);    // 0xbcf20
@@ -118,23 +120,23 @@ struct CSessionMgr {
 
 // --- A control/command message (CLobbySync messages) ---------------------------
 struct LobbyMsg {
-    i32 m_00; // +0x00 type
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
+    i32 m_type; // +0x00 message type
+    i32 m_04;   // +0x04
+    i32 m_08;   // +0x08
 };
 
 struct CLobbySync {
     i32 m_00;
-    CSessionMgr* m_04;    // +0x04
-    CNetMgr* m_08;        // +0x08 CNetMgr*
-    SlotInfo* m_0c;       // +0x0c
-    i32 m_10;             // +0x10
-    i32 m_14;             // +0x14
-    i32 m_18;             // +0x18
-    i32 m_1c;             // +0x1c modulus
-    CCluster0c m_20[4];   // +0x20 .. +0x1b0
-    i32 m_1b0[0x80];      // +0x1b0 .. +0x3b0
-    GruntRec m_3b0[0x80]; // +0x3b0 grunt-record table
+    CSessionMgr* m_session;   // +0x04
+    CNetMgr* m_netMgr;        // +0x08 CNetMgr*
+    SlotInfo* m_localDesc;    // +0x0c local player descriptor
+    i32 m_tick;               // +0x10 sub-tick counter
+    i32 m_snapshotDone;       // +0x14 per-period snapshot-built flag
+    i32 m_seq;                // +0x18 reconcile-period sequence
+    i32 m_period;             // +0x1c ticks per period (modulus)
+    CCluster0c m_slots[4];    // +0x20 .. +0x1b0
+    i32 m_idMap[0x80];        // +0x1b0 .. +0x3b0
+    GruntRec m_records[0x80]; // +0x3b0 grunt-record table
 
     // my targets
     i32 Advance();                           // 0xc01d0
@@ -158,27 +160,27 @@ void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
 
 RVA(0x000c01d0, 0x8c)
 i32 CLobbySync::Advance() {
-    i32 next10 = m_10 + 1;
-    i32 next18 = m_18 + 1;
-    if (next10 % m_1c != 0) {
-        m_10 = next10;
+    i32 nextTick = m_tick + 1;
+    i32 nextSeq = m_seq + 1;
+    if (nextTick % m_period != 0) {
+        m_tick = nextTick;
         return 1;
     }
     Reconcile();
-    if (!M_c0290(next18)) {
+    if (!M_c0290(nextSeq)) {
         return 0;
     }
-    CCluster0c* s = m_20;
+    CCluster0c* s = m_slots;
     i32 n = 4;
     do {
-        if (s && s->m_00 == 3 && s->m_04 == 0) {
-            s->M_c11b0(m_18 - 4);
+        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+            s->M_c11b0(m_seq - 4);
         }
         s++;
     } while (--n);
-    m_10 = next10;
-    m_18 = next18;
-    m_14 = 0;
+    m_tick = nextTick;
+    m_seq = nextSeq;
+    m_snapshotDone = 0;
     return 1;
 }
 
@@ -186,17 +188,17 @@ RVA(0x000c00f0, 0xaf)
 void CLobbySync::Reconcile() {
     i32 withFlag = 0;
     i32 withoutFlag = 0;
-    CCluster0c* base = m_20;
+    CCluster0c* base = m_slots;
     {
         CCluster0c* s = base;
         i32 n = 4;
         do {
             if (s) {
-                i32 type = s->m_00;
-                if (type == 3 && s->m_04 != 0) {
+                i32 type = s->m_state;
+                if (type == 3 && s->m_isRemote != 0) {
                     withFlag++;
                 }
-                if (type == 3 && s->m_04 == 0) {
+                if (type == 3 && s->m_isRemote == 0) {
                     withoutFlag++;
                 }
             }
@@ -207,11 +209,11 @@ void CLobbySync::Reconcile() {
         CCluster0c* s = base;
         i32 n = 4;
         do {
-            if (s && s->m_00 == 3) {
+            if (s && s->m_state == 3) {
                 s->Init();
-                SlotInfo* p = s->m_0c;
-                s->m_00 = 1;
-                p->m_2c = 1;
+                SlotInfo* p = s->m_desc;
+                s->m_state = 1;
+                p->m_dirty = 1;
             }
             s++;
         } while (--n);
@@ -219,11 +221,11 @@ void CLobbySync::Reconcile() {
         CCluster0c* s = base;
         i32 n = 4;
         do {
-            if (s && s->m_00 == 3 && s->m_04 != 0 && m_18 > s->m_08 + 2) {
+            if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_08 + 2) {
                 s->Init();
-                SlotInfo* p = s->m_0c;
-                s->m_00 = 1;
-                p->m_2c = 1;
+                SlotInfo* p = s->m_desc;
+                s->m_state = 1;
+                p->m_dirty = 1;
             }
             s++;
         } while (--n);
@@ -233,36 +235,36 @@ void CLobbySync::Reconcile() {
 RVA(0x000bfd40, 0x116)
 i32 CLobbySync::SendBatch() {
     i32 count = 0;
-    CCluster0c* s = m_20;
+    CCluster0c* s = m_slots;
     i32 n = 4;
     do {
-        if (s && s->m_00 == 3 && s->m_04 == 0) {
-            i32 t = m_18 + 2;
-            if (m_14 == 0 && (m_10 + 1) % m_1c == 0) {
+        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+            i32 t = m_seq + 2;
+            if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
                 if (SendOne(s, t)) {
                     count++;
                 }
             }
-            i32 v = m_18 + 1;
-            if (s->m_18 < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            i32 v = m_seq + 1;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
-            v = m_18;
-            if (s->m_18 < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            v = m_seq;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
-            v = m_18 - 1;
-            if (s->m_18 < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            v = m_seq - 1;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
-            v = m_18 - 2;
-            if (s->m_18 < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            v = m_seq - 2;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
@@ -288,11 +290,11 @@ i32 CLobbySync::Dispatch(i32 a, LobbyMsg* b, i32 c) {
     if (!obj) {
         return 0;
     }
-    obj->m_10 = 0;
+    obj->m_timer = 0;
     CCluster0c* target = obj;
     unsigned char* p = (unsigned char*)b;
     if (!(p[0] & 0x80) && (p[0] & 1)) {
-        target = &m_20[p[1]];
+        target = &m_slots[p[1]];
         if (!target) {
             return 0;
         }
@@ -310,22 +312,22 @@ i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
     if (!m) {
         return 0;
     }
-    switch (m->m_00) {
+    switch (m->m_type) {
         case 3:
-            m_04->LoadMenuSelectSprite(m);
+            m_session->LoadMenuSelectSprite(m);
             return 1;
         case 5:
             if (m->m_04 == 1) {
                 void* p = (void*)m->m_08;
-                m_04->OnPlayerLeft(p);
-                m_04->ResetPlayerCommands(p);
+                m_session->OnPlayerLeft(p);
+                m_session->ResetPlayerCommands(p);
                 return 1;
             }
             return 1;
         case 49:
-            return m_04->HandleControlMsg(m, arg2);
+            return m_session->HandleControlMsg(m, arg2);
         case 257:
-            return m_04->HandleControlMsg(m, arg2);
+            return m_session->HandleControlMsg(m, arg2);
         default:
             return 1;
     }
@@ -333,24 +335,25 @@ i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
 
 // @early-stop
 // regalloc/spill wall (~67%): logic correct, retail spills `this` (dead slot) +
-// caches &m_20[0]; this cl allocates the slot pointers differently.
+// caches &m_slots[0]; this cl allocates the slot pointers differently.
 RVA(0x000bfb40, 0xe2)
 i32 CLobbySync::SendAll() {
     i32 count = 0;
-    CCluster0c* outer = m_20;
+    CCluster0c* outer = m_slots;
     for (i32 oi = 0; oi < 4; oi++) {
-        if (outer && outer->m_00 == 3 && outer->m_04 != 0) {
+        if (outer && outer->m_state == 3 && outer->m_isRemote != 0) {
             i32 lo, hi;
             outer->M_c1230(&lo, &hi);
-            CCluster0c* inner = m_20;
+            CCluster0c* inner = m_slots;
             i32 in = 4;
             do {
-                if (inner && inner->m_00 == 3 && inner->m_04 == 0) {
+                if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
                     for (i32 v = lo; v <= hi; v++) {
                         i32 r = outer->M_c12b0(v);
                         if (r) {
                             i32 flag = (v == hi) ? 3 : 1;
-                            if (m_20[0].M_bfc70(v, (GruntRec*)r, flag, oi, inner->m_0c->m_18)) {
+                            if (m_slots[0]
+                                    .M_bfc70(v, (GruntRec*)r, flag, oi, inner->m_desc->m_netId)) {
                                 count++;
                             }
                         }
@@ -380,22 +383,29 @@ i32 CLobbySync::SendOne(CCluster0c* slot, i32 val) {
         return 1;
     }
     unsigned char flags = 0;
-    i32 m14 = slot->m_14;
-    if (slot->M_c0fd0(&slot->m_4c, m14 + 2)) {
+    i32 baseSeq = slot->m_baseSeq;
+    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 2)) {
         flags = 0x10;
     }
-    if (slot->M_c0fd0(&slot->m_4c, m14 + 3)) {
+    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 3)) {
         flags |= 0x20;
     }
     gB_flag = flags;
     gB_val = val;
     i32 idx = val % 0x80;
-    GruntRec* entry = &m_3b0[idx];
-    gB_m14 = slot->m_14;
-    gB_e04 = entry->m_04;
-    gB_e08 = entry->m_08;
-    memcpy(&gB_data, entry->m_10, entry->m_0c);
-    return m_08->SetData(m_0c->m_04, slot->m_0c->m_18, 0, (i32)&gB_flag, entry->m_0c + 0xe) == 0;
+    GruntRec* entry = &m_records[idx];
+    gB_m14 = slot->m_baseSeq;
+    gB_e04 = entry->m_checksum;
+    gB_e08 = entry->m_count;
+    memcpy(&gB_data, entry->m_payload, entry->m_payloadLen);
+    return m_netMgr->SetData(
+               m_localDesc->m_playerId,
+               slot->m_desc->m_netId,
+               0,
+               (i32)&gB_flag,
+               entry->m_payloadLen + 0xe
+           )
+           == 0;
 }
 
 // @early-stop
@@ -413,10 +423,12 @@ i32 CCluster0c::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId)
     gA_seq = seq;
     gA_flag = (unsigned char)flag;
     gA_slot = (unsigned char)slot;
-    gA_e04 = rec->m_04;
-    gA_e08 = rec->m_08;
-    memcpy(&gA_data, rec->m_10, rec->m_0c);
-    return ((CNetMgr*)m_08)->SetData(m_0c->m_04, gruntId, 0, (i32)&gA_flag, rec->m_0c + 0xf) == 0;
+    gA_e04 = rec->m_checksum;
+    gA_e08 = rec->m_count;
+    memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
+    return ((CNetMgr*)m_08)
+               ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
+           == 0;
 }
 
 // @early-stop
@@ -429,23 +441,23 @@ i32 CCluster0c::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId)
 RVA(0x000bf000, 0xd5)
 void CLobbySync::Reset() {
     m_00 = 0;
-    m_04 = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 1;
-    CCluster0c* s = m_20;
+    m_session = 0;
+    m_netMgr = 0;
+    m_localDesc = 0;
+    m_tick = 0;
+    m_snapshotDone = 0;
+    m_seq = 0;
+    m_period = 1;
+    CCluster0c* s = m_slots;
     i32 n = 4;
     do {
-        s->m_04 = 0;
+        s->m_isRemote = 0;
         s->m_08 = 0;
-        s->m_00 = 0;
-        s->m_0c = 0;
-        s->m_10 = 0;
-        s->m_14 = 0;
-        s->m_18 = 0;
+        s->m_state = 0;
+        s->m_desc = 0;
+        s->m_timer = 0;
+        s->m_baseSeq = 0;
+        s->m_sentSeq = 0;
         s->m_1c = 0;
         s->ClearList();
         s->InitSub3c();
@@ -454,15 +466,15 @@ void CLobbySync::Reset() {
         s++;
     } while (--n);
     for (i32 j = 0; j < 0x80; j++) {
-        m_1b0[j] = 0;
+        m_idMap[j] = 0;
     }
-    GruntRec* r = m_3b0;
+    GruntRec* r = m_records;
     i32 k = 0x80;
     do {
-        r->m_00 = 0;
-        r->m_08 = 0;
-        r->m_0c = 0;
-        r->m_04 = 0;
+        r->m_seq = 0;
+        r->m_count = 0;
+        r->m_payloadLen = 0;
+        r->m_checksum = 0;
         r++;
     } while (--k);
     while (g_pool.GetCount() != 0) {
@@ -482,31 +494,31 @@ void CLobbySync::Reset() {
 // incoming packet queue, dispatching foreign packets.
 RVA(0x000bf5a0, 0x110)
 i32 CLobbySync::Poll(i32 delta) {
-    CCluster0c* s = m_20;
+    CCluster0c* s = m_slots;
     i32 n = 4;
     do {
-        if (s->m_00 == 3) {
-            s->m_10 += delta;
+        if (s->m_state == 3) {
+            s->m_timer += delta;
         }
         s++;
     } while (--n);
 
     i32 avail;
-    if (m_0c == 0) {
+    if (m_localDesc == 0) {
         avail = 0;
     } else {
         i32 got;
-        CNetEndpoint* ep = m_08->m_18;
-        i32 r = ep->vtbl->Recv(ep, m_0c->m_04, &got);
+        CNetEndpoint* ep = m_netMgr->m_endpoint;
+        i32 r = ep->vtbl->Recv(ep, m_localDesc->m_playerId, &got);
         avail = (r == 0) ? got : 0;
     }
 
     i32 a = 0;
     i32 received = 0;
-    while (avail > 0 && m_04->m_564 == 0) {
+    while (avail > 0 && m_session->m_busy == 0) {
         i32 len = 0x800;
-        i32 chan = m_0c->m_04;
-        CNetEndpoint* ep = m_08->m_18;
+        i32 chan = m_localDesc->m_playerId;
+        CNetEndpoint* ep = m_netMgr->m_endpoint;
         i32 st = ep->vtbl->Read(ep, &a, &chan, 1, g_649858, &len);
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
@@ -516,7 +528,7 @@ i32 CLobbySync::Poll(i32 delta) {
         }
         received++;
         avail--;
-        if (a != m_0c->m_04) {
+        if (a != m_localDesc->m_playerId) {
             Dispatch(a, (LobbyMsg*)g_649858, len);
         }
     }
@@ -531,26 +543,26 @@ i32 CLobbySync::Poll(i32 delta) {
 // state into the current record, broadcast, then flush the pending batches.
 RVA(0x000bf9e0, 0xfe)
 i32 CLobbySync::Tick() {
-    if (m_14 == 0 && (m_10 + 1) % m_1c == 0) {
-        i32 seq = m_18 + 2;
-        GruntRec* rec = &m_3b0[seq % 0x80];
-        rec->m_00 = seq;
-        rec->m_0c = 0;
-        rec->m_08 = 0;
-        rec->m_04 = Checksum();
-        char* payload = rec->m_10;
+    if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
+        i32 seq = m_seq + 2;
+        GruntRec* rec = &m_records[seq % 0x80];
+        rec->m_seq = seq;
+        rec->m_payloadLen = 0;
+        rec->m_count = 0;
+        rec->m_checksum = Checksum();
+        char* payload = rec->m_payload;
         i32 next = seq + 1;
-        for (i32 t = seq * m_1c; t < next * m_1c; t++) {
+        for (i32 t = seq * m_period; t < next * m_period; t++) {
             CSyncObj* obj = GetSlotPtr(t);
             if (obj) {
                 NoopSync(obj);
-                rec->m_08++;
+                rec->m_count++;
                 payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
             }
         }
-        m_04->WriteTag("[end]\n");
-        rec->m_0c = (i32)(payload - (char*)rec - 0x10);
-        m_14 = 1;
+        m_session->WriteTag("[end]\n");
+        rec->m_payloadLen = (i32)(payload - (char*)rec - 0x10);
+        m_snapshotDone = 1;
     }
     return SendBatch() + SendAll();
 }

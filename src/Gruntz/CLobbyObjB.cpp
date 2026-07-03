@@ -38,7 +38,7 @@ CLobbySlot::~CLobbySlot() {
 // reproduced. Delegation + return-the-arg are otherwise exact. ~67%.
 RVA(0x000bc3f0, 0x1e)
 CString* CLobbySlot::BuildHostName(CString* out) {
-    m_c->GetHostName(out);
+    m_mgr->GetHostName(out);
     return out;
 }
 

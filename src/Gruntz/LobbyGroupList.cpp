@@ -30,21 +30,21 @@ class CLobbyGroupMgr {
 public:
     void PopulateGroupList(HWND hList, i32 flags); // 0x178470
 
-    // Inlined CObList::GetNext(m_7c)-with-null-guard: return the current node's
+    // Inlined CObList::GetNext(m_iterPos)-with-null-guard: return the current node's
     // object and advance the position latch; null position -> null.
     LobbyIface* GetNext() {
-        LobbyNode* p = m_7c;
+        LobbyNode* p = m_iterPos;
         if (p == 0) {
             return 0;
         }
-        m_7c = p->m_next;
+        m_iterPos = p->m_next;
         return p->m_data;
     }
 
     char m_pad0[0x20];
-    LobbyNode* m_20; // +0x20  list head node (CObList m_pNodeHead)
+    LobbyNode* m_listHead; // +0x20  list head node (CObList m_pNodeHead)
     char m_pad24[0x7c - 0x24];
-    LobbyNode* m_7c; // +0x7c  iteration position latch
+    LobbyNode* m_iterPos; // +0x7c  iteration position latch
 };
 
 // @early-stop
@@ -62,7 +62,7 @@ void CLobbyGroupMgr::PopulateGroupList(HWND hList, i32 flags) {
         return;
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    m_7c = m_20;
+    m_iterPos = m_listHead;
     LobbyIface* obj = GetNext();
     while (obj != 0) {
         if (((flags & 1) && obj->IsInterface2()) || ((flags & 2) && obj->IsInterface1())) {

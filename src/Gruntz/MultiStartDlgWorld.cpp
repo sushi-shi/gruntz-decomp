@@ -19,10 +19,10 @@
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // The GAME_MULTI registry path -> a name registry (m_5c is the CNetDlgHost* the
-// ctor stored as i32; its m_34 is the registry). ResolvePath returns a symbol
-// table iterated by FirstSym/NextSym2 (first entry) then NextSym3 (advance).
+// ctor stored as i32; its m_registry is the world registry). ResolvePath returns a
+// symbol table iterated by FirstSym/NextSym2 (first entry) then NextSym3 (advance).
 struct MpSymItem {
-    char* m_0; // +0x00  entry name (LPCSTR)
+    char* m_name; // +0x00  entry name (LPCSTR)
 };
 struct MpSymTable {
     void* FirstSym();                  // 0x13a2b0 __thiscall
@@ -34,7 +34,7 @@ struct MpWorldReg {
 };
 struct MpDlgHost {
     char m_pad0[0x34];
-    MpWorldReg* m_34; // +0x34
+    MpWorldReg* m_registry; // +0x34  world name registry
 };
 
 RVA(0x000c1840, 0x16e)
@@ -43,13 +43,13 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    MpSymTable* st = ((MpDlgHost*)m_5c)->m_34->ResolvePath("GAME_MULTI");
+    MpSymTable* st = ((MpDlgHost*)m_5c)->m_registry->ResolvePath("GAME_MULTI");
     if (st == 0) {
         return 0;
     }
     MpSymItem* item = st->NextSym2(st->FirstSym());
     while (item != 0) {
-        CString name(item->m_0);
+        CString name(item->m_name);
         name.MakeUpper();
         SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
         item = st->NextSym3(item);
