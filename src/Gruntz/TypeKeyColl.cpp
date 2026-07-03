@@ -79,6 +79,7 @@ extern void* g_typeNodes;
 // ===========================================================================
 // The error sink the array ctor reports a fatal alloc/bounds failure to (the
 // owner stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code).
+SIZE_UNKNOWN(CZErrSink);
 struct CZErrSink {
     void Report(void* arr, const char* msg, i32 code); // 0x16d850
 };
@@ -100,6 +101,7 @@ extern CKSlimeColl2* g_typeColl2;
 
 // The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
 // from the data tag and one-time-inits the global tables.
+SIZE_UNKNOWN(CZArrayRoot);
 class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
@@ -110,6 +112,7 @@ public:
 // The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
 // allocates the element buffer (+ a scratch element) and reports a fatal failure
 // through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
+SIZE_UNKNOWN(CZArray2D);
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
@@ -208,6 +211,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
 // (0x16e1d0) bisects g_keyArray (12-byte records, g_keyCount entries) for `key`,
 // recording the found index (or the insertion point) into +0x04.
 // ===========================================================================
+SIZE_UNKNOWN(CKeyFinder);
 struct CKeyFinder {
     void* m_vtbl;            // +0x00
     i32 m_index;             // +0x04  found index / insertion point
@@ -267,9 +271,11 @@ i32 CKeyFinder::Find(i32 key) {
 // The archive record (`ar`) the serializer drives. Its vtable slots +0x0c/+0x10/
 // +0x14 are the per-field transfer hooks; +0x14 holds the field descriptor whose
 // +0x1c is the type id.
+SIZE_UNKNOWN(CXferField);
 struct CXferField {
     i32 m_1c; // +0x1c  the type id
 };
+SIZE_UNKNOWN(CXferArchive);
 struct CXferArchive {
     void Xfer0c(void* name); // vtbl +0x0c
     void Xfer10(i32 id);     // vtbl +0x10
@@ -279,6 +285,7 @@ struct CXferArchive {
     CXferField* m_14; // +0x14
 };
 // The resolved entry's name accessor (CString c_str, __thiscall(i32)).
+SIZE_UNKNOWN(CTypeNameEntry);
 struct CTypeNameEntry {
     void* GetName(i32 z); // 0x1ba11c
 };
@@ -415,6 +422,7 @@ void* CButeTree::ScalarDtor(u32 flags) {
 // reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
 // int, both __thiscall) as reloc-masked no-body methods.
 // ===========================================================================
+SIZE_UNKNOWN(CConfigReader);
 class CConfigReader {
 public:
     void ReadDouble(void* field); // 0x191fe0
@@ -471,6 +479,7 @@ CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
 // ===========================================================================
 // The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
 // a word slot at +4.  Reloc-masked DATA extern (base 0x6bf49c).
+SIZE_UNKNOWN(CVarTableEntry);
 struct CVarTableEntry {
     void(__cdecl* fn)(i32 a, i32 b); // +0x00
     u16 w;                           // +0x04

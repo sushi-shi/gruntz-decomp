@@ -25,7 +25,7 @@
 #ifndef SRC_IMAGE_IMAGE_H
 #define SRC_IMAGE_IMAGE_H
 
-#include <Ints.h>
+#include <rva.h>
 
 #include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (the held COM surface interface) + the
                                  // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
@@ -38,6 +38,7 @@
 // The five sibling loaders and the per-format decoders are reconstructed in
 // Image.cpp; only the shared blitter DecodeBlit stays external/no-body.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CRezImage);
 class CRezImage {
 public:
     i32 LoadFromRez(char* name, void* a2, void* a3);
@@ -131,6 +132,7 @@ public:
 // so its dtor inlines that teardown the way retail's second compiled copy does,
 // without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`
 // (0x142340): destroy + conditional RezFree.
+SIZE_UNKNOWN(CFileImageSurface);
 class CFileImageSurface {
 public:
     void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
@@ -148,6 +150,7 @@ public:
 // (IsValid @0x14, v20 @0x20) go through this pointer-only dispatch interface. It holds
 // NO data (not a second view of the struct) - only the vtable slots, so the call lowers
 // to the exact `mov eax,[this]; call [eax+slot]` the foreign vtable expects.
+SIZE_UNKNOWN(CFileImageVtblView);
 struct CFileImageVtblView {
     virtual void v00();
     virtual void v04();

@@ -38,11 +38,13 @@ extern "C" u32 g_6bf3bc;
 // the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 struct CProjSoundEntry; // map value: the per-effect sound table entry
 struct CProjSoundInner; // reg->m_30->m_28: holds the CMapStringToOb at +0x10
+SIZE_UNKNOWN(CProjSpriteFactory);
 struct CProjSpriteFactory {
     // The HUD sprite factory (reg->m_30->m_8); CreateSprite @0x1597b0, __thiscall.
     CProjRenderObj*
     CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
+SIZE_UNKNOWN(CProjSoundCat);
 struct CProjSoundCat { // reg->m_30: the sound-category object
     char m_pad00[0x8];
     CProjSpriteFactory* m_8; // +0x8  the HUD sprite factory (LightFx shadow)
@@ -51,6 +53,7 @@ struct CProjSoundCat { // reg->m_30: the sound-category object
 };
 // The level "type" descriptor (reg->m_2c); LoadProjectileEffects switches on its
 // +0x20 terrain-class id to pick the level death effect.
+SIZE_UNKNOWN(CProjLevelInfo);
 struct CProjLevelInfo {
     char m_pad00[0x20];
     i32 m_20; // +0x20  terrain-class id (switch key)
@@ -58,10 +61,12 @@ struct CProjLevelInfo {
 // The level terrain plane (reg->m_70): a width x height grid of 28-byte tiles
 // reached row-major through the +0x8 row-pointer array; tile dword 0 is the
 // terrain flags LoadProjectileEffects tests (water 0x900 / death 0x2 / gate 0x40).
+SIZE_UNKNOWN(CTerrainTile);
 struct CTerrainTile {
     u32 m_0; // +0x0  terrain flags
     char m_pad04[0x1c - 0x4];
 };
+SIZE_UNKNOWN(CTerrainPlane);
 struct CTerrainPlane {
     char m_pad00[0x8];
     CTerrainTile** m_8; // +0x8  row pointers
@@ -76,11 +81,13 @@ extern CGameRegistry* g_gameReg;
 // +0x10 owner (screen pos at +0x5c/+0x60), the +0x1fc live-projectile slot, the
 // +0x170 alt-state gate, and the (+0x1ec,+0x1f0) spawn-cell key. The two hit
 // handlers are out-of-line CGrunt methods (reloc-masked, reached via ILT thunks).
+SIZE_UNKNOWN(CGruntOwner);
 struct CGruntOwner {
     char m_pad00[0x5c];
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
 };
+SIZE_UNKNOWN(CGruntTarget);
 struct CGruntTarget {
     void DeliverHit(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h); // 0x4646b0 (ret 0x20)
     void SelfImpact(i32 a, i32 b, i32 c, i32 d);                             // 0x4dd50  (ret 0x10)
@@ -96,6 +103,7 @@ struct CGruntTarget {
 
 // A {x, y} cell-key node recycled through the global free-list (the same 2-int
 // pair node BattlezMapConfig pulls). m_0 doubles as the free-list link.
+SIZE_UNKNOWN(CHitKey);
 struct CHitKey {
     i32 m_0;
     i32 m_4;
@@ -103,18 +111,22 @@ struct CHitKey {
 
 // The map value the launch-sound lookup returns: its +0x10 sub-object owns the
 // sample factory (GetItem 0x135d70, __thiscall) the projectile clones from.
+SIZE_UNKNOWN(CProjSampleFactory);
 struct CProjSampleFactory {
     CProjSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
 };
+SIZE_UNKNOWN(CProjSoundEntry);
 struct CProjSoundEntry {
     char m_pad00[0x10];
     CProjSampleFactory* m_10; // +0x10
 };
 // The CMapStringToOb the category exposes (its Lookup is the engine method
 // 0x1b8438). Embedded inside reg->m_30->m_28 at +0x10.
+SIZE_UNKNOWN(CProjSoundMap);
 struct CProjSoundMap {
     i32 Lookup(const char* key, CProjSoundEntry** out); // 0x1b8438 (ret 8)
 };
+SIZE_UNKNOWN(CProjSoundInner);
 struct CProjSoundInner {
     char m_pad00[0x10];
     CProjSoundMap m_10; // +0x10  the lookup map
@@ -502,10 +514,12 @@ extern CButeTree g_buteTree;
 // The activation-collection methods (shared with the per-class registries):
 //   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
 //   ActAlloc 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
+SIZE_UNKNOWN(CProjColl);
 struct CProjColl {
     i32 Find(i32 coord, i32 z);         // 0x16da80
     void RegisterRange(i32 lo, i32 hi); // 0x408710 (0x0df920 callee)
 };
+SIZE_UNKNOWN(CProjColl2);
 struct CProjColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
@@ -544,10 +558,12 @@ DATA(0x0024c758)
 extern CProjColl g_projActColl;
 
 // The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).
+SIZE_UNKNOWN(CProjStringNode);
 struct CProjStringNode {
     void* m_0;
     void Free(); // 0x1b9b93
 };
+SIZE_UNKNOWN(CProjTypeEntryView);
 struct CProjTypeEntryView {
     void Assign(const char* name); // 0x1b9e74
 };
@@ -1059,6 +1075,7 @@ i32 CProjectile::LaunchSound(const char* key) {
 // non-null, re-resolves the entry and invokes the handler (__thiscall) on this
 // dispatcher object.  Same global-table-driven shape as ProjActLookup's callers.
 // ===========================================================================
+SIZE_UNKNOWN(CProjActDispatcher);
 class CProjActDispatcher {
 public:
     void Dispatch(i32 coord); // 0x0ade60

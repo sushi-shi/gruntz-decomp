@@ -58,6 +58,7 @@ struct CSpriteVtbl {
     void (*Init)(CIconSprite*); // +0x10  the init "virtual" (takes the sprite)
 };
 
+SIZE_UNKNOWN(CIconSprite);
 struct CIconSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame @0x150540
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault); // CGruntAnimPlayer @0x1505b0

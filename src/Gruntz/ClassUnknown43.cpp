@@ -47,6 +47,7 @@ struct MgrObj {
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
+SIZE_UNKNOWN(ClassUnknown_43);
 class ClassUnknown_43 {
 public:
     char pad00[0x10];

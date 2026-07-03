@@ -916,6 +916,7 @@ public:
 // the Load path streams. Its per-element ctor/dtor are engine callbacks (0x401e9c /
 // 0x4023a6, external/reloc-masked); as a value-array member of CGrunt, MSVC auto-emits
 // the __ehvec_ctor/__ehvec_dtor(base, 0x68, 9, &CGruntCellRec::{ctor,dtor}).
+SIZE_UNKNOWN(CGruntCellRec);
 struct CGruntCellRec {
     CString m_attack; // +0x00  "GRUNTZ_<name>_<DIR>_ATTACK"
     CString m_struck; // +0x04  "GRUNTZ_<name>_<DIR>_STRUCK"
@@ -1148,6 +1149,7 @@ inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
 //
 // The CMotionState motion band embedded at +0x38 (reached via a cast so the CGrunt
 // overlay layout stays put) + the shared default-bound doubles the ctor seeds.
+SIZE_UNKNOWN(CGruntMotionBand);
 struct CGruntMotionBand {
     void Init(); // 0x136d0 (CMotionState ctor; retail via thunk 0x34db)
     i32 SetParams(

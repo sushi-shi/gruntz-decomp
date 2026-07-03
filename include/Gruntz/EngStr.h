@@ -16,8 +16,9 @@
 #ifndef GRUNTZ_ENGSTR_H
 #define GRUNTZ_ENGSTR_H
 
-#include <Ints.h>
+#include <rva.h>
 
+SIZE_UNKNOWN(EngStr);
 struct EngStr {
     EngStr(); // default (unused; lets the link's empty ctor stub compile)
     EngStr(const char* s, i32 n);
@@ -38,6 +39,7 @@ extern "C" char g_emptyString[];
 // out-of-line constructor the whole game-object family chains; it can throw,
 // which is what makes MSVC emit the /GX EH frame in every leaf ctor/dtor.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CUserBaseLink);
 struct CUserBaseLink {
     CUserBaseLink();    // 0x16d710 (out-of-line; can throw)
     ~CUserBaseLink() {} // inline: folds to the embedded ~EngStr call in leaf dtors

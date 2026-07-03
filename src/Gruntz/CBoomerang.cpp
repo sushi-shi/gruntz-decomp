@@ -14,6 +14,7 @@
 // stays DECLARED only (out-of-line; its `call` reloc-masks via thunk 0x37d8).
 #include <rva.h>
 
+SIZE_UNKNOWN(CProjectileBase);
 struct CProjectileBase {
     CProjectileBase(i32 a);
     virtual void Vf0();
@@ -38,11 +39,13 @@ struct CProjectileBase {
 };
 
 // The +0x154 sub-object whose [+8] dword gets the flag OR.
+SIZE_UNKNOWN(CBoomerangAux);
 struct CBoomerangAux {
     char m_pad00[0x08];
     i32 m_08; // +0x08
 };
 
+SIZE_UNKNOWN(CBoomerang);
 class CBoomerang : public CProjectileBase {
 public:
     CBoomerang(i32 a);

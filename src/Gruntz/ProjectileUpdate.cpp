@@ -84,6 +84,7 @@ struct CProjFactoryHolder {
 // only the +0x30 sprite-factory holder is reached. (Distinct object from the
 // projectile-action registry g_projReg in ProjActRegistry.cpp and from the +0x30
 // sub-registry in StreamRecordLoaders.cpp - each carried its own placeholder view.)
+SIZE_UNKNOWN(CProjGameReg);
 struct CProjGameReg {
     char m_pad00[0x30];
     CProjFactoryHolder* m_30; // +0x30

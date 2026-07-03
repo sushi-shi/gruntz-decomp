@@ -17,6 +17,7 @@ extern CButeMgr g_buteMgr;
 //   operator=(LPCSTR) = 0x1b9e74 (assign the C string)
 //   ~MiniStr()        = 0x1b9cde (destruct; the /GX temp-cleanup state)
 // The real C++ dtor makes MSVC emit the temp's EH cleanup state like retail.
+SIZE_UNKNOWN(MiniStr);
 struct MiniStr {
     char* m_buf; // +0x00  the buffer pointer (the strcmp operand)
     MiniStr();
@@ -26,6 +27,7 @@ struct MiniStr {
 
 // The bound object's +0x198 geometry/footprint descriptor: the per-frame Update
 // polls its half-extents (+0x18, +0x1c) to build the wander box.
+SIZE_UNKNOWN(DropperLayer);
 struct DropperLayer {
     char m_pad00[0x18];
     i32 m_halfWidth;  // +0x18 half-width  (tiles)
@@ -36,6 +38,7 @@ struct DropperLayer {
 // model of CGameObject (it has a name record at +0x194 the base header treats as
 // padding), so it can't fold onto <Gruntz/UserLogic.h>'s CGameObject without
 // editing that shared base - kept as a local view. Only touched offsets modeled.
+SIZE_UNKNOWN(CObjDropObj);
 struct CObjDropObj {
     char m_pad00[0x08];
     i32 m_flags; // +0x08 flags
@@ -64,19 +67,23 @@ struct CObjDropObj {
 
 // The HUD sprite factory (reg->m_mgr->m_spriteFactory); CreateSprite @0x1597b0, __thiscall.
 struct CDropSprite;
+SIZE_UNKNOWN(DropperFactory);
 struct DropperFactory {
     CDropSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
 // The world/level bounds (reg->m_mgr->m_level->m_world): tile width @0x30, height @0x34.
+SIZE_UNKNOWN(DropperWorld);
 struct DropperWorld {
     char m_pad00[0x30];
     i32 m_widthTiles;  // +0x30 world width  (tiles)
     i32 m_heightTiles; // +0x34 world height (tiles)
 };
+SIZE_UNKNOWN(DropperLevel);
 struct DropperLevel {
     char m_pad00[0x5c];
     DropperWorld* m_world; // +0x5c
 };
+SIZE_UNKNOWN(DropperMgr);
 struct DropperMgr { // reg->m_mgr
     char m_pad00[0x08];
     DropperFactory* m_spriteFactory; // +0x8  HUD sprite factory
@@ -84,6 +91,7 @@ struct DropperMgr { // reg->m_mgr
     DropperLevel* m_level; // +0x24 level bounds
 };
 // The wander RECT the destination probe searches {left, top, right, bottom}.
+SIZE_UNKNOWN(DropperBox);
 struct DropperBox {
     i32 left;
     i32 top;
@@ -91,6 +99,7 @@ struct DropperBox {
     i32 bottom;
 };
 // The probe result (a tile-logic object): +0x10 -> its bound render object.
+SIZE_UNKNOWN(DropperFound);
 struct DropperFound {
     char m_pad00[0x10];
     CObjDropObj* m_obj; // +0x10
@@ -98,15 +107,18 @@ struct DropperFound {
 // The world tile map (reg->m_map): picks a random reachable destination tile in
 // the wander box and returns the object it lands on. FindDest @0x475c60,
 // __thiscall (via the 0x32ce ILT thunk).
+SIZE_UNKNOWN(DropperMap);
 struct DropperMap {
     DropperFound* FindDest(i32 x, i32 y, i32* rect, i32* outTx, i32* outTy, DropperBox* box);
 };
 // The terrain plane (reg->m_plane): a width x height grid of 28-byte cells reached
 // row-major through the +0x8 row-pointer array; cell dword 0 holds the flags.
+SIZE_UNKNOWN(DropperTile);
 struct DropperTile {
     u32 m_flags; // +0x0 terrain flags (bit 1 = blocked)
     char m_pad04[0x1c - 0x4];
 };
+SIZE_UNKNOWN(DropperPlane);
 struct DropperPlane {
     char m_pad00[0x8];
     DropperTile** m_rows; // +0x8  row pointers
@@ -116,6 +128,7 @@ struct DropperPlane {
 
 // The global game registry (WwdGameReg, RVA 0x24556c). m_mode == 1 selects the
 // scroll mode; m_selectorTable is the level sprite-ref/selector table.
+SIZE_UNKNOWN(CObjDropReg);
 struct CObjDropReg {
     char m_pad00[0x30];
     DropperMgr* m_mgr; // +0x30 sprite factory / level bounds
@@ -134,6 +147,7 @@ DATA(0x0024556c)
 extern CObjDropReg* g_gameReg;
 
 // The bound object's +0x1a0 per-frame animator (Advance_15c360 @0x55c360).
+SIZE_UNKNOWN(DropperAnim);
 struct DropperAnim {
     void Advance(u32 dt); // 0x55c360, __thiscall
 };

@@ -43,6 +43,7 @@ struct MgrDims {
     i32 m_10;
 };
 // The grunt-cue sound object reached via g_mgrSettings->m_60.
+SIZE_UNKNOWN(SoundMgr);
 struct SoundMgr {
     void GruntCue(CGruntWander* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4 (__thiscall)
 };
@@ -66,6 +67,7 @@ extern "C" {
     i32 GameRand();                     // 0x51fee0 (__cdecl)
 }
 
+SIZE_UNKNOWN(CGruntWander);
 struct CGruntWander {
     i32 WanderStep(); // 0xed9f0
 

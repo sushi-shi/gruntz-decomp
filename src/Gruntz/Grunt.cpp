@@ -595,6 +595,7 @@ extern i32 g_gruntCtor64558c;                      // 0x64558c (-> m_438)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
+SIZE_UNKNOWN(CGruntUpdateThis);
 struct CGruntUpdateThis {
     void Update(); // 0x16ea90
 };

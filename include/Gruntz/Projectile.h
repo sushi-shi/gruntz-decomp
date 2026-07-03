@@ -51,6 +51,7 @@ extern u32 g_5f04e8;          // 0x5f04e8
 // and its 11-double coordinate setter (0x58bc0, returns 1). __thiscall on
 // this+0x38. Reached via a cast so the shared flat-int layout (proven by the
 // byte-exact no-arg ctor) is untouched.
+SIZE_UNKNOWN(CProjMotionBand);
 struct CProjMotionBand {
     void Init(); // 0x136d0
     i32 SetCoords(
@@ -70,6 +71,7 @@ struct CProjMotionBand {
 
 // The per-type config the 1-arg ctor reads its coordinate bounds from
 // (CUserLogic::m_14, the bound object's +0x7c aux). Only the four bound ints.
+SIZE_UNKNOWN(CProjBoundCfg);
 struct CProjBoundCfg {
     char _00[0x2c];
     i32 m_2c; // +0x2c  -> lo bound A (0 => default MIN)
@@ -110,6 +112,7 @@ public:
 // The animation sub-object embedded in a render object at +0x1a0; its setter
 // FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation, and
 // Setup (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite.
+SIZE_UNKNOWN(CProjAnim);
 struct CProjAnim {
     i32 SetAnim(u32 mode);   // 0x15c360
     i32 Setup(void* frame0); // 0x15c2d0
@@ -117,13 +120,16 @@ struct CProjAnim {
 
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
 // loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
+SIZE_UNKNOWN(CProjSpriteMap);
 struct CProjSpriteMap {
     i32 Lookup(const char* key, void** out); // 0x1b8438 (__thiscall, ret 8)
 };
+SIZE_UNKNOWN(CProjSpriteMgr);
 struct CProjSpriteMgr {
     char m_pad00[0x10];
     CProjSpriteMap m_10; // +0x10  the lookup map
 };
+SIZE_UNKNOWN(CProjResMgr);
 struct CProjResMgr {
     char m_pad00[0x2c];
     CProjSpriteMgr* m_2c; // +0x2c
@@ -134,6 +140,7 @@ struct CProjResMgr {
 // are modeled: +0x08 flag word, +0x0c resource host (frame lookup), +0x40 flag
 // word, +0x5c/+0x60 screen position, +0x1a0 animation sub-object, +0x1b4 geometry
 // word, +0x1c0/+0x1c8 state gates.
+SIZE_UNKNOWN(CProjRenderObj);
 struct CProjRenderObj {
     char m_pad00[0x08];
     u32 m_08;         // +0x08  flag word (|= 0x10000)
@@ -161,9 +168,11 @@ struct CProjRenderObj {
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
 // +0x10 (fired with the shadow) and an "activation host" at +0x18 whose Activate
 // (0x9d520) installs the shadow's two frame names.
+SIZE_UNKNOWN(CProjShadowActivate);
 struct CProjShadowActivate {
     void Activate(const char* shadowName, const char* baseName, i32 a, i32 b); // 0x9d520
 };
+SIZE_UNKNOWN(CProjShadowVtbl);
 struct CProjShadowVtbl {
     char m_pad00[0x10];
     void (*Init)(CProjRenderObj* self); // +0x10
@@ -173,6 +182,7 @@ struct CProjShadowVtbl {
 
 // The CSample-like sound sample object the projectile launches (+0x200). Its
 // StopAndRewind (0x135380) is reached as an out-of-line engine method.
+SIZE_UNKNOWN(CProjSample);
 struct CProjSample {
     i32 StopAndRewind();                        // 0x135380 (__thiscall, 0 args)
     i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
@@ -184,6 +194,7 @@ struct CProjSample {
 // (+0x140..+0x258). Field names are placeholders; the OFFSETS + code bytes are
 // the load-bearing facts.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CProjectile);
 class CProjectile : public CMovingLogic {
 public:
     CProjectile();                   // 0x126e0 (no-arg)

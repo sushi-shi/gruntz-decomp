@@ -26,6 +26,7 @@ extern "C" {
 // modeled in <Gruntz/SoundCueMgr.h>).
 
 // The named sprite/cue the GAME\FINISHLEVEL lookup resolves.
+SIZE_UNKNOWN(CueObj);
 struct CueObj {
     char m_pad00[0x10];
     CSoundCueMgr* m_10; // +0x10
@@ -33,6 +34,7 @@ struct CueObj {
     i32 m_18;           // +0x18 cue interval
 };
 
+SIZE_UNKNOWN(CCueHashTable);
 class CCueHashTable {
 public:
     i32 Lookup(const char* szName, CueObj** ppOut);
@@ -47,11 +49,13 @@ struct CStatusBarHolder {
     i32 m_30; // +0x30
 };
 
+SIZE_UNKNOWN(FinishLevelMgr);
 struct FinishLevelMgr {
     char m_pad00[0x28];
     CStatusBarHolder* m_28; // +0x28
 };
 
+SIZE_UNKNOWN(CFinishLevelState);
 class CFinishLevelState {
 public:
     void LoadFinishLevelSprite(i32 state);

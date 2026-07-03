@@ -69,6 +69,7 @@ void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
 extern "C" i32 Fn2063(i32);                           // 0x2063
 
 // generic thiscall MFC ctor/dtor helper (reloc-masked; only call shape matters)
+SIZE_UNKNOWN(Mfc);
 struct Mfc {
     void C_1b4867(i32);
     void C_1b48a6();
@@ -83,16 +84,19 @@ struct Mfc {
     void C_11f5a0(i32, i32, void*, void*);
 };
 
+SIZE(RegHelper, 0x21c);
 struct RegHelper { // m_38 (0x21c)
     i32 m_0;
     i32 Open(const char*, const char*, const char*, void*, u32, void*); // 0x139210
     u32 GetValueDword(const char*, u32);                                // 0x1395d0
 };
+SIZE_UNKNOWN(GameLevelZ);
 struct GameLevelZ {
     char pad[0x64];
     i32 m_64, m_68;
     void BuildAllPlanes(void*); // 0x15da80
 };
+SIZE_UNKNOWN(SurfWorkerZ);
 struct SurfWorkerZ {
     i32 Cfg(i32, i32); // 0x158cb0
 };
@@ -130,6 +134,7 @@ struct CFaderMgr { // m_40 (0x28)
     char raw[0x28];
     i32 SetConfig(i32, i32, i32); // 0x17d980
 };
+SIZE(H44, 0x128);
 struct H44 {
     char raw[0x128];
     H44();
@@ -137,6 +142,7 @@ struct H44 {
     i32 Fn1825(i32); // 0x1825
     void Fn15b9();   // 0x15b9
 };
+SIZE(H48, 0x2c);
 struct H48 {
     char raw[0x2c];
     H48();
@@ -144,12 +150,14 @@ struct H48 {
     i32 Init138490(i32, i32, i32); // 0x138490
     void Fn138950(i32);            // 0x138950
 };
+SIZE_UNKNOWN(H50);
 struct H50 {
     H50();
     ~H50();
     char raw[0x18];
     i32 Init14dec0(); // 0x14dec0
 };
+SIZE(H54, 0x30);
 struct H54 {
     char raw[0x30];
     H54();
@@ -159,6 +167,7 @@ struct H54 {
     void Fn18e8();        // 0x18e8
     void Fn29b9();        // 0x29b9
 };
+SIZE(H58, 0x1424);
 struct H58 {
     char raw[0x1424];
     H58();
@@ -167,18 +176,21 @@ struct H58 {
     void Fn3503();           // 0x3503
     void Fn10d7host(void*);
 };
+SIZE(H5c, 0x44);
 struct H5c {
     char raw[0x44];
     H5c();
     ~H5c();
     i32 Fn43db(i32, i32); // 0x43db
 };
+SIZE(H60, 0x30);
 struct H60 {
     char raw[0x30];
     H60();
     ~H60();
     i32 Fn1bfe(void*); // 0x1bfe
 };
+SIZE(H68, 0x408);
 struct H68 {
     char raw[0x408];
     H68();
@@ -186,6 +198,7 @@ struct H68 {
     i32 Fn4205(void*); // 0x4205
     void Fn2239();     // 0x2239
 };
+SIZE(H6c, 0x3c);
 struct H6c {
     char raw[0x3c];
     H6c();
@@ -193,16 +206,19 @@ struct H6c {
     i32 Fn37a1(void*); // 0x37a1
     void Fn434f();     // 0x434f
 };
+SIZE(H70, 0x94);
 struct H70 {
     char raw[0x94];
     H70();
     ~H70();
 };
+SIZE(H78, 0x3c);
 struct H78 {
     char raw[0x3c];
     void Fn3ba2();          // 0x3ba2 (dtor)
     i32 Fn3085(i32, void*); // 0x3085
 };
+SIZE(H7c, 0x388);
 struct H7c {
     H7c();
     ~H7c();
@@ -230,22 +246,26 @@ extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
 extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
 extern i32 g_644c54;
 
+SIZE(DecodeObj, 0x60);
 struct DecodeObj {
     char raw[0x60];
     void* M169700(void*, i32, i32);      // 0x169700
     void* M169700b(void*, i32);          // 0x169700 (2-arg overload site)
     void* M1698c0(void*, i32, i32, i32); // 0x1698c0
 };
+SIZE_UNKNOWN(LeafScanZ);
 struct LeafScanZ {
     i32 HasKeyEqual(const char*);                   // 0x1583c0
     void ScanTree(void*, const char*, const char*); // 0x157ee0
     void MatchSub(void*, i32);                      // 0x1584f0
 };
+SIZE_UNKNOWN(MovieLookup);
 struct MovieLookup {
     void M1b8438(const char*, void*); // 0x1b8438 (m_28 + 0x10)
 };
 extern "C" void FormatStr(void*, const char*, ...); // 0x1b2cf5
 
+SIZE_UNKNOWN(RezSync);
 struct RezSync {
     u32 m_00;
     void* m_04;

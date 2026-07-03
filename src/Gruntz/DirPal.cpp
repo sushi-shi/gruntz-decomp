@@ -25,10 +25,12 @@ extern "C" void* RezAlloc(u32 size);
 // The surface the palette describes: vtable slot 4 (+0x10) fills a 256-entry
 // system-palette snapshot into a caller buffer.
 struct PalSurface;
+SIZE_UNKNOWN(PalSurfVtbl);
 struct PalSurfVtbl {
     void* s0[4];
     i32(__stdcall* Snapshot)(PalSurface*, i32, i32, i32 count, void* dst); // +0x10
 };
+SIZE_UNKNOWN(PalSurface);
 struct PalSurface {
     PalSurfVtbl* m_vptr;
 };

@@ -17,6 +17,7 @@
 // The engine's named-namespace registry node. Its child-lookup helpers are
 // matched-elsewhere engine functions, modeled body-less so their `call rel32`
 // reloc-masks: Lookup() finds a named child node by key.
+SIZE_UNKNOWN(CAssetNamespace);
 class CAssetNamespace {
 public:
     CAssetNamespace* Lookup(char* szKey);    // FUN_0053c030 (thiscall)
@@ -24,6 +25,7 @@ public:
 };
 
 // The sound loader the SOUNDZ namespace is handed to (reloc-masked external).
+SIZE_UNKNOWN(CSoundLoader);
 class CSoundLoader {
 public:
     i32 LoadNamespace(CAssetNamespace* ns, char* szPrefix, char* szSuffix); // FUN_00557ee0
@@ -31,12 +33,14 @@ public:
 
 // The display/view object reached through this->m_4. SetVideoMode() is the
 // 0x280x0x1e0 (640x480) display-mode setter (ErrorThunk_08ddd0, thiscall).
+SIZE_UNKNOWN(CSplashView);
 class CSplashView {
 public:
     i32 SetVideoMode(i32 bForce);
 };
 
 // The owner that hands the loaded sound set off through its m_28 sound loader.
+SIZE_UNKNOWN(CSplashOwner);
 class CSplashOwner {
 public:
     char m_pad00[0x28];

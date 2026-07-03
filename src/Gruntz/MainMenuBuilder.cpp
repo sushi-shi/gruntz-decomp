@@ -71,6 +71,7 @@ static i32 FinalMovieAvailable(void* sub) {
     return ((MovieProbe*)sub)->IsAvailable();
 }
 typedef void (MenuItem::*MenuItemFn)(i32);
+SIZE_UNKNOWN(MenuItemVtbl);
 struct MenuItemVtbl {
     char m_pad00[0x18];
     MenuItemFn m_18; // +0x18

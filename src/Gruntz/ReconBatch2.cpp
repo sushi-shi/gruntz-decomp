@@ -127,6 +127,7 @@ public:
 // The map holder: ClearUnknownMap lives in the CDDrawMapHolder base; the keyed
 // prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
 // freeable inner at +0x2c.
+SIZE_UNKNOWN(CDDrawMapHolder);
 class CDDrawMapHolder {
 public:
     char m_pad0[0x2c];

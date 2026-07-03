@@ -1012,6 +1012,7 @@ i32 CDeviceConfigB::IsReady() {
 // The DirectInput mouse snapshot the +0x2a0 buffer holds for a mouse device
 // (DIMOUSESTATE): the relative axis deltas + the four button-down bytes (bit 0x80
 // is "down"). PollMouse reads lX/lY (lZ is ignored) and rgbButtons[0..3].
+SIZE_UNKNOWN(DIMouseStateZ);
 struct DIMouseStateZ {
     i32 lX;           // +0x00
     i32 lY;           // +0x04
@@ -1101,6 +1102,7 @@ i32 CInputDevice::PollMouse() {
 // The DirectInput joystick snapshot the +0x2a0 buffer holds for a joystick device
 // (DIJOYSTATE2): the lX/lY axes then, at +0x30, the 128-button array (bit 0x80 is
 // "down"). PollJoystick reads lX/lY and the first ten buttons.
+SIZE_UNKNOWN(DIJoyState2Z);
 struct DIJoyState2Z {
     i32 lX; // +0x00
     i32 lY; // +0x04

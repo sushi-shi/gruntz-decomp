@@ -79,6 +79,7 @@ void operator delete(void*);
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/CObject.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
+SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 class CDDrawWorkerCacheBase {
 public:
     virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)

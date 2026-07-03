@@ -8,6 +8,7 @@
 // One stub is emitted per RVA; rows with multiple API categories are merged.
 
 // A window-host chain hung off the game registry: its m_4 is the top-level HWND.
+SIZE_UNKNOWN(GameWnd);
 struct GameWnd {
     char m_pad0[4];
     HWND m_4; // +0x04
@@ -42,6 +43,7 @@ struct CGameReg {
     void ReportError(u32, i32);         // CGruntzMgr::ReportError, RVA 0x346d
     struct GameObj510* GetActive355d(); // __thiscall accessor, RVA 0x355d
 };
+SIZE_UNKNOWN(GameObj510);
 struct GameObj510 {
     char m_pad0[0x510];
     i32 m_510; // +0x510

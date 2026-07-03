@@ -39,6 +39,7 @@ struct CFader {
 // m_nMaxSize(+0x0c), m_nGrowBy(+0x10). Both ctor/dtor are inlined - as member subobject
 // ctor/dtor - into CFaderMgr's ctor/dtor (the dtor's /GX EH frame comes from the
 // member teardown). The grow logic (SetAtGrow) is inlined by Add.
+SIZE_UNKNOWN(CFaderArray);
 struct CFaderArray : public Wap::CObject {
     virtual ~CFaderArray() OVERRIDE;      // slot 1 (retail dtor 0x17e430)
     virtual void FUN_004028ec() OVERRIDE; // slot 2 (retail 0x17e2a0)
@@ -68,6 +69,7 @@ inline CFaderArray::~CFaderArray() {
     }
 }
 
+SIZE_UNKNOWN(CFaderMgr);
 class CFaderMgr {
 public:
     CFaderMgr();                                // 0x17d8f0

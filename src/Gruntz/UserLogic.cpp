@@ -113,6 +113,7 @@ public:
 // were previously stubbed (manual-vptr) in src/Stub/{CTileSecretTrigger,CGiantRock,
 // CCoveredPowerup}.cpp; modeled polymorphically here so the /GX EH-frame dtor folds
 // (a manual-vptr model is frameless - see docs/patterns/eh-dtor-needs-base-subobject.md).
+SIZE_UNKNOWN(CTileSecretTrigger);
 class CTileSecretTrigger : public CTileTrigger {
 public:
     CTileSecretTrigger(CGameObject* obj); // 0x10fa60
@@ -123,12 +124,14 @@ public:
     i32 Act_10f970();           // 0x10f970 ("B" handler)
 };
 
+SIZE_UNKNOWN(CGiantRock);
 class CGiantRock : public CTileTrigger {
 public:
     CGiantRock(CGameObject* obj); // 0x10fa90
     virtual ~CGiantRock() OVERRIDE;
 };
 
+SIZE_UNKNOWN(CCoveredPowerup);
 class CCoveredPowerup : public CTileTrigger {
 public:
     CCoveredPowerup(CGameObject* obj); // 0x10fac0
@@ -162,6 +165,7 @@ public:
     void EnterField2();         // 0x27d9 (this-method, no body)
 };
 
+SIZE_UNKNOWN(CSecretTeleporterTrigger);
 class CSecretTeleporterTrigger : public CUserLogic {
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
@@ -180,6 +184,7 @@ public:
     i32 SpawnTeleporter(); // 0x042b80
 };
 
+SIZE_UNKNOWN(CWarpStonePad);
 class CWarpStonePad : public CUserLogic {
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
@@ -190,6 +195,7 @@ public:
     i32 AdvanceAnim();          // 0x10dc20
 };
 
+SIZE_UNKNOWN(CTileTriggerSwitch);
 class CTileTriggerSwitch : public CUserLogic {
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
@@ -279,6 +285,7 @@ public:
     virtual ~CSimpleAnimation() OVERRIDE;
 };
 
+SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic {
 public:
     CFrontCandy(CGameObject* obj); // 0x0abfa0
@@ -341,6 +348,7 @@ public:
 // The global game registry several tails poll for level flags (WwdGameReg, the
 // same symbol wwdfile labels at RVA 0x24556c; only the fields these tails read
 // are modeled). Declared extern only - wwdfile owns the DATA label.
+SIZE_UNKNOWN(WwdGameRegAux);
 struct WwdGameRegAux {
     char m_pad00[0x3c];
     i32 m_3c; // +0x3c
@@ -349,6 +357,7 @@ struct WwdGameRegAux {
 // The on-screen-cue receiver (g_gameReg->m_60). The teleporter spawn fires a
 // 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
 // (reloc-masked).
+SIZE_UNKNOWN(CTeleCueSink);
 struct CTeleCueSink {
     void CueA(void* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
 };
@@ -357,12 +366,14 @@ struct CTeleCueSink {
 // and returns the trigger object hit (or 0). 5-arg __thiscall ret 0x14, via the
 // 0x35f3 thunk (-> 0x75af0). External/no-body (reloc-masked).
 struct CTrigger; // the trigger object the probe returns / the cue receives
+SIZE_UNKNOWN(CTriggerProbe);
 struct CTriggerProbe {
     CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
 };
 
 // The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
+SIZE_UNKNOWN(CViewRect);
 struct CViewRect {
     i32 m_left;   // +0x00
     i32 m_top;    // +0x04
@@ -382,6 +393,7 @@ struct CViewRect {
 
 // CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
 // on-screen cue's coordinates) is the shared <Gruntz/CTrigger.h> class.
+SIZE_UNKNOWN(CTeleResHolder);
 struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     char m_pad0[0x8];
     CTeleSpriteFactory* m_8; // +0x08
@@ -444,6 +456,7 @@ extern void* g_actAllocResult;
 // shape as g_actColl but a distinct per-class instance. ResolveEntry folds the
 // VActLookup archetype inline (constant `this` -> the field loads become absolute
 // addresses); the slow Insert is __thiscall on m_coll2.
+SIZE_UNKNOWN(CLeafActReg);
 struct CLeafActReg {
     void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
     void* m_vptr;                   // +0x00
@@ -490,22 +503,27 @@ struct CFrontCandyActEntry {
     FrontCandyHandler m_fn;
 };
 typedef i32 (CSingleAnimation::*SingleAnimHandler)();
+SIZE_UNKNOWN(CSingleAnimActEntry);
 struct CSingleAnimActEntry {
     SingleAnimHandler m_fn;
 };
 typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
+SIZE_UNKNOWN(CWarpStonePadActEntry);
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;
 };
 typedef i32 (CTileTrigger::*TileTriggerHandler)();
+SIZE_UNKNOWN(CTileTriggerActEntry);
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
 };
 typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
+SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;
 };
 typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
+SIZE_UNKNOWN(CTileSecretTriggerActEntry);
 struct CTileSecretTriggerActEntry {
     TileSecretTriggerHandler m_fn;
 };
@@ -517,6 +535,7 @@ class CSecretTeleporterTrigger;
 // (single inheritance -> a 4-byte code pointer); FireActivation invokes it on
 // `this`, emitting `mov ecx,this; call [entry]`.
 typedef void (CSecretTeleporterTrigger::*ActHandler)();
+SIZE_UNKNOWN(CActEntry);
 struct CActEntry {
     ActHandler m_fn; // [entry]
 };
@@ -592,6 +611,7 @@ static inline char* ActNameLookup(i32 id) {
 // The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
 // on the complete single-inheritance class).
 typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
+SIZE_UNKNOWN(CTelActEntry);
 struct CTelActEntry {
     SpawnHandler m_fn;
 };
@@ -1477,6 +1497,7 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // (0x807f) to the mgr's top-level window; then, unless suppressed (m_36c), fire the
 // arrival anim (m_260->Anim2a72), and latch the object dirty (m_154->m_8 |= 0x10000).
 // The CString + Format + the sub-object/anim/level-lookup callees all reloc-mask.
+SIZE_UNKNOWN(CWarpArrivalSub);
 struct CWarpArrivalSub {    // the +0x1a0 arrival sub-object of *m_154
     void Poke15c360(i32 z); // 0x15c360
     char m_pad04[0x20];
@@ -1484,34 +1505,41 @@ struct CWarpArrivalSub {    // the +0x1a0 arrival sub-object of *m_154
     i32 m_24;
     i32 m_28; // +0x28 arrived gate
 };
+SIZE_UNKNOWN(CWarpM154);
 struct CWarpM154 {
     char m_pad00[0x8];
     i32 m_8; // +0x08 dirty flags
     char m_pad0c[0x1a0 - 0xc];
     CWarpArrivalSub m_1a0; // +0x1a0
 };
+SIZE_UNKNOWN(CWarpAnimObj);
 struct CWarpAnimObj {
     void Anim2a72(i32 a, i32 b, i32 c); // 0x2a72
 };
+SIZE_UNKNOWN(CWarpTagObj);
 struct CWarpTagObj {
     i32 Find13be40(char* name, i32 tag); // 0x13be40 (level-exists probe)
 };
+SIZE_UNKNOWN(CWarpLevelReg);
 struct CWarpLevelReg {
     char m_pad00[0x1c];
     i32 m_baseLevel; // +0x1c base level number
     char m_pad20[0x28 - 0x20];
     CWarpTagObj* m_28; // +0x28
 };
+SIZE_UNKNOWN(CWarpMgrWnd);
 struct CWarpMgrWnd {
     char m_pad00[0x4];
     void* m_4; // +0x04 top-level HWND
 };
+SIZE_UNKNOWN(CWarpMgr);
 struct CWarpMgr {
     char m_pad00[0x4];
     CWarpMgrWnd* m_4; // +0x04
     char m_pad08[0x2c - 0x8];
     CWarpLevelReg* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CWarpLeaf);
 struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
     char m_pad000[0x154];
     CWarpM154* m_drawState; // +0x154
@@ -1535,6 +1563,7 @@ DATA(0x002c44c8)
 extern WarpPostFn g_pPostMessageA;
 // MFC CString the destination key formats into (ctor 0x1b9b93 / dtor 0x1b9cde) + the
 // free formatter helper (0x1b2cf5); modeled so the calls reloc-mask.
+SIZE_UNKNOWN(CWarpStr);
 struct CWarpStr {
     char* m_pchData; // +0x00
     CWarpStr();
@@ -1604,6 +1633,7 @@ extern "C" u32 g_645588;   // running game clock (ms)
 extern CButeMgr g_buteMgr; // 0x6453d8 - getters reloc-mask
 extern char k_60bebc[];    // interned bute-node name "R"
 
+SIZE_UNKNOWN(CDecayArrival);
 struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
     i32 Poke15c360(i32 clock); // 0x15c360 (this, clock) -> phase 0..0x63
     char m_pad00[0x20];
@@ -1611,9 +1641,11 @@ struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
     i32 m_24;
     i32 m_28; // +0x28 arrived gate
 };
+SIZE_UNKNOWN(CDecayM194);
 struct CDecayM194 {           // m_154->m_194
     void Method152480(i32 a); // 0x152480 (this, a)
 };
+SIZE_UNKNOWN(CDecayMgr);
 struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad00[0x8];
     i32 m_8; // +0x08 dirty flags
@@ -1624,6 +1656,7 @@ struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad198[0x1a0 - 0x198];
     CDecayArrival m_1a0; // +0x1a0
 };
+SIZE_UNKNOWN(CDecayAnim);
 struct CDecayAnim {                                            // m_260 - anim/sprite controller
     void Anim2a72(i32 a, i32 b, i32 c);                        // 0x2a72
     void Method1073(i32 a, i32 b, i32 c, i32 d);               // 0x1073
@@ -1632,6 +1665,7 @@ struct CDecayAnim {                                            // m_260 - anim/s
     void Method3945(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
 };
 
+SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
 public:
     i32 LoadGruntDecayConfig();    // 0x612a0

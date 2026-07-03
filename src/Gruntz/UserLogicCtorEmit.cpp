@@ -61,10 +61,12 @@ extern "C" {
     void LogicBumpFactory();   // 0x56e4e0
 }
 struct CLogicTypeRec;
+SIZE_UNKNOWN(CLogicTypeMap);
 class CLogicTypeMap {
 public:
     i32 Lookup(char* szKey, CLogicTypeRec** ppOut); // 0x1b8008
 };
+SIZE_UNKNOWN(CLogicTypeRegistry);
 class CLogicTypeRegistry {
 public:
     virtual void m_00();

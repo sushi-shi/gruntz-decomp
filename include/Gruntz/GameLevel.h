@@ -52,6 +52,7 @@ public:
 // to the level-load/edit methods. Used as a half-open tile-bounds box
 // [minX,maxX) x [minY,maxY) (PointInBounds) and as the shared plane-read context
 // (LoadWwd's 3rd arg). minX==0x80000000 is the "unset" sentinel the ctor writes.
+SIZE_UNKNOWN(LevelCoordRect);
 struct LevelCoordRect {
     i32 minX, minY, maxX, maxY;
 };

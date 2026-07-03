@@ -12,7 +12,7 @@
 #ifndef SRC_GRUNTZ_GRUNTDATARECORD_H
 #define SRC_GRUNTZ_GRUNTDATARECORD_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // The binary writer the record serializes through: an MFC-CArchive-like object
 // whose virtual Write(const void* buf, u32 len) sits at vtable slot 12 (+0x30).
@@ -20,6 +20,7 @@
 // dispatch `mov edx,[ar]; mov ecx,ar; call [edx+0x30]` (writer in ecx, two args
 // pushed, callee cleanup). The 12 preceding slots are placeholder virtuals; their
 // bodies live in NAFXCW / elsewhere so the call reloc-masks.
+SIZE_UNKNOWN(DataWriter);
 struct DataWriter {
     virtual void Slot0();
     virtual void Slot1();
@@ -37,6 +38,7 @@ struct DataWriter {
 };
 
 // The 0x68-byte record. SerializeStrings is the only matched method.
+SIZE_UNKNOWN(GruntDataRecord);
 struct GruntDataRecord {
     char* m_str[5];  // +0x00..+0x10  five owned name strings
     char m_14[0x10]; // +0x14

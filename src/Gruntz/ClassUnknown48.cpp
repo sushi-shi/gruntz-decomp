@@ -35,6 +35,7 @@ struct Mgr2c {
     Mgr18* m_18; // 0x18
 };
 
+SIZE_UNKNOWN(ClassUnknown_48);
 class ClassUnknown_48 {
 public:
     int m_0; // 0x0

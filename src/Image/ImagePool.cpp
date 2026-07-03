@@ -78,6 +78,7 @@ namespace ApiCallerStubs {
 } // namespace ApiCallerStubs
 
 // The file-backed palette loader (Image.cpp). LoadByExtension is foreign here.
+SIZE_UNKNOWN(CImgPoolExtLoader);
 class CImgPoolExtLoader {
 public:
     i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (foreign, reloc-masked)
@@ -92,12 +93,14 @@ using ApiCallerStubs::PalBuilder_176df0;
 // (each annotated/owned by Image.cpp / CImageBlit.cpp / CImgPoolScan.cpp) - the
 // `call rel32` reloc-masks against the owning TU's symbol. Minimal inline decls; the
 // mangling depends only on class + method name + param types + convention.
+SIZE_UNKNOWN(CImgPoolBlit);
 class CImgPoolBlit {
 public:
     i32 DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3); // 0x1757c0
     i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                           // 0x175930
     i32 LoadFromRez(char* name, void* a2, void* a3);                              // 0x175a90
 };
+SIZE_UNKNOWN(CImgPoolScan);
 class CImgPoolScan {
 public:
     i32 Convert8To16(void* a0, CImgPoolScan* src, void* pal); // 0x175b80

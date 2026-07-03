@@ -13,6 +13,7 @@
 // The callback is a __thiscall member function (mov ecx,item; call reg). Model
 // it as a pointer-to-member of a COMPLETE single-inheritance class so the PMF is
 // the simple 4-byte code-pointer form (a plain `call`), not the general thunk.
+SIZE_UNKNOWN(ApplyElem);
 class ApplyElem {};
 typedef void (ApplyElem::*ApplyFn)();
 

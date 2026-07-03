@@ -5,6 +5,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+SIZE_UNKNOWN(CBitArray);
 struct CBitArray {
     char m_pad0[8];
     u32 m_capacity; // +0x8  capacity in bits (unsigned: cmp is jbe)

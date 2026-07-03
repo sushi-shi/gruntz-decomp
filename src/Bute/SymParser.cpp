@@ -241,6 +241,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // modeled as a shared local interface (ctors extern/reloc-masked, no vtable
 // emitted in this TU) so the `call [reg+8]` / `call [reg+0x10]` dispatches and
 // the `new X(...)` operator-new(size)+ctor sequences fall out.
+SIZE_UNKNOWN(CRezNode);
 struct CRezNode {
     virtual void nv0();                                        // slot 0 (+0x00)
     virtual void nv1();                                        // slot 1 (+0x04)
@@ -248,10 +249,12 @@ struct CRezNode {
     virtual void nv3();                                        // slot 3 (+0x0c)
     virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
 };
+SIZE_UNKNOWN(CRezDirNodeN);
 struct CRezDirNodeN : CRezNode {
     CRezDirNodeN(void* parent, void* rezMgr); // 0x13c940 (extern)
     char m_pad[0x38 - 0x04];
 };
+SIZE_UNKNOWN(CRezFileNodeN);
 struct CRezFileNodeN : CRezNode {
     CRezFileNodeN(void* parent); // 0x13c540 (extern)
     char m_pad[0x24 - 0x04];

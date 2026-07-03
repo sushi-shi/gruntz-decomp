@@ -29,6 +29,7 @@ extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)
 // validate methods are modeled on tiny helper shells so the __thiscall call bytes
 // fall out, reloc-masked. Each fader subtype has its own size + ctor + (init,
 // validate) pair; the setter pair SetTimers/Set2c (0x17e760/0x17e780) is shared.
+SIZE_UNKNOWN(CFaderImpl);
 struct CFaderImpl {
     void* m_vtbl;
     void SetTimers(i32 a, i32 b); // 0x17e760
@@ -91,6 +92,7 @@ void CFaderMgr::FreeAll() {
 // every exit. Modeled as an opaque blob + the CString member so the destructible
 // local forces the same /GX frame. The six subtypes share this shape; the init
 // (default-build) + apply (SetFrom) calls are per-subtype, reloc-masked.
+SIZE_UNKNOWN(CFaderInit);
 struct CFaderInit {
     char m_blob[0x24];
     CString m_str; // at +0x24 - the destructible member
@@ -98,6 +100,7 @@ struct CFaderInit {
 
 // One concrete CFader subtype's externals: ctor (returns this), default-build the
 // payload, and apply it / a pInit. All reloc-masked.
+SIZE_UNKNOWN(CFaderType);
 struct CFaderType {
     void* m_vtbl;                   // +0 = the type id checked against nFaderType
     CFaderType* Ctor();             // e.g. 0x1816c0
@@ -433,6 +436,7 @@ append:
 // (0x1b9cde) on the sub-object embedded at this+0x24 (`add ecx,0x24; jmp`).
 // Returns the callee's value. The sub-object/callee is external (reloc-masked).
 // ===========================================================================
+SIZE_UNKNOWN(CFaderTail);
 struct CFaderTail {
     i32 Flush(); // 0x1b9cde (__thiscall, 0 args)
 };

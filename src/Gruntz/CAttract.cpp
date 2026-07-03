@@ -27,6 +27,7 @@ DATA(0x002453d8)
 extern CButeMgr g_attractButeMgr;
 
 // The game registry singleton; its +0x80 attract counter selects the TITLE state.
+SIZE_UNKNOWN(CGameReg);
 struct CGameReg {
     char m_pad00[0x80];
     i32 m_attractCounter; // +0x80  the running attract-title index source

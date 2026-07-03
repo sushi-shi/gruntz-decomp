@@ -32,6 +32,7 @@
 // The origin-remap target reached through info->m_xform->m_planeRender (bit 0x40000): the
 // world-coordinate wrap/transform CSpritePlaneRender::WrapCoord (0xa000, reached via the
 // 0x295a ILT thunk; reloc-masked). Modeled with its real mangling.
+SIZE_UNKNOWN(CSpritePlaneRender);
 class CSpritePlaneRender {
 public:
     void WrapCoord(i32* px, i32* py); // 0xa000

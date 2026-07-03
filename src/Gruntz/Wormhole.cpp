@@ -88,6 +88,7 @@ struct CSpawnHolder {
     char m_pad00[0x8];
     WorldList* m_list; // +0x08 (read as (m_list + 0x10) -> +0x4 = head; modeled directly)
 };
+SIZE_UNKNOWN(CSpawnReg);
 struct CSpawnReg {
     char m_pad00[0x30];
     CSpawnHolder* m_holder; // +0x30

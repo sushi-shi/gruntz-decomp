@@ -108,6 +108,7 @@ struct CCluster0c {
 // net-game code (LoadMenuSelectSprite etc.). Named distinctly so it does not
 // masquerade as the engine base CGameMgr; only the +0x564 offset + the
 // reloc-masked call shapes are load-bearing. ----------------------------------
+SIZE_UNKNOWN(CSessionMgr);
 struct CSessionMgr {
     char pad000[0x564];
     i32 m_busy;                           // +0x564 net busy flag

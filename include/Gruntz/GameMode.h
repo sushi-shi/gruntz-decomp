@@ -261,9 +261,11 @@ public:
 // whose virtual dtor frees the image list (CImageList::DeleteImageList @0x1c6a5c).
 // Real-virtual model - cl emits the implicit ??_7 stamps (reloc-masked); the base
 // dtor folds into ~CCreditsState as the final base-vptr restore.
+SIZE_UNKNOWN(CCreditsImgBase);
 struct CCreditsImgBase {
     virtual ~CCreditsImgBase() {}
 };
+SIZE_UNKNOWN(CCreditsImageList);
 struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown

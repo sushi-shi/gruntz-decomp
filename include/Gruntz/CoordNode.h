@@ -6,10 +6,11 @@
 #ifndef GRUNTZ_GRUNTZ_COORDNODE_H
 #define GRUNTZ_GRUNTZ_COORDNODE_H
 
-#include <Ints.h>
+#include <rva.h>
 
 struct Coord; // {i32 x; i32 y;} payload; completed by the TU that reads it
 
+SIZE(CoordNode, 0xc);
 struct CoordNode {
     CoordNode* m_next;  // +0x00  intrusive list/free link
     char m_pad04[0x04]; // +0x04  unused

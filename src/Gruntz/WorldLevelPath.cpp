@@ -53,6 +53,7 @@ struct LevelMgr {
 
 // The world/game-registry object at +0x4: its rez-path name query (returns a CString
 // by value), the current world-name string, and the two mode gates.
+SIZE_UNKNOWN(CWorldObj);
 class CWorldObj {
 public:
     CString QueryLevelName(); // 0x4928c0 (via ILT 0x2531; __thiscall, returns by value)

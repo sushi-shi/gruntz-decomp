@@ -5,6 +5,7 @@
 #include <rva.h>
 #include <Mfc.h>
 
+SIZE_UNKNOWN(ClassUnknown_30);
 class ClassUnknown_30 {
 public:
     CString m_str; // offset 0x0

@@ -12,11 +12,13 @@
 extern "C" void* memset(void* dst, i32 c, u32 n);
 
 // MFC CTime: built from a FILETIME; the time_t is its first dword.
+SIZE_UNKNOWN(CTime);
 struct CTime {
     i32 m_time;                          // +0x00
     CTime(const FILETIME* ft, i32 nDST); // 0x1b3065
 };
 
+SIZE_UNKNOWN(CFileStatus);
 struct CFileStatus {
     i32 m_0;          // +0x00 create time
     i32 m_4;          // +0x04 access time
@@ -27,6 +29,7 @@ struct CFileStatus {
     char m_12[0x104]; // +0x12 full path
 };
 
+SIZE_UNKNOWN(CFile);
 class CFile {
 public:
     i32 GetStatus(CFileStatus* status);

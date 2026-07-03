@@ -36,6 +36,7 @@ struct CString {
 
 // The video window seen through its manual playback vtable during teardown: slot 1
 // (+0x04) is the scalar-deleting destroy, slot 24 (+0x60) the finalize hook.
+SIZE_UNKNOWN(CursSink);
 struct CursSink {
     virtual void v0();
     virtual void Destroy(i32 del); // slot 1 == vtable +0x04
@@ -76,14 +77,17 @@ extern "C" void RezFree_call(void* p);
 
 // A releasable sub-buffer reached via manual vtable dispatch (slot +0x08).
 struct SmkBufVtbl;
+SIZE_UNKNOWN(SmkBuf);
 struct SmkBuf {
     SmkBufVtbl* m_vptr;
 };
+SIZE_UNKNOWN(SmkBufVtbl);
 struct SmkBufVtbl {
     void* s0[2];
     void(__stdcall* Release)(SmkBuf*); // +0x08
 };
 // The embedded sub-player whose Shutdown() lives at RVA 0x17b570.
+SIZE_UNKNOWN(SmackSub);
 struct SmackSub {
     void Shutdown(); // RVA 0x17b570
 };

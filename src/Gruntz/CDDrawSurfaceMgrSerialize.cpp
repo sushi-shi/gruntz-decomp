@@ -87,6 +87,7 @@ public:
 
 // The child blit-op targets. m_08 child (CDDrawChildGroup) carries ops 0x15abc0 /
 // 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (CGameLevel) carries 0x160f70.
+SIZE_UNKNOWN(CDDrawChildGroupOps);
 struct CDDrawChildGroupOps {
     i32 Probe();                                 // 0x15abc0  (__thiscall, no arg)
     i32 BlitA(Serializer* s, i32 arg);           // 0x15acb0

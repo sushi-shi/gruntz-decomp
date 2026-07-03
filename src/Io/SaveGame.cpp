@@ -541,6 +541,7 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
 // A save-slot record probed by the two temp-file helpers below: an int/flag at
 // +0x00 (bit0 = "has a temp file"; cleared to 0 by the closer) and the temp-file
 // path string at +0x35. Only these two offsets are touched.
+SIZE_UNKNOWN(SaveTempRec);
 struct SaveTempRec {
     i32 m_00;           // +0x00  flags (bit0) / cleared to 0 by the closer
     char m_pad04[0x31]; // +0x04..+0x34

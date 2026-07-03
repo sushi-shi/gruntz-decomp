@@ -11,6 +11,7 @@
 
 // The debug-output sink object; its first dword is reset, then it is configured
 // from the parsed keyword string.
+SIZE_UNKNOWN(CDebugSink);
 struct CDebugSink {
     i32 m_0;                 // +0x00
     void Configure(char* s); // 0x184c10
@@ -44,6 +45,7 @@ extern "C" {
     }
 }
 
+SIZE_UNKNOWN(CDebugConfig);
 class CDebugConfig {
 public:
     CDebugConfig* InitFromEnv(); // 0x185000

@@ -595,6 +595,7 @@ i32 RezMgr::UpdateClock() {
 // distinct derived vtable stays a cosmetic/unbound COMDAT here (its retail datum
 // 0x1ef7d0 is emitted by FinalVtables as CVtbl_1ef7d0 - the reloc-masked vptr
 // store matches whichever symbol names it).
+SIZE_UNKNOWN(RezChildList);
 struct RezChildList {         // the owner's child list embedded at owner+0x1c
     void* m_0;                // +0x00
     void* m_head;             // +0x04

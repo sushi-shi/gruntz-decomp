@@ -21,14 +21,17 @@
 // pointer): *m_2c is the interface, whose first field is a C-vtable; slot 0x58 is
 // poked (arg 1, 0) once per newly-reached frame. External / reloc-masked.
 struct IFadeSink;
+SIZE_UNKNOWN(IFadeSinkVtbl);
 struct IFadeSinkVtbl {
     char _00[0x58];
     void(__stdcall* m_58)(IFadeSink*, i32, i32); // +0x58
 };
+SIZE_UNKNOWN(IFadeSink);
 struct IFadeSink {
     IFadeSinkVtbl* vtbl; // +0x00  C-vtable
 };
 
+SIZE_UNKNOWN(FaderRun);
 class FaderRun {
 public:
     virtual ~FaderRun();    // slot 0

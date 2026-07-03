@@ -189,6 +189,7 @@ enum {
 // <Dsndmgr/CGruntzSoundZ.h>, whose CGruntzSoundZ would be redefined by GruntzMgr.h's
 // inline CGruntzSoundZ (a separate triplication to resolve first). All the sinks are
 // external/no-body so the call rel32 displacements reloc-mask; local view retained.
+SIZE_UNKNOWN(CGameMgrSettings);
 struct CGameMgrSettings {
     void ApplyOpt(i32 v);        // 0x492340  (thiscall)
     void StoreInputFlag(i32 v);  // 0x4919d0  CGruntzMgr::StoreInputFlag
@@ -2037,6 +2038,7 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32, i32, i32) {
 // ===========================================================================
 // A tiny view of the overlay object cached at CPlay::m_overlayActive (+0x320): it is
 // a pointer (Render null-checks it as a gate), whose click probe consumes the event.
+SIZE_UNKNOWN(COverlayClick);
 struct COverlayClick {
     i32 Probe(i32 a, i32 x, i32 y); // reloc-masked thiscall
 };
@@ -2292,14 +2294,17 @@ i32 CPlay::ResumeGame() {
 // per-tool cursor table (a dense switch, one GAME_CURSORZ_* per tool). Each path loads via
 // the reloc-masked LoadCursor helper (0x39ea) and, on success, stamps the m_2fc/m_300/m_504/
 // m_2f8 cursor state. Fields beyond CPlay's modeled layout are reached by a typed self-view.
+SIZE_UNKNOWN(CursorFxObj);
 struct CursorFxObj { // the held cursor-anim object at m_4e4 (its +0x40 flag word toggles)
     char m_pad00[0x40];
     i32 m_40; // +0x40 flag word (bit0)
 };
 // The on-screen cue sink (g_64556c->m_60); the flailing-grunt path fires a 6-arg cue.
+SIZE_UNKNOWN(CursorCueSink);
 struct CursorCueSink {
     void PlayCue(i32 g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x39f4 thiscall
 };
+SIZE_UNKNOWN(CursorSelf);
 struct CursorSelf {
     char m_pad00[0x2f8];
     i32 m_2f8; // +0x2f8 loaded frame id
@@ -2582,10 +2587,12 @@ extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 extern CButeMgr g_buteMgr;                // 0x6453d8
 extern "C" double g_scrollSpeedScale;     // 0x5eaa10  (== 0.01)
 
+SIZE_UNKNOWN(ScrollGeom);
 struct ScrollGeom {
     char p0[0x84];
     i32 m_84, m_88; // +0x84/88  live scroll x/y offset
 };
+SIZE_UNKNOWN(ScrollWorld);
 struct ScrollWorld {
     char p0[0x30];
     struct M30 {

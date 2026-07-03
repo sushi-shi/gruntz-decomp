@@ -36,6 +36,7 @@ public:
     CGruntzSoundInnerZ* m_1c; // +0x1c current bank
 };
 
+SIZE_UNKNOWN(CreditzMgr);
 struct CreditzMgr {
     char m_pad00[0x48];
     CGruntzSoundZ* m_48; // +0x48 bank table

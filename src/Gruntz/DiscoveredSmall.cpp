@@ -17,6 +17,7 @@ extern void* g_wapObjectDtorVtbl;
 // offset (m_c) from the freed pointer, chain it onto the head (m_4). __thiscall,
 // 1 stack arg.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_28);
 class ClassUnknown_28 {
 public:
     void Push(char* p);
@@ -48,6 +49,7 @@ void* __stdcall ClassUnknown_29_advance(void** it) {
 // ClassUnknown_14 @0x029ac0 - 4-field initializer (ctor returning this).
 // __thiscall, 4 stack args, ret 0x10.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_14);
 class ClassUnknown_14 {
 public:
     ClassUnknown_14(i32 a, i32 b, i32 c, i32 d);
@@ -67,6 +69,7 @@ ClassUnknown_14::ClassUnknown_14(i32 a, i32 b, i32 c, i32 d) {
 // ---------------------------------------------------------------------------
 // ClassUnknown_21 @0x15b2b0 - zero three fields (ctor returning this).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_21);
 class ClassUnknown_21 {
 public:
     ClassUnknown_21();
@@ -86,6 +89,7 @@ ClassUnknown_21::ClassUnknown_21() {
 // ---------------------------------------------------------------------------
 // ClassUnknown_22 @0x15b270 - seed two fields (ctor returning this).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_22);
 class ClassUnknown_22 {
 public:
     ClassUnknown_22();
@@ -104,6 +108,7 @@ ClassUnknown_22::ClassUnknown_22() {
 // ClassUnknown_39 @0x148d10 - free two owned heap blocks (m_c, m_20) if set.
 // __thiscall, void.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_39);
 class ClassUnknown_39 {
 public:
     void FreeBuffers();
@@ -130,6 +135,7 @@ void ClassUnknown_39::FreeBuffers() {
 // standalone void re-init method, not a ctor, so the store IS retail's own body -
 // cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(ClassUnknown_46);
 class ClassUnknown_46 {
 public:
     void BaseInit();
@@ -157,6 +163,7 @@ struct Obj49Target {
     char m_pad[0x48];
     i32 m_48;
 };
+SIZE_UNKNOWN(ClassUnknown_49);
 class ClassUnknown_49 {
 public:
     void Teardown();

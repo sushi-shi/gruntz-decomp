@@ -93,6 +93,7 @@ struct IDirectDrawSurfaceZ {
 // ---------------------------------------------------------------------------
 class CDDPalette; // fwd (SetPalette takes a wrapper ptr)
 
+SIZE_UNKNOWN(CDDSurface);
 class CDDSurface {
 public:
     // The wrapper's own vtable. Only slot 7 (@0x1c) is invoked by these thunks

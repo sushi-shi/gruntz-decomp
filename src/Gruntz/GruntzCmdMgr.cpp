@@ -14,6 +14,7 @@
 // The g_mgrSettings singleton (0x64556c). Minimal local view: IsActive folds
 // reg->m_30 into a boolean. extern "C" so the DATA load reloc-masks against the
 // canonical _g_mgrSettings symbol (single view; was a mis-named g_gameReg alias).
+SIZE_UNKNOWN(MgrSettings30);
 struct MgrSettings30 {
     char m_pad0[0x30];
     i32 m_30; // +0x30

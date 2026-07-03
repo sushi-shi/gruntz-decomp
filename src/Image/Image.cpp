@@ -940,6 +940,7 @@ inline void* operator new(u32, void* p) {
     return p;
 } // placement new (construct in place)
 
+SIZE_UNKNOWN(CRezImageSource);
 class CRezImageSource {
 public:
     virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
@@ -958,6 +959,7 @@ public:
 // (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
 // CFileImage/CPoolItemA/CDDSurface). Slots named by their retail 0x1ef7f0 vtable-slot
 // RVA (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140.
+SIZE_UNKNOWN(CRezSurfaceItem);
 class CRezSurfaceItem {
 public:
     virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor

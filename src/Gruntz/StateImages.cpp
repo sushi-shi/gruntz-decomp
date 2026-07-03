@@ -18,6 +18,7 @@ extern i32(WINAPI* g_ShowCursor)(i32);
 
 // The active DDraw worker registry (mgr->m_workerReg): only slot +0x4c (load namespace)
 // is reached; the lower slots pad the vtable to the right index.
+SIZE_UNKNOWN(WorkerReg);
 class WorkerReg {
 public:
     virtual void Slot00();
@@ -47,6 +48,7 @@ public:
     i32 Method_158ee0(); // 0x158ee0
 };
 
+SIZE_UNKNOWN(StateMgr);
 struct StateMgr {
     char m_pad00[0x4];
     CDDrawWorkerMgr* m_workerMgr; // +0x04
@@ -54,6 +56,7 @@ struct StateMgr {
     WorkerReg* m_workerReg; // +0x10 active worker registry
 };
 
+SIZE_UNKNOWN(CImageState);
 class CImageState {
 public:
     virtual void V00();

@@ -511,6 +511,7 @@ extern "C" i32 g_62bf74; // clip-region enable gate
 extern double g_5e96f8;  // 480.0 (screen height) - extern-loaded so the reseed division
 extern double g_5e96f0;  // 0.025 (scroll rate)   - is fld/fdiv, not a folded immediate
 // The credits scroll's DirectDraw surface (prov->m_8): only GetDC/ReleaseDC are used.
+SIZE_UNKNOWN(CreditsSurf);
 struct CreditsSurf {
     struct Vtbl {
         char p0[0x44];
@@ -519,26 +520,32 @@ struct CreditsSurf {
         i32(__stdcall* ReleaseDC)(CreditsSurf*, HDC hdc); // +0x68 ReleaseDC
     }* vtbl;
 };
+SIZE_UNKNOWN(CreditsHdcProv);
 struct CreditsHdcProv { // m_c->m_4->m_14->m_2c
     char p0[0x8];
     CreditsSurf* m_8; // +0x08 the DDraw surface
 };
+SIZE_UNKNOWN(CreditsView4M14);
 struct CreditsView4M14 {
     char p0[0x2c];
     CreditsHdcProv* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CreditsView4);
 struct CreditsView4 {
     char p0[0x14];
     CreditsView4M14* m_14; // +0x14
 };
+SIZE_UNKNOWN(CreditsScrollView);
 struct CreditsScrollView {
     char p0[0x4];
     CreditsView4* m_4; // +0x04
 };
+SIZE_UNKNOWN(CreditsGdiObj);
 struct CreditsGdiObj { // m_1e8 clip region (CGdiObject: m_hObject @+0x4)
     char p0[0x4];
     void* m_hObject; // +0x04
 };
+SIZE_UNKNOWN(CreditsScrollSelf);
 struct CreditsScrollSelf {
     char m_pad00[0xc];
     CreditsScrollView* m_c; // +0x0c
@@ -645,6 +652,7 @@ i32 CCreditsState::DrawScrollingCredits() {
 // the +0x1ec ptr array (naming-independent offset access), set/clear their active bit,
 // then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
 // SetTexture/SetCycle are reloc-masked __thiscall externs.
+SIZE_UNKNOWN(CGlitterAnim);
 struct CGlitterAnim {                       // a created animation object
     void SetName(const char* key, i32 idx); // 0x1504d0 (this, key, idx)
     void SetTexture(const char* key);       // 0x150540 (this, key)
@@ -659,27 +667,33 @@ struct CGlitterAnim {                       // a created animation object
     i32 m_5c; // +0x5c id/offset
     i32 m_60; // +0x60 x-position
 };
+SIZE_UNKNOWN(CGlitterFactory);
 struct CGlitterFactory {
     // 0x1597b0: create a named animation of `kind` from a template ("DoNothing"/"SimpleAnimation").
     CGlitterAnim* Create(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e);
 };
+SIZE_UNKNOWN(CGlitterMgrM30);
 struct CGlitterMgrM30 {
     char m_pad00[0x8];
     CGlitterFactory* m_8; // +0x08 the animation factory
 };
+SIZE_UNKNOWN(CGlitterMgrSet);
 struct CGlitterMgrSet {
     char m_pad00[0x4];
     i32 m_4; // +0x04 element count
 };
 // The selection source (m_74): GetSel resolves an active selection handle.
+SIZE_UNKNOWN(CGlitterSel);
 struct CGlitterSel {
     i32 GetSel(i32 a, i32 b); // 0x4165 thiscall
 };
 // The color->handle table (m_78): the SecretColor-indexed handle array at +0x14.
+SIZE_UNKNOWN(CGlitterColorTable);
 struct CGlitterColorTable {
     char m_pad00[0x14];
     i32 m_arr14[1]; // +0x14  color->handle table
 };
+SIZE_UNKNOWN(CGlitterMgr);
 struct CGlitterMgr {
     char m_pad00[0x30];
     CGlitterMgrM30* m_30; // +0x30
@@ -742,6 +756,7 @@ extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte fl
 // The go-kart install target reached via m_c->m_10 (a vtable-bearing view; slot +0x48
 // installs the resolved image under a name + a byte-flag out-param). Declared-only
 // virtuals (bodies live in another TU) so cl emits NO ??_7 yet dispatches via the vtable.
+SIZE_UNKNOWN(CEffView10);
 struct CEffView10 {
     virtual void v00();
     virtual void v01();
@@ -763,16 +778,19 @@ struct CEffView10 {
     virtual void v17();
     virtual void Install(void* img, const char* name, unsigned char* flag); // slot 18 (+0x48)
 };
+SIZE_UNKNOWN(CEffView);
 struct CEffView { // CState::m_c reinterpreted
     char p0[0x10];
     CEffView10* m_10; // +0x10
 };
 // The namespace/image registry at this+0x30 (resolves a named image handle).
+SIZE_UNKNOWN(CEffNamespace);
 struct CEffNamespace {
     void* Lookup(const char* name); // 0x13bae0 thiscall
 };
 // The geometry table (0x60b8fc, 0x10-byte rows): the effect sprites' x-position is
 // (row.a + row.c) / 2. The loop init/bound relocs land on &row[0].c / &row[8].c.
+SIZE_UNKNOWN(CEffGeomRow);
 struct CEffGeomRow {
     i32 a;     // +0x00
     i32 pad4;  // +0x04 (417, unused)
@@ -783,6 +801,7 @@ DATA(0x0020b8fc)
 extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 
 // Typed self-view for the big CPlay-layout owner (offsets only; not a class re-decl).
+SIZE_UNKNOWN(CEffLoaderSelf);
 struct CEffLoaderSelf {
     char m_pad00[0xc];
     CEffView* m_c; // +0x0c  view holder
@@ -1187,14 +1206,17 @@ i32 CCreditsState::ShowAttractTitle() {
 // "Menu"/"BrightnessPercent" level, transition the page, and build the menu page.
 // The state/menu/self sub-calls + the g_buteMgr GetIntDef are reloc-masked externs.
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+SIZE_UNKNOWN(CMenuBrightTgt);
 struct CMenuBrightTgt {
     void SetBrightness(i32 value, i32 flags); // 0x13f460
     void Fill(i32 z);                         // 0x13e760
 };
+SIZE_UNKNOWN(CMenuBrightHolder);
 struct CMenuBrightHolder {
     char m_pad00[0x2c];
     CMenuBrightTgt* m_2c; // +0x2c
 };
+SIZE_UNKNOWN(CMenuPageA);
 struct CMenuPageA {
     void Method158dc0();      // 0x158dc0 no-arg
     void TransTitle();        // 0x158e90 no-arg
@@ -1203,10 +1225,12 @@ struct CMenuPageA {
     CMenuBrightHolder* m_14; // +0x14 title brightness holder
     CMenuBrightHolder* m_18; // +0x18 menu brightness holder
 };
+SIZE_UNKNOWN(CMenuRootA);
 struct CMenuRootA {
     char m_pad00[0x4];
     CMenuPageA* m_04; // +0x04
 };
+SIZE_UNKNOWN(CAttractStateMgrA);
 struct CAttractStateMgrA {
     void* LookupState(char* name); // 0x13c030
 };
@@ -1214,6 +1238,7 @@ struct CAttractStateMgrA {
 // they are reached through its own ILT thunks (0x1e60/0x1843).
 // The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
 // attract-state count divisor. TU-local views; both reloc-mask.
+SIZE_UNKNOWN(CButeCfg);
 struct CButeCfg {
     i32 GetIntDef(char* tag, char* key, i32 def); // canonical CButeMgr::GetIntDef
 };
@@ -1872,6 +1897,7 @@ struct CMenuMusic {
 // Local views: CHudStats = the live-value/score object (g_mgrSettings->m_7c); CHudBuf
 // = the output-buffer arg (Assign = the "???" writer @0x1b9e74). sprintf @0x1b2cf5.
 extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+SIZE_UNKNOWN(CHudStats);
 struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall on THIS
     // The 13 reloc-masked live-value getters (thiscall on the stats object):
     i32 GetC10();
@@ -1891,6 +1917,7 @@ struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall 
     i32 m_c; // +0xc  live-game flag (getter gate)
     i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
 };
+SIZE_UNKNOWN(CHudBuf);
 struct CHudBuf {
     void Assign(const char* s); // 0x1b9e74 (reloc-masked)
 };

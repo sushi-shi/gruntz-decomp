@@ -90,6 +90,7 @@ extern i32 g_volumeTable[100];
 // links the node's anchor (m_link@+0x04) into the owner's voice list (owner+0xc).
 // The ctor is external (modeled here, defined in 0x136fe0); a placement-new call
 // lowers to `mov ecx,voice; call 0x136fe0` reloc-masked.
+SIZE_UNKNOWN(DSoundMgrVoice);
 struct DSoundMgrVoice {
     virtual void
     Slot0(); // +0x00  vptr slot (voice vtable 0x5ef6d0, stamped by the external ctor; declared-only)
@@ -110,6 +111,7 @@ struct DSoundMgrVoice {
 
 // Owner voice-list helpers (intrusive doubly-linked list, __thiscall on the list
 // head). Insert-at-head (0x1390e0) takes the anchor.
+SIZE_UNKNOWN(DSoundMgrList);
 struct DSoundMgrList {
     void* m_head;                  // +0x00
     void* m_tail;                  // +0x04
@@ -1144,6 +1146,7 @@ extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 // The reaped element carries a real vptr at +0; the per-frame update is virtual
 // slot 0 (call [vtbl]). Declared-only virtual -> no vtable emitted (never
 // instantiated), the call just dispatches.
+SIZE_UNKNOWN(TickElem);
 struct TickElem {
     virtual i32 Tick(i32 t); // +0x00 slot 0
     DSoundLink m_link;       // +0x04
@@ -1187,13 +1190,16 @@ i32 DirectSoundMgr::winapi_136e20_timeGetTime(i32 time) {
 // its guard (sub->m_74, 0x1353f0); when the guard reports idle (0) and the sub is
 // active (m_68), stop the inner list (0x1380d0) if flagged (m_60) and retire the
 // sub (0x1379d0) if flagged (m_64). Records the guard result back into m_68.
+SIZE_UNKNOWN(SubInnerList);
 struct SubInnerList {
     void Tick(i32 t); // 0x137e30
     void Stop(i32 x); // 0x1380d0
 };
+SIZE_UNKNOWN(SubGuard);
 struct SubGuard {
     i32 Poll(); // 0x1353f0
 };
+SIZE_UNKNOWN(SubNode);
 struct SubNode {
     char m_pad0[0x4];
     void* m_next; // +0x04  chain link
@@ -1204,6 +1210,7 @@ struct SubNode {
     char m_pad6c[0x74 - 0x6c]; // inner voice list embedded at +0x6c
     SubGuard* m_74;            // +0x74
 };
+SIZE_UNKNOWN(SubTickMgr);
 struct SubTickMgr {
     void RemoveSub(SubNode* n); // 0x1379d0
 };

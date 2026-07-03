@@ -30,6 +30,7 @@ inline void* operator new(size_t, void* p) {
 
 // A view of the CPtrList node layout (CPtrList::CNode is protected): next/prev/data.
 // (Distinct from GruntzMgr.cpp's CMenuNode menu-tree node; this is the list node.)
+SIZE_UNKNOWN(CMenuListNode);
 struct CMenuListNode {
     CMenuListNode* pNext;
     CMenuListNode* pPrev;
@@ -37,6 +38,8 @@ struct CMenuListNode {
 };
 
 // The catalog map reached through m_owner->m_catalog->m_map (CMapStringToPtr::Lookup, 0x1b8008).
+// The catalog map reached through m_0->m_10->m_10 (CMapStringToPtr::Lookup, 0x1b8008).
+SIZE_UNKNOWN(CMenuMap);
 struct CMenuMap {
     i32 Lookup(const char* key, void*& out);
 };

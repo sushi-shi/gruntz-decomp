@@ -7,6 +7,7 @@
 #include <rva.h>
 #include <Mfc.h>
 
+SIZE_UNKNOWN(ClassUnknown_9);
 class ClassUnknown_9 {
 public:
     CString m_str; // 0x0

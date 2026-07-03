@@ -55,6 +55,7 @@ struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 // `call [eax+0x24]`) fall out; the vtable itself is the foreign 0x5efb80 stamped
 // by address in the ctor, so this class never emits one (the named virtuals only
 // drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
+SIZE_UNKNOWN(CAnimWorker);
 class CAnimWorker {
 public:
     virtual void Slot00();              // +0x00
@@ -87,6 +88,7 @@ extern void* g_animWorkerVtbl;
 
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
+SIZE_UNKNOWN(CGameObjLayer);
 struct CGameObjLayer {
     char m_pad00[0x10];
     i32 m_10; // +0x10  z-clamp bound (eyecandy)
@@ -95,6 +97,7 @@ struct CGameObjLayer {
     i32 m_1c; // +0x1c  layer base Y / base offset
 };
 
+SIZE_UNKNOWN(CGameObject);
 struct CGameObject {
     void AddLogicHit(char* key);                        // 0x150f50
     void AddLogicAttack(char* key);                     // 0x151030
@@ -170,6 +173,7 @@ struct CGameObject {
 
 // The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
 // touched by the eyecandy/sparkle ctors.
+SIZE_UNKNOWN(CGameObjAux);
 struct CGameObjAux {
     char m_pad00[0x08];
     i32 m_08; // +0x08
@@ -358,6 +362,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // they get a single class definition. Ctors/dtor are out-of-line in
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CTileTrigger);
 class CTileTrigger : public CUserLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)

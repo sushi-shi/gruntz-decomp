@@ -445,6 +445,7 @@ extern i32 g_stepTimer;
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
 // masked (no body); modeled as a method on a tiny object (the same idiom as
 // UnitMutator/UnitCommit) so `mov ecx,[reg+0x60]; call` falls out.
+SIZE_UNKNOWN(SceneHit);
 struct SceneHit {
     void Fire(void* unit, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x11b3b0
 };

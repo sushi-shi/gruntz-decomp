@@ -19,13 +19,14 @@
 #ifndef GRUNTZ_GRUNTZ_CANIPLAYER_H
 #define GRUNTZ_GRUNTZ_CANIPLAYER_H
 
-#include <Ints.h>
+#include <rva.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_30 view (CResMgr + CDrawTarget)
 
 // The g_gameReg singleton (VA 0x64556c) viewed by Tick: m_30 is the canonical
 // resource manager (CResMgr); Tick reaches the active render context through
 // g->m_30->m_drawTarget->m_drawContext (+0x30 ->+0x04 ->+0x14). Typed CResMgr* so
 // the render path reaches it with no reinterpret cast.
+SIZE_UNKNOWN(CAniPlayerGameReg);
 struct CAniPlayerGameReg {
     char m_pad00[0x30];
     CResMgr* m_30; // +0x30  resource manager

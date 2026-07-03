@@ -30,7 +30,7 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
@@ -101,6 +101,7 @@ struct CButeValue {
 
 // The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
 // it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
+SIZE_UNKNOWN(ButeRef16);
 struct ButeRef16 {
     i32 w[4];
 };

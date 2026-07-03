@@ -49,6 +49,7 @@ void CEffect6b::Apply(i32 a, i32 b) {
 // 0x75a40: a 2D grid lookup - bounds-check (x, y) against the width/height, then
 // return the first dword of the (28-byte-stride) cell at rows[y][x]; out of bounds
 // returns 1.
+SIZE_UNKNOWN(CGridCell);
 struct CGridCell {
     i32 m_0;
     char _pad[0x1c - 4];

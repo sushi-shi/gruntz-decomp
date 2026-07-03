@@ -22,7 +22,7 @@
 #ifndef DINMGR2_DIRECTINPUTMGR2_H
 #define DINMGR2_DIRECTINPUTMGR2_H
 
-#include <Ints.h>
+#include <rva.h>
 #include <ComDefs.h> // STDMETHOD / HRESULT - the DirectInput COM interface macros
 
 // ---------------------------------------------------------------------------
@@ -34,6 +34,7 @@
 // ---------------------------------------------------------------------------
 struct IDirectInputDeviceZ;
 
+SIZE_UNKNOWN(IDirectInputZ);
 struct IDirectInputZ {
     STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0 +0x00
     STDMETHOD_(u32, AddRef)();                               // slot 1 +0x04
@@ -59,6 +60,7 @@ struct IDirectInputZ {
 //   +0x34 (slot 13) SetCooperativeLevel(HWND, DWORD)
 //   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(IDirectInputDeviceZ);
 struct IDirectInputDeviceZ {
     STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0  +0x00
     STDMETHOD_(u32, AddRef)();                               // slot 1  +0x04
@@ -98,6 +100,7 @@ struct IDirectInputDeviceZ {
 //   +0x10 (slot 4)  PollA()                - update used by 0x133080/0x133110
 //   +0x14 (slot 5)  PollB()                - update used by 0x133160
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CInputDeviceBase);
 class CInputDeviceBase {
 public:
     virtual i32 ScalarDtor(i32 flag); // +0x00
@@ -119,6 +122,7 @@ typedef CInputDevice CDeviceConfigA;
 // CDevicePtrArray - DirectInputMgr2's embedded CPtrArray (m_devices). 0x14-byte MFC
 // CPtrArray layout; the dtor empties it via SetSize(0,-1) (reloc-masked thiscall).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDevicePtrArray);
 struct CDevicePtrArray {
     virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
@@ -134,6 +138,7 @@ struct CDevicePtrArray {
 // CDeviceListNode - the 0x88-byte nodes 0x1331e0 allocates and 0x1331a0 frees.
 // next@0, payload@8; destructed via 0x134c60 then freed.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDeviceListNode);
 struct CDeviceListNode {
     i32 ConfigCreate(i32 a1, i32 a2, i32 a3); // 0x134be0
     void ConfigDtor();                        // 0x134c60
@@ -147,6 +152,7 @@ struct CDeviceListNode {
 // CDeviceList - DirectInputMgr2's embedded device collection (m_deviceList). A custom
 // MFC-derived intrusive list (head@+4, tail@+8). Methods are reloc-masked thiscall.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDeviceList);
 struct CDeviceList {
     virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
     void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)

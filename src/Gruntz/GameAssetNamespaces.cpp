@@ -64,6 +64,7 @@ public:
     void* MakeAndAddB(i32 w, i32 h, i32 a, i32 b, i32 c); // 0x142e60
 };
 
+SIZE_UNKNOWN(WorkerHolder);
 struct WorkerHolder {
     char m_pad00[0x10];
     CDDrawWorkerRegistry* m_imageReg; // +0x10
@@ -74,6 +75,7 @@ struct WorkerHolder {
     CDDrawSubMgrAni* m_aniScan;        // +0x2c
 };
 
+SIZE_UNKNOWN(AssetMgr);
 struct AssetMgr {
     char m_pad00[0x30];
     WorkerHolder* m_workerHolder; // +0x30
@@ -84,6 +86,7 @@ struct AssetMgr {
     CSpriteRefTable* m_spriteRefTable; // +0x74
 };
 
+SIZE_UNKNOWN(CAssetLoader);
 class CAssetLoader {
 public:
     void LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3);

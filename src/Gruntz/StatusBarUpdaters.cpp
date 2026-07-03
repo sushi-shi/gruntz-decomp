@@ -67,6 +67,7 @@ SIZE_UNKNOWN(CStatusBarHolder);
 // The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24). Distinct object from the
 // registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/CTileGrid.h>).
+SIZE_UNKNOWN(CMapTileGrid);
 struct CMapTileGrid {
     char m_pad00[0x20];
     i32* m_cellState; // +0x20  cell-state table

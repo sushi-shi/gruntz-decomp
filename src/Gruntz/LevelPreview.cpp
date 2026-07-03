@@ -40,6 +40,7 @@ public:
 // this TU cannot pull the full canonical header (its transitive CDDSurface clashes
 // with this TU's local DirectDraw surface view). Named distinctly so it is not
 // mistaken for the WAP32::CGameMgr engine base class.
+SIZE_UNKNOWN(CGruntzMgrErrSink);
 class CGruntzMgrErrSink {
 public:
     void ReportError(i32 code, i32 flags); // 0x8dc60  CGruntzMgr::ReportError
@@ -47,6 +48,7 @@ public:
 
 // The countdown's audio kill hook (the sound mgr at the status-bar holder's +0x2c;
 // __thiscall, arg -1 == "all"). 0x136e20, reloc-masked.
+SIZE_UNKNOWN(CSoundMgr);
 class CSoundMgr {
 public:
     i32 KillCue(i32 which); // 0x136e20
@@ -58,6 +60,7 @@ public:
 
 // The render host reached via the worker mgr's +0x10; carries the back surface at
 // +0x2c.
+SIZE_UNKNOWN(CRenderHost);
 struct CRenderHost {
     char m_pad00[0x2c];
     CDDSurface* m_2c; // +0x2c
@@ -78,6 +81,7 @@ struct CStatusBarHolder {
     CSoundMgr* m_2c; // +0x2c
     i32 m_30;        // +0x30
 };
+SIZE_UNKNOWN(PreviewMgr);
 struct PreviewMgr {
     char m_pad00[4];
     CDDrawWorkerMgr* m_04; // +0x04
@@ -92,6 +96,7 @@ struct PreviewMgr {
 // in the engine, but the timer compare/subtract below promote against the unsigned
 // +0x1b8 timer (the unsigned ja/jb the countdown uses).
 
+SIZE_UNKNOWN(CPreviewState);
 class CPreviewState {
 public:
     // The screen's vtable (vptr @+0x00); only slot 8 (+0x20) - the per-frame

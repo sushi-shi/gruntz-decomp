@@ -115,6 +115,7 @@ public:
 // zero-size marker so the +0xF4 field lands in CPlane without pulling the real
 // 0xc0-byte surface into the plane layout. Draw is still a deferred stub, so no
 // surface methods are referenced from this TU yet.
+SIZE_UNKNOWN(PlaneBlitScratch);
 struct PlaneBlitScratch {};
 
 // A drawable plane source-frame (one entry of the tile/image lookup the renderer

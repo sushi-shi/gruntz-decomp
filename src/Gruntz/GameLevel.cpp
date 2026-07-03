@@ -72,6 +72,7 @@ struct CParseSource {
 
 // CGameLevelChild - placeholder for whatever class lives in the pointer arrays
 // at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
+SIZE_UNKNOWN(CGameLevelChild);
 class CGameLevelChild {
 public:
     virtual void Dummy();
@@ -90,6 +91,7 @@ public:
 //   +0x40/+0x44  out: tile-origin X / Y     +0x48/+0x4c out: tile-extent X / Y
 //   +0x70/+0x74  viewport tiles across/down +0x78/+0x7c view-anchor X / Y
 //   +0x84/+0x88  out: integer scaledX / scaledY
+SIZE_UNKNOWN(PlaneGeom);
 struct PlaneGeom {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -947,6 +949,7 @@ void PlaneGeom::RecomputePlaneCoords() {
 //   Refresh()      @0x163670  - per-plane refresh hook
 // Fields: +0x08 flags, +0x20 tileBase, +0x24 rowOfs, +0x28 width, +0x2c height,
 //   +0x74 limit, +0x80 cap, +0xb4 name[].
+SIZE_UNKNOWN(LevelPlane);
 struct LevelPlane {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -968,6 +971,7 @@ struct LevelPlane {
 };
 
 // Three zero-arg __thiscall methods on the main plane the forwarders tail into.
+SIZE_UNKNOWN(MainPlane);
 struct MainPlane {
     i32 QueryA();  // @0x163300
     i32 QueryB();  // @0x163370
@@ -982,6 +986,7 @@ extern "C" i32 __cdecl _strcmpi(const char*, const char*);
 // brush-kind all live on the same object that elsewhere is the level container.
 // Accessed via raw offsets so the codegen is naming-independent (the same offsets
 // are typed differently by the level-load methods).
+SIZE_UNKNOWN(LevelScroll);
 struct LevelScroll {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -1007,6 +1012,7 @@ extern "C" i32 __stdcall EditSubDispatch12(LevelScroll* lvl, i32 a, i32 b, i32 c
 // and the +0x138/+0x140 axis limits. The level itself is the handler's `this`; the
 // target is the explicit first argument. Accessed via named fields here (a window
 // onto the same offsets LevelScroll types differently for the simple path).
+SIZE_UNKNOWN(ScrollTarget);
 struct ScrollTarget {
     char pad_0[0x08];
     u32 flags; // +0x08  (bit4 = held)
@@ -1050,6 +1056,7 @@ struct ScrollTarget {
 // EditTarget - the explicit target arg the brush handlers drive. A window onto the
 // edit-state object (the same offsets ScrollTarget names for the simple path, plus
 // the +0x134/+0x13c axis-low brackets and the +0xf8/+0xfc per-axis step strides).
+SIZE_UNKNOWN(EditTarget);
 struct EditTarget {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -1073,6 +1080,7 @@ struct EditTarget {
 // ProbeObj - the candidate object AltStepValidate fits against (a game object hanging
 // off the owner's chain). Its world-space bounding box is the +0x144/+0x14c tile span
 // and +0x148 row, offset by the +0x5c/+0x60 origin; +0x178 is a clamp adjustment.
+SIZE_UNKNOWN(ProbeObj);
 struct ProbeObj {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X
@@ -1089,6 +1097,7 @@ struct ProbeObj {
 // viewed at the probe offsets: the wrap moduli at +0x30/+0x34 (clamp bounds), the
 // log2-tile shift amounts at +0x8c/+0x90, the column-offset table at +0x24 and the
 // tile grid at +0x20.
+SIZE_UNKNOWN(ProbePlane);
 struct ProbePlane {
     char pad_0[0x20];
     i32* tileGrid;   // +0x20
@@ -1188,6 +1197,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
+SIZE_UNKNOWN(EditSink);
 struct EditSink {
     virtual void v00();
     virtual void v04();
@@ -1464,6 +1474,7 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
 // hangs off +0x14 (the node list) and whose +0x28 hook is dispatched in the
 // non-origin-fixed path. ObjNode - one node in that chain (next@+0, payload@+8);
 // the payload object carries a depth key at +0x74 and a +0x2c draw hook.
+SIZE_UNKNOWN(ObjPayload);
 struct ObjPayload {
     virtual void v00();
     virtual void v04();
@@ -1480,6 +1491,7 @@ struct ObjPayload {
     char pad_4[0x74 - 0x04];
     i32 depth; // +0x74
 };
+SIZE_UNKNOWN(ObjNode);
 struct ObjNode {
     ObjNode* next;    // +0x00
     char pad_4[0x04]; // +0x04
@@ -1489,10 +1501,12 @@ struct ObjNode {
 // sub-record at +0x10 whose +0x04 field is the head node; the engine takes the
 // ADDRESS of the +0x10 record (lea), null-checks it (always live), then loads the
 // head. The +0x28 hook is dispatched in the non-origin-fixed path.
+SIZE_UNKNOWN(VisitChain);
 struct VisitChain {
     char pad_0[0x04];
     ObjNode* head; // +0x04 (i.e. VisitCtx+0x14)
 };
+SIZE_UNKNOWN(VisitCtx);
 struct VisitCtx {
     virtual void v00();
     virtual void v04();
@@ -2064,10 +2078,12 @@ done_eq:
 // A game object in the broad-phase chain. The brackets at +0x134..+0x140 are the
 // object-local AABB (added to the +0x5c/+0x60 world origin); +0x90 is the notifier
 // dispatcher (its +0x10 slot is the callback); +0xe8/+0xf4 the collision masks.
+SIZE_UNKNOWN(BPNotifier);
 struct BPNotifier {
     char pad_0[0x10];
     i32 (*notify)(void* obj); // +0x10
 };
+SIZE_UNKNOWN(BPObj);
 struct BPObj {
     char pad_0[0x08];
     u32 flags; // +0x08  (bit 0x100 = active)
@@ -2090,15 +2106,18 @@ struct BPObj {
 
 // The owner's object chain: this->m_owner (+0xc) -> +0x8 (chain mgr) -> +0x14 (head).
 // Each node holds the next link at +0x00 and the object pointer at +0x08.
+SIZE_UNKNOWN(BPNode);
 struct BPNode {
     BPNode* next; // +0x00
     char pad_4[0x08 - 0x04];
     BPObj* obj; // +0x08
 };
+SIZE_UNKNOWN(BPChainMgr);
 struct BPChainMgr {
     char pad_0[0x14];
     BPNode* head; // +0x14
 };
+SIZE_UNKNOWN(BPOwner);
 struct BPOwner {
     char pad_0[0x08];
     BPChainMgr* mgr; // +0x08
@@ -2923,6 +2942,7 @@ fail:
 // add chain - retail keeps tMid/tLoA both live (boxL via a combined lea) while our cl
 // spills tLoA to [esp+0x24]. Reordering the local computes regresses it (84%); not
 // source-steerable. Deferred to the final sweep.
+SIZE_UNKNOWN(HoldPayload);
 struct HoldPayload {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X
@@ -2976,6 +2996,7 @@ i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
 // = that + the image set's width (+0x04) - 1. Returns 1 (0 for an empty/clear tile).
 // An inlined tile probe that, unlike AxisProbe, keeps the tile-aligned coord and
 // reads the image set's width field instead of dispatching slot +0x20. ret 0x10.
+SIZE_UNKNOWN(SpanImageSet);
 struct SpanImageSet {
     char pad_0[0x04];
     i32 m_04; // +0x04  tile (column) width
@@ -3015,6 +3036,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 
 // ProbeTarget - the edit target ProbeColumn/WalkColumnDown drive: its +0x5c/+0x60
 // scroll origin and the +0x134/+0x138/+0x140 axis brackets.
+SIZE_UNKNOWN(ProbeTarget);
 struct ProbeTarget {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X

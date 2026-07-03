@@ -44,11 +44,13 @@ public:
     i32 m_8; // +0x08 dirty flags
 };
 
+SIZE_UNKNOWN(LevelMgr);
 struct LevelMgr {
     char m_pad00[0x24];
     CGameLevel* m_24; // +0x24
 };
 
+SIZE_UNKNOWN(CWorldState);
 class CWorldState {
 public:
     i32 BuildWorldLevelKey(i32 unused);

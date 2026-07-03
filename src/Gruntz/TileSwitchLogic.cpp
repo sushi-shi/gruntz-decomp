@@ -89,6 +89,7 @@ static i32 VtblResolve(void* node) {
 // CGruntzMgr game manager (which is loaded separately as g_mgrSettings): its level
 // lives at +0x22c and its trigger container at +0x2e4. Only touched offsets matter;
 // carcass access by raw this+offset.
+SIZE_UNKNOWN(CTileWireLogic);
 class CTileWireLogic {
 public:
     i32 WireTileSwitchLogic(void* trigger, i32 x, i32 y); // __thiscall (callee cleans 0xc)

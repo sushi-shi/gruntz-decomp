@@ -837,6 +837,7 @@ struct CProjObjReg {
 // loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
 // CDDrawSubMgrLeaf type CSerialSub34 resolves through). +0x8 is a CProjObjReg*
 // (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
+SIZE_UNKNOWN(CProjRegSub30);
 struct CProjRegSub30 {
     char _00[0x8];
     CProjObjReg* m_8; // +0x08

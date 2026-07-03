@@ -66,6 +66,7 @@ inline CStatusBarItem::~CStatusBarItem() {
 }
 
 // CSBI_RectOnly (vtable 0x5eab8c, 11 slots; overrides the vdtor).
+SIZE_UNKNOWN(CSBI_RectOnly);
 struct CSBI_RectOnly : CStatusBarItem {
     virtual ~CSBI_RectOnly();
     void DtorRect(); // 0xe8760  CSBI_RectOnly member teardown (reloc-masked)
@@ -101,6 +102,7 @@ inline CSBI_ImageSet::~CSBI_ImageSet() {
 #endif
 
 // CSBI_ImageSetAni (14 slots = vdtor + 10 + 1 + 1 + 1).
+SIZE_UNKNOWN(CSBI_ImageSetAni);
 struct CSBI_ImageSetAni : CSBI_ImageSet {
     virtual ~CSBI_ImageSetAni();
     virtual void Ianf1();

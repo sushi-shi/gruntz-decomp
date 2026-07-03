@@ -101,6 +101,7 @@ extern "C" void ServicesDispatchCb(); // 0x401a19
 // The engine config store reached through m_4->+0x38: writes the selected service /
 // player-name / game-name into the registry section. Two __thiscall setters
 // (0x139460 / 0x1393b0), external/no-body so the `call rel32` reloc-masks.
+SIZE_UNKNOWN(CNetConfigStore);
 struct CNetConfigStore {
     void WriteInt(const char* key, i32 val);              // 0x139460
     void WriteString(const char* key, const char* value); // 0x1393b0
@@ -126,6 +127,7 @@ extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
 extern "C" CNetMgr* g_groupEnumMgr;                                   // 0x648cf4
 extern "C" CNetMgr* g_connectRptMgr;                                  // 0x648cf8
+SIZE_UNKNOWN(CNetChannelTable);
 struct CNetChannelTable {
     char m_pad0[8];
     i32 m_8;                  // +0x08  the channel field RegisterChannelFrom takes
@@ -150,6 +152,7 @@ extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
 extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
 struct CGameSettings;
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
+SIZE_UNKNOWN(CGameCfgStore);
 struct CGameCfgStore {
     void GetString(const char* key, char* buf, void* out2, const char* dflt); // 0x1394a0
 };
@@ -1118,6 +1121,7 @@ extern "C" void SeedRandom(i32 seed);             // 0x11fed0 (srand)
 typedef i32 (CNetMgr::*NmSlotRet)();
 typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
 typedef void (CNetMgr::*NmSlotVoid)();
+SIZE_UNKNOWN(CNetConnectVtbl);
 struct CNetConnectVtbl {
     char m_pad0[8];
     NmSlotRet Abort; // +0x08  abort/close on start failure
@@ -1129,6 +1133,7 @@ struct CNetConnectVtbl {
 };
 
 // The external `this`-methods the driver calls (thunked -> reloc-masked no-body):
+SIZE_UNKNOWN(CNetConnectThis);
 struct CNetConnectThis {
     i32 InitConnect(i32 a, i32 b, i32 c); // 0x43a9
     i32 StartTitle();                     // 0x12df
@@ -1137,15 +1142,18 @@ struct CNetConnectThis {
     i32 LoadCursorSprites(i32 a, i32 b);  // 0x35da
 };
 // The m_4 game-mgr sub-object methods (external, reloc-masked):
+SIZE_UNKNOWN(CNetGameMgrView);
 struct CNetGameMgrView {
     void ResetClockGlobals();   // 0x1d98
     void ClearOptionsSlots();   // 0x30df
     i32 InitLobbySettings();    // 0x2112
     CString GetWorldFileName(); // 0x2531
 };
+SIZE_UNKNOWN(CSymParserView);
 struct CSymParserView {
     void* ResolvePath(const char* p); // 0x13c030 (?ResolvePath@CSymParser@@ - reloc-masked)
 };
+SIZE_UNKNOWN(CFreeNodesView);
 struct CFreeNodesView {
     void FreeNodes(); // 0x128a
 };
@@ -1158,12 +1166,14 @@ struct CFreeNodesView {
 // CNetMgr inline (no ctor call), so its base vptr stamp stays manual + faithful,
 // distinct from the real CNetMgr : Wap::CObject (whose vptrs cl emits).
 extern void* g_netGroupNodeDtorVtbl; // 0x5e8cb4 (Wap::CObject base vtable)
+SIZE_UNKNOWN(CNetPeerBase);
 struct CNetPeerBase {
     void* m_vptr; // +0x00
     CNetPeerBase() {
         m_vptr = &g_netGroupNodeDtorVtbl; // 0x5e8cb4
     }
 };
+SIZE_UNKNOWN(CNetPeer);
 struct CNetPeer : CNetPeerBase {
     char m_pad4[0x1c - 4]; // +0x04 (incl. +0x14 / +0x18)
     CObList m_l0;          // +0x1c
@@ -1179,6 +1189,7 @@ struct CNetPeer : CNetPeerBase {
 
 // (2) the 0x1c interface object: 7 dwords, no vtable/dtor. Attach/Deactivate/
 // Configure are external (thunked) methods, reloc-masked.
+SIZE_UNKNOWN(CNetIface);
 struct CNetIface {
     i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18;
     CNetIface() {
@@ -1200,6 +1211,7 @@ struct CNetIface {
 // init is that class's OWN leaf (a separate TU), not reproduced here - only the two
 // notable non-zero fields are set. ~CNetSess (Teardown + member dtors) drives the
 // failure-path teardown (states 9/0xa).
+SIZE_UNKNOWN(CNetSess);
 struct CNetSess {
     char m_pad0[0x2c];
     CPtrList m_notify[8]; // +0x2c
@@ -1219,6 +1231,7 @@ struct CNetSess {
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
+SIZE_UNKNOWN(CNetCmdMgr);
 struct CNetCmdMgr {
     CPtrList m_l0, m_l1, m_l2, m_l3; // +0x00 / +0x1c / +0x38 / +0x54
     char m_pad70[0x74 - (4 * sizeof(CPtrList))];
@@ -1815,6 +1828,7 @@ void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
 // The per-player channel/color holder (Cdb200 @0xdb200): swap the held slot to `c`
 // (returns 1 when accepted). External __thiscall -> reloc-masked.
+SIZE_UNKNOWN(CNetColorHolder);
 struct CNetColorHolder {
     i32 SwapColor(i32 c); // 0xdb200
 };
@@ -1835,6 +1849,7 @@ extern i32 g_sndCueTag;                                        // 0x61ab24
 
 // The received-message view: a bit7 flag byte, the message id, then a payload the
 // arms read as a word / channel byte / chat text depending on the id.
+SIZE_UNKNOWN(CNetMsg);
 struct CNetMsg {
     u8 m_0; // +0x00  flag byte (bit7 => "process me")
     char m_pad1[3];
@@ -2778,6 +2793,7 @@ inline void* operator new(u32, void* p) {
 // manual `*(void**)node = &g_net*Vtbl` stamp. The vtables cl emits here are orphans
 // (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by InterfaceObject.cpp's VTBL,
 // so no VTBL is attached here -> no dup-DATA).
+SIZE_UNKNOWN(CNetGroupNodeBase);
 struct CNetGroupNodeBase {
     virtual void V0();            // slot 0 (sub_1bef01)
     virtual ~CNetGroupNodeBase(); // slot 1 (scalar-deleting dtor)
@@ -2787,6 +2803,7 @@ struct CNetGroupNodeBase {
 };
 inline CNetGroupNodeBase::~CNetGroupNodeBase() {}
 
+SIZE_UNKNOWN(CNetGroupNode);
 struct CNetGroupNode : CNetGroupNodeBase {
     i32 m_4;        // +0x04  the service-provider GUID (stored raw)
     CString m_name; // +0x08  the provider name
