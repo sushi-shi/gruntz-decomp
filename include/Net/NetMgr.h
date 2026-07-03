@@ -763,9 +763,14 @@ public:
     );                                         // 0x1789e0  EnumPlayers slot wrapper -> CreatePlayer
     i32 EnumGroupsAll();                       // 0x178a40  EnumGroups (slot 0xc) wrapper
     i32 EnumGroupsRange(void* rec, i32 flags); // 0x178a80  EnumGroups (slot 0xc) over a record
-    i32 AddSessionNode(void* a, void* b);      // 0x178b30  (/GX) new session node -> +0x54 list
-    i32 CreatePlayer(void* a, i32 b, i32 c);   // 0x178cb0  GetSessionDesc + AddSessionNode
-    void PopulateSessionList(void* hList);     // 0x178d40  (/GX) fill a Win32 session list box
+    i32 AddSessionNode(
+        i32 id,
+        const char* nameA,
+        const char* nameB,
+        i32 d
+    ); // 0x178b30  (/GX) new session node -> InitSession + GetData5 -> +0x54 list
+    i32 CreatePlayer(void* a, i32 b, i32 c); // 0x178cb0  GetSessionDesc + AddSessionNode
+    void PopulateSessionList(void* hList);   // 0x178d40  (/GX) fill a Win32 session list box
 
     // The 0xbbxxx / 0xbcxxx connect/config helpers reconstructed in this TU.
     void RecordDropPlayer2(i32 a, i32 id); // 0xbb5e0  record a pending drop (matched here)

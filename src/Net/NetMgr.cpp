@@ -154,7 +154,9 @@ struct CGameSettings;
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
 SIZE_UNKNOWN(CGameCfgStore);
 struct CGameCfgStore {
-    void GetString(const char* key, char* buf, void* out2, const char* dflt); // 0x1394a0
+    // GetString reads a config value into `buf` (capacity via the in/out `*pcap`
+    // dword), falling back to `dflt`. The 3rd arg is a pointer to the max-length.
+    void GetString(const char* key, char* buf, i32* pcap, const char* dflt); // 0x1394a0
 };
 
 // ---------------------------------------------------------------------------
@@ -1548,12 +1550,14 @@ i32 CNetMgr::SetupServices() {
 // records the game name), latches the selected service id, reads the group
 // selection, and closes the dialog (EndDialog(1)).
 // @early-stop
-// Win32-import-pointer + /GX CString-temp wall: the base-proc dispatch, the message
-// switch, both Cancel/OK paths, the cached-import (g_pGetDlgItem/SendMessageA/...)
-// calls and the EndDialog exits are reproduced, but retail's config-default read
-// (settings GetString into a char buf + CString) marshals a 5th (maxlen) stack arg
-// and packs the scoped CString temps under the /GX frame in a way clean C++ won't
-// match. Final sweep.
+// regalloc callee-save-count wall (~77%): the base-proc dispatch, the switch(msg)
+// (sub 0x110/je/dec/jne, matching retail), the GetString(key,buf,&maxlen,default)
+// config reads (int* maxlen reusing one slot, cfg re-derived per call), both
+// Cancel/OK paths and the by-value CString(name) arg-slot construction are all
+// reproduced. Residual: retail keeps GetDlgItem's fn-ptr in a 4th callee-saved reg
+// (ebp) across INITDIALOG, so retail saves ebx/ebp/esi/edi (sub esp,0x50) while
+// our /O2 uses only ebx/esi/edi (sub esp,0x58); the extra reg + 4-byte frame delta
+// cascades every stack offset and re-orders the return-0 tail blocks. Final sweep.
 RVA(0x000b7b10, 0x27c)
 i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
     g_setupDlgHwnd = hDlg;
@@ -1561,30 +1565,35 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
         return 1;
     }
 
-    if (msg == 0x110) {
-        HWND combo = g_pGetDlgItem(hDlg, 0x3fc);
-        g_groupEnumMgr->m_groupSel = 0;
-        g_groupEnumMgr->PopulateGroupList(combo, 0);
-        if (g_serviceId == 0x3e7) {
-            g_pSendMessageA(combo, 0x186, 0, 0);
-        } else if ((i32)g_pSendMessageA(combo, 0x186, g_serviceId, 0) == -1) {
-            g_pSendMessageA(combo, 0x186, 0, 0);
+    switch (msg) {
+        case 0x110: {
+            HWND combo = g_pGetDlgItem(hDlg, 0x3fc);
+            g_groupEnumMgr->m_groupSel = 0;
+            g_groupEnumMgr->PopulateGroupList(combo, 0);
+            if (g_serviceId == 0x3e7) {
+                g_pSendMessageA(combo, 0x186, 0, 0);
+            } else if ((i32)g_pSendMessageA(combo, 0x186, g_serviceId, 0) == -1) {
+                g_pSendMessageA(combo, 0x186, 0, 0);
+            }
+
+            char nameBuf[0xa];
+            char gameBuf[0x40];
+            i32 cap = 0xa;
+            ((CGameCfgStore*)*(void**)((char*)g_mgrSettings + 0x38))
+                ->GetString("Player_Name", nameBuf, &cap, "Player");
+            cap = 0x40;
+            ((CGameCfgStore*)*(void**)((char*)g_mgrSettings + 0x38))
+                ->GetString("Game_Name", gameBuf, &cap, "Multiplayer_Gruntz");
+            g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
+            g_pSetDlgItemTextA(hDlg, 0x51b, nameBuf);
+            g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
+            g_pSetDlgItemTextA(hDlg, 0x51c, gameBuf);
+            return 1;
         }
-
-        CGameCfgStore* cfg = (CGameCfgStore*)*(void**)((char*)g_mgrSettings + 0x38);
-        char nameBuf[0x40];
-        char gameBuf[0x40];
-        cfg->GetString("Player_Name", nameBuf, &nameBuf, "Player");
-        cfg->GetString("Game_Name", gameBuf, &gameBuf, "Multiplayer_Gruntz");
-        g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
-        g_pSetDlgItemTextA(hDlg, 0x51b, nameBuf);
-        g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
-        g_pSetDlgItemTextA(hDlg, 0x51c, gameBuf);
-        return 1;
-    }
-
-    if (msg != 0x111) {
-        return 0;
+        case 0x111:
+            break;
+        default:
+            return 0;
     }
 
     if (wParam == 2) {
@@ -3195,19 +3204,22 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
 // AddTail's the node onto the +0x54 list, self-destructing it if AddTail fails
 // and clearing its +0x20. The two CString temps' dtors run under the /GX frame.
 // @early-stop
-// /GX EH-frame scheduling wall: the `new`-built node (real-polymorphic ctor:
-// two-phase vptr stamp around the two CString MEMBER ctors + the 4 scalar zeroes,
-// under the compiler's new-cleanup frame), the InitSession call, the GetData5(slot
-// 0x74) probe + ReportError, and the AddTail/delete tail are all reconstructed; the
-// residual is the EH-state cookie sequence retail emits around the member CStrings'
-// lifetime vs the delete-on-AddTail-fail cleanup. Final-sweep candidate.
+// /GX EH-cookie + frame-size wall (~69%): AddSessionNode is now the real 4-arg
+// method - it forwards all four params (id, nameA, nameB, d) straight to
+// InitSession (was a bogus (a,b,b,b)), and GetData5 reads the NEW node's own
+// m_sessionId into a local scalar (was ((CNetSessionNode*)a)->m_sessionId + node).
+// The node ctor, InitSession, GetData5 probe + ReportError and AddTail/delete tail
+// all match. Residual: the /GX unwind funclet cookie immediate (push 0xb vs push 0,
+// module-global index) and retail's 2-dword EH-state reserve (sub esp,8) vs our
+// 1-dword (push ecx), a 4-byte frame delta that cascades the stack offsets. Final sweep.
 RVA(0x00178b30, 0x140)
-i32 CNetMgr::AddSessionNode(void* a, void* b) {
+i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d) {
     CNetSessionNode* node = new CNetSessionNode();
 
-    if (node->InitSession((i32)a, (const char*)b, (const char*)b, (i32)b) != 0) {
+    if (node->InitSession(id, nameA, nameB, d) != 0) {
         IDirectPlay4Z* iface = m_directPlay;
-        i32 hr = iface->GetData5(((CNetSessionNode*)a)->m_sessionId, node, 4, 1);
+        i32 blob;
+        i32 hr = iface->GetData5(node->m_sessionId, &blob, 4, 1);
         if (hr != 0) {
             ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, 0);
         }
@@ -3232,28 +3244,29 @@ i32 CNetMgr::AddSessionNode(void* a, void* b) {
 // (NetMgr.cpp line 0x3bb) and returns 0; on success hands the output plus the two
 // trailing args to AddSessionNode.
 // @early-stop
-// stack-buffer-size-drives-frame wall (~71%): the GetSessionDesc(slot 6) probe into
-// the 0x10 descriptor + scalar out-var, the ReportError failure path and the
-// AddSessionNode tail are reproduced, but retail's frame is 0x14 (cl 0x10) and it
-// packs the desc fields / out-var into different esp offsets, re-permuting the
-// field stores + arg regs. See docs/patterns/stack-buffer-size-drives-frame.md.
-// Final sweep.
+// stack-buffer-size-drives-frame wall (~83%): the 0x10 descriptor is now filled in
+// retail order - desc = {0x10, 0, a, b} (was {0x10,0,b,c}), GetSessionDesc(slot 6)
+// takes `c` as its scalar arg (was `a`), and the 4-arg AddSessionNode tail passes
+// (out, a, b, 0). The full control flow, the GetSessionDesc probe, the ReportError
+// failure path and the AddSessionNode call all match. Residual: retail overlaps the
+// out-var onto a dead arg slot (frame 0x10 vs our 0x14) and materializes the zero
+// once in eax to seed every zeroed local where our /O2 stores immediates. Final sweep.
 RVA(0x00178cb0, 0x8b)
 i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
     i32 out = 0;
     i32 desc[4];
     desc[0] = 0x10;
     desc[1] = 0;
-    desc[2] = b;
-    desc[3] = c;
+    desc[2] = (i32)a;
+    desc[3] = b;
 
     IDirectPlay4Z* iface = m_directPlay;
-    i32 hr = iface->GetSessionDesc(&desc[0], &out, (i32)a, 0, 0);
+    i32 hr = iface->GetSessionDesc(&desc[0], &out, c, 0, 0);
     if (hr != 0) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x3bb, hr, 0);
         return 0;
     }
-    return AddSessionNode((void*)out, (void*)b);
+    return AddSessionNode(out, (const char*)a, (const char*)b, 0);
 }
 
 // ---------------------------------------------------------------------------
