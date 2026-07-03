@@ -805,14 +805,6 @@ source = "src/Gruntz/Random.cpp"
 flags = "base"
 
 [[unit]]
-# The Miles Sound System (AIL) MIDI/XMIDI sequence subsystem (0xf8e20 + the
-# 0x138490-0x139030 cluster) - the "sibling AIL TU" of Dsndmgr/CGruntzSoundZ
-# (re-homed from ApiCallers). No destructible locals -> /base.
-unit = "ailmidiseq"
-source = "src/Dsndmgr/AilMidiSeq.cpp"
-flags = "base"
-
-[[unit]]
 # Small self-contained geometry / window / timer / object-lifetime helpers
 # (0x2b340/0x8c380/0x115b30/0x118930/0x1192d0/0x137e30/0x1380d0/0x161e80/
 # 0x1bf577/0x1c09de), re-homed from ApiCallers. No destructible locals -> /base.

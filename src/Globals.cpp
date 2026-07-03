@@ -30,7 +30,7 @@ struct CToobEntry;
 struct CVTrigColl2;
 struct CVTrigEntry;
 struct GLSResetMgr;
-struct KeyRecv_f8ec0;
+struct SfManagerDevice;
 struct ScrollView;
 struct ShadeDescr;
 
@@ -453,13 +453,13 @@ extern char g_sfDir[]; // 0x64dfa0  current-directory scratch (0xff)
 DATA(0x0024e0a0)
 extern u32 g_sfVer; // 0x64e0a0  build/version selector
 DATA(0x0024e0a4)
-extern u16 g_count_64e0a4; // device count
+extern u16 g_sfDeviceCount; // 0x64e0a4  SFMAN32 device count
 DATA(0x0024e0a8)
-extern void* g_dll_64e0a8; // SFMAN32.DLL handle
+extern void* g_sfDll; // 0x64e0a8  SFMAN32.DLL handle
 DATA(0x0024e0b0)
-extern KeyRecv_f8ec0* g_keyRecv_64e0b0;
+extern SfManagerDevice* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
 DATA(0x0024e0b8)
-extern void* g_initFlag_64e0b8;
+extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
 DATA(0x0024e0c0)
 extern u8 g_ratings_64e0c0[]; // per-device rating bytes
 DATA(0x0024e360)

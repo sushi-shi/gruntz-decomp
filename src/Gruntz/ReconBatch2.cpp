@@ -7,8 +7,8 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
-#include <DDrawMgr/CDDSurface.h>  // canonical CDDSurface (Blt @0x13ee60)
-#include <Gruntz/KeyRecv_f8ec0.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (Blt @0x13ee60)
+#include <Gruntz/SfManagerDevice.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
 // ===========================================================================
@@ -169,22 +169,22 @@ void CGameModeBase::ResetPreview() {
 // __cdecl(); returns 0 if the flag is clear else 1.
 // ===========================================================================
 DATA(0x0024dace)
-extern WORD g_word_64dace;
+extern WORD g_sfCfgA2;
 DATA(0x0024dacc)
-extern WORD g_word_64dacc;
+extern WORD g_sfCfgA0;
 DATA(0x0024dd28)
-extern WORD g_word_64dd28;
+extern WORD g_sfDeviceId;
 RVA(0x000f8ec0, 0x50)
-i32 InitKeys_f8ec0() {
-    if (g_initFlag_64e0b8 == 0) {
+i32 SfDeviceInitKeys() {
+    if (g_sfReady == 0) {
         return 0;
     }
-    g_word_64dace = 0;
+    g_sfCfgA2 = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
-        g_word_64dacc = (WORD)i;
-        g_keyRecv_64e0b0->m_34(g_word_64dd28, &g_word_64dacc);
+        g_sfCfgA0 = (WORD)i;
+        g_sfDevice->m_34(g_sfDeviceId, &g_sfCfgA0);
     }
-    g_word_64dacc = 1;
+    g_sfCfgA0 = 1;
     return 1;
 }
 
@@ -500,7 +500,7 @@ SIZE_UNKNOWN(Entry_c0460);
 SIZE_UNKNOWN(Holder_f9840);
 SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
-SIZE_UNKNOWN(KeyRecv_f8ec0);
+SIZE_UNKNOWN(SfManagerDevice);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
 SIZE_UNKNOWN(OptCfg_c4b30);

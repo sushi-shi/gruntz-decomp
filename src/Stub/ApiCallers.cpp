@@ -54,7 +54,7 @@ extern CGameReg* g_gameReg;
 // (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
 // g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
 // g_coinValue, moved with the MIDI sequence + LCG helpers to
-// src/Dsndmgr/AilMidiSeq.cpp and src/Gruntz/Random.cpp.)
+// src/Dsndmgr/CGruntzSoundZ.cpp and src/Gruntz/Random.cpp.)
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
 DATA(0x00248ce0)
@@ -1901,7 +1901,7 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // (0xf8e20 MIDI-driver DLL teardown re-homed to src/Dsndmgr/AilMidiSeq.cpp.)
+    // (0xf8e20 soundfont-device DLL teardown re-homed to src/Gruntz/SoundFontPath.cpp.)
 
     // __thiscall(): begin/end a paint cycle on the top-level window (m_4->m_4->m_4).
     struct PaintWnd_0fac70 {
@@ -2096,8 +2096,8 @@ namespace ApiCallerStubs {
 
     // (The AIL MIDI/XMIDI sequence subsystem - 0x138490/0x1384f0 driver bring-up +
     // teardown, 0x138950/0x1389c0 XMIDI master volume, 0x138c20 sequence-record
-    // init, and the 0x138dd0-0x139030 AilSeq player methods - re-homed to
-    // src/Dsndmgr/AilMidiSeq.cpp.)
+    // init, and the 0x138dd0-0x139030 player methods - re-homed as real
+    // CGruntzSoundZ / CGruntzSoundInnerZ methods in src/Dsndmgr/CGruntzSoundZ.cpp.)
 
     // (0x13d4c0 was WndHolder_13d4c0::Destroy; recovered as CGameWnd::OnClose -
     // the WM_CLOSE handler, vtable slot 4 - and migrated to src/Wap32/GameWnd.cpp.

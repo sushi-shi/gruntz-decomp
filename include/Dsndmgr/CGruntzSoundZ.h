@@ -34,10 +34,10 @@ public:
     virtual ~CGruntzSoundInnerZ() OVERRIDE;
     // slot 5 = one-time setup from an in-memory buffer: copies `name` into m_name (or
     // auto-names "MIDI%i"), allocs the sequence handle + m_loadBuffer, seeds defaults.
-    virtual i32 DecodeBuf(i32 buf, i32 len, i32 name); // [5]  0x138c20  in-memory setup
+    virtual i32 DecodeBuf(const void* buf, u32 len, const char* name); // [5] 0x138c20 in-mem setup
     // slot 6 = open `path` as a file, slurp it into m_loadBuffer, run DecodeBuf; a ".."
     // path forwards to LoadSpecial. `name` = the registration name (0 -> auto).
-    virtual i32 Load(i32 path, i32 name);    // [6]  0x138aa0  load a bank from a file
+    virtual i32 Load(const char* path, const char* name); // [6] 0x138aa0 load a bank from a file
     virtual void ReleaseHandle();            // [7]  0x138dd0  Stop + free seq handle & buffer
     virtual i32 IsStarted();                 // [8]  0x138a10  m_seqHandle != 0
     virtual i32 Play(i32 hDriver, i32 mode); // [9]  0x138e10  start on the digital driver
@@ -46,7 +46,7 @@ public:
     virtual i32 Stop();                      // [12] 0x138e60  AIL_end_sequence
     virtual i32 Retrigger(); // [13] 0x138f20  re-Play(m_playDriver,m_playMode) if idle
     virtual i32 Slot38();    // [14] 0x138a20  returns 1 (const-true predicate)
-    virtual i32 LoadSpecial(const char* path, i32 name); // [15] 0x138d50  ".." AIL-file load
+    virtual i32 LoadSpecial(const char* path, const char* name); // [15] 0x138d50 ".." AIL-file load
 
     // Inline ctor: cl stamps ??_7 then seeds the fields in retail store order.
     CGruntzSoundInnerZ() {
@@ -61,6 +61,10 @@ public:
     }
 
     i32 IsBusy(); // RVA 0x138f60 - IsStarted() gate + AIL_sequence_status(m_seqHandle)
+    // Non-virtual AIL-sequence tuning helpers (gate on IsStarted(); reloc-masked AIL imports).
+    i32 SetTempo(i32 tempo, i32 ms);   // RVA 0x138f90 - AIL_set_sequence_tempo, cache m_tempoPct
+    i32 SetVolume(i32 volume, i32 ms); // RVA 0x138fd0 - scale 0..100->0..127, cache m_volumePct
+    i32 SetLoop(i32 loop);             // RVA 0x139030 - re-arm AIL_set_sequence_loop_count
 
     char m_name[0x40];  // +0x04  inline map key/name buffer
     i32 m_pauseDepth;   // +0x44  pause nesting counter (StopAll++ / StopBank-- ; 0 = playing)
@@ -76,15 +80,21 @@ VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ 
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:
-    ~CGruntzSoundZ();    // body at RVA 0x086040
-    i32 Shutdown();      // defined in the sibling AIL TU (RVA 0x1384f0)
-    void StopAndFlush(); // stop current + destroy every map entry
-    CGruntzSoundInnerZ* CreateBank2(i32 path, i32 name);
-    CGruntzSoundInnerZ* CreateBank(i32 buf, i32 len, i32 name);
+    ~CGruntzSoundZ(); // body at RVA 0x086040
+    // AIL driver bring-up: cache the digital/MIDI handles, optionally open the MIDI-out driver.
+    i32 Init(i32 mdiHandle, i32 digHandle, i32 skipInit); // RVA 0x138490
+    void Shutdown();     // RVA 0x1384f0 - StopAndFlush + AIL_shutdown teardown
+    void StopAndFlush(); // RVA 0x138530 - stop current + destroy every map entry
+    // XMIDI master-volume push/read. __thiscall on the m_sound bank (CGruntzMgr +0x48);
+    // the body ignores `this` and drives the global AIL MIDI driver.
+    i32 SetXMidiVolume(i32 volume); // RVA 0x138950 - scale 0..100 and push to AIL
+    i32 GetXMidiVolume();           // RVA 0x1389c0 - read + rescale to 0..100
+    CGruntzSoundInnerZ* CreateBank2(const char* path, const char* name);
+    CGruntzSoundInnerZ* CreateBank(const void* buf, u32 len, const char* name);
     void Insert(CGruntzSoundInnerZ* inner);
     CGruntzSoundInnerZ* FindBank(const char* key);
-    i32 PlayCreate2(i32 path, i32 playMode, i32 name);
-    i32 PlayCreate3(i32 buf, i32 len, i32 playMode, i32 name);
+    i32 PlayCreate2(const char* path, i32 playMode, const char* name);
+    i32 PlayCreate3(const void* buf, u32 len, i32 playMode, const char* name);
     i32 PlayByName(const char* name, i32 playMode);
     void StopCurrent();
     i32 Restart(i32 playMode);
