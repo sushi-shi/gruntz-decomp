@@ -219,10 +219,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     m_74 = 0;
 
     i32 glitter = 0;
-    void* rec = *(void**)((char*)obj + 0x194);
+    char* rec = obj->m_194;
     if (rec != 0) {
         CString name;
-        name = (const char*)rec + 0x24;
+        name = rec + 0x24;
 
         if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_BOMBZ") == 0) {
             m_object->m_124 = 1;

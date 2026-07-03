@@ -211,7 +211,7 @@ RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
-    *(i32*)((char*)m_object + 0xe4) = 7; // CGameObject+0xe4 not modeled (needs UserLogic.h)
+    m_object->m_e4 = 7;
     Fn16ea90();
     m_150 = (i32)owner;
     m_sprite = (CProjRenderObj*)owner;

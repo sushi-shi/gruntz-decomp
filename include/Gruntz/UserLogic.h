@@ -136,7 +136,9 @@ struct CGameObject {
     CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0x114 - 0x94];
+    char m_pad94[0xe4 - 0x94];
+    i32 m_e4; // +0xe4  (CProjectile ctor seeds it to 7)
+    char m_pade8[0x114 - 0xe8];
     i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
     i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
     i32 m_11c;       // +0x11c  CSpotLight ctor: settings-table index
@@ -161,8 +163,16 @@ struct CGameObject {
     i32 m_168;       // +0x168
     char m_pad16c[0x188 - 0x16c];
     i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
-    char m_pad18c[0x198 - 0x18c];
+    char m_pad18c[0x194 - 0x18c];
+    char* m_194;            // +0x194  object source-def record (its class-name string is at +0x24)
     CGameObjLayer* m_layer; // +0x198
+    // +0x1a0: the most-derived game object embeds a per-CLASS anim sub-object here
+    // (WwdAnimSub / CPathSubMgr / CAnimSink / CTeleAnimSink / CWarlordAnimSub /
+    // DropperAnim / CWormGeoSub / CGruntPuddleSink / ...). Its concrete type is
+    // determined by the leaf class, so the base CGameObject* view legitimately can
+    // only reach it by address: `((LeafSub*)((char*)m_38 + 0x1a0))->...`. The sink's
+    // +0x20/+0x28 fields surface below as m_1c0/m_1c8. Kept as documented authentic
+    // raw-offset access (a single base field can't type a per-leaf embedded object).
     char m_pad19c[0x1b4 - 0x19c];
     i32 m_geoId; // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];

@@ -80,10 +80,10 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_6c = a1;
     i32 rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(a1, 0);
     CGameObject* obj = m_object;
-    *(i32*)((char*)obj + 0x58) = 1;
-    *(i32*)((char*)obj + 0x50) = 0xa;
-    *(i32*)((char*)obj + 0x4c) = rec;
-    *(i32*)((char*)m_38 + 0x40) &= ~1;
+    obj->m_drawActive = 1;
+    obj->m_drawFillCmd = 0xa;
+    obj->m_drawFillArg = rec;
+    m_38->m_stateFlags &= ~1;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_iconBute);
     if (a1 == 0) {
@@ -129,7 +129,7 @@ i32 CGruntPuddle::Remove() {
             flags = 1;
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
-            *(i32*)((char*)m_38 + 0x8) |= 0x10000;
+            m_38->m_flags |= 0x10000;
             CObjList* list = (CObjList*)g_gameReg->m_68;
             CObjListNode* node = list->m_head;
             while (node != 0) {
@@ -144,12 +144,12 @@ i32 CGruntPuddle::Remove() {
     }
     ((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_6bf3bc);
     CGameObject* o = m_38;
-    if (*(i32*)((char*)o + 0x1c8) != 0 && *(i32*)((char*)o + 0x1c0) == 0) {
+    if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         if (m_60 != 0) {
-            *(i32*)((char*)o + 0x40) |= 1;
+            o->m_stateFlags |= 1;
         } else {
-            m_40 = *(i32*)((char*)o + 0x1b4);
-            ((CGameObject*)o)->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+            m_40 = o->m_geoId;
+            o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_60 = 1;
             m_5c = 0;
         }

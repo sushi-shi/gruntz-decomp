@@ -2316,8 +2316,8 @@ gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	4	2cd5e3ce91
 gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	7	f2e89680128b	0x65e80
 gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	3	8c61a5989d90	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
-gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	5	e77448b1c431	0x40c30
-gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	5	b9627fa7fc52	0x40d20
+gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	6	c1871fc6c522	0x40c30
+gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	6	0543bfc327bb	0x40d20
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	2	2d19600b4765	0x7d810
 gruntresurrectradius	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	2	e21f1ed5ce39	0x7be60
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
@@ -2654,7 +2654,7 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088	0x18a850
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f	0x18a940
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300
-ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	89.8288	89.8288	11	119b32337328	0x95b10
+ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	89.8288	89.8288	12	8ee41ff87186	0x95b10
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	1	fde4a2ce1197	0x11d00
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	90.8442	90.8442	7	b14f2ec69f97	0x97680
 ingameicon	?InitIconActionTable@@YAXXZ	100.0000	100.0000	1	e833f3ac9ede	0x97800
@@ -3000,8 +3000,8 @@ projactregistry	??1CProjActOwner@@UAE@XZ	100.0000	100.0000	1	3a018279bc02	0x7fd0
 projactregistry	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	11e9b3a5f0e8	0x80e0
 projactregistry	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	a25c8147a240	0x8060
 projactregistry	?RegisterType@CProjActObj@@QAEXXZ	91.1739	91.1739	1	8fb0cc7540b3	0x8240
-projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	4	43b4ace70dd9	0xdec60
-projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	5	43b4ace70dd9	0x126e0
+projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	55.2278	55.2278	5	31e1f837308d	0xdec60
+projectile	??0CProjectile@@QAE@XZ	99.0472	99.0472	6	31e1f837308d	0x126e0
 projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	2	09e62e24baf9	0xdef60
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	3	4e7f6b25cd9f	0xe05e0
 projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	dbdd016866f6	0xade60
