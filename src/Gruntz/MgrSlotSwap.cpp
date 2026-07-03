@@ -58,7 +58,8 @@ i32 CSlotHolder::DoSwap() {
             ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08];
     ((RegM30*)g_mgrSettings->m_world)
         ->m_24->m_5c
-        ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08] = oldTok;
+        ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08] =
+        oldTok;
     ((RegSubMgr*)g_mgrSettings->m_tileGrid)->Notify(this->m_08, this->m_0c, oldTok);
     this->m_34 = newTok;
     return 1;

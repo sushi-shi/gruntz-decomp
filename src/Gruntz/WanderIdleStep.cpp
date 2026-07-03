@@ -381,7 +381,8 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < (u32)F(g_mgrSettings->m_tileGrid, 0xc) && ly < (u32)F(g_mgrSettings->m_tileGrid, 0x10)) {
+            if (lx < (u32)F(g_mgrSettings->m_tileGrid, 0xc)
+                && ly < (u32)F(g_mgrSettings->m_tileGrid, 0x10)) {
                 ProbeMove((i32)lx, (i32)ly, 0, F(this, 0x248), 1, 0);
             }
             if (F(this, 0x328) != 0) {

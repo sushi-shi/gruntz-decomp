@@ -138,7 +138,8 @@ struct CView {
     // through vtable slot 18 (+0x48). Declared-only virtuals -> cl emits no ??_7 (the
     // object is only ever reached by pointer) yet dispatches through the real vtable.
     struct CImageRegistry {
-        void Release(const char* szName, const char* szKey);  // FUN_00155360 (namespace register/release)
+        void
+        Release(const char* szName, const char* szKey); // FUN_00155360 (namespace register/release)
         void Register(const char* szName, const char* szKey); // FUN_00155360 (loader alias)
         i32 Has(const char* szName);                          // FUN_00155550 -> found
         virtual void v00();
@@ -163,7 +164,7 @@ struct CView {
         // namespace key ("_") for the level loaders and a byte-flag out-ptr for the
         // effect-sprite install (that site casts its unsigned char*).
         virtual void Install(void* set, const char* szName, const char* szKey);
-        char p04[0x10 - 0x4];             // after the vptr (+0x00)
+        char p04[0x10 - 0x4]; // after the vptr (+0x00)
         struct CMap {
             void Lookup(i32 key, void*& out); // 0x1b8008 (thiscall)
         } m_10;                               // +0x10  the name->object map / frame grid
@@ -172,19 +173,19 @@ struct CView {
     void* m_20;         // +0x20  a frame profiler timer (timeGetTime x2)
     CDrawSurface* m_24; // +0x24  the draw-surface (PushView / Pre/PostStep)
     // Resource facet (offsets the render facet does not touch):
-    struct SoundRegistry {                                              // +0x28
-        void Release(const char* szName, const char* szKey);           // FUN_00157c70
-        void Register(const char* szName, const char* szKey);          // FUN_00157c70 (loader alias)
-        i32 Has(const char* szName);                                   // FUN_001583c0 -> found
+    struct SoundRegistry {                                    // +0x28
+        void Release(const char* szName, const char* szKey);  // FUN_00157c70
+        void Register(const char* szName, const char* szKey); // FUN_00157c70 (loader alias)
+        i32 Has(const char* szName);                          // FUN_001583c0 -> found
         void Install(void* set, const char* szName, const char* szKey); // FUN_00157ee0
         char p0[0x2c];
         CViewPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
     }* m_28;                  // +0x28  sound registry + pooled resource
-    struct AnimRegistry {                                              // +0x2c
-        void Release(const char* szName, const char* szKey);          // FUN_00152720 (credits reg)
-        i32 Has(const char* szName);                                  // FUN_00152c50 -> found
+    struct AnimRegistry {     // +0x2c
+        void Release(const char* szName, const char* szKey); // FUN_00152720 (credits reg)
+        i32 Has(const char* szName);                         // FUN_00152c50 -> found
         void Install(void* set, const char* szName, const char* szKey); // FUN_00152ad0
-    }* m_2c;                                                          // +0x2c  anim/third registry
+    }* m_2c; // +0x2c  anim/third registry
 };
 
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

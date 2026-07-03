@@ -115,7 +115,7 @@ struct RockNotify {                        // g_mgrSettings->m_tileGrid
 struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     char m_pad00[0x2c];
     RockSettingsRoot* m_curState; // +0x2c
-    RockMapHost* m_world;            // +0x30  write-grid host
+    RockMapHost* m_world;         // +0x30  write-grid host
     char m_pad34[0x70 - 0x34];
     RockNotify* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];

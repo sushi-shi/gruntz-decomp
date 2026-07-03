@@ -504,8 +504,8 @@ enum GruntDeathType {
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGameRegistry* _g = g_pGameRegistry;                                                       \
-        if (GruntPointVisible(_g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {              \
-            _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                            \
+        if (GruntPointVisible(_g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {           \
+            _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                       \
         }                                                                                          \
     } while (0)
 

@@ -324,8 +324,8 @@ i32 CTimer::Tick(i32 dt) {
         i32* key = *(i32**)((char*)g_gameReg + 0x15c);
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)->FindByKey((i32)key, &found);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
+                                       ->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -338,8 +338,8 @@ i32 CTimer::Tick(i32 dt) {
         i32* key = *(i32**)((char*)g_gameReg + 0x15c);
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)->FindByKey((i32)key, &found);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
+                                       ->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();

@@ -233,8 +233,8 @@ i32 CProjectile::Update() {
             case 17: {
                 i32 pos[2];
                 GetSpawnPos(pos);
-                CProjSprite* spr =
-                    g_gameReg->m_world->m_8->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
+                CProjSprite* spr = g_gameReg->m_world->m_8
+                                       ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
                 spr->m_7c->Init(spr);
                 spr->m_124 = m_1ec;

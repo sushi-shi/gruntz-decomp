@@ -2,7 +2,7 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget + CImageRegistry)
-#include <Image/CImage.h>  // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
+#include <Image/CImage.h> // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).

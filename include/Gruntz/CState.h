@@ -105,8 +105,8 @@ public:
     i32 m_2c;         // +0x2c
     CResSource* m_30; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
     CResSource* m_34; // +0x34  GAME asset bank (GAME-namespace loaders' source)
-    i32 m_38; // +0x38
-    i32 m_3c; // +0x3c
+    i32 m_38;         // +0x38
+    i32 m_3c;         // +0x3c
     char m_pad40[0x4c - 0x40];
     char m_4c; // +0x4c (byte)
     char m_pad4d[0x150 - 0x4d];

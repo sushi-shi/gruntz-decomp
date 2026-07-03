@@ -98,7 +98,7 @@ SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record
 struct CNetCmdPacket {
     i32 m_sequence;       // +0x0  sequence
     CNetCmdSlot* m_owner; // +0x4  owning slot (this)
-    u8 m_flags;     // +0x8  flag byte
+    u8 m_flags;           // +0x8  flag byte
     char m_pad9[0xc - 9];
     i32 m_payloadLength; // +0xc  payload length
     char m_payload[1];   // +0x10 payload

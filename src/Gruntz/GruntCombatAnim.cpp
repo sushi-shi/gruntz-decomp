@@ -181,7 +181,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), &out);                                                 \
+        reg->m_world->m_28->m_10.Lookup((key), &out);                                              \
         cue = out;                                                                                 \
     } while (0)
 
