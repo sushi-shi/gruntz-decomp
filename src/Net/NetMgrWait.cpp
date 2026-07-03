@@ -110,12 +110,12 @@ i32 CNetMgr::WaitForOtherPlayers() {
         return 1;
     }
     i32 count = 0;
-    i32* slot = (i32*)((char*)m_session + 0x20);
+    CNetCmdSlot* slot = m_session->m_slots;
     for (i32 j = 4; j != 0; j--) {
-        if (slot != 0 && *slot == 3) {
+        if (slot != 0 && slot->m_state == 3) {
             count++;
         }
-        slot = (i32*)((char*)slot + 0x64);
+        slot++;
     }
     if (count == 0) {
         m_534 = 1;
@@ -152,10 +152,10 @@ i32 CNetMgr::WaitForOtherPlayers() {
         } else {
             abort -= elapsed;
         }
-        for (i32 off = 0; off < 0x190; off += 0x64) {
-            i32* s = (i32*)((char*)m_session + 0x20 + off);
-            if (*s == 3) {
-                *(i32*)((char*)s + 0x10) += elapsed;
+        for (i32 i = 0; i < 4; i++) {
+            CNetCmdSlot* s = &m_session->m_slots[i];
+            if (s->m_state == 3) {
+                s->m_latency += elapsed;
             }
         }
         if (abort == 0) {
@@ -258,16 +258,19 @@ i32 CNetMgr::Poll(i32 token) {
 
         i32 allAcked = 1;
         i32 allAgree = 1;
-        i32* rec = (i32*)(g_mgrSettings + 0x170);
+        // g_mgrSettings is the game-manager singleton; its +0x150 channel table is
+        // the same CNetGameMgr::m_channels[4] the net mgr drives (retail walks it
+        // from +0x170 == channel.m_20, reading back to m_18/m_14).
+        CNetGameMgr* mgr = (CNetGameMgr*)g_mgrSettings;
         for (i32 i = 0; i < 4; i++) {
-            if (rec[-2] != m_localPlayerId && rec[0] != 0 && rec[-3] != 0) {
+            CNetChannel* ch = &mgr->m_channels[i];
+            if (ch->m_18 != m_localPlayerId && ch->m_20 != 0 && ch->m_14 != 0) {
                 if (m_recordAcked[i] == 0) {
                     allAcked = 0;
                 } else if (!(m_recordToken[i] == token && token != 0)) {
                     allAgree = 0;
                 }
             }
-            rec = (i32*)((char*)rec + 0x238);
         }
         if (allAcked != 0) {
             if (allAgree != 0) {

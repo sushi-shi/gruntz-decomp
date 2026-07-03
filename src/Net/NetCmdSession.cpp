@@ -164,7 +164,7 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    m_owner = a1;
+    m_owner = (CNetMgr*)a1; // the session passes its owning CNetMgr in as an i32 handle
     m_state = a3;
     m_resetGuard = 0;
     m_latchedSeq = 0;

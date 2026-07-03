@@ -78,18 +78,10 @@ public:
 // command to it. Shared via the canonical CNetGameMgr::m_6c (folds the former
 // local CGruntzCmdMgr/CNetMgrSub placeholders).
 
-// The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
-// game-mgr sub-object (CNetGameMgr; whose +0x6c is the grunt command manager), the
-// DirectPlay session at +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay.
-struct CNetMgrView {
-    char m_pad0[4];
-    CNetGameMgr* m_sub; // +0x04
-    char m_pad8[0x520 - 8];
-    CNetSession* m_session; // +0x520  the session sub-object
-
-    i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
-};
-SIZE_UNKNOWN(CNetMgrView); // CNetMgr view (only +0x4/+0x520 pinned); retail size TBD
+// The slot's +0x1c owner is the shared CNetMgr (NetMgr.h): ProcessCmd reaches its
+// +0x4 game-mgr sub-object (CNetGameMgr; +0x6c is the grunt command manager), the
+// DirectPlay session at +0x520 (FindCmdSlot), and DispatchRecvMsg (0xb9750) for the
+// high-bit relay - all real typed members now, no reduced view.
 
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
@@ -186,7 +178,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         return 1;
     }
     if (opcode & 0x80) {
-        return ((CNetMgrView*)m_owner)->DispatchRecv(m_cmdHead[6], rec, size);
+        return m_owner->DispatchRecvMsg(m_cmdHead[6], (char*)rec, size);
     }
     if (odd == 0) {
         if (m_resetGuard != 0) {
@@ -213,7 +205,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     rem -= 13;
 
     if (m_resetGuard != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgrView*)m_owner)->m_session->FindCmdSlot(playerId);
+        CNetCmdSlot* slot = m_owner->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
@@ -262,7 +254,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1;
-        ((CNetMgrView*)m_owner)->m_sub->m_6c->EnqueueCommand(0, obj);
+        m_owner->m_4->m_6c->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }

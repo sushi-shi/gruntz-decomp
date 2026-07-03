@@ -127,12 +127,8 @@ extern "C" i32 Cfg_SetSection(char* buf, const char* fmt, i32 arg);   // 0xf9280
 extern "C" i32 Cfg_AppendKeyVal(char* buf, const char* key, i32 val); // 0xf93b0
 extern "C" CNetMgr* g_groupEnumMgr;                                   // 0x648cf4
 extern "C" CNetMgr* g_connectRptMgr;                                  // 0x648cf8
-SIZE_UNKNOWN(CNetChannelTable);
-struct CNetChannelTable {
-    char m_pad0[8];
-    i32 m_8;                  // +0x08  the channel field RegisterChannelFrom takes
-    CString GetChannelName(); // 0x1f450 (NRV CString)
-};
+// The channel-table base at CNetGameMgr+0x150 is m_4->m_channels[0] (CNetChannel);
+// JoinAndRegisterChannel seeds its name CString (+0x4) / id (m_8) directly.
 
 // OnJoinConfirm's referents: the game's cached GetDlgItem import pointer, the
 // key=value config parser (0xf9160) + its int parse (0x11ffb0). All reloc-masked.
@@ -623,10 +619,9 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
     packet[0] |= 0x80;
     *(i32*)(packet + 4) = STAT_CHANNEL_TABLE;
 
-    i32 off = 0;
     char* rec = packet + 9;
-    for (; off < 0x8e0; off += 0x238) {
-        CNetChannel* ch = (CNetChannel*)((char*)m_4 + 0x150 + off);
+    for (i32 i = 0; i < 4; i++) {
+        CNetChannel* ch = &m_4->m_channels[i];
         if (ch != 0) {
             rec[-1] = (char)ch->m_20;
             rec[0] = (char)ch->m_8;
@@ -668,10 +663,9 @@ i32 CNetMgr::ParseChannelTable(void* packet) {
         ResetNetSlots();
     }
 
-    i32 off = 0;
     char* rec = (char*)packet + 9;
-    for (; off < 0x8e0; off += 0x238) {
-        CNetChannel* ch = (CNetChannel*)((char*)m_4 + 0x150 + off);
+    for (i32 i = 0; i < 4; i++) {
+        CNetChannel* ch = &m_4->m_channels[i];
         if (ch != 0) {
             ch->m_20 = (u8)rec[-1];
             ch->m_8 = (u8)rec[0];
@@ -725,20 +719,20 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
 
     CNetChannel* ch = 0;
     if (idx >= 0 && idx <= 4) {
-        ch = (CNetChannel*)((char*)m_4 + idx * 0x238 + 0x150);
+        ch = &m_4->m_channels[idx];
         if (ch != 0 && ch->m_20 != 0) {
             ch = 0;
         }
     }
     if (ch == 0) {
-        CNetChannel* p = (CNetChannel*)((char*)m_4 + 0x150);
+        CNetChannel* p = m_4->m_channels;
         for (i32 i = 0; i < 4; i++) {
             ch = p;
             if (p != 0 && p->m_20 == 0) {
                 break;
             }
             ch = 0;
-            p = (CNetChannel*)((char*)p + 0x238);
+            p++;
         }
         if (ch == 0) {
             return 0;
@@ -783,7 +777,7 @@ i32 CNetMgr::RegisterChannelRec(void* rec) {
 // slot (SetNetSlot(id, 1)). Returns 1 when a slot was removed.
 RVA(0x000bac90, 0x46)
 i32 CNetMgr::RemoveChannel(i32 idx) {
-    CNetChannel* ch = (CNetChannel*)((char*)m_4 + idx * 0x238 + 0x150);
+    CNetChannel* ch = &m_4->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
@@ -862,7 +856,7 @@ i32 CNetMgr::ParseOneChannel(void* rec) {
     if (idx < 0 || idx >= 4) {
         return 0;
     }
-    CNetChannel* ch = (CNetChannel*)((char*)m_4 + idx * 0x238 + 0x150);
+    CNetChannel* ch = &m_4->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
@@ -1001,7 +995,7 @@ i32 CNetMgr::DropChannelPlayer(i32 idx) {
         return 0;
     }
 
-    CNetChannel* ch = (CNetChannel*)((char*)m_4 + idx * 0x238 + 0x150);
+    CNetChannel* ch = &m_4->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
@@ -1067,12 +1061,12 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
     m_608[slot] = id;
 
     i32 stateThree = 0;
-    i32* p = (i32*)((char*)m_session + 0x20);
+    CNetCmdSlot* p = m_session->m_slots;
     for (i = 0; i < 4; i++) {
-        if (p != 0 && *p == 3) {
+        if (p != 0 && p->m_state == 3) {
             stateThree++;
         }
-        p = (i32*)((char*)p + 0x64);
+        p++;
     }
 
     i32 recorded = 0;
@@ -1688,12 +1682,12 @@ i32 CNetMgr::DetectConnectionConfig() {
         m_resend = rs;
     }
 
-    CNetChannelTable* ct = (CNetChannelTable*)((char*)m_4 + 0x150);
+    CNetChannel* ch0 = m_4->m_channels;
     {
         CString name = GetString5a0();
-        *(CString*)((char*)ct + 4) = name;
+        ch0->m_4 = name;
     }
-    ct->m_8 = 0;
+    ch0->m_8 = 0;
 
     i32 r = JoinAndRegisterChannel();
     if (r != 0) {
@@ -1741,9 +1735,9 @@ i32 CNetMgr::JoinAndRegisterChannel() {
     }
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
-    CNetChannelTable* ct = (CNetChannelTable*)((char*)m_4 + 0x150);
-    i32 chField = ct->m_8;
-    CString name = ct->GetChannelName();
+    CNetChannel* ch0 = m_4->m_channels;
+    i32 chField = ch0->m_8;
+    CString name = ch0->GetName();
     i32 ok = RegisterChannelFrom(name, chField, -1, m_localPlayerId);
     return ok != 0 ? enumResult : 0;
 }
@@ -2316,16 +2310,16 @@ i32 CNetMgr::SetupTcpIpConfig() {
         m_resend = rs;
     }
 
-    CNetChannelTable* ct = (CNetChannelTable*)((char*)m_4 + 0x150);
+    CNetChannel* ch0 = m_4->m_channels;
     {
         CString name = GetString5a0();
-        *(CString*)((char*)ct + 4) = name;
+        ch0->m_4 = name;
     }
-    ct->m_8 = 0;
+    ch0->m_8 = 0;
 
     void* lp;
     {
-        CString cn = ct->GetChannelName();
+        CString cn = ch0->GetName();
         lp = (void*)m_peer->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
     }
     m_localPlayer = (CNetPlayerEntry*)lp;
@@ -2335,8 +2329,8 @@ i32 CNetMgr::SetupTcpIpConfig() {
     }
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
-    i32 chField = ct->m_8;
-    CString cn2 = ct->GetChannelName();
+    i32 chField = ch0->m_8;
+    CString cn2 = ch0->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_localPlayerId);
     return ok != 0;
 }
@@ -2534,6 +2528,9 @@ u32 CNetMgr::GetMaxAckLatency() {
             }
         }
     } else {
+        // The retail leaf addresses each slot m_4-relative (base m_4, disp +0x164/
+        // +0x170/+0x37c), NOT via the +0x150 channel base - a distinct authentic
+        // encoding, so the CNetPlayerSlot view is kept (removing it shifts base/disp).
         CNetPlayerSlot* slot = (CNetPlayerSlot*)m_4;
         for (i32 i = 0; i < 4; i++) {
             if (slot->m_164 && slot->m_170) {
@@ -3790,7 +3787,7 @@ i32 CNetMgr::CreateSession() {
     m_5cc = b;
 
     for (i32 i = 0; i < 4; i++) {
-        CNetChannel* ch = (CNetChannel*)((char*)m_4 + 0x150 + i * 0x238);
+        CNetChannel* ch = &m_4->m_channels[i];
         i32 code = 1;
         if (ch->m_20 != 0 && ch->m_14 != 0) {
             code = (ch->m_18 == m_localPlayerId) ? 2 : 3;

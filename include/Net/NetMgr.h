@@ -55,6 +55,7 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // ---------------------------------------------------------------------------
 class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
 class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
+class CNetMgr;       // defined below; the command slot caches one as its +0x1c owner
 
 // ---------------------------------------------------------------------------
 // The game-manager singleton - only its +0x38 RegistryHelper is
@@ -151,9 +152,10 @@ SIZE(CNetVersionPacket, 0x20); // fully-known stack packet
 //   +0x5a4 m_cmdDelay       : the _CmdDelay value persisted by ApplyCmdDelayDefaults.
 //   +0x5a8 m_resend         : the _Resend value persisted by ApplyCmdDelayDefaults.
 // ---------------------------------------------------------------------------
-// One per-player slot in the m_4 sub-object's slot array (stride 0x238). Only
-// the three dwords GetMaxAckLatency reads are pinned: two "slot active" gate
-// flags and the slot's current latency value.
+// One per-player slot viewed m_4-RELATIVE (base m_4, stride 0x238): retail's
+// GetMaxAckLatency leaf addresses the same array this way (base m_4, large disps
+// +0x164/+0x170/+0x37c), a distinct authentic encoding from the +0x150 channel
+// base below - so this view is kept for that one leaf.
 struct CNetPlayerSlot {
     char m_pad0[0x164];
     DWORD m_164; // +0x164  slot-active gate A
@@ -162,16 +164,17 @@ struct CNetPlayerSlot {
     char m_pad174[0x37c - 0x174];
     DWORD m_37c; // +0x37c  the slot's latency value
 };
-SIZE_UNKNOWN(CNetPlayerSlot); // partial slot view (only the 3 gate/latency dwords pinned)
+SIZE_UNKNOWN(CNetPlayerSlot); // m_4-relative slot view (3 gate/latency dwords pinned)
 
 // ---------------------------------------------------------------------------
-// One channel descriptor in the inline array at (m_4 + 0x150), stride 0x238,
-// four entries (the 0x8e0 loop bound == 4 * 0x238). This is the SAME memory
-// CNetPlayerSlot views from m_4 (channel+0x14 == m_4+0x164 gate A,
-// channel+0x20 == m_4+0x170 gate B, channel+0x22c == m_4+0x37c latency); here
-// it is the channel-table base used by the serialize/parse/register run
-// (0xba810..0xbb190). Only the touched fields are pinned. The +0x4 member is a
-// CString (the channel's name); +0x18 a dword id; +0x20 the "active" gate.
+// One channel descriptor in the inline array at (CNetGameMgr + 0x150), stride
+// 0x238, four entries (the 0x8e0 loop bound == 4 * 0x238) - modeled by value as
+// CNetGameMgr::m_channels[4]. Same memory the CNetPlayerSlot view sees m_4-
+// relative (channel+0x14 == m_4+0x164 gate A, channel+0x20 == m_4+0x170 gate B,
+// channel+0x22c == m_4+0x37c latency); the serialize/parse/register run
+// (0xba810..0xbb190) addresses it +0x150-relative. Only the touched fields are
+// pinned. The +0x4 member is a CString (the channel's name); +0x18 a dword id;
+// +0x20 the "active" gate.
 struct CNetChannel {
     i32 m_0;     // +0x00  id/header dword (serialized at packet+8)
     CString m_4; // +0x04  channel name (CString)
@@ -184,15 +187,16 @@ struct CNetChannel {
     i32 m_20;    // +0x20  "active" gate (== m_4+0x170 gate B)
     char m_pad24[0x228 - 0x24];
     i32 m_228; // +0x228
-    i32 m_22c; // +0x22c (== m_4+0x37c latency)
+    i32 m_22c; // +0x22c  the slot's latency value (== m_4+0x37c)
     i32 m_230; // +0x230
+    char m_pad234[0x238 - 0x234];
 
     // The channel's name fetched by value (NRV into the caller's slot); thiscall
     // engine routine reached through an incremental-link thunk (no body here so
     // the call reloc-masks). 0x41f450.
     CString GetName();
 };
-SIZE_UNKNOWN(CNetChannel); // channel-descriptor view (0x238 stride not fully modeled); size TBD
+SIZE(CNetChannel, 0x238); // one inline channel descriptor (array stride 0x238)
 
 // A payload entry found through the m_58 player list. FindPlayerById matches on
 // the entry's +0x4 id field.
@@ -245,7 +249,7 @@ struct CNetCmdSlot {
     i32 m_latency;    // +0x10  the slot's latency value (CheckLatency compares vs the cap)
     i32 m_baseSeq;    // +0x14  base command sequence number
     i32 m_maxSeq;     // +0x18  high-water sequence (RaiseMax keeps the max)
-    i32 m_owner;      // +0x1c  owning CNetMgr back-pointer (Init <- session; cast for dispatch)
+    CNetMgr* m_owner; // +0x1c  owning CNetMgr back-pointer (Init <- session; drives ProcessCmd)
     CObList m_cmds;   // +0x20  queued-command list (CObList, 0x1c bytes)
     i32 m_3c;         // +0x3c  ack-flag array base ((&m_3c)[playerIdx])
     i32 m_40;         // +0x40
@@ -616,7 +620,7 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // placeholder views of the same object: CNetHwndHolder (+0x4 window/HWND chain),
 // CNetSubObject / CNetMgrSub (+0x6c command manager), and OptionsHost
 // (CountActiveChannels @0x492e30). The +0x4 sub-object is ALSO the base of the
-// inline per-channel slot array at +0x150 (see CNetChannel / CNetPlayerSlot).
+// inline per-channel slot array at +0x150 (CNetGameMgr::m_channels, see CNetChannel).
 // ---------------------------------------------------------------------------
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
@@ -628,8 +632,10 @@ struct CNetGameMgr {
     CNetChatLog* m_5c; // +0x5c  the chat/text display
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
+    char m_pad70[0x150 - 0x70];
+    CNetChannel m_channels[4]; // +0x150  the inline per-channel slot array (stride 0x238)
 };
-SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c pinned); retail size TBD
+SIZE_UNKNOWN(CNetGameMgr); // game-mgr view (+0x4/+0x5c/+0x6c/+0x150 pinned); retail size TBD
 
 // The DirectPlay player-descriptor node the +0x38 player CObList holds (the
 // payload PopulatePlayerList lists into the Win32 list box). Only its +0x34
@@ -949,9 +955,10 @@ public:
     // (vptr implicit at +0x000; was `char m_pad0[4]`)
     // The +0x4 game-manager sub-object (the canonical CNetGameMgr view above):
     // ->m_wnd->m_hwnd is the HWND the message handlers PostMessageA through; ->m_6c
-    // is the CGruntzCmdMgr command manager. The +0x4 object is ALSO the base of the
-    // inline per-player ack-latency / channel slot array at +0x150, reached through
-    // the byte-base casts (CNetPlayerSlot*)m_4 / (char*)m_4 + 0x150 + ...
+    // is the CGruntzCmdMgr command manager. The +0x4 object ALSO holds the inline
+    // per-channel ack-latency slot array at +0x150 (CNetGameMgr::m_channels[4]),
+    // reached by name now (except the one m_4-relative GetMaxAckLatency leaf, which
+    // keeps its authentic CNetPlayerSlot base/disp encoding).
     CNetGameMgr* m_4; // +0x004
     // A CString member at +0x8 (GetName returns a copy of it by value).
     CString m_8; // +0x008
