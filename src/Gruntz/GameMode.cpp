@@ -629,7 +629,7 @@ i32 CCreditsState::DrawScrollingCredits() {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, 0x280, 0x1e0};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
-            DrawTextA(hdc, (const char*)s, -1, &r, 0x75);
+            DrawTextA(hdc, s, -1, &r, 0x75); // CString -> LPCTSTR (implicit)
             SetTextColor(hdc, oldColor2);
         }
         if (g_62bf74 != 0) {
@@ -719,8 +719,8 @@ i32 CState::BuildWarpStoneGlitterAnimation() {
     self->m_1e4 = 0;
     self->m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGlitterAnim* a =
-            g_mgrSettings->m_world->m_8->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
+        CGlitterAnim* a = g_mgrSettings->m_world->m_8
+                              ->Create(0, 0, 0, (i != self->m_1d8) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;

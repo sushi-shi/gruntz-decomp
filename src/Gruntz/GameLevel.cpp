@@ -48,9 +48,10 @@
 // CGameLevel. Each touches the level's own members through their named fields
 // (m_planeCtx@+0x10, m_planes/m_imageSets, m_owner@+0x0c, m_04@+0x04, the
 // m_b0..m_dc default-extents block, m_header@+0xe0). The per-plane / edit-state /
-// visit-context objects they dispatch into are UNMATCHED engine classes, modeled
-// as typed window structs (PlaneGeom/LevelPlane/MainPlane/LevelScroll/VisitCtx/
-// EditSink) that view the same object at the offsets each method touches.
+// visit-context objects they dispatch into are the real CPlane (WwdFile.h) for the
+// per-plane objects, and UNMATCHED engine classes for the edit-state / visit-context
+// objects, modeled as typed window structs (LevelScroll/ScrollTarget/EditTarget/
+// VisitCtx/EditSink) that view the same object at the offsets each method touches.
 //
 // The shared "default extents" block at +0xb0..+0xdc is stamped with the same
 // constants by the ctor and several edit methods (StampParamBlock):
@@ -70,53 +71,11 @@ struct CParseSource {
     void EndParse();
 };
 
-// CGameLevelChild - placeholder for whatever class lives in the pointer arrays
-// at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
-SIZE_UNKNOWN(CGameLevelChild);
-class CGameLevelChild {
-public:
-    virtual void Dummy();
-    virtual void Release(i32 arg);
-};
-
-// PlaneGeom - the in-memory plane the level recomputes coords on. This is the
-// same object as CPlane (WwdFile.h), viewed at the offsets RecomputePlaneCoords
-// touches; RecomputePlaneCoords is a __thiscall taking the plane as `this` (the
-// retail call site is a bare `call` with the plane already in ecx - NO pushed
-// argument), so it is modeled as a method here per the matcher __thiscall idiom.
-// Layout (a window onto CPlane):
-//   +0x08 flags  (bit2 = wrap X, bit3 = wrap Y)
-//   +0x10/+0x14  scaledX / scaledY (float scroll origin, pre-stored by LoadWwd)
-//   +0x30/+0x34  tilesWide / tilesHigh (int wrap modulus)
-//   +0x40/+0x44  out: tile-origin X / Y     +0x48/+0x4c out: tile-extent X / Y
-//   +0x70/+0x74  viewport tiles across/down +0x78/+0x7c view-anchor X / Y
-//   +0x84/+0x88  out: integer scaledX / scaledY
-SIZE_UNKNOWN(PlaneGeom);
-struct PlaneGeom {
-    char pad_0[0x08];
-    u32 flags; // +0x08
-    char pad_c[0x10 - 0x0c];
-    float scaledX; // +0x10
-    float scaledY; // +0x14
-    char pad_18[0x30 - 0x18];
-    i32 tilesWide; // +0x30
-    i32 tilesHigh; // +0x34
-    char pad_38[0x40 - 0x38];
-    i32 originX; // +0x40
-    i32 originY; // +0x44
-    i32 extentX; // +0x48
-    i32 extentY; // +0x4c
-    char pad_50[0x70 - 0x50];
-    i32 viewW;   // +0x70
-    i32 viewH;   // +0x74
-    i32 anchorX; // +0x78
-    i32 anchorY; // +0x7c
-    char pad_80[0x84 - 0x80];
-    i32 intX; // +0x84
-    i32 intY; // +0x88
-
-    void RecomputePlaneCoords();
-};
+// The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
+// view of the engine plane, GameLevel.h), m_imageSets -> CImageSet*. Both carry the
+// +0x04 release slot (CLevelPlane::dtor / CImageSet::Release). The per-plane object.s
+// tile grid, extents, coord-recompute outputs, tile->pixel shifts and name are all
+// named CLevelPlane members reached without a per-site cast off m_mainPlane.
 
 // The two-phase vptr stores are now cl-emitted: the inlined CLoadable ctor (in
 // GameLevel.h) auto-stamps the base vptr (&??_7CLoadable, orphan reloc-masked
@@ -300,7 +259,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     {
         i32 startX = hdr->startX;
         i32 startY = hdr->startY;
-        CPlane* mp = m_mainPlane;
+        CLevelPlane* mp = m_mainPlane;
         if (mp->m_flags & 1) {
             mp->m_scaledX = (float)startX;
             mp->m_scaledY = (float)startY;
@@ -308,7 +267,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             mp->m_scaledX = (float)startX * mp->m_scaleX;
             mp->m_scaledY = (float)startY * mp->m_scaleY;
         }
-        ((PlaneGeom*)mp)->RecomputePlaneCoords();
+        mp->RecomputePlaneCoords();
 
         // Re-derive the start coords from the main plane's origin for the rest.
         i32 ox = m_mainPlane->m_originX;
@@ -317,7 +276,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
-                CPlane* p = (CPlane*)m_planes[i2];
+                CLevelPlane* p = (CLevelPlane*)m_planes[i2];
                 if (p->m_flags & 1) {
                     p->m_scaledX = (float)ox;
                     p->m_scaledY = (float)oy;
@@ -325,7 +284,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
                     p->m_scaledX = (float)ox * p->m_scaleX;
                     p->m_scaledY = (float)oy * p->m_scaleY;
                 }
-                ((PlaneGeom*)p)->RecomputePlaneCoords();
+                p->RecomputePlaneCoords();
             }
             ++i2;
         }
@@ -490,16 +449,16 @@ RVA(0x0015d1f0, 0x87)
 i32 CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->Release(1); // release/free hook (+0x04)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -518,16 +477,16 @@ RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->Release(1); // release/free hook (+0x04)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -835,103 +794,103 @@ i32 CImageSet3::Parse(void* record) {
 }
 
 // ---------------------------------------------------------------------------
-// PlaneGeom::RecomputePlaneCoords - recompute one plane's scaled scroll origin
+// CLevelPlane::RecomputePlaneCoords - recompute one plane's scaled scroll origin
 // and visible-tile extents from its (already-scaled) float coords. __thiscall
 // with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the
 // CRT __ftol helper (the (int)float casts). X and Y are computed identically:
 // wrap (flags bit set) folds the coord modulo the tile count into [0, count);
 // else it clamps to [0, count-1].
 RVA(0x00161c90, 0x1e4)
-void PlaneGeom::RecomputePlaneCoords() {
-    PlaneGeom* p = this;
-    u32 flags = p->flags;
+void CLevelPlane::RecomputePlaneCoords() {
+    CLevelPlane* p = this;
+    u32 flags = p->m_flags;
     i32 wrapX = flags & 4;
 
     // --- X axis: wrap/clamp scaledX into the tile grid -----------------------
     if (wrapX) {
-        if (p->scaledX < 0.0f) {
+        if (p->m_scaledX < 0.0f) {
             do {
-                p->scaledX += (float)p->tilesWide;
-            } while (p->scaledX < 0.0f);
+                p->m_scaledX += (float)p->m_wrapW;
+            } while (p->m_scaledX < 0.0f);
         }
-        if (p->scaledX >= (float)p->tilesWide) {
-            float t = p->scaledX;
+        if (p->m_scaledX >= (float)p->m_wrapW) {
+            float t = p->m_scaledX;
             do {
-                t -= (float)p->tilesWide;
-            } while (t >= (float)p->tilesWide);
-            p->scaledX = t;
+                t -= (float)p->m_wrapW;
+            } while (t >= (float)p->m_wrapW);
+            p->m_scaledX = t;
         }
     } else {
-        if (p->scaledX < 0.0f) {
-            p->scaledX = 0;
-        } else if ((float)p->tilesWide <= p->scaledX) {
-            p->scaledX = (float)(p->tilesWide - 1);
+        if (p->m_scaledX < 0.0f) {
+            p->m_scaledX = 0;
+        } else if ((float)p->m_wrapW <= p->m_scaledX) {
+            p->m_scaledX = (float)(p->m_wrapW - 1);
         }
     }
 
     // --- Y axis: identical wrap/clamp on scaledY/tilesHigh -------------------
     i32 wrapY = flags & 8;
     if (wrapY) {
-        if (p->scaledY < 0.0f) {
+        if (p->m_scaledY < 0.0f) {
             do {
-                p->scaledY += (float)p->tilesHigh;
-            } while (p->scaledY < 0.0f);
+                p->m_scaledY += (float)p->m_wrapH;
+            } while (p->m_scaledY < 0.0f);
         }
-        if (p->scaledY >= (float)p->tilesHigh) {
-            float t = p->scaledY;
+        if (p->m_scaledY >= (float)p->m_wrapH) {
+            float t = p->m_scaledY;
             do {
-                t -= (float)p->tilesHigh;
-            } while (t >= (float)p->tilesHigh);
-            p->scaledY = t;
+                t -= (float)p->m_wrapH;
+            } while (t >= (float)p->m_wrapH);
+            p->m_scaledY = t;
         }
     } else {
-        if (p->scaledY < 0.0f) {
-            p->scaledY = 0;
-        } else if ((float)p->tilesHigh <= p->scaledY) {
-            p->scaledY = (float)(p->tilesHigh - 1);
+        if (p->m_scaledY < 0.0f) {
+            p->m_scaledY = 0;
+        } else if ((float)p->m_wrapH <= p->m_scaledY) {
+            p->m_scaledY = (float)(p->m_wrapH - 1);
         }
     }
 
     // --- snap to integer + derive the tile origin ----------------------------
-    i32 ix = (i32)p->scaledX;
-    p->intX = ix;
-    i32 iy = (i32)p->scaledY;
-    p->intY = iy;
+    i32 ix = (i32)p->m_scaledX;
+    p->m_originX = ix;
+    i32 iy = (i32)p->m_scaledY;
+    p->m_originY = iy;
 
-    i32 ox = ix - p->anchorX;
-    p->originX = ox;
+    i32 ox = ix - p->m_anchorX;
+    p->m_tileOriginX = ox;
     if (ox < 0) {
         if (wrapX) {
-            p->originX = p->tilesWide + ox;
+            p->m_tileOriginX = p->m_wrapW + ox;
         } else {
-            p->originX = 0;
+            p->m_tileOriginX = 0;
         }
     }
 
-    i32 oy = iy - p->anchorY;
-    p->originY = oy;
+    i32 oy = iy - p->m_anchorY;
+    p->m_tileOriginY = oy;
     if (oy < 0) {
         if (wrapY) {
-            p->originY = p->tilesHigh + oy;
+            p->m_tileOriginY = p->m_wrapH + oy;
         } else {
-            p->originY = 0;
+            p->m_tileOriginY = 0;
         }
     }
 
     // --- derive the far tile extents (clamped, unless wrapping) ---------------
-    i32 ex = p->viewW + p->originX - 1;
-    i32 ey = p->viewH + p->originY - 1;
-    p->extentX = ex;
-    p->extentY = ey;
-    if (ex >= p->tilesWide && wrapX == 0) {
-        i32 over = ex - p->tilesWide + 1;
-        p->extentX = ex - over;
-        p->originX = p->originX - over;
+    i32 ex = p->m_viewW + p->m_tileOriginX - 1;
+    i32 ey = p->m_viewH + p->m_tileOriginY - 1;
+    p->m_tileExtentX = ex;
+    p->m_tileExtentY = ey;
+    if (ex >= p->m_wrapW && wrapX == 0) {
+        i32 over = ex - p->m_wrapW + 1;
+        p->m_tileExtentX = ex - over;
+        p->m_tileOriginX = p->m_tileOriginX - over;
     }
-    if (ey >= p->tilesHigh && wrapY == 0) {
-        i32 over = ey - p->tilesHigh + 1;
-        p->extentY = ey - over;
-        p->originY = p->originY - over;
+    if (ey >= p->m_wrapH && wrapY == 0) {
+        i32 over = ey - p->m_wrapH + 1;
+        p->m_tileExtentY = ey - over;
+        p->m_tileOriginY = p->m_tileOriginY - over;
     }
 }
 
@@ -941,42 +900,9 @@ void PlaneGeom::RecomputePlaneCoords() {
 // callees that reloc-mask (no string/global relocations except the jump tables).
 // ===========================================================================
 
-// LevelPlane - a window onto the per-plane object stored in m_planes (CPlane*),
-// viewed at the offsets this cluster touches. The named slot methods are UNMATCHED
-// engine __thiscall leaves modeled with no body (their call sites reloc-mask):
-//   Build(coords)  @0x161e80  - re-place + recompute one plane's coords
-//   Sync(arg)      @0x162010  - per-plane visit helper
-//   Refresh()      @0x163670  - per-plane refresh hook
-// Fields: +0x08 flags, +0x20 tileBase, +0x24 rowOfs, +0x28 width, +0x2c height,
-//   +0x74 limit, +0x80 cap, +0xb4 name[].
-SIZE_UNKNOWN(LevelPlane);
-struct LevelPlane {
-    char pad_0[0x08];
-    u32 flags; // +0x08
-    char pad_c[0x20 - 0x0c];
-    i32* tileBase; // +0x20
-    i32* rowOfs;   // +0x24
-    i32 width;     // +0x28
-    i32 height;    // +0x2c
-    char pad_30[0x74 - 0x30];
-    i32 limit; // +0x74
-    char pad_78[0x80 - 0x78];
-    i32 cap; // +0x80
-    char pad_84[0xb4 - 0x84];
-    char name[4]; // +0xb4
-
-    void Build(LevelCoordRect* coords); // @0x161e80 (ret 4)
-    void Sync(i32 arg);                 // @0x162010 (ret 4)
-    void Refresh();                     // @0x163670 (ret)
-};
-
-// Three zero-arg __thiscall methods on the main plane the forwarders tail into.
-SIZE_UNKNOWN(MainPlane);
-struct MainPlane {
-    i32 QueryA();  // @0x163300
-    i32 QueryB();  // @0x163370
-    void Notify(); // @0x163420
-};
+// The per-plane object stored in m_planes is CLevelPlane (GameLevel.h). CGameLevel drives
+// its Build(coords)/Sync(arg)/Refresh() slots (unmatched engine __thiscall leaves,
+// reloc-masked call sites) and reads its tile grid / extents / name directly.
 
 // __strcmpi (CRT) - reloc-masked. Declared with no header to keep the cdecl shape.
 extern "C" i32 __cdecl _strcmpi(const char*, const char*);
@@ -1093,22 +1019,10 @@ struct ProbeObj {
     i32 m_178; // +0x178
 };
 
-// ProbePlane - the main plane the tile probe reads. Same object as CPlane/CPlaneRender,
-// viewed at the probe offsets: the wrap moduli at +0x30/+0x34 (clamp bounds), the
-// log2-tile shift amounts at +0x8c/+0x90, the column-offset table at +0x24 and the
-// tile grid at +0x20.
-SIZE_UNKNOWN(ProbePlane);
-struct ProbePlane {
-    char pad_0[0x20];
-    i32* tileGrid;   // +0x20
-    i32* colOffsets; // +0x24
-    char pad_28[0x30 - 0x28];
-    i32 wrapW; // +0x30
-    i32 wrapH; // +0x34
-    char pad_38[0x8c - 0x38];
-    i32 shiftX; // +0x8c
-    i32 shiftY; // +0x90
-};
+// The tile probe reads the main plane (CLevelPlane) at its probe offsets: the wrap moduli
+// m_wrapW/m_wrapH (+0x30/+0x34, clamp bounds), the log2-tile shifts m_shiftX/m_shiftY
+// (+0x8c/+0x90), the column-offset table m_colOffsets (+0x24) and the tile grid
+// m_tileGrid (+0x20).
 
 // PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270). Written as
 // a do/while macro so each of the (up to four) copies in a single function schedules
@@ -1123,27 +1037,27 @@ struct ProbePlane {
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (px_ >= pc_->wrapW) {                                                               \
-                px_ = pc_->wrapW - 1;                                                              \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (px_ >= pc_->m_wrapW) {                                                             \
+                px_ = pc_->m_wrapW - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (py_ >= pc_->wrapH) {                                                               \
-                py_ = pc_->wrapH - 1;                                                              \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (py_ >= pc_->m_wrapH) {                                                             \
+                py_ = pc_->m_wrapH - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
-        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                         \
-        i32 qx_ = px_ >> pl_->shiftX;                                                              \
-        i32 qy_ = py_ >> pl_->shiftY;                                                              \
+        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
+        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
+        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                    \
-        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                    \
-        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                    \
-        i32 tile_ = pl_->tileGrid[idx_];                                                           \
+        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
+        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
+        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = 0;                                                                          \
         } else {                                                                                   \
@@ -1166,28 +1080,28 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (px < 0) {
         px = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (px >= pc->wrapW) {
-            px = pc->wrapW - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (px >= pc->m_wrapW) {
+            px = pc->m_wrapW - 1;
         }
     }
     i32 py = limit;
     if (py < 0) {
         py = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (py >= pc->wrapH) {
-            py = pc->wrapH - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (py >= pc->m_wrapH) {
+            py = pc->m_wrapH - 1;
         }
     }
-    ProbePlane* pl = (ProbePlane*)m_mainPlane;
-    i32 qx = px >> pl->shiftX;
-    i32 qy = py >> pl->shiftY;
+    CLevelPlane* pl = m_mainPlane;
+    i32 qx = px >> pl->m_shiftX;
+    i32 qy = py >> pl->m_shiftY;
     i32 col = qx;
-    i32 subX = px - (qx << pl->shiftX);
-    i32 idx = pl->colOffsets[qy] + col;
-    i32 subY = py - (qy << pl->shiftY);
-    i32 tile = pl->tileGrid[idx];
+    i32 subX = px - (qx << pl->m_shiftX);
+    i32 idx = pl->m_colOffsets[qy] + col;
+    i32 subY = py - (qy << pl->m_shiftY);
+    i32 tile = pl->m_tileGrid[idx];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
@@ -1234,25 +1148,25 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 // referenced image set's slot +0x20 with (0, 0). ret 8.
 RVA(0x00082600, 0x73)
 i32 CGameLevel::LookupTile(i32 x, i32 y) {
-    LevelPlane* mp;
+    CLevelPlane* mp;
     if (x < 0) {
         x = 0;
     } else {
-        mp = (LevelPlane*)m_mainPlane;
-        if (x >= mp->width) {
-            x = mp->width - 1;
+        mp = m_mainPlane;
+        if (x >= mp->m_width) {
+            x = mp->m_width - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        mp = (LevelPlane*)m_mainPlane;
-        if (y >= mp->height) {
-            y = mp->height - 1;
+        mp = m_mainPlane;
+        if (y >= mp->m_height) {
+            y = mp->m_height - 1;
         }
     }
-    mp = (LevelPlane*)m_mainPlane;
-    i32 tile = mp->tileBase[mp->rowOfs[y] + x];
+    mp = m_mainPlane;
+    i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
@@ -1265,7 +1179,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
 RVA(0x000cedf0, 0xf)
 i32 CGameLevel::MainPlaneQueryA() {
     if (m_mainPlane != 0) {
-        return ((MainPlane*)m_mainPlane)->QueryA();
+        return (m_mainPlane)->QueryA();
     }
     return 0;
 }
@@ -1273,7 +1187,7 @@ i32 CGameLevel::MainPlaneQueryA() {
 RVA(0x000cee10, 0xf)
 i32 CGameLevel::MainPlaneQueryB() {
     if (m_mainPlane != 0) {
-        return ((MainPlane*)m_mainPlane)->QueryB();
+        return (m_mainPlane)->QueryB();
     }
     return 0;
 }
@@ -1281,7 +1195,7 @@ i32 CGameLevel::MainPlaneQueryB() {
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
-        ((MainPlane*)m_mainPlane)->Notify();
+        (m_mainPlane)->Notify();
     }
 }
 
@@ -1291,7 +1205,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((LevelPlane*)m_planes[i])->Build(coords);
+        ((CLevelPlane*)m_planes[i])->Build(coords);
     }
 }
 
@@ -1332,7 +1246,7 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Build(&rect);
+            ((CLevelPlane*)m_planes.GetData()[i])->Build(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1348,7 +1262,7 @@ void CGameLevel::SyncToMainIndex(i32 arg) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i <= m_mainIndex);
     }
@@ -1362,7 +1276,7 @@ void CGameLevel::SyncAfterMainIndex(i32 arg) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1462,8 +1376,8 @@ i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        LevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes[i] : 0;
-        if (_strcmpi(name, p->name) == 0) {
+        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes[i] : 0;
+        if (_strcmpi(name, p->m_name) == 0) {
             return (CPlane*)p;
         }
     }
@@ -1542,15 +1456,15 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     VisitChain* chain = &c->m_chain;
 
     if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
-        ((LevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
+        ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
         ObjNode* node = chain->head;
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                LevelPlane* p =
-                    (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes.GetData()[i] : 0;
-                i32 cap = p->cap;
+                CLevelPlane* p =
+                    (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes.GetData()[i] : 0;
+                i32 cap = p->m_cap;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
                     ObjNode* cur = node;
@@ -1563,7 +1477,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
                         blocked = 1;
                     }
                 }
-                ((LevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
+                ((CLevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -1580,7 +1494,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
@@ -1588,7 +1502,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            ((LevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -1599,7 +1513,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((LevelPlane*)m_planes[i])->Refresh();
+        ((CLevelPlane*)m_planes[i])->Refresh();
     }
 }
 
@@ -1708,28 +1622,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = yLo;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1802,28 +1716,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = yLo;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1896,28 +1810,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = fixedY;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1990,28 +1904,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = fixedY;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -2996,41 +2910,36 @@ i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
 // = that + the image set's width (+0x04) - 1. Returns 1 (0 for an empty/clear tile).
 // An inlined tile probe that, unlike AxisProbe, keeps the tile-aligned coord and
 // reads the image set's width field instead of dispatching slot +0x20. ret 0x10.
-SIZE_UNKNOWN(SpanImageSet);
-struct SpanImageSet {
-    char pad_0[0x04];
-    i32 m_04; // +0x04  tile (column) width
-};
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
         x = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (x >= pc->wrapW) {
-            x = pc->wrapW - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (x >= pc->m_wrapW) {
+            x = pc->m_wrapW - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (y >= pc->wrapH) {
-            y = pc->wrapH - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (y >= pc->m_wrapH) {
+            y = pc->m_wrapH - 1;
         }
     }
-    ProbePlane* pl = (ProbePlane*)m_mainPlane;
-    i32 qx = x >> pl->shiftX;
-    i32 alignedX = qx << pl->shiftX;
-    i32 qy = y >> pl->shiftY;
-    i32 idx = pl->colOffsets[qy] + qx;
-    i32 tile = pl->tileGrid[idx];
+    CLevelPlane* pl = m_mainPlane;
+    i32 qx = x >> pl->m_shiftX;
+    i32 alignedX = qx << pl->m_shiftX;
+    i32 qy = y >> pl->m_shiftY;
+    i32 idx = pl->m_colOffsets[qy] + qx;
+    i32 tile = pl->m_tileGrid[idx];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    SpanImageSet* set = (SpanImageSet*)m_imageSets[tile & 0xffff];
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
     *outLo = alignedX;
-    *outHi = alignedX + set->m_04 - 1;
+    *outHi = alignedX + set->m_width - 1;
     return 1;
 }
 
@@ -3104,7 +3013,7 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
             break;
         }
         ++row;
-        if (row >= ((ProbePlane*)m_mainPlane)->wrapH) {
+        if (row >= (m_mainPlane)->m_wrapH) {
             return 0;
         }
         PROBE_TILE(this, px, row, result);

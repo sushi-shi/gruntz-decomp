@@ -2080,7 +2080,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     if (m_overlayDrag != 0) {
         return 1;
     }
-    if (((CWorld*)(void*)g_64556c)->m_68->m_400 == 0) {
+    if (((CRegSub68*)g_64556c->m_68)->m_400 == 0) { // reg->m_68 cue-sink busy gate
         return 1;
     }
     if (m_4w()->m_c != 0) {
@@ -4427,7 +4427,7 @@ i32 CPlay::AddLevelGruntz() {
         if (r == -1) {
             CString msg;
             AgFormat(&msg, "Could not add Grunt: Player=%d", g->m_124, y, x);
-            AgLog(g_64556c, (const char*)msg);
+            AgLog(g_64556c, msg); // CString -> LPCTSTR (implicit)
             return 0;
         }
         g->m_08 |= 0x10000;

@@ -47,6 +47,8 @@ public:
     virtual i32 dummy7();             // +0x1c
     virtual i32 dummy8(i32 a, i32 b); // +0x20
     virtual i32 GetStride();          // +0x24  record byte length (cursor advance)
+
+    i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
@@ -56,6 +58,63 @@ public:
 SIZE_UNKNOWN(LevelCoordRect);
 struct LevelCoordRect {
     i32 minX, minY, maxX, maxY;
+};
+
+// ---------------------------------------------------------------------------
+// CLevelPlane - CGameLevel's full, typed view of the per-plane object (the real
+// engine plane, CPlane in WwdFile.h; CPlaneRender is its render facet). The tile
+// probes, the coord-recompute and the per-plane visit/build helpers all reach the
+// SAME object through these named members. It is a gamelevel-local view because the
+// canonical CPlane cannot be widened in the shared WwdFile.h without disturbing the
+// wwdfile TU's codegen (MSVC leaks scheduling across a modified class). The scalar-
+// deleting dtor (+0x04) is the array-release slot; Build/Sync/Refresh/Query*/Notify
+// and RecomputePlaneCoords are the engine __thiscall leaves the level drives per
+// plane (RecomputePlaneCoords is matched in GameLevel.cpp; the rest reloc-mask).
+SIZE(CLevelPlane, 0x158);
+class CLevelPlane {
+public:
+    virtual i32 dummy0();
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor (array release)
+
+    void Build(LevelCoordRect* coords); // 0x161e80  re-place + recompute one plane
+    void Sync(i32 arg);                 // 0x162010  per-plane visit helper
+    void Refresh();                     // 0x163670  per-plane refresh hook
+    i32 QueryA();                       // 0x163300  main-plane query
+    i32 QueryB();                       // 0x163370  main-plane query
+    void Notify();                      // 0x163420  main-plane notify
+    void RecomputePlaneCoords();        // 0x161c90  wrap/clamp scaled coords (matched)
+
+    u8 pad_4[0x4]; // +0x04
+    u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
+    u8 pad_c[0x10 - 0xc];
+    float m_scaledX;   // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
+    float m_scaledY;   // +0x14  scroll origin Y
+    float m_scaleX;    // +0x18  X parallax factor
+    float m_scaleY;    // +0x1c  Y parallax factor
+    i32* m_tileGrid;   // +0x20  tile-id grid (row-indexed)
+    i32* m_colOffsets; // +0x24  per-row column base offsets
+    i32 m_width;       // +0x28  tile-grid width (LookupTile clamp)
+    i32 m_height;      // +0x2c  tile-grid height
+    i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
+    i32 m_wrapH;       // +0x34  tile count down
+    u8 pad_38[0x40 - 0x38];
+    i32 m_tileOriginX; // +0x40  out: near tile-origin X
+    i32 m_tileOriginY; // +0x44  out: near tile-origin Y
+    i32 m_tileExtentX; // +0x48  out: far tile-extent X
+    i32 m_tileExtentY; // +0x4c  out: far tile-extent Y
+    u8 pad_50[0x70 - 0x50];
+    i32 m_viewW;   // +0x70  viewport tiles across
+    i32 m_viewH;   // +0x74  viewport tiles down
+    i32 m_anchorX; // +0x78  view-anchor X
+    i32 m_anchorY; // +0x7c  view-anchor Y
+    i32 m_cap;     // +0x80
+    i32 m_originX; // +0x84  out: integer scaledX (snapped)
+    i32 m_originY; // +0x88  out: integer scaledY
+    i32 m_shiftX;  // +0x8c  tile->pixel shift X
+    i32 m_shiftY;  // +0x90  tile->pixel shift Y
+    u8 pad_94[0xb4 - 0x94];
+    char m_name[4];          // +0xb4  plane name (FindPlaneByName)
+    u8 pad_b8[0x158 - 0xb8]; // pad to the real plane size (0x158)
 };
 
 // The parse-source object passed to LoadFromSource. Defined in
@@ -299,7 +358,7 @@ public:
     CByteArray m_array20;          // +0x20  (built by the ctor; EH state 0)
     CLevelPtrArray m_planes;       // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)
     CLevelPtrArray m_imageSets;    // +0x48  (EH state 2)
-    CPlane* m_mainPlane;           // +0x5C
+    CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_scrollStepX;             // +0x64  per-axis scroll step limit (ClampScroll)
     i32 m_scrollStepY;             // +0x68
