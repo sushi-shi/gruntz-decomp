@@ -58,6 +58,18 @@ class CStatusBarMgr;
 // zeroes the base fields the retail ??0CStatusBarItem (0x1005d0) cleared.
 class CSbConfigItem {
 public:
+    // INLINE ctor (deliberately). The retail /GX frame here comes from `new CSBI_X`
+    // CALLING the base ctor OUT OF LINE (call 0x1005d0/0x101fa0): the opaque may-throw
+    // call makes cl register the operator-delete-on-ctor-throw cleanup and raise the
+    // frame (proven on the sibling CGameMenuMgr::BuildGameMenu, 0x101580, which is a
+    // COMPLETE body: declaring its base ctor out-of-line took it 37%->63% by emitting
+    // the exact Order-A /GX prologue). LoadTabSprites, however, is still a large PARTIAL
+    // (only the Gruntz/Resource/title cases), so adding the frame here allocates the
+    // /GX prologue in the wrong Order-B register layout (this->ebp instead of ->esi)
+    // and REGRESSES the partial (23.7%->20.6%). The out-of-line-ctor unblock only pays
+    // off once the WHOLE 7629 B body is reconstructed (register pressure then matches
+    // retail's this->esi/Order-A). Kept inline until that full redo; see
+    // docs/patterns/gx-frame-outofline-ctor.md.
     CSbConfigItem() {
         m_4 = 0;
         m_24 = 0;
@@ -107,8 +119,8 @@ public:
     char pad[0x24 - 0x0c];
     i32 m_24; // +0x24
     i32 m_28; // +0x28
+    i32 m_2c; // +0x2c  Setup id (filled by Configure)
     i32 m_30; // +0x30
-    i32 m_34; // +0x34
 };
 SIZE_UNKNOWN(CSbConfigItem);
 
@@ -129,10 +141,12 @@ SIZE(CSBI_Image, 0x34);
 class CSBI_ImageSet : public CSbConfigItem { // vtable 0x5eac4c, size 0x3c
 public:
     CSBI_ImageSet() {
-        m_8 = 4;
         m_30 = 0;
+        m_8 = 4;
+        m_34 = 0;
     }
-    char _pad34[0x3c - 0x34];
+    i32 m_34; // +0x34
+    char _pad38[0x3c - 0x38];
 };
 SIZE(CSBI_ImageSet, 0x3c);
 
