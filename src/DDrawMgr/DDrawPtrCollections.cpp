@@ -149,12 +149,18 @@ inline CPoolItemBase::CPoolItemBase() {
     m_b8 = 0;
 }
 
-// vtable 0x5efa58: overrides the dtor (??_G 0x142340 / ~ 0x142820) and slot 6
+// vtable 0x5efa58: overrides the dtor (??_G 0x142340 / ~ 0x142360) and slot 6
 // (0x143cc0); adds three init tail slots (9 = 0x148890, 10 = 0x148940, 11 = 0x148840).
+// This a58 subclass is the SAME class the Image TU models as CFileImageSurface: its
+// ??_G/~ COMDAT (0x142340/0x142360) is emitted by BOTH the image AND ddraw TUs (both
+// `new` a58 items) but the linker kept the image copy - so a58's non-deleting dtor lives
+// at 0x142360 in <image> (?ScalarDelete@CFileImageSurface + ??1CFileImageSurface), and
+// here it is declared-only (its emitted COMDAT is the discarded copy). See the surface-
+// family doc: docs/patterns/surface-pool-comdat-dtors.md.
 class CPoolItemA : public CPoolItemBase {
 public:
-    virtual ~CPoolItemA() OVERRIDE;                                  // slot 0  ~ 0x142820
-    virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cc0
+    virtual ~CPoolItemA() OVERRIDE; // slot 0  ~ 0x142360 (image copy)
+    virtual i32 v18() OVERRIDE;     // slot 6  0x143cc0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
     virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
     virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
@@ -162,11 +168,12 @@ public:
 SIZE(CPoolItemA, 0xc0);
 VTBL(CPoolItemA, 0x001efa58);
 
-// vtable 0x5efa88: overrides the dtor (??_G 0x142800) and slot 6 (0x143cb0); adds two
-// init tail slots (9 = 0x148a50, 10 = 0x148ac0).
+// vtable 0x5efa88: overrides the dtor (??_G 0x142800 / ~ 0x142820) and slot 6 (0x143cb0);
+// adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).  Its ~ (0x142820) is emitted
+// here (only the ddraw TU `new`s a88 items).
 class CPoolItemA88 : public CPoolItemBase {
 public:
-    virtual ~CPoolItemA88() OVERRIDE;                                // slot 0  ??_G 0x142800
+    virtual ~CPoolItemA88() OVERRIDE;                                // slot 0  ~ 0x142820
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cb0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148a50
     virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148ac0
@@ -174,11 +181,12 @@ public:
 SIZE(CPoolItemA88, 0xc0);
 VTBL(CPoolItemA88, 0x001efa88);
 
-// vtable 0x5efab8: overrides the dtor (??_G 0x142a20), slot 2 (0x148b50) and slot 6
-// (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).
+// vtable 0x5efab8: overrides the dtor (??_G 0x142a20 / ~ 0x142a40), slot 2 (0x148b50) and
+// slot 6 (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).  Its ~
+// (0x142a40) is emitted here (was formerly mislabeled ~CDDSurface in DDSurfaceDtor.cpp).
 class CPoolItemAB8 : public CPoolItemBase {
 public:
-    virtual ~CPoolItemAB8() OVERRIDE;                                // slot 0  ??_G 0x142a20
+    virtual ~CPoolItemAB8() OVERRIDE;                                // slot 0  ~ 0x142a40
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
@@ -479,12 +487,15 @@ CPoolItemBase* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
 // CFileImage::~CFileImage @0x141350 in a sibling TU; the inline definition emits no
 // out-of-line body here, so it does not collide.)
 // ---------------------------------------------------------------------------
-// ~CPoolItemA (0x142820).  Derived a58 non-deleting dtor - trivial body; inlines the
+// ~CPoolItemA88 (0x142820).  Derived a88 non-deleting dtor - trivial body; inlines the
 // base teardown above (INLINE ~CPoolItemBase: implicit stamp-first, FreeSurfaces, member
-// dtor).  __thiscall, ret 0x0.  Byte-exact.
+// dtor - the a88 vptr stamp folds as a dead store, leaving the base 0x5ef7f0 stamp).
+// __thiscall, ret 0x0.  Byte-identical to every other pool-item dtor (the vptr operand
+// reloc-masks to 0x5ef7f0); the OWNING class is fixed by its ??_G (0x142800, a88 vtable
+// slot 0), not the byte pattern.  Byte-exact.
 // ---------------------------------------------------------------------------
 RVA(0x00142820, 0x53)
-CPoolItemA::~CPoolItemA() {}
+CPoolItemA88::~CPoolItemA88() {}
 
 // ---------------------------------------------------------------------------
 // Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
@@ -521,6 +532,16 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     delete item;
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// ~CPoolItemAB8 (0x142a40).  Derived ab8 non-deleting dtor - trivial body; inlines the
+// shared base teardown (INLINE ~CPoolItemBase: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
+// member dtor; the ab8 vptr stamp folds as a dead store).  __thiscall, ret 0x0.  Byte-
+// identical to the other pool-item dtors; owner fixed by its ??_G (0x142a20, ab8 vtable
+// slot 0).  Was formerly mislabeled ~CDDSurface in DDSurfaceDtor.cpp.  Byte-exact.
+// ---------------------------------------------------------------------------
+RVA(0x00142a40, 0x53)
+CPoolItemAB8::~CPoolItemAB8() {}
 
 // ---------------------------------------------------------------------------
 // Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]

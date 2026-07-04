@@ -2539,11 +2539,6 @@ source = "src/Gruntz/LogicRecordDispatch.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "ddsurfacedtor"
-source = "src/DDrawMgr/DDSurfaceDtor.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "cmdscrollapply"
 source = "src/Gruntz/CmdScrollApply.cpp"
 flags = "base"

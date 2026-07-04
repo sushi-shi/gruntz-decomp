@@ -104,7 +104,7 @@ ddpagemgr	2	1
 ddrawblterrthunk	1	1
 ddrawchildgroup	8	6
 ddrawpolyfill	1	0
-ddrawptrcollections	31	17
+ddrawptrcollections	32	18
 ddrawshadeblit	9	1
 ddrawsubmgr	58	33
 ddrawsubmgrani	3	1
@@ -122,7 +122,6 @@ ddrawworkermapsmall	11	6
 ddrawworkerregistry	26	18
 ddrawworkers	4	4
 ddscreen	3	2
-ddsurfacedtor	1	1
 debugprintf	2	2
 deflate	9	9
 demosetup	1	1
@@ -1085,7 +1084,8 @@ ddrawchildgroup	?WalkDispatch38@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	fb
 ddrawpolyfill	?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z	67.3576	67.3576	2	2074332f611a	0x146fe0
 ddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	2	e487cd1ae33c	0x141cc0
 ddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	1	2f4c0afd1caf	0x141d50
-ddrawptrcollections	??1CPoolItemA@@UAE@XZ	100.0000	100.0000	1	faa6059e4030	0x142820
+ddrawptrcollections	??1CPoolItemA88@@UAE@XZ	100.0000	100.0000	1	803bff44cb8d	0x142820
+ddrawptrcollections	??1CPoolItemAB8@@UAE@XZ	100.0000	100.0000	1	95622ca30bcf	0x142a40
 ddrawptrcollections	??1CPoolItemAE8@@UAE@XZ	100.0000	100.0000	1	91b670f90cb8	0x142d40
 ddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemBase@@@Z	100.0000	100.0000	1	abc40fe0591e	0x142100
 ddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
@@ -1305,7 +1305,6 @@ ddrawworkers	?Vfunc34@CDDrawWorkerB@@UAEHHHHH@Z	100.0000	100.0000	1	e467ad482723
 ddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	2	9d4d4a23d71e	0x17cdf0
 ddscreen	?Configure@CDDScreen@@QAEHHHPAUtagPOINT@@PAUtagRECT@@@Z	97.3969	97.3969	1	dea3ed94b89a	0x17cfc0
 ddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	2	adf69acad6c8	0x17cc80
-ddsurfacedtor	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	d1995fa0e1e6	0x142a40
 debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	1	9c7af45f7192	0x185000
 debugprintf	_RezAssertFail	100.0000	100.0000	1	afc4cb16914d	0x184e00
 deflate	_deflate	100.0000	100.0000	1	3bf3a6c067ea	0x186620
