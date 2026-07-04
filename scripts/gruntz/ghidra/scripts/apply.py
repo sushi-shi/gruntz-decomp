@@ -655,15 +655,37 @@ try:
     # ---- (D) FID + zlib names (apply first; source stub labels override where overlapping) ----
     # Each mangled name is DEMANGLED + applied (readable name + namespace +
     # signature), falling back to the literal name when it isn't manglable (zlib).
+    #
+    # PRECEDENCE (src > FID): symbol_names.csv (from src/ RVA()/DATA() macros) is the
+    # SOURCE OF TRUTH; a FID library label must NEVER touch an RVA that src claims.
+    # FID's HIGH/MED/AMBIG rows include false collisions - ??0CMetaFileDC at a real
+    # ctor, ??_G__non_rtti_object at a real scalar-deleting dtor, ??1CFile at
+    # CFileIO's dtor, ?GetStatus@CFile@@ at a global - that would win THIS layer and
+    # only be PARTIALLY undone by (E): (E) fixes an identifier leaf or the class
+    # namespace, but leaves a Frankenstein name for a non-identifier dtor leaf
+    # (CFileIO::~CFile) or a global wrongly nested in a FID class
+    # (CFile::GetFileTimeInfo). Skipping src RVAs here makes src win deterministically
+    # AT THE SOURCE LAYER, cold and on idempotent re-runs, independent of (E). This is
+    # the spec rule: FID labels cover only what src does NOT claim. Human (USER_DEFINED)
+    # names are likewise never touched here - they are re-asserted last by (G).
+    src_rvas = set(rva for (rva, _n) in syms) | set(rva for (rva, _n) in data_syms)
     n_fid_named = 0; n_fid_skip_low = 0; n_fid_nofunc = 0; n_fid_demangled = 0
+    n_fid_skip_src = 0; n_fid_skip_human = 0
     for (rva, name, lib, conf) in fids:
         if conf == "LOW":
             n_fid_skip_low += 1
+            continue
+        if rva in src_rvas:
+            n_fid_skip_src += 1        # src claims this RVA -> src wins, FID stands down
             continue
         addr = toaddr(rva)
         fn = ensure_function(addr)
         if fn is None:
             n_fid_nofunc += 1
+            continue
+        prim = st.getPrimarySymbol(addr)
+        if prim is not None and prim.getSource() == US:
+            n_fid_skip_human += 1      # never demote/clobber a human name (check #6)
             continue
         cur = str(fn.getName())
         # name it when unnamed/bogus OR still showing a mangled string (a prior
@@ -677,15 +699,21 @@ try:
                     fn.setName(name, GEN); n_fid_named += 1
                 except Exception:
                     pass
-    R("FID/library funcs named (HIGH/MED/AMBIG): %d  (%d demangled, LOW skipped: %d, no-func: %d)" %
-      (n_fid_named, n_fid_demangled, n_fid_skip_low, n_fid_nofunc))
+    R("FID/library funcs named (HIGH/MED/AMBIG): %d  (%d demangled, LOW skipped: %d, "
+      "src-claimed skipped: %d, human skipped: %d, no-func: %d)" %
+      (n_fid_named, n_fid_demangled, n_fid_skip_low, n_fid_skip_src, n_fid_skip_human, n_fid_nofunc))
 
     n_sym_named = 0; n_sym_nofunc = 0; n_sym_demangled = 0
+    n_sym_skip_human = 0; n_sym_already = 0
     for (rva, name) in syms:
         addr = toaddr(rva)
         fn = ensure_function(addr)
         if fn is None:
             n_sym_nofunc += 1
+            continue
+        prim = st.getPrimarySymbol(addr)
+        if prim is not None and prim.getSource() == US:
+            n_sym_skip_human += 1      # never demote/clobber a human name (check #6)
             continue
         cur = str(fn.getName())
         if is_default(cur) or is_bogus(cur) or "?" in cur or "@" in cur:
@@ -696,8 +724,11 @@ try:
                     fn.setName(name, GEN); n_sym_named += 1
                 except Exception:
                     pass
-    R("symbol_names (zlib+ctors) reconciled: %d  (%d demangled, no-func: %d)"
-      % (n_sym_named, n_sym_demangled, n_sym_nofunc))
+        else:
+            n_sym_already += 1         # already carries the src (demangled) name (idempotent)
+    R("symbol_names (zlib+ctors) reconciled: %d  (%d demangled, already-named: %d, "
+      "human skipped: %d, no-func: %d)"
+      % (n_sym_named, n_sym_demangled, n_sym_already, n_sym_skip_human, n_sym_nofunc))
 
     # Global DATA symbols a matched global is referenced through (labels.py @data
     # rows). The name is the clang MS-ABI mangling (?g_foo@@3.. / _g_foo); Ghidra
@@ -746,7 +777,8 @@ try:
     n_nofunc = 0; n_created = 0
     n_proto = 0; n_proto_fail = 0
     n_this_applied = 0
-    n_local_vars = 0; n_local_funcs = 0
+    n_local_vars = 0; n_local_funcs = 0; n_local_skip_human = 0
+    local_rvas_hit = set()          # locals.json RVAs the (E) loop actually reached
     this_methods_by_class = {}
     proto_examples = []
     _ident = re.compile(r"^[A-Za-z_]\w*$")
@@ -858,6 +890,7 @@ try:
         # so the offset maps directly. The decompiler shows these on next decompile.
         locs = locals_map.get(rva)
         if locs:
+            local_rvas_hit.add(rva)
             sf = fn.getStackFrame()
             set_here = 0
             for L in locs:
@@ -869,6 +902,7 @@ try:
                 # don't clobber a human-named slot at this offset (USER_DEFINED)
                 ev = sf.getVariableContaining(off)
                 if ev is not None and ev.getSource() == US:
+                    n_local_skip_human += 1
                     continue
                 try:
                     sf.createVariable(nm, off, Undefined4DataType.dataType, GEN)
@@ -888,7 +922,9 @@ try:
     R("function signatures: renamed=%d kept=%d ns-set=%d plate-added=%d created-func=%d no-func=%d"
       % (n_renamed, n_kept, n_ns, n_plate, n_created, n_nofunc))
     R("prototypes applied (typed return + named params): %d  (failed: %d)" % (n_proto, n_proto_fail))
-    R("local variables named (byte-exact funcs): %d across %d function(s)" % (n_local_vars, n_local_funcs))
+    R("local variables named (byte-exact funcs): %d across %d function(s)  "
+      "(locals.json sets=%d, reached=%d, human slots preserved=%d)"
+      % (n_local_vars, n_local_funcs, len(locals_map), len(local_rvas_hit), n_local_skip_human))
     for e in proto_examples: R("    proto: " + e)
     R("this-type (struct*) applications: %d  across %d classes" %
       (n_this_applied, len(this_methods_by_class)))

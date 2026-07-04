@@ -279,6 +279,36 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
   clang record layouts / enums over `src/` + `src/Stub/types/`, defined in the DTM;
   each struct is applied as the `this` type on its class's methods.
 
+### Name precedence (src wins) and the apply report
+
+`apply.py` layers names in a fixed order so the outcome is deterministic and the
+`src/` labels are the SOURCE OF TRUTH at every RVA they claim:
+
+1. **FID library labels** (`config/library_labels.csv`; HIGH/MED/AMBIG only — LOW
+   rows are deliberately skipped as noise) name only the RVAs `src/` does **not**
+   claim. A FID row at an `src`-claimed RVA is skipped (counted as `src-claimed
+   skipped`): FID's AMBIG collisions — `??0CMetaFileDC@@` at a real ctor,
+   `??_G__non_rtti_object@@` at a real scalar-deleting dtor, `??1CFile@@` at
+   `CFileIO`'s dtor, `?GetStatus@CFile@@` at a global — must never win (before this
+   was enforced at the source layer, FID applied first and layer 3 only *partially*
+   undid it: a `CFileIO::~CFile` Frankenstein leaf, or a global wrongly nested as
+   `CFile::GetFileTimeInfo`).
+2. **`symbol_names.csv`** (from `src/` `RVA()`/`DATA()`) names + demangles every RVA
+   `src/` claims — so `src` beats both FID and Ghidra's own analysis/demangler.
+3. **`functions.json`** overlays the readable leaf + class namespace + typed
+   prototype; **`locals.json`** adds stack-local names for byte-exact functions only.
+4. **`user_annotations.json`** (human edits, `USER_DEFINED`) is re-applied LAST and
+   wins over everything. The FID and `symbol_names` layers additionally skip any RVA
+   already carrying a `USER_DEFINED` name (`human skipped`), so a human rename is
+   never demoted or clobbered mid-run — even a deliberately mangled-looking one.
+
+A re-run is a fixed point: the DB does not change and names do not flap (only a
+small set of already-correct names is re-asserted, to the identical value). Every
+layer's applied / skipped / conflict tally — incl. `src-claimed skipped`, `human
+skipped`, and the byte-exact locals coverage (`locals.json sets` / `reached` /
+`human slots preserved`) — is written to
+`build/ghidra-named/exports/enrichment_apply_report.txt`.
+
 ### Round-trip: capturing human edits (`gruntz capture`)
 
 The generated enrichment is the forward direction (`src/` → Ghidra). The back

@@ -125,3 +125,34 @@ edit C++ in src/  →  compile "base" objs (MSVC 5.0 under Wine)
                   →  objdiff  (x86/COFF)  base  vs  the cached "target" objs
                   →  iterate the C++ until each function matches byte-for-byte
 ```
+
+## Populating the Ghidra database
+
+The delink needs a **named** Ghidra DB (`build/ghidra-named`). It is built + enriched
+by two commands (both under `nix develop .#build`):
+
+- **`gruntz init`** — cold, one-time: imports + auto-analyzes `GRUNTZ.EXE` (several
+  minutes, Aggressive Instruction Finder on), then runs the enrichment + export.
+- **`gruntz ghidra-refresh`** — incremental: regenerates `build/gen/*` (incl.
+  `locals.json`) and re-runs the enrichment (`apply.py`) + export on the
+  already-analyzed DB (`--no-analyze`), so the labels reflect the latest `src/`.
+
+**Names come from three layers, in precedence order (`src/` is the source of truth):**
+
+1. **`src/` `RVA()`/`DATA()` macros** → `build/gen/symbol_names.csv`: the authority.
+   A `src`-claimed RVA always gets the `src` name — it wins over FID **and** Ghidra's
+   own analysis/demangler.
+2. **`config/library_labels.csv`** (FID HIGH/MED/AMBIG; LOW is skipped as noise):
+   library labels for everything `src/` does **not** claim.
+3. **byte-exact (100%-matched) functions** additionally get their **stack locals**
+   named, harvested from a `cl /Z7` CodeView build (`harvest_locals.py`).
+
+**Human edits round-trip:** GUI renames/comments/typed locals are `USER_DEFINED` and
+win over all generated names; capture them into the tracked
+`config/user_annotations.json` with **`gruntz capture`** — `apply.py` re-applies them
+LAST so they survive a clean rebuild (and never demotes/clobbers them mid-run).
+
+**What happened:** every run writes a per-layer tally (applied / skipped / conflicts,
+incl. `src-claimed skipped` and `human skipped`) to
+`build/ghidra-named/exports/enrichment_apply_report.txt`. Details:
+[`docs/build-system.md`](docs/build-system.md#name-precedence-src-wins-and-the-apply-report).
