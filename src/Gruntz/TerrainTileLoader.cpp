@@ -45,6 +45,9 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Mfc.h> // PtInRect (via <windows.h>), the CString diagnostic temp
+
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -57,16 +60,6 @@ extern i32 g_inputCtx; // DAT_0061ab24 @0x61ab24 (Lookup-free sink)
 // ---------------------------------------------------------------------------
 void TtLookup(void* table10, const char* name, void** out); // 0x1b8438 Lookup
 void TtFree(i32 sink, i32 a, i32 b, i32 c);                 // 0x25fe   free a set
-void* TtRegister(
-    i32 zero,
-    const char* ns,
-    i32 tag,
-    i32 a,
-    i32 b,
-    i32 c
-);                                                     // 0x1597b0 register namespace
-void TtAddPrefixA(void* set, const char* name);        // 0x150540 add prefix A
-void TtAddPrefixB(void* set, const char* name, i32 z); // 0x1505b0 add prefix B
 
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
@@ -77,13 +70,15 @@ namespace {
     // "Particlez" namespace registered under the level's map sub-object, then add
     // the GAME_DIRT prefix. Returns the registered set (0 on failure).
     void LoadDirt(void* self, i32 x, i32 y) {
+        // create the "Particlez" eye-candy sprite (canonical factory @ [self+0x22c]+0x8;
+        // the old TtRegister model missed the 0xcf84f hint arg) and configure it.
         void* map = PTR(self, 0x22c);
-        void* set = TtRegister(0, "Particlez", 0x40003, x, y, 0); // tag 'Particlez'
+        CGameObject* set =
+            ((CSpriteFactory*)PTR(map, 0x8))->CreateSprite(0, x, y, 0xcf84f, "Particlez", 0x40003);
         if (set != 0) {
-            TtAddPrefixA(set, "LEVEL_DIRT");
-            TtAddPrefixB(set, "GAME_DIRT", 0);
+            set->ApplyName("LEVEL_DIRT");
+            set->ApplyLookupGeometry("GAME_DIRT", 0);
         }
-        (void)map;
     }
 
     // The GIANTROCK arm (inner case 0x22): clear the LEVEL_GAUNTLETROCK1 +

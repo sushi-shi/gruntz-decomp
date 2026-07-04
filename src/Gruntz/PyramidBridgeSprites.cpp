@@ -55,6 +55,9 @@
 // byte-faithful reconstruction; keep it until the jump-table wall is cracked.
 
 #include <Mfc.h> // PtInRect (via <windows.h>); the two CString temps
+
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created transition trigger)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -62,21 +65,19 @@
 // ---------------------------------------------------------------------------
 extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 
-// The transition-tag data + the trigger-table base (named so the immediate /
-// rect-base operands reloc-mask).
-extern void* g_60a848; // s_TileTriggerTransition_0060a848
+// The "TileTriggerTransition" class-name string (the CreateSprite lookup key;
+// named so the DIR32 operand reloc-masks).
+extern char g_60a848[]; // s_TileTriggerTransition_0060a848
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
 // ---------------------------------------------------------------------------
-i32 PbCellClass(void* cell);                                     // cell vtable +0x20 -> class id
-void* PbTrigger(i32 a, void* tag, i32 b, i32 sx, i32 sy, i32 c); // 0x1597b0
-void PbHideTrigger(void* trig);                                  // trig->m_7c +0x10
-void PbShowTransition(void* mapHost, i32 id, i32 x, i32 y);      // 0x33f0
-void PbStrCtor(void* str);                                       // 0x1b9b93 CString::CString
-void PbStrDtor(void* str);                                       // 0x1b9cde CString::~CString
-void PbAssignStr(void* str, const char* s);                      // 0x1b9e74 CString::operator=
-i32 PbScanLoopA(void* self, i32 a);                              // 0x25b8 (water-bridge inner)
+i32 PbCellClass(void* cell);                                // cell vtable +0x20 -> class id
+void PbShowTransition(void* mapHost, i32 id, i32 x, i32 y); // 0x33f0
+void PbStrCtor(void* str);                                  // 0x1b9b93 CString::CString
+void PbStrDtor(void* str);                                  // 0x1b9cde CString::~CString
+void PbAssignStr(void* str, const char* s);                 // 0x1b9e74 CString::operator=
+i32 PbScanLoopA(void* self, i32 a);                         // 0x25b8 (water-bridge inner)
 
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
@@ -161,12 +162,15 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
             || srcId == 0x67) {
             transId = 0; // fall through to the switch with no trigger
         } else {
-            void* trig = PbTrigger(0, g_60a848, 0x40003, sy, sx, 0);
+            // create the "TileTriggerTransition" sprite (canonical factory @ map+0x8),
+            // run its aux Init driver, snapshot the aux m_18 setup as the transition id
+            CGameObject* trig =
+                ((CSpriteFactory*)PTR(map, 0x8))->CreateSprite(0, sx, sy, 0, g_60a848, 0x40003);
             if (trig == 0) {
                 goto done;
             }
-            PbHideTrigger(trig);
-            transId = I32(PTR(trig, 0x7c), 0x18);
+            trig->m_7c->Init(trig);
+            transId = (i32)trig->m_7c->m_18;
         }
     }
 

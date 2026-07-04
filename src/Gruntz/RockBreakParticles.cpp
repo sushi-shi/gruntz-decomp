@@ -241,8 +241,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (!PtInRect(&g_mgrSettings->m_13c, pt)) {
                 continue;
             }
-            CGameObject* spr =
-                m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+            CGameObject* spr = m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
             }

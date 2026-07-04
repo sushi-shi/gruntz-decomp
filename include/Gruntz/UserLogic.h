@@ -103,7 +103,10 @@ struct CGameObjLayer {
     i32 m_1c;       // +0x1c  layer base Y / base offset
 };
 
-SIZE_UNKNOWN(CGameObject);
+// Exact size 0x1dc, byte-proven from TWO new-sites: CSpriteFactory::CreateSpriteImpl
+// (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
+// manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
+SIZE(CGameObject, 0x1dc);
 struct CGameObject {
     void AddLogicHit(char* key);                        // 0x150f50
     void AddLogicAttack(char* key);                     // 0x151030
@@ -144,7 +147,8 @@ struct CGameObject {
     char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
-    i32 m_stateFlags; // +0x40
+    i32 m_stateFlags; // +0x40  bit0 = visible/active (set by the icon/glitter/booty
+                      //        creators; cleared to hide - IconLoaders/GameMode/BzState)
     char m_pad44[0x4c - 0x44];
     i32 m_drawFillArg;  // +0x4c
     i32 m_drawFillCmd;  // +0x50  draw-fill command type (0xb = decay fill-bar)

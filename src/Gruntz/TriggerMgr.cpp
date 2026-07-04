@@ -1,8 +1,8 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
-#include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
-#include <stdlib.h>          // rand (0x11fee0, reloc-masked)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
+#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 // TriggerMgr.cpp - CTriggerMgr, the playfield tile-object / switch-trigger grid
 // manager (trace placeholder tomalla-23, C:\Proj\Gruntz). See TriggerMgr.h.

@@ -215,10 +215,10 @@ public:
     char m_pad2c4[0x2c8 - 0x2c4];
     CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
     CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
-    i32 m_stepIndex;            // +0x2e8  active-player step index
-    i32 m_walkStarted;          // +0x2ec  walk-animation-started gate
-    i32 m_soundStarted;         // +0x2f0  sound-started gate
-    i32 m_secretGate;           // +0x2f4  secret-message gate
+    i32 m_stepIndex;               // +0x2e8  active-player step index
+    i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
+    i32 m_soundStarted;            // +0x2f0  sound-started gate
+    i32 m_secretGate;              // +0x2f4  secret-message gate
 };
 SIZE_UNKNOWN(BzState);
 

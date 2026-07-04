@@ -8,7 +8,7 @@
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
 #include <Bute/ButeMgr.h>             // CButeTree (the type-registry funnel)
 #include <math.h>                     // sin / cos (StepMotion's parabola)
@@ -459,8 +459,9 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
     // Spawn the LightFx shadow companion + activate its two frames.
     CSpriteFactory* factory = g_gameReg->m_world->m_8;
-    m_shadow = (CProjRenderObj*)
-        factory->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
+    m_shadow =
+        (CProjRenderObj*)factory
+            ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->Init(m_shadow);
         m_shadow->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
@@ -780,9 +781,9 @@ void CProjectile::LoadProjectileEffects() {
             // water tile: spill a splash then hide the projectile
             if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                 && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                CProjRenderObj* fx = (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
-                    0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003
-                );
+                CProjRenderObj* fx =
+                    (CProjRenderObj*)reg->m_world->m_8
+                        ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
                     fx->CacheFirstFrame("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
@@ -807,15 +808,14 @@ void CProjectile::LoadProjectileEffects() {
                         // level death tile: spill the death-splash then hide
                         if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                             && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                            CProjRenderObj* fx =
-                                (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
-                                    0,
-                                    m_targetX,
-                                    m_targetY,
-                                    0xcf84f,
-                                    "Particlez",
-                                    0x40003
-                                );
+                            CProjRenderObj* fx = (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
+                                0,
+                                m_targetX,
+                                m_targetY,
+                                0xcf84f,
+                                "Particlez",
+                                0x40003
+                            );
                             if (fx != 0) {
                                 fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);

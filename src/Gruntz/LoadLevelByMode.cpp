@@ -69,6 +69,8 @@
 // protect the 34.85% partial.
 
 #include <Win32.h> // timeGetTime / UpdateWindow / ShowCursor (reloc-masked IAT)
+
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 #include <stdio.h>  // sprintf (0x11f890)
 #include <stdlib.h> // atoi (0x11ffb0) + srand (0x11fed0)
@@ -155,10 +157,9 @@ i32 LlScanWarpStone(void* self);                                // 0x28dd
 void LlSetTitle(void* level58, i32 nameLen, void* out);         // 0x175d
 i32 LlAfterTitle(void* self);                                   // 0x2e14
 void LlWsFormat(void* out, const char* fmt, i32 n);             // 0x1b2cf5 wsprintf-into-CString
-i32 LlButeLookup(void* bute, const char* sect, const char* key, void* out);              // 0x171af0
-void LlButeStore(void* dst, void* key, void* val);                                       // 0x1b5485
-void LlClearTiles(void* self, i32 n);                                                    // 0x130c
-void* LlRegisterNamespace(i32 a, const char* ns, i32 tag, i32 cap, i32 b, i32 c, i32 d); // 0x1597b0
+i32 LlButeLookup(void* bute, const char* sect, const char* key, void* out); // 0x171af0
+void LlButeStore(void* dst, void* key, void* val);                          // 0x1b5485
+void LlClearTiles(void* self, i32 n);                                       // 0x130c
 void LlSpriteHook(void* host8, i32 a);       // FUN via host->m_8 vtable +0x24
 i32 LlEqSet(void* self, i32 a);              // 0x2eaa
 void LlSpriteRelease(void* spr);             // 0x14ce
@@ -665,8 +666,9 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     }
     LlClearTiles(PTR(self, 0x2dc), I32(self, 0x1c));
 
-    // ---- CursorSnapSprite registration ----
-    set = LlRegisterNamespace(0, "CursorSnapSprite", 0x40001, 0x13880, 0, 0, 0);
+    // ---- CursorSnapSprite registration (the canonical factory at [self+0xc]->m_8) ----
+    set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
+              ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
     I32(self, 0x4e4) = (i32)set;
     if (set != 0) {
         void* host8 = PTR(PTR(self, 0xc), 0x8);

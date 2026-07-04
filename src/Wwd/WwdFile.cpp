@@ -463,12 +463,18 @@ struct WwdGameObj {
 
 // The object's engine ctor + sprite/anim helpers are __thiscall methods on the
 // object (this in ecx). Modeled as members so the calls reloc-mask cleanly.
+// IDENTITY: WwdGameObj IS the shared CGameObject (<Gruntz/UserLogic.h>) - this TU
+// manually `operator new(0x1dc)`s + ctors (0x15b390) the SAME 0x1dc-byte instance
+// CSpriteFactory::CreateSprite builds, and the four setters below are the canonical
+// CGameObject leaves. The full WwdGameObj->CGameObject fold is deferred with the
+// B-family (SpriteResource.cpp DUAL-MODEL note); the method names align to the
+// canonical identities meanwhile.
 struct WwdGameObjMethods {
-    void Construct(void* owner, i32 id, i32 z);        // 0x15b390  ctor, ret 0xc
-    void CacheFirstFrameAt(const char* name, i32 idx); // 0x1504d0  ret 0x8
-    void CacheFirstFrame(const char* name);            // 0x150540  ret 0x4
-    i32 ApplyLookupGeometry(const char* s, i32 flag);  // 0x1505b0  ret 0x8
-    void SetLogic(const char* logic);                  // 0x150610  ret 0x4
+    void Construct(void* owner, i32 id, i32 z);       // 0x15b390  the CGameObject engine ctor
+    void ApplyLookupSprite(const char* name, i32 n);  // 0x1504d0  ret 0x8 (frame-indexed)
+    void ApplyName(const char* name);                 // 0x150540  ret 0x4 (first-frame cache)
+    i32 ApplyLookupGeometry(const char* s, i32 flag); // 0x1505b0  ret 0x8
+    void LookupAnimSprite(const char* name);          // 0x150610  ret 0x4 (anim-set cache)
 };
 
 // CDDrawSubMgr ctor embedded at +0x1A0: (this, surfMgr, a, b). __thiscall, ret 0xc.
@@ -749,16 +755,16 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     // Apply name -> sprite first-frame cache (indexed when src[?] != -1).
     if (logic.GetLength() != 0) {
         if (z != -1) {
-            ((WwdGameObjMethods*)obj)->CacheFirstFrameAt((const char*)logic, z);
+            ((WwdGameObjMethods*)obj)->ApplyLookupSprite((const char*)logic, z);
         } else {
-            ((WwdGameObjMethods*)obj)->CacheFirstFrame((const char*)logic);
+            ((WwdGameObjMethods*)obj)->ApplyName((const char*)logic);
         }
     }
 
     // Apply sound -> anim geometry + logic.
     if (sound.GetLength() != 0) {
         ((WwdGameObjMethods*)obj)->ApplyLookupGeometry((const char*)sound, 0);
-        ((WwdGameObjMethods*)obj)->SetLogic((const char*)sound);
+        ((WwdGameObjMethods*)obj)->LookupAnimSprite((const char*)sound);
     }
 
     // Apply imageSet -> object's m_imageSetName.

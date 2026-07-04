@@ -108,9 +108,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
     slot->m_220 = m_object->m_screenX;
     slot->m_224 = m_object->m_screenY;
-    CGameObject* e = g_exitGameReg->m_world->m_8->CreateSprite(
-        0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003
-    );
+    CGameObject* e =
+        g_exitGameReg->m_world->m_8
+            ->CreateSprite(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
     if (e != 0) {
         e->m_124 = m_object->m_124;
         e->m_7c->Init(e);

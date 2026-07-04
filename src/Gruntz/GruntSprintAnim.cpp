@@ -138,4 +138,3 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
 SIZE_UNKNOWN(CGruntSprintAnim);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CGsSoundTable);
-

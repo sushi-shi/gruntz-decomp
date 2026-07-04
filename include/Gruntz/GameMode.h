@@ -177,8 +177,8 @@ struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
 struct CCreditsVideo;    // CCreditsState::m_videoHandle - Smacker video handle
 struct CBootyBonusState; // CMultiBootyState::m_bonusState - bonus scroll/flags object
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
-                     // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
-                     //  draw walks the same objects as position/flag records)
+                    // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
+                    //  draw walks the same objects as position/flag records)
 
 // ---------------------------------------------------------------------------
 // The concrete leaf states. Each overrides Update() to return its own state-ID

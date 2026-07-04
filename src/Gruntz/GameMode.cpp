@@ -37,8 +37,8 @@
 #include <Bute/ButeMgr.h>      // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created glitter/letter sprites)
-#include <Win32.h> // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
+#include <Win32.h>                // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>                // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
 #include <math.h>
 #include <rva.h>
 #include <stdio.h> // sprintf - the ATTRACT/title stack-buffer string builders
@@ -655,7 +655,7 @@ i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
         CGameObject* a = g_mgrSettings->m_world->m_8
-                              ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
+                             ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -866,7 +866,8 @@ i32 CState::LoadGruntEffectSprites() {
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGameObject* b = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* b =
+            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_bomb[i] = b;
         if (b == 0) {
             return 0;
@@ -881,7 +882,8 @@ i32 CState::LoadGruntEffectSprites() {
         self->m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
         self->m_bomb[i]->m_stateFlags |= 1;
 
-        CGameObject* e = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* e =
+            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_expl[i] = e;
         if (e == 0) {
             return 0;
@@ -889,7 +891,8 @@ i32 CState::LoadGruntEffectSprites() {
         e->ApplyName("GAME_EXPLOSION");
         self->m_expl[i]->m_stateFlags |= 1;
 
-        CGameObject* g = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* g =
+            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_gokart[i] = g;
         if (g == 0) {
             return 0;
@@ -1543,7 +1546,7 @@ void CMultiBootyState::StepGlitterAnim() {
     i32 i = 0;
     CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
     if (idx > 0) {
-        i32* tbl = g_5e8fe8 + 1;    // ecx: tbl[-1]=x, tbl[0]=y
+        i32* tbl = g_5e8fe8 + 1;   // ecx: tbl[-1]=x, tbl[0]=y
         CGameObject** ap = arr1ec; // eax
         do {
             CGameObject* e = *ap;

@@ -75,11 +75,17 @@ extern "C" void* g_6bf3bc;  // _g_6bf3bc @0x6bf3bc (the EH frame's pushed global
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).
 // ---------------------------------------------------------------------------
-void RbSubUpdate(void* anim1a0);                         // 0x15c360 [this+0x38]+0x1a0 sub-update
-void RbCacheFirst(void* anim, const char* name);         // 0x150540 CacheFirstFrame(CString byval)
-void RbApplyLookup(void* anim, const char* name, i32 z); // 0x1505b0 ApplyLookupGeometry
-void RbStrAssign(void* str, const char* s);              // 0x1b9e74 CString::operator=(LPCSTR)
-void* RbCreateSprite(i32 a, i32 b, i32 c, const char* ns, i32 tag, i32 flags); // 0x1597b0 register
+void RbSubUpdate(void* anim1a0); // 0x15c360 [this+0x38]+0x1a0 sub-update
+void RbCacheFirst(
+    void* anim,
+    const char* name
+); // 0x150540 = CGameObject::ApplyName (thiscall; free-fn shape kept with the parked carcass)
+void RbApplyLookup(
+    void* anim,
+    const char* name,
+    i32 z
+);                                          // 0x1505b0 = CGameObject::ApplyLookupGeometry (ditto)
+void RbStrAssign(void* str, const char* s); // 0x1b9e74 CString::operator=(LPCSTR)
 i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
 double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
