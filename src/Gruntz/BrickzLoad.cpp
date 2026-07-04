@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <Ints.h>
-#include <Bute/ButeMgr.h> // CButeMgr::GetInt (g_buteMgr)
+#include <Bute/ButeMgr.h>     // CButeMgr::GetInt (g_buteMgr)
+#include <Gruntz/CViewport.h> // shared world-plane grid (the terrain descriptor)
 // BrickzLoad.cpp - CBrickz::LoadAttributes (0x0810f0), the level-load terrain
 // parser for the self-contained pathfinding grid container (the placeholder
 // "CBrickz" in <Gruntz/Brickz.h>; the SAME container AllocGrid/ComputeCellFlags
@@ -40,13 +41,8 @@ struct BzCell {
 
 // The terrain grid descriptor (attr->m_5c): a flat id table (m_20) indexed by a
 // per-row base-offset table (m_24).
-struct BzGrid {
-    char m_pad0[0x20];
-    i32* m_20; // +0x20  flat id table
-    i32* m_24; // +0x24  per-row base-offset table
-    i32 m_28;  // +0x28
-    i32 m_2c;  // +0x2c
-};
+// The terrain grid descriptor (m_78->m_24->m_5c) is the shared world-plane
+// CViewport (<Gruntz/CViewport.h>): cell = m_cells[m_rowBase[col] + row].
 
 // The attribute/bute-type manager (this->m_78->m_24): the grid descriptor at
 // +0x5c and the per-cell tile-type lookup at 0x082600 (ILT thunk 0x4228).
@@ -55,7 +51,7 @@ struct BzAttr {
     // type code for cell (row,col).
     i32 LookupTile(i32 row, i32 col); // 0x082600
     char m_pad0[0x5c];
-    BzGrid* m_5c; // +0x5c  the terrain grid descriptor
+    CViewport* m_5c; // +0x5c  the terrain grid descriptor (world-plane)
 };
 
 // The level manager reached as g_mgrSettings->m_world: the attribute manager at
@@ -236,7 +232,7 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 RVA(0x000810f0, 0x8b4)
 i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     m_78 = g_mgrSettings->m_world;
-    BzGrid* grid = m_78->m_24->m_5c;
+    CViewport* grid = m_78->m_24->m_5c;
     if (grid == 0) {
         return 0;
     }
@@ -253,7 +249,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     BzCell* cell = m_4;
     for (i32 col = 0; col < m_10; col++) {
         for (i32 row = 0; row < m_c; row++, cell++) {
-            i32 tileId = grid->m_20[grid->m_24[col] + row];
+            i32 tileId = grid->m_cells[grid->m_rowBase[col] + row];
             if (tileId != -1) {
                 tileId &= 0xffff;
             }
@@ -266,10 +262,10 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
             if (g_mgrSettings->m_isEasyMode != 0 && g_mgrSettings->m_134 == 1) {
                 if (tileId == 0x105) {
                     tileId = 0x101;
-                    grid->m_20[grid->m_24[col] + row] = 0x101;
+                    grid->m_cells[grid->m_rowBase[col] + row] = 0x101;
                 } else if (tileId == 0x106) {
                     tileId = 0x103;
-                    grid->m_20[grid->m_24[col] + row] = 0x103;
+                    grid->m_cells[grid->m_rowBase[col] + row] = 0x103;
                 }
             }
 
@@ -312,7 +308,7 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
                     default:
                         break;
                 }
-                grid->m_20[grid->m_24[col] + row] = tileId;
+                grid->m_cells[grid->m_rowBase[col] + row] = tileId;
             }
 
             // Inline ComputeCellFlags: look up the type code, pack the flags.
@@ -519,7 +515,6 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
 SIZE_UNKNOWN(BzAttr);
 SIZE_UNKNOWN(BzCell);
 SIZE_UNKNOWN(BzFreeNode);
-SIZE_UNKNOWN(BzGrid);
 SIZE_UNKNOWN(BzLevelMgr);
 SIZE_UNKNOWN(BzMovingObj);
 SIZE_UNKNOWN(BzMovingObjType);

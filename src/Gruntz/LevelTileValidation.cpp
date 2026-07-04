@@ -32,6 +32,7 @@
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
 
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/CViewport.h>  // the shared world tile-grid geometry
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -196,23 +197,13 @@ struct TileClassVtbl {
 struct TileClass {
     TileClassVtbl* m_vtbl;
 };
-struct TileGridGeom {
-    char m_pad00[0x20];
-    i32* m_20; // +0x20  cell table
-    i32* m_24; // +0x24  row-offset table
-    char m_pad28[0x30 - 0x28];
-    i32 m_30; // +0x30  width
-    i32 m_34; // +0x34  height
-    char m_pad38[0x8c - 0x38];
-    i32 m_8c; // +0x8c  x shift
-    i32 m_90; // +0x90  y shift
-};
+// The world tile-grid geometry is the shared CViewport (<Gruntz/CViewport.h>).
 struct TileGrid {
     char m_pad00[0x24];
     char m_pad24[0x4c - 0x24];
     TileClass** m_4c; // +0x4c
     char m_pad50[0x5c - 0x50];
-    TileGridGeom* m_5c; // +0x5c
+    CViewport* m_5c; // +0x5c
 };
 struct PlayMgrRenderer {
     char m_pad00[0x10];
@@ -271,25 +262,25 @@ public:
 // coords, resolve the tile-class through the row/cell tables, and call its
 // +0x20 type virtual. Returns 0 for an empty/out-of-range cell.
 static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
-    TileGridGeom* g = grid->m_5c;
+    CViewport* g = grid->m_5c;
     if (x < 0) {
         x = 0;
-    } else if (x >= g->m_30) {
-        x = g->m_30 - 1;
+    } else if (x >= g->m_worldWidth) {
+        x = g->m_worldWidth - 1;
     }
     if (y < 0) {
         y = 0;
-    } else if (y >= g->m_34) {
-        y = g->m_34 - 1;
+    } else if (y >= g->m_worldHeight) {
+        y = g->m_worldHeight - 1;
     }
-    i32 tx = x >> g->m_8c;
-    i32 ty = y >> g->m_90;
-    i32 cell = g->m_20[g->m_24[ty] + tx];
+    i32 tx = x >> g->m_shiftX;
+    i32 ty = y >> g->m_shiftY;
+    i32 cell = g->m_cells[g->m_rowBase[ty] + tx];
     if (cell == (i32)0xeeeeeeee || cell == -1) {
         return 0;
     }
     TileClass* tc = grid->m_4c[cell & 0xffff];
-    return tc->m_vtbl->GetTypeId(tc, x - (tx << g->m_8c), y - (ty << g->m_90));
+    return tc->m_vtbl->GetTypeId(tc, x - (tx << g->m_shiftX), y - (ty << g->m_shiftY));
 }
 
 // ===========================================================================
@@ -691,7 +682,6 @@ SIZE_UNKNOWN(StartNode);
 SIZE_UNKNOWN(TileClass);
 SIZE_UNKNOWN(TileClassVtbl);
 SIZE_UNKNOWN(TileGrid);
-SIZE_UNKNOWN(TileGridGeom);
 SIZE_UNKNOWN(TileLogicObj);
 SIZE_UNKNOWN(TileObjList);
 SIZE_UNKNOWN(TileObjNode);

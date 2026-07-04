@@ -7,7 +7,8 @@
 // UNMATCHED engine classes whose reads / helper calls must reloc-mask. Functions in
 // retail-RVA order.
 #include <Gruntz/TriggerMgr.h>
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape)
+#include <Gruntz/CViewport.h> // shared world tile-grid geometry (dims here)
 
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
 // id as (kind + kPendingFxIdBase), latched into m_pendingFxKind and handed to the world.
@@ -213,15 +214,11 @@ struct CTmWorld {
     i32 m_504; // +0x504  pending-fx flag (only null-tested)
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
-// g_gameReg->m_world->m_24->m_5c lands on a CTmGrid whose +0x30/+0x34 are (cols,rows).
-struct CTmGrid {
-    char p0[0x30];
-    i32 m_30; // +0x30  grid cols
-    i32 m_34; // +0x34  grid rows
-};
+// g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
+// (<Gruntz/CViewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
 struct CTmGridHolder {
     char p0[0x5c];
-    CTmGrid* m_5c; // +0x5c  the grid object
+    CViewport* m_5c; // +0x5c  the grid object
 };
 struct CTmRegSub30 {
     char p0[0x24];
@@ -2245,9 +2242,9 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CTmGrid* grid = g_gameReg->m_world->m_24->m_5c;
-    i32 minX = grid->m_30 - 1;
-    i32 minY = grid->m_34 - 1;
+    CViewport* grid = g_gameReg->m_world->m_24->m_5c;
+    i32 minX = grid->m_worldWidth - 1;
+    i32 minY = grid->m_worldHeight - 1;
     do {
         CTmNode* cur = n;
         n = n->m_next;
@@ -2433,7 +2430,6 @@ SIZE_UNKNOWN(CTmPtrList);
 SIZE_UNKNOWN(CTmStatusItem);
 SIZE_UNKNOWN(CTmWorld);
 SIZE_UNKNOWN(CTmScoreSub);
-SIZE_UNKNOWN(CTmGrid);
 SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmGameReg);

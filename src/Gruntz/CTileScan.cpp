@@ -8,10 +8,8 @@
 #include <rva.h>
 #include <Gruntz/CScanGrid.h>
 
-struct CScanCell {
-    i32 m_0;
-    char _pad[0x1c - 4];
-};
+// CScanCell (the grid's 0x1c-B cell; only m_flags is read here) is the shared def
+// in <Gruntz/CScanGrid.h>.
 struct CScanPos {
     char _00[0x5c];
     i32 m_5c; // +0x5c  pixel y
@@ -39,7 +37,7 @@ struct CTileScan {
 // when out of bounds.
 static inline i32 GridLookup(CScanGrid* g, i32 x, i32 y) {
     if ((u32)x < (u32)g->m_c && (u32)y < (u32)g->m_10) {
-        return g->m_8[y][x].m_0;
+        return g->m_8[y][x].m_flags;
     }
     return 1;
 }

@@ -62,14 +62,8 @@ extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
 
 extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
 
-// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape): m_8 row table, m_c/m_10 dims, m_60
-// dirty rect, m_70/m_74 its size.
-struct CScanCell {
-    i32 m_0; // +0x00 flags
-    char _04[0x10 - 4];
-    i32 m_10; // +0x10 type
-    char _14[0x1c - 0x14];
-};
+// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape) and its 0x1c-B CScanCell
+// are the shared def in <Gruntz/CScanGrid.h> (m_8 row table, m_c/m_10 dims).
 
 // Pending-coord list node (CGrunt+0x320) + the active cell node (CGrunt+0x324).
 struct CScanCoord {
@@ -299,7 +293,7 @@ L_ed153:
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
-        if ((cell->m_0 & 0x8000) != 0 || cell->m_10 == 0x97 || cell->m_10 == 0x98) {
+        if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
             ((CGruntTileMgr*)P(this, 0x260))
                 ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (col << 5) + 0x10, (row << 5) + 0x10);
             StampMove(1, 1);
@@ -350,7 +344,7 @@ L_ed153:
     for (i32 row = isect.top; row < isect.bottom; row++) {
         CScanCell* cell = &grid->m_8[row][isect.left];
         for (i32 col = isect.left; col < isect.right; col++) {
-            if ((cell->m_0 & 0x8000) != 0 || cell->m_10 == 0x97 || cell->m_10 == 0x98) {
+            if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
                 i32 dr = row - cy;
                 IABS(dr);
                 i32 dc = col - cx;
@@ -732,7 +726,7 @@ L_tailc:
         i32 col = coord->x;
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
-        if ((cell->m_0 & 0x40) != 0 || (cell->m_0 & 0x10000) != 0) {
+        if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
             ((CGruntTileMgr*)P(this, 0x260))
                 ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (col << 5) + 0x10, (row << 5) + 0x10);
             StampMove(1, 1);
@@ -779,7 +773,7 @@ L_tailc:
         for (i32 row = isect.top; row < isect.bottom; row++) {
             CScanCell* cell = &grid->m_8[row][isect.left];
             for (i32 col = isect.left; col < isect.right; col++) {
-                if ((cell->m_0 & 0x10000) != 0) {
+                if ((cell->m_flags & 0x10000) != 0) {
                     i32 dr = row - cy;
                     IABS(dr);
                     i32 dc = col - cx;

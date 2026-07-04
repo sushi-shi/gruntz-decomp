@@ -14,6 +14,7 @@
 // reloc-masked.
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/CViewport.h> // shared world tile-grid geometry (dims here)
 
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
@@ -22,15 +23,11 @@
 struct CCenterTarget {
     i32 Center(i32 x, i32 y); // 0x2e28
 };
-// The map dimensions: gameReg->m_30->m_24->m_5c -> {width @0x30, height @0x34}.
-struct CMapDims {
-    char m_pad00[0x30];
-    i32 m_30; // +0x30 width
-    i32 m_34; // +0x34 height
-};
+// The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
+// CViewport (<Gruntz/CViewport.h>); only its m_worldWidth/m_worldHeight are read here.
 struct CMapHolderB {
     char m_pad00[0x5c];
-    CMapDims* m_5c; // +0x5c
+    CViewport* m_5c; // +0x5c
 };
 struct CMapHolderA {
     char m_pad00[0x24];
@@ -84,9 +81,9 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CMapDims* dims = (CMapDims*)g_gameRegSel->m_world->m_24->m_5c;
-    i32 minX = dims->m_30 - 1;
-    i32 minY = dims->m_34 - 1;
+    CViewport* dims = (CViewport*)g_gameRegSel->m_world->m_24->m_5c;
+    i32 minX = dims->m_worldWidth - 1;
+    i32 minY = dims->m_worldHeight - 1;
     i32 maxX = 0;
     i32 maxY = 0;
     i32 count = 0;

@@ -1,24 +1,21 @@
 // MgrSlotSwap.cpp - 0x1128b0 (__thiscall) on a small game object holding a token at
 // +0x34 plus the (group m_08, index m_0c) coordinates. If the token is live it swaps
 // the token currently parked in the global registry's plane table
-// (((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_20[ m_24[m_0c] + m_08 ]) with its own, notifies
+// (((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_cells[ m_rowBase[m_0c] + m_08 ]) with its own, notifies
 // the registry's m_70 sub-manager, and adopts the previously-parked token. An empty
 // token reports the 0x8009/0x451 diagnostic and returns 0. Every callee + the global
 // are reloc-masked.
 #include <Ints.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/CViewport.h> // shared world-plane grid (the registry plane)
 #include <rva.h>
 
-// The registry plane table: a value plane (m_20) indexed by an offset plane (m_24).
-struct RegPlane {
-    char m_pad0[0x20];
-    i32* m_20; // +0x20  value table
-    i32* m_24; // +0x24  per-group offset table
-};
+// The registry plane table (g_mgrSettings->m_world->m_24->m_5c) is the shared
+// world-plane CViewport: value plane m_cells indexed by offset plane m_rowBase.
 
 struct RegLevel { // g_mgrSettings->m_world->m_24
     char m_pad0[0x5c];
-    RegPlane* m_5c; // +0x5c
+    CViewport* m_5c; // +0x5c
 };
 
 struct RegM30 {
@@ -54,11 +51,11 @@ i32 CSlotHolder::DoSwap() {
     }
     i32 newTok =
         ((RegM30*)g_mgrSettings->m_world)
-            ->m_24->m_5c
-            ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08];
+            ->m_24->m_5c->m_cells
+                [((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_rowBase[this->m_0c] + this->m_08];
     ((RegM30*)g_mgrSettings->m_world)
-        ->m_24->m_5c
-        ->m_20[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_24[this->m_0c] + this->m_08] =
+        ->m_24->m_5c->m_cells
+            [((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_rowBase[this->m_0c] + this->m_08] =
         oldTok;
     ((RegSubMgr*)g_mgrSettings->m_tileGrid)->Notify(this->m_08, this->m_0c, oldTok);
     this->m_34 = newTok;
@@ -68,5 +65,4 @@ i32 CSlotHolder::DoSwap() {
 SIZE_UNKNOWN(CSlotHolder);
 SIZE_UNKNOWN(RegLevel);
 SIZE_UNKNOWN(RegM30);
-SIZE_UNKNOWN(RegPlane);
 SIZE_UNKNOWN(RegSubMgr);

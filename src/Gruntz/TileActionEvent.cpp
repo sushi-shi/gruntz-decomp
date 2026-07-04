@@ -10,6 +10,7 @@
 //   parked at the two-jump-table wall (@early-stop) for the final sweep.
 #include <Win32.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/CViewport.h> // shared world tile-grid geometry
 
 #include <Gruntz/TileActionEvent.h>
 
@@ -20,18 +21,11 @@
 // Only the offsets this cluster reaches are modeled; reloc-masked DIR32.
 // ---------------------------------------------------------------------------
 
-// The action-occupancy tile grid reached as g->m_30->m_24->m_5c: a flat cell array
-// at +0x20, a per-row start-index table at +0x24. cell = m_20[ m_24[y] + x ].
-struct CActionGrid {
-    char m_pad0[0x20];
-    i32* m_20; // +0x20  flat cell array (action codes per tile)
-    i32* m_24; // +0x24  per-row start-index table (m_24[y])
-};
-SIZE_UNKNOWN(CActionGrid);
-
+// The action-occupancy tile grid reached as g->m_30->m_24->m_5c is the shared
+// CViewport (<Gruntz/CViewport.h>): cell = m_cells[m_rowBase[y] + x].
 struct WwdGrViewport {
     char m_pad0[0x5c];
-    CActionGrid* m_5c; // +0x5c
+    CViewport* m_5c; // +0x5c
 };
 SIZE_UNKNOWN(WwdGrViewport);
 
@@ -173,8 +167,8 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CActionGrid* grid = (CActionGrid*)g_gameReg->m_world->m_24->m_5c;
-        i32* cell = &grid->m_20[grid->m_24[m_tileY] + m_tileX];
+        CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+        i32* cell = &grid->m_cells[grid->m_rowBase[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;
         }

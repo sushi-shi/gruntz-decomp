@@ -56,12 +56,7 @@ struct CScanGrunt {                                              // the grunt (a
     i32 m_3f0; // +0x3f0 stuck counter
 };
 
-struct CScanCell { // 0x1c bytes/cell
-    i32 m_0;       // +0x00 flags
-    char _04[0x10 - 4];
-    i32 m_10; // +0x10 type
-    char _14[0x1c - 0x14];
-};
+// CScanCell (the grid's 0x1c-B cell) is the shared def in <Gruntz/CScanGrid.h>.
 struct CScanGoal { // this->m_f4[] element
     i32 m_0, m_4;
 };
@@ -131,11 +126,11 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
             CScanGrid* grid = m_c;
             i32 flags;
             if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
-                flags = grid->m_8[row][col].m_0;
+                flags = grid->m_8[row][col].m_flags;
             } else {
                 flags = 1;
             }
-            if ((flags & 0x4000) && grid->m_8[row][col].m_10 == 0x99) {
+            if ((flags & 0x4000) && grid->m_8[row][col].m_type == 0x99) {
                 CScanListNode* n = g->m_320;
                 while (n != 0) {
                     CScanListNode* cur = n;
@@ -174,14 +169,14 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
                     CScanCell* cell = &grid->m_8[row][isect.left];
                     for (i32 col = isect.left; col < isect.right; col++) {
                         if (hits < 5) {
-                            i32 flags = cell->m_0;
+                            i32 flags = cell->m_flags;
                             if (flags & 0x8000) {
                                 if (DoTrigger1fb9(g, col, row, 0xd87, 0, 0)) {
                                     SCAN_RECT_BOUNDS(grid);
                                     return 1;
                                 }
                                 hits++;
-                            } else if ((flags & 0x4000) && cell->m_10 != 0x99) {
+                            } else if ((flags & 0x4000) && cell->m_type != 0x99) {
                                 if (DoTrigger1fb9(g, col, row, 0xd87, 0, 0)) {
                                     SCAN_RECT_BOUNDS(grid);
                                     return 1;

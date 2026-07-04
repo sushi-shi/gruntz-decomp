@@ -17,26 +17,21 @@
 
 #include <Ints.h>
 #include <Gruntz/CGameRegistry.h>
-#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
+#include <Gruntz/CViewport.h> // shared world tile-grid geometry (the active layer)
+#include <rva.h>              // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern u32 g_645588;
 
-// One indexed tile layer: a flat cell array at +0x20 and a per-row base-offset
-// table at +0x24, so cell (x,y) is m_20[m_24[y] + x].
-struct TgcLayer {
-    char _pad00[0x20];
-    i32* m_20; // +0x20  flat cell array
-    i32* m_24; // +0x24  per-row base offsets
-};
-SIZE_UNKNOWN(TgcLayer);
+// The active tile layer (flat cell array + per-row base-offset table, cell (x,y) =
+// m_cells[m_rowBase[y] + x]) is the shared CViewport.
 
 // The tile map: m_5c is the active layer.
 struct TgcMap {
     char _pad00[0x5c];
-    TgcLayer* m_5c; // +0x5c  active layer
+    CViewport* m_5c; // +0x5c  active layer
 };
 SIZE_UNKNOWN(TgcMap);
 

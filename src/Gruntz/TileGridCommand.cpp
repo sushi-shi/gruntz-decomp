@@ -165,10 +165,10 @@ ret1:
 RVA(0x00112b70, 0x5a)
 i32 CTileGridCommand::BumpCell() {
     CGameRegistry* reg = g_gameReg;
-    TgcLayer* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    i32 v = layer->m_20[m_08 + layer->m_24[m_0c]] + 1;
-    TgcLayer* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-    layer2->m_20[m_08 + layer2->m_24[m_0c]] = v;
+    CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] + 1;
+    CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
     ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
     m_14 = 1;
     return 1;
@@ -190,32 +190,32 @@ i32 CTileGridCommand::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
         CGameRegistry* reg = g_gameReg;
-        TgcLayer* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-        L->m_20[L->m_24[m_0c] + m_08] = m_34;
+        CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+        L->m_cells[L->m_rowBase[m_0c] + m_08] = m_34;
         v = m_34;
         ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
                 CGameRegistry* reg = g_gameReg;
-                TgcLayer* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-                v = L->m_20[L->m_24[m_0c] + m_08] + 1;
-                TgcLayer* L2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-                L2->m_20[L2->m_24[m_0c] + m_08] = v;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                v = L->m_cells[L->m_rowBase[m_0c] + m_08] + 1;
+                CViewport* L2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L2->m_cells[L2->m_rowBase[m_0c] + m_08] = v;
                 ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
                 CGameRegistry* reg = g_gameReg;
-                TgcLayer* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-                L->m_20[L->m_24[m_0c] + m_08] = 0x5b;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5b;
                 ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGameRegistry* reg = g_gameReg;
-                TgcLayer* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
-                L->m_20[L->m_24[m_0c] + m_08] = 0x5a;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5a;
                 ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5a);
                 break;
             }
