@@ -17,6 +17,14 @@ load-bearing; names were never recovered. Your job, on **one class**, two parts:
 You **edit the class's single shared header + every TU that uses it**, then **leave the working
 tree** for the orchestrator to build / measure / commit. You do NOT `git add`/commit or bless.
 
+**Tool discipline:** `rg` is for lexical sweeps (find placeholder spellings, count sites). For
+SEMANTIC questions — every reference to a member you're renaming (across headers/TUs, through
+same-named collisions), a symbol's true def site, a member's type — use
+`python -m gruntz.analysis.clangd_query def|refs|hover|symbol` (clangd/LSP over src); for
+ownership/identity (who news/calls/stores this, on what `this`) use
+`python -m gruntz.analysis.xref <rva|name>` + the Ghidra decomp's xrefs. A rename or identity
+call backed only by grep is a guess; cite xref/clangd evidence.
+
 ## Read the SOURCE, not the assembly
 
 Your evidence is the **reconstructed C++ the matchers already wrote** — `src/<Module>/<TU>.cpp` and

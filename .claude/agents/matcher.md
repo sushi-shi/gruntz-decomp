@@ -39,6 +39,22 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 batch's size to fit your budget. So budget is never a reason to stop short of the
 mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
 
+## Tool discipline — semantic questions go to xref/LSP, not grep
+
+`rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
+occurrences, list def sites). Any SEMANTIC question — who calls/news this, what `this`
+does a method run on, which class owns a vtable slot, where is this symbol really
+defined/referenced, what type is that member — MUST be answered with the real tools
+BEFORE you conclude:
+- `python -m gruntz.analysis.xref <rva|name>` — retail caller/callee call-jmp graph
+  (`--callees`, `--raw`); the caller-side complement of `dump_target`.
+- the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
+- `python -m gruntz.analysis.clangd_query def|refs|hover|symbol` — clangd (LSP) over
+  the src tree; true definition/reference/type answers where grep returns
+  name-collision noise (same-named members, per-TU shadows, overloads).
+An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
+cite xref/clangd evidence for it in your report instead.
+
 You are a **matcher**. The orchestrator (`.claude/agents/orchestrator.md`) spawns you with a
 translation unit / function cluster and its retail RVAs. Your job: write C++ that, compiled with
 **MSVC 5.0** under wine, produces COFF **byte-identical** to retail `GRUNTZ.EXE`, verified with
