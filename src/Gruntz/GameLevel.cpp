@@ -1455,8 +1455,10 @@ i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
 // MoveKindDispatch12 (@0x1671c0): drive both axes toward (x,y). For the X axis,
 // if x is above/below the target's current scrollX call the matching hi/lo stepper
 // (which clamps x in place through &x); same for Y; OR the two results. Finally
-// commit the (possibly stepped) scroll x/y back into the target and return the
-// accumulated flag word. this=level, target passed explicitly (it is itself a level).
+// commit the (possibly stepped) screen x/y (+0x5c/+0x60) back into the target and
+// return the accumulated flag word. this=CGameLevel; `t` is the moved CGameObject
+// (verified: CMovingLogic::Update loads m_object->owner->m_level as this and passes
+// m_object as the target - see the IDENTITY note above).
 RVA(0x001671c0, 0x97)
 i32 CGameLevel::MoveKindDispatch12(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
