@@ -643,6 +643,15 @@ struct CTileReg {
 //   ReleaseTile(a,b)     thunk_FUN_004784d0  (release on lookup miss; ret int)
 //   PostWire()           the 0-arg wire call after the grid stamp (WireTileSwitchLogic)
 // ---------------------------------------------------------------------------
+// A node of the tile-mgr's live-grunt list (CGruntTileMgr::m_4 chain): m_next @+0,
+// and @+8 the live-grunt entry (raw-offset col@0x54 / row@0x58 / busy@0x5c).
+SIZE_UNKNOWN(CGruntLiveNode);
+struct CGruntLiveNode {
+    CGruntLiveNode* m_next; // +0x00
+    char m_pad4[0x8 - 0x4];
+    char* m_entry; // +0x08  live-grunt entry (raw offsets col/row/busy at +0x54/58/5c)
+};
+
 SIZE_UNKNOWN(CGruntTileMgr);
 class CGruntTileMgr {
 public:
@@ -660,6 +669,10 @@ public:
     void ArrivalNotify6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // thunk (ret 0x18)
     void SetTileState4(i32 a, i32 b, i32 c, i32 d);                // thunk (ret 0x10)
     i32 ProbeFreeTile(i32 a, i32 b, void* c, i32 d, void* e, i32 f, i32 g, i32 h, i32 i); // probe
+    // The grunt-step scan machines (WanderIdleStep / GruntArrivalScan / GruntUpdateStep)
+    // reach two more operations, both already modeled above under other names (same
+    // reloc-masked targets): FindGrunt (thunk 0x253b -> 0x477df0) IS GetOccupant, and
+    // Scatter (thunk 0x14bf -> 0x6dae0) IS CommitTileSlot2. No new methods needed.
     // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
     // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
     void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
@@ -696,9 +709,16 @@ public:
     // the tile-mgr, ret 0x10): apply the (i,j) cell effect with the tier value + flag.
     void ApplyCellEffect(i32 i, i32 j, i32 k, i32 flag); // 0x2e96
 
+    // The tile-mgr's live-grunt list head (+0x04): the WanderIdle/ArrivalScan seek
+    // walks it for the nearest targetable grunt. Its node is {next @+0, entry @+8};
+    // the entry's tile col/row/busy live at raw +0x54/+0x58/+0x5c (a per-entry view
+    // distinct from CGrunt's own layout), so the entry is left a raw pointer.
+    char m_pad0[0x4];
+    struct CGruntLiveNode* m_4; // +0x04  live-grunt list head
+    char m_pad8[0x1c - 0x8];
     // CombatCue's grid (this+0x1c): a 4x15 grunt-pointer board scanned i=0..3, j=0..14
     // (the address is monotonic, so retail strength-reduces it to a running pointer).
-    char m_pad0[0x1c];
+    // Also the WanderIdle/UpdateStep move grid (indexed [col][row] = flat col*15+row).
     CGrunt* m_grid[4][15]; // +0x1c
     char m_pad10c[0x148 - 0x10c];
     i32 m_148;   // +0x148
@@ -1498,7 +1518,7 @@ public:
     char m_pad31d[0x320 - 0x31d];
     GruntCoordNode* m_320; // +0x320  (occupied-coord CObList head)
     GruntCoordNode* m_324; // +0x324  (occupied-coord CObList tail node)
-    i32 m_coordCount; // +0x328 (occupied-coord list count; non-empty gate for the m_320 list)
+    i32 m_coordCount;      // +0x328 (occupied-coord list count; non-empty gate for the m_320 list)
     char m_pad32c[0x338 - 0x32c];
     GruntListSub m_338; // +0x338 (~CObList 0x1b48c6; destructed by ~CGrunt)
     char m_pad339[0x33c - 0x339];
@@ -1800,6 +1820,16 @@ public:
     // relocate/arrive on (m_tileMgr TileSwitch6 / CommitTileSlot2), and recycling the
     // visited-coord nodes onto the shared free list.
     i32 PhaseStep();
+    // The grunt per-tick arrival/scan/wander step machines (ex-CGruntStep/CGruntWander
+    // per-TU aliases; every offset they touch is a CGrunt member, every helper a CGrunt
+    // method - so they are CGrunt methods). All __thiscall ret 4, drive the tile-to-tile
+    // move via the tile-mgr grid + the on-screen CueA cue.
+    i32 UpdateArrival(); // @0xf0130  (GruntUpdateStep.cpp) "I"-grunt arrival update
+    i32 SeekTarget();    // @0xf71c0  (GruntUpdateStep.cpp) seek/scan variant
+    i32 WanderStep();    // @0xed9f0  (WanderIdleStep.cpp) idle/wander 6-phase step
+    i32 ArrivalScanA();  // @0xecc90  (GruntArrivalScan.cpp) grid-cell box scan
+    i32 ArrivalScanB();  // @0xf0e20  (GruntArrivalScan.cpp) live-grunt-list scan
+    i32 ArrivalScanC();  // @0xf36a0  (GruntArrivalScan.cpp) 0x10000-flag box scan
     // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
     // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
     void GetScreenPos(struct GruntTilePos* out); // 0x29a50

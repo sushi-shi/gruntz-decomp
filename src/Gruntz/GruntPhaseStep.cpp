@@ -57,7 +57,7 @@ struct CGruntPtAcc {
 
 // Recompute the grid dirty rect (m_60) as {0,0,w,h} intersected with a copy, then
 // m_70/m_74 = the resulting size (the shared GruntTileScan dirty-rect idiom).
-#define GRID_BOUNDS(grid)                                                                           \
+#define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
@@ -75,7 +75,7 @@ struct CGruntPtAcc {
     }
 
 // Recycle the visited-coord CObList nodes (head) back onto the shared free list.
-#define RECYCLE_COORDS(head)                                                                        \
+#define RECYCLE_COORDS(head)                                                                       \
     {                                                                                              \
         GruntCoordNode* n = (head);                                                                \
         while (n != 0) {                                                                           \
@@ -258,7 +258,8 @@ state0: {
     if (m_390 == 0) {
         goto common;
     }
-    if (GruntPointVisible(g_pGameRegistry->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60) == 0) {
+    if (GruntPointVisible(g_pGameRegistry->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)
+        == 0) {
         goto s0_reset;
     }
     g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);

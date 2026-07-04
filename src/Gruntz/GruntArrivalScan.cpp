@@ -3,26 +3,26 @@
 // explicit args, return 1. Direct siblings of GruntUpdateStep.cpp's UpdateArrival
 // (0xf0130) / SeekTarget (0xf71c0) and GruntArrivalStep.cpp's StepArrivalDefenseAlt
 // (0xf1c70): the head gates on the grunt's type name (g_typeColl.Lookup(...)->m_0) -
-// each returns 1 immediately when the grunt IS an "I" (0x60cca0) - and the body drives
-// the tile-to-tile move: resolve the grunt under the HUD center (FindGrunt), gate on
-// the powered-up / arrival state words, recompute the board dirty rect (m_60/m_70/m_74,
-// the GruntTileScan.cpp idiom), scan a box of grid cells for the nearest live target
-// and Scatter / ProbeMove to it, and on commit fire the grunt cue (0x39f4). All engine
-// helpers + the manager/grid globals are external (reloc-masked); the CGrunt field bag
-// is addressed by raw offset exactly as retail does. Data globals are named to the
-// current symbol_names.csv bindings: g_gameReg (canonical CGameRegistry* @0x24556c),
-// g_typeColl (?g_typeColl@@3UCTypeColl@@A), g_dropList (?g_dropList@@3UCStepList2@@A).
-#include <Ints.h>
-#include <string.h> // inline strcmp of the grunt type name
+// each returns 1 immediately when the grunt IS an "I" - and the body drives the
+// tile-to-tile move: resolve the grunt under the HUD center (m_tileMgr->GetOccupant),
+// gate on the powered-up / arrival state words, recompute the board dirty rect, scan a
+// box of grid cells (or the tile-mgr live-grunt list) for the nearest live target and
+// CommitTileSlot2 / TileSwitch6 to it, and on commit fire the on-screen cue (CueA).
+//
+// FOLDED onto the canonical CGrunt (<Gruntz/Grunt.h>): the local CGruntStep this-alias
+// + CGruntTileMgr(FindGrunt/Scatter/m_4)/CGruntCueSink(PlayCue) views are gone. Real
+// CGrunt methods; the tile-mgr is the canonical CGruntTileMgr (GetOccupant == the old
+// FindGrunt, CommitTileSlot2 == Scatter, m_4 == the live-grunt list); the cue is
+// m_cueSink->CueA. The grid/coord node views are the shared CScanGrid family. The CGrunt
+// field bag stays raw F()/P() offset (codegen-neutral naming, load-bearing offsets).
+#include <Gruntz/Grunt.h> // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
 
-#include <Win32.h> // RECT + IntersectRect / PtInRect
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
+#include <string.h> // inline strcmp of the grunt type name
 #include <Gruntz/StepList2.h>
 #include <Gruntz/ScanRectInit.h>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/TypeColl.h>
-#include <Gruntz/StepList.h>
 
 #pragma intrinsic(strcmp)
 
@@ -30,76 +30,23 @@
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 #define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31)) // MSVC cdq/xor/sub abs
 
-struct CGruntStep;
-
 // Type-name collection (g_typeColl @0x6bf650): Lookup(key)->node, node->m_0 = name.
-extern CTypeColl g_typeColl; // ?g_typeColl@@3UCTypeColl@@A (bound in GruntUpdateStep.cpp)
+extern CTypeColl g_typeColl; // (DATA-bound in GruntUpdateStep.cpp)
 
-// A grunt in the tileMgr's live-grunt list (node->m_8): m_54/m_58 = tile col/row,
-// m_5c = a busy flag.
-struct CScanGruntNode;
+// The owned pending-coord recycle pool (g_dropList @0x645540; DATA-bound elsewhere).
+extern CStepList2 g_dropList;
 
-// Per-grunt move/path sub-manager (CGrunt+0x260): FindGrunt(this)->grunt-under-HUD;
-// also the grid the Scatter helper (0x14bf) is a __thiscall on; m_4 = live-grunt list.
-struct CGruntTileMgr {
-    CGruntStep* FindGrunt(CGruntStep* g);    // 0x40253b
-    i32 Scatter(i32 a, i32 b, i32 c, i32 d); // 0x4014bf
-    char _00[4];
-    CScanGruntNode* m_4; // +0x04 live-grunt list head
-};
-struct CScanGruntNode {
-    CScanGruntNode* m_next; // +0x00
-    char _04[8 - 4];
-    char* m_8; // +0x08 -> grunt (m_54 col, m_58 row, m_5c busy)
-};
+// The board/cell targetable gate (0xf0db0, __cdecl reloc-masked): the active-move
+// cell predicate used by ArrivalScanB.
+extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0
 
-// __cdecl board/cell predicates (reloc-masked). BoardTest: point-in-board-rect;
-// CellTargetable: the active-move cell gate.
-extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
-extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
-
-// The owned pending-coord collection at CGrunt+0x31c that gets RemoveAll'd on commit.
-
-extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
-
-// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape) and its 0x1c-B CScanCell,
-// plus the shared CScanCoord/CScanNode324 (CGrunt+0x324) and CScanListNode
-// (CGrunt+0x320) path-node types, are the shared def in <Gruntz/ScanGrid.h>.
-
-// The +0x60 on-screen cue receiver (CGruntCueSink, forward-declared by
-// CGameRegistry.h): its 6-arg grunt entrance cue is at 0x4039f4 (__thiscall).
-// Completed here with just that method (data-less class, layout-neutral).
-class CGruntCueSink {
-public:
-    void PlayCue(CGruntStep* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
-};
-
-// The game-manager singleton is the canonical CGameRegistry (*0x64556c): the board
-// base via m_world->m_24->+0x5c (CSpriteFactoryHolder -> CGameViewport), the +0x60
-// cue receiver (m_cueSink), and the +0x70 tile grid downcast to the richer CScanGrid
-// view (dirty rect + row table).
-DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // 0x64556c
-
-struct CGruntStep {
-    i32 ArrivalScanA(); // 0xecc90
-    i32 ArrivalScanB(); // 0xf0e20
-    i32 ArrivalScanC(); // 0xf36a0
-
-    // reloc-masked CGrunt __thiscall helpers (called on this and on other grunts):
-    i32 TileProbe(i32 x, i32 y);                             // 0x403c4c
-    i32 RunGate(i32 a);                                      // 0x403d5a
-    void ResetEntrance(i32 a, i32 b, i32 c);                 // 0x40136b
-    i32 OwnsTile(i32 a, i32 b);                              // 0x401014
-    void CommitMove(i32 a, i32 b, i32 c, i32 d);             // 0x40302b
-    i32 ProbeMove(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x401640
-    void StampMove(i32 a, i32 b);                            // 0x401401
-    void ReadCenter(void* out);                              // 0x4036c0
-    void SelectIcon(i32 a, i32 b, i32 c, i32 d);             // 0x403bd9
-};
+// The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry: the
+// board base via m_world->m_24->+0x5c, the +0x60 cue receiver (m_cueSink), and the
+// +0x70 tile grid downcast to the richer CScanGrid view (dirty rect + row table).
+extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // Recompute the board dirty rect (m_60) as {0,0,w,h} intersected with a copy of
-// itself; m_70/m_74 = the resulting size. (GruntTileScan.cpp SCAN_RECT_BOUNDS.)
+// itself; m_70/m_74 = the resulting size.
 #define GRID_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
@@ -148,7 +95,7 @@ struct CGruntStep {
                 g_dropList.Drop(cur->m_8);                                                         \
             }                                                                                      \
         }                                                                                          \
-        ((CStepList*)((char*)this + 0x31c))->RemoveAll();                                          \
+        m_31c.RemoveAll();                                                                         \
     }
 
 // ===========================================================================
@@ -158,28 +105,28 @@ struct CGruntStep {
 // UpdateArrival/SeekTarget and GruntArrivalStep.cpp's StepArrivalDefenseAlt.
 // Final-sweep candidate.
 RVA(0x000ecc90, 0x86a)
-i32 CGruntStep::ArrivalScanA() {
-    if (strcmp(g_typeColl.Lookup(F(P(this, 0x14), 0x1c))->m_0, "I") == 0) {
+i32 CGrunt::ArrivalScanA() {
+    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    ReadCenter(c1);
+    GetScreenPos((GruntTilePos*)c1);
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    ReadCenter(c2);
+    GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGruntStep* g = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
+    CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = F(P(g, 0x10), 0x5c);
         if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && this->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
+            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
             atTarget = 1;
         }
     }
@@ -193,7 +140,7 @@ i32 CGruntStep::ArrivalScanA() {
             return 1;
         }
         if (F(this, 0x3f0) >= 100) {
-            if (RunGate(1) != 0) {
+            if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
@@ -217,7 +164,7 @@ i32 CGruntStep::ArrivalScanA() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        ResetEntrance(1, 0, 0);
+        Stub_062e10(1, 0, 0);
         return 1;
     }
 
@@ -230,7 +177,7 @@ i32 CGruntStep::ArrivalScanA() {
     }
     if (F(this, 0x218) == 0 && F(this, 0x3f0) >= 100) {
         if (atTarget) {
-            CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+            CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
             DRAIN_COORDS();
             return 1;
         }
@@ -242,7 +189,7 @@ i32 CGruntStep::ArrivalScanA() {
     }
 
 L_ed006:
-    if (g == 0 || (u32)F(this, 0x2ec) <= 0x1f4 || this->OwnsTile(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
+    if (g == 0 || (u32)F(this, 0x2ec) <= 0x1f4 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
         F(this, 0x390) = 0;
         goto L_ed153;
     }
@@ -251,24 +198,24 @@ L_ed006:
     }
     if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
         && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && this->TileProbe(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
+        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
         F(this, 0x2ec) = 0;
         return 1;
     }
     if (F(this, 0x220) != 0) {
         goto L_ed153;
     }
-    if (this->ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
+    if (TileSwitch6(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
         == 0) {
         goto L_ed153;
     }
     if (F(this, 0x390) != 0) {
-        char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
+        char* board = P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40;
         i32 x = F(P(this, 0x10), 0x5c);
         i32 y = F(P(this, 0x10), 0x60);
         if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-            g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+            g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
         }
         F(this, 0x390) = 0;
     }
@@ -281,9 +228,13 @@ L_ed153:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x8000) != 0 || cell->m_type == 0x97 || cell->m_type == 0x98) {
-            ((CGruntTileMgr*)P(this, 0x260))
-                ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (col << 5) + 0x10, (row << 5) + 0x10);
-            StampMove(1, 1);
+            m_tileMgr->CommitTileSlot2(
+                F(this, 0x1ec),
+                F(this, 0x1f0),
+                (col << 5) + 0x10,
+                (row << 5) + 0x10
+            );
+            SetEntrancePos(1, 1);
             F(this, 0x2ec) = 0;
         }
         return 1;
@@ -352,16 +303,15 @@ L_ed153:
         i32 dr = bestRow - cy;
         IABS(dr);
         if (dc <= 1 && dr <= 1) {
-            ((CGruntTileMgr*)P(this, 0x260))
-                ->Scatter(
-                    F(this, 0x1ec),
-                    F(this, 0x1f0),
-                    (bestCol << 5) + 0x10,
-                    (bestRow << 5) + 0x10
-                );
-            StampMove(1, 1);
+            m_tileMgr->CommitTileSlot2(
+                F(this, 0x1ec),
+                F(this, 0x1f0),
+                (bestCol << 5) + 0x10,
+                (bestRow << 5) + 0x10
+            );
+            SetEntrancePos(1, 1);
         } else {
-            this->ProbeMove(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
+            TileSwitch6(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
@@ -371,33 +321,33 @@ L_ed153:
 
 // ===========================================================================
 // @early-stop
-// Sibling of ArrivalScanA with a __cdecl board test (BoardTest 0x1127) instead of the
-// inlined point-in-rect, and a live-grunt-LIST scan (tileMgr->m_4, PtInRect membership)
-// instead of the grid-cell box scan. Logic reconstructed fully; same deep-regalloc +
-// slot-recycle wall family. Final-sweep candidate.
+// Sibling of ArrivalScanA with a __cdecl board test (CellTargetable 0xf0db0) instead
+// of the inlined point-in-rect, and a live-grunt-LIST scan (m_tileMgr->m_4, PtInRect
+// membership) instead of the grid-cell box scan. Logic reconstructed fully; same
+// deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f0e20, 0x928)
-i32 CGruntStep::ArrivalScanB() {
-    if (strcmp(g_typeColl.Lookup(F(P(this, 0x14), 0x1c))->m_0, "I") == 0) {
+i32 CGrunt::ArrivalScanB() {
+    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    ReadCenter(c1);
+    GetScreenPos((GruntTilePos*)c1);
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    ReadCenter(c2);
+    GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGruntStep* g = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
+    CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = F(P(g, 0x10), 0x5c);
         if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && this->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
+            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
             atTarget = 1;
         }
     }
@@ -411,7 +361,7 @@ i32 CGruntStep::ArrivalScanB() {
             return 1;
         }
         if (F(this, 0x3f0) >= 100) {
-            if (RunGate(1) != 0) {
+            if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
@@ -435,7 +385,7 @@ i32 CGruntStep::ArrivalScanB() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        ResetEntrance(1, 0, 0);
+        Stub_062e10(1, 0, 0);
         return 1;
     }
 
@@ -448,7 +398,7 @@ i32 CGruntStep::ArrivalScanB() {
     }
     if (F(this, 0x218) == 0 && F(this, 0x3f0) >= 100) {
         if (atTarget) {
-            CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+            CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
             DRAIN_COORDS();
             return 1;
         }
@@ -460,7 +410,7 @@ i32 CGruntStep::ArrivalScanB() {
     }
 
 L_ed006b:
-    if (g == 0 || this->OwnsTile(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
+    if (g == 0 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
         F(this, 0x390) = 0;
         goto L_scanb;
     }
@@ -469,8 +419,8 @@ L_ed006b:
     }
     if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
         && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && this->TileProbe(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
+        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
     }
     if (F(this, 0x220) != 0) {
         goto L_scanb;
@@ -480,13 +430,14 @@ L_ed006b:
     }
     {
         i32 cc[4];
-        g->ReadCenter(cc);
-        if (this->ProbeMove(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
+        g->GetScreenPos((GruntTilePos*)cc);
+        if (TileSwitch6(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) != 0) {
             if (F(this, 0x390) != 0) {
                 i32 x = F(P(this, 0x10), 0x5c);
                 i32 y = F(P(this, 0x10), 0x60);
-                if (BoardTest(P(g_gameReg->m_world->m_24, 0x5c) + 0x40, x, y) != 0) {
-                    g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                if (GruntPointVisible((i32)(P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40), x, y)
+                    != 0) {
+                    g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
                 F(this, 0x390) = 0;
             }
@@ -500,9 +451,13 @@ L_scanb:
         i32 col = coord->x;
         i32 row = coord->y;
         if (CellTargetable(col, row) != 0) {
-            ((CGruntTileMgr*)P(this, 0x260))
-                ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (col << 5) + 0x10, (row << 5) + 0x10);
-            StampMove(1, 1);
+            m_tileMgr->CommitTileSlot2(
+                F(this, 0x1ec),
+                F(this, 0x1f0),
+                (col << 5) + 0x10,
+                (row << 5) + 0x10
+            );
+            SetEntrancePos(1, 1);
             F(this, 0x2ec) = 0;
         }
         return 1;
@@ -547,16 +502,20 @@ L_scanb:
     i32 best = 0x7fffffff;
     i32 bestX = 0;
     i32 bestY = 0;
-    CScanGruntNode* node = ((CGruntTileMgr*)P(this, 0x260))->m_4;
+    CGruntLiveNode* node = m_tileMgr->m_4;
     while (node != 0) {
-        char* gg = node->m_8;
+        char* gg = node->m_entry;
         node = node->m_next;
         if (F(gg, 0x5c) == 0) {
             i32 gx = F(gg, 0x54);
             i32 gy = F(gg, 0x58);
-            if (this->TileProbe((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
-                ((CGruntTileMgr*)P(this, 0x260))
-                    ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (gx << 5) + 0x10, (gy << 5) + 0x10);
+            if (RectContains((gx << 5) + 0x10, (gy << 5) + 0x10) != 0) {
+                m_tileMgr->CommitTileSlot2(
+                    F(this, 0x1ec),
+                    F(this, 0x1f0),
+                    (gx << 5) + 0x10,
+                    (gy << 5) + 0x10
+                );
                 GRID_RECT_BOUNDS(grid);
                 return 1;
             }
@@ -582,11 +541,15 @@ L_scanb:
         i32 dy = bestY - cy;
         IABS(dy);
         if (dx <= 1 && dy <= 1) {
-            ((CGruntTileMgr*)P(this, 0x260))
-                ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (bestX << 5) + 0x10, (bestY << 5) + 0x10);
-            StampMove(1, 1);
+            m_tileMgr->CommitTileSlot2(
+                F(this, 0x1ec),
+                F(this, 0x1f0),
+                (bestX << 5) + 0x10,
+                (bestY << 5) + 0x10
+            );
+            SetEntrancePos(1, 1);
         } else {
-            this->ProbeMove(bestX, bestY, 0, F(this, 0x248), 1, 0);
+            TileSwitch6(bestX, bestY, 0, F(this, 0x248), 1, 0);
         }
     }
     GRID_RECT_INLINE(grid);
@@ -601,26 +564,26 @@ L_scanb:
 // grid cells by flag 0x10000 (active-move by 0x40|0x10000). Logic reconstructed fully;
 // same deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f36a0, 0x78e)
-i32 CGruntStep::ArrivalScanC() {
-    if (strcmp(g_typeColl.Lookup(F(P(this, 0x14), 0x1c))->m_0, "I") == 0) {
+i32 CGrunt::ArrivalScanC() {
+    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
         return 1;
     }
-    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
-    ReadCenter(c1);
+    GetScreenPos((GruntTilePos*)c1);
     i32 cx = c1[0] >> 5;
     i32 c2[4];
-    ReadCenter(c2);
+    GetScreenPos((GruntTilePos*)c2);
     i32 cy = c2[1] >> 5;
 
-    CGruntStep* g = ((CGruntTileMgr*)P(this, 0x260))->FindGrunt(this);
+    CGrunt* g = m_tileMgr->GetOccupant(this);
     i32 atTarget = 0;
     if (g != 0) {
         i32 x = F(P(g, 0x10), 0x5c);
         if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
-            && this->TileProbe(x, F(P(g, 0x10), 0x60)) != 0) {
+            && RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
             atTarget = 1;
         }
     }
@@ -637,7 +600,7 @@ i32 CGruntStep::ArrivalScanC() {
             return 1;
         }
         if (F(this, 0x3f0) >= 100) {
-            if (RunGate(1) != 0) {
+            if (FindGridNeighbor(1) != 0) {
                 return 1;
             }
             if (atTarget && g == 0) {
@@ -653,7 +616,7 @@ i32 CGruntStep::ArrivalScanC() {
             F(this, 0x218) = 0;
             F(this, 0x21c) = 0;
             F(this, 0x220) = 0;
-            ResetEntrance(1, 0, 0);
+            Stub_062e10(1, 0, 0);
             return 1;
         }
         if (atTarget) {
@@ -669,11 +632,11 @@ i32 CGruntStep::ArrivalScanC() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        ResetEntrance(1, 0, 0);
+        Stub_062e10(1, 0, 0);
         return 1;
     }
 
-    if (g == 0 || this->OwnsTile(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
+    if (g == 0 || GruntInRadius(F(g, 0x1ec), F(g, 0x1f0)) == 0) {
         F(this, 0x390) = 0;
         goto L_tailc;
     }
@@ -682,8 +645,8 @@ i32 CGruntStep::ArrivalScanC() {
     }
     if (F(this, 0x3f0) >= 100 && F(P(g, 0x10), 0x5c) == F(g, 0x17c)
         && F(P(g, 0x10), 0x60) == F(g, 0x180)
-        && this->TileProbe(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
-        CommitMove(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
+        && RectContains(F(P(g, 0x10), 0x5c), F(P(g, 0x10), 0x60)) != 0) {
+        CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
         F(this, 0x2ec) = 0;
         return 1;
     }
@@ -693,14 +656,14 @@ i32 CGruntStep::ArrivalScanC() {
     if ((u32)F(this, 0x2ec) <= 0x1f4) {
         goto L_tailc;
     }
-    if (this->ProbeMove(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
+    if (TileSwitch6(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
         != 0) {
         if (F(this, 0x390) != 0) {
-            char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
+            char* board = P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40;
             i32 x = F(P(this, 0x10), 0x5c);
             i32 y = F(P(this, 0x10), 0x60);
             if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-                g_gameReg->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
             F(this, 0x390) = 0;
         }
@@ -714,9 +677,13 @@ L_tailc:
         i32 row = coord->y;
         CScanCell* cell = &grid->m_8[row][col];
         if ((cell->m_flags & 0x40) != 0 || (cell->m_flags & 0x10000) != 0) {
-            ((CGruntTileMgr*)P(this, 0x260))
-                ->Scatter(F(this, 0x1ec), F(this, 0x1f0), (col << 5) + 0x10, (row << 5) + 0x10);
-            StampMove(1, 1);
+            m_tileMgr->CommitTileSlot2(
+                F(this, 0x1ec),
+                F(this, 0x1f0),
+                (col << 5) + 0x10,
+                (row << 5) + 0x10
+            );
+            SetEntrancePos(1, 1);
             F(this, 0x2ec) = 0;
         }
         return 1;
@@ -781,16 +748,15 @@ L_tailc:
             i32 dr = bestRow - cy;
             IABS(dr);
             if (dc <= 1 && dr <= 1) {
-                ((CGruntTileMgr*)P(this, 0x260))
-                    ->Scatter(
-                        F(this, 0x1ec),
-                        F(this, 0x1f0),
-                        (bestCol << 5) + 0x10,
-                        (bestRow << 5) + 0x10
-                    );
-                StampMove(1, 1);
+                m_tileMgr->CommitTileSlot2(
+                    F(this, 0x1ec),
+                    F(this, 0x1f0),
+                    (bestCol << 5) + 0x10,
+                    (bestRow << 5) + 0x10
+                );
+                SetEntrancePos(1, 1);
             } else {
-                this->ProbeMove(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
+                TileSwitch6(bestCol, bestRow, 0, F(this, 0x248), 1, 0);
             }
         }
         GRID_RECT_INLINE(grid);
@@ -798,17 +764,3 @@ L_tailc:
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CGruntCueSink);
-SIZE_UNKNOWN(CGruntStep);
-SIZE_UNKNOWN(CScanCell);
-SIZE_UNKNOWN(CScanCoord);
-SIZE_UNKNOWN(CScanGrid);
-SIZE_UNKNOWN(CScanGruntNode);
-SIZE_UNKNOWN(CScanListNode);
-SIZE_UNKNOWN(CScanNode324);
-SIZE_UNKNOWN(CScanRectInit);
-SIZE_UNKNOWN(CStepList);
-SIZE_UNKNOWN(CStepList2);
-SIZE_UNKNOWN(CTypeColl);
-SIZE_UNKNOWN(CTypeNode);
