@@ -853,7 +853,7 @@ brickz	?SearchEdge@CBrickz@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	3	783e81b45a00	0x81
 brickz	?Serialize@CBrickz@@QAEHHHHH@Z	37.9032	37.9032	1	18774618cdf4	0x9356c
 brickz	?Unlink@CBrickz@@QAEXPAUBrickzNode@@@Z	74.9487	74.9487	3	84a041008a64	0x9f690
 brickz	?UpdateDiagonals@CBrickz@@QAEHH@Z	53.5683	53.5683	2	e0f752c92016	0x82030
-brickzload	?LoadAttributes@CBrickz@@QAEHHH@Z	12.5917	12.5917	3	bdc92c3d5cea	0x810f0
+brickzload	?LoadAttributes@CBrickz@@QAEHHH@Z	12.5917	12.5917	4	4530006ba057	0x810f0
 bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	1	8e1c162b9ed0	0x110860
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	3	8f39c886254c	0xbf1d0
 butemgr	??0ios@@QAE@XZ	100.0000	100.0000	1	3f3309bfcfe8	0x169c00
@@ -2819,7 +2819,7 @@ mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	59.8226	59.8226	2	6b88
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	2	2779ef0a81cb	0xf0db0
 mgrobjserialize	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	4	c436f1fa9117	0xface0
 mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCMgrWriter@@@Z	100.0000	100.0000	2	cc0f48d1094a	0xfb1c0
-mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	54.9057	54.9057	3	5e290dffb79e	0x1128b0
+mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	54.9057	54.9057	4	44b31121e4cc	0x1128b0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 minervainner	?Stop@SoundStream@@QAEXXZ	100.0000	100.0000	1	46d12e5e2855	0x137a80
 misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	2	d224c96d8cca	0x18a190
@@ -3517,7 +3517,7 @@ triggermgr	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	4	ccf26983352c
 triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	84.7778	84.7778	6	608e9ed7b7af	0x79b30
 triggermgr	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	5	a38fb4cc91d9	0x6bcb0
 triggermgr	?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z	70.9419	70.9419	3	d6af4daff444	0x6bea0
-triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	86.8284	86.8284	4	fe9b06c9a15c	0x7cd40
+triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	86.8284	86.8284	5	6d1df6a2772f	0x7cd40
 triggermgr	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	3	e2e5e11f1e67	0x6b680
 triggermgr	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	59.2576	59.2576	3	fa87edc77ab4	0x6e800
 triggermgr	?ClearGridRange@CTriggerMgr@@QAEHH@Z	60.1875	60.1875	3	7be5d0d6d8bd	0x6bd40

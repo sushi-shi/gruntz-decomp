@@ -22,7 +22,8 @@
 
 #include <Mfc.h> // Win32/engine types
 
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
+#include <Gruntz/CGameRegistry.h> // canonical game-registry singleton (*0x64556c)
 #include <rva.h>
 
 DATA(0x002bf3bc)
@@ -71,26 +72,16 @@ struct CProjSprite {
     i32 m_120; // +0x120
     i32 m_124; // +0x124
 };
-// The HUD sprite factory (g_gameReg->m_world->m_8), CreateSprite by class NAME.
+// The HUD sprite factory reached as g_gameReg->m_world->m_8 (CreateSprite by class
+// NAME): the reused +0x08 pointer of the registry's world/resource holder, downcast
+// to this TU's factory method-holder. The world holder + registry singleton are the
+// canonical CGameRegistry/CSpriteFactoryHolder now (was CProjGameReg/CProjFactoryHolder).
 struct CProjFactory {
     CProjSprite*
     CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name, i32 flags); // 0x1597b0
 };
-struct CProjFactoryHolder {
-    char m_pad00[0x8];
-    CProjFactory* m_8; // +0x08
-};
-// The game-registry singleton (*0x64556c) as this projectile-update TU views it:
-// only the +0x30 sprite-factory holder is reached. (Distinct object from the
-// projectile-action registry g_projReg in ProjActRegistry.cpp and from the +0x30
-// sub-registry in StreamRecordLoaders.cpp - each carried its own placeholder view.)
-SIZE_UNKNOWN(CProjGameReg);
-struct CProjGameReg {
-    char m_pad00[0x30];
-    CProjFactoryHolder* m_world; // +0x30
-};
 DATA(0x0024556c)
-extern CProjGameReg* g_gameReg; // *0x64556c
+extern CGameRegistry* g_gameReg; // the one game-registry singleton (*0x64556c)
 
 // The projectile's host/world object (this->m_10).
 struct CProjHost {
@@ -210,7 +201,7 @@ i32 CProjectile::Update() {
             case 10:
             case 11: {
                 CProjSprite* spr =
-                    g_gameReg->m_world->m_8
+                    ((CProjFactory*)g_gameReg->m_world->m_8)
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
@@ -221,7 +212,7 @@ i32 CProjectile::Update() {
             }
             case 2: {
                 CProjSprite* spr =
-                    g_gameReg->m_world->m_8
+                    ((CProjFactory*)g_gameReg->m_world->m_8)
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Boomerang", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
@@ -233,7 +224,7 @@ i32 CProjectile::Update() {
             case 17: {
                 i32 pos[2];
                 GetSpawnPos(pos);
-                CProjSprite* spr = g_gameReg->m_world->m_8
+                CProjSprite* spr = ((CProjFactory*)g_gameReg->m_world->m_8)
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
                 spr->m_7c->Init(spr);
@@ -243,7 +234,7 @@ i32 CProjectile::Update() {
             case 21:
             case 22: {
                 CProjSprite* spr =
-                    g_gameReg->m_world->m_8
+                    ((CProjFactory*)g_gameReg->m_world->m_8)
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
                 CProjSetup* s = spr->m_7c->m_18;
@@ -313,7 +304,6 @@ i32 CProjectile::Update() {
     return 0;
 }
 SIZE_UNKNOWN(CProjFactory);
-SIZE_UNKNOWN(CProjFactoryHolder);
 SIZE_UNKNOWN(CProjHost);
 SIZE_UNKNOWN(CProjLogic);
 SIZE_UNKNOWN(CProjSetup);
