@@ -10,9 +10,10 @@
 // recovered engine identities.
 #include <Gruntz/CSimpleAnimation.h>
 
-#include <Bute/ButeMgr.h> // CButeTree (the shared registration key store)
-#include <Mfc.h>          // CString (the scratch name-vec element)
-#include <Wap32/ZVec.h>   // zDArray<member-fn-ptr> dispatch table + zvec accessors
+#include <Bute/ButeMgr.h>   // CButeTree (the shared registration key store)
+#include <Mfc.h>            // CString (the scratch name-vec element)
+#include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + zvec accessors
+#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 #include <Gruntz/CAnimSink.h>
 
@@ -52,7 +53,7 @@ extern i32 g_logicRegCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-struct NameVec : public zDArray {};
+// NameVec is the shared def in <Gruntz/NameVec.h>.
 DATA(0x002bf650)
 extern NameVec g_buteNameVec;
 

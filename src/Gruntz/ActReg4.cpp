@@ -12,11 +12,10 @@
 #include <Globals.h>
 #include <Gruntz/CTypeNameEntryView.h>
 #include <Gruntz/CTypeColl.h>
+#include <Gruntz/CTypeColl2.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
-struct CTypeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
+// CTypeColl2 (the Insert facet) is the shared def in <Gruntz/CTypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;

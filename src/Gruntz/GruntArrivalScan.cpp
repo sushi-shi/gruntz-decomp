@@ -62,22 +62,9 @@ extern "C" i32 CellTargetable(i32 col, i32 row);     // 0x40107d
 
 extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpdateStep.cpp)
 
-// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape) and its 0x1c-B CScanCell
-// are the shared def in <Gruntz/CScanGrid.h> (m_8 row table, m_c/m_10 dims).
-
-// Pending-coord list node (CGrunt+0x320) + the active cell node (CGrunt+0x324).
-struct CScanCoord {
-    i32 x, y;
-};
-struct CScanNode324 {
-    char _00[8];
-    CScanCoord* m_8; // +0x08 -> {col,row}
-};
-struct CScanListNode {
-    CScanListNode* m_next; // +0x00
-    i32 _04;
-    i32 m_8; // +0x08 link value
-};
+// The board grid (g_gameReg->m_tileGrid, CScanGrid-shape) and its 0x1c-B CScanCell,
+// plus the shared CScanCoord/CScanNode324 (CGrunt+0x324) and CScanListNode
+// (CGrunt+0x320) path-node types, are the shared def in <Gruntz/CScanGrid.h>.
 
 // The +0x60 on-screen cue receiver (CGruntCueSink, forward-declared by
 // CGameRegistry.h): its 6-arg grunt entrance cue is at 0x4039f4 (__thiscall).

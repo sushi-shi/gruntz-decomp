@@ -22,13 +22,22 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
+// NOT folded onto <Gruntz/CScanGrid.h> on purpose: this TU views two grid members
+// at a DIFFERENT access shape than the arrival/tile-scan TUs (offset-conflation ->
+// split, don't union):
+//   * the list node's +0x08 is dereferenced here as a coord POINTER (CScanNode.m_8);
+//     GruntArrivalScan/GruntTileScan treat the SAME field as an i32 handle passed to
+//     the coord-pool Drop. Same 4 bytes, two authentic typings -> distinct classes.
+//   * the cell's flag is read here as the BYTE at +0x03 (CScanCell.m_3, a movzx);
+//     the header's CScanCell reads the whole dword m_flags at +0x00 (a dword test).
+//     Folding would rewrite the byte load into a dword load and diverge codegen.
 struct CScanKeyNode {
     i32 m_0, m_4; // col, row
 };
 struct CScanNode {     // m_320 tracked-coord node
     CScanNode* m_next; // +0x00
     i32 _04;
-    CScanKeyNode* m_8; // +0x08 -> coord
+    CScanKeyNode* m_8; // +0x08 -> coord (pointer view; see split note above)
 };
 struct CScanNode324 { // m_324
     char _00[8];

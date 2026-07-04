@@ -9,6 +9,7 @@
 #include <Globals.h>
 #include <Gruntz/CTypeNameEntryView.h>
 #include <Gruntz/CTypeColl.h>
+#include <Gruntz/CTypeColl2.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
@@ -103,10 +104,8 @@ void CProjActObj::FireActivation(i32 coord) {
 // through, keyed by the per-type id the global bute-tree assigns to a class name.
 // Same fast-range/slow-Find/rebuild lookup as the per-class R3 table. All globals
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
-// external/no-body.
-struct CTypeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
+// external/no-body. CTypeColl2 (the Insert facet) is the shared def in
+// <Gruntz/CTypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;

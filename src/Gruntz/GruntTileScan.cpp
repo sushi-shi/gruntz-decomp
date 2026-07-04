@@ -21,25 +21,11 @@
 #include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-struct CScanCoord {
-    i32 x, y;
-};
-struct CScanNode324 { // grunt->m_324 (current path node)
-    char _00[8];
-    CScanCoord* m_8; // +0x08 -> {col,row}
-};
-struct CScanListNode { // grunt->m_320 pending-coord node
-    CScanListNode* m_next;
-    i32 _04;
-    i32 m_8; // +0x08  recycled coord-node handle (fed to g_coordPool.Drop)
-};
+// CScanCoord/CScanNode324 (grunt->m_324), CScanListNode (grunt->m_320 pending-coord
+// node) and CScanSub10 (grunt->m_10) are the shared def in <Gruntz/CScanGrid.h>.
 struct CScanObList {        // grunt->m_31c
     void RemoveAll1b48a6(); // 0x1b48a6
     char _00[4];
-};
-struct CScanSub10 { // grunt->m_10
-    char _00[0x5c];
-    i32 m_5c, m_60; // +0x5c screen x, +0x60 screen y
 };
 struct CScanGrunt {                                              // the grunt (arg, ebp)
     void GetTilePos36c0(CScanCoord* out);                        // 0x36c0

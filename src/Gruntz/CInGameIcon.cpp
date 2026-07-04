@@ -13,9 +13,10 @@
 
 #include <rva.h>
 
-#include <string.h>       // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h> // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>   // zDArray (the command-dispatch tables)
+#include <string.h>         // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>   // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>     // zDArray (the command-dispatch tables)
+#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
@@ -72,7 +73,7 @@ extern i32 g_iconRegCounter; // 0x61aea8  (running registration index)
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-struct NameVec : public zDArray {};
+// NameVec is the shared def in <Gruntz/NameVec.h>.
 DATA(0x002bf650)
 extern NameVec g_buteNameVec; // 0x6bf650
 

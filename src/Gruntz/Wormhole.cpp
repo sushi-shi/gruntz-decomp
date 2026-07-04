@@ -1,6 +1,7 @@
 #include <Gruntz/CWormhole.h> // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
-#include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
+#include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + the shared registration infra
+#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <rva.h>
 // Wormhole.cpp - CWormhole - a world teleport node (RTTI CWormhole), a CUserLogic
 // game-object leaf. Three methods are matched here:
@@ -159,7 +160,7 @@ extern i32 g_logicRegCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-struct NameVec : public zDArray {};
+// NameVec is the shared def in <Gruntz/NameVec.h>.
 DATA(0x002bf650)
 extern NameVec g_buteNameVec;
 

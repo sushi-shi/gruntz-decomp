@@ -31,4 +31,30 @@ struct CScanGrid {
     i32 m_70, m_74; // +0x70/0x74 its size
 };
 
+// Path-node coordinate pair {col,row} that CScanNode324::m_8 points at. Shared by
+// the CGrunt tile/arrival scan TUs (was locally redeclared per-TU).
+struct CScanCoord {
+    i32 x, y;
+};
+
+// The grunt's current path node (grunt->m_324): +0x08 -> the {col,row} coord pair.
+struct CScanNode324 {
+    char _00[8];
+    CScanCoord* m_8; // +0x08 -> {col,row}
+};
+
+// A pending-coord list node (grunt->m_320 chain): +0x08 is the recycled coord-node
+// handle fed to the coord recycle pool's Drop.
+struct CScanListNode {
+    CScanListNode* m_next; // +0x00
+    i32 _04;
+    i32 m_8; // +0x08 recycled coord-node handle
+};
+
+// The grunt's +0x10 sub-object: screen x/y at +0x5c/+0x60.
+struct CScanSub10 {
+    char _00[0x5c];
+    i32 m_5c, m_60; // +0x5c screen x, +0x60 screen y
+};
+
 #endif // GRUNTZ_GRUNTZ_CSCANGRID_H

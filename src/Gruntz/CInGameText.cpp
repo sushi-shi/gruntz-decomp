@@ -16,6 +16,7 @@
 #include <Bute/ButeMgr.h> // CButeTree (the registration key store)
 #include <Mfc.h>          // CString (the scratch name-vec element)
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
@@ -32,7 +33,7 @@ extern i32 g_textRegCounter; // 0x61aea8  (running registration index)
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
-struct NameVec : public zDArray {};
+// NameVec is the shared def in <Gruntz/NameVec.h>.
 DATA(0x002bf650)
 extern NameVec g_buteNameVec; // 0x6bf650
 

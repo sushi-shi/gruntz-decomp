@@ -2298,7 +2298,7 @@ grunt	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.5000	94.5000	5	4e87d39bdcf0	0x617c0
 grunt	?winapi_04a9f0_CopyRect_OffsetRect@CGrunt@@QAEHXZ	100.0000	100.0000	1	dbbfdbcac471	0x4a9f0
 gruntarrivalscan	?ArrivalScanA@CGruntStep@@QAEHXZ	51.2879	51.2879	4	6c0e4fc5e73e	0xecc90
 gruntarrivalscan	?ArrivalScanB@CGruntStep@@QAEHXZ	45.3379	45.3379	3	6d2783aea21c	0xf0e20
-gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3710	45.3710	4	85a3c29e467b	0xf36a0
+gruntarrivalscan	?ArrivalScanC@CGruntStep@@QAEHXZ	45.3877	45.3877	4	85a3c29e467b	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	5	3fc5aa52df45	0xf1c70
 gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.5223	23.5223	1	be17b57152b2	0x2c690
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	5	d76bb29395b5	0x57100
