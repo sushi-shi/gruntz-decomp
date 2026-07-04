@@ -7,9 +7,11 @@
 // Names are tomalla placeholders. Offsets, store order, vtable slots, and global
 // addresses are load-bearing for matching.
 
-// HWND comes from the real <windows.h> (via Win32.h; pure-Win32 TU, no MFC).
+// <Mfc.h> FIRST (superset of Win32.h: same <windows.h> for HWND + the MFC classes,
+// e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
+// note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
+#include <Mfc.h>
 #include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
-#include <Win32.h>
 
 class CDDrawSubMgrItem {
 public:
@@ -33,21 +35,32 @@ public:
     CDDrawSubMgrItem* m_item; // +0x10  surface-dimensions item
 };
 
-// The +0x20 sound stream is a foreign Dsndmgr object: its scalar-deleting dtor is at
-// vtable slot 0 (`call [eax]`); Free (0x137a80) is a non-virtual __thiscall method.
+// The +0x20 sound stream is the foreign Dsndmgr SoundStream (<Dsndmgr/SoundStream.h>,
+// SoundStream : SoundDevice; scalar-deleting dtor at vtable slot 0, `call [eax]`).
+// Two distinct non-virtual __thiscall teardowns, proven by FreeContext's callees:
+//   Stop (0x137a80) - pause/reset streaming (the leaf-scan +0x2c inner teardown),
+//   Free (0x137740) - full reap+shutdown (the owner's own m_soundStream @+0x20).
+// Kept as a minimal local view (not the real header) to protect this TU's 6 exact
+// functions from the SoundStream/SoundDevice dependency chain's codegen perturbation.
 struct SoundStream {
     virtual void Destroy(u32 flags); // [0] scalar-deleting destructor
-    void Free();                     // 0x137a80
+    void Stop();                     // 0x137a80  (SoundStream::Stop)
+    void Free();                     // 0x137740  (SoundStream::Free)
 };
 
-// The +0x28 leaf-scan child: a polymorphic submgr (vptr@+0, scalar-delete at slot 1),
-// with a non-virtual ClearMap and an inner SoundStream at +0x2c.
+// The +0x28 leaf-scan child (CDDrawSubMgrLeafScan, own vtable 0x5efca0): a polymorphic
+// submgr (vptr@+0, scalar-delete at slot 1) with a non-virtual ClearMap, an MFC
+// CMapStringToOb keyed cache @+0x10 (0x1c bytes -> ends +0x2c), and a held sound object
+// @+0x2c. That held object's concrete type is SoundStream (this TU calls Stop on it);
+// the canonical (DDrawSubMgrLeafScan.cpp) views the same field as its base SoundDevice*
+// (SoundStream : SoundDevice) - consistent via inheritance, not a real conflict.
 struct CDDrawSubMgrLeafScan {
     virtual void Slot00();
     virtual void Destroy(u32 flags); // [1] scalar-deleting destructor
     void ClearMap();
-    char m_pad04[0x2c - 0x4];
-    SoundStream* m_inner; // +0x2c  inner (Free'd on context teardown)
+    char m_pad04[0x10 - 0x04]; // +0x04
+    CMapStringToOb m_cache;    // +0x10  keyed asset cache (MFC; ends +0x2c)
+    SoundStream* m_inner;      // +0x2c  held SoundStream (Stop'd on context teardown)
 };
 
 // The +0x24 resolution submgr is a CDDrawSubMgr subtype (CDDrawResolveSubMgr /
@@ -255,8 +268,9 @@ fail:
 }
 
 // External context helpers (SoundStream / CDDrawSubMgrLeafScan / CDDrawResolveSubMgr /
-// HP_Callback are defined above the class). Both the m_soundStream stream and the
-// CDDrawSubMgrLeafScan +0x2c inner are the same SoundStream (Free @0x137a80).
+// HP_Callback are defined above the class). Both the m_soundStream stream (+0x20) and
+// the CDDrawSubMgrLeafScan +0x2c inner are SoundStream objects, but teardown differs:
+// the inner is Stop'd (0x137a80), the owner's own stream is Free'd (0x137740).
 extern void __cdecl RelayHwnd(void* hWnd);
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 
@@ -268,7 +282,7 @@ void CDDrawSurfaceMgr::FreeContext() {
     if (m_leafScan != 0) {
         SoundStream* inner = m_leafScan->m_inner;
         if (inner != 0) {
-            inner->Free();
+            inner->Stop(); // 0x137a80 (leaf-scan +0x2c held stream: pause/reset)
         }
         m_leafScan->ClearMap();
     }
