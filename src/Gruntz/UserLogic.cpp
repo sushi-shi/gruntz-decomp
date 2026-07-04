@@ -20,11 +20,13 @@
 #include <Gruntz/SimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
 #include <Gruntz/SingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
 #include <Gruntz/SingleFrameMessage.h> // the canonical CSingleFrameMessage class (ctor defined below)
-#include <Gruntz/TeleSpriteFactory.h> // shared teleporter HUD-sprite factory
-#include <Gruntz/ToobSpikez.h>        // the canonical CToobSpikez class (ctor defined below)
-#include <Gruntz/Trigger.h>           // shared point-probe result object
-#include <Gruntz/Viewport.h>          // shared world->screen transform
-#include <Gruntz/SerialObjRef.h>      // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/TeleSpriteFactory.h>  // shared teleporter HUD-sprite factory
+#include <Gruntz/ToobSpikez.h>         // the canonical CToobSpikez class (ctor defined below)
+#include <Gruntz/Trigger.h>            // shared point-probe result object
+#include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger (ctors defined below)
+#include <Gruntz/VoiceTrigger.h>       // canonical CVoiceTrigger (no-arg ctor + GetTypeTag below)
+#include <Gruntz/Viewport.h>           // shared world->screen transform
+#include <Gruntz/SerialObjRef.h>       // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -117,12 +119,8 @@ i32 CUserLogic::UserLogicVfuncD() {
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
 // ===========================================================================
-class CSecretLevelTrigger : public CUserLogic {
-public:
-    CSecretLevelTrigger();                 // 0x010b20 (no-arg)
-    CSecretLevelTrigger(CGameObject* obj); // 0x0424b0 (1-arg)
-    virtual ~CSecretLevelTrigger() OVERRIDE;
-};
+// CSecretLevelTrigger is the canonical <Gruntz/SecretLevelTrigger.h> class (its
+// ctor/dtor bodies stay here; the class shape is shared with SecretLevelTrigger.cpp).
 
 // CTileTrigger is declared in <Gruntz/UserLogic.h>.
 
@@ -167,12 +165,8 @@ public:
     i32 m_60;                  // +0x60
 };
 
-class CVoiceTrigger : public CUserLogic {
-public:
-    LogicTypeId GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
-    CVoiceTrigger();
-    virtual ~CVoiceTrigger() OVERRIDE;
-};
+// CVoiceTrigger is the canonical <Gruntz/VoiceTrigger.h> class (its no-arg ctor +
+// GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).
 
 class CTeleporter : public CUserLogic {
 public:

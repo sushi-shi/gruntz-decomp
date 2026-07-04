@@ -11,19 +11,12 @@
 // only on the CUserLogic base hierarchy from <Gruntz/UserLogic.h>, and Tick is a
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
-#include <Gruntz/UserLogic.h> // CUserLogic base (CVoiceTrigger : CUserLogic)
+#include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
-class CVoiceTrigger : public CUserLogic {
-public:
-    CVoiceTrigger(CGameObject* obj);   // 0x119b50 (1-arg leaf ctor)
-    static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
-    void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")
-    i32 Tick();                        // 0x11a700
-    virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
-};
-SIZE_UNKNOWN(CVoiceTrigger);
+// CVoiceTrigger : CUserLogic - the canonical class shape now lives in
+// <Gruntz/VoiceTrigger.h> (shared with the no-arg ctor + GetTypeTag in UserLogic.cpp).
 
 // The bound object is the inherited CUserLogic m_10/m_38 (CGameObject*); the ctor
 // and Tick use them directly (the CTeleporter idiom - no per-TU view cast).

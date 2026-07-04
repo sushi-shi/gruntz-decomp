@@ -1,0 +1,30 @@
+// VoiceTrigger.h - the voice-trigger tile-logic game object (C:\Proj\Gruntz).
+//
+// CVoiceTrigger : CUserLogic - a method-only leaf (no data members beyond the
+// CUserLogic base; the bound object is the inherited m_10/m_38). Its methods are
+// split across two TUs: the no-arg ctor + GetTypeTag in src/Gruntz/UserLogic.cpp,
+// and the 1-arg ctor + Init/RegisterActs + Tick + dtor in src/Gruntz/VoiceTrigger.cpp.
+// This header unifies the two per-TU redeclarations (matching-neutral: no members,
+// only the CUserLogic dtor slot is overridden). Only offsets/code bytes are
+// load-bearing; names are placeholders.
+#ifndef GRUNTZ_CVOICETRIGGER_H
+#define GRUNTZ_CVOICETRIGGER_H
+
+#include <rva.h>
+
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CVoiceTrigger : CUserLogic)
+
+SIZE_UNKNOWN(CVoiceTrigger);
+class CVoiceTrigger : public CUserLogic {
+public:
+    CVoiceTrigger();                   // 0x013470 (no-arg ctor; body in UserLogic.cpp)
+    CVoiceTrigger(CGameObject* obj);   // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
+    LogicTypeId GetTypeTag();          // 0x0133b0 (per-class logic-type id, 0x426)
+    static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
+    void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")
+    i32 Tick();                        // 0x11a700
+    virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
+};
+
+#endif // GRUNTZ_CVOICETRIGGER_H

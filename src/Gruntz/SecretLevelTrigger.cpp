@@ -14,17 +14,11 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Trigger.h>   // shared point-probe result object
-#include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
+#include <Gruntz/Trigger.h>            // shared point-probe result object
+#include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger : CUserLogic
 
-class CSecretLevelTrigger : public CUserLogic {
-public:
-    static void InitActReg();                // 0x0426e0 (construct g_secretActReg over [2000,2010])
-    static void RegisterActs();              // 0x0428c0 (register the class's activation handlers)
-    i32 Tick();                              // 0x042ac0
-    virtual ~CSecretLevelTrigger() OVERRIDE; // 0x010c50 (folds the CUserLogic teardown)
-};
-SIZE_UNKNOWN(CSecretLevelTrigger);
+// CSecretLevelTrigger : CUserLogic - the canonical class shape now lives in
+// <Gruntz/SecretLevelTrigger.h> (shared with the ctors in UserLogic.cpp).
 
 // The class registry entry: its first dword receives the Tick handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).
