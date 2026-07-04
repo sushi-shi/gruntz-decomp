@@ -6,6 +6,7 @@
 #include <rva.h>
 
 #include <stdio.h>
+#include <Bute/SymParser.h>               // the shared CSymParser (ResolvePath 0x13c030)
 #include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
@@ -14,10 +15,7 @@
 DATA(0x006bf37c)
 extern i32 g_resourceInstallActive;
 
-class CSymParser {
-public:
-    void* ResolvePath(char* path); // 0x13c030
-};
+// CSymParser (ResolvePath 0x13c030) is the shared <Bute/SymParser.h> shape.
 
 // CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
 // <DDrawMgr/DDrawAssetRegistryViews.h> (mirror the per-object loader AssetNamespacePrefixes.cpp).

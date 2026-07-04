@@ -25,14 +25,13 @@
 
 #include <rva.h>
 
+#include <Bute/SymParser.h> // the shared CSymParser (ResolvePath 0x13c030)
+
 // The ButeMgr symbol tree the rez data is resolved/parsed through.
 struct CSymNode {
     CSymNode* Insert(const char* key, i32 flags); // 0x13a000 (2nd arg is a non-reloc literal)
     void* BeginParse();                           // 0x139960  returns the 0x5f4-byte block
     void EndParse();                              // 0x1399d0
-};
-struct CSymParser {
-    CSymNode* ResolvePath(const char* path); // 0x13c030
 };
 
 // The 0x5f4-byte rez descriptor read/parsed into a stack buffer; only its +0x2ec
@@ -91,7 +90,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
         FormatBuf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
-        CSymNode* node = m_34->ResolvePath(scratch);
+        CSymNode* node = (CSymNode*)m_34->ResolvePath(scratch);
         if (node == 0) {
             return 0;
         }
@@ -113,7 +112,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         return buf.m_2ec;
     }
     if (a2 == 0) {
-        CSymNode* node = m_34->ResolvePath("GAME_MULTI");
+        CSymNode* node = (CSymNode*)m_34->ResolvePath("GAME_MULTI");
         if (node == 0) {
             return 0;
         }
@@ -129,7 +128,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         sub->EndParse();
         return buf.m_2ec;
     }
-    CSymNode* node = m_34->ResolvePath("GAME_BATTLEZ");
+    CSymNode* node = (CSymNode*)m_34->ResolvePath("GAME_BATTLEZ");
     if (node == 0) {
         return 0;
     }
