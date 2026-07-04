@@ -2,9 +2,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Io/FileStream.h>               // engine CFileIO (palette loaders)
-#include <string.h>                      // memset (inlined to rep stos at /O2 /Oi)
-#include <Gruntz/CDDrawPtrCollections.h> // single-source CDDrawPtrCollections class shape
+#include <Io/FileStream.h>                 // engine CFileIO (palette loaders)
+#include <string.h>                        // memset (inlined to rep stos at /O2 /Oi)
+#include <DDrawMgr/CDDrawPtrCollections.h> // single-source CDDrawPtrCollections class shape
 #include <Globals.h>
 // CDDrawPtrCollections.cpp - tomalla-named standalone class in the ddrawmgr surface/page
 // manager "DDraw surface manager" family (tomalla's CDDrawPtrCollections, 0x948 B, NO RTTI vtable).
@@ -79,7 +79,7 @@ struct CPtrListNode {
 
 // The real MFC CByteArray sub-object embedded at item+0x94 (ctor 0x1b4f0b /
 // dtor 0x1b4f3e, reloc-masked; constructed in place by the factories).
-// (CDDrawPtrCollections is defined in <Gruntz/CDDrawPtrCollections.h>, above.)
+// (CDDrawPtrCollections is defined in <DDrawMgr/CDDrawPtrCollections.h>, above.)
 
 // The pool-A items' operator delete (invoked by the scalar-deleting dtors); the
 // engine free, reloc-masked rel32.
@@ -277,7 +277,7 @@ struct CCachedSurface {
 };
 
 // The CDDrawPtrCollections host class (0x948 B) is the single-source shape from
-// <Gruntz/CDDrawPtrCollections.h> (included at the top); the method bodies below
+// <DDrawMgr/CDDrawPtrCollections.h> (included at the top); the method bodies below
 // implement it and the CPoolItem* / CCachedSurface helper family it dispatches.
 
 // ---------------------------------------------------------------------------

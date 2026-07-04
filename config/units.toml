@@ -240,7 +240,7 @@ flags = "eh"
 
 [[unit]]
 unit = "cddrawworker"
-source = "src/Gruntz/CDDrawWorker.cpp"
+source = "src/DDrawMgr/CDDrawWorker.cpp"
 flags = "eh"
 
 [[unit]]
@@ -865,7 +865,7 @@ flags = "base"
 [[unit]]
 # trace-discovered ShadeDescr* global selector pair (re-homed from Discovered.cpp).
 unit = "shadedescrtable"
-source = "src/Gruntz/ShadeDescrTable.cpp"
+source = "src/DDrawMgr/ShadeDescrTable.cpp"
 flags = "base"
 
 [[unit]]
@@ -1366,7 +1366,7 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawshadeblit"
-source = "src/Gruntz/CDDrawShadeBlit.cpp"
+source = "src/DDrawMgr/CDDrawShadeBlit.cpp"
 flags = "base"
 
 [[unit]]
@@ -1386,32 +1386,32 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawworkerlist"
-source = "src/Gruntz/CDDrawWorkerList.cpp"
+source = "src/DDrawMgr/CDDrawWorkerList.cpp"
 flags = "base"
 
 [[unit]]
 unit = "cddrawsubmgrpages"
-source = "src/Gruntz/CDDrawSubMgrPages.cpp"
+source = "src/DDrawMgr/CDDrawSubMgrPages.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "cddrawchildgroup"
-source = "src/Gruntz/CDDrawChildGroup.cpp"
+source = "src/DDrawMgr/CDDrawChildGroup.cpp"
 flags = "base"
 
 [[unit]]
 unit = "cddrawworkermapsmall"
-source = "src/Gruntz/CDDrawWorkerMapSmall.cpp"
+source = "src/DDrawMgr/CDDrawWorkerMapSmall.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "cddrawsurfacemgr"
-source = "src/Gruntz/CDDrawSurfaceMgr.cpp"
+source = "src/DDrawMgr/CDDrawSurfaceMgr.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "cddrawsurfacemgrserialize"
-source = "src/Gruntz/CDDrawSurfaceMgrSerialize.cpp"
+source = "src/DDrawMgr/CDDrawSurfaceMgrSerialize.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1421,7 +1421,7 @@ flags = "eh"
 
 [[unit]]
 unit = "cddrawworkerregistry"
-source = "src/Gruntz/CDDrawWorkerRegistry.cpp"
+source = "src/DDrawMgr/CDDrawWorkerRegistry.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1456,12 +1456,12 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawsubmgrleaf"
-source = "src/Gruntz/CDDrawSubMgrLeaf.cpp"
+source = "src/DDrawMgr/CDDrawSubMgrLeaf.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "cddrawsubmgrleafscan"
-source = "src/Gruntz/CDDrawSubMgrLeafScan.cpp"
+source = "src/DDrawMgr/CDDrawSubMgrLeafScan.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1471,7 +1471,7 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawsubmgrani"
-source = "src/Gruntz/CDDrawSubMgrAni.cpp"
+source = "src/DDrawMgr/CDDrawSubMgrAni.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1486,7 +1486,7 @@ flags = "eh"
 
 [[unit]]
 unit = "cddrawworkercache"
-source = "src/Gruntz/CDDrawWorkerCache.cpp"
+source = "src/DDrawMgr/CDDrawWorkerCache.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1506,12 +1506,12 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawworkers"
-source = "src/Gruntz/CDDrawWorkers.cpp"
+source = "src/DDrawMgr/CDDrawWorkers.cpp"
 flags = "base"
 
 [[unit]]
 unit = "cddrawsubmgr"
-source = "src/Gruntz/CDDrawSubMgr.cpp"
+source = "src/DDrawMgr/CDDrawSubMgr.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1521,17 +1521,17 @@ flags = "base"
 
 [[unit]]
 unit = "cddrawptrcollections"
-source = "src/Gruntz/CDDrawPtrCollections.cpp"
+source = "src/DDrawMgr/CDDrawPtrCollections.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "cdirectdrawmgr"
-source = "src/Gruntz/CDirectDrawMgr.cpp"
+source = "src/DDrawMgr/CDirectDrawMgr.cpp"
 flags = "base"
 
 [[unit]]
 unit = "cddrawsurfacepair"
-source = "src/Gruntz/CDDrawSurfacePair.cpp"
+source = "src/DDrawMgr/CDDrawSurfacePair.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2076,7 +2076,7 @@ flags = "base"
 
 [[unit]]
 unit = "ddrawblterrthunk"
-source = "src/Gruntz/DDrawBltErrThunk.cpp"
+source = "src/DDrawMgr/DDrawBltErrThunk.cpp"
 flags = "base"
 
 [[unit]]
@@ -2238,7 +2238,7 @@ flags = "eh"
 
 [[unit]]
 unit = "ddrawpolyfill"
-source = "src/Gruntz/DDrawPolyFill.cpp"
+source = "src/DDrawMgr/DDrawPolyFill.cpp"
 flags = "framed"
 [[unit]]
 unit = "cscanlinesurfacesave"
@@ -2321,7 +2321,7 @@ source = "src/Gruntz/NameRecord.cpp"
 flags = "base"
 [[unit]]
 unit = "cddrawworkerhost"
-source = "src/Gruntz/CDDrawWorkerHost.cpp"
+source = "src/DDrawMgr/CDDrawWorkerHost.cpp"
 flags = "eh"
 
 [[unit]]

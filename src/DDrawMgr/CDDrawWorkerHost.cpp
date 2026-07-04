@@ -4,10 +4,10 @@
 // its own vtable, shuts down + frees the +0xb0 worker (PruneCount then delete),
 // frees the two owned buffers (+0x20/+0x24), then the CWorkerObArray member (+0x9c)
 // and the CLoadable grand-base teardown fold in under the /GX frame. See
-// include/Gruntz/CDDrawWorkerHost.h.
+// include/DDrawMgr/CDDrawWorkerHost.h.
 #include <Mfc.h> // /GX EH-frame helpers
 
-#include <Gruntz/CDDrawWorkerHost.h>
+#include <DDrawMgr/CDDrawWorkerHost.h>
 
 // The host's own primary vtable (0x5f0270) is now the cl-emitted
 // ??_7CDDrawWorkerHost (real-polymorphic CLoadable-derived class; VTBL at

@@ -4,9 +4,9 @@
 // pass is gated on the CGruntzMgr settings singleton (_g_mgrSettings) being live.
 // Offsets + code bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Mfc.h>
-#include <Gruntz/CDDrawWorkerMgr.h> // canonical CDDrawWorkerMgr (m_levelData->m_ready)
-#include <Gruntz/GruntzMgr.h>       // canonical CGruntzMgr (game-manager singleton; one true shape)
-#include <Gruntz/SerialArchive.h>   // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
+#include <DDrawMgr/CDDrawWorkerMgr.h> // canonical CDDrawWorkerMgr (m_levelData->m_ready)
+#include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (game-manager singleton; one true shape)
+#include <Gruntz/SerialArchive.h> // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Ints.h>
 #include <rva.h>
 

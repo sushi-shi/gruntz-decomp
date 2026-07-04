@@ -7,7 +7,7 @@
 //                           factory; then build + link each object's child record.
 //
 // CWwdObjMgr is the 0x159xxx-0x15bxxx collection class; its richer view + the
-// 0x15abxx list/map methods + CreateObject_159600 live in src/Gruntz/CDDrawSubMgr.cpp.
+// 0x15abxx list/map methods + CreateObject_159600 live in src/DDrawMgr/CDDrawSubMgr.cpp.
 // This is a separate TU carrying only the minimal view LoadObjects needs. The
 // per-kind factories (159440/159600/1598d0/159830), the level-file helpers
 // (BuildChild 0x156a90 / Resolve 0x1b8008) and the reader's slot-11 read are all

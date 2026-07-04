@@ -14,7 +14,7 @@
 #include <Gruntz/CString.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Bute/ButeMgr.h>   // canonical CButeMgr (one shape)
 #include <Gruntz/CAttract.h>
-#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40)
+#include <DDrawMgr/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40)
 #include <rva.h>
 #include <Globals.h>
 

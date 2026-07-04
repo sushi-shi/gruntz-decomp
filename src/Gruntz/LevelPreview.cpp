@@ -7,8 +7,8 @@
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
-#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
-#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
+#include <DDrawMgr/CDDSurface.h>      // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
+#include <DDrawMgr/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -52,7 +52,7 @@ public:
 // Flip @0x13e850). Both from <DDrawMgr/CDDSurface.h>.
 
 // The DDraw surface pair CDDrawWorkerMgr holds at +0x10 (m_frontPair); only its
-// +0x2c channel surface is read here. Forward-declared in <Gruntz/CDDrawWorkerMgr.h>;
+// +0x2c channel surface is read here. Forward-declared in <DDrawMgr/CDDrawWorkerMgr.h>;
 // this TU completes that forward-declared type (same shape as CSoundFxEmitter.h).
 class CDDrawSurfacePair {
 public:

@@ -6,14 +6,14 @@
 // CImageBuildDesc into the decoded RLE pixel buffer (+0x0c) and a 256-entry palette
 // (+0x20), copying the desc's dimension/format metadata. Teardown (0x148d10) and the
 // palette-remap helper (0x1495d0) are external engine callees (reloc-masked). The
-// blit side of the same class lives in src/Gruntz/CDDrawShadeBlit.cpp; see
-// <Gruntz/CDDrawShadeBlit.h> for the shared layout.
+// blit side of the same class lives in src/DDrawMgr/CDDrawShadeBlit.cpp; see
+// <DDrawMgr/CDDrawShadeBlit.h> for the shared layout.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
 // No destructible stack local -> no /GX frame (flags="base").
 // ---------------------------------------------------------------------------
 
-#include <Gruntz/CDDrawShadeBlit.h>
+#include <DDrawMgr/CDDrawShadeBlit.h>
 #include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/Close, reloc-masked) + CString
 
 #include <string.h> // memcpy (inlined to rep movs)

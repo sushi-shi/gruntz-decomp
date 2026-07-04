@@ -7,9 +7,9 @@
 //
 // Field names are placeholders; offsets + code bytes are load-bearing. The three
 // other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
-// external/reloc-masked. See <Gruntz/CDDrawShadeBlit.h> for the layout.
+// external/reloc-masked. See <DDrawMgr/CDDrawShadeBlit.h> for the layout.
 #include <DDrawMgr/CDDSurface.h> // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
-#include <Gruntz/CDDrawShadeBlit.h>
+#include <DDrawMgr/CDDrawShadeBlit.h>
 
 #include <rva.h>
 #include <string.h> // inline rep-movs memcpy intrinsic

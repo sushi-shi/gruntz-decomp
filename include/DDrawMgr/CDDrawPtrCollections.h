@@ -5,7 +5,7 @@
 // methods (0x142xxx / 0x143xxx) are the surface/palette acquire entries.
 //
 // Single owner of the class shape. The method bodies + the CPoolItem* / CCachedSurface
-// helper family live in src/Gruntz/CDDrawPtrCollections.cpp (owner unit); the
+// helper family live in src/DDrawMgr/CDDrawPtrCollections.cpp (owner unit); the
 // item/surface pointer types are forward-declared here (the class uses them only as
 // pointers) so this header stays light. Consumers (ReconBatch2, GameAssetNamespaces)
 // that previously re-declared their own method-only views of this class now share

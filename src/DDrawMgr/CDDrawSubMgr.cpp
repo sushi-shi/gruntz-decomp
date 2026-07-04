@@ -10,11 +10,11 @@
 #include <string.h>             // strcpy (the inline CRT copy in Serialize_15c970)
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
-#include <Gruntz/CDirectDrawMgr.h>
-#include <Gruntz/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
-#include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
-#include <Wap32/CWapObj.h>          // CWapObj : Wap::CObject - real base for the surface-pair view
+#include <DDrawMgr/CDirectDrawMgr.h>
+#include <DDrawMgr/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <DDrawMgr/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
+#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - real base for the surface-pair view
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
@@ -139,7 +139,7 @@ public:
 // ---------------------------------------------------------------------------
 
 // The polymorphic surface-pair held at manager+0x10/+0x14/+0x18: the retail
-// CDDrawSurfacePair (own vtable 0x5eff30, see include/Gruntz/CDDrawSurfacePair.h).
+// CDDrawSurfacePair (own vtable 0x5eff30, see include/DDrawMgr/CDDrawSurfacePair.h).
 // Real CWapObj-derived base (slots 0..4 CObject thunks + scalar-dtor, slot 6 IsReady
 // 0x001c08 inherited); the own slots (7..13) are named from their retail slot RVAs.
 // Scratch RECT at +0x1c, held CDDSurface wrapper at +0x2c. Dispatched pointer-only here.
@@ -202,7 +202,7 @@ public:
 };
 
 // The worker manager (this for the 0x158xxx methods) is now the single-source
-// CDDrawWorkerMgr from <Gruntz/CDDrawWorkerMgr.h> (included above); its owned
+// CDDrawWorkerMgr from <DDrawMgr/CDDrawWorkerMgr.h> (included above); its owned
 // CDDrawWorkerNode / CDDrawSurfacePair members are the local defs above.
 
 // The small per-frame blit-param/element struct (this for the 0x15c2xx methods).
@@ -245,7 +245,7 @@ public:
     CBlitLabelMap m_labelMap; // +0x10 label -> worker map
 };
 
-// CDDrawBlitParam is the single-source shared class in <Gruntz/CDDrawBlitParam.h>
+// CDDrawBlitParam is the single-source shared class in <DDrawMgr/CDDrawBlitParam.h>
 // (included at the top of this TU); its deps CDDrawBlitParamSrc / CSerialArchive /
 // CDDrawBlitWorker are fully defined above / in <Gruntz/SerialArchive.h>.
 

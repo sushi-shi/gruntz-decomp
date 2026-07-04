@@ -15,7 +15,7 @@
 #include <Image/CImage.h>
 
 #include <DDrawMgr/CDDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
-#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+#include <DDrawMgr/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
 
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);

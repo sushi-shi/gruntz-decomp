@@ -2,9 +2,9 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>
-#include <Image/CImage.h>           // CImage::RenderFrame (0x153790) - the m_40/m_3c frames
-#include <Gruntz/CDDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter
-#include <DDrawMgr/CDDSurface.h>    // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
+#include <Image/CImage.h>             // CImage::RenderFrame (0x153790) - the m_40/m_3c frames
+#include <DDrawMgr/CDDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter
+#include <DDrawMgr/CDDSurface.h>      // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
 // SBI_WellGoo.cpp - Gruntz CSBI_WellGoo (C:\Proj\Gruntz), the frameless method.
 // RTTI .?AVCSBI_WellGoo@@; the most-derived leaf of the SBI image chain
 //   CSBI_WellGoo : CSBI_Image : CSBI_RectOnly : CStatusBarItem. Vtable @0x5eadfc.

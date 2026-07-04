@@ -38,7 +38,7 @@ struct DDrawBltHost {
     char m_184[16];          // +0x184 source RECT (passed as &m_184)
 };
 
-// The DDraw error sink (src/Gruntz/CDirectDrawMgr.cpp @0x141400): __cdecl
+// The DDraw error sink (src/DDrawMgr/CDirectDrawMgr.cpp @0x141400): __cdecl
 // (file, line, hr); call displacement reloc-masked.
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr);
 

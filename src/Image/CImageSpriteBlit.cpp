@@ -22,8 +22,8 @@
 #include <Image/CImage.h>
 #include <Win32.h> // RECT, CopyRect
 
-#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (m_surface: BltEx / shaded-blit src)
-#include <Gruntz/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: Blit/Notify + ShadeRect)
+#include <DDrawMgr/CDDSurface.h>      // canonical CDDSurface (m_surface: BltEx / shaded-blit src)
+#include <DDrawMgr/CDDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: Blit/Notify + ShadeRect)
 #include <Globals.h>
 
 // The 25-int g_bltFxScratch block (shared with CDDrawWorkerRegistry); [1] carries

@@ -16,7 +16,7 @@
 // window @+0x1c.
 //
 // It is the polymorphic surface element held at the worker-manager's
-// +0x10/+0x14/+0x18 slots (see src/Gruntz/CDDrawSubMgr.cpp's CDDrawSurfacePair
+// +0x10/+0x14/+0x18 slots (see src/DDrawMgr/CDDrawSubMgr.cpp's CDDrawSurfacePair
 // placeholder). The own vtable @0x5eff30:
 //   slot 1  (@0x04)  scalar-deleting dtor (0x1590d0)
 //   slot 5  (@0x14)  IsValid              (0x159090) - the "surface ready?" pred
@@ -31,7 +31,7 @@
 // bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 
-#include <Gruntz/CDirectDrawMgr.h> // CDDSurface (the held surface @+0x2c)
+#include <DDrawMgr/CDirectDrawMgr.h> // CDDSurface (the held surface @+0x2c)
 
 // The two vtables in the dtor chain: this class's own (0x5eff30) and the
 // grand-base dtor vtable (0x5e8cb4). Reloc-masked DATA externs (the manual

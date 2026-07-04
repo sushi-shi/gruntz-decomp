@@ -4,7 +4,7 @@
 // CImage.h - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, the ONLY
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
-// of CDDrawSurfacePair (include/Gruntz/CDDrawSurfacePair.h): both derive from the
+// of CDDrawSurfacePair (include/DDrawMgr/CDDrawSurfacePair.h): both derive from the
 // same polymorphic Wap::CObject base (grand-base dtor vtable @0x5e8cb4) and share
 // the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
@@ -66,7 +66,7 @@ public:
     CDDSurface* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
 };
 
-// The owned +0x30 object is a CDDrawShadeBlit (<Gruntz/CDDrawShadeBlit.h>) - the
+// The owned +0x30 object is a CDDrawShadeBlit (<DDrawMgr/CDDrawShadeBlit.h>) - the
 // 0x3c-byte shaded sprite: a decoded-pixel/RLE buffer (+0x0c) and a 256-entry palette
 // (+0x20), plus the blit-descriptor metadata. BuildSlot13 news it and decodes a frame
 // into it (Build); the sprite blitters draw it (Blit). The former CImageOwned view was

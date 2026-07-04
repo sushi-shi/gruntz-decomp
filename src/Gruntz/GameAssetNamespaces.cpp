@@ -6,8 +6,8 @@
 #include <rva.h>
 
 #include <stdio.h>
-#include <Gruntz/CDDrawPtrCollections.h>     // the ONE CDDrawPtrCollections shape (MakeAndAddB)
-#include <Gruntz/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
+#include <DDrawMgr/CDDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
+#include <DDrawMgr/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
 #include <Globals.h>
 
 DATA(0x006bf37c)
@@ -19,7 +19,7 @@ public:
 };
 
 // CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
-// <Gruntz/CDDrawAssetRegistryViews.h> (mirror the per-object loader AssetNamespacePrefixes.cpp).
+// <DDrawMgr/CDDrawAssetRegistryViews.h> (mirror the per-object loader AssetNamespacePrefixes.cpp).
 
 class CSpriteRefTable {
 public:

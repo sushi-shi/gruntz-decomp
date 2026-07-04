@@ -1,6 +1,6 @@
 #include <rva.h>
 // CAniElement.cpp - the 0x28-byte 'ANI' animation element (primary vftable
-// @0x5efba8) cataloged by CDDrawSubMgrAni (src/Gruntz/CDDrawSubMgrAni.cpp). It
+// @0x5efba8) cataloged by CDDrawSubMgrAni (src/DDrawMgr/CDDrawSubMgrAni.cpp). It
 // owns a CObArray of 0x34-byte frame records (tomalla-39, vtable @0x5f02c0),
 // a name buffer and a scale.
 //

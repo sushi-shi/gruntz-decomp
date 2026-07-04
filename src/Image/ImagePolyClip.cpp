@@ -8,7 +8,7 @@
 // moment a pass empties the polygon, else publishes the final vertex count to
 // 0x6becf8 and returns 1. The four int clip args are converted to float in the
 // prologue (fild/fstp). Field names are placeholders; offsets + code bytes are
-// load-bearing. See <Gruntz/CDDrawShadeBlit.h> family for the surrounding blit.
+// load-bearing. See <DDrawMgr/CDDrawShadeBlit.h> family for the surrounding blit.
 #include <Ints.h>
 
 #include <rva.h>

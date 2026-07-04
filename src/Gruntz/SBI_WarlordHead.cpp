@@ -2,9 +2,9 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
-#include <Gruntz/CDDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
-#include <Gruntz/CGameRegistry.h>   // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
-#include <Gruntz/ResMgr.h>          // CDrawTarget (m_world->m_drawTarget->m_drawContext)
+#include <DDrawMgr/CDDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
+#include <Gruntz/CGameRegistry.h> // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
+#include <Gruntz/ResMgr.h>        // CDrawTarget (m_world->m_drawTarget->m_drawContext)
 // SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
 // chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :

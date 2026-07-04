@@ -8,7 +8,7 @@
 // The active-edge tables, the scanline scratch globals and the fixed-point scales
 // are reloc-masked DATA externs; CDDSurface::Lock and the IDirectDrawSurface Unlock
 // vtable slot are reloc-masked calls (the DX6 vtable supplies the slot layout).
-#include <Gruntz/CDirectDrawMgr.h>
+#include <DDrawMgr/CDirectDrawMgr.h>
 #include <rva.h>
 
 // A polygon vertex (stride 0x1c): float x@+0, float y@+4 (the rest unused here).

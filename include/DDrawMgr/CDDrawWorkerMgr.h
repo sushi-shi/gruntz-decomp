@@ -7,7 +7,7 @@
 // declared-only for the through-vptr dispatch).
 //
 // Single owner of the class shape. The method bodies live in
-// src/Gruntz/CDDrawSubMgr.cpp (owner unit); the other consumers (StateImages,
+// src/DDrawMgr/CDDrawSubMgr.cpp (owner unit); the other consumers (StateImages,
 // CAttract, CSoundFxEmitter, LevelPreview) previously re-declared their own
 // per-TU views of this class and now share this def. The two owned-pointer member
 // types (CDDrawWorkerNode @+0x0c, CDDrawSurfacePair @+0x10..+0x18) are

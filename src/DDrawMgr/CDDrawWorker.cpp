@@ -2,7 +2,7 @@
 // CDDrawWorker.cpp - the owned-collection node of the DDrawMgr "DDraw worker"
 // family (placeholder name; engine "tomalla-35"). Non-RTTI engine class;
 // vtable @0x5efbe8 (g_ddrawWorkerVtbl), grand-base dtor vtable
-// g_wapObjectDtorVtbl @0x5e8cb4. See include/Gruntz/CDDrawWorker.h.
+// g_wapObjectDtorVtbl @0x5e8cb4. See include/DDrawMgr/CDDrawWorker.h.
 //
 // Two methods (retail-RVA order):
 //   0x151eb0  DeleteAll        (delete every owned element, RemoveAll, seed sentinels)
@@ -12,7 +12,7 @@
 // the dtor its /GX EH frame (cf. CWwdGrid::~CWwdGrid @0x1682a0).
 #include <Mfc.h> // /GX EH-frame helpers
 
-#include <Gruntz/CDDrawWorker.h>
+#include <DDrawMgr/CDDrawWorker.h>
 
 // The class is real-polymorphic: cl emits ??_7CLoadable (grand-base @0x5e8cb4)
 // + the derived vtable @0x5efbe8 implicitly. Both former manual externs

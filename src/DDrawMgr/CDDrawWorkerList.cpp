@@ -44,7 +44,7 @@ class CObject;
 // list allocates/dispatches. `new CDDrawWorkerB/A` makes cl auto-emit
 // ??_7CDDrawWorkerB/A and stamp the vptr in the ctor (no manual stamp); the
 // slot-11/12/13 relocs name the real Vfunc overrides defined in CDDrawWorkers.cpp.
-#include <Gruntz/CDDrawWorkerNode.h>
+#include <DDrawMgr/CDDrawWorkerNode.h>
 
 // The child type used in the work-node linked-list at +0x14.
 // Virtual slot +0x28 (Vfunc28) is dispatched in PruneWorkers; +0x74 is a
@@ -375,4 +375,4 @@ SIZE_UNKNOWN(WorkerListSibBase);
 SIZE_UNKNOWN(CDDrawWorkerItem);
 SIZE_UNKNOWN(WorkNode);
 // CDDrawWorkerBase/A/B SIZE + VTBL(CDDrawWorkerB) now live in
-// <Gruntz/CDDrawWorkerNode.h>.
+// <DDrawMgr/CDDrawWorkerNode.h>.

@@ -18,7 +18,7 @@
 // The menu-drive methods (0x182c70..0x183150) forward to the owned menu page
 // (m_activeNode, a CMenuPage - the same class the node-walks dispatch into) and
 // blit the menu surface set (CDDSurface) hung off the owner.
-#include <Gruntz/CDirectDrawMgr.h>
+#include <DDrawMgr/CDirectDrawMgr.h>
 #include <Gruntz/MenuPage.h>
 
 // ---------------------------------------------------------------------------

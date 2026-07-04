@@ -3,11 +3,11 @@
 // hierarchy's reset/arm helper (CDDrawWorkerBase::Helper_164790, inherited by both
 // subtypes) and CDDrawWorkerB's named-object frame fetch
 // (CDDrawWorkerB::Helper_166040), so they live on the real classes from
-// <Gruntz/CDDrawWorkerNode.h> - no separate "HelperHost" object. Both hang off the
+// <DDrawMgr/CDDrawWorkerNode.h> - no separate "HelperHost" object. Both hang off the
 // worker's +0x0c owner context (CDDrawWorkerCtx). Self-contained except the MFC
 // CMapStringToOb::Lookup (0x1b8008) named-object lookup in Helper_166040. Names are
 // placeholders; offsets + code bytes are load-bearing.
-#include <Gruntz/CDDrawWorkerNode.h>
+#include <DDrawMgr/CDDrawWorkerNode.h>
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
 #include <Ints.h>

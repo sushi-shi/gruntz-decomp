@@ -20,7 +20,7 @@
 // MB_ICONEXCLAMATION, 0x30). Mfc.h precedes any DirectX header.
 #include <Io/FileStream.h>
 
-#include <Gruntz/CDirectDrawMgr.h>
+#include <DDrawMgr/CDirectDrawMgr.h>
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy / memcpy (rep movs / repne scasb), strrchr / _stricmp
@@ -1216,7 +1216,7 @@ extern "C" void* DdOperatorNew(unsigned int); // 0x1b9b46
 
 // The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
 // CDdObArray + the pool comparator/publisher (Compare/AddPoolItem) live on
-// CDirectDrawMgr in <Gruntz/CDirectDrawMgr.h>.
+// CDirectDrawMgr in <DDrawMgr/CDirectDrawMgr.h>.
 DATA(0x00283ec8)
 extern CDdObArray g_modeArray;
 

@@ -19,8 +19,8 @@
 // literals reloc-masked against the matched symbols.
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
 #include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
-#include <Win32.h>                           // RECT
+#include <DDrawMgr/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
+#include <Win32.h>                             // RECT
 
 #include <rva.h>
 
@@ -33,7 +33,7 @@ struct CSymTree {
 };
 
 // CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
-// <Gruntz/CDDrawAssetRegistryViews.h> (mirror the per-area loader GameAssetNamespaces.cpp).
+// <DDrawMgr/CDDrawAssetRegistryViews.h> (mirror the per-area loader GameAssetNamespaces.cpp).
 
 struct AssetRoot { // this->m_c
     char m_pad00[0x10];

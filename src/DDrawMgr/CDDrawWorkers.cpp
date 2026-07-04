@@ -3,12 +3,12 @@
 // (m_74 = 2), then forwards to the inherited reset/arm helper (CDDrawWorkerBase::
 // Helper_164790, 0x164790) or the own named-object frame fetch
 // (CDDrawWorkerB::Helper_166040, 0x166040). The worker hierarchy lives in the
-// shared <Gruntz/CDDrawWorkerNode.h>; calling the (inherited/own) helper directly
+// shared <DDrawMgr/CDDrawWorkerNode.h>; calling the (inherited/own) helper directly
 // replaces the former (HelperHost*)this cross-cast.
 //
 // Plain /O2 /MT leaves (no SEH frame). Field names are placeholders; offsets +
 // code bytes are load-bearing.
-#include <Gruntz/CDDrawWorkerNode.h>
+#include <DDrawMgr/CDDrawWorkerNode.h>
 
 #include <Ints.h>
 #include <rva.h>

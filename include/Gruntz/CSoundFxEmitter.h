@@ -39,7 +39,7 @@ extern i32 g_fxDirectGate;
 
 // The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
 // ready" predicate + the front/back/overlay surface pairs at +0x10/+0x14/+0x18.
-#include <Gruntz/CDDrawWorkerMgr.h>
+#include <DDrawMgr/CDDrawWorkerMgr.h>
 
 namespace Utils {
     namespace WinAPI {
@@ -60,7 +60,7 @@ struct FaderRun : public CFader {
 };
 
 // The DDraw surface pair CDDrawWorkerMgr holds at +0x10/+0x14/+0x18 (front/back/
-// overlay). Forward-declared in <Gruntz/CDDrawWorkerMgr.h>; only its +0x2c channel
+// overlay). Forward-declared in <DDrawMgr/CDDrawWorkerMgr.h>; only its +0x2c channel
 // surface is read here, so this TU completes that forward-declared type.
 class CDDrawSurfacePair {
 public:

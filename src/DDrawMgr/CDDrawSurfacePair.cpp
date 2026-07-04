@@ -4,7 +4,7 @@
 // CDDSurface wrapper) borrowed from the parent CDirectDrawMgr's surface pool,
 // plus a cached pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an
 // x/y offset window @+0x1c. Its own vtable is @0x5eff30; the grand-base dtor
-// vtable is g_wapObjectDtorVtbl @0x5e8cb4. See include/Gruntz/CDDrawSurfacePair.h.
+// vtable is g_wapObjectDtorVtbl @0x5e8cb4. See include/DDrawMgr/CDDrawSurfacePair.h.
 //
 // This TU carries four of the class's methods (in retail-RVA order):
 //   BltSelf       (0x03a1d0) - BltFast another pair's surface onto ours
@@ -18,7 +18,7 @@
 // masked external __thiscall/__stdcall calls.
 // ---------------------------------------------------------------------------
 
-#include <Gruntz/CDDrawSurfacePair.h>
+#include <DDrawMgr/CDDrawSurfacePair.h>
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:

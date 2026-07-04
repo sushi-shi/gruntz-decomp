@@ -21,7 +21,7 @@
 // hand-rolled vtbl-struct dispatch did. The primary/source surfaces drive the
 // surface interface, the IDirectDraw2 device drives the DirectDraw interface, and
 // the palette drives the palette interface - each at its own retail vtable slots.
-#include <Gruntz/CDirectDrawMgr.h>
+#include <DDrawMgr/CDirectDrawMgr.h>
 
 extern "C" void* memset(void* d, i32 c, u32 n); // inlined to rep stos
 

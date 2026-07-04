@@ -21,7 +21,7 @@
 #include <Image/Image.h>
 #include <rva.h>
 
-#include <Gruntz/CDirectDrawMgr.h>
+#include <DDrawMgr/CDirectDrawMgr.h>
 #include <Globals.h>
 
 // The shared 256-entry palette->16bpp lookup table (file RVA 0x283ca0 = VA
