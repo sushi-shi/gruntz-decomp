@@ -4,17 +4,11 @@
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
 #include <rva.h>
+#include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
+#include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
 
 #include <Gruntz/Brickz.h>
 #include <Win32.h> // RECT + IntersectRect (AllocGrid seeds the grid bounding rect)
-
-// abs() is a /Oi intrinsic under /O2: the heuristic's |goal - cur| terms lower
-// branchlessly to `cdq; xor; sub` (matching retail), not a `jns` branch.
-extern "C" i32 __cdecl abs(i32);
-
-// memset (AllocGrid zeroes the freshly-allocated cell pool; the /Oi intrinsic
-// lowers it to the inline `shr ecx,2; rep stosd; and ecx,3; rep stosb` sequence).
-extern "C" void* __cdecl memset(void* dst, i32 val, u32 n);
 
 // The pool allocator the container new's its cell pool + column table off
 // (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
