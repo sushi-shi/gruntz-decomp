@@ -2,7 +2,8 @@
 
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
-#include <Gruntz/ResMgr.h> // canonical CImageRegistry (this->m_c->m_10)
+#include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
+#include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
@@ -103,22 +104,13 @@ inline MenuHudObj::MenuHudObj() {
 i32 MenuLayout(MenuAssetMgr* mgr, void* sub, RECT* rc, i32 a, i32 b, i32 c); // 0x182ab0
 i32 MenuCommit(MenuHudObj* obj, i32 idx);                                    // 0x402fcc
 
-class CMenuState {
-public:
-    i32 LoadAssets(i32 a1, i32 a2, i32 a3);
-    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
-
-    char m_pad00[0x4];
-    MenuRoot* m_4;     // +0x04
-    MenuRegSet* m_8;   // +0x08
-    MenuAssetMgr* m_c; // +0x0c
-    char m_pad10[0x2c - 0x10];
-    MenuRegObj* m_2c; // +0x2c
-    char m_pad30[0x1b4 - 0x30];
-    MenuHudObj* m_1b4; // +0x1b4
-    i32 m_1b8;         // +0x1b8
-    i32 m_1bc;         // +0x1bc
-};
+// CMenuState is the canonical <Gruntz/GameMode.h> `CMenuState : CState`. The MENU
+// asset loader reaches the CState base region through the SAME facets the game-state
+// hierarchy documents (CState.h: the +0x04 owner and +0x0c CView holder are downcast
+// to each TU's local facet views): m_4 (CGruntzMgr owner) -> MenuRoot cursor gate,
+// m_8 (CBankMgr) -> MenuRegSet, m_c (CView) -> MenuAssetMgr resource holder, m_2c
+// (CResSource) -> the STATEZ_MENU MenuRegObj. m_1b4 (CGMMenuUI) is the heap MenuHudObj
+// the routine builds. Only offsets / code bytes are load-bearing.
 
 // @early-stop
 // frame-layout / regalloc wall (~89.5%): complete + correct body - instruction
@@ -138,32 +130,32 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     if (!LoadGameAssetNamespaces(a2, a3, a3)) {
         return 0;
     }
-    m_4->Hide(0);
-    m_2c = m_8->Register("STATEZ_MENU");
+    ((MenuRoot*)m_4)->Hide(0);
+    m_2c = (CResSource*)((MenuRegSet*)m_8)->Register("STATEZ_MENU");
     if (m_2c == 0) {
         return 0;
     }
 
-    if (!m_c->m_10->Has("MENU")) {
-        void* set = m_2c->LookupSet("IMAGEZ");
+    if (!((MenuAssetMgr*)m_c)->m_10->Has("MENU")) {
+        void* set = ((MenuRegObj*)m_2c)->LookupSet("IMAGEZ");
         if (set == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        m_c->m_10->Install(set, "MENU", "_");
+        ((MenuAssetMgr*)m_c)->m_10->Install(set, "MENU", "_");
         g_resourceInstallActive = 0;
     }
 
-    if (!m_c->m_28->Has("MENU")) {
-        void* set = m_2c->LookupSet("SOUNDZ");
+    if (!((MenuAssetMgr*)m_c)->m_28->Has("MENU")) {
+        void* set = ((MenuRegObj*)m_2c)->LookupSet("SOUNDZ");
         if (set == 0) {
             return 0;
         }
-        m_c->m_28->Install(set, "MENU", "_");
+        ((MenuAssetMgr*)m_c)->m_28->Install(set, "MENU", "_");
     }
 
-    if (!m_c->m_4->IsReady()) {
-        if (!m_c->m_4->Init(0, 0x30000)) {
+    if (!((MenuAssetMgr*)m_c)->m_4->IsReady()) {
+        if (!((MenuAssetMgr*)m_c)->m_4->Init(0, 0x30000)) {
             return 0;
         }
     }
@@ -173,34 +165,34 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     rc.top = 8;
     rc.right = 0x27f;
     rc.bottom = 0x1df;
-    m_1b4 = new MenuHudObj();
+    m_1b4 = (CGMMenuUI*)new MenuHudObj();
 
-    if (!MenuLayout(m_c, m_4->m_4->m_4, &rc, 0x14, 0xa, 1)) {
+    if (!MenuLayout((MenuAssetMgr*)m_c, ((MenuRoot*)m_4)->m_4->m_4, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
-    if (m_1b4->AddKey("MENU_CURSOR", 0x64, 0x20)) {
-        m_1b4->AddKey2("MENU_CURSOR", 0x64, 0x20);
+    if (((MenuHudObj*)m_1b4)->AddKey("MENU_CURSOR", 0x64, 0x20)) {
+        ((MenuHudObj*)m_1b4)->AddKey2("MENU_CURSOR", 0x64, 0x20);
     }
-    m_1b4->m_44 = "MENU_SELECT";
-    m_1b4->m_48 = "MENU_ACTIVATE";
+    ((MenuHudObj*)m_1b4)->m_44 = "MENU_SELECT";
+    ((MenuHudObj*)m_1b4)->m_48 = "MENU_ACTIVATE";
 
     MenuSndEntry* e;
-    m_c->m_28->m_10.Find("MENU_ACTIVATE", &e);
+    ((MenuAssetMgr*)m_c)->m_28->m_10.Find("MENU_ACTIVATE", &e);
     if (e != 0) {
-        m_c->m_28->m_10.Find("MENU_ACTIVATE", &e);
+        ((MenuAssetMgr*)m_c)->m_28->m_10.Find("MENU_ACTIVATE", &e);
         m_1b8 = e->m_10->m_28;
     } else {
         m_1b8 = 0;
     }
 
-    if (!MenuCommit(m_1b4, -1)) {
+    if (!MenuCommit((MenuHudObj*)m_1b4, -1)) {
         return 0;
     }
 
     MenuSndEntry* fm;
     ((MenuSndRegistry*)g_menuMgrSettings->m_world->m_28)->m_10.Find("MENU_MENU", &fm);
-    m_1bc = (i32)fm;
+    m_1bc = (CMenuMusic*)fm;
     return 1;
 }
 

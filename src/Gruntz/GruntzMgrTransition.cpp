@@ -122,6 +122,12 @@ struct CAttract : CTsBaseA { // param 2, 0x1c0
         m_vptr = (void*)&g_stCAttractVtbl;
     }
 };
+// NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
+// base-fold wall): a canonical polymorphic CMenuState would make cl emit + stamp a
+// LOCAL ??_7CMenuState here (the ctor references its own vtable), claiming the retail
+// vtable RVA 0x5e9e84 that gamemode already owns. This non-poly shell + manual g_st*
+// stamp is the deliberate whole-family pattern (see file header); the loader-view fold
+// happened in MenuStateAssets.cpp, which does not construct the class.
 struct CMenuState : CTsBaseA { // param 5, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
     CMenuState() {

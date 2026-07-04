@@ -225,6 +225,13 @@ public:
     // cached-field pair gated by m_liveGame && stats->m_c (the sibling-guard idiom).
     void FormatHudText(struct CHudBuf* buf, i32 sel);
 
+    // MENU asset loader (0x9fe50, MenuStateAssets.cpp): registers the MENU
+    // IMAGEZ/SOUNDZ namespaces through the m_c (CView) resource facet, primes the
+    // state core, then builds the menu HUD object + wires its keys/sound cues.
+    i32 LoadAssets(i32 a1, i32 a2, i32 a3);
+    // Base namespace loader chained first (reloc-masked near call).
+    i32 LoadGameAssetNamespaces(i32, i32, i32);
+
     char m_pad1a8[0x1b4 - 0x1a8];
     CGMMenuUI* m_1b4;  // +0x1b4 the menu UI object the scans drive
     i32 m_1b8;         // +0x1b8 fade/poll duration
