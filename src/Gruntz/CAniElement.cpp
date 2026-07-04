@@ -37,40 +37,15 @@ public:
     void EndParse_1399d0();    // 0x1399d0
 };
 
-// The raw 0x34-byte frame record at allocation time (only the fields the builder
-// touches before handing off to the parser). ALL-VTABLES mandate: modeled REAL
-// polymorphic (the 5-slot AniRecordVtbl @0x5f02c0) so `new CAniRecordInit` makes cl
-// auto-emit ??_7CAniRecordInit + stamp the vptr in the ctor - no manual
-// `m_vptr = &g_aniRecordVtbl` store.
-// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4 (adds
-// no new virtuals), but KEPT as a real standalone class - it is `new`'d directly
-// and carries its own 0x34-byte record, so it is NOT a bare-Wap::CObject fold
-// (Wap32/CObject.h). Do not rename to CObject (would ODR-clash).
-struct CAniRecordInit {
-    virtual void FUN_005bef01(); // [0] 0x1bef01
-    virtual ~CAniRecordInit();   // [1] scalar-deleting dtor slot (0x165780)
-    virtual void FUN_004028ec(); // [2] 0x0028ec
-    virtual void FUN_0040106e(); // [3] 0x00106e
-    virtual void FUN_00404034(); // [4] 0x004034
-
-    inline CAniRecordInit() {
-        m_count = 0;
-        m_indices = 0;
-        m_owner = 0xffff;
-    }
-
-    // vptr implicit at +0x00
-    char m_pad04[0x8];  // +0x04..+0x0b
-    i32 m_owner;        // +0x0c = 0xffff
-    char m_pad10[0x1c]; // +0x10..+0x2b
-    i32 m_count;        // +0x2c = 0
-    i32 m_indices;      // +0x30 = 0
-};
+// The 0x34-byte frame record Build `new`s + catalogs is the shared CAniRecordView
+// (include/Gruntz/CAniRecordView.h): its ctor stamps the primary vptr (@0x5f02c0)
+// and seeds m_owner/m_count/m_indices. (Formerly a CAniElement.cpp-local
+// CAniRecordInit duplicate - folded into the one shared view.)
 
 // ---------------------------------------------------------------------------
 // 0x06b270: bounds-checked CObArray fetch. 1 stack arg (ret 4).
 RVA(0x0006b270, 0x1b)
-CObject* CAniElement::AtChecked_06b270(i32 i) const {
+::CObject* CAniElement::AtChecked_06b270(i32 i) const {
     if (i >= 0 && i < m_records.m_nSize) {
         return m_records.m_pData[i];
     }
@@ -111,11 +86,11 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
     CAniRecordView* rec = 0;
     i32 i;
     for (i = 0; i < src->m_count; i++) {
-        rec = (CAniRecordView*)new CAniRecordInit;
+        rec = new CAniRecordView;
         if (rec->Parse_168c60(ctx, cursor) == 0) {
             goto fail;
         }
-        m_records.SetAtGrow(m_records.m_nSize, (CObject*)rec);
+        m_records.SetAtGrow(m_records.m_nSize, (::CObject*)rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_total += rec->GetSize_168e50();
     }
@@ -126,7 +101,7 @@ fail:
         rec->ScalarDtor(1);
     }
     for (i = 0; i < m_records.m_nSize; i++) {
-        CObject* p = m_records.m_pData[i];
+        ::CObject* p = m_records.m_pData[i];
         if (p != 0) {
             ((CAniRecordView*)p)->ScalarDtor(1);
         }
@@ -160,6 +135,5 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
 SIZE_UNKNOWN(CAniElement);
 SIZE_UNKNOWN(CAniEntry);
 SIZE_UNKNOWN(CAniRecordArray);
-SIZE_UNKNOWN(CAniRecordInit);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);

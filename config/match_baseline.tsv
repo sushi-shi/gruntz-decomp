@@ -922,8 +922,8 @@ canicycle	?GetTypeTag@CAniCycle@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	f9da
 canicycle	?InitActReg@CAniCycle@@SAXXZ	100.0000	100.0000	1	5d76d9347b15	0xaaf00
 canicycle	?RegisterActs@CAniCycle@@SAXXZ	92.9130	92.9130	1	17ca46567be1	0xab0e0
 canicycle	?Serialize@CAniCycle@@QAEHHHHH@Z	100.0000	100.0000	1	463d2d3617be	0xf470
-canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	2278365ee372	0x6b270
-canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	94.4198	94.4198	3	e18b0bc665b4	0x165460
+canielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	2	320dc531bf9c	0x6b270
+canielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	94.4198	94.4198	4	18a3ba255119	0x165460
 canielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	2	85d5ec23739a	0x1655c0
 canielementeh	?LoadFile_165620@CAniElement@@QAEHPAX0H@Z	97.2875	97.2875	1	3562d633122d	0x165620
 canirecord	??1CAniRecordBase2@@UAE@XZ	100.0000	100.0000	2	abd383228ed2	0x165dd0
@@ -1636,7 +1636,7 @@ crangeset	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	ed00b3a920e2	0x184be
 crangeset	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	958ae75d3e77	0x184ba0
 creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	1	301211db2fb6	0x39dc0
 cremusentrylist	??1CAniElement@@UAE@XZ	100.0000	100.0000	2	330ab79ee01f	0x152e30
-cremusentrylist	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	3	36e1a52cac5c	0x165730
+cremusentrylist	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	4	b746afcd38e6	0x165730
 cremusnode	??0CResolveNode@@QAE@HHH@Z	61.5882	61.5882	2	f200addcc214	0x15b2c0
 cremusnode	??0CResolveNode@@QAE@XZ	88.5833	88.5833	2	f200addcc214	0x1549d0
 cremusnode	??1CResolveNode@@UAE@XZ	78.8182	78.8182	3	5137edfbf74f	0x154a50

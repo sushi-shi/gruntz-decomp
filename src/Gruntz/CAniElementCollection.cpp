@@ -1,21 +1,22 @@
 #include <rva.h>
-// CAniElementCollection.cpp - the 0x28-byte owned-collection node of the DDrawMgr
-// image-manager family (this IS CAniElement: vtable @0x5efba8 = ??_7CAniElementObj,
-// same 0x28 layout as include/Gruntz/CAniElement.h - a duplicate polymorphic view
-// kept for its /GX dtor model; dedup with CAniElement.h is a follow-up). Non-RTTI
-// engine class; grand-base dtor vtable g_wapObjectDtorVtbl @0x5e8cb4.
-// See include/Gruntz/CAniElementCollection.h.
+// CAniElementCollection.cpp - the /GX teardown TU of CAniElement (the 0x28-byte
+// 'ANI' element; vtable @0x5efba8 = ??_7CAniElementObj). This is NOT a second class:
+// it is the same CAniElement (single definition in include/Gruntz/CAniElement.h),
+// with only its two /GX methods split out here per the frameless/EH TU split
+// (docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md). Non-RTTI engine class;
+// grand-base dtor vtable g_wapObjectDtorVtbl @0x5e8cb4.
 //
 // Two methods (retail-RVA order):
 //   0x152e30  ~CAniElement (stamp own vtbl, DeleteAll, ~CObArray member, base)
 //   0x165730  DeleteAll        (delete every owned element, free m_buf, RemoveAll)
 //
-// The base subobject + the destructible CObArray member give the dtor its /GX EH
-// frame (the manual-vptr siblings can only reach the no-frame plateau; the real
-// base/member model recovers the frame - cf. CWwdGrid::~CWwdGrid @0x1682a0).
+// The Wap::CObject base subobject + the destructible CObArray member (m_records)
+// give the dtor its /GX EH frame (the manual-vptr siblings can only reach the
+// no-frame plateau; the real base/member model recovers the frame - cf.
+// CWwdGrid::~CWwdGrid @0x1682a0).
 #include <Mfc.h> // /GX EH-frame helpers
 
-#include <Gruntz/CAniElementCollection.h>
+#include <Gruntz/CAniElement.h> // folded: the single CAniElement definition
 
 // Engine heap free (RezFree, __cdecl, reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p); // 0x1b9b82
@@ -28,7 +29,7 @@ extern "C" void RezFree(void* p); // 0x1b9b82
 RVA(0x00165730, 0x4c)
 void CAniElement::DeleteAll() {
     for (i32 i = 0; i < m_records.m_nSize; i++) {
-        CAniRecordView* el = m_records.m_pData[i];
+        CAniRecordView* el = (CAniRecordView*)m_records.m_pData[i];
         if (el != 0) {
             el->ScalarDtor(1);
         }
