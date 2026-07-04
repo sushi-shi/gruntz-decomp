@@ -3,6 +3,7 @@
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Wap32/WapObj.h>   // CWapObj : Wap::CObject - real base for the spawned-child views
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
 // CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -101,13 +102,9 @@ public:
 // re-stamp, then Create()s it. Its used fields are m_width (@0x10), m_surface (@0x2c),
 // m_ownsSurface (@0x30).
 
-// The parent/root handle object at CDDrawSubMgrPages+0x0c; the factory records an
-// error code into its +0x38 field when a child fails.
-class CDDrawSurfaceMgr {
-public:
-    i32 m_pad00[0x0e]; // +0x00..0x37
-    i32 m_38;          // +0x38  error code slot
-};
+// The parent/root handle object at CDDrawSubMgrPages+0x0c is the canonical
+// CDDrawSurfaceMgr (above); the factory records an error code into its m_lastError
+// (+0x38) slot when a child fails.
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgrPages (retail RTTI ??_7CDDrawSubMgrDraco @0x5efe08 - proven by the
@@ -254,21 +251,21 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_18 = (CDDrawSurfaceChild*)c;
 
     if (a->CreateModeSurface_1644a0(a1, a2, a3) == 0) {
-        if (m_0c->m_38 == 0) {
-            m_0c->m_38 = 0x7d1;
+        if (m_0c->m_lastError == 0) {
+            m_0c->m_lastError = 0x7d1;
         }
         return 0;
     }
     if (b->Create(a1, a2, a3, 0) == 0) {
-        if (m_0c->m_38 == 0) {
-            m_0c->m_38 = 0x7d2;
+        if (m_0c->m_lastError == 0) {
+            m_0c->m_lastError = 0x7d2;
         }
         return 0;
     }
     if (!(a4 & 1)) {
         if (c->Create(a1, a2, a3, 0) == 0) {
-            if (m_0c->m_38 == 0) {
-                m_0c->m_38 = 0x7d3;
+            if (m_0c->m_lastError == 0) {
+                m_0c->m_lastError = 0x7d3;
             }
             return 0;
         }
@@ -279,7 +276,6 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 SIZE_UNKNOWN(CDDrawSubMgrPages);
 SIZE_UNKNOWN(CDDrawSubMgrPagesBase);
 SIZE_UNKNOWN(CDDrawSurfaceChild);
-SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CDDrawSurfaceChildA, 0x30);
 // CDDrawSurfacePair SIZE(0x34) + VTBL(0x5eff30) now live in <DDrawMgr/DDrawSurfacePair.h>.
 // ??_7CDDrawSubMgrPages (was Vtbl_1efe08 / the CDDrawSubMgrPages vtable; 10 slots). cl
