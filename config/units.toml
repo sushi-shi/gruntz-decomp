@@ -1584,17 +1584,13 @@ flags = "eh"
 [[unit]]
 unit = "lightfx"
 source = "src/Gruntz/LightFx.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "lightfxrender"
 source = "src/Gruntz/LightFxRender.cpp"
 flags = "base"
 
-[[unit]]
-unit = "lightfxeh"
-source = "src/Gruntz/LightFxEh.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "droppedobjectshadow"
