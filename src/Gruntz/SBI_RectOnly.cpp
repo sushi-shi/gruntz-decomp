@@ -325,13 +325,13 @@ i32 CSBI_RectOnly::SetHlCell(i32 row, i32 handle, i32 group) {
 RVA(0x00106a00, 0xbf)
 void CSBI_RectOnly::NotifyAllSlots() {
     if (m_notify0) {
-        m_notify0->s28();
+        m_notify0->Refresh();
     }
     if (m_notify2) {
-        m_notify2->s28();
+        m_notify2->Refresh();
     }
     if (m_notify3) {
-        m_notify3->s28();
+        m_notify3->Refresh();
     }
     if (m_extraNotify0 && m_extraNotifyArg0) {
         m_extraNotify0->Notify(m_extraNotifyArg0);
@@ -354,7 +354,7 @@ void CSBI_RectOnly::NotifyAllSlots() {
     }
 
     if (m_notify1) {
-        m_notify1->s28();
+        m_notify1->Refresh();
     }
     if (m_extraNotify1) {
         m_extraNotify1->Notify(m_extraNotifyArg1);
@@ -792,9 +792,9 @@ noChange:;
     }
     if (changed) {
         if (m_gaugeSink && m_gaugeNotify) {
-            m_gaugeNotify->s28();
+            m_gaugeNotify->Refresh();
             m_gaugeSink->m_44 = m_gauge;
-            m_gaugeSink->s28();
+            m_gaugeSink->Refresh();
         }
     }
 }
@@ -898,7 +898,7 @@ i32 CSBI_RectOnly::Deactivate() {
         CSbiNotifyNode* cur = n;
         n = n->m_next;
         if (cur->m_payload) {
-            ((CSbiSlotPtr*)cur->m_payload)->s28();
+            ((CSbiSlotPtr*)cur->m_payload)->Refresh();
         }
     }
 
@@ -907,7 +907,7 @@ i32 CSBI_RectOnly::Deactivate() {
         CSbiNotifyNode* cur = m;
         m = m->m_next;
         if (cur->m_payload) {
-            ((CSbiSlotPtr*)cur->m_payload)->s28();
+            ((CSbiSlotPtr*)cur->m_payload)->Refresh();
         }
     }
 
@@ -2090,7 +2090,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         mp->m_30 = v;
         mp->m_4 = 0;
-        mp->s28();
+        mp->Refresh();
     }
 
     // ---- GAMETAB (menu item, type 5; inline ctor) ----
@@ -2425,7 +2425,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             CSbiNotifyNode* cur = n;
             n = n->m_next;
             if (cur->m_payload) {
-                ((CSbiNotifyPayload*)cur->m_payload)->s14();
+                ((CSbiNotifyPayload*)cur->m_payload)->Tick();
             }
         }
         CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
@@ -2433,7 +2433,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             CSbiNotifyNode* cur = m;
             m = m->m_next;
             if (cur->m_payload) {
-                ((CSbiNotifyPayload*)cur->m_payload)->s14();
+                ((CSbiNotifyPayload*)cur->m_payload)->Tick();
             }
         }
         if (m_retabNotify) {
@@ -2447,8 +2447,8 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
         k = k->m_next;
         CSbiNotifyPayload* p = (CSbiNotifyPayload*)cur->m_payload;
         if (p) {
-            p->s28();
-            p->s14();
+            p->Refresh();
+            p->Tick();
         }
     }
     return 1;
@@ -2807,7 +2807,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
         CSbiNotifyNode* cur = n;
         n = n->m_next;
         if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->s10(arg);
+            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
         }
     }
     CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
@@ -2815,7 +2815,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
         CSbiNotifyNode* cur = m;
         m = m->m_next;
         if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->s10(arg);
+            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
         }
     }
     CSbiNotifyNode* k = m_listD4.m_head;
@@ -2823,7 +2823,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
         CSbiNotifyNode* cur = k;
         k = k->m_next;
         if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->s10(arg);
+            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
         }
     }
     if (m_retabNotify) {

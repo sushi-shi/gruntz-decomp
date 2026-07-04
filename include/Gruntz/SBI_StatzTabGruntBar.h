@@ -66,17 +66,17 @@ SIZE_UNKNOWN(CStatzGameReg);
 // mov eax,[this]; mov ecx,this; call [eax+0x28] __thiscall dispatch.
 class CStatzSelf {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void Refresh(); // +0x28 (slot 10)
+    virtual void Destroy();     // slot 0  scalar-deleting dtor
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // +0x28 (slot 10)
 };
 SIZE_UNKNOWN(CStatzSelf);
 

@@ -47,17 +47,17 @@ public:
         m_24 = 0;
         m_28 = 0;
     }
-    virtual ~CSbConfigItem(); // +0x00 (scalar deleting dtor)
-    virtual void s04();       // +0x04
-    virtual void s08();       // +0x08
-    virtual void s0c();       // +0x0c
-    virtual void s10();       // +0x10
-    virtual void s14();       // +0x14
-    virtual void s18();       // +0x18
-    virtual void s1c();       // +0x1c
-    virtual void s20();       // +0x20
-    virtual void s24();       // +0x24
-    virtual void s28();       // +0x28
+    virtual ~CSbConfigItem();   // +0x00 (scalar deleting dtor)
+    virtual void Serialize();   // +0x04 (slot 1)
+    virtual void Setup();       // +0x08 (slot 2)
+    virtual void ClearFrame();  // +0x0c (slot 3)
+    virtual void Poll();        // +0x10 (slot 4)
+    virtual void Tick();        // +0x14 (slot 5)
+    virtual void HitHandlerA(); // +0x18 (slot 6)
+    virtual void HitHandlerB(); // +0x1c (slot 7)
+    virtual void HitHandlerC(); // +0x20 (slot 8)
+    virtual void HitHandlerD(); // +0x24 (slot 9)
+    virtual void Refresh();     // +0x28 (slot 10)
     virtual i32 Configure(
         CStatusBarMgr* mgr,
         i32 a,
@@ -78,9 +78,9 @@ public:
         i32 d,
         i32 e,
         i32 f
-    );                                                        // +0x34
-    virtual void s34_pad();                                   // +0x34 (filler)
-    virtual void s38(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38
+    );                                                             // +0x34
+    virtual void s34_pad();                                        // +0x34 (filler)
+    virtual void ApplyDir(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38 (SetDirection sink)
 
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.

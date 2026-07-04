@@ -61,16 +61,16 @@ SIZE_UNKNOWN(CSbiSeqHolder);
 // load-bearing). Making it polymorphic is codegen-neutral for the non-virtual calls.
 class CSbiSprite {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
+    virtual void Destroy();                  // slot 0  scalar-deleting dtor
+    virtual void Serialize();                // slot 1
+    virtual void Setup();                    // slot 2
+    virtual void ClearFrame();               // slot 3
+    virtual void Poll();                     // slot 4
+    virtual void Tick();                     // slot 5
+    virtual void HitHandlerA();              // slot 6
+    virtual void HitHandlerB();              // slot 7
+    virtual void HitHandlerC();              // slot 8
+    virtual void HitHandlerD();              // slot 9
     virtual void Refresh();                  // +0x28 (slot 10)
     void Release();                          // __thiscall, no args (sibling thunk_FUN_004e84f0)
     void Show(i32 idx, i32 on);              // 2 args (call 0x2059)
@@ -84,15 +84,15 @@ SIZE_UNKNOWN(CSbiSprite);
 // m_yLo/m_yHi the y span. Two click handlers dispatch through vtable slots 7/9.
 class CSbiRect {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
+    virtual void Destroy();                    // slot 0  scalar-deleting dtor
+    virtual void Serialize();                  // slot 1
+    virtual void Setup();                      // slot 2
+    virtual void ClearFrame();                 // slot 3
+    virtual void Poll();                       // slot 4
+    virtual void Tick();                       // slot 5
+    virtual void HitHandlerA();                // slot 6
     virtual void Click1c(i32 a, i32 b, i32 c); // +0x1c (slot 7)
-    virtual void s20();
+    virtual void HitHandlerC();                // slot 8
     virtual void Click24(i32 a, i32 b, i32 c); // +0x24 (slot 9)
     i32 m_enabled;                             // +0x04 enabled
     i32 m_kind;                                // +0x08 widget kind tag
@@ -120,18 +120,18 @@ SIZE_UNKNOWN(CSbiStatObj);
 // slot 0x30 (index 12) is a __thiscall void(int) notifier.
 class CSbiSlotPtr {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
+    virtual void Destroy();      // slot 0  scalar-deleting dtor
+    virtual void Serialize();    // slot 1
+    virtual void Setup();        // slot 2
+    virtual void ClearFrame();   // slot 3
+    virtual void Poll();         // slot 4
+    virtual void Tick();         // slot 5
+    virtual void HitHandlerA();  // slot 6
+    virtual void HitHandlerB();  // slot 7
+    virtual void HitHandlerC();  // slot 8
+    virtual void HitHandlerD();  // slot 9
+    virtual void Refresh();      // slot 10
+    virtual void Configure();    // slot 11
     virtual void Notify(i32 on); // +0x30 (slot 12)
     char m_pad4[0x14 - 0x4];
     i32 m_rect14[4]; // +0x14  falling-item rect (UpdateFallingItemStatusBar)
@@ -158,17 +158,17 @@ SIZE_UNKNOWN(CSbiNotifyNode);
 // virtual arg shapes are reloc-masked.
 class CSbiNotifyPayload {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10(i32 arg); // +0x10
-    virtual void s14();        // +0x14
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28(); // +0x28
+    virtual void Destroy();     // slot 0  scalar-deleting dtor
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll(i32 arg); // +0x10 (slot 4)
+    virtual void Tick();        // +0x14 (slot 5)
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // +0x28 (slot 10)
 };
 SIZE_UNKNOWN(CSbiNotifyPayload);
 
@@ -215,17 +215,17 @@ SIZE_UNKNOWN(CSbiPtrCollection);
 // reading) and a refresh slot at vtable index 0x28 (slot 10).
 class CSbiGaugeNotify {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28(); // +0x28 (slot 10) refresh
+    virtual void Destroy();     // slot 0  scalar-deleting dtor
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // +0x28 (slot 10) refresh
     char m_pad4[0x44 - 0x4];
     i32 m_44; // +0x44  latched gauge reading
 };
@@ -741,15 +741,15 @@ SIZE_UNKNOWN(CSbiSeqMap);
 // validates it as the restored sequence holder stored back into m_8).
 class CSbiSeqObj {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual i32 TypeTag(); // +0x20 (slot 8)
+    virtual void Destroy();     // slot 0  scalar-deleting dtor
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual i32 TypeTag();      // +0x20 (slot 8)
 };
 SIZE_UNKNOWN(CSbiSeqObj);
 
@@ -818,18 +818,18 @@ public:
         m_24 = 0;
         m_28 = 0;
     }
-    virtual ~CSbiTab(); // slot 0
-    virtual void s04();
+    virtual ~CSbiTab();       // slot 0
+    virtual void Serialize(); // slot 1
     virtual i32
     Setup(void* owner, i32 objid, i32 code, i32 z, SbiTabRect rc, i32 a9, i32 a10); // slot 2
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28(); // slot 10
+    virtual void ClearFrame();                                                      // slot 3
+    virtual void Poll();                                                            // slot 4
+    virtual void Tick();                                                            // slot 5
+    virtual void HitHandlerA();                                                     // slot 6
+    virtual void HitHandlerB();                                                     // slot 7
+    virtual void HitHandlerC();                                                     // slot 8
+    virtual void HitHandlerD();                                                     // slot 9
+    virtual void Refresh();                                                         // slot 10
     virtual i32 Configure(
         void* owner,
         i32 code,
@@ -939,12 +939,12 @@ void __stdcall MainBarDrawFrame(CSbiMainL2* obj, i32 x, i32 y, i32 flag); // 0x1
 // (the outer switch key). Reloc-masked non-virtual siblings otherwise.
 class CSbiHiWidget {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
+    virtual void Destroy();                   // slot 0  scalar-deleting dtor
+    virtual void Serialize();                 // slot 1
+    virtual void Setup();                     // slot 2
+    virtual void ClearFrame();                // slot 3
+    virtual void Poll();                      // slot 4
+    virtual void Tick();                      // slot 5
     virtual void Update(i32 a, i32 b, i32 c); // +0x18 (slot 6)
     char m_pad4[0xc - 0x4];
     i32 m_c;  // +0xc  command id

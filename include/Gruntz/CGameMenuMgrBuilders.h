@@ -34,17 +34,17 @@ public:
     // Reloc-masked call target, so one shared base ctor pairs with retail's per-class
     // ctors. See docs/patterns/gx-frame-outofline-ctor.md.
     CSbMenuItem();
-    virtual ~CSbMenuItem(); // +0x00
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
+    virtual ~CSbMenuItem();     // +0x00
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // slot 10
     virtual i32 Configure(
         CGameMenuMgr* mgr,
         i32 code,
