@@ -18,6 +18,7 @@
 #include <Bute/ButeTree.h>      // canonical CButeTree (one shape)
 #include <Gruntz/CPathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -392,25 +393,10 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 // a thirteen-element quadword array (a loop) and five dwords.
 // ---------------------------------------------------------------------------
 
-// The serialization stream: vtable slot 0x2c (index 11) reads n bytes, slot 0x30
-// (index 12) transfers n bytes (reloc-masked indirect calls; only the slot offsets
-// are load-bearing - same shape as CKitchenSlime's CSlimeStream).
-class CHazardStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);     // +0x2c (slot 11)
-    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
-};
+// The serialization stream is the shared WAP32 CSerialArchive (Read @ vtable +0x2c,
+// slot 11 - the read/load direction; Write @ +0x30, slot 12 - the store/transfer
+// direction), now the one modeled class in <Gruntz/SerialArchive.h> - the former local
+// `CHazardStream` view (same shape as CKitchenSlime's CSlimeStream) is folded away.
 
 // The +0x34 serializable sub-object the UFO chains into (Chain @0x408c00 via the
 // 0x1aff thunk; same sub-chain CKitchenSlime uses).
@@ -421,21 +407,21 @@ struct CHazardSerialSub {
 // One tag-gated quad-pair (two adjacent 8-byte fields), shared between two state
 // vectors. Inlined with the field pointer as a parameter so cl computes the base
 // once (lea) and the second field as base+8 (add) - the retail group-1/group-2 shape.
-static inline void SerQuadPair(CHazardStream* s, i32 tag, char* p) {
+static inline void SerQuadPair(CSerialArchive* s, i32 tag, char* p) {
     if (tag != 4) {
         if (tag == 7) {
             s->Read(p, 8);
             s->Read(p + 8, 8);
         }
     } else {
-        s->Transfer(p, 8);
-        s->Transfer(p + 8, 8);
+        s->Write(p, 8);
+        s->Write(p + 8, 8);
     }
 }
 
 RVA(0x000b4d30, 0x287)
 i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
-    CHazardStream* s = (CHazardStream*)stream;
+    CSerialArchive* s = (CSerialArchive*)stream;
     char* B = (char*)this;
     if (SerializeChain(stream, tag, c, d) == 0) {
         return 0;
@@ -467,24 +453,24 @@ i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
             s->Read(B + 0x118, 4);
         }
     } else {
-        s->Transfer(B + 0x58, 8);
-        s->Transfer(B + 0x60, 8);
-        s->Transfer(B + 0x68, 8);
-        s->Transfer(B + 0x70, 8);
-        s->Transfer(B + 0x78, 8);
-        s->Transfer(B + 0x80, 8);
-        s->Transfer(B + 0x88, 8);
+        s->Write(B + 0x58, 8);
+        s->Write(B + 0x60, 8);
+        s->Write(B + 0x68, 8);
+        s->Write(B + 0x70, 8);
+        s->Write(B + 0x78, 8);
+        s->Write(B + 0x80, 8);
+        s->Write(B + 0x88, 8);
         char* p = B + 0x90;
         i32 n = 13;
         do {
-            s->Transfer(p, 8);
+            s->Write(p, 8);
             p += 8;
         } while (--n != 0);
-        s->Transfer(B + 0xf8, 4);
-        s->Transfer(B + 0xfc, 4);
-        s->Transfer(B + 0x100, 4);
-        s->Transfer(B + 0x104, 4);
-        s->Transfer(B + 0x118, 4);
+        s->Write(B + 0xf8, 4);
+        s->Write(B + 0xfc, 4);
+        s->Write(B + 0x100, 4);
+        s->Write(B + 0x104, 4);
+        s->Write(B + 0x118, 4);
     }
     return 1;
 }
@@ -504,7 +490,6 @@ SIZE_UNKNOWN(CHazardReg);
 SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
-SIZE_UNKNOWN(CHazardStream);
 SIZE_UNKNOWN(CRainCloud);
 SIZE_UNKNOWN(CSpotLight);
 SIZE_UNKNOWN(CSpotLightFactory);

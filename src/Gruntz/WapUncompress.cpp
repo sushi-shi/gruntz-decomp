@@ -23,6 +23,7 @@ struct GzStream {
     unsigned long adler;     // +0x30
     unsigned long reserved;  // +0x34
 };
+SIZE(GzStream, 0x38);
 
 extern "C" {
     int

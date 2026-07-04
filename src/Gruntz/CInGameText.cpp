@@ -225,7 +225,7 @@ void RegisterTextLogic() {
 // +0x34 sub-object's own serializer, then round-trip the two own dwords at
 // +0x54/+0x58: tag 4 stores (archive Write), tag 7 loads (archive Read).
 RVA(0x00099a30, 0xaa)
-i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
+i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
@@ -252,5 +252,4 @@ i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CInGameText);
 SIZE_UNKNOWN(CTextActReg);
-SIZE_UNKNOWN(CTextArchive);
 SIZE_UNKNOWN(CGameRegistry);

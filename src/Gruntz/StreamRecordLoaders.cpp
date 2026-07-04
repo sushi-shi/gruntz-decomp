@@ -20,25 +20,12 @@
 // embedded +0x150 sub-record of CProjLoadRec below
 
 // ---------------------------------------------------------------------------
-// CStreamReader - the input stream the records read from. Only the +0x2c virtual
-// (Read(buf, count)) is touched; modeled polymorphically so `mov edx,[esi]; call
-// [edx+0x2c]` falls out. Never instantiated here, so no vtable is emitted.
+// The input stream the CTriggerLoadRec/CEventLoadRec records read from is the shared
+// WAP32 CSerialArchive (Read @ vtable +0x2c), pulled in via <Gruntz/CSerialObjRef.h>
+// above - the former local `CStreamReader` view is folded away. `s->Read` lowers to
+// `mov edx,[esi]; call [edx+0x2c]`. (The +0x30-reading CArchiveReader below is a
+// distinct, anomalous-slot stream kept local.)
 // ---------------------------------------------------------------------------
-class CStreamReader {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void Read(void* buf, i32 count); // +0x2c
-};
 
 // ---------------------------------------------------------------------------
 // The game registry's string->object name map (CMapStringToPtr::Lookup @0x1b8008,
@@ -86,7 +73,7 @@ extern i32 g_serialCounter;
 // the stream / registry is absent.
 // ===========================================================================
 struct CTriggerLoadRec {
-    i32 Load(CStreamReader* s);
+    i32 Load(CSerialArchive* s);
 
     i32 m_0, m_4, m_8, m_c; // +0x00..+0x0c  raw
     void* m_10;             // +0x10  indexed type ref
@@ -110,7 +97,7 @@ struct CTriggerLoadRec {
 // this-expression and a map-receiver temp (regressed to 89%); the store position
 // is the MSVC5 scheduler coin-flip, source-invariant.
 RVA(0x00009bb0, 0x367)
-i32 CTriggerLoadRec::Load(CStreamReader* s) {
+i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -234,7 +221,7 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
 // the m_30 sub-registry.
 // ===========================================================================
 struct CEventLoadRec {
-    i32 Load(CStreamReader* s);
+    i32 Load(CSerialArchive* s);
 
     i32 m_0, m_4; // +0x00,+0x04  raw
     void* m_8;    // +0x08  name ref
@@ -254,7 +241,7 @@ struct CEventLoadRec {
 // sinks, cl hoists). The idx-in-callee-saved-reg regalloc is steered by the
 // `i32 i = idx;` copy. ~92%.
 RVA(0x0009c650, 0x372)
-i32 CEventLoadRec::Load(CStreamReader* s) {
+i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -1107,5 +1094,4 @@ SIZE_UNKNOWN(CRegNameMap);
 SIZE_UNKNOWN(CRegNameTable);
 SIZE_UNKNOWN(CRegSub30);
 SIZE_UNKNOWN(CRegTypeTable);
-SIZE_UNKNOWN(CStreamReader);
 SIZE_UNKNOWN(CTriggerLoadRec);

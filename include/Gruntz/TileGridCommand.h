@@ -17,8 +17,9 @@
 
 #include <Ints.h>
 #include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h> // shared world tile-grid geometry (the active layer)
-#include <rva.h>              // SIZE_UNKNOWN class-metadata macros used below
+#include <Gruntz/CViewport.h>     // shared world tile-grid geometry (the active layer)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
 
@@ -77,25 +78,9 @@ SIZE_UNKNOWN(TgcRegion);
 SIZE_UNKNOWN(CGameRegistry);
 extern CGameRegistry* g_gameReg;
 
-// A serialization stream: Transfer (vtable slot 12, +0x30) copies n bytes
-// to/from a buffer.  Only the slot offset matters; reloc-masked virtual call.
-class TgcStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);      // +0x2c (deserialize transfer)
-    virtual void Transfer(void* buf, i32 n); // +0x30
-};
-SIZE_UNKNOWN(TgcStream);
+// The serialization stream is the shared WAP32 CSerialArchive (Read @ vtable +0x2c /
+// Write @ +0x30 - the store/transfer slot this cluster drives), now the one modeled
+// class in <Gruntz/SerialArchive.h> - the former local `TgcStream` view is folded away.
 
 class CTileGridCommand {
 public:
@@ -103,9 +88,9 @@ public:
     // TgcTickView cast of a manual-vptr command -> mov eax,[this]; call [eax]).
     virtual void Tick();
 
-    void RecordMove();             // 0x112880
-    i32 Serialize(TgcStream* s);   // 0x113ae0
-    i32 Deserialize(TgcStream* s); // 0x113c10
+    void RecordMove();                  // 0x112880
+    i32 Serialize(CSerialArchive* s);   // 0x113ae0
+    i32 Deserialize(CSerialArchive* s); // 0x113c10
 
     // Time-driven duty-cycle classifier: returns +1 while inside the on/off span,
     // 0 on the rising edge of a one-shot, -1 on the falling edge.  __thiscall.

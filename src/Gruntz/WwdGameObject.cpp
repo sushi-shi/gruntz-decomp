@@ -18,7 +18,8 @@
 // virtual [+0x30], CString dtor, NAFXCW Lookup, sibling readers) are modeled
 // with no body so their rel32 calls reloc-mask.
 #include <rva.h>
-#include <string.h> // inlined memset / strcpy (rep stos / repne scas + rep movs)
+#include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 
 // ---------------------------------------------------------------------------
@@ -84,29 +85,15 @@ struct MgrSub158570 {
     MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
 
-// The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/
-// WriteSnapshot. Its op is the virtual at +0x2c/+0x30: a fixed-size element
-// transfer (read or write `size` bytes).
-// authentic: the retail mangling of those methods carries an `int` param (`H`,
-// e.g. ?ReadState@CWwdGameObject@@QAEHH@Z) - the archive enters as an int handle,
-// so the source param stays `int` (dev-faithful) and the `(Archive*)` reinterpret
-// of that handle is the real operation. Retyping the param would rewrite the
-// symbol and diverge from what the devs wrote.
-struct Archive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void ReadBuf(void* buf, i32 size); // +0x2c (the read/load direction)
-    virtual void Xfer(void* buf, i32 size);    // +0x30 (the write/store direction)
-};
+// The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/WriteSnapshot
+// is the shared WAP32 CSerialArchive (Read @ vtable +0x2c - the read/load direction;
+// Write @ +0x30 - the store direction), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `Archive` view is folded away.
+// authentic: the retail mangling of those methods carries an `int` param (`H`, e.g.
+// ?ReadState@CWwdGameObject@@QAEHH@Z) - the archive enters as an int handle, so the
+// source param stays `int` (dev-faithful) and the `(CSerialArchive*)` reinterpret of
+// that handle is the real operation. Retyping the param would rewrite the symbol and
+// diverge from what the devs wrote.
 // mgr+0x14 reader: a name-builder (Build -> CString) with its lookup map at +0x10.
 struct MgrSub165360 {
     EngStr* Build(EngStr* out, void* obj); // 0x165360  __thiscall -> CString
@@ -386,24 +373,24 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObject::ReadState(i32 src) {
-    Archive* ar = (Archive*)src;
+    CSerialArchive* ar = (CSerialArchive*)src;
     if (ar == 0) {
         return 0;
     }
-    ar->Xfer(&m_dotColor, 4);
-    ar->Xfer(&m_190, 4);
+    ar->Write(&m_dotColor, 4);
+    ar->Write(&m_190, 4);
     i32 flag = 0;
     if (m_198 != 0) {
         flag = 1;
     }
-    ar->Xfer(&flag, 4);
+    ar->Write(&flag, 4);
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
     if (m_194 != 0) {
         strcpy(tmp, (char*)m_194 + 0x24);
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     {
@@ -412,7 +399,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
     return 1;
 }
 
@@ -426,18 +413,18 @@ i32 CWwdGameObject::ReadState(i32 src) {
 // ---------------------------------------------------------------------------
 RVA(0x00150c30, 0x130)
 i32 CWwdGameObject::Sub150c30(i32 src) {
-    Archive* ar = (Archive*)src;
+    CSerialArchive* ar = (CSerialArchive*)src;
     if (ar == 0) {
         return 0;
     }
-    ar->ReadBuf(&m_dotColor, 4);
-    ar->ReadBuf(&m_190, 4);
+    ar->Read(&m_dotColor, 4);
+    ar->Read(&m_190, 4);
     i32 flag;
-    ar->ReadBuf(&flag, 4);
+    ar->Read(&flag, 4);
     m_194 = 0;
 
     char name[0x100];
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
         WwdMgr* mgr = m_mgr;
@@ -455,7 +442,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     }
 
     m_19c = 0;
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
         WwdMgr* mgr = m_mgr;
@@ -635,62 +622,62 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x00151320, 0x454)
 i32 CWwdGameObject::Serialize(i32 arParam) {
-    Archive* ar = (Archive*)arParam;
+    CSerialArchive* ar = (CSerialArchive*)arParam;
     if (ar == 0) {
         return 0;
     }
 
-    ar->Xfer(m_b8, 0x24);
+    ar->Write(m_b8, 0x24);
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
     strcpy(tmp, m_name);
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
-    ar->Xfer(&m_e4, 4);
-    ar->Xfer(&m_e8, 4);
-    ar->Xfer(&m_ec, 4);
-    ar->Xfer(&m_f0, 4);
-    ar->Xfer(&m_f4, 4);
-    ar->Xfer(&m_f8, 4);
-    ar->Xfer(&m_fc, 4);
-    ar->Xfer(&m_100, 4);
-    ar->Xfer(&m_104, 4);
-    ar->Xfer(&m_108, 4);
-    ar->Xfer(&m_10c, 4);
-    ar->Xfer(&m_110, 4);
-    ar->Xfer(&m_114, 4);
-    ar->Xfer(&m_118, 4);
-    ar->Xfer(&m_11c, 4);
-    ar->Xfer(&m_120, 4);
-    ar->Xfer(&m_124, 4);
-    ar->Xfer(&m_128, 4);
-    ar->Xfer(&m_12c, 4);
-    ar->Xfer(&m_130, 4);
-    ar->Xfer(&m_134, 0x10);
-    ar->Xfer(&m_144, 0x10);
-    ar->Xfer(&m_154, 0x10);
-    ar->Xfer(&m_164, 4);
-    ar->Xfer(&m_168, 4);
-    ar->Xfer(&m_16c, 4);
-    ar->Xfer(&m_170, 4);
-    ar->Xfer(&m_174, 4);
-    ar->Xfer(&m_178, 4);
-    ar->Xfer(&m_17c, 4);
-    ar->Xfer(&m_180, 4);
-    ar->Xfer(&m_10, 4);
-    ar->Xfer(&m_14, 4);
-    ar->Xfer(&m_lastX, 0x24); // +0x18 render-state block
-    ar->Xfer(&m_40, 4);
-    ar->Xfer(&m_44, 4);
-    ar->Xfer(&m_48, 4);
-    ar->Xfer(&m_50, 4);
-    ar->Xfer(&m_54, 4);
-    ar->Xfer(&m_58, 4);
-    ar->Xfer(&m_clipLeft, 0x10); // +0x64 clip rect
-    ar->Xfer(&m_04, 4);
-    ar->Xfer(&m_flags, 4);
-    ar->Xfer(&m_184, 4);
+    ar->Write(&m_e4, 4);
+    ar->Write(&m_e8, 4);
+    ar->Write(&m_ec, 4);
+    ar->Write(&m_f0, 4);
+    ar->Write(&m_f4, 4);
+    ar->Write(&m_f8, 4);
+    ar->Write(&m_fc, 4);
+    ar->Write(&m_100, 4);
+    ar->Write(&m_104, 4);
+    ar->Write(&m_108, 4);
+    ar->Write(&m_10c, 4);
+    ar->Write(&m_110, 4);
+    ar->Write(&m_114, 4);
+    ar->Write(&m_118, 4);
+    ar->Write(&m_11c, 4);
+    ar->Write(&m_120, 4);
+    ar->Write(&m_124, 4);
+    ar->Write(&m_128, 4);
+    ar->Write(&m_12c, 4);
+    ar->Write(&m_130, 4);
+    ar->Write(&m_134, 0x10);
+    ar->Write(&m_144, 0x10);
+    ar->Write(&m_154, 0x10);
+    ar->Write(&m_164, 4);
+    ar->Write(&m_168, 4);
+    ar->Write(&m_16c, 4);
+    ar->Write(&m_170, 4);
+    ar->Write(&m_174, 4);
+    ar->Write(&m_178, 4);
+    ar->Write(&m_17c, 4);
+    ar->Write(&m_180, 4);
+    ar->Write(&m_10, 4);
+    ar->Write(&m_14, 4);
+    ar->Write(&m_lastX, 0x24); // +0x18 render-state block
+    ar->Write(&m_40, 4);
+    ar->Write(&m_44, 4);
+    ar->Write(&m_48, 4);
+    ar->Write(&m_50, 4);
+    ar->Write(&m_54, 4);
+    ar->Write(&m_58, 4);
+    ar->Write(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Write(&m_04, 4);
+    ar->Write(&m_flags, 4);
+    ar->Write(&m_184, 4);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
@@ -699,7 +686,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
@@ -708,7 +695,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
@@ -717,7 +704,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
     return 1;
 }
 
@@ -730,63 +717,63 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 // ---------------------------------------------------------------------------
 RVA(0x00151780, 0x40d)
 i32 CWwdGameObject::Sub151780(i32 arParam) {
-    Archive* ar = (Archive*)arParam;
+    CSerialArchive* ar = (CSerialArchive*)arParam;
     if (ar == 0) {
         return 0;
     }
 
-    ar->ReadBuf(m_b8, 0x24);
+    ar->Read(m_b8, 0x24);
 
     char name[0x80];
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     ((CStringAssign*)&m_name)->Assign(name);
 
-    ar->ReadBuf(&m_e4, 4);
-    ar->ReadBuf(&m_e8, 4);
-    ar->ReadBuf(&m_ec, 4);
-    ar->ReadBuf(&m_f0, 4);
-    ar->ReadBuf(&m_f4, 4);
-    ar->ReadBuf(&m_f8, 4);
-    ar->ReadBuf(&m_fc, 4);
-    ar->ReadBuf(&m_100, 4);
-    ar->ReadBuf(&m_104, 4);
-    ar->ReadBuf(&m_108, 4);
-    ar->ReadBuf(&m_10c, 4);
-    ar->ReadBuf(&m_110, 4);
-    ar->ReadBuf(&m_114, 4);
-    ar->ReadBuf(&m_118, 4);
-    ar->ReadBuf(&m_11c, 4);
-    ar->ReadBuf(&m_120, 4);
-    ar->ReadBuf(&m_124, 4);
-    ar->ReadBuf(&m_128, 4);
-    ar->ReadBuf(&m_12c, 4);
-    ar->ReadBuf(&m_130, 4);
-    ar->ReadBuf(&m_134, 0x10);
-    ar->ReadBuf(&m_144, 0x10);
-    ar->ReadBuf(&m_154, 0x10);
-    ar->ReadBuf(&m_164, 4);
-    ar->ReadBuf(&m_168, 4);
-    ar->ReadBuf(&m_16c, 4);
-    ar->ReadBuf(&m_170, 4);
-    ar->ReadBuf(&m_174, 4);
-    ar->ReadBuf(&m_178, 4);
-    ar->ReadBuf(&m_17c, 4);
-    ar->ReadBuf(&m_180, 4);
-    ar->ReadBuf(&m_10, 4);
-    ar->ReadBuf(&m_14, 4);
-    ar->ReadBuf(&m_lastX, 0x24); // +0x18 render-state block
-    ar->ReadBuf(&m_40, 4);
-    ar->ReadBuf(&m_44, 4);
-    ar->ReadBuf(&m_48, 4);
-    ar->ReadBuf(&m_50, 4);
-    ar->ReadBuf(&m_54, 4);
-    ar->ReadBuf(&m_58, 4);
-    ar->ReadBuf(&m_clipLeft, 0x10); // +0x64 clip rect
-    ar->ReadBuf(&m_04, 4);
-    ar->ReadBuf(&m_flags, 4);
-    ar->ReadBuf(&m_184, 4);
+    ar->Read(&m_e4, 4);
+    ar->Read(&m_e8, 4);
+    ar->Read(&m_ec, 4);
+    ar->Read(&m_f0, 4);
+    ar->Read(&m_f4, 4);
+    ar->Read(&m_f8, 4);
+    ar->Read(&m_fc, 4);
+    ar->Read(&m_100, 4);
+    ar->Read(&m_104, 4);
+    ar->Read(&m_108, 4);
+    ar->Read(&m_10c, 4);
+    ar->Read(&m_110, 4);
+    ar->Read(&m_114, 4);
+    ar->Read(&m_118, 4);
+    ar->Read(&m_11c, 4);
+    ar->Read(&m_120, 4);
+    ar->Read(&m_124, 4);
+    ar->Read(&m_128, 4);
+    ar->Read(&m_12c, 4);
+    ar->Read(&m_130, 4);
+    ar->Read(&m_134, 0x10);
+    ar->Read(&m_144, 0x10);
+    ar->Read(&m_154, 0x10);
+    ar->Read(&m_164, 4);
+    ar->Read(&m_168, 4);
+    ar->Read(&m_16c, 4);
+    ar->Read(&m_170, 4);
+    ar->Read(&m_174, 4);
+    ar->Read(&m_178, 4);
+    ar->Read(&m_17c, 4);
+    ar->Read(&m_180, 4);
+    ar->Read(&m_10, 4);
+    ar->Read(&m_14, 4);
+    ar->Read(&m_lastX, 0x24); // +0x18 render-state block
+    ar->Read(&m_40, 4);
+    ar->Read(&m_44, 4);
+    ar->Read(&m_48, 4);
+    ar->Read(&m_50, 4);
+    ar->Read(&m_54, 4);
+    ar->Read(&m_58, 4);
+    ar->Read(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Read(&m_04, 4);
+    ar->Read(&m_flags, 4);
+    ar->Read(&m_184, 4);
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, &found);
@@ -795,7 +782,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
         }
     }
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, &found);
@@ -804,7 +791,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
         }
     }
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, &found);
@@ -825,7 +812,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // stores schedule one slot off retail. Logic complete; not steerable.
 RVA(0x00151c00, 0x118)
 i32 CWwdGameObject::WriteSnapshot(i32 dst) {
-    Archive* ar = (Archive*)dst;
+    CSerialArchive* ar = (CSerialArchive*)dst;
     if (ar == 0) {
         return 0;
     }
@@ -865,7 +852,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
         strcpy(rec.m_name, str.m_data);
         str.Dtor();
     }
-    ar->Xfer(&rec, 0xa0);
+    ar->Write(&rec, 0xa0);
     return 1;
 }
 
@@ -998,7 +985,6 @@ reject:
 }
 
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(Archive);
 SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
 SIZE(CmdMap, 0x3c);

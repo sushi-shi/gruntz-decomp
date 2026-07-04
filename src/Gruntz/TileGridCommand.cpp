@@ -34,28 +34,28 @@ void CTileGridCommand::RecordMove() {
 // block through the stream's Transfer (vtable slot 12) and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
-i32 CTileGridCommand::Serialize(TgcStream* s) {
+i32 CTileGridCommand::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Transfer(&m_08, 4);
-    s->Transfer(&m_0c, 4);
-    s->Transfer(&m_10, 4);
-    s->Transfer(&m_14, 4);
-    s->Transfer(&m_18, 4);
-    s->Transfer(&m_1c, 4);
-    s->Transfer(&m_28, 4);
-    s->Transfer(&m_2c, 4);
-    s->Transfer(&m_30, 4);
-    s->Transfer(&m_34, 4);
-    s->Transfer(&m_dutyOn, 4);
-    s->Transfer(&m_24, 4);
+    s->Write(&m_08, 4);
+    s->Write(&m_0c, 4);
+    s->Write(&m_10, 4);
+    s->Write(&m_14, 4);
+    s->Write(&m_18, 4);
+    s->Write(&m_1c, 4);
+    s->Write(&m_28, 4);
+    s->Write(&m_2c, 4);
+    s->Write(&m_30, 4);
+    s->Write(&m_34, 4);
+    s->Write(&m_dutyOn, 4);
+    s->Write(&m_24, 4);
     i32* p = m_grid;
     for (i32 i = 0; i < 24; i++) {
-        s->Transfer(p, 4);
+        s->Write(p, 4);
         p++;
     }
     return 1;
@@ -68,7 +68,7 @@ i32 CTileGridCommand::Serialize(TgcStream* s) {
 // write slot (+0x30). Reads the 12 scalar fields then the 24-dword grid block.
 // ---------------------------------------------------------------------------
 RVA(0x00113c10, 0xe8)
-i32 CTileGridCommand::Deserialize(TgcStream* s) {
+i32 CTileGridCommand::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }

@@ -1,6 +1,7 @@
 #include <rva.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
 #include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
 #include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
@@ -114,26 +115,9 @@ struct CTimerFrame {
     void RenderFrame(i32 pSurf, i32 x, i32 y, i32 z);
 };
 
-// The archive/order object passed to HandleEvent + Serialize. The field-transfer
-// entries are the virtuals at vtable byte-offsets 0x2c (Read) and 0x30 (Write),
-// each taking a buffer ptr + a byte count. Modeled polymorphic (slot decls only,
-// never defined -> no ??_7 here) so `ar->Write(buf,n)` lowers to the exact
-// `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
-struct CTimerArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c
-    virtual void Write(void* buf, i32 n); // +0x30
-};
+// The archive/order object passed to HandleEvent + Serialize is the shared WAP32
+// CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `CTimerArchive` view is folded away.
 
 class CTimer {
 public:
@@ -144,9 +128,9 @@ public:
     i32 Draw(i32 x, i32 pSurf);
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
-    i32 HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4);
-    i32 Serialize(CTimerArchive* ar);   // 0x9c2e0 (this cluster)
-    i32 Deserialize(CTimerArchive* ar); // 0x9c650 (external, declared-not-defined)
+    i32 HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4);
+    i32 Serialize(CSerialArchive* ar);   // 0x9c2e0 (this cluster)
+    i32 Deserialize(CSerialArchive* ar); // 0x9c650 (external, declared-not-defined)
 
     i32 m_baseX;       // +0x00 base x (screen origin)
     i32 m_baseY;       // +0x04 base y
@@ -476,7 +460,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
 // pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
+i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -539,7 +523,7 @@ struct CStrReader {
 // gives `zero` its own slot, shifting every frame-size immediate by 4. Body
 // (vtable Transfer dispatch + inlined memset/strcpy + name lookup) exact.
 RVA(0x0009c2e0, 0x2b6)
-i32 CTimer::Serialize(CTimerArchive* ar) {
+i32 CTimer::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -626,6 +610,5 @@ SIZE_UNKNOWN(CKeyTable);
 SIZE_UNKNOWN(CLevelNotify);
 SIZE_UNKNOWN(CLoadingBar);
 SIZE_UNKNOWN(CTimer);
-SIZE_UNKNOWN(CTimerArchive);
 SIZE_UNKNOWN(CTimerFrame);
 SIZE_UNKNOWN(CTimerNotifyObj);

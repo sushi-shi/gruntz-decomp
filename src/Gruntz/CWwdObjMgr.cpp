@@ -15,7 +15,8 @@
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
 
-#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
+#include <Gruntz/CWwdObjMgr.h>    // the shared object-collection manager class
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_2c/m_48 layout)
 #include <Globals.h>
 
@@ -37,23 +38,10 @@ struct WwdObjDesc {
     i32 m_9c;               // +0x9c
 };
 
-// The level reader (arg1): a polymorphic stream whose +0x2c slot (index 11) reads
-// the next object descriptor into a caller buffer. Modeled with the 12 virtuals so
-// the slot-11 call lowers to `mov eax,[obj]; call [eax+0x2c]` (no body -> reloc-mask).
-struct WwdReader {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void ReadDesc(void* buf, i32 size); // index 11 (+0x2c)
-};
+// The level reader (arg1) is the shared WAP32 CSerialArchive stream (Read @ vtable
+// +0x2c), now the one modeled class in <Gruntz/SerialArchive.h> - the former local
+// `WwdReader` view is folded away. `reader->Read` reads the next object descriptor
+// into a caller buffer, lowering to `mov eax,[obj]; call [eax+0x2c]`.
 
 // The string-resolve map reached at (m_0c->m_14 + 0x10): Resolve(nameBuf, &out)
 // looks the descriptor name up to a value. __thiscall, no body -> reloc-mask.
@@ -96,14 +84,14 @@ public:
 // stack-buffer + null-register (ebp=0) regalloc across the arms is non-steerable
 // under /O2; the reader/level-file chains are modeled by raw offset. Final sweep.
 RVA(0x0015ad30, 0x2be)
-i32 CWwdObjMgr::LoadObjects(WwdReader* reader, u32 count, i32 unused) {
+i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
     i32 savedCounter = 0;
     if (reader == 0) {
         return 0;
     }
     for (u32 i = 0; i < count; i++) {
         WwdObjDesc desc;
-        reader->ReadDesc(&desc, 0xa0);
+        reader->Read(&desc, 0xa0);
 
         void* found;
         if (m_48.Lookup((void*)desc.m_04, found) && found != 0) {
@@ -196,5 +184,4 @@ i32 CWwdObjMgr::LoadObjects(WwdReader* reader, u32 count, i32 unused) {
 SIZE_UNKNOWN(CWwdGameObject);
 SIZE_UNKNOWN(WwdGameObjAux);
 SIZE_UNKNOWN(WwdObjDesc);
-SIZE_UNKNOWN(WwdReader);
 SIZE_UNKNOWN(WwdStrResolve);

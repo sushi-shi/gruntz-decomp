@@ -17,7 +17,8 @@
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
 #include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h> // the shared world-plane object (was local CWorldLayer)
+#include <Gruntz/CViewport.h>     // the shared world-plane object (was local CWorldLayer)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
@@ -328,27 +329,11 @@ struct HudGuard44 {
     void Teardown(); // (this) reloc-masked (Close)
 };
 
-// The archive/serializer object SaveState streams every clock/scroll/warp field
-// through; its Serialize(void* data, int size) lives at vtbl slot +0x30 and is
-// reloc-masked. Model it as a typed vtable so each `mov ecx,ar; push n; push &f;
-// call [ar+0x30]` falls out (MSVC 5.0 forbids __thiscall on a fn-ptr, so the
-// slots are anchors and Serialize is a virtual member).
-class CSerializerZ {
-public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s0a();
-    virtual void Transfer(void* data, i32 size);  // slot 11 (+0x2c) (Load read path)
-    virtual void Serialize(void* data, i32 size); // slot 12 (+0x30)
-};
+// The archive/serializer object SaveState/LoadState stream every clock/scroll/warp
+// field through: the shared WAP32 CSerialArchive stream interface (Read @ vtbl +0x2c,
+// the Load read path; Write @ +0x30, the Save write path), now the one modeled class
+// in <Gruntz/SerialArchive.h> - the former local `CSerializerZ` view is folded away.
+// Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
 
 // The engine reaches the USER32 cursor through a stored function pointer at
 // 0x6c44c4 (`mov edi,ds:...; call edi`), not a direct IAT call; model it as a
@@ -2422,7 +2407,7 @@ void CGruntzMgr::UpdateScoreHud() {
 // state block (m_114..m_13c) and the clock/scroll/warp globals - each via the
 // archive's Serialize(&field, size) slot. Returns 1.
 RVA(0x00093620, 0x254)
-i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
+i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -2434,38 +2419,38 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
     char buf[0x80];
     memset(buf, 0, 0x80);
     strcpy(buf, m_strWorldFile);
-    ar->Serialize(buf, 0x80);
+    ar->Write(buf, 0x80);
 
-    ar->Serialize(&m_114, 4);
-    ar->Serialize(&m_inputFlag, 4);
-    ar->Serialize(&m_128, 4);
-    ar->Serialize(&m_12c, 4);
-    ar->Serialize(&m_130, 4);
-    ar->Serialize(&m_134, 4);
-    ar->Serialize(&m_optionsCount, 4);
-    ar->Serialize(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
-    ar->Serialize(&g_645580, 4);
-    ar->Serialize(&g_645584, 4);
-    ar->Serialize(&g_645588, 4);
-    ar->Serialize(&g_64558c, 4);
-    ar->Serialize(&g_645590, 4);
-    ar->Serialize(&g_645594, 4);
-    ar->Serialize(&g_645598, 4);
-    ar->Serialize(&g_64559c, 4);
-    ar->Serialize(&g_6455a0, 4);
-    ar->Serialize(&g_6455b0, 4);
-    ar->Serialize(&g_6455a8, 4);
-    ar->Serialize(&g_6455a4, 4);
-    ar->Serialize(&g_6455ac, 4);
-    ar->Serialize(&g_6455f8, 4);
-    ar->Serialize(&m_isEasyMode, 4);
-    ar->Serialize(&g_6455e8, 4);
-    ar->Serialize(&g_6452a4, 4);
-    ar->Serialize(&g_6452cc, 4);
-    ar->Serialize(&g_645508, 4);
-    ar->Serialize(&g_64550c, 4);
-    ar->Serialize(&g_warpX, 4);
-    ar->Serialize(&g_warpY, 4);
+    ar->Write(&m_114, 4);
+    ar->Write(&m_inputFlag, 4);
+    ar->Write(&m_128, 4);
+    ar->Write(&m_12c, 4);
+    ar->Write(&m_130, 4);
+    ar->Write(&m_134, 4);
+    ar->Write(&m_optionsCount, 4);
+    ar->Write(&m_viewOriginL, 0x10); // the 0x10-byte view-origin block (+0x13c..+0x148)
+    ar->Write(&g_645580, 4);
+    ar->Write(&g_645584, 4);
+    ar->Write(&g_645588, 4);
+    ar->Write(&g_64558c, 4);
+    ar->Write(&g_645590, 4);
+    ar->Write(&g_645594, 4);
+    ar->Write(&g_645598, 4);
+    ar->Write(&g_64559c, 4);
+    ar->Write(&g_6455a0, 4);
+    ar->Write(&g_6455b0, 4);
+    ar->Write(&g_6455a8, 4);
+    ar->Write(&g_6455a4, 4);
+    ar->Write(&g_6455ac, 4);
+    ar->Write(&g_6455f8, 4);
+    ar->Write(&m_isEasyMode, 4);
+    ar->Write(&g_6455e8, 4);
+    ar->Write(&g_6452a4, 4);
+    ar->Write(&g_6452cc, 4);
+    ar->Write(&g_645508, 4);
+    ar->Write(&g_64550c, 4);
+    ar->Write(&g_warpX, 4);
+    ar->Write(&g_warpY, 4);
     return 1;
 }
 
@@ -2478,7 +2463,7 @@ i32 CGruntzMgr::SaveState(CSerializerZ* ar) {
 // file name into a scratch buffer and assigns it to m_strWorldFile, then transfers
 // each scalar field/global in the identical order as SaveState.
 RVA(0x00093920, 0x22f)
-i32 CGruntzMgr::LoadState(CSerializerZ* ar) {
+i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -2488,39 +2473,39 @@ i32 CGruntzMgr::LoadState(CSerializerZ* ar) {
     g_629ad0++;
 
     char buf[0x80];
-    ar->Transfer(buf, 0x80);
+    ar->Read(buf, 0x80);
     m_strWorldFile = buf;
 
-    ar->Transfer(&m_114, 4);
-    ar->Transfer(&m_inputFlag, 4);
-    ar->Transfer(&m_128, 4);
-    ar->Transfer(&m_12c, 4);
-    ar->Transfer(&m_130, 4);
-    ar->Transfer(&m_134, 4);
-    ar->Transfer(&m_optionsCount, 4);
-    ar->Transfer(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
-    ar->Transfer(&g_645580, 4);
-    ar->Transfer(&g_645584, 4);
-    ar->Transfer(&g_645588, 4);
-    ar->Transfer(&g_64558c, 4);
-    ar->Transfer(&g_645590, 4);
-    ar->Transfer(&g_645594, 4);
-    ar->Transfer(&g_645598, 4);
-    ar->Transfer(&g_64559c, 4);
-    ar->Transfer(&g_6455a0, 4);
-    ar->Transfer(&g_6455b0, 4);
-    ar->Transfer(&g_6455a8, 4);
-    ar->Transfer(&g_6455a4, 4);
-    ar->Transfer(&g_6455ac, 4);
-    ar->Transfer(&g_6455f8, 4);
-    ar->Transfer(&m_isEasyMode, 4);
-    ar->Transfer(&g_6455e8, 4);
-    ar->Transfer(&g_6452a4, 4);
-    ar->Transfer(&g_6452cc, 4);
-    ar->Transfer(&g_645508, 4);
-    ar->Transfer(&g_64550c, 4);
-    ar->Transfer(&g_warpX, 4);
-    ar->Transfer(&g_warpY, 4);
+    ar->Read(&m_114, 4);
+    ar->Read(&m_inputFlag, 4);
+    ar->Read(&m_128, 4);
+    ar->Read(&m_12c, 4);
+    ar->Read(&m_130, 4);
+    ar->Read(&m_134, 4);
+    ar->Read(&m_optionsCount, 4);
+    ar->Read(&m_viewOriginL, 0x10); // view-origin block (+0x13c..+0x148)
+    ar->Read(&g_645580, 4);
+    ar->Read(&g_645584, 4);
+    ar->Read(&g_645588, 4);
+    ar->Read(&g_64558c, 4);
+    ar->Read(&g_645590, 4);
+    ar->Read(&g_645594, 4);
+    ar->Read(&g_645598, 4);
+    ar->Read(&g_64559c, 4);
+    ar->Read(&g_6455a0, 4);
+    ar->Read(&g_6455b0, 4);
+    ar->Read(&g_6455a8, 4);
+    ar->Read(&g_6455a4, 4);
+    ar->Read(&g_6455ac, 4);
+    ar->Read(&g_6455f8, 4);
+    ar->Read(&m_isEasyMode, 4);
+    ar->Read(&g_6455e8, 4);
+    ar->Read(&g_6452a4, 4);
+    ar->Read(&g_6452cc, 4);
+    ar->Read(&g_645508, 4);
+    ar->Read(&g_64550c, 4);
+    ar->Read(&g_warpX, 4);
+    ar->Read(&g_warpY, 4);
     return 1;
 }
 
@@ -3695,7 +3680,6 @@ SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CSaveDlgBase);
 SIZE_UNKNOWN(CSaveNameDlg);
-SIZE_UNKNOWN(CSerializerZ);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);

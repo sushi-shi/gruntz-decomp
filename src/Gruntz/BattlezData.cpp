@@ -443,7 +443,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 // edi/ebx past the null guard (pushing only ecx/ebp/esi upfront), which shifts
 // every spill-slot offset (`[esp+0x18]` vs `[esp+0x14]`) downstream. Not source-steerable.
 RVA(0x000fd3f0, 0x425)
-i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
+i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     i32* p;
     i32 i;
     i32 r;
@@ -572,5 +572,4 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
 }
 
 SIZE_UNKNOWN(BattlezRecord);
-SIZE_UNKNOWN(BattlezStream);
 SIZE_UNKNOWN(CBattlezData);

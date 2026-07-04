@@ -3,7 +3,7 @@ Unknown ids	5
 g_<hex> globals	1244
 Method/Stub/FUN	265
 placeholder classes	385
-placeholder vtable slots	911
+placeholder vtable slots	785
 *Vtbl structs	83
 ->vtbl accesses	56
 g_*Vtbl globals	140

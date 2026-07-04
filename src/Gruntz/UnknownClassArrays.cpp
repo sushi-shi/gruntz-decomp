@@ -39,6 +39,7 @@
 #include <Gruntz/CoordNode.h> // the shared coord-list node
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
 
 // CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
@@ -83,25 +84,10 @@ struct EmitArg {
     virtual void Emit30(void* coord, i32 count); // +0x30 (index 12)
 };
 
-// The serializer/archive the Serialize method writes into: a polymorphic object
-// whose vtable carries a Write(void* buf, uint count) slot at +0x30 (index 12).
-// The slot call is a __thiscall indirect (mov edx,[ar]; call [edx+0x30]); modeled
-// with real virtuals so the convention falls out (see dummy-virtual-slots.md).
-struct Serializer {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void Read(void* buf, u32 count);        // +0x2c (index 11)
-    virtual void Write(const void* buf, u32 count); // +0x30 (index 12)
-};
+// The serializer/archive the Serialize/Deserialize methods drive: the shared WAP32
+// CSerialArchive stream interface (Read @ vtable +0x2c / Write @ +0x30), now the one
+// modeled class in <Gruntz/SerialArchive.h> - the former local `Serializer` view is
+// folded away. Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
 
 // A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; nonzero result
 // means "skip the emit". __stdcall (callee pops its one arg — no add esp at the
@@ -1315,7 +1301,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
 // ===========================================================================
 RVA(0x0002b420, 0x419)
 i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
-    Serializer* ar = (Serializer*)arArg;
+    CSerialArchive* ar = (CSerialArchive*)arArg;
     if (ar == 0) {
         return 0;
     }
@@ -1424,7 +1410,7 @@ i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
 // edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
 RVA(0x0002b950, 0x513)
 i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
-    Serializer* ar = (Serializer*)arArg;
+    CSerialArchive* ar = (CSerialArchive*)arArg;
     if (ar == 0) {
         return 0;
     }

@@ -548,12 +548,11 @@ i32 CRollingBall::Update() {
 // The +0x88/+0x90 explosion-timing pair is streamed first, then the move/state
 // field list (+0x58..+0x98).
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain((i32)ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)((char*)this + 0x34))
-             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!((CSerialObjRef*)((char*)this + 0x34))->Chain(ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
 

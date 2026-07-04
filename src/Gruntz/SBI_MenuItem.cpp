@@ -59,7 +59,7 @@ extern "C" u32 g_6bf3c0;
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// CMiNameReg/CMiArchive moved to <Gruntz/SBI_MenuItem.h>.
+// CMiNameReg moved to <Gruntz/SBI_MenuItem.h>; the archive is the shared CSerialArchive.
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::ClearFrame() - zero the resolved frame handle.
@@ -89,7 +89,7 @@ void CSBI_MenuItem::ClearFrame2() {
 // (retail's temps share a slot, shifting the esp+ frame offsets by 4). Deferred.
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
-    CMiArchive* ar = (CMiArchive*)arP;
+    CSerialArchive* ar = (CSerialArchive*)arP;
     if (ar == 0) {
         return 0;
     }
@@ -340,7 +340,7 @@ i32 CSBI_MenuItem::Blit() {
 // name / g_serialCounter / the cue Lookup symbol vs retail's REL32 names).
 RVA(0x000e8520, 0x152)
 i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
-    CMiArchive* ar = (CMiArchive*)arP;
+    CSerialArchive* ar = (CSerialArchive*)arP;
     if (ar == 0) {
         return 0;
     }
@@ -388,7 +388,7 @@ void CSBI_MenuItem::SetSubtype() {
 // owned rect/flag fields (m_4..m_18, then +0x28) through the archive.
 RVA(0x0010bfc0, 0xe8)
 i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
-    CMiArchive* ar = (CMiArchive*)arP;
+    CSerialArchive* ar = (CSerialArchive*)arP;
     if (ar == 0) {
         return 0;
     }

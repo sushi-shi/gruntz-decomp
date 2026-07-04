@@ -42,7 +42,7 @@ CMapLogic::~CMapLogic() {}
 // transfers six trailing floats one at a time (size 4). Any other mode is a no-op
 // that still returns 1. Returns 0 only for a null archive.
 RVA(0x000ec230, 0x11c)
-i32 MapSerializeCurve(CMapArchive* ar, i32 mode) {
+i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
     if (ar == 0) {
         return 0;
     }
@@ -113,7 +113,7 @@ void CMapLogic::FreeNodes() {
 // retail spreads the read/write counts across esp+0x14 / esp+0x18 (frame-layout,
 // not steerable without guessing the local-allocation order).
 RVA(0x00082430, 0x161)
-i32 CMapLogic::SerializeNodes(CMapArchive* ar, i32 mode, i32 a2, i32 a3) {
+i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
         return 0;
     }

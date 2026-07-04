@@ -25,29 +25,9 @@
 
 #include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
-// ---------------------------------------------------------------------------
-// The CArchive-like serializer the record is streamed through (Serialize's arg1).
-// Modeled polymorphic (slot decls only, never defined -> no ??_7 emitted) so
-// `ar->Read(buf,n)`/`ar->Write(buf,n)` lower to `mov eax,[ar]; push n; push buf;
-// mov ecx,ar; call [eax+0x2c|0x30]`. Mirror of TileActionEvent.h's
-// CTileActionArchive: +0x2c = Read (mode 7 = load), +0x30 = Write (mode 4 = store).
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CRbArchive);
-struct CRbArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);  // +0x2c
-    virtual i32 Write(void* buf, i32 n); // +0x30
-};
+// The CArchive-like serializer the record is streamed through (Serialize's arg1) is
+// the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
+// <Gruntz/CSerialObjRef.h> above - the former local `CRbArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
 // CRollingBall : CUserLogic (vftable 0x5e86fc). Own state from +0x40 onward.
@@ -66,8 +46,8 @@ public:
     // name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0aff40
 
-    i32 Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
-    i32 Update();                                         // 0x0b0140
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
+    i32 Update();                                             // 0x0b0140
 
     // --- CRollingBall own fields (offsets load-bearing) ---
     i32 m_savedGeoId;          // +0x40  saved m_38->m_1b4 geometry id

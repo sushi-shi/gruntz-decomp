@@ -248,8 +248,8 @@ public:
     i32 ExitModalUI(class CModalDialog* dlg, i32 notify);   // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);                // @0x08e980
     i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(class CSerializerZ* ar);                  // @0x093620
-    i32 LoadState(class CSerializerZ* ar);                  // @0x093920 (deserialize counterpart)
+    i32 SaveState(struct CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
+    i32 LoadState(struct CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
     void UpdateScoreHud();                                  // @0x0860b0
     i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);      // @0x093460
     void RecomputeViewScale();                              // @0x08f7f0

@@ -19,27 +19,11 @@
 
 #include <rva.h>
 
-// The CArchive-like serializer the record is streamed through. Modeled polymorphic
-// (slot decls only, never defined -> no ??_7 emitted) so `ar->Write(buf,n)` lowers
-// to `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]`. Slot +0x30 is
-// the only one this cluster's serializer drives (mode 4 = write). Mirror of
-// MapLogic.h's CMapArchive.
-struct CTileActionArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);  // +0x2c
-    virtual i32 Write(void* buf, i32 n); // +0x30
-};
-SIZE_UNKNOWN(CTileActionArchive);
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+
+// The CArchive-like serializer the record is streamed through is the shared WAP32
+// CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `CTileActionArchive` view is folded away.
 
 class CTileActionEvent {
 public:

@@ -16,12 +16,12 @@
 #include <Mfc.h> // CPtrList, CMapPtrToPtr value members (real afxcoll layout)
 
 // The managed object types + the level reader/file; each TU supplies the full
-// definition it needs (only pointer/handle uses appear in this interface).
-struct WwdReader;
+// definition it needs (only pointer/handle uses appear in this interface). The level
+// reader is the shared CSerialArchive stream (Read @+0x2c), used to read descriptors.
 struct WwdFile;
 class CWwdGameObject;
 class CWwdObject;
-class CWwdArchive;
+struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
 
 class CWwdObjMgr {
 public:
@@ -32,7 +32,7 @@ public:
     CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
 
     // Level-load path (bodies: CWwdObjMgr.cpp; Init_159830 is external/no-body).
-    i32 LoadObjects(WwdReader* reader, u32 count, i32 unused);
+    i32 LoadObjects(CSerialArchive* reader, u32 count, i32 unused);
     i32 Init_159830(void* obj, i32 a94, i32 a98, i32 a9c, const void* nameBuf, i32 z);
 
     // List / map ops (bodies: CDDrawSubMgr.cpp).
@@ -43,8 +43,8 @@ public:
     i32 CountActive_15abc0();
     i32 ForEachDispatch_15ac20(i32 a1, i32 a2, i32 a3);
     i32 ForEachProbe_15acb0(i32 a1, i32 a2);
-    i32 ForEachSerialize_15b020(CWwdArchive* ar, i32 a2);
-    i32 Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag);
+    i32 ForEachSerialize_15b020(CSerialArchive* ar, i32 a2);
+    i32 Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag);
     i32 PruneOrphans_15b1d0();
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
     void TickKillCues_159a70(i32 advance); // vtable slot 9 (per-frame kill-cue tick)

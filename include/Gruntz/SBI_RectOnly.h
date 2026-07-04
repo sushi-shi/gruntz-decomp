@@ -18,8 +18,9 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h>
-#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape)
-#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
+#include <Gruntz/SbiConfig.h>     // canonical config-host family (one shape)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
 
 // A 24-byte (0x18) slot record: the +0x208 array element.
@@ -41,27 +42,9 @@ struct CSbiHlRow {
 };
 SIZE_UNKNOWN(CSbiHlRow);
 
-// The CSBI serialization stream (archive). Slot 0x30 (index 12) transfers n
-// bytes to/from buf; slot 0x2c (index 11) reads n bytes and returns a status.
-// Only the slot offsets are load-bearing (the virtual call is reloc-masked), as
-// in the already-matched CTileGridCommand::Serialize.
-class CSbiStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);      // +0x2c (slot 11)
-    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
-};
-SIZE_UNKNOWN(CSbiStream);
+// The CSBI serialization stream (archive) is the shared WAP32 CSerialArchive (Read @
+// vtable +0x2c / Write @ +0x30 - the store/transfer slot), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `CSbiStream` view is folded away.
 
 // The +0x8 object carries a sequence id at +0x188 (read during serialize).
 struct CSbiSeqHolder {
@@ -383,8 +366,8 @@ public:
     void TabCommit(); // call 0x125d - success helper
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
-    i32 Serialize(CSbiStream* s);
-    i32 Deserialize(CSbiStream* s);
+    i32 Serialize(CSerialArchive* s);
+    i32 Deserialize(CSerialArchive* s);
     void NotifyAllSlots();
 
     i32 ConfigureRect(

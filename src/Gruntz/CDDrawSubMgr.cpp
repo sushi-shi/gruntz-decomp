@@ -12,6 +12,7 @@
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Gruntz/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
+#include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
@@ -223,24 +224,10 @@ public:
     float m_scale; // +0x20
 };
 
-// __thiscall archive/file sink (vtable slot +0x30 = Write(buf, len)).  Shared by
-// CWwdObjMgr::ForEachSerialize and CDDrawBlitParam::Serialize.
-class CWwdArchive {
-public:
-    virtual void Av00();
-    virtual void Av04();
-    virtual void Av08();
-    virtual void Av0C();
-    virtual void Av10();
-    virtual void Av14();
-    virtual void Av18();
-    virtual void Av1C();
-    virtual void Av20();
-    virtual void Av24();
-    virtual void Av28();
-    virtual void Read(void* buf, i32 len);        // +0x2c (the read/load direction)
-    virtual void Write(const void* buf, i32 len); // +0x30 (the write/store direction)
-};
+// The __thiscall archive/file sink shared by CWwdObjMgr::ForEachSerialize and
+// CDDrawBlitParam::Serialize is the shared WAP32 CSerialArchive stream (Read @ vtable
+// +0x2c / Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h> - the
+// former local `CWwdArchive` view is folded away.
 
 // The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
 // 0x152d30 method returns a CString (the label written by Serialize).
@@ -264,8 +251,8 @@ public:
 };
 
 // CDDrawBlitParam is the single-source shared class in <Gruntz/CDDrawBlitParam.h>
-// (included at the top of this TU); its deps CDDrawBlitParamSrc / CWwdArchive /
-// CDDrawBlitWorker are fully defined above.
+// (included at the top of this TU); its deps CDDrawBlitParamSrc / CSerialArchive /
+// CDDrawBlitWorker are fully defined above / in <Gruntz/SerialArchive.h>.
 
 // ---------------------------------------------------------------------------
 // CDDrawSubMgr::CDDrawSubMgr
@@ -710,7 +697,7 @@ void CDDrawBlitParam::Recompute_15c320(i32 a1) {
 // cl re-reads the temp slot (`mov edi,[esp+0xc]`, 4 B).  Entropy tail / NRVO
 // addressing choice; no source lever.
 RVA(0x0015c970, 0xfe)
-i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
+i32 CDDrawBlitParam::Serialize_15c970(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -746,7 +733,7 @@ i32 CDDrawBlitParam::Serialize_15c970(CWwdArchive* ar) {
 // cases into a cmp/je-subtract chain.  Not source-steerable — the lowering
 // follows case-value density.  docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CDDrawBlitParam::Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4) {
+i32 CDDrawBlitParam::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -792,7 +779,7 @@ i32 CDDrawBlitParam::Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4) {
 // local regressed to 88.4%; not source-steerable.  docs/patterns/pin-local-for-
 // callee-saved-reg.md / zero-register-pinning.md.
 RVA(0x0015ca70, 0x15b)
-i32 CDDrawBlitParam::Deserialize_15ca70(CWwdArchive* ar) {
+i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1032,7 +1019,7 @@ i32 CWwdObjMgr::ForEachProbe_15acb0(i32 a1, i32 a2) {
 // two distinct `return 1` epilogues (empty-map vs loop-done), our cl hoists the
 // body and merges the epilogue.  An optimizer CFG-shape choice; logic exact.
 RVA(0x0015b020, 0xc0)
-i32 CWwdObjMgr::ForEachSerialize_15b020(CWwdArchive* ar, i32 a2) {
+i32 CWwdObjMgr::ForEachSerialize_15b020(CSerialArchive* ar, i32 a2) {
     if (ar == 0) {
         return 0;
     }
@@ -1068,7 +1055,7 @@ i32 CWwdObjMgr::ForEachSerialize_15b020(CWwdArchive* ar, i32 a2) {
 // reproducible from C without re-introducing the (here dead) name build; logic /
 // CFG / offsets are exact, the dead cleanup branch is the residual.
 RVA(0x0015b0e0, 0xec)
-i32 CWwdObjMgr::Deserialize_15b0e0(CWwdArchive* ar, u32 count, i32 flag) {
+i32 CWwdObjMgr::Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag) {
     if (ar == 0) {
         return 0;
     }
@@ -2558,7 +2545,6 @@ SIZE_UNKNOWN(CQueueProbeData);
 SIZE_UNKNOWN(CQueueProbeNode);
 SIZE_UNKNOWN(CDrawSubWorker);
 SIZE_UNKNOWN(CDrawSubWorkerBase);
-SIZE_UNKNOWN(CWwdArchive);
 SIZE_UNKNOWN(CWwdBox);
 SIZE_UNKNOWN(CWwdCmdMap);
 SIZE_UNKNOWN(CWwdFactoryObject);

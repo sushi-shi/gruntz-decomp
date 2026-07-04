@@ -9,10 +9,10 @@
 // is exactly why CStatusBarItem's ctor is inline in the shared header (MSVC 5.0
 // will not fold an out-of-line base ctor).
 
-// CSBI_RectOnly + all its engine-referent views (CSbiSlot/CSbiStream/CSbiSprite/
-// ...) and the slot-state enum/consts now live in the canonical shared header
-// <Gruntz/SBI_RectOnly.h> (included above). Only the RVA-keyed method bodies and
-// the DATA()-bound globals remain in this TU.
+// CSBI_RectOnly + all its engine-referent views (CSbiSlot/CSbiSprite/...) and the
+// slot-state enum/consts now live in the canonical shared header <Gruntz/SBI_RectOnly.h>
+// (included above); the serialize stream is the shared CSerialArchive. Only the
+// RVA-keyed method bodies and the DATA()-bound globals remain in this TU.
 
 // An unnamed engine DWORD global read by the HUD-rect group setters.
 DATA(0x00245588)
@@ -373,7 +373,7 @@ void CSBI_RectOnly::NotifyAllSlots() {
 // recompile spills the inner counter and reserves 3 via `sub esp,0xc`). Not
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 RVA(0x001090a0, 0x38f)
-i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
+i32 CSBI_RectOnly::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -382,8 +382,8 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
     }
 
     char* B = (char*)this;
-    s->Transfer(B, 4); // offset 0 (vptr field)
-    s->Transfer(B + 0x4, 4);
+    s->Write(B, 4); // offset 0 (vptr field)
+    s->Write(B + 0x4, 4);
 
     g_serialCounter++;
     i32 seq = 0;
@@ -394,77 +394,77 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
     if (m_8) {
         seq = ((CSbiSeqHolder*)m_8)->m_188;
     }
-    s->Transfer(&seq, 4);
+    s->Write(&seq, 4);
 
-    s->Transfer(B + 0x10, 0x10);
-    s->Transfer(B + 0x20, 4);
-    s->Transfer(B + 0x24, 4);
-    s->Transfer(B + 0x28, 4);
-    s->Transfer(B + 0x110, 4);
-    s->Transfer(B + 0x62c, 4);
+    s->Write(B + 0x10, 0x10);
+    s->Write(B + 0x20, 4);
+    s->Write(B + 0x24, 4);
+    s->Write(B + 0x28, 4);
+    s->Write(B + 0x110, 4);
+    s->Write(B + 0x62c, 4);
 
     char* p = B + 0x114;
     for (i32 i = 0; i < 15; i++) {
-        s->Transfer(p, 4);
+        s->Write(p, 4);
         p += 4;
     }
 
-    s->Transfer(B + 0x34c, 4);
-    s->Transfer(B + 0x350, 4);
-    s->Transfer(B + 0x354, 4);
-    s->Transfer(B + 0x35c, 4);
-    s->Transfer(B + 0x360, 4);
-    s->Transfer(B + 0x10c, 4);
-    s->Transfer(B + 0x298, 4);
-    s->Transfer(B + 0x29c, 4);
-    s->Transfer(B + 0x524, 4);
-    s->Transfer(B + 0x52c, 4);
-    s->Transfer(B + 0x528, 4);
-    s->Transfer(B + 0x544, 4);
-    s->Transfer(B + 0x504, 0x10);
-    s->Transfer(B + 0x514, 0x10);
-    s->Transfer(B + 0x548, 4);
-    s->Transfer(B + 0x550, 4);
-    s->Transfer(B + 0x554, 4);
-    s->Transfer(B + 0x4c8, 4);
-    s->Transfer(B + 0x4cc, 4);
-    s->Transfer(B + 0x4e8, 4);
-    s->Transfer(B + 0x4ec, 4);
-    s->Transfer(B + 0x318, 4);
-    s->Transfer(B + 0x31c, 4);
-    s->Transfer(B + 0x330, 4);
-    s->Transfer(B + 0x334, 4);
-    s->Transfer(B + 0x558, 4);
-    s->Transfer(B + 0x55c, 4);
-    s->Transfer(B + 0x574, 4);
-    s->Transfer(B + 0x578, 4);
+    s->Write(B + 0x34c, 4);
+    s->Write(B + 0x350, 4);
+    s->Write(B + 0x354, 4);
+    s->Write(B + 0x35c, 4);
+    s->Write(B + 0x360, 4);
+    s->Write(B + 0x10c, 4);
+    s->Write(B + 0x298, 4);
+    s->Write(B + 0x29c, 4);
+    s->Write(B + 0x524, 4);
+    s->Write(B + 0x52c, 4);
+    s->Write(B + 0x528, 4);
+    s->Write(B + 0x544, 4);
+    s->Write(B + 0x504, 0x10);
+    s->Write(B + 0x514, 0x10);
+    s->Write(B + 0x548, 4);
+    s->Write(B + 0x550, 4);
+    s->Write(B + 0x554, 4);
+    s->Write(B + 0x4c8, 4);
+    s->Write(B + 0x4cc, 4);
+    s->Write(B + 0x4e8, 4);
+    s->Write(B + 0x4ec, 4);
+    s->Write(B + 0x318, 4);
+    s->Write(B + 0x31c, 4);
+    s->Write(B + 0x330, 4);
+    s->Write(B + 0x334, 4);
+    s->Write(B + 0x558, 4);
+    s->Write(B + 0x55c, 4);
+    s->Write(B + 0x574, 4);
+    s->Write(B + 0x578, 4);
 
     char* q = B + 0x224;
     for (i32 j = 0; j < 5; j++) {
-        s->Transfer(q - 4, 4);
-        s->Transfer(q, 4);
+        s->Write(q - 4, 4);
+        s->Write(q, 4);
         q += 0x18;
     }
     char* r = B + 0x2c4;
     for (i32 k = 0; k < 3; k++) {
-        s->Transfer(r - 4, 4);
-        s->Transfer(r, 4);
+        s->Write(r - 4, 4);
+        s->Write(r, 4);
         r += 0x18;
     }
     char* nb = B + 0x378;
     i32 outer = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Transfer(nb, 4);
-            s->Transfer(nb + 4, 4);
+            s->Write(nb, 4);
+            s->Write(nb + 4, 4);
             nb += 0x18;
         }
     } while (--outer);
 
     i32 count = m_ptrCount;
-    s->Transfer(&count, 4);
+    s->Write(&count, 4);
     for (u32 n = 0; n < (u32)count; n++) {
-        s->Transfer(m_ptrTable[n], 8);
+        s->Write(m_ptrTable[n], 8);
     }
     return 1;
 }
@@ -486,7 +486,7 @@ i32 CSBI_RectOnly::Serialize(CSbiStream* s) {
 // frame-size regalloc choice (plus the free-list induction wall shared with
 // Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
 RVA(0x00109520, 0x44c)
-i32 CSBI_RectOnly::Deserialize(CSbiStream* s) {
+i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }

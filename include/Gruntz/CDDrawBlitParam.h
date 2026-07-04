@@ -6,7 +6,7 @@
 #include <Ints.h>
 
 class CDDrawBlitParamSrc;
-class CWwdArchive;
+struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
 class CDDrawBlitWorker;
 
 class CDDrawBlitParam {
@@ -20,9 +20,9 @@ public:
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
     void Recompute_15c320(i32 a1);
     i32 SelectCue_157a80(void* force);
-    i32 Serialize_15c970(CWwdArchive* ar);
-    i32 Deserialize_15ca70(CWwdArchive* ar);
-    i32 Find(CWwdArchive* ar, i32 type, i32 a3, i32 a4);
+    i32 Serialize_15c970(CSerialArchive* ar);
+    i32 Deserialize_15ca70(CSerialArchive* ar);
+    i32 Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4);
 
     char m_pad00[0x0c];           // +0x00 .. +0x0b
     CDDrawBlitWorker* m_worker;   // +0x0c

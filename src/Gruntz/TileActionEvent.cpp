@@ -1,6 +1,6 @@
 // TileActionEvent.cpp - the per-tile game-action event record (trace placeholder
-// tomalla-108). Methods in ascending retail-RVA order. The record shape and
-// the CTileActionArchive serializer come from <Gruntz/TileActionEvent.h>; the game
+// tomalla-108). Methods in ascending retail-RVA order. The record shape comes from
+// <Gruntz/TileActionEvent.h>; the serializer is the shared CSerialArchive; the game
 // registry singleton (g_gameReg) is modeled here with only the offsets these paths
 // touch. All engine callees are reloc-masked (no body).
 //
@@ -592,7 +592,7 @@ i32 CTileActionEvent::Serialize(void* ar, i32 mode, i32 a3, i32 a4) {
 // Returns 0 if ar or the registry's +0x30 sub-object is null, else 1.
 RVA(0x00113f60, 0xa2)
 i32 CTileActionEvent::SerializeFields(void* ar) {
-    CTileActionArchive* a = (CTileActionArchive*)ar;
+    CSerialArchive* a = (CSerialArchive*)ar;
     if (a == 0) {
         return 0;
     }
@@ -620,7 +620,7 @@ i32 CTileActionEvent::SerializeFields(void* ar) {
 // +0x30 sub-object is null, else 1.
 RVA(0x00114040, 0xa2)
 i32 CTileActionEvent::DeserializeFields(void* ar) {
-    CTileActionArchive* a = (CTileActionArchive*)ar;
+    CSerialArchive* a = (CSerialArchive*)ar;
     if (a == 0) {
         return 0;
     }

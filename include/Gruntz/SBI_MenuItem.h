@@ -18,6 +18,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+
 // The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
 // in the .cpp); only a pointer is needed here, so forward-declare it.
 struct CSbiConfigHost;
@@ -100,24 +102,9 @@ struct CMiNameReg {
 };
 SIZE_UNKNOWN(CMiNameReg);
 
-// The archive object passed to Serialize: field-transfer virtuals at vtable
-// byte-offsets 0x2c (Read) and 0x30 (Write).
-struct CMiArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c
-    virtual void Write(void* buf, i32 n); // +0x30
-};
-SIZE_UNKNOWN(CMiArchive);
+// The archive object passed to Serialize is the shared WAP32 CSerialArchive (Read @
+// vtable +0x2c / Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h>
+// - the former local `CMiArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem - a single status-bar menu entry. The small layout (fields up to

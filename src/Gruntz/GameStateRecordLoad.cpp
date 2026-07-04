@@ -17,8 +17,9 @@
 // `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
-#include <Bute/ButeMgr.h>     // CButeMgr (GetIntDef) + CString
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (the game-manager singleton; one true shape)
+#include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
+#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
@@ -32,24 +33,9 @@ extern CButeMgr g_buteMgr;     // 0x6453d8  the global bute manager
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
-// The CRecReader the record reads from: Read(buf, len) is virtual slot 0x2c
-// (index 11). 11 placeholder virtuals put Read at +0x2c; all external (no body)
-// so no vtable is emitted here and `ar->Read` lowers to `mov edx,[ar];
-// call [edx+0x2c]`.
-struct CRecReader {
-    virtual void rv00();
-    virtual void rv01();
-    virtual void rv02();
-    virtual void rv03();
-    virtual void rv04();
-    virtual void rv05();
-    virtual void rv06();
-    virtual void rv07();
-    virtual void rv08();
-    virtual void rv09();
-    virtual void rv10();
-    virtual void Read(void* buf, i32 len); // slot 11 -> +0x2c
-};
+// The record reads from the shared WAP32 CSerialArchive stream (Read @ vtable +0x2c),
+// now the one modeled class in <Gruntz/SerialArchive.h> - the former local `CRecReader`
+// view is folded away. `ar->Read` lowers to `mov edx,[ar]; call [edx+0x2c]`.
 
 // A directory object whose runtime type tag (virtual slot 0x20 = index 8) gates
 // the serial-ref store (only tag==5 objects are accepted).
@@ -111,7 +97,7 @@ struct CRecPtrList {
 
 // A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
 struct CSubRecord {
-    i32 Load(CRecReader* ar); // 0x3ee0 __thiscall(ar) -> bool
+    i32 Load(CSerialArchive* ar); // 0x3ee0 __thiscall(ar) -> bool
 };
 
 // Global operator new / free (engine NAFXCW; reloc-masked).
@@ -120,7 +106,7 @@ extern "C" void RecFree(void* p); // 0x1b9b82  (operator delete / free)
 
 class CGameStateRecord {
 public:
-    i32 Load(CRecReader* ar);
+    i32 Load(CSerialArchive* ar);
 };
 
 // The three repeating block shapes, expanded inline + unrolled (retail unrolls
@@ -186,7 +172,7 @@ public:
 // effect). The documented large-function regalloc/frame-layout wall; reconstructed
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
-i32 CGameStateRecord::Load(CRecReader* ar) {
+i32 CGameStateRecord::Load(CSerialArchive* ar) {
     char* p = (char*)this;
     if (ar == 0) {
         return 0;
@@ -431,7 +417,6 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
     return 1;
 }
 
-SIZE_UNKNOWN(CRecReader);
 SIZE_UNKNOWN(CDirObj);
 SIZE_UNKNOWN(CSerialMap);
 SIZE_UNKNOWN(CNameMap);

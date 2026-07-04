@@ -227,7 +227,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 // are swapped pervasively (~8% fuzzy, but logic byte-for-byte: the mode 4/7 + tag
 // 1/2 branch tree and every call match). Not source-steerable; final sweep.
 RVA(0x00024890, 0x18d)
-i32 CGruntzCmdMgr::Serialize(GzStream* stream, i32 mode, i32 a3, i32 a4) {
+i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
     if (!stream) {
         return 0;
     }
