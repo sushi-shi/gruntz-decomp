@@ -2639,7 +2639,7 @@ rva,name,lib,confidence,source
 0x1bef92,??0AFX_CLASSINIT@@QAE@PAUCRuntimeClass@@@Z,NAFXCW,HIGH,anchored
 0x1befbe,?IsDerivedFrom@CRuntimeClass@@QBEHPBU1@@Z,NAFXCW,HIGH,anchored
 0x1befd7,??0CFile@@QAE@XZ,NAFXCW,HIGH,anchored
-0x1bf017,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
+0x1bf017,??_GCFile@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1bf033,??0CFile@@QAE@H@Z,NAFXCW,HIGH,anchored
 0x1bf077,??0CFile@@QAE@PBDI@Z,NAFXCW,HIGH,anchored
 0x1bf121,??1CFile@@UAE@XZ,NAFXCW,HIGH,anchored

@@ -130,28 +130,13 @@ unit = "levelinfodlg"
 source = "src/Gruntz/LevelInfoDlg.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "configstore"
-source = "src/Gruntz/ConfigStore.cpp"
-flags = "framed"
-
-[[unit]]
-unit = "configstorewrite"
-source = "src/Gruntz/ConfigStoreWrite.cpp"
-flags = "framed"
-
-[[unit]]
-# CConfigStore::GetString/GetBinary - framed module getters that build a CString
-# temp, so /Oy- (framed) + /GX (the EH frame for the destructible CString).
-unit = "configstoreread"
-source = "src/Gruntz/ConfigStoreRead.cpp"
-flags = "framedeh"
-
-[[unit]]
-# 0x1bf*-0x1c7* registry/COM/mouse-wheel helpers - framed (/O2 /Oy-).
-unit = "reghelpers"
-source = "src/Gruntz/RegHelpers.cpp"
-flags = "framed"
+# configstore / configstorewrite / configstoreread / reghelpers UNITS REMOVED
+# (P0 library reconcile): their bodies were hand-copies of the statically-linked
+# NAFXCW MFC CWinApp profile/registry API (WriteProfileInt/String/Binary,
+# GetAppRegistryKey/GetSectionKey/GetProfileInt/String/Binary at 0x1cca..-0x1d5..)
+# + AfxGetInProcServer/_AfxGetMouseScrollLines (0x1bf702/0x1c7cb3), all HIGH-conf
+# NAFXCW in config/library_labels.csv. Carved to the CSV (library, excluded from
+# the denominator); the game calls them through real MFC via <Mfc.h>.
 
 [[unit]]
 unit = "soundfontpath"
@@ -1192,15 +1177,11 @@ unit = "startupprompt"
 source = "src/Gruntz/StartUpPrompt.cpp"
 flags = "eh"
 
-[[unit]]
-# Win32 file-path/time-info utility family (CanonicalizePath / GetFileTimeInfo /
-# RestoreFileTimeInfo) at 0x1bf8f8/0x1c1609/0x1c176a - the SAME 0x1bf*-0x1d5*
-# registry/COM helper module the `framed` profile (ebp frames retained, /Oy-)
-# was made for; the volume-root MFC CString temp in CanonicalizePath adds /GX
-# (an `__EH_prolog` ebp EH frame).
-unit = "filepathinfo"
-source = "src/Gruntz/FilePathInfo.cpp"
-flags = "framedeh"
+# filepathinfo UNIT REMOVED (P0 library reconcile): CanonicalizePath /
+# GetFileTimeInfo / RestoreFileTimeInfo (0x1bf8f8/0x1c1609/0x1c176a) were
+# hand-copies of the NAFXCW MFC AfxFullPath + CFile::GetStatus/SetStatus (HIGH-conf
+# in config/library_labels.csv; called by CFile::Open, CDocument::SetPathName,
+# CWinApp::AddToRecentFileList). Carved to the CSV (library, excluded).
 
 [[unit]]
 # CProjectile::Update (Projectile::vfunc_9 @0x61cb0) - the per-frame projectile
