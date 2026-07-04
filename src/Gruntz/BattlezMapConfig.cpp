@@ -296,6 +296,7 @@ struct UnitGeom {
 struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
+SIZE_UNKNOWN(CoordPool);
 DATA(0x00245540)
 extern CoordPool g_coordPool;
 
