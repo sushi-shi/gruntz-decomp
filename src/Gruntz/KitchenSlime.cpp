@@ -750,9 +750,9 @@ i32 CKitchenSlime::LoadSprites() {
     CSlimeAnimPlayer* player = Anim();
     CSprite* spr = player->m_194;
     if (changed != 0 && spr != 0) {
-        if (spr->m_64 <= 1 && spr->m_68 >= 1) {
+        if (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) {
             player->m_190 = 1;
-            player->m_198 = spr->m_10.m_pData[1];
+            player->m_198 = spr->m_frames.m_pData[1];
             m_stepMag = 0;
             m_stepMagHi = 0;
             return 1;

@@ -59,11 +59,11 @@ i32 CAniPlayer::Init(
     i32 b4
 ) {
     if (seq2 != 0 && seq != 0) {
-        m_2c = seq;
+        m_seq = seq;
         m_10 = a3;
-        m_24 = seq2;
-        m_28 = 0;
-        m_04 = 1;
+        m_seq2 = seq2;
+        m_repeatCount = 0;
+        m_active = 1;
         m_rect[0] = r0;
         m_rect[1] = r1;
         m_rect[2] = r2;
@@ -71,21 +71,21 @@ i32 CAniPlayer::Init(
         m_0c = a2;
         if (key != 0) {
             AniCelTable* tbl = 0;
-            ((AniCelMap*)((char*)seq2->m_10 + 0x10))->Lookup(key, &tbl);
-            m_34 = tbl;
+            ((AniCelMap*)((char*)seq2->m_celMapHolder + 0x10))->Lookup(key, &tbl);
+            m_celTable = tbl;
             if (tbl != 0) {
-                m_3c = b2;
-                m_44 = b3;
-                m_48 = b4;
-                m_50 = (b0 == -1) ? (b4 >= 0 ? tbl->m_64 : tbl->m_68) : b0;
-                m_4c = (b1 == -1) ? (b4 >= 0 ? tbl->m_68 : tbl->m_64) : b1;
-                m_38 = m_50;
-                if (m_50 < tbl->m_64 || m_50 > tbl->m_68) {
-                    m_30 = 0;
+                m_interval = b2;
+                m_loop = b3;
+                m_step = b4;
+                m_startFrame = (b0 == -1) ? (b4 >= 0 ? tbl->m_firstFrame : tbl->m_lastFrame) : b0;
+                m_endFrame = (b1 == -1) ? (b4 >= 0 ? tbl->m_lastFrame : tbl->m_firstFrame) : b1;
+                m_frame = m_startFrame;
+                if (m_startFrame < tbl->m_firstFrame || m_startFrame > tbl->m_lastFrame) {
+                    m_cel = 0;
                     return 0;
                 }
-                m_30 = (AniCel*)tbl->m_14[m_50];
-                return m_30 != 0;
+                m_cel = (AniCel*)tbl->m_cels[m_startFrame];
+                return m_cel != 0;
             }
         }
     }
@@ -104,44 +104,44 @@ i32 CAniPlayer::Init(
 // block-merger's choices, not source-steerable.
 RVA(0x000e7b00, 0xe1)
 i32 CAniPlayer::Tick() {
-    if (m_28 > 0) {
-        AniCelTable* tbl = m_34;
+    if (m_repeatCount > 0) {
+        AniCelTable* tbl = m_celTable;
         AniCel* cel;
-        if (m_38 >= tbl->m_64 && m_38 <= tbl->m_68) {
-            cel = (AniCel*)tbl->m_14[m_38];
+        if (m_frame >= tbl->m_firstFrame && m_frame <= tbl->m_lastFrame) {
+            cel = (AniCel*)tbl->m_cels[m_frame];
         } else {
             cel = 0;
         }
-        m_30 = cel;
+        m_cel = cel;
         if (cel != 0) {
             i32 surfaceCtx = g_gameReg->m_world->m_drawTarget->m_drawContext;
-            cel->RenderFrame(surfaceCtx, cel->m_18 + m_rect[0], cel->m_1c + m_rect[1], 0);
+            cel->RenderFrame(surfaceCtx, cel->m_offsetX + m_rect[0], cel->m_offsetY + m_rect[1], 0);
         }
         u32 now = timeGetTime();
-        if (now - (u32)m_40 > (u32)m_3c) {
-            m_38 += m_48;
-            m_40 = timeGetTime();
+        if (now - (u32)m_lastTime > (u32)m_interval) {
+            m_frame += m_step;
+            m_lastTime = timeGetTime();
         }
-        if (m_48 > 0) {
-            if (m_38 > m_4c) {
-                if (m_44 != 0) {
-                    m_38 = m_50;
+        if (m_step > 0) {
+            if (m_frame > m_endFrame) {
+                if (m_loop != 0) {
+                    m_frame = m_startFrame;
                     return 1;
                 }
-                m_38 = m_4c;
-                m_28--;
+                m_frame = m_endFrame;
+                m_repeatCount--;
             }
-        } else if (m_48 < 0) {
-            if (m_38 < m_4c) {
-                if (m_44 != 0) {
-                    m_38 = m_50;
+        } else if (m_step < 0) {
+            if (m_frame < m_endFrame) {
+                if (m_loop != 0) {
+                    m_frame = m_startFrame;
                     return 1;
                 }
-                m_38 = m_4c;
-                m_28--;
+                m_frame = m_endFrame;
+                m_repeatCount--;
             }
         } else {
-            m_28--;
+            m_repeatCount--;
         }
     }
     return 1;

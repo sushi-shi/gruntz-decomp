@@ -130,10 +130,10 @@ i32 CSBI_SideTab::BuildHandle() {
     CSprite* gm = 0;
     g_gameReg->m_world->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &gm);
     i32 glyph;
-    if (gm == 0 || val < gm->m_64 || val > gm->m_68) {
+    if (gm == 0 || val < gm->m_firstFrame || val > gm->m_lastFrame) {
         glyph = 0;
     } else {
-        glyph = (i32)gm->m_10.m_pData[val];
+        glyph = (i32)gm->m_frames.m_pData[val];
     }
     m_38 = val;
     m_34 = (CImage*)glyph;

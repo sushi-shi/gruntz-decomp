@@ -110,8 +110,8 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             if (strlen(name) != 0) {
                 CSprite* r = 0;
                 mgr->m_10->m_10map.Lookup(name, &r);
-                if (r && idx >= r->m_64 && idx <= r->m_68) {
-                    m_30 = (i32)r->m_10.m_pData[idx];
+                if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
+                    m_30 = (i32)r->m_frames.m_pData[idx];
                 } else {
                     m_30 = 0;
                 }

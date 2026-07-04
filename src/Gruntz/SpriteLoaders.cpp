@@ -92,9 +92,9 @@ i32 CLoadingBar::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_frame1 = (spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_10.m_pData[1] : 0;
-    m_frame2 = (spr->m_64 <= 2 && spr->m_68 >= 2) ? spr->m_10.m_pData[2] : 0;
-    m_frame3 = (spr->m_64 <= 3 && spr->m_68 >= 3) ? spr->m_10.m_pData[3] : 0;
+    m_frame1 = (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frames.m_pData[1] : 0;
+    m_frame2 = (spr->m_firstFrame <= 2 && spr->m_lastFrame >= 2) ? spr->m_frames.m_pData[2] : 0;
+    m_frame3 = (spr->m_firstFrame <= 3 && spr->m_lastFrame >= 3) ? spr->m_frames.m_pData[3] : 0;
     m_loaded = 1;
     return 1;
 }
@@ -208,23 +208,28 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_frameMinTens = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
+    m_frameMinTens =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
     if (!m_frameMinTens) {
         return 0;
     }
-    m_frameMinOnes = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
+    m_frameMinOnes =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
     if (!m_frameMinOnes) {
         return 0;
     }
-    m_frameColon = (spr->m_64 <= 11 && spr->m_68 >= 11) ? spr->m_10.m_pData[11] : 0;
+    m_frameColon =
+        (spr->m_firstFrame <= 11 && spr->m_lastFrame >= 11) ? spr->m_frames.m_pData[11] : 0;
     if (!m_frameColon) {
         return 0;
     }
-    m_frameSecTens = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
+    m_frameSecTens =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
     if (!m_frameSecTens) {
         return 0;
     }
-    m_frameSecOnes = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_10.m_pData[10] : 0;
+    m_frameSecOnes =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
     if (!m_frameSecOnes) {
         return 0;
     }
@@ -363,10 +368,18 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     CSprite* spr = m_sprite;
-    m_frameMinTens = (spr->m_64 <= d10min && d10min <= spr->m_68) ? spr->m_10.m_pData[d10min] : 0;
-    m_frameMinOnes = (spr->m_64 <= d1min && d1min <= spr->m_68) ? spr->m_10.m_pData[d1min] : 0;
-    m_frameSecTens = (spr->m_64 <= d10sec && d10sec <= spr->m_68) ? spr->m_10.m_pData[d10sec] : 0;
-    m_frameSecOnes = (spr->m_64 <= d1sec && d1sec <= spr->m_68) ? spr->m_10.m_pData[d1sec] : 0;
+    m_frameMinTens = (spr->m_firstFrame <= d10min && d10min <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d10min]
+                         : 0;
+    m_frameMinOnes = (spr->m_firstFrame <= d1min && d1min <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d1min]
+                         : 0;
+    m_frameSecTens = (spr->m_firstFrame <= d10sec && d10sec <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d10sec]
+                         : 0;
+    m_frameSecOnes = (spr->m_firstFrame <= d1sec && d1sec <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d1sec]
+                         : 0;
     return 1;
 }
 

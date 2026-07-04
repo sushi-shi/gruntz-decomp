@@ -13,8 +13,8 @@
 //
 //   CGruntSprite::CacheFirstFrame  @0x150540 (this = a created sprite; reached as
 //       this->m_c->m_10->map; caches the sprite's FIRST valid frame:
-//       m_194 = the sprite, m_190 = the first frame number N (=spr->m_64),
-//       m_198 = spr->m_14[N] only if N is in the inclusive [m_64..m_68] range).
+//       m_sprite = the sprite, m_frameNum = the first frame number N (=spr->m_64),
+//       m_framePtr = spr->m_14[N] only if N is in the inclusive [m_64..m_68] range).
 //       1-arg __thiscall (ret 4). Called by LoadCameraSprite right after the
 //       factory builds the sprite + runs its init virtual.
 //
@@ -104,25 +104,25 @@ public:
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
     char m_pad10[0x190 - 0x10];
-    i32 m_190;      // +0x190  first frame number
-    CSprite* m_194; // +0x194  the looked-up sprite
-    i32* m_198;     // +0x198  the first frame's pointer (or 0)
+    i32 m_frameNum;    // +0x190  first frame number
+    CSprite* m_sprite; // +0x194  the looked-up sprite
+    i32* m_framePtr;   // +0x198  the first frame's pointer (or 0)
 };
 
 RVA(0x00150540, 0x65)
 void CGruntSprite::CacheFirstFrame(const char* name) {
     CSprite* spr = 0;
     m_c->m_10->m_10map.Lookup(name, &spr);
-    m_194 = spr;
+    m_sprite = spr;
     if (spr) {
-        i32 n = spr->m_64;
-        m_190 = n;
-        if (n >= spr->m_64 && n <= spr->m_68) {
-            m_198 = spr->m_10.m_pData[n];
+        i32 n = spr->m_firstFrame;
+        m_frameNum = n;
+        if (n >= spr->m_firstFrame && n <= spr->m_lastFrame) {
+            m_framePtr = spr->m_frames.m_pData[n];
             return;
         }
     }
-    m_198 = 0;
+    m_framePtr = 0;
 }
 
 // ===========================================================================
@@ -131,9 +131,9 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
 //
 // As CacheFirstFrame, but the frame number is supplied by the caller (arg 2)
 // instead of taken from spr->m_64. Looks the named sprite up through m_c->m_10,
-// caches it at m_194, and - on a hit and a frame in [m_64..m_68] - caches the
-// frame's pointer at m_198 and the frame number at m_190; otherwise m_190 still
-// records the requested frame and m_198 is 0. __thiscall, ret 8.
+// caches it at m_sprite, and - on a hit and a frame in [m_64..m_68] - caches the
+// frame's pointer at m_framePtr and the frame number at m_frameNum; otherwise m_frameNum still
+// records the requested frame and m_framePtr is 0. __thiscall, ret 8.
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
 // the `mov [&spr],0` sinks past the arg pushes + the extra frame arg flips the
@@ -143,14 +143,14 @@ RVA(0x001504d0, 0x6c)
 void CGruntSprite::CacheFrame(const char* name, i32 frame) {
     CSprite* spr = 0;
     m_c->m_10->m_10map.Lookup(name, &spr);
-    m_194 = spr;
+    m_sprite = spr;
     if (spr) {
-        if (frame >= spr->m_64 && frame <= spr->m_68) {
-            m_190 = frame;
-            m_198 = spr->m_10.m_pData[frame];
+        if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
+            m_frameNum = frame;
+            m_framePtr = spr->m_frames.m_pData[frame];
         } else {
-            m_190 = frame;
-            m_198 = 0;
+            m_frameNum = frame;
+            m_framePtr = 0;
         }
     }
 }
@@ -409,7 +409,7 @@ void CGruntAnimPlayer::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
 // flipping the guard operands didn't move it. ~84%, logic complete.
 RVA(0x00151f00, 0xa4)
 CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
-    if (n < m_10.m_nSize && m_10.m_pData[n] != 0) {
+    if (n < m_frames.m_nSize && m_frames.m_pData[n] != 0) {
         return 0;
     }
     CFrameWorker* worker = new CFrameWorker(n, m_c);
@@ -419,12 +419,12 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
         }
         return 0;
     }
-    m_10.SetAtGrow(n, (CObject*)worker);
-    if (n < m_64) {
-        m_64 = n;
+    m_frames.SetAtGrow(n, (CObject*)worker);
+    if (n < m_firstFrame) {
+        m_firstFrame = n;
     }
-    if (n > m_68) {
-        m_68 = n;
+    if (n > m_lastFrame) {
+        m_lastFrame = n;
     }
     return worker;
 }
@@ -438,8 +438,8 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // same shape as CacheFirstFrame's lookup, but as a standalone __thiscall (ret 4).
 RVA(0x0015cc30, 0x1e)
 i32 CSprite::GetFrame(i32 n) {
-    if (n >= m_64 && n <= m_68) {
-        return (i32)m_10.m_pData[n];
+    if (n >= m_firstFrame && n <= m_lastFrame) {
+        return (i32)m_frames.m_pData[n];
     }
     return 0;
 }

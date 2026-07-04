@@ -37,10 +37,10 @@ extern CAniPlayerGameReg* g_gameReg;
 // pointer table, indexed by frame; +0x64/+0x68 are the inclusive frame range.
 struct AniCelTable {
     char _pad00[0x14];
-    void** m_14; // +0x14  cel pointer table (m_14[frame] -> cel)
+    void** m_cels; // +0x14  cel pointer table (m_cels[frame] -> cel)
     char _pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  first frame
-    i32 m_68; // +0x68  last frame
+    i32 m_firstFrame; // +0x64  first frame
+    i32 m_lastFrame;  // +0x68  last frame
 };
 
 // One cel: it renders itself onto a surface context via RenderFrame (0x153790,
@@ -49,15 +49,15 @@ struct AniCelTable {
 struct AniCel {
     void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
     char _pad00[0x18];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
+    i32 m_offsetX; // +0x18
+    i32 m_offsetY; // +0x1c
 };
 
 // The sequence object passed to Init (held at +0x24/+0x2c). Its +0x10 holds a
 // CMap (+0x10 into it) keyed by the cel key; lookup yields the AniCelTable.
 struct AniSeq {
     char _pad00[0x10];
-    void* m_10; // +0x10  -> map holder (+0x10 is the CMap)
+    void* m_celMapHolder; // +0x10  -> map holder (+0x10 is the CMap)
 };
 
 class CAniPlayer {
@@ -80,24 +80,24 @@ public:
     );          // 0x0e7980
     i32 Tick(); // 0x0e7b00
 
-    i32 m_00;          // +0x00
-    i32 m_04;          // +0x04  active flag
-    char _pad08[4];    // +0x08
-    i32 m_0c;          // +0x0c
-    i32 m_10;          // +0x10
-    i32 m_rect[4];     // +0x14..0x20  rect (drawn through a common base)
-    AniSeq* m_24;      // +0x24
-    i32 m_28;          // +0x28
-    AniSeq* m_2c;      // +0x2c
-    AniCel* m_30;      // +0x30  current cel
-    AniCelTable* m_34; // +0x34
-    i32 m_38;          // +0x38  current frame
-    i32 m_3c;          // +0x3c  interval
-    i32 m_40;          // +0x40  last time
-    i32 m_44;          // +0x44  step
-    i32 m_48;          // +0x48  wrap step
-    i32 m_4c;          // +0x4c  low bound
-    i32 m_50;          // +0x50  high bound
+    i32 m_00;                // +0x00
+    i32 m_active;            // +0x04  active flag
+    char _pad08[4];          // +0x08
+    i32 m_0c;                // +0x0c  (Init arg2)
+    i32 m_10;                // +0x10  (Init arg3)
+    i32 m_rect[4];           // +0x14..0x20  rect (drawn through a common base)
+    AniSeq* m_seq2;          // +0x24  sequence (Init arg1)
+    i32 m_repeatCount;       // +0x28  remaining play cycles
+    AniSeq* m_seq;           // +0x2c  sequence (Init arg0)
+    AniCel* m_cel;           // +0x30  current cel
+    AniCelTable* m_celTable; // +0x34
+    i32 m_frame;             // +0x38  current frame
+    i32 m_interval;          // +0x3c  ms between advances
+    i32 m_lastTime;          // +0x40  last timeGetTime
+    i32 m_loop;              // +0x44  loop-forever flag (else stop at end)
+    i32 m_step;              // +0x48  per-advance frame delta (signed)
+    i32 m_endFrame;          // +0x4c  clamp/stop frame
+    i32 m_startFrame;        // +0x50  start / loop-reset frame
 };
 
 #endif

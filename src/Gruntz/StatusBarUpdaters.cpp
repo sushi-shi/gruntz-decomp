@@ -390,7 +390,8 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     i32 n = phase + 1;
     ((CRegHolder*)g_gameReg->m_world)
         ->m_statusBar->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
-    i32* frame = (spr && n >= spr->m_64 && n <= spr->m_68) ? spr->m_10.m_pData[n] : 0;
+    i32* frame =
+        (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
     m[0x38 / 4] = (i32)frame;
     if (frame == 0) {
         return 1;

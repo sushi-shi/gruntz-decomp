@@ -561,8 +561,8 @@ animworkerhandlers	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	1	617fb6512b6b	0x15b
 animworkerhandlers	?Handler03d670@@YAHPAUOwner@@@Z	100.0000	100.0000	1	839c531d42a0	0x3d670
 animworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b23002ac8904	0x7db20
 animworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	27f15168f4f5	0x7dda0
-aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	1	af4e113bdde4	0xe7980
-aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.2222	91.2222	4	6688a2eee5c5	0xe7b00
+aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	64.5543	64.5543	2	549d3c0bb727	0xe7980
+aniplayer	?Tick@CAniPlayer@@QAEHXZ	91.2222	91.2222	5	60145011fa1a	0xe7b00
 apihicallers	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	99.5131	99.5131	2	72d5a9d31548	0x168080
 apihicallers	?Init@Fx_17fe00@@QAEHPAUFxDesc_17fe00@@@Z	73.5392	73.5392	2	c8a4f24f5e43	0x17fe00
 apihicallers	?Init@Handler_17c3f0@@QAEHPAXPAUObjA2_17c3f0@@PAUObjA3_17c3f0@@HHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	100.0000	100.0000	2	c6159078587d	0x17c3f0
@@ -2680,7 +2680,7 @@ interfaceobject	?GetName@InterfaceObject@@QAE?AVCString@@XZ	100.0000	100.0000	2	
 kitchenslime	??0CKitchenSlime@@QAE@PAUCGameObject@@@Z	79.3907	79.3907	5	73893a8c5551	0xb23a0
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	5d147b2b8ea5	0x13100
 kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b90390ef5	0xb2940
-kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	10	5afd445090fa	0xb3160
+kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	11	1c61af4753cc	0xb3160
 kitchenslime	?RegisterRange@CKitchenSlime@@SAXXZ	100.0000	100.0000	1	e64735a29922	0xb28c0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	1	df69f8da8be5	0xb2aa0
 kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e52434960	0xb2ff0
@@ -3154,7 +3154,7 @@ sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	3	b886
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	3	47486f9c52db	0xe81e0
 sbi_menuitem	?Serialize@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	6	800f96877ba7	0xe8520
-sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	7	b294a66ae02d	0xe6e40
+sbi_menuitem	?SerializeChain@CSBI_MenuItem@@QAEHPAXHHH@Z	84.9697	84.9697	8	b30c2d99862b	0xe6e40
 sbi_menuitem	?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z	100.0000	100.0000	6	260e51e92c46	0x10bfc0
 sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHHH@Z	93.1020	93.1020	5	6ac355a4f9e9	0xe8310
 sbi_menuitem	?SetSubtype@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	ef8f234ee98d	0x1005b0
@@ -3232,7 +3232,7 @@ sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	4	81dc
 sbi_rectonly_eh	?DtorMembers@CSBI_RectOnly@@QAEXXZ	49.1923	49.1923	1	4c6d76b17d3f	0xc8980
 sbi_rectonly_eh	?EnsureSub@CSBI_RectOnly@@QAEHHHH@Z	100.0000	100.0000	2	de84c5225915	0x109ad0
 sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	1	857773112dad	0x100700
-sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	6	f79ca690e127	0xe9850
+sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	7	1bdd430da87b	0xe9850
 sbi_sidetab	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	333133b9c736	0xe9820
 sbi_sidetab	?Render@CSBI_SideTab@@QAEHH@Z	98.1250	98.1250	5	3ebbfc7b74cd	0xe99c0
 sbi_sidetab	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	fc1e8fed52ab	0xe9800
@@ -3566,7 +3566,7 @@ triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.9118	84.9118	6	8b18159fd6d9	0x7
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	2	4490579c401f	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	19.4654	19.4654	3	8470763035a4	0x6d300
 triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.7985	64.7985	4	d06b117ca010	0x798d0
-triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	65.3555	65.3555	1	cpp:d153cf6fc536	0x7abc0
+triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	65.3555	65.3555	1	17dd527f8fcd	0x7abc0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	5	7f839d22e4c1	0x79b80
 triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9	0x112860
 trirecordserialize	?Serialize@CPairRecord@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	18db2355dfd2	0x58ee0

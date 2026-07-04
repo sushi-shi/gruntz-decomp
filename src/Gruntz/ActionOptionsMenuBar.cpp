@@ -156,7 +156,9 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 
     m_active = 0;
     g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
-    m_frame = (spr && spr->m_64 <= 1 && spr->m_68 >= 1) ? (CMenuBarFrame*)spr->m_10.m_pData[1] : 0;
+    m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
+                  ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
+                  : 0;
     if (!m_frame) {
         return 0;
     }
@@ -279,17 +281,23 @@ i32 CActionOptionsMenuBar::Refresh() {
         switch (p[-4]) {
             case 1: {
                 CSprite* s = m_normChipSprite;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
-                frame = (*p < s->m_64 || *p > s->m_68) ? 0 : (i32)s->m_10.m_pData[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             default:
