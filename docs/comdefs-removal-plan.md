@@ -9,29 +9,45 @@
 > existed, and the accepted cost of deleting it). Fuzzy −0.01%; the rest are small
 > fuzzy%-only drops in already-unmatched functions in TUs that newly pulled windows.h via
 > ddraw.h. Two findings changed the plan:
-> - **`WaveFormatX.h` KEPT (Step 3 deferred).** The vendored `WAVEFORMATEX` is 0x12
->   (packed) but the game's is 0x14 (the DirectSound TUs byte-match at 0x14) — same
->   size-mismatch class as DDCAPS below. Migrating value locals 0x14→0x12 would break
->   matches, so `WaveFormatX` stays (it correctly models retail's WAVEFORMATEX).
-> - **`m_caps` stays `i32[0x5f]` (0x17c).** Retail hardcodes dwSize=0x17c (380 B) — larger
->   than the vendored DX6 `DDCAPS` (0x13c) — a stale/mistaken dwSize on the game's side; a
->   real value member would shrink the class. Real DX types are used everywhere their size
->   is version-stable (RECT/POINT/DDBLTFX/DDSURFACEDESC/DDCOLORKEY/PALETTEENTRY locals).
+> - **`WaveFormatX.h` KEPT PERMANENTLY (Step 3 CANCELLED-FOR-CAUSE).** Probe-verified:
+>   the SDK `WAVEFORMATEX` is **0x12** — `#pragma pack(1)` in EVERY SDK era (mmsystem.h
+>   wraps it in pshpack1) — but Monolith's own struct is **0x14** (the last `u16` padded
+>   to a 4-byte multiple, unpacked). The DirectSound TUs byte-match at 0x14, so `WaveFormatX`
+>   is NOT a scaffolding mirror of `WAVEFORMATEX`; it is the faithful reconstruction of the
+>   devs' OWN unpacked wave-format struct. Migrating 0x14→0x12 would shrink every containing
+>   layout and break matches. It stays forever. (Evidence: `static_assert(sizeof(WAVEFORMATEX)
+>   ==0x12)` + `static_assert(sizeof(WaveFormatX)==0x14)` both pass, wine-cl + clang.)
+> - **`m_caps` IS a real `DDCAPS_DX6` (0x17c) — the retail dwSize is CORRECT.** Probe-verified:
+>   `sizeof(DDCAPS)==sizeof(DDCAPS_DX6)==0x17c` (the vendored DX6 ddraw.h defaults
+>   DIRECTDRAW_VERSION=0x0600, so `DDCAPS` aliases `DDCAPS_DX6`). The retail's hardcoded
+>   dwSize=0x17c is therefore `sizeof(DDCAPS)`, NOT a stale/mistaken constant — the earlier
+>   "0x13c / larger than DDCAPS" note was WRONG: it read 0x13c off the MSVC5 toolchain's
+>   OLDER shadow `DDRAW.H` (the include-order bug below). `m_caps`/`m_helCaps` stay raw
+>   `i32[0x5f]` only because the widely-included header must not pull `<ddraw.h>`; the .cpp
+>   accesses them through the real `DDCAPS` type (`((LPDDCAPS)m_caps)->dwSize/->dwCaps`,
+>   byte-proven codegen-neutral). Real DX types are used everywhere their size is
+>   version-stable (RECT/POINT/DDBLTFX/DDSURFACEDESC/DDCOLORKEY/PALETTEENTRY locals).
 > - **Lean shared headers stay forward-decl.** `DDSurface.h`/`DirectDrawMgr.h` are
 >   included by both MFC and non-MFC TUs; an MFC TU forbids raw windows.h, so the header
 >   can't pull ddraw.h — each dispatching `.cpp` includes it instead (PCH is the future fix).
-> - **Pre-existing cold-init bug (NOT this change):** the DirectSound migration dropped the
->   local `#define DSBLOCK_ENTIREBUFFER`, but the MSVC5 toolchain ships its own older
->   `DSOUND.H` (no DSBLOCK) that the clang AST-dump (ghidra_metadata_generate) resolves
->   *before* the DX SDK's, so a cold `gruntz init` fails on DirectSoundMgr.cpp. Wine-cl is
->   fine (cc_wrap puts vendored DX first). Fix separately: align ghidra_metadata_generate's
->   dsound.h resolution with cc_wrap, or restore the local define.
+> - **Cold-init bug FIXED (commit "init/clangd: put vendor/directx6/Include on clang's /I
+>   path").** Root cause: `clangd.py`'s vendor loop is one-dir-deep, so it added
+>   `/I vendor/directx6` but MISSED `vendor/directx6/Include` where the DX6 headers live; the
+>   clang AST-dump (ghidra_metadata_generate) + clangd editor tooling — which read that compdb
+>   — then resolved `<dsound.h>`/`<ddraw.h>` to the MSVC5 toolchain's OLDER shadow copies (via
+>   `/imsvc`), which lack `DSBLOCK_ENTIREBUFFER` and mis-size `DDCAPS`. So a cold `gruntz init`
+>   failed at the AST-dump on DirectSoundMgr.cpp. Wine-cl was always fine (cc_wrap prepends the
+>   vendored DX). The fix adds `vendor/directx6/Include` on the user `/I` path (searched BEFORE
+>   the `/imsvc` system dirs), matching cc_wrap + labels.py — one compdb fix aligns every
+>   clang-side consumer. Verified: `gruntz structs` passes; the preprocessor opens the vendored
+>   dsound.h. This ALSO disproved the "0x13c DDCAPS" note above (that number was the toolchain
+>   shadow's older DDCAPS).
 
 
 **Goal:** delete `include/ComDefs.h` entirely — every hand-rolled COM view either
 migrates to its real SDK header, or (for engine-only interfaces) sources the
 `STDMETHOD`/`HRESULT`/`GUID` macros from the real `<windows.h>` instead of our mirror.
-Then `WaveFormatX.h` follows.
+(`WaveFormatX.h` does NOT follow — it is a permanent-keep, see Step 3.)
 
 ## Why ComDefs exists (the constraint to break)
 ComDefs.h is a hand-rolled mirror of `<basetyps.h>`+`<wtypes.h>` (STDMETHOD/HRESULT/
@@ -81,14 +97,24 @@ may be free).
    (windows.h) so INetReleasable/IDirectPlay4Z/CImage* get their STDMETHOD from the real
    `<basetyps.h>`; drop `#include <ComDefs.h>` from NetMgr.h + ImageProbe.cpp. Measure/accept
    the lean-TU regalloc hits.
-3. **WaveFormatX.h → real `WAVEFORMATEX`** in the (now windows.h-bearing) Dsndmgr TUs; delete
-   WaveFormatX.h.
+3. **WaveFormatX.h → CANCELLED-FOR-CAUSE (permanent-keep, do NOT delete).** The original plan
+   was to migrate to real `WAVEFORMATEX` and delete WaveFormatX.h. Probe-verified this is
+   WRONG: the SDK `WAVEFORMATEX` is 0x12 (`pack(1)` in every era via pshpack1.h) while
+   Monolith's `WaveFormatX` is 0x14 (the trailing `u16 cbSize` padded to a 4-byte multiple,
+   unpacked). The DirectSound TUs byte-match at 0x14, so WaveFormatX models the devs' OWN
+   struct — it is the faithful reconstruction, not a scaffolding mirror of WAVEFORMATEX.
+   Swapping to the packed 0x12 type would shrink every containing layout and break matches.
+   WaveFormatX.h stays permanently; it is decoupled from ComDefs.h entirely.
 4. **Delete ComDefs.h.** No includers remain → remove the file + the CLSID stopgap; the −1
    stopgap regression is superseded by the (measured) lean-TU windows.h cost.
 
 ## Gotchas (learned)
-- `labels.py` (clang-cl label step) needs `vendor/directx6/Include` on its `/I` path, like
-  cc_wrap.py (added). Any new vendored SDK dir with an `Include/` subdir needs the same.
+- Every clang-side tool needs `vendor/directx6/Include` on its `/I` path, like cc_wrap.py:
+  `labels.py` has it directly (VENDOR_INCS); `clangd.py` (the compdb generator that the
+  `structs`/AST-dump step + clangd editor tooling + tidy/caller/rename audits all consume)
+  now adds it too (its vendor loop is one-dir-deep and had missed the `Include/` subdir). Any
+  new vendored SDK dir with an `Include/` subdir needs the same, on `/I` (user, searched before
+  the `/imsvc` system dirs) so the vendored header wins over the toolchain's shadow.
 - ninja does NOT recompile a TU when only a vendored/`ComDefs.h` header changes — delete
   `build/objdiff/base/*.obj` before rebuilding or the % is a stale-obj illusion.
 - Constants differ across DX versions even when interfaces don't (DSBSTATUS_LOOPING) — always
