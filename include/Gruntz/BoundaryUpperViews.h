@@ -46,7 +46,7 @@ struct B_1614b0 {
 SIZE_UNKNOWN(B_1614b0);
 
 // 0x137300 - SoundDevice getter (Probe @0x137260, reloc-masked).
-struct Snd_137300 {
+struct SoundDevice {
     char _0[0x78];
     void* m_78; // 0x78
     char _7c[0x84 - 0x7c];
@@ -54,7 +54,7 @@ struct Snd_137300 {
     i32 Probe(); // 0x137260
     i32 Get();
 };
-SIZE_UNKNOWN(Snd_137300);
+SIZE_UNKNOWN(SoundDevice);
 
 // 0x1433d0 - CDdObArray ordered compare (unsigned m_c then m_8, then m_54 0/1).
 struct DdOb_1433d0 {

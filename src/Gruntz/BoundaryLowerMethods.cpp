@@ -94,7 +94,7 @@ void C915d0::M0(void* arg) {
     }
     i32 ok;
     if (m_48->m_1c != 0) {
-        ok = m_48->m_1c->Probe138f60();
+        ok = m_48->m_1c->IsBusy();
     } else {
         ok = 0;
     }
@@ -104,7 +104,7 @@ void C915d0::M0(void* arg) {
     if (m_48->m_1c == 0) {
         return;
     }
-    m_48->m_1c->Do138fd0(0, (i32)arg);
+    m_48->m_1c->SetVolume(0, (i32)arg);
 }
 RVA(0x00091620, 0x3f)
 void C915d0::M64(void* arg) {
@@ -116,7 +116,7 @@ void C915d0::M64(void* arg) {
     }
     i32 ok;
     if (m_48->m_1c != 0) {
-        ok = m_48->m_1c->Probe138f60();
+        ok = m_48->m_1c->IsBusy();
     } else {
         ok = 0;
     }
@@ -126,7 +126,7 @@ void C915d0::M64(void* arg) {
     if (m_48->m_1c == 0) {
         return;
     }
-    m_48->m_1c->Do138fd0(0x64, (i32)arg);
+    m_48->m_1c->SetVolume(0x64, (i32)arg);
 }
 
 // ===========================================================================
@@ -276,16 +276,16 @@ i32 Cdb750::M(void* arg) {
         return 0;
     }
     if (arg == 0) {
-        if (m_c->m_2c->Get152c50("LEVEL") != 0) {
+        if (m_c->m_2c->HasKeyPrefix_152c50("LEVEL") != 0) {
             return 1;
         }
     }
-    m_c->m_2c->Set1527d0("LEVEL", &g_dat60b588);
-    void* e = (void*)m_28->Resolve13bae0(&g_dat613054);
+    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", &g_dat60b588);
+    void* e = (void*)m_28->ResolvePath(&g_dat613054);
     if (e == 0) {
         return 0;
     }
-    m_c->m_2c->Bind152ad0(e, "LEVEL", &g_dat60b588);
+    m_c->m_2c->ScanTree_152ad0(e, "LEVEL", &g_dat60b588);
     return 1;
 }
 

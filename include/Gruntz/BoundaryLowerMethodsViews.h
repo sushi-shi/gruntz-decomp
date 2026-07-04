@@ -23,15 +23,15 @@ struct C213a0 {
 SIZE_UNKNOWN(C213a0);
 
 // 0x0464e0 - type-id -> entry resolver (projectile/act fast-range + Find + grow).
-struct CKSlimeColl464 {
+struct CVariantSlot {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (ret 0xc)
 };
-SIZE_UNKNOWN(CKSlimeColl464);
+SIZE_UNKNOWN(CVariantSlot);
 // Field layout is the attributed sibling CTypeKeyColl : CZArray2D (TypeKeyColl.cpp)
 // - it shares Find (0x16da80); this is the projectile/act instance.
 struct CTypeColl464 {
     void* m_0;                // +0x00  vptr
-    CKSlimeColl464* m_4;      // +0x04  grow-path node inserter
+    CVariantSlot* m_4;      // +0x04  grow-path node inserter
     i32 m_lo;                 // +0x08  index low bound
     i32 m_hi;                 // +0x0c  index high bound
     char* m_buf;              // +0x10  primary element buffer (base)
@@ -82,14 +82,14 @@ struct C8e880 {
 SIZE_UNKNOWN(C8e880);
 
 // 0x0915d0 / 0x091620 - guarded dispatch through the +0x48 sub's +0x1c probe.
-struct CInner915 {
-    i32 Probe138f60();           // 0x138f60
-    void Do138fd0(i32 a, i32 b); // 0x138fd0
+struct CGruntzSoundInnerZ {
+    i32 IsBusy();           // 0x138f60
+    void SetVolume(i32 a, i32 b); // 0x138fd0
 };
-SIZE_UNKNOWN(CInner915);
+SIZE_UNKNOWN(CGruntzSoundInnerZ);
 struct CMid915 {
     char pad0[0x1c];
-    CInner915* m_1c; // +0x1c
+    CGruntzSoundInnerZ* m_1c; // +0x1c
 };
 SIZE_UNKNOWN(CMid915);
 struct C915d0 {
@@ -181,14 +181,14 @@ struct CObjC {
     void M201d(i32 a); // 0x201d
 };
 SIZE_UNKNOWN(CObjC);
-struct CInnerC {
+struct CDDrawWorkerMgr {
     i32 M158d20();  // 0x158d20
     void M158e40(); // 0x158e40
 };
-SIZE_UNKNOWN(CInnerC);
+SIZE_UNKNOWN(CDDrawWorkerMgr);
 struct CMidC {
     char pad0[4];
-    CInnerC* m_4; // +0x04
+    CDDrawWorkerMgr* m_4; // +0x04
 };
 SIZE_UNKNOWN(CMidC);
 struct Ccef50 {
@@ -250,26 +250,26 @@ struct Cdb2f0 {
 SIZE_UNKNOWN(Cdb2f0);
 
 // 0x0db750 - "LEVEL" config sync through the +0x0c owner's +0x2c config.
-struct CCfgdb {
-    void* Get152c50(const char* key);                     // 0x152c50
-    void Set1527d0(const char* key, void* v);             // 0x1527d0
-    void Bind152ad0(void* val, const char* key, void* v); // 0x152ad0
+struct CDDrawSubMgrLeaf {
+    void* HasKeyPrefix_152c50(const char* key);                     // 0x152c50
+    void RemoveKeysEqual_1527d0(const char* key, void* v);             // 0x1527d0
+    void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
 };
-SIZE_UNKNOWN(CCfgdb);
+SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 struct CHolderdb {
     char pad0[0x2c];
-    CCfgdb* m_2c; // +0x2c
+    CDDrawSubMgrLeaf* m_2c; // +0x2c
 };
 SIZE_UNKNOWN(CHolderdb);
-struct CParserdb {
-    i32 Resolve13bae0(void* arg); // 0x13bae0
+struct CSymTab {
+    i32 ResolvePath(void* arg); // 0x13bae0
 };
-SIZE_UNKNOWN(CParserdb);
+SIZE_UNKNOWN(CSymTab);
 struct Cdb750 {
     char pad0[0xc];
     CHolderdb* m_c; // +0x0c
     char pad10[0x28 - 0x10];
-    CParserdb* m_28; // +0x28
+    CSymTab* m_28; // +0x28
     i32 M(void* arg);
 };
 SIZE_UNKNOWN(Cdb750);
@@ -306,13 +306,13 @@ struct Ceb970 {
 SIZE_UNKNOWN(Ceb970);
 
 // 0x0fa150 - release the four owned blits through the +0x0c owner's +0x1c allocator.
-struct CFreer142160 {
+struct CDDrawPtrCollections {
     void Free(void* p); // 0x142160
 };
-SIZE_UNKNOWN(CFreer142160);
+SIZE_UNKNOWN(CDDrawPtrCollections);
 struct CMidFa {
     char pad0[0x1c];
-    CFreer142160* m_1c; // +0x1c
+    CDDrawPtrCollections* m_1c; // +0x1c
 };
 SIZE_UNKNOWN(CMidFa);
 struct Cfa150 {
@@ -333,7 +333,7 @@ SIZE_UNKNOWN(Cfa150);
 // 0x104c80 - release the +0x34 blit through the +0x24 owner's +0x1c allocator.
 struct CMid104 {
     char pad0[0x1c];
-    CFreer142160* m_1c; // +0x1c
+    CDDrawPtrCollections* m_1c; // +0x1c
 };
 SIZE_UNKNOWN(CMid104);
 struct C104c80 {
@@ -346,13 +346,13 @@ struct C104c80 {
 SIZE_UNKNOWN(C104c80);
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build).
-struct CFactory104 {
+struct CSpriteFactory {
     void* Create(i32 a, i32 b, i32 c, i32 d, const char* name, i32 f); // 0x1597b0
 };
-SIZE_UNKNOWN(CFactory104);
+SIZE_UNKNOWN(CSpriteFactory);
 struct CHolder104 {
     char pad0[8];
-    CFactory104* m_8; // +0x08
+    CSpriteFactory* m_8; // +0x08
 };
 SIZE_UNKNOWN(CHolder104);
 struct C104dd0 {

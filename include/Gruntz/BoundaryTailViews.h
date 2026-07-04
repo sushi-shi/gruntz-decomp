@@ -84,7 +84,7 @@ struct Obj85500 {
 SIZE_UNKNOWN(Obj85500);
 
 // 0x148250 - flush a pending blit.
-struct CBlit148250 {
+struct CDDPalette {
     char _0[0x14];
     i32 m_14; // 0x14 fill color
     char _18[0x1c - 0x18];
@@ -93,11 +93,11 @@ struct CBlit148250 {
     i32 m_2c;                                               // 0x2c
     i32 m_30;                                               // 0x30
     i32 m_34;                                               // 0x34 pending flag
-    void M147aa0(i32 a, i32 b, i32 c, i32 d);               // 0x147aa0
-    void M147cd0(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x147cd0
+    void SetAndNotify(i32 a, i32 b, i32 c, i32 d);               // 0x147aa0
+    void SetRange(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x147cd0
     void Flush();
 };
-SIZE_UNKNOWN(CBlit148250);
+SIZE_UNKNOWN(CDDPalette);
 
 // 0x23d90 - snap a draw rectangle to the 0x20 grid and dispatch a blit.
 struct R23d90 {
@@ -141,7 +141,7 @@ struct Map_bdd0 {
 SIZE_UNKNOWN(Map_bdd0);
 struct Arg1_bdd0 {
     char _0[0x10];
-    Map_bdd0 m_10; // 0x10 (CMapStringToOb)
+    Map_bdd0 m_10; // 0x10 (Map_bdd0)
 };
 SIZE_UNKNOWN(Arg1_bdd0);
 struct CObj_bdd0 {

@@ -126,19 +126,19 @@ CString Obj85500::GetName() {
 // ---------------------------------------------------------------------------
 // 0x148250 - flush a pending blit: if nothing pending (m_34==0) return; clear the
 // pending flag (m_34=0); when a fill color m_14 is set, dispatch the solid blit
-// M147aa0(m_2c,m_30,m_14,0) and clear m_14; otherwise dispatch the keyed blit
-// M147cd0 passing m_1c plus its byte-shifted views (the engine reads the packed
+// SetAndNotify(m_2c,m_30,m_14,0) and clear m_14; otherwise dispatch the keyed blit
+// SetRange passing m_1c plus its byte-shifted views (the engine reads the packed
 // color back out at +1/+2 byte offsets through an 8-byte stack temp). __thiscall.
 // ---------------------------------------------------------------------------
 RVA(0x00148250, 0x61)
-void CBlit148250::Flush() {
+void CDDPalette::Flush() {
     if (m_34 == 0) {
         return;
     }
     i32 v = m_14;
     m_34 = 0;
     if (v != 0) {
-        M147aa0(m_2c, m_30, v, 0);
+        SetAndNotify(m_2c, m_30, v, 0);
         m_14 = 0;
     } else {
         union {
@@ -146,7 +146,7 @@ void CBlit148250::Flush() {
             char b[8];
         } u;
         u.c = m_1c;
-        M147cd0(m_2c, m_30, u.c, *(i32*)(u.b + 1), *(i32*)(u.b + 2), 0);
+        SetRange(m_2c, m_30, u.c, *(i32*)(u.b + 1), *(i32*)(u.b + 2), 0);
     }
 }
 

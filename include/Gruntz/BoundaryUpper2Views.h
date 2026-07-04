@@ -143,7 +143,7 @@ struct CPageStore17b510 {
 SIZE_UNKNOWN(CPageStore17b510);
 
 // 0x174ed0 / 0x175780 - CImage owner free/clear pair.
-struct CImgArg {
+struct CRezImage {
     i32 _0[0x44c / 4];
     i32 m_44c;        // +0x44c
     i32 _450;         // +0x450
@@ -152,19 +152,19 @@ struct CImgArg {
     void X(i32, i32); // 0x176ad0
     void D();         // 0x175c90
 };
-SIZE_UNKNOWN(CImgArg);
+SIZE_UNKNOWN(CRezImage);
 struct CImgSub10 {
     void Add(i32); // 0x1b4ac7
 };
 SIZE_UNKNOWN(CImgSub10);
-struct CImgOwner {
+struct CImagePool {
     i32 _0[4];                  // +0x00 .. +0x0c
     CImgSub10 m_10;             // +0x10
     void A(i32);                // 0x174f30
-    void B(CImgArg*, i32, i32); // 0x175780
-    void Free(CImgArg*);        // 0x174ed0
+    void B(CRezImage*, i32, i32); // 0x175780
+    void Free(CRezImage*);        // 0x174ed0
 };
-SIZE_UNKNOWN(CImgOwner);
+SIZE_UNKNOWN(CImagePool);
 
 // 0x137200 - SoundDevice restore (COM buffer restore via vtbl slot 0x30).
 struct ISndBuf;
@@ -177,7 +177,7 @@ struct ISndBuf {
     ISndBufVtbl* vtbl;
 };
 SIZE_UNKNOWN(ISndBuf);
-struct SndDevice {
+struct SoundDevice {
     i32 _0[0x78 / 4];
     void* m_78; // +0x78
     i32 _7c[(0x84 - 0x7c) / 4];
@@ -185,7 +185,7 @@ struct SndDevice {
     i32 Probe();       // 0x137260
     i32 Restore();
 };
-SIZE_UNKNOWN(SndDevice);
+SIZE_UNKNOWN(SoundDevice);
 
 // 0x13e7d0 - CDDSurface restore (build a 0x64-byte descriptor + restore helper).
 struct RestoreDesc {
@@ -195,14 +195,14 @@ struct RestoreDesc {
     i32 _54[(0x64 - 0x54) / 4];
 };
 SIZE_UNKNOWN(RestoreDesc);
-struct CDDSurf13e7d0 {
+struct CDDSurface {
     i32 Restore(void* arg1, i32 arg2);
     i32 H(void* a, i32 b, i32 c, i32 flags, RestoreDesc* d); // 0x13eef0
 };
-SIZE_UNKNOWN(CDDSurf13e7d0);
+SIZE_UNKNOWN(CDDSurface);
 
 // 0x143040 - CDDrawPtrCollections factory (allocate+zero a 0x38-byte node, Init, Add).
-struct Node38 {
+struct CDDPalette {
     i32 m_0;
     i32 m_4;
     i32 m_8;
@@ -214,7 +214,7 @@ struct Node38 {
     i32 m_2c;
     i32 m_30;
     i32 m_34;
-    Node38() {
+    CDDPalette() {
         m_4 = 0;
         m_0 = 0;
         m_8 = 0;
@@ -229,13 +229,13 @@ struct Node38 {
     i32 Init(i32, i32, i32); // 0x147390
     void Cleanup();          // 0x147530
 };
-SIZE_UNKNOWN(Node38);
-struct CNodeFactory {
+SIZE_UNKNOWN(CDDPalette);
+struct CDDrawPtrCollections {
     i32 m_0;           // +0x00
-    void Add(Node38*); // 0x142eb0
-    Node38* Create(i32 a, i32 b);
+    void Add(CDDPalette*); // 0x142eb0
+    CDDPalette* Create(i32 a, i32 b);
 };
-SIZE_UNKNOWN(CNodeFactory);
+SIZE_UNKNOWN(CDDrawPtrCollections);
 
 // 0x1509c0 - CWwdGameObject visibility test.
 struct WwdExtent {
@@ -274,7 +274,7 @@ struct WwdCtx {
     WwdCamHolder* m_camera; // +0x24
 };
 SIZE_UNKNOWN(WwdCtx);
-struct CWwdObj1509 {
+struct CWwdGameObject {
     i32 _0[2];     // +0x00
     u32 m_flags;   // +0x08
     WwdCtx* m_ctx; // +0x0c
@@ -285,13 +285,13 @@ struct CWwdObj1509 {
     WwdExtent* m_extent; // +0x198
     i32 Test();
 };
-SIZE_UNKNOWN(CWwdObj1509);
+SIZE_UNKNOWN(CWwdGameObject);
 
 // 0x13a530 - CSymTab remove-entry.
-struct SymHelper24 {
+struct CHashBase {
     void Unlink(void* p); // 0x184ab0
 };
-SIZE_UNKNOWN(SymHelper24);
+SIZE_UNKNOWN(CHashBase);
 struct SymEntry2 {
     i32 _0[0xc / 4];
     i32 m_span; // +0x0c
@@ -302,7 +302,7 @@ struct SymEntry2 {
 SIZE_UNKNOWN(SymEntry2);
 struct SymEntry1 {
     i32 _0[0x24 / 4];
-    SymHelper24 m_24; // +0x24
+    CHashBase m_24; // +0x24
 };
 SIZE_UNKNOWN(SymEntry1);
 struct SymList18 {
@@ -311,14 +311,14 @@ struct SymList18 {
     void Drop(void* p); // 0x13c210
 };
 SIZE_UNKNOWN(SymList18);
-struct CSymTab13a530 {
+struct CSymTab {
     i32 _0[4];
     i32 m_size;        // +0x10  running total span
     i32 _14;           // +0x14
     SymList18* m_list; // +0x18
     i32 Remove(SymEntry1* a1, SymEntry2* a2);
 };
-SIZE_UNKNOWN(CSymTab13a530);
+SIZE_UNKNOWN(CSymTab);
 
 // 0x17e230 - destroy a by-value CDataBuffer-like parameter.
 struct DBuf17e230 {

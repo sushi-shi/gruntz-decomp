@@ -206,7 +206,7 @@ i32 CPageStore17b510::Lookup(u32 idx) {
 // teardown D (0x175c90) and a method X (0x176ad0). __thiscall.
 // ---------------------------------------------------------------------------
 RVA(0x00174ed0, 0x5d)
-void CImgOwner::Free(CImgArg* o) {
+void CImagePool::Free(CRezImage* o) {
     if (!o) {
         return;
     }
@@ -221,7 +221,7 @@ void CImgOwner::Free(CImgArg* o) {
     RezFree(o);
 }
 RVA(0x00175780, 0x3f)
-void CImgOwner::B(CImgArg* o, i32 a, i32 b) {
+void CImagePool::B(CRezImage* o, i32 a, i32 b) {
     if (o->m_458 && o->m_454) {
         A(o->m_458);
         o->X(0, 0);
@@ -236,7 +236,7 @@ void CImgOwner::B(CImgArg* o, i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 extern void __cdecl SndErr(const char* file, i32 line, i32 flag); // 0x138150
 RVA(0x00137200, 0x53)
-i32 SndDevice::Restore() {
+i32 SoundDevice::Restore() {
     if (!m_78) {
         return 0;
     }
@@ -331,7 +331,7 @@ void __stdcall UnpackTag_13b970(u32 tag, char* dst) {
 // ---------------------------------------------------------------------------
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr); // 0x141400
 RVA(0x0013e7d0, 0x73)
-i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
+i32 CDDSurface::Restore(void* arg1, i32 arg2) {
     if (!arg1) {
         return 0;
     }
@@ -352,8 +352,8 @@ i32 CDDSurf13e7d0::Restore(void* arg1, i32 arg2) {
 // return 0. __thiscall, 2 args.
 // ---------------------------------------------------------------------------
 RVA(0x00143040, 0x7c)
-Node38* CNodeFactory::Create(i32 a, i32 b) {
-    Node38* o = new Node38();
+CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
+    CDDPalette* o = new CDDPalette();
     if (!o->Init(m_0, a, b)) {
         if (o) {
             o->Cleanup();
@@ -378,7 +378,7 @@ Node38* CNodeFactory::Create(i32 a, i32 b) {
 // directly from memory. No source spelling reproduces retail's exact edge-register assignment;
 // logic (both the camera-rect and grid-extent bounds checks) complete.
 RVA(0x001509c0, 0xab)
-i32 CWwdObj1509::Test() {
+i32 CWwdGameObject::Test() {
     WwdExtent* e = m_extent;
     if (!e) {
         return 0;
@@ -453,7 +453,7 @@ i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
 // __thiscall, 2 args.
 // ---------------------------------------------------------------------------
 RVA(0x0013a530, 0x47)
-i32 CSymTab13a530::Remove(SymEntry1* a1, SymEntry2* a2) {
+i32 CSymTab::Remove(SymEntry1* a1, SymEntry2* a2) {
     m_size -= a2->m_span;
     a1->m_24.Unlink(&a2->m_1c);
     a2->Teardown();
