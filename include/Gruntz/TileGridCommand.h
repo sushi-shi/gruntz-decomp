@@ -19,6 +19,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h>      // shared world tile-grid geometry (the active layer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SpriteFactory.h>  // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>      // CGameObject (the created InGameText sprite)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
@@ -37,23 +39,14 @@ struct TgcMap {
 SIZE_UNKNOWN(TgcMap);
 
 // A report record posted by the in-game text manager; +0x124 latches a serial.
-struct TgcReport {
-    char _pad00[0x124];
-    i32 m_124; // +0x124
-};
-SIZE_UNKNOWN(TgcReport);
-
-// The in-game floating-text manager (gamemgr->m_08): Report posts a formatted
-// status line and returns the new record.  __thiscall engine callee, reloc-masked.
-struct TgcTextMgr {
-    TgcReport* Report(i32 a1, i32 x, i32 y, i32 strId, const char* fmt, i32 flags); // 0x1597b0
-};
-SIZE_UNKNOWN(TgcTextMgr);
-
-// The active game manager: m_08 is the in-game text manager; m_24 the tile map.
+// The floating "InGameText" record is a fresh CSpriteFactory::CreateSprite result
+// (the canonical 0x1597b0 factory entry; the former "Report" role-name was a
+// mislabel - it CREATES the "InGameText" sprite, hint 95000=0x17318): the caller
+// stamps the string id into the created CGameObject's m_124 selector key.
+// The active game manager: m_08 is the sprite factory; m_24 the tile map.
 struct TgcGameMgr {
     char _pad00[0x08];
-    TgcTextMgr* m_08; // +0x08  in-game text manager
+    CSpriteFactory* m_08; // +0x08  the sprite factory (CreateSprite @0x1597b0)
     char _pad0c[0x24 - 0x0c];
     TgcMap* m_24; // +0x24  the tile map
 };

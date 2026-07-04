@@ -80,12 +80,12 @@ i32 BzState::BuildBootyWalkingGruntz() {
         if (m_animSprites[i] == 0) {
             return 0;
         }
-        m_animSprites[i]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_NORTH_WALK");
+        m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
-        m_animSprites[i]->m_visFlags |= 1;
-        m_animSprites[i]->m_58 = 1;
-        m_animSprites[i]->m_50 = 0xa;
-        m_animSprites[i]->m_selHandle = sel;
+        m_animSprites[i]->m_stateFlags |= 1;
+        m_animSprites[i]->m_drawActive = 1;
+        m_animSprites[i]->m_drawFillCmd = 0xa;
+        m_animSprites[i]->m_drawFillArg = sel;
         m_visSprites[i] = g_mgrSettings->m_soundHolder->m_spriteFactory
                               ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_visSprites[i] == 0) {
@@ -96,10 +96,10 @@ i32 BzState::BuildBootyWalkingGruntz() {
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
         buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
-        m_visSprites[i]->CacheFirstFrame(buf);
+        m_visSprites[i]->ApplyName(buf);
         m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
-        m_visSprites[i]->m_spriteId = g_idleSpriteIds[i] + 0xfa;
-        m_visSprites[i]->m_timer = 0xdc;
+        m_visSprites[i]->m_screenX = g_idleSpriteIds[i] + 0xfa;
+        m_visSprites[i]->m_screenY = 0xdc;
     }
     return 1;
 }
@@ -149,12 +149,12 @@ i32 BzState::UpdateBootyWalkingGruntz() {
         if (n < 0x24) {
             for (i32 i = 0; i < 4; i++) {
                 if (i <= (g_mgrSettings->m_levelRecord->m_levelIndex - 1) % 4) {
-                    m_visSprites[i]->m_visFlags |= 1;
-                    m_animSprites[i]->m_spriteId = g_idleSpriteIds[i];
-                    m_animSprites[i]->m_timer = 0xdc;
-                    m_animSprites[i]->m_visFlags &= ~1;
+                    m_visSprites[i]->m_stateFlags |= 1;
+                    m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
+                    m_animSprites[i]->m_screenY = 0xdc;
+                    m_animSprites[i]->m_stateFlags &= ~1;
                     if (g_mgrSettings->m_levelRecord->GetRecordValue(i) == 0) {
-                        m_animSprites[i]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
                         CString letter;
@@ -172,14 +172,14 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                                 letter = "P";
                                 break;
                         }
-                        m_animSprites[i]->CacheFirstFrame("GRUNTZ_PICKUPS");
+                        m_animSprites[i]->ApplyName("GRUNTZ_PICKUPS");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
                     }
                 } else {
-                    m_visSprites[i]->m_spriteId = g_idleSpriteIds[i];
-                    m_visSprites[i]->m_timer = 0xdc;
-                    m_visSprites[i]->m_visFlags &= ~1;
-                    m_animSprites[i]->m_visFlags |= 1;
+                    m_visSprites[i]->m_screenX = g_idleSpriteIds[i];
+                    m_visSprites[i]->m_screenY = 0xdc;
+                    m_visSprites[i]->m_stateFlags &= ~1;
+                    m_animSprites[i]->m_stateFlags |= 1;
                 }
             }
         }
@@ -188,18 +188,18 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     }
 
     // ---- step path (m_initGate == 0) ----
-    if (m_visSprites[0]->m_spriteId != g_idleSpriteIds[0]) {
+    if (m_visSprites[0]->m_screenX != g_idleSpriteIds[0]) {
         for (i32 k = 0; k < 4; k++) {
-            m_visSprites[k]->m_spriteId -= 10;
+            m_visSprites[k]->m_screenX -= 10;
         }
     }
-    if (m_stepIndex == 0 && (m_animSprites[0]->m_visFlags & 1)) {
-        m_animSprites[0]->m_visFlags &= ~1;
-        m_animSprites[0]->m_spriteId = g_idleSpriteIds[0];
-        m_animSprites[0]->m_timer = 0x1f4;
+    if (m_stepIndex == 0 && (m_animSprites[0]->m_stateFlags & 1)) {
+        m_animSprites[0]->m_stateFlags &= ~1;
+        m_animSprites[0]->m_screenX = g_idleSpriteIds[0];
+        m_animSprites[0]->m_screenY = 0x1f4;
     }
 
-    if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_timer <= 0x195) {
+    if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
         if (g_mgrSettings->m_levelRecord->GetRecordValue(m_stepIndex) == 0) {
             m_soundStarted = 1;
             BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
@@ -221,13 +221,13 @@ i32 BzState::UpdateBootyWalkingGruntz() {
             return 1;
         }
         if (res->m_player->IsPlaying() != 0) {
-            m_visSprites[m_stepIndex]->m_visFlags ^= 1;
+            m_visSprites[m_stepIndex]->m_stateFlags ^= 1;
         } else {
-            m_visSprites[m_stepIndex]->m_visFlags |= 1;
+            m_visSprites[m_stepIndex]->m_stateFlags |= 1;
         }
     }
 
-    if (m_walkStarted == 0 && m_animSprites[m_stepIndex]->m_timer <= 0xdc) {
+    if (m_walkStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
         {
             CString letter;
             switch (m_stepIndex) {
@@ -259,13 +259,13 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                             }
                         }
                     }
-                    m_animSprites[m_stepIndex]->CacheFirstFrame("GRUNTZ_PICKUPS");
+                    m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
-                    BzSprite* g = m_animSprites[m_stepIndex];
-                    g->m_58 = 1;
-                    g->m_50 = 0xa;
-                    g->m_selHandle = sel;
-                    m_visSprites[m_stepIndex]->m_visFlags |= 1;
+                    CGameObject* g = m_animSprites[m_stepIndex];
+                    g->m_drawActive = 1;
+                    g->m_drawFillCmd = 0xa;
+                    g->m_drawFillArg = sel;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     u32 x;
                     if (!(g_randSeeded & 1)) {
                         g_randSeeded |= 1;
@@ -278,13 +278,13 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                         ->Play(0, 0x3bf, (((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 1, -1, -1);
                     m_walkStarted = 1;
                 } else {
-                    m_animSprites[m_stepIndex]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                    m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                     m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
-                    BzSprite* g = m_animSprites[m_stepIndex];
-                    g->m_58 = 1;
-                    g->m_50 = 0xa;
-                    g->m_selHandle = sel;
-                    m_visSprites[m_stepIndex]->m_visFlags |= 1;
+                    CGameObject* g = m_animSprites[m_stepIndex];
+                    g->m_drawActive = 1;
+                    g->m_drawFillCmd = 0xa;
+                    g->m_drawFillArg = sel;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
                     g_mgrSettings->m_cuePlayer->Play(0, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_mgrSettings->m_levelRecord->m_levelIndex % 4) {
@@ -292,9 +292,9 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                         return 1;
                     }
                     if (m_stepIndex < 4) {
-                        m_animSprites[m_stepIndex]->m_visFlags &= ~1;
-                        m_animSprites[m_stepIndex]->m_spriteId = g_idleSpriteIds[m_stepIndex];
-                        m_animSprites[m_stepIndex]->m_timer = 0x1f4;
+                        m_animSprites[m_stepIndex]->m_stateFlags &= ~1;
+                        m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
+                        m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
                         m_soundStarted = 0;
                         m_walkStarted = 0;
                     }
@@ -302,23 +302,24 @@ i32 BzState::UpdateBootyWalkingGruntz() {
             }
         }
     } else if (m_walkStarted != 0) {
-        BzSpriteSub* sub = &m_animSprites[m_stepIndex]->m_completion;
-        if (sub->m_armed != 0 && sub->m_done == 0) {
+        // the +0x1a0 anim-sink pair: m_1c8 = active/armed, m_1c0 = idle/done
+        CGameObject* spr = m_animSprites[m_stepIndex];
+        if (spr->m_1c8 != 0 && spr->m_1c0 == 0) {
             m_stepIndex++;
             if (m_stepIndex == g_mgrSettings->m_levelRecord->m_levelIndex % 4) {
                 m_stepIndex = 4;
                 return 1;
             }
             if (m_stepIndex < 4) {
-                m_animSprites[m_stepIndex]->m_visFlags &= ~1;
-                m_animSprites[m_stepIndex]->m_spriteId = g_idleSpriteIds[m_stepIndex];
-                m_animSprites[m_stepIndex]->m_timer = 0x1f4;
+                m_animSprites[m_stepIndex]->m_stateFlags &= ~1;
+                m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
+                m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
                 m_walkStarted = 0;
                 m_soundStarted = 0;
             }
         }
     } else {
-        m_animSprites[m_stepIndex]->m_timer -= 3;
+        m_animSprites[m_stepIndex]->m_screenY -= 3;
     }
     return 0;
 }

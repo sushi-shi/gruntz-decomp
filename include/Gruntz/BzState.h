@@ -12,6 +12,8 @@
 #define GRUNTZ_GRUNTZ_BZSTATE_H
 
 #include <Ints.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created idle-grunt sprites)
 
 #include <rva.h>
 
@@ -41,34 +43,13 @@ struct BzWndHolder {
 };
 SIZE_UNKNOWN(BzWndHolder);
 
-// The per-player sprite completion sub-object (sprite + 0x1a0).
-struct BzSpriteSub {
-    char m_pad00[0x20];
-    i32 m_done; // +0x20  done flag  (sprite+0x1c0)
-    char m_pad24[0x28 - 0x24];
-    i32 m_armed; // +0x28  armed flag (sprite+0x1c8)
-};
-SIZE_UNKNOWN(BzSpriteSub);
-
 // The idle/walking grunt sprite (m_trailSprites[]/m_visSprites[]/m_animSprites[]
-// elements). CacheFirstFrame caches the named first frame; ApplyLookupGeometry
-// resolves its cycle geometry. Both reloc-masked __thiscall.
-struct BzSprite {
-    void CacheFirstFrame(const char* name);             // 0x150540
-    i32 ApplyLookupGeometry(const char* name, i32 def); // 0x1505b0
-    char m_pad00[0x40];
-    i32 m_visFlags; // +0x40  visibility flags
-    char m_pad44[0x4c - 0x44];
-    i32 m_selHandle; // +0x4c  selection handle
-    i32 m_50;        // +0x50
-    char m_pad54[0x58 - 0x54];
-    i32 m_58;       // +0x58
-    i32 m_spriteId; // +0x5c  sprite id
-    i32 m_timer;    // +0x60  timer
-    char m_pad64[0x1a0 - 0x64];
-    BzSpriteSub m_completion; // +0x1a0
-};
-SIZE_UNKNOWN(BzSprite);
+// elements) is the shared CGameObject (<Gruntz/UserLogic.h>): ApplyName (0x150540)
+// caches the named first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle
+// geometry; the booty walk drives m_stateFlags (bit0 visible), the draw-fill block
+// and the screen position (the former BzSprite view mis-read m_screenX/m_screenY
+// as "sprite id"/"timer" - the stored values are onscreen coordinates; its +0x1a0
+// completion sub is the canonical m_1c0/m_1c8 anim-sink pair).
 
 // The playback sub-object of a sound entry (BzSoundEntry::m_player).
 struct BzSoundPlayer {
@@ -101,16 +82,12 @@ struct BzSoundSet {
 };
 SIZE_UNKNOWN(BzSoundSet);
 
-// g_mgrSettings->m_soundHolder->m_spriteFactory - the sprite/animation factory the
-// booty setup builds its per-player idle grunts through (CSpriteFactory 0x1597b0).
-struct BzSpriteFactory {
-    BzSprite* CreateSprite(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e); // 0x1597b0
-};
-SIZE_UNKNOWN(BzSpriteFactory);
-
+// g_mgrSettings->m_soundHolder->m_spriteFactory - the canonical CSpriteFactory
+// (<Gruntz/SpriteFactory.h>) the booty setup builds its per-player idle grunts
+// through (CreateSprite @0x1597b0).
 struct BzSoundHolder {
     char m_pad00[0x8];
-    BzSpriteFactory* m_spriteFactory; // +0x08  sprite/animation factory
+    CSpriteFactory* m_spriteFactory; // +0x08  sprite/animation factory
     char m_pad0c[0x28 - 0xc];
     BzSoundSet* m_soundSet; // +0x28
 };
@@ -229,15 +206,15 @@ public:
     i32 m_initOnce;         // +0x1d0  init-once gate
     i32 m_secretBannerOnce; // +0x1d4  secret-banner once gate
     char m_pad1d8[0x1ec - 0x1d8];
-    BzSprite* m_trailSprites[4]; // +0x1ec  trailing idle sprites
+    CGameObject* m_trailSprites[4]; // +0x1ec  trailing idle sprites
     char m_pad1fc[0x200 - 0x1fc];
     i32 m_levelCompleteGate; // +0x200  level-complete gate
     char m_pad204[0x284 - 0x204];
     i32 m_readyFlags[8];    // +0x284  per-slot "ready text" flags
     i32 m_templateFlags[8]; // +0x2a4  per-slot "template" flags
     char m_pad2c4[0x2c8 - 0x2c4];
-    BzSprite* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
-    BzSprite* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
+    CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
+    CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
     i32 m_stepIndex;            // +0x2e8  active-player step index
     i32 m_walkStarted;          // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;         // +0x2f0  sound-started gate

@@ -228,8 +228,8 @@ i32 CTileGridCommand::ApplyMove(i32 verb) {
     i32 px = (m_08 << 5) + 0x10;
     ((TgcRegion*)reg->m_cmdGrid)->MarkRect(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
-        TgcReport* rec =
-            ((TgcGameMgr*)reg->m_world)->m_08->Report(0, px, py, 95000, "InGameText", 0x40003);
+        CGameObject* rec =
+            reg->m_world->m_8->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
             rec->m_124 = m_2c;
         }

@@ -399,7 +399,7 @@ i32 C104dd0::Create() {
     if (m_y > d - 9) {
         m_y = d - 0x22;
     }
-    m_sprite = m_factoryHolder->m_8->Create(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
+    m_sprite = m_factoryHolder->m_8->CreateSprite(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
     return m_sprite != 0;
 }
 

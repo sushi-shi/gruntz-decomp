@@ -23,10 +23,10 @@
 #include <Globals.h>
 
 // Per-player idle-sprite id table (0x5e9068) + the trailing 4-sprite geometry
-// table (0x5e8fe4, {timer, id} pairs), and the wand-cue ambient sound tag.
+// table (0x5e8fe4, {y, x} pairs - onscreen coordinates), and the wand-cue ambient sound tag.
 struct BzGeomPair {
-    i32 m_timer;    // +0x00  timer
-    i32 m_spriteId; // +0x04  sprite id
+    i32 m_y; // +0x00  onscreen y
+    i32 m_x; // +0x04  onscreen x
 };
 DATA(0x001e8fe4)
 extern BzGeomPair g_idleGeom[4]; // 0x5e8fe4
@@ -268,10 +268,10 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
             }
             if (g_mgrSettings->m_levelRecord->m_levelIndex < 0x24) {
                 for (i32 p = 0; p < 4; p++) {
-                    m_visSprites[p]->m_visFlags |= 1;
-                    m_animSprites[p]->m_spriteId = g_idleSpriteIds[p];
-                    m_animSprites[p]->m_timer = 0xdc;
-                    m_animSprites[p]->m_visFlags &= ~1;
+                    m_visSprites[p]->m_stateFlags |= 1;
+                    m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
+                    m_animSprites[p]->m_screenY = 0xdc;
+                    m_animSprites[p]->m_stateFlags &= ~1;
                     if (g_mgrSettings->m_levelRecord->GetRecordValue(p) != 0) {
                         CString letter;
                         switch (p) {
@@ -288,18 +288,18 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
                                 letter = "P";
                                 break;
                         }
-                        m_animSprites[p]->CacheFirstFrame("GRUNTZ_PICKUPS");
+                        m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
                         m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
                     } else {
-                        m_animSprites[p]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     }
                 }
             }
             for (i32 k = 0; k < 4; k++) {
-                m_trailSprites[k]->m_spriteId = g_idleGeom[k].m_spriteId;
-                m_trailSprites[k]->m_timer = g_idleGeom[k].m_timer;
-                m_trailSprites[k]->m_visFlags &= ~1;
+                m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
+                m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
+                m_trailSprites[k]->m_stateFlags &= ~1;
             }
             if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
                 return 0;

@@ -14,6 +14,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // canonical Read@+0x2c / Write@+0x30 archive stream
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 
 // 0x0213a0 - virtual-base field getter (reads +0x04 of the virtual base whose
 // displacement lives in the vbtable's second slot).
@@ -345,19 +346,17 @@ struct C104c80 {
 };
 SIZE_UNKNOWN(C104c80);
 
-// 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build).
-struct CSpriteFactory {
-    void* Create(i32 a, i32 b, i32 c, i32 d, const char* name, i32 f); // 0x1597b0
-};
-SIZE_UNKNOWN(CSpriteFactory);
+// 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
+// the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>; the former local
+// CSpriteFactory re-definition here collided with the canonical class name).
 struct CHolder104 {
     char pad0[8];
-    CSpriteFactory* m_8; // +0x08
+    CSpriteFactory* m_8; // +0x08  the sprite factory (CreateSprite @0x1597b0)
 };
 SIZE_UNKNOWN(CHolder104);
 struct C104dd0 {
     char pad0[8];
-    void* m_sprite;              // +0x08
+    CGameObject* m_sprite;       // +0x08  the created StatusBarSprite instance
     CHolder104* m_factoryHolder; // +0x0c
     char pad10[0x24 - 0x10];
     i32 m_x; // +0x24
