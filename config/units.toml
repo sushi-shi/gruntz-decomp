@@ -1076,7 +1076,7 @@ flags = "base"
 
 [[unit]]
 unit = "netgamedlgwatch"
-source = "src/Gruntz/NetGameDlgWatch.cpp"
+source = "src/Net/NetGameDlgWatch.cpp"
 flags = "base"
 
 [[unit]]
@@ -2111,7 +2111,7 @@ flags = "base"
 
 [[unit]]
 unit = "cimageset3"
-source = "src/Gruntz/CImageSet3.cpp"
+source = "src/Image/CImageSet3.cpp"
 flags = "base"
 
 [[unit]]
@@ -2207,15 +2207,15 @@ source = "src/Gruntz/WarpTextureBlit.cpp"
 flags = "base"
 [[unit]]
 unit = "imagerotate"
-source = "src/Gruntz/ImageRotate.cpp"
+source = "src/Image/ImageRotate.cpp"
 flags = "base"
 [[unit]]
 unit = "palettebmp"
-source = "src/Gruntz/PaletteBmp.cpp"
+source = "src/Image/PaletteBmp.cpp"
 flags = "eh"
 [[unit]]
 unit = "imagesavebmp"
-source = "src/Gruntz/ImageSaveBmp.cpp"
+source = "src/Image/ImageSaveBmp.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2421,7 +2421,7 @@ source = "src/Gruntz/FinalVtables.cpp"
 flags = "base"
 [[unit]]
 unit = "palettecopy"
-source = "src/Gruntz/PaletteCopy.cpp"
+source = "src/Image/PaletteCopy.cpp"
 flags = "base"
 [[unit]]
 unit = "chainforward"
@@ -2499,7 +2499,7 @@ source = "src/Gruntz/LobbySync.cpp"
 flags = "base"
 [[unit]]
 unit = "netgamedlg"
-source = "src/Gruntz/NetGameDlg.cpp"
+source = "src/Net/NetGameDlg.cpp"
 flags = "eh"
 [[unit]]
 unit = "fadersetup"
@@ -2568,7 +2568,7 @@ flags = "eh"
 
 [[unit]]
 unit = "cimageprobe"
-source = "src/Gruntz/CImageProbe.cpp"
+source = "src/Image/CImageProbe.cpp"
 flags = "base"
 
 [[unit]]
