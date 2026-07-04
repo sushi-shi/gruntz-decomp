@@ -1685,7 +1685,7 @@ fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	61.1207	61.1207	2	5df24928ea76	0x21e2
 fontconfig	?winapi_022360_DrawTextA_SelectObject_SetTextColor@CFontConfig@@QAEHHHHH@Z	0.7353	0.7353	2	02c6bbf147cb	0x22360
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	6	91daa7a5370e	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	7	6a0fc4d959d6	0x115810
-fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.0296	87.0296	1	4a036f1eb99a	0x45d30
+fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.1482	87.1482	1	4a036f1eb99a	0x45d30
 fortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 fortressflag	?AdvanceAnim@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	fe412e5b2595	0x463e0
 fortressflag	?GetTypeTag@CFortressFlag@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	e14a94426987	0x10e40
@@ -1724,7 +1724,7 @@ gameapp	?Run@CGameMgr@WAP32@@UAEHPAVCGameWnd@@PAD@Z	100.0000	100.0000	7	4302d666
 gameapp	?RunMessageLoop@CGameApp@@UAEHXZ	100.0000	100.0000	8	4f1033ef8264	0x13d910
 gameapp	?Stub_080dd0@CGameApp@@QAEPAXI@Z	100.0000	100.0000	2	41a8178d7c61	0x80dd0
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z	100.0000	100.0000	3	892f31a104f1	0x133380
-gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	3	b640155c8a5a	0xf9ea0
+gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	4	b03128b7bcf9	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	f73b375e6779	0xc0590
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	e9b5224f1312	0x1183b0
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
@@ -2416,7 +2416,7 @@ levelinfodlg	?BuildLevelTitleString@@YAXPAUHWND__@@HPAUCLevelInfo@@@Z	94.4600	94
 levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	1	f6d3100a3ff2	0xde420
 levelpreview	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	2	9d45b7b2d2dc	0xfab90
 levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	3	67694f17c50e	0xde200
-levelrezpath	?BuildLevelRezPath@LevelRezLoader@@QAEHHHHHVCString@@@Z	44.8097	44.8097	1	eb916c0b8965	0x93d40
+levelrezpath	?BuildLevelRezPath@LevelRezLoader@@QAEHHHHHVCString@@@Z	44.8097	44.8097	2	68de6d89f45b	0x93d40
 levelsync	?Sync@CLevelSync@@QAEHPAUCSerialArchive@@HHH@Z	47.0701	47.0701	1	c099be1460c7	0x1084d0
 leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	3	e7ffb890588b	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	91.2321	91.2321	2	64249e682039	0xd5b20
@@ -3563,7 +3563,7 @@ unknownclassarrays	?Report@ZErrTarget@@QAEXHH@Z	100.0000	100.0000	1	23c0de48cf4f
 unknownclassarrays	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	2	fdd97ca487c8	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	1	ff6203669340	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	60.6182	60.6182	2	1cba316a44c5	0x2a570
-unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8750	77.8750	2	177facd861d5	0x2ab80
+unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8750	77.8661	2	177facd861d5	0x2ab80
 unknownclassarrays	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	84.1995	84.1995	2	a24ad9260ad0	0x2ae00
 unknownclassarrays	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	69.0547	69.0547	2	a87aa74b62c7	0x2c140
 unknownclassarrays	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.6554	59.6554	2	4c95bd3474f1	0x2dfa0
@@ -3696,8 +3696,8 @@ winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	7	6588fcebd04
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	8	a8fadeb810bf	0x11c860
-worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	3	0e0d23c92b4f	0x3c0e0
-worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	3	e6cc7fe0a395	0xdbc80
+worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	4	3caf938e462c	0x3c0e0
+worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	4	d519657cb81b	0xdbc80
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.4528	95.4528	4	338fc373cbf8	0xb7b0
 worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.6182	95.6182	4	7c39f57b6833	0xb6a0
