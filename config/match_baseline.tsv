@@ -95,9 +95,6 @@ cluster0c	3	2
 cmdscrollapply	2	2
 colorhsv	1	0
 comhelperthunks	3	3
-configstore	4	0
-configstoreread	2	0
-configstorewrite	2	0
 connslotlist	3	3
 creditzassets	1	1
 cremusentrylist	2	2
@@ -176,8 +173,7 @@ fileimageblit	5	0
 fileimageloadbyext	1	1
 fileimagerundecode	4	0
 filemem	9	8
-filepathinfo	3	0
-filestream	12	10
+filestream	1	0
 finishlevelsprite	1	0
 fixedptrarray32	3	2
 flashrect	2	0
@@ -381,7 +377,6 @@ rangeset	3	2
 reconbatch2	19	14
 reconbatch2o1	5	4
 recordfill	1	1
-reghelpers	2	0
 registry23	1	0
 registryhelper	8	8
 resourceloaders	8	4
@@ -1036,14 +1031,6 @@ colorhsv	?RgbToHsv@@YAXPAUColorHSV@@I@Z	45.7699	45.7699	2	671fce63329c	0x14fcc0
 comhelperthunks	??1CNoTrackObject@@UAE@XZ	100.0000	100.0000	1	d617d26c06bd	0x1d4722
 comhelperthunks	?ComActivate2f00@@YAXXZ	100.0000	100.0000	1	a4800685df63	0x1bae1f
 comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	1	4d940e10e212	0x1d4c0c
-configstore	?GetInt@CConfigStore@@QAEHPAD0H@Z	17.6905	17.6905	1	00a531e13933	0x1d4fbd
-configstore	?OpenRoot@CConfigStore@@QAEPAUHKEY__@@XZ	57.7385	57.7385	1	906a02758db6	0x1d4ee3
-configstore	?OpenSubKey@CConfigStore@@QAEPAUHKEY__@@PAD@Z	56.9394	56.9394	1	84aab5890a22	0x1d4f77
-configstore	?WriteString@CConfigStore@@QAEHPAD00@Z	29.6610	29.6610	2	7d35ed671314	0x1ccb5c
-configstoreread	?GetBinary@CConfigStore@@QAEHPAD0PAPAXPAH@Z	16.7143	16.7143	1	ae753c051c22	0x1d513b
-configstoreread	?GetString@CConfigStore@@QAE?AVCString@@PAD00@Z	40.7753	40.7753	1	3cb9ee408923	0x1d5029
-configstorewrite	?WriteProfileBinary@CConfigStore@@QAEHPAD0PAEI@Z	29.3913	29.3913	1	ebafc7deec10	0x1ccbfc
-configstorewrite	?WriteProfileInt@CConfigStore@@QAEHPAD0H@Z	47.0455	47.0455	1	52d1ac54cb5a	0x1ccae7
 connslotlist	?InitLan@CConnSlotList@@QAEHXZ	100.0000	100.0000	2	85ce0ff4c5d2	0x37e10
 connslotlist	?InitModem@CConnSlotList@@QAEHXZ	100.0000	100.0000	2	6a0b460fffd4	0x37c30
 connslotlist	?InitNet@CConnSlotList@@QAEHXZ	100.0000	100.0000	2	0aff1d78e568	0x37f00
@@ -1656,21 +1643,7 @@ filemem	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	d9e38b96f792	0x157a50
 filemem	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	8df80faaf0af	0x157a40
 filemem	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	1	87fed6342cd4	0x165e30
 filemem	?Write@CFileMem@@UAEHPBXH@Z	100.0000	100.0000	2	4a8a74d6fd73	0x165f50
-filepathinfo	?CanonicalizePath@@YGHPAD0@Z	46.3067	46.3067	1	8d75f350f231	0x1bf8f8
-filepathinfo	?GetFileTimeInfo@@YGHPADPAUFileInfoRec@@@Z	38.5000	38.5000	1	04835d233a14	0x1c1609
-filepathinfo	?RestoreFileTimeInfo@@YGXPADPAUFileInfoRec@@@Z	77.3782	77.3782	1	5e0d0b7a8eca	0x1c176a
-filestream	??0CFileIO@@QAE@PAX@Z	100.0000	100.0000	4	71072e81b26d	0x1bf033
-filestream	??0CFileIO@@QAE@XZ	100.0000	100.0000	4	71072e81b26d	0x1befd7
-filestream	??1CFileIO@@UAE@XZ	100.0000	100.0000	4	53a856f67760	0x1bf121
-filestream	??_GCFileIO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:18a02430cff4	0x1bf017
-filestream	?Close@CFileIO@@UAEXXZ	100.0000	100.0000	1	9420384bcc01	0x1bf426
-filestream	?GetLength@CFileIO@@UAEIXZ	100.0000	100.0000	1	b7d132fe7ed9	0x1bf505
-filestream	?GetPosition@CFileIO@@UAEJXZ	100.0000	100.0000	1	7114720e1b32	0x1bf3dc
-filestream	?Open@CFileIO@@UAEHPBDIPAX@Z	95.7798	95.7798	1	067b7c4f70da	0x1bf200
-filestream	?Read@CFileIO@@UAEIPAXI@Z	100.0000	100.0000	1	a56b90957c6e	0x1bf328
 filestream	?ReopenSharedFile@CFileIO@@QAEXPAD@Z	79.0625	79.0625	1	05b763bd55e9	0xbd3e0
-filestream	?Seek@CFileIO@@UAEJJH@Z	100.0000	100.0000	1	8b8088fe579a	0x1bf3ad
-filestream	?Write@CFileIO@@UAEXPBXI@Z	100.0000	100.0000	1	db1a74d765f0	0x1bf362
 finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	58.1863	58.1863	1	a942491207f6	0x7c3d0
 fixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	1	2797f241ff3c	0x134c80
 fixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	1	096306e621bc	0x134c60
@@ -2969,8 +2942,6 @@ reconbatch2o1	?AtexitReg_1d4bc1@@YAXXZ	100.0000	100.0000	1	b8422bf67f53	0x1d4bc1
 reconbatch2o1	?Bump_1c0fa8@@YAXXZ	46.6667	46.6667	1	d8fa77b4c026	0x1c0fa8
 reconbatch2o1	?Call_1bae9b@@YAXXZ	100.0000	100.0000	1	7eb70d661467	0x1bae9b
 recordfill	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	aed5c7f7274a	0x17f500
-reghelpers	?ClsidToInProcServer@@YGHPADPAVCString@@@Z	62.4328	62.4328	1	7ffbd48033a1	0x1bf702
-reghelpers	?GetWheelScrollLines@@YAHH@Z	58.0099	58.0099	1	d2271dd4179f	0x1c7cb3
 registry23	?Add@Reg23@@QAEPAXPAX0@Z	18.2500	18.2500	2	03e64072ca77	0x16e360
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	5	fe60dc8bc3b2	0x139330
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	3	90d7795268cd	0x139650
