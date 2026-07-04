@@ -50,17 +50,21 @@ struct CSoundNode {
     CSoundChannel* m_data; // +0x08
 };
 
+// The MFC CPlex block the list's node allocator chains (CPtrList::m_pBlocks);
+// only its type identity is needed here (layout owned by MFC, never walked).
+struct CSoundBlock;
+
 // The embedded MFC CPtrList of channels (the +0x08 sub-object). Modeled minimally:
 // the raw node walks read m_head directly; RemoveAll + the destructor are engine
 // externs (reloc-masked __thiscall on the sub-object address).
 struct CSoundChannelList {
-    void* m_vptr;       // +0x00 (== object +0x08) list vftable slot
-    CSoundNode* m_head; // +0x04 (== object +0x0c)
-    CSoundNode* m_tail; // +0x08
-    void* m_free;       // +0x0c
-    void* m_blocks;     // +0x10
-    i32 m_blockSize;    // +0x14
-    i32 m_count;        // +0x18
+    void* m_vptr;          // +0x00 (== object +0x08) list vftable slot
+    CSoundNode* m_head;    // +0x04 (== object +0x0c)  MFC CPtrList::m_pNodeHead
+    CSoundNode* m_tail;    // +0x08                    m_pNodeTail
+    CSoundNode* m_free;    // +0x0c                    m_pNodeFree (free-node list)
+    CSoundBlock* m_blocks; // +0x10                   m_pBlocks (MFC CPlex block chain)
+    i32 m_blockSize;       // +0x14
+    i32 m_count;           // +0x18
 
     void* AddTail(void* p); // 0x1b4991  (returns the new node)
     void RemoveAll();       // 0x1b48a6

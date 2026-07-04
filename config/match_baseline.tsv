@@ -2691,8 +2691,8 @@ leafelementobj	?LoadSoundA@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	2	92f9450
 leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	2	a206ea5a370f	0x158720
 levelinfodlg	?BuildLevelTitleString@@YAXPAUHWND__@@HPAUCLevelInfo@@@Z	94.4600	94.4600	2	5c496fa36d8a	0xe44e0
 levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	1	f6d3100a3ff2	0xde420
-levelpreview	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	1	7c55f1425856	0xfab90
-levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	2	2f5cc19e1950	0xde200
+levelpreview	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	96.3906	96.3906	2	9d45b7b2d2dc	0xfab90
+levelpreview	?Tick@CPreviewState@@QAEHXZ	99.7826	99.7826	3	67694f17c50e	0xde200
 levelrezpath	?BuildLevelRezPath@LevelRezLoader@@QAEHHHHHVCString@@@Z	44.8097	44.8097	1	eb916c0b8965	0x93d40
 levelsync	?Sync@CLevelSync@@QAEHPAUSyncStream@@HHH@Z	47.0701	47.0701	4	1a90e3250229	0x1084d0
 leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	65.2349	65.2349	3	e7ffb890588b	0xd2b20

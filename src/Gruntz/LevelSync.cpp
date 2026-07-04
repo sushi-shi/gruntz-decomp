@@ -41,9 +41,10 @@ struct SyncSub {
 };
 
 // The lazily-allocated +0x54c child (operator new(0x40) + ctor 0x401271).
+class CLevelSync; // owner (defined below); m_3c back-links to it
 struct CLevelSyncChild {
     char pad[0x3c];
-    void* m_3c; // +0x3c back-link to the owner
+    CLevelSync* m_3c; // +0x3c back-link to the owner (= `this` in Sync)
     CLevelSyncChild();
 };
 
