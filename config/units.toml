@@ -1826,7 +1826,7 @@ flags = "eh"
 
 [[unit]]
 unit = "smackervideowindow"
-source = "src/Gruntz/SmackerVideoWindow.cpp"
+source = "src/Io/SmackerVideoWindow.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2262,7 +2262,7 @@ flags = "base"
 
 [[unit]]
 unit = "movieplayer"
-source = "src/Gruntz/MoviePlayer.cpp"
+source = "src/Io/MoviePlayer.cpp"
 flags = "eh"
 [[unit]]
 unit = "wapuncompress"

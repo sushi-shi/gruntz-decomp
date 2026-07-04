@@ -9,8 +9,8 @@
 // load-bearing fact; field names are placeholders.
 //
 // Two reconstructed entry points so far (separate retail TUs):
-//   0x17c6f0  CMoviePlayer::Open   (src/Gruntz/MoviePlayer.cpp, frameless)
-//   0x038fc0  CMoviePlayer::~CMoviePlayer (src/Gruntz/MoviePlayerEh.cpp, /GX)
+//   0x17c6f0  CMoviePlayer::Open   (src/Io/MoviePlayer.cpp, frameless)
+//   0x038fc0  CMoviePlayer::~CMoviePlayer (src/Io/MoviePlayer.cpp, merged /GX Eh)
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 

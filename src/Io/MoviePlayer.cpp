@@ -1,8 +1,8 @@
 #include <rva.h>
-#include <Gruntz/MoviePlayer.h>
+#include <Io/MoviePlayer.h>
 #include <Mfc.h> // /GX EH-frame helpers
 // MoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
-// movie/stream decode object (placeholder name; see include/Gruntz/MoviePlayer.h).
+// movie/stream decode object (placeholder name; see include/Io/MoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
 //   0x17c6f0  Open - orchestrate a decode open through the +0x540 store + OpenHi.
 // The store/worker sibling methods (Begin/OpenA/Abort/OpenB/OpenHi) live elsewhere
@@ -51,7 +51,7 @@ SIZE_UNKNOWN(CMovieFile);
 // merged from MoviePlayerEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
 // ============================================================================
 // MoviePlayerEh.cpp - the /GX EH-framed destructor of the DDrawMgr movie/FMV
-// player decode object (see include/Gruntz/MoviePlayer.h).
+// player decode object (see include/Io/MoviePlayer.h).
 // Split off the frameless main cluster (the dtor lives at 0x038fc0, far from the
 // 0x17b500..0x17c790 method cluster, so it is its own retail TU). MSVC5 /GX frames
 // the member-teardown walk; the embedded store + scratch embed give it the frame.
