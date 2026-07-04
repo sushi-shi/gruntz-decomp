@@ -1,4 +1,4 @@
-// CTeleporter.cpp - the teleporter tile-logic game object (C:\Proj\Gruntz).
+// Teleporter.cpp - the teleporter tile-logic game object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CTeleporter methods, defined in ascending retail-RVA order:
 //   ~CTeleporter @0x010dd0 - the /GX leaf dtor (folds the CUserLogic teardown).

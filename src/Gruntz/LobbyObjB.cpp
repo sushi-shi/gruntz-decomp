@@ -1,4 +1,4 @@
-// CLobbyObjB.cpp - the CMulti m_520 lobby object + its 0x64-stride slot element
+// LobbyObjB.cpp - the CMulti m_520 lobby object + its 0x64-stride slot element
 // (mis-attributed to CMulti by the dynamic-this tracer). See CLobbyObjB.h.
 //
 // Reconstructed in ascending retail-RVA order. Both destructors are /GX (the

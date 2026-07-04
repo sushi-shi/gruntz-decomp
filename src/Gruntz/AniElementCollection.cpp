@@ -1,5 +1,5 @@
 #include <rva.h>
-// CAniElementCollection.cpp - the /GX teardown TU of CAniElement (the 0x28-byte
+// AniElementCollection.cpp - the /GX teardown TU of CAniElement (the 0x28-byte
 // 'ANI' element; vtable @0x5efba8 = ??_7CAniElementObj). This is NOT a second class:
 // it is the same CAniElement (single definition in include/Gruntz/AniElement.h),
 // with only its two /GX methods split out here per the frameless/EH TU split

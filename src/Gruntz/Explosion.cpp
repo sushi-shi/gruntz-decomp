@@ -1,4 +1,4 @@
-// CExplosion.cpp - the explosion eyecandy (C:\Proj\Gruntz), a CUserLogic leaf.
+// Explosion.cpp - the explosion eyecandy (C:\Proj\Gruntz), a CUserLogic leaf.
 // The /GX leaf dtor and the 1-arg ctor (the shared CUserLogic(obj) prologue + the
 // per-class eyecandy tail).
 #include <Gruntz/Explosion.h>

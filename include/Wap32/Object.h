@@ -1,4 +1,4 @@
-// CObject.h - Wap::CObject, the WAP engine's CObject grand-base (RTTI name
+// Object.h - Wap::CObject, the WAP engine's CObject grand-base (RTTI name
 // "CObject", vtable RVA 0x1e8cb4 / VA 0x5e8cb4, COL type-descriptor `CObject`).
 //
 // This is the ONE authoritative WAP grand-base. The reconstruction previously

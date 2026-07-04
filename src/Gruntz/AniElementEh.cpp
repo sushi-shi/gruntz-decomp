@@ -1,4 +1,4 @@
-// CAniElementEh.cpp - the /GX (eh) sibling of CAniElement.cpp, carrying the single
+// AniElementEh.cpp - the /GX (eh) sibling of CAniElement.cpp, carrying the single
 // member whose destructible file-reader local forces the C++ EH frame (the rest of
 // CAniElement stays in the frameless base TU; split per
 // docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md).

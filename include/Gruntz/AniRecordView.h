@@ -1,4 +1,4 @@
-// CAniRecordView.h - the shared polymorphic view of the 0x34-byte 'ANI' frame
+// AniRecordView.h - the shared polymorphic view of the 0x34-byte 'ANI' frame
 // record that CAniElement (Build) `new`s and catalogs in its CObArray.
 //
 // The REAL record is CAniRecord (src/Gruntz/AniRecord.cpp): a non-polymorphic,

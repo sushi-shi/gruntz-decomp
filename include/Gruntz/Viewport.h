@@ -1,4 +1,4 @@
-// CViewport.h - the world plane / world->screen transform object (reached as
+// Viewport.h - the world plane / world->screen transform object (reached as
 // g_gameReg->m_resMgr->m_view->m_viewport, and g_gameReg->m_world->m_24->m_5c).
 // ONE object, several field views recovered from different call sites - all folded
 // here so every consumer reaches it typed, cast-free:

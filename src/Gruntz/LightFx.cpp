@@ -1,4 +1,4 @@
-// CLightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
+// LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
 // reconstructed here, in ascending retail-RVA order:
 //   * Activate  (0x9d520) - bind the effect spec from the object bute map.

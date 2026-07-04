@@ -1,4 +1,4 @@
-// CWnd.h - the single shared minimal view of MFC's CWnd used by the Win32/dialog
+// Wnd.h - the single shared minimal view of MFC's CWnd used by the Win32/dialog
 // TUs. The wrapped window handle lives at +0x1c (m_hWnd); the object is 0x3c
 // bytes. Every method here is a real statically-linked MFC entrypoint modeled with
 // NO body, so its `call rel32` displacement reloc-masks (match-by-shape). Field

@@ -1,4 +1,4 @@
-// CLevelTimeDtor.h - matched-world view of CLevelTime for its leaf destructor
+// LevelTimeDtor.h - matched-world view of CLevelTime for its leaf destructor
 // (C:\Proj\Gruntz).
 //
 // CLevelTime : CUserLogic (RTTI .?AVCLevelTime@@) - the level-timer tile-logic

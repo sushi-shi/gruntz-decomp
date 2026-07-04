@@ -1,4 +1,4 @@
-// CStatusBarMgr.cpp - the in-game status-bar per-tab widget builder.
+// StatusBarMgr.cpp - the in-game status-bar per-tab widget builder.
 //
 // LoadTabSprites (RVA 0x102250, __thiscall, returns int) is the giant per-tab
 // builder: it dispatches on the current tab index (m_10c, 1..5) and, for that

@@ -1,4 +1,4 @@
-// CDDrawShadeBlit.cpp - DDrawMgr software shaded-sprite blitter (tracer
+// DDrawShadeBlit.cpp - DDrawMgr software shaded-sprite blitter (tracer
 // placeholder tomalla-86). Methods in ascending retail-RVA order.
 //
 // 0x1497f0 Blit       - validate the destination rect, select the per-draw-type

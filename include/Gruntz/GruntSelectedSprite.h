@@ -1,4 +1,4 @@
-// CGruntSelectedSprite.h - the "grunt is selected" indicator sprite, a
+// GruntSelectedSprite.h - the "grunt is selected" indicator sprite, a
 // CUserLogic-derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor
 // folds the bare CUserLogic teardown (the leaf-dtor archetype); SetCell stores
 // the (x,y) grunt cell; Update tracks the selected grunt's screen position.

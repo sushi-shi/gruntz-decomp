@@ -1,4 +1,4 @@
-// CState.h - the WAP32 base game-state class (C:\Proj\Gruntz). One canonical
+// State.h - the WAP32 base game-state class (C:\Proj\Gruntz). One canonical
 // definition, shared by GameMode.h (the leaf states CMenuState/CCreditsState/
 // CBootyState + the gamemode CPlay::Update match) and CPlay.h (the in-game PLAY
 // state whose Render drives the high vtable slots).

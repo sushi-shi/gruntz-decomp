@@ -1,4 +1,4 @@
-// CBankMgr.h - CState's bank/source facet (afx-free). The +0x08 bank manager
+// BankMgr.h - CState's bank/source facet (afx-free). The +0x08 bank manager
 // (CState::m_8) resolves a named bank/namespace into a CResSource; the resolved
 // source (CState::m_2c/m_28/m_30/m_34) then looks up / loads named sets.
 //

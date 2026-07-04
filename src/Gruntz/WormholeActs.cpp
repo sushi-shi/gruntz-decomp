@@ -1,4 +1,4 @@
-// CWormholeActs.cpp - CWormhole's activation-name registration (C:\Proj\Gruntz).
+// WormholeActs.cpp - CWormhole's activation-name registration (C:\Proj\Gruntz).
 //
 // CWormhole's per-frame activation handler is bound here by RegisterActs (the
 // 0x18d shared-name-registry archetype). This lives in its own TU rather than

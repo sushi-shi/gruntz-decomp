@@ -1,4 +1,4 @@
-// CFaderTileRender.cpp - the per-column tile gather/remap scanline compositor of
+// FaderTileRender.cpp - the per-column tile gather/remap scanline compositor of
 // the big CFader subtype (the 0x7d5c-byte fader allocated by CFaderMgr::Add case
 // 2; its Apply path 0x1817e0 calls this). __thiscall, two args (arg0 = base
 // pixel row, arg1 = a leading X offset). For each of m_colCount columns it gathers a

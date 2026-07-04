@@ -1,4 +1,4 @@
-// CPlayPlaneScan.cpp - two CPlay per-frame plane-list sub-steps re-homed from
+// PlayPlaneScan.cpp - two CPlay per-frame plane-list sub-steps re-homed from
 // src/Stub/Discovered.cpp (trace-attributed to CPlay: this->m_view at +0xc is the
 // CView, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
 // surface). Both walk the renderer's embedded plane list (a CObList-style

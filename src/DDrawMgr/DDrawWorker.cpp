@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawWorker.cpp - the owned-collection node of the DDrawMgr "DDraw worker"
+// DDrawWorker.cpp - the owned-collection node of the DDrawMgr "DDraw worker"
 // family (placeholder name; engine "tomalla-35"). Non-RTTI engine class;
 // vtable @0x5efbe8 (g_ddrawWorkerVtbl), grand-base dtor vtable
 // g_wapObjectDtorVtbl @0x5e8cb4. See include/DDrawMgr/DDrawWorker.h.

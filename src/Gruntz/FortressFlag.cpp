@@ -1,4 +1,4 @@
-// CFortressFlag.cpp - the fortress-flag game-object (C:\Proj\Gruntz).
+// FortressFlag.cpp - the fortress-flag game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CFortressFlag methods, defined in ascending retail-RVA
 // order:

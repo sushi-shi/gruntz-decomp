@@ -1,4 +1,4 @@
-// CInGameTextUpdate.cpp - CInGameText::Update (0x997c0), the in-game text/help
+// InGameTextUpdate.cpp - CInGameText::Update (0x997c0), the in-game text/help
 // object's per-frame tick (C:\Proj\Gruntz), re-homed from src/Stub/Backlog.cpp.
 //
 // Ghidra symbol cluster proves CInGameText ownership: 0x997c0 sits inside the

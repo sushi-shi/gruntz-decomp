@@ -1,4 +1,4 @@
-// CGruntzSoundZ.h - a positional/zoned sound bank manager in the Dsndmgr module
+// GruntzSoundZ.h - a positional/zoned sound bank manager in the Dsndmgr module
 // (the 0x138xxx region, adjacent to the AIL/DirectSound subsystem).
 //
 // CGruntzSoundZ derives from MFC CMapStringToOb (the map sits at offset 0; its

@@ -1,4 +1,4 @@
-// CGruntPowerupSprite.h - the "grunt has a powerup" indicator sprite, a
+// GruntPowerupSprite.h - the "grunt has a powerup" indicator sprite, a
 // CUserLogic-derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor
 // folds the bare CUserLogic teardown (leaf-dtor archetype); SetCell stashes the
 // grunt cell + powerup id and binds the bute sprite; Update tracks the grunt.

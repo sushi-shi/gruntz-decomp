@@ -1,4 +1,4 @@
-// CGruntWingzTimeSprite.h - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
+// GruntWingzTimeSprite.h - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
 //
 // RTTI (.?AVCGruntWingzTimeSprite@@, vtbl 0x1e77cc) gives the true base as
 // CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden).

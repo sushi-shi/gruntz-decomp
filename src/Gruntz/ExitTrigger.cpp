@@ -1,4 +1,4 @@
-// CExitTrigger.cpp - the level-exit trigger tile-logic game-object (C:\Proj\Gruntz).
+// ExitTrigger.cpp - the level-exit trigger tile-logic game-object (C:\Proj\Gruntz).
 //
 // Two CExitTrigger methods, defined in ascending retail-RVA order:
 //   GetTypeTag     @0x010870 - the 6-byte per-class logic-type id accessor (0x3f7).

@@ -1,4 +1,4 @@
-// CPlay.cpp - CPlay::Render: the in-game PLAY state's per-frame
+// Play.cpp - CPlay::Render: the in-game PLAY state's per-frame
 // step+draw, the heart of the running game. CARCASS reconstruction: the control
 // flow, the CPlay/CState/CGameRegistry member offsets, and the ordered per-frame
 // call sequence are faithful; field/callee names are placeholders and unmatched

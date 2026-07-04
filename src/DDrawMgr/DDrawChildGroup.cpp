@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
+// DDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
 // sub-manager CDDrawChildGroup (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
 //

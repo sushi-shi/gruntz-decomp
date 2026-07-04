@@ -1,4 +1,4 @@
-// CWorldSoundSet.h - a trace-discovered Gruntz ambient-sound game object
+// WorldSoundSet.h - a trace-discovered Gruntz ambient-sound game object
 // (C:\Proj\Gruntz; the this-tracer mislabeled it CRandomAmbientSound - that RTTI
 // name belongs to the polymorphic class in CRandomAmbientSound.h). It owns a
 // world/level back-pointer (+0x00), a second back-pointer seeded at init (+0x04),

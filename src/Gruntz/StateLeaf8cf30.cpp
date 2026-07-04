@@ -1,4 +1,4 @@
-// CStateLeaf8cf30.cpp - CHelpState::~CHelpState, the help-screen game-state's /GX
+// StateLeaf8cf30.cpp - CHelpState::~CHelpState, the help-screen game-state's /GX
 // destructor (0x8cf30), an orphan COMDAT. IDENTITY RECOVERED: the derived vtable it
 // stamps, 0x5e9dfc, is ??_7CHelpState@@6B@ (config/vtable_names.csv 0x1e9dfc). It is
 // the true CHelpState : CState dtor; BacklogStateLoaders.cpp models the same

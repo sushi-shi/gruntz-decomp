@@ -1,4 +1,4 @@
-// CTileScan.cpp - a 3x3 tile-region scan (orphan COMDAT @0x35f10). Gated on a
+// TileScan.cpp - a 3x3 tile-region scan (orphan COMDAT @0x35f10). Gated on a
 // per-frame threshold + a tile-state probe, it walks the 3x3 tile region around the
 // argument's screen position (skipping the centre + out-of-bounds tiles), and on
 // the first neighbour tile whose grid flags request it (the inlined grid lookup =

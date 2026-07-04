@@ -1,4 +1,4 @@
-// CEyeCandy.h - the eyecandy tile-logic game-object (C:\Proj\Gruntz).
+// EyeCandy.h - the eyecandy tile-logic game-object (C:\Proj\Gruntz).
 //
 // CEyeCandy : CUserLogic - a tile-logic leaf in the same game-object hierarchy
 // as CTimeBomb (proven by its dtor @0x00fd60 stamping the CUserLogic vftable

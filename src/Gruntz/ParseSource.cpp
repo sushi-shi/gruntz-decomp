@@ -1,4 +1,4 @@
-// CParseSource.cpp - the positioned byte-reader over a ButeMgr parse source
+// ParseSource.cpp - the positioned byte-reader over a ButeMgr parse source
 // (trace placeholder tomalla-85, RVAs 0x139ae0 / 0x139af0). SetPos seeks
 // the cursor; Read copies up to `len` bytes (clamped to the limit) from whichever
 // backing store is live - the mapped source, the inline buffer, or the virtual

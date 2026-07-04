@@ -1,4 +1,4 @@
-// CGruntSelectedSprite.cpp - the "grunt is selected" indicator sprite
+// GruntSelectedSprite.cpp - the "grunt is selected" indicator sprite
 // (C:\Proj\Gruntz). A CUserLogic-derived game object; methods in ascending
 // retail-RVA order:
 //   ~CGruntSelectedSprite  @0x011e80 - the /GX leaf dtor (CUserLogic teardown).

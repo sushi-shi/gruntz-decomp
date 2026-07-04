@@ -1,4 +1,4 @@
-// CFileImageBlit.cpp - the CFileImage::Blit<dest><src> pixel-format converters
+// FileImageBlit.cpp - the CFileImage::Blit<dest><src> pixel-format converters
 // (DIRSURF.CPP). Each is the leaf blitter CFileImage::Blit (0x13faa0) dispatches
 // to by (dest bpp = m_bitDepth, src bpp = bitcount); the trailing digits encode
 // dest_src depths (168 = dest 16bpp / src 8bpp, etc.). They all share the same

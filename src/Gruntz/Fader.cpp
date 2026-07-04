@@ -1,4 +1,4 @@
-// CFader.cpp - the CFaderMgr element base class + one concrete subtype's
+// Fader.cpp - the CFaderMgr element base class + one concrete subtype's
 // destructor (tracer placeholder MallocCtor_17fdb0, keyed off the 0x17fdb0 subtype
 // ctor). CFader is the polymorphic base of the six screen-fader subtypes the
 // CFaderMgr::Add factory allocates; each fader owns a CShadeTableCache color-table

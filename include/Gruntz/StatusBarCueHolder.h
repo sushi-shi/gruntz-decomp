@@ -1,4 +1,4 @@
-// CStatusBarCueHolder.h - the cue-playing status-bar holder shared by the
+// StatusBarCueHolder.h - the cue-playing status-bar holder shared by the
 // level-preview (LevelPreview.cpp) and finish-level (FinishLevelSprite.cpp) state
 // drivers. ONE shape, ONE definition: an embedded name->cue hash table at +0x10
 // (CCueHashTable::Lookup @0x1b8438, __thiscall ret 8), the audio-kill sound mgr at

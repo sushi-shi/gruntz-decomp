@@ -1,4 +1,4 @@
-// CScanlineSurfaceSave.cpp - CScanlineSurface::SaveBmp (0x176b30), the 8bpp software
+// ScanlineSurfaceSave.cpp - CScanlineSurface::SaveBmp (0x176b30), the 8bpp software
 // surface's "write me out as an 8-bit BMP" path. Split into its own /GX EH TU (the
 // rest of CScanlineSurface.cpp is FPO `base`): a destructible stack CFile temp forces
 // the exception frame (push -1 / handler / fs:0).

@@ -1,4 +1,4 @@
-// CView.h - the ONE shared shape of the CState +0x0c view/render/resource context.
+// View.h - the ONE shared shape of the CState +0x0c view/render/resource context.
 //
 // CState::m_c is the real RTTI class `CView` (vftable ??_7CView@@6B@ @0x5ee1c4, RVA
 // 0x1ee1c4). It is a SINGLE object that every game-state reaches through one of

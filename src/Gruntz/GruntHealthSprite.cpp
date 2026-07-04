@@ -1,4 +1,4 @@
-// CGruntHealthSprite.cpp - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
+// GruntHealthSprite.cpp - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
 //
 // CGruntHealthSprite methods, defined in ascending retail-RVA order:
 //   ~CGruntHealthSprite @0x011fb0 - the /GX leaf dtor (folds the CUserLogic teardown).

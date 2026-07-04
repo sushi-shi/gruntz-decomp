@@ -1,4 +1,4 @@
-// CFileImageRunDecode.cpp - the CFileImage RLE row-decoders (DIRSURF.CPP), which
+// FileImageRunDecode.cpp - the CFileImage RLE row-decoders (DIRSURF.CPP), which
 // retail compiled UNOPTIMIZED (/Od): a full ebp frame with every local spilled to
 // the stack, no register allocation or strength reduction. They Lock the surface,
 // walk it row by row (the row base via the pitch-scale helper 0x1413c0), and RLE-

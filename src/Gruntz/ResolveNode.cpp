@@ -1,6 +1,6 @@
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
 #include <rva.h>
-// CResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
+// ResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
 // CDDrawSubMgr family (the Wap::CObject base dtor vtable lineage; the base subobject
 // vftable g_wapObjectDtorVtbl @0x5e8cb4 is restamped at ~CResolveNode exit). The
 // node's own primary vftable is at RVA 0x1efbc0 (g_resolveNodeVtbl). The node's

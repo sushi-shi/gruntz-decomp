@@ -1,4 +1,4 @@
-// CWarlord.h - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
+// Warlord.h - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
 // CUserLogic-derived leaf. This header models ONLY what the three home-TU
 // methods (~CWarlord, the slot-4 state dispatcher, and the anim re-arm) touch.
 //

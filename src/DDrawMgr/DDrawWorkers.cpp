@@ -1,4 +1,4 @@
-// CDDrawWorkers.cpp - the CDDrawWorkerA/CDDrawWorkerB frame-set virtuals (vtable
+// DDrawWorkers.cpp - the CDDrawWorkerA/CDDrawWorkerB frame-set virtuals (vtable
 // slots 11/12/13). Each stashes the requested frame + marks the worker armed
 // (m_74 = 2), then forwards to the inherited reset/arm helper (CDDrawWorkerBase::
 // Helper_164790, 0x164790) or the own named-object frame fetch

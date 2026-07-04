@@ -1,4 +1,4 @@
-// CCheckpointTrigger.cpp - the checkpoint-trigger tile-logic object
+// CheckpointTrigger.cpp - the checkpoint-trigger tile-logic object
 // (C:\Proj\Gruntz), a CUserLogic leaf. Only the /GX leaf dtor is reconstructed.
 #include <Gruntz/CheckpointTrigger.h>
 

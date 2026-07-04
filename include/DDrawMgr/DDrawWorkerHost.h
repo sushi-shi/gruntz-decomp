@@ -1,4 +1,4 @@
-// CDDrawWorkerHost.h - a larger DDrawMgr DDraw-worker host (ctor 0x1615a0, dtor
+// DDrawWorkerHost.h - a larger DDrawMgr DDraw-worker host (ctor 0x1615a0, dtor
 // 0x163af0; own primary vtable g_ddrawWorkerHostVtbl @0x5f0270). Like
 // CDDrawWorker it derives from the CLoadable grand-base (m_04/m_08/m_0c
 // reset on teardown, then the grand-base dtor vtable g_wapObjectDtorVtbl

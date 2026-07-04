@@ -1,4 +1,4 @@
-// CAnimSink.h - the shared view of the animation sub-object embedded at
+// AnimSink.h - the shared view of the animation sub-object embedded at
 // CGameObject+0x1a0 (the bound object is CUserLogic::m_38). Its setter (0x15c360,
 // __thiscall, 1 arg) re-targets the active animation to the draw-delta passed in;
 // modeled NO-body so the call reloc-masks (the body lives in the engine sub-mgr

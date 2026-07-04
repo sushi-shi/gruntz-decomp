@@ -1,4 +1,4 @@
-// CMovingLogicSerial.cpp - CMovingLogic's bute-text curve writer (C:\Proj\Gruntz).
+// MovingLogicSerial.cpp - CMovingLogic's bute-text curve writer (C:\Proj\Gruntz).
 //
 //   0x16cdd0  WriteCurve - stream the 0x108-byte movement-curve block
 //                          (CMovingLogic+0x38) field-by-field into a CButeText

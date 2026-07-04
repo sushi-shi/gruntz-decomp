@@ -1,4 +1,4 @@
-// CLoadable.h - the ONE canonical WAP "loadable" intermediate base, unifying the
+// Loadable.h - the ONE canonical WAP "loadable" intermediate base, unifying the
 // three formerly-duplicated CLoadable models (GameLevel.h, CDDrawWorker.h,
 // CDDrawWorkerRegistry.cpp) and the fabricated CDDrawSubMgrBase.
 //

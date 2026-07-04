@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawSubMgrAni.cpp - the 'ANI' (animation) keyed catalog sub-manager of the
+// DDrawSubMgrAni.cpp - the 'ANI' (animation) keyed catalog sub-manager of the
 // CDirectDrawMgr surface/page-manager family (the "DDraw surface manager" group; see
 // docs/ddraw-family-names.md). Sibling of CDDrawSubMgrLeaf (string
 // catalog) and CDDrawSubMgrLeafScan (sound cache): a CObject/CDDrawSubMgr-derived

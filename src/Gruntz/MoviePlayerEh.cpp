@@ -1,5 +1,5 @@
 #include <rva.h>
-// CMoviePlayerEh.cpp - the /GX EH-framed destructor of the DDrawMgr movie/FMV
+// MoviePlayerEh.cpp - the /GX EH-framed destructor of the DDrawMgr movie/FMV
 // player decode object (see include/Gruntz/MoviePlayer.h).
 // Split off the frameless main cluster (the dtor lives at 0x038fc0, far from the
 // 0x17b500..0x17c790 method cluster, so it is its own retail TU). MSVC5 /GX frames

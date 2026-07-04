@@ -1,4 +1,4 @@
-// CSecretLevelTrigger.cpp - the secret-level trigger game-object (C:\Proj\Gruntz).
+// SecretLevelTrigger.cpp - the secret-level trigger game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CSecretLevelTrigger methods, defined in ascending
 // retail-RVA order:

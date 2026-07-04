@@ -1,4 +1,4 @@
-// CDroppedObject.h - a dropped game-object (C:\Proj\Gruntz).
+// DroppedObject.h - a dropped game-object (C:\Proj\Gruntz).
 //
 // CDroppedObject : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CTimeBomb (proven by its dtor @0x0125b0 stamping the CUserLogic

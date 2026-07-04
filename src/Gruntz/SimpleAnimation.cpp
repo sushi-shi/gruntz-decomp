@@ -1,4 +1,4 @@
-// CSimpleAnimation.cpp - a simple eyecandy animation game-object (C:\Proj\Gruntz).
+// SimpleAnimation.cpp - a simple eyecandy animation game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CSimpleAnimation methods, defined in ascending retail-RVA
 // order:

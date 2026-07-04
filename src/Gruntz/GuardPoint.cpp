@@ -1,4 +1,4 @@
-// CGuardPoint.cpp - the guard-point marker (C:\Proj\Gruntz), a CUserLogic leaf.
+// GuardPoint.cpp - the guard-point marker (C:\Proj\Gruntz), a CUserLogic leaf.
 // The /GX leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj) prologue).
 #include <Gruntz/GuardPoint.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)

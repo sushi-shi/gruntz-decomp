@@ -1,4 +1,4 @@
-// CWarlord.cpp - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
+// Warlord.cpp - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
 // CUserLogic-derived leaf. Home TU for three __thiscall methods, in ascending
 // retail-RVA order:
 //   0x0107f0  ~CWarlord       the dtor: destruct the +0x54 CString, then the

@@ -1,4 +1,4 @@
-// CHaznColl.h - the single shared view of the coordinate/activation-registry
+// HaznColl.h - the single shared view of the coordinate/activation-registry
 // collection. The same engine collection archetype is instantiated as the
 // static-hazard registry (@0x64e3d0) and the shared name registry (@0x6bf650), and
 // range-registered from the boundary thunk pool. Find (0x16da80, __thiscall) is the

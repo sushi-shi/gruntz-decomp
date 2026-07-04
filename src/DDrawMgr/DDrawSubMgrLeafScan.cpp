@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
+// DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
 // CDDrawSubMgrLeaf family (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" group; see docs/ddraw-family-names.md). This is
 // the keyed-asset CACHE variant: it owns a CMapStringToOb at +0x10 keyed by

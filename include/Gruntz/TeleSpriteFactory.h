@@ -1,4 +1,4 @@
-// CTeleSpriteFactory.h - the HUD/visual sprite factory reached as mgr->m_30->m_8.
+// TeleSpriteFactory.h - the HUD/visual sprite factory reached as mgr->m_30->m_8.
 // CreateSprite (0x1597b0) spawns the named teleporter sprite. The produced sprite
 // is the shared engine game object (CGameObject; both UserLogic.cpp and
 // CTeleporter.cpp cast the result to CGameObject*), forward-declared here as an

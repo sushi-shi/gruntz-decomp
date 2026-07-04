@@ -1,4 +1,4 @@
-// CGruntSpawnConfig.cpp - the grunt spawn/voice configuration manager.
+// GruntSpawnConfig.cpp - the grunt spawn/voice configuration manager.
 //
 // Ten __thiscall methods reconstructed in ascending-RVA order. The dtor (0x85df0)
 // lives in the 0x85xxx text region (next to ~CGruntzMapMgr) but is this class's

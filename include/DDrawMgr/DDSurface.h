@@ -1,4 +1,4 @@
-// CDDSurface.h - the WAP32 DirectDraw surface wrapper (DDrawMgr module,
+// DDSurface.h - the WAP32 DirectDraw surface wrapper (DDrawMgr module,
 // C:\Proj\DDrawMgr\DIRSURF.CPP) and the IDirectDrawSurface COM interface it drives.
 // THE canonical single-source shape for CDDSurface: every TU that touches a DDraw
 // surface (the CImage/CFileImage blit paths, the menu flip/attract poll, the sound-

@@ -1,4 +1,4 @@
-// CGruntToyTimeSprite.h - the grunt toy-timer HUD sprite (C:\Proj\Gruntz).
+// GruntToyTimeSprite.h - the grunt toy-timer HUD sprite (C:\Proj\Gruntz).
 //
 // RTTI (.?AVCGruntToyTimeSprite@@, vtbl 0x1e79ec) gives the true base as
 // CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden).

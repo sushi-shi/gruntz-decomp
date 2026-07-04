@@ -1,4 +1,4 @@
-// CDDrawSurfaceMgrSerialize.cpp - CDDrawSurfaceMgr::SnapshotChildren (0x156020),
+// DDrawSurfaceMgrSerialize.cpp - CDDrawSurfaceMgr::SnapshotChildren (0x156020),
 // the 1285-B child blit-param serializer/dispatcher carved out of the discovered
 // backlog. Split into its own /GX ("eh") TU because the function is a deep EH
 // state machine (~14 unwind states over a CFile-backed serializer temp + an

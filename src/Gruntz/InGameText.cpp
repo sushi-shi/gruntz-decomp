@@ -1,4 +1,4 @@
-// CInGameText.cpp - the in-game text/message display object (a CUserLogic-derived
+// InGameText.cpp - the in-game text/message display object (a CUserLogic-derived
 // game-object leaf). Three __thiscall methods reconstructed in ascending-RVA
 // order:
 //   0x011dc0  ~CInGameText  (the bare CUserLogic teardown, /GX frame)

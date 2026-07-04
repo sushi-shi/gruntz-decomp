@@ -1,4 +1,4 @@
-// CLevelTimeDtor.cpp - CLevelTime's /GX leaf destructor (C:\Proj\Gruntz).
+// LevelTimeDtor.cpp - CLevelTime's /GX leaf destructor (C:\Proj\Gruntz).
 //
 // This TU hosts the leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj)
 // prologue) against the matched <Gruntz/UserLogic.h> teardown.

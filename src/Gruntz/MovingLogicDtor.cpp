@@ -1,4 +1,4 @@
-// CMovingLogicDtor.cpp - CMovingLogic's /GX leaf destructor (C:\Proj\Gruntz).
+// MovingLogicDtor.cpp - CMovingLogic's /GX leaf destructor (C:\Proj\Gruntz).
 //
 // Hosts the leaf dtor (0x13bd0) against the canonical <Gruntz/MovingLogic.h>.
 #include <Gruntz/MovingLogicDtor.h>

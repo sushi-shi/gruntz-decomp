@@ -1,4 +1,4 @@
-// CDirectDrawMgr.cpp - the DDrawMgr module's DirectDraw manager group
+// DirectDrawMgr.cpp - the DDrawMgr module's DirectDraw manager group
 // (C:\Proj\DDrawMgr\). Three classes share one TU here because they all funnel
 // failed HRESULTs through CDirectDrawMgr::GetErrorString:
 //

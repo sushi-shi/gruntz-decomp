@@ -1,4 +1,4 @@
-// CGruntToySprite.h - the "grunt has a toy" indicator sprite, a CUserLogic-
+// GruntToySprite.h - the "grunt has a toy" indicator sprite, a CUserLogic-
 // derived game object (vftables 0x5e705c / 0x5e70b4). The 0x44 dtor folds the
 // bare CUserLogic teardown (leaf-dtor archetype); SetCell stashes the grunt cell
 // and clears a flag bit; Update tracks the grunt's screen position + layer.

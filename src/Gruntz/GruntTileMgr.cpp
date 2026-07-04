@@ -1,4 +1,4 @@
-// CGruntTileMgr.cpp - the grunt path/occupancy sub-manager's spell-area cue
+// GruntTileMgr.cpp - the grunt path/occupancy sub-manager's spell-area cue
 // (re-homed from src/Stub/ApiCallers.cpp). CombatCue scans the tile-mgr's 4x15
 // grunt grid (this+0x1c) for grunts whose 14x14-px HUD box overlaps the cue's
 // pixel AABB (centred on the caster, +-((radius<<5)+7)), then applies the

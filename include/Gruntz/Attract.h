@@ -1,4 +1,4 @@
-// CAttract.h - CAttract, the attract/title-screen game-state (RTTI
+// Attract.h - CAttract, the attract/title-screen game-state (RTTI
 // .?AVCAttract@@, vtable @0x5ea194). A CState leaf (RTTI base list:
 // CAttract -> CState): it overrides the slot-2 resource release, the slot-7
 // paint/host poll, the slot-10 per-frame poll, and carries the EH-framed `??1`.

@@ -1,4 +1,4 @@
-// CFrontCandyAni.cpp - a front-candy eyecandy animation game-object
+// FrontCandyAni.cpp - a front-candy eyecandy animation game-object
 // (C:\Proj\Gruntz). The mirror of CBehindCandyAni, sharing the per-class
 // activation-registry archetype:
 //   FireActivation @0x0ad1b0 - the per-coordinate activation-registry dispatcher.

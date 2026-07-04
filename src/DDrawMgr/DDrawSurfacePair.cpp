@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawSurfacePair.cpp - a surface-backed drawing region in the DDrawMgr
+// DDrawSurfacePair.cpp - a surface-backed drawing region in the DDrawMgr
 // DDrawMgr image family. It owns one held DDraw surface (a CPoolItemA, the
 // CDDSurface wrapper) borrowed from the parent CDirectDrawMgr's surface pool,
 // plus a cached pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an

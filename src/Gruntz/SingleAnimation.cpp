@@ -1,4 +1,4 @@
-// CSingleAnimation.cpp - a single-shot eyecandy animation game-object
+// SingleAnimation.cpp - a single-shot eyecandy animation game-object
 // (C:\Proj\Gruntz).
 //
 // One trace-discovered CSingleAnimation method:

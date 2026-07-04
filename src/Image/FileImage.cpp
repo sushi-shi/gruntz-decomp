@@ -1,4 +1,4 @@
-// CFileImage.cpp - the file-backed surface image cluster (0x13ebb0..0x144d80).
+// FileImage.cpp - the file-backed surface image cluster (0x13ebb0..0x144d80).
 // Six methods in retail-RVA order: a vertical row-flip of the locked surface, a
 // decode thunk, two export-to-file paths (BMP + TGA headers + bottom-up rows), the
 // run-length decode dispatcher, and the file load wrapper. The held surface, its

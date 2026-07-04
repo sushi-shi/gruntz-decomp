@@ -1,4 +1,4 @@
-// CWapObj.h - the WAP engine's abstract intermediate base between Wap::CObject
+// WapObj.h - the WAP engine's abstract intermediate base between Wap::CObject
 // (the 5-slot grand-base, vtable @0x5e8cb4) and the surface/image/loadable game
 // objects. vtable_hierarchy --tree/--audit proves it: EVERY object in the
 // CImage / CLoadable / CDDrawWorker / CDrawSubWorker / CResolveNode /

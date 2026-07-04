@@ -1,4 +1,4 @@
-// CDDrawWorkerMgr.h - the DDraw "worker manager" held at the surface manager's
+// DDrawWorkerMgr.h - the DDraw "worker manager" held at the surface manager's
 // +0x0c region and reached (as PreviewMgr+0x04 / status-bar +0x04) by several
 // game-side TUs. It is the __thiscall receiver for the 0x158xxx surface ops
 // (Method_158b40 install-image .. Method_159ef0). Polymorphic: its own vtable

@@ -1,4 +1,4 @@
-// CToyPeek.h - the toy-peek HUD eyecandy (C:\Proj\Gruntz), a CUserLogic tile-logic
+// ToyPeek.h - the toy-peek HUD eyecandy (C:\Proj\Gruntz), a CUserLogic tile-logic
 // leaf (RTTI .?AVCToyPeek@@). The 1-arg ctor (0x98140) folds the shared
 // CUserLogic(obj) prologue then a per-class tail; the leaf state begins at +0x58.
 // Offsets + code bytes are load-bearing; field names are placeholders.

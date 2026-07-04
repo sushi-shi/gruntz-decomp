@@ -1,4 +1,4 @@
-// CAmbientSound.h - the engine's positional ambient-sound game object
+// AmbientSound.h - the engine's positional ambient-sound game object
 // (C:\Proj\Gruntz). RTTI: CAmbientSound : CUserBase, sizeof 0x40, vftable
 // 0x5e710c (CUserBase's is 0x5e70b4). It owns a DirectSoundMgr voice handle
 // (+0x04), a level/scale (+0x08/+0x0c/+0x10), an "is playing" flag (+0x14), TWO

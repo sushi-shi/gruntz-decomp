@@ -1,4 +1,4 @@
-// CToobSpikez.h - the toob-spikez hazard game-object (C:\Proj\Gruntz).
+// ToobSpikez.h - the toob-spikez hazard game-object (C:\Proj\Gruntz).
 //
 // CToobSpikez : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CTimeBomb (proven by its dtor @0x012c60 stamping the CUserLogic

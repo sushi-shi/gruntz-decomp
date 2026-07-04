@@ -1,4 +1,4 @@
-// CBehindCandyAni.cpp - a behind-candy eyecandy animation game-object
+// BehindCandyAni.cpp - a behind-candy eyecandy animation game-object
 // (C:\Proj\Gruntz).
 //
 // Two trace-discovered CBehindCandyAni methods, defined in ascending retail-RVA

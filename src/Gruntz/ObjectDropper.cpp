@@ -1,4 +1,4 @@
-// CObjectDropper.cpp - the object-dropper tile-logic object (C:\Proj\Gruntz), a
+// ObjectDropper.cpp - the object-dropper tile-logic object (C:\Proj\Gruntz), a
 // CUserLogic leaf. The /GX leaf dtor + the 1-arg ctor (shared CUserLogic(obj)
 // prologue + the per-class drop setup).
 #include <Gruntz/ObjectDropper.h>

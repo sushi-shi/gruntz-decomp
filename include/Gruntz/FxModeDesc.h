@@ -1,4 +1,4 @@
-// CFxModeDesc.h - a small non-polymorphic mode/effect descriptor record (trace
+// FxModeDesc.h - a small non-polymorphic mode/effect descriptor record (trace
 // placeholder tomalla-47). A type discriminator at +0x00 plus a handful of
 // int parameter fields; CFxModeDesc is the base (ctor 0x17e7b0 zeroes the tag)
 // and the concrete modes derive from it - each derived ctor runs the base ctor

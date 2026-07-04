@@ -1,4 +1,4 @@
-// CGruntStaminaSprite.cpp - the grunt stamina-bar eyecandy sprite (C:\Proj\Gruntz).
+// GruntStaminaSprite.cpp - the grunt stamina-bar eyecandy sprite (C:\Proj\Gruntz).
 //
 // CGruntStaminaSprite : CUserLogic (the base hierarchy comes from
 // <Gruntz/UserLogic.h>). Only offsets / code bytes are load-bearing; names are

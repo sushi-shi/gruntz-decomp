@@ -1,4 +1,4 @@
-// CStatusBarMgr.h - the in-game status-bar manager (C:\Proj\Gruntz).
+// StatusBarMgr.h - the in-game status-bar manager (C:\Proj\Gruntz).
 //
 // CStatusBarMgr owns the five status-bar "tabs" (Statz / Gruntz / Resource /
 // Multiplayer / Game). Each tab is a list of CStatusBarItem-derived widgets

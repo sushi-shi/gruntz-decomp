@@ -1,4 +1,4 @@
-// CGruntPuddle.h - the grunt-puddle game object, a CUserLogic-derived leaf
+// GruntPuddle.h - the grunt-puddle game object, a CUserLogic-derived leaf
 // (vftables 0x5e705c / 0x5e70b4, the CUserLogic / CUserBase pair). Confirmed
 // CGruntPuddle by its own string constants: "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2"
 // (the lookup-geometry sprite key @ 0x60c1c0) and "B" (the one-char bute key @

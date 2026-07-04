@@ -1,4 +1,4 @@
-// CStaticHazard.cpp - a static hazard game-object (C:\Proj\Gruntz).
+// StaticHazard.cpp - a static hazard game-object (C:\Proj\Gruntz).
 //
 // CStaticHazard : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Methods defined in ascending retail-RVA order:

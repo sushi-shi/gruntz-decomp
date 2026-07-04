@@ -1,4 +1,4 @@
-// CFaderMgr.h - the Gruntz screen-fader manager (tracer placeholder
+// FaderMgr.h - the Gruntz screen-fader manager (tracer placeholder
 // tomalla-48). A polymorphic owner of a growable CPtrArray of CFader*
 // objects. CFaderMgr::Add(nFaderType, pInit) is a 7-way factory: it allocates
 // one of six CFader subclasses by type code, primes it from the manager's

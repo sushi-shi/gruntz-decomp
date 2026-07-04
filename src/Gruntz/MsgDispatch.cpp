@@ -1,4 +1,4 @@
-// CMsgDispatch.cpp - three near-identical command dispatchers (orphan COMDATs
+// MsgDispatch.cpp - three near-identical command dispatchers (orphan COMDATs
 // @0xaa0a0 / 0xaa1e0 / 0xaa460) that route a UI message (arg->m_7c->m_1c) to the
 // handler sub-object (m_18): command 0 lazily constructs the handler (new CObj(arg)
 // + slot-6 init, /GX EH-framed), the mid commands fan out to its vtable slots, and

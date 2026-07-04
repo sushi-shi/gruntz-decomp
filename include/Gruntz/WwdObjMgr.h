@@ -1,4 +1,4 @@
-// CWwdObjMgr.h - the 0x159xxx-0x15bxxx WWD level-object collection manager. One
+// WwdObjMgr.h - the 0x159xxx-0x15bxxx WWD level-object collection manager. One
 // class, reconstructed across four TUs (level-load in CWwdObjMgr.cpp, the per-kind
 // factories in CWwdObjMgrFactories.cpp + CDDrawSubMgr.cpp, the list/map ops in
 // CDDrawSubMgr.cpp, and the spatial routing in WwdSpatialMgr.cpp).

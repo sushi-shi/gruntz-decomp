@@ -1,4 +1,4 @@
-// CMulti.h - the multiplayer / lobby game-state (C:\Proj\Gruntz). RTTI
+// Multi.h - the multiplayer / lobby game-state (C:\Proj\Gruntz). RTTI
 // (.?AVCMulti@@) gives the most-derived shape: `CMulti : public CPlay, public
 // CState` (CHD numBaseClasses=3, bases CMulti/CPlay/CState). The destructor at
 // 0x08d270 stamps the three retail vtables in turn (CMulti 0x5e9fe4 -> CPlay

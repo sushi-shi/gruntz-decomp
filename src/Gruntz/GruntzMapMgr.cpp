@@ -1,4 +1,4 @@
-// CGruntzMapMgr.cpp - the grunt-map manager container teardown (C:\Proj\Gruntz).
+// GruntzMapMgr.cpp - the grunt-map manager container teardown (C:\Proj\Gruntz).
 //
 // ~CGruntzMapMgr (0x85d10) is a /GX dtor: cl re-stamps the derived vtable (the
 // implicit stamp-first), then the body pushes every non-null CObArray element's

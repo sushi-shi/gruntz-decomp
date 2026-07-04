@@ -1,4 +1,4 @@
-// CAniPlayer.h - a timed cel-animation playback object (placeholder name; the
+// AniPlayer.h - a timed cel-animation playback object (placeholder name; the
 // RTTI class was not pinned - it is a non-virtual sprite-sequence player, NOT
 // CAniCycle/CSimpleAnimation, whose vtables do not contain these methods).
 //

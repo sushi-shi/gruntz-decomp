@@ -1,4 +1,4 @@
-// CButeSectionCtor.cpp - the constructor of a Bute "section" object (0x170210).
+// ButeSectionCtor.cpp - the constructor of a Bute "section" object (0x170210).
 //
 // An 8-state /GX EH constructor: it default-constructs a leading CString (+0x10),
 // three embedded CButeNode-family config-tree nodes (+0x18/+0x48/+0x74; the zPTree

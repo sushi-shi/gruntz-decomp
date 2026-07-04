@@ -1,4 +1,4 @@
-// CGameMenuMgrBuilders.h - the GAMETAB game-menu builder (BuildGameMenu TU,
+// GameMenuMgrBuilders.h - the GAMETAB game-menu builder (BuildGameMenu TU,
 // StatusBarGameMenu.cpp) shapes: the builder-facet base CSbMenuItem + its concrete
 // SBI leaves + the registry factory view + the CGameMenuMgr class. Moved here from
 // the per-TU inline defs so each carries a single shared definition (matching-neutral;

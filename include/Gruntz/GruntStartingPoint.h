@@ -1,4 +1,4 @@
-// CGruntStartingPoint.h - the grunt starting-point marker (C:\Proj\Gruntz), a
+// GruntStartingPoint.h - the grunt starting-point marker (C:\Proj\Gruntz), a
 // CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is
 // reconstructed here; the ctor (0x3df30) remains the @stub backlog in
 // src/Stub/GruntStartingPoint.cpp. Offsets + code bytes are load-bearing.

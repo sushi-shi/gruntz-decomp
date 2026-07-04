@@ -1,4 +1,4 @@
-// CLightFxEh.cpp - the /GX EH-framed CLightFx method(s), split off the frameless
+// LightFxEh.cpp - the /GX EH-framed CLightFx method(s), split off the frameless
 // clightfx TU (C:\Proj\Gruntz). MSVC5's /GX frames the leaf dtor (its destructible
 // +0x18 CUserLogic link forces the EH frame), so it cannot share the base TU's
 // frameless flags without re-framing its 100% leaves. The split is matching-neutral

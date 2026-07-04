@@ -1,4 +1,4 @@
-// CDDSurfaceDtor.cpp - ~CDDSurface (0x142a40), the DirectDraw surface wrapper's
+// DDSurfaceDtor.cpp - ~CDDSurface (0x142a40), the DirectDraw surface wrapper's
 // /GX destructor (re-homed from src/Stub/Discovered.cpp, matcher-1). CDDSurface is a
 // pool-item surface deriving from the shared polymorphic base (surface vtable 0x5ef7f0);
 // cl emits the implicit vptr stamp (stamp-first), runs the shared base teardown

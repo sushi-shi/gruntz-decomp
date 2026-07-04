@@ -1,4 +1,4 @@
-// CWwdObjMgr.cpp - the WWD level-object loader (C:\Proj\Gruntz). One trace method:
+// WwdObjMgr.cpp - the WWD level-object loader (C:\Proj\Gruntz). One trace method:
 //
 //   0x15ad30  LoadObjects - iterate the level reader's `count` object descriptors,
 //                           dedup each against the active-set map (+0x48), publish

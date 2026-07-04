@@ -1,4 +1,4 @@
-// CMovingLogicDtor.h - hosts CMovingLogic's leaf destructor (0x00013bd0) against
+// MovingLogicDtor.h - hosts CMovingLogic's leaf destructor (0x00013bd0) against
 // the canonical class (C:\Proj\Gruntz).
 //
 // CMovingLogic : CUserLogic (RTTI .?AVCMovingLogic@@) - the moving-object logic

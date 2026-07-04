@@ -1,4 +1,4 @@
-// CStatusBarSpriteActs.cpp - CStatusBarSprite's activation-name registration
+// StatusBarSpriteActs.cpp - CStatusBarSprite's activation-name registration
 // (C:\Proj\Gruntz).
 //
 // CStatusBarSprite : CUserLogic (RTTI vtable 0x5e7fc4; ctor 0x10c230, in

@@ -1,4 +1,4 @@
-// CTimeBomb.cpp - the timez-bomb pickup game-object (C:\Proj\Gruntz).
+// TimeBomb.cpp - the timez-bomb pickup game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CTimeBomb methods, defined in ascending retail-RVA order:
 //   ~CTimeBomb        @0x012a70 - the /GX leaf dtor (folds the CUserLogic teardown).

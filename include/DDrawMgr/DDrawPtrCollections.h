@@ -1,4 +1,4 @@
-// CDDrawPtrCollections.h - the DDraw surface/palette POOL host (tomalla
+// DDrawPtrCollections.h - the DDraw surface/palette POOL host (tomalla
 // CDDrawPtrCollections): two CPtrList pools (+0x47c pool-A CPoolItemBase*, +0x498
 // pool-B CPoolItemB*) + a CPtrArray (+0x4b4), two cached-surface slots at +0x00/
 // +0x04, and a last-error/state tail. 0x948 bytes. The item-factory + pool-drain

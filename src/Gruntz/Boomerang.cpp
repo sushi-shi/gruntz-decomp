@@ -1,4 +1,4 @@
-// CBoomerang.cpp - the CBoomerang projectile ctor (its own TU; no other CBoomerang
+// Boomerang.cpp - the CBoomerang projectile ctor (its own TU; no other CBoomerang
 // method is reconstructed yet, so this is the class's first/real TU). Re-homed from
 // src/Stub/Boomerang.cpp.
 //

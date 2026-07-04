@@ -1,4 +1,4 @@
-// CScanlineSurface.cpp - the software (system-memory) DIB-surface ops of CRezImage
+// ScanlineSurface.cpp - the software (system-memory) DIB-surface ops of CRezImage
 // (the REZ->image DIB-surface class defined in <Image/Image.h>). Formerly a separate
 // `CScanlineSurface` view of the +0x428..+0x458 block; folded onto the ONE canonical
 // class so the format-decode DispatchDecode forwards to the real Decode*Data decoders

@@ -1,4 +1,4 @@
-// CSplashState.cpp - the splash-screen game state (its own TU; LoadSounds is the
+// SplashState.cpp - the splash-screen game state (its own TU; LoadSounds is the
 // only reconstructed method so far). Re-homed from src/Stub/SplashState.cpp
 // (C:\Proj\Gruntz).
 //

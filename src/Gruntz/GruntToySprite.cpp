@@ -1,4 +1,4 @@
-// CGruntToySprite.cpp - the "grunt has a toy" indicator sprite (C:\Proj\Gruntz).
+// GruntToySprite.cpp - the "grunt has a toy" indicator sprite (C:\Proj\Gruntz).
 // A CUserLogic-derived game object; methods in ascending retail-RVA order:
 //   ~CGruntToySprite  @0x0122b0 - the /GX leaf dtor (CUserLogic teardown).
 //   SetCell           @0x07f920 - stash the (x,y) grunt cell, clear m_38 bit 0.

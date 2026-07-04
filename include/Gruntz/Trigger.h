@@ -1,4 +1,4 @@
-// CTrigger.h - the trigger object the point-probe (0x75af0, g_gameReg->m_68->Probe)
+// Trigger.h - the trigger object the point-probe (0x75af0, g_gameReg->m_68->Probe)
 // returns. One class, two views recovered from different call sites:
 //   +0x10  the bound HUD sprite (read by the teleporter spawn in UserLogic.cpp)
 //   +0x170 the required level id (the secret-level trigger match in CSecretLevelTrigger.cpp)

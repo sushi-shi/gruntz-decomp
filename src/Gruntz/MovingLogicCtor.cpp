@@ -1,4 +1,4 @@
-// CMovingLogicCtor.cpp - the out-of-line CMovingLogic constructor (0x13940),
+// MovingLogicCtor.cpp - the out-of-line CMovingLogic constructor (0x13940),
 // re-homed from src/Stub/CMovingLogic.cpp (C:\Proj\Gruntz).
 //
 // The engine emits TWO copies of this ctor: the inline one that folds into

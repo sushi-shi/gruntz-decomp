@@ -1,4 +1,4 @@
-// CFrontCandyAni.h - a front-candy eyecandy animation game-object
+// FrontCandyAni.h - a front-candy eyecandy animation game-object
 // (C:\Proj\Gruntz). The sibling of CBehindCandyAni (the eyecandy that draws in
 // FRONT of the gruntz rather than behind), sharing the same CUserLogic leaf
 // archetype: a per-coordinate activation registry (g_frontCandyActReg @0x6460b0)

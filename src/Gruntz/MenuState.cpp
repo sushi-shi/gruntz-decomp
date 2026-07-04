@@ -1,4 +1,4 @@
-// CMenuState.cpp - the front-end menu state (C:\Proj\Gruntz). Trace-discovered
+// MenuState.cpp - the front-end menu state (C:\Proj\Gruntz). Trace-discovered
 // routines, defined in ascending retail-RVA order:
 //   LoadGameOptionsToDialog @0x036860 - the free __cdecl options-dialog writer that
 //       snapshots g_gameReg into the g_opt_* staging globals and pushes them into the

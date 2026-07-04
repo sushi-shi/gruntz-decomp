@@ -1,4 +1,4 @@
-// CAniCycle.cpp - an animation-cycle eyecandy game-object (C:\Proj\Gruntz). One
+// AniCycle.cpp - an animation-cycle eyecandy game-object (C:\Proj\Gruntz). One
 // trace-discovered method:
 //   RegisterActs @0x0ab0e0 - bind the per-frame handler to the "A" key.
 //

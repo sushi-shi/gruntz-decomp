@@ -1,4 +1,4 @@
-// CFixedPtrArray32.cpp - a 32-slot fixed-capacity pointer array (trace
+// FixedPtrArray32.cpp - a 32-slot fixed-capacity pointer array (trace
 // placeholder tomalla-1, RVAs 0x134be0 / 0x134c60 / 0x134c80). A small
 // value-embedded collection: m_00 flag at +0x00, m_count at +0x04, a 32-entry
 // pointer table m_items[32] at +0x08. Add() appends until the 32-slot cap;

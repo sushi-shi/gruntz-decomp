@@ -1,4 +1,4 @@
-// CAniElement.h - the 0x28-byte 'ANI' animation element (primary vftable
+// AniElement.h - the 0x28-byte 'ANI' animation element (primary vftable
 // @0x5efba8 = ??_7CAniElementObj) cataloged by CDDrawSubMgrAni. It owns a
 // CObArray of 0x34-byte frame records (real class CAniRecord, vtable @0x5f02c0)
 // plus a name buffer and a scale.

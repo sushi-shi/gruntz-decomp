@@ -1,4 +1,4 @@
-// CPlaySync.cpp - CPlay::SyncState (0x0d7520): the play-state serialize/round-trip.
+// PlaySync.cpp - CPlay::SyncState (0x0d7520): the play-state serialize/round-trip.
 // Bail on a null archive, run the header serialize, then a mode pre-step (mode 4 =
 // write, mode 7 = read, mode 8 = re-init the ambient-sound cue). Then round-trip a
 // sequence of 64-bit timer blocks through the archive (mode 4 -> Write vtbl[0x30],

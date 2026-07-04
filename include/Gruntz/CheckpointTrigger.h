@@ -1,4 +1,4 @@
-// CCheckpointTrigger.h - the checkpoint-trigger tile-logic object (C:\Proj\Gruntz),
+// CheckpointTrigger.h - the checkpoint-trigger tile-logic object (C:\Proj\Gruntz),
 // a CUserLogic leaf (vftables 0x5e705c / 0x5e70b4). Only the /GX leaf dtor is
 // reconstructed here; offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_CCHECKPOINTTRIGGER_H

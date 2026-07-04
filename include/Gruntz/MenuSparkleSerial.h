@@ -1,4 +1,4 @@
-// CMenuSparkleSerial.h - CMenuSparkle's serialize override (RTTI .?AVCMenuSparkle@@,
+// MenuSparkleSerial.h - CMenuSparkle's serialize override (RTTI .?AVCMenuSparkle@@,
 // vtable 0x5e82dc -> slot 1 @ 0xae1c0; C:\Proj\Gruntz). The override chains the
 // shared CUserLogic base serialize (0x16e7f0, the same slot-1 base every
 // CUserLogic-derived Serialize calls - CMovingLogic's included), then a +0x34

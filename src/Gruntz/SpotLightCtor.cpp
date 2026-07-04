@@ -1,4 +1,4 @@
-// CSpotLightCtor.cpp - the 1-arg CSpotLight constructor (0xb1200), re-homed from
+// SpotLightCtor.cpp - the 1-arg CSpotLight constructor (0xb1200), re-homed from
 // src/Stub/SpotLight.cpp (C:\Proj\Gruntz).
 //
 // CSpotLight : CUserLogic (vftable 0x5e75bc). The ctor folds the shared inline

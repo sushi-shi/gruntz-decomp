@@ -1,4 +1,4 @@
-// CDroppedObjectShadow.cpp - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
+// DroppedObjectShadow.cpp - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
 // a CUserLogic leaf. The 1-arg leaf ctor + the /GX leaf dtor are reconstructed here.
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameRegistry.h>

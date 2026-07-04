@@ -1,4 +1,4 @@
-// CRangeSet.cpp - a small fixed-capacity inclusive-range set (capacity 15) that
+// RangeSet.cpp - a small fixed-capacity inclusive-range set (capacity 15) that
 // lives in the 0x1845b0..0x185700 menu cluster. The object is { u32 m_count; then
 // up to 16 { u32 lo; u32 hi } pairs starting at +0x04 }. AddRange appends a pair
 // while count+1 < 16; Contains scans for the first pair whose [lo,hi] (unsigned)

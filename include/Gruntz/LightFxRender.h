@@ -1,4 +1,4 @@
-// CLightFxRender.h - a non-polymorphic (no vftable / no RTTI) software light /
+// LightFxRender.h - a non-polymorphic (no vftable / no RTTI) software light /
 // glow effect renderer in the lighting-effects module (between CLightFx @0x49cf00
 // and CDoNothingNormal @0x4a9e00). The object (~0x440 bytes) owns an embedded
 // 16-bit pixel buffer at +0x4c (~500 words) that the shape generators fill, a

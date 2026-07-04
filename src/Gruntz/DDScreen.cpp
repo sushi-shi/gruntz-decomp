@@ -1,4 +1,4 @@
-// CDDScreen.cpp - three methods of the big tiled-DirectDraw display manager
+// DDScreen.cpp - three methods of the big tiled-DirectDraw display manager
 // (the CDDPageMgr bring-up class behind 0x17c040; members run out to ~0x86a4).
 // Homed together because 0x17cc80/0x17cdf0/0x17cfc0 are adjacent methods of the
 // same object. Field names recovered from usage; offsets + emitted bytes are

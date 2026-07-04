@@ -1,4 +1,4 @@
-// CDoNothingNormalDtor.h - matched-world view of CDoNothingNormal for its leaf
+// DoNothingNormalDtor.h - matched-world view of CDoNothingNormal for its leaf
 // destructor (C:\Proj\Gruntz).
 //
 // CDoNothingNormal : CUserLogic (RTTI .?AVCDoNothingNormal@@) - the "normal"

@@ -1,4 +1,4 @@
-// CParticlez.h - the particlez effect game-object (C:\Proj\Gruntz).
+// Particlez.h - the particlez effect game-object (C:\Proj\Gruntz).
 //
 // CParticlez : CUserLogic - a tile-logic leaf in the same game-object hierarchy
 // as CTimeBomb (proven by its dtor @0x012d90 stamping the CUserLogic vftable

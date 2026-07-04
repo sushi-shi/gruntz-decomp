@@ -1,4 +1,4 @@
-// CAniAdvanceCursor.cpp - the WWD animation-advance cursor sub-object (trace
+// AniAdvanceCursor.cpp - the WWD animation-advance cursor sub-object (trace
 // class CAniAdvanceCursor). It is the WWD sub-object class whose vtable is
 // 0x5f0128 (the same table WwdFile.cpp's ReadPlaneObjects stamps into the +0x1A0
 // embedded sub-object). REAL POLYMORPHIC: this TU owns ??_7CAniAdvanceCursor@@6B@

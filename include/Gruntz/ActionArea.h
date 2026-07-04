@@ -1,4 +1,4 @@
-// CActionArea.h - the action-area trigger tile-logic game-object (C:\Proj\Gruntz),
+// ActionArea.h - the action-area trigger tile-logic game-object (C:\Proj\Gruntz),
 // a CUserLogic leaf (RTTI .?AVCActionArea@@). The 1-arg ctor (0x7da0) folds the
 // shared CUserLogic(obj) prologue then a per-class tail; the leaf state begins at
 // +0x54. Offsets + code bytes are load-bearing; field names are placeholders.

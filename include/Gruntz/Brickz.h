@@ -1,6 +1,6 @@
 // Brickz.h - trace-discovered move-grid cluster (placeholder name CBrickzGrid).
 //
-// NOT the game-object CBrickz (include/Gruntz/CBrickz.h, a real CUserLogic-derived
+// NOT the game-object CBrickz (include/Gruntz/Brickz.h, a real CUserLogic-derived
 // RTTI class): the trace tool mislabeled this self-contained grid container CBrickz,
 // which collided its methods' mangled names (e.g. ?Serialize@CBrickz@@QAEHHHHH@Z)
 // with the real CBrickz's. Renamed CBrickzGrid to recover the distinct owner.

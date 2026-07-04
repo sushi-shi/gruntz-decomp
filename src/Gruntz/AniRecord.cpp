@@ -1,5 +1,5 @@
 #include <rva.h>
-// CAniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
+// AniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
 // CAniElement (src/Gruntz/AniElement.cpp) into a CObArray of these. The
 // orchestrator placeholders tomalla-39 / _40 / _41 are ALL this ONE class
 // (consolidated here):

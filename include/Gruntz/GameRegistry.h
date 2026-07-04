@@ -1,4 +1,4 @@
-// CGameRegistry.h - the one canonical shape of the global game-manager singleton
+// GameRegistry.h - the one canonical shape of the global game-manager singleton
 // (?g_gameReg@@3PAUWwdGameReg@@A, the WwdGameReg* at RVA 0x24556c / VA 0x64556c).
 //
 // SINGLETON IDENTITY (verified): the object at *0x24556c is the RTTI-confirmed

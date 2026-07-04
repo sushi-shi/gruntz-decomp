@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawSurfaceMgr.cpp - root object of the tomalla-named DDraw surface/page-manager
+// DDrawSurfaceMgr.cpp - root object of the tomalla-named DDraw surface/page-manager
 // family. CDDrawSurfaceMgr is the owner stored off CGruntzMgr
 // +0x30; it holds one child manager pointer per slot and a pair of global draw
 // clock mirrors reset by the ctor.

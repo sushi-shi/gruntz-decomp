@@ -1,4 +1,4 @@
-// CCursorSnapSprite.h - the cursor-snap sprite game object (C:\Proj\Gruntz).
+// CursorSnapSprite.h - the cursor-snap sprite game object (C:\Proj\Gruntz).
 //
 // CCursorSnapSprite : CUserLogic (RTTI: .?AVCCursorSnapSprite@@ at 0x609b70). A
 // tile-logic leaf in the same game-object hierarchy as CFortressFlag, proven by

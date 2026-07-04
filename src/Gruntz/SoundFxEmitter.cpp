@@ -1,4 +1,4 @@
-// CSoundFxEmitter.cpp - five sibling sound-effect/screen-transition emitters
+// SoundFxEmitter.cpp - five sibling sound-effect/screen-transition emitters
 // (0xfa410, 0xfa550, 0xfa790, 0xfa8f0, 0xfaa60). See CSoundFxEmitter.h for the
 // recovered class/chain layout. Each: gate on the resource chain, fill a
 // CFxModeT2/T3 transition descriptor on the stack, register it with the CFaderMgr,

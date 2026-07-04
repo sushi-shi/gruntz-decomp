@@ -1,4 +1,4 @@
-// CSingleAnimation.h - a single-shot eyecandy animation game-object
+// SingleAnimation.h - a single-shot eyecandy animation game-object
 // (C:\Proj\Gruntz).
 //
 // CSingleAnimation : CUserLogic - a tile-logic leaf in the same game-object

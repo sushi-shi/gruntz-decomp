@@ -1,4 +1,4 @@
-// CDirectDrawMgr.h - the WAP32 DirectDraw manager group (DDrawMgr module,
+// DirectDrawMgr.h - the WAP32 DirectDraw manager group (DDrawMgr module,
 // C:\Proj\DDrawMgr\). Reconstructs the surface needed to byte-match three
 // related TUs that all share the CDirectDrawMgr::GetErrorString reporter:
 //

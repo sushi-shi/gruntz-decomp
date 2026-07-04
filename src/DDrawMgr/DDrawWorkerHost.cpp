@@ -1,5 +1,5 @@
 #include <rva.h>
-// CDDrawWorkerHost.cpp - the scalar (non-deleting) destructor (0x163af0) of the
+// DDrawWorkerHost.cpp - the scalar (non-deleting) destructor (0x163af0) of the
 // CLoadable-derived host (own vtable g_ddrawWorkerHostVtbl @0x5f0270). Stamps
 // its own vtable, shuts down + frees the +0xb0 worker (PruneCount then delete),
 // frees the two owned buffers (+0x20/+0x24), then the CWorkerObArray member (+0x9c)

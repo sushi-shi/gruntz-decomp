@@ -1,4 +1,4 @@
-// CFaderSubtypes.h - the six concrete CFader screen-fader subtypes the
+// FaderSubtypes.h - the six concrete CFader screen-fader subtypes the
 // CFaderMgr::Add factory allocates. Each is a real polymorphic CFader subclass
 // (: public CFader): its ctor chains ??0CFader, stamps its own vftable, and zeroes
 // its subtype fields; its two motion virtuals (v1/v2) override the CFader pure

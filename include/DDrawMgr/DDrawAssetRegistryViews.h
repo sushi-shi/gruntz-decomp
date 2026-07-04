@@ -1,4 +1,4 @@
-// CDDrawAssetRegistryViews.h - the shared namespace-loader VIEWS of the three
+// DDrawAssetRegistryViews.h - the shared namespace-loader VIEWS of the three
 // DDrawMgr asset registries reached off an owner's worker-holder (+0x10 image
 // worker-registry, +0x28 sound leaf-scan, +0x2c aniz sub-manager). Both the
 // per-object loader (AssetNamespacePrefixes.cpp, BuildAssetNamespacePrefixes

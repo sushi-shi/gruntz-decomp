@@ -1,4 +1,4 @@
-// CGruntPuddle.cpp - the grunt-puddle game object (a CUserLogic-derived leaf).
+// GruntPuddle.cpp - the grunt-puddle game object (a CUserLogic-derived leaf).
 // Four __thiscall methods reconstructed in ascending-RVA order:
 //   0x010d10  ~CGruntPuddle  (the bare CUserLogic teardown, /GX frame)
 //   0x040c30  Place          (seed the puddle into a tile cell; bind sprite/bute)

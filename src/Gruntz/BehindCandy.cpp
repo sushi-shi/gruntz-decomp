@@ -1,4 +1,4 @@
-// CBehindCandy.cpp - the behind-candy eyecandy tile-logic game-object (C:\Proj\Gruntz).
+// BehindCandy.cpp - the behind-candy eyecandy tile-logic game-object (C:\Proj\Gruntz).
 //
 // Two CBehindCandy methods, defined in ascending retail-RVA order:
 //   GetTypeTag      @0x00fb70 - the 6-byte per-class logic-type id accessor (0x3f0).

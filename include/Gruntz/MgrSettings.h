@@ -1,4 +1,4 @@
-// CMgrSettings.h - a small persisted settings record (0x3c bytes) whose Serialize
+// MgrSettings.h - a small persisted settings record (0x3c bytes) whose Serialize
 // (0x109e00) streams three ints + five doubles through a CArchive-like stream,
 // then round-trips a named-object reference (a 0x80 name + an index) through the
 // game registry: READ resolves name->record via CMapStringToOb::Lookup and indexes

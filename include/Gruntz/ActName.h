@@ -1,4 +1,4 @@
-// CActName.h - the CString held in a resolved activation-name slot, shared by
+// ActName.h - the CString held in a resolved activation-name slot, shared by
 // every CUserLogic leaf's RegisterActs (and the static-hazard registry). ~CString
 // (0x1b9b93) frees the old entry list; CString::operator=(char const*) (0x1b9e74)
 // assigns the new key. Both are external/no-body so the calls reloc-mask. The

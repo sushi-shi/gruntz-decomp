@@ -1,5 +1,5 @@
 #include <rva.h>
-// CImageOwned.cpp - the build/decode methods of the RTTI CImage's +0x30 owned
+// ImageOwned.cpp - the build/decode methods of the RTTI CImage's +0x30 owned
 // object, which IS a CDDrawShadeBlit (the shaded sprite; former placeholder name
 // "CImageOwned"). Methods in retail-RVA order: the ctor (0x148ce0) that primes the
 // blit-descriptor defaults, and Build (0x1490d0) - decodes one frame out of a

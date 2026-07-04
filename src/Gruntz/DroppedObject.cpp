@@ -1,4 +1,4 @@
-// CDroppedObject.cpp - a dropped game-object (C:\Proj\Gruntz).
+// DroppedObject.cpp - a dropped game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CDroppedObject methods, defined in ascending retail-RVA
 // order:

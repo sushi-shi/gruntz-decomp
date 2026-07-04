@@ -1,4 +1,4 @@
-// CSerialObjRef.h - a serialized reference to a registry object BY NAME. This is
+// SerialObjRef.h - a serialized reference to a registry object BY NAME. This is
 // the small record embedded at +0x34 of every serializable CUserLogic tile-logic
 // object; its Chain (0x8c00, __thiscall ret 0x10) is run by each leaf's Serialize
 // override (CSecretTeleporterTrigger, CFortressFlag, RollingBall, CCursorSnapSprite,

@@ -1,4 +1,4 @@
-// CTimeBomb.h - the timez-bomb pickup game-object (C:\Proj\Gruntz).
+// TimeBomb.h - the timez-bomb pickup game-object (C:\Proj\Gruntz).
 //
 // CTimeBomb : CUserLogic - a tile-logic leaf in the same game-object hierarchy
 // as CKitchenSlime (proven by its dtor stamping the CUserLogic vftable 0x5e705c

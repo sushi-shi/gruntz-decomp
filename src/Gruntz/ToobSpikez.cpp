@@ -1,4 +1,4 @@
-// CToobSpikez.cpp - the toob-spikez hazard game-object (C:\Proj\Gruntz).
+// ToobSpikez.cpp - the toob-spikez hazard game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CToobSpikez methods, defined in ascending retail-RVA
 // order:

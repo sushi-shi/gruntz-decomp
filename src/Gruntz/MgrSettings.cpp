@@ -1,4 +1,4 @@
-// CMgrSettings.cpp - CMgrSettings::Serialize (0x109e00). See CMgrSettings.h. The
+// MgrSettings.cpp - CMgrSettings::Serialize (0x109e00). See CMgrSettings.h. The
 // scalar block (3 ints + 5 doubles) streams directly; the trailing object
 // reference round-trips through the game registry (READ: name+index -> Lookup ->
 // indexed record element; WRITE: m_38 -> AnyValueMatches -> name+index). The

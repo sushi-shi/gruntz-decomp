@@ -1,4 +1,4 @@
-// CScanGrid.h - the shared board grid view (g_mgrSettings->m_tileGrid, CBrickz-shape):
+// ScanGrid.h - the shared board grid view (g_mgrSettings->m_tileGrid, CBrickz-shape):
 // m_8 row table, m_c/m_10 dims, m_60 dirty rect, m_70/m_74 its size. Scan TUs that
 // only read the dims still adopt the full shape (extra members are unreferenced).
 // The grid's cell type (CScanCell, 0x1c B) is the single shared definition here;

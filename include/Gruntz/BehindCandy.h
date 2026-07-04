@@ -1,4 +1,4 @@
-// CBehindCandy.h - the behind-candy eyecandy tile-logic game-object (C:\Proj\Gruntz).
+// BehindCandy.h - the behind-candy eyecandy tile-logic game-object (C:\Proj\Gruntz).
 //
 // CBehindCandy : CUserLogic - a tile-logic leaf in the same game-object hierarchy
 // as CTimeBomb (proven by its dtor @0x00fc30 stamping the CUserLogic vftable

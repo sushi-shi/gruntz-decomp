@@ -1,4 +1,4 @@
-// CGruntHealthSprite.h - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
+// GruntHealthSprite.h - the grunt health-bar eyecandy sprite (C:\Proj\Gruntz).
 //
 // CGruntHealthSprite : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CSimpleAnimation (proven by its dtor @0x011fb0 stamping the

@@ -1,4 +1,4 @@
-// CActionArea.cpp - the action-area trigger tile-logic game-object (C:\Proj\Gruntz),
+// ActionArea.cpp - the action-area trigger tile-logic game-object (C:\Proj\Gruntz),
 // a CUserLogic leaf. Only the 1-arg ctor is reconstructed here.
 #include <Gruntz/ActionArea.h>
 

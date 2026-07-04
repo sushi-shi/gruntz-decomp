@@ -1,4 +1,4 @@
-// CExplosion.h - the explosion eyecandy (C:\Proj\Gruntz), a CUserLogic tile-logic
+// Explosion.h - the explosion eyecandy (C:\Proj\Gruntz), a CUserLogic tile-logic
 // leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is reconstructed here; the
 // ctor (0x470e0) remains the @stub backlog in src/Stub/Explosion.cpp. Offsets +
 // code bytes are the load-bearing facts; field names are placeholders.

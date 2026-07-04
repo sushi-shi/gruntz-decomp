@@ -1,4 +1,4 @@
-// CAniCycle.h - an animation-cycle eyecandy game-object (C:\Proj\Gruntz), a
+// AniCycle.h - an animation-cycle eyecandy game-object (C:\Proj\Gruntz), a
 // CUserLogic leaf in the same animation family as CSimpleAnimation /
 // CSingleFrameMessage: a per-class activation registry (g_aniCycleActReg
 // @0x646088) bound by RegisterActs to a per-frame AdvanceAnim handler under the

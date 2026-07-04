@@ -1,4 +1,4 @@
-// CInGameText.h - the in-game text/message display object, a CUserLogic-derived
+// InGameText.h - the in-game text/message display object, a CUserLogic-derived
 // game-object leaf (vftables 0x5e705c / 0x5e70b4, the CUserLogic / CUserBase
 // pair - the same shape every UserLogic leaf carries). Recovered from the three
 // trace-discovered methods:

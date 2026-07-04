@@ -1,4 +1,4 @@
-// CToyPeek.cpp - the toy-peek HUD eyecandy (C:\Proj\Gruntz), a CUserLogic leaf.
+// ToyPeek.cpp - the toy-peek HUD eyecandy (C:\Proj\Gruntz), a CUserLogic leaf.
 // Only the 1-arg ctor is reconstructed here (the shared CUserLogic(obj) prologue
 // + the per-class eyecandy tail).
 #include <Gruntz/ToyPeek.h>

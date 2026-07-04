@@ -1,4 +1,4 @@
-// CRandomAmbientSound.cpp - the RTTI-named CRandomAmbientSound (vtable 0x5e713c,
+// RandomAmbientSound.cpp - the RTTI-named CRandomAmbientSound (vtable 0x5e713c,
 // chain CRandomAmbientSound : CAmbientSound : CUserBase, sizeof 0x58). A
 // random-interval ambient sound bound to one or two visibility boxes: Setup seeds
 // the mgr handle / play params / boxes; Step (vtable slot 3) ticks the listener

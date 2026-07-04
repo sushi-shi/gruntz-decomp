@@ -1,4 +1,4 @@
-// CGruntzSoundZ.cpp - the Dsndmgr positional/zoned sound-bank manager and its
+// GruntzSoundZ.cpp - the Dsndmgr positional/zoned sound-bank manager and its
 // per-bank inner sound object (C:\Proj\Dsndmgr\, the 0x138xxx AIL/DirectSound
 // region). This is the whole 0x138490-0x139030 method band: the outer manager
 // CGruntzSoundZ (a CMapStringToOb keyed by each bank's inline name buffer) and the

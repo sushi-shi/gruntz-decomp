@@ -1,4 +1,4 @@
-// CMoviePlayer.h - the DDrawMgr movie/FMV player (formerly the "severus"
+// MoviePlayer.h - the DDrawMgr movie/FMV player (formerly the "severus"
 // codename placeholder; Ghidra FUN_0017c6f0 cluster). A large (>0x8694 B) movie/stream
 // decode object: its main cluster (0x17b500..0x17c790) wraps DirectDrawCreate,
 // ShowCursor and the Smacker decoder around an embedded decode store at +0x540

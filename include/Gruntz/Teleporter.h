@@ -1,4 +1,4 @@
-// CTeleporter.h - the teleporter tile-logic game object (C:\Proj\Gruntz).
+// Teleporter.h - the teleporter tile-logic game object (C:\Proj\Gruntz).
 //
 // CTeleporter : CUserLogic (RTTI: .?AVCTeleporter@@ at 0x609598). A tile-logic
 // leaf in the same game-object hierarchy as CGruntPuddle / CPathHazard, proven

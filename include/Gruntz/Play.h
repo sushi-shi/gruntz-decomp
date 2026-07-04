@@ -1,4 +1,4 @@
-// CPlay.h - the in-game PLAY state, the
+// Play.h - the in-game PLAY state, the
 // concrete CState subclass whose Render() (vtable slot +0x14) is the
 // per-frame heart of the running game: input -> per-entity step -> draw -> the
 // HUD/scroll/FX overlays. See GameMode.{h,cpp} for the state hierarchy this

@@ -1,4 +1,4 @@
-// CGruntVoice.h - a grunt-voice game/sound object, a CUserLogic-derived leaf
+// GruntVoice.h - a grunt-voice game/sound object, a CUserLogic-derived leaf
 // (vftables 0x5e705c / 0x5e70b4, the CUserLogic / CUserBase pair - same shape
 // every UserLogic leaf dtor folds). Trace-discovered as CGruntVoice.
 //

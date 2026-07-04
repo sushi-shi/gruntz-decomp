@@ -1,4 +1,4 @@
-// CTypeColl2.h - the insert facet of the shared type-name registry (@0x6bf650) the
+// TypeColl2.h - the insert facet of the shared type-name registry (@0x6bf650) the
 // projectile/action registrars reach: Insert (0x16d850, __thiscall ret 0xc) rebuilds
 // a collection slot. Redeclared identically in the ProjActRegistry / ActReg4
 // registrars; folded here. NO-body -> the call reloc-masks. Kept as its own header

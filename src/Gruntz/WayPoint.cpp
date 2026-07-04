@@ -1,4 +1,4 @@
-// CWayPoint.cpp - the waypoint marker (C:\Proj\Gruntz), a CUserLogic leaf. The /GX
+// WayPoint.cpp - the waypoint marker (C:\Proj\Gruntz), a CUserLogic leaf. The /GX
 // leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj) prologue: this TU
 // inlines the built-in logic-type registration, see LogicTypeTableInline.h).
 #include <Gruntz/WayPoint.h>

@@ -1,4 +1,4 @@
-// CPathHazard.cpp - the path-following hazard game object (C:\Proj\Gruntz).
+// PathHazard.cpp - the path-following hazard game object (C:\Proj\Gruntz).
 //
 // Four trace-discovered CPathHazard methods, defined in ascending retail-RVA
 // order:

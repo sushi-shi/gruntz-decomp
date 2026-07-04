@@ -1,4 +1,4 @@
-// CStatusBarMgrBuilders.h - the CStatusBarMgr per-tab builder (LoadTabSprites TU,
+// StatusBarMgrBuilders.h - the CStatusBarMgr per-tab builder (LoadTabSprites TU,
 // CStatusBarMgr.cpp) shapes: the builder-facet base CSbConfigItem + its concrete
 // SBI leaves + the icon/factory helpers + the CStatusBarMgr class. Moved here from
 // the per-TU inline defs so each carries a single shared definition (matching-neutral;

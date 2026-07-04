@@ -1,4 +1,4 @@
-// CMovingLogic.h - the ONE canonical CMovingLogic : CUserLogic (RTTI
+// MovingLogic.h - the ONE canonical CMovingLogic : CUserLogic (RTTI
 // .?AVCMovingLogic@@, vftable 0x5e87ac). Replaces the former per-TU reduced-view
 // definitions - the fat/tile-logic world now shares this single class. C:\Proj\Gruntz.
 //

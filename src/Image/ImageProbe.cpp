@@ -1,4 +1,4 @@
-// CImageProbe.cpp - the image-source probe/resolve init (RVA 0x17cbe0).
+// ImageProbe.cpp - the image-source probe/resolve init (RVA 0x17cbe0).
 //
 // Fills a 0x6c-byte surface-request descriptor (embedded at +0x9c) from the
 // source-info object (+0x10), asks the source provider (+0x14, COM slot 6) to

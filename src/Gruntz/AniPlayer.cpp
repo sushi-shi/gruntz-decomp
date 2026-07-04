@@ -1,4 +1,4 @@
-// CAniPlayer.cpp - a timed cel-animation playback object (placeholder class;
+// AniPlayer.cpp - a timed cel-animation playback object (placeholder class;
 // the RTTI name was not pinned). Two non-virtual __thiscall methods, ascending
 // RVA:
 //   0x0e7980  Init  (seed the player from a sequence + rect + cel key; 14 args,

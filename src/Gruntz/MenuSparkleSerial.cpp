@@ -1,4 +1,4 @@
-// CMenuSparkleSerial.cpp - CMenuSparkle::SerializeMove (0xae1c0): the class's vtable
+// MenuSparkleSerial.cpp - CMenuSparkle::SerializeMove (0xae1c0): the class's vtable
 // slot-1 serialize. Bail on a null archive; chain the CUserLogic base serialize +
 // the +0x34 sub-object serialize (bail if either fails); then round-trip two 4-byte
 // globals through the archive (mode 4 = write via vtbl[0x30], mode 7 = read via

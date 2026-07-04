@@ -1,4 +1,4 @@
-// CBehindCandyAni.h - a behind-candy eyecandy animation game-object
+// BehindCandyAni.h - a behind-candy eyecandy animation game-object
 // (C:\Proj\Gruntz).
 //
 // CBehindCandyAni : CUserLogic - a tile-logic leaf in the same game-object

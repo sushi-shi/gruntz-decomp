@@ -1,4 +1,4 @@
-// CInGameIcon.h - the in-game HUD/cursor icon, a CUserLogic-derived game object
+// InGameIcon.h - the in-game HUD/cursor icon, a CUserLogic-derived game object
 // (vftables 0x5e705c / 0x5e70b4, the CUserLogic / CUserBase pair). The class
 // owns the inherited CUserLogic layout (the CGameObject* at +0x10, the +0x18
 // EngStr link, etc.; see <Gruntz/UserLogic.h>) plus its own icon-state fields

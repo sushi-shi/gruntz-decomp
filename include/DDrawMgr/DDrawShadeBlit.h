@@ -1,4 +1,4 @@
-// CDDrawShadeBlit.h - the DDrawMgr software shaded-sprite blitter (tracer
+// DDrawShadeBlit.h - the DDrawMgr software shaded-sprite blitter (tracer
 // placeholder tomalla-86). A non-polymorphic blit descriptor: the
 // CopyRect/RenderFrame path (src/Gruntz/*CopyRect*) builds one off [obj+0x30] and
 // calls Blit() (0x1497f0), which validates the destination rect, picks the

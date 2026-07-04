@@ -1,4 +1,4 @@
-// CParticlez.cpp - the particlez effect game-object (C:\Proj\Gruntz).
+// Particlez.cpp - the particlez effect game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CParticlez methods, defined in ascending retail-RVA
 // order:

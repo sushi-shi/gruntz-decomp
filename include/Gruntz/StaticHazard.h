@@ -1,4 +1,4 @@
-// CStaticHazard.h - a static hazard game-object (C:\Proj\Gruntz).
+// StaticHazard.h - a static hazard game-object (C:\Proj\Gruntz).
 //
 // CStaticHazard : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CTimeBomb (proven by its dtor @0x012b30 stamping the CUserLogic

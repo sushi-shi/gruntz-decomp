@@ -1,4 +1,4 @@
-// CFxModeDesc.cpp - the mode/effect descriptor record family (trace placeholder
+// FxModeDesc.cpp - the mode/effect descriptor record family (trace placeholder
 // tomalla-47) plus the bute section-key builder grouped with it.
 //
 //   - MakeButeSectionKey (0xf9280, __cdecl): appends "[" + a1 + ":" + a2 + "]"

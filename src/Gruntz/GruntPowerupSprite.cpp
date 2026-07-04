@@ -1,4 +1,4 @@
-// CGruntPowerupSprite.cpp - the "grunt has a powerup" indicator sprite
+// GruntPowerupSprite.cpp - the "grunt has a powerup" indicator sprite
 // (C:\Proj\Gruntz). A CUserLogic-derived game object; methods in ascending
 // retail-RVA order:
 //   ~CGruntPowerupSprite  @0x012370 - the /GX leaf dtor (CUserLogic teardown).

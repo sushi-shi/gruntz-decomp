@@ -1,4 +1,4 @@
-// CInGameIcon.cpp - the in-game HUD/cursor icon (a CUserLogic-derived game
+// InGameIcon.cpp - the in-game HUD/cursor icon (a CUserLogic-derived game
 // object). Five __thiscall methods reconstructed in ascending-RVA order:
 //   0x011d00  ~CInGameIcon   (the bare CUserLogic teardown, /GX frame)
 //   0x097680  HandleInput    (the cursor/key input handler -> game-state fields)

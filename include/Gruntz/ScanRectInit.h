@@ -1,4 +1,4 @@
-// CScanRectInit.h - the shared rect-init helper (0x34a4) that fills a RECT and
+// ScanRectInit.h - the shared rect-init helper (0x34a4) that fills a RECT and
 // returns it. Modeled NO-body so the call reloc-masks. Placeholder name; only the
 // signature + emitted code bytes are load-bearing.
 #ifndef GRUNTZ_GRUNTZ_CSCANRECTINIT_H

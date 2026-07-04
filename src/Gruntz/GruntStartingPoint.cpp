@@ -1,4 +1,4 @@
-// CGruntStartingPoint.cpp - the grunt starting-point marker (C:\Proj\Gruntz), a
+// GruntStartingPoint.cpp - the grunt starting-point marker (C:\Proj\Gruntz), a
 // CUserLogic leaf. The /GX leaf dtor + the 1-arg ctor (shared CUserLogic(obj)
 // prologue + the per-class tail).
 #include <Gruntz/GruntStartingPoint.h>

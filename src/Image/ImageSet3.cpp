@@ -1,4 +1,4 @@
-// CImageSet3.cpp - the WWD "imageSet3" collection object (its own vtable is
+// ImageSet3.cpp - the WWD "imageSet3" collection object (its own vtable is
 // g_imageSet3Vtbl @0x5f0228; the grand-base dtor vtable is g_wapObjectDtorVtbl
 // @0x5e8cb4, the same CLoadable base CDDrawSurfacePair / CGameLevel derive
 // from).  It owns a spatial GRID at +0xb0 (a CWwdGrid: its Prune sweeps the four

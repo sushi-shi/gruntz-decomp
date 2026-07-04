@@ -1,4 +1,4 @@
-// CGruntCreationPoint.cpp - the grunt creation-point game-object (C:\Proj\Gruntz).
+// GruntCreationPoint.cpp - the grunt creation-point game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CGruntCreationPoint methods, defined in ascending
 // retail-RVA order:

@@ -1,4 +1,4 @@
-// CDDrawWorkerNode.h - the shared CDDrawWorkerList "worker" class hierarchy. A
+// DDrawWorkerNode.h - the shared CDDrawWorkerList "worker" class hierarchy. A
 // worker is a 0x7c-byte polymorphic frame-animation node the CDDrawWorkerList
 // factory (CreateWorker24/28/2C/30) allocates, seeds, and dispatches. Two
 // concrete subtypes appear: CDDrawWorkerA (vtable 0x1efea0, 12 slots, BYTE frame at

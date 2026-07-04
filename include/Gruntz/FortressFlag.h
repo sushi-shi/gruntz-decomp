@@ -1,4 +1,4 @@
-// CFortressFlag.h - a fortress-flag game-object (C:\Proj\Gruntz).
+// FortressFlag.h - a fortress-flag game-object (C:\Proj\Gruntz).
 //
 // CFortressFlag : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CSecretTeleporterTrigger (proven by its dtor @0x010e90 stamping

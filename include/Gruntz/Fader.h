@@ -1,4 +1,4 @@
-// CFader.h - the CFaderMgr element base class (tracer placeholder
+// Fader.h - the CFaderMgr element base class (tracer placeholder
 // MallocCtor_17fdb0, keyed off a CFader subtype ctor at 0x17fdb0). CFader is the
 // polymorphic base of the six screen-fader subtypes the CFaderMgr factory
 // (CFaderMgr::Add) allocates; its vftable is at RVA 0x1f07a8. Each fader owns a

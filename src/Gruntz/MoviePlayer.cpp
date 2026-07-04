@@ -1,5 +1,5 @@
 #include <rva.h>
-// CMoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
+// MoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
 // movie/stream decode object (placeholder name; see include/Gruntz/MoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
 //   0x17c6f0  Open - orchestrate a decode open through the +0x540 store + OpenHi.

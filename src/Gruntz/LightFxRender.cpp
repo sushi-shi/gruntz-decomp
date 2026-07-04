@@ -1,4 +1,4 @@
-// CLightFxRender.cpp - software light/glow effect renderer (tracer placeholder
+// LightFxRender.cpp - software light/glow effect renderer (tracer placeholder
 // tomalla-68), a non-polymorphic helper in the lighting module. Methods in
 // ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
 // +0x4c that the shape generators fill; it allocates a DirectDraw work surface

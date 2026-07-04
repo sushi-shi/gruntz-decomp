@@ -1,4 +1,4 @@
-// CWorldSoundSet.cpp - a trace-discovered Gruntz ambient-sound game object
+// WorldSoundSet.cpp - a trace-discovered Gruntz ambient-sound game object
 // (C:\Proj\Gruntz). It manages a list of live sound channels: Init seeds the
 // world/level back-pointers and activates the object; Restart/Stop/Resume/Retune
 // drive the channels (each walks the embedded CPtrList raw - node->next at +0x00,

@@ -1,4 +1,4 @@
-// CGruntzMapMgr.h - the grunt-map manager container (C:\Proj\Gruntz). Its dtor
+// GruntzMapMgr.h - the grunt-map manager container (C:\Proj\Gruntz). Its dtor
 // (0x85d10) sits in the 0x85xxx text region next to CMapLogic::FreeNodes (0x85480)
 // and shares the SAME node-pool teardown idiom (the freelist push of every CObArray
 // element back onto g_freeList, then SetSize(0,-1) + Reset @0x9ec30).

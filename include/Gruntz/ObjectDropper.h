@@ -1,4 +1,4 @@
-// CObjectDropper.h - the object-dropper tile-logic object (C:\Proj\Gruntz), a
+// ObjectDropper.h - the object-dropper tile-logic object (C:\Proj\Gruntz), a
 // CUserLogic leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is reconstructed
 // here; the ctor (0xc59f0) remains the @stub backlog in
 // src/Stub/ObjectDropper.cpp. Offsets + code bytes are load-bearing.

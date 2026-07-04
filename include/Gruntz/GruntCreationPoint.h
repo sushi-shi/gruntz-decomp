@@ -1,4 +1,4 @@
-// CGruntCreationPoint.h - the grunt creation-point game-object (C:\Proj\Gruntz).
+// GruntCreationPoint.h - the grunt creation-point game-object (C:\Proj\Gruntz).
 //
 // CGruntCreationPoint : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CSimpleAnimation (proven by its dtor @0x010730 stamping the

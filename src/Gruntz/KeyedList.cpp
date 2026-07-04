@@ -1,4 +1,4 @@
-// CKeyedList.cpp - a small keyed-list container (orphan COMDATs @0x379a0 /
+// KeyedList.cpp - a small keyed-list container (orphan COMDATs @0x379a0 /
 // 0x379f0 / 0x37a70). Clear walks the m_4 node list freeing each node's owned
 // sub-object; the EH-framed reset + add-node manage the backing CString store.
 // Placeholder names; only OFFSETS + code bytes are load-bearing.

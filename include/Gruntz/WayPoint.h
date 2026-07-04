@@ -1,4 +1,4 @@
-// CWayPoint.h - the waypoint marker (C:\Proj\Gruntz), a CUserLogic tile-logic leaf
+// WayPoint.h - the waypoint marker (C:\Proj\Gruntz), a CUserLogic tile-logic leaf
 // (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is reconstructed here; the ctor
 // (0xae3f0) remains the @stub backlog in src/Stub/WayPoint.cpp. Offsets + code
 // bytes are load-bearing.

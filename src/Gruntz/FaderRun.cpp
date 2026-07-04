@@ -1,4 +1,4 @@
-// CFaderRun.cpp - the CFader "run timed fade" driver (0x17e620), a CFader-subtype
+// FaderRun.cpp - the CFader "run timed fade" driver (0x17e620), a CFader-subtype
 // method the ApiCaller stub misfiled as winapi_17e620_GetTickCount. It drives the
 // whole fade: primes frame 0, busy-waits the lead-in (Wait), then spins on
 // GetTickCount mapping elapsed/duration onto the [0..count] frame index (v2 = frame

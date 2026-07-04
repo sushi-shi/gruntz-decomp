@@ -1,4 +1,4 @@
-// CAttract.cpp - CAttract, the attract/title-screen game-state (RTTI
+// Attract.cpp - CAttract, the attract/title-screen game-state (RTTI
 // .?AVCAttract@@, vtable @0x5ea194; a CState leaf). Promoted out of the
 // src/Stub/ aggregate into its own EH unit because the `??1` destructor carries
 // the /GX SEH frame. See CAttract.h for the layout + the sub-object models.

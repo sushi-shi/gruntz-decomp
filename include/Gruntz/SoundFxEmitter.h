@@ -1,4 +1,4 @@
-// CSoundFxEmitter.h - the owning class of five sibling sound-effect/transition
+// SoundFxEmitter.h - the owning class of five sibling sound-effect/transition
 // emitter methods (0xfa410, 0xfa550, 0xfa790, 0xfa8f0, 0xfaa60). Owner class
 // unidentified by RTTI; modeled here under a placeholder name since names are
 // matching-neutral. Each method: walk the resource chain to a DirectDraw channel,

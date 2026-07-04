@@ -1,4 +1,4 @@
-// CDoNothing.h - the inert "do nothing" tile-logic game-object (C:\Proj\Gruntz).
+// DoNothing.h - the inert "do nothing" tile-logic game-object (C:\Proj\Gruntz).
 //
 // CDoNothing : CUserLogic - a tile-logic leaf in the same game-object hierarchy
 // as CTimeBomb (proven by its dtor @0x00f770 stamping the CUserLogic vftable

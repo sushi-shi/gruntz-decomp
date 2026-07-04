@@ -1,4 +1,4 @@
-// CGruntSpawnConfig.h - the grunt spawn/voice configuration manager.
+// GruntSpawnConfig.h - the grunt spawn/voice configuration manager.
 //
 // A plain (non-CObject) helper that loads grunt-spawn parameters from the bute
 // config (g_buteMgr) and the game registry (g_gameReg), then builds + serves a

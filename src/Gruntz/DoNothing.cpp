@@ -1,4 +1,4 @@
-// CDoNothing.cpp - the inert "do nothing" tile-logic game-object (C:\Proj\Gruntz).
+// DoNothing.cpp - the inert "do nothing" tile-logic game-object (C:\Proj\Gruntz).
 //
 // Two CDoNothing methods, defined in ascending retail-RVA order:
 //   GetTypeTag    @0x00f6b0 - the 6-byte per-class logic-type id accessor (0x3ec).

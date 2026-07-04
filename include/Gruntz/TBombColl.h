@@ -1,4 +1,4 @@
-// CTBombColl.h - the single shared view of the timebomb activation-registry
+// TBombColl.h - the single shared view of the timebomb activation-registry
 // collection (the same coordinate/activation-registry archetype as CHaznColl,
 // instantiated as CTimeBomb's own registry @0x64c780 and the shared name registry
 // @0x6bf650, and range-registered from the boundary thunk pool). Find (0x16da80,

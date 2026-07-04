@@ -1,4 +1,4 @@
-// CWormhole.h - the world teleport-node game-object (C:\Proj\Gruntz), a CUserLogic
+// Wormhole.h - the world teleport-node game-object (C:\Proj\Gruntz), a CUserLogic
 // leaf. The class adds no data members the dtor sees, so its dtor folds the bare
 // CUserLogic teardown (the /GX leaf-dtor archetype). Split across two TUs:
 //   Wormhole.cpp      - the object logic (~CWormhole, SpawnPartners, LoadColors,

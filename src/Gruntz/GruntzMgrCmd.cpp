@@ -1,4 +1,4 @@
-// CGruntzMgrCmd.cpp - CGruntzMgr::HandleCommand (RVA 0x862f0): the game's
+// GruntzMgrCmd.cpp - CGruntzMgr::HandleCommand (RVA 0x862f0): the game's
 // WM_COMMAND / accelerator + cheat-code dispatcher.  Re-homed out of the
 // src/Stub/ApiCallers.cpp winapi grab-bag into its own CGruntzMgr unit so the
 // class is not mixed with unrelated api-caller stubs; RVA() binds the symbol by

@@ -1,4 +1,4 @@
-// CSerialObjRef.cpp - the shared serialized-object-reference Chain (0x8c00).
+// SerialObjRef.cpp - the shared serialized-object-reference Chain (0x8c00).
 // See CSerialObjRef.h for the layout + the registry/archive chain notes. Every
 // CUserLogic Serialize override runs this on `&this->m_34`; modeled here once as
 // the real method so the reloc-masked Chain calls in the caller TUs pair to it by

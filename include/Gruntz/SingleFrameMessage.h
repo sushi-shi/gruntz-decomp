@@ -1,4 +1,4 @@
-// CSingleFrameMessage.h - a single-frame message eyecandy game-object
+// SingleFrameMessage.h - a single-frame message eyecandy game-object
 // (C:\Proj\Gruntz), a CUserLogic leaf in the same animation family as
 // CSimpleAnimation / CAniCycle: a per-class activation registry
 // (g_singleFrameActReg @0x645ef0) bound by RegisterActs to a per-frame

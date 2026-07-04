@@ -1,4 +1,4 @@
-// CDoNothingNormalLogic.cpp - the CDoNothingNormal logic-worker message pump
+// DoNothingNormalLogic.cpp - the CDoNothingNormal logic-worker message pump
 // (C:\Proj\Gruntz). The SAME archetype as LogicWorkerHandlers.cpp's four pumps
 // (0xa9cc0 / 0xaa5a0 / 0xaa960 / 0xaf0a0); re-homed from src/Stub/CDoNothingNormal.cpp
 // (where the this/ecx trace mis-named it the CDoNothingNormal ctor - it is the

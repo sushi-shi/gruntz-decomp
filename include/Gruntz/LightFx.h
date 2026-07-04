@@ -1,4 +1,4 @@
-// CLightFx.h - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
+// LightFx.h - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (RTTI .?AVCUserLogic@@ / .?AVCUserBase@@; ctor 0x9cf00).
 // sizeof 0x5c = CUserLogic(0x40) + 0x1c leaf data.
 //

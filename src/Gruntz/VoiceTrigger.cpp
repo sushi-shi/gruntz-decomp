@@ -1,4 +1,4 @@
-// CVoiceTrigger.cpp - the voice-trigger game-object (C:\Proj\Gruntz).
+// VoiceTrigger.cpp - the voice-trigger game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CVoiceTrigger methods, defined in ascending retail-RVA
 // order:

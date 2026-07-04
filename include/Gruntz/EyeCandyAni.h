@@ -1,4 +1,4 @@
-// CEyeCandyAni.h - the animated eyecandy game-object (C:\Proj\Gruntz), a
+// EyeCandyAni.h - the animated eyecandy game-object (C:\Proj\Gruntz), a
 // CUserLogic leaf (RTTI .?AVCEyeCandyAni@@). The 1-arg ctor (0xac870) folds the
 // shared CUserLogic(obj) prologue, binds the "A" bute node + cycle geometry, then
 // runs the shared eyecandy z-clamp/BigActHeight tail (cf. CEyeCandy / CBehindCandyAni

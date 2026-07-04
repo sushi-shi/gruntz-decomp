@@ -1,4 +1,4 @@
-// CGruntVoice.cpp - a grunt-voice game/sound object (a CUserLogic-derived leaf).
+// GruntVoice.cpp - a grunt-voice game/sound object (a CUserLogic-derived leaf).
 // Four __thiscall methods reconstructed in ascending-RVA order:
 //   0x119ae0  ~CGruntVoice  (the bare CUserLogic teardown, /GX frame)
 //   0x119e40  Dispatch      (per-coordinate activation registry -> handler call)

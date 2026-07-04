@@ -1,4 +1,4 @@
-// CGruntStaminaSprite.h - the grunt stamina-bar eyecandy sprite (C:\Proj\Gruntz).
+// GruntStaminaSprite.h - the grunt stamina-bar eyecandy sprite (C:\Proj\Gruntz).
 //
 // RTTI (.?AVCGruntStaminaSprite@@, vtbl 0x1e7a44) gives the true base as
 // CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden).

@@ -1,4 +1,4 @@
-// CGruntToyTimeSprite.cpp - the grunt toy-timer HUD sprite (C:\Proj\Gruntz), a
+// GruntToyTimeSprite.cpp - the grunt toy-timer HUD sprite (C:\Proj\Gruntz), a
 // CUserLogic leaf. Only the /GX leaf dtor is reconstructed.
 #include <Gruntz/GruntToyTimeSprite.h>
 

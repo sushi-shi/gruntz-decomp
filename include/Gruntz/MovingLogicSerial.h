@@ -1,4 +1,4 @@
-// CMovingLogicSerial.h - the bute-text serialization helpers of CMovingLogic
+// MovingLogicSerial.h - the bute-text serialization helpers of CMovingLogic
 // (RTTI .?AVCMovingLogic@@; C:\Proj\Gruntz). CMovingLogic carries a fixed
 // 0x108-byte coefficient block at this+0x38 (a movement curve: 29 doubles in
 // three runs + one int), which the class's bute Serialize (vtbl slot @0x16f4a0)

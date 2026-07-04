@@ -1,4 +1,4 @@
-// CTypeColl.h - the shared type-name collection. Lookup (0x40437c, __thiscall)
+// TypeColl.h - the shared type-name collection. Lookup (0x40437c, __thiscall)
 // resolves a type id to its CTypeNode (whose m_0 is the type-name string); Find
 // (0x16da80, __thiscall ret 8) is the slow id lookup. Modeled NO-body so the calls
 // reloc-mask. Placeholder names; only the signatures + offsets are load-bearing.

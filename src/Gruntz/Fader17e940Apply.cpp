@@ -1,4 +1,4 @@
-// CFader17e940Apply.cpp - CFader17e940::ApplyInit (0x17ea00), the type-6
+// Fader17e940Apply.cpp - CFader17e940::ApplyInit (0x17ea00), the type-6
 // screen-fader's "apply the transition descriptor" method (the mesh builder).
 //
 // DE-VIEW NOTE (was mislabeled CFxModeT3::Build): Ghidra RTTI names 0x17ea00

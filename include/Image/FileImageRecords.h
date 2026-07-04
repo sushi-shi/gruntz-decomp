@@ -1,4 +1,4 @@
-// CFileImageRecords.h - the internal data-record layouts the CFileImage save/decode
+// FileImageRecords.h - the internal data-record layouts the CFileImage save/decode
 // path (src/Image/FileImage.cpp) reads/builds: the run-length decode source header and
 // the two on-stack export file headers. Kept in this dedicated header (included only by
 // CFileImage.cpp) rather than in <Image/Image.h> so the other Image TUs that include

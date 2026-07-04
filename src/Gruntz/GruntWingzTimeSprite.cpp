@@ -1,4 +1,4 @@
-// CGruntWingzTimeSprite.cpp - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
+// GruntWingzTimeSprite.cpp - the grunt "wingz" time eyecandy sprite (C:\Proj\Gruntz).
 //
 // Two trace-discovered CGruntWingzTimeSprite methods, defined in ascending
 // retail-RVA order:

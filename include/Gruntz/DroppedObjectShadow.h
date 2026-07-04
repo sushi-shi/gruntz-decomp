@@ -1,4 +1,4 @@
-// CDroppedObjectShadow.h - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
+// DroppedObjectShadow.h - the dropped-object shadow eyecandy (C:\Proj\Gruntz),
 // a CUserLogic tile-logic leaf (RTTI .?AVCUserLogic@@). The /GX leaf dtor + the
 // 1-arg ctor (0xc7490) are reconstructed here. NOTE: 0xc62e0 (Ghidra-labeled
 // "LoadAttributes@CDroppedObjectShadow") was a trace mis-attribution - it is

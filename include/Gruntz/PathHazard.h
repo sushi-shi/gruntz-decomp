@@ -1,4 +1,4 @@
-// CPathHazard.h - the path-following hazard game object (C:\Proj\Gruntz).
+// PathHazard.h - the path-following hazard game object (C:\Proj\Gruntz).
 //
 // CPathHazard : CUserLogic (RTTI; most-derived vftable 0x5e7394, the
 // CPathHazard base ctor 0xb35a0 stamps it; CRainCloud / CUFO derive from it).

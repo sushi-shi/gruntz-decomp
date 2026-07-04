@@ -1,4 +1,4 @@
-// CWwdObjMgrFactories.cpp - the per-kind CWwdGameObject factories that are
+// WwdObjMgrFactories.cpp - the per-kind CWwdGameObject factories that are
 // siblings of CWwdObjMgr::CreateObject (0x159600, modelled in CDDrawSubMgr.cpp).
 // Each RezAlloc's a wide object, constructs its base + sub-objects in place,
 // stamps the intermediate then final vtable, registers it (InsertSorted_159e40),

@@ -1,4 +1,4 @@
-// CDoNothingNormalDtor.cpp - CDoNothingNormal's /GX leaf destructor (C:\Proj\Gruntz).
+// DoNothingNormalDtor.cpp - CDoNothingNormal's /GX leaf destructor (C:\Proj\Gruntz).
 //
 // The ctor stub still lives in src/Stub/CDoNothingNormal.cpp (stub-world base);
 // this TU hosts the leaf dtor against the matched <Gruntz/UserLogic.h> teardown.

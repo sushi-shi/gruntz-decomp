@@ -1,4 +1,4 @@
-// CImageSpriteBlit.cpp - the five CImage sprite blit/clip routines
+// ImageSpriteBlit.cpp - the five CImage sprite blit/clip routines
 // (0x1538c0..0x1544d0). Each one:
 //   * computes the on-screen sprite rect from the worker's draw position
 //     (info->m_drawX/m_drawY), the sprite anchor (this->m_anchorX/m_anchorY) and

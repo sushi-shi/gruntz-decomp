@@ -1,4 +1,4 @@
-// CEyeCandy.cpp - the eyecandy tile-logic game-object (C:\Proj\Gruntz).
+// EyeCandy.cpp - the eyecandy tile-logic game-object (C:\Proj\Gruntz).
 //
 // Two CEyeCandy methods, defined in ascending retail-RVA order:
 //   GetTypeTag    @0x00fca0 - the 6-byte per-class logic-type id accessor (0x3f1).

@@ -1,4 +1,4 @@
-// CRandomAmbientSound.h - the RTTI-named CRandomAmbientSound (vtable 0x5e713c,
+// RandomAmbientSound.h - the RTTI-named CRandomAmbientSound (vtable 0x5e713c,
 // RTTI chain CRandomAmbientSound : CAmbientSound : CUserBase, sizeof 0x58, in
 // C:\Proj\Gruntz). A "play a sound at random intervals while the listener is in a
 // region" eyecandy object: it owns a DirectSoundMgr handle (+0x04), two visibility

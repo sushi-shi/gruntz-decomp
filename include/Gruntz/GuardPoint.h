@@ -1,4 +1,4 @@
-// CGuardPoint.h - the guard-point marker (C:\Proj\Gruntz), a CUserLogic tile-logic
+// GuardPoint.h - the guard-point marker (C:\Proj\Gruntz), a CUserLogic tile-logic
 // leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is reconstructed here; the
 // ctor (0xae5f0) remains the @stub backlog in src/Stub/GuardPoint.cpp. Offsets +
 // code bytes are load-bearing.

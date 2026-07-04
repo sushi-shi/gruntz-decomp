@@ -1,4 +1,4 @@
-// CFileImageLoadByExt.cpp - CFileImage::LoadByExt (0x148940), the .BMP/.PCX/.PID
+// FileImageLoadByExt.cpp - CFileImage::LoadByExt (0x148940), the .BMP/.PCX/.PID
 // file-extension dispatcher (== the DIRSURF.CPP surface). Re-homed from
 // src/Stub/CFileImageDecode.cpp; uses the single-source CFileImage in <Image/Image.h>
 // (no local view). The default-loader branch is CFileImage::Load (the RT_BITMAP loader

@@ -1,4 +1,4 @@
-// CCursorSnapSprite.cpp - the cursor-snap sprite game object (C:\Proj\Gruntz).
+// CursorSnapSprite.cpp - the cursor-snap sprite game object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CCursorSnapSprite methods, defined in ascending retail-RVA
 // order:

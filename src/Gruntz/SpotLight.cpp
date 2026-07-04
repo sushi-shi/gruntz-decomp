@@ -1,4 +1,4 @@
-// CSpotLight.cpp - re-homed from src/Stub/Discovered.cpp (0x0b1ee0). The
+// SpotLight.cpp - re-homed from src/Stub/Discovered.cpp (0x0b1ee0). The
 // CSpotLight per-tick update: when the owner's mode (m_owner->m_mode) is 1 it rotates
 // the (m_offsetX,m_offsetY) offset by the running angle m_angle (scaled by m_angleStep and the frame
 // delta g_645584), folds in the tracked target (m_target->m_x/m_y), and advances

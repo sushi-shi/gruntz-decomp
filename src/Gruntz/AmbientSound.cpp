@@ -1,4 +1,4 @@
-// CAmbientSound.cpp - the positional ambient-sound game object (see
+// AmbientSound.cpp - the positional ambient-sound game object (see
 // include/Gruntz/AmbientSound.h). Reconstructs three of its __thiscall methods
 // in ascending retail-RVA order:
 //   0x00b790  ~CAmbientSound  (zero the voice handle / last field; restamp the

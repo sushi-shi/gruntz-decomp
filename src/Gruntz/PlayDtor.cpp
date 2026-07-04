@@ -1,4 +1,4 @@
-// CPlayDtor.cpp - the /GX destructor of the in-game PLAY state CPlay (0x8c830) and
+// PlayDtor.cpp - the /GX destructor of the in-game PLAY state CPlay (0x8c830) and
 // of its CPlay-derived sibling state CDemo (0x8d0d0). Uses the ONE canonical CPlay
 // (<Gruntz/Play.h>, `class CPlay : public CState`): its five destructible MFC
 // members are typed there (CString m_1b4, CByteArray m_startMarkers, CByteArray m_3a4[4],

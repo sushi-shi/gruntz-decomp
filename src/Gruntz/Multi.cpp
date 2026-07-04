@@ -1,4 +1,4 @@
-// CMulti.cpp - the multiplayer / lobby game-state (C:\Proj\Gruntz). Recovered
+// Multi.cpp - the multiplayer / lobby game-state (C:\Proj\Gruntz). Recovered
 // from RTTI (.?AVCMulti@@, vtable 0x5e9fe4) after the dynamic-this tracer
 // mis-attributed the 0x08d270 / 0x0b6110-0x0bc420 cluster to CPlay: every method
 // touches the networking/lobby sub-object block at member offsets > +0x510

@@ -1,4 +1,4 @@
-// CEyeCandyAni.cpp - the animated eyecandy game-object (C:\Proj\Gruntz), a
+// EyeCandyAni.cpp - the animated eyecandy game-object (C:\Proj\Gruntz), a
 // CUserLogic leaf. Reconstructs the 1-arg ctor, the two vtable overrides, and the
 // per-class activation acts (RegisterActs 0xacd10 + AdvanceAnim 0xacf10; the SAME
 // archetype as the CFrontCandyAni sibling, but over CEyeCandyAni's 0x646060

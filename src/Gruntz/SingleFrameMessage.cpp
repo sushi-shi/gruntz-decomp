@@ -1,4 +1,4 @@
-// CSingleFrameMessage.cpp - a single-frame message eyecandy game-object
+// SingleFrameMessage.cpp - a single-frame message eyecandy game-object
 // (C:\Proj\Gruntz). One trace-discovered method:
 //   RegisterActs @0x0ab710 - bind the per-frame handler to the "A" key.
 //

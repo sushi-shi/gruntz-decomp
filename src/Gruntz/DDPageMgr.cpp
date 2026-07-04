@@ -1,4 +1,4 @@
-// CDDPageMgr.cpp - the record-cache manager that sits between the (unconfirmed)
+// DDPageMgr.cpp - the record-cache manager that sits between the (unconfirmed)
 // CDDPageMgr cluster and CFaderMgr (proximity candidate; RTTI name does not
 // survive, so the class name is a placeholder - campaign doctrine). The object is
 // large (~0x8698 bytes): a "loaded" guard pointer at +0x04 and, far down, a 1-based

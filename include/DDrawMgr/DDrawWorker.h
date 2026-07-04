@@ -1,4 +1,4 @@
-// CDDrawWorker.h - an owned-collection node of the DDrawMgr "DDraw worker"
+// DDrawWorker.h - an owned-collection node of the DDrawMgr "DDraw worker"
 // family (placeholder name; engine "tomalla-35"). Non-RTTI engine class; its
 // own primary vtable is at RVA 0x1efbe8 (g_ddrawWorkerVtbl). It derives from a
 // CLoadable-shaped base subobject (m_04/m_08/m_0c reset on teardown, then the

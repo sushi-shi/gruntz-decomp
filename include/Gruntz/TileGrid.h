@@ -1,4 +1,4 @@
-// CTileGrid.h - the tile occupancy grid (the game registry's +0x70 object). A
+// TileGrid.h - the tile occupancy grid (the game registry's +0x70 object). A
 // flat row-table of pointers (m_8): m_8[tileY] is a row base, and each cell is a
 // 0x1c-byte (7-dword) record indexed by tile-x, so a field at cell byte 0xN is
 // ((i32*)m_8[tileY])[tileX*7 + N/4]. Cell dword 0 carries flag bits (byte+3 bit

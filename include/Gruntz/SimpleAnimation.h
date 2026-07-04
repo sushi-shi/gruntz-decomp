@@ -1,4 +1,4 @@
-// CSimpleAnimation.h - a simple eyecandy animation game-object (C:\Proj\Gruntz).
+// SimpleAnimation.h - a simple eyecandy animation game-object (C:\Proj\Gruntz).
 //
 // CSimpleAnimation : CUserLogic - a tile-logic leaf in the same game-object
 // hierarchy as CGruntPuddle (proven by its dtor @0x00f9d0 stamping the
