@@ -45,6 +45,20 @@ clean-room mandate instead (docs/cleanup-plan.md): the binary-proven correct sha
 regalloc/header % drops are accepted + reported, never a reason to defer or revert correct
 work. Only a build failure or wrong evidence stops a cleanup change.
 
+**NAME-PRESERVING FOLDS (hard rule):** a fold/merge must never degrade knowledge. When a
+view you are deleting carries a semantic field/method name (`m_attractCounter`, `originX`,
+`GetCollisionAt`) and the canonical member is still `m_<hex>`/placeholder, MIGRATE the
+semantic name onto the canonical (`gruntz sema rename`) as part of the fold — the union of
+both sides' knowledge, best name wins. Two views disagreeing on a name = pick by evidence;
+a view name that smells invented (no usage backing) gets flagged, not copied.
+
+**OPPORTUNISTIC NAMING/DE-CAST (while context is hot):** inside files YOUR brief owns, name
+every `m_<hex>`/`g_<hex>`/local/cast whose role you have ALREADY proven while doing your
+main task — even outside the immediate assignment. You hold the disasm/xref context now;
+a later pass pays to relearn it. Rules: evidence bar unchanged (observed role, never
+invented), USR-exact renames only, never wander into files owned by parallel workers,
+report the opportunistic changes separately.
+
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
