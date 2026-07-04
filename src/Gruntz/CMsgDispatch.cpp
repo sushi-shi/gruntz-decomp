@@ -9,33 +9,60 @@
 #include <rva.h>
 
 struct CMsg;
+struct CObjVtbl;
 
-// The handler object (m_18): 0x54 bytes, a polymorphic class whose vtable slots
-// 6 / 10..15 are the per-command hooks (all __thiscall, no args). Real virtuals
-// with placeholder slots so each `m_18->SlotNN()` emits `mov edx,[ecx];
-// call [edx+0xNN]` for free (docs/patterns/dummy-virtual-slots.md). Constructed
-// via the external ctor (reloc-masked); non-abstract so `new CObj` is legal.
+// The handler object (m_18): 0x54 bytes. This is a FOREIGN engine class - its ??_7
+// and the dispatched slot bodies (6 / 10..15) are unreconstructed engine code, so
+// the honest model is a manual vptr at +0 into a vtable struct that names ONLY the
+// used slots (the gaps are documented `char` pad). Constructed via the external
+// ctor (reloc-masked). Class COMPLETE before the T::* typedef (4-byte PMF, see
+// docs/patterns/pmf-complete-class-4byte.md).
 class CObj {
 public:
-    CObj(CMsg* arg);       // 0x2e4b (external, no body)
-    virtual void v00();    // +0x00
-    virtual void v04();    // +0x04
-    virtual void v08();    // +0x08
-    virtual void v0c();    // +0x0c
-    virtual void v10();    // +0x10
-    virtual void v14();    // +0x14
-    virtual void Slot18(); // +0x18 slot 6
-    virtual void v1c();    // +0x1c
-    virtual void v20();    // +0x20
-    virtual void v24();    // +0x24
-    virtual void Slot28(); // +0x28 slot 10
-    virtual void Slot2c(); // +0x2c slot 11
-    virtual void Slot30(); // +0x30 slot 12
-    virtual void Slot34(); // +0x34 slot 13
-    virtual void Slot38(); // +0x38 slot 14
-    virtual void Slot3c(); // +0x3c slot 15
+    CObjVtbl* vptr;
     char _pad[0x54 - 4];
+    CObj(CMsg* arg); // 0x2e4b (external, no body)
+    void Slot18();   // +0x18 slot 6
+    void Slot28();   // +0x28 slot 10
+    void Slot2c();   // +0x2c slot 11
+    void Slot30();   // +0x30 slot 12
+    void Slot34();   // +0x34 slot 13
+    void Slot38();   // +0x38 slot 14
+    void Slot3c();   // +0x3c slot 15
 };
+typedef void (CObj::*ObjFn)();
+struct CObjVtbl {
+    char _00[0x18];
+    ObjFn s18; // +0x18
+    char _1c[0x28 - 0x1c];
+    ObjFn s28; // +0x28
+    ObjFn s2c; // +0x2c
+    ObjFn s30; // +0x30
+    ObjFn s34; // +0x34
+    ObjFn s38; // +0x38
+    ObjFn s3c; // +0x3c
+};
+inline void CObj::Slot18() {
+    (this->*(vptr->s18))();
+}
+inline void CObj::Slot28() {
+    (this->*(vptr->s28))();
+}
+inline void CObj::Slot2c() {
+    (this->*(vptr->s2c))();
+}
+inline void CObj::Slot30() {
+    (this->*(vptr->s30))();
+}
+inline void CObj::Slot34() {
+    (this->*(vptr->s34))();
+}
+inline void CObj::Slot38() {
+    (this->*(vptr->s38))();
+}
+inline void CObj::Slot3c() {
+    (this->*(vptr->s3c))();
+}
 
 struct CSub {
     char _00[0x18];
@@ -101,4 +128,5 @@ i32 Dispatch_aa460(CMsg* arg){DISPATCH_BODY}
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CMsg);
 SIZE_UNKNOWN(CObj);
+SIZE_UNKNOWN(CObjVtbl);
 SIZE_UNKNOWN(CSub);

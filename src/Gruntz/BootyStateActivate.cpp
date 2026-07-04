@@ -21,34 +21,28 @@ SIZE_UNKNOWN(BootyNamespace);
 struct BootyNamespace {
     i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
 };
-// The registrar object reached via asset-root->m_10: a polymorphic engine class whose
-// vtable slot +0x4c (index 19) registers a looked-up image set under a prefix (returns
-// -1 on failure). Modeled as a real C++ class with 19 placeholder virtuals so Register
-// lands at +0x4c; the __thiscall virtual call falls out as `mov edx,[ecx]; call
-// [edx+0x4c]` (declared-only slots -> no ??_7 emitted here; constructed elsewhere).
+// The registrar object reached via asset-root->m_10. This is a FOREIGN engine class:
+// its ??_7 and the intermediate slots 0..18 are unreconstructed engine code, so the
+// honest model is the ONE dispatched slot. Its vtable slot +0x4c registers a looked-up
+// image set under a prefix (returns -1 on failure), modeled as a 4-byte PMF loaded
+// from the vtable (`char m_pad00[0x4c]` documents the un-recovered slots) so MSVC
+// emits `mov edx,[ecx]; call [edx+0x4c]`. The class must be COMPLETE before the T::*
+// typedef so the PMF stays 4 bytes - see docs/patterns/pmf-complete-class-4byte.md.
+struct BootyRegistrarVtbl; // opaque; the PMF lives at offset 0x4c inside it
 SIZE_UNKNOWN(BootyRegistrar);
 struct BootyRegistrar {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual void v38();
-    virtual void v3c();
-    virtual void v40();
-    virtual void v44();
-    virtual void v48();
-    virtual i32 Register(i32 handle, char* prefix, char* sep); // +0x4c
+    BootyRegistrarVtbl* m_vtbl; // +0x00
+    i32 CallRegister(i32 handle, char* prefix, char* sep);
 };
+typedef i32 (BootyRegistrar::*BootyRegFn)(i32 handle, char* prefix, char* sep);
+SIZE_UNKNOWN(BootyRegistrarVtbl);
+struct BootyRegistrarVtbl {
+    char m_pad00[0x4c];
+    BootyRegFn Register; // +0x4c
+};
+inline i32 BootyRegistrar::CallRegister(i32 handle, char* prefix, char* sep) {
+    return (this->*(m_vtbl->Register))(handle, prefix, sep);
+}
 SIZE_UNKNOWN(CGruntDataLoader);
 struct CGruntDataLoader { // asset-root->m_4 sub-object
     void Load();          // FUN @ 0x158ee0 __thiscall (reloc-masked)
@@ -189,7 +183,7 @@ i32 CMultiBootyState::OnActivate2() {
         return 0;
     }
     BootyRegistrar* reg = m_c->m_10;
-    if (reg->Register(h, "BOOTY", "_") == -1) {
+    if (reg->CallRegister(h, "BOOTY", "_") == -1) {
         return 0;
     }
 
@@ -198,7 +192,7 @@ i32 CMultiBootyState::OnActivate2() {
         return 0;
     }
     reg = m_c->m_10;
-    if (reg->Register(h, "GRUNTZ", "_") == -1) {
+    if (reg->CallRegister(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -207,7 +201,7 @@ i32 CMultiBootyState::OnActivate2() {
         return 0;
     }
     reg = m_c->m_10;
-    if (reg->Register(h, "LEVEL", "_") == -1) {
+    if (reg->CallRegister(h, "LEVEL", "_") == -1) {
         return 0;
     }
 

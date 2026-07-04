@@ -84,49 +84,17 @@ namespace modeinit {
         i32 m_40; // +0x40
     };
 
-    // The owner (this): a polymorphic class. Its own vtable slots 29 (+0x74),
-    // 30 (+0x78) and 36 (+0x90) are init/bind hooks (__thiscall: `this` in ecx,
-    // args pushed). Real virtuals with placeholder slots so `this->vNN(...)`
-    // emits `mov edx,[this]; mov ecx,this; call [edx+0xNN]` for free
-    // (docs/patterns/dummy-virtual-slots.md).
+    // The owner (this). This is a FOREIGN engine class: its ??_7 and slots 0..36 are
+    // unreconstructed engine code, so the honest model is the THREE dispatched slots.
+    // Its own vtable slots +0x74/+0x78 (init hooks) and +0x90 (bind hook) are
+    // __thiscall (`this` in ecx, args pushed), modeled as 4-byte member-function
+    // pointers loaded from the vtable (the `char m_pad` runs document the un-recovered
+    // slots) so `this->CallVNN(...)` emits `mov eax,[this]; mov ecx,this;
+    // call [eax+0xNN]`. Class COMPLETE before the T::* typedef so each PMF stays 4
+    // bytes (docs/patterns/pmf-complete-class-4byte.md).
+    struct ModeObjVtbl;
     struct ModeObj {
-        virtual void v00();
-        virtual void v04();
-        virtual void v08();
-        virtual void v0c();
-        virtual void v10();
-        virtual void v14();
-        virtual void v18();
-        virtual void v1c();
-        virtual void v20();
-        virtual void v24();
-        virtual void v28();
-        virtual void v2c();
-        virtual void v30();
-        virtual void v34();
-        virtual void v38();
-        virtual void v3c();
-        virtual void v40();
-        virtual void v44();
-        virtual void v48();
-        virtual void v4c();
-        virtual void v50();
-        virtual void v54();
-        virtual void v58();
-        virtual void v5c();
-        virtual void v60();
-        virtual void v64();
-        virtual void v68();
-        virtual void v6c();
-        virtual void v70();
-        virtual i32 v74();             // +0x74 slot 29
-        virtual i32 v78(i32 a, i32 b); // +0x78 slot 30
-        virtual void v7c();
-        virtual void v80();
-        virtual void v84();
-        virtual void v88();
-        virtual void v8c();
-        virtual void v90(); // +0x90 slot 36
+        ModeObjVtbl* m_vtbl; // +0x00
 
         Parent* m_4; // +0x04
         char m_pad8[0xc - 8];
@@ -160,7 +128,29 @@ namespace modeinit {
         i32 Init0c7ec0(Arg1* a1, i32 a2, i32 a3);
         i32 Setup43a9(Arg1* a1, i32 a2, i32 a3); // 0x000043a9
         i32 Method35da(i32 a, i32 b);            // 0x000035da
+        i32 CallV74();                           // +0x74 slot 29
+        i32 CallV78(i32 a, i32 b);               // +0x78 slot 30
+        void CallV90();                          // +0x90 slot 36
     };
+    typedef i32 (ModeObj::*ModeFn74)();
+    typedef i32 (ModeObj::*ModeFn78)(i32 a, i32 b);
+    typedef void (ModeObj::*ModeFn90)();
+    struct ModeObjVtbl {
+        char m_pad0[0x74];
+        ModeFn74 m_74; // +0x74
+        ModeFn78 m_78; // +0x78
+        char m_pad7c[0x90 - 0x7c];
+        ModeFn90 m_90; // +0x90
+    };
+    inline i32 ModeObj::CallV74() {
+        return (this->*(m_vtbl->m_74))();
+    }
+    inline i32 ModeObj::CallV78(i32 a, i32 b) {
+        return (this->*(m_vtbl->m_78))(a, b);
+    }
+    inline void ModeObj::CallV90() {
+        (this->*(m_vtbl->m_90))();
+    }
 
     // @early-stop
     // EH-state + array-ctor wall. Complete correct reconstruction: the owner-flag
@@ -373,11 +363,11 @@ namespace modeinit {
         if (m_4->m_114 == 0) {
             m_4->m_bc = 0;
         }
-        if (!v74()) {
+        if (!CallV74()) {
             return 0;
         }
-        v90();
-        if (!v78(a2, 1)) {
+        CallV90();
+        if (!CallV78(a2, 1)) {
             return 0;
         }
         if (!Method35da(0, 0)) {

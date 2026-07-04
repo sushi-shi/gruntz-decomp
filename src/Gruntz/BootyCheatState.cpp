@@ -51,30 +51,25 @@ struct BcRegSet {                   // this->m_8
 struct BcSoundRegistry {                            // this->m_c->m_28
     void Install(void* set, char* name, char* sep); // FUN_00557ee0
 };
-// The image registrar reached via m_c->m_10: a polymorphic engine class whose vtable
-// slot +0x48 (index 18) installs a resolved set. 18 placeholder virtuals so Install
-// lands at +0x48 (`mov edx,[ecx]; call [edx+0x48]`); declared-only -> no ??_7 here.
+// The image registrar reached via m_c->m_10. This is a FOREIGN engine class: its ??_7
+// and the intermediate slots 0..17 are unreconstructed engine code, so the honest
+// model is the ONE dispatched slot. Its vtable slot +0x48 installs a resolved set,
+// modeled as a 4-byte PMF loaded from the vtable (`char m_pad00[0x48]` documents the
+// un-recovered slots) so `mov edx,[ecx]; call [edx+0x48]`. Class COMPLETE before the
+// T::* typedef (4-byte PMF, docs/patterns/pmf-complete-class-4byte.md).
+struct BcImageRegistryVtbl;
 struct BcImageRegistry {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual void v38();
-    virtual void v3c();
-    virtual void v40();
-    virtual void v44();
-    virtual void Install(void* set, char* name, char* sep); // +0x48
+    BcImageRegistryVtbl* m_vtbl; // +0x00
+    void CallInstall(void* set, char* name, char* sep);
 };
+typedef void (BcImageRegistry::*BcInstallFn)(void* set, char* name, char* sep);
+struct BcImageRegistryVtbl {
+    char m_pad00[0x48];
+    BcInstallFn Install; // +0x48
+};
+inline void BcImageRegistry::CallInstall(void* set, char* name, char* sep) {
+    (this->*(m_vtbl->Install))(set, name, sep);
+}
 struct BcAssetCore { // this->m_c->m_8
     void Prepare();  // FUN_00559ef0
 };
@@ -199,7 +194,7 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         if (!imagez) {
             goto fail;
         }
-        m_c->m_10->Install(imagez, "BOOTY", "_");
+        m_c->m_10->CallInstall(imagez, "BOOTY", "_");
     }
 
     {
@@ -240,6 +235,7 @@ fail:
 SIZE_UNKNOWN(BcAssetCore);
 SIZE_UNKNOWN(BcAssetRoot);
 SIZE_UNKNOWN(BcImageRegistry);
+SIZE_UNKNOWN(BcImageRegistryVtbl);
 SIZE_UNKNOWN(BcPumpHost);
 SIZE_UNKNOWN(BcRegObj);
 SIZE_UNKNOWN(BcRegSet);

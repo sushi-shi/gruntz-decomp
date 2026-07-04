@@ -600,7 +600,7 @@ arrayserialize	?Serialize@TArray@@QAEXPAUArcSer@@@Z	72.6849	72.6849	2	6df0f9b45c
 assetnamespaceprefixes	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	90.4985	90.4985	5	f2e4538fbda9	0xdca70
 backlogstateloaders	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
 backlogstateloaders	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	2	651fae3d1099	0x95090
-backlogstateloaders	?OnActivate_vfunc8@GameLevelState@@QAEHXZ	100.0000	100.0000	2	13e6c73fb35d	0xcb800
+backlogstateloaders	?OnActivate_vfunc8@GameLevelState@@QAEHXZ	100.0000	100.0000	3	587ca9541927	0xcb800
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	2	1b1db0c79b91	0xfccf0
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
@@ -640,11 +640,11 @@ blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
 blowfish	?InitializeBlowfish@@YAFPAEF@Z	100.0000	100.0000	2	0fe7c64cfdb4	0x170100
-bootycheatstate	?LoadAssets@CBootyCheatState@@QAEHHHH@Z	86.2008	86.2008	4	8c221ead9732	0x18830
+bootycheatstate	?LoadAssets@CBootyCheatState@@QAEHHHH@Z	86.2008	86.2008	5	b4f73038b79d	0x18830
 bootymessages	?BuildBootyGruntIdleAnimation@BzState@@QAEHXZ	54.8807	54.8807	2	ada68ec3ef51	0x1ce60
 bootymessages	?ShowLevelCompleteMessage@BzState@@QAEXXZ	98.0342	98.0342	2	2e3d18f9c79f	0x1c9d0
 bootymessages	?ShowSecretBonusMessage@BzState@@QAEHXZ	93.1850	93.1850	2	a9940216abc5	0x18f00
-bootystateactivate	?OnActivate2@CMultiBootyState@@QAEHXZ	100.0000	100.0000	2	7991ca7eea8e	0x1f6f0
+bootystateactivate	?OnActivate2@CMultiBootyState@@QAEHXZ	100.0000	100.0000	3	b78b5592c398	0x1f6f0
 bootystateactivate	?vfunc_9@CBootyState@@QAEHH@Z	94.7973	94.7973	2	dca1814b1bda	0x18d30
 bootywalkanim	?BuildBootyWalkingGruntz@BzState@@QAEHXZ	92.8158	92.8158	1	8d0e2504c08b	0x1b450
 bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	93.9848	93.9848	2	ea72e2d00476	0x1b690
@@ -2827,7 +2827,7 @@ minervainner	?Stop@SoundStream@@QAEXXZ	100.0000	100.0000	1	46d12e5e2855	0x137a80
 misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	2	d224c96d8cca	0x18a190
 misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	2	f27ee6bcf8b4	0x186a50
 misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	2	270be9416a5b	0x186990
-modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	55.6969	55.6969	2	c2f597602204	0xc7ec0
+modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	54.8679	54.8679	3	f6fec7af51da	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	2	8ad390ea1d22	0x16f3c0
 motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	2	ef5e4a08d508	0x16f430
@@ -3350,7 +3350,7 @@ spriteresource	?GetFrame@CSprite@@QAEHH@Z	100.0000	100.0000	2	ff51887ebc7c	0x15c
 spriteresource	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	99.4110	99.4110	4	98b13a5a58a2	0x151f00
 spriteresource	?LookupAnimSprite@CGruntAnimPlayer@@QAEHPBD@Z	73.0435	73.0435	1	07b112262249	0x150610
 startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	1	a3e252acbdce	0x1f9b0
-statedispatch	?StateDispatch@@YGHPAUCStateCtx@@HH@Z	32.4881	32.4881	1	59d826efce87	0x9b770
+statedispatch	?StateDispatch@@YGHPAUCStateCtx@@HH@Z	32.4881	32.4881	2	980d52e5e5c9	0x9b770
 stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	3	dbdbb6ad1672	0xa09a0
 stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	3	216aeaa6bb04	0x1c8a0
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
