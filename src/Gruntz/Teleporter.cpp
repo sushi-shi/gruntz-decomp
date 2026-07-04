@@ -7,9 +7,9 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/Teleporter.h>
-#include <Gruntz/ActReg.h>            // shared activation-registrar archetype (CTeleporterActReg)
-#include <Gruntz/TeleSpriteFactory.h> // shared teleporter HUD-sprite factory
+#include <Gruntz/ActReg.h> // shared activation-registrar archetype (CTeleporterActReg)
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
 
 // The bound / spawned visual object the tick reads + re-seeds IS the engine
@@ -44,10 +44,10 @@ struct CTeleRecord {
 struct CTeleScroller {
     void ResetGoals(i32 x, i32 y); // 0xd5f00
 };
-// The sprite factory reached as mgr->m_world->m_8 (CreateSprite 0x1597b0) is the shared
-// <Gruntz/TeleSpriteFactory.h> class. g_gameReg->m_world is already the real
-// CSpriteFactoryHolder (<Gruntz/GameRegistry.h>); its m_8 (CSpriteFactory*) is cast to
-// the complete CTeleSpriteFactory at the call site - no separate local holder view.
+// The sprite factory reached as mgr->m_world->m_8 (CreateSprite 0x1597b0) is the
+// canonical CSpriteFactory (<Gruntz/SpriteFactory.h>). g_gameReg->m_world is already the
+// real CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) whose m_8 IS that CSpriteFactory* -
+// no local holder/factory view, and the result is the created CGameObject.
 
 // The selection holder at mgr->m_68->m_244 (its +0x8 -> the {row,col} index pair).
 struct CTeleSelHolder {
@@ -225,15 +225,14 @@ i32 CTeleporter::Update() {
         m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
-        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
-                                   ->CreateSprite(
-                                       0,
-                                       s->m_11c * 32 + 16,
-                                       s->m_120 * 32 + 16,
-                                       0,
-                                       g_teleporterSpawnKey,
-                                       0x40003
-                                   );
+        CGameObject* spawned = (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+            0,
+            s->m_11c * 32 + 16,
+            s->m_120 * 32 + 16,
+            0,
+            g_teleporterSpawnKey,
+            0x40003
+        );
         if (spawned != 0) {
             spawned->m_124 = 1;
             spawned->m_placeMode = m_object->m_placeMode;
@@ -243,15 +242,14 @@ i32 CTeleporter::Update() {
         }
     } else {
         CGameObject* s = m_object;
-        CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
-                                   ->CreateSprite(
-                                       0,
-                                       s->m_164 * 32 + 16,
-                                       s->m_168 * 32 + 16,
-                                       0,
-                                       g_wormholeSpawnKey,
-                                       0x40003
-                                   );
+        CGameObject* spawned = (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+            0,
+            s->m_164 * 32 + 16,
+            s->m_168 * 32 + 16,
+            0,
+            g_wormholeSpawnKey,
+            0x40003
+        );
         spawned->m_164 = m_object->m_screenX;
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
@@ -288,6 +286,5 @@ SIZE_UNKNOWN(CTeleMgrSub);
 SIZE_UNKNOWN(CTeleRecord);
 SIZE_UNKNOWN(CTeleScroller);
 SIZE_UNKNOWN(CTeleSelHolder);
-SIZE_UNKNOWN(CTeleSpriteFactory);
 SIZE_UNKNOWN(CTeleporter);
 SIZE_UNKNOWN(CTeleporterActReg);

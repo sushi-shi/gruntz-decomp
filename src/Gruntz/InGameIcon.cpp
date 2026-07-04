@@ -14,11 +14,12 @@
 
 #include <rva.h>
 
-#include <string.h>              // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>        // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>          // zDArray (the command-dispatch tables)
-#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
+#include <string.h>               // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>         // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>           // zDArray (the command-dispatch tables)
+#include <Gruntz/LogicFnTable.h>  // the shared LogicFnTable dispatch-table shape
+#include <Gruntz/NameVec.h>       // g_buteNameVec's scratch zDArray<CString> view
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
@@ -28,12 +29,9 @@ extern CButeTree g_buteTree;
 // The bute manager singleton the builder queries for the WarpStone target
 // (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
 
-// The sprite/animation factory reached as g_gameReg->m_world->m_8 (its +0x8 field);
-// CreateSprite (0x1597b0, __thiscall) builds a "SimpleAnimation" glitter sprite.
-struct IconSpriteFactory {
-    CGameObject*
-    CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
-};
+// The sprite/animation factory reached as g_gameReg->m_world->m_8 is the canonical
+// CSpriteFactory (shared <Gruntz/SpriteFactory.h>); CreateSprite (0x1597b0, __thiscall)
+// builds a "SimpleAnimation" glitter sprite (returned as the created CGameObject).
 
 // The current game-state (g_gameReg->m_curState) viewed by the icon-setup path as
 // the per-level warp holder: +0x1c the level number, +0x384.. four (x,y) WarpStone
@@ -450,8 +448,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
 
     // glitter overlay sprite for the powerup / curse groups
     if (glitter != 0) {
-        IconSpriteFactory* fac = (IconSpriteFactory*)g_gameReg->m_world->m_8;
-        CGameObject* fx = fac->CreateSprite(
+        CGameObject* fx = (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
             0,
             m_object->m_screenX,
             m_object->m_screenY,

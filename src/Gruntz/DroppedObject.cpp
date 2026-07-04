@@ -10,6 +10,7 @@
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -261,14 +262,8 @@ void CDroppedObject::RegisterActs() {
 // The 0x1c-byte-cell collision grid is g_gameReg->m_tileGrid, already typed
 // CTileGrid* on the canonical CGameRegistry (row table m_8, width m_c, height m_10)
 // - no local grid view; ActA reads a cell through it directly.
-struct DropSpriteFactory { // g_gameReg->m_world->m_08
-    CGameObject*
-    CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
-};
-struct DropReg30 { // g_gameReg->m_world
-    char m_pad00[0x08];
-    DropSpriteFactory* m_08; // +0x08
-};
+// g_gameReg->m_world->m_8 is the canonical CSpriteFactory (shared
+// <Gruntz/SpriteFactory.h>); CreateSprite @0x1597b0 returns the created CGameObject.
 struct DropReg2c { // g_gameReg->m_curState
     char m_pad00[0x20];
     i32 m_20; // +0x20  fx-mode selector (the splash switch key)
@@ -348,15 +343,15 @@ i32 CDroppedObject::ActA() {
                             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                                 && m_landY < g_gameReg->m_viewOriginB
                                 && m_landY >= g_gameReg->m_viewOriginT) {
-                                CGameObject* s = ((DropReg30*)g_gameReg->m_world)
-                                                     ->m_08->CreateSprite(
-                                                         0,
-                                                         x,
-                                                         m_landY,
-                                                         0xcf84f,
-                                                         "Particlez",
-                                                         0x40003
-                                                     );
+                                CGameObject* s =
+                                    (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+                                        0,
+                                        x,
+                                        m_landY,
+                                        0xcf84f,
+                                        "Particlez",
+                                        0x40003
+                                    );
                                 if (s != 0) {
                                     s->ApplyName("LEVEL_DEATHSPLASH");
                                     s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
@@ -371,9 +366,8 @@ i32 CDroppedObject::ActA() {
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                 && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
-                CGameObject* s =
-                    ((DropReg30*)g_gameReg->m_world)
-                        ->m_08->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
+                CGameObject* s = (CGameObject*)g_gameReg->m_world->m_8
+                                     ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
@@ -399,6 +393,4 @@ SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DropReg2c);
-SIZE_UNKNOWN(DropReg30);
-SIZE_UNKNOWN(DropSpriteFactory);
 SIZE_UNKNOWN(DropTileMgr);
