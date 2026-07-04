@@ -231,6 +231,77 @@
         gdb             # dynamic this/ecx tracing of the game under wine (winedbg --gdb)
       ]);
 
+      # ONE shell for everything. `nix develop` (default) == `nix develop .#build`:
+      # analysis + target-side delink + objdiff AND the MSVC 5.0/wine recompile
+      # side. `.#build` is kept as an alias so every existing script/brief spelling
+      # (`nix develop .#build --command ...`) keeps working. Carries all analysis
+      # tools + wine + jdk21 and exports the full MSVC/wine/Ghidra env.
+      gruntzShell = pkgs.mkShell {
+        name = "gruntz-decomp";
+        packages = commonTools ++ [ pkgs.wineWow64Packages.staging pkgs.jdk21 ];
+        shellHook = ''
+          export GRUNTZ_DIR="$PWD"
+          export GRUNTZ_EXE="${gruntz-exe}"
+          export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+          # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
+          # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
+          export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
+
+          # Enable the repo-tracked pre-commit auto-format hook (idempotent).
+          if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+            git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
+              && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
+          fi
+
+          export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
+          export WINEDEBUG="fixme-all,err-kerberos"
+          export WINEDLLOVERRIDES="mscoree,mshtml="
+          # The per-prefix wineserver is now kept alive across builds (warm `wine
+          # cl` = fast rebuilds); it is a daemon shared by every `nix develop`
+          # invocation on this prefix, so `nix develop --command` (e.g. the nvim
+          # build loop) reconnects to it. Reap it when YOU leave an INTERACTIVE
+          # shell; `gruntz clean` reaps it before removing the prefix.
+          case "$-" in *i*) trap 'wineserver -k >/dev/null 2>&1 || true' EXIT ;; esac
+          export GRUNTZ_TOOLCHAIN="${gruntz-toolchain}"
+          export MSVC_DIR="${gruntz-toolchain}/msvc"
+          export DXSDK_DIR="${gruntz-toolchain}/dx"
+          export NINJA_DIR="${gruntz-toolchain}/ninja"
+          # PyGhidra (replaces Jython): pyghidra.start() bootstraps the Ghidra JVM
+          # via jpype so the headless apply/export scripts run as CPython3.
+          export GHIDRA_INSTALL_DIR="${pkgs.ghidra}/lib/ghidra"
+          export JAVA_HOME="${pkgs.jdk21}/lib/openjdk"
+
+          # Proprietary runtime DLLs (mss32 + smackw32, and sfman32 once pinned).
+          # These run ALONGSIDE the recompiled EXE under wine - none are needed
+          # to build/link it. See docs/runtime-dlls.md.
+          export GRUNTZ_RUNTIME="${gruntz-runtime}"
+
+          # Banner -> stderr so stdout stays clean for `nix develop --command`
+          # piping (e.g. gruntz status ... --json | jq).
+          echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
+          echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
+          echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil (analysis + delink + objdiff)" >&2
+          echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
+          echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
+          echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
+          echo "[gruntz] shell      : ONE shell - 'nix develop' (== '.#build'); everything (analysis + build/init) is here" >&2
+          ${nvimShimHook}
+          # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
+          # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
+          # First run builds the local env incl. the Ghidra DB (minutes); afterwards
+          # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
+          if [ -n "$GRUNTZ_SKIP_INIT" ]; then
+            echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)" >&2
+          else
+            if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
+              echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
+            fi
+            python3 -m gruntz init \
+              || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2
+          fi
+        '';
+      };
+
     in {
       packages.${system} = {
         inherit vostok-delinker objdiff objdiff-cli gruntz-exe gruntz-toolchain
@@ -239,101 +310,12 @@
       };
 
       devShells.${system} = {
-        # Default shell - no MSVC: analysis, target-side delink, objdiff.
-        default = pkgs.mkShell {
-          name = "gruntz-decomp";
-          packages = commonTools;
-          shellHook = ''
-            export GRUNTZ_DIR="$PWD"
-            export GRUNTZ_EXE="${gruntz-exe}"
-            export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
-            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
-            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
-            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
-
-            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
-            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
-              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
-                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
-            fi
-
-            # Banner -> stderr so stdout stays clean for `nix develop --command`
-            # piping (e.g. gruntz status / python -m gruntz.match.status ... --json | jq).
-            echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
-            echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil" >&2
-            echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (status/labels/structs/format/ghidra-refresh/todo)" >&2
-            echo "[gruntz] base/MSVC  : 'nix develop .#build' for 'gruntz build'/'init' (VC5 + wine)" >&2
-            ${nvimShimHook}
-            if [ ! -f "$GRUNTZ_DIR/build/clangd/compile_commands.json" ]; then
-              echo "[gruntz] clangd     : generating LSP compile DB (first entry) ..." >&2
-              python3 -m gruntz clangd \
-                || echo "[gruntz] clangd     : failed - run 'gruntz clangd'" >&2
-            fi
-          '';
-        };
-
-        # Base/recompile shell - MSVC 5.0 under wine-staging (staging is used for
-        # mspdbsrv; VC5 may not need it but it is a harmless superset).
-        build = pkgs.mkShell {
-          name = "gruntz-build";
-          packages = commonTools ++ [ pkgs.wineWow64Packages.staging pkgs.jdk21 ];
-          shellHook = ''
-            export GRUNTZ_DIR="$PWD"
-            export GRUNTZ_EXE="${gruntz-exe}"
-            export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
-            # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
-            # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
-            export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
-
-            # Enable the repo-tracked pre-commit auto-format hook (idempotent).
-            if [ "$(git -C "$GRUNTZ_DIR" config --local core.hooksPath 2>/dev/null)" != ".githooks" ]; then
-              git -C "$GRUNTZ_DIR" config --local core.hooksPath .githooks 2>/dev/null \
-                && echo "[gruntz] hooks      : pre-commit auto-format on (core.hooksPath=.githooks)" >&2
-            fi
-
-            export WINEPREFIX="$GRUNTZ_DIR/build/wineprefix"   # generated state lives under build/
-            export WINEDEBUG="fixme-all,err-kerberos"
-            export WINEDLLOVERRIDES="mscoree,mshtml="
-            # The per-prefix wineserver is now kept alive across builds (warm `wine
-            # cl` = fast rebuilds); it is a daemon shared by every `nix develop`
-            # invocation on this prefix, so `nix develop --command` (e.g. the nvim
-            # build loop) reconnects to it. Reap it when YOU leave an INTERACTIVE
-            # shell; `gruntz clean` reaps it before removing the prefix.
-            case "$-" in *i*) trap 'wineserver -k >/dev/null 2>&1 || true' EXIT ;; esac
-            export GRUNTZ_TOOLCHAIN="${gruntz-toolchain}"
-            export MSVC_DIR="${gruntz-toolchain}/msvc"
-            export DXSDK_DIR="${gruntz-toolchain}/dx"
-            export NINJA_DIR="${gruntz-toolchain}/ninja"
-            # PyGhidra (replaces Jython): pyghidra.start() bootstraps the Ghidra JVM
-            # via jpype so the headless apply/export scripts run as CPython3.
-            export GHIDRA_INSTALL_DIR="${pkgs.ghidra}/lib/ghidra"
-            export JAVA_HOME="${pkgs.jdk21}/lib/openjdk"
-
-            # Proprietary runtime DLLs (mss32 + smackw32, and sfman32 once pinned).
-            # These run ALONGSIDE the recompiled EXE under wine - none are needed
-            # to build/link it. See docs/runtime-dlls.md.
-            export GRUNTZ_RUNTIME="${gruntz-runtime}"
-            echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
-            echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
-            echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
-            echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
-            ${nvimShimHook}
-            # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
-            # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
-            # First run builds the local env incl. the Ghidra DB (minutes); afterwards
-            # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
-            if [ -n "$GRUNTZ_SKIP_INIT" ]; then
-              echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)" >&2
-            else
-              if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
-                echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
-              fi
-              python3 -m gruntz init \
-                || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2
-            fi
-          '';
-        };
+        # ONE shell for everything (analysis + MSVC 5.0/wine recompile). `.#build`
+        # is an ALIAS of the default so every `nix develop .#build ...` spelling in
+        # scripts/briefs keeps working. staging wine is used for mspdbsrv (VC5 may
+        # not need it but it is a harmless superset).
+        default = gruntzShell;
+        build = gruntzShell;
       };
     };
 }
