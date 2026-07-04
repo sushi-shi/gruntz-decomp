@@ -43,9 +43,6 @@ struct CTubeTypeNode {
 struct CTubeTypeColl {
     CTubeTypeNode* Resolve3864(i32 key); // 0x3864
 };
-struct CTubeStrSlot {
-    void ResetCtor(); // 0x1b9b93  CString::CString() (re-init a freed registry slot)
-};
 struct CTubeAnimLookup { // CGrunt::m_14
     char _00[0x1c];
     i32 m_1c; // +0x1c
@@ -136,7 +133,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     i32 count = g_typeCount;
     for (i32 i = count; i != 0; i--) {
         if (p != 0) {
-            ((CTubeStrSlot*)p)->ResetCtor();
+            ((CString*)p)->CString::CString(); // 0x1b9b93 re-init the freed registry slot
         }
         p = (char*)p + 4;
     }
@@ -160,6 +157,5 @@ SIZE_UNKNOWN(CTubeBlitParam);
 SIZE_UNKNOWN(CTubeMgr2c);
 SIZE_UNKNOWN(CTubeRecord);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CTubeStrSlot);
 SIZE_UNKNOWN(CTubeTypeColl);
 SIZE_UNKNOWN(CTubeTypeNode);

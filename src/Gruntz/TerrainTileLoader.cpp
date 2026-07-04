@@ -68,11 +68,6 @@ void* TtRegister(
 void TtAddPrefixA(void* set, const char* name);        // 0x150540 add prefix A
 void TtAddPrefixB(void* set, const char* name, i32 z); // 0x1505b0 add prefix B
 
-// The CString diagnostic temp ctor/dtor (the /GX frame's destructible local).
-// External MFC (reloc-masked).
-void TtStrCtor(void* str); // 0x1b9b93 CString::CString
-void TtStrDtor(void* str); // 0x1b9cde CString::~CString
-
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
