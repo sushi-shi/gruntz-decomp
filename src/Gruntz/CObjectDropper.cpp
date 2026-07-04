@@ -59,7 +59,8 @@ struct CObjDropObj {
     i32 m_14c; // +0x14c
     i32 m_150; // +0x150
     char m_pad154[0x194 - 0x154];
-    void* m_nameRec;           // +0x194 the sprite/name record (dir name at +0x24)
+    char*
+        m_nameRec; // +0x194 the sprite/name record (dir name at +0x24); char* like CGameObject::m_194
     DropperLayer* m_footprint; // +0x198 footprint descriptor (wander-box half-extents)
     char m_pad19c[0x1b4 - 0x19c];
     i32 m_cycleGeomId; // +0x1b4 cycle-geometry id
@@ -217,7 +218,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     CObjDropObj* obj38 = (CObjDropObj*)m_38;
     if (obj38->m_nameRec != 0) {
         MiniStr name;
-        name = (char*)obj38->m_nameRec + 0x24;
+        name = obj38->m_nameRec + 0x24;
         const char* s = name.m_buf;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
             o->m_travelDir = 1;

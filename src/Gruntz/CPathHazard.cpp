@@ -307,7 +307,7 @@ i32 CPathHazard::Tick() {
                 m_legSegsHi = 0;
                 m_legTag = g_pathLegTag;
                 m_legTagHi = 0;
-                m_prevAnimSetNode = (void*)m_objAux->m_1c;
+                m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;
             }
@@ -415,7 +415,7 @@ i32 CLightningHazard::SiblingTick() {
         o->m_drawFillArg = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
         CLightVtbl* vt = *(CLightVtbl**)this;
         (this->*(vt->BeginLeg))();
-        m_prevAnimSetNode = (void*)m_objAux->m_1c;
+        m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
         m_strikeArmed = 0;
     }

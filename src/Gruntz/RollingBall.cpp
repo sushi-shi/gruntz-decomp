@@ -149,7 +149,7 @@ struct CRbCtorObj {
     i32 m_14c; // +0x14c
     i32 m_150; // +0x150
     char m_pad154[0x194 - 0x154];
-    void* m_194; // +0x194 sprite/name record (dir name at +0x24)
+    char* m_194; // +0x194 sprite/name record (dir name at +0x24); char* like CGameObject::m_194
     char m_pad198[0x1b4 - 0x198];
     i32 m_1b4; // +0x1b4 cycle-geometry id
 };
@@ -211,7 +211,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     CRbCtorObj* obj38 = (CRbCtorObj*)m_38;
     if (obj38->m_194 != 0) {
         CRbMiniStr name;
-        name = (char*)obj38->m_194 + 0x24;
+        name = obj38->m_194 + 0x24;
         const char* s = name.m_buf;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;

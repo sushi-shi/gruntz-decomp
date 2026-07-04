@@ -1552,8 +1552,8 @@ cpathhazard	?ArmStrike@CLightningHazard@@QAEHHH@Z	94.9296	94.9296	8	594758789779
 cpathhazard	?BeginLeg@CPathHazard@@UAEHXZ	84.2358	84.2358	3	f187570cb612	0xb47e0
 cpathhazard	?ForwardTick@CPathHazard@@QAEXXZ	100.0000	100.0000	1	a46d1c7f75bb	0xb5070
 cpathhazard	?GetTypeTag@CPathHazard@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	315269255256	0x132f0
-cpathhazard	?SiblingTick@CLightningHazard@@QAEHXZ	86.0469	86.0469	7	6a28d6b718cc	0xb43f0
-cpathhazard	?Tick@CPathHazard@@UAEHXZ	94.8794	94.8794	3	932c91fd1e8a	0xb4020
+cpathhazard	?SiblingTick@CLightningHazard@@QAEHXZ	86.0469	86.0469	8	41ff15b00274	0xb43f0
+cpathhazard	?Tick@CPathHazard@@UAEHXZ	94.8794	94.8794	4	019ffd965ecf	0xb4020
 cplay	?AddLevelGruntz@CPlay@@QAEHXZ	79.4107	79.4107	3	3b3372435aa9	0xd5960
 cplay	?ApplyGameOptions@CPlay@@QAEXXZ	76.0784	76.0784	3	baa575fa9e17	0x36be0
 cplay	?ArmSnapshot@CPlay@@QAEHHH@Z	99.2000	99.2000	1	896666303e5b	0xd9240
@@ -3102,7 +3102,7 @@ rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
 ringbuffer	?deflateInit_@@YAHHHHH@Z	100.0000	100.0000	1	488cfe5747f6	0x186180
 ringbuffer	?flush_pending@@YAXPAUz_stream@@@Z	100.0000	100.0000	1	5b40120f1de9	0x186910
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	2	c25d6f414d5c	0x7b440
-rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	5	fe39ef82eb60	0xaf820
+rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	6	bc1443c7689f	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	1	a7984852a451	0xaff40

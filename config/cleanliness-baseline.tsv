@@ -4,7 +4,7 @@ g_<hex> globals	1244
 Method/Stub/FUN	337
 placeholder classes	391
 )this casts	328
-)m_ casts	758
-(char*) casts	916
+)m_ casts	756
+(char*) casts	914
 (const char*) casts	109
-void* m_ members	438
+void* m_ members	436
