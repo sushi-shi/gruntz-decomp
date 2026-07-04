@@ -35,8 +35,10 @@
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Rez/RezMgr.h>        // RezFree - the engine allocator the video-handle teardown uses
 #include <Bute/ButeMgr.h>      // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
-#include <Win32.h>             // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>             // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created glitter/letter sprites)
+#include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
 #include <math.h>
 #include <rva.h>
 #include <stdio.h> // sprintf - the ATTRACT/title stack-buffer string builders
@@ -594,42 +596,20 @@ i32 CCreditsState::DrawScrollingCredits() {
 // BuildWarpStoneGlitterAnimation (0x19540): a CMultiBootyState (booty) method - the
 // trace mis-homed it on CState (the `this` is really a CMultiBootyState, whose
 // glitter block sits at +0x1d8..+0x1fc). Build 4 "DoNothing" warp-letter animations
-// through the mgr-settings animation factory (g_mgrSettings->m_world->m_8), stash them in
-// the +0x1ec ptr array (naming-independent offset access), set/clear their active bit,
-// then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
-// SetTexture/SetCycle are reloc-masked __thiscall externs.
-SIZE_UNKNOWN(CGlitterAnim);
-// The created "SimpleAnimation"/"DoNothing" sprite (the factory return). The WARP
-// booty-letter draw (StepGlitterAnim/MoveLettersByDir) walks the very same objects
-// as position/flag records, so its former CBootyLetter facet (m_8 flag word, m_5c/m_60
-// = x/y, m_40 out-of-bounds flag, m_74 one-shot latch) is folded in here - one class.
-struct CGlitterAnim {                       // a created animation object
-    void SetName(const char* key, i32 idx); // 0x1504d0 (this, key, idx)
-    void SetTexture(const char* key);       // 0x150540 (this, key)
-    void SetCycle(const char* key, i32 z);  // 0x1505b0 (this, key, z)
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 flag word (booty draw: |= 0x20000 latch bit)
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40 flag word (bit0 = active / out-of-bounds)
-    char m_pad44[0x4c - 0x44];
-    i32 m_4c; // +0x4c selection/color handle
-    i32 m_50; // +0x50 mode
-    char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58 flag
-    i32 m_5c; // +0x5c id/offset (booty draw: x)
-    i32 m_60; // +0x60 x-position (booty draw: y)
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74 one-shot latch (booty draw)
-};
-SIZE_UNKNOWN(CGlitterFactory);
-struct CGlitterFactory {
-    // 0x1597b0: create a named animation of `kind` from a template ("DoNothing"/"SimpleAnimation").
-    CGlitterAnim* Create(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e);
-};
+// through the mgr-settings animation factory (g_mgrSettings->m_world->m_8, the
+// canonical CSpriteFactory), stash them in the +0x1ec ptr array (naming-independent
+// offset access), set/clear their active bit, then build the trailing
+// "SimpleAnimation" glitter sprite.
+// The created "SimpleAnimation"/"DoNothing" sprite is the shared CGameObject
+// (ApplyLookupSprite @0x1504d0 / ApplyName @0x150540 / ApplyLookupGeometry
+// @0x1505b0). The WARP booty-letter draw (StepGlitterAnim/MoveLettersByDir) walks
+// the very same objects as position/flag records - its former CBootyLetter facet
+// (m_flags latch bit, m_screenX/Y, m_stateFlags active/out-of-bounds bit,
+// m_latchedAnimId one-shot latch) is the same one class.
 SIZE_UNKNOWN(CGlitterMgrM30);
 struct CGlitterMgrM30 {
     char m_pad00[0x8];
-    CGlitterFactory* m_8; // +0x08 the animation factory
+    CSpriteFactory* m_8; // +0x08 the animation factory (CreateSprite @0x1597b0)
 };
 SIZE_UNKNOWN(CGlitterMgrSet);
 struct CGlitterMgrSet {
@@ -667,32 +647,32 @@ RVA(0x00019540, 0x12a)
 i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
     // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
     // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
-    CGlitterAnim** slot = (CGlitterAnim**)((char*)this + 0x1ec);
+    CGameObject** slot = (CGameObject**)((char*)this + 0x1ec);
     m_radius = 0xc8;
     m_letterIdx = (g_mgrSettings->m_7c->m_4 - 1) % 4;
     m_angleStep = 0;
     m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGlitterAnim* a = g_mgrSettings->m_world->m_8
-                              ->Create(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
+        CGameObject* a = g_mgrSettings->m_world->m_8
+                              ->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
         }
-        a->SetName("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
-        a->m_40 |= 1;
+        a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
+        a->m_stateFlags |= 1;
     }
     for (i32 k = 0; k <= m_letterIdx; k++) {
-        slot[k]->m_40 &= ~1;
+        slot[k]->m_stateFlags &= ~1;
     }
-    CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
+    CGameObject* g = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
     m_cursorLetter = g;
     if (g == 0) {
         return 0;
     }
-    g->SetTexture("GAME_GLITTERGOLD");
-    m_cursorLetter->SetCycle("GAME_CYCLE100", 0);
+    g->ApplyName("GAME_GLITTERGOLD");
+    m_cursorLetter->ApplyLookupGeometry("GAME_CYCLE100", 0);
     return 1;
 }
 
@@ -739,18 +719,18 @@ struct CEffLoaderSelf {
     char m_pad10[0x30 - 0x10];
     CEffNamespace* m_30; // +0x30  image namespace
     char m_pad34[0x224 - 0x34];
-    CGlitterAnim* m_bomb[8];   // +0x224  bomb-grunt sprites
-    CGlitterAnim* m_gokart[8]; // +0x244  go-kart sprites
-    CGlitterAnim* m_expl[8];   // +0x264  explosion sprites
+    CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites
+    CGameObject* m_gokart[8]; // +0x244  go-kart sprites
+    CGameObject* m_expl[8];   // +0x264  explosion sprites
     char m_pad284[0x2fc - 0x284];
-    CGlitterAnim* m_2fc; // +0x2fc  stopwatch
-    CGlitterAnim* m_300; // +0x300  exit
-    CGlitterAnim* m_304; // +0x304  death twitch
-    CGlitterAnim* m_308; // +0x308  gauntletz
-    CGlitterAnim* m_30c; // +0x30c  beachballz
-    CGlitterAnim* m_310; // +0x310  roidz
-    CGlitterAnim* m_314; // +0x314  coin
-    CGlitterAnim* m_318; // +0x318  wormhole/teleporter
+    CGameObject* m_2fc; // +0x2fc  stopwatch
+    CGameObject* m_300; // +0x300  exit
+    CGameObject* m_304; // +0x304  death twitch
+    CGameObject* m_308; // +0x308  gauntletz
+    CGameObject* m_30c; // +0x30c  beachballz
+    CGameObject* m_310; // +0x310  roidz
+    CGameObject* m_314; // +0x314  coin
+    CGameObject* m_318; // +0x318  wormhole/teleporter
 };
 
 // @confidence: med
@@ -779,150 +759,150 @@ i32 CState::LoadGruntEffectSprites() {
     }
     self->m_c->m_imageRegistry->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
-    CGlitterFactory* f = g_mgrSettings->m_world->m_8;
+    CSpriteFactory* f = g_mgrSettings->m_world->m_8;
 
-    CGlitterAnim* sw = f->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_2fc = sw;
     if (sw == 0) {
         return 0;
     }
-    sw->SetTexture("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
-    self->m_2fc->SetCycle("GAME_CYCLE100", 0);
-    self->m_2fc->m_40 |= 1;
+    sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
+    self->m_2fc->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    self->m_2fc->m_stateFlags |= 1;
 
-    CGlitterAnim* wh = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* wh = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_318 = wh;
     if (wh == 0) {
         return 0;
     }
     i32 tint =
         g_mgrSettings->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
-    self->m_318->SetTexture("GAME_WORMHOLE");
-    self->m_318->SetCycle("GAME_TELEPORTER", 0);
-    CGlitterAnim* p318 = self->m_318;
-    p318->m_58 = 1;
-    p318->m_50 = 7;
-    p318->m_4c = tint;
+    self->m_318->ApplyName("GAME_WORMHOLE");
+    self->m_318->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    CGameObject* p318 = self->m_318;
+    p318->m_drawActive = 1;
+    p318->m_drawFillCmd = 7;
+    p318->m_drawFillArg = tint;
 
-    CGlitterAnim* ex = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* ex = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_300 = ex;
     if (ex == 0) {
         return 0;
     }
-    ex->SetTexture("GRUNTZ_EXITZ");
-    self->m_300->SetCycle("GAME_GRUNTFLEX", 0);
-    CGlitterAnim* p300 = self->m_300;
-    p300->m_58 = 1;
-    p300->m_50 = 0xa;
-    p300->m_4c = handleA;
-    self->m_300->m_40 |= 1;
+    ex->ApplyName("GRUNTZ_EXITZ");
+    self->m_300->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
+    CGameObject* p300 = self->m_300;
+    p300->m_drawActive = 1;
+    p300->m_drawFillCmd = 0xa;
+    p300->m_drawFillArg = handleA;
+    self->m_300->m_stateFlags |= 1;
 
-    CGlitterAnim* dt = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* dt = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_304 = dt;
     if (dt == 0) {
         return 0;
     }
-    dt->SetTexture("GRUNTZ_NORMALGRUNT_DEATH");
-    self->m_304->SetCycle("GAME_GRUNTTWITCH", 0);
-    CGlitterAnim* p304 = self->m_304;
-    p304->m_58 = 1;
-    p304->m_50 = 0xa;
-    p304->m_4c = handleA;
-    self->m_304->m_40 |= 1;
+    dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
+    self->m_304->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
+    CGameObject* p304 = self->m_304;
+    p304->m_drawActive = 1;
+    p304->m_drawFillCmd = 0xa;
+    p304->m_drawFillArg = handleA;
+    self->m_304->m_stateFlags |= 1;
 
-    CGlitterAnim* gl = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* gl = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_308 = gl;
     if (gl == 0) {
         return 0;
     }
-    gl->SetTexture("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
-    self->m_308->SetCycle("GAME_CYCLE100", 0);
-    CGlitterAnim* p308 = self->m_308;
-    p308->m_58 = 1;
-    p308->m_50 = 0xa;
-    p308->m_4c = handleA;
-    self->m_308->m_40 |= 1;
+    gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
+    self->m_308->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p308 = self->m_308;
+    p308->m_drawActive = 1;
+    p308->m_drawFillCmd = 0xa;
+    p308->m_drawFillArg = handleA;
+    self->m_308->m_stateFlags |= 1;
 
-    CGlitterAnim* bb = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* bb = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_30c = bb;
     if (bb == 0) {
         return 0;
     }
-    bb->SetTexture("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
-    self->m_30c->SetCycle("GAME_CYCLE100", 0);
-    CGlitterAnim* p30c = self->m_30c;
-    p30c->m_58 = 1;
-    p30c->m_50 = 0xa;
-    p30c->m_4c = handleA;
-    self->m_30c->m_40 |= 1;
+    bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
+    self->m_30c->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p30c = self->m_30c;
+    p30c->m_drawActive = 1;
+    p30c->m_drawFillCmd = 0xa;
+    p30c->m_drawFillArg = handleA;
+    self->m_30c->m_stateFlags |= 1;
 
-    CGlitterAnim* rz = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* rz = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_310 = rz;
     if (rz == 0) {
         return 0;
     }
-    rz->SetTexture("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
-    self->m_310->SetCycle("GAME_CYCLE100", 0);
-    CGlitterAnim* p310 = self->m_310;
-    p310->m_58 = 1;
-    p310->m_50 = 0xa;
-    p310->m_4c = handleA;
-    self->m_310->m_40 |= 1;
+    rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
+    self->m_310->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p310 = self->m_310;
+    p310->m_drawActive = 1;
+    p310->m_drawFillCmd = 0xa;
+    p310->m_drawFillArg = handleA;
+    self->m_310->m_stateFlags |= 1;
 
-    CGlitterAnim* cn = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* cn = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_314 = cn;
     if (cn == 0) {
         return 0;
     }
-    cn->SetTexture("GAME_INGAMEICONZ_POWERUPZ_COIN");
-    self->m_314->SetCycle("GAME_CYCLE100", 0);
-    CGlitterAnim* p314 = self->m_314;
-    p314->m_58 = 1;
-    p314->m_50 = 0xa;
-    p314->m_4c = handleA;
-    self->m_314->m_40 |= 1;
+    cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
+    self->m_314->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p314 = self->m_314;
+    p314->m_drawActive = 1;
+    p314->m_drawFillCmd = 0xa;
+    p314->m_drawFillArg = handleA;
+    self->m_314->m_stateFlags |= 1;
 
     // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGlitterAnim* b = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* b = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_bomb[i] = b;
         if (b == 0) {
             return 0;
         }
-        b->SetTexture("GRUNTZ_BOMBGRUNT_WEST_ITEM");
-        self->m_bomb[i]->SetCycle("GAME_GRUNTBOMBSPRINT", 0);
-        CGlitterAnim* bp = self->m_bomb[i];
-        bp->m_58 = 1;
-        bp->m_50 = 0xa;
-        bp->m_4c = handleA;
-        self->m_bomb[i]->m_5c = 0x2c6;
-        self->m_bomb[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
-        self->m_bomb[i]->m_40 |= 1;
+        b->ApplyName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
+        self->m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
+        CGameObject* bp = self->m_bomb[i];
+        bp->m_drawActive = 1;
+        bp->m_drawFillCmd = 0xa;
+        bp->m_drawFillArg = handleA;
+        self->m_bomb[i]->m_screenX = 0x2c6;
+        self->m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_bomb[i]->m_stateFlags |= 1;
 
-        CGlitterAnim* e = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* e = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_expl[i] = e;
         if (e == 0) {
             return 0;
         }
-        e->SetTexture("GAME_EXPLOSION");
-        self->m_expl[i]->m_40 |= 1;
+        e->ApplyName("GAME_EXPLOSION");
+        self->m_expl[i]->m_stateFlags |= 1;
 
-        CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* g = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_gokart[i] = g;
         if (g == 0) {
             return 0;
         }
-        g->SetTexture("GRUNTZ_GOKARTGRUNT_EAST");
-        self->m_gokart[i]->SetCycle("GAME_CYCLE100", 0);
-        CGlitterAnim* gp = self->m_gokart[i];
-        gp->m_58 = 1;
-        gp->m_50 = 0xa;
-        gp->m_4c = handleB;
-        self->m_gokart[i]->m_5c = -70;
-        self->m_gokart[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
-        self->m_gokart[i]->m_40 |= 1;
+        g->ApplyName("GRUNTZ_GOKARTGRUNT_EAST");
+        self->m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        CGameObject* gp = self->m_gokart[i];
+        gp->m_drawActive = 1;
+        gp->m_drawFillCmd = 0xa;
+        gp->m_drawFillArg = handleB;
+        self->m_gokart[i]->m_screenX = -70;
+        self->m_gokart[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_gokart[i]->m_stateFlags |= 1;
     }
     return 1;
 }
@@ -1425,8 +1405,8 @@ CBootyState::~CBootyState() {
 // (StepGlitterAnim) lays eight letter sprites on a sine spiral that shrinks per frame.
 // ===========================================================================
 
-// (The booty letter sprites are CGlitterAnim - the same created "SimpleAnimation"
-// objects the factory builds, walked here as position/flag records. See CGlitterAnim.)
+// (The booty letter sprites are CGameObject - the same created "SimpleAnimation"
+// objects the factory builds, walked here as position/flag records. See CGameObject.)
 
 // The packed {x,y} spawn-coordinate table the animator indexes by m_letterIdx (DAT_005e8fe8;
 // the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
@@ -1530,23 +1510,23 @@ void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
             i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            CGlitterAnim** ap = (CGlitterAnim**)((char*)this + 0x1ec); // walks arr1ec by 1
+            CGameObject** ap = (CGameObject**)((char*)this + 0x1ec); // walks arr1ec by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
-                CGlitterAnim* e = *ap;
-                e->m_5c = tbl[-1];
+                CGameObject* e = *ap;
+                e->m_screenX = tbl[-1];
                 e = *ap;
-                e->m_60 = tbl[0];
+                e->m_screenY = tbl[0];
                 e = *ap;
-                if (e->m_74 != 1) {
-                    e->m_74 = 1;
-                    e->m_8 |= 0x20000;
+                if (e->m_latchedAnimId != 1) {
+                    e->m_latchedAnimId = 1;
+                    e->m_flags |= 0x20000;
                 }
                 ap++;
                 tbl += 2;
             }
         }
-        m_cursorLetter->m_5c = g_5e8fe8[m_letterIdx * 2];
-        m_cursorLetter->m_60 = g_5e8fe8[m_letterIdx * 2 + 1];
+        m_cursorLetter->m_screenX = g_5e8fe8[m_letterIdx * 2];
+        m_cursorLetter->m_screenY = g_5e8fe8[m_letterIdx * 2 + 1];
         return;
     }
 
@@ -1561,33 +1541,33 @@ void CMultiBootyState::StepGlitterAnim() {
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
-    CGlitterAnim** arr1ec = (CGlitterAnim**)((char*)this + 0x1ec);
+    CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
     if (idx > 0) {
         i32* tbl = g_5e8fe8 + 1;    // ecx: tbl[-1]=x, tbl[0]=y
-        CGlitterAnim** ap = arr1ec; // eax
+        CGameObject** ap = arr1ec; // eax
         do {
-            CGlitterAnim* e = *ap;
+            CGameObject* e = *ap;
             i++;
             ap++;
-            e->m_5c = tbl[-1];
+            e->m_screenX = tbl[-1];
             e = ap[-1];
-            e->m_60 = tbl[0];
+            e->m_screenY = tbl[0];
             tbl += 2;
         } while (i < m_letterIdx);
     }
     // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
-    m_cursorLetter->m_5c = m_scratchX;
-    m_cursorLetter->m_60 = m_1e8;
-    arr1ec[i]->m_5c = m_scratchX;
-    arr1ec[i]->m_60 = m_1e8;
+    m_cursorLetter->m_screenX = m_scratchX;
+    m_cursorLetter->m_screenY = m_1e8;
+    arr1ec[i]->m_screenX = m_scratchX;
+    arr1ec[i]->m_screenY = m_1e8;
 
     MoveLettersByDir();
 
     if (m_radius == 0) {
-        CGlitterAnim* e = arr1ec[i];
-        if (e->m_74 != 1) {
-            e->m_74 = 1;
-            e->m_8 |= 0x20000;
+        CGameObject* e = arr1ec[i];
+        if (e->m_latchedAnimId != 1) {
+            e->m_latchedAnimId = 1;
+            e->m_flags |= 0x20000;
         }
     }
 }
@@ -1604,55 +1584,55 @@ void CMultiBootyState::StepGlitterAnim() {
 RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
-        CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
+        CGameObject** p = (CGameObject**)((char*)this + 0x204);
         i32 n = 8;
         do {
-            CGlitterAnim* e = *p;
+            CGameObject* e = *p;
             p++;
-            e->m_40 |= 1;
+            e->m_stateFlags |= 1;
         } while (--n);
         return;
     }
-    CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
+    CGameObject** p = (CGameObject**)((char*)this + 0x204);
     for (i32 i = 0; i < 8; i++, p++) {
-        CGlitterAnim* e = *p;
-        i32 x = e->m_5c;
-        i32 y = e->m_60;
+        CGameObject* e = *p;
+        i32 x = e->m_screenX;
+        i32 y = e->m_screenY;
         if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
-            e->m_40 |= 1;
+            e->m_stateFlags |= 1;
         } else {
             switch (i) {
                 case 0:
-                    e->m_5c = x;
-                    (*p)->m_60 = y - 4;
+                    e->m_screenX = x;
+                    (*p)->m_screenY = y - 4;
                     break;
                 case 1:
-                    e->m_5c = x + 4;
-                    (*p)->m_60 = y - 4;
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y - 4;
                     break;
                 case 2:
-                    e->m_5c = x + 4;
-                    (*p)->m_60 = y;
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y;
                     break;
                 case 3:
-                    e->m_5c = x + 4;
-                    (*p)->m_60 = y + 4;
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y + 4;
                     break;
                 case 4:
-                    e->m_5c = x;
-                    (*p)->m_60 = y + 4;
+                    e->m_screenX = x;
+                    (*p)->m_screenY = y + 4;
                     break;
                 case 5:
-                    e->m_5c = x - 4;
-                    (*p)->m_60 = y + 4;
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y + 4;
                     break;
                 case 6:
-                    e->m_5c = x - 4;
-                    (*p)->m_60 = y;
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y;
                     break;
                 case 7:
-                    e->m_5c = x - 4;
-                    (*p)->m_60 = y - 4;
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y - 4;
                     break;
             }
         }

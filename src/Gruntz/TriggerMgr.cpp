@@ -1,4 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
 #include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
 #include <stdlib.h>          // rand (0x11fee0, reloc-masked)
@@ -300,17 +301,14 @@ struct CTmSoundChan {
     i32 StopAndRewind(); // 0x135380 (reloc-masked)
 };
 
-struct CTmListNode;
-// CSpriteFactory::CreateSprite (@0x1597b0, reloc-masked) builds a sprite from a config
-// key; the level's sprite factory is level->m_8. It also holds the level's display-object
-// list at +0x14. The created sprite carries a descriptor at +0x7c whose slot-4 (+0x10) is
-// an Init thunk run on the fresh sprite.
+// The level's sprite factory (level->m_8) is the canonical CSpriteFactory
+// (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0, reloc-masked) builds a sprite
+// from a config key, and the factory owns the live display-object list at +0x14
+// (m_liveObjects / CSpriteListNode). The created sprite is the shared CGameObject,
+// cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
+// onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
+// slot-4 (+0x10) is an Init thunk run on the fresh sprite.
 struct CTmCell;
-struct CTmSpriteFactory {
-    CTmCell* CreateSprite(i32 a, i32 x, i32 y, i32 b, const char* key, i32 c); // 0x1597b0
-    char p4[0x14 - 0x4];
-    CTmListNode* m_14; // +0x14  display-object list head node
-};
 struct CTmSpriteDesc {
     void* s0[4];
     void (*Init)(void*); // +0x10
@@ -338,21 +336,16 @@ struct CTmLevelView {
 // factory the spawners create from, +0x24 the level view.
 struct CTmLevel {
     char p0[0x8];
-    CTmSpriteFactory* m_8; // +0x08  sprite/object factory + display-object list holder
+    CSpriteFactory* m_8; // +0x08  sprite/object factory + live-object list holder
     char pc[0x24 - 0xc];
     CTmLevelView* m_24; // +0x24  the level view (scroll origin)
 };
 
-// The level's display-object list (level->m_8): a manager with head node @m_14; each
-// node carries the next ptr @m_0 and the bound object @m_8. The object's type is
-// identified by a fixed entry in its descriptor (obj+0x7c) slot-4 (+0x10) matching the
-// CGrunt::ReadConfigFromButeMgr method address; on a match, +0x18 names the target whose
-// +0x200 channel marker is cleared.
-struct CTmListNode {
-    CTmListNode* m_0; // +0x00 next
-    char p0[0x4];
-    CTmCell* m_8; // +0x08 bound object (a placed game object)
-};
+// The level's display-object list (level->m_8->m_liveObjects, the canonical
+// CSpriteListNode chain): each node carries the next ptr @+0 and the bound object
+// @+8. The object's type is identified by a fixed entry in its descriptor
+// (obj+0x7c) slot-4 (+0x10) matching the CGrunt::ReadConfigFromButeMgr method
+// address; on a match, +0x18 names the target whose +0x200 channel marker is cleared.
 // The grid-cell object's ReadConfigFromButeMgr method address is the retail's type tag
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
@@ -902,10 +895,10 @@ void CTriggerMgr::DestroyAllAnims() {
         r--;
     } while (r != 0);
 
-    CTmListNode* node = m_level->m_8->m_14;
+    CSpriteListNode* node = m_level->m_8->m_liveObjects;
     while (node != 0) {
-        CTmCell* obj = node->m_8;
-        node = node->m_0;
+        CTmCell* obj = (CTmCell*)node->m_sprite;
+        node = node->next;
         if (obj != 0) {
             char* desc = *(char**)((char*)obj + 0x7c);
             void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;
@@ -984,8 +977,8 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
 // stash the placement fields (+0x124/+0x114/+0x118) and tail into PlacePuddle. (ret 0x18.)
 RVA(0x0007a180, 0x86)
 i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
-    CTmSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    CSpriteFactory* fac = m_level->m_8;
+    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
         g_gameReg->ReportError(0x8009, 0x400);
         return 0;
@@ -1359,8 +1352,8 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     }
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
-    CTmSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CSpriteFactory* fac = m_level->m_8;
+    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
     }
@@ -1725,15 +1718,15 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
             return 0;
         }
-        CTmSpriteFactory* fac = m_level->m_8;
-        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        CSpriteFactory* fac = m_level->m_8;
+        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 3;
         logicArg = 1;
     } else {
         // sel==2: place-and-report variant -> WarpStone factory
         this->PlaceB(a14, a18, 1);
-        CTmSpriteFactory* fac = m_level->m_8;
-        sprite = fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        CSpriteFactory* fac = m_level->m_8;
+        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
         kindArg = 2;
         logicArg = 1;
     }
@@ -1885,8 +1878,8 @@ i32 CTriggerMgr::PlaceObject(
     if (free >= 15) {
         return -1;
     }
-    CTmSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
+    CSpriteFactory* fac = m_level->m_8;
+    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
     if (sprite == 0) {
         return -1;
     }
@@ -2447,10 +2440,8 @@ SIZE_UNKNOWN(CTmGameReg);
 SIZE_UNKNOWN(CTmScoreBoard);
 SIZE_UNKNOWN(CTmCmdMgr);
 SIZE_UNKNOWN(CTmNameReg);
-SIZE_UNKNOWN(CTmSpriteFactory);
 SIZE_UNKNOWN(CTmSpriteDesc);
 SIZE_UNKNOWN(CTmLevel);
-SIZE_UNKNOWN(CTmListNode);
 SIZE_UNKNOWN(CTmPuddleTarget);
 SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);

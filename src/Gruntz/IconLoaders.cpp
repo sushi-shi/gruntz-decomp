@@ -1,7 +1,7 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/String.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteListNode shape
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 // Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
 // ---------------------------------------------------------------------------
-// CSpriteFactory + CSpriteIconNode live in the shared <Gruntz/SpriteFactory.h>; the
+// CSpriteFactory + CSpriteListNode live in the shared <Gruntz/SpriteFactory.h>; the
 // created sprite is the shared CGameObject (<Gruntz/UserLogic.h>, included above).
 
 // Two icon-class init-slot fns the toybox de-dup test compares an existing
@@ -140,7 +140,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
 // ===========================================================================
 //
 // Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
-// the factory's live-icon list (m_factoryHolder->m_8->m_liveIcons) and bails (return 0) if an
+// the factory's live-icon list (m_factoryHolder->m_8->m_liveObjects) and bails (return 0) if an
 // existing icon of one of the two icon classes already sits on that tile;
 // otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
 // slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
@@ -155,9 +155,9 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
-    CSpriteIconNode* node = fac->m_liveIcons;
+    CSpriteListNode* node = fac->m_liveObjects;
     while (node != 0) {
-        CSpriteIconNode* cur = node;
+        CSpriteListNode* cur = node;
         node = node->next;
         CGameObject* obj = cur->m_sprite;
         void* init = (void*)obj->m_7c->Init;

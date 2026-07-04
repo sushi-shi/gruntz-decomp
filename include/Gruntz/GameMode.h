@@ -176,8 +176,8 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
 struct CCreditsVideo;    // CCreditsState::m_videoHandle - Smacker video handle
 struct CBootyBonusState; // CMultiBootyState::m_bonusState - bonus scroll/flags object
-struct CGlitterAnim; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
-                     // (the "SimpleAnimation" sprite the factory builds; the booty
+struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
+                     // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
                      //  draw walks the same objects as position/flag records)
 
 // ---------------------------------------------------------------------------
@@ -446,7 +446,7 @@ public:
     i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
     i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
     char m_pad1ec[0x1fc - 0x1ec];
-    CGlitterAnim* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
+    CGameObject* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];
     CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };

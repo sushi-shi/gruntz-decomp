@@ -14,8 +14,10 @@
 // (CIconSprite / CHudSprite / CProjSprite / ...) were views of this one class.
 // The lookup RESULT (the frame-data template) is the separate CSprite value type.
 //
-// The factory also owns the live-icon list at +0x14 (walked by LoadToyBoxIcon to
-// de-dup by class + tile). Only offsets + code bytes are load-bearing; the field
+// The factory also owns the live created/placed display-object list at +0x14
+// (walked by LoadToyBoxIcon to de-dup icons by class + tile, and by TriggerMgr's
+// DestroyAllAnims to clear grunt channel markers - it holds every live created
+// object, not just icons). Only offsets + code bytes are load-bearing; the field
 // names are placeholders for the engine identities recovered from the call sites.
 #ifndef GRUNTZ_SPRITEFACTORY_H
 #define GRUNTZ_SPRITEFACTORY_H
@@ -30,13 +32,13 @@ struct CGameObject; // the created 0x1dc-byte game-sprite INSTANCE (<Gruntz/User
 // 4-byte code pointer (else MSVC's general PMF emits a this-adjust thunk).
 struct __single_inheritance CSprite2;
 
-// An entry in the factory's live-icon list (m_liveIcons): next-link @+0, sprite @+8.
-struct CSpriteIconNode {
-    CSpriteIconNode* next; // +0x00
+// An entry in the factory's live-object list (m_liveObjects): next @+0, object @+8.
+struct CSpriteListNode {
+    CSpriteListNode* next; // +0x00
     char m_pad4[0x8 - 0x4];
     CGameObject* m_sprite; // +0x08
 };
-SIZE_UNKNOWN(CSpriteIconNode);
+SIZE_UNKNOWN(CSpriteListNode);
 
 class CSpriteFactory {
 public:
@@ -52,7 +54,7 @@ public:
     char m_pad00[0xc];
     CResMgr* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    CSpriteIconNode* m_liveIcons; // +0x14  live-icon list head
+    CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
 };
 SIZE_UNKNOWN(CSpriteFactory);
 
