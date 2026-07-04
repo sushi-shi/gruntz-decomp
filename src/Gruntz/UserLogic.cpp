@@ -31,6 +31,8 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <stdlib.h> // rand (0x11fee0; CMenuSparkle timer seed)
+
 // ---------------------------------------------------------------------------
 // CButeTree (declared in <Bute/ButeMgr.h>, pulled via UserLogic.h) - the engine
 // bute store the tile-logic tails query for their "A" node. g_buteTree
@@ -388,9 +390,6 @@ struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
 // CTeleCueSink*, m_68 to CTriggerProbe*, m_7c to WwdGameRegAux*; GetMessageBounds
 // returns the on-screen message-bounds RECT.
 extern WwdGameReg* g_gameReg;
-
-// The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
-extern "C" i32 rand(void);
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry FireActivation (0x042150) dispatches
