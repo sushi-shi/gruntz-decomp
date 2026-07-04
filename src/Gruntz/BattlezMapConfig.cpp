@@ -293,6 +293,7 @@ struct UnitGeom {
 // Recycle(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
 // freelist headed at this->m_04. Reloc-masked DATA; modeled as a tiny object so
 // the `mov ecx,0x645540; push elem; call` falls out.
+SIZE_UNKNOWN(CoordPool);
 struct CoordPool {
     void Recycle(void* elem); // 0x0311b0
 };
