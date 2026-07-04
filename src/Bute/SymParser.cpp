@@ -7,6 +7,7 @@
 #include <rva.h>
 #include <stdlib.h> // atoi (0x11ff10) / _splitpath (0x18c530)
 #include <string.h> // strlen/strcpy/strcmp (inline) / _strlwr (0x18d330)
+#include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose
 
 #include <Bute/SymParser.h>
 
@@ -349,22 +350,18 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     return 1;
 }
 
-// ParseRecords' CRT directory-walk family (_findfirst/_findnext/_findclose @0x11f900/
-// 0x11fa30/0x11fb50), _strlwr (0x18d330), _splitpath (0x18c530), atoi (0x11ff10) and the
-// per-file leaf builders (0x13b970 / 0x13cac0). All reloc-masked. The "." / ".." / "\\"
-// / "*.*" comparands are pooled .rodata literals.
-struct SymFindData {
-    i32 m_attrib; // +0x00
-    char m_pad04[0x1c - 0x04];
-    i32 m_size; // +0x1c
-    char m_name[0x108];
-};
-SIZE(SymFindData, 0x128); // CRT _finddata_t view { attrib, size @0x1c, name @0x20 }
-extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd); // 0x11f900
-extern "C" i32 SymFindNext(i32 h, SymFindData* fd);             // 0x11fa30
-extern "C" i32 SymFindClose(i32 h);                             // 0x11fb50
-void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey);   // 0x13b970
-void SymBindRecord(void* rec, char* name, i32 h);               // 0x13cac0
+// ParseRecords' CRT directory walk is the real _findfirst/_findnext/_findclose
+// (0x11f900/0x11fa30/0x11fb50, FID-carved) over <io.h>'s _finddata_t; _strlwr
+// (0x18d330), _splitpath (0x18c530), atoi (0x11ff10) and the per-file leaf builders
+// (0x13b970 / 0x13cac0) round it out. All reloc-masked. The former hand-rolled
+// SymFindData view mis-placed size/name at +0x1c/+0x20 (SIZE 0x128); the ParseRecords
+// disasm proves the STANDARD _finddata_t (0x118 B): retail reads fd.attrib at fd+0x00
+// (`and eax,0x10 / cmp al,0x10`, _A_SUBDIR) and fd.name at fd+0x14 (fd base at [esp+0x30],
+// name at [esp+0x44]). time_t/_fsize_t are 4-byte here, so size@+0x10, name@+0x14 - the
+// same layout CustomLevelList uses. The "." / ".." / "\\" / "*.*" comparands are pooled
+// .rodata literals.
+void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey); // 0x13b970
+void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
 extern const char g_sepSlash[];                                 // 0x60cff0  "\\"
 extern const char g_wildcard[];                                 // 0x61a0a0  "*.*"
 extern const char g_dotDot[];                                   // 0x5ee8ec  ".."
@@ -377,7 +374,10 @@ extern const char g_dot[];                                      // 0x60cf90  "."
 // build). This is a structural reconstruction of the control flow + every scope/parser
 // call; the >1KB /GX stack frame + alloca probe, the many inline strlen/strcpy/strcmp
 // idioms, and the differently-named _findfirst/CSymTab reloc operands are the documented
-// walls. Logic shape complete; byte-match parked for the final sweep.
+// walls. Correcting the fd view to the real _finddata_t (name +0x20->+0x14) was
+// match-NEUTRAL (55.42%): cl places fd at a wholly different [esp+N] than retail, so
+// every fd access diverges on the frame displacement regardless of the intra-struct
+// offset - the frame-layout wall dominates. Logic shape complete; parked for the final sweep.
 RVA(0x0013b300, 0x545)
 i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) {
     char pattern[0x500];
@@ -388,24 +388,24 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
     char full[0x600];
     strcpy(full, pattern);
     strcpy(full + strlen(full), g_wildcard);
-    SymFindData fd;
-    i32 h = SymFindFirst(full, &fd);
+    _finddata_t fd;
+    i32 h = _findfirst(full, &fd);
     if (h < 0) {
         return 1;
     }
     do {
-        if (strcmp(fd.m_name, g_dotDot) == 0 || strcmp(fd.m_name, g_dot) == 0) {
+        if (strcmp(fd.name, g_dotDot) == 0 || strcmp(fd.name, g_dot) == 0) {
             continue;
         }
-        if ((fd.m_attrib & 0x10) == 0x10) {
+        if ((fd.attrib & 0x10) == 0x10) {
             // subdirectory: build a child scope and recurse into it
             char childpath[0x600];
             strcpy(childpath, pattern);
-            strcpy(childpath + strlen(childpath), fd.m_name);
+            strcpy(childpath + strlen(childpath), fd.name);
             _strlwr(childpath);
-            void* child = node->FindSub(fd.m_name);
+            void* child = node->FindSub(fd.name);
             if (child == 0) {
-                child = node->CreateSub(fd.m_name);
+                child = node->CreateSub(fd.name);
                 if (child == 0) {
                     continue;
                 }
@@ -416,7 +416,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         // a file: split off its extension, resolve the leaf record
         char fname[0x108];
         char ext[0x108];
-        _splitpath(fd.m_name, 0, 0, fname, ext);
+        _splitpath(fd.name, 0, 0, fname, ext);
         _strlwr(ext);
         i32 nleft = (i32)strlen(fname);
         i32 i = 0;
@@ -432,17 +432,17 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         SymBuildLeaf(this, &fd, extKey);
         void* rec = node->FindOrAddSym(key);
         if (node->Insert(fname, extKey) == 0) {
-            node->Method4b0((void*)(u32)fd.m_size, rec, full, 0);
+            node->Method4b0((void*)(u32)fd.size, rec, full, 0);
         } else if (flag != 0) {
             node->Method530(rec, extKey);
-            node->Method4b0((void*)(u32)fd.m_size, rec, full, 0);
+            node->Method4b0((void*)(u32)fd.size, rec, full, 0);
         }
         void* node2 = node->FindOrAddSym(key);
         if (node2) {
             SymBindRecord(node2, full, h);
         }
-    } while (SymFindNext(h, &fd) != 0);
-    SymFindClose(h);
+    } while (_findnext(h, &fd) != 0);
+    _findclose(h);
     return 1;
 }
 
