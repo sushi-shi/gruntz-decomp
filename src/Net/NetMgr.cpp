@@ -1842,9 +1842,12 @@ struct CNetColorHolder {
     i32 SwapColor(i32 c); // 0xdb200
 };
 
-// The engine positional-sound player (0x1f940, __stdcall(tag,0,0,0)) the chat cue
-// fires through the 0x25fe incremental-link thunk. External -> reloc-masked.
-extern "C" void __stdcall PlaySoundCue(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
+// LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the positional sound cue when
+// the kill-cue clock throttle has elapsed. Reached as a bare call - the caller's
+// preceding null-check leaves the cue object in ecx, so no explicit `this` load is
+// emitted; modeled as a flat __stdcall alias. Fires through the 0x25fe incremental-
+// link thunk; external -> reloc-masked.
+extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
 
 // The cached USER32 PostMessageA pointer (the game's own function-pointer global,
 // distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
@@ -1969,7 +1972,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (e == 0) {
                 break;
             }
-            PlaySoundCue(g_sndCueTag, 0, 0, 0);
+            PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             break;
         }
 

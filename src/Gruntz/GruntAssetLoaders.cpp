@@ -243,10 +243,13 @@ struct CGruntSndResMgr {
     CGruntSndRes* m_c; // +0x0c
 };
 
-// The launch-sound cue tag (reloc-masked global) + the __stdcall sound player.
+// The launch-sound cue tag (reloc-masked global) + the throttled cue player.
 DATA(0x0021ab24)
-extern i32 g_sndCueTag;                                       // ?g_sndCueTag@@3HA
-void __stdcall PlayAttackSound(i32 tag, i32 a, i32 b, i32 c); // thunk 0x25fe -> 0x1f940
+extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+// LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the cue when the kill-cue clock
+// throttle has elapsed. Reached as a bare call (latent-ecx cue object), so modeled as
+// a flat __stdcall alias through thunk 0x25fe. External -> reloc-masked.
+extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
 
 // The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
 // strings (CreateSprite/Activate/ApplyName args) are spelled as inline literals
@@ -304,7 +307,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         GruntSoundEntry* sout = 0;
         ((GruntSoundMap*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, &sout);
         if (sout != 0) {
-            PlayAttackSound(g_sndCueTag, 0, 0, 0);
+            PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
     }
 
