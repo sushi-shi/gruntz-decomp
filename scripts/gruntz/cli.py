@@ -162,6 +162,30 @@ def summarize(report: dict) -> None:
         save_baseline(rows)
     except Exception as exc:  # never let the scoreboard break a build report
         print(f"  cleanliness: (unavailable: {exc})")
+    # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the
+    # hierarchy discrepancies that a topological override analysis finds - INHERIT
+    # (derive the real base instead of re-listing its slots), REDECLARE (drop
+    # redeclared inherited slots), OVERRIDE (unmarked overrides), MISSING (fewer
+    # decls than slots) - plus the UNANCHORED src vtables not yet in the hierarchy
+    # ('the proper ones not in the hierarchy'). Reducing these is what drives the
+    # 'placeholder vtable slots' text metric to 0 AND removes placeholder view
+    # classes. See `gruntz.analysis.vtable_hierarchy --audit / --coverage`.
+    try:
+        import re as _re
+        def _vh(mode: str) -> str:
+            return subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", mode],
+                                  capture_output=True, text=True, cwd=str(REPO)).stdout
+        aud, cov = _vh("--audit"), _vh("--coverage")
+        def _n(txt: str, pat: str) -> str:
+            m = _re.search(pat, txt)
+            return m.group(1) if m else "?"
+        inh, red = _n(aud, r"#\s*INHERIT\s*:\s*(\d+)"), _n(aud, r"#\s*REDECLARE\s*:\s*(\d+)")
+        ovr, mis = _n(aud, r"#\s*OVERRIDE\s*:\s*(\d+)"), _n(aud, r"#\s*MISSING\s*:\s*(\d+)")
+        anch, unanch = _n(cov, r"#\s*anchored\s*:\s*(\d+)"), _n(cov, r"UNANCHORED[^:]*:\s*(\d+)")
+        print(f"  vtable health (-> 0; binary-proven): INHERIT {inh}  REDECLARE {red}  "
+              f"OVERRIDE-unmarked {ovr}  MISSING {mis}  |  anchored {anch}, UNANCHORED {unanch}")
+    except Exception as exc:  # never let the vtable probe break a build report
+        print(f"  vtable health: (unavailable: {exc})")
 
 
 # --- subcommands -----------------------------------------------------------

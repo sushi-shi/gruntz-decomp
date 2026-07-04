@@ -3,6 +3,7 @@ Unknown ids	5
 g_<hex> globals	1244
 Method/Stub/FUN	271
 placeholder classes	386
+placeholder vtable slots	918
 )this casts	328
 )m_ casts	775
 (char*) casts	919

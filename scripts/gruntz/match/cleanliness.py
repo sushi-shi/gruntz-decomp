@@ -55,6 +55,15 @@ def _count_placeholders(code: str) -> int:
     return sum(1 for n in _TYPEDEF.findall(code) if _is_placeholder(n))
 
 
+# The "placeholder vtable slots" metric (GAMEABLE, but tracked per request): a
+# virtual whose NAME is a placeholder for an unresolved vtable slot (dummyN / vNN /
+# vfunc / SlotN) - a real virtual with an un-recovered identity. Counts the DECL
+# sites (one per slot). Drive to 0 via the vtable_hierarchy TOPOLOGICAL override
+# analysis (inherit the base's slots, name the rest from the slot RVA), NOT by
+# hand-renaming - see `python -m gruntz.analysis.vtable_hierarchy --audit/--coverage`.
+_VTSLOT = re.compile(r"virtual\b[^;{}\n]*\b(?:dummy[0-9]+|v[0-9a-f]{2,}|vfunc[0-9]*|[Ss]lot[0-9]+)\s*\(")
+
+
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable
 # code->int for structural counts. Occurrences summed over stripped code.
 METRICS = (
@@ -63,6 +72,7 @@ METRICS = (
     ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
     ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b"), False),
     ("placeholder classes", _count_placeholders, False),
+    ("placeholder vtable slots", _VTSLOT, False),
     (")this casts", re.compile(r"\)this\b"), False),
     (")m_ casts", re.compile(r"\)m_[A-Za-z0-9_]"), False),
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
@@ -121,7 +131,7 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
     """Formatted scoreboard lines (two columns) for the build report."""
     rows = rows if rows is not None else count()
     base = load_baseline()
-    naming, casts = rows[:5], rows[5:]
+    naming, casts = rows[:6], rows[6:]
     width = max(len(lbl) for lbl, _ in rows) + 1
     lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
     for i in range(max(len(naming), len(casts))):
