@@ -174,7 +174,23 @@
       # is THE package root, put on PYTHONPATH so the package + every `python -m
       # gruntz.<x>` child import resolves.
       gruntz-cli = pkgs.writeShellScriptBin "gruntz" ''
-        d="''${GRUNTZ_DIR:-$PWD}"
+        # Resolve the repo/worktree root robustly: GRUNTZ_DIR (set by the shell
+        # hook), else walk up from $PWD to the dir holding scripts/gruntz/cli.py
+        # (so `gruntz` works from build/, src/, any subdir), else git toplevel.
+        d="''${GRUNTZ_DIR:-}"
+        if [ -z "$d" ]; then
+          p="$PWD"
+          while [ "$p" != "/" ]; do
+            if [ -f "$p/scripts/gruntz/cli.py" ]; then d="$p"; break; fi
+            p="$(dirname "$p")"
+          done
+        fi
+        [ -n "$d" ] || d="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+        if [ ! -f "$d/scripts/gruntz/cli.py" ]; then
+          echo "gruntz: repo root not found (run inside the gruntz checkout, or set GRUNTZ_DIR)" >&2
+          exit 2
+        fi
+        export GRUNTZ_DIR="$d"
         export PYTHONPATH="$d/scripts''${PYTHONPATH:+:$PYTHONPATH}"
         exec python3 -m gruntz "$@"
       '';
@@ -240,7 +256,10 @@
         name = "gruntz-decomp";
         packages = commonTools ++ [ pkgs.wineWow64Packages.staging pkgs.jdk21 ];
         shellHook = ''
-          export GRUNTZ_DIR="$PWD"
+          # Repo/worktree root, not $PWD — `nix develop` may be entered from a
+          # subdir (it walks up to find flake.nix; so must we). git toplevel is
+          # worktree-aware, which is exactly right for the worker pool.
+          export GRUNTZ_DIR="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
           export GRUNTZ_EXE="${gruntz-exe}"
           export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
           # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
