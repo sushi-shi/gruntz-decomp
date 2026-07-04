@@ -70,25 +70,26 @@ extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 //
 // DISPOSITION (CTrigLogic8c/9c/C8): these are NOT single classes - each is a SIZE
 // BUCKET (0x8c/0x9c/0xc8 bytes) that the switch allocates for SEVERAL distinct real
-// leaf classes (e.g. CTrigLogic8c covers ctor thunks 0x3206/0x3eb3/0x4192/0x2db5/
-// 0x332d/0x2f72 = 6 different trigger-logic leaves). A single real class name can't
-// stand for a size bucket, so they are kept as honest size-tagged models; the real
-// per-id leaf classes (CTileMultiTriggerSwitchLogic, CGiantRockLogic, ... in
-// TileTriggerDerivedCtors.cpp) each name themselves where individually reconstructed.
+// leaf classes (e.g. CTrigLogic8c covers 6 different trigger-logic leaves). A single
+// real class name can't stand for a size bucket, so the buckets stay size-tagged;
+// but each per-id ctor selector IS one real RTTI class, resolved by ILT-jmp target
+// and now named for it (the tag/New* pairs below -> CTileTriggerSwitchLogic /
+// CTileMultiTriggerSwitchLogic / ... / CGiantRockLogic, defs in
+// TileTriggerDerivedCtors.cpp + the two base ctors 0x110430/0x1107f0).
 struct CTileTriggerFactory; // the owning factory (this); back-stamped into m_20/m_24
 
 struct CTrigLogic {
-    struct Ctor3206Tag {};
-    struct Ctor3eb3Tag {};
-    struct Ctor4192Tag {};
-    struct Ctor2db5Tag {};
-    struct Ctor332dTag {};
-    struct Ctor2f72Tag {};
-    struct Ctor43b3Tag {};
-    struct Ctor2c3eTag {};
-    struct Ctor18deTag {};
-    struct Ctor310cTag {};
-    struct Ctor2a4fTag {};
+    struct TileTriggerSwitchLogicTag {};
+    struct TileMultiTriggerSwitchLogicTag {};
+    struct TileExclusiveTriggerSwitchLogicTag {};
+    struct TileSecretTriggerSwitchLogicTag {};
+    struct TileTimeTriggerSwitchLogicTag {};
+    struct CheckpointTriggerSwitchLogicTag {};
+    struct TileTriggerLogicTag {};
+    struct GiantRockLogicTag {};
+    struct TileTimeTriggerLogicTag {};
+    struct TileSecretTriggerLogicTag {};
+    struct CoveredPowerupLogicTag {};
 
     i32 m_00; // +0x00
     i32 m_04; // +0x04  type id (the switch id 1..26)
@@ -99,17 +100,19 @@ struct CTrigLogic {
     CTileTriggerFactory* m_24; // +0x24  owner (277f group)
     char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
 
-    CTrigLogic* Ctor3206();                      // 0x3206 (ids 1,2,5)
-    CTrigLogic* Ctor3eb3();                      // 0x3eb3 (id 3)
-    CTrigLogic* Ctor4192();                      // 0x4192 (id 4)
-    CTrigLogic* Ctor2db5();                      // 0x2db5 (id 6)
-    CTrigLogic* Ctor332d();                      // 0x332d (id 7)
-    CTrigLogic* Ctor2f72();                      // 0x2f72 (id 8)
-    CTrigLogic* Ctor43b3();                      // 0x43b3 (ids 21,24)
-    CTrigLogic* Ctor2c3e();                      // 0x2c3e (id 22)
-    CTrigLogic* Ctor18de();                      // 0x18de (id 23)
-    CTrigLogic* Ctor310c();                      // 0x310c (id 25)
-    CTrigLogic* Ctor2a4f();                      // 0x2a4f (id 26)
+    // Each thunk (ILT 0xNNNN -> the real leaf ctor RVA) constructs one RTTI class;
+    // resolved from the ILT jmp target (TileTriggerDerivedCtors.cpp / the base ctors).
+    CTrigLogic* NewTileTriggerSwitchLogic();          // ILT 0x3206 -> ??0CTileTriggerSwitchLogic 0x110430 (ids 1,2,5)
+    CTrigLogic* NewTileMultiTriggerSwitchLogic();     // ILT 0x3eb3 -> ??0CTileMultiTriggerSwitchLogic 0x111f10 (id 3)
+    CTrigLogic* NewTileExclusiveTriggerSwitchLogic(); // ILT 0x4192 -> ??0CTileExclusiveTriggerSwitchLogic 0x112050 (id 4)
+    CTrigLogic* NewTileSecretTriggerSwitchLogic();    // ILT 0x2db5 -> ??0CTileSecretTriggerSwitchLogic 0x112790 (id 6)
+    CTrigLogic* NewTileTimeTriggerSwitchLogic();      // ILT 0x332d -> ??0CTileTimeTriggerSwitchLogic 0x1127c0 (id 7)
+    CTrigLogic* NewCheckpointTriggerSwitchLogic();    // ILT 0x2f72 -> ??0CCheckpointTriggerSwitchLogic 0x1127f0 (id 8)
+    CTrigLogic* NewTileTriggerLogic();                // ILT 0x43b3 -> ??0CTileTriggerLogic 0x1107f0 (ids 21,24)
+    CTrigLogic* NewGiantRockLogic();                  // ILT 0x2c3e -> ??0CGiantRockLogic 0x112210 (id 22)
+    CTrigLogic* NewTileTimeTriggerLogic();            // ILT 0x18de -> ??0CTileTimeTriggerLogic 0x112270 (id 23)
+    CTrigLogic* NewTileSecretTriggerLogic();          // ILT 0x310c -> ??0CTileSecretTriggerLogic 0x112760 (id 25)
+    CTrigLogic* NewCoveredPowerupLogic();             // ILT 0x2a4f -> ??0CCoveredPowerupLogic 0x112240 (id 26)
     i32 Reg277f(void* r, i32 k, i32 a2, i32 a3); // 0x277f (ids 1..8)
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
@@ -117,23 +120,23 @@ struct CTrigLogic {
 SIZE_UNKNOWN(CTrigLogic);
 
 struct CTrigLogic8c : public CTrigLogic {
-    inline CTrigLogic8c(CTrigLogic::Ctor3206Tag) {
-        Ctor3206();
+    inline CTrigLogic8c(CTrigLogic::TileTriggerSwitchLogicTag) {
+        NewTileTriggerSwitchLogic();
     }
-    inline CTrigLogic8c(CTrigLogic::Ctor3eb3Tag) {
-        Ctor3eb3();
+    inline CTrigLogic8c(CTrigLogic::TileMultiTriggerSwitchLogicTag) {
+        NewTileMultiTriggerSwitchLogic();
     }
-    inline CTrigLogic8c(CTrigLogic::Ctor4192Tag) {
-        Ctor4192();
+    inline CTrigLogic8c(CTrigLogic::TileExclusiveTriggerSwitchLogicTag) {
+        NewTileExclusiveTriggerSwitchLogic();
     }
-    inline CTrigLogic8c(CTrigLogic::Ctor2db5Tag) {
-        Ctor2db5();
+    inline CTrigLogic8c(CTrigLogic::TileSecretTriggerSwitchLogicTag) {
+        NewTileSecretTriggerSwitchLogic();
     }
-    inline CTrigLogic8c(CTrigLogic::Ctor332dTag) {
-        Ctor332d();
+    inline CTrigLogic8c(CTrigLogic::TileTimeTriggerSwitchLogicTag) {
+        NewTileTimeTriggerSwitchLogic();
     }
-    inline CTrigLogic8c(CTrigLogic::Ctor2f72Tag) {
-        Ctor2f72();
+    inline CTrigLogic8c(CTrigLogic::CheckpointTriggerSwitchLogicTag) {
+        NewCheckpointTriggerSwitchLogic();
     }
 
     char m_sizePad[0x8c - 0x74];
@@ -141,17 +144,17 @@ struct CTrigLogic8c : public CTrigLogic {
 SIZE_UNKNOWN(CTrigLogic8c);
 
 struct CTrigLogic9c : public CTrigLogic {
-    inline CTrigLogic9c(CTrigLogic::Ctor43b3Tag) {
-        Ctor43b3();
+    inline CTrigLogic9c(CTrigLogic::TileTriggerLogicTag) {
+        NewTileTriggerLogic();
     }
-    inline CTrigLogic9c(CTrigLogic::Ctor18deTag) {
-        Ctor18de();
+    inline CTrigLogic9c(CTrigLogic::TileTimeTriggerLogicTag) {
+        NewTileTimeTriggerLogic();
     }
-    inline CTrigLogic9c(CTrigLogic::Ctor310cTag) {
-        Ctor310c();
+    inline CTrigLogic9c(CTrigLogic::TileSecretTriggerLogicTag) {
+        NewTileSecretTriggerLogic();
     }
-    inline CTrigLogic9c(CTrigLogic::Ctor2a4fTag) {
-        Ctor2a4f();
+    inline CTrigLogic9c(CTrigLogic::CoveredPowerupLogicTag) {
+        NewCoveredPowerupLogic();
     }
 
     char m_sizePad[0x9c - 0x74];
@@ -159,8 +162,8 @@ struct CTrigLogic9c : public CTrigLogic {
 SIZE_UNKNOWN(CTrigLogic9c);
 
 struct CTrigLogicC8 : public CTrigLogic {
-    inline CTrigLogicC8(CTrigLogic::Ctor2c3eTag) {
-        Ctor2c3e();
+    inline CTrigLogicC8(CTrigLogic::GiantRockLogicTag) {
+        NewGiantRockLogic();
     }
 
     char m_sizePad[0xc8 - 0x74];
@@ -233,31 +236,31 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
         case 1:
         case 2:
         case 5: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor3206Tag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 3: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor3eb3Tag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileMultiTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 4: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor4192Tag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileExclusiveTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 6: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor2db5Tag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileSecretTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 7: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor332dTag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileTimeTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 8: {
-            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::Ctor2f72Tag());
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::CheckpointTriggerSwitchLogicTag());
             return Reg277fTail(this, obj, reader, a2, a3, id);
         }
         case 21: {
-            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor43b3Tag());
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTriggerLogicTag());
             if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
                 return 0;
             }
@@ -293,7 +296,7 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
             return obj;
         }
         case 22: {
-            CTrigLogic* obj = new CTrigLogicC8(CTrigLogic::Ctor2c3eTag());
+            CTrigLogic* obj = new CTrigLogicC8(CTrigLogic::GiantRockLogicTag());
             if (obj->Reg1d39(reader, 7, a2, a3) == 0) {
                 return 0;
             }
@@ -302,19 +305,19 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
             return obj;
         }
         case 23: {
-            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor18deTag());
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTimeTriggerLogicTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 24: {
-            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor43b3Tag());
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTriggerLogicTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 25: {
-            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor310cTag());
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileSecretTriggerLogicTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         case 26: {
-            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::Ctor2a4fTag());
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::CoveredPowerupLogicTag());
             return Reg1abeTail(this, obj, reader, a2, a3, id);
         }
         default:
