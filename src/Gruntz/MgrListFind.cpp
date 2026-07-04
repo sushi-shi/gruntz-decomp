@@ -45,7 +45,7 @@ extern CGameRegistry* g_mgrSettings; // ?g_mgrSettings (VA 0x64556c)
 // source-steerable. Logic 100% correct; deferred.
 RVA(0x000f0db0, 0x48)
 i32 MgrListFind(i32 a1, i32 a2) {
-    MgrFindNode* node = ((MgrFindList*)g_mgrSettings->m_68)->m_4;
+    MgrFindNode* node = ((MgrFindList*)g_mgrSettings->m_cmdGrid)->m_4;
     while (node) {
         MgrFindNode* cur = node;
         node = node->m_next;

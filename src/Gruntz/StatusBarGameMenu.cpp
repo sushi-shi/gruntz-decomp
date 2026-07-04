@@ -248,7 +248,7 @@ void CGameMenuMgr::BuildGameMenu() {
 
     // ---- briefing variant: a single MISSIONSTATUS widget ----
     it = new CSBI_ImageSet;
-    i32 variant = (((CGmFactory*)g_gameReg->m_68)->m_variant == 1) ? 1 : 2;
+    i32 variant = (((CGmFactory*)g_gameReg->m_cmdGrid)->m_variant == 1) ? 1 : 2;
     r.left = bx;
     r.top = by + 0xd7;
     r.right = bx + 0x9f;

@@ -201,7 +201,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 if (out && out->m_soundFactory) {
                     m_rollingballLoop = out->m_soundFactory->GetItem();
                     if (m_rollingballLoop) {
-                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
                 }
             }
@@ -218,7 +218,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 if (out && out->m_soundFactory) {
                     m_teleportLoop = out->m_soundFactory->GetItem();
                     if (m_teleportLoop) {
-                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
                 }
             }
@@ -304,7 +304,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     } else {
                         if (g_644c54 == i) {
-                            ((CGooWellMgr*)g_gameReg->m_68)->Notify(2);
+                            ((CGooWellMgr*)g_gameReg->m_cmdGrid)->Notify(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CLookObj* out = 0;
@@ -319,7 +319,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     }
                 }
-                ((CBzData*)g_gameReg->m_7c)->MarkFlag(idx, i);
+                ((CBzData*)g_gameReg->m_scoreHud)->MarkFlag(idx, i);
                 return 0;
             }
         }

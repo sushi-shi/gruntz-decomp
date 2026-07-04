@@ -58,7 +58,7 @@ CWarpStoneFly::CWarpStoneFly() {
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if ((i32)m_currentX == m_targetX && (i32)m_currentY == m_targetY) {
-        CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_68 + 0x260);
+        CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
         arr->SetAtGrow(arr->m_index, m_arrivalMode);
         m_owner->m_busy = 0;
         if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {

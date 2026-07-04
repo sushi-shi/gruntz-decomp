@@ -294,20 +294,20 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         if (c == gate->m_10->m_188) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
-                streams[1]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+                streams[1]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
             }
         } else if (a != 0 && streams[0] != 0) {
-            streams[0]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+            streams[0]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
         }
     } else {
         chosen = 0;
         if (d == gate->m_10->m_188) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
-                streams[0]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+                streams[0]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
             }
         } else if (b != 0 && streams[1] != 0) {
-            streams[1]->SetVolumeByIndex(g_gameReg->m_120 / 2);
+            streams[1]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
         }
     }
     if (streams[chosen] == 0) {

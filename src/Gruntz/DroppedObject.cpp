@@ -385,7 +385,7 @@ i32 CDroppedObject::ActA() {
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_screenX, m_landY, 1, 7, -1);
+        ((DropTileMgr*)g_gameReg->m_cmdGrid)->PostMove(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
     m_object->m_screenY = landed;

@@ -152,14 +152,22 @@ struct CGameRegistry {
     i32 FinishLevel(i32 a, i32 b);     // 0x08e980 (== CGruntzMgr::FinishLevel)
     void ReportError(i32 id, i32 tag); // status-bar activation-fail report (i32,i32 overload)
 
-    // Well-understood slots are named (the base CGameMgr region m_gameWnd/m_owner/
-    // m_frameGate/m_soundEnabled, the four single-type pointers m_curState/m_world/
-    // m_cueSink/m_tileGrid, m_settings/m_sound/m_numRuns + the scalar config block);
-    // the genuinely reused per-mode void* slots (0x54/58/68/6c/74/78/7c) and the per-TU
-    // outcome discriminator (0x134) keep m_<off> - their concrete role differs per
-    // game-mode/TU, so one name would mislead. m_11c/m_120 and m_14 also stay m_<off>:
-    // their manager-side name (GruntzMgr input flags / m_musicEnabled) conflicts with
-    // the consumer-side use (sound volume / level-loaded gate) - flagged, not guessed.
+    // Slot NAMES agree with <Gruntz/GruntzMgr.h> (the RTTI-true MFC owner) - one field,
+    // one name across the dual view (0x24556c convergence, step 1). Named: the base
+    // CGameMgr region (m_gameWnd/m_owner/m_frameGate/m_soundEnabled), the manager-owned
+    // sub-object pointers (m_curState/m_world/m_settings/m_sound/m_cueSink/m_inputState/
+    // m_saveSink/m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_scoreHud), m_numRuns + the scalar
+    // config block. Still m_<off> (role unrecovered): m_74/m_78, the m_128..m_134
+    // outcome block.
+    //   SUBSTANCE-DIVERGENCE FLAGS (one physical field, but the two views disagree on
+    //   what it IS - the name unifies to the manager's, endgame to resolve the real
+    //   single type): +0x54 (mgr input-state vs ambient-sound's active level, cast
+    //   WwdActiveLevel->m_objectCount + spatial-sound array); +0x60 m_cueSink (cue
+    //   receiver, 60+ grunt sites) vs GruntzMgr m_timer (per-frame tick + Voice_Volume);
+    //   +0x70 m_tileGrid (tile board) vs GruntzMgr m_cmdNotify (cmd sink + cell-height);
+    //   +0x11c/+0x120 (mgr input flags vs consumer sound-volume); +0x14 (base
+    //   m_musicEnabled vs GruntzMgr level-loaded gate); +0x150 m_focusSlots (per-player
+    //   focus/round state) vs GruntzMgr m_options[4] (registry config records).
     char m_pad0[0x4];   // +0x00  CGameMgr vptr slot (base ??_7CGameMgr@@6B@)
     void* m_gameWnd;    // +0x04  bound game window (base CGameMgr::m_gameWnd; window/host)
     void* m_owner;      // +0x08  owning app (base CGameMgr::m_owner)
@@ -180,22 +188,24 @@ struct CGameRegistry {
     char m_pad3c[0x48 - 0x3c];
     void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
     char m_pad4c[0x54 - 0x4c];
-    void* m_54; // +0x54  == m_inputState (grunt: active-world view)
-    void* m_58; // +0x58  == m_saveSink (grunt: progress / notifier)
+    void* m_inputState; // +0x54  input/state object (FLAG: ambient sound casts it to the
+                        //         active level, WwdActiveLevel->m_objectCount)
+    void* m_saveSink; // +0x58  save-record sink (consumers read save-game progress:
+                      //         MenuProgress->m_1c / final-movie availability)
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)
     char m_pad64[0x68 - 0x64];
-    void* m_68;            // +0x68  == m_cmdGrid. REUSED slot (authentic per-mode downcast):
-                           //         placement/cue grid (CGruntRec**) in single-player, the
-                           //         goo-well mgr in battlez, a light-fx target in the fx TUs.
-    void* m_6c;            // +0x6c  == m_cmdSubMgr (secondary grid/cmd sub-object)
+    void* m_cmdGrid;   // +0x68  world command-grid. REUSED slot (authentic per-mode downcast):
+                       //         placement/cue grid (CGruntRec**) in single-player, the
+                       //         goo-well mgr in battlez, a light-fx target in the fx TUs.
+    void* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object
     CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
                            //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
     void* m_74;            // +0x74  sprite factory / ref-table (BeginGridWalk retry path)
     void* m_78;            // +0x78  sub-object (per-TU view)
-    void* m_7c;            // +0x7c  == m_scoreHud (HUD/score accumulator + cmd sink);
-                           //         battlez views it as the CBzData score tracker facet.
+    void* m_scoreHud;  // +0x7c  HUD/score accumulator + cmd sink;
+                       //         battlez views it as the CBzData score tracker facet.
     i32 m_numRuns;         // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
                            //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];
@@ -210,8 +220,8 @@ struct CGameRegistry {
     i32 m_isEffectsEnabled; // +0x110  "Effects"
     char m_pad114[0x118 - 0x114];
     i32 m_isEasyMode;  // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
-    i32 m_11c;         // +0x11c  == m_inputFlag
-    i32 m_120;         // +0x120  == m_inputStateVal
+    i32 m_inputFlag;     // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
+    i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
     i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
     char m_pad128[0x130 - 0x128];
     i32 m_130; // +0x130  (m_128..m_134 game-outcome block; m_134==3 -> "won")

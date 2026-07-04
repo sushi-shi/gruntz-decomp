@@ -2121,7 +2121,7 @@ i32 CGruntzMgr::Quicksave() {
         m_timer->Stop();
     }
     FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
-    if (((ScoreNotifier*)g_gameReg->m_58)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
+    if (((ScoreNotifier*)g_gameReg->m_saveSink)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
         m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -2377,9 +2377,9 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (m_hudGuard->m_124 == 0) {
         m_scoreHud->Seed(sub->m_1c, 0);
-        ((ScoreNotifier*)g_gameReg->m_58)->Bump(sub->m_1c);
-        ((ScoreNotifier*)g_gameReg->m_58)->Tick((sub->m_1c % 0x28) + 1);
-        ((ScoreNotifier*)g_gameReg->m_58)->Notify(0, 0x81a6);
+        ((ScoreNotifier*)g_gameReg->m_saveSink)->Bump(sub->m_1c);
+        ((ScoreNotifier*)g_gameReg->m_saveSink)->Tick((sub->m_1c % 0x28) + 1);
+        ((ScoreNotifier*)g_gameReg->m_saveSink)->Notify(0, 0x81a6);
     }
     m_scoreHud->Refresh(sub->m_1c);
     m_scoreHud->m_8 = 0;

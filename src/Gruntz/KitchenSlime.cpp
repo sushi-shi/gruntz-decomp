@@ -476,10 +476,10 @@ i32 CKitchenSlime::Tick() {
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = Level();
         i32 outX, outY;
-        CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_68)
+        CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_cmdGrid)
                                 ->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
         if (ent && ent->m_258 != 0x38) {
-            ((CSlimeCueGate*)g_gameReg->m_68)->ScrollTo(outY, outX, 5, -1);
+            ((CSlimeCueGate*)g_gameReg->m_cmdGrid)->ScrollTo(outY, outX, 5, -1);
         }
     }
 

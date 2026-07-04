@@ -122,7 +122,7 @@ i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CGameObject* spr = m_object;
     CTrigger* hit =
-        ((CTriggerSink*)g_gameReg->m_68)->Probe(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+        ((CTriggerSink*)g_gameReg->m_cmdGrid)->Probe(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -136,7 +136,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = 0;
         }
         if (ok) {
-            ((CTriggerSink*)g_gameReg->m_68)->ScrollTo(outB, outA, 0xc, -1);
+            ((CTriggerSink*)g_gameReg->m_cmdGrid)->ScrollTo(outB, outA, 0xc, -1);
         }
         m_38->m_flags |= 0x10000;
     }

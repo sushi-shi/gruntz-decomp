@@ -224,7 +224,7 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGruntRec* grunt = ((CGruntRec**)g_gameReg->m_68)[m_gridX * 15 + m_gridY];
+    CGruntRec* grunt = ((CGruntRec**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY];
     if (grunt != 0) {
         m_button1Icon = grunt->m_secondaryIcon;
         if (grunt->m_kind >= 0x17) {
@@ -348,7 +348,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    if (((CGruntRec**)g_gameReg->m_68)[m_gridX * 15 + m_gridY] == 0) {
+    if (((CGruntRec**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY] == 0) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).

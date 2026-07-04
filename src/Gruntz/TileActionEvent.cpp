@@ -307,7 +307,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             brick->Detonate(0, 1, 0, 0);
             brick->m_1e4 = 0;
         } else if (effect == 0x138) {
-            ((CTileEventSink*)g_gameReg->m_68)
+            ((CTileEventSink*)g_gameReg->m_cmdGrid)
                 ->PostA((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
@@ -332,7 +332,7 @@ i32 CTileActionEvent::Process(i32 arg) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == 0x144) {
-            ((CTileEventSink*)g_gameReg->m_68)
+            ((CTileEventSink*)g_gameReg->m_cmdGrid)
                 ->PostB((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
         }
     }

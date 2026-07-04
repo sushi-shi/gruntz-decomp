@@ -302,7 +302,7 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_404 = 0;
         ls->m_3f8 = g_645588;
         ls->m_3fc = 0;
-        ((CLevelNotify*)g_gameReg->m_68)->Notify(g_644c54);
+        ((CLevelNotify*)g_gameReg->m_cmdGrid)->Notify(g_644c54);
         CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
         if (slot != 0) {
             slot->m_24 = 1;

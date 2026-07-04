@@ -338,7 +338,7 @@ i32 CTimeBomb::LoadAttributes() {
     }
     m_38->m_flags |= 0x10000;
     TBombGridClear(m_object);
-    ((TBombTileMgr*)g_gameReg->m_68)
+    ((TBombTileMgr*)g_gameReg->m_cmdGrid)
         ->NotifyMoveAt(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }

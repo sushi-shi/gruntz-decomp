@@ -257,7 +257,7 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     // m_68 is the registry's poly per-mode slot (void* in the shared view); in the
     // in-game status-bar context it is always the unit-record table. One authentic
     // downcast to the concrete view, then cast-free field access.
-    RegUnitTable* units = (RegUnitTable*)g_gameReg->m_68;
+    RegUnitTable* units = (RegUnitTable*)g_gameReg->m_cmdGrid;
     if (units->m_slots[slot] == 0) {
         return 0;
     }

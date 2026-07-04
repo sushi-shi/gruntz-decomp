@@ -140,7 +140,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         e->m_7c->m_10(e);
         m_warlordId = e->m_7c->m_18;
         if (m_object->m_124 == g_644c54) {
-            ((CExitCueSink*)g_exitGameReg->m_68)->m_2a0 = m_warlordId;
+            ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = m_warlordId;
         }
         CFocusSlot* slot2 = &g_exitGameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {

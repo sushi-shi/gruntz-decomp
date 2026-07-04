@@ -102,7 +102,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
     if (mode != 0) {
         if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) == 0) {
             ((GRLightObj*)g_gameReg->m_cueSink)->Tick();
-            ((GRFxObj*)g_gameReg->m_68)->Update();
+            ((GRFxObj*)g_gameReg->m_cmdGrid)->Update();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);

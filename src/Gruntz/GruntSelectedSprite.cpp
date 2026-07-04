@@ -80,7 +80,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_mgrSettings;
-    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
+    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_drawn != 0) {
         ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
         m_object->m_screenX = e->m_renderable->m_screenX;

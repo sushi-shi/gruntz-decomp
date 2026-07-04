@@ -948,7 +948,7 @@ void CProjectile::ScanTargets(i32 impact) {
         for (; col < 0xf; col++, colOff += 4) {
             // authentic: sliding-window grid access - 0x1c row-stride overlaps the
             // 4-byte column pitch, so it is raw byte arithmetic, not a 2D pointer array.
-            CGruntTarget* g = *(CGruntTarget**)((char*)g_gameReg->m_68 + colOff);
+            CGruntTarget* g = *(CGruntTarget**)((char*)g_gameReg->m_cmdGrid + colOff);
             if (g == 0) {
                 continue;
             }
@@ -1043,7 +1043,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (m_sound == 0) {
         return 0;
     }
-    m_sound->Play(g_gameReg->m_11c, 0, 0, 1);
+    m_sound->Play(g_gameReg->m_inputFlag, 0, 0, 1);
     return 1;
 }
 

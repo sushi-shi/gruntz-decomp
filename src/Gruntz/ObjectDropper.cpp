@@ -269,7 +269,7 @@ i32 CObjectDropper::Update() {
             i32 tx;
             i32 ty;
             DropperFound* found =
-                ((DropperMap*)g_gameReg->m_68)
+                ((DropperMap*)g_gameReg->m_cmdGrid)
                     ->FindDest(o->m_screenX, o->m_screenY, &o->m_144, &tx, &ty, &box);
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {

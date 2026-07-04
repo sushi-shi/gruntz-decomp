@@ -268,7 +268,7 @@ i32 CPathHazard::Tick() {
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
         CPathEntity* ent =
-            (CPathEntity*)((CPathCueGate*)reg->m_68)
+            (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
                 ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
@@ -382,7 +382,7 @@ i32 CLightningHazard::SiblingTick() {
     } else {
         i32 outA, outB;
         CPathEntity* ent =
-            (CPathEntity*)((CPathCueGate*)reg->m_68)
+            (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
                 ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
@@ -423,7 +423,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_strikeDeadline = (i64)(u32)g_strikeClock;
-    ((CPathCueGate*)g_lightGameReg->m_68)->Strike(a, b, 9, -1);
+    ((CPathCueGate*)g_lightGameReg->m_cmdGrid)->Strike(a, b, 9, -1);
 
     CGameObject* obj = m_object;
     CGameRegistry* reg = g_lightGameReg;

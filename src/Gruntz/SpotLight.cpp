@@ -81,7 +81,7 @@ int CSpotLight::Update_0b1ee0() {
         m_worldY = m_anchorY + m_worldY;
         m_angle = (double)g_645584 * m_angleStep + m_angle;
     }
-    if (((MgrObj68*)g_gameReg->m_68)->arr[m_gridCol + m_gridRow * 15] == 0) {
+    if (((MgrObj68*)g_gameReg->m_cmdGrid)->arr[m_gridCol + m_gridRow * 15] == 0) {
         m_prevNode = m_lightCfg->m_buteNode;
         m_lightCfg->m_buteNode = g_buteTree.Find(s_actKeyA);
     }

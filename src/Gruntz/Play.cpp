@@ -1113,7 +1113,7 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
     } else {
         m_region3Gate = 0;
         RegionLeave();
-        ((CRegSink*)g_64556c->m_68)->Post(-1, 0); // reg->m_68->Post(0xffffffff, 0)
+        ((CRegSink*)g_64556c->m_cmdGrid)->Post(-1, 0); // reg->m_68->Post(0xffffffff, 0)
     }
     m_region3Interval = REGION_INTERVAL_MS;
     m_region3IntervalHi = 0;
@@ -1675,7 +1675,7 @@ RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == 0 && m_inGame == 0 && m_overlayDrag == 0 && m_snapshotActive == 0
         && m_guts->m_548 == 0 && m_guts->m_busyA == 0 && m_guts->m_busyB == 0
-        && g_64556c->m_frameGate == 0 && ((CRegSub68*)g_64556c->m_68)->m_400 != 0) {
+        && g_64556c->m_frameGate == 0 && ((CRegSub68*)g_64556c->m_cmdGrid)->m_400 != 0) {
         return 1;
     }
     return 0;
@@ -2092,7 +2092,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     if (m_overlayDrag != 0) {
         return 1;
     }
-    if (((CRegSub68*)g_64556c->m_68)->m_400 == 0) { // reg->m_68 cue-sink busy gate
+    if (((CRegSub68*)g_64556c->m_cmdGrid)->m_400 == 0) { // reg->m_68 cue-sink busy gate
         return 1;
     }
     if (m_4w()->m_c != 0) {

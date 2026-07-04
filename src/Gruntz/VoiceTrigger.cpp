@@ -251,7 +251,7 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_68)
+    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_cmdGrid)
                          ->QueryAt(
                              m_object->m_screenX,
                              m_object->m_screenY,

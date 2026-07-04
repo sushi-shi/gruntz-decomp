@@ -103,7 +103,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_54 + 8);
+        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_inputState + 8);
         if (sound->m_mgr != 0) {
             sound->m_mgr->StopAndRewind();
             sound->m_isPlaying = 0;
@@ -121,7 +121,7 @@ void SpawnPosSound(PosSoundObj* obj) {
     obj->m_flags40 |= 1;
     aux->m_voice = 0;
     void* layer = obj->m_layer;
-    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_54 != 0) {
+    if (layer != 0 && g_gameReg != 0 && g_gameReg->m_inputState != 0) {
         i32 pt[2];
         pt[0] = obj->m_x;
         pt[1] = obj->m_y;
@@ -216,7 +216,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
         return;
     }
 
@@ -394,7 +394,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount == 0) {
+    if (((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
         return;
     }
     m_mgr->ApplyAndPlay(1, m_panIndex, 0, 1);

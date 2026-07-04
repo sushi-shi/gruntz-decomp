@@ -113,7 +113,7 @@ int Obj0f7d90::Update_0f7d90() {
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
-        ((MgrObj*)g_mgrSettings->m_68)->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
+        ((MgrObj*)g_mgrSettings->m_cmdGrid)->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
     if (m_2ec <= 0x3e8) {

@@ -740,7 +740,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         }
         i32 sub = obj->m_130;
         i32 idx = arg0 * 15 + arg1;
-        CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
+        CIconRecord* cell = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
         i32 ok;
         if (cell == 0 || cell->m_1fc == 0) {
             ok = 0;
@@ -771,7 +771,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     i32 sub = obj->m_130;
     i32 cmd = obj->m_124;
     i32 idx = arg0 * 15 + arg1;
-    CIconRecord* cell = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
+    CIconRecord* cell = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
     i32 ok;
     if (cell == 0 || cell->m_1fc == 0) {
         ok = 0;
@@ -783,7 +783,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         return 0;
     }
     if (cmd == 0x14) {
-        CIconRecord* placed = ((CIconRecord**)((char*)reg->m_68 + 0x1c))[idx];
+        CIconRecord* placed = ((CIconRecord**)((char*)reg->m_cmdGrid + 0x1c))[idx];
         if (placed != 0) {
             placed->m_38c = m_object->m_placeMode;
             reg = g_gameReg;

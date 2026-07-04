@@ -468,10 +468,10 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (((HazGridMgr*)g_gameReg->m_68)
+        if (((HazGridMgr*)g_gameReg->m_cmdGrid)
                 ->ScreenToCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
-            ((HazGridMgr*)g_gameReg->m_68)->MarkCell(a, b, m_object->m_124, -1);
+            ((HazGridMgr*)g_gameReg->m_cmdGrid)->MarkCell(a, b, m_object->m_124, -1);
         }
         if (m_object->m_latchedAnimId != m_object->m_placeMode) {
             m_object->m_latchedAnimId = m_object->m_placeMode;

@@ -254,7 +254,7 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    if (F(this, 0x328) != 0 && F(F(g_pGameRegistry->m_68, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
+    if (F(this, 0x328) != 0 && F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
         void* p = (void*)P(this, 0x320);
         while (p != 0) {
             void* next = *(void**)p;
@@ -273,7 +273,7 @@ i32 CGrunt::SeekTarget() {
         reason = F(this, 0x19c);
     }
     if (reason == 0 && (reason = F(this, 0x2f0), reason >= 0) && reason < 0xf) {
-        CGrunt* slot = (CGrunt*)F(F(g_pGameRegistry->m_68, 0x1c) + reason * 4, 0);
+        CGrunt* slot = (CGrunt*)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + reason * 4, 0);
         if (slot == 0 || F(slot, 0x1fc) == 0) {
             if (F(this, 0x328) != 0) {
                 void* p = (void*)P(this, 0x320);
@@ -341,7 +341,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            i32* slots = (i32*)(F(g_pGameRegistry->m_68, 0x1c) + (char*)0);
+            i32* slots = (i32*)(F(g_pGameRegistry->m_cmdGrid, 0x1c) + (char*)0);
             i32 i = 0;
             do {
                 i32 sv = slots[i];
@@ -388,7 +388,7 @@ i32 CGrunt::SeekTarget() {
         if ((u32)F(this, 0x2ec) < 0x3e9) {
             return 1;
         }
-        i32 base = F((i32)F(F(g_pGameRegistry->m_68, 0x1c) + F(this, 0x2f0) * 4, 0), 0x10);
+        i32 base = F((i32)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + F(this, 0x2f0) * 4, 0), 0x10);
         TileSwitch6(F(base, 0x5c) >> 5, F(base, 0x60) >> 5, 0, F(this, 0x248), 1, 0);
     } else {
         CGrunt* g = m_tileMgr->GetOccupant(this);

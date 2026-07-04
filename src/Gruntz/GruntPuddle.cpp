@@ -130,7 +130,7 @@ i32 CGruntPuddle::Remove() {
         }
         if ((flags & 0x939) != 0 || (flags & 0x2) != 0) {
             m_38->m_flags |= 0x10000;
-            CObjList* list = (CObjList*)g_gameReg->m_68;
+            CObjList* list = (CObjList*)g_gameReg->m_cmdGrid;
             CObjListNode* node = list->m_head;
             while (node != 0) {
                 CObjListNode* next = node->m_next;

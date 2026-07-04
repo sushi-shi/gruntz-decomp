@@ -191,7 +191,7 @@ i32 CTeleporter::Update() {
         i32 x = o->m_screenX;
         if (x < mgr->m_viewOriginR && x >= mgr->m_viewOriginL && y < mgr->m_viewOriginB
             && y >= mgr->m_viewOriginT) {
-            ((CTeleIconTable*)mgr->m_68)->m_3fc = 1;
+            ((CTeleIconTable*)mgr->m_cmdGrid)->m_3fc = 1;
         }
     }
     mgr = g_gameReg;
@@ -214,14 +214,14 @@ i32 CTeleporter::Update() {
     i32 outA;
     i32 outB;
     CTeleRecord* found =
-        ((CTeleIconTable*)mgr->m_68)->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
+        ((CTeleIconTable*)mgr->m_cmdGrid)->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }
 
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
-        ((CTeleMgrSub*)g_gameReg->m_7c)->m_28++;
+        ((CTeleMgrSub*)g_gameReg->m_scoreHud)->m_28++;
         m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
@@ -264,13 +264,13 @@ i32 CTeleporter::Update() {
     m_tickHandled = 1;
     mgr = g_gameReg;
     CTeleRecord* current;
-    if (((CTeleIconTable*)mgr->m_68)->m_24c != 1) {
+    if (((CTeleIconTable*)mgr->m_cmdGrid)->m_24c != 1) {
         current = 0;
     } else {
-        i32* pair = ((CTeleIconTable*)mgr->m_68)->m_244->m_8;
+        i32* pair = ((CTeleIconTable*)mgr->m_cmdGrid)->m_244->m_8;
         i32 row = pair[0];
         i32 col = pair[1];
-        current = ((CTeleRecord**)((char*)(CTeleIconTable*)mgr->m_68 + 0x1c))[row * 15 + col];
+        current = ((CTeleRecord**)((char*)(CTeleIconTable*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
         CGameObject* g = found->m_10;
