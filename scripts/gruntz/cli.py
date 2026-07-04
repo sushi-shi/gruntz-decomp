@@ -688,6 +688,43 @@ def _sema_tool(module: str, argv: list) -> int:
                           cwd=str(REPO), env=_pkg_env()).returncode
 
 
+def _sema_log(rc: int, secs: float) -> None:
+    """One line per `gruntz sema` invocation (ALL subcommands, logged from the
+    main dispatch); must NEVER break the tool. The line IS the command
+    (shell-quoted, metadata behind `#`), so any line pasted into a shell re-runs
+    that exact query:
+        gruntz sema xref 0x00080850 --raw  # 2026-07-04T19:55:01 rc=0 312ms
+    Usage-analysis feed: what agents actually run -> tool improvements."""
+    try:
+        import datetime
+        import shlex
+        cmd = shlex.join(["gruntz", *sys.argv[1:]])  # exactly what was invoked
+        meta = "# {} rc={} {}ms".format(
+            datetime.datetime.now().isoformat(timespec="seconds"),
+            rc, int(secs * 1000))
+        path = REPO / "build" / "gruntz_sema.log"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a") as f:
+            f.write("{}  {}\n".format(cmd, meta))
+    except Exception:
+        pass  # logging is best-effort by design
+
+
+def _run_sema_logged(args) -> None:
+    """Dispatch a sema subcommand with usage logging (rc captured through
+    sys.exit; covers the delegating AND the inline-dossier subcommands)."""
+    import time
+    t0 = time.time()
+    rc = 0
+    try:
+        args.func(args)
+    except SystemExit as e:
+        rc = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
+        _sema_log(rc, time.time() - t0)
+        raise
+    _sema_log(rc, time.time() - t0)
+
+
 def _point_argv(args) -> list:
     """`<file> <line> [<col>]` -> the clangd_query positional list."""
     return [args.file, args.line] + ([args.col] if args.col is not None else [])
@@ -954,7 +991,10 @@ def main() -> None:
     args = ap.parse_args()
     if getattr(args, "ninja_args", None) and args.ninja_args[:1] == ["--"]:
         args.ninja_args = args.ninja_args[1:]
-    args.func(args)
+    if sys.argv[1:2] == ["sema"]:
+        _run_sema_logged(args)  # usage log -> build/gruntz_sema.log
+    else:
+        args.func(args)
 
 
 if __name__ == "__main__":

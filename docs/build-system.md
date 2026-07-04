@@ -49,6 +49,11 @@ Every subcommand is a **thin delegation** to an existing `gruntz.analysis` /
 `gruntz.match` module (each still runnable as `python -m gruntz.<...>`); nothing
 here re-implements analysis. **Semantic questions go here — grep is lexical-only.**
 
+Every `gruntz sema` invocation is appended to **`build/gruntz_sema.log`** (usage
+analysis → tool improvements). Each line IS the command, shell-quoted, with the
+metadata behind a `#` — so any line pasted into a shell re-runs that exact query:
+`gruntz sema xref 0x00080850 --raw  # 2026-07-04T19:29:04 rc=0 169ms`.
+
 ```sh
 gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
 gruntz sema symbol CGruntzApp        # fuzzy workspace-symbol search (clangd)
