@@ -116,9 +116,18 @@ CStateSub8c470::~CStateSub8c470() {
 // 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base vptr restores: cl's implicit
 // vptr-restore stamps a pure-call vtable into [this] and returns (7-byte
 // `mov [ecx],offset ??_7 + ret`). 0x13aaf0 and 0x13ca30 share the 0x5ef760 pure-call
-// vtable. Real polymorphic: an empty virtual dtor emits exactly the stamp+ret (the
-// abstract element base's concrete owner is unmodeled, so the emitted ??_7 reloc-masks
-// against the retail pure-call vtable by shape). __thiscall, no args.
+// vtable; 0x137330 stamps ??_7PureSoundElem (0x5ef6c8, include/Dsndmgr/SoundVoiceList.h).
+// Real polymorphic: an empty virtual dtor emits exactly the stamp+ret. __thiscall.
+//
+// de-view CONFIRMED-SAME, REQUIRED-SPLIT (not foldable into PureSoundElem):
+// CAbstract137330 IS PureSoundElem's base-object destructor (retail ??1PureSoundElem,
+// a NON-virtual dtor). Retail emits this as a standalone COMDAT only because the EH
+// unwind funclet @0x1e0950 (its sole caller) references ~PureSoundElem out-of-line,
+// while every `delete (PureSoundElem*)e` site (0x136f60/0x136e20/0x136ed0) INLINES the
+// teardown (mov[e],0x5ef6c8; RezFree - see PurgeVoiceList @0x136ea8). A folded out-of-
+// line PureSoundElem dtor would convert those cross-TU inline sites to calls (regress);
+// an inline dtor would drop THIS standalone (we don't emit the EH funclet that forces
+// it). So the two models must coexist - kept a distinct emitter here.
 // ===========================================================================
 struct CAbstract137330 {
     virtual ~CAbstract137330();
