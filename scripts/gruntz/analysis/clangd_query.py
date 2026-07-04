@@ -7,12 +7,25 @@ who references it, what is its type.
   python3 -m gruntz.analysis.clangd_query def  <file> <line> [<col>]   # definition
   python3 -m gruntz.analysis.clangd_query refs <file> <line> [<col>]   # references
   python3 -m gruntz.analysis.clangd_query hover <file> <line> [<col>]  # type/doc at point
+  python3 -m gruntz.analysis.clangd_query rename <file> <line> [<col>] <new-name>
+                                                                # rename the symbol at
+                                                                # point tree-wide (add
+                                                                # --dry-run to preview)
   python3 -m gruntz.analysis.clangd_query index                 # build the background
                                                                 # index, wait until done
 
 Lines/columns are 1-based (as printed by grep/editors). When <col> is omitted,
 identifiers on the line are probed right-to-left (the declared name sits
 rightmost on C++ declaration lines) until one yields a result.
+
+`rename` drives clangd's `textDocument/rename`: it returns a WorkspaceEdit -
+the declaration plus EVERY reference in every TU (keyed on the symbol's USR, so
+a same-named field of a different struct is NOT touched) - which the tool applies
+bottom-to-top per file (only OUR src/**, include/** files; vendor/SDK edits are
+skipped). Cross-file completeness needs clangd's background index, so `rename`
+waits for it to settle first. Renaming is matching-NEUTRAL at /O2 (names are
+name-independent). See gruntz.analysis.rename_member for the class-member bulk
+variant.
 
 Cross-TU answers (symbol, refs into other TUs) come from clangd's background
 index, built incrementally under .cache/clangd/ on first use - early runs may
@@ -44,6 +57,7 @@ class Clangd:
     def __init__(self):
         self.proc = subprocess.Popen(
             ["clangd", "--background-index", "--log=error",
+             "--header-insertion=never",  # never let `rename` smuggle in an #include
              f"--compile-commands-dir={CDB_DIR}"],
             cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
@@ -55,11 +69,18 @@ class Clangd:
             "capabilities": {
                 # workDoneProgress lets clangd report background-index progress
                 "window": {"workDoneProgress": True},
-                # ask for hierarchical DocumentSymbol[] (full body `range` +
-                # document-scoped) rather than the flat SymbolInformation[]
-                # (name-only ranges, leaks header symbols) - see document_symbols.
-                "textDocument": {"documentSymbol": {
-                    "hierarchicalDocumentSymbolSupport": True}},
+                # advertise WorkspaceEdit documentChanges so `rename` may return
+                # either response shape (normalize_edits handles both)
+                "workspace": {"workspaceEdit": {"documentChanges": True}},
+                "textDocument": {
+                    # ask for hierarchical DocumentSymbol[] (full body `range` +
+                    # document-scoped) rather than the flat SymbolInformation[]
+                    # (name-only ranges, leaks header symbols) - see document_symbols.
+                    "documentSymbol": {
+                        "hierarchicalDocumentSymbolSupport": True},
+                    # tree-wide symbol rename (textDocument/rename); see `rename`
+                    "rename": {"prepareSupport": True},
+                },
             },
         })
         self._notify("initialized", {})
@@ -79,20 +100,33 @@ class Clangd:
     def _notify(self, method: str, params: dict) -> None:
         self._send({"method": method, "params": params})
 
-    def _request(self, method: str, params: dict, timeout: float = 120.0):
+    def _request(self, method: str, params: dict, timeout: float = 120.0,
+                 tolerant: bool = False):
+        """`tolerant` returns None on a clangd error instead of exiting - used by
+        `rename` so probing a non-symbol position (e.g. a comment token) just
+        moves on to the next candidate."""
         self._id += 1
         self._send({"id": self._id, "method": method, "params": params})
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             msg = self._recv()
+            # clangd may interleave a progress-token create request we must answer
+            if msg.get("method") == "window/workDoneProgress/create":
+                self._send({"id": msg["id"], "result": None})
+                continue
             if msg.get("id") == self._id:
                 if "error" in msg:
+                    if tolerant:
+                        return None
                     sys.exit(f"clangd error: {msg['error'].get('message')}")
                 return msg.get("result")
         sys.exit(f"clangd: no reply to {method} within {timeout}s")
 
-    def wait_for_index(self) -> None:
-        """Block until background indexing reports 'end' (or stays idle)."""
+    def wait_for_index(self, stream=None) -> None:
+        """Block until background indexing reports 'end' (or stays idle). Progress
+        goes to `stream` (default stdout; `rename` passes stderr to keep the edit
+        listing clean)."""
+        stream = stream or sys.stdout
         begun = False
         last = time.monotonic()
         while True:
@@ -102,7 +136,8 @@ class Clangd:
                 # which can take a while on a warm cache - be patient
                 if time.monotonic() - last > (30.0 if begun else 90.0):
                     print("index: idle - nothing (left) to index" if not begun
-                          else "index: no progress for 30s - assuming done")
+                          else "index: no progress for 30s - assuming done",
+                          file=stream)
                     return
                 continue
             msg = self._recv()
@@ -119,9 +154,10 @@ class Clangd:
             elif value.get("kind") == "report":
                 pct = value.get("percentage")
                 msg_txt = value.get("message", "")
-                print(f"\rindex: {pct}% {msg_txt[:60]:<60}", end="", flush=True)
+                print(f"\rindex: {pct}% {msg_txt[:60]:<60}", end="", flush=True,
+                      file=stream)
             elif value.get("kind") == "end" and begun:
-                print("\nindex: done")
+                print("\nindex: done", file=stream)
                 return
 
     def open_file(self, path: Path) -> None:
@@ -138,6 +174,16 @@ class Clangd:
         self.open_file(path)
         return self._request("textDocument/documentSymbol", {
             "textDocument": {"uri": path.as_uri()}}) or []
+
+    def rename(self, path: Path, line: int, char: int, new_name: str):
+        """0-based line/char. Returns a WorkspaceEdit (decl + all refs) or None
+        (tolerant: a non-symbol position yields None, not an exit, so `do_rename`
+        can probe the next identifier)."""
+        return self._request("textDocument/rename", {
+            "textDocument": {"uri": path.as_uri()},
+            "position": {"line": line, "character": char},
+            "newName": new_name,
+        }, tolerant=True)
 
     def close(self) -> None:
         try:
@@ -195,7 +241,95 @@ def _first_compdb_file() -> Path:
     return p
 
 
-def main() -> None:
+# --- rename: WorkspaceEdit normalization + application ----------------------
+def _uri_to_path(uri: str) -> Path:
+    return Path(uri.removeprefix("file://"))
+
+
+def _normalize_edits(ws_edit) -> dict:
+    """WorkspaceEdit -> {Path: [TextEdit,...]} handling both the `changes` and
+    the `documentChanges` response shapes clangd may return."""
+    out: dict[Path, list] = {}
+    if not ws_edit:
+        return out
+    for uri, edits in (ws_edit.get("changes") or {}).items():
+        out.setdefault(_uri_to_path(uri), []).extend(edits)
+    for dc in ws_edit.get("documentChanges") or []:
+        out.setdefault(_uri_to_path(dc["textDocument"]["uri"]), []).extend(
+            dc.get("edits", []))
+    return out
+
+
+def _line_starts(text: str) -> list:
+    starts = [0]
+    for i, ch in enumerate(text):
+        if ch == "\n":
+            starts.append(i + 1)
+    return starts
+
+
+def _is_ours(path: Path) -> bool:
+    """Only OUR reconstructed sources are writable; vendor/ + SDK headers aren't."""
+    try:
+        parts = path.resolve().relative_to(ROOT).parts
+    except ValueError:
+        return False
+    return bool(parts) and parts[0] in ("src", "include") and "vendor" not in parts
+
+
+def do_rename(lsp: Clangd, path: Path, line: int, col, new_name: str,
+              dry_run: bool) -> int:
+    """Rename the symbol at (1-based line[/col]) to `new_name` across the tree.
+    --dry-run prints the edit set (file:line: old -> new) and writes nothing;
+    otherwise applies edits bottom-to-top per file and prints per-file counts."""
+    lsp.open_file(path)
+    # cross-file references come from the background index - let it settle first,
+    # with progress on stderr so the edit listing stays clean on stdout
+    lsp.wait_for_index(stream=sys.stderr)
+    ws = None
+    for ln, ch in positions_to_probe(path, line, col):
+        ws = lsp.rename(path, ln, ch, new_name)
+        if _normalize_edits(ws):
+            break
+    edits = _normalize_edits(ws)
+    if not edits:
+        print("(no rename result - not a renameable identifier at that position, "
+              "or the index is still cold)")
+        return 1
+
+    foreign = [p for p in edits if not _is_ours(p)]
+    total_files = total_sites = 0
+    for path_i, tedits in sorted(edits.items(), key=lambda kv: str(kv[0])):
+        if not _is_ours(path_i):
+            continue
+        content = path_i.read_text()
+        starts = _line_starts(content)
+        resolved = []
+        for e in tedits:
+            r = e["range"]
+            s = starts[r["start"]["line"]] + r["start"]["character"]
+            t = starts[r["end"]["line"]] + r["end"]["character"]
+            resolved.append((s, t, e["newText"], r["start"]["line"]))
+        resolved.sort()
+        total_files += 1
+        total_sites += len(resolved)
+        if dry_run:
+            for s, t, new_text, ln0 in resolved:
+                print(f"  {rel(str(path_i))}:{ln0 + 1}: {content[s:t]} -> {new_text}")
+        else:
+            for s, t, new_text, _ in reversed(resolved):  # bottom-up keeps offsets valid
+                content = content[:s] + new_text + content[t:]
+            path_i.write_text(content)
+            print(f"  {rel(str(path_i))}: {len(resolved)} edit(s)")
+
+    verb = "would change" if dry_run else "changed"
+    print(f"{verb} {total_sites} site(s) across {total_files} file(s).")
+    for p in sorted(foreign, key=str):
+        print(f"  (skipped foreign file: {rel(str(p))})", file=sys.stderr)
+    return 0
+
+
+def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -206,6 +340,13 @@ def main() -> None:
         p.add_argument("file")
         p.add_argument("line", type=int)
         p.add_argument("col", type=int, nargs="?")
+    r = sub.add_parser("rename")
+    r.add_argument("file")
+    r.add_argument("line", type=int)
+    r.add_argument("col", type=int, nargs="?")  # optional; new_name is the required tail
+    r.add_argument("new_name")
+    r.add_argument("--dry-run", action="store_true",
+                   help="preview the edit set (file:line: old -> new); write nothing")
     args = ap.parse_args()
 
     # Gitignored, so absent on fresh clones/worktrees; without it clangd
@@ -243,6 +384,11 @@ def main() -> None:
         path = (ROOT / args.file).resolve()
         if not path.is_file():
             sys.exit(f"no such file: {args.file}")
+
+        if args.cmd == "rename":
+            return do_rename(lsp, path, args.line, args.col, args.new_name,
+                             args.dry_run)
+
         method = {"def": "textDocument/definition",
                   "refs": "textDocument/references",
                   "hover": "textDocument/hover"}[args.cmd]
@@ -259,4 +405,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
