@@ -18,18 +18,15 @@
 #include <Win32.h> // PtInRect / RECT / POINT
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
 #include <rva.h>
 
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);
 
-// The eye-candy sprite the factory returns (the created instance; CacheFirstFrame
-// @0x150540 / ApplyLookupGeometry @0x1505b0, role-named here). The factory itself is
-// the canonical CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
-struct RockSprite {
-    void SetAnim(const char* name);            // FUN_00150540 __thiscall
-    void SetAnimLoop(const char* name, i32 f); // FUN_001505b0 __thiscall
-};
+// The eye-candy sprite the factory returns is the shared CGameObject (ApplyName
+// @0x150540 / ApplyLookupGeometry @0x1505b0); the factory is the canonical
+// CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
 
 // The rate-limited sound cue (the shared Booty* sound-chain idiom).
 struct RockSndPlayer {
@@ -244,13 +241,13 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (!PtInRect(&g_mgrSettings->m_13c, pt)) {
                 continue;
             }
-            RockSprite* spr =
-                (RockSprite*)m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+            CGameObject* spr =
+                m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
             }
-            spr->SetAnim("LEVEL_ROCKBREAK");
-            spr->SetAnimLoop("LEVEL_ROCKBREAK", 0);
+            spr->ApplyName("LEVEL_ROCKBREAK");
+            spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
             RockSndSet* set = m_22c->m_28;
             if (set->m_30 == 0) {
@@ -283,4 +280,3 @@ SIZE_UNKNOWN(RockSndEntry);
 SIZE_UNKNOWN(RockSndPlayer);
 SIZE_UNKNOWN(RockSndSet);
 SIZE_UNKNOWN(RockSndTable);
-SIZE_UNKNOWN(RockSprite);

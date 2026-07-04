@@ -6,8 +6,13 @@
 // CGruntResurrector is the recovered/placeholder identity (no RTTI vtable - a
 // non-virtual manager pass). Only offsets / code bytes are load-bearing; helpers are
 // reloc-masked externals.
-#include <Win32.h> // PtInRect / RECT / POINT
+// <Mfc.h> (not <Win32.h>): UserLogic.h pulls afx via ButeMgr.h/String.h, so the
+// umbrella must be the MFC superset kept first (PtInRect / RECT / POINT come with
+// it; docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md).
+#include <Mfc.h>
 
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <rva.h>
 
 SIZE_UNKNOWN(ResGruntLogic);
@@ -51,16 +56,14 @@ struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
     ResCfgSub38 m_38; // +0x38
     char m_pad3c[0x238 - 0x3c];
 };
-struct ResSprite;
-SIZE_UNKNOWN(ResSpriteFactory);
-struct ResSpriteFactory { // g_mgrSettings->m_world->m_8
-    // FUN_001597b0 __thiscall, ret 0x18: build the named eye-candy sprite.
-    ResSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, char* name, i32 flags);
-};
+// The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
+// the created "LightFx" eye-candy sprite is the shared CGameObject whose +0x7c
+// CGameObjAux carries the Init driver (+0x10) and the per-class setup slot m_18
+// (+0x18) - here the LightFx flash config below, downcast at the site.
 SIZE_UNKNOWN(ResFactoryHost);
 struct ResFactoryHost {
     char m_pad00[0x8];
-    ResSpriteFactory* m_8; // +0x08
+    CSpriteFactory* m_8; // +0x08
 };
 SIZE_UNKNOWN(ResSettings);
 struct ResSettings {
@@ -72,20 +75,8 @@ struct ResSettings {
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
 };
 SIZE_UNKNOWN(ResLightCfg);
-struct ResLightCfg {                                // spr->m_7c->m_18
+struct ResLightCfg {                                // spr->m_7c->m_18 (LightFx setup)
     void Configure(char* a, char* b, i32 c, i32 d); // FUN @ 0x2117 __thiscall
-};
-SIZE_UNKNOWN(ResSpriteCtl);
-struct ResSpriteCtl { // spr->m_7c
-    char m_pad00[0x10];
-    void(__cdecl* Init)(ResSprite*); // +0x10
-    char m_pad14[0x18 - 0x14];
-    ResLightCfg* m_18; // +0x18
-};
-SIZE_UNKNOWN(ResSprite);
-struct ResSprite {
-    char m_pad00[0x7c];
-    ResSpriteCtl* m_7c; // +0x7c
 };
 SIZE_UNKNOWN(ResButeMgr);
 struct ResButeMgr {
@@ -179,10 +170,10 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (ok) {
             g->m_38->m_8 |= 0x10000;
             Notify(node);
-            ResSprite* spr =
+            CGameObject* spr =
                 g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            spr->m_7c->m_18->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
+            ((ResLightCfg*)spr->m_7c->m_18)->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
         }
     }
     return 1;

@@ -22,41 +22,31 @@
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Mfc.h>                   // CString (the /GX directional-name temps) + Win32
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
+#include <Mfc.h>                  // CString (the /GX directional-name temps) + Win32
 
 #include <rva.h>
 
-struct CGsSprite;
-
 // The HUD sprite factory reached via g_mgrSettings->m_world->m_8 is the canonical
 // CSpriteFactory (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
-// up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created CGsSprite.
-// The world holder is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - no
-// local holder view.
+// up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created
+// CGameObject. The world holder is the canonical CSpriteFactoryHolder
+// (<Gruntz/GameRegistry.h>) - no local holder view.
 
 // The g_gameReg->m_74 lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
+// The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
+// i32-typed here (no cast at the store).
 struct CGsSoundTable {
-    void* Lookup(i32 idx, i32 flag); // 0xe23c0
+    i32 Lookup(i32 idx, i32 flag); // 0xe23c0
 };
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_mgrSettings; // *0x64556c (canonical _g_mgrSettings view)
 
-// The created SimpleAnimation sprite. CacheFirstFrame (0x150540) caches the named
-// first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle geometry. Both
-// reloc-masked __thiscall.
-struct CGsSprite {
-    void CacheFirstFrame(const char* name);             // 0x150540
-    i32 ApplyLookupGeometry(const char* name, i32 def); // 0x1505b0
-
-    char m_pad0[0x4c];
-    void* m_4c; // +0x4c  sound handle
-    i32 m_50;   // +0x50  rate
-    char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58  active flag
-    i32 m_5c; // +0x5c  sub-tile X
-    i32 m_60; // +0x60  sub-tile Y
-};
+// The created SimpleAnimation sprite is the shared CGameObject: ApplyName (0x150540)
+// caches the named first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle
+// geometry; the loader stamps its draw-fill block (m_drawFillArg/m_drawFillCmd/
+// m_drawActive) and screen position. Both setters reloc-masked __thiscall.
 
 // The owning sprite-collection (best-guess name; RTTI owner reloc-masked).
 class CGruntSprintAnim {
@@ -65,7 +55,7 @@ public:
     void PerDirGeometry(i32 dir, i32* outX, i32* outY); // 0x019cd0 (thunk 0x3869)
 
     char m_pad0[0x204];
-    CGsSprite* m_sprintSprites[8]; // +0x204  the 8 directional sprint sprites
+    CGameObject* m_sprintSprites[8]; // +0x204  the 8 directional sprint sprites
 };
 
 // ===========================================================================
@@ -91,14 +81,14 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    void* h = ((CGsSoundTable*)g_mgrSettings->m_spriteFactory)->Lookup(0, 0);
+    i32 h = ((CGsSoundTable*)g_mgrSettings->m_spriteFactory)->Lookup(0, 0);
     if (!h) {
         return 0;
     }
 
     for (i32 i = 1; i <= 8; i++) {
         m_sprintSprites[i - 1] =
-            (CGsSprite*)g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_sprintSprites[i - 1] == 0) {
             return 0;
         }
@@ -131,16 +121,16 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
                 break;
         }
 
-        m_sprintSprites[i - 1]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
+        m_sprintSprites[i - 1]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
         m_sprintSprites[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
-        m_sprintSprites[i - 1]->m_58 = 1;
-        m_sprintSprites[i - 1]->m_50 = 0xa;
-        m_sprintSprites[i - 1]->m_4c = h;
+        m_sprintSprites[i - 1]->m_drawActive = 1;
+        m_sprintSprites[i - 1]->m_drawFillCmd = 0xa;
+        m_sprintSprites[i - 1]->m_drawFillArg = h;
 
         i32 outX, outY;
         PerDirGeometry(i, &outX, &outY);
-        m_sprintSprites[i - 1]->m_5c = outX;
-        m_sprintSprites[i - 1]->m_60 = outY;
+        m_sprintSprites[i - 1]->m_screenX = outX;
+        m_sprintSprites[i - 1]->m_screenY = outY;
     }
     return 1;
 }
@@ -148,4 +138,4 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
 SIZE_UNKNOWN(CGruntSprintAnim);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CGsSoundTable);
-SIZE_UNKNOWN(CGsSprite);
+

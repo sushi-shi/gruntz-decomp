@@ -29,6 +29,7 @@
 
 #include <Gruntz/GameRegistry.h>  // WwdGameReg / g_gameReg
 #include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 
 // Forward decls so the manager's typed slots need no view-casts (defs below / in
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
@@ -150,18 +151,10 @@ public:
 
 // LoadGruntVoices builds a play request through the shared sprite factory
 // (m_04->m_08, the CSpriteFactory whose CreateSprite lives at 0x1597b0; see
-// <Gruntz/SpriteFactory.h>). The created instance is CIconSprite; this loader
-// only touches its +0x7c slot bag, so it views the result as a CSpriteHandle.
-struct CSpriteHandleSub {
-    char m_00[0x10];
-    void (*Activate)(void* self); // [m_7c + 0x10]  the slot-0x10 method
-    char m_14[0x18 - 0x14];
-    void* m_18; // +0x18  the result handle stored into the m_08/m_0c pair
-};
-struct CSpriteHandle {
-    char m_00[0x7c];
-    CSpriteHandleSub* m_7c; // +0x7c  vtable-ish slot bag (Activate + result)
-};
+// <Gruntz/SpriteFactory.h>). The created instance is the shared CGameObject
+// (<Gruntz/UserLogic.h>); this loader only touches its +0x7c CGameObjAux control
+// block (the Init driver @+0x10, the m_18 setup slot it stashes as the voice
+// stream handle).
 
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
 // its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the

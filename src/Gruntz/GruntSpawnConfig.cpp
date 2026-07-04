@@ -157,9 +157,9 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     i32 i = 0;
     void** slot = (void**)&m_08;
     for (; i < 2; i++, slot++) {
-        CSpriteHandle* spr =
-            (CSpriteHandle*)m_04->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
-        spr->m_7c->Activate(spr);
+        CGameObject* spr =
+            m_04->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
+        spr->m_7c->Init(spr);
         void* got = spr->m_7c->m_18;
         *slot = got;
         if (got == 0) {
@@ -592,7 +592,5 @@ SIZE_UNKNOWN(CSpawnRemoveColl);
 SIZE_UNKNOWN(CSpawnStream);
 SIZE_UNKNOWN(CSpawnTree);
 SIZE_UNKNOWN(CSpawnVoice);
-SIZE_UNKNOWN(CSpriteHandle);
-SIZE_UNKNOWN(CSpriteHandleSub);
 SIZE_UNKNOWN(CSpriteReleasable);
 SIZE_UNKNOWN(CVoiceSound);

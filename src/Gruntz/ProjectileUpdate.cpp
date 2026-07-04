@@ -25,6 +25,7 @@
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/GameRegistry.h>  // canonical game-registry singleton (*0x64556c)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <rva.h>
 
 DATA(0x002bf3bc)
@@ -57,26 +58,12 @@ struct CProjSetupVtbl {
 inline i32 CProjSetup::Configure(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g) {
     return (this->*(m_vptr->Configure))(a, b, c, d, e, f, g);
 }
-// The created eye-candy sprite. m_7c is a per-instance control block: Init at
-// +0x10 (__cdecl), the config setup at +0x18.
-struct CProjSprite;
-struct CProjSpriteCtl {
-    void* m_s0[4];                     // slots 0..3
-    void(__cdecl* Init)(CProjSprite*); // +0x10
-    char m_pad14[0x18 - 0x14];
-    CProjSetup* m_18; // +0x18
-};
-struct CProjSprite {
-    char m_pad00[0x7c];
-    CProjSpriteCtl* m_7c; // +0x7c
-    char m_pad80[0x120 - 0x80];
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124
-};
+// The created eye-candy sprite is the shared CGameObject (<Gruntz/UserLogic.h>);
+// its +0x7c CGameObjAux control block carries the Init driver (+0x10) and the
+// per-class setup slot m_18 (+0x18) - here the CProjSetup above, downcast per site
+// (the slot is generically typed on the canonical aux; proven-heterogeneous).
 // The HUD sprite factory reached as g_gameReg->m_world->m_8 is the canonical
-// CSpriteFactory (shared <Gruntz/SpriteFactory.h>); CreateSprite @0x1597b0 returns
-// the created instance, modeled here per-TU as CProjSprite (the created-instance
-// naming unification CProjSprite/CIconSprite/CHudSprite is the deferred separate sweep).
+// CSpriteFactory (shared <Gruntz/SpriteFactory.h>).
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg; // the one game-registry singleton (*0x64556c)
 
@@ -197,22 +184,22 @@ i32 CProjectile::Update() {
             case 9:
             case 10:
             case 11: {
-                CProjSprite* spr =
-                    (CProjSprite*)g_gameReg->m_world->m_8
+                CGameObject* spr =
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
-                CProjSetup* s = spr->m_7c->m_18;
+                CProjSetup* s = (CProjSetup*)spr->m_7c->m_18;
                 if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
                 break;
             }
             case 2: {
-                CProjSprite* spr =
-                    (CProjSprite*)g_gameReg->m_world->m_8
+                CGameObject* spr =
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Boomerang", 0x40003);
                 spr->m_7c->Init(spr);
-                CProjSetup* s = spr->m_7c->m_18;
+                CProjSetup* s = (CProjSetup*)spr->m_7c->m_18;
                 if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
@@ -221,7 +208,7 @@ i32 CProjectile::Update() {
             case 17: {
                 i32 pos[2];
                 GetSpawnPos(pos);
-                CProjSprite* spr = (CProjSprite*)g_gameReg->m_world->m_8
+                CGameObject* spr = g_gameReg->m_world->m_8
                                        ->CreateSprite(0, pos[0], pos[1], 0xf, "TimeBomb", 0x40003);
                 spr->m_120 = 0;
                 spr->m_7c->Init(spr);
@@ -230,11 +217,11 @@ i32 CProjectile::Update() {
             }
             case 21:
             case 22: {
-                CProjSprite* spr =
-                    (CProjSprite*)g_gameReg->m_world->m_8
+                CGameObject* spr =
+                    g_gameReg->m_world->m_8
                         ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0, "Projectile", 0x40003);
                 spr->m_7c->Init(spr);
-                CProjSetup* s = spr->m_7c->m_18;
+                CProjSetup* s = (CProjSetup*)spr->m_7c->m_18;
                 if (s->Configure(m_170, m_1ec, m_1f0, m_208, m_20c, m_10->m_5c, m_10->m_60) == 0) {
                     s->m_154->m_8 |= 0x10000;
                 }
@@ -306,8 +293,6 @@ SIZE_UNKNOWN(CProjLogic);
 SIZE_UNKNOWN(CProjSetup);
 SIZE_UNKNOWN(CProjSetupLogic);
 SIZE_UNKNOWN(CProjSetupVtbl);
-SIZE_UNKNOWN(CProjSprite);
-SIZE_UNKNOWN(CProjSpriteCtl);
 SIZE_UNKNOWN(CProjTarget);
 SIZE_UNKNOWN(CProjTargetTable);
 SIZE_UNKNOWN(CProjTickSub);

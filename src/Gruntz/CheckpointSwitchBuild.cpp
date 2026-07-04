@@ -20,15 +20,16 @@
 // [[vtable-realization-ctor-boundary]]).  BuildSmall is @early-stop on a codegen
 // wall, so re-basing yields zero match benefit.
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <rva.h>
 
 SIZE_UNKNOWN(CStatzRect60);
 struct CStatzRect60 {
     i32 d[0x18]; // 0x60 bytes
 };
-struct CStatzSprite;
 // The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
-// CreateSprite @0x1597b0 returns the created CStatzSprite.
+// CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
+// configures it; the +0x7c CGameObjAux Init runs post-create; m_layer gates success).
 SIZE_UNKNOWN(CStatzFactoryHolder);
 struct CStatzFactoryHolder {
     char m_pad0[0x8];
@@ -40,19 +41,6 @@ struct CStatzGameReg {
 };
 DATA(0x0024556c)
 extern CStatzGameReg* g_statzGameReg; // *0x64556c
-SIZE_UNKNOWN(CStatzSpriteInitVtbl);
-struct CStatzSpriteInitVtbl {
-    void* m_slot0[4];                   // slots 0..3
-    void(__cdecl* Init)(CStatzSprite*); // slot 4 (+0x10)
-};
-SIZE_UNKNOWN(CStatzSprite);
-struct CStatzSprite {
-    char m_pad0[0x7c];
-    CStatzSpriteInitVtbl* m_7c; // +0x7c
-    char m_pad80[0x198 - 0x80];
-    i32 m_198;                        // +0x198
-    void Configure(void* tag, i32 a); // FUN_001504d0 __thiscall
-};
 DATA(0x0020aa34)
 extern char g_statzTabSpriteName[]; // CreateSprite name buffer
 DATA(0x0020f928)
@@ -94,14 +82,14 @@ i32 CCheckpointTriggerSwitchLogic::
     if (a9 == 0) {
         return 1;
     }
-    CStatzSprite* spr =
-        (CStatzSprite*)g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+    CGameObject* spr =
+        g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
     if (!spr) {
         return 0;
     }
     spr->m_7c->Init(spr);
-    spr->Configure(g_statzTabCfgTag, a9);
-    if (spr->m_198 == 0) {
+    spr->ApplyLookupSprite(g_statzTabCfgTag, a9);
+    if (spr->m_layer == 0) {
         return 0;
     }
     return 1;
