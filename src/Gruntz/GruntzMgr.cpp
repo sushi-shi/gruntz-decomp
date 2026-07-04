@@ -952,7 +952,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     DWORD dwSize = 0; // real GetConnectionSettings takes LPDWORD (unsigned long*)
     hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
-    if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
+    if (hr != 0 && hr != (i32)DPERR_BUFFERTOOSMALL) {
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = 0;
