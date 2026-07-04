@@ -27,6 +27,16 @@ extern "C" double sqrt(double);
 // CPathHazard (single inheritance -> 4-byte code pointer; CPathHazard is complete
 // in the header above, pmf-complete-class-4byte), so `(this->*slot)(...)` emits
 // the `mov ecx,this; call [slot]` virtual-dispatch shape with no cast.
+//
+// NOT realizable to plain `this->Tick()` direct virtual calls (base-vtable
+// slot-count wall, dummy-virtual-slots.md): the modeled CUserLogic base carries
+// only 14 vtable slots (CUserBase 0..2 + UserLogicVfunc1..B = 3..13), but retail's
+// CPathHazard vtable places Tick at slot 16 (+0x40). A direct `this->Tick()` thus
+// dispatches through the C++-computed slot 14 (+0x38) - PROVEN: converting
+// ForwardTick to `Tick()` emitted `jmp [eax+0x38]` vs retail's `jmp [eax+0x40]`
+// (regressed the exact match). The manual struct hard-codes the retail offsets to
+// sidestep the 2-slot base gap; realizing needs CUserLogic widened to 16 slots (a
+// shared-base change rippling every CUserLogic-derived vtable), not a per-class fix.
 typedef void (CPathHazard::*PathArriveFn)();
 typedef i32 (CPathHazard::*PathBeginFn)();
 typedef i32 (CPathHazard::*PathHitFn)(i32, i32);
