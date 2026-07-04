@@ -266,7 +266,7 @@ imagerotate	1	0
 imagesavebmp	1	0
 imageset	8	4
 imageset3	3	3
-imagespriteblit	7	1
+imagespriteblit	7	0
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -1242,7 +1242,7 @@ ddrawsurfacemgrserialize	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZHP
 ddrawsurfacepair	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	1	95513d9589bc	0x1590f0
 ddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	1	d06a4ac6fdc3	0x3a1d0
 ddrawsurfacepair	?Create@CDDrawSurfacePair@@QAEHHHHH@Z	96.0198	96.0198	1	e9409ddd1f80	0x163c90
-ddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7371	52.7371	1	4813981e19d6	0x163f40
+ddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7629	52.7629	1	4813981e19d6	0x163f40
 ddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	74.9589	74.9589	1	ea15e5d2fcd8	0x164180
 ddrawsurfacepair	?Probe_164660@CDDrawSurfacePair@@QAEHXZ	99.0909	99.0909	1	47ccb9c6a215	0x164660
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	1	b298a4284ba3	0x163f00
@@ -1436,34 +1436,34 @@ directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	4	4eb5da0c13
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	5	ffd92397445e	0x132d90
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	3	24dea7a346e1	0x133bf0
 directinputmgr2	?Unacquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	2	05966ec87c28	0x134fe0
-directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x136230
-directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x136180
-directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	84.0312	84.0312	1	cpp:f1f0f4e5c1fb	0x135b10
-directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x1351d0
+directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	1f704e8d3419	0x136230
+directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	1	1f704e8d3419	0x136180
+directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	84.0312	84.0312	1	183e43741667	0x135b10
+directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	0752e8addecf	0x1351d0
 directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	1	1beec211bc4e	0x136260
 directsoundmgr	??1DSoundCloneInst@@UAE@XZ	99.9655	99.9655	2	708413df0a89	0x135bb0
 directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	1	70e6312f0246	0x135300
 directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	2	6af7920ca856	0x136300
-directsoundmgr	?Clone@DSoundCloneInst@@QAEPAVDirectSoundMgr@@H@Z	100.0000	100.0000	1	5caf6afdaf82	0x135c20
+directsoundmgr	?Clone@DSoundCloneInst@@QAEPAVDirectSoundMgr@@H@Z	100.0000	100.0000	2	1fd23d67e049	0x135c20
 directsoundmgr	?CloneAndPlay@DirectSoundMgr@@QAEHHHH@Z	100.0000	100.0000	4	d34b8baf73b3	0x135660
 directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	2	efe805a378d5	0x1359a0
 directsoundmgr	?Create@SoundDevice@@QAEHPAXII@Z	100.0000	100.0000	1	be6713ef4f44	0x136550
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	98.7755	98.7755	1	5c85a7556e57	0x137260
-directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAI0@Z	100.0000	100.0000	3	53d3803e15dc	0x135a20
+directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAI0@Z	100.0000	100.0000	4	25da30b8f9d8	0x135a20
 directsoundmgr	?GetErrorString@DirectSoundMgr@@SAXPADHH@Z	100.0000	100.0000	2	2bd716326344	0x138150
-directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAXIPAI@Z	100.0000	100.0000	3	ba4daebabd07	0x135ac0
-directsoundmgr	?GetPan@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	d7510998e35b	0x1357f0
-directsoundmgr	?GetVolume@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	500dca84d3e0	0x1355f0
+directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAXIPAI@Z	100.0000	100.0000	4	268de1f22b76	0x135ac0
+directsoundmgr	?GetPan@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	0a98c5ff591a	0x1357f0
+directsoundmgr	?GetVolume@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	03c9d9a8fa7a	0x1355f0
 directsoundmgr	?GetVolumePercent@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	2	b7536ea97fc9	0x135640
-directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	5	57c1d0a0661d	0x135440
-directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	5	37de7ff9f2b4	0x1353f0
-directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	5	28de74b5fbd4	0x136370
-directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	4	bb1a9cb04907	0x135f40
+directsoundmgr	?IsLooping@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	6	dfd37fd5587e	0x135440
+directsoundmgr	?IsPlaying@DirectSoundMgr@@QAEHXZ	99.8529	99.8529	6	056dc0a9a4fb	0x1353f0
+directsoundmgr	?Lock@DirectSoundMgr@@QAEHIIPAPAXPAI01I@Z	67.6556	67.6556	6	181144d9bb20	0x136370
+directsoundmgr	?LockConvert@DirectSoundMgr@@QAEHPAXII@Z	100.0000	100.0000	5	6889259a64d7	0x135f40
 directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	95.5172	95.5172	5	e11e8a48d987	0x136270
 directsoundmgr	?PurgeVoiceList@SoundDevice@@QAEHH@Z	98.6667	98.6667	1	a638590d9c38	0x136e20
 directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	3	b3d52d6256fc	0x135340
 directsoundmgr	?ReacquireViaCallback@SoundDevice@@QAEHXZ	100.0000	100.0000	1	9b08d14670ba	0x1365e0
-directsoundmgr	?RemoveClone@DSoundCloneInst@@QAEXPAVDirectSoundMgr@@@Z	100.0000	100.0000	1	27d6de5b90af	0x135d20
+directsoundmgr	?RemoveClone@DSoundCloneInst@@QAEXPAVDirectSoundMgr@@@Z	100.0000	100.0000	2	ab7cd59871aa	0x135d20
 directsoundmgr	?Restore@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	5	2fa9da8c90fd	0x135310
 directsoundmgr	?SetCooperativeLevel@SoundDevice@@QAEHPAXI@Z	100.0000	100.0000	1	c01d01bc7782	0x1365f0
 directsoundmgr	?SetCurrentPosition@DirectSoundMgr@@QAEHI@Z	100.0000	100.0000	3	cb46fdef2785	0x135a70
@@ -1637,8 +1637,8 @@ fileimage	?LoadFile2@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	bddd4ee5439
 fileimage	?LoadFile@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	4741355a053c	0x144d80
 fileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	1	4fc9a25c9a53	0x1443b0
 fileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	1	129402c7d84d	0x144900
-fileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	1	90f57f481306	0x13fce0
-fileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	1	96cabdcef01f	0x13fbb0
+fileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1406	1	90f57f481306	0x13fce0
+fileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	1	96cabdcef01f	0x13fbb0
 fileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	1	3e9216258d22	0x13ff80
 fileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	1	80e29eb15757	0x140420
 fileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	1	9efd0a5f4cf8	0x140110
@@ -2371,12 +2371,12 @@ imageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x
 imageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 imageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0
 imagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.7761	82.7761	1	f8ca75920297	0x153d90
-imagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6329	80.6329	1	76a79523ed16	0x153b20
+imagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6812	80.6812	1	76a79523ed16	0x153b20
 imagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.4573	98.4573	1	79d3e8977f78	0x1538c0
-imagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.8469	83.8469	1	49b751ab8f9b	0x154750
+imagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.9091	83.9091	1	49b751ab8f9b	0x154750
 imagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4789	1	7400ccfcfcfa	0x153ff0
 imagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2297	73.2297	1	26c1a0f6216f	0x1544d0
-imagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	100.0000	100.0000	1	a81d92669fca	0x154270
+imagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.9409	99.9409	1	a81d92669fca	0x154270
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
 infblock	_inflate_blocks_new	100.0000	100.0000	1	fc0dd390fb8b	0x187530
@@ -3226,11 +3226,11 @@ sounddevice	??_GSoundDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:641e78474631	0x13
 sounddevice	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	4	a2903c9ccb4a	0x136910
 sounddevice	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	3	f047aa5c36bd	0x136860
 sounddevice	?BuildVolumeTable@SoundDevice@@SAXXZ	100.0000	100.0000	1	7b6c96db57e0	0x1351a0
-sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	45.2437	45.2437	5	7cb5aa2f6dd0	0x1366f0
+sounddevice	?CreateBuffer@SoundDevice@@QAEPAVDirectSoundMgr@@PAUWaveFormatX@@II@Z	45.2437	45.2437	6	6a666ed37bfe	0x1366f0
 sounddevice	?FreeSamples@SoundDevice@@QAEHXZ	75.5556	75.5556	5	f0d0eb43a2e4	0x136ed0
 sounddevice	?ReloadRiff@SoundDevice@@QAEHPAVDirectSoundMgr@@PAXI@Z	93.1376	93.1376	3	039837ac63f4	0x136bd0
 sounddevice	?RemoveBuffer@SoundDevice@@QAEXPAVDirectSoundMgr@@@Z	100.0000	100.0000	1	4e0b95060720	0x136d80
-sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	4	52feae01d399	0x1371a0
+sounddevice	?SetPrimaryFormat@SoundDevice@@QAEHPAX@Z	100.0000	100.0000	5	53fd7ab41176	0x1371a0
 sounddevice	?Shutdown@SoundDevice@@QAEXXZ	100.0000	100.0000	5	08b811b7a04e	0x136690
 sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	4	ec6b4c65c83f	0x136de0
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	2	7511425a99b1	0x136ab0
@@ -3246,7 +3246,7 @@ soundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	1	7d5e
 soundresmap	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	1	d14ccc097d38	0x157b00
 soundstream	??0SoundStream@@QAE@XZ	96.9000	96.9000	3	523e670fa5d8	0x1376d0
 soundstream	??1SoundStream@@UAE@XZ	100.0000	100.0000	1	153ae3f9d9be	0x137710
-soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoiceNode@@PAUWaveFormatX@@IHHH@Z	49.0496	49.0496	4	9d22281b42ac	0x137780
+soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoiceNode@@PAUWaveFormatX@@IHHH@Z	49.0496	49.0496	5	6c0e9b43e470	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoiceNode@@@Z	99.9722	99.9722	3	1ff89cdc81da	0x1379d0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoiceNode@@PAVCParseSource@@HHHHH@Z	90.3187	90.3187	2	dd97c81c0fe7	0x137900
 soundstream	?ParseWave@SoundStream@@QAEHPAVCParseSource@@PAUWaveFormatX@@PAI2@Z	98.2640	98.2640	1	91df625923c5	0x137b70
@@ -3340,7 +3340,7 @@ streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.96
 streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	d3396f3e7c45	0xea990
 streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	83.1642	83.1642	5	faa8c3ae50f6	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z	92.2366	92.2366	1	e1d29f4a89e7	0x9bb0
-streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBuffer@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	1	cpp:aa1e5f6d1dd1	0x1375b0
+streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBuffer@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	1	fc73ace82bc9	0x1375b0
 streamvoice	??1StreamVoice@@UAE@XZ	42.4643	42.4643	1	35c051fa0c80	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	3	e205205d9fe4	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	0b1e8d24ac07	0x137520

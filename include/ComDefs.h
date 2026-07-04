@@ -62,9 +62,25 @@ typedef struct _GUID {
 #ifndef __IID_DEFINED__
 #define __IID_DEFINED__
 typedef GUID IID;
+// CLSID lives in the SAME wtypes.h __IID_DEFINED__ block as IID, so mirror it (else our
+// setting __IID_DEFINED__ makes a later real wtypes.h - via <ddraw.h>/<dsound.h>/<dplay.h>
+// in the same TU - skip its whole block, starving <cguid.h>/<ole2.h> of CLSID). Guarded,
+// ABI-identical. NOTE: this is a STOPGAP - the endgame is to delete ComDefs.h entirely
+// (migrate every hand-rolled COM view to its real SDK header). Accepts a small regalloc
+// regression on already-matched TUs meanwhile (ComDefs.h's own caveat above).
+typedef GUID CLSID;
+typedef CLSID* LPCLSID;
 #endif
 #ifndef REFIID
 #define REFIID const IID&
+#endif
+#ifndef _REFGUID_DEFINED
+#define _REFGUID_DEFINED
+#define REFGUID const GUID&
+#endif
+#ifndef _REFCLSID_DEFINED
+#define _REFCLSID_DEFINED
+#define REFCLSID const CLSID&
 #endif
 
 // STDMETHOD family (<basetyps.h>, C++ mode): a __stdcall virtual COM slot.
