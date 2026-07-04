@@ -25,24 +25,31 @@ extern "C" {
     void LogicBumpFactory();   // 0x56e4e0
 }
 
-// The logic-type registry reached through ctx->m_0c->m_14: its own Find (the
-// 0x1703 thunk) returns the found type (0 == absent); its virtual registrar lives
-// at vtable slot +0x24.
+// The logic-type registry reached through ctx->m_0c->m_14. This is a FOREIGN engine
+// class: its ??_7 and slots 0..8 are unreconstructed engine code, so the honest
+// model names only the ONE dispatched slot - its registrar at vtable slot +0x24
+// (__thiscall), modeled as a 4-byte member-function pointer loaded from the vtable
+// (`char m_pad00[0x24]` documents the un-recovered slots) so
+// `m_14->RegisterType(...)` emits `mov eax,[ecx]; call [eax+0x24]`. Its own Find
+// (the 0x1703 thunk) is a non-virtual __thiscall returning the found type (0 ==
+// absent). Class COMPLETE before the T::* typedef so the PMF stays 4 bytes
+// (docs/patterns/pmf-complete-class-4byte.md).
+struct CLogicTypeRegVtbl;
 class CLogicTypeReg {
 public:
-    virtual void v00();                                                     // +0x00
-    virtual void v04();                                                     // +0x04
-    virtual void v08();                                                     // +0x08
-    virtual void v0c();                                                     // +0x0c
-    virtual void v10();                                                     // +0x10
-    virtual void v14();                                                     // +0x14
-    virtual void v18();                                                     // +0x18
-    virtual void v1c();                                                     // +0x1c
-    virtual void v20();                                                     // +0x20
-    virtual void RegisterType(void* factoryFn, const char* key, i32 flags); // +0x24
-
+    CLogicTypeRegVtbl* m_vtbl;                                      // +0x00
+    void RegisterType(void* factoryFn, const char* key, i32 flags); // +0x24 via vtbl
     i32 Find(const char* key); // 0x1703 thunk (__thiscall, returns found type or 0)
 };
+typedef void (CLogicTypeReg::*CLogicTypeRegRegisterFn)(void* factoryFn, const char* key, i32 flags);
+SIZE_UNKNOWN(CLogicTypeRegVtbl);
+struct CLogicTypeRegVtbl {
+    char m_pad00[0x24];
+    CLogicTypeRegRegisterFn RegisterType; // +0x24
+};
+inline void CLogicTypeReg::RegisterType(void* factoryFn, const char* key, i32 flags) {
+    (this->*(m_vtbl->RegisterType))(factoryFn, key, flags);
+}
 
 // The intermediate object reached through ctx->m_0c: its +0x14 slot points at the
 // logic-type registry.

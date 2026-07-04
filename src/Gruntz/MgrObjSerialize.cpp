@@ -19,29 +19,28 @@ extern "C" int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4
 DATA(0x0024e35c)
 extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 
-// The image-set the object loads into (m_levelData->m_imageSet); slot 19 (vtbl+0x4c) loads it.
+// The image-set the object loads into (m_levelData->m_imageSet). This is a FOREIGN
+// engine class: its ??_7 and slots 0..18 are unreconstructed engine code, so the
+// honest model is the ONE dispatched slot. Its vtable slot 19 (+0x4c, __thiscall)
+// loads a resolved rez path under a name, modeled as a 4-byte member-function
+// pointer loaded from the vtable (`char m_pad00[0x4c]` documents the un-recovered
+// slots) so `m_imageSet->Load(...)` emits `mov eax,[ecx]; call [eax+0x4c]`. Class
+// COMPLETE before the T::* typedef so the PMF stays 4 bytes
+// (docs/patterns/pmf-complete-class-4byte.md).
+struct CMgrImageSetVtbl;
 struct CMgrImageSet {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual i32 Load(char* path, const char* a, const char* b); // slot 19 -> vtbl+0x4c
+    CMgrImageSetVtbl* m_vtbl;                           // +0x00
+    i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c) via vtbl
 };
+typedef i32 (CMgrImageSet::*CMgrImageSetLoadFn)(char* path, const char* a, const char* b);
+SIZE_UNKNOWN(CMgrImageSetVtbl);
+struct CMgrImageSetVtbl {
+    char m_pad00[0x4c];
+    CMgrImageSetLoadFn Load; // +0x4c
+};
+inline i32 CMgrImageSet::Load(char* path, const char* a, const char* b) {
+    return (this->*(m_vtbl->Load))(path, a, b);
+}
 
 // The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {

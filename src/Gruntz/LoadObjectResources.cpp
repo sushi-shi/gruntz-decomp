@@ -50,33 +50,37 @@ struct CObjResBuilder {
     CObjResNode* FindAdd(const CString& key); // 0x9a290 __thiscall, ret child-or-null
 };
 
-// The Image registry (entry->m_10): polymorphic; its CMapStringToOb source map is
-// embedded at +0x10, Install is vtable slot 18 (+0x48), ProcessNew is slot 20 (+0x50).
+// The Image registry (entry->m_10). This is a FOREIGN engine class: its ??_7 and
+// the intermediate slots are unreconstructed engine code, so the honest model names
+// only the TWO dispatched slots - Install at vtable slot 18 (+0x48) and ProcessNew
+// at slot 20 (+0x50), both __thiscall. Its CMapStringToOb source map is embedded at
+// +0x10. The slots are modeled as 4-byte member-function pointers loaded from the
+// vtable (`char m_pad` runs document the un-recovered slots) so the calls emit
+// `mov eax,[ecx]; call [eax+0xNN]`. Class COMPLETE before the T::* typedefs so each
+// PMF stays 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
+struct ObjImageRegistryVtbl;
 struct ObjImageRegistry {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
-    virtual void v19();
-    virtual void ProcessNew(CObject* val); // slot 20 (+0x50)
+    ObjImageRegistryVtbl* m_vtbl;                     // +0x00
+    void Install(void* h, char* name, const char* g); // slot 18 (+0x48) via vtbl
+    void ProcessNew(CObject* val);                    // slot 20 (+0x50) via vtbl
     char m_pad04[0x10 - 0x4];
     CMapStringToOb m_map; // +0x10  source map (CString -> CImage*)
 };
+typedef void (ObjImageRegistry::*ObjImgInstallFn)(void* h, char* name, const char* g);
+typedef void (ObjImageRegistry::*ObjImgProcessFn)(CObject* val);
+SIZE_UNKNOWN(ObjImageRegistryVtbl);
+struct ObjImageRegistryVtbl {
+    char m_pad00[0x48];
+    ObjImgInstallFn Install; // +0x48
+    char m_pad4c[0x50 - 0x4c];
+    ObjImgProcessFn ProcessNew; // +0x50
+};
+inline void ObjImageRegistry::Install(void* h, char* name, const char* g) {
+    (this->*(m_vtbl->Install))(h, name, g);
+}
+inline void ObjImageRegistry::ProcessNew(CObject* val) {
+    (this->*(m_vtbl->ProcessNew))(val);
+}
 
 // The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
 // ProcessNew/Install are direct __thiscall methods.

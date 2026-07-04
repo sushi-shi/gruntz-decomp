@@ -14,16 +14,18 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Mfc.h> // CMapStringToPtr / CString / POSITION + <windows.h>
+#include <Mfc.h>           // CMapStringToPtr / CString / POSITION + <windows.h>
+#include <Wap32/CObject.h> // Wap::CObject - the MFC-free WAP grand-base (namespace-qualified)
 
-// The polymorphic map value: a resource whose virtual destructor is the SECOND
-// virtual (vtbl slot 1), so `delete p` dispatches `call [vptr+4]` with the scalar-
-// deleting flag. Modeled with no bodies (reloc-masked indirect call).
+// The polymorphic map value: a WAP CObject-derived resource. RemoveByValue does
+// `delete p`, dispatching the scalar-deleting destructor at the shared Wap::CObject
+// vtable slot 1 (`call [vptr+4]`). It derives from the real engine grand-base
+// (RTTI "CObject", vtable @0x5e8cb4) - slots 0/2/3/4 are the inherited CObject
+// interface (declared-only, reloc-masked); CSoundRes overrides only the dtor slot 1.
 SIZE_UNKNOWN(CSoundRes);
-class CSoundRes {
+class CSoundRes : public Wap::CObject {
 public:
-    virtual void vf0(); // slot 0 (unused here, fixes the dtor at slot 1)
-    virtual ~CSoundRes();
+    virtual ~CSoundRes() OVERRIDE; // slot 1 (scalar-deleting dtor)
 };
 
 // The registry. m_map @+0x10 (CMapStringToPtr, 0x1c bytes -> +0x10..+0x2b).

@@ -38,6 +38,16 @@ struct CKeyTable {
 // The image/tile registry at CResMgr+0x10: a virtual Install at vtable slot 18
 // (+0x48) plus non-virtual Has/Register helpers, and the name->sprite hash table
 // embedded at its own +0x10. All methods external/no-body so the calls reloc-mask.
+//
+// FOREIGN object - the honest form (manual m_vtbl into a typed CImageRegistryVtbl
+// naming only the +0x48 Install slot + char pad, a la CView::CImageRegistry) is
+// WALLED here: converting this polymorphic class to the non-polymorphic PMF form
+// flips CSBI_MenuItem::DecCounter (sbi_menuitem, RVA 0xe82a0) 100->92.04% - a
+// whole-TU load-schedule coin-flip (that fn's own @early-stop notes it is a
+// non-steerable 1-instruction schedule swap). The drop is identical (92.0357)
+// whether the Vtbl is inlined or moved to end-of-header, so it is not layout-
+// steerable. Left in the vNN placeholder form to preserve DecCounter's 100%;
+// re-attack in the final sweep once DecCounter is stably matched.
 SIZE_UNKNOWN(CImageRegistry);
 struct CImageRegistry {
     i32 Has(char* szName);                    // 0x155550 __thiscall, ret found
