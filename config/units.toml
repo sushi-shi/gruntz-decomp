@@ -357,11 +357,6 @@ source = "src/Gruntz/DrawDebugStats.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "donothingnormallogic"
-source = "src/Gruntz/DoNothingNormalLogic.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "multistartdlgworld"
 source = "src/Gruntz/MultiStartDlgWorld.cpp"
 flags = "eh"
@@ -1928,11 +1923,6 @@ flags = "eh"
 [[unit]]
 unit = "logicdispatchinit"
 source = "src/Gruntz/LogicDispatchInit.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "donothingnormaldtor"
-source = "src/Gruntz/DoNothingNormalDtor.cpp"
 flags = "eh"
 
 [[unit]]
