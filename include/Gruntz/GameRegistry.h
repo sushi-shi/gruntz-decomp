@@ -32,14 +32,18 @@
 // object TYPES defined in <Gruntz/ResMgr.h>/<Gruntz/Viewport.h> are forward-
 // declared (not included) to keep this ~60-TU-wide header light.
 //
-// The REUSED slots at 0x54/0x58/0x68/0x6c/0x74/0x78/0x7c genuinely hold a
-// *different concrete object per game-mode* (e.g. +0x68 is a placement/cue grid in
-// single-player, the goo-well mgr in battlez, a light-fx target in the fx TUs; +0x7c
-// is the score/HUD sink under several battlez/teleporter facets). Fabricating one
-// fake mega-type would be an artifact, not the devs' shape (and a wrong unifying
-// type is worse than a documented base + downcast), so those stay void* and each TU
-// casts to its own concrete view - a legitimate, AUTHENTIC downcast, not a squeeze
-// hack.
+// The slots at 0x54/0x58/0x68/0x6c/0x74/0x78/0x7c are SUSPECT / UN-RECOVERED, NOT
+// confirmed-authentic. Today each TU downcasts the void* to a different concrete type
+// (+0x68: a placement/cue grid in single-player, the goo-well mgr in battlez, a
+// light-fx SURFACE in the fx TUs; +0x7c: a "draw object" in GameMode vs GruntPickupStats
+// in the pickup loader). That per-TU divergence is a RED FLAG per no-sane-dev-test: a
+// real CGruntzMgr field has ONE type, so "a different type per TU" almost always means
+// the real single type - or the common base the mode objects derive - was never
+// recovered, and the void*-plus-downcast is a reconstruction ARTIFACT, not a genuine
+// per-mode union. These stay void* ONLY because the real type isn't recovered yet. The
+// fix (do NOT defend the void*): trace what the retail CGruntzMgr ctor + per-mode init
+// actually store at each offset - a single type, or a real base to derive - then type
+// it here so consumers reach it cast-free, exactly like m_curState/m_world/m_tileGrid.
 #ifndef GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
