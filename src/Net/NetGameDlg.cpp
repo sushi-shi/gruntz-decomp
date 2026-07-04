@@ -7,6 +7,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/OptCfgSingleton.h> // shared OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
+
 // A child control returned by CWnd::GetDlgItem; only EnableWindow is reached here.
 struct CCtrl {
     void EnableWindow(i32 enable); // 0x1be6a7
@@ -75,9 +77,9 @@ struct CNetSession {
     void SendStatFlag(i32 id, i32 v); // 0xb9240
 };
 // The singleton's canonical symbol is owned by ReconBatch2.cpp as a typed pointer
-// (?g_optCfg_64bd5c@@3PAUOptCfg_c4b30@@A); re-declare it by that name so the load
-// reloc-masks, then view it through the session layout.
-struct OptCfg_c4b30;
+// (?g_optCfg_64bd5c@@3PAUOptCfg_c4b30@@A); re-declare that extern here so the load
+// reloc-masks, then view it through the session layout (OptCfg_c4b30 is the shared
+// placeholder from <Gruntz/OptCfgSingleton.h>; really CMulti).
 extern OptCfg_c4b30* g_optCfg_64bd5c; // 0x64bd5c
 
 // The game-settings singleton (CGruntzMgr) used to resolve the level + show modals.

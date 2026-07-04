@@ -7,8 +7,9 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
-#include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
-#include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <DDrawMgr/DDSurface.h>      // canonical CDDSurface (Blt @0x13ee60)
+#include <Gruntz/OptCfgSingleton.h> // OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
+#include <sfman32.h>                // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
 // ===========================================================================
@@ -94,10 +95,8 @@ void Host_c2a80::Run() {
 struct OptionsSlotHost_c4b30 {
     i32* FindOptionsSlot(i32 key); // 0x2e00 (FindOptionsSlot)
 };
-struct OptCfg_c4b30 {
-    char m_pad0[0x5c0];
-    i32 m_5c0; // +0x5c0
-};
+// OptCfg_c4b30 is the g_64bd5c (CMulti) singleton view -- defined once in
+// <Gruntz/OptCfgSingleton.h>; this TU owns its canonical DATA symbol.
 DATA(0x0024bd5c)
 extern OptCfg_c4b30* g_optCfg_64bd5c;
 struct OptOwner_c4b30 {
@@ -204,30 +203,38 @@ void CGameModeBase::Reset() {
 
 // ===========================================================================
 // 0x000faec0 (103B) - per-frame present/refresh of the bound view. If the
-// suppress flag is set, clear it and return; else Refresh the sub-view, CopyRect
-// the front surface with arg0, Flip the back surface, then Refresh again.
+// suppress flag is set, clear it and return; else Refresh the sub-view, blit the
+// front surface with arg0, Flip the back surface, then Refresh again.
 // __thiscall(arg0). m_c->m_4 is reloaded each statement (not cached across).
+//
+// NOT a one-class-many-views over-split: it is a genuine 4-deep pointer chain into
+// distinct real DDraw objects (every sub-object call is direct/reloc-masked, so the
+// typing below is matching-neutral):
+//   SubView_faec0.Refresh  = CDDrawWorkerMgr::Method_158c70 (0x158c70, ddrawsubmgr, EXACT)
+//   CView.m_2c .Flip       = CDDSurface::Flip               (0x13e850, directdrawmgr, EXACT)
+//   CView.m_2c .CopyRect   = CFileImage::ShadeRect          (0x13f460, lutshaderect, src-claim ~67%)
+// unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CView hops -- the
+// only inbound edge is ILT thunk 0x1ec9 (no clean ctor/new trace).
 // ===========================================================================
-// The +0x2c surface controller (CopyRect 0x13f460, Flip 0x13e850), no-body.
-struct SurfCtl_faec0 {
-    void CopyRect(i32 a, i32 b); // 0x13f460
-    void Flip(i32 a);            // 0x13e850
+struct SurfCtl_faec0 {           // +0x2c surface controller (CDDSurface for Flip / CFileImage for the blit)
+    void CopyRect(i32 a, i32 b); // 0x13f460 (= CFileImage::ShadeRect)
+    void Flip(i32 a);            // 0x13e850 (= CDDSurface::Flip)
 };
 struct CView_faec0 {
     char m_pad0[0x2c];
     SurfCtl_faec0* m_2c; // +0x2c
 };
-struct SubView_faec0 {
+struct SubView_faec0 {            // = CDDrawWorkerMgr (Refresh = Method_158c70 @0x158c70)
     char m_pad0[0x10];
     CView_faec0* m_10;            // +0x10 (Flip target host)
-    CView_faec0* m_14;            // +0x14 (CopyRect target host + Refresh arg)
+    CView_faec0* m_14;            // +0x14 (blit target host + Refresh arg)
     void Refresh(CView_faec0* v); // 0x158c70
 };
 struct Mid_faec0 {
     char m_pad0[0x4];
     SubView_faec0* m_4; // +0x04
 };
-struct PresentHost_faec0 {
+struct PresentHost_faec0 { // unidentified owner of Present @0xfaec0 (only inbound edge: ILT thunk 0x1ec9)
     char m_pad0[0xc];
     Mid_faec0* m_c; // +0x0c
     void Present(i32 arg0);
@@ -502,8 +509,7 @@ SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
-SIZE_UNKNOWN(OptCfg_c4b30);
-SIZE_UNKNOWN(OptOwner_c4b30);
+SIZE_UNKNOWN(OptOwner_c4b30); // OptCfg_c4b30 SIZE lives in <Gruntz/OptCfgSingleton.h>
 SIZE_UNKNOWN(OptionsSlotHost_c4b30);
 SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(PtrList_bf580);

@@ -12,6 +12,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/OptCfgSingleton.h> // shared OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
+
 // The game-registry singleton pointer (the scoring symbol CPlay reaches too).
 extern "C" void* g_64556c; // 0x64556c
 
@@ -72,8 +74,8 @@ struct WatchReg {
     WatchRegSlot m_slots[1]; // +0x150
 };
 
-// The net-session singleton pointer (canonical DATA symbol owned by ReconBatch2.cpp).
-struct OptCfg_c4b30;
+// The net-session singleton pointer (canonical DATA symbol owned by ReconBatch2.cpp;
+// OptCfg_c4b30 is the shared view from <Gruntz/OptCfgSingleton.h>, really CMulti).
 extern OptCfg_c4b30* g_optCfg_64bd5c; // 0x64bd5c
 inline WatchSess* Sess() {
     return (WatchSess*)g_optCfg_64bd5c;
