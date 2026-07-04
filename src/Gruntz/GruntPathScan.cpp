@@ -1,50 +1,35 @@
 // GruntPathScan.cpp - CGrunt::PathScan57db0 (0x057db0, __thiscall ret 0, /GX). The
 // per-tick grunt path-cell scan over the level plane (g_mgrSettings->m_tileGrid): recompute
-// the 5x5 dirty rect around the grunt tile, walk the tracked-coord list (m_31c)
-// firing the plane trigger (Probe20f4, flags m_248|0x20000000 / m_24c) on flagged
-// cells, and on a hit recycle the pending-coord nodes back onto g_freeList /
-// g_coordPool. With no hit it re-scans the 9x9 neighbourhood (flag 0x20040002) firing
-// the same trigger, recomputes the plane dirty rect and returns 0. The scratch list
-// local (CObList block-10, ctor 0x1b4867 / dtor 0x1b48c6) makes MSVC emit the /GX EH
-// frame. Shares the CGrunt coord-pool / plane family; big body (0x8f8).
-#include <rva.h>
+// the 5x5 dirty rect around the grunt tile, walk the tracked-coord CObList (m_31c/m_320)
+// firing the plane trigger (Probe20f4, flags m_arrivalFlags|0x20000000 / m_24c) on flagged
+// cells, and on a hit recycle the pending-coord nodes back onto g_freeList / g_coordPool.
+// With no hit it re-scans the 9x9 neighbourhood (flag 0x20040002) firing the same trigger,
+// recomputes the plane dirty rect and returns 0. The scratch list local (CObList block-10,
+// ctor 0x1b4867 / dtor 0x1b48c6) makes MSVC emit the /GX EH frame. Big body (0x8f8).
+//
+// FOLDED onto the canonical CGrunt (<Gruntz/Grunt.h>): the wall doc that kept this a
+// pure-Win32 partial (C1189: Grunt.h pulls <Mfc.h> via String.h) is disproven - <Mfc.h> is
+// a superset of <Win32.h>, so switching the umbrella + using the real class kills the local
+// `struct CGrunt` view. The occupied-coord CObList is the canonical m_31c/m_320/m_324/
+// m_coordCount + GruntCoordNode/GruntCoord; the recycle pool is the canonical g_coordPool
+// (GruntCoordPool::Recycle, replacing the StepList2 view). The grid/scratch-list helpers
+// (CScanPlane/CScanCell/CScanList) stay local views: the tile-plane's dirty-rect view is
+// richer than the canonical GruntBoard, and CScanList is the /GX-forcing stack CObList.
+#include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h> FIRST: RECT+IntersectRect+GruntCoordPool)
 
+#include <rva.h>
 #include <Ints.h>
-#include <Win32.h> // RECT + IntersectRect
 #include <Gruntz/ScanRectInit.h>
-#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 extern "C" char* g_mgrSettings; // _g_mgrSettings @0x64556c (plane at +0x70)
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 
-extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
-
-// --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// NOT folded onto <Gruntz/ScanGrid.h> on purpose: this TU views two grid members
-// at a DIFFERENT access shape than the arrival/tile-scan TUs (offset-conflation ->
-// split, don't union):
-//   * the list node's +0x08 is dereferenced here as a coord POINTER (CScanNode.m_8);
-//     GruntArrivalScan/GruntTileScan treat the SAME field as an i32 handle passed to
-//     the coord-pool Drop. Same 4 bytes, two authentic typings -> distinct classes.
-//   * the cell's flag is read here as the BYTE at +0x03 (CScanCell.m_3, a movzx);
-//     the header's CScanCell reads the whole dword m_flags at +0x00 (a dword test).
-//     Folding would rewrite the byte load into a dword load and diverge codegen.
-struct CScanKeyNode {
-    i32 m_0, m_4; // col, row
-};
-struct CScanNode {     // m_320 tracked-coord node
-    CScanNode* m_next; // +0x00
-    i32 _04;
-    CScanKeyNode* m_8; // +0x08 -> coord (pointer view; see split note above)
-};
-struct CScanNode324 { // m_324
-    char _00[8];
-    CScanKeyNode* m_8; // +0x08
-};
-struct CScanList {             // scratch CObList (block size 10) - forces /GX
-    CScanList(i32 blockSize);  // 0x1b4867
+// --- local grid/scratch-list views (not the canonical CGrunt; the tile-plane's dirty-rect
+// view is richer than GruntBoard, and CScanList is the /GX-forcing stack CObList) ---
+struct CScanList {             // scratch CObList (block size 10) - forces /GX; also the
+    CScanList(i32 blockSize);  // 0x1b4867     view under which this+0x31c is walked/recycled
     ~CScanList();              // 0x1b48c6
     void* Head1b4a03();        // 0x1b4a03
     void Add1b4991(void* p);   // 0x1b4991
@@ -52,10 +37,6 @@ struct CScanList {             // scratch CObList (block size 10) - forces /GX
     void* Find1de8(void** it); // 0x1de8
     char _00[0x18];
     i32 m_18; // +0x18 trigger out-slot
-};
-struct CScanSub10 { // this->m_10
-    char _00[0x5c];
-    i32 m_5c, m_60; // +0x5c, +0x60
 };
 struct CScanCell { // 0x1c bytes/cell
     char _00[3];
@@ -72,31 +53,10 @@ struct CScanPlane { // grid (settings->m_70)
     i32 Probe20f4(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
     void Method43ea(i32 a);                                                          // 0x43ea
 };
-// CGrunt is the REAL class: sema confirms this method is ?PathScan57db0@CGrunt@@QAEHXZ
-// (a __thiscall CGrunt member), so this struct is an offset-0 alias of the canonical
-// CGrunt (<Gruntz/Grunt.h>) - every field below sits at its canonical offset (m_10,
-// m_248/m_24c, the +0x31c CObList, m_320/m_328). NOT folded onto Grunt.h: this is a
-// pure-Win32 TU (<Win32.h> -> windows.h FIRST) and Grunt.h pulls <Gruntz/String.h> ->
-// <Mfc.h> -> afx, which forbids a prior windows.h (C1189: "MFC apps must not #include
-// <windows.h>"). Kept as the minimal REAL-named Win32-safe partial (offsets + the local
-// method/grid views are load-bearing; see the grid-split note above). C1189 wall.
-struct CGrunt { // this (ebx)
-    char _00[0x10];
-    CScanSub10* m_10; // +0x10
-    char _14[0x248 - 0x14];
-    i32 m_248, m_24c; // +0x248, +0x24c trigger flags
-    char _250[0x31c - 0x250];
-    char m_31c[4];       // +0x31c CObList base
-    CScanNode* m_320;    // +0x320 head
-    CScanNode324* m_324; // +0x324 current node
-    i32 m_328;           // +0x328 pending latch
-    i32 PathScan57db0();
-    // The +0x31c CObList viewed as the scratch scan-list (the raw m_31c slot stays
-    // 4 bytes so m_320 keeps its offset); one reinterpret here, no cast at the uses.
-    CScanList* ScanList() {
-        return (CScanList*)m_31c;
-    }
-};
+
+// The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
+// canonical GruntListSub m_31c; one reinterpret at the address, no cast at the uses).
+#define SCAN_LIST() ((CScanList*)&m_31c)
 
 // Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
 #define SCAN_BOUNDS(grid)                                                                          \
@@ -125,21 +85,21 @@ struct CGrunt { // this (ebx)
 
 // @early-stop
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
-// from the scratch CObList local, the m_328 gate, the 5x5 dirty box + IntersectRect
-// clamp, the tracked-coord scan loop firing Probe20f4 (m_248|0x20000000 / m_24c)
+// from the scratch CObList local, the m_coordCount gate, the 5x5 dirty box + IntersectRect
+// clamp, the tracked-coord scan loop firing Probe20f4 (m_arrivalFlags|0x20000000 / m_24c)
 // capped at five hits, the g_freeList pop/push + g_coordPool recycle drains, the 9x9
-// neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are
-// byte-shaped and the DATA refs (g_mgrSettings / g_freeList family / g_coordPool /
-// IntersectRect) pair. Residual walls: the overlapping stack-slot schedule of the
-// box/coord temps, the per-iteration CObList EH-state stamps and the 8-arg Probe20f4
-// push ordering diverge from retail's regalloc - re-attack leaf-first in the sweep.
+// neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are byte-shaped
+// and the DATA refs (g_mgrSettings / g_freeList family / g_coordPool / IntersectRect) pair.
+// Residual walls: the overlapping stack-slot schedule of the box/coord temps, the
+// per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
+// retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
     CScanPlane* grid = *(CScanPlane**)(g_mgrSettings + 0x70);
-    if (m_328 == 0) {
+    if (m_coordCount == 0) {
         return 1;
     }
-    CScanNode* node = m_320;
+    GruntCoordNode* node = m_320;
 
     i32 col5 = m_10->m_5c >> 5;
     i32 row5 = m_10->m_60 >> 5;
@@ -159,26 +119,27 @@ i32 CGrunt::PathScan57db0() {
     grid->m_70 = grid->m_68 - grid->m_60;
     grid->m_74 = grid->m_6c - grid->m_64;
 
-    i32 tcol = m_324->m_8->m_0;
-    i32 trow = m_324->m_8->m_4;
+    i32 tcol = m_324->m_coord->m_x;
+    i32 trow = m_324->m_coord->m_y;
     i32 hits = 0;
     i32 hitFound = 0;
 
     while (node != 0) {
-        CScanNode* cur = node;
+        GruntCoordNode* cur = node;
         node = node->m_next;
-        CScanKeyNode* co = cur->m_8;
+        GruntCoord* co = cur->m_coord;
         if (co != 0) {
-            i32 c = co->m_0;
-            i32 r = co->m_4;
+            i32 c = co->m_x;
+            i32 r = co->m_y;
             i32 fire = 1;
             if (grid->m_8[r][c].m_3 & 0x20) {
-                fire = (co->m_0 == tcol && co->m_4 == trow) ? 1 : 0;
+                fire = (co->m_x == tcol && co->m_y == trow) ? 1 : 0;
             }
             if (fire) {
                 CScanList s(0xa);
-                i32 res =
-                    grid->Probe20f4(c, r, co->m_0, co->m_4, &s.m_18, 1, m_248 | 0x20000000, m_24c);
+                i32 res = grid->Probe20f4(
+                    c, r, co->m_x, co->m_y, &s.m_18, 1, m_arrivalFlags | 0x20000000, m_24c
+                );
                 if (res != 0) {
                     if (s.m_18 != 0) {
                         hitFound = 1;
@@ -197,32 +158,32 @@ i32 CGrunt::PathScan57db0() {
     if (hitFound) {
         // recover the remaining tracked nodes onto the free-list
         while (node != 0) {
-            CScanNode* cur = node;
+            GruntCoordNode* cur = node;
             node = node->m_next;
             if (g_freeList != 0) {
-                CScanKeyNode* co = cur->m_8;
+                GruntCoord* co = cur->m_coord;
                 void** fn = (void**)g_freeList;
-                fn[0] = (void*)co->m_0;
-                fn[1] = (void*)co->m_4;
+                fn[0] = (void*)co->m_x;
+                fn[1] = (void*)co->m_y;
                 g_freeList = *fn;
-                ScanList()->Add1b4991(fn);
+                SCAN_LIST()->Add1b4991(fn);
             }
         }
-        if (m_328 != 0) {
-            CScanNode* nd = m_320;
+        if (m_coordCount != 0) {
+            GruntCoordNode* nd = m_320;
             while (nd != 0) {
-                void* r = ScanList()->Find1de8((void**)&nd);
+                void* r = SCAN_LIST()->Find1de8((void**)&nd);
                 if (*(i32*)r != 0) {
-                    g_coordPool.Drop(*(i32*)r);
+                    g_coordPool.Recycle((void*)*(i32*)r);
                 }
             }
-            ScanList()->RemoveAll1b48a6();
+            SCAN_LIST()->RemoveAll1b48a6();
         }
-        void* elem = ScanList()->Head1b4a03();
+        void* elem = SCAN_LIST()->Head1b4a03();
         if (elem != 0) {
             FREELIST_PUSH(elem);
         }
-        ScanList()->RemoveAll1b48a6();
+        SCAN_LIST()->RemoveAll1b48a6();
         SCAN_BOUNDS(grid);
         return 1;
     }
@@ -243,15 +204,16 @@ i32 CGrunt::PathScan57db0() {
                 if ((u32)rr < (u32)grid->m_10 && (u32)cc < (u32)grid->m_c) {
                     cf = ((i32*)grid->m_8[rr])[cc];
                 }
-                if (((m_248 | 0x20040002) & cf) & 0x20000000) {
+                if (((m_arrivalFlags | 0x20040002) & cf) & 0x20000000) {
                     continue;
                 }
-                if (((m_248 | 0x20040002) & cf) != 0 && (m_24c & cf) == 0) {
+                if (((m_arrivalFlags | 0x20040002) & cf) != 0 && (m_24c & cf) == 0) {
                     continue;
                 }
                 CScanList s(0xa);
-                i32 res =
-                    grid->Probe20f4(col5, row5, col5, row5, &s.m_18, 1, m_248 | 0x20040002, m_24c);
+                i32 res = grid->Probe20f4(
+                    col5, row5, col5, row5, &s.m_18, 1, m_arrivalFlags | 0x20040002, m_24c
+                );
                 if (res != 0 && s.m_18 != 0) {
                     void* elem = s.Head1b4a03();
                     if (elem != 0) {
@@ -265,8 +227,5 @@ i32 CGrunt::PathScan57db0() {
     return 0;
 }
 
-SIZE_UNKNOWN(CScanKeyNode);
 SIZE_UNKNOWN(CScanList);
-SIZE_UNKNOWN(CScanNode);
 SIZE_UNKNOWN(CScanPlane);
-SIZE_UNKNOWN(CScanSub10);
