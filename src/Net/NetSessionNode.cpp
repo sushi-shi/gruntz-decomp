@@ -64,7 +64,7 @@ SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
 // ---------------------------------------------------------------------------
 class CNetPlayerListNode : public Wap::CObject {
 public:
-    virtual ~CNetPlayerListNode();
+    virtual ~CNetPlayerListNode() OVERRIDE;
     i32 Init(CNetSessionDesc* desc);
 
     CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
@@ -78,7 +78,7 @@ VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
 // ---------------------------------------------------------------------------
 class CNetSessionNode : public Wap::CObject {
 public:
-    virtual ~CNetSessionNode();
+    virtual ~CNetSessionNode() OVERRIDE;
 
     i32 m_sessionId;      // +0x04  cleared on teardown
     CString m_08;         // +0x08  name CString

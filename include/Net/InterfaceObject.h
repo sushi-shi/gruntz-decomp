@@ -27,8 +27,8 @@ struct InterfaceObject : public Wap::CObject {
     CString m_name; // +0x08  the provider name
     i32 m_c;        // +0x0c  cached AddTail position
 
-    virtual ~InterfaceObject(); // slot 1 (own dtor; 0x179340)
-    CString GetName();          // 0x179300
+    virtual ~InterfaceObject() OVERRIDE; // slot 1 (own dtor; 0x179340)
+    CString GetName();                   // 0x179300
 
     // The five GUID predicates (external __thiscall thunks; reloc-masked). Each tests
     // the node's stored GUID against one service-provider connection class.

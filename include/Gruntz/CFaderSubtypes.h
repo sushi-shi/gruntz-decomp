@@ -56,9 +56,9 @@ SIZE(CFader17e940, 0x6c);
 VTBL(CFader17e940, 0x001f07c0);
 class CFader17e940 : public CFader {
 public:
-    CFader17e940();    // 0x17e940
-    virtual void v1(); // slot 1 -> 0x17ef00 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17f120 (overrides CFader pure)
+    CFader17e940();             // 0x17e940
+    virtual void v1() OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
+    virtual void v2() OVERRIDE; // slot 2 -> 0x17f120 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x6c);
@@ -77,10 +77,10 @@ SIZE(CFaderSine, 0x7d5c);
 VTBL(CFaderSine, 0x001f0848);
 class CFaderSine : public CFader {
 public:
-    CFaderSine();          // 0x17fdb0
-    virtual ~CFaderSine(); // 0x17fdf0
-    virtual void v1();     // slot 1 -> 0x17ff30 (overrides CFader pure)
-    virtual void v2();     // slot 2 -> 0x180400 (overrides CFader pure)
+    CFaderSine();                   // 0x17fdb0
+    virtual ~CFaderSine() OVERRIDE; // 0x17fdf0
+    virtual void v1() OVERRIDE;     // slot 1 -> 0x17ff30 (overrides CFader pure)
+    virtual void v2() OVERRIDE;     // slot 2 -> 0x180400 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x7d5c);
@@ -100,9 +100,9 @@ SIZE(CFaderFlat, 0x50);
 VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
 public:
-    CFaderFlat();      // 0x17f530
-    virtual void v1(); // slot 1 -> 0x17f660 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17f950 (overrides CFader pure)
+    CFaderFlat();               // 0x17f530
+    virtual void v1() OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
+    virtual void v2() OVERRIDE; // slot 2 -> 0x17f950 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x50);
@@ -121,9 +121,9 @@ SIZE(CFader180410, 0x206c);
 VTBL(CFader180410, 0x001f0870);
 class CFader180410 : public CFader {
 public:
-    CFader180410();    // 0x180410
-    virtual void v1(); // slot 1 -> 0x180640 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x1814f0 (overrides CFader pure)
+    CFader180410();             // 0x180410
+    virtual void v1() OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
+    virtual void v2() OVERRIDE; // slot 2 -> 0x1814f0 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x206c);
@@ -142,9 +142,9 @@ SIZE(CFader17f9a0, 0x5c);
 VTBL(CFader17f9a0, 0x001f0810);
 class CFader17f9a0 : public CFader {
 public:
-    CFader17f9a0();    // 0x17f9a0
-    virtual void v1(); // slot 1 -> 0x17fc60 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x17fda0 (overrides CFader pure)
+    CFader17f9a0();             // 0x17f9a0
+    virtual void v1() OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
+    virtual void v2() OVERRIDE; // slot 2 -> 0x17fda0 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x5c);
@@ -167,9 +167,9 @@ SIZE(CFader1816c0, 0x494);
 VTBL(CFader1816c0, 0x001f0890);
 class CFader1816c0 : public CFader {
 public:
-    CFader1816c0();    // 0x1816c0
-    virtual void v1(); // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual void v2(); // slot 2 -> 0x182900 (overrides CFader pure)
+    CFader1816c0();             // 0x1816c0
+    virtual void v1() OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
+    virtual void v2() OVERRIDE; // slot 2 -> 0x182900 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x494);

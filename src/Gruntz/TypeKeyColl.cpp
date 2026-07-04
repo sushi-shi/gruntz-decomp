@@ -116,7 +116,7 @@ SIZE_UNKNOWN(CZArray2D);
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
-    virtual ~CZArray2D();                                 // [0] ??_G 0x16df20 (external)
+    virtual ~CZArray2D() OVERRIDE;                        // [0] ??_G 0x16df20 (external)
     i32 m_lo;                                             // +0x08  index low bound
     i32 m_hi;                                             // +0x0c  index high bound
     void* m_buf;                                          // +0x10  primary element buffer
@@ -129,7 +129,7 @@ public:
 class CTypeKeyColl : public CZArray2D {
 public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
-    virtual ~CTypeKeyColl();                                 // [0] ??_G 0x16dde0 (external)
+    virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
     void* m_cursor;                                          // +0x1c  (== m_buf)
     i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)

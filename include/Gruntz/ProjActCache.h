@@ -96,7 +96,7 @@ public:
 class zBitVec : public CContainerErr {
 public:
     zBitVec(i32 idx, i32 sizehint); // 0x16d790
-    virtual ~zBitVec();             // [0] override; ??_G/dtor @0x16d2d0
+    virtual ~zBitVec() OVERRIDE;    // [0] override; ??_G/dtor @0x16d2d0
     i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z, external)
     i32 EnsureSize(i32 nbits);      // 0x1936e0 (grow + preserve, reports OOM)
 };

@@ -41,8 +41,8 @@ struct CObj50 {
     virtual ~CObj50(); // 0x16dfc0 (external; stamps 0x5f04d8 internally)
 };
 struct CButeStore : CContainerErr, CObj50 {
-    virtual ~CButeStore();    // 0x174d70
-    void ClearRecursive(i32); // 0x16e070
+    virtual ~CButeStore() OVERRIDE; // 0x174d70
+    void ClearRecursive(i32);       // 0x16e070
 };
 RVA(0x00174d70, 0x70)
 CButeStore::~CButeStore() {

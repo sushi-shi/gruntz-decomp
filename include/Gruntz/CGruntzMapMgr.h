@@ -40,9 +40,9 @@ struct CMapMgr {
 SIZE_UNKNOWN(CGruntzMapMgr);
 class CGruntzMapMgr : public CMapMgr {
 public:
-    virtual ~CGruntzMapMgr(); // 0x85d10
-    void Reset();             // 0x9ec30 (external, reloc-masked)
-    CObArray m_arr;           // +0x7c
+    virtual ~CGruntzMapMgr() OVERRIDE; // 0x85d10
+    void Reset();                      // 0x9ec30 (external, reloc-masked)
+    CObArray m_arr;                    // +0x7c
 };
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

@@ -19,7 +19,7 @@ public:
 
 class CObj5f0890 : public CObj5f0890Base {
 public:
-    virtual ~CObj5f0890(); // 0x181720
+    virtual ~CObj5f0890() OVERRIDE; // 0x181720
     char m_pad04[0x44 - 0x04];
     void* m_44; // +0x44
     void* m_48; // +0x48

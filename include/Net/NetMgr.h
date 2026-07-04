@@ -495,8 +495,8 @@ public:
         }
         m_54 = 0;
     }
-    virtual ~CNetPlayerListNode(); // 0x1793b0 (NetSessionNode.cpp)
-    i32 Init(void* playerDesc);    // 0x1795a0  copy + trim the descriptor
+    virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)
+    i32 Init(void* playerDesc);             // 0x1795a0  copy + trim the descriptor
 };
 
 // ---------------------------------------------------------------------------
@@ -525,7 +525,7 @@ public:
         m_ownedBufferA = 0;
         m_ownedBufferB = 0;
     }
-    virtual ~CNetSessionNode(); // 0x179420 (NetSessionNode.cpp)
+    virtual ~CNetSessionNode() OVERRIDE; // 0x179420 (NetSessionNode.cpp)
 
     // The 4-arg init the session-node ctor runs (0x1796c0): store the dword id
     // (+0x4) and the second dword (+0x10), assign the two CStrings (+0x8/+0xc), and

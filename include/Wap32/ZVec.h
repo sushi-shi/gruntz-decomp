@@ -52,9 +52,9 @@ public:
 // member-function pointers; its accessor override fixes up freshly-grown slots.
 class zDArray : public _zvec {
 public:
-    i32 Destroy();         // 0x8750  (re-stamp live vtable + run ~zDArray)
-    i32 IndexToPtr(i32 i); // 0x310f0 (base accessor + per-slot member-ptr init)
-    virtual ~zDArray();    // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
+    i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~zDArray)
+    i32 IndexToPtr(i32 i);       // 0x310f0 (base accessor + per-slot member-ptr init)
+    virtual ~zDArray() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
 
 #endif // GRUNTZ_WAP32_ZVEC_H

@@ -148,9 +148,9 @@ struct Pt_168080 {
 // base; slot 1 is the class's own 0x168280 scalar dtor, slot 5 the 0x168060 new
 // virtual - all declared-only -> reloc-masked.
 struct SubWidget_168080 : public Wap::CObject {
-    virtual ~SubWidget_168080(); // [1] +0x04 0x168280 scalar-deleting dtor
-    virtual void s14();          // [5] 0x168060
-    i32 m_4;                     // +0x04
+    virtual ~SubWidget_168080() OVERRIDE; // [1] +0x04 0x168280 scalar-deleting dtor
+    virtual void s14();                   // [5] 0x168060
+    i32 m_4;                              // +0x04
     char m_pad8[0x44 - 8];
     i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)
     SubWidget_168080() {
