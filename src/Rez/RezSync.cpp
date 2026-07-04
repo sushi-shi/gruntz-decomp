@@ -252,7 +252,6 @@ SIZE_UNKNOWN(MovieLookup);
 struct MovieLookup {
     void M1b8438(const char*, void*); // 0x1b8438 (m_28 + 0x10)
 };
-extern "C" void FormatStr(void*, const char*, ...); // 0x1b2cf5
 
 SIZE_UNKNOWN(RezSync);
 struct RezSync {
@@ -826,10 +825,10 @@ i32 RezSync::Init(void* a1, char* a2) {
         CSymParser* attract = (CSymParser*)m_34->ResolvePath("STATEZ_ATTRACT");
         CString title;
         g_645534 = 0;
-        FormatStr(&title, "\\SCREENZ\\TITLE%d", g_645534 + 1);
+        title.Format("\\SCREENZ\\TITLE%d", g_645534 + 1);
         while (attract->ResolveTab((const char*)*(void**)&title, &g_lab504358)) {
             g_645534++;
-            FormatStr(&title, "\\SCREENZ\\TITLE%d", g_645534 + 1);
+            title.Format("\\SCREENZ\\TITLE%d", g_645534 + 1);
         }
         if (Fn12d0(mode, 1, 0, 0)) {
             g_645584 = 0;

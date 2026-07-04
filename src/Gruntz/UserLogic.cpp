@@ -1417,7 +1417,7 @@ struct CWarpAnimObj {
 };
 SIZE_UNKNOWN(CWarpTagObj);
 struct CWarpTagObj {
-    i32 Find13be40(char* name, i32 tag); // 0x13be40 (level-exists probe)
+    i32 Find13be40(const char* name, i32 tag); // 0x13be40 (level-exists probe)
 };
 SIZE_UNKNOWN(CWarpLevelReg);
 struct CWarpLevelReg {
@@ -1460,15 +1460,6 @@ extern "C" CWarpMgr* g_mgrSettings;
 typedef i32(WINAPI* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
 DATA(0x002c44c8)
 extern WarpPostFn g_pPostMessageA;
-// MFC CString the destination key formats into (ctor 0x1b9b93 / dtor 0x1b9cde) + the
-// free formatter helper (0x1b2cf5); modeled so the calls reloc-mask.
-SIZE_UNKNOWN(CWarpStr);
-struct CWarpStr {
-    char* m_pchData; // +0x00
-    CWarpStr();
-    ~CWarpStr();
-};
-extern "C" void FormatWarpStr(CWarpStr* dst, const char* fmt, ...); // 0x1b2cf5
 // @early-stop
 // 86.4%: logic byte-faithful. Residual is the leaf's offset-view register scheduling
 // (the m_drawState reloads) + the /GX CString unwind state ordering; not source-steerable.
@@ -1486,9 +1477,9 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
     if (self->m_warpMode == 0xc) {
         CWarpLevelReg* reg = g_mgrSettings->m_curState;
         i32 lvl = reg->m_baseLevel + 0x64;
-        CWarpStr s;
-        FormatWarpStr(&s, "WORLDZ\\LEVEL%i", lvl);
-        if (reg->m_28->Find13be40(s.m_pchData, 0x575744)) {
+        CString s;
+        s.Format("WORLDZ\\LEVEL%i", lvl);
+        if (reg->m_28->Find13be40((LPCTSTR)s, 0x575744)) {
             g_pPostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807f, lvl);
         }
     }

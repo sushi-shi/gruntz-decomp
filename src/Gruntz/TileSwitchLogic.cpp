@@ -69,10 +69,6 @@ void TsFree(void* sink, i32 a, i32 b, i32 c);                 // 0x25fe free a s
 void TsAck(void* gr, i32 a, i32 b);                           // 0x346d ack a switch fire
 void TsRemove(void* gr, i32 a);                               // 0x417e remove from queue
 
-// The wsprintf-into-CString diagnostic helper (the /GX frame's destructible temp
-// is a real <Mfc.h> CString; its ctor 0x1b9b93 / dtor 0x1b9cde are reloc-masked).
-void TsFormat(void* out, const char* fmt, i32 x, i32 y); // 0x1b2cf5 format into CString
-
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
@@ -159,7 +155,7 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
     void* sw = TsLookupSwitch(trig, (x >> 5) + ((y >> 5) << 8) + 0x700);
     if (sw == 0) {
         CString msg; // [esp+0x30] diagnostic temp
-        TsFormat(&msg, "No switch logic found for switch at: x=%d, y=%d", x, y);
+        msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
         TsRemove(gr, *(i32*)((char*)&msg + 0));
         TsAck(gr, 0x80dd, 0x3eb);
         return 0;

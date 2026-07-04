@@ -10,9 +10,6 @@
 
 #include <Bute/SymTab.h> // the shared CSymTab (ResolveQualified 0x13be40)
 
-// The engine sprintf-into-CString helper (cdecl).
-void Format(CString* out, const char* fmt, ...); // 0x1b2cf5 (cdecl)
-
 // The loaded level record (CGameLevel / CLoadable), viewed as a FOREIGN dispatch
 // object here: the full class + its vtable live in the gamelevel TU; only the
 // namespace-load hook (slot 15, +0x3c) and Reset (slot 17, +0x44) are dispatched from
@@ -66,7 +63,7 @@ RVA(0x0003c0e0, 0xfb)
 i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->CallReset();
     CString key;
-    Format(&key, "WORLDZ\\LEVEL%i", 1);
+    key.Format("WORLDZ\\LEVEL%i", 1);
     i32 node = m_28->ResolveQualified(key, (void*)0x575744);
     if (node == 0) {
         return 0;

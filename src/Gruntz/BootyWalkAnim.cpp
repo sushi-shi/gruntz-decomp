@@ -36,11 +36,9 @@ extern "C" {
     extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
 }
 
-// The per-player secret-letter table "WARP" (0x5e93a8) + the varargs status-line
-// formatter (0x1b2cf5, __cdecl(&dst, fmt, ...)); both reloc-masked.
+// The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)
-extern char g_secretChars[];                           // "WARP"
-void BzMsgFormatV(CString* dst, const char* fmt, ...); // 0x1b2cf5
+extern char g_secretChars[]; // "WARP"
 
 // ===========================================================================
 // BuildBootyWalkingGruntz @0x1b450 - the ONE-TIME setup that creates the four
@@ -97,7 +95,7 @@ i32 BzState::BuildBootyWalkingGruntz() {
         const char* prefix = (i < (g_mgrSettings->m_levelRecord->m_levelIndex - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
-        BzMsgFormatV(&buf, "%sSECRET%c", prefix, g_secretChars[i]);
+        buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
         m_visSprites[i]->CacheFirstFrame(buf);
         m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
         m_visSprites[i]->m_spriteId = g_idleSpriteIds[i] + 0xfa;

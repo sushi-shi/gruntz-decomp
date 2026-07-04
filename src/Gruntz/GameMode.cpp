@@ -39,7 +39,7 @@
 #include <ddraw.h>             // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
 #include <math.h>
 #include <rva.h>
-#include <stdio.h> // sprintf (0x1b2cf5) - the clock/version/title string builders
+#include <stdio.h> // sprintf - the ATTRACT/title stack-buffer string builders
 
 // ===========================================================================
 // CState - the base game-state class.
@@ -1824,8 +1824,9 @@ struct CMenuMusic {
 // the game-stats object g_mgrSettings->m_7c (the sibling-guard idiom). The default
 // case writes "???".
 //
-// Local views: CHudStats = the live-value/score object (g_mgrSettings->m_7c); CHudBuf
-// = the output-buffer arg (Assign = the "???" writer @0x1b9e74). sprintf @0x1b2cf5.
+// Local view: CHudStats = the live-value/score object (g_mgrSettings->m_7c). The
+// output arg is a real CString*: each case is CString::Format @0x1b2cf5 (masked),
+// the default is operator=(LPCSTR) @0x1b9e74 writing "???".
 SIZE_UNKNOWN(CHudStats);
 struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall on THIS
     // The 13 reloc-masked live-value getters (thiscall on the stats object):
@@ -1846,10 +1847,6 @@ struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall 
     i32 m_c; // +0xc  live-game flag (getter gate)
     i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
 };
-SIZE_UNKNOWN(CHudBuf);
-struct CHudBuf {
-    void Assign(const char* s); // 0x1b9e74 (reloc-masked)
-};
 #define STATS ((CHudStats*)g_mgrSettings->m_7c)
 #define STAT(getter, field) ((m_liveGame != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
 // @early-stop
@@ -1861,18 +1858,18 @@ struct CHudBuf {
 // inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
 // operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3c0)
-void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
+void CMenuState::FormatHudText(CString* buf, i32 sel) {
     switch (sel) {
         case 0: {
             u32 secs = (u32)(STAT(GetC10, m_10) / 1000);
-            sprintf((char*)buf, "%d:%2.2d", secs / 60, secs % 60);
+            buf->Format("%d:%2.2d", secs / 60, secs % 60);
             return;
         }
         case 1:
-            sprintf((char*)buf, "%d", STAT(GetC1c, m_1c));
+            buf->Format("%d", STAT(GetC1c, m_1c));
             return;
         case 2:
-            sprintf((char*)buf, "%d", STAT(GetC20, m_20));
+            buf->Format("%d", STAT(GetC20, m_20));
             return;
         case 3: {
             i32 total = STAT(GetC34, m_34);
@@ -1881,7 +1878,7 @@ void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
             if (cur >= cap) {
                 cur = cap;
             }
-            sprintf((char*)buf, "%d of %d", cur, total);
+            buf->Format("%d of %d", cur, total);
             return;
         }
         case 4: {
@@ -1891,7 +1888,7 @@ void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
             if (cur >= cap) {
                 cur = cap;
             }
-            sprintf((char*)buf, "%d of %d", cur, total);
+            buf->Format("%d of %d", cur, total);
             return;
         }
         case 5: {
@@ -1901,7 +1898,7 @@ void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
             if (cur >= cap) {
                 cur = cap;
             }
-            sprintf((char*)buf, "%d of %d", cur, total);
+            buf->Format("%d of %d", cur, total);
             return;
         }
         case 6: {
@@ -1911,7 +1908,7 @@ void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
             if (cur >= cap) {
                 cur = cap;
             }
-            sprintf((char*)buf, "%d of %d", cur, total);
+            buf->Format("%d of %d", cur, total);
             return;
         }
         case 7: {
@@ -1921,11 +1918,11 @@ void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
             if (cur >= cap) {
                 cur = cap;
             }
-            sprintf((char*)buf, "%d of %d", cur, total);
+            buf->Format("%d of %d", cur, total);
             return;
         }
         default:
-            buf->Assign("???");
+            *buf = "???";
             return;
     }
 }

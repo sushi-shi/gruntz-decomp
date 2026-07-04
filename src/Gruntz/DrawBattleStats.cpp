@@ -26,8 +26,6 @@
 
 #include <rva.h>
 
-// EngFmt (0x1b2cf5): __cdecl variadic sprintf-into-CString.
-void EngFmt(CString* out, const char* fmt, ...);
 // DrawStatText (0x1f00 -> 0x1154b0): __cdecl(ctx, text, rect, y, flag, b, g, r, a9).
 extern "C" void
 DrawStatText(void* ctx, CString* text, RECT* rc, i32 y, i32 flag, i32 b, i32 g, i32 r, i32 a9);
@@ -108,27 +106,27 @@ void CBattleStatsView::DrawBattleStats() {
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
         if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
-            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
+            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
+            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
             copyRect(&rc, &g_col2Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
+            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
             copyRect(&rc, &g_col3Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
+            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", *(i32*)((char*)(StatArray*)g_mgr->m_scoreHud + 0x48 + i * 4));
+            s.Format("%d", *(i32*)((char*)(StatArray*)g_mgr->m_scoreHud + 0x48 + i * 4));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            EngFmt(&s, "%d", ((StatArray*)g_mgr->m_scoreHud)->SumWinRow(i));
+            s.Format("%d", ((StatArray*)g_mgr->m_scoreHud)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
@@ -221,7 +219,7 @@ void CBattleStatsView::DrawBattleStats() {
                     break;
             }
             CString cn;
-            EngFmt(&s, "%s", (const char*)*GetColorName(&cn));
+            s.Format("%s", (const char*)*GetColorName(&cn));
             copyRect(&rc, &g_colorRects[i]);
             DrawStatText(
                 m_c,
@@ -238,7 +236,7 @@ void CBattleStatsView::DrawBattleStats() {
     }
 
     // Title.
-    EngFmt(&s, "BATTLE STATZ");
+    s.Format("BATTLE STATZ");
     rc.left = 0x96;
     rc.top = 0xf;
     rc.right = 0x280;

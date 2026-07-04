@@ -27,10 +27,6 @@ extern CButeTree g_buteTree;
 // The bute manager singleton the builder queries for the WarpStone target
 // (g_buteMgr.GetInt) - declared in <Gruntz/UserLogic.h> (pulled via the header).
 
-// EngFmt (0x1b2cf5): __cdecl variadic sprintf-into-CString - the WarpStone path
-// formats "Level%i" and "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i".
-void EngFmt(CString* out, const char* fmt, ...);
-
 // The sprite/animation factory reached as g_gameReg->m_world->m_8 (its +0x8 field);
 // CreateSprite (0x1597b0, __thiscall) builds a "SimpleAnimation" glitter sprite.
 struct IconSpriteFactory {
@@ -443,10 +439,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     if (m_object->m_124 == 0x14 && g_gameReg->m_134 == 1) {
         IconLevelState* lvl = (IconLevelState*)g_gameReg->m_curState;
         CString levelStr;
-        EngFmt(&levelStr, "Level%i", lvl->m_levelNum);
+        levelStr.Format("Level%i", lvl->m_levelNum);
         CString warpName;
         i32 target = g_buteMgr.GetInt("WarpStone", levelStr);
-        EngFmt(&warpName, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
+        warpName.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", target);
         m_object->ApplyName(warpName);
         m_object->m_placeMode = target;
     }

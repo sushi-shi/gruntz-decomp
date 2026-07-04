@@ -29,9 +29,6 @@ struct CVoiceBuilder {
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
-// The format-into-CString helper (FUN_001b2cf5, reloc-masked free fn).
-void EngFmt(CString* out, const char* fmt, ...); // 0x1b2cf5
-
 // The heap CStringList node (0x24 bytes): a CObList (+0x00) plus two scalar fields.
 // AddName copies one CString into the list (FUN_00402446 via its ILT thunk).
 struct VoiceList {
@@ -65,10 +62,10 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
     }
 
     CString dir, scratch, sub, name;
-    EngFmt(&scratch, "SG%i", n);
+    scratch.Format("SG%i", n);
     scratch = *g_buteMgr.GetStringDef((LPCTSTR)scratch, "DIR", &dir);
 
-    EngFmt(&sub, "S%i", 1);
+    sub.Format("S%i", 1);
     sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
 
     VoiceList* list = 0;
@@ -81,15 +78,15 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
         do {
             i++;
             if (sub.IsEmpty()) {
-                EngFmt(&name, "VOICES_%s", (LPCTSTR)scratch);
+                name.Format("VOICES_%s", (LPCTSTR)scratch);
             } else {
-                EngFmt(&name, "VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
+                name.Format("VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
             }
             void* res = m_0->m_resolver->Resolve((LPCTSTR)name, 0x574156);
             if (res != 0) {
                 CString tmp = name;
                 list->AddName(tmp);
-                EngFmt(&sub, "S%i", i);
+                sub.Format("S%i", i);
                 sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
             } else {
                 sub.Empty();

@@ -65,8 +65,6 @@ void ShowHudMessage(
     i32 d,
     i32 e
 ); // 0x1154b0
-// The status-line builder (0x1b2cf5, __cdecl(&dst, lpsz)).
-void BzMsgFormat(CString* dst, const char* text); // 0x1b2cf5
 
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,
@@ -122,7 +120,7 @@ void BzState::ShowLevelCompleteMessage() {
         } else {
             if (rec->m_worldFlag != 0) {
                 if (rec->GroupAllScored()) {
-                    BzMsgFormat(&s, "WARP letterz recovered! Prepare to warp!");
+                    s.Format("WARP letterz recovered! Prepare to warp!");
                 } else {
                     s = "WARP letterz not recovered! No checkpoint this time.";
                 }
@@ -165,7 +163,7 @@ i32 BzState::ShowSecretBonusMessage() {
         SetRect(&r1, 0, -15, 0x280, 0x1d1);
         SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
         SetRect(&r3, 0, 0x38, 0x280, 0x78);
-        BzMsgFormat(&s, "The Secret of Secretz:");
+        s.Format("The Secret of Secretz:");
         ShowHudMessage(m_sink, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
 
         CString s2(g_secretMsgA);
@@ -188,7 +186,7 @@ i32 BzState::ShowSecretBonusMessage() {
     CString title;
     RECT rTitle;
     SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
-    BzMsgFormat(&title, "Secret Bonus Acquired:");
+    title.Format("Secret Bonus Acquired:");
     ShowHudMessage(m_sink, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
     for (i32 j = 0; j < category; j++) {

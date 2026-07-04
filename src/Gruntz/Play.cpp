@@ -4352,7 +4352,6 @@ struct AgThis {
 };
 
 extern i32 g_644c54;                             // 0x644c54 placeholder token
-void AgFormat(CString* s, const char* fmt, ...); // 0x1b2cf5 CString::Format
 void AgLog(CGameRegistry* reg, const char* msg); // 0x417e
 
 // @early-stop
@@ -4394,7 +4393,7 @@ i32 CPlay::AddLevelGruntz() {
         );
         if (r == -1) {
             CString msg;
-            AgFormat(&msg, "Could not add Grunt: Player=%d", g->m_124, y, x);
+            msg.Format("Could not add Grunt: Player=%d", g->m_124, y, x);
             AgLog(g_64556c, msg); // CString -> LPCTSTR (implicit)
             return 0;
         }

@@ -148,8 +148,6 @@ extern "C" {
     DATA(0x0024556c)
     extern CGameRegistry* g_64556c;
 }
-// __cdecl error formatter: fills a CString from a printf-style template.
-void PlaneErrFmt(CString* dst, const char* fmt, i32 x, i32 y); // 0x1b2cf5
 
 // The two plane-type discriminators the scans compare m_desc->m_typeId against
 // (reloc-masked address operands; identities are irrelevant to the byte match).
@@ -252,7 +250,7 @@ i32 CPlay::ScanBuildTiles() {
                     )
                 == 0) {
                 CString s;
-                PlaneErrFmt(&s, "Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
+                s.Format("Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
                 g_64556c->ReportError(s);
                 return 0;
             }
@@ -314,7 +312,7 @@ i32 CPlay::ScanBuildTiles() {
                     )
                 == 0) {
                 CString s;
-                PlaneErrFmt(&s, "Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
+                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
                 g_64556c->ReportError(s);
                 return 0;
             }

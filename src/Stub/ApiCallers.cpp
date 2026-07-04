@@ -1199,29 +1199,18 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // A scratch CString (m_data at +0; CStringData length is 8 bytes before m_data).
-    struct GameCStr_be2f0 {
-        char* m_data;      // +0x00
-        GameCStr_be2f0();  // ctor RVA 0x1b9b93 (thiscall)
-        ~GameCStr_be2f0(); // dtor RVA 0x1b9cde (thiscall)
-    };
     // The "client status" CString global (?g_6473d8@@3VCString@@A).
     DATA(0x002473d8)
-    extern GameCStr_be2f0 g_clientStatus;
-    void FormatCStr_1b2cf5(GameCStr_be2f0* dst, const char* fmt, const char* a); // RVA 0x1b2cf5
+    extern CString g_clientStatus;
     void InitDropPrompt_be3e0(HWND hWnd, void* ctx); // thunk 0x2185 -> 0xbe3e0 (cdecl)
     // __cdecl(hWnd, ctx): show the "not receiving data" banner, init, arm a timer.
     RVA(0x000be2f0, 0xb9)
     void winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            GameCStr_be2f0 banner;
-            if (*(i32*)(g_clientStatus.m_data - 8) != 0) {
-                FormatCStr_1b2cf5(
-                    &banner,
-                    "Not Receiving Data From Client: %s",
-                    g_clientStatus.m_data
-                );
-                SetDlgItemTextA(hWnd, 0x44b, banner.m_data);
+            CString banner;
+            if (g_clientStatus.GetLength() != 0) {
+                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_clientStatus);
+                SetDlgItemTextA(hWnd, 0x44b, (LPCTSTR)banner);
             }
             InitDropPrompt_be3e0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
@@ -1358,18 +1347,11 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // A scratch CString with the MFC ctor/dtor/operator= (m_data at +0).
-    struct CStr_c3e30 {
-        char* m_data;               // +0x00
-        CStr_c3e30();               // ctor RVA 0x1b9b93 (thiscall)
-        ~CStr_c3e30();              // dtor RVA 0x1b9cde (thiscall)
-        void Assign(const char* s); // operator= RVA 0x1b9e74 (thiscall)
-    };
     // A dialog-item CWnd (HWND at +0x1c) refreshed from the model.
     struct CWndItem_c3e30 {
         char m_pad0[0x1c];
-        HWND m_1c;                                    // +0x1c
-        void Refresh1ce7db(i32 sel, CStr_c3e30* out); // thiscall RVA 0x1ce7db
+        HWND m_1c;                                 // +0x1c
+        void Refresh1ce7db(i32 sel, CString* out); // thiscall RVA 0x1ce7db
     };
     // The replay/recording model singleton at 0x64bd5c IS the CMulti multiplayer
     // game-state (xref-proven). Now that this TU is MFC (see the <Gruntz/Multi.h>
@@ -1395,14 +1377,14 @@ namespace ApiCallerStubs {
             if (item != 0) {
                 i32 r = SendMessageA(item->m_1c, 0x147, 0, 0);
                 if (r != -1) {
-                    CStr_c3e30 name;
+                    CString name;
                     item->Refresh1ce7db(r, &name);
-                    if (*(i32*)(name.m_data - 8) != 0) {
+                    if (name.GetLength() != 0) {
                         m_6c = 0;
                     }
                     g_replayModel->m_5b0 = 0;
                     g_replayModel->m_5b8 = g_emptyStr_6293f4;
-                    g_replayModel->m_5b4 = name.m_data;
+                    g_replayModel->m_5b4 = (LPCTSTR)name;
                     g_replayModel->Commit3ada(0);
                 }
             }
@@ -1416,11 +1398,6 @@ namespace ApiCallerStubs {
     // (CMulti::m_isHost) and the local player's colour id (CMulti::m_hostIndex).
     DATA(0x0024bd5c)
     extern CMulti* g_64bd5c;
-    // MFC CString return value the per-slot name formatter fills; its ~ is 0x1b9cde.
-    struct DlgStr_c4230 {
-        char* m_data;
-        ~DlgStr_c4230(); // RVA 0x1b9cde (CString::~CString), reloc-masked
-    };
     // Per-slot roster record hung off the registry at +0x150 (stride 0x238).
     struct PlayerSlot_0c50f0 {
         char m_pad0[0x10];
@@ -1430,8 +1407,8 @@ namespace ApiCallerStubs {
         i32 m_1c; // +0x1c ready flag
         i32 m_20; // +0x20 in-use flag
         char m_pad24[0x228 - 0x24];
-        i32 m_228;                      // +0x228 combo value
-        DlgStr_c4230 FormatName_3e54(); // __thiscall RVA 0x3e54
+        i32 m_228;                 // +0x228 combo value
+        CString FormatName_3e54(); // __thiscall RVA 0x3e54
     };
     // A resolved dialog child (CWnd) whose HWND lives at +0x1c.
     struct DlgWnd_c4230 {
@@ -1514,8 +1491,8 @@ namespace ApiCallerStubs {
                 }
                 if (slot->m_20) {
                     {
-                        DlgStr_c4230 name = slot->FormatName_3e54();
-                        char* pch = name.m_data;
+                        CString name = slot->FormatName_3e54();
+                        LPCTSTR pch = (LPCTSTR)name;
                         force = 0;
                         this->NameEdit298c(idx)->SetWindowText_1be520(pch);
                     }

@@ -223,7 +223,7 @@ public:
     // 0x1af70 - the 960-B HUD-text formatter switch: 8 cases of sprintf over the
     // game-stats object (g_mgrSettings->m_7c), each stat read via the live-getter /
     // cached-field pair gated by m_liveGame && stats->m_c (the sibling-guard idiom).
-    void FormatHudText(struct CHudBuf* buf, i32 sel);
+    void FormatHudText(CString* buf, i32 sel);
 
     // MENU asset loader (0x9fe50, MenuStateAssets.cpp): registers the MENU
     // IMAGEZ/SOUNDZ namespaces through the m_c (CView) resource facet, primes the
