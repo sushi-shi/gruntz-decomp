@@ -22,11 +22,47 @@ void operator delete(void* p);
 
 // The active pixel-format descriptor (channel shifts/sizes), selecting variant.
 
-// The held DirectDraw surface (m_8): dispatched thiscall through vtbl slot 0x80
-// (Unlock/notify). Same held surface CFileImage models as CFileImageHeldSurface in
-// <Image/Image.h>; only the notify slot is used here.
+// The held DirectDraw surface (m_8), modeled as a real abstract C++ class with
+// __stdcall virtuals (`this` pushed on the stack) so `m_8->Unlock(0)` lowers to the
+// same `mov reg,[m_8]; call [reg+0x80]` the manual m_vtbl[0x80/4](m_8,0) dispatch did.
+// Slot 32 (+0x80) is the Unlock/notify the shade path calls; the leading placeholder
+// slots land it at its retail vtable index. Same held surface CFileImage models as
+// CFileImageHeldSurface in <Image/Image.h>; only the notify slot is used here. A
+// local view (no new include) to protect this TU's fragile regalloc state.
 struct HeldDDSurface {
-    void (**m_vtbl)(void*, i32); // +0x00 dispatch table (slot 0x80/4 = Unlock/notify)
+    virtual void __stdcall s00(); // slot 0 (+0x00)
+    virtual void __stdcall s01();
+    virtual void __stdcall s02();
+    virtual void __stdcall s03();
+    virtual void __stdcall s04();
+    virtual void __stdcall s05();
+    virtual void __stdcall s06();
+    virtual void __stdcall s07();
+    virtual void __stdcall s08();
+    virtual void __stdcall s09();
+    virtual void __stdcall s0a();
+    virtual void __stdcall s0b();
+    virtual void __stdcall s0c();
+    virtual void __stdcall s0d();
+    virtual void __stdcall s0e();
+    virtual void __stdcall s0f();
+    virtual void __stdcall s10();
+    virtual void __stdcall s11();
+    virtual void __stdcall s12();
+    virtual void __stdcall s13();
+    virtual void __stdcall s14();
+    virtual void __stdcall s15();
+    virtual void __stdcall s16();
+    virtual void __stdcall s17();
+    virtual void __stdcall s18();
+    virtual void __stdcall s19();
+    virtual void __stdcall s1a();
+    virtual void __stdcall s1b();
+    virtual void __stdcall s1c();
+    virtual void __stdcall s1d();
+    virtual void __stdcall s1e();
+    virtual void __stdcall s1f();            // slot 31 (+0x7c)
+    virtual void __stdcall Unlock(i32 rect); // slot 32 (+0x80)
 };
 
 // CFileImage - the DIRSURF.CPP surface (full class in <Image/Image.h>). Modeled as a
@@ -125,16 +161,16 @@ i32 CFileImage::ShadeRect(i32 pct, RECT* clip) {
             }
         } else {
             operator delete(scratch);
-            m_8->m_vtbl[0x80 / 4](m_8, 0);
+            m_8->Unlock(0);
             return 0;
         }
     } else {
         operator delete(scratch);
-        m_8->m_vtbl[0x80 / 4](m_8, 0);
+        m_8->Unlock(0);
         return 0;
     }
 
-    m_8->m_vtbl[0x80 / 4](m_8, 0);
+    m_8->Unlock(0);
     operator delete(scratch);
     return 1;
 }

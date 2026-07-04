@@ -1294,21 +1294,23 @@ struct CDdCreateArg {
     CDdDescSrc* m_8; // +0x08 descriptor source
 };
 
-// The pool item: vtable stamped by address; Init (+0x04) / scalar-dtor (+0x00) are
-// thiscall, modeled as single-inheritance member pointers (a 4-byte code addr).
-struct CDdPoolItem;
-struct CDdPoolVtbl {
-    i32 (CDdPoolItem::*Dtor)(i32);   // +0x00
-    i32 (CDdPoolItem::*Init)(void*); // +0x04
-};
+// The pool item: a polymorphic object whose vtable is the RETAIL vtable at 0x5ef7f0.
+// Its Init (slot 1) / scalar-deleting-dtor (slot 0) virtual bodies live in other
+// DDrawMgr TUs, so cl cannot emit a matching ??_7 here; the factory operator-new's
+// the raw 0xc0 block and stamps that retail vtable by ADDRESS (transitional
+// workaround - a non-ctor stamp, the vtable-realization compiler-model wall, same
+// idiom as g_planeRenderVtbl in WwdFile.cpp). The dispatch is expressed as real
+// thiscall virtuals (no hand-rolled vtbl struct): `pi->Init(x)` lowers to the retail
+// `mov edx,[pi]; mov ecx,pi; call [edx+4]`.
 DATA(0x001ef7f0)
-extern CDdPoolVtbl g_poolItemVtbl; // 0x5ef7f0
+extern void* g_poolItemVtbl; // 0x5ef7f0  the pool item's retail vtable (realized elsewhere)
 
 struct CDdPoolSub {
     void Ctor(); // 0x1b4f0b  (+0x94 sub-object ctor)
 };
 struct CDdPoolItem {
-    CDdPoolVtbl* m_vtbl; // +0x00
+    virtual i32 Dtor(i32);   // slot 0 (+0x00) scalar-deleting dtor (delete-flag arg)
+    virtual i32 Init(void*); // slot 1 (+0x04)
 };
 
 RVA(0x00143630, 0x10d)
@@ -1335,9 +1337,9 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         item = 0;
     }
     CDdPoolItem* pi = (CDdPoolItem*)item;
-    if ((pi->*(pi->m_vtbl->Init))(outA) == 0) {
+    if (pi->Init(outA) == 0) {
         if (item != 0) {
-            (pi->*(pi->m_vtbl->Dtor))(1);
+            pi->Dtor(1);
         }
         return 0;
     }
@@ -1350,5 +1352,4 @@ SIZE_UNKNOWN(CDdDescSrc);
 SIZE_UNKNOWN(CDdEnumVtbl);
 SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
-SIZE_UNKNOWN(CDdPoolVtbl);
 SIZE_UNKNOWN(DDModeDesc);

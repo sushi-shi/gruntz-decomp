@@ -131,8 +131,9 @@ public:
     char _bc[0xc0 - 0xbc];
 };
 SIZE(CPoolItemBase, 0xc0);
-// The base vtable 0x5ef7f0 is bound in CDirectDrawMgr.cpp (g_poolItemVtbl / CDdPoolVtbl);
-// CPoolItemBase's emitted ??_7 is left unbound here so it does not collide with that.
+// The base vtable 0x5ef7f0 is bound in CDirectDrawMgr.cpp (the g_poolItemVtbl
+// by-address factory stamp); CPoolItemBase's emitted ??_7 is left unbound here so it
+// does not collide with that.
 
 // Zero the scalar fields (the CByteArray member + vptr are the compiler's job).
 inline CPoolItemBase::CPoolItemBase() {
@@ -239,25 +240,36 @@ inline void* CPoolItemB::operator new(u32) {
     return ::operator new(0x38);
 }
 
-// A cached surface object (the +0x00 / +0x04 slots): polymorphic, with a
-// Release-like vtbl[8] and a RestoreAll-like vtbl[0x4c].  External, no body.
-// The vtable methods are stdcall-shaped: `this` is pushed and the callee cleans up
-// (no caller `add esp,4`), so model the slot pointers as __stdcall.
-struct CCachedSurfaceVtbl;
+// A cached surface object (the +0x00 / +0x04 slots): a real abstract C++ class with
+// __stdcall virtuals (`this` pushed, callee-cleaned - no caller `add esp,4`), so
+// `surf->Slot(args)` lowers to the same `mov reg,[surf]; call [reg+slot]` the manual
+// vtbl-struct dispatch did. External (never constructed here) so no vtable is emitted.
+// Placeholder slots land Release(2)/GetSurfaceDesc(12)/Restore(19)/Configure(21) at
+// their retail vtable indices.
 struct CCachedSurface {
-    CCachedSurfaceVtbl* vtbl;
-};
-struct CCachedSurfaceVtbl {
-    void(__stdcall* Method00)(CCachedSurface*);
-    char _04[0x08 - 0x04];
-    void(__stdcall* Release)(CCachedSurface*); // +0x08
-    char _0c[0x30 - 0x0c];
-    i32(__stdcall* GetSurfaceDesc)(CCachedSurface*, void* desc); // +0x30
-    char _34[0x4c - 0x34];
-    void(__stdcall* Restore)(CCachedSurface*); // +0x4c
-    char _50[0x54 - 0x50];
-    // +0x54  reconfigure the surface (5 forwarded args); returns an HRESULT.
-    i32(__stdcall* Configure)(CCachedSurface*, i32, i32, i32, i32, i32);
+    virtual void __stdcall Method00();                // slot 0  (+0x00)
+    virtual void __stdcall s04();                     // slot 1  (+0x04)
+    virtual void __stdcall Release();                 // slot 2  (+0x08)
+    virtual void __stdcall s0c();                     // slot 3
+    virtual void __stdcall s10();                     // slot 4
+    virtual void __stdcall s14();                     // slot 5
+    virtual void __stdcall s18();                     // slot 6
+    virtual void __stdcall s1c();                     // slot 7
+    virtual void __stdcall s20();                     // slot 8
+    virtual void __stdcall s24();                     // slot 9
+    virtual void __stdcall s28();                     // slot 10
+    virtual void __stdcall s2c();                     // slot 11
+    virtual i32 __stdcall GetSurfaceDesc(void* desc); // slot 12 (+0x30)
+    virtual void __stdcall s34();                     // slot 13
+    virtual void __stdcall s38();                     // slot 14
+    virtual void __stdcall s3c();                     // slot 15
+    virtual void __stdcall s40();                     // slot 16
+    virtual void __stdcall s44();                     // slot 17
+    virtual void __stdcall s48();                     // slot 18
+    virtual void __stdcall Restore();                 // slot 19 (+0x4c)
+    virtual void __stdcall s50();                     // slot 20 (+0x50)
+    // slot 21 (+0x54): reconfigure the surface (5 forwarded args); returns an HRESULT.
+    virtual i32 __stdcall Configure(i32, i32, i32, i32, i32);
 };
 
 // The CDDrawPtrCollections host class (0x948 B) is the single-source shape from
@@ -295,7 +307,7 @@ CDDrawPtrCollections::~CDDrawPtrCollections() {
 RVA(0x00142060, 0x9d)
 void CDDrawPtrCollections::Clear(i32 mode) {
     if (mode && m_surf0) {
-        m_surf0->vtbl->Restore(m_surf0);
+        m_surf0->Restore();
     }
     for (i32 i = 0; i < m_array.GetSize(); i++) {
         RezFree(m_array.GetData()[i]);
@@ -305,11 +317,11 @@ void CDDrawPtrCollections::Clear(i32 mode) {
     EmptyPoolB();
     g_DirectDrawMgr = 0;
     if (m_surf0) {
-        m_surf0->vtbl->Release(m_surf0);
+        m_surf0->Release();
         m_surf0 = 0;
     }
     if (m_surf4) {
-        m_surf4->vtbl->Release(m_surf4);
+        m_surf4->Release();
         m_surf4 = 0;
     }
     m_534 = 0;
@@ -779,7 +791,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
     SurfDesc desc;
     memset(&desc, 0, 0x6c);
     desc.dwSize = 0x6c;
-    i32 hr = m_surf0->vtbl->GetSurfaceDesc(m_surf0, &desc);
+    i32 hr = m_surf0->GetSurfaceDesc(&desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
         return 0;
@@ -843,7 +855,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
 // ---------------------------------------------------------------------------
 RVA(0x00143c20, 0x84)
 i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
-    i32 hr = m_surf0->vtbl->Configure(m_surf0, a0, a1, a2, a3, a4);
+    i32 hr = m_surf0->Configure(a0, a1, a2, a3, a4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
         if (m_944 == 0) {
@@ -861,6 +873,5 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
 }
 
 SIZE_UNKNOWN(CCachedSurface);
-SIZE_UNKNOWN(CCachedSurfaceVtbl);
 SIZE_UNKNOWN(CPtrListNode);
 SIZE_UNKNOWN(SurfDesc);

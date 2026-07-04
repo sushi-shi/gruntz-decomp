@@ -14,49 +14,16 @@
 #include <Ints.h>
 #include <rva.h>
 
-extern "C" void* memset(void* d, i32 c, u32 n); // inlined to rep stos
+// The DirectDraw COM interfaces (IDirectDraw2Z / IDirectDrawSurfaceZ /
+// IDirectDrawPaletteZ) come from the canonical single-source header, modeled as
+// real abstract C++ classes (STDMETHOD == `virtual HRESULT __stdcall`), so
+// `obj->Method(args)` lowers to the same `mov eax,[obj]; call [eax+slot]` the
+// hand-rolled vtbl-struct dispatch did. The primary/source surfaces drive the
+// surface interface, the IDirectDraw2 device drives the DirectDraw interface, and
+// the palette drives the palette interface - each at its own retail vtable slots.
+#include <Gruntz/CDirectDrawMgr.h>
 
-// A COM object (surface / IDirectDraw2 / palette). One vtable view covers every
-// slot these three methods reach; members only touching Release just use slot 2.
-struct IDDObj;
-struct IDDVtbl {
-    void* s00;
-    void* s04;
-    u32(__stdcall* Release)(IDDObj*); // +0x08 (IUnknown slot 2)
-    void* s0c;
-    void* s10;
-    i32(__stdcall* Blt)(
-        IDDObj*,
-        void* dst,
-        IDDObj* src,
-        void* srcRect,
-        u32 flags,
-        void* fx
-    ); // +0x14 (surface slot 5)
-    void* s18;
-    i32(__stdcall* BltFast)(
-        IDDObj*,
-        i32 x,
-        i32 y,
-        IDDObj* src,
-        void* srcRect,
-        u32 trans
-    );                                           // +0x1c (surface slot 7)
-    void* s20[11];                               // +0x20..+0x4b
-    i32(__stdcall* RestoreDisplayMode)(IDDObj*); // +0x4c (IDirectDraw slot 19)
-    void* s50[4];                                // +0x50..+0x5f
-    i32(__stdcall* IsLost)(IDDObj*);             // +0x60 (surface slot 24)
-    void* s64;
-    void* s68;
-    i32(__stdcall* Restore)(IDDObj*); // +0x6c (surface slot 27)
-    void* s70;
-    void* s74;
-    void* s78;
-    i32(__stdcall* SetPalette)(IDDObj*, IDDObj* pal); // +0x7c (surface slot 31)
-};
-struct IDDObj {
-    IDDVtbl* vtbl;
-};
+extern "C" void* memset(void* d, i32 c, u32 n); // inlined to rep stos
 
 // DDBLTFX (0x64 bytes): only dwSize@0x00, dwROP@0x08, dwFillColor@0x50 are set.
 struct DDBLTFX_ {
@@ -106,14 +73,14 @@ public:
 
     char m_pad00[0x0c];
     i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
-    CTileInfo* m_tileInfo; // +0x10
-    IDDObj* m_dd2;         // +0x14   IDirectDraw2
-    IDDObj* m_dd;          // +0x18   IDirectDraw
-    IDDObj* m_primary;     // +0x1c   primary surface
-    IDDObj* m_20;          // +0x20   surface (only Release'd here; role unproven)
-    IDDObj* m_srcSurf;     // +0x24   blit source surface
-    IDDObj* m_28;          // +0x28   surface (only Release'd here; role unproven)
-    IDDObj* m_palette;     // +0x2c
+    CTileInfo* m_tileInfo;          // +0x10
+    IDirectDraw2Z* m_dd2;           // +0x14   IDirectDraw2
+    IDirectDraw2Z* m_dd;            // +0x18   IDirectDraw
+    IDirectDrawSurfaceZ* m_primary; // +0x1c   primary surface
+    IDirectDrawSurfaceZ* m_20;      // +0x20   surface (only Release'd here; role unproven)
+    IDirectDrawSurfaceZ* m_srcSurf; // +0x24   blit source surface
+    IDirectDrawSurfaceZ* m_28;      // +0x28   surface (only Release'd here; role unproven)
+    IDirectDrawPaletteZ* m_palette; // +0x2c
     char m_pad30[0x50c - 0x30];
     i32 m_50c; // +0x50c   reset to 0 by Configure
     char m_pad510[0x514 - 0x510];
@@ -138,11 +105,11 @@ public:
 RVA(0x0017cc80, 0x109)
 void CDDScreen::HandleError() {
     if (m_srcSurf) {
-        m_srcSurf->vtbl->Release(m_srcSurf);
+        m_srcSurf->Release();
         m_srcSurf = 0;
     }
     if (m_28) {
-        m_28->vtbl->Release(m_28);
+        m_28->Release();
         m_28 = 0;
     }
     if (m_bpp == 8) {
@@ -153,34 +120,34 @@ void CDDScreen::HandleError() {
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
-        void* rc = (void*)m_primary->vtbl->Blt(m_primary, 0, 0, 0, 0x1020000, &fx);
+        void* rc = (void*)m_primary->Blt(0, 0, 0, 0x1020000, &fx);
         if (rc) {
             memset(&fx, 0, sizeof(fx));
             fx.dwSize = 0x64;
             fx.dwFillColor = 0;
-            m_primary->vtbl->Blt(m_primary, 0, 0, 0, 0x1000400, &fx);
+            m_primary->Blt(0, 0, 0, 0x1000400, &fx);
         }
     }
     if (m_0c == 0) {
         if (m_palette) {
-            m_palette->vtbl->Release(m_palette);
+            m_palette->Release();
             m_palette = 0;
         }
         if (m_primary) {
-            m_primary->vtbl->Release(m_primary);
+            m_primary->Release();
             m_primary = 0;
         }
         if (m_20) {
-            m_20->vtbl->Release(m_20);
+            m_20->Release();
             m_20 = 0;
         }
         if (m_dd2) {
-            m_dd2->vtbl->RestoreDisplayMode(m_dd2);
-            m_dd2->vtbl->Release(m_dd2);
+            m_dd2->RestoreDisplayMode();
+            m_dd2->Release();
             m_dd2 = 0;
         }
         if (m_dd) {
-            m_dd->vtbl->Release(m_dd);
+            m_dd->Release();
             m_dd = 0;
         }
     }
@@ -193,15 +160,6 @@ void CDDScreen::HandleError() {
 // DDERR_SURFACELOST restore the lost surface(s) (re-attaching the palette on the
 // 8bpp primary) and retry; any other HRESULT is returned.
 // ===========================================================================
-// @early-stop
-// instruction-scheduling wall (~90.8%): everything outside the dest-rect setup is
-// byte-exact (incl. the BltFast/Blt vtable dispatch, the SURFACELOST restore-retry
-// loop and the cross-jumped 8bpp SetPalette tail). In the m_destRect==0 branch retail
-// keeps m_tilesAcross in eax / m_tilesDown in ecx across the left/top stores and computes
-// nCols*m_tilesAcross / nRows*m_tilesDown lazily afterwards; cl groups the two products of each
-// shared operand and hoists them early (folding nCols as a memory operand). A pure
-// MSVC5 /O2 scheduler coin-flip with no source lever (tile-dim locals regress it to
-// 90.2%); deferred to the final sweep.
 RVA(0x0017cdf0, 0x1c6)
 i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     DDRect dst, src;
@@ -224,43 +182,41 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     for (;;) {
         i32 hr;
         if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == 0) {
-            hr = m_primary->vtbl->BltFast(m_primary, dst.left, dst.top, m_srcSurf, &src, 0x10);
+            hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, 0x10);
             if (hr != 0x887601c2) {
                 return hr;
             }
-            if (m_primary->vtbl->IsLost(m_primary) == 0x887601c2
-                && m_primary->vtbl->Restore(m_primary) == 0) {
+            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
                 if (m_bpp == 8) {
-                    m_primary->vtbl->SetPalette(m_primary, m_palette);
+                    m_primary->SetPalette(m_palette);
                     UploadPalette();
                 }
             } else {
-                hr = m_srcSurf->vtbl->IsLost(m_srcSurf);
+                hr = m_srcSurf->IsLost();
                 if (hr != 0x887601c2) {
                     return hr;
                 }
-                hr = m_srcSurf->vtbl->Restore(m_srcSurf);
+                hr = m_srcSurf->Restore();
                 if (hr != 0) {
                     return hr;
                 }
             }
         } else {
-            hr = m_primary->vtbl->Blt(m_primary, &dst, m_srcSurf, &src, 0x1000000, 0);
+            hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, 0);
             if (hr != 0x887601c2) {
                 return hr;
             }
-            if (m_primary->vtbl->IsLost(m_primary) == 0x887601c2
-                && m_primary->vtbl->Restore(m_primary) == 0) {
+            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
                 if (m_bpp == 8) {
-                    m_primary->vtbl->SetPalette(m_primary, m_palette);
+                    m_primary->SetPalette(m_palette);
                     UploadPalette();
                 }
             } else {
-                hr = m_srcSurf->vtbl->IsLost(m_srcSurf);
+                hr = m_srcSurf->IsLost();
                 if (hr != 0x887601c2) {
                     return hr;
                 }
-                hr = m_srcSurf->vtbl->Restore(m_srcSurf);
+                hr = m_srcSurf->Restore();
                 if (hr != 0) {
                     return hr;
                 }
@@ -409,5 +365,3 @@ SIZE_UNKNOWN(CTileInfo);
 SIZE_UNKNOWN(DDBLTFX_);
 SIZE_UNKNOWN(DDPoint);
 SIZE_UNKNOWN(DDRect);
-SIZE_UNKNOWN(IDDObj);
-SIZE_UNKNOWN(IDDVtbl);

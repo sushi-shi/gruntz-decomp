@@ -98,7 +98,7 @@ cddrawworkerlist	11	5
 cddrawworkermapsmall	11	6
 cddrawworkerregistry	26	18
 cddrawworkers	4	4
-cddscreen	3	1
+cddscreen	3	2
 cddsurfacedtor	1	0
 cdirectdrawmgr	28	11
 cdonothing	3	2
@@ -1201,7 +1201,7 @@ cddrawworkers	?Vfunc2C@CDDrawWorkerA@@UAEHHHH@Z	100.0000	100.0000	1	3a8bc470d667
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@UAEHHHH@Z	100.0000	100.0000	1	e1090e02f711	0x1572f0
 cddrawworkers	?Vfunc30@CDDrawWorkerB@@UAEHHHPAUCDDrawFrameSource@@H@Z	100.0000	100.0000	1	61b65e45ca9b	0x1572b0
 cddrawworkers	?Vfunc34@CDDrawWorkerB@@UAEHHHHH@Z	100.0000	100.0000	1	e467ad482723	0x157280
-cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	90.7763	90.7763	3	1d7398057079	0x17cdf0
+cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	3	1d7398057079	0x17cdf0
 cddscreen	?Configure@CDDScreen@@QAEHHHPAUDDPoint@@PAUDDRect@@@Z	97.3969	97.3969	3	42a0001a5a6a	0x17cfc0
 cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	3	aae8f6c82e44	0x17cc80
 cddsurfacedtor	??1CDDSurface@@QAE@XZ	94.0000	94.0000	1	cacc86e7ced0	0x142a40
@@ -1214,7 +1214,7 @@ cdirectdrawmgr	?CheckMode16@CDDPageMgr@@QAEHXZ	83.9000	83.9000	3	b68b4e775276	0x
 cdirectdrawmgr	?Create@CDDPalette@@QAEHPAUIDirectDraw2Z@@PAXI@Z	99.5455	99.5455	3	ca7bb78d2fe7	0x147390
 cdirectdrawmgr	?CreateDevice@CDirectDrawMgr@@QAEHPAX0HHHI@Z	95.5882	95.5882	4	e4a0e7fd042c	0x141dc0
 cdirectdrawmgr	?CreateFromTrailing@CDDPalette@@QAEHPAUIDirectDraw2Z@@PAXII@Z	89.0930	89.0930	1	048c80ea24d7	0x147840
-cdirectdrawmgr	?CreatePoolItem@CDirectDrawMgr@@QAEPAXPAX0@Z	71.8444	71.8444	3	e8723141386a	0x143630
+cdirectdrawmgr	?CreatePoolItem@CDirectDrawMgr@@QAEPAXPAX0@Z	75.1889	75.1889	4	334dee41d533	0x143630
 cdirectdrawmgr	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2Z@@PAXI@Z	62.6000	62.6000	1	80bac667844d	0x1474d0
 cdirectdrawmgr	?Destroy@CDDPalette@@QAEXXZ	100.0000	100.0000	2	c536de3d7f83	0x147530
 cdirectdrawmgr	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	4	d924bf419788	0x13e850
@@ -2747,7 +2747,7 @@ logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aa
 logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0
 logicworkerhandlers	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8791e12082ce	0xaa960
 logicworkerhandlers	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	fc95604f0cd1	0xaf0a0
-lutshaderect	?ShadeRect@CFileImage@@QAEHHPAUtagRECT@@@Z	64.6000	64.6000	1	ddce9237f59a	0x13f460
+lutshaderect	?ShadeRect@CFileImage@@QAEHHPAUtagRECT@@@Z	66.8318	66.8318	1	ddce9237f59a	0x13f460
 m3mfcleaves	?GetActive@CDdeView@@QAEHXZ	100.0000	100.0000	2	57a47a7fd4d6	0x1d047f
 m3mfcleaves	?ModuleStateField30@@YAHXZ	100.0000	100.0000	1	bf3a2e7a831a	0x1ce95f
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	3	13c9b07d552c	0xa11d0
