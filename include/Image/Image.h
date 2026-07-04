@@ -131,9 +131,12 @@ public:
 // pixel bytes to one of the surface blitters (Blit / BlitDirect, ret 0x10/8 -
 // external no-body) which copy into the destination plane.
 //
-// The OFFSETS + code bytes are load-bearing. The decoders touch the surface
-// geometry (m_height, m_width) and the palette context (m_palBitCount,
-// m_palette 256-entry table, m_hasPalette flag).
+// The OFFSETS + code bytes are load-bearing. The decoders touch only the 0xc0
+// surface geometry (m_height, m_width) on `this`; the palette context they read
+// (m_palBpp / m_palette / m_hasPalette at +0x538/+0x53c/+0x93c) lives on the
+// CDDrawPtrCollections display manager passed in as the `surf`/`info` ARGUMENT -
+// NOT on this 0xc0 surface (both surface ctors 0x13e9a0/0x1421a0 operator-new(0xc0)).
+// The former conflated palette fields were retired to <DDrawMgr/DDrawPtrCollections.h>.
 // ---------------------------------------------------------------------------
 
 // A heap element held in CFileImage::m_elements (the +0x94 CPtrArray). FreeSurfaces
@@ -433,12 +436,11 @@ public:
     i32 m_ac;                   // +0xac
     i32 m_b0;                   // +0xb0
     i32 m_b4;                   // +0xb4
-    i32 m_b8;                   // +0xb8  cleared by the surface teardown
-    i32 m_bc;                   // +0xbc
-    char m_padc0[0x538 - 0xc0]; // +0xc0
-    i32 m_palBitCount;          // +0x538  bits per pixel of the palette context
-    i32 m_palette[0x100];       // +0x53c  256-entry palette (ends at 0x93c)
-    i32 m_hasPalette;           // +0x93c  have-palette flag
+    i32 m_b8; // +0xb8  cleared by the surface teardown
+    i32 m_bc; // +0xbc
 };
+SIZE(CFileImage, 0xc0); // the DIRSURF.CPP 0xc0 surface (== the CDDSurface pool item; both
+                        // surface ctors 0x13e9a0/0x1421a0 operator-new(0xc0)). The former
+                        // 0xc0->0x940 palette tail was CDDrawPtrCollections's, not this class's.
 
 #endif // SRC_IMAGE_IMAGE_H
