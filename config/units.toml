@@ -2279,10 +2279,6 @@ flags = "base"
 [[unit]]
 unit = "movieplayer"
 source = "src/Gruntz/MoviePlayer.cpp"
-flags = "base"
-[[unit]]
-unit = "movieplayereh"
-source = "src/Gruntz/MoviePlayerEh.cpp"
 flags = "eh"
 [[unit]]
 unit = "wapuncompress"
