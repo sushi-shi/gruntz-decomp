@@ -84,7 +84,7 @@ struct CWorldLookupHolder;
 // pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
 // definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
 // it; here CWorldZ::m_1c is a pointer, so a forward declaration suffices (keeps this
-// widely-included class header free of the <ComDefs.h> STDMETHOD footprint).
+// widely-included class header free of the COM/STDMETHOD (objbase.h) footprint).
 struct CWorldDispatch;
 // The world's +0x4 sub-object exposes a map-index field at +0x14.
 SIZE_UNKNOWN(CWorldSub4);

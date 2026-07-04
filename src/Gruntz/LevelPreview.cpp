@@ -7,7 +7,8 @@
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
-#include <DDrawMgr/DDSurface.h>      // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
+#include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
+#include <ddraw.h>              // real IDirectDrawSurface dispatch (Mfc.h above supplies windows.h)
 #include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
@@ -47,7 +48,7 @@ public:
     i32 KillCue(i32 which); // 0x136e20
 };
 
-// The live DirectDraw COM surface is IDirectDrawSurfaceZ (slot 24 IsLost, +0x60);
+// The live DirectDraw COM surface is IDirectDrawSurface (slot 24 IsLost, +0x60);
 // the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
 // Flip @0x13e850). Both from <DDrawMgr/DDSurface.h>.
 
@@ -124,7 +125,7 @@ public:
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurfaceZ* surf = m_0c->m_04->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* surf = m_0c->m_04->m_frontPair->m_surface->m_8;
     if (surf == 0 || surf->IsLost() != 0) {
         if (Advance() == 0) {
             m_04->ReportError(0x8006, 0xfa0);

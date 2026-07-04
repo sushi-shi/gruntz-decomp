@@ -5,12 +5,13 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The held DirectDraw palette interface: the canonical real-polymorphic COM
-// interface (IDirectDrawPaletteZ, STDMETHOD SetEntries @slot 6 / +0x18) from the
-// single-source DDraw header. `pal->SetEntries(...)` lowers to the same
+// The held DirectDraw palette interface: the real IDirectDrawPalette (SetEntries
+// @slot 6 / +0x18) from <ddraw.h>. `pal->SetEntries(...)` lowers to the same
 // `mov eax,[pal]; call [eax+0x18]` the old manual `struct Vtbl` view emitted -
-// self is pushed as the STDMETHOD (__stdcall) implicit first stack arg.
+// self is pushed as the __stdcall implicit first stack arg.
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h> // real IDirectDrawPalette dispatch (SetEntries)
 
 // The screen object (CDDScreen). Only the palette-upload offsets are pinned here;
 // the full layout lives in CDDScreen.cpp (which declares UploadPalette + BlitRegion).
@@ -18,7 +19,7 @@ struct CDDScreen {
     char m_pad0[0x10];
     u8* m_10; // +0x10  RGB source base (frame palette entries at +0x6c)
     char m_pad14[0x2c - 0x14];
-    IDirectDrawPaletteZ* m_palette; // +0x2c  held DirectDraw palette
+    IDirectDrawPalette* m_palette; // +0x2c  held DirectDraw palette
     char m_pad30[0x108 - 0x30];
     u8 m_slots[0x400]; // +0x108  256 * 4-byte PALETTEENTRY slots
 
@@ -48,5 +49,5 @@ void CDDScreen::UploadPalette() {
         dst += 4;
         src += 3;
     } while (--n);
-    m_palette->SetEntries(0, 0, 0x100, m_slots);
+    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_slots);
 }

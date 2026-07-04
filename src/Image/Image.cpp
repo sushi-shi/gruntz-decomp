@@ -45,6 +45,7 @@
 // the former pointer-only CFileImageVtblView is retired. CDirectDrawMgr is included
 // only for CDirectDrawMgr::GetErrorString (the Fill error path).
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock/Blt/Release); Image.h above supplies windows.h
 #include <Globals.h>
 
 // The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
@@ -1058,14 +1059,14 @@ i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
 // non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
 RVA(0x0013edb0, 0x78)
 void CFileImage::Clear(i32 white) {
-    i32 fx[0x19]; // DDBLTFX (0x64 bytes)
-    i32* p = fx;
+    DDBLTFX fx;
+    i32* p = (i32*)&fx;
     for (i32 i = 0x19; i != 0; i--) {
         *p++ = 0;
     }
-    fx[0] = 0x64;                         // dwSize @+0x0
-    fx[2] = white ? (i32)0xff0062 : 0x42; // fill flags @+0x8
-    i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, fx);
+    fx.dwSize = 0x64;
+    fx.dwROP = white ? (i32)0xff0062 : 0x42; // WHITENESS : BLACKNESS (DDBLT_ROP)
+    i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, &fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);

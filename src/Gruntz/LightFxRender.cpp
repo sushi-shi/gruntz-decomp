@@ -8,7 +8,9 @@
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
-#include <DDrawMgr/DDSurface.h> // IDirectDrawSurfaceZ (the held surface's Unlock, slot 32)
+#include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held surface's Unlock, slot 32)
+#include <Win32.h>              // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>              // real IDirectDrawSurface dispatch (Unlock)
 #include <Gruntz/LightFxRender.h>
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
@@ -16,7 +18,7 @@
 
 // The held surface (LfxBorderCtx::m_08 / LfxSurface::m_08) is the real
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
-// (+0x80). The canonical IDirectDrawSurfaceZ lives in <DDrawMgr/DDSurface.h>.
+// (+0x80). The canonical IDirectDrawSurface lives in <DDrawMgr/DDSurface.h>.
 
 // Forward declares so LfxMgr / the class members can hold typed pointers to the
 // tile-descriptor bank and the tile grid (full layouts defined further down).
@@ -29,7 +31,7 @@ struct LfxGrid;
 //   +0x20 row stride (per y) / +0xb0 column stride (per x), in bytes
 struct LfxSurface {
     char m_pad[0x8];
-    IDirectDrawSurfaceZ* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
+    IDirectDrawSurface* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
     char m_pad0c[0x18 - 0xc];
     i32 m_18; // +0x18 surface height-in-tiles / divisor
     i32 m_1c; // +0x1c surface width-in-tiles / divisor
@@ -46,7 +48,7 @@ struct LfxSurface {
 // +0x2c the locked work surface (pitch / stride / Lock).
 struct LfxBorderCtx {
     char m_pad0[0x8];
-    IDirectDrawSurfaceZ* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
+    IDirectDrawSurface* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
     char m_pad0c[0x2c - 0xc];
     LfxSurface* m_2c; // +0x2c the work surface
 };

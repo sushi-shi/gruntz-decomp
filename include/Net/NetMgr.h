@@ -14,7 +14,6 @@
 #ifndef NET_NETMGR_H
 #define NET_NETMGR_H
 
-#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectPlay COM interface macros
 #include <Ints.h>
 #include <rva.h>          // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Wap32/Object.h> // Wap::CObject - the shared CObject-like grand-base
@@ -23,6 +22,11 @@
 // connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
 // timeGetTime decl (the frame-sync / connect-wait clock).
 #include <Mfc.h>
+#include <wtypes.h>   // HRESULT (Mfc.h's lean windows.h does NOT expose it - the reason
+                      // ComDefs.h existed); the real header, lighter than <objbase.h>'s full
+                      // OLE/RPC chain (which perturbs matched Net regalloc)
+#include <basetyps.h> // STDMETHOD / STDMETHOD_ / PURE - the real COM interface macros for the
+                      // hand-modeled DirectPlay (IDirectPlay4Z) + INetReleasable interfaces below
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/ObList.h>
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator the node factories use

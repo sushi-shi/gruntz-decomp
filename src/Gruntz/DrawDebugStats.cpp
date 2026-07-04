@@ -22,8 +22,8 @@
 // literals reloc-masked against the matched string symbols. Only the offsets /
 // code bytes are load-bearing.
 
-#include <Mfc.h>     // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
-#include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
+#include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
+#include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcat/strlen intrinsics (/O2)
@@ -58,53 +58,14 @@ struct DbgPosRoot { // this->m_c->m_24
     char m_pad00[0x5c];
     DbgPos* m_5c; // +0x5c
 };
-// The DC source reached through this->m_c->m_4->m_14->m_2c->m_8: the game's
-// IDirectDrawSurface (DDRAW COM). GetDC is slot 17 (+0x44), ReleaseDC slot 26
-// (+0x68); both are __stdcall with the surface as the hidden `this`. Modeled as a
-// local SDK-named interface (real DX6 slot names) so `surf->GetDC(&hdc)` lowers to
-// the same `push &hdc; push surf; mov reg,[surf]; call [reg+slot]` the manual
-// vtbl-struct view did; pointer-only, so no vtable is emitted in this TU.
-struct IDirectDrawSurfaceZ {
-    STDMETHOD(QueryInterface)() PURE;        // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
-    STDMETHOD_(u32, Release)() PURE;         // slot 2
-    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
-    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
-    STDMETHOD(Blt)() PURE;                   // slot 5
-    STDMETHOD(BltBatch)() PURE;              // slot 6
-    STDMETHOD(BltFast)() PURE;               // slot 7
-    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
-    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
-    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
-    STDMETHOD(Flip)() PURE;                  // slot 11
-    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
-    STDMETHOD(GetBltStatus)() PURE;          // slot 13
-    STDMETHOD(GetCaps)() PURE;               // slot 14
-    STDMETHOD(GetClipper)() PURE;            // slot 15
-    STDMETHOD(GetColorKey)() PURE;           // slot 16
-    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
-    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
-    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
-    STDMETHOD(GetPalette)() PURE;            // slot 20
-    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
-    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
-    STDMETHOD(Initialize)() PURE;            // slot 23
-    STDMETHOD(IsLost)() PURE;                // slot 24
-    STDMETHOD(Lock)() PURE;                  // slot 25
-    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
-    STDMETHOD(Restore)() PURE;               // slot 27
-    STDMETHOD(SetClipper)() PURE;            // slot 28
-    STDMETHOD(SetColorKey)() PURE;           // slot 29
-    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
-    STDMETHOD(SetPalette)() PURE;            // slot 31
-    STDMETHOD(Unlock)() PURE;                // slot 32
-    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
-    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
-    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
-};
+// The DC source reached through this->m_c->m_4->m_14->m_2c->m_8: the game's real
+// IDirectDrawSurface (<ddraw.h>). GetDC is slot 17 (+0x44), ReleaseDC slot 26
+// (+0x68); both __stdcall with the surface as the hidden `this`, so
+// `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
+// call [reg+slot]` - pointer-only, no vtable emitted in this TU.
 struct DbgDcHost { // this->m_c->m_4->m_14->m_2c
     char m_pad00[0x8];
-    IDirectDrawSurfaceZ* m_8; // +0x08
+    IDirectDrawSurface* m_8; // +0x08
 };
 struct DbgL14 { // this->m_c->m_4->m_14
     char m_pad00[0x2c];
@@ -236,7 +197,6 @@ SIZE_UNKNOWN(DbgFpsSrc);
 SIZE_UNKNOWN(DbgObjsSrc);
 SIZE_UNKNOWN(DbgPos);
 SIZE_UNKNOWN(DbgPosRoot);
-SIZE_UNKNOWN(IDirectDrawSurfaceZ);
 SIZE_UNKNOWN(DbgDcHost);
 SIZE_UNKNOWN(DbgL14);
 SIZE_UNKNOWN(DbgDcRoot);

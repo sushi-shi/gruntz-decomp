@@ -24,7 +24,7 @@
 
 #include <rva.h>
 
-#include <Ints.h> // i32 / u32 (were reached via <ComDefs.h> before the real header)
+#include <Ints.h> // i32 / u32 (dinput.h below brings the real COM macros via objbase.h)
 
 // The real DirectInput SDK header, for the version retail was built against: DirectX
 // 6. Supplies the genuine IDirectInputA (the DirectInputCreateA object) + the QI'd

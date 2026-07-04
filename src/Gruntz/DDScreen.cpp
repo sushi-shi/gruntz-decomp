@@ -14,45 +14,21 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The DirectDraw COM interfaces (IDirectDraw2Z / IDirectDrawSurfaceZ /
-// IDirectDrawPaletteZ) come from the canonical single-source header, modeled as
-// real abstract C++ classes (STDMETHOD == `virtual HRESULT __stdcall`), so
-// `obj->Method(args)` lowers to the same `mov eax,[obj]; call [eax+slot]` the
-// hand-rolled vtbl-struct dispatch did. The primary/source surfaces drive the
-// surface interface, the IDirectDraw2 device drives the DirectDraw interface, and
-// the palette drives the palette interface - each at its own retail vtable slots.
+// The DirectDraw COM interfaces (IDirectDraw/IDirectDraw2/IDirectDrawSurface/
+// IDirectDrawPalette) + descriptor structs (DDBLTFX, RECT, POINT) come from the real
+// SDK: <Win32.h> (windows.h) then <ddraw.h> (interfaces via <ddraw.h> whose slots
+// lower to `mov eax,[obj]; call [eax+slot]`). The primary/source surfaces drive the
+// surface interface, the IDirectDraw2 device the DirectDraw interface, and the
+// palette the palette interface - each at its own retail vtable slots.
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <Win32.h>
+#include <ddraw.h>
 
 #include <string.h> // memset - inlined to rep stos
-
-// DDBLTFX (0x64 bytes): only dwSize@0x00, dwROP@0x08, dwFillColor@0x50 are set.
-struct DDBLTFX_ {
-    u32 dwSize;      // 0x00
-    u32 pad04;       // 0x04 dwDDFX
-    u32 dwROP;       // 0x08
-    u32 pad0c[17];   // 0x0c..0x4f
-    u32 dwFillColor; // 0x50
-    u32 pad54[4];    // 0x54..0x63
-};
 
 // The engine heap allocator (NAFXCW operator new replacement) - 16-byte RECT
 // nodes Configure allocates for the explicit-blit case. _RezAlloc (named, rel32).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-
-// A blit rectangle (left/top/right/bottom). m_destRect points at one of these.
-struct DDRect {
-    i32 left;   // +0x0
-    i32 top;    // +0x4
-    i32 right;  // +0x8
-    i32 bottom; // +0xc
-};
-
-// The origin point Configure's caller may pass (validated against the screen
-// extents - unsigned, so the compares lower to `ja`).
-struct DDPoint {
-    u32 x; // +0x0
-    u32 y; // +0x4
-};
 
 // The tile-size descriptor m_tileInfo points at (only the tile width/height are read;
 // unsigned so the validation/divide lower to `ja`/`div`).
@@ -66,21 +42,21 @@ class CDDScreen {
 public:
     void HandleError();  // 0x17cc80
     void ResetPalette(); // 0x17ca60 (body in PaletteReset.cpp; clears the +0x108 table)
-    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);            // 0x17cdf0
-    i32 Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect); // 0x17cfc0
-    i32 CheckGrid();      // 0x17cbe0 (sibling, external)
+    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);        // 0x17cdf0
+    i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
+    i32 CheckGrid();                                               // 0x17cbe0 (sibling, external)
     void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
 
     char m_pad00[0x0c];
     i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
-    CTileInfo* m_tileInfo;          // +0x10
-    IDirectDraw2Z* m_dd2;           // +0x14   IDirectDraw2
-    IDirectDraw2Z* m_dd;            // +0x18   IDirectDraw
-    IDirectDrawSurfaceZ* m_primary; // +0x1c   primary surface
-    IDirectDrawSurfaceZ* m_20;      // +0x20   surface (only Release'd here; role unproven)
-    IDirectDrawSurfaceZ* m_srcSurf; // +0x24   blit source surface
-    IDirectDrawSurfaceZ* m_28;      // +0x28   surface (only Release'd here; role unproven)
-    IDirectDrawPaletteZ* m_palette; // +0x2c
+    CTileInfo* m_tileInfo;         // +0x10
+    IDirectDraw2* m_dd2;           // +0x14   IDirectDraw2
+    IDirectDraw* m_dd;             // +0x18   IDirectDraw
+    IDirectDrawSurface* m_primary; // +0x1c   primary surface
+    IDirectDrawSurface* m_20;      // +0x20   surface (only Release'd here; role unproven)
+    IDirectDrawSurface* m_srcSurf; // +0x24   blit source surface
+    IDirectDrawSurface* m_28;      // +0x28   surface (only Release'd here; role unproven)
+    IDirectDrawPalette* m_palette; // +0x2c
     char m_pad30[0x50c - 0x30];
     i32 m_50c; // +0x50c   reset to 0 by Configure
     char m_pad510[0x514 - 0x510];
@@ -92,7 +68,7 @@ public:
     i32 m_tilesDown;      // +0x528
     i32 m_originX;        // +0x52c
     i32 m_originY;        // +0x530
-    DDRect* m_destRect;   // +0x534  explicit dest rect (or 0)
+    RECT* m_destRect;     // +0x534  explicit dest rect (or 0)
     i32 m_forceSingleRow; // +0x538
     char m_pad53c[0x86a0 - 0x53c];
     i32 m_86a0; // +0x86a0   reset to 0 by Configure
@@ -116,7 +92,7 @@ void CDDScreen::HandleError() {
         ResetPalette();
     }
     if (m_primary) {
-        DDBLTFX_ fx;
+        DDBLTFX fx;
         memset(&fx, 0, sizeof(fx));
         fx.dwSize = 0x64;
         fx.dwROP = 0x42;
@@ -162,7 +138,7 @@ void CDDScreen::HandleError() {
 // ===========================================================================
 RVA(0x0017cdf0, 0x1c6)
 i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
-    DDRect dst, src;
+    RECT dst, src;
     if (m_destRect) {
         dst.left = m_destRect->left;
         dst.top = m_destRect->top;
@@ -242,7 +218,7 @@ i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 // delinked switchdataD_0057d2a0). Both resolve when those symbols are named; not a
 // codegen issue. topic:scoring-artifact - no further code change possible.
 RVA(0x0017cfc0, 0x2dd)
-i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
+i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {
             return 0;
@@ -324,7 +300,7 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
                 m_tilesDown = 1;
                 m_originX = 0;
                 m_originY = 0;
-                m_destRect = (DDRect*)RezAlloc(0x10);
+                m_destRect = (RECT*)RezAlloc(0x10);
                 m_destRect->top = 0;
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
@@ -340,7 +316,7 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
             if (!rect) {
                 return 0;
             }
-            DDRect* r = (DDRect*)RezAlloc(0x10);
+            RECT* r = (RECT*)RezAlloc(0x10);
             m_destRect = r;
             r->left = rect->left;
             r->top = rect->top;
@@ -362,6 +338,3 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, DDPoint* origin, DDRect* rect) {
 
 SIZE_UNKNOWN(CDDScreen);
 SIZE_UNKNOWN(CTileInfo);
-SIZE_UNKNOWN(DDBLTFX_);
-SIZE_UNKNOWN(DDPoint);
-SIZE_UNKNOWN(DDRect);

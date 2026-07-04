@@ -19,6 +19,8 @@
 // ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <Win32.h>  // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock)
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
@@ -148,11 +150,11 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
     if (m_surface == 0) {
         return 1;
     }
-    IDirectDrawSurfaceZ* s = m_surface->m_8;
+    IDirectDrawSurface* s = m_surface->m_8;
     if (s != 0 && s->IsLost() == 0) {
         return 1;
     }
-    IDirectDrawSurfaceZ* r = m_surface->m_8;
+    IDirectDrawSurface* r = m_surface->m_8;
     // Named local before `== 0` so MSVC emits the setcc form (xor/test/sete/mov),
     // not the neg/sbb/inc normalize. docs/patterns/return-bool-via-local-setcc.md.
     i32 hr = r->Restore();

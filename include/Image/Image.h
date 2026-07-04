@@ -27,7 +27,7 @@
 
 #include <rva.h>
 
-#include <DDrawMgr/DDSurface.h> // IDirectDrawSurfaceZ (the held COM surface interface) + the
+#include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held COM surface interface) + the
                                 // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
 #include <Io/FileStream.h>
 
@@ -174,7 +174,7 @@ public:
 
 // The held DirectDraw surface at +0x08, dispatched THISCALL for the CFileImage.cpp
 // save/flip Unlock call sites (vtable slot +0x80 = Unlock(rect)). Same physical held
-// surface as m_8 (IDirectDrawSurfaceZ*, the DDraw COM/stdcall view); this is the
+// surface as m_8 (IDirectDrawSurface*, the DDraw COM/stdcall view); this is the
 // pointer-only dispatch interface for the thiscall Unlock sites - it holds NO data.
 // [The held-surface convention (thiscall here vs stdcall COM elsewhere) is a re-match
 // reconcile item - see docs/multi-view-worklist.md.]
@@ -401,8 +401,8 @@ public:
     // is modeled here directly rather than viewed through a separate wrapper class.
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
     char m_pad04[0x08 - 0x04]; // +0x04
-    IDirectDrawSurfaceZ* m_8;  // +0x08  held DirectDraw surface (released via Release)
-    IDirectDrawSurfaceZ* m_c;  // +0x0c  held back/secondary surface (also released)
+    IDirectDrawSurface* m_8;   // +0x08  held DirectDraw surface (released via Release)
+    IDirectDrawSurface* m_c;   // +0x0c  held back/secondary surface (also released)
     union {                    // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
         char m_desc[0x24];
         struct {
