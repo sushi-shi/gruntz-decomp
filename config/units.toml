@@ -1469,7 +1469,7 @@ flags = "eh"
 [[unit]]
 unit = "wwdgameobject"
 source = "src/Gruntz/WwdGameObject.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "ddrawworkers"
@@ -2116,10 +2116,6 @@ unit = "mgrsettings"
 source = "src/Gruntz/MgrSettings.cpp"
 flags = "base"
 
-[[unit]]
-unit = "wwdgameobjecteh"
-source = "src/Gruntz/WwdGameObjectEh.cpp"
-flags = "eh"
 [[unit]]
 unit = "colorhsv"
 source = "src/Gruntz/ColorHsv.cpp"
