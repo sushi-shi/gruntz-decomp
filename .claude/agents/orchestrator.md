@@ -299,6 +299,16 @@ must STOP and report, not force the wrong class.
 > the true class/signature even when consolidating temporarily dips the score —
 > the % is recovered by re-matching against the correct shared header. (Headers
 > live under `include/<Module>/`, mirroring `src/`; angle-bracket includes.)
+>
+> **Phase policy (clean-room mandate, docs/cleanup-plan.md): reconstruction
+> maximizes %; cleanup maximizes correctness-of-shape and ACCEPTS % cost.** During
+> cleanup phases a regalloc / definition-reordering / header-fattening drop from a
+> correct-shape change is accepted: the worker reports it (with the mechanism), the
+> orchestrator blesses it at integration (`status update --accept-regressions`) —
+> never instruct a cleanup worker to revert a correct-shape change to protect %.
+> The % is pushed back up in a dedicated final phase (P6) after the source is
+> clean. (Worker-side detail: matcher.md "Two work modes" — incl. the one surviving
+> %-driven revert, the localized-drop shape-disproof.)
 
 > **Inline ctors and their out-of-line COMDAT copy.** A class whose ctor must be
 > *inline* (because a derived ctor folds it — e.g. `CSBI_RectOnly` inlines

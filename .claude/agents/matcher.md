@@ -282,10 +282,12 @@ other TUs), where letting the compiler emit a vtable would produce a divergent o
 out prematurely** (an incomplete polymorphic class emits a wrong vtable and regresses); remove it
 when the class is fully modeled and the emitted vtable matches retail.
 
-**Verify before assuming a cast is required.** A type swap can shift codegen if it changes the
-underlying class: a typed `CTypedPtrArray<CPtrArray,…>` dropped GameLevel's ctor **89.5%→72%**,
-proving that array is a genuine `CDWordArray` — so its casts stay. Build + match-check each swap;
-if a previously-green function drops, the type was load-bearing — revert and keep the cast.
+**Verify each type swap with a build — a % drop is evidence to READ, not an auto-revert.** A drop
+**localized at the retyped accesses** means the binary disproves the new shape: a typed
+`CTypedPtrArray<CPtrArray,…>` dropped GameLevel's ctor **89.5%→72%**, proving that array is a
+genuine `CDWordArray` — the casts are authentic dev code; revert and keep them. A **diffuse**
+regalloc/header-fattening ripple from a binary-proven-correct shape is NOT such proof — in a
+cleanup brief it is an accepted, reported cost (see "Two work modes"), never a reason to revert.
 
 **Never** write `(T*)0xADDR` for a data reference — a bare immediate carries no relocation and
 caps the function below 100%. Use the real string literal / named global / typed extern

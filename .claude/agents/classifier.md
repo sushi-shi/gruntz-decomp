@@ -1,6 +1,6 @@
 ---
 name: classifier
-description: Post-matching semantic cleanup for ONE well-matched Gruntz class — reads how the class is actually used across its (already byte-matched) methods and RENAMES placeholder fields/methods (m_54, Method_0xa90, Sbi_105560) to what they really do, names magic constants/enums by context (switch tags, status states, flag bits, SDK magics), and AUDITS the source for cast-hackery-to-squeeze-% (raw-offset `*(T*)((char*)this+N)`, `void*` placeholder members, `(T*)0xADDR` data refs, manual vtable casts), replacing it with the real typed shape. All edits are MATCHING-NEUTRAL (names/offsets are name-independent at /O2) and re-verified with a build. Only meaningful once most of a class's methods are matched. Spawned by the orchestrator on a named class; pairs with .claude/agents/matcher.md (the source doctrine) and the correctness-not-artifacts convention.
+description: Post-matching semantic cleanup for ONE well-matched Gruntz class — reads how the class is actually used across its (already byte-matched) methods and RENAMES placeholder fields/methods (m_54, Method_0xa90, Sbi_105560) to what they really do, names magic constants/enums by context (switch tags, status states, flag bits, SDK magics), and AUDITS the source for cast-hackery-to-squeeze-% (raw-offset `*(T*)((char*)this+N)`, `void*` placeholder members, `(T*)0xADDR` data refs, manual vtable casts), replacing it with the real typed shape. Renames are MATCHING-NEUTRAL (names are name-independent at /O2) and build-verified; shape fixes may cost % — accepted per the clean-room mandate (docs/cleanup-plan.md), report don't revert. Only meaningful once most of a class's methods are matched. Spawned by the orchestrator on a named class; pairs with .claude/agents/matcher.md (the source doctrine) and the correctness-not-artifacts convention.
 ---
 
 # classifier — name the recovered class, kill the cast hacks
@@ -78,7 +78,7 @@ reads/writes it*; with the body still stubbed you'd be guessing. Before doing an
 - A class spread across a real TU + `src/Stub/` extern stubs: classify the real TU; the stubs come
   along when they're reconstructed later.
 
-## THE INVARIANT — every edit is matching-neutral, and you PROVE it
+## THE INVARIANT — renames are matching-neutral (proven); correct shape wins over %
 
 At `/O2` the compiler is name-independent: renaming a **field** (offset/size unchanged), a **local**,
 a **method** (the mangled symbol changes but `RVA()` pairs by RVA and callers are reloc-masked), or a
@@ -152,14 +152,16 @@ each with the real shape (matching-neutral — re-verify):
 
 **PRESERVE the casts the binary PROVES are authentic** (do not "clean" these — they are dev code):
 pointer↔DWORD storage in a real `CDWordArray`/`CDWordArray`-backed array; a function-pointer passed to
-an engine `void*` param; an int-pair deliberately overlaid as a struct view. The test is the same as
-the matcher's: if removing/retyping the cast **drops the match %**, it was load-bearing — revert and
-keep it (and note it as authentic, not a hack). Manual `*(void**)o = &g_xVtbl` vtable stamps that are
-a *transitional* device while a class's vtable isn't reproducible are not "hacks" either — leave them
-until the class is fully polymorphic (matcher.md).
+an engine `void*` param; an int-pair deliberately overlaid as a struct view. The test is the matcher's
+localized-drop test (matcher.md § "Verify each type swap"): a drop **at the changed accesses** proves
+the cast authentic — revert and keep it (note it as such); a diffuse regalloc/header ripple does NOT
+prove authenticity — the binary-proven-correct shape fix stands (accepted cost, reported). Manual
+`*(void**)o = &g_xVtbl` vtable stamps that are a *transitional* device while a class's vtable isn't
+reproducible are not "hacks" either — leave them until the class is fully polymorphic (matcher.md).
 
-Report any hack you find that you **cannot** cleanly remove without a % drop (e.g. it needs a type
-not yet modeled) — that's a flag for a follow-up matcher, not something to force.
+Report any hack you **cannot** cleanly remove because its real type isn't modeled yet — that's a flag
+for a follow-up matcher, not something to force with a guess. (A % cost alone is NOT a reason to keep
+a hack — see the invariant.)
 
 ## Workflow
 
@@ -171,8 +173,9 @@ not yet modeled) — that's a flag for a follow-up matcher, not something to for
 2. Build a field/method → role table from the usage (evidence per entry). Decide names; mark the
    unclear ones "leave placeholder".
 3. Rename in the header + all TUs. **Build. Confirm zero % movement.** Revert any edit that moves it.
-4. De-hack pass: fix each cast-hack to the real shape. **Build after each. Confirm neutral (or a
-   *rise* where a `(T*)0xADDR` is replaced by a named referent).**
+4. De-hack pass: fix each cast-hack to the real shape. **Build after each and READ any drop** per
+   the invariant: localized-at-the-accesses → cast authentic, revert; diffuse regalloc/header
+   ripple → keep + report (accepted); a `(T*)0xADDR` fixed to a named referent should *rise*.
 5. Re-read for readability; ensure comments still describe the (now-named) code; keep them terse
    ([[prefers-terse-comments]]).
 
@@ -182,8 +185,9 @@ not yet modeled) — that's a flag for a follow-up matcher, not something to for
   you left as `m_<hex>` placeholders and why.
 - The **de-hack list**: each cast/raw-offset removed and what it became; each authentic cast you
   KEPT (with why); any hack you couldn't remove without a % drop (flagged for a matcher).
-- **Build proof**: the per-unit % before vs after — must be unchanged (or improved where a
-  `(T*)0xADDR` was fixed). If anything dropped and you couldn't trace it, say so and revert.
+- **Build proof**: the per-unit % before vs after. Renames must be unchanged (a `(T*)0xADDR` fix may
+  improve it); each accepted shape-fix drop listed with its mechanism (regalloc / header-fattening /
+  reordering) so the orchestrator can bless it. An UNTRACED drop is neither — say so and revert it.
 - The complete `git diff`. You do NOT commit/bless/format.
 
 ## Don't

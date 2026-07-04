@@ -130,13 +130,16 @@ once — main has a single `build/` and a single HEAD):
 3. **Build + measure** in main: `nix develop .#build --command gruntz build`.
    Confirm the target hit its reported %, and read the before→after exact count.
 4. **Bless** the baseline: `gruntz` status `update` (records new best% + handles
-   same-RVA symbol renames). Two cases need `update --accept-regressions`:
+   same-RVA symbol renames). Three cases need `update --accept-regressions`:
    (a) a **migration** — the old stub symbol goes LOST at its RVA (intended
    rename); (b) a **trivial cross-function fuzzy drift** (measured: a neighbor in
    the same aggregate obj dropping <0.1% when you add a new function/string
-   literal — its code+relocs are unchanged, pure objdiff scoring noise). A real
-   `best%` drop on an untouched function is NOT acceptable — investigate instead.
-   Keep the bless in the same commit.
+   literal — its code+relocs are unchanged, pure objdiff scoring noise);
+   (c) a **cleanup-phase correct-shape drop the worker REPORTED** with its
+   mechanism (regalloc / header-fattening / reordering) — accepted per the
+   clean-room mandate (docs/cleanup-plan.md; orchestrator.md §5). A `best%` drop
+   with NO reported cause on an untouched function is NOT acceptable —
+   investigate instead. Keep the bless in the same commit.
 5. **Commit** atomically: `git add` ONLY this matcher's file(s) +
    `config/match_baseline.tsv`, message `match: <fn> -> <result>` with the
    `Co-Authored-By: Claude Opus 4.8 (1M context)` trailer. One matcher = one
