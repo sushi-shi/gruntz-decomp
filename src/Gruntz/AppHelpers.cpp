@@ -9,6 +9,7 @@
 #include <Win32.h>
 
 #include <Gruntz/GameRegistry.h> // canonical *0x64556c game-manager singleton
+#include <Gruntz/LightFxMgr.h>   // CLightFxMgr (m_logicPump @+0x78; m_tables[])
 
 extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 extern void* g_64e25c;
@@ -32,14 +33,9 @@ int CTitleApp::OnStart(int) {
 }
 
 // ---------------------------------------------------------------------------
-// The +0x78 reused sub-object slot's concrete view here (authentic downcast off
-// the game-registry singleton's void* m_78).
-struct MgrInner {
-    char pad[0x28];
-    void* m_28; // +0x28
-};
 // The game-manager singleton is the canonical CGameRegistry (*0x64556c); this
-// routine reaches its +0x78 slot's m_28.
+// routine reaches its +0x78 light-FX pump (CLightFxMgr) shade-table array
+// (m_tables[5], the +0x28 slot).
 extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
 struct CSub10 {
@@ -63,7 +59,7 @@ int CHandlerB4::Handle(int a0, int a1, int a2, int a3) {
         return 0;
     }
     if (a1 == 8) {
-        void* x = ((MgrInner*)g_mgrSettings->m_logicPump)->m_28;
+        void* x = g_mgrSettings->m_logicPump->m_tables[5];
         CSub10* p = m_10;
         p->m_58 = 1;
         p->m_50 = 7;
@@ -91,4 +87,3 @@ SIZE_UNKNOWN(CHandlerB4);
 SIZE_UNKNOWN(CSub10);
 SIZE_UNKNOWN(CTitleApp);
 SIZE_UNKNOWN(DlgData);
-SIZE_UNKNOWN(MgrInner);

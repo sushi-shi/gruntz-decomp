@@ -2,18 +2,15 @@
 // a CUserLogic leaf. The 1-arg leaf ctor + the /GX leaf dtor are reconstructed here.
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) the leaf interns "A"
 // into; named by mangled symbol so the Find call reloc-masks.
 extern CButeTree g_buteTree;
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). The ctor
-// reads its +0x78 sub-object's +0x28 field into m_object->m_4c. Modeled minimally with
-// only the touched offsets; address-pinned so the `mov ds:g_gameReg` reloc-masks.
-struct WwdGameRegSub {
-    char m_pad00[0x28];
-    i32 m_28; // +0x28
-};
+// reads its +0x78 light-FX pump (CLightFxMgr) shade table m_tables[5] (the +0x28
+// slot) into m_object->m_drawFillArg; address-pinned so the `mov ds:g_gameReg` reloc-masks.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
@@ -41,7 +38,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
-    m_object->m_drawFillArg = ((WwdGameRegSub*)g_gameReg->m_logicPump)->m_28;
+    m_object->m_drawFillArg = (i32)g_gameReg->m_logicPump->m_tables[5];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     if (m_object->m_latchedAnimId != 0xcf84f) {
@@ -59,4 +56,3 @@ RVA(0x00012670, 0x44)
 CDroppedObjectShadow::~CDroppedObjectShadow() {}
 
 #include <rva.h>
-SIZE_UNKNOWN(WwdGameRegSub);

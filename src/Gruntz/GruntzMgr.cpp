@@ -21,6 +21,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
+#include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -3110,7 +3111,7 @@ void CGruntzMgr::Close() {
         m_saveSink = 0;
     }
     if (m_logicPump) {
-        m_logicPump->Teardown();
+        m_logicPump->Reset(); // CLightFxMgr::Reset @0x9dc80 (zero the bound ptrs + tables)
         operator delete(m_logicPump);
         m_logicPump = 0;
     }

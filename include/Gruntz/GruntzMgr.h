@@ -134,6 +134,7 @@ struct CInput54;
 // multi-facet slots carry all their facets' fields + methods.
 struct EngObj;          // teardown-only sub-object (Teardown())
 class CSpriteRefTable;  // +0x74 sprite/animation ref table (Reset teardown @0xe2290)
+class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
 struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
 struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
@@ -345,13 +346,13 @@ public:
     CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
                                       //         GetByIndex consumers; Close tears it down via Reset)
-    EngObj* m_logicPump;     // +0x78  per-frame logic/effects pump (consumers: Push + +0x14 table);
-                             //         mgr only tears it down, so typed EngObj until modeled
-    ScoreHud* m_scoreHud;    // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;           // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
-    i32 m_numMovies;         // +0x84  "Num_Movies" (movie-playback counter)
-    i32 m_colorDepth;        // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
-    i32 m_modeW, m_modeH;    // +0x8c, +0x90  live video mode (w, h)
+    CLightFxMgr* m_logicPump; // +0x78  light-FX/shade-table pump (Push + m_tables[10]@+0x14
+                              //         consumers; Close tears it down via Reset @0x9dc80)
+    ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
+    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
+    i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
+    i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH;   // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;                // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;                // +0xa0  one-shot lobby-connect guard

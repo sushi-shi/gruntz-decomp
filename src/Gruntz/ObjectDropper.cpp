@@ -6,6 +6,7 @@
 #include <string.h> // inline strcmp for the direction-name match
 #include <Globals.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid terrain plane
+#include <Gruntz/LightFxMgr.h>   // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) + the bute manager
 // (g_buteMgr.GetDwordDef 0x1721e0); declared extern so the calls reloc-mask.
@@ -235,7 +236,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
-    i32 sel = ((i32*)g_gameReg->m_logicPump)[10];
+    i32 sel = (i32)g_gameReg->m_logicPump->m_tables[5];
     o->m_active = 1;
     o->m_state = 7;
     o->m_spriteRef = sel;

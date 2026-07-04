@@ -10,6 +10,7 @@
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/GruntPowerupSprite.h>
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
 
 // The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
 // @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
@@ -75,7 +76,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = *(i32*)((char*)g_mgrSettings->m_logicPump + powerup * 4 + 0x14);
+    i32 rec = (i32)g_mgrSettings->m_logicPump->m_tables[powerup];
     CGameObject* r = m_object;
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
@@ -130,7 +131,7 @@ i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4)
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CGameObject* r = m_object;
-            i32 v = *(i32*)((char*)g_mgrSettings->m_logicPump + id * 4 + 0x14);
+            i32 v = (i32)g_mgrSettings->m_logicPump->m_tables[id];
             r->m_drawActive = 1;
             r->m_drawFillArg = v;
             r->m_drawFillCmd = 7;

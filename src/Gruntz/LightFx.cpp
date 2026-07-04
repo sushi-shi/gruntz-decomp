@@ -3,6 +3,7 @@
 #include <Gruntz/LightFx.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 // LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
@@ -45,12 +46,6 @@ struct LfxMapSource {
     LfxMapHolder* m_0c; // +0xc
 };
 
-// The per-frame logic-table push the bound object runs (g_gameReg->m_78). It
-// IGNORES `this` (reads its ctx from the first stack arg), __thiscall ret 0xc
-// (3 args) - the 0x9dcb0 routine; modeled NO-body so the call reloc-masks.
-struct LfxLogicPump {
-    i32 Push(i32 node, i32 anchor, i32 slot); // 0x9dcb0 (via the 0x295f thunk)
-};
 
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
 // read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
@@ -176,7 +171,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     ((LfxMapSource*)m_3c)->m_0c->m_10->m_10.Lookup(spec, &node);
     i32 found = node;
-    ((LfxLogicPump*)g_gameReg->m_logicPump)->Push(found, anchorA, 7);
+    g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
     LfxObj* obj = (LfxObj*)m_38;
     if (found != 0) {
         LfxEffectNode* en = (LfxEffectNode*)found;
@@ -223,7 +218,6 @@ SIZE_UNKNOWN(CLightFxActEntry);
 SIZE_UNKNOWN(CLightFxActReg);
 SIZE_UNKNOWN(LfxEffectNode);
 SIZE_UNKNOWN(LfxLayerSink);
-SIZE_UNKNOWN(LfxLogicPump);
 SIZE_UNKNOWN(LfxMapCore);
 SIZE_UNKNOWN(LfxMapHolder);
 SIZE_UNKNOWN(LfxMapSource);

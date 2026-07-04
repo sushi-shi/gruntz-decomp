@@ -68,6 +68,11 @@ struct CImageRegistry; // +0x30->+0x10 image/tile registry (name->sprite map)
 // descriptor. `new`'d in the game bootstrap (0x83450), torn down by CGruntzMgr::Close
 // (CSpriteRefTable::Reset @0xe2290). Forward-declared to keep this ~60-TU view light.
 class CSpriteRefTable;
+// +0x78 per-frame light-FX / shade-table pump (<Gruntz/LightFxMgr.h>): Push(imgSet,
+// anchor, slot) applies a chosen shade table; m_tables[10] (+0x14) is the effect->table
+// array consumers index. `new`'d in the bootstrap (0x83450), torn down by Close
+// (CLightFxMgr::Reset @0x9dc80). Forward-declared to keep this ~60-TU view light.
+class CLightFxMgr;
 
 // The level/view object reached as g->m_30->m_24: +0x10 the on-screen bar RECT
 // (the action/option menu bar), +0x5c the world->screen viewport (WrapCoord;
@@ -217,8 +222,8 @@ struct CGameRegistry {
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (ONE object,
                                       //         RTTI/teardown-proven: LoadSprite in CPlay,
                                       //         GetByIndex==GetSel in InGameIcon; Grunt.h GetSel)
-    void* m_logicPump;     // +0x78  per-frame logic/effects pump (ONE object: Push + an int/color
-                           //         table at +0x14 + field at +0x28; LfxLogicPump). void* until typed.
+    CLightFxMgr* m_logicPump; // +0x78  light-FX / shade-table pump (ONE object, teardown-proven:
+                              //         Push@0x9dcb0; m_tables[10]@+0x14 is the effect->table array)
     void* m_scoreHud;  // +0x7c  HUD/score accumulator + cmd sink;
                        //         battlez views it as the CBzData score tracker facet.
     i32 m_numRuns;     // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti

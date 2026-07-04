@@ -4,6 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -156,8 +157,7 @@ i32 CStrikeEffect::Tick() {
         } else {
             m_118 = 0;
         }
-        i32* tbl = (i32*)g_mgrSettings->m_logicPump;
-        i32 frame = tbl[idx + 5];
+        i32 frame = (i32)g_mgrSettings->m_logicPump->m_tables[idx];
         CStrikeSprite* spr = m_10;
         spr->m_58 = 1;
         spr->m_4c = frame;
