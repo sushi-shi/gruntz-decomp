@@ -764,6 +764,28 @@ i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
 }
 
 // ---------------------------------------------------------------------------
+// StartPrimary (0x137200, re-homed from BoundaryUpper2): gated on init, lazily
+// (re)create the primary buffer, then start it looping (IDirectSoundBuffer::Play
+// slot 12, DSBPLAY_LOOPING); report + fail on a non-zero HRESULT. (The
+// BoundaryUpper2 view mislabeled this "SoundDevice::Restore" over a placeholder
+// ISndBuf slot 0x30 - it is the real StartPrimary declared in SoundDevice.h.)
+RVA(0x00137200, 0x53)
+i32 SoundDevice::StartPrimary() {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (CreatePrimaryBuffer() == 0) {
+        return 0;
+    }
+    i32 hr = m_primaryBuffer->Play(0, 0, DSBPLAY_LOOPING) != 0;
+    if (hr) {
+        DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x68b, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CreatePrimaryBuffer: gated on init + m_coopLevel==DSSCL_NORMAL; lazily
 // CreateSoundBuffer(primary, m_bufferFlags|DSBCAPS_PRIMARYBUFFER) into m_primaryBuffer.
 RVA(0x00137260, 0x95)

@@ -148,26 +148,8 @@ SIZE_UNKNOWN(CPageStore17b510);
 // 0x174ed0 / 0x175780 - CImagePool free/clear pair: RE-HOMED to the imagepool unit
 // (src/Image/ImagePool.cpp), reconciled onto the real CImagePool / CRezImage types.
 
-// 0x137200 - SoundDevice restore (COM buffer restore via vtbl slot 0x30).
-struct ISndBuf;
-struct ISndBufVtbl {
-    i32 _0[0x30 / 4];
-    i32(__stdcall* Restore)(ISndBuf*, i32, i32, i32); // +0x30
-};
-SIZE_UNKNOWN(ISndBufVtbl);
-struct ISndBuf {
-    ISndBufVtbl* vtbl;
-};
-SIZE_UNKNOWN(ISndBuf);
-struct SoundDevice {
-    i32 _0[0x78 / 4];
-    void* m_78; // +0x78
-    i32 _7c[(0x84 - 0x7c) / 4];
-    ISndBuf* m_buffer; // +0x84
-    i32 Probe();       // 0x137260
-    i32 Restore();
-};
-SIZE_UNKNOWN(SoundDevice);
+// 0x137200 - SoundDevice::StartPrimary: RE-HOMED to the directsoundmgr unit
+// (src/Dsndmgr/DirectSoundMgr.cpp, real SoundDevice in SoundDevice.h).
 
 // 0x13e7d0 - CDDSurface restore (build a 0x64-byte descriptor + restore helper).
 struct RestoreDesc {

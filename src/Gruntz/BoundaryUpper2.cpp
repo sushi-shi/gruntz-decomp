@@ -207,26 +207,10 @@ i32 CPageStore17b510::Lookup(u32 idx) {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// 0x137200 - SoundDevice restore: if the COM buffer (+0x84) is present and the
-// device Probe (0x137260) succeeds, call its Restore (vtbl slot 0xc) and on
-// failure log a Dsndmgr error. __thiscall.
+// 0x137200 - SoundDevice::StartPrimary: RE-HOMED to the directsoundmgr unit
+// (src/Dsndmgr/DirectSoundMgr.cpp) alongside CreatePrimaryBuffer (0x137260); it is
+// the real StartPrimary (SoundDevice.h), not a "Restore". See that TU.
 // ---------------------------------------------------------------------------
-extern void __cdecl SndErr(const char* file, i32 line, i32 flag); // 0x138150
-RVA(0x00137200, 0x53)
-i32 SoundDevice::Restore() {
-    if (!m_78) {
-        return 0;
-    }
-    if (!Probe()) {
-        return 0;
-    }
-    i32 ok = m_buffer->vtbl->Restore(m_buffer, 0, 0, 1) != 0;
-    if (ok) {
-        SndErr("C:\\Proj\\Dsndmgr\\DSNDMGR.CPP", 0x68b, ok);
-        return 0;
-    }
-    return 1;
-}
 
 // ---------------------------------------------------------------------------
 // 0x13ba70 - CSymParser thunk: allocate a 4-byte local, pass its address to the

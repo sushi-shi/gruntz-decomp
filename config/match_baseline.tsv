@@ -58,7 +58,7 @@ boundarytail	8	2
 boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
-boundaryupper2	25	17
+boundaryupper2	24	16
 boundaryupper2eh	4	2
 boundaryuppereh	9	9
 bracketvalue	1	1
@@ -130,7 +130,7 @@ destructbutton	1	1
 dialogs	42	20
 directdrawmgr	29	12
 directinputmgr2	41	38
-directsoundmgr	42	34
+directsoundmgr	43	35
 dirpal	3	0
 discoveredarray	1	0
 discoveredeh	2	2
@@ -876,7 +876,6 @@ boundaryupper2	?Remove@CSymTab@@QAEHPAUSymEntry1@@PAUSymEntry2@@@Z	100.0000	100.
 boundaryupper2	?Reset@CDDWorkerFlatA@@QAEXXZ	90.3333	90.3333	1	9dd7a0ea7064	0x1570d0
 boundaryupper2	?Reset@CDDWorkerFlatB@@QAEXXZ	90.3333	90.3333	1	e03b69032262	0x157240
 boundaryupper2	?Restore@CDDSurface@@QAEHPAXH@Z	100.0000	100.0000	1	2cc51732b819	0x13e7d0
-boundaryupper2	?Restore@SoundDevice@@QAEHXZ	100.0000	100.0000	1	59c9537a4724	0x137200
 boundaryupper2	?RestoreLostSurfaces_1437f0@@YAHXZ	100.0000	100.0000	2	4d056768e59c	0x1437f0
 boundaryupper2	?SetPalette@CPalObj143950@@QAEHPBEH@Z	78.2647	78.2647	3	9aff0c3e6d76	0x143950
 boundaryupper2	?Setup@ImgOwnedX@@QAEHHHHH@Z	100.0000	100.0000	2	d3d82fa55d4b	0x148af0
@@ -1470,6 +1469,7 @@ directsoundmgr	?SetPan@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	3b0ee676d611	
 directsoundmgr	?SetPanByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	1	ca81b43045d6	0x1357a0
 directsoundmgr	?SetVolume@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	3	76614df35601	0x135560
 directsoundmgr	?SetVolumeByIndex@DirectSoundMgr@@QAEHH@Z	100.0000	100.0000	2	de64fe712122	0x1355c0
+directsoundmgr	?StartPrimary@SoundDevice@@QAEHXZ	100.0000	100.0000	1	d9edee152e65	0x137200
 directsoundmgr	?StopAllClones@DSoundCloneInst@@QAEXXZ	100.0000	100.0000	1	e52211eb6536	0x136150
 directsoundmgr	?StopAndRewind@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	5	8ac7740af7a2	0x135380
 directsoundmgr	?TickSubManagers@SoundDevice@@QAEHH@Z	100.0000	100.0000	1	706d947c78ff	0x137ac0
