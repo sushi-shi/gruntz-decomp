@@ -22,6 +22,7 @@
 #include <Mfc.h>           // MFC CString (ctor/dtor/op=/op+, all reloc-masked)
 #include <Io/FileStream.h> // CFileIO (0x1befd7 ctor / 0x1bf121 dtor / Open/Read/GetLength/Close)
 #include <string.h>        // inline memcpy (rep movsd) at /O2
+#include <stdio.h>         // sprintf (0x11f890)
 
 #include <rva.h>
 
@@ -42,8 +43,6 @@ struct LevelRezData {
     char m_pad2f0[0x5f4 - 0x2f0];
 };
 
-// FormatBuf (0x11f890): the engine sprintf-into-char-buffer, __cdecl variadic.
-extern "C" i32 FormatBuf(char* buf, const char* fmt, ...); // 0x11f890
 
 class LevelRezLoader {
 public:
@@ -89,15 +88,15 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     // Namespace path. Retail writes the Insert/BeginParse/memcpy/EndParse tail out
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
-        FormatBuf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
+        sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
         CSymNode* node = (CSymNode*)m_34->ResolvePath(scratch);
         if (node == 0) {
             return 0;
         }
         if (a4 > 0x24) {
-            FormatBuf(scratch, "TRAINING%i", a4 % 0x24);
+            sprintf(scratch, "TRAINING%i", a4 % 0x24);
         } else {
-            FormatBuf(scratch, "LEVEL%i", a4);
+            sprintf(scratch, "LEVEL%i", a4);
         }
         CSymNode* sub = node->Insert(scratch, 0x575744);
         if (sub == 0) {

@@ -50,6 +50,7 @@
 #include <Globals.h>
 
 #include <stdio.h> // vsprintf (NAFXCW varargs formatter)
+#include <stdlib.h> // atoi (0x11ffb0)
 
 // Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);
 // the `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
@@ -101,7 +102,6 @@ extern "C" void ButeGroup_Apply();
 //   ReadDword(tok, end, b)  strtoul-like (base b), the type-1 dword value
 //   ReadFloat(tok)          atof-like, returns the value in st(0)
 // plus the CRT variadic sscanf the point/rect cases drive.
-extern "C" i32 ButeRead_Int(char* tok);                           // 0x11ffb0
 extern "C" DWORD ButeRead_Dword(char* tok, char** end, i32 base); // 0x1240b0
 extern "C" double ButeRead_Float(char* tok);                      // 0x18d220
 extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
@@ -732,7 +732,7 @@ bool ButeMgr::ParseAttributeFile() {
     switch (self->m_tokType) {
         case 5:
         case 6: { // signed int -> type 0
-            v = ButeRead_Int(self->m_token);
+            v = atoi(self->m_token);
             if (self->m_writeMode) {
                 accum->AppendInt(self->GetInt(self->m_tagName, self->m_str104));
             } else if (!bDup) {

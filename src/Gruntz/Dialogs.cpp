@@ -784,7 +784,7 @@ struct CNetDlgHost {                 // m_4 (runs the dialog, finds the local pl
 };
 // cdecl ILT-thunk helpers.
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
-void DlgSleep_13dfe0(i32 ms);        // 0x13dfe0
+void ActiveWait(i32 ms); // 0x13dfe0 busy-wait
 
 class CNetMgrLite {
 public:
@@ -844,7 +844,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
                 }
             }
         }
-        DlgSleep_13dfe0(0xfa);
+        ActiveWait(0xfa);
     }
     return 1;
 }

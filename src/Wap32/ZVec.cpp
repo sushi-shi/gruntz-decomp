@@ -26,7 +26,7 @@ VTBL(zDArray, 0x001f04d4);           // ~zDArray-entry vtable (0x5f04d4)
 #pragma function(memcpy)
 
 // Two engine return-address capture helpers that seed the error token.
-extern void* zErr_CaptureRetA(); // 0x16e0f0 (mov eax,[ebp+4])
+extern void* GetCallerRetAddr(); // 0x16e0f0 (mov eax,[ebp+4])
 extern void* zErr_CaptureRetB(); // 0x16d990 (pop/push/ret)
 
 // Per-element relocation applied to each freshly-grown member-pointer slot
@@ -123,7 +123,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     if (idx < m_lo) {
         p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
-            g_zvecErrToken = zErr_CaptureRetA();
+            g_zvecErrToken = GetCallerRetAddr();
             m_err->Error(this, (u32)s_out_of_memory, 0x22);
             return 0;
         }
@@ -140,7 +140,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     i32 hinew = idx + at;
     p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
-        g_zvecErrToken = zErr_CaptureRetA();
+        g_zvecErrToken = GetCallerRetAddr();
         m_err->Error(this, (u32)s_out_of_memory, 0x22);
         return 0;
     }

@@ -6,12 +6,8 @@
 // to the inline `repne scasb` intrinsic.
 #include <Ints.h>
 #include <rva.h>
-
-extern "C" {
-    int __cdecl sprintf(char* buf, const char* fmt, ...);      // 0x11f890
-    char* __cdecl strstr(const char* hay, const char* needle); // 0x120090
-    unsigned int __cdecl strlen(const char* s);
-}
+#include <stdio.h>  // sprintf (0x11f890)
+#include <string.h> // strstr (0x120090) + inline strlen
 #pragma intrinsic(strlen)
 
 // ---------------------------------------------------------------------------

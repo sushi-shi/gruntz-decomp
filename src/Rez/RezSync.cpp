@@ -16,6 +16,7 @@
 #include <Mfc.h>          // CString + the MFC collection ctors/dtors (reloc-masked)
 #include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
 #include <string.h>
+#include <stdlib.h> // srand (0x11fed0)
 
 #include <Gruntz/CoordNode.h>     // the shared coord-pool node
 #include <Gruntz/ParseSource.h>   // canonical CParseSource (one shape)
@@ -51,9 +52,7 @@ extern u32(WINAPI* g_pTimeGetTime)();  // 0x6c4650
 extern u32(WINAPI* g_pGetTickCount)(); // 0x6c3fc8
 extern i32(WINAPI* g_ShowCursor)(i32); // 0x6c44c4
 
-extern "C" void RezSrand(u32);                       // 0x11fed0
 extern "C" char* StrUpr(char*);                      // 0x18d330
-extern "C" char* SubstringMatch(char*, const char*); // 0x120090 (strstr semantics)
 
 extern "C" void cb_403193();
 extern "C" void cb_401bc2();
@@ -385,7 +384,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x463);
         return 0;
     }
-    RezSrand((g_pTimeGetTime() + g_pGetTickCount()) >> 1);
+    srand((g_pTimeGetTime() + g_pGetTickCount()) >> 1);
     g_wap32Run80 = 0x21;
     while (g_ShowCursor(0) >= 0) {
     }
@@ -479,26 +478,26 @@ i32 RezSync::Init(void* a1, char* a2) {
         char buf[0x130];
         strcpy(buf, a2);
         StrUpr(buf);
-        if (SubstringMatch(buf, "PLAY")) {
+        if (strstr(buf, "PLAY")) {
             mode = 3;
         }
-        if (SubstringMatch(buf, "MULTI")) {
+        if (strstr(buf, "MULTI")) {
             mode = 0x11;
         }
-        if (SubstringMatch(buf, "DEMO")) {
+        if (strstr(buf, "DEMO")) {
             mode = 7;
         }
-        if (SubstringMatch(buf, "SELECT")) {
+        if (strstr(buf, "SELECT")) {
             mode = 0x10;
         }
-        if (SubstringMatch(buf, "NOLOGO")) {
+        if (strstr(buf, "NOLOGO")) {
             noLogo = 1;
         }
-        SubstringMatch(buf, "NOMOVIES");
-        if (SubstringMatch(buf, "LOAD:")) {
+        strstr(buf, "NOMOVIES");
+        if (strstr(buf, "LOAD:")) {
             char cpy[0x11c];
             strcpy(cpy, buf);
-            char* tok = SubstringMatch(cpy, "LOAD:");
+            char* tok = strstr(cpy, "LOAD:");
             if (tok && strlen(tok) > 5) {
                 tok += 5;
                 i32 j = 0;

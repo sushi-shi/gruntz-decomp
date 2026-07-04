@@ -7,14 +7,14 @@
 // destructible stack CFile forces the /GX EH frame.
 #include <Dsndmgr/GruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
+#include <string.h> // strstr (0x120090)
 
 // (Global scalar operator new - the NAFXCW allocator at 0x1b9b46 - comes from the
 // real <Mfc.h> via CGruntzSoundZ.h; no local forward-decl needed.)
 
-// The name compare against the pooled ".." token (0x120090, __cdecl 2-arg; strcmp/
+// The name compare against the pooled ".." token (0x120090 strstr, __cdecl 2-arg;
 // _mbscmp). Reloc-masked rel32; the ".." is the shared $SG constant (0x5ee8ec) the
 // ButeMgr parser also references, so reach it by symbol so the DIR32 pairs.
-extern "C" i32 SbNameCmp(const char* a, const char* b); // 0x120090
 DATA(0x001ee8ec)
 extern char g_dotDot[]; // 0x5ee8ec  ".."
 
@@ -32,10 +32,10 @@ extern char g_dotDot[]; // 0x5ee8ec  ".."
 // chain, the slot-5/15 virtual dispatches and the m_loadBuffer store are byte-faithful,
 // but the local CFile's stack-slot scheduling inside the /GX frame + the EH-state
 // numbering (the documented eh-scoped-local wall) and the differently-named
-// SbNameCmp/operator-new reloc operands diverge. Logic complete; final sweep.
+// strstr/operator-new reloc operands diverge. Logic complete; final sweep.
 RVA(0x00138aa0, 0x175)
 i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
-    if (SbNameCmp(path, g_dotDot) != 0) {
+    if (strstr(path, g_dotDot) != 0) {
         CFile file;
         if (!file.Open(path, 0, 0)) {
             return 0;

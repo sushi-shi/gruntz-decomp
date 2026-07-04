@@ -19,6 +19,7 @@
 #include <Win32.h>  // RECT + IntersectRect
 #include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
+#include <stdlib.h> // engine rand (0x11fee0)
 #include <Globals.h>
 #include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 #include <Gruntz/TypeColl.h>  // the shared type-name collection
@@ -120,7 +121,6 @@ struct CStepRectInit { // 0x34a4 - init a rect + return it
 
 extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
-extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 engine LCG rand
 
 // Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
 // empty the list.
@@ -273,7 +273,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
         i32 dist = (i32)sqrt((double)(iabs(dx) * iabs(dx) + iabs(dy) * iabs(dy)));
         if (dist > m_a4) {
             if (m_f8 != 0) {
-                CStepGoal* e = m_f4[GameRand11fee0() % m_f8];
+                CStepGoal* e = m_f4[rand() % m_f8];
                 g->Trigger1640(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
             g->m_2f0 = -1;
@@ -333,7 +333,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
 tail:
     if (Method2626(g)) {
         if (g->m_328 == 0 && (u32)g->m_2ec > (u32)m_a0 && m_f8 != 0) {
-            CStepGoal* e = m_f4[GameRand11fee0() % m_f8];
+            CStepGoal* e = m_f4[rand() % m_f8];
             g->Trigger1640(e->m_0, e->m_4, 0, 0x983, 0, 0);
             g->m_2ec = 0;
         }

@@ -19,6 +19,7 @@
 #include <Gruntz/ScanRectInit.h>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
+#include <stdlib.h> // engine rand (0x11fee0)
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 // CScanCoord/CScanNode324 (grunt->m_324), CScanListNode (grunt->m_320 pending-coord
@@ -61,7 +62,6 @@ struct CScanMgr {                                                          // th
 
 extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
-extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 (engine LCG rand)
 
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a
 // copy of itself; m_70/m_74 = the resulting size. Inlined at each exit.
@@ -174,7 +174,7 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
             }
             SCAN_RECT_BOUNDS(grid);
             if (m_f8 != 0) {
-                CScanGoal* e = m_f4[GameRand11fee0() % m_f8];
+                CScanGoal* e = m_f4[rand() % m_f8];
                 g->Trigger1640(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
             g->m_2ec = 0;

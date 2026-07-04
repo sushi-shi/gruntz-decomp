@@ -6,11 +6,11 @@
 // codegen naming-independent over the opaque object layout; offsets are load-bearing.
 #include <Ints.h>
 #include <rva.h>
+#include <stdlib.h> // rand (0x11fee0), the trailing signature component
 
 #define I32AT(p, off) (*(i32*)((char*)(p) + (off)))
 
-extern "C" i32 g_645588;       // 0x645588 (the per-frame sync salt)
-extern "C" i32 ChecksumTail(); // 0x11fee0 (the trailing signature component)
+extern "C" i32 g_645588; // 0x645588 (the per-frame sync salt)
 
 struct CGameSyncSig {
     i32 ComputeSignature();
@@ -21,7 +21,7 @@ struct CGameSyncSig {
 // @early-stop
 // integer-sum reassociation/scheduling wall (topic:wall topic:regalloc, ~58%):
 // every field offset, the nested 15x4 loop, the value->value+2 switch jump table,
-// the g_645588 salt and the ChecksumTail() term are all byte-faithful, but retail
+// the g_645588 salt and the rand() term are all byte-faithful, but retail
 // spills m_17c/m_180 to locals (a 0x10-byte frame) which reschedules the long field
 // sum (adjacent independent loads land in a different order, e.g. 0x3f0/0x3f4 and
 // 0x60/0x74 swapped). MSVC freely reassociates the integer +, so the order is not
@@ -126,7 +126,7 @@ i32 CGameSyncSig::ComputeSignature() {
                 }
                 sum += I32AT(obj, 0x450) + I32AT(obj, 0x358) + I32AT(obj, 0x218) + I32AT(obj, 0x21c)
                        + I32AT(obj, 0x220) + g_645588 + r;
-                sum += ChecksumTail();
+                sum += rand();
             }
             off += 4;
         } while (--cnt);

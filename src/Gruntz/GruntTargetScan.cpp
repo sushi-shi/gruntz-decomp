@@ -26,6 +26,7 @@
 #include <Win32.h> // RECT / POINT / PtInRect
 #include <rva.h>
 #include <Gruntz/ScanGrid.h>
+#include <stdlib.h> // engine rand (0x11fee0)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -143,8 +144,6 @@ extern "C" u32 g_clock;             // _g_645588 @0x645588 running game clock
 // __cdecl board rect predicate (0x401127): point-in-board-rect.
 extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
 
-// The engine rand() (0x11fee0).
-extern "C" i32 ScanRand(); // 0x11fee0
 
 struct CGruntScan {
     i32 ScanNearestTarget(); // 0xf42f0
@@ -443,7 +442,7 @@ L_wander:
             F(this, 0x310) = 0;
             F(this, 0x30c) = 0;
             F(this, 0x314) = 0;
-            F(this, 0x310) = ScanRand() % 0x7530 + 0x7530;
+            F(this, 0x310) = rand() % 0x7530 + 0x7530;
             F(this, 0x314) = 0;
             F(this, 0x308) = (i32)g_clock;
             F(this, 0x30c) = 0;
@@ -457,10 +456,10 @@ L_wander:
             i32 spanY = F(hud, 0x140) - baseRow;
             spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
             if (spanX != 0) {
-                baseCol += ScanRand() % spanX;
+                baseCol += rand() % spanX;
             }
             if (spanY != 0) {
-                baseRow += ScanRand() % spanY;
+                baseRow += rand() % spanY;
             }
             CScanGrid* grid = g_mgrSettings->m_tileGrid;
             if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {

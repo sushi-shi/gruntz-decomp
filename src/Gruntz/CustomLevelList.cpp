@@ -12,6 +12,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
+#include <stdio.h> // sprintf (0x11f890)
 
 namespace m4 {
 
@@ -30,7 +31,6 @@ namespace m4 {
     };
     extern "C" i32 CrtFindFirst(const char* spec, FindData* fd); // 0x0011f900 (_findfirst)
     extern "C" i32 CrtFindNext(i32 h, FindData* fd);             // 0x0011fa30 (_findnext)
-    extern "C" i32 FormatBuf(char* buf, const char* fmt, ...);   // 0x0011f890 (sprintf-ish)
     extern "C" i32 CustomGate(const char* name);                 // 0x0018d290
 
     // The shared reentrancy lock guarding the directory walk.
@@ -58,7 +58,7 @@ namespace m4 {
     // @early-stop
     // regalloc + frame-layout wall. Complete correct reconstruction: the listbox
     // reset, the "Custom" gate, the _findfirst glob, the singleton lock (its /GX
-    // unwind), the do-while _findnext walk with the per-entry FormatBuf + by-value
+    // unwind), the do-while _findnext walk with the per-entry sprintf + by-value
     // IsHidden query + extension strip + LB_ADDSTRING, and the unlock all align by
     // shape (llvm-objdump -dr). Residual is MSVC5's stack-buffer placement (the glob
     // vs FindData vs display-name locals land at different [esp+N] than retail's, and
@@ -83,7 +83,7 @@ namespace m4 {
         if (found) {
             do {
                 char disp[260];
-                FormatBuf(disp, g_nameFmt, fd.name);
+                sprintf(disp, g_nameFmt, fd.name);
                 if (!g_mgrSettings->IsHidden13a2(CString(disp))) {
                     i32 len = strlen(disp);
                     if (len > 4) {

@@ -93,7 +93,7 @@ extern CKSlimeColl2* g_typeColl2;
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern "C" void* AllocFail();     // 0x16e0f0 (records the fatal context)
+extern "C" void* GetCallerRetAddr(); // 0x16e0f0 (records the fatal context)
 extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete / free)
 extern "C" i32 ProjActAlloc();    // 0x16d990
 
@@ -139,7 +139,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
     m_buf = 0;
     m_stride = stride;
     if (lo > hi) {
-        g_projActAllocResult = AllocFail();
+        g_projActAllocResult = GetCallerRetAddr();
         m_owner->Report(this, "Inconsistent bounds", 0x16);
         return;
     }
@@ -156,7 +156,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
             return;
         }
     }
-    g_projActAllocResult = AllocFail();
+    g_projActAllocResult = GetCallerRetAddr();
     m_owner->Report(this, "out of memory", 0xc);
 }
 

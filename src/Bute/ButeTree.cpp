@@ -34,7 +34,7 @@ extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 
 // The first-differing-bit (crit-bit index) of two keys (__cdecl). The name
 // matches the delinker's symbol for 0x16e480 so the `call` reloc pairs.
-i32 KeyPrefixBits_16e480(const char* a, const char* b); // 0x16e480
+i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 // Alloc-context diagnostic cells (.data; DATA-pinned so the loads/stores
 // reloc-mask). Shared with the projectile/type registries.
@@ -141,7 +141,7 @@ void* CButeTree::Insert(const char* key, void* value) {
 
     i32 critbit;
     if (m_candidateLeaf != 0) {
-        critbit = KeyPrefixBits_16e480(key, m_candidateLeaf->m_key);
+        critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     } else {
         critbit = newbit - 1;
     }
