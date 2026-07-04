@@ -16,6 +16,7 @@
 
 class CAniCycle : public CUserLogic {
 public:
+    CAniCycle(CGameObject* obj); // 0x0aad20 (ctor body in UserLogic.cpp)
     // The vtable slot-2 logic-type id accessor (returns 0x3ea).
     LogicTypeId GetTypeTag(); // 0x00f450
     // The vtable slot-1 override (two-chain Serialize): the shared CUserLogic
@@ -31,6 +32,9 @@ public:
     // so it is declared only - RegisterActs takes its address as a reloc-masked
     // handler-store operand.
     i32 AdvanceAnim();
+    virtual ~CAniCycle() OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40 (geometry-id cache; written by the ctor)
 };
 
 #endif // GRUNTZ_CANICYCLE_H

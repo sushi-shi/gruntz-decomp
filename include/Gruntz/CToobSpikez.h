@@ -25,6 +25,7 @@
 
 class CToobSpikez : public CUserLogic {
 public:
+    CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
     LogicTypeId GetTypeTag();                  // 0x012ba0 (vtable slot 2: per-class logic-type id)
@@ -33,6 +34,8 @@ public:
     void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
     void RegisterActs();                       // 0x1149c0 (binds the logic handler to key "A")
     virtual ~CToobSpikez() OVERRIDE;           // 0x012c60 (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40 (leaf field, written by the ctor)
 };
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

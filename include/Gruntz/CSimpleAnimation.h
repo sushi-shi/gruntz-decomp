@@ -24,7 +24,8 @@
 
 class CSimpleAnimation : public CUserLogic {
 public:
-    i32 AdvanceAnim(); // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
+    CSimpleAnimation(CGameObject* obj); // 0x0ab940 (ctor body in UserLogic.cpp)
+    i32 AdvanceAnim();                  // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CSimpleAnimation() OVERRIDE; // 0x00f9d0 (folds the CUserLogic teardown)
 };
 

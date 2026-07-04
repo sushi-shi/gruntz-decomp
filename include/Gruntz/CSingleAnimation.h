@@ -19,6 +19,12 @@
 
 class CSingleAnimation : public CUserLogic {
 public:
+    CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
+    static void InitActReg();   // 0x0ae9a0 (construct the activation registry over [2000,2010])
+    static void RegisterActs(); // 0x0aeb80 (bind the per-frame handler to key "A")
+    // The per-frame handler (@0x0aed80); Ghidra did not carve it (recovery gap), so it
+    // is declared only - RegisterActs takes its address as a reloc-masked operand.
+    i32 AdvanceAnim();
     virtual ~CSingleAnimation() OVERRIDE; // 0x010540 (folds the CUserLogic teardown)
 };
 

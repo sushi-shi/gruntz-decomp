@@ -14,6 +14,7 @@
 
 class CSingleFrameMessage : public CUserLogic {
 public:
+    CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
     static void InitActReg(); // 0x0ab530
@@ -24,6 +25,8 @@ public:
     // so it is declared only - RegisterActs takes its address as a reloc-masked
     // handler-store operand.
     i32 AdvanceAnim();
+    virtual ~CSingleFrameMessage()
+        OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
 };
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

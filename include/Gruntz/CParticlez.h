@@ -17,10 +17,13 @@
 #define GRUNTZ_CPARTICLEZ_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserLogic base (CParticlez : CUserLogic)
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>   // CUserLogic base (CParticlez : CUserLogic)
 
 class CParticlez : public CUserLogic {
 public:
+    CParticlez(CGameObject* obj);   // 0x046ad0 (ctor body in UserLogic.cpp)
+    LogicTypeId GetTypeTag();       // 0x012cd0 (per-class logic-type id, 0x41c)
     static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
     void FireActivation(i32 coord); // 0x046d30
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
