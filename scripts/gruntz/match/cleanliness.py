@@ -72,7 +72,13 @@ METRICS = (
     ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
     ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b"), False),
     ("placeholder classes", _count_placeholders, False),
+    # --- manual-vtable residue (the de-hack / vtable-review targets) ---
     ("placeholder vtable slots", _VTSLOT, False),
+    ("*Vtbl structs", re.compile(r"\b(?:struct|class)\s+\w*Vtbl\w*"), False),
+    ("->vtbl accesses", re.compile(r"->\s*\w*[Vv]tbl\w*"), False),
+    ("g_*Vtbl globals", re.compile(r"\bg_\w*[Vv]tbl\w*"), False),
+    ("m_vtbl/m_vptr members", re.compile(r"\bm_v(?:tbl|ptr)\w*"), False),
+    # --- casts ---
     (")this casts", re.compile(r"\)this\b"), False),
     (")m_ casts", re.compile(r"\)m_[A-Za-z0-9_]"), False),
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
@@ -131,13 +137,15 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
     """Formatted scoreboard lines (two columns) for the build report."""
     rows = rows if rows is not None else count()
     base = load_baseline()
-    naming, casts = rows[:6], rows[6:]
+    # three groups: naming (5) | manual-vtable residue (5) | casts (5)
+    naming, vtable, casts = rows[:5], rows[5:10], rows[10:]
     width = max(len(lbl) for lbl, _ in rows) + 1
     lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
-    for i in range(max(len(naming), len(casts))):
-        left = _cell(*naming[i], base, width) if i < len(naming) else ""
-        right = _cell(*casts[i], base, width) if i < len(casts) else ""
-        lines.append(f"  {left:<{width + 14}}  {right}")
+    for i in range(max(len(naming), len(vtable), len(casts))):
+        a = _cell(*naming[i], base, width) if i < len(naming) else ""
+        b = _cell(*vtable[i], base, width) if i < len(vtable) else ""
+        c = _cell(*casts[i], base, width) if i < len(casts) else ""
+        lines.append(f"  {a:<{width + 14}}  {b:<{width + 14}}  {c}")
     return lines
 
 
