@@ -95,6 +95,14 @@ i32 CImageState::LoadStateImages() {
 // CBootyState::OnActivate2 (slot-8 vfunc, RVA 0x1c8a0): hide the cursor, load the
 // BOOTY + GRUNTZ image namespaces, then either pop the secret-bonus toast (when
 // m_activation==200) or fade the "bg" title and show the level-complete toast.
+// This is the REAL CBootyState (vtable 0x5e9cec) slot 8 - NOT its sibling
+// CMultiBootyState (0x5e9bdc); GameMode.h declares this slot @0x01c8a0 as
+// "declared-only; StateImages". NOT folded onto the canonical CBootyState : CState
+// (<Gruntz/GameMode.h>): (1) this is a pure-Win32 TU (<Win32.h> -> windows.h FIRST) and
+// GameMode.h pulls <Mfc.h> -> afx (C1189 wall); (2) the canonical CBootyState declares
+// no data members (its fields are reached by offset), so the +0xc/+0x2c/+0x30/+0x1bc
+// members below have no canonical name to fold to yet (P2 identity-recovery). Kept as a
+// minimal REAL-named Win32-safe partial. C1189 + memberless-canonical wall.
 class CBootyState {
 public:
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0

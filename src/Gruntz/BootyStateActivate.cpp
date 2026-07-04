@@ -8,6 +8,14 @@
 // The two classes are siblings over CState; the shared asset-host / namespace /
 // sound-chain sub-objects are modeled once below. Only offsets / code bytes are
 // load-bearing; every helper is a reloc-masked external.
+//
+// The two CBootyState / CMultiBootyState below are offset-0 aliases of the canonical
+// sibling classes (<Gruntz/GameMode.h>: CBootyState vtbl 0x5e9cec, CMultiBootyState vtbl
+// 0x5e9bdc), each modeled as a minimal REAL-named Win32-safe partial. NOT folded onto
+// GameMode.h: (1) this is a pure-Win32 TU (<Win32.h> -> windows.h FIRST) and GameMode.h
+// pulls <Mfc.h> -> afx (C1189 wall); (2) the canonical classes declare no data members
+// (fields reached by offset), so the local m_c/m_28/m_2c/m_30 members have no canonical
+// name to fold to yet (P2 identity-recovery). C1189 + memberless-canonical wall.
 #include <Win32.h> // ShowCursor (reloc-masked)
 
 #include <rva.h>
