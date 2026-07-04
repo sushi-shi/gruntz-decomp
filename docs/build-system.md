@@ -58,6 +58,8 @@ time, return code).
 ```sh
 gruntz sema disasm 0x0008c750        # TARGET (retail) disasm+relocs; --target explicit
 gruntz sema disasm 0x0008c750 --base # BASE: your compiled fn from build/objdiff/base/<unit>.obj
+gruntz sema disasm 0x0008c750 --rich # BASE asm interleaved with /Z7 source lines (implies --base)
+gruntz sema disasm 0x0008c750 --rich --lite  # same, but bare asm (drops the addr/byte columns)
 gruntz sema disasm 0x0008c750 --diff # base-vs-target asm diff (addresses masked; rc=1 if differs)
 gruntz sema disasm 0x0008c750 --lite # asm only - no addresses/bytes/reloc blocks
 gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
@@ -70,6 +72,20 @@ gruntz sema match cplay | 0x..       # per-function/unit match % (from report.js
 gruntz sema disasm 0x00080850        # retail disasm + relocs (dump_target)
 gruntz sema strings 0x00080850       # string set of a fn;  --find TEXT for the reverse lookup
 ```
+
+**`disasm --rich`** interleaves the BASE disassembly with the C++ source lines it
+came from, so you can see which statements survive `/O2` and which instruction(s)
+each produced (source line flush-left, its instructions indented — a homm2-style
+source↔asm view). It is BASE-only (retail carries no line info, so `--rich` implies
+`--base` and rejects `--target`/`--diff`) and composes with `--lite` (source lines +
+bare asm). The line data comes from a `/Z7` debug object of the same TU
+(`build/debug/<unit>.obj`, the codegen-neutral CodeView build `harvest_locals.py`
+also uses) — built on demand and cached on source mtime. MSVC 5.0 does **not** emit
+modern C13 line tables; it uses classic COFF line numbers (`.text` section-header
+`PointerToLinenumbers` + 6-byte `IMAGE_LINENUMBER` records) whose stored value is
+relative to the function's `.bf` begin line, so `codeview.parse_lines()` recovers
+`source_line = bf_line + stored`. Functions from vendored (non-`src/`) TUs, or when
+the `/Z7` compile is unavailable, degrade to bare asm.
 
 `xref`/`class`/`disasm`/`strings`/`rva` read the retail EXE + generated exports
 (no clangd needed); the clangd-backed ones (`symbol`/`def`/`refs`/

@@ -121,8 +121,90 @@ def parse_locals(obj_path):
     return out
 
 
+# --- COFF line numbers (source line <-> code offset) -----------------------
+#
+# MSVC 5.0 /Z7 does NOT emit the modern C13 DEBUG_S_LINES subsection (the one
+# `llvm-readobj --codeview` understands). It uses the CLASSIC COFF line-number
+# mechanism instead: each function's `.text` section header carries
+# PointerToLinenumbers / NumberOfLinenumbers pointing at a run of 6-byte
+# IMAGE_LINENUMBER records
+#     union { u32 SymbolTableIndex;   // when Linenumber == 0 (the anchor record)
+#             u32 VirtualAddress; }   // when Linenumber != 0: code offset in section
+#     u16 Linenumber;
+# The anchor (Linenumber == 0) names the function via its symbol index. Every
+# other record's Linenumber is stored RELATIVE to the function's begin line,
+# which lives in the function's `.bf` symbol aux record (bytes [4:6]). So the
+# real source line is  bf_line + stored.  (Verified against CState::CState:
+# .bf=53, the stored-16 record at offset 0x48 is `mov [eax+0x16c],ecx` == the
+# `m_16c = 0;` at GameMode.cpp:69 == 53+16.)  The .text bytes are byte-identical
+# with/without /Z7, so these offsets line up 1:1 with the matching base obj's
+# `llvm-objdump` offsets.
+
+# Section-header field offsets (40-byte IMAGE_SECTION_HEADER).
+_SECHDR = 40
+_SH_PTRLINES = 28   # PointerToLinenumbers  (u32)
+_SH_NLINES = 34     # NumberOfLinenumbers   (u16)
+
+
+def _coff_sym_name(data, symptr, strtab_off, idx):
+    b = symptr + idx * 18
+    nm = data[b:b + 8]
+    if nm[:4] == b"\0\0\0\0":                       # long name -> string table
+        off = struct.unpack_from("<I", nm, 4)[0]
+        end = data.index(b"\0", strtab_off + off)
+        return data[strtab_off + off:end].decode("latin1")
+    return nm.rstrip(b"\0").decode("latin1")
+
+
+def parse_lines(obj_path):
+    """{mangled_func_name: {"bf": begin_line, "lines": {code_off: src_line}}}.
+
+    One entry per `.text` COMDAT that carries COFF line numbers; `lines` maps a
+    code offset (relative to the function start, == the base obj's objdump
+    offset) to its 1-based source line. Functions without line records (or a
+    resolvable `.bf`) are simply absent.
+    """
+    with open(obj_path, "rb") as f:
+        data = f.read()
+    nsec = struct.unpack_from("<H", data, 2)[0]
+    symptr, nsym = struct.unpack_from("<II", data, 8)
+    strtab_off = symptr + nsym * 18
+    out = {}
+    for s in range(nsec):
+        h = 20 + s * _SECHDR
+        name = data[h:h + 8].rstrip(b"\0").decode("latin1")
+        lptr = struct.unpack_from("<I", data, h + _SH_PTRLINES)[0]
+        nline = struct.unpack_from("<H", data, h + _SH_NLINES)[0]
+        if name != ".text" or not lptr or nline < 1:
+            continue
+        fidx, ln0 = struct.unpack_from("<IH", data, lptr)
+        if ln0 != 0 or fidx >= nsym:               # first record must be the anchor
+            continue
+        # begin line: function symbol's aux TagIndex -> `.bf` symbol, aux[4:6].
+        if data[symptr + fidx * 18 + 17] < 1:      # NumberOfAuxSymbols
+            continue
+        tag = struct.unpack_from("<I", data, symptr + (fidx + 1) * 18)[0]
+        if not 0 < tag < nsym:
+            continue
+        bf = struct.unpack_from("<H", data, symptr + (tag + 1) * 18 + 4)[0]
+        fname = _coff_sym_name(data, symptr, strtab_off, fidx)
+        lines = {}
+        for r in range(1, nline):
+            off, stored = struct.unpack_from("<IH", data, lptr + r * 6)
+            lines[off] = bf + stored
+        out[fname] = {"bf": bf, "lines": lines}
+    return out
+
+
 if __name__ == "__main__":
     import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--lines":
+        for obj in sys.argv[2:]:
+            for nm, info in parse_lines(obj).items():
+                print(f"{nm}  bf={info['bf']}")
+                for off, ln in sorted(info["lines"].items()):
+                    print(f"    off {off:#06x}  line {ln}")
+        raise SystemExit(0)
     for obj in sys.argv[1:]:
         procs = parse_locals(obj)
         nstack = sum(1 for v in procs.values() for l in v if l.kind == "stack")

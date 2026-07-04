@@ -818,7 +818,109 @@ def _disasm_norm(text: str) -> list:
     return lines
 
 
+def _flags_for(udef: dict) -> list:
+    """Resolve a unit's flags-profile name to its cl flag list (units.toml [flags])."""
+    with MANIFEST.open("rb") as f:
+        profiles = tomllib.load(f).get("flags", {})
+    return list(profiles.get(udef.get("flags", ""), []))
+
+
+def _debug_obj_for(unit: str, source: str, flags: list):
+    """build/debug/<unit>.obj compiled `<flags> /Z7` (codegen-neutral CodeView),
+    cached on source mtime - same artifact harvest_locals.py builds. Path or None."""
+    obj = REPO / "build" / "debug" / f"{unit}.obj"
+    src = REPO / source
+    if not src.is_file():
+        return None
+    if obj.is_file() and obj.stat().st_mtime >= src.stat().st_mtime:
+        return obj  # fresh
+    obj.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [sys.executable, str(BUILD / "cc_wrap.py"), "--out", str(obj),
+           "--src", str(src), "--", *flags, "/Z7"]
+    res = subprocess.run(cmd, cwd=str(REPO), env=_pkg_env(),
+                         capture_output=True, text=True)
+    if res.returncode != 0 or not obj.is_file():
+        sys.stderr.write(f"[--rich] /Z7 compile of {unit} failed (wine/cl missing?); "
+                         f"showing bare asm.\n  {res.stderr.strip()[-200:]}\n")
+        return None
+    return obj
+
+
+def _disasm_rich(rva: str, lite: bool) -> str:
+    """BASE disasm interleaved with the /Z7 CodeView source lines it came from:
+    each mapped code offset prints its source statement (flush-left) above the
+    instruction(s) it lowered to. Shows which statements survive /O2 and which
+    got folded (a run of instructions under one line = merged; a source line
+    that never appears = optimized away)."""
+    try:
+        n = int(rva, 16)
+    except ValueError:
+        die(f"'{rva}' is not a hex RVA (--rich needs an RVA)")
+    claim = _csv_find(GEN_NAMES, n)
+    if not claim:
+        die("no src claim at this RVA - --rich needs a reconstructed fn "
+            "(check `gruntz sema rva`)")
+    unit, name = claim["unit"], claim["name"]
+    udef = next((u for u in units() if u.get("unit") == unit), None)
+    source = (udef or {}).get("source", "")
+    # line map from the (fresh) /Z7 debug obj; degrade to bare disasm if absent.
+    linemap, bf = {}, None
+    if udef and source.startswith("src/"):
+        dbg = _debug_obj_for(unit, source, _flags_for(udef))
+        if dbg is not None:
+            sys.path.insert(0, str(BUILD))
+            import codeview  # noqa: E402  (build helper, package-local)
+            info = codeview.parse_lines(str(dbg)).get(name)
+            if info:
+                linemap, bf = info["lines"], info["bf"]
+    src_path = REPO / source
+    src_lines = (src_path.read_text(errors="replace").splitlines()
+                 if src_path.is_file() else None)
+
+    def src_text(lineno: int) -> str:
+        if src_lines and 1 <= lineno <= len(src_lines):
+            return src_lines[lineno - 1].rstrip() or f"{source}:{lineno}"
+        return f"{source}:{lineno}"
+
+    try:
+        size = int(claim.get("size", "0") or "0", 16)
+    except ValueError:
+        size = 0
+    import re as _re
+    row = _re.compile(r"^(\s*)([0-9a-f]+):\s+((?:[0-9a-f]{2}\s)+)\s*(\S.*)$")
+    out = [f"{name}  [{unit}]"]
+    if bf is None:
+        out.append("(no /Z7 line info for this fn - bare asm)")
+    current = None
+    for ln in _disasm_base_text(rva).splitlines():
+        m = row.match(ln)
+        if not m:
+            if "IMAGE_REL" in ln and not lite:
+                out.append(ln)  # reloc annotation - attaches to the instr above
+            continue  # else drop llvm-objdump boilerplate; keep the rich view clean
+        off = int(m.group(2), 16)
+        if size and off >= size:
+            break  # trailing COMDAT padding (nops) past the function
+        want = linemap.get(off, bf if current is None else current)
+        if want is not None and want != current:
+            out.append(src_text(want))
+            current = want
+        out.append("    " + m.group(4).strip() if lite else ln)
+    return "\n".join(out) + "\n"
+
+
 def cmd_sema_disasm(args) -> None:
+    if getattr(args, "rich", False):
+        if args.target:
+            die("--rich is BASE-only (retail GRUNTZ.EXE carries no line info); "
+                "drop --target")
+        if args.diff:
+            die("--rich does not combine with --diff (rich is a single-side view)")
+        if not args.base:
+            print("[--rich implies --base: source lines come from the /Z7 debug "
+                  "build of your compiled obj]")
+        print(_disasm_rich(args.rva, args.lite), end="")
+        sys.exit(0)
     if args.diff:
         import difflib
         base = _disasm_norm(_disasm_base_text(args.rva))
@@ -1058,13 +1160,18 @@ def _add_sema(sub) -> None:
 
     sd = ss.add_parser("disasm",
                        help="disasm: TARGET (retail, default) / --base (compiled) / "
-                            "--diff (base vs target) / --lite (asm only)")
+                            "--rich (base + /Z7 source lines) / --diff (base vs "
+                            "target) / --lite (asm only)")
     sd.add_argument("rva", help="RVA (0x..) or symbol name")
     sdside = sd.add_mutually_exclusive_group()
     sdside.add_argument("--target", action="store_true",
                         help="retail GRUNTZ.EXE side (the default; explicit for clarity)")
     sdside.add_argument("--base", action="store_true",
                         help="disassemble YOUR compiled fn from its base obj instead of retail")
+    sd.add_argument("--rich", action="store_true",
+                    help="BASE disasm interleaved with the /Z7 CodeView source lines "
+                         "each instruction came from (implies --base; composes with "
+                         "--lite; rejects --target/--diff)")
     sd.add_argument("--lite", action="store_true",
                     help="asm only - no addresses, no byte columns, no reloc blocks")
     sd.add_argument("--diff", action="store_true",
