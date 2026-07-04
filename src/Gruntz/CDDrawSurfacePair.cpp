@@ -252,6 +252,8 @@ void CDDrawSurfacePair::DrawBox(i32* rect, i32 color) {
 // after the Lock), we pin x in ebp, which cascades the register operand through the
 // body; plus retail coalesces the two [off+1]/[off+2] zero stores into one word store
 // while we keep three byte stores. Not source-steerable; deferred to the final sweep.
+// (75.05->74.96 sub-0.1% wiggle when CSurfacePairBase gained its real CWapObj base:
+// TU-wide symbol-set/EH-state reshuffle, not a logic change - the regalloc wall stands.)
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {

@@ -66,31 +66,38 @@ public:
 // so clang mangles them to the MFC-canonical names.
 #include <Gruntz/CMapStringToOb.h>
 
+// Self-view of CDDrawWorkerRegistry's OWN vtable (0x5efd28); each slot named from its
+// retail slot-function RVA (the registry's own methods - ResetScratch/Shutdown/
+// DispatchKeyed*/Forward*/Stub_*/RemoveWorker/RemoveByKey/MapTeardown). Only slot +0x58
+// (MapTeardown 0x1552b0) is dispatched here (by Shutdown). Kept a view rather than
+// folded into a polymorphic CDDrawWorkerRegistry: the registry vtable interleaves with
+// the adjacent manager-family vtables, so virtualizing it is the deferred vtable-family-
+// unification pass (see RegView48).
 class CWorkerVtableView {
 public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Slot30();
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual void Slot3C();
-    virtual void Slot40();
-    virtual void Slot44();
-    virtual void Slot48();
-    virtual void Slot4C();
-    virtual void Slot50();
-    virtual void Slot54();
-    virtual void Slot58();
+    virtual void Slot00_1bef01();      // slot 0  0x1bef01 (CObject thunk)
+    virtual void Slot04_156df0();      // slot 1  0x156df0 (ScalarDtor)
+    virtual void Slot08_28ec();        // slot 2  0x0028ec (CObject thunk)
+    virtual void Slot0C_106e();        // slot 3  0x00106e (CObject thunk)
+    virtual void Slot10_4034();        // slot 4  0x004034 (CObject thunk)
+    virtual void Slot14_156dc0();      // slot 5  0x156dc0
+    virtual void Slot18_154aa0();      // slot 6  0x154aa0 (ResetScratch)
+    virtual void Slot1C_154ac0();      // slot 7  0x154ac0 (Shutdown)
+    virtual void Slot20_156de0();      // slot 8  0x156de0 (GetStateId)
+    virtual void Slot24_154df0();      // slot 9  0x154df0 (DispatchKeyed2C)
+    virtual void Slot28_154f60();      // slot 10 0x154f60 (Forward2C)
+    virtual void Slot2C_154f40();      // slot 11 0x154f40 (Forward30)
+    virtual void Slot30_154ce0();      // slot 12 0x154ce0 (DispatchKeyed30)
+    virtual void Slot34_154f20();      // slot 13 0x154f20 (Forward38)
+    virtual void Slot38_154ae0();      // slot 14 0x154ae0 (DispatchKeyed38)
+    virtual void Slot3C_154f00();      // slot 15 0x154f00 (Forward34)
+    virtual void Slot40_154be0();      // slot 16 0x154be0 (DispatchKeyed34)
+    virtual void Slot44_156e80();      // slot 17 0x156e80 (Stub_156e80)
+    virtual void Slot48_154f80();      // slot 18 0x154f80 (Stub_154f80)
+    virtual void Slot4C_155160();      // slot 19 0x155160 (Stub_155160)
+    virtual void Slot50_155280();      // slot 20 0x155280 (RemoveWorker)
+    virtual void Slot54_156ec0();      // slot 21 0x156ec0 (RemoveByKey)
+    virtual void MapTeardown_1552b0(); // slot 22 (+0x58) 0x1552b0 (dispatched by Shutdown)
 };
 
 // Real polymorphic two-level model (ALL-VTABLES mandate): CLoadable carries
@@ -247,25 +254,29 @@ public:
     RegDirEntry* Next_13a280(RegDirEntry* e); // 0x13a280 (__thiscall, 1 arg)
 };
 
-// A worker value viewed for the +0x28/+0x3c dispatches + the +0x18 status field.
+// A CDDrawWorker (vtable 0x5efbe8) viewed for the +0x28/+0x3c dispatches + the +0x18
+// status field; slots named from their retail slot-function RVAs. Slot28 (0x1521f0)
+// and Slot3C (0x1522b0) are the dispatched ops, modeled with the arg arity the
+// Stub_154f80/155160 call sites use (the CDDrawWorker slot declarations elsewhere
+// model them 0-arg - an arity reconcile for the deferred family-unification pass).
 class RegWorkerValue {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void Slot28(i32 dir); // +0x28
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual void v38();
-    virtual i32 Slot3C(i32 dir); // +0x3c
+    virtual void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
+    virtual void Slot04_155780();        // slot 1  0x155780 (ScalarDtor)
+    virtual void Slot08_28ec();          // slot 2  0x0028ec (CObject thunk)
+    virtual void Slot0C_106e();          // slot 3  0x00106e (CObject thunk)
+    virtual void Slot10_4034();          // slot 4  0x004034 (CObject thunk)
+    virtual void Slot14_155750();        // slot 5  0x155750
+    virtual void Slot18_1c08();          // slot 6  0x001c08 (IsReady)
+    virtual void Slot1C_151eb0();        // slot 7  0x151eb0 (DeleteAll)
+    virtual void Slot20_155770();        // slot 8  0x155770
+    virtual void Slot24_155810();        // slot 9  0x155810 (Vfunc24)
+    virtual void Slot28_1521f0(i32 dir); // slot 10 (+0x28) 0x1521f0 (dispatched)
+    virtual void Slot2C_152110();        // slot 11 0x152110 (Vfunc2C)
+    virtual void Slot30_152060();        // slot 12 0x152060 (Vfunc30)
+    virtual void Slot34_151fb0();        // slot 13 0x151fb0 (Vfunc34)
+    virtual void Slot38_151f00();        // slot 14 0x151f00 (Vfunc38)
+    virtual i32 Slot3C_1522b0(i32 dir);  // slot 15 (+0x3c) 0x1522b0 (dispatched)
     char m_pad04[0x18 - 0x04];
     i32 m_18; // +0x18  status field
 };
@@ -322,7 +333,7 @@ i32 CDDrawWorkerRegistry::ResetScratch() {
 // Runs the +0x58 hook, then clears the two counters.
 RVA(0x00154ac0, 0x12)
 void CDDrawWorkerRegistry::Shutdown() {
-    ((CWorkerVtableView*)this)->Slot58();
+    ((CWorkerVtableView*)this)->MapTeardown_1552b0();
     g_resourceInstallActive = 0;
     g_surfaceColorKey = 0;
 }
@@ -669,7 +680,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const 
         if (w == 0) {
             return 0;
         }
-        ((RegWorkerValue*)w)->Slot28((i32)dir);
+        ((RegWorkerValue*)w)->Slot28_1521f0((i32)dir);
         if (((RegWorkerValue*)w)->m_18 == 0) {
             ((RegView48*)this)->Vfunc54(sub);
         } else {
@@ -713,7 +724,7 @@ i32 CDDrawWorkerRegistry::Stub_155160(RegDirHandle* dir, const char* sub, const 
         CObject* out = 0;
         m_map.Lookup(sub, out);
         if (out != 0) {
-            if (((RegWorkerValue*)out)->Slot3C((i32)dir) == -1) {
+            if (((RegWorkerValue*)out)->Slot3C_1522b0((i32)dir) == -1) {
                 operator delete(buf);
                 return -1;
             }

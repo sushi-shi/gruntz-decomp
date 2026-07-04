@@ -14,6 +14,7 @@
 #include <Gruntz/CDDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
 #include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/CDDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
+#include <Wap32/CWapObj.h>          // CWapObj : Wap::CObject - real base for the surface-pair view
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
@@ -137,25 +138,21 @@ public:
 // the (reloc-masked) external call targets, NOT on the C++ class identity.
 // ---------------------------------------------------------------------------
 
-// The polymorphic surface-pair held at manager+0x10/+0x14/+0x18: vtable at +0x00
-// (slot 0x14 = "ready?"; slot 0x34 = a 1-arg op), a DDBLTFX-ish scratch RECT at
-// +0x1c, and the held CDDSurface wrapper at +0x2c.
-class CDDrawSurfacePair {
+// The polymorphic surface-pair held at manager+0x10/+0x14/+0x18: the retail
+// CDDrawSurfacePair (own vtable 0x5eff30, see include/Gruntz/CDDrawSurfacePair.h).
+// Real CWapObj-derived base (slots 0..4 CObject thunks + scalar-dtor, slot 6 IsReady
+// 0x001c08 inherited); the own slots (7..13) are named from their retail slot RVAs.
+// Scratch RECT at +0x1c, held CDDSurface wrapper at +0x2c. Dispatched pointer-only here.
+class CDDrawSurfacePair : public CWapObj {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual i32 Vfunc14(); // slot 5  (@0x14): surface-ready predicate
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual i32 Vfunc28(i32 w, i32 h, i32 bpp); // slot 10 (@0x28): geometry setter
-    virtual void v2c();
-    virtual i32 Vfunc30(i32 w, i32 h, i32 bpp, i32 a4); // slot 12 (@0x30)
-    virtual i32 Vfunc34(i32 a);                         // slot 13 (@0x34): 1-arg op
+    i32 IsLoaded() OVERRIDE;           // slot 5  (@0x14) 0x159090 surface-ready predicate
+    virtual void TeardownSurface();    // slot 7  (@0x1c) 0x163e20
+    virtual void Slot08_1590c0();      // slot 8  (@0x20) 0x1590c0
+    virtual void SetGeometry_158fd0(); // slot 9  (@0x24) 0x158fd0
+    virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x164250 geometry setter
+    virtual void InitFromSurface_163db0();             // slot 11 (@0x2c) 0x163db0
+    virtual i32 Create_163c90(i32 w, i32 h, i32 bpp, i32 a4); // slot 12 (@0x30) 0x163c90
+    virtual i32 LoadImage_163e50(i32 a);                      // slot 13 (@0x34) 0x163e50 1-arg op
 
     // Non-virtual surface-state predicates (reloc-masked __thiscall callees).
     i32 Probe_164660(); // 0x164660
@@ -178,20 +175,18 @@ public:
 };
 
 // A polymorphic dispatcher held at the node's +0x08: vtable slot 0x2c is a
-// 2-arg op called by Method_158b90.
-class CDDrawWorkerDisp {
+// 2-arg op called by Method_158b90. CObject-derived (slots 0..4 the shared thunks +
+// scalar dtor via Wap::CObject); slots 5..10 are the dispatcher's own - its concrete
+// vtable is not yet identified (the m_disp factory is unmatched), so they stay
+// placeholders. Vfunc2C at slot 11 is the only dispatched op (arity from the call site).
+class CDDrawWorkerDisp : public Wap::CObject {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
+    virtual void v14();                 // slot 5
+    virtual void v18();                 // slot 6
+    virtual void v1c();                 // slot 7
+    virtual void v20();                 // slot 8
+    virtual void v24();                 // slot 9
+    virtual void v28();                 // slot 10
     virtual void Vfunc2C(i32 a, i32 b); // slot 11 (@0x2c)
 };
 
@@ -356,7 +351,7 @@ i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->Vfunc34(arg1);
+    return p->LoadImage_163e50(arg1);
 }
 
 // 0x158b90: flip m_frontPair's surface, then dispatch the node's +0x08 op with the
@@ -388,14 +383,14 @@ RVA(0x00158bf0, 0x7f)
 i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
     CDDrawSurfacePair* p = m_frontPair;
     if (p->m_geom10 != a1 || p->m_geom14 != a2 || p->m_geom18 != a3) {
-        if (!m_frontPair->Vfunc28(a1, a2, a3)) {
+        if (!m_frontPair->SetGeom_164250(a1, a2, a3)) {
             return 0;
         }
-        if (!m_backPair->Vfunc28(a1, a2, a3)) {
+        if (!m_backPair->SetGeom_164250(a1, a2, a3)) {
             return 0;
         }
-        if (m_overlayPair && m_overlayPair->Vfunc14()) {
-            if (!m_overlayPair->Vfunc28(a1, a2, a3)) {
+        if (m_overlayPair && m_overlayPair->IsLoaded()) {
+            if (!m_overlayPair->SetGeom_164250(a1, a2, a3)) {
                 return 0;
             }
         }
@@ -407,11 +402,11 @@ i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
 // 0x30 and (if a2) BltFast m_backPair's surface into m_overlayPair's.
 RVA(0x00158cb0, 0x6a)
 i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
-    if (m_overlayPair->Vfunc14()) {
+    if (m_overlayPair->IsLoaded()) {
         return 0;
     }
     CDDrawSurfacePair* s14 = m_backPair;
-    if (!m_overlayPair->Vfunc30(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
+    if (!m_overlayPair->Create_163c90(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
         return 0;
     }
     if (a1) {
@@ -452,13 +447,13 @@ i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
     return hr == 0;
 }
 
-// 0x158d20: return m_overlayPair->Vfunc14() != 0.
+// 0x158d20: return m_overlayPair->IsLoaded() != 0.
 RVA(0x00158d20, 0x16)
 i32 CDDrawWorkerMgr::Method_158d20() {
     if (!m_overlayPair) {
         return 0;
     }
-    return m_overlayPair->Vfunc14() != 0;
+    return m_overlayPair->IsLoaded() != 0;
 }
 
 // 0x158dc0: blt m_backPair's surface <- m_frontPair's surface; if the m_worker flag bit1 is set,
@@ -507,14 +502,14 @@ i32 CDDrawWorkerMgr::Method_158dc0() {
     return hr2 == 0;
 }
 
-// 0x158e40: if m_overlayPair->Vfunc14(): blt m_overlayPair's surface <- m_frontPair's surface, return (==0).
+// 0x158e40: if m_overlayPair->IsLoaded(): blt m_overlayPair's surface <- m_frontPair's surface, return (==0).
 // @early-stop
 // 50% — structure/offsets byte-exact; the only residual is the `pop esi`
 // scheduling (retail interleaves it before the test/sete; our cl emits it in
 // the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x00158e40, 0x4c)
 i32 CDDrawWorkerMgr::Method_158e40() {
-    if (m_overlayPair && m_overlayPair->Vfunc14()) {
+    if (m_overlayPair && m_overlayPair->IsLoaded()) {
         CDDrawSurfacePair* a = m_overlayPair;
         CDDrawSurfacePair* b = m_frontPair;
         if (!b) {
@@ -534,7 +529,7 @@ i32 CDDrawWorkerMgr::Method_158e40() {
     return 0;
 }
 
-// 0x158e90: if m_backPair and m_overlayPair->Vfunc14(): BltFast(0,0,m_backPair surf, &m_backPair[+0x1c], 0x10).
+// 0x158e90: if m_backPair and m_overlayPair->IsLoaded(): BltFast(0,0,m_backPair surf, &m_backPair[+0x1c], 0x10).
 RVA(0x00158e90, 0x47)
 i32 CDDrawWorkerMgr::Method_158e90() {
     if (!m_backPair) {
@@ -543,7 +538,7 @@ i32 CDDrawWorkerMgr::Method_158e90() {
     if (!m_overlayPair) {
         return 0;
     }
-    if (!m_overlayPair->Vfunc14()) {
+    if (!m_overlayPair->IsLoaded()) {
         return 0;
     }
     CDDrawSurfacePair* a = m_backPair;
@@ -552,7 +547,7 @@ i32 CDDrawWorkerMgr::Method_158e90() {
     return 1;
 }
 
-// 0x158ee0: if m_backPair, m_overlayPair and m_overlayPair->Vfunc14(): BltFast(0,0,m_overlayPair surf,&m_overlayPair[+0x1c],0x10).
+// 0x158ee0: if m_backPair, m_overlayPair and m_overlayPair->IsLoaded(): BltFast(0,0,m_overlayPair surf,&m_overlayPair[+0x1c],0x10).
 RVA(0x00158ee0, 0x47)
 i32 CDDrawWorkerMgr::Method_158ee0() {
     if (!m_backPair) {
@@ -561,7 +556,7 @@ i32 CDDrawWorkerMgr::Method_158ee0() {
     if (!m_overlayPair) {
         return 0;
     }
-    if (!m_overlayPair->Vfunc14()) {
+    if (!m_overlayPair->IsLoaded()) {
         return 0;
     }
     CDDrawSurfacePair* a = m_overlayPair;
@@ -1336,13 +1331,12 @@ public:
     CQueueProbeData* m_data; // +0x08 -> probed object
 };
 
-class CQueueProbeData {
+// CObject-derived (slots 0..4 the shared thunks + scalar dtor via Wap::CObject);
+// slots 5..7 are the object's own - its concrete vtable is not yet identified (the
+// queue producer is unmatched), so they stay placeholders. Probe20 at slot 8 (+0x20)
+// is the only dispatched op (the status probe, 5 == "ready").
+class CQueueProbeData : public Wap::CObject {
 public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
     virtual void Slot14();
     virtual void Slot18();
     virtual void Slot1C();

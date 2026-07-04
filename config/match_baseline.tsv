@@ -1136,7 +1136,7 @@ cddrawsurfacepair	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	2	95513d9589bc	
 cddrawsurfacepair	?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z	100.0000	100.0000	2	d06a4ac6fdc3	0x3a1d0
 cddrawsurfacepair	?Create@CDDrawSurfacePair@@QAEHHHHH@Z	96.0198	96.0198	3	e9409ddd1f80	0x163c90
 cddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAHH@Z	52.7371	52.7371	4	4813981e19d6	0x163f40
-cddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	75.0548	75.0548	4	ea15e5d2fcd8	0x164180
+cddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	74.9589	74.9589	4	ea15e5d2fcd8	0x164180
 cddrawsurfacepair	?Probe_164660@CDDrawSurfacePair@@QAEHXZ	99.0909	99.0909	5	47ccb9c6a215	0x164660
 cddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	98.6667	98.6667	3	b298a4284ba3	0x163f00
 cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	2	df8a633d06c8	0x163e20
@@ -1190,10 +1190,10 @@ cddrawworkerregistry	?RemoveByKey@CDDrawWorkerRegistry@@QAEXPBD@Z	77.5185	77.518
 cddrawworkerregistry	?RemoveKeysEqual_155360@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	5	56c64584a7bf	0x155360
 cddrawworkerregistry	?RemoveWorker@CDDrawWorkerRegistry@@QAEXPAUCDDrawWorker@@@Z	100.0000	100.0000	1	64fce0f8dc6d	0x155280
 cddrawworkerregistry	?ResetScratch@CDDrawWorkerRegistry@@QAEHXZ	100.0000	100.0000	1	b2e52f93abac	0x154aa0
-cddrawworkerregistry	?Shutdown@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	1	753c5da456c2	0x154ac0
+cddrawworkerregistry	?Shutdown@CDDrawWorkerRegistry@@QAEXXZ	100.0000	100.0000	2	ca6c3d4ab241	0x154ac0
 cddrawworkerregistry	?StringCopy_155810@CDDrawWorkerRegistry@@QAEHPBD@Z	100.0000	100.0000	4	73922624b2b9	0x155810
-cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	62.8269	62.8269	2	9e671873c540	0x154f80
-cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	100.0000	100.0000	1	58e7e69cea7d	0x155160
+cddrawworkerregistry	?Stub_154f80@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	62.8269	62.8269	3	00c0dd690e62	0x154f80
+cddrawworkerregistry	?Stub_155160@CDDrawWorkerRegistry@@QAEHPAVRegDirHandle@@PBD1@Z	100.0000	100.0000	2	c0928479c599	0x155160
 cddrawworkerregistry	?Stub_156df0@CDDrawWorkerRegistry@@QAEPAXH@Z	100.0000	100.0000	1	dfa2b8a9e580	0x156df0
 cddrawworkerregistry	?Stub_156e80@CDDrawWorkerRegistry@@QAEHPAVRegProbeChain@@H@Z	73.3333	73.3333	1	1b776dd465ae	0x156e80
 cddrawworkerregistry	?SumSizesEqual_155460@CDDrawWorkerRegistry@@QAEHPBDH@Z	68.9750	68.9750	4	097f3648e1e7	0x155460
@@ -1895,7 +1895,7 @@ discoveredsmall	?ListNodeAdvance@@YGPAXPAPAX@Z	100.0000	100.0000	1	1e41b8b08631	
 discoveredsmall	?Push@FreeNodePool@@QAEXPAD@Z	100.0000	100.0000	1	ceb8e2ebe09b	0x311b0
 discoveredsmall	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	1	8b8796dcac10	0x1397a0
 drawbattlestats	?DrawBattleStats@CBattleStatsView@@QAEXXZ	84.5575	84.5575	3	0fcb48618a0d	0x1ed30
-drawdebugstats	?DrawDebugStats@CDbgView@@QAEXXZ	99.5525	99.5525	2	f6006c949c32	0xcf770
+drawdebugstats	?DrawDebugStats@CDbgView@@QAEXXZ	99.5525	99.5525	3	716bf33921ad	0xcf770
 drawtext	?Draw3DText22810@TextHost@m4@@QAEHPAX0PAUtagRECT@@HHHHHHH@Z	82.4896	82.4896	1	6a456550000f	0x22810
 drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	1	03c0979cae0b	0x21f20
 drawtext	?Render22160@PwdHost@m4@@QAEHPAXHPAUtagRECT@@@Z	75.6343	75.6343	2	c057952b5fb8	0x22160

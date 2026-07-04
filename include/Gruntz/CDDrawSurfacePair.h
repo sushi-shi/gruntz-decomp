@@ -3,6 +3,7 @@
 
 #include <rva.h>
 #include <Ints.h>
+#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - the shared grand-base (slots 0..6)
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr
@@ -35,25 +36,24 @@
 // The two vtables in the dtor chain: this class's own (0x5eff30) and the
 // grand-base dtor vtable (0x5e8cb4). Reloc-masked DATA externs (the manual
 // ---------------------------------------------------------------------------
-// CSurfacePairBase - the polymorphic CLoadable base. Real C++ virtual: the
-// implicit vptr sits at +0x00, the scalar-deleting dtor is slot 1, and the base
-// subobject dtor is EMPTY so cl emits ONLY the implicit grand-base re-stamp
-// (reloc-masks 0x5e8cb4) folded LAST into the leaf ~CDDrawSurfacePair. The base-
-// field resets (m_status/m_flags/m_mgr) move into the DERIVED dtor body so they precede
-// the grand-base fold (eh-dtor-implicit-vptr-stamp-first.md sub-case 2). The
-// destructible base subobject supplies the leaf dtor's /GX EH frame.
+// CSurfacePairBase - the polymorphic CWapObj-derived base. Slots 0..4 come from
+// Wap::CObject (the 5-slot grand-base thunks + scalar-deleting dtor), slot 6
+// (IsReady default @0x001c08) from CWapObj; the base declares only its slot-5
+// override (IsLoaded @0x159090, the "surface ready?" predicate). The base subobject
+// dtor is EMPTY so cl folds the implicit grand-base re-stamp (masks 0x5e8cb4) LAST
+// into the leaf ~CDDrawSurfacePair; the intermediate CWapObj/CObject stamps are
+// dead-store eliminated. The base-field resets (m_status/m_flags/m_mgr) move into the
+// DERIVED dtor body so they precede the grand-base fold
+// (eh-dtor-implicit-vptr-stamp-first.md sub-case 2). The destructible base subobject
+// supplies the leaf dtor's /GX EH frame.
 // ---------------------------------------------------------------------------
 struct CDDrawSurfaceMgr; // forward (CSurfacePairBase::m_mgr; full defn below)
 
 SIZE_UNKNOWN(CSurfacePairBase);
-class CSurfacePairBase {
+class CSurfacePairBase : public CWapObj {
 public:
-    virtual void v00();          // slot 0
-    virtual ~CSurfacePairBase(); // slot 1 (scalar-deleting dtor)
-    virtual void v08();          // slot 2
-    virtual void v0c();          // slot 3
-    virtual void v10();          // slot 4
-    virtual i32 IsValid();       // slot 5 (@0x14) - the "surface ready?" predicate
+    ~CSurfacePairBase() OVERRIDE; // slot 1 (scalar-deleting dtor)
+    i32 IsLoaded() OVERRIDE;      // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_status;            // +0x04  status word (-1 inactive, 0x63 active)
