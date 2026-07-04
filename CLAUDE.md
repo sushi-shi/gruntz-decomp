@@ -35,6 +35,9 @@ the single source of truth).
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
 
+**Windows (x64), no Nix/wine:** `py bootstrap_windows.py` ports the flake — same
+pinned toolchain, native `cl.exe`. See `docs/windows-setup.md`.
+
 ## Target facts — MEASURED, do not re-derive
 
 - `GRUNTZ.EXE` (`$GRUNTZ_EXE`, flake-fetched) — EN v1.0, 2,511,872 B, MD5 `81c7f648…`.

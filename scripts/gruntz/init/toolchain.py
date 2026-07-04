@@ -34,6 +34,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Native Windows runs cl.exe directly: no wine prefix, no wine registry. The
+# header/lib search dirs are ordinary INCLUDE/LIB env vars (exported by
+# build/win-toolchain/activate.{ps1,bat}); see docs/windows-setup.md.
+IS_WINDOWS = os.name == "nt"
+
 
 def log(m): print("[setup] " + m, flush=True)
 
@@ -148,23 +153,65 @@ def smoke_test(msvc, gruntz_dir):
             "(missing INCLUDE? missing DLL next to cl.exe? need wine-staging?).")
 
 
+def smoke_test_native(msvc, gruntz_dir):
+    """Native (no-wine) variant of smoke_test - just `cl /c hello.cpp`."""
+    cl = find_ci(msvc / "bin", "cl.exe")
+    work = gruntz_dir / "build" / "smoke"
+    work.mkdir(parents=True, exist_ok=True)
+    src = work / "hello.cpp"
+    src.write_text('#include <stdio.h>\nint main(void){ printf("hello from VC5\\n"); return 0; }\n')
+    obj = work / "hello.obj"
+    if obj.exists():
+        obj.unlink()
+    log(f"Smoke test: cl /c {src.name}")
+    r = subprocess.run([str(cl), "/nologo", "/c", str(src)],
+                       cwd=str(work), text=True, capture_output=True)
+    if r.stdout.strip():
+        print(r.stdout)
+    if r.stderr.strip():
+        print(r.stderr, file=sys.stderr)
+    if obj.exists():
+        log(f"OK - produced {obj} ({obj.stat().st_size} bytes) - the toolchain compiles.")
+    else:
+        die("smoke compile produced no .obj - check INCLUDE/LIB and the cl output above.")
+
+
+def windows_setup(msvc, dx, gruntz_dir, smoke=False):
+    """Native MSVC 5.0: nothing to register, no prefix. Ensure INCLUDE/LIB exist
+    (the activate scripts set them; default them here so a standalone run + smoke
+    still works)."""
+    os.environ.setdefault(
+        "INCLUDE", os.pathsep.join([str(msvc / "include"), str(dx / "Include")]))
+    os.environ.setdefault(
+        "LIB", os.pathsep.join([str(msvc / "lib"), str(dx / "Lib")]))
+    log("native Windows: no wine prefix needed; INCLUDE/LIB come from the env.")
+    if smoke:
+        smoke_test_native(msvc, gruntz_dir)
+    log("done.")
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Set up the Wine/MSVC-5.0 build environment.")
-    ap.add_argument("--force", action="store_true", help="re-init the Wine prefix")
+    ap = argparse.ArgumentParser(description="Set up the MSVC-5.0 build environment "
+                                             "(Wine on Linux; native on Windows).")
+    ap.add_argument("--force", action="store_true", help="re-init the Wine prefix (Linux)")
     ap.add_argument("--smoke", action="store_true", help="compile a hello-world to verify cl runs")
     args = ap.parse_args()
 
     msvc = Path(require_env("MSVC_DIR"))
     dx = Path(require_env("DXSDK_DIR"))
-    prefix = Path(require_env("WINEPREFIX"))
     gruntz_dir = Path(os.environ.get("GRUNTZ_DIR", os.getcwd()))
 
+    if not find_ci(msvc / "bin", "cl.exe"):
+        die(f"CL.EXE not under {msvc}/bin - is the toolchain provisioned?")
+
+    if IS_WINDOWS:
+        windows_setup(msvc, dx, gruntz_dir, smoke=args.smoke)
+        return
+
+    prefix = Path(require_env("WINEPREFIX"))
     os.environ["WINEPREFIX"] = str(prefix)
     os.environ.setdefault("WINEDEBUG", "fixme-all,err-kerberos")
     os.environ.setdefault("WINEDLLOVERRIDES", "mscoree,mshtml=")
-
-    if not find_ci(msvc / "bin", "cl.exe"):
-        die(f"CL.EXE not under {msvc}/bin - is .#build's gruntz-toolchain built?")
 
     init_prefix(prefix, force=args.force)
     configure_registry(msvc, dx)

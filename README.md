@@ -76,6 +76,11 @@ flake** and exposed via `$GRUNTZ_EXE` — there is no tracked `binaries/` dir.
 Linux (x86_64) with [Nix](https://nixos.org/download) and flakes enabled
 (`experimental-features = nix-command flakes`).
 
+**Windows (x64)** is also supported via a native port of the flake — no Nix, no
+Wine (MSVC 5.0 runs natively): `py bootstrap_windows.py` provisions the same
+pinned toolchain and writes activate scripts; see
+[`docs/windows-setup.md`](docs/windows-setup.md).
+
 ## Quickstart
 
 ```sh
@@ -95,6 +100,11 @@ The VC5 toolchain is packaged (fetched + pinned in `flake.nix`). Run `gruntz ini
 once to build the local environment — Wine prefix, clangd DB, and the Ghidra DB
 (import + analyze GRUNTZ.EXE → `functions.csv`/`symbols.csv`); heavy on first run,
 idempotent after. Then `gruntz build` runs the loop (compile → labels → delink → objdiff).
+
+On **Windows**, the equivalent is `py bootstrap_windows.py` (provision) then
+`. .\build\win-toolchain\activate.ps1` — the same `gruntz init` / `gruntz build`
+follow, with `cl.exe` compiling natively. See
+[`docs/windows-setup.md`](docs/windows-setup.md).
 
 ## Formatting
 

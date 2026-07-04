@@ -108,7 +108,12 @@ def build_lowercase_mirror(real: Path, mirror: Path) -> Path:
     `/imsvc <mirror>` then resolves a lowercase `#include <string.h>` onto the
     uppercase `STRING.H` on disk. Rebuilt only when `real` changes (a marker
     guards it) so a toolchain bump doesn't leave dangling symlinks.
+
+    On Windows the filesystem is case-insensitive (and symlinks need admin /
+    developer mode), so no mirror is needed - <string.h> already finds STRING.H.
     """
+    if os.name == "nt":
+        return real
     import shutil
     marker = mirror.parent / (mirror.name + ".src")
     if mirror.is_dir() and marker.is_file() and marker.read_text() == str(real):
