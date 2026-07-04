@@ -70,6 +70,13 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 INC = str(REPO / "include")   # repo-local headers (mirror src/) live here; on the clang -I path
+# Vendored third-party SDK headers live one dir deep under vendor/<sdk>/ (e.g.
+# vendor/miles/Mss32.h, vendor/smacker/smack.h) so `#include <Mss32.h>` resolves
+# like the original toolchain's SDK include dirs.
+VENDOR_INCS = sorted(str(d) for d in (REPO / "vendor").iterdir() if d.is_dir()) \
+    if (REPO / "vendor").is_dir() else []
+INC_CL = [f"/I{p}" for p in (INC, *VENDOR_INCS)]   # clang-cl driver (/I)
+INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 
 # The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
 # TRUSTED: the base obj is all unused externs (no symbols), so the authority
@@ -228,7 +235,7 @@ def emit_ir(clang, tu, flags, cl_flags=None):
         with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
             ll = tf.name
         try:
-            cmd = [clang, "--driver-mode=cl", "/c", *cl_flags, f"/I{INC}",
+            cmd = [clang, "--driver-mode=cl", "/c", *cl_flags, *INC_CL,
                    "-Xclang", "-emit-llvm", "-o", ll, tu]
             res = subprocess.run(cmd, capture_output=True, text=True)
             ir = Path(ll).read_text() if os.path.getsize(ll) else ""
@@ -241,7 +248,7 @@ def emit_ir(clang, tu, flags, cl_flags=None):
             log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
             return None
         return ir
-    cmd = [clang, *MS_FLAGS, *flags, f"-I{INC}", "-S", "-emit-llvm", "-o", "-", tu]
+    cmd = [clang, *MS_FLAGS, *flags, *INC_GCC, "-S", "-emit-llvm", "-o", "-", tu]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if not res.stdout:
         log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
@@ -326,10 +333,10 @@ def collect_vars(ast, main_file):
 
 def clang_ast(clang, tu, flags, cl_flags=None):
     if cl_flags is not None:
-        cmd = [clang, "--driver-mode=cl", *cl_flags, f"/I{INC}", tu, "-fsyntax-only",
+        cmd = [clang, "--driver-mode=cl", *cl_flags, *INC_CL, tu, "-fsyntax-only",
                "-Xclang", "-ast-dump=json"]
     else:
-        cmd = [clang, *MS_FLAGS, *flags, f"-I{INC}", tu, "-fsyntax-only",
+        cmd = [clang, *MS_FLAGS, *flags, *INC_GCC, tu, "-fsyntax-only",
                "-Xclang", "-ast-dump=json"]
     res = subprocess.run(cmd, capture_output=True, text=True)
     try:

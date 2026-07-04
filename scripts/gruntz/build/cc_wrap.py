@@ -115,20 +115,23 @@ def main() -> None:
     src_w = winepath_w(src)
     out_w = winepath_w(out)
     # Repo-local headers live under include/ (mirrors src/); put it on cl's search
-    # path so `#include <Module/Foo.h>` resolves (winepath so cl sees it). The
-    # vendored real DirectX 6 SDK headers (vendor/directx6/Include - the version the
-    # retail game was actually built against, see docs) go on FIRST so `<ddraw.h>` /
-    # `<dsound.h>` / `<dinput.h>` / `<dplay.h>` resolve to the repo-pinned copy rather
-    # than the toolchain's own dx/Include (both are the same DX6 SDK; the vendored
-    # copy makes the version explicit + independent of the toolchain tarball).
+    # path so `#include <Module/Foo.h>` resolves (winepath so cl sees it). Vendored
+    # third-party SDK headers live under vendor/<sdk>/ (e.g. vendor/miles-6.0c/mss.h,
+    # vendor/smacker-3.2f/smack.h) so `#include <Mss32.h>` resolves like the original
+    # toolchain's SDK dirs; the DirectX 6 SDK headers sit one level deeper under
+    # vendor/directx6/Include (the version the retail game was built against, pinned
+    # ahead of the toolchain's own dx/Include).
     repo = next((p for p in src.parents if (p / "flake.nix").exists()), None)
-    inc_flags = []
+    inc_dirs = []
     if repo:
+        if (repo / "include").is_dir():
+            inc_dirs.append(repo / "include")
+        if (repo / "vendor").is_dir():
+            inc_dirs += sorted(d for d in (repo / "vendor").iterdir() if d.is_dir())
         dx = repo / "vendor" / "directx6" / "Include"
         if dx.is_dir():
-            inc_flags.append(f"/I{winepath_w(dx)}")
-        if (repo / "include").is_dir():
-            inc_flags.append(f"/I{winepath_w(repo / 'include')}")
+            inc_dirs.append(dx)
+    inc_flags = [f"/I{winepath_w(d)}" for d in inc_dirs]
     cmd = ["wine", str(cl), *inc_flags, *flags, f"/Fo{out_w}", src_w]
 
     output, rc = _run_cl(cmd, out)

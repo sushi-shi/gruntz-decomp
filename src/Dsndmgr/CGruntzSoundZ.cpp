@@ -23,9 +23,9 @@
 #include <Dsndmgr/CGruntzSoundZ.h>
 #include <rva.h>
 
-#include <Vendor/Mss32.h> // the Miles Sound System (MSS32.DLL) AIL/XMIDI imports
-#include <stdio.h>        // sprintf - the "MIDI%i" auto-name (0x11f890, _sprintf)
-#include <string.h>       // strcpy/memcpy (inline rep movs / repne scas under /O2)
+#include <Mss32.h>  // the Miles Sound System (MSS32.DLL) AIL/XMIDI imports
+#include <stdio.h>  // sprintf - the "MIDI%i" auto-name (0x11f890, _sprintf)
+#include <string.h> // strcpy/memcpy (inline rep movs / repne scas under /O2)
 
 // ---------------------------------------------------------------------------
 // The AIL MIDI driver state globals (.data), shared with the RezSync game-init.

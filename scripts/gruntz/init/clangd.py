@@ -163,6 +163,10 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
         # our own reconstructed headers (mirror src/ under include/) - NOT /imsvc, so
         # diagnostics in our code still surface; resolves `#include <Module/Foo.h>`.
         "/I", str(REPO / "include"),
+        # vendored third-party SDK headers (vendor/<sdk>/, one dir deep) so
+        # `#include <Mss32.h>` / `<smack.h>` / `<sfman32.h>` resolve.
+        *[f for d in sorted((REPO / "vendor").iterdir()) if d.is_dir()
+          for f in ("/I", str(d))],
         *DEFINES,
     ]
 

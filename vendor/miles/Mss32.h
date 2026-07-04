@@ -1,4 +1,4 @@
-// Vendor/Mss32.h - the Miles Sound System (MSS32.DLL) API surface Gruntz imports.
+// vendor/miles/Mss32.h - the Miles Sound System (MSS32.DLL) API surface Gruntz imports.
 //
 // Third-party audio middleware ("AIL" = Audio Interchange Library, RAD Game Tools'
 // Miles Sound System). GRUNTZ.EXE reaches these through the MSS32.DLL import table
