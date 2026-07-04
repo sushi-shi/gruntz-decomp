@@ -37,10 +37,10 @@ class SoundStream;
 struct StreamVoiceNode {
     virtual ~StreamVoiceNode(); // +0x00  slot 0 scalar-deleting dtor (0x5ef6d8; defined externally)
     DSoundLink m_link;          // +0x04  intrusive link { next@+0x04, prev@+0x08 } (POSITION+4)
-    IDirectSoundBufferZ* m_buffer; // +0x0c  the IDirectSoundBuffer to release
-    char m_pad10[0x28 - 0x10];     // DirectSoundMgr base region (modeled in StreamVoice.h)
-    u32 m_durationMs;              // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDiv)
-    u32 m_byteLength;              // +0x2c  byte length
+    IDirectSoundBuffer* m_buffer; // +0x0c  the IDirectSoundBuffer to release
+    char m_pad10[0x28 - 0x10];    // DirectSoundMgr base region (modeled in StreamVoice.h)
+    u32 m_durationMs;             // +0x28  duration-ms (= m_byteLength*1000/m_avgBytesDiv)
+    u32 m_byteLength;             // +0x2c  byte length
     char m_pad30[0x38 - 0x30];
     u32 m_avgBytes;    // +0x38  avg-bytes-per-sec
     u32 m_avgBytesDiv; // +0x3c  avg-bytes-per-sec (divisor)
@@ -48,7 +48,7 @@ struct StreamVoiceNode {
     StreamVoiceFeeder m_feeder; // +0x6c  embedded streaming feeder sub-object
 
     // ctor 0x1375b0(IDirectSoundBuffer* buf, SoundStream* owner, int a, int b).
-    StreamVoiceNode(IDirectSoundBufferZ* buf, SoundStream* owner, i32 a, i32 b);
+    StreamVoiceNode(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b);
     void ComputeDuration(); // 0x1359a0  m_durationMs = m_byteLength*1000/m_avgBytesDiv
 };
 SIZE(StreamVoiceNode, 0xb0); // 0xb0 bytes via RezAlloc (ctor 0x1375b0)

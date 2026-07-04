@@ -12,6 +12,9 @@
 #include <Dsndmgr/SoundStream.h>
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <Win32.h>
+#include <Win32.h>    // windows.h base types (dsound.h needs them)
+#include <mmsystem.h> // WAVEFORMATEX (dsound.h needs it predefined)
+#include <dsound.h>   // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
 
 // The __FILE__ string DSndMgSR.CPP passes to GetErrorString (the $SG pooled
@@ -88,13 +91,13 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
     wf.wBitsPerSample = fmt->wBitsPerSample;
     wf.cbSize = fmt->cbSize;
 
-    IDirectSoundBufferZ* out = 0;
+    IDirectSoundBuffer* out = 0;
     DSBUFFERDESC desc;
     desc.dwSize = 0x14;
     desc.dwFlags = a;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = &wf;
+    desc.lpwfxFormat = (LPWAVEFORMATEX)&wf;
 
     i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {

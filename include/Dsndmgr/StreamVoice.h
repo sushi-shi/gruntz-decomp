@@ -15,7 +15,7 @@
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
 
-struct IDirectSoundBufferZ;
+struct IDirectSoundBuffer;
 class DirectSoundMgr;
 
 // The streaming source reader SetSource parses + arms the feeder over is the
@@ -63,17 +63,17 @@ struct StreamVoice {
 
     // ctor 0x1375b0(buf, owner, a, b): run the base init, cache a/b, clear the
     // position; the feeder is default-constructed (its ctor 0x137cd0) between.
-    StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a, i32 b);
+    StreamVoice(IDirectSoundBuffer* buf, DirectSoundMgr* owner, i32 a, i32 b);
     i32 SetSource(CParseSource* src);                    // 0x1374c0
     i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop); // 0x137520
     u32 ComputeRatio();                                  // 0x137590
 
     // DirectSoundMgr base run, reloc-masked __thiscall (defined in their own TUs).
-    void BaseInit(IDirectSoundBufferZ* buf, DirectSoundMgr* owner); // 0x135b10
-    void BaseDtor();                                                // 0x135bb0
-    i32 SetVolumeByIndex(i32 idx);                                  // 0x1355c0
-    i32 SetPanByIndex(i32 idx);                                     // 0x1357a0
-    i32 SetFreqByIndex(i32 idx);                                    // 0x135920
+    void BaseInit(IDirectSoundBuffer* buf, DirectSoundMgr* owner); // 0x135b10
+    void BaseDtor();                                               // 0x135bb0
+    i32 SetVolumeByIndex(i32 idx);                                 // 0x1355c0
+    i32 SetPanByIndex(i32 idx);                                    // 0x1357a0
+    i32 SetFreqByIndex(i32 idx);                                   // 0x135920
 };
 SIZE(StreamVoice, 0xb0);       // 0xb0 bytes via operator new (ctor 0x1375b0)
 VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = scalar-deleting dtor 0x137650)

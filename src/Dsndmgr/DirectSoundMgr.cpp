@@ -7,6 +7,9 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/DSoundVoice.h> // the 0x28-byte voice node CloneAndPlay news
 #include <Dsndmgr/SoundDevice.h> // SoundDevice: the owning device (m_owner) + its methods
+#include <Win32.h>               // windows.h base types (dsound.h needs them)
+#include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
+#include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
@@ -28,7 +31,6 @@ extern "C" i32 g_thirdEnabled; // 0x653c58
 
 // DSERR_BUFFERLOST (MAKE_DSHRESULT(150)) - the DirectSound error a lost hardware
 // buffer returns; every buffer op that hits it drops into the reacquire-retry path.
-static const i32 DSERR_BUFFERLOST = (i32)0x88780096;
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -38,17 +40,10 @@ extern "C" char g_emptyString[]; // 0x6293f4
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
 // DSOUND SDK magics (real values, defined locally like DirectInputMgr2.cpp).
-#define DSBCAPS_CTRLFREQUENCY 0x20 // GetCaps flag: frequency control available
-#define DSBCAPS_CTRLPAN 0x40       // GetCaps flag: pan control available
-#define DSBCAPS_CTRLVOLUME 0x80    // GetCaps flag: volume control available
-#define DSBCAPS_PRIMARYBUFFER 0x01 // CreateSoundBuffer flag: the primary buffer
-#define DSBSTATUS_PLAYING 0x01     // GetStatus bit: buffer is playing
-#define DSBSTATUS_LOOPING 0x02     // GetStatus bit: buffer is looping (DX5-era value)
-#define DSBLOCK_ENTIREBUFFER 0x02  // Lock flag: lock the whole buffer
-#define DSSCL_NORMAL 0x01          // cooperative level: normal (shared) access
+#define DSB_RETAIL_LOOPBIT                                                                         \
+    0x02 // retail IsLooping mask; DX6 dsound.h DSB_RETAIL_LOOPBIT is 0x04, this game used the DX5-era 0x02 (byte-proven, load-bearing)
 
 // DSOUND.dll ordinal #1 device creator; no dllimport -> direct `e8 rel32` thunk (retail).
-extern "C" i32 __stdcall DirectSoundCreate(void* lpGuid, IDirectSoundZ** ppDS, void* pUnkOuter);
 
 // DSound centi-dB [-10000..0] -> 0..100 percent; free __cdecl helper 0x135110.
 extern "C" i32 ConvertVolumeToPercent(i32 vol);
@@ -70,7 +65,7 @@ DirectSoundMgr::~DirectSoundMgr() {}
 // ctor: cache buffer + owner, zero the caps/state, then (if buf) read caps into m_caps
 // and cache initial freq/pan/volume guarded by the capability bits (report on failure).
 RVA(0x001351d0, 0x109)
-DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner) {
+DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
     // cl auto-stamps ??_7DirectSoundMgr@@6B@ (0x5ef6b8) here.
     m_buffer = buf;
     m_owner = owner;
@@ -93,7 +88,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) == DSBCAPS_CTRLFREQUENCY) {
-        i32 hr = buf->GetFrequency(&m_freq) != 0;
+        i32 hr = buf->GetFrequency((LPDWORD)&m_freq) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x58, hr);
         }
@@ -101,7 +96,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner) {
     m_setFreq = m_freq;
 
     if ((m_caps & DSBCAPS_CTRLPAN) == DSBCAPS_CTRLPAN) {
-        i32 hr = buf->GetPan(&m_pan) != 0;
+        i32 hr = buf->GetPan((LONG*)&m_pan) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x60, hr);
         }
@@ -110,7 +105,7 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
-        i32 hr = buf->GetVolume(&m_volume) != 0;
+        i32 hr = buf->GetVolume((LONG*)&m_volume) != 0;
         if (hr) {
             GetErrorString(DSNDMGR_FILE, 0x68, hr);
         }
@@ -178,7 +173,7 @@ i32 DirectSoundMgr::IsPlaying() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->GetStatus(&status) != 0;
+    i32 hr = m_buffer->GetStatus((LPDWORD)&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xac, hr);
         return 0;
@@ -196,12 +191,12 @@ i32 DirectSoundMgr::IsLooping() {
         return 0;
     }
     u32 status;
-    i32 hr = m_buffer->GetStatus(&status) != 0;
+    i32 hr = m_buffer->GetStatus((LPDWORD)&status) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0xbb, hr);
         return 0;
     }
-    return (status & DSBSTATUS_LOOPING) == DSBSTATUS_LOOPING;
+    return (status & DSB_RETAIL_LOOPBIT) == DSB_RETAIL_LOOPBIT;
 }
 
 // ---------------------------------------------------------------------------
@@ -254,7 +249,7 @@ i32 DirectSoundMgr::GetVolume() {
         return 0;
     }
     i32 vol;
-    i32 hr = m_buffer->GetVolume(&vol) != 0;
+    i32 hr = m_buffer->GetVolume((LONG*)&vol) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x10e, hr);
         return 0;
@@ -341,7 +336,7 @@ i32 DirectSoundMgr::GetPan() {
         return 0;
     }
     i32 pan;
-    i32 hr = m_buffer->GetPan(&pan) != 0;
+    i32 hr = m_buffer->GetPan((LONG*)&pan) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x15e, hr);
         return 0;
@@ -419,7 +414,7 @@ i32 DirectSoundMgr::GetCurrentPosition(u32* play, u32* write) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetCurrentPosition(play, write) != 0;
+    i32 hr = m_buffer->GetCurrentPosition((LPDWORD)play, (LPDWORD)write) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -449,7 +444,7 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat(fmt, size, written) != 0;
+    i32 hr = m_buffer->GetFormat((LPWAVEFORMATEX)fmt, size, (LPDWORD)written) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -483,7 +478,7 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
     if (clone == 0) {
         return 0;
     }
-    IDirectSoundZ* dev = m_owner->m_device;
+    IDirectSound* dev = m_owner->m_device;
     i32 hr = dev->DuplicateSoundBuffer(m_buffer, &clone->m_buffer) != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
@@ -503,7 +498,7 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
         return;
     }
     if (clone != this) {
-        IDirectSoundBufferZ* buf = clone->m_buffer;
+        IDirectSoundBuffer* buf = clone->m_buffer;
         buf->Release();
         clone->m_buffer = 0;
     }
@@ -527,7 +522,9 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
     void* p2;
     u32 n1;
     u32 n2;
-    i32 hr = m_buffer->Lock(0, lockBytes, &p1, &n1, &p2, &n2, DSBLOCK_ENTIREBUFFER) != 0;
+    i32 hr =
+        m_buffer->Lock(0, lockBytes, &p1, (LPDWORD)&n1, &p2, (LPDWORD)&n2, DSBLOCK_ENTIREBUFFER)
+        != 0;
     if (hr) {
         GetErrorString(DSNDMGR_FILE, 0x2bd, hr);
         return 0;
@@ -592,7 +589,7 @@ void DSoundCloneInst::StopAllClones() {
 // EH-state-count wall: code bytes byte-identical (base-vs-target llvm-objdump -dr) except
 // the /GX unwind state machine. Base ctor DEFINED AFTER -> out-of-line `call 0x136230`.
 RVA(0x00135b10, 0x6b)
-DSoundCloneInst::DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner)
+DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     : DSoundBaseSub(buf, owner) {
     m_cloneList.m_head = 0;
     m_cloneList.m_tail = 0;
@@ -605,7 +602,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner)
 // DSoundBaseSub 2-arg ctor 0x136230: chain base ctor (cl stamps 0x5ef6c0); set
 // m_cloneNode.m_inst=this, m_reacquireOwner=this, m_playKey=1.
 RVA(0x00136230, 0x2d)
-DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner)
+DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
     : DirectSoundMgr(buf, owner) {
     // cl auto-stamps ??_7DSoundBaseSub@@6B@ (0x5ef6c0) here.
     m_cloneNode.m_inst = this;
@@ -618,7 +615,7 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner)
 // back-ptr + m_reacquireOwner=original, copy its sample/reacquire/rate block, recompute
 // duration. The trailing ComputeDuration over the destructible base -> /GX EH frame.
 RVA(0x00136180, 0x86)
-DSoundBaseSub::DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner, DirectSoundMgr* original)
+DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, DirectSoundMgr* original)
     : DirectSoundMgr(buf, owner) {
     m_cloneNode.m_inst = this;
     m_reacquireOwner = original;
@@ -699,7 +696,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
     if (m_owner->m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
+    i32 hr = m_buffer->Lock(off, bytes, p1, (LPDWORD)n1, p2, (LPDWORD)n2, flags) != 0;
     if (!hr) {
         return 1;
     }
@@ -707,7 +704,7 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
         if (m_reacquireOwner->ReacquireBuffer() == 0) {
             return 0;
         }
-        hr = m_buffer->Lock(off, bytes, p1, n1, p2, n2, flags) != 0;
+        hr = m_buffer->Lock(off, bytes, p1, (LPDWORD)n1, p2, (LPDWORD)n2, flags) != 0;
         if (!hr) {
             return 1;
         }

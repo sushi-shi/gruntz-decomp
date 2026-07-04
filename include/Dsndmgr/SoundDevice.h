@@ -100,7 +100,7 @@ public:
     // vptr @ +0x00 (implicit, from the virtual dtor); the first real field is +0x04.
     DSoundList m_bufferList; // +0x04  owned-buffer list {head@+4, tail@+8} (biased +4 links)
     DSoundList m_voiceList;  // +0x0c  voice/channel sub-list {head@+0xc, tail@+0x10}
-    IDirectSoundZ* m_device; // +0x14  the IDirectSound device
+    IDirectSound* m_device;  // +0x14  the IDirectSound device
     // +0x18..+0x78: unused by the device shape (the per-buffer fields DirectSoundMgr
     // uses in the same layout region; the device role never touches them).
     char m_reserved[0x78 - 0x18];
@@ -111,11 +111,11 @@ public:
     // member-fn-ptr is 4 bytes (just the code address), so this is layout-identical
     // to the raw slot - and __thiscall by default, matching the retail dispatch.
     i32 (SoundDevice::*m_reacquireProc)();
-    IDirectSoundBufferZ* m_primaryBuffer; // +0x84  primary buffer
-    i32 m_coopLevel;                      // +0x88  cooperative level
-    u32 m_bufferFlags;                    // +0x8c  buffer-desc flags
-    i32 m_force8Bit;                      // +0x90  force-8-bit downconvert flag (Acquire reads)
-    DSoundLink* m_instanceHead;           // +0x94  derived instance-list head (SoundStream)
+    IDirectSoundBuffer* m_primaryBuffer; // +0x84  primary buffer
+    i32 m_coopLevel;                     // +0x88  cooperative level
+    u32 m_bufferFlags;                   // +0x8c  buffer-desc flags
+    i32 m_force8Bit;                     // +0x90  force-8-bit downconvert flag (Acquire reads)
+    DSoundLink* m_instanceHead;          // +0x94  derived instance-list head (SoundStream)
 };
 SIZE(SoundDevice, 0x98);       // device base (SoundStream's first own member is at +0x98)
 VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)

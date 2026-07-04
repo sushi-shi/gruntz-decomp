@@ -20,35 +20,19 @@
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
-#include <ComDefs.h>                // STDMETHOD / HRESULT / REFIID - DirectSound COM macros
 #include <Dsndmgr/SoundVoiceList.h> // DSoundLink / DSoundList intrusive list primitive
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
 // The ctor reads dwFlags into m_caps and ignores the rest.
-struct DSBCAPS {
-    u32 dwSize;
-    u32 dwFlags;
-    u32 dwBufferBytes;
-    u32 dwUnlockTransferRate;
-    u32 dwPlayCpuOverhead;
-};
-SIZE(DSBCAPS, 0x14); // 5-DWORD DirectSound buffer-caps struct
 
 // DSBUFFERDESC - the 0x14-byte sound-buffer descriptor passed to
 // IDirectSound::CreateSoundBuffer (dwSize, dwFlags, dwBufferBytes, dwReserved,
 // lpwfxFormat). Only dwSize/dwFlags are stamped here; the rest is zeroed.
-struct DSBUFFERDESC {
-    u32 dwSize;
-    u32 dwFlags;
-    u32 dwBufferBytes;
-    u32 dwReserved;
-    void* lpwfxFormat;
-};
-SIZE(DSBUFFERDESC, 0x14); // 0x14-byte DirectSound buffer descriptor
 
-struct IDirectSoundBufferZ; // forward-decl: CreateSoundBuffer's out-param type
-class SoundDevice;          // owning device (m_owner); full def in SoundDevice.h
-class DirectSoundMgr;       // a clone (CloneNode::m_inst back-points at it)
+struct IDirectSound;       // forward-decl: real dsound.h interface (dispatched in the .cpp)
+struct IDirectSoundBuffer; // forward-decl: CreateSoundBuffer's out-param type
+class SoundDevice;         // owning device (m_owner); full def in SoundDevice.h
+class DirectSoundMgr;      // a clone (CloneNode::m_inst back-points at it)
 
 // A clone-list node: a self-referential doubly-linked node whose m_inst back-points
 // at the buffer that owns it. Each buffer embeds one (m_cloneNode) by which it hangs in
@@ -69,28 +53,6 @@ SIZE(CloneNode, 0xc); // {next, prev, inst}
 //   +0x0c (slot 3)  CreateSoundBuffer  (LPCDSBUFFERDESC, LPDIRECTSOUNDBUFFER*, LPUNKNOWN)
 //   +0x18 (slot 6)  SetCooperativeLevel(HWND, DWORD)
 // ---------------------------------------------------------------------------
-struct IDirectSoundZ {
-    // Real COM interface (abstract), declared the dev-authentic SDK way with the
-    // STDMETHOD / STDMETHOD_ macros (== `virtual HRESULT __stdcall` / `virtual u32
-    // __stdcall`), so `iface->Method(args)` lowers to the same `mov eax,[iface];
-    // call [eax+slot]` the manual vtbl-struct dispatch did. The IUnknown triad
-    // (QueryInterface/AddRef/Release) heads the vtable.
-    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) PURE; // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;                          // slot 1
-    STDMETHOD_(u32, Release)() PURE;                         // slot 2  (+0x08)
-    STDMETHOD(CreateSoundBuffer)(
-        void* desc,
-        IDirectSoundBufferZ** out,
-        void* unk
-    ) PURE;                              // slot 3  (+0x0c)
-    STDMETHOD(GetCaps)(void* caps) PURE; // slot 4  (+0x10, unused)
-    STDMETHOD(DuplicateSoundBuffer)(
-        IDirectSoundBufferZ* original,
-        IDirectSoundBufferZ** out
-    ) PURE;                                                     // slot 5  (+0x14)
-    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 level) PURE; // slot 6  (+0x18)
-};
-SIZE(IDirectSoundZ, 0x4); // COM interface: a single vptr (opaque SDK object, held by ptr)
 
 // ---------------------------------------------------------------------------
 // IDirectSoundBuffer (DSOUND) - the buffer interface the per-buffer wrappers
@@ -110,43 +72,6 @@ SIZE(IDirectSoundZ, 0x4); // COM interface: a single vptr (opaque SDK object, he
 //   +0x4c (slot 19) Unlock              (LPVOID, DWORD, LPVOID, DWORD)
 //   +0x50 (slot 20) Restore             ()
 // ---------------------------------------------------------------------------
-struct IDirectSoundBufferZ {
-    // Real COM interface (abstract), declared the dev-authentic SDK way with the
-    // STDMETHOD / STDMETHOD_ macros (== `virtual HRESULT __stdcall` / `virtual u32
-    // __stdcall`), so `buf->Method(args)` lowers to `mov eax,[buf]; call [eax+slot]`
-    // (was the manual vtbl-struct dispatch). Only the touched slots carry meaningful
-    // signatures; the IUnknown triad heads the vtable.
-    STDMETHOD(QueryInterface)(REFIID riid, void** ppv) PURE;      // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;                               // slot 1
-    STDMETHOD_(u32, Release)() PURE;                              // slot 2  (+0x08)
-    STDMETHOD(GetCaps)(void* caps) PURE;                          // slot 3  (+0x0c)
-    STDMETHOD(GetCurrentPosition)(u32* play, u32* write) PURE;    // slot 4  (+0x10)
-    STDMETHOD(GetFormat)(void* fmt, u32 size, u32* written) PURE; // slot 5  (+0x14)
-    STDMETHOD(GetVolume)(i32* vol) PURE;                          // slot 6  (+0x18)
-    STDMETHOD(GetPan)(i32* pan) PURE;                             // slot 7  (+0x1c)
-    STDMETHOD(GetFrequency)(u32* freq) PURE;                      // slot 8  (+0x20)
-    STDMETHOD(GetStatus)(u32* status) PURE;                       // slot 9  (+0x24)
-    STDMETHOD(Initialize)(void* dsound, void* desc) PURE;         // slot 10 (+0x28, unused)
-    STDMETHOD(Lock)(
-        u32 off,
-        u32 bytes,
-        void** p1,
-        u32* n1,
-        void** p2,
-        u32* n2,
-        u32 fl
-    ) PURE;                                                     // slot 11 (+0x2c)
-    STDMETHOD(Play)(u32 r1, u32 r2, u32 flags) PURE;            // slot 12 (+0x30)
-    STDMETHOD(SetCurrentPosition)(u32 pos) PURE;                // slot 13 (+0x34)
-    STDMETHOD(SetFormat)(void* fmt) PURE;                       // slot 14 (+0x38)
-    STDMETHOD(SetVolume)(i32 vol) PURE;                         // slot 15 (+0x3c)
-    STDMETHOD(SetPan)(i32 pan) PURE;                            // slot 16 (+0x40)
-    STDMETHOD(SetFrequency)(u32 freq) PURE;                     // slot 17 (+0x44)
-    STDMETHOD(Stop)() PURE;                                     // slot 18 (+0x48)
-    STDMETHOD(Unlock)(void* p1, u32 n1, void* p2, u32 n2) PURE; // slot 19 (+0x4c)
-    STDMETHOD(Restore)() PURE;                                  // slot 20 (+0x50)
-};
-SIZE(IDirectSoundBufferZ, 0x4); // COM interface: a single vptr (opaque SDK object, held by ptr)
 
 // ---------------------------------------------------------------------------
 // DirectSoundMgr - the per-buffer sound-buffer wrapper BASE (vtable 0x5ef6b8,
@@ -158,7 +83,7 @@ SIZE(IDirectSoundBufferZ, 0x4); // COM interface: a single vptr (opaque SDK obje
 // ---------------------------------------------------------------------------
 class DirectSoundMgr {
 public:
-    DirectSoundMgr(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x1351d0 ctor
+    DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x1351d0 ctor
     virtual ~DirectSoundMgr(); // 0x135300  base-subobject dtor (implicit vptr reset)
 
     i32 Restore();                 // 0x135310  m_buffer->Restore()
@@ -203,16 +128,16 @@ public:
     // hangs in SoundDevice::m_bufferList, this DSoundLink is the biased element+4 the
     // list threads (SoundDevice::Shutdown/StopAll/CreateBuffer/RemoveBuffer). Set by
     // the list helpers, not the ctor.
-    DSoundLink m_link;             // +0x04  device buffer-list link {next@+4, prev@+8}
-    IDirectSoundBufferZ* m_buffer; // +0x0c  the held sound buffer
-    SoundDevice* m_owner;          // +0x10  owning device back-pointer
-    u32 m_playFlags;               // +0x14  Play/looping flags (bit 0 = loop)
-    u32 m_freq;                    // +0x18  cached frequency (GetFrequency)
-    i32 m_pan;                     // +0x1c  cached pan (GetPan)
-    i32 m_volume;                  // +0x20  cached volume (GetVolume)
-    u32 m_setFreq;                 // +0x24  cached SetFrequency value
-    u32 m_durationMs;              // +0x28  duration (ComputeDuration)
-    u32 m_sampleCount;             // +0x2c  sample count (set by the clone ctor)
+    DSoundLink m_link;            // +0x04  device buffer-list link {next@+4, prev@+8}
+    IDirectSoundBuffer* m_buffer; // +0x0c  the held sound buffer
+    SoundDevice* m_owner;         // +0x10  owning device back-pointer
+    u32 m_playFlags;              // +0x14  Play/looping flags (bit 0 = loop)
+    u32 m_freq;                   // +0x18  cached frequency (GetFrequency)
+    i32 m_pan;                    // +0x1c  cached pan (GetPan)
+    i32 m_volume;                 // +0x20  cached volume (GetVolume)
+    u32 m_setFreq;                // +0x24  cached SetFrequency value
+    u32 m_durationMs;             // +0x28  duration (ComputeDuration)
+    u32 m_sampleCount;            // +0x2c  sample count (set by the clone ctor)
     // +0x30  per-buffer reacquire callback (__cdecl fn-ptr taking (this, ctx)); a
     // pointer is 4 bytes, so this is layout-identical to the raw i32 slot.
     i32(__cdecl* m_reacquireCb)(DirectSoundMgr*, i32);
@@ -247,11 +172,11 @@ SIZE(CloneList, 0x8); // {head, tail}
 // fields). dtor 0x136260 resets the vptr + chains ~DirectSoundMgr.
 class DSoundBaseSub : public DirectSoundMgr {
 public:
-    DSoundBaseSub(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x136230
+    DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x136230
     // Clone/dup ctor 0x136180: 2-arg ctor + records source (m_reacquireOwner), copies
     // its sample/reacquire/rate block, recomputes duration.
     DSoundBaseSub(
-        IDirectSoundBufferZ* buf,
+        IDirectSoundBuffer* buf,
         SoundDevice* owner,
         DirectSoundMgr* original
     );                                 // 0x136180
@@ -265,8 +190,8 @@ VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 // CreateBuffer (RezAlloc(0x60)), threads on its buffer list, and reaps in RemoveBuffer.
 class DSoundCloneInst : public DSoundBaseSub {
 public:
-    DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
-    virtual ~DSoundCloneInst() OVERRIDE;                           // 0x135bb0  clone-drain dtor
+    DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10
+    virtual ~DSoundCloneInst() OVERRIDE;                          // 0x135bb0  clone-drain dtor
 
     DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
     void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone
@@ -275,7 +200,7 @@ public:
     // RezAlloc(0x60)+construct path lowers to a reloc-masked __thiscall instead of a
     // placement-new (which cl would frame differently). Same address as the ctor above;
     // declared-only here so the call reloc-masks.
-    void BaseInit(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10 (== ctor)
+    void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10 (== ctor)
 
     CloneList m_cloneList; // +0x58  clone/child list {head@+0x58, tail@+0x5c}
 };

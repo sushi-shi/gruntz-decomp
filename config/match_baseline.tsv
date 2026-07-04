@@ -1436,10 +1436,10 @@ directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	4	4eb5da0c13
 directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	5	ffd92397445e	0x132d90
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	3	24dea7a346e1	0x133bf0
 directinputmgr2	?Unacquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	2	05966ec87c28	0x134fe0
-directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBufferZ@@PAVSoundDevice@@@Z	100.0000	100.0000	2	75abafed23a8	0x136230
-directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBufferZ@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	2	75abafed23a8	0x136180
-directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBufferZ@@PAVSoundDevice@@@Z	84.0312	84.0312	1	7b5265f47f85	0x135b10
-directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBufferZ@@PAVSoundDevice@@@Z	100.0000	100.0000	1	f612ae490146	0x1351d0
+directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x136230
+directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x136180
+directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	84.0312	84.0312	1	cpp:f1f0f4e5c1fb	0x135b10
+directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	cpp:f1f0f4e5c1fb	0x1351d0
 directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	1	1beec211bc4e	0x136260
 directsoundmgr	??1DSoundCloneInst@@UAE@XZ	99.9655	99.9655	2	708413df0a89	0x135bb0
 directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	1	70e6312f0246	0x135300
@@ -2145,7 +2145,7 @@ gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	4	bd2cebfcd
 gruntzmgr	?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	2	3fb6c7c4f642	0x928c0
 gruntzmgr	?GoToNextLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	cbee59b79662	0x8d850
 gruntzmgr	?GoToPrevLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	ee87a5fc6b0c	0x8d910
-gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	100.0000	100.0000	8	f59c5249fa98	0x8eca0
+gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	100.0000	100.0000	9	77b8fc592456	0x8eca0
 gruntzmgr	?IsBattlezMapFile@CGruntzMgr@@QAEHVCString@@@Z	32.3667	32.3667	1	3ed13719be82	0x93be0
 gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8fa40
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	5401f86ad561	0x91500
@@ -3340,7 +3340,7 @@ streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.96
 streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	d3396f3e7c45	0xea990
 streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	83.1642	83.1642	5	faa8c3ae50f6	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z	92.2366	92.2366	1	e1d29f4a89e7	0x9bb0
-streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	4	f5673dfcdb6e	0x1375b0
+streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBuffer@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	1	cpp:aa1e5f6d1dd1	0x1375b0
 streamvoice	??1StreamVoice@@UAE@XZ	42.4643	42.4643	1	35c051fa0c80	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	3	e205205d9fe4	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	0b1e8d24ac07	0x137520

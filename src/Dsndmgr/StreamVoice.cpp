@@ -8,6 +8,9 @@
 #include <Dsndmgr/SoundStream.h> // the owning SoundStream (m_owner): ParseWave + m_initialized
 #include <Dsndmgr/StreamVoice.h>
 #include <Win32.h>
+#include <Win32.h>    // windows.h base types (dsound.h needs them)
+#include <mmsystem.h> // WAVEFORMATEX (dsound.h needs it predefined)
+#include <dsound.h>   // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
 
 // StreamVoice is a REAL polymorphic class (its lone virtual is the destructor, see
@@ -26,7 +29,7 @@
 // method calls (no real base/member dtors). Defer to the final sweep once the whole
 // Dsndmgr class family is modeled.
 RVA(0x001375b0, 0x77)
-StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a, i32 b) {
+StreamVoice::StreamVoice(IDirectSoundBuffer* buf, DirectSoundMgr* owner, i32 a, i32 b) {
     // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
     BaseInit(buf, owner);
     m_streamArgB = b;

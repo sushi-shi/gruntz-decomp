@@ -5,6 +5,9 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree - the engine heap allocator/deallocator
 #include <math.h>       // acos / pow (intrinsic __CIacos / __CIpow) in VolumeToAttenuation
+#include <Win32.h>      // windows.h base types (dsound.h needs them)
+#include <mmsystem.h>   // WAVEFORMATEX (dsound.h needs it predefined)
+#include <dsound.h>     // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
 #include <stdio.h> // FILE - the CRT stream Eng_fopen returns (its _file fd feeds Eng_filelength)
 #include <Globals.h>
@@ -153,13 +156,13 @@ DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags
     *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
     wf.cbSize = fmt->cbSize;
 
-    IDirectSoundBufferZ* out = 0;
+    IDirectSoundBuffer* out = 0;
     DSBUFFERDESC desc;
     desc.dwSize = DSBUFFERDESC_SIZE;
     desc.dwFlags = flags;
     desc.dwBufferBytes = bytes;
     desc.dwReserved = 0;
-    desc.lpwfxFormat = &wf;
+    desc.lpwfxFormat = (LPWAVEFORMATEX)&wf;
 
     i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
@@ -448,7 +451,7 @@ i32 SoundDevice::SetPrimaryFormat(void* fmt) {
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->SetFormat(fmt) != 0;
+    i32 hr = m_primaryBuffer->SetFormat((LPWAVEFORMATEX)fmt) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
         return 0;
