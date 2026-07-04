@@ -116,6 +116,14 @@ namespace gruntphase {
         NeighborNode* Resolve253b(CGrunt* g); // 0x0000253b
     };
 
+    // CGrunt is the REAL class: sema confirms this method is
+    // ?PhaseStep@CGrunt@gruntphase@@QAEHXZ (a __thiscall CGrunt member), so this struct
+    // is an offset-0 alias of the canonical CGrunt (<Gruntz/Grunt.h>) - every field below
+    // sits at its canonical offset. NOT folded onto Grunt.h: this is a pure-Win32 TU
+    // (<Win32.h> -> windows.h FIRST) and Grunt.h pulls <Gruntz/String.h> -> <Mfc.h> ->
+    // afx, which forbids a prior windows.h (C1189). Kept as the minimal REAL-named
+    // Win32-safe partial, scoped in namespace gruntphase to stay self-contained (offsets +
+    // the local method/sub-object views are load-bearing). C1189 wall.
     struct CGrunt {
         char m_pad0[0x10];
         MapObj* m_10;  // +0x10

@@ -72,6 +72,14 @@ struct CScanPlane { // grid (settings->m_70)
     i32 Probe20f4(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
     void Method43ea(i32 a);                                                          // 0x43ea
 };
+// CGrunt is the REAL class: sema confirms this method is ?PathScan57db0@CGrunt@@QAEHXZ
+// (a __thiscall CGrunt member), so this struct is an offset-0 alias of the canonical
+// CGrunt (<Gruntz/Grunt.h>) - every field below sits at its canonical offset (m_10,
+// m_248/m_24c, the +0x31c CObList, m_320/m_328). NOT folded onto Grunt.h: this is a
+// pure-Win32 TU (<Win32.h> -> windows.h FIRST) and Grunt.h pulls <Gruntz/String.h> ->
+// <Mfc.h> -> afx, which forbids a prior windows.h (C1189: "MFC apps must not #include
+// <windows.h>"). Kept as the minimal REAL-named Win32-safe partial (offsets + the local
+// method/grid views are load-bearing; see the grid-split note above). C1189 wall.
 struct CGrunt { // this (ebx)
     char _00[0x10];
     CScanSub10* m_10; // +0x10
