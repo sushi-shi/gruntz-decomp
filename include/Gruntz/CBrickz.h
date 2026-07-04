@@ -20,7 +20,7 @@
 class CBrickz : public CUserLogic {
 public:
     CBrickz(CGameObject* obj); // 0x10e800 (1-arg ctor)
-    ~CBrickz();                // (folds the CUserLogic teardown; vtable anchor)
+    ~CBrickz() OVERRIDE;       // (folds the CUserLogic teardown; vtable anchor)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
     LogicTypeId GetTypeTag();                  // 0x11300 (vtable slot 2: per-class logic-type id)

@@ -55,9 +55,10 @@ SIZE(StreamVoiceNode, 0xb0); // 0xb0 bytes via RezAlloc (ctor 0x1375b0)
 
 class SoundStream : public SoundDevice {
 public:
-    SoundStream();          // 0x1376d0  base ctor + zero the voice list + stamp 0x5ef6ec
-    virtual ~SoundStream(); // 0x137710  reset vptr (0x5ef6ec) then ~SoundDevice; cl auto-emits
-                            // the ??_G scalar-deleting dtor at 0x1376f0
+    SoundStream(); // 0x1376d0  base ctor + zero the voice list + stamp 0x5ef6ec
+    virtual ~SoundStream()
+        OVERRIDE; // 0x137710  reset vptr (0x5ef6ec) then ~SoundDevice; cl auto-emits
+                  // the ??_G scalar-deleting dtor at 0x1376f0
     StreamVoiceNode* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
     StreamVoiceNode* OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);

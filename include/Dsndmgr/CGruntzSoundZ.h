@@ -80,7 +80,7 @@ VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ 
 
 class CGruntzSoundZ : public CMapStringToOb {
 public:
-    ~CGruntzSoundZ(); // body at RVA 0x086040
+    ~CGruntzSoundZ() OVERRIDE; // body at RVA 0x086040
     // AIL driver bring-up: cache the digital/MIDI handles, optionally open the MIDI-out driver.
     i32 Init(i32 mdiHandle, i32 digHandle, i32 skipInit); // RVA 0x138490
     void Shutdown();     // RVA 0x1384f0 - StopAndFlush + AIL_shutdown teardown

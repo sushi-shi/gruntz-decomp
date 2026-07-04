@@ -223,7 +223,7 @@ public:
     // ctor); ~CPlay is the real 0x8c830 /GX dtor. Both defined out-of-class in their
     // owning TUs (GruntzMgrTransition.cpp / CPlayDtor.cpp).
     CPlay();
-    virtual ~CPlay(); // slot 0 (0x8c830)
+    virtual ~CPlay() OVERRIDE; // slot 0 (0x8c830)
 
     virtual GameStateId Update() OVERRIDE; // GAMESTATE_PLAY (3);  (slot 4)
     virtual i32 Render() OVERRIDE;         // THE per-frame heart (this TU)

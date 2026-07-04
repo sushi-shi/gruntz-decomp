@@ -105,7 +105,7 @@ SIZE_UNKNOWN(CBattlezDlg);
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
-    ~CBattlezDlg(); // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    ~CBattlezDlg() OVERRIDE; // 0x14c90 (destroy CString m_6c, chain ~CDialog)
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8];      // +0x60
@@ -172,7 +172,7 @@ SIZE_UNKNOWN(CBattlezDlgCustom);
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
-    ~CBattlezDlgCustom(); // 0x17140 (destroy CString m_customName, chain ~CDialog)
+    ~CBattlezDlgCustom() OVERRIDE; // 0x17140 (destroy CString m_customName, chain ~CDialog)
 
     CString m_customName; // +0x5c  (default CString)
 };
@@ -205,7 +205,7 @@ SIZE_UNKNOWN(CMultiStartDlg);
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
-    ~CMultiStartDlg(); // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
+    ~CMultiStartDlg() OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();

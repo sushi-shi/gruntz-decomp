@@ -148,7 +148,7 @@ inline CPoolItemBase::CPoolItemBase() {
 // (0x143cc0); adds three init tail slots (9 = 0x148890, 10 = 0x148940, 11 = 0x148840).
 class CPoolItemA : public CPoolItemBase {
 public:
-    virtual ~CPoolItemA();                                           // slot 0  ~ 0x142820
+    virtual ~CPoolItemA() OVERRIDE;                                  // slot 0  ~ 0x142820
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cc0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
     virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
@@ -161,7 +161,7 @@ VTBL(CPoolItemA, 0x001efa58);
 // init tail slots (9 = 0x148a50, 10 = 0x148ac0).
 class CPoolItemA88 : public CPoolItemBase {
 public:
-    virtual ~CPoolItemA88();                                         // slot 0  ??_G 0x142800
+    virtual ~CPoolItemA88() OVERRIDE;                                // slot 0  ??_G 0x142800
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cb0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148a50
     virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148ac0
@@ -173,7 +173,7 @@ VTBL(CPoolItemA88, 0x001efa88);
 // (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).
 class CPoolItemAB8 : public CPoolItemBase {
 public:
-    virtual ~CPoolItemAB8();                                         // slot 0  ??_G 0x142a20
+    virtual ~CPoolItemAB8() OVERRIDE;                                // slot 0  ??_G 0x142a20
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
@@ -186,7 +186,7 @@ VTBL(CPoolItemAB8, 0x001efab8);
 // and slot 6 (0x143ce0); adds one init tail slot (9 = 0x148c40, 6-arg).
 class CPoolItemAE8 : public CPoolItemBase {
 public:
-    virtual ~CPoolItemAE8();                                              // slot 0  ~ 0x142d40
+    virtual ~CPoolItemAE8() OVERRIDE;                                     // slot 0  ~ 0x142d40
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;               // slot 2  0x148cc0
     virtual i32 v18() OVERRIDE;                                           // slot 6  0x143ce0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40

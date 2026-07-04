@@ -16,7 +16,7 @@
 // CSBI_WellGoo most-derived (vtable 0x5eadfc, 12 slots; overrides the vdtor). Adds
 // no new storage the dtor touches - m_configHost/m_ownedSurface live in the base.
 struct CSBI_WellGoo : CSBI_Image {
-    virtual ~CSBI_WellGoo();
+    virtual ~CSBI_WellGoo() OVERRIDE;
 };
 
 RVA(0x00104bb0, 0x94)

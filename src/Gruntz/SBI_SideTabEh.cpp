@@ -7,7 +7,7 @@
 // RVA-keyed). Chain: CSBI_SideTab : CStatusBarItem (shared).
 
 struct CSBI_SideTab : CStatusBarItem {
-    virtual ~CSBI_SideTab();
+    virtual ~CSBI_SideTab() OVERRIDE;
     void Reset(); // 0xe9800  most-derived member teardown (reloc-masked)
 };
 

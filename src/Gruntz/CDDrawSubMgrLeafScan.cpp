@@ -264,7 +264,7 @@ public:
     CString FindKeyOfValue_158570(LeafScanValue* target);
     i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
 
-    virtual ~CDDrawSubMgrLeafScan(); // overrides slot [1]
+    virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
 
     CMapStringToOb m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundDevice* m_2c;   // +0x2c  held DSound device

@@ -9,7 +9,7 @@
 // the shared SbiDtorChain.h).
 
 struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
-    virtual ~CSBI_StatzTabArrow();
+    virtual ~CSBI_StatzTabArrow() OVERRIDE;
     void DtorStatzTabArrow(); // most-derived member teardown (reloc-masked)
 };
 SIZE_UNKNOWN(CSBI_StatzTabArrow);

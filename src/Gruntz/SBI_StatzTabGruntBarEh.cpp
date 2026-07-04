@@ -7,7 +7,7 @@
 // function is RVA-keyed). Chain: CSBI_StatzTabGruntBar : CStatusBarItem (shared).
 
 struct CSBI_StatzTabGruntBar : CStatusBarItem {
-    virtual ~CSBI_StatzTabGruntBar();
+    virtual ~CSBI_StatzTabGruntBar() OVERRIDE;
     void Reset(); // 0xea470  most-derived member teardown (reloc-masked)
 };
 

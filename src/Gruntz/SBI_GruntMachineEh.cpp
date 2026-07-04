@@ -7,7 +7,7 @@
 // function is RVA-keyed). Chain: CSBI_GruntMachine : CStatusBarItem (shared).
 
 struct CSBI_GruntMachine : CStatusBarItem {
-    virtual ~CSBI_GruntMachine();
+    virtual ~CSBI_GruntMachine() OVERRIDE;
     void Reset(); // 0xe8c70  most-derived member teardown (reloc-masked)
 };
 

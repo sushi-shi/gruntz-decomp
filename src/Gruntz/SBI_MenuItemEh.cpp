@@ -8,7 +8,7 @@
 // (the three bases carried by the shared SbiDtorChain.h).
 
 struct CSBI_MenuItem : CSBI_Image {
-    virtual ~CSBI_MenuItem();
+    virtual ~CSBI_MenuItem() OVERRIDE;
     void DtorMenu(); // 0xe81a0  most-derived member teardown (reloc-masked)
 };
 

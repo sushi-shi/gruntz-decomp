@@ -128,8 +128,8 @@ struct CImgHolderBase {
 // reloc-masked), then the folded base teardown re-stamps the base vtable. The /GX EH
 // frame guards the base teardown if DeleteImageList throws.
 struct CImgHolder : CImgHolderBase {
-    void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
-    virtual ~CImgHolder();  // 0x016500
+    void DeleteImageList();         // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
+    virtual ~CImgHolder() OVERRIDE; // 0x016500
 };
 
 RVA(0x00016500, 0x46)

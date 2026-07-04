@@ -89,9 +89,10 @@ VTBL(StreamFeeder, 0x001ef6f0); // cl-emitted ??_7StreamFeeder@@6B@ (3-slot base
 // are declared-only overrides (bodies external).
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {} // empty: base ctor stamps 0x5ef6f0, cl then stamps 0x5ef6e0
-    virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2); // [0] 0x137380
-    virtual i32 FeedData();                                                         // [1] 0x137490
-    virtual void OnDrain();                                                         // [2] 0x1374b0
+    virtual i32 Feed(void* dst1, u32 n1, u32* got1, void* dst2, u32 n2, u32* got2)
+        OVERRIDE;                    // [0] 0x137380
+    virtual i32 FeedData() OVERRIDE; // [1] 0x137490
+    virtual void OnDrain() OVERRIDE; // [2] 0x1374b0
 };
 SIZE(StreamVoiceFeeder, 0x44);       // derived feeder; no added fields
 VTBL(StreamVoiceFeeder, 0x001ef6e0); // cl-emitted ??_7StreamVoiceFeeder@@6B@ (derived override)

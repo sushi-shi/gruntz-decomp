@@ -53,7 +53,7 @@ public:
     // lives in CDDrawSubMgrPages.cpp. This ctor's class carries the CLoadable base
     // vtable (0x5efc30). The inline empty dtor only keeps the ctor polymorphic so the
     // (spurious, reloc-masked) ??_7CDDrawSubMgr vptr stamp still falls out.
-    virtual ~CDDrawSubMgr() {}
+    virtual ~CDDrawSubMgr() OVERRIDE {}
     virtual void IsReady();
     virtual i32 Init();
     virtual i32 OnDestroy();      // 0x1576c0 (state predicate, returns 1)

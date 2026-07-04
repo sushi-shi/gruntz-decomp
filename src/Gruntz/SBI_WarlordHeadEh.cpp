@@ -8,7 +8,7 @@
 // CSBI_RectOnly : CStatusBarItem (the four bases carried by SbiDtorChain.h).
 
 struct CSBI_WarlordHead : CSBI_ImageSet {
-    virtual ~CSBI_WarlordHead();
+    virtual ~CSBI_WarlordHead() OVERRIDE;
     void DtorReset(); // 0xe7400  most-derived member teardown (reloc-masked)
 };
 

@@ -70,7 +70,7 @@ struct CDDrawPtrCollections; // defined below (m_ptrColl's heap object)
 class CDDrawSurfaceMgr : public Wap::CObject {
 public:
     CDDrawSurfaceMgr();
-    virtual ~CDDrawSurfaceMgr();
+    virtual ~CDDrawSurfaceMgr() OVERRIDE;
     virtual i32 IsReady();
     virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
     virtual void Slot1C();

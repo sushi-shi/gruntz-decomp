@@ -254,8 +254,8 @@ public:
         IDirectSoundBufferZ* buf,
         SoundDevice* owner,
         DirectSoundMgr* original
-    );                        // 0x136180
-    virtual ~DSoundBaseSub(); // 0x136260  base-subobject dtor (vptr reset + chain)
+    );                                 // 0x136180
+    virtual ~DSoundBaseSub() OVERRIDE; // 0x136260  base-subobject dtor (vptr reset + chain)
 };
 SIZE(DSoundBaseSub, 0x58);       // clone alloc: Clone() news 0x58 (RezAlloc(0x58))
 VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
@@ -266,7 +266,7 @@ VTBL(DSoundBaseSub, 0x001ef6c0); // cl-emitted ??_7DSoundBaseSub@@6B@
 class DSoundCloneInst : public DSoundBaseSub {
 public:
     DSoundCloneInst(IDirectSoundBufferZ* buf, SoundDevice* owner); // 0x135b10
-    virtual ~DSoundCloneInst();                                    // 0x135bb0  clone-drain dtor
+    virtual ~DSoundCloneInst() OVERRIDE;                           // 0x135bb0  clone-drain dtor
 
     DirectSoundMgr* Clone(i32 a);            // 0x135c20  new a clone, dup the buffer, link it
     void RemoveClone(DirectSoundMgr* clone); // 0x135d20  release + unlink + delete one clone

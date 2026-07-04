@@ -182,7 +182,8 @@ public:
     i32 m_08;               // +0x08
     CImageParent* m_parent; // +0x0c  parent CDDrawPtrCollections (its surface pool at +0x1c)
 
-    virtual ~CImage(); // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
+    virtual ~CImage()
+        OVERRIDE; // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
 
     virtual void FreeAll();   // slot 7  0x153260
     virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)

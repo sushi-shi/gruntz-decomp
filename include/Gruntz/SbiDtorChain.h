@@ -72,7 +72,7 @@ inline CStatusBarItem::~CStatusBarItem() {
 // CSBI_RectOnly (vtable 0x5eab8c, 11 slots; overrides the vdtor).
 SIZE_UNKNOWN(CSBI_RectOnly);
 struct CSBI_RectOnly : CStatusBarItem {
-    virtual ~CSBI_RectOnly();
+    virtual ~CSBI_RectOnly() OVERRIDE;
     void DtorRect(); // 0xe8760  CSBI_RectOnly member teardown (reloc-masked)
 };
 #ifndef SBI_OWN_RECTONLY_DTOR
@@ -83,7 +83,7 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 
 // CSBI_Image (vtable 0x5eac0c, 12 slots = vdtor + 10 + 1 new).
 struct CSBI_Image : CSBI_RectOnly {
-    virtual ~CSBI_Image();
+    virtual ~CSBI_Image() OVERRIDE;
     virtual void Imf1();
     void DtorImage(); // 0xe6d90  CSBI_Image member teardown (reloc-masked)
 };
@@ -95,7 +95,7 @@ inline CSBI_Image::~CSBI_Image() {
 
 // CSBI_ImageSet (vtable 0x5eac4c, 13 slots = vdtor + 10 + 1 + 1).
 struct CSBI_ImageSet : CSBI_Image {
-    virtual ~CSBI_ImageSet();
+    virtual ~CSBI_ImageSet() OVERRIDE;
     virtual void Isf1();
     void DtorImageSet(); // CSBI_ImageSet member teardown (reloc-masked)
 };
@@ -108,7 +108,7 @@ inline CSBI_ImageSet::~CSBI_ImageSet() {
 // CSBI_ImageSetAni (14 slots = vdtor + 10 + 1 + 1 + 1).
 SIZE_UNKNOWN(CSBI_ImageSetAni);
 struct CSBI_ImageSetAni : CSBI_ImageSet {
-    virtual ~CSBI_ImageSetAni();
+    virtual ~CSBI_ImageSetAni() OVERRIDE;
     virtual void Ianf1();
     virtual void Ianf2();
     void DtorImageSetAni(); // CSBI_ImageSetAni member teardown (reloc-masked)
