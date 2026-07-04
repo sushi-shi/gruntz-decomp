@@ -1,83 +1,48 @@
-// BootyStateActivate.cpp - the booty/bonus game-state per-frame activation ticks
-// (C:\Proj\Gruntz), re-homed from src/Stub/Backlog.cpp (where a single placeholder
-// `BootyState` class conflated two sibling state classes).
+// BootyStateActivate.cpp - the CBootyState / CMultiBootyState per-frame activation
+// slot bodies (C:\Proj\Gruntz), FOLDED onto the canonical GameMode.h siblings.
 //
 // Attribution is vtable-proven (see the retail state vtables):
-//   0x18d30 = CBootyState      slot 9 (+0x24)  vtable 0x5e9cec
-//   0x1f6f0 = CMultiBootyState slot 8 (+0x20)  vtable 0x5e9bdc  (the OnActivate2)
-// The two classes are siblings over CState; the shared asset-host / namespace /
-// sound-chain sub-objects are modeled once below. Only offsets / code bytes are
-// load-bearing; every helper is a reloc-masked external.
-//
-// The two CBootyState / CMultiBootyState below are offset-0 aliases of the canonical
-// sibling classes (<Gruntz/GameMode.h>: CBootyState vtbl 0x5e9cec, CMultiBootyState vtbl
-// 0x5e9bdc), each modeled as a minimal REAL-named Win32-safe partial. NOT folded onto
-// GameMode.h: (1) this is a pure-Win32 TU (<Win32.h> -> windows.h FIRST) and GameMode.h
-// pulls <Mfc.h> -> afx (C1189 wall); (2) the canonical classes declare no data members
-// (fields reached by offset), so the local m_c/m_28/m_2c/m_30 members have no canonical
-// name to fold to yet (P2 identity-recovery). C1189 + memberless-canonical wall.
-#include <Win32.h> // ShowCursor (reloc-masked)
+//   0x18d30 = CBootyState      slot 9 (+0x24)  vtbl 0x5e9cec  (Vslot09)
+//   0x1f6f0 = CMultiBootyState slot 8 (+0x20)  vtbl 0x5e9bdc  (InputVirtual / OnActivate2)
+// The two are CONFIRMED-distinct siblings over CState (<Gruntz/GameMode.h>). The old
+// per-TU CBootyState/CMultiBootyState views (with BootyAssetRoot @+0x0c, BootyRegistrar,
+// BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CView facets:
+//   - m_c (+0x0c)  == CView (the shared render/resource context - see <Gruntz/View.h>).
+//     The +0x04 loader (was CGruntDataLoader::Load) is CView's m_renderState->Flush
+//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CView's
+//     m_imageRegistry->LoadNamespace (vtable slot +0x4c).
+//   - the +0x2c/+0x28/+0x30 asset sources (were BootyNamespace) are CState::m_2c /
+//     m_levelBank / m_gruntzBank (CResSource; LookupSet == the old Lookup, 0x13bae0).
+// Only the g_mgrSettings world sound set below stays a local facet view - a separate
+// object web from the +0x0c context (deferred canonical world-sound model). Only offsets
+// / code bytes are load-bearing; every helper is a reloc-masked external.
+#include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 
 #include <rva.h>
+#include <Gruntz/BankMgr.h>  // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
+#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CView facet
 
 // ---------------------------------------------------------------------------
-// Shared booty-state sub-objects.
-// ---------------------------------------------------------------------------
-// A named asset-namespace registry slot. Lookup() finds a child set by name and
-// returns a handle (reloc-masked __thiscall).
-SIZE_UNKNOWN(BootyNamespace);
-struct BootyNamespace {
-    i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
-};
-// The registrar object reached via asset-root->m_10. This is a FOREIGN engine class:
-// its ??_7 and the intermediate slots 0..18 are unreconstructed engine code, so the
-// honest model is the ONE dispatched slot. Its vtable slot +0x4c registers a looked-up
-// image set under a prefix (returns -1 on failure), modeled as a 4-byte PMF loaded
-// from the vtable (`char m_pad00[0x4c]` documents the un-recovered slots) so MSVC
-// emits `mov edx,[ecx]; call [edx+0x4c]`. The class must be COMPLETE before the T::*
-// typedef so the PMF stays 4 bytes - see docs/patterns/pmf-complete-class-4byte.md.
-struct BootyRegistrarVtbl; // opaque; the PMF lives at offset 0x4c inside it
-SIZE_UNKNOWN(BootyRegistrar);
-struct BootyRegistrar {
-    BootyRegistrarVtbl* m_vtbl; // +0x00
-    i32 CallRegister(i32 handle, char* prefix, char* sep);
-};
-typedef i32 (BootyRegistrar::*BootyRegFn)(i32 handle, char* prefix, char* sep);
-SIZE_UNKNOWN(BootyRegistrarVtbl);
-struct BootyRegistrarVtbl {
-    char m_pad00[0x4c];
-    BootyRegFn Register; // +0x4c
-};
-inline i32 BootyRegistrar::CallRegister(i32 handle, char* prefix, char* sep) {
-    return (this->*(m_vtbl->Register))(handle, prefix, sep);
-}
-SIZE_UNKNOWN(CGruntDataLoader);
-struct CGruntDataLoader { // asset-root->m_4 sub-object
-    void Load();          // FUN @ 0x158ee0 __thiscall (reloc-masked)
-};
-SIZE_UNKNOWN(BootyAssetRoot);
-struct BootyAssetRoot { // state->m_c
-    char m_pad00[0x4];
-    CGruntDataLoader* m_4; // +0x04
-    char m_pad08[0x10 - 0x8];
-    BootyRegistrar* m_10; // +0x10  vtable-bearing registrar (slot +0x4c)
-};
-// The shared-game-registry sound chain re-triggered by CBootyState::vfunc_9's ambient
-// BOOTY_LOOP poll.
+// The game-registry (*0x24556c == g_mgrSettings, the CGameRegistry singleton) WORLD
+// sound set, re-triggered by CBootyState::Vslot09's ambient BOOTY_LOOP poll. This is a
+// SEPARATE object web from the +0x0c CView context (the world holder's sound SET, reached
+// as reg->m_world(+0x30)->m_28); the vfunc_9 global-load path reads it off the singleton,
+// not off `this`, so it stays a local facet view here pending a canonical world-sound
+// model. Reloc-masked __thiscall entries.
 SIZE_UNKNOWN(BootySndPlayer);
 struct BootySndPlayer {
-    void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
+    void Play(i32 token, i32, i32, i32); // 0x1360d0
 };
 SIZE_UNKNOWN(BootySndEntry);
 struct BootySndEntry {
     char m_pad00[0x10];
-    BootySndPlayer* m_10; // +0x10
+    BootySndPlayer* m_10; // +0x10  the player
     u32 m_14;             // +0x14  last-played stamp
     u32 m_18;             // +0x18  interval
 };
 SIZE_UNKNOWN(BootySndTable);
 struct BootySndTable {
-    void Find(char* szName, BootySndEntry** out); // FUN_001b8438 __thiscall, out-param
+    void Find(char* szName, BootySndEntry** out); // 0x1b8438 (out-param)
 };
 SIZE_UNKNOWN(BootySndSet);
 struct BootySndSet {
@@ -86,65 +51,53 @@ struct BootySndSet {
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
-SIZE_UNKNOWN(BootySndMgr);
-struct BootySndMgr {
+SIZE_UNKNOWN(BootySndWorld);
+struct BootySndWorld { // g_mgrSettings->m_world (+0x30) sound facet
     char m_pad00[0x28];
     BootySndSet* m_28; // +0x28
 };
-// A typed view of the *0x64556c game-registry singleton for the sound chain.
-struct BzGameReg {
+SIZE_UNKNOWN(BzGameReg);
+struct BzGameReg { // == *0x24556c (g_mgrSettings), viewed for the world sound set
     char m_pad00[0x30];
-    BootySndMgr* m_world; // +0x30
+    BootySndWorld* m_world; // +0x30
     char m_pad34[0x11c - 0x34];
     i32 m_11c; // +0x11c  sound token
 };
 DATA(0x0024556c)
-extern BzGameReg* g_bzReg;
+extern BzGameReg* g_mgrSettings;
 DATA(0x0021ab20)
-extern i32 g_61ab20; // BOOTY_LOOP enable gate
+extern i32 g_sndEnabled; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
-extern "C" u32 g_6bf3c0; // wrap-safe draw clock
+extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 // ---------------------------------------------------------------------------
-// CBootyState (vtable 0x5e9cec).
-SIZE_UNKNOWN(CBootyState);
-class CBootyState {
-public:
-    i32 vfunc_9(i32);                                                 // slot 9 (+0x24) @0x18d30
-    i32 RegisterMultiNamespaces(char* mode, i32, i32, i32, i32, i32); // reloc-masked
-    void StartTimer(i32, i32, i32, i32);                              // reloc-masked
-
-    char m_pad00[0xc];
-    BootyAssetRoot* m_c; // +0x0c
-};
-
-// CBootyState::vfunc_9 (0x18d30) - the booty "bg" activation tick: install the "bg"
-// multi-namespace, kick the grunt-data load + state timer, and (when the BOOTY_LOOP
-// ambient sound entry exists and is enabled by g_61ab20) re-trigger it on a
-// rate-limited timer keyed off the g_6bf3c0 frame counter vs the entry's last-played
-// stamp + interval.
+// CBootyState::Vslot09 (slot 9, 0x18d30) - the booty "bg" activation tick: hide the
+// cursor, fade in the "bg" title, kick the render worker apply (m_c->m_renderState->Flush)
+// + the booty page timer, and (when the BOOTY_LOOP ambient sound entry exists and is
+// enabled by g_sndEnabled) re-trigger it on a rate-limited timer keyed off the
+// g_killCueClock frame counter vs the entry's last-played stamp + interval.
 // @early-stop
-// regalloc wall (~95%): retail holds `set` (reg->m_world->m_28) in eax and the play
-// entry `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and
-// spills/reloads `res` at the Play call. Logic + all externs/strings named.
+// regalloc wall (~95%): retail holds `set` (reg->m_world->m_28) in eax and the play entry
+// `res` live in eax with no reload; the /O2 recompile pins `set` in ecx and spills/reloads
+// `res` at the Play call. Logic + all externs/strings named/folded.
 RVA(0x00018d30, 0xcd)
-i32 CBootyState::vfunc_9(i32) {
+i32 CBootyState::Vslot09(i32) {
     while (ShowCursor(FALSE) >= 0)
         ;
-    if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
         return 0;
     }
-    m_c->m_4->Load();
-    StartTimer(0x50, 0x3e8, 0, 1);
+    m_c->m_renderState->Flush();
+    BuildPage(0x50, 0x3e8, 0, 1);
 
-    BzGameReg* reg = g_bzReg;
+    BzGameReg* reg = g_mgrSettings;
     BootySndSet* set = reg->m_world->m_28;
     i32 token = reg->m_11c;
     if (set->m_30 == 0) {
         BootySndEntry* res = 0;
         set->m_10.Find("BOOTY_LOOP", &res);
-        if (res != 0 && g_61ab20 != 0) {
-            u32 now = g_6bf3c0;
+        if (res != 0 && g_sndEnabled != 0) {
+            u32 now = g_killCueClock;
             if (now - res->m_14 >= res->m_18) {
                 res->m_14 = now;
                 res->m_10->Play(token, 0, 0, 1);
@@ -155,30 +108,12 @@ i32 CBootyState::vfunc_9(i32) {
 }
 
 // ---------------------------------------------------------------------------
-// CMultiBootyState (vtable 0x5e9bdc).
-SIZE_UNKNOWN(CMultiBootyState);
-class CMultiBootyState {
-public:
-    i32 OnActivate2();                                                // slot 8 (+0x20) @0x1f6f0
-    i32 BaseOnActivate();                                             // base vfunc8 (reloc-masked)
-    i32 RegisterMultiNamespaces(char* mode, i32, i32, i32, i32, i32); // reloc-masked
-    void OnActivated();                                               // reloc-masked
-    void StartTimer(i32, i32, i32, i32);                              // reloc-masked
-
-    char m_pad00[0xc];
-    BootyAssetRoot* m_c; // +0x0c
-    char m_pad10[0x28 - 0x10];
-    BootyNamespace* m_28; // +0x28  "LEVEL" image namespace
-    BootyNamespace* m_2c; // +0x2c  "BOOTY" image namespace
-    BootyNamespace* m_30; // +0x30  "GRUNTZ" image namespace
-};
-
-// CMultiBootyState::OnActivate2 (0x1f6f0) - on state activation: chain the base
-// activate, hide the cursor, register the BOOTY/GRUNTZ/LEVEL image namespaces under
-// the asset host, install the "multi" namespaces, then kick the grunt-data load +
-// the state timer.
+// CMultiBootyState::InputVirtual (slot 8, 0x1f6f0) - on state activation: chain the base
+// image-load gate, hide the cursor, resolve+register the BOOTY/GRUNTZ/LEVEL "IMAGEZ" sets
+// through the CView image registry (LoadNamespace +0x4c), fade in the "multi" title, run
+// the post-activate hook, then kick the render worker apply + the page timer.
 RVA(0x0001f6f0, 0x10b)
-i32 CMultiBootyState::OnActivate2() {
+i32 CMultiBootyState::InputVirtual() {
     if (!BaseOnActivate()) {
         return 0;
     }
@@ -186,39 +121,39 @@ i32 CMultiBootyState::OnActivate2() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    i32 h = m_2c->Lookup("IMAGEZ");
-    if (!h) {
+    void* tree = m_2c->LookupSet("IMAGEZ");
+    if (!tree) {
         return 0;
     }
-    BootyRegistrar* reg = m_c->m_10;
-    if (reg->CallRegister(h, "BOOTY", "_") == -1) {
-        return 0;
-    }
-
-    h = m_30->Lookup("IMAGEZ");
-    if (!h) {
-        return 0;
-    }
-    reg = m_c->m_10;
-    if (reg->CallRegister(h, "GRUNTZ", "_") == -1) {
+    CView::CImageRegistry* reg = m_c->m_imageRegistry;
+    if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }
 
-    h = m_28->Lookup("IMAGEZ");
-    if (!h) {
+    tree = m_gruntzBank->LookupSet("IMAGEZ");
+    if (!tree) {
         return 0;
     }
-    reg = m_c->m_10;
-    if (reg->CallRegister(h, "LEVEL", "_") == -1) {
+    reg = m_c->m_imageRegistry;
+    if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
-    if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+    tree = m_levelBank->LookupSet("IMAGEZ");
+    if (!tree) {
+        return 0;
+    }
+    reg = m_c->m_imageRegistry;
+    if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
+        return 0;
+    }
+
+    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
         return 0;
     }
 
     OnActivated();
-    m_c->m_4->Load();
-    StartTimer(0x50, 0x3e8, 0, 1);
+    m_c->m_renderState->Flush();
+    BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }

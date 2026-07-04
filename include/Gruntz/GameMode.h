@@ -360,6 +360,18 @@ public:
 
     // Non-virtual engine-label backlog stub (0x1d440; vtable-neutral).
     void vfunc_1();
+
+    // Booty-title tail helpers reached via ILT thunks (reloc-masked; the byte match is
+    // name-independent). These are SHARED bodies owned by other classes but dispatched
+    // with a CBootyState `this` (same functions its sibling CMultiBootyState calls):
+    //   FadeInTitle == CAttract::FadeInTitle (0xfa1f0), BuildPage == CSoundFxEmitter's
+    //   0xfa8f0. ShowSecretBonusMessage/ShowLevelCompleteMessage are the booty-toast
+    //   helpers the slot-8 activator (StateImages.cpp) pops. Homed here so StateImages'
+    //   and BootyStateActivate's local CBootyState views fold onto this canonical class.
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0xfa1f0
+    i32 BuildPage(i32 a, i32 b, i32 c, i32 d);                      // 0xfa8f0
+    void ShowSecretBonusMessage();                                 // 0xfa540
+    void ShowLevelCompleteMessage();                               // 0xfa120
 };
 
 // CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
@@ -402,6 +414,12 @@ public:
     // formerly the CBootyAnimSelf `this`-alias view).
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
     void BuildPage(i32 x, i32 w, i32 h, i32 flag);                  // FUN_004fa8f0
+    // Slot-8 activator (OnActivate2 @0x1f6f0, booty-activate TU) tail helpers:
+    // BaseOnActivate is the shared image-load gate (0xface0, == CImageState's
+    // Unmatched_0face0 / CMgrPersistObj::Init), dispatched here with the state `this`;
+    // OnActivated (0x1ed30) runs after the namespaces install. Reloc-masked externals.
+    i32 BaseOnActivate(); // 0xface0
+    void OnActivated();   // 0x1ed30
 
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.
