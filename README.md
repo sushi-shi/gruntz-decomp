@@ -60,7 +60,7 @@ src/                          reconstructed C++ — the single source of truth
 vendor/                       third-party source (zlib 1.0.4) — kept verbatim, never formatted
 config/units.toml             per-TU build manifest (configure.py -> build.ninja)
 docs/                         build system, matching notes, the consolidation design
-flake.nix                     Nix build environment (two dev shells)
+flake.nix                     Nix dev environment (one shell: analysis + MSVC5/Wine)
 .clang-format                 the Rust-like house style (`gruntz format`)
 .githooks/pre-commit          auto-formats staged src/+include/ on commit
 CLAUDE.md                     working notes for Claude agents
@@ -78,23 +78,68 @@ Linux (x86_64) with [Nix](https://nixos.org/download) and flakes enabled
 
 ## Quickstart
 
-```sh
-nix develop          # default shell — works today, no MSVC needed
-```
+From a fresh clone to a running match loop, four commands:
 
-Provides `vostok-delinker`, `objdiff` / `objdiff-cli`, `ghidra`, `llvm-pdbutil`,
-and python/ripgrep/etc. `GRUNTZ_EXE` points at the retail binary (fetched from
-the Internet Archive). This shell covers everything **except** the recompile
-half: Ghidra analysis, the target-side delink, and objdiff inspection.
+**1. Enter the dev shell.**
 
 ```sh
-nix develop .#build  # adds MSVC 5.0 under Wine for the base/recompile side
+nix develop          # ONE shell: analysis tools + MSVC 5.0-under-Wine
 ```
 
-The VC5 toolchain is packaged (fetched + pinned in `flake.nix`). Run `gruntz init`
-once to build the local environment — Wine prefix, clangd DB, and the Ghidra DB
-(import + analyze GRUNTZ.EXE → `functions.csv`/`symbols.csv`); heavy on first run,
-idempotent after. Then `gruntz build` runs the loop (compile → labels → delink → objdiff).
+There is a single shell now (`nix develop .#build` is a kept alias, so old
+spellings still work). It provides `vostok-delinker`, `objdiff` / `objdiff-cli`,
+`ghidra`, `llvm-pdbutil`, python/ripgrep/etc. **and** the MSVC 5.0 toolchain under
+Wine. The flake fetches `GRUNTZ.EXE` (plus the `CLAW`/`MEDIEVAL` cross-diff siblings
+and the VC5 toolchain) automatically and exports `$GRUNTZ_EXE`.
+
+**2. Build the local environment (one-time; auto-run on shell entry).**
+
+```sh
+gruntz init          # Wine prefix + clangd DB + Ghidra project
+```
+
+`gruntz init` creates the imperative state Nix does not: the Wine prefix, the clangd
+compile DB, and the **Ghidra project** (import + auto-analyze `GRUNTZ.EXE`). Cold it
+is ~2–3 min; it is idempotent and self-skips once the Ghidra exports exist. How the
+*named* Ghidra DB is populated — name precedence (`src` > FID > Ghidra), byte-exact
+stack locals, incremental `gruntz ghidra-refresh`, and the human-annotation
+round-trip — is detailed in [Populating the Ghidra database](#populating-the-ghidra-database)
+below; **read that section first** if you plan to touch names.
+
+**3. Run the matching loop.**
+
+```sh
+gruntz build         # compile → labels → delink → objdiff → match summary
+```
+
+This compiles the `src/` "base" objects (MSVC 5.0 under Wine), delinks the retail EXE
+into "target" objects, and objdiffs them. The report lands at
+**`build/objdiff/report.json`** (per-unit + roll-up % are printed, and the match-status
+block at the top of this README is refreshed). Two invariants are **fatal gates** that
+fail the build: **library-overlap** (a `src` `RVA()` must not collide with a
+FID-identified library function) and **class-size** (every modeled class needs a
+`SIZE`/`SIZE_UNKNOWN`).
+
+**4. Navigate the code semantically.**
+
+```sh
+gruntz sema -h       # source/target navigator (xref, disasm, rva, class, def/refs, match)
+```
+
+Prefer `gruntz sema` over grep for any semantic question (who calls this, what type is
+this member, which vtable slot). See
+[`docs/build-system.md`](docs/build-system.md#semantic-navigation--gruntz-sema).
+
+**Where to read next:** [`docs/build-system.md`](docs/build-system.md) (the build system
++ CLI in depth), [`.claude/agents/matcher.md`](.claude/agents/matcher.md) (the matching
+doctrine), and [`config/match-queue.md`](config/match-queue.md) (the prioritized worklist).
+
+> **Known issue (cold `gruntz init` only):** the struct-metadata step (`gruntz structs`,
+> a clang AST-dump that feeds Ghidra) currently fails on `src/Dsndmgr/DirectSoundMgr.cpp`
+> — the LSP compile-DB include order lets the toolchain `dsound.h` shadow the vendored
+> `dx/Include` one, so `DSBLOCK_ENTIREBUFFER` is undeclared (fix tracked separately). A
+> warm/seeded Ghidra DB skips this step, so `gruntz init` and `gruntz build` are
+> unaffected on an already-analyzed checkout.
 
 ## Formatting
 
