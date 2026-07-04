@@ -17,8 +17,8 @@ struct CU55Base {
     virtual ~CU55Base() {}
 };
 struct CU55 : CU55Base {
-    void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
-    virtual ~CU55();        // 0x016460
+    void DeleteImageList();   // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
+    virtual ~CU55() OVERRIDE; // 0x016460
 };
 RVA(0x00016460, 0x46)
 CU55::~CU55() {

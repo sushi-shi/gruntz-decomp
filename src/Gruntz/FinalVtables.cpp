@@ -61,7 +61,8 @@ VTBL(CVtbl_1ef7d0, 0x001ef7d0);
 // IsReady/Init/Cleanup -> this is CDDrawSurfaceMgr's own vtable.
 // ---------------------------------------------------------------------------
 struct CVtbl_1efc58 : Wap::CObject {
-    virtual ~CVtbl_1efc58();       // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual ~CVtbl_1efc58()
+        OVERRIDE;                  // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();        // [5] 0x155f00 = CDDrawSurfaceMgr::IsReady
     virtual void Init();           // [6] 0x155900 = CDDrawSurfaceMgr::Init
     virtual void Cleanup_155e20(); // [7] 0x155e20 = CDDrawSurfaceMgr::Cleanup_155e20
@@ -86,7 +87,8 @@ VTBL(CVtbl_1efc58, 0x001efc58);
 // CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
 // ---------------------------------------------------------------------------
 struct CVtbl_1efd28 : Wap::CObject {
-    virtual ~CVtbl_1efd28();        // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual ~CVtbl_1efd28()
+        OVERRIDE;                   // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void FUN_00556dc0();    // [5] 0x156dc0
     virtual void ResetScratch();    // [6] 0x154aa0 = CDDrawWorkerRegistry::ResetScratch
     virtual void Shutdown();        // [7] 0x154ac0 = CDDrawWorkerRegistry::Shutdown
@@ -124,7 +126,8 @@ VTBL(CVtbl_1efd28, 0x001efd28);
 // Slots carry the matched CDDrawWorkerList leaf names.
 // ---------------------------------------------------------------------------
 struct CVtbl_1efd88 : Wap::CObject {
-    virtual ~CVtbl_1efd88();        // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual ~CVtbl_1efd88()
+        OVERRIDE;                   // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();         // [5] 0x156f00 = CDDrawWorkerList::IsReady
     virtual void FUN_00556fc0();    // [6] 0x156fc0 = Stub_156fc0 (worklist)
     virtual void Dtor_163bc0();     // [7] 0x163bc0 = CDDrawWorkerList::~CDDrawWorkerList
@@ -158,7 +161,8 @@ VTBL(CVtbl_1efd88, 0x001efd88);
 // Slots carry the matched CDDrawChildGroup/CDDrawSubMgr/CWwdObjMgr leaf names.
 // ---------------------------------------------------------------------------
 struct CVtbl_1efdc0 : Wap::CObject {
-    virtual ~CVtbl_1efdc0();    // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual ~CVtbl_1efdc0()
+        OVERRIDE;               // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();     // [5] 0x1575e0 = CDDrawChildGroup::IsReady
     virtual void OnDestroy();   // [6] 0x1576c0 = CDDrawSubMgr::OnDestroy
     virtual void ForwardTo3C(); // [7] 0x1591e0 = CDDrawChildGroup::ForwardTo3C
@@ -193,7 +197,8 @@ VTBL(CVtbl_1efdc0, 0x001efdc0);
 // (declared-only), so this is a surface-pair-adjacent worker vtable.
 // ---------------------------------------------------------------------------
 struct CVtbl_1eff70 : CWapObj {
-    virtual ~CVtbl_1eff70();         // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual ~CVtbl_1eff70()
+        OVERRIDE;                    // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x159150
     virtual void FUN_005591d0();     // [7] 0x1591d0
     virtual void FUN_00559180();     // [8] 0x159180

@@ -39,7 +39,7 @@ public:
 
     CResolveNode();
     CResolveNode(i32 owner, i32 field04, i32 field08);
-    virtual ~CResolveNode();
+    virtual ~CResolveNode() OVERRIDE;
     i32 Init(i32 owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
 
     // vptr @+0x00 + m_04/m_08/m_0c inherited from CLoadable; own scratch from +0x10.

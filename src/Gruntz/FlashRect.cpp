@@ -39,7 +39,7 @@ namespace m4 {
     struct ImgHolder : SevWorker {
         HBRUSH m_brush;
         void Release1c6a5c(); // 0x001c6a5c (brush release)
-        virtual ~ImgHolder() {
+        virtual ~ImgHolder() OVERRIDE {
             Release1c6a5c();
         }
         // MFC-style safe handle: NULL-guards the receiver (retail keeps the

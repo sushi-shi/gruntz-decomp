@@ -88,7 +88,7 @@ public:
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~Wap::CObject
     // (no manual `*(void**)this = &g_*Vtbl`).
-    ~CLoadable() {
+    ~CLoadable() OVERRIDE {
         m_04 = -1;
         m_08 = 0;
         m_0c = 0;

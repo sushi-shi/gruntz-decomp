@@ -25,6 +25,7 @@
 #include <Mfc.h>                   // CObject / CObArray (real NAFXCW layout)
 #include <Wap32/CObject.h>         // Wap::CObject - the shared engine grand-base
 #include <Gruntz/CAniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
+#include <rva.h>                   // OVERRIDE
 
 // The per-element frame-record array (engine CObArray @+0x08, vtbl 0x5ed494).
 // Derives CObArray purely to reach the protected m_pData / m_nSize that retail
@@ -54,7 +55,7 @@ struct CAniSource {
 
 class CAniElement : public Wap::CObject {
 public:
-    virtual ~CAniElement();                   // 0x152e30 (CAniElementCollection.cpp)
+    virtual ~CAniElement() OVERRIDE;          // 0x152e30 (CAniElementCollection.cpp)
     ::CObject* AtChecked_06b270(i32 i) const; // 0x06b270 (MFC ::CObject array element)
     i32 Build_165460(void* ctx, CAniSource* src, i32 flags); // 0x165460
     i32 Configure_1655c0(void* ctx, void* entry, i32 flags); // 0x1655c0

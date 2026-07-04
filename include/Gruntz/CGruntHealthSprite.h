@@ -37,7 +37,7 @@ public:
 
     void HealthUpdate(); // 0x07f180 (the registered per-frame handler; defined elsewhere)
     i32 SetHealthGlyph(i32 x, i32 y, i32 health); // 0x07f0d0
-    ~CGruntHealthSprite();                        // 0x011fb0 (folds the CUserLogic teardown)
+    ~CGruntHealthSprite() OVERRIDE;               // 0x011fb0 (folds the CUserLogic teardown)
 
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the
     // two coordinates at +0x54/+0x58 and the health at +0x5c.

@@ -20,7 +20,7 @@
 
 class CGruntToyTimeSprite : public CUserLogic {
 public:
-    ~CGruntToyTimeSprite(); // 0x012130 (folds the CUserLogic teardown)
+    ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 SIZE(CGruntToyTimeSprite, 0x54);

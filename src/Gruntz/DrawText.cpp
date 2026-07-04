@@ -28,7 +28,7 @@ namespace m4 {
     };
     struct ImgHolder2 : SevWorker2 {
         void Release1c6a5c();
-        virtual ~ImgHolder2() {
+        virtual ~ImgHolder2() OVERRIDE {
             Release1c6a5c();
         }
     };
