@@ -7,7 +7,8 @@
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
-#include <DDrawMgr/CDDSurface.h> // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
+#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
+#include <Gruntz/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -58,20 +59,13 @@ public:
 // the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
 // Flip @0x13e850). Both from <DDrawMgr/CDDSurface.h>.
 
-// The render host reached via the worker mgr's +0x10; carries the back surface at
-// +0x2c.
-SIZE_UNKNOWN(CRenderHost);
-struct CRenderHost {
+// The DDraw surface pair CDDrawWorkerMgr holds at +0x10 (m_frontPair); only its
+// +0x2c channel surface is read here. Forward-declared in <Gruntz/CDDrawWorkerMgr.h>;
+// this TU completes that forward-declared type (same shape as CSoundFxEmitter.h).
+class CDDrawSurfacePair {
+public:
     char m_pad00[0x2c];
-    CDDSurface* m_2c; // +0x2c
-};
-
-// The DirectDraw worker mgr (PreviewMgr+0x04); Method_158b40 @0x158b40 (__thiscall)
-// installs the resolved screen image; +0x10 is the render host.
-struct CDDrawWorkerMgr {
-    char m_pad00[0x10];
-    CRenderHost* m_10;                      // +0x10
-    i32 Method_158b40(i32 image, i32 mode); // 0x158b40
+    CDDSurface* m_surface; // +0x2c the DirectDraw channel surface
 };
 
 struct CStatusBarHolder {
@@ -143,7 +137,7 @@ public:
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurfaceZ* surf = m_0c->m_04->m_10->m_2c->m_8;
+    IDirectDrawSurfaceZ* surf = m_0c->m_04->m_frontPair->m_surface->m_8;
     if (surf == 0 || surf->IsLost() != 0) {
         if (Advance() == 0) {
             m_04->ReportError(0x8006, 0xfa0);
@@ -210,7 +204,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
 // 96.39% - pointer-chain scratch-register + arg-eval-order wall (docs/patterns/
 // pin-local-for-callee-saved-reg.md: "inner-split hurts 2-arg"): the m_0c->m_04
 // object base for the 2-arg Method_158b40 call is hoisted before the arg pushes by
-// retail (cl emits it after), and the m_0c->m_04->m_10->m_2c Flip chain picks edx/
+// retail (cl emits it after), and the m_0c->m_04->m_frontPair->m_surface Flip chain picks edx/
 // eax where cl picks ecx/edx - ~6 register-field bytes. Logic + control flow + all
 // externs (sprintf, g_screenTag, ResolveQualified, Method_158b40, Flip) byte-exact.
 // Final sweep.
@@ -235,7 +229,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
         return 0;
     }
     if (doFlip != 0) {
-        m_0c->m_04->m_10->m_2c->Flip(0);
+        m_0c->m_04->m_frontPair->m_surface->Flip(0);
     }
     return 1;
 }
