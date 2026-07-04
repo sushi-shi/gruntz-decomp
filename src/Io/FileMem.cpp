@@ -112,10 +112,10 @@ i32 CFileMem::Open() {
 
 // ---------------------------------------------------------------------------
 // CFileMem::Ready  (0x00165ef0)
-// Poke the inner file's status slot (+0x54) and report ready (1).
+// Poke the inner file's slot 21 (+0x54; CFileIO::Close) and report ready (1).
 RVA(0x00165ef0, 0xf)
 i32 CFileMem::Ready() {
-    ((CFileIODispatch*)&m_file)->Status();
+    ((CFileIODispatch*)&m_file)->Close();
     return 1;
 }
 

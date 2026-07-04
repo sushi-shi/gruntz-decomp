@@ -5,22 +5,21 @@
 // Locator type descriptor `.?AVzPTree@@` (gruntz.analysis.vtable_hierarchy --class
 // zPTree, aka the fabricated CButeNodeBase). zPTree's RTTI base-class-array names
 // its primary base `zErrHandling` with a SECOND base (MI, secondary vtable @+8) -
-// which is exactly our modeled shape (CContainerErr @+0, CButeNodeEntry @+8). The
+// which is exactly our modeled shape (zErrHandling @+0, CButeNodeEntry @+8). The
 // former fabricated name "CButeNodeBase" is replaced by the real library name
-// zPTree here; its primary base is the shared engine class we call CContainerErr,
-// whose own RTTI-real name is `zErrHandling` (used cross-module by zBitVec/EngStr/
-// GameText, so a global CContainerErr -> zErrHandling rename is a separate,
-// out-of-Bute-scope change).
+// zPTree here; its primary base is the RTTI-real `zErrHandling` (the same engine
+// class is modeled per-TU elsewhere under placeholder names - EngStr/GameText/
+// ProjActCache).
 //
-// This is its own self-contained class model (CContainerErr base, CButeNodeEntry
+// This is its own self-contained class model (zErrHandling base, CButeNodeEntry
 // subobject); it cannot fold into ButeMgr.cpp, which carries a different minimal
 // `class zPTree` decl (ButeMgr.h, the empty call-site stand-in) for the ParseTagLine
 // `new CButeNode` path -> ODR conflict. So it lives in its own unit, flags="eh".
 //
-// zPTree derives from CContainerErr (=zErrHandling, the container-library exception
-// base, ctor @0x16d9c0, modeled in GameText) and embeds a small node subobject
+// zPTree derives from zErrHandling (the container-library exception base, ctor
+// @0x16d9c0, modeled in GameText) and embeds a small node subobject
 // at +0x8 (the keyed-store entry: a ptr + a 16-bit kind + a vtbl). The ctor
-// runs the CContainerErr base ctor (passing the node's error-message global),
+// runs the zErrHandling base ctor (passing the node's error-message global),
 // constructs the +0x8 subobject from (n, desc), then re-stamps the two derived
 // vtables (the subobject at +0x8 and the whole object at +0x0) and zeroes the
 // two child-link fields at +0x18 / +0x28.
@@ -30,21 +29,22 @@
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 
-// CContainerErr (RTTI-real name zErrHandling) - the container-library exception
-// base (vptr@0, msg@4). Its ctor (RVA 0x16d9c0, real body in GameText) is
-// __thiscall(this, msg); declared no-body here so the `push msg; call` shape is
-// reloc-masked. Shared across modules under the CContainerErr name (zBitVec/EngStr/
-// GameText), so kept as CContainerErr here (a global rename to zErrHandling is a
-// separate cross-module task). REAL POLYMORPHIC (ALL-VTABLES phase): the vtbl@0
-// field is now the implicit vptr (virtual dtor); the derived zPTree ctor auto-stamps
-// ??_7zPTree @+0 after the external base ctor returns (== the old manual whole-object
-// restamp). The base stays destructible so the derived ctor keeps its /GX unwind frame.
+// zErrHandling - the container-library exception base (vptr@0, msg@4), RTTI-real
+// name (zPTree's RTTI base-class-array names its primary base `zErrHandling`). Its
+// ctor (RVA 0x16d9c0, real body in GameText) is __thiscall(this, msg); declared
+// no-body here so the `push msg; call` shape is reloc-masked. The same engine class
+// is modeled per-TU elsewhere under placeholder names (EngStr/GameText/ProjActCache);
+// this unit carries its own self-contained decl. REAL POLYMORPHIC (ALL-VTABLES phase):
+// the vtbl@0 field is the implicit vptr (virtual dtor); the derived zPTree ctor
+// auto-stamps ??_7zPTree @+0 after the external base ctor returns (== the old manual
+// whole-object restamp). The base stays destructible so the derived ctor keeps its
+// /GX unwind frame.
 extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 
-class CContainerErr {
+class zErrHandling {
 public:
-    CContainerErr(void* msg);
-    virtual ~CContainerErr(); // +0x00 vptr; external no-body dtor (real body in GameText)
+    zErrHandling(void* msg);
+    virtual ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
 
     void* m_msg; // +0x04
 };
@@ -69,11 +69,11 @@ SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, 0 }
 VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 
 // zPTree layout (multiply-derived, two vptrs):
-//   +0x00  CContainerErr base   (vptr, msg)
+//   +0x00  zErrHandling base    (vptr, msg)
 //   +0x08  CButeNodeEntry base  (vptr, desc, kind, 0) - spans +0x08..+0x18
 //   +0x18  m_child18 : child link, zeroed
 //   +0x28  m_child28 : child link, zeroed
-class zPTree : public CContainerErr, public CButeNodeEntry {
+class zPTree : public zErrHandling, public CButeNodeEntry {
 public:
     zPTree(void* desc, i32 n);
 
@@ -99,7 +99,7 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_0c = 0;
 }
 
-// zPTree ctor (0x16dff0): run the CContainerErr primary base ctor + the
+// zPTree ctor (0x16dff0): run the zErrHandling primary base ctor + the
 // CButeNodeEntry second-base ctor, then cl auto-stamps the two most-derived vptrs
 // (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived vtable @+8 =
 // 0x5e949c) and zeroes the two child links. /GX unwind frame from the two
@@ -110,7 +110,7 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
 // vptrs FIRST, shifting the stamp schedule vs the hand-rolled last-stores. Logic
 // byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
-zPTree::zPTree(void* desc, i32 n) : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
+zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
     m_child18 = 0;
     m_child28 = 0;
 }

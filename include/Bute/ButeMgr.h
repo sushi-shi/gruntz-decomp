@@ -316,6 +316,14 @@ SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 // the full multiply-derived zPTree model + the vtable_hierarchy evidence). Here it
 // is only the call-site stand-in for the `new CButeNode` path (empty external base,
 // ctor reloc-masked), a separate model from ButeNode.cpp's to avoid an ODR conflict.
+//
+// zPTree's RTTI-real primary base is zErrHandling (the container-library exception
+// base; full model in ButeNode.cpp, where the real zPTree derives it). This stand-in
+// is intentionally kept base-less: any structural change here (even an EBO-neutral
+// empty base) perturbs MSVC5's /O2 regalloc in this hot header's many includers
+// (measured: gruntcombatanim / grunt / cplay fuzzy-% regressed). The vtable_hierarchy
+// INHERIT audit therefore still flags this stand-in decl; the substantive fix lives
+// in ButeNode.cpp's real model.
 class zPTree {
 public:
     zPTree(void* desc, i32 n);

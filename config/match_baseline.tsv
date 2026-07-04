@@ -906,7 +906,7 @@ butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	2	89f2096c845f	0x3cc20
 butenode	??0CButeCfgNode174d@@QAE@H@Z	100.0000	100.0000	2	d7f02ce2538b	0x174d00
 butenode	??0CButeNodeEntry@@QAE@HPAX@Z	82.8750	82.8750	3	10e0e89d83b7	0x16df70
-butenode	??0zPTree@@QAE@PAXH@Z	96.0968	96.0968	1	c33533bbd02b	0x16dff0
+butenode	??0zPTree@@QAE@PAXH@Z	96.0968	96.0968	2	8e3fdc4b37df	0x16dff0
 butesectionctor	?Construct@CButeSection@@QAEPAV1@XZ	4.9342	4.9342	1	53fa6314a541	0x170210
 butestoreclear	?ClearRecursive@CButeStore@@QAEXPAUCButeStoreNode@@@Z	100.0000	100.0000	1	5047004e088e	0x16e070
 butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	3	b873d33bf922	0x16d190
@@ -988,9 +988,9 @@ cddrawptrcollections	??1CPoolItemA@@UAE@XZ	4.0000	4.0000	1	faa6059e4030	0x142820
 cddrawptrcollections	??1CPoolItemAE8@@UAE@XZ	4.0000	4.0000	1	91b670f90cb8	0x142d40
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemBase@@@Z	100.0000	100.0000	1	abc40fe0591e	0x142100
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
-cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	3	b78028500bfe	0x142060
-cddrawptrcollections	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	1	56947f610115	0x143b20
-cddrawptrcollections	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	2	a4c47d234917	0x143c20
+cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	4	aaabca589f51	0x142060
+cddrawptrcollections	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	2	e9789f58593b	0x143b20
+cddrawptrcollections	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	3	6b88595a7f49	0x143c20
 cddrawptrcollections	?Create7f0_1@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@H@Z	80.2969	80.2969	1	196d78187e40	0x1421a0
 cddrawptrcollections	?CreateA@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@HHHHH@Z	82.4861	82.4861	1	4dac05d4ccf0	0x142260
 cddrawptrcollections	?CreateB@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@HHHHH@Z	82.4861	82.4861	1	12b9a3d7723b	0x1423c0
@@ -1201,9 +1201,9 @@ cddrawworkers	?Vfunc2C@CDDrawWorkerA@@UAEHHHH@Z	100.0000	100.0000	1	3a8bc470d667
 cddrawworkers	?Vfunc2C@CDDrawWorkerB@@UAEHHHH@Z	100.0000	100.0000	1	e1090e02f711	0x1572f0
 cddrawworkers	?Vfunc30@CDDrawWorkerB@@UAEHHHPAUCDDrawFrameSource@@H@Z	100.0000	100.0000	1	61b65e45ca9b	0x1572b0
 cddrawworkers	?Vfunc34@CDDrawWorkerB@@UAEHHHHH@Z	100.0000	100.0000	1	e467ad482723	0x157280
-cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	3	1d7398057079	0x17cdf0
+cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	4	32f2b6757e25	0x17cdf0
 cddscreen	?Configure@CDDScreen@@QAEHHHPAUDDPoint@@PAUDDRect@@@Z	97.3969	97.3969	3	42a0001a5a6a	0x17cfc0
-cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	3	aae8f6c82e44	0x17cc80
+cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	4	ca427c2d4bfb	0x17cc80
 cddsurfacedtor	??1CDDSurface@@QAE@XZ	94.0000	94.0000	1	cacc86e7ced0	0x142a40
 cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	3	0c0dc1d1d49e	0x147c80
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	4	f120a09d7445	0x13ee60
@@ -1986,7 +1986,7 @@ filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	2	d75cea6c3ecf	0x157850
 filemem	??1CFileMem@@UAE@XZ	59.8148	59.8148	1	161a08579238	0x157980
 filemem	?Open@CFileMem@@UAEHXZ	100.0000	100.0000	2	b99db6406cbf	0x165e60
 filemem	?Read@CFileMem@@UAEHPAXH@Z	100.0000	100.0000	2	0fee4ca3f345	0x165f00
-filemem	?Ready@CFileMem@@UAEHXZ	100.0000	100.0000	2	606678f7ca8e	0x165ef0
+filemem	?Ready@CFileMem@@UAEHXZ	100.0000	100.0000	3	8b054ba55bc2	0x165ef0
 filemem	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	d9e38b96f792	0x157a50
 filemem	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	8df80faaf0af	0x157a40
 filemem	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	1	87fed6342cd4	0x165e30
@@ -2747,7 +2747,7 @@ logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	cc9db04aa
 logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d909b08dc631	0xaa5a0
 logicworkerhandlers	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8791e12082ce	0xaa960
 logicworkerhandlers	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	fc95604f0cd1	0xaf0a0
-lutshaderect	?ShadeRect@CFileImage@@QAEHHPAUtagRECT@@@Z	66.8318	66.8318	1	ddce9237f59a	0x13f460
+lutshaderect	?ShadeRect@CFileImage@@QAEHHPAUtagRECT@@@Z	66.8318	66.8318	2	e9470b03004f	0x13f460
 m3mfcleaves	?GetActive@CDdeView@@QAEHXZ	100.0000	100.0000	2	57a47a7fd4d6	0x1d047f
 m3mfcleaves	?ModuleStateField30@@YAHXZ	100.0000	100.0000	1	bf3a2e7a831a	0x1ce95f
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	77.6725	77.6725	3	13c9b07d552c	0xa11d0

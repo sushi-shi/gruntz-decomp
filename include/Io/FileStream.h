@@ -43,17 +43,17 @@ struct CFileIODispatch {
     virtual void v8();
     virtual void v9();
     virtual i32 Open(const char* name, u32 flags, void* err); // +0x28 slot 10
-    virtual void v11();
-    virtual LONG Seek(LONG off, i32 from); // +0x30 slot 12
-    virtual void v13();
-    virtual i32 GetLength();                    // +0x38 slot 14
-    virtual i32 Read(void* buf, u32 n);         // +0x3c slot 15
-    virtual void Write(const void* buf, u32 n); // +0x40 slot 16
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual i32 Status(); // +0x54 slot 21
+    virtual void Duplicate();                                 // slot 11 (CFile::Duplicate)
+    virtual LONG Seek(LONG off, i32 from);                    // +0x30 slot 12
+    virtual void SetLength();                                 // slot 13 (CFile::SetLength)
+    virtual i32 GetLength();                                  // +0x38 slot 14
+    virtual i32 Read(void* buf, u32 n);                       // +0x3c slot 15
+    virtual void Write(const void* buf, u32 n);               // +0x40 slot 16
+    virtual void LockRange();                                 // slot 17 (CFile::LockRange)
+    virtual void UnlockRange();                               // slot 18 (CFile::UnlockRange)
+    virtual void Abort();                                     // slot 19 (CFile::Abort)
+    virtual void Flush();                                     // slot 20 (CFile::Flush)
+    virtual i32 Close(); // +0x54 slot 21 (CFile::Close; FileMem::Reset drives it)
 };
 SIZE_UNKNOWN(CFileIODispatch); // reinterpret dispatch view (never constructed)
 
