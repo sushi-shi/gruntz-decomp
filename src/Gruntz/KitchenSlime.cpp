@@ -8,6 +8,7 @@
 #include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/CTypeNameEntryView.h>
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -557,10 +558,8 @@ i32 CKitchenSlime::Tick() {
 // call is reloc-masked, as in CSBI_RectOnly::Serialize).
 
 // The +0x34 serializable sub-object the slime chains into after the shared
-// CUserLogic::SerializeChain (same archetype as CFortressFlag::Serialize).
-struct CSlimeSerialSub {
-    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00 (via 0x1aff thunk)
-};
+// CUserLogic::SerializeChain is the shared CSerialObjRef (Chain @0x8c00 via the
+// 0x1aff thunk); same archetype as CFortressFlag::Serialize.
 
 // CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
 // read tag (7) read the seven motion quadwords (m_speed..m_88) through the stream's
@@ -598,7 +597,8 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     if (SerializeChain(stream, tag, c, d) == 0) {
         return 0;
     }
-    return ((CSlimeSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) != 0;
+    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 // @early-stop
@@ -765,7 +765,6 @@ SIZE_UNKNOWN(CSlimeCueGate);
 SIZE_UNKNOWN(CSlimeEntity);
 SIZE_UNKNOWN(CSlimeLevel);
 SIZE_UNKNOWN(CSlimeMiniStr);
-SIZE_UNKNOWN(CSlimeSerialSub);
 SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);
