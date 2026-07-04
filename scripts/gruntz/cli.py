@@ -690,22 +690,21 @@ def _sema_tool(module: str, argv: list) -> int:
 
 def _sema_log(rc: int, secs: float) -> None:
     """One line per `gruntz sema` invocation (ALL subcommands, logged from the
-    main dispatch); must NEVER break the tool. The line IS the command
-    (shell-quoted, metadata behind `#`), so any line pasted into a shell re-runs
-    that exact query:
-        gruntz sema xref 0x00080850 --raw  # 2026-07-04T19:55:01 rc=0 312ms
+    main dispatch); must NEVER break the tool. Metadata first, command after the
+    `: ` (shell-quoted) so it copies straight out:
+        [2026-07-04][19:55:01][0]: gruntz sema xref 0x00080850 --raw
     Usage-analysis feed: what agents actually run -> tool improvements."""
+    del secs  # not logged (format: [date][time][rc]: <command>)
     try:
         import datetime
         import shlex
+        now = datetime.datetime.now()
         cmd = shlex.join(["gruntz", *sys.argv[1:]])  # exactly what was invoked
-        meta = "# {} rc={} {}ms".format(
-            datetime.datetime.now().isoformat(timespec="seconds"),
-            rc, int(secs * 1000))
         path = REPO / "build" / "gruntz_sema.log"
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "a") as f:
-            f.write("{}  {}\n".format(cmd, meta))
+            f.write("[{}][{}][{}]: {}\n".format(
+                now.date(), now.strftime("%H:%M:%S"), rc, cmd))
     except Exception:
         pass  # logging is best-effort by design
 
