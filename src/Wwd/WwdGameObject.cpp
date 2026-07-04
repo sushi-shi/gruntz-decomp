@@ -378,6 +378,12 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
 // ReadState (0x150b00): pull four fields back through the archive at the
 // requested object (ebx), copy its name string, then re-emit them.
 // ---------------------------------------------------------------------------
+// @early-stop
+// frame-slot-coloring wall (99.39%): buffer corrected to char[0x100] (frame now the
+// retail sub esp,0x108, cf. read-twin Sub150c30), body byte-identical, but MSVC5 colors
+// the two 4-byte scalars (flag / EngStr str) into the swapped esp slots vs retail
+// (base str@[esp+0x10]/flag@[esp+0x14]; retail flag@0x10/str@0x14) - one `lea ecx`
+// operand differs. Not steerable by decl/scope order (tried block/hoist/reorder).
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObject::ReadState(i32 src) {
     CSerialArchive* ar = (CSerialArchive*)src;
@@ -392,14 +398,14 @@ i32 CWwdGameObject::ReadState(i32 src) {
     }
     ar->Write(&flag, 4);
 
-    char tmp[0x80];
-    memset(tmp, 0, sizeof(tmp));
+    char tmp[0x100]; // 256-byte name scratch (only 0x80 written; cf. Sub150c30's name[0x100])
+    memset(tmp, 0, 0x80);
     if (m_194 != 0) {
         strcpy(tmp, (char*)m_194 + 0x24);
     }
     ar->Write(tmp, 0x80);
 
-    memset(tmp, 0, sizeof(tmp));
+    memset(tmp, 0, 0x80);
     {
         EngStr str;
         m_mgr->m_28->FindKeyOfValue_158570(&str, (i32)m_19c);

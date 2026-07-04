@@ -264,7 +264,13 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
 // WwdFile::InflateMainBlock
 // Validates the header, copies the 0x5F4-byte header prefix into dest, then
 // zlib-uncompresses the COMPRESS main block into the remainder. Returns dest on
-// success, 0 on any validation/inflate failure. (~88.7% fuzzy, entropy plateau.)
+// success, 0 on any validation/inflate failure.
+// @early-stop
+// callee-saved regalloc-coloring wall (~88.7%): body byte-identical, but MSVC5 and
+// retail break the dest/destLen coloring tie oppositely - both cross the inline memcpy,
+// retail pins destLen in ebp and spills dest to [esp+0x18], recompile pins dest in ebp
+// and spills destLen. The register swap propagates through the whole body. Not steerable
+// from C (same # uses either way; declaration/order-neutral).
 RVA(0x00160790, 0xd2)
 i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
     uLongf outLen;
