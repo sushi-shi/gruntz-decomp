@@ -16,12 +16,11 @@
 #include <Io/FileStream.h>
 #include <rva.h>
 
-#include <Io/SharedFileObj.h> // shared C646778 (the static MFC CFile global at 0x646778)
-
-// The shared global file object at 0x646778 (canonical DATA owned by
-// BoundaryLowerThunks.cpp). Referenced here for its Open (0x1bf200 == the MFC
-// CFile::Open) + close (0x1bf426 == CFile::Close); both calls are reloc-masked.
-extern C646778 g_obj646778;
+// The engine's ONE static MFC CFile instance at 0x646778: a concrete CFileIO global
+// (canonical DATA owned by BoundaryLowerThunks.cpp). Referenced here for its Open
+// (0x1bf200 == CFile::Open) + Close (0x1bf426 == CFile::Close); on this concrete-typed
+// global both devirtualize to direct, reloc-masked calls.
+extern CFileIO g_obj646778;
 
 // CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
 // `this`; the single stack arg is the path.
@@ -33,7 +32,7 @@ extern C646778 g_obj646778;
 RVA(0x000bd3e0, 0x34)
 void CFileIO::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);
-    g_obj646778.M1bf426();
+    g_obj646778.Close();
     g_obj646778.Open(path, 1, 0);
 }
 
