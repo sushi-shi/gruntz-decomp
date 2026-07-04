@@ -136,7 +136,7 @@ struct CView {
         // is that RVA's Ghidra VA: VA == RVA + 0x400000). The render/credits path uses
         // it as a flip-prep; the state activators (CBootyState/CMultiBootyState/
         // CMenuState) call the SAME function as the resource worker-apply on activate.
-        void Flush();    // 0x158ee0 (== CDDrawWorkerMgr::Method_158ee0)
+        void Flush(); // 0x158ee0 (== CDDrawWorkerMgr::Method_158ee0)
         char p0[0x10];
         struct SurfaceA {
             char p0[0x2c];

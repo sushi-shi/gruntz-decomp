@@ -370,8 +370,8 @@ public:
     //   and BootyStateActivate's local CBootyState views fold onto this canonical class.
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0xfa1f0
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d);                      // 0xfa8f0
-    void ShowSecretBonusMessage();                                 // 0xfa540
-    void ShowLevelCompleteMessage();                               // 0xfa120
+    void ShowSecretBonusMessage();                                  // 0xfa540
+    void ShowLevelCompleteMessage();                                // 0xfa120
 
     // --- CBootyState members (placeholders, beyond the CState layout) ---
     char m_pad1a8[0x1bc - 0x1a8];
