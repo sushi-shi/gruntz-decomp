@@ -412,7 +412,9 @@ public:
             i32 m_pitch;  // +0x20  row stride
         };
     };
-    i32 m_lockPitch;            // +0x34  desc lPitch (returned by Lock)
+    i32 m_lockBits;             // +0x34  desc lpSurface: locked bits pointer (returned by
+                                //         Lock; used as the pixel buffer by Fill/BlitDirect).
+                                //         NOT lPitch - reconciled with DDSurface.h's m_34.
     char m_pad38[0x64 - 0x38];  // +0x38
     i32 m_64;                   // +0x64  pixel-format bit depth / colour-key colour
     char m_pad68[0x7c - 0x68];  // +0x68
