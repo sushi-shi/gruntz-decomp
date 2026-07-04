@@ -376,24 +376,123 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObj15b390::Construct (0x15b390) - a per-kind CWwdGameObject in-place ctor,
-// re-homed from src/Stub/MallocConstructors. xref (gruntz.analysis.xref): reached
-// through the CreateObject dispatchers CWwdObjMgr::CreateObject_1598d0 (0x1598d0),
-// CWwdObjMgrL::CreateObject_166640 (0x166640) and WwdFile::ReadPlaneObjects
-// (0x162af0). Base-stamps ??_7CResolveNode (0x5efbc0), op-news an AnimWorkerObj
-// (??_7 0x5efb80, size 0x17c) at +0x7c, final-stamps g_wwdGameObjectVtbl (0x5f0020),
-// bumps g_wwdObjIdCounter (0x61ab14). A sibling of the wide-object ctors above; its
-// large body sits at the same rezalloc-placement-new EH wall (see the TU header),
-// so it is homed as a shell here. Reconstruction deferred.
-struct CWwdGameObj15b390 {
-    CWwdGameObj15b390* Construct(int a, int b, int c); // 0x15b390
+// CWwdGameObj15b390::Construct (0x15b390) - the shared CWwdGameObject base-object
+// ctor the wide-object factories call (CreateObject_1598d0/166640 do
+// `((CWwdResolveBaseB*)obj)->Ctor(...)` == call 0x15b390; also WwdFile::ReadPlaneObjects
+// 0x162af0). It is a REAL /GX ctor: the CResolveNode base subobject stamps ??_7CResolveNode
+// (0x5efbc0) + its +0x04..+0xd8 fields, then the CString label member (+0xdc, ??0CString@@
+// 0x1b9b93) constructs, then the derived body final-stamps g_wwdGameObjectVtbl (0x5f0020),
+// `new`-allocates the +0x7c AnimWorkerObj worker (??_7 0x5efb80, 0x17c bytes; op-new 0x1b9b46
+// is null-checked -> MSVC5 nothrow new), and publishes g_wwdObjIdCounter (0x61ab14).
+// The CString member + throwing op-new give the ctor its retail /GX ctor-in-flight EH frame.
+//
+// Foreign vtables reloc-mask (the real ??_7CResolveNode / ??_7AnimWorkerObj live in the
+// Image / DDrawWorkerCache TUs; g_wwdGameObjectVtbl is the un-modeled 0x5f0020 datum).
+extern void* g_resolveNodeVtbl;   // 0x5efbc0  ??_7CResolveNode (reloc-masked)
+extern void* g_animWorkerObjVtbl; // 0x5efb80  ??_7AnimWorkerObj (reloc-masked)
+
+// The +0x7c sprite/anim worker (0x17c bytes). `new`-constructed inline in the base ctor;
+// self-contained inline-construction view (only the field stores + vtable stamp matter).
+struct WwdAnimWorker {
+    WwdAnimWorker(int b, int a) {
+        m_04 = b;
+        m_08 = 0;
+        m_0c = a;
+        *(void**)this = &g_animWorkerObjVtbl; // 0x5efb80
+        m_10 = 0;
+        m_14 = 0;
+        m_18 = 0;
+        m_170 = 0;
+        m_1c = 0;
+        m_174 = 0;
+        m_178 = 0;
+    }
+    void* m_vptr; // +0x00
+    int m_04, m_08, m_0c, m_10, m_14, m_18, m_1c;
+    char _p20[0x170 - 0x20];
+    int m_170, m_174, m_178;
 };
-// @confidence: high
-// @source: xref
-// @stub
+
+// The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
+struct WwdCtorBase {
+    WwdCtorBase(int a, int b, int c) {
+        m_08 = c;
+        m_04 = b;
+        m_0c = a;
+        m_20 = (int)0x80000000;
+        m_38 = -1;
+        *(void**)this = &g_resolveNodeVtbl; // 0x5efbc0
+        m_5c = (int)0x80000000;
+        m_64 = (int)0x80000000;
+        m_3c = 0;
+        m_40 = 0;
+        m_a8 = 0;
+        m_a4 = 0;
+        m_b4 = 0;
+        m_c0 = (int)0x80000000;
+        m_d8 = -1;
+    }
+    void* m_vptr; // +0x00
+    int m_04, m_08, m_0c;
+    char _p10[0x20 - 0x10];
+    int m_20;
+    char _p24[0x38 - 0x24];
+    int m_38, m_3c, m_40;
+    char _p44[0x5c - 0x44];
+    int m_5c;
+    char _p60[0x64 - 0x60];
+    int m_64;
+    char _p68[0x78 - 0x68];
+    int m_78;
+    void* m_7c; // +0x7c worker
+    int m_80;
+    char _p84[0x88 - 0x84];
+    int m_88;
+    char _p8c[0x90 - 0x8c];
+    int m_90;
+    char _p94[0x98 - 0x94];
+    int m_98;
+    char _p9c[0xa4 - 0x9c];
+    int m_a4, m_a8;
+    char _pac[0xb4 - 0xac];
+    int m_b4;
+    char _pb8[0xc0 - 0xb8];
+    int m_c0;
+    char _pc4[0xd8 - 0xc4];
+    int m_d8;
+};
+
+struct CWwdGameObj15b390 : public WwdCtorBase {
+    CString m_label; // +0xdc  ??0CString (0x1b9b93)
+    char _pe0[0x188 - 0xe0];
+    int m_188; // +0x188  object id
+    CWwdGameObj15b390(int a, int b, int c);
+};
+
+// @early-stop
+// eh-member-state wall (59.7%, up from a 1.77% bare @stub): the real /GX ctor
+// (CResolveNode base stamp 0x5efbc0 + CString member ctor 0x1b9b93 + final stamp 0x5f0020
+// + `new` AnimWorkerObj worker + id publish) is byte-faithful store-for-store, but MSVC5
+// declines to emit the retail member-construction EH-state machine: retail bumps the state
+// cookies (`mov [esp+0x1c],0` -> `BYTE 2` before the CString ctor -> `BYTE 3` before the
+// worker op-new) so an unwind destroys the live CString, and pins `lea ecx,[esi+0xdc]` at
+// that state-2 boundary; our cl treats the inline worker `new` as non-throwing (no throw
+// point after the member), so it emits no state cookies and freely hoists the `lea`. Not
+// source-steerable: `::operator new`+placement REGRESSED (57.2%), a declared worker dtor is
+// neutral, and out-of-lining the worker ctor would mismatch retail's inline stores.
+// docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
 RVA(0x0015b390, 0x128)
-CWwdGameObj15b390* CWwdGameObj15b390::Construct(int a, int b, int c) {
-    return this;
+CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c) {
+    *(void**)this = &g_wwdGameObjectVtbl; // 0x5f0020 final stamp
+    m_5c = (int)0x80000000;
+    m_78 = 0;
+    m_7c = new WwdAnimWorker(b, a);
+    m_98 = 0;
+    m_80 = 0;
+    m_88 = 0;
+    m_90 = 0;
+    m_188 = g_wwdObjIdCounter;
+    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
@@ -409,3 +508,5 @@ SIZE_UNKNOWN(CWwdResolveBaseB);
 SIZE_UNKNOWN(CWwdSub9c);
 SIZE_UNKNOWN(CWwdSubB8);
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
+SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)
+SIZE(WwdAnimWorker, 0x17c);      // the +0x7c anim worker
