@@ -1,7 +1,7 @@
-// FileImageLoadByExt.cpp - CFileImage::LoadByExt (0x148940), the .BMP/.PCX/.PID
+// FileImageLoadByExt.cpp - CDDSurface::LoadByExt (0x148940), the .BMP/.PCX/.PID
 // file-extension dispatcher (== the DIRSURF.CPP surface). Re-homed from
-// src/Stub/CFileImageDecode.cpp; uses the single-source CFileImage in <Image/Image.h>
-// (no local view). The default-loader branch is CFileImage::Load (the RT_BITMAP loader
+// src/Stub/CFileImageDecode.cpp; uses the single-source CDDSurface in <Image/Image.h>
+// (no local view). The default-loader branch is CDDSurface::Load (the RT_BITMAP loader
 // at 0x144270, body in the ApiCallers TU) - the same __thiscall `this`. Only offsets /
 // code bytes are load-bearing; helpers are reloc-masked externals.
 #include <Mfc.h> // afx-first (Image.h uses MFC/Win32 types)
@@ -14,7 +14,7 @@
 extern "C" char* RezStrrchr(const char* s, i32 c);       // FUN_00120680 (_RezStrrchr)
 extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezStricmp)
 
-// CFileImage::LoadByExt - load an image by inspecting its file
+// CDDSurface::LoadByExt - load an image by inspecting its file
 // extension. Forces the IMAGEZ flag (|0x40), finds the extension, and dispatches
 // to LoadFile2 (.BMP) / LoadFile (.PCX) / DecodePcxEx (.PID) or the default loader
 // (Load @0x144270, the same __thiscall `this`). On a successful load (except the
@@ -27,13 +27,14 @@ extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezSt
 // the recompile emits them reversed. Same regs, same short-circuit, only the load
 // schedule differs; all other code bytes are byte-identical (llvm-objdump -dr base vs
 // target). A pure scheduler tie-break that flips on ANY change to the widely-included
-// <Image/Image.h> symbol table: it had incidentally drifted to 100% at one baseline,
-// and folding the CScanlineSurface/CImageSurfaceNode views onto CRezImage (adding the
-// 7 surface methods to the shared header) re-triggered it. Not source-steerable
-// (reordering the `&&` -> 96%); the correct shared-class shape is kept over the
-// coin-flip byte-match (per the no-multiple-views mandate).
+// surface symbol table: it had incidentally drifted to 100% at one baseline, was
+// re-triggered by the CScanlineSurface/CImageSurfaceNode fold, and flipped back to
+// ~99.9% by the CFileImage->CDDSurface 3-name unification (this method now lives on
+// the unified CDDSurface, callees renamed + the header pulls <Mfc.h>). Not source-
+// steerable (reordering the `&&` -> 96%); the correct unified-class shape is kept
+// over the coin-flip byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
-i32 CFileImage::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
+i32 CDDSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = RezStrrchr(path, '.');

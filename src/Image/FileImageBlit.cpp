@@ -1,5 +1,5 @@
-// FileImageBlit.cpp - the CFileImage::Blit<dest><src> pixel-format converters
-// (DIRSURF.CPP). Each is the leaf blitter CFileImage::Blit (0x13faa0) dispatches
+// FileImageBlit.cpp - the CDDSurface::Blit<dest><src> pixel-format converters
+// (DIRSURF.CPP). Each is the leaf blitter CDDSurface::Blit (0x13faa0) dispatches
 // to by (dest bpp = m_bitDepth, src bpp = bitcount); the trailing digits encode
 // dest_src depths (168 = dest 16bpp / src 8bpp, etc.). They all share the same
 // Blit248 outer frame: optional palette null-check, Lock(0), a mode-2 (bottom-up
@@ -42,7 +42,7 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // blue  down-shift
 
 // ---------------------------------------------------------------------------
-// CFileImage::Blit168  (8bpp src -> 16bpp dest, palette remap)
+// CDDSurface::Blit168  (8bpp src -> 16bpp dest, palette remap)
 // Build a 256-entry 16bpp LUT from the source palette (the RGB shift table packs
 // each {R,G,B} entry into a screen-native 16bpp word), then walk the surface row
 // by row writing LUT[index] per source pixel.
@@ -53,7 +53,7 @@ extern i32 g_bDown; // blue  down-shift
 // shifts this=edi/src=edx and spills the source index to the stack). Logic exact;
 // the inner LUT-lookup idiom is correct, only the register file is permuted.
 RVA(0x0013fbb0, 0x126)
-i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
@@ -93,7 +93,7 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::Blit1624  (24bpp src -> 16bpp dest)
+// CDDSurface::Blit1624  (24bpp src -> 16bpp dest)
 // Pack each B,G,R source triple straight into a screen-native 16bpp word.
 // @early-stop
 // Entropy wall (~71%): the per-pixel 3-byte read + shift-pack needs a stack temp
@@ -101,7 +101,7 @@ i32 CFileImage::Blit168(void* srcv, void* palv, i32 mode) {
 // narrowing (movb vs movzx) of the channel packs diverge from our equivalent
 // codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
 RVA(0x0013fce0, 0x17f)
-i32 CFileImage::Blit1624(void* srcv, i32 mode) {
+i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
     u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
@@ -139,7 +139,7 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::Blit2416  (16bpp src -> 24bpp dest, 6-byte/pixel word writes)
+// CDDSurface::Blit2416  (16bpp src -> 24bpp dest, 6-byte/pixel word writes)
 // Unpack each 16bpp word into an R,G,B triple, each stored as a zero-extended
 // 16bpp word (the retail dest stride is 6 bytes per source pixel).
 // @early-stop
@@ -147,7 +147,7 @@ i32 CFileImage::Blit1624(void* srcv, i32 mode) {
 // (shr bx then shl bl, with the shift-count load width varying word/dword) and
 // the one stack temp are MSVC5 /O2 register-allocation coin-flips. Logic exact.
 RVA(0x0013ff80, 0x184)
-i32 CFileImage::Blit2416(void* srcv, i32 mode) {
+i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
     u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
@@ -181,7 +181,7 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::Blit824  (24bpp src -> 8bpp dest, nearest-palette quantize)
+// CDDSurface::Blit824  (24bpp src -> 8bpp dest, nearest-palette quantize)
 // For each B,G,R source triple, find the palette index whose entry minimizes the
 // sum of squared channel differences (entry 0 seeds the best; entries 1..255 are
 // scanned, breaking early on an exact match), and write that index.
@@ -192,7 +192,7 @@ i32 CFileImage::Blit2416(void* srcv, i32 mode) {
 // (channel pairing s0<->pal[+2], s1<->pal[+1], s2<->pal[+0], min-SSD, exact-match
 // break) is faithful; only the regalloc/scheduling of the spills diverges.
 RVA(0x00140110, 0x30b)
-i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
@@ -268,7 +268,7 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImage::Blit816  (16bpp src -> 8bpp dest, nearest-palette quantize)
+// CDDSurface::Blit816  (16bpp src -> 8bpp dest, nearest-palette quantize)
 // Unpack each 16bpp source word into an R,G,B triple (via the screen shift table),
 // then find the palette index minimizing the sum of squared channel differences
 // (entry 0 seeds the best; 1..255 scanned, exact-match break) and write it.
@@ -279,7 +279,7 @@ i32 CFileImage::Blit824(void* srcv, void* palv, i32 mode) {
 // register-allocation coin-flips. Logic (RGB unpack, red<->pal[0]/green<->pal[1]/
 // blue<->pal[2] min-SSD, exact-match break) is faithful.
 RVA(0x00140420, 0x34f)
-i32 CFileImage::Blit816(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;

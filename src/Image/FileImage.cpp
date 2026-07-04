@@ -5,13 +5,13 @@
 // Lock (0x13e6d0) / Unlock (vtable +0x80), the decode runners (0x140aa0/0x140c50/
 // 0x145270/0x1453f0), the Blit (0x13faa0) and the inner thunk (0x1471d0) are all
 // external engine callees (reloc-masked); the export/load methods slurp through the
-// real MFC CFile. See include/Image/Image.h for the (single-source) CFileImage layout.
+// real MFC CFile. See include/Image/Image.h for the (single-source) CDDSurface layout.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
 // ---------------------------------------------------------------------------
 #include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
 
-#include <Image/Image.h>                  // the single-source CFileImage (the DIRSURF surface)
+#include <Image/Image.h>                  // the single-source CDDSurface (the DIRSURF surface)
 #include <Image/FileImageRecords.h>       // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
@@ -31,7 +31,7 @@ extern "C" void RezFree(void* p);
 // The DecodeRun grayscale-ramp scratch (reloc-masked global at 0x683ef0; 0x400 bytes).
 
 // ClipRect16 (the 16-byte rect/clip record) + the inner blit/decode worker
-// CFileImage::Run (0x1471d0) are declared on CFileImage in <Image/Image.h>.
+// CDDSurface::Run (0x1471d0) are declared on CDDSurface in <Image/Image.h>.
 
 // The 256*3 grayscale-ramp scratch buffer the 24-bit decode-convert path fills
 // (reloc-masked global at 0x684af0; +0x401 = the running write cursor, +0x801 = end).
@@ -52,7 +52,7 @@ extern "C" void RezFree(void* p);
 // that one choice. docs/patterns/zero-register-pinning.md + reread-member-view-pointer.md.
 // Not source-steerable on a leaf this small; deferred to the final sweep.
 RVA(0x0013ebb0, 0x126)
-void CFileImage::FlipVertical() {
+void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
         return;
     }
@@ -125,7 +125,7 @@ void CFileImage::FlipVertical() {
 // (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
 // spelling. Deferred to the final sweep.
 RVA(0x00141280, 0x4a)
-void CFileImage::
+void CDDSurface::
     DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3) {
     ClipRect16 clip;
     clip.a = r0;
@@ -149,7 +149,7 @@ void CFileImage::
 // offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
 // one allocation retail emitted. Deferred to the final sweep.
 RVA(0x00143cf0, 0x16b)
-i32 CFileImage::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
+i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     DecodeSrc* src = (DecodeSrc*)srcv;
     i32 srcFmt = src->m_1c;
     if (srcFmt != 8 && srcFmt != 0x18) {
@@ -190,7 +190,7 @@ i32 CFileImage::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
         }
     }
 
-    if (CFileImage::BlitSurf(info, src->m_12, src->m_16, 0, b)
+    if (CDDSurface::BlitSurf(info, src->m_12, src->m_16, 0, b)
         == 0) { // direct (qualified) slot-3 call
         return 0;
     }
@@ -218,7 +218,7 @@ i32 CFileImage::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 // /GX funcinfo state index push (eh-state-numbering-base.md) plus the DecodeRun callee's
 // own divergence (it is the branch-scheduling wall above). Deferred to the final sweep.
 RVA(0x00143e60, 0x15b)
-i32 CFileImage::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
+i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFileIO file;
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -257,7 +257,7 @@ i32 CFileImage::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
 // spill scheduling + the EH-state numbering diverge from retail; not source-steerable.
 // Deferred to the final sweep.
 RVA(0x001443b0, 0x284)
-i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
+i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
@@ -356,7 +356,7 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
 // field stores and the nested bottom-up row-write loop are logic/offset/CFG-faithful,
 // but the frame spill scheduling + EH-state numbering diverge; deferred to the sweep.
 RVA(0x00144900, 0x227)
-i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
+i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     (void)pal;
     if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
@@ -435,7 +435,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
 // allocation; logic + offsets + CFG + the run-decoder dispatch are exact (the base
 // disasm is structurally byte-faithful). Deferred to the final sweep.
 RVA(0x00144b30, 0x250)
-i32 CFileImage::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode) {
+i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode) {
     if (src == 0) {
         return 0;
     }
@@ -547,7 +547,7 @@ i32 CFileImage::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
 // RezFree'd after Decode (and on a short read). ret 0xc.
 // ---------------------------------------------------------------------------
 RVA(0x00144d80, 0x15b)
-i32 CFileImage::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
+i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -572,13 +572,13 @@ i32 CFileImage::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted). CFileImageHeldSurface (the thiscall
 // held-surface slot-dispatch view) emits no vtable -> VTBL skip. CFileImageInfo was
-// folded into CFileImage (it is a 2nd CFileImage instance passed as `info`).
+// folded into CDDSurface (it is a 2nd CDDSurface instance passed as `info`).
 // ===========================================================================
-// --- shared CFileImage (Image.h) header classes ---
+// --- shared CDDSurface (Image.h) header classes ---
 SIZE_UNKNOWN(CFileImageHeldSurface);
 SIZE_UNKNOWN(CFileImageSrc);
 SIZE_UNKNOWN(CFileImagePal);
-SIZE_UNKNOWN(CFileImage);
+SIZE_UNKNOWN(CDDSurface);
 // --- header data-record structs (Image.h / CFileImageRecords.h; annotated here) ---
 SIZE_UNKNOWN(DecodeSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record

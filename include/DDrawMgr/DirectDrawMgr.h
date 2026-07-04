@@ -123,7 +123,7 @@ public:
 // two 0x400-byte PALETTEENTRY caches @0xc/@0x10.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CDDPalette);
-class CDDPalette {
+struct CDDPalette { // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
     i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags); // 0x147410
     i32 Create(IDirectDraw2* dd, void* entries, u32 flags);        // 0x147390

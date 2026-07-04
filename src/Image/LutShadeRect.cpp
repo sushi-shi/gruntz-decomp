@@ -26,7 +26,7 @@ void operator delete(void* p);
 // __stdcall virtuals (`this` pushed on the stack) so `m_8->Unlock(0)` lowers to the
 // same `mov reg,[m_8]; call [reg+0x80]` the manual m_vtbl[0x80/4](m_8,0) dispatch did.
 // Slot 32 (+0x80) is the Unlock/notify the shade path calls; the leading placeholder
-// slots land it at its retail vtable index. Same held surface CFileImage models as
+// slots land it at its retail vtable index. Same held surface CDDSurface models as
 // CFileImageHeldSurface in <Image/Image.h>; only the notify slot is used here. A
 // local view (no new include) to protect this TU's fragile regalloc state.
 struct HeldDDSurface {
@@ -65,10 +65,10 @@ struct HeldDDSurface {
     virtual void __stdcall Unlock(i32 rect); // slot 32 (+0x80)
 };
 
-// CFileImage - the DIRSURF.CPP surface (full class in <Image/Image.h>). Modeled as a
+// CDDSurface - the DIRSURF.CPP surface (full class in <Image/Image.h>). Modeled as a
 // partial view here: only the shade path's fields + Lock (0x13e6d0) are pinned. m_8
 // is the held DirectDraw surface, m_18/m_1c the surface height/width, m_20 the pitch.
-struct CFileImage {
+struct CDDSurface {
     char m_pad0[8];
     HeldDDSurface* m_8; // +0x08 held DirectDraw surface
     char m_padc[0x18 - 0xc];
@@ -90,7 +90,7 @@ struct CFileImage {
 // the same compares - so every [this+off] ModRM byte and the channel-split reg
 // choices differ. A regalloc coin-flip, not a codegen miss.
 RVA(0x0013f460, 0x2da)
-i32 CFileImage::ShadeRect(i32 pct, RECT* clip) {
+i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {
         return 0;
     }
@@ -175,5 +175,5 @@ i32 CFileImage::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-SIZE_UNKNOWN(CFileImage);
+SIZE_UNKNOWN(CDDSurface);
 SIZE_UNKNOWN(HeldDDSurface);

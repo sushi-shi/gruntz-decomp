@@ -19,10 +19,10 @@
 // bytes are load-bearing. The blit/notify/transform callees are external no-body
 // fns (reloc-masked rel32); CopyRect is the user32 import.
 #include <rva.h>
+#include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface: BltEx/shaded-blit src); pulls <Mfc.h> FIRST
 #include <Image/CImage.h>
-#include <Win32.h> // RECT, CopyRect
+#include <Win32.h> // RECT, CopyRect (windows.h already via Mfc.h above; guarded no-op)
 
-#include <DDrawMgr/DDSurface.h>      // canonical CDDSurface (m_surface: BltEx / shaded-blit src)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: Blit/Notify + ShadeRect)
 #include <Globals.h>
 

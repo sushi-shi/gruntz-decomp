@@ -86,12 +86,12 @@ extern "C" IDirectDraw2* g_DirectDraw; // 0x683ee8
 // ===========================================================================
 
 // CDDSurface::Lock (__thiscall). Lock(this->m_desc) with NULL rect / flags 1;
-// on SURFACELOST restore-and-retry, else report. Returns m_34 on hard fail.
+// on SURFACELOST restore-and-retry, else report. Returns m_lockBits on hard fail.
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
     i32 hr = m_8->Lock((LPRECT)rect, (LPDDSURFACEDESC)m_desc, 1, 0);
     if (hr == 0) {
-        return m_34;
+        return m_lockBits;
     }
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost() == 0) {
@@ -99,7 +99,7 @@ i32 CDDSurface::Lock(void* rect) {
         }
         hr = m_8->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
         if (hr == 0) {
-            return m_34;
+            return m_lockBits;
         }
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x203, hr);
         return 0;
@@ -335,7 +335,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 
     i32 bits = m_64;
     m_bc = 0;
-    m_a8 = bits;
+    m_bitDepth = bits;
     // NOTE: retail emits two MSVC jump tables here (selector = bits-8, range 25),
     // with the tables placed INLINE in .text after the body. Writing the switch
     // with a `case 8` makes MSVC emit the same jump-table structure, but the
@@ -382,7 +382,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     i32 height = m_height;
     m_8c = height;
     m_90 = m_ac * height;
-    m_7c = m_7c | 1;
+    m_dontOwn = m_dontOwn | 1;
     return 1;
 }
 
