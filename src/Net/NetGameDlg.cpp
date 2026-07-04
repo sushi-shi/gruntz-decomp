@@ -7,8 +7,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/OptCfgSingleton.h> // shared OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
-
 // A child control returned by CWnd::GetDlgItem; only EnableWindow is reached here.
 struct CCtrl {
     void EnableWindow(i32 enable); // 0x1be6a7
@@ -76,11 +74,12 @@ struct CNetSession {
     i32 Poll(i32 token);              // 0x1249
     void SendStatFlag(i32 id, i32 v); // 0xb9240
 };
-// The singleton's canonical symbol is owned by ReconBatch2.cpp as a typed pointer
-// (?g_optCfg_64bd5c@@3PAUOptCfg_c4b30@@A); re-declare that extern here so the load
-// reloc-masks, then view it through the session layout (OptCfg_c4b30 is the shared
-// placeholder from <Gruntz/OptCfgSingleton.h>; really CMulti).
-extern OptCfg_c4b30* g_optCfg_64bd5c; // 0x64bd5c
+// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
+// <Gruntz/Multi.h>). This dialog only casts the pointer to its own net-session lens,
+// so a forward-decl suffices (avoids pulling the heavy Multi.h). The DATA symbol is
+// owned by ReconBatch2.cpp; this extern reloc-masks against it.
+class CMulti;
+extern CMulti* g_64bd5c; // 0x64bd5c
 
 // The game-settings singleton (CGruntzMgr) used to resolve the level + show modals.
 struct CGameSettings {
@@ -101,7 +100,7 @@ CString GetConfigNameA();               // 0xb6090
 CString GetConfigNameB();               // 0xb60d0
 
 inline CNetSession* Session() {
-    return (CNetSession*)g_optCfg_64bd5c;
+    return (CNetSession*)g_64bd5c;
 }
 
 // @early-stop

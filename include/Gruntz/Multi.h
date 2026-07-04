@@ -260,14 +260,16 @@ public:
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
     // lobby sub-objects and pushes the final stat flags.
-    void Teardown();                            // 0x0b6110
-    CString& ClearString59c(CString& s);        // 0x0b76c0  (assign m_groupName <- empty)
-    CString& ClearString5a0(CString& s);        // 0x0b7730  (assign m_hostName <- empty)
-    CString GetString59c();                     // 0x0b7a90  (return m_groupName by value)
-    CString GetString5a0();                     // 0x0b7ad0  (return m_hostName by value)
-    void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
-    void ReportNetError();                      // 0x0b7f60
-    i32 JoinSession();                          // 0x0b7fe0
+    void Teardown();                     // 0x0b6110
+    CString& ClearString59c(CString& s); // 0x0b76c0  (assign m_groupName <- empty)
+    CString& ClearString5a0(CString& s); // 0x0b7730  (assign m_hostName <- empty)
+    CString GetString59c();              // 0x0b7a90  (return m_groupName by value)
+    CString GetString5a0();              // 0x0b7ad0  (return m_hostName by value)
+    CString Name42ff();                  // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
+    CString Name31d4();                  // ILT 0x0031d4 -> GetConfigNameA 0x0b6090 (MultiColorDlg)
+    void ReportVersionMsg(char* msg, i32 code);                // 0x0b7e30
+    void ReportNetError();                                     // 0x0b7f60
+    i32 JoinSession();                                         // 0x0b7fe0
     i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
     void AckJoinFailure();                                     // 0x0bc420
 
@@ -400,7 +402,8 @@ public:
     u8 m_5a4;            // +0x5a4  step shift base (used as byte/word; follows m_hostName)
     char m_pad5a5_5a8[0x5a8 - 0x5a5];
     i32 m_drainReload; // +0x5a8  drain reload value
-    char m_pad5ac_5b4[0x5b4 - 0x5ac];
+    char m_pad5ac_5b0[0x5b0 - 0x5ac];
+    i32 m_5b0;       // +0x5b0  lobby current-selection index (MultiColorDlg)
     CString m_5b4;   // +0x5b4
     CString m_5b8;   // +0x5b8
     i32 m_5bc;       // +0x5bc  gate flag

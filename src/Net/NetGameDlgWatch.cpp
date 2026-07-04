@@ -12,8 +12,6 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/OptCfgSingleton.h> // shared OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
-
 // The game-registry singleton pointer (the scoring symbol CPlay reaches too).
 extern "C" void* g_64556c; // 0x64556c
 
@@ -74,11 +72,14 @@ struct WatchReg {
     WatchRegSlot m_slots[1]; // +0x150
 };
 
-// The net-session singleton pointer (canonical DATA symbol owned by ReconBatch2.cpp;
-// OptCfg_c4b30 is the shared view from <Gruntz/OptCfgSingleton.h>, really CMulti).
-extern OptCfg_c4b30* g_optCfg_64bd5c; // 0x64bd5c
+// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
+// <Gruntz/Multi.h>). This dialog only casts the pointer to its own watch-session lens,
+// so a forward-decl suffices. The DATA symbol is owned by ReconBatch2.cpp; this extern
+// reloc-masks against it.
+class CMulti;
+extern CMulti* g_64bd5c; // 0x64bd5c
 inline WatchSess* Sess() {
-    return (WatchSess*)g_optCfg_64bd5c;
+    return (WatchSess*)g_64bd5c;
 }
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).

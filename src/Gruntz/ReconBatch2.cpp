@@ -7,9 +7,8 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
-#include <DDrawMgr/DDSurface.h>      // canonical CDDSurface (Blt @0x13ee60)
-#include <Gruntz/OptCfgSingleton.h> // OptCfg_c4b30 view of the g_64bd5c (CMulti) singleton
-#include <sfman32.h>                // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
+#include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
 // ===========================================================================
@@ -98,10 +97,13 @@ void Host_c2a80::Run() {
 struct OptionsSlotHost_c4b30 {
     i32* FindOptionsSlot(i32 key); // 0x2e00 (FindOptionsSlot)
 };
-// OptCfg_c4b30 is the g_64bd5c (CMulti) singleton view -- defined once in
-// <Gruntz/OptCfgSingleton.h>; this TU owns its canonical DATA symbol.
+// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
+// <Gruntz/Multi.h>). This Win32 TU can't include <Gruntz/Multi.h> (MFC C1189 wall vs
+// <Win32.h>), so the singleton is a forward-declared CMulti* and the one field it reads
+// is accessed by offset: +0x5c0 == CMulti::m_hostIndex. This TU owns the canonical DATA.
+class CMulti;
 DATA(0x0024bd5c)
-extern OptCfg_c4b30* g_optCfg_64bd5c;
+extern CMulti* g_64bd5c;
 struct OptOwner_c4b30 {
     char m_pad0[0x5c];
     OptionsSlotHost_c4b30* m_5c; // +0x5c
@@ -109,7 +111,7 @@ struct OptOwner_c4b30 {
 };
 RVA(0x000c4b30, 0x1f)
 i32 OptOwner_c4b30::Resolve() {
-    i32* slot = m_5c->FindOptionsSlot(g_optCfg_64bd5c->m_5c0);
+    i32* slot = m_5c->FindOptionsSlot(*(i32*)((char*)g_64bd5c + 0x5c0)); // m_hostIndex
     if (slot == 0) {
         return -1;
     }
@@ -222,7 +224,7 @@ void CGameModeBase::Reset() {
 // unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CView hops -- the
 // only inbound edge is ILT thunk 0x1ec9 (no clean ctor/new trace).
 // ===========================================================================
-struct SurfCtl_faec0 {           // +0x2c surface controller (CDDSurface for Flip / CFileImage for the blit)
+struct SurfCtl_faec0 { // +0x2c surface controller (CDDSurface for Flip / CFileImage for the blit)
     void CopyRect(i32 a, i32 b); // 0x13f460 (= CFileImage::ShadeRect)
     void Flip(i32 a);            // 0x13e850 (= CDDSurface::Flip)
 };
@@ -230,7 +232,7 @@ struct CView_faec0 {
     char m_pad0[0x2c];
     SurfCtl_faec0* m_2c; // +0x2c
 };
-struct SubView_faec0 {            // = CDDrawWorkerMgr (Refresh = Method_158c70 @0x158c70)
+struct SubView_faec0 { // = CDDrawWorkerMgr (Refresh = Method_158c70 @0x158c70)
     char m_pad0[0x10];
     CView_faec0* m_10;            // +0x10 (Flip target host)
     CView_faec0* m_14;            // +0x14 (blit target host + Refresh arg)
@@ -240,7 +242,8 @@ struct Mid_faec0 {
     char m_pad0[0x4];
     SubView_faec0* m_4; // +0x04
 };
-struct PresentHost_faec0 { // unidentified owner of Present @0xfaec0 (only inbound edge: ILT thunk 0x1ec9)
+struct
+    PresentHost_faec0 { // unidentified owner of Present @0xfaec0 (only inbound edge: ILT thunk 0x1ec9)
     char m_pad0[0xc];
     Mid_faec0* m_c; // +0x0c
     void Present(i32 arg0);
@@ -515,7 +518,7 @@ SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
-SIZE_UNKNOWN(OptOwner_c4b30); // OptCfg_c4b30 SIZE lives in <Gruntz/OptCfgSingleton.h>
+SIZE_UNKNOWN(OptOwner_c4b30);
 SIZE_UNKNOWN(OptionsSlotHost_c4b30);
 SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(PtrList_bf580);

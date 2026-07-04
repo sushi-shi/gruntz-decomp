@@ -9,6 +9,7 @@
 // only offsets + code bytes are load-bearing. Uses the real MFC CString.
 #include <Mfc.h> // real MFC CString (ctor/dtor/strcmp-conversion) + windows types
 
+#include <Gruntz/Multi.h> // real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
@@ -30,17 +31,10 @@ namespace m4 {
     };
     DlgItem* __stdcall FromHandle1bb23a(HWND h); // 0x001bb23a (CWnd::FromHandle)
 
-    // The multiplayer lobby manager singleton (g_64bd5c). m_5c-relative color-slot
-    // table is probed per active player; Name42ff/Name31d4 return CString by value.
-    struct LobbyMgr {
-        char m_pad00[0x528];
-        i32 m_528; // +0x528 session-active flag
-        char m_pad52c[0x5b0 - 0x52c];
-        i32 m_5b0;          // +0x5b0 current selection
-        CString Name42ff(); // 0x000042ff (thiscall, returns CString by value)
-        CString Name31d4(); // 0x000031d4
-    };
-    extern LobbyMgr* g_64bd5c; // 0x0064bd5c
+    // The multiplayer lobby game-state singleton at 0x64bd5c is a CMulti (xref-proven):
+    // m_isHost (+0x528) gates the active branch, m_5b0 (+0x5b0) is the current selection,
+    // Name42ff/Name31d4 return the current-slot / default name (CString by value).
+    extern CMulti* g_64bd5c; // 0x0064bd5c
 
     struct MultiColorDlg {
         char m_pad00[0x5c];
@@ -63,7 +57,7 @@ namespace m4 {
     // - plus the demangled-vs-mangled MFC/CString reloc names - not steerable.
     RVA(0x000c1aa0, 0x2f8)
     i32 MultiColorDlg::UpdateColorItems() {
-        if (g_64bd5c->m_528 != 0) {
+        if (g_64bd5c->m_isHost != 0) {
             DlgItem* it4ff = GetItem(0x4ff);
             DlgItem* itChild = FromHandle1bb23a(g_pGetWindow(GetItem(0x4ff)->m_1c, 5));
             DlgItem* it42b = GetItem(0x42b);

@@ -22,8 +22,13 @@
 // delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x0024556c)
 extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
+// State-machine invariant: 0x64bd5c holds the multiplayer game-state singleton (a
+// CMulti, xref-proven; see <Gruntz/Multi.h>). The dtor here snapshots it from
+// g_gameReg->m_curState (+0x2c); the dialog then reads it through its registry-facet
+// lens (CMultiReg, below). Forward-declared CMulti* -- only the pointer is needed here.
+class CMulti;
 DATA(0x0024bd5c)
-extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
+extern CMulti* g_64bd5c;
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
@@ -205,7 +210,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_host = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_64bd5c = g_gameReg[0x2c / 4];
+    g_64bd5c = (CMulti*)g_gameReg[0x2c / 4];
 }
 
 // CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
