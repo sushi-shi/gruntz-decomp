@@ -201,33 +201,10 @@ i32 CPageStore17b510::Lookup(u32 idx) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x174ed0 / 0x175780 - CImage owner free/clear pair. The owner (this) holds a
-// CObArray-like sub at +0x10; the argument object carries m_44c/m_454/m_458 and a
-// teardown D (0x175c90) and a method X (0x176ad0). __thiscall.
+// 0x174ed0 / 0x175780 - CImagePool free/clear pair: RE-HOMED to the imagepool unit
+// (src/Image/ImagePool.cpp) alongside their siblings (RemovePalette 0x174f30,
+// CRezImage::Free 0x175c90 / SetPalette 0x176ad0). See that TU.
 // ---------------------------------------------------------------------------
-RVA(0x00174ed0, 0x5d)
-void CImagePool::Free(CRezImage* o) {
-    if (!o) {
-        return;
-    }
-    if (o->m_458 && o->m_454) {
-        A(o->m_458);
-        B(0, 0, 0);
-    }
-    if (o->m_44c) {
-        m_10.Add(o->m_44c);
-    }
-    o->D();
-    RezFree(o);
-}
-RVA(0x00175780, 0x3f)
-void CImagePool::B(CRezImage* o, i32 a, i32 b) {
-    if (o->m_458 && o->m_454) {
-        A(o->m_458);
-        o->X(0, 0);
-    }
-    o->X(a, b);
-}
 
 // ---------------------------------------------------------------------------
 // 0x137200 - SoundDevice restore: if the COM buffer (+0x84) is present and the

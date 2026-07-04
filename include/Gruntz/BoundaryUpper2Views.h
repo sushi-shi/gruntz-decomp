@@ -145,33 +145,8 @@ struct CPageStore17b510 {
 };
 SIZE_UNKNOWN(CPageStore17b510);
 
-// 0x174ed0 / 0x175780 - CImagePool free/clear pair (MISFILED: these two are CImagePool
-// methods whose siblings 0x174f30.. are matched in the imagepool unit; A 0x174f30 ==
-// CImagePool::RemovePalette. The managed surface node is CRezImage (X 0x176ad0 ==
-// CRezImage::SetPalette, D 0x175c90 == CRezImage::Free). Reorg: home 0x174ed0/0x175780 to
-// imagepool.
-struct CRezImage {
-    i32 _0[0x44c / 4];
-    i32 m_44c;                    // +0x44c
-    i32 _450;                     // +0x450
-    i32 m_454;                    // +0x454
-    i32 m_458;                    // +0x458
-    void X(i32, i32);             // 0x176ad0 == CRezImage::SetPalette
-    void D();                     // 0x175c90 == CRezImage::Free
-};
-SIZE_UNKNOWN(CRezImage);
-struct CImgSub10 {
-    void Add(i32); // 0x1b4ac7 (CObArray)
-};
-SIZE_UNKNOWN(CImgSub10);
-struct CImagePool {
-    i32 _0[4];                    // +0x00 .. +0x0c
-    CImgSub10 m_10;               // +0x10
-    void A(i32);                  // 0x174f30 == CImagePool::RemovePalette
-    void B(CRezImage*, i32, i32); // 0x175780
-    void Free(CRezImage*);        // 0x174ed0
-};
-SIZE_UNKNOWN(CImagePool);
+// 0x174ed0 / 0x175780 - CImagePool free/clear pair: RE-HOMED to the imagepool unit
+// (src/Image/ImagePool.cpp), reconciled onto the real CImagePool / CRezImage types.
 
 // 0x137200 - SoundDevice restore (COM buffer restore via vtbl slot 0x30).
 struct ISndBuf;

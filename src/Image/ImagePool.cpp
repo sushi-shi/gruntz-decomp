@@ -97,6 +97,7 @@ class CImagePool {
 public:
     i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
     void Clear();                                                                 // 0x174eb0
+    void Free(CRezImage* node);                                                   // 0x174ed0
     void RemovePalette(CImagePaletteNode* node);                                  // 0x174f30
     void ClearSurfaces();                                                         // 0x174f60
     void ClearPalettes();                                                         // 0x174fa0
@@ -104,6 +105,7 @@ public:
     CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
     CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
+    void B(CRezImage* node, i32 a, i32 b);                                        // 0x175780
 
     CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0
     CRezImage* AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
@@ -141,6 +143,29 @@ void CImagePool::Clear() {
     m_resourceModuleHandle = 0;
     m_sourceHwnd = 0;
     m_08 = 0;
+}
+
+// ===========================================================================
+// CImagePool::Free (ret 4, re-homed from BoundaryUpper2) - discard a surface
+// node: if it currently owns a palette (m_paletteNode && m_paletteScalar),
+// RemovePalette it and repoint (B(null, 0, 0)); unlink the node from the +0x10
+// surface list by its cached POSITION (m_listPosition), run CRezImage::Free
+// (0x175c90) and RezFree it.
+// ===========================================================================
+RVA(0x00174ed0, 0x5d)
+void CImagePool::Free(CRezImage* node) {
+    if (!node) {
+        return;
+    }
+    if (node->m_paletteNode && node->m_paletteScalar) {
+        RemovePalette((CImagePaletteNode*)node->m_paletteNode);
+        B(0, 0, 0);
+    }
+    if (node->m_listPosition) {
+        m_surfaces.RemoveAt((POSITION)node->m_listPosition);
+    }
+    node->Free();
+    RezFree(node);
 }
 
 // ===========================================================================
@@ -540,6 +565,20 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     }
     node->m_listPosition = m_palettes.AddTail((CObject*)node);
     return node;
+}
+
+// ===========================================================================
+// CImagePool::B (ret 0xc, re-homed from BoundaryUpper2) - re-point a surface
+// node's palette: if it currently owns one, detach it (RemovePalette +
+// CRezImage::SetPalette(0,0)), then latch the new (a,b) via SetPalette.
+// ===========================================================================
+RVA(0x00175780, 0x3f)
+void CImagePool::B(CRezImage* node, i32 a, i32 b) {
+    if (node->m_paletteNode && node->m_paletteScalar) {
+        RemovePalette((CImagePaletteNode*)node->m_paletteNode);
+        node->SetPalette(0, 0);
+    }
+    node->SetPalette((void*)a, b);
 }
 
 // ===========================================================================
