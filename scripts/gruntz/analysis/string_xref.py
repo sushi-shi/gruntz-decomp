@@ -14,8 +14,9 @@
 # ranked candidates).
 #
 # Inputs : binaries/retail_en/GRUNTZ.EXE  (v1.0 EN, md5 81c7f648...)
-#          build/ghidra-named/exports/functions.csv  (Ghidra function boundaries)
+#          build/ghidra-enrich/exports/functions.csv  (Ghidra function boundaries)
 # Usage  : nix develop --command python3 -m gruntz.analysis.string_xref [--rva 0x141400 ...]
+#          --find TEXT  -> reverse: every fn referencing a string containing TEXT
 #          (no args -> ranked report of bare FUN_ funcs with distinctive strings)
 import struct, csv, re, bisect, sys, os
 from pathlib import Path
@@ -23,7 +24,7 @@ from pathlib import Path
 ROOT = str(next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
                 Path(__file__).resolve().parents[3]))
 BIN  = os.path.join(ROOT, "binaries/retail_en/GRUNTZ.EXE")
-FUNCS= os.path.join(ROOT, "build/ghidra-named/exports/functions.csv")
+FUNCS= os.path.join(ROOT, "build/ghidra-enrich/exports/functions.csv")
 IMAGE_BASE = 0x400000
 
 def load():
@@ -80,6 +81,14 @@ def main():
             rva=int(tok,16)
             print(f"### 0x{rva:06x} {fname.get(rva,'?')} sz={fsize.get(rva,0)}")
             for s in sorted(func_strs.get(rva,[])): print("   "+repr(s))
+        return
+    if "--find" in args:                       # reverse: literal -> referencing fns
+        needle = args[args.index("--find")+1].lower()
+        for rva in sorted(func_strs):
+            hits=[s for s in func_strs[rva] if needle in s.lower()]
+            if hits:
+                print(f"### 0x{rva:06x} {fname.get(rva,'?')}")
+                for s in sorted(hits): print("   "+repr(s))
         return
     DIST=re.compile(r"GRUNTZ|AREA|STAGE|WORLDZ?|QUESTZ|TOOLZ|TOYZ|WARLORDZ|POWERUPZ|"
                     r"\.wwd|\.rez|\.vob|\.SF2|BOOTY|MULTI|STATEZ|SECRET|TELEPORT|CHEAT|"

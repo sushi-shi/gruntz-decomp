@@ -40,6 +40,33 @@ nix develop .#build --command gruntz build           # all of the above + match 
 objdiff report -> summary). Pass ninja args after `--`, e.g.
 `gruntz build -- -j8`.
 
+## Semantic navigation — `gruntz sema`
+
+Source/target navigation for matchers & classifiers lives under one discoverable
+group (`gruntz sema -h` is self-teaching — one usage example per subcommand).
+Every subcommand is a **thin delegation** to an existing `gruntz.analysis` /
+`gruntz.match` module (each still runnable as `python -m gruntz.<...>`); nothing
+here re-implements analysis. **Semantic questions go here — grep is lexical-only.**
+
+```sh
+gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
+gruntz sema symbol CGruntzApp        # fuzzy workspace-symbol search (clangd)
+gruntz sema def|refs|hover F L [C]   # go-to-def / all-refs (USR-exact) / type at point (clangd)
+gruntz sema rename F L [C] NEW [--dry-run]   # tree-wide, USR-keyed rename (clangd; matching-neutral)
+gruntz sema rva 0x00080850           # address dossier: src claim + lib row + Ghidra fn + match %
+gruntz sema class CImage             # vtable slots tagged new/override/inherited + hierarchy
+gruntz sema match cplay | 0x..       # per-function/unit match % (from report.json)
+gruntz sema disasm 0x00080850        # retail disasm + relocs (dump_target)
+gruntz sema strings 0x00080850       # string set of a fn;  --find TEXT for the reverse lookup
+```
+
+`xref`/`class`/`disasm`/`strings`/`rva` read the retail EXE + generated exports
+and work in a plain `nix develop`; the clangd-backed ones (`symbol`/`def`/`refs`/
+`hover`/`rename`) need `build/clangd/compile_commands.json` (`gruntz clangd`) and
+warm on first use (`rename` waits for the background index so cross-TU edits are
+complete). The harness LSP tool covers def/refs/hover/symbol/calls but **not**
+rename — that is why `sema rename` exists.
+
 ## Formatting — the Rust-like house style
 
 The reconstructed C++ is auto-formatted with **clang-format** (from the Nix dev

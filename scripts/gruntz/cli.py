@@ -40,6 +40,10 @@ Subcommands
   todo          List obj symbols that lack an @address (matching worklist).
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
                 for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
+  sema <cmd>    Semantic navigation (one entrypoint; `gruntz sema -h` lists all):
+                xref/symbol/def/refs/hover/rename (clangd LSP), rva/class/match
+                dossiers, disasm, strings. Thin wrappers over gruntz.analysis /
+                gruntz.match - SEMANTIC questions go here, grep is lexical-only.
 """
 
 import argparse
@@ -670,6 +674,218 @@ def cmd_clean(args) -> None:
     log(f"clean: removed {removed} path(s). Next: `gruntz init` then `gruntz build`.")
 
 
+# --- sema: semantic navigation group ---------------------------------------
+# ONE discoverable entrypoint for the source/target-navigation tools a matcher or
+# classifier reaches for - retail xref graph, clangd LSP (symbol/def/refs/hover/
+# rename), disasm, strings, and the report/label dossiers. Each subcommand is a
+# THIN delegation to an existing gruntz.analysis / gruntz.match module (all still
+# runnable as `python -m gruntz.<...>`); nothing here re-implements analysis.
+def _sema_tool(module: str, argv: list) -> int:
+    """Stream a read-only navigation tool's output (package on PYTHONPATH; no
+    `[gruntz] $` log noise on these interactive queries)."""
+    return subprocess.run([sys.executable, "-m", module, *map(str, argv)],
+                          cwd=str(REPO), env=_pkg_env()).returncode
+
+
+def _point_argv(args) -> list:
+    """`<file> <line> [<col>]` -> the clangd_query positional list."""
+    return [args.file, args.line] + ([args.col] if args.col is not None else [])
+
+
+def cmd_sema_xref(args) -> None:
+    flags = (["--callees"] if args.callees else []) + (["--raw"] if args.raw else [])
+    sys.exit(_sema_tool("gruntz.analysis.xref", flags + args.target))
+
+
+def cmd_sema_symbol(args) -> None:
+    sys.exit(_sema_tool("gruntz.analysis.clangd_query", ["symbol", args.query]))
+
+
+def cmd_sema_point(args) -> None:                 # def / refs / hover share this
+    sys.exit(_sema_tool("gruntz.analysis.clangd_query",
+                        [args.sema, *_point_argv(args)]))
+
+
+def cmd_sema_rename(args) -> None:
+    argv = ["rename", *_point_argv(args), args.new_name]
+    if args.dry_run:
+        argv.append("--dry-run")
+    sys.exit(_sema_tool("gruntz.analysis.clangd_query", argv))
+
+
+def cmd_sema_disasm(args) -> None:
+    sys.exit(_sema_tool("gruntz.analysis.dump_target", [args.rva]))
+
+
+def cmd_sema_strings(args) -> None:
+    if args.find:
+        sys.exit(_sema_tool("gruntz.analysis.string_xref", ["--find", args.find]))
+    if not args.rva:
+        die("sema strings: give an <rva> or --find <text>")
+    sys.exit(_sema_tool("gruntz.analysis.string_xref", ["--rva", args.rva]))
+
+
+def cmd_sema_class(args) -> None:
+    sys.exit(_sema_tool("gruntz.analysis.vtable_hierarchy", ["--class", args.name]))
+
+
+def cmd_sema_match(args) -> None:
+    t = args.target
+    if t in {u["unit"] for u in units()}:
+        sys.exit(_sema_tool("gruntz.match.status", ["status", "--unit", t]))
+    grep = t
+    if t.lower().startswith("0x") and GEN_NAMES.exists():
+        import csv
+        want = int(t, 16)
+        grep = None
+        for r in csv.reader(GEN_NAMES.open()):
+            if r and r[0].lower().startswith("0x"):
+                try:
+                    if int(r[0], 16) == want:
+                        grep = r[1]
+                        break
+                except ValueError:
+                    pass
+        if grep is None:
+            die(f"no src function claims RVA {t} (nothing to score) - try a unit name")
+    sys.exit(_sema_tool("gruntz.match.status", ["status", "--grep", grep]))
+
+
+def _csv_find(path: Path, rva: int, key: str = "rva"):
+    """First CSV row whose `key` column parses to `rva` (hex), or None."""
+    import csv
+    if not path.is_file():
+        return None
+    for r in csv.DictReader(path.open()):
+        try:
+            if int(r[key], 16) == rva:
+                return r
+        except (ValueError, KeyError):
+            pass
+    return None
+
+
+def cmd_sema_rva(args) -> None:
+    """One-shot address dossier: joins symbol_names.csv, library_labels.csv,
+    Ghidra functions.csv and objdiff report.json - pure lookups, no analysis."""
+    try:
+        rva = int(args.addr, 16)
+    except ValueError:
+        die(f"'{args.addr}' is not a hex RVA (e.g. 0x00080850)")
+    print(f"RVA 0x{rva:08x}")
+
+    claim = _csv_find(GEN_NAMES, rva)
+    if claim:
+        print(f"  src claim : {claim['name']}  [{claim['unit']}] "
+              f"({claim.get('kind', '?')})")
+    else:
+        print("  src claim : (none - not reconstructed under src/)")
+
+    librow = _csv_find(REPO / "config" / "library_labels.csv", rva)
+    if librow:
+        print(f"  library   : {librow['name']}  {librow['lib']} / "
+              f"{librow['confidence']} / {librow['source']}  "
+              f"(carve-out: excluded from the match %)")
+
+    grow = _csv_find(GHIDRA_FUNCTIONS, rva, key="entry_rva")
+    if grow:
+        print(f"  ghidra    : {grow['name']}  size {grow['byte_size']} B")
+    else:
+        print("  ghidra    : (no function start at this RVA in the export)")
+
+    if claim and REPORT.is_file():
+        rep = json.loads(REPORT.read_text())
+        pct = None
+        for u in rep.get("units", []):
+            if claim.get("unit") and u.get("name") != claim["unit"]:
+                continue
+            for fn in u.get("functions") or []:
+                if fn.get("name") == claim["name"]:
+                    pct = fn.get("fuzzy_match_percent")
+                    break
+            if pct is not None:
+                break
+        if pct is not None:
+            print(f"  match     : {pct:.2f}% fuzzy"
+                  + ("  (EXACT)" if pct >= 100.0 else ""))
+
+
+def _add_sema(sub) -> None:
+    """The `sema` semantic-navigation group: one self-teaching help screen, each
+    subcommand a thin delegation (see the cmd_sema_* funcs)."""
+    sema = sub.add_parser(
+        "sema", formatter_class=argparse.RawDescriptionHelpFormatter,
+        help="semantic navigation: xref / clangd LSP / disasm / dossiers",
+        description="gruntz sema <cmd> - source & target navigation for matchers "
+                    "and classifiers.\nThin wrappers over the analysis tools (each "
+                    "also runnable as `python -m gruntz.<...>`).\nSEMANTIC questions "
+                    "go here; grep is lexical-only.",
+        epilog="examples (use when ...):\n"
+        "  gruntz sema xref 0x00080850           who calls this fn (attribution)\n"
+        "  gruntz sema xref --callees CFoo::Bar   its own call targets\n"
+        "  gruntz sema symbol CGruntzApp          fuzzy workspace-symbol search\n"
+        "  gruntz sema def   src/X.cpp 42         jump to the definition\n"
+        "  gruntz sema refs  include/X.h 30       every ref (USR-exact; no grep collisions)\n"
+        "  gruntz sema hover src/X.cpp 42         type/decl at point\n"
+        "  gruntz sema rename include/X.h 40 m_new --dry-run   tree-wide rename preview\n"
+        "  gruntz sema rva   0x00080850           address dossier (claim/lib/ghidra/%)\n"
+        "  gruntz sema class CImage               vtable slots + hierarchy tags\n"
+        "  gruntz sema match cplay                per-fn % of a unit (or an RVA)\n"
+        "  gruntz sema disasm 0x00080850          retail disasm + relocs\n"
+        "  gruntz sema strings 0x00080850         the string set of a fn\n"
+        "  gruntz sema strings --find WORLDZ      reverse literal lookup\n")
+    ss = sema.add_subparsers(dest="sema", required=True)
+
+    sx = ss.add_parser("xref", help="retail caller/callee graph (attribution)")
+    sx.add_argument("target", nargs="+", help="RVA(s) (0x..) or symbol name(s)")
+    sx.add_argument("--callees", action="store_true", help="forward: its call targets")
+    sx.add_argument("--raw", action="store_true", help="every call site (no dedup)")
+    sx.set_defaults(func=cmd_sema_xref)
+
+    sy = ss.add_parser("symbol", help="fuzzy workspace-symbol search (clangd)")
+    sy.add_argument("query")
+    sy.set_defaults(func=cmd_sema_symbol)
+
+    for nm, hlp in (("def", "definition at point"),
+                    ("refs", "references at point (USR-exact)"),
+                    ("hover", "type/decl at point")):
+        p = ss.add_parser(nm, help=hlp + " (clangd)")
+        p.add_argument("file")
+        p.add_argument("line", type=int)
+        p.add_argument("col", type=int, nargs="?")
+        p.set_defaults(func=cmd_sema_point)
+
+    sr = ss.add_parser("rename", help="tree-wide symbol rename (clangd; USR-exact)")
+    sr.add_argument("file")
+    sr.add_argument("line", type=int)
+    sr.add_argument("col", type=int, nargs="?")  # optional; new_name is the required tail
+    sr.add_argument("new_name")
+    sr.add_argument("--dry-run", action="store_true",
+                    help="preview the edit set (file:line: old -> new); write nothing")
+    sr.set_defaults(func=cmd_sema_rename)
+
+    srv = ss.add_parser("rva", help="address dossier (src claim / lib / ghidra / match)")
+    srv.add_argument("addr", help="hex RVA, e.g. 0x00080850")
+    srv.set_defaults(func=cmd_sema_rva)
+
+    sc = ss.add_parser("class", help="vtable slots + hierarchy tags for a class")
+    sc.add_argument("name")
+    sc.set_defaults(func=cmd_sema_class)
+
+    sm = ss.add_parser("match", help="per-function/unit match summary (report.json)")
+    sm.add_argument("target", help="a unit name, or an 0x RVA a src fn claims")
+    sm.set_defaults(func=cmd_sema_match)
+
+    sd = ss.add_parser("disasm", help="retail disasm + relocs (dump_target)")
+    sd.add_argument("rva", help="RVA (0x..) or symbol name")
+    sd.set_defaults(func=cmd_sema_disasm)
+
+    st = ss.add_parser("strings", help="per-fn string set / --find reverse lookup")
+    st.add_argument("rva", nargs="?", help="RVA (0x..) whose string set to print")
+    st.add_argument("--find", metavar="TEXT", help="reverse: fns referencing TEXT")
+    st.set_defaults(func=cmd_sema_strings)
+
+
 def _clang() -> str:
     import os
     return os.environ.get("GRUNTZ_CLANG") or tool("clang")
@@ -732,6 +948,7 @@ def main() -> None:
     ln.set_defaults(func=cmd_lint)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
                    ).set_defaults(func=cmd_clean)
+    _add_sema(sub)   # sema: semantic-navigation group (xref/LSP/disasm/dossiers)
 
     args = ap.parse_args()
     if getattr(args, "ninja_args", None) and args.ninja_args[:1] == ["--"]:
