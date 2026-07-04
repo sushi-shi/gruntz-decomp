@@ -116,11 +116,11 @@ static i32 ResolveCell(void* map, i32 x, i32 y) {
 // the per-case jump index (case = id - 0xf). Enum constants are matching-neutral
 // (same integer immediates as the raw hex they replace).
 enum PyramidSpriteType {
-    kSpriteTypeBase     = 0xf,  // first tile-action sprite type (jump-table base)
-    kOrangePyramidUp    = 0x62, // case 0x53
-    kBlackPyramidUp     = 0x64, // case 0x55
-    kGreenPyramidUp     = 0x66, // case 0x57
-    kPurplePyramidUp    = 0x6a, // case 0x5b
+    kSpriteTypeBase = 0xf,   // first tile-action sprite type (jump-table base)
+    kOrangePyramidUp = 0x62, // case 0x53
+    kBlackPyramidUp = 0x64,  // case 0x55
+    kGreenPyramidUp = 0x66,  // case 0x57
+    kPurplePyramidUp = 0x6a, // case 0x5b
 };
 
 // The PLAY-state level object whose tile descriptor drives the transition.
@@ -184,23 +184,31 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
     switch ((u32)(spriteType - kSpriteTypeBase)) {
         case kGreenPyramidUp - kSpriteTypeBase: // 0x57  GREENPYRAMIDZ
             PbAssignStr(&keyTemp, "GAME_GREENPYRAMIDZ");
-            PbAssignStr(&upTemp,
-                        (spriteType == kGreenPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN");
+            PbAssignStr(
+                &upTemp,
+                (spriteType == kGreenPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
+            );
             break;
         case kPurplePyramidUp - kSpriteTypeBase: // 0x5b  PURPLEPYRAMIDZ
             PbAssignStr(&keyTemp, "GAME_PURPLEPYRAMIDZ");
-            PbAssignStr(&upTemp,
-                        (spriteType == kPurplePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN");
+            PbAssignStr(
+                &upTemp,
+                (spriteType == kPurplePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
+            );
             break;
         case kOrangePyramidUp - kSpriteTypeBase: // 0x53  ORANGEPYRAMIDZ
             PbAssignStr(&keyTemp, "GAME_ORANGEPYRAMIDZ");
-            PbAssignStr(&upTemp,
-                        (spriteType == kOrangePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN");
+            PbAssignStr(
+                &upTemp,
+                (spriteType == kOrangePyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
+            );
             break;
         case kBlackPyramidUp - kSpriteTypeBase: // 0x55  BLACKPYRAMIDZ
             PbAssignStr(&keyTemp, "GAME_BLACKPYRAMIDZ");
-            PbAssignStr(&upTemp,
-                        (spriteType == kBlackPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN");
+            PbAssignStr(
+                &upTemp,
+                (spriteType == kBlackPyramidUp) ? "GAME_PYRAMIDUP" : "GAME_PYRAMIDDOWN"
+            );
             break;
         default:
             // the remaining ~0x60 cases (red/white/checkpoint pyramids + the

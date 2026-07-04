@@ -18,7 +18,7 @@
 // member-unwind state machine itself (the former manual raw-offset construction
 // emitted no frame and matched only ~5%).
 #include <rva.h>
-#include <Mfc.h>     // real CString (ctor 0x1b9b93 / Empty 0x1b9c69 / ~CString 0x1b9cde)
+#include <Mfc.h> // real CString (ctor 0x1b9b93 / Empty 0x1b9c69 / ~CString 0x1b9cde)
 #include <Ints.h>
 #include <Globals.h> // g_streamTag (0x574de0), g_streamData (0x5f0514)
 
@@ -63,27 +63,27 @@ struct CBSecObj10f {
 
 class CButeSection {
 public:
-    i32 m_00;             // +0x00  (zeroed at trylevel 7)
-    i32 m_04;             // +0x04  (untouched)
-    i32 m_08;             // +0x08  (zeroed)
-    u8 m_0c;              // +0x0c  (= 1)
-    u8 m_0d;              // +0x0d  (zeroed)
-    u8 m_0e;              // +0x0e  (untouched)
-    u8 m_0f;              // +0x0f  (untouched)
-    CString m_10;         // +0x10  leading CString
-    i32 m_14;             // +0x14  (zeroed)
-    CBSecStream m_18;     // +0x18  config-tree node
-    i32 m_44;             // +0x44  (untouched gap word)
-    CBSecStream m_48;     // +0x48  config-tree node
-    CBSecStream m_74;     // +0x74  config-tree node
+    i32 m_00;                // +0x00  (zeroed at trylevel 7)
+    i32 m_04;                // +0x04  (untouched)
+    i32 m_08;                // +0x08  (zeroed)
+    u8 m_0c;                 // +0x0c  (= 1)
+    u8 m_0d;                 // +0x0d  (zeroed)
+    u8 m_0e;                 // +0x0e  (untouched)
+    u8 m_0f;                 // +0x0f  (untouched)
+    CString m_10;            // +0x10  leading CString
+    i32 m_14;                // +0x14  (zeroed)
+    CBSecStream m_18;        // +0x18  config-tree node
+    i32 m_44;                // +0x44  (untouched gap word)
+    CBSecStream m_48;        // +0x48  config-tree node
+    CBSecStream m_74;        // +0x74  config-tree node
     char m_a0[0x100 - 0xa0]; // +0xa0 (untouched)
-    CString m_100;        // +0x100
-    CString m_104;        // +0x104
-    CString m_108;        // +0x108
-    u8 m_10c;             // +0x10c (zeroed)
-    u8 m_10d;             // +0x10d (zeroed)
-    u8 m_10e;             // +0x10e (zeroed)
-    CBSecObj10f m_10f;    // +0x10f
+    CString m_100;           // +0x100
+    CString m_104;           // +0x104
+    CString m_108;           // +0x108
+    u8 m_10c;                // +0x10c (zeroed)
+    u8 m_10d;                // +0x10d (zeroed)
+    u8 m_10e;                // +0x10e (zeroed)
+    CBSecObj10f m_10f;       // +0x10f
     CButeSection();
 };
 
