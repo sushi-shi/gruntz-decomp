@@ -10,6 +10,7 @@
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 
 // CExitTrigger::GetTypeTag @0x010870 - return the class's logic-type id. The same
 // 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
@@ -39,38 +40,13 @@ extern char s_actKeyA[]; // "A"
 // HUD only for the active area.
 extern "C" i32 g_644c54;
 
-// The level-exit entity the bring-up resolves under the trigger's tile (the
-// "Warlord" head probed at the bound object's screen pos). Its +0x7c carries a
-// finalize sub-object: a fn-ptr at +0x10 (cdecl, takes the entity) + an id at
-// +0x18. +0x124 is the area/owner index, +0x188 the resolved value stored back.
-struct CExitSubObj {
-    char m_pad00[0x10];
-    void(__cdecl* m_10)(void* e); // +0x10  finalize fn-ptr
-    char m_pad14[0x18 - 0x14];
-    i32 m_18; // +0x18  resolved id
-};
-SIZE_UNKNOWN(CExitSubObj);
-struct CExitEntity {
-    char m_pad00[0x7c];
-    CExitSubObj* m_7c; // +0x7c
-    char m_pad80[0x124 - 0x80];
-    i32 m_124; // +0x124  area/owner index
-    char m_pad128[0x188 - 0x128];
-    i32 m_188; // +0x188
-};
-SIZE_UNKNOWN(CExitEntity);
-
-// The registry probe sink (g_gameReg->m_world->m_8): Probe (0x1597b0, the 0x60a668
-// "Warlord" lookup at the bound screen pos) resolves the exit entity or 0.
-struct CExitProbeSink {
-    CExitEntity* Probe(i32 a, i32 x, i32 y, i32 b, const char* key, i32 flag); // 0x1597b0
-};
-SIZE_UNKNOWN(CExitProbeSink);
-struct CExitMgr30 {
-    char m_pad00[0x08];
-    CExitProbeSink* m_8; // +0x08
-};
-SIZE_UNKNOWN(CExitMgr30);
+// The level-exit "Warlord" entity is a fresh CSpriteFactory::CreateSprite result
+// (the canonical 0x1597b0 factory entry on g_exitGameReg->m_world->m_8; the former
+// "Probe" reading was a mislabel - it CREATES the warlord head sprite at the bound
+// screen pos). The created instance is the shared CGameObject: +0x7c CGameObjAux
+// carries the Init driver (+0x10, the finalize fn-ptr here) and the per-class
+// setup slot m_18 the ctor snapshots raw as the warlord id; m_124 the area/owner
+// index, m_188 the object id stored back into the focus slot.
 
 // The focused-warlord cue slot is CFocusSlot, the g_exitGameReg->m_focusSlots[]
 // element (<Gruntz/GameRegistry.h>), indexed by the bound object's area index
@@ -132,13 +108,14 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
     slot->m_220 = m_object->m_screenX;
     slot->m_224 = m_object->m_screenY;
-    CExitEntity* e =
-        ((CExitMgr30*)g_exitGameReg->m_world)
-            ->m_8->Probe(0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003);
+    CGameObject* e = g_exitGameReg->m_world->m_8->CreateSprite(
+        0, m_object->m_screenX, m_object->m_screenY, 0, "Warlord", 0x40003
+    );
     if (e != 0) {
         e->m_124 = m_object->m_124;
-        e->m_7c->m_10(e);
-        m_warlordId = e->m_7c->m_18;
+        e->m_7c->Init(e);
+        // pointer-as-id snapshot of the aux setup slot (authentic DWORD storage)
+        m_warlordId = (i32)e->m_7c->m_18;
         if (m_object->m_124 == g_644c54) {
             ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = m_warlordId;
         }

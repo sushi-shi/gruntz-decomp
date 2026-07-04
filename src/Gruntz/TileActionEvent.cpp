@@ -8,11 +8,15 @@
 //   (0x112da0), MorphByTool (0x113420), Serialize (0x113f10), SerializeFields
 //   (0x113f60). The big Process (0x112ee0) is a complete logical reconstruction
 //   parked at the two-jump-table wall (@early-stop) for the final sweep.
-#include <Win32.h>
+// <Mfc.h> (not <Win32.h>): UserLogic.h pulls afx via ButeMgr.h/String.h, so the
+// umbrella must be the MFC superset kept first (mfc-wall-is-breakable doctrine).
+#include <Mfc.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h> // shared world tile-grid geometry
 
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileActionEvent.h>
+#include <Gruntz/UserLogic.h> // CGameObject (the created break sprite)
 
 #include <rva.h>
 
@@ -29,12 +33,9 @@ struct WwdGrViewport {
 };
 SIZE_UNKNOWN(WwdGrViewport);
 
-// The sprite factory the brick-break path spawns through (g->m_30->m_8). Process
-// also reads g->m_30->m_28->m_30 (a one-shot impact-sound gate). External slots.
-struct CSpriteMaker {
-    void* CreateSprite(i32 a0, i32 x, i32 y, i32 z, void* name, i32 flags); // 0x1597b0
-};
-SIZE_UNKNOWN(CSpriteMaker);
+// The sprite factory the brick-break path spawns through (g->m_30->m_8) is the
+// canonical CSpriteFactory (<Gruntz/SpriteFactory.h>). Process also reads
+// g->m_30->m_28->m_30 (a one-shot impact-sound gate). External slots.
 struct CSpriteMakerSub {
     char m_pad0[0x30];
     i32 m_30; // +0x30  impact-sound already-played gate
@@ -42,7 +43,7 @@ struct CSpriteMakerSub {
 SIZE_UNKNOWN(CSpriteMakerSub);
 struct WwdGrSprHolder {
     char m_pad0[0x8];
-    CSpriteMaker* m_8; // +0x08  sprite factory (CreateSprite)
+    CSpriteFactory* m_8; // +0x08  sprite factory (CreateSprite @0x1597b0)
     char m_pad0c[0x24 - 0xc];
     WwdGrViewport* m_24;   // +0x24  the SetActionCode grid viewport
     CSpriteMakerSub* m_28; // +0x28  impact-gate holder
@@ -89,15 +90,11 @@ struct CBrickTile {
 };
 SIZE_UNKNOWN(CBrickTile);
 
-// The spawned brick-break sprite (CreateSprite result): ApplyAnim selects the
-// break animation by name, CacheFrame caches its first frame. External no-body.
-struct CBreakSprite {
-    void ApplyAnim(void* name, i32 a1); // 0x1505b0
-    void CacheFrame(void* name);        // 0x150540
-    i32 m_8;                            // +0x08  flag word
-    i32 m_198;                          // +0x198 cache-state gate
-};
-SIZE_UNKNOWN(CBreakSprite);
+// The spawned brick-break sprite (CreateSprite result) is the shared CGameObject:
+// ApplyLookupGeometry (0x1505b0) selects the break animation by name, ApplyName
+// (0x150540) caches its first frame, m_flags the retire bit, m_layer the
+// cache-state gate. (The former CBreakSprite view also mislaid m_8/m_198 at
+// offsets 0/4 - the canonical layout fixes that.)
 
 // The impact one-shot emitter vtable slot used on g->m_30->m_28->m_30==0.
 struct CImpactSound {
@@ -341,11 +338,10 @@ i32 CTileActionEvent::Process(i32 arg) {
     i32 py = (m_tileY << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
-        CBreakSprite* spr =
-            (CBreakSprite*)((WwdGrSprHolder*)g_gameReg->m_world)
-                ->m_8->CreateSprite(0, px, py, 0xcf84f, (void*)"Particlez", 0x40003);
+        CGameObject* spr =
+            g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
         if (spr != 0) {
-            spr->ApplyAnim((void*)"GAME_BRICKBREAK", 0);
+            spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
             // Inner dense byte-mapped switch on (effect - 0x132) -> the colored break
             // animation; effect 0x138->RED, 0x13d->BLUE, 0x142->GOLD, the remaining
             // mapped slots->BLACK, anything off-table->default GAME_BRICKBREAK (which
@@ -353,22 +349,22 @@ i32 CTileActionEvent::Process(i32 arg) {
             // 0x144 color assignments are the deferred byte-match residual.
             switch (effect) {
                 case 0x138:
-                    spr->CacheFrame((void*)"GAME_REDBRICKBREAK");
+                    spr->ApplyName("GAME_REDBRICKBREAK");
                     break;
                 case 0x13d:
-                    spr->CacheFrame((void*)"GAME_BLUEBRICKBREAK");
+                    spr->ApplyName("GAME_BLUEBRICKBREAK");
                     break;
                 case 0x142:
-                    spr->CacheFrame((void*)"GAME_GOLDBRICKBREAK");
+                    spr->ApplyName("GAME_GOLDBRICKBREAK");
                     break;
                 default:
                     if (effect >= 0x133 && effect <= 0x144) {
-                        spr->CacheFrame((void*)"GAME_BLACKBRICKBREAK");
+                        spr->ApplyName("GAME_BLACKBRICKBREAK");
                         break;
                     }
-                    spr->CacheFrame((void*)"GAME_BRICKBREAK");
-                    if (spr->m_198 == 0) {
-                        spr->m_8 |= 0x10000;
+                    spr->ApplyName("GAME_BRICKBREAK");
+                    if (spr->m_layer == 0) {
+                        spr->m_flags |= 0x10000;
                     }
                     break;
             }

@@ -8,6 +8,7 @@
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
 #include <Bute/ButeMgr.h>             // CButeTree (the type-registry funnel)
 #include <math.h>                     // sin / cos (StepMotion's parabola)
@@ -39,17 +40,13 @@ extern "C" u32 g_6bf3bc;
 // the `mov ecx,ds:g_gameReg` load against the already-named symbol.
 struct CProjSoundEntry; // map value: the per-effect sound table entry
 struct CProjSoundInner; // reg->m_world->m_28: holds the CMapStringToOb at +0x10
-SIZE_UNKNOWN(CProjSpriteFactory);
-struct CProjSpriteFactory {
-    // The HUD sprite factory (reg->m_world->m_8); CreateSprite @0x1597b0, __thiscall.
-    CProjRenderObj*
-    CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-};
+// The HUD sprite factory (reg->m_world->m_8) is the canonical CSpriteFactory
+// (<Gruntz/SpriteFactory.h>); the created instance is cast to this TU's B-view
+// CProjRenderObj (== the shared CGameObject; the B-family fold is deferred, see
+// SpriteResource.cpp's DUAL-MODEL note).
 SIZE_UNKNOWN(CProjSoundCat);
-struct CProjSoundCat { // reg->m_world: the sound-category object
-    char m_pad00[0x8];
-    CProjSpriteFactory* m_8; // +0x8  the HUD sprite factory (LightFx shadow)
-    char m_pad0c[0x28 - 0xc];
+struct CProjSoundCat { // reg->m_world: the sound-category facet (the +0x28 slot)
+    char m_pad00[0x28];
     CProjSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
 // The level "type" descriptor (reg->m_curState); LoadProjectileEffects switches on its
@@ -461,8 +458,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_arrived = 0;
 
     // Spawn the LightFx shadow companion + activate its two frames.
-    CProjSpriteFactory* factory = (CProjSpriteFactory*)g_gameReg->m_world->m_8;
-    m_shadow =
+    CSpriteFactory* factory = g_gameReg->m_world->m_8;
+    m_shadow = (CProjRenderObj*)
         factory->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->Init(m_shadow);
@@ -783,9 +780,9 @@ void CProjectile::LoadProjectileEffects() {
             // water tile: spill a splash then hide the projectile
             if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                 && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                CProjRenderObj* fx =
-                    ((CProjSoundCat*)reg->m_world)
-                        ->m_8->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
+                CProjRenderObj* fx = (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
+                    0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003
+                );
                 if (fx != 0) {
                     fx->CacheFirstFrame("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
@@ -810,15 +807,15 @@ void CProjectile::LoadProjectileEffects() {
                         // level death tile: spill the death-splash then hide
                         if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                             && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                            CProjRenderObj* fx = ((CProjSoundCat*)reg->m_world)
-                                                     ->m_8->CreateSprite(
-                                                         0,
-                                                         m_targetX,
-                                                         m_targetY,
-                                                         0xcf84f,
-                                                         "Particlez",
-                                                         0x40003
-                                                     );
+                            CProjRenderObj* fx =
+                                (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
+                                    0,
+                                    m_targetX,
+                                    m_targetY,
+                                    0xcf84f,
+                                    "Particlez",
+                                    0x40003
+                                );
                             if (fx != 0) {
                                 fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
