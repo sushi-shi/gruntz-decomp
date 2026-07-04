@@ -36,9 +36,9 @@ struct BootySndPlayer {
 SIZE_UNKNOWN(BootySndEntry);
 struct BootySndEntry {
     char m_pad00[0x10];
-    BootySndPlayer* m_10; // +0x10  the player
-    u32 m_14;             // +0x14  last-played stamp
-    u32 m_18;             // +0x18  interval
+    BootySndPlayer* m_player; // +0x10  the player
+    u32 m_lastPlayed;         // +0x14  last-played frame stamp
+    u32 m_interval;           // +0x18  min replay interval
 };
 SIZE_UNKNOWN(BootySndTable);
 struct BootySndTable {
@@ -47,21 +47,21 @@ struct BootySndTable {
 SIZE_UNKNOWN(BootySndSet);
 struct BootySndSet {
     char m_pad00[0x10];
-    BootySndTable m_10; // +0x10  (&m_10 == set+0x10)
+    BootySndTable m_table; // +0x10  (&m_table == set+0x10)
     char m_pad11[0x30 - 0x11];
-    i32 m_30; // +0x30  active guard
+    i32 m_activeGuard; // +0x30  active guard (nonzero -> skip the ambient poll)
 };
 SIZE_UNKNOWN(BootySndWorld);
 struct BootySndWorld { // g_mgrSettings->m_world (+0x30) sound facet
     char m_pad00[0x28];
-    BootySndSet* m_28; // +0x28
+    BootySndSet* m_soundSet; // +0x28
 };
 SIZE_UNKNOWN(BzGameReg);
 struct BzGameReg { // == *0x24556c (g_mgrSettings), viewed for the world sound set
     char m_pad00[0x30];
     BootySndWorld* m_world; // +0x30
     char m_pad34[0x11c - 0x34];
-    i32 m_11c; // +0x11c  sound token
+    i32 m_soundToken; // +0x11c  ambient sound token
 };
 DATA(0x0024556c)
 extern BzGameReg* g_mgrSettings;
@@ -91,16 +91,16 @@ i32 CBootyState::Vslot09(i32) {
     BuildPage(0x50, 0x3e8, 0, 1);
 
     BzGameReg* reg = g_mgrSettings;
-    BootySndSet* set = reg->m_world->m_28;
-    i32 token = reg->m_11c;
-    if (set->m_30 == 0) {
+    BootySndSet* set = reg->m_world->m_soundSet;
+    i32 token = reg->m_soundToken;
+    if (set->m_activeGuard == 0) {
         BootySndEntry* res = 0;
-        set->m_10.Find("BOOTY_LOOP", &res);
+        set->m_table.Find("BOOTY_LOOP", &res);
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
-            if (now - res->m_14 >= res->m_18) {
-                res->m_14 = now;
-                res->m_10->Play(token, 0, 0, 1);
+            if (now - res->m_lastPlayed >= res->m_interval) {
+                res->m_lastPlayed = now;
+                res->m_player->Play(token, 0, 0, 1);
             }
         }
     }
