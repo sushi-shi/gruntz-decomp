@@ -1,5 +1,11 @@
 // LightEffectSetup.cpp - a shade/lighting effect setup pass (RVA 0x1804a0).
 //
+// This is CFaderLight::ApplyInit (0x1804a0), the type-2 CFader subtype's apply
+// method (subtype CFaderLight declared in <Gruntz/FaderSubtypes.h>, allocated by
+// CFaderMgr::Add). Modeled here as the flat body-view CFaderLightApply because the
+// method reads the CFader base-region slots repurposed as surface/palette; fold
+// into CFaderLight (: public CFader) is a follow-up matcher.
+//
 // Captures a descriptor's surface/colour parameters into the effect object, clips
 // the centre point to the surface rect (early-out if outside), fills the per-scan
 // span tables, and resolves the hue-ramp shade table. Field names are
@@ -47,7 +53,7 @@ struct LightDesc {
 };
 SIZE_UNKNOWN(LightDesc);
 
-class CLightEffect {
+class CFaderLightApply {
 public:
     i32 Setup(LightDesc* d);
 
@@ -74,7 +80,7 @@ public:
     i32 m_surfaceWidth;     // +0x2064 surface width
     i32 m_surfaceHeight;    // +0x2068 surface height
 };
-SIZE_UNKNOWN(CLightEffect);
+SIZE_UNKNOWN(CFaderLightApply);
 
 // @early-stop
 // 92% - /O2 regalloc entropy tail: the descriptor field loads and the m_3c/m_activeSurface
@@ -82,7 +88,7 @@ SIZE_UNKNOWN(CLightEffect);
 // ecx/edx/eax; same instruction selection + scheduling, only the register names
 // differ. Logic + externs match retail. Final sweep.
 RVA(0x0001804a0, 0x182)
-i32 CLightEffect::Setup(LightDesc* d) {
+i32 CFaderLightApply::Setup(LightDesc* d) {
     m_20 = 0;
     Surf* s = d->m_surface;
     if (s == 0) {

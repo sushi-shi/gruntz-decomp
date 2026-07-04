@@ -1,13 +1,15 @@
 // Fader.cpp - the CFader screen-transition family (C:\Proj\Gruntz): the CFader
-// base + its concrete subtypes (CFaderSine / CFaderFlat / CFader17e940 /
-// CFader17f9a0 / CFader180410 / CFader1816c0 / CFaderRadial / CFaderElem /
-// CFaderShape / CFaderTileRender + the FaderRun helper). One dev TU, formerly
+// base + its concrete subtypes (CFaderSine / CFaderFlat / CFaderMesh /
+// CFaderRadial / CFaderLight / CFaderShape) plus the flat body-views that host
+// each subtype's ApplyInit (CFaderRadialApply / CFaderShapeApply / CFaderElem /
+// CFaderTileRender + the FaderRun helper; CFaderLightApply is in
+// DDrawMgr/LightEffectSetup.cpp). One dev TU, formerly
 // split across Fader.cpp + Fader{Run,Radial,ElemSetup,ShapeSetup,TileRender,
-// 17e940Apply}.cpp + Obj5f0890Dtor.cpp (the ~CFader1816c0 dtor). Merged per
+// 17e940Apply}.cpp + Obj5f0890Dtor.cpp (the ~CFaderShape dtor). Merged per
 // docs/tu-topology-plan.md (Phase 1); FaderMgr.cpp stays its own TU. All in the
 // 0x17d8f0-0x182610 engine band (one link cluster).
 //
-// Unit flags eh: CFader's dtor + ~CFader1816c0 need the /GX EH frame; the run/
+// Unit flags eh: CFader's dtor + ~CFaderShape need the /GX EH frame; the run/
 // build/render helpers (RunFade / ApplyInit / Apply / Build / Setup / RenderTile /
 // RenderWarpTile) carry no destructible C++ object so /GX is a no-op for them
 // (byte-verified under eh). Functions kept in ascending retail-RVA order at the
@@ -98,7 +100,7 @@ void CFader::Set2c(i32 v) {
 }
 
 // ===========================================================================
-// CFader17e940 - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested
+// CFaderMesh - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested
 // polymorphic sub-object at +0x58 (its own vftable 0x5f07d8 + four zeroed fields).
 // ATYPICAL vptr order: the member sub-object is constructed (its vptr + fields)
 // BEFORE the subtype's own primary vftable 0x5f07c0 is stamped -- MSVC5's ctor
@@ -108,7 +110,7 @@ void CFader::Set2c(i32 v) {
 // (Class declaration in <Gruntz/FaderSubtypes.h>.)
 // ===========================================================================
 RVA(0x0017e940, 0x27)
-CFader17e940::CFader17e940() {}
+CFaderMesh::CFaderMesh() {}
 
 // ===========================================================================
 // CFaderSine - the case-"3" / jump-index-2 fader subtype (CFaderMgr::Add allocates
@@ -148,25 +150,25 @@ CFaderFlat::CFaderFlat() {
 }
 
 // ===========================================================================
-// CFader180410 - subtype ctor 0x180410: clears m_40. vftable 0x5f0870.
+// CFaderLight - subtype ctor 0x180410: clears m_40. vftable 0x5f0870.
 // ===========================================================================
 // (Class declaration in <Gruntz/FaderSubtypes.h>; size 0x206c pinned from the
 // CFaderMgr::Add new(0x206c) allocation.)
 // ===========================================================================
 RVA(0x00180410, 0x19)
-CFader180410::CFader180410() {
+CFaderLight::CFaderLight() {
     m_40 = 0;
 }
 
 // ===========================================================================
-// CFader17f9a0 - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
+// CFaderRadial - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
 // 0x5f0810.
 // ===========================================================================
 // (Class declaration in <Gruntz/FaderSubtypes.h>; size 0x5c pinned from the
 // CFaderMgr::Add new(0x5c) allocation.)
 // ===========================================================================
 RVA(0x0017f9a0, 0x24)
-CFader17f9a0::CFader17f9a0() {
+CFaderRadial::CFaderRadial() {
     m_44 = 0;
     m_40 = 0;
     m_50 = 0;
@@ -174,13 +176,13 @@ CFader17f9a0::CFader17f9a0() {
 }
 
 // ===========================================================================
-// CFader1816c0 - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
+// CFaderShape - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
 // m_488/m_48c and the CFader base field m_20. vftable 0x5f0890.
 // ===========================================================================
 // (Class declaration in <Gruntz/FaderSubtypes.h>.)
 // ===========================================================================
 RVA(0x001816c0, 0x32)
-CFader1816c0::CFader1816c0() {
+CFaderShape::CFaderShape() {
     m_478 = 0;
     m_44 = 0;
     m_48 = 0;
@@ -293,20 +295,20 @@ void FaderRun::RunFade(u32 dur, i32 lead, i32 notify) {
 // ============================================================================
 // section: Fader17e940Apply.cpp
 // ============================================================================
-// Fader17e940Apply.cpp - CFader17e940::ApplyInit (0x17ea00), the type-6
+// Fader17e940Apply.cpp - CFaderMesh::ApplyInit (0x17ea00), the type-6
 // screen-fader's "apply the transition descriptor" method (the mesh builder).
 //
 // DE-VIEW NOTE (was mislabeled CFxModeT3::Build): Ghidra RTTI names 0x17ea00
 // ?Build@CFxModeT3@@QAEHPAUFxConfig@@@Z, but that attribution is WRONG. This
-// method's `this` (ecx) is the 0x6c-byte CFader17e940 (ctor 0x17e940, own vftable
+// method's `this` (ecx) is the 0x6c-byte CFaderMesh (ctor 0x17e940, own vftable
 // 0x5f07c0, growable mesh buffer at +0x58), NOT the 0x14-byte CFxModeT3 mode
 // descriptor (ctor 0x17e880, fields only 0x00..0x10). Proof: 0x17e880 writes just
 // 0x14 bytes, whereas this method reads/writes +0x24/+0x28/+0x3c..+0x54 and inits a
-// buffer at +0x58, so 0x58+0x14 == 0x6c == the CFader17e940 allocation size. Its
+// buffer at +0x58, so 0x58+0x14 == 0x6c == the CFaderMesh allocation size. Its
 // only caller is CFaderMgr::Add's case-6 arm (RezAlloc(0x6c) -> ctor 0x17e940 ->
 // this method), and the descriptor argument it consumes is the CFxMode-family record
 // CFaderMgr builds via CFxModeT6::CFxModeT6 (0x17e910) / CFaderInit::BuildDefaultInit5.
-// So the real owner is CFader17e940 (canonical decl in <Gruntz/FaderSubtypes.h>),
+// So the real owner is CFaderMesh (canonical decl in <Gruntz/FaderSubtypes.h>),
 // the real method name is ApplyInit, and CFxModeT3 the descriptor stays modeled at
 // its true 0x14 size in <Gruntz/FxModeDesc.h>.
 //
@@ -322,7 +324,7 @@ void FaderRun::RunFade(u32 dur, i32 lead, i32 notify) {
 // buffer grow is the inlined MFC CArray::SetAtGrow(GetSize(),&pt) (RezAlloc/RezFree).
 
 // A box whose +0x18 / +0x1c are its width / height (read by the param derive). The
-// active src/dst box pointers live in CFader17e940::m_3c / m_38 (stored as dwords).
+// active src/dst box pointers live in CFaderMesh::m_3c / m_38 (stored as dwords).
 struct FxBox {
     char pad[0x18];
     i32 m_width;  // +0x18
@@ -350,7 +352,7 @@ struct FxPoint {
     i32 v[10];
 };
 
-// A typed view of the growable buffer sub-object embedded at CFader17e940::m_58
+// A typed view of the growable buffer sub-object embedded at CFaderMesh::m_58
 // (the CRezBufferObject / MFC CArray<FxPoint>): vptr + pData/size/max/growby.
 struct FxMeshBuffer {
     void* m_vtbl;            // +0x00 (+0x58)
@@ -372,7 +374,7 @@ extern "C" void* RezAlloc(i32 n); // 0x1b9b46
 extern "C" void RezFree(void* p); // 0x1b9b82
 
 // ===========================================================================
-// 0x17ea00 - CFader17e940::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
+// 0x17ea00 - CFaderMesh::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
 // into this->m_58 from the transition descriptor. Returns 0 on a null gate, else 1.
 // ===========================================================================
 // @early-stop
@@ -389,10 +391,10 @@ extern "C" void RezFree(void* p); // 0x1b9b82
 // + rep-movs) diverges likewise. Grid topology, the sqrt distance projection and the
 // field assembly are all correct; the this-recolor + FP schedule park it (~68.4%,
 // up from ~65.6% pre-de-view). Final-sweep candidate. The de-view (CFxModeT3::Build
-// -> CFader17e940::ApplyInit) is byte-neutral/positive: only the mangled symbol name
+// -> CFaderMesh::ApplyInit) is byte-neutral/positive: only the mangled symbol name
 // changes (paired by RVA), not the algorithm.
 RVA(0x0017ea00, 0x4fc)
-i32 CFader17e940::ApplyInit(CFaderInit* descOpaque) {
+i32 CFaderMesh::ApplyInit(CFaderInit* descOpaque) {
     // The arg is the CFxMode transition descriptor; m_58 is this fader's growable
     // mesh buffer. Both are typed views onto the real (opaque) shapes.
     FxTransDesc* cfg = (FxTransDesc*)descOpaque;
@@ -733,7 +735,12 @@ struct FrCell {
     i32 vx, vy, fade, pixel;
 };
 
-struct CFaderRadial {
+// Flat body-view of CFaderRadial::ApplyInit (0x17fa40): models the whole 0x5c-byte
+// object flat because Build reads CFader base-region slots (m_table/m_timerA/m_timerB/
+// m_flag @+0x1c/+0x24/+0x28/+0x30) repurposed as surface/palette/owns-flag. Folding
+// into CFaderRadial (: public CFader) needs those base slots reinterpreted, not a
+// pure rename - left as a subordinate view; fold is a follow-up matcher.
+struct CFaderRadialApply {
     i32 Build(FrConfig* cfg);                // 0x17fa40
     void* BuildSurface(i32 a, i32 b, i32 c); // 0x14e830  (this+0x4 helper)
     char p0[0x1c];
@@ -764,8 +771,8 @@ struct CFaderRadial {
 // Globals.h (removing it did not recover the %). Accepted per the cleanup-over-%
 // mandate; the final sweep re-attacks the x87 schedule.
 RVA(0x0017fa40, 0x1f3)
-i32 CFaderRadial::Build(FrConfig* cfg) {
-    CFaderRadial* self = this;
+i32 CFaderRadialApply::Build(FrConfig* cfg) {
+    CFaderRadialApply* self = this;
     if (cfg->m_paletteArg == 0) {
         self->m_palette = self->m_defaultPalette;
     } else {
@@ -832,13 +839,13 @@ SIZE_UNKNOWN(FrImageSrc);
 SIZE_UNKNOWN(FrConfig);
 SIZE_UNKNOWN(FrSurface);
 SIZE_UNKNOWN(FrCell);
-SIZE_UNKNOWN(CFaderRadial);
+SIZE_UNKNOWN(CFaderRadialApply);
 
 // ============================================================================
 // section: Obj5f0890Dtor.cpp
 // ============================================================================
-// Obj5f0890Dtor.cpp - 0x181720, CFader1816c0::~CFader1816c0: the virtual destructor
-// of the screen-fader subtype whose vftable is at 0x5f0890 (== ??_7CFader1816c0@@6B@,
+// Obj5f0890Dtor.cpp - 0x181720, CFaderShape::~CFaderShape: the virtual destructor
+// of the screen-fader subtype whose vftable is at 0x5f0890 (== ??_7CFaderShape@@6B@,
 // confirmed by the entry vptr-stamp reloc). Stamp-first vptr, then free the six owned
 // heap buffers (m_478, m_44, m_48, m_4c, m_488, m_48c) with operator delete, then chain
 // to the CFader base destructor at 0x17e4a0. The CFader base subobject's non-trivial
@@ -847,14 +854,14 @@ SIZE_UNKNOWN(CFaderRadial);
 // the base dtor are reloc-masked externs.
 //
 // (Was a standalone placeholder CObj5f0890 : CObj5f0890Base; folded onto the real
-// CFader1816c0 - identical field layout, and CObj5f0890Base was CFader (both base dtor
-// 0x17e4a0). The dtor now carries the correct ??_7CFader1816c0 name.)
+// CFaderShape - identical field layout, and CObj5f0890Base was CFader (both base dtor
+// 0x17e4a0). The dtor now carries the correct ??_7CFaderShape name.)
 
 void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
 
 // ---------------------------------------------------------------------------
 RVA(0x00181720, 0xb3)
-CFader1816c0::~CFader1816c0() {
+CFaderShape::~CFaderShape() {
     if (m_478) {
         operator delete((void*)m_478);
     }
@@ -936,7 +943,10 @@ struct FInit {
     FInitPal* m_flashPal;         // +0x28 flash palette source
 };
 
-struct CFaderShape {
+// Flat body-view of CFaderShape::ApplyInit (0x1817e0): models the whole 0x494-byte
+// object flat (Setup reuses the CFader base-region slots). Fold into CFaderShape
+// (: public CFader) is a follow-up matcher; kept as a subordinate view for now.
+struct CFaderShapeApply {
     char p00[0x4];
     ShadeCache m_cache;         // +0x04 cache subobject (0x18)
     CShadeTable* m_shadeTable;  // +0x1c resolved shade table
@@ -979,7 +989,7 @@ struct CFaderShape {
 // `0x10 - sin(i/r*PI)*-32` (m_highlightRamp), plus the MFC CString temp the file-name
 // AddFromArray path builds, diverge. Same family as CFaderRadial::Build (0x17fa40).
 RVA(0x001817e0, 0x315)
-i32 CFaderShape::Setup(FInit* pInit) {
+i32 CFaderShapeApply::Setup(FInit* pInit) {
     i32 i;
     this->m_20 = 0;
     if (pInit == 0) {
@@ -1093,7 +1103,7 @@ SIZE_UNKNOWN(ShadeCache);
 SIZE_UNKNOWN(FShadeSurf);
 SIZE_UNKNOWN(FInitPal);
 SIZE_UNKNOWN(FInit);
-SIZE_UNKNOWN(CFaderShape);
+SIZE_UNKNOWN(CFaderShapeApply);
 
 // ============================================================================
 // section: FaderTileRender.cpp

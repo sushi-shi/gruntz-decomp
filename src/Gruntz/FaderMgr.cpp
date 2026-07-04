@@ -1,8 +1,8 @@
 // FaderMgr.cpp - the Gruntz screen-fader manager (tracer placeholder
 // tomalla-48): a polymorphic owner of a growable CPtrArray of CFader*.
 // CFaderMgr::Add is a 7-way factory keyed on nFaderType (0..5): allocate the
-// concrete CFader subtype (CFader1816c0/CFader180410/CFaderSine/CFader17f9a0/
-// CFaderFlat/CFader17e940), prime it from the manager's shared timing fields
+// concrete CFader subtype (CFaderShape/CFaderLight/CFaderSine/CFaderRadial/
+// CFaderFlat/CFaderMesh), prime it from the manager's shared timing fields
 // (SetTimers/Set2c inherited from CFader), default- or copy-init it from pInit,
 // validate, and append it - tracing "CFaderMgr::Add (...) - ..." + deleting the
 // fader on any failure.
@@ -124,7 +124,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && InitTypeId(pInit) != 1) {
                 goto wrongclass;
             }
-            CFader1816c0* f = new CFader1816c0;
+            CFaderShape* f = new CFaderShape;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
@@ -145,7 +145,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && InitTypeId(pInit) != 2) {
                 goto wrongclass;
             }
-            CFader180410* f = new CFader180410;
+            CFaderLight* f = new CFaderLight;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
@@ -187,7 +187,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && InitTypeId(pInit) != 4) {
                 goto wrongclass;
             }
-            CFader17f9a0* f = new CFader17f9a0;
+            CFaderRadial* f = new CFaderRadial;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
@@ -229,7 +229,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             if (pInit && InitTypeId(pInit) != 6) {
                 goto wrongclass;
             }
-            CFader17e940* f = new CFader17e940;
+            CFaderMesh* f = new CFaderMesh;
             fader = f;
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);

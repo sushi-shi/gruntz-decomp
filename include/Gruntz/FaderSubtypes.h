@@ -8,9 +8,9 @@
 // no (CFader*) upcast).
 //
 // nFaderType (0..5) -> subtype / pInit type-id / operator-new size:
-//   0 -> CFader1816c0 (id 1, 0x494)   3 -> CFader17f9a0 (id 4, 0x5c)
-//   1 -> CFader180410 (id 2, 0x206c)  4 -> CFaderFlat    (id 5, 0x50)
-//   2 -> CFaderSine   (id 3, 0x7d5c)  5 -> CFader17e940  (id 6, 0x6c)
+//   0 -> CFaderShape (id 1, 0x494)   3 -> CFaderRadial (id 4, 0x5c)
+//   1 -> CFaderLight (id 2, 0x206c)  4 -> CFaderFlat    (id 5, 0x50)
+//   2 -> CFaderSine   (id 3, 0x7d5c)  5 -> CFaderMesh  (id 6, 0x6c)
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. The per-subtype `operator new` returns the exact retail allocation
@@ -34,17 +34,17 @@
 struct CFaderInit;
 
 // ===========================================================================
-// CFader17e940 (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
+// CFaderMesh (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
 // at +0x58 (own vftable 0x5f07d8). See CFader.cpp for the ctor/member-order notes.
 // ===========================================================================
-SIZE_UNKNOWN(CFader17e940Sub);
-struct CFader17e940Sub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
+SIZE_UNKNOWN(CFaderMeshSub);
+struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
     virtual void v0();   // one virtual -> its own vtable (reloc-masks 0x5f07d8)
     i32 m_04;            // +0x5c
     i32 m_08;            // +0x60
     i32 m_0c;            // +0x64
     i32 m_10;            // +0x68
-    CFader17e940Sub() {
+    CFaderMeshSub() {
         m_04 = 0;
         m_10 = 0;
         m_0c = 0;
@@ -52,11 +52,11 @@ struct CFader17e940Sub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
     }
 };
 
-SIZE(CFader17e940, 0x6c);
-VTBL(CFader17e940, 0x001f07c0);
-class CFader17e940 : public CFader {
+SIZE(CFaderMesh, 0x6c);
+VTBL(CFaderMesh, 0x001f07c0);
+class CFaderMesh : public CFader {
 public:
-    CFader17e940();             // 0x17e940
+    CFaderMesh();             // 0x17e940
     virtual void v1() OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
     virtual void v2() OVERRIDE; // slot 2 -> 0x17f120 (overrides CFader pure)
 
@@ -65,7 +65,7 @@ public:
     }
     i32 ApplyInit(
         CFaderInit* src
-    ); // 0x17ea00 (apply the transition descriptor; body in CFader17e940Apply.cpp)
+    ); // 0x17ea00 (apply the transition descriptor; body in CFaderMeshApply.cpp)
     i32 CopyFrom(CFader* src); // 0x17ea00 (same method; copy from the pInit descriptor)
 
     // ApplyInit latches the transition descriptor into these fields, then walks an
@@ -80,7 +80,7 @@ public:
     i32 m_4c;                 // +0x4c  record-order flag
     i32 m_50;                 // +0x50  columns
     i32 m_54;                 // +0x54  rows
-    CFader17e940Sub m_58;     // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
+    CFaderMeshSub m_58;     // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
 };
 
 // ===========================================================================
@@ -128,13 +128,13 @@ public:
 };
 
 // ===========================================================================
-// CFader180410 (ctor 0x180410, size 0x206c): motion virtuals 0x180640 / 0x1814f0.
+// CFaderLight (ctor 0x180410, size 0x206c): motion virtuals 0x180640 / 0x1814f0.
 // ===========================================================================
-SIZE(CFader180410, 0x206c);
-VTBL(CFader180410, 0x001f0870);
-class CFader180410 : public CFader {
+SIZE(CFaderLight, 0x206c);
+VTBL(CFaderLight, 0x001f0870);
+class CFaderLight : public CFader {
 public:
-    CFader180410();             // 0x180410
+    CFaderLight();             // 0x180410
     virtual void v1() OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
     virtual void v2() OVERRIDE; // slot 2 -> 0x1814f0 (overrides CFader pure)
 
@@ -149,13 +149,13 @@ public:
 };
 
 // ===========================================================================
-// CFader17f9a0 (ctor 0x17f9a0, size 0x5c): motion virtuals 0x17fc60 / 0x17fda0.
+// CFaderRadial (ctor 0x17f9a0, size 0x5c): motion virtuals 0x17fc60 / 0x17fda0.
 // ===========================================================================
-SIZE(CFader17f9a0, 0x5c);
-VTBL(CFader17f9a0, 0x001f0810);
-class CFader17f9a0 : public CFader {
+SIZE(CFaderRadial, 0x5c);
+VTBL(CFaderRadial, 0x001f0810);
+class CFaderRadial : public CFader {
 public:
-    CFader17f9a0();             // 0x17f9a0
+    CFaderRadial();             // 0x17f9a0
     virtual void v1() OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
     virtual void v2() OVERRIDE; // slot 2 -> 0x17fda0 (overrides CFader pure)
 
@@ -174,14 +174,14 @@ public:
 };
 
 // ===========================================================================
-// CFader1816c0 (ctor 0x1816c0, size 0x494): motion virtuals 0x181b00 / 0x182900.
+// CFaderShape (ctor 0x1816c0, size 0x494): motion virtuals 0x181b00 / 0x182900.
 // ===========================================================================
-SIZE(CFader1816c0, 0x494);
-VTBL(CFader1816c0, 0x001f0890);
-class CFader1816c0 : public CFader {
+SIZE(CFaderShape, 0x494);
+VTBL(CFaderShape, 0x001f0890);
+class CFaderShape : public CFader {
 public:
-    CFader1816c0();                   // 0x1816c0
-    virtual ~CFader1816c0() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
+    CFaderShape();                   // 0x1816c0
+    virtual ~CFaderShape() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
     virtual void v1() OVERRIDE;       // slot 1 -> 0x181b00 (overrides CFader pure)
     virtual void v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
 
