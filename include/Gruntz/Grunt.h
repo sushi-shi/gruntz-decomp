@@ -955,6 +955,7 @@ SIZE_UNKNOWN(GruntListSub);
 struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
+    void RemoveAll(); // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
     GruntListSub() {
         CtorImpl(0xa);
     }
@@ -1792,6 +1793,13 @@ public:
     // dispatch: GetOccupant/grid-occupant settle + CommitNeighbor, the 4-way
     // StepArrivalDrop tile walk toward m_defenderX/Y, and the on-screen entrance cue.
     i32 StepArrivalDefenseAlt();
+    // @0xf60f0 (ret 4, /GX) - the arrival/relocation phase step. Gated on the grunt
+    // type name (g_typeColl.Lookup(m_14->m_1c) vs "F"); drives the m_defenderState
+    // machine (0/2/4/0x19/0x1a) recomputing the target tile, building the 16 border
+    // cells of the 5x5 block into a point accumulator, random-picking a free cell to
+    // relocate/arrive on (m_tileMgr TileSwitch6 / CommitTileSlot2), and recycling the
+    // visited-coord nodes onto the shared free list.
+    i32 PhaseStep();
     // CUserLogic::GetScreenPos (0x29a50) reached on the occupant grunt: copies its
     // m_10->{m_5c,m_60} into the out point. External/reloc-masked.
     void GetScreenPos(struct GruntTilePos* out); // 0x29a50
