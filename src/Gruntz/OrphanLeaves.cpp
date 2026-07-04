@@ -41,7 +41,9 @@ struct CSubObj8 {
     void BaseDtor(); // 0x169d70
 };
 struct COwnerWithSubs {
-    char _00[0x0c];
+    char _00[0x08];
+    CSubObj8 m_08; // +0x08  (empty reloc-masked view)
+    char _09[0x0c - 0x09];
     CSubObjC m_0c;   // +0x0c
     void DtorSubC(); // 0x3cbc0
     void DtorSub8(); // 0x3cbf0  (acts on +0x08)
@@ -49,14 +51,14 @@ struct COwnerWithSubs {
 
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
-    CSubObjC* s = (CSubObjC*)((char*)this + 0xc);
+    CSubObjC* s = &m_0c;
     s->Clear();
     s->BaseDtor();
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
-    CSubObj8* s = (CSubObj8*)((char*)this + 8);
+    CSubObj8* s = &m_08;
     s->Clear();
     s->BaseDtor();
 }

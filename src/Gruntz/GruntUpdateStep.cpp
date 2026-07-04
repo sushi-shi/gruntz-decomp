@@ -82,6 +82,12 @@ struct CGruntStep {
     void StampMove(i32 a, i32 b);                             // 0x401401
     void ReadCenter(void* out);                               // 0x4036c0
     void SelectIcon(i32 a, i32 b, i32 c, i32 d);              // 0x403bd9
+
+    // The rest of the CGrunt field bag is reached by raw F()/P() offset (naming the
+    // ~40 touched members buys nothing); only the owned step-list sub-object at
+    // +0x31c is typed, so its RemoveAll dispatches as a real member call.
+    char m_pad00[0x31c]; // +0x000
+    CStepList m_31c;     // +0x31c  owned step-list, RemoveAll'd on commit
 };
 
 // ===========================================================================
@@ -278,7 +284,7 @@ tail:
                         prev = g_freeList;
                     }
                 }
-                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                m_31c.RemoveAll();
             }
             StampMove(cell[0] * 0x20 + 0x10, cell[1] * 0x20 + 0x10);
         }
@@ -306,7 +312,7 @@ i32 CGruntStep::SeekTarget() {
                 g_dropList.Drop(*link);
             }
         }
-        ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+        m_31c.RemoveAll();
         F(this, 0x2f0) = 0;
     }
 
@@ -327,7 +333,7 @@ i32 CGruntStep::SeekTarget() {
                         g_dropList.Drop(*link);
                     }
                 }
-                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                m_31c.RemoveAll();
             }
             F(this, 0x2f0) = -1;
             return 1;
@@ -366,7 +372,7 @@ i32 CGruntStep::SeekTarget() {
                         g_dropList.Drop(*link);
                     }
                 }
-                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                m_31c.RemoveAll();
                 return 1;
             }
         }

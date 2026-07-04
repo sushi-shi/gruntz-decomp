@@ -73,6 +73,11 @@ struct CGruntWander {
     i32 ProbeMove(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);  // 0x401640
     void StampMove(i32 a, i32 b);                             // 0x401401
     void ReadCenter(void* out);                               // 0x4036c0
+
+    // The CGrunt field bag is otherwise reached by raw F()/P() offset; only the owned
+    // step-list sub-object at +0x31c is typed so its RemoveAll is a real member call.
+    char m_pad00[0x31c]; // +0x000
+    CStepList m_31c;     // +0x31c  owned step-list, RemoveAll'd on commit
 };
 
 // ===========================================================================
@@ -154,7 +159,7 @@ i32 CGruntWander::WanderStep() {
                                 }
                             } while (node != 0);
                         }
-                        ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                        m_31c.RemoveAll();
                     }
                     F(this, 0x2d4) = 5;
                     return 1;
@@ -231,7 +236,7 @@ i32 CGruntWander::WanderStep() {
                         }
                     } while (node != 0);
                 }
-                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                m_31c.RemoveAll();
             }
             F(this, 0x2d4) = 5;
             return 1;
@@ -283,7 +288,7 @@ i32 CGruntWander::WanderStep() {
                         }
                     } while (node != 0);
                 }
-                ((CStepList*)((char*)this + 0x31c))->RemoveAll();
+                m_31c.RemoveAll();
             }
             F(this, 0x2d4) = 5;
             F(this, 0x2ec) = 0x1f4;

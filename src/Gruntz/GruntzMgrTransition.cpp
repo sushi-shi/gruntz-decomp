@@ -159,10 +159,11 @@ struct CAttract : CTsBaseA { // param 2, 0x1c0
 // stamp is the deliberate whole-family pattern (see file header); the loader-view fold
 // happened in MenuStateAssets.cpp, which does not construct the class.
 struct CMenuState : CTsBaseA { // param 5, 0x1c0
-    char m_pad[0x1c0 - 0x1b4];
+    i32 m_1b4;                 // +0x1b4
+    char m_pad1b8[0x1c0 - 0x1b8];
     CMenuState() {
         m_vptr = (void*)&g_stCMenuStateVtbl;
-        *(i32*)((char*)this + 0x1b4) = 0;
+        m_1b4 = 0;
     }
 };
 struct CHelpState : CTsBaseA { // param 9, 0x1b8
@@ -172,10 +173,11 @@ struct CHelpState : CTsBaseA { // param 9, 0x1b8
     }
 };
 struct CSplashState : CTsBaseA { // param 14, 0x1bc
-    char m_pad[0x1bc - 0x1b4];
+    i32 m_1b4;                   // +0x1b4
+    char m_pad1b8[0x1bc - 0x1b8];
     CSplashState() {
         m_vptr = (void*)&g_stCSplashStateVtbl;
-        *(i32*)((char*)this + 0x1b4) = 0;
+        m_1b4 = 0;
     }
 };
 struct CDemo : CTsBaseB { // param 7, 0x528
@@ -185,22 +187,63 @@ struct CDemo : CTsBaseB { // param 7, 0x528
     }
 };
 struct CMultiBootyState : CTsBaseA { // param 18, 0x244
-    char m_pad[0x244 - 0x1b4];
+    i32 m_1b4;                       // +0x1b4
+    i32 m_1b8;                       // +0x1b8
+    char m_pad1bc[0x244 - 0x1bc];
     CMultiBootyState() {
         m_vptr = (void*)&g_stCMultiBootyStateVtbl;
-        *(i32*)((char*)this + 0x1b4) = 0;
-        *(i32*)((char*)this + 0x1b8) = 0x64;
+        m_1b4 = 0;
+        m_1b8 = 0x64;
     }
 };
 struct CBootyState : CTsBaseA { // param 10, 0x320
-    char m_pad[0x320 - 0x1b4];
+    i32 m_1b4;                  // +0x1b4
+    i32 m_1b8;                  // +0x1b8
+    i32 m_1bc;                  // +0x1bc
+    i32 m_1c0;                  // +0x1c0
+    i32 m_1c4;                  // +0x1c4
+    i32 m_1c8;                  // +0x1c8
+    i32 m_1cc;                  // +0x1cc
+    i32 m_1d0;                  // +0x1d0
+    i32 m_1d4;                  // +0x1d4
+    char m_pad1d8[0x1ec - 0x1d8];
+    i32 m_1ec; // +0x1ec
+    i32 m_1f0; // +0x1f0
+    i32 m_1f4; // +0x1f4
+    i32 m_1f8; // +0x1f8
+    char m_pad1fc[0x200 - 0x1fc];
+    i32 m_200; // +0x200
+    char m_pad204[0x284 - 0x204];
+    i32 m_284[8]; // +0x284
+    i32 m_2a4[8]; // +0x2a4
+    i32 m_2c4;    // +0x2c4
+    char m_pad2c8[0x2e8 - 0x2c8];
+    i32 m_2e8; // +0x2e8
+    i32 m_2ec; // +0x2ec
+    i32 m_2f0; // +0x2f0
+    i32 m_2f4; // +0x2f4
+    char m_pad2f8[0x320 - 0x2f8];
     CBootyState();
 };
 struct CCreditsState : CTsBaseA { // param 8, 0x218
-    char m_pad1b4[0x1e8 - 0x1b4];
-    CTsSub45 m_1e8; // +0x1e8
-    MfcStr m_1f0;   // +0x1f0
-    char m_pad1f4[0x218 - 0x1f4];
+    i32 m_1b4;                    // +0x1b4
+    i32 m_1b8;                    // +0x1b8
+    i32 m_1bc;                    // +0x1bc
+    i32 m_1c0;                    // +0x1c0
+    i32 m_1c4;                    // +0x1c4
+    char m_1c8[0x10];             // +0x1c8  Set-initialized rect sub-object
+    char m_1d8[0x10];             // +0x1d8  Set-initialized rect sub-object
+    CTsSub45 m_1e8;               // +0x1e8
+    MfcStr m_1f0;                 // +0x1f0
+    i32 m_1f4;                    // +0x1f4
+    i32 m_1f8;                    // +0x1f8
+    i32 m_1fc;                    // +0x1fc
+    i32 m_200;                    // +0x200
+    i32 m_204;                    // +0x204
+    i32 m_208;                    // +0x208
+    i32 m_20c;                    // +0x20c
+    i32 m_210;                    // +0x210
+    char m_pad214[0x218 - 0x214];
     CCreditsState();
 };
 // CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
@@ -208,11 +251,17 @@ struct CCreditsState : CTsBaseA { // param 8, 0x218
 // inline-construction shape the factory needs, and its ctor (defined below) stamps
 // ??_7CPlay via cl (no manual g_stCPlayVtbl stamp).
 struct CMulti : CTsBaseB { // param 17, 0x660
-    char m_pad520[0x598 - 0x520];
+    i32 m_520;             // +0x520
+    i32 m_524;             // +0x524
+    char m_pad528[0x590 - 0x528];
+    i32 m_590; // +0x590
+    char m_pad594[0x598 - 0x594];
     MfcStr m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
-    char m_pad5a4[0x5b4 - 0x5a4];
+    char m_pad5a4[0x5b0 - 0x5a4];
+    i32 m_5b0;           // +0x5b0
     MfcStr m_5b4, m_5b8; // +0x5b4/+0x5b8
-    char m_pad5bc[0x604 - 0x5bc];
+    char m_pad5bc[0x600 - 0x5bc];
+    i32 m_600;      // +0x600
     MfcBytes m_604; // +0x604
     char m_pad618[0x660 - 0x618];
     CMulti();
@@ -223,50 +272,48 @@ struct CMulti : CTsBaseB { // param 17, 0x660
 // ctor body runs after the base + member sub-object ctors, matching the retail
 // position of the `mov [this],offset ??_7<Class>` store).
 CBootyState::CBootyState() {
-    char* p = (char*)this;
     m_vptr = (void*)&g_stCBootyStateVtbl;
-    *(i32*)(p + 0x1c0) = 0;
-    *(i32*)(p + 0x1c8) = 0;
-    *(i32*)(p + 0x1c4) = 0;
-    *(i32*)(p + 0x1cc) = 0;
-    *(i32*)(p + 0x1b8) = 0;
-    *(i32*)(p + 0x1bc) = 0x64;
-    *(i32*)(p + 0x2c4) = 0;
-    *(i32*)(p + 0x2e8) = 0;
-    *(i32*)(p + 0x2ec) = 0;
-    *(i32*)(p + 0x2f0) = 0;
-    *(i32*)(p + 0x1b4) = 0;
-    *(i32*)(p + 0x2f4) = 0;
-    *(i32*)(p + 0x200) = 0;
-    *(i32*)(p + 0x1d0) = 0;
-    *(i32*)(p + 0x1d4) = 0;
-    *(i32*)(p + 0x1ec) = 0;
-    *(i32*)(p + 0x1f0) = 0;
-    *(i32*)(p + 0x1f4) = 0;
-    *(i32*)(p + 0x1f8) = 0;
+    m_1c0 = 0;
+    m_1c8 = 0;
+    m_1c4 = 0;
+    m_1cc = 0;
+    m_1b8 = 0;
+    m_1bc = 0x64;
+    m_2c4 = 0;
+    m_2e8 = 0;
+    m_2ec = 0;
+    m_2f0 = 0;
+    m_1b4 = 0;
+    m_2f4 = 0;
+    m_200 = 0;
+    m_1d0 = 0;
+    m_1d4 = 0;
+    m_1ec = 0;
+    m_1f0 = 0;
+    m_1f4 = 0;
+    m_1f8 = 0;
     for (i32 i = 0; i < 8; i++) {
-        *(i32*)(p + 0x284 + i * 4) = 0;
-        *(i32*)(p + 0x2a4 + i * 4) = 0;
+        m_284[i] = 0;
+        m_2a4[i] = 0;
     }
 }
 CCreditsState::CCreditsState() {
-    char* p = (char*)this;
     m_vptr = (void*)&g_stCCreditsStateVtbl;
-    *(i32*)(p + 0x1b8) = 0;
-    *(i32*)(p + 0x1bc) = 0;
-    *(i32*)(p + 0x1c0) = 0;
-    *(i32*)(p + 0x1c4) = 0;
-    *(i32*)(p + 0x1f4) = 0;
-    *(i32*)(p + 0x1f8) = 0;
-    *(i32*)(p + 0x1fc) = 0;
-    *(i32*)(p + 0x200) = 0;
-    *(i32*)(p + 0x204) = 0;
-    Ts_Set(p + 0x1c8, 0, 0, 0x280, 0x1e0);
-    Ts_Set(p + 0x1d8, 0, 0, 0x280, 0x1e0);
-    *(i32*)(p + 0x20c) = 1;
-    *(i32*)(p + 0x210) = 0;
-    *(i32*)(p + 0x208) = 0;
-    *(i32*)(p + 0x1b4) = 0;
+    m_1b8 = 0;
+    m_1bc = 0;
+    m_1c0 = 0;
+    m_1c4 = 0;
+    m_1f4 = 0;
+    m_1f8 = 0;
+    m_1fc = 0;
+    m_200 = 0;
+    m_204 = 0;
+    Ts_Set(m_1c8, 0, 0, 0x280, 0x1e0);
+    Ts_Set(m_1d8, 0, 0, 0x280, 0x1e0);
+    m_20c = 1;
+    m_210 = 0;
+    m_208 = 0;
+    m_1b4 = 0;
 }
 CPlay::CPlay() {
     // cl runs the CState base ctor + the five member ctors, then auto-stamps
@@ -317,13 +364,12 @@ CPlay::CPlay() {
     *(i32*)(p + 0x504) = 0;
 }
 CMulti::CMulti() {
-    char* p = (char*)this;
     m_vptr = (void*)&g_stCMultiVtbl;
-    *(i32*)(p + 0x520) = 0;
-    *(i32*)(p + 0x524) = 0;
-    *(i32*)(p + 0x590) = 1;
-    *(i32*)(p + 0x5b0) = 0;
-    *(i32*)(p + 0x600) = 1;
+    m_520 = 0;
+    m_524 = 0;
+    m_590 = 1;
+    m_5b0 = 0;
+    m_600 = 1;
 }
 
 // ===========================================================================

@@ -140,10 +140,10 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
             m_pal[i] = (u16)i;
         }
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)this, DIB_PAL_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_PAL_COLORS, &m_pixels, 0, 0);
     } else {
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)this, DIB_RGB_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_RGB_COLORS, &m_pixels, 0, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -650,14 +650,14 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
 i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
-    i32* desc = (i32*)this->m_desc;
+    i32* desc = (i32*)(this->m_desc);
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
     *(i32*)(this->m_desc + 0x68) = a5; // m_78
     this->m_width = width;
     this->m_height = height;
-    *(i32*)this->m_desc = 0x6c;    // dwSize
+    *(i32*)(this->m_desc) = 0x6c;  // dwSize
     *(i32*)(this->m_desc + 4) = 7; // dwFlags
     if (a4 != 0 && a4 != ((CFileImage*)surf)->m_palBitCount) {
         *(i32*)(this->m_desc + 4) = 0x1007;

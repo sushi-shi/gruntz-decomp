@@ -54,7 +54,8 @@ namespace m4 {
 
     // The dialog host; the item rect sub-object lives at +0x1c.
     struct DrawHost {
-        char m_pad00_1c[0x1c];
+        char m_pad00[0x1c];
+        void* m_1c;                                       // +0x1c  item-rect CString source
         i32 MeasureLabel21f20(HDC hdc, const char* text); // 0x00021f20
     };
 
@@ -71,7 +72,7 @@ namespace m4 {
         if (hdc == 0) {
             return 0;
         }
-        RectSrc src((char*)this + 0x1c);
+        RectSrc src(&m_1c);
         RECT* rp = src.m_rect;
         if (*((i32*)text - 2) == 0) {
             g_62b434 = 0;
@@ -155,7 +156,7 @@ namespace m4 {
         if (hdc == 0) {
             return 0;
         }
-        PwdStr text((char*)this + 0x1c);
+        PwdStr text(&m_1c);
         if (g_pGetAsyncKeyState(0x11) & 0x8000) {
             for (i32 i = 0; i < text.Len(); i++) {
                 text.SetAt(i, '*');

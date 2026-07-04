@@ -201,6 +201,17 @@ static const char s_gruntSec[] = "Grunt";
 
 struct CGruntCombat {
     i32 LoadGruntCombatAnimations(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
+
+    // The CGrunt field bag is otherwise reached by raw F()/P() offset; only the
+    // owned coord-recycle list (+0x31c) and the three knockback doubles
+    // (+0x400/+0x408/+0x410) are typed so they access as real members instead of
+    // (char*)this offset casts. CombatCoordList is an empty reloc-masked view (1 B).
+    char m_pad00[0x31c];   // +0x000
+    CombatCoordList m_31c; // +0x31c  occupied-coord recycle list
+    char m_pad31d[0x400 - 0x31d];
+    double m_400; // +0x400  knockback distance / tiles-per-ms
+    double m_408; // +0x408  target tile x
+    double m_410; // +0x410  target tile y
 };
 
 RVA(0x000597a0, 0x1345)
@@ -644,7 +655,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
                 node[1] = ry;
                 g_freeList = *(void**)g_freeList;
             }
-            ((CombatCoordList*)((char*)this + 0x31c))->AddHead(node);
+            m_31c.AddHead(node);
         }
 
         F(this, 0x17c) = newX;
@@ -655,9 +666,9 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         double ddy = (double)newY - F(P(this, 0x10), 0x60);
         double dist = sqrt(ddx * ddx + ddy * ddy);
         u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
-        *(double*)((char*)this + 0x400) = dist / (double)kb;
-        *(double*)((char*)this + 0x408) = (double)F(P(this, 0x10), 0x5c);
-        *(double*)((char*)this + 0x410) = (double)F(P(this, 0x10), 0x60);
+        m_400 = dist / (double)kb;
+        m_408 = (double)F(P(this, 0x10), 0x5c);
+        m_410 = (double)F(P(this, 0x10), 0x60);
 
         if (F(this, 0x328) != 0) {
             void** node = (void**)P(this, 0x320);
@@ -675,7 +686,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
                     }
                 } while (node != 0);
             }
-            ((CombatCoordList*)((char*)this + 0x31c))->RemoveAll();
+            m_31c.RemoveAll();
         }
         F(this, 0x1e8) = 0;
     }

@@ -64,8 +64,16 @@ struct CSelNode {
 struct CGroupSel {
     char m_pad00[0x1c];
     CSelGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
-    // ... the latch / state fields below live well past the grid; reached by
-    // offset so the modeled array stays size-1.
+    // The latch / state fields below live well past the grid; the modeled grid
+    // stays size-1 (indexed past its end) so these keep their true offsets.
+    char m_pad20[0x230 - 0x20];
+    i32 m_230; // +0x230  select-latch gate
+    i32 m_234; // +0x234  latched x
+    i32 m_238; // +0x238  latched y
+    char m_pad23c[0x244 - 0x23c];
+    CSelNode* m_244; // +0x244  selection list head
+    char m_pad248[0x24c - 0x248];
+    i32 m_24c;                       // +0x24c  single-selection flag
     i32 CenterOnGroup(i32 doSelect); // 0x7cf40
     i32 TrySelect(i32 a, i32 b);     // 0x33aa
     void Commit();                   // 0x3d1e
@@ -77,7 +85,7 @@ struct CGroupSel {
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
 i32 CGroupSel::CenterOnGroup(i32 doSelect) {
-    CSelNode* n = *(CSelNode**)((char*)this + 0x244);
+    CSelNode* n = m_244;
     if (n == 0) {
         return 0;
     }
@@ -113,16 +121,16 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
     i32 r = ((CCenterTarget*)g_gameRegSel->m_curState)->Center(cx, cy);
-    if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
-        CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
+    if (r != 0 && count == 1 && m_24c == 1) {
+        CSelKey* head = m_244->m_8;
         CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_1f0;
             i32 v1ec = cell2->m_1ec;
             if (TrySelect(v1ec, v1f0)) {
-                *(i32*)((char*)this + 0x234) = v1ec;
-                *(i32*)((char*)this + 0x238) = v1f0;
-                *(i32*)((char*)this + 0x230) = 1;
+                m_234 = v1ec;
+                m_238 = v1f0;
+                m_230 = 1;
                 Commit();
             }
         }

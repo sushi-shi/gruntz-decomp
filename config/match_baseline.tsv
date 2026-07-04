@@ -1889,8 +1889,8 @@ discoveredsmall	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	1	8b8796dcac10	0x1
 drawbattlestats	?DrawBattleStats@CBattleStatsView@@QAEXXZ	84.5575	84.5575	3	0fcb48618a0d	0x1ed30
 drawdebugstats	?DrawDebugStats@CDbgView@@QAEXXZ	99.5525	99.5525	3	716bf33921ad	0xcf770
 drawtext	?Draw3DText22810@TextHost@m4@@QAEHPAX0PAUtagRECT@@HHHHHHH@Z	82.4896	82.4896	1	6a456550000f	0x22810
-drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	1	03c0979cae0b	0x21f20
-drawtext	?Render22160@PwdHost@m4@@QAEHPAXHPAUtagRECT@@@Z	75.6343	75.6343	2	c057952b5fb8	0x22160
+drawtext	?MeasureLabel21f20@DrawHost@m4@@QAEHPAXPBD@Z	72.0179	72.0179	2	391ff0270ae9	0x21f20
+drawtext	?Render22160@PwdHost@m4@@QAEHPAXHPAUtagRECT@@@Z	75.6343	75.6343	3	c133d83b481d	0x22160
 dsoundvoice	?Stop@DSoundVoice@@UAEHXZ	100.0000	100.0000	1	3535e3da3a46	0x1370d0
 dsoundvoice	?Tick@DSoundVoice@@UAEHH@Z	95.6977	95.6977	1	da8ff59627bf	0x137060
 engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
@@ -2199,7 +2199,7 @@ glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	db897731bcf2	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	7	7080b1764c3e	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	2	670714627492	0x112080
-groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	5	408c461fa497	0x7cf40
+groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	6	2b9e65309b43	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	5	17e9dd3e46c0	0x47a10
 grunt	??1CGrunt@@UAE@XZ	94.9091	94.9091	1	a4a4fdb30606	0xf2f0
 grunt	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	52.4272	52.4272	4	fdfcbe154143	0x59230
@@ -2299,7 +2299,7 @@ gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	7	6
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.0193	75.0193	5	01efdd985aab	0x68880
 gruntchargestep	?ChargeStep@Grunt@@QAEHXZ	21.4710	21.4710	3	e65adaa3f7a1	0xef6b0
 gruntcmdpercent	?ComputeCmdPercent@@YAHH@Z	100.0000	100.0000	2	32370a43dd27	0x135110
-gruntcombatanim	?LoadGruntCombatAnimations@CGruntCombat@@QAEHHHHHHHHH@Z	40.8920	40.8920	5	168bdc368c73	0x597a0
+gruntcombatanim	?LoadGruntCombatAnimations@CGruntCombat@@QAEHHHHHHHHH@Z	40.8920	40.8920	6	02ba92b6497f	0x597a0
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	856f308a3acc	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	31960e9c57ac	0x56da0
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	3	f1489bb640c1	0xd95f0
@@ -2336,8 +2336,8 @@ gruntstatestep	?Step33520@CStepMgr@@QAEHPAUCStepGrunt@@@Z	56.2408	56.2408	4	b855
 grunttargetscan	?ScanNearestTarget@CGruntScan@@QAEHXZ	27.4446	27.4446	3	9f7916becc2b	0xf42f0
 grunttilescan	?ScanRegion32ce0@CScanMgr@@QAEHPAUCScanGrunt@@@Z	72.3417	72.3417	3	f988adfe8191	0x32ce0
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	3	e739c20809ec	0x50a50
-gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	4	53e520b6135c	0xf71c0
-gruntupdatestep	?UpdateArrival@CGruntStep@@QAEHXZ	33.5792	33.5792	4	1b6c5cc3ed44	0xf0130
+gruntupdatestep	?SeekTarget@CGruntStep@@QAEHXZ	13.3685	13.3685	5	9c511aa8757c	0xf71c0
+gruntupdatestep	?UpdateArrival@CGruntStep@@QAEHXZ	33.5792	33.5792	5	34da0a4e7723	0xf0130
 gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	91.4107	91.4107	4	ebbf073dbab0	0x1198a0
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	800298c90ba0	0x119ae0
 gruntvoice	?Dispatch@CGruntVoice@@QAEXH@Z	100.0000	100.0000	2	254b7ed0b958	0x119e40
@@ -2552,12 +2552,12 @@ image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
 image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	5	2b51a4a45ed9	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	4	8aed16de0bee	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	6	e1382840ae83	0x13ece0
-image	?BlitSurf@CFileImage@@UAEHPAXHHHH@Z	100.0000	100.0000	1	42d8470bfa37	0x13e0d0
+image	?BlitSurf@CFileImage@@UAEHPAXHHHH@Z	100.0000	100.0000	2	7774da6c91a8	0x13e0d0
 image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	3	628a32fec706	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	4	668fff39468f	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7361	82.7361	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPAX0I@Z	31.2544	31.2544	1	46900e1adf18	0x143fc0
-image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	2	2a6fcdb231eb	0x1757c0
+image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	3	a6cd704255ee	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPAX0I@Z	55.6786	55.6786	1	1f36bb298147	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	3	2363b05ccf58	0x1457a0
 image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
@@ -2966,8 +2966,8 @@ netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x17942
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
 obj5f0890dtor	??1CFader1816c0@@UAE@XZ	100.0000	100.0000	1	e4fa9c8757cb	0x181720
-orphanleaves	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	58abcd060f36	0x3cbf0
-orphanleaves	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	47dbac1cec10	0x3cbc0
+orphanleaves	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	2	0dda2bc92293	0x3cbf0
+orphanleaves	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	2	f3b8067b6531	0x3cbc0
 orphanleaves	?FreeGlobal62c25c@@YAXXZ	100.0000	100.0000	1	b38e4759fa2e	0x3ac30
 orphanleaves	?GetGlobal5e8e98@@YAPAXXZ	100.0000	100.0000	1	38723b3b9c91	0x183d0
 orphanleaves	?Register6446d8Range@@YAXXZ	100.0000	100.0000	1	7ec6b5523c0d	0x3e120
@@ -3703,7 +3703,7 @@ videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	7	3668fb144dff
 voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	79.3141	4	c230f806c574	0x11c210
 vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400b	0x110460
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
-wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.9113	73.9113	4	6fba00fbaf2c	0xed9f0
+wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.9113	73.9113	5	e0e84056feb6	0xed9f0
 wapmisc	?Stamp@CNoTrackObjectStamp@@QAEXXZ	100.0000	100.0000	1	a82e179dbf00	0x11d100
 wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	2	585f8972f086	0x1155b0
 wapmisc	?Unmatched_1bae5d@@YAXXZ	100.0000	100.0000	1	c66d0b1641b5	0x1bae5d
