@@ -66,10 +66,15 @@ struct CMapStringToObLite {
     i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
 };
 
-// A CString-like value (4-byte handle = pointer to the heap char data). The
-// engine's CString is one pointer; its data starts at the pointed-to address.
+// The engine CString value returned by-value from Op/Build: one pointer to the
+// heap char data (data starts at the pointed-to address). Modeled as a POD (no
+// C++ ctor/dtor) so cl emits none implicitly and the teardown is the EXPLICIT
+// reloc-masked engine ~CString call (Dtor, 0x1b9cde) - a real CString local's
+// implicit dtor would perturb the codegen this reconstruction pins.
+// authentic: POD CString-value view; Dtor is the modeled engine ~CString extern.
 struct EngStr {
     const char* m_data; // +0x00  -> the char buffer
+    void Dtor();        // 0x1b9cde  NAFXCW ~CString (reloc-masked, __thiscall)
 };
 
 // mgr+0x28 reader: a name-resolver (Op -> CString) with its lookup map at +0x10.
@@ -79,8 +84,14 @@ struct MgrSub158570 {
     MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
 
-// The archive/stream passed to ReadState/Serialize/WriteSnapshot. Its op is the
-// virtual at +0x30: a fixed-size element transfer (read or write `size` bytes).
+// The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/
+// WriteSnapshot. Its op is the virtual at +0x2c/+0x30: a fixed-size element
+// transfer (read or write `size` bytes).
+// authentic: the retail mangling of those methods carries an `int` param (`H`,
+// e.g. ?ReadState@CWwdGameObject@@QAEHH@Z) - the archive enters as an int handle,
+// so the source param stays `int` (dev-faithful) and the `(Archive*)` reinterpret
+// of that handle is the real operation. Retyping the param would rewrite the
+// symbol and diverge from what the devs wrote.
 struct Archive {
     virtual void Slot00();
     virtual void Slot04();
@@ -138,18 +149,11 @@ struct WwdSnapshot {
 };
 
 // CString::operator=(LPCSTR) on the +0xdc name member (NAFXCW, reloc-masked).
+// authentic: m_name is the engine's bare CString handle (one `char*`); its
+// operator= is an out-of-line extern, so it is modeled as a method on a tiny
+// helper the &m_name handle is reinterpreted through (no member to fold into).
 struct CStringAssign {
     void Assign(const char* s); // 0x1b9e74
-};
-
-// CString stack-local destructor (NAFXCW out-of-line, reloc-masked rel32).
-struct CStringDtor {
-    void Dtor(); // 0x1b9cde
-};
-
-// AnimWorker extra non-virtual method (0x164830, __thiscall, 4 args).
-struct AnimWorkerEx {
-    i32 Method164830(i32 a1, i32 type, i32 a3, i32 a4); // 0x164830
 };
 
 // ---------------------------------------------------------------------------
@@ -292,6 +296,10 @@ public:
 // CWwdGameObject's own polymorphic interface (vtable @0x5f0020). Declared-only
 // virtuals at the slots WriteSnapshot dispatches (+0x20, +0x40); cast `this` to
 // this interface so `mov eax,[this]; call [eax+off]` falls out as __thiscall.
+// authentic: CWwdGameObject cannot be made polymorphic in-TU (its full retail
+// vtable is unmatched engine code; declaring real virtuals would make cl emit a
+// wrong ??_7). This declared-only interface is the recommended manual-dispatch
+// form until the class's whole vtable is modeled.
 class WwdSelf {
 public:
     virtual void Slot00();
@@ -329,6 +337,9 @@ struct WwdRenderCtx {
 struct WwdSurface {
     i32 GetRowBase(i32 a); // 0x13e6d0  __thiscall -> base offset
     char m_pad00[0x08];
+    // authentic: +0x08 is a foreign engine notifier whose vtable slot +0x80 holds
+    // a FREE function fn(self, 0) (not a __thiscall method) - a manual vtable read
+    // through an untyped slot is the only faithful form; kept void*.
     void* m_08; // +0x08
     char m_pad0c[0x20 - 0x0c];
     i32 m_20; // +0x20  row pitch
@@ -336,7 +347,10 @@ struct WwdSurface {
     i32 m_b0; // +0xb0  per-column stride
 };
 
-// Raw this-offset helpers (documented offset access for the wide object).
+// Raw this-offset read of a foreign engine object reached as an opaque void*/int
+// handle (found-object refs, the a4 setup source). authentic: these referents are
+// heterogeneous unmodeled engine objects (no single concrete class to type), so a
+// documented offset read is the deliberate access - only the offset is load-bearing.
 #define F(p, off, ty) (*(ty*)((char*)(p) + (off)))
 
 // ---------------------------------------------------------------------------
@@ -396,7 +410,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
         EngStr str;
         m_mgr->m_28->Op(&str, (i32)m_19c);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
     ar->Xfer(tmp, 0x80);
     return 1;
@@ -613,7 +627,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             break;
         }
     }
-    return ((AnimWorkerEx*)m_worker)->Method164830(a1, type, a3, a4) != 0;
+    return m_worker->Method164830(a1, type, a3, a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -683,7 +697,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         EngStr str;
         m_mgr->m_14->Build(&str, m_80);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
     ar->Xfer(tmp, 0x80);
 
@@ -692,7 +706,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         EngStr str;
         m_mgr->m_14->Build(&str, m_88);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
     ar->Xfer(tmp, 0x80);
 
@@ -701,7 +715,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
         EngStr str;
         m_mgr->m_14->Build(&str, m_90);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
     ar->Xfer(tmp, 0x80);
     return 1;
@@ -832,7 +846,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
     w = m_worker;
     i32 edi = 0;
     if (w->m_18 != 0) {
-        edi = ((WorkerSub*)w->m_18)->Vfunc8();
+        edi = w->m_18->Vfunc8();
     }
 
     WwdSnapshot rec;
@@ -849,7 +863,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
         EngStr str;
         m_mgr->m_14->Build(&str, m_worker);
         strcpy(rec.m_name, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
     ar->Xfer(&rec, 0xa0);
     return 1;
@@ -984,11 +998,9 @@ reject:
 }
 
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(AnimWorkerEx);
 SIZE_UNKNOWN(Archive);
 SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
-SIZE_UNKNOWN(CStringDtor);
 SIZE(CmdMap, 0x3c);
 SIZE_UNKNOWN(MapLookupA);
 SIZE_UNKNOWN(MapLookupB);

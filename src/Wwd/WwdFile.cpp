@@ -44,6 +44,8 @@
 // chain ValidateMainBlock walks is modeled here (m_slot -> m_wwdPath, a filename);
 // the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
 // only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
+// authentic: reduced local view of the cross-TU CGameReg world slot; only the +0x24
+// path field ValidateMainBlock reads is modeled (offset-faithful, mangling-neutral).
 struct WwdGameRegSlot {
     char pad_0[0x24];
     char* m_wwdPath; // +0x24  a WWD path / numeric-tail string CheckHeader validates
@@ -483,11 +485,16 @@ struct WwdObjAnimInit {
 };
 
 // MFC CMapStringToOb::Lookup(key, &valueOut) const. __thiscall, ret 0x8.
+// authentic: reached at a COMPUTED address (m_assetOwner+0x14+0x10), not a typed
+// member, so the reloc-masked Lookup extern is modeled as a method a raw pointer
+// is cast through - there is no member to fold it into.
 struct WwdStringToObMap {
     i32 Lookup(const char* key, void*& out) const;
 };
 
 // Level register: append the finished object to the level. __thiscall, ret 0x4.
+// authentic: reached at a COMPUTED address (loader+0xb0); helper method view over a
+// raw pointer, same rationale as WwdStringToObMap.
 struct WwdObjList {
     void Add(WwdGameObj* obj);
 };
@@ -534,6 +541,9 @@ struct WwdPlaneRender {
 // real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
 extern void* g_planeRenderVtbl; // 0x5f02a8  (realized CWwdGridIter, factory inline-construction)
 
+// authentic: documented offset access into WwdFile's own wide layout (the +0xb0
+// plane-render worker slot + the +0xc reg-owner slot); only the offset is
+// load-bearing, and RebuildPlanes is @early-stop, so the raw-offset form is kept.
 #define WLOADER(t, off) (*(t*)((char*)this + (off)))
 
 // @early-stop

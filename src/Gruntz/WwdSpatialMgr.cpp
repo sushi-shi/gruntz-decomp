@@ -496,6 +496,8 @@ WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
     // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied
     // as a contiguous 16-byte block - a struct assignment through a pointer, so
     // the four fields move through one register (matching the retail lea+copy).
+    // authentic: the four bounds ints ARE the query rect; overlaying them as a
+    // WwdRect for the block copy is the real operation (int-block-as-struct view).
     WwdRect full = *(WwdRect*)&grid->m_minX;
     return Init(grid, full, remove);
 }

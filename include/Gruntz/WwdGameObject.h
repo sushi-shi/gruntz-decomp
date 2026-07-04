@@ -21,6 +21,10 @@
 // lowers to the exact `mov eax,[mgr+slot]; call` with no cast.
 struct WwdMgr;
 
+// Forward of the AnimWorker+0x18 sub-object interface (defined in the .cpp); the
+// worker's m_18 slot is typed as this so the [m_18][+0x8] dispatch needs no cast.
+class WorkerSub;
+
 // The animation/sprite worker at CWwdGameObject+0x7c. Foreign vtable; its
 // virtuals are DECLARED only (never defined) so cl emits no ??_7 - the real
 // vtable is the engine datum the ctor stamps. Declared as a polymorphic class
@@ -40,14 +44,14 @@ public:
     virtual void Slot20();             // +0x20
     virtual i32 Init(i32 a1, i32 a3);  // +0x24
 
+    // Non-virtual play-step helper (0x164830, __thiscall, 4 args) Play tail-calls.
+    i32 Method164830(i32 a1, i32 type, i32 a3, i32 a4);
+
     i32 m_04;
     i32 m_08; // +0x08  flag bits (bit0/bit1 read by Setup)
     char m_pad0c[0x18 - 0x0c];
-    void* m_18; // +0x18  sub-object with its own vtable ([m_18][+0x8] called)
-    i32 m_1c;   // +0x1c  scratch state id (saved/forced 0x50..0x53/restored)
+    WorkerSub* m_18; // +0x18  sub-object with its own vtable ([m_18][+0x8] called)
+    i32 m_1c;        // +0x1c  scratch state id (saved/forced 0x50..0x53/restored)
 };
-
-// Forward of the +0x18 sub-object interface (defined in the .cpp).
-class WorkerSub;
 
 #endif // GRUNTZ_WWDGAMEOBJECT_H

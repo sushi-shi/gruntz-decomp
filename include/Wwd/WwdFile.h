@@ -59,6 +59,10 @@ private:
     // lands at +0x04. Modeling it as C++ virtuals would make cl emit a WRONG,
     // incomplete vtable in this TU (its real virtuals are unmodeled) and regress
     // the neighbouring Save -> kept as an opaque leading word.
+    // authentic: opaque foreign slots - m_00 is the EXTERNAL stream class's engine
+    // vptr (its virtuals are unmatched; declaring them would emit a wrong ??_7 and
+    // regress Save), m_handle is a Win32 HANDLE, m_name the engine CString buffer.
+    // None are dereferenced here; they are pure layout placeholders. Kept void*.
     void* m_00;     // +0x00  engine vptr (opaque)
     void* m_handle; // +0x04  HANDLE (-1 when closed)
     i32 m_open;     // +0x08  open/refcount flag
@@ -237,6 +241,9 @@ struct CWwdStream {
 // CPlaneRender's own vtable dispatch view (the +0x14 "is-loaded" virtual the tile
 // validator gates on). Modeled as a polymorphic interface so the vtable call falls
 // out; no vtable is emitted here (no virtual is defined in this TU).
+// authentic: CPlaneRender cannot be made polymorphic in-TU (its full retail vtable
+// is unmatched engine code; real virtuals would make cl emit a wrong ??_7). This
+// declared-only interface is the recommended manual-dispatch form.
 struct CPlaneRenderPoly {
     virtual void v00();
     virtual void v04();
@@ -336,6 +343,10 @@ public:
 
 // MFC CArray<CPlane*>::SetAtGrow(index, value).
 // Grows the backing store to fit `index` then stores value at [index].
+// authentic: the +0x34 CArray sub-object is an embedded member reached by address
+// (`&m_planes`), not a typed pointer; the cast targets that embedded array's method
+// set (binary-proven CArray<CPlane*> shape). A typed member here shifted GameLevel's
+// ctor 89.5%->72% in a prior probe, so the by-address method view is retained.
 struct CPlanePtrArray {
     void SetAtGrow(i32 index, CPlane* value);
 };
