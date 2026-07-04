@@ -54,7 +54,7 @@ boundarylowerdtors	6	5
 boundarylowermethods	30	19
 boundarylowerthunks	26	26
 boundarymisc	13	11
-boundarytail	9	3
+boundarytail	8	2
 boundarytaileh	1	0
 boundarythunks	15	15
 boundaryupper	33	30
@@ -128,7 +128,7 @@ deflate	9	9
 demosetup	1	1
 destructbutton	1	1
 dialogs	42	20
-directdrawmgr	28	11
+directdrawmgr	29	12
 directinputmgr2	41	38
 directsoundmgr	42	34
 dirpal	3	0
@@ -805,7 +805,6 @@ boundarytail	?Blit@CObj23d90@@QAEXHHHHH@Z	50.4474	50.4474	1	26a8ee853016	0x23d90
 boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	2	ae4c5ca1f55b	0x118330
 boundarytail	?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH@Z	100.0000	100.0000	2	e325a99f936c	0xbdd0
 boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	100.0000	100.0000	1	3337862c0c6f	0x176d20
-boundarytail	?Flush@CDDPalette@@QAEXXZ	100.0000	100.0000	1	babd68c72a29	0x148250
 boundarytail	?GetName@Obj38120@@QAE?AVCString@@XZ	66.7273	66.7273	2	c9b14676e3a0	0x38120
 boundarytail	?GetName@Obj85500@@QAE?AVCString@@XZ	74.5000	74.5000	2	7dd559bb87bd	0x85500
 boundarytail	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	a7c1ff565747	0x788d0
@@ -1377,6 +1376,7 @@ directdrawmgr	?CreatePoolItem@CDirectDrawMgr@@QAEPAXPAX0@Z	75.1889	75.1889	1	334
 directdrawmgr	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2@@PAXI@Z	62.6000	62.6000	1	5a048af0f2f2	0x1474d0
 directdrawmgr	?Destroy@CDDPalette@@QAEXXZ	100.0000	100.0000	1	c536de3d7f83	0x147530
 directdrawmgr	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	2	b0f760928d0d	0x13e850
+directdrawmgr	?Flush@CDDPalette@@QAEXXZ	100.0000	100.0000	1	cb76a56ab3a4	0x148250
 directdrawmgr	?GetColorKey@CDDSurface@@QAEHXZ	100.0000	100.0000	2	99d1a3962604	0x13fa60
 directdrawmgr	?GetEntries@CDDPalette@@QAEHXZ	96.5517	96.5517	2	b5066da812e9	0x147c30
 directdrawmgr	?GetErrorString@CDirectDrawMgr@@SAXPADHH@Z	96.2439	96.2439	1	593662effe75	0x141400

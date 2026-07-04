@@ -1040,6 +1040,31 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 }
 
 // ===========================================================================
+// CDDPalette::Flush (0x148250, re-homed from BoundaryTail) - flush a pending
+// blit: if nothing pending (m_34==0) return; clear the pending flag; when a fill
+// color m_14 is set dispatch the solid blit SetAndNotify(m_2c,m_30,m_14,0) and
+// clear m_14; otherwise dispatch the keyed blit SetRange passing m_1c plus its
+// byte-shifted views (the engine re-reads the packed color at +1/+2 byte offsets
+// through an 8-byte stack temp). __thiscall.
+// ===========================================================================
+RVA(0x00148250, 0x61)
+void CDDPalette::Flush() {
+    if (m_34 == 0) {
+        return;
+    }
+    i32 v = m_14;
+    m_34 = 0;
+    if (v != 0) {
+        SetAndNotify(m_2c, m_30, (i32*)v, 0);
+        m_14 = 0;
+    } else {
+        char buf[8];
+        *(i32*)buf = m_1c;
+        SetRange(m_2c, m_30, *(i32*)buf, *(i32*)(buf + 1), *(i32*)(buf + 2), 0);
+    }
+}
+
+// ===========================================================================
 // CDDPageMgr (DDrawMgr) - the primary-surface bring-up (second DirectDrawCreate
 // caller). On a failed COM call it routes through its own HandleError, not
 // GetErrorString.

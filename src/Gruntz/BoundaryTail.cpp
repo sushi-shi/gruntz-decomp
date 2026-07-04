@@ -124,31 +124,10 @@ CString Obj85500::GetName() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x148250 - flush a pending blit: if nothing pending (m_34==0) return; clear the
-// pending flag (m_34=0); when a fill color m_14 is set, dispatch the solid blit
-// SetAndNotify(m_2c,m_30,m_14,0) and clear m_14; otherwise dispatch the keyed blit
-// SetRange passing m_1c plus its byte-shifted views (the engine reads the packed
-// color back out at +1/+2 byte offsets through an 8-byte stack temp). __thiscall.
+// 0x148250 - CDDPalette::Flush: RE-HOMED to the directdrawmgr unit
+// (src/DDrawMgr/DirectDrawMgr.cpp) alongside its class siblings SetAndNotify
+// (0x147aa0) / SetRange (0x147cd0). See that TU.
 // ---------------------------------------------------------------------------
-RVA(0x00148250, 0x61)
-void CDDPalette::Flush() {
-    if (m_34 == 0) {
-        return;
-    }
-    i32 v = m_14;
-    m_34 = 0;
-    if (v != 0) {
-        SetAndNotify(m_2c, m_30, v, 0);
-        m_14 = 0;
-    } else {
-        union {
-            i32 c;
-            char b[8];
-        } u;
-        u.c = m_1c;
-        SetRange(m_2c, m_30, u.c, *(i32*)(u.b + 1), *(i32*)(u.b + 2), 0);
-    }
-}
 
 // ---------------------------------------------------------------------------
 // 0x23d90 - snap a draw rectangle to the 0x20 grid and dispatch a blit. Walk

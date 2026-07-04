@@ -140,6 +140,7 @@ public:
     void Apply(i32 a1);                                           // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0
+    void Flush();            // 0x148250
 
     // --- layout ---------------------------------------------------------------
     i32 m_0;                       // +0x00  cleared by Destroy
@@ -147,10 +148,13 @@ public:
     i32 m_8;                       // +0x08  cleared by Destroy
     u8* m_cacheA;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
     u8* m_cacheB;                  // +0x10  PALETTEENTRY cache B (0x400 bytes)
-    char m_pad14[0x18 - 0x14];
-    u8* m_18; // +0x18  third buffer freed by Destroy
-    char m_pad1c[0x34 - 0x1c];
-    i32 m_34; // +0x34  cleared by Destroy
+    i32 m_14;                      // +0x14  Flush pending fill color
+    u8* m_18;                      // +0x18  third buffer freed by Destroy
+    i32 m_1c;                      // +0x1c  Flush pending packed color
+    char m_pad20[0x2c - 0x20];
+    i32 m_2c; // +0x2c  Flush blit start
+    i32 m_30; // +0x30  Flush blit count
+    i32 m_34; // +0x34  cleared by Destroy; Flush pending flag
 };
 
 // ---------------------------------------------------------------------------
