@@ -65,7 +65,7 @@ void DICfgC::DtorC() {
 // ??_7 named via VTBL so the stamp operand still reloc-masks.
 // ---------------------------------------------------------------------------
 RVA(0x001396f0, 0x1a)
-C1396f0* C1396f0::Init() {
+CParseSource* CParseSource::Init() {
     new (&m_1c) HashNode1396f0;
     m_30 = 0;
     m_34 = 0;

@@ -24,9 +24,12 @@ struct CHashTail {
 };
 SIZE_UNKNOWN(CHashTail);
 
-// 0x133370 - DirectInput device-config grand-base dtor (stamp C-level vftable @0x5ef670).
+// 0x133370 - CInputDevRoot grand-base dtor (stamps its C-level vftable 0x5ef670 ==
+// ??_7CInputDevRoot, cl-emitted via VTBL in DirectInputMgr2.cpp). BaseTeardown 0x134d50 ==
+// CInputDevRoot::ReleaseDevices. Kept standalone (binding ~CInputDevRoot here would dup
+// DinMgr2's inline base dtor - deferred to the DirectInput chain-reunify sweep).
 struct DICfgC {
-    void BaseTeardown(); // 0x134d50
+    void BaseTeardown(); // 0x134d50 == CInputDevRoot::ReleaseDevices
     void DtorC();
 };
 SIZE_UNKNOWN(DICfgC);
@@ -40,7 +43,7 @@ struct HashNode1396f0 {
 };
 VTBL(HashNode1396f0, 0x001ef740); // ??_7HashNode1396f0 @ 0x5ef740 (reloc-masked)
 SIZE_UNKNOWN(HashNode1396f0);
-struct C1396f0 {
+struct CParseSource {
     void* m_0; // +0x00
     i32 _4[(0x10 - 0x4) / 4];
     i32 m_10; // +0x10
@@ -49,9 +52,9 @@ struct C1396f0 {
     i32 _20[(0x30 - 0x20) / 4];
     void* volatile m_30; // +0x30 (0 then self; volatile pins the dead store + order)
     i32 m_34;            // +0x34
-    C1396f0* Init();
+    CParseSource* Init();
 };
-SIZE_UNKNOWN(C1396f0);
+SIZE_UNKNOWN(CParseSource);
 
 // 0x1570d0 / 0x157240 - flat volatile-tuned worker reset (redundant-store shape). This
 // is NOT the polymorphic CDDrawWorkerA/B in CDDrawWorkerNode.h - renamed to avoid the
@@ -142,25 +145,29 @@ struct CPageStore17b510 {
 };
 SIZE_UNKNOWN(CPageStore17b510);
 
-// 0x174ed0 / 0x175780 - CImage owner free/clear pair.
+// 0x174ed0 / 0x175780 - CImagePool free/clear pair (MISFILED: these two are CImagePool
+// methods whose siblings 0x174f30.. are matched in the imagepool unit; A 0x174f30 ==
+// CImagePool::RemovePalette. The managed surface node is CRezImage (X 0x176ad0 ==
+// CRezImage::SetPalette, D 0x175c90 == CRezImage::Free). Reorg: home 0x174ed0/0x175780 to
+// imagepool.
 struct CRezImage {
     i32 _0[0x44c / 4];
-    i32 m_44c;        // +0x44c
-    i32 _450;         // +0x450
-    i32 m_454;        // +0x454
-    i32 m_458;        // +0x458
-    void X(i32, i32); // 0x176ad0
-    void D();         // 0x175c90
+    i32 m_44c;                    // +0x44c
+    i32 _450;                     // +0x450
+    i32 m_454;                    // +0x454
+    i32 m_458;                    // +0x458
+    void X(i32, i32);             // 0x176ad0 == CRezImage::SetPalette
+    void D();                     // 0x175c90 == CRezImage::Free
 };
 SIZE_UNKNOWN(CRezImage);
 struct CImgSub10 {
-    void Add(i32); // 0x1b4ac7
+    void Add(i32); // 0x1b4ac7 (CObArray)
 };
 SIZE_UNKNOWN(CImgSub10);
 struct CImagePool {
-    i32 _0[4];                  // +0x00 .. +0x0c
-    CImgSub10 m_10;             // +0x10
-    void A(i32);                // 0x174f30
+    i32 _0[4];                    // +0x00 .. +0x0c
+    CImgSub10 m_10;               // +0x10
+    void A(i32);                  // 0x174f30 == CImagePool::RemovePalette
     void B(CRezImage*, i32, i32); // 0x175780
     void Free(CRezImage*);        // 0x174ed0
 };
