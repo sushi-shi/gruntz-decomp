@@ -225,10 +225,13 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // CSBI_MenuItem::DecCounter - decrement the live counter; while it is still up,
 // blit the resolved frame at the menu's screen rect. 0-arg __thiscall (ret 1).
 // The RenderFrame arg-block load schedule (retail loads m_18/m_14 on `this` before
-// the frame's anchor fields) is register-schedule-sensitive to how many struct
-// forward-decls GameLevel.h feeds this TU through GruntzMgr.h: >=3 flips two loads
-// and craters this to 74%. Held at two decls (EditSink relaxed to void*, see
-// GameLevel.h) keeps it byte-exact.
+// the frame's anchor fields) is register-schedule-sensitive to the TU's TOTAL
+// transitive file-scope fwd-decl count (SBI_MenuItem.cpp -> GruntzMgr.h chain):
+// crossing a threshold flips the two `a+b` loads pointee-first and craters this to
+// 74% (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md). Kept byte-
+// exact by pulling the +0x54/+0x74 sub-object DEFINITIONS (InputState.h/
+// SpriteRefTable.h) into GruntzMgr.h instead of fwd-declaring them, which holds the
+// count under the threshold while keeping those members typed with their real class.
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {

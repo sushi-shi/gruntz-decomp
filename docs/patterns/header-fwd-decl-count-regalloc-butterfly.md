@@ -36,3 +36,19 @@ the fix with a full build, since a DIFFERENT includer may have improved at the h
 (here `teleporter` 3/5→4/5 held at the reduced count; confirm each affected unit). Sibling of
 [[fold-view-preserve-declaration-position]] (declaration-position variant of the same type-table
 sensitivity). Evidence: DecCounter 0x0e82a0 74.04→100 by shedding GameLevel.h's `EditSink` decl.
+
+SECOND FIRING (same fn, different source): the spine facet-object pass added two typed members to
+`GruntzMgr.h` (`CSpriteRefTable* m_spriteFactory`, `CLightFxMgr* m_logicPump`), which meant two
+NEW file-scope `class X;` fwd decls in `GruntzMgr.h` — directly in the SBI_MenuItem TU's closure
+(SBI_MenuItem.cpp `#include`s GruntzMgr.h). Closure fwd-decl total 39→41 → DecCounter re-cratered
+100→74. You CANNOT shed these (the members are typed with their real class, non-negotiable). The
+LEVER that keeps the types AND drops the count: replace the fwd-decl with an `#include` of the
+type's real (lightweight, Ints.h-only) header — an included full DEFINITION does not count as a
+file-scope fwd decl, so the count drops even though the type is now MORE completely modeled.
+`#include <Gruntz/InputState.h>` (CInput54, +0x54) + `#include <Gruntz/SpriteRefTable.h>`
+(CSpriteRefTable, +0x74) in GruntzMgr.h converted 2 fwd decls to defs (41→39) → DecCounter 74→100,
+0 other units moved (blast radius = the 13 GruntzMgr.h consumers; Play already pulled both). Do NOT
+`#include` a header that itself carries fwd decls (LightFxMgr.h has 4 of its own → net +3, worse) —
+prefer the zero-own-fwd-decl headers, and measure. A same-address global reached under different
+per-TU extern NAMES (0x24556c `g_gameReg` vs `_g_mgrSettings`) is NOT this bug and needs no name
+pin: DATA relocs pair by RVA/mask, so DecCounter is byte-EXACT with its `g_gameReg` DIR32 reloc.

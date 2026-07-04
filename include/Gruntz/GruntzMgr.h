@@ -30,6 +30,13 @@
 #include <Gruntz/GameLevel.h>     // CByteArray
 #include <Gruntz/State.h>         // CState (m_curState game-state; Update() at slot 4)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
+// The +0x54/+0x74 sub-objects are typed with their REAL classes (below); pull their
+// (lightweight, Ints.h-only) definitions instead of forward-declaring them. Including
+// the definition rather than a file-scope `struct X;`/`class X;` fwd-decl keeps the
+// SBI_MenuItem TU's transitive fwd-decl count under the DecCounter regalloc-butterfly
+// threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
+#include <Gruntz/InputState.h>     // CInput54 (+0x54)
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
@@ -121,11 +128,9 @@ struct CWorldZ {
 // which dispatches on it, includes <dplobby.h>).
 struct IDirectPlayLobby;
 
-// The +0x54 active-level input/spatial-sound object (Flush/Arm/Disarm/InitInput/
-// Method0/Method1/StoreFlag; the ambient TU reads its +0x24 armed==playable gate +
-// its +0x08 spatial voice CObList). Shared shape in <Gruntz/InputState.h>; the
-// m_inputState member is a pointer, so a forward declaration suffices here.
-struct CInput54;
+// CInput54 (+0x54 active-level input/spatial-sound object; Flush/Arm/Disarm/InitInput/
+// Method0/Method1/StoreFlag; the ambient TU reads its +0x24 armed==playable gate + its
+// +0x08 spatial voice CObList) is defined by the <Gruntz/InputState.h> include above.
 
 // The manager's owned engine sub-objects, each a real class reached only through a
 // reloc-masked thiscall / vtable slot from GruntzMgr.cpp; the members are pointers,
@@ -133,8 +138,9 @@ struct CInput54;
 // per-method facet views of the SAME object into its one real class (defined in
 // GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
 // multi-facet slots carry all their facets' fields + methods.
-struct EngObj;          // teardown-only sub-object (Teardown())
-class CSpriteRefTable;  // +0x74 sprite/animation ref table (Reset teardown @0xe2290)
+struct EngObj; // teardown-only sub-object (Teardown())
+// CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
+// defined by the <Gruntz/SpriteRefTable.h> include above.
 class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
 struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
@@ -346,14 +352,14 @@ public:
     CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
     CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
-                                      //         GetByIndex consumers; Close tears it down via Reset)
+    //         GetByIndex consumers; Close tears it down via Reset)
     CLightFxMgr* m_logicPump; // +0x78  light-FX/shade-table pump (Push + m_tables[10]@+0x14
                               //         consumers; Close tears it down via Reset @0x9dc80)
-    ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
-    i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
-    i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
-    i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)
+    ScoreHud* m_scoreHud;     // +0x7c  HUD/score accumulator + command sink
+    i32 m_numRuns;            // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
+    i32 m_numMovies;          // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;         // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
+    i32 m_modeW, m_modeH;     // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH;   // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;                // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;                // +0xa0  one-shot lobby-connect guard
