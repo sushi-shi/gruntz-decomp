@@ -30,6 +30,7 @@
 // HINSTANCE / HWND / DWORD / WPARAM / LPARAM / LPSTR / LPCSTR / UINT / BOOL / WINAPI)
 // and the WM_* / SC_RESTORE / CW_USEDEFAULT / VK_CONTROL / VK_SHIFT literals.
 #include <Mfc.h>
+#include <string.h> // strstr (0x120090), cmd-line flag scan
 #include <Wap32/Wap32.h>
 #include <Gruntz/Enums.h>
 #include <rva.h>
@@ -47,12 +48,6 @@ extern "C" {
     // the module path; __cdecl 3 args (path, count, reserved); returns nonzero to
     // proceed to the single-instance check.
     i32 CheckExePath(char* pszPath, i32 nCount, void* pReserved);
-
-    // SubstringMatch (a strstr-class helper). Returns nonzero when
-    // `pszNeedle` occurs in `pszHaystack`. __cdecl 2 args (haystack first, then
-    // needle - the target's push order). Used for the LOBBYLAUNCH check and the
-    // "advanced"/"optionz" cmd-line scans.
-    i32 SubstringMatch(LPCSTR pszHaystack, LPCSTR pszNeedle);
 
     // StartupGate (reached via a thunk). __cdecl 1 arg; runs the
     // resource/CD/launch validation, returns nonzero to proceed.
@@ -123,7 +118,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
             if (IsIconic(hPrev)) {
                 SendMessageA(hPrev, WM_SYSCOMMAND, SC_RESTORE, 0);
             }
-            if (lpCmdLine != 0 && SubstringMatch(lpCmdLine, "LOBBYLAUNCH") != 0) {
+            if (lpCmdLine != 0 && strstr(lpCmdLine, "LOBBYLAUNCH") != 0) {
                 PostMessageA(hPrev, WM_COMMAND, LOBBYLAUNCH, 0);
             }
         }
@@ -180,22 +175,22 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
     }
 
     if (lpCmdLine != 0) {
-        if (SubstringMatch(lpCmdLine, "advanced") != 0) {
+        if (strstr(lpCmdLine, "advanced") != 0) {
             bAdvanced = 1;
         }
-        if (SubstringMatch(lpCmdLine, "optionz") != 0) {
+        if (strstr(lpCmdLine, "optionz") != 0) {
             bAdvanced = 1;
         }
-        if (SubstringMatch(lpCmdLine, "ADVANCED") != 0) {
+        if (strstr(lpCmdLine, "ADVANCED") != 0) {
             bAdvanced = 1;
         }
-        if (SubstringMatch(lpCmdLine, "OPTIONZ") != 0) {
+        if (strstr(lpCmdLine, "OPTIONZ") != 0) {
             bAdvanced = 1;
         }
-        if (SubstringMatch(lpCmdLine, "ADV") != 0) {
+        if (strstr(lpCmdLine, "ADV") != 0) {
             bAdvanced = 1;
         }
-        if (SubstringMatch(lpCmdLine, "adv") != 0) {
+        if (strstr(lpCmdLine, "adv") != 0) {
             bAdvanced = 1;
         }
     }

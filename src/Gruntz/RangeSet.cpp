@@ -13,10 +13,8 @@
 #include <stdlib.h> // atol
 #include <string.h> // inline strcpy (rep movs / repne scasb), strpbrk
 
-// The strstr-class helper at 0x120090 ("SubstringMatch" - the campaign name for
 // this engine strstr). Returns the position of the marker in the string (used as
 // a char* cursor here). __cdecl, haystack first. Reloc-masked.
-extern "C" char* SubstringMatch(const char* haystack, const char* needle);
 
 struct CRange {
     u32 lo; // +0x00
@@ -75,7 +73,7 @@ void CRangeSet::AddRange(u32 lo, u32 hi) {
 // byte-identical. The only residual is the prologue - retail pins the cursor in
 // ebx from entry (`push ebx; mov ebx,[esp+0x10c]`) and keeps it there across every
 // iteration, while cl peels the first iteration's cursor into eax (the param is
-// dead after the first SubstringMatch). Both `char* s = str;` and reusing the
+// dead after the first strstr). Both `char* s = str;` and reusing the
 // `str` param produce the identical eax split; not source-steerable. The lone
 // `atol` (0x11ff10) rel32 is also reloc-masked (Ghidra names it `atol`, cl emits
 // `_atol`). Logic complete; parked for the final sweep.
@@ -86,7 +84,7 @@ void CRangeSet::AddFromString(char* str) {
         return;
     }
     do {
-        char* x = SubstringMatch(str, "X");
+        char* x = strstr(str, "X");
         if (x == 0) {
             return;
         }

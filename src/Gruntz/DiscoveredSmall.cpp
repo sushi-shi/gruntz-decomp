@@ -207,12 +207,12 @@ void Obj1397a0::Teardown() {
 }
 
 // ---------------------------------------------------------------------------
-// KeyPrefixBits @0x16e480 - the bit-level common-prefix length of two byte
+// FirstDiffBit @0x16e480 - the bit-level common-prefix length of two byte
 // keys: 8 per matching leading byte, plus the trailing-zero-bit count of the
 // first differing pair's xor. __cdecl.
 // ---------------------------------------------------------------------------
 RVA(0x0016e480, 0x3e)
-i32 KeyPrefixBits_16e480(const char* a, const char* b) {
+i32 FirstDiffBit(const char* a, const char* b) {
     i32 n = 0;
     while (*a == *b) {
         n += 8;
