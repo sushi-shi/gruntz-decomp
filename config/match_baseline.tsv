@@ -595,7 +595,7 @@ areamgr	?GetTail@CSpawnEntry@@QAE?AVCString@@XZ	66.3774	66.3774	2	ff3c45c9e6be	0
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	2	7937e088d16b	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	2	1e007983363d	0x9b430
 arrayserialize	?Serialize@TArray@@QAEXPAUArcSer@@@Z	72.6849	72.6849	2	6df0f9b45cee	0x39fa0
-assetnamespaceprefixes	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	90.4985	90.4985	5	f2e4538fbda9	0xdca70
+assetnamespaceprefixes	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	90.4985	90.4985	6	63ebc0c9c108	0xdca70
 attract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
 attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	2	68e02424f730	0xa0a30
 attract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	bbd81821ecac	0x13fb0
