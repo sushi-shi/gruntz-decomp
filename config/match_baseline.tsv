@@ -69,7 +69,7 @@ buildgruntzcrcinfo	1	0
 butemgr	40	24
 butemgrparse	1	0
 butenode	3	1
-butesectionctor	1	0
+butesectionctor	1	1
 butestoreclear	1	1
 butetree	2	0
 bzkinddispatch	1	0
@@ -957,7 +957,7 @@ butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	2	89f2096c845f	
 butenode	??0CButeCfgNode174d@@QAE@H@Z	100.0000	100.0000	2	d7f02ce2538b	0x174d00
 butenode	??0CButeNodeEntry@@QAE@HPAX@Z	82.8750	82.8750	3	10e0e89d83b7	0x16df70
 butenode	??0zPTree@@QAE@PAXH@Z	96.0968	96.0968	2	8e3fdc4b37df	0x16dff0
-butesectionctor	?Construct@CButeSection@@QAEPAV1@XZ	4.9342	4.9342	1	53fa6314a541	0x170210
+butesectionctor	??0CButeSection@@QAE@XZ	100.0000	100.0000	1	34391a752bf2	0x170210
 butestoreclear	?ClearRecursive@CButeStore@@QAEXPAUCButeStoreNode@@@Z	100.0000	100.0000	1	5047004e088e	0x16e070
 butetree	?Find@CButeTree@@QAEPAXPBD@Z	90.6038	90.6038	3	b873d33bf922	0x16d190
 butetree	?Insert@CButeTree@@QAEPAXPBDPAX@Z	53.3041	53.3041	4	c739dd725435	0x16db90
@@ -2924,7 +2924,7 @@ projectile	?StepMotion@CProjectile@@QAEXXZ	70.6977	70.6977	5	bd20be68a63a	0xe08b
 projectileupdate	?Update@CProjectile@@QAEHXZ	15.9027	15.9027	7	1367f64487e3	0x61cb0
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	2	18f9d3e94c58	0x8600
 pulsehighlight	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	2	ce40306814bb	0x8440
-pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	3	1576a6d4109a	0x110c10
+pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3030	7.3030	4	68907e2ab3d9	0x110c10
 randomambientsound	??0CRandomAmbientSound@@QAE@XZ	73.0000	73.0000	1	9fe4968b914e	0xbb40
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	2	1309d2bb8bac	0xbe50
 randomambientsound	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	2	da2589e0ad0a	0xc4b0
