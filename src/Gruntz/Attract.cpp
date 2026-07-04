@@ -14,6 +14,7 @@
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
+#include <Gruntz/GameRegistry.h>     // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40)
 #include <rva.h>
 #include <Globals.h>
@@ -29,14 +30,15 @@
 DATA(0x002453d8)
 extern CButeMgr g_attractButeMgr;
 
-// The game registry singleton; its +0x80 attract counter selects the TITLE state.
-SIZE_UNKNOWN(CGameReg);
-struct CGameReg {
-    char m_pad00[0x80];
-    i32 m_attractCounter; // +0x80  the running attract-title index source
-};
+// The game registry singleton (canonical CGameRegistry, <Gruntz/GameRegistry.h>): its
+// +0x80 launch counter (m_numRuns, "Num_Runs") selects the TITLE state. The retail
+// reads it off the canonical g_gameReg pointer at ds:0x64556c (verified in InputVirtual/
+// Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]); the DATA() RVA
+// below (0x245460) is a pre-existing mis-transcription that stays reloc-masked (operand
+// masked in objdiff, code bytes unaffected) - fixing it to 0x24556c is a separate P6
+// symbol-pairing concern, out of this view-fold's scope.
 DATA(0x00245460)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int).
 DATA(0x00245534)
@@ -291,7 +293,7 @@ i32 CAttract::InputVirtual() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
@@ -309,7 +311,7 @@ i32 CAttract::Vslot06() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
@@ -526,7 +528,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
     char titleName[0x20];
 
     if (mode != 2) {
-        i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
+        i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
@@ -585,7 +587,7 @@ i32 CAttract::Activate() {
 
     ((CMenuBrightnessReset*)menuRoot()->m_04->m_14->m_2c)->Reset(0);
 
-    i32 idx = g_gameReg->m_attractCounter % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 

@@ -738,6 +738,10 @@ struct CGameReg {
         return v;
     }
 };
+// The CGameReg name's class-size annotation lives here (this walled view is now its
+// primary def): the src/Gruntz/Attract.cpp minimal CGameReg view that used to carry it
+// was folded onto the canonical CGameRegistry, so it no longer annotates the name.
+SIZE_UNKNOWN(CGameReg);
 
 // The seq-keyed object map at (g_gameReg->m_world->m_8 + 0x48): Lookup(key, &out)
 // returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
