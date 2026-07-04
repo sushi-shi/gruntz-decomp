@@ -5,6 +5,7 @@
 // NO-body so their rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
+#include <stdlib.h>              // rand (CRT PRNG, reloc-masked)
 #include <string.h>              // inline strlen / memset intrinsics
 #include <Win32.h>               // WINAPI (windows.h) for the g_p* import-pointer types
 #include <Gruntz/GameRegistry.h> // canonical Win32-safe game-manager singleton view
@@ -258,7 +259,6 @@ void EndWaitCursor18430() {
 // dispatch a tile-switch (0x4b320 via the 0x1640 thunk) with a fixed
 // (a2, a3, 0, 0x9c7, 0, 0) tuple. __stdcall, 6 args (ret 0x18).
 // ===========================================================================
-extern "C" int rand(void);
 struct CTileSwitch29af0 {
     void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (via 0x1640)
 };

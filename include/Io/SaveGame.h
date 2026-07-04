@@ -26,7 +26,7 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 
-#include <Mfc.h> // CString + <windows.h>
+#include <Mfc.h>    // CString + <windows.h>
 #include <string.h> // strncpy (the FillSlot CRT helper, reloc-masked)
 
 #include <Io/FileStream.h> // CFileIO (the stack-local file wrapper)

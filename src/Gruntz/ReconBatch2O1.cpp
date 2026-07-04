@@ -38,6 +38,11 @@ Obj_11e4d0::Obj_11e4d0() {
 // cl 5.0 pointer-bias: `add eax,0x10; inc [eax]` vs retail `inc [eax+0x10]`,
 // not source-steerable (6 spellings x 2 opt levels).
 // ===========================================================================
+// A REAL MFC symbol (AFX_MODULE_THREAD_STATE* AFXAPI AfxGetModuleThreadState(),
+// declared in the internal <afxstat_.h>; AFXAPI == __cdecl on x86, so the 0-arg
+// call bytes are identical). Hand-declared here rather than via <Mfc.h> because
+// this is a lean non-MFC TU (includes only <rva.h>) of tiny @early-stop leaves;
+// pulling the whole MFC/windows.h umbrella in would perturb their fragile codegen.
 extern "C" i32* AfxGetModuleThreadState();
 RVA(0x001c0fa8, 0x9)
 void Bump_1c0fa8() {

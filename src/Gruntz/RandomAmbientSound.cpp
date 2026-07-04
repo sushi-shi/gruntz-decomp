@@ -14,9 +14,7 @@
 #include <rva.h>
 #include <Globals.h>
 
-// The CRT sqrt intrinsic (UpdateAt's positional falloff). Declared so MSVC emits
-// the inline `fsqrt`; no body.
-extern "C" double sqrt(double);
+#include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
 // ---------------------------------------------------------------------------
 // The free `Spawn`/`Stop` ambient-sound pair (0x00c9d0 / 0x00ca00, __cdecl). They

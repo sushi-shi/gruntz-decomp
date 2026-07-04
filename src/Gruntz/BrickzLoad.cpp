@@ -3,6 +3,8 @@
 #include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr)
 #include <Gruntz/Viewport.h>     // shared world-plane grid (the terrain descriptor)
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (level mgr via m_world)
+
+#include <stdlib.h> // rand (0x11fee0, the engine rng)
 // BrickzLoad.cpp - CBrickz::LoadAttributes (0x0810f0), the level-load terrain
 // parser for the self-contained pathfinding grid container (the placeholder
 // "CBrickz" in <Gruntz/Brickz.h>; the SAME container AllocGrid/ComputeCellFlags
@@ -115,8 +117,6 @@ struct BzPtrArray {
     void SetAtGrow(i32 index, void* elem); // 0x1b5144
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75
 };
-
-extern "C" i32 __cdecl rand(); // 0x11fee0 (the engine rng)
 
 // The global bute store (?g_buteMgr@@3VCButeMgr@@A, 0x6453d8); GetInt @0x171af0.
 extern CButeMgr g_buteMgr;

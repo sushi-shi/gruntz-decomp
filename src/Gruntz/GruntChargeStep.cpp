@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <stdlib.h> // rand (0x11fee0)
+
 // A grunt world-position sub-object (this->m_10 and target->m_10). +0x5c/+0x60 are
 // the pixel coords; +0x134..+0x140 the random-wander bounding rect.
 struct PosObj {
@@ -68,9 +70,6 @@ extern "C" {
 
 // __cdecl line-of-sight probe (0x401127 via ILT): (destTile, x, y) -> reachable.
 i32 GruntLos1127(i32 dest, i32 x, i32 y);
-
-// The CRT rand (0x11fee0).
-extern "C" i32 rand();
 
 struct Grunt {
     char pad0[0x10];

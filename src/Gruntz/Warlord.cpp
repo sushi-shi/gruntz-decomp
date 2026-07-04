@@ -17,7 +17,7 @@
 
 #include <rva.h>
 
-extern "C" int rand(void); // CRT _rand (reloc-masked)
+#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)

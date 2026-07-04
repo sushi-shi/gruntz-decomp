@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
@@ -208,13 +209,6 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     g_kslimeColl2->Insert(&g_kslimeColl, item, 0xc);
     return g_kslimeCur;
 }
-
-// The math externs the movement integrator chains (CRT, reloc-masked):
-//   double floor(double) = 0x120580, double ceil(double) = 0x120480; the (int)
-//   casts lower to __ftol (0x11f570); fabs lowers inline (d9 e1).
-extern "C" double floor(double);
-extern "C" double ceil(double);
-extern "C" double fabs(double);
 
 // CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

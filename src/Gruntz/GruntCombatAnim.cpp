@@ -30,12 +30,11 @@
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <Ints.h>
+#include <math.h>   // sqrt (inline fsqrt)
+#include <stdlib.h> // rand (0x11fee0, the engine LCG rand)
 #include <string.h> // inline strcmp of the type name
 
 #include <rva.h>
-
-extern "C" int rand(); // 0x11fee0 the engine LCG rand()
-extern "C" double sqrt(double);
 
 #pragma intrinsic(strcmp, sqrt)
 

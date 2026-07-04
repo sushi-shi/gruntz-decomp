@@ -10,6 +10,8 @@
 #include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
 #include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
 
+#include <stdlib.h> // rand (0x11fee0, reloc-masked)
+
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
 // id as (kind + kPendingFxIdBase), latched into m_pendingFxKind and handed to the world.
 enum {
@@ -356,8 +358,6 @@ struct CTmListNode {
 // The grid-cell object's ReadConfigFromButeMgr method address is the retail's type tag
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
-
-extern "C" i32 rand(void); // CRT rand() 0x11fee0 (reloc-masked)
 
 // 0x6b640: SetLevel(lvl) - stash the level back-ptr, clear companion state.
 // @early-stop

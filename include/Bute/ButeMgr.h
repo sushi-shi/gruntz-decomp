@@ -277,7 +277,11 @@ public:
 };
 SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree base + m_sub @0x08
 
-// CString::operator+= one char. Appends to the accumulator.
+// A fabricated-name placeholder for CString::operator+=(char) (a real NAFXCW
+// method). Currently UNREFERENCED (no call sites), so it cannot be re-expressed as
+// `str += c` via <Mfc.h> CString. KEPT (not removed) because deleting it from this
+// widely-included header perturbs an unrelated fragile neighbor - it shaves 0.12%
+// off grunt::CGrunt_SegBoxOverlap (a cross-TU codegen leak; unit-neutral). See P0b.
 extern "C" void AfxString_AppendChar(void* pStr, char c);
 
 // ---------------------------------------------------------------------------

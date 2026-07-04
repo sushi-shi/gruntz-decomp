@@ -41,6 +41,8 @@
 #include <Bute/ButeMgr.h>
 #include <Globals.h>
 #include <Gruntz/BattlezMapConfig.h> // the shared CBattlezMapConfig definition (both phases)
+
+#include <stdlib.h> // rand (the C runtime PRNG, reloc-masked)
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
@@ -60,9 +62,6 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
 // are never dereferenced - only their address rides the immediate.
-
-// The C runtime PRNG (reloc-masked).
-extern "C" i32 rand(void);
 
 // The FP scale constant the difficulty rescale multiplies by (a 4-byte float in
 // .data; fmuls reads it). Reloc-masked const datum.

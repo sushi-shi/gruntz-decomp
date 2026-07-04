@@ -14,6 +14,8 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <string.h> // strchr/strrchr (retail 0x120120 / 0x120680; kept as calls)
+
 // The game-manager singleton at *0x64556c (dedup winner name `_g_64556c`); only
 // the mode discriminator (m_134), the single-page flag (m_130) and the level-name
 // query used here are modeled.
@@ -44,11 +46,6 @@ extern "C" void EngStr_DrawText(
     i32 a7,
     i32 a8
 );
-
-// CRT scanners (retail 0x120120 / 0x120680); declared as plain calls so the
-// optimizer does not inline them (retail keeps the call).
-extern "C" char* strchr(const char*, i32);
-extern "C" char* strrchr(const char*, i32);
 
 // Placeholder host for the retail 0x0d95f0 method (real owning class unrecovered).
 struct GruntInfoTextHost {

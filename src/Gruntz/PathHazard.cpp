@@ -16,8 +16,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 
-// sqrt inlines to fsqrt at /O2; the (int)double casts lower to __ftol.
-extern "C" double sqrt(double);
+#include <math.h> // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
 
 // CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
 // (`this->Tick/Arrive/BeginLeg/HitTest()`): CUserLogic is modeled at its full 16

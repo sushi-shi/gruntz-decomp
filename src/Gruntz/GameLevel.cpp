@@ -898,9 +898,6 @@ void CLevelPlane::RecomputePlaneCoords() {
 // its Build(coords)/Sync(arg)/Refresh() slots (unmatched engine __thiscall leaves,
 // reloc-masked call sites) and reads its tile grid / extents / name directly.
 
-// __strcmpi (CRT) - reloc-masked. Declared with no header to keep the cdecl shape.
-extern "C" i32 __cdecl _strcmpi(const char*, const char*);
-
 // LevelScroll - the scroll-state record the edit-state methods manipulate: the
 // +0x5c/+0x60 scroll x/y, +0x64/+0x68 limits, +0x08 flags and +0xe4 edit-state
 // brush-kind all live on the same object that elsewhere is the level container.

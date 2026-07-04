@@ -4,6 +4,8 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
 #include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
+
+#include <stdlib.h> // rand (reloc-masked CRT PRNG)
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
 // global HUD sprite factory (g_gameReg->m_world->m_8->CreateSprite) for the sprite,
@@ -44,9 +46,6 @@ extern CGameRegistry* g_gameReg;
 
 // The attribute manager (butemgr unit), reached as the g_buteMgr singleton.
 extern CButeMgr g_buteMgr;
-
-// CRT (reloc-masked).
-extern "C" i32 rand(void);
 
 // The created sprite. CacheFirstFrame caches its first valid frame; the icon
 // loader pushes a pile of configuration ints into the +0x114..+0x130 block. The

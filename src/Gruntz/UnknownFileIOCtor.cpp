@@ -11,6 +11,9 @@
 // reloc-mask.
 #include <rva.h>
 
+#include <stdlib.h> // srand (0x11fed0)
+#include <time.h>   // time (0x120210)
+
 struct UfoFileIO {
     UfoFileIO();  // 0x1befd7
     ~UfoFileIO(); // destructible -> /GX frame
@@ -20,8 +23,6 @@ struct UfoByteArray {
     UfoByteArray(); // 0x1b4b43 (CByteArray; trivial dtor in this frame)
     char m_pad[0x10];
 };
-extern "C" void srand(unsigned seed); // 0x11fed0
-extern "C" long time(long* t);        // 0x120210
 
 struct FileIOOwner {
     FileIOOwner();

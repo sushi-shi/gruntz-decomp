@@ -4,6 +4,8 @@
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
+
+#include <math.h> // sqrt - intrinsified to inline fsqrt under VC5 /O2
 // StatusBarUpdaters.cpp - the per-widget HUD status-bar updaters and switch-tile
 // sprite loaders (C:\Proj\Gruntz). They live on the big in-game game-mode object
 // (the EngineLabelBacklog placeholder the rest of the backlog hangs off) and
@@ -34,9 +36,6 @@ extern CButeMgr g_buteMgr;
 
 // g_644c54 - a level/group base index the StatzTab toggle keys off (CPlay.h).
 extern i32 g_644c54;
-
-// CRT sqrt - intrinsified to an inline fsqrt under VC5 /O2.
-extern "C" double sqrt(double);
 
 // CSprite (frame-data value) + CSpriteHashTable now come from <Gruntz/Sprite.h>.
 
