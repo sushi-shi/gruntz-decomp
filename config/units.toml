@@ -2227,8 +2227,8 @@ unit = "fadertilerender"
 source = "src/Gruntz/CFaderTileRender.cpp"
 flags = "base"
 [[unit]]
-unit = "fxmodet3"
-source = "src/Gruntz/CFxModeT3.cpp"
+unit = "cfader17e940apply"
+source = "src/Gruntz/CFader17e940Apply.cpp"
 flags = "base"
 
 [[unit]]

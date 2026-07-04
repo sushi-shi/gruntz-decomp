@@ -63,11 +63,24 @@ public:
     void* operator new(u32) {
         return ::operator new(0x6c);
     }
-    i32 ApplyInit(CFaderInit* src); // 0x17ea00 (apply the built default init)
-    i32 CopyFrom(CFader* src);      // 0x17ea00 (same method; copy from the pInit descriptor)
+    i32 ApplyInit(
+        CFaderInit* src
+    ); // 0x17ea00 (apply the transition descriptor; body in CFader17e940Apply.cpp)
+    i32 CopyFrom(CFader* src); // 0x17ea00 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x58 - 0x34]; // +0x34..+0x57
-    CFader17e940Sub m_58;     // +0x58..+0x6b (member vptr + 4 fields)
+    // ApplyInit latches the transition descriptor into these fields, then walks an
+    // (m_50 x m_54) grid emitting projected mesh records into the m_58 buffer.
+    // m_38/m_3c hold the active dst/src box pointers (stored as dwords via SetTimers).
+    char _pad34[0x38 - 0x34]; // +0x34 (unused by ApplyInit)
+    i32 m_38;                 // +0x38  active dst box (ptr-as-dword)
+    i32 m_3c;                 // +0x3c  active src box (ptr-as-dword)
+    i32 m_40;                 // +0x40
+    i32 m_44;                 // +0x44
+    i32 m_48;                 // +0x48
+    i32 m_4c;                 // +0x4c  record-order flag
+    i32 m_50;                 // +0x50  columns
+    i32 m_54;                 // +0x54  rows
+    CFader17e940Sub m_58;     // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
 };
 
 // ===========================================================================

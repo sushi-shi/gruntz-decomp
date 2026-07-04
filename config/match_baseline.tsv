@@ -111,6 +111,7 @@ cexplosion	2	1
 ceyecandy	3	3
 ceyecandyani	3	2
 cfader	12	12
+cfader17e940apply	1	0
 cfadermgr	8	6
 cfaderrun	1	0
 cfileimage	8	2
@@ -254,7 +255,6 @@ flashrect	2	0
 font	24	18
 fontconfig	9	5
 fonts	2	1
-fxmodet3	1	0
 gameapp	20	18
 gameassetnamespaces	1	0
 gamechecksum	1	0
@@ -1269,6 +1269,7 @@ cfader	??1CFaderSine@@UAE@XZ	100.0000	100.0000	1	983830fb6b19	0x17fdf0
 cfader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	2	42d19eaaeed0	0x17e780
 cfader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	2	c0801f821a5d	0x17e760
 cfader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
+cfader17e940apply	?ApplyInit@CFader17e940@@QAEHPAUCFaderInit@@@Z	68.3924	68.3924	1	040758d9f075	0x17ea00
 cfadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	9cb95492edb8	0x17d8f0
 cfadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	9bd8a535fa45	0x17d910
 cfadermgr	?Add@CFaderMgr@@QAEPAVCFader@@HPAV2@@Z	0.0000	0.0000	1	83408e11f54c	0x17d9c0
@@ -2041,7 +2042,6 @@ fontconfig	?TypeChar@CFontConfig@@QAEHHH@Z	61.1207	61.1207	2	5df24928ea76	0x21e2
 fontconfig	?winapi_022360_DrawTextA_SelectObject_SetTextColor@CFontConfig@@QAEHHHHH@Z	0.7353	0.7353	2	02c6bbf147cb	0x22360
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	6	91daa7a5370e	0x1158f0
 fonts	?InitializeFonts@@YAHXZ	77.3077	77.3077	7	6a0fc4d959d6	0x115810
-fxmodet3	?Build@CFxModeT3@@QAEHPAUFxConfig@@@Z	65.6025	65.6025	2	ded3f8445417	0x17ea00
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	7	cedd3aa1973a	0x13d590
 gameapp	??0CGameMgr@WAP32@@QAE@XZ	100.0000	100.0000	5	7024639d4fe6	0x13dd10
 gameapp	?Close@CGameMgr@WAP32@@UAEXXZ	100.0000	100.0000	1	15758a245fb1	0x13ddb0
@@ -3378,9 +3378,9 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	4	3e80beb093e1	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	33e1988166b7	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	4	540f0688db61	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAVCParseSource@@II@Z	100.0000	100.0000	1	e0342c720d2b	0x137340
-streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z	99.7718	99.7718	1	cpp:b7551bd6121b	0xd79d0
+streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z	99.7718	99.7718	1	a35742d67888	0xd79d0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.9657	1	787680ce73ef	0x9c650
-streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	cpp:b7551bd6121b	0xea990
+streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	d3396f3e7c45	0xea990
 streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	84.0770	84.0770	4	8b91c450ee45	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z	92.2366	92.2366	1	e1d29f4a89e7	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	4	f5673dfcdb6e	0x1375b0
