@@ -2989,7 +2989,7 @@ orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	2	d4a88df396bb	0xb4350
 packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	2	16dc77800421	0xbf530
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
-palettecopy	?UploadPalette@CDDScreen@@QAEXXZ	61.1613	61.1613	1	614d5085f67f	0x17ca10
+palettecopy	?UploadPalette@CDDScreen@@QAEXXZ	61.1613	61.1613	2	ad5f9a75f62c	0x17ca10
 palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	2	cae649118118	0x1480a0
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	16.7740	16.7740	4	17775495add5	0xd1b60
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	2	5d4f70a420b8	0x146550
