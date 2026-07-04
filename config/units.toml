@@ -537,9 +537,9 @@ source = "src/Gruntz/MotionState.cpp"
 flags = "base"
 
 [[unit]]
-unit = "movinglogicupdate"
-source = "src/Gruntz/MovingLogicUpdate.cpp"
-flags = "base"
+unit = "movinglogic"
+source = "src/Gruntz/MovingLogic.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "zvec"
@@ -1991,16 +1991,6 @@ source = "src/Gruntz/BoundaryTailEh.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "movinglogicdtor"
-source = "src/Gruntz/MovingLogicDtor.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "movinglogicctor"
-source = "src/Gruntz/MovingLogicCtor.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "statusbarspriteacts"
 source = "src/Gruntz/StatusBarSpriteActs.cpp"
 flags = "eh"
@@ -2104,11 +2094,6 @@ flags = "base"
 unit = "wwdobjmgrfactories"
 source = "src/Gruntz/WwdObjMgrFactories.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "movinglogicserial"
-source = "src/Gruntz/MovingLogicSerial.cpp"
-flags = "base"
 
 [[unit]]
 unit = "streamrecordloaders"
