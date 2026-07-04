@@ -1444,7 +1444,7 @@ flags = "eh"
 [[unit]]
 unit = "anielement"
 source = "src/Gruntz/AniElement.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "anirecord"
@@ -2058,10 +2058,6 @@ unit = "imageset3"
 source = "src/Image/ImageSet3.cpp"
 flags = "base"
 
-[[unit]]
-unit = "anielementeh"
-source = "src/Gruntz/AniElementEh.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "netcmdslot"
