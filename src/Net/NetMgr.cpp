@@ -29,6 +29,7 @@
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
 #include <stdio.h>  // sprintf (the chat-line formatter)
+#include <stdlib.h> // atoi (0x11ffb0) / srand (0x11fed0)
 
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
@@ -149,7 +150,6 @@ extern "C" CNetMgr* g_connectRptMgr;                                  // 0x648cf
 // key=value config parser (0xf9160) + its int parse (0x11ffb0). All reloc-masked.
 extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND hDlg, i32 id);              // 0x6c4564
 extern "C" i32 Cfg_GetKey(char* out, const char* src, const char* key); // 0xf9160
-extern "C" i32 ParseCfgInt(const char* s);                              // 0x11ffb0
 
 // NetSetupDlgProc's referents (the multiplayer host/join setup dialog). The engine
 // caches the USER32 imports as function-pointer globals + runs a shared base dialog
@@ -1120,7 +1120,6 @@ extern "C" i32 g_645580;                          // 0x645580
 extern "C" i32 g_645584;                          // 0x645584
 extern "C" i32 g_645588;                          // 0x645588
 extern "C" void ChannelSlots_InitAll();           // 0x2da1 (thunk) - no `this` (stale-ecx callee)
-extern "C" void SeedRandom(i32 seed);             // 0x11fed0 (srand)
 
 // The un-catalogued CNetMgr vtable slots the driver dispatches on `this`, modeled
 // as pointers-to-member loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr
@@ -1455,7 +1454,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     PollSession();
-    SeedRandom(TF(0x2d8));
+    srand(TF(0x2d8));
     g_645584 = 0;
     g_645580 = 0;
     g_645588 = 0;
@@ -1788,10 +1787,10 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     const char* cfgStr = *(const char**)((char*)sel + 0x34);
     char buf[0x28];
     if (Cfg_GetKey(buf, cfgStr, "CMDDELAY")) {
-        m_cmdDelay = ParseCfgInt(buf);
+        m_cmdDelay = atoi(buf);
     }
     if (Cfg_GetKey(buf, cfgStr, "RESEND")) {
-        m_resend = ParseCfgInt(buf);
+        m_resend = atoi(buf);
     }
     if (Cfg_GetKey(buf, cfgStr, "DynCmdDelay")) {
         ApplyDynSetting(CString(buf));
@@ -1800,7 +1799,7 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     m_resyncLParam = 1;
     m_localPlayerId = *(i32*)((char*)lp + 4);
     if (Cfg_GetKey(buf, cfgStr, "LEVEL")) {
-        m_resyncLParam = ParseCfgInt(buf);
+        m_resyncLParam = atoi(buf);
     }
 
     char packet[0x28];
@@ -1846,10 +1845,6 @@ struct CNetColorHolder {
 // The engine positional-sound player (0x1f940, __stdcall(tag,0,0,0)) the chat cue
 // fires through the 0x25fe incremental-link thunk. External -> reloc-masked.
 extern "C" void __stdcall PlaySoundCue(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
-
-// The sprintf-into-CString engine formatter (0x1b2cf5, __cdecl(&dst, fmt, ...)) the
-// version-mismatch arm builds the diagnostic line with. External -> reloc-masked.
-void NetFmtStr(CString* dst, const char* fmt, ...); // 0x1b2cf5
 
 // The cached USER32 PostMessageA pointer (the game's own function-pointer global,
 // distinct from the IAT import) + the modal chat-sink handle. DIR32 reloc-masked.
@@ -2186,14 +2181,10 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case 0x418: {
             CString result;
             if (pd != 0) {
-                CString name = ((CNetMgr*)pd)->GetName();
-                NetFmtStr(
-                    &result,
-                    "*** %s has a different version of the game.",
-                    (const char*)name
-                );
+                CString name = pd->GetName();
+                result.Format("*** %s has a different version of the game.", (const char*)name);
             } else {
-                NetFmtStr(&result, "*** A player had a different version of the game.");
+                result.Format("*** A player had a different version of the game.");
             }
             if (g_dlgResultSink != 0) {
                 ShowChatLine((void*)g_dlgResultSink, result);

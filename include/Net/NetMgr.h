@@ -210,6 +210,10 @@ SIZE(CNetChannel, 0x238); // one inline channel descriptor (array stride 0x238)
 struct CNetPlayerEntry {
     char m_pad0[4];
     i32 m_4; // +0x4  the entry's id (the lookup key)
+
+    // The entry's display name (a CString at +0x8, returned by value / NRV). In the
+    // retail this fetch shares CNetMgr::GetName's routine (0xba170) - same +0x8 read.
+    CString GetName();
 };
 SIZE_UNKNOWN(CNetPlayerEntry); // payload-entry view (only +0x4 id pinned); size TBD
 
