@@ -33,7 +33,8 @@
 
 #include <Mfc.h>         // real MFC CObject / CMapStringToOb / POSITION
 #include <Bute/SymTab.h> // CSymTab - the directory/scope tree the walker iterates
-#include <string.h>      // strcpy / sprintf inline CRT (rep movs / repnz scas)
+#include <stdio.h>       // sprintf (the %s%s%s path-join, 0x11f890)
+#include <string.h>      // strcpy inline CRT (rep movs / repnz scas)
 
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
 DATA(0x0061ab18)
@@ -43,8 +44,6 @@ extern const char g_fmtPathJoin[];
 extern "C" void RezFree(void* p);
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
-// sprintf the path join goes through (0x11f890; varargs __cdecl, reloc-masked).
-extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 
 // The +0x08 "CObject subobject" embedded in the element (0x14 bytes): a real
 // member whose (potentially throwing) ctor is 0x1b55e9 (a __thiscall on element+0x8,

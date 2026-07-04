@@ -49,6 +49,8 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <stdio.h> // vsprintf (NAFXCW varargs formatter)
+
 // Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);
 // the `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
 
@@ -188,9 +190,6 @@ static const char s_strGt[] = ">";
 static const char s_fmtRect2[] = "[%lf, %lf]";
 static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
-
-// CRT varargs formatter (engine NAFXCW vsprintf, reloc-masked external/no-body).
-extern "C" i32 vsprintf(char* buf, const char* fmt, char* va);
 
 // ---------------------------------------------------------------------------
 // CButeMgr::~CButeMgr

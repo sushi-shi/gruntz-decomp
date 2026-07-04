@@ -23,7 +23,7 @@
 // the palette drives the palette interface - each at its own retail vtable slots.
 #include <DDrawMgr/DirectDrawMgr.h>
 
-extern "C" void* memset(void* d, i32 c, u32 n); // inlined to rep stos
+#include <string.h> // memset - inlined to rep stos
 
 // DDBLTFX (0x64 bytes): only dwSize@0x00, dwROP@0x08, dwFillColor@0x50 are set.
 struct DDBLTFX_ {

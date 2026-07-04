@@ -18,6 +18,8 @@
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c real command manager (EnqueueCommand)
 #include <rva.h>
 
+#include <string.h> // memcpy (see #pragma intrinsic below)
+
 // The CObList node shape (CObject list): +0x0 next, +0x4 prev, +0x8 payload.
 // Used to walk the queue and to name the position the removal targets.
 struct CObListNode {
@@ -38,8 +40,7 @@ i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
 void __stdcall NetCmdIdAdd(i32* arr, i32 v);
 void __stdcall NetCmdIdClear(i32* arr, i32 v);
 
-// ProcessCmd's externals (all reloc-masked rel32 callees / inline intrinsics).
-extern "C" void* memcpy(void* d, const void* s, u32 n);
+// ProcessCmd's memcpy is forced intrinsic (reloc-masked / inline).
 #pragma intrinsic(memcpy)
 
 // The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from

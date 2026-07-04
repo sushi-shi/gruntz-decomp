@@ -18,6 +18,8 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <stdio.h> // sprintf (the "\SCREENZ\%s" path formatter)
+
 // ---------------------------------------------------------------------------
 // External engine globals (reloc-masked DATA symbols).
 // ---------------------------------------------------------------------------
@@ -55,8 +57,6 @@ extern ShowCursorFn g_ShowCursor;
 #define s_ATTRACT "ATTRACT"
 #define s_UNDERSCORE "_"
 #define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
-
-extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 
 // FadeInTitle's resolved-state object (m_2c re-typed): its ResolveScreen
 // (FUN_00520120) maps the "\SCREENZ\%s" path + a screen-type tag to a fade page.

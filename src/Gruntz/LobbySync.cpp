@@ -9,8 +9,7 @@
 #include <Rez/RezMgr.h>
 #include <Globals.h>
 
-extern "C" void* memcpy(void* d, const void* s, unsigned int n);
-extern "C" void* memset(void* d, int c, unsigned int n);
+#include <string.h> // memcpy, memset
 
 // --- The networking endpoint reached through CNetMgr::m_endpoint.  Its dispatch
 // table at +0 holds __stdcall fn ptrs (the object is the explicit 1st arg). ------

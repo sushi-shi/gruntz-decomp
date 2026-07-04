@@ -27,6 +27,7 @@
 #include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h> // CString + <windows.h>
+#include <string.h> // strncpy (the FillSlot CRT helper, reloc-masked)
 
 #include <Io/FileStream.h> // CFileIO (the stack-local file wrapper)
 
@@ -34,9 +35,6 @@
 // the `mov ecx,ds:g_gameReg; call <slot>` falls out as in retail. BuildLevelRezPath
 // is the __thiscall method invoked from Register() (reloc-masked no-body callee).
 extern CGameRegistry* g_gameReg;
-
-// _strncpy: the CRT helper the FillSlot path calls (reloc-masked).
-extern "C" char* __cdecl strncpy(char* dest, const char* src, u32 n);
 
 // The shared empty C string global (RVA 0x2293f4 / VA 0x6293f4), referenced by
 // Register's name-fallback path (reloc-masked DIR32).

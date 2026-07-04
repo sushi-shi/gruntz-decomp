@@ -5,6 +5,8 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <string.h> // memset (rep stos)
+
 // --- 0x186990 : free a record + its owned buffers through self->m_freeFn ----------
 struct FreeNode {
     i32 m_00;
@@ -91,7 +93,6 @@ void BitFlush(BitBuf* b) {
 }
 
 // --- 0x186a50 : reset a coder's state from the per-mode constant table --------
-extern "C" void* memset(void* d, i32 c, unsigned int n);
 
 // Four u16 fields of the current mode's record in a 0xc-stride constant table.
 

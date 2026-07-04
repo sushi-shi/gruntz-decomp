@@ -12,18 +12,15 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <stdlib.h> // realloc (0x125180), free (0x120c30)
+#include <string.h> // memcpy (0x121960), memset (rep stos)
+
 // The live zDArray<...> vtable (0x5e70fc) Destroy() re-stamps (reloc-masked address
 // operand). cl auto-stamps the emitted ??_7zDArray in the dtor; VTBL binds that
 // emitted vtable at the retail ~zDArray-entry vtable RVA (0x5f04d4).
 DATA(0x001e70fc)
 extern void* const zDArrayLiveTable; // 0x5e70fc
 VTBL(zDArray, 0x001f04d4);           // ~zDArray-entry vtable (0x5f04d4)
-
-// Externs the cluster reaches (reloc-masked rel32 callees).
-extern "C" void* realloc(void* p, u32 n);               // 0x125180
-extern "C" void* memcpy(void* d, const void* s, u32 n); // 0x121960
-extern "C" void* memset(void* d, i32 c, u32 n);         // (inlined to rep stos)
-extern "C" void free(void* p);                          // 0x120c30
 
 // The grow path calls memcpy out-of-line (not the rep-movs intrinsic).
 #pragma function(memcpy)

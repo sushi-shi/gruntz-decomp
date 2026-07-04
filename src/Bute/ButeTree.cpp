@@ -21,10 +21,7 @@
 #include <rva.h>
 #include <Globals.h>
 
-// Inline CRT string intrinsics (MSVC5 /O2 lowers these in place).
-extern "C" u32 strlen(const char* s);
-extern "C" i32 strcmp(const char* a, const char* b);
-extern "C" char* strcpy(char* d, const char* s);
+#include <string.h> // strlen/strcmp/strcpy - MSVC5 /O2 lowers these in place
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
 // a failing call originated. A frameless 4-byte naked leaf with no plain-C++ form;

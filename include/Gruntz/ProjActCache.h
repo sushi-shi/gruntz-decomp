@@ -18,6 +18,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <string.h> // strlen/strcmp/memcpy the trie insert lowers to inlines
+
 // Globals the OOM path touches (.data). g_containerName is the const-char* anchor
 // the base ctor records; g_defaultSize is the fallback capacity; g_projActCache /
 // g_projActAllocResult are the diagnostic record cells. Reloc-masked.
@@ -41,12 +43,6 @@ extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 // The first-differing-bit helper (__cdecl): the crit-bit index where two keys
 // diverge. Reloc-masked (the delinker's name for 0x16e480 is unrelated).
 extern "C" i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
-
-// Inline CRT string intrinsics the trie insert lowers to (repnz scas / sbb idiom
-// / rep movs). Declared so MSVC5 /O2 inlines them.
-extern "C" u32 strlen(const char* s);
-extern "C" i32 strcmp(const char* a, const char* b);
-extern "C" void* memcpy(void* d, const void* s, u32 n);
 
 // One crit-bit trie node (20 bytes): two child links, the crit-bit index, the
 // owned key copy, and the stored value.

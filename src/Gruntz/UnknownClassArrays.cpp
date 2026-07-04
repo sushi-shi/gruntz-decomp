@@ -42,14 +42,8 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
 
-// CRT rand() (RVA 0x11fee0); used by the grid-scan helpers to pick a random
-// neighbour. External, reloc-masked.
-extern "C" i32 rand(void);
-// CRT abs(); inlined by MSVC5 to the branchless cdq/xor/sub sequence.
-extern "C" i32 abs(i32);
-// CRT strcmp(); the anim-name dispatch lowers each compare to MSVC5's inline
-// byte-by-byte sbb/sbb sequence against a pooled type-code literal.
-extern "C" i32 strcmp(const char*, const char*);
+#include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
+#include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the

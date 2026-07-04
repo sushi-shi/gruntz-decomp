@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-extern "C" unsigned int strlen(const char* s);
+#include <string.h> // strlen
 
 struct Drawable {
     virtual void v0();

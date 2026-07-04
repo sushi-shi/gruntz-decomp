@@ -4,6 +4,9 @@
 #include <Wap32/EngStr.h>
 #include <rva.h>
 
+#include <stdlib.h> // malloc (0x120b60) - the bit band allocator
+#include <string.h> // memset - the inlined zero-fill
+
 // The text-render worker the draw forwarder tail-calls (a __cdecl that takes the
 // object, two leading args, the font draw-method pointer, then six trailing args;
 // it switches on a font-size selector and reaches g_largeFont..g_tinyFont).
@@ -77,10 +80,6 @@ RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
     m_err->Remove(this, 0);
 }
-
-// The engine allocator the bit band is malloc'd from + the inlined zero-fill.
-extern "C" void* malloc(u32 n); // 0x120b60
-extern "C" void* memset(void* d, i32 c, u32 n);
 
 // zBitVec::SetSize(nbits) - round the requested bit count up to whole 32-bit
 // words, allocate + zero-fill the word band, and report the realized bit
