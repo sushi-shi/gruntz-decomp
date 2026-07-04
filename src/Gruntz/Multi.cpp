@@ -107,7 +107,7 @@ struct CState {
 extern void __stdcall SendNetStat(i32 chan, i32 id, i32 flag);
 
 // The engine heap free (CLobbyObjA/B teardown above pairs with it).
-extern "C" void RezFree(void* p); // 0x005b9b82 (_RezFree, __cdecl)
+extern "C" void RezFree(void* p); // 0x001b9b82 (_RezFree, __cdecl)
 
 // CState's base teardown (the dtor tail-calls it after stamping the CState
 // vtable) - reloc-masked thiscall; modeled on a tiny helper so `mov ecx,esi; call`

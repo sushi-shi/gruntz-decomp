@@ -83,7 +83,7 @@ public:
     static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
 };
 
-void FreeConnectionSettings(void* p); // FUN_005b9b82 (operator delete wrapper)
+void FreeConnectionSettings(void* p); // _RezFree @0x001b9b82 (operator delete wrapper)
 
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
