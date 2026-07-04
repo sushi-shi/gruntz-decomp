@@ -96,6 +96,19 @@ struct CFrameWorker {
 // The range guard is the generic `(m_64 <= N && N <= m_68)` shape with N=m_64,
 // so the first compare is m_64 vs m_64 (always equal); it is written verbatim so
 // MSVC emits both reads.
+//
+// DUAL-MODEL NOTE (resolved: REAL SPLIT, not a fold): `CGruntSprite` here is the
+// frame-cache BOUND game-object B - the receiver of these 0x1504d0/0x150540
+// leaves (m_c @ +0xc, cache slots @ +0x190/0x194/0x198). It is NOT the CGrunt*Sprite
+// HUD family (CGruntStaminaSprite/ToyTimeSprite/WingzTimeSprite : CGruntHealthSprite,
+// ctors in GameObjectCtors.cpp). Those HUD sprites BIND B: their m_10 == m_38 ==
+// the ctor arg `obj` == B, and call B->ApplyLookupSprite (== this CacheFrame). So A
+// (HUD sprite) and B (this cache object) are DISTINCT objects - a real split. B is
+// the engine's bound game object (GameObjectCtors names the same B `CSpriteObj`; its
+// true identity is the shared CGameObject, of which `CGruntSprite`/`CGruntAnimPlayer`/
+// `CSpriteObj` are placeholder field-views); folding all of B onto CGameObject is
+// deferred (it would touch several @early-stop leaves here) and is orthogonal to the
+// HUD-family split resolved above.
 class CGruntSprite {
 public:
     void CacheFirstFrame(const char* name);

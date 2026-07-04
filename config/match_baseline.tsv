@@ -2175,9 +2175,9 @@ gamemodeobjlifecycle	?FlushPendingOps@CGameModeObj@@QAEHXZ	100.0000	100.0000	1	2
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560
 gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	98c98e0a8044	0xd1b30
 gamemousehandler	?HandleMousePress@CPlay@@QAEHHHH@Z	51.7213	51.7213	1	e0dd3dc83bd9	0xce660
-gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	4	ad67b90213c8	0x7fae0
-gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	4	30e26393050e	0x7fbd0
-gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	4	fc43e7a65f7d	0x7fcc0
+gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	78648e5abb8f	0x7fae0
+gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	f407cff34d78	0x7fbd0
+gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	8cb48a1dc8f0	0x7fcc0
 gameobjectctors	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	3ff0d28aec5e	0xb49b0
 gameobjectctors	??0CUFO@@QAE@PAUCGameObject@@@Z	81.0227	81.0227	3	e189d6162f0e	0xb4a90
 gameobjectctors	?GetToyTime@@YGHPAUCToyTimeHost@@@Z	100.0000	100.0000	2	9b101c411c25	0x7fca0

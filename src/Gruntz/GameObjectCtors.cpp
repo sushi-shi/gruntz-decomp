@@ -10,8 +10,15 @@
 // UserLogic.cpp instead.
 //
 // Two families here:
-//   * the CGruntSprite-based sprite ctors (base 0x7eb00 via thunk 0x3224):
-//     CGruntStaminaSprite / CGruntToyTimeSprite / CGruntWingzTimeSprite.
+//   * the CGruntHealthSprite-DERIVED HUD sprite ctors (base 0x7eb00 via thunk
+//     0x3224): CGruntStaminaSprite / CGruntToyTimeSprite / CGruntWingzTimeSprite.
+//     RTTI-proven parent = CGruntHealthSprite (vtable_hierarchy --tree); the base
+//     ctor at 0x7eb00 is CGruntHealthSprite::CGruntHealthSprite(CGameObject*),
+//     itself MATCHED in UserLogic.cpp (RVA 0x0007eb00). NOTE: this HUD family is a
+//     DISTINCT object from SpriteResource.cpp's `CGruntSprite` (the frame-cache
+//     bound game-object B) - the leaves BIND B as m_10 == m_38; see the base-shell
+//     note below. This resolves the deferred "CGruntSprite dual-model": it is a
+//     REAL SPLIT, not one object viewed two ways.
 //   * the CPathHazard-based ctors (base 0xb35a0 via thunk 0x2fc2):
 //     CRainCloud / CUFO.
 // Functions are defined in ascending-RVA order.
@@ -30,18 +37,23 @@ DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 // ===========================================================================
-// The CGruntSprite-based sprite ctors.
+// The CGruntHealthSprite-DERIVED HUD sprite ctors.
 //
-// Sprite-ctor archetype (/GX EH frame). Chains the OUT-OF-LINE CGruntSprite base
-// ctor (0x7eb00, via thunk 0x3224; engine fn, not matched -> per-file shell
-// whose call reloc-masks by address). The base constructs a throwing
-// CUserBaseLink and the body calls can throw, so MSVC emits the /GX frame that
-// unwinds the base subobject (its declared dtor) on throw.
+// Sprite-ctor archetype (/GX EH frame). Chains the CGruntHealthSprite base ctor
+// (0x7eb00 via thunk 0x3224 = CGruntHealthSprite::CGruntHealthSprite(CGameObject*),
+// MATCHED in UserLogic.cpp). Here it is DECLARED-ONLY (out-of-line from THIS TU),
+// so the leaf ctor's base `call` reloc-masks by address. The base constructs a
+// throwing CUserBaseLink and the body calls can throw, so MSVC emits the /GX
+// frame that unwinds the base subobject (its declared dtor) on throw.
 //
-// Body: stamp the leaf vftable, register the sprite's GAME bute via
-// m_38->ApplyLookupSprite(str, 1), seed the "A" bute node, force the object's
-// pose id, then set the two sprite anchor fields m_anchorX/m_anchorY. The three
-// siblings are the same shape (different vtbl/str and anchor constants).
+// Body: stamp the leaf vftable, bind+register the GAME sprite on the leaf's
+// BOUND game object m_38 (== m_10 == the ctor arg `obj` == B) via
+// m_38->ApplyLookupSprite(str, 1) - which is 0x1504d0, the SAME engine leaf
+// SpriteResource.cpp owns as `CGruntSprite::CacheFrame`. So the HUD sprite (this
+// class) and SpriteResource's `CGruntSprite`/`CSpriteObj` (B, the bound object)
+// are DIFFERENT objects: A binds B. Then seed the "A" bute node, force the
+// object's pose id, and set the two sprite anchor fields m_anchorX/m_anchorY. The
+// three siblings are the same shape (different vtbl/str and anchor constants).
 // ===========================================================================
 
 // --- engine helper types (offsets load-bearing) ---------------------------
@@ -58,15 +70,21 @@ struct CSpriteObjAux {
     void* m_1c; // +0x1c
 };
 
-// --- out-of-line base shell (reloc-masks to CGruntSprite ctor 0x7eb00) ------
-// Real polymorphic base now: 17 declared-only virtuals (bodies in engine TUs)
-// make cl emit each leaf's ??_7 vftable + the IMPLICIT post-base-ctor vptr stamp,
-// replacing the explicit `*(void**)this = &g_...Vtbl` store. Leaf vtable names
-// auto-derive (RTTI; config/vtable_names.csv). The base ctor stays DECLARED only
-// (out-of-line; its `call` reloc-masks to 0x7eb00).
-struct CGruntSpriteBase {
-    CGruntSpriteBase(CSpriteObj* obj);
-    ~CGruntSpriteBase(); // out-of-line; unwound on throw
+// --- CGruntHealthSprite base shell (reloc-masks to the 0x7eb00 base ctor) ----
+// This is the RTTI base CGruntHealthSprite (parent of the three HUD leaves), kept
+// as a per-TU DECLARED-ONLY shell rather than the canonical <Gruntz/CGruntHealthSprite.h>
+// class: that header models CGruntHealthSprite NON-polymorphically (for its leaf
+// dtor's dead-store-eliminated teardown), whereas these CTORS need the 17
+// declared-only virtuals so cl emits each leaf's ??_7 vftable + the IMPLICIT
+// post-base-ctor vptr stamp (replacing an explicit `*(void**)this = &g_...Vtbl`).
+// Leaf vtable names auto-derive (RTTI; config/vtable_names.csv). The base ctor +
+// dtor stay DECLARED only (out-of-line from this TU); the base `call`/unwind
+// reloc-mask by address to 0x7eb00 / ~CGruntHealthSprite @0x11fb0. Named
+// CGruntHealthSpriteBase (not "CGruntSprite") to keep it DISTINCT from
+// SpriteResource.cpp's `CGruntSprite` (the separate bound frame-cache object B).
+struct CGruntHealthSpriteBase {
+    CGruntHealthSpriteBase(CSpriteObj* obj);
+    ~CGruntHealthSpriteBase(); // out-of-line; unwound on throw
     virtual void Vf0();
     virtual void Vf1();
     virtual void Vf2();
@@ -94,7 +112,7 @@ struct CGruntSpriteBase {
     CSpriteObj* m_38; // +0x38
 };
 
-class CGruntStaminaSprite : public CGruntSpriteBase {
+class CGruntStaminaSprite : public CGruntHealthSpriteBase {
 public:
     CGruntStaminaSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
@@ -102,7 +120,7 @@ public:
     i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
 };
 
-class CGruntToyTimeSprite : public CGruntSpriteBase {
+class CGruntToyTimeSprite : public CGruntHealthSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
     // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
@@ -123,7 +141,7 @@ struct CToyTimeHost {
 // __stdcall callee (stale-ecx owner); it reads a foreign host, no fn-ptr storage.
 i32 __stdcall GetToyTime(CToyTimeHost* o);
 
-class CGruntWingzTimeSprite : public CGruntSpriteBase {
+class CGruntWingzTimeSprite : public CGruntHealthSpriteBase {
 public:
     CGruntWingzTimeSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
@@ -152,7 +170,7 @@ LogicTypeId CGruntToyTimeSprite::GetTypeTag() {
 // steerable by source spelling (doc names this exact ctor). See
 // docs/patterns/eh-ctor-vptr-restamp-position.md. Deferred to the final sweep.
 RVA(0x0007fae0, 0xa0)
-CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
+CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -173,7 +191,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
 // the throwing call's EH state 0 instead of eagerly post-base. NOT source-steerable
 // (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fbd0, 0xa0)
-CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
+CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -201,7 +219,7 @@ i32 __stdcall GetToyTime(CToyTimeHost* o) {
 // the throwing call's EH state 0 instead of eagerly post-base. NOT source-steerable
 // (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fcc0, 0xa0)
-CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj) {
+CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
@@ -485,7 +503,7 @@ SIZE(CGruntToyTimeSprite, 0x64);
 SIZE(CGruntWingzTimeSprite, 0x64);
 
 SIZE_UNKNOWN(CButeTree);
-SIZE_UNKNOWN(CGruntSpriteBase);
+SIZE_UNKNOWN(CGruntHealthSpriteBase);
 SIZE_UNKNOWN(CHazardReg);
 SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
