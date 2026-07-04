@@ -36,20 +36,27 @@
 // `operator new`s one of three variants (0x10 / 0x24 / 0x18 bytes), stamping the
 // matching external vftable (g_imageSet1/2/3Vtbl). Slot +0x14 (Parse) is then
 // invoked with the record pointer; on a 0 result slot +0x04 (Release) frees the
-// object. Slot +0x24 (GetStride) returns the record byte length (cursor advance).
+// object. Slot +0x20 (GetCollisionAt) is the per-pixel collision-kind query the tile
+// probes drive; slot +0x24 (GetStride) returns the record byte length (cursor advance).
+// dummy0/2/3/4/6/7 are the CObject-family + unused engine slots (never called by the
+// level; roles unrecovered - left as placeholders).
 // ---------------------------------------------------------------------------
 class CImageSet {
 public:
     virtual i32 dummy0();
-    virtual void Release(i32 arg);    // +0x04  release/free hook
+    virtual void Release(i32 arg);    // +0x04  release/free hook (scalar-deleting dtor)
     virtual i32 dummy2();             // +0x08
     virtual i32 dummy3();             // +0x0c
     virtual i32 dummy4();             // +0x10
     virtual i32 Parse(void* record);  // +0x14  init from the WWD record
     virtual i32 dummy6();             // +0x18
     virtual i32 dummy7();             // +0x1c
-    virtual i32 dummy8(i32 a, i32 b); // +0x20
-    virtual i32 GetStride();          // +0x24  record byte length (cursor advance)
+    // +0x20  per-pixel collision-kind query: given sub-tile pixel (x, y) returns the
+    // tile's collision category there (0 = empty/passable; 1/2 = soft-blocking, a 2 is
+    // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
+    // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
+    virtual i32 GetCollisionAt(i32 x, i32 y); // +0x20
+    virtual i32 GetStride();                   // +0x24  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
 };

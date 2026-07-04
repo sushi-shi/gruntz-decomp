@@ -590,8 +590,8 @@ struct CImageSet1 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
     virtual void s18();              // [6]  0x161330
     virtual void s1c();              // [7]  0x161340
-    virtual void s20();              // [8]  0x161380
-    virtual void s24();              // [9]  +0x24  0x161410 (GetStride slot)
+    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161380  per-pixel collision-kind query
+    virtual i32 GetStride();                   // [9]  +0x24  0x161410  record byte length (cursor advance)
     virtual void s28();              // [10] 0x161390
     virtual void s2c();              // [11] 0x1613a0
     virtual void s30();              // [12] 0x1613b0
@@ -619,8 +619,8 @@ struct CImageSet2 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
     virtual void s18();              // [6]  0x161420
     virtual void s1c();              // [7]  0x161430
-    virtual void s20();              // [8]  0x161470
-    virtual void s24();              // [9]  +0x24  0x1614a0 (GetStride slot)
+    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161470  per-pixel collision-kind query
+    virtual i32 GetStride();                   // [9]  +0x24  0x1614a0  record byte length (cursor advance)
     virtual void s28();              // [10] 0x1669e0
     virtual void s2c();              // [11] 0x166a40
     virtual void s30();              // [12] 0x166b90
@@ -652,8 +652,8 @@ struct CImageSet3 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void s18();              // [6]  0x1614b0
     virtual void s1c();              // [7]  0x1614d0
-    virtual void s20();              // [8]  0x161570
-    virtual void s24();              // [9]  +0x24  0x161590 (GetStride slot)
+    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
+    virtual i32 GetStride();                   // [9]  +0x24  0x161590  record byte length (cursor advance)
     virtual void s28();              // [10] 0x166e00
     virtual void s2c();              // [11] 0x166e60
     virtual void s30();              // [12] 0x166eb0
@@ -1053,7 +1053,7 @@ struct ProbeObj {
             (RESULT) = 0;                                                                          \
         } else {                                                                                   \
             CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
-            (RESULT) = set_->dummy8(subX_, subY_);                                                 \
+            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
 
@@ -1097,7 +1097,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
         return 0;
     }
     CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-    return set->dummy8(subX, subY);
+    return set->GetCollisionAt(subX, subY);
 }
 
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
@@ -1162,7 +1162,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
         return 0;
     }
     CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-    return set->dummy8(0, 0); // slot +0x20, called with (0, 0)
+    return set->GetCollisionAt(0, 0); // slot +0x20, called with (0, 0)
 }
 
 // ---------------------------------------------------------------------------
@@ -1639,7 +1639,7 @@ looptop: {
             result = 0;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-            result = set->dummy8(subX, subY);
+            result = set->GetCollisionAt(subX, subY);
         }
     }
     if (result == 2 && (t->flags & 0x400)) {
@@ -1733,7 +1733,7 @@ looptop: {
             result = 0;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-            result = set->dummy8(subX, subY);
+            result = set->GetCollisionAt(subX, subY);
         }
     }
     if (result == 2 && (t->flags & 0x400)) {
@@ -1827,7 +1827,7 @@ looptop: {
             result = 0;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-            result = set->dummy8(subX, subY);
+            result = set->GetCollisionAt(subX, subY);
         }
     }
     if (result == 2 && (t->flags & 0x400)) {
@@ -1921,7 +1921,7 @@ looptop: {
             result = 0;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
-            result = set->dummy8(subX, subY);
+            result = set->GetCollisionAt(subX, subY);
         }
     }
     if (result == 2 && (t->flags & 0x400)) {
