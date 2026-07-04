@@ -77,36 +77,44 @@ public:
     // the slot-2 init 0x13e0a0 in BoundaryUpper, etc.) so the emitted vtable's DIR32 slot
     // relocs mask. Declaring these real virtuals makes the slot-5 IsValid / slot-3
     // BlitSurf / slot-8 v20 dispatch sites genuine virtual calls on `this`.
-    virtual ~CDDSurface();                             // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
-    virtual i32 Refresh(IDirectDrawSurface* surf);     // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
+    virtual ~CDDSurface(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
+    virtual i32
+    Refresh(IDirectDrawSurface* surf); // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
     virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
-    virtual i32 BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5); // slot 3  0x13e0d0 (DecodePcxData dest setup / "BeginDecode")
-    virtual void FreeSurfaces();                       // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
-    virtual i32 IsValid();                             // slot 5  0x1412d0  (surface present + positive w/h)
-    virtual i32 v18();                                 // slot 6  0x141300
-    virtual i32 RestoreLost();                         // slot 7  0x13f960  (restore-this-lost-surface retry)
-    virtual i32 v20(void* a);                          // slot 8  0x13e2e0  (the surface's own blit-into-desc)
+    virtual i32 BlitSurf(
+        void* surf,
+        i32 width,
+        i32 height,
+        i32 a4,
+        i32 a5
+    ); // slot 3  0x13e0d0 (DecodePcxData dest setup / "BeginDecode")
+    virtual void
+    FreeSurfaces();        // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
+    virtual i32 IsValid(); // slot 5  0x1412d0  (surface present + positive w/h)
+    virtual i32 v18();     // slot 6  0x141300
+    virtual i32 RestoreLost(); // slot 7  0x13f960  (restore-this-lost-surface retry)
+    virtual i32 v20(void* a);  // slot 8  0x13e2e0  (the surface's own blit-into-desc)
 
     // --- non-virtual __thiscall DirectDraw thunks (DIRSURF.CPP) ----------------
     // The held-surface COM ops; each dispatches m_8/m_c (IDirectDrawSurface) and retries
     // on SURFACELOST via RestoreLost (slot 7). Bodies in DirectDrawMgr.cpp.
-    i32 Lock(void* rect);                                // 0x13e6d0
-    i32 SetPalette(CDDPalette* pal, i32 unused);         // 0x13e690
-    i32 Restore(void* arg1, i32 arg2);                   // 0x13e7d0 (BoundaryUpper2.cpp)
-    i32 Flip(CDDSurface* target);                        // 0x13e850
-    i32 SetColorKey(u32 flags, void* key);               // 0x13eaa0
-    i32 Blt(CDDSurface* src);                            // 0x13ee60
+    i32 Lock(void* rect);                        // 0x13e6d0
+    i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
+    i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
+    i32 Flip(CDDSurface* target);                // 0x13e850
+    i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
+    i32 Blt(CDDSurface* src);                    // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
-    i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);    // 0x13ef90
-    i32 GetColorKey();                                   // 0x13fa60
+    i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
+    i32 GetColorKey();                                                             // 0x13fa60
 
     // The colour-fill / geometry accessors (DIRSURF.CPP; some external no-body/reloc-
     // masked, some carry real bodies in Image.cpp).
-    i32 Fill(u32 color);   // 0x13e760  colour-fill blt (real body, Image.cpp)
-    i32 GetWidth();        // 0x141310  (returns m_width)
-    i32 GetHeight();       // 0x141320  (returns m_height)
-    i32 Scale(i32 n);      // 0x1413c0  (returns m_pitch * n)
-    void UnlockThunk();    // 0x1413b0  (m_8->vtbl[0x80](m_8, 0))
+    i32 Fill(u32 color); // 0x13e760  colour-fill blt (real body, Image.cpp)
+    i32 GetWidth();      // 0x141310  (returns m_width)
+    i32 GetHeight();     // 0x141320  (returns m_height)
+    i32 Scale(i32 n);    // 0x1413c0  (returns m_pitch * n)
+    void UnlockThunk();  // 0x1413b0  (m_8->vtbl[0x80](m_8, 0))
 
     // --- the surface SAVE/export path (DIRSURF.CPP) ---------------------------
     // SaveFile validates the surface + args, SaveDispatch picks the per-bit-depth writer
@@ -114,7 +122,8 @@ public:
     i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
     i32 SaveDispatch(char* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
     void Clear(i32 white);                                 // 0x13edb0 (ret 4)
-    i32 LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key); // 0x148840 (ret 0x18)
+    i32
+    LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key); // 0x148840 (ret 0x18)
 
     // The per-bit-depth file writers SaveDispatch delegates to (ret 0xc = 3 args). SaveBmp
     // (0x1443b0) writes the 8bpp palettized BMP, SaveTga (0x144900) the 24bpp TGA,
@@ -127,7 +136,7 @@ public:
     // Resolve picks the BMP/PCX/PID decoder by `type` (1/2/4) for the file path; ResolveEx
     // is the surface-blit variant that ORs the control word with 0x40, runs the *Data
     // decoders and installs the transparency colour after.
-    i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2);      // 0x13e550 (ret 0x14)
+    i32 Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2); // 0x13e550 (ret 0x14)
     i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i32 trans);
 
     // Per-format decoders (Image.cpp). __thiscall on CDDSurface. arg1 is the source-palette
@@ -149,8 +158,9 @@ public:
     // the former DecodeBmpData @0x143cf0; Decode == DecodePcxData2 @0x144b30. Reconstructed
     // in FileImage.cpp; `info` is the CDDrawPtrCollections display manager (palette context
     // - source bpp / palette / have-palette), NOT a 2nd surface.
-    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b);            // 0x143cf0 (BMP run)
-    i32 Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30 (PCX run)
+    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b); // 0x143cf0 (BMP run)
+    i32
+    Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30 (PCX run)
 
     // The file-load + export path (FileImage.cpp == the DIRSURF.CPP surface). LoadFile2/
     // LoadFile slurp a .BMP/.PCX file into a heap buffer then run DecodeRun/Decode;
@@ -159,7 +169,18 @@ public:
     // surface; DecodeThunk forwards to Run (the inner blit/decode worker, external/reloc-
     // masked, taking a by-value ClipRect16).
     void FlipVertical(); // 0x13ebb0
-    void DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3); // 0x141280
+    void DecodeThunk(
+        i32 a1,
+        i32 a2,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 r0,
+        i32 r1,
+        i32 r2,
+        i32 r3
+    );                                                                        // 0x141280
     i32 Run(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, ClipRect16 clip); // 0x1471d0
     i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);    // 0x143e60
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);     // 0x144d80
@@ -192,7 +213,7 @@ public:
 
     // --- layout (0xc0 bytes; the OFFSETS are load-bearing) ---------------------
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the ctor/dtor vptr stamp).
-    POSITION m_pos;          // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
+    POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
     IDirectDrawSurface* m_8; // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_c; // +0x0c  held back/secondary surface (also released)
     union {                  // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
@@ -206,7 +227,7 @@ public:
         };
     };
     i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by Lock,
-                              //         used as the pixel buffer by Fill/BlitDirect)
+                               //         used as the pixel buffer by Fill/BlitDirect)
     char m_pad38[0x64 - 0x38]; // +0x38
     i32 m_64;                  // +0x64  pixel-format bit depth / colour-key colour
     char m_pad68[0x7c - 0x68]; // +0x68
@@ -216,7 +237,7 @@ public:
     i32 m_8c;                  // +0x8c  height (cached)
     i32 m_90;                  // +0x90  bytes-per-row * height
     CPtrArray m_elements;      // +0x94  owned element array (m_pData@+0x98 / m_nSize@+0x9c);
-                              //         FreeSurfaces scalar-dtor-deletes each then RemoveAll
+                               //         FreeSurfaces scalar-dtor-deletes each then RemoveAll
     i32 m_bitDepth;            // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
     i32 m_ac;                  // +0xac  bytes-per-row factor
     i32 m_b0;                  // +0xb0  pixels-per-unit divisor

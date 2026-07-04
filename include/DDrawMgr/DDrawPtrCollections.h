@@ -32,13 +32,13 @@ public:
     CDDrawPtrCollections();
     ~CDDrawPtrCollections();
 
-    void Clear(i32 mode);                                      // 0x142060
-    void EmptyPoolA();                                         // 0x142120  (drain +0x47c list)
-    void EmptyPoolB();                                         // 0x142ed0  (drain +0x498 list)
+    void Clear(i32 mode);                                   // 0x142060
+    void EmptyPoolA();                                      // 0x142120  (drain +0x47c list)
+    void EmptyPoolB();                                      // 0x142ed0  (drain +0x498 list)
     void AddItemA(CDDSurface* item);                        // 0x142100
-    void AddItemB(CDDPalette* item);                           // 0x142eb0
+    void AddItemB(CDDPalette* item);                        // 0x142eb0
     void RemoveItemA(CDDSurface* item);                     // 0x142160
-    void RemoveItemB(CDDPalette* item);                        // 0x142f10
+    void RemoveItemB(CDDPalette* item);                     // 0x142f10
     CDDSurface* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot 2)
     CDDSurface* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
     CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
@@ -50,12 +50,12 @@ public:
     CDDSurface* Createab8_1(i32 a);                         // 0x142aa0 (vtbl ab8, slot 2, +538)
     CDDSurface* Createab8_24_3(i32 a); // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
     CDDSurface*
-    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot 9 6-arg)
-    CDDSurface* Createae8_1(i32 a);                     // 0x142da0 (vtbl ae8, slot 2)
+    Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot 9 6-arg)
+    CDDSurface* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot 2)
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-    CDDPalette* MakeB(void* rgb, i32 flags);                       // 0x142fc0
-    CDDPalette* MakeB2(i32 a, i32 b);                              // 0x142f40 (init via 0x147410)
-    CDDPalette* MakeB3(i32 a, i32 b, i32 c);                       // 0x1430c0 (init via 0x147840)
+    CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
+    CDDPalette* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
+    CDDPalette* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).

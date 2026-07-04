@@ -369,7 +369,8 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     }
     // CDDSurface::Resolve(surf, buf, type, size, surf2): resolved is the decoded buffer,
     // src->m_0c its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
-    return m_surface->Resolve(m_parent->m_1c, (void*)resolved, index, (u32)src->m_0c, (void*)g_surfaceColorKey);
+    return m_surface
+        ->Resolve(m_parent->m_1c, (void*)resolved, index, (u32)src->m_0c, (void*)g_surfaceColorKey);
 }
 
 // ---------------------------------------------------------------------------

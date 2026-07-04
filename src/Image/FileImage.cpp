@@ -11,8 +11,8 @@
 // ---------------------------------------------------------------------------
 #include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
 
-#include <Image/Image.h>                  // the single-source CDDSurface (the DIRSURF surface)
-#include <Image/FileImageRecords.h>       // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
+#include <Image/Image.h>            // the single-source CDDSurface (the DIRSURF surface)
+#include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
 #include <Io/FileStream.h> // CFileIO (engine KERNEL32 file wrapper; LoadFile2)
