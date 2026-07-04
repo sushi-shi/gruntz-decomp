@@ -39,6 +39,7 @@ extern i32 g_fxDirectGate;
 
 // The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
 // ready" predicate + the front/back/overlay surface pairs at +0x10/+0x14/+0x18.
+#include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
 #include <DDrawMgr/DDrawWorkerMgr.h>
 
 namespace Utils {
@@ -60,13 +61,8 @@ struct FaderRun : public CFader {
 };
 
 // The DDraw surface pair CDDrawWorkerMgr holds at +0x10/+0x14/+0x18 (front/back/
-// overlay). Forward-declared in <DDrawMgr/DDrawWorkerMgr.h>; only its +0x2c channel
-// surface is read here, so this TU completes that forward-declared type.
-class CDDrawSurfacePair {
-public:
-    char _00[0x2c];
-    CDDSurface* m_surface; // +0x2c the DirectDraw channel surface
-};
+// overlay). Only its +0x2c channel surface (m_surface) is read here; the ONE
+// CDDrawSurfacePair shape now comes from <DDrawMgr/DDrawSurfacePair.h> above.
 
 // The resource chain reached through emitter +0x0c: the DDraw worker manager
 // (+0x04, whose surface pairs carry the channels) plus a gate flag (+0x1c).

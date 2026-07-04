@@ -9,7 +9,8 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (Mfc.h above supplies windows.h)
-#include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
+#include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
+#include <DDrawMgr/DDrawWorkerMgr.h>   // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -53,13 +54,8 @@ public:
 // Flip @0x13e850). Both from <DDrawMgr/DDSurface.h>.
 
 // The DDraw surface pair CDDrawWorkerMgr holds at +0x10 (m_frontPair); only its
-// +0x2c channel surface is read here. Forward-declared in <DDrawMgr/DDrawWorkerMgr.h>;
-// this TU completes that forward-declared type (same shape as CSoundFxEmitter.h).
-class CDDrawSurfacePair {
-public:
-    char m_pad00[0x2c];
-    CDDSurface* m_surface; // +0x2c the DirectDraw channel surface
-};
+// +0x2c channel surface (m_surface) is read here. The ONE CDDrawSurfacePair shape
+// now comes from <DDrawMgr/DDrawSurfacePair.h> (completes DDrawWorkerMgr.h's fwd decl).
 
 // CStatusBarHolder (cue-holder shape, m_2c sound mgr + m_30 gate) is in
 // <Gruntz/StatusBarCueHolder.h>; CSoundMgr (full def) is above.

@@ -6,49 +6,54 @@
 #include <Wap32/WapObj.h> // CWapObj : Wap::CObject - the shared grand-base (slots 0..6)
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr
-// image family. It derives from the engine CLoadable base (the same
-// polymorphic base CGameLevel derives from: its grand-base dtor vtable is
-// g_wapObjectDtorVtbl == g_wapObjectDtorVtbl @0x5e8cb4). Its own vtable is
-// @0x5eff30. It owns ONE held DDraw surface (a CPoolItemA, the CDDSurface
-// wrapper) borrowed from the parent CDirectDrawMgr's surface pool, plus a cached
-// pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an x/y offset
-// window @+0x1c.
+// CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr image
+// family (own vtable ??_7CDDrawSurfacePair@@6B@ @0x5eff30, 15 slots). It owns ONE
+// held DDraw surface (a CPoolItemA, the CDDSurface wrapper) borrowed from the
+// parent CDirectDrawMgr's surface pool, plus a cached pixel geometry (width @+0x10
+// / height @+0x14 / bpp @+0x18) and an x/y offset window @+0x1c.
 //
-// It is the polymorphic surface element held at the worker-manager's
-// +0x10/+0x14/+0x18 slots (see src/DDrawMgr/DDrawSubMgr.cpp's CDDrawSurfacePair
-// placeholder). The own vtable @0x5eff30:
-//   slot 1  (@0x04)  scalar-deleting dtor (0x1590d0)
-//   slot 5  (@0x14)  IsValid              (0x159090) - the "surface ready?" pred
-//   slot 7  (@0x1c)  TeardownSurface      (0x163e20) - remove from pool, zero m_surface/m_width
-//   slot 9  (@0x24)  SetGeometry          (0x158fd0) - {w,h,bpp} cache
-//   slot 11 (@0x2c)  InitFromSurface      (0x163db0)
-//   slot 12 (@0x30)  Create               (0x163c90)
-//   slot 13 (@0x34)  LoadImage            (0x163e50) - BMP/PCX/DIR/DIP magic dispatch
-//   slot 14 (@0x38)  ResolveImage         (0x163ee0)
+// THE single-source shape. It is the polymorphic surface element the worker
+// manager holds at +0x10/+0x14/+0x18 (m_frontPair/m_backPair/m_overlayPair, see
+// DDrawWorkerMgr.h) and dispatches through the vptr; the flat readers (LevelPreview,
+// SoundFxEmitter) touch only its +0x2c channel surface. Every consumer includes
+// this header instead of re-declaring a per-TU view.
+//
+// The 15-slot own vtable @0x5eff30 (base slots 0..6 from Wap::CObject + CWapObj):
+//   slot 1  (@0x04)  ~scalar-deleting dtor  (0x1590d0/0x1590f0)
+//   slot 5  (@0x14)  IsLoaded               (0x159090)  "surface ready?" predicate
+//   slot 6  (@0x18)  IsReady                (0x001c08)  inherited CWapObj default
+//   slot 7  (@0x1c)  TeardownSurface        (0x163e20)  remove from pool, zero m_surface
+//   slot 8  (@0x20)  Slot08                 (0x1590c0)
+//   slot 9  (@0x24)  SetGeometry            (0x158fd0)  {w,h,bpp} cache
+//   slot 10 (@0x28)  SetGeom                (0x164250)  geometry setter (3 args)
+//   slot 11 (@0x2c)  InitFromSurface        (0x163db0)
+//   slot 12 (@0x30)  Create                 (0x163c90)
+//   slot 13 (@0x34)  LoadImage              (0x163e50)  BMP/PCX/DIR/DIP magic dispatch
+//   slot 14 (@0x38)  ResolveImage           (0x163ee0)
+// Only the dtor, TeardownSurface, and Create are reconstructed (in the owner TU
+// DDrawSurfacePair.cpp); the rest are declared-only virtuals so through-vptr
+// dispatch in the consumer TUs lowers exactly (their bodies live in unmatched TUs,
+// which is why the owner-TU ??_7 is a vtable-realization plateau, not a source lever).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
+// bytes are load-bearing (campaign doctrine). CDDSurface / CDDrawSurfaceMgr are
+// pointer members here, so a forward decl keeps the DirectDraw + surface-manager
+// chains out of this widely-included header (the owner TU includes their full defs).
 // ---------------------------------------------------------------------------
 
-#include <DDrawMgr/DirectDrawMgr.h> // CDDSurface (the held surface @+0x2c)
+class CDDSurface;       // +0x2c held surface (CPoolItemA); <DDrawMgr/DDSurface.h>
+class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 
-// The two vtables in the dtor chain: this class's own (0x5eff30) and the
-// grand-base dtor vtable (0x5e8cb4). Reloc-masked DATA externs (the manual
 // ---------------------------------------------------------------------------
 // CSurfacePairBase - the polymorphic CWapObj-derived base. Slots 0..4 come from
 // Wap::CObject (the 5-slot grand-base thunks + scalar-deleting dtor), slot 6
 // (IsReady default @0x001c08) from CWapObj; the base declares only its slot-5
-// override (IsLoaded @0x159090, the "surface ready?" predicate). The base subobject
-// dtor is EMPTY so cl folds the implicit grand-base re-stamp (masks 0x5e8cb4) LAST
-// into the leaf ~CDDrawSurfacePair; the intermediate CWapObj/CObject stamps are
-// dead-store eliminated. The base-field resets (m_status/m_flags/m_mgr) move into the
-// DERIVED dtor body so they precede the grand-base fold
-// (eh-dtor-implicit-vptr-stamp-first.md sub-case 2). The destructible base subobject
-// supplies the leaf dtor's /GX EH frame.
+// override (IsLoaded @0x159090). The base subobject dtor is EMPTY so cl folds the
+// implicit grand-base re-stamp (masks 0x5e8cb4) LAST into the leaf ~CDDrawSurfacePair;
+// the base-field resets (m_status/m_flags/m_mgr) move into the DERIVED dtor body so
+// they precede the grand-base fold (eh-dtor-implicit-vptr-stamp-first.md sub-case 2).
+// The destructible base subobject supplies the leaf dtor's /GX EH frame.
 // ---------------------------------------------------------------------------
-struct CDDrawSurfaceMgr; // forward (CSurfacePairBase::m_mgr; full defn below)
-
 SIZE_UNKNOWN(CSurfacePairBase);
 class CSurfacePairBase : public CWapObj {
 public:
@@ -65,63 +70,38 @@ public:
 // folded into the leaf dtor as the last store.
 inline CSurfacePairBase::~CSurfacePairBase() {}
 
-// CDDrawPtrCollections::RemoveItemA(CPoolItemA*) @0x142160 - reloc-masked
-// __thiscall engine callee modeled as a method on a tiny view so the call falls
-// out as mov ecx,pool; call with no caller-side stack cleanup. AcquireA/MakeAndAddB/
-// CreateB are the three pool surface-acquire entries Create() fans into.
-SIZE_UNKNOWN(CDDrawSurfacePool);
-class CDDrawSurfacePool {
-public:
-    void RemoveItemA(CDDSurface* item);                                      // 0x142160
-    CDDSurface* AcquireA(i32 a, i32 b);                                      // 0x143630
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);              // 0x142e60
-    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);                  // 0x1423c0
-    i32 CreateModeSurface(i32 fmt, i32 fs, i32 w, i32 h, i32 bpp, i32 mode); // 0x141dc0
-    CDDSurface* AttachMode(i32 mode);                                        // 0x142b70
-    char _pad0[0x944];
-    i32 m_lastError; // +0x944  last DirectDraw error stash
-};
-
-// CDDrawSurfaceMgr - the parent manager view m_mgr points at: a pixel-format chain
-// at +0x4 -> +0x10 -> +0x2c, the surface pool at +0x1c, and a last-error word at
-// +0x38. Only the offsets Create() reads are pinned.
-SIZE_UNKNOWN(CDDrawSurfChainB);
-struct CDDrawSurfChainB {
-    char _pad0[0x2c];
-    i32 m_pixelFormat; // +0x2c  pixel-format token
-};
-SIZE_UNKNOWN(CDDrawSurfChainA);
-struct CDDrawSurfChainA {
-    char _pad0[0x10];
-    CDDrawSurfChainB* m_next; // +0x10
-};
-SIZE_UNKNOWN(CDDrawSurfaceMgr);
-struct CDDrawSurfaceMgr {
-    char _pad0[0x04];
-    CDDrawSurfChainA* m_fmtChain; // +0x04  pixel-format chain
-    char _pad8[0x1c - 0x08];
-    CDDrawSurfacePool* m_pool; // +0x1c  surface pool
-    char _pad20[0x30 - 0x20];
-    i32 m_device;    // +0x30  device/context handle
-    i32 m_capsFlags; // +0x34  caps flags (bit4 = fullscreen, bit1 = double-buffer)
-    i32 m_lastError; // +0x38  last-error word
-};
-
-SIZE_UNKNOWN(CDDrawSurfacePair);
+SIZE(CDDrawSurfacePair, 0x34); // new-size from CDDrawSubMgrPages::CreateChildren
 VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
-    void BltSelf(CDDrawSurfacePair* src);      // 0x03a1d0
-    ~CDDrawSurfacePair() OVERRIDE;             // 0x1590f0  slot 1 (scalar-deleting dtor)
-    i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // 0x163c90  (vtable slot 12)
-    i32 RestoreIfLost();                       // 0x163f00
-    void TeardownSurface();                    // 0x163e20  (vtable slot 7)
-    void DrawBox(i32* rect, i32 color);        // 0x163f40
-    void DrawCross(i32 x, i32 y);              // 0x164180
+    // The spawned-child ctor: the CreateChildren path reuses the shared base-family
+    // arg-ctor (??0CDDrawSubMgr @0x156cb0, which stamps the CLoadable base vtable
+    // 0x5efc30) then manually re-stamps this class's own vtable (g_ddrawSurfacePairVtbl
+    // @0x5eff30). Declared-only here (the body is the shared 0x156cb0 base ctor, not
+    // in this TU); consumers that spawn a pair call it via placement-new.
+    CDDrawSurfacePair(i32 mgr, i32 kind, i32 a3); // 0x156cb0 (shared base ctor)
+
+    // --- own vtable slots 7..14 (declared-only where the body lives elsewhere) ---
+    virtual void TeardownSurface();                    // slot 7  (@0x1c) 0x163e20
+    virtual void Slot08_1590c0();                      // slot 8  (@0x20) 0x1590c0
+    virtual void SetGeometry_158fd0();                 // slot 9  (@0x24) 0x158fd0
+    virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x164250
+    virtual void InitFromSurface_163db0();             // slot 11 (@0x2c) 0x163db0
+    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // slot 12 (@0x30) 0x163c90
+    virtual i32 LoadImage_163e50(i32 a);               // slot 13 (@0x34) 0x163e50
+    virtual i32 ResolveImage_163ee0();                 // slot 14 (@0x38) 0x163ee0
+
+    ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
+
+    // --- non-virtual helpers (reconstructed in the owner TU) ------------------
+    void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0
+    i32 RestoreIfLost();                  // 0x163f00  (surface-lost retry twin of Probe)
+    void DrawBox(i32* rect, i32 color);   // 0x163f40
+    void DrawCross(i32 x, i32 y);         // 0x164180
     // 0x1644a0 - the DirectDraw mode-surface creator: cache {w,h,bpp}, ask the pool
     // to create the device surface (mode 0x11 if w>320 else 0x51; fullscreen bit
-    // from mgr->m_34), then attach + validate it; on any failure stash a 0x80e9..ed
-    // / 0xbb9 / 0xbba error in mgr->m_lastError.
+    // from mgr->m_capsFlags), then attach + validate it; on any failure stash a
+    // 0x80e9..ed / 0xbb9 / 0xbba error in mgr->m_lastError.
     i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32 w, i32 h, i32 bpp);
     i32 Probe_164660(); // 0x164660  (surface-lost probe)
 

@@ -19,6 +19,7 @@
 // ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
 #include <Win32.h>  // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock)
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
@@ -26,6 +27,53 @@
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
 // its held IDirectDrawSurface (m_8 @+0x08, for Unlock). No facet view needed.
+
+// ---------------------------------------------------------------------------
+// The parent manager m_mgr points at, and its surface pool: only the offsets
+// Create()/1644a0 read are pinned. These are owner-TU-only views (CDDrawSurfaceMgr
+// is forward-declared, pointer-only, in the shared DDrawSurfacePair.h). The pool
+// callees are reloc-masked __thiscall engine callees modeled as methods on a tiny
+// view so `mov ecx,pool; call` falls out with no caller-side stack cleanup.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CDDrawSurfacePool);
+class CDDrawSurfacePool {
+public:
+    void RemoveItemA(CDDSurface* item);                                      // 0x142160
+    CDDSurface* AcquireA(i32 a, i32 b);                                      // 0x143630
+    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);              // 0x142e60
+    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);                  // 0x1423c0
+    i32 CreateModeSurface(i32 fmt, i32 fs, i32 w, i32 h, i32 bpp, i32 mode); // 0x141dc0
+    CDDSurface* AttachMode(i32 mode);                                        // 0x142b70
+    char _pad0[0x944];
+    i32 m_lastError; // +0x944  last DirectDraw error stash
+};
+
+// The pixel-format chain m_fmtChain walks: +0x04 -> +0x10 -> +0x2c.
+SIZE_UNKNOWN(CDDrawSurfChainB);
+struct CDDrawSurfChainB {
+    char _pad0[0x2c];
+    i32 m_pixelFormat; // +0x2c  pixel-format token
+};
+SIZE_UNKNOWN(CDDrawSurfChainA);
+struct CDDrawSurfChainA {
+    char _pad0[0x10];
+    CDDrawSurfChainB* m_next; // +0x10
+};
+
+// CDDrawSurfaceMgr - the parent manager view m_mgr points at (owner-TU view; the
+// shared header forward-declares it). A pixel-format chain at +0x4, the surface pool
+// at +0x1c, device/caps at +0x30/+0x34, and a last-error word at +0x38.
+SIZE_UNKNOWN(CDDrawSurfaceMgr);
+struct CDDrawSurfaceMgr {
+    char _pad0[0x04];
+    CDDrawSurfChainA* m_fmtChain; // +0x04  pixel-format chain
+    char _pad8[0x1c - 0x08];
+    CDDrawSurfacePool* m_pool; // +0x1c  surface pool
+    char _pad20[0x30 - 0x20];
+    i32 m_device;    // +0x30  device/context handle
+    i32 m_capsFlags; // +0x34  caps flags (bit4 = fullscreen, bit1 = double-buffer)
+    i32 m_lastError; // +0x38  last-error word
+};
 
 // ---------------------------------------------------------------------------
 // 0x03a1d0: BltFast `src`'s held surface onto ours at (0,0) with the source's

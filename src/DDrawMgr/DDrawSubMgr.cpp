@@ -11,6 +11,7 @@
 // The discovered cluster's surface helpers (Blt/Flip/BltFast on CDDSurface) come
 // from the DDrawMgr group; reuse its real types instead of placeholder casts.
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (front/back/overlay pairs)
 #include <DDrawMgr/DDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <DDrawMgr/DDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
@@ -138,33 +139,13 @@ public:
 // the (reloc-masked) external call targets, NOT on the C++ class identity.
 // ---------------------------------------------------------------------------
 
-// The polymorphic surface-pair held at manager+0x10/+0x14/+0x18: the retail
-// CDDrawSurfacePair (own vtable 0x5eff30, see include/DDrawMgr/DDrawSurfacePair.h).
-// Real CWapObj-derived base (slots 0..4 CObject thunks + scalar-dtor, slot 6 IsReady
-// 0x001c08 inherited); the own slots (7..13) are named from their retail slot RVAs.
-// Scratch RECT at +0x1c, held CDDSurface wrapper at +0x2c. Dispatched pointer-only here.
-class CDDrawSurfacePair : public CWapObj {
-public:
-    i32 IsLoaded() OVERRIDE;           // slot 5  (@0x14) 0x159090 surface-ready predicate
-    virtual void TeardownSurface();    // slot 7  (@0x1c) 0x163e20
-    virtual void Slot08_1590c0();      // slot 8  (@0x20) 0x1590c0
-    virtual void SetGeometry_158fd0(); // slot 9  (@0x24) 0x158fd0
-    virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x164250 geometry setter
-    virtual void InitFromSurface_163db0();             // slot 11 (@0x2c) 0x163db0
-    virtual i32 Create_163c90(i32 w, i32 h, i32 bpp, i32 a4); // slot 12 (@0x30) 0x163c90
-    virtual i32 LoadImage_163e50(i32 a);                      // slot 13 (@0x34) 0x163e50 1-arg op
-
-    // Non-virtual surface-state predicates (reloc-masked __thiscall callees).
-    i32 Probe_164660(); // 0x164660
-    i32 Probe_163f00(); // 0x163f00
-
-    char m_pad04[0x10 - 0x04];  // +0x04 .. +0x0f
-    i32 m_geom10;               // +0x10  width  (compared in 0x158bf0)
-    i32 m_geom14;               // +0x14  height
-    i32 m_geom18;               // +0x18  bpp
-    char m_rect1c[0x2c - 0x1c]; // +0x1c  scratch RECT passed to BltFast
-    CDDSurface* m_surface;      // +0x2c
-};
+// The polymorphic surface-pair held at manager+0x10/+0x14/+0x18 (front/back/overlay):
+// the retail CDDrawSurfacePair (own vtable 0x5eff30). THE single-source shape now comes
+// from <DDrawMgr/DDrawSurfacePair.h>; the 0x158xxx methods here dispatch its own vtable
+// slots (IsLoaded/SetGeom_164250/Create/LoadImage_163e50/...) through the vptr and read
+// its geometry (m_width/m_height/m_bpp), scratch RECT (m_srcRect @+0x1c), and held
+// CDDSurface (m_surface @+0x2c). RestoreIfLost (0x163f00) / Probe_164660 (0x164660) are
+// the two non-virtual surface-lost predicates.
 
 // A geometry source read by the node's +0x2c dispatch (w @0x14, h @0x18).
 class CDDrawWorkerGeom {
@@ -365,13 +346,13 @@ void CDDrawWorkerMgr::Method_158b90() {
     c->Vfunc2C(s->m_width, s->m_height);
 }
 
-// 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair (Probe_163f00).
+// 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair (RestoreIfLost).
 RVA(0x00158bc0, 0x2e)
 i32 CDDrawWorkerMgr::Method_158bc0() {
     if (m_frontPair && !m_frontPair->Probe_164660()) {
         return 0;
     }
-    if (m_overlayPair && !m_overlayPair->Probe_163f00()) {
+    if (m_overlayPair && !m_overlayPair->RestoreIfLost()) {
         return 0;
     }
     return 1;
@@ -382,7 +363,7 @@ i32 CDDrawWorkerMgr::Method_158bc0() {
 RVA(0x00158bf0, 0x7f)
 i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
     CDDrawSurfacePair* p = m_frontPair;
-    if (p->m_geom10 != a1 || p->m_geom14 != a2 || p->m_geom18 != a3) {
+    if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
         if (!m_frontPair->SetGeom_164250(a1, a2, a3)) {
             return 0;
         }
@@ -406,11 +387,11 @@ i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
         return 0;
     }
     CDDrawSurfacePair* s14 = m_backPair;
-    if (!m_overlayPair->Create_163c90(s14->m_geom10, s14->m_geom14, s14->m_geom18, a2)) {
+    if (!m_overlayPair->Create(s14->m_width, s14->m_height, s14->m_bpp, a2)) {
         return 0;
     }
     if (a1) {
-        m_overlayPair->m_surface->BltFast(0, 0, m_backPair->m_surface, m_backPair->m_rect1c, 0x10);
+        m_overlayPair->m_surface->BltFast(0, 0, m_backPair->m_surface, m_backPair->m_srcRect, 0x10);
     }
     return 1;
 }
@@ -543,7 +524,7 @@ i32 CDDrawWorkerMgr::Method_158e90() {
     }
     CDDrawSurfacePair* a = m_backPair;
     CDDrawSurfacePair* b = m_overlayPair;
-    b->m_surface->BltFast(0, 0, a->m_surface, a->m_rect1c, 0x10);
+    b->m_surface->BltFast(0, 0, a->m_surface, a->m_srcRect, 0x10);
     return 1;
 }
 
@@ -561,7 +542,7 @@ i32 CDDrawWorkerMgr::Method_158ee0() {
     }
     CDDrawSurfacePair* a = m_overlayPair;
     CDDrawSurfacePair* b = m_backPair;
-    b->m_surface->BltFast(0, 0, a->m_surface, a->m_rect1c, 0x10);
+    b->m_surface->BltFast(0, 0, a->m_surface, a->m_srcRect, 0x10);
     return 1;
 }
 

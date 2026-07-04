@@ -2,6 +2,7 @@
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Wap32/WapObj.h>   // CWapObj : Wap::CObject - real base for the spawned-child views
+#include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
 // CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -94,25 +95,11 @@ public:
     i32 m_2c; // +0x2c
 }; // 0x30
 
-// The "B" child == the retail CDDrawSurfacePair (own vtable 0x5eff30). Real
-// CWapObj-derived base (slots 0..4 + slot 6 IsReady 0x001c08 inherited, slot 5
-// IsLoaded override 0x159090); own slots 7..12 named from their retail slot RVAs.
-class CDDrawSurfacePair : public CWapObj {
-public:
-    i32 IsLoaded() OVERRIDE;                                   // slot 5  (@0x14) 0x159090
-    virtual void TeardownSurface();                            // slot 7  (@0x1c) 0x163e20
-    virtual void Slot08_1590c0();                              // slot 8  (@0x20) 0x1590c0
-    virtual void SetGeometry_158fd0();                         // slot 9  (@0x24) 0x158fd0
-    virtual i32 SetGeom_164250(i32 a1, i32 a2, i32 a3);        // slot 10 (@0x28) 0x164250
-    virtual void InitFromSurface_163db0();                     // slot 11 (@0x2c) 0x163db0
-    virtual i32 Create_163c90(i32 a1, i32 a2, i32 a3, i32 a4); // slot 12 (@0x30) 0x163c90
-    CDDrawSurfacePair(i32 handle, i32 a2, i32 a3);             // 0x156cb0
-    char m_pad04[0x10 - 0x04];
-    i32 m_10; // +0x10
-    char m_pad14[0x2c - 0x14];
-    i32 m_2c; // +0x2c
-    i32 m_30; // +0x30
-}; // 0x34
+// The "B" child == the retail CDDrawSurfacePair (own vtable 0x5eff30). THE
+// single-source shape now comes from <DDrawMgr/DDrawSurfacePair.h>; CreateChildren
+// spawns it via the shared base-family ctor (0x156cb0) + a manual g_ddrawSurfacePairVtbl
+// re-stamp, then Create()s it. Its used fields are m_width (@0x10), m_surface (@0x2c),
+// m_ownsSurface (@0x30).
 
 // The parent/root handle object at CDDrawSubMgrPages+0x0c; the factory records an
 // error code into its +0x38 field when a child fails.
@@ -249,20 +236,20 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     CDDrawSurfacePair* b = (CDDrawSurfacePair*)operator new(0x34);
     if (b != 0) {
         new (b) CDDrawSurfacePair((i32)m_0c, 1, 0);
-        b->m_10 = 0;
+        b->m_width = 0;
         *(i32**)b = &g_ddrawSurfacePairVtbl;
-        b->m_2c = 0;
-        b->m_30 = 1;
+        b->m_surface = 0;
+        b->m_ownsSurface = 1;
     }
     m_14 = (CDDrawSurfaceChild*)b;
 
     CDDrawSurfacePair* c = (CDDrawSurfacePair*)operator new(0x34);
     if (c != 0) {
         new (c) CDDrawSurfacePair((i32)m_0c, 2, 0);
-        c->m_10 = 0;
+        c->m_width = 0;
         *(i32**)c = &g_ddrawSurfacePairVtbl;
-        c->m_2c = 0;
-        c->m_30 = 1;
+        c->m_surface = 0;
+        c->m_ownsSurface = 1;
     }
     m_18 = (CDDrawSurfaceChild*)c;
 
@@ -272,14 +259,14 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
         }
         return 0;
     }
-    if (b->Create_163c90(a1, a2, a3, 0) == 0) {
+    if (b->Create(a1, a2, a3, 0) == 0) {
         if (m_0c->m_38 == 0) {
             m_0c->m_38 = 0x7d2;
         }
         return 0;
     }
     if (!(a4 & 1)) {
-        if (c->Create_163c90(a1, a2, a3, 0) == 0) {
+        if (c->Create(a1, a2, a3, 0) == 0) {
             if (m_0c->m_38 == 0) {
                 m_0c->m_38 = 0x7d3;
             }
@@ -294,7 +281,7 @@ SIZE_UNKNOWN(CDDrawSubMgrPagesBase);
 SIZE_UNKNOWN(CDDrawSurfaceChild);
 SIZE_UNKNOWN(CDDrawSurfaceMgr);
 SIZE(CDDrawSurfaceChildA, 0x30);
-SIZE(CDDrawSurfacePair, 0x34);
+// CDDrawSurfacePair SIZE(0x34) + VTBL(0x5eff30) now live in <DDrawMgr/DDrawSurfacePair.h>.
 // ??_7CDDrawSubMgrPages (was Vtbl_1efe08 / the CDDrawSubMgrPages vtable; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum reloc-masked ->
 // matching-neutral catalog tracking.
