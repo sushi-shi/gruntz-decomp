@@ -1789,7 +1789,7 @@ i32 CPlay::BeginGridWalk(i32 key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
         return 1;
     }
     void* grid = 0;
-    m_c->m_imageRegistry->m_10.Lookup(key, grid);
+    m_c->m_imageRegistry->m_10map.Lookup(key, grid);
     m_grid = (CFrameGrid*)grid;
     if (grid == 0) {
         return 1;

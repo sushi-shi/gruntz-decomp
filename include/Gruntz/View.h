@@ -167,10 +167,14 @@ struct CView {
     // Register/Release and 0x155550 Has entries are CDDrawWorkerRegistry::RemoveKeysEqual_155360
     // / HasKeyEqual_155550, and the +0x10 map is a CMapStringToOb (Lookup 0x1b8008). It is
     // modeled THREE ways in-tree (this CView facet, ResMgr.h's top-level CImageRegistry, and
-    // CDDrawWorkerRegistry); full unification is BLOCKED this pass - the excluded Play.cpp
-    // reaches this facet by the member names below (`m_10` map, `Release`) which diverge from
-    // ResMgr.h's (`m_10map`, `Register`-only), so it can't retype without breaking an excluded
-    // TU. Kept as a CView-local facet; see the reports for the deferred merge.
+    // CDDrawWorkerRegistry). NAME-RECONCILED with ResMgr.h: the +0x10 map member is now
+    // `m_10map` (was `m_10`) and the 0x155360 method carries both `Register` (loader alias)
+    // and `Release` (the RemoveKeysEqual role) - the same names ResMgr.h's CImageRegistry
+    // uses. The remaining TYPE merge (this nested CMap-Lookup(i32,void*&) facet vs ResMgr.h's
+    // CSpriteHashTable-Lookup(const char*,CSprite**) facet - divergent Lookup signatures - and
+    // the polymorphic 18-slot vtable, which the DecCounter wall below pins to real-virtual
+    // form) stays deferred: unifying the type would force one Lookup signature and break the
+    // other facet's cast-free consumers. Kept as a CView-local facet; see the reports.
     //
     // POLYMORPHIC (18 placeholder engine slots anchor the two dispatched slots at their true
     // vtable offsets - Install (slot 18, +0x48) and LoadNamespace (slot 19, +0x4c), __thiscall).
@@ -219,8 +223,8 @@ struct CView {
         char p04[0x10 - 0x4];                                 // after the implicit vptr (+0x00)
         struct CMap {
             void Lookup(i32 key, void*& out); // 0x1b8008 (CMapStringToOb::Lookup, thiscall)
-        } m_10;                               // +0x10  the name->object map / frame grid
-    };
+        } m_10map;                            // +0x10  the name->object map / frame grid
+    };                                        // (name reconciled with ResMgr.h's CImageRegistry::m_10map)
     CImageRegistry* m_imageRegistry; // +0x10  image/name registry (Release/Register/Has/Install)
     char p14[0x20 - 0x14];
     void* m_frameProfiler;       // +0x20  frame profiler timer (timeGetTime x2)

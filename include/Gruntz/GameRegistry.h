@@ -203,7 +203,10 @@ struct CGameRegistry {
     CState* m_curState;            // +0x2c  current game-state (concrete states
                                    //         downcast to their play/level view)
     CSpriteFactoryHolder* m_world; // +0x30  world/map resource holder (grunt reaches
-                                   //         the sprite factory via m_world->m_8)
+                                   //         the sprite factory via m_world->m_8). ONE object,
+                                   //         two type-views (verified): the retail CResMgr resource
+                                   //         facet (ResMgr.h) here, the CWorldZ world facet in
+                                   //         GruntzMgr.h, and CState::m_c's CView world-holder (View.h)
     char m_pad34[0x38 - 0x34];
     void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
     //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
