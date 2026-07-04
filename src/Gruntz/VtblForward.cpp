@@ -1,6 +1,13 @@
 // VtblForward.cpp - an argument-forwarding dispatcher.
 //   0x110460  CVtblRecv::Accept - guard, copy a 0x60-byte record into +0x2c, then
 //             virtual-dispatch (slot 0) with all the args except the record source.
+//
+// Item-5 owner audit (sema xref): Accept has NO rel32 caller (its only referent is
+// the ILT thunk 0x22e8, itself uncalled) and NO recorded data/vtable reference to
+// 0x110460 - so it is reached purely through an indirect/computed dispatch. The
+// owning class is therefore not recoverable from the xref graph; CVtblRecv stays a
+// placeholder (a message/record acceptor: vptr@+0, busy gate@+0x20, 0x60-byte record
+// sink@+0x2c, virtual Dispatch slot 0). Kept in its own TU with this evidence note.
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
