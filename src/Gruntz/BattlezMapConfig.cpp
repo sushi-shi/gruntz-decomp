@@ -293,13 +293,13 @@ struct UnitGeom {
 // Recycle(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
 // freelist headed at this->m_04. Reloc-masked DATA; modeled as a tiny object so
 // the `mov ecx,0x645540; push elem; call` falls out.
-SIZE_UNKNOWN(CoordPool);
-struct CoordPool {
-    void Recycle(void* elem); // 0x0311b0
+struct FreeNodePool {
+    void Recycle(void* elem); // 0x0311b0 (real symbol ?Push@FreeNodePool; local view
+                              // uses void* to avoid casts at the CoordNode* call sites)
 };
-SIZE_UNKNOWN(CoordPool); // coord-node free-pool view (opaque intrusive-list allocator)
+// SIZE_UNKNOWN(FreeNodePool) is hosted once, on the real def in DiscoveredSmall.cpp.
 DATA(0x00245540)
-extern CoordPool g_coordPool;
+extern FreeNodePool g_coordPool;
 
 // The coord-list node-advance helper (RVA 0x029a30, thunk 0x01de8): a __thiscall
 // on the +0x31c CObList (the `this` is ignored) taking the address of a POSITION;

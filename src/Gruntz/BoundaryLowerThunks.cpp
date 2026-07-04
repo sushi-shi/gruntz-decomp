@@ -11,7 +11,7 @@
 #include <Gruntz/ActReg.h>    // shared activation-registrar archetype (CActReg + aliases)
 #include <Gruntz/HaznColl.h>  // shared coordinate/activation-registry collection
 #include <Gruntz/TBombColl.h> // shared coordinate/activation-registry collection
-#include <Io/FileStream.h>    // real CFileIO (the static MFC CFile global at 0x646778)
+#include <Io/SharedFileObj.h> // shared C646778 (static MFC CFile global at 0x646778)
 #include <Globals.h>
 
 // ===========================================================================
@@ -132,10 +132,10 @@ void Register82aa0() {
 struct FreeNodePool {
     void Recycle(void* elem); // 0x0311b0
 };
-SIZE_UNKNOWN(FreeNodePool);
-extern FreeNodePool g_coordPool; // 0x645540 (the BattlezMapConfig RUN-phase unit)
-extern void* g_freeList;         // 0x645544 (Projectile.cpp)
-extern i32 g_freeListNodeBias;   // 0x64554c (Projectile.cpp)
+// SIZE_UNKNOWN(FreeNodePool) hosted once, on the real def in DiscoveredSmall.cpp.
+extern FreeNodePool g_coordPool;  // 0x645540 (the BattlezMapConfig RUN-phase unit)
+extern void* g_freeList;       // 0x645544 (Projectile.cpp)
+extern i32 g_freeListNodeBias; // 0x64554c (Projectile.cpp)
 RVA(0x00082fa0, 0x17)
 void ResetCoordPool82fa0() {
     *(i32*)&g_coordPool = 0;
@@ -254,22 +254,22 @@ void StrFreeb5380() {
 }
 
 // ===========================================================================
-// 0x0b5400 / 0x0bd430 - construct / Close the engine's ONE static MFC CFile global
-// at 0x646778. Its real type is CFileIO (RTTI 0x1ed15c == CFile; class in
-// <Io/FileStream.h>); this TU owns its canonical DATA symbol. 0x0b5400 re-runs the
-// ctor in place via the explicit-ctor-call extension (mov ecx,&g; jmp CFileIO::CFileIO
-// 0x1befd7 - placement-new here would emit a null-check, so the explicit call is the
-// clean tail-jmp); 0x0bd430 tail-forwards CFileIO::Close (0x1bf426), devirtualized on
-// the concrete global.
+// 0x0b5400 / 0x0bd430 - tail-forward two distinct teardown methods (0x1befd7,
+// 0x1bf426) onto the shared object at 0x646778. __thiscall (no args).
+// ===========================================================================
+// C646778 (the shared static MFC CFile global; identity = the real CFileIO/NAFXCW
+// CFile, kept under the view name because FileStream.cpp includes BOTH this def and
+// the real class) is defined once in <Io/SharedFileObj.h>; this TU owns its
+// canonical DATA symbol.
 DATA(0x00246778)
-extern CFileIO g_obj646778;
+extern C646778 g_obj646778;
 RVA(0x000b5400, 0xa)
 void Forwardb5400() {
-    g_obj646778.CFileIO::CFileIO();
+    g_obj646778.M1befd7();
 }
 RVA(0x000bd430, 0xa)
 void Forwardbd430() {
-    g_obj646778.Close();
+    g_obj646778.M1bf426();
 }
 
 // ===========================================================================
