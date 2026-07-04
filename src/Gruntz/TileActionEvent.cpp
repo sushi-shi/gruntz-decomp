@@ -57,7 +57,7 @@ struct CTileEventSink {
 };
 SIZE_UNKNOWN(CTileEventSink);
 
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
 // The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /

@@ -27,7 +27,7 @@ public:
 };
 
 // The game registry singleton; only its m_30 sub-manager gates this load.
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg; // ?g_gameReg (0x64556c)
 
 // The tile trigger-data record being loaded. Reads land at +0x08..+0x20, +0x28

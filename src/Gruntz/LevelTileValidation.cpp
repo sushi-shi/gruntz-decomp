@@ -172,7 +172,7 @@ struct WwdStartPlayer {
 // its level-validation facet: m_68/m_6c downcast to PlaceGridMgr*/StartCmdMgr*,
 // m_tileGrid downcast to WwdGameGrid*, and the per-player start records in the
 // m_options block at +0x150 by raw offset (the established 0x150-region idiom).
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
 // The recycled-node free-list head (?g_freeList@@3PAXA) and a tile-id constant

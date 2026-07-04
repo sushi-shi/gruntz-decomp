@@ -145,7 +145,7 @@ struct ObjSink2dc {
 // The global game-manager singleton (*g_64556c) whose ReportError the error
 // paths call, and the error-formatting free helper.
 extern "C" {
-    DATA(0x0064556c)
+    DATA(0x0024556c)
     extern CGameRegistry* g_64556c;
 }
 // __cdecl error formatter: fills a CString from a printf-style template.

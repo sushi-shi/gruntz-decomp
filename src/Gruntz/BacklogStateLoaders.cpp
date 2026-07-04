@@ -119,7 +119,7 @@ struct GLSResetMgr {
 };
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 // Canonical layout in <Gruntz/WwdGameReg.h>; used here only as an opaque pointer.
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 // cdecl level-init helper (g_gameReg, this->m_2dc, this->m_470).
 void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-masked

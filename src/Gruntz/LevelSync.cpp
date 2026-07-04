@@ -52,7 +52,7 @@ struct CLevelSyncChild {
 struct MgrReset {
     void Reset(); // 0x403d55 (__thiscall)
 };
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
 class CLevelSync {

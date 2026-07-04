@@ -6,7 +6,7 @@ confidence: 9/10
 **CORRECTION (2026-07-01, directly MEASURED — SUPERSEDES the "name a DIR32 data referent to score
 exact" claim in the 2026-07 note below):** DIR32 data-reloc **NAMES do NOT gate exactness** under
 the current objdiff config — naming a global (`DATA()`), a pooled `??_C@` string (`coff_oracle`),
-OR a `??_7` vtable (`vtable_names.csv`) flips **NOTHING**. Two independent proofs:
+OR a `??_7` vtable (`vtable_names.csv`) flips **NOTHING**. Three independent proofs:
 1. **1684** DIR32 name-mismatches sit inside functions already scored **100.0% exact** — including
    **7 pooled `??_C@` string literals** (`RegistryHelper::Open` is 100% with base `??_C@_08LOIE@Software`
    vs target `s_ware_0061a068`; `CWorldState::BuildWorldLevelPath` 100% with `??_C@…BATTLEZ` vs
@@ -18,6 +18,17 @@ OR a `??_7` vtable (`vtable_names.csv`) flips **NOTHING**. Two independent proof
    `g_serialCount`→`g_serialCounter`; `CDDrawSubMgrLeafScan::CreateEntry`/`CreateEntry2`
    **99.809525% unchanged** after DATA-binding their sole `g_leafElemVtbl` referent (relocdiff
    confirmed the DIR32 mismatch vanished; the score did not move).
+3. **High-fan-out target-rename (2026-07-04):** the game-mgr singleton at RVA `0x24556c` is
+   referenced by ~45 base objs as `?g_gameReg@@3PAUCGameRegistry@@A` (C++), by ~48 as extern-C
+   `_g_mgrSettings`, and by ~23 as other-typed `?g_gameReg@@3PAU<T>@@A`; the delink target names it
+   `_g_mgrSettings` (labels.py DATA keep-last, `_`>`?` sort). Pinning the target's `0x24556c` name to
+   the base C++ symbol via a labels.py canonical-override + full rebuild (delink + objdiff re-ran,
+   529/529) left **every** metric byte-identical — overall **1861 exact / 68.75% fuzzy → 1861 /
+   68.75%**, every per-unit % and every sampled per-function fuzzy% bit-for-bit unchanged.
+   `CBattlezData::FillRecord` is **100.0% (a counted match)** with base `?g_gameReg…` vs target
+   `_g_mgrSettings`. So a both-named-but-differently-named DIR32 data referent is fully masked: do
+   **NOT** chase `g_gameReg`/`g_mgrSettings` name alignment (source rename OR a synth-PDB alias) as a
+   scoring lever — it is a proven 0-delta no-op.
 
 objdiff pairs DIR32 relocs by reloc TYPE + addend (and, for defined data, by pointed-to CONTENT),
 NOT by symbol name. Consequence for the near-100% pool: a code-byte-exact near-miss is capped by a
