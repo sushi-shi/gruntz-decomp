@@ -23,8 +23,8 @@
 extern "C" void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
-// The constructor. Zero the buffers/counters; prime m_drawType=1, m_18=0x80,
-// m_24=-1, and both format-flag bytes m_srcBpp/m_dstBpp=1. __thiscall.
+// The constructor. Zero the buffers/counters; prime m_drawType=1, m_light=0x80,
+// m_colorKey=-1, and both format-flag bytes m_srcBpp/m_dstBpp=1. __thiscall.
 // ---------------------------------------------------------------------------
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
@@ -32,12 +32,12 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_rleLen = 0;
     m_palDescr = 0;
     m_drawType = 1;
-    m_18 = 0x80;
+    m_light = 0x80;
     m_00 = 0;
-    m_20 = 0;
+    m_palette = 0;
     m_srcBpp = 1;
     m_dstBpp = 1;
-    m_24 = -1;
+    m_colorKey = -1;
 }
 
 // The transient RLE-output buffer: an MFC CByteArray (ctor 0x1b527e, SetSize
@@ -62,17 +62,17 @@ struct CRleByteArray {
 // emits the run length then the literal bytes; a run of key (== keyVal) bytes
 // emits (length | 0x80). Runs cap at 0x7e. The encoding accumulates in a transient
 // CByteArray, which is then copied into a fresh operator-new'd m_rleData; finally, if
-// a palette source was supplied, 256 DWORDs are copied into a fresh m_20. Returns 1
+// a palette source was supplied, 256 DWORDs are copied into a fresh m_palette. Returns 1
 // (0 only if the source pointer is null). __thiscall, ret 0x18 (6 stack args).
 //
-// The CByteArray local -> /GX EH frame; SetAtGrow per byte; m_rleData/m_20 copies are
+// The CByteArray local -> /GX EH frame; SetAtGrow per byte; m_rleData/m_palette copies are
 // inline byte/dword loops. width/height/stride come from args (stride defaults to
 // width when -1). The run discriminator is `if (px != key) {literal} else {key}`
 // so the literal path falls through inline and the key path floats to the tail via
 // the forward `je` (docs/patterns/nested-if-success-deepest-error-tail.md).
 // @early-stop
 // 97.75% - the whole RLE state machine + the two run-scan extend loops + the m_rleData
-// byte-copy + the m_20 palette dword-copy are byte-identical to retail. The only
+// byte-copy + the m_palette palette dword-copy are byte-identical to retail. The only
 // residual is the /GX scope-table EH-frame artifact: retail emits `sub esp,0x18` /
 // `push 0x8` (scope cookie) / `add esp,0x24` where MSVC5 here emits `sub esp,0x14` /
 // `push 0x0` / `add esp,0x20`, shifting every [esp+N] local by 4. Not source-
@@ -91,7 +91,7 @@ i32 CDDrawShadeBlit::BuildRle(
     if (src == 0) {
         return 0;
     }
-    m_24 = keyVal;
+    m_colorKey = keyVal;
     if (stride == -1) {
         stride = width;
     }
@@ -144,11 +144,11 @@ i32 CDDrawShadeBlit::BuildRle(
     }
 
     if (palette != 0) {
-        if (m_20 != 0) {
-            RezFree(m_20);
+        if (m_palette != 0) {
+            RezFree(m_palette);
         }
-        m_20 = (u8*)operator new(0x400);
-        memcpy(m_20, palette, 0x400);
+        m_palette = (u8*)operator new(0x400);
+        memcpy(m_palette, palette, 0x400);
     }
     return 1;
 }
@@ -181,12 +181,12 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 // came out as 2 the pixels are run through the palette-remap helper. __thiscall, ret 0xc.
 // @early-stop
 // 79.7% - body byte-faithful through the palette-loop entry (prologue, flag-byte
-// branches, m_24/m_rleLen setup, the operator-new + 0xfffffd00 stride, the do-while
+// branches, m_colorKey/m_rleLen setup, the operator-new + 0xfffffd00 stride, the do-while
 // counter structure with the mid-body `i += 3` and `cmp 0x300/jl` all exact). The
 // residual is the zero/const-register-pinning wall (docs/patterns/
 // zero-register-pinning.md): retail pins the constant 2 in `bl` across the whole
 // body (used for the m_srcBpp/m_dstBpp byte stores AND the trailing `cmp [0x28],bl`)
-// and keeps the m_20 palette pointer in `edi` inside the loop; our cl puts m_20 in
+// and keeps the m_palette palette pointer in `edi` inside the loop; our cl puts m_palette in
 // `ebx` (clobbering bl -> a reload `mov bl,2` before the compare) and folds the
 // induction var `i` into the address base (`lea (i,src)` + `m_rleLen` as index) where
 // retail forms `src+m_rleLen` as the base + `i` as the scaled index. The downstream
@@ -195,7 +195,7 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 // final sweep.
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
-    i32 flags = src->m_04;
+    i32 flags = src->m_flags;
     if ((flags & 0x40) || (flags & 0x200)) {
         if ((u8)fmt == 0x10) {
             m_srcBpp = 1;
@@ -212,10 +212,10 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         m_dstBpp = 1;
     }
 
-    if (src->m_04 & 0x100) {
-        m_24 = src->m_18;
+    if (src->m_flags & 0x100) {
+        m_colorKey = src->m_srcKey;
     } else {
-        m_24 = -1;
+        m_colorKey = -1;
     }
 
     i32 stride = size - 0x20;
@@ -224,40 +224,40 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         return 0;
     }
 
-    if (src->m_04 & 0x80) {
+    if (src->m_flags & 0x80) {
         stride -= 0x300;
         m_rleLen = stride;
         if ((u8)fmt == 0x10) {
-            if (m_20 != 0) {
-                RezFree(m_20);
+            if (m_palette != 0) {
+                RezFree(m_palette);
             }
-            m_20 = (u8*)operator new(0x400);
+            m_palette = (u8*)operator new(0x400);
             i32 i = 0;
             i32 d = 0;
             do {
                 d += 4;
-                m_20[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
+                m_palette[d - 4] = ((u8*)src + m_rleLen)[i + 0x20];
                 i += 3;
-                m_20[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
-                m_20[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
+                m_palette[d - 3] = ((u8*)src + m_rleLen)[i + 0x1e];
+                m_palette[d - 2] = ((u8*)src + m_rleLen)[i + 0x1f];
             } while (i < 0x300);
         }
     }
 
-    m_width = src->m_08;
-    m_height = src->m_0c;
+    m_width = src->m_width;
+    m_height = src->m_height;
     if (m_rleData != 0) {
         RezFree(m_rleData);
     }
     m_rleData = (u8*)operator new(m_rleLen);
-    memcpy(m_rleData, src->m_20, m_rleLen);
+    memcpy(m_rleData, src->m_frameData, m_rleLen);
 
     if (m_srcBpp == 2) {
         void* remapped = Remap(m_rleData);
         RezFree(m_rleData);
         m_rleData = (u8*)remapped;
-        RezFree(m_20);
-        m_20 = 0;
+        RezFree(m_palette);
+        m_palette = 0;
     }
     return 1;
 }
@@ -278,8 +278,8 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
 // ~90% dead-store + regalloc wall: the m_srcBpp guard, the whole descriptor build, the
 // by-value CString + rep-movs desc passing, and the DecodeFrame tail are byte-exact.
 // The residual is a register coin-flip in the (dead) flags computation: retail pins
-// m_20 in eax and the flags accumulator in esi (so `or esi,0x100` / `or esi,0x80`,
-// 32-bit), where our cl pins flags in eax / m_20 in esi (`or ah,1` / `or al,0x80`,
+// m_palette in eax and the flags accumulator in esi (so `or esi,0x100` / `or esi,0x80`,
+// 32-bit), where our cl pins flags in eax / m_palette in esi (`or ah,1` / `or al,0x80`,
 // 8-bit sub-register). Retail also ELIMINATES the `mov [..],flags` store entirely
 // (a partial-DCE artifact) while cl keeps it parked past the struct copy (dead).
 // Neither the register pinning nor the half-DCE is source-steerable under /O2.
@@ -291,7 +291,7 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     }
     CImageFrameRebuildDesc desc;
     i32 flags = 0x3d;
-    if (m_20 != 0) {
+    if (m_palette != 0) {
         flags = 0xbd;
     }
     desc.f0 = 0;
@@ -301,11 +301,11 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     desc.f5 = a2;
     desc.f6 = 0;
     desc.f7 = 0;
-    if (m_24 != -1) {
+    if (m_colorKey != -1) {
         flags |= 0x100;
-        desc.f6 = (u8)m_24;
+        desc.f6 = (u8)m_colorKey;
     }
-    if (m_20 != 0) {
+    if (m_palette != 0) {
         flags |= 0x80;
     }
     desc.f1 = flags;

@@ -783,14 +783,14 @@ i32 CFileImage::BlitDirect(void* src, i32 mode) {
 
 // ---------------------------------------------------------------------------
 // CFileImage::Blit
-// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_a8,
-// src bpp = bitcount). When m_a8==0 / bitcount agree on the "no remap" fast path
+// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_bitDepth,
+// src bpp = bitcount). When m_bitDepth==0 / bitcount agree on the "no remap" fast path
 // it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
 // then src bpp picks the matching Blit<dest><src> specialization. Unhandled
 // combinations return 0.
 RVA(0x0013faa0, 0x108)
 i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
-    i32 dest = this->m_a8;
+    i32 dest = this->m_bitDepth;
     if ((dest == 0) == bitcount) {
         return BlitDirect(src, mode);
     }
@@ -894,7 +894,7 @@ CFileImage::~CFileImage() {
 // CFileImage::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
 // Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
 // element's slot-0 scalar-deleting destructor, RemoveAll the array (SetSize(0,-1)),
-// then - unless the "don't-own" flag (m_7c & 1) is set - Release the two held
+// then - unless the "don't-own" flag (m_dontOwn & 1) is set - Release the two held
 // IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
 RVA(0x0013e4d0, 0x7e)
 void CFileImage::FreeSurfaces() {
@@ -904,13 +904,13 @@ void CFileImage::FreeSurfaces() {
     }
     m_elements.SetSize(0, -1);
     if (this->m_8 != 0) {
-        if ((this->m_7c & 1) == 0) {
+        if ((this->m_dontOwn & 1) == 0) {
             this->m_8->Release();
         }
         this->m_8 = 0;
     }
     if (this->m_c != 0) {
-        if ((this->m_7c & 1) == 0) {
+        if ((this->m_dontOwn & 1) == 0) {
             this->m_c->Release();
         }
         this->m_c = 0;
@@ -981,7 +981,7 @@ public:
     virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
     virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
 
-    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
+    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_dontOwn zeroed)
     CByteArrayMember m_94;     // +0x94
     char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
 };
@@ -998,8 +998,8 @@ public:
         m_08 = 0;
         m_0c = 0;
         m_04 = 0;
-        m_7c = 0;
-        m_a8 = 0;
+        m_dontOwn = 0;
+        m_bitDepth = 0;
         m_b8 = 0;
     }
 
@@ -1007,11 +1007,11 @@ public:
     i32 m_08;                  // +0x08
     i32 m_0c;                  // +0x0c
     char m_pad10[0x7c - 0x10]; // +0x10
-    i32 m_7c;                  // +0x7c
+    i32 m_dontOwn;             // +0x7c
     char m_pad80[0x94 - 0x80]; // +0x80
     CByteArrayMember m_94;     // +0x94
     char m_pad98[0xa8 - 0x98]; // +0x98
-    i32 m_a8;                  // +0xa8
+    i32 m_bitDepth;            // +0xa8
     char m_padac[0xb8 - 0xac]; // +0xac
     i32 m_b8;                  // +0xb8
     char m_padbc[0xc0 - 0xbc]; // +0xbc
@@ -1107,13 +1107,13 @@ i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
 
 // ---------------------------------------------------------------------------
 // CFileImage::SaveDispatch (ret 0xc) - pick the per-bit-depth file writer by the
-// surface's raw bit depth m_a8 (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
+// surface's raw bit depth m_bitDepth (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
 // forwarding all three pass-through args; any other depth returns 0. Case bodies in
 // retail .text order (24, 16, 8); the near case labels lower to MSVC's compare
 // ladder.
 RVA(0x00144350, 0x5f)
 i32 CFileImage::SaveDispatch(char* a1, void* a2, void* a3) {
-    switch (m_a8) {
+    switch (m_bitDepth) {
         case 0x18:
             return SaveTga(a1, a2, (i32)a3); // 24bpp -> 0x144900
         case 0x10:
@@ -1144,7 +1144,7 @@ extern i32 g_bDown; // blue  down-shift
 // CFileImage::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file
 // writer (DIRSURF.CPP). Bail unless the surface is valid (slot-5 IsValid), the
 // name buffer `a1` is non-null and non-empty (*a1 != 0) and the surface is 16bpp
-// (m_a8 == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
+// (m_bitDepth == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
 // bfOffBits = 0x3a) + a zeroed BITMAPINFOHEADER (biSize 0x28, biWidth/biHeight =
 // surface w/h, biPlanes 1, biBitCount 0x18), operator-new a one-scanline 24bpp
 // buffer, Lock the surface, open the CFileIO (mode 0x2001 / 0x1001 by a3), write
@@ -1168,7 +1168,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     if (*(char*)a1 == 0) {
         return 0;
     }
-    if (this->m_a8 != 0x10) {
+    if (this->m_bitDepth != 0x10) {
         return 0;
     }
 

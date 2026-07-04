@@ -264,7 +264,7 @@ public:
     ); // arg1 = decode-target surface (-> DecodePcxData surf)
 
     // The surface SAVE/export path (DIRSURF.CPP). SaveFile validates the surface +
-    // arguments, then SaveDispatch picks the per-bit-depth writer by m_a8 (8/16/24).
+    // arguments, then SaveDispatch picks the per-bit-depth writer by m_bitDepth (8/16/24).
     // Clear blanks the surface, LoadKeyed blits + installs a colour key.
     i32 SaveFile(char* buf, i32 type, void* a3, void* a4); // 0x13f910 (ret 0x10)
     i32 SaveDispatch(char* a1, void* a2, void* a3);        // 0x144350 (ret 0xc)
@@ -400,15 +400,15 @@ public:
             i32 m_pitch;  // +0x20  row stride
         };
     };
-    i32 m_34;                   // +0x34  desc lPitch (returned by Lock)
+    i32 m_lockPitch;            // +0x34  desc lPitch (returned by Lock)
     char m_pad38[0x64 - 0x38];  // +0x38
     i32 m_64;                   // +0x64  pixel-format bit depth / colour-key colour
     char m_pad68[0x7c - 0x68];  // +0x68
-    i32 m_7c;                   // +0x7c  don't-own flag (bit0 => surfaces not released)
+    i32 m_dontOwn;              // +0x7c  don't-own flag (bit0 => surfaces not released)
     char m_pad80[0x94 - 0x80];  // +0x80
     CPtrArray m_elements;       // +0x94  owned element array (m_pData@0x98 / m_nSize@0x9c);
                                 //        FreeSurfaces scalar-dtor-deletes each then RemoveAll
-    i32 m_a8;                   // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
+    i32 m_bitDepth;             // +0xa8  raw bit depth (8/16/24; the SaveDispatch selector)
     i32 m_ac;                   // +0xac
     i32 m_b0;                   // +0xb0
     i32 m_b4;                   // +0xb4

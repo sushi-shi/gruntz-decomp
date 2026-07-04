@@ -1,23 +1,24 @@
 // ImagePool.cpp - the engine image/palette resource pool (C:\Proj\...\Image).
 // The pool keeps two MFC CObLists - a list of GDI surface nodes (+0x10) and a
 // list of palette nodes (+0x2c) - plus a teardown/add/remove API over them. The
-// node payloads are the image-surface + palette helper objects already modeled
-// (under placeholder names) in src/Stub/ApiCallers.cpp and src/Image/Image.cpp:
+// node payloads are the two engine node classes below (former placeholder views
+// GdiOwner_175c90 / PalBuilder_176df0 / DeleteObjHost_177070 folded to real names):
 //
-//   GdiOwner_175c90    (surface node)  - Cleanup() @0x175c90 releases its GDI
+//   CImageSurfaceNode   (surface node)  - Cleanup() @0x175c90 releases its GDI
 //                       object + buffer; SetPalette() @0x176ad0 (here) latches the
 //                       associated palette node ptr (+0x458) and a scalar (+0x454).
-//   PalBuilder_176df0  (palette node)  - Build() @0x176df0 realizes an HPALETTE
+//                       IS the CScanlineSurface software-surface class (shared
+//                       0x175c90 Free / 0x1757c0 Create / 0x175b80 Convert8To16).
+//   CImagePaletteNode   (palette node)  - Build() @0x176df0 realizes an HPALETTE
 //                       from a PALETTEENTRY[256]; ProcessPal/ParseDispatch/
-//                       ParsePaletteTail (here) are the format front-ends that
-//                       fill that array from a packed-RGB / dispatched / trailing-
-//                       768-byte source then forward to Build.
-//   DeleteObjHost_177070 (palette node, free view) - Run() @0x177070 deletes the
-//                       realized HPALETTE before the node is freed.
-//   CImgPoolExtLoader    - LoadByExtension() @0x176f90 (Image.cpp) loads a palette
+//                       ParsePaletteTail (here) are the format front-ends that fill
+//                       that array from a packed-RGB / dispatched / trailing-768-
+//                       byte source then forward to Build. Run() @0x177070 (former
+//                       DeleteObjHost free view, folded in) deletes the HPALETTE.
+//   CImgPoolExtLoader   - LoadByExtension() @0x176f90 (Image.cpp) loads a palette
 //                       node from a file by extension.
 //
-// Those four callees are external (reloc-masked): named here exactly as their
+// The decoder callees are external (reloc-masked): named here exactly as their
 // owning TUs spell them so the pool's calls reloc-mask. The pool walks/edits the
 // CObLists through the real MFC CObList (AddTail/RemoveAll/RemoveAt are NAFXCW,
 // reloc-masked via library labels) and (de)allocates nodes through the engine
@@ -37,50 +38,52 @@ extern "C" void* g_hResModule;
 // pool touches are pinned.
 // ---------------------------------------------------------------------------
 namespace ApiCallerStubs {
-    // The GDI surface node (list +0x10). Cleanup (this TU) releases its GDI object +
-    // Rez buffer; SetPalette (this TU) latches the associated palette node ptr.
-    struct GdiOwner_175c90 {
-        char m_pad0[0x428];                // +0x000..+0x427
-        HGDIOBJ m_428;                     // +0x428  the cached GDI object
-        void* m_42c;                       // +0x42c
-        void* m_430;                       // +0x430  a Rez-allocated buffer
-        i32 m_434;                         // +0x434
-        i32 m_438;                         // +0x438
-        i32 m_43c;                         // +0x43c
-        i32 m_440;                         // +0x440 (not zeroed by the inlined ctor)
-        i32 m_444;                         // +0x444
-        i32 m_448;                         // +0x448
-        POSITION m_listPosition;           // +0x44c  cached AddTail POSITION
-        i32 m_450;                         // +0x450 (not zeroed by the inlined ctor)
-        i32 m_454;                         // +0x454  associated scalar
-        void* m_paletteNode;               // +0x458  associated palette node
-        void Cleanup();                    // 0x175c90 (this TU)
+    struct CImagePaletteNode; // fwd (CImageSurfaceNode::m_paletteNode points at one)
+
+    // The surface list node (+0x10 list). This IS the CScanlineSurface software
+    // surface class: Cleanup @0x175c90 == CScanlineSurface::Free, and the decoders
+    // (@0x1757c0/0x175b80) are CScanlineSurface::Create/Convert8To16, so the +0x438..
+    // +0x448 geometry field roles are named from that shared class. Kept as a
+    // pool-local view (not folded onto <Image/CScanlineSurface.h>) pending the multi-
+    // TU convention reconcile of the 0x175a00 decoder (stdcall there vs the thiscall
+    // dispatch here). Cleanup releases the GDI DIB object + the scanline buffer;
+    // SetPalette latches the associated palette node.
+    struct CImageSurfaceNode {
+        char m_pad0[0x428];               // +0x000..+0x427  (BITMAPINFOHEADER + color table)
+        HGDIOBJ m_gdiObject;              // +0x428  cached GDI DIB object (DeleteObject on cleanup)
+        u8* m_pixels;                     // +0x42c  DIB section bits (freed with the DIB object)
+        u32* m_scanlineOffsets;           // +0x430  Rez-allocated scanline offset table
+        i32 m_434;                        // +0x434
+        i32 m_width;                      // +0x438  width
+        i32 m_height;                     // +0x43c  height
+        i32 m_440;                        // +0x440
+        i32 m_stride;                     // +0x444  stride (bytes per scanline)
+        i32 m_scanlineMode;               // +0x448  0 = contiguous, !=0 = offset-table walk
+        POSITION m_listPosition;          // +0x44c  cached AddTail POSITION
+        i32 m_450;                        // +0x450 (not zeroed by the inlined ctor)
+        i32 m_454;                        // +0x454  associated scalar
+        CImagePaletteNode* m_paletteNode; // +0x458  associated palette node
+        void Cleanup();                   // 0x175c90 (this TU) == CScanlineSurface::Free
         void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
     };
 
-    // The palette node (list +0x2c). Build (this TU) realizes the HPALETTE from a
-    // 256-entry LOGPALETTE it assembles in-place; the front-ends are also here.
-    struct PalBuilder_176df0 {
-        HPALETTE m_0;                                // +0x000  realized HPALETTE
-        LOGPALETTE m_pal;                            // +0x004  header + entry[0]
-        char m_pad_entries[0x408 - (4 + 4 + 4)];     // entry[1..255] -> +0x408
-        i32 m_408;                                   // +0x408  Build's stored flags
-        i32 m_40c;                                   // +0x40c
-        POSITION m_listPosition;                     // +0x410  cached AddTail POSITION
-        i32 Build(PALETTEENTRY* entries, i32 flags); // 0x176df0 (this TU)
-        void Tune1770e0();                           // 0x1770e0 (this TU)
-        i32 ProcessPal(void* rgb, i32 flags);        // 0x176e70 (this TU)
+    // The palette list node (+0x2c list). Build realizes the HPALETTE from a 256-entry
+    // LOGPALETTE it assembles in-place; the front-ends fill that array. Run (former
+    // CImagePaletteNode free view, folded in) deletes the realized HPALETTE before
+    // the node is freed.
+    struct CImagePaletteNode {
+        HPALETTE m_palette;                     // +0x000  realized HPALETTE (CreatePalette)
+        LOGPALETTE m_pal;                       // +0x004  header + entry[0]
+        char m_padEntries[0x408 - (4 + 4 + 4)]; // entry[1..255] -> +0x408
+        i32 m_flags;                            // +0x408  Build's stored flags (Run zeroes it)
+        i32 m_systemTuned;                      // +0x40c  1 when reserved system range snapshotted
+        POSITION m_listPosition;                // +0x410  cached AddTail POSITION
+        i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (this TU)
+        void Tune1770e0();                                          // 0x1770e0 (this TU)
+        i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
         i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
-    };
-
-    // The palette node's free view: Run deletes the realized HPALETTE. Aliases the
-    // same node as PalBuilder (m_obj == m_0, m_408 == m_408).
-    struct DeleteObjHost_177070 {
-        HGDIOBJ m_obj;         // +0x000  the realized HPALETTE (as a GDI object)
-        char m_pad[0x408 - 4]; // +0x004..+0x407
-        i32 m_408;             // +0x408
-        void Run();            // 0x177070 (this TU)
+        void Run();                                                 // 0x177070 (this TU)
     };
 
     // Two free GDI palette helpers PalBuilder::Build/Tune funnel through (defined at
@@ -97,12 +100,11 @@ public:
     i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (foreign, reloc-masked)
 };
 
-using ApiCallerStubs::DeleteObjHost_177070;
-using ApiCallerStubs::GdiOwner_175c90;
-using ApiCallerStubs::PalBuilder_176df0;
+using ApiCallerStubs::CImagePaletteNode;
+using ApiCallerStubs::CImageSurfaceNode;
 
 // The surface-node build views. The five surface factories below RezAlloc a fresh
-// GdiOwner_175c90 node (0x45c bytes) then forward to one of these foreign decoders
+// CImageSurfaceNode node (0x45c bytes) then forward to one of these foreign decoders
 // (each annotated/owned by Image.cpp / CImageBlit.cpp / CImgPoolScan.cpp) - the
 // `call rel32` reloc-masks against the owning TU's symbol. Minimal inline decls; the
 // mangling depends only on class + method name + param types + convention.
@@ -127,19 +129,19 @@ class CImagePool {
 public:
     i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
     void Clear();                                                                 // 0x174eb0
-    void RemovePalette(PalBuilder_176df0* node);                                  // 0x174f30
+    void RemovePalette(CImagePaletteNode* node);                                  // 0x174f30
     void ClearSurfaces();                                                         // 0x174f60
     void ClearPalettes();                                                         // 0x174fa0
-    PalBuilder_176df0* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);       // 0x1754f0
-    PalBuilder_176df0* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
-    PalBuilder_176df0* AddImageFile(char* path, i32 arg);                         // 0x1755f0
-    PalBuilder_176df0* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
+    CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);       // 0x1754f0
+    CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
+    CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
+    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
 
-    GdiOwner_175c90* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x174fe0
-    GdiOwner_175c90* AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1750e0
-    GdiOwner_175c90* AddSurfaceOp(i32 a1, i32 a2, i32 a3);                   // 0x1751f0
-    GdiOwner_175c90* AddSurfaceRez(i32 a1, i32 a2);                          // 0x1752f0
-    GdiOwner_175c90* AddSurfaceConvert(i32 a1, i32 a2);                      // 0x1753f0
+    CImageSurfaceNode* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x174fe0
+    CImageSurfaceNode* AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1750e0
+    CImageSurfaceNode* AddSurfaceOp(i32 a1, i32 a2, i32 a3);                   // 0x1751f0
+    CImageSurfaceNode* AddSurfaceRez(i32 a1, i32 a2);                          // 0x1752f0
+    CImageSurfaceNode* AddSurfaceConvert(i32 a1, i32 a2);                      // 0x1753f0
 
     HINSTANCE m_resourceModuleHandle; // +0x00  resource module handle (-> g_hResModule)
     HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
@@ -178,14 +180,14 @@ void CImagePool::Clear() {
 // the +0x2c list (by its cached POSITION), delete its HPALETTE, free it.
 // ===========================================================================
 RVA(0x00174f30, 0x30)
-void CImagePool::RemovePalette(PalBuilder_176df0* node) {
+void CImagePool::RemovePalette(CImagePaletteNode* node) {
     if (!node) {
         return;
     }
     if (node->m_listPosition) {
         m_palettes.RemoveAt(node->m_listPosition);
     }
-    ((DeleteObjHost_177070*)node)->Run();
+    ((CImagePaletteNode*)node)->Run();
     RezFree(node);
 }
 
@@ -196,7 +198,7 @@ RVA(0x00174f60, 0x37)
 void CImagePool::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
-        GdiOwner_175c90* item = (GdiOwner_175c90*)m_surfaces.GetNext(pos);
+        CImageSurfaceNode* item = (CImageSurfaceNode*)m_surfaces.GetNext(pos);
         if (item) {
             item->Cleanup();
             RezFree(item);
@@ -213,7 +215,7 @@ RVA(0x00174fa0, 0x3e)
 void CImagePool::ClearPalettes() {
     POSITION pos = m_palettes.GetHeadPosition();
     while (pos) {
-        DeleteObjHost_177070* item = (DeleteObjHost_177070*)m_palettes.GetNext(pos);
+        CImagePaletteNode* item = (CImagePaletteNode*)m_palettes.GetNext(pos);
         if (item) {
             item->Run();
             RezFree(item);
@@ -242,19 +244,19 @@ void CImagePool::ClearPalettes() {
 // regalloc tie-break: node should be edi / zero should be ebx (retail); recompile
 // swaps the two callee-saved regs. Code byte-identical otherwise.
 RVA(0x00174fe0, 0xfe)
-GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
+CImageSurfaceNode* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
     HDC hdc = GetDC(m_sourceHwnd);
-    GdiOwner_175c90* node;
-    GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
+    CImageSurfaceNode* node;
+    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_428 = 0;
-        raw->m_42c = 0;
-        raw->m_430 = 0;
+        raw->m_gdiObject = 0;
+        raw->m_pixels = 0;
+        raw->m_scanlineOffsets = 0;
         raw->m_434 = 0;
-        raw->m_438 = 0;
-        raw->m_43c = 0;
-        raw->m_444 = 0;
-        raw->m_448 = 0;
+        raw->m_width = 0;
+        raw->m_height = 0;
+        raw->m_stride = 0;
+        raw->m_scanlineMode = 0;
         raw->m_listPosition = 0;
         raw->m_454 = 0;
         raw->m_paletteNode = 0;
@@ -286,19 +288,19 @@ GdiOwner_175c90* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001750e0, 0x103)
-GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+CImageSurfaceNode* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     HDC hdc = GetDC(m_sourceHwnd);
-    GdiOwner_175c90* node;
-    GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
+    CImageSurfaceNode* node;
+    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_428 = 0;
-        raw->m_42c = 0;
-        raw->m_430 = 0;
+        raw->m_gdiObject = 0;
+        raw->m_pixels = 0;
+        raw->m_scanlineOffsets = 0;
         raw->m_434 = 0;
-        raw->m_438 = 0;
-        raw->m_43c = 0;
-        raw->m_444 = 0;
-        raw->m_448 = 0;
+        raw->m_width = 0;
+        raw->m_height = 0;
+        raw->m_stride = 0;
+        raw->m_scanlineMode = 0;
         raw->m_listPosition = 0;
         raw->m_454 = 0;
         raw->m_paletteNode = 0;
@@ -330,19 +332,19 @@ GdiOwner_175c90* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001751f0, 0xf9)
-GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
+CImageSurfaceNode* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
     HDC hdc = GetDC(m_sourceHwnd);
-    GdiOwner_175c90* node;
-    GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
+    CImageSurfaceNode* node;
+    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_428 = 0;
-        raw->m_42c = 0;
-        raw->m_430 = 0;
+        raw->m_gdiObject = 0;
+        raw->m_pixels = 0;
+        raw->m_scanlineOffsets = 0;
         raw->m_434 = 0;
-        raw->m_438 = 0;
-        raw->m_43c = 0;
-        raw->m_444 = 0;
-        raw->m_448 = 0;
+        raw->m_width = 0;
+        raw->m_height = 0;
+        raw->m_stride = 0;
+        raw->m_scanlineMode = 0;
         raw->m_listPosition = 0;
         raw->m_454 = 0;
         raw->m_paletteNode = 0;
@@ -374,20 +376,20 @@ GdiOwner_175c90* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001752f0, 0xfc)
-GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
+CImageSurfaceNode* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
-    GdiOwner_175c90* node;
-    GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
+    CImageSurfaceNode* node;
+    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_428 = 0;
-        raw->m_42c = 0;
-        raw->m_430 = 0;
+        raw->m_gdiObject = 0;
+        raw->m_pixels = 0;
+        raw->m_scanlineOffsets = 0;
         raw->m_434 = 0;
-        raw->m_438 = 0;
-        raw->m_43c = 0;
-        raw->m_444 = 0;
-        raw->m_448 = 0;
+        raw->m_width = 0;
+        raw->m_height = 0;
+        raw->m_stride = 0;
+        raw->m_scanlineMode = 0;
         raw->m_listPosition = 0;
         raw->m_454 = 0;
         raw->m_paletteNode = 0;
@@ -419,19 +421,19 @@ GdiOwner_175c90* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
-GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
+CImageSurfaceNode* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
     HDC hdc = GetDC(m_sourceHwnd);
-    GdiOwner_175c90* node;
-    GdiOwner_175c90* raw = (GdiOwner_175c90*)RezAlloc(0x45c);
+    CImageSurfaceNode* node;
+    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_428 = 0;
-        raw->m_42c = 0;
-        raw->m_430 = 0;
+        raw->m_gdiObject = 0;
+        raw->m_pixels = 0;
+        raw->m_scanlineOffsets = 0;
         raw->m_434 = 0;
-        raw->m_438 = 0;
-        raw->m_43c = 0;
-        raw->m_444 = 0;
-        raw->m_448 = 0;
+        raw->m_width = 0;
+        raw->m_height = 0;
+        raw->m_stride = 0;
+        raw->m_scanlineMode = 0;
         raw->m_listPosition = 0;
         raw->m_454 = 0;
         raw->m_paletteNode = 0;
@@ -474,12 +476,12 @@ GdiOwner_175c90* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
 // only because its early m_resourceModuleHandle read pins `this`=edi; with `this` first used at the
 // tail there is no source lever. Logic byte-identical.
 RVA(0x001754f0, 0x7b)
-PalBuilder_176df0* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
-    PalBuilder_176df0* node;
-    PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
+CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
+    CImagePaletteNode* node;
+    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
-        raw->m_40c = 0;
+        raw->m_palette = 0;
+        raw->m_systemTuned = 0;
         raw->m_listPosition = 0;
         node = raw;
     } else {
@@ -487,7 +489,7 @@ PalBuilder_176df0* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
     }
     if (node->Build(entries, flags) == 0) {
         if (node) {
-            ((DeleteObjHost_177070*)node)->Run();
+            ((CImagePaletteNode*)node)->Run();
             RezFree(node);
         }
         return 0;
@@ -500,12 +502,12 @@ PalBuilder_176df0* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
 // this-register regalloc wall (~99%): same as AddPaletteEntries (this in ebx vs
 // retail edi). Logic byte-identical.
 RVA(0x00175570, 0x7b)
-PalBuilder_176df0* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
-    PalBuilder_176df0* node;
-    PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
+CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
+    CImagePaletteNode* node;
+    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
-        raw->m_40c = 0;
+        raw->m_palette = 0;
+        raw->m_systemTuned = 0;
         raw->m_listPosition = 0;
         node = raw;
     } else {
@@ -513,7 +515,7 @@ PalBuilder_176df0* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     }
     if (node->ProcessPal(rgb, flags) == 0) {
         if (node) {
-            ((DeleteObjHost_177070*)node)->Run();
+            ((CImagePaletteNode*)node)->Run();
             RezFree(node);
         }
         return 0;
@@ -523,13 +525,13 @@ PalBuilder_176df0* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
 }
 
 RVA(0x001755f0, 0x82)
-PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
+CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     g_hResModule = m_resourceModuleHandle;
-    PalBuilder_176df0* node;
-    PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
+    CImagePaletteNode* node;
+    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
-        raw->m_40c = 0;
+        raw->m_palette = 0;
+        raw->m_systemTuned = 0;
         raw->m_listPosition = 0;
         node = raw;
     } else {
@@ -537,7 +539,7 @@ PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
     }
     if (((CImgPoolExtLoader*)node)->LoadByExtension(path, arg) == 0) {
         if (node) {
-            ((DeleteObjHost_177070*)node)->Run();
+            ((CImagePaletteNode*)node)->Run();
             RezFree(node);
         }
         return 0;
@@ -550,12 +552,12 @@ PalBuilder_176df0* CImagePool::AddImageFile(char* path, i32 arg) {
 // this-register regalloc wall (~99%): same as AddPaletteEntries (this in ebx vs
 // retail edi). Logic byte-identical.
 RVA(0x00175680, 0x85)
-PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
-    PalBuilder_176df0* node;
-    PalBuilder_176df0* raw = (PalBuilder_176df0*)RezAlloc(0x414);
+CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
+    CImagePaletteNode* node;
+    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
     if (raw) {
-        raw->m_0 = 0;
-        raw->m_40c = 0;
+        raw->m_palette = 0;
+        raw->m_systemTuned = 0;
         raw->m_listPosition = 0;
         node = raw;
     } else {
@@ -563,7 +565,7 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     }
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
-            ((DeleteObjHost_177070*)node)->Run();
+            ((CImagePaletteNode*)node)->Run();
             RezFree(node);
         }
         return 0;
@@ -573,21 +575,21 @@ PalBuilder_176df0* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 }
 
 // ===========================================================================
-// GdiOwner_175c90::SetPalette (ret 8) - latch the palette node ptr
+// CImageSurfaceNode::SetPalette (ret 8) - latch the palette node ptr
 // (+0x458) and the associated scalar (+0x454).
 // ===========================================================================
 RVA(0x00176ad0, 0x17)
-void ApiCallerStubs::GdiOwner_175c90::SetPalette(void* pal, i32 a) {
-    m_paletteNode = pal;
+void ApiCallerStubs::CImageSurfaceNode::SetPalette(void* pal, i32 a) {
+    m_paletteNode = (CImagePaletteNode*)pal;
     m_454 = a;
 }
 
 // ===========================================================================
-// PalBuilder_176df0::ProcessPal (ret 8) - expand a packed RGB-triple
+// CImagePaletteNode::ProcessPal (ret 8) - expand a packed RGB-triple
 // source into a PALETTEENTRY[256] (peFlags untouched) then realize it.
 // ===========================================================================
 RVA(0x00176e70, 0x4e)
-i32 ApiCallerStubs::PalBuilder_176df0::ProcessPal(void* rgb, i32 flags) {
+i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
     PALETTEENTRY pal[256];
     u8* s = (u8*)rgb;
     PALETTEENTRY* d = pal;
@@ -601,11 +603,11 @@ i32 ApiCallerStubs::PalBuilder_176df0::ProcessPal(void* rgb, i32 flags) {
 }
 
 // ===========================================================================
-// PalBuilder_176df0::ParseDispatch  @0x177040 (ret 0x10) - format-3 -> the
+// CImagePaletteNode::ParseDispatch  @0x177040 (ret 0x10) - format-3 -> the
 // trailing-palette path; anything else fails.
 // ===========================================================================
 RVA(0x00177040, 0x23)
-i32 ApiCallerStubs::PalBuilder_176df0::ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
+i32 ApiCallerStubs::CImagePaletteNode::ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
     if (type == 3) {
         return ParsePaletteTail(buf, size, ctrl);
     }
@@ -613,7 +615,7 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParseDispatch(void* buf, u32 size, i32 ty
 }
 
 // ===========================================================================
-// PalBuilder_176df0::ParsePaletteTail (ret 0xc) - extract the
+// CImagePaletteNode::ParsePaletteTail (ret 0xc) - extract the
 // trailing 768-byte VGA palette from the end of `buf` into a PALETTEENTRY[256]
 // (peFlags = 0) and realize it; needs at least 0x300 bytes.
 // ===========================================================================
@@ -625,7 +627,7 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParseDispatch(void* buf, u32 size, i32 ty
 // recompile: R,flags,G,B from d=buf+2). Not source-steerable (cf. the entropy-
 // prone decoder tails in Image.cpp). Logic byte-faithful.
 RVA(0x00177400, 0x76)
-i32 ApiCallerStubs::PalBuilder_176df0::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
+i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[256];
     if (size < 0x300) {
         return 0;
@@ -650,24 +652,24 @@ i32 ApiCallerStubs::PalBuilder_176df0::ParsePaletteTail(void* buf, u32 size, i32
 namespace ApiCallerStubs {
     // 0x175c90: release the cached GDI object + Rez buffer and clear the slots.
     RVA(0x00175c90, 0x45)
-    void GdiOwner_175c90::Cleanup() {
-        if (m_428) {
-            DeleteObject(m_428);
-            m_428 = 0;
+    void CImageSurfaceNode::Cleanup() {
+        if (m_gdiObject) {
+            DeleteObject(m_gdiObject);
+            m_gdiObject = 0;
         }
-        if (m_430) {
-            RezFree(m_430);
-            m_430 = 0;
+        if (m_scanlineOffsets) {
+            RezFree(m_scanlineOffsets);
+            m_scanlineOffsets = 0;
         }
-        m_42c = 0;
+        m_pixels = 0;
         m_paletteNode = 0;
     }
 
     // 0x176df0: build a 256-entry LOGPALETTE from src, optionally reserve the system
-    // range, then realize it into m_0.
+    // range, then realize it into m_palette.
     RVA(0x00176df0, 0x71)
-    i32 PalBuilder_176df0::Build(PALETTEENTRY* src, i32 flags) {
-        m_408 = flags;
+    i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
+        m_flags = flags;
         m_pal.palNumEntries = 0x100;
         m_pal.palVersion = 0x300;
         DWORD* s = (DWORD*)src;
@@ -680,20 +682,20 @@ namespace ApiCallerStubs {
         } while (--i);
         if (winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps() && !(flags & 1)) {
             Tune1770e0();
-            m_40c = 1;
+            m_systemTuned = 1;
         }
-        m_0 = CreatePalette(&m_pal);
-        return m_0 != 0;
+        m_palette = CreatePalette(&m_pal);
+        return m_palette != 0;
     }
 
     // 0x177070: delete the owned GDI object, then clear a far flag.
     RVA(0x00177070, 0x22)
-    void DeleteObjHost_177070::Run() {
-        if (m_obj) {
-            DeleteObject(m_obj);
-            m_obj = 0;
+    void CImagePaletteNode::Run() {
+        if (m_palette) {
+            DeleteObject(m_palette);
+            m_palette = 0;
         }
-        m_408 = 0;
+        m_flags = 0;
     }
 
     // 0x1770a0: does the display device support a palette? (RC_PALETTE bit)
@@ -711,7 +713,7 @@ namespace ApiCallerStubs {
     // 0x1770e0: snapshot the reserved system-palette entries, marking the interior
     // animatable range PC_RESERVED (peFlags=1).
     RVA(0x001770e0, 0x7c)
-    void PalBuilder_176df0::Tune1770e0() {
+    void CImagePaletteNode::Tune1770e0() {
         winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
         HDC dc = CreateDCA("DISPLAY", 0, 0, 0);
         i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);

@@ -52,13 +52,13 @@ struct ShadeDescr {
 class CImageBuildDesc {
 public:
     char _00[0x04];
-    i32 m_04; // +0x04  decode flags
-    i32 m_08; // +0x08  -> sprite width
-    i32 m_0c; // +0x0c  -> sprite height
+    i32 m_flags;  // +0x04  decode flags
+    i32 m_width;  // +0x08  -> sprite width
+    i32 m_height; // +0x0c  -> sprite height
     char _10[0x18 - 0x10];
-    u8 m_18; // +0x18  -> sprite color key when 0x100 set
+    u8 m_srcKey; // +0x18  -> sprite color key when 0x100 set
     char _19[0x20 - 0x19];
-    u8 m_20[1]; // +0x20  raw frame data (palette + pixels)
+    u8 m_frameData[1]; // +0x20  raw frame data (palette + pixels)
 };
 
 // The 8-dword (0x20) by-value frame descriptor Rebuild builds on the stack and hands
@@ -123,29 +123,29 @@ public:
     // The forward (left-to-right) twin of ConvertRowDouble: same dual-write (dst and
     // dst+rowDelta), but dst and the saved-dest scratch line walk UP. Dense (m_14-2)
     // jump table over cases 2/3/7/8 (4/5/6 fall through). Case 3 is symmetric (both
-    // rows get the m_18 LUT of the saved dest; src is unused).
+    // rows get the m_light LUT of the saved dest; src is unused).
     void ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d5e0
     // The dual-write (vertical-double) row converter: each pixel is written to dst
     // and dst+rowDelta. Five (m_14-2) blend cases (2/3/7/8); 4/5/6 fall through.
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta); // 0x14d950
 
     i32 m_00;       // +0x00
-    i32 m_width;    // +0x04 sprite row width (Build: src->m_08)
-    i32 m_height;   // +0x08 height (Build: src->m_0c)
+    i32 m_width;    // +0x04 sprite row width (Build: src->m_width)
+    i32 m_height;   // +0x08 height (Build: src->m_height)
     u8* m_rleData;  // +0x0c RLE sprite-stream base (decoded pixel buffer; new / RezFree)
     i32 m_rleLen;   // +0x10 RLE sprite-stream length (byte bound; pixel byte count)
     i32 m_drawType; // +0x14 draw type / row-convert selector (switch tag; ctor default 1)
-    i32 m_18; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_lut (cases 3/4); alpha (case 6); fill byte (case 5)
+    i32 m_light; // +0x18 light level (ctor default 0x80): >>3 selects the LUT bank (Blit); low index into m_palDescr->m_lut (cases 3/4); alpha (case 6); fill byte (case 5)
     ShadeDescr* m_palDescr; // +0x1c palette / source-descriptor pointer (ctor default 0)
-    u8* m_20; // +0x20 256-entry (0x400 B) palette byte buffer (Build/BuildRle; new 0x400 / RezFree)
-    i32 m_24; // +0x24 color key (ctor default -1)
+    u8* m_palette; // +0x20 256-entry (0x400 B) palette byte buffer (Build/BuildRle; new 0x400 / RezFree)
+    i32 m_colorKey; // +0x24 color key (ctor default -1)
     u8 m_srcBpp; // +0x28 source pixel size in bytes (1 or 2); RLE run stride, ==1 gate; ctor default 1
     u8 m_dstBpp; // +0x29 dest pixel size in bytes (= blend mode, used as row stride); ctor default 1
-    char m_2a[0x2c - 0x2a];
-    i32 m_2c;       // +0x2c pixel-format blend variant flag (RGB555/565 shift check)
-    u8* m_lutBank0; // +0x30 blend LUT bank 0 (from g_lutBank0_673ca0)
-    u8* m_lutBank1; // +0x34 blend LUT bank 1 (from g_lutBank1_653ca0)
-    u8* m_lutBank2; // +0x38 blend LUT bank 2 (from g_lutBank2_663ca0)
+    char _2a[0x2c - 0x2a];
+    i32 m_blendVariant; // +0x2c pixel-format blend variant flag (RGB555/565 shift check)
+    u8* m_lutBank0;     // +0x30 blend LUT bank 0 (from g_lutBank0_673ca0)
+    u8* m_lutBank1;     // +0x34 blend LUT bank 1 (from g_lutBank1_653ca0)
+    u8* m_lutBank2;     // +0x38 blend LUT bank 2 (from g_lutBank2_663ca0)
 };
 
 #endif // GRUNTZ_CDDRAWSHADEBLIT_H

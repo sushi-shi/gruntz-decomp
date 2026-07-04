@@ -265,7 +265,7 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_a8 != 8) {
+    if (m_bitDepth != 8) {
         return 0;
     }
     CFileImagePal* src = (CFileImagePal*)pal;
@@ -365,7 +365,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
     if (*path == 0) {
         return 0;
     }
-    if (m_a8 != 0x18) {
+    if (m_bitDepth != 0x18) {
         return 0;
     }
 
