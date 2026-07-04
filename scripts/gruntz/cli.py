@@ -218,6 +218,10 @@ def cmd_build(args) -> None:
     # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
     # so this is the only check on its address uniqueness + format.
     run([sys.executable, "-m", "gruntz.match.verify_stubs"])
+    # Gate: no retail RVA may be double-claimed by a src RVA() reconstruction AND a
+    # config/library_labels.csv carve-out row (game body vs library body must be
+    # mutually exclusive). FATAL, no allowlist. See gruntz.match.verify_library_overlap.
+    run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
     summarize(json.loads(REPORT.read_text()))
 
     # Non-fatal extras: per-function source fingerprints (so regression checks can

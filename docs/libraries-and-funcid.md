@@ -234,6 +234,21 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > `config/library_labels.csv`. The Ghidra-FID route below is kept for context: it
 > explains why no stock MSVC-5.0 fidb exists and what a signature db must capture.
 
+> **Single-claim invariant (FATAL build gate).** Every retail RVA is claimed by
+> EXACTLY ONE side: an `RVA()`/`RVAU()` reconstruction in `src/` (a GAME body) **xor**
+> a `config/library_labels.csv` row (a carved LIBRARY body, excluded from the match
+> denominator). Claiming the same RVA in both is a **double-claim on the same bytes**.
+> `python -m gruntz.match.verify_library_overlap` (wired fatally into `gruntz build`,
+> no allowlist) enforces `src RVA() ∩ library_labels.csv = ∅`. The FID matcher is a
+> fuzzy signature matcher, so it emits false positives (a real function has ONE
+> address, yet e.g. `??_G__non_rtti_object` recurred at ~199 RVAs, `__inc` at ~989);
+> when a genuine game body is reconstructed on such an RVA, **prune the false CSV
+> row** (the src is right). Conversely, if a hand-copy of Microsoft's code slips into
+> `src/`, **carve it to the CSV** (the CSV is right) and call the real routine via
+> `<Mfc.h>`. P0's reconciliation carved 23 HIGH-confidence NAFXCW bodies (CFile
+> family, CWinApp profile/registry API, AfxFullPath / CFile::GetStatus/SetStatus,
+> AfxGetInProcServer / _AfxGetMouseScrollLines) and pruned 42 FID false rows.
+
 **Does Ghidra ship a usable FID db for MSVC 5.0? NO.** Ghidra's bundled FID
 databases (in `ghidra-data/FunctionID`, auto-installed) are:
 `vsOlder_x86.fidb`, `vsOlder_x64.fidb`, `vs2012_x86/x64`, `vs2015_x86/x64`,
