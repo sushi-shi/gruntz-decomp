@@ -17,10 +17,20 @@
 
 // A resolved asset source (CState::m_2c/m_28/m_30/m_34). LookupSet resolves a named
 // set ("TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ"); LoadGroup loads a named sub-group/set.
+//
+// IDENTITY (matcher-2, verified via sema): CResSource is the bank-source facet of the
+// ButeMgr symbol table CSymTab (<Bute/SymTab.h>) - its two entries are that class's
+// methods: LookupSet == CSymTab::ResolvePath (0x13bae0), LoadGroup == CSymTab::FindSub
+// (0x13a230). The state activators reach the SAME +0x2c/+0x28/+0x30 source through this
+// facet (LookupSet) - so folding a state's CSymTab-typed asset-source shadow (e.g.
+// StateImages' bootySymTab/gruntzSymTab) onto CState's CResSource* fields is byte-neutral.
+// Kept as this 2-method facet rather than retyped to CSymTab because the excluded Play.cpp
+// reaches m_levelBank/m_gameBank by the LookupSet name (full CResSource<->CSymTab merge
+// deferred; see the reports).
 SIZE_UNKNOWN(CResSource);
 struct CResSource {
-    void* LookupSet(char* szName); // 0x13bae0 __thiscall
-    void* LoadGroup(char* szName); // 0x13a230 __thiscall
+    void* LookupSet(char* szName); // 0x13bae0 __thiscall (== CSymTab::ResolvePath)
+    void* LoadGroup(char* szName); // 0x13a230 __thiscall (== CSymTab::FindSub)
 };
 
 // The bank/namespace manager at CState::m_8. Lookup resolves a named bank into a
