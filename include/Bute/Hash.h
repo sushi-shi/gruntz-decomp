@@ -26,6 +26,8 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <string.h> // _strcmpi (0x11fdf0) / strcmp (/Oi intrinsic byte-loop) - the
+                    // case-(in)sensitive compares the Hash.cpp lookups emit
 
 // The Rez heap alloc/free (0x1b9b46 _RezAlloc = operator new / 0x1b9b82 _RezFree,
 // both __cdecl); reloc-masked.
@@ -43,10 +45,6 @@ void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()
 // address is passed to the array-delete. Modeled as a stub so the DIR32 reloc to
 // it falls out.
 void CHashSlot_Dtor(); // 0x584a30 (retail "empty_stub")
-
-// Case-(in)sensitive compares the lookups emit (CRT, reloc-masked rel32).
-extern "C" i32 __cdecl _strcmpi(const char* a, const char* b); // 0x11fdf0
-extern "C" i32 strcmp(const char* a, const char* b);           // inline byte loop
 
 // The intrusive doubly-linked chain node threaded through each stored element at
 // element+0x04 (next@+0, prev@+4). Chains store &element->m_link; the element is
