@@ -595,6 +595,7 @@ SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size
 // m_4->m_5c->AddItem(text, 0x20, 0x11).
 struct CNetChatLog {
     i32 AddItem(const char* text, i32 type, i32 data); // 0x00421c60
+    void FreeNodes(); // 0x128a (thunk; formerly the per-TU CFreeNodesView shadow)
 };
 SIZE_UNKNOWN(CNetChatLog); // method-only chat-display view; retail size TBD
 
@@ -625,8 +626,14 @@ struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
     i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel/
                                        //              menu-select "ready options" gate)
-    char m_pad0[4];                    // +0x00
-    CNetGameWnd* m_wnd;                // +0x04  the window (its +0x4 is the engine HWND)
+    // The connect-driver lobby helpers (external, incremental-link thunked -> the
+    // call rel32 reloc-masks). Formerly the per-TU CNetGameMgrView shadow.
+    void ResetClockGlobals();   // 0x1d98 (thunk)
+    void ClearOptionsSlots();   // 0x30df (thunk)
+    i32 InitLobbySettings();    // 0x2112 (thunk)
+    CString GetWorldFileName(); // 0x2531 (thunk)
+    char m_pad0[4];             // +0x00
+    CNetGameWnd* m_wnd;         // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
     CNetConfigStore* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
     char m_pad3c[0x5c - 0x3c];

@@ -2910,7 +2910,7 @@ netmgr	?InitFromProvider@CNetMgr@@QAEHPAXHHHH@Z	96.4133	96.4133	2	61285bfab4be	0
 netmgr	?InitSession@CNetSessionNode@@QAEHHPBD0H@Z	100.0000	100.0000	2	c88f7f193db3	0x1796c0
 netmgr	?JoinAndRegisterChannel@CNetMgr@@QAEHXZ	88.0270	88.0270	3	8a5894ec0423	0xb8b10
 netmgr	?LoadConfig@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	1	66e2eaddb4d0	0xbce80
-netmgr	?NetSetupDlgProc@@YGHPAUHWND__@@IIH@Z	76.5467	76.5467	2	0f6f14370281	0xb7b10
+netmgr	?NetSetupDlgProc@@YGHPAUHWND__@@IIH@Z	76.5467	76.5467	3	09abd7baf479	0xb7b10
 netmgr	?OnDropPlayer@CNetMgr@@QAEXXZ	100.0000	100.0000	7	7e42d2494dbb	0xbc110
 netmgr	?OnJoinConfirm@CNetMgr@@QAEHPAX@Z	81.5148	81.5148	1	1bca230b31c6	0xb8cf0
 netmgr	?OnMultiOptions@CNetMgr@@QAEXXZ	100.0000	100.0000	4	e869ce4641a0	0xbadd0
@@ -2951,7 +2951,7 @@ netmgr	?SetGroupData2@CNetMgr@@QAEHPAUCNetPlayerEntry@@0HHH@Z	100.0000	100.0000	
 netmgr	?SetGroupDataFrom@CNetMgr@@QAEHPAUCNetPlayerEntry@@HHH@Z	100.0000	100.0000	3	f5004aeb590e	0x179090
 netmgr	?SetupServices@CNetMgr@@QAEHXZ	98.2243	98.2243	2	5d5de00baf0b	0xb78b0
 netmgr	?SetupTcpIpConfig@CNetMgr@@QAEHXZ	74.2317	74.2317	3	5b448c107f06	0xbc460
-netmgr	?Stub_0b5460@CNetMgr@@QAEHHHH@Z	71.2400	71.2400	1	e9efdc13b60b	0xb5460
+netmgr	?Stub_0b5460@CNetMgr@@QAEHHHH@Z	71.2400	71.2400	2	4940154fe582	0xb5460
 netmgr	?VerifyCustomLevel@CNetMgr@@QAEHHH@Z	7.1702	7.1702	2	f4e26819863c	0xb8fc0
 netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0

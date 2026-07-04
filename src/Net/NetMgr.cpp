@@ -24,6 +24,7 @@
 // a reentrancy flag, and (Pause/OutOfSync) forward a WM_COMMAND to the engine
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
+#include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
@@ -34,10 +35,12 @@
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * tiny-method-view over this/m_4 - ((CNetConnectThis/CNetGameMgrView/CSymParserView/
-//     CFreeNodesView*)obj)->M(): external reloc-masked __thiscall engine methods (own
-//     RVA) fired on the same object; the view is the modeling mechanism (see the defs
-//     near the connection driver), same idiom as the pmf-through-vtable dispatch below.
+//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectVtbl/CSymParserView*)obj)
+//     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
+//     the view is the modeling mechanism (see the defs near the connection driver), same
+//     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
+//     helpers are now real methods on CNetGameMgr / CNetChatLog - those shadows folded
+//     away; CSymParserView stays local, blocked by a header symbol-decl collision.)
 //   * TF(o)/MF(o) deliberate raw-offset macros: the ConnectDriver writes almost all
 //     unnamed padding, so the offset is the load-bearing fact (documented at the driver).
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
@@ -121,18 +124,15 @@ struct CNetConfigStore {
     void WriteInt(const char* key, i32 val);              // 0x139460
     void WriteString(const char* key, const char* value); // 0x1393b0
     i32 GetInt(const char* key, i32 dflt);                // 0x1395d0
+    // GetString reads a config value into `buf` (capacity via the in/out `*pcap`
+    // dword), falling back to `dflt`. The 3rd arg is a pointer to the max-length.
+    void GetString(const char* key, char* buf, i32* pcap, const char* dflt); // 0x1394a0
 };
 
-// The DirectPlay service-provider node (group-list payload). The five GUID
-// predicates select the connection class (IPX/TcpIp/Modem/Serial/...) - external
-// __thiscall, reloc-masked. Also used by Find (below).
-struct InterfaceObject {
-    i32 IsInterface1(); // 0x1794b0
-    i32 IsInterface2(); // 0x1794e0
-    i32 IsInterface3(); // 0x179510
-    i32 IsInterface4(); // 0x179540
-    i32 IsInterface5(); // 0x179570
-};
+// The DirectPlay service-provider node (group-list payload) is the shared
+// InterfaceObject class (its five GUID predicates select the connection class -
+// IPX/TcpIp/Modem/Serial/...; external __thiscall, reloc-masked). Used by Find +
+// DetectConnectionConfig below - now the real class, not a per-TU method-only shadow.
 
 // JoinAndRegisterChannel's referents. Two cdecl config-string builders (0xf9280
 // seeds the section, 0xf93b0 appends a "key=value"), two engine CNetMgr* globals
@@ -163,12 +163,9 @@ extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
 extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
 struct CGameSettings;
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
-SIZE_UNKNOWN(CGameCfgStore);
-struct CGameCfgStore {
-    // GetString reads a config value into `buf` (capacity via the in/out `*pcap`
-    // dword), falling back to `dflt`. The 3rd arg is a pointer to the max-length.
-    void GetString(const char* key, char* buf, i32* pcap, const char* dflt); // 0x1394a0
-};
+// (The g_mgrSettings +0x38 config store is the SAME CNetConfigStore the CNetGameMgr
+// exposes as m_configStore - GetString lives on that one class now; the former
+// CGameCfgStore method-only shadow is folded away.)
 
 // ---------------------------------------------------------------------------
 // CNetMgr::OnMultiOptions
@@ -1152,21 +1149,19 @@ struct CNetConnectThis {
     i32 ShowMultiStartDlg();              // 0x365c
     i32 LoadCursorSprites(i32 a, i32 b);  // 0x35da
 };
-// The m_4 game-mgr sub-object methods (external, reloc-masked):
-SIZE_UNKNOWN(CNetGameMgrView);
-struct CNetGameMgrView {
-    void ResetClockGlobals();   // 0x1d98
-    void ClearOptionsSlots();   // 0x30df
-    i32 InitLobbySettings();    // 0x2112
-    CString GetWorldFileName(); // 0x2531
-};
+// The m_4 game-mgr lobby helpers (ResetClockGlobals/ClearOptionsSlots/
+// InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are now declared
+// directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h) - the
+// former per-TU CNetGameMgrView / CFreeNodesView method-only shadows are folded away.
+//
+// CSymParserView (the +8 CSymParser::ResolvePath thunk) stays a local method-only
+// view: the real class lives in <Bute/SymParser.h>, but that header re-declares the
+// shared g_emptyString literal (const char[]) which collides with this TU's own
+// `extern "C" char g_emptyString[]` decl (C2373) - so the real include cannot be
+// pulled in here. Reloc-masked either way (same 0x13c030 CSymParser::ResolvePath).
 SIZE_UNKNOWN(CSymParserView);
 struct CSymParserView {
     void* ResolvePath(const char* p); // 0x13c030 (?ResolvePath@CSymParser@@ - reloc-masked)
-};
-SIZE_UNKNOWN(CFreeNodesView);
-struct CFreeNodesView {
-    void FreeNodes(); // 0x128a
 };
 
 // (1) the 0x8c-byte peer object (RezAlloc 0x8c): a real Wap::CObject-derived class
@@ -1336,8 +1331,8 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     }
 
     MF(0x114) = 0;
-    ((CNetGameMgrView*)m_4)->ResetClockGlobals();
-    ((CNetGameMgrView*)m_4)->ClearOptionsSlots();
+    m_4->ResetClockGlobals();
+    m_4->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
     // (1) peer CNetMgr
@@ -1346,7 +1341,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     g_groupEnumMgr = (CNetMgr*)peer;
 
     MF(0xac) = 1;
-    if (((CNetGameMgrView*)m_4)->InitLobbySettings() != 0) {
+    if (m_4->InitLobbySettings() != 0) {
         if (((CNetConnectThis*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
             (this->*(((CNetConnectVtbl*)*(void**)this)->Abort))();
@@ -1399,7 +1394,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
         MF(0x12c) = 1;
         *(CString*)((char*)m_4 + 0xc8) = GetConfigNameA();
     }
-    if (((CNetGameMgrView*)m_4)->GetWorldFileName().GetLength() == 0) {
+    if (m_4->GetWorldFileName().GetLength() == 0) {
         return 0;
     }
 
@@ -1465,7 +1460,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     g_645580 = 0;
     g_645588 = 0;
     TF(0x1cc) = 0;
-    ((CFreeNodesView*)m_4->m_5c)->FreeNodes();
+    m_4->m_5c->FreeNodes();
     TF(0x580) = 1;
     return 1;
 
@@ -1585,10 +1580,10 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             char nameBuf[0xa];
             char gameBuf[0x40];
             i32 cap = 0xa;
-            ((CGameCfgStore*)*(void**)((char*)g_mgrSettings + 0x38))
+            ((CNetConfigStore*)*(void**)((char*)g_mgrSettings + 0x38))
                 ->GetString("Player_Name", nameBuf, &cap, "Player");
             cap = 0x40;
-            ((CGameCfgStore*)*(void**)((char*)g_mgrSettings + 0x38))
+            ((CNetConfigStore*)*(void**)((char*)g_mgrSettings + 0x38))
                 ->GetString("Game_Name", gameBuf, &cap, "Multiplayer_Gruntz");
             g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
             g_pSetDlgItemTextA(hDlg, 0x51b, nameBuf);

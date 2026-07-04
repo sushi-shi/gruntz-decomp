@@ -4,6 +4,17 @@
 // Reset re-inits them; Init wires the three owner pointers then Resets; Verify
 // validates the slots against a windowed sequence. All cross-class callees are
 // external (reloc-masked). Field names are placeholders; offsets are load-bearing.
+//
+// DELIBERATELY a local CNetSession2 / CNetCmdSlot2 model, NOT folded onto the
+// canonical CNetSession / CNetCmdSlot (NetMgr.h) even though it IS the same 0x20bb0
+// object. Folding was attempted: it is byte-neutral (the compiled code is identical -
+// Reset still shows only its documented rep-stos scheduling swap), but renaming the
+// three methods to CNetSession::* UNPAIRS them in objdiff: the delinker packs all
+// three target functions into one .text section (Init@0, Reset@0x54, Verify@0xac) and
+// only the offset-0 symbol (Init) re-pairs with the base's separate COMDAT sections
+// under the CNetSession name, dropping Reset+Verify to 0% (unit 67%->30%). A pure
+// delinker/objdiff symbol-packing artifact, but a real measured-% loss - so the leaner
+// shadow is kept until the final sweep can fold it without the scoring regression.
 #include <Ints.h>
 #include <Net/NetMgr.h> // shared CNetMgr (m_cmdDelay @+0x5a4) + CNetResyncEntry
 #include <rva.h>
