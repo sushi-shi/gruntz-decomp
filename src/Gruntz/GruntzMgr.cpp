@@ -22,7 +22,10 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
-#include <ComDefs.h>       // STDMETHOD / HRESULT - the world-dispatch / DirectPlayLobby COM macros
+#include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
+// Brings the full windows.h/objbase.h COM chain (STDMETHOD_/HRESULT/CLSID)
+// - so ComDefs.h is dropped here (its __IID_DEFINED__ starved cguid.h of CLSID);
+// Mfc.h already provides the STDMETHODs the CWorldDispatch view uses.
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
@@ -52,21 +55,12 @@ struct CWorldDispatch {
     STDMETHOD_(void, Slot0a)() PURE; // slot 10 (+0x28)
 };
 
-// IDirectPlayLobby-shaped COM interface (CGruntzMgr::m_lobby): abstract __stdcall,
-// STDMETHOD form; only Release (slot 2) + GetConnectionSettings (slot 8, called
-// twice in the size-probe / fill idiom) are pinned.
-SIZE_UNKNOWN(IDirectPlayLobbyZ);
-struct IDirectPlayLobbyZ {
-    STDMETHOD(QueryInterface)(void* riid, void* out) PURE; // slot 0
-    STDMETHOD(v01)() PURE;                                 // slot 1
-    STDMETHOD(Release)() PURE;                             // slot 2  (+0x08)
-    STDMETHOD(v03)() PURE;                                 // slot 3
-    STDMETHOD(v04)() PURE;                                 // slot 4
-    STDMETHOD(v05)() PURE;                                 // slot 5
-    STDMETHOD(v06)() PURE;                                 // slot 6
-    STDMETHOD(v07)() PURE;                                 // slot 7
-    STDMETHOD(GetConnectionSettings)(u32 appId, void* lpData, u32* lpdwSize) PURE; // slot 8 (+0x20)
-};
+// CGruntzMgr::m_lobby is the REAL DirectPlay lobby COM interface (IDirectPlayLobby,
+// from the vendored <dplobby.h>); only Release (slot 2) + GetConnectionSettings
+// (slot 8, called twice in the size-probe / fill idiom) are dispatched. The former
+// hand-rolled IDirectPlayLobbyZ view is gone: the real interface's slots line up
+// exactly (v01=AddRef, v03-v07=Connect/CreateAddress/EnumAddress/EnumAddressTypes/
+// EnumLocalApplications, slot 8=GetConnectionSettings), so dispatch is byte-identical.
 
 namespace Utils {
     namespace WinAPI {
@@ -75,19 +69,11 @@ namespace Utils {
     } // namespace WinAPI
 } // namespace Utils
 
-// External DirectPlay surface used by InitializeLobbyConnectionSettings. The
-// DPLAYX export DirectPlayLobbyCreate (ordinal 4) and CNetMgr::ReportError are
-// reached as `call rel32`/[IAT] - the displacement reloc-masks, so only the
-// arg shapes are load-bearing. `m_connSettings` (the connection-settings buffer) is freed
-// through a small NAFXCW-style operator-delete helper (out-of-line, reloc-
-// masked); modelled as a plain free function.
-extern "C" __declspec(dllimport) i32 __stdcall DirectPlayLobbyCreate(
-    void* lpguidDSP,
-    IDirectPlayLobbyZ** lplpDPL,
-    void* pUnk,
-    void* lpData,
-    u32 dwDataSize
-);
+// DirectPlayLobbyCreate (DPLAYX ordinal 4) now comes from the real <dplobby.h>
+// (macro -> DirectPlayLobbyCreateA); reached as [IAT] - the displacement reloc-masks,
+// so only the arg shapes are load-bearing. CNetMgr::ReportError is a `call rel32`.
+// `m_connSettings` (the connection-settings buffer) is freed through a small
+// NAFXCW-style operator-delete helper (out-of-line, reloc-masked); a plain free fn.
 
 class CNetMgr {
 public:
@@ -964,7 +950,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         m_connSettings = 0;
     }
 
-    u32 dwSize = 0;
+    DWORD dwSize = 0; // real GetConnectionSettings takes LPDWORD (unsigned long*)
     hr = m_lobby->GetConnectionSettings(0, 0, &dwSize);
     if (hr != 0 && hr != (i32)0x8877001e) { // !DPERR_BUFFERTOOSMALL
         CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);

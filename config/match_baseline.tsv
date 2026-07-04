@@ -244,7 +244,7 @@ gruntzapp	10	10
 gruntzcmdmgr	12	10
 gruntzcommand	17	17
 gruntzmapmgr	1	1
-gruntzmgr	93	64
+gruntzmgr	93	65
 gruntzmgrcmd	1	0
 gruntzmgrtransition	1	0
 gruntzplayer	8	4
@@ -2145,7 +2145,7 @@ gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	4	bd2cebfcd
 gruntzmgr	?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	2	3fb6c7c4f642	0x928c0
 gruntzmgr	?GoToNextLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	cbee59b79662	0x8d850
 gruntzmgr	?GoToPrevLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	ee87a5fc6b0c	0x8d910
-gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	99.5588	99.5588	8	f59c5249fa98	0x8eca0
+gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	100.0000	100.0000	8	f59c5249fa98	0x8eca0
 gruntzmgr	?IsBattlezMapFile@CGruntzMgr@@QAEHVCString@@@Z	32.3667	32.3667	1	3ed13719be82	0x93be0
 gruntzmgr	?IsInPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	62d491889452	0x8fa40
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	5401f86ad561	0x91500
@@ -3182,7 +3182,7 @@ secretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	1	3a
 secretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	1	e412341acec4	0x428c0
 secretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	1	e2c79a02f275	0x42ac0
 serialobjref	?Chain@CSerialObjRef@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	1	714f8d9fd5e5	0x8c00
-sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	3	9d46e5a9f855	0xf8970
+sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	73.5827	73.5827	4	efb81a900f4b	0xf8970
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	3	6848e62a3d09	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	2	d7ce23754255	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	2	877851623bba	0x14de30
@@ -3236,8 +3236,8 @@ sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	4	ec6b4c65c83f	0x136d
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	2	7511425a99b1	0x136ab0
 sounddevice	?VolumeToAttenuation@SoundDevice@@SAHH@Z	58.1111	58.1111	1	ccabb2037a00	0x1350b0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	2	de77505f71a7	0x137110
-soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	3	1eae1ea42f2a	0xf8f30
-soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	1	bdc4da3a1f9d	0xf8e20
+soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	4	8fab9e022ad1	0xf8f30
+soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	2	34fb93b33268	0xf8e20
 soundfxemitter	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	1	f7b672914eae	0xfa410
 soundfxemitter	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	1	092d67926fe2	0xfa550
 soundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	1	6ddda956016a	0xfa790
