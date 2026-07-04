@@ -1145,8 +1145,8 @@ source = "src/Gruntz/GruntSprintAnim.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "backlogstateloaders"
-source = "src/Gruntz/BacklogStateLoaders.cpp"
+unit = "playstateactivate"
+source = "src/Gruntz/PlayStateActivate.cpp"
 flags = "base"
 
 [[unit]]
@@ -1764,8 +1764,8 @@ source = "src/Gruntz/OrphanClassMeta.cpp"
 flags = "base"
 
 [[unit]]
-unit = "stateleaf8cf30"
-source = "src/Gruntz/StateLeaf8cf30.cpp"
+unit = "helpstate"
+source = "src/Gruntz/HelpState.cpp"
 flags = "eh"
 
 [[unit]]

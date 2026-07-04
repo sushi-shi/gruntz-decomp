@@ -285,6 +285,10 @@ public:
     // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
     void OnExit();      // 0x0cb400
     void ModeCleanup(); // 0x0cb740  vtable slot 0x22 mode/state-exit teardown
+    // CPlay state-activation (vtable slot 8; body in PlayStateActivate.cpp): chain
+    // the base activate, register the level TILEZ/IMAGEZ namespaces, run the level-
+    // specific init chain, kick the state timer. Reached directly by CTriggerMgr.
+    i32 OnActivate(); // 0x0cb800
 
     // --- leaf sub-helpers the THIS-TU functions call (external, reloc-masked) ---
     void StepC_ModeA(i32 z); // (thiscall, 1 arg) StepC m_viewMode==1

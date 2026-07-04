@@ -37,6 +37,30 @@ struct MpDlgHost {
     MpWorldReg* m_registry; // +0x34  world name registry
 };
 
+// ---------------------------------------------------------------------------
+// BuildNamedGruntTable (0xc16b0) - seeds the 4 default named-grunt CString globals
+// (the contiguous array at 0x64bdb0, read back as the multiplayer channel labels)
+// with their default names via CString::operator=(LPCSTR) (FUN_001b9d4c, reloc-
+// masked __thiscall). Re-homed here from the deleted BacklogStateLoaders.cpp: its
+// caller is the (unmodeled) CMultiStartDlg init routine at 0xc1690, one function
+// before CMultiStartDlg itself (0xc1750) - the multiplayer-start dialog cluster.
+// ---------------------------------------------------------------------------
+struct EngStrAssign {
+    char* m_pszData;
+    void operator=(const char* s); // CString::operator=, FUN_001b9d4c
+};
+// 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
+DATA(0x0064bdb0)
+extern EngStrAssign g_gruntNames[4];
+
+RVA(0x000c16b0, 0x3d)
+void BuildNamedGruntTable() {
+    g_gruntNames[0] = "Beefy";
+    g_gruntNames[1] = "Zed";
+    g_gruntNames[2] = "Serra";
+    g_gruntNames[3] = "Jebediah";
+}
+
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
     CWnd* combo = GetDlgItem(0x4ff);
@@ -68,6 +92,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     return 1;
 }
 
+SIZE_UNKNOWN(EngStrAssign);
 SIZE_UNKNOWN(MpDlgHost);
 SIZE_UNKNOWN(MpSymItem);
 SIZE_UNKNOWN(MpSymTable);
