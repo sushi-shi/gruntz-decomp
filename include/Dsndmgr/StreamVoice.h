@@ -75,10 +75,7 @@ struct StreamVoice {
     i32 SetPanByIndex(i32 idx);                                     // 0x1357a0
     i32 SetFreqByIndex(i32 idx);                                    // 0x135920
 };
-SIZE(StreamVoice, 0xb0); // 0xb0 bytes via operator new (ctor 0x1375b0)
-VTBL(
-    StreamVoice,
-    0x001ef6d8
-); // ??_7StreamVoice (1-slot scalar-deleting dtor; ctor/dtor auto-stamp)
+SIZE(StreamVoice, 0xb0);       // 0xb0 bytes via operator new (ctor 0x1375b0)
+VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = scalar-deleting dtor 0x137650)
 
 #endif // DSNDMGR_STREAMVOICE_H

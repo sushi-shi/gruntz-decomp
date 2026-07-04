@@ -134,6 +134,7 @@ public:
     void* m_cursor;                                          // +0x1c  (== m_buf)
     i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)
 };
+VTBL(CTypeKeyColl, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 

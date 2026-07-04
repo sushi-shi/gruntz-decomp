@@ -32,6 +32,7 @@
 // ctor/dtor - into CFaderMgr's ctor/dtor (the dtor's /GX EH frame comes from the
 // member teardown). The grow logic (SetAtGrow) is inlined by Add.
 SIZE_UNKNOWN(CFaderArray);
+VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 struct CFaderArray : public Wap::CObject {
     virtual ~CFaderArray() OVERRIDE;      // slot 1 (retail dtor 0x17e430)
     virtual void FUN_004028ec() OVERRIDE; // slot 2 (retail 0x17e2a0)
