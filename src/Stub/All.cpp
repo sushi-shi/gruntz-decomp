@@ -28,6 +28,6 @@
 // (asm-carveout), and its 2 real bodies re-homed - RezAssertFail (0x184e00) ->
 // src/Gruntz/DebugPrintf.cpp, RelayHwnd (0x1437e0) -> src/Gruntz/BoundaryUpper2.cpp.
 // MallocConstructors.cpp removed: its 21 op-new/malloc-site ctors were all
-// SEMANTICALLY re-homed (Bute CButeValue setters + CButeNodeBase node -> src/Bute;
+// SEMANTICALLY re-homed (Bute CButeValue setters + zPTree node -> src/Bute/ButeNode.cpp;
 // DSoundCloneCtor/CSymTab/CRez/CWwd/CAniRecord ctors -> their real class TUs; the
 // MSVC iostream (LIBCIMT) ctors -> config/library_labels.csv FID carve-out).
