@@ -80,9 +80,11 @@ struct EngStr {
     void Dtor();        // 0x1b9cde  NAFXCW ~CString (reloc-masked, __thiscall)
 };
 
-// mgr+0x28 reader: a name-resolver (Op -> CString) with its lookup map at +0x10.
-struct MgrSub158570 {
-    EngStr* Op(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+// mgr+0x28: the real CDDrawSubMgrLeafScan (full def in DDrawMgr units) -
+// FindKeyOfValue_158570 reverse-looks-up a key CString by LeafScanValue (modeled
+// here as i32) through its +0x10 map. Reloc-masked reader view onto the real class.
+struct CDDrawSubMgrLeafScan {
+    EngStr* FindKeyOfValue_158570(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
     char m_pad00[0x10];
     MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
@@ -96,9 +98,11 @@ struct MgrSub158570 {
 // source param stays `int` (dev-faithful) and the `(CSerialArchive*)` reinterpret of
 // that handle is the real operation. Retyping the param would rewrite the symbol and
 // diverge from what the devs wrote.
-// mgr+0x14 reader: a name-builder (Build -> CString) with its lookup map at +0x10.
-struct MgrSub165360 {
-    EngStr* Build(EngStr* out, void* obj); // 0x165360  __thiscall -> CString
+// mgr+0x14: the real CDDrawWorkerRegistry (full def in DDrawMgr units) -
+// FindKeyOfValue_165360 reverse-looks-up a key CString by CWorkerMapValue through
+// its +0x10 map. Reloc-masked reader view onto the real class.
+struct CDDrawWorkerRegistry {
+    EngStr* FindKeyOfValue_165360(EngStr* out, void* obj); // 0x165360  __thiscall -> CString
     char m_pad00[0x10];
     MapLookupA m_map; // +0x10  name -> object (0x1b8008)
 };
@@ -119,9 +123,9 @@ struct WwdMgr {
     WwdMgrSub08* m_08; // +0x08  kill-cue map holder
     char m_pad0c[0x10 - 0x0c];
     WwdMgrSub10* m_10;  // +0x10  name resolver
-    MgrSub165360* m_14; // +0x14  name builder + resolver map
+    CDDrawWorkerRegistry* m_14; // +0x14  worker registry (FindKeyOfValue_165360)
     char m_pad18[0x28 - 0x18];
-    MgrSub158570* m_28; // +0x28  name resolver (Op) + secondary map
+    CDDrawSubMgrLeafScan* m_28; // +0x28  leaf-scan registry (FindKeyOfValue_158570)
 };
 
 // The 0xa0-byte snapshot record WriteSnapshot assembles on the stack.
@@ -397,7 +401,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
     memset(tmp, 0, sizeof(tmp));
     {
         EngStr str;
-        m_mgr->m_28->Op(&str, (i32)m_19c);
+        m_mgr->m_28->FindKeyOfValue_158570(&str, (i32)m_19c);
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
@@ -684,7 +688,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
         EngStr str;
-        m_mgr->m_14->Build(&str, m_80);
+        m_mgr->m_14->FindKeyOfValue_165360(&str, m_80);
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
@@ -693,7 +697,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
         EngStr str;
-        m_mgr->m_14->Build(&str, m_88);
+        m_mgr->m_14->FindKeyOfValue_165360(&str, m_88);
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
@@ -702,7 +706,7 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
         EngStr str;
-        m_mgr->m_14->Build(&str, m_90);
+        m_mgr->m_14->FindKeyOfValue_165360(&str, m_90);
         strcpy(tmp, str.m_data);
         str.Dtor();
     }
@@ -850,7 +854,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 
     {
         EngStr str;
-        m_mgr->m_14->Build(&str, m_worker);
+        m_mgr->m_14->FindKeyOfValue_165360(&str, m_worker);
         strcpy(rec.m_name, str.m_data);
         str.Dtor();
     }
@@ -992,8 +996,8 @@ SIZE_UNKNOWN(CStringAssign);
 SIZE(CmdMap, 0x3c);
 SIZE_UNKNOWN(MapLookupA);
 SIZE_UNKNOWN(MapLookupB);
-SIZE_UNKNOWN(MgrSub158570);
-SIZE_UNKNOWN(MgrSub165360);
+// CDDrawSubMgrLeafScan / CDDrawWorkerRegistry are annotated on their real defs
+// (DDrawMgr units); this TU only holds the reloc-masked reader views.
 SIZE_UNKNOWN(WorkerSub);
 SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdMgrSub08);
