@@ -372,6 +372,10 @@ public:
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d);                      // 0xfa8f0
     void ShowSecretBonusMessage();                                 // 0xfa540
     void ShowLevelCompleteMessage();                               // 0xfa120
+
+    // --- CBootyState members (placeholders, beyond the CState layout) ---
+    char m_pad1a8[0x1bc - 0x1a8];
+    i32 m_activation; // +0x1bc  activation discriminator (==200 -> secret-bonus toast)
 };
 
 // CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,

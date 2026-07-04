@@ -1,71 +1,38 @@
-// StateImages.cpp - a CState/CAttract-family vfunc-8 image loader (RVA 0xa09a0).
+// StateImages.cpp - two state-family vfunc-8 image-namespace loaders, folded onto the
+// canonical CState/CView facets (<Gruntz/State.h> + <Gruntz/View.h>):
+//   - CImageState::LoadStateImages (0xa09a0): a CState-derived "MENU" image loader.
+//   - CBootyState::InputVirtual   (0x1c8a0): the REAL CBootyState (vtbl 0x5e9cec) slot 8
+//     (GameMode.h declares this slot @0x01c8a0 declared-only; homed here) - the booty
+//     "bg"/secret-bonus activation loader; NOT its sibling CMultiBootyState (0x5e9bdc).
 //
-// Resolves the "IMAGEZ" namespace in the state's symbol table and asks the active
-// DDraw worker registry (mgr->m_workerReg) to load it (vtable slot +0x4c); on success it
-// runs the per-state image hook (this vtable slot +0x18) and forces the cursor
-// hidden. Field names are placeholders; only offsets + code bytes are load-bearing.
+// Both resolve an "IMAGEZ" tree off the state's asset source (CState::m_2c/m_gruntzBank,
+// CResSource::LookupSet == 0x13bae0) and register it through the CView image registry
+// (m_c->m_imageRegistry->LoadNamespace, vtable slot +0x4c). The old per-TU StateMgr /
+// WorkerReg / CSymTab shadows of the +0x0c/+0x2c facets are folded away. Field names are
+// placeholders; only offsets + code bytes are load-bearing.
+#include <Mfc.h> // GameMode.h needs the afx umbrella (WINAPI/windows.h come with it)
+
 #include <rva.h>
-#include <Win32.h> // WINAPI (windows.h) for the g_ShowCursor import-pointer type
+#include <Gruntz/BankMgr.h>  // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
+#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CView facet
 
-#include <Bute/SymTab.h>
-#include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158ee0)
-
-// The engine helper at 0xface0 (returns nonzero when the state may load images).
+// The engine helper at 0xface0 (returns nonzero when the state may load images; the same
+// image-load gate CMultiBootyState reaches as BaseOnActivate).
 i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
 
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
 DATA(0x006c44c4)
 extern i32(WINAPI* g_ShowCursor)(i32);
 
-// The active DDraw worker registry (mgr->m_workerReg): only slot +0x4c (load namespace)
-// is reached; the lower slots pad the vtable to the right index.
-SIZE_UNKNOWN(WorkerReg);
-class WorkerReg {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Slot30();
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual void Slot3C();
-    virtual void Slot40();
-    virtual void Slot44();
-    virtual void Slot48();
-    virtual i32 LoadNamespace(void* tree, char* a, char* b); // +0x4c
-};
-
-SIZE_UNKNOWN(StateMgr);
-struct StateMgr {
-    char m_pad00[0x4];
-    CDDrawWorkerMgr* m_workerMgr; // +0x04
-    char m_pad08[0x10 - 0x8];
-    WorkerReg* m_workerReg; // +0x10 active worker registry
-};
-
+// ---------------------------------------------------------------------------
+// CImageState - a CState-derived front-end state whose slot-8 loader installs the "MENU"
+// image namespace. Its concrete RTTI name is unrecovered (the 0xa09a0 body is reached
+// non-virtually via an ILT thunk), so it is modeled as a minimal CState subclass: the
+// +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CView/CResSource facets, and
+// the per-state image hook is CState's slot 6 (Vslot06).
 SIZE_UNKNOWN(CImageState);
-class CImageState {
+class CImageState : public CState {
 public:
-    virtual void V00();
-    virtual void V04();
-    virtual void V08();
-    virtual void V0C();
-    virtual void V10();
-    virtual void V14();
-    virtual i32 RunImageHook(); // slot 6 (+0x18)
-    char m_pad04[0x0c - 0x04];
-    StateMgr* m_stateMgr; // +0x0c
-    char m_pad10[0x2c - 0x10];
-    CSymTab* m_symTab; // +0x2c state symbol table
     i32 LoadStateImages();
 };
 
@@ -74,14 +41,14 @@ i32 CImageState::LoadStateImages() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
-    void* tree = m_symTab->ResolvePath("IMAGEZ");
+    void* tree = m_2c->LookupSet("IMAGEZ");
     if (tree == 0) {
         return 0;
     }
-    if (m_stateMgr->m_workerReg->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
-    if (RunImageHook() == 0) {
+    if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
         return 0;
     }
     i32(WINAPI * sc)(i32) = g_ShowCursor;
@@ -92,36 +59,13 @@ i32 CImageState::LoadStateImages() {
     return 1;
 }
 
-// CBootyState::OnActivate2 (slot-8 vfunc, RVA 0x1c8a0): hide the cursor, load the
-// BOOTY + GRUNTZ image namespaces, then either pop the secret-bonus toast (when
-// m_activation==200) or fade the "bg" title and show the level-complete toast.
-// This is the REAL CBootyState (vtable 0x5e9cec) slot 8 - NOT its sibling
-// CMultiBootyState (0x5e9bdc); GameMode.h declares this slot @0x01c8a0 as
-// "declared-only; StateImages". NOT folded onto the canonical CBootyState : CState
-// (<Gruntz/GameMode.h>): (1) this is a pure-Win32 TU (<Win32.h> -> windows.h FIRST) and
-// GameMode.h pulls <Mfc.h> -> afx (C1189 wall); (2) the canonical CBootyState declares
-// no data members (its fields are reached by offset), so the +0xc/+0x2c/+0x30/+0x1bc
-// members below have no canonical name to fold to yet (P2 identity-recovery). Kept as a
-// minimal REAL-named Win32-safe partial. C1189 + memberless-canonical wall.
-class CBootyState {
-public:
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    void ShowSecretBonusMessage();                                  // 0x0fa540
-    void ShowLevelCompleteMessage();                                // 0x0fa120
-    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0
-    i32 OnActivate2();
-
-    char m_pad00[0x0c];
-    StateMgr* m_stateMgr; // +0x0c
-    char m_pad10[0x2c - 0x10];
-    CSymTab* m_bootySymTab;  // +0x2c BOOTY symbol table
-    CSymTab* m_gruntzSymTab; // +0x30 GRUNTZ symbol table
-    char m_pad34[0x1bc - 0x34];
-    i32 m_activation; // +0x1bc activation discriminator
-};
-
+// ---------------------------------------------------------------------------
+// CBootyState::InputVirtual (slot 8, 0x1c8a0): hide the cursor, load the BOOTY + GRUNTZ
+// image namespaces, then either pop the secret-bonus toast (when m_activation == 200) or
+// fade the "bg" title and show the level-complete toast, kick the render worker apply
+// (m_c->m_renderState->Flush) and build the booty page.
 RVA(0x0001c8a0, 0xec)
-i32 CBootyState::OnActivate2() {
+i32 CBootyState::InputVirtual() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
@@ -130,18 +74,18 @@ i32 CBootyState::OnActivate2() {
     while (r >= 0) {
         r = sc(0);
     }
-    void* booty = m_bootySymTab->ResolvePath("IMAGEZ");
+    void* booty = m_2c->LookupSet("IMAGEZ");
     if (booty == 0) {
         return 0;
     }
-    if (m_stateMgr->m_workerReg->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
-    void* gruntz = m_gruntzSymTab->ResolvePath("IMAGEZ");
+    void* gruntz = m_gruntzBank->LookupSet("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }
-    if (m_stateMgr->m_workerReg->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_c->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_activation != 200) {
@@ -152,7 +96,7 @@ i32 CBootyState::OnActivate2() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_stateMgr->m_workerMgr->Method_158ee0();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    m_c->m_renderState->Flush();
+    BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
