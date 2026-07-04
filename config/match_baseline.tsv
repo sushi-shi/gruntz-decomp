@@ -81,7 +81,7 @@ ccheckpointtrigger	3	2
 ccursorsnapsprite	3	2
 cddpagemgr	2	1
 cddrawchildgroup	8	6
-cddrawptrcollections	31	15
+cddrawptrcollections	31	17
 cddrawshadeblit	9	1
 cddrawsubmgr	58	33
 cddrawsubmgrani	3	1
@@ -99,7 +99,7 @@ cddrawworkermapsmall	11	6
 cddrawworkerregistry	26	18
 cddrawworkers	4	4
 cddscreen	3	2
-cddsurfacedtor	1	0
+cddsurfacedtor	1	1
 cdirectdrawmgr	28	11
 cdonothing	3	2
 cdonothingnormaldtor	1	1
@@ -116,7 +116,7 @@ cfadermgr	8	6
 cfaderrun	1	0
 cfileimage	8	2
 cfileimageblit	5	0
-cfileimageloadbyext	1	0
+cfileimageloadbyext	1	1
 cfileimagerundecode	4	0
 cfixedptrarray32	3	2
 cfortressflag	8	5
@@ -984,8 +984,8 @@ cddrawchildgroup	?WalkDispatch34@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	5
 cddrawchildgroup	?WalkDispatch38@CDDrawChildGroup@@QAEXHHH@Z	89.0909	89.0909	1	fbc4a12d3032	0x159d40
 cddrawptrcollections	??0CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	7	5b0c77c4b72a	0x141cc0
 cddrawptrcollections	??1CDDrawPtrCollections@@QAE@XZ	100.0000	100.0000	2	2f4c0afd1caf	0x141d50
-cddrawptrcollections	??1CPoolItemA@@UAE@XZ	4.0000	4.0000	1	faa6059e4030	0x142820
-cddrawptrcollections	??1CPoolItemAE8@@UAE@XZ	4.0000	4.0000	1	91b670f90cb8	0x142d40
+cddrawptrcollections	??1CPoolItemA@@UAE@XZ	100.0000	100.0000	1	faa6059e4030	0x142820
+cddrawptrcollections	??1CPoolItemAE8@@UAE@XZ	100.0000	100.0000	1	91b670f90cb8	0x142d40
 cddrawptrcollections	?AddItemA@CDDrawPtrCollections@@QAEXPAVCPoolItemBase@@@Z	100.0000	100.0000	1	abc40fe0591e	0x142100
 cddrawptrcollections	?AddItemB@CDDrawPtrCollections@@QAEXPAUCPoolItemB@@@Z	100.0000	100.0000	1	49c9c58ce9de	0x142eb0
 cddrawptrcollections	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	4	aaabca589f51	0x142060
@@ -1204,7 +1204,7 @@ cddrawworkers	?Vfunc34@CDDrawWorkerB@@UAEHHHHH@Z	100.0000	100.0000	1	e467ad48272
 cddscreen	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	4	32f2b6757e25	0x17cdf0
 cddscreen	?Configure@CDDScreen@@QAEHHHPAUDDPoint@@PAUDDRect@@@Z	97.3969	97.3969	3	42a0001a5a6a	0x17cfc0
 cddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	4	ca427c2d4bfb	0x17cc80
-cddsurfacedtor	??1CDDSurface@@QAE@XZ	94.0000	94.0000	1	cacc86e7ced0	0x142a40
+cddsurfacedtor	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	cpp:794ac22a79e8	0x142a40
 cdirectdrawmgr	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	3	0c0dc1d1d49e	0x147c80
 cdirectdrawmgr	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	4	f120a09d7445	0x13ee60
 cdirectdrawmgr	?BltEx@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	3	9eb25ff50966	0x13eef0
@@ -1290,11 +1290,11 @@ cfileimage	?LoadFile@CFileImage@@QAEHPAV1@PBDH@Z	100.0000	100.0000	1	4741355a053
 cfileimage	?SaveBmp@CFileImage@@QAEHPBDPAXH@Z	60.8842	60.8842	3	c7867be434ba	0x1443b0
 cfileimage	?SaveTga@CFileImage@@QAEHPBDPAXH@Z	60.8182	60.8182	3	79f268102df5	0x144900
 cfileimageblit	?Blit1624@CFileImage@@QAEHPAXH@Z	71.1484	71.1484	5	90f57f481306	0x13fce0
-cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	66.0088	66.0088	5	96cabdcef01f	0x13fbb0
+cfileimageblit	?Blit168@CFileImage@@QAEHPAX0H@Z	67.5044	67.5044	5	96cabdcef01f	0x13fbb0
 cfileimageblit	?Blit2416@CFileImage@@QAEHPAXH@Z	82.0000	82.0000	5	3e9216258d22	0x13ff80
 cfileimageblit	?Blit816@CFileImage@@QAEHPAX0H@Z	66.2889	66.2889	5	80e29eb15757	0x140420
 cfileimageblit	?Blit824@CFileImage@@QAEHPAX0H@Z	58.8610	58.8610	5	9efd0a5f4cf8	0x140110
-cfileimageloadbyext	?LoadByExt@CFileImage@@QAEHPAV1@PADHH@Z	99.8899	99.8899	3	eae0b24c48ee	0x148940
+cfileimageloadbyext	?LoadByExt@CFileImage@@QAEHPAV1@PADHH@Z	100.0000	100.0000	3	eae0b24c48ee	0x148940
 cfileimagerundecode	?DecodeRun24@CFileImage@@QAEHPAX@Z	99.5437	99.5437	2	e98702b4daad	0x140c50
 cfileimagerundecode	?DecodeRun8@CFileImage@@QAEHPAX@Z	99.5000	99.5000	2	98f4666b90fc	0x140aa0
 cfileimagerundecode	?RunDecode1@CFileImage@@QAEHPAX0HH@Z	99.5726	99.5726	1	e7d9cf805b71	0x145270
@@ -2561,29 +2561,29 @@ image	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	1	8f95b4aa6ff0	0x142360
 image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	5	2b51a4a45ed9	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	4	8aed16de0bee	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	6	e1382840ae83	0x13ece0
-image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	5	69f70b98ffb6	0x13e0d0
+image	?BlitSurf@CFileImage@@UAEHPAXHHHH@Z	100.0000	100.0000	1	42d8470bfa37	0x13e0d0
 image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	3	628a32fec706	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	4	668fff39468f	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7361	82.7361	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPAX0I@Z	31.2544	31.2544	1	46900e1adf18	0x143fc0
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	2	2a6fcdb231eb	0x1757c0
 image	?DecodePcx@CFileImage@@QAEPAXPAX0I@Z	55.6786	55.6786	1	1f36bb298147	0x144ee0
-image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	2	3c0bd7a8933b	0x1457a0
-image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176000
+image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	3	2363b05ccf58	0x1457a0
+image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.2848	91.2848	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAXPAD00@Z	100.0000	100.0000	1	f5c332cefc97	0x1459d0
 image	?DecodePid@CFileImage@@QAEPAXPAX0I0@Z	35.4204	35.4204	2	37756e297b3a	0x145b10
 image	?DecodePidData@CRezImage@@QAEHPAX00@Z	72.7817	72.7817	2	b93929db1932	0x176440
-image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.2692	96.2692	2	21532b7f118e	0x175e00
+image	?DecodeResData@CRezImage@@QAEHPAX00@Z	96.4615	96.4615	2	21532b7f118e	0x175e00
 image	?DecodeRidData@CRezImage@@QAEHPAX00@Z	74.2963	74.2963	1	810bbd370cfe	0x1762c0
 image	?Fill@CFileImage@@QAEHI@Z	100.0000	100.0000	2	c98017d6e689	0x13e760
 image	?FillPalette@CFileImage@@QAEXI@Z	100.0000	100.0000	1	99fc085bdc1e	0x13eb40
-image	?FreeSurfaces@CFileImage@@QAEXXZ	100.0000	100.0000	5	210e818d263d	0x13e4d0
+image	?FreeSurfaces@CFileImage@@UAEXXZ	100.0000	100.0000	1	210e818d263d	0x13e4d0
 image	?LoadBmp@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	5	aba7939dc95e	0x144110
 image	?LoadBmp@CRezImage@@QAEHPADPAX1@Z	97.9776	97.9776	1	fd0779a3ee7c	0x175e40
 image	?LoadByExtension@CImageExtLoader@@QAEHPADH@Z	100.0000	100.0000	1	82f853089727	0x176f90
 image	?LoadDefault@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	a1b3409e3266	0x1767d0
 image	?LoadFromRez@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	e0c7570d3641	0x175a90
-image	?LoadKeyed@CFileImage@@QAEHPAXHHHHH@Z	100.0000	100.0000	2	99198518d92b	0x148840
+image	?LoadKeyed@CFileImage@@QAEHPAXHHHHH@Z	100.0000	100.0000	3	7a65b41aafd4	0x148840
 image	?LoadPalFile@CImageExtLoader@@QAEHPADH@Z	100.0000	100.0000	1	dc321cd747b6	0x1771f0
 image	?LoadPcx@CFileImage@@QAEPAXPAD0@Z	100.0000	100.0000	5	1daaffefb0ee	0x145110
 image	?LoadPcx@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	857a4282e5a5	0x176190
@@ -2594,8 +2594,8 @@ image	?LoadRid@CRezImage@@QAEHPADPAX1@Z	100.0000	100.0000	1	d0c5aeafafc4	0x17631
 image	?Resolve@CFileImage@@QAEHPAX0HI0@Z	100.0000	100.0000	4	027a4c53f78a	0x13e550
 image	?ResolveEx@CFileImage@@QAEHPAX0HIHH@Z	100.0000	100.0000	6	21a8cb158f11	0x148890
 image	?SaveDispatch@CFileImage@@QAEHPADPAX1@Z	100.0000	100.0000	2	1453dc787645	0x144350
-image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	2	88239218f56a	0x13f910
-image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	6	6f6f98b2b675	0x144640
+image	?SaveFile@CFileImage@@QAEHPADHPAX1@Z	100.0000	100.0000	3	46909a4f699f	0x13f910
+image	?SaveRle16@CFileImage@@QAEHPAX00@Z	52.5687	52.5687	7	45657ec0bc01	0x144640
 image	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	2	faea0c2b336a	0x142340
 imagepolyclip	?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z	68.9572	68.9572	1	5c33c21cc94b	0x1461b0
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@ApiCallerStubs@@PAXIHH@Z	99.1111	99.1111	1	4d718d2c35f4	0x175680
@@ -2827,7 +2827,7 @@ minervainner	?Stop@SoundStream@@QAEXXZ	100.0000	100.0000	1	46d12e5e2855	0x137a80
 misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	2	d224c96d8cca	0x18a190
 misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	2	f27ee6bcf8b4	0x186a50
 misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	2	270be9416a5b	0x186990
-modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	55.6969	55.6969	1	1a707841b201	0xc7ec0
+modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	55.6969	55.6969	2	c2f597602204	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	2	8ad390ea1d22	0x16f3c0
 motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	2	ef5e4a08d508	0x16f430

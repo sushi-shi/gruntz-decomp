@@ -4,12 +4,12 @@ g_<hex> globals	1246
 Method/Stub/FUN	263
 placeholder classes	383
 placeholder vtable slots	941
-*Vtbl structs	57
+*Vtbl structs	55
 ->vtbl accesses	18
-g_*Vtbl globals	139
-m_vtbl/m_vptr members	99
-)this casts	328
+g_*Vtbl globals	137
+m_vtbl/m_vptr members	97
+)this casts	322
 )m_ casts	809
 (char*) casts	920
 (const char*) casts	109
-void* m_ members	418
+void* m_ members	417

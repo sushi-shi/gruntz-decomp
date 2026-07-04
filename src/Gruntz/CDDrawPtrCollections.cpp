@@ -107,8 +107,12 @@ class CPoolItemBase {
 public:
     CPoolItemBase();
 
-    virtual ~CPoolItemBase();                          // slot 0  0x141350 (??_G 0x141330)
-    virtual i32 Refresh();                             // slot 1  0x13e140
+    virtual ~CPoolItemBase() {
+        FreeSurfaces();
+    }                      // slot 0  0x141350 (??_G 0x141330); INLINE so each
+                           // derived dtor inlines the teardown (retail has no
+                           // out-of-line base dtor - it is CFileImage::~ @0x141350)
+    virtual i32 Refresh(); // slot 1  0x13e140
     virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
     virtual i32 BlitSurf(void*, i32, i32, i32, i32);   // slot 3  0x13e0d0
     virtual void FreeSurfaces();                       // slot 4  0x13e4d0
@@ -467,26 +471,18 @@ CPoolItemBase* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
 }
 
 // ---------------------------------------------------------------------------
-// The shared base teardown the derived dtors inline: re-stamp the base vptr
-// (0x5ef7f0), run FreeSurfaces(), then destroy the owned CByteArray member (auto).
-// /GX (trylevel 0 -> -1 around the member dtor).  cl folds the redundant derived
-// vptr stamp (dead store), leaving the base 0x5ef7f0 stamp - matching retail's dtors.
-// (Base ~CPoolItemBase itself is CFileImage::~CFileImage @0x141350 in a sibling TU;
-// left unbound here so it does not collide.)
-// ---------------------------------------------------------------------------
-CPoolItemBase::~CPoolItemBase() {
-    FreeSurfaces();
-}
-
+// The shared base teardown the derived dtors inline (defined INLINE in the class
+// body above): re-stamp the base vptr (0x5ef7f0), run FreeSurfaces(), then destroy
+// the owned CByteArray member (auto).  /GX (trylevel 0 -> -1 around the member dtor).
+// cl folds the redundant derived vptr stamp (dead store), leaving the base 0x5ef7f0
+// stamp - matching retail's per-class inlined dtors.  (Base ~CPoolItemBase itself is
+// CFileImage::~CFileImage @0x141350 in a sibling TU; the inline definition emits no
+// out-of-line body here, so it does not collide.)
 // ---------------------------------------------------------------------------
 // ~CPoolItemA (0x142820).  Derived a58 non-deleting dtor - trivial body; inlines the
-// base teardown above.  __thiscall, ret 0x0.
+// base teardown above (INLINE ~CPoolItemBase: implicit stamp-first, FreeSurfaces, member
+// dtor).  __thiscall, ret 0x0.  Byte-exact.
 // ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (docs/patterns/eh-state-numbering-base.md + eh-ctor-vptr-restamp-
-// position.md): body byte-identical, residue is the unwind-funcinfo push value (global
-// __ehfuncinfo state index, not reproducible from one TU) + the vptr-restamp schedule.
-// Deferred to the final sweep.
 RVA(0x00142820, 0x53)
 CPoolItemA::~CPoolItemA() {}
 
@@ -586,13 +582,10 @@ CPoolItemBase* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32
 
 // ---------------------------------------------------------------------------
 // ~CPoolItemAE8 (0x142d40).  Derived ae8 non-deleting dtor - trivial body; inlines the
-// shared base teardown (stamp 0x5ef7f0 + FreeSurfaces + member dtor).  /GX, ret 0x0.
-// Byte-identical codegen to ~CPoolItemA (0x142820); a distinct subclass.
+// shared base teardown (INLINE ~CPoolItemBase: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
+// member dtor).  /GX, ret 0x0.  Byte-identical codegen to ~CPoolItemA (0x142820); a
+// distinct subclass.  Byte-exact.
 // ---------------------------------------------------------------------------
-// @early-stop
-// EH-state wall (same as ~CPoolItemA @0x142820): body byte-identical, residue is the
-// unwind-funcinfo push value (global __ehfuncinfo state index) + the vptr-restamp
-// scheduling. Deferred to the final sweep.
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
 

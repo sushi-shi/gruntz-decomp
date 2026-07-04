@@ -189,7 +189,8 @@ i32 CFileImage::DecodeRun(CFileImage* info, void* srcv, i32, i32 b) {
         }
     }
 
-    if (BlitSurf(info, src->m_12, src->m_16, 0, b) == 0) {
+    if (CFileImage::BlitSurf(info, src->m_12, src->m_16, 0, b)
+        == 0) { // direct (qualified) slot-3 call
         return 0;
     }
 
@@ -256,7 +257,7 @@ i32 CFileImage::LoadFile2(CFileImage* info, const char* path, i32 mode) {
 // Deferred to the final sweep.
 RVA(0x001443b0, 0x284)
 i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
-    if (((CFileImageVtblView*)this)->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (path == 0) {
@@ -356,7 +357,7 @@ i32 CFileImage::SaveBmp(const char* path, void* pal, i32 mode) {
 RVA(0x00144900, 0x227)
 i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
     (void)pal;
-    if (((CFileImageVtblView*)this)->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (path == 0) {
@@ -486,7 +487,7 @@ i32 CFileImage::Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode) 
         }
     }
 
-    if (((CFileImageVtblView*)this)->BeginDecode(info, width, height, 0, mode) == 0) {
+    if (this->BlitSurf(info, width, height, 0, mode) == 0) { // slot-3 virtual dispatch (+0x0c)
         return 0;
     }
 

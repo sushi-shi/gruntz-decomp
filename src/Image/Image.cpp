@@ -39,9 +39,10 @@
 // The file-image surface and the DirectDraw surface wrapper (DIRSURF.CPP) are ONE
 // class: the full surface layout + COM thunks (Lock/BltEx/SetColorKey, reloc-masked)
 // are modeled directly on CFileImage (see <Image/Image.h>), not viewed through a
-// separate CDDSurface wrapper. The two foreign-vtable virtuals it dispatches (IsValid,
-// v20) go through the pointer-only CFileImageVtblView (the vtable-realization boundary:
-// the shared surface vtable 0x5ef7f0 can't be cl-emitted). CDirectDrawMgr is included
+// separate CDDSurface wrapper. CFileImage is the polymorphic BASE of the shared
+// pool-item surface family (9-slot vtable @0x5ef7f0); the surface virtuals it dispatches
+// (BlitSurf slot 3, IsValid slot 5, v20 slot 8) are genuine virtual calls on `this` -
+// the former pointer-only CFileImageVtblView is retired. CDirectDrawMgr is included
 // only for CDirectDrawMgr::GetErrorString (the Fill error path).
 #include <Gruntz/CDirectDrawMgr.h>
 #include <Globals.h>
@@ -663,7 +664,7 @@ i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
         *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
         this->m_64 = a4;
     }
-    return ((CFileImageVtblView*)this)->v20(surf);
+    return this->v20(surf); // slot-8 virtual dispatch (+0x20)
 }
 
 // ---------------------------------------------------------------------------
@@ -1081,7 +1082,7 @@ void CFileImage::Clear(i32 white) {
 // dispatcher and return its result.
 RVA(0x0013f910, 0x4a)
 i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
-    if (((CFileImageVtblView*)this)->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (buf == 0) {
@@ -1152,7 +1153,7 @@ extern i32 g_bDown; // blue  down-shift
 // complete + correct; both are documented non-steerable plateaus.
 RVA(0x00144640, 0x2be)
 i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
-    if (((CFileImageVtblView*)this)->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (a1 == 0) {
@@ -1244,7 +1245,9 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
 // install it via FillPalette. Returns 1.
 RVA(0x00148840, 0x47)
 i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
-    if (BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
+    // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
+    // vtable indirection (retail direct-calls 0x13e0d0 here).
+    if (CFileImage::BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
         return 0;
     }
     if (key != -1) {
@@ -1674,7 +1677,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
         }
     }
 
-    if (!BlitSurf(dst, w, h, 0, a4)) {
+    if (!CFileImage::BlitSurf(dst, w, h, 0, a4)) { // direct (qualified) slot-3 call
         return 0;
     }
 

@@ -163,37 +163,14 @@ public:
     CPtrArray m_elements;      // +0x94  owned element array (auto member-dtor)
 };
 
-// CFileImage's own (foreign, shared) surface vtable lives at 0x5ef7f0 - a hand-rolled
-// vtable a cl-emitted ??_7 would diverge from (the vtable-realization boundary). So
-// CFileImage carries only its dtor virtual; the two surface virtuals it dispatches
-// (IsValid @0x14, v20 @0x20) go through this pointer-only dispatch interface. It holds
-// NO data (not a second view of the struct) - only the vtable slots, so the call lowers
-// to the exact `mov eax,[this]; call [eax+slot]` the foreign vtable expects.
-//
-// Why not fold this into a polymorphic CFileByte hierarchy (final-sweep worklist):
-// 0x5ef7f0 is the SHARED base vtable of a 4+ class family (bound by address in
-// CDirectDrawMgr.cpp as g_poolItemVtbl; modeled as CPoolItemBase in
-// CDDrawPtrCollections.cpp, CPoolItemA @0x5efa58, CDDSurface, ...). Its slot bodies
-// are CFileImage methods referenced by their Q-mangled (non-virtual) names ACROSS
-// FIVE TUs: e.g. FreeSurfaces (slot 4, 0x13e4d0) is direct-called from the dtors in
-// image / cddrawptrcollections / cddsurfacedtor, and BlitSurf (slot 3, 0x13e0d0) has
-// three direct by-name callers. Virtualizing them here (Q->U mangling) would break
-// every cross-TU by-name reference. The real fix is unifying CFileImage with the
-// DDrawMgr CPoolItemBase base across all 5 TUs - a dedicated multi-TU pass; until
-// then this view is the language-forced device (BlitSurf/SaveFile already byte-exact
-// through it).
-SIZE_UNKNOWN(CFileImageVtblView);
-struct CFileImageVtblView {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual i32 BeginDecode(void* info, i32 w, i32 h, i32 z, i32 mode); // slot 3, @0x0c
-    virtual void v10();
-    virtual i32 IsValid(); // slot 5, @0x14
-    virtual void v18();
-    virtual void v1c();
-    virtual i32 v20(void* a); // slot 8, @0x20
-};
+// CFileImage's own surface vtable lives at VA 0x5ef7f0 - the SHARED 9-slot base vtable
+// of the pool-item surface family (bound by address in CDirectDrawMgr.cpp as
+// g_poolItemVtbl; the sibling derived classes CPoolItemA @0x5efa58 / CDDSurface / ... in
+// CDDrawPtrCollections.cpp / CDDSurfaceDtor.cpp derive from this same base). CFileImage
+// declares the full 9-slot polymorphic layout above (dtor / Refresh / Init1 / BlitSurf /
+// FreeSurfaces / IsValid / v18 / v1c / v20), so the two surface virtuals it dispatches
+// (IsValid @0x14 slot 5, v20 @0x20 slot 8) and the slot-3 BlitSurf dispatch are genuine
+// virtual calls - the former pointer-only CFileImageVtblView is retired.
 
 // The held DirectDraw surface at +0x08, dispatched THISCALL for the CFileImage.cpp
 // save/flip Unlock call sites (vtable slot +0x80 = Unlock(rect)). Same physical held
@@ -329,13 +306,31 @@ public:
     i32 Scale(i32 n);   // 0x1413c0  (returns m_pitch * n)
     void UnlockThunk(); // 0x1413b0  (m_8->vtbl[0x80](m_8, 0))
 
-    virtual ~CFileImage(); // 0x141350  (virtual: the implicit vptr stamp lands stamp-first)
+    // The 9-slot shared surface vtable (VA 0x5ef7f0). CFileImage IS the polymorphic
+    // BASE of the pool-item surface family - the same 0xc0 object CPoolItemA / CDDSurface /
+    // CPoolItemAE8 (sibling TUs) derive from. cl emits ??_7CFileImage@@6B@ and stamps the
+    // vptr in the ctor/dtor (implicit, stamp-first); it reloc-masks against the shared
+    // 0x5ef7f0 vtable. Slots 3/4 (BlitSurf / FreeSurfaces) carry real bodies in Image.cpp;
+    // the other slots are declared-only (their bodies live in sibling TUs: Refresh 0x13e140
+    // in CDirectDrawMgr, the slot-2 init 0x13e0a0 in BoundaryUpper, etc.) so the emitted
+    // vtable's DIR32 slot relocs mask. Declaring these real virtuals is what retires the old
+    // pointer-only CFileImageVtblView: the slot-5 IsValid / slot-3 BeginDecode(=BlitSurf) /
+    // slot-8 v20 dispatch sites are now genuine virtual calls on `this`.
+    virtual ~CFileImage(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
+    virtual i32 Refresh();             // slot 1  0x13e140
+    virtual i32 Init1(void* h, i32 a); // slot 2  0x13e0a0
 
-    // The shared surface-teardown helper the destructor calls before destroying
-    // its CByteArray member (external no-body, reloc-masked): releases the held
-    // DirectDraw surfaces (m_8/m_c), empties the +0x94 CByteArray, and walks the
-    // +0x98/+0x9c object array calling each element's slot-0 destructor.
-    void FreeSurfaces(); // 0x13e4d0
+    // slot 3 (0x13e0d0) BlitSurf + slot 4 (0x13e4d0) FreeSurfaces carry real bodies below.
+    // BlitSurf: the DecodePcxData destination setup (also the "BeginDecode" virtual site).
+    // FreeSurfaces: the shared surface teardown the destructor calls before destroying its
+    // CByteArray member - releases the held DirectDraw surfaces (m_8/m_c), empties the +0x94
+    // CByteArray, and walks the +0x98/+0x9c object array calling each element's slot-0 dtor.
+    virtual i32 BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5); // slot 3  0x13e0d0
+    virtual void FreeSurfaces();                                             // slot 4  0x13e4d0
+    virtual i32 IsValid();    // slot 5  0x1412d0  (the surface-ready probe)
+    virtual i32 v18();        // slot 6  0x141300
+    virtual i32 v1c();        // slot 7  0x13f960
+    virtual i32 v20(void* a); // slot 8  0x13e2e0
 
     // Per-format decoders (reconstructed in Image.cpp). __thiscall on CFileImage.
     // arg1 is the source-palette surface (downcast to CFileImage* in each body); the
@@ -383,14 +378,13 @@ public:
     // setup (ret 0x14 = 5 args); DecodeRun8/DecodeRun24 RLE-expand one plane (ret
     // 4 = 1 arg); RunDecode1/RunDecode3 emit a decoded scanline run (ret 0x10 = 4
     // args); FillPalette installs the transparency colour (ret 4 = 1 arg).
-    i32 Blit(void* src, i32 bitcount, void* palette, i32 mode);      // 0x13faa0
-    i32 BlitDirect(void* src, i32 mode);                             // 0x13ece0
-    i32 BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5); // 0x13e0d0
-    i32 DecodeRun8(void* dst);                                       // 0x140aa0
-    i32 DecodeRun24(void* dst);                                      // 0x140c50
-    i32 RunDecode1(void* dst, void* src, i32 width, i32 height);     // 0x145270
-    i32 RunDecode3(void* dst, void* src, i32 width, i32 height);     // 0x1453f0
-    void FillPalette(u32 key);                                       // 0x13eb40
+    i32 Blit(void* src, i32 bitcount, void* palette, i32 mode);  // 0x13faa0
+    i32 BlitDirect(void* src, i32 mode);                         // 0x13ece0
+    i32 DecodeRun8(void* dst);                                   // 0x140aa0
+    i32 DecodeRun24(void* dst);                                  // 0x140c50
+    i32 RunDecode1(void* dst, void* src, i32 width, i32 height); // 0x145270
+    i32 RunDecode3(void* dst, void* src, i32 width, i32 height); // 0x1453f0
+    void FillPalette(u32 key);                                   // 0x13eb40
 
     // The per-(dest-bpp,src-bpp) blit specializations Blit dispatches to (external
     // no-body, reloc-masked; stubbed in src/Stub). The trailing digits encode
