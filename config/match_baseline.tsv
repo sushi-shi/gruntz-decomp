@@ -1426,7 +1426,7 @@ cimageowned	?Build@CDDrawShadeBlit@@QAEHPAVCImageBuildDesc@@HH@Z	79.6791	79.6791
 cimageowned	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHH0@Z	97.7528	97.7528	3	95b3a424d62b	0x148d40
 cimageowned	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@H@Z	100.0000	100.0000	1	ff903e3a0a97	0x148fc0
 cimageowned	?Rebuild@CDDrawShadeBlit@@QAEHVCString@@HH@Z	89.8816	89.8816	2	788d2bf98743	0x1493b0
-cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	1	2b46baccc913	0x17cbe0
+cimageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	2	40993920590b	0x17cbe0
 cimageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	e6669699495e	0x161bf0
 cimageset3	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	33643861e3a8	0x1633e0
 cimageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	b81263dd19cb	0x1628d0

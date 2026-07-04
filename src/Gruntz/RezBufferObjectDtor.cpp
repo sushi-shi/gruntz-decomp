@@ -6,11 +6,10 @@
 #include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
-// The CObject base dtor vtable (VA 0x5e8cb4, g_wapObjectDtorVtbl, pinned in many
-// TUs). Reloc-masked. The most-derived vtable (0x5f07d8) is now the cl-emitted
-// ??_7CRezBufferObject (VTBL below); the manual g_rezBufferObjectVtbl DATA-pin is gone.
-DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl;
+// The most-derived vtable (0x5f07d8) is now the cl-emitted ??_7CRezBufferObject
+// (VTBL below); the manual g_rezBufferObjectVtbl DATA-pin is gone. The CObject base
+// dtor vtable (0x5e8cb4) is now restamped by the compiler-folded ~Wap::CObject (no
+// manual g_wapObjectDtorVtbl reference remains here - the pin lives in ReconBatch2.cpp).
 
 // The Rez heap free (0x1b9b82, __cdecl) the worker's +0x4 buffer is released
 // through (reloc-masked rel32). C++ linkage (not extern "C") so MSVC5 treats it
