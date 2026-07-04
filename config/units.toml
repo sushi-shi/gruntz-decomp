@@ -1092,11 +1092,6 @@ flags = "eh"
 [[unit]]
 unit = "battlezmapconfig"
 source = "src/Gruntz/BattlezMapConfig.cpp"
-flags = "base"
-
-[[unit]]
-unit = "unknownclassarrays"
-source = "src/Gruntz/UnknownClassArrays.cpp"
 flags = "eh"
 
 [[unit]]
