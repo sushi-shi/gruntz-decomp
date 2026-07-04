@@ -125,10 +125,17 @@ void DevCfgChain::DtorD1() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x17e7c0 - CFxModeT3 /GX constructor: run the base ctor (0x17e7b0) + the +0x24
-// CString member ctor, init the descriptor fields, then assign the empty string to
-// the +0x24 CString. The destructible CString member forces the /GX frame; returns
-// `this`. __thiscall.
+// 0x17e7c0 - CFxModeT1 /GX constructor: run the base ctor (0x17e7b0, the shared
+// CFxModeDesc base) + the +0x24 CString member ctor, init the descriptor fields
+// (type tag = 1 at +0x00), then assign the empty string to the +0x24 CString. The
+// destructible CString member forces the /GX frame; returns `this`. __thiscall.
+//
+// This is the type-1 CFxMode variant, a DISTINCT class from the type-3 CFxModeT3
+// at 0x17e880 (src/Gruntz/CFxModeDesc.cpp): different layout (this one carries a
+// CString member at +0x24 and is 0x2c bytes) and a different type tag. Ghidra
+// RTTI-named both ctors "CFxModeT3"; modeling this one as CFxModeT3 too collided the
+// mangled ctor name (??0CFxModeT3@@QAE@XZ) at two RVAs. Named CFxModeT1 to recover
+// the true (distinct) owner and un-dup the symbol.
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // 0x6293f4
 struct CStr17e7c0 {
@@ -142,7 +149,7 @@ struct CFxBase17e7c0 {
     CFxBase17e7c0(); // 0x17e7b0
 };
 SIZE_UNKNOWN(CFxBase17e7c0);
-struct CFxModeT3 : CFxBase17e7c0 {
+struct CFxModeT1 : CFxBase17e7c0 {
     i32 m_0;
     i32 m_4;
     i32 m_8;
@@ -154,10 +161,11 @@ struct CFxModeT3 : CFxBase17e7c0 {
     i32 m_20;
     CStr17e7c0 m_24; // +0x24
     i32 m_28;        // +0x28
-    CFxModeT3();
+    CFxModeT1();
 };
+SIZE_UNKNOWN(CFxModeT1);
 RVA(0x0017e7c0, 0x7a)
-CFxModeT3::CFxModeT3() {
+CFxModeT1::CFxModeT1() {
     m_0 = 1;
     m_4 = 0;
     m_8 = 0;

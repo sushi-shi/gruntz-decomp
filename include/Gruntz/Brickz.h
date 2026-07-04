@@ -1,4 +1,9 @@
-// Brickz.h - trace-discovered "CBrickz" cluster (placeholder name).
+// Brickz.h - trace-discovered move-grid cluster (placeholder name CBrickzGrid).
+//
+// NOT the game-object CBrickz (include/Gruntz/CBrickz.h, a real CUserLogic-derived
+// RTTI class): the trace tool mislabeled this self-contained grid container CBrickz,
+// which collided its methods' mangled names (e.g. ?Serialize@CBrickz@@QAEHHHHH@Z)
+// with the real CBrickz's. Renamed CBrickzGrid to recover the distinct owner.
 //
 // The trace tool (gruntz.analysis.this_cluster) grouped these __thiscall methods
 // by a shared `this`/ecx pointer and labeled them CBrickz. The RTTI class actually
@@ -93,7 +98,7 @@ struct BrickzSerObj {
     i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3); // 0x0fd3f0 (__thiscall, ret 0x10)
 };
 
-class CBrickz {
+class CBrickzGrid {
 public:
     // ---- reconstructed in src/Gruntz/Brickz.cpp ----
     // The terrain-grid cell-flag compute (0x077790): look up the bute-type id for

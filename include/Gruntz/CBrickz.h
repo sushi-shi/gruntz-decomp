@@ -30,5 +30,6 @@ public:
     // ctor touches none of it. The leaf is 0x54 (0x40 base + 0x14 own).
     char m_own[0x54 - 0x40];
 };
+SIZE(CBrickz, 0x54); // 0x40 CUserLogic base + 0x14 own
 
 #endif // GRUNTZ_CBRICKZ_H
