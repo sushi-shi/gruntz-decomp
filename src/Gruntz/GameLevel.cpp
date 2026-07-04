@@ -42,6 +42,24 @@
 
 #include <string.h> // strcpy, memset
 
+// The collision-relevant tile codes among the broad tile-type space CImageSet::
+// GetCollisionAt (and the tile probes that dispatch it) returns. NOT a closed enum:
+// CGameLevel::LookupTile hands the same result to BrickzLoad as a full tile-type code
+// switched over cases up to 113, so only these low codes carry a movement-collision
+// meaning - named from how the movement/scroll steppers below branch on them; every
+// other code is treated as passable. File-local (only the steppers here consume them),
+// so GetCollisionAt keeps its i32 return. Matching-neutral: each folds to the same int
+// immediate the retail steppers compare. #define, not an enum: introducing ANY enum
+// DECLARATION into this @early-stop-heavy TU perturbs MSVC5's whole-TU scheduling enough
+// to shift the unrelated BroadPhase regalloc wall by -0.13% fuzzy; the preprocessor form
+// has no AST footprint and is byte-identical to baseline (verified: named/anon enum both
+// regress, #define is exactly neutral). #undef'd at end of file.
+#define kTilePassable 0 // empty tile / any non-colliding code
+#define kTileSoft 1     // soft-blocking (triggers the inward axis re-scan)
+#define kTileSoft2 2    // soft-blocking; 0x400-flag downgradeable, and blocks a fall
+#define kTileHard 3     // hard-blocking (the axis gates' `== kTileHard` stop code)
+#define kTileSpecial 4  // special (folds the target's 0x400000 flag)
+
 // ===========================================================================
 // The CDDrawLevelData methods, merged in here as CGameLevel.
 //
@@ -972,7 +990,7 @@ extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
-            (RESULT) = 0;                                                                          \
+            (RESULT) = kTilePassable;                                                                          \
         } else {                                                                                   \
             CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
@@ -1512,21 +1530,21 @@ looptop: {
         i32 subY = cy - (qy << pl->m_shiftY);
         i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-            result = 0;
+            result = kTilePassable;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
-    if (result == 2 && (t->m_flags & 0x400)) {
-        result = 0;
+    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
+        result = kTilePassable;
     }
-    if (result == 1 || result == 2) {
+    if (result == kTileSoft || result == kTileSoft2) {
         i32 lo = t->m_screenX + t->m_extentR;
         i32 j = xEnd - 1;
         state |= 0x60000;
         for (; j > lo; j--) {
-            if (AxisProbe(j, yLo) == 0) {
+            if (AxisProbe(j, yLo) == kTilePassable) {
                 j -= t->m_extentR;
                 goto have_x;
             }
@@ -1605,21 +1623,21 @@ looptop: {
         i32 subY = cy - (qy << pl->m_shiftY);
         i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-            result = 0;
+            result = kTilePassable;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
-    if (result == 2 && (t->m_flags & 0x400)) {
-        result = 0;
+    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
+        result = kTilePassable;
     }
-    if (result == 1 || result == 2) {
+    if (result == kTileSoft || result == kTileSoft2) {
         i32 lo = t->m_screenX + t->m_extentL;
         i32 j = xEnd + 1;
         state |= 0xa0000;
         for (; j < lo; j++) {
-            if (AxisProbe(j, yLo) == 0) {
+            if (AxisProbe(j, yLo) == kTilePassable) {
                 j -= t->m_extentL;
                 goto have_x;
             }
@@ -1698,21 +1716,21 @@ looptop: {
         i32 subY = cy - (qy << pl->m_shiftY);
         i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-            result = 0;
+            result = kTilePassable;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
-    if (result == 2 && (t->m_flags & 0x400)) {
-        result = 0;
+    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
+        result = kTilePassable;
     }
-    if (result == 1 || result == 2) {
+    if (result == kTileSoft || result == kTileSoft2) {
         i32 lo = t->m_screenY + t->m_extentB;
         i32 j = fixedY - 1;
         state |= 0x1020000;
         for (; j > lo; j--) {
-            if (AxisProbe(col, j) == 0) {
+            if (AxisProbe(col, j) == kTilePassable) {
                 j -= t->m_extentB;
                 goto have_y;
             }
@@ -1791,21 +1809,21 @@ looptop: {
         i32 subY = cy - (qy << pl->m_shiftY);
         i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
-            result = 0;
+            result = kTilePassable;
         } else {
             CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
-    if (result == 2 && (t->m_flags & 0x400)) {
-        result = 0;
+    if (result == kTileSoft2 && (t->m_flags & 0x400)) {
+        result = kTilePassable;
     }
-    if (result == 1 || result == 2) {
+    if (result == kTileSoft || result == kTileSoft2) {
         i32 lo = t->m_screenY + t->m_extentT;
         i32 j = fixedY + 1;
         state |= 0x820000;
         for (; j < lo; j++) {
-            if (AxisProbe(col, j) == 0) {
+            if (AxisProbe(col, j) == kTilePassable) {
                 j -= t->m_extentT;
                 goto have_y;
             }
@@ -2070,7 +2088,7 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 
     if (a3 & 1) {
         i32 limit = t->m_extentT + a2 - 1;
-        if (AxisProbe(coord, limit) == 3) {
+        if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
                 i32 lo = coord;
                 i32 hi = coord;
@@ -2082,7 +2100,7 @@ i32 CGameLevel::MoveHandlerA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         }
     } else if (a3 & 2) {
         i32 limit = t->m_extentB + a2 + 2;
-        if (AxisProbe(coord, limit) == 3) {
+        if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
                 i32 lo = coord;
                 i32 hi = coord;
@@ -2144,7 +2162,7 @@ i32 CGameLevel::MoveHandlerC(CGameObject* t, i32 a1, i32 a2, i32 a3) {
     if (a3 & 1) {
         i32 limit = t->m_extentT + a2 - 1;
         i32 saved = coord;
-        if (AxisProbe(coord, limit) == 3) {
+        if (AxisProbe(coord, limit) == kTileHard) {
             if (a3 & 0x10) {
                 i32 lo = saved;
                 i32 hi = saved;
@@ -2196,7 +2214,7 @@ i32 CGameLevel::MoveHandlerB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 
     if (a3 & 1) {
         i32 limit = t->m_extentT + cursor - 1;
-        if (AxisProbe(coord, limit) == 3) {
+        if (AxisProbe(coord, limit) == kTileHard) {
             i32 mid = coord;
             if (a3 & 0x10) {
                 i32 lo = coord;
@@ -2237,7 +2255,7 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         if (t->m_moveMode != 1) {
             i32 hi = t->m_extentB + cursor + 1;
             i32 lo = t->m_extentT + cursor - 1;
-            if (AxisProbe(a2, lo) != 3 && AxisProbe(a2, hi) != 3) {
+            if (AxisProbe(a2, lo) != kTileHard && AxisProbe(a2, hi) != kTileHard) {
                 t->m_moveMode = 4;
             }
         }
@@ -2245,7 +2263,7 @@ i32 CGameLevel::MoveHandlerD(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         cursor = AdvanceA(t, a1, a2, a3);
         i32 hi = t->m_extentB + cursor + 1;
         i32 lo = t->m_extentT + cursor - 1;
-        if (AxisProbe(a2, lo) != 3 && AxisProbe(a2, hi) != 3) {
+        if (AxisProbe(a2, lo) != kTileHard && AxisProbe(a2, hi) != kTileHard) {
             i32 probe = a2;
             i32 want = (t->m_extentB + cursor + 1) - cursor + t->m_screenY;
             if (SpanCheck(want, t->m_extentB + cursor + 1, probe, &probe) != 0 && probe > cursor) {
@@ -2294,7 +2312,7 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
         do {
             i32 result;
             PROBE_TILE(this, mid, cur, result);
-            if (result == 1) {
+            if (result == kTileSoft) {
                 *outX = t->m_screenX;
                 return 0x60000;
             }
@@ -2331,7 +2349,7 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3) {
         do {
             i32 result;
             PROBE_TILE(this, mid, cur, result);
-            if (result == 1) {
+            if (result == kTileSoft) {
                 *outX = t->m_screenX;
                 return 0xa0000;
             }
@@ -2372,21 +2390,21 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         do {
             i32 result;
             PROBE_TILE(this, cur, hiY, result);
-            if (result == 1 || result == 2) {
+            if (result == kTileSoft || result == kTileSoft2) {
                 // kind 1/2: re-probe the one-step-back pair twice to confirm the
                 // move still fits (retail outlines the 2nd index lookup to a leaf).
                 i32 r2;
                 PROBE_TILE(this, cur, hiY - 1, r2);
-                if (r2 != 1) {
+                if (r2 != kTileSoft) {
                     i32 r3;
                     PROBE_TILE(this, cur, hiY - 1, r3);
-                    if (r3 != 2) {
+                    if (r3 != kTileSoft2) {
                         return a2;
                     }
                 }
-            } else if (t->m_moveMode != 6 && result == 3) {
-                if (AxisProbe(cur, hiY) == 3) {
-                    if (AxisProbe(cur, hiY - 1) != 3) {
+            } else if (t->m_moveMode != 6 && result == kTileHard) {
+                if (AxisProbe(cur, hiY) == kTileHard) {
+                    if (AxisProbe(cur, hiY - 1) != kTileHard) {
                         return a2;
                     }
                 }
@@ -2421,7 +2439,7 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
 
     i32 first;
     PROBE_TILE(this, a1, hiY, first);
-    if (first == 4) {
+    if (first == kTileSpecial) {
         t->m_flags |= 0x400000;
     }
     i32 base = a2 - t->m_screenY;
@@ -2431,26 +2449,26 @@ i32 CGameLevel::AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         do {
             i32 result;
             PROBE_TILE(this, cur, hiY, result);
-            if (result == 1 || result == 2) {
+            if (result == kTileSoft || result == kTileSoft2) {
                 i32 floor = t->m_screenY + t->m_extentB;
                 if (hiY >= floor) {
                     i32 y = hiY;
                     do {
                         i32 g = AxisProbe(cur, y);
-                        if (g != 1 && g != 2) {
+                        if (g != kTileSoft && g != kTileSoft2) {
                             t->m_moveMode = 1;
                             return y - t->m_extentB;
                         }
                         --y;
                     } while (y >= floor);
                 }
-            } else if (t->m_moveMode != 6 && result == 3) {
+            } else if (t->m_moveMode != 6 && result == kTileHard) {
                 i32 floor = hiY - base;
                 if (hiY > floor) {
                     i32 y = hiY - 1;
                     if (y >= floor) {
                         do {
-                            if (AxisProbe(cur, y) != 3) {
+                            if (AxisProbe(cur, y) != kTileHard) {
                                 t->m_moveMode = 1;
                                 return (y + 1) - t->m_extentB - 1;
                             }
@@ -2489,12 +2507,12 @@ i32 CGameLevel::AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3) {
         do {
             i32 result;
             PROBE_TILE(this, cur, ceil, result);
-            if (result == 1) {
+            if (result == kTileSoft) {
                 i32 floor = t->m_screenY + t->m_extentT - 1;
                 if (ceil <= floor) {
                     i32 y = ceil;
                     do {
-                        if (AxisProbe(cur, y) != 1) {
+                        if (AxisProbe(cur, y) != kTileSoft) {
                             t->m_moveMode = 4;
                             return y - t->m_extentT;
                         }
@@ -2534,7 +2552,7 @@ i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
     do {
         i32 result;
         PROBE_TILE(this, a, cur, result);
-        if (result != 3) {
+        if (result != kTileHard) {
             *out = cur + 1;
             return 1;
         }
@@ -2781,8 +2799,8 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     i32 result;
     PROBE_TILE(this, px, row, result);
 
-    while (result != 1) {
-        if (result == 2 || result == 3) {
+    while (result != kTileSoft) {
+        if (result == kTileSoft2 || result == kTileHard) {
             break;
         }
         ++row;
@@ -2809,3 +2827,10 @@ SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
 SIZE_UNKNOWN(CGameLevel);
 SIZE_UNKNOWN(CImageSet);
+
+// tile-collision code names (file-local; see the block near the top of this TU).
+#undef kTilePassable
+#undef kTileSoft
+#undef kTileSoft2
+#undef kTileHard
+#undef kTileSpecial
