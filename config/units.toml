@@ -2091,7 +2091,9 @@ flags = "base"
 [[unit]]
 unit = "butesectionctor"
 source = "src/Bute/ButeSectionCtor.cpp"
-flags = "base"
+# The CButeSection ctor (0x170210) has 8 destructible embedded members (CString +
+# CButeNode streams) -> /GX EH frame + 8-trylevel member-unwind state machine.
+flags = "eh"
 
 [[unit]]
 unit = "logicactregistrars"
