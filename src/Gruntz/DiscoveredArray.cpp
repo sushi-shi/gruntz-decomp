@@ -1,8 +1,12 @@
-// DiscoveredArray.cpp - a trace-discovered MFC CArray<TYPE,ARG>::SetSize
-// instantiation re-homed from src/Stub/Discovered.cpp (tomalla-1 @0x150040).
-// The element is a 4-byte POD (DWORD), so the grow/shrink/realloc paths inline
-// memset/memcpy (rep stosd/movsd) around the engine operator new (0x1b9b46) /
-// operator delete (0x1b9b82). Self-contained; owner class is unidentified.
+// DiscoveredArray.cpp - CDwArray::SetSize (0x150040), the out-of-line MFC
+// CArray<DWORD>::SetSize for CShadeTableCache's DWORD table array. OWNER (sema xref):
+// its 6 callers are all CShadeTableCache methods (LumaSortTable/HueSortTable/
+// GreyTable/AddTable/SubTable/AlphaTable @0x14e...). The real owner TU is
+// src/DDrawMgr/ShadeTableCache.cpp, which is EXCLUDED from this pass (user's DDrawMgr
+// PR), so this CArray<DWORD> instantiation stays here pending that lane; it is a
+// self-contained MFC template method. The element is a 4-byte POD (DWORD), so the
+// grow/shrink/realloc paths inline memset/memcpy (rep stosd/movsd) around the engine
+// operator new (0x1b9b46) / operator delete (0x1b9b82).
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>

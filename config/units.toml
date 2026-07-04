@@ -2396,10 +2396,6 @@ unit = "mgrobjserialize"
 source = "src/Gruntz/MgrObjSerialize.cpp"
 flags = "eh"
 [[unit]]
-unit = "arraye40"
-source = "src/Gruntz/ArrayE40.cpp"
-flags = "base"
-[[unit]]
 unit = "gamechecksum"
 source = "src/Gruntz/GameChecksum.cpp"
 flags = "base"

@@ -6,6 +6,12 @@
 // trees into the three worker registries (this->m_c->m_10/m_28/m_2c), resolving the
 // "IMAGEZ_"/"SOUNDZ_"/"ANIZ_"+name trees off this->m_30 (the ButeMgr parser).
 //
+// Item-7 verify (vs GameAssetNamespaces.cpp / CAssetLoader): sibling loader but NOT
+// the same class - a different `this` layout (CNamespaceLoader here: m_c@+0xc,
+// m_30@+0x30, no dense low block; CAssetLoader there: m_mgr@+0x4/m_symParser@+0x8/
+// m_workerHolder@+0xc/m_areaArg@+0x1c/version-string@+0x4c/...). Per-object vs
+// per-area loaders, distinct classes -> stay separate TUs (no merge).
+//
 //   - mode != 0 (full): if the GRUNTZ_ image key is absent, optionally run the
 //     lighting/preview draw (lightGate), then g_resourceInstallActive-gate a
 //     ResolvePath("IMAGEZ_"+name) + the registry's vtable LoadTree (+0x48), then run

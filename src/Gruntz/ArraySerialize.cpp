@@ -1,4 +1,8 @@
 // ArraySerialize.cpp - a typed growable array's Serialize (0x39fa0). __thiscall.
+// OWNER (sema xref): Serialize @0x39fa0 has NO rel32 caller (reached only through the
+// uncalled ILT thunk 0x1e56) - it is dispatched indirectly via the MFC CArchive
+// Serialize mechanism, so the owning class is not recoverable from the xref graph.
+// Kept in its own TU as an unowned MFC CArray<DWORD>::Serialize template instantiation.
 // The MFC CArray<DWORD>::Serialize shape with SetSize inlined: when the archive
 // is storing, write the element count then the raw block; when loading, read the
 // count, (re)size the buffer (alloc/grow-with-copy/shrink-in-place per the MFC
