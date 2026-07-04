@@ -59,6 +59,15 @@ a later pass pays to relearn it. Rules: evidence bar unchanged (observed role, n
 invented), USR-exact renames only, never wander into files owned by parallel workers,
 report the opportunistic changes separately.
 
+**WIN-WIN MATCHING (the current phase, user mandate 2026-07-05):** a MATCHING brief is
+ALSO a cleanup brief for its owned files. While reconstructing/cracking functions you
+MUST, in the same files: type members instead of casting, name every `m_<hex>` your
+disasm work proves, fold/delete local view structs onto the canonicals, and convert
+`*Vtbl` structs / `m_vtbl`/`m_vptr` fields / PMF tables to real C++ virtuals (slot order
+from `gruntz sema class` + config/vtable_names.csv; the PMF→real-virtual conversion is
+PROVEN better, the MFC wall is dead, the foreign-vtable view exception is abolished).
+Every batch reports BOTH deltas: match % UP and the cleanliness counters DOWN.
+
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
@@ -75,7 +84,17 @@ wrapper, still runnable as `python -m gruntz.<...>`):
 - `gruntz sema rva <addr>` / `class <name>` / `match <rva|unit>` — one-shot dossiers
   (src claim + FID row + Ghidra fn + match %; vtable slot roles; per-fn %).
 - `gruntz sema disasm <rva>` / `strings <rva>|--find <text>` — retail disasm+relocs;
-  a fn's string set / reverse literal lookup.
+  a fn's string set / reverse literal lookup. **The disasm flags are your core
+  matching loop:**
+  - `--diff` — BASE-vs-TARGET asm diff, addresses masked, rc=1 if differing: the
+    fastest "am I byte-exact / what still differs" check after every build.
+  - `--base` — YOUR compiled fn out of its unit's base obj (what objdiff compares).
+  - `--rich` — `--base` interleaved with the /Z7 SOURCE LINES: see which statement
+    produced which instructions and what /O2 folded — the go-to view when a body
+    plateaus (reads which of your statements the compiler reshaped). Composes with
+    `--lite`.
+  - `--lite` — bare asm, no addresses/bytes/reloc noise (for reading + hand-diffing).
+  - `--target` — the retail side, explicit (the default).
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.
