@@ -46,6 +46,13 @@
 // final sweep (docs/patterns/jumptable-data-overlap.md;
 // big-seh-fuzzy-desync.md; eh-state-numbering-base.md;
 // o2-optimizer-bailout-framed.md).
+//
+// COLLECTION-EMBEDDING pass (tried, reverted): converting the two void* temps to
+// real inner-scope `CString` locals (assignments via operator=, implicit dtors)
+// REGRESSED this 7.30% -> 6.84% - cl re-schedules the /GX temp ctor/dtor placement
+// and stack offsets away from retail's manually-placed sequence, which the void* +
+// explicit PbStr* calls reproduce faithfully. The manual temp model is the
+// byte-faithful reconstruction; keep it until the jump-table wall is cracked.
 
 #include <Mfc.h> // PtInRect (via <windows.h>); the two CString temps
 #include <rva.h>

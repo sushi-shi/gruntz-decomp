@@ -58,6 +58,15 @@
 // from C source. Deferred to the final sweep (docs/patterns/
 // eh-state-numbering-base.md; big-seh-fuzzy-desync.md; zero-register-pinning.md;
 // o2-optimizer-bailout-framed.md).
+//
+// COLLECTION-EMBEDDING pass (NOT attempted here; sibling evidence): the CString
+// temps here are constructed/destroyed across MULTIPLE scopes (warpTemp/areaTemp at
+// distinct init sub-steps) for /GX EH precision. The sibling PyramidBridgeSprites -
+// which has the SIMPLER top-to-bottom temp lifetime - regressed 7.30% -> 6.84% when
+// its void* temps were converted to real `CString` locals (cl re-schedules the /GX
+// temp ctor/dtor placement). The multi-scope temps here are strictly harder; the
+// void* + explicit LlStr* placement is the byte-faithful model - left untouched to
+// protect the 34.85% partial.
 
 #include <Win32.h> // timeGetTime / UpdateWindow / ShowCursor (reloc-masked IAT)
 #include <rva.h>
