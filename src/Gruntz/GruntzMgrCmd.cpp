@@ -93,7 +93,6 @@ namespace GruntzMgrCmd {
     };
 
     extern "C" GZSound* __stdcall CueLookup(const char* name); // 0x2cca
-    extern GZLogic* GZLogicNull;                               // unused placeholder
 
     DATA(0x0061ab24)
     extern i32 g_sndCueTag;

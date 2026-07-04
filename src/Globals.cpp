@@ -508,12 +508,6 @@ DATA(0x00251518)
 extern i32 g_vtrigStride;
 DATA(0x00251520)
 extern i32 g_vtrigScratch;
-DATA(0x00253484)
-extern i32 g_wheelInited; // 0x653484
-DATA(0x00253488)
-extern i32 g_wheelScrollLines; // 0x653488
-DATA(0x00253490)
-extern u16 g_wheelMode; // 0x653490  0=undetected, 1=no wheel msg, 2=wheel present
 DATA(0x00253c48)
 extern i32 g_panTable[];
 DATA(0x00253c68)

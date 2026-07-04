@@ -14,13 +14,6 @@
 
 #include <Mfc.h> // CObject, CString + <windows.h> (CreateFileA/ReadFile/...) FIRST
 
-// External NAFXCW error helpers (reloc-masked no-body calls). The names are
-// placeholders pending the alias pass (MFC's real exports are
-// AfxThrowFileException / CFileException::ThrowOsError / AfxFullPath).
-extern "C" void __stdcall AfxThrowOsError(LONG lOsError, LPCSTR lpszName);
-extern "C" void __stdcall AfxThrowFileError(i32 cause, LONG lOsError, LPCSTR lpszName);
-extern "C" void __stdcall AfxFullPath(char* lpszPathOut, const char* lpszFileName);
-
 // ---------------------------------------------------------------------------
 // CFileIODispatch - a language-forced reinterpret VIEW over a CFileIO's vtable,
 // used to FORCE a virtual dispatch on a CONCRETE embedded CFileIO. CFileIO now

@@ -175,11 +175,9 @@ namespace gruntphase {
     struct RectT {
         i32 left, top, right, bottom;
     };
-    extern "C" RectT* RectSet34a4(RectT* r, i32 l, i32 t, i32 rr, i32 bb); // 0x000034a4
-    // The dirty/valid-cell region builder over the accumulator.
-    extern "C" void AccInit1b4b43(void* rgn);         // 0x001b4b43 (also PtAcc::Ctor)
-    extern "C" i32 GridTest1127(i32 a, i32 b, i32 c); // 0x00001127 (cdecl)
-    extern "C" i32 Rand11fee0();                      // 0x0011fee0
+    extern "C" RectT* RectSet34a4(RectT* r, i32 l, i32 t, i32 rr, i32 bb);  // 0x000034a4
+    extern "C" i32 GridTest1127(i32 a, i32 b, i32 c);                       // 0x00001127 (cdecl)
+    extern "C" i32 Rand11fee0();                                            // 0x0011fee0
     extern "C" void PlaceTile14bf(void* plane, i32 a, i32 b, i32 c, i32 d); // 0x000014bf
 
     // @early-stop

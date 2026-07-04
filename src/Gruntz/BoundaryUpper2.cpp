@@ -14,7 +14,6 @@
 
 // The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
 // rel32). 0x1b9b46 / 0x1b9b82.
-extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
 void* operator new(u32 n); // engine allocator @0x1b9b46 (same as RezAlloc)
 inline void* operator new(u32, void* p) {

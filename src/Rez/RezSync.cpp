@@ -45,7 +45,6 @@ extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
 extern i32 g_6452d4, g_6452a8, g_645558, g_645560, g_64555c, g_645564;
 extern i32 g_645210, g_645534;
 extern void* g_645570; // attract host
-extern void* g_645574; // actor list
 extern void* g_645578;
 extern void* g_60fa70;
 extern u32(WINAPI* g_pTimeGetTime)();  // 0x6c4650
@@ -55,11 +54,9 @@ extern i32(WINAPI* g_ShowCursor)(i32); // 0x6c44c4
 extern "C" void RezSrand(u32);                       // 0x11fed0
 extern "C" char* StrUpr(char*);                      // 0x18d330
 extern "C" char* SubstringMatch(char*, const char*); // 0x120090 (strstr semantics)
-extern "C" i32 RezSprintf(char*, const char*, ...);  // 0x1b2cf5
 
 extern "C" void cb_403193();
 extern "C" void cb_401bc2();
-extern "C" void cb_403774();
 extern char g_lab504358[]; // 0x504358
 extern char g_lab545854[]; // 0x545854
 
@@ -68,7 +65,6 @@ extern "C" void Fn3526cdecl(void*);                   // 0x3526
 void __stdcall Fn1d3eff(i32, i32, void*, i32);        // 0x1d3eff
 void __stdcall Blowfish_InitKey(unsigned char*);      // 0x16f6c0
 void __stdcall BitStreamBlowfishDecode(void*, void*); // 0x16f760
-extern "C" i32 Fn2063(i32);                           // 0x2063
 
 // generic thiscall MFC ctor/dtor helper (reloc-masked; only call shape matters)
 SIZE_UNKNOWN(Mfc);
@@ -239,7 +235,6 @@ extern i32 g_gameReg; // 0x645460
 extern u8 g_6454e6, g_6454e7, g_6453e5;
 extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
 extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
-extern i32 g_644c54;
 
 SIZE(DecodeObj, 0x60);
 struct DecodeObj {

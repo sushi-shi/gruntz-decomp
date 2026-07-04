@@ -53,12 +53,8 @@
 // ---------------------------------------------------------------------------
 // Shared singletons and the recycled-node free list (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;         // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c (game-mgr singleton)
-extern void* g_645578;         // DAT_00645578 @0x645578 (dev/render-state; +0x18 flags)
-extern "C" i32 g_644c54;       // DAT_00644c54 @0x644c54 (area index / default cue wParam)
-extern void* g_freeList;       // ?g_freeList@@3PAXA       @0x645544
-extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA @0x64554c
-extern i32 g_inputCtx;         // DAT_0061ab24 @0x61ab24 (GAME_TABHIGHLIGHT1 free sink)
+extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c (game-mgr singleton)
+extern i32 g_inputCtx; // DAT_0061ab24 @0x61ab24 (GAME_TABHIGHLIGHT1 free sink)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked __thiscall ILT thunks. Declared,

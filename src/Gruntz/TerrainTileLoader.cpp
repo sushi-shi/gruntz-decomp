@@ -50,9 +50,7 @@
 // ---------------------------------------------------------------------------
 // Shared singletons + the recycled-node free sink (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;   // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" i32 g_644c54; // DAT_00644c54 @0x644c54 (the current area index)
-extern i32 g_inputCtx;   // DAT_0061ab24 @0x61ab24 (Lookup-free sink)
+extern i32 g_inputCtx; // DAT_0061ab24 @0x61ab24 (Lookup-free sink)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).

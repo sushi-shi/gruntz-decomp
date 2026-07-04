@@ -292,8 +292,6 @@ struct CTmNameReg {
     char** Lookup(i32 id); // 0x46e0c0
 };
 extern CTmNameReg g_nameReg; // 0x6bf650
-extern void* g_nameRegNodes; // 0x6bf66c
-extern i32 g_nameRegCount;   // 0x6bf670
 void Str_Free(void* node);   // CString teardown, 0x1b9b93
 
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,

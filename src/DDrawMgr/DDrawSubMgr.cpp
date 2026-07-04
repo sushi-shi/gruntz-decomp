@@ -1510,9 +1510,6 @@ public:
     i32 m_speed;               // +0x38  float speed, raw bits
 };
 
-// __ftol the (int)double scale-cast lowers to (0x11f570).
-extern "C" i32 __ftol();
-
 // ---------------------------------------------------------------------------
 // 0x1587f0: per-frame sound-cue trigger.  Defaults the (center,range1,range2)
 // triple from the geometry context when non-positive, clamps the signed offset
@@ -2013,8 +2010,6 @@ void CAniRenderCtx::ClampLast_15cc90() {
 
 // Engine heap allocator (operator new / RezAlloc).  Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-// Engine heap free (RezFree); the worker dtor path.  0x1b9b82.
-extern "C" void RezFree(void* p); // 0x1b9b82
 
 // The global object-id counter the factory stamps into +0x188 and post-increments.
 

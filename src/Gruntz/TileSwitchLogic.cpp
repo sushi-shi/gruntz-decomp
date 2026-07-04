@@ -51,9 +51,6 @@
 // loads the manager separately to report/ack switch fires. (Earlier reconstructions
 // mislabelled this datum as a WwdGameReg; the delinker names it _g_mgrSettings.)
 extern "C" void* g_mgrSettings; // _g_mgrSettings @0x64556c (the CGruntzMgr singleton)
-extern "C" void* g_buteMgr;     // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
-extern "C" i32 g_644c54;        // DAT_00644c54 @0x644c54 (current area index)
-extern "C" void* g_61ab24;      // DAT_0061ab24 @0x61ab24 (secret-switch sink)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).

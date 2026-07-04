@@ -9,9 +9,7 @@
 #include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
 #include <Gruntz/BoundaryUpperViews.h> // owner/referent views for this TU (pulls Blk6c.h)
 
-// The engine __cdecl allocator/deallocator (operator new/delete; reloc-masked
-// rel32). 0x1b9b46 / 0x1b9b82.
-extern "C" void* RezAlloc(u32 n);
+// The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p);
 
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.

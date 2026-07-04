@@ -16,8 +16,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-extern "C" int __ftol(); // 0x11f570 ((int) of an x87 value)
-
 // is-power-of-two gate (0x145e00): returns 1 iff exactly one bit of n is set.
 extern i32 WarpIsPow2(i32 n); // 0x145e00
 
