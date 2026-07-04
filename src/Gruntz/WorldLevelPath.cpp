@@ -12,10 +12,7 @@
 #include <Ints.h>
 #include <Globals.h>
 
-class CSymTab {
-public:
-    i32 ResolveQualified(const char* name, i32 tag); // 0x13be40
-};
+#include <Bute/SymTab.h> // the shared CSymTab (ResolveQualified 0x13be40)
 
 // The loaded level record (CGameLevel): Reset at vtable +0x44, the namespace-load
 // hook at +0x3c, a by-name load hook at +0x40, a dirty-flags word at +0x08, and the
@@ -101,7 +98,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     if (m_4->m_c8.GetLength() != 0) {
         if (m_4->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_4->QueryLevelName();
-            i32 node = m_34->ResolveQualified(key, 0x575744);
+            i32 node = m_34->ResolveQualified(key, (void*)0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -110,7 +107,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
             }
         } else if (m_4->m_12c != 0) {
             CString key = "MULTI\\" + m_4->QueryLevelName();
-            i32 node = m_34->ResolveQualified(key, 0x575744);
+            i32 node = m_34->ResolveQualified(key, (void*)0x575744);
             if (node == 0) {
                 return 0;
             }
@@ -133,7 +130,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
         } else {
             key.Format("WORLDZ\\LEVEL%i", sel);
         }
-        i32 node = m_28->ResolveQualified(key, 0x575744);
+        i32 node = m_28->ResolveQualified(key, (void*)0x575744);
         if (node == 0) {
             return 0;
         }

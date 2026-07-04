@@ -8,13 +8,10 @@
 
 #include <Ints.h>
 
+#include <Bute/SymTab.h> // the shared CSymTab (ResolveQualified 0x13be40)
+
 // The engine sprintf-into-CString helper (cdecl).
 void Format(CString* out, const char* fmt, ...); // 0x1b2cf5 (cdecl)
-
-class CSymTab {
-public:
-    i32 ResolveQualified(const char* name, i32 tag); // 0x13be40
-};
 
 // The loaded level record (CGameLevel / CLoadable), viewed as a FOREIGN dispatch
 // object here: the full class + its vtable live in the gamelevel TU; only the
@@ -70,7 +67,7 @@ i32 CWorldState::BuildWorldLevelKey(i32 unused) {
     m_0c->m_24->CallReset();
     CString key;
     Format(&key, "WORLDZ\\LEVEL%i", 1);
-    i32 node = m_28->ResolveQualified(key, 0x575744);
+    i32 node = m_28->ResolveQualified(key, (void*)0x575744);
     if (node == 0) {
         return 0;
     }
