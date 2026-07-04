@@ -4,6 +4,7 @@
 // that every player shares the same custom level before the match starts (0xc4c00).
 // Offsets + code bytes are load-bearing; field/class names are placeholders.
 #include <Mfc.h>
+#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Ints.h>
 #include <rva.h>
 
@@ -59,26 +60,11 @@ struct CChanWnd {
     void* m_hwnd; // +0x1c HWND
 };
 
-// The net-session manager singleton (the int handle g_64bd5c holds its pointer).
-struct CNetSession {
-    char m_pad000[0x528];
-    i32 m_active; // +0x528 active flag
-    char m_pad52c[0x530 - 0x52c];
-    i32 m_verified; // +0x530 verified flag
-    char m_pad534[0x53c - 0x534];
-    i32 m_mismatch; // +0x53c mismatch flag
-    char m_pad540[0x5b0 - 0x540];
-    void* m_customLevelName; // +0x5b0 custom-level name
-
-    void DropPlayer(i32 id);          // 0xbb510
-    i32 Poll(i32 token);              // 0x1249
-    void SendStatFlag(i32 id, i32 v); // 0xb9240
-};
-// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
-// <Gruntz/Multi.h>). This dialog only casts the pointer to its own net-session lens,
-// so a forward-decl suffices (avoids pulling the heavy Multi.h). The DATA symbol is
-// owned by ReconBatch2.cpp; this extern reloc-masks against it.
-class CMulti;
+// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven). The
+// former per-TU CNetSession lens (a same-memory alias of this pointer) is gone: its
+// fields are genuine CMulti members (m_isHost/m_530/m_53c/m_5b0) and its methods are
+// genuine CMulti methods (DropPlayer/Poll/SendStatFlag) - see <Gruntz/Multi.h>. The
+// DATA symbol is owned by ReconBatch2.cpp; this extern reloc-masks against it.
 extern CMulti* g_64bd5c; // 0x64bd5c
 
 // The game-settings singleton (CGruntzMgr) used to resolve the level + show modals.
@@ -99,10 +85,6 @@ i32 ChannelSlots_FindFree();            // 0xdb280
 CString GetConfigNameA();               // 0xb6090
 CString GetConfigNameB();               // 0xb60d0
 
-inline CNetSession* Session() {
-    return (CNetSession*)g_64bd5c;
-}
-
 // @early-stop
 // /GX EH-frame representation wall (~84%): the code stream is byte-faithful (all
 // GetDlgItem/EnableWindow calls + the g_optCfg load pair), but the delinker emits
@@ -117,7 +99,7 @@ i32 CNetGameDlg::EnableControls() {
     GetDlgItem(0x42d)->EnableWindow(1);
     GetDlgItem(0x511)->EnableWindow(1);
     CString s1;
-    if (Session()->m_customLevelName == 0) {
+    if (g_64bd5c->m_5b0 == 0) {
         CString s2;
     }
     return 1;
@@ -142,7 +124,7 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
     if (pSend(owner->m_hwnd, 0x147, 0, 0) == 0) {
         if (s->m_14 != 0) {
             if (s->m_active != 0) {
-                Session()->DropPlayer(s->m_playerId);
+                g_64bd5c->DropPlayer(s->m_playerId);
             }
         } else if (s->m_active != 0) {
             ChannelSlots_Set(s->m_slotIndex, 1);
@@ -155,7 +137,7 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
         if (pSend(owner->m_hwnd, 0x147, 0, 0) != 4) {
             if (s->m_14 != 0) {
                 if (s->m_active != 0) {
-                    Session()->DropPlayer(s->m_playerId);
+                    g_64bd5c->DropPlayer(s->m_playerId);
                 }
                 i32 free = ChannelSlots_FindFree();
                 s->m_slotIndex = free;
@@ -177,39 +159,43 @@ void CNetGameDlg::UpdateSlot(i32 ch) {
 }
 
 // @early-stop
-// /GX CString cleanup-state-machine wall (~55%): the branch logic + the merged
+// /GX CString cleanup-state-machine wall (~52%): the branch logic + the merged
 // BuildRezPath / by-value caption copy are reconstructed, but two retail early
 // guards test the relocatable addresses of CTileExclusiveTriggerSwitchLogic /
 // ReleaseResources (a pointer-to-member null check this cl can't re-spell), which
 // shifts the layout, and the a/b CString destruct-state numbering is EH residue.
+// (CLEANUP p2: folding the CNetSession lens into the real CMulti re-mangled the
+// Poll/SendStatFlag callees CMulti::-side; the code loads are byte-identical -
+// (void*)m_5b0 is the same DWORD mov as the old void* field - but the re-mangled
+// reloc symbol set nudged the EH-scope fuzzy score 54.6% -> 51.9%. Accepted.)
 // before the match starts, confirm every player has the same custom
 // level; otherwise re-enable the dialog and pop the appropriate error modal.
 RVA(0x000c4c00, 0x190)
 void CNetGameDlg::VerifyCustomLevel() {
-    CNetSession* mgr = Session();
-    if (mgr->m_active == 0) {
+    CMulti* mgr = g_64bd5c;
+    if (mgr->m_isHost == 0) {
         return;
     }
     mgr->SendStatFlag(0x3fc, 1);
     void* token;
-    if (Session()->m_customLevelName != 0) {
+    if (g_64bd5c->m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = g_mgrSettings->BuildRezPath(0, Session()->m_customLevelName, 0, 0, b);
+        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = g_mgrSettings->BuildRezPath(0, Session()->m_customLevelName, 0, 0, a);
+        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, a);
     }
-    Session()->m_mismatch = 0;
-    if (Session()->Poll((i32)token) == 0) {
-        Session()->m_verified = 0;
+    g_64bd5c->m_53c = 0;
+    if (g_64bd5c->Poll((i32)token) == 0) {
+        g_64bd5c->m_530 = 0;
         EnableWindow(0);
         g_mgrSettings->ShowModal("Unable to verify custom level with other players");
         EnableWindow(1);
-    } else if (Session()->m_mismatch == 0) {
-        Session()->m_verified = 1;
+    } else if (g_64bd5c->m_53c == 0) {
+        g_64bd5c->m_530 = 1;
         OnOK();
     } else {
-        Session()->m_verified = 0;
+        g_64bd5c->m_530 = 0;
         EnableWindow(0);
         g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
         EnableWindow(1);

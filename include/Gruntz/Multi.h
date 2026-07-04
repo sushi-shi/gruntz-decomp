@@ -178,10 +178,25 @@ void MultiRestoreFocus(void* hwnd); // 0x00518930
 // The opened-player object OpenPlayer returns (group-name accessor @0x4b76a0).
 class CMultiPlayer;
 
+// The report gate's player-info sub-object (gate->m_70): per-slot occupancy probes
+// the multiplayer-start dialog reads to derive the player count. Reloc-masked
+// __thiscall leaves in the DirectPlay session cluster (0x1794xx).
+class CMultiPlayerInfo {
+public:
+    i32 Q1794b0(); // 0x1794b0  slot-1 occupancy probe
+    i32 Q1794e0(); // 0x1794e0  slot-2
+    i32 Q179510(); // 0x179510  slot-3
+    i32 Q179540(); // 0x179540  slot-4
+};
+SIZE_UNKNOWN(CMultiPlayerInfo);
+
 // The join/report gate at CMulti+0x524: released via its scalar-deleting destructor
 // (vtable slot +0x04, thiscall, arg 1). ONE struct (was split into a separate
-// CMultiNetGate net-bind view): StartTitle drives its net-bind entry points
-// (non-virtual, reloc-masked thiscall) and stashes the opened player at +0x74.
+// CMultiNetGate net-bind view, and the per-TU WatchSess524 / CMultiRegSub lens
+// sub-object views folded here): StartTitle drives its net-bind entry points
+// (non-virtual, reloc-masked thiscall) and stashes the opened player at +0x74; the
+// lobby watchdog re-probes it via M178a80, and the start-dialog reads its +0x70
+// player-info sub-object's per-slot occupancy probes.
 class CMultiReportGate {
 public:
     virtual void Slot00();                // +0x00
@@ -189,7 +204,9 @@ public:
     i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
     void Activate();                      // 0x578750
     CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
-    char m_pad04[0x74 - 0x4];
+    void M178a80(void* h, i32 a);         // 0x578a80  watchdog re-probe (EnumGroupsRange)
+    char m_pad04[0x70 - 0x4];
+    CMultiPlayerInfo* m_70; // +0x70  per-slot player-info sub-object (start-dialog probes)
     CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
 };
 
@@ -284,10 +301,20 @@ public:
     // External CMulti methods this TU calls but does not define (reloc-masked).
     void SendStatFlag(i32 code, i32 flag);  // 0x0b9240 (__thiscall, reads m_5bc)
     void SendNetStat3(i32 a, i32 b, i32 c); // 0x0b9290 (__thiscall, 3 args)
-    void CPlayDtorBody();                   // 0x04c8700 (the CPlay sub-object teardown, thiscall)
-    void OnDropPlayer();                    // 0x0bc110
-    i32 RebindHost();                       // 0x0bc750  (also CNetMgr-shared)
-    i32 RebindHostAlt();                    // 0x0bc460
+    // The multiplayer net-game / lobby-watchdog dialog helpers reach these on the
+    // g_64bd5c singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
+    // Folded here from the former per-TU CNetSession / WatchSess lens types.
+    void DropPlayer(i32 id);  // 0x0bb510  (CNetMgr::DropChannelPlayer)
+    i32 Poll(i32 token);      // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
+    i32 ResolveLocalPlayer(); // 0x0ba7d0
+    void ReportAckLatency();  // 0x0bd000
+    i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
+    void PollSession();                        // 0x0b95f0
+    void AutoTuneCmdDelay();                   // 0x0bcc10
+    void CPlayDtorBody(); // 0x04c8700 (the CPlay sub-object teardown, thiscall)
+    void OnDropPlayer();  // 0x0bc110
+    i32 RebindHost();     // 0x0bc750  (also CNetMgr-shared)
+    i32 RebindHostAlt();  // 0x0bc460
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
     // off the g_64bd5c singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
@@ -382,33 +409,41 @@ public:
     CNetSession2* m_session; // +0x520  heap obj (thiscall teardown + _RezFree)
     CMultiReportGate*
         m_netGate; // +0x524  released via vtable +0x4 scalar dtor; the join/report gate
-    i32 m_isHost;  // +0x528  is-host latch
-    char m_pad52c_534[0x534 - 0x52c];
-    i32 m_534; // +0x534  reset by Connect
-    char m_pad538_564[0x564 - 0x538];
+    i32 m_isHost;  // +0x528  is-host latch (net-game dlg: active-session flag)
+    i32 m_52c;     // +0x52c  session-terminated flag (lobby watchdog)
+    i32 m_530;     // +0x530  custom-level verified flag (net-game dlg)
+    i32 m_534;     // +0x534  reset by Connect
+    i32 m_538;     // +0x538  player-removed flag (lobby watchdog)
+    i32 m_53c;     // +0x53c  version-mismatch flag (net-game dlg verify)
+    char m_pad540_564[0x564 - 0x540];
     i32 m_564; // +0x564  busy/active gate
-    char m_pad568_574[0x574 - 0x568];
+    i32 m_568; // +0x568  selection-taken flag (lobby watchdog)
+    i32 m_56c; // +0x56c  session-full flag (lobby watchdog)
+    i32 m_570; // +0x570  version-mismatch flag (lobby watchdog)
     i32 m_574; // +0x574  stall latch
     char m_pad578_57c[0x57c - 0x578];
     i32 m_pumpGuard; // +0x57c  pump-active reentrancy guard
     i32 m_connected; // +0x580  gate flag
     char m_pad584_588[0x588 - 0x584];
-    i32 m_588; // +0x588  armed flag
-    char m_pad58c_590[0x590 - 0x58c];
+    i32 m_588;           // +0x588  armed flag
+    i32 m_58c;           // +0x58c  stat-reset gate (lobby watchdog)
     i32 m_590;           // +0x590  copied to m_logic->m_110 on teardown
     i32 m_594;           // +0x594  ambient-enable gate
     CString m_598;       // +0x598
     CString m_groupName; // +0x59c
     CString m_hostName;  // +0x5a0
-    u8 m_5a4;            // +0x5a4  step shift base (used as byte/word; follows m_hostName)
-    char m_pad5a5_5a8[0x5a8 - 0x5a5];
-    i32 m_drainReload; // +0x5a8  drain reload value
-    char m_pad5ac_5b0[0x5b0 - 0x5ac];
-    i32 m_5b0;       // +0x5b0  lobby current-selection index (MultiColorDlg)
-    CString m_5b4;   // +0x5b4
-    CString m_5b8;   // +0x5b8
-    i32 m_5bc;       // +0x5bc  gate flag
-    i32 m_hostIndex; // +0x5c0  host index (ResolveHost arg)
+    // +0x5a4 is a DWORD (NetMgr stores m_cmdDelay here; the net color-config dialog
+    // reads it + m_5a8 as a color word pair). Tick reads it as a DWORD (m_curSlotId
+    // + m_5a4*2) and again as its low byte ((u8)m_5a4 << 1), so the byte uses cast.
+    i32 m_5a4;         // +0x5a4  cmd-delay / step-shift base / color word (DWORD)
+    i32 m_drainReload; // +0x5a8  drain reload value (net color-config: 2nd color word)
+    i32 m_5ac;         // +0x5ac  game-closed flag (lobby watchdog; == NetMgr m_gameClosed)
+    i32 m_5b0;         // +0x5b0  lobby current-selection index / custom-level id (net-game
+                       //          dlg: BuildRezPath arg cast (void*)m_5b0)
+    CString m_5b4;     // +0x5b4
+    CString m_5b8;     // +0x5b8
+    i32 m_5bc;         // +0x5bc  gate flag
+    i32 m_hostIndex;   // +0x5c0  host index (ResolveHost arg)
     char m_pad5c4_5cc[0x5cc - 0x5c4];
     i32 m_curSlotId;  // +0x5cc  current slot id
     i32 m_5d0;        // +0x5d0
@@ -419,7 +454,8 @@ public:
     i32 m_5e4;        // +0x5e4  second timeGetTime
     i32 m_5e8;        // +0x5e8
     i32 m_5ec;        // +0x5ec
-    char m_pad5f0_604[0x604 - 0x5f0];
+    char m_pad5f0_600[0x600 - 0x5f0];
+    i32 m_600;        // +0x600  committed / abort gate (start dlg + watchdog; == NetMgr m_600)
     CByteArray m_604; // +0x604
 };
 

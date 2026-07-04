@@ -8,7 +8,8 @@
 // and the game-registry slot array (*0x64556c) are modeled with ONLY the offsets
 // this method touches. Engine callees + Win32 imports are external (reloc-masked);
 // field/class names are placeholders (campaign doctrine).
-#include <Mfc.h> // wsprintfA / KillTimer (imports reloc-mask through their IAT ptrs)
+#include <Mfc.h>          // wsprintfA / KillTimer (imports reloc-mask through their IAT ptrs)
+#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Ints.h>
 #include <rva.h>
 
@@ -20,42 +21,12 @@ struct WatchCtrl {
     void SetWindowTextA(const char* text); // 0x1be520 (reloc-masked)
 };
 
-// The net-session singleton reached through *0x64bd5c.  Its status flags gate the
-// watchdog's terminal branches; the m_524 sub-object holds the poll worker.
-struct WatchSess524 {
-    char m_pad00[0x74];
-    void* m_74;                 // +0x74  poll worker handle
-    void M178a80(void* h, i32); // 0x178a80 (thiscall on this sub-object)
-};
-struct WatchSess {
-    char m_pad000[0x524];
-    WatchSess524* m_524; // +0x524 poll worker owner
-    i32 m_528;           // +0x528 active flag
-    i32 m_52c;           // +0x52c terminated flag
-    char m_pad530[0x538 - 0x530];
-    i32 m_538; // +0x538 removed flag
-    char m_pad53c[0x568 - 0x53c];
-    i32 m_568; // +0x568 selection-taken flag
-    i32 m_56c; // +0x56c full flag
-    i32 m_570; // +0x570 version-mismatch flag
-    char m_pad574[0x58c - 0x574];
-    i32 m_58c; // +0x58c stat-reset gate
-    char m_pad590[0x5ac - 0x590];
-    i32 m_5ac; // +0x5ac closed flag
-    char m_pad5b0[0x5bc - 0x5b0];
-    i32 m_5bc; // +0x5bc poll token
-    char m_pad5c0[0x600 - 0x5c0];
-    i32 m_600; // +0x600 abort gate
-
-    // reloc-masked __thiscall leaves (thunks / engine methods):
-    void M2338();                     // 0x2338
-    void M2955(i32 a, i32 b, i32 c);  // 0x2955
-    void M360c();                     // 0x360c
-    i32 M1cee(void* h, i32 token);    // 0x1cee -> worker handle
-    void M2c39();                     // 0x2c39
-    void M2365();                     // 0x2365
-    void M1af0(const char* msg, i32); // 0x1af0 show status message
-};
+// The multiplayer game-state singleton at 0x64bd5c is a CMulti. The former per-TU
+// WatchSess / WatchSess524 lens types (same-memory aliases of this pointer and its
+// +0x524 report gate) are gone: the status flags are genuine CMulti members
+// (m_isHost/m_52c/m_538/m_568/m_56c/m_570/m_58c/m_5ac/m_5bc/m_600) and the terminal
+// helpers are genuine CMulti / CMultiReportGate methods - see <Gruntz/Multi.h>.
+extern CMulti* g_64bd5c; // 0x64bd5c
 
 // The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot).
 struct WatchRegSlot {
@@ -71,16 +42,6 @@ struct WatchReg {
     char m_pad000[0x150];
     WatchRegSlot m_slots[1]; // +0x150
 };
-
-// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
-// <Gruntz/Multi.h>). This dialog only casts the pointer to its own watch-session lens,
-// so a forward-decl suffices. The DATA symbol is owned by ReconBatch2.cpp; this extern
-// reloc-masks against it.
-class CMulti;
-extern CMulti* g_64bd5c; // 0x64bd5c
-inline WatchSess* Sess() {
-    return (WatchSess*)g_64bd5c;
-}
 
 // The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
 extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
@@ -123,22 +84,22 @@ void CNetDlgWatch::Watchdog() {
         return;
     }
     g_watchBusy = 1;
-    void* h = Sess()->m_524->m_74;
+    void* h = g_64bd5c->m_netGate->m_player;
     if (h == 0) {
         return;
     }
-    Sess()->m_524->M178a80(h, 0);
-    Sess()->M2338();
+    g_64bd5c->m_netGate->M178a80(h, 0);
+    g_64bd5c->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = g_pTimeGetTime();
-        Sess()->M2955(0x41f, (i32)t, 0);
+        g_64bd5c->SendNetStat3(0x41f, (i32)t, 0);
     }
-    if (Sess()->m_528 == 0) {
+    if (g_64bd5c->m_isHost == 0) {
         if (g_watchBlinkA == 0) {
-            Sess()->M360c();
+            g_64bd5c->ReportAckLatency();
         }
         EnableWindow(0);
-        i32 r = Sess()->M1cee(h, Sess()->m_5bc);
+        i32 r = g_64bd5c->VerifyCustomLevel(h, g_64bd5c->m_5bc);
         EnableWindow(1);
         if (r != 0) {
             M1bab37(1);
@@ -146,9 +107,9 @@ void CNetDlgWatch::Watchdog() {
             return;
         }
     } else {
-        Sess()->M2c39();
-        if (Sess()->m_600 != 0) {
-            Sess()->M2365();
+        g_64bd5c->PollSession();
+        if (g_64bd5c->m_600 != 0) {
+            g_64bd5c->AutoTuneCmdDelay();
         }
     }
     i32 a = g_watchBlinkA + 1;
@@ -195,29 +156,29 @@ void CNetDlgWatch::Watchdog() {
     if (b > 0x31) {
         g_watchBlinkB = 0;
     }
-    if (Sess()->m_52c != 0) {
+    if (g_64bd5c->m_52c != 0) {
         KillTimer(m_hWnd, 1);
-        Sess()->M1af0("terminated", 0);
+        g_64bd5c->ReportVersionMsg("terminated", 0);
         g_watchBusy = 0;
         return;
     }
-    if (Sess()->m_568 != 0) {
-        Sess()->m_568 = 0;
-        Sess()->M1af0("selected", 0);
+    if (g_64bd5c->m_568 != 0) {
+        g_64bd5c->m_568 = 0;
+        g_64bd5c->ReportVersionMsg("selected", 0);
         g_watchBusy = 0;
         return;
     }
-    const char* msg;
-    if (Sess()->m_538 != 0) {
+    char* msg;
+    if (g_64bd5c->m_538 != 0) {
         KillTimer(m_hWnd, 1);
         msg = "removed";
-    } else if (Sess()->m_5ac != 0) {
+    } else if (g_64bd5c->m_5ac != 0) {
         KillTimer(m_hWnd, 1);
         msg = "closed";
-    } else if (Sess()->m_56c != 0) {
+    } else if (g_64bd5c->m_56c != 0) {
         KillTimer(m_hWnd, 1);
         msg = "full";
-    } else if (Sess()->m_570 != 0) {
+    } else if (g_64bd5c->m_570 != 0) {
         KillTimer(m_hWnd, 1);
         msg = "version";
     } else {
@@ -228,16 +189,16 @@ void CNetDlgWatch::Watchdog() {
             M38d2();
             g_playerLeftFlag = 0;
         }
-        if (Sess()->m_58c != 0) {
+        if (g_64bd5c->m_58c != 0) {
             M227a();
             M2c0c();
             M38d2();
-            Sess()->m_58c = 0;
+            g_64bd5c->m_58c = 0;
         }
         g_watchBusy = 0;
         return;
     }
-    Sess()->M1af0(msg, 0);
+    g_64bd5c->ReportVersionMsg(msg, 0);
     M1bab37(0);
     g_watchBusy = 0;
 }
@@ -246,5 +207,3 @@ SIZE_UNKNOWN(CNetDlgWatch);
 SIZE_UNKNOWN(WatchCtrl);
 SIZE_UNKNOWN(WatchReg);
 SIZE_UNKNOWN(WatchRegSlot);
-SIZE_UNKNOWN(WatchSess);
-SIZE_UNKNOWN(WatchSess524);

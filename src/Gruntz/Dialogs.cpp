@@ -13,6 +13,7 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <rva.h>
 #include <Globals.h>
 
@@ -23,10 +24,9 @@
 DATA(0x0024556c)
 extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 // State-machine invariant: 0x64bd5c holds the multiplayer game-state singleton (a
-// CMulti, xref-proven; see <Gruntz/Multi.h>). The dtor here snapshots it from
-// g_gameReg->m_curState (+0x2c); the dialog then reads it through its registry-facet
-// lens (CMultiReg, below). Forward-declared CMulti* -- only the pointer is needed here.
-class CMulti;
+// CMulti, xref-proven). The ctor snapshots it from g_gameReg->m_curState (+0x2c); the
+// dialog reads it through genuine CMulti members - the former per-TU CMultiReg /
+// CMultiRegSub lens types (same-memory aliases) are gone (see <Gruntz/Multi.h>).
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 
@@ -36,31 +36,10 @@ extern CMulti* g_64bd5c;
 // ---------------------------------------------------------------------------
 // CMultiStartDlg multiplayer-setup helpers (BuildSlotList / UpdateSlot model).
 // ---------------------------------------------------------------------------
-// The game-registry snapshot g_64bd5c holds (a per-team player-info sub-object at
-// +0x524->+0x70 the slot probes run on, a team/mode latch at +0x528/+0x588/+0x600,
-// and the +0x5a4/+0x5a8 color pair). Reloc-masked field offsets.
-struct CMultiPlayerInfo { // reg->m_524->m_70
-    i32 Q1794b0();        // 0x1794b0  slot-1 occupancy probe
-    i32 Q1794e0();        // 0x1794e0  slot-2
-    i32 Q179510();        // 0x179510  slot-3
-    i32 Q179540();        // 0x179540  slot-4
-};
-struct CMultiRegSub {
-    char m_pad00[0x70];
-    CMultiPlayerInfo* m_70; // +0x70
-};
-struct CMultiReg {
-    char m_pad000[0x524];
-    CMultiRegSub* m_524; // +0x524
-    i32 m_528;           // +0x528  mode/team latch (read only as a nonzero test)
-    char m_pad52c[0x588 - 0x52c];
-    i32 m_588; // +0x588  forced-count latch (read only as a nonzero test)
-    char m_pad58c[0x5a4 - 0x58c];
-    i32 m_5a4; // +0x5a4
-    i32 m_5a8; // +0x5a8
-    char m_pad5ac[0x600 - 0x5ac];
-    i32 m_600; // +0x600  committed flag
-};
+// The multiplayer game-state's per-team player-info sub-object and the team/mode +
+// forced-count + color-pair latches are now genuine CMulti / CMultiReportGate members
+// (g_64bd5c->m_isHost/m_588/m_5a4/m_drainReload/m_600 and g_64bd5c->m_netGate->m_70
+// -> CMultiPlayerInfo::Q1794b0..Q179540); see <Gruntz/Multi.h>.
 
 // A player-slot record in the m_5c slot array (0x238 stride); only the +0x16c
 // occupancy field is read.
@@ -225,9 +204,9 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
     m_slotList = new CMultiSlotList(0xa);
-    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    CMulti* reg = g_64bd5c;
     i32 count = 5;
-    CMultiPlayerInfo* pi = reg->m_524->m_70;
+    CMultiPlayerInfo* pi = reg->m_netGate->m_70;
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
@@ -266,9 +245,9 @@ i32 CMultiStartDlg::UpdateSlot() {
     if (w == 0) {
         return 0;
     }
-    CMultiReg* reg = (CMultiReg*)g_64bd5c;
+    CMulti* reg = g_64bd5c;
     i32 enable;
-    if (reg->m_528) {
+    if (reg->m_isHost) {
         i32 idx = GetSlotIndex();
         enable = (((CMultiSlot*)m_host)[idx].m_16c == 0);
     } else {
@@ -276,11 +255,11 @@ i32 CMultiStartDlg::UpdateSlot() {
     }
     w->EnableWindow(enable);
     i32 v = GetSafe1c();
-    CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
+    CMulti* reg2 = g_64bd5c;
     if (reg2->m_600) {
         m_slotList->Method3396(v, 0x527, 0, 0);
     } else {
-        m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+        m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_drainReload);
     }
     return 1;
 }
@@ -880,9 +859,6 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
 RVA(0x000b8960, 0x59)
 CMultiStartDlg::~CMultiStartDlg() {}
 
-SIZE_UNKNOWN(CMultiPlayerInfo);
-SIZE_UNKNOWN(CMultiRegSub);
-SIZE_UNKNOWN(CMultiReg);
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(CMultiSlotList);
 SIZE_UNKNOWN(CImgHolderBase);
