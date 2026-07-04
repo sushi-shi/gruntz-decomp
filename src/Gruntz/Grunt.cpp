@@ -6336,7 +6336,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
-            Stub_048400();
+            ReadConfigFromButeMgr();
             Stub_048470(0, 0);
             LoadAnimNameTable(0, 0);
             Stub_062e10(1, 0, 0);

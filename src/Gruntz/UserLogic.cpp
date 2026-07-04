@@ -1599,8 +1599,8 @@ struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
     i32 m_28; // +0x28 arrived gate
 };
 SIZE_UNKNOWN(CDecayM194);
-struct CDecayM194 {           // m_154->m_194
-    void Method152480(i32 a); // 0x152480 (this, a)
+struct CDecayM194 {          // m_154->m_194 (real: CImageSet)
+    void SetAllTypes(i32 a); // 0x152480 = CImageSet::SetAllTypes
 };
 SIZE_UNKNOWN(CDecayMgr);
 struct CDecayMgr { // m_154 - the bound draw-state manager
@@ -1755,7 +1755,7 @@ RVA(0x00061570, 0x11d)
 i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
     if ((i64)(u32)g_645588 - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
         m_drawState->m_40 |= 1;
-        m_drawState->m_194->Method152480(1);
+        m_drawState->m_194->SetAllTypes(1);
         if (m_animSuppress == 0) {
             m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
         }

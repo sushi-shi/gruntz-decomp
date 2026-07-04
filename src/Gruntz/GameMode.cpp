@@ -1156,9 +1156,9 @@ struct CMenuBrightHolder {
 };
 SIZE_UNKNOWN(CMenuPageA);
 struct CMenuPageA {
-    void Method158dc0();      // 0x158dc0 no-arg
-    void TransTitle();        // 0x158e90 no-arg
-    void Method158d50(i32 z); // 0x158d50 (1 arg)
+    void Method_158dc0();      // 0x158dc0 no-arg (csv leaf: CDDrawWorkerMgr::Method_158dc0)
+    void TransTitle();         // 0x158e90 no-arg
+    void Method_158d50(i32 z); // 0x158d50 (1 arg) (csv leaf: CDDrawWorkerMgr::Method_158d50)
     char m_pad00[0x14];
     CMenuBrightHolder* m_14; // +0x14 title brightness holder
     CMenuBrightHolder* m_18; // +0x18 menu brightness holder
@@ -1191,9 +1191,9 @@ RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CMenuRootA* root = (CMenuRootA*)m_c;
     if (m_208 != 0) {
-        root->m_04->Method158dc0();
+        root->m_04->Method_158dc0();
         root->m_04->TransTitle();
-        root->m_04->Method158d50(0);
+        root->m_04->Method_158d50(0);
         root->m_04->m_18->m_2c->Fill(0);
         return 1;
     }

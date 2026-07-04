@@ -1098,7 +1098,7 @@ cddrawsubmgrleaf	?RemoveKeysEqual_1527d0@CDDrawSubMgrLeaf@@QAEHPBD0@Z	100.0000	1
 cddrawsubmgrleaf	?RemoveValue_152660@CDDrawSubMgrLeaf@@QAEXPAVCCatalogNode@@@Z	99.8545	99.8545	2	c2640c665e25	0x152660
 cddrawsubmgrleaf	?ScalarDtor@CDDrawSubMgrLeaf@@UAEPAXH@Z	100.0000	100.0000	1	896d61607bff	0x1577c0
 cddrawsubmgrleaf	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXH@Z	100.0000	100.0000	1	b6c123b0d72a	0x157550
-cddrawsubmgrleafscan	??1CDDrawSubMgrLeafScan@@UAE@XZ	94.8750	94.8750	2	62c2877e1726	0x157570
+cddrawsubmgrleafscan	??1CDDrawSubMgrLeafScan@@UAE@XZ	94.8750	94.8750	3	ed0c22ac58ca	0x157570
 cddrawsubmgrleafscan	??1LeafElementObj@@UAE@XZ	94.1429	94.1429	1	903f2961e4f6	0x158680
 cddrawsubmgrleafscan	?Configure_158760@LeafElementObj@@QAEHPAVCParseSource@@@Z	41.0811	41.0811	1	35ca9b91d8a6	0x158760
 cddrawsubmgrleafscan	?CreateEntry2_157e00@CDDrawSubMgrLeafScan@@QAEPAULeafElementObj@@PBDPAX@Z	63.2857	63.2857	2	7aadd4bab5f2	0x157e00
@@ -1573,7 +1573,7 @@ cplay	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	4	81a1c29448c8	0xce530
 cplay	?DrawWorldFrame@CPlay@@QAEXXZ	94.4118	94.4118	5	d0c8c72f5e17	0xc9c20
 cplay	?DrawWorldFrames@CPlay@@QAEHXZ	88.8529	88.8529	4	512035afc242	0xc9cc0
 cplay	?DrawWorldPresent@CPlay@@QAEHXZ	98.8333	98.8333	3	393744c61580	0xcefc0
-cplay	?EnterMode@CPlay@@QAEHH@Z	97.2903	97.2903	3	79a75b605917	0xd6fa0
+cplay	?EnterMode@CPlay@@QAEHH@Z	97.2903	97.2903	4	91ae9f1de8f7	0xd6fa0
 cplay	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	2	4dac5fdcff1e	0xd6440
 cplay	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	3	74cb88045201	0xd5f90
 cplay	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	4cf18aed0e73	0xcee70
@@ -2142,7 +2142,7 @@ gamemode	?FormatHudText@CMenuState@@QAEXPAUCHudBuf@@H@Z	97.4844	97.4844	1	92727a
 gamemode	?ForwardIdleAnim@CMultiBootyState@@QAEHHH@Z	100.0000	100.0000	1	4efc3adad86f	0x1d420
 gamemode	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	4	ace08f9c6fc1	0xa06d0
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	3	e5f14c89a313	0x19cd0
-gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	3	bc6d7970e106	0x39570
+gamemode	?InitAttractTitle@CCreditsState@@QAEHXZ	81.2079	81.2079	4	ae9ccb7fd8d1	0x39570
 gamemode	?InputVirtual@CCreditsState@@UAEHXZ	100.0000	100.0000	1	452b038a8041	0x393b0
 gamemode	?LoadCreditzStateAssets@CCreditsState@@QAEHHHH@Z	100.0000	100.0000	2	5f8f1a3eb875	0x38d20
 gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	4	cc066e36a8c2	0x1a040
@@ -2215,7 +2215,7 @@ grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	8	1b10a4a61e60	0x6
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	6	576eed3f032a	0x641b0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	3	a7b05c5f0d12	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	5	45397f7f939c	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	4	6dc9c894153f	0x52c70
@@ -2247,7 +2247,7 @@ grunt	?InitDirVectors@CGrunt@@UAEXXZ	37.3394	37.3394	3	e00d0a5e3e20	0x5caa0
 grunt	?Load@CGrunt@@QAEHPAVCGruntArchive@@@Z	87.2286	87.2286	5	eeadde8e11a7	0xd8060
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	75.9312	75.9312	3	f341d57d748b	0x49c60
 grunt	?LoadEntranceConfig@CGrunt@@QAEXXZ	78.8377	78.8377	8	4bbc0c35210b	0x67f80
-grunt	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3881	87.3881	5	122d231ae7a9	0x69d60
+grunt	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3881	87.3881	6	990022c2e2af	0x69d60
 grunt	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	22.1570	22.1570	4	bfd553dc34bd	0x6a060
 grunt	?LoadVehicleGruntAnimations@CGrunt@@QAEXXZ	93.7992	93.7992	7	ac85344c3ebb	0x63db0
 grunt	?OnStruck@CGrunt@@QAEXH@Z	76.2798	76.2798	2	214f0be3e655	0x588f0
@@ -3301,7 +3301,7 @@ sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	4	ec6b4c65c83f	0x136d
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	2	7511425a99b1	0x136ab0
 sounddevice	?VolumeToAttenuation@SoundDevice@@SAHH@Z	58.1111	58.1111	1	ccabb2037a00	0x1350b0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	2	de77505f71a7	0x137110
-soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	2	3381b4fa7e5e	0xf8f30
+soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	3	1eae1ea42f2a	0xf8f30
 soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	1	bdc4da3a1f9d	0xf8e20
 soundresmap	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	1	d14ccc097d38	0x157b00
 soundstream	??0SoundStream@@QAE@XZ	96.9000	96.9000	3	523e670fa5d8	0x1376d0
@@ -3466,7 +3466,7 @@ tiletriggercontainer	?FilterList2@CTileTriggerContainer@@QAEHPAX@Z	84.2000	84.20
 tiletriggercontainer	?FindInLists12@CTileTriggerContainer@@QAEPAXHH@Z	100.0000	100.0000	2	c6ed53b9990d	0x116f20
 tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAX@Z	51.3243	51.3243	2	031444f05700	0x117150
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	1	d8586fefd0bf	0x116fa0
-tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUTtcStream@@HHH@Z	29.7289	29.7289	2	a71508886519	0x117280
+tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUTtcStream@@HHH@Z	29.7289	29.7289	3	e94fd6709b11	0x117280
 tiletriggercontainer	?SerializeApplyA@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	2	a1a03c04f1a2	0x117630
 tiletriggercontainer	?SerializeApplyB@@YGHPAUTtcStream@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	2	fe53fda39900	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	2	7da81f3dbd6b	0x117f60
@@ -3684,7 +3684,7 @@ userlogic	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	1	38a3a9c69832	0x10e
 userlogic	?InitActReg@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	1	18b0022f5bf2	0x10de20
 userlogic	?InitActReg@CWarpStonePad@@SAXXZ	100.0000	100.0000	1	199d7a379d83	0x10d840
 userlogic	?IsAtSavedScreenPos@CUserLogic@@QAEHXZ	100.0000	100.0000	3	3e705558696b	0x29a80
-userlogic	?LoadGruntDecayConfig2@CGruntBehaviorLeaf@@QAEHXZ	77.2439	77.2439	4	178234f1f74f	0x61570
+userlogic	?LoadGruntDecayConfig2@CGruntBehaviorLeaf@@QAEHXZ	77.2439	77.2439	5	793bd078d566	0x61570
 userlogic	?LoadGruntDecayConfig@CGruntBehaviorLeaf@@QAEHXZ	90.8344	90.8344	4	5fa881f766bf	0x612a0
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	2	57b0cfb95114	0x4dd50
@@ -3740,7 +3740,7 @@ winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	7	9845fffea311	
 winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	7	6588fcebd04e	0x1fd50
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
-winmain	_WinMain@16	100.0000	100.0000	7	6c5fa75446ef	0x11c860
+winmain	_WinMain@16	100.0000	100.0000	8	a8fadeb810bf	0x11c860
 worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	2	5578b77212a8	0x3c0e0
 worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	100.0000	100.0000	2	7d9ae913e8b2	0xdbc80
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0

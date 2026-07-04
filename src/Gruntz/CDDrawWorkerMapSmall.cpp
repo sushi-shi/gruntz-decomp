@@ -69,7 +69,7 @@ public:
     virtual void FUN_00404034();                 // [4] 0x004034
     virtual void FUN_00565d90();                 // [5] 0x165d90
     virtual void FUN_00401c08();                 // [6] 0x001c08
-    virtual void FUN_00568fb0();                 // [7] 0x168fb0
+    virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
     virtual void FUN_00565da0();                 // [8] 0x165da0
     virtual void FUN_00568f20();                 // [9] 0x168f20
     virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0

@@ -521,7 +521,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
                 return 0;
             }
         }
-        if (Method117e20(s) == 0) {
+        if (TransferFlag74(s) == 0) {
             return 0;
         }
         return 1;
@@ -568,7 +568,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         m->m_14 = this;
         m_list3.AddTail(m);
     }
-    if (Method117e70(s) == 0) {
+    if (LoadFlag74(s) == 0) {
         return 0;
     }
     return 1;

@@ -245,9 +245,9 @@ public:
     // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
     // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
     // four are declared-only here -> reloc-masked vtable references.
-    virtual i32 FUN_00557530();  // [5] 0x157530 (CDDrawMapHolder::IsReady, other TU)
+    virtual i32 IsReady();       // [5] 0x157530 (= CDDrawSubMgrLeafScan::IsReady, other TU)
     virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void FUN_00557ae0(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, other TU)
+    virtual void ClearContext(); // [7] 0x157ae0 (= CDDrawSubMgrLeaf::ClearContext, other TU)
     virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
@@ -372,10 +372,10 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
 // names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
-    // VM18 (0x157ae0) is slot [7] of this class's own vtable (FUN_00557ae0); a
+    // VM18 (0x157ae0) is slot [7] of this class's own vtable (ClearContext); a
     // virtual call on `this` inside the dtor devirtualizes to the retail direct
     // rel32, so no view cast is needed.
-    FUN_00557ae0();
+    ClearContext();
     // m_10 (CMapStringToOb) member dtor auto-fires here, then the LeafScanBase
     // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }

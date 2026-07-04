@@ -28,10 +28,13 @@ extern WORD g_sfDeviceId; // 0x64dd28  soundfont load token
 
 // 0xf8ec0 (via ILT thunk 0x3382): re-seed the music device key table.
 int SfDeviceInitKeys();
-namespace EngineLabelBacklog {
-    // 0xf90f0 (via ILT thunk 0x3d32): OpenFile(OF_EXIST) probe.
-    int Stub_0f90f0(char* szPath);
-} // namespace EngineLabelBacklog
+// 0xf90f0 (via ILT thunk 0x3d32): OpenFile(OF_EXIST) probe. The real function is
+// Utils::WinAPI::FileExistsCopyF90F0 (src/Utils/WinAPI.cpp); reloc-masked callee.
+namespace Utils {
+    namespace WinAPI {
+        i32 FileExistsCopyF90F0(char* szPath);
+    }
+} // namespace Utils
 
 // CloseSoundFontDevice (0xf8e20): if a device is selected (init flag set, receiver
 // present, at least one device counted), re-seed the key table, deselect the chosen
@@ -75,7 +78,7 @@ i32 BuildSoundFontPath(char drive) {
         hiVer = 1;
     }
     g_sfCurPath = hiVer ? g_sfLocal4 : g_sfLocal;
-    if (EngineLabelBacklog::Stub_0f90f0(g_sfCurPath)) {
+    if (Utils::WinAPI::FileExistsCopyF90F0(g_sfCurPath)) {
         res = g_sfDevice->Load(g_sfDeviceId, &g_sfCfgA0, &g_sfCfgB0);
     }
     if (res != 0) {

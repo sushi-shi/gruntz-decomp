@@ -1620,8 +1620,7 @@ public:
     // +0x38 + the twelve default coordinate bounds, then the huge field-init block).
     CGrunt(void* owner);
 
-    // Engine-label backlog stubs.
-    void Stub_048400();
+    // Engine-label backlog stubs. (0x048400 is CGrunt::ReadConfigFromButeMgr, declared above.)
     void Stub_048470(i32 a, i32 b);        // (2-arg; called from LoadEntranceConfig tail)
     void Stub_062e10(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
     void Stub_0633e0();

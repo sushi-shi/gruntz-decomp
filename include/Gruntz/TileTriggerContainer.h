@@ -206,10 +206,11 @@ public:
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
     void* LoadElement(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117800
 
-    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  Method117e70
-    // closes the load (op 7); Method117e20 closes the save (op 4).  __thiscall.
-    i32 Method117e70(TtcStream* s); // 0x117e70
-    i32 Method117e20(TtcStream* s); // 0x117e20
+    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  LoadFlag74
+    // closes the load (op 7); TransferFlag74 closes the save (op 4).  __thiscall.
+    // (Real fn: CTileTriggerSwitchLogic::LoadFlag74 / ::TransferFlag74; called on this.)
+    i32 LoadFlag74(TtcStream* s);     // 0x117e70
+    i32 TransferFlag74(TtcStream* s); // 0x117e20
 
     // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.

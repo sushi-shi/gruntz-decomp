@@ -4167,10 +4167,10 @@ struct EmHdr14 {
     char p0[0x2c];
     EmHdr2c* m_2c; // +0x2c
 };
-struct EmCWorld {            // m_c->m_4
-    i32 Sub158d20();         // 0x158d20
-    i32 Sub158cb0(i32, i32); // 0x158cb0
-    void Sub158e90();        // 0x158e90
+struct EmCWorld {                // m_c->m_4 (real: CDDrawWorkerMgr)
+    i32 Method_158d20();         // 0x158d20 = CDDrawWorkerMgr::Method_158d20
+    i32 Method_158cb0(i32, i32); // 0x158cb0 = CDDrawWorkerMgr::Method_158cb0
+    void Method_158e90();        // 0x158e90 = CDDrawWorkerMgr::Method_158e90
     char p0[0x14];
     EmHdr14* m_14; // +0x14
     i32 m_18;      // +0x18
@@ -4274,10 +4274,10 @@ i32 CPlay::EnterMode(i32 mode) {
         self->m_guts->Pause();
         self->m_guts->Resume();
         if (mode == 9) {
-            if (self->m_c->m_4->Sub158d20() != 0) {
+            if (self->m_c->m_4->Method_158d20() != 0) {
                 goto finish;
             }
-            if (self->m_c->m_4->Sub158cb0(0, 0x30000) != 0) {
+            if (self->m_c->m_4->Method_158cb0(0, 0x30000) != 0) {
                 goto finish;
             }
             return 0;
@@ -4286,7 +4286,7 @@ i32 CPlay::EnterMode(i32 mode) {
     }
 
 finish:
-    self->m_c->m_4->Sub158e90();
+    self->m_c->m_4->Method_158e90();
     self->ArmTimer(0x50, 0x3e8, 0, 1);
     if (self->m_c->m_24->m_5c != 0) {
         ((EmSink5c*)self->m_c->m_24->m_5c)->Notify();

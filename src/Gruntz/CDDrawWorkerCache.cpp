@@ -43,7 +43,7 @@ public:
     virtual void FUN_00404034();         // [4] 0x004034
     virtual void FUN_00551d60();         // [5] 0x151d60
     virtual void FUN_00401c08();         // [6] 0x001c08
-    virtual void FUN_00551e70();         // [7] 0x151e70
+    virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)
     virtual void FUN_00551d70();         // [8] 0x151d70
     virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
 };
@@ -115,10 +115,11 @@ inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
 class CDDrawWorkerCache : public CDDrawWorkerCacheBase {
 public:
     void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x157700)
-    virtual void FUN_005576d0();         // [5] 0x1576d0 (declared-only)
-    virtual void FUN_00557790();         // [6] 0x157790 (declared-only)
-    virtual void FUN_00565210();         // [7] 0x165210 (teardown, defined in Registry TU)
-    virtual StateId GetStateId();        // [8] 0x1576f0
+    virtual void IsReady(); // [5] 0x1576d0 (= CDDrawWorkerRegistry::IsReady, declared-only)
+    virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
+    virtual void
+    DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)
+    virtual StateId GetStateId();                                // [8] 0x1576f0
     virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
     // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
@@ -216,7 +217,7 @@ void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
 // + the reloc-masked EH-state/teardown/vtable symbol names. Logic complete.
 RVA(0x00157720, 0x68)
 CDDrawWorkerCache::~CDDrawWorkerCache() {
-    FUN_00565210();
+    DestroyAll();
     // implicit: ~m_10 (CMapStringToOb), then ~CDDrawWorkerCacheBase (field resets + the
     // grand-base ??_7 re-stamp) - reproduces retail's teardown order.
 }
