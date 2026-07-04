@@ -1850,8 +1850,8 @@ source = "src/Gruntz/HelperHost.cpp"
 flags = "base"
 
 [[unit]]
-unit = "unknownclassincgruntzmgr"
-source = "src/Gruntz/UnknownClassInCGruntzMgr.cpp"
+unit = "gruntspawnlevel"
+source = "src/Gruntz/GruntSpawnLevel.cpp"
 flags = "eh"
 
 [[unit]]

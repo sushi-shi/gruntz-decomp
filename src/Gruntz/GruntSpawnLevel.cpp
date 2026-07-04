@@ -1,6 +1,7 @@
-// CGruntSpawnLevel.cpp - a CString-owning collection object embedded in
-// CGruntzMgr (Ghidra/tomalla placeholder "CGruntSpawnLevel"). Its own TU
-// (NOT folded into GruntzMgr.cpp - a separate lane edits that). The ctor (0xda790)
+// GruntSpawnLevel.cpp - CGruntSpawnLevel, a CString-owning collection object
+// embedded in CGruntzMgr (Ghidra names the ctor @0xda790 "CGruntSpawnLevel"). Its
+// own TU, sibling of GruntSpawnConfig.cpp (NOT folded into GruntzMgr.cpp - a
+// separate lane edits that). The ctor (0xda790)
 // builds a CString + a +0x38 sub-object then seeds the GruntzPlayer-shaped field
 // block (m_0=-1 / m_18=-2 / m_14=1 / m_228=0xf hash size); the dtor (0x83260)
 // reverses it. Names are placeholders; offsets + code bytes are load-bearing.
