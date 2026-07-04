@@ -167,6 +167,17 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
         # `#include <Mss32.h>` / `<smack.h>` / `<sfman32.h>` resolve.
         *[f for d in sorted((REPO / "vendor").iterdir()) if d.is_dir()
           for f in ("/I", str(d))],
+        # The DirectX 6 SDK headers sit one level DEEPER (vendor/directx6/Include),
+        # so the one-dir-deep vendor loop above misses them. Add that dir on the
+        # user `/I` path - which clang searches BEFORE the `/imsvc` system dirs - so
+        # the vendored DX6 `<ddraw.h>` / `<dsound.h>` win over the MSVC5 toolchain's
+        # OWN older shadow copies, matching cc_wrap.py's order (the wine-cl build
+        # pins vendor/directx6/Include ahead of the toolchain's dx/Include). Without
+        # this, the toolchain's stale DDRAW.H/DSOUND.H shadow the vendored ones and
+        # the `structs`/AST-dump step (which reads THIS compdb) fails to resolve
+        # DSBLOCK_ENTIREBUFFER / mis-sizes DDCAPS. See labels.py's VENDOR_INCS.
+        *(["/I", str(REPO / "vendor" / "directx6" / "Include")]
+          if (REPO / "vendor" / "directx6" / "Include").is_dir() else []),
         *DEFINES,
     ]
 
