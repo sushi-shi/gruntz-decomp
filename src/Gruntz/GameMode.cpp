@@ -663,21 +663,21 @@ DATA(0x0024556c)
 extern "C" CGlitterMgr* g_mgrSettings;
 // @early-stop
 // 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
-// `(i != m_1d8) ? 1 : 3` kind (retail's neg/sbb/and/add form vs cl's) + the per-iteration
+// `(i != m_letterIdx) ? 1 : 3` kind (retail's neg/sbb/and/add form vs cl's) + the per-iteration
 // g_mgrSettings reload scheduling. Not source-steerable.
 RVA(0x00019540, 0x12a)
 i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
     // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
     // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
     CGlitterAnim** slot = (CGlitterAnim**)((char*)this + 0x1ec);
-    m_1dc = 0xc8;
-    m_1d8 = (g_mgrSettings->m_7c->m_4 - 1) % 4;
-    m_1e0 = 0;
-    m_1e4 = 0;
+    m_radius = 0xc8;
+    m_letterIdx = (g_mgrSettings->m_7c->m_4 - 1) % 4;
+    m_angleStep = 0;
+    m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGlitterAnim* a =
-            g_mgrSettings->m_world->m_8->Create(0, 0, 0, (i != m_1d8) ? 1 : 3, "DoNothing", 3);
+        CGlitterAnim* a = g_mgrSettings->m_world->m_8
+                              ->Create(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -685,16 +685,16 @@ i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
         a->SetName("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
         a->m_40 |= 1;
     }
-    for (i32 k = 0; k <= m_1d8; k++) {
+    for (i32 k = 0; k <= m_letterIdx; k++) {
         slot[k]->m_40 &= ~1;
     }
     CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
-    m_1fc = g;
+    m_cursorLetter = g;
     if (g == 0) {
         return 0;
     }
     g->SetTexture("GAME_GLITTERGOLD");
-    m_1fc->SetCycle("GAME_CYCLE100", 0);
+    m_cursorLetter->SetCycle("GAME_CYCLE100", 0);
     return 1;
 }
 
@@ -1136,7 +1136,7 @@ i32 CCreditsState::InputVirtual() {
 }
 
 // InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
-// CAttract::LoadTitleConfig (CAttract.cpp). If the title view is already live (m_208),
+// CAttract::LoadTitleConfig (CAttract.cpp). If the title view is already live (m_videoPlaying),
 // just run the menu-page frame sub-steps (0x158dc0 / TransTitle / 0x158d50 + the
 // m_18 fill) and bail; otherwise pick a rotating TITLE index off the mgr frame
 // counter, format the "STATEZ_ATTRACT"/"TITLE%d" keys, resolve the attract state
@@ -1190,7 +1190,7 @@ extern "C" i32 g_645534;
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CMenuRootA* root = (CMenuRootA*)m_c;
-    if (m_208 != 0) {
+    if (m_videoPlaying != 0) {
         root->m_04->Method_158dc0();
         root->m_04->TransTitle();
         root->m_04->Method_158d50(0);
@@ -1224,7 +1224,7 @@ i32 CCreditsState::InitAttractTitle() {
 // CCreditsState teardown / per-frame video + flash steps (trace-discovered).
 // ===========================================================================
 
-// The video-handle (m_210) sub-object: its EH-framed destructor (0x38fc0) is a
+// The video-handle (m_videoHandle) sub-object: its EH-framed destructor (0x38fc0) is a
 // __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
 struct CCreditsVideo {
     void Teardown(); // FUN_00438fc0 __thiscall, no-arg (the /GX dtor)
@@ -1265,7 +1265,7 @@ struct CCreditsDrawRoot {
 // @source: decomp-xref
 // CCreditsState::ReleaseResources() (0x38f00): if (m_c) free the pooled resource
 // then release the three named registries ("CREDITZ"); then tear down + RezFree
-// the video handle (m_210) and chain BaseCleanup. m_c is re-read for each access
+// the video handle (m_videoHandle) and chain BaseCleanup. m_c is re-read for each access
 // (retail never caches it); the pooled-Free sits INSIDE the m_c guard.
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
@@ -1280,11 +1280,11 @@ void CCreditsState::ReleaseResources() {
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
-    CCreditsVideo* vh = m_210;
+    CCreditsVideo* vh = m_videoHandle;
     if (vh) {
         vh->Teardown();
         RezFree(vh);
-        m_210 = 0;
+        m_videoHandle = 0;
     }
     ((CGameModeBase*)this)->BaseCleanup();
 }
@@ -1304,13 +1304,13 @@ CCreditsState::~CCreditsState() {
 // CCreditsState::FinishState() (0x39c40): clear the playing gate, return 1.
 RVA(0x00039c40, 0x10)
 i32 CCreditsState::FinishState() {
-    m_208 = 0;
+    m_videoPlaying = 0;
     return 1;
 }
 
 // @confidence: high
 // @source: decomp-xref
-// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing (m_208==0)
+// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing (m_videoPlaying==0)
 // return 1. Else advance the Smacker movie one frame; when the last frame is
 // reached, Close() the handle and FinishState(). Either way, if both surfaces are
 // live, blit the current frame to the dest surface. Returns the FinishState result
@@ -1322,16 +1322,16 @@ i32 CCreditsState::FinishState() {
 // + correct body; not source-steerable (zero-register-pinning.md family).
 RVA(0x00039c60, 0x7a)
 i32 CCreditsState::StepVideo() {
-    if (!m_208) {
+    if (!m_videoPlaying) {
         return 1;
     }
     i32 ret = 0;
-    if (m_210) {
+    if (m_videoHandle) {
         CCreditsDrawView* v = ((CCreditsDrawRoot*)m_c)->m_4;
         CCreditsDrawHolder* dst = v->m_18;
         CCreditsDrawHolder* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
-            m_210->Close();
+            m_videoHandle->Close();
             ret = FinishState();
         }
         if (dst && src) {
@@ -1431,7 +1431,7 @@ CBootyState::~CBootyState() {
 // (The booty letter sprites are CGlitterAnim - the same created "SimpleAnimation"
 // objects the factory builds, walked here as position/flag records. See CGlitterAnim.)
 
-// The packed {x,y} spawn-coordinate table the animator indexes by m_1d8 (DAT_005e8fe8;
+// The packed {x,y} spawn-coordinate table the animator indexes by m_letterIdx (DAT_005e8fe8;
 // the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
 // arrays are reached by offset off `this`.
 extern "C" i32 g_5e8fe8[]; // {472,101, 525,98, 474,146, 525,144, ...}
@@ -1520,7 +1520,7 @@ extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
 // m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
-// walks a sine spiral (radius m_1dc, angle (m_1e0+225)*pi/180), advances the step by 5,
+// walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the step by 5,
 // shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the trailing
 // sprite's spawn flag when the radius reaches zero.
 // @early-stop
@@ -1531,10 +1531,10 @@ extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
-        if (m_1d8 >= 0) {
+        if (m_letterIdx >= 0) {
             i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
             CGlitterAnim** ap = (CGlitterAnim**)((char*)this + 0x1ec); // walks arr1ec by 1
-            for (i32 i = 0; i <= m_1d8; i++) {
+            for (i32 i = 0; i <= m_letterIdx; i++) {
                 CGlitterAnim* e = *ap;
                 e->m_5c = tbl[-1];
                 e = *ap;
@@ -1548,21 +1548,21 @@ void CMultiBootyState::StepGlitterAnim() {
                 tbl += 2;
             }
         }
-        m_1fc->m_5c = g_5e8fe8[m_1d8 * 2];
-        m_1fc->m_60 = g_5e8fe8[m_1d8 * 2 + 1];
+        m_cursorLetter->m_5c = g_5e8fe8[m_letterIdx * 2];
+        m_cursorLetter->m_60 = g_5e8fe8[m_letterIdx * 2 + 1];
         return;
     }
 
-    i32 step = m_1e0;
-    i32 idx = m_1d8;
-    double r = (float)m_1dc; // load (float)m_1dc first; shared across sin/cos terms
+    i32 step = m_angleStep;
+    i32 idx = m_letterIdx;
+    double r = (float)m_radius; // load (float)m_radius first; shared across sin/cos terms
     double ang = ((float)step - g_5e93b4) * g_5e93b8;
-    m_1e4 = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
+    m_scratchX = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
     m_1e8 = (i32)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
-    m_1e0 = step + 5;
-    m_1dc = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+    m_angleStep = step + 5;
+    m_radius = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
 
-    // Snap the leading sprites (0..m_1d8-1) to their static table coords (pointer walk).
+    // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
     CGlitterAnim** arr1ec = (CGlitterAnim**)((char*)this + 0x1ec);
     if (idx > 0) {
@@ -1576,17 +1576,17 @@ void CMultiBootyState::StepGlitterAnim() {
             e = ap[-1];
             e->m_60 = tbl[0];
             tbl += 2;
-        } while (i < m_1d8);
+        } while (i < m_letterIdx);
     }
-    // The trailing sprite + the i'th (== m_1d8) sprite get the computed scratch coords.
-    m_1fc->m_5c = m_1e4;
-    m_1fc->m_60 = m_1e8;
-    arr1ec[i]->m_5c = m_1e4;
+    // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
+    m_cursorLetter->m_5c = m_scratchX;
+    m_cursorLetter->m_60 = m_1e8;
+    arr1ec[i]->m_5c = m_scratchX;
     arr1ec[i]->m_60 = m_1e8;
 
     MoveLettersByDir();
 
-    if (m_1dc == 0) {
+    if (m_radius == 0) {
         CGlitterAnim* e = arr1ec[i];
         if (e->m_74 != 1) {
             e->m_74 = 1;
@@ -1663,7 +1663,7 @@ void CMultiBootyState::MoveLettersByDir() {
 }
 
 // CMultiBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires,
-// drive the bonus state's scroll phase (m_2f8->m_5c): on the wrap value (-0x82) play
+// drive the bonus state's scroll phase (m_bonusState->m_5c): on the wrap value (-0x82) play
 // the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
 // (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
 RVA(0x0001c0f0, 0xd5)
@@ -1671,7 +1671,7 @@ i32 CMultiBootyState::CheckPerfectBonus() {
     if (!BOOTY_REG->m_7c->FrameReady(-1)) {
         return 1;
     }
-    CBootyBonusState* st = m_2f8;
+    CBootyBonusState* st = m_bonusState;
     i32 phase = st->m_5c;
     if (phase == (i32)0xffffff7e) {
         CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -1691,10 +1691,10 @@ i32 CMultiBootyState::CheckPerfectBonus() {
         }
     }
     if (phase >= 0x302) {
-        m_2f8->m_8 |= 0x10000;
+        m_bonusState->m_8 |= 0x10000;
         return 1;
     }
-    m_2f8->m_5c = phase + 0xa;
+    m_bonusState->m_5c = phase + 0xa;
     return 1;
 }
 
@@ -1823,7 +1823,7 @@ struct CMenuMusic {
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
 // divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
-// read via STAT(getter, field) = (m_1d0 && stats->m_c) ? getter() : stats->field over
+// read via STAT(getter, field) = (m_liveGame && stats->m_c) ? getter() : stats->field over
 // the game-stats object g_mgrSettings->m_7c (the sibling-guard idiom). The default
 // case writes "???".
 //
@@ -1855,7 +1855,7 @@ struct CHudBuf {
     void Assign(const char* s); // 0x1b9e74 (reloc-masked)
 };
 #define STATS ((CHudStats*)g_mgrSettings->m_7c)
-#define STAT(getter, field) ((m_1d0 != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
+#define STAT(getter, field) ((m_liveGame != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
 // @early-stop
 // jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
 // 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:

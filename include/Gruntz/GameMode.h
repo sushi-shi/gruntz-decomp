@@ -174,11 +174,11 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // declared so the leaf members below are typed to their real class (no per-site
 // cast). Each is a pointer slot, so the typing is codegen-neutral.
 struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
-struct CCreditsVideo;    // CCreditsState::m_210    - Smacker video handle
-struct CBootyBonusState; // CMultiBootyState::m_2f8 - bonus scroll/flags object
-struct CGlitterAnim;     // CMultiBootyState::m_1fc + the +0x1ec/+0x204 letter-sprite arrays
-                         // (the "SimpleAnimation" sprite the factory builds; the booty
-                         //  draw walks the same objects as position/flag records)
+struct CCreditsVideo;    // CCreditsState::m_videoHandle - Smacker video handle
+struct CBootyBonusState; // CMultiBootyState::m_bonusState - bonus scroll/flags object
+struct CGlitterAnim; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
+                     // (the "SimpleAnimation" sprite the factory builds; the booty
+                     //  draw walks the same objects as position/flag records)
 
 // ---------------------------------------------------------------------------
 // The concrete leaf states. Each overrides Update() to return its own state-ID
@@ -222,7 +222,7 @@ public:
 
     // 0x1af70 - the 960-B HUD-text formatter switch: 8 cases of sprintf over the
     // game-stats object (g_mgrSettings->m_7c), each stat read via the live-getter /
-    // cached-field pair gated by m_1d0 && stats->m_c (the sibling-guard idiom).
+    // cached-field pair gated by m_liveGame && stats->m_c (the sibling-guard idiom).
     void FormatHudText(struct CHudBuf* buf, i32 sel);
 
     char m_pad1a8[0x1b4 - 0x1a8];
@@ -230,7 +230,7 @@ public:
     i32 m_1b8;         // +0x1b8 fade/poll duration
     CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
     char m_pad1c0[0x1d0 - 0x1c0];
-    i32 m_1d0; // +0x1d0  live-game flag (FormatHudText getter-path gate)
+    i32 m_liveGame; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
     void BuildVersionString(i32, i32, i32, i32);
 };
@@ -265,7 +265,7 @@ class CCreditsState : public CState {
 public:
     // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
     // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
-    // cl auto-destroys the m_1f0 CString + the m_1e8 image list before chaining
+    // cl auto-destroys the m_caption CString + the m_1e8 image list before chaining
     // ~CState. Slots whose bodies live in another TU (0x39160 shared with
     // CAttract::RefreshTitle; 0x39440/0x394b0 in ApiCallers) or are deferred are
     // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
@@ -306,11 +306,11 @@ public:
     i32 m_1c4; // +0x1c4 conditional-FX gate
     char m_pad1c8[0x1e8 - 0x1c8];
     CCreditsImageList m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
-    CString m_1f0;           // +0x1f0 credits caption CString (freed by ~CCreditsState)
+    CString m_caption;       // +0x1f0 credits caption CString (freed by ~CCreditsState)
     char m_pad1f4[0x208 - 0x1f4];
-    i32 m_208; // +0x208 video playing gate
+    i32 m_videoPlaying; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
-    CCreditsVideo* m_210; // +0x210 Smacker video handle
+    CCreditsVideo* m_videoHandle; // +0x210 Smacker video handle
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3); // 0x38d20 (slot 1, called non-virtually)
     i32 InitAttractTitle();
@@ -411,15 +411,15 @@ public:
     char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
     char m_pad1b8[0x1d8 - 0x1b8];
-    i32 m_1d8; // +0x1d8 active letter count / index
-    i32 m_1dc; // +0x1dc phase accumulator (ftol result)
-    i32 m_1e0; // +0x1e0 step counter (advances by 5)
-    i32 m_1e4; // +0x1e4 scratch X (ftol)
-    i32 m_1e8; // +0x1e8 scratch Y (ftol)
+    i32 m_letterIdx; // +0x1d8 active letter count / index
+    i32 m_radius;    // +0x1dc sine-spiral radius (loaded (float) for sin/cos; shrinks to 0)
+    i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
+    i32 m_scratchX;  // +0x1e4 computed scratch X (sin(ang)*r + tableX)
+    i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
     char m_pad1ec[0x1fc - 0x1ec];
-    CGlitterAnim* m_1fc; // +0x1fc the trailing/cursor letter sprite
+    CGlitterAnim* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
     char m_pad200[0x2f8 - 0x200];
-    CBootyBonusState* m_2f8; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
+    CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

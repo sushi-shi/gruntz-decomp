@@ -17,6 +17,7 @@
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/CViewport.h> // the shared world-plane object (was local CWorldLayer)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
@@ -648,23 +649,12 @@ public:
     void Teardown();                                 // (this) reloc-masked (Close)
 };
 
-// The world's layer/plane object: an element of the active view's +0x38 layer array
-// AND the object its +0x5c distinguished-layer slot points at (same memory, so one
-// type). A visibility flag word at +0x8 (bit 0 = locked, bit 1 = visible); the height
-// grid (value grid +0x20, per-column base table +0x24); the loaded map's playable
-// field limits (+0x30/+0x34); and the edge origins (+0x40..+0x4c) all live here - each
+// The world's layer/plane object is the shared CViewport (<Gruntz/CViewport.h>): an
+// element of the active view's +0x38 layer array AND the object its +0x5c distinguished-
+// layer slot points at (same memory, so one type). Its visibility flag word (+0x08),
+// height grid (value grid +0x20, per-column base table +0x24), playable field limits
+// (+0x30/+0x34) and edge origins (+0x40..+0x4c) all live in the folded CViewport - each
 // caller reads only the facet it needs.
-struct CWorldLayer {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  flag word (bit 0 = locked, bit 1 = visible)
-    char m_pad0c[0x20 - 0xc];
-    i32* m_20; // +0x20  height value grid
-    i32* m_24; // +0x24  per-column base table
-    char m_pad28[0x30 - 0x28];
-    i32 m_30, m_34; // +0x30/+0x34  playable field width/height limits
-    char m_pad38[0x40 - 0x38];
-    i32 m_40, m_44, m_48, m_4c; // +0x40..+0x4c  edge origins
-};
 
 // The active world view held at m_world->m_24. One object; each manager method reads a
 // different facet: the tile rect (+0x10..+0x1c) + the three scaled-extent output pairs
@@ -675,10 +665,10 @@ struct CWorldView {
     char m_pad0[0x10];
     i32 m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect (scroll extents)
     char m_pad20[0x38 - 0x20];
-    CWorldLayer** m_38; // +0x38  layer array
-    i32 m_3c;           // +0x3c  layer count
+    CViewport** m_38; // +0x38  layer array
+    i32 m_3c;         // +0x3c  layer count
     char m_pad40[0x5c - 0x40];
-    CWorldLayer* m_5c; // +0x5c  distinguished layer / plane
+    CViewport* m_5c; // +0x5c  distinguished layer / plane
     char m_pad60[0x64 - 0x60];
     i32 m_64, m_68; // +0x64/+0x68  mode-reload extent pair
     char m_pad6c[0xc8 - 0x6c];
@@ -751,7 +741,7 @@ CGruntzMgrOptions::~CGruntzMgrOptions() {}
 
 // -------------------------------------------------------------------------
 // The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
-// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CWorldLayer)
+// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CViewport)
 // carries a flag word at +0x8 whose bit 1 (0x2) is a visibility toggle the level-cycle
 // / debug methods flip.
 
@@ -1046,9 +1036,9 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            CWorldLayer* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
-            if (layer && !(layer->m_8 & 1)) {
-                layer->m_8 ^= 2;
+            CViewport* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
+            if (layer && !(layer->m_flags & 1)) {
+                layer->m_flags ^= 2;
                 return 1;
             }
         }
@@ -1065,9 +1055,9 @@ i32 CGruntzMgr::ToggleHeightLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
         CWorldView* view = m_world->m_24;
         if (view) {
-            CWorldLayer* layer = view->m_5c;
+            CViewport* layer = view->m_5c;
             if (layer) {
-                layer->m_8 ^= 2;
+                layer->m_flags ^= 2;
                 return 1;
             }
         }
@@ -1084,9 +1074,9 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
         CWorldView* view = m_world->m_24;
         if (view) {
-            CWorldLayer* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
-            if (layer && !(layer->m_8 & 1)) {
-                layer->m_8 ^= 2;
+            CViewport* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
+            if (layer && !(layer->m_flags & 1)) {
+                layer->m_flags ^= 2;
                 return 1;
             }
         }
@@ -2319,10 +2309,10 @@ void CGruntzMgr::RecomputeViewScale() {
     if (v->m_5c == 0) {
         return;
     }
-    m_viewOriginL = v->m_5c->m_40 - 0x60;
-    m_viewOriginT = m_world->m_24->m_5c->m_44 - 0x60;
-    m_viewOriginR = m_world->m_24->m_5c->m_48 + 0x60;
-    m_viewOriginB = m_world->m_24->m_5c->m_4c + 0x60;
+    m_viewOriginL = v->m_5c->m_edgeL - 0x60;
+    m_viewOriginT = m_world->m_24->m_5c->m_edgeT - 0x60;
+    m_viewOriginR = m_world->m_24->m_5c->m_edgeR + 0x60;
+    m_viewOriginB = m_world->m_24->m_5c->m_edgeB + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -2983,9 +2973,9 @@ i32 CGruntzMgr::SyncOptionsState() {
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CWorldLayer* grid = m_world->m_24->m_5c;
-    i32 idx = grid->m_24[col] + row;
-    grid->m_20[idx] = value;
+    CViewport* grid = m_world->m_24->m_5c;
+    i32 idx = grid->m_rowBase[col] + row;
+    grid->m_cells[idx] = value;
     m_cmdNotify->Set(row, col, value);
 }
 
@@ -3534,7 +3524,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-// The loaded map's playable extent (m_world->m_24->m_5c) is the shared CWorldLayer;
+// The loaded map's playable extent (m_world->m_24->m_5c) is the shared CViewport;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 struct SvmGuts { // m_curState->m_2dc: the HUD/guts subsystem
     i32 m_0;     // +0x00  state (0/1 -> which poke order)
@@ -3571,9 +3561,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
         if (m_world->m_24 != 0) {
-            CWorldLayer* f = m_world->m_24->m_5c;
+            CViewport* f = m_world->m_24->m_5c;
             if (f != 0) {
-                if (w > f->m_30 || h > f->m_34) {
+                if (w > f->m_worldWidth || h > f->m_worldHeight) {
                     SvmStateView* st = (SvmStateView*)m_curState;
                     st->Prep();
                     if (st->m_2dc != 0) {
@@ -3709,7 +3699,6 @@ SIZE_UNKNOWN(CSerializerZ);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
-SIZE_UNKNOWN(CWorldLayer);
 SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldMenuHolder);
 SIZE_UNKNOWN(CWorldModeIface);
