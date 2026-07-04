@@ -15,6 +15,7 @@
 #undef s32
 #undef s64
 #include <string.h>
+#include <stdio.h> // sprintf (0x11f890)
 
 // Auto-generated API-caller stubs from docs/api-caller-name-plan.tsv.
 // Greenfield only: tracked/already-tried and named-untracked library rows are intentionally excluded.
@@ -1281,7 +1282,6 @@ namespace ApiCallerStubs {
     // CString length lives 8 bytes before the data.
     DATA(0x00249618)
     extern char* g_playerName_649618;
-    i32 __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
     void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
     // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.
     RVA(0x000be760, 0x82)
@@ -1289,7 +1289,7 @@ namespace ApiCallerStubs {
         if (hWnd && ctx) {
             char buf[0x80];
             if (*(i32*)(g_playerName_649618 - 8)) {
-                Format_11f890(buf, "New Player Drop-In Request: %s", g_playerName_649618);
+                sprintf(buf, "New Player Drop-In Request: %s", g_playerName_649618);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
             Init_2ed7(hWnd, ctx);

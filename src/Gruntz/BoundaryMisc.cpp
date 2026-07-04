@@ -248,10 +248,10 @@ struct AfxModuleState18430 {
     AfxThread18430* m_thread; // +0x04
 };
 SIZE_UNKNOWN(AfxModuleState18430);
-extern AfxModuleState18430* AfxGetModuleState18430(); // 0x1d3631 (reloc-masked)
+extern AfxModuleState18430* AfxGetModuleState(); // 0x1d3631 (reloc-masked)
 RVA(0x00018430, 0xd)
 void EndWaitCursor18430() {
-    AfxGetModuleState18430()->m_thread->EndWaitCursor();
+    AfxGetModuleState()->m_thread->EndWaitCursor();
 }
 
 // ===========================================================================

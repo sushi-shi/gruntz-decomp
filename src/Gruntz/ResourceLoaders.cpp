@@ -2,10 +2,11 @@
 // GDI counter-draw helpers re-homed out of the src/Stub/ApiCallers.cpp winapi
 // grab-bag. Each host struct is a local view onto its (not-yet-recovered) owning
 // class; offsets + emitted bytes are load-bearing. The moves are byte-neutral
-// (only FindResource/LoadResource/GDI + Format_11f890).
+// (only FindResource/LoadResource/GDI + sprintf).
 #include <Win32.h>
 #include <rva.h>
 #include <string.h>
+#include <stdio.h> // sprintf (0x11f890)
 
 // The app HINSTANCE used as the resource module (DAT_00683ee0).
 DATA(0x00283ee0)
@@ -14,7 +15,6 @@ extern HINSTANCE g_resModule;
 DATA(0x002bf6e0)
 extern HINSTANCE g_palModule_6bf6e0;
 // Shared sprintf-into-buffer helper (also referenced from ApiCallers.cpp).
-i32 __cdecl Format_11f890(char* buf, const char* fmt, ...); // RVA 0x11f890
 
 namespace ResLoaders {
     struct AppModule_136a30 {
@@ -212,7 +212,7 @@ namespace ResLoaders {
     RVA(0x00164380, 0x98)
     void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
         char buf[0x20];
-        Format_11f890(buf, "%i", n);
+        sprintf(buf, "%i", n);
         CounterWnd_164380* w = m_2c;
         if (!w) {
             return;

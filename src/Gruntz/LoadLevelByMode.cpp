@@ -61,6 +61,8 @@
 
 #include <Win32.h> // timeGetTime / UpdateWindow / ShowCursor (reloc-masked IAT)
 #include <rva.h>
+#include <stdio.h>  // sprintf (0x11f890)
+#include <stdlib.h> // atoi (0x11ffb0) + srand (0x11fed0)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -104,17 +106,14 @@ void* LlRegistryFind(void* reg, const char* key);            // 0x13c030 find se
 void* LlSetField(void* self);                                // 0x2531 -> &m_xx
 void* LlPathJoin(void* set, i32 nameField, const char* sep); // 0x13a000
 void* LlSetResolve(void* set);                               // 0x139960
-i32 LlAtoi(const char* s);                                   // 0x11ffb0 (engine atoi)
 void LlSetRelease(void* set);                                // 0x1399d0
 void* LlButeLevelNum(void* src);                             // 0x2c8e
-void LlFormatLevelName(void* out, const char* fmt, i32 n);   // 0x11f890 sprintf
 void LlStrCtor(void* str);                                   // 0x1b9b93 CString::CString
 void LlStrDtor(void* str);                                   // 0x1b9cde CString::~CString
 void LlAssignStr(void* str, const char* s);                  // 0x1b9e74 CString::operator=
 
 void LlSetMode(void* self, i32 mode); // 0x2bd0
 void LlClearTimers(void* self);       // 0x2e3c
-void LlInitClock(i32 t);              // 0x11fed0 (push timeGetTime())
 void LlObListInit(void* p);           // 0x1b48a6
 void LlClearList(void* self);         // 0x2c11
 
@@ -166,7 +165,7 @@ i32 LlBuildBars(void* self, i32 a);          // virtual host4 +0xa4 / 0xa8
 void LlFinishMap(void* self);                // 0x12ee
 void LlFinishMap2(void* self);               // 0x128a
 void LlStartGame(void* self);                // 0x3d55
-void LlEnableFog(i32 a);                     // 0x13dfe0 (push 0x64)
+void ActiveWait(i32 ms); // 0x13dfe0 busy-wait
 void LlSetCue(void* mapHost, i32 a, i32 b);  // 0x13f460
 void LlSpriteResize(
     void* host,
@@ -300,7 +299,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     gameReg = g_64556c;
     g_645588 = 0;
     if (I32(gameReg, 0x134) == 3) {
-        LlInitClock(timeGetTime());
+        srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
     LlSetMode(self, 0);
@@ -344,7 +343,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 }
                 break;
             }
-            i32 num = LlAtoi(p);
+            i32 num = atoi(p);
             LlSetRelease(set);
             level = num;
         } else if (I32(host, 0x12c) != 0) {
@@ -374,7 +373,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 }
                 break;
             }
-            i32 num = LlAtoi(p);
+            i32 num = atoi(p);
             LlSetRelease(set);
             level = num;
         } else {
@@ -393,7 +392,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     }
 
     // ---- 3) build the level name + look it up ----
-    LlFormatLevelName(nameBuf, "AREA%i", I32(self, 0x20));
+    sprintf(nameBuf, "AREA%i", I32(self, 0x20));
     set = LlRegistryFind(PTR(self, 0x8), nameBuf);
     I32(self, 0x28) = (i32)set;
     if (set == 0) {
@@ -451,10 +450,10 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
         host = PTR(self, 0x4);
         if (I32(PTR(host, 0xc8), -8) != 0) {
             if (I32(host, 0x128) == 0 && I32(host, 0x12c) == 0) {
-                LlFormatLevelName(nameBuf, "CUSTOMLEVEL", 0);
+                sprintf(nameBuf, "CUSTOMLEVEL", 0);
             }
         } else if (level > 0x24) {
-            LlFormatLevelName(nameBuf, "TRAINING", 0);
+            sprintf(nameBuf, "TRAINING", 0);
         }
         (void)prevTiles;
     }
@@ -706,7 +705,7 @@ okContinue:
     LlBeginStep(self, 0);
     LlEndStep(self);
     LlBeginStep(self, 1);
-    LlEnableFog(0x64);
+    ActiveWait(0x64);
     LlEndStep(self);
 
     gameReg = g_64556c;
