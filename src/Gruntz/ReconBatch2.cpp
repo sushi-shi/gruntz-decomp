@@ -30,8 +30,11 @@ void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
 
 // ===========================================================================
 // 0x000bf580 (16B) - `g_list.AddTail(arg0)` on a global list (DAT_0064aca8).
+// The list at 0x64aca8 is really the MFC CPtrList `g_pool` (canonical symbol
+// ?g_pool@@3VCPtrList@@A, owned by LobbySync.cpp); PtrList_bf580 is this Win32 TU's
+// placeholder view (AddTail == CPtrList::AddTail, reloc-masked).
 // ===========================================================================
-struct PtrList_bf580 {
+struct PtrList_bf580 { // = CPtrList (g_pool @0x64aca8, see LobbySync.cpp)
     void AddTail(void* p);
 };
 DATA(0x0024aca8)
@@ -114,14 +117,17 @@ i32 OptOwner_c4b30::Resolve() {
 }
 
 // ===========================================================================
-// 0x000f9840 / 0x000de140 (cleanup pair, CGameModeBase) - free the owned sub-
-// resource (SoundStream::Free), clear/prune the sub-manager map, then run the
+// 0x000f9840 / 0x000de140 (cleanup pair, CGameModeBase) - stop the owned sub-
+// resource (SoundStream::Stop), clear/prune the sub-manager map, then run the
 // base teardown (CGameModeBase::BaseCleanup). m_c->m_28 (the map holder) is
 // reloaded each statement, not cached.
 // ===========================================================================
+// Local placeholder view of the real SoundStream (include/Dsndmgr/SoundStream.h);
+// 0x137a80 is canonically SoundStream::Stop (minervainner / SoundStreamTeardown.cpp),
+// so name the method Stop here too (was the mislabel "Free").
 class SoundStream {
 public:
-    void Free(); // 0x137a80
+    void Stop(); // 0x137a80 (= SoundStream::Stop)
 };
 // The map holder: ClearMap lives in the CDDrawMapHolder base; the keyed
 // prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
@@ -156,7 +162,7 @@ public:
 RVA(0x000de140, 0x33)
 void CGameModeBase::ResetPreview() {
     if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->Free();
+        m_c->m_28->m_2c->Stop();
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
     BaseCleanup();
@@ -195,7 +201,7 @@ i32 SfDeviceInitKeys() {
 RVA(0x000f9840, 0x29)
 void CGameModeBase::Reset() {
     if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->Free();
+        m_c->m_28->m_2c->Stop();
     }
     m_c->m_28->ClearMap();
     BaseCleanup();

@@ -11,6 +11,7 @@
 #include <Gruntz/ActReg.h>    // shared activation-registrar archetype (CActReg + aliases)
 #include <Gruntz/HaznColl.h>  // shared coordinate/activation-registry collection
 #include <Gruntz/TBombColl.h> // shared coordinate/activation-registry collection
+#include <Io/SharedFileObj.h> // shared C646778 (static MFC CFile global at 0x646778)
 #include <Globals.h>
 
 // ===========================================================================
@@ -256,13 +257,12 @@ void StrFreeb5380() {
 // 0x0b5400 / 0x0bd430 - tail-forward two distinct teardown methods (0x1befd7,
 // 0x1bf426) onto the shared object at 0x646778. __thiscall (no args).
 // ===========================================================================
-struct CFileIO {
-    void M1befd7(); // 0x1befd7 (reloc-masked)
-    void M1bf426(); // 0x1bf426 (reloc-masked)
-};
-SIZE_UNKNOWN(CFileIO);
+// C646778 (the shared static MFC CFile global; identity = the real CFileIO/NAFXCW
+// CFile, kept under the view name because FileStream.cpp includes BOTH this def and
+// the real class) is defined once in <Io/SharedFileObj.h>; this TU owns its
+// canonical DATA symbol.
 DATA(0x00246778)
-extern CFileIO g_obj646778;
+extern C646778 g_obj646778;
 RVA(0x000b5400, 0xa)
 void Forwardb5400() {
     g_obj646778.M1befd7();

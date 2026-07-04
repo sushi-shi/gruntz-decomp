@@ -16,14 +16,11 @@
 #include <Io/FileStream.h>
 #include <rva.h>
 
-// -------------------------------------------------------------------------
-// The shared global file object at 0x646778 (bound as C646778 in
+#include <Io/SharedFileObj.h> // shared C646778 (the static MFC CFile global at 0x646778)
+
+// The shared global file object at 0x646778 (canonical DATA owned by
 // BoundaryLowerThunks.cpp). Referenced here for its Open (0x1bf200 == the MFC
 // CFile::Open) + close (0x1bf426 == CFile::Close); both calls are reloc-masked.
-struct C646778 {
-    BOOL Open(char* path, u32 flags, void* pError); // 0x1bf200
-    void M1bf426();                                 // 0x1bf426
-};
 extern C646778 g_obj646778;
 
 // CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
