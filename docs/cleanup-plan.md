@@ -63,6 +63,15 @@ g_gameReg slot typing (type the canonical fields, never cast-to-reach), the
 0cfbd0/faec0 one-address-many-classes splits, ClassUnknown_N, stale
 `CButeNodeBase.cpp` refs, Pages-vs-Draco naming.
 
+**P2b — TU topology reorg** (see **`docs/tu-topology-plan.md`**, 2026-07-04
+audit): src/Gruntz is a dump — 76 TUs sit entirely in the engine RVA band,
+~25 are pure aggregate buckets, ~22 are `*Eh.cpp` flag-splits. Execution
+order: same-class merges → artifact renames (UnknownClassArrays→
+CBattlezMapConfig etc.) → whole-TU moves to engine modules (DirPal→DDrawMgr,
+Wwd*→Wwd, SoundStream*→Dsndmgr, …) → per-fn dissolution of Boundary*/
+Discovered*/Orphan*/Api*/ReconBatch* buckets. Overlaps P2 (the buckets are
+where the placeholder classes live).
+
 **P3 — finish `docs/comdefs-removal-plan.md`** (parallel-safe): DirectDraw →
 real `<ddraw.h>`, reparent engine interfaces, `WaveFormatX.h` → `WAVEFORMATEX`,
 delete `ComDefs.h`.
