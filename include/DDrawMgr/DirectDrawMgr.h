@@ -37,12 +37,16 @@
 //                        GetDisplayMode@12, SetCooperativeLevel@20, SetDisplayMode@21,
 //                        WaitForVerticalBlank@22, EnumDisplayModes@8).
 //   IDirectDrawPalette - GetEntries@4, SetEntries@6.
-// NOTE the DDCAPS m_caps/m_helCaps below stay raw i32[0x5f] (0x17c bytes): the retail
-// hardcodes dwSize=0x17c (380 B), which is actually LARGER than the vendored DX6
-// DDCAPS (0x13c = 316 B) - almost certainly a stale/mistaken dwSize constant on the
-// game's side (we are on DX6). Modeling m_caps as the real DDCAPS value member would
-// shrink it 0x17c->0x13c and shift the whole class layout, so it stays a raw buffer;
-// GetCaps gets it via an (LPDDCAPS) cast (the runtime writes only dwSize's worth).
+// NOTE the DDCAPS m_caps/m_helCaps below are the driver + HEL DDCAPS_DX6 value
+// blocks: 0x5f i32 == 0x17c bytes == EXACTLY sizeof(DDCAPS_DX6) (probe-verified,
+// wine-cl + clang). The retail's hardcoded dwSize=0x17c is therefore CORRECT - it
+// is sizeof(DDCAPS), NOT a stale/mistaken constant (an earlier note wrongly read
+// 0x13c off the MSVC5 toolchain's OLDER shadow DDRAW.H; the vendored DX6 ddraw.h
+// defaults DIRECTDRAW_VERSION=0x0600 => DDCAPS aliases DDCAPS_DX6 @ 0x17c). They
+// stay RAW i32[0x5f] here only because this header is widely included and must not
+// pull the OLE/windows <ddraw.h> chain; the .cpp (which has <ddraw.h>) accesses
+// them through the REAL DDCAPS type - `((DDCAPS*)m_caps)->dwSize`/`->dwCaps`,
+// `GetCaps((LPDDCAPS)m_caps, ...)` - so the size/offsets are byte-identical.
 // ---------------------------------------------------------------------------
 struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
 struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
@@ -101,8 +105,8 @@ public:
     // --- layout (only touched offsets pinned) ---------------------------------
     IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device
     IDirectDraw* m_dd1;     // +0x04  the raw IDirectDraw DirectDrawCreate returns
-    i32 m_caps[0x5f];       // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
-    i32 m_helCaps[0x5f];    // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
+    i32 m_caps[0x5f];       // +0x08  driver DDCAPS_DX6 storage (0x17c B); .cpp uses (DDCAPS*)
+    i32 m_helCaps[0x5f];    // +0x184 HEL DDCAPS_DX6 storage (0x17c B)
     char m_pad300[0x4b4 - 0x300];
     CDdObArray m_poolItems; // +0x4b4 pool-item CObArray sub-object
     char m_pad4c8[0x534 - 0x4c8];
