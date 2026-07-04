@@ -32,11 +32,9 @@ appdialogs	1	1
 apphelpers	3	3
 applyrange	1	1
 areamgr	7	2
-arraye40	1	0
 arrayserialize	1	0
 assetnamespaceprefixes	1	0
 attract	17	9
-backlogstateloaders	3	3
 battlezdata	30	27
 battlezdlgrow	1	0
 battlezmapconfig	42	10
@@ -86,10 +84,6 @@ checkpointswitchbuild	1	0
 checkpointtrigger	3	2
 cimage	11	7
 circleshadeblit	1	0
-classunknown30	1	0
-classunknown43	1	0
-classunknown48	3	1
-classunknown9	1	1
 cluster0c	3	2
 cmdscrollapply	2	2
 colorhsv	1	0
@@ -156,7 +150,7 @@ explosion	2	1
 eyecandy	3	3
 eyecandyani	5	3
 eyecandytypetags	4	4
-fader	20	13
+fader	21	13
 fadermgr	8	6
 feccrypt	3	2
 fileimage	8	2
@@ -214,6 +208,7 @@ gruntpuddle	5	2
 gruntresurrectradius	1	0
 gruntselectedsprite	5	3
 gruntspawnconfig	18	9
+gruntspawnlevel	2	0
 gruntsprintanim	1	0
 gruntstaminasprite	3	3
 gruntstartingpoint	2	1
@@ -242,6 +237,7 @@ guardpoint	4	3
 hash	10	9
 heapdiag	2	0
 helperhost	2	0
+helpstate	2	2
 iconloaders	6	1
 image	41	25
 imageowned	5	2
@@ -318,7 +314,7 @@ msgdispatch	3	3
 msgpacket	2	2
 multi	18	7
 multicolordlg	1	0
-multistartdlgworld	1	1
+multistartdlgworld	2	2
 namerecord	1	0
 netcmdmgr	1	1
 netcmdsession	6	4
@@ -334,6 +330,9 @@ netsession	2	1
 netsession2	3	1
 netsessionnode	3	2
 netthingdtor	1	1
+obj09a260	1	0
+obj0f7d90	1	0
+obj11c630	1	1
 objectdropper	4	3
 orphanleaves	7	7
 orphanmethods	4	2
@@ -347,6 +346,7 @@ play	71	30
 playdtor	2	2
 playercommandstep	1	0
 playplanescan	2	0
+playstateactivate	1	1
 playsync	1	1
 polyclipraster	1	0
 portalpath	2	2
@@ -433,7 +433,6 @@ spriteresource	10	3
 startupprompt	1	0
 statedispatch	1	0
 stateimages	2	2
-stateleaf8cf30	1	1
 statemgrbz	5	3
 statichazard	7	3
 statusbargamemenu	1	0
@@ -448,6 +447,7 @@ streamrecordloaders	5	0
 streamvoice	5	3
 surfacepalette	1	1
 symparser	13	5
+symrec	3	1
 symtab	22	11
 teleporter	5	3
 terraintileloader	1	0
@@ -474,7 +474,6 @@ triggersound	1	1
 trirecordserialize	2	2
 typekeycoll	10	5
 uncompr	1	1
-unknownclassincgruntzmgr	2	0
 unknownfileioctor	1	1
 userbaselink	10	0
 userlogic	64	28
@@ -595,7 +594,6 @@ areamgr	?FindEntry@CSpawnList@@QAEPAVCSpawnEntryN@@VCString@@H@Z	73.7755	73.7755
 areamgr	?GetTail@CSpawnEntry@@QAE?AVCString@@XZ	66.3774	66.3774	2	ff3c45c9e6be	0x9a830
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	2	7937e088d16b	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.3529	58.3529	2	1e007983363d	0x9b430
-arraye40	?SetSize@CArrayE40@@QAEXHH@Z	95.9035	95.9035	1	fb49215ba665	0x17f390
 arrayserialize	?Serialize@TArray@@QAEXPAUArcSer@@@Z	72.6849	72.6849	2	6df0f9b45cee	0x39fa0
 assetnamespaceprefixes	?BuildAssetNamespacePrefixes@CNamespaceLoader@@QAEHABVCString@@HHH@Z	90.4985	90.4985	5	f2e4538fbda9	0xdca70
 attract	??1CAttract@@UAE@XZ	100.0000	100.0000	1	8f5b73f92144	0x8cd90
@@ -615,9 +613,6 @@ attract	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	d57b012bca6
 attract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	2	603d6d92c790	0x14630
 attract	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	1	c08d70788cb3	0x147b0
 attract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	ef592215907d	0x14770
-backlogstateloaders	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
-backlogstateloaders	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	2	651fae3d1099	0x95090
-backlogstateloaders	?OnActivate_vfunc8@GameLevelState@@QAEHXZ	100.0000	100.0000	3	587ca9541927	0xcb800
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	2	1b1db0c79b91	0xfccf0
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	2	d6751b8a863d	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	2	56a78ec21608	0xfcb90
@@ -1039,12 +1034,6 @@ cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	4	92729710f619	0x1537
 cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	4	4ae2a6f26d44	0x153810
 cimage	?Resolve@CImage@@UAEHPAVCImageSource@@H@Z	100.0000	100.0000	1	5324216b8e59	0x152f20
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	2	81a8776b5e44	0x180fb0
-classunknown30	?GetStr_09a260@Obj09a260@@QAE?AVCString@@XZ	66.7273	66.7273	1	2a61f6af2b38	0x9a260
-classunknown43	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	1	1986b1318780	0xf7d90
-classunknown48	??0CSymRec@@QAE@PAXPAUCSymTab@@H@Z	100.0000	100.0000	1	daffdae37f03	0x139c80
-classunknown48	??0CSymRec@@QAE@PAXPAUCSymTab@@HH@Z	99.1290	99.1290	1	daffdae37f03	0x139bf0
-classunknown48	??1CSymRec@@QAE@XZ	98.3099	98.3099	1	173329cb7e04	0x139cf0
-classunknown9	??0Obj11c630@@QAE@VCString@@PAX@Z	100.0000	100.0000	1	d26351c8be17	0x11c630
 cluster0c	?Cleanup@CCluster0c@@QAEXXZ	100.0000	100.0000	1	b1316ef6e14d	0xc5240
 cluster0c	?Init@CCluster0c@@QAEXXZ	71.0000	71.0000	1	d31cbe3da407	0xc0c20
 cluster0c	?Run@CCluster0c@@QAEXXZ	100.0000	100.0000	1	3b32969b9cef	0xc2a50
@@ -1626,6 +1615,7 @@ fader	?RenderTile@CFaderTileRender@@QAEXHH@Z	59.0975	59.0975	1	9cdd84d652cc	0x18
 fader	?RenderWarpTile@CFaderTileRender@@QAEXHH@Z	44.0032	44.0032	1	5cd619174757	0x181e50
 fader	?RunFade@FaderRun@@QAEXIHH@Z	86.4057	86.4057	1	ce9ba500dac5	0x17e620
 fader	?Set2c@CFader@@QAEXH@Z	100.0000	100.0000	1	42d19eaaeed0	0x17e780
+fader	?SetSize@CArrayE40@@QAEXHH@Z	95.9035	95.9035	1	fb49215ba665	0x17f390
 fader	?SetTimers@CFader@@QAEXHH@Z	100.0000	100.0000	1	c0801f821a5d	0x17e760
 fader	?Setup@CFaderShape@@QAEHPAUFInit@@@Z	40.6732	40.6732	1	5b7bd36ff2b5	0x1817e0
 fader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	1	22403b8571db	0x17e510
@@ -2044,6 +2034,8 @@ gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d2
 gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHHHHHHH@Z	0.7336	0.7336	1	165f5c3fbfea	0x11b3b0
 gruntspawnconfig	?SpawnVoiceDriverStd@@YGHHHHHH@Z	0.8299	0.8299	1	db4c60a0ae79	0x11b7c0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	2	31d475ea8ce8	0x11c730
+gruntspawnlevel	??0CGruntSpawnLevel@@QAE@XZ	85.3478	85.3478	1	006e4071467e	0xda790
+gruntspawnlevel	??1CGruntSpawnLevel@@QAE@XZ	72.3182	72.3182	1	da4634b11447	0x83260
 gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	79.5942	79.5942	4	0d2c4fbca713	0x19920
 gruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	100.0000	100.0000	1	5ffcecb6cc17	0x12070
 gruntstaminasprite	?GetStaminaTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	1	a1a55c19ab81	0x7fbb0
@@ -2275,6 +2267,8 @@ heapdiag	?HeapCheckDump@@YAHH@Z	96.7042	96.7042	2	dd95544da898	0x118a30
 heapdiag	?winapi_118b50_OutputDebugStringA@ApiCallerStubs@@YAXH@Z	69.3478	69.3478	1	1343d8bab8f7	0x118b50
 helperhost	?Helper_164790@CDDrawWorkerBase@@QAEHHH@Z	90.5556	90.5556	1	7e839a3393c9	0x164790
 helperhost	?Helper_166040@CDDrawWorkerB@@QAEHHH@Z	95.0000	95.0000	1	03819b174356	0x166040
+helpstate	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b3e2189a4d39	0x8cf30
+helpstate	?LoadAssets@CHelpState@@QAEHHHH@Z	100.0000	100.0000	1	651fae3d1099	0x95090
 iconloaders	?BuildBootyPerfectAnimation@EngineLabelBacklog@@QAEHXZ	100.0000	100.0000	8	799c5f93eeff	0x1c070
 iconloaders	?BuildPowerupIconKeys@@YGXPAVPowerupKeyRegistry@@H@Z	53.5443	53.5443	1	88798b19a6eb	0x1e720
 iconloaders	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	8	b67ad9b22188	0x78960
@@ -2653,6 +2647,7 @@ multi	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	89dcb866edcc	0xb72c0
 multi	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	8499295ac675	0xb6110
 multi	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	1	c91ba236d5fb	0xb6890
 multicolordlg	?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ	89.7165	89.7165	1	c3ab88e97c67	0xc1aa0
+multistartdlgworld	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
 multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	3	70fdea68da3a	0xc1840
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	4	5bf32827a180	0xc4b60
@@ -2789,6 +2784,9 @@ netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
+obj09a260	?GetStr_09a260@Obj09a260@@QAE?AVCString@@XZ	66.7273	66.7273	1	2a61f6af2b38	0x9a260
+obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	1	1986b1318780	0xf7d90
+obj11c630	??0Obj11c630@@QAE@VCString@@PAX@Z	100.0000	100.0000	1	d26351c8be17	0x11c630
 objectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	1	a38c04f0ffbf	0xc59f0
 objectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 objectdropper	?GetTypeTag@CObjectDropper@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	0f2ba896b8d9	0x124a0
@@ -2859,7 +2857,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	1	7961f8394476	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	1	fc889e191936	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	1	ae9b351526fa	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	1	07c8a5320451	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	1	881a8cd68b99	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	1	881a8cd68b99	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	1	969efe4aecb2	0xd65d0
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	1	17e3f8d692d4	0xd9050
@@ -2899,6 +2897,7 @@ playdtor	??1CPlay@@UAE@XZ	100.0000	100.0000	1	07c566493077	0x8c830
 playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	16.7740	16.7740	4	17775495add5	0xd1b60
 playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	95.8323	95.8323	1	37d8e317e220	0xd53d0
 playplanescan	?ScanShuffleQuads@CPlay@@QAEHXZ	77.6802	77.6802	1	5935482f3ffc	0xd9290
+playstateactivate	?OnActivate@CPlay@@QAEHXZ	100.0000	100.0000	1	2a2f29693d41	0xcb800
 playsync	?SyncState@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	dc5b932d112d	0xd7520
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.4152	53.4152	2	5d4f70a420b8	0x146550
 portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	1	7220403c8bd3	0x90550
@@ -3288,7 +3287,6 @@ startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	1	a3e252acbdce	0x
 statedispatch	?StateDispatch@@YGHPAUCStateCtx@@HH@Z	32.4881	32.4881	2	980d52e5e5c9	0x9b770
 stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	3	dbdbb6ad1672	0xa09a0
 stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	3	216aeaa6bb04	0x1c8a0
-stateleaf8cf30	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b3e2189a4d39	0x8cf30
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0
@@ -3353,6 +3351,9 @@ symparser	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	2	93b1d67882d1	0x13c050
 symparser	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	c6b60724f735	0x1852e0
 symparser	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	d2f5951f4d21	0x13c030
 symparser	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	65f97a6deb84	0x13bff0
+symrec	??0CSymRec@@QAE@PAXPAUCSymTab@@H@Z	100.0000	100.0000	1	daffdae37f03	0x139c80
+symrec	??0CSymRec@@QAE@PAXPAUCSymTab@@HH@Z	99.1290	99.1290	1	daffdae37f03	0x139bf0
+symrec	??1CSymRec@@QAE@XZ	98.3099	98.3099	1	173329cb7e04	0x139cf0
 symtab	??0CSymTab@@QAE@PAVCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	2	377a1da824cf	0x139de0
 symtab	??1CSymTab@@QAE@XZ	88.7245	88.7245	3	dfa4fe284fc8	0x139ee0
 symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	75.6782	75.6782	3	84bfe6657c8e	0x13a640
@@ -3552,8 +3553,6 @@ typekeycoll	?ProjTypeXfer@@YAHPAUCXferArchive@@@Z	87.0472	87.0472	1	bd3523e30b37
 typekeycoll	?ScalarDtor@CButeTree@@QAEPAXI@Z	100.0000	100.0000	2	721a8a7f7b36	0x16e9c0
 typekeycoll	?Set@CVariantSlot@@QAEXPAXHH@Z	99.8526	99.8526	1	6d489b5d8c48	0x16d850
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
-unknownclassincgruntzmgr	??0CGruntSpawnLevel@@QAE@XZ	85.3478	85.3478	1	006e4071467e	0xda790
-unknownclassincgruntzmgr	??1CGruntSpawnLevel@@QAE@XZ	72.3182	72.3182	1	da4634b11447	0x83260
 unknownfileioctor	??0FileIOOwner@@QAE@XZ	100.0000	100.0000	1	a3ae229aad1a	0x8fea0
 userbaselink	??0CUserBaseLink@@QAE@XZ	13.5429	13.5429	3	4f55195a665e	0x16d710
 userbaselink	??0EngStr@@QAE@PBDH@Z	0.6747	0.6747	3	83d426dbd622	0x16d3a0
