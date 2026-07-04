@@ -5,16 +5,12 @@
 // (CDDrawSurfaceMgr::SnapshotChildren) over the "Gruntz Save Game" stream. Field
 // names are placeholders; only OFFSETS + code bytes matter.
 #include <rva.h>
-#include <string.h> // strlen / memset inline to repne scasb / rep stos
+#include <string.h>                   // strlen / memset inline to repne scasb / rep stos
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (SnapshotChildren @0x156020)
 
-// The recursive snapshot run-callback signature + the surface-mgr serializer it is
-// handed to. Both modeled NO-body so the call/address-of reloc-mask.
-typedef i32(__cdecl* SnapRunCallback)(void* mgr, void* ser, i32 mode, i32, i32);
+// The recursive snapshot run-callback handed to SnapshotChildren; modeled NO-body
+// so the call/address-of reloc-mask. Its type is the canonical HP_Callback.
 extern i32 __cdecl SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // 0x24e6 thunk
-
-struct CDDrawSurfaceMgr {
-    i32 SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name, i32 arg3); // 0x156020
-};
 
 // The game-state host being saved; its +0x30 is the bound surface manager. Modeled
 // as a view (only +0x30 is touched here); the opaque head is the game-mgr region.
