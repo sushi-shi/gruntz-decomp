@@ -39,6 +39,7 @@
 #include <ddraw.h>             // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
 #include <math.h>
 #include <rva.h>
+#include <stdio.h> // sprintf (0x1b2cf5) - the clock/version/title string builders
 
 // ===========================================================================
 // CState - the base game-state class.
@@ -1140,7 +1141,6 @@ i32 CCreditsState::InputVirtual() {
 // (m_8->LookupState) into m_2c, fade the title in (FadeInTitle), apply the configured
 // "Menu"/"BrightnessPercent" level, transition the page, and build the menu page.
 // The state/menu/self sub-calls + the g_buteMgr GetIntDef are reloc-masked externs.
-extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 SIZE_UNKNOWN(CMenuBrightTgt);
 struct CMenuBrightTgt {
     void SetBrightness(i32 value, i32 flags); // 0x13f460
@@ -1826,7 +1826,6 @@ struct CMenuMusic {
 //
 // Local views: CHudStats = the live-value/score object (g_mgrSettings->m_7c); CHudBuf
 // = the output-buffer arg (Assign = the "???" writer @0x1b9e74). sprintf @0x1b2cf5.
-extern "C" i32 sprintf(char* buf, const char* fmt, ...);
 SIZE_UNKNOWN(CHudStats);
 struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall on THIS
     // The 13 reloc-masked live-value getters (thiscall on the stats object):
