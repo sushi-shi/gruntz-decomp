@@ -26,6 +26,7 @@
 
 class CBehindCandyAni : public CUserLogic {
 public:
+    CBehindCandyAni(CGameObject* obj); // 0x0ad540 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry (g_behindCandyActReg
     // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad7d0
@@ -36,6 +37,8 @@ public:
     LogicTypeId GetTypeTag();   // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
+
+    i32 m_40; // +0x40 (geoId latch; written by the ctor)
 };
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

@@ -12,6 +12,8 @@
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Mfc.h>           // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/ActReg.h> // shared CActColl/CActColl2/CActReg activation-registry archetype
+#include <Gruntz/CBehindCandyAni.h>    // the canonical CBehindCandyAni class (ctor defined below)
+#include <Gruntz/CEyeCandy.h>          // the canonical CEyeCandy class (ctor defined below)
 #include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
 #include <Gruntz/CTrigger.h>           // shared point-probe result object
 #include <Gruntz/CViewport.h>          // shared world->screen transform
@@ -300,11 +302,7 @@ public:
     virtual ~CBehindCandy() OVERRIDE;
 };
 
-class CEyeCandy : public CUserLogic {
-public:
-    CEyeCandy(CGameObject* obj); // 0x0ac620
-    virtual ~CEyeCandy() OVERRIDE;
-};
+// CEyeCandy comes from <Gruntz/CEyeCandy.h> (folded; ctor 0x0ac620 defined below).
 
 class CFrontCandyAni : public CUserLogic {
 public:
@@ -315,12 +313,7 @@ public:
     i32 m_40;                   // +0x40
 };
 
-class CBehindCandyAni : public CUserLogic {
-public:
-    CBehindCandyAni(CGameObject* obj); // 0x0ad540
-    virtual ~CBehindCandyAni() OVERRIDE;
-    i32 m_40; // +0x40
-};
+// CBehindCandyAni comes from <Gruntz/CBehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
 class CMenuSparkle : public CUserLogic {
 public:

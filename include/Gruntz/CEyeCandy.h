@@ -24,7 +24,8 @@
 SIZE_UNKNOWN(CEyeCandy);
 class CEyeCandy : public CUserLogic {
 public:
-    LogicTypeId GetTypeTag(); // 0x00fca0 (returns the class logic-type id 0x3f1)
+    CEyeCandy(CGameObject* obj); // 0x0ac620 (ctor body in UserLogic.cpp)
+    LogicTypeId GetTypeTag();    // 0x00fca0 (returns the class logic-type id 0x3f1)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fcc0 (vtable slot 1: two-chain Serialize)
     virtual ~CEyeCandy() OVERRIDE;                // 0x00fd60 (folds the CUserLogic teardown)
 };
