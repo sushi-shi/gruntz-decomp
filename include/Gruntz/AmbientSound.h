@@ -43,15 +43,10 @@ struct AmbientBox {
 
 // ---------------------------------------------------------------------------
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
-// Update gates the (re)start on the active-level handle (+0x10) and the active
-// world view's object count (+0x54->m_24). Only the two touched offsets are
-// modeled; same singleton CRandomAmbientSound taps.
+// Update gates the (re)start on the active-level handle (+0x10) and the +0x54
+// active-level object's armed/playable gate (m_inputState->m_armed; CInput54 in
+// <Gruntz/InputState.h> - the same object CRandomAmbientSound taps).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(WwdActiveLevel);
-struct WwdActiveLevel {
-    char m_pad0[0x24];
-    i32 m_objectCount; // +0x24  object count (non-zero == playable)
-};
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 

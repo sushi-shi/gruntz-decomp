@@ -58,6 +58,7 @@ class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or
                        // completed locally with just the 0x4039f4 6-arg cue - a
                        // data-less method handle, so layout-neutral, no cross-cast)
 class CState;          // +0x2c current game-state; CState.h completes it
+struct CInput54;       // +0x54 active-level input/spatial-sound object (InputState.h)
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Gruntz/Viewport.h>; forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
@@ -178,8 +179,12 @@ struct CGameRegistry {
     //   common role, still void* until the real class is modeled.
     //   SUBSTANCE-DIVERGENCE FLAGS (one physical field, but the two views disagree on
     //   what it IS - the name unifies to the manager's, endgame to resolve the real
-    //   single type): +0x54 (mgr input-state vs ambient-sound's active level, cast
-    //   WwdActiveLevel->m_objectCount + spatial-sound array); +0x60 m_cueSink (cue
+    //   single type):
+    //   +0x54 RESOLVED -> CInput54 (<Gruntz/InputState.h>): ONE object (proven by the
+    //     LoadWorldMode ctor). The mgr's input facet and the ambient TU's active-level
+    //     facet are the same record; +0x24 is the mgr's armed flag == the ambient's
+    //     "playable"/object-count gate, +0x08 the shared spatial-sound voice CObList.
+    //   +0x60 m_cueSink (cue
     //   receiver, 60+ grunt sites) vs GruntzMgr m_timer (per-frame tick + Voice_Volume);
     //   +0x70 m_tileGrid (tile board) vs GruntzMgr m_cmdNotify (cmd sink + cell-height);
     //   +0x11c/+0x120 (mgr input flags vs consumer sound-volume); +0x14 (base
@@ -205,10 +210,12 @@ struct CGameRegistry {
     char m_pad3c[0x48 - 0x3c];
     void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
     char m_pad4c[0x54 - 0x4c];
-    void* m_inputState; // +0x54  input/state object (FLAG: ambient sound casts it to the
-                        //         active level, WwdActiveLevel->m_objectCount)
-    void* m_saveSink;   // +0x58  save-record sink (consumers read save-game progress:
-                        //         MenuProgress->m_1c / final-movie availability)
+    CInput54* m_inputState; // +0x54  active-level input/spatial-sound object (ONE object,
+                            //         proven: the mgr's input facet == the ambient TU's
+                            //         active-level facet, +0x24 armed==playable gate,
+                            //         +0x08 CObList spatial voice list; see InputState.h)
+    void* m_saveSink; // +0x58  save-record sink (consumers read save-game progress:
+                      //         MenuProgress->m_1c / final-movie availability)
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)

@@ -11,6 +11,7 @@
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
 #include <Gruntz/RandomAmbientSound.h>
+#include <Gruntz/InputState.h> // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <rva.h>
 #include <Globals.h>
 
@@ -56,11 +57,9 @@ struct PosSoundObj {
     char m_pad124[0x19c - 0x124];
     void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
 };
-// The spatial-mgr CObArray (at g_gameReg->m_54 + 0x08) RemoveAt unlinks the
-// voice's node from.
-struct PosSoundSpatial {
-    i32 RemoveAt(void* node); // 0x1b4ac7  (__thiscall)
-};
+// The spatial-sound voice CObList lives at g_gameReg->m_inputState + 0x08 (the same
+// embedded CObList the manager ctors/tears down); RemoveAt unlinks the voice's node.
+// Shared shape: CObListSub in <Gruntz/InputState.h>.
 
 // The factory the spawn path calls (Stub_00b960 via the 0x20e5 thunk). It news a
 // 0x48-byte voice; modeled __stdcall (callee-cleaned, no `add esp`).
@@ -103,7 +102,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        PosSoundSpatial* arr = (PosSoundSpatial*)((char*)g_gameReg->m_inputState + 8);
+        CObListSub* arr = (CObListSub*)((char*)g_gameReg->m_inputState + 8);
         if (sound->m_mgr != 0) {
             sound->m_mgr->StopAndRewind();
             sound->m_isPlaying = 0;
@@ -178,7 +177,7 @@ i32 CRandomAmbientSound::Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* 
 // ---------------------------------------------------------------------------
 // Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind): the play/stop driver.
 // Gated on the mgr handle, the playing flag, and the active level
-// (g_gameReg->m_soundEnabled and ((WwdActiveLevel*)g_gameReg->m_54)->m_objectCount). On play it reseeds
+// (g_gameReg->m_soundEnabled and g_gameReg->m_inputState->m_armed). On play it reseeds
 // the voice (mgr->ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA clamped)/100 then
 // m_scaleB/100 (both signed magic-/100), clamps the
 // result to [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay
@@ -216,7 +215,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
+    if (g_gameReg->m_inputState->m_armed == 0) {
         return;
     }
 
@@ -394,7 +393,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
+    if (g_gameReg->m_inputState->m_armed == 0) {
         return;
     }
     m_mgr->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -514,5 +513,4 @@ SIZE_UNKNOWN(AmbSoundRecord);
 SIZE_UNKNOWN(AmbientPoint);
 SIZE_UNKNOWN(PosSoundAux);
 SIZE_UNKNOWN(PosSoundObj);
-SIZE_UNKNOWN(PosSoundSpatial);
 SIZE_UNKNOWN(PosSoundVoice);

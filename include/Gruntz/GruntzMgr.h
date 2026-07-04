@@ -121,9 +121,10 @@ struct CWorldZ {
 // which dispatches on it, includes <dplobby.h>).
 struct IDirectPlayLobby;
 
-// The +0x54 input/state object (Flush/Arm/Disarm/InitInput/Method0/Method1/
-// StoreFlag). Full view lives in GruntzMgr.cpp; the m_inputState member is a
-// pointer, so a forward declaration suffices here.
+// The +0x54 active-level input/spatial-sound object (Flush/Arm/Disarm/InitInput/
+// Method0/Method1/StoreFlag; the ambient TU reads its +0x24 armed==playable gate +
+// its +0x08 spatial voice CObList). Shared shape in <Gruntz/InputState.h>; the
+// m_inputState member is a pointer, so a forward declaration suffices here.
 struct CInput54;
 
 // The manager's owned engine sub-objects, each a real class reached only through a

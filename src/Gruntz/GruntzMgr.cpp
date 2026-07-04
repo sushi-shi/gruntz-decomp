@@ -22,6 +22,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
+#include <Gruntz/InputState.h>     // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -523,25 +524,8 @@ struct CRezSurface94 {
     void Build();                   // FUN_0053aa10 (this) reloc-masked
     i32 Apply(i32 a, i32 b, i32 c); // FUN_0053ad00 (this, *p, 1, 0) reloc-masked
 };
-struct CObListSub {
-    void Init(i32 cap); // CObList ctor (this = obj+8, 0xa) reloc-masked
-    void Dtor();        // ~CObList-family (this = obj+8) reloc-masked
-};
-// The input/state object held at CGruntzMgr +0x54. m_24 is its armed flag; the two
-// parameterless thiscalls toggle its active state; Flush() is its +0 teardown
-// method; InitInput wires it to the world's +0x28 sub-controller. All reloc-masked.
-struct CInput54 {
-    char m_pad0[0x24];
-    i32 m_24;                                       // +0x24  armed flag
-    void Flush();                                   // 0x1082-thunk (this) reloc-masked
-    void Arm();                                     // FUN_0040bcf0 (this) reloc-masked
-    void Disarm();                                  // FUN_0040bc80 (this) reloc-masked
-    i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
-    void Method0();                                 // FUN @ 0x29b9 thunk (reloc-masked)
-    void Method1();                                 // FUN @ 0x18e8 thunk (reloc-masked)
-    void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
-    void Teardown();                                // (this) reloc-masked (Close)
-};
+// CObListSub (the +0x08 spatial CObList) + CInput54 (the +0x54 object) now live in
+// the shared <Gruntz/InputState.h> - the same object the ambient-sound TU reads.
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
 // SetVideoMode(hwnd, w, h, depth, flag)). MSVC5 forbids __thiscall on a fn-ptr,
@@ -1819,13 +1803,13 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 
     CInput54* cur = m_inputState;
     if (m_isAmbientEnabled != 0) {
-        if (cur->m_24 == 0) {
-            cur->m_24 = 1;
+        if (cur->m_armed == 0) {
+            cur->m_armed = 1;
             cur->Arm();
         }
     } else {
-        if (cur->m_24 != 0) {
-            cur->m_24 = 0;
+        if (cur->m_armed != 0) {
+            cur->m_armed = 0;
             cur->Disarm();
         }
     }
@@ -3649,7 +3633,6 @@ SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CInput54);
 SIZE_UNKNOWN(CLevelState);
 SIZE_UNKNOWN(CWorldMenuMap);
 SIZE_UNKNOWN(CMenuNode);
@@ -3663,7 +3646,6 @@ SIZE_UNKNOWN(CMonoEntry);
 SIZE_UNKNOWN(CMonoSprite);
 SIZE_UNKNOWN(CMonoView);
 SIZE_UNKNOWN(CMonoWorld);
-SIZE_UNKNOWN(CObListSub);
 SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
