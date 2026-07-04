@@ -290,7 +290,7 @@ common: {
                 RECYCLE_COORDS(m_320);
                 m_31c.RemoveAll();
             }
-            ((CGruntTileMgr*)g_pGameRegistry->m_68)
+            ((CGruntTileMgr*)g_pGameRegistry->m_cmdGrid)
                 ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
             m_arrivalCol = bx;
             m_arrivalRow = by;
