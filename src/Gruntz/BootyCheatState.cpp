@@ -51,22 +51,30 @@ struct BcRegSet {                   // this->m_8
 struct BcSoundRegistry {                            // this->m_c->m_28
     void Install(void* set, char* name, char* sep); // FUN_00557ee0
 };
-// The image registrar reached via m_c->m_10: vtable slot +0x48 installs a
-// resolved set. Modeled as a PMF so MSVC emits `mov edx,[ecx]; call [edx+0x48]`;
-// the class must be COMPLETE before the PMF typedef (pmf-complete-class-4byte.md).
-struct BcImageRegistryVtbl;
+// The image registrar reached via m_c->m_10: a polymorphic engine class whose vtable
+// slot +0x48 (index 18) installs a resolved set. 18 placeholder virtuals so Install
+// lands at +0x48 (`mov edx,[ecx]; call [edx+0x48]`); declared-only -> no ??_7 here.
 struct BcImageRegistry {
-    BcImageRegistryVtbl* m_vptr;
-    void InstallVia48(void* set, char* name, char* sep);
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void v2c();
+    virtual void v30();
+    virtual void v34();
+    virtual void v38();
+    virtual void v3c();
+    virtual void v40();
+    virtual void v44();
+    virtual void Install(void* set, char* name, char* sep); // +0x48
 };
-typedef void (BcImageRegistry::*BcInstall48Fn)(void*, char*, char*);
-struct BcImageRegistryVtbl {
-    char m_pad00[0x48];
-    BcInstall48Fn Install; // +0x48
-};
-inline void BcImageRegistry::InstallVia48(void* set, char* name, char* sep) {
-    (this->*(m_vptr->Install))(set, name, sep);
-}
 struct BcAssetCore { // this->m_c->m_8
     void Prepare();  // FUN_00559ef0
 };
@@ -191,7 +199,7 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         if (!imagez) {
             goto fail;
         }
-        m_c->m_10->InstallVia48(imagez, "BOOTY", "_");
+        m_c->m_10->Install(imagez, "BOOTY", "_");
     }
 
     {
@@ -232,7 +240,6 @@ fail:
 SIZE_UNKNOWN(BcAssetCore);
 SIZE_UNKNOWN(BcAssetRoot);
 SIZE_UNKNOWN(BcImageRegistry);
-SIZE_UNKNOWN(BcImageRegistryVtbl);
 SIZE_UNKNOWN(BcPumpHost);
 SIZE_UNKNOWN(BcRegObj);
 SIZE_UNKNOWN(BcRegSet);

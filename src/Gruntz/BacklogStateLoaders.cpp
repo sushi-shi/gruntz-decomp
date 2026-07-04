@@ -51,23 +51,33 @@ public:
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // 0x6293f4 (engine global empty string)
 
-// The namespace registrar reached via m_c->m_10: vtable slot +0x4c registers a
-// looked-up image set under a name + separator (returns -1 on failure).  Modeled
-// as a pointer-to-member so MSVC emits `mov edx,[ecx]; call [edx+0x4c]`; the class
-// must be COMPLETE before the PMF typedef (pmf-complete-class-4byte.md).
-struct GLSRegistrarVtbl;
+// The namespace registrar reached via m_c->m_10: a polymorphic engine class whose
+// vtable slot +0x4c (index 19) registers a looked-up image set under a name +
+// separator (returns -1 on failure). Modeled with 19 placeholder virtuals so
+// Register lands at +0x4c; the call falls out as `mov edx,[ecx]; call [edx+0x4c]`
+// (declared-only slots -> no ??_7 emitted here; the object is constructed elsewhere).
 struct GLSRegistrar {
-    GLSRegistrarVtbl* m_vtbl;
-    i32 CallRegister(i32 handle, char* name, char* sep);
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void v2c();
+    virtual void v30();
+    virtual void v34();
+    virtual void v38();
+    virtual void v3c();
+    virtual void v40();
+    virtual void v44();
+    virtual void v48();
+    virtual i32 Register(i32 handle, char* name, char* sep); // +0x4c
 };
-typedef i32 (GLSRegistrar::*GLSRegFn)(i32 handle, char* name, char* sep);
-struct GLSRegistrarVtbl {
-    char m_pad00[0x4c];
-    GLSRegFn Register; // +0x4c
-};
-inline i32 GLSRegistrar::CallRegister(i32 handle, char* name, char* sep) {
-    return (this->*(m_vtbl->Register))(handle, name, sep);
-}
 struct GLSNamespace {         // m_28 / m_30
     i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
 };
@@ -87,19 +97,25 @@ struct GLSSubA {  // m_c->m_4
 struct GLSObj24 {                    // m_c->m_24
     void Wire(GLSSub14* a, void* b); // FUN_0015dc90 __thiscall
 };
-struct GLSPolyCVtbl;
-struct GLSPolyC { // m_c->m_c
-    GLSPolyCVtbl* m_vtbl;
-    void CallSlot34(GLSSub14* a, void* b);
+// m_c->m_c: a polymorphic engine class whose vtable slot +0x34 (index 13) is wired
+// here. 13 placeholder virtuals so Slot34 lands at +0x34 (`mov edx,[ecx]; call
+// [edx+0x34]`); declared-only -> no ??_7 emitted here.
+struct GLSPolyC {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void v2c();
+    virtual void v30();
+    virtual void Slot34(GLSSub14* a, void* b); // +0x34
 };
-typedef void (GLSPolyC::*GLSSlot34Fn)(GLSSub14* a, void* b);
-struct GLSPolyCVtbl {
-    char m_pad00[0x34];
-    GLSSlot34Fn Slot34; // +0x34
-};
-inline void GLSPolyC::CallSlot34(GLSSub14* a, void* b) {
-    (this->*(m_vtbl->Slot34))(a, b);
-}
 struct GLSAssetRoot { // this->m_c
     char m_pad00[0x4];
     GLSSubA* m_4;       // +0x04
@@ -158,7 +174,7 @@ i32 GameLevelState::OnActivate_vfunc8() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->CallRegister(h, g_emptyString, "_") == -1) {
+    if (m_c->m_10->Register(h, g_emptyString, "_") == -1) {
         return 0;
     }
 
@@ -166,7 +182,7 @@ i32 GameLevelState::OnActivate_vfunc8() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->CallRegister(h, "LEVEL", "_") == -1) {
+    if (m_c->m_10->Register(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -174,7 +190,7 @@ i32 GameLevelState::OnActivate_vfunc8() {
     if (!h) {
         return 0;
     }
-    if (m_c->m_10->CallRegister(h, "GRUNTZ", "_") == -1) {
+    if (m_c->m_10->Register(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -189,7 +205,7 @@ i32 GameLevelState::OnActivate_vfunc8() {
         Method1ae6();
     } else {
         m_c->m_24->Wire(m_c->m_4->m_14, m_c->m_8);
-        m_c->m_c->CallSlot34(m_c->m_4->m_14, m_c->m_4->m_18);
+        m_c->m_c->Slot34(m_c->m_4->m_14, m_c->m_4->m_18);
     }
 
     m_2dc->Finalize();
@@ -243,9 +259,7 @@ SIZE_UNKNOWN(GLSMapMgr);
 SIZE_UNKNOWN(GLSNamespace);
 SIZE_UNKNOWN(GLSObj24);
 SIZE_UNKNOWN(GLSPolyC);
-SIZE_UNKNOWN(GLSPolyCVtbl);
 SIZE_UNKNOWN(GLSRegistrar);
-SIZE_UNKNOWN(GLSRegistrarVtbl);
 SIZE_UNKNOWN(GLSResetMgr);
 SIZE_UNKNOWN(GLSSub14);
 SIZE_UNKNOWN(GLSSub2c);
