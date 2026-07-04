@@ -111,11 +111,11 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
 
 ## The loop
 
-1. **Pull the target.** `python -m gruntz.analysis.dump_target <rva>` (disasm + relocs), the
-   Ghidra decomp, `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`,
-   `extern_harvest`/`string_xref` for the referent set.
+1. **Pull the target.** `gruntz sema disasm <rva>` (disasm + relocs), the
+   Ghidra decomp, `gruntz sema def|refs|hover|symbol`, `gruntz sema strings <rva>`
+   + `extern_harvest` for the referent set.
    **USE GHIDRA XREFS — they unblock attribution and are generally useful, not a last resort.**
-   `python -m gruntz.analysis.xref <rva|name>` gives the retail call/jmp CALLER graph
+   `gruntz sema xref <rva|name>` gives the retail call/jmp CALLER graph
    (`--callees` for the other direction, `--raw` for addresses) — the caller-side complement of
    `dump_target`. Combined with the Ghidra decomp's xrefs (who reads/writes a field, who news a
    class, which vtable slot holds a fn), this is the primary tool for: attributing an orphan/

@@ -65,7 +65,7 @@ you what the class IS. Use GHIDRA XREFS — `python -m gruntz.analysis.xref <rva
 caller/callee graph) + the Ghidra decomp's xrefs — as a PRIMARY tool: who `new`s the class and stores
 it where, who calls its methods on what `this`, which subsystem owns it, what the sibling
 already-named classes in the same call cluster are. Name the class from that demonstrated role. This
-is standard, not a last resort (it unblocked the MallocConstructors/Backlog/Discovered attributions).
+is standard, not a last resort — it is how a placeholder/codename class is attributed to its owner.
 
 ## Precondition — only run on a WELL-MATCHED class
 

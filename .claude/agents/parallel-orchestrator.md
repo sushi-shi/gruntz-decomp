@@ -41,7 +41,7 @@ OWN gitignored `build/` (incl. its own wineprefix — `GRUNTZ_DIR=$PWD` ⇒
 `WINEPREFIX=$PWD/build/wineprefix`), so its `gruntz build` is incremental, not a
 cold `gruntz init`. Provisioning is a **full one-time `build/` copy** from main; a
 copied wineprefix relocates fine (measured: all 4 worktrees build green in-place,
-416/1092 exact, no regressions).
+no regressions).
 
 **Idempotent setup — skip any slot that already exists (this is what makes a
 restart free; the four slots are already provisioned):**
@@ -90,11 +90,10 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
    alignment across *unrelated* clean files (measured: ~9 files swept in), which
    you then have to discard at integration. Tell the matcher: edit only its
    target file(s); leave formatting to the orchestrator.
-5. **Allow migrations.** A stub is often mis-attributed (measured this session:
-   `ErrorThunk_08ddd0`→`CGruntzMgr::RestoreVideoMode`, `ErrorThunk_135f40`→
-   `DirectSoundMgr::LockConvert`). If the matcher recovers the true owner, it
-   SHOULD migrate the body into the real class's TU, remove the stub, and update
-   the header — report every file touched.
+5. **Allow migrations.** A stub is often mis-attributed (a placeholder
+   `ErrorThunk_*`/`Stub_*` name routinely hides the real owner). If the matcher
+   recovers the true owner, it SHOULD migrate the body into the real class's TU,
+   remove the stub, and update the header — report every file touched.
 6. Report: final per-function % + a one-line summary + the **complete
    `git diff`** of its worktree changes (so integration is a clean `git apply`).
 
@@ -105,14 +104,13 @@ finishes.
 
 Two matchers editing the **same file** collide at integration (duplicate
 top-of-file class/extern decls → a build error, not a clean merge). So keep each
-multi-stub file a **single lane**: route all of `Backlog.cpp`'s targets through
-ONE slot, all of `CAttract.cpp`'s through another, etc. Cluster siblings in one
-file also share idioms — feeding the next sibling to the same lane lets the
-matcher reference the just-landed one (measured: the LoadActionTileSprites/
-LoadLevelImages/LoadLevelSounds cluster, and one sibling even *corrected* a
-prior sibling's misdiagnosed `@early-stop`). The other slots take distinct-file
-targets — prefer methods/loaders over ctors/dtors, which systematically plateau
-~60% on the `flags="base"` EH wall.
+multi-stub file a **single lane**: route all of one file's targets (e.g. all of
+`src/Stub/ApiCallers.cpp`'s) through ONE slot, another file's through another.
+Cluster siblings in one file also share idioms — feeding the next sibling to the
+same lane lets the matcher reference the just-landed one (a later sibling can even
+*correct* a prior one's misdiagnosed `@early-stop`). The other slots take
+distinct-file targets — prefer methods/loaders over ctors/dtors, which
+systematically plateau ~60% on the `flags="base"` EH wall.
 
 ## Integration protocol (SERIAL — the heart of this doc)
 
