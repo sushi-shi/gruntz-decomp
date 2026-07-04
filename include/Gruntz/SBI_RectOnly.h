@@ -189,12 +189,18 @@ struct CSbiSpriteCfg {
 };
 SIZE_UNKNOWN(CSbiSpriteCfg);
 
-// The +0x54c tear-down object (a notifier freed on retab).
+// The lazily-created 0x40-byte object at CSBI_RectOnly+0x54c: EnsureSub `new`s and
+// Init()s it on first use; the retab teardown drives Refresh()/Notify0() and frees it.
+// One object, one type (former SBI_RectOnlyEh.cpp `CSbiLazySub` folded in - same
+// offset, same lazy-create/free-on-retab lifecycle).
 struct CSbiMode54c {
-    void Notify0(i32 arg); // 0x1258 (__thiscall, 1 arg)
-    void Refresh();        // 0x280b (__thiscall, no args)
+    CSbiMode54c();                              // FUN_005091..  no-arg ctor
+    i32 Init(void* owner, i32 a, i32 b, i32 c); // __thiscall, ret 0x10
+    void Notify0(i32 arg);                      // 0x1258 (__thiscall, 1 arg)
+    void Refresh();                             // 0x280b (__thiscall, no args)
+    char m_pad[0x40];
 };
-SIZE_UNKNOWN(CSbiMode54c);
+SIZE(CSbiMode54c, 0x40);
 
 // A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
 struct CSbiPtrList {
@@ -288,6 +294,9 @@ public:
     // vtable slot 2 (0xe86e0): the 10-arg setup; inherited by CSBI_Image/_ImageSet.
     i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10);
 
+    void UpdateDestructButton(i32 arg); // 0x10bc30 (arms the destruct-button warning)
+    i32 EnsureSub(i32 a, i32 b, i32 c); // 0x109ad0 (lazily create the +0x54c sub-object)
+    void DtorMembers();                 // 0xc8980  member teardown (/GX member-array dtor)
     void ResetCounters();
     void ResetSlots();
     void ArmSlot(i32 idx);

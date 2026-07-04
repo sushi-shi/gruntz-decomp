@@ -1,25 +1,15 @@
 #include <rva.h>
+#include <Ints.h>
+
+#include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly big host + CSbiMode54c (+0x54c sub-object)
 // SBI_RectOnlyEh.cpp - the /GX EH-framed CSBI_RectOnly methods, split off the
 // frameless sbi_rectonly TU (C:\Proj\Gruntz). MSVC5's /GX always frames a method
 // that owns a lifetime-spanning `new`+ctor or a destructible member, so these
 // cannot share the base TU's frameless flags without re-framing its 100% leaves.
 // The split is matching-neutral (each function is RVA-keyed); see
-// docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md.
-//
-// LAYOUT NOTE: these methods touch only `this` + m_54c (a lazily-created
-// sub-object pointer at +0x54c), so the class carries a minimal view here - the
-// offset is the load-bearing fact, the mangled name (?<method>@CSBI_RectOnly@@...)
-// is layout-independent. The full class lives in SBI_RectOnly.cpp.
-
-// The lazily-created 0x40-byte sub-object held at CSBI_RectOnly+0x54c: a no-arg
-// ctor + a 4-arg Init (the owner + the three forwarded args).
-class CSbiLazySub {
-public:
-    CSbiLazySub();                              // FUN_005091..  no-arg ctor
-    i32 Init(void* owner, i32 a, i32 b, i32 c); // __thiscall, ret 0x10
-    char m_pad[0x40];
-};
-SIZE_UNKNOWN(CSbiLazySub);
+// docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md. The former per-TU minimal
+// `class CSBI_RectOnly {}` + `CSbiLazySub` views are folded onto the canonical host /
+// its +0x54c CSbiMode54c sub-object (P1 view fold).
 
 // The two scalar destructors (~CSBI_RectOnly @0x100700, ~CSBI_ImageSet @0x102000)
 // that used to live here moved to SBI_RectOnlyDtorEh.cpp / SBI_ImageSetEh.cpp,
@@ -48,15 +38,6 @@ SIZE_UNKNOWN(CSbiByteArray);
 // the vector-destroy iterator for the eight +0x2c notify lists.
 void SbiList_Dtor(); // 0x5b48c6
 
-class CSBI_RectOnly {
-public:
-    i32 EnsureSub(i32 a, i32 b, i32 c);
-    void DtorMembers(); // 0xc8980  CSBI_RectOnly member teardown (/GX member-array dtor)
-    void Teardown();    // 0xfe350  pre-teardown (drains the pooled ptr table)
-    char m_pad0[0x54c];
-    CSbiLazySub* m_54c; // +0x54c  lazily-created sub-object
-};
-
 // 0xc8980: CSBI_RectOnly member teardown - the /GX dtor body that drains the pooled
 // state (Teardown), destructs the +0x530 CByteArray, then runs the eh-vector-destroy
 // iterator over the eight +0x2c notify lists (stride 0x1c, ~CPtrList per element). The
@@ -79,15 +60,15 @@ void CSBI_RectOnly::DtorMembers() {
 }
 
 // Lazily create the +0x54c sub-object on first use: bail (return 0) if it already
-// exists; otherwise `new` a 0x40-byte CSbiLazySub, default-construct it, store it,
+// exists; otherwise `new` a 0x40-byte CSbiMode54c, default-construct it, store it,
 // and forward the three args to its Init. /GX frames the new+ctor span.
 RVA(0x00109ad0, 0xa9)
 i32 CSBI_RectOnly::EnsureSub(i32 a, i32 b, i32 c) {
-    if (m_54c) {
+    if (m_retabNotify) {
         return 0;
     }
-    CSbiLazySub* o = new CSbiLazySub();
-    m_54c = o;
+    CSbiMode54c* o = new CSbiMode54c();
+    m_retabNotify = o;
     if (o == 0) {
         return (i32)o; // retail returns the null pointer already in eax (no re-xor)
     }
