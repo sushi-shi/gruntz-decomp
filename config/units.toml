@@ -2036,12 +2036,12 @@ flags = "base"
 
 [[unit]]
 unit = "ddpagemgr"
-source = "src/Gruntz/DDPageMgr.cpp"
+source = "src/DDrawMgr/DDPageMgr.cpp"
 flags = "base"
 
 [[unit]]
 unit = "ddscreen"
-source = "src/Gruntz/DDScreen.cpp"
+source = "src/DDrawMgr/DDScreen.cpp"
 flags = "base"
 
 [[unit]]
@@ -2114,7 +2114,7 @@ flags = "base"
 
 [[unit]]
 unit = "colorhsv"
-source = "src/Gruntz/ColorHsv.cpp"
+source = "src/DDrawMgr/ColorHsv.cpp"
 flags = "base"
 [[unit]]
 unit = "arrayserialize"
@@ -2122,7 +2122,7 @@ source = "src/Gruntz/ArraySerialize.cpp"
 flags = "base"
 [[unit]]
 unit = "circleshadeblit"
-source = "src/Gruntz/CircleShadeBlit.cpp"
+source = "src/DDrawMgr/CircleShadeBlit.cpp"
 flags = "base"
 [[unit]]
 unit = "warptextureblit"
@@ -2540,7 +2540,7 @@ flags = "eh"
 
 [[unit]]
 unit = "ddsurfacedtor"
-source = "src/Gruntz/DDSurfaceDtor.cpp"
+source = "src/DDrawMgr/DDSurfaceDtor.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2609,7 +2609,7 @@ flags = "eh"
 
 [[unit]]
 unit = "dirpal"
-source = "src/Gruntz/DirPal.cpp"
+source = "src/DDrawMgr/DirPal.cpp"
 flags = "base"
 
 [[unit]]
