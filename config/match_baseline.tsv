@@ -1023,7 +1023,7 @@ cimage	?Create24@CImage@@UAEHPAVCImageFrameDesc@@HH@Z	100.0000	100.0000	3	6de2a0
 cimage	?Create@CImage@@UAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	3	5eb85d8fa75c	0x152e90
 cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	3	cd23a848ee49	0x153260
 cimage	?LoadDispatch@CImage@@UAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	3	4dd9b298048d	0x152fb0
-cimage	?Reload@CImage@@UAEHPAVCImageSource@@H@Z	99.4000	99.4000	5	3f34e4e40f1d	0x153380
+cimage	?Reload@CImage@@UAEHPAVCImageSource@@H@Z	99.4000	99.4000	6	d364005c3445	0x153380
 cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	4	92729710f619	0x153790
 cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	4	4ae2a6f26d44	0x153810
 cimage	?Resolve@CImage@@UAEHPAVCImageSource@@H@Z	100.0000	100.0000	1	5324216b8e59	0x152f20
@@ -1105,7 +1105,7 @@ ddrawptrcollections	?Createab8_3@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@HHH@
 ddrawptrcollections	?Createae8_1@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@H@Z	80.2969	80.2969	1	819b2d931964	0x142da0
 ddrawptrcollections	?Createae8_6@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@HHHHHH@Z	82.9595	82.9595	1	d9538dadb251	0x142c40
 ddrawptrcollections	?EmptyPoolA@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	c256df4c6eff	0x142120
-ddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	1	dc3d2b2523b0	0x142ed0
+ddrawptrcollections	?EmptyPoolB@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	2	2d0658359755	0x142ed0
 ddrawptrcollections	?LoadPaletteMake950@CDDrawPtrCollections@@QAEPAUCDDPalette@@PBDH@Z	97.9464	97.9464	1	4372443da529	0x143a30
 ddrawptrcollections	?LoadPaletteMakeB@CDDrawPtrCollections@@QAEPAUCDDPalette@@PBDH@Z	97.9464	97.9464	1	d7c5a6014f7e	0x143150
 ddrawptrcollections	?MakeAndAddB@CDDrawPtrCollections@@QAEPAVCPoolItemBase@@HHHHH@Z	100.0000	100.0000	1	a9d70c16bfb2	0x142e60
@@ -2283,7 +2283,7 @@ image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	5	f38f0700c831	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7639	82.7639	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPAX0I@Z	31.2544	31.2544	2	f1761a624ac1	0x143fc0
 image	?DecodeBmpHeader@CRezImage@@QAEHPAXHHH0@Z	95.7395	95.7395	3	a6cd704255ee	0x1757c0
-image	?DecodePcx@CFileImage@@QAEPAXPAX0I@Z	55.6786	55.6786	2	0229e60f0d81	0x144ee0
+image	?DecodePcx@CFileImage@@QAEPAXPAX0I@Z	55.7755	55.7755	2	0229e60f0d81	0x144ee0
 image	?DecodePcxData@CFileImage@@QAEHPAX0HHH@Z	86.2370	86.2370	4	a8adc563cf6e	0x1457a0
 image	?DecodePcxData@CRezImage@@QAEHPAX00@Z	91.3291	91.3291	1	02415d581e6f	0x176000
 image	?DecodePcxEx@CFileImage@@QAEHPAXPAD00@Z	100.0000	100.0000	1	f5c332cefc97	0x1459d0
