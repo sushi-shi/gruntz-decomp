@@ -227,6 +227,10 @@ def cmd_build(args) -> None:
     # config/library_labels.csv carve-out row (game body vs library body must be
     # mutually exclusive). FATAL, no allowlist. See gruntz.match.verify_library_overlap.
     run([sys.executable, "-m", "gruntz.match.verify_library_overlap"])
+    # One mangled fn name = one RVA (MSVC5 keeps one COMDAT copy per name, so a
+    # duplicate across units contradicts the binary). FATAL. See
+    # gruntz.match.verify_unique_names.
+    run([sys.executable, "-m", "gruntz.match.verify_unique_names"])
     summarize(json.loads(REPORT.read_text()))
 
     # Non-fatal extras: per-function source fingerprints (so regression checks can
