@@ -700,13 +700,26 @@ namespace ApiCallerStubs {
     }
 
     // __thiscall(int code): clamp code into (0,0x29] and post a 0x111 command.
+    // This 0x90220 body is also what Dispatcher_0cfbd0::Dispatch (@0xcfbd0) reaches
+    // as `m_4->Post(m_1c+1)` -- so the old DispOwner_0cfbd0 was a SECOND placeholder
+    // view of this same class; merged here. The +0x48/0x54/0x60 sub-managers are the
+    // extra fields Dispatch touches (leaf types fwd-declared just below).
+    struct SoundBankRef_0cfbd0;  // = CGruntzSoundZ (StopAndFlush @0x138530, gruntzsoundz)
+    struct CmdHostSub54_0cfbd0;  // unidentified sub-mgr (reset @0x40b660)
+    struct CmdHostSub60_0cfbd0;  // unidentified sub-mgr (reset @0x51af90)
     struct WndOwner_090220 {
         i32 m_0;
-        HWND m_4; // +0x04 = HWND
+        HWND m_4; // +0x04 = HWND  (also the old DispWnd_0cfbd0: top-window holder)
     };
     struct CmdHost_090220 {
         i32 m_0;
-        WndOwner_090220* m_4; // +0x04
+        WndOwner_090220* m_4;      // +0x04
+        char m_pad8[0x48 - 8];     // +0x08..0x47
+        SoundBankRef_0cfbd0* m_48; // +0x48  audio bank (flushed on Dispatch quiesce)
+        char m_pad4c[0x54 - 0x4c]; // +0x4c..0x53
+        CmdHostSub54_0cfbd0* m_54; // +0x54
+        char m_pad58[0x60 - 0x58]; // +0x58..0x5f
+        CmdHostSub60_0cfbd0* m_60; // +0x60
         void Post(i32 code);
     };
     RVA(0x00090220, 0x2f)
@@ -1630,50 +1643,45 @@ namespace ApiCallerStubs {
         }
     }
 
-    // Sub-objects reached through the dispatcher's members; each has a __thiscall
-    // reset/notify with no args (RVAs 0x137a80/0x138530/0x40b660/0x51af90).
-    struct DispWnd_0cfbd0 {
-        char m_pad0[4];
-        DispWnd_0cfbd0* m_4; // +0x04
+    // One RVA (0x0cfbd0) = a single __thiscall state-pump on an UNIDENTIFIED owner.
+    // On state 0x20 it quiesces the level -- stop the streaming voice (SoundStream::
+    // Stop @0x137a80, minervainner), flush the sound bank (CGruntzSoundZ::StopAndFlush
+    // @0x138530), reset the 0x40b660 / 0x51af90 sub-mgrs -- then posts WM_COMMAND
+    // 0x8023 to the top HWND; else advances the counter via CmdHost_090220::Post
+    // (m_1c+1).  The WM_COMMAND host is the already-modeled CmdHost_090220 (the old
+    // DispOwner_0cfbd0 dedup'd into it above; its m_4 top-window holder is
+    // WndOwner_090220 == the old DispWnd_0cfbd0).  All sub-object calls are direct/
+    // reloc-masked, so the leaf typing is matching-neutral.
+    // unidentified: the owner (`this`) + the +0xc context chain (DispCtx/DispInner)
+    // + the 0x40b660/0x51af90 reset targets -- only inbound edge is ILT thunk 0x1c17
+    // (no clean ctor/new trace).
+    struct SoundStreamRef_0cfbd0 { // = SoundStream::Stop @0x137a80 (minervainner)
+        void Stop137a80();
     };
-    struct DispBoard_0cfbd0 {
-        void Reset137a80(); // RVA 0x137a80
+    struct SoundBankRef_0cfbd0 { // = CGruntzSoundZ::StopAndFlush @0x138530
+        void StopAndFlush138530();
     };
-    struct DispAudio_0cfbd0 {
-        void Reset138530(); // RVA 0x138530
+    struct CmdHostSub54_0cfbd0 { // unidentified sub-mgr, reset @0x40b660
+        void Reset40b660();
     };
-    struct DispNet_0cfbd0 {
-        void Reset40b660(); // RVA 0x40b660 (thunk 0x28ab)
+    struct CmdHostSub60_0cfbd0 { // unidentified sub-mgr, reset @0x51af90
+        void Reset51af90();
     };
-    struct DispUi_0cfbd0 {
-        void Reset51af90(); // RVA 0x51af90 (thunk 0x244b)
-    };
-    struct DispOwner_0cfbd0 {
-        char m_pad0[4];
-        DispWnd_0cfbd0* m_4; // +0x04 -> m_4 -> m_4 = HWND
-        char m_pad8[0x48 - 8];
-        DispAudio_0cfbd0* m_48; // +0x48
-        char m_pad4c[0x54 - 0x4c];
-        DispNet_0cfbd0* m_54; // +0x54
-        char m_pad58[0x60 - 0x58];
-        DispUi_0cfbd0* m_60; // +0x60
-        void Post(i32 code); // RVA 0x90220
-    };
-    struct DispInner_0cfbd0 {
+    struct DispInner_0cfbd0 { // unidentified +0xc->+0x28 context node
         char m_pad0[0x2c];
-        DispBoard_0cfbd0* m_2c; // +0x2c
+        SoundStreamRef_0cfbd0* m_2c; // +0x2c
     };
-    struct DispCtx_0cfbd0 {
+    struct DispCtx_0cfbd0 { // unidentified +0xc context holder
         char m_pad0[0x28];
         DispInner_0cfbd0* m_28; // +0x28
     };
-    struct Dispatcher_0cfbd0 {
+    struct Dispatcher_0cfbd0 { // unidentified: owner of Dispatch @0xcfbd0
         char m_pad0[4];
-        DispOwner_0cfbd0* m_4; // +0x04
+        CmdHost_090220* m_4; // +0x04  WM_COMMAND host + audio/net/ui subs
         char m_pad8[0xc - 8];
         DispCtx_0cfbd0* m_c; // +0x0c
         char m_pad10[0x1c - 0x10];
-        i32 m_1c; // +0x1c
+        i32 m_1c; // +0x1c  pump state (0x20 => quiesce)
         char m_pad20[0x40 - 0x20];
         i32 m_40; // +0x40
         char m_pad44[0x1bc - 0x44];
@@ -1688,9 +1696,9 @@ namespace ApiCallerStubs {
             m_40 = 1;
             DispInner_0cfbd0* inner = m_c->m_28;
             if (inner->m_2c) {
-                inner->m_2c->Reset137a80();
+                inner->m_2c->Stop137a80();
             }
-            m_4->m_48->Reset138530();
+            m_4->m_48->StopAndFlush138530();
             m_4->m_54->Reset40b660();
             m_4->m_60->Reset51af90();
             PostMessageA((HWND)m_4->m_4->m_4, 0x111, 0x8023, 0);
