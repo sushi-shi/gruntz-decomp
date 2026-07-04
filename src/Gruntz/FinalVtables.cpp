@@ -24,6 +24,7 @@
 // and are NOT redefined here (no dup-RVA) - they stay declared-only.
 #include <Ints.h>
 #include <Wap32/CObject.h> // the shared WAP CObject grand-base (slots 0/2/3/4 base thunks)
+#include <Wap32/CWapObj.h> // CWapObj : CObject - adds IsLoaded(5)/IsReady(6) defaults
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -185,20 +186,17 @@ SIZE_UNKNOWN(CVtbl_1efdc0);
 VTBL(CVtbl_1efdc0, 0x001efdc0);
 
 // ---------------------------------------------------------------------------
-// 0x5eff70 (RVA 0x1eff70) - 11 slots. CObject-style, slot 1 dtor 0x159190.
-// Slot 9 (0x1644a0) points at a CDDrawSurfacePair method (declared-only), so this
-// is a surface-pair-adjacent worker vtable.
+// 0x5eff70 (RVA 0x1eff70) - 11 slots. A CWapObj-derived worker: slots 0-4 are the
+// CObject grand-base thunks, slot 5 overrides IsLoaded (0x159150), slot 6 is the
+// inherited IsReady default (0x001c08 - the CWapObj binary fingerprint), and slots
+// 7-10 are its own virtuals. Slot 9 (0x1644a0) points at a CDDrawSurfacePair method
+// (declared-only), so this is a surface-pair-adjacent worker vtable.
 // ---------------------------------------------------------------------------
-struct CVtbl_1eff70 {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (base thunk)
-    virtual ~CVtbl_1eff70();     // [1] 0x159190 scalar-deleting dtor (anchor)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (base thunk)
-    virtual void FUN_0040106e(); // [3] 0x00106e (base thunk)
-    virtual void FUN_00404034(); // [4] 0x004034 (base thunk)
-    virtual void FUN_00559150(); // [5] 0x159150
-    virtual void FUN_00401c08(); // [6] 0x001c08 (base thunk)
-    virtual void FUN_005591d0(); // [7] 0x1591d0
-    virtual void FUN_00559180(); // [8] 0x159180
+struct CVtbl_1eff70 : CWapObj {
+    virtual ~CVtbl_1eff70();         // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual i32 IsLoaded() OVERRIDE; // [5] 0x159150
+    virtual void FUN_005591d0();     // [7] 0x1591d0
+    virtual void FUN_00559180();     // [8] 0x159180
     virtual void
     directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(); // [9] 0x1644a0 = CDDrawSurfacePair
     virtual void FUN_005646b0();                                           // [10] 0x1646b0

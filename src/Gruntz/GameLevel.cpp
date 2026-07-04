@@ -34,6 +34,7 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
+#include <Wap32/CObject.h>       // Wap::CObject grand-base (slots 0-4) for the CImageSetN variants
 #include <Gruntz/CParseSource.h> // canonical CParseSource (BeginParse/EndParse)
 #include <Io/FileStream.h>       // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
@@ -573,20 +574,19 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// The three CImageSet variants the factory allocates. REAL-POLYMORPHIC now: each is
-// a flat 18-slot class so cl emits its ??_7CImageSetN@@6B@ (bound below via VTBL to
-// the retail vtable) and AUTO-stamps the vptr in the INLINE ctor - lowering
-// `new CImageSetN` to exactly the retail `RezAlloc(size); if (p) { stamp vptr; zero
-// fields }` shape. Only slot 5 (+0x14 Parse) is a matched body; the base-thunk +
-// engine slots are declared-only (their vtable entries reloc-mask). The vptr sits
-// at +0x00 (implicit); the padding pins each size: kind 1 = 0x10, kind 2 = 0x24,
-// kind 3 = 0x18. Slot RVAs (from retail 0x5f0198/01e0/0228) noted per class.
-struct CImageSet1 {
-    virtual void s00();              // [0]  0x1bef01
-    virtual void* Release(u32 flag); // [1]  +0x04  0x161350 scalar-deleting dtor
-    virtual void s08();              // [2]  0x0028ec
-    virtual void s0c();              // [3]  0x00106e
-    virtual void s10();              // [4]  0x004034
+// The three CImageSet variants the factory allocates. REAL-POLYMORPHIC: each is an
+// 18-slot class deriving the Wap::CObject grand-base (slots 0-4 inherited, slot 1 =
+// its virtual dtor), so cl emits its ??_7CImageSetN@@6B@ (bound below via VTBL to the
+// retail vtable) and AUTO-stamps the vptr in the INLINE ctor - the base-subobject
+// stamp dead-store-elides, lowering `new CImageSetN` to exactly the retail
+// `RezAlloc(size); if (p) { stamp vptr; zero fields }` shape. Only slot 5 (+0x14
+// Parse) is a matched body; the inherited base thunks + engine slots are declared-
+// only (their vtable entries reloc-mask). The vptr sits at +0x00 (implicit); the
+// padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18. Slot RVAs
+// (from retail 0x5f0198/01e0/0228) noted per class.
+struct CImageSet1 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor; cl auto-
+    // stamps this vptr in the inline ctor, the base stamp dead-store-elides).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
     virtual void s18();              // [6]  0x161330
     virtual void s1c();              // [7]  0x161340
@@ -614,12 +614,8 @@ struct CImageSet1 {
     i32 m_08;        // +0x08
     i32 m_0c;        // +0x0c
 };
-struct CImageSet2 {
-    virtual void s00();              // [0]  0x1bef01
-    virtual void* Release(u32 flag); // [1]  +0x04  0x161440 scalar-deleting dtor
-    virtual void s08();              // [2]  0x0028ec
-    virtual void s0c();              // [3]  0x00106e
-    virtual void s10();              // [4]  0x004034
+struct CImageSet2 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
     virtual void s18();              // [6]  0x161420
     virtual void s1c();              // [7]  0x161430
@@ -651,12 +647,8 @@ struct CImageSet2 {
     i32 m_1c; // +0x1c
     i32 m_20; // +0x20
 };
-struct CImageSet3 {
-    virtual void s00();              // [0]  0x1bef01
-    virtual void* Release(u32 flag); // [1]  +0x04  0x1614e0 scalar-deleting dtor
-    virtual void s08();              // [2]  0x0028ec
-    virtual void s0c();              // [3]  0x00106e
-    virtual void s10();              // [4]  0x004034
+struct CImageSet3 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void s18();              // [6]  0x1614b0
     virtual void s1c();              // [7]  0x1614d0

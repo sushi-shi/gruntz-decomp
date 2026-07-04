@@ -2070,10 +2070,10 @@ gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	7	0d2bff35ae1b	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	5	7e872536db3c	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
-gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
+gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.8919	71.8919	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@@YGHPAVCGameLevel@@HHH@Z	94.7826	94.7826	1	592b87081e74	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	3	7be6f90ed881	0x161270
-gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	3	02fd95b25bc5	0x167ea0
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	72.0896	72.0896	3	02fd95b25bc5	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	3	9fef39ddfd60	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	3	5d9e2ca33c33	0x15ffe0
