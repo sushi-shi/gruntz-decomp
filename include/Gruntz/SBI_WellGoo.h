@@ -67,33 +67,34 @@ SIZE_UNKNOWN(CGooGameReg);
 // ---------------------------------------------------------------------------
 // CSBI_WellGoo - the well-goo status-bar item. Real RTTI base is CSBI_Image (see
 // top comment); kept FLAT (frameless method-view) because Tick reads base-region
-// storage (m_18/m_20/m_28) under goo-specific names that CStatusBarItem models as
-// the m_rect14 aggregate - deriving it would erase those recovered semantics.
+// storage (m_fillBase/m_fillTop/m_countdown) under goo-specific names that
+// CStatusBarItem models as the m_rect14 aggregate - deriving it would erase those
+// recovered semantics.
 class CSBI_WellGoo {
 public:
     // vtable slot 5 (0xe6380): the per-frame goo Tick.
     i32 Tick();
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
+    // ----- layout (offsets are the load-bearing fact) -----
     char m_pad0[0x18];
-    i32 m_18; // +0x18  goo fill base (low water line)
+    i32 m_fillBase; // +0x18  goo fill base (low water line)
     char m_pad1c[0x20 - 0x1c];
-    i32 m_20; // +0x20  goo fill top (current water line; Render origin)
+    i32 m_fillTop; // +0x20  goo fill top (current water line; Render origin)
     char m_pad24[0x28 - 0x24];
-    i32 m_28; // +0x28  countdown (Tick decrements; <=0 => idle)
+    i32 m_countdown; // +0x28  countdown (Tick decrements; <=0 => idle)
     char m_pad2c[0x34 - 0x2c];
-    CDDSurface* m_34;      // +0x34  goo source surface (Blit + BltEx `src`)
-    CDDrawShadeBlit* m_38; // +0x38  owned shaded-sprite blitter (Blit `this`)
-    CImage* m_3c;          // +0x3c  foreground frame record (final RenderFrame `this`)
-    CImage* m_40;          // +0x40  base frame record (first RenderFrame `this`)
-    i32 m_44;              // +0x44  fill scale factor (int, fimul); 0 => skip fill
-    i32 m_48;              // +0x48  draw x origin
-    i32 m_4c;              // +0x4c  src-rect base (lea &m_4c: Blit p0/clip, BltEx srcRect)
+    CDDSurface* m_gooSrc;       // +0x34  goo source surface (Blit + BltEx `src`)
+    CDDrawShadeBlit* m_blitter; // +0x38  owned shaded-sprite blitter (Blit `this`)
+    CImage* m_fgFrame;          // +0x3c  foreground frame record (final RenderFrame `this`)
+    CImage* m_baseFrame;        // +0x40  base frame record (first RenderFrame `this`)
+    i32 m_fillScale;            // +0x44  fill scale factor (int, fimul); 0 => skip fill
+    i32 m_drawX;                // +0x48  draw x origin
+    i32 m_srcRect; // +0x4c  src-rect base (lea &m_srcRect: Blit p0/clip, BltEx srcRect)
     char m_pad50[0x54 - 0x50];
-    i32 m_54; // +0x54  draw-depth guard counter (inc around BltEx, dec after)
-    i32 m_58; // +0x58  draw-depth guard counter (inc around BltEx, dec after)
-    i32 m_5c; // +0x5c  dest-rect base (lea &m_5c: BltEx dstRect)
-    i32 m_60; // +0x60  ftol(m_20 - clampedFill); foreground y top (m_60 - 2)
+    i32 m_drawGuard; // +0x54  draw-depth guard counter (inc around BltEx, dec after)
+    i32 m_blitGuard; // +0x58  draw-depth guard counter (inc around BltEx, dec after)
+    i32 m_dstRect;   // +0x5c  dest-rect base (lea &m_dstRect: BltEx dstRect)
+    i32 m_fgTop;     // +0x60  ftol(m_fillTop - clampedFill); foreground y top (m_fgTop - 2)
 };
 SIZE_UNKNOWN(CSBI_WellGoo);
 

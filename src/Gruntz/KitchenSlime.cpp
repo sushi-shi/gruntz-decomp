@@ -7,7 +7,7 @@
 #include <Globals.h>
 #include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/CTypeNameEntryView.h>
-#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -551,29 +551,16 @@ i32 CKitchenSlime::Tick() {
     return 0;
 }
 
-// The serialization stream: vtable slot 0x2c (index 11) reads n bytes into a
-// buffer, slot 0x30 (index 12) transfers n bytes. Only the slot offsets are
-// load-bearing (the virtual call is reloc-masked), as in CSBI_RectOnly::Serialize.
-class CSlimeStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);     // +0x2c (slot 11)
-    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
-};
+// The serialization stream is the shared CSerialArchive: slot +0x2c (index 11) Read
+// reads n bytes into a buffer, slot +0x30 (index 12) Write transfers n bytes (was
+// the per-TU CSlimeStream view; only the slot offsets are load-bearing, the virtual
+// call is reloc-masked, as in CSBI_RectOnly::Serialize).
 
 // The +0x34 serializable sub-object the slime chains into after the shared
-// CUserLogic::SerializeChain is the shared CSerialObjRef (Chain @0x8c00 via the
-// 0x1aff thunk); same archetype as CFortressFlag::Serialize.
+// CUserLogic::SerializeChain (same archetype as CFortressFlag::Serialize).
+struct CSlimeSerialSub {
+    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00 (via 0x1aff thunk)
+};
 
 // CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
 // read tag (7) read the seven motion quadwords (m_speed..m_88) through the stream's
@@ -585,7 +572,7 @@ public:
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     char* B = (char*)this;
-    CSlimeStream* s = (CSlimeStream*)stream;
+    CSerialArchive* s = (CSerialArchive*)stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
     // Read; jmp; else: Transfer) - the retail dispatch order.
@@ -600,19 +587,18 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
             s->Read(B + 0x88, 8);
         }
     } else {
-        s->Transfer(B + 0x58, 8);
-        s->Transfer(B + 0x60, 8);
-        s->Transfer(B + 0x68, 8);
-        s->Transfer(B + 0x70, 8);
-        s->Transfer(B + 0x78, 8);
-        s->Transfer(B + 0x80, 8);
-        s->Transfer(B + 0x88, 8);
+        s->Write(B + 0x58, 8);
+        s->Write(B + 0x60, 8);
+        s->Write(B + 0x68, 8);
+        s->Write(B + 0x70, 8);
+        s->Write(B + 0x78, 8);
+        s->Write(B + 0x80, 8);
+        s->Write(B + 0x88, 8);
     }
     if (SerializeChain(stream, tag, c, d) == 0) {
         return 0;
     }
-    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d)
-           != 0;
+    return ((CSlimeSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) != 0;
 }
 
 // @early-stop
@@ -779,7 +765,7 @@ SIZE_UNKNOWN(CSlimeCueGate);
 SIZE_UNKNOWN(CSlimeEntity);
 SIZE_UNKNOWN(CSlimeLevel);
 SIZE_UNKNOWN(CSlimeMiniStr);
-SIZE_UNKNOWN(CSlimeStream);
+SIZE_UNKNOWN(CSlimeSerialSub);
 SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);

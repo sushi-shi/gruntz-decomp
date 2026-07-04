@@ -2683,7 +2683,7 @@ kitchenslime	?FireActivation@CKitchenSlime@@QAEXH@Z	100.0000	100.0000	1	b01b9039
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	69.1992	69.1992	11	1c61af4753cc	0xb3160
 kitchenslime	?RegisterRange@CKitchenSlime@@SAXXZ	100.0000	100.0000	1	e64735a29922	0xb28c0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	1	df69f8da8be5	0xb2aa0
-kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	1	f04e52434960	0xb2ff0
+kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	2	d5c18fb3da57	0xb2ff0
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.8551	94.8551	9	cc94be9500fc	0xb2ca0
 latencylist	?PopulateModemFast@CLatencyList@@QAEHXZ	100.0000	100.0000	2	879bb338c37b	0x37d20
 latencylist	?PopulateModemSlow@CLatencyList@@QAEHXZ	100.0000	100.0000	2	a5313381be03	0x37b40
@@ -3106,7 +3106,7 @@ rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6804	78.6804	6	bc1443c768
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
 rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	1	683351f53157	0xafd60
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	1	a7984852a451	0xaff40
-rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	2	d7e02dab8901	0xb0fe0
+rollingball	?Serialize@CRollingBall@@QAEHPAUCRbArchive@@HHH@Z	100.0000	100.0000	3	3eae82ab739f	0xb0fe0
 rollingball	?Update@CRollingBall@@QAEHXZ	37.8018	37.8018	2	c4d7cce584e4	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	1	a26d45c833a7	0x85b50
 savegame	?CheckMagic@CSaveGame@@QAEHXZ	100.0000	100.0000	1	02a9801629ea	0xe5690
@@ -3250,7 +3250,7 @@ sbi_warlordhead	?SetState@CSBI_WarlordHead@@QAEHH@Z	100.0000	100.0000	1	034d9978
 sbi_warlordhead	?SetupImage@CSBI_WarlordHead@@QAEHHHHHHHHHHHH@Z	46.2105	46.2105	1	16d818a3069c	0xeb6b0
 sbi_warlordhead	?ShowFrames@CSBI_WarlordHead@@QAEHHPAUShadeDescr@@@Z	92.2716	92.2716	1	740d1107859a	0xeb740
 sbi_warlordhead_eh	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	7b4689ef7bd9	0x104a00
-sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	99.9561	99.9561	3	e1b63f748e82	0xe6380
+sbi_wellgoo	?Tick@CSBI_WellGoo@@QAEHXZ	99.9561	99.9561	4	36c96caf0678	0xe6380
 sbi_wellgoo_eh	??1CSBI_WellGoo@@UAE@XZ	100.0000	100.0000	4	55273fc4f0ba	0x104bb0
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	1	3d4ae8c20789	0x182a80
 scattersamples	?ScatterSamples@@YAXPAHHHH@Z	59.2162	59.2162	1	345a3c1c24dd	0x182940
