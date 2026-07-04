@@ -96,7 +96,13 @@ public:
     // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
     CGruntzMgr* m_4;
     CBankMgr* m_8; // +0x08  asset-bank manager (CPlay loaders: Lookup GRUNTZ/GAME banks)
-    CView* m_c;    // +0x0c  view/render/resource context (the shared CView)
+    // +0x0c  view/render/resource context (the shared CView). VERIFIED (matcher-2, sema):
+    // this is the SAME object as CGameRegistry::m_world (+0x30) - non-polymorphic, its +0x04
+    // sub-object is the DDraw worker manager (CDDrawWorkerMgr::Method_158ee0 @0x158ee0) and its
+    // +0x10 registrar is a CDDrawWorkerRegistry (Install/LoadTree +0x48, LoadNamespace +0x4c).
+    // The state activators (CBootyState/CMultiBootyState/CImageState slot-8 loaders) reach it
+    // through this one CView; their old per-TU StateMgr/BootyAssetRoot shadows are folded away.
+    CView* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     i32 m_14; // +0x14
     i32 m_18; // +0x18
