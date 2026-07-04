@@ -19,6 +19,7 @@
 #include <rva.h>
 
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/SerialArchive.h> // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / rep movs)
 #include <Globals.h>
@@ -35,26 +36,10 @@ extern i32 g_serialCounter;
 // The per-player config name tables the two free getters below index by enum.
 // Each is an array of char* into the rodata string pool. Reloc-masked DATA.
 
-// The archive/order object Serialize streams through. Its field-transfer entries
-// are the virtuals at vtable byte-offsets 0x2c (Load) and 0x30 (Save), each taking
-// a buffer ptr + a byte count. Modeled polymorphic (slot decls only, never defined
-// -> no ??_7) so `ar->Save(buf,n)` lowers to the exact
+// The archive/order object Serialize streams through is the shared WAP32
+// CSerialArchive (Read @ vtable +0x2c = kind-7 load, Write @ +0x30 = kind-4 save;
+// declared-only virtuals in <Gruntz/SerialArchive.h>). `ar->Write(buf,n)` lowers to
 // `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
-struct PlayerArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Load(void* buf, i32 n); // +0x2c
-    virtual void Save(void* buf, i32 n); // +0x30
-};
 
 // The embedded CBattlezMapConfig bundle at this+0x38: Serialize forwards its 4-arg
 // command to the bundle's Method_02bfc0 (thunk 0x2df1 -> 0x2bfc0), a __thiscall
@@ -182,49 +167,49 @@ i32 GruntzPlayer::Reset() {
 // ===========================================================================
 RVA(0x000dace0, 0x239)
 i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
-    PlayerArchive* ar = (PlayerArchive*)arArg;
+    CSerialArchive* ar = (CSerialArchive*)arArg;
     char tmp[0x80];
     // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
     // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
     if (kind != 4) {
         if (kind == 7) {
             // Load.
-            ar->Load(&m_playerIndex, 4);
-            ar->Load(&m_008, 4);
-            ar->Load(&m_00c, 4);
-            ar->Load(&m_010, 4);
-            ar->Load(&m_014, 4);
-            ar->Load(&m_018, 4);
-            ar->Load(&m_01c, 4);
-            ar->Load(&m_020, 4);
-            ar->Load(&m_028, 4);
-            ar->Load(&m_024, 4);
+            ar->Read(&m_playerIndex, 4);
+            ar->Read(&m_008, 4);
+            ar->Read(&m_00c, 4);
+            ar->Read(&m_010, 4);
+            ar->Read(&m_014, 4);
+            ar->Read(&m_018, 4);
+            ar->Read(&m_01c, 4);
+            ar->Read(&m_020, 4);
+            ar->Read(&m_028, 4);
+            ar->Read(&m_024, 4);
             g_serialCounter++;
-            ar->Load(tmp, 0x80);
+            ar->Read(tmp, 0x80);
             m_name = tmp;
-            ar->Load(&m_220, 4);
-            ar->Load(&m_224, 4);
-            ar->Load(&m_228, 4);
+            ar->Read(&m_220, 4);
+            ar->Read(&m_224, 4);
+            ar->Read(&m_228, 4);
         }
     } else {
         // Save.
-        ar->Save(&m_playerIndex, 4);
-        ar->Save(&m_008, 4);
-        ar->Save(&m_00c, 4);
-        ar->Save(&m_010, 4);
-        ar->Save(&m_014, 4);
-        ar->Save(&m_018, 4);
-        ar->Save(&m_01c, 4);
-        ar->Save(&m_020, 4);
-        ar->Save(&m_028, 4);
-        ar->Save(&m_024, 4);
+        ar->Write(&m_playerIndex, 4);
+        ar->Write(&m_008, 4);
+        ar->Write(&m_00c, 4);
+        ar->Write(&m_010, 4);
+        ar->Write(&m_014, 4);
+        ar->Write(&m_018, 4);
+        ar->Write(&m_01c, 4);
+        ar->Write(&m_020, 4);
+        ar->Write(&m_028, 4);
+        ar->Write(&m_024, 4);
         g_serialCounter++;
         memset(tmp, 0, sizeof(tmp));
         strcpy(tmp, (const char*)m_name);
-        ar->Save(tmp, 0x80);
-        ar->Save(&m_220, 4);
-        ar->Save(&m_224, 4);
-        ar->Save(&m_228, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&m_220, 4);
+        ar->Write(&m_224, 4);
+        ar->Write(&m_228, 4);
     }
     return ((PlayerConfigBundle*)&m_038)->Command(ar, kind, a3, a4) != 0;
 }
@@ -275,5 +260,4 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     return s;
 }
 
-SIZE_UNKNOWN(PlayerArchive);
 SIZE_UNKNOWN(PlayerConfigBundle);

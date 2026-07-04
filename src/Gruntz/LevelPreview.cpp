@@ -12,7 +12,8 @@
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
-#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/CStatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
+#include <Gruntz/SoundCueMgr.h>         // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Globals.h>
 
 extern "C" {
@@ -24,17 +25,8 @@ extern "C" {
     extern u32 g_killCueClock;
 }
 
-// CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>.
-struct CueObj {
-    char m_pad00[0x10];
-    CSoundCueMgr* m_10; // +0x10
-    i32 m_14;           // +0x14
-    i32 m_18;           // +0x18
-};
-class CCueHashTable {
-public:
-    i32 Lookup(const char* szName, CueObj** ppOut); // 0x1b8438
-};
+// CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>;
+// CueObj/CCueHashTable/CStatusBarHolder in <Gruntz/CStatusBarCueHolder.h>.
 // The per-frame error sink: CGruntzMgr::ReportError (@0x8dc60, __thiscall, reloc-
 // masked). This is the CGruntzMgr game-manager singleton (the one true shape lives
 // in <Gruntz/GruntzMgr.h>); modeled here as a minimal reloc-masked-callee view -
@@ -68,13 +60,8 @@ public:
     CDDSurface* m_surface; // +0x2c the DirectDraw channel surface
 };
 
-struct CStatusBarHolder {
-    char m_pad00[0x10];
-    CCueHashTable m_10map; // +0x10
-    char m_pad14[0x2c - 0x14];
-    CSoundMgr* m_2c; // +0x2c
-    i32 m_30;        // +0x30
-};
+// CStatusBarHolder (cue-holder shape, m_2c sound mgr + m_30 gate) is in
+// <Gruntz/CStatusBarCueHolder.h>; CSoundMgr (full def) is above.
 SIZE_UNKNOWN(PreviewMgr);
 struct PreviewMgr {
     char m_pad00[4];

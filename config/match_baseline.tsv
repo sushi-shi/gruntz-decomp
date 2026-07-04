@@ -2491,7 +2491,7 @@ gruntzplayer	?GetDefaultName@GruntzPlayer@@SA?AVCString@@XZ	97.7778	97.7778	1	c9
 gruntzplayer	?GetDifficultyName@@YA?AVCString@@HH@Z	100.0000	100.0000	2	fd3691b39302	0xdb110
 gruntzplayer	?GetName@GruntzPlayer@@QAE?AVCString@@XZ	100.0000	100.0000	2	5bbb2546dd9f	0x1f450
 gruntzplayer	?Reset@GruntzPlayer@@QAEHXZ	94.8750	94.8750	2	70e9ae95b614	0xda9e0
-gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	100.0000	100.0000	4	1709186395ba	0xdace0
+gruntzplayer	?Serialize@GruntzPlayer@@QAEHPAXHHH@Z	100.0000	100.0000	5	d85ca28ce16b	0xdace0
 gruntzrandom	?Flip@CoinFlip@Rng@@QAEHXZ	100.0000	100.0000	1	01a1f430f1cd	0xda200
 gruntzrandom	?Next2@Rng@@YAHXZ	100.0000	100.0000	1	3fa475817eca	0x15cbe0
 gruntzrandom	?Next@Rng@@YAHXZ	100.0000	100.0000	1	4726cbccaccb	0xcd00
@@ -2818,7 +2818,7 @@ menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.5216	89.5216	5	52a471550a68
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	59.8226	59.8226	2	6b88343eca62	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	2	2779ef0a81cb	0xf0db0
 mgrobjserialize	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	4	c436f1fa9117	0xface0
-mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCMgrWriter@@@Z	100.0000	100.0000	2	cc0f48d1094a	0xfb1c0
+mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	ec865d81c997	0xfb1c0
 mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	54.9057	54.9057	4	44b31121e4cc	0x1128b0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 minervainner	?Stop@SoundStream@@QAEXXZ	100.0000	100.0000	1	46d12e5e2855	0x137a80
@@ -3135,7 +3135,7 @@ savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	43.9830	43.9830	5	db84d635c8
 savegame	?winapi_09e2d0_SetDlgItemTextA@ApiCallerStubs@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	4bee5503eb43	0x9e2d0
 savegame	?winapi_0e3e80_SetDlgItemTextA@ApiCallerStubs@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	3c01b84191ca	0xe3e80
 savegamemenu	?DrawSaveGameMenu@@YAHPAXHPAUCSaveGameMenu@@@Z	62.5704	62.5704	1	22d81452061a	0xe3f40
-saverecload	?Load@SaveRecord@@QAEHPAULoadStream@@@Z	95.9116	95.9116	1	8394a0c8957d	0xfaff0
+saverecload	?Load@SaveRecord@@QAEHPAUCSerialArchive@@@Z	95.9116	95.9116	1	35c212d3637c	0xfaff0
 savescreenshot	?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z	96.7564	96.7564	4	31b4216abe75	0x114ff0
 sbi_gruntmachine	?Render@CSBI_GruntMachine@@QAEHH@Z	92.0513	92.0513	5	10cbe46e3063	0xe8cb0
 sbi_gruntmachine	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	539d6616e793	0xe8c70
@@ -3378,9 +3378,9 @@ streamfeeder	?FillBuffer@StreamFeeder@@QAEHII@Z	88.5679	88.5679	4	3e80beb093e1	0
 streamfeeder	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	33e1988166b7	0x137f00
 streamfeeder	?Resume@StreamFeeder@@QAEHXZ	100.0000	100.0000	4	540f0688db61	0x137ed0
 streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAVCParseSource@@II@Z	100.0000	100.0000	1	e0342c720d2b	0x137340
-streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAVCArchiveReader@@@Z	99.7718	99.7718	3	0f253860b627	0xd79d0
+streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z	99.7718	99.7718	1	cpp:b7551bd6121b	0xd79d0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.9657	1	787680ce73ef	0x9c650
-streamrecordloaders	?Load@CGruntStateRec@@QAEHPAVCDualReader@@HHH@Z	90.5323	90.5323	5	a3e197491875	0xea990
+streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	cpp:b7551bd6121b	0xea990
 streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	84.0770	84.0770	4	8b91c450ee45	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z	92.2366	92.2366	1	e1d29f4a89e7	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	4	f5673dfcdb6e	0x1375b0

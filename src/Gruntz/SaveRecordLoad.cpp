@@ -1,23 +1,12 @@
-// SaveRecordLoad.cpp - SaveRecord::Load (0x0faff0): deserializes a fixed record
-// from a stream object via its virtual Read(buf,size) (vtable slot +0x30).
+// SaveRecordLoad.cpp - SaveRecord::Load (0x0faff0): streams a fixed record through
+// the shared WAP32 CSerialArchive's +0x30 slot (CSerialArchive::Write, the canonical
+// store entry). NB the SaveRecord::Load method name is the recovered-symbol
+// placeholder; the archive object drives the actual transfer direction, only the
+// +0x30 slot offset is load-bearing.
 #include <Ints.h>
 #include <rva.h>
 
-struct LoadStream {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void Read(void* buf, i32 n); // slot +0x30
-};
+#include <Gruntz/SerialArchive.h> // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 
 struct SaveRecord {
     char pad00[0x0c];
@@ -46,38 +35,37 @@ struct SaveRecord {
     i32 m_1a8;
     i32 m_1ac;
 
-    i32 Load(LoadStream* s); // 0x0faff0
+    i32 Load(CSerialArchive* s); // 0x0faff0
 };
 
 RVA(0x000faff0, 0x163)
-i32 SaveRecord::Load(LoadStream* s) {
+i32 SaveRecord::Load(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
     if (!m_0c) {
         return 0;
     }
-    s->Read(&m_1c, 4);
-    s->Read(&m_20, 4);
-    s->Read(&m_24, 4);
-    s->Read(&m_38, 4);
-    s->Read(&m_3c, 4);
-    s->Read(&m_40, 4);
-    s->Read(&m_44, 4);
-    s->Read(&m_48, 4);
-    s->Read(m_4c, 0x100);
-    s->Read(&m_14c, 4);
-    s->Read(&m_150, 4);
-    s->Read(&m_154, 4);
-    s->Read(&m_158, 4);
-    s->Read(&m_15c, 4);
-    s->Read(m_168, 0x10);
-    s->Read(m_178, 0x10);
-    s->Read(m_188, 0x10);
-    s->Read(m_198, 0x10);
-    s->Read(&m_1a8, 4);
-    s->Read(&m_1ac, 4);
+    s->Write(&m_1c, 4);
+    s->Write(&m_20, 4);
+    s->Write(&m_24, 4);
+    s->Write(&m_38, 4);
+    s->Write(&m_3c, 4);
+    s->Write(&m_40, 4);
+    s->Write(&m_44, 4);
+    s->Write(&m_48, 4);
+    s->Write(m_4c, 0x100);
+    s->Write(&m_14c, 4);
+    s->Write(&m_150, 4);
+    s->Write(&m_154, 4);
+    s->Write(&m_158, 4);
+    s->Write(&m_15c, 4);
+    s->Write(m_168, 0x10);
+    s->Write(m_178, 0x10);
+    s->Write(m_188, 0x10);
+    s->Write(m_198, 0x10);
+    s->Write(&m_1a8, 4);
+    s->Write(&m_1ac, 4);
     return 1;
 }
-SIZE_UNKNOWN(LoadStream);
 SIZE_UNKNOWN(SaveRecord);

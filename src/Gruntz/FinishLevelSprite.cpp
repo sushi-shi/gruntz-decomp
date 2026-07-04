@@ -7,8 +7,9 @@
 // bytes are load-bearing.
 #include <rva.h>
 
-#include <Gruntz/Grunt.h>       // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
-#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/CStatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
+#include <Gruntz/Grunt.h>               // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
+#include <Gruntz/SoundCueMgr.h>         // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Ints.h>
 
 DATA(0x00645588)
@@ -23,31 +24,9 @@ extern "C" {
 }
 
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
-// modeled in <Gruntz/SoundCueMgr.h>).
-
-// The named sprite/cue the GAME\FINISHLEVEL lookup resolves.
-SIZE_UNKNOWN(CueObj);
-struct CueObj {
-    char m_pad00[0x10];
-    CSoundCueMgr* m_10; // +0x10
-    i32 m_14;           // +0x14 last-played clock
-    i32 m_18;           // +0x18 cue interval
-};
-
-SIZE_UNKNOWN(CCueHashTable);
-class CCueHashTable {
-public:
-    i32 Lookup(const char* szName, CueObj** ppOut);
-};
-
-// The status-bar holder: embedded name->cue hash table at +0x10, live-surface gate
-// at +0x30.
-struct CStatusBarHolder {
-    char m_pad00[0x10];
-    CCueHashTable m_10map; // +0x10
-    char m_pad14[0x30 - 0x14];
-    i32 m_30; // +0x30
-};
+// modeled in <Gruntz/SoundCueMgr.h>). CueObj / CCueHashTable / CStatusBarHolder
+// (the cue-holder shape: name->cue hash @+0x10, live-surface gate @+0x30) are the
+// shared shape in <Gruntz/CStatusBarCueHolder.h>.
 
 SIZE_UNKNOWN(FinishLevelMgr);
 struct FinishLevelMgr {

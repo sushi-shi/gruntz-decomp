@@ -1,11 +1,12 @@
 // MgrObjSerialize.cpp - serialize methods of a large persisted game-mgr object
-// (C:\Proj\Gruntz). The object's Save writes its fields through a writer/archive
-// whose Write(buf,len) is virtual slot 11 (vtbl+0x2c); the whole pass is gated on
-// the CGruntzMgr settings singleton (_g_mgrSettings) being live. Offsets + code
-// bytes are load-bearing; field/class names are best-guess placeholders.
+// (C:\Proj\Gruntz). The object's Save streams its fields through the shared WAP32
+// CSerialArchive's +0x2c slot (CSerialArchive::Read, virtual slot 11); the whole
+// pass is gated on the CGruntzMgr settings singleton (_g_mgrSettings) being live.
+// Offsets + code bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Mfc.h>
-#include <Gruntz/GruntzMgr.h>       // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Gruntz/CDDrawWorkerMgr.h> // canonical CDDrawWorkerMgr (m_levelData->m_ready)
+#include <Gruntz/GruntzMgr.h>       // canonical CGruntzMgr (game-manager singleton; one true shape)
+#include <Gruntz/SerialArchive.h>   // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Ints.h>
 #include <rva.h>
 
@@ -81,22 +82,12 @@ void EngStr_DrawText(
     i32 i
 ); // 0x115440
 
-// The archive/writer: Write(buf,len) is virtual slot 11 (vtbl+0x2c). The leading
-// slots are never touched here, modeled only to place Write at the right offset.
-struct CMgrWriter {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void Write(void* buf, i32 len); // slot 11 -> vtbl+0x2c
-};
+// The archive stream is the shared WAP32 CSerialArchive (declared-only virtuals in
+// <Gruntz/SerialArchive.h>). This pass dispatches through its +0x2c slot
+// (CSerialArchive::Read, the canonical load entry): `mov eax,[w]; push len; push
+// buf; mov ecx,w; call [eax+0x2c]`. NB the method name Save here is the recovered-
+// symbol placeholder; the archive object drives the actual transfer direction, only
+// the +0x2c slot offset is load-bearing.
 
 // The persisted object. Only the serialized fields are named.
 struct CMgrPersistObj {
@@ -117,41 +108,41 @@ struct CMgrPersistObj {
     char m_198[0x10];
     i32 m_1a8, m_1ac, m_1b0;
 
-    i32 Save(CMgrWriter* w);
+    i32 Save(CSerialArchive* w);
     i32 Init(); // 0xface0
 };
 
 // CMgrPersistObj::Save: gate on the writer + the settings singleton, then
 // stream every persisted field through the writer's Write(buf,len) virtual.
 RVA(0x000fb1c0, 0x168)
-i32 CMgrPersistObj::Save(CMgrWriter* w) {
+i32 CMgrPersistObj::Save(CSerialArchive* w) {
     if (w == 0) {
         return 0;
     }
     if (g_mgrSettings->m_world == 0) {
         return 0;
     }
-    w->Write(&m_1c, 4);
-    w->Write(&m_20, 4);
-    w->Write(&m_24, 4);
-    w->Write(&m_38, 4);
-    w->Write(&m_3c, 4);
-    w->Write(&m_40, 4);
-    w->Write(&m_44, 4);
-    w->Write(&m_48, 4);
-    w->Write(m_4c, 0x100);
-    w->Write(&m_14c, 4);
-    w->Write(&m_150, 4);
-    w->Write(&m_154, 4);
-    w->Write(&m_158, 4);
-    w->Write(&m_15c, 4);
-    w->Write(m_168, 0x10);
-    w->Write(m_178, 0x10);
-    w->Write(m_188, 0x10);
-    w->Write(m_198, 0x10);
-    w->Write(&m_1a8, 4);
-    w->Write(&m_1ac, 4);
-    w->Write(&m_1b0, 4);
+    w->Read(&m_1c, 4);
+    w->Read(&m_20, 4);
+    w->Read(&m_24, 4);
+    w->Read(&m_38, 4);
+    w->Read(&m_3c, 4);
+    w->Read(&m_40, 4);
+    w->Read(&m_44, 4);
+    w->Read(&m_48, 4);
+    w->Read(m_4c, 0x100);
+    w->Read(&m_14c, 4);
+    w->Read(&m_150, 4);
+    w->Read(&m_154, 4);
+    w->Read(&m_158, 4);
+    w->Read(&m_15c, 4);
+    w->Read(m_168, 0x10);
+    w->Read(m_178, 0x10);
+    w->Read(m_188, 0x10);
+    w->Read(m_198, 0x10);
+    w->Read(&m_1a8, 4);
+    w->Read(&m_1ac, 4);
+    w->Read(&m_1b0, 4);
     return 1;
 }
 
@@ -204,6 +195,5 @@ SIZE_UNKNOWN(CDisplayMgr);
 SIZE_UNKNOWN(CMgrImageSet);
 SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
-SIZE_UNKNOWN(CMgrWriter);
 SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);
