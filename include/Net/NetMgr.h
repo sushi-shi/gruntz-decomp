@@ -436,11 +436,19 @@ SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object
 // polymorphic class so `obj->SelfDestruct(1)` emits the thiscall virtual
 // dispatch (slot 1 == +0x4); the virtual is never defined so no vtable is
 // emitted in this TU.
+//
+// The concrete payloads (CNetPlayerListNode @0x5f0760, CNetSessionNode @0x5f0778,
+// InterfaceObject) are all Wap::CObject-derived, so this base view's two used slots
+// carry the CObject-interface identities: slot 0 is CObject::GetRuntimeClass (the
+// shared grand-base slot-0 thunk 0x1bef01, undispatched here) and slot 1 is the
+// per-payload scalar-deleting destructor (the flag-arg self-destruct). SelfDestruct
+// stays a distinct named virtual (not ~CObject) because retail dispatches the
+// deleting variant with an explicit flag=1, which the plain dtor cannot express.
 // ---------------------------------------------------------------------------
 class CNetPlayerObj {
 public:
-    virtual void Slot00();               // +0x00
-    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (self-destruct)
+    virtual void GetRuntimeClass();      // +0x00  slot 0 (CObject GetRuntimeClass, 0x1bef01)
+    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (scalar-deleting dtor, flag arg)
 
     char m_pad4[0x20 - 0x4]; // +0x04
     __POSITION* m_20;        // +0x20  cached list position

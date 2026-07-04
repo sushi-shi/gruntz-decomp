@@ -45,7 +45,10 @@ public:
     virtual i32 StopBank(i32 bank);          // [11] 0x138ed0  resume (unnest via m_pauseDepth)
     virtual i32 Stop();                      // [12] 0x138e60  AIL_end_sequence
     virtual i32 Retrigger(); // [13] 0x138f20  re-Play(m_playDriver,m_playMode) if idle
-    virtual i32 Slot38();    // [14] 0x138a20  returns 1 (const-true predicate)
+    // [14] 0x138a20  `mov eax,1; retn` const-true predicate. Declared-only own slot of
+    // this class (like the sibling slots, no PDB name survives): named descriptively for
+    // the MIDI/XMIDI sequence object it interrogates; exact original identity unrecovered.
+    virtual i32 IsMidi();
     virtual i32 LoadSpecial(const char* path, const char* name); // [15] 0x138d50 ".." AIL-file load
 
     // Inline ctor: cl stamps ??_7 then seeds the fields in retail store order.
