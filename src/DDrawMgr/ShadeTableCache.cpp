@@ -86,7 +86,11 @@ inline CShadeTableArray::CShadeTableArray() {
 inline CShadeTableArray::~CShadeTableArray() {
     // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
     // ~Wap::CObject which resets the CObject vtable (0x5e8cb4) - was the two
-    // manual m_vtbl stamps.
+    // manual m_vtbl stamps. This inline copy folds into ~CShadeTableCache
+    // (0x14de50, 100%); the standalone out-of-line ??1 (0x14fe30, called by the
+    // scalar-deleting dtor 0x150020) CANNOT also be homed here - defining the dtor
+    // out-of-line makes 0x14de50 CALL it (dropping 0x14de50 100% -> ~61%), so
+    // 0x14fe30 stays a standalone placeholder in BoundaryUpperEh.cpp (binary-proven).
     if (m_pData) {
         operator delete(m_pData);
     }

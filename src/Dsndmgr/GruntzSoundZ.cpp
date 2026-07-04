@@ -352,6 +352,19 @@ i32 CGruntzSoundZ::GetXMidiVolume() {
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
+// ~CGruntzSoundInnerZ (0x138a50, base-object ??1 dtor, re-homed from
+// BoundaryUpperEh): cl stamps ??_7CGruntzSoundInnerZ (0x5ef700), runs
+// ReleaseHandle (slot 7, devirtualized inside the dtor -> direct call 0x138dd0),
+// then chains the empty ~Wap::CObject base (restamp 0x5e8cb4). ReleaseHandle can
+// throw (operator delete), so the base subobject carries the /GX unwind frame. The
+// vtable-slot scalar-deleting dtor 0x138a30 is an (external) LIBCMT carve-out.
+// ---------------------------------------------------------------------------
+RVA(0x00138a50, 0x46)
+CGruntzSoundInnerZ::~CGruntzSoundInnerZ() {
+    ReleaseHandle();
+}
+
+// ---------------------------------------------------------------------------
 // DecodeBuf (vtable slot 5): one-time in-memory setup - seed defaults, name the
 // sequence (`name` or auto "MIDI%i"), copy `len` XMIDI bytes into the owned
 // m_loadBuffer, then allocate + initialise an AIL sequence handle. __thiscall, ret 0xc.

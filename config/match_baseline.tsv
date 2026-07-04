@@ -60,7 +60,7 @@ boundarythunks	15	15
 boundaryupper	33	30
 boundaryupper2	25	17
 boundaryupper2eh	4	2
-boundaryuppereh	10	10
+boundaryuppereh	9	9
 bracketvalue	1	1
 brickz	15	3
 brickzload	1	0
@@ -231,7 +231,7 @@ gruntzmgrcmd	1	0
 gruntzmgrtransition	1	0
 gruntzplayer	8	4
 gruntzrandom	5	3
-gruntzsoundz	28	25
+gruntzsoundz	29	26
 gruntzwnd	9	9
 guardpoint	4	3
 hash	10	9
@@ -887,7 +887,6 @@ boundaryupper2eh	??0CFxModeT1@@QAE@XZ	100.0000	100.0000	1	e7f4315a8788	0x17e7c0
 boundaryupper2eh	??1CRezDir13c9b0@@UAE@XZ	99.9750	99.9750	2	4625c1d094fb	0x13c9b0
 boundaryupper2eh	??1CRezDir13cb80@@UAE@XZ	100.0000	100.0000	2	efda8e56901f	0x13cb80
 boundaryupper2eh	?DtorD1@DevCfgChain@@QAEXXZ	34.2381	34.2381	1	0857b79db11b	0x1333b0
-boundaryuppereh	??1C138a50@@UAE@XZ	100.0000	100.0000	2	6a3ac20d44d0	0x138a50
 boundaryuppereh	??1C14fe30@@UAE@XZ	100.0000	100.0000	2	bd89cc45cdd3	0x14fe30
 boundaryuppereh	??1C15b6d0@@UAE@XZ	100.0000	100.0000	1	08895d124e69	0x15b6d0
 boundaryuppereh	??1C161500@@UAE@XZ	100.0000	100.0000	2	f3b3be93e280	0x161500
@@ -2210,6 +2209,7 @@ gruntzrandom	?Next2@Rng@@YAHXZ	100.0000	100.0000	1	3fa475817eca	0x15cbe0
 gruntzrandom	?Next@Rng@@YAHXZ	100.0000	100.0000	1	4726cbccaccb	0xcd00
 gruntzrandom	?RangeStd@Rng@@YGHHH@Z	14.4444	14.4444	1	50dc653b49af	0x19f50
 gruntzrandom	?Roll@RangeBox@Rng@@QAEXHHHH@Z	72.3590	72.3590	1	d9ab9dc846ff	0xcd70
+gruntzsoundz	??1CGruntzSoundInnerZ@@UAE@XZ	100.0000	100.0000	1	b908dff360e2	0x138a50
 gruntzsoundz	??1CGruntzSoundZ@@UAE@XZ	91.5790	91.5790	2	583256210787	0x86040
 gruntzsoundz	?CreateBank2@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBD0@Z	100.0000	100.0000	1	fe5c8dc0ebe1	0x1385e0
 gruntzsoundz	?CreateBank@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBXIPBD@Z	100.0000	100.0000	1	a55e1e88ed12	0x138670

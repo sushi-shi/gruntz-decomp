@@ -36,8 +36,14 @@ C17e240::~C17e240() {
 
 // ---------------------------------------------------------------------------
 // 0x14fe30 - ~CShadeTableArray (IDENTITY: stamped vtable 0x5efb28 == ??_7CShadeTableArray,
-// RTTI-confirmed; base folds ??_7CObject 0x5e8cb4). Free the +0x4 element buffer. Kept as
-// a standalone placeholder (renaming to CShadeTableArray would dup its DDrawMgr VTBL).
+// RTTI-confirmed; base folds ??_7CObject 0x5e8cb4). Free the +0x4 element buffer. STAYS a
+// standalone placeholder here (NOT foldable onto the real CShadeTableArray in
+// ShadeTableCache.cpp): the cache dtor ~CShadeTableCache (0x14de50, 100%) INLINES the array
+// teardown (verified: it stamps 0x5efb28 + frees inline, does NOT call 0x14fe30). Defining
+// CShadeTableArray::~CShadeTableArray out-of-line there makes 0x14de50 CALL it instead,
+// cratering 0x14de50 100% -> ~61% (binary-proven this session). A class's dtor can be inline
+// (for the owner's fold) XOR out-of-line (for 0x14fe30), not both - so this out-of-line ??1
+// keeps its own placeholder class.
 // ---------------------------------------------------------------------------
 struct Sev14fe30 {
     virtual ~Sev14fe30();
@@ -80,25 +86,10 @@ C161500::~C161500() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x138a50 - ~CGruntzSoundInnerZ (IDENTITY: stamped vtable 0x5ef700 == ??_7CGruntzSoundInnerZ,
-// RTTI-confirmed; SubTeardown 0x138dd0 == CGruntzSoundInnerZ::ReleaseHandle; base folds
-// ??_7CObject 0x5e8cb4). This is the base-object dtor (??1); the vtable-slot deleting dtor is
-// 0x138a30. Kept standalone (renaming to CGruntzSoundInnerZ would dup its Dsndmgr VTBL).
+// 0x138a50 - CGruntzSoundInnerZ::~CGruntzSoundInnerZ: RE-HOMED (folded onto the
+// real class) into the gruntzsoundz unit (src/Dsndmgr/GruntzSoundZ.cpp), where the
+// class + its VTBL already live. See that TU.
 // ---------------------------------------------------------------------------
-struct Sev138a50 {
-    virtual ~Sev138a50();
-};
-SIZE_UNKNOWN(Sev138a50);
-inline Sev138a50::~Sev138a50() {}
-struct C138a50 : Sev138a50 {
-    ~C138a50() OVERRIDE;
-    void SubTeardown(); // 0x138dd0
-};
-SIZE_UNKNOWN(C138a50);
-RVA(0x00138a50, 0x46)
-C138a50::~C138a50() {
-    SubTeardown();
-}
 
 // ---------------------------------------------------------------------------
 // 0x168c10 - leaf dtor (stamp derived 0x5f0328, fold base ??_7CObject 0x5e8cb4). Member
