@@ -21,6 +21,7 @@ struct CScanCell {
     i32 m_type; // +0x10  tile type/code
     char _14[0x1c - 0x14];
 };
+SIZE_UNKNOWN(CScanCell);
 
 struct CScanGrid {
     char _00[8];
@@ -30,18 +31,21 @@ struct CScanGrid {
     RECT m_60;      // +0x60 dirty rect
     i32 m_70, m_74; // +0x70/0x74 its size
 };
+SIZE_UNKNOWN(CScanGrid);
 
 // Path-node coordinate pair {col,row} that CScanNode324::m_8 points at. Shared by
 // the CGrunt tile/arrival scan TUs (was locally redeclared per-TU).
 struct CScanCoord {
     i32 x, y;
 };
+SIZE_UNKNOWN(CScanCoord);
 
 // The grunt's current path node (grunt->m_324): +0x08 -> the {col,row} coord pair.
 struct CScanNode324 {
     char _00[8];
     CScanCoord* m_8; // +0x08 -> {col,row}
 };
+SIZE_UNKNOWN(CScanNode324);
 
 // A pending-coord list node (grunt->m_320 chain): +0x08 is the recycled coord-node
 // handle fed to the coord recycle pool's Drop.
@@ -50,6 +54,7 @@ struct CScanListNode {
     i32 _04;
     i32 m_8; // +0x08 recycled coord-node handle
 };
+SIZE_UNKNOWN(CScanListNode);
 
 // The grunt's +0x10 sub-object: screen x/y at +0x5c/+0x60.
 struct CScanSub10 {

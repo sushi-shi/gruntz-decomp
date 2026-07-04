@@ -10,5 +10,6 @@
 struct CStepList2 {
     void Drop(i32 node); // 0x40163b (__thiscall on g_645540)
 };
+SIZE_UNKNOWN(CStepList2);
 
 #endif // GRUNTZ_GRUNTZ_CSTEPLIST2_H

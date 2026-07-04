@@ -10,10 +10,12 @@
 struct CTypeNode {
     char* m_0;
 };
+SIZE_UNKNOWN(CTypeNode);
 
 struct CTypeColl {
     CTypeNode* Lookup(i32 key); // 0x40437c (__thiscall)
     i32 Find(i32 key, i32 z);   // 0x16da80 (__thiscall ret 8)
 };
+SIZE_UNKNOWN(CTypeColl);
 
 #endif // GRUNTZ_GRUNTZ_CTYPECOLL_H

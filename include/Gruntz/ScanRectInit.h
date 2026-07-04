@@ -11,5 +11,6 @@
 struct CScanRectInit { // 0x34a4 - init a rect + return it
     RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
+SIZE_UNKNOWN(CScanRectInit);
 
 #endif // GRUNTZ_GRUNTZ_CSCANRECTINIT_H

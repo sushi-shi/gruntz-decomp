@@ -9,5 +9,6 @@
 struct CStepList {
     void RemoveAll(); // 0x5b48a6 (__thiscall)
 };
+SIZE_UNKNOWN(CStepList);
 
 #endif // GRUNTZ_GRUNTZ_CSTEPLIST_H
