@@ -982,7 +982,7 @@ flags = "base"
 # __stdcall Blowfish bit-decode loop (0x16f760), trace mis-attributed to
 # ClassUnknown_4; re-homed from Discovered.cpp.
 unit = "bitstreamblowfish"
-source = "src/Gruntz/BitStreamBlowfish.cpp"
+source = "src/Crypto/BitStreamBlowfish.cpp"
 flags = "base"
 
 [[unit]]
@@ -2026,7 +2026,7 @@ flags = "eh"
 
 [[unit]]
 unit = "feccrypt"
-source = "src/Gruntz/FecCrypt.cpp"
+source = "src/Crypto/FecCrypt.cpp"
 flags = "base"
 
 [[unit]]
