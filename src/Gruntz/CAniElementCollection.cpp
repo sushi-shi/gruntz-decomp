@@ -27,17 +27,17 @@ extern "C" void RezFree(void* p); // 0x1b9b82
 // ===========================================================================
 RVA(0x00165730, 0x4c)
 void CAniElement::DeleteAll() {
-    for (i32 i = 0; i < m_items.m_nSize; i++) {
-        CAniRecordView* el = m_items.m_pData[i];
+    for (i32 i = 0; i < m_records.m_nSize; i++) {
+        CAniRecordView* el = m_records.m_pData[i];
         if (el != 0) {
             el->ScalarDtor(1);
         }
     }
-    if (m_buf != 0) {
-        RezFree(m_buf);
-        m_buf = 0;
+    if (m_name != 0) {
+        RezFree(m_name);
+        m_name = 0;
     }
-    m_items.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
+    m_records.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
 }
 
 // ===========================================================================

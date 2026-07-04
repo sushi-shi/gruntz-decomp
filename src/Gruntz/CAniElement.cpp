@@ -54,17 +54,17 @@ struct CAniRecordInit {
     virtual void FUN_00404034(); // [4] 0x004034
 
     inline CAniRecordInit() {
-        m_2c = 0;
-        m_30 = 0;
-        m_0c = 0xffff;
+        m_count = 0;
+        m_indices = 0;
+        m_owner = 0xffff;
     }
 
     // vptr implicit at +0x00
     char m_pad04[0x8];  // +0x04..+0x0b
-    i32 m_0c;           // +0x0c = 0xffff
+    i32 m_owner;        // +0x0c = 0xffff
     char m_pad10[0x1c]; // +0x10..+0x2b
-    i32 m_2c;           // +0x2c = 0
-    i32 m_30;           // +0x30 = 0
+    i32 m_count;        // +0x2c = 0
+    i32 m_indices;      // +0x30 = 0
 };
 
 // ---------------------------------------------------------------------------
@@ -91,10 +91,10 @@ CObject* CAniElement::AtChecked_06b270(i32 i) const {
 // `lea` hoisted before the pushes (pin-local-for-callee-saved-reg.md). None steerable.
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
-    m_04 = flags;
+    m_flags = flags;
     m_scale = 1.0f;
     m_total = 0;
-    m_04 = src->m_08 | flags;
+    m_flags = src->m_flags | flags;
 
     const char* cursor = src->m_data;
     if (src->m_namelen != 0) {
@@ -147,7 +147,7 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
     if (((CAniEntry*)entry)->ParseTag_139800() != 0x414e49) {
         return 0;
     }
-    m_04 = flags;
+    m_flags = flags;
     void* src = ((CAniEntry*)entry)->BeginParse_139960();
     if (src == 0) {
         return 0;

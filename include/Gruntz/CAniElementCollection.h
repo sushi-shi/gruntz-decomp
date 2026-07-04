@@ -9,7 +9,7 @@
 // Layout recovered from the factory (0x1528d0, `new` 0x28 bytes) + the dtor +
 // DeleteAll helper:
 //   +0x00 vptr (Wap::CObject)
-//   +0x04 m_04   (zeroed at construct)
+//   +0x04 m_flags   (zeroed at construct)
 //   +0x08 m_items  CObArray of owned CObject* (vtbl 0x5ed494; m_pData@+0xc, m_nSize@+0x10)
 //   +0x1c m_buf  a heap buffer freed (RezFree) on teardown
 // Only the offsets + emitted bytes are load-bearing; field names are placeholders.
@@ -17,15 +17,12 @@
 #define GRUNTZ_CANIELEMENTCOLLECTION_H
 
 #include <Ints.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/CObject.h>         // Wap::CObject - the shared engine grand-base
+#include <Gruntz/CAniRecordView.h> // owned frame-record element (real: CAniRecord)
 
-// An owned CObject element: the deleting destructor is vtable slot 1 (byte +0x04),
-// __thiscall (flags arg). DeleteAll dispatches `el->ScalarDtor(1)` per live element
-// as a real virtual call (retail `mov edx,[ecx]; call [edx+4]`).
-struct CAniRecordView {
-    virtual void Slot00();              // slot 0 (+0x00)
-    virtual void* ScalarDtor(u32 flag); // slot 1 (+0x04) scalar-deleting dtor
-};
+// DeleteAll dispatches `el->ScalarDtor(1)` per live element as a real virtual call
+// (retail `mov edx,[ecx]; call [edx+4]`) on CAniRecordView (the shared frame-record
+// view, slot 1 = the scalar-deleting dtor).
 
 // The owned-pointer array embedded at +0x08 (engine CObArray; vtbl 0x5ed494).
 // m_pData@+0x04 (= node+0x0c), m_nSize@+0x08 (= node+0x10). Modeled with a real
@@ -57,9 +54,9 @@ public:
     virtual ~CAniElement();
     void DeleteAll(); // 0x165730  delete every owned element, free m_buf, RemoveAll
 
-    i32 m_04;                // +0x04
-    CAniRecordArray m_items; // +0x08  owned-pointer array (m_pData@+0xc, m_nSize@+0x10)
-    void* m_buf;             // +0x1c  heap buffer (RezFree'd on teardown)
+    i32 m_flags;               // +0x04
+    CAniRecordArray m_records; // +0x08  owned-pointer array (m_pData@+0xc, m_nSize@+0x10)
+    void* m_name;              // +0x1c  name/heap buffer (RezFree'd on teardown)
 };
 
 #endif // GRUNTZ_CANIELEMENTCOLLECTION_H

@@ -73,9 +73,9 @@ public:
 class CAniRecordOwner {
 public:
     i32 m_00, m_04; // +0x00..+0x07
-    i32 m_08;       // +0x08  flags
+    i32 m_flags;    // +0x08  flags
     char _pad0c[0x1c - 0x0c];
-    CAniRecordPool* m_1c; // +0x1c  the pool allocator
+    CAniRecordPool* m_pool; // +0x1c  the pool allocator
 };
 
 // The freshly-allocated +0x10 buffer's second-stage init (0x1485b0, __thiscall on
@@ -106,21 +106,21 @@ public:
     void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
     void FreeBuf_168fb0();                                            // 0x168fb0
 
-    void* m_vptr;          // +0x00
-    u16 m_flags;           // +0x04  status word (bit 1 scaled, bit 2 has-name)
-    u16 m_06;              // +0x06  (high half of the +0x04 dword)
-    i32 m_08;              // +0x08
-    CAniRecordOwner* m_0c; // +0x0c  owner node (also seeded 0xffff at alloc)
-    i32 m_10;              // +0x10  pool work buffer (i32 here; ptr in the virtuals)
-    i32 m_14;              // +0x14
-    i32 m_18;              // +0x18  frame count (GetSize)
-    i32 m_1c;              // +0x1c
-    i32 m_20;              // +0x20
-    i32 m_24;              // +0x24
-    u16 m_28;              // +0x28
-    u16 m_2a;              // +0x2a
-    i32 m_count;           // +0x2c  resolved-index array length
-    i32* m_indices;        // +0x30  resolved-index array
+    void* m_vptr;             // +0x00
+    u16 m_flags;              // +0x04  status word (bit 1 scaled, bit 2 has-name)
+    u16 m_06;                 // +0x06  (high half of the +0x04 dword)
+    i32 m_08;                 // +0x08
+    CAniRecordOwner* m_owner; // +0x0c  owner node (also seeded 0xffff at alloc)
+    i32 m_buf;                // +0x10  pool work buffer (i32 here; ptr in the virtuals)
+    i32 m_14;                 // +0x14
+    i32 m_frameCount;         // +0x18  frame count (GetSize)
+    i32 m_1c;                 // +0x1c
+    i32 m_20;                 // +0x20
+    i32 m_24;                 // +0x24
+    u16 m_28;                 // +0x28
+    u16 m_2a;                 // +0x2a
+    i32 m_count;              // +0x2c  resolved-index array length
+    i32* m_indices;           // +0x30  resolved-index array
 };
 
 // ---------------------------------------------------------------------------
@@ -194,7 +194,7 @@ CAniRecordPrimary::~CAniRecordPrimary() {
     if (r->m_indices != 0) {
         RezFree(r->m_indices);
     }
-    r->m_0c = (CAniRecordOwner*)0xffff;
+    r->m_owner = (CAniRecordOwner*)0xffff;
     r->m_count = 0;
     r->m_indices = 0;
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
@@ -211,10 +211,10 @@ i32 CAniRecord::Parse_168c60(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = (u16)*p++;
     m_08 = *p++;
-    m_0c = (CAniRecordOwner*)*p++;
-    m_10 = *p++;
+    m_owner = (CAniRecordOwner*)*p++;
+    m_buf = *p++;
     m_14 = *p++;
-    m_18 = *p++;
+    m_frameCount = *p++;
     m_1c = *p++;
     m_20 = *p++;
     m_24 = *p++;
@@ -293,7 +293,7 @@ void CAniRecord::ResolveIndices_168d00(CAniMapOwner* owner, const char* str) {
 // edx-pin + eager-default. Not source-steerable - documented scheduling wall.
 RVA(0x00168e50, 0x1e)
 i32 CAniRecord::GetSize_168e50() {
-    i32 n = m_18;
+    i32 n = m_frameCount;
     if (n > 0) {
         if (m_flags & 0x1) {
             return n * 22;
@@ -310,8 +310,8 @@ i32 CAniRecord::GetSize_168e50() {
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_0c->m_1c->Alloc2_142f40(size, 0x44);
-    m_10 = (i32)buf;
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
+    m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
     }
@@ -327,8 +327,8 @@ void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_0c->m_1c->Alloc1_142fc0(size, 0x44);
-    m_10 = (i32)buf;
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
     }
@@ -343,8 +343,8 @@ void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
 // 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_0c->m_1c->Alloc3_1430c0(a, size, 0x44);
-    m_10 = (i32)buf;
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
+    m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
     }
@@ -360,10 +360,10 @@ void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
 // clear it. Frameless leaf.
 RVA(0x00168fb0, 0x1f)
 void CAniRecord::FreeBuf_168fb0() {
-    i32 buf = m_10;
+    i32 buf = m_buf;
     if (buf != 0) {
-        m_0c->m_1c->Free_142f10((void*)buf);
-        m_10 = 0;
+        m_owner->m_pool->Free_142f10((void*)buf);
+        m_buf = 0;
     }
 }
 
