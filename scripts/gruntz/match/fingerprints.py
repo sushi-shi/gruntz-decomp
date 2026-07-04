@@ -25,7 +25,7 @@ A function clangd can't resolve (a compiler-generated `scalar deleting dtor', a
 parse failure, a name clangd spells differently) simply gets NO entry, and
 match_status falls back to the unit's whole-.cpp hash for it - coarser but safe.
 
-  nix develop .#build --command python3 -m gruntz.match.fingerprints [--all] [-v]
+  nix develop --command python3 -m gruntz.match.fingerprints [--all] [-v]
 """
 from __future__ import annotations
 

@@ -51,7 +51,7 @@ def die(msg: str) -> None:
 
 
 def tool(name: str) -> str:
-    """Resolve a tool on PATH - the `nix develop .#build` shell provides them all."""
+    """Resolve a tool on PATH - the `nix develop` shell provides them all."""
     return shutil.which(name) or name  # bare name lets subprocess surface the error
 
 

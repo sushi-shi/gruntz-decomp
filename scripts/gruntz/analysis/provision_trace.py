@@ -2,7 +2,7 @@
 r"""gruntz.analysis.provision_trace - provision THIS checkout's dynamic this/ecx trace runtime.
 
 Idempotent, re-runnable setup for the Frida `this`-tracer documented end-to-end in
-`docs/dynamic-analysis.md`. Run from any checkout inside `nix develop .#build`:
+`docs/dynamic-analysis.md`. Run from any checkout inside `nix develop`:
 
     python -m gruntz.analysis.provision_trace            # retail GRUNTZ.EXE (default)
     python -m gruntz.analysis.provision_trace --play     # provision, then launch the game
@@ -505,7 +505,7 @@ def main():
     mode = "demo" if args.demo else "retail"
 
     if not os.environ.get("MSVC_DIR") and not shutil.which("wine"):
-        die("wine not found - run inside `nix develop .#build`.")
+        die("wine not found - run inside `nix develop`.")
 
     log(f"provisioning the {mode} trace runtime under {BUILD} ...")
     gadget = fetch_gadget()

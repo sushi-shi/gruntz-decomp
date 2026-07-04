@@ -11,7 +11,7 @@ and exits non-zero (so ninja sees the failure) if cl did not produce the object.
 That last check matters because Wine spews unrelated driver/EGL noise and can
 return a non-cl exit code; the real success signal is "the .obj exists".
 
-Toolchain + prefix come from the environment that `nix develop .#build` exports
+Toolchain + prefix come from the environment that `nix develop` exports
 (MSVC_DIR, WINEPREFIX). Run scripts/setup-toolchain.py once to initialise the
 prefix (PATH/INCLUDE/LIB in the Wine registry) before the first build.
 
@@ -94,10 +94,10 @@ def main() -> None:
     msvc = msvc_dir()
     cl = find_ci(msvc / "bin", "cl.exe")
     if not cl:
-        die(f"CL.EXE not found under {msvc}/bin - run inside `nix develop .#build` "
+        die(f"CL.EXE not found under {msvc}/bin - run inside `nix develop` "
             "(or build .#gruntz-toolchain).")
     if shutil.which("wine") is None:
-        die("wine not found - run inside `nix develop .#build`.")
+        die("wine not found - run inside `nix develop`.")
 
     src = Path(args.src).resolve()
     out = Path(args.out).resolve()

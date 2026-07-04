@@ -31,7 +31,7 @@ Stages 2-4 (coff_sig/classify/unanchored) are the original matcher, verbatim. Th
 original glue was never committed - so on the first regeneration, diff the result
 against the tracked config/library_labels.csv before trusting it.
 
-Run inside `nix develop .#build`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
+Run inside `nix develop`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
 build/ghidra-enrich/exports/functions.csv (produce it with `gruntz init`).
 """
 import csv, os, shutil, subprocess, sys
@@ -63,7 +63,7 @@ def unpack_lib(lib_path: Path, objs_dir: Path) -> None:
 def main() -> None:
     msvc = os.environ.get("MSVC_DIR")
     if not msvc:
-        sys.exit("[fid] $MSVC_DIR unset - run inside `nix develop .#build`.")
+        sys.exit("[fid] $MSVC_DIR unset - run inside `nix develop`.")
     exe = os.environ.get("GRUNTZ_EXE") or str(REPO / "build/exe/GRUNTZ.EXE")
     if not Path(exe).exists():
         sys.exit(f"[fid] EXE not found ({exe}) - set $GRUNTZ_EXE or run `gruntz init`.")

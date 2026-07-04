@@ -37,7 +37,7 @@ net: if clangd's index missed a site, its decl was still renamed, so the stale
 access fails to compile (`m_old is not a member of C`) - re-run with a warm
 index, or use --audit to list residual member accesses via clang-query.
 
-Must be run inside `nix develop .#build` (clangd + python on PATH) from the
+Must be run inside `nix develop` (clangd + python on PATH) from the
 worktree root (so --compile-commands-dir and .cache/clangd resolve there).
 """
 from __future__ import annotations
@@ -358,7 +358,7 @@ def main(argv=None) -> int:
 
     if not CDB.is_file():
         sys.exit("[rename_member] build/clangd/compile_commands.json not found - "
-                 "run `gruntz clangd` inside `nix develop .#build`")
+                 "run `gruntz clangd` inside `nix develop`")
 
     # --- parse the mapping (file + inline pairs) -------------------------------
     mapping: list[tuple[str, str]] = []
@@ -537,7 +537,7 @@ def run_audit(cls: str, fields: list[str]) -> None:
                 ["clang-query", "-p", str(CDB_DIR), "-c", matcher, *tus, "--"],
                 cwd=ROOT, capture_output=True, text=True, timeout=600)
         except FileNotFoundError:
-            print("[audit] clang-query not on PATH (need nix develop .#build)",
+            print("[audit] clang-query not on PATH (need nix develop)",
                   file=sys.stderr)
             return
         sites = sorted(set(re.findall(r"(\S+:\d+:\d+): note: \"x\" binds",

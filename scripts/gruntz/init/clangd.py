@@ -22,12 +22,12 @@ emitted per [[unit]] - currently the 9 vendored zlib .c TUs plus any src/*.cpp
 that the manifest has grown. New units are picked up automatically on re-run.
 
 Include resolution (in priority order):
-  1. $MSVC_DIR/include and $DXSDK_DIR/Include - exported by `nix develop .#build`.
+  1. $MSVC_DIR/include and $DXSDK_DIR/Include - exported by `nix develop`.
   2. otherwise `nix build .#gruntz-toolchain` and read msvc/include + dx/Include
      from the result symlink.
 
 Usage:
-    # inside `nix develop .#build` (env already set), or plain - it will fall
+    # inside `nix develop` (env already set), or plain - it will fall
     # back to building the toolchain:
     gruntz clangd          # or: python3 scripts/gruntz/init/clangd.py
 """
@@ -66,7 +66,7 @@ DEFINES = ["/D_X86_", "/DWIN32", "/D_WINDOWS", "/D_MBCS"]
 def resolve_include_dirs() -> tuple[Path, Path, str]:
     """Return (msvc_include, dx_include, source) for the toolchain headers.
 
-    Prefers the env vars exported by `nix develop .#build`; otherwise builds
+    Prefers the env vars exported by `nix develop`; otherwise builds
     .#gruntz-toolchain and reads the include dirs out of the result path.
     """
     msvc_dir = os.environ.get("MSVC_DIR")
@@ -88,7 +88,7 @@ def resolve_include_dirs() -> tuple[Path, Path, str]:
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         raise SystemExit(
             "[clangd] ERROR: could not resolve the toolchain headers. "
-            "Run inside `nix develop .#build` (sets MSVC_DIR/DXSDK_DIR), or "
+            "Run inside `nix develop` (sets MSVC_DIR/DXSDK_DIR), or "
             f"ensure `nix build .#gruntz-toolchain` works.\n  cause: {e}")
     root = Path(out[-1])
     msvc_inc = root / "msvc" / "include"

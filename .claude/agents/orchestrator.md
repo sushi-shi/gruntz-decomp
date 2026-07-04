@@ -65,7 +65,7 @@ misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
 > `{8}` width naturally excludes the ≤4-digit RVA size arg. Keep the convention when
 > writing new labels: `RVA(0x00xxxxxx, 0x..)`, `DATA(0x00xxxxxx)`.
 > **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
-> run in a plain `nix develop` shell it writes **0 candidates** and clobbers the
+> run before `gruntz init` has built it, it writes **0 candidates** and clobbers the
 > committed queue — `git checkout config/match-queue.md` to restore.
 >
 > **CURRENT MODE — breadth-first, PREFER-NEW, STOP-EARLY (the default until further

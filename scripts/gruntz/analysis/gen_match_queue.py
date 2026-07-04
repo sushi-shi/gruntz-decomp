@@ -17,7 +17,7 @@ leaf (or all callees already matched) -> match it now. We order by readiness, th
 prefer the middle-small size band (~64-512 B), then by size. Re-run any time to
 refill the queue as matches land (idempotent).
 
-Run inside nix develop: nix develop .#build --command python3 -m gruntz.analysis.gen_match_queue
+Run inside nix develop: nix develop --command python3 -m gruntz.analysis.gen_match_queue
 """
 import os, struct, csv, bisect, pickle, json
 from pathlib import Path

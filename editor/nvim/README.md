@@ -82,9 +82,9 @@ async build lands while you're typing elsewhere) and fades after a few seconds.
 Extra args pass through to the build, e.g. `:GruntzBuild build/objdiff/base/netmgr.obj`
 to limit ninja to one TU.
 
-> **Launch nvim from `nix develop .#build` for fast builds.** The build then runs
+> **Launch nvim from `nix develop` for fast builds.** The build then runs
 > `gruntz build` **directly** (~0.5–1s). Launched from the plain `nix develop`
-> shell it still works, but each build is wrapped in `nix develop .#build`, which
+> shell it still works, but each build is wrapped in `nix develop`, which
 > adds ~2.5s of shell-setup overhead *per build*. The plugin auto-detects which
 > shell it's in (via `$MSVC_DIR`).
 
@@ -137,8 +137,8 @@ across restarts; a remembered toggle wins over the `setup` default.
 
 `objdiff-cli` on `PATH` — launch nvim from the project dev shell (`nix
 develop`). A populated `build/` (run `gruntz build` once if it's a fresh
-checkout). The build command additionally needs the `.#build` shell, which it
-enters itself.
+checkout). The build command needs the dev shell's toolchain env, which it
+enters itself when nvim was launched outside the shell.
 
 ## Install
 

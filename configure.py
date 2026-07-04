@@ -27,7 +27,7 @@ Two graph phases (see docs/build-system.md):
 The TARGET (delink) half is orchestrated as a ninja `delink` rule that runs
 scripts/gruntz/build/delink.py (synth_pdb -> vostok-delinker -> collect <unit>.c.obj).
 
-Run inside `nix develop .#build`:
+Run inside `nix develop`:
     python3 configure.py        # regenerate build.ninja + objdiff.json
     ninja                       # build the base objs + delink the target
     objdiff-cli report generate -p build/objdiff -o build/objdiff/report.json
@@ -292,7 +292,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         # catalog macros (labels.py:vtbl_labels), which live in HEADERS, not the
         # per-TU .cpp frags. So a VTBL edit must re-trigger the merge: list every
         # VTBL-bearing file as an implicit dep (re-globbed each configure run, i.e.
-        # each `nix develop .#build` entry).
+        # each `nix develop` entry).
         vtbl_dep = sorted(
             str(p.relative_to(REPO))
             for p in list((REPO / "include").rglob("*.h")) + list((REPO / "src").rglob("*.cpp"))

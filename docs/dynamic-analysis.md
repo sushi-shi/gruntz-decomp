@@ -93,7 +93,7 @@ Two things are load-bearing to get the game to a playable menu in **one** window
 
 ```sh
 cd <repo>
-nix develop .#build   # provides wine + python + the gruntz CLI
+nix develop   # the one shell: wine + python + the gruntz CLI
 
 # (one-time, in build/wineprefix-game) registry: virtual desktop, D: cdrom,
 #   "Disable SoundFonts"=1  (see gotchas) -- persisted in the prefix.

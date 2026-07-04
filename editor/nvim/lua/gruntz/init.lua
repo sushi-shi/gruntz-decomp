@@ -763,10 +763,10 @@ local build_job, build_gen, build_note = nil, 0, nil
 --- quiet=true : no log window - just a small "building ..." note that closes
 ---              into the result popup (build-on-save). Skips the redundant
 ---              init-on-shell-entry so the edit->%-update loop stays snappy.
---- nvim launched from `nix develop .#build` already has the toolchain env, so we
+--- nvim launched from `nix develop` already has the toolchain env, so we
 --- run `gruntz build` DIRECTLY - no per-build `nix develop` (which costs ~2.5s).
---- Outside it we wrap in `nix develop .#build` (works, but pays that every build;
---- launch nvim from .#build for the fast loop).
+--- Outside it we wrap in `nix develop` (works, but pays that every build;
+--- launch nvim from `nix develop` for the fast loop).
 local function in_build_env()
   return (os.getenv("MSVC_DIR") or "") ~= "" and (os.getenv("WINEPREFIX") or "") ~= ""
 end
@@ -781,7 +781,7 @@ local function do_build(root, args, quiet)
   local unit = (select(1, symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])) or {}).unit
   local direct = in_build_env()
   local cmd = direct and { "gruntz", "build" }
-              or { "nix", "develop", ".#build", "--command", "gruntz", "build" }
+              or { "nix", "develop", "--command", "gruntz", "build" }
   vim.list_extend(cmd, args or {})
   -- GRUNTZ_SKIP_INIT only matters for the wrapped path (it gates the shellHook's
   -- init-on-entry); the direct path doesn't run the shellHook at all.
@@ -923,7 +923,7 @@ local function do_fast_build(root, unit, buf)
   -- A specific ninja target -> ninja builds only that obj; report.json doesn't move,
   -- so `gruntz build` skips its verify/summary tail and returns right after the cl.
   local cmd = direct and { "gruntz", "build", target }
-              or { "nix", "develop", ".#build", "--command", "gruntz", "build", target }
+              or { "nix", "develop", "--command", "gruntz", "build", target }
   local jenv = direct and nil or { GRUNTZ_SKIP_INIT = "1" }
   log("save-build [" .. unit .. "]" .. (direct and " [direct]" or " [nix]")
     .. ": " .. table.concat(cmd, " ") .. "  [" .. root .. "]")

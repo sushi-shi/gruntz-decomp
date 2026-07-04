@@ -24,13 +24,12 @@ the single source of truth).
 
 ## Tools come from Nix
 
-- `nix develop` (default) — works today, **no MSVC**: `vostok-delinker`,
-  `objdiff`/`objdiff-cli`, `ghidra`, `llvm-pdbutil`, python/rg/file/xxd/jq.
-  Enough for analysis + **target-side delink** + objdiff.
-- `nix develop .#build` — adds the MSVC 5.0 toolchain under `wine` for the
-  **base/recompile** side. The `gruntz-toolchain` tarball is packaged (fetched +
-  pinned in `flake.nix`); run `gruntz init` once to build the local env (wine
-  prefix, clangd DB, Ghidra DB) — a few minutes on a cold run, fast/idempotent
+- **One shell for everything:** `nix develop` (== `nix develop .#build`, kept as an
+  alias so old spellings work) — analysis (`vostok-delinker`, `objdiff`/`objdiff-cli`,
+  `ghidra`, `llvm-pdbutil`, python/rg/file/xxd/jq) **and** the MSVC 5.0 toolchain under
+  `wine` for the base/recompile side. The `gruntz-toolchain` tarball is packaged
+  (fetched + pinned in `flake.nix`); `gruntz init` (auto-run on shell entry) builds the
+  local env — wine prefix, clangd DB, Ghidra DB — a few minutes cold, fast/idempotent
   after (see the build-speed note under Conventions).
 
 `GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.

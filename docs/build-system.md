@@ -23,17 +23,18 @@ per-unit + roll-up match % (`gruntz build` prints this; it is now a thin
 wrapper around configure.py + ninja + objdiff)
 ```
 
-Everything runs inside `nix develop .#build` (exports `MSVC_DIR`, `DXSDK_DIR`,
-`WINEPREFIX`, and now `ninja` on PATH). Initialise the Wine prefix once with
-`scripts/gruntz/init/toolchain.py` if it has not been set up.
+Everything runs inside `nix develop` — the one dev shell (`.#build` is a kept
+alias of it), which exports `MSVC_DIR`, `DXSDK_DIR`, `WINEPREFIX`, and `ninja`
+on PATH. The Wine prefix + toolchain env are set up by `gruntz init`, which the
+shell runs on entry (idempotent).
 
 ## Quick start
 
 ```sh
-nix develop .#build --command python3 scripts/gruntz/init/toolchain.py   # once
-nix develop .#build --command python3 configure.py                 # manifest -> build.ninja
-nix develop .#build --command ninja                                # build (incremental)
-nix develop .#build --command gruntz build           # all of the above + match summary
+nix develop --command python3 scripts/gruntz/init/toolchain.py   # once
+nix develop --command python3 configure.py                 # manifest -> build.ninja
+nix develop --command ninja                                # build (incremental)
+nix develop --command gruntz build           # all of the above + match summary
 ```
 
 ``gruntz build`` is the one-command front door (configure -> ninja ->
@@ -61,7 +62,7 @@ gruntz sema strings 0x00080850       # string set of a fn;  --find TEXT for the 
 ```
 
 `xref`/`class`/`disasm`/`strings`/`rva` read the retail EXE + generated exports
-and work in a plain `nix develop`; the clangd-backed ones (`symbol`/`def`/`refs`/
+(no clangd needed); the clangd-backed ones (`symbol`/`def`/`refs`/
 `hover`/`rename`) need `build/clangd/compile_commands.json` (`gruntz clangd`) and
 warm on first use (`rename` waits for the background index so cross-TU edits are
 complete). The harness LSP tool covers def/refs/hover/symbol/calls but **not**
@@ -101,7 +102,7 @@ is pinned by `Standard: c++03`).
 
 **You normally never run it by hand.** A repo-tracked **pre-commit hook**
 (`.githooks/pre-commit`) formats staged `src/`+`include/` files automatically on
-each commit; both dev shells enable it on entry via
+each commit; the dev shell enables it on entry via
 `git config core.hooksPath .githooks` (idempotent; shared across worktrees).
 Outside the Nix shell (no `clang-format` on PATH) the hook skips with a notice
 rather than blocking the commit.

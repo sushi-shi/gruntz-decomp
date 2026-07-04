@@ -7,7 +7,7 @@ relocation sites in range resolved to symbol names (the load-bearing address
 operands: vftables, globals, strings, imports). Calls (E8/E9 rel32) are shown by
 objdump with absolute RVA targets thanks to --adjust-vma.
 
-Usage (inside nix develop .#build):
+Usage (inside nix develop):
     python3 -m gruntz.analysis.dump_target 0x13d8c0 [0x13dc20 ...]
     python3 -m gruntz.analysis.dump_target CGameApp::CloseResources
     python3 -m gruntz.analysis.dump_target --no-disasm 0x13d8c0      # bytes+relocs only

@@ -12,7 +12,7 @@ side complement of `dump_target` (which shows a function's callees/relocs).
 Names are resolved best-first: build/gen/symbol_names.csv (matched src/ names +
 their units) -> ghidra functions.csv -> a FUN_<rva> fallback.
 
-Usage (inside nix develop .#build, or plain - only reads files + $GRUNTZ_EXE):
+Usage (inside nix develop, or plain - only reads files + $GRUNTZ_EXE):
     python3 -m gruntz.analysis.xref 0x136180 0x139bf0        # callers of each
     python3 -m gruntz.analysis.xref CGameApp::CloseResources # by name (symbol_names)
     python3 -m gruntz.analysis.xref --callees 0x136180       # forward: its call targets

@@ -21,7 +21,7 @@ runnable and most externals are unresolved (resolved to 0) - that depresses the
 raw byte number; the exact-subset number is the honest code-fidelity signal.
 
 Run in `nix develop` (no MSVC needed - reads existing EXEs). Regenerate the
-candidate first with `nix develop .#build --command python -m gruntz.build.link`.
+candidate first with `nix develop --command python -m gruntz.build.link`.
 
 Usage:
     python -m gruntz.analysis.exe_diff

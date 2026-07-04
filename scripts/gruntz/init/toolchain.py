@@ -12,7 +12,7 @@ Sets up the Wine prefix for our (older, simpler) toolchain:
     yet; the base/recompile side starts as hand-compiled `.cpp -> .obj` fed to
     objdiff. (When a real source tree exists, re-add a graph step here.)
 
-Run inside `nix develop .#build`, which exports:
+Run inside `nix develop`, which exports:
   MSVC_DIR   - toolchain msvc/ dir  (bin/CL.EXE, include/, lib/)
   DXSDK_DIR  - toolchain dx/  dir   (Include/, Lib/)
   WINEPREFIX - Wine prefix to set up
@@ -46,7 +46,7 @@ def die(m):
 def require_env(name):
     v = os.environ.get(name)
     if not v:
-        die(f"{name} not set - run this inside `nix develop .#build`")
+        die(f"{name} not set - run this inside `nix develop`")
     return v
 
 
@@ -164,7 +164,7 @@ def main():
     os.environ.setdefault("WINEDLLOVERRIDES", "mscoree,mshtml=")
 
     if not find_ci(msvc / "bin", "cl.exe"):
-        die(f"CL.EXE not under {msvc}/bin - is .#build's gruntz-toolchain built?")
+        die(f"CL.EXE not under {msvc}/bin - is the gruntz-toolchain built?")
 
     init_prefix(prefix, force=args.force)
     configure_registry(msvc, dx)

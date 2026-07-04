@@ -107,7 +107,7 @@ python -m gruntz.match.status update --accept-regressions  # bless current as th
 python -m gruntz.match.status diff <revA> [<revB>]  # what moved between two commits' baselines
 python -m gruntz.match.status diff HEAD~5 --all # ... incl. TOUCHED; revB defaults to working tree
 
-python -m gruntz.match.fingerprints [--all] [-v]  # refresh the per-function cache (needs .#build)
+python -m gruntz.match.fingerprints [--all] [-v]  # refresh the per-function cache (needs the dev shell)
 ```
 
 `diff` reads each side from `git show <rev>:config/match_baseline.tsv` and reports

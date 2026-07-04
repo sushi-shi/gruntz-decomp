@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """gruntz.cli - the single entry point for the Gruntz matching pipeline.
 
-Run inside the Nix dev shell (the `gruntz` wrapper, or `python -m gruntz`):
+Run inside the Nix dev shell (the `gruntz` wrapper, or `python -m gruntz`).
+There is ONE shell now - `nix develop` (`.#build` is a kept alias):
 
-    nix develop .#build --command gruntz build
-    nix develop         --command gruntz status
+    nix develop --command gruntz build
+    nix develop --command gruntz status
 
 Subcommands
 -----------
@@ -94,7 +95,7 @@ def die(msg: str) -> None:
 
 
 def tool(name: str) -> str:
-    """Resolve a tool on PATH - the `nix develop .#build` shell provides them all."""
+    """Resolve a tool on PATH - the `nix develop` shell provides them all."""
     return shutil.which(name) or name  # bare name lets subprocess surface a clear error
 
 
@@ -204,7 +205,7 @@ def cmd_build(args) -> None:
         die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
     ninja = tool("ninja")
     # Keep ONE persistent wineserver alive for the whole dev-shell session (the
-    # `.#build` shellHook reaps it on interactive exit). The first build boots it
+    # dev shell's shellHook reaps it on interactive exit). The first build boots it
     # (~1.2s); later builds find it up, so `wine cl` pays no cold-start. We no
     # longer kill it after each build - that re-paid wineboot on every rebuild.
     _start_wine_session()                 # ensure the session is up (cheap if already running)
@@ -315,7 +316,7 @@ def _ghidra_metadata_apply(analyze: bool) -> None:
     """Drive the PyGhidra enrichment+export (replaces analyzeHeadless).
 
     Runs scripts/gruntz/ghidra/ghidra_metadata_apply.py under THIS interpreter (sys.executable
-    is the `nix develop .#build` python that carries the pyghidra package): it boots
+    is the `nix develop` python that carries the pyghidra package): it boots
     PyGhidra in-process, imports/analyzes GRUNTZ.EXE into build/ghidra-named/gruntz,
     then runs apply.py + export.py as GhidraScripts. `analyze=True` for the first
     import; False to re-run apply/export on the already-analyzed DB.
@@ -418,7 +419,7 @@ def _build_ghidra_db(reimport: bool = False) -> None:
             "skipping (--reimport to rebuild).")
         return
     if not RETAIL_EXE.exists():
-        die("no build/exe/GRUNTZ.EXE - set $GRUNTZ_EXE (run inside `nix develop .#build`).")
+        die("no build/exe/GRUNTZ.EXE - set $GRUNTZ_EXE (run inside `nix develop`).")
     if reimport and GHIDRA_PROJECT_DIR.exists():
         shutil.rmtree(GHIDRA_PROJECT_DIR)
     GHIDRA_PROJECT_DIR.mkdir(parents=True, exist_ok=True)
@@ -494,7 +495,7 @@ def _ghidra_warm() -> bool:
 
 
 def cmd_init(args) -> None:
-    """One-time FULL local setup for this checkout. Run inside `nix develop .#build`.
+    """One-time FULL local setup for this checkout. Run inside `nix develop`.
 
     Builds the local, imperative state (under build/) that Nix does not - so a fresh
     checkout goes straight to `gruntz build` after one `init`:
@@ -525,7 +526,7 @@ def cmd_init(args) -> None:
     run([sys.executable, str(CONFIGURE)])            # build.ninja + compile_commands + objdiff.json
     _ensure_retail_copy()                            # stable retail copy (cheap, idempotent)
     if not os.environ.get("MSVC_DIR"):
-        log("MSVC_DIR unset - run inside `nix develop .#build` for the toolchain + "
+        log("MSVC_DIR unset - run inside `nix develop` for the toolchain + "
             "Ghidra steps. Did dirs + configure + retail copy only.")
         return
     tc = [sys.executable, str(INIT / "toolchain.py")]

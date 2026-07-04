@@ -7,7 +7,7 @@ from, its hash/size, whether it is required vs optional, and - the key point -
 that **none of them are needed at build/link time**.
 
 The mechanism: a `gruntz-runtime` derivation
-(a `runCommand`) assembles the DLLs into one out dir, exposed in the `.#build`
+(a `runCommand`) assembles the DLLs into one out dir, exposed in the
 devShell as `$GRUNTZ_RUNTIME`. The DLLs that *do* ship on the retail CD are
 pulled straight out of the Internet Archive CD image using the same
 `/download/<id>/<iso>/<inner-path>` 302 trick as `gruntz-exe` (the inner path is
@@ -217,7 +217,7 @@ if a target machine lacks it and Wine's builtin proves insufficient.
 - `gruntz-runtime` - `runCommand` assembling `MSS32.DLL` + `SMACKW32.DLL` (and
   `SFMAN32.DLL` once pinned) into one out dir.
 - All four added to `packages.${system}`.
-- `.#build` devShell exports `GRUNTZ_RUNTIME="${gruntz-runtime}"`.
+- The devShell exports `GRUNTZ_RUNTIME="${gruntz-runtime}"`.
 
 `nix-instantiate --parse flake.nix` passes; `nix build .#gruntz-runtime` builds;
 `nix flake show` evaluates all outputs.

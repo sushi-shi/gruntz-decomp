@@ -353,7 +353,7 @@ def main():
     # falls back to a generic command and every query silently degrades.
     if not CDB.is_file():
         sys.exit("[clangd-query] build/clangd/compile_commands.json not found - "
-                 "run `gruntz clangd` (inside `nix develop .#build`)")
+                 "run `gruntz clangd` (inside `nix develop`)")
 
     lsp = Clangd()
     try:

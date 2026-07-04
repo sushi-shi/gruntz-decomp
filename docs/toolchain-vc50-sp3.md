@@ -179,7 +179,7 @@ hit-rate is low, retry with the other VC5 SP libs (caveat in funcid doc).
 
 The toolchain tarball is **built, published, and pinned**: the flake's
 `gruntz-toolchain` fetches it from the GitHub release with a real `sha256`, so
-`nix develop .#build` works today. The steps below reproduce that tarball from
+`nix develop` works today. The steps below reproduce that tarball from
 the original media. The base-disc, SP3, DirectX 6 SDK, and ninja media hashes are
 all pinned in `create-toolchain-release.nix`.
 
@@ -213,7 +213,7 @@ all pinned in `create-toolchain-release.nix`.
 7. **Update the flake hash (only if you rebuilt the tarball).** The
    `gruntz-toolchain` fetchurl in `flake.nix` is already pinned to the published
    release (real URL + `sha256`). If you republish a new tarball, replace that
-   `sha256` with the printed digest. `nix develop .#build` then provides MSVC 5.0
+   `sha256` with the printed digest. `nix develop` then provides MSVC 5.0
    SP3 under Wine.
 
 ### Reproducibility note

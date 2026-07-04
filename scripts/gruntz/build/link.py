@@ -24,7 +24,7 @@ Defaults are tuned for layout study, not a shippable binary:
   /FORCE /NODEFAULTLIB /SUBSYSTEM:WINDOWS /BASE:0x400000 /INCREMENTAL:NO /MAP
   /OPT:NOREF /OPT:NOICF   (keep EVERY function so the map is complete)
 
-Run inside `nix develop .#build`.
+Run inside `nix develop`.
 """
 
 import argparse
@@ -141,14 +141,14 @@ def main() -> None:
     args = ap.parse_args()
 
     if shutil.which("wine") is None:
-        die("wine not found - run inside `nix develop .#build`.")
+        die("wine not found - run inside `nix develop`.")
     msvc = Path(os.environ.get("MSVC_DIR", "/tmp/gtc/msvc"))
     link = find_ci(msvc / "bin", "link.exe")
     if not link:
-        die(f"link.exe not found under {msvc}/bin - run inside `nix develop .#build`.")
+        die(f"link.exe not found under {msvc}/bin - run inside `nix develop`.")
     prefix = os.environ.get("WINEPREFIX")
     if not prefix:
-        die("WINEPREFIX not set - run inside `nix develop .#build`.")
+        die("WINEPREFIX not set - run inside `nix develop`.")
 
     out = Path(args.out).resolve()
     mapf = Path(args.mapfile).resolve() if args.mapfile else out.with_suffix(".map")

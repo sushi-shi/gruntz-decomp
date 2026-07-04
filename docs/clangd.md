@@ -38,7 +38,7 @@ at `build/clangd/`.
 1. Get the toolchain env (so the MSVC/DX include dirs resolve):
 
    ```sh
-   nix develop .#build      # exports MSVC_DIR and DXSDK_DIR
+   nix develop      # exports MSVC_DIR and DXSDK_DIR (the one shell)
    ```
 
    `scripts/gruntz/init/clangd.py` also works **outside** the dev shell - if the env vars are
