@@ -35,8 +35,9 @@ C17e240::~C17e240() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x14fe30 - CShadeTableCache-area leaf dtor: stamp derived (0x5efb28), free the
-// +0x4 heap buffer, restamp the base dtor vtable (0x5e8cb4).
+// 0x14fe30 - ~CShadeTableArray (IDENTITY: stamped vtable 0x5efb28 == ??_7CShadeTableArray,
+// RTTI-confirmed; base folds ??_7CObject 0x5e8cb4). Free the +0x4 element buffer. Kept as
+// a standalone placeholder (renaming to CShadeTableArray would dup its DDrawMgr VTBL).
 // ---------------------------------------------------------------------------
 struct Sev14fe30 {
     virtual ~Sev14fe30();
@@ -79,8 +80,10 @@ C161500::~C161500() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x138a50 - DSoundList inner-sound leaf dtor: stamp derived (0x5ef700), run the
-// member teardown (0x138dd0), fold the base restamp (0x5e8cb4).
+// 0x138a50 - ~CGruntzSoundInnerZ (IDENTITY: stamped vtable 0x5ef700 == ??_7CGruntzSoundInnerZ,
+// RTTI-confirmed; SubTeardown 0x138dd0 == CGruntzSoundInnerZ::ReleaseHandle; base folds
+// ??_7CObject 0x5e8cb4). This is the base-object dtor (??1); the vtable-slot deleting dtor is
+// 0x138a30. Kept standalone (renaming to CGruntzSoundInnerZ would dup its Dsndmgr VTBL).
 // ---------------------------------------------------------------------------
 struct Sev138a50 {
     virtual ~Sev138a50();
@@ -98,8 +101,9 @@ C138a50::~C138a50() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x168c10 - CAniRecord-area leaf dtor: stamp derived (0x5f0328), member teardown
-// (0x191800), fold the base restamp (0x5e8cb4).
+// 0x168c10 - leaf dtor (stamp derived 0x5f0328, fold base ??_7CObject 0x5e8cb4). Member
+// teardown 0x191800 == CWwdGrid::FreeBuckets (called on this) -> owns/is a CWwdGrid
+// (0x5f0328 has no RTTI name; exact class unconfirmed).
 // ---------------------------------------------------------------------------
 struct Sev168c10 {
     virtual ~Sev168c10();
@@ -117,8 +121,9 @@ C168c10::~C168c10() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b6d0 - CWwdGameObject sub leaf dtor: stamp derived (0x5f0128), member
-// teardown (0x15c2c0), reset m_4/m_8/m_c, fold the base restamp (0x5e8cb4).
+// 0x15b6d0 - leaf dtor (stamp derived 0x5f0128, fold base ??_7CObject 0x5e8cb4). Member
+// teardown 0x15c2c0 == CDDrawBlitParam::Reset_15c2c0; reset m_4/m_8/m_c (0x5f0128 unnamed;
+// exact class unconfirmed).
 // ---------------------------------------------------------------------------
 struct Sev15b6d0 {
     virtual ~Sev15b6d0();
@@ -200,9 +205,9 @@ RVA(0x0017e990, 0x6b)
 C17e990::~C17e990() {}
 
 // ---------------------------------------------------------------------------
-// 0x163a40 - CDDrawWorkerList-area dtor: the destructible base subobject lives at
-// +0x70 (restamp 0x5e8cb4). Run the member teardown (0x1682f0), then the +0x70
-// subobject folds. No most-derived vptr at offset 0.
+// 0x163a40 - dtor whose destructible base subobject lives at +0x70 (folds ??_7CObject
+// 0x5e8cb4). Member teardown 0x1682f0 == CWwdSpatialMgr::FreeGrids -> owns a CWwdSpatialMgr.
+// No most-derived vptr at offset 0.
 // ---------------------------------------------------------------------------
 struct Base163a40 {
     virtual ~Base163a40();

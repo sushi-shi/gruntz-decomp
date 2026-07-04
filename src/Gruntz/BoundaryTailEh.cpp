@@ -27,16 +27,16 @@ extern i32 g_fileMemBaseVtbl;
 // `call rel32` instead, so the dispatch byte + the EH trylevel store sequencing
 // diverge. See docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md.
 // ---------------------------------------------------------------------------
-struct CFmb1578b0 {
+struct CFileMemBase {
     void* m_vtbl;     // +0x0
     char _4[0xc - 4]; // +0x4,+0x8 scalars
     CStr m_name;      // +0xc
     void ResetBase(); // 0x157a40 (base vtable slot +0xc)
-    ~CFmb1578b0();
+    ~CFileMemBase();
 };
-SIZE_UNKNOWN(CFmb1578b0);
+SIZE_UNKNOWN(CFileMemBase);
 RVA(0x001578b0, 0x51)
-CFmb1578b0::~CFmb1578b0() {
+CFileMemBase::~CFileMemBase() {
     m_vtbl = (void*)&g_fileMemBaseVtbl;
     ResetBase();
 }

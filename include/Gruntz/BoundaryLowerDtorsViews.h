@@ -27,8 +27,8 @@ struct CWorker39f20 : WorkerBase39f20 {
 };
 SIZE_UNKNOWN(CWorker39f20);
 
-// 0x08c400 - ~CHolder8c400 (/GX): derived vtable stamp, run the +0x00 teardown
-// (0x1c6a5c), then fold the base subobject.
+// 0x08c400 - /GX dtor: derived vtable stamp, run the +0x00 teardown (0x1c6a5c ==
+// CImageList::DeleteImageList, MFC) -> owns an MFC CImageList; then fold the CObject base.
 struct WorkerBase8c400 {
     virtual ~WorkerBase8c400(); // base vptr @ +0x00 (folds 0x5e8cb4)
 };
@@ -40,8 +40,10 @@ struct CHolder8c400 : WorkerBase8c400 {
 };
 SIZE_UNKNOWN(CHolder8c400);
 
-// 0x0390a0 - ~CCredits390a0 (/GX): explicit cleanup (0x17b570), then fold the two
-// owned members at +0x138 (dtor 0x1b4b76) and +0x124 (dtor 0x1bf121) in reverse.
+// 0x0390a0 - /GX dtor: explicit cleanup (0x17b570 == CPageStore17b510::Close), then fold the
+// two owned members at +0x138 (dtor 0x1b4b76 == ~CByteArray, MFC) and +0x124 (dtor 0x1bf121 ==
+// ~CFile, MFC) in reverse. Owns an MFC CFile (+0x124) + CByteArray (+0x138); the "CCredits"
+// class name is unconfirmed (a file/page loader).
 struct Member124_390a0 {
     char pad0[0x14];    // 0x124..0x137 (size 0x14)
     ~Member124_390a0(); // 0x1bf121
@@ -73,10 +75,11 @@ struct CMenuState8d000 : CStateBase8d000 {
 };
 SIZE_UNKNOWN(CMenuState8d000);
 
-// 0x021310 / 0x021570 - ~CButeTree (/GX, multiple inheritance): stamp both base
-// vtables, run the body teardown (0x16e070), then fold the +0x08 second base (dtor
-// 0x16dfc0, MI this-adjust null guard) and the +0x00 first base (dtor 0x16da60). Two
-// distinct derived classes share the base vtables.
+// 0x021310 / 0x021570 - CButeStore-family dtors (/GX, multiple inheritance): stamp both
+// base vtables, run the body teardown (0x16e070 == CButeStore::ClearRecursive), then fold
+// the +0x08 second base (dtor 0x16dfc0, MI this-adjust null guard) and the +0x00 first base
+// (dtor 0x16da60 == ~CContainerErr; its vtable 0x5e94ac == ??_7zPTree, RTTI-confirmed). Two
+// distinct derived classes share the base vtables (kept standalone to avoid dup base vtables).
 struct CButeBase1_21 {
     virtual ~CButeBase1_21();   // +0x00 vptr (0x5e94ac), dtor 0x16da60
     void Teardown16e070(i32 z); // 0x16e070

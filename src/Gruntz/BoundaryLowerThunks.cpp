@@ -128,11 +128,11 @@ void Register82aa0() {
 // pool globals (head @0x645540, freelist @0x645544, scratch @0x645548, bias
 // @0x64554c). __cdecl. The three pinned-elsewhere globals reuse their names.
 // ===========================================================================
-struct CoordPool {
+struct FreeNodePool {
     void Recycle(void* elem); // 0x0311b0
 };
-SIZE_UNKNOWN(CoordPool);
-extern CoordPool g_coordPool;  // 0x645540 (the BattlezMapConfig RUN-phase unit)
+SIZE_UNKNOWN(FreeNodePool);
+extern FreeNodePool g_coordPool;  // 0x645540 (the BattlezMapConfig RUN-phase unit)
 extern void* g_freeList;       // 0x645544 (Projectile.cpp)
 extern i32 g_freeListNodeBias; // 0x64554c (Projectile.cpp)
 RVA(0x00082fa0, 0x17)
@@ -256,13 +256,13 @@ void StrFreeb5380() {
 // 0x0b5400 / 0x0bd430 - tail-forward two distinct teardown methods (0x1befd7,
 // 0x1bf426) onto the shared object at 0x646778. __thiscall (no args).
 // ===========================================================================
-struct C646778 {
+struct CFileIO {
     void M1befd7(); // 0x1befd7 (reloc-masked)
     void M1bf426(); // 0x1bf426 (reloc-masked)
 };
-SIZE_UNKNOWN(C646778);
+SIZE_UNKNOWN(CFileIO);
 DATA(0x00246778)
-extern C646778 g_obj646778;
+extern CFileIO g_obj646778;
 RVA(0x000b5400, 0xa)
 void Forwardb5400() {
     g_obj646778.M1befd7();

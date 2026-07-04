@@ -217,7 +217,7 @@ i32 ParseSerial(CSerialObj* obj, char* s) {
 // 0x0212a0 - reset: recursively clear a child table (0x16e070) then null members
 // at +0x18, +0x28, +0x14 (in that order). __thiscall, no args.
 // ===========================================================================
-struct CClear212a0 {
+struct CButeStore {
     char m_pad0[0x14];
     void* m_14; // +0x14
     i32 m_18;   // +0x18
@@ -226,9 +226,9 @@ struct CClear212a0 {
     void ClearRecursive(i32); // 0x16e070 (reloc-masked)
     void Reset();
 };
-SIZE_UNKNOWN(CClear212a0);
+SIZE_UNKNOWN(CButeStore);
 RVA(0x000212a0, 0x21)
-void CClear212a0::Reset() {
+void CButeStore::Reset() {
     ClearRecursive(0);
     m_18 = 0;
     m_28 = 0;
