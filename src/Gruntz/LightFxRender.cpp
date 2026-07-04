@@ -8,9 +8,10 @@
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
-#include <DDrawMgr/DDSurface.h> // IDirectDrawSurface (the held surface's Unlock, slot 32)
-#include <Win32.h>              // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>              // real IDirectDrawSurface dispatch (Unlock)
+#include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) - this TU
+                   // uses only IDirectDrawSurface (no CDDSurface), so it stays off the
+                   // <Mfc.h>-pulling <DDrawMgr/DDSurface.h> and keeps its lean Win32 chain
 #include <Gruntz/LightFxRender.h>
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view

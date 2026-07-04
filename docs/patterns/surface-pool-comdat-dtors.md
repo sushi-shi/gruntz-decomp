@@ -14,7 +14,7 @@ vtable references its `??_G`, NOT by the byte pattern:
 
 | vtable (VA) | ??_G      | ~ (non-del dtor) | owner (this campaign)          | owning TU |
 | ----------- | --------- | ---------------- | ------------------------------ | --------- |
-| 0x5ef7f0 base | 0x141330 | 0x141350         | CFileImage / CDDSurface / CPoolItemBase | image |
+| 0x5ef7f0 base | 0x141330 | 0x141350         | CDDSurface (UNIFIED)           | image |
 | 0x5efa58 a58  | 0x142340 | 0x142360         | CFileImageSurface / CPoolItemA | image |
 | 0x5efa88 a88  | 0x142800 | 0x142820         | CPoolItemA88                   | ddrawptrcollections |
 | 0x5efab8 ab8  | 0x142a20 | 0x142a40         | CPoolItemAB8                   | ddrawptrcollections |
@@ -47,17 +47,35 @@ by the pool, so their dtors live only in the ddraw region.
   classes are declared-only (their COMDAT was the discarded copy) so no duplicate
   RVA is claimed.
 
-## The cross-module identity (documented, merge deferred)
+## The cross-module identity (MERGED — the base is one class `CDDSurface`)
 
-The base (0x5ef7f0) is modeled under THREE names — `CDDSurface` (<DDrawMgr/
+The base (0x5ef7f0) was modeled under THREE names — `CDDSurface` (<DDrawMgr/
 DDSurface.h>, the widely-included surface-op view), `CFileImage` (<Image/Image.h>,
 the fuller BMP/PCX/PID-loader view), `CPoolItemBase` (DDrawPtrCollections.cpp, the
-pool view) — and a58 under two (`CFileImageSurface` / `CPoolItemA`). Same physical
-class; RTTI-less so no ground-truth name. A full name-merge would force the +0x94
-`CByteArray` member onto ~30 pointer-only `CDDSurface` includers (the MFC ripple)
-and reconcile CDDSurface's placeholder vtable (`v00..v20`) into the real slot roles
-(dtor/Refresh/Init1/BlitSurf/FreeSurfaces) that a few TUs call — a large deliberate
-sweep, not a byte-match blocker. Until then the identity is documented on each view.
+pool view). Same physical class; RTTI-less so no ground-truth name, but EVERY method
+references `C:\Proj\DDrawMgr\DIRSURF.CPP`, so it is one DDrawMgr class from DIRSURF.CPP
+and `CDDSurface` (= DirectDraw Surface = DIRSURF) is the evidenced name. The three
+views are now UNIFIED into one `class CDDSurface` in <DDrawMgr/DDSurface.h>:
+- DDSurface.h absorbs Image.h's full model (all method decls + layout + the 9-slot
+  polymorphic vtable dtor/Refresh/Init1/BlitSurf/FreeSurfaces/IsValid/v18/RestoreLost/
+  v20), and pulls <Mfc.h> for the real +0x94 member. That member is a **CPtrArray**
+  (`m_elements`), NOT a CByteArray — the FreeSurfaces disasm (0x13e4d0) walks
+  `[+0x98][i*4]` and `delete`s each element via its slot-0 vdtor, i.e. an array of
+  polymorphic OBJECT POINTERS; the "CByteArray" FLIRT name was a misattribution.
+- Name-preserving field merge (semantic wins): m_pos (pool POSITION @+0x04), m_8/m_c
+  (held surfaces), m_lockBits (was m_34), m_dontOwn (was m_7c), m_bitDepth (was m_a8).
+- Image.h drops CFileImage (keeps CRezImage + the sibling helpers); all Image-module
+  bodies are now `CDDSurface::`. DDrawPtrCollections.cpp drops the local CPoolItemBase;
+  CPoolItemA/A88/AB8/AE8 derive from `CDDSurface`.
+- The dtor split: the image TU keeps the out-of-line `~CDDSurface` @0x141350 (its kept
+  COMDAT); the ddraw TU defines `~CDDSurface` inline (before the derived classes) so
+  each derived dtor still inlines the teardown. The build delinks per-unit, so the two
+  definitions do not collide. The a58 pair (CFileImageSurface / CPoolItemA) stays two
+  classes for the same reason (a SEPARATE unification, not yet done).
+- MFC ripple: the Win32 deref-consumers include DDSurface.h (with <Mfc.h>) FIRST;
+  pointer-only TUs that need only IDirectDrawSurface (e.g. LightFxRender) stay off it.
+Net matching impact was +0.01% fuzzy (one -1 exact = fileimageloadbyext's pre-existing
+scheduler coin-flip, re-triggered as its @early-stop comment predicts).
 
 ## Pool-B sibling (unrelated hierarchy)
 
