@@ -31,26 +31,23 @@ namespace Utils {
     };
 } // namespace Utils
 
-// The game-registry singleton. Only the offsets this proc walks are modeled:
-//   ((CGameRegLevel*)g_gameReg->m_curState)->m_1c   the current level number
-//   g_gameReg->m_settings   the Utils::RegistryHelper the values persist through
-//   g_gameReg->m_world->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
-struct CGameRegLevel {
+// The game-registry singleton (CGameRegistry.h). This proc reaches three owned
+// slots through AUTHENTIC per-site downcasts (their concrete class lives in other
+// clusters, so CGameRegistry keeps the base/void* type and the consumer casts):
+//   ((CGameRegLevel*)g_gameReg->m_curState)->m_1c   current level number
+//                                            (CState* base -> concrete level view)
+//   ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(...)
+//                                            (void* m_settings -> RegistryHelper)
+//   ((CGameRegWarp*)g_gameReg->m_world->m_24->m_5c)->m_84 / ->m_88  seed X/Y
+//                                            (viewport addr stored i32 -> +0x84/+0x88)
+struct CGameRegLevel { // downcast view of CState* m_curState (+0x1c level number)
     char m_pad00[0x1c];
     i32 m_1c;
 };
-struct CGameRegWarp {
+struct CGameRegWarp { // reinterpret view of the m_5c viewport (+0x84/+0x88 seed X/Y)
     char m_pad00[0x84];
     i32 m_84;
     i32 m_88;
-};
-struct CGameRegSub24 {
-    char m_pad00[0x5c];
-    CGameRegWarp* m_5c;
-};
-struct CGameRegSub30 {
-    char m_pad00[0x24];
-    CGameRegSub24* m_24;
 };
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -112,6 +109,4 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 SIZE_UNKNOWN(CGameRegLevel);
-SIZE_UNKNOWN(CGameRegSub24);
-SIZE_UNKNOWN(CGameRegSub30);
 SIZE_UNKNOWN(CGameRegWarp);

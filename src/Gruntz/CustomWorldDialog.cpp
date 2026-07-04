@@ -120,7 +120,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_str62c25c += "\\Custom\\";
     g_str62c25c += itemText;
     g_str62c25c += ".WWD";
-    if (!FileExists_4282((const char*)g_str62c25c)) {
+    if (!FileExists_4282(g_str62c25c)) {
         g_str62c25c.Empty();
         return 0;
     }

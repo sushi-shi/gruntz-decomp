@@ -47,9 +47,9 @@ struct CMultiRegSub {
 struct CMultiReg {
     char m_pad000[0x524];
     CMultiRegSub* m_524; // +0x524
-    void* m_528;         // +0x528  mode/team latch
+    i32 m_528;           // +0x528  mode/team latch (read only as a nonzero test)
     char m_pad52c[0x588 - 0x52c];
-    void* m_588; // +0x588  forced-count latch
+    i32 m_588; // +0x588  forced-count latch (read only as a nonzero test)
     char m_pad58c[0x5a4 - 0x58c];
     i32 m_5a4; // +0x5a4
     i32 m_5a8; // +0x5a8

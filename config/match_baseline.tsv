@@ -1706,7 +1706,7 @@ ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	2	7ce413
 ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	3	6a638d281002	0x98140
 customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	e093b53f1442	0x180e0
 customlevellist	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	73.9508	73.9508	1	2bdfbb3a9268	0x3af90
-customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	973547bb84a4	0x3b310
+customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	08dda11b8b49	0x3b310
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	4	b698ba8d6aa0	0x3ad90
 customworldinfodlg	?LoadCustomWorldInfo@@YAHPAX@Z	100.0000	100.0000	1	7279864a0176	0x3b7c0
 customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
