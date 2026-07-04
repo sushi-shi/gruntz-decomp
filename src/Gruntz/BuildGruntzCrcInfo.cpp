@@ -12,6 +12,7 @@
 // the rand nonce and WriteLog are reloc-masked engine calls.
 #include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
 #include <rva.h>
+#include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
 // A grunt record: only the dumped fields are named (sparse, raw offsets).
 struct CrcGrunt {
@@ -59,8 +60,6 @@ struct CrcOwner {
 };
 
 extern "C" char g_emptyString[]; // 0x6293f4 (== "")
-// FUN_0011fee0 __cdecl, 0-arg: the per-grunt random nonce ("rnd").
-extern i32 GruntCrcRand();
 
 // @source: decomp-xref
 // @early-stop
@@ -86,7 +85,7 @@ void CrcOwner::BuildGruntzCrcInfo() {
             if (grunt == 0) {
                 continue;
             }
-            i32 rnd = GruntCrcRand();
+            i32 rnd = rand();
             i32 type = grunt->m_170;
             i32 wp;
             switch (type) {
