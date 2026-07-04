@@ -66,6 +66,13 @@ wrapper, still runnable as `python -m gruntz.<...>`):
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.
 
+**The "MFC C1189 wall" is BREAKABLE** — `<Mfc.h>` is a superset of `<Win32.h>` (same
+windows.h + the MFC classes); a Win32 TU that needs a real MFC type just switches its
+umbrella to `<Mfc.h>` (kept first). Proven matching-neutral. Never park a view struct or
+offset-cast behind "the TU can't include MFC" — see
+docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md (caveats: STRICT `(HWND)`
+reinterprets, delete local decl-only proximity hosts).
+
 **Worked examples (real runs, trimmed):**
 
     $ gruntz sema xref 0x00080850          # use when: attributing an orphan fn to its owner
