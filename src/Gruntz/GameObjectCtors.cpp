@@ -39,8 +39,8 @@ extern CButeTree g_buteTree;
 //
 // Body: stamp the leaf vftable, register the sprite's GAME bute via
 // m_38->ApplyLookupSprite(str, 1), seed the "A" bute node, force the object's
-// pose id, then set the two sprite anchor fields m_5c/m_60. The three siblings
-// are the same shape (different vtbl/str and m_5c/m_60 constants).
+// pose id, then set the two sprite anchor fields m_anchorX/m_anchorY. The three
+// siblings are the same shape (different vtbl/str and anchor constants).
 // ===========================================================================
 
 // --- engine helper types (offsets load-bearing) ---------------------------
@@ -97,8 +97,8 @@ class CGruntStaminaSprite : public CGruntSpriteBase {
 public:
     CGruntStaminaSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
+    i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
 };
 
 class CGruntToyTimeSprite : public CGruntSpriteBase {
@@ -107,8 +107,8 @@ public:
     // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
     LogicTypeId GetTypeTag();
     char m_pad3c[0x5c - 0x3c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
+    i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
 };
 
 // The bound object the toy-time accessor reads its +0x3f4 timer field out of.
@@ -126,8 +126,8 @@ class CGruntWingzTimeSprite : public CGruntSpriteBase {
 public:
     CGruntWingzTimeSprite(CSpriteObj* obj);
     char m_pad3c[0x5c - 0x3c];
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
+    i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
+    i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
 };
 
 // Leaf vftables (??_7CGrunt{Stamina,ToyTime,WingzTime}Sprite@@6B@) are now
@@ -160,8 +160,8 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
         o->m_74 = 0xdbba0;
         o->m_08 |= 0x20000;
     }
-    m_5c = 0x64;
-    m_60 = -0x20;
+    m_anchorX = 0x64;
+    m_anchorY = -0x20;
 }
 
 // @confidence: high
@@ -181,8 +181,8 @@ CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntSpriteBase(obj
         o->m_74 = 0xdbba0;
         o->m_08 |= 0x20000;
     }
-    m_5c = 0;
-    m_60 = -0x20;
+    m_anchorX = 0;
+    m_anchorY = -0x20;
 }
 
 // GetToyTime @0x0007fca0 - free __stdcall accessor: read the bound host's +0x3f4
@@ -209,8 +209,8 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntSpriteBase
         o->m_74 = 0xdbba0;
         o->m_08 |= 0x20000;
     }
-    m_5c = 0;
-    m_60 = -0x26;
+    m_anchorX = 0;
+    m_anchorY = -0x26;
 }
 
 // ===========================================================================

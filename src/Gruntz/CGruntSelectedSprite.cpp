@@ -66,7 +66,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 }
 
 // Update @0x07e9f0 - resolve the grunt for cell (m_cellX,m_cellY) from the registry's
-// grunt table; if that grunt is drawn (entry->m_1d8), sync the +0x38 object's
+// grunt table; if that grunt is drawn (entry->m_drawn), sync the +0x38 object's
 // helper and copy the grunt's screen position into the bound renderable so the
 // "selected" ring tracks the grunt. Returns 0.
 //
@@ -74,17 +74,17 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 // regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
 // but cl pins g_mgrSettings in a different register than retail (ecx vs edx) and emits
 // the reg->m_68 load before the index lea-chain where retail defers it - the
-// `m_1d8` second condition shifts the register pressure so the deref ordering is
+// `m_drawn` second condition shifts the register pressure so the deref ordering is
 // not source-steerable (the sibling Toy::Update, no m_1d8 check, reaches 99.3%).
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_mgrSettings;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
-    if (e != 0 && e->m_1d8 != 0) {
+    if (e != 0 && e->m_drawn != 0) {
         ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
-        m_object->m_screenX = e->m_10->m_5c;
-        m_object->m_screenY = e->m_10->m_60;
+        m_object->m_screenX = e->m_renderable->m_screenX;
+        m_object->m_screenY = e->m_renderable->m_screenY;
     }
     return 0;
 }

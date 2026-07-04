@@ -83,16 +83,16 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     m_cellY = y;
     i32 slot = 0x15 - (i32)((double)health * 0.2 + 0.5);
     CGruntRenderable* obj = (CGruntRenderable*)m_object;
-    CGruntLayerHolder* map = obj->m_194;
+    CGruntLayerHolder* map = obj->m_layerHolder;
     if (map) {
         i32 glyph;
-        if (slot >= map->m_64 && slot <= map->m_68) {
-            glyph = map->m_14[slot];
+        if (slot >= map->m_layerLo && slot <= map->m_layerHi) {
+            glyph = map->m_layerTable[slot];
         } else {
             glyph = 0;
         }
-        obj->m_198 = glyph;
-        obj->m_190 = slot;
+        obj->m_mappedLayer = glyph;
+        obj->m_resolvedLayer = slot;
     }
     m_health = health;
     return 1;

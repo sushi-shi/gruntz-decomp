@@ -72,23 +72,23 @@ i32 CGruntToySprite::Update() {
     if (e == 0) {
         return 0;
     }
-    i32 layer = e->m_198;
+    i32 layer = e->m_layerIndex;
     if (m_lastLayer != layer) {
         CGruntRenderable* r = (CGruntRenderable*)m_object;
         m_lastLayer = layer;
-        CGruntLayerHolder* h = r->m_194;
+        CGruntLayerHolder* h = r->m_layerHolder;
         if (h != 0) {
             i32 mapped;
-            if (layer >= h->m_64 && layer <= h->m_68) {
-                mapped = h->m_14[layer];
+            if (layer >= h->m_layerLo && layer <= h->m_layerHi) {
+                mapped = h->m_layerTable[layer];
             } else {
                 mapped = 0;
             }
-            r->m_198 = mapped;
-            r->m_190 = layer;
+            r->m_mappedLayer = mapped;
+            r->m_resolvedLayer = layer;
         }
     }
-    m_object->m_screenX = e->m_10->m_5c;
-    m_object->m_screenY = e->m_10->m_60 - 0x20;
+    m_object->m_screenX = e->m_renderable->m_screenX;
+    m_object->m_screenY = e->m_renderable->m_screenY - 0x20;
     return 0;
 }

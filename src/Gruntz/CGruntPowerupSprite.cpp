@@ -11,26 +11,8 @@
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/CGruntPowerupSprite.h>
 
-// The (de)serialization archive: Read @ vtable slot 11 (+0x2c), Write @ slot 12
-// (+0x30) - the same CArchive-family shape the other leaf serializers tap. The 11
-// leading virtuals are placeholders fixing the offsets; bodies live elsewhere so
-// the thiscall dispatch reloc-masks.
-class PupArchive {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c
-    virtual void Write(void* buf, i32 n); // +0x30
-};
+// The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
+// @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
 
 // The serializable sub-object overlaid at CUserLogic+0x34; its own serializer is
 // reached as `lea ecx,[this+0x34]; call` through the 0x1aff thunk (the SAME helper
@@ -119,8 +101,8 @@ i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
     CGruntEntry* e = ((CGruntEntry**)((char*)g_mgrSettings->m_68 + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
-        m_object->m_screenX = e->m_10->m_5c;
-        m_object->m_screenY = e->m_10->m_60;
+        m_object->m_screenX = e->m_renderable->m_screenX;
+        m_object->m_screenY = e->m_renderable->m_screenY;
     }
     return 0;
 }
@@ -130,7 +112,7 @@ i32 CGruntPowerupSprite::Update() {
 // m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
 // the powerup's bute-set record (g_mgrSettings->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
-i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
+i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
         return 0;
     }
@@ -159,5 +141,4 @@ i32 CGruntPowerupSprite::Serialize(PupArchive* ar, i32 mode, i32 a3, i32 a4) {
 
 SIZE_UNKNOWN(CGruntPowerupSprite);
 SIZE_UNKNOWN(CPowerupActEntry);
-SIZE_UNKNOWN(PupArchive);
 SIZE_UNKNOWN(PupSubObj);

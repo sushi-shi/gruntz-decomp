@@ -32,10 +32,10 @@
 // ---------------------------------------------------------------------------
 struct CGruntLayerHolder {
     char m_pad00[0x14];
-    i32* m_14; // +0x14  the per-index layer table
+    i32* m_layerTable; // +0x14  the per-index layer table
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lo layer bound
-    i32 m_68; // +0x68  hi layer bound
+    i32 m_layerLo; // +0x64  lo layer bound
+    i32 m_layerHi; // +0x68  hi layer bound
 };
 
 // ---------------------------------------------------------------------------
@@ -45,16 +45,16 @@ struct CGruntLayerHolder {
 // ---------------------------------------------------------------------------
 struct CGruntRenderable {
     char m_pad00[0x4c];
-    i32 m_4c; // +0x4c  bute-set record (powerup setter)
-    i32 m_50; // +0x50  display state (== 7)
+    i32 m_buteRec;      // +0x4c  bute-set record (powerup setter)
+    i32 m_displayState; // +0x50  display state (== 7)
     char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58  visibility flag (== 1)
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
+    i32 m_visible; // +0x58  visibility flag (== 1)
+    i32 m_screenX; // +0x5c  screen x
+    i32 m_screenY; // +0x60  screen y
     char m_pad64[0x190 - 0x64];
-    i32 m_190;                // +0x190  resolved layer index
-    CGruntLayerHolder* m_194; // +0x194  layer-clamp holder
-    i32 m_198;                // +0x198  mapped layer value
+    i32 m_resolvedLayer;              // +0x190  resolved layer index
+    CGruntLayerHolder* m_layerHolder; // +0x194  layer-clamp holder
+    i32 m_mappedLayer;                // +0x198  mapped layer value
 };
 
 // ---------------------------------------------------------------------------
@@ -65,11 +65,11 @@ struct CGruntRenderable {
 // ---------------------------------------------------------------------------
 struct CGruntEntry {
     char m_pad00[0x10];
-    CGruntRenderable* m_10; // +0x10  the grunt's renderable
+    CGruntRenderable* m_renderable; // +0x10  the grunt's renderable
     char m_pad14[0x198 - 0x14];
-    i32 m_198; // +0x198  the grunt's current layer index
+    i32 m_layerIndex; // +0x198  the grunt's current layer index
     char m_pad19c[0x1d8 - 0x19c];
-    i32 m_1d8; // +0x1d8  the grunt's "drawn/visible" gate
+    i32 m_drawn; // +0x1d8  the grunt's "drawn/visible" gate
 };
 
 // ---------------------------------------------------------------------------

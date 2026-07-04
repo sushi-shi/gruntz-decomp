@@ -10,6 +10,7 @@
 #include <rva.h>
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
+#include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
 class CGruntPowerupSprite : public CUserLogic {
 public:
@@ -24,9 +25,9 @@ public:
     // sub-object, then round-trip m_cellX/m_cellY (8 B) and m_powerupId (4 B). On read (mode 7) it
     // re-resolves the powerup's bute-set record from g_gameReg->m_78 into the bound
     // renderable (m_10). (__thiscall: ret 0x10.)
-    i32 Serialize(class PupArchive* ar, i32 mode, i32 a3, i32 a4);
+    i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4);
 
-    i32 m_40; // +0x40
+    i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
     char m_pad44[0x54 - 0x44];
     i32 m_cellX;     // +0x54  grunt cell x
     i32 m_cellY;     // +0x58  grunt cell y

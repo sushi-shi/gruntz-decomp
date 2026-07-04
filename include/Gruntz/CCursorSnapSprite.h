@@ -37,7 +37,7 @@ public:
     CCursorSnapSprite(CGameObject* obj);   // 0x3a340
     virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
 };
 
 #endif // GRUNTZ_CCURSORSNAPSPRITE_H
