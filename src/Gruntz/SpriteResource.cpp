@@ -213,9 +213,9 @@ struct CSprite2 {
 
 // CSpriteFactory now lives in the shared <Gruntz/SpriteFactory.h> (included above);
 // this TU owns CreateSprite (0x1597b0) + AttachSprite (0x159830). The lookup RESULT is
-// a CSprite frame-data template; the created INSTANCE is a CIconSprite.
+// a CSprite frame-data template; the created INSTANCE is the shared CGameObject.
 RVA(0x001597b0, 0x57)
-CIconSprite*
+CGameObject*
 CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags) {
     CSprite* tmpl = 0;
     m_c->m_14->m_10map.Lookup(name, &tmpl);

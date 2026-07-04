@@ -344,7 +344,7 @@ i32 CDroppedObject::ActA() {
                                 && m_landY < g_gameReg->m_viewOriginB
                                 && m_landY >= g_gameReg->m_viewOriginT) {
                                 CGameObject* s =
-                                    (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+                                    g_gameReg->m_world->m_8->CreateSprite(
                                         0,
                                         x,
                                         m_landY,
@@ -366,7 +366,7 @@ i32 CDroppedObject::ActA() {
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
                 && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
-                CGameObject* s = (CGameObject*)g_gameReg->m_world->m_8
+                CGameObject* s = g_gameReg->m_world->m_8
                                      ->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");

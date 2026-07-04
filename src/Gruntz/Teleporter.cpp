@@ -225,7 +225,7 @@ i32 CTeleporter::Update() {
         m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
-        CGameObject* spawned = (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+        CGameObject* spawned = g_gameReg->m_world->m_8->CreateSprite(
             0,
             s->m_11c * 32 + 16,
             s->m_120 * 32 + 16,
@@ -242,7 +242,7 @@ i32 CTeleporter::Update() {
         }
     } else {
         CGameObject* s = m_object;
-        CGameObject* spawned = (CGameObject*)g_gameReg->m_world->m_8->CreateSprite(
+        CGameObject* spawned = g_gameReg->m_world->m_8->CreateSprite(
             0,
             s->m_164 * 32 + 16,
             s->m_168 * 32 + 16,

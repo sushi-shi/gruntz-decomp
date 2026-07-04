@@ -297,7 +297,21 @@ SIZE_UNKNOWN(CGameObjAux);
 struct CGameObjAux {
     char m_pad00[0x08];
     i32 m_08; // +0x08
-    char m_pad0c[0x1c - 0x0c];
+    char m_pad0c[0x10 - 0x0c];
+    // +0x10  post-create init/activation driver: the creating TUs run
+    // `spr->m_7c->Init(spr)` on the fresh CSpriteFactory::CreateSprite result
+    // (ProjectileUpdate / CheckpointSwitchBuild / GruntResurrectRadius /
+    // GruntSpawnConfig / ExitTrigger; SpriteResource's AttachSprite drives the
+    // same slot post-attach).
+    void (*Init)(CGameObject* obj); // +0x10
+    char m_pad14[0x18 - 0x14];
+    // +0x18  the per-class setup/logic object bound to the created sprite. Its
+    // concrete type follows the CreateSprite class-name key (CProjSetup for
+    // "Projectile"/"Boomerang", the LightFx flash config for "LightFx", the
+    // voice stream handle for "GruntVoice"; ExitTrigger snapshots it raw as the
+    // warlord id), so the creating TU downcasts per site - a proven-heterogeneous
+    // slot, kept generically typed like m_1c.
+    void* m_18; // +0x18
     void* m_1c; // +0x1c
     char m_pad20[0xbc - 0x20];
     i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
