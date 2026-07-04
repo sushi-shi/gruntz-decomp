@@ -25,8 +25,16 @@ AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
 // <Gruntz/CWnd.h>). Ctor/CreateEx/SetFocus are external (the CObject vtable is
 // stamped by the real ctor).
 
-// The video window seen through its manual playback vtable during teardown: slot 1
-// (+0x04) is the scalar-deleting destroy, slot 24 (+0x60) the finalize hook.
+// m_videoWnd is genuinely `new CWnd` (CreateVideoWindow: push 0x3c; call the CWnd
+// ctor 0x1baecf) - so these two Teardown dispatches go through MFC CWnd's OWN
+// vtable: slot 1 (+0x04) is CObject's scalar-deleting destructor (Destroy(1)),
+// slot 24 (+0x60) a CWnd finalize virtual (Finish). This is a FOREIGN-SDK vtable
+// view, not a game-class cross-cast: CWnd.h models MFC's CWnd with NO real virtuals
+// (its ctor is an external NAFXCW entrypoint, so cl never emits a CWnd vtable),
+// and declaring all 24 intervening MFC slots in the shared CWnd.h just to name
+// these two would fabricate 23 placeholder virtuals into a widely-shared header for
+// no net gain. Kept as a compact local interface; the __thiscall dispatch is the
+// same `mov ecx,[wnd]; mov eax,[ecx]; call [eax+slot]` either way.
 SIZE_UNKNOWN(CursSink);
 struct CursSink {
     virtual void v0();
@@ -66,16 +74,16 @@ extern "C" __declspec(dllimport) u32 __stdcall SmackClose(i32 smk);
 // The Rez allocator's free (RVA 0x1b9b82).
 extern "C" void RezFree_call(void* p);
 
-// A releasable sub-buffer reached via manual vtable dispatch (slot +0x08).
-struct SmkBufVtbl;
+// A releasable sub-buffer reached via its vtable (Release at slot 2 == +0x08).
+// Foreign engine object: the slots are __stdcall (retail dispatch pushes the object
+// as an explicit stack arg -- `mov ecx,[obj]; push obj; call [ecx+8]`, not ecx), so
+// Release is a __stdcall virtual on a real (declare-only) polymorphic class. The
+// indirect call is the same codegen as the old hand-rolled SmkBufVtbl.
 SIZE_UNKNOWN(SmkBuf);
 struct SmkBuf {
-    SmkBufVtbl* m_vptr;
-};
-SIZE_UNKNOWN(SmkBufVtbl);
-struct SmkBufVtbl {
-    void* s0[2];
-    void(__stdcall* Release)(SmkBuf*); // +0x08
+    virtual void v0();
+    virtual void v1();
+    virtual void __stdcall Release(); // slot 2 == +0x08
 };
 // The embedded sub-player whose Shutdown() lives at RVA 0x17b570.
 SIZE_UNKNOWN(SmackSub);
@@ -205,11 +213,11 @@ i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         return r;
     }
     if (m_24) {
-        m_24->m_vptr->Release(m_24);
+        m_24->Release();
         m_24 = 0;
     }
     if (m_28) {
-        m_28->m_vptr->Release(m_28);
+        m_28->Release();
         m_28 = 0;
     }
     CloseSmacker();
@@ -243,11 +251,11 @@ i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         return r;
     }
     if (m_24) {
-        m_24->m_vptr->Release(m_24);
+        m_24->Release();
         m_24 = 0;
     }
     if (m_28) {
-        m_28->m_vptr->Release(m_28);
+        m_28->Release();
         m_28 = 0;
     }
     CloseSmacker();

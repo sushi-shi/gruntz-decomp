@@ -22,33 +22,64 @@
 DATA(0x001ef888)
 extern void* g_imageProbeTag; // 0x5ef888
 
-// The resolved image source (CImageSource): slot-0 Probe(magic, &out).
-struct CImageSource;
-struct CImageSourceVtbl {
-    i32(__stdcall* Probe)(CImageSource*, void* magic, void** out); // +0x00
-};
+// The engine's COM-style interfaces (vptr @ +0x00, __stdcall slots that take the
+// object as the explicit first arg). Modeled as real declare-only polymorphic
+// classes: cl emits no vtable (no ctor/key-fn defined, never instantiated), and
+// `obj->Slot(args)` lowers to the same `mov eax,[obj]; push obj; call [eax+slot]`
+// the old hand-rolled *Vtbl structs did (verified byte-exact at 0x17cbe0). The
+// intervening unnamed slots are placeholder virtuals holding the slot index.
+
+// The resolved image source: Probe at slot 0 (+0x00), Probe(magic, &out).
 struct CImageSource {
-    CImageSourceVtbl* vtbl;
+    virtual i32 __stdcall Probe(void* magic, void** out); // slot 0 == +0x00
 };
 
-// The probed payload object: slot 0x7c hands it the bound surface.
-struct CImagePayload;
-struct CImagePayloadVtbl {
-    char s0[0x7c];
-    void(__stdcall* Apply)(CImagePayload*, void* surface); // +0x7c
-};
+// The probed payload object: Apply at slot 31 (+0x7c) hands it the bound surface.
 struct CImagePayload {
-    CImagePayloadVtbl* vtbl;
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void v19();
+    virtual void v20();
+    virtual void v21();
+    virtual void v22();
+    virtual void v23();
+    virtual void v24();
+    virtual void v25();
+    virtual void v26();
+    virtual void v27();
+    virtual void v28();
+    virtual void v29();
+    virtual void v30();
+    virtual void __stdcall Apply(void* surface); // slot 31 == +0x7c
 };
 
-// The source provider that builds the descriptor into a CImageSource: slot 6.
-struct CImageProvider;
-struct CImageProviderVtbl {
-    char s0[0x18];
-    i32(__stdcall* BuildSource)(CImageProvider*, void* desc, CImageSource** out, i32 flag); // +0x18
-};
+// The source provider that builds the descriptor into a CImageSource: BuildSource
+// at slot 6 (+0x18).
 struct CImageProvider {
-    CImageProviderVtbl* vtbl;
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual i32 __stdcall BuildSource(void* desc, CImageSource** out, i32 flag); // slot 6 == +0x18
 };
 
 // The source-info object the descriptor is seeded from (+0x10).
@@ -95,14 +126,14 @@ i32 CImageProbe::Init() {
     m_desc.f68 = 0x840;
     m_desc.f08 = m_10->m_08;
     m_desc.f0c = m_10->m_04;
-    if (m_14->vtbl->BuildSource(m_14, &m_desc, &m_28, 0) != 0) {
+    if (m_14->BuildSource(&m_desc, &m_28, 0) != 0) {
         return 0;
     }
-    if (m_28->vtbl->Probe(m_28, &g_imageProbeTag, (void**)&m_24) != 0) {
+    if (m_28->Probe(&g_imageProbeTag, (void**)&m_24) != 0) {
         return 0;
     }
     if (m_520 == 8) {
-        m_24->vtbl->Apply(m_24, m_2c);
+        m_24->Apply(m_2c);
     }
     return 1;
 }
@@ -112,8 +143,6 @@ i32 CImageProbe::Init() {
 SIZE_UNKNOWN(CImageDesc);
 SIZE_UNKNOWN(CImageInfo);
 SIZE_UNKNOWN(CImagePayload);
-SIZE_UNKNOWN(CImagePayloadVtbl);
 SIZE_UNKNOWN(CImageProbe);
 SIZE_UNKNOWN(CImageProvider);
-SIZE_UNKNOWN(CImageProviderVtbl);
-SIZE_UNKNOWN(CImageSourceVtbl);
+SIZE_UNKNOWN(CImageSource);
