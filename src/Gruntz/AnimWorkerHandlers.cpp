@@ -8,7 +8,7 @@
 // trace-clusterer's tomalla-72 "class" is a false grouping; see the report).
 // Each reads owner->m_7c (the worker), then runs a /GX message pump keyed on the
 // worker's state tag worker->m_1c:
-//   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow
+//   state 0      -> `new <leaf>(owner)`; activate it (sub->vtbl[0x18]); stow
 //                   it at worker->m_18; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
 //   state 0x50   -> sub->vtbl[0x38]()      state 0x53 -> sub->vtbl[0x3c]()
@@ -27,53 +27,34 @@
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// The polymorphic sub-record the worker `new`s and dispatches. Slots are laid
-// out so the message pump's vtable calls land at the right byte offsets
-// (0x18 = slot 6 activate, 0x28..0x3c = slots 10..15). Declarations only - never
-// defined here, so no ??_7 is emitted; the constructed object's real vtable is
-// the engine sprite class's, stamped by its own (extern) constructor.
-class SubRecord {
-public:
-    virtual void Slot00();   // +0x00
-    virtual void Slot04();   // +0x04
-    virtual void Slot08();   // +0x08
-    virtual void Slot0C();   // +0x0c
-    virtual void Slot10();   // +0x10
-    virtual void Slot14();   // +0x14
-    virtual void Activate(); // +0x18  (slot 6)
-    virtual void Slot1C();   // +0x1c
-    virtual void Slot20();   // +0x20
-    virtual void Slot24();   // +0x24
-    virtual void Vfunc28();  // +0x28  (state 0x1e)
-    virtual void Vfunc2C();  // +0x2c  (state 0x1d)
-    virtual void Vfunc30();  // +0x30  (state 0x52)
-    virtual void Vfunc34();  // +0x34  (state 0x51)
-    virtual void Vfunc38();  // +0x38  (state 0x50)
-    virtual void Vfunc3C();  // +0x3c  (state 0x53)
-};
+// The dispatched sub-records are real CUserLogic leaves (vftable 0x5e705c, 16
+// slots); the worker pump calls their inherited slots (slot 6 activate @+0x18,
+// slots 10..15 @+0x28..+0x3c) directly - no fabricated view class.
+#include <Gruntz/UserLogic.h>
 
-// The three engine sprite sub-records the handlers `new`. Each is an opaque
-// engine object of its exact retail size with a 1-arg __thiscall constructor
-// matched in another TU; declared with no body so `new T(owner)` lowers to
-// push sizeof(T); call operator new; mov ecx,raw; push owner; call <ctor>, all
-// reloc-masked. The leading SubRecord base lets the post-construction
-// Activate() dispatch lower to `mov eax,[obj]; call [eax+0x18]`.
+// The owner game object handed to each handler; forward-declared for the leaf
+// ctors, fully defined below.
 struct Owner;
 
-struct SubRecord54 : public SubRecord {
-    SubRecord54(Owner* owner); // 0x03fc70 (CWormhole::Stub_03fc70 family)
-    char m_body[0x54 - 0x04];
+// The three engine sprite sub-records the handlers `new` (real CUserLogic leaves;
+// each most-derived ctor is matched in another TU). Here each is a thin size-view
+// - inherited CUserLogic base + the leaf's own tail as m_body - so `new T(owner)`
+// lowers to push sizeof(T); call operator new; mov ecx,raw; push owner; call
+// <ctor>, all reloc-masked, and the post-construction activate + pump dispatches
+// lower to `mov eax,[obj]; call [eax+N]` through the inherited 16-slot vtable.
+struct CWormhole : public CUserLogic {
+    CWormhole(Owner* owner); // 0x03fc70
+    char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
-struct SubRecord5C : public SubRecord {
-    SubRecord5C(Owner* owner); // 0x07e3e0 CGruntSelectedSprite
-    char m_body[0x5c - 0x04];
+struct CGruntSelectedSprite : public CUserLogic {
+    CGruntSelectedSprite(Owner* owner); // 0x07e3e0
+    char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
-struct SubRecord60 : public SubRecord {
-    SubRecord60(Owner* owner); // 0x07f350 CGruntToySprite
-    char m_body[0x60 - 0x04];
+struct CGruntToySprite : public CUserLogic {
+    CGruntToySprite(Owner* owner); // 0x07f350
+    char m_body[0x60 - 0x40];
 }; // sizeof = 0x60
 
 // The worker held at owner->m_7c (foreign vtable 0x5efb80). Only the message-
@@ -81,7 +62,7 @@ struct SubRecord60 : public SubRecord {
 struct Worker {
     void* m_vptr;              // +0x00
     char m_pad04[0x18 - 0x04]; // +0x04..0x17
-    SubRecord* m_18;           // +0x18  the live sub-record
+    CUserLogic* m_18;          // +0x18  the live sub-record
     u32 m_1c;                  // +0x1c  state tag (UNSIGNED switch key)
 };
 
@@ -93,7 +74,7 @@ struct Owner {
 
 // The engine default message pump run for any unhandled state (0x16e4f0,
 // __cdecl, takes the sub-record). Reloc-masked rel32 - no body.
-extern "C" void Worker_DefaultPump(SubRecord* sub);
+extern "C" void Worker_DefaultPump(CUserLogic* sub);
 
 // ---------------------------------------------------------------------------
 // The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range
@@ -106,28 +87,28 @@ i32 Handler03d670(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord54(owner);
-            sub->Activate();
+            CUserLogic* sub = new CWormhole(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -144,28 +125,28 @@ i32 Handler07db20(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord5C(owner);
-            sub->Activate();
+            CUserLogic* sub = new CGruntSelectedSprite(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -182,28 +163,28 @@ i32 Handler07dda0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new SubRecord60(owner);
-            sub->Activate();
+            CUserLogic* sub = new CGruntToySprite(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -263,7 +244,4 @@ WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_174 = 0;
     m_178 = 0;
 }
-SIZE_UNKNOWN(SubRecord54);
-SIZE_UNKNOWN(SubRecord5C);
-SIZE_UNKNOWN(SubRecord60);
 SIZE_UNKNOWN(WorkerFull);

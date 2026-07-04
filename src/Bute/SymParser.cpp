@@ -104,17 +104,20 @@ CSymParser::~CSymParser() {
     // in reverse declaration order, under the /GX member-teardown trylevels.
 }
 
-// The two reader constructors ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
+// The two concrete reader nodes ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
 // binary @0x13c540 ctor(this)). Both __thiscall on a freshly allocated reader block.
-// Reloc-masked externs.
-struct CTextReaderInit {
-    char m_storage[0x38];
+// Reloc-masked externs. Each is a real CObjNode leaf (the intrusive-list-node base:
+// vptr + next/prev at +0..+0xb, the Read/ReadRaw reader vtable), so `new T(...)` is a
+// plain CObjNode* upcast (base @ offset 0) - no reinterpret cast, and the list-Link /
+// Read / ReadRaw dispatches fall out of the inherited base.
+struct CTextReaderInit : public CObjNode {
     CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
+    char m_body[0x38 - 0xc];               // own text-reader state (past the CObjNode base)
 };
 SIZE(CTextReaderInit, 0x38); // text-reader alloc block (operator new)
-struct CBinReaderInit {
-    char m_storage[0x24];
+struct CBinReaderInit : public CObjNode {
     CBinReaderInit(CSymParser* p); // 0x13c540
+    char m_body[0x24 - 0xc];       // own binary-reader state (past the CObjNode base)
 };
 SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
 
@@ -148,7 +151,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (m_40 == 0) {
             return 0;
         }
-        CObjNode* reader = (CObjNode*)new CTextReaderInit(this, m_2c);
+        CObjNode* reader = new CTextReaderInit(this, m_2c);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -176,7 +179,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 1;
     }
     // binary stream
-    CObjNode* reader = (CObjNode*)new CBinReaderInit(this);
+    CObjNode* reader = new CBinReaderInit(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;

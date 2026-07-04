@@ -96,6 +96,12 @@ i32 CUserLogic::UserLogicVfuncA() {
 i32 CUserLogic::UserLogicVfuncB() {
     return 0;
 }
+i32 CUserLogic::UserLogicVfuncC() {
+    return 0;
+}
+i32 CUserLogic::UserLogicVfuncD() {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // CSecretTeleporterTrigger virtual support. Two engine externs the Serialize

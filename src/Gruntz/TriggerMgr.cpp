@@ -1077,6 +1077,13 @@ struct CTmPendingFx {
 // polymorphic so `src->GetA/GetB` lower to the retail `mov eax,[esi]; call [eax+0x2c/0x30]`
 // virtual dispatch (GetA at slot 11=+0x2c, GetB at slot 12=+0x30); slots 0..10 are unused
 // placeholders that only pin the vtable layout.
+//
+// NOT reparentable to a named sprite base: `obj` arrives as the opaque first arg (a0) of
+// CGruntzMgr::BroadcastCmd (0x93460), a broadcast-command payload whose concrete class is
+// not determinable from the reconstructed set - GetA/GetB are a generic 2-getter sprite
+// interface, not a modeled shared base. Kept as a documented genuine interface view (the
+// task's "else leave"); RebuildOverlay is byte-exact (100%) so a speculative retype would
+// only risk it.
 struct CTmOverlaySrc {
     virtual void vf00();
     virtual void vf01();

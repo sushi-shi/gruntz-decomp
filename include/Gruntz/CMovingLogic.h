@@ -12,8 +12,9 @@
 //   * twelve default-bound doubles the ctor seeds to the [MIN,MAX] box;
 //   * four trailing ints (+0x140..+0x14c) the per-frame Update / bute Serialize touch.
 //
-// Vtable (17 slots, per vtable_hierarchy --class CMovingLogic): 16 inherited from
-// CUserLogic + exactly ONE new virtual, Update (slot 16 / offset 0x40, RVA 0x16ea90).
+// Vtable (17 slots, per vtable_hierarchy --class CMovingLogic): all 16 inherited from
+// CUserLogic (now fully modeled at 16 slots) + exactly ONE new virtual, Update
+// (slot 16 / offset 0x40, RVA 0x16ea90).
 // Serialize (0x16f4a0, slot 1 override) and the leaf dtor (slot 0, 0x13bd0) are the
 // class's own remaining methods.
 //
@@ -64,12 +65,9 @@ public:
     CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
     CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
     virtual ~CMovingLogic() OVERRIDE; // slot 0 (leaf dtor 0x13bd0)
-    // Slots 14/15 are CUserLogic's own real slots; UserLogic.h models CUserLogic at
-    // its 14-slot fat view, so they are declared here as fillers purely to land
-    // Update at its true slot 16 (offset 0x40) without editing the shared base. The
-    // CUserLogic 14->16 slot correction belongs to CUserLogic's own INHERIT pass.
-    virtual i32 CUserLogicSlot14();
-    virtual i32 CUserLogicSlot15();
+    // Update lands at its true slot 16 (offset 0x40) directly: CUserLogic now models
+    // all 16 of its real slots (0..15), so Update is CMovingLogic's first added
+    // virtual with no filler needed.
     virtual void Update(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
 
     // Slot 1 override (bute-text serialize). Kept a plain method (its (arc,mode,..)

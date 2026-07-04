@@ -147,12 +147,6 @@ const double g_movingLogicMax = 2147483646.0;
 // (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.)
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
-i32 CMovingLogic::CUserLogicSlot14() {
-    return 0;
-}
-i32 CMovingLogic::CUserLogicSlot15() {
-    return 0;
-}
 
 i32 CProjectile::ProjectileVfunc() {
     return 0;

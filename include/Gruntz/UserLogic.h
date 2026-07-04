@@ -6,7 +6,7 @@
 //
 // Hierarchy (recovered from RTTI ClassHierarchyDescriptors in GRUNTZ.EXE):
 //     CUserBase                       vftable 0x5e70b4  (3 virtuals)
-//       +-- CUserLogic : CUserBase    vftable 0x5e705c  (12 virtuals)
+//       +-- CUserLogic : CUserBase    vftable 0x5e705c  (16 virtuals)
 //             +-- CSecretLevelTrigger, CTileTrigger, CTeleporter, CWarpStonePad,
 //                 CToobSpikez, ...    (the tile-logic game-object leaves)
 //
@@ -226,9 +226,11 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CUserLogic : CUserBase (vftable 0x5e705c, 16 slots; only the first 12 modeled
-// here - the tile-logic leaves stamp the vftable by address, so the extra slots
-// need not be declared). Owns the shared data layout + the +0x18 link sub-object.
+// CUserLogic : CUserBase (vftable 0x5e705c, 16 slots; ALL 16 modeled here -
+// CUserBase slots 0..2 + UserLogicVfunc1..D at slots 3..15). Owns the shared data
+// layout + the +0x18 link sub-object. The full 16-slot model lets CUserLogic-derived
+// leaves that add their OWN virtuals (CMovingLogic::Update @slot 16, CPathHazard's
+// Tick..HitTest @slots 16..20) land them at the true retail offsets with no filler.
 // The default ctor just constructs the link (used by the no-arg leaves). The
 // inline 1-arg ctor folds the full shared init into each leaf's 1-arg ctor.
 //
@@ -257,6 +259,8 @@ public:
     virtual i32 UserLogicVfunc9();
     virtual i32 UserLogicVfuncA();
     virtual i32 UserLogicVfuncB();
+    virtual i32 UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
+    virtual i32 UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
 
     // The shared serialize-chain helper (0x16e7f0, __thiscall ret 0x10). Run on
     // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;

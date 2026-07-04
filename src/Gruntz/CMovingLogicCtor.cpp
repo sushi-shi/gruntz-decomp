@@ -19,12 +19,6 @@
 // in MovingLogicUpdate.cpp, referenced externally.)
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
-i32 CMovingLogic::CUserLogicSlot14() {
-    return 0;
-}
-i32 CMovingLogic::CUserLogicSlot15() {
-    return 0;
-}
 
 // The standalone ctor. The +0x38..+0x10c motion ints are zeroed in retail's
 // scheduled "column" order (all .a/low fields, then all .b/high fields), then the

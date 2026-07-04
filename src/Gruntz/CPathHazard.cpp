@@ -19,35 +19,15 @@
 // sqrt inlines to fsqrt at /O2; the (int)double casts lower to __ftol.
 extern "C" double sqrt(double);
 
-// The typed view of `this`'s vtable the Tick driver / ForwardTick dispatch
-// through. The slots are the hazard's own __thiscall virtuals invoked indirectly
-// (`mov ecx,this; call [edx+NN]`): slot 16 (+0x40) Tick (ForwardTick's tail
-// target), slot 18 (+0x48) the "arrived" handler, slot 19 (+0x4c) BeginLeg, slot
-// 20 (+0x50) the per-frame hit test. Each slot is a pointer-to-member-function of
-// CPathHazard (single inheritance -> 4-byte code pointer; CPathHazard is complete
-// in the header above, pmf-complete-class-4byte), so `(this->*slot)(...)` emits
-// the `mov ecx,this; call [slot]` virtual-dispatch shape with no cast.
-//
-// NOT realizable to plain `this->Tick()` direct virtual calls (base-vtable
-// slot-count wall, dummy-virtual-slots.md): the modeled CUserLogic base carries
-// only 14 vtable slots (CUserBase 0..2 + UserLogicVfunc1..B = 3..13), but retail's
-// CPathHazard vtable places Tick at slot 16 (+0x40). A direct `this->Tick()` thus
-// dispatches through the C++-computed slot 14 (+0x38) - PROVEN: converting
-// ForwardTick to `Tick()` emitted `jmp [eax+0x38]` vs retail's `jmp [eax+0x40]`
-// (regressed the exact match). The manual struct hard-codes the retail offsets to
-// sidestep the 2-slot base gap; realizing needs CUserLogic widened to 16 slots (a
-// shared-base change rippling every CUserLogic-derived vtable), not a per-class fix.
-typedef void (CPathHazard::*PathArriveFn)();
-typedef i32 (CPathHazard::*PathBeginFn)();
-typedef i32 (CPathHazard::*PathHitFn)(i32, i32);
-struct CPathHazardVtbl {
-    char s0[0x40];
-    PathArriveFn Tick; // +0x40  slot 16
-    char s44[0x48 - 0x44];
-    PathArriveFn Arrive;  // +0x48  slot 18
-    PathBeginFn BeginLeg; // +0x4c  slot 19 (== 0xb47e0)
-    PathHitFn HitTest;    // +0x50  slot 20
-};
+// CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
+// (`this->Tick/Arrive/BeginLeg/HitTest()`): CUserLogic is modeled at its full 16
+// slots (UserLogic.h), so CPathHazard's five added virtuals land at their true
+// retail slots 16..20 (+0x40 Tick, +0x48 Arrive, +0x4c BeginLeg, +0x50 HitTest) -
+// the former base-vtable slot-count wall (14-slot base -> Tick mis-placed at slot
+// 14) is lifted, and the manual CPathHazardVtbl offset-view is gone. (CLightningHazard
+// below still reads the same slots RAW via CLightVtbl: it cannot derive CPathHazard -
+// its /GX leaf dtor must fold the bare-CUserLogic teardown, which an out-of-line
+// CPathHazard base dtor would block - so its raw view is retained.)
 
 // ---------------------------------------------------------------------------
 // A sibling timed/striking path-hazard (the CRainCloud/CUFO family; proximity-
@@ -293,8 +273,7 @@ i32 CPathHazard::Tick() {
                 ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
-                CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
-                if ((this->*(vt->HitTest))(outA, outB) == 0) {
+                if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
                     return 0;
                 }
             }
@@ -309,8 +288,7 @@ i32 CPathHazard::Tick() {
             // Arrived at the waypoint tile.
             m_posX = (double)wx;
             m_posY = (double)wy;
-            CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
-            (this->*(vt->Arrive))();
+            this->Arrive(); // virtual slot 18 (+0x48)
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legSegs = segs;
@@ -321,7 +299,7 @@ i32 CPathHazard::Tick() {
                 m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;
             }
-            (this->*(vt->BeginLeg))();
+            this->BeginLeg(); // virtual slot 19 (+0x4c)
             return 0;
         }
     }
@@ -527,8 +505,7 @@ i32 CPathHazard::BeginLeg() {
 // [eax+0x40]`. The tail-call through the typed vtable emits the jmp directly.
 RVA(0x000b5070, 0x5)
 void CPathHazard::ForwardTick() {
-    CPathHazardVtbl* vt = *(CPathHazardVtbl**)this;
-    (this->*(vt->Tick))();
+    Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
@@ -541,6 +518,5 @@ SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathCueGate);
 SIZE_UNKNOWN(CPathEntity);
-SIZE_UNKNOWN(CPathHazardVtbl);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);

@@ -8,7 +8,7 @@
 // clusterer's tomalla-65 grouping was a false grouping; these are not class
 // members). Each reads owner->m_7c (the worker), then runs a /GX message pump
 // keyed on the worker's state tag worker->m_1c:
-//   state 0      -> `new <SubRecord>(owner)`; activate it (sub->vtbl[0x18]); stow
+//   state 0      -> `new <leaf>(owner)`; activate it (sub->vtbl[0x18]); stow
 //                   it at worker->m_18; advance the state tag to 0x3e8.
 //   state 0x1d   -> sub->vtbl[0x2c]()      state 0x1e -> sub->vtbl[0x28]()
 //   state 0x50   -> sub->vtbl[0x38]()      state 0x53 -> sub->vtbl[0x3c]()
@@ -28,27 +28,29 @@
 // are load-bearing (campaign doctrine).
 #include <rva.h>
 
-#include <Gruntz/WorkerHandler.h> // shared SubRecord / Worker / Owner archetype
+#include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + CUserLogic base
 
-// The three engine HUD sub-records the handlers `new`. Each is an opaque engine
-// object of its exact retail size with a 1-arg __thiscall constructor matched in
-// another TU; declared with no body so `new T(owner)` lowers to
+// The three engine HUD sub-records the handlers `new`. Each is a real CUserLogic
+// leaf (its own most-derived ctor is matched in another TU); here it is a thin
+// size-view - the inherited CUserLogic base + the leaf's own tail as m_body. The
+// 1-arg __thiscall ctor is declared with no body so `new T(owner)` lowers to
 // push sizeof(T); call operator new; mov ecx,raw; push owner; call <ctor>, all
-// reloc-masked. The leading SubRecord base lets the post-construction Activate()
-// dispatch lower to `mov eax,[obj]; call [eax+0x18]`.
-struct CInGameIcon : public SubRecord {
+// reloc-masked. Deriving the real CUserLogic base lets the post-construction
+// activate + pump dispatches lower to `mov eax,[obj]; call [eax+N]` through the
+// inherited 16-slot CUserLogic vtable (no fabricated view class).
+struct CInGameIcon : public CUserLogic {
     CInGameIcon(Owner* owner); // 0x095b10
-    char m_body[0x80 - 0x04];
+    char m_body[0x80 - 0x40];
 }; // sizeof = 0x80
 
-struct CInGameText : public SubRecord {
+struct CInGameText : public CUserLogic {
     CInGameText(Owner* owner); // 0x099110
-    char m_body[0x5c - 0x04];
+    char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
-struct CEyeCandy : public SubRecord {
+struct CEyeCandy : public CUserLogic {
     CEyeCandy(Owner* owner); // 0x0ac620
-    char m_body[0x54 - 0x04];
+    char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
 // ---------------------------------------------------------------------------
@@ -58,28 +60,28 @@ i32 Handler095750(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new CInGameIcon(owner);
-            sub->Activate();
+            CUserLogic* sub = new CInGameIcon(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -96,28 +98,28 @@ i32 Handler095890(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new CInGameText(owner);
-            sub->Activate();
+            CUserLogic* sub = new CInGameText(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -134,28 +136,28 @@ i32 Handler0aa6e0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            SubRecord* sub = new CEyeCandy(owner);
-            sub->Activate();
+            CUserLogic* sub = new CEyeCandy(owner);
+            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
         case 0x1d:
-            rec->m_18->Vfunc2C();
+            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
             break;
         case 0x1e:
-            rec->m_18->Vfunc28();
+            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
             break;
         case 0x50:
-            rec->m_18->Vfunc38();
+            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
             break;
         case 0x53:
-            rec->m_18->Vfunc3C();
+            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
             break;
         case 0x52:
-            rec->m_18->Vfunc30();
+            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
             break;
         case 0x51:
-            rec->m_18->Vfunc34();
+            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
             break;
         case 0x3e8:
             break;
@@ -165,5 +167,3 @@ i32 Handler0aa6e0(Owner* owner) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(SubRecord);
