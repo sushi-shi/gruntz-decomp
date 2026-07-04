@@ -96,10 +96,10 @@ namespace StatusBarTabBuilders {
         if (s == 0) {
             return 0;
         }
-        i32 sel = ((CSpriteRefTable*)g_gameReg->m_74)
+        i32 sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)
                       ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_644c54].m_toolId, 0);
         if (sel == 0) {
-            sel = ((CSpriteRefTable*)g_gameReg->m_74)->GetSel(1, 0);
+            sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(1, 0);
         }
         m_imageSet->SetAllTypes(10);
         m_imageSet->SetAllFormats(sel);

@@ -401,7 +401,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     i32 m170 = *(i32*)(p + 0x170);
     i32 m1f4 = *(i32*)(p + 0x1f4);
     i32 flag = (m170 >= 0x17);
-    i32 r = ((CMgr74*)g_mgrSettings->m_74)->Compute(m1f4, flag);
+    i32 r = ((CMgr74*)g_mgrSettings->m_spriteFactory)->Compute(m1f4, flag);
     CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
     cb->m_58 = 1;
     cb->m_50 = 0xa;

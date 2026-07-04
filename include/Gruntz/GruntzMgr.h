@@ -342,8 +342,10 @@ public:
     CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
     CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
     CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
-    EngObj* m_74;           // +0x74  engine sub-object (teardown-only)
-    EngObj* m_78;           // +0x78  engine sub-object (teardown-only)
+    EngObj* m_spriteFactory; // +0x74  sprite/asset factory (consumers: LoadSprite/GetByIndex);
+                             //         mgr only tears it down, so typed EngObj until modeled
+    EngObj* m_logicPump;     // +0x78  per-frame logic/effects pump (consumers: Push + +0x14 table);
+                             //         mgr only tears it down, so typed EngObj until modeled
     ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
     i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
     i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)

@@ -3009,10 +3009,10 @@ void CGruntzMgr::Close() {
         delete m_curState;
         m_curState = 0;
     }
-    if (m_74) {
-        m_74->Teardown();
-        operator delete(m_74);
-        m_74 = 0;
+    if (m_spriteFactory) {
+        m_spriteFactory->Teardown();
+        operator delete(m_spriteFactory);
+        m_spriteFactory = 0;
     }
     if (m_cmdGrid) {
         m_cmdGrid->Teardown();
@@ -3107,10 +3107,10 @@ void CGruntzMgr::Close() {
         operator delete(m_saveSink);
         m_saveSink = 0;
     }
-    if (m_78) {
-        m_78->Teardown();
-        operator delete(m_78);
-        m_78 = 0;
+    if (m_logicPump) {
+        m_logicPump->Teardown();
+        operator delete(m_logicPump);
+        m_logicPump = 0;
     }
     CloseSettingsStore();
     if (m_lobby) {
@@ -3359,8 +3359,8 @@ CGruntzMgr::CGruntzMgr() {
     m_cmdGrid = 0;
     m_cmdSubMgr = 0;
     m_cmdNotify = 0;
-    m_74 = 0;
-    m_78 = 0;
+    m_spriteFactory = 0;
+    m_logicPump = 0;
     m_lobbyResult = 0;
     m_lobbyProbed = 0;
     m_a4 = 0;

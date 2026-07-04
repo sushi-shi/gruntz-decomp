@@ -78,7 +78,7 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_placeArg3 = a3;
     m_placeArg0 = a0;
     m_placeIndex = a1;
-    i32 rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(a1, 0);
+    i32 rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(a1, 0);
     CGameObject* obj = m_object;
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = 0xa;

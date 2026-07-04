@@ -116,7 +116,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_90 = 0;
     }
-    i32 looked = ((CSpotMgrTable*)g_gameReg->m_78)->m_arr[m_object->m_11c];
+    i32 looked = ((CSpotMgrTable*)g_gameReg->m_logicPump)->m_arr[m_object->m_11c];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;

@@ -75,7 +75,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = *(i32*)((char*)g_mgrSettings->m_78 + powerup * 4 + 0x14);
+    i32 rec = *(i32*)((char*)g_mgrSettings->m_logicPump + powerup * 4 + 0x14);
     CGameObject* r = m_object;
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
@@ -129,7 +129,7 @@ i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4)
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CGameObject* r = m_object;
-            i32 v = *(i32*)((char*)g_mgrSettings->m_78 + id * 4 + 0x14);
+            i32 v = *(i32*)((char*)g_mgrSettings->m_logicPump + id * 4 + 0x14);
             r->m_drawActive = 1;
             r->m_drawFillArg = v;
             r->m_drawFillCmd = 7;

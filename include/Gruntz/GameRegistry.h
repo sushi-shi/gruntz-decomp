@@ -156,9 +156,13 @@ struct CGameRegistry {
     // one name across the dual view (0x24556c convergence, step 1). Named: the base
     // CGameMgr region (m_gameWnd/m_owner/m_frameGate/m_soundEnabled), the manager-owned
     // sub-object pointers (m_curState/m_world/m_settings/m_sound/m_cueSink/m_inputState/
-    // m_saveSink/m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_scoreHud), m_numRuns + the scalar
-    // config block. Still m_<off> (role unrecovered): m_74/m_78, the m_128..m_134
-    // outcome block.
+    // m_saveSink/m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_scoreHud/m_spriteFactory/m_logicPump),
+    // m_numRuns + the scalar config block. Still m_<off> (role unrecovered): the
+    // m_128..m_134 outcome block.
+    //   The reused-slot names (m_cmdGrid/m_spriteFactory/m_logicPump/...) are ONE object
+    //   each (per no-sane-dev-test): the per-TU downcasts to different concrete types are
+    //   the unrecovered-single-type ARTIFACT, not a genuine per-mode union - named by the
+    //   common role, still void* until the real class is modeled.
     //   SUBSTANCE-DIVERGENCE FLAGS (one physical field, but the two views disagree on
     //   what it IS - the name unifies to the manager's, endgame to resolve the real
     //   single type): +0x54 (mgr input-state vs ambient-sound's active level, cast
@@ -196,14 +200,16 @@ struct CGameRegistry {
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)
     char m_pad64[0x68 - 0x64];
-    void* m_cmdGrid;   // +0x68  world command-grid. REUSED slot (authentic per-mode downcast):
-                       //         placement/cue grid (CGruntRec**) in single-player, the
-                       //         goo-well mgr in battlez, a light-fx target in the fx TUs.
+    void* m_cmdGrid;   // +0x68  world command-grid (ONE object; the per-mode downcasts -
+                       //         placement/cue grid in single-player, goo-well mgr in battlez,
+                       //         light-fx target in fx - are the unrecovered-type artifact).
     void* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object
     CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
                            //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
-    void* m_74;            // +0x74  sprite factory / ref-table (BeginGridWalk retry path)
-    void* m_78;            // +0x78  sub-object (per-TU view)
+    void* m_spriteFactory; // +0x74  sprite/asset factory (ONE object: LoadSprite in CPlay,
+                           //         GetByIndex in InGameIcon; Grunt.h CSpriteRefTable). void* until typed.
+    void* m_logicPump;     // +0x78  per-frame logic/effects pump (ONE object: Push + an int/color
+                           //         table at +0x14 + field at +0x28; LfxLogicPump). void* until typed.
     void* m_scoreHud;  // +0x7c  HUD/score accumulator + cmd sink;
                        //         battlez views it as the CBzData score tracker facet.
     i32 m_numRuns;         // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
@@ -224,7 +230,13 @@ struct CGameRegistry {
     i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
     i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
     char m_pad128[0x130 - 0x128];
-    i32 m_130; // +0x130  (m_128..m_134 game-outcome block; m_134==3 -> "won")
+    // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,
+    // the RNG runs deterministic/replay-style (CoinFlip), secret-level triggers initialize
+    // (CSecretLevelTrigger), and per-level info text shows; when nonzero, a fixed HUD banner
+    // (str 0x81a0) shows and RNG goes live. Persisted (SaveState streams it; FillSaveInfo
+    // -> record m_f8). No nonzero write survives in the reconstructed code, so its exact
+    // identity (replay / recording / special mode) is UNPROVEN - left m_130, not guessed.
+    i32 m_130;
     i32 m_134; // +0x134  gate/outcome discriminator (grunt: ==1 visible-bounds,
                //         ==2 alt path; GruntzMgr: ==3 "won")
     char m_pad138[0x13c - 0x138];

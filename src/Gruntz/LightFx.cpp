@@ -176,7 +176,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
     ((LfxMapSource*)m_3c)->m_0c->m_10->m_10.Lookup(spec, &node);
     i32 found = node;
-    ((LfxLogicPump*)g_gameReg->m_78)->Push(found, anchorA, 7);
+    ((LfxLogicPump*)g_gameReg->m_logicPump)->Push(found, anchorA, 7);
     LfxObj* obj = (LfxObj*)m_38;
     if (found != 0) {
         LfxEffectNode* en = (LfxEffectNode*)found;

@@ -364,7 +364,7 @@ i32 CLightningHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = ((i32*)g_lightGameReg->m_78)[sel + 5]; // [m_78 + sel*4 + 0x14]
+        o->m_drawFillArg = ((i32*)g_lightGameReg->m_logicPump)[sel + 5]; // [m_78 + sel*4 + 0x14]
     }
 
     ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
@@ -399,7 +399,7 @@ i32 CLightningHazard::SiblingTick() {
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
-        o->m_drawFillArg = ((i32*)g_lightGameReg->m_78)[0xa]; // [m_78 + 0x28]
+        o->m_drawFillArg = ((i32*)g_lightGameReg->m_logicPump)[0xa]; // [m_78 + 0x28]
         CLightVtbl* vt = *(CLightVtbl**)this;
         (this->*(vt->BeginLeg))();
         m_prevAnimSetNode = m_objAux->m_1c;

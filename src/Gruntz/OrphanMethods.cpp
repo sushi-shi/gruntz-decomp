@@ -156,7 +156,7 @@ i32 CStrikeEffect::Tick() {
         } else {
             m_118 = 0;
         }
-        i32* tbl = (i32*)g_mgrSettings->m_78;
+        i32* tbl = (i32*)g_mgrSettings->m_logicPump;
         i32 frame = tbl[idx + 5];
         CStrikeSprite* spr = m_10;
         spr->m_58 = 1;

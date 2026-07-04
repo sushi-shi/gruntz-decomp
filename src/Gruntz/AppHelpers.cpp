@@ -63,7 +63,7 @@ int CHandlerB4::Handle(int a0, int a1, int a2, int a3) {
         return 0;
     }
     if (a1 == 8) {
-        void* x = ((MgrInner*)g_mgrSettings->m_78)->m_28;
+        void* x = ((MgrInner*)g_mgrSettings->m_logicPump)->m_28;
         CSub10* p = m_10;
         p->m_58 = 1;
         p->m_50 = 7;

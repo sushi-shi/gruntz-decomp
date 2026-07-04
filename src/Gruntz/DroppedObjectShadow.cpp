@@ -41,7 +41,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
-    m_object->m_drawFillArg = ((WwdGameRegSub*)g_gameReg->m_78)->m_28;
+    m_object->m_drawFillArg = ((WwdGameRegSub*)g_gameReg->m_logicPump)->m_28;
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     if (m_object->m_latchedAnimId != 0xcf84f) {

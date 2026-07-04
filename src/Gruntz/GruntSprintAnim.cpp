@@ -101,7 +101,7 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    void* h = ((CGsSoundTable*)g_mgrSettings->m_74)->Lookup(0, 0);
+    void* h = ((CGsSoundTable*)g_mgrSettings->m_spriteFactory)->Lookup(0, 0);
     if (!h) {
         return 0;
     }

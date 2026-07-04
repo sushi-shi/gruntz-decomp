@@ -235,7 +235,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
-    i32 sel = ((i32*)g_gameReg->m_78)[10];
+    i32 sel = ((i32*)g_gameReg->m_logicPump)[10];
     o->m_active = 1;
     o->m_state = 7;
     o->m_spriteRef = sel;

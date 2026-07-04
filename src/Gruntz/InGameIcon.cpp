@@ -531,9 +531,9 @@ i32 CInGameIcon::HandleInput() {
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
-        rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(icon, 0);
+        rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(icon, 0);
         if (rec == 0) {
-            rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(1, 0);
+            rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(1, 0);
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
         i32 icon;
@@ -560,9 +560,9 @@ i32 CInGameIcon::HandleInput() {
                 icon = 7;
                 break;
         }
-        rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(icon, 0);
+        rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(icon, 0);
         if (rec == 0) {
-            rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(1, 0);
+            rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(1, 0);
         }
     } else {
         return 1;

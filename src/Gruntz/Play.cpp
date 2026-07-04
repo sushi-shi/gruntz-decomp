@@ -1799,7 +1799,7 @@ i32 CPlay::BeginGridWalk(i32 key, i32 index, i32 e8, i32 delay, i32 hasGrid) {
         i32 id = g_644c54;
         void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
         if (spr == 0) {
-            spr = ((CWorld::SpriteLoader*)g_64556c->m_74)->LoadSprite(spr, 1);
+            spr = ((CWorld::SpriteLoader*)g_64556c->m_spriteFactory)->LoadSprite(spr, 1);
         }
         m_grid->SetDelay(0xa);
         m_grid->SetSprite(spr);
