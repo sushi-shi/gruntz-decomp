@@ -1232,8 +1232,8 @@ i32 CDDPageMgr::CheckMode16() {
 // CreatePoolItem builds + initialises one pool item from a descriptor source.
 // ===========================================================================
 // Engine heap free / operator new (reloc-masked __cdecl leaves).
-extern "C" void RezFree(void* p);             // 0x1b9b82
-extern "C" void* DdOperatorNew(unsigned int); // 0x1b9b46
+extern "C" void RezFree(void* p);        // 0x1b9b82
+extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
 
 // The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
 // CDdObArray + the pool comparator/publisher (Compare/AddPoolItem) live on
@@ -1344,7 +1344,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
     }
-    char* item = (char*)DdOperatorNew(0xc0);
+    char* item = (char*)RezAlloc(0xc0);
     if (item != 0) {
         ((CDdPoolSub*)(item + 0x94))->Ctor();
         *(void**)item = &g_poolItemVtbl;

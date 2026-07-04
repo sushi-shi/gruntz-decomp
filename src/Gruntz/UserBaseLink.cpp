@@ -24,7 +24,7 @@ RVA(0x0016d2a0, 0x26)
 EngStr::~EngStr() {}
 
 // operator new the engine uses (0x1b9b46, __cdecl); reloc-masked rel32.
-extern "C" void* RezOpNew(u32 n); // 0x1b9b46
+extern "C" void* RezAlloc(u32 n); // 0x1b9b46
 
 // Stamp the foreign worker vtable (0x5efb80) by address - the vptr store the
 // inline worker ctor emits; never a C++ ctor (that would emit a divergent vtable).
@@ -46,7 +46,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 != 0) {
         m_80->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezOpNew(0x17c);
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -90,7 +90,7 @@ void CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 != 0) {
         m_88->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezOpNew(0x17c);
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -126,7 +126,7 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_90 != 0) {
         m_90->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezOpNew(0x17c);
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;

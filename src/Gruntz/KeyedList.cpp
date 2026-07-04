@@ -13,7 +13,7 @@ struct CListNode {
     char _04[8 - 4];
     CNodeSub* m_8; // +0x08  owned sub-object
 };
-extern "C" void ZFree(void* p); // 0x1b9b82 (operator delete / free)
+extern "C" void RezFree(void* p); // 0x1b9b82 (operator delete / free)
 
 // The list node a key-add allocates: a CString key + two payload dwords (0xc B).
 struct CNode {
@@ -56,7 +56,7 @@ void CKeyedList::Clear() {
             CNodeSub* sub = cur->m_8;
             if (sub != 0) {
                 sub->Dtor();
-                ZFree(sub);
+                RezFree(sub);
             }
         } while (node != 0);
     }

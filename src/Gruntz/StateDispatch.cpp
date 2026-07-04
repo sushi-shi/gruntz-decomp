@@ -13,7 +13,7 @@
 #include <rva.h>
 
 // Engine operator new (reloc-masked __cdecl leaf).
-extern "C" void* SdOperatorNew(unsigned int); // 0x1b9b46
+extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
 
 // The fallback the default case hands the active handler to (__cdecl, 1 arg).
 extern "C" void SdFallback(void* handler); // 0x16e4f0
@@ -93,7 +93,7 @@ i32 __stdcall StateDispatch(CStateCtx* ctx, i32 a1, i32 a2) {
     switch (st->m_1c) {
         case 0: {
             st->m_1c = 0x3e8;
-            CStateHandler* obj = (CStateHandler*)SdOperatorNew(0x54);
+            CStateHandler* obj = (CStateHandler*)RezAlloc(0x54);
             CStateHandler* h;
             if (obj != 0) {
                 h = obj->Ctor(ctx);

@@ -11,7 +11,7 @@
 
 // The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
 // treats it as potentially-throwing and keeps the /GX base-subobject unwind frame.
-void RezFree39f20(void* p); // 0x1b9b82
+void RezFree(void* p); // 0x1b9b82
 
 // ===========================================================================
 // 0x039f20 - ~CWorker39f20 (/GX): stamp the derived vtable (0x5e971c), RezFree the
@@ -21,7 +21,7 @@ void RezFree39f20(void* p); // 0x1b9b82
 RVA(0x00039f20, 0x51)
 CWorker39f20::~CWorker39f20() {
     if (m_4) {
-        RezFree39f20(m_4);
+        RezFree(m_4);
     }
 }
 

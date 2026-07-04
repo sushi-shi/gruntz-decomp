@@ -18,7 +18,7 @@ extern "C" void* __cdecl memset(void* dst, i32 val, u32 n);
 
 // The pool allocator the container new's its cell pool + column table off
 // (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
-extern "C" void* __cdecl BrickzGridAlloc(u32 n); // 0x1b9b46
+extern "C" void* __cdecl RezAlloc(u32 n); // 0x1b9b46
 
 // The two intrusive node-pool sub-objects embedded at +0x30 and +0x3c: AllocGrid
 // seeds each with count*5 nodes through its __thiscall init (reloc-masked thunks).
@@ -399,11 +399,11 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     m_width = width;
     m_height = height;
     m_cellCount = count;
-    m_cellPool = (BrickzCell*)BrickzGridAlloc(count * 0x1c);
+    m_cellPool = (BrickzCell*)RezAlloc(count * 0x1c);
     if (m_cellPool == 0) {
         return 0;
     }
-    m_rows = (BrickzCell**)BrickzGridAlloc(height * 4);
+    m_rows = (BrickzCell**)RezAlloc(height * 4);
     if (m_rows == 0) {
         return 0;
     }

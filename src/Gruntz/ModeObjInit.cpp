@@ -21,8 +21,8 @@ namespace modeinit {
     extern "C" void ElemCtor403a3a();                                                 // 0x00403a3a
     extern "C" void EhVecCtor(void* base, i32 sz, i32 count, void* ctor, void* dtor); // 0x0011f5a0
     extern "C" void VecCtor(void* base, i32 sz, i32 count, void* ctor);               // 0x00001aa5
-    extern "C" void* OpNew(u32 sz);                                                   // 0x001b9b46
-    extern "C" void OpDelete(void* p);                                                // 0x001b9b82
+    extern "C" void* RezAlloc(u32 sz);                                                // 0x001b9b46
+    extern "C" void RezFree(void* p);                                                 // 0x001b9b82
 
     // The 0x1c control block owned at this->m_2e0.
     struct Ctl1c {
@@ -188,7 +188,7 @@ namespace modeinit {
             return 0;
         }
 
-        Ctl1c* ctl = (Ctl1c*)OpNew(0x1c);
+        Ctl1c* ctl = (Ctl1c*)RezAlloc(0x1c);
         if (ctl) {
             ctl->m_18 = 0;
             ctl->m_14 = 0;
@@ -204,7 +204,7 @@ namespace modeinit {
         if (m_2e0->Init3e77(m_c, m_4->m_5c) == 0) {
             if (m_2e0) {
                 m_2e0->Dtor285b();
-                OpDelete(m_2e0);
+                RezFree(m_2e0);
             }
             m_2e0 = 0;
             return 0;
@@ -212,7 +212,7 @@ namespace modeinit {
         m_2e0->m_10 = 0;
         m_2e0->Method171c(1);
 
-        Worker630* wk = (Worker630*)OpNew(0x630);
+        Worker630* wk = (Worker630*)RezAlloc(0x630);
         if (wk) {
             char* p = (char*)wk;
             i32 i;
@@ -310,13 +310,13 @@ namespace modeinit {
                 m_2dc->PreDtor248c();
                 ((Worker630::Sub530*)((char*)m_2dc + 0x530))->Dtor1b4f3e();
                 EhVecCtor((char*)m_2dc + 0x2c, 0, 0, 0, 0); // __ehvec_dtor 0x11f640 (reloc-masked)
-                OpDelete(m_2dc);
+                RezFree(m_2dc);
             }
             m_2dc = 0;
             return 0;
         }
 
-        Rec78* r78 = (Rec78*)OpNew(0x78);
+        Rec78* r78 = (Rec78*)RezAlloc(0x78);
         if (r78) {
             char* p = (char*)r78;
             ((StrRec*)(p + 0x00))->Ctor1b4867(0xa);
@@ -331,13 +331,13 @@ namespace modeinit {
         if (m_2e4->Init403e() == 0) {
             if (m_2e4) {
                 m_2e4->Dtor1cad();
-                OpDelete(m_2e4);
+                RezFree(m_2e4);
             }
             m_2e4 = 0;
             return 0;
         }
 
-        Rec50* r50 = (Rec50*)OpNew(0x50);
+        Rec50* r50 = (Rec50*)RezAlloc(0x50);
         if (r50) {
             r50->Init286f();
         } else {

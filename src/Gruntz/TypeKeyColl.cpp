@@ -20,9 +20,10 @@
 #include <Mfc.h>
 #include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot (one shape)
 #include <rva.h>
+#include <stdlib.h> // malloc (0x120b60)
 #include <string.h> // memset
 
-#include <Gruntz/StringNode.h>   // the type-name teardown slot
+#include <Gruntz/StringNode.h>  // the type-name teardown slot
 #include <Gruntz/TypeKeyColl.h> // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
 #include <Globals.h>
 
@@ -92,10 +93,9 @@ extern CKSlimeColl2* g_typeColl2;
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern "C" void* AllocFail();   // 0x16e0f0 (records the fatal context)
-extern "C" void* ZAlloc(u32 n); // 0x120b60 (CRT alloc)
-extern "C" void ZFree(void* p); // 0x1b9b82 (CRT free / operator delete)
-extern "C" i32 ProjActAlloc();  // 0x16d990
+extern "C" void* AllocFail();     // 0x16e0f0 (records the fatal context)
+extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete / free)
+extern "C" i32 ProjActAlloc();    // 0x16d990
 
 // The CString slot teardown the node-array free loop walks (one per 4-byte slot).
 // ===========================================================================
@@ -144,14 +144,14 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
         return;
     }
     i32 total = (hi - lo + 1) * stride;
-    void* buf = ZAlloc(total);
+    void* buf = malloc(total);
     m_buf = buf;
     if (buf != 0) {
         memset(buf, 0, total);
         if (m_buf2 != 0) {
             return;
         }
-        m_buf2 = ZAlloc(m_stride);
+        m_buf2 = malloc(m_stride);
         if (m_buf2 != 0) {
             return;
         }
@@ -366,7 +366,7 @@ void* CButeTree::ScalarDtor(u32 flags) {
     ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
     BaseDtor();
     if (flags & 1) {
-        ZFree(this);
+        RezFree(this);
     }
     return this;
 }

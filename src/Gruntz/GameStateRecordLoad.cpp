@@ -102,7 +102,7 @@ struct CSubRecord {
 
 // Global operator new / free (engine NAFXCW; reloc-masked).
 void* operator new(u32 n);        // 0x1b9b46
-extern "C" void RecFree(void* p); // 0x1b9b82  (operator delete / free)
+extern "C" void RezFree(void* p); // 0x1b9b82  (operator delete / free)
 
 class CGameStateRecord {
 public:
@@ -381,7 +381,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     // Drain + free the m_338 list.
     while (*(void**)(p + 0x344) != 0 && *(i32*)((char*)*(void**)(p + 0x33c) + 8) != 0) {
         void* rem = ((CRecPtrList*)(p + 0x338))->RemoveHead();
-        RecFree(rem);
+        RezFree(rem);
     }
 
     // Rebuild m_338 from a count of new(0x2c) nodes (zero-init, read 0x2c each).

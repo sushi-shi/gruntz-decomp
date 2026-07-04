@@ -140,7 +140,7 @@ i32 LlClearPlaneA(void* a);                                     // 0x1633e0 (cde
 i32 LlClearPlaneB(void* a);                                     // 0x163300 (cdecl)
 i32 LlSetupView(void* host70);                                  // 0x3d19 (host->m_70)
 i32 LlSetupView2(void* host70, void* a);                        // 0x3562
-void* LlAllocCtx(i32 sz);                                       // 0x1b9b46 operator new
+void* RezAlloc(i32 sz);                                         // 0x1b9b46 operator new
 i32 LlInstallCtx(void* host70, i32 id, void* ctx);              // 0x3bf2
 i32 LlSizeView(void* ctx, i32 a);                               // 0x3bca
 i32 LlScanWarpStone(void* self);                                // 0x28dd
@@ -154,7 +154,7 @@ void* LlRegisterNamespace(i32 a, const char* ns, i32 tag, i32 cap, i32 b, i32 c,
 void LlSpriteHook(void* host8, i32 a);       // FUN via host->m_8 vtable +0x24
 i32 LlEqSet(void* self, i32 a);              // 0x2eaa
 void LlSpriteRelease(void* spr);             // 0x14ce
-void LlFreeSprite(void* p);                  // 0x1b9b82 operator delete
+void RezFree(void* p);                       // 0x1b9b82 operator delete
 i32 LlLoadMap(void* self, void* a, void* b); // 0x2b80
 i32 LlLoadStep1(void* self);                 // 0x3553
 i32 LlLoadStep2(void* self);                 // 0x345e
@@ -595,7 +595,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
 
     // lazily allocate the level context at +0x320
     if (I32(self, 0x320) == 0) {
-        void* ctx = LlAllocCtx(0x43c);
+        void* ctx = RezAlloc(0x43c);
         if (ctx != 0) {
             I32(ctx, 0) = 0;
             I32(ctx, 0x4) = 0;
@@ -671,7 +671,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 void* spr = PTR(self, 0x3f4);
                 if (spr != 0) {
                     LlSpriteRelease(spr);
-                    LlFreeSprite(spr);
+                    RezFree(spr);
                     I32(self, 0x3f4) = 0;
                 }
             }
