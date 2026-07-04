@@ -20,92 +20,33 @@
 #ifndef GRUNTZ_CDIRECTDRAWMGR_H
 #define GRUNTZ_CDIRECTDRAWMGR_H
 
-#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectDraw COM interface macros
 #include <rva.h>
 
-// IDirectDrawSurfaceZ (the surface COM interface) + CDDSurface (the wrapper) live
+// IDirectDrawSurface (the surface COM interface) + CDDSurface (the wrapper) live
 // in the canonical single-source header; every DDraw-touching TU includes it.
 #include <DDrawMgr/DDSurface.h>
 
 // ---------------------------------------------------------------------------
-// IDirectDraw / IDirectDraw2 (DDRAW). The first 23 slots are identical between
-// v1 and v2 (v2 only appends GetAvailableVidMem), so one struct covers both.
-// Slots pinned to retail vtable byte offsets:
-//   +0x00 (slot  0)  QueryInterface      (REFIID, void**)
-//   +0x14 (slot  5)  CreatePalette       (DWORD, LPPALETTEENTRY, palette*, IUnknown*)
-//   +0x18 (slot  6)  CreateSurface       (LPDDSURFACEDESC, surf*, IUnknown*)
-//   +0x2c (slot 11)  GetCaps             (LPDDCAPS, LPDDCAPS)
-//   +0x30 (slot 12)  GetDisplayMode      (LPDDSURFACEDESC)
-//   +0x50 (slot 20)  SetCooperativeLevel (HWND, DWORD)
-//   +0x54 (slot 21)  SetDisplayMode      (DWORD, DWORD, DWORD)
+// The DirectDraw COM interfaces the DDrawMgr classes hold, forward-declared here
+// (the real <ddraw.h> definitions). The dispatching TUs (DDRAWMGR.CPP / DIRPAL.CPP
+// / DDScreen / PaletteCopy) pull <Win32.h>+<ddraw.h> for the full interfaces + slot
+// signatures; every other includer holds only typed pointers, so a forward decl
+// keeps the OLE/windows chain out of this widely-included header.
+//   IDirectDraw        - the raw device DirectDrawCreate returns (QI'd to v2).
+//   IDirectDraw2       - device (CreatePalette@5, CreateSurface@6, GetCaps@11,
+//                        GetDisplayMode@12, SetCooperativeLevel@20, SetDisplayMode@21,
+//                        WaitForVerticalBlank@22, EnumDisplayModes@8).
+//   IDirectDrawPalette - GetEntries@4, SetEntries@6.
+// NOTE the DDCAPS m_caps/m_helCaps below stay raw i32[0x5f] (0x17c bytes): the retail
+// hardcodes dwSize=0x17c (380 B), which is actually LARGER than the vendored DX6
+// DDCAPS (0x13c = 316 B) - almost certainly a stale/mistaken dwSize constant on the
+// game's side (we are on DX6). Modeling m_caps as the real DDCAPS value member would
+// shrink it 0x17c->0x13c and shift the whole class layout, so it stays a raw buffer;
+// GetCaps gets it via an (LPDDCAPS) cast (the runtime writes only dwSize's worth).
 // ---------------------------------------------------------------------------
-struct IDirectDrawPaletteZ; // forward (CreatePalette out param)
-
-SIZE_UNKNOWN(IDirectDraw2Z);
-struct IDirectDraw2Z {
-    // Real COM interface (abstract), declared the dev-authentic SDK way with the
-    // STDMETHOD macro (== `virtual HRESULT __stdcall`), so `dd->Method(args)` lowers
-    // to the same `mov eax,[dd]; call [eax+slot]` the manual vtbl-struct dispatch did.
-    // Every DX6 slot is pinned at its retail index; only the called ones carry args.
-    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE; // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;                               // slot 1
-    STDMETHOD_(u32, Release)() PURE;                              // slot 2
-    STDMETHOD(Compact)() PURE;                                    // slot 3
-    STDMETHOD(CreateClipper)() PURE;                              // slot 4
-    STDMETHOD(CreatePalette)(
-        u32 flags,
-        void* entries,
-        IDirectDrawPaletteZ** out,
-        void* unk
-    ) PURE; // slot 5  (+0x14)
-    STDMETHOD(CreateSurface)(
-        void* desc,
-        IDirectDrawSurfaceZ** out,
-        void* unk
-    ) PURE;                                                                       // slot 6 (+0x18)
-    STDMETHOD(DuplicateSurface)() PURE;                                           // slot 7
-    STDMETHOD(EnumDisplayModes)(u32 flags, void* desc, void* ctx, void* cb) PURE; // slot 8 (+0x20)
-    STDMETHOD(EnumSurfaces)() PURE;                                               // slot 9
-    STDMETHOD(FlipToGDISurface)() PURE;                                           // slot 10
-    STDMETHOD(GetCaps)(void* driverCaps, void* helCaps) PURE;                     // slot 11 (+0x2c)
-    STDMETHOD(GetDisplayMode)(void* desc) PURE;                                   // slot 12 (+0x30)
-    STDMETHOD(GetFourCCCodes)() PURE;                                             // slot 13
-    STDMETHOD(GetGDISurface)() PURE;                                              // slot 14
-    STDMETHOD(GetMonitorFrequency)() PURE;                                        // slot 15
-    STDMETHOD(GetScanLine)() PURE;                                                // slot 16
-    STDMETHOD(GetVerticalBlankStatus)() PURE;                                     // slot 17
-    STDMETHOD(Initialize)() PURE;                                                 // slot 18
-    STDMETHOD(RestoreDisplayMode)() PURE;                                         // slot 19
-    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 level) PURE;                   // slot 20 (+0x50)
-    STDMETHOD(SetDisplayMode)(
-        u32 w,
-        u32 h,
-        u32 bpp,
-        u32 refresh,
-        u32 flags
-    ) PURE;                                                   // slot 21 (+0x54)
-    STDMETHOD(WaitForVerticalBlank)(u32 flags, void* h) PURE; // slot 22 (+0x58)
-};
-
-// ---------------------------------------------------------------------------
-// IDirectDrawPalette (DDRAW) - the palette interface the CDDPalette thunks
-// drive. Slots:
-//   +0x10 (slot 4)  GetEntries  (DWORD, DWORD, DWORD, LPPALETTEENTRY)
-//   +0x14 (slot 5)  Initialize  (LPDIRECTDRAW, DWORD, LPPALETTEENTRY)
-//   +0x18 (slot 6)  SetEntries  (DWORD, DWORD, DWORD, LPPALETTEENTRY)
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(IDirectDrawPaletteZ);
-struct IDirectDrawPaletteZ {
-    // Real COM interface (abstract), STDMETHOD form (== `virtual HRESULT __stdcall`)
-    // so `pal->Method(args)` lowers to the same `mov eax,[pal]; call [eax+slot]`.
-    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE;               // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;                                             // slot 1
-    STDMETHOD_(u32, Release)() PURE;                                            // slot 2
-    STDMETHOD(GetCaps)(void* caps) PURE;                                        // slot 3
-    STDMETHOD(GetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 4 (+0x10)
-    STDMETHOD(Initialize)(void* dd, u32 flags, void* entries) PURE;             // slot 5 (+0x14)
-    STDMETHOD(SetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 6 (+0x18)
-};
+struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
+struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
+struct IDirectDrawPalette; // <ddraw.h>: the held palette
 
 // ---------------------------------------------------------------------------
 // The pool-item / mode-list CObArray sub-object (an MFC CObArray view): SetSize
@@ -158,10 +99,10 @@ public:
     void AddPoolItem(void* item);  // 0x142100  pool publisher (reloc-masked)
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2Z* m_device; // +0x00  the held IDirectDraw2 device
-    IDirectDraw2Z* m_dd1;    // +0x04  the raw IDirectDraw DirectDrawCreate returns
-    i32 m_caps[0x5f];        // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
-    i32 m_helCaps[0x5f];     // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
+    IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device
+    IDirectDraw* m_dd1;     // +0x04  the raw IDirectDraw DirectDrawCreate returns
+    i32 m_caps[0x5f];       // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
+    i32 m_helCaps[0x5f];    // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
     char m_pad300[0x4b4 - 0x300];
     CDdObArray m_poolItems; // +0x4b4 pool-item CObArray sub-object
     char m_pad4c8[0x534 - 0x4c8];
@@ -180,28 +121,28 @@ public:
 SIZE_UNKNOWN(CDDPalette);
 class CDDPalette {
 public:
-    i32 LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x147410
-    i32 Create(IDirectDraw2Z* dd, void* entries, u32 flags);        // 0x147390
-    i32 LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags);      // 0x147590
-    i32 LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags);      // 0x147710
-    i32 CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags);         // 0x1474d0
-    i32 CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size,
-                           u32 flags);                             // 0x147840
-    i32 LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags);     // 0x1478c0
-    i32 LoadDefault(IDirectDraw2Z* dd, char* filename, u32 flags); // 0x1479e0
-    void Destroy();                                                // 0x147530
-    i32 GetEntries();                                              // 0x147c30
-    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4);    // 0x147aa0
-    void Apply(i32 a1);                                            // 0x147c80 (a1 unused)
+    i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags); // 0x147410
+    i32 Create(IDirectDraw2* dd, void* entries, u32 flags);        // 0x147390
+    i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);      // 0x147590
+    i32 LoadPcx(IDirectDraw2* dd, char* filename, u32 flags);      // 0x147710
+    i32 CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags);         // 0x1474d0
+    i32 CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size,
+                           u32 flags);                            // 0x147840
+    i32 LoadPal(IDirectDraw2* dd, char* filename, u32 flags);     // 0x1478c0
+    i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags); // 0x1479e0
+    void Destroy();                                               // 0x147530
+    i32 GetEntries();                                             // 0x147c30
+    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4);   // 0x147aa0
+    void Apply(i32 a1);                                           // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0
 
     // --- layout ---------------------------------------------------------------
-    i32 m_0;                        // +0x00  cleared by Destroy
-    IDirectDrawPaletteZ* m_palette; // +0x04  the held palette interface
-    i32 m_8;                        // +0x08  cleared by Destroy
-    u8* m_cacheA;                   // +0x0c  PALETTEENTRY cache A (0x400 bytes)
-    u8* m_cacheB;                   // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    i32 m_0;                       // +0x00  cleared by Destroy
+    IDirectDrawPalette* m_palette; // +0x04  the held palette interface
+    i32 m_8;                       // +0x08  cleared by Destroy
+    u8* m_cacheA;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
+    u8* m_cacheB;                  // +0x10  PALETTEENTRY cache B (0x400 bytes)
     char m_pad14[0x18 - 0x14];
     u8* m_18; // +0x18  third buffer freed by Destroy
     char m_pad1c[0x34 - 0x1c];
@@ -240,14 +181,14 @@ public:
     char m_pad8[0x0c - 0x08];
     i32 m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    IDirectDraw2Z* m_dd2;                     // +0x14  the QI'd IDirectDraw2
-    IDirectDraw2Z* m_dd1;                     // +0x18  the raw IDirectDraw DirectDrawCreate returns
-    IDirectDrawSurfaceZ* m_primarySurface;    // +0x1c  primary surface (QI'd to Surface3)
-    IDirectDrawSurfaceZ* m_primarySurfaceRaw; // +0x20  primary surface (raw)
-    i32 m_24;                                 // +0x24
-    i32 m_28;                                 // +0x28
-    IDirectDrawPaletteZ* m_palette;           // +0x2c  the palette
-    union {                                   // +0x30  DDSURFACEDESC scratch (CreateSurface target)
+    IDirectDraw2* m_dd2;                     // +0x14  the QI'd IDirectDraw2
+    IDirectDraw* m_dd1;                      // +0x18  the raw IDirectDraw DirectDrawCreate returns
+    IDirectDrawSurface* m_primarySurface;    // +0x1c  primary surface (QI'd to Surface3)
+    IDirectDrawSurface* m_primarySurfaceRaw; // +0x20  primary surface (raw)
+    i32 m_24;                                // +0x24
+    i32 m_28;                                // +0x28
+    IDirectDrawPalette* m_palette;           // +0x2c  the palette
+    union {                                  // +0x30  DDSURFACEDESC scratch (CreateSurface target)
         char m_desc[0x6c]; //        raw view (Init bulk-clears the desc as dwords)
         struct {
             u32 m_descSize; // +0x30  dwSize

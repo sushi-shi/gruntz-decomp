@@ -22,6 +22,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock); Image.h above supplies windows.h
 #include <Globals.h>
 
 // The shared 256-entry palette->16bpp lookup table (file RVA 0x283ca0 = VA

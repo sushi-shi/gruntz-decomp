@@ -10,7 +10,7 @@
 //
 // The provider/source/payload are the engine's COM-style interfaces (vtbl ptr @0,
 // __stdcall methods taking the object as the explicit first arg - the same idiom
-// as IDirectDrawSurfaceZ in CDirectDrawMgr.cpp); modeled NO-body so every dispatch
+// as IDirectDrawSurface in CDirectDrawMgr.cpp); modeled NO-body so every dispatch
 // reloc-masks. Field names are placeholders; only offsets + code bytes are
 // load-bearing.
 #include <rva.h>

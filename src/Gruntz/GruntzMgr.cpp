@@ -24,7 +24,7 @@
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
 // Brings the full windows.h/objbase.h COM chain (STDMETHOD_/HRESULT/CLSID)
-// - so ComDefs.h is dropped here (its __IID_DEFINED__ starved cguid.h of CLSID);
+// - so the old hand-rolled COM mirror is not needed here (it starved cguid.h of CLSID);
 // Mfc.h already provides the STDMETHODs the CWorldDispatch view uses.
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter

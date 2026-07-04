@@ -21,6 +21,7 @@
 #include <Io/FileStream.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, IDirectDrawSurface/Palette, DirectDrawCreate, IIDs); Mfc.h (via FileStream.h) supplies windows.h first
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy / memcpy (rep movs / repne scasb), strrchr / _stricmp
@@ -49,21 +50,22 @@ extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
-// DDERR_SURFACELOST - the lost-surface HRESULT the wrappers retry on.
-#define DDERR_SURFACELOST 0x887601c2
-// DDERR_NOCOLORKEY - GetColorKey's "no key set" non-error.
-#define DDERR_NOCOLORKEY 0x887600d7
+// DDERR_SURFACELOST (the lost-surface retry HRESULT, MAKE_DDHRESULT(450) =
+// 0x887601c2) and DDERR_NOCOLORKEY (GetColorKey's "no key set" non-error,
+// MAKE_DDHRESULT(215) = 0x887600d7) come from <ddraw.h>.
 
-// DDRAW.dll DirectDrawCreate - direct `e8 rel32` to the incremental-link thunk
+// DDRAW.dll DirectDrawCreate is declared by <ddraw.h> (HRESULT WINAPI, no
+// __declspec(dllimport)) -> a direct `e8 rel32` to the incremental-link thunk
 // (reloc-masked), like DirectSoundCreate, not an `ff 15 [IAT]` indirect.
-extern "C" i32 __stdcall DirectDrawCreate(void* lpGuid, IDirectDraw2Z** ppDD, void* pUnkOuter);
 
-// IID_IDirectDraw2 / IID_IDirectDrawSurface3 - dxguid GUID constants in .rdata,
-// passed to QueryInterface. Reloc-masked DATA() externs.
+// IID_IDirectDraw2 / IID_IDirectDrawSurface3 - the real dxguid GUID constants in
+// .rdata, passed to QueryInterface by REFIID. <ddraw.h> declares them (EXTERN_C
+// const GUID); redeclared here with DATA() to bind their retail addresses so the
+// `push OFFSET` reloc-masks (same idiom as DirectInputMgr2.cpp's IID redeclare).
 DATA(0x001ef848)
-extern const u8 IID_IDirectDraw2[16]; // 0x5ef848
+extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 DATA(0x001ef888)
-extern const u8 IID_IDirectDrawSurface3[16]; // 0x5ef888
+extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
 // operator new(size_t) - the engine allocator (reloc-masked rel32).
 void* operator new(u32);
@@ -77,7 +79,7 @@ static const char s_extPal[] = ".PAL";
 
 // The process-wide DirectDraw object + the CDirectDrawMgr singleton (.data).
 DATA(0x00283ee8)
-extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
+extern "C" IDirectDraw2* g_DirectDraw; // 0x683ee8
 
 // ===========================================================================
 // CDDSurface (DIRSURF.CPP) - the IDirectDrawSurface wrapper thunks.
@@ -87,7 +89,7 @@ extern "C" IDirectDraw2Z* g_DirectDraw; // 0x683ee8
 // on SURFACELOST restore-and-retry, else report. Returns m_34 on hard fail.
 RVA(0x0013e6d0, 0x88)
 i32 CDDSurface::Lock(void* rect) {
-    i32 hr = m_8->Lock(rect, m_desc, 1, 0);
+    i32 hr = m_8->Lock((LPRECT)rect, (LPDDSURFACEDESC)m_desc, 1, 0);
     if (hr == 0) {
         return m_34;
     }
@@ -95,7 +97,7 @@ i32 CDDSurface::Lock(void* rect) {
         if (RestoreLost() == 0) {
             return 0;
         }
-        hr = m_8->Lock(0, m_desc, 1, 0);
+        hr = m_8->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
         if (hr == 0) {
             return m_34;
         }
@@ -120,7 +122,7 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
 // CDDSurface::Flip (__thiscall). Flip(target->m_8, 1); SURFACELOST retry.
 RVA(0x0013e850, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
-    IDirectDrawSurfaceZ* tsurf = 0;
+    IDirectDrawSurface* tsurf = 0;
     if (target != 0) {
         tsurf = target->m_8;
     }
@@ -146,7 +148,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 // CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
 RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, void* key) {
-    i32 hr = m_8->SetColorKey(flags, key);
+    i32 hr = m_8->SetColorKey(flags, (LPDDCOLORKEY)key);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x353, hr);
         return hr;
@@ -160,10 +162,10 @@ RVA(0x0013ee60, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     void* srcRect = src->m_80;
     void* dstRect = m_80;
-    i32 hr = m_8->Blt(dstRect, src->m_8, srcRect, 0x1000000, 0);
+    i32 hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, 0x1000000, 0);
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->Blt(dstRect, src->m_8, srcRect, 0x1000000, 0);
+            hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, 0x1000000, 0);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -180,13 +182,13 @@ RVA(0x0013eef0, 0x98)
 i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx) {
     i32 hr;
     if (src != 0) {
-        hr = m_8->Blt(dstRect, src->m_8, srcRect, flags, fx);
+        hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, flags, (LPDDBLTFX)fx);
     } else {
-        hr = m_8->Blt(dstRect, 0, srcRect, flags, fx);
+        hr = m_8->Blt((LPRECT)dstRect, 0, (LPRECT)srcRect, flags, (LPDDBLTFX)fx);
     }
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->Blt(dstRect, src->m_8, srcRect, flags, fx);
+            hr = m_8->Blt((LPRECT)dstRect, src->m_8, (LPRECT)srcRect, flags, (LPDDBLTFX)fx);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -200,10 +202,10 @@ i32 CDDSurface::BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, 
 // CDDSurface::BltFast (__thiscall, ret 0x14 => 5 args). SURFACELOST retry.
 RVA(0x0013ef90, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans) {
-    i32 hr = m_8->BltFast(x, y, src->m_8, srcRect, trans);
+    i32 hr = m_8->BltFast(x, y, src->m_8, (LPRECT)srcRect, trans);
     if (hr == (i32)DDERR_SURFACELOST) {
         if (RestoreLost()) {
-            hr = m_8->BltFast(x, y, src->m_8, srcRect, trans);
+            hr = m_8->BltFast(x, y, src->m_8, (LPRECT)srcRect, trans);
         } else {
             return (i32)DDERR_SURFACELOST;
         }
@@ -302,11 +304,11 @@ void BuildColorChannelTables() {
 // non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)
 i32 CDDSurface::GetColorKey() {
-    u32 key[2];
-    i32 hr = m_8->GetColorKey(8, key);
+    DDCOLORKEY key;
+    i32 hr = m_8->GetColorKey(8, &key);
     if (hr != (i32)DDERR_NOCOLORKEY) {
         if (hr == 0) {
-            return key[0];
+            return key.dwColorSpaceLowValue;
         }
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x695, hr);
     }
@@ -318,7 +320,7 @@ i32 CDDSurface::GetColorKey() {
 // desc geometry is read through the named DDSURFACEDESC fields (m_descSize/
 // m_height/m_width/m_pitch) of the surface's embedded scratch.
 RVA(0x0013e140, 0x133)
-i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
+i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     m_8 = surf;
     i32 i;
     i32* d = (i32*)m_desc;
@@ -326,7 +328,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurfaceZ* surf) {
         *d++ = 0;
     }
     m_descSize = 0x6c;
-    i32 hr = m_8->GetSurfaceDesc(m_desc);
+    i32 hr = m_8->GetSurfaceDesc((LPDDSURFACEDESC)m_desc);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
@@ -644,11 +646,11 @@ i32 CDirectDrawMgr::CreateDevice(
 ) {
     m_93c = 0;
     m_940 = 0;
-    IDirectDraw2Z* dd = g_DirectDraw;
+    IDirectDraw2* dd = g_DirectDraw;
     if (dd != 0) {
         m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(hwnd, &m_dd1, 0);
+        i32 chr = DirectDrawCreate((GUID*)hwnd, &m_dd1, 0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
             if (m_lastError == 0) {
@@ -666,7 +668,7 @@ i32 CDirectDrawMgr::CreateDevice(
         }
     }
 
-    i32 hr = m_device->SetCooperativeLevel(hwnd, coopFlags);
+    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, coopFlags);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
@@ -688,7 +690,7 @@ i32 CDirectDrawMgr::CreateDevice(
     }
     m_caps[0] = 0x17c;
     m_helCaps[0] = 0x17c;
-    hr = m_device->GetCaps(m_caps, m_helCaps);
+    hr = m_device->GetCaps((LPDDCAPS)m_caps, (LPDDCAPS)m_helCaps);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
@@ -708,16 +710,16 @@ i32 CDirectDrawMgr::CreateDevice(
     }
 
     if (bpp == 0) {
-        i32 desc[0x1b];
+        DDSURFACEDESC desc;
         i32 j;
-        i32* d = desc;
+        i32* d = (i32*)&desc;
         for (j = 0x1b; j != 0; j--) {
             *d++ = 0;
         }
-        desc[0] = 0x6c;
-        hr = m_device->GetDisplayMode(desc);
+        desc.dwSize = 0x6c;
+        hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
-            m_bpp = desc[0x15];
+            m_bpp = desc.ddpfPixelFormat.dwRGBBitCount;
         }
     }
 
@@ -733,7 +735,7 @@ i32 CDirectDrawMgr::CreateDevice(
 // PALETTEENTRY array (m_cacheA), allocates a second cache (m_cacheB), then creates the
 // DirectDraw palette via IDirectDraw::CreatePalette into m_palette.
 RVA(0x00147390, 0x78)
-i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
+i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
     m_cacheA = (u8*)operator new(0x400);
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
     // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
@@ -742,7 +744,7 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
         *(i32*)(m_cacheA + i) = *(i32*)((char*)entries + i);
     }
     m_cacheB = (u8*)operator new(0x400);
-    i32 hr = dd->CreatePalette(flags, entries, &m_palette, 0);
+    i32 hr = dd->CreatePalette(flags, (LPPALETTEENTRY)entries, &m_palette, 0);
     if (hr == 0) {
         return 1;
     }
@@ -762,7 +764,7 @@ i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
 // CImage::LoadFromRez. Each branch re-tests `ext != 0` (the target's per-case
 // `test esi; je default`).
 RVA(0x00147410, 0xbc)
-i32 CDDPalette::LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags) {
+i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     char* ext = strrchr(filename, '.');
     if (ext && _stricmp(ext, s_extBmp) == 0) {
         return LoadBmp(dd, filename, flags);
@@ -778,7 +780,7 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2Z* dd, char* filename, u32 flags) {
 // RGB-triplet array, expands it on the stack into PALETTEENTRY[256] (peFlags=0),
 // then forwards to Create. The 0x400-byte stack buffer drives `sub esp,0x400`.
 RVA(0x001474d0, 0x60)
-i32 CDDPalette::CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags) {
+i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
     u8 entries[0x400];
     u8* src = (u8*)rgb;
     for (i32 i = 0; i < 0x100; i++) {
@@ -829,7 +831,7 @@ void CDDPalette::Destroy() {
 // buffers + the EH-state stores) + the reloc-masked CFileIO/EH symbol names.
 // Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147590, 0x17e)
-i32 CDDPalette::LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags) {
+i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 hdr14[0xe];   // BITMAPFILEHEADER
     u8 pe[0x400];    // expanded PALETTEENTRY[256]
     u8 info[0x428];  // BITMAPINFOHEADER + the in-file palette region
@@ -866,7 +868,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2Z* dd, char* filename, u32 flags) {
 // layout of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol
 // names. Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x00147710, 0x122)
-i32 CDDPalette::LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags) {
+i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 pe[0x400];  // expanded PALETTEENTRY[256]
     u8 rgb[0x300]; // 256 packed RGB triplets (trailing VGA palette)
     CFileIO file;
@@ -899,7 +901,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2Z* dd, char* filename, u32 flags) {
 // our cl bumps it at the loop tail) - a code-scheduling choice, not source-steerable.
 // Same family as Create's SIB-encoding plateau. docs/patterns/zero-register-pinning.md.
 RVA(0x00147840, 0x7e)
-i32 CDDPalette::CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size, u32 flags) {
+i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags) {
     if (size < 0x300) {
         return 0;
     }
@@ -927,7 +929,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2Z* dd, void* data, u32 size, u32 
 // of the 0x710-byte scratch frame + the reloc-masked CFileIO/EH symbol names.
 // Deferred to the final sweep. docs/patterns/zero-register-pinning.md.
 RVA(0x001478c0, 0x112)
-i32 CDDPalette::LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags) {
+i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 pe[0x400];  // expanded PALETTEENTRY[256]
     u8 rgb[0x300]; // 256 packed RGB triplets
     CFileIO file;
@@ -965,10 +967,10 @@ void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
         cache[start + i] = data[i];
     }
     if (g_DirectDrawMgr != 0) {
-        IDirectDraw2Z* dd = g_DirectDrawMgr->m_device;
+        IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_palette->SetEntries(0, start, count, data);
+    m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)data);
 }
 
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
@@ -986,7 +988,7 @@ i32 CDDPalette::GetEntries() {
             return 0;
         }
     }
-    i32 hr = m_palette->GetEntries(0, 0, 0x100, m_cacheB);
+    i32 hr = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheB);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
@@ -1013,10 +1015,10 @@ void CDDPalette::Apply(i32 a1) {
         *(i32*)(m_cacheA + i) = *(i32*)(readback + i);
     }
     if (g_DirectDrawMgr != 0) {
-        IDirectDraw2Z* dd = g_DirectDrawMgr->m_device;
+        IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_palette->SetEntries(0, 0, 0x100, readback);
+    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)readback);
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
@@ -1027,7 +1029,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
         m_cacheA[i * 4 + 1] = g;
         m_cacheA[i * 4 + 2] = b;
     }
-    i32 hr = m_palette->SetEntries(flags, start, count, m_cacheA + start * 4);
+    i32 hr = m_palette->SetEntries(flags, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -1072,7 +1074,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     if (m_dd1->QueryInterface(IID_IDirectDraw2, (void**)&m_dd2) != 0) {
         return 0;
     }
-    if (m_dd2->SetCooperativeLevel(window, coopFlags) != 0) {
+    if (m_dd2->SetCooperativeLevel((HWND)window, coopFlags) != 0) {
         HandleError();
         return 0;
     }
@@ -1089,7 +1091,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     m_descSize = 0x6c;
     m_24 = 1;
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
-    if (m_dd2->CreateSurface(m_desc, &m_primarySurfaceRaw, 0) != 0) {
+    if (m_dd2->CreateSurface((LPDDSURFACEDESC)m_desc, &m_primarySurfaceRaw, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -1102,7 +1104,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     OnModeSet(w);
 
     if (mode->bpp == 8) {
-        if (m_dd2->CreatePalette(4, m_palEntries, &m_palette, 0) != 0) {
+        if (m_dd2->CreatePalette(4, (LPPALETTEENTRY)m_palEntries, &m_palette, 0) != 0) {
             HandleError();
             return 0;
         }
@@ -1147,18 +1149,9 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
 // bit counter, while we keep `this` in ebx (sub esp,0x6c) and use edi for the third
 // counter; this cascades the loop register operands + the desc stack offset.
 // Not source-steerable; deferred to the final sweep.
-struct DDModeDesc {
-    u32 dwSize; // +0x00
-    char pad4[0x58 - 0x04];
-    u32 rMask; // +0x58  ddpfPixelFormat.dwRBitMask
-    u32 gMask; // +0x5c  dwGBitMask
-    u32 bMask; // +0x60  dwBBitMask
-    char pad64[0x6c - 0x64];
-}; // 0x6c
-
 RVA(0x0017d2b0, 0xfa)
 i32 CDDPageMgr::CheckMode16() {
-    DDModeDesc desc;
+    DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
     if (m_dd2->GetDisplayMode(&desc) != 0) {
@@ -1171,21 +1164,21 @@ i32 CDDPageMgr::CheckMode16() {
     i32 i;
     u32 m;
 
-    m = desc.rMask;
+    m = desc.ddpfPixelFormat.dwRBitMask;
     for (i = 0; i < 32; i++) {
         if ((m & 1) == 1) {
             r++;
         }
         m >>= 1;
     }
-    m = desc.gMask;
+    m = desc.ddpfPixelFormat.dwGBitMask;
     for (i = 0; i < 32; i++) {
         if ((m & 1) == 1) {
             g++;
         }
         m >>= 1;
     }
-    m = desc.bMask;
+    m = desc.ddpfPixelFormat.dwBBitMask;
     for (i = 0; i < 32; i++) {
         if ((m & 1) == 1) {
             b++;
@@ -1221,7 +1214,7 @@ DATA(0x00283ec8)
 extern CDdObArray g_modeArray;
 
 // The EnumDisplayModes callback (0x143390); only its address is referenced.
-// (EnumDisplayModes is slot 8 / +0x20 on the shared IDirectDraw2Z interface.)
+// (EnumDisplayModes is slot 8 / +0x20 on the IDirectDraw2 interface.)
 extern "C" void DdEnumModesCallback(); // 0x143390
 
 // @early-stop
@@ -1237,7 +1230,7 @@ void CDirectDrawMgr::SetupCaps() {
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_device->EnumDisplayModes(0, 0, 0, (void*)DdEnumModesCallback);
+    i32 hr = m_device->EnumDisplayModes(0, 0, 0, (LPDDENUMMODESCALLBACK)DdEnumModesCallback);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
@@ -1352,4 +1345,3 @@ SIZE_UNKNOWN(CDdDescSrc);
 SIZE_UNKNOWN(CDdEnumVtbl);
 SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
-SIZE_UNKNOWN(DDModeDesc);

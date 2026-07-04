@@ -35,7 +35,8 @@
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Rez/RezMgr.h>        // RezFree - the engine allocator the video-handle teardown uses
 #include <Bute/ButeMgr.h>      // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
-#include <ComDefs.h>           // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
+#include <Win32.h>             // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>             // real IDirectDrawSurface (credits-scroll DC: GetDC/ReleaseDC)
 #include <math.h>
 #include <rva.h>
 
@@ -459,56 +460,15 @@ void CBootyState::vfunc_1() {}
 extern "C" i32 g_62bf74; // clip-region enable gate
 extern double g_5e96f8;  // 480.0 (screen height) - extern-loaded so the reseed division
 extern double g_5e96f0;  // 0.025 (scroll rate)   - is fld/fdiv, not a folded immediate
-// The credits scroll's DirectDraw surface (prov->m_8): the game's
-// IDirectDrawSurface (DDRAW COM). Only GetDC (slot 17, +0x44) and ReleaseDC
-// (slot 26, +0x68) are used; both __stdcall with the surface as the hidden
-// `this`. A local SDK-named interface (real DX6 slot names) so
-// `surf->GetDC(&hdc)` lowers to the same `push &hdc; push surf; mov reg,[surf];
-// call [reg+slot]` the manual vtbl-struct view did; pointer-only -> no vtable
-// emitted in this TU.
-SIZE_UNKNOWN(IDirectDrawSurfaceZ);
-struct IDirectDrawSurfaceZ {
-    STDMETHOD(QueryInterface)() PURE;        // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
-    STDMETHOD_(u32, Release)() PURE;         // slot 2
-    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
-    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
-    STDMETHOD(Blt)() PURE;                   // slot 5
-    STDMETHOD(BltBatch)() PURE;              // slot 6
-    STDMETHOD(BltFast)() PURE;               // slot 7
-    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
-    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
-    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
-    STDMETHOD(Flip)() PURE;                  // slot 11
-    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
-    STDMETHOD(GetBltStatus)() PURE;          // slot 13
-    STDMETHOD(GetCaps)() PURE;               // slot 14
-    STDMETHOD(GetClipper)() PURE;            // slot 15
-    STDMETHOD(GetColorKey)() PURE;           // slot 16
-    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
-    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
-    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
-    STDMETHOD(GetPalette)() PURE;            // slot 20
-    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
-    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
-    STDMETHOD(Initialize)() PURE;            // slot 23
-    STDMETHOD(IsLost)() PURE;                // slot 24
-    STDMETHOD(Lock)() PURE;                  // slot 25
-    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
-    STDMETHOD(Restore)() PURE;               // slot 27
-    STDMETHOD(SetClipper)() PURE;            // slot 28
-    STDMETHOD(SetColorKey)() PURE;           // slot 29
-    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
-    STDMETHOD(SetPalette)() PURE;            // slot 31
-    STDMETHOD(Unlock)() PURE;                // slot 32
-    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
-    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
-    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
-};
+// The credits scroll's DirectDraw surface (prov->m_8): the game's real
+// IDirectDrawSurface (<ddraw.h>). Only GetDC (slot 17, +0x44) and ReleaseDC
+// (slot 26, +0x68) are used; both __stdcall with the surface as the hidden `this`,
+// so `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
+// call [reg+slot]` - pointer-only, no vtable emitted in this TU.
 SIZE_UNKNOWN(CreditsHdcProv);
 struct CreditsHdcProv { // m_c->m_4->m_14->m_2c
     char p0[0x8];
-    IDirectDrawSurfaceZ* m_8; // +0x08 the DDraw surface
+    IDirectDrawSurface* m_8; // +0x08 the DDraw surface
 };
 SIZE_UNKNOWN(CreditsView4M14);
 struct CreditsView4M14 {

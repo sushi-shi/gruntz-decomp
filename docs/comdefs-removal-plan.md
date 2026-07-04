@@ -1,5 +1,33 @@
 # Plan: remove ComDefs.h (and the other reimplemented headers)
 
+> **STATUS (DONE — ComDefs.h deleted).** DirectDraw migrated to real `<ddraw.h>`;
+> NetMgr.h's last `<ComDefs.h>` replaced with real `<wtypes.h>`+`<basetyps.h>` (HRESULT +
+> STDMETHOD - lighter than `<objbase.h>`'s OLE/RPC chain, same match result); **`include/
+> ComDefs.h` deleted** (CLSID stopgap gone with it). Overall exact **1859→1859 (net
+> neutral)**: DirectDraw +1, NetMgr −1 (CNetSession2::Verify 100→89.5% - the real COM
+> header's declarations perturb that Net TU's regalloc; this is exactly why ComDefs.h
+> existed, and the accepted cost of deleting it). Fuzzy −0.01%; the rest are small
+> fuzzy%-only drops in already-unmatched functions in TUs that newly pulled windows.h via
+> ddraw.h. Two findings changed the plan:
+> - **`WaveFormatX.h` KEPT (Step 3 deferred).** The vendored `WAVEFORMATEX` is 0x12
+>   (packed) but the game's is 0x14 (the DirectSound TUs byte-match at 0x14) — same
+>   size-mismatch class as DDCAPS below. Migrating value locals 0x14→0x12 would break
+>   matches, so `WaveFormatX` stays (it correctly models retail's WAVEFORMATEX).
+> - **`m_caps` stays `i32[0x5f]` (0x17c).** Retail hardcodes dwSize=0x17c (380 B) — larger
+>   than the vendored DX6 `DDCAPS` (0x13c) — a stale/mistaken dwSize on the game's side; a
+>   real value member would shrink the class. Real DX types are used everywhere their size
+>   is version-stable (RECT/POINT/DDBLTFX/DDSURFACEDESC/DDCOLORKEY/PALETTEENTRY locals).
+> - **Lean shared headers stay forward-decl.** `DDSurface.h`/`DirectDrawMgr.h` are
+>   included by both MFC and non-MFC TUs; an MFC TU forbids raw windows.h, so the header
+>   can't pull ddraw.h — each dispatching `.cpp` includes it instead (PCH is the future fix).
+> - **Pre-existing cold-init bug (NOT this change):** the DirectSound migration dropped the
+>   local `#define DSBLOCK_ENTIREBUFFER`, but the MSVC5 toolchain ships its own older
+>   `DSOUND.H` (no DSBLOCK) that the clang AST-dump (ghidra_metadata_generate) resolves
+>   *before* the DX SDK's, so a cold `gruntz init` fails on DirectSoundMgr.cpp. Wine-cl is
+>   fine (cc_wrap puts vendored DX first). Fix separately: align ghidra_metadata_generate's
+>   dsound.h resolution with cc_wrap, or restore the local define.
+
+
 **Goal:** delete `include/ComDefs.h` entirely — every hand-rolled COM view either
 migrates to its real SDK header, or (for engine-only interfaces) sources the
 `STDMETHOD`/`HRESULT`/`GUID` macros from the real `<windows.h>` instead of our mirror.

@@ -16,6 +16,8 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+#include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
@@ -329,7 +331,7 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     if (m_surface == 0) {
         return 1;
     }
-    IDirectDrawSurfaceZ* s = m_surface->m_8;
+    IDirectDrawSurface* s = m_surface->m_8;
     if (s != 0) {
         if (s->IsLost() == 0) {
             return 1;

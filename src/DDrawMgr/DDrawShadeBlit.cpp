@@ -9,6 +9,8 @@
 // other mode-loop callees (0x149950/0x149d00/0x14b770) and the surface Lock are
 // external/reloc-masked. See <DDrawMgr/DDrawShadeBlit.h> for the layout.
 #include <DDrawMgr/DDSurface.h> // CDDSurface src arg (m_pitch/m_b0/Lock; m_8->Unlock COM)
+#include <Win32.h>              // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>              // real IDirectDrawSurface dispatch (surf->m_8->Unlock)
 #include <DDrawMgr/DDrawShadeBlit.h>
 
 #include <rva.h>
