@@ -23,80 +23,28 @@
 #define DINMGR2_DIRECTINPUTMGR2_H
 
 #include <rva.h>
-#include <ComDefs.h> // STDMETHOD / HRESULT - the DirectInput COM interface macros
+
+#include <Ints.h> // i32 / u32 (were reached via <ComDefs.h> before the real header)
+
+// The real DirectInput SDK header, for the version retail was built against: DirectX
+// 6. Supplies the genuine IDirectInputA (the DirectInputCreateA object) + the QI'd
+// IDirectInputDevice2A (the dispatched device, Poll @ slot 25), plus the DI* flag
+// constants (DIDEVTYPE_*/DISCL_*/DIEDFL_*/DIERR_*) and the DIPROP* property structs
+// the manager uses. It drags in the Win32 COM/HANDLE chain (<objbase.h>), so pull
+// <windows.h> (via <Win32.h>) first and pin the version the game compiled against.
+#define DIRECTINPUT_VERSION 0x0500
+#include <Win32.h>
+#include <dinput.h>
 
 // The device base (defined near the bottom); the manager holds it by pointer.
 class CInputDevBase;
 
-// A DirectInput enumeration callback (LPDIENUMDEVICESCALLBACKA shape): __stdcall,
-// (device-instance, ref) -> continue-flag. Typing the EnumDevices slot with this
-// lets the callback address pass without a fn-ptr->void* cast.
-typedef i32(STDMETHODCALLTYPE* DinEnumCallback)(const void* instance, void* ref);
-
-// ---------------------------------------------------------------------------
-// IDirectInput (DINPUT) - the object DirectInputCreateA returns. COM convention
-// => __stdcall virtuals, declared the dev-authentic SDK way (STDMETHOD family).
-// Slots pinned to their retail vtable offsets:
-//   +0x0c (slot 3)  CreateDevice (REFGUID, LPDIRECTINPUTDEVICE*, LPUNKNOWN)
-//   +0x10 (slot 4)  EnumDevices  (DWORD, LPDIENUMDEVICESCALLBACKA, LPVOID, DWORD)
-// ---------------------------------------------------------------------------
-struct IDirectInputDeviceZ;
-
-SIZE_UNKNOWN(IDirectInputZ); // abstract COM interface - never allocated here
-struct IDirectInputZ {
-    STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0 +0x00
-    STDMETHOD_(u32, AddRef)();                               // slot 1 +0x04
-    STDMETHOD_(u32, Release)();                              // slot 2 +0x08
-    STDMETHOD(CreateDevice)(
-        const void* rguid,
-        IDirectInputDeviceZ** outDev,
-        void* unk
-    );                                                                             // slot 3 +0x0c
-    STDMETHOD(EnumDevices)(u32 devType, DinEnumCallback cb, void* ref, u32 flags); // slot 4 +0x10
-};
-
-// ---------------------------------------------------------------------------
-// IDirectInputDevice (DINPUT) - the per-device interface the CInputDev thunks
-// drive. __stdcall virtuals; slots pinned to their retail vtable offsets:
-//   +0x00 (slot 0)  QueryInterface     (REFIID, LPVOID*)
-//   +0x08 (slot 2)  Release            ()
-//   +0x18 (slot 6)  SetProperty        (REFGUID, LPCDIPROPHEADER)
-//   +0x1c (slot 7)  Acquire            ()
-//   +0x20 (slot 8)  Unacquire          ()
-//   +0x24 (slot 9)  GetDeviceState     (DWORD cb, LPVOID data)
-//   +0x2c (slot 11) SetDataFormat      (LPCDIDATAFORMAT)
-//   +0x34 (slot 13) SetCooperativeLevel(HWND, DWORD)
-//   +0x64 (slot 25) Poll               () [IDirectInputDevice2]
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(IDirectInputDeviceZ); // abstract COM interface - never allocated here
-struct IDirectInputDeviceZ {
-    STDMETHOD(QueryInterface)(const void* riid, void** out); // slot 0  +0x00
-    STDMETHOD_(u32, AddRef)();                               // slot 1  +0x04
-    STDMETHOD_(u32, Release)();                              // slot 2  +0x08
-    STDMETHOD_(void, Slot3)();                               // slot 3  +0x0c
-    STDMETHOD_(void, Slot4)();                               // slot 4  +0x10
-    STDMETHOD_(void, Slot5)();                               // slot 5  +0x14
-    STDMETHOD(SetProperty)(const void* rguid, void* prop);   // slot 6  +0x18
-    STDMETHOD(Acquire)();                                    // slot 7  +0x1c
-    STDMETHOD(Unacquire)();                                  // slot 8  +0x20
-    STDMETHOD(GetDeviceState)(u32 cb, void* data);           // slot 9  +0x24
-    STDMETHOD_(void, Slot10)();                              // slot 10 +0x28
-    STDMETHOD(SetDataFormat)(const void* fmt);               // slot 11 +0x2c
-    STDMETHOD_(void, Slot12)();                              // slot 12 +0x30
-    STDMETHOD(SetCooperativeLevel)(void* hwnd, u32 flags);   // slot 13 +0x34
-    STDMETHOD_(void, Slot14)();                              // slot 14 +0x38
-    STDMETHOD_(void, Slot15)();                              // slot 15 +0x3c
-    STDMETHOD_(void, Slot16)();                              // slot 16 +0x40
-    STDMETHOD_(void, Slot17)();                              // slot 17 +0x44
-    STDMETHOD_(void, Slot18)();                              // slot 18 +0x48
-    STDMETHOD_(void, Slot19)();                              // slot 19 +0x4c
-    STDMETHOD_(void, Slot20)();                              // slot 20 +0x50
-    STDMETHOD_(void, Slot21)();                              // slot 21 +0x54
-    STDMETHOD_(void, Slot22)();                              // slot 22 +0x58
-    STDMETHOD_(void, Slot23)();                              // slot 23 +0x5c
-    STDMETHOD_(void, Slot24)();                              // slot 24 +0x60
-    STDMETHOD(Poll)();                                       // slot 25 +0x64
-};
+// The DINPUT interfaces the manager drives are the real SDK ones now (above): the
+// object is IDirectInputA (CreateDevice @ slot 3 / EnumDevices @ slot 4), and each
+// device is QueryInterface'd from IDirectInputDeviceA to IDirectInputDevice2A - whose
+// dispatched slots (SetProperty @ +0x18, Acquire @ +0x1c, Unacquire @ +0x20,
+// GetDeviceState @ +0x24, SetDataFormat @ +0x2c, SetCooperativeLevel @ +0x34, Poll @
+// +0x64) match the hand-rolled ...Z view's offsets exactly (frozen across DX3/5/6).
 
 // The CInputDevice class (below) IS the 0x338-byte object InitA new's, inits inline,
 // and stamps with the cl-emitted keyboard vftable. CDeviceConfigA is the alias the
@@ -211,7 +159,7 @@ public:
     static void GetErrorString(char* file, i32 line, i32 hr); // 0x133590
 
     // --- layout ---------------------------------------------------------------
-    IDirectInputZ* m_directInput; // +0x00  the DInput object (DirectInputCreateA out)
+    IDirectInputA* m_directInput; // +0x00  the DInput object (DirectInputCreateA out)
     // m_owner / m_hinst are Win32 HWND / HINSTANCE handles. They stay void* to
     // match the void*-typed DInput/Win32 wrappers they flow into and to keep this
     // header (also included by GameApp/UnknownVTables) free of <windows.h> - a
@@ -287,7 +235,7 @@ public:
     // an unmatched teardown at 0x1342b0) - reloc-masked in objdiff, so cl's inherited
     // targets here diff clean. Direct callers qualify the call (CInputDevRoot::Create)
     // to keep the byte-exact direct `call rel32`.
-    virtual i32 Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
+    virtual i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
     virtual void ReleaseDevices();                                             // slot 2  0x134d50
     virtual i32 IsValid();                                                     // slot 3  0x1332b0
 
@@ -296,14 +244,14 @@ public:
 
     // Shared COM device-config thunks: they touch only the root-owned m_device2 /
     // m_hwnd, so every device leaf (keyboard/mouse/joystick) reaches them directly.
-    i32 SetDataFormat(const void* fmt);                                        // 0x134eb0
-    i32 SetCooperativeLevel(u32 flags);                                        // 0x134ef0
-    i32 SetProperty(const void* rguid, void* prop);                            // 0x134f30
-    i32 SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData); // 0x134f70
+    i32 SetDataFormat(const void* fmt);                                    // 0x134eb0
+    i32 SetCooperativeLevel(u32 flags);                                    // 0x134ef0
+    i32 SetProperty(REFGUID rguid, void* prop);                            // 0x134f30
+    i32 SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData); // 0x134f70
 
     // --- layout ---------------------------------------------------------------
-    IDirectInputDeviceZ* m_device;  // +0x004  the created device (CreateDevice out)
-    IDirectInputDeviceZ* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
+    IDirectInputDeviceA* m_device;   // +0x004  the created device (CreateDevice out)
+    IDirectInputDevice2A* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
     char m_padc[0x29c - 0x0c];
     // m_hwnd is the cached cooperative-level HWND (Win32 handle) - kept void* for the
     // same documented FOREIGN-HANDLE reason as the manager's m_owner/m_hinst.
@@ -333,7 +281,7 @@ public:
 
     // CreateDeviceWrap (0x134260): validates (di, hwnd), runs Create, then dispatches
     // the +0x14 ResetState virtual. Non-virtual; direct-called by every leaf.
-    i32 CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd); // 0x134260
+    i32 CreateDeviceWrap(IDirectInputA* di, const void* guid, void* hwnd); // 0x134260
 };
 
 // CInputDevice (keyboard, vtable 0x5ef628, 0x338) - the object InitA new's. Adds
@@ -344,7 +292,7 @@ public:
     CInputDevice();
     virtual ~CInputDevice() OVERRIDE; // 0x133300 (the /GX multilevel deleting-dtor)
 
-    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x133b50
+    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x133b50
     void Teardown();                                                           // 0x133bf0
     void SetupKeyTable();                                                      // 0x133c30
     virtual i32 Poll() OVERRIDE;                                               // slot 4  0x133d00
@@ -367,9 +315,9 @@ public:
     CDeviceConfigB();
     virtual ~CDeviceConfigB() OVERRIDE; // 0x1334f0 (the /GX multilevel deleting-dtor)
 
-    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
+    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
     i32 IsReady();                                                                     // 0x1343a0
-    i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
+    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
     i32 SetupAxes();                                                                   // 0x134710
     void Free360(); // 0x134360 (mouse leaf teardown; body in BoundaryUpper.cpp)
 

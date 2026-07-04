@@ -7,9 +7,10 @@
 // only offsets + code bytes are load-bearing.
 #include <rva.h>
 
-#include <ComDefs.h> // STDMETHOD - the IDirectDrawPalette COM interface the lerp drives
 #include <Ints.h>
 #include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
+
+#include <ddraw.h> // the real IDirectDrawPalette (DX6 SDK, vendor/directx6/Include)
 
 // Retail caches the timeGetTime entry point in a game-owned global pointer and
 // calls through it (ff 15), not via the import thunk. CANONICAL: _g_pTimeGetTime
@@ -18,26 +19,14 @@
 // 0x6c4650, an orphan symbol_names row).
 extern "C" u32(WINAPI* g_pTimeGetTime)();
 
-// The owning palette object is the DirectDraw palette COM interface
-// (IDirectDrawPalette): only SetEntries (slot 6, +0x18) is invoked. Declared the
-// dev-authentic SDK way with STDMETHOD so `m_paletteObj->SetEntries(...)` lowers to
-// the same `mov eax,[iface]; call [eax+0x18]` COM dispatch the manual vtbl-slot view
-// did. The object is external (pointer-only, never constructed here) so no ??_7 is
-// emitted. COM => __stdcall with the interface pointer as the hidden first arg.
-SIZE_UNKNOWN(IDirectDrawPaletteZ);
-struct IDirectDrawPaletteZ {
-    STDMETHOD(QueryInterface)(const void* riid, void** out) PURE;               // slot 0
-    STDMETHOD_(u32, AddRef)() PURE;                                             // slot 1
-    STDMETHOD_(u32, Release)() PURE;                                            // slot 2  (+0x08)
-    STDMETHOD(GetCaps)(u32* caps) PURE;                                         // slot 3
-    STDMETHOD(GetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 4
-    STDMETHOD(Initialize)(void* dd, u32 flags, void* colorTable) PURE;          // slot 5
-    STDMETHOD(SetEntries)(u32 flags, u32 start, u32 count, void* entries) PURE; // slot 6  (+0x18)
-};
-
+// The owning palette object is the real DirectDraw palette COM interface
+// (IDirectDrawPalette, from the DX6 SDK's <ddraw.h>): only SetEntries (slot 6, +0x18)
+// is invoked, so `m_paletteObj->SetEntries(...)` lowers to the same `mov eax,[iface];
+// call [eax+0x18]` COM dispatch the hand-rolled ...Z view did (slot order is frozen
+// across DX3/5/6). COM => __stdcall with the interface pointer as the hidden first arg.
 struct PaletteLerp {
     char m_pad00[4];
-    IDirectDrawPaletteZ* m_paletteObj; // +0x04 owning DirectDraw palette (SetEntries at +0x18)
+    IDirectDrawPalette* m_paletteObj; // +0x04 owning DirectDraw palette (SetEntries at +0x18)
     char m_pad08[4];
     u8* m_livePalette; // +0x0c live palette bytes (destination)
     char m_pad10[4];
@@ -95,7 +84,7 @@ i32 PaletteLerp::Tick() {
                 0,
                 m_firstColorIndex,
                 m_colorCount,
-                m_livePalette + m_firstColorIndex * 4
+                (LPPALETTEENTRY)(m_livePalette + m_firstColorIndex * 4)
             );
         }
     } else {
@@ -122,7 +111,7 @@ i32 PaletteLerp::Tick() {
                 0,
                 m_firstColorIndex,
                 m_colorCount,
-                m_livePalette + m_firstColorIndex * 4
+                (LPPALETTEENTRY)(m_livePalette + m_firstColorIndex * 4)
             );
         }
     }

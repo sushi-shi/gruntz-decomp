@@ -34,19 +34,10 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
-// DInput SDK constants (real <dinput.h> names/values; the full header isn't
-// included because its hand-rolled COM interfaces / GUIDs here are matched by
-// shape - see IDirectInputZ above). Same immediates, so matching-neutral.
-#define DIRECTINPUT_VERSION 0x0500 // DirectInputCreateA version arg
-#define DIDEVTYPE_JOYSTICK 4       // EnumDevices device type
-#define DIEDFL_ATTACHEDONLY 1      // EnumDevices flags (attached devices only)
-#define DISCL_NONEXCLUSIVE 2       // SetCooperativeLevel: share the device
-#define DISCL_FOREGROUND 4         // SetCooperativeLevel: foreground-only access
-
-// The DInput property GUIDs SetupAxes uses, as the SDK's MAKEDIPROP(N) magic
-// pointer values ((const GUID*)(N)): DIPROP_RANGE=4, DIPROP_DEADZONE=5.
-#define DIPROP_RANGE ((const void*)4)
-#define DIPROP_DEADZONE ((const void*)5)
+// The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
+// DISCL_* / DIPROP_RANGE / DIPROP_DEADZONE / DIERR_*) now come from the real
+// <dinput.h> (via DirectInputMgr2.h). DIPROP_RANGE/DEADZONE are the SDK's MAKEDIPROP(4)
+// / MAKEDIPROP(5) magic-pointer GUIDs, passed by REFGUID to SetProperty.
 
 // DirectInputMgr2::Create flags: each bit, when SET, SKIPS one sub-initializer.
 #define DIDF_NO_DEVICE_B 2    // skip InitB (device B)
@@ -60,25 +51,18 @@
 // GetDeviceState snapshot buffer: 256 bytes (one per keyboard scan code).
 #define STATE_BUFFER_SIZE 0x100
 
-// The two DIERR HRESULTs ReadState recovers from by re-Acquiring the device.
-#define DIERR_INPUTLOST 0x8007001e   // access to the device was lost
-#define DIERR_NOTACQUIRED 0x8007000c // device not acquired
-
 // The __FILE__ strings the wrappers pass to GetErrorString - two source-path
 // $SG pooled constants ($SG at 0x6199bc / 0x619ed8) referenced across the run.
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-// DINPUT.dll DirectInputCreateA - called via a direct `e8 rel32` to its
-// incremental-link thunk (the thunk is `jmp ds:[IAT]`); reloc-masked, like
-// DirectSoundCreate / DirectDrawCreate, not an `ff 15 [IAT]` indirect.
-extern "C" i32 __stdcall
-DirectInputCreateA(void* hinst, u32 version, IDirectInputZ** ppDI, void* punkOuter);
-
-// IID_IDirectInputDevice2A - a dxguid GUID constant in .rdata (0x5ef458),
-// passed to the device QueryInterface. Reloc-masked DATA() extern.
+// IID_IDirectInputDevice2A - the dxguid GUID constant in .rdata (0x5ef458) passed to
+// the device QueryInterface. <dinput.h> declares it (EXTERN_C const GUID); we redeclare
+// it only to pin its retail RVA so objdiff names the reloc target. DirectInputCreateA
+// itself is the real <dinput.h> import decl (a direct `e8 rel32` to its ILT thunk,
+// reloc-masked, like DirectSoundCreate / DirectDrawCreate - not an `ff 15 [IAT]`).
 DATA(0x001ef458)
-extern const u8 IID_IDirectInputDevice2A[16]; // 0x5ef458
+extern "C" const GUID IID_IDirectInputDevice2A;
 
 // The static DIEnumDevicesCallbackA the EnumDevices wrapper passes by address
 // (0x532fc0, a separate DinMgr2.cpp callback not yet matched). Referenced only
@@ -219,7 +203,7 @@ i32 DirectInputMgr2::Create(void* owner, void* hinst, u32 flags) {
     if (hinst == 0) {
         return 0;
     }
-    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
+    i32 hr = DirectInputCreateA((HINSTANCE)hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0x32, hr);
         return 0;
@@ -285,7 +269,7 @@ void DirectInputMgr2::Shutdown() {
 // scheduling, no /O2 source lever flips it. 86.5%.
 RVA(0x00132e20, 0xb1)
 i32 DirectInputMgr2::InitA(u32 flags) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
@@ -308,7 +292,7 @@ i32 DirectInputMgr2::InitA(u32 flags) {
 // scalar-deletes it (m_deviceB) and returns 0; on success keeps it in m_deviceB.
 RVA(0x00132ee0, 0x9a)
 i32 DirectInputMgr2::InitB(u32 flags) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
@@ -330,11 +314,16 @@ i32 DirectInputMgr2::InitB(u32 flags) {
 // failed HRESULT and returns 0, else 1.
 RVA(0x00132f80, 0x3d)
 i32 DirectInputMgr2::EnumGameControllers(u32) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
-    i32 hr = di->EnumDevices(DIDEVTYPE_JOYSTICK, DinEnumDevicesCallback, this, DIEDFL_ATTACHEDONLY);
+    i32 hr = di->EnumDevices(
+        DIDEVTYPE_JOYSTICK,
+        (LPDIENUMDEVICESCALLBACKA)DinEnumDevicesCallback,
+        this,
+        DIEDFL_ATTACHEDONLY
+    );
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0xfb, hr);
         return 0;
@@ -629,7 +618,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 // flag, seeds the scan-code table, sets the keyboard data format + cooperative level,
 // then allocates the 0x100-byte GetDeviceState snapshot buffer (+0x2a0/+0x2a4).
 RVA(0x00133b50, 0x97)
-i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -938,7 +927,7 @@ i32 CInputDevice::Poll() {
 // hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
 // configure virtual through the stamped foreign vtable. Returns 1 on success.
 RVA(0x00134260, 0x43)
-i32 CInputDevBase::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
+i32 CInputDevBase::CreateDeviceWrap(IDirectInputA* di, const void* guid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -959,7 +948,7 @@ i32 CInputDevBase::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* h
 // cooperative level, then returns whether the device came up (IsReady). The shared
 // wrapper thunks live on CInputDevice (the device-config objects share its prefix).
 RVA(0x001342c0, 0x95)
-i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -1154,7 +1143,7 @@ i32 CInputDevice::PollJoystick() {
 // joystick data format, a 0x110-byte DIJOYSTATE2 snapshot buffer, and a SetupAxes()
 // finalizer that configures the DI axis ranges + dead zones.
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigB::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -1190,24 +1179,17 @@ i32 CDeviceConfigB::SetupAxes() {
     if (m_device2 == 0) {
         return 0;
     }
-    struct DIPropRange {
-        u32 dwSize;       // +0x00
-        u32 dwHeaderSize; // +0x04
-        u32 dwObj;        // +0x08
-        u32 dwHow;        // +0x0c
-        i32 lMin;         // +0x10
-        i32 lMax;         // +0x14
-    } range;
-    range.dwSize = 0x18;
-    range.dwHeaderSize = 0x10;
-    range.dwObj = 0;
-    range.dwHow = 1;
+    DIPROPRANGE range; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, lMin, lMax}
+    range.diph.dwSize = 0x18;
+    range.diph.dwHeaderSize = 0x10;
+    range.diph.dwObj = 0;
+    range.diph.dwHow = 1;
     range.lMin = -1000;
     range.lMax = 1000;
     if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
-    range.dwObj = 4;
+    range.diph.dwObj = 4;
     if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
@@ -1222,7 +1204,7 @@ i32 CDeviceConfigB::SetupAxes() {
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
 // interface (m_device2). Each COM failure is reported; returns whether m_device2 is non-null.
 RVA(0x00134cb0, 0x94)
-i32 CInputDevRoot::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
+i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -1230,7 +1212,7 @@ i32 CInputDevRoot::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd)
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->CreateDevice(deviceGuid, &m_device, 0);
+    i32 hr = di->CreateDevice(*(const GUID*)deviceGuid, &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -1294,7 +1276,7 @@ i32 CInputDevRoot::SetDataFormat(const void* fmt) {
     if (fmt == 0) {
         return 0;
     }
-    i32 hr = m_device2->SetDataFormat(fmt);
+    i32 hr = m_device2->SetDataFormat((LPCDIDATAFORMAT)fmt);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -1307,7 +1289,7 @@ i32 CInputDevRoot::SetDataFormat(const void* fmt) {
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
 i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
-    i32 hr = m_device2->SetCooperativeLevel(m_hwnd, flags);
+    i32 hr = m_device2->SetCooperativeLevel((HWND)m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
         return 0;
@@ -1318,11 +1300,11 @@ i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
 // CInputDevice::SetProperty (__thiscall, ret 8 => 2 args). Pass-through to
 // IDirectInputDevice::SetProperty; report on failure.
 RVA(0x00134f30, 0x40)
-i32 CInputDevRoot::SetProperty(const void* rguid, void* prop) {
+i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
-    i32 hr = m_device2->SetProperty(rguid, prop);
+    i32 hr = m_device2->SetProperty(rguid, (LPCDIPROPHEADER)prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -1336,19 +1318,13 @@ i32 CInputDevRoot::SetProperty(const void* rguid, void* prop) {
 // to SetProperty(rguid, &prop). The data fields are filled from the args first,
 // then the two fixed size words.
 RVA(0x00134f70, 0x40)
-i32 CInputDevRoot::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
-    struct DIPropDword {
-        u32 dwSize;       // +0x00
-        u32 dwHeaderSize; // +0x04
-        u32 dwObj;        // +0x08
-        u32 dwHow;        // +0x0c
-        u32 dwData;       // +0x10
-    } prop;
-    prop.dwObj = dwObj;
-    prop.dwHow = dwHow;
+i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData) {
+    DIPROPDWORD prop; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, dwData}
+    prop.diph.dwObj = dwObj;
+    prop.diph.dwHow = dwHow;
     prop.dwData = dwData;
-    prop.dwSize = 0x14;
-    prop.dwHeaderSize = 0x10;
+    prop.diph.dwSize = 0x14;
+    prop.diph.dwHeaderSize = 0x10;
     return SetProperty(rguid, &prop);
 }
 

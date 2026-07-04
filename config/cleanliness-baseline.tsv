@@ -9,7 +9,7 @@ placeholder vtable slots	772
 g_*Vtbl globals	137
 m_vtbl/m_vptr members	165
 )this casts	278
-)m_ casts	807
+)m_ casts	808
 (char*) casts	883
 (const char*) casts	110
 void* m_ members	418
