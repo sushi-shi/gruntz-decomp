@@ -83,7 +83,7 @@ void* RbCreateSprite(i32 a, i32 b, i32 c, const char* ns, i32 tag, i32 flags); /
 i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
 double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
-i32 RbFtol(double x);                                         // 0x11f570 __ftol
+extern "C" i32 __ftol(double x); // 0x11f570
 
 // Registry slot calls on g_gameReg sub-objects (reloc-masked __thiscall).
 i32 RbProbeRect(void* obj, i32 cx, i32 cy, i32* rectBase, i32* outA, i32* outB, i32 z); // 0x32ce
@@ -492,38 +492,38 @@ i32 CRollingBall::Update() {
     if (I32(self, 0x70) > 0) {
         double v = dt + DBL(self, 0x60);
         DBL(self, 0x60) = v;
-        nx = RbFtol(RbCeil(v));
+        nx = __ftol(RbCeil(v));
         if (nx >= (I32(self, 0x78) >> 5)) {
             nx = I32(self, 0x78) >> 5;
         }
     } else if (I32(self, 0x70) < 0) {
         double v = DBL(self, 0x60) - dt;
         DBL(self, 0x60) = v;
-        nx = RbFtol(RbFloor(v));
+        nx = __ftol(RbFloor(v));
         if (nx < (I32(self, 0x78) >> 5)) {
             nx = I32(self, 0x78) >> 5;
         }
     } else {
-        nx = RbFtol(RbFloor(DBL(self, 0x60)));
+        nx = __ftol(RbFloor(DBL(self, 0x60)));
     }
 
     i32 ny = I32(self, 0x7c) >> 5;
     if (I32(self, 0x74) > 0) {
         double v = dt + DBL(self, 0x68);
         DBL(self, 0x68) = v;
-        ny = RbFtol(RbCeil(v));
+        ny = __ftol(RbCeil(v));
         if (ny >= (I32(self, 0x7c) >> 5)) {
             ny = I32(self, 0x7c) >> 5;
         }
     } else if (I32(self, 0x74) < 0) {
         double v = DBL(self, 0x68) - dt;
         DBL(self, 0x68) = v;
-        ny = RbFtol(RbFloor(v));
+        ny = __ftol(RbFloor(v));
         if (ny < (I32(self, 0x7c) >> 5)) {
             ny = I32(self, 0x7c) >> 5;
         }
     } else {
-        ny = RbFtol(RbFloor(DBL(self, 0x68)));
+        ny = __ftol(RbFloor(DBL(self, 0x68)));
     }
 
     void* out = PTR(self, 0x10);

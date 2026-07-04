@@ -694,7 +694,7 @@ SIZE_UNKNOWN(CFaderElem);
 // 0x5f0828/30/38/40). Field names are placeholders; offsets + code bytes are the
 // load-bearing fact.
 
-extern "C" int FrSqrtFn(double v); // 0x11f570  (cdecl-ish post-sqrt step)
+extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
 struct FrSurface; // defined below; FrConfig holds a FrSurface* surface override
 
@@ -804,13 +804,13 @@ i32 CFaderRadialApply::Build(FrConfig* cfg) {
 
     i32 cx = self->m_centerX;
     i32 cy = self->m_centerY;
-    self->m_maxRadius = FrSqrtFn((double)(cx * cx + cy * cy));
+    self->m_maxRadius = __ftol((double)(cx * cx + cy * cy));
 
     for (i32 y = 0; y < s->m_width; y++) {
         for (i32 x = 0; x < s->m_height; x++) {
             i32 dx = x - self->m_centerX;
             i32 dy = 0 - self->m_centerY; // (y term folded into the per-row base)
-            float r = (float)self->m_maxRadius - (float)FrSqrtFn((double)(dx * dx + dy * dy));
+            float r = (float)self->m_maxRadius - (float)__ftol((double)(dx * dx + dy * dy));
             float fade = r / self->m_fadeDivisor;
             i32 vx = (i32)((float)dx * fade);
             i32 vy = (i32)((float)dy * fade);
