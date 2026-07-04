@@ -304,15 +304,15 @@ public:
     // toward it in limited increments, re-running EditSwitch until it reaches or is blocked.
     i32 ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3);
 
-    // ProbeColumn (@0x160980): probe the tile at (target->m_5c + dx, target->m_138 +
-    // target->m_60), clamped into the main plane grid, and return the image set's slot
-    // +0x20 dispatch (0 for an empty/clear tile). ret 8.
+    // ProbeColumn (@0x160980): probe the tile at (target->originX + dx, target->axisMid
+    // + target->originY), clamped into the main plane grid, and return the image set's
+    // GetCollisionAt (+0x20) dispatch (0 for an empty/clear tile). ret 8.
     i32 ProbeColumn(void* target, i32 dx);
 
-    // WalkColumnDown (@0x160a40): from the start row (target->m_140 + target->m_60),
-    // probe tiles stepping the row downward until the image set's slot +0x20 reports a
-    // stop code (1/2/3) or the row runs off the grid; on a stop, commit the resolved
-    // row back into target->m_60. ret 8 (the 2nd stack arg is unused).
+    // WalkColumnDown (@0x160a40): from the start row (target->axisHi + target->originY),
+    // probe tiles stepping the row downward until the image set's GetCollisionAt (+0x20)
+    // reports a stop code (1/2/3) or the row runs off the grid; on a stop, commit the
+    // resolved row back into target->originY. ret 8 (the 2nd stack arg is unused).
     i32 WalkColumnDown(void* target, i32 unused);
 
     // Forwards a method (vtable +0x28/+0x2c) across every plane.

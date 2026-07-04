@@ -663,8 +663,8 @@ struct CImageSet3 : Wap::CObject {
     virtual void s40();              // [16] 0x167050
     virtual void s44();              // [17] 0x1670d0
     CImageSet3() {
-        m_04 = 0; // cl auto-stamps &??_7CImageSet3 first
-        m_14 = 0;
+        m_width = 0; // cl auto-stamps &??_7CImageSet3 first
+        m_pixels = 0;
     }
     void* operator new(size_t n) {
         return RezAlloc(n);
@@ -672,11 +672,11 @@ struct CImageSet3 : Wap::CObject {
     void operator delete(void* p) {
         RezFree(p);
     }
-    i32 m_04;   // +0x04  tile width
-    i32 m_08;   // +0x08  tile height
-    i32 m_0c;   // +0x0c  log2(height)
-    i32 m_10;   // +0x10  width*height (byte size)
-    void* m_14; // +0x14  owned pixel buffer
+    i32 m_width;   // +0x04  tile width
+    i32 m_height;   // +0x08  tile height
+    i32 m_heightLog2;   // +0x0c  log2(height)
+    i32 m_byteSize;   // +0x10  width*height (byte size)
+    void* m_pixels; // +0x14  owned pixel buffer
 };
 
 RVA(0x0015d820, 0xa3)
@@ -767,23 +767,23 @@ RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
     i32* p = (i32*)((char*)record + 8);
     i32 w = *p++;
-    m_04 = w;
+    m_width = w;
     i32 h = *p++;
-    m_08 = h;
-    m_0c = 0;
-    m_10 = w * h;
+    m_height = h;
+    m_heightLog2 = 0;
+    m_byteSize = w * h;
     for (; h > 1; h >>= 1) {
-        m_0c++;
+        m_heightLog2++;
     }
-    if ((1 << m_0c) != w) {
+    if ((1 << m_heightLog2) != w) {
         return 0;
     }
-    void* dst = operator new(m_10);
-    m_14 = dst;
+    void* dst = operator new(m_byteSize);
+    m_pixels = dst;
     if (dst == 0) {
         return 0;
     }
-    memcpy(dst, p, m_10);
+    memcpy(dst, p, m_byteSize);
     return 1;
 }
 
@@ -898,6 +898,27 @@ void CLevelPlane::RecomputePlaneCoords() {
 // its Build(coords)/Sync(arg)/Refresh() slots (unmatched engine __thiscall leaves,
 // reloc-masked call sites) and reads its tile grid / extents / name directly.
 
+// ===========================================================================
+// FACET VIEWS onto ONE unmatched engine object (identity note - Part 2 disposition).
+// The edit-state / broad-phase / probe "target" the methods below drive is a single
+// UNMATCHED engine class - a scrollable game/map object - viewed through several
+// window structs, one per method family (each names only the offsets its family
+// touches): LevelScroll, ScrollTarget, EditTarget (scroll/edit steppers), BPObj +
+// BPNode/BPChainMgr/BPOwner/BPNotifier (the AABB broad-phase), and ProbeObj /
+// HoldPayload / ProbeTarget (the fit/probe tests). They are NOT distinct types - the
+// same physical layout underlies all of them:
+//     +0x08 flags   +0x5c/+0x60 scroll/world origin (x,y)   +0x64/+0x68 step limits
+//     +0x90 collision-notifier   +0x94 back-ptr   +0xe4 edit brush-kind
+//     +0xe8/+0xf4 collision masks   +0xf8/+0xfc per-axis step strides
+//     +0x134..+0x140 the object's own collision AABB (left/bottom/right/top;
+//                    the steppers read it as axis brackets axisLoA/LoB/Mid/Hi)
+//     +0x144..+0x14c a SECOND box (candidate/sprite bounds)   +0x178 an overhang clamp
+// The principled fix (no-sane-dev): match that engine game-object class and collapse
+// every view into it (the `void* target` params + per-family casts then vanish). Its
+// real identity is likely a CMapObject/CGruntObject-family base (engine, cross-TU /
+// UNMATCHED) - deferred to that matcher, NOT fabricated here as one local union.
+// ===========================================================================
+
 // LevelScroll - the scroll-state record the edit-state methods manipulate: the
 // +0x5c/+0x60 scroll x/y, +0x64/+0x68 limits, +0x08 flags and +0xe4 edit-state
 // brush-kind all live on the same object that elsewhere is the level container.
@@ -1000,14 +1021,14 @@ struct EditTarget {
 SIZE_UNKNOWN(ProbeObj);
 struct ProbeObj {
     char pad_0[0x5c];
-    i32 m_5c; // +0x5c  origin X
-    i32 m_60; // +0x60  origin Y
+    i32 originX; // +0x5c  origin X
+    i32 originY; // +0x60  origin Y
     char pad_64[0x144 - 0x64];
-    i32 m_144; // +0x144  box left
-    i32 m_148; // +0x148  box row
-    i32 m_14c; // +0x14c  box right
+    i32 boxL; // +0x144  box left
+    i32 boxRow; // +0x148  box row
+    i32 boxR; // +0x14c  box right
     char pad_150[0x178 - 0x150];
-    i32 m_178; // +0x178
+    i32 overhang; // +0x178
 };
 
 // The tile probe reads the main plane (CLevelPlane) at its probe offsets: the wrap moduli
@@ -2782,7 +2803,7 @@ i32 CGameLevel::AltStepValidate(void* target, void* payload, i32 a1, i32 a2, i32
     EditTarget* t = (EditTarget*)target;
     ProbeObj* p = (ProbeObj*)payload;
 
-    if (p->m_144 == -1) {
+    if (p->boxL == -1) {
         goto fail;
     }
     if (t->axisLoA == -1) {
@@ -2794,15 +2815,15 @@ i32 CGameLevel::AltStepValidate(void* target, void* payload, i32 a1, i32 a2, i32
             goto fail;
         }
 
-        i32 boxL = p->m_144 + p->m_5c;
-        i32 boxR = p->m_14c + p->m_5c;
-        i32 boxT = p->m_60 + p->m_148;
+        i32 boxL = p->boxL + p->originX;
+        i32 boxR = p->boxR + p->originX;
+        i32 boxT = p->originY + p->boxRow;
         i32 tLoA = t->axisLoA + a1;
         i32 tMid = t->axisMid + a1;
         i32 tHi = t->axisHi + a2;
         i32 cmpHi = t->axisHi + sy;
 
-        i32 over = p->m_178;
+        i32 over = p->overhang;
         if (over > 0) {
             over = 0;
         }
@@ -2850,14 +2871,14 @@ fail:
 SIZE_UNKNOWN(HoldPayload);
 struct HoldPayload {
     char pad_0[0x5c];
-    i32 m_5c; // +0x5c  origin X
-    i32 m_60; // +0x60  origin Y
+    i32 originX; // +0x5c  origin X
+    i32 originY; // +0x60  origin Y
     char pad_64[0xe8 - 0x64];
-    i32 m_e8; // +0xe8  kind marker (held == 0x80)
+    i32 kindMarker; // +0xe8  kind marker (held == 0x80)
     char pad_ec[0x144 - 0xec];
-    i32 m_144; // +0x144  box left
-    i32 m_148; // +0x148  box row
-    i32 m_14c; // +0x14c  box right
+    i32 boxL; // +0x144  box left
+    i32 boxRow; // +0x148  box row
+    i32 boxR; // +0x14c  box right
 };
 RVA(0x0015ff20, 0xc0)
 i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
@@ -2868,10 +2889,10 @@ i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
     if ((a3 & 8) == 0) {
         return 0;
     }
-    if (p->m_e8 != 0x80) {
+    if (p->kindMarker != 0x80) {
         return 0;
     }
-    if (p->m_144 == -1) {
+    if (p->boxL == -1) {
         return 0;
     }
     EditTarget* et = (EditTarget*)t;
@@ -2879,10 +2900,10 @@ i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    i32 ox = p->m_5c;
-    i32 boxL = ox + p->m_144;
-    i32 boxR = ox + p->m_14c;
-    i32 boxT = p->m_60 + p->m_148;
+    i32 ox = p->originX;
+    i32 boxL = ox + p->boxL;
+    i32 boxR = ox + p->boxR;
+    i32 boxT = p->originY + p->boxRow;
     i32 hi = et->axisHi + a2;
     i32 tMid = et->axisMid + a1;
     i32 tLoA = et->axisLoA + a1;
@@ -2939,19 +2960,19 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 SIZE_UNKNOWN(ProbeTarget);
 struct ProbeTarget {
     char pad_0[0x5c];
-    i32 m_5c; // +0x5c  origin X
-    i32 m_60; // +0x60  origin Y
+    i32 originX; // +0x5c  origin X
+    i32 originY; // +0x60  origin Y
     char pad_64[0x134 - 0x64];
-    i32 m_134; // +0x134  axis low bracket
-    i32 m_138; // +0x138  axis mid bracket
+    i32 axisLo; // +0x134  axis low bracket
+    i32 axisMid; // +0x138  axis mid bracket
     char pad_13c[0x140 - 0x13c];
-    i32 m_140; // +0x140  axis high bracket
+    i32 axisHi; // +0x140  axis high bracket
 };
 
 // ---------------------------------------------------------------------------
 // ProbeColumn (@0x160980): probe the single tile at the target's column origin
-// (m_5c + dx, m_138 + m_60), clamped into the main plane grid, returning the image
-// set's slot +0x20 dispatch (0 for an empty/clear tile). The inlined AxisProbe shape
+// (originX + dx, axisMid + originY), clamped into the main plane grid, returning the
+// image set's GetCollisionAt (+0x20) dispatch (0 for an empty/clear tile). The inlined AxisProbe shape
 // (PROBE_TILE) applied to a target+offset probe point. ret 8.
 //
 // @early-stop
@@ -2961,19 +2982,19 @@ struct ProbeTarget {
 RVA(0x00160980, 0xc0)
 i32 CGameLevel::ProbeColumn(void* target, i32 dx) {
     ProbeTarget* t = (ProbeTarget*)target;
-    i32 px = t->m_5c + dx;
-    i32 py = t->m_138 + t->m_60;
+    i32 px = t->originX + dx;
+    i32 py = t->axisMid + t->originY;
     i32 result;
     PROBE_TILE(this, px, py, result);
     return result;
 }
 
 // ---------------------------------------------------------------------------
-// WalkColumnDown (@0x160a40): from the start row (target->m_140 + target->m_60), probe
-// the tile column at the fixed x (target->m_5c) stepping the row downward until the
-// image set's slot +0x20 reports a stop code (1/2/3) or the row runs off the grid
-// (>= plane height). On a stop, commit the resolved row back into target->m_60 as
-// (m_60 + finalRow - startRow - 1) and return 1; an unset low bracket / missing main
+// WalkColumnDown (@0x160a40): from the start row (target->axisHi + target->originY), probe
+// the tile column at the fixed x (target->originX) stepping the row downward until the
+// image set's GetCollisionAt (+0x20) reports a stop code (1/2/3) or the row runs off the grid
+// (>= plane height). On a stop, commit the resolved row back into target->originY as
+// (originY + finalRow - startRow - 1) and return 1; an unset low bracket / missing main
 // plane / off-grid walk returns 0.
 //
 // @early-stop
@@ -2985,15 +3006,15 @@ i32 CGameLevel::ProbeColumn(void* target, i32 dx) {
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     ProbeTarget* t = (ProbeTarget*)target;
-    if (t->m_134 == AXIS_UNSET) {
+    if (t->axisLo == AXIS_UNSET) {
         return 0;
     }
     if (m_mainPlane == 0) {
         return 0;
     }
 
-    i32 px = t->m_5c;
-    i32 row = t->m_140 + t->m_60;
+    i32 px = t->originX;
+    i32 row = t->axisHi + t->originY;
     i32 startRow = row;
 
     i32 result;
@@ -3011,7 +3032,7 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     }
 
     i32 final = row - startRow - 1;
-    t->m_60 += final;
+    t->originY += final;
     return 1;
 }
 
