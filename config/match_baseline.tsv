@@ -766,8 +766,8 @@ boundarylowerthunks	??1CGameApp@@UAE@XZ	100.0000	100.0000	1	cb2b600a142c	0x80cf0
 boundarylowerthunks	??1CGameMgr@@UAE@XZ	100.0000	100.0000	2	06c19ee9e7a7	0x85540
 boundarylowerthunks	??1CGameWnd@@UAE@XZ	100.0000	100.0000	1	507af906a1fc	0x94c10
 boundarylowerthunks	??1CStatusBaseSub100780@@UAE@XZ	100.0000	100.0000	1	6b44c2beb123	0x100780
-boundarylowerthunks	?FontForward115730@@YAXXZ	100.0000	100.0000	1	f375fb2dcb43	0x115730
-boundarylowerthunks	?FontForward1157b0@@YAXXZ	100.0000	100.0000	1	e2e4947ee163	0x1157b0
+boundarylowerthunks	?FontForward115730@@YAXXZ	100.0000	100.0000	2	e7b86b636328	0x115730
+boundarylowerthunks	?FontForward1157b0@@YAXXZ	100.0000	100.0000	2	0e9781836617	0x1157b0
 boundarylowerthunks	?Forwardb5400@@YAXXZ	100.0000	100.0000	2	c02cf070efd5	0xb5400
 boundarylowerthunks	?Forwardbd430@@YAXXZ	100.0000	100.0000	2	bfb56a282f0b	0xbd430
 boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	100.0000	100.0000	2	b778b232fd88	0xd5d70
@@ -1225,7 +1225,7 @@ ddrawsubmgrpages	?ScalarDtor@CDDrawSubMgrPages@@UAEPAXH@Z	100.0000	100.0000	1	9f
 ddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	1	a3371ca436ea	0x155840
 ddrawsurfacemgr	??1CDDrawSurfaceMgr@@UAE@XZ	100.0000	100.0000	1	a14f65509f82	0x1558b0
 ddrawsurfacemgr	?Cleanup_155e20@CDDrawSurfaceMgr@@QAEXXZ	96.1236	96.1236	1	5ec340e8ecc4	0x155e20
-ddrawsurfacemgr	?FreeContext@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	1	c8d41d8b3d67	0x155fc0
+ddrawsurfacemgr	?FreeContext@CDDrawSurfaceMgr@@UAEXXZ	100.0000	100.0000	2	3ae5fa0999bb	0x155fc0
 ddrawsurfacemgr	?Init@CDDrawSurfaceMgr@@QAEXXZ	0.0998	0.0998	1	f0ef0454f6af	0x155900
 ddrawsurfacemgr	?InvokeCallback@CDDrawSurfaceMgr@@UAEHPAXHHH@Z	100.0000	100.0000	1	972d7d462061	0x156a90
 ddrawsurfacemgr	?IsReady@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	1	c8356b351522	0x155f00
@@ -1993,7 +1993,7 @@ grunthealthsprite	?RegisterActs@CGruntHealthSprite@@SAXXZ	92.9130	92.9130	1	5bf7
 grunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	1	5529a639fa31	0x7f0d0
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	3	f1489bb640c1	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	3	002b7c208fa2	0x31610
-gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	4	08e7f169b01c	0x57db0
+gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	5	a2ec3d365c9f	0x57db0
 gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	5	b9d651e9b372	0xf60f0
 gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	7	f2e89680128b	0x65e80
 gruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	083563c3491b	0x12370
@@ -2944,7 +2944,7 @@ reconbatch2	?Copy_16f6e0@@YGXPAUSrc_16f6e0@@PAUDst_16f6e0@@@Z	84.8696	84.8696	1	
 reconbatch2	?DropItem@Worker181x_181x@@QAEXXZ	100.0000	100.0000	1	378e853ef3c0	0x1816a0
 reconbatch2	?EnableButtons_be820@@YAXPAUHWND__@@PAUDlgData_be820@@@Z	100.0000	100.0000	1	7316f596e079	0xbe820
 reconbatch2	?Find@EntryOwner_c0460@@QAEPAUEntry_c0460@@I@Z	88.7500	88.7500	1	51c45055f5ec	0xc0460
-reconbatch2	?Forward_115630@@YAPAVFont@@XZ	100.0000	100.0000	1	d4d1488859fa	0x115630
+reconbatch2	?Forward_115630@@YAXXZ	100.0000	100.0000	1	9979e1ffa085	0x115630
 reconbatch2	?Get_1b9b8d@@YAPAPAXXZ	100.0000	100.0000	1	4ab3f49aac2f	0x1b9b8d
 reconbatch2	?Init@Init8_1104f0@@QAEHHHHHHHHH@Z	100.0000	100.0000	1	4191472f8bf9	0x1104f0
 reconbatch2	?Present@PresentHost_faec0@@QAEXH@Z	100.0000	100.0000	1	cf03705b9793	0xfaec0
@@ -3645,7 +3645,7 @@ vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
 wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.9113	73.9113	5	e0e84056feb6	0xed9f0
 wapmisc	?Stamp@CNoTrackObjectStamp@@QAEXXZ	100.0000	100.0000	1	a82e179dbf00	0x11d100
-wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	2	585f8972f086	0x1155b0
+wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	3	7865b68f2241	0x1155b0
 wapmisc	?Unmatched_1bae5d@@YAXXZ	100.0000	100.0000	1	c66d0b1641b5	0x1bae5d
 wapmisc	?Unmatched_c76d0@@YAXXZ	100.0000	100.0000	2	4f026db92f95	0xc76d0
 wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	2	9dfcfba82359	0x1853b0
