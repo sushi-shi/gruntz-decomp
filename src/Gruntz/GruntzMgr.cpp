@@ -20,6 +20,7 @@
 #include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -3011,7 +3012,7 @@ void CGruntzMgr::Close() {
         m_curState = 0;
     }
     if (m_spriteFactory) {
-        m_spriteFactory->Teardown();
+        m_spriteFactory->Reset(); // CSpriteRefTable::Reset @0xe2290 (free both buckets)
         operator delete(m_spriteFactory);
         m_spriteFactory = 0;
     }

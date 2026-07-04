@@ -10,6 +10,7 @@
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 
 #include <rva.h>
 
@@ -527,9 +528,9 @@ i32 CInGameIcon::HandleInput() {
         if (icon < 0 || icon >= 0x11) {
             icon = 0;
         }
-        rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(icon, 0);
+        rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
         if (rec == 0) {
-            rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(1, 0);
+            rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
     } else if (cmd == 0x1e || cmd == 0x13) {
         i32 icon;
@@ -556,9 +557,9 @@ i32 CInGameIcon::HandleInput() {
                 icon = 7;
                 break;
         }
-        rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(icon, 0);
+        rec = g_gameReg->m_spriteFactory->GetSel(icon, 0);
         if (rec == 0) {
-            rec = ((CIconFactory*)g_gameReg->m_spriteFactory)->GetByIndex(1, 0);
+            rec = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
     } else {
         return 1;
@@ -859,7 +860,6 @@ void CInGameIcon::SetField54(i32 v) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CGameRegMapHolder);
-SIZE_UNKNOWN(CIconFactory);
 SIZE_UNKNOWN(CIconMap);
 SIZE_UNKNOWN(CIconMapHolder);
 SIZE_UNKNOWN(CIconRecord);

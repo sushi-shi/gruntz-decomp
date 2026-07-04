@@ -11,6 +11,7 @@
 // bytes are load-bearing (campaign doctrine).
 #include <Dsndmgr/GruntzSoundZ.h> // CWorld::m_48 zoned sound bank (PlayByName @0x138840)
 #include <Gruntz/Play.h>
+#include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c, Write @ +0x30)
 
 // Round-trip a 16-byte (two 4-int halves) timer block through the archive; `p` is
@@ -56,8 +57,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                 i32 id = g_644c54;
                 void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
                 if (spr == 0) {
-                    spr = ((CWorld::SpriteLoader*)g_64556c->m_spriteFactory)
-                              ->LoadSprite((void*)1, (i32)spr);
+                    spr = g_64556c->m_spriteFactory->LoadSprite((void*)1, (i32)spr);
                 }
                 m_grid->SetDelay(0xa);
                 m_grid->SetSprite(spr);

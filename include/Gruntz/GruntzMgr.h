@@ -133,6 +133,7 @@ struct CInput54;
 // GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
 // multi-facet slots carry all their facets' fields + methods.
 struct EngObj;          // teardown-only sub-object (Teardown())
+class CSpriteRefTable;  // +0x74 sprite/animation ref table (Reset teardown @0xe2290)
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
 struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
 struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
@@ -334,16 +335,16 @@ public:
     EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
-    CInput54* m_inputState;  // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
-    SaveSink58* m_saveSink;  // +0x58  save-record sink (SaveSink58::Store)
-    CChatLog* m_chatLog;     // +0x5c  chat/message log (Insert)
-    TimerObj* m_timer;       // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
-    i32 m_64;                // +0x64
-    CCmdGrid* m_cmdGrid;     // +0x68  world delta-table grid + command sink (Reset/Flush)
-    CmdSink* m_cmdSubMgr;    // +0x6c  command sub-manager sink
-    CmdSinkV* m_cmdNotify;   // +0x70  command sink (vtbl slot 1) + cell-height notify
-    EngObj* m_spriteFactory; // +0x74  sprite/asset factory (consumers: LoadSprite/GetByIndex);
-                             //         mgr only tears it down, so typed EngObj until modeled
+    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
+    SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
+    CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
+    TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    i32 m_64;               // +0x64
+    CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
+    CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
+    CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
+    CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
+                                      //         GetByIndex consumers; Close tears it down via Reset)
     EngObj* m_logicPump;     // +0x78  per-frame logic/effects pump (consumers: Push + +0x14 table);
                              //         mgr only tears it down, so typed EngObj until modeled
     ScoreHud* m_scoreHud;    // +0x7c  HUD/score accumulator + command sink

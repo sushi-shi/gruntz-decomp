@@ -50,11 +50,10 @@ struct CGameRegMapHolder {
 // (<Gruntz/TileGrid.h>, via CGameRegistry.h): m_8 row table, m_c/m_10 bounds;
 // each cell is 0x1c bytes (7 dwords), indexed by tile (x,y).
 
-// The icon/sprite factory (g_gameReg->m_74): GetByIndex(idx, z) returns a
-// per-player icon record (thunk 0x4165 -> FUN_004e23c0, __thiscall). No body.
-struct CIconFactory {
-    i32 GetByIndex(i32 idx, i32 z); // 0x4165
-};
+// The icon/sprite factory (g_gameReg->m_spriteFactory, +0x74) is CSpriteRefTable
+// (<Gruntz/SpriteRefTable.h>): the former CIconFactory::GetByIndex(idx, z) is
+// CSpriteRefTable::GetSel(i, bAlt) - the icon paths call GetSel directly, cast-free
+// (thunk 0x4165 -> 0xe23c0 == CSpriteRefTable::GetSel).
 
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c

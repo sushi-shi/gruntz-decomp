@@ -165,13 +165,11 @@ struct CWorld {
         i32 m_400; // +0x400  active-region gate (HandleTileClick)
     }* m_68;       // +0x68  -> +0x230 substep gate
     void* m_6c;    // +0x6c  a frame-timer object (Eng_FrameTimerStep)
-    void* m_70;    // +0x70  an input sub-object
-    // +0x74: the sprite/animation loader (BeginGridWalk loads the grid's frame
-    // sprite). NOT the engine CSpriteFactory (that one is CreateSprite); this is a
-    // distinct LoadSprite API, named for its role to avoid a false identity.
-    struct SpriteLoader {
-        void* LoadSprite(void* desc, i32 flag); // 0x4e23c0 (thiscall)
-    }* m_74;
+    void* m_70; // +0x70  an input sub-object
+    // +0x74: the sprite/animation ref table (== g_gameReg->m_spriteFactory; this
+    // CWorld view is the CGruntzMgr singleton). BeginGridWalk loads the grid's frame
+    // sprite via its LoadSprite(desc, flag) facet. Full class in <Gruntz/SpriteRefTable.h>.
+    CSpriteRefTable* m_74;
     char p78[0x7c - 0x78];
     CWarlordCounters* m_7c; // +0x7c  per-kind warlord counter block (LoadWarlordSprites)
     char p80[0x8c - 0x80];
