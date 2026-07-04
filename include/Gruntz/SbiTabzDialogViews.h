@@ -11,6 +11,13 @@
 // the SAME level; this view uses an OUT-OF-LINE base ctor so `new` emits the throwing
 // base-ctor call + /GX ctor-in-flight EH frame - cannot merge with CSbConfigItem's
 // inline-ctor view (measured-regression wall, docs/patterns/gx-frame-outofline-ctor.md).
+//
+// FOLD VERDICT (P1): CSBI_Image/CSBI_MenuItem/CSBI_ImageSet are ONE retail class each
+// (single RTTI ??_7 + single vtable) - view, not sibling. This OUT-OF-LINE facet also
+// cannot merge with the other OUT-OF-LINE one (StatusBarGameMenu's CSbMenuItem): the
+// slot-0x2c virtual's arg2 differs at the call sites - BuildTabzDialog passes a
+// `TabzSub*` pointer (m_c), BuildGameMenu an `i32 code`, so no single param type is
+// cast-free for both. The multi-def is an irreducible codegen wall, not lazy dup.
 #ifndef GRUNTZ_SBI_TABZDIALOG_VIEWS_H
 #define GRUNTZ_SBI_TABZDIALOG_VIEWS_H
 

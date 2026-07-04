@@ -10,6 +10,15 @@
 // the SAME level; one MSVC5 spelling emits only one shape (out-of-line vs inline base
 // ctor), so they stay renamed apart, NOT merged
 // (docs/patterns/gx-frame-outofline-ctor.md).
+//
+// FOLD VERDICT (P1): CSBI_MenuItem/CSBI_ImageSet are ONE retail class each (single
+// RTTI ??_7 + single vtable, config/vtable_names.csv 0x5eab4c / 0x5eac4c) - view, not
+// sibling. Even the two OUT-OF-LINE-ctor facets (this CSbMenuItem + Tabz's
+// CSbDialogItem, both need the throwing base-ctor `call` for the /GX frame) can NOT
+// merge to one base: their slot-0x2c virtual's arg2 differs at the call sites -
+// BuildGameMenu passes an `i32 code`, BuildTabzDialog a `TabzSub*` pointer, so no
+// single param type is cast-free for both (verified by the call sites). The multi-def
+// is an irreducible codegen wall, not lazy duplication.
 #ifndef GRUNTZ_CGAMEMENUMGR_BUILDERS_H
 #define GRUNTZ_CGAMEMENUMGR_BUILDERS_H
 
