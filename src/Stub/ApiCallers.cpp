@@ -1,5 +1,6 @@
-#include <Win32.h>
+#include <Mfc.h> // real MFC (CObject/CString/CPtrList) + windows.h via afx.h (superset of Win32.h)
 
+#include <Gruntz/Multi.h> // real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 // smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
@@ -101,13 +102,6 @@ extern LRESULT(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 DATA(0x002c44f0)
 extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 
-// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
-// <Gruntz/Multi.h>). This Win32 TU can't include <Gruntz/Multi.h> (MFC C1189 wall vs
-// <Win32.h>), so the singleton is a forward-declared CMulti* whose int fields are read
-// by offset (documented at each site). ::CMulti (global) is distinct from the local
-// proximity-attributed ApiCallerStubs::CMulti stub-host below.
-class CMulti;
-
 namespace ApiCallerStubs {
     // Fake placeholder host: these ApiCaller stubs are __thiscall (disasm shows
     // they take `this` in ecx) but their real owning class isn't recovered yet.
@@ -197,10 +191,8 @@ namespace ApiCallerStubs {
         i32 winapi_057db0_IntersectRect();
         void LoadGruntCombatAnimations(i32, i32, i32, i32, i32, i32, i32, i32);
     };
-    struct CMulti {
-        i32 winapi_0b6b40_timeGetTime_wsprintfA();
-        i32 winapi_0b6e90_SetRect();
-    };
+    // (The old proximity-host `struct CMulti` here is gone: this TU now includes the
+    // real <Gruntz/Multi.h>, so CMulti refers to the real multiplayer game-state class.)
 
     // The action/logic record hung off the object's m_7c; m_10 is its handler fn ptr
     // (compared against the default handler at LAB_00402d15 to set a flag bit).
@@ -332,7 +324,7 @@ namespace ApiCallerStubs {
     RVA(0x00014720, 0x37)
     i32 CmdHost_014720::Key(i32 code, i32 unused) {
         if (code == 0x20 || code == 0xd || code == 0x1b) {
-            PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
+            PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8023, 0);
         }
         return 1;
     }
@@ -453,9 +445,9 @@ namespace ApiCallerStubs {
     i32 CmdHost_039440::Key(i32 code, i32 unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
             if (m_24 == 5) {
-                PostMessageA(m_4->m_4->m_4, 0x111, 0x8023, 0);
+                PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8023, 0);
             } else {
-                PostMessageA(m_4->m_4->m_4, 0x111, 0x8027, 0);
+                PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
             }
         }
         return 1;
@@ -890,7 +882,7 @@ namespace ApiCallerStubs {
     RVA(0x000953f0, 0x37)
     i32 CmdHost_0953f0::Key(i32 code, i32 unused) {
         if (code == 0x1b || code == 0x20 || code == 0xd) {
-            PostMessageA(m_4->m_4->m_4, 0x111, 0x8036, 0);
+            PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8036, 0);
         }
         return 1;
     }
@@ -1378,25 +1370,14 @@ namespace ApiCallerStubs {
         HWND m_1c;                                    // +0x1c
         void Refresh1ce7db(i32 sel, CStr_c3e30* out); // thiscall RVA 0x1ce7db
     };
-    // WIN32-WALL RESIDUAL: this is the SAME CMulti singleton at 0x64bd5c as g_64bd5c
-    // above (m_528 == CMulti::m_isHost). It could not be folded to `::CMulti*` like
-    // SelOwner because OnReset calls the thiscall method Commit3ada (ILT 0x3ada ->
-    // 0xbccd0) and drives two CString sub-objects (m_5b4/m_5b8) -- neither is
-    // expressible on a forward-declared CMulti in a <Win32.h> TU (MFC C1189 wall), and
-    // a local view named `CPtrList`/`CMulti` with the method would diverge from the
-    // real class across TUs. Real fix: re-home OnReset into an MFC TU that includes
-    // <Gruntz/Multi.h> and use CMulti directly (deferred). Placeholder m_ names.
-    struct ReplayModel_64bd5c {
-        char m_pad0[0x528];
-        i32 m_528; // +0x528 == CMulti::m_isHost
-        char m_pad52c[0x5b0 - 0x52c];
-        i32 m_5b0;            // +0x5b0 == CMulti::m_5b0
-        CStr_c3e30 m_5b4;     // +0x5b4 == CMulti::m_5b4 (CString)
-        CStr_c3e30 m_5b8;     // +0x5b8 == CMulti::m_5b8 (CString)
-        void Commit3ada(i32); // thiscall ILT 0x3ada -> 0xbccd0 (the Win32-wall blocker)
-    };
+    // The replay/recording model singleton at 0x64bd5c IS the CMulti multiplayer
+    // game-state (xref-proven). Now that this TU is MFC (see the <Gruntz/Multi.h>
+    // include up top -- the old <Win32.h> wall is broken), OnReset drives it through
+    // REAL CMulti members/methods: m_isHost (+0x528), m_5b0, the CString members
+    // m_5b4/m_5b8, and Commit3ada (ILT 0x3ada -> 0xbccd0). The semantic name is kept.
+    // ReconBatch2.cpp owns the canonical DATA; this extern reloc-masks against it.
     DATA(0x0024bd5c)
-    extern ReplayModel_64bd5c* g_replayModel;
+    extern CMulti* g_replayModel;
     extern "C" char g_emptyStr_6293f4[]; // 0x6293f4
     // The host dialog; m_6c is a dirty flag, GetItem27d resolves a child CWnd.
     struct ReplayDlg_c3e30 {
@@ -1408,7 +1389,7 @@ namespace ApiCallerStubs {
     // __thiscall(): reset the replay name field and refresh the selected item.
     RVA(0x000c3e30, 0xfe)
     void ReplayDlg_c3e30::OnReset() {
-        if (g_replayModel->m_528 != 0) {
+        if (g_replayModel->m_isHost != 0) {
             CWndItem_c3e30* item = GetItem27d(0x4ff);
             if (item != 0) {
                 i32 r = SendMessageA(item->m_1c, 0x147, 0, 0);
@@ -1419,8 +1400,8 @@ namespace ApiCallerStubs {
                         m_6c = 0;
                     }
                     g_replayModel->m_5b0 = 0;
-                    g_replayModel->m_5b8.Assign(g_emptyStr_6293f4);
-                    g_replayModel->m_5b4.Assign(name.m_data);
+                    g_replayModel->m_5b8 = g_emptyStr_6293f4;
+                    g_replayModel->m_5b4 = name.m_data;
                     g_replayModel->Commit3ada(0);
                 }
             }
@@ -1429,12 +1410,11 @@ namespace ApiCallerStubs {
 
     // The Battlez multiplayer setup dialog (CBattlezDlg). Refreshes all four player
     // slots' controls (name edit / kind combo / ready checkbox / colour) from the
-    // registry roster + the selection owner (g_64bd5c = the CMulti singleton), then
-    // invalidates the four colour swatches. The selection owner carries the network
-    // flag (+0x528 == CMulti::m_isHost) and the local player's colour id
-    // (+0x5c0 == CMulti::m_hostIndex); both read by offset (Win32 wall, see top).
+    // registry roster + the selection owner (the g_64bd5c CMulti singleton), then
+    // invalidates the four colour swatches. It reads the network flag
+    // (CMulti::m_isHost) and the local player's colour id (CMulti::m_hostIndex).
     DATA(0x0024bd5c)
-    extern ::CMulti* g_64bd5c;
+    extern CMulti* g_64bd5c;
     // MFC CString return value the per-slot name formatter fills; its ~ is 0x1b9cde.
     struct DlgStr_c4230 {
         char* m_data;
@@ -1485,30 +1465,28 @@ namespace ApiCallerStubs {
         i32 f18 = 0;
         i32 idx = 0;
         i32 t = this->LocalSlot2d4c();
-        i32 localColour =
-            *(i32*)((char*)g_64bd5c + 0x528) ? *(i32*)(this->m_5c + t * 0x238 + 0x16c) : 1;
+        i32 localColour = g_64bd5c->m_isHost ? *(i32*)(this->m_5c + t * 0x238 + 0x16c) : 1;
         i32 off = 0;
         do {
             PlayerSlot_0c50f0* slot = (PlayerSlot_0c50f0*)((char*)g_gameReg + off + 0x150);
             if (slot) {
-                if (slot->m_18 != *(i32*)((char*)g_64bd5c + 0x5c0) && slot->m_14 && slot->m_20) {
+                if (slot->m_18 != g_64bd5c->m_hostIndex && slot->m_14 && slot->m_20) {
                     f18 = 1;
                 }
                 i32 enName;
-                if (*(i32*)((char*)g_64bd5c + 0x528) && slot->m_14 == 0) {
+                if (g_64bd5c->m_isHost && slot->m_14 == 0) {
                     enName = 1;
                 } else {
-                    enName = slot->m_18 == *(i32*)((char*)g_64bd5c + 0x5c0) ? 1 : 0;
+                    enName = slot->m_18 == g_64bd5c->m_hostIndex ? 1 : 0;
                 }
                 this->NameEdit298c(idx)->EnableWindow_1be6a7(enName);
                 this->KindCombo1929(idx)->EnableWindow_1be6a7(
-                    *(i32*)((char*)g_64bd5c + 0x528) && localColour == 0
-                            && slot->m_18 != *(i32*)((char*)g_64bd5c + 0x5c0)
+                    g_64bd5c->m_isHost && localColour == 0 && slot->m_18 != g_64bd5c->m_hostIndex
                         ? 1
                         : 0
                 );
                 DlgWnd_c4230* ready = this->ReadyCheck1159(idx);
-                ready->EnableWindow_1be6a7(slot->m_18 == *(i32*)((char*)g_64bd5c + 0x5c0) ? 1 : 0);
+                ready->EnableWindow_1be6a7(slot->m_18 == g_64bd5c->m_hostIndex ? 1 : 0);
                 if (slot->m_1c) {
                     if (slot->m_20) {
                         g_pSendMessageA(ready->m_1c, 0xf1, 1, 0);
@@ -1522,14 +1500,14 @@ namespace ApiCallerStubs {
                     g_pSendMessageA(ready->m_1c, 0xf1, 0, 0);
                 }
                 this->ColourBtn1753(idx)->EnableWindow_1be6a7(
-                    *(i32*)((char*)g_64bd5c + 0x528) && slot->m_20 && localColour == 0 ? 1 : 0
+                    g_64bd5c->m_isHost && slot->m_20 && localColour == 0 ? 1 : 0
                 );
                 this->SyncColour3a5d(idx, slot->m_20 ? slot->m_228 : 0);
                 if (force == 0) {
                     if (this->LocalSlot2d4c() == idx) {
                         goto next;
                     }
-                    if (*(i32*)((char*)g_64bd5c + 0x528) && slot->m_14 == 0) {
+                    if (g_64bd5c->m_isHost && slot->m_14 == 0) {
                         goto next;
                     }
                 }
@@ -1555,7 +1533,7 @@ namespace ApiCallerStubs {
             off += 0x238;
             idx++;
         } while (off < 0x8e0);
-        if (*(i32*)((char*)g_64bd5c + 0x528)) {
+        if (g_64bd5c->m_isHost) {
             DlgWnd_c4230* ok = this->GetDlgItem_1be27d(1);
             if (ok == 0) {
                 return 0;
@@ -1615,7 +1593,7 @@ namespace ApiCallerStubs {
         Refresh();
     }
 
-    // PlayerSlot_0c50f0 / SelOwner_0c50f0 / g_64bd5c are modelled above (shared with
+    // PlayerSlot_0c50f0 / the g_64bd5c CMulti singleton are modelled above (shared with
     // BattlezDlg_c4230::UpdatePlayers).
     WndItem* __stdcall ResolveItem_1159(i32 idx); // RVA 0x1159
     void __stdcall Func1d70(i32 flag);            // RVA 0x1d70
@@ -1645,7 +1623,7 @@ namespace ApiCallerStubs {
         } else {
             slot->m_1c = 0;
         }
-        if (*(i32*)((char*)g_64bd5c + 0x528)) {
+        if (g_64bd5c->m_isHost) {
             Func1d70(0);
             Sync16db(1);
             Sync227a();
@@ -1809,7 +1787,7 @@ namespace ApiCallerStubs {
             m_4->Forward();
             return;
         }
-        PostMessageA(m_4->m_4->m_4, 0x111, 0x8027, 0);
+        PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
     }
 
     DATA(0x0024c86c)

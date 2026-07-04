@@ -272,6 +272,7 @@ public:
     i32 JoinSession();                                         // 0x0b7fe0
     i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
     void AckJoinFailure();                                     // 0x0bc420
+    void Commit3ada(i32); // ILT 0x0003ada -> 0x0bccd0  replay-name commit (ApiCallers OnReset)
 
     // Reconstructed in this TU (ascending RVA).
     i32 StartSession(i32 mode, i32 unused); // 0x0b6580  arm the slot table + reseed timers
