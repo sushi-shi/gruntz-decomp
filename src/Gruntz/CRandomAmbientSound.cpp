@@ -490,8 +490,8 @@ void CRandomAmbientSound::Step(i32 x, i32 y, i32 force) {
         }
         Update(1, 0x64, half);
     } else {
-        i32 lo = m_48;
-        i32 hi = m_4c;
+        i32 lo = m_intervalLoB;
+        i32 hi = m_intervalHiB;
         i32 span = hi - lo + 1;
         i32 r;
         if (span == 0) {

@@ -16,7 +16,7 @@ struct VoiceResolver {
 };
 struct VoiceRoot { // this->m_0
     char m_pad00[0x34];
-    VoiceResolver* m_34; // +0x34
+    VoiceResolver* m_resolver; // +0x34  the 'WAV' resource resolver
 };
 struct VoiceList;
 struct CVoiceBuilder {
@@ -85,7 +85,7 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
             } else {
                 EngFmt(&name, "VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
             }
-            void* res = m_0->m_34->Resolve((LPCTSTR)name, 0x574156);
+            void* res = m_0->m_resolver->Resolve((LPCTSTR)name, 0x574156);
             if (res != 0) {
                 CString tmp = name;
                 list->AddName(tmp);

@@ -26,15 +26,16 @@
 
 #include <Dsndmgr/DirectSoundMgr.h>
 
-// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ 0x64556c).
-// Update gates the play on m_activeLevel and m_world->m_objectCount (the active
-// world's object count). The interval roller in Step also loads g_gameReg as a dead
-// receiver before the rand call (the binary proves the load even though rand ignores it).
+// The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A, RVA 0x24556c /
+// VA 0x64556c). Update gates the play on m_activeLevel and m_world->m_objectCount
+// (the active world's object count). The interval roller in Step also loads g_gameReg
+// as a dead receiver before the rand call (the binary proves the load even though rand
+// ignores it).
 struct WwdActiveLevel {
     char m_pad0[0x24];
     i32 m_objectCount; // +0x24  object count (non-zero == playable)
 };
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
 // The global frame-delta clock in ms (DAT_00645584, canonical ?g_tickDelta@@3HA);
@@ -120,12 +121,15 @@ public:
     AmbientBox m_box2;     // +0x28  secondary visibility box
     i32 m_panIndex;        // +0x38  pan/reseed parameter
     i32 m_3c;              // +0x3c  zero-init in ctor
-    i32 m_40;              // +0x40  interval roller lo
-    i32 m_44;              // +0x44  interval roller hi
-    i32 m_48;              // +0x48  interval roller lo2 (phase B)
-    i32 m_4c;              // +0x4c  interval roller hi2 (phase B)
-    i32 m_countdownMs;     // +0x50  rolled countdown (ms, drained by g_645584)
-    i32 m_phase;           // +0x54  roller phase flag (toggled each reroll)
+    // +0x40/+0x44 are a union: the random path (Setup/Step) uses them as the
+    // phase-A interval bounds [lo,hi]; the positional path (SetupPos/UpdateAt) uses
+    // them as the (x,y) anchor. Left as raw offsets since the role forks by instance.
+    i32 m_40;          // +0x40  interval-roller phase-A lo  / anchor x
+    i32 m_44;          // +0x44  interval-roller phase-A hi  / anchor y
+    i32 m_intervalLoB; // +0x48  interval-roller phase-B lo (roller-only)
+    i32 m_intervalHiB; // +0x4c  interval-roller phase-B hi (roller-only)
+    i32 m_countdownMs; // +0x50  rolled countdown (ms, drained by g_645584)
+    i32 m_phase;       // +0x54  roller phase flag (toggled each reroll)
 };
 SIZE(CRandomAmbientSound, 0x58);
 

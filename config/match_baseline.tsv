@@ -1434,7 +1434,7 @@ cimagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.8469	83.84
 cimagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4789	4	7400ccfcfcfa	0x153ff0
 cimagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2297	73.2297	4	26c1a0f6216f	0x1544d0
 cimagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	100.0000	100.0000	4	a81d92669fca	0x154270
-cingametextupdate	?Update@CInGameText@@QAEHXZ	75.7485	75.7485	3	27083f6dcc62	0x997c0
+cingametextupdate	?Update@CInGameText@@QAEHXZ	75.7485	75.7485	4	7a052e92dd77	0x997c0
 circleshadeblit	?Render@CircleShadeBlit@@QAEXHHHHHH@Z	54.5197	54.5197	2	81a8776b5e44	0x180fb0
 ckeyedlist	??1CNode@@QAE@XZ	100.0000	100.0000	1	7894cc5a002b	0x379f0
 ckeyedlist	?AddNode@CKeyedList@@QAEPAUCNode@@PBDHH@Z	83.7778	83.7778	1	58602dffad36	0x37a70
@@ -3022,7 +3022,7 @@ randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbie
 randomambientsound	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	2	da2589e0ad0a	0xc4b0
 randomambientsound	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	2	d2919d8a4749	0xc530
 randomambientsound	?SpawnPosSound@@YAXPAUPosSoundObj@@@Z	75.9638	75.9638	3	dde63a73c69c	0xca00
-randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	3	901751a58820	0xcb30
+randomambientsound	?Step@CRandomAmbientSound@@QAEXHHH@Z	93.6594	93.6594	4	56d0eb945dc2	0xcb30
 randomambientsound	?StopPosSound@@YAXPAUPosSoundObj@@@Z	100.0000	100.0000	1	40c068eecb35	0xc9d0
 randomambientsound	?Update@CRandomAmbientSound@@QAEXHHH@Z	35.3264	35.3264	5	f6cbf0165885	0xc2a0
 randomambientsound	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2586	89.2586	5	14f4273d6ce9	0xc5b0
@@ -3708,7 +3708,7 @@ videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	3	f43cfbc063eb	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	2	cdd8f7042c0b	0x378c0
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	7	3668fb144dff	0x370a0
-voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	79.3141	3	a8beaf0cd2af	0x11c210
+voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	79.3141	4	c230f806c574	0x11c210
 vtblforward	?Accept@CVtblRecv@@QAEHHHHHHPAHHHH@Z	100.0000	100.0000	1	0ce4b442400b	0x110460
 wallproject	?ProjectWallQuad@@YAHHHHHHHHHHHH@Z	39.5180	39.5180	2	ec1b9f828e2a	0x1471d0
 wanderidlestep	?WanderStep@CGruntWander@@QAEHXZ	73.9113	73.9113	4	6fba00fbaf2c	0xed9f0
