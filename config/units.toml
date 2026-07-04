@@ -664,7 +664,7 @@ flags = "eh"
 
 [[unit]]
 unit = "rezsync"
-source = "src/Gruntz/RezSync.cpp"
+source = "src/Rez/RezSync.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2340,7 +2340,7 @@ source = "src/Gruntz/ChainForward.cpp"
 flags = "base"
 [[unit]]
 unit = "rezbufferobjectdtor"
-source = "src/Gruntz/RezBufferObjectDtor.cpp"
+source = "src/Rez/RezBufferObjectDtor.cpp"
 flags = "eh"
 
 [[unit]]
