@@ -18,6 +18,7 @@
 
 #include <rva.h>
 
+#include <new>      // placement new (the inlined ConstructElements grow loop)
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 
 // ===========================================================================
@@ -115,18 +116,22 @@ i32 CWarlord::ResolveState(i32 key) {
 // collection (g_typeColl, backed by g_typeNodes/g_typeCount) on a miss, then
 // stamps each resolved type-id's slot in the action-handler dispatch array
 // (g_actionTable @0x644610) with that action's handler entry point. The six
-// (key, handler) pairs are emitted inline (the same find-or-create block x6).
-// Takes no `this` (a __cdecl free function); proximity-attributed to the CWarlord
-// cluster, so homed here by RVA.
+// (key, handler) pairs are emitted inline (the same find-or-create block x6, via
+// the REGISTER_ACTION macro since cl declines to inline a helper this large). The
+// inlined SetAtGrow expands to IndexToPtr + the placement-new ConstructElements
+// grow loop (`::new(p) CString` = retail's `test esi,esi; je` null guard + the
+// `for(; n--; p++)` lea-recover trip count) + the CString key assign.
 //
-// @early-stop
-// inlined-MFC-collection wall (eh-state + ConstructElements / regalloc): the
-// per-type find-or-create inlines the CButeTree insert + the CStringArray grow
-// (the ConstructElements loop over g_typeNodes/g_typeCount + the CString key
-// assignment) + the action-array ElementAt - reproducing MSVC's exact inlining
-// and 6-way register allocation of that collection machinery is a leaf-first /
-// final-sweep task. The FindType/AddType calls, the six key pushes and the six
-// `mov [slot],handler` stores pair by reloc; the logic is complete.
+// @early-stop  (~96.9%, logic + structure byte-exact)
+// Two residual scratch-register coin-flips, no source lever:
+//   (a) create-path id load: retail funnels g_typeCounter through eax to merge
+//       with the FindType path's `mov edi,eax` (`mov eax,[g_typeCounter]; push eax;
+//       mov edi,eax`), while our cl coalesces id_ straight into edi (`mov edi,
+//       [g_typeCounter]; push edi`) - our cl is strictly MORE optimal, same family
+//       as the dead-global-read-spill "our cl is smarter" wall; can't cleanly
+//       de-optimize from source (the fresh-var restructure regressed 96.9->84.9%).
+//   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
+//       (global scheduling); logic identical. Deferred to the final sweep.
 
 // The Gruntz type-registry globals (.data). g_buteTree maps an action-key string
 // to a 1-based type id (0 = absent); g_typeColl is the parallel growable key
@@ -157,27 +162,39 @@ extern "C" void Act_D(); // 0x403422
 extern "C" void Act_E(); // 0x40431d
 extern "C" void Act_F(); // 0x402725
 
-static void* RegisterAction(const char* key, void* handler) {
-    i32 id = g_buteTree.FindType(key);
-    if (id == 0) {
-        g_buteTree.AddType(key, g_typeCounter);
-        g_typeColl.SetAtGrow(g_typeCounter, key);
-        id = g_typeCounter++;
-    }
-    void** slot = g_actionTable.ElementAt(id);
-    *slot = handler;
-    return slot;
-}
+// Find-or-create one action-key -> handler binding. Retail INLINES all six blocks
+// (SetAtGrow is expanded to IndexToPtr + the placement-new grow loop + the CString
+// key assign); a macro forces the 6x inlining cl declines for a helper this large.
+// The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
+#define REGISTER_ACTION(key, handler)                                                              \
+    do {                                                                                           \
+        i32 id_ = g_buteTree.FindType(key);                                                        \
+        if (id_ == 0) {                                                                            \
+            g_buteTree.AddType(key, g_typeCounter);                                                \
+            id_ = g_typeCounter;                                                                   \
+            CString* slot_ = (CString*)g_typeColl.IndexToPtr(id_);                                 \
+            CString* p_ = (CString*)g_typeColl.m_cursor;                                           \
+            for (i32 n_ = g_typeColl.m_count; n_--; p_++) {                                        \
+                ::new ((void*)p_) CString;                                                         \
+            }                                                                                      \
+            *slot_ = key;                                                                          \
+            ++g_typeCounter;                                                                       \
+        }                                                                                          \
+        void** aslot_ = g_actionTable.ElementAt(id_);                                              \
+        *aslot_ = (void*)(handler);                                                                \
+    } while (0)
 
 RVA(0x000447a0, 0x333)
 void RegisterWarlordActions() {
-    RegisterAction("A", (void*)Act_A);
-    RegisterAction("B", (void*)Act_B);
-    RegisterAction("C", (void*)Act_C);
-    RegisterAction("D", (void*)Act_D);
-    RegisterAction("E", (void*)Act_E);
-    RegisterAction("F", (void*)Act_F);
+    REGISTER_ACTION("A", Act_A);
+    REGISTER_ACTION("B", Act_B);
+    REGISTER_ACTION("C", Act_C);
+    REGISTER_ACTION("D", Act_D);
+    REGISTER_ACTION("E", Act_E);
+    REGISTER_ACTION("F", Act_F);
 }
+
+#undef REGISTER_ACTION
 
 // ===========================================================================
 // CWarlord::RearmMoving  (0x044bb0)
