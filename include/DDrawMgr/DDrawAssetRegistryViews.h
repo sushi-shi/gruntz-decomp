@@ -50,7 +50,9 @@ class CDDrawSubMgrLeafScan {
 public:
     i32 HasKeyEqual(const char* key);                               // 0x1583c0
     void ScanTree(void* tree, const char* prefix, const char* sep); // 0x157ee0
-    void ScanTreeDirect(const char* prefix, const char* sep);       // 0x157c70
+    // 0x157c70 is authoritatively ?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@ (EXACT
+    // in DDrawSubMgrLeafScan.cpp); use that single name so the caller reloc pairs.
+    i32 RemoveKeysEqual_157c70(const char* base, const char* str); // 0x157c70
 };
 
 // GRUNTZ_/GAME aniz sub-manager (owner+0x2c): prefix probe + tree scan.

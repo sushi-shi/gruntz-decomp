@@ -148,7 +148,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
         }
     }
     if (m_c->m_28->HasKeyEqual("GRUNTZ_" + name) != 0) {
-        m_c->m_28->ScanTreeDirect("GRUNTZ_" + name, "_");
+        m_c->m_28->RemoveKeysEqual_157c70("GRUNTZ_" + name, "_");
     }
     if (m_c->m_2c->HasKeyPrefix("GRUNTZ_" + name) != 0) {
         m_c->m_2c->ScanTreeDirect("GRUNTZ_" + name, "_");
