@@ -2,6 +2,7 @@
 
 #include <rva.h>
 #include <Gruntz/CGameRegistry.h>
+#include <Gruntz/ResMgr.h> // canonical CImageRegistry (this->m_c->m_10)
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
@@ -14,8 +15,15 @@
 // Only offsets / code bytes are load-bearing; every engine callee is a reloc-
 // masked external (no body).
 
-// --- the sound-cue lookup sub-table (the BootySndTable idiom): Find(name, &out)
-// writes the matched entry to *out; the entry's m_10->m_28 is the cached token ---
+// The image registry reached through this->m_c->m_10 is the canonical CImageRegistry
+// (<Gruntz/ResMgr.h>): non-virtual Has + the vtable-slot-18 (+0x48) Install. Shared,
+// so no local view.
+
+// --- the sound-cue lookup: the sound registry's embedded name->cue map (+0x10)
+// exposes a by-name Find (0x1b8438) whose value is a domain-specific cue entry (the
+// entry's m_10->m_28 is the cached DS token). The generic CSpriteHashTable does not
+// model this Find, so the sound registry keeps a small TYPED local view here - a
+// MenuSndEntry**-typed Find, so the resolve sites take no out-param cast. ---
 struct MenuSndEntryInner {
     char m_pad00[0x28];
     i32 m_28; // +0x28
@@ -24,51 +32,26 @@ struct MenuSndEntry {
     char m_pad00[0x10];
     MenuSndEntryInner* m_10; // +0x10
 };
-struct MenuSndTable {
-    void Find(char* name, MenuSndEntry** out); // FUN_001b8438 __thiscall, out-param
+struct MenuCueMap {
+    void Find(const char* name, MenuSndEntry** out); // 0x1b8438 __thiscall, typed out-param
 };
-
-// --- the registries reached through this->m_c (image @ +0x10 virtual, sound @
-// +0x28 non-virtual with an embedded Find sub-table at +0x10) ---
-struct MenuImageRegistry {
-    i32 Has(char* name); // FUN_00555550 __thiscall, ret found
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* set, char* name, char* key); // slot 18 (+0x48)
-};
-struct MenuSoundRegistry {
-    i32 Has(char* name);                            // FUN_004583c0 __thiscall
-    void Install(void* set, char* name, char* key); // FUN_00557ee0 __thiscall
+struct MenuSndRegistry {                            // this->m_c->m_28  (sound registry)
+    i32 Has(char* name);                            // 0x1583c0 __thiscall, ret found
+    void Install(void* set, char* name, char* key); // 0x157ee0 __thiscall
     char m_pad00[0x10];
-    MenuSndTable m_10; // +0x10  Find sub-table
+    MenuCueMap m_10; // +0x10  name->cue map (Find)
 };
-struct MenuStateCore {      // this->m_c->m_4
-    i32 IsReady();          // FUN_00558d20 __thiscall
-    i32 Init(i32 a, i32 b); // FUN_00558cb0 __thiscall
+struct MenuStateCore {      // this->m_c->m_4  (the CResMgr +0x04 state core)
+    i32 IsReady();          // 0x158d20 __thiscall
+    i32 Init(i32 a, i32 b); // 0x158cb0 __thiscall
 };
-struct MenuAssetMgr { // this->m_c
+struct MenuAssetMgr { // this->m_c  (the CResMgr resource/level manager)
     char m_pad00[0x4];
-    MenuStateCore* m_4; // +0x04
+    MenuStateCore* m_4; // +0x04  state core (IsReady/Init)
     char m_pad08[0x10 - 0x8];
-    MenuImageRegistry* m_10; // +0x10  image registry (vtable +0x48 install)
+    CImageRegistry* m_10; // +0x10  image registry (canonical <Gruntz/ResMgr.h>)
     char m_pad14[0x28 - 0x14];
-    MenuSoundRegistry* m_28; // +0x28  sound registry
+    MenuSndRegistry* m_28; // +0x28  sound registry (cue map)
 };
 struct MenuRegObj {              // the registered STATEZ_MENU object (m_2c)
     void* LookupSet(char* name); // FUN_0053bae0 __thiscall, ret set ptr
@@ -86,12 +69,11 @@ struct MenuRoot { // this->m_4
     void Hide(i32 z);   // FUN @ 0x4034ef __thiscall
 };
 
-// The global mgr singleton (*0x64556c): m_30->m_28 (+0x10) is the shared sound
-// table the MENU_MENU cue is resolved from.
-struct MenuMgrSndHost {
-    char m_pad00[0x28];
-    MenuSoundRegistry* m_28; // +0x28
-};
+// The global mgr singleton (*0x24556c): its resource holder's +0x28 sound registry
+// carries the shared cue map the MENU_MENU cue is resolved from. That holder slot
+// (CSpriteFactoryHolder::m_28) is a genuinely heterogeneous void* - other TUs view it
+// as a sound-set (HbSndSet) or a mute gate - so it is cast to the sound-registry view
+// at this one use-site (the authentic proven-heterogeneous-slot cast).
 DATA(0x0024556c)
 extern CGameRegistry* g_menuMgrSettings;
 DATA(0x0022f37c)
@@ -217,22 +199,20 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    ((MenuMgrSndHost*)g_menuMgrSettings->m_world)->m_28->m_10.Find("MENU_MENU", &fm);
+    ((MenuSndRegistry*)g_menuMgrSettings->m_world->m_28)->m_10.Find("MENU_MENU", &fm);
     m_1bc = (i32)fm;
     return 1;
 }
 
 SIZE_UNKNOWN(MenuAssetMgr);
+SIZE_UNKNOWN(MenuCueMap);
 SIZE_UNKNOWN(MenuCursorSub);
 SIZE_UNKNOWN(MenuHudObj);
-SIZE_UNKNOWN(MenuImageRegistry);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(MenuMgrSndHost);
 SIZE_UNKNOWN(MenuRegObj);
 SIZE_UNKNOWN(MenuRegSet);
 SIZE_UNKNOWN(MenuRoot);
 SIZE_UNKNOWN(MenuSndEntry);
 SIZE_UNKNOWN(MenuSndEntryInner);
-SIZE_UNKNOWN(MenuSndTable);
-SIZE_UNKNOWN(MenuSoundRegistry);
+SIZE_UNKNOWN(MenuSndRegistry);
 SIZE_UNKNOWN(MenuStateCore);

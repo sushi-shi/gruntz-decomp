@@ -158,19 +158,19 @@ public:
     void AddPoolItem(void* item);  // 0x142100  pool publisher (reloc-masked)
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    IDirectDraw2Z* m_0;  // +0x00  the held IDirectDraw2 device
-    IDirectDraw2Z* m_4;  // +0x04  the raw IDirectDraw DirectDrawCreate returns
-    i32 m_caps[0x5f];    // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
-    i32 m_helCaps[0x5f]; // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
+    IDirectDraw2Z* m_device; // +0x00  the held IDirectDraw2 device
+    IDirectDraw2Z* m_dd1;    // +0x04  the raw IDirectDraw DirectDrawCreate returns
+    i32 m_caps[0x5f];        // +0x08  driver DDCAPS (dwSize 0x17c at +0x08)
+    i32 m_helCaps[0x5f];     // +0x184 HEL DDCAPS (dwSize 0x17c at +0x184)
     char m_pad300[0x4b4 - 0x300];
     CDdObArray m_poolItems; // +0x4b4 pool-item CObArray sub-object
     char m_pad4c8[0x534 - 0x4c8];
-    i32 m_534; // +0x534 caps flag (& 0x8000000)
-    i32 m_538; // +0x538 cached bpp
+    i32 m_bltCaps; // +0x534 caps flag (& 0x8000000)
+    i32 m_bpp;     // +0x538 cached bpp
     char m_pad53c[0x93c - 0x53c];
-    i32 m_93c; // +0x93c
-    i32 m_940; // +0x940
-    i32 m_944; // +0x944 last-error stash
+    i32 m_93c;       // +0x93c
+    i32 m_940;       // +0x940
+    i32 m_lastError; // +0x944 last-error stash
 };
 
 // ---------------------------------------------------------------------------
@@ -197,11 +197,11 @@ public:
                  u32 flags); // 0x147cd0
 
     // --- layout ---------------------------------------------------------------
-    i32 m_0;                  // +0x00  cleared by Destroy
-    IDirectDrawPaletteZ* m_4; // +0x04  the held palette interface
-    i32 m_8;                  // +0x08  cleared by Destroy
-    u8* m_c;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes)
-    u8* m_10;                 // +0x10  PALETTEENTRY cache B (0x400 bytes)
+    i32 m_0;                        // +0x00  cleared by Destroy
+    IDirectDrawPaletteZ* m_palette; // +0x04  the held palette interface
+    i32 m_8;                        // +0x08  cleared by Destroy
+    u8* m_cacheA;                   // +0x0c  PALETTEENTRY cache A (0x400 bytes)
+    u8* m_cacheB;                   // +0x10  PALETTEENTRY cache B (0x400 bytes)
     char m_pad14[0x18 - 0x14];
     u8* m_18; // +0x18  third buffer freed by Destroy
     char m_pad1c[0x34 - 0x1c];
@@ -235,33 +235,33 @@ public:
     void FinishInit();     // 0x17d6b0
 
     // --- layout (only touched offsets pinned) ---------------------------------
-    void* m_0; // +0x00  owner window (HWND; stored last by Init)
-    i32 m_4;   // +0x04  "initialized" flag
+    void* m_window;    // +0x00  owner window (HWND; stored last by Init)
+    i32 m_initialized; // +0x04  "initialized" flag
     char m_pad8[0x0c - 0x08];
     i32 m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    IDirectDraw2Z* m_14;       // +0x14  the QI'd IDirectDraw2
-    IDirectDraw2Z* m_18;       // +0x18  the raw IDirectDraw DirectDrawCreate returns
-    IDirectDrawSurfaceZ* m_1c; // +0x1c  primary surface (QI'd to Surface3)
-    IDirectDrawSurfaceZ* m_20; // +0x20  primary surface (raw)
-    i32 m_24;                  // +0x24
-    i32 m_28;                  // +0x28
-    IDirectDrawPaletteZ* m_2c; // +0x2c  the palette
-    union {                    // +0x30  DDSURFACEDESC scratch (CreateSurface target)
-        char m_desc[0x6c];     //        raw view (Init bulk-clears the desc as dwords)
+    IDirectDraw2Z* m_dd2;                     // +0x14  the QI'd IDirectDraw2
+    IDirectDraw2Z* m_dd1;                     // +0x18  the raw IDirectDraw DirectDrawCreate returns
+    IDirectDrawSurfaceZ* m_primarySurface;    // +0x1c  primary surface (QI'd to Surface3)
+    IDirectDrawSurfaceZ* m_primarySurfaceRaw; // +0x20  primary surface (raw)
+    i32 m_24;                                 // +0x24
+    i32 m_28;                                 // +0x28
+    IDirectDrawPaletteZ* m_palette;           // +0x2c  the palette
+    union {                                   // +0x30  DDSURFACEDESC scratch (CreateSurface target)
+        char m_desc[0x6c]; //        raw view (Init bulk-clears the desc as dwords)
         struct {
             u32 m_descSize; // +0x30  dwSize
             char m_descpad34[0x98 - 0x34];
             u32 m_descCaps; // +0x98  ddsCaps.dwCaps
         };
     };
-    char m_pad9c[0x108 - 0x9c]; // +0x9c
-    char m_108[0x510 - 0x108];  // +0x108 PALETTEENTRY init buffer (only &m_108 used)
-    i32 m_510;                  // +0x510
+    char m_pad9c[0x108 - 0x9c];       // +0x9c
+    char m_palEntries[0x510 - 0x108]; // +0x108 PALETTEENTRY init buffer (only &m_palEntries used)
+    i32 m_modeTag;                    // +0x510
     char m_pad514[0x518 - 0x514];
-    i32 m_518; // +0x518  width
-    i32 m_51c; // +0x51c  height
-    i32 m_520; // +0x520  bpp
+    i32 m_width;  // +0x518  width
+    i32 m_height; // +0x51c  height
+    i32 m_bpp;    // +0x520  bpp
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

@@ -2814,7 +2814,7 @@ menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	5	5d81e35394da	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	3	80acd97a7f81	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	4	b9c5dc260ce3	0x183df0
 menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	2	acff9f8da0ff	0xae1c0
-menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.5216	89.5216	4	0679869aae4c	0x9fe50
+menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.5216	89.5216	5	52a471550a68	0x9fe50
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	59.8226	59.8226	2	6b88343eca62	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	2	2779ef0a81cb	0xf0db0
 mgrobjserialize	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	4	c436f1fa9117	0xface0

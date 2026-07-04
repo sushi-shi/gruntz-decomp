@@ -106,10 +106,10 @@ i32 CDDSurface::Lock(void* rect) {
     return 0;
 }
 
-// CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_4).
+// CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_palette).
 RVA(0x0013e690, 0x35)
 i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
-    i32 hr = m_8->SetPalette(pal->m_4);
+    i32 hr = m_8->SetPalette(pal->m_palette);
     if (hr == 0) {
         return 1;
     }
@@ -646,33 +646,33 @@ i32 CDirectDrawMgr::CreateDevice(
     m_940 = 0;
     IDirectDraw2Z* dd = g_DirectDraw;
     if (dd != 0) {
-        m_0 = dd;
+        m_device = dd;
     } else {
-        i32 chr = DirectDrawCreate(hwnd, &m_4, 0);
+        i32 chr = DirectDrawCreate(hwnd, &m_dd1, 0);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
-            if (m_944 == 0) {
-                m_944 = 0x3e9;
+            if (m_lastError == 0) {
+                m_lastError = 0x3e9;
             }
             return 0;
         }
-        chr = m_4->QueryInterface(IID_IDirectDraw2, (void**)&m_0);
+        chr = m_dd1->QueryInterface(IID_IDirectDraw2, (void**)&m_device);
         if (chr != 0) {
             CDirectDrawMgr::GetErrorString(0, 0, chr);
-            if (m_944 == 0) {
-                m_944 = 0x3ef;
+            if (m_lastError == 0) {
+                m_lastError = 0x3ef;
             }
             return 0;
         }
     }
 
-    i32 hr = m_0->SetCooperativeLevel(hwnd, coopFlags);
+    i32 hr = m_device->SetCooperativeLevel(hwnd, coopFlags);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
     if (hr != 0) {
-        if (m_944 == 0) {
-            m_944 = 0x3ea;
+        if (m_lastError == 0) {
+            m_lastError = 0x3ea;
         }
         return 0;
     }
@@ -688,23 +688,23 @@ i32 CDirectDrawMgr::CreateDevice(
     }
     m_caps[0] = 0x17c;
     m_helCaps[0] = 0x17c;
-    hr = m_0->GetCaps(m_caps, m_helCaps);
+    hr = m_device->GetCaps(m_caps, m_helCaps);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xad, hr);
     }
-    m_534 = m_caps[1] & 0x8000000;
+    m_bltCaps = m_caps[1] & 0x8000000;
     SetupCaps();
 
     if (width > 0 && height > 0) {
         hr = SetVideoMode(width, height, bpp, 0, 0);
         if (hr != 0) {
             CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xc2, hr);
-            if (m_944 == 0) {
-                m_944 = 0x3ec;
+            if (m_lastError == 0) {
+                m_lastError = 0x3ec;
             }
             return 0;
         }
-        m_538 = bpp;
+        m_bpp = bpp;
     }
 
     if (bpp == 0) {
@@ -715,9 +715,9 @@ i32 CDirectDrawMgr::CreateDevice(
             *d++ = 0;
         }
         desc[0] = 0x6c;
-        hr = m_0->GetDisplayMode(desc);
+        hr = m_device->GetDisplayMode(desc);
         if (hr == 0) {
-            m_538 = desc[0x15];
+            m_bpp = desc[0x15];
         }
     }
 
@@ -730,19 +730,19 @@ i32 CDirectDrawMgr::CreateDevice(
 // ===========================================================================
 
 // CDDPalette::Create (__thiscall, ret 0xc => 3 args). Caches a copy of the
-// PALETTEENTRY array (m_c), allocates a second cache (m_10), then creates the
-// DirectDraw palette via IDirectDraw::CreatePalette into m_4.
+// PALETTEENTRY array (m_cacheA), allocates a second cache (m_cacheB), then creates the
+// DirectDraw palette via IDirectDraw::CreatePalette into m_palette.
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2Z* dd, void* entries, u32 flags) {
-    m_c = (u8*)operator new(0x400);
+    m_cacheA = (u8*)operator new(0x400);
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
-    // (retail encodes [entries+i]/[m_c+i] with i as the index; MSVC here makes i
+    // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_c + i) = *(i32*)((char*)entries + i);
+        *(i32*)(m_cacheA + i) = *(i32*)((char*)entries + i);
     }
-    m_10 = (u8*)operator new(0x400);
-    i32 hr = dd->CreatePalette(flags, entries, &m_4, 0);
+    m_cacheB = (u8*)operator new(0x400);
+    i32 hr = dd->CreatePalette(flags, entries, &m_palette, 0);
     if (hr == 0) {
         return 1;
     }
@@ -791,23 +791,23 @@ i32 CDDPalette::CreateRGB(IDirectDraw2Z* dd, void* rgb, u32 flags) {
     return Create(dd, entries, flags);
 }
 
-// CDDPalette::Destroy (__thiscall, no args). Nulls m_0/m_4/m_8, frees the three
-// owned buffers (m_c/m_10/m_18) via operator delete, clears m_34. m_4 is only
-// nulled (not Released) here.
+// CDDPalette::Destroy (__thiscall, no args). Nulls m_0/m_palette/m_8, frees the three
+// owned buffers (m_cacheA/m_cacheB/m_18) via operator delete, clears m_34. m_palette is
+// only nulled (not Released) here.
 RVA(0x00147530, 0x54)
 void CDDPalette::Destroy() {
     m_0 = 0;
     m_8 = 0;
-    if (m_4 != 0) {
-        m_4 = 0;
+    if (m_palette != 0) {
+        m_palette = 0;
     }
-    if (m_c != 0) {
-        operator delete(m_c);
-        m_c = 0;
+    if (m_cacheA != 0) {
+        operator delete(m_cacheA);
+        m_cacheA = 0;
     }
-    if (m_10 != 0) {
-        operator delete(m_10);
-        m_10 = 0;
+    if (m_cacheB != 0) {
+        operator delete(m_cacheB);
+        m_cacheB = 0;
     }
     if (m_18 != 0) {
         operator delete(m_18);
@@ -949,30 +949,30 @@ i32 CDDPalette::LoadPal(IDirectDraw2Z* dd, char* filename, u32 flags) {
 }
 
 // CDDPalette::SetAndNotify (__thiscall, ret 0x10 => 4 args; a4 unused). Cache the
-// `count` supplied PALETTEENTRYs into m_c starting at `start`, wait for the next
+// `count` supplied PALETTEENTRYs into m_cacheA starting at `start`, wait for the next
 // vertical blank through the global DirectDrawMgr's device (slot 22, @+0x58), then
 // push the range straight into the DirectDraw palette via SetEntries(0, start,
 // count, data). The notify only fires when the singleton is up.
 // @early-stop
 // copy-loop SIB / arg-regalloc wall (61.87%): the VBlank-notify + SetEntries call
-// chain match, but MSVC5's strength-reduced cache copy loop (`m_c[start+i]=data[i]`)
+// chain match, but MSVC5's strength-reduced cache copy loop (`m_cacheA[start+i]=data[i]`)
 // picks a different induction-var/SIB form + arg-register assignment than retail.
 // Same family as Create's copy-loop plateau. docs/patterns/zero-register-pinning.md.
 RVA(0x00147aa0, 0x6a)
 void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
-    i32* cache = (i32*)m_c;
+    i32* cache = (i32*)m_cacheA;
     for (i32 i = 0; i < count; i++) {
         cache[start + i] = data[i];
     }
     if (g_DirectDrawMgr != 0) {
-        IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
+        IDirectDraw2Z* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_4->SetEntries(0, start, count, data);
+    m_palette->SetEntries(0, start, count, data);
 }
 
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the
-// readback cache (m_10), then reads all 256 entries; reports a bad HRESULT.
+// readback cache (m_cacheB), then reads all 256 entries; reports a bad HRESULT.
 RVA(0x00147c30, 0x4d)
 i32 CDDPalette::GetEntries() {
     // Lazily allocates the readback cache, then reads all 256 entries; reports a
@@ -980,13 +980,13 @@ i32 CDDPalette::GetEntries() {
     // the int symbol returns whatever sits in eax), so it omits the trailing
     // `xor eax,eax` this `return 0` emits. MSVC 5.0 C++ forbids fall-off
     // (C2561), so the one-instruction `xor` gap can't be reproduced from clean C.
-    if (m_10 == 0) {
-        m_10 = (u8*)operator new(0x400);
-        if (m_10 == 0) {
+    if (m_cacheB == 0) {
+        m_cacheB = (u8*)operator new(0x400);
+        if (m_cacheB == 0) {
             return 0;
         }
     }
-    i32 hr = m_4->GetEntries(0, 0, 0x100, m_10);
+    i32 hr = m_palette->GetEntries(0, 0, 0x100, m_cacheB);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x265, hr);
     }
@@ -994,40 +994,40 @@ i32 CDDPalette::GetEntries() {
 }
 
 // CDDPalette::Apply (__thiscall, ret 4 but no real arg). When the readback cache
-// (m_10) is populated, copy it into the working cache (m_c, 0x400 bytes), wait for
+// (m_cacheB) is populated, copy it into the working cache (m_cacheA, 0x400 bytes), wait for
 // the next vertical blank through the global DirectDrawMgr's device (slot 22,
 // @+0x58), then push all 256 entries into the DirectDraw palette via SetEntries(0,
-// 0, 0x100, m_10).
+// 0, 0x100, m_cacheB).
 // @early-stop
 // regalloc coin-flip (97.58%): every code byte matches retail EXCEPT the register
-// the m_4 load for SetEntries lands in (retail reuses esi, ours uses eax). Same
+// the m_palette load for SetEntries lands in (retail reuses esi, ours uses eax). Same
 // values/stores/order; not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x00147c80, 0x4d)
 void CDDPalette::Apply(i32 a1) {
-    u8* readback = m_10;
+    u8* readback = m_cacheB;
     if (readback == 0) {
         return;
     }
     // Byte-offset copy loop (i+=4, cmp 0x400) matches retail's index-walk form.
     for (i32 i = 0; i < 0x400; i += 4) {
-        *(i32*)(m_c + i) = *(i32*)(readback + i);
+        *(i32*)(m_cacheA + i) = *(i32*)(readback + i);
     }
     if (g_DirectDrawMgr != 0) {
-        IDirectDraw2Z* dd = g_DirectDrawMgr->m_0;
+        IDirectDraw2Z* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_4->SetEntries(0, 0, 0x100, readback);
+    m_palette->SetEntries(0, 0, 0x100, readback);
 }
 
 // CDDPalette::SetRange (__thiscall, ret 0x18 => 6 args).
 RVA(0x00147cd0, 0x78)
 i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     for (i32 i = start; i < start + count; i++) {
-        m_c[i * 4 + 0] = r;
-        m_c[i * 4 + 1] = g;
-        m_c[i * 4 + 2] = b;
+        m_cacheA[i * 4 + 0] = r;
+        m_cacheA[i * 4 + 1] = g;
+        m_cacheA[i * 4 + 2] = b;
     }
-    i32 hr = m_4->SetEntries(flags, start, count, m_c + start * 4);
+    i32 hr = m_palette->SetEntries(flags, start, count, m_cacheA + start * 4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2a3, hr);
     }
@@ -1047,7 +1047,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 // through the named DDSURFACEDESC fields (m_descSize / ddsCaps.dwCaps m_descCaps).
 RVA(0x0017c040, 0x25d)
 i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
-    if (m_4 != 0) {
+    if (m_initialized != 0) {
         return 0;
     }
     if (window == 0) {
@@ -1066,17 +1066,17 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     }
 
     m_c = 0;
-    if (DirectDrawCreate(0, &m_18, 0) != 0) {
+    if (DirectDrawCreate(0, &m_dd1, 0) != 0) {
         return 0;
     }
-    if (m_18->QueryInterface(IID_IDirectDraw2, (void**)&m_14) != 0) {
+    if (m_dd1->QueryInterface(IID_IDirectDraw2, (void**)&m_dd2) != 0) {
         return 0;
     }
-    if (m_14->SetCooperativeLevel(window, coopFlags) != 0) {
+    if (m_dd2->SetCooperativeLevel(window, coopFlags) != 0) {
         HandleError();
         return 0;
     }
-    if (m_14->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
+    if (m_dd2->SetDisplayMode(w, h, bpp, 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -1089,24 +1089,25 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     m_descSize = 0x6c;
     m_24 = 1;
     m_descCaps = 0x200; // ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE
-    if (m_14->CreateSurface(m_desc, &m_20, 0) != 0) {
+    if (m_dd2->CreateSurface(m_desc, &m_primarySurfaceRaw, 0) != 0) {
         HandleError();
         return 0;
     }
 
-    if (m_20->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_1c) != 0) {
+    if (m_primarySurfaceRaw->QueryInterface(IID_IDirectDrawSurface3, (void**)&m_primarySurface)
+        != 0) {
         return 0;
     }
 
     OnModeSet(w);
 
     if (mode->bpp == 8) {
-        if (m_14->CreatePalette(4, m_108, &m_2c, 0) != 0) {
+        if (m_dd2->CreatePalette(4, m_palEntries, &m_palette, 0) != 0) {
             HandleError();
             return 0;
         }
-        m_1c->SetPalette(m_2c);
-        m_510 = 0;
+        m_primarySurface->SetPalette(m_palette);
+        m_modeTag = 0;
     }
 
     if (mode->bpp == 0x18) {
@@ -1120,15 +1121,15 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
         }
     }
 
-    m_518 = w;
+    m_width = w;
     m_24 = 0;
     m_28 = 0;
-    m_51c = h;
-    m_520 = bpp;
-    m_0 = window;
+    m_height = h;
+    m_bpp = bpp;
+    m_window = window;
     m_c = 0;
     ShowCursor(0);
-    m_4 = 1;
+    m_initialized = 1;
     FinishInit();
     return 1;
 }
@@ -1137,7 +1138,7 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
 // CDDPageMgr::CheckMode16 (@0x17d2b0, __thiscall, no args)
 // Read the current display mode's pixel format (IDirectDraw2::GetDisplayMode,
 // vtbl slot 12), popcount its R/G/B channel bit-masks, and classify a 16-bit
-// mode: 5/5/5 -> tag m_510 = 0x80000000, 5/6/5 -> 0xc0000000. Returns 1 on a
+// mode: 5/5/5 -> tag m_modeTag = 0x80000000, 5/6/5 -> 0xc0000000. Returns 1 on a
 // recognised 16-bit mode, 0 otherwise (incl. a failed GetDisplayMode).
 // @early-stop
 // 83.9% - logic/CFG/the GetDisplayMode COM call/the three 32-iter popcount loops/
@@ -1160,7 +1161,7 @@ i32 CDDPageMgr::CheckMode16() {
     DDModeDesc desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = 0x6c;
-    if (m_14->GetDisplayMode(&desc) != 0) {
+    if (m_dd2->GetDisplayMode(&desc) != 0) {
         return 0;
     }
 
@@ -1193,11 +1194,11 @@ i32 CDDPageMgr::CheckMode16() {
     }
 
     if (r == 5 && g == 5 && b == 5) {
-        m_510 = (i32)0x80000000;
+        m_modeTag = (i32)0x80000000;
         return 1;
     }
     if (r == 5 && g == 6 && b == 5) {
-        m_510 = (i32)0xc0000000;
+        m_modeTag = (i32)0xc0000000;
         return 1;
     }
     return 0;
@@ -1236,7 +1237,7 @@ void CDirectDrawMgr::SetupCaps() {
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
-    i32 hr = m_0->EnumDisplayModes(0, 0, 0, (void*)DdEnumModesCallback);
+    i32 hr = m_device->EnumDisplayModes(0, 0, 0, (void*)DdEnumModesCallback);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
