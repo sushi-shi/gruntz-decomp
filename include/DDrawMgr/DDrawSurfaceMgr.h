@@ -1,0 +1,115 @@
+#ifndef GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H
+#define GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H
+
+// DDrawSurfaceMgr.h - THE single-source shape of CDDrawSurfaceMgr, the root object
+// of the tomalla-named DDraw surface/page-manager family. It is owned off
+// CGruntzMgr+0x30 (RezSync news it), holds one child sub-manager per slot, a foreign
+// Dsndmgr sound stream at +0x20, the surface pool at +0x1c, and a run/config
+// callback at +0x3c. A polymorphic Wap::CObject (implicit vptr @+0x00; the ctor
+// 0x155840 stamps ??_7CDDrawSurfaceMgr, the dtor 0x1558b0 restamps the grand base).
+//
+// Field/offset provenance (union of the six former per-TU views, name-preserving):
+//   +0x04  m_pages       CDDrawSubMgrPages   - PROVEN by the Init store 0x15596a:
+//                        `new(0x1c)` whose vtable is stamped ??_7CDDrawSubMgrPages
+//                        (0x5efe08) at 0x15594e, then `mov [this+4],edi`. RezSync's
+//                        "SurfWorkerZ"/Ghidra "CDDrawWorkerMgr" is the SAME class
+//                        (its 0x158b40..0x159ef0 methods are CDDrawSubMgrPages's own
+//                        non-virtual surface ops - the real 0x5efe08 vtable carries
+//                        16+ slots, the DDrawSubMgrPages.cpp model under-declared 10).
+//                        Field types as the shared child base CDDrawSubMgr.
+//   +0x08  m_childGroup  CDDrawChildGroup    (Serialize's m_08 blit-op target)
+//   +0x0c  m_workerList  CDDrawWorkerList
+//   +0x10  m_surfaceDesc CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
+//   +0x14  m_workerCache CDDrawWorkerCache
+//   +0x18  m_workerMap   CDDrawWorkerMapSmall
+//   +0x1c  m_ptrColl     CDDrawPtrCollections - the surface pool (SurfacePair's m_pool);
+//                        heap object, ctor 0x141cc0 / dtor 0x141d50, ~0x948 B.
+//   +0x20  m_soundStream foreign Dsndmgr SoundStream
+//   +0x24  m_resolveSubMgr CDDrawResolveSubMgr / CGameLevel (RezSync m_24 BuildAllPlanes;
+//                        Serialize m_24 blit target)
+//   +0x28  m_leafScan    CDDrawSubMgrLeafScan (RezSync m_28 ScanTree/HasKeyEqual/MatchSub)
+//   +0x2c  m_leaf        CDDrawSubMgrLeaf
+//   +0x30  m_hWnd        bound window handle (Init arg1; SurfacePair reads it as the
+//                        "device" handle it hands the pool)
+//   +0x34  m_flags       Init arg5 / caps flags (SurfacePair: bit4 fullscreen, bit1
+//                        double-buffer)
+//   +0x38  m_lastError   last-error code slot (Init 0x3e9..0x3ee, CreateChildren
+//                        0x7d1..0x7d3, SurfacePair 0xfa1../0x80e9../0xbb9/0xbba;
+//                        the owner's former m_initError / SubMgrPages' m_38)
+//   +0x3c  m_callback    run/config callback (owner InvokeCallback + Serialize's m_3c
+//                        run-callback; same __cdecl 5-arg signature)
+//
+// Field names are placeholders; only OFFSETS + code bytes are load-bearing. Every
+// child is a forward-declared pointer member so this header does not drag in - or
+// clash with - a consumer's local child views; the owner TU (DDrawSurfaceMgr.cpp)
+// supplies the full child defs for its own method bodies.
+
+#include <rva.h>
+#include <Ints.h>
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
+
+// HWND for the +0x30 window handle. When windows.h has NOT been pulled in (the lean
+// consumers, e.g. GameSave), provide the STRICT (afx-default) incomplete-handle form
+// so the pointer member compiles; when it HAS (the MFC/Win32 TUs, _WINDEF_ set), use
+// the real one. m_hWnd is never dereferenced, so an incomplete HWND suffices.
+#ifndef _WINDEF_
+struct HWND__;
+typedef struct HWND__* HWND;
+#endif
+
+// The owned child sub-managers (polymorphic; shared child base with the scalar-
+// deleting destructor at vtable slot 1). Pointer members only here.
+class CDDrawSubMgr;
+struct CDDrawSubMgrLeafScan;
+struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
+struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
+
+// The +0x3c run/config callback: a __cdecl function pointer invoked with
+// (this, arg1..arg4). Owner InvokeCallback dispatch == Serialize's run-callback.
+typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
+
+SIZE(CDDrawSurfaceMgr, 0x40);
+class CDDrawSurfaceMgr : public Wap::CObject {
+public:
+    CDDrawSurfaceMgr();
+    virtual ~CDDrawSurfaceMgr() OVERRIDE;
+    virtual i32 IsReady();
+    virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
+    virtual void Slot1C();
+    virtual void FreeContext();
+    virtual i32 SetDimensions(i32 x, i32 y, i32 flags);
+    virtual void SetHwnd(void* hWnd);
+    virtual i32 Slot2C(i32 arg);
+    virtual i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
+
+    // Engine-label backlog stub (0x155900, the 5-arg Init that news all 11 children).
+    void Init();
+
+    // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
+    void Cleanup_155e20();
+
+    // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
+    // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
+    i32 SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3); // 0x156020
+    i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
+
+    CDDrawSubMgr* m_pages;            // +0x04  CDDrawSubMgrPages
+    CDDrawSubMgr* m_childGroup;       // +0x08  CDDrawChildGroup
+    CDDrawSubMgr* m_workerList;       // +0x0c  CDDrawWorkerList
+    CDDrawSubMgr* m_surfaceDesc;      // +0x10  CDDrawSurfaceDesc submgr
+    CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
+    CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
+    CDDrawPtrCollections* m_ptrColl;  // +0x1c  surface pool
+    SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream
+    CDDrawSubMgr* m_resolveSubMgr;    // +0x24  CDDrawResolveSubMgr / CGameLevel
+    CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
+    CDDrawSubMgr* m_leaf;             // +0x2c  CDDrawSubMgrLeaf
+    HWND m_hWnd;                      // +0x30  bound window / device handle
+    i32 m_flags;                      // +0x34  caps flags
+    i32 m_lastError;                  // +0x38  last-error code
+    HP_Callback m_callback;           // +0x3c  run/config callback
+};
+
+#endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

@@ -11,7 +11,8 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>             // Wap::CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
 
 class CDDrawSubMgrItem {
 public:
@@ -69,54 +70,14 @@ struct CDDrawResolveSubMgr : public CDDrawSubMgr {
     i32 SetCoords(i32 x, i32 y);
 };
 
-// The +0x3c callback slot: a __cdecl function pointer invoked with (this, arg1..arg4).
-typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
-
-// The CObject grand base is Wap::CObject (vtable @0x5e8cb4; Wap32/Object.h): the
-// implicit vptr @+0x00 + the 5-slot CObject interface, with the scalar-deleting dtor
-// at slot 1. Real polymorphic base subobject: the empty inline virtual dtor makes cl
-// emit the implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
-// ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX
-// EH frame. The base also fixes the derived vtable layout: the dtor lands at slot 1
-// and IsReady (byte 0x14) at slot 5, etc.
-struct CDDrawPtrCollections; // defined below (m_ptrColl's heap object)
-class CDDrawSurfaceMgr : public Wap::CObject {
-public:
-    CDDrawSurfaceMgr();
-    virtual ~CDDrawSurfaceMgr() OVERRIDE;
-    virtual i32 IsReady();
-    virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
-    virtual void Slot1C();
-    virtual void FreeContext();
-    virtual i32 SetDimensions(i32 x, i32 y, i32 flags);
-    virtual void SetHwnd(void* hWnd);
-    virtual i32 Slot2C(i32 arg);
-    virtual i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    virtual i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    virtual i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
-
-    // Engine-label backlog stubs.
-    void Init();
-
-    // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
-    void Cleanup_155e20();
-
-    CDDrawSubMgr* m_pages;            // +0x04  CDDrawSubMgrPages
-    CDDrawSubMgr* m_childGroup;       // +0x08  CDDrawChildGroup
-    CDDrawSubMgr* m_workerList;       // +0x0c  CDDrawWorkerList
-    CDDrawSubMgr* m_surfaceDesc;      // +0x10  CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
-    CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
-    CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
-    CDDrawPtrCollections* m_ptrColl;  // +0x1c
-    SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream
-    CDDrawSubMgr* m_resolveSubMgr;    // +0x24  resolution submgr (CDDrawResolveSubMgr / CGameLevel)
-    CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
-    CDDrawSubMgr* m_leaf;             // +0x2c  CDDrawSubMgrLeaf
-    HWND m_hWnd;                      // +0x30
-    i32 m_flags;                      // +0x34
-    i32 m_initError;                  // +0x38
-    HP_Callback m_callback;           // +0x3c
-};
+// The +0x3c callback slot (HP_Callback), the CObject grand base (Wap::CObject,
+// vtable @0x5e8cb4), and the full CDDrawSurfaceMgr class now live in the canonical
+// <DDrawMgr/DDrawSurfaceMgr.h> (included above). The empty inline ~Wap::CObject
+// gives cl the implicit grand-base re-stamp (reloc-masks 0x5e8cb4) folded LAST into
+// ~CDDrawSurfaceMgr, and the destructible base subobject supplies the dtor's /GX EH
+// frame; the base also fixes the derived vtable layout (dtor at slot 1, IsReady at
+// slot 5). The children (CDDrawSubMgr etc.) are forward-declared in the header and
+// fully defined above so these method bodies can dereference them.
 
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // draw-clock mirror
@@ -149,7 +110,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_leafScan = 0;
     m_leaf = 0;
     m_flags = 0;
-    m_initError = 0;
+    m_lastError = 0;
     m_callback = 0;
     g_6bf3c0 = 0;
     g_6bf3bc = 0;
