@@ -119,4 +119,19 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 }
 #endif
 
+// CSBI_MenuItem (vtable 0x5eab4c, 12 slots): a CSBI_Image leaf (sibling of
+// CSBI_ImageSet, NOT on the ImageSet spine). Its ~CSBI_MenuItem (0x1007d0) unwinds
+// the four-level subobject chain by re-stamping 0x5eab4c -> 0x5eac0c -> 0x5eab8c ->
+// 0x5eabcc (CSBI_MenuItem / CSBI_Image / CSBI_RectOnly / CStatusBarItem), proving the
+// base is CSBI_Image. Formerly a per-TU redef in SBI_MenuItemEh.cpp; folded here.
+struct CSBI_MenuItem : CSBI_Image {
+    virtual ~CSBI_MenuItem() OVERRIDE;
+    void DtorMenu(); // 0xe81a0  most-derived member teardown (reloc-masked)
+};
+#ifndef SBI_OWN_MENUITEM_DTOR
+inline CSBI_MenuItem::~CSBI_MenuItem() {
+    DtorMenu();
+}
+#endif
+
 #endif // GRUNTZ_SBIDTORCHAIN_H
