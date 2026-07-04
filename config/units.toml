@@ -1345,10 +1345,6 @@ unit = "mgrautoscroll"
 source = "src/Gruntz/MgrAutoScroll.cpp"
 flags = "base"
 
-[[unit]]
-unit = "fadershapesetup"
-source = "src/Gruntz/FaderShapeSetup.cpp"
-flags = "base"
 
 [[unit]]
 unit = "polyclipraster"
@@ -1835,10 +1831,6 @@ unit = "fader"
 source = "src/Gruntz/Fader.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "faderrun"
-source = "src/Gruntz/FaderRun.cpp"
-flags = "base"
 
 [[unit]]
 unit = "smackervideowindow"
@@ -2145,10 +2137,6 @@ unit = "arrayserialize"
 source = "src/Gruntz/ArraySerialize.cpp"
 flags = "base"
 [[unit]]
-unit = "faderradial"
-source = "src/Gruntz/FaderRadial.cpp"
-flags = "base"
-[[unit]]
 unit = "circleshadeblit"
 source = "src/Gruntz/CircleShadeBlit.cpp"
 flags = "base"
@@ -2172,14 +2160,6 @@ flags = "eh"
 [[unit]]
 unit = "imagepolyclip"
 source = "src/Image/ImagePolyClip.cpp"
-flags = "base"
-[[unit]]
-unit = "fadertilerender"
-source = "src/Gruntz/FaderTileRender.cpp"
-flags = "base"
-[[unit]]
-unit = "fader17e940apply"
-source = "src/Gruntz/Fader17e940Apply.cpp"
 flags = "base"
 
 [[unit]]
@@ -2453,10 +2433,6 @@ unit = "netgamedlg"
 source = "src/Net/NetGameDlg.cpp"
 flags = "eh"
 [[unit]]
-unit = "fadersetup"
-source = "src/Gruntz/FaderElemSetup.cpp"
-flags = "base"
-[[unit]]
 unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
 flags = "base"
@@ -2547,10 +2523,6 @@ unit = "bracketvalue"
 source = "src/Gruntz/BracketValueParse.cpp"
 flags = "base"
 
-[[unit]]
-unit = "obj5f0890dtor"
-source = "src/Gruntz/Obj5f0890Dtor.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "mgrslotswap"

@@ -1,3 +1,36 @@
+// Fader.cpp - the CFader screen-transition family (C:\Proj\Gruntz): the CFader
+// base + its concrete subtypes (CFaderSine / CFaderFlat / CFader17e940 /
+// CFader17f9a0 / CFader180410 / CFader1816c0 / CFaderRadial / CFaderElem /
+// CFaderShape / CFaderTileRender + the FaderRun helper). One dev TU, formerly
+// split across Fader.cpp + Fader{Run,Radial,ElemSetup,ShapeSetup,TileRender,
+// 17e940Apply}.cpp + Obj5f0890Dtor.cpp (the ~CFader1816c0 dtor). Merged per
+// docs/tu-topology-plan.md (Phase 1); FaderMgr.cpp stays its own TU. All in the
+// 0x17d8f0-0x182610 engine band (one link cluster).
+//
+// Unit flags eh: CFader's dtor + ~CFader1816c0 need the /GX EH frame; the run/
+// build/render helpers (RunFade / ApplyInit / Apply / Build / Setup / RenderTile /
+// RenderWarpTile) carry no destructible C++ object so /GX is a no-op for them
+// (byte-verified under eh). Functions kept in ascending retail-RVA order at the
+// per-original-TU section granularity (within-TU order is byte-neutral,
+// docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
+// original file's provenance comment.
+#include <Gruntz/Fader.h>
+#include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
+#include <Ints.h>
+#include <Win32.h>  // GetTickCount / WINAPI / RECT (reloc-masked imports)
+#include <math.h>   // acos/sin (fsin) / sqrt (fsqrt) intrinsics
+#include <string.h> // rep-movs / memset element copies
+#include <rva.h>
+
+// ApplyInit's two .rdata FP constants. Kept as minimal externs (not a fat
+// <Globals.h> include, which leaks regalloc into the sibling render helpers - see
+// docs on globals consolidation); the DATA binding lives in Globals.cpp.
+extern float g_fxBias;
+extern float g_fxEps;
+
+// ============================================================================
+// section: Fader.cpp
+// ============================================================================
 // Fader.cpp - the CFaderMgr element base class + one concrete subtype's
 // destructor (tracer placeholder MallocCtor_17fdb0, keyed off the 0x17fdb0 subtype
 // ctor). CFader is the polymorphic base of the six screen-fader subtypes the
@@ -9,11 +42,6 @@
 // code bytes are load-bearing. The CShadeTableCache ctor/dtor/FindRemove (0x14de30
 // / 0x14de50 / 0x14fb80) and operator new/delete are external/reloc-masked; the
 // fader subtype vftables are stamped as reloc-masked DIR32 data.
-#include <Gruntz/Fader.h>
-#include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
-
-#include <rva.h>
-#include <Win32.h> // GetTickCount / DWORD (pure-Win32 fader; reloc-masked import)
 
 // ===========================================================================
 // 0x17e450 - CFader::CFader(): build the cache subobject (0x14de30), stamp the
@@ -160,4 +188,1240 @@ CFader1816c0::CFader1816c0() {
     m_488 = 0;
     m_48c = 0;
     m_20 = 0;
+}
+
+// ============================================================================
+// section: FaderRun.cpp
+// ============================================================================
+// FaderRun.cpp - the CFader "run timed fade" driver (0x17e620), a CFader-subtype
+// method the ApiCaller stub misfiled as winapi_17e620_GetTickCount. It drives the
+// whole fade: primes frame 0, busy-waits the lead-in (Wait), then spins on
+// GetTickCount mapping elapsed/duration onto the [0..count] frame index (v2 = frame
+// count, v1 = render frame N). Each newly-reached frame optionally pokes a COM-style
+// sink (m_2c) then renders; at the end it records the achieved frame rate in m_34
+// and finalizes via v4. Field NAMES are placeholders; offsets + bytes load-bearing.
+//
+// `this` is modelled as a standalone CFader-subtype shape (vtable + fields to +0x38)
+// rather than deriving CFader, because the recovered CFader.h fixes v1/v2 as void()
+// while this driver needs v1(int)/v2()->int; the vtable SLOTS + call bytes are what
+// match (reloc-masked), not the names. NON-EH (base /O2) frame.
+
+// The busy-wait spinner (0x17e510): spins until GetTickCount() >= now + delay.
+// Reloc-masked rel32 callee, __thiscall (ignores its this).
+
+// The COM-style fade sink reached through this->m_2c (a pointer-to-interface-
+// pointer): *m_2c is the interface, whose first field is a C-vtable; slot 0x58 is
+// poked (arg 1, 0) once per newly-reached frame. External / reloc-masked.
+struct IFadeSink;
+SIZE_UNKNOWN(IFadeSinkVtbl);
+struct IFadeSinkVtbl {
+    char _00[0x58];
+    void(__stdcall* m_58)(IFadeSink*, i32, i32); // +0x58
+};
+SIZE_UNKNOWN(IFadeSink);
+struct IFadeSink {
+    IFadeSinkVtbl* vtbl; // +0x00  C-vtable
+};
+
+SIZE_UNKNOWN(FaderRun);
+class FaderRun {
+public:
+    virtual ~FaderRun();    // slot 0
+    virtual void v1(i32 f); // slot 1  render frame f
+    virtual i32 v2();       // slot 2  frame count
+    virtual void v3();      // slot 3  begin
+    virtual void v4();      // slot 4  end
+    void Wait(i32 delay);   // 0x17e510
+
+    void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
+
+    char _04[0x2c - 0x04]; // +0x04
+    IFadeSink** m_2c;      // +0x2c  fade sink (pointer-to-interface-pointer)
+    char _30[0x34 - 0x30]; // +0x30
+    i32 m_34;              // +0x34  measured frame rate
+};
+
+// @early-stop
+// Complete + correct (~86%). Wall = the x87 loop-invariant conversion block: retail
+// batches (float)startTick + (float)dur + (float)count as fild QWORD x2 + fild DWORD
+// then a single `fxch st(2)` + 3 fstp, and pins fStart@0x2c / fDur@0x10 / fCount@0x14;
+// MSVC5 here schedules the three (unsigned/int)->float conversions separately and
+// assigns different stack slots, which cascades the fsub/fdiv/fmul memory operands
+// (same FP-schedule/local-slot class as the blit reassociation walls). No source
+// ordering of the three float decls pins the fxch batching. Loop body, guards, sink
+// COM-call and the m_34 frame-rate store (0.001f const) are byte-exact.
+RVA(0x0017e620, 0x13b)
+void FaderRun::RunFade(u32 dur, i32 lead, i32 notify) {
+    i32 prev = 0;
+    i32 frame = 0;
+    i32 count = v2();
+    if (count < 1) {
+        return;
+    }
+    v3();
+    v1(0);
+    Wait(lead);
+    i32 loops = 0;
+    DWORD startTick = GetTickCount();
+    float fStart = (float)startTick;
+    float fDur = (float)dur;
+    float fCount = (float)count;
+    if (count >= 0) {
+        do {
+            frame = (i32)(((float)GetTickCount() - fStart) / fDur * fCount);
+            if (prev != frame && frame <= count && frame > 0) {
+                if (notify && m_2c) {
+                    IFadeSink* o = *m_2c;
+                    o->vtbl->m_58(o, 1, 0);
+                }
+                v1(frame);
+                loops++;
+            }
+            prev = frame;
+        } while (frame <= count);
+    }
+    if (frame != count) {
+        v1(count);
+        loops++;
+    }
+    float fLoops = (float)loops;
+    DWORD elapsed = GetTickCount() - startTick;
+    m_34 = (i32)(fLoops / ((float)elapsed * 0.001f));
+    v4();
+}
+
+// ============================================================================
+// section: Fader17e940Apply.cpp
+// ============================================================================
+// Fader17e940Apply.cpp - CFader17e940::ApplyInit (0x17ea00), the type-6
+// screen-fader's "apply the transition descriptor" method (the mesh builder).
+//
+// DE-VIEW NOTE (was mislabeled CFxModeT3::Build): Ghidra RTTI names 0x17ea00
+// ?Build@CFxModeT3@@QAEHPAUFxConfig@@@Z, but that attribution is WRONG. This
+// method's `this` (ecx) is the 0x6c-byte CFader17e940 (ctor 0x17e940, own vftable
+// 0x5f07c0, growable mesh buffer at +0x58), NOT the 0x14-byte CFxModeT3 mode
+// descriptor (ctor 0x17e880, fields only 0x00..0x10). Proof: 0x17e880 writes just
+// 0x14 bytes, whereas this method reads/writes +0x24/+0x28/+0x3c..+0x54 and inits a
+// buffer at +0x58, so 0x58+0x14 == 0x6c == the CFader17e940 allocation size. Its
+// only caller is CFaderMgr::Add's case-6 arm (RezAlloc(0x6c) -> ctor 0x17e940 ->
+// this method), and the descriptor argument it consumes is the CFxMode-family record
+// CFaderMgr builds via CFxModeT6::CFxModeT6 (0x17e910) / CFaderInit::BuildDefaultInit5.
+// So the real owner is CFader17e940 (canonical decl in <Gruntz/FaderSubtypes.h>),
+// the real method name is ApplyInit, and CFxModeT3 the descriptor stays modeled at
+// its true 0x14 size in <Gruntz/FxModeDesc.h>.
+//
+// It latches the descriptor into this, sizes the source/dest boxes, derives the
+// per-cell step (dx = box->h / m_50, dy = box->w / m_54) and the cell radius
+// (sqrt(dx*dx+dy*dy)), then walks an (m_54 x m_50) grid emitting one projected mesh
+// point per cell into the growable buffer at this+0x58. Each point ellipse-projects
+// the cell center: the radial distance v = sqrt((row-halfH)^2 + (col-halfW)^2)
+// drives a normalized (x,y) direction, scaled by the cell radius and accumulated via
+// OffsetRect onto two sub-rects (pt48 = src cell, pt64 = dst cell), assembled (order
+// gated on m_4c) into the 40-byte mesh record. Field names are placeholders; offsets
+// + code bytes are load-bearing. The point conversions go through the CRT __ftol; the
+// buffer grow is the inlined MFC CArray::SetAtGrow(GetSize(),&pt) (RezAlloc/RezFree).
+
+// A box whose +0x18 / +0x1c are its width / height (read by the param derive). The
+// active src/dst box pointers live in CFader17e940::m_3c / m_38 (stored as dwords).
+struct FxBox {
+    char pad[0x18];
+    i32 m_width;  // +0x18
+    i32 m_height; // +0x1c
+};
+
+// The CFxMode transition descriptor (the ApplyInit argument): the mode record
+// CFaderMgr::Add fills (CFxModeT6::CFxModeT6 / BuildDefaultInit5) or passes through.
+// CFaderInit models the same bytes as an opaque blob + a trailing CString; this view
+// names the int parameter fields ApplyInit reads. +0x00 is the type discriminator.
+struct FxTransDesc {
+    i32 m_00;
+    FxBox* m_srcBox; // +0x04 src box override (else this->m_timerA)
+    FxBox* m_dstBox; // +0x08 dst box override (else this->m_timerB)
+    i32 m_0c;
+    i32 m_10;          // gate: 0 -> bail
+    i32 m_recordOrder; // +0x14
+    i32 m_18;
+    i32 m_columns; // +0x1c
+    i32 m_rows;    // +0x20
+};
+
+// The 40-byte (10-dword) mesh point pushed into the buffer.
+struct FxPoint {
+    i32 v[10];
+};
+
+// A typed view of the growable buffer sub-object embedded at CFader17e940::m_58
+// (the CRezBufferObject / MFC CArray<FxPoint>): vptr + pData/size/max/growby.
+struct FxMeshBuffer {
+    void* m_vtbl;            // +0x00 (+0x58)
+    FxPoint* m_pData;        // +0x04 (+0x5c)
+    i32 m_nSize;             // +0x08 (+0x60)
+    i32 m_nMaxSize;          // +0x0c (+0x64)
+    i32 m_nGrowBy;           // +0x10 (+0x68)
+    void Init(i32 a, i32 b); // 0x17f390 (external, reloc-masked)
+};
+
+// The OffsetRect import (reached via the global function pointer at 0x6c4490) and
+// the two .rdata float constants the projection compares/biases against.
+DATA(0x002c4490)
+extern void(WINAPI* g_OffsetRect)(void* r, i32 dx, i32 dy); // PTR_OffsetRect_006c4490
+
+// Rez heap for the buffer grow (reloc-masked). Param unified to i32 across the
+// merged sections (extern "C" cannot overload; 32-bit push is width-neutral).
+extern "C" void* RezAlloc(i32 n); // 0x1b9b46
+extern "C" void RezFree(void* p); // 0x1b9b82
+
+// ===========================================================================
+// 0x17ea00 - CFader17e940::ApplyInit(desc): build the (m_54 x m_50) ellipse mesh
+// into this->m_58 from the transition descriptor. Returns 0 on a null gate, else 1.
+// ===========================================================================
+// @early-stop
+// regalloc this-pin + x87-schedule wall (proven with llvm-objdump -dr base vs
+// target): the descriptor latch is instruction-for-instruction identical
+// (same loads [eax+N], same stores [this+N], same tests/branches, same offsets),
+// but retail pins `this` in EBP while cl colours it ESI - a callee-saved recolor
+// that changes the ModRM encoding of every this-relative access through the whole
+// body (this is the docs/patterns/zero-register-pinning.md family), and the frame
+// is 0x9c vs cl's 0x90 (retail reserves 12 B more x87 stack-temps). On top of that
+// the radius + per-cell projection is a dense x87 expression whose fild/fsqrt/fdiv/
+// fmul + __ftol ordering is not source-steerable (docs/patterns/x87-fp-stack-
+// schedule.md, ~60-75% band), and the open-coded MFC buffer grow (RezAlloc/RezFree
+// + rep-movs) diverges likewise. Grid topology, the sqrt distance projection and the
+// field assembly are all correct; the this-recolor + FP schedule park it (~68.4%,
+// up from ~65.6% pre-de-view). Final-sweep candidate. The de-view (CFxModeT3::Build
+// -> CFader17e940::ApplyInit) is byte-neutral/positive: only the mangled symbol name
+// changes (paired by RVA), not the algorithm.
+RVA(0x0017ea00, 0x4fc)
+i32 CFader17e940::ApplyInit(CFaderInit* descOpaque) {
+    // The arg is the CFxMode transition descriptor; m_58 is this fader's growable
+    // mesh buffer. Both are typed views onto the real (opaque) shapes.
+    FxTransDesc* cfg = (FxTransDesc*)descOpaque;
+    FxMeshBuffer* mesh = (FxMeshBuffer*)&m_58;
+
+    m_3c = cfg->m_srcBox ? (i32)cfg->m_srcBox : m_timerA;
+    m_38 = cfg->m_dstBox ? (i32)cfg->m_dstBox : m_timerB;
+    if (cfg->m_10 == 0) {
+        return 0;
+    }
+    m_40 = cfg->m_0c;
+    m_44 = cfg->m_10;
+    m_48 = cfg->m_18;
+    m_4c = cfg->m_recordOrder;
+    m_50 = cfg->m_columns;
+    m_54 = cfg->m_rows;
+
+    mesh->Init(0, -1);
+
+    i32 halfW = ((FxBox*)m_3c)->m_width / 2;
+    i32 halfH = ((FxBox*)m_3c)->m_height / 2;
+    i32 dx = ((FxBox*)m_38)->m_height / m_50;
+    i32 dy = ((FxBox*)m_38)->m_width / m_54;
+    float radius = (float)sqrt((double)(dx * dx + dy * dy));
+    if (m_54 <= 0) {
+        return 1;
+    }
+
+    for (i32 row = 0; row < m_54; row++) {
+        i32 cellW2 = halfW * halfW;
+        i32 cellD = halfW * halfW + halfH * halfH;
+        float cellR = (float)sqrt((double)cellD) + radius - g_fxBias;
+        if (m_50 <= 0) {
+            continue;
+        }
+        for (i32 col = 0; col < m_50; col++) {
+            i32 d2 = halfH * halfH + cellW2;
+            float v = (float)sqrt((double)d2);
+            float normX, normY;
+            if (v > g_fxEps) {
+                normY = (float)(row - halfH) / v;
+                normX = (float)(col - halfW) / v;
+            } else {
+                normY = 0.0f;
+                normX = 1.0f;
+            }
+
+            i32 pt48[4];
+            pt48[0] = 0;
+            pt48[1] = 0;
+            pt48[2] = dx;
+            pt48[3] = dy;
+            g_OffsetRect(pt48, row, col);
+            i32 ox = (i32)(cellR * normX);
+            i32 oy = (i32)(cellR * normY);
+            g_OffsetRect(pt48, oy, ox);
+
+            i32 pt64[4];
+            pt64[0] = 0;
+            pt64[1] = 0;
+            pt64[2] = d2;
+            pt64[3] = dy;
+            g_OffsetRect(pt64, row, col);
+
+            FxPoint pt;
+            if (m_4c) {
+                pt.v[0] = pt64[2];
+                pt.v[1] = pt64[3];
+                pt.v[2] = pt64[0];
+                pt.v[3] = pt64[1];
+                pt.v[4] = pt48[0];
+                pt.v[5] = pt48[1];
+                pt.v[6] = pt48[2];
+                pt.v[7] = pt48[3];
+            } else {
+                pt.v[0] = pt48[0];
+                pt.v[1] = pt48[1];
+                pt.v[2] = pt48[2];
+                pt.v[3] = pt48[3];
+                pt.v[4] = pt64[2];
+                pt.v[5] = pt64[3];
+                pt.v[6] = pt64[0];
+                pt.v[7] = pt64[1];
+            }
+            pt.v[8] = 0;
+            pt.v[9] = 0x3f800000;
+
+            // Inlined MFC CArray::SetAtGrow(GetSize(), &pt).
+            i32 idx = mesh->m_nSize;
+            i32 newSize = idx + 1;
+            if (newSize == 0) {
+                if (mesh->m_pData) {
+                    RezFree(mesh->m_pData);
+                    mesh->m_pData = 0;
+                }
+                mesh->m_nMaxSize = 0;
+                mesh->m_nSize = 0;
+            } else if (mesh->m_pData == 0) {
+                mesh->m_pData = (FxPoint*)RezAlloc(newSize * sizeof(FxPoint));
+                memset(mesh->m_pData, 0, newSize * sizeof(FxPoint));
+                mesh->m_nMaxSize = newSize;
+                mesh->m_nSize = newSize;
+            } else if (newSize <= mesh->m_nMaxSize) {
+                if (newSize > idx) {
+                    memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(FxPoint));
+                }
+                mesh->m_nSize = newSize;
+            } else {
+                i32 grow = mesh->m_nGrowBy;
+                if (grow == 0) {
+                    grow = idx / 8;
+                    if (grow < 4) {
+                        grow = 4;
+                    } else if (grow > 0x400) {
+                        grow = 0x400;
+                    }
+                }
+                i32 newMax = mesh->m_nMaxSize + grow;
+                if (newSize > newMax) {
+                    newMax = newSize;
+                }
+                FxPoint* nd = (FxPoint*)RezAlloc(newMax * sizeof(FxPoint));
+                memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(FxPoint));
+                memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(FxPoint));
+                RezFree(mesh->m_pData);
+                mesh->m_pData = nd;
+                mesh->m_nSize = newSize;
+                mesh->m_nMaxSize = newMax;
+            }
+            mesh->m_pData[idx] = pt;
+        }
+    }
+    return 1;
+}
+
+SIZE_UNKNOWN(FxBox);
+SIZE_UNKNOWN(FxTransDesc);
+SIZE_UNKNOWN(FxPoint);
+SIZE_UNKNOWN(FxMeshBuffer);
+
+// ============================================================================
+// section: FaderElemSetup.cpp
+// ============================================================================
+// FaderElemSetup.cpp - CFaderElem::Apply (0x17f5e0), a fader-element setup method
+// in the CFaderMgr family (caller CFaderMgr::Add 0x17d9c0).  Copies a config
+// source's fields into the element and allocates its per-frame work array.
+
+extern "C" void* RezAlloc(i32 n); // 0x1b9b46
+
+struct FaderSrc {
+    char pad00[0x18];
+    i32 m_frameCount; // +0x18 frame count
+};
+
+struct FaderArg {
+    char pad00[4];
+    i32 m_04;        // +0x04
+    FaderSrc* m_src; // +0x08
+    i32 m_0c;        // +0x0c
+    i32 m_10;        // +0x10
+    i32 m_14;        // +0x14
+};
+
+struct CFaderElem {
+    char pad00[0x20];
+    i32 m_20;               // +0x20
+    i32 m_24;               // +0x24
+    FaderSrc* m_defaultSrc; // +0x28
+    char pad2c[0x38 - 0x2c];
+    i32 m_38;        // +0x38
+    FaderSrc* m_src; // +0x3c
+    i32 m_40;        // +0x40
+    i32 m_44;        // +0x44
+    i32 m_48;        // +0x48
+    i32* m_frames;   // +0x4c per-frame array
+
+    i32 Apply(FaderArg* s); // 0x17f5e0
+};
+
+// @early-stop
+// regalloc/scheduling tie (~90%): logic byte-exact; retail's ecx/edx assignment
+// for the m_src reload + s->m_10 store schedule differs from this cl's.
+RVA(0x0017f5e0, 0x7d)
+i32 CFaderElem::Apply(FaderArg* s) {
+    i32 a = s->m_04;
+    if (!a) {
+        a = m_24;
+    }
+    m_38 = a;
+    if (s->m_src) {
+        m_src = s->m_src;
+    } else {
+        m_src = m_defaultSrc;
+    }
+    m_40 = s->m_0c;
+    m_44 = s->m_10;
+    m_20 = 0;
+    m_48 = s->m_14;
+    m_frames = (i32*)RezAlloc(m_src->m_frameCount << 2);
+    for (i32 i = 0; i < m_src->m_frameCount; i++) {
+        m_frames[i] = 0;
+    }
+    return 1;
+}
+
+SIZE_UNKNOWN(FaderSrc);
+SIZE_UNKNOWN(FaderArg);
+SIZE_UNKNOWN(CFaderElem);
+
+// ============================================================================
+// section: FaderRadial.cpp
+// ============================================================================
+// FaderRadial.cpp - the radial distance-field fader init (0x17fa40). __thiscall.
+// Resolves the source surface + palette from the config arg, allocates a
+// width*height*16 cell buffer, computes the center + max radius, then fills each
+// cell with sqrt(dx^2+dy^2)-derived fade values (sampling the source pixel
+// through the surface's GetRowBase + post-plot notifier when in bounds). The
+// embedded radial math is heavy x87 (fild/fsqrt + the constant pool at
+// 0x5f0828/30/38/40). Field names are placeholders; offsets + code bytes are the
+// load-bearing fact.
+
+extern "C" int FrSqrtFn(double v); // 0x11f570  (cdecl-ish post-sqrt step)
+
+struct FrSurface; // defined below; FrConfig holds a FrSurface* surface override
+
+// The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle
+// at +0x0c that seeds BuildSurface.
+struct FrImageSrc {
+    char p0[0xc];
+    i32 m_0c; // +0x0c  surface dimension/handle
+};
+
+// The source config arg.
+struct FrConfig {
+    char p0[0x4];
+    void* m_paletteArg;      // +0x04
+    FrSurface* m_surfaceArg; // +0x08
+    char p0c[0x10 - 0xc];
+    FrImageSrc* m_imageSrc;  // +0x10  (-> m_0c surface)
+    void* m_providedSurface; // +0x14
+};
+
+// The source surface (this->m_srcSurface): dims at +0x18/+0x1c, GetRowBase @0x13e6d0,
+// pixel buffer at +0x08, row pitch at +0x20, post-plot notifier @[+8] slot 0x80.
+struct FrSurface {
+    i32 GetRowBase(i32 row); // 0x13e6d0  __thiscall
+    char p0[0x8];
+    void* m_pixels; // +0x08  pixel buffer
+    char p0c[0x18 - 0xc];
+    i32 m_width;  // +0x18  width
+    i32 m_height; // +0x1c  height
+    char p20[0x24 - 0x20];
+    i32 m_pitch; // +0x20  row pitch
+    char p24[0xb0 - 0x24];
+    i32 m_colStride; // +0xb0  column stride
+};
+
+// The 16-byte fade cell.
+struct FrCell {
+    i32 vx, vy, fade, pixel;
+};
+
+struct CFaderRadial {
+    i32 Build(FrConfig* cfg);                // 0x17fa40
+    void* BuildSurface(i32 a, i32 b, i32 c); // 0x14e830  (this+0x4 helper)
+    char p0[0x1c];
+    void* m_workSurface; // +0x1c  resolved surface handle
+    char p20[0x24 - 0x20];
+    void* m_defaultPalette;      // +0x24  default palette
+    FrSurface* m_defaultSurface; // +0x28  default surface
+    char p2c[0x30 - 0x2c];
+    i32 m_ownsSurface; // +0x30  owns-surface flag
+    char p34[0x38 - 0x34];
+    FrSurface* m_srcSurface; // +0x38  source surface
+    void* m_palette;         // +0x3c  resolved palette
+    char p40[0x44 - 0x40];
+    i32 m_maxRadius; // +0x44  max-radius scale
+    char p48[0x4c - 0x48];
+    float m_fadeDivisor; // +0x4c  radius->fade divisor
+    FrCell* m_cells;     // +0x50  cell buffer
+    i32 m_centerX;       // +0x54  center x
+    i32 m_centerY;       // +0x58  center y
+};
+
+// @early-stop
+// x87 scheduling wall: the surface/palette resolution + the radial cell loop are
+// faithful, but MSVC's fild/fxch/fsqrt interleave over the per-cell distance math
+// is not source-steerable (~62%). TRIGGER: dropped 63.27%->61.64% at the Phase-1
+// Fader merge - a regalloc leak from the merged TU's added headers/eh profile
+// (Win32.h/windows.h + /GX), NOT a logic change (body untouched); confirmed not
+// Globals.h (removing it did not recover the %). Accepted per the cleanup-over-%
+// mandate; the final sweep re-attacks the x87 schedule.
+RVA(0x0017fa40, 0x1f3)
+i32 CFaderRadial::Build(FrConfig* cfg) {
+    CFaderRadial* self = this;
+    if (cfg->m_paletteArg == 0) {
+        self->m_palette = self->m_defaultPalette;
+    } else {
+        self->m_palette = cfg->m_paletteArg;
+    }
+
+    if (cfg->m_surfaceArg == 0) {
+        self->m_srcSurface = self->m_defaultSurface;
+    } else {
+        self->m_srcSurface = cfg->m_surfaceArg;
+    }
+
+    if (cfg->m_providedSurface == 0) {
+        self->m_workSurface = self->BuildSurface(cfg->m_imageSrc->m_0c, 0x10, 0);
+        self->m_ownsSurface = 1;
+    } else {
+        self->m_workSurface = cfg->m_providedSurface;
+        self->m_ownsSurface = 0;
+    }
+    if (self->m_workSurface == 0) {
+        return 0;
+    }
+
+    FrSurface* s = self->m_srcSurface;
+    self->m_fadeDivisor = (float)s->m_height * 1.0; // K(0x5f0828)
+    self->m_centerX = s->m_height / 2;
+    self->m_centerY = s->m_width / 2;
+    self->m_cells = (FrCell*)::operator new(s->m_width * s->m_height * 16);
+
+    i32 cx = self->m_centerX;
+    i32 cy = self->m_centerY;
+    self->m_maxRadius = FrSqrtFn((double)(cx * cx + cy * cy));
+
+    for (i32 y = 0; y < s->m_width; y++) {
+        for (i32 x = 0; x < s->m_height; x++) {
+            i32 dx = x - self->m_centerX;
+            i32 dy = 0 - self->m_centerY; // (y term folded into the per-row base)
+            float r = (float)self->m_maxRadius - (float)FrSqrtFn((double)(dx * dx + dy * dy));
+            float fade = r / self->m_fadeDivisor;
+            i32 vx = (i32)((float)dx * fade);
+            i32 vy = (i32)((float)dy * fade);
+            u8 pix;
+            i32 rb = self->m_srcSurface->GetRowBase(y);
+            if (rb != 0) {
+                FrSurface* ss = self->m_srcSurface;
+                i32 col = ss->m_colStride * x;
+                i32 rowbase = ss->m_pitch * y;
+                pix = ((u8*)ss->m_pixels)[rowbase + rb + col];
+                (*(void (**)(void*, i32))(*(void***)ss->m_pixels + 0x80 / 4))(ss->m_pixels, 0);
+            } else {
+                pix = 0;
+            }
+            FrCell* cell = &self->m_cells[y * self->m_srcSurface->m_height + x];
+            cell->vx = vx;
+            cell->vy = vy;
+            cell->fade = (i32)fade;
+            cell->pixel = pix;
+        }
+    }
+    return 1;
+}
+
+SIZE_UNKNOWN(FrImageSrc);
+SIZE_UNKNOWN(FrConfig);
+SIZE_UNKNOWN(FrSurface);
+SIZE_UNKNOWN(FrCell);
+SIZE_UNKNOWN(CFaderRadial);
+
+// ============================================================================
+// section: Obj5f0890Dtor.cpp
+// ============================================================================
+// Obj5f0890Dtor.cpp - 0x181720, CFader1816c0::~CFader1816c0: the virtual destructor
+// of the screen-fader subtype whose vftable is at 0x5f0890 (== ??_7CFader1816c0@@6B@,
+// confirmed by the entry vptr-stamp reloc). Stamp-first vptr, then free the six owned
+// heap buffers (m_478, m_44, m_48, m_4c, m_488, m_48c) with operator delete, then chain
+// to the CFader base destructor at 0x17e4a0. The CFader base subobject's non-trivial
+// virtual dtor gives the /GX unwind frame (state 0 -> -1 around the base-dtor call). The
+// implicit vptr stamp reloc-masks against the retail 0x5f0890 vtable; operator delete and
+// the base dtor are reloc-masked externs.
+//
+// (Was a standalone placeholder CObj5f0890 : CObj5f0890Base; folded onto the real
+// CFader1816c0 - identical field layout, and CObj5f0890Base was CFader (both base dtor
+// 0x17e4a0). The dtor now carries the correct ??_7CFader1816c0 name.)
+
+void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)
+
+// ---------------------------------------------------------------------------
+RVA(0x00181720, 0xb3)
+CFader1816c0::~CFader1816c0() {
+    if (m_478) {
+        operator delete((void*)m_478);
+    }
+    if (m_44) {
+        operator delete((void*)m_44);
+    }
+    if (m_48) {
+        operator delete((void*)m_48);
+    }
+    if (m_4c) {
+        operator delete((void*)m_4c);
+    }
+    if (m_488) {
+        operator delete((void*)m_488);
+    }
+    if (m_48c) {
+        operator delete((void*)m_48c);
+    }
+}
+
+// ============================================================================
+// section: FaderShapeSetup.cpp
+// ============================================================================
+// FaderShapeSetup.cpp - a CFaderMgr-family screen-fader subclass init (0x1817e0).
+// __thiscall, called by CFaderMgr::Add (0x17d9c0). Resolves three equal-sized
+// source surfaces (m_surfA/m_surfB/m_surfC) from the config arg (defaulting to the fader's
+// own m_defaultSurfA/m_defaultSurfB), validates their dimensions match, builds an acos warp table
+// (m_warpTable) and a sin highlight ramp (m_highlightRamp), resolves the shade table via the
+// embedded CShadeTableCache (file/array/flash), then allocates per-column pitch
+// tables (m_pitchA/m_pitchB/m_pitchC) and a scratch line (m_scratchLine). Field names are placeholders;
+// offsets + code bytes are the load-bearing fact.
+
+extern "C" void* RezAlloc(i32 n);                   // 0x1b9b46
+extern "C" int _access(const char* path, int mode); // 0x193900 CRT
+
+// The 0x10-byte shade-table buffer the cache builders return (full def in
+// <DDrawMgr/ShadeTableCache.h>); referenced only by pointer here.
+struct CShadeTable;
+
+// The embedded shade-table cache subobject (CFader base, at this+0x04).
+struct ShadeCache {
+    i32 Init();                                                       // 0x14dec0
+    CShadeTable* AddFromArray(char* name);                            // 0x14f6c0
+    CShadeTable* FlashTable(void* pal, i32 nA, i32 nB, i32 s, i32 e); // 0x14df40
+    char pad[0x18];
+};
+
+// A source surface: dims at +0x18/+0x1c, row pitch +0x20, format gate +0xa8,
+// column stride +0xb0.
+struct FShadeSurf {
+    char p00[0x18];
+    i32 m_width;  // +0x18 width
+    i32 m_height; // +0x1c height
+    i32 m_pitch;  // +0x20 row pitch
+    char p24[0xa8 - 0x24];
+    i32 m_format; // +0xa8 format
+    char pac[0xb0 - 0xac];
+    i32 m_colStride; // +0xb0 column stride
+};
+
+// The +0x28 config arg's palette holder.
+struct FInitPal {
+    char p00[0xc];
+    void* m_palBase; // +0x0c palette base
+};
+
+// The config arg (CFaderMgr::Add's pInit).
+struct FInit {
+    char p00[0x4];
+    FShadeSurf* m_surfA;          // +0x04 surface A override
+    FShadeSurf* m_surfB;          // +0x08 surface B override
+    FShadeSurf* m_surfC;          // +0x0c surface C override
+    i32 m_rampSize;               // +0x10 ramp size
+    i32 m_mode;                   // +0x14 mode (1..3)
+    i32 m_18;                     // +0x18
+    i32 m_gate;                   // +0x1c gate
+    CShadeTable* m_prebuiltTable; // +0x20 prebuilt shade table
+    char* m_tableName;            // +0x24 table file/array name
+    FInitPal* m_flashPal;         // +0x28 flash palette source
+};
+
+struct CFaderShape {
+    char p00[0x4];
+    ShadeCache m_cache;         // +0x04 cache subobject (0x18)
+    CShadeTable* m_shadeTable;  // +0x1c resolved shade table
+    i32 m_20;                   // +0x20
+    FShadeSurf* m_defaultSurfA; // +0x24 default surface A
+    FShadeSurf* m_defaultSurfB; // +0x28 default surface B
+    char p2c[0x30 - 0x2c];
+    i32 m_30; // +0x30
+    char p34[0x38 - 0x34];
+    FShadeSurf* m_surfA; // +0x38 surface A
+    FShadeSurf* m_surfB; // +0x3c surface B
+    FShadeSurf* m_surfC; // +0x40 surface C
+    i32* m_pitchA;       // +0x44 A column pitch table
+    i32* m_pitchB;       // +0x48 B column pitch table
+    i32* m_pitchC;       // +0x4c C column pitch table
+    i32 m_mode;          // +0x50 mode
+    i32 m_54;            // +0x54
+    i32 m_rampSize;      // +0x58 ramp size
+    i32 m_active;        // +0x5c active flag
+    i32 m_heightA;       // +0x60 A height
+    i32 m_widthA;        // +0x64 A width
+    i32 m_heightB;       // +0x68 B height
+    i32 m_widthB;        // +0x6c B width
+    i32 m_heightC;       // +0x70 C height
+    i32 m_widthC;        // +0x74 C width
+    char p78[0x478 - 0x78];
+    i32* m_warpTable; // +0x478 acos warp table
+    char p47c[0x488 - 0x47c];
+    void* m_scratchLine; // +0x488 scratch line
+    u8* m_highlightRamp; // +0x48c sin highlight ramp
+
+    i32 Setup(FInit* pInit); // 0x1817e0
+};
+
+// @early-stop
+// x87 scheduling wall (~40-50%): the surface resolution, the equal-dimension
+// validation, the per-column pitch tables (m_pitchA/m_pitchB/m_pitchC) and the m_scratchLine scratch
+// allocation match, but the two transcendental ramp loops are not source-steerable
+// - retail's fild/fxch/fstp stack-slot reuse over `acos((i-r)/r)*r` (m_warpTable) and
+// `0x10 - sin(i/r*PI)*-32` (m_highlightRamp), plus the MFC CString temp the file-name
+// AddFromArray path builds, diverge. Same family as CFaderRadial::Build (0x17fa40).
+RVA(0x001817e0, 0x315)
+i32 CFaderShape::Setup(FInit* pInit) {
+    i32 i;
+    this->m_20 = 0;
+    if (pInit == 0) {
+        return 0;
+    }
+
+    this->m_surfA = pInit->m_surfA ? pInit->m_surfA : this->m_defaultSurfA;
+    this->m_surfB = pInit->m_surfB ? pInit->m_surfB : this->m_defaultSurfB;
+    if (this->m_surfA == 0) {
+        return 0;
+    }
+    if (this->m_surfB == 0) {
+        return 0;
+    }
+    this->m_surfC = pInit->m_surfC ? pInit->m_surfC : this->m_surfB;
+
+    if (!this->m_cache.Init()) {
+        return 0;
+    }
+
+    this->m_heightA = this->m_surfA->m_height;
+    this->m_widthA = this->m_surfA->m_width;
+    this->m_heightB = this->m_surfB->m_height;
+    this->m_widthB = this->m_surfB->m_width;
+    this->m_heightC = this->m_surfC->m_height;
+    this->m_widthC = this->m_surfC->m_width;
+    if (this->m_heightA != this->m_heightB) {
+        return 0;
+    }
+    if (this->m_widthA != this->m_widthB) {
+        return 0;
+    }
+    if (this->m_heightA != this->m_heightC) {
+        return 0;
+    }
+    if (this->m_widthA != this->m_widthC) {
+        return 0;
+    }
+    if (this->m_heightC != this->m_heightB) {
+        return 0;
+    }
+    if (this->m_widthC != this->m_widthB) {
+        return 0;
+    }
+
+    if (pInit->m_mode == 0) {
+        return 0;
+    }
+    if ((u32)pInit->m_mode >= 4) {
+        return 0;
+    }
+    this->m_mode = pInit->m_mode;
+    this->m_54 = pInit->m_18;
+    this->m_rampSize = pInit->m_rampSize;
+
+    if (this->m_mode == 1 || this->m_mode == 2) {
+        if (this->m_heightA < (i32)((double)this->m_rampSize * 3.141592653589793)) {
+            return 0;
+        }
+    }
+
+    this->m_warpTable = (i32*)RezAlloc(this->m_rampSize * 8);
+    for (i = 0; i < 2 * this->m_rampSize; i++) {
+        this->m_warpTable[i] =
+            (i32)(acos(((float)i - (float)this->m_rampSize) / (float)this->m_rampSize)
+                  * (float)this->m_rampSize);
+    }
+
+    this->m_active = pInit->m_gate;
+    if (this->m_surfA->m_format != 8) {
+        this->m_active = 0;
+    }
+
+    if (this->m_active != 0) {
+        if (pInit->m_prebuiltTable) {
+            this->m_30 = 0;
+            this->m_shadeTable = pInit->m_prebuiltTable;
+        } else if (_access(pInit->m_tableName, 0) == 0) {
+            this->m_shadeTable = this->m_cache.AddFromArray(pInit->m_tableName);
+            if (this->m_shadeTable == 0) {
+                this->m_active = 0;
+            }
+        } else {
+            this->m_shadeTable =
+                this->m_cache.FlashTable(pInit->m_flashPal->m_palBase, 0x20, 0x20, 0x32, 0xc8);
+        }
+
+        i32 m = this->m_rampSize << 1;
+        this->m_highlightRamp = (u8*)RezAlloc(m);
+        for (i = 0; i < m; i++) {
+            i32 t = (i32)(sin((float)i / (float)this->m_rampSize * 3.14f) * -32.0);
+            this->m_highlightRamp[i] = (u8)(0x10 - t);
+        }
+    }
+
+    this->m_pitchA = (i32*)RezAlloc(this->m_widthA * 4);
+    this->m_pitchB = (i32*)RezAlloc(this->m_widthB * 4);
+    this->m_pitchC = (i32*)RezAlloc(this->m_widthC * 4);
+    for (i = 0; i < this->m_widthA; i++) {
+        this->m_pitchA[i] = this->m_surfA->m_pitch * i;
+        this->m_pitchB[i] = this->m_surfB->m_pitch * i;
+        this->m_pitchC[i] = this->m_surfC->m_pitch * i;
+    }
+
+    i32 mx = (this->m_widthA > this->m_heightA) ? this->m_widthA : this->m_heightA;
+    this->m_scratchLine = RezAlloc(this->m_surfA->m_colStride * mx);
+    return 1;
+}
+
+SIZE_UNKNOWN(ShadeCache);
+SIZE_UNKNOWN(FShadeSurf);
+SIZE_UNKNOWN(FInitPal);
+SIZE_UNKNOWN(FInit);
+SIZE_UNKNOWN(CFaderShape);
+
+// ============================================================================
+// section: FaderTileRender.cpp
+// ============================================================================
+// FaderTileRender.cpp - the per-column tile gather/remap scanline compositor of
+// the big CFader subtype (the 0x7d5c-byte fader allocated by CFaderMgr::Add case
+// 2; its Apply path 0x1817e0 calls this). __thiscall, two args (arg0 = base
+// pixel row, arg1 = a leading X offset). For each of m_colCount columns it gathers a
+// (2*m_halfWidth)-pixel source line into the scratch line m_lineBuf - either straight
+// (per-bpp 1/2/3) or through a 64-wide 2D LUT (m_lut->table, keyed by the gathered
+// byte and the per-pixel selector m_shadeIndices) when m_useLut is set - then optionally
+// copies/zeros a destination strip (gated on m_stripCopy) and finally writes the scratch
+// line back into the destination buffer. The gather source (m_gatherBase, tapped
+// via m_tapTable) and the straight/edge-strip source (m_straightBase) are read; the
+// assembled line is written to m_dstBase - all addressed in pixel*bpp units. The
+// per-column row offsets come from m_gatherRowOffsets / m_straightRowOffsets /
+// m_dstRowOffsets respectively. Offsets + code bytes are load-bearing.
+
+// m_surf's type: a surface descriptor whose +0xb0 is the bytes-per-pixel (1/2/3).
+struct TileSurf {
+    char pad[0xb0];
+    i32 bytesPerPixel; // bytes per pixel
+};
+SIZE_UNKNOWN(TileSurf);
+
+// m_lut's type: a palette/LUT descriptor whose +0x8 is the 2D remap table base.
+struct TileLut {
+    char pad[0x8];
+    u8* table;
+};
+SIZE_UNKNOWN(TileLut);
+
+class CFaderTileRender {
+public:
+    void RenderTile(i32 arg0, i32 arg1);     // 0x182610
+    void RenderWarpTile(i32 arg0, i32 arg1); // 0x181e50
+
+    char m_00[0x1c];
+    TileLut* m_lut; // +0x1c remap-table descriptor
+    char m_20[0x38 - 0x20];
+    TileSurf* m_surf; // +0x38 surface (->bytesPerPixel = bytes/pixel)
+    char m_3c[0x44 - 0x3c];
+    i32* m_dstRowOffsets;      // +0x44 per-column write-back row offset (into m_dstBase)
+    i32* m_straightRowOffsets; // +0x48 per-column straight/strip-source row offset
+    i32* m_gatherRowOffsets;   // +0x4c per-column gather-source row offset (into m_gatherBase)
+    i32 m_placement;           // +0x50 placement mode (1 = leading edge, 2 = trailing edge)
+    i32 m_stripCopy;           // +0x54 edge strip: nonzero = copy underlying pixels, 0 = zero-fill
+    i32 m_halfWidth; // +0x58 half line-width (line is 2*m_halfWidth px; arc = PI*m_halfWidth)
+    i32 m_useLut;    // +0x5c shade-LUT gather flag
+    i32 m_span;      // +0x60 total wrap span (used by the PI-scaled warp)
+    i32 m_colCount;  // +0x64 column count
+    char m_68[0x478 - 0x68];
+    i32* m_tapTable;    // +0x478 per-pixel source-tap table (pixel indices into the gather source)
+    u8* m_dstBase;      // +0x47c write-back destination line base
+    u8* m_straightBase; // +0x480 straight-copy / edge-strip source base
+    u8* m_gatherBase;   // +0x484 tap-sampled gather source base
+    u8* m_lineBuf;      // +0x488 scratch line assembled before write-back
+    u8* m_shadeIndices; // +0x48c per-pixel shade selector (low 6 bits of the LUT index)
+};
+SIZE(CFaderTileRender, 0x7d5c);
+
+// ===========================================================================
+// 0x182610 - RenderTile: assemble + write back one (2*m_halfWidth)-wide line per column.
+// ===========================================================================
+// @early-stop
+// Regalloc / loop-scheduling wall: this is a deep nested gather with ~16 live
+// member bases, four per-bpp inner variants and two byte-copy tails. The logic
+// (column loop, the m_useLut LUT gather vs the 1/2/3-byte straight copies, the m_stripCopy
+// copy/zero strip, the scratch write-back) is reconstructed faithfully, but MSVC5
+// reloads each member base per use and threads the dual src/dest pointers through
+// a spill schedule that this C spelling does not reproduce instruction-for-
+// instruction. Inner addressing, the *bpp scaling and the LUT keying are correct;
+// the spill/reload schedule parks it. Final-sweep candidate.
+RVA(0x00182610, 0x2eb)
+void CFaderTileRender::RenderTile(i32 arg0, i32 arg1) {
+    if (arg1 <= 0) {
+        return;
+    }
+    i32 stride = m_halfWidth * 2; // inner pixel count
+    i32 rowBytes = stride + arg1;
+    i32 bpp = m_surf->bytesPerPixel;
+
+    i32 x0;
+    u8* src2base;
+    u8* destBase;
+    if (m_placement == 1) {
+        src2base = m_lineBuf;
+        x0 = arg1;
+        destBase = m_straightBase + (arg0 - arg1) * bpp;
+    } else if (m_placement == 2) {
+        src2base = m_lineBuf + bpp * stride;
+        x0 = 0;
+        destBase = m_straightBase + (arg0 + stride) * bpp;
+    } else {
+        return;
+    }
+
+    u8* srcA = m_dstBase + (arg0 - x0) * bpp;
+    u8* srcB = m_gatherBase + (arg0 - x0) * bpp;
+    if (m_colCount <= 0) {
+        return;
+    }
+
+    for (i32 j = 0; j < m_colCount; j++) {
+        u8* rowSrcA = srcA + m_dstRowOffsets[j];
+        u8* rowSrcB = srcB + m_gatherRowOffsets[j];
+
+        if (m_useLut) {
+            u8* lut = m_lut->table;
+            for (i32 k = 0; k < stride; k++) {
+                u8 b = rowSrcB[m_tapTable[k]];
+                m_lineBuf[x0 + k] = lut[(b << 6) + m_shadeIndices[k]];
+            }
+        } else if (bpp == 1) {
+            for (i32 k = 0; k < stride; k++) {
+                m_lineBuf[x0 + k] = rowSrcB[m_tapTable[k]];
+            }
+        } else if (bpp == 2) {
+            for (i32 k = 0; k < stride; k++) {
+                u8* s = rowSrcB + m_tapTable[k] * 2;
+                u8* d = m_lineBuf + (x0 + k) * 2;
+                d[0] = s[0];
+                d[1] = s[1];
+            }
+        } else if (bpp == 3) {
+            for (i32 k = 0; k < stride; k++) {
+                u8* s = rowSrcB + m_tapTable[k] * 3;
+                u8* d = m_lineBuf + (x0 + k) * 3;
+                d[0] = s[0];
+                d[1] = s[1];
+                d[2] = s[2];
+            }
+        }
+
+        if (m_stripCopy) {
+            u8* s = destBase + m_straightRowOffsets[j];
+            u8* d = src2base;
+            for (i32 n = bpp * arg1; n > 0; n--) {
+                *d++ = *s++;
+            }
+        } else {
+            memset(src2base, 0, bpp * arg1);
+        }
+
+        u8* s = m_lineBuf;
+        u8* d = rowSrcA;
+        for (i32 n = bpp * rowBytes; n > 0; n--) {
+            *d++ = *s++;
+        }
+    }
+}
+
+// ===========================================================================
+// 0x181e50 - RenderWarpTile: the PI-scaled counterpart of RenderTile. Computes a
+// per-tile column split point from a circular (m_halfWidth * PI) arc scaling, then for
+// each of m_colCount columns gathers a (2*m_halfWidth) line (straight bytes + the m_tapTable-tapped
+// remainder, or the m_useLut LUT path) and writes it back, with the m_stripCopy copy/zero
+// dest strip. param_2 = base pixel row, param_3 = leading width.
+// ===========================================================================
+// @early-stop
+// Dual wall: (1) the same deep-loop / many-live-base regalloc schedule that parks
+// the sibling RenderTile, and (2) the x87 arc/scale block (fild/fmul PI/fidiv/fimul
+// /__ftol) whose fp-stack scheduling cl reorders. Logic (the two condition-gated
+// scroll halves, the per-bpp 1/2/3 gather, the LUT remap, the copy/zero strip and
+// the scratch write-back) is reconstructed faithfully; FP scheduling + spill order
+// park it. Final-sweep candidate.
+RVA(0x00181e50, 0x7b9)
+void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
+    i32 stride = m_halfWidth * 2;
+    if (arg1 <= 0) {
+        return;
+    }
+    i32 arc = (i32)((double)m_halfWidth * 3.14159);
+    i32 bpp = m_surf->bytesPerPixel;
+
+    i32 colBase;
+    if ((m_placement == 1 && m_stripCopy != 0) || (m_placement == 2 && m_stripCopy == 0)) {
+        colBase = stride - (i32)((double)stride / (arc - m_halfWidth) * (m_span - arg0 - stride));
+    } else {
+        colBase = arg0;
+    }
+    if ((m_placement == 1 && m_stripCopy == 0) || (m_placement == 2 && m_stripCopy != 0)) {
+        colBase = (i32)((double)stride / (arc - m_halfWidth) * arg0);
+    }
+
+    if ((m_placement == 1 && m_stripCopy != 0) || (m_placement == 2 && m_stripCopy == 0)) {
+        i32 col = 0;
+        if (m_colCount > 0) {
+            i32 base = bpp * arg0;
+            do {
+                u8* dstLine = m_dstRowOffsets[col] + base + m_dstBase;
+                u8* gsrc = m_gatherRowOffsets[col] + base + m_gatherBase;
+                u8* ssrc = m_straightRowOffsets[col] + base + m_straightBase;
+                if (m_useLut == 0) {
+                    if (bpp == 1) {
+                        i32 i = 0;
+                        i32 t = colBase;
+                        if (colBase > 0) {
+                            do {
+                                m_lineBuf[i] = ssrc[i];
+                                i++;
+                            } while (i < colBase);
+                        }
+                        for (; t < stride; t++) {
+                            m_lineBuf[t] = gsrc[m_tapTable[t]];
+                        }
+                    } else if (bpp == 2) {
+                        i32 i = 0;
+                        i32 t = colBase;
+                        if (colBase > 0) {
+                            do {
+                                i32 o = i * 2;
+                                m_lineBuf[o] = ssrc[o];
+                                m_lineBuf[o + 1] = ssrc[o + 1];
+                                i++;
+                            } while (i < colBase);
+                        }
+                        while (t < stride) {
+                            i32 e = t + 1;
+                            m_lineBuf[e * 2 - 2] = gsrc[m_tapTable[t] * 2];
+                            m_lineBuf[e * 2 - 1] = gsrc[m_tapTable[t] * 2 + 1];
+                            t = e;
+                        }
+                    } else if (bpp == 3) {
+                        if (colBase > 0) {
+                            i32 d = 0;
+                            u8* sp = ssrc + 2;
+                            i32 c = colBase;
+                            do {
+                                m_lineBuf[d] = sp[-2];
+                                m_lineBuf[d + 1] = sp[-1];
+                                m_lineBuf[d + 2] = *sp;
+                                d += 3;
+                                c--;
+                                sp += 3;
+                            } while (c != 0);
+                        }
+                        if (colBase < stride) {
+                            i32 d = colBase * 3;
+                            for (i32 t = colBase; t < stride; t++) {
+                                m_lineBuf[d] = gsrc[m_tapTable[t] * 3];
+                                m_lineBuf[d + 1] = gsrc[m_tapTable[t] * 3 + 1];
+                                m_lineBuf[d + 2] = gsrc[m_tapTable[t] * 3 + 2];
+                                d += 3;
+                            }
+                        }
+                    }
+                } else {
+                    u8* lut = m_lut->table;
+                    i32 i = 0;
+                    i32 t = colBase;
+                    if (colBase > 0) {
+                        do {
+                            m_lineBuf[i] = ssrc[i];
+                            i++;
+                        } while (i < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        m_lineBuf[t] =
+                            lut[(u32)m_shadeIndices[t] + (u32)gsrc[m_tapTable[t]] * 0x40];
+                    }
+                }
+                u8* sp = m_lineBuf;
+                i32 cnt = bpp * stride;
+                u8* dp = dstLine;
+                i32 n = cnt;
+                if (cnt > 0) {
+                    do {
+                        *dp = *sp;
+                        sp++;
+                        n--;
+                        dp++;
+                    } while (n != 0);
+                }
+                if (m_stripCopy == 0) {
+                    if (bpp * arg1 > 0) {
+                        memset(dstLine + cnt, 0, bpp * arg1);
+                    }
+                } else {
+                    i32 c2 = bpp * arg1;
+                    dstLine -= c2;
+                    u8* s2 = (arg0 - arg1) * bpp + m_straightRowOffsets[col] + m_straightBase;
+                    if (c2 > 0) {
+                        do {
+                            *dstLine = *s2;
+                            dstLine++;
+                            s2++;
+                            c2--;
+                        } while (c2 != 0);
+                    }
+                }
+                col++;
+            } while (col < m_colCount);
+        }
+    } else if (((m_placement == 1 && m_stripCopy == 0) || (m_placement == 2 && m_stripCopy != 0))
+               && m_colCount > 0) {
+        i32 col = 0;
+        i32 base = bpp * arg0;
+        do {
+            u8* dstLine = m_dstRowOffsets[col] + base + m_dstBase;
+            u8* gsrc = m_gatherRowOffsets[col] + base + m_gatherBase;
+            u8* ssrc = m_straightRowOffsets[col] + base + m_straightBase;
+            if (m_useLut == 0) {
+                if (bpp == 1) {
+                    i32 i = 0;
+                    i32 t = colBase;
+                    i32 e;
+                    if (colBase > 0) {
+                        do {
+                            e = i + 1;
+                            m_lineBuf[i] = gsrc[m_tapTable[i]];
+                            i = e;
+                        } while (e < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        m_lineBuf[t] = ssrc[t];
+                    }
+                } else if (bpp == 2) {
+                    i32 i = 0;
+                    i32 t = colBase;
+                    if (colBase > 0) {
+                        do {
+                            i32 o = i * 4;
+                            i++;
+                            m_lineBuf[i * 2 - 2] = gsrc[m_tapTable[o / 4] * 2];
+                            m_lineBuf[i * 2 - 1] = gsrc[m_tapTable[i - 1] * 2 + 1];
+                        } while (i < colBase);
+                    }
+                    for (; t < stride; t++) {
+                        i32 o = t * 2;
+                        m_lineBuf[o] = ssrc[o];
+                        m_lineBuf[o + 1] = ssrc[o + 1];
+                    }
+                } else if (bpp == 3) {
+                    i32 k = 0;
+                    if (colBase > 0) {
+                        i32 d = 0;
+                        do {
+                            m_lineBuf[d] = gsrc[m_tapTable[k] * 3];
+                            m_lineBuf[d + 1] = gsrc[m_tapTable[k] * 3 + 1];
+                            m_lineBuf[d + 2] = gsrc[m_tapTable[k] * 3 + 2];
+                            k++;
+                            d += 3;
+                        } while (k < colBase);
+                    }
+                    if (colBase < stride) {
+                        i32 d = colBase * 3;
+                        i32 c = stride - colBase;
+                        u8* sp = ssrc + 2 + d;
+                        do {
+                            m_lineBuf[d] = sp[-2];
+                            m_lineBuf[d + 1] = sp[-1];
+                            m_lineBuf[d + 2] = *sp;
+                            d += 3;
+                            c--;
+                            sp += 3;
+                        } while (c != 0);
+                    }
+                }
+            } else {
+                u8* lut = m_lut->table;
+                i32 i = 0;
+                i32 t = colBase;
+                i32 e;
+                if (colBase > 0) {
+                    do {
+                        e = i + 1;
+                        m_lineBuf[i] =
+                            lut[(u32)m_shadeIndices[i] + (u32)gsrc[m_tapTable[i]] * 0x40];
+                        i = e;
+                    } while (e < colBase);
+                }
+                for (; t < stride; t++) {
+                    m_lineBuf[t] = ssrc[t];
+                }
+            }
+            u8* sp = m_lineBuf;
+            i32 cnt = bpp * stride;
+            u8* dp = dstLine;
+            i32 n = cnt;
+            if (cnt > 0) {
+                do {
+                    *dp = *sp;
+                    sp++;
+                    n--;
+                    dp++;
+                } while (n != 0);
+            }
+            if (m_stripCopy == 0) {
+                if (bpp * arg1 > 0) {
+                    memset(dstLine - bpp * arg1, 0, bpp * arg1);
+                }
+            } else {
+                i32 c2 = bpp * arg1;
+                u8* s2 = (arg0 + stride) * bpp + m_straightRowOffsets[col] + m_straightBase;
+                dstLine += cnt;
+                if (c2 > 0) {
+                    do {
+                        *dstLine = *s2;
+                        dstLine++;
+                        s2++;
+                        c2--;
+                    } while (c2 != 0);
+                }
+            }
+            col++;
+        } while (col < m_colCount);
+    }
 }
