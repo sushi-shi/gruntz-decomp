@@ -127,7 +127,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
     }
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
-    m_40 = m_38->m_geoId;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->ApplyName("GAME_HELPBOX");
     m_38->m_flags |= 2;
@@ -155,8 +155,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_latchedAnimId = 0x17318;
         m_object->m_flags |= 0x20000;
     }
-    m_54 = -1;
-    m_58 = -1;
+    m_cachedAreaId = -1;
+    m_cachedSubId = -1;
 }
 
 // The activation-coordinate registry view of the dispatch table (g_textDispatch
@@ -236,12 +236,12 @@ i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
     }
     switch (tag) {
         case 4:
-            ar->Write(&m_54, 4);
-            ar->Write(&m_58, 4);
+            ar->Write(&m_cachedAreaId, 4);
+            ar->Write(&m_cachedSubId, 4);
             break;
         case 7:
-            ar->Read(&m_54, 4);
-            ar->Read(&m_58, 4);
+            ar->Read(&m_cachedAreaId, 4);
+            ar->Read(&m_cachedSubId, 4);
             break;
     }
     return 1;

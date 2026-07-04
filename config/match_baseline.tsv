@@ -1143,7 +1143,7 @@ cddrawsurfacepair	?TeardownSurface@CDDrawSurfacePair@@QAEXXZ	100.0000	100.0000	2
 cddrawsurfacepair	?directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA@CDDrawSurfacePair@@QAEHHHH@Z	87.4172	87.4172	4	3c07e821a884	0x1644a0
 cddrawworker	??1CDDrawWorker@@UAE@XZ	100.0000	100.0000	1	5cdfcc8a13a6	0x1557a0
 cddrawworker	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	2	ed5c051de7bc	0x151eb0
-cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	2	ef4a5460ef10	0x157720
+cddrawworkercache	??1CDDrawWorkerCache@@QAE@XZ	94.8750	94.8750	3	6bd95feec940	0x157720
 cddrawworkercache	?CreateWorker@CDDrawWorkerCache@@UAEPAXHPBDH@Z	54.6071	54.6071	1	72f8791a06f6	0x1652c0
 cddrawworkercache	?GetStateId@CDDrawWorkerCache@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	ba8e2da10e75	0x1576f0
 cddrawworkercache	?ScalarDtor@CDDrawWorkerCache@@UAEPAXH@Z	100.0000	100.0000	1	ecfc4338209c	0x157700
@@ -2665,12 +2665,12 @@ ingameicon	?RegisterIconActions@@YAXXZ	87.0000	87.0000	1	1762bee03e85	0x979e0
 ingameicon	?RegisterIconState@@YAXXZ	96.4783	96.4783	1	899dde6a8598	0x97f40
 ingameicon	?Serialize@CInGameIcon@@QAEHPAVCArchive@@HHH@Z	0.6826	0.6826	2	958d1db3464e	0x98c90
 ingameicon	?SetField54@CInGameIcon@@QAEXH@Z	100.0000	100.0000	5	fc7f7276471e	0x99b10
-ingametext	??0CInGameText@@QAE@PAUCGameObject@@@Z	91.0414	91.0414	4	3e08ffdf87fc	0x99110
+ingametext	??0CInGameText@@QAE@PAUCGameObject@@@Z	91.0414	91.0414	5	0ca487198c3a	0x99110
 ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
 ingametext	?InitActReg@CInGameText@@SAXXZ	100.0000	100.0000	1	e96177786be5	0x993e0
 ingametext	?RegisterTextLogic@@YAXXZ	96.4783	96.4783	1	99afe765bef2	0x995c0
-ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	1	1cfc09245808	0x99a30
+ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	2	32fe7a802580	0x99a30
 ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60f46e9	0x95750
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
 ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0

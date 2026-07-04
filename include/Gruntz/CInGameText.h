@@ -62,13 +62,14 @@ public:
 
     static void InitActReg();                               // 0x0993e0
     void Dispatch(i32 idx);                                 // 0x099460
+    i32 Update();                                           // 0x0997c0
     i32 Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b); // 0x099a30
 
-    // --- CInGameText own fields (placeholders; offsets load-bearing) ---
-    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    // --- CInGameText own fields (offsets load-bearing) ---
+    i32 m_savedGeoId;          // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53 (inherited tail / own scratch)
-    i32 m_54;                  // +0x54  serialized scalar
-    i32 m_58;                  // +0x58  serialized scalar
+    i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
+    i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar
 };
 
 // ---------------------------------------------------------------------------

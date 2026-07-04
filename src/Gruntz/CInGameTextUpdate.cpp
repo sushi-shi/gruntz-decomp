@@ -3,15 +3,18 @@
 //
 // Ghidra symbol cluster proves CInGameText ownership: 0x997c0 sits inside the
 // CInGameText method run (ctor 0x99110, InitActReg 0x993e0, Dispatch 0x99460,
-// RegisterTextLogic 0x995c0, Update 0x997c0, Serialize 0x99a30). The class is also
-// modeled in CInGameText.cpp (via <Gruntz/CInGameText.h>); this TU carries an
-// independent minimal view (the update-path offsets only) so it does not perturb the
-// ctor/dtor TU's polymorphic model. Only offsets / code bytes are load-bearing;
-// helpers are reloc-masked externals.
+// RegisterTextLogic 0x995c0, Update 0x997c0, Serialize 0x99a30). The class is the
+// canonical <Gruntz/CInGameText.h> model (folded here - no per-TU view): the two
+// receivers the update path drives (m_object @ +0x10, m_38 @ +0x38) are the shared
+// CGameObject the ctor binds (both == obj), reached through their real CGameObject
+// fields (m_screenX/m_screenY/m_124/m_stateFlags + the +0x1a0 per-leaf anim sub).
+// Only offsets / code bytes are load-bearing; the engine sub-object helpers below
+// (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
+#include <Gruntz/CInGameText.h> // the canonical CInGameText : CUserLogic model
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
-// The area-hit-test + object sub-objects (HitTestCell result chain).
+// The area-hit-test result chain (HitTestCell -> object -> type index).
 SIZE_UNKNOWN(HbF14);
 struct HbF14 {
     char m_pad00[0x1c];
@@ -30,23 +33,8 @@ struct HbCellMgr { // g_mgrSettings->m_68
     HbFoundObj* HitTestCell(i32 x, i32 y, i32* areaId, i32* subId, i32 flag);
 };
 SIZE_UNKNOWN(HbSub1a0);
-struct HbSub1a0 {         // m_38 + 0x1a0
+struct HbSub1a0 {         // the per-leaf anim sub-object embedded at CGameObject+0x1a0
     void Tick(i32 clock); // FUN_0095c360 __thiscall
-};
-SIZE_UNKNOWN(HbLogic);
-struct HbLogic { // this->m_38
-    char m_pad00[0x40];
-    i32 m_40; // +0x40  active bit (|=1 on cue, &=~1 on miss)
-    char m_pad44[0x1a0 - 0x44];
-    HbSub1a0 m_1a0; // +0x1a0
-};
-SIZE_UNKNOWN(HbOwner);
-struct HbOwner { // this->m_10
-    char m_pad00[0x5c];
-    i32 m_5c; // +0x5c  tile x
-    i32 m_60; // +0x60  tile y
-    char m_pad64[0x124 - 0x64];
-    i32 m_124; // +0x124  pickup-sprite arg
 };
 // The shared sound chain (the CBootyState ambient-cue idiom, reused here).
 SIZE_UNKNOWN(HbSndPlayer);
@@ -119,19 +107,6 @@ extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 extern "C" char g_str_K[]; // DAT_0060d7f8 == "K" (placeholder/null type marker)
 
-SIZE_UNKNOWN(CInGameText);
-class CInGameText {
-public:
-    i32 Update(); // 0x997c0
-    char m_pad00[0x10];
-    HbOwner* m_10; // +0x10
-    char m_pad14[0x38 - 0x14];
-    HbLogic* m_38; // +0x38
-    char m_pad3c[0x54 - 0x3c];
-    i32 m_54; // +0x54  cached areaId
-    i32 m_58; // +0x58  cached subId
-};
-
 // @early-stop
 // regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-
 // instruction vs retail (the whole front half is byte-exact modulo reloc names).
@@ -142,21 +117,22 @@ public:
 // See docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    m_38->m_1a0.Tick(g_6bf3bc);
+    ((HbSub1a0*)((char*)m_38 + 0x1a0))->Tick(g_6bf3bc);
 
     i32 areaId;
     i32 subId;
     HbFoundObj* found =
-        g_mgrSettings->m_68->HitTestCell(m_10->m_5c, m_10->m_60, &areaId, &subId, 1);
+        g_mgrSettings->m_68
+            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
-        m_58 = -1;
-        m_38->m_40 &= ~1;
+        m_cachedSubId = -1;
+        m_38->m_stateFlags &= ~1;
         return 0;
     }
     if (areaId != g_644c54) {
         return 0;
     }
-    if (m_58 != -1 && areaId == m_54 && subId == m_58) {
+    if (m_cachedSubId != -1 && areaId == m_cachedAreaId && subId == m_cachedSubId) {
         return 0;
     }
 
@@ -174,13 +150,13 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    if (!found->LoadPickupSprites(0x5e, 0, m_10->m_124, 0, 1)) {
+    if (!found->LoadPickupSprites(0x5e, 0, m_object->m_124, 0, 1)) {
         return 0;
     }
 
-    HbOwner* o = m_10;
-    i32 x = o->m_5c;
-    i32 y = o->m_60;
+    CGameObject* o = m_object;
+    i32 x = o->m_screenX;
+    i32 y = o->m_screenY;
     if (x < g_mgrSettings->m_144 && x >= g_mgrSettings->m_13c && y < g_mgrSettings->m_148
         && y >= g_mgrSettings->m_140) {
         HbSndSet* set = g_mgrSettings->m_world->m_28;
@@ -201,8 +177,8 @@ i32 CInGameText::Update() {
         }
     }
 
-    m_54 = areaId;
-    m_58 = subId;
-    m_38->m_40 |= 1;
+    m_cachedAreaId = areaId;
+    m_cachedSubId = subId;
+    m_38->m_stateFlags |= 1;
     return 0;
 }
