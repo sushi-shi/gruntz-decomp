@@ -40,7 +40,7 @@ extern i32 g_fxDirectGate;
 // The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
 // ready" predicate + the front/back/overlay surface pairs at +0x10/+0x14/+0x18.
 #include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
-#include <DDrawMgr/DDrawWorkerMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
 namespace Utils {
     namespace WinAPI {
@@ -60,7 +60,7 @@ struct FaderRun : public CFader {
     void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
 };
 
-// The DDraw surface pair CDDrawWorkerMgr holds at +0x10/+0x14/+0x18 (front/back/
+// The DDraw surface pair CDDrawSubMgrPages holds at +0x10/+0x14/+0x18 (front/back/
 // overlay). Only its +0x2c channel surface (m_surface) is read here; the ONE
 // CDDrawSurfacePair shape now comes from <DDrawMgr/DDrawSurfacePair.h> above.
 
@@ -68,7 +68,7 @@ struct FaderRun : public CFader {
 // (+0x04, whose surface pairs carry the channels) plus a gate flag (+0x1c).
 struct FxResource {
     char _00[0x04];
-    CDDrawWorkerMgr* m_worker; // +0x04 the shared DDraw worker manager
+    CDDrawSubMgrPages* m_worker; // +0x04 the shared DDraw worker manager
     char _08[0x14];
     i32 m_gate; // +0x1c gate field (must be set to proceed)
 };

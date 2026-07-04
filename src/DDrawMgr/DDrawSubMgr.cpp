@@ -14,8 +14,10 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (front/back/overlay pairs)
 #include <DDrawMgr/DDrawBlitParam.h> // single-source CDDrawBlitParam (also used by WwdGameObject.cpp)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <DDrawMgr/DDrawWorkerMgr.h> // single-source CDDrawWorkerMgr (0x158xxx surface ops)
-#include <Wap32/WapObj.h>            // CWapObj : Wap::CObject - real base for the surface-pair view
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (+0x0c parent of the pages child)
+#include <DDrawMgr/DDrawSubMgrPages.h> // single-source CDDrawSubMgrPages (0x158xxx surface ops)
+#include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (parent's +0x08 broadcast dispatcher)
+#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - real base for the surface-pair view
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
@@ -30,10 +32,9 @@
 // bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 
-// Forward-declare the family manager (root) stored at CGruntzMgr+0x30.
-// Full definition lives in CDDrawSurfaceMgr.cpp (CDDrawSurfaceMgr unit); role
-// names are documented in docs/ddraw-family-names.md.
-class CDDrawSurfaceMgr;
+// The family manager (root) stored at CGruntzMgr+0x30 comes from the canonical
+// <DDrawMgr/DDrawSurfaceMgr.h> (included above); it is the +0x0c parent of the
+// CDDrawSubMgrPages "pages" child whose 0x158xxx surface ops live in this TU.
 
 // The CDDrawSubMgr and CObject vtables are used in the dtor vtable chain, emitted
 // automatically by the compiler.
@@ -147,44 +148,14 @@ public:
 // CDDSurface (m_surface @+0x2c). RestoreIfLost (0x163f00) / Probe_164660 (0x164660) are
 // the two non-virtual surface-lost predicates.
 
-// A geometry source read by the node's +0x2c dispatch (w @0x14, h @0x18).
-class CDDrawWorkerGeom {
-public:
-    char m_pad00[0x14]; // +0x00 .. +0x13
-    i32 m_width;        // +0x14  (1st dispatch arg)
-    i32 m_height;       // +0x18  (2nd dispatch arg)
-};
-
-// A polymorphic dispatcher held at the node's +0x08: vtable slot 0x2c is a
-// 2-arg op called by Method_158b90. CObject-derived (slots 0..4 the shared thunks +
-// scalar dtor via Wap::CObject); slots 5..10 are the dispatcher's own - its concrete
-// vtable is not yet identified (the m_disp factory is unmatched), so they stay
-// placeholders. Vfunc2C at slot 11 is the only dispatched op (arity from the call site).
-class CDDrawWorkerDisp : public Wap::CObject {
-public:
-    virtual void v14();                 // slot 5
-    virtual void v18();                 // slot 6
-    virtual void v1c();                 // slot 7
-    virtual void v20();                 // slot 8
-    virtual void v24();                 // slot 9
-    virtual void v28();                 // slot 10
-    virtual void Vfunc2C(i32 a, i32 b); // slot 11 (@0x2c)
-};
-
-// The worker held at manager+0x0c: a geometry source @0x04, a dispatcher @0x08,
-// and a flag word @0x34 (bit1 tested).
-class CDDrawWorkerNode {
-public:
-    char m_pad00[0x04];       // +0x00 .. +0x03
-    CDDrawWorkerGeom* m_geom; // +0x04
-    CDDrawWorkerDisp* m_disp; // +0x08
-    char m_pad0c[0x34 - 0x0c];
-    i32 m_flags; // +0x34 flag word (bit1 tested)
-};
-
-// The worker manager (this for the 0x158xxx methods) is now the single-source
-// CDDrawWorkerMgr from <DDrawMgr/DDrawWorkerMgr.h> (included above); its owned
-// CDDrawWorkerNode / CDDrawSurfacePair members are the local defs above.
+// The worker manager (this for the 0x158xxx methods) is the single-source
+// CDDrawSubMgrPages from <DDrawMgr/DDrawSubMgrPages.h> (included above): its owned
+// front/back/overlay elements are CDDrawSurfacePair (+0x10/+0x14/+0x18), and its
+// +0x0c back-pointer is the root CDDrawSurfaceMgr (whose +0x04 m_pages == this and
+// +0x08 m_childGroup is the CDDrawChildGroup broadcast dispatcher). The former local
+// CDDrawWorkerNode / CDDrawWorkerGeom / CDDrawWorkerDisp views were a mis-derivation
+// of that parent chain (the "node" is the parent manager, its "geom"/"disp" are the
+// parent's m_pages/m_childGroup) - now folded onto the real types.
 
 // The small per-frame blit-param/element struct (this for the 0x15c2xx methods).
 // Field +0x0c on the arg points at a worker-node-like object; +0x10 is a count,
@@ -319,7 +290,7 @@ CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
 
 // 0x158b40: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x34 with arg1.
 RVA(0x00158b40, 0x2c)
-i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
+i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
     CDDrawSurfacePair* p;
     if (arg2 == 2) {
         p = m_overlayPair;
@@ -335,20 +306,22 @@ i32 CDDrawWorkerMgr::Method_158b40(i32 arg1, i32 arg2) {
     return p->LoadImage_163e50(arg1);
 }
 
-// 0x158b90: flip m_frontPair's surface, then dispatch the node's +0x08 op with the
-// node's +0x04 geometry (w,h).
+// 0x158b90: flip m_frontPair's surface, then broadcast (back-pair, overlay-pair)
+// through the parent's +0x08 child-group dispatcher (WalkDispatch30, slot 0x2c). The
+// two args are the back/overlay surface elements read off the parent's m_pages (==
+// this), passed as opaque dwords to the list-broadcast.
 RVA(0x00158b90, 0x28)
-void CDDrawWorkerMgr::Method_158b90() {
+void CDDrawSubMgrPages::Method_158b90() {
     m_frontPair->m_surface->Flip(0);
-    CDDrawWorkerNode* n = m_worker;
-    CDDrawWorkerDisp* c = n->m_disp;
-    CDDrawWorkerGeom* s = n->m_geom;
-    c->Vfunc2C(s->m_width, s->m_height);
+    CDDrawSurfaceMgr* n = m_0c;
+    CDDrawChildGroup* c = n->m_childGroup;
+    CDDrawSubMgrPages* s = n->m_pages;
+    c->WalkDispatch30((i32)s->m_backPair, (i32)s->m_overlayPair);
 }
 
 // 0x158bc0: ready predicate over m_frontPair (Probe_164660) and m_overlayPair (RestoreIfLost).
 RVA(0x00158bc0, 0x2e)
-i32 CDDrawWorkerMgr::Method_158bc0() {
+i32 CDDrawSubMgrPages::Method_158bc0() {
     if (m_frontPair && !m_frontPair->Probe_164660()) {
         return 0;
     }
@@ -361,7 +334,7 @@ i32 CDDrawWorkerMgr::Method_158bc0() {
 // 0x158bf0: if m_frontPair's cached geometry already == (a1,a2,a3) return 1; else set
 // geometry on m_frontPair, m_backPair, and (if ready) m_overlayPair, returning 0 on any failure.
 RVA(0x00158bf0, 0x7f)
-i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
+i32 CDDrawSubMgrPages::Method_158bf0(i32 a1, i32 a2, i32 a3) {
     CDDrawSurfacePair* p = m_frontPair;
     if (p->m_width != a1 || p->m_height != a2 || p->m_bpp != a3) {
         if (!m_frontPair->SetGeom_164250(a1, a2, a3)) {
@@ -382,7 +355,7 @@ i32 CDDrawWorkerMgr::Method_158bf0(i32 a1, i32 a2, i32 a3) {
 // 0x158cb0: if m_overlayPair is ready, bail; else copy m_backPair's geometry into m_overlayPair via slot
 // 0x30 and (if a2) BltFast m_backPair's surface into m_overlayPair's.
 RVA(0x00158cb0, 0x6a)
-i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
+i32 CDDrawSubMgrPages::Method_158cb0(i32 a1, i32 a2) {
     if (m_overlayPair->IsLoaded()) {
         return 0;
     }
@@ -399,12 +372,12 @@ i32 CDDrawWorkerMgr::Method_158cb0(i32 a1, i32 a2) {
 // 0x158d50: fill m_backPair's surface and flip m_frontPair's, twice unconditionally, then once
 // more if the node's +0x34 flag bit1 is set.
 RVA(0x00158d50, 0x61)
-void CDDrawWorkerMgr::Method_158d50(i32 a1) {
+void CDDrawSubMgrPages::Method_158d50(i32 a1) {
     m_backPair->m_surface->Fill(a1);
     m_frontPair->m_surface->Flip(0);
     m_backPair->m_surface->Fill(a1);
     m_frontPair->m_surface->Flip(0);
-    if (m_worker->m_flags & 2) {
+    if (m_0c->m_flags & 2) {
         m_backPair->m_surface->Fill(a1);
         m_frontPair->m_surface->Flip(0);
     }
@@ -412,7 +385,7 @@ void CDDrawWorkerMgr::Method_158d50(i32 a1) {
 
 // 0x158c70: blt dst's surface <- m_frontPair's surface; return (hr == 0).
 RVA(0x00158c70, 0x36)
-i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
+i32 CDDrawSubMgrPages::Method_158c70(CDDrawSurfacePair* dst) {
     if (!m_frontPair) {
         return 0;
     }
@@ -430,7 +403,7 @@ i32 CDDrawWorkerMgr::Method_158c70(CDDrawSurfacePair* dst) {
 
 // 0x158d20: return m_overlayPair->IsLoaded() != 0.
 RVA(0x00158d20, 0x16)
-i32 CDDrawWorkerMgr::Method_158d20() {
+i32 CDDrawSubMgrPages::Method_158d20() {
     if (!m_overlayPair) {
         return 0;
     }
@@ -444,7 +417,7 @@ i32 CDDrawWorkerMgr::Method_158d20() {
 // first-block (Blt-fall-through vs our jmp) and the esi-pop placement, a
 // regalloc/scheduling wall (see docs/patterns/zero-register-pinning.md).
 RVA(0x00158dc0, 0x7d)
-i32 CDDrawWorkerMgr::Method_158dc0() {
+i32 CDDrawSubMgrPages::Method_158dc0() {
     CDDrawSurfacePair* p10 = m_frontPair;
     CDDrawSurfacePair* p14 = m_backPair;
     i32 ok;
@@ -463,7 +436,7 @@ i32 CDDrawWorkerMgr::Method_158dc0() {
     if (!ok) {
         return ok;
     }
-    if (!(m_worker->m_flags & 2)) {
+    if (!(m_0c->m_flags & 2)) {
         return ok;
     }
     m_frontPair->m_surface->Flip(0);
@@ -489,7 +462,7 @@ i32 CDDrawWorkerMgr::Method_158dc0() {
 // scheduling (retail interleaves it before the test/sete; our cl emits it in
 // the epilogue), a scheduling coin-flip (docs/patterns/zero-register-pinning.md).
 RVA(0x00158e40, 0x4c)
-i32 CDDrawWorkerMgr::Method_158e40() {
+i32 CDDrawSubMgrPages::Method_158e40() {
     if (m_overlayPair && m_overlayPair->IsLoaded()) {
         CDDrawSurfacePair* a = m_overlayPair;
         CDDrawSurfacePair* b = m_frontPair;
@@ -512,7 +485,7 @@ i32 CDDrawWorkerMgr::Method_158e40() {
 
 // 0x158e90: if m_backPair and m_overlayPair->IsLoaded(): BltFast(0,0,m_backPair surf, &m_backPair[+0x1c], 0x10).
 RVA(0x00158e90, 0x47)
-i32 CDDrawWorkerMgr::Method_158e90() {
+i32 CDDrawSubMgrPages::Method_158e90() {
     if (!m_backPair) {
         return 0;
     }
@@ -530,7 +503,7 @@ i32 CDDrawWorkerMgr::Method_158e90() {
 
 // 0x158ee0: if m_backPair, m_overlayPair and m_overlayPair->IsLoaded(): BltFast(0,0,m_overlayPair surf,&m_overlayPair[+0x1c],0x10).
 RVA(0x00158ee0, 0x47)
-i32 CDDrawWorkerMgr::Method_158ee0() {
+i32 CDDrawSubMgrPages::Method_158ee0() {
     if (!m_backPair) {
         return 0;
     }
@@ -548,8 +521,8 @@ i32 CDDrawWorkerMgr::Method_158ee0() {
 
 // 0x159ef0: tail-call this vtable slot 0x3c.
 RVA(0x00159ef0, 0x5)
-void CDDrawWorkerMgr::Method_159ef0() {
-    this->Vfunc3c();
+void CDDrawSubMgrPages::Method_159ef0() {
+    this->Slot0F_157a00();
 }
 
 // 0x15c290: blit-param init.
@@ -2507,9 +2480,6 @@ SIZE_UNKNOWN(CDDrawSubMgrFar);
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 SIZE_UNKNOWN(FamilyMapBase);
-SIZE_UNKNOWN(CDDrawWorkerDisp);
-SIZE_UNKNOWN(CDDrawWorkerGeom);
-SIZE_UNKNOWN(CDDrawWorkerNode);
 SIZE_UNKNOWN(CQueueDrainHost);
 SIZE_UNKNOWN(CQueueProbeData);
 SIZE_UNKNOWN(CQueueProbeNode);

@@ -10,7 +10,7 @@
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
 #include <ddraw.h>              // real IDirectDrawSurface dispatch (Mfc.h above supplies windows.h)
 #include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
-#include <DDrawMgr/DDrawWorkerMgr.h>   // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
@@ -53,16 +53,16 @@ public:
 // the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
 // Flip @0x13e850). Both from <DDrawMgr/DDSurface.h>.
 
-// The DDraw surface pair CDDrawWorkerMgr holds at +0x10 (m_frontPair); only its
+// The DDraw surface pair CDDrawSubMgrPages holds at +0x10 (m_frontPair); only its
 // +0x2c channel surface (m_surface) is read here. The ONE CDDrawSurfacePair shape
-// now comes from <DDrawMgr/DDrawSurfacePair.h> (completes DDrawWorkerMgr.h's fwd decl).
+// now comes from <DDrawMgr/DDrawSurfacePair.h> (completes DDrawSubMgrPages.h's fwd decl).
 
 // CStatusBarHolder (cue-holder shape, m_2c sound mgr + m_30 gate) is in
 // <Gruntz/StatusBarCueHolder.h>; CSoundMgr (full def) is above.
 SIZE_UNKNOWN(PreviewMgr);
 struct PreviewMgr {
     char m_pad00[4];
-    CDDrawWorkerMgr* m_04; // +0x04
+    CDDrawSubMgrPages* m_04; // +0x04
     char m_pad08[0x28 - 0x08];
     CStatusBarHolder* m_28; // +0x28
 };

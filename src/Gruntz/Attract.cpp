@@ -14,8 +14,8 @@
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
-#include <Gruntz/GameRegistry.h>     // the ONE game-registry shape (CGameRegistry / g_gameReg)
-#include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40)
+#include <Gruntz/GameRegistry.h>       // the ONE game-registry shape (CGameRegistry / g_gameReg)
+#include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
 #include <rva.h>
 #include <Globals.h>
 
@@ -71,7 +71,7 @@ public:
 
 // The menu page worker (m_c->m_04 re-typed): its fader (0x158b40, ret 8) runs the
 // title fade, returning non-zero when the fade is still in progress. Named to retail
-// (?Method_158b40@CDDrawWorkerMgr) so the call pairs exactly. See CDDrawWorkerMgr.h.
+// (?Method_158b40@CDDrawSubMgrPages) so the call pairs exactly. See CDDrawSubMgrPages.h.
 
 // ---------------------------------------------------------------------------
 // FramePoll (0x143e0) sub-object models.
@@ -422,7 +422,7 @@ i32 CAttract::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (page == 0) {
         return 0;
     }
-    CDDrawWorkerMgr* w = (CDDrawWorkerMgr*)menuRoot()->m_04;
+    CDDrawSubMgrPages* w = (CDDrawSubMgrPages*)menuRoot()->m_04;
     if (w->Method_158b40((i32)page, e != 0 ? 2 : 1) != 0) {
         return 1;
     }

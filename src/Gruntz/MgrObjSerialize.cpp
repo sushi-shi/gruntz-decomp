@@ -4,7 +4,7 @@
 // pass is gated on the CGruntzMgr settings singleton (_g_mgrSettings) being live.
 // Offsets + code bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Mfc.h>
-#include <DDrawMgr/DDrawWorkerMgr.h> // canonical CDDrawWorkerMgr (m_levelData->m_ready)
+#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (m_levelData->m_ready)
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Gruntz/SerialArchive.h> // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Ints.h>
@@ -45,7 +45,7 @@ inline i32 CMgrImageSet::Load(char* path, const char* a, const char* b) {
 // The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {
     char pad00[4];
-    CDDrawWorkerMgr* m_ready; // +0x04 (the Method_158bc0 readiness gate)
+    CDDrawSubMgrPages* m_ready; // +0x04 (the Method_158bc0 readiness gate)
     char pad08[0x10 - 0x08];
     CMgrImageSet* m_imageSet; // +0x10
 };

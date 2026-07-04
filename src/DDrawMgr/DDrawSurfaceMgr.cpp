@@ -11,18 +11,17 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h>             // Wap::CObject - the shared engine grand-base
-#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
+#include <Wap32/Object.h>              // Wap::CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // THE canonical CDDrawSurfaceMgr class shape
+#include <DDrawMgr/DDrawSubMgrPages.h> // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
+#include <DDrawMgr/DDrawChildGroup.h>  // real +0x08 child type (m_childGroup)
+#include <DDrawMgr/DDrawSurfacePair.h> // m_pages->m_frontPair geometry (m_width/m_height)
 
-class CDDrawSubMgrItem {
-public:
-    i32 m_width;  // +0x10  current surface width
-    i32 m_height; // +0x14  current surface height
-};
-
-// The owned child managers: polymorphic engine objects with the scalar-deleting
-// destructor at vtable slot 1 (`mov eax,[child]; push 1; call [eax+4]`). Modeling
-// that as a real virtual folds the former per-slot delete-view casts.
+// The remaining owned child managers (m_workerList/m_surfaceDesc/m_workerCache/
+// m_workerMap/m_leaf): polymorphic engine objects with the scalar-deleting destructor
+// at vtable slot 1 (`mov eax,[child]; push 1; call [eax+4]`). Modeling that as a real
+// virtual folds the former per-slot delete-view casts. (m_pages / m_childGroup now use
+// their real specific types from the shared headers above.)
 class CDDrawSubMgr {
 public:
     virtual void FUN_005bef01();     // [0] 0x1bef01 (dispatch view, declared-only)
@@ -33,7 +32,7 @@ public:
     virtual i32 Vfunc14();           // [5] readiness predicate (dispatched)
 
     i32 m_04;
-    CDDrawSubMgrItem* m_item; // +0x10  surface-dimensions item
+    i32 m_10; // +0x10
 };
 
 // The +0x20 sound stream is the foreign Dsndmgr SoundStream (<Dsndmgr/SoundStream.h>,
@@ -158,11 +157,11 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
         m_soundStream = 0;
     }
     if (m_pages) {
-        m_pages->Destroy(1);
+        delete m_pages;
         m_pages = 0;
     }
     if (m_childGroup) {
-        m_childGroup->Destroy(1);
+        delete m_childGroup;
         m_childGroup = 0;
     }
     if (m_workerList) {
@@ -200,7 +199,7 @@ void CDDrawSurfaceMgr::Cleanup_155e20() {
 // its +0x14 virtual readiness check.
 RVA(0x00155f00, 0x41)
 i32 CDDrawSurfaceMgr::IsReady() {
-    CDDrawSubMgr* first = m_pages;
+    CDDrawSubMgrPages* first = m_pages;
 
     if (first == 0) {
         goto fail;
@@ -217,7 +216,7 @@ i32 CDDrawSurfaceMgr::IsReady() {
     if (m_workerCache == 0) {
         goto fail;
     }
-    if (first->Vfunc14() == 0) {
+    if (first->IsLoaded() == 0) {
         goto fail;
     }
     if (m_resolveSubMgr != 0) {
@@ -257,7 +256,7 @@ void CDDrawSurfaceMgr::FreeContext() {
 // Validates/sets surface dimensions.
 RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
-    CDDrawSubMgrItem* child = m_pages->m_item;
+    CDDrawSurfacePair* child = m_pages->m_frontPair;
     if (child->m_width != x || child->m_height != y) {
         if (CreateChildSurface(x, y, flags) == 0) {
             return 0;
@@ -350,7 +349,6 @@ i32 CDDrawSurfaceMgr::Slot34(i32, i32, i32, i32, void*) {
 RVA(0x00155900, 0x519)
 void CDDrawSurfaceMgr::Init() {}
 
-SIZE_UNKNOWN(CDDrawSubMgrItem);
 SIZE_UNKNOWN(Wap::CObject);
 SIZE_UNKNOWN(CDDrawPtrCollections);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);

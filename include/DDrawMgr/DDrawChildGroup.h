@@ -73,7 +73,7 @@ public:
 
     // --- vtable padding so the leaf virtuals land at their target slots ---
     virtual void Slot00();                       // +0x00
-    virtual void Slot04();                       // +0x04
+    virtual ~CDDrawChildGroup();                 // +0x04  slot 1 scalar-deleting dtor
     virtual void Slot08();                       // +0x08
     virtual void Slot0C();                       // +0x0c
     virtual void Slot10();                       // +0x10

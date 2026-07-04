@@ -12,9 +12,9 @@
 // parent CDirectDrawMgr's surface pool, plus a cached pixel geometry (width @+0x10
 // / height @+0x14 / bpp @+0x18) and an x/y offset window @+0x1c.
 //
-// THE single-source shape. It is the polymorphic surface element the worker
-// manager holds at +0x10/+0x14/+0x18 (m_frontPair/m_backPair/m_overlayPair, see
-// DDrawWorkerMgr.h) and dispatches through the vptr; the flat readers (LevelPreview,
+// THE single-source shape. It is the polymorphic surface element the pages manager
+// holds at +0x10/+0x14/+0x18 (m_frontPair/m_backPair/m_overlayPair, see
+// DDrawSubMgrPages.h) and dispatches through the vptr; the flat readers (LevelPreview,
 // SoundFxEmitter) touch only its +0x2c channel surface. Every consumer includes
 // this header instead of re-declaring a per-TU view.
 //

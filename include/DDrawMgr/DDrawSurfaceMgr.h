@@ -9,15 +9,14 @@
 // 0x155840 stamps ??_7CDDrawSurfaceMgr, the dtor 0x1558b0 restamps the grand base).
 //
 // Field/offset provenance (union of the six former per-TU views, name-preserving):
-//   +0x04  m_pages       CDDrawSubMgrPages   - PROVEN by the Init store 0x15596a:
+//   +0x04  m_pages       CDDrawSubMgrPages*  - PROVEN by the Init store 0x15596a:
 //                        `new(0x1c)` whose vtable is stamped ??_7CDDrawSubMgrPages
-//                        (0x5efe08) at 0x15594e, then `mov [this+4],edi`. RezSync's
-//                        "SurfWorkerZ"/Ghidra "CDDrawWorkerMgr" is the SAME class
-//                        (its 0x158b40..0x159ef0 methods are CDDrawSubMgrPages's own
-//                        non-virtual surface ops - the real 0x5efe08 vtable carries
-//                        16+ slots, the DDrawSubMgrPages.cpp model under-declared 10).
-//                        Field types as the shared child base CDDrawSubMgr.
-//   +0x08  m_childGroup  CDDrawChildGroup    (Serialize's m_08 blit-op target)
+//                        (0x5efe08) at 0x15594e, then `mov [this+4],edi`. The former
+//                        "CDDrawWorkerMgr" view (0x158b40..0x159ef0 surface ops) and
+//                        RezSync's "SurfWorkerZ" are the SAME class, now one shared
+//                        <DDrawMgr/DDrawSubMgrPages.h> (23-slot vtable 0x5efe08).
+//   +0x08  m_childGroup  CDDrawChildGroup*   (Serialize's m_08 blit-op target;
+//                        <DDrawMgr/DDrawChildGroup.h>)
 //   +0x0c  m_workerList  CDDrawWorkerList
 //   +0x10  m_surfaceDesc CDDrawSurfaceDesc submgr (static DDSURFACEDESC)
 //   +0x14  m_workerCache CDDrawWorkerCache
@@ -60,6 +59,8 @@ typedef struct HWND__* HWND;
 // The owned child sub-managers (polymorphic; shared child base with the scalar-
 // deleting destructor at vtable slot 1). Pointer members only here.
 class CDDrawSubMgr;
+class CDDrawSubMgrPages; // +0x04 the page/child factory (front/back/overlay surfaces)
+class CDDrawChildGroup;  // +0x08 the broadcast child-group (intrusive list + 2 maps)
 struct CDDrawSubMgrLeafScan;
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
@@ -95,8 +96,8 @@ public:
     i32 SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3); // 0x156020
     i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
 
-    CDDrawSubMgr* m_pages;            // +0x04  CDDrawSubMgrPages
-    CDDrawSubMgr* m_childGroup;       // +0x08  CDDrawChildGroup
+    CDDrawSubMgrPages* m_pages;       // +0x04  page/child factory (front/back/overlay)
+    CDDrawChildGroup* m_childGroup;   // +0x08  broadcast child-group
     CDDrawSubMgr* m_workerList;       // +0x0c  CDDrawWorkerList
     CDDrawSubMgr* m_surfaceDesc;      // +0x10  CDDrawSurfaceDesc submgr
     CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
