@@ -20,31 +20,43 @@ public:
 // The loaded level record (CGameLevel): Reset at vtable +0x44, the namespace-load
 // hook at +0x3c, a by-name load hook at +0x40, a dirty-flags word at +0x08, and the
 // non-virtual NotifyAllPlanes / FindPlaneByName.
+// FOREIGN dispatch view (full class + vtable live in the gamelevel TU): only LoadHook
+// (slot 15, +0x3c), LoadHookByName (slot 16, +0x40) and Reset (slot 17, +0x44) are
+// dispatched here. Honest model = a manual vptr into a typed vtable struct naming ONLY
+// those three slots as 4-byte thiscall PMFs + char pad[], NO fake virtuals; m_vtbl at
+// +0x00 keeps the object layout (m_8 @ +0x08) byte-identical. NotifyAllPlanes /
+// FindPlaneByName are non-virtual.
+struct CGameLevelVtbl;
 class CGameLevel {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual void v38();
-    virtual i32 LoadHook(i32 node);                   // +0x3c
-    virtual i32 LoadHookByName(const char* name);     // +0x40
-    virtual void Reset();                             // +0x44
-    void NotifyAllPlanes();                           // 0x160f40
-    struct CPlane* FindPlaneByName(const char* name); // 0x15dde0
+    CGameLevelVtbl* m_vtbl; // +0x00
     char m_pad04[0x8 - 0x4];
-    i32 m_8; // +0x08 dirty flags
+    i32 m_8;                                          // +0x08 dirty flags
+    i32 CallLoadHook(i32 node);                       // vtbl +0x3c
+    i32 CallLoadHookByName(const char* name);         // vtbl +0x40
+    void CallReset();                                 // vtbl +0x44
+    void NotifyAllPlanes();                           // 0x160f40 (non-virtual)
+    struct CPlane* FindPlaneByName(const char* name); // 0x15dde0 (non-virtual)
 };
+typedef i32 (CGameLevel::*GlLoadFn)(i32);
+typedef i32 (CGameLevel::*GlLoadNameFn)(const char*);
+typedef void (CGameLevel::*GlResetFn)();
+struct CGameLevelVtbl {
+    char m_pad00[0x3c];
+    GlLoadFn LoadHook;           // +0x3c
+    GlLoadNameFn LoadHookByName; // +0x40
+    GlResetFn Reset;             // +0x44
+};
+SIZE_UNKNOWN(CGameLevelVtbl);
+inline i32 CGameLevel::CallLoadHook(i32 node) {
+    return (this->*(m_vtbl->LoadHook))(node);
+}
+inline i32 CGameLevel::CallLoadHookByName(const char* name) {
+    return (this->*(m_vtbl->LoadHookByName))(name);
+}
+inline void CGameLevel::CallReset() {
+    (this->*(m_vtbl->Reset))();
+}
 
 struct LevelMgr {
     char m_pad00[0x24];
@@ -85,7 +97,7 @@ struct ScrollView;
 
 RVA(0x000dbc80, 0x309)
 i32 CWorldState::BuildWorldLevelPath(i32 unused) {
-    m_0c->m_24->Reset();
+    m_0c->m_24->CallReset();
     if (m_4->m_c8.GetLength() != 0) {
         if (m_4->m_128 != 0) {
             CString key = "BATTLEZ\\" + m_4->QueryLevelName();
@@ -93,7 +105,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadHook(node) == 0) {
+            if (m_0c->m_24->CallLoadHook(node) == 0) {
                 return 0;
             }
         } else if (m_4->m_12c != 0) {
@@ -102,11 +114,11 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
             if (node == 0) {
                 return 0;
             }
-            if (m_0c->m_24->LoadHook(node) == 0) {
+            if (m_0c->m_24->CallLoadHook(node) == 0) {
                 return 0;
             }
         } else {
-            if (m_0c->m_24->LoadHookByName(m_4->QueryLevelName()) == 0) {
+            if (m_0c->m_24->CallLoadHookByName(m_4->QueryLevelName()) == 0) {
                 return 0;
             }
         }
@@ -125,7 +137,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
         if (node == 0) {
             return 0;
         }
-        if (m_0c->m_24->LoadHook(node) == 0) {
+        if (m_0c->m_24->CallLoadHook(node) == 0) {
             return 0;
         }
     }

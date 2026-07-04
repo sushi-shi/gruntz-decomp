@@ -80,20 +80,28 @@ struct CTmSerAux {
     void* m_18; // +0x18  the placed game-object
 };
 SIZE_UNKNOWN(CTmSerAux);
+// FOREIGN placed-object descriptor: only vtable slot 8 (GetTypeId @ +0x20) is
+// dispatched; slots 0..7 are unreconstructed engine code. Honest model = a manual
+// vptr into a typed vtable struct naming ONLY the used slot (rest is padding), the
+// slot a 4-byte thiscall PMF loaded from the vtable, so `CallGetTypeId()` still
+// lowers to `mov eax,[o]; mov ecx,o; call [eax+0x20]`.
+struct CTmSerMapObjVtbl;
 struct CTmSerMapObj {
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual i32 GetTypeId(); // slot 8 = vtbl+0x20
+    CTmSerMapObjVtbl* m_vtbl; // +0x00
     char pad04[0x7c - 0x4];
-    CTmSerAux* m_7c; // +0x7c
+    CTmSerAux* m_7c;     // +0x7c
+    i32 CallGetTypeId(); // slot 8 = vtbl+0x20
 };
 SIZE_UNKNOWN(CTmSerMapObj);
+typedef i32 (CTmSerMapObj::*TmMapObjFn)();
+struct CTmSerMapObjVtbl {
+    char m_pad00[0x20];
+    TmMapObjFn GetTypeId; // +0x20 slot 8
+};
+SIZE_UNKNOWN(CTmSerMapObjVtbl);
+inline i32 CTmSerMapObj::CallGetTypeId() {
+    return (this->*(m_vtbl->GetTypeId))();
+}
 // The level object (this->m_22c); its +0x8 host owns the name->object map at +0x48.
 struct CTmSerMap {
     i32 Lookup(i32 key, void** out); // 0x1b8760 (__thiscall, ret 8)
@@ -230,7 +238,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (key != 0) {
             void* found = 0;
             void* looked = map->Lookup(key, &found) ? found : 0;
-            void* obj = (looked != 0 && ((CTmSerMapObj*)looked)->GetTypeId() == 5) ? looked : 0;
+            void* obj = (looked != 0 && ((CTmSerMapObj*)looked)->CallGetTypeId() == 5) ? looked : 0;
             m_goal = (CTmGoal*)obj; // Eh's serialize-view reinterpret of the goal slot
             if (obj == 0) {
                 return 0;

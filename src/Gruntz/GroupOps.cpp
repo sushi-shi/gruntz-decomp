@@ -137,21 +137,44 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
 DATA(0x0024556c)
 extern CGameRegistry* g_gameRegDiag; // 0x64556c
 
-// A resolved map node: virtual prepare at slot +0x0c, +0x10 the key, +0x14 a flag.
+// A resolved map node (FOREIGN engine object): only vtable slot +0x0c (prepare) is
+// dispatched; slots 0/4/8 are unreconstructed engine code. Honest model = manual
+// vptr into a typed vtable struct naming ONLY the used slot as a 4-byte thiscall PMF
+// + char pad, so `CallPrepare()` still lowers to `mov eax,[o]; mov ecx,o; call [eax+0xc]`.
+struct CFindNodeVtbl;
 struct CFindNode {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c(); // +0x0c prepare
-    char m_pad10[0x10 - 0x04];
-    i32 m_10; // +0x10 key
-    i32 m_14; // +0x14 flag
+    CFindNodeVtbl* m_vtbl; // +0x00
+    char m_pad04[0x10 - 0x04];
+    i32 m_10;           // +0x10 key
+    i32 m_14;           // +0x14 flag
+    void CallPrepare(); // vtbl +0x0c
 };
-// An inner-list member: virtual destroy at slot 0, non-virtual Match (0x1fa5).
+typedef void (CFindNode::*FindNodeFn)();
+struct CFindNodeVtbl {
+    char m_pad00[0x0c];
+    FindNodeFn Prepare; // +0x0c
+};
+SIZE_UNKNOWN(CFindNodeVtbl);
+inline void CFindNode::CallPrepare() {
+    (this->*(m_vtbl->Prepare))();
+}
+// An inner-list member (FOREIGN): virtual destroy at slot 0 (unreconstructed), plus a
+// non-virtual Match (0x1fa5). Honest model = manual vptr into a typed vtable naming the
+// one dispatched slot as a 4-byte thiscall PMF.
+struct CBcastMemberVtbl;
 struct CBcastMember {
-    virtual void v00(); // +0x00 destroy
-    i32 Match(i32 key); // 0x1fa5
+    CBcastMemberVtbl* m_vtbl; // +0x00
+    i32 Match(i32 key);       // 0x1fa5
+    void CallDestroy();       // vtbl +0x00 slot 0
 };
+typedef void (CBcastMember::*BcastMemberFn)();
+struct CBcastMemberVtbl {
+    BcastMemberFn Destroy; // +0x00 slot 0
+};
+SIZE_UNKNOWN(CBcastMemberVtbl);
+inline void CBcastMember::CallDestroy() {
+    (this->*(m_vtbl->Destroy))();
+}
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00
     void* m_pad04;
@@ -195,12 +218,12 @@ i32 CGroupBroadcast::Broadcast() {
             return 0;
         }
         if (node->m_10 != m_10 && node->m_14 != 0) {
-            node->v0c();
+            node->CallPrepare();
             i32 any = 0;
             for (CBcastListNode* it = m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
                 if (o != 0 && o->Match(node->m_10)) {
-                    o->v00();
+                    o->CallDestroy();
                     counter++;
                     any = 1;
                 }

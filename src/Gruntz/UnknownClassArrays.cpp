@@ -63,26 +63,32 @@ struct ElementRefresher {
     void Refresh(i32 index); // ~0x021906
 };
 
-// The argument object of Method_02bfc0: a polymorphic unit whose vtable carries
-// two pair-emit slots at +0x2c (index 11) / +0x30 (index 12). The slot call is a
-// __thiscall indirect (mov eax,[obj]; call [eax+slot]); modeled with real
-// virtuals so the right convention falls out (the __thiscall keyword is
-// unspellable on a fn-ptr under MSVC5, see docs/patterns/dummy-virtual-slots.md).
+// The FOREIGN argument object of Method_02bfc0: a polymorphic unit whose vtable
+// carries two dispatched pair-emit slots at +0x2c (index 11) / +0x30 (index 12); the
+// rest are unreconstructed engine code. The slot call is a __thiscall indirect
+// (mov eax,[obj]; call [eax+slot]). Honest model = a manual vptr into a typed vtable
+// struct naming ONLY the two used slots as 4-byte thiscall PMFs + char pad[], NO fake
+// virtuals (the PMF is __thiscall by default, sidestepping the unspellable-keyword
+// issue in docs/patterns/dummy-virtual-slots.md).
+struct EmitArgVtbl;
 struct EmitArg {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void Emit2c(void* coord, i32 count); // +0x2c (index 11)
-    virtual void Emit30(void* coord, i32 count); // +0x30 (index 12)
+    EmitArgVtbl* m_vtbl;                     // +0x00
+    void CallEmit2c(void* coord, i32 count); // +0x2c (index 11)
+    void CallEmit30(void* coord, i32 count); // +0x30 (index 12)
 };
+typedef void (EmitArg::*EmitFn)(void* coord, i32 count);
+struct EmitArgVtbl {
+    char m_pad00[0x2c];
+    EmitFn Emit2c; // +0x2c
+    EmitFn Emit30; // +0x30
+};
+SIZE_UNKNOWN(EmitArgVtbl);
+inline void EmitArg::CallEmit2c(void* coord, i32 count) {
+    (this->*(m_vtbl->Emit2c))(coord, count);
+}
+inline void EmitArg::CallEmit30(void* coord, i32 count) {
+    (this->*(m_vtbl->Emit30))(coord, count);
+}
 
 // The serializer/archive the Serialize/Deserialize methods drive: the shared WAP32
 // CSerialArchive stream interface (Read @ vtable +0x2c / Write @ +0x30), now the one
@@ -1565,13 +1571,13 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     }
     char* scratch = (char*)&m_scratch78;
     if (kind == 4) {
-        obj->Emit30(scratch, 8);
+        obj->CallEmit30(scratch, 8);
         scratch += 8;
-        obj->Emit30(scratch, 8);
+        obj->CallEmit30(scratch, 8);
     } else if (kind == 7) {
-        obj->Emit2c(scratch, 8);
+        obj->CallEmit2c(scratch, 8);
         scratch += 8;
-        obj->Emit2c(scratch, 8);
+        obj->CallEmit2c(scratch, 8);
     }
     return 1;
 }

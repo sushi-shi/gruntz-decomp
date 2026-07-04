@@ -41,23 +41,53 @@ struct CDInputMgrZ {
 DATA(0x00245570)
 extern CDInputMgrZ* g_645570;
 
-// The vtable-dispatch view of a state object: the factory drives the current
-// state through slots 0 (scalar-deleting dtor), 1 (activate), 4 (id), 9 and 10.
+// The vtable-dispatch view of a FOREIGN state object: the factory drives the current
+// state through slots 0 (scalar-deleting dtor), 1 (activate), 4 (id), 9 and 10; the
+// rest are unreconstructed engine code (the retail vtable is stamped by the leaf
+// ctors from the g_st<Class>Vtbl externs below). Honest model = a manual vptr into a
+// typed vtable struct naming ONLY the dispatched slots as 4-byte thiscall PMFs + char
+// pad[], NO fake virtuals; m_vtbl sits at +0x00 exactly where the fake vptr did, so
+// the object layout (m_pad2c, m_1c) is byte-identical.
+struct CTsStateVtbl;
 struct CTsState {
-    virtual void v00(u32 flags);                      // slot 0  scalar-deleting dtor
-    virtual i32 v01(CGruntzMgr* mgr, i32 a2, i32 a3); // slot 1  activate
-    virtual void v02();
-    virtual void v03();
-    virtual i32 v04(); // slot 4  id/update
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual i32 v09(i32 a);    // slot 9
-    virtual i32 v0a(i32 a);    // slot 10 (+0x28)
-    char m_pad2c[0x1c - 0x0c]; // to +0x1c
-    i32 m_1c;                  // +0x1c  sub-object saved on teardown
+    CTsStateVtbl* m_vtbl;                              // +0x00
+    char m_pad2c[0x1c - 0x0c];                         // (kept exactly)
+    i32 m_1c;                                          // sub-object saved on teardown
+    void CallDtor(u32 flags);                          // slot 0  scalar-deleting dtor
+    i32 CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3); // slot 1  activate
+    i32 CallId();                                      // slot 4  id/update
+    i32 CallSlot9(i32 a);                              // slot 9
+    i32 CallSlot10(i32 a);                             // slot 10 (+0x28)
 };
+typedef void (CTsState::*TsDtorFn)(u32);
+typedef i32 (CTsState::*TsActFn)(CGruntzMgr*, i32, i32);
+typedef i32 (CTsState::*TsIdFn)();
+typedef i32 (CTsState::*TsSlotFn)(i32);
+struct CTsStateVtbl {
+    TsDtorFn Dtor;    // +0x00 slot 0
+    TsActFn Activate; // +0x04 slot 1
+    char m_pad08[0x10 - 0x08];
+    TsIdFn Id; // +0x10 slot 4
+    char m_pad14[0x24 - 0x14];
+    TsSlotFn Slot9;  // +0x24 slot 9
+    TsSlotFn Slot10; // +0x28 slot 10
+};
+SIZE_UNKNOWN(CTsStateVtbl);
+inline void CTsState::CallDtor(u32 flags) {
+    (this->*(m_vtbl->Dtor))(flags);
+}
+inline i32 CTsState::CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3) {
+    return (this->*(m_vtbl->Activate))(mgr, a2, a3);
+}
+inline i32 CTsState::CallId() {
+    return (this->*(m_vtbl->Id))();
+}
+inline i32 CTsState::CallSlot9(i32 a) {
+    return (this->*(m_vtbl->Slot9))(a);
+}
+inline i32 CTsState::CallSlot10(i32 a) {
+    return (this->*(m_vtbl->Slot10))(a);
+}
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
 // their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
@@ -314,16 +344,16 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     CTsState* cur = (CTsState*)m_curState;
     i32 local10 = 0;
     if (cur != 0) {
-        local10 = cur->v04();
+        local10 = cur->CallId();
         i32 savedSub = cur->m_1c;
-        cur->v0a(stateId);
+        cur->CallSlot10(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
             a2 = savedSub; // retail reuses the arg2 stack slot as scratch for cur->m_1c
             m_curState = 0;
         } else {
             if (m_curState != 0) {
-                ((CTsState*)m_curState)->v00(1);
+                ((CTsState*)m_curState)->CallDtor(1);
             }
             m_curState = 0;
             FlushStateStack();
@@ -389,16 +419,16 @@ install:
     PerFrameTick();
     {
         CTsState* st = (CTsState*)m_curState;
-        i32 ok = st->v01(this, a2, local10);
+        i32 ok = st->CallActivate(this, a2, local10);
         st = (CTsState*)m_curState;
         if (ok == 0) {
             if (st != 0) {
-                st->v00(1);
+                st->CallDtor(1);
             }
             m_curState = 0;
             return 0;
         }
-        st->v09(local10);
+        st->CallSlot9(local10);
         *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 1;
         g_645570->ReadAll();
         PerFrameTick();

@@ -807,23 +807,30 @@ struct CProjRegSub30 {
     CDDrawSubMgrLeaf* m_2c; // +0x2c
 };
 
-// The CMapPtrToPtr-resolved object whose type code (virtual slot +0x20) gates the
-// m_1fc latch; its default-int is read from +0x188 on the write path. Pointer-only,
-// never constructed -> no vtable emitted.
+// The FOREIGN CMapPtrToPtr-resolved object whose type code (vtable slot +0x20) gates
+// the m_1fc latch; its default-int is read from +0x188 on the write path. Only that
+// one slot is dispatched (rest is unreconstructed engine code); pointer-only, never
+// constructed. Honest model = a manual vptr into a typed vtable struct naming ONLY
+// the used slot as a 4-byte thiscall PMF + char pad[], NO fake virtuals. The vptr
+// (m_vtbl) sits at +0x00 exactly where the fake virtuals' vptr did, so the object
+// layout (_24 pad, m_188) is byte-identical.
+struct CProjTypeObjVtbl;
 class CProjTypeObj {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual i32 GetTypeCode(); // +0x20
+    CProjTypeObjVtbl* m_vtbl; // +0x00
     char _24[0x188 - 0x24];
-    i32 m_188; // +0x188
+    i32 m_188;             // +0x188
+    i32 CallGetTypeCode(); // vtbl +0x20
 };
+typedef i32 (CProjTypeObj::*ProjTypeFn)();
+struct CProjTypeObjVtbl {
+    char m_pad00[0x20];
+    ProjTypeFn GetTypeCode; // +0x20
+};
+SIZE_UNKNOWN(CProjTypeObjVtbl);
+inline i32 CProjTypeObj::CallGetTypeCode() {
+    return (this->*(m_vtbl->GetTypeCode))();
+}
 
 // One spliced freelist node: next at +0, payload pointer at +8.
 struct CProjNode {
@@ -939,7 +946,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (((CProjTypeObj*)found)->GetTypeCode() == 5) ? (i32)found : 0;
+                r = (((CProjTypeObj*)found)->CallGetTypeCode() == 5) ? (i32)found : 0;
             }
             m_1fc = (CProjTypeObj*)r;
             if (m_1fc == 0 && key != 0) {

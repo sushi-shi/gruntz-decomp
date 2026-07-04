@@ -33,36 +33,31 @@ AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
 // (its ctor is an external NAFXCW entrypoint, so cl never emits a CWnd vtable),
 // and declaring all 24 intervening MFC slots in the shared CWnd.h just to name
 // these two would fabricate 23 placeholder virtuals into a widely-shared header for
-// no net gain. Kept as a compact local interface; the __thiscall dispatch is the
-// same `mov ecx,[wnd]; mov eax,[ecx]; call [eax+slot]` either way.
+// no net gain. Honest model = a manual vptr into a typed vtable struct naming ONLY the
+// two dispatched slots as 4-byte thiscall PMFs (rest is padding), NO fake virtuals; the
+// dispatch is the same `mov ecx,[wnd]; mov eax,[ecx]; call [eax+slot]` either way.
 SIZE_UNKNOWN(CursSink);
+struct CursSinkVtbl;
 struct CursSink {
-    virtual void v0();
-    virtual void Destroy(i32 del); // slot 1 == vtable +0x04
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21();
-    virtual void v22();
-    virtual void v23();
-    virtual void Finish(); // slot 24 == vtable +0x60
+    CursSinkVtbl* m_vtbl;      // +0x00
+    void CallDestroy(i32 del); // slot 1  == vtable +0x04
+    void CallFinish();         // slot 24 == vtable +0x60
 };
+typedef void (CursSink::*CursSinkDtorFn)(i32 del);
+typedef void (CursSink::*CursSinkFinFn)();
+struct CursSinkVtbl {
+    char m_pad00[0x04];
+    CursSinkDtorFn Destroy; // +0x04 slot 1
+    char m_pad08[0x60 - 0x08];
+    CursSinkFinFn Finish; // +0x60 slot 24
+};
+SIZE_UNKNOWN(CursSinkVtbl);
+inline void CursSink::CallDestroy(i32 del) {
+    (this->*(m_vtbl->Destroy))(del);
+}
+inline void CursSink::CallFinish() {
+    (this->*(m_vtbl->Finish))();
+}
 
 // Smacker imports (IAT) reached during open/pump/close.
 extern "C" __declspec(dllimport) void __stdcall SmackSoundUseDirectSound(void* ds);
@@ -176,9 +171,9 @@ void CSmackWin::Teardown() {
     m_active = 0;
     Free17cc80();
     if (m_videoWnd) {
-        ((CursSink*)m_videoWnd)->Finish();
+        ((CursSink*)m_videoWnd)->CallFinish();
         if (m_videoWnd) {
-            ((CursSink*)m_videoWnd)->Destroy(1);
+            ((CursSink*)m_videoWnd)->CallDestroy(1);
         }
         m_videoWnd = 0;
     }

@@ -3820,26 +3820,24 @@ struct CRtWorld { // this->m_4
     char p64[0x68 - 0x64];
     CRtTimeline* m_68; // +0x68
 };
-struct CRtImageReg { // m_c->m_24 (virtual; the +0x44 slot 17 teardown)
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void Teardown(); // slot 17 (+0x44)
+// FOREIGN m_c->m_24 image registry: only vtable slot 17 (Teardown, +0x44) is
+// dispatched here; the rest are unreconstructed engine code. Honest model = a manual
+// vptr into a typed vtable struct naming ONLY the used slot as a 4-byte thiscall PMF
+// + char pad[], NO fake virtuals.
+struct CRtImageRegVtbl;
+struct CRtImageReg {         // m_c->m_24
+    CRtImageRegVtbl* m_vtbl; // +0x00
+    void CallTeardown();     // slot 17 (+0x44)
 };
+typedef void (CRtImageReg::*RtImageRegFn)();
+struct CRtImageRegVtbl {
+    char m_pad00[0x44];
+    RtImageRegFn Teardown; // +0x44 slot 17
+};
+SIZE_UNKNOWN(CRtImageRegVtbl);
+inline void CRtImageReg::CallTeardown() {
+    (this->*(m_vtbl->Teardown))();
+}
 struct CRtSoundReg2c {  // m_c->m_28->m_2c
     void Reset137a80(); // 0x137a80 thunk
 };
@@ -3920,7 +3918,7 @@ void CPlay::FreeListTeardown() {
     self->m_4->m_54->Reset28ab();
     self->m_4->m_60->Reset244b();
     ((CRtReg*)g_64556c)->m_68->Reset15c3();
-    self->m_c->m_24->Teardown();
+    self->m_c->m_24->CallTeardown();
     self->m_c->m_8->Reset15aa90();
     if (self->m_guts != 0) {
         self->m_guts->Guts12fd(0);
@@ -4009,43 +4007,16 @@ struct DtorWorld { // this->m_4
     i32 m_128; // +0x128
 };
 
+// FOREIGN view of CPlay's `this` for the dtor path: only vtable slot 32 (Vfunc80,
+// +0x80) is dispatched; the rest are unreconstructed engine code. Honest model = a
+// manual vptr into a typed vtable struct naming ONLY the used slot as a 4-byte
+// thiscall PMF + char pad[], NO fake virtuals. m_vtbl sits at +0x00 exactly where the
+// fake virtuals' vptr did, so the object layout (p0/m_4/... below) is byte-identical.
+struct CDtorThisVtbl;
 struct CDtorThis {
-    // Slot +0x80 (index 32) is the only virtual dispatched; declare the leading
-    // 32 slots so `mov eax,[this]; call [eax+0x80]` falls out as __thiscall.
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21();
-    virtual void v22();
-    virtual void v23();
-    virtual void v24();
-    virtual void v25();
-    virtual void v26();
-    virtual void v27();
-    virtual void v28();
-    virtual void v29();
-    virtual void v30();
-    virtual void v31();
-    virtual void Vfunc80(); // +0x80
-    void BaseDtor();        // 0x3f53 thunk  (base CState dtor)
+    CDtorThisVtbl* m_vtbl; // +0x00
+    void CallVfunc80();    // slot 32 (+0x80)
+    void BaseDtor();       // 0x3f53 thunk  (base CState dtor)
 
     char p0[0x4];
     DtorWorld* m_4; // +0x04
@@ -4066,6 +4037,15 @@ struct CDtorThis {
     CRtArr m_488; // +0x488
     i32 m_49c;    // +0x49c
 };
+typedef void (CDtorThis::*CDtorVfunc)();
+struct CDtorThisVtbl {
+    char m_pad00[0x80];
+    CDtorVfunc Vfunc80; // +0x80 slot 32
+};
+SIZE_UNKNOWN(CDtorThisVtbl);
+inline void CDtorThis::CallVfunc80() {
+    (this->*(m_vtbl->Vfunc80))();
+}
 
 // @early-stop
 // hard-regalloc wall: ebp pinned to the zero-const + the cached free-list head
@@ -4080,7 +4060,7 @@ void CPlay::CPlayDtorBody() {
         ::operator delete(self->m_320);
         self->m_320 = 0;
     }
-    self->Vfunc80();
+    self->CallVfunc80();
     if (self->m_4) {
         self->m_4->m_128 = 0;
         ((DtorObList*)((char*)self->m_4 + 0xc8))->Dtor();

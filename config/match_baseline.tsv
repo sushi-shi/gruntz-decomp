@@ -523,7 +523,7 @@ winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
 worldlevelkey	1	1
-worldlevelpath	1	1
+worldlevelpath	1	0
 worldsoundset	13	5
 wormhole	8	5
 wwdfile	21	3
@@ -1047,18 +1047,18 @@ cddrawsubmgr	?ForEachSerialize_15b020@CWwdObjMgr@@QAEHPAUCSerialArchive@@H@Z	90.
 cddrawsubmgr	?GetStateId@CDDrawSubMgr@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	271f584eed55	0x157790
 cddrawsubmgr	?Init_158fb0@CDrawSubWorkerBase@@QAEXXZ	100.0000	100.0000	1	13ff48d34610	0x158fb0
 cddrawsubmgr	?InsertSorted_159e40@CWwdObjMgr@@QAEXPAVCWwdObject@@H@Z	97.7465	97.7465	2	920b468c3d80	0x159e40
-cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	4	9a4a32ffe7dc	0x158b40
+cddrawsubmgr	?Method_158b40@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	5	0e52052bd7a4	0x158b40
 cddrawsubmgr	?Method_158b90@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	2	8366869b6100	0x158b90
 cddrawsubmgr	?Method_158bc0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	2	13eb060d56b1	0x158bc0
-cddrawsubmgr	?Method_158bf0@CDDrawWorkerMgr@@QAEHHHH@Z	100.0000	100.0000	2	e4c740ab7741	0x158bf0
+cddrawsubmgr	?Method_158bf0@CDDrawWorkerMgr@@QAEHHHH@Z	100.0000	100.0000	3	128b15c1dc16	0x158bf0
 cddrawsubmgr	?Method_158c70@CDDrawWorkerMgr@@QAEHPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	4	dda4cfd56074	0x158c70
-cddrawsubmgr	?Method_158cb0@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	2	6a7da1fa0415	0x158cb0
-cddrawsubmgr	?Method_158d20@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	4	212afdfb81f2	0x158d20
+cddrawsubmgr	?Method_158cb0@CDDrawWorkerMgr@@QAEHHH@Z	100.0000	100.0000	3	1be922e706c7	0x158cb0
+cddrawsubmgr	?Method_158d20@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	5	836f10aded5a	0x158d20
 cddrawsubmgr	?Method_158d50@CDDrawWorkerMgr@@QAEXH@Z	100.0000	100.0000	2	83de4e2c96b1	0x158d50
 cddrawsubmgr	?Method_158dc0@CDDrawWorkerMgr@@QAEHXZ	71.1429	71.1429	4	6d02d458f568	0x158dc0
-cddrawsubmgr	?Method_158e40@CDDrawWorkerMgr@@QAEHXZ	50.1282	50.1282	4	ebc08c33de0c	0x158e40
-cddrawsubmgr	?Method_158e90@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	4	21f139eb9d3e	0x158e90
-cddrawsubmgr	?Method_158ee0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	4	91c00c200691	0x158ee0
+cddrawsubmgr	?Method_158e40@CDDrawWorkerMgr@@QAEHXZ	50.1282	50.1282	5	037acfe579c9	0x158e40
+cddrawsubmgr	?Method_158e90@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	5	2f7791d01234	0x158e90
+cddrawsubmgr	?Method_158ee0@CDDrawWorkerMgr@@QAEHXZ	100.0000	100.0000	5	70d2fe7d31f2	0x158ee0
 cddrawsubmgr	?Method_159ef0@CDDrawWorkerMgr@@QAEXXZ	100.0000	100.0000	1	14f6f09b257f	0x159ef0
 cddrawsubmgr	?Notify_15b650@CWwdFactoryObject@@QAEXPAX@Z	84.4762	84.4762	2	efb596d0987f	0x15b650
 cddrawsubmgr	?OnDestroy@CDDrawSubMgr@@UAEHXZ	100.0000	100.0000	1	42fc45e28808	0x1576c0
@@ -1116,7 +1116,7 @@ cddrawsubmgrleafscan	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	10
 cddrawsubmgrleafscan	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	e7963647e727	0x157ee0
 cddrawsubmgrleafscan	?SumField_1580b0@CDDrawSubMgrLeafScan@@QAEHPBD@Z	69.6395	69.6395	2	be7d0b01b6b5	0x1580b0
 cddrawsubmgrpages	??1CDDrawSubMgrPages@@QAE@XZ	100.0000	100.0000	1	d3feb2a8af12	0x1574d0
-cddrawsubmgrpages	?CreateChildren@CDDrawSubMgrPages@@UAEHHHHH@Z	65.9748	65.9748	1	73cf3b179fc0	0x1588f0
+cddrawsubmgrpages	?CreateChildren@CDDrawSubMgrPages@@UAEHHHHH@Z	65.9748	65.9748	2	9fe9058dc41e	0x1588f0
 cddrawsubmgrpages	?DestroyChildren@CDDrawSubMgrPages@@UAEXXZ	100.0000	100.0000	1	198082846f66	0x158ac0
 cddrawsubmgrpages	?GetStateId@CDDrawSubMgrPages@@UAE?AW4StateId@@XZ	100.0000	100.0000	1	ac291d82f753	0x1574a0
 cddrawsubmgrpages	?IsReady@CDDrawSubMgrPages@@UAEHXZ	100.0000	100.0000	1	77f24b58cd75	0x157480
@@ -1568,7 +1568,7 @@ cplay	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	5	e63a2a51c134	0xd72c0
 cplay	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	2	a5bc3fd73617	0xdba30
 cplay	?BuildSpriteImageKeyTable@CPlay@@QAEHPAUCLoadNotify@@@Z	100.0000	100.0000	1	c5f2170eee7f	0xdd540
 cplay	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	1	a4e6377a94b1	0xdd340
-cplay	?CPlayDtorBody@CPlay@@QAEXXZ	91.4540	91.4540	3	3d2729e27910	0xc8700
+cplay	?CPlayDtorBody@CPlay@@QAEXXZ	91.4540	91.4540	4	c8e0e8a34055	0xc8700
 cplay	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	3	5f78ebbb2c75	0xda3b0
 cplay	?ClampViewport2@CPlay@@QAEHH@Z	85.8469	85.8469	2	b26f15e1caec	0xd8ed0
 cplay	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	2	cec222906153	0xd8dc0
@@ -1580,7 +1580,7 @@ cplay	?EnterMode@CPlay@@QAEHH@Z	97.2903	97.2903	4	91ae9f1de8f7	0xd6fa0
 cplay	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	2	4dac5fdcff1e	0xd6440
 cplay	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	3	74cb88045201	0xd5f90
 cplay	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	1	4cf18aed0e73	0xcee70
-cplay	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	3	14b125d6b614	0xcb480
+cplay	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	4	a65dd3130d4c	0xcb480
 cplay	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	6	db269e2ff42f	0xd0db0
 cplay	?HandleTileClick@CPlay@@QAEHHHH@Z	80.9500	80.9500	4	bbf19be9900a	0xceae0
 cplay	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	4	e78a8e52d74d	0xdb600
@@ -2207,7 +2207,7 @@ glyphstr	?ShowHudMessageAlt@@YAXPAUHudMsgSink@@HHHHHHHH@Z	94.2857	94.2857	1	b497
 glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	db897731bcf2	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	69ba9e995038	0xc03f0
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.3620	96.3620	7	7080b1764c3e	0x6eb80
-groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	1	4587301968b6	0x112080
+groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2364	84.2364	2	670714627492	0x112080
 groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	5	408c461fa497	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	78.2475	78.2475	5	17e9dd3e46c0	0x47a10
 grunt	??1CGrunt@@UAE@XZ	94.9091	94.9091	1	a4a4fdb30606	0xf2f0
@@ -3065,8 +3065,8 @@ registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	6	b6d6a5a685b2	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	6	be65b55daff7	0x1393b0
 resourceloaders	?Apply@PalHost_1775f0@ResLoaders@@QAEHPBDH@Z	100.0000	100.0000	1	c0971b8fd7d2	0x1775f0
-resourceloaders	?DrawCount@DrawHost_164380@ResLoaders@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	1	cbbbff79bd5a	0x164380
-resourceloaders	?DrawLabel@DrawHost2_164420@ResLoaders@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	1	f5fd1dc45900	0x164420
+resourceloaders	?DrawCount@DrawHost_164380@ResLoaders@@QAEXPAUtagRECT@@H@Z	80.6964	80.6964	2	e834608e0571	0x164380
+resourceloaders	?DrawLabel@DrawHost2_164420@ResLoaders@@QAEXPAUtagRECT@@PAD@Z	95.0000	95.0000	2	8505ab789b1b	0x164420
 resourceloaders	?Load@PalLoad_1479e0@ResLoaders@@QAEHHPADH@Z	89.7286	89.7286	1	7d615ef6071a	0x1479e0
 resourceloaders	?Load@ResLoad_144270@ResLoaders@@QAEHHPADH@Z	86.9885	86.9885	1	89bb64091605	0x144270
 resourceloaders	?LoadWave@WaveHost2_136ce0@ResLoaders@@QAEHPAUWaveProbe_136ce0@2@PBDH@Z	100.0000	100.0000	1	a2fe1b327393	0x136ce0
@@ -3285,7 +3285,7 @@ smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	3	48be
 smackervideowindow	?OpenHi@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	3	8e9fd0884283	0x17c630
 smackervideowindow	?OpenLo@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	3	3c85ab4943e1	0x17c570
 smackervideowindow	?Pump@CSmackWin@@QAEHHH@Z	100.0000	100.0000	2	798280f015b4	0x17c790
-smackervideowindow	?Teardown@CSmackWin@@QAEXXZ	100.0000	100.0000	2	6fbe5118a9e6	0x17c510
+smackervideowindow	?Teardown@CSmackWin@@QAEXXZ	100.0000	100.0000	3	5ce3b913cf72	0x17c510
 soundbankload	?Load@CGruntzSoundInnerZ@@UAEHPBD0@Z	77.1053	77.1053	1	98cbcaa9aba4	0x138aa0
 sounddevice	??0SoundDevice@@QAE@XZ	57.3438	57.3438	4	52eace1fb1e8	0x136440
 sounddevice	??1SoundDevice@@UAE@XZ	28.2353	28.2353	2	e0fc8f4cd0e9	0x136500
@@ -3383,7 +3383,7 @@ streamfeeder	?SeedWindow@StreamFeeder@@QAEHPAVCParseSource@@II@Z	100.0000	100.00
 streamrecordloaders	?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z	99.7718	99.7718	1	a35742d67888	0xd79d0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.9657	1	787680ce73ef	0x9c650
 streamrecordloaders	?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z	90.5323	90.5323	1	d3396f3e7c45	0xea990
-streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	84.0770	84.0770	4	8b91c450ee45	0xe0d40
+streamrecordloaders	?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	83.1642	83.1642	5	faa8c3ae50f6	0xe0d40
 streamrecordloaders	?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z	92.2366	92.2366	1	e1d29f4a89e7	0x9bb0
 streamvoice	??0StreamVoice@@QAE@PAUIDirectSoundBufferZ@@PAVDirectSoundMgr@@HH@Z	34.4706	34.4706	4	f5673dfcdb6e	0x1375b0
 streamvoice	??1StreamVoice@@UAE@XZ	42.4643	42.4643	1	35c051fa0c80	0x137650
@@ -3618,7 +3618,7 @@ unknownclassarrays	?Report@ZErrTarget@@QAEXHH@Z	100.0000	100.0000	1	23c0de48cf4f
 unknownclassarrays	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	2	fdd97ca487c8	0x2b420
 unknownclassarrays	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	1	ff6203669340	0x267c0
 unknownclassarrays	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	60.6182	60.6182	2	1cba316a44c5	0x2a570
-unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8661	77.8661	2	177facd861d5	0x2ab80
+unknownclassarrays	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8750	77.8750	2	177facd861d5	0x2ab80
 unknownclassarrays	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	84.1995	84.1995	2	a24ad9260ad0	0x2ae00
 unknownclassarrays	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	69.0547	69.0547	2	a87aa74b62c7	0x2c140
 unknownclassarrays	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.6554	59.6554	2	4c95bd3474f1	0x2dfa0
@@ -3742,8 +3742,8 @@ winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	7	6588fcebd04
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	8	a8fadeb810bf	0x11c860
-worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	2	5578b77212a8	0x3c0e0
-worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	100.0000	100.0000	2	7d9ae913e8b2	0xdbc80
+worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	3	0e0d23c92b4f	0x3c0e0
+worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	2	7d9ae913e8b2	0xdbc80
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.4528	95.4528	4	338fc373cbf8	0xb7b0
 worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.6182	95.6182	4	7c39f57b6833	0xb6a0

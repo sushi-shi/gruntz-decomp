@@ -173,36 +173,32 @@ namespace ResLoaders {
         return Apply(a, pal, c);
     }
 
-    // A polymorphic DC source: GetDC is vtable slot 0x44 (#17), Done is slot 0x68 (#26).
+    // A FOREIGN polymorphic DC source: only GetDC (slot 17, vtbl +0x44) and Done
+    // (slot 26, vtbl +0x68) are dispatched; the rest are unreconstructed engine code.
+    // Honest model = a manual vptr into a typed vtable struct naming ONLY the two used
+    // slots as 4-byte thiscall PMFs + char pad[], NO fake virtuals; each dispatch is
+    // the same `mov eax,[s]; mov ecx,s; call [eax+slot]`.
+    struct DcSink_164380Vtbl;
     struct DcSink_164380 {
-        virtual void v0();
-        virtual void v1();
-        virtual void v2();
-        virtual void v3();
-        virtual void v4();
-        virtual void v5();
-        virtual void v6();
-        virtual void v7();
-        virtual void v8();
-        virtual void v9();
-        virtual void v10();
-        virtual void v11();
-        virtual void v12();
-        virtual void v13();
-        virtual void v14();
-        virtual void v15();
-        virtual void v16();
-        virtual i32 GetDC(HDC* out); // slot 17 == vtable +0x44
-        virtual void v18();
-        virtual void v19();
-        virtual void v20();
-        virtual void v21();
-        virtual void v22();
-        virtual void v23();
-        virtual void v24();
-        virtual void v25();
-        virtual void Done(HDC dc); // slot 26 == vtable +0x68
+        DcSink_164380Vtbl* m_vtbl; // +0x00
+        i32 CallGetDC(HDC* out);   // slot 17 == vtable +0x44
+        void CallDone(HDC dc);     // slot 26 == vtable +0x68
     };
+    typedef i32 (DcSink_164380::*DcGetDCFn)(HDC* out);
+    typedef void (DcSink_164380::*DcDoneFn)(HDC dc);
+    struct DcSink_164380Vtbl {
+        char m_pad00[0x44];
+        DcGetDCFn GetDC; // +0x44 slot 17
+        char m_pad48[0x68 - 0x48];
+        DcDoneFn Done; // +0x68 slot 26
+    };
+    SIZE_UNKNOWN(DcSink_164380Vtbl);
+    inline i32 DcSink_164380::CallGetDC(HDC* out) {
+        return (this->*(m_vtbl->GetDC))(out);
+    }
+    inline void DcSink_164380::CallDone(HDC dc) {
+        (this->*(m_vtbl->Done))(dc);
+    }
     struct CounterWnd_164380 {
         char m_pad0[8];
         DcSink_164380* m_8; // +0x08
@@ -222,14 +218,14 @@ namespace ResLoaders {
             return;
         }
         HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
+        w->m_8->CallGetDC(&hdc);
         if (!hdc) {
             return;
         }
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, 0xffffff);
         DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
-        w->m_8->Done(hdc);
+        w->m_8->CallDone(hdc);
     }
 
     struct DrawHost2_164420 {
@@ -245,14 +241,14 @@ namespace ResLoaders {
             return;
         }
         HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
+        w->m_8->CallGetDC(&hdc);
         if (!hdc) {
             return;
         }
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, 0xffffff);
         DrawTextA(hdc, text, strlen(text), rc, 0x25);
-        w->m_8->Done(hdc);
+        w->m_8->CallDone(hdc);
     }
 
     struct PalHost_1775f0 {

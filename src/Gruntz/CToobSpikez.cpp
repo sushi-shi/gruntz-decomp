@@ -27,28 +27,64 @@
 struct CGameObjLogic;
 
 // The CToobSpikez logic instance, viewed through its CUserLogic+leaf vtable
-// (slots 6/10..15 are the dispatched phase handlers). External ctor 0x1145c0.
+// (slots 6/10..15 are the dispatched phase handlers). This is a FOREIGN view: the
+// object IS a CToobSpikez : CUserLogic, but the dispatched slots are unreconstructed
+// engine code and the base CUserLogic hits the 14-vs-16 base-slot-count wall (slots
+// 14/15 exist in CUserLogic but aren't modeled), so deriving cannot reach them.
+// Honest model: a manual vptr into a typed vtable struct naming ONLY the used slots
+// (the rest is padding), NO fake virtuals. The slots are 4-byte thiscall PMFs loaded
+// from the vtable, so each `inst->CallSlot()` still lowers to `mov eax,[inst]; mov
+// ecx,inst; call [eax+slot]`. External ctor 0x1145c0 stamps the real vtable.
+struct CToobLogicInstVtbl;
 class CToobLogicInst {
 public:
     CToobLogicInst(CGameObjLogic* obj); // 0x1145c0 (CToobSpikez ctor; reloc-masked)
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6(); // slot 6  (+0x18) phase-0 init
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10(); // slot 10 (+0x28) phase 0x1e
-    virtual void v11(); // slot 11 (+0x2c) phase 0x1d
-    virtual void v12(); // slot 12 (+0x30) phase 0x52
-    virtual void v13(); // slot 13 (+0x34) phase 0x51
-    virtual void v14(); // slot 14 (+0x38) phase 0x50
-    virtual void v15(); // slot 15 (+0x3c) phase 0x53
+    CToobLogicInstVtbl* m_vtbl;         // +0x00
     char m_pad04[0x54 - 0x04];
+    void CallInit();    // slot 6  (+0x18) phase-0 init
+    void CallPhase1e(); // slot 10 (+0x28) phase 0x1e
+    void CallPhase1d(); // slot 11 (+0x2c) phase 0x1d
+    void CallPhase52(); // slot 12 (+0x30) phase 0x52
+    void CallPhase51(); // slot 13 (+0x34) phase 0x51
+    void CallPhase50(); // slot 14 (+0x38) phase 0x50
+    void CallPhase53(); // slot 15 (+0x3c) phase 0x53
 };
+// CToobLogicInst is COMPLETE above -> the PMF is a 4-byte code pointer
+// (docs/patterns/pmf-complete-class-4byte.md).
+typedef void (CToobLogicInst::*ToobSlotFn)();
+struct CToobLogicInstVtbl {
+    char m_pad00[0x18];
+    ToobSlotFn Init; // +0x18 slot 6
+    char m_pad1c[0x28 - 0x1c];
+    ToobSlotFn Phase1e; // +0x28 slot 10
+    ToobSlotFn Phase1d; // +0x2c slot 11
+    ToobSlotFn Phase52; // +0x30 slot 12
+    ToobSlotFn Phase51; // +0x34 slot 13
+    ToobSlotFn Phase50; // +0x38 slot 14
+    ToobSlotFn Phase53; // +0x3c slot 15
+};
+SIZE_UNKNOWN(CToobLogicInstVtbl);
+inline void CToobLogicInst::CallInit() {
+    (this->*(m_vtbl->Init))();
+}
+inline void CToobLogicInst::CallPhase1e() {
+    (this->*(m_vtbl->Phase1e))();
+}
+inline void CToobLogicInst::CallPhase1d() {
+    (this->*(m_vtbl->Phase1d))();
+}
+inline void CToobLogicInst::CallPhase52() {
+    (this->*(m_vtbl->Phase52))();
+}
+inline void CToobLogicInst::CallPhase51() {
+    (this->*(m_vtbl->Phase51))();
+}
+inline void CToobLogicInst::CallPhase50() {
+    (this->*(m_vtbl->Phase50))();
+}
+inline void CToobLogicInst::CallPhase53() {
+    (this->*(m_vtbl->Phase53))();
+}
 
 // The bound object's logic record at CGameObject+0x7c.
 struct CToobLogicRec {
@@ -72,27 +108,27 @@ i32 ToobSpikezLogic(CGameObjLogic* obj) {
         case 0: {
             rec->m_1c = 0x3e8;
             CToobLogicInst* inst = new CToobLogicInst(obj);
-            inst->v6();
+            inst->CallInit();
             rec->m_18 = inst;
             break;
         }
         case 0x1d:
-            rec->m_18->v11();
+            rec->m_18->CallPhase1d();
             break;
         case 0x1e:
-            rec->m_18->v10();
+            rec->m_18->CallPhase1e();
             break;
         case 0x50:
-            rec->m_18->v14();
+            rec->m_18->CallPhase50();
             break;
         case 0x51:
-            rec->m_18->v13();
+            rec->m_18->CallPhase51();
             break;
         case 0x52:
-            rec->m_18->v12();
+            rec->m_18->CallPhase52();
             break;
         case 0x53:
-            rec->m_18->v15();
+            rec->m_18->CallPhase53();
             break;
         case 0x3e8:
             break;

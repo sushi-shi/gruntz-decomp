@@ -422,27 +422,31 @@ extern "C" u32 g_64559c; // 0x64559c  stat timer 4
 DATA(0x002455a0)
 extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 
-// The redraw vfn host at (CMulti::m_view)->m_8: two thiscall slots pumped each
-// frame (real virtuals so the dispatch is ecx=this, no push).
+// The FOREIGN redraw vfn host at (CMulti::m_view)->m_8: two thiscall slots pumped
+// each frame; the rest are unreconstructed engine code. Honest model = a manual vptr
+// into a typed vtable struct naming ONLY the two dispatched slots as 4-byte thiscall
+// PMFs + char pad[], NO fake virtuals; each dispatch is ecx=this, no push (same as
+// the pure-virtual form).
+struct McObjVtbl;
 struct McObj {
-    virtual void v0() = 0;
-    virtual void v1() = 0;
-    virtual void v2() = 0;
-    virtual void v3() = 0;
-    virtual void v4() = 0;
-    virtual void v5() = 0;
-    virtual void v6() = 0;
-    virtual void v7() = 0;
-    virtual void v8() = 0;
-    virtual void Slot24() = 0; // +0x24
-    virtual void v10() = 0;
-    virtual void v11() = 0;
-    virtual void v12() = 0;
-    virtual void v13() = 0;
-    virtual void v14() = 0;
-    virtual void v15() = 0;
-    virtual void Slot40() = 0; // +0x40
+    McObjVtbl* m_vtbl; // +0x00
+    void CallSlot24(); // vtbl +0x24
+    void CallSlot40(); // vtbl +0x40
 };
+typedef void (McObj::*McObjFn)();
+struct McObjVtbl {
+    char m_pad00[0x24];
+    McObjFn Slot24; // +0x24
+    char m_pad28[0x40 - 0x28];
+    McObjFn Slot40; // +0x40
+};
+SIZE_UNKNOWN(McObjVtbl);
+inline void McObj::CallSlot24() {
+    (this->*(m_vtbl->Slot24))();
+}
+inline void McObj::CallSlot40() {
+    (this->*(m_vtbl->Slot40))();
+}
 struct McHost { // CMulti::m_view
     char m_pad0[8];
     McObj* m_8; // +0x08
@@ -554,8 +558,8 @@ i32 CMulti::PumpA() {
     } else {
         g_6455a0 = 0;
     }
-    ((McHost*)m_view)->m_8->Slot24();
-    ((McHost*)m_view)->m_8->Slot40();
+    ((McHost*)m_view)->m_8->CallSlot24();
+    ((McHost*)m_view)->m_8->CallSlot40();
     m_logic->m_68->Step3017(g_645584);
     m_fxOverlay->Step34bd(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
