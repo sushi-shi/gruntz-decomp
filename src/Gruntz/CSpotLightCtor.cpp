@@ -13,8 +13,9 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h> // CUserLogic / CGameObject base init + g_buteMgr
-#include <Bute/ButeMgr.h>     // CButeTree / CButeMgr
+#include <Gruntz/UserLogic.h>     // CUserLogic / CGameObject base init + g_buteMgr
+#include <Bute/ButeMgr.h>         // CButeTree / CButeMgr
+#include <Gruntz/CGameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
 #include <rva.h>
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
@@ -27,19 +28,16 @@ extern CButeTree g_buteTree;
 extern const double g_spotRateNum; // 0x5ea3f0
 extern const double g_spotRateMul; // 0x5ea3f8
 
-// The settings/registry singleton (0x64556c): m_78 -> the per-frame light-color
-// table the ctor indexes by m_11c (+0x14 base), m_134 the alpha-blend gate.
+// The per-frame light-color table is the spotlight facet of the canonical
+// registry's reused +0x78 slot ((CSpotMgrTable*)g_gameReg->m_78; see
+// CGameRegistry.h): the ctor indexes it by m_object->m_11c (+0x14 base); the
+// alpha-blend gate is the registry's m_134 discriminator. Authentic downcast.
 struct CSpotMgrTable {
     char m_pad00[0x14];
     i32 m_arr[1]; // +0x14
 };
-struct CSpotMgrReg {
-    char m_pad00[0x78];
-    CSpotMgrTable* m_78; // +0x78
-    char m_pad7c[0x134 - 0x7c];
-    i32 m_134; // +0x134
-};
-extern "C" CSpotMgrReg* g_mgrSettings; // 0x64556c
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CSpotLight : CUserLogic - the light eyecandy logic. Own fields begin past the
@@ -118,7 +116,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     } else {
         m_90 = 0;
     }
-    i32 looked = g_mgrSettings->m_78->m_arr[m_object->m_11c];
+    i32 looked = ((CSpotMgrTable*)g_gameReg->m_78)->m_arr[m_object->m_11c];
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
@@ -130,12 +128,11 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     m_9c = -1;
     m_a0 = -1;
     m_a4 = 0;
-    if (g_mgrSettings->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         m_a4 = 1;
     }
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CSpotMgrReg);
 SIZE_UNKNOWN(CSpotMgrTable);

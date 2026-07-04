@@ -5,6 +5,7 @@
 
 #include <string.h> // inline strcmp for the direction-name match
 #include <Globals.h>
+#include <Gruntz/CGameRegistry.h> // canonical *0x24556c singleton + CTileGrid terrain plane
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) + the bute manager
 // (g_buteMgr.GetDwordDef 0x1721e0); declared extern so the calls reloc-mask.
@@ -66,7 +67,10 @@ struct CObjDropObj {
     i32 m_cycleGeomId; // +0x1b4 cycle-geometry id
 };
 
-// The HUD sprite factory (reg->m_mgr->m_spriteFactory); CreateSprite @0x1597b0, __thiscall.
+// The dropper's facet of the registry resource holder (g_gameReg->m_world, an
+// authentic per-mode downcast of the reused +0x30 slot; see CGameRegistry.h):
+// the HUD sprite factory (m_spriteFactory->CreateSprite @0x1597b0, __thiscall) +
+// the level/world tile bounds (m_level->m_world width @0x30 / height @0x34).
 struct CDropSprite;
 SIZE_UNKNOWN(DropperFactory);
 struct DropperFactory {
@@ -85,7 +89,7 @@ struct DropperLevel {
     DropperWorld* m_world; // +0x5c
 };
 SIZE_UNKNOWN(DropperMgr);
-struct DropperMgr { // reg->m_mgr
+struct DropperMgr { // (DropperMgr*)g_gameReg->m_world
     char m_pad00[0x08];
     DropperFactory* m_spriteFactory; // +0x8  HUD sprite factory
     char m_pad0c[0x24 - 0xc];
@@ -105,47 +109,31 @@ struct DropperFound {
     char m_pad00[0x10];
     CObjDropObj* m_obj; // +0x10
 };
-// The world tile map (reg->m_map): picks a random reachable destination tile in
-// the wander box and returns the object it lands on. FindDest @0x475c60,
-// __thiscall (via the 0x32ce ILT thunk).
+// The world tile map ((DropperMap*)g_gameReg->m_68, the reused +0x68 slot's
+// dropper facet): picks a random reachable destination tile in the wander box and
+// returns the object it lands on. FindDest @0x475c60, __thiscall (0x32ce ILT thunk).
 SIZE_UNKNOWN(DropperMap);
 struct DropperMap {
     DropperFound* FindDest(i32 x, i32 y, i32* rect, i32* outTx, i32* outTy, DropperBox* box);
 };
-// The terrain plane (reg->m_plane): a width x height grid of 28-byte cells reached
-// row-major through the +0x8 row-pointer array; cell dword 0 holds the flags.
+// One terrain-plane cell of the registry's tile grid (g_gameReg->m_tileGrid, the
+// canonical CTileGrid): a 0x1c-byte (7-dword) record; dword 0 holds the flags.
+// Reached as ((DropperTile*)grid->m_8[row])[col] - the authentic CTileGrid cell
+// idiom (grid->m_8 is the row-pointer table, cells 0x1c B apart; see CTileGrid.h).
 SIZE_UNKNOWN(DropperTile);
 struct DropperTile {
     u32 m_flags; // +0x0 terrain flags (bit 1 = blocked)
     char m_pad04[0x1c - 0x4];
 };
-SIZE_UNKNOWN(DropperPlane);
-struct DropperPlane {
-    char m_pad00[0x8];
-    DropperTile** m_rows; // +0x8  row pointers
-    i32 m_width;          // +0xc  width  (tiles)
-    i32 m_height;         // +0x10 height (tiles)
-};
 
-// The global game registry (WwdGameReg, RVA 0x24556c). m_mode == 1 selects the
-// scroll mode; m_selectorTable is the level sprite-ref/selector table.
-SIZE_UNKNOWN(CObjDropReg);
-struct CObjDropReg {
-    char m_pad00[0x30];
-    DropperMgr* m_mgr; // +0x30 sprite factory / level bounds
-    char m_pad34[0x68 - 0x34];
-    DropperMap* m_map; // +0x68 world tile map (destination probe)
-    char m_pad6c[0x70 - 0x6c];
-    DropperPlane* m_plane; // +0x70 terrain plane
-    char m_pad74[0x78 - 0x74];
-    i32* m_selectorTable; // +0x78 selector table
-    char m_pad7c[0x118 - 0x7c];
-    i32 m_editGate; // +0x118 pause/edit gate
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_mode; // +0x134 mode discriminator
-};
+// The global game registry is the one canonical CGameRegistry singleton (RVA
+// 0x24556c). The dropper reaches its own facets through the reused per-mode slots
+// (authentic downcasts, see CGameRegistry.h): m_world -> DropperMgr (sprite
+// factory + level/world bounds), m_68 -> DropperMap (destination probe), m_tileGrid
+// -> the terrain plane (CTileGrid), m_78 -> the level selector table (i32*). The
+// scroll/hazard gates are m_134 (mode discriminator) and m_isEasyMode (edit gate).
 DATA(0x0024556c)
-extern CObjDropReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The bound object's +0x1a0 per-frame animator (Advance_15c360 @0x55c360).
 SIZE_UNKNOWN(DropperAnim);
@@ -244,10 +232,10 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     m_lastDropTileX = -1;
     m_lastDropTileY = -1;
     m_speed = g_objDropDiv / (double)(i64)(u32)time;
-    if (g_gameReg->m_mode == 1) {
+    if (g_gameReg->m_134 == 1) {
         m_scrollMode = 1;
     }
-    i32 sel = g_gameReg->m_selectorTable[10];
+    i32 sel = ((i32*)g_gameReg->m_78)[10];
     o->m_active = 1;
     o->m_state = 7;
     o->m_spriteRef = sel;
@@ -271,7 +259,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if ((i64)g_645588 - m_lastDropTime >= m_dropInterval) {
-        if (g_gameReg->m_editGate == 0 || g_gameReg->m_mode != 1) {
+        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
             CObjDropObj* o = (CObjDropObj*)m_object;
             DropperBox box;
             box.left = o->m_screenX - o->m_footprint->m_halfWidth + 7;
@@ -281,24 +269,26 @@ i32 CObjectDropper::Update() {
             i32 tx;
             i32 ty;
             DropperFound* found =
-                g_gameReg->m_map->FindDest(o->m_screenX, o->m_screenY, &o->m_144, &tx, &ty, &box);
+                ((DropperMap*)g_gameReg->m_68)
+                    ->FindDest(o->m_screenX, o->m_screenY, &o->m_144, &tx, &ty, &box);
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {
                         CObjDropObj* fo = found->m_obj;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
-                        DropperPlane* plane = g_gameReg->m_plane;
+                        CTileGrid* plane = g_gameReg->m_tileGrid;
                         i32 cx = fx >> 5;
                         i32 cy = fy >> 5;
                         u32 flags;
-                        if ((u32)cx >= (u32)plane->m_width || (u32)cy >= (u32)plane->m_height) {
+                        if ((u32)cx >= (u32)plane->m_c || (u32)cy >= (u32)plane->m_10) {
                             flags = 1;
                         } else {
-                            flags = plane->m_rows[cy][cx].m_flags;
+                            flags = ((DropperTile*)plane->m_8[cy])[cx].m_flags;
                         }
                         if ((flags & 2) == 0) {
-                            g_gameReg->m_mgr->m_spriteFactory
+                            ((DropperMgr*)g_gameReg->m_world)
+                                ->m_spriteFactory
                                 ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
                             m_lastDropTileX = tx;
                             m_lastDropTileY = ty;
@@ -317,7 +307,7 @@ i32 CObjectDropper::Update() {
     double drift = (double)g_645584 * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX >= (double)g_gameReg->m_mgr->m_level->m_world->m_widthTiles) {
+        if (m_posX >= (double)((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_widthTiles) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -325,14 +315,15 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX = (double)(g_gameReg->m_mgr->m_level->m_world->m_widthTiles - 1);
+            m_posX =
+                (double)(((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_widthTiles - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY > (double)g_gameReg->m_mgr->m_level->m_world->m_heightTiles) {
+        if (m_posY > (double)((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_heightTiles) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -340,7 +331,8 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY = (double)(g_gameReg->m_mgr->m_level->m_world->m_heightTiles - 1);
+            m_posY =
+                (double)(((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_heightTiles - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }

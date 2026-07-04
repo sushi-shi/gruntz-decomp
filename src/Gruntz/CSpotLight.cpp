@@ -9,7 +9,8 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <math.h>
-#include <Bute/ButeMgr.h> // CButeTree::Find
+#include <Bute/ButeMgr.h>         // CButeTree::Find
+#include <Gruntz/CGameRegistry.h> // canonical *0x24556c singleton (light-grid via m_68)
 
 extern "C" unsigned g_645584; // 0x645584 frame delta
 extern CButeTree g_buteTree;  // 0x6bf620
@@ -28,15 +29,15 @@ struct SpotM98 {
     int m_x; // 0x5c
     int m_y; // 0x60
 };
+// The light-fx cell grid is the spotlight facet of the registry's reused +0x68
+// slot ((MgrObj68*)g_gameReg->m_68; see CGameRegistry.h): a flat i32 grid at +0x1c
+// indexed (col + row*15). Authentic per-mode downcast of the canonical singleton.
 struct MgrObj68 {
     char pad[0x1c];
     int arr[1]; // 0x1c
 };
-struct MgrReg2 {
-    char pad[0x68];
-    MgrObj68* m_lightGrid; // 0x68
-};
-extern "C" MgrReg2* g_mgrSettings; // 0x64556c
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 class CSpotLight {
 public:
@@ -80,7 +81,7 @@ int CSpotLight::Update_0b1ee0() {
         m_worldY = m_anchorY + m_worldY;
         m_angle = (double)g_645584 * m_angleStep + m_angle;
     }
-    if (g_mgrSettings->m_lightGrid->arr[m_gridCol + m_gridRow * 15] == 0) {
+    if (((MgrObj68*)g_gameReg->m_68)->arr[m_gridCol + m_gridRow * 15] == 0) {
         m_prevNode = m_lightCfg->m_buteNode;
         m_lightCfg->m_buteNode = g_buteTree.Find(s_actKeyA);
     }
@@ -90,7 +91,6 @@ int CSpotLight::Update_0b1ee0() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(MgrObj68);
-SIZE_UNKNOWN(MgrReg2);
 SIZE_UNKNOWN(SpotM10);
 SIZE_UNKNOWN(SpotM14);
 SIZE_UNKNOWN(SpotM98);
