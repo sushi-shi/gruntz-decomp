@@ -11,8 +11,8 @@
 
 class CHelpState : public CState {
 public:
-    virtual ~CHelpState(); // 0x8cf30
-    void Teardown();       // 0x1357 (member teardown body)
+    virtual ~CHelpState() OVERRIDE; // 0x8cf30
+    void Teardown();                // 0x1357 (member teardown body)
 };
 
 RVA(0x0008cf30, 0x55)
