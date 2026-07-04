@@ -62,12 +62,6 @@ public:
     i32 ApplyType4(void* obj);
     i32 ApplyType7(void* obj);
 
-    // Tag-dispatched serialize-appliers (reloc-masked __thiscall): the container's
-    // SerializeApplyA/B free helpers stream the +0x04 type tag then dispatch to these.
-    i32 ApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f
-    i32 ApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39
-    i32 ApplyC(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe
-
     // Per-cell probe (reloc-masked rel32 callee); cell is (y) + (x << 8).
     i32 ProbeCell(i32 cell, i32 kind);
 

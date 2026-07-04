@@ -3468,9 +3468,9 @@ tiletriggercontainer	?FilterList2@CTileTriggerContainer@@QAEHPAX@Z	84.2000	84.20
 tiletriggercontainer	?FindInLists12@CTileTriggerContainer@@QAEPAXHH@Z	100.0000	100.0000	2	c6ed53b9990d	0x116f20
 tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAX@Z	51.3243	51.3243	2	031444f05700	0x117150
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	1	d8586fefd0bf	0x116fa0
-tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUCSerialArchive@@HHH@Z	29.7289	29.7289	2	b28c31275578	0x117280
-tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAVCTileTriggerSwitchLogic@@@Z	57.3077	57.3077	1	cf3874b9ae87	0x117630
-tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAVCTileTriggerSwitchLogic@@@Z	63.2576	63.2576	1	81559fc3a0b7	0x117710
+tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUCSerialArchive@@HHH@Z	29.7289	29.7289	3	7759cc1bc3e2	0x117280
+tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@@Z	57.3077	57.3077	1	9d989b430775	0x117630
+tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@@Z	63.2576	63.2576	1	ece065c0b9e2	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	2	7da81f3dbd6b	0x117f60
 tiletriggerderivedctors	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	357254543f7f	0x1127f0
 tiletriggerderivedctors	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	1a54a6aa172e	0x112240

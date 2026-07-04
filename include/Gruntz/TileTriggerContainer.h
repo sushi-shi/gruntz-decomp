@@ -53,7 +53,7 @@ struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
     // +0x08  the CObList node payload: a genuine heterogeneous CObject* slot - the
-    // four lists store DIFFERENT element types (TtcElem / TtcMark / CTileTriggerSwitchLogic /
+    // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcTrigElem /
     // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
     void* m_data;
 };
@@ -129,28 +129,34 @@ struct TtcBaseElem {
 SIZE_UNKNOWN(TtcBaseElem);
 extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
 
-// The serialize helpers operate on CTileTriggerSwitchLogic elements (its +0x04 type
-// tag drives the dispatch, its ApplyA/ApplyB/ApplyC appliers do the work). Folded
-// onto the real CTileTriggerSwitchLogic (vtable 0x5eae8c == ??_7CTileTriggerSwitchLogic):
-// the former TtcSwitchObj placeholder was a {vptr, m_04} view of exactly that class.
-class CTileTriggerSwitchLogic;
+// The serialize helpers operate on the factory-built trigger-logic element - a
+// CTrigLogic (the object CTileTriggerFactory::Build @0x117800 Rez-allocates,
+// constructs, and registers).  Its +0x04 is the serialized type TAG that drives the
+// dispatch below; the appliers reached here are CTrigLogic's OWN register thunks
+// Reg277f (0x277f) / Reg1d39 (0x1d39) / Reg1abe (0x1abe) - the very thunks the
+// factory calls (confirmed by the caller graph: each of 0x277f / 0x1d39 / 0x1abe is
+// called by both 0x117630 / 0x117710 here AND 0x117800 Build).  Reloc-masked
+// __thiscall callees returning nonzero on success.
+//
+// Modeled as an honest local view (NOT CTileTriggerSwitchLogic - a different class /
+// layout, vtable 0x5eae8c; the earlier TtcSwitchObj->CTileTriggerSwitchLogic fold was
+// a mis-attribution).  Correctness-not-artifacts: an honest placeholder named for its
+// true CTrigLogic identity beats a wrong class name.
+struct TtcTrigElem {
+    i32 Reg277f(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f (SerializeApplyA)
+    i32 Reg1d39(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (SerializeApplyB tag 0x16)
+    i32 Reg1abe(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe (SerializeApplyB else)
+    i32 m_00;                                               // +0x00
+    i32 m_04; // +0x04  serialized type tag (the factory's switch id)
+};
+SIZE_UNKNOWN(TtcTrigElem);
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
-// functions: stream the object's tag, then dispatch on it.
-i32 __stdcall SerializeApplyA(
-    CSerialArchive* s,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    CTileTriggerSwitchLogic* o
-); // 0x117630
-i32 __stdcall SerializeApplyB(
-    CSerialArchive* s,
-    i32 a2,
-    i32 a3,
-    i32 a4,
-    CTileTriggerSwitchLogic* o
-); // 0x117710
+// functions: stream the element's tag, then dispatch to its register thunks.
+i32 __stdcall
+SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117630
+i32 __stdcall
+SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117710
 
 class CTileTriggerContainer {
 public:

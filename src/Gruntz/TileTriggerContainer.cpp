@@ -18,7 +18,6 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
-#include <Gruntz/TileTriggerSwitchLogic.h> // the real CTileTriggerSwitchLogic (was TtcSwitchObj)
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
@@ -497,21 +496,21 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         i32 cnt = m_base.m_0c;
         s->Write(&cnt, 4);
         for (node = m_base.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyA(s, 4, a3, a4, (CTileTriggerSwitchLogic*)node->m_data) == 0) {
+            if (SerializeApplyA(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
         cnt = m_list1.m_0c;
         s->Write(&cnt, 4);
         for (node = m_list1.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (CTileTriggerSwitchLogic*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
         cnt = m_list2.m_0c;
         s->Write(&cnt, 4);
         for (node = m_list2.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (CTileTriggerSwitchLogic*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
@@ -587,8 +586,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
 // 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117630, 0x82)
-i32 __stdcall
-SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
+i32 __stdcall SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o) {
     if (o == 0) {
         return 0;
     }
@@ -602,9 +600,9 @@ SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLog
         case 5:
         case 6:
         case 7:
-            return o->ApplyA(s, a2, a3, a4) != 0;
+            return o->Reg277f(s, a2, a3, a4) != 0;
         case 8:
-            return o->ApplyA(s, a2, a3, a4) != 0;
+            return o->Reg277f(s, a2, a3, a4) != 0;
         default:
             return 0;
     }
@@ -621,8 +619,7 @@ SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLog
 // 6-tag switch to a jmp[tbl+(tag-0x15)*4] table, the recompile to a cmp tree.
 // See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117710, 0xa6)
-i32 __stdcall
-SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o) {
+i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o) {
     if (o == 0) {
         return 0;
     }
@@ -630,14 +627,14 @@ SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLog
     s->Write(&tag, 4);
     switch (tag) {
         case 0x16:
-            return o->ApplyB(s, a2, a3, a4) != 0;
+            return o->Reg1d39(s, a2, a3, a4) != 0;
         case 0x15:
         case 0x17:
         case 0x18:
         case 0x19:
-            return o->ApplyC(s, a2, a3, a4) != 0;
+            return o->Reg1abe(s, a2, a3, a4) != 0;
         case 0x1a:
-            return o->ApplyC(s, a2, a3, a4) != 0;
+            return o->Reg1abe(s, a2, a3, a4) != 0;
         default:
             return 0;
     }
