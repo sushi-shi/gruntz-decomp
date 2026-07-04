@@ -10,7 +10,8 @@
 // fields (m_screenX/m_screenY/m_124/m_stateFlags + the +0x1a0 per-leaf anim sub).
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
-#include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Gruntz/InGameText.h>   // the canonical CInGameText : CUserLogic model
+#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
 
@@ -85,9 +86,8 @@ struct EngStr4 {
     char* m_pszData; // +0x00 (4 bytes so the loop's `p++` advances by 4)
     void Ctor();     // FUN_001b9b93 __thiscall (CString default ctor)
 };
-struct CTypeKeyColl {
-    char** IndexToPtr(i32 idx); // FUN_00403864 (thunk) __thiscall -> node (*node == name)
-};
+// CTypeKeyColl (IndexToPtr == thunk 0x403864 -> node) is the shared
+// <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 DATA(0x002bf66c)

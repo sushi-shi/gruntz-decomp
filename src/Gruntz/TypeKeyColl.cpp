@@ -22,7 +22,8 @@
 #include <rva.h>
 #include <string.h> // memset
 
-#include <Gruntz/StringNode.h> // the type-name teardown slot
+#include <Gruntz/StringNode.h>   // the type-name teardown slot
+#include <Gruntz/TypeKeyColl.h> // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
 #include <Globals.h>
 
 // ===========================================================================
@@ -77,12 +78,8 @@ extern void* g_typeNodes;
 // ===========================================================================
 // External engine leaves (no body - call rel32 reloc-masks).
 // ===========================================================================
-// The error sink the array ctor reports a fatal alloc/bounds failure to (the
-// owner stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code).
-SIZE_UNKNOWN(CZErrSink);
-struct CZErrSink {
-    void Report(void* arr, const char* msg, i32 code); // 0x16d850
-};
+// CZErrSink (the fatal-alloc/bounds error sink stored at +0x04) is the shared
+// <Gruntz/TypeKeyColl.h> shape.
 // The CKSlimeColl2 dispatcher the type-name lookup grows the collection through.
 struct CKSlimeColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (ret 0xc)
@@ -90,51 +87,8 @@ struct CKSlimeColl2 {
 DATA(0x002bf654)
 extern CKSlimeColl2* g_typeColl2;
 
-// The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl.
-// Each level is a REAL polymorphic class: its retail vtable (0x5f04cc/0x5f04d4/
-// 0x5f04d0) holds exactly one slot - its virtual scalar-deleting destructor
-// (??_G 0x16da40/0x16df20/0x16dde0, calling ??1 0x16da60/0x16df40/0x16de00; all
-// in unmatched TUs, so the dtors are declared-only). cl emits the implicit ??_7
-// vptr stamp in each ctor (the retail manual `*(void**)this = &g_*Vtbl`). Giving
-// CZArrayRoot a virtual dtor is also what gives CZArray2D's allocating ctor its
-// /GX unwind frame (the documented EH wall).
-
-// The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
-// from the data tag and one-time-inits the global tables.
-SIZE_UNKNOWN(CZArrayRoot);
-class CZArrayRoot {
-public:
-    CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
-    virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
-    CZErrSink* m_owner;     // +0x04  error-sink / owner
-};
-
-// The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
-// allocates the element buffer (+ a scratch element) and reports a fatal failure
-// through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
-SIZE_UNKNOWN(CZArray2D);
-class CZArray2D : public CZArrayRoot {
-public:
-    CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
-    virtual ~CZArray2D() OVERRIDE;                        // [0] ??_G 0x16df20 (external)
-    i32 m_lo;                                             // +0x08  index low bound
-    i32 m_hi;                                             // +0x0c  index high bound
-    void* m_buf;                                          // +0x10  primary element buffer
-    void* m_buf2;                                         // +0x14  scratch element
-    i32 m_stride;                                         // +0x18  element size
-};
-
-// The growable key collection itself (@0x6bf650, 0x16dda0 ctor). Find probes the
-// sorted node array; the ctor forwards to the base and derives cursor + count.
-class CTypeKeyColl : public CZArray2D {
-public:
-    CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
-    virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
-    i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
-    void* m_cursor;                                          // +0x1c  (== m_buf)
-    i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)
-};
-VTBL(CTypeKeyColl, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
+// The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl and
+// the leaf ??_7CTypeKeyColl @0x5f04d0 are the shared <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 

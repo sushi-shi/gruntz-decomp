@@ -14,6 +14,7 @@
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/Warlord.h>
+#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 
 #include <rva.h>
 
@@ -137,9 +138,8 @@ struct CTypeNameTree {
 DATA(0x002bf620)
 extern CTypeNameTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
 
-struct CTypeKeyColl {
-    void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)
-};
+// CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
+// <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
 

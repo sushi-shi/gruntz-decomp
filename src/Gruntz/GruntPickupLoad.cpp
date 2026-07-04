@@ -6,6 +6,7 @@
 // runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
@@ -16,9 +17,7 @@ extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
 // The id->name-slot type registry @0x6bf650: Resolve(id) returns a slot whose +0 is
 // the interned anim-code name string (reloc-masked; Resolve is thunk 0x437c).
-struct CTypeKeyColl {
-    void* Resolve(void* id); // thunk 0x437c (__thiscall ret 4)
-};
+// CTypeKeyColl is the shared <Gruntz/TypeKeyColl.h> shape.
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A
 
