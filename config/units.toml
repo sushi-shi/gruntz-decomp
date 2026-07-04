@@ -2010,7 +2010,7 @@ source = "src/Gruntz/SoundStreamFree.cpp"
 flags = "base"
 
 [[unit]]
-unit = "minervainner"
+unit = "soundstreamteardown"
 source = "src/Gruntz/SoundStreamTeardown.cpp"
 flags = "base"
 
