@@ -56,5 +56,6 @@ struct CScanSub10 {
     char _00[0x5c];
     i32 m_5c, m_60; // +0x5c screen x, +0x60 screen y
 };
+SIZE_UNKNOWN(CScanSub10); // tree-wide tag (was hosted in GruntPathScan.cpp before the CGrunt fold)
 
 #endif // GRUNTZ_GRUNTZ_CSCANGRID_H

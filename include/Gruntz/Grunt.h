@@ -1318,6 +1318,9 @@ public:
     void ConsiderArrival(i32 a);                       // @0x52f40 (ret 4) arrival/drop gate
     void SelectMoveIcon(i32 a);                        // @0x57800 (ret 4) pick move-cursor icon
     i32 TryPowerupAtTile();                            // @0x57aa0 (ret 0) probe move tile
+    // @0x57db0 (ret 0, /GX) - the per-tick grunt path-cell scan (GruntPathScan.cpp):
+    // 5x5 dirty box, tracked-coord list scan firing the plane trigger, freelist recycle.
+    i32 PathScan57db0();
 
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
@@ -1492,8 +1495,8 @@ public:
     i32 m_318;                   // +0x318
     GruntListSub m_31c;          // +0x31c (~CObList 0x1b48c6; destructed by ~CGrunt)
     char m_pad31d[0x320 - 0x31d];
-    GruntCoordNode* m_320; // +0x320
-    char m_pad324[0x328 - 0x324];
+    GruntCoordNode* m_320; // +0x320  (occupied-coord CObList head)
+    GruntCoordNode* m_324; // +0x324  (occupied-coord CObList tail node)
     i32 m_coordCount; // +0x328 (occupied-coord list count; non-empty gate for the m_320 list)
     char m_pad32c[0x338 - 0x32c];
     GruntListSub m_338; // +0x338 (~CObList 0x1b48c6; destructed by ~CGrunt)
