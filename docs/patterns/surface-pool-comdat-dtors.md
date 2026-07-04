@@ -67,22 +67,3 @@ Teardown ARE CDDPalette's CreateRGB(0x1474d0)/LoadFromFile(0x147410)/
 CreateFromTrailing(0x147840)/Destroy(0x147530); Create@0x143040 `new`s + returns
 `CDDPalette*` (mangled `PAUCDDPalette` ⇒ struct). No shared base with the surface
 family — pool-A = surfaces, pool-B = palettes.
-
-## Same mangled name at multiple RVAs: pipeline-TOLERATED, model-INVALID
-
-The step-0 experiment (two units emitting `??1CFileImageSurface@@UAE@XZ` at two
-RVAs) proved the PIPELINE copes: `symbol_names.csv` carries `(unit, name)` rows,
-the delink is RVA-driven, objdiff pairs per-unit — nothing explodes. Treat that
-strictly as a **refactor safety property** (a transitional duplicate mid-rename
-won't break the build), NEVER as a modeling license:
-
-- **Linker theorem:** MSVC5 keeps ONE COMDAT copy per symbol name. N similar
-  retail bodies at N RVAs ⇒ the original link had N DISTINCT names ⇒ N distinct
-  classes/functions. A reconstruction that *needs* one name at two retail RVAs
-  contradicts the binary — it is a mis-model (exactly how this family's
-  "5 copies of one dtor" premise was disproven).
-- **Tooling cost:** duplicate names break name→RVA injectivity (sema reverse
-  lookups, Ghidra navigation, xref-by-name become ambiguous).
-
-Rule: a persistent duplicate mangled fn name across units is a defect to
-resolve (find the distinct real identities), not a state to keep.
