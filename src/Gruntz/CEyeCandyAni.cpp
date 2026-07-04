@@ -1,12 +1,38 @@
 // CEyeCandyAni.cpp - the animated eyecandy game-object (C:\Proj\Gruntz), a
-// CUserLogic leaf. Only the 1-arg ctor is reconstructed here.
+// CUserLogic leaf. Reconstructs the 1-arg ctor, the two vtable overrides, and the
+// per-class activation acts (RegisterActs 0xacd10 + AdvanceAnim 0xacf10; the SAME
+// archetype as the CFrontCandyAni sibling, but over CEyeCandyAni's 0x646060
+// registry). The 0xacb30 InitActReg that constructs that registry lives in
+// src/Gruntz/LogicDispatchInit.cpp (InitLogicDispatch_646060).
 #include <Gruntz/CEyeCandyAni.h>
-#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/CSerialObjRef.h>   // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/ActNameRegistry.h> // shared activation-name registry (g_buteTree/g_nameReg/CActName)
+#include <Gruntz/ActReg.h>          // shared CActReg coordinate-registry archetype (ResolveEntry)
+#include <Gruntz/CAnimSink.h>       // the m_38+0x1a0 animation sink (SetAnim @0x15c360)
 
-// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
-// pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
-DATA(0x002bf620)
-extern CButeTree g_buteTree;
+// g_buteTree (@0x6bf620; Find 0x16d190 __thiscall ret 4; Insert 0x16db90) comes from
+// <Gruntz/ActNameRegistry.h>, along with g_nextActId / s_actKeyA / the shared name
+// registry + CActName - the SAME globals every CUserLogic leaf's RegisterActs uses.
+
+// The per-frame draw-delta mirror (_g_6bf3bc @0x6bf3bc) AdvanceAnim hands the sink;
+// the value-load reloc-masks. Declared extern "C" (canonical decoration).
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc;
+
+// CEyeCandyAni's activation-coordinate registry singleton (@0x646060), built over the
+// fixed [2000,2010] range by InitLogicDispatch_646060 (0xacb30, LogicDispatchInit.cpp,
+// where the DATA(0x00246060) symbol is pinned as g_logicDispatch_646060 - the same
+// object viewed as its zDArray dispatch table). Here it is the CActReg activation
+// view (ResolveEntry); referenced extern-only so the loads reloc-mask.
+struct CEyeCandyActReg : public CActReg {};
+extern CEyeCandyActReg g_eyeCandyActReg; // 0x646060
+
+// The handler entry the registry yields: its first dword receives the per-frame
+// handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance class).
+typedef i32 (CEyeCandyAni::*EyeCandyHandler)();
+struct CEyeCandyActEntry {
+    EyeCandyHandler m_fn;
+};
 
 // CEyeCandyAni::GetTypeTag @0x00ff00 - the vtable slot-2 logic-type id accessor
 // (the 6-byte `mov eax,<id>; ret` archetype).
@@ -64,4 +90,47 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
+// CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler
+// (AdvanceAnim @0x0acf10) to the activation key "A" via the shared name registry,
+// then bind id->entry in the class's coordinate registry (g_eyeCandyActReg
+// @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x000acd10, 0x18d)
+void CEyeCandyAni::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CActName*)list)->Free();
+            }
+            list++;
+        }
+        ((CActName*)slot)->Assign(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id))->m_fn = &CEyeCandyAni::AdvanceAnim;
+}
+
+// CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
+// sub-object (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc) and return 0.
+// Byte-identical to CFrontCandyAni::AdvanceAnim (0x0ad510) save the call displacement.
+RVA(0x000acf10, 0x17)
+i32 CEyeCandyAni::AdvanceAnim() {
+    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    return 0;
+}
+
 #include <rva.h>
+SIZE_UNKNOWN(CEyeCandyActEntry);
+SIZE_UNKNOWN(CEyeCandyActReg);

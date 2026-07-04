@@ -277,25 +277,21 @@ public:
 
 // CEyeCandy comes from <Gruntz/CEyeCandy.h> (folded; ctor 0x0ac620 defined below).
 
-// NOT foldable into <Gruntz/CFrontCandyAni.h>: this local is a MIS-ATTRIBUTION,
-// not a duplicate of that header. Only the ctor 0x0acf40 (vptr 0x5e83e4, Ghidra
-// RTTI-confirmed CFrontCandyAni) is genuinely this class. Layout order proves the
-// RegisterActs 0x0acd10 (registry 0x646060) + AdvanceAnim 0x0acf10 below actually
-// belong to CEyeCandyAni (ctor 0xac870): the candy clusters run {ctor, InitActReg,
-// FireActivation, RegisterActs, AdvanceAnim} contiguously, and 0xacb30 (InitActReg
-// -> 0x646060) / 0xacd10 / 0xacf10 all sit BEFORE this ctor, in CEyeCandyAni's run.
-// The real CFrontCandyAni::RegisterActs/AdvanceAnim (registry 0x6460b0) live in
-// src/Gruntz/CFrontCandyAni.cpp at 0x0ad310/0x0ad510 -> the ?RegisterActs@
-// CFrontCandyAni@@SAXXZ mangled symbol is currently emitted at TWO RVAs (0x0acd10
-// here + 0x0ad310 there). Fix belongs to a matcher: re-home 0x0acd10/0x0acf10 to
-// CEyeCandyAni; leave the ctor 0x0acf40 as CFrontCandyAni. (@early-stop deferred.)
+// This local is ONLY the genuine CFrontCandyAni ctor 0x0acf40 (vptr 0x5e83e4, Ghidra
+// RTTI-confirmed) - a partial view, NOT foldable into <Gruntz/CFrontCandyAni.h>. The
+// RegisterActs 0x0acd10 (registry 0x646060) + AdvanceAnim 0x0acf10 that used to sit
+// here were a MIS-ATTRIBUTION: layout order proves they belong to CEyeCandyAni (ctor
+// 0xac870) - the candy cluster runs {ctor 0xac870, InitActReg 0xacb30 -> 0x646060,
+// FireActivation, RegisterActs 0xacd10, AdvanceAnim 0xacf10} contiguously, all in
+// CEyeCandyAni's run BEFORE this ctor. They have been re-homed to src/Gruntz/
+// CEyeCandyAni.cpp (0x646060 is CEyeCandyAni's registry). The real CFrontCandyAni
+// acts (registry 0x6460b0) stay in src/Gruntz/CFrontCandyAni.cpp at 0x0ad310/0x0ad510,
+// so ?RegisterActs@CFrontCandyAni@@SAXXZ is now emitted at ONE RVA (0x0ad310), not two.
 class CFrontCandyAni : public CUserLogic {
 public:
     CFrontCandyAni(CGameObject* obj); // 0x0acf40
     virtual ~CFrontCandyAni() OVERRIDE;
-    static void RegisterActs(); // 0x0acd10 (really CEyeCandyAni::RegisterActs)
-    i32 AdvanceAnim();          // 0x0acf10 (really CEyeCandyAni::AdvanceAnim)
-    i32 m_40;                   // +0x40
+    i32 m_40; // +0x40
 };
 
 // CBehindCandyAni comes from <Gruntz/CBehindCandyAni.h> (folded; ctor 0x0ad540 below).
@@ -416,8 +412,9 @@ extern CActColl g_actColl;
 // are unchanged.
 SIZE_UNKNOWN(CLeafActReg);
 struct CLeafActReg : public CActReg {};
-DATA(0x00246060)
-extern CLeafActReg g_frontCandyActReg; // 0x646060
+// (g_frontCandyActReg @0x646060 was the mis-attributed CEyeCandyAni registry - it
+// re-homed to src/Gruntz/CEyeCandyAni.cpp as g_eyeCandyActReg; 0x646060's DATA symbol
+// is pinned in src/Gruntz/LogicDispatchInit.cpp as g_logicDispatch_646060.)
 DATA(0x00245f70)
 extern CLeafActReg g_singleAnimActReg; // 0x645f70
 DATA(0x0024e6a0)
@@ -430,11 +427,8 @@ DATA(0x0024e7e8)
 extern CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
 
 // Each leaf's handler entry: its first dword receives the per-frame handler PMF
-// (AdvanceAnim, a 4-byte code ptr on the single-inheritance class).
-typedef i32 (CFrontCandyAni::*FrontCandyHandler)();
-struct CFrontCandyActEntry {
-    FrontCandyHandler m_fn;
-};
+// (AdvanceAnim, a 4-byte code ptr on the single-inheritance class). (CFrontCandyAni's
+// entry re-homed to src/Gruntz/CEyeCandyAni.cpp with its RegisterActs.)
 typedef i32 (CSingleAnimation::*SingleAnimHandler)();
 SIZE_UNKNOWN(CSingleAnimActEntry);
 struct CSingleAnimActEntry {
@@ -1003,39 +997,10 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
-// --- CFrontCandyAni::RegisterActs (0x0acd10) ---
-// Bind the per-frame handler (AdvanceAnim @0x0acf10) to the activation key "A"
-// via the shared name registry, then bind id->entry in the class's coordinate
-// registry (g_frontCandyActReg). The SAME archetype as
-// CSecretTeleporterTrigger::RegisterActs.
-//
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
-RVA(0x000acd10, 0x18d)
-void CFrontCandyAni::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
-    if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
-        char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
-        while (n-- != 0) {
-            if (list != 0) {
-                ((CActName*)list)->Free();
-            }
-            list++;
-        }
-        ((CActName*)slot)->Assign(s_actKeyA);
-        g_nextActId++;
-    }
-    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
-        &CFrontCandyAni::AdvanceAnim;
-}
+// --- CFrontCandyAni::RegisterActs (0x0acd10) + AdvanceAnim (0x0acf10) re-homed ---
+// These were a mis-attribution of CEyeCandyAni's acts (registry 0x646060) and now
+// live in src/Gruntz/CEyeCandyAni.cpp, killing the ?RegisterActs@CFrontCandyAni
+// dup-RVA (they emit as ?RegisterActs@CEyeCandyAni / ?AdvanceAnim@CEyeCandyAni).
 
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
 CFrontCandyAni::~CFrontCandyAni() {}

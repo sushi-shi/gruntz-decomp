@@ -17,6 +17,13 @@ public:
     CEyeCandyAni(CGameObject* obj); // 0xac870
     LogicTypeId GetTypeTag();       // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)
+    // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
+    // shared name registry + the class's coordinate registry (g_eyeCandyActReg
+    // @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
+    static void RegisterActs(); // 0x0acd10
+    // Re-target the bound object's animation sub-object (m_38 + 0x1a0) to the
+    // current draw-delta (g_6bf3bc) and return 0.
+    i32 AdvanceAnim(); // 0x0acf10
 
     i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
 };

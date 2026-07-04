@@ -109,7 +109,7 @@ cdroppedobjectshadow	2	1
 cexittrigger	3	2
 cexplosion	2	1
 ceyecandy	3	3
-ceyecandyani	3	2
+ceyecandyani	5	3
 cfader	12	12
 cfader17e940apply	1	0
 cfadermgr	8	6
@@ -505,7 +505,7 @@ unknownclassarrays	41	10
 unknownclassincgruntzmgr	2	0
 unknownfileioctor	1	1
 userbaselink	10	0
-userlogic	65	28
+userlogic	64	28
 userlogicctoremit	2	1
 vehiclegruntsprites	1	0
 videoconfig	4	1
@@ -1255,7 +1255,9 @@ ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
 ceyecandy	?GetTypeTag@CEyeCandy@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	316b2739b4f5	0xfca0
 ceyecandy	?Serialize@CEyeCandy@@QAEHHHHH@Z	100.0000	100.0000	1	348008d35e12	0xfcc0
 ceyecandyani	??0CEyeCandyAni@@QAE@PAUCGameObject@@@Z	92.2797	92.2797	4	a64213bcd5c0	0xac870
+ceyecandyani	?AdvanceAnim@CEyeCandyAni@@QAEHXZ	100.0000	100.0000	1	cpp:2804cbfacf19	0xacf10
 ceyecandyani	?GetTypeTag@CEyeCandyAni@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	33b824b26f29	0xff00
+ceyecandyani	?RegisterActs@CEyeCandyAni@@SAXXZ	92.9130	92.9130	1	cpp:2804cbfacf19	0xacd10
 ceyecandyani	?Serialize@CEyeCandyAni@@QAEHHHHH@Z	100.0000	100.0000	1	16f11254034d	0xff20
 cfader	??0CFader17e940@@QAE@XZ	100.0000	100.0000	1	406fed16569b	0x17e940
 cfader	??0CFader17f9a0@@QAE@XZ	100.0000	100.0000	1	20a5e8d10656	0x17f9a0
@@ -3689,7 +3691,6 @@ userlogic	?LoadGruntDecayConfig@CGruntBehaviorLeaf@@QAEHXZ	90.8344	90.8344	4	5fa
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	2	b70d71b09830	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	2	57b0cfb95114	0x4dd50
 userlogic	?LoadWandGruntItemConfig@CGruntBehaviorLeaf@@QAEHXZ	95.1277	95.1277	2	37b6f78cb8c4	0x65a60
-userlogic	?RegisterActs@CFrontCandyAni@@SAXXZ	92.9130	92.9130	2	d25ea497f128	0xacd10
 userlogic	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	1	f286c9cc6563	0x422b0
 userlogic	?RegisterActs@CSingleAnimation@@SAXXZ	92.9130	92.9130	2	6d302026d75d	0xaeb80
 userlogic	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5473	78.5473	2	49dce112d702	0x10f340
