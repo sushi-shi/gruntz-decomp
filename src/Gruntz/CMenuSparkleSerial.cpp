@@ -20,7 +20,7 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
         return 0;
     }
-    if (!m_34.Serialize(arc, mode, a3, a4)) {
+    if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CSerialObj*)a4)) {
         return 0;
     }
     if (mode != 4) {
@@ -40,4 +40,3 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CMenuSparkle);
-SIZE_UNKNOWN(CMenuSparkleSub);

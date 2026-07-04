@@ -552,7 +552,8 @@ i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain((i32)ar, tag, c, d)) {
         return 0;
     }
-    if (!((CRbSerialSub34*)((char*)this + 0x34))->Chain((i32)ar, tag, c, d)) {
+    if (!((CSerialObjRef*)((char*)this + 0x34))
+             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
 

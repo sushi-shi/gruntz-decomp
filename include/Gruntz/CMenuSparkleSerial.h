@@ -20,20 +20,16 @@
 // Write @+0x30) + CUserLogic::SerializeMove (0x16e7f0, the slot-1 base serialize).
 #include <Gruntz/Grunt.h>
 
-// The +0x34 sub-object that also serializes (0x8c00); reloc-masked (no body). This
-// is the shared "+0x34 serialized-object-reference" (cf. CSerialObjRef); typed to the
-// real archive so the chain call carries no cast.
-class CMenuSparkleSub {
-public:
-    i32 Serialize(CGruntArchive* arc, i32 mode, i32 a3, i32 a4); // 0x8c00
-};
+// The +0x34 sub-object that also serializes (0x8c00) is the shared serialized-
+// object-reference; folded onto the canonical CSerialObjRef (Chain @0x8c00).
+#include <Gruntz/CSerialObjRef.h>
 
 class CMenuSparkle : public CUserLogic {
 public:
     // slot-1 override (0xae1c0); overrides CUserLogic::SerializeMove.
     i32 SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) OVERRIDE;
-    i32 m_30;             // +0x30
-    CMenuSparkleSub m_34; // +0x34
+    i32 m_30;           // +0x30
+    CSerialObjRef m_34; // +0x34  the +0x34 serialized-object-reference
 };
 
 #endif // GRUNTZ_CMENUSPARKLESERIAL_H

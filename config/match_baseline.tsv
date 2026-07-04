@@ -2670,7 +2670,7 @@ ingametext	??1CInGameText@@UAE@XZ	100.0000	100.0000	1	f69bd50df17d	0x11dc0
 ingametext	?Dispatch@CInGameText@@QAEXH@Z	100.0000	100.0000	1	732a6ae0ef8a	0x99460
 ingametext	?InitActReg@CInGameText@@SAXXZ	100.0000	100.0000	1	e96177786be5	0x993e0
 ingametext	?RegisterTextLogic@@YAXXZ	96.4783	96.4783	1	99afe765bef2	0x995c0
-ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	2	32fe7a802580	0x99a30
+ingametext	?Serialize@CInGameText@@QAEHPAVCTextArchive@@HHH@Z	100.0000	100.0000	3	0151084f98f7	0x99a30
 ingameworkerhandlers	?Handler095750@@YAHPAUOwner@@@Z	100.0000	100.0000	1	76ecb60f46e9	0x95750
 ingameworkerhandlers	?Handler095890@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8bf2772ac296	0x95890
 ingameworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f247242b9830	0xaa6e0
@@ -2813,7 +2813,7 @@ menupage	?SelectForward@CMenuPage@@QAEHXZ	60.8194	60.8194	3	0cdcb5c57397	0x1843f
 menupage	?SelectFwd2@CMenuPage@@QAEHXZ	62.0000	62.0000	5	5d81e35394da	0x184230
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	3	80acd97a7f81	0x183ad0
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	4	b9c5dc260ce3	0x183df0
-menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	1	36491ddb2240	0xae1c0
+menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAVCGruntArchive@@HHH@Z	100.0000	100.0000	2	acff9f8da0ff	0xae1c0
 menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.5216	89.5216	4	0679869aae4c	0x9fe50
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	59.8226	59.8226	2	6b88343eca62	0xebd70
 mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	2	2779ef0a81cb	0xf0db0

@@ -23,16 +23,7 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
-// ---------------------------------------------------------------------------
-// The +0x34 serializable sub-object's chain (0x8c00, __thiscall ret 0x10). Run
-// on `&this->m_34` (reached via `lea ecx,[edi+0x34]`). External/no-body so the
-// call reloc-masks; the body is pinned in src/Stub/Discovered.cpp. Mirror of the
-// shared CSerialObjRef sub-object (<Gruntz/CSerialObjRef.h>, Chain @0x8c00).
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CRbSerialSub34);
-struct CRbSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
+#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
 // ---------------------------------------------------------------------------
 // The CArchive-like serializer the record is streamed through (Serialize's arg1).

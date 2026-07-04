@@ -16,8 +16,9 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
-#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, CGameObject
-#include <Wap32/ZVec.h>       // zDArray<member-fn-ptr> (the dispatch table)
+#include <Gruntz/UserLogic.h>     // CUserLogic : CUserBase, CGameObject
+#include <Wap32/ZVec.h>           // zDArray<member-fn-ptr> (the dispatch table)
+#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
 // ---------------------------------------------------------------------------
 // The engine serialization stream the leaf Serialize round-trips through. A
@@ -41,15 +42,9 @@ public:
     virtual void Write(void* buf, i32 n); // +0x30
 };
 
-// ---------------------------------------------------------------------------
-// The embedded serializable sub-object overlaid at CInGameText+0x34 (a multi-
-// field record the leaf serializes via the 0x1aff thunk -> FUN_00408c00). Its
-// own Serialize is reached as `lea ecx,[this+0x34]; call`. External; no body.
-// ---------------------------------------------------------------------------
-class CTextSubObj {
-public:
-    i32 SerializeSub(void* ar, i32 tag, i32 a, i32 b); // 0x001aff (thunk)
-};
+// The embedded serializable sub-object overlaid at CInGameText+0x34 is the shared
+// CSerialObjRef (Chain @0x8c00 via the 0x1aff thunk); reached as
+// `lea ecx,[this+0x34]; call`. Modeled by <Gruntz/CSerialObjRef.h> above.
 
 // ---------------------------------------------------------------------------
 // CInGameText : CUserLogic. Its own state begins at +0x54 (within the inherited

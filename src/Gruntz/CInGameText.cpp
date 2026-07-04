@@ -231,7 +231,7 @@ i32 CInGameText::Serialize(CTextArchive* ar, i32 tag, i32 a, i32 b) {
     if (SerializeChain((i32)ar, tag, a, b) == 0) {
         return 0;
     }
-    if (((CTextSubObj*)&m_34)->SerializeSub(ar, tag, a, b) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CSerialObj*)b) == 0) {
         return 0;
     }
     switch (tag) {
@@ -253,4 +253,3 @@ SIZE_UNKNOWN(CInGameText);
 SIZE_UNKNOWN(CTextActReg);
 SIZE_UNKNOWN(CTextArchive);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CTextSubObj);
