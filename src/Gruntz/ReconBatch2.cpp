@@ -7,8 +7,8 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
-#include <DDrawMgr/DDSurface.h>     // canonical CDDSurface (Blt @0x13ee60)
-#include <Gruntz/SfManagerDevice.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
+#include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
 // ===========================================================================
@@ -182,7 +182,7 @@ i32 SfDeviceInitKeys() {
     g_sfCfgA2 = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfCfgA0 = (WORD)i;
-        g_sfDevice->m_34(g_sfDeviceId, &g_sfCfgA0);
+        g_sfDevice->SF_GetLoadedBankPathname(g_sfDeviceId, &g_sfCfgA0);
     }
     g_sfCfgA0 = 1;
     return 1;
@@ -500,7 +500,6 @@ SIZE_UNKNOWN(Entry_c0460);
 SIZE_UNKNOWN(Holder_f9840);
 SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
-SIZE_UNKNOWN(SfManagerDevice);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
 SIZE_UNKNOWN(OptCfg_c4b30);

@@ -13,6 +13,18 @@
 #include <Mfc.h> // CString + windows.h (afx-first; CWnd.h's <Win32.h> is then a no-op)
 #include <Ints.h>
 #include <rva.h>
+#include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
+// smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
+// macros that shadow <Ints.h>'s typedefs; undo them so the rest of this TU keeps our
+// aliases (matching-neutral: rad's u32==unsigned long is the same 4 bytes).
+#undef u8
+#undef u16
+#undef u32
+#undef u64
+#undef s8
+#undef s16
+#undef s32
+#undef s64
 
 #include <Gruntz/Wnd.h>
 
@@ -59,13 +71,7 @@ inline void CursSink::CallFinish() {
     (this->*(m_vtbl->Finish))();
 }
 
-// Smacker imports (IAT) reached during open/pump/close.
-extern "C" __declspec(dllimport) void __stdcall SmackSoundUseDirectSound(void* ds);
-extern "C" __declspec(dllimport) i32 __stdcall SmackOpen(i32 src, u32 flags, i32 buf);
-extern "C" __declspec(dllimport) i32 __stdcall SmackWait(i32 smk);
-extern "C" __declspec(dllimport) void __stdcall SmackSoundOnOff(i32 smk, i32 on);
-extern "C" __declspec(dllimport) void __stdcall SmackGoto(i32 smk, u32 frame);
-extern "C" __declspec(dllimport) u32 __stdcall SmackClose(i32 smk);
+// Smacker imports (IAT) reached during open/pump/close come from <smack.h>.
 // The Rez allocator's free (RVA 0x1b9b82).
 extern "C" void RezFree_call(void* p);
 
@@ -91,7 +97,7 @@ struct CSmackWin {
     i32 m_active;     // +0x04 active flag
     i32 m_streamOpen; // +0x08 stream-open flag
     char _0c[0x10 - 0xc];
-    i32 m_smackHandle; // +0x10 Smacker handle
+    Smack* m_smackHandle; // +0x10 Smacker stream handle (SmackOpen result)
     char _14[0x1c - 0x14];
     i32 m_command; // +0x1c pending command
     char _20[0x24 - 0x20];
@@ -198,7 +204,7 @@ i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         flags = 0;
     }
     flags |= 0xfe000;
-    m_smackHandle = SmackOpen(src, flags, -1);
+    m_smackHandle = SmackOpen((const char*)src, flags, -1);
     if (!m_smackHandle) {
         return 0;
     }
@@ -236,7 +242,7 @@ i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
         flags = 0;
     }
     flags |= 0xff000;
-    m_smackHandle = SmackOpen(src, flags, -1);
+    m_smackHandle = SmackOpen((const char*)src, flags, -1);
     if (!m_smackHandle) {
         return 0;
     }

@@ -361,7 +361,7 @@ packetpool	2	2
 palettebmp	1	0
 palettecopy	1	0
 palettelerp	1	1
-particlez	5	3
+particlez	5	4
 pathhazard	9	4
 play	71	30
 playdtor	2	2
@@ -1800,7 +1800,7 @@ gamelevel	?ScrollStepXHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	79.0286	79.02
 gamelevel	?ScrollStepXLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	78.3429	78.3429	4	f464a3a2b111	0x167450
 gamelevel	?ScrollStepYHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.8563	82.8563	4	b94b00908edd	0x167640
 gamelevel	?ScrollStepYLo@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	82.1667	82.1667	4	e4230841b55e	0x167830
-gamelevel	?SetCoordExtents@CGameLevel@@UAEHHH@Z	79.4583	79.4583	1	af009d24d456	0x15d030
+gamelevel	?SetCoordExtents@CGameLevel@@UAEHHH@Z	84.2800	84.2800	1	af009d24d456	0x15d030
 gamelevel	?SetCoords@CGameLevel@@UAEHPAULevelCoordRect@@@Z	100.0000	100.0000	1	61c6a9d4d0ff	0x15d0d0
 gamelevel	?SetCoordsAndLoad38@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	1	df6a04e1372d	0x15cf70
 gamelevel	?SetCoordsAndLoad3C@CGameLevel@@UAEHHPAULevelCoordRect@@@Z	100.0000	100.0000	2	db1709b7734d	0x15ceb0
@@ -2229,7 +2229,7 @@ gruntzsoundz	?CreateBank@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBXIPBD@Z	100.
 gruntzsoundz	?DecodeBuf@CGruntzSoundInnerZ@@UAEHPBXIPBD@Z	100.0000	100.0000	1	133521322a6e	0x138c20
 gruntzsoundz	?FindBank@CGruntzSoundZ@@QAEPAVCGruntzSoundInnerZ@@PBD@Z	100.0000	100.0000	1	c4b65c5aa9a0	0x138730
 gruntzsoundz	?GetXMidiVolume@CGruntzSoundZ@@QAEHXZ	91.2963	91.2963	1	9d0729e47d07	0x1389c0
-gruntzsoundz	?Init@CGruntzSoundZ@@QAEHHHH@Z	99.8077	99.8077	1	d47031d6b421	0x138490
+gruntzsoundz	?Init@CGruntzSoundZ@@QAEHHHH@Z	99.8077	99.8077	2	4e71804bafff	0x138490
 gruntzsoundz	?Insert@CGruntzSoundZ@@QAEXPAVCGruntzSoundInnerZ@@@Z	100.0000	100.0000	1	b843524aebe2	0x138700
 gruntzsoundz	?IsBusy@CGruntzSoundInnerZ@@QAEHXZ	100.0000	100.0000	2	6f23cf57664f	0x138f60
 gruntzsoundz	?IsPlaying@CGruntzSoundZ@@QAEHXZ	100.0000	100.0000	1	891d8c3d69ae	0x138920
@@ -2818,7 +2818,7 @@ particlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 particlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
 particlez	?InitActReg@CParticlez@@SAXXZ	100.0000	100.0000	1	913801e82692	0x46cb0
 particlez	?RegisterActs@CParticlez@@SAXXZ	92.9130	92.9130	1	5449c01d1d37	0x46e90
-particlez	?Update@CParticlez@@QAEHXZ	48.6486	48.6486	1	6ec39d46c21d	0x47090
+particlez	?Update@CParticlez@@QAEHXZ	100.0000	100.0000	1	6ec39d46c21d	0x47090
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	91.3233	91.3233	1	912cb5328948	0xb35a0
 pathhazard	??1CLightningHazard@@UAE@XZ	100.0000	100.0000	1	f8326e95f521	0x13280
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	60974e654df7	0x13340
@@ -2959,7 +2959,7 @@ reconbatch2	?Reset@CGameModeBase@@QAEXXZ	98.6667	98.6667	2	4b0d5728b95c	0xf9840
 reconbatch2	?ResetPreview@CGameModeBase@@QAEXXZ	98.8235	98.8235	1	7c0b831bc71d	0xde140
 reconbatch2	?Resolve@OptOwner_c4b30@@QAEHXZ	100.0000	100.0000	1	3513ee3cd2d8	0xc4b30
 reconbatch2	?Run@Host_c2a80@@QAEXXZ	100.0000	100.0000	1	0e366092ef40	0xc2a80
-reconbatch2	?SfDeviceInitKeys@@YAHXZ	100.0000	100.0000	1	7147fa4e6f16	0xf8ec0
+reconbatch2	?SfDeviceInitKeys@@YAHXZ	100.0000	100.0000	2	d1ad553a0f98	0xf8ec0
 reconbatch2	?StampVtbl@Obj_11e8dc@@QAEXXZ	100.0000	100.0000	2	96a57bedaec8	0x11e8dc
 reconbatch2	?Validate_fafa0@@YGHHHHH@Z	93.3333	93.3333	2	12f5fa949edd	0xfafa0
 reconbatch2	?Walk@Tree_193340@@QAEXP6AXHHH@ZHPAUTNode_193340@@@Z	100.0000	100.0000	1	06114a29f728	0x193340
@@ -3215,8 +3215,8 @@ slotcombofill	?Method2a45@CMultiSlotList@@QAEHHH@Z	59.1579	59.1579	1	da5e03287e8
 smackervideowindow	?Advance@CSmackWin@@QAEHHH@Z	100.0000	100.0000	2	611fd405d7e1	0x17c8e0
 smackervideowindow	?CloseSmacker@CSmackWin@@QAEHXZ	100.0000	100.0000	2	ba6bcd798efe	0x17c9b0
 smackervideowindow	?CreateVideoWindow@CSmackWin@@QAEHHH@Z	98.0097	98.0097	3	48be5ccadafb	0x17c2a0
-smackervideowindow	?OpenHi@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	3	8e9fd0884283	0x17c630
-smackervideowindow	?OpenLo@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	3	3c85ab4943e1	0x17c570
+smackervideowindow	?OpenHi@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	4	b3e53ae76a48	0x17c630
+smackervideowindow	?OpenLo@CSmackWin@@QAEHHHHHH@Z	70.7324	70.7324	4	2bd4569a4c24	0x17c570
 smackervideowindow	?Pump@CSmackWin@@QAEHHH@Z	100.0000	100.0000	2	798280f015b4	0x17c790
 smackervideowindow	?Teardown@CSmackWin@@QAEXXZ	100.0000	100.0000	3	5ce3b913cf72	0x17c510
 soundbankload	?Load@CGruntzSoundInnerZ@@UAEHPBD0@Z	77.1053	77.1053	1	98cbcaa9aba4	0x138aa0

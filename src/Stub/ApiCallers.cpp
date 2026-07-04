@@ -1,6 +1,18 @@
 #include <Win32.h>
 
 #include <rva.h>
+#include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
+// smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
+// macros that shadow <Ints.h>'s typedefs; undo them so the rest of this TU keeps our
+// aliases (matching-neutral: rad's u32==unsigned long is the same 4 bytes).
+#undef u8
+#undef u16
+#undef u32
+#undef u64
+#undef s8
+#undef s16
+#undef s32
+#undef s64
 #include <string.h>
 
 // Auto-generated API-caller stubs from docs/api-caller-name-plan.tsv.
@@ -2177,11 +2189,8 @@ namespace ApiCallerStubs {
     // a Smack* and m_24 as a DDraw surface where the moved open/pump/close use m_10 as
     // an i32 handle / m_24 as a SmkBuf, so folding them into the shared CSmackWin view
     // needs those two fields typed once + casts (verify class identity first).
-    extern "C" __declspec(dllimport) void __stdcall
-    SmackToBuffer(void* smk, i32 left, i32 top, i32 pitch, i32 height, void* buf, i32 flags);
-    extern "C" __declspec(dllimport) void __stdcall SmackDoFrame(void* smk);
-    extern "C" __declspec(dllimport) i32 __stdcall SmackToBufferRect(void* smk, i32 flags);
-    extern "C" __declspec(dllimport) void __stdcall SmackNextFrame(void* smk);
+    // Smacker imports (SmackToBuffer/SmackDoFrame/SmackToBufferRect/SmackNextFrame)
+    // + the Smack stream handle come from <smack.h>.
     // The DirectDraw surface the frame is locked/blitted into (manual vtable).
     struct DDSurf_17caa0;
     struct DDSurfVtbl_17caa0 {
@@ -2195,25 +2204,10 @@ namespace ApiCallerStubs {
     struct DDSurf_17caa0 {
         DDSurfVtbl_17caa0* vptr;
     };
-    // The decoded Smacker stream header.
-    struct Smack_17caa0 {
-        char m_pad0[4];
-        i32 m_4; // +0x04 width
-        i32 m_8; // +0x08 height
-        i32 m_c; // +0x0c frame count
-        char m_pad10[0x68 - 0x10];
-        i32 m_68; // +0x68
-        char m_pad6c[0x374 - 0x6c];
-        i32 m_374; // +0x374 current frame
-        char m_pad378[0x380 - 0x378];
-        i32 m_380; // +0x380 dirty-rect left
-        i32 m_384; // +0x384 dirty-rect top
-        i32 m_388; // +0x388 dirty-rect right
-        i32 m_38c; // +0x38c dirty-rect bottom
-    };
+    // The decoded Smacker stream header is the vendored `Smack` (see <smack.h>).
     struct MoviePlayer_17caa0 {
         char m_pad0[0x10];
-        Smack_17caa0* m_10; // +0x10
+        Smack* m_10; // +0x10  decoded Smacker stream
         char m_pad14[0x24 - 0x14];
         DDSurf_17caa0* m_24; // +0x24
         char m_pad28[0x9c - 0x28];
@@ -2235,7 +2229,7 @@ namespace ApiCallerStubs {
     // changed region, then advance to the next frame (0 once the last frame plays).
     RVA(0x0017caa0, 0x13b)
     i32 MoviePlayer_17caa0::RenderFrame() {
-        if (m_10->m_68 && m_520 == 8) {
+        if (m_10->NewPalette && m_520 == 8) {
             Sub17ca10();
         }
         i32 hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
@@ -2246,7 +2240,7 @@ namespace ApiCallerStubs {
             hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
         }
         if (hr == 0) {
-            SmackToBuffer(m_10, 0, 0, m_ac, m_10->m_8, m_c0, m_510);
+            SmackToBuffer(m_10, 0, 0, m_ac, m_10->Height, m_c0, m_510);
             SmackDoFrame(m_10);
             m_50c = 1;
             m_24->vptr->Unlock(m_24, m_c0);
@@ -2254,13 +2248,13 @@ namespace ApiCallerStubs {
     afterLock:
         if (m_514 != 1) {
             while (SmackToBufferRect(m_10, 0) != 0) {
-                Sub17cdf0(m_10->m_380, m_10->m_384, m_10->m_388, m_10->m_38c);
+                Sub17cdf0(m_10->LastRectx, m_10->LastRecty, m_10->LastRectw, m_10->LastRecth);
             }
         } else {
-            Sub17cdf0(0, 0, m_10->m_4, m_10->m_8);
+            Sub17cdf0(0, 0, m_10->Width, m_10->Height);
         }
-        Smack_17caa0* s = m_10;
-        if (s->m_374 == s->m_c - 1) {
+        Smack* s = m_10;
+        if (s->FrameNum == s->Frames - 1) {
             return 0;
         }
         SmackNextFrame(s);

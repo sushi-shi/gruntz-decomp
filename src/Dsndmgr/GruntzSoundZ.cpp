@@ -23,7 +23,7 @@
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <rva.h>
 
-#include <Mss32.h>  // the Miles Sound System (MSS32.DLL) AIL/XMIDI imports
+#include <mss.h>    // the genuine Miles Sound System (MSS32.DLL) AIL/XMIDI SDK header
 #include <stdio.h>  // sprintf - the "MIDI%i" auto-name (0x11f890, _sprintf)
 #include <string.h> // strcpy/memcpy (inline rep movs / repne scas under /O2)
 
@@ -64,7 +64,7 @@ i32 CGruntzSoundZ::Init(i32 mdiHandle, i32 digHandle, i32 skipInit) {
     m_digHandle = digHandle;
     m_pCurrent = 0;
     m_enabled = 1;
-    g_ailDriver64 = mdiHandle;
+    g_ailDriver64 = (HMDIDRIVER)mdiHandle;
     if (skipInit == 0) {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, 0, -1) != 0 || g_ailMidiDriver == 0) {

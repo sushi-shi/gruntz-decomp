@@ -20,6 +20,11 @@
 #include <Mfc.h>          // real MFC CMapStringToOb / CObject / CString / POSITION
 #include <Wap32/Object.h> // Wap::CObject grand-base (slots 0/2/3/4 = 0x1bef01/0x28ec/0x106e/0x4034)
 
+// The Miles Sound System XMIDI sequence handle: <mss.h>'s opaque HSEQUENCE. Forward-
+// declared here so this ~light header need not pull the 4200-line <mss.h> into every
+// includer; GruntzSoundZ.cpp gets the identical typedef from <mss.h> itself.
+typedef struct _SEQUENCE* HSEQUENCE;
+
 // The inner per-bank sound object (0x60 bytes, vtable @ 0x5ef700). Derives from the
 // shared Wap::CObject grand-base: cl inherits its 5 base slots (0 GetRuntimeClass /
 // 1 dtor / 2 Serialize / 3 AssertValid / 4 Dump) and this class overrides the dtor
@@ -69,14 +74,14 @@ public:
     i32 SetVolume(i32 volume, i32 ms); // RVA 0x138fd0 - scale 0..100->0..127, cache m_volumePct
     i32 SetLoop(i32 loop);             // RVA 0x139030 - re-arm AIL_set_sequence_loop_count
 
-    char m_name[0x40];  // +0x04  inline map key/name buffer
-    i32 m_pauseDepth;   // +0x44  pause nesting counter (StopAll++ / StopBank-- ; 0 = playing)
-    i32 m_playMode;     // +0x48  saved Play() mode arg (loop flag; re-used by Retrigger)
-    i32 m_playDriver;   // +0x4c  saved Play() digital-driver handle (re-used by Retrigger)
-    i32 m_volumePct;    // +0x50  seeded 0x64 (AIL volume percent default 100)
-    i32 m_tempoPct;     // +0x54  seeded 0x64 (AIL tempo percent default 100)
-    i32 m_seqHandle;    // +0x58  AIL sequence handle (queried by IsBusy)
-    char* m_loadBuffer; // +0x5c  owned load buffer (operator new; SoundBankLoad::Load)
+    char m_name[0x40];     // +0x04  inline map key/name buffer
+    i32 m_pauseDepth;      // +0x44  pause nesting counter (StopAll++ / StopBank-- ; 0 = playing)
+    i32 m_playMode;        // +0x48  saved Play() mode arg (loop flag; re-used by Retrigger)
+    i32 m_playDriver;      // +0x4c  saved Play() digital-driver handle (re-used by Retrigger)
+    i32 m_volumePct;       // +0x50  seeded 0x64 (AIL volume percent default 100)
+    i32 m_tempoPct;        // +0x54  seeded 0x64 (AIL tempo percent default 100)
+    HSEQUENCE m_seqHandle; // +0x58  AIL sequence handle (queried by IsBusy)
+    char* m_loadBuffer;    // +0x5c  owned load buffer (operator new; SoundBankLoad::Load)
 };
 SIZE(CGruntzSoundInnerZ, 0x60);       // allocated 0x60 bytes (inner sound object)
 VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)

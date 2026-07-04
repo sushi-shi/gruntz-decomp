@@ -16,15 +16,13 @@
 #include <stdio.h>  // sprintf (0x11f890)
 #include <string.h> // memset (rep stos intrinsic)
 
-#include <Gruntz/SfManagerDevice.h> // the SFMAN32 device interface (*0x64e0b0)
+#include <sfman32.h> // the SFMAN32 device interface (*0x64e0b0) + "SFManager" factory
 #include <Globals.h>
-
-typedef i32(__cdecl* SFFactory)(i32 flags, SfManagerDevice** out);
 
 extern WORD g_sfDeviceId; // 0x64dd28 (best device index)
 
 DATA(0x0024e0ac)
-extern SFFactory* g_factory_64e0ac; // the "SFManager" data export (ptr-to-fnptr)
+extern SfManagerFactory* g_factory_64e0ac; // the "SFManager" data export (ptr-to-fnptr)
 
 // @early-stop
 // MSVC5 u16-global codegen wall (~74%): the full control flow - the SFMAN32.DLL
@@ -44,7 +42,7 @@ i32 SFManager_SelectBestDevice() {
     if (g_sfDll == 0) {
         return 0;
     }
-    SFFactory* fn = (SFFactory*)GetProcAddress(g_sfDll, "SFManager");
+    SfManagerFactory* fn = (SfManagerFactory*)GetProcAddress(g_sfDll, "SFManager");
     g_factory_64e0ac = fn;
     if (fn == 0) {
         FreeLibrary(g_sfDll);
@@ -56,7 +54,7 @@ i32 SFManager_SelectBestDevice() {
         return 0;
     }
 
-    g_sfDevice->GetCount(&g_sfDeviceCount);
+    g_sfDevice->SF_GetNumDevs(&g_sfDeviceCount);
     if (g_sfDeviceCount == 0) {
         return 0;
     }
@@ -64,21 +62,25 @@ i32 SFManager_SelectBestDevice() {
     for (g_idx_64da80 = 0; g_idx_64da80 < g_sfDeviceCount; g_idx_64da80++) {
         memset(&g_caps_64df30, 0, 0x66);
         g_caps_64df30 = 0x66;
-        g_sfDevice->QueryCaps(g_idx_64da80, &g_caps_64df30);
+        g_sfDevice->SF_GetDevCaps(g_idx_64da80, &g_caps_64df30);
         sprintf(g_traceBuf_64da90, "Querying %s", &g_capsName_64df46);
         if (g_capsFlags_64df36 & 0x40000000) {
             g_ratings_64e0c0[g_idx_64da80] = 0x20;
         } else if (g_capsFlags_64df36 & 0x80000000) {
             g_ratings_64e0c0[g_idx_64da80] = 0x80;
         } else {
-            g_sfDevice->Select(g_idx_64da80);
-            g_sfDevice->GetRating(g_idx_64da80, &g_ratingBuf_64dbe0, (i32*)&g_ratingRaw_64da84);
+            g_sfDevice->SF_Open(g_idx_64da80);
+            g_sfDevice->SF_QueryStaticSampleMemorySize(
+                g_idx_64da80,
+                &g_ratingBuf_64dbe0,
+                (i32*)&g_ratingRaw_64da84
+            );
             u8 r = (u8)((g_ratingRaw_64da84 >> 0x13) + 0x40);
             g_ratings_64e0c0[g_idx_64da80] = r;
             if (r == 0x40) {
                 g_ratings_64e0c0[g_idx_64da80] = 0;
             }
-            g_sfDevice->Deselect(g_idx_64da80);
+            g_sfDevice->SF_Close(g_idx_64da80);
         }
     }
 
@@ -100,7 +102,7 @@ i32 SFManager_SelectBestDevice() {
                 }
             }
             sprintf(g_traceBuf_64da90, "Best Device number is %d", g_sfDeviceId);
-            if (g_sfDevice->Select(g_sfDeviceId) != 0) {
+            if (g_sfDevice->SF_Open(g_sfDeviceId) != 0) {
                 g_ratings_64e0c0[g_sfDeviceId] = 0;
             } else {
                 g_remaining_64df98 = 0;
@@ -115,13 +117,14 @@ i32 SFManager_SelectBestDevice() {
 
     memset(&g_caps_64df30, 0, 0x66);
     g_caps_64df30 = 0x66;
-    g_sfDevice->QueryCaps(g_sfDeviceId, &g_caps_64df30);
+    g_sfDevice->SF_GetDevCaps(g_sfDeviceId, &g_caps_64df30);
     if (g_capsFlags_64df36 & 0x80000000) {
         g_sfVer = (u32)-1;
     } else {
-        g_sfDevice->GetRating(g_sfDeviceId, &g_ratingBuf_64dbe0, (i32*)&g_sfVer);
+        g_sfDevice
+            ->SF_QueryStaticSampleMemorySize(g_sfDeviceId, &g_ratingBuf_64dbe0, (i32*)&g_sfVer);
     }
-    g_sfDevice->GetId(g_sfDeviceId, (i32*)&g_id_64df9c);
+    g_sfDevice->SF_GetRouterID(g_sfDeviceId, (i32*)&g_id_64df9c);
     u32 v = g_id_64df9c;
     g_id0_613dff = (char)(v & 0x7f);
     g_id3_613e02 = (char)((v >> 0x18) & 0x7f);
