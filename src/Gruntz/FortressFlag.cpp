@@ -11,7 +11,8 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FortressFlag.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialObjRef.h>   // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -42,13 +43,9 @@ extern "C" u32 g_6bf3bc;
 // +0x4c/+0x50/+0x58 state trio directly (all modeled on CGameObject).
 
 // The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (0xe23c0) returns
-// the selected sprite handle for ref-row i; modeled NO-body so the call
-// reloc-masks (the body lives in src/Gruntz/SpriteRefTable.cpp). `class` tag
-// matches the canonical <Gruntz/SpriteRefTable.h> / <Gruntz/WwdGameReg.h> fwd decl.
-class CSpriteRefTable {
-public:
-    i32 GetSel(i32 i, i32 bAlt); // 0xe23c0
-};
+// the selected sprite handle for ref-row i; the body lives in
+// src/Gruntz/SpriteRefTable.cpp (reloc-masked). CSpriteRefTable is the shared
+// <Gruntz/SpriteRefTable.h> shape.
 
 // One ref-index array slot: an 8-byte entry whose first dword is the ref-row
 // index. The fixup indexes the array at g_gameReg+0x158 by (selector-row * 71)

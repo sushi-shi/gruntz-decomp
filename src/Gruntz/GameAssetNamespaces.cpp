@@ -6,6 +6,7 @@
 #include <rva.h>
 
 #include <stdio.h>
+#include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
 #include <Globals.h>
@@ -21,10 +22,8 @@ public:
 // CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
 // <DDrawMgr/DDrawAssetRegistryViews.h> (mirror the per-object loader AssetNamespacePrefixes.cpp).
 
-class CSpriteRefTable {
-public:
-    i32 BuildToolToyColorTable(void* arg); // 0x0e2400 (thunk 0x32d8)
-};
+// CSpriteRefTable (BuildToolToyColorTable == 0xe2400, thunk 0x32d8) is the shared
+// <Gruntz/SpriteRefTable.h> shape.
 
 SIZE_UNKNOWN(WorkerHolder);
 struct WorkerHolder {
@@ -125,7 +124,9 @@ void CAssetLoader::LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3) {
         }
         m_workerHolder->m_aniScan->ScanTree(aniz, "GAME", "_");
     }
-    if (m_mgr->m_spriteRefTable->BuildToolToyColorTable(m_mgr->m_symParser) == 0) {
+    // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
+    // handle); the parser pointer is passed through unchanged (reloc-masked).
+    if (m_mgr->m_spriteRefTable->BuildToolToyColorTable((i32)m_mgr->m_symParser) == 0) {
         return;
     }
     if (m_scratch0 == 0 && m_scratch1 == 0) {

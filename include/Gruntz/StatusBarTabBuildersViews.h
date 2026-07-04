@@ -9,6 +9,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/SpriteRefTable.h> // the shared ::CSpriteRefTable (g_gameReg->m_74->GetSel)
+
 namespace StatusBarTabBuilders {
 
     // The four consecutive geometry anchors (this+0x14..0x20) the builders copy in as
@@ -57,11 +59,9 @@ namespace StatusBarTabBuilders {
         i32 m_18; // +0x18
     };
 
-    // The sprite-ref table (g_gameReg->m_74) whose GetSel maps a tool/toy id to a
-    // palette/format selector.
-    struct CSpriteRefTable {
-        i32 GetSel(i32 id, i32 flag); // 0x4e3a0 (reached via ILT 0x4165)
-    };
+    // The sprite-ref table (g_gameReg->m_74) whose GetSel (0xe23c0, reached via ILT
+    // 0x4165) maps a tool/toy id to a palette/format selector is the shared
+    // ::CSpriteRefTable (unqualified CSpriteRefTable below resolves to it).
 
     // One 0x238-byte per-world settings record (g_gameReg->m_138[g_644c54]).
     struct CSbWorldSlot {
