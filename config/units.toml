@@ -1454,17 +1454,17 @@ flags = "eh"
 
 [[unit]]
 unit = "wwdspatialmgr"
-source = "src/Gruntz/WwdSpatialMgr.cpp"
+source = "src/Wwd/WwdSpatialMgr.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "wwdgrid"
-source = "src/Gruntz/WwdGrid.cpp"
+source = "src/Wwd/WwdGrid.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "wwdgameobject"
-source = "src/Gruntz/WwdGameObject.cpp"
+source = "src/Wwd/WwdGameObject.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1479,7 +1479,7 @@ flags = "eh"
 
 [[unit]]
 unit = "wwdobjmgr"
-source = "src/Gruntz/WwdObjMgr.cpp"
+source = "src/Wwd/WwdObjMgr.cpp"
 flags = "base"
 
 [[unit]]
@@ -2072,7 +2072,7 @@ flags = "base"
 
 [[unit]]
 unit = "wwdobjmgrfactories"
-source = "src/Gruntz/WwdObjMgrFactories.cpp"
+source = "src/Wwd/WwdObjMgrFactories.cpp"
 flags = "eh"
 
 [[unit]]
