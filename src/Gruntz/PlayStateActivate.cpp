@@ -102,8 +102,8 @@ void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-mas
 // The CPlay activation facet: `this` cast once, so the field accesses take CPlay's
 // activation offsets without disturbing Play.cpp's Render-side member typing.
 struct PlayActivate {
-    i32 BaseOnActivate(); // base vfunc8 (reloc-masked)
-    void Method1ae6();    // FUN_00401ae6 __thiscall (m_474 != 0 arm)
+    i32 BaseOnActivate();                // base vfunc8 (reloc-masked)
+    void Method1ae6();                   // FUN_00401ae6 __thiscall (m_474 != 0 arm)
     void StartTimer(i32, i32, i32, i32); // FUN_00401843 __thiscall
 
     char m_pad00[0xc];
