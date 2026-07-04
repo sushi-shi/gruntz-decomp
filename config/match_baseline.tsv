@@ -545,7 +545,7 @@ actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEXHHHHHH@Z	76.6415	76.6415	6
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8191	84.8191	11	12995c8196b3	0x90e0
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	0.0000	0.0000	6	660affb57dbd	0x9330
 actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	76.8762	76.8762	7	a7103394426f	0x94c0
-actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAUCMenuArchive@@@Z	95.8667	95.8667	8	0b3c112a245c	0x9810
+actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAUCSerialArchive@@@Z	95.8667	95.8667	1	3889545fecd7	0x9810
 actreg4	?ActReg4RegisterType@@YAXXZ	91.1739	91.1739	1	5c4e6657ca7d	0x3e300
 actregsiblings	?CSiblingActorA_RegisterActs@@YAXXZ	91.1739	91.1739	1	b79a7edb78b6	0xc60e0
 actregsiblings	?CSiblingActorB_RegisterActs@@YAXXZ	91.1739	91.1739	1	b05bb9e9d0ab	0xc78b0
@@ -2384,11 +2384,11 @@ gruntzcommand	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	
 gruntzcommand	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	698937fc0f7d	0x24430
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
 gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
-gruntzcommand	?Load@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	2	79fb84b4c761	0x245f0
-gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	2	0cc14b81778c	0x247d0
+gruntzcommand	?Load@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x245f0
+gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x247d0
 gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	1	dc044912d246	0x240d0
 gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5dc220	0x24050
-gruntzcommand	?Save@CGruntzCommand@@QAEHPAVCmdStream@@@Z	100.0000	100.0000	2	95aa31c18c43	0x24520
+gruntzcommand	?Save@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x24520
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60
@@ -3356,7 +3356,7 @@ stateimages	?OnActivate2@CBootyState@@QAEHXZ	100.0000	100.0000	3	216aeaa6bb04	0x
 statemgrbz	?Build@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	94.7384	94.7384	3	80ed1d5c6cdf	0x383b0
 statemgrbz	?Flush@StateMgrBZ@@QAEHXZ	74.0612	74.0612	2	6dc0743b6fd8	0x385e0
 statemgrbz	?Init@StateMgrBZ@@QAEHPAUSbzInputManager@@H@Z	100.0000	100.0000	2	12e97377255a	0x382c0
-statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	2	899b20785515	0x386b0
+statemgrbz	?Reset@StateMgrBZ@@QAEHXZ	100.0000	100.0000	3	5969c1e11e3e	0x386b0
 statemgrbz	?Setup@StateMgrBZ@@QAEXXZ	100.0000	100.0000	2	76e3a3c435f8	0x38340
 statusbargamemenu	?BuildGameMenu@CGameMenuMgr@@QAEXXZ	62.9137	62.9137	6	eb0f6bb3cfcb	0x101580
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0

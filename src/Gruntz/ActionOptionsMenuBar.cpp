@@ -16,6 +16,7 @@
 // resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
 #include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
 #include <Gruntz/CViewport.h>     // shared world->screen transform
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
@@ -64,26 +65,6 @@ struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
 };
 
-// The archive (CArchive) passed to Serialize; the read/write entry is the virtual
-// at vtable byte-offset 0x30 (slot 12). Modeled polymorphic (slot decls only, never
-// defined -> no ??_7 here) so `ar->Transfer(buf,n)` lowers to the exact
-// `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
-struct CMenuArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Transfer(void* buf, i32 n); // +0x30
-};
-
 // ---------------------------------------------------------------------------
 // CActionOptionsMenuBar
 // ---------------------------------------------------------------------------
@@ -98,7 +79,7 @@ public:
     i32 HitClick(i32 mx, i32 my);
     i32 HitHover(i32 mx, i32 my);
     void Deactivate();
-    i32 Serialize(CMenuArchive* ar);
+    i32 Serialize(CSerialArchive* ar);
     i32 LoadAssets();
 
     i32 m_gridX;               // +0x00  grid X
@@ -438,9 +419,9 @@ void CActionOptionsMenuBar::Deactivate() {
 // Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_world spill slot
 // ([esp+0x10]) for the per-block `zero` int, giving a 0x84 frame; our cl gives
 // `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
-// arg offset by 4. Body (vtable Transfer dispatch + inlined memset/strcpy) exact.
+// arg offset by 4. Body (vtable Write dispatch @+0x30 + inlined memset/strcpy) exact.
 RVA(0x00009810, 0x2df)
-i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
+i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -453,13 +434,13 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         return 0;
     }
 
-    ar->Transfer(this, 8);
-    ar->Transfer(&m_screenX, 4);
-    ar->Transfer(&m_screenY, 4);
-    ar->Transfer(&m_loaded, 4);
-    ar->Transfer(&m_active, 4);
-    ar->Transfer(&m_button0State, 8);
-    ar->Transfer(&m_button0Icon, 8);
+    ar->Write(this, 8);
+    ar->Write(&m_screenX, 4);
+    ar->Write(&m_screenY, 4);
+    ar->Write(&m_loaded, 4);
+    ar->Write(&m_active, 4);
+    ar->Write(&m_button0State, 8);
+    ar->Write(&m_button0Icon, 8);
 
     char tmp[0x80];
 
@@ -468,21 +449,21 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
     if (m_normChipSprite) {
         strcpy(tmp, (char*)m_normChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_highChipSprite) {
         strcpy(tmp, (char*)m_highChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_greyChipSprite) {
         strcpy(tmp, (char*)m_greyChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
@@ -491,8 +472,8 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         if (m_frame) {
             ((CStrReader*)mgr->m_10)->ReadField((i32)m_frame, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
 
     g_serialCounter++;
@@ -502,8 +483,8 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         if (m_button0Frame) {
             ((CStrReader*)mgr->m_10)->ReadField((i32)m_button0Frame, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
 
     g_serialCounter++;
@@ -514,8 +495,8 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
         if (v20) {
             ((CStrReader*)mgr->m_10)->ReadField(v20, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
     return 1;
 }
@@ -523,7 +504,6 @@ i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
 SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDrawTarget);
 SIZE_UNKNOWN(CGruntRec);
-SIZE_UNKNOWN(CMenuArchive);
 SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteHashTable);
 SIZE_UNKNOWN(CSpriteMgr);

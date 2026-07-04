@@ -42,9 +42,9 @@ struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
 
-// The network (de)serialization stream the base command Save/Load drive (defined in
-// the .cpp). Forward-declared as a class so the member mangling agrees across clang/MSVC.
-class CmdStream;
+// The network (de)serialization stream the base command Save/Load drive: the shared
+// WAP32 archive interface (Read @+0x2c / Write @+0x30), forward-declared here.
+struct CSerialArchive;
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
@@ -100,8 +100,8 @@ public:
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
     // The network (de)serializers (0x024520 / 0x0245f0): no-op unless the
     // registry's active-game gate is set, then stream the 8 scalar fields.
-    i32 Save(CmdStream* s); // 0x024520  via stream Write (+0x30)
-    i32 Load(CmdStream* s); // 0x0245f0  via stream Read  (+0x2c)
+    i32 Save(CSerialArchive* s); // 0x024520  via stream Write (+0x30)
+    i32 Load(CSerialArchive* s); // 0x0245f0  via stream Read  (+0x2c)
 
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
     // `mov [this],&vftable; ret` (void, no eax-return, no null guard) - an
@@ -149,7 +149,7 @@ public:
     // 0x5e96b4): no-op unless the stream is non-null AND the registry's active-game
     // gate is set, then read the 8 scalar fields, taking the +0x10 flag word as a
     // single 16-bit READ (vs the base Load's two 1-byte reads).
-    i32 NetLoad(CmdStream* s);
+    i32 NetLoad(CSerialArchive* s);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

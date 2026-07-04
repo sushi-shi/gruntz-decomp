@@ -181,14 +181,14 @@ RVA(0x000386b0, 0x5d)
 i32 StateMgrBZ::Reset() {
     SbzInputDevice* d = m_device;
     if (d) {
-        d->Reset();
+        d->ResetState();
     } else {
         SbzDeviceList* arr = m_deviceList;
         if (arr && arr->m_count > 0) {
             SbzInputDevice** p = &arr->m_elems[0];
             i32 i = 0;
             do {
-                (*p)->Reset();
+                (*p)->ResetState();
                 ++i;
                 ++p;
             } while (i < arr->m_count);

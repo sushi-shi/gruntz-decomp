@@ -20,20 +20,22 @@
 #include <Ints.h>
 #include <rva.h>
 
-// SbzInputDevice - the DinMgr2 input device (real type CInputDevice, 0x338 bytes).
-// Only the two packed key-bitflag words (+0x2ac current, +0x2b0 edge) and the head
-// of the scan-code table (+0x2b4.., dwords) StateMgrBZ touches are pinned. Reset()
-// dispatches its +0x14 (slot 5) virtual, so it is modeled polymorphically for that
-// one call.
+// SbzInputDevice - the DinMgr2 input device (real type CInputDevice, 0x338 bytes,
+// ??_7CInputDevice@@6B@ @0x1ef628; the CInputDevRoot->CInputDevBase->CInputDevice
+// hierarchy in <DinMgr2/DirectInputMgr2.h>). Local view: only the two packed key-
+// bitflag words (+0x2ac current, +0x2b0 edge) and the head of the scan-code table
+// (+0x2b4.., dwords) StateMgrBZ touches are pinned. The 6 vtable slots are named
+// from CInputDevice's real ??_7 (declared-only, foreign -> reloc-masked, no ??_7
+// emitted here); ResetState (slot 5, +0x14) is the per-device clear StateMgrBZ calls.
 SIZE_UNKNOWN(SbzInputDevice);
 class SbzInputDevice {
 public:
-    virtual void Slot00(); // +0x00
-    virtual void Slot04(); // +0x04
-    virtual void Slot08(); // +0x08
-    virtual void Slot0C(); // +0x0c
-    virtual void Slot10(); // +0x10
-    virtual void Reset();  // +0x14  (slot 5) - per-device clear
+    virtual i32 ScalarDtor(u32 flag); // slot 0  +0x00  0x1332e0 scalar-deleting dtor
+    virtual i32 CreateDeviceWrap();   // slot 1  +0x04  0x134260
+    virtual void Teardown();          // slot 2  +0x08  0x133bf0
+    virtual i32 IsValid();            // slot 3  +0x0c  0x1332b0
+    virtual i32 Poll();               // slot 4  +0x10  0x133d00 per-frame poll
+    virtual i32 ResetState();         // slot 5  +0x14  0x1332c0 clear the press-edge latch
 
     char m_pad04[0x2ac - 0x04]; // +0x04 (after the auto-emitted vptr at +0x00)
     u32 m_currentKeys;          // +0x2ac  packed "press edges this frame" key word

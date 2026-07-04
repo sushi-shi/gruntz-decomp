@@ -20,29 +20,9 @@
 // flags (a real ??0 emits `mov eax,ecx`; placement-new emits a null guard).
 // They stay in the src/Stub/ backlog as the documented COMDAT-duplication case.
 #include <Gruntz/GruntzCommand.h>
-#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
-
-// The network (de)serialization stream (a CArchive/CSocketFile-family object):
-// Read @ vtable slot 11 (+0x2c), Write @ slot 12 (+0x30). Modeled polymorphic so
-// the thiscall dispatch `mov edx,[s]; mov ecx,s; call [edx+N]` falls out at the
-// right slot; the 11 leading virtuals are placeholders fixing the offsets.
-class CmdStream {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Read(void* buf, i32 len);  // +0x2c  slot 11
-    virtual void Write(void* buf, i32 len); // +0x30  slot 12
-};
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). Save/Load no-op
 // unless its +0x30 active-game gate (m_world) is non-null (same gate the cmd-mgr
@@ -294,7 +274,7 @@ void CGruntzMultiCommand::FreeAll() {
 // stream is non-null AND the registry's active-game gate (g_gameReg+0x30) is set.
 // ---------------------------------------------------------------------------
 RVA(0x00024520, 0x98)
-i32 CGruntzCommand::Save(CmdStream* s) {
+i32 CGruntzCommand::Save(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
@@ -317,7 +297,7 @@ i32 CGruntzCommand::Save(CmdStream* s) {
 // fields read back through the stream's Read (vtable slot +0x2c).
 // ---------------------------------------------------------------------------
 RVA(0x000245f0, 0x98)
-i32 CGruntzCommand::Load(CmdStream* s) {
+i32 CGruntzCommand::Load(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
@@ -342,7 +322,7 @@ i32 CGruntzCommand::Load(CmdStream* s) {
 // pair. Reached only through the vtable (reloc-masked); modeled non-virtual.
 // ---------------------------------------------------------------------------
 RVA(0x000247d0, 0x8b)
-i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
+i32 CGruntzMultiCommand::NetLoad(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
@@ -383,5 +363,3 @@ const u16 g_cmdBitTable[16] = {
     0x4000,
     0x8000
 };
-
-SIZE_UNKNOWN(CmdStream);
