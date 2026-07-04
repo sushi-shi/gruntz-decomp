@@ -1,13 +1,15 @@
-// FileIOOwner: a fresh-object constructor (0x8fea0) mis-attributed to
-// CGruntzMgr::InitCFileIOMember by the call-xref heuristic. It is NOT a CGruntzMgr
-// method: it constructs a destructible CFileIO at +0x124 and a CByteArray at +0x138,
-// zeros four scalars, and seeds the CRT rng - which contradicts the CGruntzMgr ctor's
-// int store at +0x138 and overwrites +0x00 (a vptr). Its true owner class is not yet
-// identified, so it lives in its own TU (like GruntzMgrHelper) rather than
-// the wrong class's file. Re-homed from src/Stub/CGruntzMgr.cpp.
+// FileIOOwner: the constructor (0x8fea0) of a large STACK-LOCAL loader-context
+// object built inside CGruntzMgr::ChangeState_8fab0 (0x8fab0). VERIFIED not a
+// CGruntzMgr method and not CFileIO: the caller constructs it as a stack temporary
+// (`lea ecx,[esp+0x558]; call 0x8fea0`), and the object CONTAINS a destructible
+// CFileIO at +0x124 and a CByteArray at +0x138, zeros four scalars, and seeds the
+// CRT rng (srand(time(0))). ChangeState destructs it (0x8fd94) in its EH cleanup.
+// So it is a distinct per-transition file/level loader context whose RTTI class name
+// is unrecovered (Ghidra placeholder "FileIOOwner"); it stays in its own TU (the
+// earlier CFileIO/Io/CGruntzMgr hypotheses are all refuted by the above evidence).
 //
 // The destructible CFileIO forces the /GX EH frame (one EH state). Modeled as the
-// ctor it is on a placeholder owner class; the member ctors/dtor + CRT calls
+// ctor it is on the placeholder owner class; the member ctors/dtor + CRT calls
 // reloc-mask.
 #include <rva.h>
 
