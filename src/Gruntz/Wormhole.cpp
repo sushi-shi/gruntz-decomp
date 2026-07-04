@@ -1,6 +1,7 @@
 #include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + the shared registration infra
+#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <rva.h>
 // Wormhole.cpp - CWormhole - a world teleport node (RTTI CWormhole), a CUserLogic
@@ -175,9 +176,7 @@ extern const char s_wormholeLogicKey[];
 
 // The CWormhole-logic dispatch table (a zDArray<int (CUserLogic::*)(void)> @
 // 0x644660). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
-struct LogicFnTable : public zDArray {
-    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
-};
+// Shared shape: <Gruntz/LogicFnTable.h>.
 DATA(0x00244660)
 extern LogicFnTable g_wormholeDispatch;
 

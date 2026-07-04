@@ -16,6 +16,7 @@
 #include <string.h>         // inline strcmp: the ctor's icon-name dispatch chain
 #include <Bute/ButeMgr.h>   // CButeTree (the bute store Setup queries)
 #include <Wap32/ZVec.h>     // zDArray (the command-dispatch tables)
+#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 
@@ -53,12 +54,8 @@ SIZE_UNKNOWN(IconLevelState);
 // registration thunks construct + populate. The ctor (zDArray::Construct, the
 // 0x408710 method: stride-4 base init + the 0x5e70fc vptr stamp) reloc-masks.
 // Their static-init thunks below build each table over the index band [0x7d0,
-// 0x7da].
+// 0x7da].  Shared shape: <Gruntz/LogicFnTable.h>.
 // ===========================================================================
-struct LogicFnTable : public zDArray {
-    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
-};
-
 DATA(0x002458b0)
 extern LogicFnTable g_iconActionTable; // 0x6458b0
 DATA(0x00245928)

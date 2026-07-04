@@ -49,11 +49,11 @@ static inline void FreeNameList() {
 }
 
 // The per-class logic dispatch table (RTTI ULogicFnTable, @0x6445e8); same field
-// layout as CActReg. Kept local (a distinct zDArray-based LogicFnTable view lives
-// in CInGameIcon.cpp et al.; unifying those needs the zDArray hierarchy).
-struct LogicFnTable : public CActReg {};
+// layout as CActReg. Modeled here through the CActReg lookup path (ResolveEntry),
+// so it uses the shared <Gruntz/ActReg.h> CLogicActTable alias rather than the
+// polymorphic zDArray view <Gruntz/LogicFnTable.h> the icon/wormhole TUs build with.
 DATA(0x002445e8)
-extern LogicFnTable g_logicDispatch_6445e8; // 0x6445e8
+extern CLogicActTable g_logicDispatch_6445e8; // 0x6445e8
 
 // The class registries the per-key handler entries live in. g_teleporterActReg
 // (RTTI UCTeleporterActReg, @0x6446b0) is CTeleporter's named registry (the shared

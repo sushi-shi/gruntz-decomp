@@ -13,6 +13,7 @@
 #include <Bute/ButeMgr.h>   // CButeTree (the shared registration key store)
 #include <Mfc.h>            // CString (the scratch name-vec element)
 #include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + zvec accessors
+#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 #include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
@@ -68,9 +69,7 @@ extern const char s_simpleAnimLogicKey[];
 
 // The CSimpleAnimation-logic dispatch table (a zDArray<int (CUserLogic::*)(void)>
 // @ 0x646038). The 0x15 thunk constructs it over the index band [0x7d0, 0x7da].
-struct LogicFnTable : public zDArray {
-    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710 (zDArray<T> ctor, returns this)
-};
+// Shared shape: <Gruntz/LogicFnTable.h>.
 DATA(0x00246038)
 extern LogicFnTable g_simpleAnimDispatch;
 

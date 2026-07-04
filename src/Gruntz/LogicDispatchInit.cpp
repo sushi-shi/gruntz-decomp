@@ -14,14 +14,10 @@
 // dispatch-table address; the proximity candidates are recorded per function. The
 // bodies are owner-independent (the global is a reloc-masked DATA extern and the
 // zDArray ctor call reloc-masks), so the byte match is exact regardless.
-#include <Wap32/ZVec.h> // zDArray base
-
-// The logic dispatch table type + its ctor (0x408710, the zDArray<T> ctor over an
-// index band; reached through the 0x3742 ILT thunk - the SAME callee as
-// InitSimpleAnimDispatch). Returns this.
-struct LogicFnTable : public zDArray {
-    LogicFnTable* Construct(i32 lo, i32 hi); // 0x408710
-};
+#include <Wap32/ZVec.h>          // zDArray base
+#include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
+// LogicFnTable (zDArray<T>, ctor 0x408710 reached via the 0x3742 ILT thunk - the
+// SAME callee as InitSimpleAnimDispatch) is the shared <Gruntz/LogicFnTable.h> shape.
 
 // The per-class dispatch tables (zDArray<methodptr> in .data).
 DATA(0x002445e8)
