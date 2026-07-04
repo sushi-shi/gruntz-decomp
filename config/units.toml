@@ -2046,7 +2046,7 @@ flags = "base"
 
 [[unit]]
 unit = "bitstreampack"
-source = "src/Gruntz/BitStreamPack.cpp"
+source = "src/Wap32/BitStreamPack.cpp"
 flags = "base"
 
 [[unit]]
@@ -2266,7 +2266,7 @@ source = "src/Gruntz/MoviePlayer.cpp"
 flags = "eh"
 [[unit]]
 unit = "wapuncompress"
-source = "src/Gruntz/WapUncompress.cpp"
+source = "src/Wap32/WapUncompress.cpp"
 flags = "base"
 [[unit]]
 unit = "customworlddialog"
@@ -2414,7 +2414,7 @@ source = "src/Gruntz/GlyphStringDraw.cpp"
 flags = "base"
 [[unit]]
 unit = "misc18"
-source = "src/Gruntz/Misc18.cpp"
+source = "src/Wap32/Misc18.cpp"
 flags = "base"
 [[unit]]
 unit = "saverecload"
