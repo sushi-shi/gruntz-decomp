@@ -121,8 +121,8 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
         m_stride = width;
     }
     m_rowPad = m_stride - width;
-    m_454 = 0;
-    m_458 = 0;
+    m_paletteScalar = 0;
+    m_paletteNode = 0;
     m_transparent = 1;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
@@ -731,11 +731,11 @@ i32 CFileImage::Fill(u32 color) {
 // have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
 // source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
 RVA(0x0013eb40, 0x3c)
-void CFileImage::FillPalette(void* arg) {
+void CFileImage::FillPalette(u32 key) {
     u32 ck[2];
-    ck[0] = (u32)arg;
-    ck[1] = (u32)arg;
-    if ((i32)arg != -1) {
+    ck[0] = key;
+    ck[1] = key;
+    if ((i32)key != -1) {
         this->m_bc = 1;
     } else {
         this->m_bc = 0;
@@ -1255,7 +1255,7 @@ i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32
         return 0;
     }
     if (key != -1) {
-        FillPalette((void*)key);
+        FillPalette(key);
     }
     return 1;
 }
@@ -1584,7 +1584,7 @@ void* CFileImage::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
         RezFree(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette(surf2);
+        FillPalette((u32)surf2);
     }
     return (void*)1;
 }
@@ -1711,7 +1711,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
         RezFree(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette((void*)a5);
+        FillPalette(a5);
     }
     return 1;
 }
@@ -1781,7 +1781,7 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
             return 0;
     }
     if (trans != -1 && type != FMT_PID) {
-        FillPalette((void*)trans);
+        FillPalette(trans);
     }
     return 1;
 }

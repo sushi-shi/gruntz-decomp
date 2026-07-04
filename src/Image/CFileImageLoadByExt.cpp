@@ -22,14 +22,18 @@ extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezSt
 // @source: string-xref (.BMP/.PCX/.PID extension table)
 //
 // @early-stop
-// scheduling wall (~99.9%): with the single-source polymorphic CFileImage (no local
-// view - the reconstruction-hack view the devs never wrote), MSVC reschedules one
-// stack-arg load (`movl 0x1c(%esp),%eax`, the a4 read) one instruction later than
-// retail; all other code bytes are byte-identical (llvm-objdump -dr base vs target).
-// Not source-steerable on a leaf this small; the correct shared-class shape is kept
-// over the byte-match (per the no-multiple-views mandate).
+// scheduling wall (~99.9%): MSVC swaps the ORDER of the two independent tail loads at
+// 0xdd - retail emits `mov esi,[esp+0x20]` (a4) then `mov eax,[esp+0x1c]` (doFill);
+// the recompile emits them reversed. Same regs, same short-circuit, only the load
+// schedule differs; all other code bytes are byte-identical (llvm-objdump -dr base vs
+// target). A pure scheduler tie-break that flips on ANY change to the widely-included
+// <Image/Image.h> symbol table: it had incidentally drifted to 100% at one baseline,
+// and folding the CScanlineSurface/CImageSurfaceNode views onto CRezImage (adding the
+// 7 surface methods to the shared header) re-triggered it. Not source-steerable
+// (reordering the `&&` -> 96%); the correct shared-class shape is kept over the
+// coin-flip byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
-i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 a4) {
+i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = RezStrrchr(path, '.');
@@ -42,15 +46,15 @@ i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 a4) {
             return 0;
         }
     } else if (ext != 0 && RezStricmp(ext, ".PID") == 0) {
-        if (DecodePcxEx(info, path, (void*)flags, (void*)a4) == 0) {
+        if (DecodePcxEx(info, path, (void*)flags, (void*)key) == 0) {
             return 0;
         }
         doFill = 0;
     } else if (this->Load((i32)info, path, flags) == 0) {
         return 0;
     }
-    if (a4 != -1 && doFill != 0) {
-        FillPalette((void*)a4);
+    if (key != -1 && doFill != 0) {
+        FillPalette(key);
     }
     return 1;
 }

@@ -4,11 +4,14 @@
 // node payloads are the two engine node classes below (former placeholder views
 // GdiOwner_175c90 / PalBuilder_176df0 / DeleteObjHost_177070 folded to real names):
 //
-//   CImageSurfaceNode   (surface node)  - Cleanup() @0x175c90 releases its GDI
-//                       object + buffer; SetPalette() @0x176ad0 (here) latches the
-//                       associated palette node ptr (+0x458) and a scalar (+0x454).
-//                       IS the CScanlineSurface software-surface class (shared
-//                       0x175c90 Free / 0x1757c0 Create / 0x175b80 Convert8To16).
+//   CRezImage           (surface node)  - the shared DIB-surface class in
+//                       <Image/Image.h> (former pool-local CImageSurfaceNode view folded
+//                       onto it). Free() @0x175c90 releases its GDI object + buffer;
+//                       SetPalette() @0x176ad0 (here) latches the palette node ptr
+//                       (+0x458) and a scalar (+0x454). The decoders @0x1757c0 (Create/
+//                       DecodeBmpHeader) / 0x175b80 (Convert8To16) / 0x175a00
+//                       (DispatchDecode) are its methods, defined in Image.cpp /
+//                       CScanlineSurface.cpp - one class across all three TUs.
 //   CImagePaletteNode   (palette node)  - Build() @0x176df0 realizes an HPALETTE
 //                       from a PALETTEENTRY[256]; ProcessPal/ParseDispatch/
 //                       ParsePaletteTail (here) are the format front-ends that fill
@@ -24,8 +27,9 @@
 // reloc-masked via library labels) and (de)allocates nodes through the engine
 // RezAlloc/RezFree. Field names are placeholders; only OFFSETS + code bytes are
 // load-bearing.
-#include <Mfc.h>        // CObList / POSITION + <windows.h> PALETTEENTRY
-#include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
+#include <Mfc.h>         // CObList / POSITION + <windows.h> PALETTEENTRY
+#include <Image/Image.h> // CRezImage - the shared DIB-surface class (the pool's surface node)
+#include <Rez/RezMgr.h>  // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 
 // The selected-image resource module handle, latched into the engine global
@@ -38,34 +42,14 @@ extern "C" void* g_hResModule;
 // pool touches are pinned.
 // ---------------------------------------------------------------------------
 namespace ApiCallerStubs {
-    struct CImagePaletteNode; // fwd (CImageSurfaceNode::m_paletteNode points at one)
+    struct CImagePaletteNode; // fwd (CRezImage::m_paletteNode points at one)
 
-    // The surface list node (+0x10 list). This IS the CScanlineSurface software
-    // surface class: Cleanup @0x175c90 == CScanlineSurface::Free, and the decoders
-    // (@0x1757c0/0x175b80) are CScanlineSurface::Create/Convert8To16, so the +0x438..
-    // +0x448 geometry field roles are named from that shared class. Kept as a
-    // pool-local view (not folded onto <Image/CScanlineSurface.h>) pending the multi-
-    // TU convention reconcile of the 0x175a00 decoder (stdcall there vs the thiscall
-    // dispatch here). Cleanup releases the GDI DIB object + the scanline buffer;
-    // SetPalette latches the associated palette node.
-    struct CImageSurfaceNode {
-        char m_pad0[0x428];               // +0x000..+0x427  (BITMAPINFOHEADER + color table)
-        HGDIOBJ m_gdiObject;              // +0x428  cached GDI DIB object (DeleteObject on cleanup)
-        u8* m_pixels;                     // +0x42c  DIB section bits (freed with the DIB object)
-        u32* m_scanlineOffsets;           // +0x430  Rez-allocated scanline offset table
-        i32 m_434;                        // +0x434
-        i32 m_width;                      // +0x438  width
-        i32 m_height;                     // +0x43c  height
-        i32 m_440;                        // +0x440
-        i32 m_stride;                     // +0x444  stride (bytes per scanline)
-        i32 m_scanlineMode;               // +0x448  0 = contiguous, !=0 = offset-table walk
-        POSITION m_listPosition;          // +0x44c  cached AddTail POSITION
-        i32 m_450;                        // +0x450 (not zeroed by the inlined ctor)
-        i32 m_454;                        // +0x454  associated scalar
-        CImagePaletteNode* m_paletteNode; // +0x458  associated palette node
-        void Cleanup();                   // 0x175c90 (this TU) == CScanlineSurface::Free
-        void SetPalette(void* pal, i32 a); // 0x176ad0 (this TU)
-    };
+    // The surface list node (+0x10 list) IS CRezImage, the shared DIB-surface class in
+    // <Image/Image.h> (former pool-local CImageSurfaceNode view folded onto it): Free
+    // @0x175c90 (== the loaders' Free), and the decoders @0x1757c0/0x175b80/0x175a00 are
+    // CRezImage::DecodeBmpHeader/Convert8To16/DispatchDecode - one class across Image.cpp /
+    // CScanlineSurface.cpp / here. Free releases the GDI DIB object + the row-offset table;
+    // SetPalette (@0x176ad0, defined below) latches the associated palette node.
 
     // The palette list node (+0x2c list). Build realizes the HPALETTE from a 256-entry
     // LOGPALETTE it assembles in-place; the front-ends fill that array. Run (former
@@ -101,29 +85,13 @@ public:
 };
 
 using ApiCallerStubs::CImagePaletteNode;
-using ApiCallerStubs::CImageSurfaceNode;
-
-// The surface-node build views. The five surface factories below RezAlloc a fresh
-// CImageSurfaceNode node (0x45c bytes) then forward to one of these foreign decoders
-// (each annotated/owned by Image.cpp / CImageBlit.cpp / CImgPoolScan.cpp) - the
-// `call rel32` reloc-masks against the owning TU's symbol. Minimal inline decls; the
-// mangling depends only on class + method name + param types + convention.
-SIZE_UNKNOWN(CImgPoolBlit);
-class CImgPoolBlit {
-public:
-    i32 DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3); // 0x1757c0
-    i32 DecodeBlit(void*, void*, i32, i32, i32, void*);                           // 0x175930
-    i32 LoadFromRez(char* name, void* a2, void* a3);                              // 0x175a90
-};
-SIZE_UNKNOWN(CImgPoolScan);
-class CImgPoolScan {
-public:
-    i32 Convert8To16(void* a0, CImgPoolScan* src, void* pal); // 0x175b80
-    i32 Dispatch175a00(i32 a0, i32 kind, i32 a2, i32 a3);     // 0x175a00 (thiscall site)
-};
 
 // ---------------------------------------------------------------------------
-// CImagePool - holds the two node lists + three head scalars.
+// CImagePool - holds the two node lists + three head scalars. The five surface
+// factories below RezAlloc a fresh CRezImage node (0x45c bytes) then forward to one
+// of its decoders (DecodeBmpHeader/DecodeBlit/LoadFromRez/DispatchDecode/Convert8To16,
+// defined in Image.cpp / CScanlineSurface.cpp) - external here, the `call rel32`
+// reloc-masks against the owning TU's CRezImage symbol.
 // ---------------------------------------------------------------------------
 class CImagePool {
 public:
@@ -137,11 +105,11 @@ public:
     CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
 
-    CImageSurfaceNode* AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x174fe0
-    CImageSurfaceNode* AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1750e0
-    CImageSurfaceNode* AddSurfaceOp(i32 a1, i32 a2, i32 a3);                   // 0x1751f0
-    CImageSurfaceNode* AddSurfaceRez(i32 a1, i32 a2);                          // 0x1752f0
-    CImageSurfaceNode* AddSurfaceConvert(i32 a1, i32 a2);                      // 0x1753f0
+    CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0
+    CRezImage* AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
+    CRezImage* AddSurfaceOp(i32 buf, i32 kind, i32 ctrl);                              // 0x1751f0
+    CRezImage* AddSurfaceRez(i32 name, i32 ctrl);                                      // 0x1752f0
+    CRezImage* AddSurfaceConvert(i32 src, i32 pal);                                    // 0x1753f0
 
     HINSTANCE m_resourceModuleHandle; // +0x00  resource module handle (-> g_hResModule)
     HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
@@ -198,9 +166,9 @@ RVA(0x00174f60, 0x37)
 void CImagePool::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
-        CImageSurfaceNode* item = (CImageSurfaceNode*)m_surfaces.GetNext(pos);
+        CRezImage* item = (CRezImage*)m_surfaces.GetNext(pos);
         if (item) {
-            item->Cleanup();
+            item->Free();
             RezFree(item);
         }
     }
@@ -231,7 +199,7 @@ void CImagePool::ClearPalettes() {
 // zeroes its handle/dim/POSITION block, then forwards to one foreign decoder; on
 // success AddTail's the node onto the surface list (+0x10) caching the POSITION at
 // node+0x44c; either way it restores the selected palette (+0x0c) and ReleaseDC's,
-// returning the node (or, on decode failure, Cleanup'ing + freeing it -> 0).
+// returning the node (or, on decode failure, Free()'ing + RezFree'ing it -> 0).
 //
 // All five sit at ~96% on one regalloc tie-break: retail enregisters the node in
 // edi and the zero constant in ebx, the recompile swaps them (node=ebx/zero=edi),
@@ -244,34 +212,34 @@ void CImagePool::ClearPalettes() {
 // regalloc tie-break: node should be edi / zero should be ebx (retail); recompile
 // swaps the two callee-saved regs. Code byte-identical otherwise.
 RVA(0x00174fe0, 0xfe)
-CImageSurfaceNode* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
+CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CImageSurfaceNode* node;
-    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
+    CRezImage* node;
+    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_gdiObject = 0;
+        raw->m_dibSection = 0;
         raw->m_pixels = 0;
-        raw->m_scanlineOffsets = 0;
+        raw->m_rowOffsets = 0;
         raw->m_434 = 0;
         raw->m_width = 0;
         raw->m_height = 0;
         raw->m_stride = 0;
-        raw->m_scanlineMode = 0;
+        raw->m_rowPad = 0;
         raw->m_listPosition = 0;
-        raw->m_454 = 0;
+        raw->m_paletteScalar = 0;
         raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CImgPoolBlit*)node)->DecodeBmpHeader((void*)hdc, a1, a2, a3, (void*)a4) == 0) {
+    if (node->DecodeBmpHeader((void*)hdc, width, height, bitCount, (void*)flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
-            node->Cleanup();
+            node->Free();
             RezFree(node);
         }
         return 0;
@@ -288,34 +256,34 @@ CImageSurfaceNode* CImagePool::AddSurfaceBmp(i32 a1, i32 a2, i32 a3, i32 a4) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001750e0, 0x103)
-CImageSurfaceNode* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CImageSurfaceNode* node;
-    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
+    CRezImage* node;
+    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_gdiObject = 0;
+        raw->m_dibSection = 0;
         raw->m_pixels = 0;
-        raw->m_scanlineOffsets = 0;
+        raw->m_rowOffsets = 0;
         raw->m_434 = 0;
         raw->m_width = 0;
         raw->m_height = 0;
         raw->m_stride = 0;
-        raw->m_scanlineMode = 0;
+        raw->m_rowPad = 0;
         raw->m_listPosition = 0;
-        raw->m_454 = 0;
+        raw->m_paletteScalar = 0;
         raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CImgPoolBlit*)node)->DecodeBlit((void*)a1, (void*)hdc, a2, a3, a4, (void*)a5) == 0) {
+    if (node->DecodeBlit((void*)src, (void*)hdc, width, height, bitCount, (void*)flag) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
-            node->Cleanup();
+            node->Free();
             RezFree(node);
         }
         return 0;
@@ -332,34 +300,34 @@ CImageSurfaceNode* CImagePool::AddSurfaceBlit(i32 a1, i32 a2, i32 a3, i32 a4, i3
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001751f0, 0xf9)
-CImageSurfaceNode* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
+CRezImage* CImagePool::AddSurfaceOp(i32 buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CImageSurfaceNode* node;
-    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
+    CRezImage* node;
+    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_gdiObject = 0;
+        raw->m_dibSection = 0;
         raw->m_pixels = 0;
-        raw->m_scanlineOffsets = 0;
+        raw->m_rowOffsets = 0;
         raw->m_434 = 0;
         raw->m_width = 0;
         raw->m_height = 0;
         raw->m_stride = 0;
-        raw->m_scanlineMode = 0;
+        raw->m_rowPad = 0;
         raw->m_listPosition = 0;
-        raw->m_454 = 0;
+        raw->m_paletteScalar = 0;
         raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CImgPoolScan*)node)->Dispatch175a00(a1, a2, (i32)hdc, a3) == 0) {
+    if (node->DispatchDecode((void*)buf, kind, (void*)hdc, (void*)ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
-            node->Cleanup();
+            node->Free();
             RezFree(node);
         }
         return 0;
@@ -376,35 +344,35 @@ CImageSurfaceNode* CImagePool::AddSurfaceOp(i32 a1, i32 a2, i32 a3) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001752f0, 0xfc)
-CImageSurfaceNode* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
+CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
-    CImageSurfaceNode* node;
-    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
+    CRezImage* node;
+    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_gdiObject = 0;
+        raw->m_dibSection = 0;
         raw->m_pixels = 0;
-        raw->m_scanlineOffsets = 0;
+        raw->m_rowOffsets = 0;
         raw->m_434 = 0;
         raw->m_width = 0;
         raw->m_height = 0;
         raw->m_stride = 0;
-        raw->m_scanlineMode = 0;
+        raw->m_rowPad = 0;
         raw->m_listPosition = 0;
-        raw->m_454 = 0;
+        raw->m_paletteScalar = 0;
         raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CImgPoolBlit*)node)->LoadFromRez((char*)a1, (void*)hdc, (void*)a2) == 0) {
+    if (node->LoadFromRez((char*)name, (void*)hdc, (void*)ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
-            node->Cleanup();
+            node->Free();
             RezFree(node);
         }
         return 0;
@@ -421,34 +389,34 @@ CImageSurfaceNode* CImagePool::AddSurfaceRez(i32 a1, i32 a2) {
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001753f0, 0xf4)
-CImageSurfaceNode* CImagePool::AddSurfaceConvert(i32 a1, i32 a2) {
+CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
     HDC hdc = GetDC(m_sourceHwnd);
-    CImageSurfaceNode* node;
-    CImageSurfaceNode* raw = (CImageSurfaceNode*)RezAlloc(0x45c);
+    CRezImage* node;
+    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
     if (raw) {
-        raw->m_gdiObject = 0;
+        raw->m_dibSection = 0;
         raw->m_pixels = 0;
-        raw->m_scanlineOffsets = 0;
+        raw->m_rowOffsets = 0;
         raw->m_434 = 0;
         raw->m_width = 0;
         raw->m_height = 0;
         raw->m_stride = 0;
-        raw->m_scanlineMode = 0;
+        raw->m_rowPad = 0;
         raw->m_listPosition = 0;
-        raw->m_454 = 0;
+        raw->m_paletteScalar = 0;
         raw->m_paletteNode = 0;
         node = raw;
     } else {
         node = 0;
     }
-    if (((CImgPoolScan*)node)->Convert8To16((void*)hdc, (CImgPoolScan*)a1, (void*)a2) == 0) {
+    if (node->Convert8To16((void*)hdc, (CRezImage*)src, (void*)pal) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
         }
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
-            node->Cleanup();
+            node->Free();
             RezFree(node);
         }
         return 0;
@@ -575,13 +543,13 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 }
 
 // ===========================================================================
-// CImageSurfaceNode::SetPalette (ret 8) - latch the palette node ptr
+// CRezImage::SetPalette (ret 8) - latch the palette node ptr
 // (+0x458) and the associated scalar (+0x454).
 // ===========================================================================
 RVA(0x00176ad0, 0x17)
-void ApiCallerStubs::CImageSurfaceNode::SetPalette(void* pal, i32 a) {
-    m_paletteNode = (CImagePaletteNode*)pal;
-    m_454 = a;
+void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
+    m_paletteNode = paletteNode;
+    m_paletteScalar = scalar;
 }
 
 // ===========================================================================
@@ -649,22 +617,24 @@ i32 ApiCallerStubs::CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32
 // src/Stub/ApiCallers.cpp (CImagePool owns these node types). All GDI callees are
 // GDI32 imports (reloc-masked); RezFree is the pool allocator (0x1b9b82).
 // ===========================================================================
-namespace ApiCallerStubs {
-    // 0x175c90: release the cached GDI object + Rez buffer and clear the slots.
-    RVA(0x00175c90, 0x45)
-    void CImageSurfaceNode::Cleanup() {
-        if (m_gdiObject) {
-            DeleteObject(m_gdiObject);
-            m_gdiObject = 0;
-        }
-        if (m_scanlineOffsets) {
-            RezFree(m_scanlineOffsets);
-            m_scanlineOffsets = 0;
-        }
-        m_pixels = 0;
-        m_paletteNode = 0;
+// 0x175c90: release the cached GDI object + Rez buffer and clear the slots.
+// The pool's node teardown IS CRezImage::Free (the same 0x175c90 the loaders' EnsureSize
+// calls) - one shared DIB-surface class.
+RVA(0x00175c90, 0x45)
+void CRezImage::Free() {
+    if (m_dibSection) {
+        DeleteObject(m_dibSection);
+        m_dibSection = 0;
     }
+    if (m_rowOffsets) {
+        RezFree(m_rowOffsets);
+        m_rowOffsets = 0;
+    }
+    m_pixels = 0;
+    m_paletteNode = 0;
+}
 
+namespace ApiCallerStubs {
     // 0x176df0: build a 256-entry LOGPALETTE from src, optionally reserve the system
     // range, then realize it into m_palette.
     RVA(0x00176df0, 0x71)

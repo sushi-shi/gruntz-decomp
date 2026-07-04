@@ -6,13 +6,13 @@
 // Pass: build a BITMAPFILEHEADER (copied from the 14-byte template @0x61aabc, then the
 // bfSize/bfOffBits slots patched) + a zeroed BITMAPINFOHEADER and 256-entry colour table
 // (de-interleaved from the source palette object's RGBQUADs), open the file and Write the
-// two headers then the scanlines bottom-up (m_pixels + m_scanlineOffsets[row], width bytes each).
+// two headers then the scanlines bottom-up (m_pixels + m_rowOffsets[row], width bytes each).
 //
 // The CFile ctor/Open/Write/dtor are reloc-masked __thiscall engine bodies; the surface
 // geometry fields are named (see the header), only offsets + emitted bytes are load-bearing.
 #include <Mfc.h>
 
-#include <Image/CScanlineSurface.h>
+#include <Image/Image.h>
 #include <rva.h>
 #include <Globals.h>
 
@@ -37,7 +37,7 @@ struct BmpFile {
     char pad[0x440 - 0x10];
 };
 
-// CScanlineSurface::SaveBmp(filename, paletteObj), __thiscall (ret 8).
+// CRezImage::SaveBmp(filename, paletteObj), __thiscall (ret 8).
 // @early-stop
 // /GX-EH + stack-layout wall: the logic (header build, the RGBQUAD de-interleave, the
 // bottom-up scanline Write loop) and the reloc-masked CFile calls are faithful, but the
@@ -45,10 +45,10 @@ struct BmpFile {
 // different stack slots than retail, and the EH frame shifts the whole allocation. A
 // complete, correct reconstruction parked on the documented EH/stack-slot wall. topic:wall.
 RVA(0x00176b30, 0x1e5)
-i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
+i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
     if (obj == 0) {
-        obj = m_paletteObj; // +0x458 default palette object
+        obj = m_paletteNode; // +0x458 default palette object
         if (obj == 0) {
             return 0;
         }
@@ -95,7 +95,7 @@ i32 CScanlineSurface::SaveBmp(const char* filename, void* paletteObj) {
     file.m_8.Write(fileHdr, 0xe);
     file.m_8.Write(info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
-        file.m_8.Write(m_pixels + m_scanlineOffsets[row], m_width);
+        file.m_8.Write((u8*)m_pixels + m_rowOffsets[row], m_width);
     }
     return 1;
 }

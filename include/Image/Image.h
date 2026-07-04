@@ -70,6 +70,24 @@ public:
     // External/no-body so its call reloc-masks. ret 0x18 = 6 stack args.
     i32 DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, void* a3);
 
+    // The rest of the DIB-surface class (bodies in CScanlineSurface.cpp /
+    // CScanlineSurfaceSave.cpp / ImagePool.cpp) - formerly the fragmented views
+    // CScanlineSurface and ApiCallerStubs::CImageSurfaceNode, now folded onto this
+    // one class. DispatchDecode (0x175a00) is the format-decoder selector: __thiscall,
+    // reads `kind` (the 2nd stack arg, 2..5) and forwards (this, buf, a2, a3) to one
+    // of the four Decode*Data decoders keeping `this` in ecx (the retail 2-register
+    // arg-forward reserves ecx for the pass-through). EnsureSize/Convert8To16 reallocate
+    // via DecodeBmpHeader (the "Create" entry @0x1757c0); Free (0x175c90, == the pool's
+    // node Cleanup) releases the DIB object + the operator-new'd row table; SetPalette
+    // (0x176ad0) latches the associated palette node; SaveBmp writes the 8bpp plane out.
+    i32 DispatchDecode(void* buf, i32 kind, void* dc, void* ctrl);    // 0x175a00
+    i32 Convert8To16(void* dc, CRezImage* src, void* pal);            // 0x175b80
+    i32 EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, void* flag); // 0x175ce0
+    void Fill(i32 value);                                             // 0x175d50
+    void Free();                                                      // 0x175c90 (pool: Cleanup)
+    void SetPalette(void* paletteNode, i32 scalar);                   // 0x176ad0
+    i32 SaveBmp(const char* filename, void* paletteObj);              // 0x176b30
+
     // Layout. The object opens with a BITMAPINFOHEADER (this+0,
     // biSize..biClrImportant) and a 256-entry WORD color table (this+0x28);
     // DecodeBmpHeader fills these, CreateDIBSections the plane and builds the
@@ -86,10 +104,10 @@ public:
     i32 m_bitCount;               // +0x440  bits per pixel
     i32 m_stride;                 // +0x444  aligned destination row stride (bytes per row)
     i32 m_rowPad;                 // +0x448  destination padding = m_stride - m_width
-    char m_pad44c[0x4];           // +0x44c
+    void* m_listPosition;         // +0x44c  pool: cached AddTail POSITION (surface list node)
     i32 m_transparent;            // +0x450  flag (1 = transparent/RLE plane)
-    i32 m_454;                    // +0x454  0 (write-only; role unproven)
-    i32 m_458;                    // +0x458  0 (write-only; role unproven)
+    i32 m_paletteScalar;          // +0x454  associated palette scalar (SetPalette 2nd arg)
+    void* m_paletteNode;          // +0x458  palette node / SaveBmp default palette object
 };
 
 // ---------------------------------------------------------------------------
@@ -372,7 +390,7 @@ public:
     i32 DecodeRun24(void* dst);                                      // 0x140c50
     i32 RunDecode1(void* dst, void* src, i32 width, i32 height);     // 0x145270
     i32 RunDecode3(void* dst, void* src, i32 width, i32 height);     // 0x1453f0
-    void FillPalette(void* arg);                                     // 0x13eb40
+    void FillPalette(u32 key);                                       // 0x13eb40
 
     // The per-(dest-bpp,src-bpp) blit specializations Blit dispatches to (external
     // no-body, reloc-masked; stubbed in src/Stub). The trailing digits encode
