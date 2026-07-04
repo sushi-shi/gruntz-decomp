@@ -1970,6 +1970,13 @@ rva,name,lib,confidence,source
 0x1699e0,msc_iostream_iostream_ctor_1699e0,LIBCMT,LOW,iostream-cluster-bail
 0x169bc0,msc_iostream_iostream_dtor_169bc0,LIBCMT,LOW,iostream-cluster-bail
 0x169d10,msc_iostream_ios_ctor_169d10,LIBCMT,LOW,iostream-cluster-bail
+0x1697c0,msc_ios_vbase_ctor_thunk_1697c0,LIBCMT,LOW,iostream-cluster-bail
+0x1699c0,msc_ios_vbase_ctor_thunk_1699c0,LIBCMT,LOW,iostream-cluster-bail
+0x169c00,msc_ios_ctor_169c00,LIBCMT,LOW,iostream-cluster-bail
+0x169d70,??1ios@@UAE@XZ,LIBCMT,LOW,iostream-cluster-bail
+0x169dd0,msc_ios_setsub_169dd0,LIBCMT,LOW,iostream-cluster-bail
+0x16b650,msc_ios_vbase_ctor_thunk_16b650,LIBCMT,LOW,iostream-cluster-bail
+0x16c0c0,msc_ios_vbase_ctor_thunk_16c0c0,LIBCMT,LOW,iostream-cluster-bail
 0x169c70,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16ab90,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x16b0c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

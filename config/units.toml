@@ -2581,13 +2581,9 @@ unit = "worldlevelkey"
 source = "src/Gruntz/WorldLevelKey.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "filegetstatus"
-source = "src/Gruntz/FileGetStatus.cpp"
-# MFC-derived (CFile::GetStatus); NAFXCW ships /ln (favor size): pushes memory
-# operands directly + pins the -1 constant in ebx (both /O2-framed misses here).
-flags = "o1"
-
+# filegetstatus unit REMOVED: CFile::GetStatus (0x1c152f) is statically-linked
+# NAFXCW/MFC library code (FID-anchored in config/library_labels.csv), not game
+# scope - it is carved out there rather than hand-reconstructed.
 
 
 [[unit]]

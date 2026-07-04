@@ -114,89 +114,13 @@ struct ButeRef24 {
 };
 SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 
-// ios - the CRT/MSVC 5.0 <iostream.h> `ios` base class (the .bute parser reads
-// its config files through C++ iostreams). RTTI-PROVEN: the vtable at 0x5f03bc
-// carries the Complete-Object-Locator whose type descriptor is `.?AVios@@`
-// (gruntz.analysis.vtable_hierarchy --class ios), a ROOT class (no base).
-// Corroborated by the reconstructed bodies below: the ctor seeds the ios defaults
-// (precision 6 @+0x28, fill ' '=0x20 @+0x2c, x_width -1 @+0x34), inits a
-// per-instance CRITICAL_SECTION (ios::x_lock) + ref-counts a shared one (the CRT
-// _mtlock), and InitVbaseA..D are the virtual-base-construction thunks (ios is the
-// shared virtual base of the iostream MI diamond istream/ostream). The former
-// fabricated name "CButeMgrHelper" is replaced by the real library name.
-//
-// This is the hand-reconstructed, byte-matched view of the statically-linked CRT
-// ios (its ctor/dtor/vbase-thunks are matched at 100%); we do NOT pull the real
-// <ios.h> because that would drop those matched methods (the library ios ctor +
-// vbase thunks are not emitted as standalone annotatable symbols) and the layout
-// here is a matching device (field names placeholders; only OFFSETS/bytes bind).
-//
-// Layout recovered from the ctor's field-init list (0x169c00):
-//   +0x00  vptr      : vptr (0x5f03bc, shared with the dtor's vtable restore)
-//   +0x04  m_pSub    : void* - the streambuf/sub-object pointer (dtor/SetSub
-//                      delete-and-replace target; its slot-0 is a scalar deleting dtor)
-//   +0x08  m_flags   : int   - flag word (SetSub toggles bit 0x4 from sub nullness)
-//   +0x0c  m_0c      : int   - zero-init
-//   +0x10  m_10      : int   - zero-init
-//   +0x14  m_14[8]   : padding to +0x1c
-//   +0x1c  m_ownsSub : int   - "owns sub-object" guard (SetSub checks it; ios x_delbuf)
-//   +0x20  m_20      : int   - zero-init
-//   +0x24  m_24      : int   - zero-init
-//   +0x28  m_28      : int   - 6   (default precision)
-//   +0x2c  m_2c      : char  - 0x20 (default fill ' ')
-//   +0x30  m_30      : int   - zero-init
-//   +0x34  m_34      : int   - -1  (default width)
-//   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
-// REAL POLYMORPHIC (ALL-VTABLES): the +0x00 vptr is implicit (virtual dtor); its
-// own primary vtable ??_7ios @0x5f03bc. The constructor (0x169c00) and the teardown
-// dtor (0x169d70) are modeled as a real C++ ctor/dtor so cl auto-stamps the vptr
-// (== the old manual stamp) and emits the retail `.?AVios@@` descriptor, reloc-masked.
-// The owned +0x4 sub-object (a CRT streambuf): a polymorphic dispatch view whose
-// slot-0 scalar-deleting dtor the ios teardown/SetSub fires. Defined in ButeMgr.cpp.
-struct CButeSub;
-
-VTBL(ios, 0x001f03bc); // ios' own primary vtable (ctor/dtor auto-stamp)
-class ios {
-public:
-    void FuncA();
-
-    // The constructor: zero-init the fields, stamp the vptr (auto), set the
-    // constants, init the per-instance critical section, and one-time-init the
-    // shared critical section under a ref-count guard. (0x169c00, was Construct.)
-    ios();
-    // The teardown/cleanup dtor (0x169d70, was FuncB): restore the vptr (auto),
-    // reset m_34, drop the shared crit-sec under the ref-count guard, delete the
-    // per-instance one, tear down the owned +0x4 sub-object, reset sub + flag word.
-    virtual ~ios();
-    // Replace the sub-object at +0x4 (delete the old one through its vtable when
-    // owned), then toggle bit 0x4 of m_flags from the new pointer's nullness.
-    void SetSub(void* p);
-    // The virtual-base vtable-init thunks (compiler vbase ctor closures): each
-    // stamps a virtual-base subobject's vptr through the this-relative vbtable;
-    // the A/B pair tail into the C/D ret-only thunks. TERMINAL virtual-inheritance
-    // wall - the vbase construction tables can't be reproduced from a clean model.
-    void InitVbaseA();
-    void InitVbaseB();
-    void InitVbaseC();
-    void InitVbaseD();
-
-    // vptr implicit @ +0x00 (??_7ios@@6B@ = 0x5f03bc)
-    CButeSub* m_pSub;          // +0x04  owned streambuf sub-object (slot-0 scalar dtor)
-    i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
-    i32 m_0c;                  // +0x0c
-    i32 m_10;                  // +0x10
-    char m_pad14[0x1c - 0x14]; // +0x14
-    i32 m_ownsSub;             // +0x1c  "owns sub-object" guard (SetSub checks it)
-    i32 m_20;                  // +0x20
-    i32 m_24;                  // +0x24
-    i32 m_28;                  // +0x28
-    char m_2c;                 // +0x2c
-    char m_pad2d[0x30 - 0x2d]; // +0x2d
-    i32 m_30;                  // +0x30
-    i32 m_34;                  // +0x34
-    CRITICAL_SECTION m_cs;     // +0x38
-};
-SIZE(ios, 0x50); // fields through m_cs (CRITICAL_SECTION @0x38, 0x18 B)
+// The statically-linked MSVC 5.0 <iostream.h> `ios` base (RTTI `.?AVios@@`, vtable
+// 0x5f03bc) that CButeMgr embeds at +0x14 is LIBRARY code (LIBCP.LIB / LIBCMT), not
+// game scope: its ctor/dtor/streambuf-setter + the virtual-base construction thunks
+// are carved out in config/library_labels.csv and are NOT reconstructed here. The
+// parser's own ios view lives in ButeMgrParse.cpp (struct ButeIos); the one game
+// consumer, CButeMgr::ClearHelper, calls the two library entry points it needs
+// through a tiny caller-side receiver defined locally in ButeMgr.cpp.
 
 // CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
 // sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the

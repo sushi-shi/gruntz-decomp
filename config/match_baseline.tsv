@@ -59,7 +59,7 @@ brickz	15	3
 brickzload	1	0
 bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
-butemgr	47	30
+butemgr	40	24
 butemgrparse	1	0
 butenode	3	1
 butesectionctor	1	0
@@ -246,7 +246,6 @@ fadersetup	1	0
 fadershapesetup	1	0
 fadertilerender	2	0
 feccrypt	3	2
-filegetstatus	1	0
 filemem	9	8
 filepathinfo	3	0
 filestream	12	10
@@ -856,12 +855,10 @@ brickz	?UpdateDiagonals@CBrickzGrid@@QAEHH@Z	53.5683	53.5683	1	06ff2322b054	0x82
 brickzload	?LoadAttributes@CBrickz@@QAEHHH@Z	12.5917	12.5917	5	8d40019fc5e8	0x810f0
 bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	1	8e1c162b9ed0	0x110860
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9695	70.9695	3	8f39c886254c	0xbf1d0
-butemgr	??0ios@@QAE@XZ	100.0000	100.0000	1	3f3309bfcfe8	0x169c00
 butemgr	??1CButeMgr@@QAE@XZ	68.6322	68.6322	1	febe7cdf6ea9	0x213c0
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	1	44a2235fbbca	0x172160
-butemgr	??1ios@@UAE@XZ	100.0000	100.0000	2	d2a7b6e20683	0x169d70
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	2	6b8d1de98cce	0x1703e0
-butemgr	?ClearHelper@CButeMgr@@QAEXXZ	66.8750	66.8750	5	0b3042ae552e	0x171a40
+butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	6	e9f26789c22c	0x171a40
 butemgr	?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z	65.0865	65.0865	1	d4689edf2d09	0x172040
 butemgr	?Exists@CButeMgr@@QAE_NPBD0@Z	100.0000	100.0000	1	40aa0c9a8b9d	0x171a60
 butemgr	?GetDouble@CButeMgr@@QAENPBD0@Z	100.0000	100.0000	1	dbf373c952a1	0x172c40
@@ -877,13 +874,9 @@ butemgr	?GetRef8@CButeMgr@@QAEPAUCButeRef8@@PBD0@Z	85.4783	85.4783	1	bef0d52943d
 butemgr	?GetString@CButeMgr@@QAEPADPBD0@Z	99.6324	99.6324	1	2204272fabff	0x1731d0
 butemgr	?GetStringDef@CButeMgr@@QAEPAVCString@@PBD0PAV2@@Z	100.0000	100.0000	1	ac5f0629d8f1	0x173180
 butemgr	?Init@CButeMgr@@QAEXXZ	100.0000	100.0000	2	5883047925f0	0x170330
-butemgr	?InitVbaseA@ios@@QAEXXZ	100.0000	100.0000	1	f36a743eb16a	0x1697c0
-butemgr	?InitVbaseB@ios@@QAEXXZ	100.0000	100.0000	1	d2892e79a71b	0x1699c0
-butemgr	?InitVbaseC@ios@@QAEXXZ	100.0000	100.0000	1	e0835ba3d548	0x16b650
-butemgr	?InitVbaseD@ios@@QAEXXZ	100.0000	100.0000	1	bc4d9fe2768d	0x16c0c0
 butemgr	?InvokeCallback@CButeMgr@@QAEPAXP6APAXPAV1@@Z@Z	100.0000	100.0000	3	b8aec83ccb1a	0x171550
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	3	527d3af29fa4	0x170390
-butemgr	?Parse@CButeMgr@@QAE_NXZ	95.0352	95.0352	7	fa077d24fa1d	0x1704c0
+butemgr	?Parse@CButeMgr@@QAE_NXZ	94.6831	94.6831	7	fa077d24fa1d	0x1704c0
 butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	40.8564	40.8564	5	7ee68a420d32	0x170750
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	94.6377	94.6377	4	fbb86aa44ad1	0x171580
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	97.8824	97.8824	8	25c4524d5359	0x1711b0
@@ -901,7 +894,6 @@ butemgr	?SetRef5@CButeValue@@QAEPAU1@HPBUButeRef16@@@Z	100.0000	100.0000	1	cb350
 butemgr	?SetRef7@CButeValue@@QAEPAU1@HPBUButeRef24@@@Z	100.0000	100.0000	1	7f70d7682e03	0x174730
 butemgr	?SetRef8@CButeValue@@QAEPAU1@HPBUButeRef16@@@Z	100.0000	100.0000	1	5092d3e2fe65	0x174cb0
 butemgr	?SetString@CButeValue@@QAEPAU1@HABVCString@@@Z	100.0000	100.0000	1	c27f9fcb97b7	0x1736a0
-butemgr	?SetSub@ios@@QAEXPAX@Z	100.0000	100.0000	2	5b26dd6266a0	0x169dd0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	2	672209f4feee	0x171160
 butemgrparse	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	2	89f2096c845f	0x3cc20
 butenode	??0CButeCfgNode174d@@QAE@H@Z	100.0000	100.0000	2	d7f02ce2538b	0x174d00
@@ -1302,7 +1294,7 @@ cfileimagerundecode	?RunDecode3@CFileImage@@QAEHPAX0HH@Z	99.5427	99.5427	1	43595
 cfixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	2	2797f241ff3c	0x134c80
 cfixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	2	096306e621bc	0x134c60
 cfixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	2	9d1ec6c23328	0x134be0
-cfortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.1482	87.1482	8	4a036f1eb99a	0x45d30
+cfortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	87.0296	87.0296	8	4a036f1eb99a	0x45d30
 cfortressflag	??1CFortressFlag@@UAE@XZ	100.0000	100.0000	1	2055bad4ba8d	0x10e90
 cfortressflag	?AdvanceAnim@CFortressFlag@@QAEHXZ	100.0000	100.0000	1	fe412e5b2595	0x463e0
 cfortressflag	?GetTypeTag@CFortressFlag@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	e14a94426987	0x10e40
@@ -1593,7 +1585,7 @@ cplay	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	3	7961f8394476	0xcffe0
 cplay	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	4	fc889e191936	0xdb7e0
 cplay	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	3	ae9b351526fa	0xdb6c0
 cplay	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	2	07c8a5320451	0xd1710
-cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.2200	86.2200	3	881a8cd68b99	0xd12b0
+cplay	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	881a8cd68b99	0xd12b0
 cplay	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	2	969efe4aecb2	0xd65d0
 cplay	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	1	49243b4e5268	0xcb740
 cplay	?NotifyVisibleEntities@CPlay@@QAEHXZ	74.8676	74.8676	3	17e3f8d692d4	0xd9050
@@ -1672,7 +1664,7 @@ csoundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	3	6ddda
 csoundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	3	e9995291b3dd	0xfa8f0
 csoundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	4	7d5e17ab225c	0xfaa60
 csplashstate	?LoadSounds@CSplashState@@QAEHHHH@Z	100.0000	100.0000	3	2bbff5c149ee	0xf9780
-cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	51.9551	51.9551	3	d0586170162a	0xb1ee0
+cspotlight	?Update_0b1ee0@CSpotLight@@QAEHXZ	55.5056	55.5056	3	d0586170162a	0xb1ee0
 cspotlightctor	??0CSpotLight@@QAE@PAUCGameObject@@@Z	84.4734	84.4734	4	e63e276b361e	0xb1200
 cstateleaf8cf30	??1CHelpState@@UAE@XZ	100.0000	100.0000	1	b3e2189a4d39	0x8cf30
 cstatichazard	??0CStaticHazard@@QAE@PAUCGameObject@@@Z	82.5685	82.5685	7	5d7d3448a7b2	0xfb7a0
@@ -1981,7 +1973,6 @@ fadertilerender	?RenderWarpTile@CFaderTileRender@@QAEXHH@Z	43.9935	43.9935	4	5cd
 feccrypt	?FecDecode@@YGXPBDPADG@Z	100.0000	100.0000	1	5b0e31c468f8	0x17bfe0
 feccrypt	?FecEncode@@YGXPBDPAD@Z	100.0000	100.0000	1	6bc3315ae515	0x17bf70
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	71.3600	71.3600	2	b0a1392b9cfe	0x17b5f0
-filegetstatus	?GetStatus@CFile@@QBEHAAUCFileStatus@@@Z	94.5882	94.5882	1	1711653de3f3	0x1c152f
 filemem	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	2	d75cea6c3ecf	0x157850
 filemem	??1CFileMem@@UAE@XZ	59.8148	59.8148	1	161a08579238	0x157980
 filemem	?Open@CFileMem@@UAEHXZ	100.0000	100.0000	2	b99db6406cbf	0x165e60
@@ -2217,7 +2208,7 @@ grunt	?BuildEntranceAnimation@CGrunt@@QAEXH@Z	71.4562	71.4562	8	1b10a4a61e60	0x6
 grunt	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	6	576eed3f032a	0x641b0
 grunt	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	99.9032	99.9032	3	a7b05c5f0d12	0x57890
 grunt	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	04ada45b6431	0x3c7f0
-grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7723	78.7723	1	bb4ee352e2c0	0x62b70
+grunt	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.8911	78.8911	1	bb4ee352e2c0	0x62b70
 grunt	?CGrunt_TileSwitch@@YGXHHHHHH@Z	66.2000	66.2000	2	e4d83b1d7834	0x4b320
 grunt	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	5	45397f7f939c	0x514a0
 grunt	?ClaimSwitchTile@CGrunt@@QAEHXZ	61.5954	61.5954	4	6dc9c894153f	0x52c70
@@ -2258,7 +2249,7 @@ grunt	?PlayMoveSoundAtTile@CGrunt@@QAEXHH@Z	100.0000	100.0000	1	a7adfdf5dae3	0x5
 grunt	?PlaySound@CGrunt@@QAEXHUCGruntVoiceRec@@@Z	62.4901	62.4901	4	941434878451	0x4ac10
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	96.8421	96.8421	6	5652ecb14dc8	0x48400
 grunt	?RearmAttackAnim2@CGrunt@@QAEHXZ	73.0980	73.0980	4	3af6858ae63e	0x61bc0
-grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	54.0229	54.0229	7	366ccb974d69	0x61940
+grunt	?RearmAttackAnim@CGrunt@@QAEHHH@Z	55.5420	55.5420	7	366ccb974d69	0x61940
 grunt	?RearmEntranceDrop@CGrunt@@QAEXXZ	88.8646	88.8646	4	00c810d58229	0x68370
 grunt	?RectContains@CGrunt@@QAEHHH@Z	58.8145	58.8145	4	83e50bbcc1b8	0x51850
 grunt	?RectContainsGated@CGrunt@@QAEHHH@Z	62.3307	62.3307	3	ef9c48064558	0x51a20
@@ -2384,11 +2375,11 @@ gruntzcommand	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	
 gruntzcommand	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	698937fc0f7d	0x24430
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
 gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
-gruntzcommand	?Load@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x245f0
-gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x247d0
+gruntzcommand	?Load@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	b8b67c7b8c36	0x245f0
+gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	7678947eff40	0x247d0
 gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	1	dc044912d246	0x240d0
 gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5dc220	0x24050
-gruntzcommand	?Save@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	cpp:3152c97f8931	0x24520
+gruntzcommand	?Save@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	2c7b77016b78	0x24520
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60
@@ -3567,7 +3558,7 @@ triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	85.3243	85.3243	6	03cb1201c01d	0x7
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.9118	84.9118	6	8b18159fd6d9	0x7b1b0
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	2	4490579c401f	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	19.4654	19.4654	3	8470763035a4	0x6d300
-triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.7985	64.7985	4	d06b117ca010	0x798d0
+triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.8731	64.8731	4	d06b117ca010	0x798d0
 triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	65.3555	65.3555	2	95a6e651b9a9	0x7abc0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	5	7f839d22e4c1	0x79b80
 triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9	0x112860
