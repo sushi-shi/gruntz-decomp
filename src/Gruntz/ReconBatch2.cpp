@@ -5,9 +5,10 @@
 // the OFFSETS + emitted code bytes are load-bearing, campaign doctrine). All are
 // plain /O2 /MT frameless leaves (no SEH/EH frame). External engine callees are
 // modeled with NO body so their rel32 calls reloc-mask.
-#include <Win32.h>
+#include <Mfc.h> // real MFC (CPtrList/CString) + windows.h via afx.h (superset of Win32.h)
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
+#include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer singleton)
 #include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
@@ -28,19 +29,16 @@ void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
 }
 
 // ===========================================================================
-// 0x000bf580 (16B) - `g_list.AddTail(arg0)` on a global list (DAT_0064aca8).
-// The list at 0x64aca8 is really the MFC CPtrList `g_pool` (canonical symbol
-// ?g_pool@@3VCPtrList@@A, owned by LobbySync.cpp); PtrList_bf580 is this Win32 TU's
-// placeholder view (AddTail == CPtrList::AddTail, reloc-masked).
+// 0x000bf580 (16B) - `g_pool.AddTail(arg0)` on the global recycled-node pool at
+// 0x64aca8: the real MFC CPtrList `g_pool` (canonical ?g_pool@@3VCPtrList@@A, owned by
+// LobbySync.cpp). Reachable directly now that this TU is MFC (wall broken); AddTail is
+// the real NAFXCW CPtrList::AddTail (reloc-masked).
 // ===========================================================================
-struct PtrList_bf580 { // = CPtrList (g_pool @0x64aca8, see LobbySync.cpp)
-    void AddTail(void* p);
-};
 DATA(0x0024aca8)
-extern PtrList_bf580 g_list_64aca8;
+extern CPtrList g_pool;
 RVA(0x000bf580, 0x10)
 void AddTail_bf580(void* p) {
-    g_list_64aca8.AddTail(p);
+    g_pool.AddTail(p);
 }
 
 // ===========================================================================
@@ -97,11 +95,9 @@ void Host_c2a80::Run() {
 struct OptionsSlotHost_c4b30 {
     i32* FindOptionsSlot(i32 key); // 0x2e00 (FindOptionsSlot)
 };
-// The multiplayer game-state singleton at 0x64bd5c is a CMulti (xref-proven; see
-// <Gruntz/Multi.h>). This Win32 TU can't include <Gruntz/Multi.h> (MFC C1189 wall vs
-// <Win32.h>), so the singleton is a forward-declared CMulti* and the one field it reads
-// is accessed by offset: +0x5c0 == CMulti::m_hostIndex. This TU owns the canonical DATA.
-class CMulti;
+// The multiplayer game-state singleton at 0x64bd5c is the real CMulti (xref-proven;
+// <Gruntz/Multi.h>, included above now that this TU is MFC -- the old <Win32.h> wall is
+// broken). This TU owns the canonical DATA; Resolve reads CMulti::m_hostIndex directly.
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 struct OptOwner_c4b30 {
@@ -111,7 +107,7 @@ struct OptOwner_c4b30 {
 };
 RVA(0x000c4b30, 0x1f)
 i32 OptOwner_c4b30::Resolve() {
-    i32* slot = m_5c->FindOptionsSlot(*(i32*)((char*)g_64bd5c + 0x5c0)); // m_hostIndex
+    i32* slot = m_5c->FindOptionsSlot(g_64bd5c->m_hostIndex);
     if (slot == 0) {
         return -1;
     }
@@ -521,7 +517,6 @@ SIZE_UNKNOWN(Obj_11e8dc);
 SIZE_UNKNOWN(OptOwner_c4b30);
 SIZE_UNKNOWN(OptionsSlotHost_c4b30);
 SIZE_UNKNOWN(PresentHost_faec0);
-SIZE_UNKNOWN(PtrList_bf580);
 SIZE_UNKNOWN(Src_16f6e0);
 SIZE_UNKNOWN(SubView_faec0);
 SIZE_UNKNOWN(SurfCtl_faec0);
