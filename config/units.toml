@@ -294,12 +294,8 @@ flags = "base"
 [[unit]]
 unit = "triggermgr"
 source = "src/Gruntz/TriggerMgr.cpp"
-flags = "base"
-
-[[unit]]
-unit = "triggermgr_eh"
-source = "src/Gruntz/TriggerMgrEh.cpp"
 flags = "eh"
+
 
 [[unit]]
 unit = "userlogic"
