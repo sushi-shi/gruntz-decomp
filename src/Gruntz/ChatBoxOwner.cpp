@@ -4,6 +4,7 @@
 // bytes are load-bearing; helpers are reloc-masked externals.
 #include <rva.h>
 
+#include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
 #include <Gruntz/CGameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
 
@@ -35,21 +36,53 @@ struct CChatBoxRegRoot { // m_18 points here
     char m_pad00[0x10];
     CChatBoxRegistry* m_10; // +0x10
 };
-// arg1->m_2c->m_8: a polymorphic DC source. GetDC (slot +0x44 == #17) and Done
-// (slot +0x68 == #26) are __stdcall slots taking the object explicitly.
-struct CChatBoxDcVtbl;
-struct CChatBoxDcSrc {
-    CChatBoxDcVtbl* m_vptr;
-};
-struct CChatBoxDcVtbl {
-    void* s0[0x11];                                   // slots 0..16
-    void(__stdcall* GetDC)(CChatBoxDcSrc*, HDC* out); // slot 17 == +0x44
-    void* s18[0x68 / 4 - 0x12];                       // slots 18..25
-    void(__stdcall* Done)(CChatBoxDcSrc*, HDC);       // slot 26 == +0x68
+// arg1->m_2c->m_8: the game's IDirectDrawSurface (DDRAW COM). GetDC is slot 17
+// (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the
+// hidden `this`. A local SDK-named interface (real DX6 slot names) so
+// `surf->GetDC(&hdc)` lowers to the same `push &hdc; push surf; mov reg,[surf];
+// call [reg+slot]` the manual vtbl-struct view did; pointer-only -> no vtable
+// emitted in this TU.
+struct IDirectDrawSurfaceZ {
+    STDMETHOD(QueryInterface)() PURE;        // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
+    STDMETHOD_(u32, Release)() PURE;         // slot 2
+    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
+    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
+    STDMETHOD(Blt)() PURE;                   // slot 5
+    STDMETHOD(BltBatch)() PURE;              // slot 6
+    STDMETHOD(BltFast)() PURE;               // slot 7
+    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
+    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
+    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
+    STDMETHOD(Flip)() PURE;                  // slot 11
+    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
+    STDMETHOD(GetBltStatus)() PURE;          // slot 13
+    STDMETHOD(GetCaps)() PURE;               // slot 14
+    STDMETHOD(GetClipper)() PURE;            // slot 15
+    STDMETHOD(GetColorKey)() PURE;           // slot 16
+    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
+    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
+    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
+    STDMETHOD(GetPalette)() PURE;            // slot 20
+    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
+    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
+    STDMETHOD(Initialize)() PURE;            // slot 23
+    STDMETHOD(IsLost)() PURE;                // slot 24
+    STDMETHOD(Lock)() PURE;                  // slot 25
+    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
+    STDMETHOD(Restore)() PURE;               // slot 27
+    STDMETHOD(SetClipper)() PURE;            // slot 28
+    STDMETHOD(SetColorKey)() PURE;           // slot 29
+    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
+    STDMETHOD(SetPalette)() PURE;            // slot 31
+    STDMETHOD(Unlock)() PURE;                // slot 32
+    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
+    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
+    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
 };
 struct CChatBoxDcHost { // arg1->m_2c points here
     char m_pad00[0x8];
-    CChatBoxDcSrc* m_8; // +0x08
+    IDirectDrawSurfaceZ* m_8; // +0x08
 };
 struct CChatBoxCtx { // arg1 points here
     char m_pad00[0x2c];
@@ -250,7 +283,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     HDC hdc = 0;
-    host->m_8->m_vptr->GetDC(host->m_8, &hdc);
+    host->m_8->GetDC(&hdc);
     if (!hdc) {
         return 1;
     }
@@ -272,7 +305,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[3] = (void*)(self->m_4 + 0x37);
         self->m_14->StampText(hdc, 0x17b, rect);
     }
-    host->m_8->m_vptr->Done(host->m_8, hdc);
+    host->m_8->ReleaseDC(hdc);
     return 1;
 }
 
@@ -280,8 +313,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
 // live in ChatBoxOwner.h).
 SIZE_UNKNOWN(CChatBoxCtx);
 SIZE_UNKNOWN(CChatBoxDcHost);
-SIZE_UNKNOWN(CChatBoxDcSrc);
-SIZE_UNKNOWN(CChatBoxDcVtbl);
+SIZE_UNKNOWN(IDirectDrawSurfaceZ);
 SIZE_UNKNOWN(CChatBoxFrame);
 SIZE_UNKNOWN(CChatBoxHash);
 SIZE_UNKNOWN(CChatBoxRegRoot);

@@ -1400,7 +1400,7 @@ chatboxowner	?Configure@CChatBoxOwner@@QAEXH@Z	69.1600	69.1600	2	60b7026f1695	0x
 chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	1	5fefd421f983	0x20510
 chatboxowner	?GetField1c@CChatBoxOwner@@QAE?AVCString@@XZ	100.0000	100.0000	1	4e17040d1b35	0x20ef0
 chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	38.1212	38.1212	2	7af03ac39e80	0x21140
-chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHH@Z	83.3714	83.3714	1	61826b87232e	0x20f40
+chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHH@Z	83.3714	83.3714	2	65de91f0fc35	0x20f40
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	0.2088	0.2088	1	648b4b881843	0x205c0
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	94bf38f28220	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	1	77144daa4699	0x22be0
@@ -2137,7 +2137,7 @@ gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	3	7a5141c2b00e	0xa0d80
 gamemode	?BuildWarpStoneGlitterAnimation@CMultiBootyState@@QAEHXZ	88.1274	88.1274	3	246794ce9c3d	0x19540
 gamemode	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	4	4a742783bdac	0x1c0f0
-gamemode	?DrawScrollingCredits@CCreditsState@@QAEHXZ	75.3092	75.3092	2	aca1a81d9102	0x396f0
+gamemode	?DrawScrollingCredits@CCreditsState@@QAEHXZ	75.3092	75.3092	3	10e4e2506d91	0x396f0
 gamemode	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	2	195e59985910	0x39c40
 gamemode	?FlashColor@CCreditsState@@QAEHXZ	66.5769	66.5769	1	fcd764f9eff7	0x39d00
 gamemode	?FormatHudText@CMenuState@@QAEXPAUCHudBuf@@H@Z	97.4844	97.4844	1	92727a9826e5	0x1af70

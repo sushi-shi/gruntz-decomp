@@ -61,7 +61,11 @@ def _count_placeholders(code: str) -> int:
 # sites (one per slot). Drive to 0 via the vtable_hierarchy TOPOLOGICAL override
 # analysis (inherit the base's slots, name the rest from the slot RVA), NOT by
 # hand-renaming - see `python -m gruntz.analysis.vtable_hierarchy --audit/--coverage`.
-_VTSLOT = re.compile(r"virtual\b[^;{}\n]*\b(?:dummy[0-9]+|v[0-9a-f]{2,}|vfunc[0-9]*|[Ss]lot[0-9]+)\s*\(")
+_VTSLOT = re.compile(
+    r"virtual\b[^;{}\n]*\b(?:dummy[0-9]+|vfunc[0-9]*|[Ss]lot[0-9]+"
+    r"|[sv][0-9a-f]{2,3}(?![0-9a-z])"  # v04 / s04 offset-named fake slots (both are placeholders)
+    r"|[SsVv]f[0-9a-f]+)\s*\("          # Sf1 / vf10 slot-forwarders
+)
 
 
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable

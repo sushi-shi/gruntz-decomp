@@ -10,8 +10,8 @@
 // scratch buffer and inline-strcat's onto the accumulator; the 0x80 piece builds
 // a CString (FormatElapsed @0x1190f0, "%i:%02i:%02i") which gives the routine its
 // /GX exception frame, so it lives in an `eh` unit. The tail grabs a DC from a
-// polymorphic source (m_c->m_4->m_14->m_2c->m_8; GetDC = vtable slot +0x44, Done
-// = slot +0x68, both __stdcall taking the object explicitly), sets text attrs,
+// polymorphic source (m_c->m_4->m_14->m_2c->m_8; the IDirectDrawSurface COM slots
+// GetDC = +0x44, ReleaseDC = +0x68, both __stdcall), sets text attrs,
 // runs the owner's post-setup virtual (slot +0x94), and draws the accumulated
 // text bottom-aligned in the level's rect (g_dbgMgr->GetRect, then DrawTextA when
 // rect.left>0 else TextOutA).
@@ -22,7 +22,8 @@
 // literals reloc-masked against the matched string symbols. Only the offsets /
 // code bytes are load-bearing.
 
-#include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
+#include <Mfc.h>     // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
+#include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
 #include <Gruntz/CGameRegistry.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcat/strlen intrinsics (/O2)
@@ -57,22 +58,53 @@ struct DbgPosRoot { // this->m_c->m_24
     char m_pad00[0x5c];
     DbgPos* m_5c; // +0x5c
 };
-// The DC source reached through this->m_c->m_4->m_14->m_2c->m_8: a polymorphic
-// object whose vtable carries GetDC at slot +0x44 (#17) and Done at slot +0x68
-// (#26), both __stdcall taking the object explicitly.
-struct DbgDcSrc;
-struct DbgDcVtbl {
-    void* s0[0x11];                              // slots 0..16
-    void(__stdcall* GetDC)(DbgDcSrc*, HDC* out); // slot 17 == +0x44
-    void* s18[0x68 / 4 - 0x12];                  // slots 18..25
-    void(__stdcall* Done)(DbgDcSrc*, HDC);       // slot 26 == +0x68
-};
-struct DbgDcSrc {
-    DbgDcVtbl* m_vtbl; // +0x00
+// The DC source reached through this->m_c->m_4->m_14->m_2c->m_8: the game's
+// IDirectDrawSurface (DDRAW COM). GetDC is slot 17 (+0x44), ReleaseDC slot 26
+// (+0x68); both are __stdcall with the surface as the hidden `this`. Modeled as a
+// local SDK-named interface (real DX6 slot names) so `surf->GetDC(&hdc)` lowers to
+// the same `push &hdc; push surf; mov reg,[surf]; call [reg+slot]` the manual
+// vtbl-struct view did; pointer-only, so no vtable is emitted in this TU.
+struct IDirectDrawSurfaceZ {
+    STDMETHOD(QueryInterface)() PURE;        // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
+    STDMETHOD_(u32, Release)() PURE;         // slot 2
+    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
+    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
+    STDMETHOD(Blt)() PURE;                   // slot 5
+    STDMETHOD(BltBatch)() PURE;              // slot 6
+    STDMETHOD(BltFast)() PURE;               // slot 7
+    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
+    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
+    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
+    STDMETHOD(Flip)() PURE;                  // slot 11
+    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
+    STDMETHOD(GetBltStatus)() PURE;          // slot 13
+    STDMETHOD(GetCaps)() PURE;               // slot 14
+    STDMETHOD(GetClipper)() PURE;            // slot 15
+    STDMETHOD(GetColorKey)() PURE;           // slot 16
+    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
+    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
+    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
+    STDMETHOD(GetPalette)() PURE;            // slot 20
+    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
+    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
+    STDMETHOD(Initialize)() PURE;            // slot 23
+    STDMETHOD(IsLost)() PURE;                // slot 24
+    STDMETHOD(Lock)() PURE;                  // slot 25
+    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
+    STDMETHOD(Restore)() PURE;               // slot 27
+    STDMETHOD(SetClipper)() PURE;            // slot 28
+    STDMETHOD(SetColorKey)() PURE;           // slot 29
+    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
+    STDMETHOD(SetPalette)() PURE;            // slot 31
+    STDMETHOD(Unlock)() PURE;                // slot 32
+    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
+    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
+    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
 };
 struct DbgDcHost { // this->m_c->m_4->m_14->m_2c
     char m_pad00[0x8];
-    DbgDcSrc* m_8; // +0x08
+    IDirectDrawSurfaceZ* m_8; // +0x08
 };
 struct DbgL14 { // this->m_c->m_4->m_14
     char m_pad00[0x2c];
@@ -173,7 +205,7 @@ void CDbgView::DrawDebugStats() {
 
     DbgDcHost* host = m_c->m_4->m_14->m_2c;
     HDC hdc = 0;
-    host->m_8->m_vtbl->GetDC(host->m_8, &hdc);
+    host->m_8->GetDC(&hdc);
     if (hdc == 0) {
         return;
     }
@@ -197,15 +229,14 @@ void CDbgView::DrawDebugStats() {
             TextOutA(hdc, 0, dr.top, buf, strlen(buf));
         }
     }
-    host->m_8->m_vtbl->Done(host->m_8, hdc);
+    host->m_8->ReleaseDC(hdc);
 }
 
 SIZE_UNKNOWN(DbgFpsSrc);
 SIZE_UNKNOWN(DbgObjsSrc);
 SIZE_UNKNOWN(DbgPos);
 SIZE_UNKNOWN(DbgPosRoot);
-SIZE_UNKNOWN(DbgDcVtbl);
-SIZE_UNKNOWN(DbgDcSrc);
+SIZE_UNKNOWN(IDirectDrawSurfaceZ);
 SIZE_UNKNOWN(DbgDcHost);
 SIZE_UNKNOWN(DbgL14);
 SIZE_UNKNOWN(DbgDcRoot);
