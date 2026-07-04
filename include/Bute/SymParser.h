@@ -116,7 +116,7 @@ SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 // CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
 // manual vptr stamps (embedded-member "incorrect load into struct").
 // ---------------------------------------------------------------------------
-VTBL(CSymParser, 0x005ef750);
+VTBL(CSymParser, 0x001ef750);
 class CSymParser {
 public:
     virtual void V0(); // slot 0 (sub_13b9f0)

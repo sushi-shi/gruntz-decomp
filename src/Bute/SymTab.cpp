@@ -10,7 +10,7 @@
 
 // The child-scope hash-node vtable (the key-hash interface a scope exposes to its
 // parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.
-DATA(0x005ef748)
+DATA(0x001ef748)
 void* CSymTab_node_vftable;
 
 // A leaf record's parse stream is the canonical CParseSource (included above);

@@ -155,7 +155,7 @@ SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 // slot-0 scalar-deleting dtor the ios teardown/SetSub fires. Defined in ButeMgr.cpp.
 struct CButeSub;
 
-VTBL(ios, 0x005f03bc); // ios' own primary vtable (ctor/dtor auto-stamp)
+VTBL(ios, 0x001f03bc); // ios' own primary vtable (ctor/dtor auto-stamp)
 class ios {
 public:
     void FuncA();

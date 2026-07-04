@@ -108,7 +108,7 @@ struct CDDrawSurfaceMgr {
 };
 
 SIZE_UNKNOWN(CDDrawSurfacePair);
-VTBL(CDDrawSurfacePair, 0x005eff30);
+VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
     void BltSelf(CDDrawSurfacePair* src);      // 0x03a1d0

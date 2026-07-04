@@ -71,7 +71,7 @@ public:
                             //        (name/password strdup'd in place)
 };
 SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
-VTBL(CNetPlayerListNode, 0x005f0760); // own (most-derived) vtable
+VTBL(CNetPlayerListNode, 0x001f0760); // own (most-derived) vtable
 
 // ---------------------------------------------------------------------------
 // CNetSessionNode - two CString members + two raw heap buffers.
@@ -90,7 +90,7 @@ public:
     i32 m_listPosition;   // +0x20  cleared on teardown
 };
 SIZE(CNetSessionNode, 0x24);       // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
-VTBL(CNetSessionNode, 0x005f0778); // own (final) vtable
+VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 
 // ===========================================================================
 // CNetPlayerListNode::~CNetPlayerListNode  @0x1793b0

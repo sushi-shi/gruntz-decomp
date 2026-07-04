@@ -22,7 +22,7 @@
 // anonymous Vtbl_1f0748 in UnknownVTables.h); reloc-masked, matching-neutral. Kept in
 // this TU (the one that emits the vtable via the out-of-line dtor); the class layout +
 // SIZE live in the shared header.
-VTBL(InterfaceObject, 0x005f0748);
+VTBL(InterfaceObject, 0x001f0748);
 
 // InterfaceObject::GetName (0x179300) - copy-construct the +0x8 name CString into
 // the caller's return slot and hand it back.

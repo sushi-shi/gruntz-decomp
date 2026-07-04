@@ -66,7 +66,7 @@ public:
     i32 m_0c; // +0x0c  zero-init
 };
 SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, 0 }
-VTBL(CButeNodeEntry, 0x005f04d8); // the entry member's own (base) vtable
+VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 
 // zPTree layout (multiply-derived, two vptrs):
 //   +0x00  CContainerErr base   (vptr, msg)
@@ -83,7 +83,7 @@ public:
     i32 m_child28; // +0x28  child link (zeroed)
 };
 SIZE(zPTree, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
-VTBL(zPTree, 0x005e94ac); // most-derived (whole-object) vtable @+0
+VTBL(zPTree, 0x001e94ac); // most-derived (whole-object) vtable @+0
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the
 // ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8, 0@+0xc. Clean leaf
@@ -126,7 +126,7 @@ zPTree::zPTree(void* desc, i32 n) : CContainerErr(&g_buteNodeErrMsg), CButeNodeE
 // (zPTree, the .bute config tree) are proven.
 extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
 
-VTBL(CButeCfgNode174d, 0x005f051c); // node primary (most-derived) vtable @+0x00
+VTBL(CButeCfgNode174d, 0x001f051c); // node primary (most-derived) vtable @+0x00
 class CButeCfgNode174d : public zPTree {
 public:
     CButeCfgNode174d(i32 kind); // 0x174d00

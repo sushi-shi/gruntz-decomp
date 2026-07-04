@@ -131,7 +131,7 @@ public:
 // clamped query rect @ +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and
 // the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
 SIZE(CWwdGridIter, 0x44);
-VTBL(CWwdGridIter, 0x005f02a8);
+VTBL(CWwdGridIter, 0x001f02a8);
 class CWwdGridIter : public Wap::CObject {
 public:
     // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from

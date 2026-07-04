@@ -44,15 +44,15 @@ inline void* operator new(u32, void* p) {
 // The two spawned-worker vtables, stamped manually into the heap block AFTER the
 // external base ctor runs (transitional workaround: the workers' virtuals live in
 // other TUs, so cl can't emit these vtables - referenced as reloc-masked DATA externs).
-DATA(0x005eff70)
+DATA(0x001eff70)
 extern i32 g_ddrawSurfaceChildAVtbl; // 0x5eff70
-DATA(0x005eff30)
+DATA(0x001eff30)
 extern i32 g_ddrawSurfacePairVtbl; // 0x5eff30
 
 // The grand-base teardown vftable restored at ~CDDrawSubMgrPages exit (0x5e8cb4;
 // the delinked retail dtor names its restamp DIR32 ?g_wapObjectDtorVtbl@@3PAXA, so
 // this manual DATA-extern stamp - not a cl-auto ~CObject fold - is what matches).
-DATA(0x005e8cb4)
+DATA(0x001e8cb4)
 extern void* g_wapObjectDtorVtbl;
 
 // CDDrawSubMgrPagesBase - the CObject-like family grand-base (5-slot vtable masks

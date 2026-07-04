@@ -31,7 +31,7 @@ public:
     i32 m_18; // +0x18
 };
 SIZE_UNKNOWN(CAniAdvanceCursor);
-VTBL(CAniAdvanceCursor, 0x005f0128);
+VTBL(CAniAdvanceCursor, 0x001f0128);
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
 // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.

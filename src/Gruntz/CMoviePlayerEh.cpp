@@ -11,10 +11,10 @@
 #include <Gruntz/CMoviePlayer.h>
 
 // The scratch embed's own vtable (foreign engine datum, reloc-masked DATA()).
-DATA(0x005e971c)
+DATA(0x001e971c)
 extern void* g_movieScratchVtbl; // 0x5e971c
 // The shared base object dtor vtable (also stamped by CDDrawWorker).
-DATA(0x005e8cb4)
+DATA(0x001e8cb4)
 extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // The scratch embed (worker+0x868c) teardown: stamp its own vtable, RezFree the
