@@ -2890,16 +2890,13 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c (mangled-name match)
 extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
-// A level's named-set source (this->m_levelBank / this->m_gameBank, and the banks cached in
-// m_gruntzBank/m_gameBank). LookupSet (0x13bae0) resolves "TILEZ"/"IMAGEZ"/"SOUNDZ"/"ANIZ".
-struct CResSource {
-    void* LookupSet(char* szName); // 0x13bae0 __thiscall, ret set ptr
-};
-// The bank manager at this->m_8: Lookup (0x13c030) resolves a "GRUNTZ"/"GAME"
-// bank into a CResSource (LoadImageBanks caches the result in m_gruntzBank/m_gameBank).
-struct CBankMgr {
-    CResSource* Lookup(char* szName); // 0x13c030 __thiscall
-};
+// CResSource (the named-set source: this->m_levelBank / m_gameBank, the banks cached
+// in m_gruntzBank/m_gameBank; LookupSet 0x13bae0) and CBankMgr (the bank manager at
+// this->m_8; Lookup 0x13c030) are the shared CState bank/source facet - one definition
+// in <Gruntz/CBankMgr.h> (also used by CSplashState/BacklogStateLoaders). Included here
+// in-place (declaration order preserved) rather than at the top so the fold stays
+// codegen-neutral for this TU.
+#include <Gruntz/CBankMgr.h>
 // The loader family reaches its resource state directly through `this` (a CPlay):
 // the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
 // m_gruntzBank/m_gameBank) and the shared CView resource registries (CState::m_c->m_10/m_28/m_2c).
@@ -4993,7 +4990,6 @@ SIZE_UNKNOWN(AgThis);
 SIZE_UNKNOWN(AgWorld);
 SIZE_UNKNOWN(AgWorldSink);
 SIZE_UNKNOWN(CAnimRegistry);
-SIZE_UNKNOWN(CBankMgr);
 SIZE_UNKNOWN(CCueState);
 SIZE_UNKNOWN(CDrawSurface);
 SIZE_UNKNOWN(CDtorThis);
@@ -5026,7 +5022,6 @@ SIZE_UNKNOWN(CRegSlot);
 SIZE_UNKNOWN(CRegSub68);
 SIZE_UNKNOWN(CRenderState);
 SIZE_UNKNOWN(CRenderer);
-SIZE_UNKNOWN(CResSource);
 SIZE_UNKNOWN(CRpFrame);
 SIZE_UNKNOWN(CRpGeom);
 SIZE_UNKNOWN(CRpM30);

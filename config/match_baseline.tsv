@@ -576,7 +576,7 @@ apimischelpers	?Tick@Throttle_137e30@ApiMisc@@QAEHH@Z	100.0000	100.0000	1	a39349
 apimischelpers	?Tick@Timer_1380d0@ApiMisc@@QAEHH@Z	100.0000	100.0000	1	d7000634905a	0x1380d0
 apimischelpers	?winapi_118930_SetActiveWindow_SetFocus@ApiMisc@@YAXPAX@Z	100.0000	100.0000	1	66a395725d40	0x118930
 apimischelpers	?winapi_1192d0_IsIconic@ApiMisc@@YAHPAXHH@Z	100.0000	100.0000	1	2ab22d79c980	0x1192d0
-apiwrappers	?BuildText@CreditzScreen@m4@@QAEHXZ	99.6508	99.6508	3	0d282c601519	0x39a60
+apiwrappers	?BuildText@CreditzScreen@m4@@QAEHXZ	99.6508	99.6508	4	d29361382fd0	0x39a60
 apiwrappers	?CheckCombatRegion@GruntCombatMgr@m4@@QAEXHHHHH@Z	80.1707	80.1707	2	664d74d84c96	0x78060
 apiwrappers	?FillLevelInfoDialog@m4@@YAHPAUHWND__@@@Z	100.0000	100.0000	3	8c2735af8f89	0x3b1a0
 apiwrappers	?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@PAH1PAUtagRECT@@@Z	74.7516	74.7516	2	a9ae4e998211	0x75c60
@@ -1515,7 +1515,7 @@ cmulti	?DropTimeout@CMulti@@QAEXXZ	78.9107	78.9107	3	8ec89e7a34ca	0xbc2d0
 cmulti	?GetString59c@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	2	7209ac30717d	0xb7a90
 cmulti	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	2	5425993d11b6	0xb7ad0
 cmulti	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	1	9a2e0c390aa8	0xb7fe0
-cmulti	?PumpA@CMulti@@QAEHXZ	88.3707	88.3707	4	29506646df8e	0xb6b40
+cmulti	?PumpA@CMulti@@QAEHXZ	88.3707	88.3707	5	5ac04d260265	0xb6b40
 cmulti	?PumpB@CMulti@@QAEXXZ	83.1602	83.1602	7	a2a28a731116	0xb6e90
 cmulti	?ReportNetError@CMulti@@QAEXXZ	95.2000	95.2000	2	8d9000a90521	0xb7f60
 cmulti	?ReportVersionMsg@CMulti@@QAEXPADH@Z	100.0000	100.0000	2	e891856ac86f	0xb7e30
@@ -1705,7 +1705,7 @@ ctoobspikez	?GetTypeTag@CToobSpikez@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	
 ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1149c0
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 ctoobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	2	1a581cf7ad26	0x12bc0
-ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	2	7ce413b3d3a4	0x114480
+ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	3	e1feac44164a	0x114480
 ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	4	14cb1f3df467	0x98140
 customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	e093b53f1442	0x180e0
 customlevellist	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	73.9508	73.9508	1	2bdfbb3a9268	0x3af90
@@ -2485,7 +2485,7 @@ gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	96.6667	96.6667	3	d2ca0ab27636	0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	12d3051e213d	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	6	8942fd8710cf	0x860b0
-gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	43.0975	43.0952	4	77c9c972bd83	0x8b960
+gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	43.0952	43.0952	5	423adce967f7	0x8b960
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	2	d21c9c879458	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	2	d21c9c879458	0xda960
 gruntzplayer	?GetColorName@@YA?AVCString@@HH@Z	100.0000	100.0000	2	9ae1e9e792c0	0xdb050
@@ -3568,7 +3568,7 @@ triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.9118	84.9118	6	8b18159fd6d9	0x7
 triggermgr_eh	??1CTriggerMgr@@QAE@XZ	46.0625	46.0625	2	4490579c401f	0x85c50
 triggermgr_eh	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	19.4654	19.4654	3	8470763035a4	0x6d300
 triggermgr_eh	?DestroyGroup@CTriggerMgr@@QAEHHHH@Z	64.7985	64.7985	4	d06b117ca010	0x798d0
-triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	65.3555	65.3555	1	17dd527f8fcd	0x7abc0
+triggermgr_eh	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	65.3555	65.3555	2	95a6e651b9a9	0x7abc0
 triggermgr_eh	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	59.1261	59.1261	5	7f839d22e4c1	0x79b80
 triggersound	?IsCueActive@CTriggerSound@@QAEHXZ	100.0000	100.0000	1	cf7853510fa9	0x112860
 trirecordserialize	?Serialize@CPairRecord@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	18db2355dfd2	0x58ee0
@@ -3594,7 +3594,7 @@ unknownclassarrays	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.6087	75.6087	2	ac
 unknownclassarrays	?Method_026470@CBattlezMapConfig@@QAEHH@Z	83.1071	83.1071	2	f738071bf7eb	0x26470
 unknownclassarrays	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	3	7a02ee4067ce	0x29b40
 unknownclassarrays	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	58.8333	58.8333	2	153a79ebaa48	0x2ad40
-unknownclassarrays	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	80.7188	80.7188	1	baabe5a55afc	0x2bfc0
+unknownclassarrays	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	80.7188	80.7188	2	fe7f661a90a5	0x2bfc0
 unknownclassarrays	?Method_02c080@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	12c95bbed6a4	0x2c080
 unknownclassarrays	?Method_02c0a0@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	2	25dcdc6b14d7	0x2c0a0
 unknownclassarrays	?Method_02d800@CBattlezMapConfig@@QAEHHHHH@Z	20.0022	20.0022	2	3909cb2fb704	0x2d800
@@ -3743,7 +3743,7 @@ winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6b
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	8	a8fadeb810bf	0x11c860
 worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	3	0e0d23c92b4f	0x3c0e0
-worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	2	7d9ae913e8b2	0xdbc80
+worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	3	e6cc7fe0a395	0xdbc80
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.4528	95.4528	4	338fc373cbf8	0xb7b0
 worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.6182	95.6182	4	7c39f57b6833	0xb6a0
