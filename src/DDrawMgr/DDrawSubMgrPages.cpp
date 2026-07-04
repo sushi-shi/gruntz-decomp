@@ -3,7 +3,7 @@
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Wap32/WapObj.h>   // CWapObj : Wap::CObject - real base for the spawned-child views
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
-#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
+#include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
 // CDDrawSubMgrPages.cpp - one leaf cleanup method of the tomalla-named ddrawmgr
 // sub-manager CDDrawSubMgrPages (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
