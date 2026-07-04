@@ -1,6 +1,6 @@
 // DDrawPtrCollections.h - the DDraw surface/palette POOL host (tomalla
 // CDDrawPtrCollections): two CPtrList pools (+0x47c pool-A CPoolItemBase*, +0x498
-// pool-B CPoolItemB*) + a CPtrArray (+0x4b4), two cached-surface slots at +0x00/
+// pool-B CDDPalette*) + a CPtrArray (+0x4b4), two cached-surface slots at +0x00/
 // +0x04, and a last-error/state tail. 0x948 bytes. The item-factory + pool-drain
 // methods (0x142xxx / 0x143xxx) are the surface/palette acquire entries.
 //
@@ -23,7 +23,7 @@
 // The pool item base + pool-B item + cached surface: completed in the owner unit
 // (their vtables / layouts stay there); pointer-only here.
 class CPoolItemBase;
-struct CPoolItemB;
+struct CDDPalette;
 struct CCachedSurface;
 
 SIZE_UNKNOWN(CDDrawPtrCollections);
@@ -36,9 +36,9 @@ public:
     void EmptyPoolA();                                         // 0x142120  (drain +0x47c list)
     void EmptyPoolB();                                         // 0x142ed0  (drain +0x498 list)
     void AddItemA(CPoolItemBase* item);                        // 0x142100
-    void AddItemB(CPoolItemB* item);                           // 0x142eb0
+    void AddItemB(CDDPalette* item);                           // 0x142eb0
     void RemoveItemA(CPoolItemBase* item);                     // 0x142160
-    void RemoveItemB(CPoolItemB* item);                        // 0x142f10
+    void RemoveItemB(CDDPalette* item);                        // 0x142f10
     CPoolItemBase* Create7f0_1(i32 a);                         // 0x1421a0 (vtbl 7f0, slot 2)
     CPoolItemBase* CreateA(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142260
     CPoolItemBase* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
@@ -53,15 +53,15 @@ public:
     Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x142c40 (vtbl ae8, slot 9 6-arg)
     CPoolItemBase* Createae8_1(i32 a);                     // 0x142da0 (vtbl ae8, slot 2)
     CPoolItemBase* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
-    CPoolItemB* MakeB(i32 a, i32 b);                               // 0x142fc0
-    CPoolItemB* MakeB2(i32 a, i32 b);                              // 0x142f40 (init via 0x147410)
-    CPoolItemB* MakeB3(i32 a, i32 b, i32 c);                       // 0x1430c0 (init via 0x147840)
+    CDDPalette* MakeB(void* rgb, i32 flags);                       // 0x142fc0
+    CDDPalette* MakeB2(i32 a, i32 b);                              // 0x142f40 (init via 0x147410)
+    CDDPalette* MakeB3(i32 a, i32 b, i32 c);                       // 0x1430c0 (init via 0x147840)
 
     // Read the trailing 0x300-byte palette from a file and register a pool-B item built
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).
-    CPoolItemB* LoadPaletteMakeB(const char* path, i32 z);   // 0x143150
-    CPoolItemB* LoadPaletteMake950(const char* path, i32 z); // 0x143a30
-    void* Make950(void* buf, i32 z);                         // 0x143950 (external sibling of MakeB)
+    CDDPalette* LoadPaletteMakeB(const char* path, i32 z);   // 0x143150
+    CDDPalette* LoadPaletteMake950(const char* path, i32 z); // 0x143a30
+    CDDPalette* Make950(void* buf, i32 z);                   // 0x143950 (external sibling of MakeB)
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
     i32 ComputeColorMasks(); // 0x143b20
@@ -73,7 +73,7 @@ public:
     CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
     char _pad008[0x47c - 0x08];
     CPtrList m_poolA;  // +0x47c  (block size 0xa) - CPoolItemA*
-    CPtrList m_poolB;  // +0x498  (block size 0xa) - CPoolItemB*
+    CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
     char _pad4C8[0x534 - 0x4c8];
     i32 m_534; // +0x534  - zeroed in ctor / Clear

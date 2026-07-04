@@ -207,40 +207,49 @@ public:
 SIZE(CPoolItemAE8, 0xc0);
 VTBL(CPoolItemAE8, 0x001efae8);
 
-// The +0x498-pool item: a 0x38-byte struct (RezAlloc'd, vtable-less).  Field 0
-// caches the POSITION; the +0x4..+0x10 + +0x14/+0x18/+0x2c/+0x30/+0x34 dwords are
-// zeroed at create.  Torn down by the engine helper (Teardown, __thiscall 0x147530)
-// then RezFree'd.
-struct CPoolItemB {
-    inline CPoolItemB();
+struct IDirectDrawPalette; // <ddraw.h> in the palette-owning TUs; pointer-only here
+
+// The +0x498-pool item IS a CDDPalette (DIRPAL.CPP, 0x38-byte RezAlloc'd palette
+// wrapper) - the same class DirectDrawMgr.h models fully (as `CDDPalette`) and
+// BoundaryUpper2.cpp's Create@0x143040 news+returns (`CDDPalette*`, mangled PAU =>
+// struct).  PROVEN by method-RVA equality: the pool's Init/Init2/Init3/Teardown ARE
+// CDDPalette's CreateRGB(0x1474d0)/LoadFromFile(0x147410)/CreateFromTrailing(0x147840)/
+// Destroy(0x147530); the 0x38 layout + the ctor field-zero set match exactly.  The
+// pool-context method names + signatures are kept here (reconciling them with the
+// DirectDrawMgr.h view's full signatures - m_surf0's real DirectDraw type - is a
+// separate dedup; each TU currently carries its own view, none in the same TU so no
+// ODR clash).  Field 0 caches the CPtrList POSITION.
+struct CDDPalette {
+    inline CDDPalette();
     inline void* operator new(u32);
 
-    void Teardown();                    // 0x147530 (__thiscall) - frees owned bufs
-    i32 Init(void* arg, i32 a, i32 b);  // 0x1474d0 (__thiscall) - returns success
-    i32 Init2(void* arg, i32 a, i32 b); // 0x147410 (__thiscall) - alt init, returns success
-    i32
-    Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840 (__thiscall) - 3-param init, returns success
+    void Teardown();                           // 0x147530  == CDDPalette::Destroy
+    i32 Init(void* dd, void* rgb, i32 flags);  // 0x1474d0  == CDDPalette::CreateRGB
+    i32 Init2(void* arg, i32 a, i32 b);        // 0x147410  == CDDPalette::LoadFromFile
+    i32 Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840  == CDDPalette::CreateFromTrailing
 
-    POSITION m_pos; // +0x00 cached POSITION
-    i32 m_04;       // +0x04
-    i32 m_08;       // +0x08
-    i32 m_0c;       // +0x0c
-    i32 m_10;       // +0x10
-    i32 m_14;       // +0x14
-    i32 m_18;       // +0x18
+    // Field names migrated from the DirectDrawMgr.h CDDPalette view (proven same class).
+    POSITION m_pos;                // +0x00 cached CPtrList POSITION (this pool-context use of
+                                   //       DirectDrawMgr's +0x00 field)
+    IDirectDrawPalette* m_palette; // +0x04 held palette interface
+    i32 m_8;                       // +0x08 cleared by Destroy
+    u8* m_cacheA;                  // +0x0c PALETTEENTRY cache A (0x400 bytes)
+    u8* m_cacheB;                  // +0x10 PALETTEENTRY cache B (0x400 bytes)
+    i32 m_14;                      // +0x14 Flush pending fill color
+    u8* m_18;                      // +0x18 third buffer freed by Destroy
     char _1c[0x2c - 0x1c];
-    i32 m_2c; // +0x2c
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
+    i32 m_2c; // +0x2c Flush blit start
+    i32 m_30; // +0x30 Flush blit count
+    i32 m_34; // +0x34 Flush pending flag (cleared by Destroy)
 };
-SIZE(CPoolItemB, 0x38); // measured: new(0x38) -> RezAlloc'd 0x38-byte item
+SIZE(CDDPalette, 0x38); // measured: new(0x38) -> RezAlloc'd 0x38-byte item
 
-inline CPoolItemB::CPoolItemB() {
-    m_04 = 0;
+inline CDDPalette::CDDPalette() {
+    m_palette = 0;
     m_pos = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_10 = 0;
+    m_8 = 0;
+    m_cacheA = 0;
+    m_cacheB = 0;
     m_34 = 0;
     m_18 = 0;
     m_14 = 0;
@@ -248,7 +257,7 @@ inline CPoolItemB::CPoolItemB() {
     m_30 = 0;
 }
 
-inline void* CPoolItemB::operator new(u32) {
+inline void* CDDPalette::operator new(u32) {
     return ::operator new(0x38);
 }
 
@@ -639,7 +648,7 @@ CPoolItemBase* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32
 // AddItemB (0x142eb0).  pool.AddTail(item); item->pos = position.
 // ---------------------------------------------------------------------------
 RVA(0x00142eb0, 0x17)
-void CDDrawPtrCollections::AddItemB(CPoolItemB* item) {
+void CDDrawPtrCollections::AddItemB(CDDPalette* item) {
     item->m_pos = m_poolB.AddTail(item);
 }
 
@@ -653,7 +662,7 @@ void CDDrawPtrCollections::EmptyPoolB() {
     while (node) {
         CPtrListNode* cur = node;
         node = node->pNext;
-        CPoolItemB* item = (CPoolItemB*)cur->data;
+        CDDPalette* item = (CDDPalette*)cur->data;
         if (item) {
             item->Teardown();
             RezFree(item);
@@ -666,7 +675,7 @@ void CDDrawPtrCollections::EmptyPoolB() {
 // RemoveItemB (0x142f10).  pool.RemoveAt(item->pos); tear down + RezFree item.
 // ---------------------------------------------------------------------------
 RVA(0x00142f10, 0x2b)
-void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
+void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     m_poolB.RemoveAt(item->m_pos);
     if (item) {
         item->Teardown();
@@ -675,14 +684,14 @@ void CDDrawPtrCollections::RemoveItemB(CPoolItemB* item) {
 }
 
 // ---------------------------------------------------------------------------
-// MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CPoolItemB, zero its
+// MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CDDPalette, zero its
 // fields, init it via the alternate Init2 (0x147410) with (m_surf0, a, b); on success
 // add to pool B and return it, else tear down + RezFree and return 0.  NO EH frame
 // (no destructible local), so this matches cleanly.
 // ---------------------------------------------------------------------------
 RVA(0x00142f40, 0x7c)
-CPoolItemB* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
-    CPoolItemB* item = new CPoolItemB;
+CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
+    CDDPalette* item = new CDDPalette;
     if (!item->Init2(m_surf0, a, b)) {
         if (item) {
             item->Teardown();
@@ -695,14 +704,14 @@ CPoolItemB* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// MakeB (0x142fc0).  RezAlloc a 0x38-byte CPoolItemB, zero its fields, init it via
+// MakeB (0x142fc0).  RezAlloc a 0x38-byte CDDPalette, zero its fields, init it via
 // the external Item498_Init (0x1474d0) with (vtbl-of-this, a, b); on success add to
 // pool B and return it, else tear down + RezFree and return 0.
 // ---------------------------------------------------------------------------
 RVA(0x00142fc0, 0x7c)
-CPoolItemB* CDDrawPtrCollections::MakeB(i32 a, i32 b) {
-    CPoolItemB* item = new CPoolItemB;
-    if (!item->Init(m_surf0, a, b)) {
+CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->Init(m_surf0, rgb, flags)) {
         if (item) {
             item->Teardown();
             RezFree(item);
@@ -714,14 +723,14 @@ CPoolItemB* CDDrawPtrCollections::MakeB(i32 a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CPoolItemB,
+// MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CDDPalette,
 // zero its fields, init it via the 3-param Init3 (0x147840) with (m_surf0, a, b,
 // c); on success add to pool B and return it, else tear down + RezFree and return
 // 0.  No EH frame (no destructible local) -> matches cleanly.
 // ---------------------------------------------------------------------------
 RVA(0x001430c0, 0x81)
-CPoolItemB* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
-    CPoolItemB* item = new CPoolItemB;
+CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
+    CDDPalette* item = new CDDPalette;
     if (!item->Init3(m_surf0, a, b, c)) {
         if (item) {
             item->Teardown();
@@ -746,7 +755,7 @@ CPoolItemB* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
 // from one TU; docs/patterns/eh-state-numbering-base.md) and (b) MSVC folds the
 // reloaded-from-param-slot MakeB tag to an immediate 0 where retail reloads it. Deferred.
 RVA(0x00143150, 0xe9)
-CPoolItemB* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
+CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     CFileIO file;
     z = 0;
     if (!file.Open(path, 0, 0)) {
@@ -757,7 +766,7 @@ CPoolItemB* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return MakeB((i32)buf, z);
+    return MakeB(buf, z);
 }
 
 // ---------------------------------------------------------------------------
@@ -769,7 +778,7 @@ CPoolItemB* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // additionally the Make950 callee (0x143950) is still an unreconstructed engine_boundary
 // stub, so its rel32 reloc pairs by code bytes but not by symbol name. Deferred.
 RVA(0x00143a30, 0xe9)
-CPoolItemB* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
+CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     CFileIO file;
     z = 0;
     if (!file.Open(path, 0, 0)) {
@@ -780,7 +789,7 @@ CPoolItemB* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
     if (file.Read(buf, 0x300) != 0x300) {
         return 0;
     }
-    return (CPoolItemB*)Make950(buf, z);
+    return Make950(buf, z);
 }
 
 // The back-buffer surface description ComputeColorMasks fills (a DDSURFACEDESC, 0x6c

@@ -27,48 +27,62 @@
 struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
 
 // ---------------------------------------------------------------------------
-// CDDSurface (DIRSURF.CPP) - a held IDirectDrawSurface wrapper. POLYMORPHIC:
-// the vptr @0 carries the wrapper's own virtuals (own vtable at 0x5ef7f0); slot 7
-// (@0x1c) is the "restore-this-lost-surface" retry called when a DDraw op returns
-// SURFACELOST (see CDDSurface::Blt: mov eax,[this]; call [eax+0x1c]). The thunks
-// are non-virtual public __thiscall methods. The scalar-deleting dtor (0x142a40,
-// reconstructed in src/Gruntz/DDSurfaceDtor.cpp) destroys the embedded sub-object
-// at +0x94 (the m_pad94 region here) - that TU keeps its own manual-vptr-stamp
-// view because the class's own vtable (0x5ef7f0) is a hand-rolled foreign vtable a
-// cl-emitted ??_7 would diverge from (vtable-realization boundary).
+// CDDSurface (DIRSURF.CPP) - the WAP32 0xc0-byte surface base (vtable 0x5ef7f0,
+// RTTI-less `g_poolItemVtbl`). This is the SAME physical class the Image module
+// models as CFileImage (<Image/Image.h>, the fuller view - the BMP/PCX/PID loaders
+// + surface blitters) and the DDraw pool models as CPoolItemBase
+// (DDrawPtrCollections.cpp); CFileImageSurface / CPoolItemA / CPoolItemA88 / ...AB8 /
+// ...AE8 are its four derived subclasses (vtables 0x5efa58/a88/ab8/ae8). Cross-module
+// views of ONE class (RTTI-less, so the campaign named it CDDSurface here / CFileImage
+// there); a full name-merge would force the +0x94 CByteArray member onto ~30 pointer-
+// only includers (the MFC ripple) - deferred, see docs/patterns/surface-pool-comdat-dtors.md.
+//
+// The vptr @0 carries the base's own virtuals (vtable 0x5ef7f0); slot 7 (@0x1c) is the
+// "restore-this-lost-surface" retry called when a DDraw op returns SURFACELOST (see
+// CDDSurface::Blt: mov eax,[this]; call [eax+0x1c]). The Blt/Flip/Lock/Fill/... thunks
+// are non-virtual public __thiscall methods. The base's non-deleting dtor is at
+// 0x141350 (??_G 0x141330), reconstructed as CFileImage::~CFileImage in Image.cpp; it
+// destroys the +0x94 sub-object (the m_pad94 region here). No vtable is emitted in the
+// pointer-only TUs (no ctor/dtor there, address never taken).
 // ---------------------------------------------------------------------------
 class CDDPalette; // fwd (SetPalette takes a wrapper ptr)
 
 SIZE_UNKNOWN(CDDSurface);
 class CDDSurface {
 public:
-    // The wrapper's own vtable. Only slot 7 (@0x1c) is invoked by these thunks
-    // (the lost-surface restore). The 7 leading slots are placeholders to land
-    // RestoreLost at byte offset 0x1c; no vtable is emitted in the pointer-only
-    // TUs (no ctor/dtor there, address never taken).
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual i32 IsValid(); // slot 5, @0x14 (surface present + positive w/h)
-    virtual void v18();
-    virtual i32 RestoreLost(); // slot 7, @0x1c
-    virtual i32 v20(void* a);  // slot 8, @0x20 (the surface's own blit-into-desc)
+    // The base surface vtable (0x5ef7f0). The leading placeholder slots land IsValid
+    // at byte +0x14 and RestoreLost at +0x1c (the only slots these thunks invoke); the
+    // // <role> tags give each slot's real RVA from the retail vtable dump. (Left as
+    // placeholder virtuals rather than the real roles/dtor so this widely-included
+    // header does not perturb the ~30 pointer-only TUs - the real slot names live on
+    // the CFileImage view in <Image/Image.h>.)
+    virtual void v00();        // slot 0  ~dtor (??_G 0x141330 / ~ 0x141350)
+    virtual void v04();        // slot 1  Refresh 0x13e140
+    virtual void v08();        // slot 2  Init1   0x13e0a0
+    virtual void v0c();        // slot 3  BlitSurf 0x13e0d0
+    virtual void v10();        // slot 4  FreeSurfaces 0x13e4d0
+    virtual i32 IsValid();     // slot 5, @0x14  0x1412d0 (surface present + positive w/h)
+    virtual void v18();        // slot 6  0x141300
+    virtual i32 RestoreLost(); // slot 7, @0x1c  0x13f960
+    virtual i32 v20(void* a);  // slot 8, @0x20  0x13e2e0 (the surface's own blit-into-desc)
 
+    // Non-virtual __thiscall thunks. Fill/Resolve carry real bodies in Image.cpp under
+    // the CFileImage view (?Fill@CFileImage@@ 0x13e760 / ?Resolve@CFileImage@@ 0x13e550):
+    // they are this same base class's methods, reached here via the CDDSurface name (the
+    // rel32 call reloc masks the CDDSurface-vs-CFileImage name difference).
     i32 Flip(CDDSurface* target);                // 0x13e850
-    i32 Fill(i32 color);                         // 0x13e760
+    i32 Fill(i32 color);                         // 0x13e760  (== ?Fill@CFileImage@@)
     i32 Lock(void* rect);                        // 0x13e6d0
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
     i32 Blt(CDDSurface* src);                    // 0x13ee60
-    i32 Reload(
+    i32 Resolve(
         void* pool,
         i32 src,
         i32 index,
         void* data,
         i32 flag
-    ); // 0x13e550 (rebuild from parse source; ret 0x14)
+    ); // 0x13e550 (== ?Resolve@CFileImage@@; rebuild from parse source; ret 0x14)
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect,
                 u32 trans);                // 0x13ef90
