@@ -4,6 +4,8 @@
 // single object shape with two embedded engine hash tables at +0x38/+0x40 and the
 // owning parser at +0x18. See include/Bute/SymTab.h for the full layout.
 #include <rva.h>
+#include <stdlib.h> // _splitpath (0x18c530)
+#include <string.h> // strchr/strncpy/inline strcpy+strlen/_strupr (0x18d330)
 
 #include <Bute/SymParser.h>     // full CSymParser (m_owner layout) + CSymTab via SymParser.h
 #include <Gruntz/ParseSource.h> // canonical CParseSource (EndParse @0x1399d0)

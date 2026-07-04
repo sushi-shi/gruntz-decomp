@@ -5,6 +5,8 @@
 // (its own abstract sub-object vtable 0x5ef760) and an engine hash table at +0x80.
 // See include/Bute/SymParser.h for the layout + the call-graph evidence.
 #include <rva.h>
+#include <stdlib.h> // atoi (0x11ff10) / _splitpath (0x18c530)
+#include <string.h> // strlen/strcpy/strcmp (inline) / _strlwr (0x18d330)
 
 #include <Bute/SymParser.h>
 
@@ -120,10 +122,6 @@ struct CBinReaderInit : public CObjNode {
     char m_body[0x24 - 0xc];       // own binary-reader state (past the CObjNode base)
 };
 SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
-
-// CRT strdup-style helpers + the inline strlen/strcpy the buffer-recache emits.
-extern "C" u32 strlen(const char* s);
-extern "C" char* strcpy(char* d, const char* s);
 
 // @early-stop
 // 0x3b8 (952 B) /GX text/binary loader. The body reproduces the buffer recache
@@ -362,18 +360,15 @@ struct SymFindData {
     char m_name[0x108];
 };
 SIZE(SymFindData, 0x128); // CRT _finddata_t view { attrib, size @0x1c, name @0x20 }
-extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd);                       // 0x11f900
-extern "C" i32 SymFindNext(i32 h, SymFindData* fd);                                   // 0x11fa30
-extern "C" i32 SymFindClose(i32 h);                                                   // 0x11fb50
-extern "C" char* _strlwr(char* s);                                                    // 0x18d330
-extern "C" i32 atoi(const char* s);                                                   // 0x11ff10
-extern "C" void _splitpath(const char* p, char* drv, char* dir, char* fn, char* ext); // 0x18c530
-void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey);                         // 0x13b970
-void SymBindRecord(void* rec, char* name, i32 h);                                     // 0x13cac0
-extern const char g_sepSlash[]; // 0x60cff0  "\\"
-extern const char g_wildcard[]; // 0x61a0a0  "*.*"
-extern const char g_dotDot[];   // 0x5ee8ec  ".."
-extern const char g_dot[];      // 0x60cf90  "."
+extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd); // 0x11f900
+extern "C" i32 SymFindNext(i32 h, SymFindData* fd);             // 0x11fa30
+extern "C" i32 SymFindClose(i32 h);                             // 0x11fb50
+void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey);   // 0x13b970
+void SymBindRecord(void* rec, char* name, i32 h);               // 0x13cac0
+extern const char g_sepSlash[];                                 // 0x60cff0  "\\"
+extern const char g_wildcard[];                                 // 0x61a0a0  "*.*"
+extern const char g_dotDot[];                                   // 0x5ee8ec  ".."
+extern const char g_dot[];                                      // 0x60cf90  "."
 
 // @early-stop
 // 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with

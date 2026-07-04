@@ -42,17 +42,10 @@ void* operator new(u32 size);
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
-// CRT helpers the tokenizer/resolvers emit inline or by call; reloc-masked rel32.
-extern "C" char* strchr(const char* s, i32 c);           // 0x120120 (inlined word-scan)
-extern "C" char* strncpy(char* d, const char* s, u32 n); // 0x120340
-extern "C" char* strcpy(char* d, const char* s);         // inlined rep movs at /O2 /Oi
-extern "C" u32 strlen(const char* s);                    // inlined repnz scas at /O2 /Oi
-
-// CRT path helpers the keyed Find emits by call (0x18c530 _splitpath, 0x18d330
-// _strupr); reloc-masked rel32.
-extern "C" void __cdecl
-_splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
-extern "C" char* __cdecl _strupr(char* s);
+// The CRT string/path helpers the tokenizer/resolvers emit (strchr 0x120120 /
+// strncpy 0x120340 / inline strcpy/strlen / _splitpath 0x18c530 / _strupr 0x18d330)
+// come from the real <string.h>/<stdlib.h> in SymTab.cpp, the sole user - kept out
+// of this shared header so the other includers don't pull the CRT.
 
 // The child-scope hash-node vtable stamped at CSymTab+0x20 (the key-hash interface
 // that lets a scope be inserted into its parent's m_subTabs). Modeled as a manual
