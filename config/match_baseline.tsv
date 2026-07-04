@@ -2974,7 +2974,7 @@ netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
-obj5f0890dtor	??1CObj5f0890@@UAE@XZ	100.0000	100.0000	1	0f3d26b86a0f	0x181720
+obj5f0890dtor	??1CFader1816c0@@UAE@XZ	100.0000	100.0000	1	e4fa9c8757cb	0x181720
 orphanleaves	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	58abcd060f36	0x3cbf0
 orphanleaves	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	1	47dbac1cec10	0x3cbc0
 orphanleaves	?FreeGlobal62c25c@@YAXXZ	100.0000	100.0000	1	b38e4759fa2e	0x3ac30
@@ -3469,8 +3469,8 @@ tiletriggercontainer	?FindInLists12@CTileTriggerContainer@@QAEPAXHH@Z	100.0000	1
 tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAX@Z	51.3243	51.3243	2	031444f05700	0x117150
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	1	d8586fefd0bf	0x116fa0
 tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAUCSerialArchive@@HHH@Z	29.7289	29.7289	1	c73da0c6eb12	0x117280
-tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAUTtcSwitchObj@@@Z	57.3077	57.3077	1	67d11d0b20cf	0x117630
-tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAUTtcSwitchObj@@@Z	63.2576	63.2576	1	edbfed71ac8c	0x117710
+tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAVCTileTriggerSwitchLogic@@@Z	57.3077	57.3077	1	cpp:b34b573f2bb9	0x117630
+tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAVCTileTriggerSwitchLogic@@@Z	63.2576	63.2576	1	cpp:b34b573f2bb9	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	77.9559	77.9559	2	7da81f3dbd6b	0x117f60
 tiletriggerderivedctors	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	357254543f7f	0x1127f0
 tiletriggerderivedctors	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	1a54a6aa172e	0x112240

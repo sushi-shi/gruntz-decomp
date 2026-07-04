@@ -180,9 +180,10 @@ SIZE(CFader1816c0, 0x494);
 VTBL(CFader1816c0, 0x001f0890);
 class CFader1816c0 : public CFader {
 public:
-    CFader1816c0();             // 0x1816c0
-    virtual void v1() OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual void v2() OVERRIDE; // slot 2 -> 0x182900 (overrides CFader pure)
+    CFader1816c0();                   // 0x1816c0
+    virtual ~CFader1816c0() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
+    virtual void v1() OVERRIDE;       // slot 1 -> 0x181b00 (overrides CFader pure)
+    virtual void v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x494);

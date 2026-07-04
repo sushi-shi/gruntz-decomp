@@ -53,7 +53,7 @@ struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
     // +0x08  the CObList node payload: a genuine heterogeneous CObject* slot - the
-    // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcSwitchObj /
+    // four lists store DIFFERENT element types (TtcElem / TtcMark / CTileTriggerSwitchLogic /
     // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
     void* m_data;
 };
@@ -129,25 +129,28 @@ struct TtcBaseElem {
 SIZE_UNKNOWN(TtcBaseElem);
 extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
 
-// A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
-// is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
-// (reloc-masked __thiscall callees) returning nonzero on success.
-struct TtcSwitchObjVtbl; // the switch object's vtable (contents owned elsewhere)
-struct TtcSwitchObj {
-    i32 ApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
-    i32 ApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
-    i32 ApplyC(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
-    TtcSwitchObjVtbl* m_vptr;
-    i32 m_04; // +0x04  type tag
-};
-SIZE_UNKNOWN(TtcSwitchObj);
+// The serialize helpers operate on CTileTriggerSwitchLogic elements (its +0x04 type
+// tag drives the dispatch, its ApplyA/ApplyB/ApplyC appliers do the work). Folded
+// onto the real CTileTriggerSwitchLogic (vtable 0x5eae8c == ??_7CTileTriggerSwitchLogic):
+// the former TtcSwitchObj placeholder was a {vptr, m_04} view of exactly that class.
+class CTileTriggerSwitchLogic;
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
 // functions: stream the object's tag, then dispatch on it.
-i32 __stdcall
-SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117630
-i32 __stdcall
-SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117710
+i32 __stdcall SerializeApplyA(
+    CSerialArchive* s,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    CTileTriggerSwitchLogic* o
+); // 0x117630
+i32 __stdcall SerializeApplyB(
+    CSerialArchive* s,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    CTileTriggerSwitchLogic* o
+); // 0x117710
 
 class CTileTriggerContainer {
 public:
