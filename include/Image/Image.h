@@ -31,6 +31,12 @@
                                 // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
 #include <Io/FileStream.h>
 
+// The DDraw surface/palette pool host (<DDrawMgr/DDrawPtrCollections.h>) - the display
+// manager the file-image decoders receive as their palette-context argument (m_palBpp /
+// m_palette / m_hasPalette). Pointer/param-only here, so a forward decl keeps the manager
+// (and its MFC container members) out of the widely-included consumers of this header.
+class CDDrawPtrCollections;
+
 // ---------------------------------------------------------------------------
 // CRezImage - the image-resolution dispatcher.
 // LoadFromRez is __thiscall, ret 0xc (this + name + two opaque pass-through
@@ -343,9 +349,10 @@ public:
     // The surface-blit decoders ResolveEx dispatches to (ret 0x10 = 4 args). Same
     // functions the .BMP/.PCX file-load path uses (DecodeRun == the former caller-side
     // DecodeBmpData @0x143cf0; Decode == DecodePcxData2 @0x144b30). Reconstructed in
-    // CFileImage.cpp; `info` is a 2nd CFileImage instance (the decode target/config).
-    i32 DecodeRun(CFileImage* info, void* src, i32 a, i32 b);            // 0x143cf0 (BMP run)
-    i32 Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30 (PCX run)
+    // CFileImage.cpp; `info` is the CDDrawPtrCollections display manager (the palette
+    // context - source bpp / palette / have-palette), NOT a 2nd surface.
+    i32 DecodeRun(CDDrawPtrCollections* info, void* src, i32 a, i32 b);            // 0x143cf0 (BMP run)
+    i32 Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode); // 0x144b30 (PCX run)
 
     // The file-load + export path reconstructed in CFileImage.cpp (== the DIRSURF.CPP
     // surface). LoadFile2/LoadFile slurp a .BMP/.PCX file into a heap buffer then run
@@ -367,9 +374,9 @@ public:
         i32 r3
     );                                                                        // 0x141280
     i32 Run(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, ClipRect16 clip); // 0x1471d0
-    i32 LoadFile2(CFileImage* info, const char* path, i32 mode);              // 0x143e60
-    i32 LoadFile(CFileImage* info, const char* path, i32 mode);               // 0x144d80
-    i32 LoadByExt(CFileImage* info, char* path, i32 flags, i32 a4);           // 0x148940
+    i32 LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode);     // 0x143e60
+    i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);      // 0x144d80
+    i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 a4);  // 0x148940
     i32 Load(i32 a, char* name, i32 c);                                       // 0x144270
 
     // The surface blitters + raw run-decoders the decoders delegate to (external

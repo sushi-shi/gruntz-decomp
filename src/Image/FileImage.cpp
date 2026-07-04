@@ -11,8 +11,9 @@
 // ---------------------------------------------------------------------------
 #include <Mfc.h> // CFile (the export path slurps through the real MFC CFile) - afx-first
 
-#include <Image/Image.h>            // the single-source CFileImage (the DIRSURF surface)
-#include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
+#include <Image/Image.h>                  // the single-source CFileImage (the DIRSURF surface)
+#include <Image/FileImageRecords.h>       // DecodeSrc / BmpFileHeader / TgaHeader (this TU's records)
+#include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
 #include <Io/FileStream.h> // CFileIO (engine KERNEL32 file wrapper; LoadFile2)
 
@@ -148,7 +149,7 @@ void CFileImage::
 // offset/CFG-faithful, but MSVC's spilled-reg + ramp-cursor scheduling diverges from the
 // one allocation retail emitted. Deferred to the final sweep.
 RVA(0x00143cf0, 0x16b)
-i32 CFileImage::DecodeRun(CFileImage* info, void* srcv, i32, i32 b) {
+i32 CFileImage::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     DecodeSrc* src = (DecodeSrc*)srcv;
     i32 srcFmt = src->m_1c;
     if (srcFmt != 8 && srcFmt != 0x18) {
@@ -156,7 +157,7 @@ i32 CFileImage::DecodeRun(CFileImage* info, void* srcv, i32, i32 b) {
     }
 
     i32 convert = 0;
-    i32 curFmt = info->m_palBitCount;
+    i32 curFmt = info->m_palBpp;
     if (curFmt != srcFmt) {
         convert = 1;
     }
@@ -217,7 +218,7 @@ i32 CFileImage::DecodeRun(CFileImage* info, void* srcv, i32, i32 b) {
 // /GX funcinfo state index push (eh-state-numbering-base.md) plus the DecodeRun callee's
 // own divergence (it is the branch-scheduling wall above). Deferred to the final sweep.
 RVA(0x00143e60, 0x15b)
-i32 CFileImage::LoadFile2(CFileImage* info, const char* path, i32 mode) {
+i32 CFileImage::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFileIO file;
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -434,7 +435,7 @@ i32 CFileImage::SaveTga(const char* path, void* pal, i32 mode) {
 // allocation; logic + offsets + CFG + the run-decoder dispatch are exact (the base
 // disasm is structurally byte-faithful). Deferred to the final sweep.
 RVA(0x00144b30, 0x250)
-i32 CFileImage::Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode) {
+i32 CFileImage::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, i32 mode) {
     if (src == 0) {
         return 0;
     }
@@ -451,7 +452,7 @@ i32 CFileImage::Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode) 
     }
 
     i32 convert = 0;
-    i32 curFmt = info->m_palBitCount;
+    i32 curFmt = info->m_palBpp;
     if (curFmt != srcFmt) {
         convert = 1;
     }
@@ -546,7 +547,7 @@ i32 CFileImage::Decode(CFileImage* info, CFileImageSrc* src, i32 len, i32 mode) 
 // RezFree'd after Decode (and on a short read). ret 0xc.
 // ---------------------------------------------------------------------------
 RVA(0x00144d80, 0x15b)
-i32 CFileImage::LoadFile(CFileImage* info, const char* path, i32 mode) {
+i32 CFileImage::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
     CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;

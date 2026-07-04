@@ -1768,12 +1768,12 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
             }
             break;
         case FMT_PCX:
-            if (!Decode((CFileImage*)surf, (CFileImageSrc*)buf, (i32)size, c)) {
+            if (!Decode((CDDrawPtrCollections*)surf, (CFileImageSrc*)buf, (i32)size, c)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeRun((CFileImage*)surf, buf, (i32)size, c)) {
+            if (!DecodeRun((CDDrawPtrCollections*)surf, buf, (i32)size, c)) {
                 return 0;
             }
             break;

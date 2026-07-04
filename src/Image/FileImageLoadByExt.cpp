@@ -33,7 +33,7 @@ extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezSt
 // (reordering the `&&` -> 96%); the correct shared-class shape is kept over the
 // coin-flip byte-match (per the no-multiple-views mandate).
 RVA(0x00148940, 0x102)
-i32 CFileImage::LoadByExt(CFileImage* info, char* path, i32 flags, i32 key) {
+i32 CFileImage::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
     i32 doFill = 1;
     char* ext = RezStrrchr(path, '.');
