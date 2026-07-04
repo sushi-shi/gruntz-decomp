@@ -12,6 +12,7 @@
 #include <Gruntz/HaznColl.h>  // shared coordinate/activation-registry collection
 #include <Gruntz/TBombColl.h> // shared coordinate/activation-registry collection
 #include <Io/FileStream.h>    // real CFileIO (the static MFC CFile global at 0x646778)
+#include <Font/Font.h>        // real Font / FontRenderer (the global font objects)
 #include <Globals.h>
 
 // ===========================================================================
@@ -345,24 +346,23 @@ CStatusBaseSub100780::~CStatusBaseSub100780() {
 }
 
 // ===========================================================================
-// 0x115730 / 0x1157b0 - tail-forward a font teardown onto two font globals
-// (g_tinyFont @0x64ea58 via 0x179700, g_64ead8 via 0x179be0). __thiscall.
+// 0x115730 / 0x1157b0 - construct two DISTINCT global font objects in place via
+// the explicit-ctor-call tail-jmp (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md;
+// mov ecx,&g; jmp ctor - no placement-new null-guard). g_tinyFont @0x64ea58 is a Font
+// (ctor 0x179700, ??0Font@@QAE@XZ); g_font64ead8 @0x64ead8 is a FontRenderer (ctor
+// 0x179be0, ??0FontRenderer@@QAE@XZ) - a DIFFERENT type from the four bitmap Font
+// globals, split out here. Both from <Font/Font.h>.
 // ===========================================================================
-class Font {
-public:
-    void M179700(); // 0x179700 (reloc-masked)
-    void M179be0(); // 0x179be0 (reloc-masked)
-};
 extern Font g_tinyFont; // 0x64ea58 (pinned in Fonts.cpp)
 DATA(0x0024ead8)
-extern Font g_font64ead8;
+extern FontRenderer g_font64ead8;
 RVA(0x00115730, 0xa)
 void FontForward115730() {
-    g_tinyFont.M179700();
+    g_tinyFont.Font::Font();
 }
 RVA(0x001157b0, 0xa)
 void FontForward1157b0() {
-    g_font64ead8.M179be0();
+    g_font64ead8.FontRenderer::FontRenderer();
 }
 
 // ===========================================================================

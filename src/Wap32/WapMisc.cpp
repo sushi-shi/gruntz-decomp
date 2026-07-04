@@ -8,6 +8,8 @@
 #include <rva.h>
 #include <Ints.h>
 
+#include <Font/Font.h> // real Font (the g_largeFont global)
+
 // --- 0x11d100 : CNoTrackObject vptr stamp ------------------------------------
 // Stamps the ??_7CNoTrackObject vtable (VA 0x5ec26c = the vtable ComHelperThunks.cpp
 // models as CNoTrackObject). Kept as a bare stamp leaf: making it a real CNoTrackObject
@@ -25,15 +27,13 @@ void CNoTrackObjectStamp::Stamp() {
 }
 
 // --- 0x1155b0 : construct the g_largeFont global -----------------------------
-// Tail-jmp to ??0Font (0x179700 == the Font default ctor); a dynamic-initializer
-// thunk that constructs the global font. Font is the real engine font class.
-struct Font {
-    void Construct(); // 0x179700 (??0Font@@QAE@XZ)
-};
+// A dynamic-initializer thunk that constructs the global font in place via the
+// explicit-ctor-call tail-jmp (mov ecx,&g_largeFont; jmp ??0Font@@QAE@XZ 0x179700 -
+// no placement-new null-guard). Font is the real engine font class (<Font/Font.h>).
 extern Font g_largeFont; // ?g_largeFont@@3VFont@@A (0x64eac0)
 RVA(0x001155b0, 0xa)
 void Unmatched_1155b0() {
-    g_largeFont.Construct();
+    g_largeFont.Font::Font();
 }
 
 // --- 0x1bae5d : forward (-1) to a CWnd method on a global object -------------

@@ -9,6 +9,7 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
 #include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer singleton)
+#include <Font/Font.h>          // real Font (the g_mediumFont global)
 #include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
@@ -336,18 +337,15 @@ i32 Probe_112840() {
 }
 
 // ===========================================================================
-// 0x00115630 (10B) - forward to a Font method on the medium-font global
-// (tail call: `mov ecx,&g_mediumFont; jmp Font::Method`).
+// 0x00115630 (10B) - construct the medium-font global in place via the
+// explicit-ctor-call tail-jmp (mov ecx,&g_mediumFont; jmp ??0Font@@QAE@XZ 0x179700 -
+// no placement-new null-guard). Font is the real engine font class (<Font/Font.h>).
 // ===========================================================================
-class Font {
-public:
-    Font* Ctor179700(); // tail-called on the global (retail: ??0Font@@QAE@XZ)
-};
 DATA(0x0024eae8)
 extern Font g_mediumFont;
 RVA(0x00115630, 0xa)
-Font* Forward_115630() {
-    return g_mediumFont.Ctor179700();
+void Forward_115630() {
+    g_mediumFont.Font::Font();
 }
 
 // ===========================================================================
