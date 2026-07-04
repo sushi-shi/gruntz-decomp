@@ -144,6 +144,13 @@ struct CGameRegistry {
     void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
     void StopBankIfActive();  // 0x92000 (== CGruntzMgr::StopBankIfActive; sound-bank stop)
     void StopBank0IfActive(); // 0x92030 (== CGruntzMgr::StopBank0IfActive; bank-0 stop)
+    // The status-bar HUD reaches these score/level methods on the singleton (== the
+    // MFC-side CGruntzMgr view of *0x24556c; reloc-masked, the same-object dual-view).
+    // Re-homed here from the former per-TU SBI CGameReg facet's Fn29aa/HiPump/SetToggle.
+    void UpdateScoreHud();             // 0x0860b0 (== CGruntzMgr::UpdateScoreHud)
+    void AccrueScoreTime();            // 0x0861e0 (== CGruntzMgr::AccrueScoreTime)
+    i32 FinishLevel(i32 a, i32 b);     // 0x08e980 (== CGruntzMgr::FinishLevel)
+    void ReportError(i32 id, i32 tag); // status-bar activation-fail report (i32,i32 overload)
 
     // Well-understood slots are named (the base CGameMgr region m_gameWnd/m_owner/
     // m_frameGate/m_soundEnabled, the four single-type pointers m_curState/m_world/

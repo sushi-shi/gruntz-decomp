@@ -76,6 +76,7 @@ struct CGameReg {
     void ReportError(u32, i32);         // CGruntzMgr::ReportError, RVA 0x346d
     struct GameObj510* GetActive355d(); // __thiscall accessor, RVA 0x355d
 };
+SIZE_UNKNOWN(CGameReg); // (its own placeholder view; the SBI CGameReg facet was dissolved)
 SIZE_UNKNOWN(GameObj510);
 struct GameObj510 {
     char m_pad0[0x510];

@@ -197,6 +197,11 @@ public:
     // magic group, recycle the (row,col) record node and unlink it from the +0x240 list.
     i32 ResetCell(i32 col, i32 row, i32 force, i32 keep);
 
+    // 0x78960: LoadCameraSprite - the SBI_RectOnly cursor-place path fires this after
+    // latching the placed (row,col). Declared-only (reloc-masked; Ghidra mis-attributes
+    // it to EngineLabelBacklog, but it is dispatched thiscall on this trigger mgr).
+    i32 LoadCameraSprite();
+
     // 0x6d300: ApplySwitch - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
     // sample the tile attribute, switch on the logic class (CDDraw tag - 0x34), dispatch
     // the matching switch/trigger logic object; on a miss, Format an error CString

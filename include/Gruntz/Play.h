@@ -327,8 +327,12 @@ public:
     i32 StepGridWalk(i32 dt);                   // 0x0d0a60 (THIS TU)
     i32 HandleDragMove(i32 a, i32 x, i32 y);    // 0x0d0db0 (THIS TU)
     i32 ResetGoals(i32, i32);                   // 0x0d5f00 (THIS TU)
-    i32 BuildHelpReveal();                      // 0x0d72c0 (THIS TU)
-    i32 RegisterInputBindings();                // 0x0d9160 (THIS TU)
+    // The status-bar HUD (SBI_RectOnly) reaches these on the current play-state
+    // (g_gameReg->m_curState downcast to CPlay); reloc-masked, bodies out-of-line.
+    i32 SetState(i32 cur, i32 prev); // 0x0d5b20  set the highlight-cursor state pair
+    i32 HiRefresh(i32 a);            // 0x0d6560  highlight-cursor refresh
+    i32 BuildHelpReveal();           // 0x0d72c0 (THIS TU)
+    i32 RegisterInputBindings();     // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
@@ -577,12 +581,12 @@ public:
     }* m_scrollSink;      // +0x4e4  StepScroll's scroll-offset sink + drag flags
     i32 m_gridWalkActive; // +0x4e8  grid-walk active flag
     i32 m_renderDisabled; // +0x4ec  Render hard early-out gate
-    char m_pad4f0[0x4f4 - 0x4f0];
-    i32 m_winLoseBanner; // +0x4f4  win/lose banner gate
-    i32 m_inGame;        // +0x4f8  PRIMARY mode: nonzero = main in-game frame
-    i32 m_overlayDrag;   // +0x4fc  overlay-drag-active flag
-    i32 m_paused;        // +0x500  paused/no-step flag
-    i32 m_dragEndNotify; // +0x504  drag-end notify gate
+    i32 m_4f0;            // +0x4f0  highlight-busy gate (SBI_RectOnly reads it non-zero => bail)
+    i32 m_winLoseBanner;  // +0x4f4  win/lose banner gate
+    i32 m_inGame;         // +0x4f8  PRIMARY mode: nonzero = main in-game frame
+    i32 m_overlayDrag;    // +0x4fc  overlay-drag-active flag
+    i32 m_paused;         // +0x500  paused/no-step flag
+    i32 m_dragEndNotify;  // +0x504  drag-end notify gate
     char m_pad508[0x510 - 0x508];
     i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
     char m_pad514[0x518 - 0x514];

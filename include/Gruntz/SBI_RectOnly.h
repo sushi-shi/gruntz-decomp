@@ -19,6 +19,7 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
+#include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (the one *0x24556c singleton)
 #include <Gruntz/SbiConfig.h>     // canonical config-host family (one shape)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
@@ -624,19 +625,12 @@ struct CSbiGameMgr {
 };
 SIZE_UNKNOWN(CSbiGameMgr);
 
-// The sub-manager at g_gameReg+0x2c that carries the highlight-busy gate at +0x4f0.
-// PlaceCursorTarget forwards a resolved tile's (x,y) origin pair to ScrollTo.
-struct CSbiSubMgr {
-    i32 ScrollTo(i32 x, i32 y);       // __thiscall, 2 args (FUN_004d5f00)
-    void SetState(i32 cur, i32 prev); // __thiscall, 2 args (call 0xfe3e0 site -> 0x3f8a)
-    void Refresh();                   // __thiscall, no args (call 0xfe520 site -> 0x3d55)
-    void PostWarn(i32 on, i32 id);    // 0x20bd (destruct-warning pump, 2 args)
-    void HiRefresh(i32 a);            // 0x385a (highlight refresh, 1 arg)
-    void HiToggle(i32 a);             // 0x3c15 (highlight toggle, 1 arg)
-    char m_pad0[0x4f0];
-    i32 m_4f0; // +0x4f0  highlight-busy flag (non-zero => bail)
-};
-SIZE_UNKNOWN(CSbiSubMgr);
+// REMOVED (was `struct CSbiSubMgr`): the current play-state at g_gameReg->m_curState
+// (+0x2c) is the real CPlay (Play.h). Its highlight methods are CPlay methods, reached
+// via ((CPlay*)g_gameReg->m_curState) - a genuine CState->CPlay downcast (m_curState is
+// canonically CState*): ScrollTo->ResetGoals (0xd5f00), Refresh->ResetViewport (0xd8c60),
+// PostWarn->ArmSnapshot (0xd9240), HiToggle->EnterOverlayDrag (0xd6440), SetState (0xd5b20),
+// HiRefresh (0xd6560), and the +0x4f0 highlight-busy gate (CPlay::m_4f0).
 
 // A resolved tile-grid entry (m_grid[]): carries a sub-object at +0x10 whose
 // +0x5c/+0x60 are the tile origin pair forwarded to ScrollTo.
@@ -652,96 +646,48 @@ struct CSbiTileEntry {
 };
 SIZE_UNKNOWN(CSbiTileEntry);
 
-// The active grunt/level object at g_gameReg+0x68: a probe pair (ProbeXY at the
-// front, ScrollProbe), a tile-entry grid at +0x1c (15-wide rows), the placed-cursor
-// latch trio at +0x230, the camera-sprite loader, and a tab-highlight-enabled gate
-// at +0x400 (zero => skip the cue + cursor activation).
-struct CSbiActiveObj {
-    i32 ProbeXY(i32 col, i32 row, i32 a, i32 b); // __thiscall, 4 args (FUN_0046bfd0)
-    i32 ScrollProbe(i32 col, i32 row);           // __thiscall, 2 args (FUN_004784d0)
-    void LoadCameraSprite();                     // __thiscall (FUN_00478960)
-    char m_pad0[0x1c];
-    CSbiTileEntry* m_grid[1]; // +0x1c  tile-entry grid (15-wide rows, 4-byte stride)
-    char m_pad20[0x230 - 0x20];
-    i32 m_230; // +0x230  cursor-placed flag
-    i32 m_234; // +0x234  placed column
-    i32 m_238; // +0x238  placed row
-    char m_pad23c[0x288 - 0x23c];
-    i32 m_288; // +0x288  MISSIONSTATUS/briefing variant selector
-    char m_pad28c[0x400 - 0x28c];
-    i32 m_400; // +0x400  tab-highlight-enabled gate
-};
-SIZE_UNKNOWN(CSbiActiveObj);
+// REMOVED (was `struct CSbiActiveObj`): the single-player active object at
+// g_gameReg->m_68 (+0x68) is the real CTriggerMgr (TriggerMgr.h), reached via
+// ((CTriggerMgr*)g_gameReg->m_68) - a genuine per-mode-reused void* slot (grid/goo-
+// well/light-fx in other modes). ProbeXY->ResetCell (0x46bfd0), ScrollProbe->
+// RecordListHas (0x4784d0), LoadCameraSprite (0x478960); the placed-cursor latch trio
+// is CTriggerMgr m_230/m_recX/m_recY, m_288 == m_288, m_400 == m_groupFlag. The grid
+// element type is CTmCell (still an unmatched engine cell), viewed here as CSbiTileEntry.
 
-// The diagnostics logger at g_gameReg+0x38 (a position-string sink).
-struct CSbiLogger {
-    void LogPos(char* tag, i32 subtype); // __thiscall, 2 args
-    i32 QueryPos(char* tag, i32 flag);   // 0x1395d0 (__thiscall, 2 args, returns int)
-};
-SIZE_UNKNOWN(CSbiLogger);
+// REMOVED (was `struct CSbiLogger`): the settings/registry writer at
+// g_gameReg->m_settings (+0x38) is the real Utils::RegistryHelper (RegistryHelper.h),
+// reached via ((Utils::RegistryHelper*)g_gameReg->m_settings). LogPos->SetValueDword,
+// QueryPos->GetValueDword (0x1395d0). (m_settings stays void* in the canonical header -
+// its MFC-side dual-view types it CSettingsWriter*, owned by a parallel worker.)
 
-// The CGameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Modeled
-// minimally - only the members/methods the reconstructed bodies touch.
-//
-// CONSOLIDATION DEFERRED (canonical view = CGameRegistry/CGruntzMgr): unlike the
-// other 0x24556c views (KitchenSlime/GooWellMgr/SBI_MenuItem/...) which were folded
-// to the canonical types, THIS view carries TU-specific __thiscall METHODS on the
-// singleton (Fn29aa @0x29aa, SetToggle @0x409d, HiPump @0x1fc8, ReportError(i32,i32),
-// inline ViewSize()) plus fields the canonical layouts do not expose (m_c/m_10/m_4).
-// Those methods/fields cannot move into the shared CGameRegistry.h / GruntzMgr.h
-// without breaching the fat-header wall (any addition there regresses a neighbor via
-// MSVC cross-fn codegen leak), and reaching them through the canonical type would
-// need a per-site methods-cast view - re-introducing exactly the per-TU view struct
-// the consolidation removes. Left as the local view; re-attack in the final sweep if
-// the canonical methods/fields ever become expressible cleanly.
-// The window host at g_gameReg+0x4: carries the game HWND at +0x4 (the
-// PostMessage target).
+// The window host at g_gameReg->m_gameWnd (+0x4): carries the game HWND at +0x4 (the
+// PostMessage target). Reached as ((CSbiWndHost*)g_gameReg->m_gameWnd) - the +0x4
+// sub-object of the canonical CGameRegistry, not a facet of the singleton itself.
 struct CSbiWndHost {
     char m_pad0[0x4];
     void* m_4; // +0x4  game window handle
 };
 SIZE_UNKNOWN(CSbiWndHost);
-struct CGameReg {
-    void Fn29aa();                // 0x29aa (briefing-variant hook, no args)
-    void SetToggle(i32 v, i32 a); // 0x409d (2 args)
-    void HiPump();                // 0x1fc8 (no args)
-    char m_pad0[0x4];
-    CSbiWndHost* m_4; // +0x4  window host (PostMessage target)
-    char m_pad8[0xc - 0x8];
-    i32 m_c;    // +0xc  RESUME/toggle gate
-    void* m_10; // +0x10  presence gate (destruct-button build guard)
-    char m_pad14[0x2c - 0x14];
-    CSbiSubMgr* m_curState; // +0x2c  highlight sub-manager
-    CSbiGameMgr* m_world;   // +0x30  active game-manager (null-guard in Serialize)
-    char m_pad34[0x38 - 0x34];
-    CSbiLogger* m_38; // +0x38  diagnostics logger
-    char m_pad3c[0x68 - 0x3c];
-    CSbiActiveObj* m_68; // +0x68  active grunt/level object
-    char m_pad6c[0x8c - 0x6c];
-    i32 m_modeW; // +0x8c  cursor/view x (offset by -0x45 into the rect-only item)
-    i32 m_modeH; // +0x90  cursor/view y (offset by -0x30)
-    char m_pad94[0x11c - 0x94];
-    i32 m_11c; // +0x11c  destruct-button configure tag
-    char m_pad120[0x134 - 0x120];
-    i32 m_134;                      // +0x134  game-over/exit gate
-    void ReportError(i32 a, i32 b); // __thiscall
-    // The cursor/view extent accessor: returns {m_modeW, m_modeH} by value. Inlined at the
-    // 0xfe520 placement site; the struct return materializes both fields on the stack
-    // (the y store survives as a dead spill).
-    struct ViewExtent {
-        i32 x, y;
-    };
-    ViewExtent ViewSize() {
-        ViewExtent v;
-        v.x = m_modeW;
-        v.y = m_modeH;
-        return v;
-    }
-};
-// The CGameReg name's class-size annotation lives here (this walled view is now its
-// primary def): the src/Gruntz/Attract.cpp minimal CGameReg view that used to carry it
-// was folded onto the canonical CGameRegistry, so it no longer annotates the name.
-SIZE_UNKNOWN(CGameReg);
+
+// CONSOLIDATED (was the per-TU `struct CGameReg`, an offset-0 SAME-MEMORY ALIAS of the
+// *0x24556c singleton): dissolved into the canonical CGameRegistry (<Gruntz/GameRegistry.h>).
+// The scalar slots are canonical members reached cast-free (m_c -> m_frameGate +0xc,
+// m_10 -> m_soundEnabled +0x10, m_modeW/m_modeH/m_11c/m_134); the pointer slots are the
+// canonical sub-object members reached through evidence-backed downcasts to the REAL
+// concrete classes (all sema-proven; matching-neutral - a downcast of a same-offset slot
+// is a free reinterpret). The former per-TU facet VIEWS are all removed in favour of the
+// real classes (SBI_RectOnly.cpp includes their headers):
+//   m_curState (+0x2c) -> (CPlay*)               the current play-state (Play.h)
+//   m_settings (+0x38) -> (Utils::RegistryHelper*) the registry writer (RegistryHelper.h)
+//   m_68 (+0x68)       -> (CTriggerMgr*)          the single-player trigger grid (TriggerMgr.h)
+// Two slots keep a small TU-local facet view (documented, honest): m_gameWnd (+0x4) ->
+// (CSbiWndHost*) (a 1-field window-host shell) and m_world (+0x30) -> (CSbiGameMgr*) (the
+// resource mgr / CResMgr; its fold is DEFERRED - a deep CResMgr sub-object cascade, see
+// the CSbiMusicHost/CSbiMainL1 note above and GameRegistry.h's m_world typing).
+// The three TU-specific methods re-homed to CGameRegistry as the real CGruntzMgr methods
+// they are: Fn29aa->UpdateScoreHud (0x860b0), HiPump->AccrueScoreTime (0x861e0),
+// SetToggle->FinishLevel (0x8e980); ReportError(i32,i32) added as the i32,i32 overload.
+// The dead inline ViewSize() (unused - 0xfe520 reads m_modeW/m_modeH directly) is dropped.
 
 // The seq-keyed object map at (g_gameReg->m_world->m_8 + 0x48): Lookup(key, &out)
 // returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
