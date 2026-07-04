@@ -5,7 +5,7 @@
 // children (head at +0x04; nodes next@+0x00, data@+0x08).  The ctor zeroes the
 // 24-dword m_block at +0x2c and clears m_20; the Find/Remove accessors walk the
 // child list; ValidateByType/ApplyByType dispatch on a passed type tag; the
-// Transfer/Serialize methods stream the object's fields through a CSerialStream.
+// Transfer/Serialize methods stream the object's fields through a CSerialArchive.
 //
 // NOTE on the trace cluster: the dynamic this-tracer lumped ~28 RVAs under this
 // class.  Only the subset that matches this layout (vtable 0x5eae8c, +0x04 child
@@ -77,7 +77,7 @@ i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
 // CTileTriggerSwitchLogic::VerifyBlockLinksB
 // The FindChild(key, 3) variant of VerifyBlockLinks (byte-identical structure,
 // different diagnostic codes 0x44d/0x44e and the slow-lookup kind arg 3 vs 8):
-// gate on m_14, find the owner's child that claims this object (FindIndexByKey),
+// gate on m_linkGate, find the owner's child that claims this object (FindIndexByKey),
 // ack 0x44d on miss; then validate each nonzero block key resolves (FindChild
 // (key, 3)) to a gated child, acking 0x44e on a lookup miss.
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
 // value, non-steerable frame choice. See docs/patterns/this-spilled-to-local-for-loop-seed.md
 RVA(0x00111f40, 0xc4)
 i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
-    if (m_14 == 0) {
+    if (m_linkGate == 0) {
         return 0;
     }
     ListNode* node = m_owner->m_20;
@@ -101,7 +101,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         ListNode* cur = node;
         node = node->m_next;
         child = cur->m_data;
-        if (child != 0 && child->FindIndexByKey(m_10) != 0) {
+        if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
     }
@@ -120,7 +120,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
             g_gameReg->Ack(0x80dd, 0x44e);
             return 0;
         }
-        if (c->m_14 == 0) {
+        if (c->m_linkGate == 0) {
             return 0;
         }
         p++;
@@ -130,13 +130,13 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::VerifyBlockLinks
-// Linkage validator: if this->m_14 is clear, succeed (return 0 short-circuit on
+// Linkage validator: if this->m_linkGate is clear, succeed (return 0 short-circuit on
 // the null gate).  Otherwise walk the owner's child list (head @ owner->m_20),
-// asking each child's FindIndexByKey(this->m_10) until one claims this object.
+// asking each child's FindIndexByKey(this->m_key1) until one claims this object.
 // If none does, ack diagnostic 0x452 and fail.  Then, for the claiming child,
 // scan its 24-dword key block (child->m_block[4..27]): an empty slot succeeds;
 // each nonzero key must resolve via owner->FindChild(key, 8) to a child whose
-// m_14 gate is set (else fail, acking 0x453 when the lookup itself misses).
+// m_linkGate is set (else fail, acking 0x453 when the lookup itself misses).
 // Returns 1 on the early empty-slot success, 0 otherwise.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -147,7 +147,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
 // docs/patterns/this-spilled-to-local-for-loop-seed.md
 RVA(0x00112c70, 0xc4)
 i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
-    if (m_14 == 0) {
+    if (m_linkGate == 0) {
         return 0;
     }
     ListNode* node = m_owner->m_20;
@@ -160,7 +160,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         ListNode* cur = node;
         node = node->m_next;
         child = cur->m_data;
-        if (child != 0 && child->FindIndexByKey(m_10) != 0) {
+        if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
     }
@@ -179,7 +179,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
             g_gameReg->Ack(0x80dd, 0x453);
             return 0;
         }
-        if (c->m_14 == 0) {
+        if (c->m_linkGate == 0) {
             return 0;
         }
         p++;
@@ -194,24 +194,24 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
 // read slot (+0x2c). Returns 1 (or 0 when gated off).
 // ---------------------------------------------------------------------------
 RVA(0x001139a0, 0xb4)
-i32 CTileTriggerSwitchLogic::LoadState(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::LoadState(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->TransferIn(&m_08, 4);
-    s->TransferIn(&m_0c, 4);
-    s->TransferIn(&m_10, 4);
-    s->TransferIn(&m_14, 4);
-    s->TransferIn(&m_18, 4);
-    s->TransferIn(&m_1c, 4);
-    s->TransferIn(&m_20, 4);
-    s->TransferIn(&m_28, 4);
+    s->Read(&m_08, 4);
+    s->Read(&m_key0c, 4);
+    s->Read(&m_key1, 4);
+    s->Read(&m_linkGate, 4);
+    s->Read(&m_18, 4);
+    s->Read(&m_1c, 4);
+    s->Read(&m_20, 4);
+    s->Read(&m_28, 4);
     i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
-        s->TransferIn(p, 4);
+        s->Read(p, 4);
         p++;
     }
     return 1;
@@ -285,19 +285,19 @@ i32 CTileTriggerSwitchLogic::ApplyByType(void* obj, i32 type, i32 a3, i32 a4) {
 // stream->edi (pushes all 4 callee regs, then loads args) vs our this->edi /
 // stream->esi (arg load interleaved with the pushes). Reg-pair swap only.
 RVA(0x00113dd0, 0x7b)
-i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Transfer(&m_block[37], 4); // +0xc0
-    s->Transfer(&m_block[38], 4); // +0xc4
-    i32* p = &m_block[28];        // +0x9c
+    s->Write(&m_block[37], 4); // +0xc0
+    s->Write(&m_block[38], 4); // +0xc4
+    i32* p = &m_block[28];     // +0x9c
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
-            s->Transfer(p, 4);
+            s->Write(p, 4);
             p++;
         }
     }
@@ -335,7 +335,7 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
         ListNode* cur = node;
         CTileTriggerSwitchLogic* data = node->m_data;
         node = node->m_next;
-        if (data->m_04 == k2 && data->m_10 == k1) {
+        if (data->m_04 == k2 && data->m_key1 == k1) {
             if (data) {
                 // NOTE: retail inlines a vptr restamp (mov [data],offset ??_7)
                 // here; with the manual g_...Vtbl removed it's omitted in this
@@ -363,7 +363,7 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(i32 k1, i32 k2) {
         ListNode* cur = node;
         node = node->m_next;
         CTileTriggerSwitchLogic* data = cur->m_data;
-        if (data->m_10 == k1) {
+        if (data->m_key1 == k1) {
             if (k2 == 0 || data->m_04 == k2) {
                 return data;
             }
@@ -383,7 +383,7 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(i32 key) {
         ListNode* cur = node;
         node = node->m_next;
         CTileTriggerSwitchLogic* data = cur->m_data;
-        if (data->m_0c == key) {
+        if (data->m_key0c == key) {
             return data;
         }
     }
@@ -397,14 +397,14 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(i32 key) {
 // stream's Transfer (vtable slot 12) and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00117e20, 0x36)
-i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Transfer(&m_block[18], 4);
+    s->Write(&m_block[18], 4);
     return 1;
 }
 
@@ -415,14 +415,14 @@ i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialStream* s) {
 // (vtable +0x2c) instead of the write slot (+0x30). Returns 1 on success.
 // ---------------------------------------------------------------------------
 RVA(0x00117e70, 0x36)
-i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialStream* s) {
+i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->TransferIn(&m_block[18], 4);
+    s->Read(&m_block[18], 4);
     return 1;
 }
 

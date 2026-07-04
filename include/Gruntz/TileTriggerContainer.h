@@ -13,7 +13,8 @@
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
 #include <Ints.h>
-#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 // The owning container; back-stamped into the list elements (m_14 / m_20).
 class CTileTriggerContainer;
@@ -78,8 +79,6 @@ public:
 };
 SIZE_UNKNOWN(TtcObList);
 
-struct TtcStream;
-
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
 struct TtcMark {
@@ -87,7 +86,7 @@ struct TtcMark {
     // Per-mark (de)serialize-and-fill helper used by the big serialize walk
     // (0x117280): reads the mark's fields from the stream and validates them.
     // __thiscall, returns nonzero on success.  Reloc-masked rel32 callee (0x113f10).
-    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x113f10
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x113f10
     i32 m_00;
     i32 m_04;
     i32 m_08;
@@ -130,33 +129,14 @@ struct TtcBaseElem {
 SIZE_UNKNOWN(TtcBaseElem);
 extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
 
-// A serialization stream (its slot-12 / +0x30 Transfer copies n bytes); only the
-// vtable slot offset matters.  Reloc-masked virtual call.
-struct TtcStream {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void ReadCount(void* buf, i32 n); // +0x2c  read path (slot 11)
-    virtual void Transfer(void* buf, i32 n);  // +0x30  write path (slot 12)
-};
-SIZE_UNKNOWN(TtcStream);
-
 // A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
 // is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
 // (reloc-masked __thiscall callees) returning nonzero on success.
 struct TtcSwitchObjVtbl; // the switch object's vtable (contents owned elsewhere)
 struct TtcSwitchObj {
-    i32 ApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
-    i32 ApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
-    i32 ApplyC(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
+    i32 ApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
+    i32 ApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
+    i32 ApplyC(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
     TtcSwitchObjVtbl* m_vptr;
     i32 m_04; // +0x04  type tag
 };
@@ -164,8 +144,10 @@ SIZE_UNKNOWN(TtcSwitchObj);
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
 // functions: stream the object's tag, then dispatch on it.
-i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117630
-i32 __stdcall SerializeApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117710
+i32 __stdcall
+SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117630
+i32 __stdcall
+SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
@@ -200,17 +182,17 @@ public:
     // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
     // then for each list reads a count and LoadElement's that many elements, AddTail'd
     // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
-    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117280
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117280
 
     // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
-    void* LoadElement(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117800
+    void* LoadElement(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117800
 
     // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  LoadFlag74
     // closes the load (op 7); TransferFlag74 closes the save (op 4).  __thiscall.
     // (Real fn: CTileTriggerSwitchLogic::LoadFlag74 / ::TransferFlag74; called on this.)
-    i32 LoadFlag74(TtcStream* s);     // 0x117e70
-    i32 TransferFlag74(TtcStream* s); // 0x117e20
+    i32 LoadFlag74(CSerialArchive* s);     // 0x117e70
+    i32 TransferFlag74(CSerialArchive* s); // 0x117e20
 
     // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.

@@ -18,7 +18,8 @@
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
 #include <rva.h>
-#include <Mfc.h> // CPtrList and the MFC list helpers (reloc-masked)
+#include <Mfc.h>                  // CPtrList and the MFC list helpers (reloc-masked)
+#include <Gruntz/SerialArchive.h> // CSerialArchive - the Load serializer's stream (Read @ +0x2c)
 
 // The global free-list of recycled list nodes (an intrusive singly-linked stack)
 // and its node-bias constant, shared across the manager's list churn. Stored as
@@ -35,10 +36,6 @@ struct CTrigPoint {
     i32 y; // +0x04
 };
 SIZE_UNKNOWN(CTrigPoint);
-
-// The archive reader the Load serializer pulls fields through (vtable slot 0x2c =
-// Read(dst, size)); defined fully in the eh sibling TU.
-struct CTmSerReader;
 
 // The placed grid-cell game object (a CGrunt). The full unified shape is a file-local
 // view in each TU; the grid stores pointers to it, so an incomplete decl suffices here.
@@ -60,7 +57,7 @@ public:
     // (the 4x15 placed-object grid, per-row state bands, byte table, record list,
     // ten selection lists, base object list, overlay sub-object + tail scalars).
     // /GX; lives in the eh sibling TU. ret 1, or 0 on any missing referent.
-    i32 Load(CTmSerReader* ar);
+    i32 Load(CSerialArchive* ar);
 
     // --- the small reconstructed leaf interface (retail-RVA order) -------------
     // 0x759e0: copy the cached origin pair (+0x174,+0x178) into the caller's

@@ -73,21 +73,8 @@ void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 // carry a type-id virtual (slot 8 = vtbl+0x20) and a +0x7c sub-object whose +0x18
 // is the real placed game-object.
 // ---------------------------------------------------------------------------
-struct CTmSerReader {
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void Read(void* dst, i32 size); // slot 11 = vtbl+0x2c
-};
-SIZE_UNKNOWN(CTmSerReader);
+// The archive reader `ar` is the shared CSerialArchive (Read @ vtable slot 11 =
+// +0x2c); see <Gruntz/SerialArchive.h> (pulled via TriggerMgr.h).
 struct CTmSerAux {
     char pad00[0x18];
     void* m_18; // +0x18  the placed game-object
@@ -127,9 +114,9 @@ SIZE_UNKNOWN(CTmSerByteArray);
 // The overlay sub-object (this->m_25c): new(0x40) + ctor, its own Load, and a
 // Clear + custom free on teardown.
 struct CTmSerOverlay {
-    CTmSerOverlay();            // 0x9090 (ctor via new)
-    void Clear();               // 0x92e0
-    i32 Load(CTmSerReader* ar); // 0x9bb0
+    CTmSerOverlay();              // 0x9090 (ctor via new)
+    void Clear();                 // 0x92e0
+    i32 Load(CSerialArchive* ar); // 0x9bb0
     inline void* operator new(u32);
     char m_body[0x40];
 };
@@ -149,7 +136,7 @@ void Tm_RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown
 // reuse (retail folds `this` and the lookup-out param into one slot) number/allocate
 // differently than retail's __ehfuncinfo. topic:wall topic:eh.
 RVA(0x0007abc0, 0x4b6)
-i32 CTriggerMgr::Load(CTmSerReader* ar) {
+i32 CTriggerMgr::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }

@@ -11,31 +11,12 @@
 
 #include <Ints.h>
 #include <Gruntz/CGameRegistry.h>
-#include <rva.h> // SIZE_UNKNOWN class-metadata macros used below
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 // The CGameRegistry singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.
 extern CGameRegistry* g_gameReg;
-
-// A serialization stream: Vfunc30 (vtable slot 12) copies n bytes to/from a
-// buffer.  Only the slot offset (+0x30) matters; reloc-masked virtual call.
-class CSerialStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void TransferIn(void* buf, i32 n); // +0x2c  read counterpart of Transfer
-    virtual void Transfer(void* buf, i32 n);   // +0x30
-};
-SIZE_UNKNOWN(CSerialStream);
 
 // vftable.  Reconstructed from the methods below; fields only
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
@@ -70,11 +51,11 @@ public:
     CTileTriggerSwitchLogic* FindByField0C(i32 key);         // 0x1171d0
     i32 ScanNeighborhood(i32 x, i32 y);                      // 0x117ec0
     i32 ValidateByType(void* obj, i32 type, i32 a3, i32 a4); // 0x113a90
-    i32 TransferFlag74(CSerialStream* s);                    // 0x117e20
-    i32 LoadFlag74(CSerialStream* s);                        // 0x117e70 (read via slot +0x2c)
+    i32 TransferFlag74(CSerialArchive* s);                   // 0x117e20
+    i32 LoadFlag74(CSerialArchive* s);                       // 0x117e70 (read via slot +0x2c)
     i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
-    i32 SerializeMatrix(CSerialStream* s);                   // 0x113dd0
-    i32 LoadState(CSerialStream* s);                         // 0x1139a0 (read via slot +0x2c)
+    i32 SerializeMatrix(CSerialArchive* s);                  // 0x113dd0
+    i32 LoadState(CSerialArchive* s);                        // 0x1139a0 (read via slot +0x2c)
 
     // __thiscall validators/appliers used by ApplyByType (reloc-masked).
     i32 ApplyBase(void* obj, i32 type, i32 a3, i32 a4);
@@ -89,14 +70,14 @@ public:
     void BuildRockBreakInGameText();
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
-    i32 m_04;                         // +0x04  list head (owner) / key (data obj)
-    i32 m_08;                         // +0x08  (not accessed here)
-    i32 m_0c;                         // +0x0c  (not accessed here)
-    i32 m_10;                         // +0x10  key1 (compared in RemoveByKeys/FindChild)
-    i32 m_14;                         // +0x14  link-check gate (VerifyBlockLinks guard)
-    i32 m_18;                         // +0x18  (serialized in LoadState)
-    i32 m_1c;                         // +0x1c  (serialized in LoadState)
-    ListNode* m_20;                   // +0x20  child-list head (owner) / cleared before delete
+    i32 m_04;       // +0x04  list head (owner) / key (data obj); genuinely dual-role
+    i32 m_08;       // +0x08  (serialized in LoadState)
+    i32 m_key0c;    // +0x0c  secondary key (compared in FindByField0C)
+    i32 m_key1;     // +0x10  primary key (FindIndexByKey/RemoveByKeys/FindChild)
+    i32 m_linkGate; // +0x14  link-check gate (VerifyBlockLinks guard)
+    i32 m_18;       // +0x18  (serialized in LoadState)
+    i32 m_1c;       // +0x1c  (serialized in LoadState)
+    ListNode* m_20; // +0x20  child-list head (owner) / cleared before delete
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
     i32 m_28;                         // +0x28  (serialized in LoadState)
     i32 m_block[40];                  // +0x2c..0xcb  (first 24 zeroed in ctor)

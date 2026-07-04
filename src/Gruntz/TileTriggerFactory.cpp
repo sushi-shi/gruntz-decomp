@@ -15,26 +15,11 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Gruntz/SerialArchive.h> // the serialized reader is the shared CSerialArchive (Read @ +0x2c)
 #include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82, both __cdecl)
 
-// The serialized reader the type id is read off: vtable slot 11 (+0x2c) is a
-// Read(void* buf, i32 n). Modeled polymorphically so `mov eax,[r]; call [eax+0x2c]`
-// falls out with no cast; the vtable is owned elsewhere (no emit here).
-struct CTrigReader {
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v0a();
-    virtual void Read(void* buf, i32 n); // slot 11 (+0x2c)
-};
-SIZE_UNKNOWN(CTrigReader);
+// The serialized type id is read off the shared CSerialArchive stream (Read @
+// vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
 
 // A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
@@ -188,7 +173,7 @@ struct CTileTriggerFactory {
     char m_pad00[0x70];
     CTrigLogic* m_70; // +0x70  id-21 latches the built object here
 
-    void* Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3); // 0x117800
+    void* Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3); // 0x117800
 };
 SIZE_UNKNOWN(CTileTriggerFactory);
 
@@ -196,7 +181,7 @@ SIZE_UNKNOWN(CTileTriggerFactory);
 static void* Reg277fTail(
     CTileTriggerFactory* self,
     CTrigLogic* obj,
-    CTrigReader* reader,
+    CSerialArchive* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -213,7 +198,7 @@ static void* Reg277fTail(
 static void* Reg1abeTail(
     CTileTriggerFactory* self,
     CTrigLogic* obj,
-    CTrigReader* reader,
+    CSerialArchive* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -235,7 +220,7 @@ static void* Reg1abeTail(
 // MSVC tail-merges differently from the helper-factored spelling here) + the differently
 // -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
 RVA(0x00117800, 0x47f)
-void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) {
+void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
     if (reader == 0) {
         return 0;
     }
