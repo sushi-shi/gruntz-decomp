@@ -256,10 +256,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
         default:
             break;
     }
-    m_object->m_144 = m_object->m_screenX - 7;
-    m_object->m_14c = m_object->m_144 + 14;
-    m_object->m_148 = m_object->m_screenY - 7;
-    m_object->m_150 = m_object->m_148 + 14;
+    m_object->m_areaL = m_object->m_screenX - 7;
+    m_object->m_areaR = m_object->m_areaL + 14;
+    m_object->m_areaT = m_object->m_screenY - 7;
+    m_object->m_areaB = m_object->m_areaT + 14;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;

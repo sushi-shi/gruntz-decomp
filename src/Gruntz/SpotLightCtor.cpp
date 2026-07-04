@@ -121,10 +121,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_drawFillCmd = 7;
     m_object->m_drawFillArg = looked;
     m_98 = 0;
-    m_object->m_144 = 0;
-    m_object->m_14c = 0;
-    m_object->m_148 = 0;
-    m_object->m_150 = 0;
+    m_object->m_areaL = 0;
+    m_object->m_areaR = 0;
+    m_object->m_areaT = 0;
+    m_object->m_areaB = 0;
     m_9c = -1;
     m_a0 = -1;
     m_a4 = 0;

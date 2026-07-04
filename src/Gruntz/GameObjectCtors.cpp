@@ -352,10 +352,10 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawFillArg = n;
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
-    m_object->m_144 = 1;
-    m_object->m_14c = 1;
-    m_object->m_148 = 1;
-    m_object->m_150 = 1;
+    m_object->m_areaL = 1;
+    m_object->m_areaR = 1;
+    m_object->m_areaT = 1;
+    m_object->m_areaB = 1;
 }
 
 // @confidence: high
@@ -395,10 +395,10 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = 0x8;
     m_object->m_fillFraction = 0x80;
-    m_object->m_144 = 0;
-    m_object->m_14c = 0;
-    m_object->m_148 = 0;
-    m_object->m_150 = 0;
+    m_object->m_areaL = 0;
+    m_object->m_areaR = 0;
+    m_object->m_areaT = 0;
+    m_object->m_areaB = 0;
 }
 
 // ---------------------------------------------------------------------------

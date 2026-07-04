@@ -200,10 +200,10 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_object->m_144 = m_object->m_screenX - (m_object->m_134 << 5) - 7;
-    m_object->m_14c = m_object->m_screenX + (m_object->m_13c << 5) + 7;
-    m_object->m_148 = m_object->m_screenY - (m_object->m_138 << 5) - 7;
-    m_object->m_150 = m_object->m_screenY + (m_object->m_140 << 5) + 7;
+    m_object->m_areaL = m_object->m_screenX - (m_object->m_extentL << 5) - 7;
+    m_object->m_areaR = m_object->m_screenX + (m_object->m_extentR << 5) + 7;
+    m_object->m_areaT = m_object->m_screenY - (m_object->m_extentT << 5) - 7;
+    m_object->m_areaB = m_object->m_screenY + (m_object->m_extentB << 5) + 7;
 }
 
 // CVoiceTrigger::InitActReg @0x11a320 - construct the trigger's OWN activation-
@@ -255,10 +255,10 @@ i32 CVoiceTrigger::Tick() {
                          ->QueryAt(
                              m_object->m_screenX,
                              m_object->m_screenY,
-                             &m_object->m_134,
+                             &m_object->m_extentL,
                              &outA,
                              &outB,
-                             &m_object->m_144
+                             &m_object->m_areaL
                          );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_sprite;

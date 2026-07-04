@@ -43,6 +43,7 @@
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
+struct CGameObject; // fwd (CAnimWorker's collide callback takes the object)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
 // 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
@@ -72,7 +73,12 @@ public:
     i32 m_04; // +0x04
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c
-    i32 m_10; // +0x10
+    // +0x10  collision-notify callback: CGameLevel::BroadPhase calls
+    // `obj->m_collideWorker->m_collideNotify(obj)` (a raw fn-ptr load off the
+    // worker, NOT a vtable dispatch - one indirection in the retail bytes) when a
+    // candidate move would overlap another object; zero-stamped at worker build
+    // (UserBaseLink) = "no callback".
+    i32 (*m_collideNotify)(CGameObject* obj); // +0x10
     i32 m_14; // +0x14
     i32 m_18; // +0x18
     i32 m_1c; // +0x1c
@@ -108,10 +114,32 @@ struct CGameObject {
     i32 EnsureWorker80(CGameObject* src);               // 0x150eb0  (lazy worker @ +0x80, dispatch)
     void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
-    char m_pad00[0x04];
+
+    // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
+    // no vtable is ever emitted from source - every dispatch reloc-masks). Slot
+    // roles are unrecovered except [11] Draw: CGameLevel::VisitVisible dispatches
+    // it (+0x2c) per object during the between-planes render walk, passing the
+    // render visitor. [10] (+0x28) is the sibling hook the object-chain owner
+    // also carries - unnamed here (no direct evidence on the object).
+    virtual void v00();          // [0]  +0x00
+    virtual void v04();          // [1]  +0x04
+    virtual void v08();          // [2]  +0x08
+    virtual void v0c();          // [3]  +0x0c
+    virtual void v10();          // [4]  +0x10
+    virtual void v14();          // [5]  +0x14
+    virtual void v18();          // [6]  +0x18
+    virtual void v1c();          // [7]  +0x1c
+    virtual void v20();          // [8]  +0x20
+    virtual void v24();          // [9]  +0x24
+    virtual void v28(void* arg); // [10] +0x28
+    virtual void Draw(void* arg); // [11] +0x2c  per-object draw hook (VisitVisible)
+
     i32 m_04;    // +0x04
-    i32 m_flags; // +0x08
-    i32 m_0c;    // +0x0c
+    i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;
+                 //        bit10 (0x400) = pass soft-block tiles; 0x20000 = z-key dirty;
+                 //        0x400000 = special-tile latch (probe kind 4)
+    i32 m_0c;    // +0x0c  owning world/context (CGameObjWorld view; generically-
+                 //        typed i32 across the family, cast at the deref sites)
     i32 m_10;    // +0x10  (worker getters pass src->m_10 through slot 9)
     char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
@@ -135,10 +163,27 @@ struct CGameObject {
     char m_pad84[0x88 - 0x84];
     CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
-    CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0xe4 - 0x94];
-    i32 m_e4; // +0xe4  (CProjectile ctor seeds it to 7)
-    char m_pade8[0x114 - 0xe8];
+    CAnimWorker* m_collideWorker; // +0x90  lazily-built worker (EnsureWorker90); its
+                                  //        m_collideNotify is fired by BroadPhase
+    CGameObject* m_hitOther;      // +0x94  the other party of the pending collision
+                                  //        (stored just before m_collideNotify fires)
+    CGameObject* m_carrier;       // +0x98  latched carrier (a category-0x80 platform
+                                  //        object; StepAxisAlt stores it + sets flags
+                                  //        bit4; CMovingLogic::Update then advances
+                                  //        m_screenX/Y by the carrier's m_deltaX/Y)
+    char m_pad9c[0xe4 - 0x9c];
+    // +0xe4  movement-resolution mode (CGameLevel::DispatchMove kinds 1..8):
+    // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,
+    // 3 -> B, 4 -> C, 8 -> B/C by direction, 6 -> D (two-probe recovery); the
+    // handlers transition 1 <-> 4 <-> 6 as moves land/fall/block.
+    i32 m_moveMode; // +0xe4
+    u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
+                        //        BroadPhase tests other->m_collCategory & t->m_collMask)
+    char m_padec[0xf4 - 0xec];
+    u32 m_collMask; // +0xf4  which categories this object collides with
+    i32 m_strideX;  // +0xf8  tile-probe stride X (the move steppers' scan step)
+    i32 m_strideY;  // +0xfc  tile-probe stride Y
+    char m_pad100[0x114 - 0x100];
     i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
     i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
     i32 m_11c;       // +0x11c  CSpotLight ctor: settings-table index
@@ -147,21 +192,36 @@ struct CGameObject {
     i32 m_placeMode; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
     i32 m_12c;       // +0x12c  CSpotLight ctor: m_58 scale gate
     i32 m_130;       // +0x130  (CUFO ctor: seeds the spotlight's m_120)
-    i32 m_134;       // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
-    i32 m_138;       // +0x138
-    i32 m_13c;       // +0x13c
-    i32 m_140;       // +0x140
-    i32 m_144;       // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
-    i32 m_148;       // +0x148
-    i32 m_14c;       // +0x14c
-    i32 m_150;       // +0x150
+    // +0x134..+0x140  signed per-side collision extents around (m_screenX, m_screenY):
+    // left/top/right/bottom. Trigger ctors store TILE spans (world box = pos +/-
+    // extent<<5 +/- 7); the movement steppers read them as PIXEL offsets (L stored
+    // negative). 0x80000000 = unset (BroadPhase skips the object).
+    i32 m_extentL; // +0x134
+    i32 m_extentT; // +0x138
+    i32 m_extentR; // +0x13c
+    i32 m_extentB; // +0x140  the feet line (WalkColumnDown ground-snaps from it)
+    // +0x144..+0x150  the derived activation/stand box L/T/R/B (world-space in the
+    // trigger initializers: VoiceTrigger InitActReg; the platform-carry fit tests
+    // read L/T/R relative to the carrier's position - basis differs per family).
+    // CSpotLight ctor zeros all four.
+    i32 m_areaL; // +0x144
+    i32 m_areaT; // +0x148  a platform's stand surface row (AltStepValidate/HoldMove)
+    i32 m_areaR; // +0x14c
+    i32 m_areaB; // +0x150
     i32 m_154;       // +0x154  captured config block (checkpoint state slots 8..11)
     i32 m_158;       // +0x158
     i32 m_15c;       // +0x15c
     i32 m_160;       // +0x160
     i32 m_164;       // +0x164
     i32 m_168;       // +0x168
-    char m_pad16c[0x188 - 0x16c];
+    char m_pad16c[0x174 - 0x16c];
+    // +0x174/+0x178  per-frame movement deltas. CMovingLogic::Update advances a
+    // riding object by its carrier's deltas; AltStepValidate widens the stand-
+    // acceptance ceiling by a NEGATIVE (upward) m_deltaY so a rising platform
+    // still catches its rider.
+    i32 m_deltaX; // +0x174
+    i32 m_deltaY; // +0x178
+    char m_pad17c[0x188 - 0x17c];
     i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
     char m_pad18c[0x194 - 0x18c];
     char* m_194;            // +0x194  object source-def record (its class-name string is at +0x24)
@@ -179,6 +239,56 @@ struct CGameObject {
     i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8  the +0x1a0 anim sub-mgr's active flag (sink+0x28)
+};
+
+// ---------------------------------------------------------------------------
+// The game-object WORLD chain (the level's / each object's m_0c owner context).
+// Real engine classes, UNMATCHED (candidates: the CWwdObjMgr/map-mgr family);
+// modeled as typed shells so CGameLevel's movement/render walks and
+// CMovingLogic's level hop are cast-free. Layout proven by the matched walkers:
+//   owner(+0x0c) -> +0x08 = the object chain; owner -> +0x24 = the CGameLevel
+//   (CMovingLogic::Update, WorldLevelPath); chain +0x14 = head node; node
+//   {+0x00 next, +0x08 object}.
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CGameObjNode);
+struct CGameObjNode {
+    CGameObjNode* next; // +0x00
+    char m_pad04[0x04]; // +0x04
+    CGameObject* obj;   // +0x08
+};
+
+// The chain owner is polymorphic; slot +0x28 is the hook CGameLevel::VisitVisible
+// dispatches between the plane syncs on the non-origin-fixed path. The head node
+// hangs off a +0x10 sub-record (the engine lea's its ADDRESS and null-checks it
+// before loading the head - the sub-struct keeps that byte shape).
+SIZE_UNKNOWN(CGameObjChain);
+struct CGameObjChain {
+    virtual void v00();          // [0]  +0x00
+    virtual void v04();          // [1]  +0x04
+    virtual void v08();          // [2]  +0x08
+    virtual void v0c();          // [3]  +0x0c
+    virtual void v10();          // [4]  +0x10
+    virtual void v14();          // [5]  +0x14
+    virtual void v18();          // [6]  +0x18
+    virtual void v1c();          // [7]  +0x1c
+    virtual void v20();          // [8]  +0x20
+    virtual void v24();          // [9]  +0x24
+    virtual void Hook(void* arg); // [10] +0x28  render-walk hook (VisitVisible)
+
+    char m_pad04[0x10 - 0x04];
+    struct List {
+        char m_pad00[0x04];
+        CGameObjNode* head; // +0x04  (i.e. chain +0x14)
+    } m_list; // +0x10
+};
+
+class CGameLevel; // fwd (the world owns the level; full class in <Gruntz/GameLevel.h>)
+SIZE_UNKNOWN(CGameObjWorld);
+struct CGameObjWorld {
+    char m_pad00[0x08];
+    CGameObjChain* m_objChain; // +0x08  the live object chain (BroadPhase/StepAxisAlt)
+    char m_pad0c[0x24 - 0x0c];
+    CGameLevel* m_level; // +0x24  the loaded level (CMovingLogic / WorldLevelPath hop)
 };
 
 // The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are

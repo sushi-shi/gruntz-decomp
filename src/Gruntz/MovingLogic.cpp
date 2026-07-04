@@ -23,6 +23,7 @@
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
+#include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_645588
 #include <rva.h>
 
@@ -195,44 +196,17 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 // g_motionNegHalf (0x5f04f8, -0.5) comes via MotionState.h (canonical include).
 // The running game clock g_645588 comes via <Gruntz/MovingLogic.h>.
 
-// The lazily-built per-object worker at CGameObject+0x98 (the CAnimWorker the
-// UserLogic family builds); only its two per-frame scroll deltas are touched.
-struct MlScrollWorker {
-    char _00[0x174];
-    i32 m_174; // +0x174  X scroll delta
-    i32 m_178; // +0x178  Y scroll delta
-};
-
-// The level the bound object clamp-scrolls: reached as obj->m_c->m_24. Its
-// per-frame scroll clamp is CGameLevel::ClampScroll (0x15de40); modeled here as a
-// bodyless external so the direct call reloc-masks.
-struct MlLevel {
-    i32 ClampScroll(void* target, i32 a1, i32 a2, i32 a3); // 0x15de40
-};
-struct MlHolder {
-    char _00[0x24];
-    MlLevel* m_24; // +0x24
-};
-
-// The bound CGameObject at CMovingLogic+0x10 (only the fields this update reads).
-struct MlBoundObject {
-    char _00[0x08];
-    i32 m_8;       // +0x08  flags (bit 0x10 = worker-scroll active)
-    MlHolder* m_c; // +0x0c  level holder
-    char _10[0x5c - 0x10];
-    i32 m_5c; // +0x5c  screen X
-    i32 m_60; // +0x60  screen Y
-    char _64[0x98 - 0x64];
-    MlScrollWorker* m_98; // +0x98  lazily-built scroll worker
-    char _9c[0xe4 - 0x9c];
-    i32 m_e4; // +0xe4  scroll mode (1 = follow, 7 = free)
-};
+// The bound object is the canonical CGameObject (UserLogic.h, via MovingLogic.h):
+// the former MlBoundObject/MlScrollWorker/MlHolder/MlLevel reduced views are
+// COLLAPSED into it - m_flags bit4 = riding, m_carrier = the latched carrier
+// object (its m_deltaX/m_deltaY are the per-frame ride deltas; CGameLevel::
+// StepAxisAlt latches it), m_moveMode drives the level's DispatchMove. The level
+// hop is (CGameObjWorld*)m_object->m_0c -> m_level -> MoveToward (0x15de40); the
+// m_0c cast is language-forced (the base stores the owner as a generic i32).
 
 // CMovingLogic is the shared canonical (<Gruntz/MovingLogic.h>): its +0x38
-// CMotionState band is reached through Motion(); m_10 is the bound CGameObject,
-// viewed here as the richer MlBoundObject (a scoped CGameObject reduced view - the
-// engine-object consolidation, not CMovingLogic's - so its scroll/level fields are
-// reachable). m_140/m_144/m_148/m_14c are the base's trailing ints.
+// CMotionState band is reached through Motion(); m_10 is the bound CGameObject.
+// m_140/m_144/m_148/m_14c are the base's trailing ints.
 
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -240,9 +214,9 @@ struct MlBoundObject {
 // byte-faithful; the residual is three documented codegen walls verified by
 // llvm-objdump -dr base vs target (0x16ea90):
 //   1. regalloc (dominant): in the worker-scroll block MSVC pins the bound object
-//      m_10 in a CALLEE-SAVED reg (edi) and carries it across into the ClampScroll
+//      m_10 in a CALLEE-SAVED reg (edi) and carries it across into the MoveToward
 //      block (one live range), whereas retail re-fetches m_10 into SCRATCH (eax/edx)
-//      per use and reloads a fresh edi in the ClampScroll block (two live ranges).
+//      per use and reloads a fresh edi in the MoveToward block (two live ranges).
 //      A reload-vs-reuse coin-flip; not source-steerable (using m_10-> directly
 //      already yields the aliasing reloads; the reg CLASS choice is the allocator's).
 //   2. x87 latency-fill: the two (int)m_38.m_40 / (int)m_38.m_48 snapshots let cl
@@ -260,36 +234,36 @@ void CMovingLogic::Update() {
     m_144 = (i32)Motion()->m_48;
     Motion()->Step((double)g_645588 * g_5f04f0 - Motion()->m_00);
 
-    // Worker-driven scroll: fold the per-frame scroll deltas into the object's
-    // screen position and re-seed the motion targets.
-    if ((((MlBoundObject*)m_object)->m_8 & 0x10) && ((MlBoundObject*)m_object)->m_98 != 0) {
-        ((MlBoundObject*)m_object)->m_5c += ((MlBoundObject*)m_object)->m_98->m_174;
-        Motion()->m_40 = (double)((MlBoundObject*)m_object)->m_5c;
-        ((MlBoundObject*)m_object)->m_60 += ((MlBoundObject*)m_object)->m_98->m_178;
-        Motion()->m_48 = (double)((MlBoundObject*)m_object)->m_60;
+    // Carrier ride: while riding (flags bit4 + a latched carrier), fold the
+    // carrier's per-frame deltas into the object's position and re-seed the
+    // motion targets.
+    if ((m_object->m_flags & 0x10) && m_object->m_carrier != 0) {
+        m_object->m_screenX += m_object->m_carrier->m_deltaX;
+        Motion()->m_40 = (double)m_object->m_screenX;
+        m_object->m_screenY += m_object->m_carrier->m_deltaY;
+        Motion()->m_48 = (double)m_object->m_screenY;
     }
 
-    // Clamp-scroll the level toward the new position.
-    if (((MlBoundObject*)m_object)->m_e4 == 1) {
-        m_148 = ((MlBoundObject*)m_object)
-                    ->m_c->m_24->ClampScroll(
+    // Drive the level's move resolver toward the new position.
+    if (m_object->m_moveMode == 1) {
+        m_148 = ((CGameObjWorld*)m_object->m_0c)
+                    ->m_level->MoveToward(
                         m_object,
                         (i32)Motion()->m_40,
-                        ((MlBoundObject*)m_object)->m_60,
+                        m_object->m_screenY,
                         m_14c
                     );
         Motion()->m_30 = 0.0;
     } else {
-        ((MlBoundObject*)m_object)->m_8 &= ~0x10;
-        m_148 =
-            ((MlBoundObject*)m_object)
-                ->m_c->m_24->ClampScroll(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
+        m_object->m_flags &= ~0x10;
+        m_148 = ((CGameObjWorld*)m_object->m_0c)
+                    ->m_level->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X
     // arrival velocity and re-anchor the target.
     CMotionState* ms = Motion();
-    i32 sx = ((MlBoundObject*)m_object)->m_5c;
+    i32 sx = m_object->m_screenX;
     if ((i32)Motion()->m_40 != sx) {
         double d = (double)sx;
         ms->m_28 = ms->ArrivalVelX(d);
@@ -299,7 +273,7 @@ void CMovingLogic::Update() {
     }
 
     // Y arrival (symmetric).
-    i32 sy = ((MlBoundObject*)m_object)->m_60;
+    i32 sy = m_object->m_screenY;
     if ((i32)Motion()->m_48 != sy) {
         double d = (double)sy;
         ms->m_30 = ms->ArrivalVelY(d);
@@ -308,8 +282,8 @@ void CMovingLogic::Update() {
         ms->m_a8 = a8new;
     }
 
-    // Per-mode velocity fix-ups keyed off the ClampScroll result flags.
-    if (((MlBoundObject*)m_object)->m_e4 != 7) {
+    // Per-mode velocity fix-ups keyed off the MoveToward result flags.
+    if (m_object->m_moveMode != 7) {
         i32 f = m_148;
         if (f & 0x800000) {
             Motion()->m_30 = -Motion()->m_30;
@@ -385,10 +359,6 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
     return ((CMovingLogicBase*)this)->Serialize(arc, mode, a3, a4) != 0;
 }
 
-SIZE_UNKNOWN(MlBoundObject);
-SIZE_UNKNOWN(MlHolder);
-SIZE_UNKNOWN(MlLevel);
-SIZE_UNKNOWN(MlScrollWorker);
 SIZE_UNKNOWN(CButeReadTemp);
 SIZE_UNKNOWN(CButeText);
 SIZE_UNKNOWN(CButeVbaseTeardown);

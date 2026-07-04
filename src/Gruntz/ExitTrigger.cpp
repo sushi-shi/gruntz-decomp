@@ -118,10 +118,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_latchedAnimId = 0x124f8;
         m_object->m_flags |= 0x20000;
     }
-    m_object->m_144 = 1;
-    m_object->m_14c = 1;
-    m_object->m_148 = 1;
-    m_object->m_150 = 1;
+    m_object->m_areaL = 1;
+    m_object->m_areaR = 1;
+    m_object->m_areaT = 1;
+    m_object->m_areaB = 1;
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_warlordId = 0;

@@ -205,7 +205,7 @@ RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
-    m_object->m_e4 = 7;
+    m_object->m_moveMode = 7;
     Fn16ea90();
     m_150 = (i32)owner;
     m_sprite = (CProjRenderObj*)owner;

@@ -269,7 +269,7 @@ i32 CPathHazard::Tick() {
         i32 outA, outB;
         CPathEntity* ent =
             (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
-                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
+                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_areaL, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
@@ -383,7 +383,7 @@ i32 CLightningHazard::SiblingTick() {
         i32 outA, outB;
         CPathEntity* ent =
             (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
-                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_144, &outA, &outB, rect);
+                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_areaL, &outA, &outB, rect);
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
                 CLightVtbl* vt = *(CLightVtbl**)this;

@@ -52,7 +52,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
             w->m_08 = 0;
             w->m_0c = m_0c;
             StampWorkerVtbl(w);
-            w->m_10 = 0;
+            w->m_collideNotify = 0;
             w->m_14 = 0;
             w->m_18 = 0;
             w->m_170 = 0;
@@ -96,7 +96,7 @@ void CGameObject::EnsureWorker88(CGameObject* src) {
             w->m_08 = 0;
             w->m_0c = m_0c;
             StampWorkerVtbl(w);
-            w->m_10 = 0;
+            w->m_collideNotify = 0;
             w->m_14 = 0;
             w->m_18 = 0;
             w->m_170 = 0;
@@ -123,8 +123,8 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
     if (src == 0) {
         return;
     }
-    if (m_90 != 0) {
-        m_90->Slot07();
+    if (m_collideWorker != 0) {
+        m_collideWorker->Slot07();
     } else {
         CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
         if (w != 0) {
@@ -132,7 +132,7 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
             w->m_08 = 0;
             w->m_0c = m_0c;
             StampWorkerVtbl(w);
-            w->m_10 = 0;
+            w->m_collideNotify = 0;
             w->m_14 = 0;
             w->m_18 = 0;
             w->m_170 = 0;
@@ -142,12 +142,12 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
         } else {
             w = 0;
         }
-        m_90 = w;
+        m_collideWorker = w;
     }
-    if (m_90 == 0) {
+    if (m_collideWorker == 0) {
         return;
     }
-    m_90->Slot09(src->m_10, 0);
+    m_collideWorker->Slot09(src->m_10, 0);
 }
 
 // CGameObject's three built-in logic-handler registrars (engine .text). Pinned
