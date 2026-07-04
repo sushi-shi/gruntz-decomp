@@ -873,7 +873,7 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
     return 1;
 }
 
-// CFileImage / CFileImageSurface / CImageSurfaceItemInit are all real-polymorphic
+// CFileImage / CFileImageSurface / CRezSurfaceItem are all real-polymorphic
 // now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
 // in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
 // base-surface vtable extern/stamp remains (all-vtables mandate).
@@ -971,30 +971,23 @@ class CByteArrayMember {
 public:
     CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
 };
-// Dispatch view of the built item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
+// The built 0xc0 surface item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
 // (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
-// CFileImage/CPoolItemA/CDDSurface). Slots named by their retail 0x1ef7f0 vtable-slot
-// RVA (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140.
-SIZE_UNKNOWN(CRezSurfaceItem);
+// CFileImage/CPoolItemA/CDDSurface). Real-polymorphic (2-slot declared-only foreign
+// surface-item vtable; the declared-only slots reloc-mask). cl auto-stamps the vptr
+// (??_7CRezSurfaceItem@@6B@) at ctor entry - the former manual surface-vtable stamp
+// stamped the vptr FIRST, so the store position is preserved (extern + stamp removed
+// per the all-vtables mandate). Slots named by their retail 0x1ef7f0 vtable-slot RVA
+// (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140 (Load). This is the
+// ONE class the factory news, dispatches through, and files into the cache - the
+// former CImageSurfaceItemInit "init view" was the same physical object; folded here
+// so Build_13e9a0 carries no cross-cast.
+SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
 class CRezSurfaceItem {
 public:
     virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
-    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
-
-    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_dontOwn zeroed)
-    CByteArrayMember m_94;     // +0x94
-    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
-};
-// Real-polymorphic (2-slot foreign surface-item vtable 0x5ef7f0; declared-only
-// slots reloc-mask). cl auto-stamps the vptr (??_7CImageSurfaceItemInit@@6B@) at
-// ctor entry - the former manual surface-vtable stamp already stamped the vptr
-// FIRST, so the store position is preserved. Extern + stamp removed per the
-// all-vtables mandate.
-class CImageSurfaceItemInit {
-public:
-    virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
-    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04
-    inline CImageSurfaceItemInit() {
+    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04  Load
+    inline CRezSurfaceItem() {
         m_08 = 0;
         m_0c = 0;
         m_04 = 0;
@@ -1047,7 +1040,7 @@ RVA(0x0013e9a0, 0xcc)
 i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
     void* payload = 0;
     if (src->Probe(&g_imageProbeTag, &payload) != 0) {
-        CRezSurfaceItem* item = (CRezSurfaceItem*)new CImageSurfaceItemInit;
+        CRezSurfaceItem* item = new CRezSurfaceItem;
         if (item->FUN_0013e140(payload)) { // slot 1 @+0x04  Load
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
@@ -1798,8 +1791,4 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
 SIZE_UNKNOWN(CFileImageElement);
 SIZE_UNKNOWN(CImageExtLoader);
 SIZE_UNKNOWN(CByteArrayMember);
-// CImageSurfaceItemInit: real-polymorphic (cl emits ??_7CImageSurfaceItemInit), but its
-// vtable is the SHARED CPoolItemA base @0x1ef7f0 - no per-class VTBL (would misname the
-// shared datum). Exact size 0xc0: `new CImageSurfaceItemInit` allocates the 0xc0 item.
-SIZE(CImageSurfaceItemInit, 0xc0);
 SIZE_UNKNOWN(CImageFactory);

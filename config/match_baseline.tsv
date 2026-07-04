@@ -2562,7 +2562,7 @@ image	?Blit248@CFileImage@@QAEHPAX0H@Z	94.3103	94.3103	5	2b51a4a45ed9	0x13fe60
 image	?Blit@CFileImage@@QAEHPAXH0H@Z	100.0000	100.0000	4	8aed16de0bee	0x13faa0
 image	?BlitDirect@CFileImage@@QAEHPAXH@Z	70.4941	70.4941	6	e1382840ae83	0x13ece0
 image	?BlitSurf@CFileImage@@QAEHPAXHHHH@Z	100.0000	100.0000	5	69f70b98ffb6	0x13e0d0
-image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	2	5c10ad4a4229	0x13e9a0
+image	?Build_13e9a0@CImageFactory@@QAEHPAVCRezImageSource@@H@Z	84.5692	84.5692	3	628a32fec706	0x13e9a0
 image	?Clear@CFileImage@@QAEXH@Z	100.0000	100.0000	4	668fff39468f	0x13edb0
 image	?DecodeBlit@CRezImage@@QAEHPAX0HHH0@Z	82.7361	82.7361	1	1dab25229951	0x175930
 image	?DecodeBmp@CFileImage@@QAEPAXPAX0I@Z	31.2544	31.2544	1	46900e1adf18	0x143fc0
