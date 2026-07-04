@@ -19,11 +19,35 @@ tree** for the orchestrator to build / measure / commit. You do NOT `git add`/co
 
 **Tool discipline:** `rg` is for lexical sweeps (find placeholder spellings, count sites). For
 SEMANTIC questions — every reference to a member you're renaming (across headers/TUs, through
-same-named collisions), a symbol's true def site, a member's type — use
-`python -m gruntz.analysis.clangd_query def|refs|hover|symbol` (clangd/LSP over src); for
-ownership/identity (who news/calls/stores this, on what `this`) use
-`python -m gruntz.analysis.xref <rva|name>` + the Ghidra decomp's xrefs. A rename or identity
-call backed only by grep is a guess; cite xref/clangd evidence.
+same-named collisions), a symbol's true def site, a member's type — use `gruntz sema
+def|refs|hover|symbol` (clangd/LSP over src; the harness **LSP** tool is the same data); for
+ownership/identity (who news/calls/stores this, on what `this`) use `gruntz sema xref <rva|name>`
++ the Ghidra decomp's xrefs; `gruntz sema rva|class` are one-shot dossiers. A rename or identity
+call backed only by grep is a guess; cite the `sema` evidence. **Rename tree-wide with `gruntz
+sema rename` — NEVER a text sed:** it is USR-keyed, so it renames only the named class's member
+and never a same-named field of another class.
+
+**Worked examples (real runs, trimmed):**
+
+    $ gruntz sema rename include/Net/NetMgr.h 648 m_5c_chatLog --dry-run
+    include/Net/NetMgr.h:648: m_5c -> m_5c_chatLog
+    src/Net/NetMgr.cpp:560: m_5c -> m_5c_chatLog          # (+5 more)
+    would change 7 site(s) across 2 file(s).
+    # -> USR-exact: only CNetGameMgr::m_5c — 7 sites in 2 files. `grep m_5c` hits 101
+    #    files across dozens of unrelated classes; a sed would wreck them. Drop
+    #    --dry-run to apply; matching-neutral (verified: netmgr unchanged at 23.902%).
+
+    $ gruntz sema class CImage             # use when: naming vtable slots / recovering roles
+    CImage : CWapObj  [rtti] vtbl@0x1eaa2c 18 slots  (13 new, 1 override, 4 inherited)
+        [ 7] new       FreeAll             // 0x153260
+    # -> tags which slots this class OWNS (name those) vs inherits (leave to the base);
+    #    the RTTI base (CWapObj) anchors identity.
+
+    $ gruntz sema rva 0x00080850           # use when: confirming an address's identity/owner
+    src claim : ??0CGruntzApp@@QAE@XZ  [gruntzapp] (func)   ghidra: CGruntzApp   match: 100% EXACT
+    library   : ??0CMetaFileDC@@QAE@XZ  NAFXCW / AMBIG / anchored
+    # -> src name + owning unit + match state in one shot (the AMBIG FID row is a false
+    #    positive — evidence to distrust, not to name from).
 
 ## Read the SOURCE, not the assembly
 

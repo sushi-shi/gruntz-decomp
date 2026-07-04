@@ -1,6 +1,6 @@
 ---
 name: matcher
-tools: Bash, Read, Edit, Write, Grep, Glob
+tools: Bash, Read, Edit, Write, Grep, Glob, LSP
 description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE — reconstructs C++ that, compiled with MSVC 5.0, produces identical COFF (verified with objdiff). Spawned by the orchestrator with a TU + retail RVAs. Holds the deep source-writing doctrine: model real types over casts, real Win32/MFC headers, match-by-shape, reloc-masking, EH/calling conventions. Use for the actual function-reconstruction work; pairs with docs/patterns/ (codegen idioms) and docs/matching-patterns.md (entropy/scoring).
 ---
 
@@ -39,21 +39,65 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 batch's size to fit your budget. So budget is never a reason to stop short of the
 mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
 
-## Tool discipline — semantic questions go to xref/LSP, not grep
+## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
 occurrences, list def sites). Any SEMANTIC question — who calls/news this, what `this`
 does a method run on, which class owns a vtable slot, where is this symbol really
 defined/referenced, what type is that member — MUST be answered with the real tools
-BEFORE you conclude:
-- `python -m gruntz.analysis.xref <rva|name>` — retail caller/callee call-jmp graph
-  (`--callees`, `--raw`); the caller-side complement of `dump_target`.
+BEFORE you conclude. They live under one group (`gruntz sema -h`; each is a thin
+wrapper, still runnable as `python -m gruntz.<...>`):
+- `gruntz sema xref <rva|name> [--callees] [--raw]` — retail caller/callee call-jmp
+  graph; caller-side complement of `sema disasm`.
+- `gruntz sema def|refs|hover|symbol …` — clangd (LSP) over src; true def/ref/type
+  where grep returns collision noise (same-named members, per-TU shadows, overloads).
+  The harness **LSP** tool (def/refs/hover/symbol/incoming+outgoing-calls) is the same.
+- `gruntz sema rva <addr>` / `class <name>` / `match <rva|unit>` — one-shot dossiers
+  (src claim + FID row + Ghidra fn + match %; vtable slot roles; per-fn %).
+- `gruntz sema disasm <rva>` / `strings <rva>|--find <text>` — retail disasm+relocs;
+  a fn's string set / reverse literal lookup.
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
-- `python -m gruntz.analysis.clangd_query def|refs|hover|symbol` — clangd (LSP) over
-  the src tree; true definition/reference/type answers where grep returns
-  name-collision noise (same-named members, per-TU shadows, overloads).
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
-cite xref/clangd evidence for it in your report instead.
+cite the `sema` evidence for it in your report instead.
+
+**Worked examples (real runs, trimmed):**
+
+    $ gruntz sema xref 0x00080850          # use when: attributing an orphan fn to its owner
+    ==== callers of 0x00080850  ??0CGruntzApp@@QAE@XZ ====
+      jmp  in 0x000026c1 CGruntzApp [ghidra]
+    # -> the ctor's only caller is its ILT jmp-thunk (0x26c1); chase the thunk's callers
+    #    (or --raw) for the real new-site. Attribution by evidence, not a name guess.
+
+    $ gruntz sema rva 0x00080850           # use when: "what is this address — already done?"
+    RVA 0x00080850
+      src claim : ??0CGruntzApp@@QAE@XZ  [gruntzapp] (func)
+      library   : ??0CMetaFileDC@@QAE@XZ  NAFXCW / AMBIG / anchored  (carve-out ...)
+      ghidra    : CGruntzApp  size 18 B
+      match     : 100.00% fuzzy  (EXACT)
+    # -> already EXACT in `gruntzapp` -> skip it (STOP-EARLY). The library row is an
+    #    AMBIG FID false-positive (it is NOT really CMetaFileDC) — don't trust it.
+
+    $ gruntz sema disasm 0x00080850        # use when: reading instruction selection + relocs
+    Relocations (address operands — reloc-masked in objdiff):
+      @0x08085a  -> 0x005e9ab4  ??_7CGruntzApp@@6B@
+       80851: 8b f1             mov  esi,ecx
+       80858: c7 06 b4 9a 5e 00 mov  DWORD PTR [esi],0x5e9ab4
+    # -> the vptr-store of ??_7CGruntzApp@@6B@ into [this] IS the RTTI proof this is
+    #    CGruntzApp's ctor (and the reloc objdiff masks).
+
+    $ gruntz sema strings --find .wwd      # use when: finding a subsystem by its literals
+    ### 0x03af90 FillCustomLevelList
+       '*.WWD'
+    ### 0x03b310 LoadCustomWorldSelection
+       '.WWD'
+    # -> the custom-level loader cluster; reverse literal lookup beats grepping .rdata.
+
+    $ gruntz sema class CImage             # use when: modeling a class's vtable shape
+    CImage : CWapObj  [rtti] vtbl@0x1eaa2c 18 slots  (13 new, 1 override, 4 inherited)
+        [ 1] override  `scalar_deleting_destructor'   // 0x002adb  (origin CObject)
+        [ 7] new       FreeAll                        // 0x153260
+    # -> base is CWapObj; new/override/inherited tags say which slots to declare vs.
+    #    leave to the base (don't re-list inherited slots). `sema match <unit>` shows %.
 
 You are a **matcher**. The orchestrator (`.claude/agents/orchestrator.md`) spawns you with a
 translation unit / function cluster and its retail RVAs. Your job: write C++ that, compiled with

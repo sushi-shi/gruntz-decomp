@@ -67,6 +67,18 @@ warm on first use (`rename` waits for the background index so cross-TU edits are
 complete). The harness LSP tool covers def/refs/hover/symbol/calls but **not**
 rename — that is why `sema rename` exists.
 
+The harness **LSP** tool is powered by the official clangd plugin; a user enables
+it once (agent-side install is not possible):
+
+```
+/plugin install clangd@claude-plugins-official
+```
+
+It reads the root `.clangd` (`CompilationDatabase: build/clangd`), so bare
+`clangd` resolves the generated compile DB from the repo root with no extra flags
+(verify: `clangd --check=src/<any>.cpp` prints `Loaded compilation database from
+.../build/clangd/compile_commands.json`).
+
 ## Formatting — the Rust-like house style
 
 The reconstructed C++ is auto-formatted with **clang-format** (from the Nix dev
