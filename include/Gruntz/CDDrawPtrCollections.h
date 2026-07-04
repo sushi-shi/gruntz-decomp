@@ -76,12 +76,12 @@ public:
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CPoolItemB*
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
     char _pad4C8[0x534 - 0x4c8];
-    i32 fieldUnknown534; // +0x534  - zeroed in ctor / Clear
-    i32 fieldUnknown538; // +0x538  - zeroed in ctor
+    i32 m_534; // +0x534  - zeroed in ctor / Clear
+    i32 m_538; // +0x538  - zeroed in ctor
     char _pad53C[0x93c - 0x53c];
-    i32 fieldUnknown93C; // +0x93c  - zeroed in ctor
-    i32 fieldUnknown940; // +0x940  - zeroed in ctor
-    i32 fieldUnknown944; // +0x944  - zeroed in ctor
+    i32 m_93c; // +0x93c  - zeroed in ctor
+    i32 m_940; // +0x940  - zeroed in ctor
+    i32 m_944; // +0x944  - zeroed in ctor
 }; // 0x948
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H

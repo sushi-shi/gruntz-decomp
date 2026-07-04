@@ -271,11 +271,11 @@ RVA(0x00141cc0, 0x84)
 CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_array() {
     m_surf0 = 0;
     m_surf4 = 0;
-    fieldUnknown534 = 0;
-    fieldUnknown538 = 0;
-    fieldUnknown93C = 0;
-    fieldUnknown940 = 0;
-    fieldUnknown944 = 0;
+    m_534 = 0;
+    m_538 = 0;
+    m_93c = 0;
+    m_940 = 0;
+    m_944 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +312,7 @@ void CDDrawPtrCollections::Clear(i32 mode) {
         m_surf4->vtbl->Release(m_surf4);
         m_surf4 = 0;
     }
-    fieldUnknown534 = 0;
+    m_534 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -507,7 +507,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->v24(this, a, b, c, 0, 0)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -526,7 +526,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_1(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->Init1(this, a)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -548,7 +548,7 @@ CPoolItemBase* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
     if (item->v24(this, 0x18, 0x21, a, 0, 0)) {
         AddItemA(item);
-        fieldUnknown538 = item->m_a8;
+        m_538 = item->m_a8;
         return item;
     }
     delete item;
@@ -846,15 +846,15 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
     i32 hr = m_surf0->vtbl->Configure(m_surf0, a0, a1, a2, a3, a4);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
-        if (fieldUnknown944 == 0) {
-            fieldUnknown944 = 0x3ec;
+        if (m_944 == 0) {
+            m_944 = 0x3ec;
         }
         return hr;
     }
     if (ComputeColorMasks() == 0) {
         hr = (i32)0x80004005;
-        if (fieldUnknown944 == 0) {
-            fieldUnknown944 = 0x3ed;
+        if (m_944 == 0) {
+            m_944 = 0x3ed;
         }
     }
     return hr;

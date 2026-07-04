@@ -154,11 +154,11 @@ public:
     void* ScalarDeletingDtor(u32 flags); // @0x083330
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
-    void UnknownClose() OVERRIDE; // @0x0855e0 (member teardown)
-    void AccrueScoreTime();       // @0x0861e0 (per-state HUD time/score accrual + state push)
-    void OnCheckpointReached();   // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
-    void DelayedQuit();           // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
-    i32 SaveGameAs();             // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
+    void Close() OVERRIDE;      // @0x0855e0 (member teardown)
+    void AccrueScoreTime();     // @0x0861e0 (per-state HUD time/score accrual + state push)
+    void OnCheckpointReached(); // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
+    void DelayedQuit();         // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
+    i32 SaveGameAs();           // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
@@ -342,7 +342,7 @@ public:
     EngObj* m_74;           // +0x74  engine sub-object (teardown-only)
     EngObj* m_78;           // +0x78  engine sub-object (teardown-only)
     ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
+    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
     i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
     i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
     i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)

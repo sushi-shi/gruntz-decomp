@@ -149,21 +149,21 @@ void ResetCoordPool82fa0() {
 // ===========================================================================
 // REALIZED: model the base WAP32::CGameMgr as a global 6-slot (0x18) polymorphic
 // CGameMgr - the delinker names its vtable ??_7CGameMgr@@6B@ globally (config/
-// vtable_names.csv). 0x85540 IS that dtor (restamp the base vtable + UnknownClose),
+// vtable_names.csv). 0x85540 IS that dtor (restamp the base vtable + Close),
 // so cl's implicit entry vptr-store emits ??_7CGameMgr@@6B@ (masks 0x5e9b8c).
 struct CGameMgr {
-    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + UnknownClose
+    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
     virtual void s1();
     virtual void s2();
     virtual void s3();
     virtual void s4();
     virtual void s5();
-    void UnknownClose(); // 0x13ddb0 (reloc-masked)
+    void Close(); // 0x13ddb0 (reloc-masked)
 };
 SIZE_UNKNOWN(CGameMgr);
 RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
-    UnknownClose();
+    Close();
 }
 
 // ===========================================================================

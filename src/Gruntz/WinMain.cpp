@@ -80,7 +80,7 @@ i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 // CGruntzApp - the game application object `new`'d on the normal path, defined
 // once in <Gruntz/GruntzApp.h>. WinMain touches only its vtable: slot 2
-// (VirtualUnknownMethod03, the app "Init"), slot 6 (RunMessageLoop) and the
+// (Init, the app "Init"), slot 6 (RunMessageLoop) and the
 // scalar-deleting dtor (slot 0) - all virtual dispatches (`call [vtbl+N]`), so
 // the call bytes are byte-exact regardless of method names.
 #include <Gruntz/GruntzApp.h>
@@ -221,15 +221,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
 
     // 3f. Init the app: Init(hInstance, "Gruntz", "Gruntz", cmdLine, 0,
     //     CW_USEDEFAULT, CW_USEDEFAULT). On failure tear down + return 0.
-    if (g_pApp->VirtualUnknownMethod03(
-            hInstance,
-            "Gruntz",
-            "Gruntz",
-            lpCmdLine,
-            0,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT
-        )
+    if (g_pApp->Init(hInstance, "Gruntz", "Gruntz", lpCmdLine, 0, CW_USEDEFAULT, CW_USEDEFAULT)
         == 0) {
         if (g_pApp != 0) {
             delete g_pApp;

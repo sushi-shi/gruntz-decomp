@@ -115,7 +115,7 @@ i32 CGameApp::RunMessageLoop() {
                 DispatchMessageA(&msg);
             } while (PeekMessageA(&msg, 0, 0, 0, 1));
         }
-        VirtualUnknownMethod09(); // idle virtual (vtbl +0x20)
+        OnIdle(); // idle virtual (vtbl +0x20)
     }
 }
 
@@ -171,13 +171,13 @@ WAP32::CGameMgr* CGameApp::InitializeGameManager() {
 }
 
 // -------------------------------------------------------------------------
-// CGameApp::VirtualUnknownMethod03
+// CGameApp::Init
 // Builds a GameInfo descriptor on the stack from the launch parameters, then
-// hands it to VirtualUnknownMethod02 (vtable +0x4) to register+create.
+// hands it to InitInstance (vtable +0x4) to register+create.
 // hInstance is required (null -> 0). The three name strings are conditionally
 // strcpy'd (inline rep movs at /O2/Oi).
 RVA(0x0013d7b0, 0x105)
-i32 CGameApp::VirtualUnknownMethod03(
+i32 CGameApp::Init(
     HINSTANCE hInstance,
     char* szWindowName,
     char* szGameIdentifier,
@@ -208,7 +208,7 @@ i32 CGameApp::VirtualUnknownMethod03(
         strcpy(gi.szCmdLine, szCmdLine);
     }
 
-    return VirtualUnknownMethod02(&gi, 0, 0);
+    return InitInstance(&gi, 0, 0);
 }
 
 // -------------------------------------------------------------------------
@@ -280,12 +280,12 @@ void CGameApp::InitializeDefaultCreateStruct() {
 }
 
 // -------------------------------------------------------------------------
-// CGameApp::VirtualUnknownMethod02
+// CGameApp::InitInstance
 // The Run/Init orchestration: validate the GameInfo, copy it into the member,
 // resolve hInstance, build the class+window names, register the class, create
 // the window via CGameWnd::CreateAndShow, then bring up the game manager.
 RVA(0x0013d5d0, 0x1d3)
-i32 CGameApp::VirtualUnknownMethod02(
+i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,
     WNDCLASSA* pWndClass,
     CREATESTRUCTA* pCreateStruct
@@ -368,7 +368,7 @@ Fail:
 }
 
 // -------------------------------------------------------------------------
-// CGameApp::VirtualUnknownMethod09 - vtbl slot +0x20.
+// CGameApp::OnIdle - vtbl slot +0x20.
 // The per-frame idle virtual the message pump calls on an empty queue
 // (RunMessageLoop dispatches `call [vtbl+0x20]`). When the app is active -
 // both gate words m_appActive and m_running set - it tail-calls the game manager's
@@ -376,7 +376,7 @@ Fail:
 // `mov ecx,[m_8]; mov eax,[ecx]; jmp [eax+0x10]` (no own epilogue needed since
 // neither gate-load disturbs a callee-saved reg).
 RVA(0x0013dc70, 0x1d)
-void CGameApp::VirtualUnknownMethod09() {
+void CGameApp::OnIdle() {
     if (m_appActive && m_running) {
         m_gameMgr->Tick();
     }
@@ -421,7 +421,7 @@ WAP32::CGameMgr::CGameMgr() {
     m_frameGate = 0;
     m_pauseFlag = 0;
     InitTimeFields(1);
-    UnknownMethodInitializeTimeGlobal();
+    InitializeTimeGlobal();
 }
 
 // -------------------------------------------------------------------------
@@ -442,17 +442,17 @@ i32 WAP32::CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_owner = pGameWnd->m_owner;
     m_pauseFlag = 0;
     InitTimeFields(1);
-    UnknownMethodInitializeTimeGlobal();
+    InitializeTimeGlobal();
     g_wap32Run80 = 0x64;
     g_wap32Run7c = 0x64;
     return 1;
 }
 
 // -------------------------------------------------------------------------
-// CGameMgr::UnknownClose  (vtable +0x08)
+// CGameMgr::Close  (vtable +0x08)
 // Clears the two manager-owned pointers/handles.
 RVA(0x0013ddb0, 0x9)
-void WAP32::CGameMgr::UnknownClose() {
+void WAP32::CGameMgr::Close() {
     m_gameWnd = 0;
     m_owner = 0;
 }
@@ -470,10 +470,10 @@ void WAP32::CGameMgr::InitTimeFields(i32 reset) {
 }
 
 // -------------------------------------------------------------------------
-// CGameMgr::UnknownMethodInitializeTimeGlobal
+// CGameMgr::InitializeTimeGlobal
 // Seeds the frame clock from timeGetTime and clears its deltas.
 RVA(0x0013dea0, 0x18)
-void WAP32::CGameMgr::UnknownMethodInitializeTimeGlobal() {
+void WAP32::CGameMgr::InitializeTimeGlobal() {
     g_wap32Now = timeGetTime();
     g_wap32FrameDelta = 0;
     g_wap32ClockReset = 0;

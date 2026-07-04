@@ -8,7 +8,7 @@
 //       holds the CGameApp; call its vtbl slot +0x1c).
 //   CGruntzMgr::GetGruntzDriveLetter - memoised CD drive-letter accessor
 //       (Utils::WinAPI::GetGruntzDriveLetter on first call).
-//   CGruntzMgr::~CGruntzMgr        - virtual dtor: runs UnknownClose() then the
+//   CGruntzMgr::~CGruntzMgr        - virtual dtor: runs Close() then the
 //       compiler-generated member/base teardown under the /GX C++ EH frame.
 //   the scalar-deleting destructor (vtable slot 0) is auto-emitted by MSVC.
 //
@@ -128,7 +128,7 @@ extern "C" {
     ); // PTR_DialogBoxParamA_006c4550
 }
 
-// Game-clock/registry globals reached by AccrueScoreTime / UnknownClose.
+// Game-clock/registry globals reached by AccrueScoreTime / Close.
 extern "C" {
     DATA(0x00248ce8)
     extern i32 g_648ce8; // DAT_00648ce8  (timeGetTime base stamp)
@@ -180,7 +180,7 @@ struct CWorldMenuHolder {
     CWorldMenuMap m_10; // +0x10  embedded keyed map (sub-object)
 };
 
-// UnknownClose's teardown vocabulary. Most owned sub-objects share a parameterless
+// Close's teardown vocabulary. Most owned sub-objects share a parameterless
 // thiscall teardown then operator delete (modeled as one EngObj type - the per-call
 // displacement reloc-masks). m_30/m_3c are torn down through their own vtable slot 1
 // (a flagged scalar-delete), m_settings is the settings/registry writer (WriteInt per
@@ -196,7 +196,7 @@ public:
 };
 struct CSettingsWriter {
     void WriteInt(const char* key, i32 value); // FUN_00539460 (this, key, value) reloc-masked
-    void Teardown();                           // (this) reloc-masked (UnknownClose)
+    void Teardown();                           // (this) reloc-masked (Close)
 };
 // The settings store open/close brackets around the WriteInt block (reloc-masked
 // __cdecl free fns; no this).
@@ -292,7 +292,7 @@ extern CGameRegistry* g_gameReg;
 // +0x20c/+0x21c (UpdateScoreHud, indexed by g_644c54), the "scored" flag at +0x288
 // (AccrueScoreTime), the 4-arg command sink (BroadcastCmd), the Reset/Flush sub-
 // controller (ResetWorldState/UnloadSoundChain), and the shared Teardown +
-// operator-delete (UnknownClose). All engine entrypoints are reloc-masked thiscalls.
+// operator-delete (Close). All engine entrypoints are reloc-masked thiscalls.
 struct CCmdGrid {
     char m_pad0[0x20c];
     i32 m_arr20c[4]; // +0x20c..+0x21c  score delta table
@@ -307,7 +307,7 @@ struct CCmdGrid {
 
 // The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
 // score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
-// command sink (BroadcastCmd), and the shared Teardown (UnknownClose).
+// command sink (BroadcastCmd), and the shared Teardown (Close).
 struct ScoreHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08  refresh flag
@@ -317,14 +317,14 @@ struct ScoreHud {
     void Refresh(i32 score);                 // FUN @ 0x1884 thunk (this, score)
     void Seed(i32 v, i32 z);                 // FUN @ 0x1c8f thunk (this, v, z)
     i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked (BroadcastCmd)
-    void Teardown();                         // (this) reloc-masked (UnknownClose)
+    void Teardown();                         // (this) reloc-masked (Close)
 };
 
 // The +0x44 object carrying a one-shot guard at +0x124.
 struct HudGuard44 {
     char m_pad0[0x124];
     i32 m_124;       // +0x124
-    void Teardown(); // (this) reloc-masked (UnknownClose)
+    void Teardown(); // (this) reloc-masked (Close)
 };
 
 // The archive/serializer object SaveState streams every clock/scroll/warp field
@@ -364,13 +364,13 @@ i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 // The +0x60 timer/poll object (CGruntzMgr::m_timer; reloc-masked thiscalls).
 // StoreInputState mirrors the latest input-state value into its +0x2c field; Stop
 // pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
-// broadcast (BroadcastCmd); Teardown + operator delete tear it down (UnknownClose).
+// broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
 struct TimerObj {
     char m_pad0[0x2c];
     i32 m_inputMirror; // +0x2c
     void Stop();       // (this) reloc-masked
     void Tick();       // (this) reloc-masked (BroadcastCmd cmd 4/7)
-    void Teardown();   // (this) reloc-masked (UnknownClose)
+    void Teardown();   // (this) reloc-masked (Close)
 };
 
 // One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
@@ -403,7 +403,7 @@ struct SaveInfo {
 // (reloc-masked thiscall).
 struct SaveSink58 {
     void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
-    void Teardown();                      // (this) reloc-masked (UnknownClose)
+    void Teardown();                      // (this) reloc-masked (Close)
 };
 
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
@@ -566,7 +566,7 @@ struct CInput54 {
     void Method0();                                 // FUN @ 0x29b9 thunk (reloc-masked)
     void Method1();                                 // FUN @ 0x18e8 thunk (reloc-masked)
     void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
-    void Teardown();                                // (this) reloc-masked (UnknownClose)
+    void Teardown();                                // (this) reloc-masked (Close)
 };
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
@@ -630,22 +630,22 @@ struct OptionsSlot {
 // +0x68 grid (CCmdGrid), the live source object (via GetSaveSource), the +0x6c
 // sub-mgr (m_cmdSubMgr), the +0x70 polymorphic object (m_cmdNotify, vtbl slot 1),
 // and the +0x7c HUD (ScoreHud). Each returns nonzero to keep broadcasting. The
-// +0x6c sub-mgr also shares the Teardown + operator delete (UnknownClose). All
+// +0x6c sub-mgr also shares the Teardown + operator delete (Close). All
 // reloc-masked.
 struct CmdSink {
     i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
-    void Teardown();                         // (this) reloc-masked (UnknownClose)
+    void Teardown();                         // (this) reloc-masked (Close)
 };
 // The +0x70 object (CGruntzMgr::m_cmdNotify): dispatches the 4-arg command through
 // vtbl slot 1 (+0x04) as a thiscall (BroadcastCmd), takes a cell-height notify
 // through a non-virtual Set (SetCellHeight), and shares the Teardown + operator
-// delete (UnknownClose). Model it as a polymorphic class with anchor slot 0.
+// delete (Close). Model it as a polymorphic class with anchor slot 0.
 class CmdSinkV {
 public:
     virtual void s0();
     virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
     void Set(i32 row, i32 col, i32 value);           // (this, row, col, value) reloc-masked
-    void Teardown();                                 // (this) reloc-masked (UnknownClose)
+    void Teardown();                                 // (this) reloc-masked (Close)
 };
 
 // The world's layer/plane object: an element of the active view's +0x38 layer array
@@ -728,10 +728,10 @@ extern "C" {
 struct DirectInputMgr2 {
     i32 PollAll();   // FUN_00533080
     i32 Flush();     // FUN_00533110 (a second per-frame entrypoint)
-    void Teardown(); // (this) reloc-masked (UnknownClose)
+    void Teardown(); // (this) reloc-masked (Close)
 };
 // The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
-// UnknownClose zeroes its field block (+0x00..+0x14) before delete.
+// Close zeroes its field block (+0x00..+0x14) before delete.
 struct StateMgrBZ {
     i32 m_0, m_4, m_8; // +0x00..+0x08
     char m_padc[0x10 - 0xc];
@@ -767,7 +767,7 @@ struct CLevelState {
 // (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
 struct CChatLog {
     i32 Insert(char* msg, i32 type, i32 channel); // (this, msg, type, channel)
-    void Teardown();                              // (this) reloc-masked (UnknownClose)
+    void Teardown();                              // (this) reloc-masked (Close)
 };
 
 // The shared scratch buffer the toggle-message formatter renders "<item> is
@@ -1132,7 +1132,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 // CGruntzMgr::PerFrameTick  (__thiscall; `ret`)
 // The per-frame draw-clock tick. If the active state's Update() reports the
 // "paused/hold" id (0x11) the tick is skipped; otherwise it refreshes the engine
-// clock (CGameMgr::UnknownMethodInitializeTimeGlobal), optionally re-stamps the
+// clock (CGameMgr::InitializeTimeGlobal), optionally re-stamps the
 // draw clock (g_6bf3c0 = timeGetTime(), g_6bf3bc = 0) when the draw gate m_world is
 // set, and finally mirrors the freshly-refreshed engine clock into the game-side
 // pair (g_645580/g_645584).
@@ -1142,7 +1142,7 @@ void CGruntzMgr::PerFrameTick() {
         return;
     }
 
-    UnknownMethodInitializeTimeGlobal();
+    InitializeTimeGlobal();
 
     if (m_world) {
         g_6bf3c0 = timeGetTime();
@@ -2262,20 +2262,20 @@ i32 CGruntzMgr::ChangeState_8fab0(i32 /*arg*/) {
     return 0;
 }
 
-// CGruntzMgr::UnknownClose (@0x0855e0) is the large member-teardown method the
+// CGruntzMgr::Close (@0x0855e0) is the large member-teardown method the
 // dtor calls; its body is still the stub (src/Stub/CGruntzMgr.cpp). It is only
 // DECLARED here (in the header) - the dtor's call to it is an external ref whose
 // reloc objdiff masks, so no definition is needed in this TU.
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::~CGruntzMgr  (virtual; vtable slot 0; own vftable @0x5e9b64)
-// The own body just runs UnknownClose(); the compiler then destructs the five
+// The own body just runs Close(); the compiler then destructs the five
 // destructible members (m_options, m_strMoviePath, m_strEC, m_stateStack, m_strWorldFile, in
 // reverse-construction order) and chains the base ~CGameMgr - all under the /GX
 // C++ EH frame (per-member unwind states 4..0).
 RVA(0x00083360, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
-    UnknownClose();
+    Close();
 }
 
 // -------------------------------------------------------------------------
@@ -2990,12 +2990,12 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::UnknownClose (0x0855e0; vtbl slot 2). The full manager teardown the
+// CGruntzMgr::Close (0x0855e0; vtbl slot 2). The full manager teardown the
 // dtor runs: deregister the world's mode-reset callback, flush the live config block
 // (each WriteInt names one setting), clear the state stack + delete the live state,
 // then tear down + delete every owned sub-object (most a parameterless thiscall +
 // operator delete; m_30/m_3c through their own vtable slot 1; m_settings the writer; the
-// two engine state singletons), and finally chain the base CGameMgr::UnknownClose and
+// two engine state singletons), and finally chain the base CGameMgr::Close and
 // drop the registry singleton.
 // @early-stop
 // big mechanical teardown (~512 named-extern set): the control flow + the WriteInt
@@ -3004,7 +3004,7 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
 // is a distinct engine address modeled as one shared EngObj symbol, so those relocs
 // stay fuzzy until each is named) - the documented reloc-typing wall, not a code diff.
 RVA(0x000855e0, 0x448)
-void CGruntzMgr::UnknownClose() {
+void CGruntzMgr::Close() {
     if (m_world) {
         ((CWorldRegistrar*)m_world)->RegisterCallback(0);
     }
@@ -3160,7 +3160,7 @@ void CGruntzMgr::UnknownClose() {
         operator delete(m_connSettings);
         m_connSettings = 0;
     }
-    this->CGameMgr::UnknownClose();
+    this->CGameMgr::Close();
     g_gameReg = 0;
 }
 

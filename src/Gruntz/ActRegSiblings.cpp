@@ -28,10 +28,10 @@ struct CSiblingActorAEntry {
 };
 
 // Class B: registry @0x64bf00 (reuse the g_64bf00 tag), handler @0xc7ab0.
-struct Obj64bf00;
+struct CNetSingletonBf00;
 DATA(0x0024bf00)
-extern Obj64bf00 g_64bf00; // 0x64bf00
-struct Obj64bf00 : CSiblingActReg {};
+extern CNetSingletonBf00 g_64bf00; // 0x64bf00
+struct CNetSingletonBf00 : CSiblingActReg {};
 struct CSiblingActorB {
     i32 Advance(); // 0xc7ab0
 };
@@ -144,4 +144,4 @@ SIZE_UNKNOWN(CSiblingActorA);
 SIZE_UNKNOWN(CSiblingActorAEntry);
 SIZE_UNKNOWN(CSiblingActorB);
 SIZE_UNKNOWN(CSiblingActorBEntry);
-SIZE_UNKNOWN(Obj64bf00);
+SIZE_UNKNOWN(CNetSingletonBf00);

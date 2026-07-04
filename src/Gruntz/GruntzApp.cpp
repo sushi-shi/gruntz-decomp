@@ -61,14 +61,14 @@ RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
 
 // ---------------------------------------------------------------------------
-// CGruntzApp::VirtualUnknownMethod03
+// CGruntzApp::Init
 // CGruntzApp's override of the base init virtual (CGameApp vtbl slot +0x8). It
 // re-pushes all 7 launch args in order and tail-forwards to the base
-// CGameApp::VirtualUnknownMethod03 (`this` left in ecx untouched),
+// CGameApp::Init (`this` left in ecx untouched),
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
 RVA(0x00080930, 0x31)
-i32 CGruntzApp::VirtualUnknownMethod03(
+i32 CGruntzApp::Init(
     HINSTANCE hInstance,
     char* szWindowName,
     char* szGameIdentifier,
@@ -77,7 +77,7 @@ i32 CGruntzApp::VirtualUnknownMethod03(
     i32 windowWidth,
     i32 windowHeight
 ) {
-    return CGameApp::VirtualUnknownMethod03(
+    return CGameApp::Init(
                hInstance,
                szWindowName,
                szGameIdentifier,

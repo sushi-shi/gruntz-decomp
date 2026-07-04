@@ -100,7 +100,7 @@ public:
 // CGameMgr - the WAP32 game manager base class (vftable ??_7CGameMgr@@6B@ @
 // 0x5e9b8c, 6 slots). The TRUE object is 0x2c bytes (CGameApp::Initialize-
 // GameManager does `new CGameMgr` => operator new(0x2c)); the ctor seeds the
-// frame clock and a couple of run-state flags. VirtualUnknownMethod02 starts it
+// frame clock and a couple of run-state flags. InitInstance starts it
 // with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
 // dtor @ vtable slot 0) on failure.
 //
@@ -115,23 +115,23 @@ namespace WAP32 {
     class CGameMgr {
     public:
         CGameMgr();
-        // ~CGameMgr is INLINE: it re-stores the base vftable then runs UnknownClose
+        // ~CGameMgr is INLINE: it re-stores the base vftable then runs Close
         // (clearing the owned pointers). It must be visible here so the derived
         // CGruntzMgr's dtor (another TU) inlines the base-subobject teardown exactly
-        // as the retail dtor does (store base vptr + devirtualized UnknownClose
+        // as the retail dtor does (store base vptr + devirtualized Close
         // call) instead of emitting an out-of-line base-dtor call.
         virtual ~CGameMgr() {
-            UnknownClose();
+            Close();
         } // +0x00 idx0 dtor
         virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
-        virtual void UnknownClose();                          // +0x08 idx2
+        virtual void Close();                                 // +0x08 idx2
         virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
         virtual void Tick();                                  // +0x10 idx4  per-frame tick
         virtual void Wap32GameMgrVfunc5();                    // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
-        void InitTimeFields(i32 reset);           // @0x13de70
-        void UnknownMethodInitializeTimeGlobal(); // @0x13dea0
+        void InitTimeFields(i32 reset); // @0x13de70
+        void InitializeTimeGlobal();    // @0x13dea0
 
         CGameWnd* m_gameWnd; // +0x04  bound game window (set by Run)
         CGameApp* m_owner;   // +0x08  owning app (pGameWnd->m_owner; set by Run)
@@ -159,8 +159,8 @@ namespace WAP32 {
 // CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
 
 // GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
-// +0x14 (m_gameInfo); VirtualUnknownMethod03 builds one on the stack and hands
-// it to VirtualUnknownMethod02, which copies it into the member and uses it to
+// +0x14 (m_gameInfo); Init builds one on the stack and hands
+// it to InitInstance, which copies it into the member and uses it to
 // register the class + create the window.
 struct GameInfo {
     i32 size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
@@ -182,7 +182,7 @@ struct GameInfo {
 //   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
 //   source mirrors (m_hAccel initialised before m_hInstance).
 //
-//   The dispatch methods (VirtualUnknownMethod02/03, InitializeDefaultCreate-
+//   The dispatch methods (InitInstance/03, InitializeDefaultCreate-
 //   Struct) call the other CGameApp methods through the vtable (call [vptr+N]),
 //   so the WHOLE class is virtual with the tomalla slot order; matched methods
 //   keep their bodies (virtual mangles `U`, not `Q`).
@@ -208,12 +208,12 @@ public:
     // The class's own dispatch surface (this TU matches 02/03 + the two
     // InitializeDefault* + the resource/error helpers); unmatched slots are
     // inline stubs so the vtable indices land on the binary's layout.
-    virtual i32 VirtualUnknownMethod02(
+    virtual i32 InitInstance(
         GameInfo* pGameInfo,
         WNDCLASSA* pWndClass,
         CREATESTRUCTA* pCreateStruct
     ); // +0x04
-    virtual i32 VirtualUnknownMethod03(
+    virtual i32 Init(
         HINSTANCE hInstance,
         char* szWindowName,
         char* szGameIdentifier,
@@ -227,7 +227,7 @@ public:
     virtual void VirtualUnknownMethod06() {}                // +0x14
     virtual i32 RunMessageLoop();                           // +0x18
     virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
-    virtual void VirtualUnknownMethod09();   // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
+    virtual void OnIdle();                   // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
     virtual void FreeGameManager();          // +0x24
     virtual void VirtualUnknownMethod11() {} // +0x28
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
