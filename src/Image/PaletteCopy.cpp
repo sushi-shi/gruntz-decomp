@@ -10,7 +10,7 @@
 // single-source DDraw header. `pal->SetEntries(...)` lowers to the same
 // `mov eax,[pal]; call [eax+0x18]` the old manual `struct Vtbl` view emitted -
 // self is pushed as the STDMETHOD (__stdcall) implicit first stack arg.
-#include <DDrawMgr/CDirectDrawMgr.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 
 // The screen object (CDDScreen). Only the palette-upload offsets are pinned here;
 // the full layout lives in CDDScreen.cpp (which declares UploadPalette + BlitRegion).

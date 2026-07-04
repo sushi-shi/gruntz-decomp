@@ -19,7 +19,7 @@
 // Only OFFSETS + the inheritance chain are load-bearing; the empty dtor body and
 // the two-chain Serialize body are enough for cl to reproduce the retail bytes.
 #include <Gruntz/BoundaryLeafLogicViews.h> // placeholder CUserLogic leaf classes (pulls UserLogic.h)
-#include <Gruntz/CSerialObjRef.h>          // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialObjRef.h>           // the shared serialized-object-reference (Chain @0x8c00)
 
 // ---------------------------------------------------------------------------
 // Leaf destructors (the /GX leaf-dtor archetype). Each is byte-identical to

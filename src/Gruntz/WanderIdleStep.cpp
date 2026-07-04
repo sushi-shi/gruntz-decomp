@@ -13,9 +13,9 @@
 #include <Win32.h> // RECT/POINT/PtInRect (game WinAPI table 0x6c456c, IAT call)
 
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CStepList2.h>
-#include <Gruntz/CStepList.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/StepList2.h>
+#include <Gruntz/StepList.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))

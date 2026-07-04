@@ -2,8 +2,8 @@
 #define SRC_NET_INTERFACEOBJECT_H
 
 #include <Ints.h>
-#include <Mfc.h>           // real MFC CString (the +0x8 name member)
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
+#include <Mfc.h>          // real MFC CString (the +0x8 name member)
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
 #include <rva.h>
 
 // InterfaceObject - the DirectPlay service-provider group-list node (C:\Proj\NetMgr):

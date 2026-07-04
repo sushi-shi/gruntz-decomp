@@ -6,7 +6,7 @@
 // all the 0xa30 of per-game state lives HERE.
 //
 // SAME OBJECT AS THE g_gameReg SINGLETON (*0x24556c): CGruntzMgr is the RTTI-true,
-// fully-typed MFC VIEW of the very object that <Gruntz/CGameRegistry.h>'s
+// fully-typed MFC VIEW of the very object that <Gruntz/GameRegistry.h>'s
 // CGameRegistry models as a plain (MFC-free) struct for the ~60 engine/Win32 TUs.
 // Proof: CGruntzMgr::ReportError == CGameRegistry::Ack (both @0x08dc60); m_curState
 // ==CGameRegistry::m_2c, m_sound==m_48, m_modeW==m_8c, etc. The two headers are the
@@ -26,10 +26,10 @@
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Wap32.h>
-#include <Gruntz/CString.h>
-#include <Gruntz/GameLevel.h>      // CByteArray
-#include <Gruntz/CState.h>         // CState (m_curState game-state; Update() at slot 4)
-#include <Dsndmgr/CGruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
+#include <Gruntz/String.h>
+#include <Gruntz/GameLevel.h>     // CByteArray
+#include <Gruntz/State.h>         // CState (m_curState game-state; Update() at slot 4)
+#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)

@@ -143,14 +143,14 @@ SIZE_UNKNOWN(CSpriteFactory);
 struct CSpriteFactory {
     CHudSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
 };
-// CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/CGameRegistry.h>.
+// CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
 
 class CGruntCueSink; // defined below (the 5-arg on-screen cue receiver)
 
 // CGameRegistry - the shared global singleton (*g_pGameRegistry). The CGrunt
 // resolvers below read the visible-bounds gate (m_134, m_13c..m_148) and fire
 // m_60->Cue.
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 // The global manager pointer.
 extern CGameRegistry* g_pGameRegistry;
@@ -166,7 +166,7 @@ extern CGameRegistry* g_pGameRegistry;
 // to the animator's lookup setter. Only the calls the resolvers emit are
 // modeled (external/no-body so the `call rel32` displacements reloc-mask): the
 // two operator+ overloads and the dtor.
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // operator+(LPCTSTR, const CString&)  ("GRUNTZ_" + m_typeName)
 // operator+(const CString&, LPCTSTR)  (... + "_CATEGORY")
@@ -734,7 +734,7 @@ i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
 // canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
-// defined in <Gruntz/CGameRegistry.h> (included above). The arrival path checks
+// defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
 // its +0x14 gate.
 
 // ---------------------------------------------------------------------------

@@ -21,7 +21,7 @@
 // external; the strings are $SG literals reloc-masked against the matched symbols;
 // CopyRect is hoisted through a data function-pointer global (0x6c44bc).
 #include <Mfc.h> // MFC CString (ctor 0x1b9b93 / dtor 0x1b9cde / op=(LPCTSTR) 0x1b9e74)
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Win32.h> // RECT
 
 #include <rva.h>

@@ -8,8 +8,8 @@
 // built by Unmatched_c76d0) reuse the existing tags so their loads reloc-mask.
 // Only offsets + code bytes are load-bearing; class identities are best-guess.
 #include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/ActReg.h>             // the shared activation-registrar archetype (CSiblingActReg)
-#include <Gruntz/CCheckpointTrigger.h> // real CCheckpointTrigger : CUserLogic (was Stub/)
+#include <Gruntz/ActReg.h>            // the shared activation-registrar archetype (CSiblingActReg)
+#include <Gruntz/CheckpointTrigger.h> // real CCheckpointTrigger : CUserLogic (was Stub/)
 
 // The per-class activation-coordinate registry (CSiblingActReg) is the shared
 // <Gruntz/ActReg.h> CActReg-derived alias: same range/cache shape as the shared name

@@ -28,7 +28,7 @@ extern CDebugSink g_6bf850;
 // to avoid <stdarg.h>. Contains is external - only its mangled name is load-bearing.
 // ---------------------------------------------------------------------------
 struct CRangeSet {
-    bool Contains(u32 value); // 0x184ba0 (src/Gruntz/CRangeSet.cpp, external)
+    bool Contains(u32 value); // 0x184ba0 (src/Gruntz/RangeSet.cpp, external)
 };
 extern "C" {
     int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)

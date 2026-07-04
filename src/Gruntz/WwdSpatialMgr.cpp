@@ -2,9 +2,9 @@
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
 // grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
-#include <Gruntz/CWwdObjMgr.h> // the shared object-collection manager class
+#include <Gruntz/WwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (iterator's CObject prefix)
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (iterator's CObject prefix)
 
 // ===========================================================================
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
@@ -56,7 +56,7 @@ public:
     WwdGridNode m_region; // +0x9c  embedded grid region sub-object
 };
 
-// CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/CWwdObjMgr.h>
+// CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
 // class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
 
 // A 16-byte rectangle passed by value into the grid scroll method.

@@ -22,7 +22,7 @@
 #include <rva.h>
 #include <string.h> // memset
 
-#include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Globals.h>
 
 // ===========================================================================

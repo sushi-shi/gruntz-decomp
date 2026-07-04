@@ -22,8 +22,8 @@
 #include <rva.h>
 #include <Ints.h>
 
-class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWindowText
-struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/CString.h>)
+class CString; // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
+struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
 
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
@@ -55,12 +55,12 @@ public:
 // CString - the MFC string. Only its default ctor is touched (the embedded
 // string members the dialog ctors construct in place).
 // m_pchData = *_afxEmptyString.
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // CObList - the MFC object list. Only the block-size ctor is touched (the
 // embedded list CMultiStartDlg constructs with nBlockSize=0xa).
 // 0x1c bytes (vptr + 5 scalar fields).
-#include <Gruntz/CObList.h>
+#include <Gruntz/ObList.h>
 
 // CDialog - the MFC dialog base. The subclass ctors store their OWN vptr at
 // [this] AFTER chaining this base ctor, so CDialog must be polymorphic (a

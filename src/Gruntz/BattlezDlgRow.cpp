@@ -8,7 +8,7 @@
 
 #include <Win32.h>
 
-#include <Gruntz/CWnd.h>
+#include <Gruntz/Wnd.h>
 
 // SendMessageA is reached through a game-owned function pointer (ff 15).
 DATA(0x006c44a4)

@@ -44,7 +44,7 @@
 // (BlitSurf slot 3, IsValid slot 5, v20 slot 8) are genuine virtual calls on `this` -
 // the former pointer-only CFileImageVtblView is retired. CDirectDrawMgr is included
 // only for CDirectDrawMgr::GetErrorString (the Fill error path).
-#include <DDrawMgr/CDirectDrawMgr.h>
+#include <DDrawMgr/DirectDrawMgr.h>
 #include <Globals.h>
 
 // The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout

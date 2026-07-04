@@ -3,7 +3,7 @@
 // buffer, then (base subobject teardown) restamp the CObject base dtor vtable
 // (0x5e8cb4). The destructible base subobject forces the /GX EH frame.
 #include <Ints.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
 // The most-derived vtable (0x5f07d8) is now the cl-emitted ??_7CRezBufferObject
@@ -16,7 +16,7 @@
 // as potentially-throwing and keeps the /GX base-subobject unwind frame.
 void RezFree(void* p);
 
-// The CObject base subobject is Wap::CObject (Wap32/CObject.h): empty dtor body; cl
+// The CObject base subobject is Wap::CObject (Wap32/Object.h): empty dtor body; cl
 // stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
 
 // The worker: a +0x4 heap buffer freed on teardown.

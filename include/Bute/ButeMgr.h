@@ -34,7 +34,7 @@
 
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // The CButeValue::type discriminant. Recovered from the type-tag each getter
 // compares against (GetInt==0, GetDword==1, GetDouble==2, GetFloat==3,
@@ -325,7 +325,7 @@ SIZE(CButeRef8, 0x10);
 //   - operator=  (CString::operator=, NAFXCW)
 //   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
-// (CString itself comes from <Gruntz/CString.h>, included at the top.)
+// (CString itself comes from <Gruntz/String.h>, included at the top.)
 // ---------------------------------------------------------------------------
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).

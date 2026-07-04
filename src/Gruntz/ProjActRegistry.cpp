@@ -4,12 +4,12 @@
 // cache slots (g_projActCache / g_projActAllocResult) via a grid + bute-tree lookup.
 // This TU sits between Utils/ApplyRange and Wap32/ZVec in retail-RVA order. Field
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
-#include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
-#include <Gruntz/CTypeNameEntryView.h>
-#include <Gruntz/CTypeColl.h>
-#include <Gruntz/CTypeColl2.h>
+#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/TypeColl2.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
@@ -105,7 +105,7 @@ void CProjActObj::FireActivation(i32 coord) {
 // Same fast-range/slow-Find/rebuild lookup as the per-class R3 table. All globals
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
 // external/no-body. CTypeColl2 (the Insert facet) is the shared def in
-// <Gruntz/CTypeColl2.h>.
+// <Gruntz/TypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;

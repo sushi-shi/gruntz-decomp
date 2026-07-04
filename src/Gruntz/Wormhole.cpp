@@ -1,4 +1,4 @@
-#include <Gruntz/CWormhole.h> // the shared CWormhole class (object logic + acts)
+#include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
@@ -124,7 +124,7 @@ struct CWormGeoSub {
 
 // CWormhole - the world teleport node (CUserLogic leaf); the full class (both the
 // object-logic and the activation-registration method sets) lives in the shared
-// <Gruntz/CWormhole.h>.
+// <Gruntz/Wormhole.h>.
 
 // ---------------------------------------------------------------------------
 // CWormhole::~CWormhole  (0x010980)
@@ -410,7 +410,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
 // "EntranceColor", 3)), else the cached kind index; look it up in g_gameReg's color
 // table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
 // ---------------------------------------------------------------------------
-#include <Gruntz/CSerialObjRef.h>
+#include <Gruntz/SerialObjRef.h>
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {

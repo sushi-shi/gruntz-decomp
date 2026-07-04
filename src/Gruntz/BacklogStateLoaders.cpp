@@ -1,7 +1,7 @@
 #include <Mfc.h> // ShowCursor + CGruntzMgr/CGameWnd (CHelpState m_4 facet; afx-first)
 
-#include <Gruntz/CBankMgr.h>   // CBankMgr::Lookup (CHelpState m_8 facet)
-#include <Gruntz/CState.h>     // CState base (CHelpState m_4/m_8/m_2c facets)
+#include <Gruntz/BankMgr.h>    // CBankMgr::Lookup (CHelpState m_8 facet)
+#include <Gruntz/State.h>      // CState base (CHelpState m_4/m_8/m_2c facets)
 #include <Gruntz/GruntzMgr.h>  // CGruntzMgr + m_gameWnd->PumpMessages (m_4 facet)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>

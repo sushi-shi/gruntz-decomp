@@ -2,7 +2,7 @@
 // +0x68->+0x4 node list for a payload whose (m_5c==0, m_54, m_58) matches the two
 // query coordinates. Self-contained; g_mgrSettings is a reloc-masked DATA load.
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
 // The payload a node holds; only the three queried words matter.

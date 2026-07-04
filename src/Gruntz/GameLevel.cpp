@@ -34,9 +34,9 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Wap32/CObject.h>       // Wap::CObject grand-base (slots 0-4) for the CImageSetN variants
-#include <Gruntz/CParseSource.h> // canonical CParseSource (BeginParse/EndParse)
-#include <Io/FileStream.h>       // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Wap32/Object.h>       // Wap::CObject grand-base (slots 0-4) for the CImageSetN variants
+#include <Gruntz/ParseSource.h> // canonical CParseSource (BeginParse/EndParse)
+#include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset

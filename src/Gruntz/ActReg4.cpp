@@ -8,14 +8,14 @@
 #include <Bute/ButeMgr.h> // CButeTree
 #include <rva.h>
 
-#include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Globals.h>
-#include <Gruntz/CTypeNameEntryView.h>
-#include <Gruntz/CTypeColl.h>
-#include <Gruntz/CTypeColl2.h>
+#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/TypeColl2.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
-// CTypeColl2 (the Insert facet) is the shared def in <Gruntz/CTypeColl2.h>.
+// CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;

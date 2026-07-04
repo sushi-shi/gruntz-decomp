@@ -1,6 +1,6 @@
 #include <rva.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
 #include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
@@ -56,7 +56,7 @@ struct CLevelNotify {
 };
 
 // The per-player timer slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
-// (<Gruntz/CGameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
+// (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
 // holds the level/entity key.
 
 // The loading bar reaches the resource object through this->m_resMgr (its own CResMgr).

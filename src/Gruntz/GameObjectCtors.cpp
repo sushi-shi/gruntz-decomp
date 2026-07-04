@@ -22,8 +22,8 @@
 //   * the CPathHazard-based ctors (base 0xb35a0 via thunk 0x2fc2):
 //     CRainCloud / CUFO.
 // Functions are defined in ascending-RVA order.
-#include <Bute/ButeTree.h>      // canonical CButeTree (one shape)
-#include <Gruntz/CPathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
+#include <Bute/ButeTree.h>     // canonical CButeTree (one shape)
+#include <Gruntz/PathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <rva.h>
@@ -72,7 +72,7 @@ struct CSpriteObjAux {
 
 // --- CGruntHealthSprite base shell (reloc-masks to the 0x7eb00 base ctor) ----
 // This is the RTTI base CGruntHealthSprite (parent of the three HUD leaves), kept
-// as a per-TU DECLARED-ONLY shell rather than the canonical <Gruntz/CGruntHealthSprite.h>
+// as a per-TU DECLARED-ONLY shell rather than the canonical <Gruntz/GruntHealthSprite.h>
 // class: that header models CGruntHealthSprite NON-polymorphically (for its leaf
 // dtor's dead-store-eliminated teardown), whereas these CTORS need the 17
 // declared-only virtuals so cl emits each leaf's ??_7 vftable + the IMPLICIT
@@ -310,7 +310,7 @@ struct CSpotLight {
 };
 
 // CRainCloud / CUFO : CPathHazard (RTTI-proven; vtable_hierarchy --tree). The real
-// base is the fully-modeled 21-slot CPathHazard (<Gruntz/CPathHazard.h>); its ctor
+// base is the fully-modeled 21-slot CPathHazard (<Gruntz/PathHazard.h>); its ctor
 // (0xb35a0) stays DECLARED only (out-of-line; the leaf ctor's `call` reloc-masks
 // to it via thunk 0x2fc2). cl emits each leaf's ??_7 + the implicit post-base-ctor
 // vptr stamp; the inherited m_10/m_38 (CUserLogic, == obj) and m_savedGeoId (+0x40)

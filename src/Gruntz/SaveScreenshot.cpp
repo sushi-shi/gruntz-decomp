@@ -14,7 +14,7 @@
 #include <rva.h>
 
 #include <Win32.h> // wsprintfA
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 // The registry/config object (arg2). GetInt/WriteInt are 2-arg __thiscall helpers.
 struct ScrConfig {

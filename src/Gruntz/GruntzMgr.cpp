@@ -16,8 +16,8 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h>     // the shared world-plane object (was local CWorldLayer)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Enums.h>
@@ -634,7 +634,7 @@ public:
     void Teardown();                                 // (this) reloc-masked (Close)
 };
 
-// The world's layer/plane object is the shared CViewport (<Gruntz/CViewport.h>): an
+// The world's layer/plane object is the shared CViewport (<Gruntz/Viewport.h>): an
 // element of the active view's +0x38 layer array AND the object its +0x5c distinguished-
 // layer slot points at (same memory, so one type). Its visibility flag word (+0x08),
 // height grid (value grid +0x20, per-column base table +0x24), playable field limits

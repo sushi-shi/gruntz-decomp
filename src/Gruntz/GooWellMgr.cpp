@@ -16,8 +16,8 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <rva.h>
-#include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr.GetDwordDef)
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Bute/ButeMgr.h>        // CButeMgr (g_buteMgr.GetDwordDef)
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 
 struct CGooWellMgr;
 struct CGameObj2c;
@@ -127,7 +127,7 @@ struct CBzData {
 };
 
 // One player slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
-// (<Gruntz/CGameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
+// (<Gruntz/GameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
 // this round" mark, m_0c the row's sound id.
 
 // The game-registry singleton, canonical CGameRegistry view. The slots this TU

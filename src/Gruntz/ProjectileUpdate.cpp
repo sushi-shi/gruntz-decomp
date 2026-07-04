@@ -22,8 +22,8 @@
 
 #include <Mfc.h> // Win32/engine types
 
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/CGameRegistry.h> // canonical game-registry singleton (*0x64556c)
+#include <Bute/ButeMgr.h>        // canonical CButeMgr (one shape)
+#include <Gruntz/GameRegistry.h> // canonical game-registry singleton (*0x64556c)
 #include <rva.h>
 
 DATA(0x002bf3bc)

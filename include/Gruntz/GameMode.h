@@ -130,7 +130,7 @@ struct CGMOwner {
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 // The view/draw holder (CState+0xc) render facet the credits poll walks is the same
-// shared CView (<Gruntz/CView.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
+// shared CView (<Gruntz/View.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
 // block m_c->m_4->{m_10->m_2c (Draw), m_14 (Blit), m_18 (blit arg)}, m_28->m_2c
 // (cursor gate). Reached through m_c directly (no cast).
 
@@ -163,12 +163,12 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 
 // ---------------------------------------------------------------------------
 // CState - the base game-state class. One canonical definition, shared via
-// <Gruntz/CState.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
+// <Gruntz/State.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
 // below derive from it; the gamemode TU casts the owner member (CGruntzMgr* m_4)
 // to its own CGMOwner reconstruction and reaches the +0x0c CView resource facet
-// (m_c, the shared <Gruntz/CView.h> class) directly.
-#include <Gruntz/CState.h>
-#include <Gruntz/CView.h> // the shared CState::m_c view/render/resource class
+// (m_c, the shared <Gruntz/View.h> class) directly.
+#include <Gruntz/State.h>
+#include <Gruntz/View.h> // the shared CState::m_c view/render/resource class
 
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site
@@ -184,7 +184,7 @@ struct CGlitterAnim; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 let
 // The concrete leaf states. Each overrides Update() to return its own state-ID
 // tag (the 6-byte stub) - the only override modeled here for the leaf match
 // (their own vtables carry the heavy Render overrides, matched/carcassed
-// separately). The in-game PLAY state CPlay lives in its own <Gruntz/CPlay.h>.
+// separately). The in-game PLAY state CPlay lives in its own <Gruntz/Play.h>.
 // ---------------------------------------------------------------------------
 
 // CMenuState - the front-end menu state. Render

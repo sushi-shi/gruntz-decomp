@@ -2,8 +2,8 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_GruntMachine.h>
-#include <Gruntz/CGameRegistry.h> // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
-#include <Gruntz/ResMgr.h>        // CDrawTarget (m_world->m_drawTarget->m_drawContext)
+#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
+#include <Gruntz/ResMgr.h>       // CDrawTarget (m_world->m_drawTarget->m_drawContext)
 // SBI_GruntMachine.cpp - Gruntz CSBI_GruntMachine (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_GruntMachine@@; a sibling leaf of the SBI family
 //   CSBI_GruntMachine : CStatusBarItem. Vtable @0x5eadbc. The /GX-framed scalar

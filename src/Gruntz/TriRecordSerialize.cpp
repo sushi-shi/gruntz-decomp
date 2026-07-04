@@ -2,7 +2,7 @@
 // (orphan COMDAT @0x3c8f0). Transfers m_0/m_4/m_8 through the archive Read (slot
 // +0x2c) / Write (slot +0x30) dispatch, keyed on the tag (4 = write, 7 = read).
 // Placeholder class name; only OFFSETS + code bytes are load-bearing.
-#include <Gruntz/CSerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <rva.h>
 
 struct CTriRecord {

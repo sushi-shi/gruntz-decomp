@@ -7,13 +7,13 @@
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
 #include <rva.h>
 
-#include <DDrawMgr/CDDSurface.h>      // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
-#include <DDrawMgr/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
+#include <DDrawMgr/DDSurface.h>      // canonical CDDSurface + IDirectDrawSurfaceZ (IsLost/Flip)
+#include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
-#include <Gruntz/CStatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
-#include <Gruntz/SoundCueMgr.h>         // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/StatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
+#include <Gruntz/SoundCueMgr.h>        // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Globals.h>
 
 extern "C" {
@@ -26,7 +26,7 @@ extern "C" {
 }
 
 // CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>;
-// CueObj/CCueHashTable/CStatusBarHolder in <Gruntz/CStatusBarCueHolder.h>.
+// CueObj/CCueHashTable/CStatusBarHolder in <Gruntz/StatusBarCueHolder.h>.
 // The per-frame error sink: CGruntzMgr::ReportError (@0x8dc60, __thiscall, reloc-
 // masked). This is the CGruntzMgr game-manager singleton (the one true shape lives
 // in <Gruntz/GruntzMgr.h>); modeled here as a minimal reloc-masked-callee view -
@@ -49,10 +49,10 @@ public:
 
 // The live DirectDraw COM surface is IDirectDrawSurfaceZ (slot 24 IsLost, +0x60);
 // the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
-// Flip @0x13e850). Both from <DDrawMgr/CDDSurface.h>.
+// Flip @0x13e850). Both from <DDrawMgr/DDSurface.h>.
 
 // The DDraw surface pair CDDrawWorkerMgr holds at +0x10 (m_frontPair); only its
-// +0x2c channel surface is read here. Forward-declared in <DDrawMgr/CDDrawWorkerMgr.h>;
+// +0x2c channel surface is read here. Forward-declared in <DDrawMgr/DDrawWorkerMgr.h>;
 // this TU completes that forward-declared type (same shape as CSoundFxEmitter.h).
 class CDDrawSurfacePair {
 public:
@@ -61,7 +61,7 @@ public:
 };
 
 // CStatusBarHolder (cue-holder shape, m_2c sound mgr + m_30 gate) is in
-// <Gruntz/CStatusBarCueHolder.h>; CSoundMgr (full def) is above.
+// <Gruntz/StatusBarCueHolder.h>; CSoundMgr (full def) is above.
 SIZE_UNKNOWN(PreviewMgr);
 struct PreviewMgr {
     char m_pad00[4];

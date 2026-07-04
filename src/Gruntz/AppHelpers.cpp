@@ -8,7 +8,7 @@
 #include <rva.h>
 #include <Win32.h>
 
-#include <Gruntz/CGameRegistry.h> // canonical *0x64556c game-manager singleton
+#include <Gruntz/GameRegistry.h> // canonical *0x64556c game-manager singleton
 
 extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4)
 extern void* g_64e25c;

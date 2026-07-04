@@ -5,8 +5,8 @@
 // owning parser at +0x18. See include/Bute/SymTab.h for the full layout.
 #include <rva.h>
 
-#include <Bute/SymParser.h>      // full CSymParser (m_owner layout) + CSymTab via SymParser.h
-#include <Gruntz/CParseSource.h> // canonical CParseSource (EndParse @0x1399d0)
+#include <Bute/SymParser.h>     // full CSymParser (m_owner layout) + CSymTab via SymParser.h
+#include <Gruntz/ParseSource.h> // canonical CParseSource (EndParse @0x1399d0)
 
 // The child-scope hash-node vtable (the key-hash interface a scope exposes to its
 // parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.

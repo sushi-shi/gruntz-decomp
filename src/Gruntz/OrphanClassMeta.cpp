@@ -6,8 +6,8 @@
 #include <rva.h>
 
 #include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CState.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/State.h>
 #include <Gruntz/Enums.h>
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/GruntIndicatorSprite.h>

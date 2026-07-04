@@ -10,7 +10,7 @@
 // (Was a standalone placeholder CObj5f0890 : CObj5f0890Base; folded onto the real
 // CFader1816c0 - identical field layout, and CObj5f0890Base was CFader (both base dtor
 // 0x17e4a0). The dtor now carries the correct ??_7CFader1816c0 name.)
-#include <Gruntz/CFaderSubtypes.h> // the real CFader1816c0 (: public CFader)
+#include <Gruntz/FaderSubtypes.h> // the real CFader1816c0 (: public CFader)
 #include <rva.h>
 
 void __cdecl operator delete(void* p); // ??3@YAXPAX@Z (0x1b9b82)

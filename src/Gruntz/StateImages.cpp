@@ -8,7 +8,7 @@
 #include <Win32.h> // WINAPI (windows.h) for the g_ShowCursor import-pointer type
 
 #include <Bute/SymTab.h>
-#include <DDrawMgr/CDDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158ee0)
+#include <DDrawMgr/DDrawWorkerMgr.h> // the ONE CDDrawWorkerMgr shape (Method_158ee0)
 
 // The engine helper at 0xface0 (returns nonzero when the state may load images).
 i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ

@@ -10,7 +10,7 @@
 #define SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H
 
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 

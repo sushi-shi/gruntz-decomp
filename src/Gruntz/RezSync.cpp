@@ -17,9 +17,9 @@
 #include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
 #include <string.h>
 
-#include <Gruntz/CoordNode.h>      // the shared coord-pool node
-#include <Gruntz/CParseSource.h>   // canonical CParseSource (one shape)
-#include <Dsndmgr/CGruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
+#include <Gruntz/CoordNode.h>     // the shared coord-pool node
+#include <Gruntz/ParseSource.h>   // canonical CParseSource (one shape)
+#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
 #include <Globals.h>
 
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
@@ -147,7 +147,7 @@ struct H44 {
 };
 // m_48 is the audio host = canonical CGruntzSoundZ (Init @0x138490 / SetXMidiVolume
 // @0x138950 / m_enabled @+0x28); `new CGruntzSoundZ` inlines its real CMapStringToOb
-// ctor (<Dsndmgr/CGruntzSoundZ.h>).
+// ctor (<Dsndmgr/GruntzSoundZ.h>).
 SIZE_UNKNOWN(H50);
 struct H50 {
     H50();

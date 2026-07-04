@@ -42,7 +42,7 @@ public:
     CMotionState(); // 0x136d0
     // The out-of-line ctor entry (0x136d0) the fat-world CMovingLogic leaf ctors
     // invoke via a `+0x38` cast (the band is not a direct member of a fat-CUserLogic
-    // CMovingLogic; see Gruntz/CMovingLogic.h). Same address as the ctor; reloc-masked.
+    // CMovingLogic; see Gruntz/MovingLogic.h). Same address as the ctor; reloc-masked.
     void Init(); // 0x136d0
     i32 SetParams(
         double a0,

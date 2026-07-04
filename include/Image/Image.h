@@ -27,8 +27,8 @@
 
 #include <rva.h>
 
-#include <DDrawMgr/CDDSurface.h> // IDirectDrawSurfaceZ (the held COM surface interface) + the
-                                 // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
+#include <DDrawMgr/DDSurface.h> // IDirectDrawSurfaceZ (the held COM surface interface) + the
+                                // CDDSurface wrapper's foreign vtable (IsValid/v20 dispatch)
 #include <Io/FileStream.h>
 
 // ---------------------------------------------------------------------------
@@ -243,7 +243,7 @@ struct ClipRect16 {
 };
 
 // The CFileImage.cpp save/decode data records (DecodeSrc / BmpFileHeader / TgaHeader)
-// live in <Image/CFileImageRecords.h> - a CFileImage.cpp-only header, kept out of this
+// live in <Image/FileImageRecords.h> - a CFileImage.cpp-only header, kept out of this
 // widely-included one so the other Image TUs are not perturbed (MSVC codegen leak).
 
 class CFileImage {

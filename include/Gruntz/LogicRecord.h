@@ -9,7 +9,7 @@
 // load-bearing.
 //
 // IDENTITY: this 0x17c-byte class IS the "AnimWorkerObj" worker modeled in
-// src/DDrawMgr/CDDrawWorkerCache.cpp - same size, same most-derived vtable 0x1efb80
+// src/DDrawMgr/DDrawWorkerCache.cpp - same size, same most-derived vtable 0x1efb80
 // (cl-emitted there as ??_7AnimWorkerObj via VTBL(), so the same RVA can't carry
 // two names). The two coexist as a REQUIRED dual-view (vtable-realization-ctor-
 // boundary): the CDDrawWorkerCache factory needs the real-polymorphic form so cl

@@ -23,11 +23,11 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
-#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
 // The CArchive-like serializer the record is streamed through (Serialize's arg1) is
 // the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
-// <Gruntz/CSerialObjRef.h> above - the former local `CRbArchive` view is folded away.
+// <Gruntz/SerialObjRef.h> above - the former local `CRbArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
 // CRollingBall : CUserLogic (vftable 0x5e86fc). Own state from +0x40 onward.

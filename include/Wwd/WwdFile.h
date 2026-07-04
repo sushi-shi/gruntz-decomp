@@ -116,7 +116,7 @@ public:
 // PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
 // (its ADDRESS is passed into CDDSurface::BltEx by CPlaneRender::Draw). It is NOT
 // the engine CDDSurface wrapper (the canonical class - the real BltEx/BltFast
-// `this` reached via ctx->m_2c - lives in <DDrawMgr/CDDSurface.h>); this is only a
+// `this` reached via ctx->m_2c - lives in <DDrawMgr/DDSurface.h>); this is only a
 // zero-size marker so the +0xF4 field lands in CPlane without pulling the real
 // 0xc0-byte surface into the plane layout. Draw is still a deferred stub, so no
 // surface methods are referenced from this TU yet.

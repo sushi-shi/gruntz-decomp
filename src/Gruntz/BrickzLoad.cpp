@@ -1,8 +1,8 @@
 #include <rva.h>
 #include <Ints.h>
-#include <Bute/ButeMgr.h>         // CButeMgr::GetInt (g_buteMgr)
-#include <Gruntz/CViewport.h>     // shared world-plane grid (the terrain descriptor)
-#include <Gruntz/CGameRegistry.h> // canonical *0x24556c singleton (level mgr via m_world)
+#include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr)
+#include <Gruntz/Viewport.h>     // shared world-plane grid (the terrain descriptor)
+#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (level mgr via m_world)
 // BrickzLoad.cpp - CBrickz::LoadAttributes (0x0810f0), the level-load terrain
 // parser for the self-contained pathfinding grid container (the placeholder
 // "CBrickz" in <Gruntz/Brickz.h>; the SAME container AllocGrid/ComputeCellFlags
@@ -43,7 +43,7 @@ struct BzCell {
 // The terrain grid descriptor (attr->m_5c): a flat id table (m_20) indexed by a
 // per-row base-offset table (m_24).
 // The terrain grid descriptor (m_78->m_24->m_5c) is the shared world-plane
-// CViewport (<Gruntz/CViewport.h>): cell = m_cells[m_rowBase[col] + row].
+// CViewport (<Gruntz/Viewport.h>): cell = m_cells[m_rowBase[col] + row].
 
 // The attribute/bute-type manager (this->m_78->m_24): the grid descriptor at
 // +0x5c and the per-cell tile-type lookup at 0x082600 (ILT thunk 0x4228).

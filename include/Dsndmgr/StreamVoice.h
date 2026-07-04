@@ -9,7 +9,7 @@
 #ifndef DSNDMGR_STREAMVOICE_H
 #define DSNDMGR_STREAMVOICE_H
 
-#include <Gruntz/CParseSource.h>
+#include <Gruntz/ParseSource.h>
 #include <rva.h>
 
 #include <Dsndmgr/StreamFeeder.h>

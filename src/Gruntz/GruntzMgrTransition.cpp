@@ -28,7 +28,7 @@
 // never claim the RVA. (Same manual-inline-construction pattern as CButeSection /
 // CNetPeer.) Field names are placeholders; offsets + code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/CPlay.h> // canonical CPlay (the case-3 `new CPlay` uses the one shape)
+#include <Gruntz/Play.h> // canonical CPlay (the case-3 `new CPlay` uses the one shape)
 #include <rva.h>
 
 // operator new / the game heap (0x1b9b46), reloc-masked.
@@ -247,7 +247,7 @@ struct CCreditsState : CTsBaseA { // param 8, 0x218
     CCreditsState();
 };
 // CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
-// <Gruntz/CPlay.h>; its five destructible MFC members + CState base give the same
+// <Gruntz/Play.h>; its five destructible MFC members + CState base give the same
 // inline-construction shape the factory needs, and its ctor (defined below) stamps
 // ??_7CPlay via cl (no manual g_stCPlayVtbl stamp).
 struct CMulti : CTsBaseB { // param 17, 0x660

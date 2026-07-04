@@ -10,7 +10,7 @@
 // body / by-address DATA externs).
 #include <Win32.h>
 
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)

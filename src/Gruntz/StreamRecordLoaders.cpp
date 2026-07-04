@@ -13,15 +13,15 @@
 #include <rva.h>
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
-#include <Gruntz/CSerialObjRef.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/SerialObjRef.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
+#include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 // leaf + KeyOfValue), CSerialObj - shared with the
 // embedded +0x150 sub-record of CProjLoadRec below
 
 // ---------------------------------------------------------------------------
 // Every record here streams through the shared WAP32 CSerialArchive (Read @ vtable
-// +0x2c = load, Write @ +0x30 = store), pulled in via <Gruntz/CSerialObjRef.h> above
+// +0x2c = load, Write @ +0x30 = store), pulled in via <Gruntz/SerialObjRef.h> above
 // - the former local CStreamReader / CArchiveReader / CDualReader views are all folded
 // away. `s->Read` lowers to `mov edx,[esi]; call [edx+0x2c]`; `s->Write` to
 // `call [edx+0x30]`. (The +0x30-only CArchiveLoadRec store-serializer reaches Write;

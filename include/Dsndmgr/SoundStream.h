@@ -19,7 +19,7 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVoiceList.h> // DSoundLink (intrusive link) / DSoundList (the voice list)
 #include <Dsndmgr/StreamFeeder.h>   // the real embedded feeder sub-object (StreamVoiceNode+0x6c)
-#include <Gruntz/CParseSource.h>    // the RIFF/WAVE byte-reader (ParseWave / OpenStream)
+#include <Gruntz/ParseSource.h>     // the RIFF/WAVE byte-reader (ParseWave / OpenStream)
 
 class SoundStream;
 

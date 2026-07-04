@@ -20,7 +20,7 @@
 // offsets / code bytes are load-bearing (campaign doctrine).
 
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Mfc.h> // CString (the /GX directional-name temps) + Win32
 
 #include <rva.h>

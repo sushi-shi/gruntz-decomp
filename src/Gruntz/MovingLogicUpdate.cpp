@@ -14,14 +14,14 @@
 // fields are read/written directly). Trailing ints m_140/m_144/m_148/m_14c live
 // after the 0x108-byte motion block. Kept in a dedicated unit; the +0x38 band is
 // the shared CMotionState reached through the canonical CMovingLogic::Motion().
-#include <Gruntz/CMovingLogic.h>
+#include <Gruntz/MovingLogic.h>
 #include <rva.h>
 #include <Globals.h>
 
 // The ms->units scale the elapsed-clock delta is multiplied by (0x5f04f0, a
 // read-only .rdata double read via `fmul [mem]`); sits just before g_motionNegHalf.
 // g_motionNegHalf (0x5f04f8, -0.5) comes via MotionState.h (canonical include).
-// The running game clock g_645588 comes via <Gruntz/CMovingLogic.h>.
+// The running game clock g_645588 comes via <Gruntz/MovingLogic.h>.
 
 // The lazily-built per-object worker at CGameObject+0x98 (the CAnimWorker the
 // UserLogic family builds); only its two per-frame scroll deltas are touched.
@@ -56,7 +56,7 @@ struct MlBoundObject {
     i32 m_e4; // +0xe4  scroll mode (1 = follow, 7 = free)
 };
 
-// CMovingLogic is the shared canonical (<Gruntz/CMovingLogic.h>): its +0x38
+// CMovingLogic is the shared canonical (<Gruntz/MovingLogic.h>): its +0x38
 // CMotionState band is reached through Motion(); m_10 is the bound CGameObject,
 // viewed here as the richer MlBoundObject (a scoped CGameObject reduced view - the
 // engine-object consolidation, not CMovingLogic's - so its scroll/level fields are

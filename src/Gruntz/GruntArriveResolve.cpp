@@ -12,9 +12,9 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Win32.h>             // RECT + IntersectRect
-#include <string.h>            // memset (out-of-bounds cell fill)
-#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
+#include <Win32.h>            // RECT + IntersectRect
+#include <string.h>           // memset (out-of-bounds cell fill)
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)

@@ -9,8 +9,8 @@
 // load-bearing (campaign doctrine). All callees (the brightness setter 0x1524d0,
 // SerializeChain 0x16e7f0, CSerialObjRef::Chain, the archive Read/Write slots) are
 // external/no-body so their call rel32 / DIR32 reloc-mask.
-#include <Gruntz/UserLogic.h>     // CUserLogic + SerializeChain (0x16e7f0)
-#include <Gruntz/CSerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
+#include <Gruntz/UserLogic.h>    // CUserLogic + SerializeChain (0x16e7f0)
+#include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
 
 // The global millisecond tick (_g_645588). The DWORD load reloc-masks.
 DATA(0x00245588)

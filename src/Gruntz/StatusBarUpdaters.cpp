@@ -1,6 +1,6 @@
 #include <rva.h>
 #include <Bute/ButeMgr.h>
-#include <Gruntz/CGameRegistry.h>          // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>           // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host

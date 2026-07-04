@@ -19,7 +19,7 @@
 // m_options[4] block (4 x 0x238 -> 0xa30); the TUs that reach it (per-player start
 // records @0x150, ref-index array @0x158, ...) index it by raw (char*)g_gameReg +
 // offset - the established idiom (see Grunt.cpp / GameMode). The reconciled MFC/
-// Win32 sibling view is <Gruntz/CGameRegistry.h> (CGruntzMgr / g_pGameRegistry).
+// Win32 sibling view is <Gruntz/GameRegistry.h> (CGruntzMgr / g_pGameRegistry).
 #ifndef GRUNTZ_GRUNTZ_WWDGAMEREG_H
 #define GRUNTZ_GRUNTZ_WWDGAMEREG_H
 

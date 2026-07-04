@@ -3,7 +3,7 @@
 //
 // The rtti/heuristic labeling gave this the mangled name "CStatusBarMgr", but it is
 // a GENUINELY DIFFERENT class from the Gruntz in-game status-bar builder
-// (CStatusBarMgr, src/Gruntz/CStatusBarMgr.cpp) - proven by two incompatible layout
+// (CStatusBarMgr, src/Gruntz/StatusBarMgr.cpp) - proven by two incompatible layout
 // facts, so it is renamed here (same-name-genuinely-different -> RENAME):
 //   * +0x10 is a POINTER to the live-surface owner (deref m_10->m_78) here, but an
 //     int base-x coordinate (bx = m_10; r.left = bx + 0x18 ...) in the HUD builder;

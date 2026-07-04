@@ -11,8 +11,8 @@
 // parser (a 2228-byte multi-switch bute reader) - parked in src/Stub/CBrickz.cpp
 // for the final sweep (a leaf-first redo).
 #include <Gruntz/CBrickz.h>
-#include <Gruntz/CSerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
-#include <Bute/ButeMgr.h>         // CButeTree (g_buteTree)
+#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Bute/ButeMgr.h>        // CButeTree (g_buteTree)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
 extern CButeTree g_buteTree;

@@ -14,8 +14,8 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Mfc.h>           // CMapStringToPtr / CString / POSITION + <windows.h>
-#include <Wap32/CObject.h> // Wap::CObject - the MFC-free WAP grand-base (namespace-qualified)
+#include <Mfc.h>          // CMapStringToPtr / CString / POSITION + <windows.h>
+#include <Wap32/Object.h> // Wap::CObject - the MFC-free WAP grand-base (namespace-qualified)
 
 // The polymorphic map value: a WAP CObject-derived resource. RemoveByValue does
 // `delete p`, dispatching the scalar-deleting destructor at the shared Wap::CObject

@@ -49,7 +49,7 @@ SIZE_UNKNOWN(CWhConfig);
 // The active surface context Render passes into RenderFrame is reached through the
 // canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
 // m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
-// <Gruntz/CGameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
+// <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
 // per-TU game-manager facet is kept.
 
 // The base ImageSet SetupImage (CSBI_ImageSet vtable slot 11, 0xe72f0): same

@@ -5,8 +5,8 @@
 // combat-region scan. Placeholder class/field names (m_<hexoffset>); only the
 // offsets + code bytes are load-bearing. Compiled base+/GX to mirror the
 // original stub-unit environment.
-#include <Bute/ButeMgr.h>          // canonical CButeMgr (one shape); MFC-first (pulls afx)
-#include <Dsndmgr/CGruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape); MFC-first (pulls afx)
+#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
 #include <Win32.h>
 
 #include <Ints.h>

@@ -19,8 +19,8 @@
 #ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
-#include <rva.h>           // Ints + the OVERRIDE/SIZE/VTBL label macros
-#include <Wap32/CObject.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
+#include <rva.h>          // Ints + the OVERRIDE/SIZE/VTBL label macros
+#include <Wap32/Object.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
 
 // A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
 // m_alloc/m_size/m_data; 0x1501a0 Alloc(size,key) frees+reallocs m_data; 0x1503c0

@@ -20,8 +20,8 @@
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
-#include <Mfc.h>                 // CObList (+0x204 member)
-#include <Gruntz/CMovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
+#include <Mfc.h>                // CObList (+0x204 member)
+#include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
 // The animation sub-object embedded in a render object at +0x1a0; its setter

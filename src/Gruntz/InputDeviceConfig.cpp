@@ -24,7 +24,7 @@
 // dtor (drives the C++ EH unwind state). Their bodies are external/no-body so the
 // call displacements reloc-mask against the matched NAFXCW routines.
 // ---------------------------------------------------------------------------
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // ---------------------------------------------------------------------------
 // CInputConfig - the input-device option holder. Only the device-id discriminator

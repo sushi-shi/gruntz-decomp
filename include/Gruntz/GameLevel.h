@@ -121,12 +121,12 @@ public:
 };
 
 // The parse-source object passed to LoadFromSource: the canonical CParseSource
-// (include/Gruntz/CParseSource.h); only the pointer type appears here so a
+// (include/Gruntz/ParseSource.h); only the pointer type appears here so a
 // forward decl suffices.
 class CParseSource;
 
 // CGameLevel::GetClassId (slot 8) type tag. Mirrors the canonical
-// LoadableClassId enum in <Gruntz/CLoadable.h> (CLASSID_GAMELEVEL = 0x19); named
+// LoadableClassId enum in <Gruntz/Loadable.h> (CLASSID_GAMELEVEL = 0x19); named
 // here rather than pulled in because this TU keeps its own (B)-form CLoadable
 // struct below (a second `class CLoadable` would ODR-clash the canonical one).
 // A named enumerator lowers to the same `mov eax,0x19` immediate (matching-neutral).
@@ -136,7 +136,7 @@ enum LoadableClassId {
 
 // ---------------------------------------------------------------------------
 // CLoadable - the engine base CGameLevel derives from. Its 9-slot base vftable
-// is @0x5efc30 (the SAME class the canonical <Gruntz/CLoadable.h> models; slots
+// is @0x5efc30 (the SAME class the canonical <Gruntz/Loadable.h> models; slots
 // verified against the retail vtable: [1] 0x155720 ??_G, [5] 0x155700 IsLoaded,
 // [7] 0x155740 Unload, [8] 0x154a00 GetClassId).
 //

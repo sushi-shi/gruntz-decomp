@@ -74,7 +74,7 @@ extern CGameReg* g_gameReg;
 // (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
 // g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
 // g_coinValue, moved with the MIDI sequence + LCG helpers to
-// src/Dsndmgr/CGruntzSoundZ.cpp and src/Gruntz/Random.cpp.)
+// src/Dsndmgr/GruntzSoundZ.cpp and src/Gruntz/Random.cpp.)
 
 // GetDlgItem(hWnd,0x4b6) cache (DAT_00648ce0), shared by several timer wrappers.
 DATA(0x00248ce0)
@@ -2088,7 +2088,7 @@ namespace ApiCallerStubs {
     // re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
     // 0x11b3b0 + 0x11b7c0 (CGruntSpawnConfig weighted grunt-voice spawn drivers): both
-    // re-homed to src/Gruntz/CGruntSpawnConfig.cpp (SpawnVoiceDriver / SpawnVoiceDriverStd).
+    // re-homed to src/Gruntz/GruntSpawnConfig.cpp (SpawnVoiceDriver / SpawnVoiceDriverStd).
 
     // 0x1206b0 (CRT _heapchk/_heapwalk: SEH frame + HeapValidate/HeapWalk loop) and
     // 0x123d10 (CRT _threadstartex thread bootstrap: SEH + GetCurrentThreadId/
@@ -2117,7 +2117,7 @@ namespace ApiCallerStubs {
     // (The AIL MIDI/XMIDI sequence subsystem - 0x138490/0x1384f0 driver bring-up +
     // teardown, 0x138950/0x1389c0 XMIDI master volume, 0x138c20 sequence-record
     // init, and the 0x138dd0-0x139030 player methods - re-homed as real
-    // CGruntzSoundZ / CGruntzSoundInnerZ methods in src/Dsndmgr/CGruntzSoundZ.cpp.)
+    // CGruntzSoundZ / CGruntzSoundInnerZ methods in src/Dsndmgr/GruntzSoundZ.cpp.)
 
     // (0x13d4c0 was WndHolder_13d4c0::Destroy; recovered as CGameWnd::OnClose -
     // the WM_CLOSE handler, vtable slot 4 - and migrated to src/Wap32/GameWnd.cpp.

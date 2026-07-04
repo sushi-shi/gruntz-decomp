@@ -12,10 +12,10 @@
 #include <string.h> // inline strcmp of the grunt type name
 
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CStepList2.h>
-#include <Gruntz/CTypeColl.h>
-#include <Gruntz/CStepList.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/StepList2.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/StepList.h>
 
 #pragma intrinsic(strcmp)
 

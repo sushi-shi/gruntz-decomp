@@ -38,7 +38,7 @@
 
 #include <Gruntz/CoordNode.h> // the shared coord-list node
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
 

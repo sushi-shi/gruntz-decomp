@@ -16,8 +16,8 @@
 #define SRC_GRUNTZ_TILEGRIDCOMMAND_H
 
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h>     // shared world tile-grid geometry (the active layer)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (the active layer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 

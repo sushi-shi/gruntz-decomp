@@ -8,10 +8,10 @@
 // status-bar sub-objects it reaches (the active tab child m_2dc, the sound set, the
 // area probe, the spawner) are modeled minimally; only offsets / code bytes are
 // load-bearing and every helper is a reloc-masked external.
-// <Gruntz/CPlay.h> (canonical CPlay) pulls <Mfc.h> -> <windows.h> the afx-first
+// <Gruntz/Play.h> (canonical CPlay) pulls <Mfc.h> -> <windows.h> the afx-first
 // way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
 // error ("MFC apps must not #include <windows.h>").
-#include <Gruntz/CPlay.h>
+#include <Gruntz/Play.h>
 
 #include <rva.h>
 

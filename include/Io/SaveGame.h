@@ -24,7 +24,7 @@
 #ifndef SRC_IO_SAVEGAME_H
 #define SRC_IO_SAVEGAME_H
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h> // CString + <windows.h>
 

@@ -14,7 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>    // CString + <windows.h>
 #include <string.h> // intrinsic strcmp ("D")

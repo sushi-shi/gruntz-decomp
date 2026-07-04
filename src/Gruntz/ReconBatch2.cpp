@@ -7,7 +7,7 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Win32.h>
 
-#include <DDrawMgr/CDDSurface.h>    // canonical CDDSurface (Blt @0x13ee60)
+#include <DDrawMgr/DDSurface.h>     // canonical CDDSurface (Blt @0x13ee60)
 #include <Gruntz/SfManagerDevice.h> // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 

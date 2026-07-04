@@ -131,7 +131,7 @@ void DevCfgChain::DtorD1() {
 // destructible CString member forces the /GX frame; returns `this`. __thiscall.
 //
 // This is the type-1 CFxMode variant, a DISTINCT class from the type-3 CFxModeT3
-// at 0x17e880 (src/Gruntz/CFxModeDesc.cpp): different layout (this one carries a
+// at 0x17e880 (src/Gruntz/FxModeDesc.cpp): different layout (this one carries a
 // CString member at +0x24 and is 0x2c bytes) and a different type tag. Ghidra
 // RTTI-named both ctors "CFxModeT3"; modeling this one as CFxModeT3 too collided the
 // mangled ctor name (??0CFxModeT3@@QAE@XZ) at two RVAs. Named CFxModeT1 to recover

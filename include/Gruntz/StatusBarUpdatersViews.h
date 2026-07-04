@@ -35,7 +35,7 @@ SIZE_UNKNOWN(CStatusBarHolder);
 
 // The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24). Distinct object from the
-// registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/CTileGrid.h>).
+// registry +0x70 tile occupancy grid (CTileGrid, <Gruntz/TileGrid.h>).
 SIZE_UNKNOWN(CMapTileGrid);
 struct CMapTileGrid {
     char m_pad00[0x20];
@@ -43,7 +43,7 @@ struct CMapTileGrid {
     i32* m_rowOffset; // +0x24  row-offset table
 };
 // The tile-system notifier at registry +0x70 is the canonical CTileGrid
-// (<Gruntz/CTileGrid.h>), viewed through its Notify facet.
+// (<Gruntz/TileGrid.h>), viewed through its Notify facet.
 // The registry's +0x30 holder: it carries the tile-grid holder (+0x24 -> +0x5c
 // grid) and the status-bar holder (+0x28).
 struct CRegHolder {

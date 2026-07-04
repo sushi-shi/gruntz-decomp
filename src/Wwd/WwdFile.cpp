@@ -26,7 +26,7 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
@@ -42,7 +42,7 @@
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
 // chain ValidateMainBlock walks is modeled here (m_slot -> m_wwdPath, a filename);
-// the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
+// the full CGameReg layout lives in src/Gruntz/StatusBarMgr.cpp. Offsets are the
 // only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
 // authentic: reduced local view of the cross-TU CGameReg world slot; only the +0x24
 // path field ValidateMainBlock reads is modeled (offset-faithful, mangling-neutral).

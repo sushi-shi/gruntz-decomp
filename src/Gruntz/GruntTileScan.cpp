@@ -16,13 +16,13 @@
 
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
-#include <Gruntz/CScanRectInit.h>
-#include <Gruntz/CScanGrid.h>
-#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
+#include <Gruntz/ScanRectInit.h>
+#include <Gruntz/ScanGrid.h>
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 // CScanCoord/CScanNode324 (grunt->m_324), CScanListNode (grunt->m_320 pending-coord
-// node) and CScanSub10 (grunt->m_10) are the shared def in <Gruntz/CScanGrid.h>.
+// node) and CScanSub10 (grunt->m_10) are the shared def in <Gruntz/ScanGrid.h>.
 struct CScanObList {        // grunt->m_31c
     void RemoveAll1b48a6(); // 0x1b48a6
     char _00[4];
@@ -43,7 +43,7 @@ struct CScanGrunt {                                              // the grunt (a
     i32 m_3f0; // +0x3f0 stuck counter
 };
 
-// CScanCell (the grid's 0x1c-B cell) is the shared def in <Gruntz/CScanGrid.h>.
+// CScanCell (the grid's 0x1c-B cell) is the shared def in <Gruntz/ScanGrid.h>.
 struct CScanGoal { // this->m_f4[] element
     i32 m_0, m_4;
 };

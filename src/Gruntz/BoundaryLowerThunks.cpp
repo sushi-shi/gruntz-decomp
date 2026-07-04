@@ -8,9 +8,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/ActReg.h>     // shared activation-registrar archetype (CActReg + aliases)
-#include <Gruntz/CHaznColl.h>  // shared coordinate/activation-registry collection
-#include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/ActReg.h>    // shared activation-registrar archetype (CActReg + aliases)
+#include <Gruntz/HaznColl.h>  // shared coordinate/activation-registry collection
+#include <Gruntz/TBombColl.h> // shared coordinate/activation-registry collection
 #include <Globals.h>
 
 // ===========================================================================
@@ -45,8 +45,8 @@ extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
 SIZE_UNKNOWN(CLogicActTable);
 SIZE_UNKNOWN(CLookupColl);
 SIZE_UNKNOWN(CActReg);
-SIZE_UNKNOWN(CTBombColl);                   // CTBombColl defined in <Gruntz/CTBombColl.h> (shared)
-SIZE_UNKNOWN(CHaznColl);                    // CHaznColl defined in <Gruntz/CHaznColl.h> (shared)
+SIZE_UNKNOWN(CTBombColl);                   // CTBombColl defined in <Gruntz/TBombColl.h> (shared)
+SIZE_UNKNOWN(CHaznColl);                    // CHaznColl defined in <Gruntz/HaznColl.h> (shared)
 extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0 (LogicActReg.cpp)
 extern CLookupColl g_reg_644af0;            // 0x644af0 (LogicActRegistrars.cpp)
 extern CLogicActTable g_logicActReg_646010; // 0x646010 (LogicActReg.cpp)

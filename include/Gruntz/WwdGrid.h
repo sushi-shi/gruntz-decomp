@@ -15,7 +15,7 @@
 #define GRUNTZ_WWDGRID_H
 
 #include <Ints.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
 struct BucketHead;
@@ -60,7 +60,7 @@ struct BucketHead {
 // frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
 // NO VTBL: ??_7Wap@@CObject masks the SHARED CObject vtable @0x5e8cb4 (already
 // bound as g_wapObjectDtorVtbl in reconbatch2) - a per-class VTBL would dup-DATA.
-// The grand-base is Wap::CObject (Wap32/CObject.h).
+// The grand-base is Wap::CObject (Wap32/Object.h).
 
 // CWwdGrid derives from Wap::CObject. Real polymorphic now: the ctor gets the
 // implicit ??_7CWwdGrid vptr stamp, ~CWwdGrid the implicit stamp-first re-stamp,

@@ -1,5 +1,5 @@
 // DDrawBltErrThunk.cpp - a DDrawMgr-family display helper (C:\Proj\incs\ddrawmgr.h)
-// re-homed from src/Stub/CDirectDrawMgr.cpp (the stub mangling mislabeled it
+// re-homed from src/Stub/DirectDrawMgr.cpp (the stub mangling mislabeled it
 // CDirectDrawMgr; by its disasm it is a different game-display class).
 //
 // It Blt's two RECTs through a held polymorphic surface object (m_0): the COM-ABI
@@ -38,7 +38,7 @@ struct DDrawBltHost {
     char m_184[16];          // +0x184 source RECT (passed as &m_184)
 };
 
-// The DDraw error sink (src/DDrawMgr/CDirectDrawMgr.cpp @0x141400): __cdecl
+// The DDraw error sink (src/DDrawMgr/DirectDrawMgr.cpp @0x141400): __cdecl
 // (file, line, hr); call displacement reloc-masked.
 extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr);
 

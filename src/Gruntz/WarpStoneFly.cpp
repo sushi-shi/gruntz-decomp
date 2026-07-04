@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Ints.h>
 #include <Gruntz/WarpStoneFly.h>
 // WarpStoneFly.cpp - Gruntz CWarpStoneFly (C:\Proj\Gruntz), the flying-warpstone

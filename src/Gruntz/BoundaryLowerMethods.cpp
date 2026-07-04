@@ -7,7 +7,7 @@
 // (pure code motion); the archive object folds to the canonical CSerialArchive.
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>             // canonical game-manager singleton (0x24556c) view
+#include <Gruntz/GameRegistry.h>              // canonical game-manager singleton (0x24556c) view
 #include <Gruntz/BoundaryLowerMethodsViews.h> // owner/referent views for this TU
 #include <Globals.h>
 

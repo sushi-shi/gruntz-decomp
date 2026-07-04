@@ -7,8 +7,8 @@
 // UNMATCHED engine classes whose reads / helper calls must reloc-mask. Functions in
 // retail-RVA order.
 #include <Gruntz/TriggerMgr.h>
-#include <Bute/ButeMgr.h>     // canonical CButeMgr (one shape)
-#include <Gruntz/CViewport.h> // shared world tile-grid geometry (dims here)
+#include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
+#include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
 
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
 // id as (kind + kPendingFxIdBase), latched into m_pendingFxKind and handed to the world.
@@ -215,7 +215,7 @@ struct CTmWorld {
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
 // g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
-// (<Gruntz/CViewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
+// (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
 struct CTmGridHolder {
     char p0[0x5c];
     CViewport* m_5c; // +0x5c  the grid object

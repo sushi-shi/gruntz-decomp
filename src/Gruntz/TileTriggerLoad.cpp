@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 // TileTriggerLoad.cpp - the version-4 deserialize handler (0x1138b0) for a tile
 // trigger-data record. Reached through the per-version Load dispatcher (0x513860,
 // sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed

@@ -32,7 +32,7 @@
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
 
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/CViewport.h>  // the shared world tile-grid geometry
+#include <Gruntz/Viewport.h>   // the shared world tile-grid geometry
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -197,7 +197,7 @@ struct TileClassVtbl {
 struct TileClass {
     TileClassVtbl* m_vtbl;
 };
-// The world tile-grid geometry is the shared CViewport (<Gruntz/CViewport.h>).
+// The world tile-grid geometry is the shared CViewport (<Gruntz/Viewport.h>).
 struct TileGrid {
     char m_pad00[0x24];
     char m_pad24[0x4c - 0x24];

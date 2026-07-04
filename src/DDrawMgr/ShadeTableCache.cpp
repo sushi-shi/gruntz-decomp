@@ -73,7 +73,7 @@ struct CStr {
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
 // fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
 // (The empty grand-base dtor Wap::CObject::~CObject - defined inline in
-// Wap32/CObject.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
+// Wap32/Object.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
 // ===========================================================================
 inline CShadeTableArray::CShadeTableArray() {
     // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).

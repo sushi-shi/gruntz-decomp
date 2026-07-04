@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
 // global selected-resolution mode (g_videoResolutionMode: 1=640x480,
@@ -25,7 +25,7 @@
 // /O2 /Oi MSVC5 expands it inline to repnz scasb + rep movs (the suffix-append
 // idiom in the disassembly).
 #include <Win32.h>
-#include <Gruntz/CWnd.h>
+#include <Gruntz/Wnd.h>
 #include <Gruntz/Enums.h>
 #include <string.h>
 
@@ -49,7 +49,7 @@ extern i32 g_videoResolutionMode;
 // (min,max,redraw) range, and the engine 0x405/0x400 messages are exchanged with
 // the wrapped HWND held at CWnd+0x1c (m_hWnd).
 // ---------------------------------------------------------------------------
-// CWnd is the shared minimal MFC view (see <Gruntz/CWnd.h>): FromHandle wraps the
+// CWnd is the shared minimal MFC view (see <Gruntz/Wnd.h>): FromHandle wraps the
 // HWND, m_hWnd at +0x1c.
 class CSliderCtrl : public CWnd {
 public:

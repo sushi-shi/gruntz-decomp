@@ -3,7 +3,7 @@
 // slot - then push it to the surface/palette interface held at +0x2c via its
 // vtable slot 6. Owner confirmed by xref: the sole caller is CDDScreen::HandleError
 // (0x17cc80), reached on `this` (the +0x2c palette sink is CDDScreen's m_palette).
-// CDDScreen is defined fully in src/Gruntz/CDDScreen.cpp; this TU carries only the
+// CDDScreen is defined fully in src/Gruntz/DDScreen.cpp; this TU carries only the
 // offset-compatible partial layout ResetPalette touches, so the definition mangles
 // to ?ResetPalette@CDDScreen@@ and pairs with the caller's named reference.
 #include <Ints.h>
@@ -24,7 +24,7 @@ struct IPalSink {
     SetEntries(i32 flags, i32 start, i32 count, void* entries); // slot 6 +0x18
 };
 
-// Partial view of CDDScreen (full class in src/Gruntz/CDDScreen.cpp) - only the
+// Partial view of CDDScreen (full class in src/Gruntz/DDScreen.cpp) - only the
 // offset-compatible fields ResetPalette touches. m_palette (the palette COM sink)
 // is CDDScreen's +0x2c IDDObj*, viewed here as the DirectDrawPalette IPalSink.
 struct CDDScreen {

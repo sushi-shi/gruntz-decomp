@@ -45,15 +45,15 @@
 #include <rva.h>
 
 #include <Mfc.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
-#include <Gruntz/CGameMenuMgrBuilders.h> // CSbMenuItem builder-facet + SBI leaves + CGameMenuMgr
+#include <Gruntz/GameMenuMgrBuilders.h> // CSbMenuItem builder-facet + SBI leaves + CGameMenuMgr
 
 // ---------------------------------------------------------------------------
 // The builder-facet base CSbMenuItem, its concrete SBI leaves (CSBI_ImageSet /
 // CSBI_MenuItem), the registry factory view CGmFactory and the CGameMenuMgr class
-// moved to <Gruntz/CGameMenuMgrBuilders.h>.
+// moved to <Gruntz/GameMenuMgrBuilders.h>.
 // ---------------------------------------------------------------------------
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;

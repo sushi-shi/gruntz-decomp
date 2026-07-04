@@ -21,7 +21,7 @@
 #define GRUNTZ_GRUNTINDICATORSPRITE_H
 
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 

@@ -32,7 +32,7 @@
 // final sweep: match the CObList ctor/dtor + the page ctor as leaves so the
 // trylevel-slot threading can be reproduced, then re-attack.
 
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
 
 typedef u32 u32;

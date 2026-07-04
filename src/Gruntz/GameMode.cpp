@@ -131,7 +131,7 @@ i32 CState::Vslot11(i32, i32, i32) {
 
 // The CState +0x0c resource-release facet (registry @+0x10, sound registry +
 // pooled resource @+0x28, third registry @+0x2c, worker list @+0x0c, render/flip
-// view @+0x04) is the RESOURCE facet of the one shared CView (<Gruntz/CView.h>);
+// view @+0x04) is the RESOURCE facet of the one shared CView (<Gruntz/View.h>);
 // the leaf-state teardown paths reach it through m_c directly (no cast).
 
 // CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
@@ -244,7 +244,7 @@ void CBootyState::ReleaseResources() {
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 
-// (CPlay::Update lives with the rest of CPlay in src/Gruntz/CPlay.cpp.)
+// (CPlay::Update lives with the rest of CPlay in src/Gruntz/Play.cpp.)
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x0008ce10, 0x6)
@@ -426,7 +426,7 @@ tail:
 // REMAINING Render overrides (slot +0x14) NOT matched here (deferred targets):
 //   CBootyState::Render - the bonus-state per-frame draw.
 //   CPlay::Render       - the in-game per-frame heart (the
-//       carcass is reconstructed in the `cplay` WIP unit, src/Gruntz/CPlay.cpp).
+//       carcass is reconstructed in the `cplay` WIP unit, src/Gruntz/Play.cpp).
 // Both follow the same spine the two matched Renders above show (per-entity
 // Update loop over g_645574 -> entity-flag message scans -> draw/UI step),
 // scaled up with the level/grunt simulation.
@@ -748,7 +748,7 @@ extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
 // The go-kart install target reached via m_c->m_10 is the shared CView image
-// registry (Install at vtable slot 18 / +0x48; <Gruntz/CView.h>).
+// registry (Install at vtable slot 18 / +0x48; <Gruntz/View.h>).
 // The namespace/image registry at this+0x30 (resolves a named image handle).
 SIZE_UNKNOWN(CEffNamespace);
 struct CEffNamespace {

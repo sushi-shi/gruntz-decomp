@@ -7,11 +7,11 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CTypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
-#include <Bute/ButeMgr.h>              // CButeTree (the type-registry funnel)
-#include <math.h>                      // sin / cos (StepMotion's parabola)
-#include <string.h>                    // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/TypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
+#include <Bute/ButeMgr.h>             // CButeTree (the type-registry funnel)
+#include <math.h>                     // sin / cos (StepMotion's parabola)
+#include <string.h>                   // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
 

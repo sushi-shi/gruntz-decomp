@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (sub-widget CObject prefix)
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (sub-widget CObject prefix)
 // ApiHiCallers.cpp - reconstructed game API-caller methods, the HIGH-RVA half
 // (RVA >= 0x0e0000). Each was classified as GAME (not CRT/MFC-library) and
 // reconstructed against a best-guess

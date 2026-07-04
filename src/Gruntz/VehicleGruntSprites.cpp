@@ -15,7 +15,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/CTileGrid.h>  // the registry +0x70 tile occupancy grid
+#include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
 #include <Gruntz/GruntzMgr.h>  // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
 

@@ -12,7 +12,7 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS, control IDs,
 // and code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <stdio.h> // engine sprintf (reloc-masked)
 
 // The USER32 dialog API (EndDialog / GetDlgItemInt / SetDlgItemInt /

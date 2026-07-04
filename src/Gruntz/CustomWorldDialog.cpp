@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 // CustomWorldDialog.cpp - the "CUSTOM_WORLD" modal-dialog launcher (0x3ad90,
 // __cdecl returning CString by value). Seeds the custom-world exchange globals
 // from the game-manager singleton, runs the dialog through CGameRegistry::RunModalDialog,

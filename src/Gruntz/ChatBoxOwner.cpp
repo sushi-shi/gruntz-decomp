@@ -5,7 +5,7 @@
 #include <rva.h>
 
 #include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
 
 DATA(0x0024556c)

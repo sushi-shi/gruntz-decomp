@@ -5,9 +5,9 @@
 // NO-body so their rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
-#include <string.h>               // inline strlen / memset intrinsics
-#include <Win32.h>                // WINAPI (windows.h) for the g_p* import-pointer types
-#include <Gruntz/CGameRegistry.h> // canonical Win32-safe game-manager singleton view
+#include <string.h>              // inline strlen / memset intrinsics
+#include <Win32.h>               // WINAPI (windows.h) for the g_p* import-pointer types
+#include <Gruntz/GameRegistry.h> // canonical Win32-safe game-manager singleton view
 #include <Globals.h>
 
 // ===========================================================================

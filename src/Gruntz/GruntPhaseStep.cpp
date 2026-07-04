@@ -14,7 +14,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/CTypeColl.h> // the shared type-name collection
+#include <Gruntz/TypeColl.h> // the shared type-name collection
 
 #pragma intrinsic(strcmp)
 

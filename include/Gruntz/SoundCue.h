@@ -5,7 +5,7 @@
 // to actually play the sound.
 //
 // Shared verbatim by the multiplayer menu-select handler (Net/NetMgrMenuSelect.cpp,
-// reached via CNetMgr+0xc) and the lightning-strike hazard (Gruntz/CPathHazard.cpp,
+// reached via CNetMgr+0xc) and the lightning-strike hazard (Gruntz/PathHazard.cpp,
 // reached via the game-registry's +0x30 world holder) - identical layouts + RVAs in
 // both (xref-confirmed: Lookup 0x1b8438, ConfigureItem 0x1360d0). Only offsets + code
 // bytes are load-bearing; field names are placeholders (the finder/emitter/host/

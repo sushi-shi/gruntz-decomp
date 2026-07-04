@@ -3,7 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------

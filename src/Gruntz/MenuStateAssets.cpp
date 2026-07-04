@@ -1,7 +1,7 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
 
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
 #include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-

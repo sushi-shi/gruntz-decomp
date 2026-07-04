@@ -1,14 +1,14 @@
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
-#include <Gruntz/CStringNode.h> // the type-name teardown slot
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/CTypeNameEntryView.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/TypeNameEntryView.h>
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/CSerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -71,7 +71,7 @@ struct CSlimeLevel {
 };
 
 // The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
-// (<Gruntz/CTileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
+// (<Gruntz/TileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
 // (row[gy][gx*7] is the tile-flags word).
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
 // QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a

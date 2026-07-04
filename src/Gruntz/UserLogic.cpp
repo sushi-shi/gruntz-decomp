@@ -10,21 +10,21 @@
 // The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
-#include <Mfc.h>                 // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
-#include <Gruntz/ActReg.h>       // shared CActColl/CActColl2/CActReg activation-registry archetype
-#include <Gruntz/CAniCycle.h>    // the canonical CAniCycle class (ctor defined below)
-#include <Gruntz/CBehindCandy.h> // the canonical CBehindCandy class (ctor defined below)
-#include <Gruntz/CBehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
-#include <Gruntz/CEyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
-#include <Gruntz/CParticlez.h>          // the canonical CParticlez class (ctor defined below)
-#include <Gruntz/CSimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
-#include <Gruntz/CSingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
-#include <Gruntz/CSingleFrameMessage.h> // the canonical CSingleFrameMessage class (ctor defined below)
-#include <Gruntz/CTeleSpriteFactory.h> // shared teleporter HUD-sprite factory
-#include <Gruntz/CToobSpikez.h>        // the canonical CToobSpikez class (ctor defined below)
-#include <Gruntz/CTrigger.h>           // shared point-probe result object
-#include <Gruntz/CViewport.h>          // shared world->screen transform
-#include <Gruntz/CSerialObjRef.h>      // the shared serialized-object-reference (Chain @0x8c00)
+#include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
+#include <Gruntz/AniCycle.h>    // the canonical CAniCycle class (ctor defined below)
+#include <Gruntz/BehindCandy.h> // the canonical CBehindCandy class (ctor defined below)
+#include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
+#include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
+#include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
+#include <Gruntz/SimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
+#include <Gruntz/SingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
+#include <Gruntz/SingleFrameMessage.h> // the canonical CSingleFrameMessage class (ctor defined below)
+#include <Gruntz/TeleSpriteFactory.h> // shared teleporter HUD-sprite factory
+#include <Gruntz/ToobSpikez.h>        // the canonical CToobSpikez class (ctor defined below)
+#include <Gruntz/Trigger.h>           // shared point-probe result object
+#include <Gruntz/Viewport.h>          // shared world->screen transform
+#include <Gruntz/SerialObjRef.h>      // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -110,7 +110,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 //   * CUserLogic::SerializeChain (0x16e7f0) - run on `this`.
 //   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
 //     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
-//     (Chain @0x8c00, <Gruntz/CSerialObjRef.h>).
+//     (Chain @0x8c00, <Gruntz/SerialObjRef.h>).
 // (Both bodies are pinned in src/Stub/Discovered.cpp.)
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
@@ -225,13 +225,13 @@ public:
 // CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
 // live in src/Gruntz/TileTriggerTransition.cpp.
 
-// CToobSpikez comes from <Gruntz/CToobSpikez.h> (folded; ctor 0x1145c0 defined below).
+// CToobSpikez comes from <Gruntz/ToobSpikez.h> (folded; ctor 0x1145c0 defined below).
 
-// CParticlez comes from <Gruntz/CParticlez.h> (folded; ctor 0x046ad0 + GetTypeTag 0x012cd0 below).
+// CParticlez comes from <Gruntz/Particlez.h> (folded; ctor 0x046ad0 + GetTypeTag 0x012cd0 below).
 
-// CAniCycle comes from <Gruntz/CAniCycle.h> (folded; ctor 0x0aad20 defined below).
+// CAniCycle comes from <Gruntz/AniCycle.h> (folded; ctor 0x0aad20 defined below).
 
-// CSingleAnimation comes from <Gruntz/CSingleAnimation.h> (folded; ctor 0x0ae7f0 defined below).
+// CSingleAnimation comes from <Gruntz/SingleAnimation.h> (folded; ctor 0x0ae7f0 defined below).
 
 // ---------------------------------------------------------------------------
 // The CGruntSprite-family leaves (1-arg ctors). Each folds the inline
@@ -268,9 +268,9 @@ public:
 // World/BigActHeight, then toggle the +0x7c sub-object's flag bits. m_40 caches
 // the geometry token where a tail reuses it.
 // ---------------------------------------------------------------------------
-// CSingleFrameMessage comes from <Gruntz/CSingleFrameMessage.h> (folded; ctor 0x0ab310 defined below).
+// CSingleFrameMessage comes from <Gruntz/SingleFrameMessage.h> (folded; ctor 0x0ab310 defined below).
 
-// CSimpleAnimation comes from <Gruntz/CSimpleAnimation.h> (folded; ctor 0x0ab940 defined below).
+// CSimpleAnimation comes from <Gruntz/SimpleAnimation.h> (folded; ctor 0x0ab940 defined below).
 
 SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic {
@@ -279,19 +279,19 @@ public:
     virtual ~CFrontCandy() OVERRIDE;
 };
 
-// CBehindCandy comes from <Gruntz/CBehindCandy.h> (folded; ctor 0x0ac3f0 defined below).
+// CBehindCandy comes from <Gruntz/BehindCandy.h> (folded; ctor 0x0ac3f0 defined below).
 
-// CEyeCandy comes from <Gruntz/CEyeCandy.h> (folded; ctor 0x0ac620 defined below).
+// CEyeCandy comes from <Gruntz/EyeCandy.h> (folded; ctor 0x0ac620 defined below).
 
 // This local is ONLY the genuine CFrontCandyAni ctor 0x0acf40 (vptr 0x5e83e4, Ghidra
-// RTTI-confirmed) - a partial view, NOT foldable into <Gruntz/CFrontCandyAni.h>. The
+// RTTI-confirmed) - a partial view, NOT foldable into <Gruntz/FrontCandyAni.h>. The
 // RegisterActs 0x0acd10 (registry 0x646060) + AdvanceAnim 0x0acf10 that used to sit
 // here were a MIS-ATTRIBUTION: layout order proves they belong to CEyeCandyAni (ctor
 // 0xac870) - the candy cluster runs {ctor 0xac870, InitActReg 0xacb30 -> 0x646060,
 // FireActivation, RegisterActs 0xacd10, AdvanceAnim 0xacf10} contiguously, all in
 // CEyeCandyAni's run BEFORE this ctor. They have been re-homed to src/Gruntz/
 // CEyeCandyAni.cpp (0x646060 is CEyeCandyAni's registry). The real CFrontCandyAni
-// acts (registry 0x6460b0) stay in src/Gruntz/CFrontCandyAni.cpp at 0x0ad310/0x0ad510,
+// acts (registry 0x6460b0) stay in src/Gruntz/FrontCandyAni.cpp at 0x0ad310/0x0ad510,
 // so ?RegisterActs@CFrontCandyAni@@SAXXZ is now emitted at ONE RVA (0x0ad310), not two.
 class CFrontCandyAni : public CUserLogic {
 public:
@@ -300,7 +300,7 @@ public:
     i32 m_40; // +0x40
 };
 
-// CBehindCandyAni comes from <Gruntz/CBehindCandyAni.h> (folded; ctor 0x0ad540 below).
+// CBehindCandyAni comes from <Gruntz/BehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
 class CMenuSparkle : public CUserLogic {
 public:
@@ -362,7 +362,7 @@ struct CViewRect {
     i32 m_right;  // +0x08
     i32 m_bottom; // +0x0c
 };
-// CViewport (world->screen transform) is the shared <Gruntz/CViewport.h> class;
+// CViewport (world->screen transform) is the shared <Gruntz/Viewport.h> class;
 // here only the +0x5c visible-rect base pointer is read.
 
 // The HUD sprite object the teleporter spawn produces / reads its template from
@@ -371,10 +371,10 @@ struct CViewRect {
 // +0x118/+0x11c/+0x120/+0x124/+0x128/+0x164/+0x168, and the +0x7c aux's +0xbc link id).
 
 // The HUD sprite factory the spawn calls (g_gameReg->m_world->m_8->CreateSprite) is the
-// shared <Gruntz/CTeleSpriteFactory.h> class; its result is cast to CGameObject*.
+// shared <Gruntz/TeleSpriteFactory.h> class; its result is cast to CGameObject*.
 
 // CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
-// on-screen cue's coordinates) is the shared <Gruntz/CTrigger.h> class.
+// on-screen cue's coordinates) is the shared <Gruntz/Trigger.h> class.
 SIZE_UNKNOWN(CTeleResHolder);
 struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     char m_pad0[0x8];
@@ -419,7 +419,7 @@ extern CActColl g_actColl;
 SIZE_UNKNOWN(CLeafActReg);
 struct CLeafActReg : public CActReg {};
 // (g_frontCandyActReg @0x646060 was the mis-attributed CEyeCandyAni registry - it
-// re-homed to src/Gruntz/CEyeCandyAni.cpp as g_eyeCandyActReg; 0x646060's DATA symbol
+// re-homed to src/Gruntz/EyeCandyAni.cpp as g_eyeCandyActReg; 0x646060's DATA symbol
 // is pinned in src/Gruntz/LogicDispatchInit.cpp as g_logicDispatch_646060.)
 DATA(0x00245f70)
 extern CLeafActReg g_singleAnimActReg; // 0x645f70
@@ -434,7 +434,7 @@ extern CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
 
 // Each leaf's handler entry: its first dword receives the per-frame handler PMF
 // (AdvanceAnim, a 4-byte code ptr on the single-inheritance class). (CFrontCandyAni's
-// entry re-homed to src/Gruntz/CEyeCandyAni.cpp with its RegisterActs.)
+// entry re-homed to src/Gruntz/EyeCandyAni.cpp with its RegisterActs.)
 typedef i32 (CSingleAnimation::*SingleAnimHandler)();
 SIZE_UNKNOWN(CSingleAnimActEntry);
 struct CSingleAnimActEntry {
@@ -523,7 +523,7 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-#include <Gruntz/CActName.h> // CActName (shared)
+#include <Gruntz/ActName.h> // CActName (shared)
 
 // The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
 // rebuild). Folded inline by RegisterActs once, in the new-id branch.
@@ -1005,7 +1005,7 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
 
 // --- CFrontCandyAni::RegisterActs (0x0acd10) + AdvanceAnim (0x0acf10) re-homed ---
 // These were a mis-attribution of CEyeCandyAni's acts (registry 0x646060) and now
-// live in src/Gruntz/CEyeCandyAni.cpp, killing the ?RegisterActs@CFrontCandyAni
+// live in src/Gruntz/EyeCandyAni.cpp, killing the ?RegisterActs@CFrontCandyAni
 // dup-RVA (they emit as ?RegisterActs@CEyeCandyAni / ?AdvanceAnim@CEyeCandyAni).
 
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---

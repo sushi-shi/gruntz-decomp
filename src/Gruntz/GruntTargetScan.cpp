@@ -25,7 +25,7 @@
 
 #include <Win32.h> // RECT / POINT / PtInRect
 #include <rva.h>
-#include <Gruntz/CScanGrid.h>
+#include <Gruntz/ScanGrid.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))

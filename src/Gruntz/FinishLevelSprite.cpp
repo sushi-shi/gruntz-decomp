@@ -7,9 +7,9 @@
 // bytes are load-bearing.
 #include <rva.h>
 
-#include <Gruntz/CStatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
-#include <Gruntz/Grunt.h>               // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
-#include <Gruntz/SoundCueMgr.h>         // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/StatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
+#include <Gruntz/Grunt.h>              // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
+#include <Gruntz/SoundCueMgr.h>        // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Ints.h>
 
 DATA(0x00645588)
@@ -26,7 +26,7 @@ extern "C" {
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
 // modeled in <Gruntz/SoundCueMgr.h>). CueObj / CCueHashTable / CStatusBarHolder
 // (the cue-holder shape: name->cue hash @+0x10, live-surface gate @+0x30) are the
-// shared shape in <Gruntz/CStatusBarCueHolder.h>.
+// shared shape in <Gruntz/StatusBarCueHolder.h>.
 
 SIZE_UNKNOWN(FinishLevelMgr);
 struct FinishLevelMgr {

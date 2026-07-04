@@ -1,6 +1,6 @@
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/CString.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/String.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
 #include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
@@ -26,7 +26,7 @@ extern "C" void IconClassInitA(); // 0x40288d
 extern "C" void IconClassInitB(); // 0x402bad
 
 // CSpriteFactoryHolder (the singleton's +0x30 slot, also this icon class's +0x22c
-// member) is the canonical <Gruntz/CGameRegistry.h> type (its m_8 == m_factory).
+// member) is the canonical <Gruntz/GameRegistry.h> type (its m_8 == m_factory).
 
 // The game-manager singleton (g_gameReg, *0x64556c). Different loaders read a
 // handful of its slots (viewport +0x8c/+0x90, a level-tracker +0x2c, the

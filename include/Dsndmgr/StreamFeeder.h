@@ -16,7 +16,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/WaveFormatX.h> // WAVEFORMATEX-shaped PCM header (FeederStart)
-#include <Gruntz/CParseSource.h> // the positioned byte-reader the feeder pulls from (m_source)
+#include <Gruntz/ParseSource.h>  // the positioned byte-reader the feeder pulls from (m_source)
 
 // The feeder's owner (m_owner): the SoundDevice (base of SoundStream) that creates
 // the streaming DirectSound buffer (CreateBuffer 0x1366f0) and reaps it

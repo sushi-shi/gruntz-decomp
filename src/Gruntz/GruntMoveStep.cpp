@@ -15,7 +15,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 // --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
 struct CGruntSub10 { // grunt->m_10

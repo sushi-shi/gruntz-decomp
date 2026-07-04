@@ -5,7 +5,7 @@
 // of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local

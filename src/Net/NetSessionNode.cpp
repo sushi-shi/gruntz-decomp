@@ -23,8 +23,8 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing.
 #include <Ints.h>
-#include <Mfc.h>           // /GX EH-frame helpers
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
+#include <Mfc.h>          // /GX EH-frame helpers
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
 #include <rva.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)

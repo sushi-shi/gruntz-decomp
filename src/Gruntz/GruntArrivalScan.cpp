@@ -17,12 +17,12 @@
 
 #include <Win32.h> // RECT + IntersectRect / PtInRect
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CStepList2.h>
-#include <Gruntz/CScanRectInit.h>
-#include <Gruntz/CScanGrid.h>
-#include <Gruntz/CTypeColl.h>
-#include <Gruntz/CStepList.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/StepList2.h>
+#include <Gruntz/ScanRectInit.h>
+#include <Gruntz/ScanGrid.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/StepList.h>
 
 #pragma intrinsic(strcmp)
 
@@ -64,7 +64,7 @@ extern CStepList2 g_dropList; // ?g_dropList@@3UCStepList2@@A (bound in GruntUpd
 
 // The board grid (g_gameReg->m_tileGrid, CScanGrid-shape) and its 0x1c-B CScanCell,
 // plus the shared CScanCoord/CScanNode324 (CGrunt+0x324) and CScanListNode
-// (CGrunt+0x320) path-node types, are the shared def in <Gruntz/CScanGrid.h>.
+// (CGrunt+0x320) path-node types, are the shared def in <Gruntz/ScanGrid.h>.
 
 // The +0x60 on-screen cue receiver (CGruntCueSink, forward-declared by
 // CGameRegistry.h): its 6-arg grunt entrance cue is at 0x4039f4 (__thiscall).

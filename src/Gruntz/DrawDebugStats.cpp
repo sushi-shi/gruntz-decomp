@@ -24,7 +24,7 @@
 
 #include <Mfc.h>     // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8)
 #include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcat/strlen intrinsics (/O2)
 

@@ -6,7 +6,7 @@
 // g_mgrSettings->m_cueSink. Field names are placeholders (offsets are load-bearing);
 // engine callees + g_mgrSettings are external (reloc-masked).
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
+#include <Gruntz/GameRegistry.h>
 #include <Mfc.h>
 
 class Obj0f7d90;

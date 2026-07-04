@@ -20,8 +20,8 @@
 #include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
 #include <Globals.h>
-#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
-#include <Gruntz/CTypeColl.h>  // the shared type-name collection
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
+#include <Gruntz/TypeColl.h>  // the shared type-name collection
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CStepCoord {

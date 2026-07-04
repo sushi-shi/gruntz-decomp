@@ -15,19 +15,19 @@
 // CSprite (frame-data) + CSpriteHashTable come from <Gruntz/Sprite.h>; the
 // resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
-#include <Gruntz/CGameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Gruntz/CViewport.h>     // shared world->screen transform
+#include <Gruntz/Viewport.h>      // shared world->screen transform
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 
 // CViewport (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
-// <Gruntz/CViewport.h> class: m_worldWidth (+0x30) clamps the bar position;
+// <Gruntz/Viewport.h> class: m_worldWidth (+0x30) clamps the bar position;
 // WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
 // (WwdFile::WwdFile_00a000).
 
 // The level/view object (g_gameReg->m_world->m_24) is the canonical CGameViewport
-// (<Gruntz/CGameRegistry.h>): +0x10 the on-screen bar RECT, +0x5c the viewport.
+// (<Gruntz/GameRegistry.h>): +0x10 the on-screen bar RECT, +0x5c the viewport.
 // CDrawTarget + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);

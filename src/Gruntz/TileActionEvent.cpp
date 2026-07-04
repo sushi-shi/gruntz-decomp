@@ -9,8 +9,8 @@
 //   (0x113f60). The big Process (0x112ee0) is a complete logical reconstruction
 //   parked at the two-jump-table wall (@early-stop) for the final sweep.
 #include <Win32.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h> // shared world tile-grid geometry
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h> // shared world tile-grid geometry
 
 #include <Gruntz/TileActionEvent.h>
 
@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------------
 
 // The action-occupancy tile grid reached as g->m_30->m_24->m_5c is the shared
-// CViewport (<Gruntz/CViewport.h>): cell = m_cells[m_rowBase[y] + x].
+// CViewport (<Gruntz/Viewport.h>): cell = m_cells[m_rowBase[y] + x].
 struct WwdGrViewport {
     char m_pad0[0x5c];
     CViewport* m_5c; // +0x5c

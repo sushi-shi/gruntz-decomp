@@ -6,8 +6,8 @@
 // token reports the 0x8009/0x451 diagnostic and returns 0. Every callee + the global
 // are reloc-masked.
 #include <Ints.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h> // shared world-plane grid (the registry plane)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h> // shared world-plane grid (the registry plane)
 #include <rva.h>
 
 // The registry plane table (g_mgrSettings->m_world->m_24->m_5c) is the shared

@@ -3,7 +3,7 @@
 // file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
 // engine singletons. All callees/globals are external (reloc-masked).
 #include <Ints.h>
-#include <Gruntz/CMulti.h> // the g_64bd5c singleton is a CMulti (xref-proven)
+#include <Gruntz/Multi.h> // the g_64bd5c singleton is a CMulti (xref-proven)
 #include <rva.h>
 #include <string.h>
 

@@ -10,11 +10,11 @@
 // retail engine vtables. Field names are placeholders; only offsets + code bytes
 // are load-bearing.
 #include <Ints.h>
-#include <Wap32/CObject.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
 #include <rva.h>
 
 // The wap-object teardown grand-base is Wap::CObject (vtable 0x5e8cb4, shared
-// ??_7Wap@@CObject; Wap32/CObject.h). Its empty inline dtor re-stamps only, folded
+// ??_7Wap@@CObject; Wap32/Object.h). Its empty inline dtor re-stamps only, folded
 // LAST (sinking the base vptr store to the function tail, preceded by call-free
 // field writes) - was the manual `m_vptr = &g_wapObjectDtorVtbl` store.
 

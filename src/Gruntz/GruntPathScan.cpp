@@ -11,8 +11,8 @@
 
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
-#include <Gruntz/CScanRectInit.h>
-#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
+#include <Gruntz/ScanRectInit.h>
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 extern "C" char* g_mgrSettings; // _g_mgrSettings @0x64556c (plane at +0x70)
 
@@ -22,7 +22,7 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// NOT folded onto <Gruntz/CScanGrid.h> on purpose: this TU views two grid members
+// NOT folded onto <Gruntz/ScanGrid.h> on purpose: this TU views two grid members
 // at a DIFFERENT access shape than the arrival/tile-scan TUs (offset-conflation ->
 // split, don't union):
 //   * the list node's +0x08 is dereferenced here as a coord POINTER (CScanNode.m_8);

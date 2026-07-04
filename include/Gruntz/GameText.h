@@ -19,7 +19,7 @@
 // reloc-masked in objdiff.
 // ---------------------------------------------------------------------------
 #include <rva.h>
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // ---------------------------------------------------------------------------
 // CContainerErr - the Monolith container-library exception object (the class

@@ -4,7 +4,7 @@
 // CImage.h - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, the ONLY
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
-// of CDDrawSurfacePair (include/DDrawMgr/CDDrawSurfacePair.h): both derive from the
+// of CDDrawSurfacePair (include/DDrawMgr/DDrawSurfacePair.h): both derive from the
 // same polymorphic Wap::CObject base (grand-base dtor vtable @0x5e8cb4) and share
 // the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
@@ -31,7 +31,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/CWapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
+#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
 
 class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
                  // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
@@ -44,7 +44,7 @@ class CBlitInfo; // the sprite blit/draw request (esi); defined in CImageSpriteB
 class CImageParent; // +0x0c parent (CDDrawPtrCollections); defined below
 
 // The held +0x2c surface IS the DirectDraw surface wrapper CDDSurface
-// (<DDrawMgr/CDDSurface.h>, the DIRSURF.CPP 0xc0 surface; same physical struct the
+// (<DDrawMgr/DDSurface.h>, the DIRSURF.CPP 0xc0 surface; same physical struct the
 // Image.cpp CFileImage view models): LoadDispatch reads its geometry (m_height +0x18
 // / m_width +0x1c) and the +0xbc keyed flag; Reload (slot 13) probes the held
 // IDirectDrawSurface at +0x08 (IsLost @0x60 / Restore @0x6c), Fill (0x13e760) and Blt
@@ -66,7 +66,7 @@ public:
     CDDSurface* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
 };
 
-// The owned +0x30 object is a CDDrawShadeBlit (<DDrawMgr/CDDrawShadeBlit.h>) - the
+// The owned +0x30 object is a CDDrawShadeBlit (<DDrawMgr/DDrawShadeBlit.h>) - the
 // 0x3c-byte shaded sprite: a decoded-pixel/RLE buffer (+0x0c) and a 256-entry palette
 // (+0x20), plus the blit-descriptor metadata. BuildSlot13 news it and decodes a frame
 // into it (Build); the sprite blitters draw it (Blit). The former CImageOwned view was
@@ -208,7 +208,7 @@ public:
     // sprite rect (with optional X/Y flip in the anchor math + an optional m_3c
     // coordinate transform), clip it against either the parent clip RECT or the
     // worker clip box, then blit via CDDSurface::BltEx (surface variants) or
-    // CDDrawShadeBlit::Blit (shaded variants). See src/Image/CImageSpriteBlit.cpp.
+    // CDDrawShadeBlit::Blit (shaded variants). See src/Image/ImageSpriteBlit.cpp.
     void BlitNorm(CBlitInfo* info, CImage* dst);        // 0x1538c0  no flip, surface
     void BlitFlipV(CBlitInfo* info, CImage* dst);       // 0x153b20  Y flip, surface
     void BlitFlipH(CBlitInfo* info, CImage* dst);       // 0x153d90  X flip, surface

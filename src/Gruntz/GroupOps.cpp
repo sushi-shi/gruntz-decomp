@@ -13,8 +13,8 @@
 // leaves (map lookups, the centre helper, the diagnostics sink) are external /
 // reloc-masked.
 #include <rva.h>
-#include <Gruntz/CGameRegistry.h>
-#include <Gruntz/CViewport.h> // shared world tile-grid geometry (dims here)
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
 
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
@@ -24,7 +24,7 @@ struct CCenterTarget {
     i32 Center(i32 x, i32 y); // 0x2e28
 };
 // The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
-// CViewport (<Gruntz/CViewport.h>); only its m_worldWidth/m_worldHeight are read here.
+// CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
 struct CMapHolderB {
     char m_pad00[0x5c];
     CViewport* m_5c; // +0x5c

@@ -5,7 +5,7 @@
 // ".." token, or opens `name` as a file, slurps it whole into the owned m_loadBuffer
 // (operator new), and hands it to the one-time decode setup (slot 5, DecodeBuf). The
 // destructible stack CFile forces the /GX EH frame.
-#include <Dsndmgr/CGruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
+#include <Dsndmgr/GruntzSoundZ.h> // the real CGruntzSoundInnerZ (+ MFC CFile via <Mfc.h>)
 #include <rva.h>
 
 // (Global scalar operator new - the NAFXCW allocator at 0x1b9b46 - comes from the
