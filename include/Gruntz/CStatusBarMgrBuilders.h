@@ -48,16 +48,16 @@ public:
         m_28 = 0;
     }
     virtual ~CSbConfigItem(); // +0x00 (scalar deleting dtor)
-    virtual void v04();       // +0x04
-    virtual void v08();       // +0x08
-    virtual void v0c();       // +0x0c
-    virtual void v10();       // +0x10
-    virtual void v14();       // +0x14
-    virtual void v18();       // +0x18
-    virtual void v1c();       // +0x1c
-    virtual void v20();       // +0x20
-    virtual void v24();       // +0x24
-    virtual void v28();       // +0x28
+    virtual void s04();       // +0x04
+    virtual void s08();       // +0x08
+    virtual void s0c();       // +0x0c
+    virtual void s10();       // +0x10
+    virtual void s14();       // +0x14
+    virtual void s18();       // +0x18
+    virtual void s1c();       // +0x1c
+    virtual void s20();       // +0x20
+    virtual void s24();       // +0x24
+    virtual void s28();       // +0x28
     virtual i32 Configure(
         CStatusBarMgr* mgr,
         i32 a,
@@ -79,8 +79,8 @@ public:
         i32 e,
         i32 f
     );                                                        // +0x34
-    virtual void v34_pad();                                   // +0x34 (filler)
-    virtual void v38(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38
+    virtual void s34_pad();                                   // +0x34 (filler)
+    virtual void s38(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38
 
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.

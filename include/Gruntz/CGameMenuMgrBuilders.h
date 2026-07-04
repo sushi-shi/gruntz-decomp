@@ -35,16 +35,16 @@ public:
     // ctors. See docs/patterns/gx-frame-outofline-ctor.md.
     CSbMenuItem();
     virtual ~CSbMenuItem(); // +0x00
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
+    virtual void s28();
     virtual i32 Configure(
         CGameMenuMgr* mgr,
         i32 code,

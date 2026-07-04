@@ -109,10 +109,10 @@ public:
 
     virtual ~CPoolItemBase() {
         FreeSurfaces();
-    }                      // slot 0  0x141350 (??_G 0x141330); INLINE so each
-                           // derived dtor inlines the teardown (retail has no
-                           // out-of-line base dtor - it is CFileImage::~ @0x141350)
-    virtual i32 Refresh(); // slot 1  0x13e140
+    } // slot 0  0x141350 (??_G 0x141330); INLINE so each
+    // derived dtor inlines the teardown (retail has no
+    // out-of-line base dtor - it is CFileImage::~ @0x141350)
+    virtual i32 Refresh();                             // slot 1  0x13e140
     virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
     virtual i32 BlitSurf(void*, i32, i32, i32, i32);   // slot 3  0x13e0d0
     virtual void FreeSurfaces();                       // slot 4  0x13e4d0

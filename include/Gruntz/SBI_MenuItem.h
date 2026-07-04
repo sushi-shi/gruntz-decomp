@@ -82,16 +82,16 @@ SIZE_UNKNOWN(CMiTabHost);
 // mov eax,[this]; mov ecx,this; call [eax+0x28] __thiscall dispatch.
 class CMiSelf {
 public:
-    virtual void v0();
-    virtual void v4();
-    virtual void v8();
-    virtual void vc();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
     virtual void Refresh(); // +0x28 (slot 10)
 };
 SIZE_UNKNOWN(CMiSelf);
