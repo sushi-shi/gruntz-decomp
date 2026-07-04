@@ -45,6 +45,7 @@
 // the former pointer-only CFileImageVtblView is retired. CDirectDrawMgr is included
 // only for CDirectDrawMgr::GetErrorString (the Fill error path).
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawPtrCollections.h> // the palette-context the decoders read (m_palBpp/m_palette/m_hasPalette)
 #include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock/Blt/Release); Image.h above supplies windows.h
 #include <Globals.h>
 
@@ -646,7 +647,7 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
 // the colour-key arg (m_78), record width/height into the desc, set dwSize/
 // dwFlags, and - when a4 names a non-zero source bpp that differs from the
-// palette context's bpp (surf->m_palBitCount) - flag a colour-key blit (dwFlags|0x1000,
+// palette context's bpp (surf->m_palBpp, the display manager passed in) - flag a colour-key blit (dwFlags|0x1000,
 // ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
 // own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
@@ -660,7 +661,7 @@ i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
     this->m_height = height;
     *(i32*)(this->m_desc) = 0x6c;  // dwSize
     *(i32*)(this->m_desc + 4) = 7; // dwFlags
-    if (a4 != 0 && a4 != ((CFileImage*)surf)->m_palBitCount) {
+    if (a4 != 0 && a4 != ((CDDrawPtrCollections*)surf)->m_palBpp) {
         *(i32*)(this->m_desc + 4) = 0x1007;
         *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
         this->m_64 = a4;
@@ -1262,14 +1263,15 @@ i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32
 // `buf` is a whole .BMP file (packed BITMAPFILEHEADER + BITMAPINFOHEADER). Pull
 // biWidth/biHeight/biBitCount, validate them against the destination surface's
 // geometry (m_width/m_height) and require 8 or 24 bpp. `surf` is the palette context
-// (m_palBitCount source bpp / m_palette palette / m_hasPalette have-palette). When the surface bpp
+// (the CDDrawPtrCollections display manager: m_palBpp source bpp / m_palette palette /
+// m_hasPalette have-palette). When the surface bpp
 // differs from the file's, build a palette (for 8bpp: byte-reverse the BMP's
 // in-file RGBQUADs into s_palBmp; for 24bpp reuse the surface palette) and blit
 // through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
 // data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
 RVA(0x00143fc0, 0x142)
 void* CFileImage::DecodeBmp(void* surf, void* buf, u32 size) {
-    CFileImage* pal = (CFileImage*)surf;
+    CDDrawPtrCollections* pal = (CDDrawPtrCollections*)surf;
     BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
     i32 width = ih->biWidth;
     i32 bitcount = ih->biBitCount;
@@ -1285,7 +1287,7 @@ void* CFileImage::DecodeBmp(void* surf, void* buf, u32 size) {
     }
 
     i32 remap = 0;
-    i32 palBpp = pal->m_palBitCount;
+    i32 palBpp = pal->m_palBpp;
     if (palBpp != bitcount) {
         remap = 1;
     }
@@ -1368,7 +1370,7 @@ void* CFileImage::DecodePcx(void* surf, void* buf, u32 size) {
     if (!buf) {
         return 0;
     }
-    CFileImage* pal = (CFileImage*)surf;
+    CDDrawPtrCollections* pal = (CDDrawPtrCollections*)surf;
     u8* hdr = (u8*)buf;
     i32 width = *(i16*)(hdr + 8) - *(i16*)(hdr + 4) + 1;
     i32 height = *(i16*)(hdr + 0xa) - *(i16*)(hdr + 6) + 1;
@@ -1391,7 +1393,7 @@ void* CFileImage::DecodePcx(void* surf, void* buf, u32 size) {
     }
 
     i32 remap = 0;
-    i32 palBpp = pal->m_palBitCount;
+    i32 palBpp = pal->m_palBpp;
     if (palBpp != bitcount) {
         remap = 1;
     }
@@ -1497,7 +1499,8 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // `buf` is a .PID payload (libwap32 layout: flags @ +4, width @ +8, height @
 // +0xc, run data @ +0x20). Width must be 4-aligned and the geometry must match
 // the destination surface (this->m_width / m_height). `surf` is the palette context
-// (m_palBitCount bpp / m_palette palette / m_hasPalette have-palette). When flags&0x80
+// (the CDDrawPtrCollections display manager: m_palBpp bpp / m_palette palette /
+// m_hasPalette have-palette). When flags&0x80
 // (EMBEDDED_PALETTE) the trailing 768-byte VGA palette is expanded into
 // s_palPidData; otherwise the surface palette is used. The 8bpp run is expanded
 // in place (DecodeRun8) or, when the surface bpp differs, into a scratch buffer
@@ -1505,7 +1508,7 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
 RVA(0x00145b10, 0x1b5)
 void* CFileImage::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
-    CFileImage* pal = (CFileImage*)surf;
+    CDDrawPtrCollections* pal = (CDDrawPtrCollections*)surf;
     u8* hdr = (u8*)buf;
     i32 flags = *(i32*)(hdr + 4);
     i32 width = *(i32*)(hdr + 8);
@@ -1527,7 +1530,7 @@ void* CFileImage::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
         palette = pal->m_palette;
     }
     i32 remap = 0;
-    i32 palBpp = pal->m_palBitCount;
+    i32 palBpp = pal->m_palBpp;
     if (palBpp != 8) {
         remap = 1;
     }
@@ -1628,7 +1631,7 @@ void* CFileImage::LoadPid(char* name, char* path, void* a3) {
 RVA(0x001457a0, 0x22c)
 i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
     u8* hdr = (u8*)buf; // the source PID/PCX header
-    CFileImage* dst = (CFileImage*)surf;
+    CDDrawPtrCollections* dst = (CDDrawPtrCollections*)surf;
     i32 flags = *(i32*)(hdr + 4);
     i32 w = *(i32*)(hdr + 8);
     i32 h = *(i32*)(hdr + 0xc);
@@ -1648,7 +1651,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
         palette = dst->m_palette;
     }
     i32 remap = 0;
-    i32 palBpp = dst->m_palBitCount;
+    i32 palBpp = dst->m_palBpp;
     if (palBpp != 8) {
         remap = 1;
     }

@@ -77,11 +77,18 @@ public:
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
     char _pad4C8[0x534 - 0x4c8];
     i32 m_534; // +0x534  - zeroed in ctor / Clear
-    i32 m_538; // +0x538  - zeroed in ctor
-    char _pad53C[0x93c - 0x53c];
-    i32 m_93c; // +0x93c  - zeroed in ctor
-    i32 m_940; // +0x940  - zeroed in ctor
-    i32 m_944; // +0x944  - zeroed in ctor
+    // Display palette context (+0x538..+0x944). This IS the "palette source" the
+    // Image-module BMP/PCX/PID decoders read through as an argument: m_palBpp is the
+    // display bit depth (latched from a pool item's m_a8 by the Create* factories),
+    // m_palette the 256-entry display palette (filled by SetPalette/Make950), m_hasPalette
+    // the have-palette flag. The former conflated CFileImage palette fields (m_palBitCount/
+    // m_palette/m_hasPalette) were a mis-modelling of THESE fields - the decoders never
+    // touch a palette on their 0xc0 surface `this`, only on this manager passed in.
+    i32 m_palBpp;         // +0x538  display bit depth (== source bpp for the decoders)
+    i32 m_palette[0x100]; // +0x53c  256-entry display palette (RGBQ)
+    i32 m_hasPalette;     // +0x93c  have-palette flag
+    i32 m_940;            // +0x940  - zeroed in ctor (palette tag)
+    i32 m_944;            // +0x944  - zeroed in ctor
 }; // 0x948
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWPTRCOLLECTIONS_H
