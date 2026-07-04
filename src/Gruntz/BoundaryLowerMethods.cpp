@@ -28,7 +28,7 @@ i32 C213a0::Get() {
 // ===========================================================================
 extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
 extern void* g_projActAllocResult; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
-extern "C" i32 ProjActAlloc();     // 0x16d990
+extern void* GetRetAddr();     // 0x16d990
 // @early-stop
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
 // this->edi). Full fast-range/Find/grow logic + offsets byte-faithful (same shape as
@@ -43,7 +43,7 @@ void* CTypeColl464::Resolve(i32 key) {
         return m_buf + (key - m_lo) * m_stride;
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     m_4->Insert(this, item, 0xc);
     return (void*)m_buf2;
 }

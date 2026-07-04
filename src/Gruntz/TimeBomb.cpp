@@ -19,7 +19,7 @@
 // at 0x64c780. A coordinate maps to an Entry* either directly (when within the
 // fast [g_tbombLo, g_tbombHi] range) via g_tbombBase + (coord-lo)*stride, or by a
 // slow Find in the collection (0x16da80, __thiscall ret 8), which on miss rebuilds
-// (ActAlloc 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and yields
+// (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and yields
 // g_tbombCur. The entry's first dword is a fn-ptr; a nonzero entry's handler is
 // called __thiscall on `this`. All globals are unnamed BSS (DATA-pinned so the
 // loads reloc-mask); the collection methods are external/no-body (the SAME shared
@@ -31,7 +31,7 @@ struct CTBombColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
 SIZE_UNKNOWN(CTBombColl2);
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
 extern CTBombColl g_tbombColl;
@@ -60,7 +60,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_tbombColl2->Insert(&g_tbombColl, item, 0xc);
     return g_tbombCur;
 }
@@ -75,7 +75,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 // @0x0e1e60). g_buteTree (0x6bf620, named by mangled symbol) doubles as the
 // name->id map; g_nextActId (0x61aea8) is the running id counter; s_actKeyA
 // (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
-// Find/ActAlloc/Insert + g_actCache/g_actAllocResult collection methods.
+// Find/GetRetAddr/Insert + g_actCache/g_actAllocResult collection methods.
 // ---------------------------------------------------------------------------
 DATA(0x0021aea8)
 extern i32 g_nextActId;
@@ -109,7 +109,7 @@ extern CButeTree g_buteTree;
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
+// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
@@ -119,7 +119,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

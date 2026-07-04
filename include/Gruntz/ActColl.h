@@ -5,9 +5,12 @@
 // them WITHOUT pulling the bute-tree / MFC chain into the boundary-thunk pool.
 //
 // Find (0x16da80) is the slow coordinate lookup; Insert (0x16d850) rebuilds a slot;
-// ActAlloc (0x16d990) hands out the alloc scratch. All external/no-body so the
-// calls reloc-mask; g_actCache (0x6bf464) / g_actAllocResult (0x6bf428) are the
-// shared alloc-scratch globals every registry reuses.
+// GetRetAddr (0x16d990) is NOT an allocator - it is `pop eax;push eax;ret`, returning
+// the caller's call-site return address, which the resolve stamps into g_actAllocResult
+// (0x6bf428) as an error/diagnostic breadcrumb right before the Insert (the misnomer
+// "ActAlloc"/"ProjActAlloc" is corrected to GetRetAddr; see the report). All
+// external/no-body so the calls reloc-mask; g_actCache (0x6bf464) is the real shared
+// scratch buffer Insert consumes.
 #ifndef GRUNTZ_GRUNTZ_ACTCOLL_H
 #define GRUNTZ_GRUNTZ_ACTCOLL_H
 
@@ -24,7 +27,7 @@ struct CActColl {
 struct CActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x002bf464)
 extern void* g_actCache;

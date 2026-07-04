@@ -41,7 +41,7 @@ DATA(0x002bf464)
 extern void* g_projActCache;
 DATA(0x002bf428)
 extern void* g_projActAllocResult;
-extern "C" i32 ProjActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
@@ -71,7 +71,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_typeColl2->Insert(&g_typeColl, item, 0xc);
     return g_typeCur;
 }
@@ -85,7 +85,7 @@ static inline R4Entry* R4Lookup(i32 coord) {
         return (R4Entry*)(g_actReg4Base + (coord - g_actReg4Lo) * g_actReg4Stride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_actReg4Coll2->Insert(&g_actReg4, item, 0xc);
     return g_actReg4Cur;
 }

@@ -54,7 +54,7 @@ struct CVoiceSample {
 // an Entry* either directly (within the fast [g_vactLo,g_vactHi] range) via
 // g_vactBase + (coord-g_vactLo)*g_vactStride, or by a slow lookup in g_vactColl
 // (0x16da80, __thiscall ret 8) which on miss rebuilds the table
-// (ActAlloc 0x16d990 -> g_actCache, g_vactColl2 insert 0x16d850 __thiscall ret
+// (GetRetAddr 0x16d990 -> g_actCache, g_vactColl2 insert 0x16d850 __thiscall ret
 // 0xc) and yields g_vactCur. The entry's first dword is a fn-ptr; a nonzero
 // entry's handler is called __thiscall on `this`. All registry globals are
 // unnamed BSS (DATA-pinned so the loads reloc-mask).
@@ -68,7 +68,7 @@ SIZE_UNKNOWN(CVActColl2);
 struct CVActColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x002514e0)
 extern i32 g_vactLo;
@@ -146,7 +146,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_vactColl2->Insert(&g_vactColl, item, 0xc);
     return g_vactCur;
 }

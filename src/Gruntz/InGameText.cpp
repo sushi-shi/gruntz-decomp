@@ -21,7 +21,7 @@
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
 // bounds miss (the same set ZVec.cpp models).
-extern void* zErr_CaptureRetB(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 // The shared key store + scratch name-vec the registration path populates. The
 // bute tree (g_buteTree.Find/Insert) keys each registered name to a running
@@ -59,7 +59,7 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
         i32 sentinel = g_zvecErrSentinel;
-        g_zvecErrToken = zErr_CaptureRetB();
+        g_zvecErrToken = GetRetAddr();
         v->m_err->Error(v, sentinel, 0xc);
         r = v->m_spare;
     }
@@ -86,7 +86,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
     i32 sentinel = g_zvecErrSentinel;
-    g_zvecErrToken = zErr_CaptureRetB();
+    g_zvecErrToken = GetRetAddr();
     v->m_err->Error(v, sentinel, 0xc);
     return v->m_spare;
 }

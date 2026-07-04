@@ -6,12 +6,12 @@
 // DATA-pinned global symbols are unchanged) but shares this one definition, so the
 // name has a single layout tree-wide.
 //
-//   ResolveEntry  the inline fast-range + slow Find/ActAlloc/Insert rebuild lookup
+//   ResolveEntry  the inline fast-range + slow Find/GetRetAddr/Insert rebuild lookup
 //   RegisterRange (0x3742)   seed the fast [lo,hi] id range
 //   Lookup        (0x3864)   the outlined ResolveEntry (used at large call sites)
 //   Construct     (0x408710) build the registry over a fixed range
 //
-// Reuses <Gruntz/ActColl.h> (CActColl/CActColl2/ActAlloc + alloc-scratch globals);
+// Reuses <Gruntz/ActColl.h> (CActColl/CActColl2/GetRetAddr + alloc-scratch globals);
 // deliberately does NOT pull the bute-tree / MFC chain, so the boundary-thunk and
 // teleporter/checkpoint TUs can share it without a heavy include. Only offsets +
 // code bytes are load-bearing; field names are placeholders.
@@ -20,7 +20,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/ActAlloc + g_actCache/g_actAllocResult
+#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_actAllocResult
 
 // The registry IS-A CActColl (its +0x00 collection object is the CActColl base);
 // the slow lookup is a direct base Find call, no (CActColl*)this view cast.
@@ -48,7 +48,7 @@ struct CActReg : public CActColl {
             return m_base + (id - m_lo) * m_stride;
         }
         void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
+        g_actAllocResult = GetRetAddr();
         m_coll2->Insert(this, item, 0xc);
         return m_cur;
     }

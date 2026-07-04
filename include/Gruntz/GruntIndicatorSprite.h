@@ -99,7 +99,7 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
 // Also the shared activation-name registry types/globals (CActColl / CActColl2 /
-// g_actCache / g_actAllocResult / ActAlloc / g_buteTree / g_nextActId / s_actKeyA)
+// g_actCache / g_actAllocResult / GetRetAddr / g_buteTree / g_nextActId / s_actKeyA)
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
@@ -118,7 +118,7 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 //
 // CIndicatorActReg is the shared <Gruntz/ActReg.h> CActReg archetype (the fast
 // [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow Find
-// (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) path yields m_cur).
+// (0x16da80) / GetRetAddr (0x16d990) / coll2 Insert (0x16d850) path yields m_cur).
 // It was a per-file duplicate of that layout + ResolveEntry; it keeps its own
 // placeholder name so the DATA-pinned globals below are unchanged.
 // ---------------------------------------------------------------------------

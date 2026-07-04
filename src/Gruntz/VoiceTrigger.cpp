@@ -29,7 +29,7 @@
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
 // trigger's OWN instance at 0x651500 (the SAME range/cache shape as every
 // FireActivation registry: g_vtrigColl base + the lo/hi/base/stride/cur/scratch
-// fields). The slow path Finds (0x16da80), and on miss rebuilds (ActAlloc 0x16d990
+// fields). The slow path Finds (0x16da80), and on miss rebuilds (GetRetAddr 0x16d990
 // -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
 // so the loads reloc-mask; the collection methods are external/no-body.
 // ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ struct CVTrigColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
 SIZE_UNKNOWN(CVTrigColl2);
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00251500)
 extern CVTrigColl g_vtrigColl;
@@ -67,7 +67,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_vtrigColl2->Insert(&g_vtrigColl, item, 0xc);
     return g_vtrigCur;
 }
@@ -112,7 +112,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

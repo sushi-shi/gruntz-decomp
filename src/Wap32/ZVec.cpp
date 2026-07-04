@@ -27,7 +27,7 @@ VTBL(zDArray, 0x001f04d4);           // ~zDArray-entry vtable (0x5f04d4)
 
 // Two engine return-address capture helpers that seed the error token.
 extern void* GetCallerRetAddr(); // 0x16e0f0 (mov eax,[ebp+4])
-extern void* zErr_CaptureRetB(); // 0x16d990 (pop/push/ret)
+extern void* GetRetAddr();       // 0x16d990 (pop eax;push eax;ret: the call-site return addr)
 
 // Per-element relocation applied to each freshly-grown member-pointer slot
 // (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.
@@ -66,7 +66,7 @@ i32 zDArray::IndexToPtr(i32 i) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
         i32 sentinel = g_zvecErrSentinel;
-        g_zvecErrToken = zErr_CaptureRetB();
+        g_zvecErrToken = GetRetAddr();
         m_err->Error(this, sentinel, 0xc);
         r = m_spare;
     }
@@ -104,7 +104,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
         return idx + base;
     }
     i32 sentinel = g_zvecErrSentinel;
-    g_zvecErrToken = zErr_CaptureRetB();
+    g_zvecErrToken = GetRetAddr();
     m_err->Error(this, sentinel, 0xc);
     return m_spare;
 }

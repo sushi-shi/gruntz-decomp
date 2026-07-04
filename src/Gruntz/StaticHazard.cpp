@@ -107,7 +107,7 @@ struct CHaznEntry; // an entry: first dword is the registered handler
 struct CHaznColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
 extern CHaznColl g_haznColl;
@@ -165,7 +165,7 @@ extern i32 g_nameRegScratch;
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
+// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
@@ -175,7 +175,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }
@@ -190,7 +190,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_haznColl2->Insert(&g_haznColl, item, 0xc);
     return g_haznCur;
 }

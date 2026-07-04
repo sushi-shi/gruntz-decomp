@@ -4919,7 +4919,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // ===========================================================================
 // The zvec error globals + the return-capture helper + the reporter (the same set
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
-extern void* zErr_CaptureRetB(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 struct ZErrTargetVtbl;           // the zvec error target's vtable (owned elsewhere)
 struct ZErrTarget {
     ZErrTargetVtbl* m_vptr;
@@ -4930,7 +4930,7 @@ struct ZErrTarget {
 };
 RVA(0x00034960, 0x24)
 void ZErrTarget::Report(i32 sentinel, i32 code) {
-    g_zvecErrToken = zErr_CaptureRetB();
+    g_zvecErrToken = GetRetAddr();
     m_err->Error(this, sentinel, code);
 }
 

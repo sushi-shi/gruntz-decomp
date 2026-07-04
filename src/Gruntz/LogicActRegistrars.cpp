@@ -16,7 +16,7 @@
 // @early-stop (all functions): the per-site inline-vs-out-of-line choice for the
 // name-registry/per-class slow-path rebuild is the documented non-source-steerable
 // A/B asymmetry - retail outlines handler-A's name rebuild (call 0x34960, the
-// shared ActAlloc()+Insert helper) while inlining handler-B's identical sequence;
+// shared GetRetAddr()+Insert helper) while inlining handler-B's identical sequence;
 // MSVC5 picks per call site from one inline source. Plus the register-pinning +
 // count-down induction wall CStaticHazard/CKitchenSlime/CProjectile::RegisterType
 // all carry (slot-vs-id callee-saved coloring -> free-loop count materialization).

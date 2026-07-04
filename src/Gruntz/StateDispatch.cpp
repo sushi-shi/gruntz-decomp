@@ -15,8 +15,13 @@
 // Engine operator new (reloc-masked __cdecl leaf).
 extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
 
-// The fallback the default case hands the active handler to (__cdecl, 1 arg).
-extern "C" void SdFallback(void* handler); // 0x16e4f0
+// The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
+// "fallback" - it is the shared CTypeKeyColl serializer ProjTypeXfer (0x16e4f0,
+// owned + matched in TypeKeyColl.cpp), which resolves the handler's type-registry
+// entry (ar->m_14->m_1c) and xfers it through the handler's own vtable slots. The
+// active handler (m_18) is passed as the archive-record arg.
+struct CXferArchive; // TypeKeyColl.cpp-local archive-record view
+i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
 
 // The active/created handler: a FOREIGN 0x54-byte engine object. Its ??_7 and the
 // dispatched slot bodies (0x18 init, 0x28/0x2c/0x30/0x34/0x38/0x3c) are
@@ -125,7 +130,7 @@ i32 __stdcall StateDispatch(CStateCtx* ctx, i32 a1, i32 a2) {
         case 0x3e8:
             break;
         default:
-            SdFallback(st->m_18);
+            ProjTypeXfer((CXferArchive*)st->m_18);
             break;
     }
     return 1;

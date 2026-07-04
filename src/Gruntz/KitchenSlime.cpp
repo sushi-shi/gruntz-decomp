@@ -163,7 +163,7 @@ public:
 // 0x244688). A coordinate maps to an Entry* either directly (when within the
 // fast [g_kslimeLo,g_kslimeHi] range) via g_kslimeBase + (coord-lo)*stride, or
 // by a slow Find in the collection (0x16da80, __thiscall ret 8), which on miss
-// rebuilds (ActAlloc 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret
+// rebuilds (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret
 // 0xc) and yields g_kslimeCur. The entry's first dword is a fn-ptr; a nonzero
 // entry's handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
@@ -178,7 +178,7 @@ struct CKSlimeColl {
 struct CKSlimeColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00246228)
 extern CKSlimeColl g_kslimeColl;
@@ -206,7 +206,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
         return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_kslimeColl2->Insert(&g_kslimeColl, item, 0xc);
     return g_kslimeCur;
 }
@@ -380,7 +380,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_typeColl2->Insert(&g_typeColl, item, 0xc);
     return g_typeCur;
 }

@@ -59,7 +59,7 @@ extern LogicFnTable g_iconStateTable; // 0x645928
 
 // --- the shared registration infrastructure (mirror of CInGameText's) --------
 // The zvec error globals the inlined accessors touch on a bounds miss.
-extern void* zErr_CaptureRetB(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0021aea8)
 extern i32 g_iconRegCounter; // 0x61aea8  (running registration index)
@@ -94,7 +94,7 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
         i32 sentinel = g_zvecErrSentinel;
-        g_zvecErrToken = zErr_CaptureRetB();
+        g_zvecErrToken = GetRetAddr();
         v->m_err->Error(v, sentinel, 0xc);
         r = v->m_spare;
     }
@@ -120,7 +120,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
     i32 sentinel = g_zvecErrSentinel;
-    g_zvecErrToken = zErr_CaptureRetB();
+    g_zvecErrToken = GetRetAddr();
     v->m_err->Error(v, sentinel, 0xc);
     return v->m_spare;
 }

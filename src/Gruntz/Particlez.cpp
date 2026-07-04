@@ -18,7 +18,7 @@
 // (0x0e1830), but CParticlez's OWN registry instance at 0x644870. A coordinate
 // maps to an Entry* either directly (when within the fast [g_partLo, g_partHi]
 // range) via g_partBase + (coord-lo)*stride, or by a slow Find in the collection
-// (0x16da80, __thiscall ret 8), which on miss rebuilds (ActAlloc 0x16d990 ->
+// (0x16da80, __thiscall ret 8), which on miss rebuilds (GetRetAddr 0x16d990 ->
 // g_actCache, Insert 0x16d850 __thiscall ret 0xc) and yields g_partCur. The
 // entry's first dword is a fn-ptr; a nonzero entry's handler is called
 // __thiscall on `this`. All globals are unnamed BSS (DATA-pinned so the loads
@@ -34,7 +34,7 @@ struct CPartColl {
 struct CPartColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00244870)
 extern CPartColl g_partColl;
@@ -64,7 +64,7 @@ struct CPartEntryI32 {
 // (@0x6bf650; same range/cache shape as g_partColl). g_buteTree (0x6bf620)
 // doubles as the name->id map; g_nextActId (0x61aea8) is the running id counter;
 // s_actKeyA (0x60a454) is the "A" key. The id->name-slot resolve reuses the
-// shared Find/ActAlloc/Insert + g_actCache/g_actAllocResult collection methods.
+// shared Find/GetRetAddr/Insert + g_actCache/g_actAllocResult collection methods.
 // ---------------------------------------------------------------------------
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
@@ -95,7 +95,7 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
+// The id->name-slot resolve (the fast range path + the slow Find/GetRetAddr/Insert
 // rebuild). Folded inline by RegisterActs once, in the new-id branch.
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
@@ -106,7 +106,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }
@@ -129,7 +129,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_partColl2->Insert(&g_partColl, item, 0xc);
     return g_partCur;
 }

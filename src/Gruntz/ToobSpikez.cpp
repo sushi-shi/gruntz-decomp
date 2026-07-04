@@ -146,7 +146,7 @@ i32 ToobSpikezLogic(CGameObjLogic* obj) {
 // coordinate maps to an Entry* either directly (when within the fast
 // [g_toobLo, g_toobHi] range) via g_toobBase + (coord-lo)*stride, or by a slow
 // Find in the collection (0x16da80, __thiscall ret 8), which on miss rebuilds
-// (ActAlloc 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and
+// (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and
 // yields g_toobCur. The entry's first dword is a fn-ptr; a nonzero entry's
 // handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
@@ -162,7 +162,7 @@ struct CToobColl {
 struct CToobColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
-extern "C" i32 ActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e978)
 extern CToobColl g_toobColl;
@@ -191,7 +191,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_toobColl2->Insert(&g_toobColl, item, 0xc);
     return g_toobCur;
 }
@@ -239,7 +239,7 @@ extern CButeTree g_buteTree;
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
 
-// The id->name-slot resolve (fast range path + slow Find/ActAlloc/Insert rebuild).
+// The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
@@ -249,7 +249,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = (void*)ActAlloc();
+    g_actAllocResult = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

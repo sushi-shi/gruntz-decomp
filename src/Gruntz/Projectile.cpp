@@ -489,7 +489,7 @@ extern CButeTree g_buteTree;
 
 // The activation-collection methods (shared with the per-class registries):
 //   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
-//   ActAlloc 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
+//   GetRetAddr 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
 SIZE_UNKNOWN(CProjColl);
 struct CProjColl {
     i32 Find(i32 coord, i32 z);         // 0x16da80
@@ -499,7 +499,7 @@ SIZE_UNKNOWN(CProjColl2);
 struct CProjColl2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
-extern "C" i32 ProjActAlloc(); // 0x16d990
+extern void* GetRetAddr(); // 0x16d990
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (shared alloc cache)
 DATA(0x002bf428)
@@ -555,7 +555,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_projActColl2->Insert(&g_projActColl, item, 0xc);
     return g_projActCur;
 }
@@ -570,7 +570,7 @@ static inline CProjTypeEntry* ProjTypeLookup(i32 key) {
         return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_projTypeColl2->Insert(&g_projTypeColl, item, 0xc);
     return g_projTypeCur;
 }

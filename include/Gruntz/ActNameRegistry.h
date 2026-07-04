@@ -14,10 +14,10 @@
 //
 // The id->slot resolve (ActNameLookup) and the id->entry resolve (ClassRegLookup)
 // are BOTH the same activation-registry lookup archetype as VActLookup (the fast
-// [lo,hi] range path + the slow Find/ActAlloc/Insert rebuild) - here over the
+// [lo,hi] range path + the slow Find/GetRetAddr/Insert rebuild) - here over the
 // SHARED name registry @0x6bf650 and the per-class registry respectively. All
 // registry globals are DATA-pinned so the loads reloc-mask; the collection
-// methods (Find 0x16da80 / Insert 0x16d850 / ActAlloc 0x16d990) are the same
+// methods (Find 0x16da80 / Insert 0x16d850 / GetRetAddr 0x16d990) are the same
 // shared engine functions every registry calls (no body -> reloc-masked).
 #ifndef GRUNTZ_ACTNAMEREGISTRY_H
 #define GRUNTZ_ACTNAMEREGISTRY_H
@@ -25,7 +25,7 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/ActAlloc + g_actCache/g_actAllocResult
+#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_actAllocResult
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
@@ -43,7 +43,7 @@ DATA(0x0020a454)
 extern char s_actKeyA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
-// CActColl2 / ActAlloc + g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) come from
+// CActColl2 / GetRetAddr + g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) come from
 // <Gruntz/ActColl.h> - the SAME engine functions/globals every registry reuses.
 
 // ---------------------------------------------------------------------------
@@ -80,7 +80,7 @@ struct CActName {
     void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
 };
 
-// The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
+// The id->name-slot resolve (the fast range path + the slow Find/GetRetAddr/Insert
 // rebuild), then free the old name list and assign the key. Folded inline by
 // RegisterActs once, in the build-id branch.
 static inline char* ActNameLookup(i32 id) {
@@ -92,7 +92,7 @@ static inline char* ActNameLookup(i32 id) {
         slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     } else {
         void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
+        g_actAllocResult = GetRetAddr();
         g_nameReg2->Insert(&g_nameReg, item, 0xc);
         slot = g_nameRegCur;
     }

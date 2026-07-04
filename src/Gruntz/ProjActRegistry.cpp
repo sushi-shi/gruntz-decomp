@@ -39,7 +39,7 @@ DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464
 DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428
-extern "C" i32 ProjActAlloc();     // 0x16d990
+extern void* GetRetAddr();     // 0x16d990
 
 struct CProjReg2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
@@ -69,7 +69,7 @@ static inline R3Entry* R3Lookup(i32 coord) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_projRegColl2->Insert(&g_projReg, item, 0xc);
     return g_projRegCur;
 }
@@ -143,7 +143,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = (void*)ProjActAlloc();
+    g_projActAllocResult = GetRetAddr();
     g_typeColl2->Insert(&g_typeColl, item, 0xc);
     return g_typeCur;
 }

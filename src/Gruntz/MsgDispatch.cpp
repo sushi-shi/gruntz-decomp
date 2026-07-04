@@ -74,8 +74,13 @@ struct CMsg {
     CSub* m_7c; // +0x7c
 };
 
-// The shared default handler (cdecl, 1 arg).
-extern "C" void DispatchDefault(void* obj); // 0x16e4f0
+// The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
+// "dispatch default" - it is the shared CTypeKeyColl serializer ProjTypeXfer
+// (0x16e4f0, owned + matched in TypeKeyColl.cpp), which resolves the handler's
+// type-registry entry (ar->m_14->m_1c) and xfers it through the handler's own
+// vtable slots. The handler (m_18) is passed as the archive-record arg.
+struct CXferArchive; // TypeKeyColl.cpp-local archive-record view
+i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
 
 // The dispatcher body, identical across the three instantiations (the only
 // retail difference is the reloc-masked ctor + EH funclet).
@@ -110,7 +115,7 @@ extern "C" void DispatchDefault(void* obj); // 0x16e4f0
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            DispatchDefault(sub->m_18);                                                            \
+            ProjTypeXfer((CXferArchive*)sub->m_18);                                                 \
             break;                                                                                 \
     }                                                                                              \
     return 1;

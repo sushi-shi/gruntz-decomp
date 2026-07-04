@@ -29,7 +29,7 @@
 // (0x408710). TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype (was a
 // per-file duplicate of its layout + ResolveEntry); it keeps its own placeholder
 // name so the DATA-pinned global symbol is unchanged. g_buteTree, the shared name
-// registry, and the CActColl/CActColl2/ActAlloc helpers come via
+// registry, and the CActColl/CActColl2/GetRetAddr helpers come via
 // <Gruntz/ActNameRegistry.h>.
 struct TileActReg : public CActReg {};
 SIZE_UNKNOWN(TileActReg);
