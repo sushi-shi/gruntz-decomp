@@ -1,6 +1,6 @@
 // NetCmdMgr.cpp - CNetSessHost::SelectColor (0x0c4b60, __thiscall): claim the
 // color slot `idx` for player `pid`. When the live-session flag (g_64bd5c->m_isHost)
-// is set, a color already taken (CheckColorTaken==0) rejects with the chat error;
+// is set, a color already taken (ChannelSlots_Get==0) rejects with the chat error;
 // otherwise the prior owner is released and the new one flagged. Slots are the
 // session's 0x238-byte command buffers (matcher-4's CNetCmdBuf); the selection
 // field is at +0x158. All callees/globals are external (reloc-masked). Field names
@@ -24,20 +24,22 @@ SIZE_UNKNOWN(CNetSessHost); // session-host view (only +0x5c pinned); size TBD
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 
-extern i32 CheckColorTaken(i32 pid);    // 0xdb2d0 (__cdecl, external)
-extern void SetColorFlag(i32 a, i32 b); // 0xdb2b0 (__cdecl, external)
+// The shared channel/color-slot array accessors (ChannelSlots.cpp, __cdecl). The
+// multiplayer color picker reads/stamps a player's slot through them.
+i32 ChannelSlots_Get(i32 i);       // 0xdb2d0  (color-taken read)
+void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0  (color-flag stamp)
 
 RVA(0x000c4b60, 0x77)
 i32 CNetSessHost::SelectColor(i32 colorIndex, i32 playerId) {
     CColorSlot* colorSlot = &m_cmdBuffers[colorIndex].m_sel;
     if (g_64bd5c->m_isHost != 0) {
-        i32 r = CheckColorTaken(playerId);
+        i32 r = ChannelSlots_Get(playerId);
         if (r == 0) {
             g_64bd5c->ReportVersionMsg("Someone has already selected that color.", r);
             return 0;
         }
-        SetColorFlag(colorSlot->m_currentOwnerPlayerId, 1);
-        SetColorFlag(playerId, 0);
+        ChannelSlots_Set(colorSlot->m_currentOwnerPlayerId, 1);
+        ChannelSlots_Set(playerId, 0);
     }
     colorSlot->m_currentOwnerPlayerId = playerId;
     return 1;

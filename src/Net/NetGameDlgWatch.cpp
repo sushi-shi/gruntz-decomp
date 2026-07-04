@@ -14,7 +14,7 @@
 #include <rva.h>
 
 // The game-registry singleton pointer (the scoring symbol CPlay reaches too).
-extern "C" void* g_64556c; // 0x64556c
+extern "C" void* g_mgrSettings; // 0x64556c
 
 // A child dialog control (GetDlgItem result); SetWindowTextA is a NAFXCW __thiscall.
 struct WatchCtrl {
@@ -119,7 +119,7 @@ void CNetDlgWatch::Watchdog() {
     }
     if (g_watchBlinkB == 0) {
         for (i32 i = 0; i < 4; i++) {
-            WatchRegSlot* slot = &((WatchReg*)g_64556c)->m_slots[i];
+            WatchRegSlot* slot = &((WatchReg*)g_mgrSettings)->m_slots[i];
             WatchCtrl* item1;
             WatchCtrl* item2;
             switch (i) {

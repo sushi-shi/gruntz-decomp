@@ -3539,7 +3539,7 @@ struct CGameSettings {
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
 
 // The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
-extern "C" CNetMgr* g_648cf8; // 0x648cf8
+extern "C" CNetMgr* g_connectRptMgr; // 0x648cf8
 
 // The shared empty-string literal CreateLocalPlayer hands to the peer's player
 // factory (0x6293f4; DIR32 reloc-masked).
@@ -3688,7 +3688,7 @@ i32 CNetMgr::CreateLocalPlayer() {
 // /GX CString-by-value EH-frame-layout wall (7%): the instruction SEQUENCE is
 // faithful (the arg1/arg2/m_530 guards, the GetConfigNameA/B selection, the
 // BuildRezPath by-value CString copy-ctor, the multi-temp destruct bitmask, the
-// g_648cf8 Poll dispatch and both ShowModal reports), but retail reserves two
+// g_connectRptMgr Poll dispatch and both ShowModal reports), but retail reserves two
 // dedicated EH-state dwords (`sub esp,8`) and overlaps the CString temps onto the
 // now-dead arg slots, while cl folds the EH state into the arg-overlap area and
 // omits the sub - an 8-byte frame-size delta that cascades through every
@@ -3717,13 +3717,13 @@ i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
         token = g_mgrSettings->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
     }
 
-    g_648cf8->m_levelVerifyResult = 0;
-    if (g_648cf8->Poll((i32)token) == 0) {
+    g_connectRptMgr->m_levelVerifyResult = 0;
+    if (g_connectRptMgr->Poll((i32)token) == 0) {
         m_530 = 0;
         g_mgrSettings->ShowModal("Unable to verify custom level with other players");
         return 0;
     }
-    if (g_648cf8->m_levelVerifyResult == 0) {
+    if (g_connectRptMgr->m_levelVerifyResult == 0) {
         g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
         m_530 = 0;
         return 0;
