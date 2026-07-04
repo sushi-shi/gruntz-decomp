@@ -18,15 +18,16 @@
 #include <Wwd/WwdFile.h> // CPlane, WwdHeader, operator new, uncompress
 
 // The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
-// +0x20 (m_array20) is a CByteArray; +0x34 m_planes and +0x48 m_imageSets are typed
-// pointer arrays CArray<CLevelPlane*>/CArray<CImageSet*> (same {T* m_pData; int m_nSize;
-// int m_nMaxSize} layout as the retail CDWordArray, element-typed so the use sites are
-// cast-free). NOTE: neither typed form (CArray<T*> here, or CTypedPtrArray<CPtrArray>)
-// matches the retail ctor codegen exactly - the DWORD-array-of-pointers is the byte-exact
-// shape - so this costs the CGameLevel ctor/dtor a few %; accepted for cast-free source
-// (re-pin the exact container when the ctor is finalized).
-#include <Mfc.h>
-#include <afxtempl.h> // CArray<T*>
+// The ctor builds three MFC arrays at +0x20/+0x34/+0x48; the retail ctor/dtor
+// construct/destroy all three via the SAME out-of-line CByteArray ctor/dtor (COMDAT-
+// folded in the retail image). +0x20 (m_array20) is a CByteArray; +0x34 m_planes and
+// +0x48 m_imageSets are the DWORD-array-of-pointers the devs used - genuine CDWordArrays
+// storing CLevelPlane*/CImageSet* cast to DWORD (afxcoll layout {DWORD* m_pData; int
+// m_nSize; int m_nMaxSize; int m_nGrowBy}). A typed CArray<T*>/CTypedPtrArray<CPtrArray>
+// inlines its template ctor and diverges the CGameLevel ctor/dtor codegen; the plain
+// CDWordArray is the byte-exact shape, so the (CLevelPlane*)/(DWORD) casts at the use
+// sites are the devs' authentic pointer<->DWORD storage casts (they stay).
+#include <Mfc.h> // CByteArray, CDWordArray (afxcoll)
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
@@ -381,9 +382,8 @@ public:
     // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
     CByteArray m_array20;      // +0x20  (built by the ctor; EH state 0)
-    CArray<CLevelPlane*, CLevelPlane*>
-        m_planes;                               // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)
-    CArray<CImageSet*, CImageSet*> m_imageSets; // +0x48  (EH state 2)
+    CDWordArray m_planes; // +0x34  CLevelPlane* as DWORD (m_size@+0x3c == m_planeCount; EH state 1)
+    CDWordArray m_imageSets;       // +0x48  CImageSet* as DWORD (EH state 2)
     CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_scrollStepX;             // +0x64  per-axis scroll step limit (ClampScroll)

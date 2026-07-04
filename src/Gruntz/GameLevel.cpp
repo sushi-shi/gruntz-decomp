@@ -124,14 +124,19 @@ static inline void StampParamBlock(CGameLevel* o) {
 // destructible.
 //
 // @early-stop
-// store-scheduling / EH-state-base entropy plateau + cl-emitted two-phase vptr.
-// The two vptr stores are now cl-generated (base ??_7CLoadable orphan + derived
-// ??_7CGameLevel @0x5f0150), the derived store now matching retail's &0x5f0150 exactly.
-// Residue is the same funcinfo EH-state numbering base shift (retail tags the three
-// array ctors 0/1/2; cl uses the -1 entry state then 0/1) plus one immediate (0xfa)
-// landing in a different register from the this-reload for the fs:0 restore. Logic +
-// all offsets + the two-phase construction + CFG + the EH frame are exact; not
-// source-steerable (matching-patterns.md §entropy).
+// reloc-name mask + store-scheduling entropy plateau (~94%). Re-pinning the arrays to
+// their genuine shape (CByteArray + two CDWordArrays, all out-of-line ctors) fixed the
+// whole array-construction prologue: the three `leal +0x20/+0x34/+0x48; movb EH-state
+// 0/1/2; call ??0..Array` sequence and the two cl-emitted vptr stores (base ??_7CLoadable
+// orphan + derived ??_7CGameLevel @0x5f0150) now match retail exactly (48.8%->94.4%).
+// Two residuals remain, neither source-steerable: (1) reloc-name masks - retail ICF-
+// folded the identical CByteArray/CDWordArray default ctors to ONE `CByteArray` symbol,
+// so our two `??0CDWordArray@@QAE@XZ` calls + the `push $handler` funcinfo mask against
+// retail's folded names; (2) the tail store scheduling - cl parks the 0xfa immediate in
+// eax and stamps the ??_7CGameLevel vptr before the m_b4/m_c0 stores, while retail keeps
+// 0xfa in ecx and floats the vptr stamp later (matching-patterns.md §entropy: an
+// independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
+// CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
     m_scrollStepX = 0x40;
@@ -238,7 +243,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
                 }
                 ++n;
                 elem += set->GetStride(); // vtable +0x24 stride advance
-                m_imageSets.SetAtGrow(j, set);
+                m_imageSets.SetAtGrow(j, (DWORD)set);
                 ++j;
             }
             result = n;
@@ -273,7 +278,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
-                CLevelPlane* p = m_planes[i2];
+                CLevelPlane* p = (CLevelPlane*)m_planes[i2];
                 if (p->m_flags & 1) {
                     p->m_scaledX = (float)ox;
                     p->m_scaledY = (float)oy;
@@ -446,14 +451,14 @@ RVA(0x0015d1f0, 0x87)
 i32 CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* child = m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
             child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CImageSet* child = m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1); // release/free hook (+0x04)
         }
@@ -474,14 +479,14 @@ RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* child = m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
             child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CImageSet* child = m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1); // release/free hook (+0x04)
         }
@@ -1058,7 +1063,7 @@ struct ProbeObj {
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = 0;                                                                          \
         } else {                                                                                   \
-            CImageSet* set_ = m_imageSets[tile_ & 0xffff];                                         \
+            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
             (RESULT) = set_->dummy8(subX_, subY_);                                                 \
         }                                                                                          \
     } while (0)
@@ -1102,7 +1107,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = m_imageSets[tile & 0xffff];
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
     return set->dummy8(subX, subY);
 }
 
@@ -1167,7 +1172,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = m_imageSets[tile & 0xffff];
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
     return set->dummy8(0, 0); // slot +0x20, called with (0, 0)
 }
 
@@ -1202,7 +1207,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (m_planes[i])->Build(coords);
+        ((CLevelPlane*)m_planes[i])->Build(coords);
     }
 }
 
@@ -1243,7 +1248,7 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            (m_planes.GetData()[i])->Build(&rect);
+            ((CLevelPlane*)m_planes.GetData()[i])->Build(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1259,7 +1264,7 @@ void CGameLevel::SyncToMainIndex(i32 arg) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            (m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i <= m_mainIndex);
     }
@@ -1273,7 +1278,7 @@ void CGameLevel::SyncAfterMainIndex(i32 arg) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            (m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1373,7 +1378,7 @@ i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? m_planes[i] : 0;
+        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes[i] : 0;
         if (_strcmpi(name, p->m_name) == 0) {
             return (CPlane*)p;
         }
@@ -1459,7 +1464,8 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? m_planes.GetData()[i] : 0;
+                CLevelPlane* p =
+                    (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes.GetData()[i] : 0;
                 i32 cap = p->m_cap;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
@@ -1473,7 +1479,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
                         blocked = 1;
                     }
                 }
-                (m_planes.GetData()[i])->Sync((i32)visitor);
+                ((CLevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -1490,7 +1496,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            (m_planes.GetData()[idx])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
@@ -1498,7 +1504,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            (m_planes.GetData()[j])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -1509,7 +1515,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        (m_planes[i])->Refresh();
+        ((CLevelPlane*)m_planes[i])->Refresh();
     }
 }
 
@@ -1643,7 +1649,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
-            CImageSet* set = m_imageSets[tile & 0xffff];
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->dummy8(subX, subY);
         }
     }
@@ -1737,7 +1743,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
-            CImageSet* set = m_imageSets[tile & 0xffff];
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->dummy8(subX, subY);
         }
     }
@@ -1831,7 +1837,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
-            CImageSet* set = m_imageSets[tile & 0xffff];
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->dummy8(subX, subY);
         }
     }
@@ -1925,7 +1931,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
-            CImageSet* set = m_imageSets[tile & 0xffff];
+            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
             result = set->dummy8(subX, subY);
         }
     }
@@ -2933,7 +2939,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = m_imageSets[tile & 0xffff];
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
     *outLo = alignedX;
     *outHi = alignedX + set->m_width - 1;
     return 1;

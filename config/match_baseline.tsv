@@ -260,7 +260,7 @@ gameassetnamespaces	1	0
 gamechecksum	1	0
 gameinfostring	1	1
 gamekeyhandler	1	0
-gamelevel	60	23
+gamelevel	60	26
 gamemode	44	24
 gamemodeobjlifecycle	4	3
 gamemousehandler	1	0
@@ -433,7 +433,7 @@ sbi_image_eh	1	1
 sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	12	7
+sbi_menuitem	12	8
 sbi_menuitem_eh	1	1
 sbi_rectonly	70	33
 sbi_rectonly_eh	2	1
@@ -1521,7 +1521,7 @@ cmulti	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	5	2549f48134c2	0xb6580
 cmulti	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	6	89dcb866edcc	0xb72c0
 cmulti	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	3	8499295ac675	0xb6110
 cmulti	?Tick@CMulti@@QAEHXZ	85.9939	85.9939	4	c91ba236d5fb	0xb6890
-cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	5	db0b63f7cbfa	0xc59f0
+cobjectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	86.0249	86.0249	6	d1e5b34ff29e	0xc59f0
 cobjectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 cobjectdropper	?GetTypeTag@CObjectDropper@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	0f2ba896b8d9	0x124a0
 cobjectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	5	09e3f4355d6a	0xc62e0
@@ -2066,14 +2066,14 @@ gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6800	57.6800	1	f73b375e6779	0xc0590
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	e9b5224f1312	0x1183b0
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
-gamelevel	??0CGameLevel@@QAE@HHH@Z	48.7547	48.7547	7	0d2bff35ae1b	0x15ccd0
-gamelevel	??1CGameLevel@@QAE@XZ	31.5333	31.5333	5	7e872536db3c	0x1611e0
+gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	7	0d2bff35ae1b	0x15ccd0
+gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	5	7e872536db3c	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAXHHH@Z	93.5194	93.5194	1	ed7962b2eb86	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAXHHH@Z	92.2241	92.2241	1	ac1c98577426	0x15ede0
 gamelevel	?AltStepValidate@CGameLevel@@AAEHPAX0HHPAHH@Z	71.9054	71.9054	1	7c1fc1ee8711	0x15fe40
 gamelevel	?ApplyScroll@@YGHPAVCGameLevel@@HHH@Z	94.7826	94.7826	1	592b87081e74	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	2	9864e0a73614	0x161270
-gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	72.0896	72.0896	3	02fd95b25bc5	0x167ea0
+gamelevel	?BroadPhase@CGameLevel@@QAEHPAUScrollTarget@@HH@Z	71.9552	71.9552	3	02fd95b25bc5	0x167ea0
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	2	45939b338e12	0x15da80
 gamelevel	?ClampScroll@CGameLevel@@QAEHPAXHHH@Z	70.7413	70.7413	3	3f62b93aa933	0x15de40
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	2	8dcb804e4a37	0x15ffe0
@@ -2087,11 +2087,11 @@ gamelevel	?EditSwitch@CGameLevel@@QAEHPAXHHH@Z	88.8440	88.8440	3	61467cd444a2	0x
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	3	55a1da7f0b8e	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAXHHH@Z	80.8200	80.8200	1	3fb3107bd23b	0x15eb00
 gamelevel	?GetClassId@CGameLevel@@UAEHXZ	100.0000	100.0000	2	172d439fd347	0x1611b0
-gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3953	90.3953	1	5c4b4f1637f9	0x15ff20
+gamelevel	?HoldMove@CGameLevel@@AAEHPAXHHHH@Z	90.3837	90.3837	1	5c4b4f1637f9	0x15ff20
 gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	2	642a2d2b60a4	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	1	df34d8ccfc29	0x15d500
 gamelevel	?LoadFromSource@CGameLevel@@UAEHPAVCParseSource@@@Z	100.0000	100.0000	1	81b1a07ab4f5	0x15d630
-gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	32.9207	32.9207	4	eeee95e6c757	0x15d280
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.1894	82.1894	4	eeee95e6c757	0x15d280
 gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	4	216fa956115c	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	2	e76b99ca6714	0x160ee0
 gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	3	36434becd0e7	0xcedf0
@@ -2104,7 +2104,7 @@ gamelevel	?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z	100.0000	100.000
 gamelevel	?ProbeColumn@CGameLevel@@QAEHPAXH@Z	92.5641	92.5641	1	21fc5b1c7238	0x160980
 gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	100.0000	100.0000	5	d4a58a9b55e6	0x15d820
 gamelevel	?RecomputePlaneCoords@CLevelPlane@@QAEXXZ	97.0640	97.0640	1	603b8dbe6464	0x161c90
-gamelevel	?ReleaseChildren@CGameLevel@@UAEXXZ	70.9348	70.9348	2	cc84bdcf0d0c	0x15d680
+gamelevel	?ReleaseChildren@CGameLevel@@UAEXXZ	100.0000	100.0000	2	cc84bdcf0d0c	0x15d680
 gamelevel	?ScalarDtor@CGameLevel@@UAEPAXI@Z	100.0000	100.0000	1	6b39bf2d7776	0x1611c0
 gamelevel	?ScrollKindDispatch12@CGameLevel@@QAEHPAUScrollTarget@@HHH@Z	100.0000	100.0000	1	5a24aaef4f05	0x1671c0
 gamelevel	?ScrollStepXHi@CGameLevel@@QAEHPAUScrollTarget@@HHPAHH@Z	79.0286	79.0286	3	356933d10b00	0x167260
@@ -2123,7 +2123,7 @@ gamelevel	?StepAxisHi@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	ca3b47b33d71
 gamelevel	?StepAxisLo@CGameLevel@@AAEHPAXHHPAHH@Z	82.6949	82.6949	1	6d948b316f4c	0x15e720
 gamelevel	?SyncAfterMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	2	57218076c269	0x15db00
 gamelevel	?SyncToMainIndex@CGameLevel@@QAEXH@Z	100.0000	100.0000	2	cae093b5e4be	0x15dad0
-gamelevel	?Unload@CGameLevel@@UAEHXZ	71.0392	71.0392	2	1930149b0294	0x15d1f0
+gamelevel	?Unload@CGameLevel@@UAEHXZ	100.0000	100.0000	2	1930149b0294	0x15d1f0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAXH@Z	92.3282	92.3282	6	459439598d22	0x15dc90
 gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAXH@Z	92.7579	92.7579	3	9c3d29ab7686	0x160a40
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	5	eb3ae6d87ff9	0x8c750
@@ -3149,7 +3149,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0714	74.0714	6	c93d7b401eb6	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	6	c93d7b401eb6	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	3	b886f2f7a9c1	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	3	47486f9c52db	0xe81e0
