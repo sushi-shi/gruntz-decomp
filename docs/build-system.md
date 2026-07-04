@@ -56,6 +56,10 @@ analysis → tool improvements). Metadata first, the shell-quoted command after 
 time, return code).
 
 ```sh
+gruntz sema disasm 0x0008c750        # TARGET (retail) disasm+relocs; --target explicit
+gruntz sema disasm 0x0008c750 --base # BASE: your compiled fn from build/objdiff/base/<unit>.obj
+gruntz sema disasm 0x0008c750 --diff # base-vs-target asm diff (addresses masked; rc=1 if differs)
+gruntz sema disasm 0x0008c750 --lite # asm only - no addresses/bytes/reloc blocks
 gruntz sema xref 0x00080850          # who calls this fn (retail call/jmp graph)  [--callees --raw]
 gruntz sema symbol CGruntzApp        # fuzzy workspace-symbol search (clangd)
 gruntz sema def|refs|hover F L [C]   # go-to-def / all-refs (USR-exact) / type at point (clangd)

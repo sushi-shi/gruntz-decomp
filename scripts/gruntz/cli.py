@@ -750,8 +750,91 @@ def cmd_sema_rename(args) -> None:
     sys.exit(_sema_tool("gruntz.analysis.clangd_query", argv))
 
 
+def _disasm_capture(cmd: list) -> str:
+    """Run a disasm producer, return stdout (stderr passes through)."""
+    res = subprocess.run(cmd, cwd=str(REPO), env=_pkg_env(),
+                         capture_output=True, text=True)
+    sys.stderr.write(res.stderr)
+    return res.stdout
+
+
+def _disasm_target_text(rva: str) -> str:
+    return _disasm_capture([sys.executable, "-m", "gruntz.analysis.dump_target", rva])
+
+
+def _disasm_base_text(rva: str) -> str:
+    """The CURRENT compiled asm: the fn's symbol disassembled out of its unit's
+    base obj (what objdiff compares against retail)."""
+    import csv as _csv
+    try:
+        n = int(rva, 16)
+    except ValueError:
+        die(f"'{rva}' is not a hex RVA (--base needs an RVA)")
+    claim = _csv_find(GEN_NAMES, n)
+    if not claim:
+        die("no src claim at this RVA - base disasm needs a reconstructed fn "
+            "(check `gruntz sema rva`)")
+    obj = REPO / "build" / "objdiff" / "base" / (claim["unit"] + ".obj")
+    if not obj.is_file():
+        die(f"{obj.relative_to(REPO)} missing - run `gruntz build` first")
+    out = _disasm_capture(["llvm-objdump", "-dr", "--x86-asm-syntax=intel",
+                           f"--disassemble-symbols={claim['name']}", str(obj)])
+    return f"{claim['name']}  [{claim['unit']}]\n" + out
+
+
+_DISASM_ROW = None  # compiled lazily
+
+
+def _disasm_lite(text: str) -> str:
+    """Only the asm: drop addresses, byte columns, reloc blocks; keep title lines."""
+    import re as _re
+    global _DISASM_ROW
+    if _DISASM_ROW is None:
+        _DISASM_ROW = _re.compile(r"^\s*[0-9a-f]+:\s+((?:[0-9a-f]{2}\s)+)\s*(\S.*)$")
+    keep = []
+    for ln in text.splitlines():
+        m = _DISASM_ROW.match(ln)
+        if m:
+            keep.append("    " + m.group(2).strip())
+        elif " @ RVA " in ln or ln.rstrip().endswith(">:") or "  [" in ln[:1]:
+            keep.append(ln)
+        elif ln.startswith(("CState", "?")) and ln.rstrip().endswith("]"):
+            keep.append(ln)
+    return "\n".join(keep) + "\n"
+
+
+def _disasm_norm(text: str) -> list:
+    """Lite + mask absolute-address immediates (poor-man's reloc masking) for --diff."""
+    import re as _re
+    lines = []
+    for ln in _disasm_lite(text).splitlines():
+        if not ln.startswith("    "):
+            continue  # instructions only in the diff body
+        lines.append(_re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln.strip()))
+    return lines
+
+
 def cmd_sema_disasm(args) -> None:
-    sys.exit(_sema_tool("gruntz.analysis.dump_target", [args.rva]))
+    if args.diff:
+        import difflib
+        base = _disasm_norm(_disasm_base_text(args.rva))
+        tgt = _disasm_norm(_disasm_target_text(args.rva))
+        if base == tgt:
+            print(f"identical asm ({len(tgt)} instruction(s); addresses/relocs masked)")
+            sys.exit(0)
+        print(f"[diff: BASE (compiled) vs TARGET (retail) @ {args.rva}; "
+              "addresses masked as <addr>]")
+        for ln in difflib.unified_diff(base, tgt, "base", "target", lineterm=""):
+            print(ln)
+        sys.exit(1)
+    if args.base:
+        print("[disasm source: BASE - your compiled obj (build/objdiff/base)]")
+        text = _disasm_base_text(args.rva)
+    else:
+        print("[disasm source: TARGET - retail GRUNTZ.EXE (delinked bytes + relocs)]")
+        text = _disasm_target_text(args.rva)
+    print(_disasm_lite(text) if args.lite else text, end="")
+    sys.exit(0)
 
 
 def cmd_sema_strings(args) -> None:
@@ -913,8 +996,19 @@ def _add_sema(sub) -> None:
     sm.add_argument("target", help="a unit name, or an 0x RVA a src fn claims")
     sm.set_defaults(func=cmd_sema_match)
 
-    sd = ss.add_parser("disasm", help="retail disasm + relocs (dump_target)")
+    sd = ss.add_parser("disasm",
+                       help="disasm: TARGET (retail, default) / --base (compiled) / "
+                            "--diff (base vs target) / --lite (asm only)")
     sd.add_argument("rva", help="RVA (0x..) or symbol name")
+    sdside = sd.add_mutually_exclusive_group()
+    sdside.add_argument("--target", action="store_true",
+                        help="retail GRUNTZ.EXE side (the default; explicit for clarity)")
+    sdside.add_argument("--base", action="store_true",
+                        help="disassemble YOUR compiled fn from its base obj instead of retail")
+    sd.add_argument("--lite", action="store_true",
+                    help="asm only - no addresses, no byte columns, no reloc blocks")
+    sd.add_argument("--diff", action="store_true",
+                    help="unified diff of base-vs-target asm (addresses masked; rc=1 if differs)")
     sd.set_defaults(func=cmd_sema_disasm)
 
     st = ss.add_parser("strings", help="per-fn string set / --find reverse lookup")
