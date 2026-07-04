@@ -26,6 +26,7 @@
 #include <Gruntz/PathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -250,17 +251,13 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntHealthSpri
 
 // The global game registry the hazard ctors poll; wwdfile owns the real DATA
 // label (0x24556c). +0x78 is a sub-object whose +0x28 (for the rain cloud) and
-// +0x30 (the spotlight factory, for the UFO) are read.
-// The spotlight-spawn factory embedded at CHazardRegInner+0x08 (Spawn is 0x1597b0).
-// A tiny helper with just the method so the __thiscall lowers cleanly and reloc-
-// masks; embedded (not a cast) so `->m_08.Spawn(...)` takes its address directly.
-struct CSpotLight;
-struct CSpotLightFactory {
-    CSpotLight* Spawn(i32 a, i32 b, i32 c, i32 d, const char* e, i32 f); // 0x1597b0
-};
+// +0x30 (the spotlight factory holder, for the UFO) are read. The factory POINTER
+// lives at holder+0x8 and is the canonical CSpriteFactory (byte-proven: the UFO
+// ctor loads `mov ecx,[ecx+0x8]` - a pointer load, NOT an embedded-member lea as
+// previously modeled - then `call 0x1597b0` = CreateSprite).
 struct CHazardRegInner {
     char m_pad00[0x08];
-    CSpotLightFactory m_08; // +0x08  embedded spotlight-spawn factory (its `this`)
+    CSpriteFactory* m_8; // +0x08  the spotlight-spawn factory (CreateSprite @0x1597b0)
 };
 struct CHazardRegSub {
     char m_pad00[0x28];
@@ -276,37 +273,14 @@ struct CHazardReg {
 // reads reloc-mask (the type name only affects the masked symbol name).
 extern CHazardReg* g_gameReg;
 
-// A spawned CSpotLight the CUFO ctor configures (returned by the +0x30->+0x8
-// factory's Spawn at 0x1597b0). Only the touched offsets are modeled; ApplyName
-// (0x150540) and the +0x7c sub-object's vtable poke (slot +0x10) reloc-mask.
-struct CSpotLightSubInner {
+// The spawned "SpotLight" sprite is the shared CGameObject; its +0x7c CGameObjAux
+// carries the Init driver (+0x10; byte-proven ONE indirection `mov ecx,[esi+0x7c];
+// push esi; call [ecx+0x10]; add esp,4` - the former vptr-based Configure model
+// double-dereffed) and the per-class setup slot m_18, here the spotlight setup
+// whose +0x98 stores the bound owner game-object.
+struct CSpotLightSetup { // sl->m_7c->m_18 (per-class setup; downcast at the site)
     char m_pad00[0x98];
     CGameObject* m_owner; // +0x98  the bound owner game-object (== CUFO's m_10)
-};
-struct CSpotLightSub {
-    // The +0x7c sub-object's vtable. Slot +0x10 (Configure) is invoked indirectly
-    // on `this` with the parent spotlight pushed as an arg; modeled as a typed
-    // vtable so the indirect `call [eax+0x10]` falls out (no cast).
-    struct Vtbl {
-        void* s0[4];
-        void (*Configure)(CSpotLightSub*, CSpotLight*); // slot +0x10
-    };
-    Vtbl* m_vptr; // +0x00
-    char m_pad04[0x18 - 0x04];
-    CSpotLightSubInner* m_18; // +0x18
-};
-struct CSpotLight {
-    void ApplyName(const char* name); // 0x150540 (__thiscall)
-    char m_pad00[0x7c];
-    CSpotLightSub* m_7c; // +0x7c
-    char m_pad80[0x114 - 0x80];
-    i32 m_114; // +0x114
-    i32 m_118; // +0x118
-    i32 m_11c; // +0x11c
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124
-    char m_pad128[0x12c - 0x128];
-    i32 m_12c; // +0x12c
 };
 
 // CRainCloud / CUFO : CPathHazard (RTTI-proven; vtable_hierarchy --tree). The real
@@ -378,18 +352,19 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CSpotLight* sl = g_gameReg->m_78->m_30->m_08.Spawn(0, sx, 0, 0, "SpotLight", 0x40003);
+        CGameObject* sl =
+            g_gameReg->m_78->m_30->m_8->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
-            CSpotLightSub* sub = sl->m_7c;
+            CGameObjAux* sub = sl->m_7c;
             sl->m_114 = 1;
             sl->m_12c = 0;
             sl->m_124 = 2;
             sl->m_11c = 0;
             sl->m_118 = i;
             sl->m_120 = m_object->m_130;
-            sub->m_vptr->Configure(sub, sl);
-            sl->m_7c->m_18->m_owner = m_object;
+            sub->Init(sl);
+            ((CSpotLightSetup*)sl->m_7c->m_18)->m_owner = m_object;
         }
     }
     m_object->m_drawActive = 1;
@@ -509,10 +484,7 @@ SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
 SIZE_UNKNOWN(CRainCloud);
-SIZE_UNKNOWN(CSpotLight);
-SIZE_UNKNOWN(CSpotLightFactory);
-SIZE_UNKNOWN(CSpotLightSub);
-SIZE_UNKNOWN(CSpotLightSubInner);
+SIZE_UNKNOWN(CSpotLightSetup);
 SIZE_UNKNOWN(CSpriteObj);
 SIZE_UNKNOWN(CSpriteObjAux);
 SIZE_UNKNOWN(CToyTimeHost);
