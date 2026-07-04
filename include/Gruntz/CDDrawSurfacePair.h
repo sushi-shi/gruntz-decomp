@@ -112,7 +112,7 @@ VTBL(CDDrawSurfacePair, 0x005eff30);
 class CDDrawSurfacePair : public CSurfacePairBase {
 public:
     void BltSelf(CDDrawSurfacePair* src);      // 0x03a1d0
-    virtual ~CDDrawSurfacePair();              // 0x1590f0
+    ~CDDrawSurfacePair() OVERRIDE;             // 0x1590f0  slot 1 (scalar-deleting dtor)
     i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // 0x163c90  (vtable slot 12)
     i32 RestoreIfLost();                       // 0x163f00
     void TeardownSurface();                    // 0x163e20  (vtable slot 7)

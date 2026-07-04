@@ -159,7 +159,7 @@ public:
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
     virtual void* Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3);          // [12] 0x165a90
-    virtual ~CDDrawWorkerMapSmall(); // overrides slot [1]
+    ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]
 
     // GetStateId (0x157600) is NOT a vtable slot - a plain method.
     StateId GetStateId();

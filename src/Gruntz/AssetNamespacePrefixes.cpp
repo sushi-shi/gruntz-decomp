@@ -19,7 +19,8 @@
 // literals reloc-masked against the matched symbols.
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
 #include <Gruntz/CGameRegistry.h>
-#include <Win32.h> // RECT
+#include <Gruntz/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
+#include <Win32.h>                           // RECT
 
 #include <rva.h>
 
@@ -31,46 +32,8 @@ struct CSymTree {
     void* ResolvePath(const char* path); // 0x13bae0
 };
 
-// GRUNTZ_ image worker registry (this->m_c->m_10): 18 vtable slots then LoadTree at
-// +0x48 (virtual); plus the non-virtual key probe + direct-load.
-class CDDrawWorkerRegistry {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
-    i32 HasKeyEqual(const char* key);                                       // 0x155550
-    void LoadTreeDirect(const char* prefix, const char* sep);               // 0x155360
-};
-
-class CDDrawSubMgrLeafScan {
-public:
-    i32 HasKeyEqual(const char* key);                         // 0x1583c0
-    void ScanTree(void* tree, const char* prefix, char* sep); // 0x157ee0
-    void ScanTreeDirect(const char* prefix, const char* sep); // 0x157c70
-};
-
-class CDDrawSubMgrAni {
-public:
-    i32 HasKeyPrefix(const char* key);                        // 0x152c50
-    void ScanTree(void* tree, const char* prefix, char* sep); // 0x152ad0
-    void ScanTreeDirect(const char* prefix, const char* sep); // 0x1527d0
-};
+// CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
+// <Gruntz/CDDrawAssetRegistryViews.h> (mirror the per-area loader GameAssetNamespaces.cpp).
 
 struct AssetRoot { // this->m_c
     char m_pad00[0x10];

@@ -6,7 +6,8 @@
 #include <rva.h>
 
 #include <stdio.h>
-#include <Gruntz/CDDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
+#include <Gruntz/CDDrawPtrCollections.h>     // the ONE CDDrawPtrCollections shape (MakeAndAddB)
+#include <Gruntz/CDDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
 #include <Globals.h>
 
 DATA(0x006bf37c)
@@ -17,43 +18,8 @@ public:
     void* ResolvePath(char* path); // 0x13c030
 };
 
-// The image-namespace worker registry: non-virtual key probe + a load slot at
-// vtable +0x48.
-class CDDrawWorkerRegistry {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual void LoadTree(void* tree, char* prefix, char* sep); // +0x48
-    i32 HasKeyEqual(char* key);                                 // 0x155550
-};
-
-class CDDrawSubMgrLeafScan {
-public:
-    i32 HasKeyEqual(char* key);                         // 0x1583c0
-    void ScanTree(void* tree, char* prefix, char* sep); // 0x157ee0
-};
-
-class CDDrawSubMgrAni {
-public:
-    i32 HasKeyPrefix(char* key);                        // 0x152c50
-    void ScanTree(void* tree, char* prefix, char* sep); // 0x152ad0
-};
+// CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
+// <Gruntz/CDDrawAssetRegistryViews.h> (mirror the per-object loader AssetNamespacePrefixes.cpp).
 
 class CSpriteRefTable {
 public:
