@@ -14,17 +14,15 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
+#include <Gruntz/CTypeColl.h> // the shared type-name collection
 
 #pragma intrinsic(strcmp)
 
 namespace gruntphase {
 
-    // The type-name collection singleton (0x6bf650); Lookup437c(key) returns a node
-    // whose first dword is the char* type name.
-    struct TypeColl {
-        char** Lookup437c(i32 key); // 0x0000437c (thiscall)
-    };
-    extern TypeColl g_typeColl;      // 0x006bf650
+    // The type-name collection singleton (0x6bf650); Lookup(key) returns a node whose
+    // m_0 is the char* type name.
+    extern CTypeColl g_typeColl;     // 0x006bf650
     extern const char g_phaseType[]; // 0x0060d2e8 (the gate type name)
 
     // The point accumulator built for the 16 border cells (a small CObList/array
@@ -194,7 +192,7 @@ namespace gruntphase {
         GruntTilePos pb;
 
         m_358 = 0;
-        if (strcmp(*g_typeColl.Lookup437c(m_14->m_1c), g_phaseType) == 0) {
+        if (strcmp(g_typeColl.Lookup(m_14->m_1c)->m_0, g_phaseType) == 0) {
             return 1;
         }
         m_defenderX = m_lastTilePxX;
@@ -243,7 +241,7 @@ namespace gruntphase {
         return 1;
 
     state2: {
-        if (strcmp(*g_typeColl.Lookup437c(m_14->m_1c), g_phaseType) == 0) {
+        if (strcmp(g_typeColl.Lookup(m_14->m_1c)->m_0, g_phaseType) == 0) {
             goto common;
         }
         i32 x = m_arrivalCol;

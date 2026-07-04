@@ -80,7 +80,7 @@ extern CCueTag g_sndCueTag;
 
 DATA(0x00644c54)
 extern i32 g_localPlayer; // g_644c54
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern char* g_mgrSettings; // ->m_134
 
 // Free engine helpers (reloc-masked).

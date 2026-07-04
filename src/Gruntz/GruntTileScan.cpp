@@ -18,6 +18,7 @@
 #include <Win32.h> // RECT + IntersectRect
 #include <Gruntz/CScanRectInit.h>
 #include <Gruntz/CScanGrid.h>
+#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CScanCoord {
@@ -30,7 +31,7 @@ struct CScanNode324 { // grunt->m_324 (current path node)
 struct CScanListNode { // grunt->m_320 pending-coord node
     CScanListNode* m_next;
     i32 _04;
-    void* m_8; // +0x08
+    i32 m_8; // +0x08  recycled coord-node handle (fed to g_coordPool.Drop)
 };
 struct CScanObList {        // grunt->m_31c
     void RemoveAll1b48a6(); // 0x1b48a6
@@ -72,10 +73,7 @@ struct CScanMgr {                                                          // th
     i32 ScanRegion32ce0(CScanGrunt* g);
 };
 
-struct CScanCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
-extern CScanCoordPool g_coordPool; // ?g_coordPool@@... (0x645540)
+extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
 extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 (engine LCG rand)
 
@@ -136,7 +134,7 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
                     CScanListNode* cur = n;
                     n = n->m_next;
                     if (cur->m_8 != 0) {
-                        g_coordPool.Recycle163b(cur->m_8);
+                        g_coordPool.Drop(cur->m_8);
                     }
                 }
                 g->m_31c.RemoveAll1b48a6();

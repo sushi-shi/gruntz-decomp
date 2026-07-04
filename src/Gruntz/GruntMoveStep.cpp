@@ -15,6 +15,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
 
 // --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
 struct CGruntSub10 { // grunt->m_10
@@ -24,7 +25,7 @@ struct CGruntSub10 { // grunt->m_10
 struct CMoveListNode {     // pending-coord node
     CMoveListNode* m_next; // +0x00
     i32 _04;
-    void* m_8; // +0x08
+    i32 m_8; // +0x08  recycled coord-node handle (fed to g_coordPool.Drop)
 };
 struct CMoveObList {           // CGrunt::m_31c (CObList view)
     void* Find1de8(void** it); // 0x1de8
@@ -84,12 +85,9 @@ struct CGruntMover {                                              // this (edi)
     i32 m_c0; // +0xc0
 };
 
-// The shared coord-node pool (0x645540): Recycle163b returns a node to the pool.
-struct CMoveCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
+// The shared coord-node pool (0x645540): Drop returns a node to the pool.
 DATA(0x00245540)
-extern CMoveCoordPool g_coordPool;
+extern CStepList2 g_coordPool;
 
 // Integer board-distance: the retail form is `fild;fsqrt;call __ftol`; modeled as a
 // plain int sqrt here (no /Oi) - see the @early-stop note.
@@ -104,7 +102,7 @@ static i32 isqrt(i32 v) {
             CMoveListNode* cur = nd;                                                               \
             nd = nd->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Recycle163b(cur->m_8);                                                 \
+                g_coordPool.Drop(cur->m_8);                                                        \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll1b48a6();                                                              \
@@ -244,8 +242,8 @@ i32 CGruntMover::Step(CGruntM* g) {
                 if (nd != 0) {
                     do {
                         void* r = g->m_31c.Find1de8((void**)&nd);
-                        if (*(void**)r != 0) {
-                            g_coordPool.Recycle163b(*(void**)r);
+                        if (*(i32*)r != 0) {
+                            g_coordPool.Drop(*(i32*)r);
                         }
                     } while (nd != 0);
                 }
@@ -262,7 +260,6 @@ SIZE_UNKNOWN(CGruntM);
 SIZE_UNKNOWN(CGruntMover);
 SIZE_UNKNOWN(CGruntSub10);
 SIZE_UNKNOWN(CMoveBoard);
-SIZE_UNKNOWN(CMoveCoordPool);
 SIZE_UNKNOWN(CMoveGridDims);
 SIZE_UNKNOWN(CMoveListNode);
 SIZE_UNKNOWN(CMoveObList);

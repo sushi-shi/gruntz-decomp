@@ -20,6 +20,8 @@
 #include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
 #include <Globals.h>
+#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
+#include <Gruntz/CTypeColl.h>  // the shared type-name collection
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CStepCoord {
@@ -43,13 +45,7 @@ struct CStepOwner { // g->m_14
     char _00[0x1c];
     i32 m_1c; // +0x1c type key
 };
-struct CStepTypeNode {
-    const char* m_0; // +0x00 type name
-};
-struct CStepTypeColl {
-    CStepTypeNode* Lookup437c(i32 key); // 0x437c
-};
-extern CStepTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A (0x6bf650)
+extern CTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A (0x6bf650)
 
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
 extern char k_60cc94[]; // "J"
@@ -122,10 +118,7 @@ struct CStepRectInit { // 0x34a4 - init a rect + return it
     RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
 
-struct CStepCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
-extern CStepCoordPool g_coordPool; // ?g_coordPool@@... (0x645540)
+extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
 extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 engine LCG rand
 
@@ -137,8 +130,8 @@ extern "C" i32 __cdecl GameRand11fee0(); // 0x11fee0 engine LCG rand
         if (nd != 0) {                                                                             \
             do {                                                                                   \
                 void* r = (g)->m_31c.Find1de8((void**)&nd);                                        \
-                if (*(void**)r != 0) {                                                             \
-                    g_coordPool.Recycle163b(*(void**)r);                                           \
+                if (*(i32*)r != 0) {                                                               \
+                    g_coordPool.Drop(*(i32*)r);                                                    \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
@@ -260,7 +253,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             g->m_2f4 = -1;
             if (g != 0 && g->Method421e() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0
                 && g->m_220 == 0) {
-                const char* nm = g_typeColl.Lookup437c(g->m_14->m_1c)->m_0;
+                const char* nm = g_typeColl.Lookup(g->m_14->m_1c)->m_0;
                 if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0
                     && strcmp(nm, k_60cc98) != 0 && strcmp(nm, k_60beb8) != 0
                     && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
@@ -350,7 +343,6 @@ tail:
 
 SIZE_UNKNOWN(CStepBoard);
 SIZE_UNKNOWN(CStepCoord);
-SIZE_UNKNOWN(CStepCoordPool);
 SIZE_UNKNOWN(CStepGoal);
 SIZE_UNKNOWN(CStepGrid);
 SIZE_UNKNOWN(CStepGrunt);
@@ -359,5 +351,3 @@ SIZE_UNKNOWN(CStepNode);
 SIZE_UNKNOWN(CStepOwner);
 SIZE_UNKNOWN(CStepRectInit);
 SIZE_UNKNOWN(CStepSub10);
-SIZE_UNKNOWN(CStepTypeColl);
-SIZE_UNKNOWN(CStepTypeNode);

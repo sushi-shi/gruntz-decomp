@@ -62,7 +62,7 @@ struct GameMgr {
     MgrBounds* m_tileGrid; // +0x70
 };
 extern "C" {
-    DATA(0x0064556c)
+    DATA(0x0024556c)
     extern GameMgr* g_64556c;
 }
 

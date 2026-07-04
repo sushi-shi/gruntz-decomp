@@ -12,16 +12,14 @@
 #include <Ints.h>
 #include <Win32.h> // RECT + IntersectRect
 #include <Gruntz/CScanRectInit.h>
+#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
 
 extern "C" char* g_mgrSettings; // _g_mgrSettings @0x64556c (plane at +0x70)
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 
-struct CScanCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
-extern CScanCoordPool g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540)
+extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CScanKeyNode {
@@ -197,8 +195,8 @@ i32 CGrunt::PathScan57db0() {
             CScanNode* nd = m_320;
             while (nd != 0) {
                 void* r = ScanList()->Find1de8((void**)&nd);
-                if (*(void**)r != 0) {
-                    g_coordPool.Recycle163b(*(void**)r);
+                if (*(i32*)r != 0) {
+                    g_coordPool.Drop(*(i32*)r);
                 }
             }
             ScanList()->RemoveAll1b48a6();
@@ -250,7 +248,6 @@ i32 CGrunt::PathScan57db0() {
     return 0;
 }
 
-SIZE_UNKNOWN(CScanCoordPool);
 SIZE_UNKNOWN(CScanKeyNode);
 SIZE_UNKNOWN(CScanList);
 SIZE_UNKNOWN(CScanNode);

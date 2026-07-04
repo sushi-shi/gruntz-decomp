@@ -12,16 +12,14 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Win32.h>  // RECT + IntersectRect
-#include <string.h> // memset (out-of-bounds cell fill)
+#include <Win32.h>             // RECT + IntersectRect
+#include <string.h>            // memset (out-of-bounds cell fill)
+#include <Gruntz/CStepList2.h> // the shared g_coordPool recycle pool
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 
-struct CArriveCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
-extern CArriveCoordPool g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540)
+extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CArriveCoord {
@@ -105,7 +103,7 @@ struct CArriveMgr { // this (edi)
             CArriveNode* cur = nd;                                                                 \
             nd = nd->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Recycle163b(cur->m_8);                                                 \
+                g_coordPool.Drop((i32)cur->m_8);                                                   \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll1b48a6();                                                              \
@@ -265,7 +263,6 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
 SIZE_UNKNOWN(CArriveCell);
 SIZE_UNKNOWN(CArriveCoord);
-SIZE_UNKNOWN(CArriveCoordPool);
 SIZE_UNKNOWN(CArriveGrid);
 SIZE_UNKNOWN(CArriveGrunt);
 SIZE_UNKNOWN(CArriveList);
