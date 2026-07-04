@@ -1,9 +1,9 @@
-m_<hex> fields	15195
+m_<hex> fields	15193
 Unknown ids	5
 g_<hex> globals	1244
 Method/Stub/FUN	271
 placeholder classes	386
-placeholder vtable slots	918
+placeholder vtable slots	911
 *Vtbl structs	83
 ->vtbl accesses	56
 g_*Vtbl globals	140

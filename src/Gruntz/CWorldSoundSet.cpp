@@ -17,22 +17,31 @@
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 
-// ALL-VTABLES mandate: the three channel classes are now REAL polymorphic classes
-// built via placement `new (raw) CXxx`, so cl auto-emits ??_7CAmbientSound /
-// ??_7CAmbientPosSound / ??_7CRandomAmbientSound (already mapped in
-// config/vtable_names.csv at 0x1e710c / 0x1e7124 / 0x1e713c) and stamps the vptr in
-// the ctor - no manual `*(void**)raw = &g_*Vtbl` store. Each carries its own 4-slot
-// vtable (RTTI class); the layout matches SoundChannelNew (vptr + m_voice/m_level/m_14/m_listNode).
+// ALL-VTABLES mandate: the three channel classes are REAL polymorphic classes.
+// RTTI derivation CAmbientPosSound / CRandomAmbientSound : CAmbientSound (: CUserBase)
+// is modeled by C++ inheritance so the redundant slot-1/2 re-decls fold into the
+// base; each is built via placement `new (raw) CXxx`, so cl auto-emits
+// ??_7CAmbientSound / ??_7CAmbientPosSound / ??_7CRandomAmbientSound (mapped in
+// config/vtable_names.csv at 0x1e710c / 0x1e7124 / 0x1e713c) and inlines the vptr
+// stamp in the ctor. Slot 0 is retail's compiler-gen scalar deleting destructor,
+// slot 3 is Update; see the ScalarDtor note below for why slot 0 is hand-named.
 inline void* operator new(u32, void* p) {
     return p;
 }
 
 struct CAmbientSound {
-    virtual void ScalarDtor(i32 flag); // slot 0
-    virtual void Slot1();              // slot 1
-    virtual void Slot2();              // slot 2
-    virtual void Slot3();              // slot 3
+    // slot 0 is retail's COMPILER-GENERATED scalar deleting destructor; hand-named
+    // here (not a real `~CAmbientSound()`) on purpose: a user-declared virtual dtor
+    // makes MSVC5 emit the placement-`new` ctor OUT-OF-LINE (a `call ??0CAmbient*`)
+    // instead of the inlined vptr-stamp retail schedules at each CreateXxx site,
+    // regressing CreatePos6/CreatePos5/CreateRandom ~96%->~87%. So the direct slot-0
+    // call (delete-obj shape) stays `obj->ScalarDtor(1)`, an exact match.
+    virtual void ScalarDtor(i32 flag);            // slot 0 (scalar deleting dtor)
+    virtual void Slot1();                         // slot 1 (origin CUserBase)
+    virtual void Slot2();                         // slot 2 (origin CUserBase)
+    virtual void Update(i32 x, i32 y, i32 force); // slot 3 (retail 0xc090)
     CAmbientSound() {}
+    // +0x00 vptr (??_7CAmbientSound)
     i32 m_voice; // +0x04
     i32 m_level; // +0x08
     char m_pad0c[0x14 - 0x0c];
@@ -43,34 +52,24 @@ struct CAmbientSound {
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
 };
 
-struct CAmbientPosSound {
-    virtual void ScalarDtor(i32 flag); // slot 0
-    virtual void Slot1();              // slot 1
-    virtual void Slot2();              // slot 2
-    virtual void Slot3();              // slot 3
+// RTTI: CAmbientPosSound : CAmbientSound (vftable 0x1e7124). Overrides slot 0
+// (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
+struct CAmbientPosSound : CAmbientSound {
+    void ScalarDtor(i32 flag) OVERRIDE;            // slot 0 override
+    void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CAmbientPosSound() {}
-    i32 m_voice; // +0x04
-    i32 m_level; // +0x08
-    char m_pad0c[0x14 - 0x0c];
-    i32 m_14; // +0x14
-    char m_pad18[0x3c - 0x18];
-    i32 m_listNode; // +0x3c
+    // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
 };
 
-struct CRandomAmbientSound {
-    virtual void ScalarDtor(i32 flag); // slot 0
-    virtual void Slot1();              // slot 1
-    virtual void Slot2();              // slot 2
-    virtual void Slot3();              // slot 3
+// RTTI: CRandomAmbientSound : CAmbientSound (vftable 0x1e713c). Overrides slot 0
+// (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
+struct CRandomAmbientSound : CAmbientSound {
+    void ScalarDtor(i32 flag) OVERRIDE;            // slot 0 override
+    void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CRandomAmbientSound() {}
-    i32 m_voice; // +0x04
-    i32 m_level; // +0x08
-    char m_pad0c[0x14 - 0x0c];
-    i32 m_14; // +0x14
-    char m_pad18[0x3c - 0x18];
-    i32 m_listNode; // +0x3c
+    // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
     void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
 };
