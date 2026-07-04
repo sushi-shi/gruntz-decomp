@@ -39,6 +39,12 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 batch's size to fit your budget. So budget is never a reason to stop short of the
 mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
 
+**Two work modes (know which your brief is):** the mandate above is RECONSTRUCTION mode —
+maximize %. A CLEANUP brief (folds/merges/de-hack/typing per the orchestrator) follows the
+clean-room mandate instead (docs/cleanup-plan.md): the binary-proven correct shape wins,
+regalloc/header % drops are accepted + reported, never a reason to defer or revert correct
+work. Only a build failure or wrong evidence stops a cleanup change.
+
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count

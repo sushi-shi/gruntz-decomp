@@ -106,3 +106,11 @@ archive the stub tooling.
 Standing rules throughout: build-gate every integration, re-bless
 `cleanliness-baseline.tsv` + `match_baseline.tsv` at integration, README/docs
 refresh with each landed phase.
+
+**Clean-room mandate (user, 2026-07-04, reaffirmed):** the goal is a clean-room
+implementation. During cleanup phases (P0–P5), regalloc/reordering/
+header-fattening % drops are ACCEPTED — report and bless, never revert correct
+work or skip it to protect the score. % drops must not defer agents from doing
+their work; a change stops only on build failure or wrong evidence. The match %
+is pushed back up in P6, after the source is clean. (Reconstruction/matching
+work is the exception — there the push-to-100% doctrine applies.)

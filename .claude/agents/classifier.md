@@ -91,9 +91,12 @@ change only names, never*:
 - **definition ORDER** within a TU (it drives inlining + COMDAT order — see orchestrator.md §2.4),
 - **`RVA()`/`DATA()` macros** (keep the 8-hex-digit address + size exactly).
 
-**After every rename/de-hack pass, run `gruntz build` and confirm the per-function % did not move.**
-A drop means you changed something load-bearing (a width, an offset, an order) — **revert that edit**.
-This build-check is non-negotiable: it's what separates a clean rename from an accidental regression.
+**After every rename/de-hack pass, run `gruntz build` and check the per-function %.**
+For a pure RENAME a drop means you changed something load-bearing (a width, an offset, an
+order) — **revert that edit** and find the mistake. For a DE-HACK/re-typing edit whose new
+shape is binary-proven correct, a regalloc/header-leak drop is **accepted, not reverted**
+(clean-room mandate, docs/cleanup-plan.md: % drops never defer correct cleanup; the score
+is recovered in the final phase) — record the delta in your report and keep going.
 (Run cd-first inside one `nix develop .#build` shell, like a matcher.)
 
 ## Part A — semantic renaming (evidence-driven, never invented)
