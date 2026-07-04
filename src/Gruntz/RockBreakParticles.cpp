@@ -62,22 +62,21 @@ struct RockGrid {
     i32 m_30;  // +0x30  active cols
     i32 m_34;  // +0x34  active rows
 };
-// A cell's type object (board->m_4c[cell & 0xffff]); GetType is vtable slot +0x20,
-// a __thiscall virtual modeled as a 4-byte PMF loaded from the vtable so MSVC
-// emits `mov edx,[ecx]; call [edx+0x20]` (see docs/patterns/pmf-complete-class-4byte.md).
-struct RockCellVtbl;
+// A cell's type object (board->m_4c[cell & 0xffff]); GetType is a __thiscall
+// virtual at vtable slot 8 (+0x20). Real polymorphic class: 8 placeholder
+// virtuals push GetType to slot 8, so `o->GetType(0,0)` emits
+// `mov edx,[ecx]; call [edx+0x20]` for free (docs/patterns/dummy-virtual-slots.md).
 struct RockCellObj {
-    RockCellVtbl* m_vptr; // +0x00
-    i32 GetType(i32 a, i32 b);
+    virtual void v00();                // +0x00
+    virtual void v04();                // +0x04
+    virtual void v08();                // +0x08
+    virtual void v0c();                // +0x0c
+    virtual void v10();                // +0x10
+    virtual void v14();                // +0x14
+    virtual void v18();                // +0x18
+    virtual void v1c();                // +0x1c
+    virtual i32 GetType(i32 a, i32 b); // +0x20 slot 8
 };
-typedef i32 (RockCellObj::*RockGetTypeFn)(i32, i32);
-struct RockCellVtbl {
-    char m_pad00[0x20];
-    RockGetTypeFn GetType; // +0x20
-};
-inline i32 RockCellObj::GetType(i32 a, i32 b) {
-    return (this->*(m_vptr->GetType))(a, b);
-}
 struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
     char m_pad00[0x4c];
     RockCellObj** m_4c; // +0x4c  cell type-object table
@@ -267,7 +266,6 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 SIZE_UNKNOWN(CRockBreakMgr);
 SIZE_UNKNOWN(RockBoard);
 SIZE_UNKNOWN(RockCellObj);
-SIZE_UNKNOWN(RockCellVtbl);
 SIZE_UNKNOWN(RockGrid);
 SIZE_UNKNOWN(RockLogicMgr);
 SIZE_UNKNOWN(RockLogicObj);

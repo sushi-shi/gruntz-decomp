@@ -186,15 +186,39 @@ namespace m4 {
         char m_pad0[8];
         i32 Attach(void* hrgn); // RVA 0x1c6a05
     };
-    struct CreditzDcVtbl;
+    // The offscreen-DC object (COM-style __stdcall interface: `this` is pushed as
+    // the leftmost arg, callee cleans). Real polymorphic class; placeholder slots
+    // put GetDC at slot 17 (+0x44) and ReleaseDC at slot 26 (+0x68), so
+    // `dc->GetDC(&hdc)` emits `push &hdc; push dc; mov ecx,[dc]; call [ecx+0x44]`
+    // (docs/patterns/dummy-virtual-slots.md).
     struct CreditzDc {
-        CreditzDcVtbl* vtbl;
-    };
-    struct CreditzDcVtbl {
-        char m_pad0[0x44];
-        void (*GetDC)(CreditzDc*, i32* out); // +0x44
-        char m_pad48[0x68 - 0x48];
-        void (*ReleaseDC)(CreditzDc*, i32 hdc); // +0x68
+        virtual void v00();
+        virtual void v04();
+        virtual void v08();
+        virtual void v0c();
+        virtual void v10();
+        virtual void v14();
+        virtual void v18();
+        virtual void v1c();
+        virtual void v20();
+        virtual void v24();
+        virtual void v28();
+        virtual void v2c();
+        virtual void v30();
+        virtual void v34();
+        virtual void v38();
+        virtual void v3c();
+        virtual void v40();
+        virtual void __stdcall GetDC(i32* out); // +0x44 slot 17
+        virtual void v48();
+        virtual void v4c();
+        virtual void v50();
+        virtual void v54();
+        virtual void v58();
+        virtual void v5c();
+        virtual void v60();
+        virtual void v64();
+        virtual void __stdcall ReleaseDC(i32 hdc); // +0x68 slot 26
     };
     struct CreditzSectionSrc {                              // this->m_sectionSrc
         CreditzText* GetSection(const char* name, i32 tag); // RVA 0x13a000
@@ -222,10 +246,12 @@ namespace m4 {
     };
 
     // @early-stop
-    // 98% - scheduling tail: for the final (double)(unsigned)m_1f4 conversion the
+    // scheduling tail (~99.7%): for the final (double)(unsigned)m_1f4 conversion the
     // int64 temp's two halves (low=eax, high=0) are emitted in the opposite order
     // relative to the fld/fmul (retail stores high=0 before the fld, low after the
-    // fmul; cl reverses). All other bytes identical (llvm-objdump -dr).
+    // fmul; cl reverses). All other bytes identical (llvm-objdump -dr). The GetDC/
+    // ReleaseDC region is now byte-exact after realizing CreditzDc as a real
+    // __stdcall COM interface (was 98% with the __cdecl free-fn-ptr view).
     RVA(0x00039a60, 0x179)
     i32 CreditzScreen::BuildText() {
         CreditzText* sect = m_sectionSrc->GetSection("CREDITZ", 0x545854);
@@ -251,12 +277,12 @@ namespace m4 {
         char* d = *(char**)(c2 + 0x2c);
         CreditzDc* dc = *(CreditzDc**)(d + 8);
         i32 hdc = 0;
-        dc->vtbl->GetDC(dc, &hdc);
+        dc->GetDC(&hdc);
         if (hdc) {
             i32 h = DrawTextA((HDC)hdc, m_text.m_data, -1, &m_textRect, 0x450);
             SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
             CreditzDc* dc2 = *(CreditzDc**)(d + 8);
-            dc2->vtbl->ReleaseDC(dc2, hdc);
+            dc2->ReleaseDC(hdc);
         }
         m_1f8 = 0;
         m_1fc = 0;

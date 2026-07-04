@@ -576,7 +576,7 @@ apimischelpers	?Tick@Throttle_137e30@ApiMisc@@QAEHH@Z	100.0000	100.0000	1	a39349
 apimischelpers	?Tick@Timer_1380d0@ApiMisc@@QAEHH@Z	100.0000	100.0000	1	d7000634905a	0x1380d0
 apimischelpers	?winapi_118930_SetActiveWindow_SetFocus@ApiMisc@@YAXPAX@Z	100.0000	100.0000	1	66a395725d40	0x118930
 apimischelpers	?winapi_1192d0_IsIconic@ApiMisc@@YAHPAXHH@Z	100.0000	100.0000	1	2ab22d79c980	0x1192d0
-apiwrappers	?BuildText@CreditzScreen@m4@@QAEHXZ	98.0556	98.0556	2	62f59eac2582	0x39a60
+apiwrappers	?BuildText@CreditzScreen@m4@@QAEHXZ	99.6508	99.6508	3	0d282c601519	0x39a60
 apiwrappers	?CheckCombatRegion@GruntCombatMgr@m4@@QAEXHHHHH@Z	80.1707	80.1707	2	664d74d84c96	0x78060
 apiwrappers	?FillLevelInfoDialog@m4@@YAHPAUHWND__@@@Z	100.0000	100.0000	3	8c2735af8f89	0x3b1a0
 apiwrappers	?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@PAH1PAUtagRECT@@@Z	74.7516	74.7516	2	a9ae4e998211	0x75c60
@@ -2827,7 +2827,7 @@ minervainner	?Stop@SoundStream@@QAEXXZ	100.0000	100.0000	1	46d12e5e2855	0x137a80
 misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	2	d224c96d8cca	0x18a190
 misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	2	f27ee6bcf8b4	0x186a50
 misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	2	270be9416a5b	0x186990
-modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	53.8808	53.8808	1	1a707841b201	0xc7ec0
+modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	55.6969	55.6969	1	1a707841b201	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	2	8ad390ea1d22	0x16f3c0
 motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	2	ef5e4a08d508	0x16f430

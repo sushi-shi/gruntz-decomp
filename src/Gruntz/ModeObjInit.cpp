@@ -84,19 +84,51 @@ namespace modeinit {
         i32 m_40; // +0x40
     };
 
-    // The owner (this).
-    struct ModeObj;
-    struct ModeObjVtbl {
-        char m_pad0[0x74];
-        i32 (*m_74)(ModeObj*);           // +0x74
-        i32 (*m_78)(ModeObj*, i32, i32); // +0x78
-        char m_pad7c[0x90 - 0x7c];
-        void (*m_90)(ModeObj*); // +0x90
-    };
-
+    // The owner (this): a polymorphic class. Its own vtable slots 29 (+0x74),
+    // 30 (+0x78) and 36 (+0x90) are init/bind hooks (__thiscall: `this` in ecx,
+    // args pushed). Real virtuals with placeholder slots so `this->vNN(...)`
+    // emits `mov edx,[this]; mov ecx,this; call [edx+0xNN]` for free
+    // (docs/patterns/dummy-virtual-slots.md).
     struct ModeObj {
-        ModeObjVtbl* m_vtbl; // +0x00
-        Parent* m_4;         // +0x04
+        virtual void v00();
+        virtual void v04();
+        virtual void v08();
+        virtual void v0c();
+        virtual void v10();
+        virtual void v14();
+        virtual void v18();
+        virtual void v1c();
+        virtual void v20();
+        virtual void v24();
+        virtual void v28();
+        virtual void v2c();
+        virtual void v30();
+        virtual void v34();
+        virtual void v38();
+        virtual void v3c();
+        virtual void v40();
+        virtual void v44();
+        virtual void v48();
+        virtual void v4c();
+        virtual void v50();
+        virtual void v54();
+        virtual void v58();
+        virtual void v5c();
+        virtual void v60();
+        virtual void v64();
+        virtual void v68();
+        virtual void v6c();
+        virtual void v70();
+        virtual i32 v74();             // +0x74 slot 29
+        virtual i32 v78(i32 a, i32 b); // +0x78 slot 30
+        virtual void v7c();
+        virtual void v80();
+        virtual void v84();
+        virtual void v88();
+        virtual void v8c();
+        virtual void v90(); // +0x90 slot 36
+
+        Parent* m_4; // +0x04
         char m_pad8[0xc - 8];
         i32 m_c; // +0x0c
         char m_pad10[0x40 - 0x10];
@@ -341,11 +373,11 @@ namespace modeinit {
         if (m_4->m_114 == 0) {
             m_4->m_bc = 0;
         }
-        if (!m_vtbl->m_74(this)) {
+        if (!v74()) {
             return 0;
         }
-        m_vtbl->m_90(this);
-        if (!m_vtbl->m_78(this, a2, 1)) {
+        v90();
+        if (!v78(a2, 1)) {
             return 0;
         }
         if (!Method35da(0, 0)) {
