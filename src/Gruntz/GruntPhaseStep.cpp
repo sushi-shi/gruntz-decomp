@@ -54,6 +54,7 @@ struct CGruntPtAcc {
     void RemoveAt(i32 i, i32 f); // 0x1b4e38
     void Dtor();                 // 0x1b4b76
 };
+SIZE_UNKNOWN(CGruntPtAcc);
 
 // Recompute the grid dirty rect (m_60) as {0,0,w,h} intersected with a copy, then
 // m_70/m_74 = the resulting size (the shared GruntTileScan dirty-rect idiom).
