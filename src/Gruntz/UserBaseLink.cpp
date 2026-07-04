@@ -150,14 +150,43 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
     m_collideWorker->Slot09(src->m_10, 0);
 }
 
-// CGameObject's three built-in logic-handler registrars (engine .text). Pinned
-// here so the ctors' `m_10->AddLogic*(key)` calls reloc-mask.
+// CGameObject's three built-in logic-handler registrars: look the logic-name key
+// up in the world's CMapStringToOb (m_0c -> +0x14 -> +0x10), then feed the found
+// handler through the matching lazy worker slot (Hit -> 80, Attack -> 88, Bump -> 90).
+// m_0c is the family's generically-typed world/context slot (i32); reached by
+// documented offset here.
+// @early-stop
+// scheduling coin-flip: body byte-exact EXCEPT the `handler = 0` slot-init lands one
+// push early (push &out; STORE; push key) where retail schedules it after both pushes
+// (push &out; push key; STORE). Same slot, independent store; MSVC5's scheduler places
+// it between the arg pushes. No source ordering of the init reproduces the late slot.
 RVA(0x00150f50, 0x33)
-void CGameObject::AddLogicHit(char*) {}
+void CGameObject::AddLogicHit(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    map->Lookup(key, &handler);
+    EnsureWorker80(handler);
+}
+
+// @early-stop
+// same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151030, 0x33)
-void CGameObject::AddLogicAttack(char*) {}
+void CGameObject::AddLogicAttack(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    map->Lookup(key, &handler);
+    EnsureWorker88(handler);
+}
+
+// @early-stop
+// same `handler = 0` scheduling coin-flip as AddLogicHit.
 RVA(0x00151110, 0x33)
-void CGameObject::AddLogicBump(char*) {}
+void CGameObject::AddLogicBump(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    map->Lookup(key, &handler);
+    EnsureWorker90(handler);
+}
 
 // g_logicTypesRegistered (RVA 0x2bf674, VA 0x6bf674): the one-shot logic-type
 // guard. g_emptyString (RVA 0x2293f4) is already labeled by netmgrerror, so it

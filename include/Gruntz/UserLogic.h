@@ -103,6 +103,18 @@ struct CGameObjLayer {
     i32 m_1c;       // +0x1c  layer base Y / base offset
 };
 
+// The logic-handler name map reached through the object's world context
+// (m_0c -> +0x14 -> +0x10): a CMapStringToOb keyed by logic name ("LogicHit",
+// "LogicAttack", "LogicBump"). Lookup returns the CGameObject handler through the
+// out-param (MFC ?Lookup@CMapStringToOb, reloc-masked; carve-out callee 0x1b8008).
+// Modeled as a lean __thiscall shell so the AddLogic* calls reloc-mask without
+// pulling the whole MFC map machinery into this engine TU.
+SIZE_UNKNOWN(CLogicHandlerMap);
+class CLogicHandlerMap {
+public:
+    i32 Lookup(const char* key, CGameObject** out) const; // 0x1b8008
+};
+
 // Exact size 0x1dc, byte-proven from TWO new-sites: CSpriteFactory::CreateSpriteImpl
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
