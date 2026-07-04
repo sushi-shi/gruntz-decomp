@@ -13,11 +13,11 @@
 
 #include <rva.h>
 
-#include <string.h>         // inline strcmp: the ctor's icon-name dispatch chain
-#include <Bute/ButeMgr.h>   // CButeTree (the bute store Setup queries)
-#include <Wap32/ZVec.h>     // zDArray (the command-dispatch tables)
+#include <string.h>              // inline strcmp: the ctor's icon-name dispatch chain
+#include <Bute/ButeMgr.h>        // CButeTree (the bute store Setup queries)
+#include <Wap32/ZVec.h>          // zDArray (the command-dispatch tables)
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
+#include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by

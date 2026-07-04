@@ -44,19 +44,19 @@
 class CImageSet {
 public:
     virtual i32 dummy0();
-    virtual void Release(i32 arg);    // +0x04  release/free hook (scalar-deleting dtor)
-    virtual i32 dummy2();             // +0x08
-    virtual i32 dummy3();             // +0x0c
-    virtual i32 dummy4();             // +0x10
-    virtual i32 Parse(void* record);  // +0x14  init from the WWD record
-    virtual i32 dummy6();             // +0x18
-    virtual i32 dummy7();             // +0x1c
+    virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
+    virtual i32 dummy2();            // +0x08
+    virtual i32 dummy3();            // +0x0c
+    virtual i32 dummy4();            // +0x10
+    virtual i32 Parse(void* record); // +0x14  init from the WWD record
+    virtual i32 dummy6();            // +0x18
+    virtual i32 dummy7();            // +0x1c
     // +0x20  per-pixel collision-kind query: given sub-tile pixel (x, y) returns the
     // tile's collision category there (0 = empty/passable; 1/2 = soft-blocking, a 2 is
     // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
     // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
     virtual i32 GetCollisionAt(i32 x, i32 y); // +0x20
-    virtual i32 GetStride();                   // +0x24  record byte length (cursor advance)
+    virtual i32 GetStride();                  // +0x24  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
 };
@@ -117,7 +117,7 @@ public:
     i32 m_viewH;   // +0x74  viewport tiles down
     i32 m_anchorX; // +0x78  view-anchor X
     i32 m_anchorY; // +0x7c  view-anchor Y
-    i32 m_zBound; // +0x80  plane z bound (VisitVisible draws objects with z-key < this)
+    i32 m_zBound;  // +0x80  plane z bound (VisitVisible draws objects with z-key < this)
     i32 m_originX; // +0x84  out: integer scaledX (snapped)
     i32 m_originY; // +0x88  out: integer scaledY
     i32 m_shiftX;  // +0x8c  tile->pixel shift X
@@ -239,11 +239,13 @@ public:
     i32 IsLoaded() OVERRIDE;              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
     i32 Unload() OVERRIDE;                // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
     i32 GetClassId() OVERRIDE;            // [8]  +0x20  0x1611b0  class type tag (0x19)
-    virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords);     // [9]  +0x24  0x15cf70
-    virtual i32 SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords);  // [10] +0x28  0x15ceb0
-    virtual i32 SetCoordsAndLoad40(const char* path, LevelCoordRect* coords);   // [11] +0x2c  0x15cdf0
-    virtual i32 SetCoords(LevelCoordRect* coords);                    // [12] +0x30  0x15d0d0
-    virtual i32 SetCoordExtents(i32 w, i32 h);                        // [13] +0x34  0x15d030
+    virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
+    virtual i32
+    SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords); // [10] +0x28  0x15ceb0
+    virtual i32
+    SetCoordsAndLoad40(const char* path, LevelCoordRect* coords); // [11] +0x2c  0x15cdf0
+    virtual i32 SetCoords(LevelCoordRect* coords);                // [12] +0x30  0x15d0d0
+    virtual i32 SetCoordExtents(i32 w, i32 h);                    // [13] +0x34  0x15d030
     virtual i32 LoadWwd(WwdHeader* hdr);           // [14] +0x38  0x15d280  1=ok 0=fail
     virtual i32 LoadFromSource(CParseSource* arg); // [15] +0x3c  0x15d630
     virtual i32 LoadFromFile(const char* path);    // [16] +0x40  0x15d500
@@ -372,16 +374,16 @@ private:
 
     // The sibling move leaves dispatched by MoveHandlerA..D (this=this level, the
     // moving CGameObject passed explicitly). All matched in GameLevel.cpp.
-    i32 StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e720
-    i32 StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);  // @0x15e870
-    i32 AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3);               // @0x15f1c0
-    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);              // @0x15ffe0
+    i32 StepAxisLo(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);          // @0x15e720
+    i32 StepAxisHi(CGameObject* t, i32 a1, i32 a2, i32* outX, i32 a3);          // @0x15e870
+    i32 AdvanceA(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15f1c0
+    i32 ClampSpan(i32 lo, i32 hi, i32* outLo, i32* outHi);                      // @0x15ffe0
     i32 HoldMove(CGameObject* t, CGameObject* carrier, i32 a1, i32 a2, i32 a3); // @0x15ff20
-    i32 FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3);               // @0x15eb00
-    i32 StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3); // @0x15fdb0
-    i32 AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3);               // @0x15ede0
-    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                       // @0x15f8d0
-    i32 AxisProbe(i32 coord, i32 limit);                                // @0x00161270
+    i32 FreeMove(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15eb00
+    i32 StepAxisAlt(CGameObject* t, i32 a1, i32 a2, i32* outY, i32 a3);         // @0x15fdb0
+    i32 AdvanceB(CGameObject* t, i32 a1, i32 a2, i32 a3);                       // @0x15ede0
+    i32 SpanCheck(i32 a, i32 b, i32 c, i32* out);                               // @0x15f8d0
+    i32 AxisProbe(i32 coord, i32 limit);                                        // @0x00161270
     // The two-object stand-fit validator StepAxisAlt runs per candidate carrier
     // (@0x15fe40). Matched in GameLevel.cpp.
     i32 AltStepValidate(CGameObject* t, CGameObject* payload, i32 a1, i32 a2, i32* outY, i32 a3);
@@ -408,7 +410,7 @@ public:
     i32 m_b0, m_b4, m_b8, m_bc; // +0xB0
     i32 m_c0, m_c4, m_c8, m_cc; // +0xC0
     i32 m_d0, m_d4, m_d8, m_dc; // +0xD0
-    WwdHeader m_header;            // +0xE0  (1524 B copy)
+    WwdHeader m_header;         // +0xE0  (1524 B copy)
 };
 
 // ApplyMove (@0x00167130): the move applier the DispatchMove/MoveToward drivers

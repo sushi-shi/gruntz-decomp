@@ -79,9 +79,9 @@ public:
     // candidate move would overlap another object; zero-stamped at worker build
     // (UserBaseLink) = "no callback".
     i32 (*m_collideNotify)(CGameObject* obj); // +0x10
-    i32 m_14; // +0x14
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
+    i32 m_14;                                 // +0x14
+    i32 m_18;                                 // +0x18
+    i32 m_1c;                                 // +0x1c
     char m_pad20[0x170 - 0x20];
     i32 m_170;
     i32 m_174;
@@ -121,17 +121,17 @@ struct CGameObject {
     // it (+0x2c) per object during the between-planes render walk, passing the
     // render visitor. [10] (+0x28) is the sibling hook the object-chain owner
     // also carries - unnamed here (no direct evidence on the object).
-    virtual void v00();          // [0]  +0x00
-    virtual void v04();          // [1]  +0x04
-    virtual void v08();          // [2]  +0x08
-    virtual void v0c();          // [3]  +0x0c
-    virtual void v10();          // [4]  +0x10
-    virtual void v14();          // [5]  +0x14
-    virtual void v18();          // [6]  +0x18
-    virtual void v1c();          // [7]  +0x1c
-    virtual void v20();          // [8]  +0x20
-    virtual void v24();          // [9]  +0x24
-    virtual void v28(void* arg); // [10] +0x28
+    virtual void v00();           // [0]  +0x00
+    virtual void v04();           // [1]  +0x04
+    virtual void v08();           // [2]  +0x08
+    virtual void v0c();           // [3]  +0x0c
+    virtual void v10();           // [4]  +0x10
+    virtual void v14();           // [5]  +0x14
+    virtual void v18();           // [6]  +0x18
+    virtual void v1c();           // [7]  +0x1c
+    virtual void v20();           // [8]  +0x20
+    virtual void v24();           // [9]  +0x24
+    virtual void v28(void* arg);  // [10] +0x28
     virtual void Draw(void* arg); // [11] +0x2c  per-object draw hook (VisitVisible)
 
     i32 m_04;    // +0x04
@@ -176,7 +176,7 @@ struct CGameObject {
     // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,
     // 3 -> B, 4 -> C, 8 -> B/C by direction, 6 -> D (two-probe recovery); the
     // handlers transition 1 <-> 4 <-> 6 as moves land/fall/block.
-    i32 m_moveMode; // +0xe4
+    i32 m_moveMode;     // +0xe4
     u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
                         //        BroadPhase tests other->m_collCategory & t->m_collMask)
     char m_padec[0xf4 - 0xec];
@@ -208,12 +208,12 @@ struct CGameObject {
     i32 m_areaT; // +0x148  a platform's stand surface row (AltStepValidate/HoldMove)
     i32 m_areaR; // +0x14c
     i32 m_areaB; // +0x150
-    i32 m_154;       // +0x154  captured config block (checkpoint state slots 8..11)
-    i32 m_158;       // +0x158
-    i32 m_15c;       // +0x15c
-    i32 m_160;       // +0x160
-    i32 m_164;       // +0x164
-    i32 m_168;       // +0x168
+    i32 m_154;   // +0x154  captured config block (checkpoint state slots 8..11)
+    i32 m_158;   // +0x158
+    i32 m_15c;   // +0x15c
+    i32 m_160;   // +0x160
+    i32 m_164;   // +0x164
+    i32 m_168;   // +0x168
     char m_pad16c[0x174 - 0x16c];
     // +0x174/+0x178  per-frame movement deltas. CMovingLogic::Update advances a
     // riding object by its carrier's deltas; AltStepValidate widens the stand-
@@ -263,23 +263,23 @@ struct CGameObjNode {
 // before loading the head - the sub-struct keeps that byte shape).
 SIZE_UNKNOWN(CGameObjChain);
 struct CGameObjChain {
-    virtual void v00();          // [0]  +0x00
-    virtual void v04();          // [1]  +0x04
-    virtual void v08();          // [2]  +0x08
-    virtual void v0c();          // [3]  +0x0c
-    virtual void v10();          // [4]  +0x10
-    virtual void v14();          // [5]  +0x14
-    virtual void v18();          // [6]  +0x18
-    virtual void v1c();          // [7]  +0x1c
-    virtual void v20();          // [8]  +0x20
-    virtual void v24();          // [9]  +0x24
+    virtual void v00();           // [0]  +0x00
+    virtual void v04();           // [1]  +0x04
+    virtual void v08();           // [2]  +0x08
+    virtual void v0c();           // [3]  +0x0c
+    virtual void v10();           // [4]  +0x10
+    virtual void v14();           // [5]  +0x14
+    virtual void v18();           // [6]  +0x18
+    virtual void v1c();           // [7]  +0x1c
+    virtual void v20();           // [8]  +0x20
+    virtual void v24();           // [9]  +0x24
     virtual void Hook(void* arg); // [10] +0x28  render-walk hook (VisitVisible)
 
     char m_pad04[0x10 - 0x04];
     struct List {
         char m_pad00[0x04];
         CGameObjNode* head; // +0x04  (i.e. chain +0x14)
-    } m_list; // +0x10
+    } m_list;               // +0x10
 };
 
 class CGameLevel; // fwd (the world owns the level; full class in <Gruntz/GameLevel.h>)

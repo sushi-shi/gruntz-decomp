@@ -1667,7 +1667,8 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    ((LfxBlitTarget*)g_gameReg->m_cmdGrid)->Blit(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
+    ((LfxBlitTarget*)g_gameReg->m_cmdGrid)
+        ->Blit(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
     return 1;
 }
 

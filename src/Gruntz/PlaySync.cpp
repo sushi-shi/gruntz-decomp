@@ -56,7 +56,8 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                 i32 id = g_644c54;
                 void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
                 if (spr == 0) {
-                    spr = ((CWorld::SpriteLoader*)g_64556c->m_spriteFactory)->LoadSprite((void*)1, (i32)spr);
+                    spr = ((CWorld::SpriteLoader*)g_64556c->m_spriteFactory)
+                              ->LoadSprite((void*)1, (i32)spr);
                 }
                 m_grid->SetDelay(0xa);
                 m_grid->SetSprite(spr);

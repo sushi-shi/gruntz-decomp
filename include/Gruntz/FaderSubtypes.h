@@ -39,11 +39,11 @@ struct CFaderInit;
 // ===========================================================================
 SIZE_UNKNOWN(CFaderMeshSub);
 struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
-    virtual void v0();   // one virtual -> its own vtable (reloc-masks 0x5f07d8)
-    i32 m_04;            // +0x5c
-    i32 m_08;            // +0x60
-    i32 m_0c;            // +0x64
-    i32 m_10;            // +0x68
+    virtual void v0(); // one virtual -> its own vtable (reloc-masks 0x5f07d8)
+    i32 m_04;          // +0x5c
+    i32 m_08;          // +0x60
+    i32 m_0c;          // +0x64
+    i32 m_10;          // +0x68
     CFaderMeshSub() {
         m_04 = 0;
         m_10 = 0;
@@ -56,7 +56,7 @@ SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
 class CFaderMesh : public CFader {
 public:
-    CFaderMesh();             // 0x17e940
+    CFaderMesh();               // 0x17e940
     virtual void v1() OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
     virtual void v2() OVERRIDE; // slot 2 -> 0x17f120 (overrides CFader pure)
 
@@ -80,7 +80,7 @@ public:
     i32 m_4c;                 // +0x4c  record-order flag
     i32 m_50;                 // +0x50  columns
     i32 m_54;                 // +0x54  rows
-    CFaderMeshSub m_58;     // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
+    CFaderMeshSub m_58;       // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
 };
 
 // ===========================================================================
@@ -134,7 +134,7 @@ SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
-    CFaderLight();             // 0x180410
+    CFaderLight();              // 0x180410
     virtual void v1() OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
     virtual void v2() OVERRIDE; // slot 2 -> 0x1814f0 (overrides CFader pure)
 
@@ -182,8 +182,8 @@ class CFaderShape : public CFader {
 public:
     CFaderShape();                   // 0x1816c0
     virtual ~CFaderShape() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
-    virtual void v1() OVERRIDE;       // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual void v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
+    virtual void v1() OVERRIDE;      // slot 1 -> 0x181b00 (overrides CFader pure)
+    virtual void v2() OVERRIDE;      // slot 2 -> 0x182900 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x494);

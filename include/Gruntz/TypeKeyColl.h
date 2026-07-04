@@ -66,11 +66,11 @@ public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
     virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
-    void SetAtGrow(i32 id, const char* key);                // grow + assign (inlined in retail)
-    char** IndexToPtr(i32 idx);                             // thunk 0x403864 -> node (*node == name)
-    void* Resolve(void* id);                                // thunk 0x437c (__thiscall ret 4)
-    void* m_cursor;                                          // +0x1c  (== m_buf)
-    i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)
+    void SetAtGrow(i32 id, const char* key);                 // grow + assign (inlined in retail)
+    char** IndexToPtr(i32 idx); // thunk 0x403864 -> node (*node == name)
+    void* Resolve(void* id);    // thunk 0x437c (__thiscall ret 4)
+    void* m_cursor;             // +0x1c  (== m_buf)
+    i32 m_count;                // +0x20  (== m_hi - m_lo + 1)
 };
 
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

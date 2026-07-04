@@ -2121,7 +2121,8 @@ i32 CGruntzMgr::Quicksave() {
         m_timer->Stop();
     }
     FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
-    if (((ScoreNotifier*)g_gameReg->m_saveSink)->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
+    if (((ScoreNotifier*)g_gameReg->m_saveSink)
+            ->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
         m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }

@@ -1,8 +1,8 @@
 #include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
 #include <Gruntz/UserLogic.h>
-#include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + the shared registration infra
+#include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
+#include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
 #include <rva.h>
 // Wormhole.cpp - CWormhole - a world teleport node (RTTI CWormhole), a CUserLogic
 // game-object leaf. Three methods are matched here:

@@ -246,18 +246,15 @@ void CMovingLogic::Update() {
 
     // Drive the level's move resolver toward the new position.
     if (m_object->m_moveMode == 1) {
-        m_148 = ((CGameObjWorld*)m_object->m_0c)
-                    ->m_level->MoveToward(
-                        m_object,
-                        (i32)Motion()->m_40,
-                        m_object->m_screenY,
-                        m_14c
-                    );
+        m_148 =
+            ((CGameObjWorld*)m_object->m_0c)
+                ->m_level->MoveToward(m_object, (i32)Motion()->m_40, m_object->m_screenY, m_14c);
         Motion()->m_30 = 0.0;
     } else {
         m_object->m_flags &= ~0x10;
-        m_148 = ((CGameObjWorld*)m_object->m_0c)
-                    ->m_level->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
+        m_148 =
+            ((CGameObjWorld*)m_object->m_0c)
+                ->m_level->MoveToward(m_object, (i32)Motion()->m_40, (i32)Motion()->m_48, m_14c);
     }
 
     // X arrival: if the object moved off the motion target, re-solve the X

@@ -534,7 +534,7 @@ i32 CGameLevel::SetCoordsAndLoad40(const char* path, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadFromFile(path) == 0) { // vtable +0x40 (slot 16)
-        Unload();                               // vtable +0x1c (slot 7), fail/reset hook
+        Unload();                  // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -547,7 +547,7 @@ i32 CGameLevel::SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadFromSource(src) == 0) { // vtable +0x3c (slot 15)
-        Unload();                                   // vtable +0x1c (slot 7), fail/reset hook
+        Unload();                   // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -562,7 +562,7 @@ i32 CGameLevel::SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
     if (LoadWwd(hdr) == 0) { // vtable +0x38 (slot 14)
-        Unload();                         // vtable +0x1c (slot 7), fail/reset hook
+        Unload();            // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -611,16 +611,17 @@ struct CImageSet1 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
     virtual void s18();              // [6]  0x161330
     virtual void s1c();              // [7]  0x161340
-    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161380  per-pixel collision-kind query
-    virtual i32 GetStride();                   // [9]  +0x24  0x161410  record byte length (cursor advance)
-    virtual void s28();              // [10] 0x161390
-    virtual void s2c();              // [11] 0x1613a0
-    virtual void s30();              // [12] 0x1613b0
-    virtual void s34();              // [13] 0x1613c0
-    virtual void s38();              // [14] 0x1613d0
-    virtual void s3c();              // [15] 0x1613e0
-    virtual void s40();              // [16] 0x1613f0
-    virtual void s44();              // [17] 0x161400
+    virtual i32
+    GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161380  per-pixel collision-kind query
+    virtual i32 GetStride();      // [9]  +0x24  0x161410  record byte length (cursor advance)
+    virtual void s28();           // [10] 0x161390
+    virtual void s2c();           // [11] 0x1613a0
+    virtual void s30();           // [12] 0x1613b0
+    virtual void s34();           // [13] 0x1613c0
+    virtual void s38();           // [14] 0x1613d0
+    virtual void s3c();           // [15] 0x1613e0
+    virtual void s40();           // [16] 0x1613f0
+    virtual void s44();           // [17] 0x161400
     CImageSet1() {
         m_04 = 0; // cl auto-stamps &??_7CImageSet1 first
     }
@@ -640,16 +641,17 @@ struct CImageSet2 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
     virtual void s18();              // [6]  0x161420
     virtual void s1c();              // [7]  0x161430
-    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161470  per-pixel collision-kind query
-    virtual i32 GetStride();                   // [9]  +0x24  0x1614a0  record byte length (cursor advance)
-    virtual void s28();              // [10] 0x1669e0
-    virtual void s2c();              // [11] 0x166a40
-    virtual void s30();              // [12] 0x166b90
-    virtual void s34();              // [13] 0x166bf0
-    virtual void s38();              // [14] 0x166ab0
-    virtual void s3c();              // [15] 0x166b20
-    virtual void s40();              // [16] 0x166c60
-    virtual void s44();              // [17] 0x166cd0
+    virtual i32
+    GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161470  per-pixel collision-kind query
+    virtual i32 GetStride();      // [9]  +0x24  0x1614a0  record byte length (cursor advance)
+    virtual void s28();           // [10] 0x1669e0
+    virtual void s2c();           // [11] 0x166a40
+    virtual void s30();           // [12] 0x166b90
+    virtual void s34();           // [13] 0x166bf0
+    virtual void s38();           // [14] 0x166ab0
+    virtual void s3c();           // [15] 0x166b20
+    virtual void s40();           // [16] 0x166c60
+    virtual void s44();           // [17] 0x166cd0
     CImageSet2() {
         m_04 = 0; // cl auto-stamps &??_7CImageSet2 first
     }
@@ -673,16 +675,17 @@ struct CImageSet3 : Wap::CObject {
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void s18();              // [6]  0x1614b0
     virtual void s1c();              // [7]  0x1614d0
-    virtual i32 GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
-    virtual i32 GetStride();                   // [9]  +0x24  0x161590  record byte length (cursor advance)
-    virtual void s28();              // [10] 0x166e00
-    virtual void s2c();              // [11] 0x166e60
-    virtual void s30();              // [12] 0x166eb0
-    virtual void s34();              // [13] 0x166f20
-    virtual void s38();              // [14] 0x166f80
-    virtual void s3c();              // [15] 0x166ff0
-    virtual void s40();              // [16] 0x167050
-    virtual void s44();              // [17] 0x1670d0
+    virtual i32
+    GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
+    virtual i32 GetStride();      // [9]  +0x24  0x161590  record byte length (cursor advance)
+    virtual void s28();           // [10] 0x166e00
+    virtual void s2c();           // [11] 0x166e60
+    virtual void s30();           // [12] 0x166eb0
+    virtual void s34();           // [13] 0x166f20
+    virtual void s38();           // [14] 0x166f80
+    virtual void s3c();           // [15] 0x166ff0
+    virtual void s40();           // [16] 0x167050
+    virtual void s44();           // [17] 0x1670d0
     CImageSet3() {
         m_width = 0; // cl auto-stamps &??_7CImageSet3 first
         m_pixels = 0;
@@ -693,11 +696,11 @@ struct CImageSet3 : Wap::CObject {
     void operator delete(void* p) {
         RezFree(p);
     }
-    i32 m_width;   // +0x04  tile width
-    i32 m_height;   // +0x08  tile height
-    i32 m_heightLog2;   // +0x0c  log2(height)
+    i32 m_width;      // +0x04  tile width
+    i32 m_height;     // +0x08  tile height
+    i32 m_heightLog2; // +0x0c  log2(height)
     i32 m_byteSize;   // +0x10  width*height (byte size)
-    void* m_pixels; // +0x14  owned pixel buffer
+    void* m_pixels;   // +0x14  owned pixel buffer
 };
 
 RVA(0x0015d820, 0xa3)
@@ -990,7 +993,7 @@ extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
-            (RESULT) = kTilePassable;                                                                          \
+            (RESULT) = kTilePassable;                                                              \
         } else {                                                                                   \
             CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
@@ -1887,8 +1890,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     do {
         CGameObjNode* nx = node->next;
         CGameObject* obj = node->obj;
-        if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory) && t->m_extentL != AXIS_UNSET
-            && obj->m_extentL != AXIS_UNSET) {
+        if (obj != t && (obj->m_flags & 0x100) && (t->m_collMask & obj->m_collCategory)
+            && t->m_extentL != AXIS_UNSET && obj->m_extentL != AXIS_UNSET) {
             i32 tLeft = t->m_extentL + t->m_screenX;
             i32 tBot = t->m_extentT + t->m_screenY;
             i32 tRight = t->m_screenX + t->m_extentR;

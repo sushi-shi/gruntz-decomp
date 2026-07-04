@@ -1282,7 +1282,7 @@ namespace ApiCallerStubs {
     // CString length lives 8 bytes before the data.
     DATA(0x00249618)
     extern char* g_playerName_649618;
-    void Init_2ed7(HWND hWnd, void* ctx);                       // RVA 0x2ed7 (__cdecl)
+    void Init_2ed7(HWND hWnd, void* ctx); // RVA 0x2ed7 (__cdecl)
     // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.
     RVA(0x000be760, 0x82)
     void winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer(HWND hWnd, void* ctx) {

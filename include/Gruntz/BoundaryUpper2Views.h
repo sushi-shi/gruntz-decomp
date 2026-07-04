@@ -195,7 +195,7 @@ struct CDDPalette {
 };
 SIZE_UNKNOWN(CDDPalette);
 struct CDDrawPtrCollections {
-    i32 m_0;           // +0x00
+    i32 m_0;               // +0x00
     void Add(CDDPalette*); // 0x142eb0
     CDDPalette* Create(i32 a, i32 b);
 };

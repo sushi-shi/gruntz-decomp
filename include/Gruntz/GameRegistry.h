@@ -194,26 +194,26 @@ struct CGameRegistry {
     char m_pad4c[0x54 - 0x4c];
     void* m_inputState; // +0x54  input/state object (FLAG: ambient sound casts it to the
                         //         active level, WwdActiveLevel->m_objectCount)
-    void* m_saveSink; // +0x58  save-record sink (consumers read save-game progress:
-                      //         MenuProgress->m_1c / final-movie availability)
+    void* m_saveSink;   // +0x58  save-record sink (consumers read save-game progress:
+                        //         MenuProgress->m_1c / final-movie availability)
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)
     char m_pad64[0x68 - 0x64];
-    void* m_cmdGrid;   // +0x68  world command-grid (ONE object; the per-mode downcasts -
-                       //         placement/cue grid in single-player, goo-well mgr in battlez,
-                       //         light-fx target in fx - are the unrecovered-type artifact).
-    void* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object
+    void* m_cmdGrid;       // +0x68  world command-grid (ONE object; the per-mode downcasts -
+                           //         placement/cue grid in single-player, goo-well mgr in battlez,
+                           //         light-fx target in fx - are the unrecovered-type artifact).
+    void* m_cmdSubMgr;     // +0x6c  secondary grid/cmd sub-object
     CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
                            //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
     void* m_spriteFactory; // +0x74  sprite/asset factory (ONE object: LoadSprite in CPlay,
-                           //         GetByIndex in InGameIcon; Grunt.h CSpriteRefTable). void* until typed.
-    void* m_logicPump;     // +0x78  per-frame logic/effects pump (ONE object: Push + an int/color
-                           //         table at +0x14 + field at +0x28; LfxLogicPump). void* until typed.
+    //         GetByIndex in InGameIcon; Grunt.h CSpriteRefTable). void* until typed.
+    void* m_logicPump; // +0x78  per-frame logic/effects pump (ONE object: Push + an int/color
+                       //         table at +0x14 + field at +0x28; LfxLogicPump). void* until typed.
     void* m_scoreHud;  // +0x7c  HUD/score accumulator + cmd sink;
                        //         battlez views it as the CBzData score tracker facet.
-    i32 m_numRuns;         // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
-                           //         varies the attract title screen by m_numRuns % N + 1)
+    i32 m_numRuns;     // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
+                       //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];
     i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
     i32 m_modeH;      // +0x90  live video-mode height (==480)
@@ -225,10 +225,10 @@ struct CGameRegistry {
     i32 m_isHighDetail;     // +0x10c  "High_Detail"
     i32 m_isEffectsEnabled; // +0x110  "Effects"
     char m_pad114[0x118 - 0x114];
-    i32 m_isEasyMode;  // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
-    i32 m_inputFlag;     // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
+    i32 m_isEasyMode; // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
+    i32 m_inputFlag; // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
     i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
-    i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
+    i32 m_scrollSpeed;   // +0x124  "Scroll_Speed"
     char m_pad128[0x130 - 0x128];
     // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,
     // the RNG runs deterministic/replay-style (CoinFlip), secret-level triggers initialize

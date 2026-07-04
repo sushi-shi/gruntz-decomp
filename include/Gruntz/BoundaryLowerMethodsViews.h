@@ -31,7 +31,7 @@ SIZE_UNKNOWN(CVariantSlot);
 // - it shares Find (0x16da80); this is the projectile/act instance.
 struct CTypeColl464 {
     void* m_0;                // +0x00  vptr
-    CVariantSlot* m_4;      // +0x04  grow-path node inserter
+    CVariantSlot* m_4;        // +0x04  grow-path node inserter
     i32 m_lo;                 // +0x08  index low bound
     i32 m_hi;                 // +0x0c  index high bound
     char* m_buf;              // +0x10  primary element buffer (base)
@@ -83,7 +83,7 @@ SIZE_UNKNOWN(C8e880);
 
 // 0x0915d0 / 0x091620 - guarded dispatch through the +0x48 sub's +0x1c probe.
 struct CGruntzSoundInnerZ {
-    i32 IsBusy();           // 0x138f60
+    i32 IsBusy();                 // 0x138f60
     void SetVolume(i32 a, i32 b); // 0x138fd0
 };
 SIZE_UNKNOWN(CGruntzSoundInnerZ);
@@ -251,8 +251,8 @@ SIZE_UNKNOWN(Cdb2f0);
 
 // 0x0db750 - "LEVEL" config sync through the +0x0c owner's +0x2c config.
 struct CDDrawSubMgrLeaf {
-    void* HasKeyPrefix_152c50(const char* key);                     // 0x152c50
-    void RemoveKeysEqual_1527d0(const char* key, void* v);             // 0x1527d0
+    void* HasKeyPrefix_152c50(const char* key);                // 0x152c50
+    void RemoveKeysEqual_1527d0(const char* key, void* v);     // 0x1527d0
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
 };
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);

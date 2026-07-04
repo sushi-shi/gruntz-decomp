@@ -10,11 +10,11 @@
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
 
-#include <Bute/ButeMgr.h>   // CButeTree (the shared registration key store)
-#include <Mfc.h>            // CString (the scratch name-vec element)
-#include <Wap32/ZVec.h>     // zDArray<member-fn-ptr> dispatch table + zvec accessors
+#include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
+#include <Mfc.h>                 // CString (the scratch name-vec element)
+#include <Wap32/ZVec.h>          // zDArray<member-fn-ptr> dispatch table + zvec accessors
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
-#include <Gruntz/NameVec.h> // g_buteNameVec's scratch zDArray<CString> view
+#include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
 

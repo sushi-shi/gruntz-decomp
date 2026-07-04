@@ -52,7 +52,7 @@ extern u32(WINAPI* g_pTimeGetTime)();  // 0x6c4650
 extern u32(WINAPI* g_pGetTickCount)(); // 0x6c3fc8
 extern i32(WINAPI* g_ShowCursor)(i32); // 0x6c44c4
 
-extern "C" char* StrUpr(char*);                      // 0x18d330
+extern "C" char* StrUpr(char*); // 0x18d330
 
 extern "C" void cb_403193();
 extern "C" void cb_401bc2();

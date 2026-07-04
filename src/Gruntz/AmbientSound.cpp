@@ -143,7 +143,8 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     if (inRange == 0) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0 || ((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
+    if (g_gameReg->m_soundEnabled == 0
+        || ((WwdActiveLevel*)g_gameReg->m_inputState)->m_objectCount == 0) {
         return;
     }
     if (force != 0) {

@@ -144,7 +144,6 @@ extern "C" u32 g_clock;             // _g_645588 @0x645588 running game clock
 // __cdecl board rect predicate (0x401127): point-in-board-rect.
 extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
 
-
 struct CGruntScan {
     i32 ScanNearestTarget(); // 0xf42f0
 

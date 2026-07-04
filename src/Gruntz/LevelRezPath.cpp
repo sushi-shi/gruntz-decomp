@@ -43,7 +43,6 @@ struct LevelRezData {
     char m_pad2f0[0x5f4 - 0x2f0];
 };
 
-
 class LevelRezLoader {
 public:
     i32 BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString name);

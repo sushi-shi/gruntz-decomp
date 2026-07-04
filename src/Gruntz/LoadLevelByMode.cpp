@@ -165,7 +165,7 @@ i32 LlBuildBars(void* self, i32 a);          // virtual host4 +0xa4 / 0xa8
 void LlFinishMap(void* self);                // 0x12ee
 void LlFinishMap2(void* self);               // 0x128a
 void LlStartGame(void* self);                // 0x3d55
-void ActiveWait(i32 ms); // 0x13dfe0 busy-wait
+void ActiveWait(i32 ms);                     // 0x13dfe0 busy-wait
 void LlSetCue(void* mapHost, i32 a, i32 b);  // 0x13f460
 void LlSpriteResize(
     void* host,

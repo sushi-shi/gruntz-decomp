@@ -264,8 +264,8 @@ i32 CGrunt::WanderStep() {
             i32 py = GameRand() % 4 + (F(base, 0x60) >> 5) - 2;
             i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
             if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
-                CGrunt* entry =
-                    ((CGruntTileMgr*)g_pGameRegistry->m_cmdGrid)->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+                CGrunt* entry = ((CGruntTileMgr*)g_pGameRegistry->m_cmdGrid)
+                                    ->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
                 if (entry != 0) {
                     i32 e10 = F(entry, 0x10);
                     RECT rc;

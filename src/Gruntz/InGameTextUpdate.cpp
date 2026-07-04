@@ -10,7 +10,7 @@
 // fields (m_screenX/m_screenY/m_124/m_stateFlags + the +0x1a0 per-leaf anim sub).
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
-#include <Gruntz/InGameText.h>   // the canonical CInGameText : CUserLogic model
+#include <Gruntz/InGameText.h>  // the canonical CInGameText : CUserLogic model
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)

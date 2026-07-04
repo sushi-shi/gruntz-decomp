@@ -102,17 +102,25 @@ struct CTrigLogic {
 
     // Each thunk (ILT 0xNNNN -> the real leaf ctor RVA) constructs one RTTI class;
     // resolved from the ILT jmp target (TileTriggerDerivedCtors.cpp / the base ctors).
-    CTrigLogic* NewTileTriggerSwitchLogic();          // ILT 0x3206 -> ??0CTileTriggerSwitchLogic 0x110430 (ids 1,2,5)
-    CTrigLogic* NewTileMultiTriggerSwitchLogic();     // ILT 0x3eb3 -> ??0CTileMultiTriggerSwitchLogic 0x111f10 (id 3)
-    CTrigLogic* NewTileExclusiveTriggerSwitchLogic(); // ILT 0x4192 -> ??0CTileExclusiveTriggerSwitchLogic 0x112050 (id 4)
-    CTrigLogic* NewTileSecretTriggerSwitchLogic();    // ILT 0x2db5 -> ??0CTileSecretTriggerSwitchLogic 0x112790 (id 6)
-    CTrigLogic* NewTileTimeTriggerSwitchLogic();      // ILT 0x332d -> ??0CTileTimeTriggerSwitchLogic 0x1127c0 (id 7)
-    CTrigLogic* NewCheckpointTriggerSwitchLogic();    // ILT 0x2f72 -> ??0CCheckpointTriggerSwitchLogic 0x1127f0 (id 8)
-    CTrigLogic* NewTileTriggerLogic();                // ILT 0x43b3 -> ??0CTileTriggerLogic 0x1107f0 (ids 21,24)
-    CTrigLogic* NewGiantRockLogic();                  // ILT 0x2c3e -> ??0CGiantRockLogic 0x112210 (id 22)
-    CTrigLogic* NewTileTimeTriggerLogic();            // ILT 0x18de -> ??0CTileTimeTriggerLogic 0x112270 (id 23)
-    CTrigLogic* NewTileSecretTriggerLogic();          // ILT 0x310c -> ??0CTileSecretTriggerLogic 0x112760 (id 25)
-    CTrigLogic* NewCoveredPowerupLogic();             // ILT 0x2a4f -> ??0CCoveredPowerupLogic 0x112240 (id 26)
+    CTrigLogic*
+    NewTileTriggerSwitchLogic(); // ILT 0x3206 -> ??0CTileTriggerSwitchLogic 0x110430 (ids 1,2,5)
+    CTrigLogic*
+    NewTileMultiTriggerSwitchLogic(); // ILT 0x3eb3 -> ??0CTileMultiTriggerSwitchLogic 0x111f10 (id 3)
+    CTrigLogic*
+    NewTileExclusiveTriggerSwitchLogic(); // ILT 0x4192 -> ??0CTileExclusiveTriggerSwitchLogic 0x112050 (id 4)
+    CTrigLogic*
+    NewTileSecretTriggerSwitchLogic(); // ILT 0x2db5 -> ??0CTileSecretTriggerSwitchLogic 0x112790 (id 6)
+    CTrigLogic*
+    NewTileTimeTriggerSwitchLogic(); // ILT 0x332d -> ??0CTileTimeTriggerSwitchLogic 0x1127c0 (id 7)
+    CTrigLogic*
+    NewCheckpointTriggerSwitchLogic(); // ILT 0x2f72 -> ??0CCheckpointTriggerSwitchLogic 0x1127f0 (id 8)
+    CTrigLogic* NewTileTriggerLogic(); // ILT 0x43b3 -> ??0CTileTriggerLogic 0x1107f0 (ids 21,24)
+    CTrigLogic* NewGiantRockLogic();   // ILT 0x2c3e -> ??0CGiantRockLogic 0x112210 (id 22)
+    CTrigLogic*
+    NewTileTimeTriggerLogic(); // ILT 0x18de -> ??0CTileTimeTriggerLogic 0x112270 (id 23)
+    CTrigLogic*
+    NewTileSecretTriggerLogic(); // ILT 0x310c -> ??0CTileSecretTriggerLogic 0x112760 (id 25)
+    CTrigLogic* NewCoveredPowerupLogic(); // ILT 0x2a4f -> ??0CCoveredPowerupLogic 0x112240 (id 26)
     i32 Reg277f(void* r, i32 k, i32 a2, i32 a3); // 0x277f (ids 1..8)
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)

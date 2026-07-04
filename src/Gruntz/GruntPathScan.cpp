@@ -138,7 +138,14 @@ i32 CGrunt::PathScan57db0() {
             if (fire) {
                 CScanList s(0xa);
                 i32 res = grid->Probe20f4(
-                    c, r, co->m_x, co->m_y, &s.m_18, 1, m_arrivalFlags | 0x20000000, m_24c
+                    c,
+                    r,
+                    co->m_x,
+                    co->m_y,
+                    &s.m_18,
+                    1,
+                    m_arrivalFlags | 0x20000000,
+                    m_24c
                 );
                 if (res != 0) {
                     if (s.m_18 != 0) {
@@ -212,7 +219,14 @@ i32 CGrunt::PathScan57db0() {
                 }
                 CScanList s(0xa);
                 i32 res = grid->Probe20f4(
-                    col5, row5, col5, row5, &s.m_18, 1, m_arrivalFlags | 0x20040002, m_24c
+                    col5,
+                    row5,
+                    col5,
+                    row5,
+                    &s.m_18,
+                    1,
+                    m_arrivalFlags | 0x20040002,
+                    m_24c
                 );
                 if (res != 0 && s.m_18 != 0) {
                     void* elem = s.Head1b4a03();

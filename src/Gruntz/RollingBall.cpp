@@ -83,7 +83,7 @@ void* RbCreateSprite(i32 a, i32 b, i32 c, const char* ns, i32 tag, i32 flags); /
 i32 RbGetDwordDef(const char* sec, const char* key, i32 def); // 0x1721e0 CButeMgr::GetDwordDef
 double RbCeil(double x);                                      // 0x120480 ceil
 double RbFloor(double x);                                     // 0x120580 floor
-extern "C" i32 __ftol(double x); // 0x11f570
+extern "C" i32 __ftol(double x);                              // 0x11f570
 
 // Registry slot calls on g_gameReg sub-objects (reloc-masked __thiscall).
 i32 RbProbeRect(void* obj, i32 cx, i32 cy, i32* rectBase, i32* outA, i32* outB, i32 z); // 0x32ce

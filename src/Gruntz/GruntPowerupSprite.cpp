@@ -99,7 +99,8 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
-    CGruntEntry* e = ((CGruntEntry**)((char*)g_mgrSettings->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGruntEntry* e =
+        ((CGruntEntry**)((char*)g_mgrSettings->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_renderable->m_screenX;
         m_object->m_screenY = e->m_renderable->m_screenY;

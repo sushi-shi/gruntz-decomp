@@ -49,7 +49,7 @@
 #include <rva.h>
 #include <Globals.h>
 
-#include <stdio.h> // vsprintf (NAFXCW varargs formatter)
+#include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h> // atoi (0x11ffb0)
 
 // Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);

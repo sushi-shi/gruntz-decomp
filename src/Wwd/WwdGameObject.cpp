@@ -84,7 +84,8 @@ struct EngStr {
 // FindKeyOfValue_158570 reverse-looks-up a key CString by LeafScanValue (modeled
 // here as i32) through its +0x10 map. Reloc-masked reader view onto the real class.
 struct CDDrawSubMgrLeafScan {
-    EngStr* FindKeyOfValue_158570(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+    EngStr*
+    FindKeyOfValue_158570(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
     char m_pad00[0x10];
     MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
@@ -122,7 +123,7 @@ struct WwdMgr {
     char m_pad00[0x08];
     WwdMgrSub08* m_08; // +0x08  kill-cue map holder
     char m_pad0c[0x10 - 0x0c];
-    WwdMgrSub10* m_10;  // +0x10  name resolver
+    WwdMgrSub10* m_10;          // +0x10  name resolver
     CDDrawWorkerRegistry* m_14; // +0x14  worker registry (FindKeyOfValue_165360)
     char m_pad18[0x28 - 0x18];
     CDDrawSubMgrLeafScan* m_28; // +0x28  leaf-scan registry (FindKeyOfValue_158570)

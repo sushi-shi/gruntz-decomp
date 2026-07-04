@@ -174,7 +174,8 @@ i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
     if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    CSbiTileEntry* entry = (CSbiTileEntry*)((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_grid[row + col * 15];
+    CSbiTileEntry* entry =
+        (CSbiTileEntry*)((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_grid[row + col * 15];
     if (entry == 0) {
         return 0;
     }
@@ -1603,8 +1604,8 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
     }
     r->Click1c(a, x, y);
     i32 cmd = r->m_cmd;
-    if (r->m_tab == 1 && m_hitTestDisabled == 0 && ((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag != 0
-        && cmd >= 0x13b && cmd <= 0x149) {
+    if (r->m_tab == 1 && m_hitTestDisabled == 0
+        && ((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag != 0 && cmd >= 0x13b && cmd <= 0x149) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;

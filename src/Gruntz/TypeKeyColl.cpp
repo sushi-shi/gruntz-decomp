@@ -94,8 +94,8 @@ DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 extern "C" void* GetCallerRetAddr(); // 0x16e0f0 (records the fatal context)
-extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete / free)
-extern "C" i32 ProjActAlloc();    // 0x16d990
+extern "C" void RezFree(void* p);    // 0x1b9b82 (engine operator delete / free)
+extern "C" i32 ProjActAlloc();       // 0x16d990
 
 // The CString slot teardown the node-array free loop walks (one per 4-byte slot).
 // ===========================================================================

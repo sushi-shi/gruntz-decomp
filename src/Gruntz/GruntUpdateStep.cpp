@@ -254,7 +254,8 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    if (F(this, 0x328) != 0 && F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
+    if (F(this, 0x328) != 0
+        && F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + F(this, 0x2f0) * 4, 0) == 0) {
         void* p = (void*)P(this, 0x320);
         while (p != 0) {
             void* next = *(void**)p;

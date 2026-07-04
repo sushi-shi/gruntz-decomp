@@ -121,7 +121,6 @@ struct CStepRectInit { // 0x34a4 - init a rect + return it
 
 extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
-
 // Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
 // empty the list.
 #define STEP_DRAIN(g)                                                                              \

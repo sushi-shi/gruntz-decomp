@@ -334,23 +334,23 @@ public:
     EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
-    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
-    SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
-    CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
-    TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
-    i32 m_64;               // +0x64
-    CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
-    CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
-    CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
+    CInput54* m_inputState;  // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
+    SaveSink58* m_saveSink;  // +0x58  save-record sink (SaveSink58::Store)
+    CChatLog* m_chatLog;     // +0x5c  chat/message log (Insert)
+    TimerObj* m_timer;       // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    i32 m_64;                // +0x64
+    CCmdGrid* m_cmdGrid;     // +0x68  world delta-table grid + command sink (Reset/Flush)
+    CmdSink* m_cmdSubMgr;    // +0x6c  command sub-manager sink
+    CmdSinkV* m_cmdNotify;   // +0x70  command sink (vtbl slot 1) + cell-height notify
     EngObj* m_spriteFactory; // +0x74  sprite/asset factory (consumers: LoadSprite/GetByIndex);
                              //         mgr only tears it down, so typed EngObj until modeled
     EngObj* m_logicPump;     // +0x78  per-frame logic/effects pump (consumers: Push + +0x14 table);
                              //         mgr only tears it down, so typed EngObj until modeled
-    ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
-    i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
-    i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
-    i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)
+    ScoreHud* m_scoreHud;    // +0x7c  HUD/score accumulator + command sink
+    i32 m_numRuns;           // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
+    i32 m_numMovies;         // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;        // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
+    i32 m_modeW, m_modeH;    // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH;   // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;                // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;                // +0xa0  one-shot lobby-connect guard

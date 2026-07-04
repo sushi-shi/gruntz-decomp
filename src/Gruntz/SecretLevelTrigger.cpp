@@ -121,8 +121,8 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CGameObject* spr = m_object;
-    CTrigger* hit =
-        ((CTriggerSink*)g_gameReg->m_cmdGrid)->Probe(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+    CTrigger* hit = ((CTriggerSink*)g_gameReg->m_cmdGrid)
+                        ->Probe(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
