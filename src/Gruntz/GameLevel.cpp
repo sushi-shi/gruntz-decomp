@@ -1944,8 +1944,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
 // bodies are byte-exact. Not steerable from source (case-value density decides the
 // lowering) - see docs/patterns/switch-cmpje-tree-vs-jumptable.md. Deferred.
 RVA(0x00160f70, 0xfa)
-i32 CGameLevel::EditDispatch(EditSink* sink, i32 arg1, i32 arg2, i32 arg3) {
-    EditSink* s = sink;
+i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
+    EditSink* s = (EditSink*)sink;
     if (s == 0) {
         return 0;
     }
@@ -1966,7 +1966,7 @@ i32 CGameLevel::EditDispatch(EditSink* sink, i32 arg1, i32 arg2, i32 arg3) {
     if (m_mainPlane == 0) {
         return 0;
     }
-    return ResolveLevelName(sink, arg2, arg2, arg3) != 0 ? 1 : 0;
+    return ResolveLevelName(s, arg2, arg2, arg3) != 0 ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -216,11 +216,16 @@ struct CLoadable {
 // The movement/collision target of the DispatchMove/MoveStep cluster is the
 // canonical CGameObject (<Gruntz/UserLogic.h>) - the level steps its
 // m_screenX/m_screenY through the tile probes. CGameObjChain is its world
-// object-chain owner; EditSink the serializer EditDispatch drives (defined in
-// GameLevel.cpp). Only pointers appear below, so fwd decls suffice.
+// object-chain owner. Only pointers appear below, so fwd decls suffice.
+//
+// EditDispatch's `sink` is a cross-TU polymorphic serializer whose concrete view
+// (EditSink, GetName/SetName @ +0x2c/+0x30) lives in GameLevel.cpp; it is passed
+// as a generic void* here (same authentic cross-TU-payload handling the collapse
+// keeps for BeginParse's handle) so this shared header stays at two fwd decls -
+// a third one perturbs the /O2 register schedule of an unrelated GruntzMgr.h
+// includer (CSBI_MenuItem::DecCounter's RenderFrame arg block; see report).
 struct CGameObject;
 struct CGameObjChain;
-struct EditSink;
 
 class CGameLevel : public CLoadable {
 public:
@@ -333,8 +338,10 @@ public:
     void VisitVisible(void* visitor, CGameObjChain* ctx);
 
     // String/state edit dispatch: arg1 selects a level-name get/set on `sink` (a
-    // serializer), then forwards (arg2, arg2, arg3) to a level-resolve helper.
-    i32 EditDispatch(EditSink* sink, i32 arg1, i32 arg2, i32 arg3);
+    // serializer, the GameLevel.cpp-local EditSink view), then forwards (arg2,
+    // arg2, arg3) to a level-resolve helper. `sink` is a generic void* here (see
+    // the fwd-decl note above) and cast to EditSink in the definition.
+    i32 EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3);
 
     // MoveKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis move
     // resolver ApplyMove fans modes 1..2 into. For each axis, when the object's

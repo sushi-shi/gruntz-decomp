@@ -224,11 +224,11 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::DecCounter - decrement the live counter; while it is still up,
 // blit the resolved frame at the menu's screen rect. 0-arg __thiscall (ret 1).
-// @early-stop
-// ~92%: byte-exact except a 1-instruction load-schedule coin-flip in the
-// RenderFrame arg setup (retail loads m_18 before f->m_anchorY; the recompile swaps the
-// two loads within the sub-expression) + the reloc-naming tail. Not steerable from
-// C (the within-expression evaluation order is the optimizer's); deferred.
+// The RenderFrame arg-block load schedule (retail loads m_18/m_14 on `this` before
+// the frame's anchor fields) is register-schedule-sensitive to how many struct
+// forward-decls GameLevel.h feeds this TU through GruntzMgr.h: >=3 flips two loads
+// and craters this to 74%. Held at two decls (EditSink relaxed to void*, see
+// GameLevel.h) keeps it byte-exact.
 RVA(0x000e82a0, 0x45)
 i32 CSBI_MenuItem::DecCounter() {
     if (m_28 > 0) {
