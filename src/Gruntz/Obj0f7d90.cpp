@@ -1,3 +1,9 @@
+// Obj0f7d90.cpp (renamed from ClassUnknown43.cpp) - Obj0f7d90, a per-tick game-object
+// manager. XREF: Update (0xf7d90) is reached (via ILT 0x2806) from
+// CUserLogic::LoadGruntTuningConstants (0x5d210, userlogic); it reads the game
+// registry g_mgrSettings (0x64556c). RTTI name unrecovered (Ghidra placeholder
+// "Obj0f7d90"); the caller ties it to the CUserLogic tuning/registry cluster.
+//
 // 0x0f7d90 is a per-tick Update on the Obj0f7d90
 // manager: it mirrors a coord pair
 // (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a

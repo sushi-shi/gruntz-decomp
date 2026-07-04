@@ -1,9 +1,9 @@
-// CSymRec.cpp (filename historical) - CSymRec, the CSymTab leaf symbol
-// record (the node CSymTab::FindOrAddSym builds into m_symbols). XREF: both ctors
-// (0x139bf0/0x139c80) and the teardown (0x139cf0) are called only by
-// ?FindOrAddSym@CSymTab@@QAEPAXH@Z (0x13a940); the same three RVAs are what
-// <Bute/SymTab.h> documents as CSymRec's ctors + Clear. The +0x4 sub-object's
-// vtable is Ghidra-labelled CSymTab_node (0x5ef748).
+// SymRec.cpp (renamed from Gruntz/ClassUnknown48.cpp; real Bute home) - CSymRec, the
+// CSymTab leaf symbol record (the node CSymTab::FindOrAddSym builds into m_symbols).
+// RTTI/Ghidra name CSymRec; XREF: both ctors (0x139bf0/0x139c80) and the teardown
+// (0x139cf0) are called only by ?FindOrAddSym@CSymTab@@QAEPAXH@Z (0x13a940) - the
+// same three RVAs <Bute/SymTab.h> lists as CSymRec's ctors + Clear. The +0x4
+// sub-object's vtable is Ghidra-labelled CSymTab_node (0x5ef748).
 //
 // The teardown (0x139cf0) drains two intrusive CSymList members (m_1c is purged
 // only when the owner scope's parser flag m_2c->m_owner->m_6c is set; m_24 re-files
@@ -11,8 +11,17 @@
 // destroyed in reverse order (m_24 then m_1c) - each ~CSymList() inlines to a
 // RemoveAll() call, which drives the /GX trylevel 1->0->-1 frame.
 //
-// CSymTab/CSymParser/CSymList here are reduced TU-local views (their full defs live
-// in <Bute/SymTab.h>; SymTab.cpp is canonical). Only offsets + code bytes bind.
+// COLLISION NOTE (SymTab.h): <Bute/SymTab.h> also declares `class CSymRec`, but only
+// as a MINIMAL declared-only stub - one hash sub-table m_valTable @+0x24 (all
+// SymTab.cpp needs: it derefs only `rec->m_valTable.Walk` @+0x24, which THIS full
+// model's m_24 @+0x24 matches). This TU carries the FULL, more-accurate CSymRec: the
+// dtor proves a SECOND live hash container @+0x1c (m_1c, drained conditionally) and
+// the owner-scope back-ptr @+0x2c (m_2c) that the SymTab.h stub under-models as pad.
+// Full header unification (extend SymTab.h to the two-container layout + port these
+// bodies onto canonical CHashTable/CHashElement) is deferred: it must not regress
+// SymTab.cpp (Insert @0x13a000) nor these near-100% ctor/dtor bodies. So the two
+// definitions stay separate TUs for now; CSymTab/CSymParser/CSymList here are reduced
+// TU-local views (full defs in <Bute/SymTab.h>). Only offsets + code bytes bind.
 #include <rva.h>
 #include <Mfc.h>
 

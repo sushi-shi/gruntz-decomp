@@ -1,3 +1,9 @@
+// Obj11c630.cpp (renamed from ClassUnknown9.cpp) - Obj11c630, the voice-sound record
+// that CSpawnEntry::AddVoiceSound (0x11c560, gruntspawnconfig) builds: {CString name,
+// int, void*}. XREF: its ctor (0x11c630) is called only from AddVoiceSound's append
+// path (via ILT 0x1497). RTTI name unrecovered (Ghidra placeholder "Obj11c630"); the
+// caller ties it to the CSpawnEntry voice-list element cluster.
+//
 // 0x11c630 is the Obj11c630 constructor taking a CString
 // by value (+ a pointer): the CString
 // member m_str is default-constructed (member-init, 0x1b9b93), assigned from the

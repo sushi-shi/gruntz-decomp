@@ -954,20 +954,20 @@ flags = "base"
 
 [[unit]]
 # ClassUnknown_30::GetStr (CString-by-value return) re-homed from Discovered.cpp.
-unit = "classunknown30"
-source = "src/Gruntz/ClassUnknown30.cpp"
+unit = "obj09a260"
+source = "src/Gruntz/Obj09a260.cpp"
 flags = "base"
 
 [[unit]]
 # ClassUnknown_9 ctor (by-value CString arg -> /GX) re-homed from Discovered.cpp.
-unit = "classunknown9"
-source = "src/Gruntz/ClassUnknown9.cpp"
+unit = "obj11c630"
+source = "src/Gruntz/Obj11c630.cpp"
 flags = "eh"
 
 [[unit]]
 # ClassUnknown_43 per-tick manager Update re-homed from Discovered.cpp.
-unit = "classunknown43"
-source = "src/Gruntz/ClassUnknown43.cpp"
+unit = "obj0f7d90"
+source = "src/Gruntz/Obj0f7d90.cpp"
 flags = "base"
 
 [[unit]]
@@ -987,8 +987,8 @@ flags = "base"
 
 [[unit]]
 # ClassUnknown_48::Clear (0x139cf0) intrusive-list drain (/GX) re-homed from Discovered.cpp.
-unit = "classunknown48"
-source = "src/Gruntz/ClassUnknown48.cpp"
+unit = "symrec"
+source = "src/Bute/SymRec.cpp"
 flags = "eh"
 
 [[unit]]
