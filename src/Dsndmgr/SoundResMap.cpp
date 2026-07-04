@@ -5,7 +5,7 @@
 // GetNextAssoc / RemoveKey, and the CString key temp (default-constructed,
 // torn down on every exit) force the /GX EH frame. The map helpers + the value's
 // virtual scalar-deleting destructor are reloc-masked NAFXCW/engine externs.
-#include <Gruntz/SoundResMap.h>
+#include <Dsndmgr/SoundResMap.h>
 
 // ===========================================================================
 // CSoundResMap::RemoveByValue  (0x157b00)

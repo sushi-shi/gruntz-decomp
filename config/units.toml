@@ -2006,12 +2006,12 @@ flags = "base"
 
 [[unit]]
 unit = "soundstreamfree"
-source = "src/Gruntz/SoundStreamFree.cpp"
+source = "src/Dsndmgr/SoundStreamFree.cpp"
 flags = "base"
 
 [[unit]]
 unit = "soundstreamteardown"
-source = "src/Gruntz/SoundStreamTeardown.cpp"
+source = "src/Dsndmgr/SoundStreamTeardown.cpp"
 flags = "base"
 
 [[unit]]
@@ -2245,7 +2245,7 @@ source = "src/Net/LatencyList.cpp"
 flags = "base"
 [[unit]]
 unit = "soundresmap"
-source = "src/Gruntz/SoundResMap.cpp"
+source = "src/Dsndmgr/SoundResMap.cpp"
 flags = "eh"
 [[unit]]
 unit = "menusparkleserial"
