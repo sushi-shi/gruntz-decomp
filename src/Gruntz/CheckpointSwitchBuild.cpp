@@ -19,6 +19,7 @@
 // 0x24556c, colliding with the local g_statzGameReg dual-view (a REQUIRED split,
 // [[vtable-realization-ctor-boundary]]).  BuildSmall is @early-stop on a codegen
 // wall, so re-basing yields zero match benefit.
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 
 SIZE_UNKNOWN(CStatzRect60);
@@ -26,15 +27,12 @@ struct CStatzRect60 {
     i32 d[0x18]; // 0x60 bytes
 };
 struct CStatzSprite;
-SIZE_UNKNOWN(CStatzSpriteFactory);
-struct CStatzSpriteFactory {
-    // FUN_001597b0 __thiscall, ret 0x18: build the named sprite.
-    CStatzSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, void* name, i32 flags);
-};
+// The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
+// CreateSprite @0x1597b0 returns the created CStatzSprite.
 SIZE_UNKNOWN(CStatzFactoryHolder);
 struct CStatzFactoryHolder {
     char m_pad0[0x8];
-    CStatzSpriteFactory* m_8; // +0x08
+    CSpriteFactory* m_8; // +0x08
 };
 struct CStatzGameReg {
     char m_pad0[0x30];
@@ -97,7 +95,7 @@ i32 CCheckpointTriggerSwitchLogic::
         return 1;
     }
     CStatzSprite* spr =
-        g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+        (CStatzSprite*)g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
     if (!spr) {
         return 0;
     }

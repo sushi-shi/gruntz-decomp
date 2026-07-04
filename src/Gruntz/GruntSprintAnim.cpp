@@ -21,29 +21,19 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Mfc.h> // CString (the /GX directional-name temps) + Win32
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Mfc.h>                   // CString (the /GX directional-name temps) + Win32
 
 #include <rva.h>
 
 struct CGsSprite;
 
-// The HUD sprite factory reached via g_gameReg->m_world->m_8 (CreateSprite looks the
-// template up by class-NAME, the 5th arg; __thiscall ret 0x18). Same shape as the
-// IconLoaders factory.
-struct CGsSpriteFactory {
-    CGsSprite* CreateSprite(
-        i32 kind,
-        i32 px,
-        i32 py,
-        i32 hint,
-        const char* name,
-        i32 flags
-    ); // 0x1597b0
-};
-struct CGsFactoryHolder {
-    char m_pad0[0x8];
-    CGsSpriteFactory* m_8; // +0x08
-};
+// The HUD sprite factory reached via g_mgrSettings->m_world->m_8 is the canonical
+// CSpriteFactory (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
+// up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created CGsSprite.
+// The world holder is the canonical CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - no
+// local holder view.
+
 // The g_gameReg->m_74 lookup table (0xe23c0, thunk 0x4165): Lookup(idx, flag)
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
 struct CGsSoundTable {
@@ -75,7 +65,7 @@ public:
     void PerDirGeometry(i32 dir, i32* outX, i32* outY); // 0x019cd0 (thunk 0x3869)
 
     char m_pad0[0x204];
-    CGsSprite* m_204[8]; // +0x204  the 8 directional sprint sprites
+    CGsSprite* m_sprintSprites[8]; // +0x204  the 8 directional sprint sprites
 };
 
 // ===========================================================================
@@ -107,9 +97,9 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
     }
 
     for (i32 i = 1; i <= 8; i++) {
-        m_204[i - 1] = ((CGsFactoryHolder*)g_mgrSettings->m_world)
-                           ->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        if (m_204[i - 1] == 0) {
+        m_sprintSprites[i - 1] =
+            (CGsSprite*)g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        if (m_sprintSprites[i - 1] == 0) {
             return 0;
         }
 
@@ -141,23 +131,21 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
                 break;
         }
 
-        m_204[i - 1]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
-        m_204[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
-        m_204[i - 1]->m_58 = 1;
-        m_204[i - 1]->m_50 = 0xa;
-        m_204[i - 1]->m_4c = h;
+        m_sprintSprites[i - 1]->CacheFirstFrame("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
+        m_sprintSprites[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
+        m_sprintSprites[i - 1]->m_58 = 1;
+        m_sprintSprites[i - 1]->m_50 = 0xa;
+        m_sprintSprites[i - 1]->m_4c = h;
 
         i32 outX, outY;
         PerDirGeometry(i, &outX, &outY);
-        m_204[i - 1]->m_5c = outX;
-        m_204[i - 1]->m_60 = outY;
+        m_sprintSprites[i - 1]->m_5c = outX;
+        m_sprintSprites[i - 1]->m_60 = outY;
     }
     return 1;
 }
 
 SIZE_UNKNOWN(CGruntSprintAnim);
-SIZE_UNKNOWN(CGsFactoryHolder);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CGsSoundTable);
 SIZE_UNKNOWN(CGsSprite);
-SIZE_UNKNOWN(CGsSpriteFactory);

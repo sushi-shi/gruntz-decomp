@@ -5,8 +5,9 @@
 
 #include <string.h> // inline strcmp for the direction-name match
 #include <Globals.h>
-#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid terrain plane
-#include <Gruntz/LightFxMgr.h>   // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/GameRegistry.h>  // canonical *0x24556c singleton + CTileGrid terrain plane
+#include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) + the bute manager
 // (g_buteMgr.GetDwordDef 0x1721e0); declared extern so the calls reloc-mask.
@@ -72,11 +73,6 @@ struct CObjDropObj {
 // authentic per-mode downcast of the reused +0x30 slot; see CGameRegistry.h):
 // the HUD sprite factory (m_spriteFactory->CreateSprite @0x1597b0, __thiscall) +
 // the level/world tile bounds (m_level->m_world width @0x30 / height @0x34).
-struct CDropSprite;
-SIZE_UNKNOWN(DropperFactory);
-struct DropperFactory {
-    CDropSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-};
 // The world/level bounds (reg->m_mgr->m_level->m_world): tile width @0x30, height @0x34.
 SIZE_UNKNOWN(DropperWorld);
 struct DropperWorld {
@@ -92,7 +88,7 @@ struct DropperLevel {
 SIZE_UNKNOWN(DropperMgr);
 struct DropperMgr { // (DropperMgr*)g_gameReg->m_world
     char m_pad00[0x08];
-    DropperFactory* m_spriteFactory; // +0x8  HUD sprite factory
+    CSpriteFactory* m_spriteFactory; // +0x8  HUD sprite factory (canonical, @0x1597b0)
     char m_pad0c[0x24 - 0xc];
     DropperLevel* m_level; // +0x24 level bounds
 };

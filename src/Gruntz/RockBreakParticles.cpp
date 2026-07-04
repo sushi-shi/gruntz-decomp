@@ -17,19 +17,18 @@
 #include <Mfc.h>   // MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde)
 #include <Win32.h> // PtInRect / RECT / POINT
 
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);
 
-// The eye-candy sprite the factory returns (CreateSprite @0x1597b0, ret 0x18).
+// The eye-candy sprite the factory returns (the created instance; CacheFirstFrame
+// @0x150540 / ApplyLookupGeometry @0x1505b0, role-named here). The factory itself is
+// the canonical CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
 struct RockSprite {
     void SetAnim(const char* name);            // FUN_00150540 __thiscall
     void SetAnimLoop(const char* name, i32 f); // FUN_001505b0 __thiscall
-};
-struct RockSpriteFactory { // this->m_22c->m_8
-    // FUN_001597b0 __thiscall, ret 0x18: build the named eye-candy sprite.
-    RockSprite* CreateSprite(i32 kind, i32 px, i32 py, i32 hint, const char* name, i32 flags);
 };
 
 // The rate-limited sound cue (the shared Booty* sound-chain idiom).
@@ -90,7 +89,7 @@ struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
 };
 struct RockMapHost { // this->m_22c (== g_mgrSettings->m_world)
     char m_pad00[0x8];
-    RockSpriteFactory* m_8; // +0x08
+    CSpriteFactory* m_8; // +0x08
     char m_pad0c[0x24 - 0xc];
     RockBoard* m_24;  // +0x24
     RockSndSet* m_28; // +0x28
@@ -245,7 +244,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (!PtInRect(&g_mgrSettings->m_13c, pt)) {
                 continue;
             }
-            RockSprite* spr = m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+            RockSprite* spr =
+                (RockSprite*)m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
             if (spr == 0) {
                 continue;
             }
@@ -284,4 +284,3 @@ SIZE_UNKNOWN(RockSndPlayer);
 SIZE_UNKNOWN(RockSndSet);
 SIZE_UNKNOWN(RockSndTable);
 SIZE_UNKNOWN(RockSprite);
-SIZE_UNKNOWN(RockSpriteFactory);
