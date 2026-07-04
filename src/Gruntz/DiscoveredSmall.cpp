@@ -3,6 +3,7 @@
 // placeholder whose true identity is unrecovered; only the OFFSETS + code bytes
 // are load-bearing. These are the self-contained (no/one-reloc) leaves: simple
 // ctors / inits / free-list ops / a key-compare helper.
+#include <Mfc.h> // real MFC CString (embedded name member; ~CString @0x1b9cde)
 #include <Ints.h>
 #include <rva.h>
 
@@ -231,22 +232,18 @@ i32 FirstDiffBit(const char* a, const char* b) {
 
 // ---------------------------------------------------------------------------
 // CU35Host @0x021c40 - tail-call the CString dtor (0x1b9cde) on the embedded
-// string member at +8 (`add ecx,8; jmp ~CString`). The dtor is external (no
+// CString member at +8 (`add ecx,8; jmp ~CString`). The dtor is external (no
 // body) so its `jmp rel32` reloc-masks. Re-homed from Discovered.cpp.
 // ---------------------------------------------------------------------------
-struct CU35Str {
-    ~CU35Str(); // 0x1b9cde  (~CString)
-};
 struct CU35Host {
     char m_pad0[8];
-    CU35Str m_8; // +0x08
+    CString m_8; // +0x08
     void DestroyStr();
 };
 RVA(0x00021c40, 0x8)
 void CU35Host::DestroyStr() {
-    m_8.~CU35Str();
+    m_8.CString::~CString();
 }
 
 SIZE_UNKNOWN(Obj49Target);
-SIZE_UNKNOWN(CU35Str);
 SIZE_UNKNOWN(CU35Host);

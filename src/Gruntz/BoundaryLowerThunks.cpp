@@ -18,16 +18,13 @@
 // ===========================================================================
 // Tiny string/object globals (already pinned in their owning TUs - reuse the
 // mangled name, NO new DATA pin). The thunks default-CONSTRUCT the global CString
-// (0x1b9b93 == CString::CString(), a tail-jmp `mov ecx,&g; jmp ctor`). C++ cannot
-// tail-jmp to a ctor (placement-new inserts a null check), so the ctor address is
-// forwarded through a tiny CStrCtor reloc-mask view - the globals stay the REAL
-// MFC CString so their ?...@@3VCString@@A relocs are authentic. g_levelStr is a
-// genuinely distinct type (?g_levelStr@@3UGameKeyStr@@A, NOT VCString), keep it.
+// (0x1b9b93 == CString::CString(), a tail-jmp `mov ecx,&g; jmp ctor`) via the
+// explicit-ctor-call extension `g.CString::CString();` (placement-new would emit a
+// null check; see docs/patterns/explicit-ctor-call-inplace-tail-jmp.md). The globals
+// stay the REAL MFC CString so their ?...@@3VCString@@A relocs are authentic.
+// g_levelStr is a genuinely distinct type (?g_levelStr@@3UGameKeyStr@@A, NOT
+// VCString), keep it.
 // ===========================================================================
-struct CStrCtor {
-    void Ctor1b9b93(); // 0x1b9b93 == CString::CString() (reloc-masked address forward)
-};
-SIZE_UNKNOWN(CStrCtor);
 struct GameKeyStr {
     void Free1b9b93(); // 0x1b9b93 (reloc-masked)
 };
@@ -64,7 +61,7 @@ void RegRange3a530() {
 
 RVA(0x0003acb0, 0xa)
 void StrFree3acb0() {
-    ((CStrCtor*)&g_str62c264)->Ctor1b9b93();
+    g_str62c264.CString::CString();
 }
 
 RVA(0x0003ad30, 0xa)
@@ -251,7 +248,7 @@ void RegRangeb3ae0() {
 
 RVA(0x000b5380, 0xa)
 void StrFreeb5380() {
-    ((CStrCtor*)&g_6473d8)->Ctor1b9b93();
+    g_6473d8.CString::CString();
 }
 
 // ===========================================================================
@@ -281,7 +278,7 @@ DATA(0x00249618)
 extern CString g_str649618;
 RVA(0x000bd7f0, 0xa)
 void StrFreebd7f0() {
-    ((CStrCtor*)&g_str649618)->Ctor1b9b93();
+    g_str649618.CString::CString();
 }
 
 // ===========================================================================

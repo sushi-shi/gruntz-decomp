@@ -2,15 +2,8 @@
 // CString/CByteArray-heavy class-boundary leaf methods whose destructible stack
 // local/member forces the MSVC5 /GX exception frame. Owning class names are
 // placeholders; only OFFSETS + code shape are load-bearing.
+#include <Mfc.h> // real MFC CString (embedded name member; ~CString @0x1b9cde)
 #include <rva.h>
-
-// MFC CString (statically-linked NAFXCW; reloc-masked rel32 calls).
-//   ~CString() = 0x1b9cde
-class CStr {
-public:
-    ~CStr(); // 0x1b9cde
-    char* m_pchData;
-};
 
 // The retail CFileMemBase base vtable (0x5efe68); bound by Io/FileMem.cpp.
 extern i32 g_fileMemBaseVtbl;
@@ -30,7 +23,7 @@ extern i32 g_fileMemBaseVtbl;
 struct CFileMemBase {
     void* m_vtbl;     // +0x0
     char _4[0xc - 4]; // +0x4,+0x8 scalars
-    CStr m_name;      // +0xc
+    CString m_name;   // +0xc
     void ResetBase(); // 0x157a40 (base vtable slot +0xc)
     ~CFileMemBase();
 };

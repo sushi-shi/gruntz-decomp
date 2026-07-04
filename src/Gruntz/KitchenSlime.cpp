@@ -1,3 +1,4 @@
+#include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
 #include <rva.h>
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
 #include <string.h> // inline strcmp for the ctor's direction-name match
@@ -224,17 +225,6 @@ CKitchenSlime::~CKitchenSlime() {}
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The CString temp the direction-name match builds (the static-linked MFC CString
-// helpers, modeled NO-body so the calls reloc-mask): MiniStr() = 0x1b9b93,
-// operator=(LPCSTR) = 0x1b9e74, ~MiniStr() = 0x1b9cde. The real C++ dtor makes
-// MSVC emit the temp's /GX cleanup state like retail.
-struct CSlimeMiniStr {
-    char* m_buf; // +0x00 the strcmp operand
-    CSlimeMiniStr();
-    ~CSlimeMiniStr();
-    CSlimeMiniStr& operator=(const char* s);
-};
-
 // The bound CGameObject viewed by the ctor (m_10 == m_38). The slime reads the
 // screen position (m_5c/m_posX), the layer key (m_74), the flags (m_08), the travel
 // window (m_134..m_140) clamped from the raw target tile (m_164/m_168), the
@@ -314,9 +304,9 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
 
     CSlimeAnimPlayer* obj38 = Anim();
     if (obj38->m_194 != 0) {
-        CSlimeMiniStr name;
+        CString name;
         name = (char*)obj38->m_194 + 0x24;
-        const char* s = name.m_buf;
+        const char* s = (LPCTSTR)name;
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
             o->m_124 = 1;
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
@@ -758,7 +748,6 @@ SIZE_UNKNOWN(CSlimeCtorObj);
 SIZE_UNKNOWN(CSlimeCueGate);
 SIZE_UNKNOWN(CSlimeEntity);
 SIZE_UNKNOWN(CSlimeLevel);
-SIZE_UNKNOWN(CSlimeMiniStr);
 SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);

@@ -2,6 +2,7 @@
 // /GX EH-frame siblings of BoundaryUpper2.cpp. /GX destructors whose destructible
 // base/member subobjects force the MSVC unwind frame. Only OFFSETS + code shape are
 // load-bearing.
+#include <Mfc.h> // real MFC CString (embedded m_24 name member; ctor 0x1b9b93 / op= 0x1b9e74)
 #include <Ints.h>
 #include <rva.h>
 
@@ -138,13 +139,6 @@ void DevCfgChain::DtorD1() {
 // the true (distinct) owner and un-dup the symbol.
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // 0x6293f4
-struct CStr17e7c0 {
-    char* p;
-    CStr17e7c0();                // 0x1b9b93
-    void operator=(const char*); // 0x1b9e74
-    ~CStr17e7c0();
-};
-SIZE_UNKNOWN(CStr17e7c0);
 struct CFxBase17e7c0 {
     CFxBase17e7c0(); // 0x17e7b0
 };
@@ -159,8 +153,8 @@ struct CFxModeT1 : CFxBase17e7c0 {
     i32 m_18;
     i32 m_1c;
     i32 m_20;
-    CStr17e7c0 m_24; // +0x24
-    i32 m_28;        // +0x28
+    CString m_24; // +0x24
+    i32 m_28;     // +0x28
     CFxModeT1();
 };
 SIZE_UNKNOWN(CFxModeT1);
