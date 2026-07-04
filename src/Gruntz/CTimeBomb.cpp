@@ -7,7 +7,8 @@
 // CTimeBomb : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
-#include <Gruntz/CTBombColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/CGameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
+#include <Gruntz/CTBombColl.h>    // shared coordinate/activation-registry collection
 #include <Gruntz/CTimeBomb.h>
 #include <Globals.h>
 
@@ -149,31 +150,19 @@ extern "C" u32 g_645588;
 // active-anim descriptor, and ApplyName/ApplyLookupGeometry) - all modeled on
 // CGameObject (<Gruntz/UserLogic.h>). Re-reads m_10/m_38 per access, matching retail.
 
-// The game registry singleton's collision grid (g_gameReg->m_tileGrid): an 0x1c-byte
-// cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by m_c x m_10.
-struct TBombGrid {
-    char m_pad00[0x08];
-    char** m_rows; // +0x08  row table
-    i32 m_width;   // +0x0c  width  (col bound)
-    i32 m_height;  // +0x10  height (row bound)
-};
-SIZE_UNKNOWN(TBombGrid);
-// The registry's tile-manager (g_gameReg->m_68): the per-frame detonate path
-// posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 -> 0x7b330,
-// 4 args). Modeled NO-body so the call reloc-masks.
+// The collision grid the ctor marks / the per-frame step reads is
+// g_gameReg->m_tileGrid, already typed CTileGrid* on the canonical CGameRegistry:
+// an 0x1c-byte cell grid (m_8[row] -> cell-row base; cols 0x1c B apart) bounded by
+// m_c x m_10 - no local grid view.
+// The registry's tile-manager (g_gameReg->m_68, a reused void* slot): the per-frame
+// detonate path posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 ->
+// 0x7b330, 4 args). Modeled NO-body so the call reloc-masks.
 struct TBombTileMgr {
     void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
 };
 SIZE_UNKNOWN(TBombTileMgr);
-struct TBombGameReg {
-    char m_pad00[0x68];
-    TBombTileMgr* m_tileMgr;   // +0x68  tile-manager (detonate NotifyMoveAt)
-    char m_pad6c[0x70 - 0x6c]; // +0x6c
-    TBombGrid* m_grid;         // +0x70
-};
-SIZE_UNKNOWN(TBombGameReg);
 DATA(0x0024556c)
-extern TBombGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CTimeBomb::CTimeBomb(CGameObject*) @0xe1b90 - the 1-arg leaf ctor: the standard
@@ -221,9 +210,9 @@ CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
     }
     i32 cx = m_object->m_screenX >> 5;
     i32 cy = m_object->m_screenY >> 5;
-    TBombGrid* g = g_gameReg->m_grid;
-    if (cx < g->m_width && cy < g->m_height) {
-        char* row = g->m_rows[cy];
+    CTileGrid* g = g_gameReg->m_tileGrid;
+    if (cx < g->m_c && cy < g->m_10) {
+        char* row = (char*)g->m_8[cy];
         *(i32*)(row + cx * 0x1c) |= 0x1000000;
     }
     m_object->m_124 = -1;
@@ -288,21 +277,21 @@ extern "C" u32 g_6bf3bc;
 // initial state read (out-of-bounds reads as 1) and the two detonate-path
 // clears. Same grid shape the ctor marks; the bounds compares are UNSIGNED.
 static inline i32 TBombGridCell(CGameObject* obj) {
-    TBombGrid* g = g_gameReg->m_grid;
+    CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
-        char* row = g->m_rows[cy];
+    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+        char* row = (char*)g->m_8[cy];
         return *(i32*)(row + cx * 0x1c);
     }
     return 1;
 }
 static inline void TBombGridClear(CGameObject* obj) {
-    TBombGrid* g = g_gameReg->m_grid;
+    CTileGrid* g = g_gameReg->m_tileGrid;
     i32 cx = obj->m_screenX >> 5;
     i32 cy = obj->m_screenY >> 5;
-    if ((u32)cx < (u32)g->m_width && (u32)cy < (u32)g->m_height) {
-        char* row = g->m_rows[cy];
+    if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
+        char* row = (char*)g->m_8[cy];
         *(i32*)(row + cx * 0x1c) &= ~0x1000000;
     }
 }
@@ -349,7 +338,7 @@ i32 CTimeBomb::LoadAttributes() {
     }
     m_38->m_flags |= 0x10000;
     TBombGridClear(m_object);
-    g_gameReg->m_tileMgr
+    ((TBombTileMgr*)g_gameReg->m_68)
         ->NotifyMoveAt(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }

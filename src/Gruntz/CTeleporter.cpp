@@ -141,11 +141,11 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_60 = m_object->m_7c->m_bc;
-    m_64 = 0;
-    m_58 = g_645588;
-    m_5c = 0;
-    m_40 = m_38->m_geoId;
+    m_intervalLo = m_object->m_7c->m_bc;
+    m_intervalHi = 0;
+    m_armClockLo = g_645588;
+    m_armClockHi = 0;
+    m_savedGeoId = m_38->m_geoId;
     m_object->ApplyLookupGeometry(g_teleporterGeoKey, 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_iconBute);
@@ -184,7 +184,7 @@ i32 CTeleporter::Update() {
     }
 
     CGameRegistry* mgr;
-    if (m_68 == 0) {
+    if (m_tickHandled == 0) {
         CGameObject* o = m_object;
         mgr = g_gameReg;
         i32 y = o->m_screenY;
@@ -195,18 +195,18 @@ i32 CTeleporter::Update() {
         }
     }
     mgr = g_gameReg;
-    if (m_54 == 0) {
+    if (m_armed == 0) {
         return 0;
     }
 
     CGameObject* o = m_object;
     if (o->m_7c->m_bc != 0) {
-        i64 delta = (i64)(u32)g_645588 - *(i64*)&m_58;
-        if (delta >= *(i64*)&m_60) {
-            m_40 = m_38->m_geoId;
+        i64 delta = (i64)(u32)g_645588 - *(i64*)&m_armClockLo;
+        if (delta >= *(i64*)&m_intervalLo) {
+            m_savedGeoId = m_38->m_geoId;
             m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
             m_object->m_7c->m_bc = 0;
-            m_68 = 1;
+            m_tickHandled = 1;
             return 0;
         }
     }
@@ -222,7 +222,7 @@ i32 CTeleporter::Update() {
     if (m_object->m_124 == 2) {
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 1, 1);
         ((CTeleMgrSub*)g_gameReg->m_7c)->m_28++;
-        m_40 = m_38->m_geoId;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
         CGameObject* s = m_object;
         CGameObject* spawned = (CGameObject*)((CTeleSpriteFactory*)g_gameReg->m_world->m_8)
@@ -256,12 +256,12 @@ i32 CTeleporter::Update() {
         spawned->m_168 = m_object->m_screenY;
         spawned->m_124 = m_object->m_placeMode;
         found->StepAnimDispatchA(m_object->m_164, m_object->m_168, 0, 0);
-        m_40 = m_38->m_geoId;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_teleporterCloseKey, 0);
     }
 
-    m_54 = 0;
-    m_68 = 1;
+    m_armed = 0;
+    m_tickHandled = 1;
     mgr = g_gameReg;
     CTeleRecord* current;
     if (((CTeleIconTable*)mgr->m_68)->m_24c != 1) {

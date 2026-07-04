@@ -21,20 +21,20 @@ extern i32 g_645588;
 // + the leaf-field zero-init schedule (CToyPeek's wider +0x58..+0x64 init block).
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
-    m_58 = 0;
-    m_60 = 0;
-    m_5c = 0;
-    m_64 = 0;
+    m_startClockLo = 0;
+    m_countdownLo = 0;
+    m_startClockHi = 0;
+    m_countdownHi = 0;
     m_object->m_screenY -= 0x18;
     if (m_object->m_latchedAnimId != 0xdbba0) {
         m_object->m_latchedAnimId = 0xdbba0;
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_124);
-    m_60 = 0x1388;
-    m_64 = 0;
-    m_58 = g_645588;
-    m_5c = 0;
+    m_countdownLo = 0x1388;
+    m_countdownHi = 0;
+    m_startClockLo = g_645588;
+    m_startClockHi = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
 }

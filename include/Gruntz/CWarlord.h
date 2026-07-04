@@ -121,10 +121,13 @@ public:
     char m_pad40[0x54 - 0x40];
     CString m_54; // +0x54  destructible string member
     char m_pad58[0x88 - 0x58];
-    i32 m_88; // +0x88  cooldown stamp lo (64-bit with m_8c)
-    i32 m_8c; // +0x8c  cooldown stamp hi
-    i32 m_90; // +0x90  cooldown window lo (64-bit with m_94)
-    i32 m_94; // +0x94  cooldown window hi
+    // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
+    // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
+    // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.
+    i32 m_cooldownStampLo;  // +0x88
+    i32 m_cooldownStampHi;  // +0x8c
+    i32 m_cooldownWindowLo; // +0x90
+    i32 m_cooldownWindowHi; // +0x94
 };
 
 #endif // GRUNTZ_CWARLORD_H

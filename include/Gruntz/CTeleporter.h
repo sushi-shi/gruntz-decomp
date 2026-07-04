@@ -84,14 +84,18 @@ public:
     LogicTypeId GetTypeTag();        // 0x10d80
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  snapshot of m_38->m_1b4
+    i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId
     char m_pad44[0x54 - 0x44];
-    i32 m_54; // +0x54  armed flag (a resolved target id)
-    i32 m_58; // +0x58  running-clock snapshot (g_645588)
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
-    i32 m_64; // +0x64
-    i32 m_68; // +0x68  "tick handled" latch
+    i32 m_armed; // +0x54  armed flag (a resolved target id)
+    // The armed-at running-clock snapshot (m_58) and the bound object's per-tile-time
+    // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so
+    // the per-frame delta test compares them 64-bit; kept as lo/hi i32 pairs because
+    // retail emits two separate 32-bit stores (not a sign-extending i64 assign).
+    i32 m_armClockLo;  // +0x58  running-clock snapshot (g_645588)
+    i32 m_armClockHi;  // +0x5c
+    i32 m_intervalLo;  // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
+    i32 m_intervalHi;  // +0x64
+    i32 m_tickHandled; // +0x68  "tick handled" latch
 };
 
 #endif // GRUNTZ_CTELEPORTER_H

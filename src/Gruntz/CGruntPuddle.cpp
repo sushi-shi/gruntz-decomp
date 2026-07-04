@@ -40,15 +40,15 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_38->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_40 = m_38->m_geoId;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_stateFlags |= 1;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_5c = 1;
-    m_60 = 0;
+    m_pending = 1;
+    m_placed = 0;
 }
 
 // ===========================================================================
@@ -65,19 +65,19 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
 // @early-stop
 // inverse register-pinning wall (docs/patterns/zero-register-pinning.md): the body
 // is structurally byte-exact, but retail does NOT enregister the `a1` parameter -
-// it re-reads `[esp+0x10]` each use (so `m_5c = 0` is an immediate store and the
+// it re-reads `[esp+0x10]` each use (so `m_pending = 0` is an immediate store and the
 // ApplyLookupGeometry flag is `push $0`). Our MSVC 5.0 caches `a1` in callee-saved
-// edi (extra push edi/pop edi; `m_5c = edi`; `push edi` flag). All offsets,
+// edi (extra push edi/pop edi; `m_pending = edi`; `push edi` flag). All offsets,
 // immediates, call args and branch targets match; only the a1 caching differs.
 // No init-list/assignment/reorder lever flips the allocator. Deferred.
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     CGameObject* o = m_object;
-    m_54 = o->m_screenX >> 5;
-    m_58 = o->m_screenY >> 5;
-    m_64 = a3;
-    m_68 = a0;
-    m_6c = a1;
+    m_tileX = o->m_screenX >> 5;
+    m_tileY = o->m_screenY >> 5;
+    m_placeArg3 = a3;
+    m_placeArg0 = a0;
+    m_placeIndex = a1;
     i32 rec = ((CIconFactory*)g_gameReg->m_74)->GetByIndex(a1, 0);
     CGameObject* obj = m_object;
     obj->m_drawActive = 1;
@@ -87,9 +87,9 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(g_iconBute);
     if (a1 == 0) {
-        m_60 = 1;
-        m_5c = 0;
-        m_40 = m_38->m_geoId;
+        m_placed = 1;
+        m_pending = 0;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
@@ -117,11 +117,11 @@ i32 CGruntPuddle::Place(i32 a0, i32 a1, i32 a2, i32 a3) {
 // coin-flip is not source-steerable. Deferred.
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
-    if (m_60 != 0) {
+    if (m_placed != 0) {
         CGameRegistry* reg = g_gameReg;
-        i32 ty = m_58;
+        i32 ty = m_tileY;
         CTileGrid* grid = reg->m_tileGrid;
-        i32 tx = m_54;
+        i32 tx = m_tileX;
         i32 flags;
         if ((u32)tx < (u32)grid->m_c && (u32)ty < (u32)grid->m_10) {
             flags = ((i32*)grid->m_8[ty])[tx * 7];
@@ -145,13 +145,13 @@ i32 CGruntPuddle::Remove() {
     ((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_6bf3bc);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
-        if (m_60 != 0) {
+        if (m_placed != 0) {
             o->m_stateFlags |= 1;
         } else {
-            m_40 = o->m_geoId;
+            m_savedGeoId = o->m_geoId;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
-            m_60 = 1;
-            m_5c = 0;
+            m_placed = 1;
+            m_pending = 0;
         }
     }
     return 0;

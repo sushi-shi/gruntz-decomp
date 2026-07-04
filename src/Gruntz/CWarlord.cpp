@@ -220,7 +220,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
+    if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -266,12 +266,12 @@ i32 CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if ((i64)(u32)g_645588 - *(i64*)&m_88 >= *(i64*)&m_90) {
+        if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
             ((CRegBattleEvent*)reg->m_cueSink)->PostBattleEvent(m_object->m_188, 0x436, -1, -1, -1);
-            m_90 = 0x7530;
-            m_94 = 0;
-            m_88 = g_645588;
-            m_8c = 0;
+            m_cooldownWindowLo = 0x7530;
+            m_cooldownWindowHi = 0;
+            m_cooldownStampLo = g_645588;
+            m_cooldownStampHi = 0;
         }
     }
     return 0;

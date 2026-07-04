@@ -81,15 +81,15 @@ public:
     void SetBute(char* key);                   // 0x07d810
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
     char m_pad44[0x54 - 0x44];
-    i32 m_54; // +0x54  tile X (m_10->m_5c >> 5)
-    i32 m_58; // +0x58  tile Y (m_10->m_60 >> 5)
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60  "placed" flag
-    i32 m_64; // +0x64  arg3 snapshot
-    i32 m_68; // +0x68  arg0 snapshot
-    i32 m_6c; // +0x6c  arg1 snapshot
+    i32 m_tileX;      // +0x54  owner tile X (m_object->m_screenX >> 5)
+    i32 m_tileY;      // +0x58  owner tile Y (m_object->m_screenY >> 5)
+    i32 m_pending;    // +0x5c  not-yet-placed gate (ctor 1; cleared once placed)
+    i32 m_placed;     // +0x60  "placed" flag
+    i32 m_placeArg3;  // +0x64  Place() arg3 snapshot
+    i32 m_placeArg0;  // +0x68  Place() arg0 snapshot
+    i32 m_placeIndex; // +0x6c  Place() arg1 snapshot (icon-factory index)
 };
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

@@ -38,7 +38,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    m_40 = m_38->m_geoId;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_38->m_flags |= 0x2000002;
     m_object->m_drawFillArg = ((WwdGameRegSub*)g_gameReg->m_78)->m_28;

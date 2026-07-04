@@ -18,7 +18,7 @@ public:
     LogicTypeId GetTypeTag();       // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
 };
 
 #endif // GRUNTZ_CEYECANDYANI_H

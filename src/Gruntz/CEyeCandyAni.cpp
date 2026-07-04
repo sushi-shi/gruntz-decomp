@@ -39,7 +39,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CGameObject* o = m_object;

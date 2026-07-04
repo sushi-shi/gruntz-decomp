@@ -33,7 +33,7 @@ public:
     i32 AdvanceAnim();          // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CGruntCreationPoint() OVERRIDE; // 0x010730 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
 };
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

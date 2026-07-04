@@ -98,7 +98,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_latchedAnimId = 5;
         m_object->m_flags |= 0x20000;
     }
-    m_40 = m_38->m_geoId;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_124;

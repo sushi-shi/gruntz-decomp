@@ -1244,7 +1244,7 @@ cdroppedobject	?ActA@CDroppedObject@@QAEHXZ	92.5157	92.5157	6	2ce33274d326	0xc70
 cdroppedobject	?FireActivation@CDroppedObject@@QAEXH@Z	100.0000	100.0000	1	58092acd8cf9	0xc6bd0
 cdroppedobject	?RegisterActs@CDroppedObject@@SAXXZ	78.5473	78.5473	1	ddf90768718f	0xc6d30
 cdroppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	1	f8dddf603c11	0xc6b50
-cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	4	1d304a73e46a	0xc7490
+cdroppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	85.0841	85.0841	5	02a1edd1231f	0xc7490
 cdroppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 cexittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.3461	89.3461	8	62f34e28540a	0x3ecf0
 cexittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
@@ -1254,7 +1254,7 @@ cexplosion	??1CExplosion@@UAE@XZ	100.0000	100.0000	1	937d43f67fbf	0x12ec0
 ceyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	394f31033131	0xfd60
 ceyecandy	?GetTypeTag@CEyeCandy@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	316b2739b4f5	0xfca0
 ceyecandy	?Serialize@CEyeCandy@@QAEHHHHH@Z	100.0000	100.0000	1	348008d35e12	0xfcc0
-ceyecandyani	??0CEyeCandyAni@@QAE@PAUCGameObject@@@Z	92.2797	92.2797	3	0dd3771991a2	0xac870
+ceyecandyani	??0CEyeCandyAni@@QAE@PAUCGameObject@@@Z	92.2797	92.2797	4	a64213bcd5c0	0xac870
 ceyecandyani	?GetTypeTag@CEyeCandyAni@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	33b824b26f29	0xff00
 ceyecandyani	?Serialize@CEyeCandyAni@@QAEHHHHH@Z	100.0000	100.0000	1	16f11254034d	0xff20
 cfader	??0CFader17e940@@QAE@XZ	100.0000	100.0000	1	406fed16569b	0x17e940
@@ -1318,7 +1318,7 @@ cfxmodedesc	??0CFxModeT4@@QAE@XZ	100.0000	100.0000	1	747c8589248b	0x17e8b0
 cfxmodedesc	??0CFxModeT5@@QAE@XZ	100.0000	100.0000	1	dad13d941e04	0x17e8e0
 cfxmodedesc	??0CFxModeT6@@QAE@XZ	100.0000	100.0000	1	1dd6f88f62d8	0x17e910
 cfxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	2	bc29cad45c3d	0xf9280
-cgruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	80.1295	80.1295	3	aeda172be251	0x3e520
+cgruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	80.1295	80.1295	4	d21ce4b0631a	0x3e520
 cgruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	887125215466	0x10730
 cgruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	1	f79597535ca0	0x3ecc0
 cgruntcreationpoint	?InitActReg@CGruntCreationPoint@@SAXXZ	100.0000	100.0000	1	79c2615e560b	0x3e8e0
@@ -1686,10 +1686,10 @@ cstatusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	93.2083	93.2083
 cstatusbarspriteacts	?InitActReg@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	162867839555	0x10c430
 cstatusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	92.9130	92.9130	2	dec761b26a46	0x10c610
 cteleporter	??1CTeleporter@@UAE@XZ	100.0000	100.0000	1	0aa6d090845e	0x10dd0
-cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	4	41a3eb92a36c	0x419e0
+cteleporter	?Begin@CTeleporter@@QAEHXZ	87.6667	87.6667	5	7c6255fad2b9	0x419e0
 cteleporter	?GetTypeTag@CTeleporter@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	274033e4a877	0x10d80
 cteleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	1	16ec1bd1d09e	0x414a0
-cteleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	7	2ee301c3db96	0x41aa0
+cteleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	8	3c509f7f43a5	0x41aa0
 ctilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x35f10
 ctimebomb	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.4645	83.4645	6	5162d0d8448a	0xe1b90
 ctimebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	82a73e5a479d	0x12a70
@@ -1703,7 +1703,7 @@ ctoobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	1	753529566a46	0x1
 ctoobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63	0x1147e0
 ctoobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	2	1a581cf7ad26	0x12bc0
 ctoobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	2	7ce413b3d3a4	0x114480
-ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	3	6a638d281002	0x98140
+ctoypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.4352	86.4352	4	14cb1f3df467	0x98140
 customleveldlg	?Populate180e0@CustomLevelDlg@m4dlg@@QAEHPAH@Z	71.0248	71.0248	1	e093b53f1442	0x180e0
 customlevellist	?FillCustomLevelList@m4@@YAHPAUHWND__@@@Z	73.9508	73.9508	1	2bdfbb3a9268	0x3af90
 customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	08dda11b8b49	0x3b310
@@ -2314,10 +2314,10 @@ gruntmovestep	?Step@CGruntMover@@QAEHPAUCGruntM@@@Z	18.1429	18.1429	2	5166a3aac3
 gruntpathscan	?PathScan57db0@CGrunt@@QAEHXZ	39.3829	39.3829	3	e106c50c5f03	0x57db0
 gruntphasestep	?PhaseStep@CGrunt@gruntphase@@QAEHXZ	31.4567	31.4567	4	2cd5e3ce911a	0xf60f0
 gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHHHHHH@Z	47.1890	47.1890	7	f2e89680128b	0x65e80
-gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	3	8c61a5989d90	0x40490
+gruntpuddle	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	91.9504	91.9504	4	0dc00958c3d1	0x40490
 gruntpuddle	??1CGruntPuddle@@UAE@XZ	100.0000	100.0000	1	d8797374243c	0x10d10
-gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	6	c1871fc6c522	0x40c30
-gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	6	0543bfc327bb	0x40d20
+gruntpuddle	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	7	d89281e46eb1	0x40c30
+gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	7	4b9fcf95320a	0x40d20
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	2	2d19600b4765	0x7d810
 gruntresurrectradius	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	65.4807	65.4807	2	e21f1ed5ce39	0x7be60
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
@@ -3721,8 +3721,8 @@ warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
 warlord	?InitActReg@CWarlord@@SAXXZ	100.0000	100.0000	1	d3ff00d8c05e	0x445c0
-warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	6	3abb9f4a95ec	0x44d10
-warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	5	d1594cb30b62	0x44c00
+warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	7	758d09dbbbb5	0x44d10
+warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	6	b76bf5cea5e2	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	3	3ecdaa320316	0x44bb0
 warlord	?RegisterWarlordActions@@YAXXZ	9.9959	9.9959	1	67ccb8ba741c	0x447a0

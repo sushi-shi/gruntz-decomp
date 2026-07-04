@@ -165,19 +165,20 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_40 = m_38->m_geoId;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_38->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~0x1f) + 0x10;
-    m_68 = adjY;
+    m_landY = adjY;
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
-    m_60 = (double)m_object->m_screenY;
+    m_fallY = (double)m_object->m_screenY;
     if (m_object->m_latchedAnimId != 0xcf851) {
         m_object->m_latchedAnimId = 0xcf851;
         m_object->m_flags |= 0x20000;
     }
-    m_58 = 32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
+    m_timePerTile =
+        32.0 / (double)(u32)g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8);
 }
 
 // CDroppedObject::RegisterRange @0x0c6b50 - seed the dropped-object activation
@@ -258,13 +259,9 @@ void CDroppedObject::RegisterActs() {
 // modeled: the fx-mode selector (m_2c->m_20), the sprite factory (m_30->m_08), the
 // tile-event sink (m_68), the collision grid (m_70), and the on-screen bounds
 // (m_13c..m_148). Address-pinned so the ds:g_gameReg loads reloc-mask.
-struct DropGrid { // g_gameReg->m_tileGrid (0x1c-byte cells; row table @ +8) - the SAME
-                  // grid shape CTimeBomb marks/reads.
-    char m_pad00[0x08];
-    char** m_8; // +0x08  row table
-    i32 m_c;    // +0x0c  width
-    i32 m_10;   // +0x10  height
-};
+// The 0x1c-byte-cell collision grid is g_gameReg->m_tileGrid, already typed
+// CTileGrid* on the canonical CGameRegistry (row table m_8, width m_c, height m_10)
+// - no local grid view; ActA reads a cell through it directly.
 struct DropSpriteFactory { // g_gameReg->m_world->m_08
     CGameObject*
     CreateSprite(i32 a0, i32 x, i32 y, i32 id, const char* desc, i32 flags); // 0x1597b0
@@ -321,17 +318,17 @@ struct DropAnimSink {
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
     ((DropAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
-    m_60 = (double)g_645584 * m_58 + m_60;
-    i32 landed = (i32)(m_60 - g_dropFallBias);
-    if (landed > m_68) {
+    m_fallY = (double)g_645584 * m_timePerTile + m_fallY;
+    i32 landed = (i32)(m_fallY - g_dropFallBias);
+    if (landed > m_landY) {
         i32 x = m_object->m_screenX;
-        DropGrid* g = (DropGrid*)g_gameReg->m_tileGrid;
+        CTileGrid* g = g_gameReg->m_tileGrid;
         i32 cell;
         {
             i32 cx = x >> 5;
-            i32 cy = m_68 >> 5;
+            i32 cy = m_landY >> 5;
             if ((u32)cx < (u32)g->m_c && (u32)cy < (u32)g->m_10) {
-                cell = *(i32*)(g->m_8[cy] + cx * 0x1c);
+                cell = *(i32*)((char*)g->m_8[cy] + cx * 0x1c);
             } else {
                 cell = 1;
             }
@@ -350,12 +347,17 @@ i32 CDroppedObject::ActA() {
                         case 7:
                         default:
                             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-                                && m_68 < g_gameReg->m_viewOriginB
-                                && m_68 >= g_gameReg->m_viewOriginT) {
-                                CGameObject* s =
-                                    ((DropReg30*)g_gameReg->m_world)
-                                        ->m_08
-                                        ->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+                                && m_landY < g_gameReg->m_viewOriginB
+                                && m_landY >= g_gameReg->m_viewOriginT) {
+                                CGameObject* s = ((DropReg30*)g_gameReg->m_world)
+                                                     ->m_08->CreateSprite(
+                                                         0,
+                                                         x,
+                                                         m_landY,
+                                                         0xcf84f,
+                                                         "Particlez",
+                                                         0x40003
+                                                     );
                                 if (s != 0) {
                                     s->ApplyName("LEVEL_DEATHSPLASH");
                                     s->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
@@ -369,21 +371,21 @@ i32 CDroppedObject::ActA() {
             }
         } else {
             if (x < g_gameReg->m_viewOriginR && x >= g_gameReg->m_viewOriginL
-                && m_68 < g_gameReg->m_viewOriginB && m_68 >= g_gameReg->m_viewOriginT) {
+                && m_landY < g_gameReg->m_viewOriginB && m_landY >= g_gameReg->m_viewOriginT) {
                 CGameObject* s =
                     ((DropReg30*)g_gameReg->m_world)
-                        ->m_08->CreateSprite(0, x, m_68, 0xcf84f, "Particlez", 0x40003);
+                        ->m_08->CreateSprite(0, x, m_landY, 0xcf84f, "Particlez", 0x40003);
                 if (s != 0) {
                     s->ApplyName("GAME_WATER");
                     s->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
         }
-        m_40 = m_38->m_geoId;
+        m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_screenX, m_68, 1, 7, -1);
+        ((DropTileMgr*)g_gameReg->m_68)->PostMove(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
     m_object->m_screenY = landed;
@@ -397,7 +399,6 @@ SIZE_UNKNOWN(CDropEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(DropGrid);
 SIZE_UNKNOWN(DropReg2c);
 SIZE_UNKNOWN(DropReg30);
 SIZE_UNKNOWN(DropSpriteFactory);
