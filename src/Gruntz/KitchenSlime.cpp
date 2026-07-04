@@ -168,7 +168,7 @@ public:
 // entry's handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
 // external/no-body (shared with the trigger registry's engine functions). The
-// alloc-cache pair (g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) is the
+// alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
 // SAME shared global both registries write.
 struct CKSlimeEntry; // an entry: first dword is the registered handler
 struct CKSlimeColl {
@@ -184,8 +184,7 @@ DATA(0x00246228)
 extern CKSlimeColl g_kslimeColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CKitchenSlime
 // (single inheritance -> 4-byte code pointer); FireActivation invokes it on
@@ -206,7 +205,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
         return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_kslimeColl2->Insert(&g_kslimeColl, item, 0xc);
     return g_kslimeCur;
 }
@@ -380,7 +379,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl2->Insert(&g_typeColl, item, 0xc);
     return g_typeCur;
 }

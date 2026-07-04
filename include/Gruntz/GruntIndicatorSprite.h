@@ -99,7 +99,7 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
 // Also the shared activation-name registry types/globals (CActColl / CActColl2 /
-// g_actCache / g_actAllocResult / GetRetAddr / g_buteTree / g_nextActId / s_actKeyA)
+// g_actCache / g_retAddrBreadcrumb / GetRetAddr / g_buteTree / g_nextActId / s_actKeyA)
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>

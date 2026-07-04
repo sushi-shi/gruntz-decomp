@@ -113,8 +113,7 @@ DATA(0x0024e3d0)
 extern CHaznColl g_haznColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
 // (single inheritance -> 4-byte code pointer); FireActivation invokes it on
@@ -175,7 +174,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }
@@ -190,7 +189,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_haznColl2->Insert(&g_haznColl, item, 0xc);
     return g_haznCur;
 }

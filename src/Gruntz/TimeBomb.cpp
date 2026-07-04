@@ -24,7 +24,7 @@
 // called __thiscall on `this`. All globals are unnamed BSS (DATA-pinned so the
 // loads reloc-mask); the collection methods are external/no-body (the SAME shared
 // engine functions both registries call). The alloc-cache pair (g_actCache
-// 0x6bf464 / g_actAllocResult 0x6bf428) is the SAME shared global both registries
+// 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME shared global both registries
 // write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
 struct CTBombEntry; // an entry: first dword is the registered handler
 struct CTBombColl2 {
@@ -37,8 +37,7 @@ DATA(0x0024c780)
 extern CTBombColl g_tbombColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CTimeBomb (single
 // inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
@@ -60,7 +59,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_tbombColl2->Insert(&g_tbombColl, item, 0xc);
     return g_tbombCur;
 }
@@ -75,7 +74,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
 // @0x0e1e60). g_buteTree (0x6bf620, named by mangled symbol) doubles as the
 // name->id map; g_nextActId (0x61aea8) is the running id counter; s_actKeyA
 // (0x60a454) is the "A" key. The id->name-slot resolve reuses the shared
-// Find/GetRetAddr/Insert + g_actCache/g_actAllocResult collection methods.
+// Find/GetRetAddr/Insert + g_actCache/g_retAddrBreadcrumb collection methods.
 // ---------------------------------------------------------------------------
 DATA(0x0021aea8)
 extern i32 g_nextActId;
@@ -119,7 +118,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

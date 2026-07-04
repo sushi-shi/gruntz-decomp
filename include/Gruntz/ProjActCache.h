@@ -22,15 +22,14 @@
 
 // Globals the OOM path touches (.data). g_containerName is the const-char* anchor
 // the base ctor records; g_defaultSize is the fallback capacity; g_projActCache /
-// g_projActAllocResult are the diagnostic record cells. Reloc-masked.
+// g_retAddrBreadcrumb are the diagnostic record cells. Reloc-masked.
 DATA(0x002bf408)
 extern char g_containerName[]; // 0x6bf408 (base ctor const char* arg)
 DATA(0x0021ad28)
 extern i32 g_defaultProjActSize; // 0x61ad28
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA)
-DATA(0x002bf428)
-extern void* g_projActAllocResult; // 0x6bf428 (?g_projActAllocResult@@3PAXA)
+extern void* g_retAddrBreadcrumb; // 0x6bf428 (?g_retAddrBreadcrumb@@3PAXA)
 extern void* g_projActName;        // 0x6bf454 (the bad-arg diagnostic record cell)
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where

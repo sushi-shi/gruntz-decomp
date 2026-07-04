@@ -151,7 +151,7 @@ i32 ToobSpikezLogic(CGameObjLogic* obj) {
 // handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
 // external/no-body (the SAME shared engine functions every registry calls). The
-// alloc-cache pair (g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) is the SAME
+// alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
 // shared global every registry writes (already named by KitchenSlime.cpp -
 // re-declared here, address-pinned).
 struct CToobEntry; // an entry: first dword is the registered handler
@@ -168,8 +168,7 @@ DATA(0x0024e978)
 extern CToobColl g_toobColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CToobSpikez
 // (single inheritance -> 4-byte code pointer); FireActivation invokes it on
@@ -191,7 +190,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_toobColl2->Insert(&g_toobColl, item, 0xc);
     return g_toobCur;
 }
@@ -249,7 +248,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

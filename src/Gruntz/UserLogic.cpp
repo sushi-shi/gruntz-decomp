@@ -395,7 +395,7 @@ extern WwdGameReg* g_gameReg;
 // fn-ptr table; a nonzero entry's handler is called __thiscall on `this`.
 // All globals are unnamed BSS (DATA-pinned here so the loads reloc-mask); the
 // collection methods are external/no-body.
-// CActColl / CActColl2 / GetRetAddr + g_actCache (0x6bf464) / g_actAllocResult
+// CActColl / CActColl2 / GetRetAddr + g_actCache (0x6bf464) / g_retAddrBreadcrumb
 // (0x6bf428) are the shared coordinate-registry collection primitives from
 // <Gruntz/ActReg.h>. g_actColl (0x644688) is this TU's own collection singleton.
 struct CActEntry; // an entry: first dword is the registered handler vtable
@@ -476,7 +476,7 @@ static inline CActEntry* ActLookup(i32 coord) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_actColl2->Insert(&g_actColl, item, 0xc);
     return g_actCur;
 }
@@ -487,7 +487,7 @@ static inline CActEntry* ActLookup(i32 coord) {
 // name->id map (Find returns the id, 0 == absent; Insert maps a new key->id);
 // g_nextActId (0x61aea8) is the running id counter; s_actKeyA (0x60a454) is the
 // "A" key. The id->name-slot resolve reuses the shared Find/GetRetAddr/Insert +
-// g_actCache/g_actAllocResult collection methods already declared above.
+// g_actCache/g_retAddrBreadcrumb collection methods already declared above.
 // ---------------------------------------------------------------------------
 DATA(0x0021aea8)
 extern i32 g_nextActId;
@@ -529,7 +529,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

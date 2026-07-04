@@ -20,7 +20,7 @@
 
 #include <rva.h>
 
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_actAllocResult
+#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_retAddrBreadcrumb
 
 // The registry IS-A CActColl (its +0x00 collection object is the CActColl base);
 // the slow lookup is a direct base Find call, no (CActColl*)this view cast.
@@ -48,7 +48,7 @@ struct CActReg : public CActColl {
             return m_base + (id - m_lo) * m_stride;
         }
         void* item = g_actCache;
-        g_actAllocResult = GetRetAddr();
+        g_retAddrBreadcrumb = GetRetAddr();
         m_coll2->Insert(this, item, 0xc);
         return m_cur;
     }

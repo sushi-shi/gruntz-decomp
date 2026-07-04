@@ -502,8 +502,7 @@ struct CProjColl2 {
 extern void* GetRetAddr(); // 0x16d990
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (shared alloc cache)
-DATA(0x002bf428)
-extern void* g_projActAllocResult; // 0x6bf428
+extern void* g_retAddrBreadcrumb; // 0x6bf428
 
 // R1 - the shared type-name table (@0x6bf650).
 struct CProjTypeEntry;
@@ -555,7 +554,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_projActColl2->Insert(&g_projActColl, item, 0xc);
     return g_projActCur;
 }
@@ -570,7 +569,7 @@ static inline CProjTypeEntry* ProjTypeLookup(i32 key) {
         return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
     void* item = g_projActCache;
-    g_projActAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_projTypeColl2->Insert(&g_projTypeColl, item, 0xc);
     return g_projTypeCur;
 }

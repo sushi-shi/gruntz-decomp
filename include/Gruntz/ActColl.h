@@ -6,7 +6,7 @@
 //
 // Find (0x16da80) is the slow coordinate lookup; Insert (0x16d850) rebuilds a slot;
 // GetRetAddr (0x16d990) is NOT an allocator - it is `pop eax;push eax;ret`, returning
-// the caller's call-site return address, which the resolve stamps into g_actAllocResult
+// the caller's call-site return address, which the resolve stamps into g_retAddrBreadcrumb
 // (0x6bf428) as an error/diagnostic breadcrumb right before the Insert (the misnomer
 // "ActAlloc"/"ProjActAlloc" is corrected to GetRetAddr; see the report). All
 // external/no-body so the calls reloc-mask; g_actCache (0x6bf464) is the real shared
@@ -31,7 +31,6 @@ extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 #endif // GRUNTZ_GRUNTZ_ACTCOLL_H

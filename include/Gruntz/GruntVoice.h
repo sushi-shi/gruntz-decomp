@@ -50,7 +50,7 @@ struct CVoiceSample {
 // dispatches through - the SAME ActLookup/FireActivation shape as
 // CSecretTeleporterTrigger::FireActivation (0x042150), but on CGruntVoice's OWN
 // registry statics at 0x6514xx (the shared collection methods + the cache/alloc
-// scratch globals g_actCache/g_actAllocResult are reused). A coordinate maps to
+// scratch globals g_actCache/g_retAddrBreadcrumb are reused). A coordinate maps to
 // an Entry* either directly (within the fast [g_vactLo,g_vactHi] range) via
 // g_vactBase + (coord-g_vactLo)*g_vactStride, or by a slow lookup in g_vactColl
 // (0x16da80, __thiscall ret 8) which on miss rebuilds the table
@@ -92,8 +92,7 @@ extern CVActColl2* g_vactColl2;
 // so the loads reloc-mask against the already-matched symbols).
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // ---------------------------------------------------------------------------
 // CGruntVoice : CUserLogic. Its own state begins at +0x40. The dtor (0x119ae0)
@@ -146,7 +145,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_vactColl2->Insert(&g_vactColl, item, 0xc);
     return g_vactCur;
 }

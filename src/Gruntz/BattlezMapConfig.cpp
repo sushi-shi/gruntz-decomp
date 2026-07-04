@@ -4930,7 +4930,7 @@ struct ZErrTarget {
 };
 RVA(0x00034960, 0x24)
 void ZErrTarget::Report(i32 sentinel, i32 code) {
-    g_zvecErrToken = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     m_err->Error(this, sentinel, code);
 }
 

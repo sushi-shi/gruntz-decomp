@@ -24,7 +24,7 @@
 // handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
 // external/no-body (the SAME shared engine functions every registry calls). The
-// alloc-cache pair (g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) is the SAME
+// alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
 // shared global every registry writes (already named by KitchenSlime.cpp -
 // re-declared here, address-pinned).
 struct CDropEntry; // an entry: first dword is the registered handler
@@ -41,8 +41,7 @@ DATA(0x0024bed8)
 extern CDropColl g_dropColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 // ---------------------------------------------------------------------------
 // RegisterActs (0x0c6d30) binds TWO activation keys ("A" and "B") into the
@@ -95,7 +94,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }
@@ -125,7 +124,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_dropColl2->Insert(&g_dropColl, item, 0xc);
     return g_dropCur;
 }

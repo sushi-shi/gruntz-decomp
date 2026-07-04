@@ -45,7 +45,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
     }
     if (!SetSize((i32)n)) {
         void* cache = g_projActCache;
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_4->Set(this, (i32)cache, 0xc);
     } else {
         u32* base = (m_8 > 0x20) ? (u32*)m_c : (u32*)&m_c;
@@ -80,7 +80,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     m_28 = 0;
     if (key == 0 || value == 0) {
         void* name = g_projActName;
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_4->Set(this, (i32)name, 0x16);
         return 0;
     }
@@ -178,7 +178,7 @@ void* CProjActMap::Insert(const char* key, void* value) {
     }
 
     void* cache = g_projActCache;
-    g_projActAllocResult = GetCallerRetAddr();
+    g_retAddrBreadcrumb = GetCallerRetAddr();
     m_4->Set(this, (i32)cache, 0xc);
     return 0;
 }
@@ -216,7 +216,7 @@ i32 zBitVec::EnsureSize(i32 nbits) {
     return 1;
 fail:
     void* cache = g_projActCache;
-    g_projActAllocResult = GetCallerRetAddr();
+    g_retAddrBreadcrumb = GetCallerRetAddr();
     m_4->Set(this, (i32)cache, 0xc);
     return 0;
 }

@@ -59,7 +59,7 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
         i32 sentinel = g_zvecErrSentinel;
-        g_zvecErrToken = GetRetAddr();
+        g_retAddrBreadcrumb = GetRetAddr();
         v->m_err->Error(v, sentinel, 0xc);
         r = v->m_spare;
     }
@@ -86,7 +86,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
     i32 sentinel = g_zvecErrSentinel;
-    g_zvecErrToken = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     v->m_err->Error(v, sentinel, 0xc);
     return v->m_spare;
 }

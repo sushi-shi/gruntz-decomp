@@ -25,7 +25,7 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_actAllocResult
+#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_retAddrBreadcrumb
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
@@ -43,7 +43,7 @@ DATA(0x0020a454)
 extern char s_actKeyA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
-// CActColl2 / GetRetAddr + g_actCache 0x6bf464 / g_actAllocResult 0x6bf428) come from
+// CActColl2 / GetRetAddr + g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
 // <Gruntz/ActColl.h> - the SAME engine functions/globals every registry reuses.
 
 // ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ static inline char* ActNameLookup(i32 id) {
         slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     } else {
         void* item = g_actCache;
-        g_actAllocResult = GetRetAddr();
+        g_retAddrBreadcrumb = GetRetAddr();
         g_nameReg2->Insert(&g_nameReg, item, 0xc);
         slot = g_nameRegCur;
     }

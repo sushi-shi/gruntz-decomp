@@ -78,7 +78,7 @@ extern float g_lumaG;
 extern float g_lumaB;
 extern float g_inv255;
 extern "C" void* g_pButeDefaults;
-extern void* g_zvecErrToken;
+extern void* g_retAddrBreadcrumb;
 extern u32 g_zvecErrSentinel;
 extern const double g_5f04f0;
 extern const double g_motionNegHalf;

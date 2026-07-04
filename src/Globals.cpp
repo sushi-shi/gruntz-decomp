@@ -102,8 +102,12 @@ DATA(0x001efb58)
 extern float g_inv255; // 1/255
 DATA(0x001f03e0)
 extern "C" void* g_pButeDefaults; // 0x5f03e0
-DATA(0x001f0428)
-extern void* g_zvecErrToken; // 0x6bf428
+// The GetRetAddr diagnostic breadcrumb: the coordinate registries (ActColl / ProjAct
+// / ZVec / TypeKeyColl) stamp the caller's return address here right before an Insert.
+// Write-only (no reader); the "ActAlloc"/"ProjActAlloc"/"zvecErr" names were misnomers.
+// Single DATA home for the cell (VA 0x6bf428); TUs carry a plain extern.
+DATA(0x002bf428)
+extern void* g_retAddrBreadcrumb; // 0x6bf428
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f0)

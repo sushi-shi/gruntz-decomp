@@ -49,8 +49,7 @@ DATA(0x00251500)
 extern CVTrigColl g_vtrigColl;
 DATA(0x002bf464)
 extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
+extern void* g_retAddrBreadcrumb;
 
 struct CVTrigEntry {
     void (CVoiceTrigger::*m_fn)(); // [entry]
@@ -67,7 +66,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_vtrigColl2->Insert(&g_vtrigColl, item, 0xc);
     return g_vtrigCur;
 }
@@ -112,7 +111,7 @@ static inline char* ActNameLookup(i32 id) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
-    g_actAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Insert(&g_nameReg, item, 0xc);
     return g_nameRegCur;
 }

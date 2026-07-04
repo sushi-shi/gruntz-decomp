@@ -27,7 +27,7 @@ i32 C213a0::Get() {
 // grow-on-miss lookup; same shape as TypeKeyColl's TypeResolve). __thiscall(key).
 // ===========================================================================
 extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
-extern void* g_projActAllocResult; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
+extern void* g_retAddrBreadcrumb; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
 extern void* GetRetAddr();     // 0x16d990
 // @early-stop
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
@@ -43,7 +43,7 @@ void* CTypeColl464::Resolve(i32 key) {
         return m_buf + (key - m_lo) * m_stride;
     }
     void* item = g_projActCache;
-    g_projActAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     m_4->Insert(this, item, 0xc);
     return (void*)m_buf2;
 }

@@ -4,7 +4,7 @@
 // 0x18d shared-name-registry archetype). This lives in its own TU rather than
 // Wormhole.cpp because Wormhole.cpp already models the SAME shared registry
 // addresses (0x6bf650 / 0x6bf464 / 0x6bf428 / 0x60a454 / 0x61aea8) under its
-// zvec-typed names (g_buteNameVec / g_zvecErrSentinel / g_zvecErrToken /
+// zvec-typed names (g_buteNameVec / g_zvecErrSentinel / g_retAddrBreadcrumb /
 // s_wormholeLogicKey / g_logicRegCounter) for the SEPARATE logic-dispatch
 // registration (RegisterWormholeLogic @0x401b0). Re-declaring the registry-typed
 // view of those addresses in the same TU would collide; a dedicated TU pulls the

@@ -54,8 +54,7 @@ extern void* g_buteTreeDtorSubVtbl; // CButeTree dtor-phase +0x08 vtable
 // ===========================================================================
 // The registry globals (BSS / .data; DATA-pinned so the loads reloc-mask).
 // ===========================================================================
-DATA(0x002bf428)
-extern void* g_projActAllocResult; // 0x6bf428
+extern void* g_retAddrBreadcrumb; // 0x6bf428
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464
 DATA(0x002bf658)
@@ -139,7 +138,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
     m_buf = 0;
     m_stride = stride;
     if (lo > hi) {
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_owner->Report(this, "Inconsistent bounds", 0x16);
         return;
     }
@@ -156,7 +155,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
             return;
         }
     }
-    g_projActAllocResult = GetCallerRetAddr();
+    g_retAddrBreadcrumb = GetCallerRetAddr();
     m_owner->Report(this, "out of memory", 0xc);
 }
 
@@ -257,7 +256,7 @@ static inline char* TypeResolve(i32 key) {
         return g_typeBase + (key - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
-    g_projActAllocResult = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl2->Insert(&g_typeColl, item, 0xc);
     return (char*)g_typeCur;
 }

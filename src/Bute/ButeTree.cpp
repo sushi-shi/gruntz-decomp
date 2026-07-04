@@ -38,8 +38,7 @@ i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
 
 // Alloc-context diagnostic cells (.data; DATA-pinned so the loads/stores
 // reloc-mask). Shared with the projectile/type registries.
-DATA(0x002bf428)
-extern void* g_projActAllocResult; // 0x6bf428
+extern void* g_retAddrBreadcrumb; // 0x6bf428
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464
 
@@ -64,7 +63,7 @@ RVA(0x0016d190, 0x101)
 void* CButeTree::Find(const char* key) {
     if (key == 0) {
         void* name = g_projActName;
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
@@ -125,7 +124,7 @@ void* CButeTree::Find(const char* key) {
 RVA(0x0016db90, 0x206)
 void* CButeTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errorSink->Set(this, (i32) "No prior lookup", 0x16);
         return 0;
     }
@@ -134,7 +133,7 @@ void* CButeTree::Insert(const char* key, void* value) {
     m_keyBitLength = newbit;
     if (key == 0 || value == 0) {
         void* name = g_projActName;
-        g_projActAllocResult = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
@@ -217,7 +216,7 @@ void* CButeTree::Insert(const char* key, void* value) {
     }
 
     void* cache = g_projActCache;
-    g_projActAllocResult = GetCallerRetAddr();
+    g_retAddrBreadcrumb = GetCallerRetAddr();
     m_errorSink->Set(this, (i32)cache, 0xc);
     return 0;
 }

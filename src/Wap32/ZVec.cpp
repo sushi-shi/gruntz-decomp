@@ -66,7 +66,7 @@ i32 zDArray::IndexToPtr(i32 i) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
         i32 sentinel = g_zvecErrSentinel;
-        g_zvecErrToken = GetRetAddr();
+        g_retAddrBreadcrumb = GetRetAddr();
         m_err->Error(this, sentinel, 0xc);
         r = m_spare;
     }
@@ -104,7 +104,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
         return idx + base;
     }
     i32 sentinel = g_zvecErrSentinel;
-    g_zvecErrToken = GetRetAddr();
+    g_retAddrBreadcrumb = GetRetAddr();
     m_err->Error(this, sentinel, 0xc);
     return m_spare;
 }
@@ -123,7 +123,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     if (idx < m_lo) {
         p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
-            g_zvecErrToken = GetCallerRetAddr();
+            g_retAddrBreadcrumb = GetCallerRetAddr();
             m_err->Error(this, (u32)s_out_of_memory, 0x22);
             return 0;
         }
@@ -140,7 +140,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     i32 hinew = idx + at;
     p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
-        g_zvecErrToken = GetCallerRetAddr();
+        g_retAddrBreadcrumb = GetCallerRetAddr();
         m_err->Error(this, (u32)s_out_of_memory, 0x22);
         return 0;
     }
