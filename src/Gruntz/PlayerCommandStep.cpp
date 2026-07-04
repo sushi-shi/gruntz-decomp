@@ -7,12 +7,20 @@
 // The grunt-state reset block (clear +0x308.. / +0x420 / mask +0x248) repeats across
 // most cases. All engine helpers + the manager/registry globals are external
 // (reloc-masked); the grunt/grid/this field bags are raw-offset addressed as retail.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Ints.h>
 
 #include <rva.h>
+#include <Globals.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
+
+// .rodata string literals (were bare (char*)0xADDR immediates; named so the operand
+// relocates like retail's `push offset` instead of an unrelocated `push imm32`).
+static const char s_gameBadSelect[] = "GAME_BADSELECT";              // 0x612c28
+static const char s_grunt[] = "Grunt";                               // 0x60a9ec
+static const char s_playerDefenderRadius[] = "PlayerDefenderRadius"; // 0x60e1ac
 
 struct CGrid;
 struct CGruntObj;
@@ -58,10 +66,8 @@ struct CCmdHandler {
     void Defended(i32 a, i32 b);                                          // 0x40213f
 };
 
-// Bute-config manager (g_buteMgr @0x6453d8): read the defender-radius value.
-struct CButeMgr {
-    i32 ReadRadius(const char* sec, const char* key, i32 def); // 0x40171aa0->0x571aa0
-};
+// Bute-config manager (g_buteMgr @0x6453d8): read the defender-radius value via
+// the canonical CButeMgr::GetIntDef (0x171aa0, include/Bute/ButeMgr.h).
 DATA(0x006453d8)
 extern CButeMgr g_buteMgr;
 
@@ -74,9 +80,7 @@ extern CCueTag g_sndCueTag;
 
 DATA(0x00644c54)
 extern i32 g_localPlayer; // g_644c54
-DATA(0x00644ca4)
-extern void* g_renderCtx; // g_644ca4
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern char* g_mgrSettings; // ->m_134
 
 // Free engine helpers (reloc-masked).
@@ -130,7 +134,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 return 1;
             }
             if (F(F(P(this, 0xc), 0x28), 0x30) == 0) {
-                if (BadSelect((const char*)0x612c28) != 0) {
+                if (BadSelect(s_gameBadSelect) != 0) {
                     g_sndCueTag.Complain(0, 0, 0);
                 }
             }
@@ -268,12 +272,8 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                             F(g, 0x2dc) = 1;
                             break;
                         default:
-                            F(g, 0x2dc) = g_buteMgr.ReadRadius(
-                                              (const char*)0x60a9ec,
-                                              (const char*)0x60e1ac,
-                                              3
-                                          )
-                                          + 1;
+                            F(g, 0x2dc) =
+                                g_buteMgr.GetIntDef(s_grunt, s_playerDefenderRadius, 3) + 1;
                     }
                     F(g, 0x248) |= 0x18040402;
                     F(g, 0x2f0) = -1;
@@ -475,3 +475,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
     }
     return 0;
 }
+SIZE_UNKNOWN(CCmdHandler);
+SIZE_UNKNOWN(CCueTag);
+SIZE_UNKNOWN(CGrid);
+SIZE_UNKNOWN(CGruntObj);

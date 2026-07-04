@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 // VideoConfig.cpp - the video-resolution combo-box config pair on the Gruntz
 // options/setup dialog (C:\Proj\Gruntz). Both functions translate between the
 // global selected-resolution mode (g_videoResolutionMode: 1=640x480,
@@ -24,6 +25,7 @@
 // /O2 /Oi MSVC5 expands it inline to repnz scasb + rep movs (the suffix-append
 // idiom in the disassembly).
 #include <Win32.h>
+#include <Gruntz/Wnd.h>
 #include <Gruntz/Enums.h>
 #include <string.h>
 
@@ -47,13 +49,8 @@ extern i32 g_videoResolutionMode;
 // (min,max,redraw) range, and the engine 0x405/0x400 messages are exchanged with
 // the wrapped HWND held at CWnd+0x1c (m_hWnd).
 // ---------------------------------------------------------------------------
-struct HWND__; // the strong HWND tag MFC's signature mangles in
-class CWnd {
-public:
-    static CWnd* __stdcall FromHandle(HWND__* hWnd);
-    char m_pad00[0x1c];
-    HWND m_hWnd; // +0x1c  the wrapped window handle
-};
+// CWnd is the shared minimal MFC view (see <Gruntz/Wnd.h>): FromHandle wraps the
+// HWND, m_hWnd at +0x1c.
 class CSliderCtrl : public CWnd {
 public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
@@ -62,23 +59,15 @@ public:
 // The CGruntzMgr settings singleton; only the current backbuffer width/height
 // (+0x94/+0x98) are touched here. Modeled minimally (defined inline per-TU in the
 // retail source, cf. CMenuState/CPlay).
-struct CGameMgrSettings {
-    char m_pad0[0x94];
-    i32 m_94; // +0x94  backbuffer width
-    i32 m_98; // +0x98  backbuffer height
-    char m_pad9c[0x10c - 0x9c];
-    i32 m_10c; // +0x10c  "smooth scroll" checkbox state
-    i32 m_110; // +0x110  "show fps" checkbox state
-};
 DATA(0x0024556c)
-extern CGameMgrSettings* g_mgrSettings;
+extern CGameRegistry* g_mgrSettings;
 
 // 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
 // resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
-    i32 w = g_mgrSettings->m_94;
-    i32 h = g_mgrSettings->m_98;
+    i32 w = g_mgrSettings->m_savedModeW;
+    i32 h = g_mgrSettings->m_savedModeH;
     if (w == 0x400 && h == 0x300) {
         return RES_1024x768;
     }
@@ -185,6 +174,7 @@ void SaveVideoCheckboxes(HWND hDlg) {
     if (g_mgrSettings == 0) {
         return;
     }
-    g_mgrSettings->m_10c = IsDlgButtonChecked(hDlg, 0x46f);
-    g_mgrSettings->m_110 = IsDlgButtonChecked(hDlg, 0x4d5);
+    g_mgrSettings->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
+    g_mgrSettings->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
 }
+SIZE_UNKNOWN(CSliderCtrl);

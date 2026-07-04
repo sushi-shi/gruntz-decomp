@@ -1,7 +1,7 @@
 // GruntSprintAnim.cpp - BuildGruntSprintAnimation @0x019920 (graduated from
 // src/Stub/Backlog.cpp). The per-direction grunt "sprint" animation builder: for
 // each of the 8 compass directions it asks the HUD sprite factory
-// (g_gameReg->m_30->m_8) for a "SimpleAnimation" sprite, caches its first frame
+// (g_gameReg->m_world->m_8) for a "SimpleAnimation" sprite, caches its first frame
 // from the directional walk-cycle name "GRUNTZ_NORMALGRUNT_<DIR>_WALK", applies
 // the "GAME_GRUNTSPRINT" cycle geometry, stamps a few fixed fields (the
 // g_gameReg->m_74 sound handle at +0x4c, rate 10 at +0x50, the active flag 1 at
@@ -20,13 +20,14 @@
 // offsets / code bytes are load-bearing (campaign doctrine).
 
 #include <Ints.h>
+#include <Gruntz/GameRegistry.h>
 #include <Mfc.h> // CString (the /GX directional-name temps) + Win32
 
 #include <rva.h>
 
 struct CGsSprite;
 
-// The HUD sprite factory reached via g_gameReg->m_30->m_8 (CreateSprite looks the
+// The HUD sprite factory reached via g_gameReg->m_world->m_8 (CreateSprite looks the
 // template up by class-NAME, the 5th arg; __thiscall ret 0x18). Same shape as the
 // IconLoaders factory.
 struct CGsSpriteFactory {
@@ -48,14 +49,8 @@ struct CGsFactoryHolder {
 struct CGsSoundTable {
     void* Lookup(i32 idx, i32 flag); // 0xe23c0
 };
-struct CGsGameReg {
-    char m_pad0[0x30];
-    CGsFactoryHolder* m_30; // +0x30  sprite-factory holder
-    char m_pad34[0x74 - 0x34];
-    CGsSoundTable* m_74; // +0x74  sound/resource lookup table
-};
 DATA(0x0024556c)
-extern CGsGameReg* g_gameReg; // *0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // *0x64556c (canonical _g_mgrSettings view)
 
 // The created SimpleAnimation sprite. CacheFirstFrame (0x150540) caches the named
 // first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle geometry. Both
@@ -106,13 +101,14 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    void* h = g_gameReg->m_74->Lookup(0, 0);
+    void* h = ((CGsSoundTable*)g_mgrSettings->m_74)->Lookup(0, 0);
     if (!h) {
         return 0;
     }
 
     for (i32 i = 1; i <= 8; i++) {
-        m_204[i - 1] = g_gameReg->m_30->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        m_204[i - 1] = ((CGsFactoryHolder*)g_mgrSettings->m_world)
+                           ->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_204[i - 1] == 0) {
             return 0;
         }
@@ -158,3 +154,10 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(CGruntSprintAnim);
+SIZE_UNKNOWN(CGsFactoryHolder);
+SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CGsSoundTable);
+SIZE_UNKNOWN(CGsSprite);
+SIZE_UNKNOWN(CGsSpriteFactory);

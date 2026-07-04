@@ -1,8 +1,8 @@
 // Image.cpp - the engine's REZ -> image resolution path.
 //
 // Functions matched in this TU:
-//   CImage::LoadFromRez  - ext dispatcher
-//   CImage::Load{Bmp,Pcx,Rid,Pid,Default} + the per-format decoders
+//   CRezImage::LoadFromRez  - ext dispatcher
+//   CRezImage::Load{Bmp,Pcx,Rid,Pid,Default} + the per-format decoders
 //     (DecodeBmpHeader/DecodeResData/DecodePcxData/DecodeRidData/DecodePidData)
 //   CFileImage::LoadBmp  - .BMP file loader
 //   CFileImage::LoadPcx  - .PCX file loader
@@ -36,15 +36,19 @@
 #include <rva.h>
 // <string.h>: strrchr (find the ext dot) / _stricmp (the case-insensitive ext compare).
 #include <string.h>
-// CDDSurface (DIRSURF.CPP) is the SAME object as CFileImage here - the file-image
-// surface and the DirectDraw surface wrapper are one class viewed two ways. The
-// blitters/run-decoders are its leaf methods (named CFileImage::* to match the
-// already-matched decoder callers), but their bodies touch the rich surface
-// layout + call the CDDSurface COM thunks (Lock/SetColorKey, reloc-masked).
-#include <Gruntz/CDirectDrawMgr.h>
+// The file-image surface and the DirectDraw surface wrapper (DIRSURF.CPP) are ONE
+// class: the full surface layout + COM thunks (Lock/BltEx/SetColorKey, reloc-masked)
+// are modeled directly on CFileImage (see <Image/Image.h>), not viewed through a
+// separate CDDSurface wrapper. CFileImage is the polymorphic BASE of the shared
+// pool-item surface family (9-slot vtable @0x5ef7f0); the surface virtuals it dispatches
+// (BlitSurf slot 3, IsValid slot 5, v20 slot 8) are genuine virtual calls on `this` -
+// the former pointer-only CFileImageVtblView is retired. CDirectDrawMgr is included
+// only for CDirectDrawMgr::GetErrorString (the Fill error path).
+#include <DDrawMgr/DirectDrawMgr.h>
+#include <Globals.h>
 
 // The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
-// (libwap32 wap32/pid.h, mirrored in src/Stub/types/wwd.h). Same immediates as
+// (libwap32 wap32/pid.h). Same immediates as
 // the bare masks, so naming them is matching-neutral.
 enum PidFlags {
     PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
@@ -53,6 +57,23 @@ enum PidFlags {
     PID_COMPRESSION = 0x20,      // bit5  "RLE" - skip/fill RLE pixel stream
     PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
 };
+
+// The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). DecodePidData reads
+// this at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream
+// begins right after it (buf + 0x20). Typing the buffer lets the decoder read the
+// header by name instead of raw offsets (matching-neutral - same offsets/widths).
+struct PidHeader {
+    u32 fileDesc; // +0x00  id / file descriptor
+    u32 flags;    // +0x04  PidFlags
+    i32 width;    // +0x08
+    i32 height;   // +0x0c
+    i32 offsetX;  // +0x10  draw anchor X
+    i32 offsetY;  // +0x14  draw anchor Y
+    u32 fill;     // +0x18  fill colour (masked to low word when flags & 0x100)
+    u32 unk1;     // +0x1c
+    // +0x20: the RLE/uncompressed 8bpp pixel stream begins here.
+};
+SIZE_UNKNOWN(PidHeader);
 
 // The CFileImage::Resolve / ResolveEx `type` selector. Same case immediates as the
 // bare 1/2/4 labels (the running-subtract switch chain is value-driven), so naming
@@ -82,7 +103,7 @@ static const char s_extPid[] = ".PID";
 static const char s_extPal[] = ".PAL"; // the file-loader dispatcher (0x176f90) variant
 
 // ---------------------------------------------------------------------------
-// CImage::DecodeBmpHeader
+// CRezImage::DecodeBmpHeader
 // The plane allocator/setup shared by every format. Records the image geometry
 // (width/abs(height)/bitcount and the aligned destination stride) into the
 // engine fields at this+0x434.., builds an in-place BITMAPINFOHEADER (this+0)
@@ -90,7 +111,7 @@ static const char s_extPal[] = ".PAL"; // the file-loader dispatcher (0x176f90) 
 // plane (HBITMAP @+0x428, bits @+0x42c), and operator-new's the bottom-up
 // per-row byte-offset table (this+0x430). Returns 0 if CreateDIBSection fails.
 RVA(0x001757c0, 0x16f)
-i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
+i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
     m_434 = 0;
     m_width = width;
     m_height = (height < 0) ? -height : height;
@@ -101,8 +122,8 @@ i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void*
         m_stride = width;
     }
     m_rowPad = m_stride - width;
-    m_454 = 0;
-    m_458 = 0;
+    m_paletteScalar = 0;
+    m_paletteNode = 0;
     m_transparent = 1;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
@@ -119,10 +140,10 @@ i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void*
             m_pal[i] = (u16)i;
         }
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)this, DIB_PAL_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_PAL_COLORS, &m_pixels, 0, 0);
     } else {
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)this, DIB_RGB_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_RGB_COLORS, &m_pixels, 0, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -135,12 +156,40 @@ i32 CImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, void*
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadFromRez
+// CRezImage::DecodeBlit - the shared plane blitter the format decoders
+// call. (Re)allocate/decode the plane via DecodeBmpHeader (fail -> return 0),
+// then copy `src` into it: contiguous rep-movs of (m_stride*m_height*bitcount)/8
+// bytes when m_rowPad==0, else row-by-row through the m_rowOffsets table (each
+// row m_width bytes from the running source).
+// @early-stop
+// shrink-wrapped callee-save push wall (~83%): body byte-identical otherwise. Retail
+// saves only ebx/esi at entry and defers `push edi`/`push ebp` past the DecodeBmpHeader
+// early-out (which restores just esi/ebx); cl pushes all four upfront. Not source-
+// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
+RVA(0x00175930, 0xc6)
+i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcount, void* a3) {
+    if (!DecodeBmpHeader(a2, width, height, bitcount, a3)) {
+        return 0;
+    }
+    if (m_rowPad == 0) {
+        memcpy(m_pixels, src, (u32)(m_stride * m_height * bitcount) >> 3);
+        return 1;
+    }
+    char* s = (char*)src;
+    for (i32 row = 0; row < m_height; row++) {
+        memcpy((char*)m_pixels + m_rowOffsets[row], s, m_width);
+        s += m_width;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CRezImage::LoadFromRez
 // ext = strrchr(name,'.'); dispatch on .BMP/.PCX/.RID/.PID, else default. Each
 // branch re-tests `ext != 0` (the target's `test esi; je default` per case) and
 // forwards (name,a2,a3); a matched ext returns its loader's result directly.
 RVA(0x00175a90, 0xee)
-i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadFromRez(char* name, void* a2, void* a3) {
     char* ext = strrchr(name, '.');
 
     if (ext && _stricmp(ext, s_extBmp) == 0) {
@@ -160,7 +209,7 @@ i32 CImage::LoadFromRez(char* name, void* a2, void* a3) {
 // CImageExtLoader::LoadByExtension  @0x176f90
 // ---------------------------------------------------------------------------
 // The FILE-loader counterpart of LoadFromRez (sits in the 0x176df0-0x177xxx file
-// cluster just past the CImage rez loaders): strrchr the dot, then a stricmp
+// cluster just past the CRezImage rez loaders): strrchr the dot, then a stricmp
 // ladder on .BMP/.PCX/.PAL forwarding (path, arg) verbatim to the matching file
 // loader; an absent/unknown extension falls through to Apply. Each case re-tests
 // `ext != 0` (the target's per-case `test esi; je default`). The four loaders are
@@ -193,7 +242,7 @@ i32 CImageExtLoader::LoadByExtension(char* path, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// CImageExtLoader::LoadPalFile  @0x1771f0
+// CImageExtLoader::LoadPalFile
 // ---------------------------------------------------------------------------
 // Load a raw 768-byte (.PAL) palette: open the file, require length == 0x300,
 // Read the 256*3 RGB bytes into a stack buffer, hand it to ProcessPal(buf, arg).
@@ -215,7 +264,7 @@ i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// CImageExtLoader::LoadPcxFile  @0x1772e0
+// CImageExtLoader::LoadPcxFile
 // ---------------------------------------------------------------------------
 // Load the trailing palette of a .PCX: seek 0x300 bytes back from EOF, Read the
 // 256*3 RGB triples; on a short read return 0. Expand the triples in place into a
@@ -259,35 +308,35 @@ DATA(0x002bf6e0)
 extern "C" HINSTANCE g_hResModule; // 0x6bf6e0
 
 // ---------------------------------------------------------------------------
-// CImage::DecodeResData
+// CRezImage::DecodeResData
 // The RT_BITMAP / .DEFAULT decoder: `buf` points at a packed DIB
 // (BITMAPINFOHEADER + palette + pixels). Pull biWidth/biHeight/biBitCount, point
 // `src` at the pixel bytes (for 8bpp the 256-entry RGBQUAD palette pushes them to
 // buf+biSize+0x400, else right after the 0x28 header + the 4 RGBQUAD masks at
 // buf+0x2c) and hand it to the shared blitter.
 RVA(0x00175e00, 0x3d)
-i32 CImage::DecodeResData(void* buf, void* a2, void* a3) {
-    u8* hdr = (u8*)buf;
-    i32 bitcount = *(u16*)(hdr + 0xe);
-    i32 height = *(i32*)(hdr + 8);
-    i32 width = *(i32*)(hdr + 4);
-    void* src = hdr + 0x2c;
+i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
+    BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)buf;
+    i32 bitcount = ih->biBitCount;
+    i32 height = ih->biHeight;
+    i32 width = ih->biWidth;
+    void* src = (u8*)buf + 0x2c;
     if (bitcount == 8) {
-        src = hdr + *(i32*)hdr + 0x400;
+        src = (u8*)buf + ih->biSize + 0x400;
     }
     return DecodeBlit(src, a2, width, height, bitcount, a3);
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadBmp
+// CRezImage::LoadBmp
 // The .BMP loader: open the file, read the 14-byte BITMAPFILEHEADER and the
 // 40-byte BITMAPINFOHEADER, hand the parsed (width, height, bitcount, a2, a3)
-// to the decode helper that allocates the CImage's pixel plane, then Seek to
+// to the decode helper that allocates the CRezImage's pixel plane, then Seek to
 // bfOffBits and Read exactly (bitcount/8)*stride*height pixel bytes into the
 // plane. Returns 1 on a full read, 0 on any I/O / decode failure. The CFileIO
 // stack object's dtor runs on every exit -> the C++ EH frame.
 RVA(0x00175e40, 0x1b3)
-i32 CImage::LoadBmp(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
     CFileIO file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
@@ -318,14 +367,14 @@ i32 CImage::LoadBmp(char* name, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::DecodePcxData
+// CRezImage::DecodePcxData
 // The .PCX decoder: parse the ZSoft header (width = Xmax-Xmin+1, height =
 // Ymax-Ymin+1; bail unless BitsPerPixel==8), allocate the plane via
 // DecodeBmpHeader (bitcount = NPlanes*8), then RLE-decode each scanline into a
 // scratch buffer (filled back-to-front) and emit it into the plane row, either
 // straight (1 plane) or interleaving 3 planes into RGB triples.
 RVA(0x00176000, 0x18f)
-i32 CImage::DecodePcxData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
     u8* hdr = (u8*)buf;
     i32 width = *(i16*)(hdr + 8) - *(i16*)(hdr + 4) + 1;
     i32 height = *(i16*)(hdr + 0xa) - *(i16*)(hdr + 6) + 1;
@@ -382,12 +431,12 @@ i32 CImage::DecodePcxData(void* buf, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadPcx
+// CRezImage::LoadPcx
 // Open the file, GetLength(); if zero return 0. `operator new` a buffer of that
 // size; if it fails return 0. Read the whole file, hand the buffer (+a2,a3) to
 // the PCX decode helper, free the buffer and return the decoder's result.
 RVA(0x00176190, 0x126)
-i32 CImage::LoadPcx(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
@@ -408,12 +457,12 @@ i32 CImage::LoadPcx(char* name, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::DecodeRidData
+// CRezImage::DecodeRidData
 // The .RID decoder: the header at buf+8 carries (width, height) and the raw
 // 8bpp pixels begin at buf+0x20; hand them straight to the blitter. a3's low bit
 // gates the transparency flag at this+0x450 (cleared when not set).
 RVA(0x001762c0, 0x42)
-i32 CImage::DecodeRidData(void* buf, void* a2, void* a3) {
+i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
     i32* hdr = (i32*)((char*)buf + 8);
     i32 width = hdr[0];
     i32 height = hdr[1];
@@ -425,11 +474,11 @@ i32 CImage::DecodeRidData(void* buf, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadRid
+// CRezImage::LoadRid
 // Byte-identical to LoadPcx except for the per-format decode helper (the .RID
 // reader DecodeRidData).
 RVA(0x00176310, 0x126)
-i32 CImage::LoadRid(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
@@ -450,7 +499,7 @@ i32 CImage::LoadRid(char* name, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::DecodePidData
+// CRezImage::DecodePidData
 // The .PID decoder. The header carries a flags word at buf+4 and geometry at
 // buf+8/buf+0xc; raw run data starts at buf+0x20. After allocating the plane
 // (DecodeBmpHeader, bitcount 8) two decode modes are selected by flags:
@@ -461,12 +510,13 @@ i32 CImage::LoadRid(char* name, void* a2, void* a3) {
 // flags&0x100 masks the fill colour (buf+0x18) to a low word, else it is zeroed.
 // a3's low bit gates the transparency flag at this+0x450.
 RVA(0x00176440, 0x25d)
-i32 CImage::DecodePidData(void* buf, void* a2, void* a3) {
-    u8* src = (u8*)buf + 0x20;
-    i32 width = *(i32*)((char*)buf + 8);
-    i32 height = *(i32*)((char*)buf + 0xc);
-    i32 flags = *(i32*)((char*)buf + 4);
-    i32 fill = *(i32*)((char*)buf + 0x18);
+i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
+    PidHeader* hdr = (PidHeader*)buf;
+    u8* src = (u8*)(hdr + 1); // pixel stream at buf + 0x20
+    i32 width = hdr->width;
+    i32 height = hdr->height;
+    i32 flags = hdr->flags;
+    i32 fill = hdr->fill;
 
     if (!DecodeBmpHeader(a2, width, height, 8, a3)) {
         return 0;
@@ -534,10 +584,10 @@ i32 CImage::DecodePidData(void* buf, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadPid
+// CRezImage::LoadPid
 // Byte-identical to LoadPcx/LoadRid except for the .PID decode helper.
 RVA(0x001766a0, 0x126)
-i32 CImage::LoadPid(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadPid(char* name, void* a2, void* a3) {
     CFileIO file;
 
     if (!file.Open(name, 0, 0)) {
@@ -558,12 +608,12 @@ i32 CImage::LoadPid(char* name, void* a2, void* a3) {
 }
 
 // ---------------------------------------------------------------------------
-// CImage::LoadDefault
+// CRezImage::LoadDefault
 // The fallback (no/unknown extension): pull the named RT_BITMAP resource from
 // the engine's resource module and decode it in place. Returns 0 unless the
 // module handle is set and FindResource/LoadResource/LockResource all succeed.
 RVA(0x001767d0, 0x64)
-i32 CImage::LoadDefault(char* name, void* a2, void* a3) {
+i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
         return 0;
@@ -584,11 +634,10 @@ i32 CImage::LoadDefault(char* name, void* a2, void* a3) {
 }
 
 // ===========================================================================
-// CFileImage surface helpers (DIRSURF.CPP leaf methods). `this` is the same
-// object the CDDSurface wrapper holds, so the bodies view it as a CDDSurface to
-// reach the rich surface layout + the COM thunks. Named CFileImage::* to pair
-// with the matched decoder callers; placed in retail-RVA order (all below the
-// CFileImage decoders' RVAs, so they lead the CFileImage section).
+// CFileImage surface helpers (DIRSURF.CPP leaf methods). The rich surface layout +
+// COM thunks are CFileImage's own (it IS the DirectDraw surface object), reached
+// directly via members/methods - no separate wrapper-class view. Placed in retail-RVA
+// order (all below the CFileImage decoders' RVAs, so they lead the CFileImage section).
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
@@ -601,22 +650,21 @@ i32 CImage::LoadDefault(char* name, void* a2, void* a3) {
 // own slot-8 virtual with `surf`.
 RVA(0x0013e0d0, 0x66)
 i32 CFileImage::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32* desc = (i32*)s->m_desc;
+    i32* desc = (i32*)(this->m_desc);
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
     }
-    *(i32*)(s->m_desc + 0x68) = a5; // m_78
-    *(i32*)(s->m_desc + 0xc) = width;
-    *(i32*)(s->m_desc + 8) = height;
-    *(i32*)s->m_desc = 0x6c;    // dwSize
-    *(i32*)(s->m_desc + 4) = 7; // dwFlags
+    *(i32*)(this->m_desc + 0x68) = a5; // m_78
+    this->m_width = width;
+    this->m_height = height;
+    *(i32*)(this->m_desc) = 0x6c;  // dwSize
+    *(i32*)(this->m_desc + 4) = 7; // dwFlags
     if (a4 != 0 && a4 != ((CFileImage*)surf)->m_palBitCount) {
-        *(i32*)(s->m_desc + 4) = 0x1007;
-        *(i32*)(s->m_desc + 0x48) = 0x20; // m_58
-        s->m_64 = a4;
+        *(i32*)(this->m_desc + 4) = 0x1007;
+        *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
+        this->m_64 = a4;
     }
-    return s->v20(surf);
+    return this->v20(surf); // slot-8 virtual dispatch (+0x20)
 }
 
 // ---------------------------------------------------------------------------
@@ -636,17 +684,17 @@ i32 CFileImage::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
     }
     switch (type) {
         case FMT_PID:
-            if (!DecodePid((char*)surf, buf, size, surf2)) {
+            if (!DecodePid(surf, buf, size, surf2)) {
                 return 0;
             }
             break;
         case FMT_PCX:
-            if (!DecodePcx((char*)surf, buf, size)) {
+            if (!DecodePcx(surf, buf, size)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmp((char*)surf, buf, size)) {
+            if (!DecodeBmp(surf, buf, size)) {
                 return 0;
             }
             break;
@@ -664,7 +712,6 @@ i32 CFileImage::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
 // CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
 RVA(0x0013e760, 0x63)
 i32 CFileImage::Fill(u32 color) {
-    CDDSurface* s = (CDDSurface*)this;
     i32 fx[0x19]; // DDBLTFX (0x64 bytes)
     i32* p = fx;
     for (i32 i = 0x19; i != 0; i--) {
@@ -672,7 +719,7 @@ i32 CFileImage::Fill(u32 color) {
     }
     fx[0] = 0x64;          // dwSize
     fx[0x14] = (i32)color; // dwFillColor @ +0x50
-    i32 hr = s->BltEx(0, 0, 0, 0x1000400, fx);
+    i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
     }
@@ -685,17 +732,16 @@ i32 CFileImage::Fill(u32 color) {
 // have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
 // source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
 RVA(0x0013eb40, 0x3c)
-void CFileImage::FillPalette(void* arg) {
-    CDDSurface* s = (CDDSurface*)this;
+void CFileImage::FillPalette(u32 key) {
     u32 ck[2];
-    ck[0] = (u32)arg;
-    ck[1] = (u32)arg;
-    if ((i32)arg != -1) {
-        s->m_bc = 1;
+    ck[0] = key;
+    ck[1] = key;
+    if ((i32)key != -1) {
+        this->m_bc = 1;
     } else {
-        s->m_bc = 0;
+        this->m_bc = 0;
     }
-    s->SetColorKey(8, ck);
+    this->SetColorKey(8, ck);
 }
 
 // ---------------------------------------------------------------------------
@@ -706,48 +752,46 @@ void CFileImage::FillPalette(void* arg) {
 // down. Unlock and return 1.
 RVA(0x0013ece0, 0xc7)
 i32 CFileImage::BlitDirect(void* src, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 locked = s->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* p = (u8*)src;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
             u8* sp = p;
-            i32 n = s->m_ac;
+            i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
             u8* sp = p;
-            i32 n = s->m_ac;
+            i32 n = this->m_ac;
             for (i32 i = n; i > 0; i--) {
                 *dst++ = *sp++;
             }
             p += n;
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
 // ---------------------------------------------------------------------------
 // CFileImage::Blit
-// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_a8,
-// src bpp = bitcount). When m_a8==0 / bitcount agree on the "no remap" fast path
+// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_bitDepth,
+// src bpp = bitcount). When m_bitDepth==0 / bitcount agree on the "no remap" fast path
 // it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
 // then src bpp picks the matching Blit<dest><src> specialization. Unhandled
 // combinations return 0.
 RVA(0x0013faa0, 0x108)
 i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
-    i32 dest = s->m_a8;
+    i32 dest = this->m_bitDepth;
     if ((dest == 0) == bitcount) {
         return BlitDirect(src, mode);
     }
@@ -796,20 +840,19 @@ i32 CFileImage::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
 // 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
 RVA(0x0013fe60, 0x11e)
 i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
-    CDDSurface* s = (CDDSurface*)this;
     u8* pal = (u8*)palv;
     if (pal == 0) {
         return 0;
     }
-    i32 locked = s->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         return 0;
     }
     u8* src = (u8*)srcv;
     if (mode == 2) {
-        for (i32 row = *(i32*)(s->m_desc + 8) - 1; row >= 0; row--) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -817,9 +860,9 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     } else {
-        for (i32 row = 0; row < *(i32*)(s->m_desc + 8); row++) {
-            u8* dst = (u8*)locked + row * *(i32*)(s->m_desc + 0x10);
-            for (i32 col = 0; col < *(i32*)(s->m_desc + 0xc); col++) {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
                 u8 idx = *src++;
                 *dst++ = pal[idx * 4 + 2];
                 *dst++ = pal[idx * 4 + 1];
@@ -827,16 +870,14 @@ i32 CFileImage::Blit248(void* srcv, void* palv, i32 mode) {
             }
         }
     }
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->Unlock(0);
     return 1;
 }
 
-// The CFileImage vtable (reloc-masked .rdata global). The destructor restores the
-// vptr to it before tearing the object down; the class's virtuals live in other
-// (unmatched) TUs, so the vtable is modeled as a DATA extern + a manual stamp
-// rather than letting the compiler emit a divergent one.
-DATA(0x001ef7f0)
-extern void* g_fileImageVtbl; // 0x5ef7f0
+// CFileImage / CFileImageSurface / CRezSurfaceItem are all real-polymorphic
+// now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
+// in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
+// base-surface vtable extern/stamp remains (all-vtables mandate).
 
 // ---------------------------------------------------------------------------
 // CFileImage::~CFileImage
@@ -854,35 +895,32 @@ CFileImage::~CFileImage() {
 // CFileImage::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
 // Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
 // element's slot-0 scalar-deleting destructor, RemoveAll the array (SetSize(0,-1)),
-// then - unless the "don't-own" flag (m_7c & 1) is set - Release the two held
+// then - unless the "don't-own" flag (m_dontOwn & 1) is set - Release the two held
 // IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
 RVA(0x0013e4d0, 0x7e)
 void CFileImage::FreeSurfaces() {
-    CDDSurface* s = (CDDSurface*)this;
     for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
         CFileImageElement* e = (CFileImageElement*)m_elements[i];
-        if (e != 0) {
-            e->ScalarDtor(1);
-        }
+        delete e;
     }
     m_elements.SetSize(0, -1);
-    if (s->m_8 != 0) {
-        if ((s->m_7c & 1) == 0) {
-            s->m_8->vtbl->Release(s->m_8);
+    if (this->m_8 != 0) {
+        if ((this->m_dontOwn & 1) == 0) {
+            this->m_8->Release();
         }
-        s->m_8 = 0;
+        this->m_8 = 0;
     }
-    if (s->m_c != 0) {
-        if ((s->m_7c & 1) == 0) {
-            s->m_c->vtbl->Release(s->m_c);
+    if (this->m_c != 0) {
+        if ((this->m_dontOwn & 1) == 0) {
+            this->m_c->Release();
         }
-        s->m_c = 0;
+        this->m_c = 0;
     }
-    s->m_b8 = 0;
+    this->m_b8 = 0;
 }
 
 // ---------------------------------------------------------------------------
-// CFileImageSurface::ScalarDelete (0x142340) - the derived surface wrapper's `??_G`
+// CFileImageSurface::ScalarDelete - the derived surface wrapper's `??_G`
 // scalar-deleting destructor (vtable slot 0 @0x5efa58). Run the teardown copy, then -
 // when the low bit of the hidden flags arg is set - RezFree the object; return this.
 RVA(0x00142340, 0x1e)
@@ -897,7 +935,7 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImageSurface::~CFileImageSurface (0x142360) - the second compiled teardown
+// CFileImageSurface::~CFileImageSurface - the second compiled teardown
 // copy, byte-identical to ~CFileImage (0x141350): the virtual destructor's implicit
 // vptr stamp lands stamp-first, then the shared FreeSurfaces teardown runs and the
 // owned CPtrArray member at +0x94 is destroyed (guarded -> the /GX EH frame). The
@@ -912,14 +950,15 @@ CFileImageSurface::~CFileImageSurface() {
 // Modeling pieces (all reloc-masked):
 //   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
 //   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
-//   - the 0xc0 surface item (vtbl g_fileImageVtbl, CByteArray @+0x94), the same
+//   - the 0xc0 surface item (surface vtable @0x5ef7f0, CByteArray @+0x94), the same
 //     shape as CDDrawPtrCollections::Create7f0_1.
 // ---------------------------------------------------------------------------
 inline void* operator new(u32, void* p) {
     return p;
 } // placement new (construct in place)
 
-class CImageSource {
+SIZE_UNKNOWN(CRezImageSource);
+class CRezImageSource {
 public:
     virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
 };
@@ -933,51 +972,63 @@ class CByteArrayMember {
 public:
     CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
 };
-class CImageSurfaceItem {
+// The built 0xc0 surface item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
+// (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
+// CFileImage/CPoolItemA/CDDSurface). Real-polymorphic (2-slot declared-only foreign
+// surface-item vtable; the declared-only slots reloc-mask). cl auto-stamps the vptr
+// (??_7CRezSurfaceItem@@6B@) at ctor entry - the former manual surface-vtable stamp
+// stamped the vptr FIRST, so the store position is preserved (extern + stamp removed
+// per the all-vtables mandate). Slots named by their retail 0x1ef7f0 vtable-slot RVA
+// (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140 (Load). This is the
+// ONE class the factory news, dispatches through, and files into the cache - the
+// former CImageSurfaceItemInit "init view" was the same physical object; folded here
+// so Build_13e9a0 carries no cross-cast.
+SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
+class CRezSurfaceItem {
 public:
-    virtual void* Delete(u32 flags); // slot 0 (@0x00) scalar-deleting dtor
-    virtual i32 Load(void* src);     // slot 1 (@0x04)
-
-    char m_pad04[0x94 - 0x04]; // +0x04 (m_04/m_08/m_0c/m_7c zeroed)
-    CByteArrayMember m_94;     // +0x94
-    char m_pada8[0xc0 - 0x98]; // +0xa8/+0xb8 zeroed
-};
-class CImageSurfaceItemInit {
-public:
-    inline CImageSurfaceItemInit() {
-        *(void**)this = &g_fileImageVtbl;
-        *(i32*)((char*)this + 0x08) = 0;
-        *(i32*)((char*)this + 0x0c) = 0;
-        *(i32*)((char*)this + 0x04) = 0;
-        *(i32*)((char*)this + 0x7c) = 0;
-        *(i32*)((char*)this + 0xa8) = 0;
-        *(i32*)((char*)this + 0xb8) = 0;
+    virtual void* FUN_00141330(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
+    virtual i32 FUN_0013e140(void* src);   // slot 1 @+0x04  Load
+    inline CRezSurfaceItem() {
+        m_08 = 0;
+        m_0c = 0;
+        m_04 = 0;
+        m_dontOwn = 0;
+        m_bitDepth = 0;
+        m_b8 = 0;
     }
 
-    char m_pad00[0x94];
-    CByteArrayMember m_94;
-    char m_pada8[0xc0 - 0x95];
+    i32 m_04;                  // +0x04
+    i32 m_08;                  // +0x08
+    i32 m_0c;                  // +0x0c
+    char m_pad10[0x7c - 0x10]; // +0x10
+    i32 m_dontOwn;             // +0x7c
+    char m_pad80[0x94 - 0x80]; // +0x80
+    CByteArrayMember m_94;     // +0x94
+    char m_pad98[0xa8 - 0x98]; // +0x98
+    i32 m_bitDepth;            // +0xa8
+    char m_padac[0xb8 - 0xac]; // +0xac
+    i32 m_b8;                  // +0xb8
+    char m_padbc[0xc0 - 0xbc]; // +0xbc
 };
 
 // The global image cache the new item is filed into.
 class CImageCache {
 public:
-    void SetAtGrow(i32 index, CImageSurfaceItem* item); // 0x1b5144
+    void SetAtGrow(i32 index, CRezSurfaceItem* item); // 0x1b5144
 };
 DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
-extern i32 g_imageCacheIndex;    // 0x653c90
 
 // The owner of the factory (this) is not touched by the body; modeled as an
 // opaque shell so the call lowers to the retail __thiscall frame.
 class CImageFactory {
 public:
-    i32 Build_13e9a0(CImageSource* src, i32 a2);
+    i32 Build_13e9a0(CRezImageSource* src, i32 a2);
 };
 
 // ---------------------------------------------------------------------------
-// 0x13e9a0: probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
-// item, construct it (CByteArray @+0x94, stamp g_fileImageVtbl, zero the scalar
+// Probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
+// item, construct it (CByteArray @+0x94, stamp the surface vtable, zero the scalar
 // fields), Load the payload through slot 1, and on success file it into the global
 // image cache - else virtual-delete it. /GX. ret 0xc.
 // @early-stop
@@ -987,14 +1038,14 @@ public:
 // ctor-in-flight EH state, so the body is byte-exact but the frame differs. Deferred
 // to the final sweep.
 RVA(0x0013e9a0, 0xcc)
-i32 CImageFactory::Build_13e9a0(CImageSource* src, i32 a2) {
+i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
     void* payload = 0;
     if (src->Probe(&g_imageProbeTag, &payload) != 0) {
-        CImageSurfaceItem* item = (CImageSurfaceItem*)new CImageSurfaceItemInit;
-        if (item->Load(payload)) {
+        CRezSurfaceItem* item = new CRezSurfaceItem;
+        if (item->FUN_0013e140(payload)) { // slot 1 @+0x04  Load
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
-            item->Delete(1);
+            item->FUN_00141330(1); // slot 0 @+0x00  scalar-deleting dtor
         }
     }
     return 1;
@@ -1007,7 +1058,6 @@ i32 CImageFactory::Build_13e9a0(CImageSource* src, i32 a2) {
 // non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
 RVA(0x0013edb0, 0x78)
 void CFileImage::Clear(i32 white) {
-    CDDSurface* s = (CDDSurface*)this;
     i32 fx[0x19]; // DDBLTFX (0x64 bytes)
     i32* p = fx;
     for (i32 i = 0x19; i != 0; i--) {
@@ -1015,7 +1065,7 @@ void CFileImage::Clear(i32 white) {
     }
     fx[0] = 0x64;                         // dwSize @+0x0
     fx[2] = white ? (i32)0xff0062 : 0x42; // fill flags @+0x8
-    i32 hr = s->m_8->vtbl->Blt(s->m_8, 0, 0, 0, 0x1020000, fx);
+    i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -1032,7 +1082,7 @@ void CFileImage::Clear(i32 white) {
 // dispatcher and return its result.
 RVA(0x0013f910, 0x4a)
 i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
-    if (((CDDSurface*)this)->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (buf == 0) {
@@ -1051,19 +1101,19 @@ i32 CFileImage::SaveFile(char* buf, i32 type, void* a3, void* a4) {
 
 // ---------------------------------------------------------------------------
 // CFileImage::SaveDispatch (ret 0xc) - pick the per-bit-depth file writer by the
-// surface's raw bit depth m_a8 (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
+// surface's raw bit depth m_bitDepth (8 -> Save8, 16 -> SaveRle16, 24 -> Save24),
 // forwarding all three pass-through args; any other depth returns 0. Case bodies in
 // retail .text order (24, 16, 8); the near case labels lower to MSVC's compare
 // ladder.
 RVA(0x00144350, 0x5f)
-i32 CFileImage::SaveDispatch(void* a1, void* a2, void* a3) {
-    switch (((CDDSurface*)this)->m_a8) {
+i32 CFileImage::SaveDispatch(char* a1, void* a2, void* a3) {
+    switch (m_bitDepth) {
         case 0x18:
-            return Save24(a1, a2, a3);
+            return SaveTga(a1, a2, (i32)a3); // 24bpp -> 0x144900
         case 0x10:
             return SaveRle16(a1, a2, a3);
         case 8:
-            return Save8(a1, a2, a3);
+            return SaveBmp(a1, a2, (i32)a3); // 8bpp -> 0x1443b0
         default:
             return 0;
     }
@@ -1088,7 +1138,7 @@ extern i32 g_bDown; // blue  down-shift
 // CFileImage::SaveRle16 (0x144640, ret 0xc) - the 16bpp surface -> 24bpp BMP file
 // writer (DIRSURF.CPP). Bail unless the surface is valid (slot-5 IsValid), the
 // name buffer `a1` is non-null and non-empty (*a1 != 0) and the surface is 16bpp
-// (m_a8 == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
+// (m_bitDepth == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
 // bfOffBits = 0x3a) + a zeroed BITMAPINFOHEADER (biSize 0x28, biWidth/biHeight =
 // surface w/h, biPlanes 1, biBitCount 0x18), operator-new a one-scanline 24bpp
 // buffer, Lock the surface, open the CFileIO (mode 0x2001 / 0x1001 by a3), write
@@ -1103,8 +1153,7 @@ extern i32 g_bDown; // blue  down-shift
 // complete + correct; both are documented non-steerable plateaus.
 RVA(0x00144640, 0x2be)
 i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
-    CDDSurface* s = (CDDSurface*)this;
-    if (s->IsValid() == 0) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
         return 0;
     }
     if (a1 == 0) {
@@ -1113,7 +1162,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     if (*(char*)a1 == 0) {
         return 0;
     }
-    if (s->m_a8 != 0x10) {
+    if (this->m_bitDepth != 0x10) {
         return 0;
     }
 
@@ -1133,8 +1182,8 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     bfh.bfReserved1 = 0;
     bfh.bfReserved2 = 0;
 
-    i32 height = *(i32*)(s->m_desc + 8);  // dwHeight
-    i32 width = *(i32*)(s->m_desc + 0xc); // dwWidth
+    i32 height = this->m_height; // dwHeight
+    i32 width = this->m_width;   // dwWidth
     bih.biHeight = height;
     bih.biWidth = width;
     bfh.bfSize = 3 * width * height + 0x3a;
@@ -1148,7 +1197,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         return 0;
     }
 
-    u8* locked = (u8*)s->Lock(0);
+    u8* locked = (u8*)Lock(0);
     if (locked == 0) {
         RezFree(line);
         return 0;
@@ -1162,7 +1211,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         ok = file.Open((char*)a2, 0x1001, 0);
     }
     if (ok == 0) {
-        s->m_8->vtbl->Unlock(s->m_8, 0);
+        this->m_8->Unlock(0);
         RezFree(line);
         return 0;
     }
@@ -1172,7 +1221,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
     file.Write(&bih, 0x2c);
 
     for (i32 row = height - 1; row >= 0; row--) {
-        u8* src = locked + row * *(i32*)(s->m_desc + 0x10);
+        u8* src = locked + row * this->m_pitch;
         u8* dst = line;
         for (i32 x = 0; x < width; x++) {
             u16 px = *(u16*)src;
@@ -1185,7 +1234,7 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
         file.Write(line, 3 * width);
     }
 
-    s->m_8->vtbl->Unlock(s->m_8, 0);
+    this->m_8->Unlock(0);
     RezFree(line);
     return 1;
 }
@@ -1196,11 +1245,13 @@ i32 CFileImage::SaveRle16(void* a1, void* a2, void* a3) {
 // install it via FillPalette. Returns 1.
 RVA(0x00148840, 0x47)
 i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32 key) {
-    if (BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
+    // Direct (non-virtual) dispatch to the slot-3 body: qualified call suppresses the
+    // vtable indirection (retail direct-calls 0x13e0d0 here).
+    if (CFileImage::BlitSurf(surf, width, height, a4, a5 | 0x40) == 0) {
         return 0;
     }
     if (key != -1) {
-        FillPalette((void*)key);
+        FillPalette(key);
     }
     return 1;
 }
@@ -1216,7 +1267,7 @@ i32 CFileImage::LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5, i32
 // through the remapping Blit; otherwise straight-copy via BlitDirect. The pixel
 // data starts at buf + bfOffBits. Returns 1 on a successful blit, else 0.
 RVA(0x00143fc0, 0x142)
-void* CFileImage::DecodeBmp(char* surf, void* buf, u32 size) {
+void* CFileImage::DecodeBmp(void* surf, void* buf, u32 size) {
     CFileImage* pal = (CFileImage*)surf;
     BITMAPINFOHEADER* ih = (BITMAPINFOHEADER*)((char*)buf + 0xe);
     i32 width = ih->biWidth;
@@ -1312,7 +1363,7 @@ void* CFileImage::LoadBmp(char* name, char* path) {
 // through the palette (built from the PCX trailing 768-byte VGA palette for 8bpp,
 // or the surface palette for 24bpp). Returns 1 on success, 0 on failure.
 RVA(0x00144ee0, 0x225)
-void* CFileImage::DecodePcx(char* surf, void* buf, u32 size) {
+void* CFileImage::DecodePcx(void* surf, void* buf, u32 size) {
     if (!buf) {
         return 0;
     }
@@ -1452,7 +1503,7 @@ void* CFileImage::LoadPcx(char* name, char* path) {
 // (RunDecode1) and blit through the palette. flags&1 (TRANSPARENCY) installs the
 // transparent colour (surf2) via FillPalette. Returns 1 on success, 0 on failure.
 RVA(0x00145b10, 0x1b5)
-void* CFileImage::DecodePid(char* surf, void* buf, u32 size, void* surf2) {
+void* CFileImage::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
     CFileImage* pal = (CFileImage*)surf;
     u8* hdr = (u8*)buf;
     i32 flags = *(i32*)(hdr + 4);
@@ -1529,7 +1580,7 @@ void* CFileImage::DecodePid(char* surf, void* buf, u32 size, void* surf2) {
         RezFree(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette(surf2);
+        FillPalette((u32)surf2);
     }
     return (void*)1;
 }
@@ -1626,7 +1677,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
         }
     }
 
-    if (!BlitSurf(dst, w, h, 0, a4)) {
+    if (!CFileImage::BlitSurf(dst, w, h, 0, a4)) { // direct (qualified) slot-3 call
         return 0;
     }
 
@@ -1656,7 +1707,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
         RezFree(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
-        FillPalette((void*)a5);
+        FillPalette(a5);
     }
     return 1;
 }
@@ -1667,7 +1718,7 @@ i32 CFileImage::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
 // Opens a PCX file, reads data, calls DecodePcxData.
 // ===========================================================================
 RVA(0x001459d0, 0x135)
-i32 CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
+i32 CFileImage::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
     CFileIO file;
 
     if (!file.Open(path, 0, 0)) {
@@ -1685,7 +1736,7 @@ i32 CFileImage::DecodePcxEx(char* name, char* path, void* a3, void* a4) {
         return 0;
     }
 
-    i32 result = DecodePcxData(name, buf, len, (i32)a3, (i32)a4);
+    i32 result = DecodePcxData(surf, buf, len, (i32)a3, (i32)a4);
     operator delete(buf);
     return result;
 }
@@ -1713,12 +1764,12 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
             }
             break;
         case FMT_PCX:
-            if (!DecodePcxData2(surf, buf, size, c)) {
+            if (!Decode((CFileImage*)surf, (CFileImageSrc*)buf, (i32)size, c)) {
                 return 0;
             }
             break;
         case FMT_BMP:
-            if (!DecodeBmpData(surf, buf, size, c)) {
+            if (!DecodeRun((CFileImage*)surf, buf, (i32)size, c)) {
                 return 0;
             }
             break;
@@ -1726,7 +1777,21 @@ i32 CFileImage::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
             return 0;
     }
     if (trans != -1 && type != FMT_PID) {
-        FillPalette((void*)trans);
+        FillPalette(trans);
     }
     return 1;
 }
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted). This TU's REZ-loader family is named
+// distinctly (CRezImage / CRezImageSource / CRezSurfaceItem) so it no longer clashes
+// with the RTTI CImage cluster in CImage.h. CFileImage is the shared DIRSURF surface,
+// now single-sourced in this header (the former include/Image/CFileImage.h was folded
+// in - see docs/multi-view-worklist.md). Only names
+// first-represented in this TU are annotated below. CFileImageElement is a slot-0
+// dtor view (no emitted vtable -> VTBL skip).
+// ===========================================================================
+SIZE_UNKNOWN(CFileImageElement);
+SIZE_UNKNOWN(CImageExtLoader);
+SIZE_UNKNOWN(CByteArrayMember);
+SIZE_UNKNOWN(CImageFactory);

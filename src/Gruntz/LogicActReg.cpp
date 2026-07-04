@@ -18,39 +18,14 @@
 //   0x0474b0 -> table 0x6447f8 (g_logicDispatch_6447f8), handler 0x466b0 (thunk 0x4041ec)
 //   0x0adfc0 -> table 0x646010, handler 0xad2a0 (thunk 0x403c10)
 #include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
+#include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
 
-// ---------------------------------------------------------------------------
-// A per-logic-class activation dispatch table (a zDArray<handler> in .data). Same
-// fast-[lo,hi] / slow-Find / rebuild resolve as the shared name registry; the
-// resolved entry's first dword receives the class's activation handler. Inlined on
-// a fixed-address global instance so the member reads fold to absolute DIR32 loads
-// (the SAME shape as CAniCycleActReg::ResolveEntry / KSlimeLookup).
-// ---------------------------------------------------------------------------
-struct CLogicActTable {
-    void* m_coll;       // +0x00  the collection (Find's this)
-    CActColl2* m_coll2; // +0x04  Insert's this
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14  slow-path result
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The per-logic-class activation dispatch table (a zDArray<handler> in .data) is
+// the shared <Gruntz/ActReg.h> CLogicActTable alias: same fast-[lo,hi] / slow-Find /
+// rebuild resolve as the shared name registry; the resolved entry's first dword
+// receives the class's activation handler. Inlined on a fixed-address global so the
+// member reads fold to absolute DIR32 loads (the SAME shape as CAniCycleActReg::
+// ResolveEntry / KSlimeLookup).
 
 // The shared name-registry build (action key "A"), CKitchenSlime::RegisterType
 // ordering: register the action name on first use (g_buteTree maps name->id),

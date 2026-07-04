@@ -1,14 +1,15 @@
-// ClassUnknown43.cpp - re-homed from src/Stub/Discovered.cpp. 0x0f7d90 is a
-// per-tick Update on the ClassUnknown_43 manager: it mirrors a coord pair
+// 0x0f7d90 is a per-tick Update on the Obj0f7d90
+// manager: it mirrors a coord pair
 // (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a
 // peer object from m_260 and either re-syncs its position via g_mgrSettings->m_68
 // or (after a >1000 throttle) re-snaps + screen-bounds-checks before firing
-// g_mgrSettings->m_60. Field names are placeholders (offsets are load-bearing);
+// g_mgrSettings->m_cueSink. Field names are placeholders (offsets are load-bearing);
 // engine callees + g_mgrSettings are external (reloc-masked).
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 #include <Mfc.h>
 
-class ClassUnknown_43;
+class Obj0f7d90;
 
 struct Box5c {
     char pad[0x5c];
@@ -17,7 +18,7 @@ struct Box5c {
 };
 
 struct Obj260 {
-    ClassUnknown_43* Get253b(ClassUnknown_43* self);
+    Obj0f7d90* Get253b(Obj0f7d90* self);
 };
 
 struct Rect4 {
@@ -42,19 +43,12 @@ struct MgrObj {
     void Func3030(int a, int b, int c, int d);
     void Func39f4(void* a, int b, int c, int d, int e, int f);
 };
-struct MgrReg {
-    char pad00[0x30];
-    Reg30* m_30; // 0x30
-    char pad34[0x60 - 0x34];
-    MgrObj* m_60; // 0x60
-    char pad64[0x68 - 0x64];
-    MgrObj* m_68; // 0x68
-};
 
 DATA(0x0024556c)
-extern "C" MgrReg* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
-class ClassUnknown_43 {
+SIZE_UNKNOWN(Obj0f7d90);
+class Obj0f7d90 {
 public:
     char pad00[0x10];
     Box5c* m_10; // 0x10
@@ -94,7 +88,7 @@ public:
 // pins m_248 in ecx + reuses edi for b->m_60 while the recompile picks
 // eax/ecx/edx; pure regalloc selection in the push sequence, not steerable.
 RVA(0x000f7d90, 0x171)
-int ClassUnknown_43::Update_0f7d90() {
+int Obj0f7d90::Update_0f7d90() {
     m_300 = m_17c;
     m_304 = m_180;
     if (m_198 == 0) {
@@ -103,7 +97,7 @@ int ClassUnknown_43::Update_0f7d90() {
         m_2ec = 0;
         return 1;
     }
-    ClassUnknown_43* p = m_260->Get253b(this);
+    Obj0f7d90* p = m_260->Get253b(this);
     if (p == 0) {
         return 1;
     }
@@ -113,7 +107,7 @@ int ClassUnknown_43::Update_0f7d90() {
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
-        g_mgrSettings->m_68->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
+        ((MgrObj*)g_mgrSettings->m_68)->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
     if (m_2ec <= 0x3e8) {
@@ -127,14 +121,23 @@ int ClassUnknown_43::Update_0f7d90() {
             return 1;
         }
         Box5c* c = m_10;
-        MgrReg* g = g_mgrSettings;
+        CGameRegistry* g = g_mgrSettings;
         int y = c->m_60;
         int x = c->m_5c;
-        Rect4* r = &g->m_30->m_24->m_5c->rect;
+        Rect4* r = &((Reg30*)g->m_world)->m_24->m_5c->rect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_60->Func39f4(this, 0x366, -1, 0, -1, -1);
+            ((MgrObj*)g->m_cueSink)->Func39f4(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_390 = 0;
     return 1;
 }
+
+SIZE_UNKNOWN(Box5c);
+SIZE_UNKNOWN(MgrObj);
+SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(Obj260);
+SIZE_UNKNOWN(Rect4);
+SIZE_UNKNOWN(Reg24);
+SIZE_UNKNOWN(Reg30);
+SIZE_UNKNOWN(Reg5c);

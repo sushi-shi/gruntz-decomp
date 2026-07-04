@@ -13,6 +13,7 @@
 #include <rva.h>
 #include <stdlib.h> // qsort in the palette-sort builders
 #include <string.h> // inlined memcpy (rep movsl) in FindRemove
+#include <Globals.h>
 
 // The live screen RGB-format shift/mask table at 0x683ea0..0x683eb4 - already
 // named by CLightFxRender.cpp / CDDrawShadeBlit.cpp. The builders gate on the
@@ -28,11 +29,10 @@ extern i32 g_gDown; // 0x683eb0
 DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
-// The two foreign vftables stamped by the array ctor/dtor, as DIR32 data.
-DATA(0x001efb28)
-extern void* g_shadeArrayVtbl; // 0x5efb28 - the element-array base vtable
-DATA(0x001e8cb4)
-extern void* g_remusBaseDtorVtbl; // 0x5e8cb4 - the grand-base dtor vtable
+// ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
+// vtable (0x5e8cb4) are now cl-emitted from the real Wap::CObject/CShadeTableArray
+// polymorphic hierarchy - the manual g_shadeArrayVtbl / g_wapObjectDtorVtbl stamps
+// are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
 
 // The working palette base (0x6bf224): the sort/remap builders stash the active
 // palette pointer here for their __cdecl comparators. Reloc-masked DATA.
@@ -58,26 +58,25 @@ extern "C" i32 __cdecl CompareLuma(const void* a, const void* b);      // 0x14ed
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// The CString / CMemFile temps the AddFrom* loaders build (ctor/dtor external,
-// reloc-masked). Modeled as tiny holders so the __thiscall ctor/dtor calls and
-// the element load calls bind by shape.
+// The CString temp AddFromArray builds over the name (ctor 0x1b9ba3 / dtor
+// 0x1b9cde external, reloc-masked). Modeled as a tiny holder so the __thiscall
+// ctor/dtor calls and the element Load call bind by shape. (AddFromFile builds no
+// such temp: its LoadFile -> CDataBuffer::LoadFromMem wraps the raw buffer in its
+// own CMemFile internally, so no client-side CMemFile is constructed here.)
 struct CStr {
     char* m_p;
     CStr(const char* s); // 0x1b9ba3
     ~CStr();             // 0x1b9cde
 };
-struct CMemFile {
-    char m_buf[0x2c];
-    CMemFile(u8* data, i32 size); // 0x1cce4f (+ Attach 0x1cced7)
-    ~CMemFile();                  // 0x1ccf14
-};
 
 // ===========================================================================
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
 // fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
+// (The empty grand-base dtor Wap::CObject::~CObject - defined inline in
+// Wap32/Object.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
 // ===========================================================================
 inline CShadeTableArray::CShadeTableArray() {
-    m_vtbl = &g_shadeArrayVtbl;
+    // cl auto-stamps ??_7CShadeTableArray (0x5efb28) here (was m_vtbl = &g_shadeArrayVtbl).
     m_pData = 0;
     m_nGrowBy = 0;
     m_nMaxSize = 0;
@@ -85,12 +84,19 @@ inline CShadeTableArray::CShadeTableArray() {
 }
 
 inline CShadeTableArray::~CShadeTableArray() {
-    m_vtbl = &g_shadeArrayVtbl;
+    // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
+    // ~Wap::CObject which resets the CObject vtable (0x5e8cb4) - was the two
+    // manual m_vtbl stamps.
     if (m_pData) {
         operator delete(m_pData);
     }
-    m_vtbl = &g_remusBaseDtorVtbl;
 }
+// Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
+// rva.h and pulls windows.h's SIZE type). Wap::CObject's grand-base vtable masks
+// ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray gets a
+// VTBL.
+SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the Wap::CObject base
+VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
 // ===========================================================================
 // 0x14de30 - ctor: array subobject ctor (stamp vtable, zero fields), then the
@@ -143,13 +149,6 @@ void CShadeTableCache::FreeNodes() {
 
 // Luma-shift float constants at 0x5efb40..0x5efb5c (the gamma/luminance build).
 // Reloc-masked .rdata literals; named so the operands pair.
-extern float g_one;    // 1.0
-extern float g_255;    // 255.0
-extern float g_p01;    // 0.01
-extern float g_lumaR;  // 0.5859375
-extern float g_lumaG;  // 0.296875
-extern float g_lumaB;  // 0.109375
-extern float g_inv255; // 1/255
 DATA(0x001efb5c)
 extern float g_negone; // -1.0
 
@@ -265,46 +264,61 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
 }
 
 // ===========================================================================
-// 0x14e540 - HsvShiftTable: a (256 x steps)-byte luma-gamma shift table. For each
-// palette color and each step, compute the luminance (0.586 R + 0.297 G +
-// 0.109 B), drive a pow()-based gamma factor from the per-step level, scale each
-// channel by it with a 255 clamp, and map back to the nearest palette index.
-// EH frame + x87 (pow via __CIpow, __ftol). @early-stop
-// ===========================================================================
+// 0x14e540 - HsvShiftTable: a (256 x steps)-byte per-palette luma-gamma ramp
+// (__thiscall, ret 0x14 => FIVE args; Ghidra mis-derived the 3-arg `...HH@Z`
+// prototype). For each palette color i and each step j: compute the luminance
+// (r*lumaR + g*lumaG + b*lumaB), derive a pow()-based factor from the luminance
+// byte and the `gamma` exponent, blend it toward full over the step ratio scaled
+// by `pct`, offset each channel by `base` (arg5 & 0xff), 255-clamp, and map to the
+// nearest palette index. The luma/factor are recomputed inside the j loop exactly
+// as retail (MSVC5 /O2 does not hoist the pal reads across FindNearestColor).
+// EH frame + x87 (pow via __CIpow, channels via __ftol).
 // @early-stop
-// EH-frame wall (rezalloc-placement-new-no-eh-frame.md) + dense x87 schedule
-// (x87-fp-stack-schedule.md): the luma/pow/per-channel gamma is reconstructed but
-// retail's fld/fxch/faddp ordering across the luma sum, the __CIpow call, and the
-// three clamped channel scales does not reproduce from C; ~50-60%.
+// x87-fp-stack-schedule wall (x87-fp-stack-schedule.md): the 5-arg prototype, the
+// control flow, the FindNearestColor(pal,rn,gn,bn) arg order, and the whole
+// instruction SELECTION (fild/fmuls g_lumaR/G/B/faddp luma sum, __CIpow, per-channel
+// fmuls + fcomp g_255 clamp, __ftol) now match retail in sequence (30% wrong-arg-count
+// -> 62%). The residual is the spill layout: retail uses a 0x44 frame (rematerialises
+// the invariant floats + 3 channel pointers to fresh slots each i) while MSVC5 here
+// uses a 0x20 frame keeping more on the x87 stack, so the clamp emits fcom(+fstp)
+// vs retail's fcomp(+recompute-in-branch). Register/x87-stack allocation; not
+// source-steerable. Final-sweep candidate.
 RVA(0x0014e540, 0x2ea)
-CShadeTable* CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor) {
+CShadeTable*
+CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
         return 0;
     }
     if (!t->Alloc(steps << 8, 0)) {
-        t->Free();
-        operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
     m_arr.SetSizeGrow(idx + 1, -1);
     m_arr.m_pData[idx] = t;
     u8* data = t->m_data;
-    float gamma = (float)((packedColor & 0xff)) * g_p01;
+    i32 base = baseArg & 0xff;
+    double dGamma = (double)gamma;
+    float fPct = (float)(pct - 100);
+    float fSteps = (float)steps;
     for (i32 i = 0; i < 0x100; i++) {
         PalEntry* p = &pal[i];
-        float fr = (float)(i32)p->r;
-        float fg = (float)(i32)p->g;
-        float fb = (float)(i32)p->b;
-        float luma = fr * g_lumaR + fg * g_lumaG + fb * g_lumaB;
         for (i32 j = 0; j < steps; j++) {
-            float level = (float)j / (float)steps;
-            float factor = (float)pow((double)(luma * g_inv255), (double)(level * gamma));
-            i32 rn = (i32)(fr * factor < g_255 ? fr * factor : g_255);
-            i32 gn = (i32)(fg * factor < g_255 ? fg * factor : g_255);
-            i32 bn = (i32)(fb * factor < g_255 ? fb * factor : g_255);
-            data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
+            i32 r = p->r;
+            i32 g = p->g;
+            i32 b = p->b;
+            float luma = (float)r * g_lumaR + (float)g * g_lumaG + (float)b * g_lumaB;
+            i32 lumaByte = (i32)luma & 0xff;
+            float x = g_one / ((float)lumaByte * g_inv255 - g_negone);
+            float factor = (float)pow((double)x, dGamma);
+            float scale = (float)j / fSteps * (factor * fPct * g_p01) - g_negone;
+            float fr = (float)(base + r) * scale;
+            i32 rn = (i32)(fr < g_255 ? fr : g_255);
+            float fg = (float)(base + g) * scale;
+            i32 gn = (i32)(fg < g_255 ? fg : g_255);
+            float fb = (float)(base + b) * scale;
+            i32 bn = (i32)(fb < g_255 ? fb : g_255);
+            data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
     return t;
@@ -700,13 +714,16 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
 }
 
 // ===========================================================================
-// 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a CMemFile
-// over the (buffer,size) args via the element's file loader (0x150330). The
-// element-array growth is again inlined. EH frame. @early-stop
+// 0x14f8b0 - AddFromFile: as AddFromArray, but load the table from a raw (buffer,
+// size) memory blob via the element's LoadFile (0x150330 = CDataBuffer::
+// LoadFromMem), which builds its own CMemFile internally. The element-array
+// growth is again inlined. EH frame.
 // ===========================================================================
 // @early-stop
-// EH-frame + inlined-MFC-SetSize wall (see AddFromArray): plus a CMemFile temp
-// instead of CString; logic complete, scheduling parks it.
+// EH-frame + inlined-MFC-SetSize wall (see AddFromArray): the array-grow algorithm
+// is open-coded inline rather than the out-of-line SetSizeGrow, and the /GX
+// EH-state numbering around `new CShadeTable` doesn't reproduce; logic complete,
+// scheduling parks it.
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     CShadeTable* t = new CShadeTable;
@@ -752,8 +769,7 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    CMemFile mf((u8*)name, size);
-    if (!t->LoadFile(&mf, size, 0)) {
+    if (!t->LoadFile((void*)name, size, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -857,3 +873,8 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
     }
     return best;
 }
+
+// SIZE tracking for this TU's modeling-view locals (placed at EOF: any
+// mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
+SIZE_UNKNOWN(Hsv);
+SIZE_UNKNOWN(CStr);

@@ -1,14 +1,16 @@
 #include <rva.h>
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
-// grids (ClassUnknown_64), the master CWwdObjMgr, and the grid iterator are all
+// grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
+#include <Gruntz/WwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
+#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (iterator's CObject prefix)
 
 // ===========================================================================
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
 //
 // Owns a master CWwdObjMgr (m_mgr @ +0x00) plus THREE spatial grids
-// (CWwdGrid / ClassUnknown_64, one per plane: m_grid0/1/2 @ +0x04/+0x08/+0x0c).
+// (CWwdGrid / tomalla-64, one per plane: m_grid0/1/2 @ +0x04/+0x08/+0x0c).
 // An object is routed into a grid by its flag bits (0x800000 -> grid1,
 // 0x1000000 -> grid2, else grid0). Origin pairs at +0x40.. track each grid's
 // scroll offset; the world bbox is +0x58.., the cached scroll pos +0x68/+0x6c.
@@ -23,11 +25,12 @@
 // intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
 // position @ +0x10/+0x14, owning-object back-pointer @ +0x18. The iterator walks
 // these and reads their position.
+struct WwdBucketHead;
 struct WwdGridNode {
     WwdGridNode* m_next; // +0x00
     WwdGridNode* m_prev; // +0x04
     char m_pad08[0x0c - 0x08];
-    void* m_bucket;             // +0x0c  cached owning bucket head
+    WwdBucketHead* m_bucket;    // +0x0c  cached owning bucket head
     i32 m_x;                    // +0x10
     i32 m_y;                    // +0x14
     class CWwdObject* m_object; // +0x18  owning sprite back-pointer
@@ -53,15 +56,8 @@ public:
     WwdGridNode m_region; // +0x9c  embedded grid region sub-object
 };
 
-// CWwdObjMgr - master object manager (m_mgr). Only the cluster-called methods.
-class CWwdObjMgr {
-public:
-    void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
-    i32 RemoveAll_15ab30(i32 pos, CWwdObject* obj);
-    void RemoveByPosition_15ab70(i32 pos, CWwdObject* obj);
-    void AddToMap48_15aba0(CWwdObject* obj);
-    i32 PruneOrphans_15b1d0();
-};
+// CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
+// class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
 
 // A 16-byte rectangle passed by value into the grid scroll method.
 struct WwdRect {
@@ -77,14 +73,23 @@ struct WwdBucketHead {
     void Unlink_1391e0(WwdGridNode* node);
 };
 
-// CWwdGrid (ClassUnknown_64) - one plane's spatial bucket index. Polymorphic
-// CObject-style: scalar deleting dtor @ vtbl+4. Data fields (offsets per
-// WwdGrid.h) are read by the iterator: the rect bounds, the log2 cell shifts,
-// the column count, and the 8-byte bucket-head array.
+// CWwdGrid (tomalla-64) - one plane's spatial bucket index. The CANONICAL
+// polymorphic model (Wap::CObject base, real ~CWwdGrid OVERRIDE at vtbl slot 1,
+// pure-virtual OnFound at slot 5) lives in <Gruntz/WwdGrid.h>; this is the
+// spatial-mgr's reduced local view. It intentionally models slot 1 as an
+// explicit ScalarDtor(i32) method rather than the real destructor because
+// FreeGrids/CountInRect invoke the engine's scalar-DELETING-dtor thunk directly
+// (`mov eax,[ecx]; push 1; call [eax+4]`); a C++ `delete grid` cannot reproduce
+// that (it adds its own null-check + nulls the pointer unconditionally, where
+// retail nulls inside the taken branch), so this correct-bytes view is retained.
+// (The vtable_hierarchy --audit "CWwdGrid 1 override, 0 OVERRIDE" line is a
+// _body_counts artifact of this reduced view - the header carries the OVERRIDE.)
+// Data fields (offsets per WwdGrid.h) are read by the iterator: the rect bounds,
+// the log2 cell shifts, the column count, and the 8-byte bucket-head array.
 class CWwdGrid {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04
+    virtual i32 ScalarDtor(i32 flag); // slot 1 (+0x04) scalar-deleting-dtor thunk
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add_191840(void* region);
     i32 Remove_191890(WwdGridNode* region);
@@ -107,24 +112,39 @@ public:
 
 // Position-iterator over a CWwdGrid: a rect-restricted cursor that walks every
 // grid cell overlapping a query rectangle and visits each node truly inside it
-// (optionally unlinking it). The retail object's vptr is the shared engine table
-// at 0x5f02a8 (its virtuals live in another TU); stamp it via a reloc-masked
-// DATA() extern (transitional manual vtable).
+// (optionally unlinking it). REAL POLYMORPHIC now: the retail object's vtable @
+// 0x5f02a8 is the 5-slot CObject-style interface (slot0 sub_1bef01, slot1 the
+// scalar-deleting dtor 0x163a20, slots 2/3/4 the shared sub_0028ec/sub_00106e/
+// sub_004034) - i.e. the shared engine grand-base Wap::CObject. Deriving from
+// Wap::CObject supplies slots 0/2/3/4 by inheritance and slot 1 is the class's own
+// dtor override; cl auto-emits ??_7CWwdGridIter + the implicit vptr-FIRST ctor
+// stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-store shape). This TU OWNS
+// the 0x5f02a8 vtable catalog name via VTBL below:
+// WwdFile::RebuildPlanes only INLINE-stamps this table into its worker's +0x70
+// embedded cursor (genuine inline-construction, not a ctor call), and now
+// references g_planeRenderVtbl as an UNPINNED extern so its stamp reloc-masks
+// against this real ??_7CWwdGridIter (the manual g_planeRenderVtbl DATA pin is
+// drained). 5 slots with the dtor at slot 1, matching retail exactly.
 //
-// Cursor layout (offsets from 0x191b10/0x191c30): the grid @ +0x04, the current
-// matched node @ +0x08, the saved-next node @ +0x0c, the clamped query rect @
-// +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and the live cell-walk
-// counters @ +0x30..+0x3c, with the remove flag @ +0x40.
-class CWwdGridIter {
+// Cursor layout (offsets from 0x191b10/0x191c30): implicit vptr @ +0x00, the grid
+// @ +0x04, the current matched node @ +0x08, the saved-next node @ +0x0c, the
+// clamped query rect @ +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and
+// the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
+SIZE(CWwdGridIter, 0x44);
+VTBL(CWwdGridIter, 0x001f02a8);
+class CWwdGridIter : public Wap::CObject {
 public:
+    // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from
+    // Wap::CObject; slot 1 is the class's own scalar-deleting dtor.
+    virtual ~CWwdGridIter() OVERRIDE; // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
+
     CWwdGridIter();
-    ~CWwdGridIter();                                // 0x191c70-ish engine teardown
     WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first
     WwdGridNode* Init(CWwdGrid* grid, WwdRect rect,
                       i32 remove); // 0x191b10 set rect + first
     WwdGridNode* GetNext();        // 0x191c30 advance the cursor
 
-    void* m_vptr;        // +0x00  = &g_wwdGridIterVtbl (0x5f02a8)
+    // implicit vptr @ +0x00  (= 0x5f02a8, shared g_planeRenderVtbl)
     CWwdGrid* m_grid;    // +0x04
     WwdGridNode* m_cur;  // +0x08  current matched node
     WwdGridNode* m_next; // +0x0c saved-next (cell head cursor)
@@ -139,8 +159,6 @@ public:
     i32 m_rowBase;       // +0x3c  current row-base linear index
     i32 m_remove;        // +0x40  unlink-as-visited flag
 };
-DATA(0x005f02a8)
-extern void* g_wwdGridIterVtbl[];
 
 // --- the cluster class -----------------------------------------------------
 
@@ -277,11 +295,10 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     return count;
 }
 
-// The iterator ctor stamps the shared engine vtable (0x5f02a8) and zeros the
-// cursor fields inline; the dtor is the engine teardown that gives this TU its
-// /GX EH frame. Both are reloc-masked w.r.t. the vtable address.
+// The iterator ctor: cl auto-emits the implicit vptr-FIRST stamp (??_7CWwdGridIter
+// -> reloc-masks the shared 0x5f02a8), then zeros the cursor fields inline; the
+// dtor is the engine teardown that gives this TU its /GX EH frame.
 inline CWwdGridIter::CWwdGridIter() {
-    m_vptr = g_wwdGridIterVtbl;
     m_grid = 0;
     m_cur = 0;
 }
@@ -466,7 +483,7 @@ CWwdObject* CWwdSpatialMgr::GetNextObject() {
 }
 
 // ===========================================================================
-// CWwdGridIter cursor methods (the ClassUnknown_67 cluster). The iterator walks
+// CWwdGridIter cursor methods (the tomalla-67 cluster). The iterator walks
 // every grid cell overlapping the query rect, visiting each node truly inside it
 // (optionally unlinking it). Self-contained / reloc-free apart from the bucket
 // Unlink helper.
@@ -479,6 +496,8 @@ WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
     // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied
     // as a contiguous 16-byte block - a struct assignment through a pointer, so
     // the four fields move through one register (matching the retail lea+copy).
+    // authentic: the four bounds ints ARE the query rect; overlaying them as a
+    // WwdRect for the block copy is the real operation (int-block-as-struct view).
     WwdRect full = *(WwdRect*)&grid->m_minX;
     return Init(grid, full, remove);
 }
@@ -591,3 +610,8 @@ walk:
     }
     goto top;
 }
+SIZE_UNKNOWN(CWwdObjWorker);
+SIZE_UNKNOWN(CWwdSpatialMgr);
+SIZE_UNKNOWN(WwdBucketHead);
+SIZE_UNKNOWN(WwdGridNode);
+SIZE_UNKNOWN(WwdRect);

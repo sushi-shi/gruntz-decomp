@@ -16,8 +16,10 @@
 // strlen/strcmp/strcpy lower to the /O2 repne-scas / sbb idiom / rep-movs inlines.
 //
 // Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
+#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // Inline CRT string intrinsics (MSVC5 /O2 lowers these in place).
 extern "C" u32 strlen(const char* s);
@@ -25,8 +27,9 @@ extern "C" i32 strcmp(const char* a, const char* b);
 extern "C" char* strcpy(char* d, const char* s);
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
-// a failing call originated. A 4-byte leaf with no frame; emitted via a naked
-// stub so its `call` reloc names the real symbol (vs the delinker's FUN_<rva>).
+// a failing call originated. A frameless 4-byte naked leaf with no plain-C++ form;
+// carved out (config/library_labels.csv) so Find's `call` reloc-masks it as an
+// external symbol rather than transcribing raw instruction bytes here.
 void* GetCallerRetAddr(); // 0x16e0f0
 
 // The engine heap allocator (NAFXCW operator-new replacement, __cdecl).
@@ -42,51 +45,9 @@ DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428
 DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464
-DATA(0x002bf454)
-extern void* g_projActName; // 0x6bf454 (bad-arg diagnostic record cell)
 
-// The +0x04 error sink the trie reports a fatal failure through. __thiscall(this;
-// obj, a, b); the delinker names 0x16d850 ?Set@CVariantSlot@@QAEXPAXHH@Z.
-class CVariantSlot {
-public:
-    void Set(void* obj, i32 a, i32 b); // 0x16d850
-};
-
-// One crit-bit trie node (20 bytes).
-struct CButeNode {
-    CButeNode* m_child[2]; // +0x00 / +0x04
-    i32 m_bit;             // +0x08  crit-bit index
-    char* m_key;           // +0x0c  owned key copy
-    void* m_value;         // +0x10  stored value
-};
-
-class CButeTree {
-public:
-    void* Find(const char* key);
-    void* Insert(const char* key, void* value);
-
-    void* m_vptr;               // +0x00
-    CVariantSlot* m_errorSink;  // +0x04
-    char m_pad8[0x14 - 0x8];    // +0x08
-    i32 m_nodeCount;            // +0x14
-    CButeNode* m_root;          // +0x18
-    CButeNode* m_descentCursor; // +0x1c
-    CButeNode* m_candidateLeaf; // +0x20
-    i32 m_keyBitLength;         // +0x24  strlen*8 + 7
-    i32 m_lookupPending;        // +0x28
-};
-
-// ===========================================================================
-// GetCallerRetAddr (0x16e0f0) - return the caller's saved return address (the
-// alloc-context recorder). A frameless 4-byte leaf: `mov eax,[ebp+4]; ret`.
-// ===========================================================================
-RVA(0x0016e0f0, 0x4)
-__declspec(naked) void* GetCallerRetAddr() {
-    __asm {
-        mov eax, dword ptr [ebp + 4]
-        ret
-    }
-}
+// CVariantSlot (error sink @+0x04, Set 0x16d850), CButeTreeNode (20-byte leaf) and
+// CButeTree (the crit-bit trie) all come from the canonical <Bute/ButeTree.h>.
 
 // ===========================================================================
 // CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
@@ -110,7 +71,7 @@ void* CButeTree::Find(const char* key) {
         m_errorSink->Set(this, (i32)name, 0x16);
         return 0;
     }
-    CButeNode* root = m_root;
+    CButeTreeNode* root = m_root;
     m_descentCursor = root;
     m_candidateLeaf = 0;
     m_lookupPending = 1;
@@ -121,11 +82,11 @@ void* CButeTree::Find(const char* key) {
     }
     i32 b = root->m_bit;
     while (b <= bitmax) {
-        CButeNode** slot = m_descentCursor->m_child;
+        CButeTreeNode** slot = m_descentCursor->m_child;
         if (key[b >> 3] & (1 << (b & 7))) {
             ++slot;
         }
-        CButeNode* child = *slot;
+        CButeTreeNode* child = *slot;
         m_candidateLeaf = child;
         if (child == 0) {
             return 0;
@@ -188,7 +149,7 @@ void* CButeTree::Insert(const char* key, void* value) {
         critbit = newbit - 1;
     }
 
-    CButeNode* node = (CButeNode*)RezAlloc(0x14);
+    CButeTreeNode* node = (CButeTreeNode*)RezAlloc(0x14);
     if (node != 0) {
         node->m_value = value;
         node->m_bit = critbit;
@@ -206,22 +167,22 @@ void* CButeTree::Insert(const char* key, void* value) {
             }
 
             // Find where critbit fits and re-point the parent at the new node.
-            CButeNode* cursor = m_descentCursor;
+            CButeTreeNode* cursor = m_descentCursor;
             i32 d2 = dir;
             if (cursor == 0) {
                 m_root = node;
             } else if (critbit < cursor->m_bit) {
                 // The Find cursor is below the divergence bit: walk from the root.
-                CButeNode* p = m_root;
+                CButeTreeNode* p = m_root;
                 m_descentCursor = 0;
                 m_candidateLeaf = p;
                 if (p->m_bit <= critbit) {
-                    CButeNode* c;
+                    CButeTreeNode* c;
                     do {
                         p = m_candidateLeaf;
                         m_descentCursor = p;
                         d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
-                        CButeNode** s = p->m_child;
+                        CButeTreeNode** s = p->m_child;
                         if (d2) {
                             ++s;
                         }
@@ -229,18 +190,18 @@ void* CButeTree::Insert(const char* key, void* value) {
                         m_candidateLeaf = c;
                     } while (c->m_bit <= critbit);
                 }
-                CButeNode* cur2 = m_descentCursor;
+                CButeTreeNode* cur2 = m_descentCursor;
                 if (cur2 == 0) {
                     m_root = node;
                 } else {
-                    CButeNode** s2 = cur2->m_child;
+                    CButeTreeNode** s2 = cur2->m_child;
                     if (d2) {
                         ++s2;
                     }
                     *s2 = node;
                 }
             } else {
-                CButeNode** s1 = cursor->m_child;
+                CButeTreeNode** s1 = cursor->m_child;
                 if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
                     ++s1;
                 }

@@ -21,6 +21,7 @@
 #define GRUNTZ_GRUNTINDICATORSPRITE_H
 
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
@@ -31,10 +32,10 @@
 // ---------------------------------------------------------------------------
 struct CGruntLayerHolder {
     char m_pad00[0x14];
-    i32* m_14; // +0x14  the per-index layer table
+    i32* m_layerTable; // +0x14  the per-index layer table
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lo layer bound
-    i32 m_68; // +0x68  hi layer bound
+    i32 m_layerLo; // +0x64  lo layer bound
+    i32 m_layerHi; // +0x68  hi layer bound
 };
 
 // ---------------------------------------------------------------------------
@@ -44,16 +45,16 @@ struct CGruntLayerHolder {
 // ---------------------------------------------------------------------------
 struct CGruntRenderable {
     char m_pad00[0x4c];
-    i32 m_4c; // +0x4c  bute-set record (powerup setter)
-    i32 m_50; // +0x50  display state (== 7)
+    i32 m_buteRec;      // +0x4c  bute-set record (powerup setter)
+    i32 m_displayState; // +0x50  display state (== 7)
     char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58  visibility flag (== 1)
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
+    i32 m_visible; // +0x58  visibility flag (== 1)
+    i32 m_screenX; // +0x5c  screen x
+    i32 m_screenY; // +0x60  screen y
     char m_pad64[0x190 - 0x64];
-    i32 m_190;                // +0x190  resolved layer index
-    CGruntLayerHolder* m_194; // +0x194  layer-clamp holder
-    i32 m_198;                // +0x198  mapped layer value
+    i32 m_resolvedLayer;              // +0x190  resolved layer index
+    CGruntLayerHolder* m_layerHolder; // +0x194  layer-clamp holder
+    i32 m_mappedLayer;                // +0x198  mapped layer value
 };
 
 // ---------------------------------------------------------------------------
@@ -64,42 +65,37 @@ struct CGruntRenderable {
 // ---------------------------------------------------------------------------
 struct CGruntEntry {
     char m_pad00[0x10];
-    CGruntRenderable* m_10; // +0x10  the grunt's renderable
+    CGruntRenderable* m_renderable; // +0x10  the grunt's renderable
     char m_pad14[0x198 - 0x14];
-    i32 m_198; // +0x198  the grunt's current layer index
+    i32 m_layerIndex; // +0x198  the grunt's current layer index
     char m_pad19c[0x1d8 - 0x19c];
-    i32 m_1d8; // +0x1d8  the grunt's "drawn/visible" gate
+    i32 m_drawn; // +0x1d8  the grunt's "drawn/visible" gate
 };
 
 // ---------------------------------------------------------------------------
-// CIndicatorReg - the minimal game-registry view the indicator updaters use.
+// CGameRegistry - the minimal game-registry view the indicator updaters use.
 // Same singleton as CGameReg (?g_gameReg@@3PA...@@A @ 0x64556c); modeled with
 // the grunt table at +0x68 and the bute-set table at +0x78 the powerup setter
 // reads. Declared with the registry's own type so the data ref reloc-masks.
 //   +0x68  m_68 : grunt table base (entries at +0x1c, dword stride)
 //   +0x78  m_78 : the bute lookup table the powerup setter indexes
 // ---------------------------------------------------------------------------
-struct CIndicatorReg {
-    char m_pad00[0x68];
-    char* m_68; // +0x68  grunt table base (CGruntEntry* at +0x1c[idx])
-    char m_pad6c[0x78 - 0x6c];
-    char* m_78; // +0x78  bute-set table base
-};
 
 DATA(0x0024556c)
-extern CIndicatorReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c
+extern "C" CGameRegistry* g_mgrSettings; // canonical _g_mgrSettings @ VA 0x64556c
 
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
 // whose Sync(arg) (0x15c360, __thiscall ret 4) flushes/advances the indicator's
-// draw state. g_indicatorSync (0x6bf3bc, BSS) is the global arg it is handed.
+// draw state. g_6bf3bc (0x6bf3bc, BSS) is the draw-delta the arg carries; it is a
+// single view (extern "C" u32) shared with Projectile/CTeleporter/CGruntPuddle.
 // Both are external/no-body so the call + the load reloc-mask.
 // ---------------------------------------------------------------------------
 struct CIndicatorSyncHelper {
-    void Sync(void* ctx); // 0x15c360 (__thiscall ret 4)
+    void Sync(u32 delta); // 0x15c360 (__thiscall ret 4)
 };
 DATA(0x002bf3bc)
-extern void* g_indicatorSync; // DAT_006bf3bc
+extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 
 // The bute store the powerup setter seeds the "A" node from (g_buteTree.Find).
 // Also the shared activation-name registry types/globals (CActColl / CActColl2 /
@@ -107,6 +103,7 @@ extern void* g_indicatorSync; // DAT_006bf3bc
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 
 // ---------------------------------------------------------------------------
 // CIndicatorActReg - the per-class activation-coordinate registry singleton each
@@ -119,39 +116,13 @@ extern void* g_indicatorSync; // DAT_006bf3bc
 // Construct(lo,hi) method on the registry so `mov ecx,&g_reg; push hi; push lo;
 // call ctor` falls out byte-exact.
 //
-// The full layout (recovered from the RegisterActs id->entry resolve): the
-// fast [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow path
-// Find (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) yields m_cur.
+// CIndicatorActReg is the shared <Gruntz/ActReg.h> CActReg archetype (the fast
+// [m_lo, m_hi] range path yields m_base + (id-m_lo)*m_stride; the slow Find
+// (0x16da80) / ActAlloc (0x16d990) / coll2 Insert (0x16d850) path yields m_cur).
+// It was a per-file duplicate of that layout + ResolveEntry; it keeps its own
+// placeholder name so the DATA-pinned globals below are unchanged.
 // ---------------------------------------------------------------------------
-struct CIndicatorActReg {
-    void* m_vptr;       // +0x00  registry vtable (0x5e70fc)
-    CActColl2* m_coll2; // +0x04  the coll2 ptr the slow Insert is __thiscall on
-    i32 m_lo;           // +0x08  fast-range lo
-    i32 m_hi;           // +0x0c  fast-range hi
-    char* m_base;       // +0x10  fast-range entry base
-    char* m_cur;        // +0x14  slow-path result entry
-    i32 m_stride;       // +0x18  entry stride
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20  zeroed before the slow resolve
-
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall, ret 8)
-
-    // The id->entry resolve RegisterActs folds in (the VActLookup archetype). The
-    // returned slot's first dword receives the handler code address.
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+struct CIndicatorActReg : public CActReg {};
 
 DATA(0x00244d80)
 extern CIndicatorActReg g_healthActReg; // 0x644d80

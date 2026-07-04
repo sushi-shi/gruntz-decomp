@@ -1,60 +1,69 @@
-// Enums.h - Gruntz game-taxonomy enums, graduated from the comprehension layer
-// (src/Stub/types/enums.h, which stays as the un-matched reference). Lifting the
-// enum definitions into a real include/ header is matching-NEUTRAL: enumerator
+// Enums.h - Gruntz game-taxonomy enums. This is the authoritative home (the old
+// comprehension header src/Stub/types/enums.h has been consumed into here and
+// axed). Lifting the enum definitions into a real include/ header is matching-NEUTRAL: enumerator
 // names do not change /O2 codegen. Where an enumerator's INTEGER value is recovered
-// (Resolution, LaunchModeCode, Commands), the reconstructed src/ may use the name in
-// place of the magic constant; for the rosters whose binary numbering is still
-// unverified (GruntType/Tool/Toy/...), only the NAME set is authoritative - do NOT
-// rely on the implicit 0..N values for matching until verified against the binary.
+// (Resolution, LaunchModeCode, Commands, GruntType), the reconstructed src/ may use the
+// name in place of the magic constant; for the rosters whose binary numbering is still
+// unverified (Tool/Toy/...), only the NAME set is authoritative - do NOT rely on the
+// implicit 0..N values for matching until verified against the binary. GruntType is now
+// recovered: grunt kinds ARE object-type ids (the shared PickupType space in
+// <Gruntz/PickupType.h>), so its values are the real id space (see below).
 #ifndef GRUNTZ_GRUNTZ_ENUMS_H
 #define GRUNTZ_GRUNTZ_ENUMS_H
 
 #include <Ints.h>
 
 /* ------------------------------------------------------------------ *
- * GruntType - 36 grunt types. Each maps to a sprite namespace
- * GRUNTZ_<TYPE> and (probably) a CGrunt subtype/behavior selector.
- * Source: STRINGS_ANALYSIS.md roster.
+ * GruntType - the playable-grunt roster (sprite namespace GRUNTZ_<TYPE>).
+ * A grunt "kind" IS an object type: CGrunt::m_gruntKind (+0x258) holds a value
+ * from the shared PickupType id space (<Gruntz/PickupType.h>). So GruntType is
+ * numbered in that real id space, NOT the old 0-based roster guess:
+ *   - toys  0x17..0x20 VERIFIED (CGruntCmdObj::LoadVehicleGruntSprites loads
+ *           "<NAME>GRUNT" at the toy pickup id, e.g. 0x17 = BABYWALKERGRUNT);
+ *   - tools 1..22 + NORMAL=0 INFERRED from the same identity (PickupType's
+ *           alphabetical tool band; m_gruntKind==0 is the unarmed default), and
+ *           consistent with the powerup kinds m_gruntKind takes (0x36 GHOST,
+ *           0x37 SUPERSPEED, 0x38 INVULNERABILITY, 0x39/0x3a CONVERSION/DEATHTOUCH).
  * ------------------------------------------------------------------ */
 enum GruntType {
-    GRUNT_NORMAL,       // NORMALGRUNT
-    GRUNT_WAND,         // WANDGRUNT
-    GRUNT_CLUB,         // CLUBGRUNT
-    GRUNT_SWORD,        // SWORDGRUNT
-    GRUNT_GLOVEZ,       // GLOVEZGRUNT
-    GRUNT_GAUNTLETZ,    // GAUNTLETZGRUNT
-    GRUNT_SHOVEL,       // SHOVELGRUNT
-    GRUNT_SPRING,       // SPRINGGRUNT
-    GRUNT_GOOBER,       // GOOBERGRUNT
-    GRUNT_BOMB,         // BOMBGRUNT
-    GRUNT_TIMEBOMB,     // TIMEBOMBGRUNT
-    GRUNT_ROCK,         // ROCKGRUNT
-    GRUNT_BRICK,        // BRICKGRUNT
-    GRUNT_BOOMERANG,    // BOOMERANGGRUNT
-    GRUNT_NERFGUN,      // NERFGUNGRUNT
-    GRUNT_GUNHAT,       // GUNHATGRUNT
-    GRUNT_SHIELD,       // SHIELDGRUNT
-    GRUNT_SPY,          // SPYGRUNT
-    GRUNT_TOOB,         // TOOBGRUNT
-    GRUNT_TOOBWATER,    // TOOBWATERGRUNT
-    GRUNT_WELDER,       // WELDERGRUNT
-    GRUNT_WINGZ,        // WINGZGRUNT
-    GRUNT_GRAVITYBOOTZ, // GRAVITYBOOTZGRUNT
-    GRUNT_WARPSTONE,    // WARPSTONEGRUNT
-    GRUNT_SCROLL,       // SCROLLGRUNT
-    GRUNT_REAPER,       // REAPERGRUNT
-    GRUNT_POGOSTICK,    // POGOSTICKGRUNT
-    GRUNT_YOYO,         // YOYOGRUNT
-    GRUNT_JUMPROPE,     // JUMPROPEGRUNT
-    GRUNT_BEACHBALL,    // BEACHBALLGRUNT
-    GRUNT_BIGWHEEL,     // BIGWHEELGRUNT
-    GRUNT_BABYWALKER,   // BABYWALKERGRUNT
-    GRUNT_GOKART,       // GOKARTGRUNT
-    GRUNT_JACKINTHEBOX, // JACKINTHEBOXGRUNT
-    GRUNT_SQUEAKTOY,    // SQUEAKTOYGRUNT
-    GRUNT_HAREKRISHNA,  // HAREKRISHNAGRUNT
-    GRUNT_TYPE_COUNT    // = 36
-    // (unverified) exact integer values / ordering unverified against the binary
+    GRUNT_NORMAL = 0, // NORMALGRUNT      (unarmed; m_gruntKind default 0)
+    // Tool grunts (== PickupType tool band 1..22, alphabetical)
+    GRUNT_BOMB = 1,         // BOMBGRUNT
+    GRUNT_BOOMERANG = 2,    // BOOMERANGGRUNT
+    GRUNT_BRICK = 3,        // BRICKGRUNT
+    GRUNT_CLUB = 4,         // CLUBGRUNT
+    GRUNT_GAUNTLETZ = 5,    // GAUNTLETZGRUNT
+    GRUNT_GLOVEZ = 6,       // GLOVEZGRUNT
+    GRUNT_GOOBER = 7,       // GOOBERGRUNT
+    GRUNT_GRAVITYBOOTZ = 8, // GRAVITYBOOTZGRUNT
+    GRUNT_GUNHAT = 9,       // GUNHATGRUNT
+    GRUNT_NERFGUN = 10,     // NERFGUNGRUNT
+    GRUNT_ROCK = 11,        // ROCKGRUNT
+    GRUNT_SHIELD = 12,      // SHIELDGRUNT
+    GRUNT_SHOVEL = 13,      // SHOVELGRUNT
+    GRUNT_SPRING = 14,      // SPRINGGRUNT
+    GRUNT_SPY = 15,         // SPYGRUNT
+    GRUNT_SWORD = 16,       // SWORDGRUNT
+    GRUNT_TIMEBOMB = 17,    // TIMEBOMBGRUNT
+    GRUNT_TOOB = 18,        // TOOBGRUNT
+    GRUNT_WAND = 19,        // WANDGRUNT
+    GRUNT_WARPSTONE = 20,   // WARPSTONEGRUNT
+    GRUNT_WELDER = 21,      // WELDERGRUNT
+    GRUNT_WINGZ = 22,       // WINGZGRUNT
+    // Toy / "vehicle" grunts (== PickupType toy band 0x17..0x20, VERIFIED)
+    GRUNT_BABYWALKER = 0x17,   // BABYWALKERGRUNT
+    GRUNT_BEACHBALL = 0x18,    // BEACHBALLGRUNT
+    GRUNT_BIGWHEEL = 0x19,     // BIGWHEELGRUNT
+    GRUNT_GOKART = 0x1a,       // GOKARTGRUNT
+    GRUNT_JACKINTHEBOX = 0x1b, // JACKINTHEBOXGRUNT
+    GRUNT_JUMPROPE = 0x1c,     // JUMPROPEGRUNT
+    GRUNT_POGOSTICK = 0x1d,    // POGOSTICKGRUNT
+    GRUNT_SCROLL = 0x1e,       // SCROLLGRUNT
+    GRUNT_SQUEAKTOY = 0x1f,    // SQUEAKTOYGRUNT
+    GRUNT_YOYO = 0x20,         // YOYOGRUNT
+    // Grunt-only appearances with NO recovered object-type id (no pickup/vehicle
+    // equivalent traced): TOOBWATERGRUNT, REAPERGRUNT, HAREKRISHNAGRUNT. Left
+    // unnumbered rather than fabricate an id that would collide with the space above.
 };
 
 /* ------------------------------------------------------------------ *
@@ -109,12 +118,12 @@ enum Toy {
  * Warlord - 4 enemy bosses. Sprite namespace WARLORDZ_<NAME>.
  * ------------------------------------------------------------------ */
 enum Warlord {
-    WARLORD_KING,     // WARLORDZ_KING
-    WARLORD_NAPOLEAN, // WARLORDZ_NAPOLEAN  (sic - spelled this way in the binary)
-    WARLORD_PATTON,   // WARLORDZ_PATTON
-    WARLORD_VIKING,   // WARLORDZ_VIKING
+    WARLORD_KING,     // WARLORDZ_KING     = 0
+    WARLORD_NAPOLEAN, // WARLORDZ_NAPOLEAN = 1  (sic - spelled this way in the binary)
+    WARLORD_PATTON,   // WARLORDZ_PATTON   = 2
+    WARLORD_VIKING,   // WARLORDZ_VIKING   = 3
     WARLORD_COUNT     // = 4
-    // (unverified) exact integer values / ordering unverified against the binary
+    // VERIFIED: ordering matches CFortressFlag's m_124 switch (GAME_FORTRESSFLAGZ_*).
 };
 
 /* ------------------------------------------------------------------ *
@@ -217,7 +226,7 @@ enum LaunchMode {
 
 /* ------------------------------------------------------------------ *
  * LaunchModeCode - the INTEGER mode code the binary actually stores after
- * parsing the command line (the internal "unknownMode"), distinct from the string
+ * parsing the command line (the internal "unnamedMode"), distinct from the string
  * LaunchMode tokens above. Recovered from the dispatch (version-independent).
  * ------------------------------------------------------------------ */
 enum LaunchModeCode {

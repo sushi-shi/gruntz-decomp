@@ -1,13 +1,12 @@
 // ChatBoxOwner.h - the on-screen chat/text-box owner (C:\Proj\Gruntz). The page
 // object that positions the chat box from the active viewport, latches the source
-// registry + text host, and hit-tests the cursor against the box rectangle. Its
-// LoadChatBoxSprite renderer (RVA 0x20f40) still lives in src/Stub/ApiCallers.cpp
-// (parked at the scheduling wall); these four are the place/clear/configure/hit-test
-// helpers. Only offsets / code bytes are load-bearing; names are placeholders.
+// registry + text host, and hit-tests the cursor against the box rectangle. Only
+// offsets / code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 #define GRUNTZ_GRUNTZ_CHATBOXOWNER_H
 
 #include <Ints.h>
+#include <rva.h>
 
 #include <Mfc.h> // CString, HDC
 
@@ -21,6 +20,7 @@ struct CChatBoxTextHost {
     i32 m_34;                                   // +0x34  dirty/redraw flag
     void StampText(HDC dc, i32 id, void* rect); // 0x1cd0
 };
+SIZE_UNKNOWN(CChatBoxTextHost);
 
 class CChatBoxOwner {
 public:
@@ -35,9 +35,9 @@ public:
     i32 HitTest(i32 x, i32 y);
     // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
     CString GetField1c();
-    // 0x205c0 - the chat-box cheat-code processor ("Enable Cheatzfile" command).
+    // The chat-box cheat-code processor ("Enable Cheatzfile" command).
     void ProcessCheatInput(i32 a, i32 b);
-    // 0x20f40 - render the chat-box sprite + stamp its text for the current mode.
+    // Render the chat-box sprite + stamp its text for the current mode.
     i32 LoadChatBoxSprite(i32 arg1);
 
     i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
@@ -49,5 +49,6 @@ public:
     CChatBoxRegRoot* m_18;  // +0x18  source registry root
     CString m_1c;           // +0x1c  caption/key string
 };
+SIZE_UNKNOWN(CChatBoxOwner);
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

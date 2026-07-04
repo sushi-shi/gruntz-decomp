@@ -28,6 +28,12 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
 5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
    tight and report the rest as not-done — do not delegate.
+6. **NEVER give up / never produce zero output.** If a function genuinely cannot reach
+   100% or a byte-proven `@early-stop` after honest iteration — a real unclimbable wall —
+   you STILL keep your highest-achievable-% reconstruction in place, mark it `// @early-stop`
+   with the wall reason, and bank it. Do NOT revert it to a bare stub, delete it, or leave
+   it untouched. A maximized partial ALWAYS beats nothing; reverting/abandoning is the one
+   forbidden outcome. Always commit/leave your best %.
 
 **Your usage limits will NOT be exhausted — the orchestrator pre-calculated this
 batch's size to fit your budget. So budget is never a reason to stop short of the
@@ -48,6 +54,14 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
 1. **Pull the target.** `python -m gruntz.analysis.dump_target <rva>` (disasm + relocs), the
    Ghidra decomp, `python -m gruntz.analysis.clangd_query def|refs|hover|symbol`,
    `extern_harvest`/`string_xref` for the referent set.
+   **USE GHIDRA XREFS — they unblock attribution and are generally useful, not a last resort.**
+   `python -m gruntz.analysis.xref <rva|name>` gives the retail call/jmp CALLER graph
+   (`--callees` for the other direction, `--raw` for addresses) — the caller-side complement of
+   `dump_target`. Combined with the Ghidra decomp's xrefs (who reads/writes a field, who news a
+   class, which vtable slot holds a fn), this is the primary tool for: attributing an orphan/
+   placeholder function to its REAL owning class (who calls it on what `this`), confirming a
+   vtable slot's owner, resolving a dangling reloc, and finding the whole method-cluster of a
+   class. When a target's class/owner is unclear, xref FIRST — don't guess from the name.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
 3. **Build + diff:** `gruntz build`, then read the per-function objdiff. **Run it INSIDE one
@@ -96,6 +110,12 @@ its body stays — a **complete, correct reconstruction** (this is NOT a half-wr
 is the *byte-match* that is parked, not the logic. Record that so the method is not mistaken for a
 finished 100% match: an `// @early-stop` marker line directly above its `RVA()`, with the reason
 (the wall / blocker / what is left) on the next comment line. No `%` — the baseline tracks that.
+Follow **`docs/wall-instructions.md`** (the matcher doctrine in reverse): name the wall MECHANISM
+at the assembly level (regalloc/spill recolor, frame-size shift, vptr-stamp position, shrink-wrap
+pushes, tail-merge, demangled-vs-mangled reloc-name mismatch, …) verified with `llvm-objdump -dr`,
+and when a % moved because of an UNRELATED change (a neighbor in the same aggregate TU, a
+shared-base edit), record that trigger too — so the next worker `@early-stop`s on recognition
+instead of re-grinding.
 
     // @early-stop
     // regalloc wall — MSVC pins the loop counter in edi; see docs/patterns/regalloc-zero-pin.md
@@ -109,7 +129,38 @@ Invariant: a reconstructed method is **either ~100% (unmarked) or carries `@earl
 
 ## Source-writing doctrine
 
+### 0. NEVER define a type in a `.cpp` — reduce every per-TU view to the real header class (TOP RULE)
+
+A `struct`/`class` **definition** inside a `.cpp` is a **fake per-TU view** of a real engine class,
+and it is the campaign's #1 anti-pattern. Do NOT fabricate a local `struct CRpSound {…}` /
+`struct MgrSettings {…}` / `struct FxHolder {…}` to reproduce a callee's layout — that adds a
+SECOND, divergent lie about a class whose one true shape already lives (or belongs) in a header.
+The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`class` in headers.**
+
+- The scoreboard tracks this as **`.cpp-local views`** (printed by `gruntz build`); drive it to ~0.
+- When a fn dereferences a real class, `#include` that class's header and use the real type — never
+  a local shadow. If the real class isn't modeled yet, define it **in `include/<Module>/`** (a real
+  header other TUs share), not inline in your `.cpp`.
+- If two TUs each grew their own view of the same object, that is a DEDUP bug: unify to one header
+  type. Divergent field shapes across views (`+0x14` typed differently in two TUs) is a
+  reconciliation problem to SOLVE, not to freeze behind two structs.
+- A cross-cast of `this` (or an arg) to an unrelated class to satisfy the mangler is the same lie in
+  cast form — it means the caller's real class/hierarchy is mis-modelled. Fix the hierarchy; don't
+  paper it with `((OtherClass*)this)`. See the no-sane-dev test.
+
+Clean modeling (one real shape per class, in a header) is the deliverable — **not** the match %.
+A per-TU view that raises % is a regression in the thing that actually matters here.
+
 ### 1. Almost never reach for a C-style cast — model the real type instead
+
+**You may use placeholder views and casts *while* matching — but they must be GONE when you are
+done.** A `(SomeView*)`/`*(T*)((char*)this+N)` cast is legitimate *scaffolding* to get the bytes
+matching fast; it is never part of the deliverable. Before you call a function finished, do the
+de-hack pass: replace every scaffolding view/cast with the real typed shape (type the member,
+unroll the pad into named fields, model the extern's real signature, make the class polymorphic).
+A function you leave with placeholder casts is not done — it's a half-match that the next reader
+inherits as a lie about the type. The only casts that survive are the *binary-proven-authentic*
+ones below.
 
 This targets **placeholder-type and reinterpret casts** (`void*`, raw-offset, improper type) —
 those are almost always a type that should be named/typed properly. It does **not** mean strip
@@ -137,6 +188,17 @@ Re-typing is **matching-NEUTRAL**: a member/return/param type change keeps the s
 (all pointers are 4 bytes; `int`/`unsigned`/`DWORD` interchange), the same push/load bytes, and
 member types **don't change a function's mangling**. It also recovers the devs' real shape —
 "what the original devs did" (see [[correctness-not-artifacts]]).
+
+**A `void*` member/field/return cast to a concrete type at its use-sites is a HACK, not an "idiom" —
+type it.** It is `void*` because the real type wasn't recovered, not because the devs wrote it generic.
+Wherever a member/slot/return is cast to the SAME concrete class at its uses, that class IS its type:
+declare it — and if the class isn't modeled yet, *modeling it is the work*, not an excuse to keep the
+`void*`. The ONLY `void*` that survive: a genuine FOREIGN-API slot the SDK itself types `void*` (Win32
+`LPVOID`/`HANDLE`, `CObject*` in an MFC container), a fn-ptr passed to a `void*` param (C++ requires the
+cast), or a PROVEN-heterogeneous slot where the binary stores DIFFERENT concrete types at the SAME
+member across code paths (a real tagged union → model it as a documented union/variant, not a bare
+`void*`). "It's a generic container / trie / a getter that returns `void*`" is NOT a pass: if each
+element/return has a knowable concrete type at its site, type it.
 
 **Reserve casts for reinterpretations the *binary proves* are authentic:**
 - **pointer↔DWORD storage** in a real `CDWordArray` (the engine stores `CPlane*` as raw DWORDs;

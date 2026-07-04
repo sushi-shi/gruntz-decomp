@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 #include <Ints.h>
 #include <Gruntz/WarpStoneFly.h>
 // WarpStoneFly.cpp - Gruntz CWarpStoneFly (C:\Proj\Gruntz), the flying-warpstone
@@ -10,8 +11,8 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // two members the overlay touches are modeled; both reads are reloc-masked DIR32.
-//   m_tabArrayHost + 0x260 is a CByteArray (the registry tab-state array); its
-//   m_index dword is the index passed to SetAtGrow. m_gameMgr->m_drawable->m_context
+//   m_68 + 0x260 is a CByteArray (the registry tab-state array); its
+//   m_index dword is the index passed to SetAtGrow. m_30->m_drawable->m_context
 //   is the draw surface context.
 struct CWsfTabArray {
     char m_pad0[0x8];
@@ -27,14 +28,8 @@ struct CWsfGameMgr {
     char m_pad0[0x4];
     CWsfDrawable* m_drawable; // +0x04  active drawable
 };
-struct CWsfGameReg {
-    char m_pad0[0x30];
-    CWsfGameMgr* m_gameMgr; // +0x30  active game manager
-    char m_pad34[0x68 - 0x34];
-    char* m_tabArrayHost; // +0x68  tab-state-array host (CByteArray sits at +0x260)
-};
 DATA(0x0024556c)
-extern CWsfGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // CRT __ftol helper (the (int)double rounds) lives at 0x11f570; the (i32) casts
 // below lower to it (reloc-masked rel32). RezFree (0x1b9b82) is the per-frame
@@ -63,7 +58,7 @@ CWarpStoneFly::CWarpStoneFly() {
 RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if ((i32)m_currentX == m_targetX && (i32)m_currentY == m_targetY) {
-        CWsfTabArray* arr = (CWsfTabArray*)(g_gameReg->m_tabArrayHost + 0x260);
+        CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_68 + 0x260);
         arr->SetAtGrow(arr->m_index, m_arrivalMode);
         m_owner->m_busy = 0;
         if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
@@ -108,7 +103,15 @@ i32 CWarpStoneFly::Tick(i32 dt) {
 // 0x10a2f0: blit the overlay sprite at the rounded current position with flag 0.
 RVA(0x0010a2f0, 0x35)
 i32 CWarpStoneFly::Draw() {
-    m_sprite
-        ->Draw(g_gameReg->m_gameMgr->m_drawable->m_context, (i32)m_currentX, (i32)m_currentY, 0);
+    m_sprite->Draw(
+        ((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
+        (i32)m_currentX,
+        (i32)m_currentY,
+        0
+    );
     return 1;
 }
+SIZE_UNKNOWN(CWsfDrawable);
+SIZE_UNKNOWN(CWsfGameMgr);
+SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CWsfTabArray);

@@ -3,21 +3,19 @@
 // COMDAT-folded one-liners, so the owning class names are placeholders; only the
 // OFFSETS + code bytes are load-bearing. Unmodeled engine callees/globals are
 // declared NO-body so their rel32/DIR32 operands reloc-mask.
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Ints.h>
 #include <rva.h>
 
 // ===========================================================================
 // 0x082b20 - tail-forward a no-arg call to the bute-manager singleton
-// (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8). __cdecl, no args.
+// (?g_buteMgr@@3VCButeMgr@@A @ VA 0x6453d8). __cdecl, no args. CButeMgr::Term
+// (0x170210) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
 // ===========================================================================
-class CButeMgr {
-public:
-    void Flush170210(); // 0x170210 (reloc-masked)
-};
 extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void ButeMgrFlush82b20() {
-    g_buteMgr.Flush170210();
+    g_buteMgr.Term();
 }
 
 // ===========================================================================
@@ -27,6 +25,7 @@ void ButeMgrFlush82b20() {
 struct CProfSink {
     void Tick1b9b93(); // 0x1b9b93 (reloc-masked)
 };
+SIZE_UNKNOWN(CProfSink);
 extern "C" CProfSink g_profSink;
 RVA(0x00082ba0, 0xa)
 void ProfSinkTick82ba0() {
@@ -90,6 +89,7 @@ void ProfSinkTick82f20() {
 struct CTokenMgr {
     void Reset3bac(); // 0x3bac (thunk; reloc-masked)
 };
+SIZE_UNKNOWN(CTokenMgr);
 extern CTokenMgr g_tokenMgr;
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
@@ -97,53 +97,58 @@ void TokenMgrReset99b80() {
 }
 
 // ===========================================================================
-// 0x08c470 - constructor: stamp the CState vtable (?g_vtbl_CState@@3PAPAXA @ VA
-// 0x5ea21c) then tail-call the base init (0x3f53). __thiscall, no args.
+// 0x08c470 - a CState-base vptr restore: cl's implicit vptr-restore stamps the CState
+// vtable (0x5ea21c) then tail-jumps the base init/teardown (0x3f53). Placeholder
+// polymorphic class (the real CState dtor is modeled in GameMode.cpp; this is a
+// distinct restore, so its ??_7 reloc-masks by shape). __thiscall.
 // ===========================================================================
-extern void** g_vtbl_CState;
-struct CState8c470 {
+struct CStateSub8c470 {
     void BaseInit3f53(); // 0x3f53 (reloc-masked)
-    void Ctor();
+    virtual ~CStateSub8c470();
 };
+SIZE_UNKNOWN(CStateSub8c470);
 RVA(0x0008c470, 0xb)
-void CState8c470::Ctor() {
-    *(void**)this = (void*)&g_vtbl_CState;
+CStateSub8c470::~CStateSub8c470() {
     BaseInit3f53();
 }
 
 // ===========================================================================
-// 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base constructors: stamp a
-// pure-call vtable into [this] and return. 0x13aaf0 and 0x13ca30 share the
-// 0x5ef760 vtable. __thiscall, no args.
+// 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base vptr restores: cl's implicit
+// vptr-restore stamps a pure-call vtable into [this] and returns (7-byte
+// `mov [ecx],offset ??_7 + ret`). 0x13aaf0 and 0x13ca30 share the 0x5ef760 pure-call
+// vtable; 0x137330 stamps ??_7PureSoundElem (0x5ef6c8, include/Dsndmgr/SoundVoiceList.h).
+// Real polymorphic: an empty virtual dtor emits exactly the stamp+ret. __thiscall.
+//
+// de-view CONFIRMED-SAME, REQUIRED-SPLIT (not foldable into PureSoundElem):
+// CAbstract137330 IS PureSoundElem's base-object destructor (retail ??1PureSoundElem,
+// a NON-virtual dtor). Retail emits this as a standalone COMDAT only because the EH
+// unwind funclet @0x1e0950 (its sole caller) references ~PureSoundElem out-of-line,
+// while every `delete (PureSoundElem*)e` site (0x136f60/0x136e20/0x136ed0) INLINES the
+// teardown (mov[e],0x5ef6c8; RezFree - see PurgeVoiceList @0x136ea8). A folded out-of-
+// line PureSoundElem dtor would convert those cross-TU inline sites to calls (regress);
+// an inline dtor would drop THIS standalone (we don't emit the EH funclet that forces
+// it). So the two models must coexist - kept a distinct emitter here.
 // ===========================================================================
-DATA(0x001ef6c8)
-extern void** g_vtbl_pure6c8; // VA 0x5ef6c8 (pure-call vtable)
-DATA(0x001ef760)
-extern void** g_vtbl_pure760; // VA 0x5ef760 (pure-call vtable)
-
 struct CAbstract137330 {
-    void Ctor();
+    virtual ~CAbstract137330();
 };
+SIZE_UNKNOWN(CAbstract137330);
 RVA(0x00137330, 0x7)
-void CAbstract137330::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure6c8;
-}
+CAbstract137330::~CAbstract137330() {}
 
 struct CAbstract13aaf0 {
-    void Ctor();
+    virtual ~CAbstract13aaf0();
 };
+SIZE_UNKNOWN(CAbstract13aaf0);
 RVA(0x0013aaf0, 0x7)
-void CAbstract13aaf0::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure760;
-}
+CAbstract13aaf0::~CAbstract13aaf0() {}
 
 struct CAbstract13ca30 {
-    void Ctor();
+    virtual ~CAbstract13ca30();
 };
+SIZE_UNKNOWN(CAbstract13ca30);
 RVA(0x0013ca30, 0x7)
-void CAbstract13ca30::Ctor() {
-    *(void**)this = (void*)&g_vtbl_pure760;
-}
+CAbstract13ca30::~CAbstract13ca30() {}
 
 // ===========================================================================
 // 0x0853d0 - __stdcall forwarder: hand the single arg to the __cdecl rez-free

@@ -106,3 +106,7 @@ void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
         }
     }
 }
+
+SIZE_UNKNOWN(CLogicCtx);
+SIZE_UNKNOWN(CLogicMap);
+SIZE_UNKNOWN(CLogicRegistry);

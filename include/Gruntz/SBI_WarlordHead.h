@@ -18,53 +18,39 @@
 #define SBI_WARLORDHEAD_H
 
 #include <Ints.h>
+#include <rva.h>
+
+#include <Image/CImage.h>        // the canonical frame-record class (CImage::RenderFrame @0x153790)
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize external) + CImageSetStream
+
+struct ShadeDescr; // CImage::m_owned->m_palDescr type, latched by ShowFrames (CDDrawShadeBlit.h)
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
 // load-bearing; every call through them is reloc-masked).
 
-// A frame record (an element of the config record's m_14 frame table): a draw
-// offset pair at m_18/m_1c and (for ShowFrames) a sprite/anim handle at m_30 whose
-// m_1c is latched. Same shape the rest of the SBI image chain uses.
-struct CWhFrame {
-    char m_pad0[0x18];
-    i32 m_18; // +0x18  x draw offset
-    i32 m_1c; // +0x1c  y draw offset
-    char m_pad20[0x30 - 0x20];
-    i32 m_30; // +0x30  sprite/anim handle (ShowFrames latches its m_1c)
-};
+// The frame record (an element of the config record's m_14 frame table) is the
+// RTTI-confirmed CImage: a draw-offset pair at m_18/m_1c, an owned sprite/anim
+// object at m_30 (a CImageOwned whose m_1c ShowFrames latches), drawn by
+// CImage::RenderFrame (0x153790, __thiscall). Modeled by <Image/CImage.h>.
 
 // The resolved config record (CSBI_Image::m_34 / the ImageSet lookup result): a
 // frame-index range gate at m_64/m_68 and a frame table at m_14 (an array of
-// CWhFrame*). Same CImageCfgRecord shape used by SBI_Image.cpp.
+// CImage*). Same shape as CSbiConfigRecord (<Gruntz/SbiConfig.h>).
 struct CWhConfig {
     char m_pad0[0x14];
-    CWhFrame** m_14; // +0x14  frame table (array of frame-record pointers)
+    CImage** m_14; // +0x14  frame table (array of frame-record pointers)
     char m_pad18[0x64 - 0x18];
     i32 m_64; // +0x64  frame-index range hi gate (idx > m_64 => reject)
     i32 m_68; // +0x68  frame-index range lo gate (idx < m_68 => reject)
 };
+SIZE_UNKNOWN(CWhConfig);
 
-// The per-frame draw handle (m_30 latched record): RenderFrame (0x153790,
-// __thiscall) blits the frame at a screen position through the surface context.
-struct CWhRenderTarget {
-    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
-};
-
-// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 dword is the
-// surface context passed into RenderFrame.
-struct CWhDrawable {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  surface context
-};
-struct CWhGameMgr {
-    char m_pad0[0x4];
-    CWhDrawable* m_4; // +0x04  active drawable
-};
-struct CWhGameReg {
-    char m_pad0[0x30];
-    CWhGameMgr* m_30; // +0x30  active game manager
-};
+// The active surface context Render passes into RenderFrame is reached through the
+// canonical resource manager: g_gameReg->m_world (CSpriteFactoryHolder) ->
+// m_drawTarget (CDrawTarget, +0x04) -> m_drawContext (+0x14). Modeled by the shared
+// <Gruntz/GameRegistry.h> + <Gruntz/ResMgr.h> types (see SBI_WarlordHead.cpp); no
+// per-TU game-manager facet is kept.
 
 // The base ImageSet SetupImage (CSBI_ImageSet vtable slot 11, 0xe72f0): same
 // 11-arg shape (id, host, a3, a4, then the four rect ints, key, a10, a11). The
@@ -76,37 +62,18 @@ struct CWhRect {
     i32 m_8;
     i32 m_c;
 };
+SIZE_UNKNOWN(CWhRect);
 
-// The serialization stream (Serialize arg1): a real polymorphic object with
-// ReadBytes at vtable slot 0x2c and WriteBytes at slot 0x30, both __thiscall
-// (buf, len). Same CImageSetStream shape the rest of the SBI image chain uses;
-// every call through it lowers to `mov edx,[s]; call [edx+0x2c|0x30]`.
-struct CImageSetStream {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual void Vf5();
-    virtual void Vf6();
-    virtual void Vf7();
-    virtual void Vf8();
-    virtual void Vf9();
-    virtual void Vfa();
-    virtual void ReadBytes(void* buf, i32 len);  // slot 0x2c
-    virtual void WriteBytes(void* buf, i32 len); // slot 0x30
-};
-
-// The immediate base (CSBI_ImageSet, 0xe74f0 vtable slot 1). Declared only so the
-// base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external; the
-// reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
-class CSBI_ImageSet {
-public:
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe74f0
-};
+// The serialization stream (Serialize arg1) + the immediate base CSBI_ImageSet
+// (0xe74f0 vtable slot 1) come from the canonical <Gruntz/SBI_ImageSet.h> above.
+// The base-serialize call emits the real ?Serialize@CSBI_ImageSet@@... external,
+// whose reloc pairs against SBI_ImageSet.cpp's definition at 0xe74f0.
 
 // ---------------------------------------------------------------------------
-// CSBI_WarlordHead - the warlord-head status-bar item.
+// CSBI_WarlordHead - the warlord-head status-bar item. Real RTTI base is
+// CSBI_ImageSet (see top comment); kept FLAT (frameless method-view) because the
+// render/serialize methods read base-region storage (m_14/m_18/m_28/m_30/m_34/m_38)
+// under head-specific names spanning all four base levels.
 class CSBI_WarlordHead {
 public:
     // vtable slot 1 (0xe7cd0): serialize the head's six persistent ints
@@ -132,7 +99,7 @@ public:
     i32 BaseSetupImage(i32 a1, i32 host, i32 a3, i32 a4, CWhRect rect, i32 key, i32 a10, i32 a11);
 
     // 0xeb740: drive the show/hide of the two anchor frames (frame table slots 1/2).
-    i32 ShowFrames(i32 show, i32 arg2);
+    i32 ShowFrames(i32 show, ShadeDescr* palDescr);
     // 0xeb830: latch the raw direction (m_3c) + the derived state (m_38 = 1 or 2).
     i32 SetState(i32 dir);
     // vtable slot 5 (0xeb880): the per-frame render of the head's two frames.
@@ -149,7 +116,7 @@ public:
     char m_pad1c[0x28 - 0x1c];
     i32 m_28; // +0x28  frame countdown (Render decrements; <=0 => idle)
     char m_pad2c[0x30 - 0x2c];
-    CWhFrame* m_30;  // +0x30  latched current frame record
+    CImage* m_30;    // +0x30  latched current frame record
     CWhConfig* m_34; // +0x34  resolved config record (frame table host)
     i32 m_38;        // +0x38  state/index (SetState writes 1 or 2; Render indexes by it)
     i32 m_3c;        // +0x3c  direction (SetState writes the raw dir; Render compares vs 1)
@@ -159,6 +126,7 @@ public:
     i32 m_4c;        // +0x4c
     i32 m_50;        // +0x50
 };
+SIZE_UNKNOWN(CSBI_WarlordHead);
 
 // The frame sprite show/hide notifier (0x14dd90, __stdcall, ret 8).
 void WhShowItem(i32 handle, i32 flag);

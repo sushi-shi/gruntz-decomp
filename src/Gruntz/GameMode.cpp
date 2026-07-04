@@ -32,7 +32,10 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Gruntz/GameMode.h>
-#include <Rez/RezMgr.h> // RezFree - the engine allocator the video-handle teardown uses
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Rez/RezMgr.h>        // RezFree - the engine allocator the video-handle teardown uses
+#include <Bute/ButeMgr.h>      // CButeMgr g_buteMgr (GetIntDef for the SecretColor wormhole tint)
+#include <ComDefs.h>           // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
 #include <math.h>
 #include <rva.h>
 
@@ -49,12 +52,12 @@ CState::CState() {
     m_4 = 0;
     m_8 = 0;
     m_c = 0;
-    m_28 = 0;
+    m_levelBank = 0;
     m_2c = 0;
     m_14 = 0;
     m_18 = 0;
     m_38 = 0;
-    m_3c = 0;
+    m_ready = 0;
     m_4c = 0;
     m_24 = 0;
     m_160 = 0;
@@ -75,8 +78,8 @@ CState::CState() {
     m_1a0 = 0;
     m_19c = 0;
     m_1a4 = 0;
-    m_150 = 0;
-    m_154 = 0;
+    m_cursorX = 0;
+    m_cursorY = 0;
 }
 
 // CState::~CState()  - the slot-0 scalar-deleting dtor `??_G`. Restore the
@@ -89,8 +92,8 @@ CState::CState() {
 
 // CState::Update()  (slot 4 / +0x10): the base default = return 1.
 RVA(0x0008c4b0, 0x6)
-i32 CState::Update() {
-    return 1;
+GameStateId CState::Update() {
+    return GAMESTATE_BASE;
 }
 
 // CState::Render()  (slot 5 / +0x14): the base default = return 1.
@@ -104,10 +107,10 @@ i32 CState::Render() {
 void CState::Vfunc1() {}
 void CState::ReleaseResources() {}
 
-// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_3c.
+// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_ready.
 RVA(0x0008c490, 0x4)
 i32 CState::Vfunc3() {
-    return m_3c;
+    return m_ready;
 }
 
 // CState::Vslot11() (slot 17 / +0x44): a 3-arg base default returning 0 (the
@@ -126,59 +129,10 @@ i32 CState::Vslot11(i32, i32, i32) {
 // registry @+0x28, worker list @+0x0c, ddraw @+0x04) - field names placeholder.
 // ===========================================================================
 
-// The named-resource registries the release path drives. Each `Release*` is a
-// __thiscall(this, szName, szKey) that callee-cleans 8 bytes (reloc-masked).
-struct CResRegistry { // m_c->m_10  (FUN_00155360)
-    void Release(const char* szName, const char* szKey);
-};
-// The pooled resource Free (FUN_00137a80) + the per-frame tick (FUN_00136e20),
-// both __thiscall on the resource object (reloc-masked).
-struct CPooledRes {
-    void Free();          // FUN_00137a80, no-arg
-    void TickAnim(i32 z); // FUN_00136e20, ret 4
-};
-struct CResLeafRegistry { // m_c->m_28  (FUN_00157c70 + the m_2c resource)
-    void Release(const char* szName, const char* szKey); // FUN_00157c70
-    char m_pad00[0x2c];
-    CPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
-};
-struct CResWorkerList {    // m_c->m_c  (FUN_00163c60)
-    void DisposeWorkers(); // FUN_00163c60, thiscall no-arg
-};
-
-// The flip target the slot-10 poll drives: m_c->m_4->m_10->m_2c->Flip(0), with a
-// Flush() on m_4 first (both reloc-masked __thiscall).
-struct CFlipTarget {
-    void Flip(i32 z); // FUN_0013e850, ret 4
-};
-struct CRenderM10 {
-    char m_pad00[0x2c];
-    CFlipTarget* m_2c; // +0x2c  flip target
-};
-struct CRenderM4 {
-    void Flush(); // FUN_00558ee0, no-arg
-    char m_pad00[0x10];
-    CRenderM10* m_10; // +0x10
-};
-
-// The CState+0xc resource view, as the teardown / poll paths walk it.
-struct CStateResView {
-    char m_pad00[0x04];
-    CRenderM4* m_4; // +0x04  render/flip view (slot-10 poll)
-    char m_pad08[0x0c - 0x08];
-    CResWorkerList* m_c; // +0x0c  worker list (CMenuState dispose)
-    CResRegistry* m_10;  // +0x10  name registry
-    char m_pad14[0x28 - 0x14];
-    CResLeafRegistry* m_28; // +0x28  leaf registry + pooled resource
-    CResRegistry* m_2c;     // +0x2c  third registry (credits CREDITZ release)
-};
-
-// FUN_00137a80 Free + FUN_004a0360 menu-UI pre-delete are thiscall no-arg
-// externs on their respective objects; model as methods so the `mov ecx,obj;
-// call rel32` falls out with no stack cleanup.
-struct CMenuUIRes {   // CMenuState::m_1b4 object (pre-delete release)
-    void PreDelete(); // FUN_004a0360
-};
+// The CState +0x0c resource-release facet (registry @+0x10, sound registry +
+// pooled resource @+0x28, third registry @+0x2c, worker list @+0x0c, render/flip
+// view @+0x04) is the RESOURCE facet of the one shared CView (<Gruntz/View.h>);
+// the leaf-state teardown paths reach it through m_c directly (no cast).
 
 // CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
 // base vtable and call it (compiler-emitted). `operator delete` is reached by
@@ -192,17 +146,9 @@ void operator delete(void*);
 // labels mirror the retail jump-table fall-throughs). Both output pointers must
 // be non-null. Rand() = signed game RNG; RandRange(0,N) = uniform [0,N).
 
-// The global game registry facet these CState helpers read: m_10 a presence gate,
-// m_11c the item passed to ConfigureItem, plus the Rand() / RandRange() __thiscall
-// helpers (all reloc-masked).
-struct WwdGameReg {
-    i32 Rand();                    // FUN_0040cd00, no-arg signed rand
-    i32 RandRange(i32 lo, i32 hi); // FUN_00419f50, ret 8
-    char m_pad00[0x10];
-    i32 m_10; // +0x10  presence gate
-    char m_pad14[0x11c - 0x14];
-    i32 m_11c; // +0x11c  configure item value
-};
+// The global game registry (canonical <Gruntz/WwdGameReg.h>): these CState helpers
+// read m_10 (presence gate) / m_11c (ConfigureItem item) + the Rand()/RandRange()
+// __thiscall helpers (all reloc-masked).
 extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
 // @early-stop
@@ -283,14 +229,14 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     // The view (m_c) is re-read for every access (retail does not cache it).
-    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
     if (r) {
         r->Free();
     }
-    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
-    ((CStateResView*)m_c)->m_28->Release("GRUNTZ_WANDGRUNT", "_");
-    ((CStateResView*)m_c)->m_10->Release("BOOTY", "_");
-    ((CStateResView*)m_c)->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
+    m_c->m_soundRegistry->Release("BOOTY", "_");
+    m_c->m_soundRegistry->Release("GRUNTZ_WANDGRUNT", "_");
+    m_c->m_imageRegistry->Release("BOOTY", "_");
+    m_c->m_imageRegistry->Release("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -298,24 +244,24 @@ void CBootyState::ReleaseResources() {
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 
-// (CPlay::Update lives with the rest of CPlay in src/Gruntz/CPlay.cpp.)
+// (CPlay::Update lives with the rest of CPlay in src/Gruntz/Play.cpp.)
 
 // CMenuState::Update(): the MENU state's ID = 5.
 RVA(0x0008ce10, 0x6)
-i32 CMenuState::Update() {
-    return 5;
+GameStateId CMenuState::Update() {
+    return GAMESTATE_MENU;
 }
 
 // CCreditsState::Update(): the CREDITS state's ID = 8.
 RVA(0x0008d590, 0x6)
-i32 CCreditsState::Update() {
-    return 8;
+GameStateId CCreditsState::Update() {
+    return GAMESTATE_CREDITS;
 }
 
 // CBootyState::Update(): the BOOTY state's ID = 0xa.
 RVA(0x0008d3f0, 0x6)
-i32 CBootyState::Update() {
-    return 0xa;
+GameStateId CBootyState::Update() {
+    return GAMESTATE_BOOTY;
 }
 
 // ===========================================================================
@@ -324,22 +270,22 @@ i32 CBootyState::Update() {
 // ===========================================================================
 
 // CCreditsState::Render(): the canonical Render spine.
-//   1. INPUT POLL: i = m_c->m_4->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
+//   1. INPUT POLL: i = m_c->m_renderState->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
 //      skip the input-virtual; else
 //   2. INPUT VIRTUAL: if (this->vtbl[+0x20]()) { m_4->Post(0x8006,0xfa0); return 0; }
-//   3. CURSOR ANIM: if (m_c->m_28->m_2c) GM_SimpleAnim(-1);
+//   3. CURSOR ANIM: if (m_c->m_soundRegistry->m_2c) GM_SimpleAnim(-1);
 //   4. ENTITY UPDATE LOOP: for each e in g_entityList: e->Update();
 //   5. MESSAGE SCAN: first e with (e->m_2ac & 0xffffff) -> PostMessageA(hwnd,
 //      WM_COMMAND, m_24==5 ? 0x8023 : 0x8027, 0); m_4->m_8->m_244 = 0;
 //   6. SUB-STEPS: Sub1(); Sub2();
-//   7. DRAW: m_c->m_4->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
+//   7. DRAW: m_c->m_renderState->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
 //   8. ONE-SHOT FX (+0x1b4 latch): if (!m_1b4 && m_4->m_14) {
 //        m_4->m_48->Play("CREDITZ",1); m_1b4 = 1; }
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    CGMInputObj* in = ((CGMView*)m_c)->m_4->m_10->m_2c->m_8;
+    CGMInputObj* in = m_c->m_renderState->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
             ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
@@ -347,7 +293,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (((CGMView*)m_c)->m_28->m_2c) {
+    if (m_c->m_soundRegistry->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -385,7 +331,7 @@ i32 CCreditsState::Render() {
     Sub2();
 
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
-    CGMView::M4* v4 = ((CGMView*)m_c)->m_4;
+    CView::RenderState* v4 = m_c->m_renderState;
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((i32)v4->m_18);
 
@@ -471,19 +417,16 @@ tail:
     return 1;
 }
 
-// InputVirtual (slot 8 / +0x20) is the per-frame input poll the Render does an
-// indirect `this->vtbl[+0x20]()` to (its body is irrelevant to the Render match -
-// only the indirect call site is). Out-of-line so the CCreditsState vtable
-// resolves; NOT a byte-matched target. (Slots 6,7 are inherited from CState.)
-i32 CCreditsState::InputVirtual() {
-    return 0;
-}
+// (CCreditsState::InputVirtual is slot 8 / +0x20 == ShowAttractTitle @0x393b0, the
+// per-frame input poll the Render dispatches via `this->vtbl[+0x20]()`; its body is
+// defined below at its real RVA. Slot 6 is CCreditsState's own Vslot06 override,
+// slot 7 is inherited from CState.)
 
 // ===========================================================================
 // REMAINING Render overrides (slot +0x14) NOT matched here (deferred targets):
 //   CBootyState::Render - the bonus-state per-frame draw.
 //   CPlay::Render       - the in-game per-frame heart (the
-//       carcass is reconstructed in the `cplay` WIP unit, src/Gruntz/CPlay.cpp).
+//       carcass is reconstructed in the `cplay` WIP unit, src/Gruntz/Play.cpp).
 // Both follow the same spine the two matched Renders above show (per-entity
 // Update loop over g_645574 -> entity-flag message scans -> draw/UI step),
 // scaled up with the level/grunt simulation.
@@ -505,53 +448,572 @@ i32 CCreditsState::InputVirtual() {
 RVA(0x0001d440, 0xd7d)
 void CBootyState::vfunc_1() {}
 
-// @confidence: med
-// @source: rtti-vptr
-// @stub
-RVA(0x0008d5e0, 0x8b)
-void CCreditsState::Stub_08d5e0() {}
+// DrawScrollingCredits (0x396f0): the credits scroll-text renderer. Each frame it ticks the
+// three overlay timers down by the frame delta, advances the scrolling caption RECT by
+// `delta * speed * 0.001` (wrapping when the RECT scrolls off, reseeding m_1f4 to
+// 480/0.025), then - if the IDirectDrawSurface hands back an HDC - paints the caption
+// (self->m_1f0) transparently into the scrolled RECT, and (when both the m_1c4/m_1c0 gates
+// are live) the static "Now is the time at Monolith when we dance" credit into a fixed
+// 640x480 RECT. GDI (SetBkMode/SelectClipRgn/SetTextColor/DrawTextA) via the IAT; the
+// surface GetDC/ReleaseDC are the DDraw COM slots (+0x44/+0x68). CString temp -> /GX frame.
+extern "C" i32 g_62bf74; // clip-region enable gate
+extern double g_5e96f8;  // 480.0 (screen height) - extern-loaded so the reseed division
+extern double g_5e96f0;  // 0.025 (scroll rate)   - is fld/fdiv, not a folded immediate
+// The credits scroll's DirectDraw surface (prov->m_8): the game's
+// IDirectDrawSurface (DDRAW COM). Only GetDC (slot 17, +0x44) and ReleaseDC
+// (slot 26, +0x68) are used; both __stdcall with the surface as the hidden
+// `this`. A local SDK-named interface (real DX6 slot names) so
+// `surf->GetDC(&hdc)` lowers to the same `push &hdc; push surf; mov reg,[surf];
+// call [reg+slot]` the manual vtbl-struct view did; pointer-only -> no vtable
+// emitted in this TU.
+SIZE_UNKNOWN(IDirectDrawSurfaceZ);
+struct IDirectDrawSurfaceZ {
+    STDMETHOD(QueryInterface)() PURE;        // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
+    STDMETHOD_(u32, Release)() PURE;         // slot 2
+    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
+    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
+    STDMETHOD(Blt)() PURE;                   // slot 5
+    STDMETHOD(BltBatch)() PURE;              // slot 6
+    STDMETHOD(BltFast)() PURE;               // slot 7
+    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
+    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
+    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
+    STDMETHOD(Flip)() PURE;                  // slot 11
+    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
+    STDMETHOD(GetBltStatus)() PURE;          // slot 13
+    STDMETHOD(GetCaps)() PURE;               // slot 14
+    STDMETHOD(GetClipper)() PURE;            // slot 15
+    STDMETHOD(GetColorKey)() PURE;           // slot 16
+    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
+    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
+    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
+    STDMETHOD(GetPalette)() PURE;            // slot 20
+    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
+    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
+    STDMETHOD(Initialize)() PURE;            // slot 23
+    STDMETHOD(IsLost)() PURE;                // slot 24
+    STDMETHOD(Lock)() PURE;                  // slot 25
+    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
+    STDMETHOD(Restore)() PURE;               // slot 27
+    STDMETHOD(SetClipper)() PURE;            // slot 28
+    STDMETHOD(SetColorKey)() PURE;           // slot 29
+    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
+    STDMETHOD(SetPalette)() PURE;            // slot 31
+    STDMETHOD(Unlock)() PURE;                // slot 32
+    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
+    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
+    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
+};
+SIZE_UNKNOWN(CreditsHdcProv);
+struct CreditsHdcProv { // m_c->m_4->m_14->m_2c
+    char p0[0x8];
+    IDirectDrawSurfaceZ* m_8; // +0x08 the DDraw surface
+};
+SIZE_UNKNOWN(CreditsView4M14);
+struct CreditsView4M14 {
+    char p0[0x2c];
+    CreditsHdcProv* m_2c; // +0x2c
+};
+SIZE_UNKNOWN(CreditsView4);
+struct CreditsView4 {
+    char p0[0x14];
+    CreditsView4M14* m_14; // +0x14
+};
+SIZE_UNKNOWN(CreditsScrollView);
+struct CreditsScrollView {
+    char p0[0x4];
+    CreditsView4* m_4; // +0x04
+};
+SIZE_UNKNOWN(CreditsGdiObj);
+struct CreditsGdiObj { // m_1e8 clip region (CGdiObject: m_hObject @+0x4)
+    char p0[0x4];
+    void* m_hObject; // +0x04
+};
+SIZE_UNKNOWN(CreditsScrollSelf);
+struct CreditsScrollSelf {
+    char m_pad00[0xc];
+    CreditsScrollView* m_c; // +0x0c
+    char m_pad10[0x1bc - 0x10];
+    u32 m_1bc;           // +0x1bc overlay timer B (unsigned countdown)
+    u32 m_1c0;           // +0x1c0 overlay timer C (unsigned countdown)
+    i32 m_1c4;           // +0x1c4 second-caption gate
+    RECT m_src;          // +0x1c8 source caption RECT
+    RECT m_dst;          // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
+    CreditsGdiObj m_1e8; // +0x1e8 clip region
+    char* m_1f0;         // +0x1f0 caption CString buffer
+    u32 m_1f4;           // +0x1f4 reseed timer A (unsigned countdown)
+    double m_1f8;        // +0x1f8 scroll accumulator
+    double m_200;        // +0x200 scroll speed
+    i32 GetFlashColor(); // 0x4223 own thiscall (reloc-masked)
+};
 
-// @confidence: low
+// @confidence: med
 // @source: winapi:SelectClipRgn;SetBkMode
-// @stub
+// @early-stop
+// ~75%: complete + correct (timer decrements with matched jb-branch polarity, the
+// scroll accumulator now fadd - the extern reseed constants block the /O2 constant-fold
+// so the reseed is fld/fdiv/ftol like retail - the DDraw GetDC/ReleaseDC COM slots, the
+// CGdiObject::operator-HRGN null-check clip, both DrawTextA paths + the static credit
+// CString). Residual walls: (1) the /GX EH-frame representation (Unwind@ vs $L +
+// __except_list, docs/seh-eh.md); (2) MSVC keeps the accumulator in st0 (fst) and lets
+// ftol reuse it where retail stores-and-reloads (fstp/fld) - a float-consistency (/Op)
+// mode difference, not source-steerable; (3) FP/prov-chain scheduling around the RECT
+// copy. All logic + externs/strings named; the 3 FP-constant relocs stay differently-named.
 RVA(0x000396f0, 0x2b8)
-i32 CCreditsState::winapi_0396f0_SelectClipRgn_SetBkMode() {
-    return 0;
+i32 CCreditsState::DrawScrollingCredits() {
+    CreditsScrollSelf* self = (CreditsScrollSelf*)this;
+    if (self->m_c == 0) {
+        return 0;
+    }
+    CreditsHdcProv* prov = self->m_c->m_4->m_14->m_2c;
+
+    if (g_645584 >= self->m_1f4) {
+        self->m_1f4 = 0;
+    } else {
+        self->m_1f4 -= g_645584;
+    }
+    if (self->m_1c4 != 0) {
+        if (g_645584 >= self->m_1bc) {
+            self->m_1bc = 0;
+        } else {
+            self->m_1bc -= g_645584;
+        }
+        if (g_645584 >= self->m_1c0) {
+            self->m_1c0 = 0;
+        } else {
+            self->m_1c0 -= g_645584;
+        }
+    }
+
+    self->m_dst = self->m_src;
+    double contrib = (double)g_645584 * self->m_200 * 0.001;
+    self->m_1f8 = self->m_1f8 + contrib;
+    i32 scrolled = (i32)self->m_1f8;
+    self->m_dst.top -= scrolled;
+    self->m_dst.bottom -= scrolled;
+    if (self->m_dst.bottom < 0) {
+        self->m_1f8 = 0.0;
+        self->m_dst = self->m_src;
+        self->m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
+    }
+
+    HDC hdc = 0;
+    prov->m_8->GetDC(&hdc);
+    if (hdc != 0) {
+        i32 oldBk = SetBkMode(hdc, TRANSPARENT);
+        if (g_62bf74 != 0) {
+            CreditsGdiObj* pRgn = &self->m_1e8;
+            HRGN rgn = (pRgn != 0) ? (HRGN)pRgn->m_hObject : 0;
+            SelectClipRgn(hdc, rgn);
+        }
+        i32 oldColor = SetTextColor(hdc, self->GetFlashColor());
+        DrawTextA(hdc, self->m_1f0, -1, &self->m_dst, 0x50);
+        SetTextColor(hdc, oldColor);
+        if (self->m_1c4 != 0 && self->m_1c0 != 0) {
+            CString s("Now is the time at Monolith when we dance");
+            RECT r = {0, 0, 0x280, 0x1e0};
+            i32 oldColor2 = SetTextColor(hdc, 0xffffff);
+            DrawTextA(hdc, s, -1, &r, 0x75); // CString -> LPCTSTR (implicit)
+            SetTextColor(hdc, oldColor2);
+        }
+        if (g_62bf74 != 0) {
+            SelectClipRgn(hdc, 0);
+        }
+        SetBkMode(hdc, oldBk);
+        prov->m_8->ReleaseDC(hdc);
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------
 // Re-homed __thiscall behavioral methods (relocated from src/Stub/).
 // -------------------------------------------------------------------------
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// BuildWarpStoneGlitterAnimation (0x19540): a CMultiBootyState (booty) method - the
+// trace mis-homed it on CState (the `this` is really a CMultiBootyState, whose
+// glitter block sits at +0x1d8..+0x1fc). Build 4 "DoNothing" warp-letter animations
+// through the mgr-settings animation factory (g_mgrSettings->m_world->m_8), stash them in
+// the +0x1ec ptr array (naming-independent offset access), set/clear their active bit,
+// then build the trailing "SimpleAnimation" glitter sprite. The factory Create/SetName/
+// SetTexture/SetCycle are reloc-masked __thiscall externs.
+SIZE_UNKNOWN(CGlitterAnim);
+// The created "SimpleAnimation"/"DoNothing" sprite (the factory return). The WARP
+// booty-letter draw (StepGlitterAnim/MoveLettersByDir) walks the very same objects
+// as position/flag records, so its former CBootyLetter facet (m_8 flag word, m_5c/m_60
+// = x/y, m_40 out-of-bounds flag, m_74 one-shot latch) is folded in here - one class.
+struct CGlitterAnim {                       // a created animation object
+    void SetName(const char* key, i32 idx); // 0x1504d0 (this, key, idx)
+    void SetTexture(const char* key);       // 0x150540 (this, key)
+    void SetCycle(const char* key, i32 z);  // 0x1505b0 (this, key, z)
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 flag word (booty draw: |= 0x20000 latch bit)
+    char m_pad0c[0x40 - 0xc];
+    i32 m_40; // +0x40 flag word (bit0 = active / out-of-bounds)
+    char m_pad44[0x4c - 0x44];
+    i32 m_4c; // +0x4c selection/color handle
+    i32 m_50; // +0x50 mode
+    char m_pad54[0x58 - 0x54];
+    i32 m_58; // +0x58 flag
+    i32 m_5c; // +0x5c id/offset (booty draw: x)
+    i32 m_60; // +0x60 x-position (booty draw: y)
+    char m_pad64[0x74 - 0x64];
+    i32 m_74; // +0x74 one-shot latch (booty draw)
+};
+SIZE_UNKNOWN(CGlitterFactory);
+struct CGlitterFactory {
+    // 0x1597b0: create a named animation of `kind` from a template ("DoNothing"/"SimpleAnimation").
+    CGlitterAnim* Create(i32 a, i32 b, i32 c, i32 kind, const char* type, i32 e);
+};
+SIZE_UNKNOWN(CGlitterMgrM30);
+struct CGlitterMgrM30 {
+    char m_pad00[0x8];
+    CGlitterFactory* m_8; // +0x08 the animation factory
+};
+SIZE_UNKNOWN(CGlitterMgrSet);
+struct CGlitterMgrSet {
+    char m_pad00[0x4];
+    i32 m_4; // +0x04 element count
+};
+// The selection source (m_74): GetSel resolves an active selection handle.
+SIZE_UNKNOWN(CGlitterSel);
+struct CGlitterSel {
+    i32 GetSel(i32 a, i32 b); // 0x4165 thiscall
+};
+// The color->handle table (m_78): the SecretColor-indexed handle array at +0x14.
+SIZE_UNKNOWN(CGlitterColorTable);
+struct CGlitterColorTable {
+    char m_pad00[0x14];
+    i32 m_arr14[1]; // +0x14  color->handle table
+};
+SIZE_UNKNOWN(CGlitterMgr);
+struct CGlitterMgr {
+    char m_pad00[0x30];
+    CGlitterMgrM30* m_world; // +0x30
+    char m_pad34[0x74 - 0x34];
+    CGlitterSel* m_74;        // +0x74  selection source
+    CGlitterColorTable* m_78; // +0x78  color->handle table
+    CGlitterMgrSet* m_7c;     // +0x7c
+    i32 m_80;                 // +0x80  attract frame counter (title rotation source)
+};
+DATA(0x0024556c)
+extern "C" CGlitterMgr* g_mgrSettings;
+// @early-stop
+// 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
+// `(i != m_letterIdx) ? 1 : 3` kind (retail's neg/sbb/and/add form vs cl's) + the per-iteration
+// g_mgrSettings reload scheduling. Not source-steerable.
 RVA(0x00019540, 0x12a)
-void CState::BuildWarpStoneGlitterAnimation() {}
+i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
+    // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
+    // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
+    CGlitterAnim** slot = (CGlitterAnim**)((char*)this + 0x1ec);
+    m_radius = 0xc8;
+    m_letterIdx = (g_mgrSettings->m_7c->m_4 - 1) % 4;
+    m_angleStep = 0;
+    m_scratchX = 0;
+    m_1e8 = 0;
+    for (i32 i = 0; i < 4; i++) {
+        CGlitterAnim* a = g_mgrSettings->m_world->m_8
+                              ->Create(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
+        slot[i] = a;
+        if (a == 0) {
+            return 0;
+        }
+        a->SetName("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
+        a->m_40 |= 1;
+    }
+    for (i32 k = 0; k <= m_letterIdx; k++) {
+        slot[k]->m_40 &= ~1;
+    }
+    CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 4, "SimpleAnimation", 3);
+    m_cursorLetter = g;
+    if (g == 0) {
+        return 0;
+    }
+    g->SetTexture("GAME_GLITTERGOLD");
+    m_cursorLetter->SetCycle("GAME_CYCLE100", 0);
+    return 1;
+}
+
+// LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation set.
+// Really a CPlay-layout method (the trace homed it on the CState base); it walks the
+// same g_mgrSettings->m_world->m_8 SimpleAnimation factory as BuildWarpStoneGlitterAnimation
+// but stores ~15 named effect sprites into the big +0x2fc.. block plus three parallel
+// 8-element sprite arrays (bomb/go-kart/explosion) at +0x224/+0x244/+0x264, positioned
+// from the geometry table. Every factory/lookup/GDI callee is a reloc-masked engine
+// extern; all texture/cycle strings are named. Fields beyond CState are reached by a
+// typed self-view (naming-independent offset access, campaign doctrine).
+extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
+extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
+extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
+
+// The go-kart install target reached via m_c->m_10 is the shared CView image
+// registry (Install at vtable slot 18 / +0x48; <Gruntz/View.h>).
+// The namespace/image registry at this+0x30 (resolves a named image handle).
+SIZE_UNKNOWN(CEffNamespace);
+struct CEffNamespace {
+    void* Lookup(const char* name); // 0x13bae0 thiscall
+};
+// The geometry table (0x60b8fc, 0x10-byte rows): the effect sprites' x-position is
+// (row.a + row.c) / 2. The loop init/bound relocs land on &row[0].c / &row[8].c.
+SIZE_UNKNOWN(CEffGeomRow);
+struct CEffGeomRow {
+    i32 a;     // +0x00
+    i32 pad4;  // +0x04 (417, unused)
+    i32 c;     // +0x08
+    i32 pad12; // +0x0c (245, unused)
+};
+DATA(0x0020b8fc)
+extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
+
+// Typed self-view for this in-game effect loader. The +0x0c view is the shared
+// CView; but its effect-sprite members below (m_224/m_2fc.. arrays) sit at offsets
+// (0x304..0x318) that CPlay's own reconstruction models as drag-clamp/HUD-rect
+// scalars - a genuine unresolved offset-reuse ambiguity, so the sprite block stays a
+// documented self-view (offset access) rather than being folded into CPlay's layout.
+SIZE_UNKNOWN(CEffLoaderSelf);
+struct CEffLoaderSelf {
+    char m_pad00[0xc];
+    CView* m_c; // +0x0c  the shared view/render/resource context
+    char m_pad10[0x30 - 0x10];
+    CEffNamespace* m_30; // +0x30  image namespace
+    char m_pad34[0x224 - 0x34];
+    CGlitterAnim* m_bomb[8];   // +0x224  bomb-grunt sprites
+    CGlitterAnim* m_gokart[8]; // +0x244  go-kart sprites
+    CGlitterAnim* m_expl[8];   // +0x264  explosion sprites
+    char m_pad284[0x2fc - 0x284];
+    CGlitterAnim* m_2fc; // +0x2fc  stopwatch
+    CGlitterAnim* m_300; // +0x300  exit
+    CGlitterAnim* m_304; // +0x304  death twitch
+    CGlitterAnim* m_308; // +0x308  gauntletz
+    CGlitterAnim* m_30c; // +0x30c  beachballz
+    CGlitterAnim* m_310; // +0x310  roidz
+    CGlitterAnim* m_314; // +0x314  coin
+    CGlitterAnim* m_318; // +0x318  wormhole/teleporter
+};
 
 // @confidence: med
 // @source: string-xref
-// @stub
+// @early-stop
+// ~96.3%: complete + correct, dev-authentic shape (natural array indexing throughout -
+// self->m_bomb[i]/m_gokart[i]/m_expl[i] and g_effGeom[i].a/.c - which MSVC fuses into the
+// retail single-pointer inductions). Residual is two scheduling walls: (1) the SecretColor
+// block schedules the g_mgrSettings->m_78 load AFTER the GetIntDef call (retail hoists it
+// into ebp before the call and keeps it across) - an eval-order choice not source-steerable
+// without regressing the frame; (2) the (a+c)/2 geom pair loads a/c in the opposite eax/edx
+// order (commutative). All externs/strings named.
 RVA(0x0001a040, 0x55e)
-void CState::LoadGruntEffectSprites() {}
+i32 CState::LoadGruntEffectSprites() {
+    CEffLoaderSelf* self = (CEffLoaderSelf*)this;
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
-RVA(0x0001b450, 0x1ac)
-void CState::BuildBootyWalkingGruntz() {}
+    i32 handleA = g_mgrSettings->m_74->GetSel(0, 0);
+    if (handleA == 0) {
+        return 0;
+    }
+    i32 handleB = g_mgrSettings->m_74->GetSel(0, 1);
 
+    void* img = self->m_30->Lookup("IMAGEZ_GOKARTGRUNT");
+    if (img == 0) {
+        return 0;
+    }
+    self->m_c->m_imageRegistry->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+
+    CGlitterFactory* f = g_mgrSettings->m_world->m_8;
+
+    CGlitterAnim* sw = f->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_2fc = sw;
+    if (sw == 0) {
+        return 0;
+    }
+    sw->SetTexture("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
+    self->m_2fc->SetCycle("GAME_CYCLE100", 0);
+    self->m_2fc->m_40 |= 1;
+
+    CGlitterAnim* wh = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_318 = wh;
+    if (wh == 0) {
+        return 0;
+    }
+    i32 tint =
+        g_mgrSettings->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
+    self->m_318->SetTexture("GAME_WORMHOLE");
+    self->m_318->SetCycle("GAME_TELEPORTER", 0);
+    CGlitterAnim* p318 = self->m_318;
+    p318->m_58 = 1;
+    p318->m_50 = 7;
+    p318->m_4c = tint;
+
+    CGlitterAnim* ex = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_300 = ex;
+    if (ex == 0) {
+        return 0;
+    }
+    ex->SetTexture("GRUNTZ_EXITZ");
+    self->m_300->SetCycle("GAME_GRUNTFLEX", 0);
+    CGlitterAnim* p300 = self->m_300;
+    p300->m_58 = 1;
+    p300->m_50 = 0xa;
+    p300->m_4c = handleA;
+    self->m_300->m_40 |= 1;
+
+    CGlitterAnim* dt = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_304 = dt;
+    if (dt == 0) {
+        return 0;
+    }
+    dt->SetTexture("GRUNTZ_NORMALGRUNT_DEATH");
+    self->m_304->SetCycle("GAME_GRUNTTWITCH", 0);
+    CGlitterAnim* p304 = self->m_304;
+    p304->m_58 = 1;
+    p304->m_50 = 0xa;
+    p304->m_4c = handleA;
+    self->m_304->m_40 |= 1;
+
+    CGlitterAnim* gl = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_308 = gl;
+    if (gl == 0) {
+        return 0;
+    }
+    gl->SetTexture("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
+    self->m_308->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p308 = self->m_308;
+    p308->m_58 = 1;
+    p308->m_50 = 0xa;
+    p308->m_4c = handleA;
+    self->m_308->m_40 |= 1;
+
+    CGlitterAnim* bb = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_30c = bb;
+    if (bb == 0) {
+        return 0;
+    }
+    bb->SetTexture("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
+    self->m_30c->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p30c = self->m_30c;
+    p30c->m_58 = 1;
+    p30c->m_50 = 0xa;
+    p30c->m_4c = handleA;
+    self->m_30c->m_40 |= 1;
+
+    CGlitterAnim* rz = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_310 = rz;
+    if (rz == 0) {
+        return 0;
+    }
+    rz->SetTexture("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
+    self->m_310->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p310 = self->m_310;
+    p310->m_58 = 1;
+    p310->m_50 = 0xa;
+    p310->m_4c = handleA;
+    self->m_310->m_40 |= 1;
+
+    CGlitterAnim* cn = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 0, "SimpleAnimation", 3);
+    self->m_314 = cn;
+    if (cn == 0) {
+        return 0;
+    }
+    cn->SetTexture("GAME_INGAMEICONZ_POWERUPZ_COIN");
+    self->m_314->SetCycle("GAME_CYCLE100", 0);
+    CGlitterAnim* p314 = self->m_314;
+    p314->m_58 = 1;
+    p314->m_50 = 0xa;
+    p314->m_4c = handleA;
+    self->m_314->m_40 |= 1;
+
+    // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
+    // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
+    // parallel array walks + the geom walk into single induction pointers.
+    for (i32 i = 0; i < 8; i++) {
+        CGlitterAnim* b = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_bomb[i] = b;
+        if (b == 0) {
+            return 0;
+        }
+        b->SetTexture("GRUNTZ_BOMBGRUNT_WEST_ITEM");
+        self->m_bomb[i]->SetCycle("GAME_GRUNTBOMBSPRINT", 0);
+        CGlitterAnim* bp = self->m_bomb[i];
+        bp->m_58 = 1;
+        bp->m_50 = 0xa;
+        bp->m_4c = handleA;
+        self->m_bomb[i]->m_5c = 0x2c6;
+        self->m_bomb[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_bomb[i]->m_40 |= 1;
+
+        CGlitterAnim* e = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_expl[i] = e;
+        if (e == 0) {
+            return 0;
+        }
+        e->SetTexture("GAME_EXPLOSION");
+        self->m_expl[i]->m_40 |= 1;
+
+        CGlitterAnim* g = g_mgrSettings->m_world->m_8->Create(0, 0, 0, 2, "SimpleAnimation", 3);
+        self->m_gokart[i] = g;
+        if (g == 0) {
+            return 0;
+        }
+        g->SetTexture("GRUNTZ_GOKARTGRUNT_EAST");
+        self->m_gokart[i]->SetCycle("GAME_CYCLE100", 0);
+        CGlitterAnim* gp = self->m_gokart[i];
+        gp->m_58 = 1;
+        gp->m_50 = 0xa;
+        gp->m_4c = handleB;
+        self->m_gokart[i]->m_5c = -70;
+        self->m_gokart[i]->m_60 = (g_effGeom[i].a + g_effGeom[i].c) / 2;
+        self->m_gokart[i]->m_40 |= 1;
+    }
+    return 1;
+}
+
+// BuildBootyWalkingGruntz (0x1b450) is re-homed to its real class BzState in
+// src/Gruntz/BootyWalkAnim.cpp (beside its per-frame Update sibling).
+
+// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw
+// (1205B). Still a reconstruction target - stub body marks the slot.
 // @confidence: med
 // @source: string-xref
 // @stub
 RVA(0x0001c210, 0x4b5)
-void CBootyState::CheckWarpLetterBonus() {}
+i32 CBootyState::Render() {
+    return 0;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// CMenuState::BuildVersionString (0xa0d80): format the on-screen version banner
+// into a transient CString, append " (SPAWN MODE)" when the CD prompt latched the
+// spawn install, then hand it to the shared HUD-message sprite helper into the
+// caller-supplied RECT (the 4 args form the RECT by value). The build/patch field
+// g_65160c selects the two- vs three-number version format.
+extern "C" i32 g_651608;         // 0x651608  version field A
+extern "C" i32 g_65160c;         // 0x65160c  build/patch field (0 -> two-number format)
+extern "C" i32 g_651610;         // 0x651610  version field B
+extern "C" i32 g_cdPromptResult; // 0x6455ec  spawn-mode latch
+// The shared HUD message-sprite helper (0x1154b0 via the 0x1f00 ILT thunk,
+// __cdecl): push a transient text sprite carrying `text` into `rect`.
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(i32, i32, i32, i32) {}
+void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
+    CString str;
+    if (g_65160c == 0) {
+        str.Format("Gruntz v%d.%d", g_651608, g_651610);
+    } else {
+        str.Format("Gruntz v%d.%d%d", g_651608, g_65160c, g_651610);
+    }
+    if (g_cdPromptResult) {
+        str += " (SPAWN MODE)";
+    }
+    ShowHudMessage(m_c, &str, (RECT*)&rectLeft, 0x64, 1, 0xff, 0xff, 0, 0);
+}
 
 // The "STATEZ_CREDITZ" registered object (m_2c): same Register source as
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
@@ -692,11 +1154,12 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     return r;
 }
 
-// CCreditsState::ShowAttractTitle @0x393b0 - gate on the state core (m_c->m_4->
-// IsLoaded); if loaded, force the cursor hidden then prime the attract title.
+// CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -
+// the per-frame input poll: gate on the state core (m_c->m_4->IsLoaded); if loaded,
+// force the cursor hidden then prime the attract title.
 // Returns 1 (0 when the gate is not yet loaded, reusing the already-zero eax).
 RVA(0x000393b0, 0x3a)
-i32 CCreditsState::ShowAttractTitle() {
+i32 CCreditsState::InputVirtual() {
     CCreditzOwner* self = (CCreditzOwner*)this;
     if (self->m_c->m_4->IsLoaded() == 0) {
         return 0;
@@ -709,17 +1172,96 @@ i32 CCreditsState::ShowAttractTitle() {
     return 1;
 }
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
+// CAttract::LoadTitleConfig (CAttract.cpp). If the title view is already live (m_videoPlaying),
+// just run the menu-page frame sub-steps (0x158dc0 / TransTitle / 0x158d50 + the
+// m_18 fill) and bail; otherwise pick a rotating TITLE index off the mgr frame
+// counter, format the "STATEZ_ATTRACT"/"TITLE%d" keys, resolve the attract state
+// (m_8->LookupState) into m_2c, fade the title in (FadeInTitle), apply the configured
+// "Menu"/"BrightnessPercent" level, transition the page, and build the menu page.
+// The state/menu/self sub-calls + the g_buteMgr GetIntDef are reloc-masked externs.
+extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+SIZE_UNKNOWN(CMenuBrightTgt);
+struct CMenuBrightTgt {
+    void SetBrightness(i32 value, i32 flags); // 0x13f460
+    void Fill(i32 z);                         // 0x13e760
+};
+SIZE_UNKNOWN(CMenuBrightHolder);
+struct CMenuBrightHolder {
+    char m_pad00[0x2c];
+    CMenuBrightTgt* m_2c; // +0x2c
+};
+SIZE_UNKNOWN(CMenuPageA);
+struct CMenuPageA {
+    void Method_158dc0();      // 0x158dc0 no-arg (csv leaf: CDDrawWorkerMgr::Method_158dc0)
+    void TransTitle();         // 0x158e90 no-arg
+    void Method_158d50(i32 z); // 0x158d50 (1 arg) (csv leaf: CDDrawWorkerMgr::Method_158d50)
+    char m_pad00[0x14];
+    CMenuBrightHolder* m_14; // +0x14 title brightness holder
+    CMenuBrightHolder* m_18; // +0x18 menu brightness holder
+};
+SIZE_UNKNOWN(CMenuRootA);
+struct CMenuRootA {
+    char m_pad00[0x4];
+    CMenuPageA* m_04; // +0x04
+};
+SIZE_UNKNOWN(CAttractStateMgrA);
+struct CAttractStateMgrA {
+    void* LookupState(char* name); // 0x13c030
+};
+// CCreditsState's own FadeInTitle/BuildMenuPage are declared on the class (GameMode.h);
+// they are reached through its own ILT thunks (0x1e60/0x1843).
+// The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
+// attract-state count divisor. TU-local views; both reloc-mask.
+SIZE_UNKNOWN(CButeCfg);
+struct CButeCfg {
+    i32 GetIntDef(char* tag, char* key, i32 def); // canonical CButeMgr::GetIntDef
+};
+DATA(0x002453d8)
+extern CButeCfg g_buteCfg;
+extern "C" i32 g_645534;
+// @early-stop
+// 81.2%: logic byte-faithful (the twin of CAttract::LoadTitleConfig). Residual is the
+// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md)
+// on the FadeInTitle fail return-0 + the sprintf stack-buffer slot layout. Not steerable.
 RVA(0x00039570, 0x122)
-void CCreditsState::InitAttractTitle() {}
+i32 CCreditsState::InitAttractTitle() {
+    CMenuRootA* root = (CMenuRootA*)m_c;
+    if (m_videoPlaying != 0) {
+        root->m_04->Method_158dc0();
+        root->m_04->TransTitle();
+        root->m_04->Method_158d50(0);
+        root->m_04->m_18->m_2c->Fill(0);
+        return 1;
+    }
+    char stateName[0x20];
+    char titleName[0x20];
+    i32 idx = g_mgrSettings->m_80 % g_645534 + 1;
+    sprintf(stateName, "STATEZ_ATTRACT");
+    sprintf(titleName, "TITLE%d", idx);
+    void* saved = (void*)m_2c;
+    void* state = ((CAttractStateMgrA*)m_8)->LookupState(stateName);
+    m_2c = (CResSource*)state;
+    if (state == 0) {
+        return 0;
+    }
+    i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
+    m_2c = (CResSource*)saved;
+    if (faded == 0) {
+        return 0;
+    }
+    CMenuBrightTgt* tgt = root->m_04->m_14->m_2c;
+    tgt->SetBrightness(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    root->m_04->TransTitle();
+    BuildMenuPage(0x50, 0x3e8, 0, 1);
+    return 1;
+}
 
 // ===========================================================================
 // CCreditsState teardown / per-frame video + flash steps (trace-discovered).
 // ===========================================================================
 
-// The video-handle (m_210) sub-object: its EH-framed destructor (0x38fc0) is a
+// The video-handle (m_videoHandle) sub-object: its EH-framed destructor (0x38fc0) is a
 // __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
 struct CCreditsVideo {
     void Teardown(); // FUN_00438fc0 __thiscall, no-arg (the /GX dtor)
@@ -760,28 +1302,38 @@ struct CCreditsDrawRoot {
 // @source: decomp-xref
 // CCreditsState::ReleaseResources() (0x38f00): if (m_c) free the pooled resource
 // then release the three named registries ("CREDITZ"); then tear down + RezFree
-// the video handle (m_210) and chain BaseCleanup. m_c is re-read for each access
+// the video handle (m_videoHandle) and chain BaseCleanup. m_c is re-read for each access
 // (retail never caches it); the pooled-Free sits INSIDE the m_c guard.
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->Free();
         }
-        ((CStateResView*)m_c)->m_28->Release("CREDITZ", "_");
-        ((CStateResView*)m_c)->m_10->Release("CREDITZ", "_");
-        ((CStateResView*)m_c)->m_2c->Release("CREDITZ", "_");
+        m_c->m_soundRegistry->Release("CREDITZ", "_");
+        m_c->m_imageRegistry->Release("CREDITZ", "_");
+        m_c->m_animRegistry->Release("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
-    void* vh = m_210;
+    CCreditsVideo* vh = m_videoHandle;
     if (vh) {
-        ((CCreditsVideo*)vh)->Teardown();
+        vh->Teardown();
         RezFree(vh);
-        m_210 = 0;
+        m_videoHandle = 0;
     }
     ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// CCreditsState::~CCreditsState (`??1`, 0x8d5e0): stamp the CCreditsState vptr, run
+// ReleaseResources (the credits teardown), then cl auto-destroys the m_1f0 CString
+// (~CString @0x1b9cde) and the m_1e8 image list (stamp/DeleteImageList/base-restore)
+// in reverse-declaration order before chaining the ~CState base. /GX EH frame for the
+// member unwind. ReleaseResources / the callees all reloc-mask.
+RVA(0x0008d5e0, 0x8b)
+CCreditsState::~CCreditsState() {
+    ReleaseResources();
 }
 
 // @confidence: high
@@ -789,13 +1341,13 @@ void CCreditsState::ReleaseResources() {
 // CCreditsState::FinishState() (0x39c40): clear the playing gate, return 1.
 RVA(0x00039c40, 0x10)
 i32 CCreditsState::FinishState() {
-    m_208 = 0;
+    m_videoPlaying = 0;
     return 1;
 }
 
 // @confidence: high
 // @source: decomp-xref
-// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing (m_208==0)
+// CCreditsState::StepVideo() (0x39c60): if the credits aren't playing (m_videoPlaying==0)
 // return 1. Else advance the Smacker movie one frame; when the last frame is
 // reached, Close() the handle and FinishState(). Either way, if both surfaces are
 // live, blit the current frame to the dest surface. Returns the FinishState result
@@ -807,16 +1359,16 @@ i32 CCreditsState::FinishState() {
 // + correct body; not source-steerable (zero-register-pinning.md family).
 RVA(0x00039c60, 0x7a)
 i32 CCreditsState::StepVideo() {
-    if (!m_208) {
+    if (!m_videoPlaying) {
         return 1;
     }
     i32 ret = 0;
-    if (m_210) {
+    if (m_videoHandle) {
         CCreditsDrawView* v = ((CCreditsDrawRoot*)m_c)->m_4;
         CCreditsDrawHolder* dst = v->m_18;
         CCreditsDrawHolder* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
-            ((CCreditsVideo*)m_210)->Close();
+            m_videoHandle->Close();
             ret = FinishState();
         }
         if (dst && src) {
@@ -870,21 +1422,21 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    ((CStateResView*)m_c)->m_10->Release("MENU", "_");
-    ((CStateResView*)m_c)->m_28->Release("MENU", "_");
+    m_c->m_imageRegistry->Release("MENU", "_");
+    m_c->m_soundRegistry->Release("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->Free();
         }
-        ((CStateResView*)m_c)->m_c->DisposeWorkers();
+        m_c->m_rendererB->DisposeWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CGMMenuUI* ui = m_1b4;
     if (ui) {
-        ((CMenuUIRes*)ui)->PreDelete();
+        ui->PreDelete();
         operator delete(ui);
         m_1b4 = 0;
     }
@@ -913,21 +1465,10 @@ CBootyState::~CBootyState() {
 // (StepGlitterAnim) lays eight letter sprites on a sine spiral that shrinks per frame.
 // ===========================================================================
 
-// A letter sprite the booty animators position: m_5c/m_60 = {x,y}, m_40 = a flag
-// word OR'd in on out-of-bounds, m_74 a one-shot latch, m_8 a flag word.
-struct CBootyLetter {
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 flag word
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40 out-of-bounds flag word
-    char m_pad44[0x5c - 0x44];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74 one-shot latch
-};
+// (The booty letter sprites are CGlitterAnim - the same created "SimpleAnimation"
+// objects the factory builds, walked here as position/flag records. See CGlitterAnim.)
 
-// The packed {x,y} spawn-coordinate table the animator indexes by m_1d8 (DAT_005e8fe8;
+// The packed {x,y} spawn-coordinate table the animator indexes by m_letterIdx (DAT_005e8fe8;
 // the disasm reads x via [tbl] and y via [tbl+4], stride 8). The +0x1ec / +0x204 sprite
 // arrays are reached by offset off `this`.
 extern "C" i32 g_5e8fe8[]; // {472,101, 525,98, 474,146, 525,144, ...}
@@ -955,9 +1496,10 @@ struct CBootyBonusState {
 struct CBootyDrawObj {
     i32 FrameReady(i32 z); // FUN_004fcd70
 };
+struct CBootyMusicHost; // the g_gameReg+0x30 music host (defined below)
 struct CBootyGameReg {
     char m_pad00[0x30];
-    void* m_30; // +0x30 music host
+    CBootyMusicHost* m_30; // +0x30 music host
     char m_pad34[0x7c - 0x34];
     CBootyDrawObj* m_7c; // +0x7c draw object
     char m_pad80[0x11c - 0x80];
@@ -969,11 +1511,12 @@ struct CBootyGameReg {
 
 // The Lookup output ("BOOTY_LOOP"/"BOOTY_PERFECT" cue entry): a player @+0x10
 // (the ConfigureItem `this`), and a draw-clock gate (last @+0x14, interval @+0x18).
+struct CBootyPlayer; // the found-cue player (ConfigureItem target; defined below)
 struct CBootyFound {
     char m_pad00[0x10];
-    void* m_10; // +0x10 player (ConfigureItem this)
-    i32 m_14;   // +0x14 last draw-clock
-    i32 m_18;   // +0x18 interval
+    CBootyPlayer* m_10; // +0x10 player (ConfigureItem this)
+    i32 m_14;           // +0x14 last draw-clock
+    i32 m_18;           // +0x18 interval
 };
 
 // The embedded CMapStringToOb the cue lookup runs on (M28+0x10, reached by offset).
@@ -981,7 +1524,7 @@ struct CBootyLookupMap {
     i32 Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
 };
 
-// The music host chain g_gameReg->m_30->m_28->{m_30 gate, Lookup map @+0x10}.
+// The music host chain g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}.
 struct CBootyMusicHost {
     char m_pad00[0x28];
     struct M28 {
@@ -994,13 +1537,8 @@ struct CBootyMusicHost {
 struct CBootyPlayer {
     void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // FUN_005360d0, ret 0x10
 };
-struct CBootyFlushView {
-    void Flush(); // FUN_00558ee0
-};
-struct CBootyAnimSelf { // `this` view for the engine tail helpers (reached via thunks)
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
-    void BuildPage(i32 x, i32 w, i32 h, i32 flag);                  // FUN_004fa8f0
-};
+// CMultiBootyState's own FadeInTitle/BuildPage are declared on the class (GameMode.h);
+// they are reached through its own ILT thunks.
 
 // ReleaseResources teardown chain: m_4 (owner) -> m_60 sub-object -> Teardown (the
 // __thiscall no-arg FUN_0051c7b0, reloc-masked).
@@ -1019,7 +1557,7 @@ extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
 // m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
-// walks a sine spiral (radius m_1dc, angle (m_1e0+225)*pi/180), advances the step by 5,
+// walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the step by 5,
 // shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the trailing
 // sprite's spawn flag when the radius reaches zero.
 // @early-stop
@@ -1030,15 +1568,15 @@ extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
-        if (m_1d8 >= 0) {
-            i32* tbl = g_5e8fe8 + 1;                   // walks: tbl[-1]=x, tbl[0]=y; advances by 2
-            void** ap = (void**)((char*)this + 0x1ec); // walks arr1ec by 1
-            for (i32 i = 0; i <= m_1d8; i++) {
-                CBootyLetter* e = (CBootyLetter*)*ap;
+        if (m_letterIdx >= 0) {
+            i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            CGlitterAnim** ap = (CGlitterAnim**)((char*)this + 0x1ec); // walks arr1ec by 1
+            for (i32 i = 0; i <= m_letterIdx; i++) {
+                CGlitterAnim* e = *ap;
                 e->m_5c = tbl[-1];
-                e = (CBootyLetter*)*ap;
+                e = *ap;
                 e->m_60 = tbl[0];
-                e = (CBootyLetter*)*ap;
+                e = *ap;
                 if (e->m_74 != 1) {
                     e->m_74 = 1;
                     e->m_8 |= 0x20000;
@@ -1047,46 +1585,46 @@ void CMultiBootyState::StepGlitterAnim() {
                 tbl += 2;
             }
         }
-        ((CBootyLetter*)m_1fc)->m_5c = g_5e8fe8[m_1d8 * 2];
-        ((CBootyLetter*)m_1fc)->m_60 = g_5e8fe8[m_1d8 * 2 + 1];
+        m_cursorLetter->m_5c = g_5e8fe8[m_letterIdx * 2];
+        m_cursorLetter->m_60 = g_5e8fe8[m_letterIdx * 2 + 1];
         return;
     }
 
-    i32 step = m_1e0;
-    i32 idx = m_1d8;
-    double r = (float)m_1dc; // load (float)m_1dc first; shared across sin/cos terms
+    i32 step = m_angleStep;
+    i32 idx = m_letterIdx;
+    double r = (float)m_radius; // load (float)m_radius first; shared across sin/cos terms
     double ang = ((float)step - g_5e93b4) * g_5e93b8;
-    m_1e4 = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
+    m_scratchX = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
     m_1e8 = (i32)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
-    m_1e0 = step + 5;
-    m_1dc = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+    m_angleStep = step + 5;
+    m_radius = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
 
-    // Snap the leading sprites (0..m_1d8-1) to their static table coords (pointer walk).
+    // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
-    void** arr1ec = (void**)((char*)this + 0x1ec);
+    CGlitterAnim** arr1ec = (CGlitterAnim**)((char*)this + 0x1ec);
     if (idx > 0) {
-        i32* tbl = g_5e8fe8 + 1; // ecx: tbl[-1]=x, tbl[0]=y
-        void** ap = arr1ec;      // eax
+        i32* tbl = g_5e8fe8 + 1;    // ecx: tbl[-1]=x, tbl[0]=y
+        CGlitterAnim** ap = arr1ec; // eax
         do {
-            CBootyLetter* e = (CBootyLetter*)*ap;
+            CGlitterAnim* e = *ap;
             i++;
             ap++;
             e->m_5c = tbl[-1];
-            e = (CBootyLetter*)ap[-1];
+            e = ap[-1];
             e->m_60 = tbl[0];
             tbl += 2;
-        } while (i < m_1d8);
+        } while (i < m_letterIdx);
     }
-    // The trailing sprite + the i'th (== m_1d8) sprite get the computed scratch coords.
-    ((CBootyLetter*)m_1fc)->m_5c = m_1e4;
-    ((CBootyLetter*)m_1fc)->m_60 = m_1e8;
-    ((CBootyLetter*)arr1ec[i])->m_5c = m_1e4;
-    ((CBootyLetter*)arr1ec[i])->m_60 = m_1e8;
+    // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
+    m_cursorLetter->m_5c = m_scratchX;
+    m_cursorLetter->m_60 = m_1e8;
+    arr1ec[i]->m_5c = m_scratchX;
+    arr1ec[i]->m_60 = m_1e8;
 
     MoveLettersByDir();
 
-    if (m_1dc == 0) {
-        CBootyLetter* e = (CBootyLetter*)arr1ec[i];
+    if (m_radius == 0) {
+        CGlitterAnim* e = arr1ec[i];
         if (e->m_74 != 1) {
             e->m_74 = 1;
             e->m_8 |= 0x20000;
@@ -1106,18 +1644,18 @@ void CMultiBootyState::StepGlitterAnim() {
 RVA(0x00019b90, 0xd7)
 void CMultiBootyState::MoveLettersByDir() {
     if (m_1b4) {
-        void** p = (void**)((char*)this + 0x204);
+        CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
         i32 n = 8;
         do {
-            CBootyLetter* e = (CBootyLetter*)*p;
+            CGlitterAnim* e = *p;
             p++;
             e->m_40 |= 1;
         } while (--n);
         return;
     }
-    void** p = (void**)((char*)this + 0x204);
+    CGlitterAnim** p = (CGlitterAnim**)((char*)this + 0x204);
     for (i32 i = 0; i < 8; i++, p++) {
-        CBootyLetter* e = (CBootyLetter*)*p;
+        CGlitterAnim* e = *p;
         i32 x = e->m_5c;
         i32 y = e->m_60;
         if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
@@ -1126,35 +1664,35 @@ void CMultiBootyState::MoveLettersByDir() {
             switch (i) {
                 case 0:
                     e->m_5c = x;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
                 case 1:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
                 case 2:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y;
+                    (*p)->m_60 = y;
                     break;
                 case 3:
                     e->m_5c = x + 4;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 4:
                     e->m_5c = x;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 5:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y + 4;
+                    (*p)->m_60 = y + 4;
                     break;
                 case 6:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y;
+                    (*p)->m_60 = y;
                     break;
                 case 7:
                     e->m_5c = x - 4;
-                    ((CBootyLetter*)*p)->m_60 = y - 4;
+                    (*p)->m_60 = y - 4;
                     break;
             }
         }
@@ -1162,7 +1700,7 @@ void CMultiBootyState::MoveLettersByDir() {
 }
 
 // CMultiBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires,
-// drive the bonus state's scroll phase (m_2f8->m_5c): on the wrap value (-0x82) play
+// drive the bonus state's scroll phase (m_bonusState->m_5c): on the wrap value (-0x82) play
 // the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
 // (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
 RVA(0x0001c0f0, 0xd5)
@@ -1170,10 +1708,10 @@ i32 CMultiBootyState::CheckPerfectBonus() {
     if (!BOOTY_REG->m_7c->FrameReady(-1)) {
         return 1;
     }
-    CBootyBonusState* st = (CBootyBonusState*)m_2f8;
+    CBootyBonusState* st = m_bonusState;
     i32 phase = st->m_5c;
     if (phase == (i32)0xffffff7e) {
-        CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+        CBootyMusicHost* host = BOOTY_REG->m_30;
         i32 item = BOOTY_REG->m_11c;
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
@@ -1184,16 +1722,16 @@ i32 CMultiBootyState::CheckPerfectBonus() {
                 CBootyFound* p = (CBootyFound*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                     p->m_14 = g_6bf3c0;
-                    ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                    p->m_10->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
     }
     if (phase >= 0x302) {
-        ((CBootyBonusState*)m_2f8)->m_8 |= 0x10000;
+        m_bonusState->m_8 |= 0x10000;
         return 1;
     }
-    ((CBootyBonusState*)m_2f8)->m_5c = phase + 0xa;
+    m_bonusState->m_5c = phase + 0xa;
     return 1;
 }
 
@@ -1223,28 +1761,34 @@ i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
     if (r) {
         r->Free();
     }
-    ((CStateResView*)m_c)->m_28->Release("BOOTY", "_");
-    ((CBootyM4Sub*)((CBootyOwnerView*)m_4)->m_60)->Teardown();
+    m_c->m_soundRegistry->Release("BOOTY", "_");
+    ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
-// CMultiBootyState::FrameSlot24() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
+// CMultiBootyState::Update() (slot 4 / +0x10, 0x08d4c0): the multi-booty state's ID = 0x12.
+RVA(0x0008d4c0, 0x6)
+GameStateId CMultiBootyState::Update() {
+    return GAMESTATE_MULTIBOOTY;
+}
+
+// CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
 // title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
-i32 CMultiBootyState::FrameSlot24(i32) {
-    i32 ok = ((CBootyAnimSelf*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1);
+i32 CMultiBootyState::Vslot09(i32) {
+    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    ((CBootyFlushView*)((CGMView*)m_c)->m_4)->Flush();
-    ((CBootyAnimSelf*)this)->BuildPage(0x50, 0x3e8, 0, 1);
+    m_c->m_renderState->Flush();
+    BuildPage(0x50, 0x3e8, 0, 1);
 
-    CBootyMusicHost* host = (CBootyMusicHost*)BOOTY_REG->m_30;
+    CBootyMusicHost* host = BOOTY_REG->m_30;
     i32 item = BOOTY_REG->m_11c;
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
@@ -1255,7 +1799,7 @@ i32 CMultiBootyState::FrameSlot24(i32) {
             CBootyFound* p = (CBootyFound*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
-                ((CBootyPlayer*)p->m_10)->ConfigureItem(item, 0, 0, 1);
+                p->m_10->ConfigureItem(item, 0, 0, 1);
             }
         }
     }
@@ -1313,18 +1857,119 @@ struct CMenuMusic {
     i32 m_18;               // +0x18  interval
 };
 
-// CMenuState::FormatHudText(int) (0x1af70): the 960-byte HUD-text formatter - an
+// CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
 // 8-case switch that sprintf()s the game clock (MM:SS via the imul-by-0x10624dd3
-// divide-by-60), score, and "%d of %d" progress into a buffer, each case applying
-// the `redundant-sibling-guard-retest` idiom over g_gameReg->m_7c. Deferred to the
-// final sweep: a >512-byte variadic-sprintf switch is left stubbed rather than
-// half-reconstructed (would diverge its regalloc/schedule). See the orchestrator
-// big-function rule.
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// divide-by-1000 then /60), score, and "%d of %d" progress into `buf`. Every stat is
+// read via STAT(getter, field) = (m_liveGame && stats->m_c) ? getter() : stats->field over
+// the game-stats object g_mgrSettings->m_7c (the sibling-guard idiom). The default
+// case writes "???".
+//
+// Local views: CHudStats = the live-value/score object (g_mgrSettings->m_7c); CHudBuf
+// = the output-buffer arg (Assign = the "???" writer @0x1b9e74). sprintf @0x1b2cf5.
+extern "C" i32 sprintf(char* buf, const char* fmt, ...);
+SIZE_UNKNOWN(CHudStats);
+struct CHudStats { // g_mgrSettings->m_7c - the live-value getters are thiscall on THIS
+    // The 13 reloc-masked live-value getters (thiscall on the stats object):
+    i32 GetC10();
+    i32 GetC1c();
+    i32 GetC20();
+    i32 GetC34();
+    i32 GetC18();
+    i32 GetC30();
+    i32 GetC14();
+    i32 GetC38();
+    i32 GetC24();
+    i32 GetC40();
+    i32 GetC2c();
+    i32 GetC3c();
+    i32 GetC28();
+    char p0[0xc];
+    i32 m_c; // +0xc  live-game flag (getter gate)
+    i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
+};
+SIZE_UNKNOWN(CHudBuf);
+struct CHudBuf {
+    void Assign(const char* s); // 0x1b9e74 (reloc-masked)
+};
+#define STATS ((CHudStats*)g_mgrSettings->m_7c)
+#define STAT(getter, field) ((m_liveGame != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
+// @early-stop
+// jump-table-data scoring artifact (docs/patterns/jumptable-data-overlap.md): the
+// 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
+// every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
+// "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
+// the ~24 g_mgrSettings loads are the retail A1 moffs32 form). Residual ~2.5% is the
+// inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
+// operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3c0)
-void CMenuState::FormatHudText(i32) {}
+void CMenuState::FormatHudText(CHudBuf* buf, i32 sel) {
+    switch (sel) {
+        case 0: {
+            u32 secs = (u32)(STAT(GetC10, m_10) / 1000);
+            sprintf((char*)buf, "%d:%2.2d", secs / 60, secs % 60);
+            return;
+        }
+        case 1:
+            sprintf((char*)buf, "%d", STAT(GetC1c, m_1c));
+            return;
+        case 2:
+            sprintf((char*)buf, "%d", STAT(GetC20, m_20));
+            return;
+        case 3: {
+            i32 total = STAT(GetC34, m_34);
+            i32 cap = STAT(GetC34, m_34);
+            i32 cur = STAT(GetC18, m_18);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 4: {
+            i32 total = STAT(GetC30, m_30);
+            i32 cap = STAT(GetC30, m_30);
+            i32 cur = STAT(GetC14, m_14);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 5: {
+            i32 total = STAT(GetC38, m_38);
+            i32 cap = STAT(GetC38, m_38);
+            i32 cur = STAT(GetC24, m_24);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 6: {
+            i32 total = STAT(GetC40, m_40);
+            i32 cap = STAT(GetC40, m_40);
+            i32 cur = STAT(GetC2c, m_2c);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        case 7: {
+            i32 total = STAT(GetC3c, m_3c);
+            i32 cap = STAT(GetC3c, m_3c);
+            i32 cur = STAT(GetC28, m_28);
+            if (cur >= cap) {
+                cur = cap;
+            }
+            sprintf((char*)buf, "%d of %d", cur, total);
+            return;
+        }
+        default:
+            buf->Assign("???");
+            return;
+    }
+}
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
 extern "C" u32 g_6bf3c0; // draw-clock mirror
@@ -1348,7 +1993,7 @@ void CMenuState::StartMusic() {
         g_61ab20 = 1;
     }
     i32 item = g_gameReg->m_11c;
-    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    CMenuMusic* mus = m_1bc;
     if (flag) {
         u32 clk = g_6bf3c0;
         if (clk - mus->m_14 >= (u32)mus->m_18) {
@@ -1368,31 +2013,58 @@ void CMenuState::StopMusicChain() {
     if (m_1bc == 0) {
         return;
     }
-    CMenuMusic* mus = (CMenuMusic*)m_1bc;
+    CMenuMusic* mus = m_1bc;
     if (!mus->m_10->IsPlaying()) {
         return;
     }
-    ((CMenuMusic*)m_1bc)->m_10->Stop(0, 0x1f4, 1);
-    if (!((CMenuMusic*)m_1bc)->m_10->IsPlaying()) {
+    m_1bc->m_10->Stop(0, 0x1f4, 1);
+    if (!m_1bc->m_10->IsPlaying()) {
         return;
     }
     do {
-        CPooledRes* r = ((CStateResView*)m_c)->m_28->m_2c;
+        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
         if (r) {
             r->TickAnim(-1);
         }
-    } while (((CMenuMusic*)m_1bc)->m_10->IsPlaying());
+    } while (m_1bc->m_10->IsPlaying());
 }
 
 // CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    ((CStateResView*)m_c)->m_4->Flush();
-    ((CStateResView*)m_c)->m_4->m_10->m_2c->Flip(0);
+    m_c->m_renderState->Flush();
+    m_c->m_renderState->m_10->m_2c->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)
         ;
     return 1;
 }
+
+SIZE_UNKNOWN(CCreditzSubEntry);
+SIZE_UNKNOWN(CCreditzMusicSet);
+SIZE_UNKNOWN(CCreditzRegObj);
+SIZE_UNKNOWN(CCreditzSoundRegistry);
+SIZE_UNKNOWN(CCreditzImageRegistry);
+SIZE_UNKNOWN(CCreditzStateCore);
+SIZE_UNKNOWN(CCreditzImageRoot);
+SIZE_UNKNOWN(CCreditzSoundMgr);
+SIZE_UNKNOWN(CCreditzRegSet);
+SIZE_UNKNOWN(CCreditzOwner);
+SIZE_UNKNOWN(CCreditsVideo);
+SIZE_UNKNOWN(CCreditsSurface);
+SIZE_UNKNOWN(CCreditsDrawHolder);
+SIZE_UNKNOWN(CCreditsDrawView);
+SIZE_UNKNOWN(CCreditsDrawRoot);
+SIZE_UNKNOWN(CBootyBonusState);
+SIZE_UNKNOWN(CBootyDrawObj);
+SIZE_UNKNOWN(CBootyGameReg);
+SIZE_UNKNOWN(CBootyFound);
+SIZE_UNKNOWN(CBootyLookupMap);
+SIZE_UNKNOWN(CBootyMusicHost);
+SIZE_UNKNOWN(CBootyPlayer);
+SIZE_UNKNOWN(CBootyM4Sub);
+SIZE_UNKNOWN(CBootyOwnerView);
+SIZE_UNKNOWN(CMenuMusicPlayer);
+SIZE_UNKNOWN(CMenuMusic);

@@ -7,30 +7,17 @@
 
 #include <Ints.h>
 
-// <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, USER32/GDI32 imports),
-// the MFC-controlled way (afx.h first).
+// <Mfc.h> brings <windows.h> (handle types, WNDCLASSA, MSG, CREATESTRUCTA,
+// USER32/GDI32 imports), the MFC-controlled way (afx.h first).
 #include <Mfc.h>
 
-// CreateWindowExA's 12 arguments, packed into one params struct (CGameWnd's
-// caller fills this and passes its address to CreateAndShow). Fields are stored
-// in REVERSE CreateWindowExA-arg order: the binary loads [eax+0] first (the
-// first stdcall push = the LAST/rightmost arg, lpParam) up through [eax+0x2c]
-// (dwExStyle). Reading them in this declared order reproduces the exact
-// interleaved load/push idiom.
-struct CGameWndCreateParams {
-    void* lpParam;       // +0x00
-    HINSTANCE hInstance; // +0x04
-    HMENU hMenu;         // +0x08
-    HWND hWndParent;     // +0x0c
-    i32 nHeight;         // +0x10
-    i32 nWidth;          // +0x14
-    i32 Y;               // +0x18
-    i32 X;               // +0x1c
-    DWORD dwStyle;       // +0x20
-    LPCSTR lpWindowName; // +0x24
-    LPCSTR lpClassName;  // +0x28
-    DWORD dwExStyle;     // +0x2c
-};
+// CGameWnd::CreateAndShow receives its 12 CreateWindowExA arguments as a
+// CREATESTRUCTA* (the <windows.h> layout, same one CGameApp stores in
+// m_createStruct): lpCreateParams@0 .. dwExStyle@0x2c. The window loads [eax+0]
+// first (the first stdcall push = the rightmost CreateWindowExA arg,
+// lpCreateParams) up through dwExStyle - the interleaved load/push idiom falls
+// straight out of reading the CREATESTRUCTA fields in that order.
+class CGameApp; // owner back-pointer (CGameWnd::m_owner)
 
 // ---------------------------------------------------------------------------
 // CGameWnd - WAP32 window wrapper.
@@ -94,10 +81,10 @@ public:
     virtual i32 OnRButtonDblClk(WPARAM keys, i32 x, i32 y); // +0x50  idx20 WM_RBUTTONDBLCLK
     virtual i32 OnCommand(WPARAM wParam, LPARAM lParam);    // +0x54  idx21 WM_COMMAND
 
-    // Creates the OS window from a 12-field params struct (CreateWindowExA),
-    // registers this object as the active window singleton, then ShowWindow.
-    // Returns nonzero on success.
-    i32 CreateAndShow(CGameWndCreateParams* pParams, void* pOwner);
+    // Creates the OS window from the CreateWindowExA parameter block (the
+    // CGameApp's m_createStruct), registers this object as the active window
+    // singleton, then ShowWindow. Returns nonzero on success.
+    i32 CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner);
     void Destroy();
     // Drains up to `count` queued messages for this window's HWND, all filtered to
     // a single message id (PeekMessageA min==max==filterMsg, PM_REMOVE). Stops at
@@ -105,39 +92,15 @@ public:
     // @0x13d4e0 (13 callers across the engine).
     void PumpMessages(u32 filterMsg, i32 count);
 
-    HWND m_hwnd;      // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
-    void* m_owner;    // +0x08  owner pointer (set by CreateAndShow; not touched by ctor)
-    i32 m_closeGuard; // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
-};
-
-// Minimal polymorphic resource objects whose pointers live in CGameApp::m_4 /
-// m_8. CloseResources `delete`s them; the scalar-deleting destructor is at
-// vtable slot 0, so a single virtual dtor reproduces `mov [ecx];push 1;call`.
-// m_4 additionally exposes a window handle (+0x4) + a guard flag (+0xc) used
-// by ReportError to post WM_CLOSE.
-//
-// The per-frame idle virtual (CGameApp::VirtualUnknownMethod09, vtbl +0x20)
-// tail-calls THIS object's vtable slot +0x10 (index 4) when the app is active -
-// the game manager's per-frame tick. So the resource exposes four more virtual
-// slots (indices 1..4); only slot +0x10 (PerFrameTick) is dispatched here, the
-// others are placeholders that keep the index of +0x10 correct.
-class CGameResource {
-public:
-    virtual ~CGameResource();          // slot 0 (+0x00)
-    virtual void Wap32GameResVfunc1(); // slot 1 (+0x04)
-    virtual void Wap32GameResVfunc2(); // slot 2 (+0x08)
-    virtual void Wap32GameResVfunc3(); // slot 3 (+0x0c)
-    virtual void PerFrameTick();       // slot 4 (+0x10)
-
-    i32 m_4; // +0x04  (HWND for ReportError's PostMessageA)
-    i32 m_8; // +0x08
-    i32 m_c; // +0x0c  guard flag
+    HWND m_hwnd;       // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
+    CGameApp* m_owner; // +0x08  owning app (set by CreateAndShow; not touched by ctor)
+    i32 m_closeGuard;  // +0x0c  guard flag (zeroed by ctor and by CreateAndShow)
 };
 
 // CGameMgr - the WAP32 game manager base class (vftable ??_7CGameMgr@@6B@ @
 // 0x5e9b8c, 6 slots). The TRUE object is 0x2c bytes (CGameApp::Initialize-
 // GameManager does `new CGameMgr` => operator new(0x2c)); the ctor seeds the
-// frame clock and a couple of run-state flags. VirtualUnknownMethod02 starts it
+// frame clock and a couple of run-state flags. InitInstance starts it
 // with Run(pGameWnd, szCmdLine) (vtable +0x4) and `delete`s it (scalar-deleting
 // dtor @ vtable slot 0) on failure.
 //
@@ -152,39 +115,41 @@ namespace WAP32 {
     class CGameMgr {
     public:
         CGameMgr();
-        // ~CGameMgr is INLINE: it re-stores the base vftable then runs UnknownClose
+        // ~CGameMgr is INLINE: it re-stores the base vftable then runs Close
         // (clearing the owned pointers). It must be visible here so the derived
         // CGruntzMgr's dtor (another TU) inlines the base-subobject teardown exactly
-        // as the retail dtor does (store base vptr + devirtualized UnknownClose
+        // as the retail dtor does (store base vptr + devirtualized Close
         // call) instead of emitting an out-of-line base-dtor call.
         virtual ~CGameMgr() {
-            UnknownClose();
+            Close();
         } // +0x00 idx0 dtor
         virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
-        virtual void UnknownClose();                          // +0x08 idx2
+        virtual void Close();                                 // +0x08 idx2
         virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
-        virtual void Wap32GameMgrVfunc4();                    // +0x10 idx4
+        virtual void Tick();                                  // +0x10 idx4  per-frame tick
         virtual void Wap32GameMgrVfunc5();                    // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
-        void InitTimeFields(i32 reset);           // @0x13de70
-        void UnknownMethodInitializeTimeGlobal(); // @0x13dea0
+        void InitTimeFields(i32 reset); // @0x13de70
+        void InitializeTimeGlobal();    // @0x13dea0
 
-        i32 m_4;  // +0x04
-        i32 m_8;  // +0x08
-        i32 m_c;  // +0x0c
-        i32 m_10; // +0x10  run-state flag (=1 in ctor)
-        i32 m_14; // +0x14  run-state flag (=1 in ctor)
-        i32 m_18; // +0x18  (=-1 by InitTimeFields when reset)
-        i32 m_1c; // +0x1c
-        i32 m_20; // +0x20  (cleared by InitTimeFields)
-        i32 m_24; // +0x24  start tick (timeGetTime, by InitTimeFields)
+        CGameWnd* m_gameWnd; // +0x04  bound game window (set by Run)
+        CGameApp* m_owner;   // +0x08  owning app (pGameWnd->m_owner; set by Run)
+        i32 m_frameGate;     // +0x0c  nonzero suppresses the per-frame advance
+        i32 m_soundEnabled;  // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
+        i32 m_musicEnabled;  // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
+        i32 m_prevTick;      // +0x18  frame-clock reset sentinel (=-1 on reset)
+        i32 m_pauseFlag;     // +0x1c  run-state companion (cleared by ctor/Run; inferred)
+        i32 m_elapsedMs;     // +0x20  frame-clock accumulator (cleared by InitTimeFields)
+        i32 m_startTick;     // +0x24  start tick (timeGetTime, by InitTimeFields)
 
         // Engine-label backlog stub @0x133380. NOT actually a CGameMgr method (it
-        // scalar-deletes some other class, vftable 0x5ef670) - but the retail symbol
-        // is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the base obj must mangle it
-        // through this class. A method adds NO storage, so sizeof stays 0x2c.
-        void vector_deleting_destructor();
+        // scalar-deletes the DirectInput device-config grand-base, vftable 0x5ef670)
+        // - but the retail symbol is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the
+        // base obj must mangle it through this class. A method adds NO storage, so
+        // sizeof stays 0x2c. Vector-deleting form: stamp the C vftable, run the base
+        // subobject teardown (0x134d50), then the delete-flag tail; returns `this`.
+        void* vector_deleting_destructor(unsigned int flags);
 
     private:
         char m_pad28[0x2c - 0x28];
@@ -194,8 +159,8 @@ namespace WAP32 {
 // CREATESTRUCTA (m_createStruct @ CGameApp+0x210; the same 0x30 <windows.h> layout).
 
 // GameInfo - the 0x1d4-byte window/launch descriptor. Embedded in CGameApp at
-// +0x14 (m_gameInfo); VirtualUnknownMethod03 builds one on the stack and hands
-// it to VirtualUnknownMethod02, which copies it into the member and uses it to
+// +0x14 (m_gameInfo); Init builds one on the stack and hands
+// it to InitInstance, which copies it into the member and uses it to
 // register the class + create the window.
 struct GameInfo {
     i32 size;                     // +0x000  == sizeof(GameInfo) == 0x1d4
@@ -215,9 +180,9 @@ struct GameInfo {
 //   The ctor zeroes a handful of fields then bumps a file-scope instance
 //   counter.
 //   The ctor schedule emits the +0x10 store BEFORE the +0x0c store, which the
-//   source mirrors (m_10 initialised before m_c).
+//   source mirrors (m_hAccel initialised before m_hInstance).
 //
-//   The dispatch methods (VirtualUnknownMethod02/03, InitializeDefaultCreate-
+//   The dispatch methods (InitInstance/03, InitializeDefaultCreate-
 //   Struct) call the other CGameApp methods through the vtable (call [vptr+N]),
 //   so the WHOLE class is virtual with the tomalla slot order; matched methods
 //   keep their bodies (virtual mangles `U`, not `Q`).
@@ -243,12 +208,12 @@ public:
     // The class's own dispatch surface (this TU matches 02/03 + the two
     // InitializeDefault* + the resource/error helpers); unmatched slots are
     // inline stubs so the vtable indices land on the binary's layout.
-    virtual i32 VirtualUnknownMethod02(
+    virtual i32 InitInstance(
         GameInfo* pGameInfo,
         WNDCLASSA* pWndClass,
         CREATESTRUCTA* pCreateStruct
     ); // +0x04
-    virtual i32 VirtualUnknownMethod03(
+    virtual i32 Init(
         HINSTANCE hInstance,
         char* szWindowName,
         char* szGameIdentifier,
@@ -262,38 +227,38 @@ public:
     virtual void VirtualUnknownMethod06() {}                // +0x14
     virtual i32 RunMessageLoop();                           // +0x18
     virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
-    virtual void VirtualUnknownMethod09();                  // +0x20  the idle virtual
-    virtual void FreeGameManager();                         // +0x24
-    virtual void VirtualUnknownMethod11() {}                // +0x28
-    virtual BOOL InitializeAccelerators(LPCSTR lpTable);    // +0x2c
-    virtual void ShowError() {}                             // +0x30
-    virtual CGameWnd* InitializeGameWindow();               // +0x34
-    virtual WAP32::CGameMgr* InitializeGameManager();       // +0x38  (0x13dbc0: new CGameMgr)
-    virtual void InitializeDefaultWindowClass();            // +0x3c
-    virtual void InitializeDefaultCreateStruct();           // +0x40
+    virtual void OnIdle();                   // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
+    virtual void FreeGameManager();          // +0x24
+    virtual void VirtualUnknownMethod11() {} // +0x28
+    virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
+    virtual void ShowError() {}                          // +0x30
+    virtual CGameWnd* InitializeGameWindow();            // +0x34
+    virtual WAP32::CGameMgr* InitializeGameManager();    // +0x38  (0x13dbc0: new CGameMgr)
+    virtual void InitializeDefaultWindowClass();         // +0x3c
+    virtual void InitializeDefaultCreateStruct();        // +0x40
 
     // Static window procedure stored into m_wc.lpfnWndProc.
-    static LRESULT __stdcall GameWindowProc(HWND, UINT, WPARAM, LPARAM);
+    static LRESULT CALLBACK GameWindowProc(HWND, UINT, WPARAM, LPARAM);
 
     // Non-virtual modal-screen handler (reloc-masked; ?@2b0d).
     void RunModal(i32 id, HWND hwnd);
 
-    CGameResource* m_4;           // +0x04  deleted by CloseResources (the CGameWnd)
-    CGameResource* m_8;           // +0x08  deleted by CloseResources (the CGameMgr)
-    HINSTANCE m_c;                // +0x0c  hInstance
-    HACCEL m_10;                  // +0x10  accelerator table
+    CGameWnd* m_gameWnd;          // +0x04  the game window (deleted by CloseResources)
+    WAP32::CGameMgr* m_gameMgr;   // +0x08  the game manager (deleted by CloseResources)
+    HINSTANCE m_hInstance;        // +0x0c  hInstance
+    HACCEL m_hAccel;              // +0x10  accelerator table
     GameInfo m_gameInfo;          // +0x14  (0x1d4 bytes; szGameIdentifier @ +0xa0 etc.)
     WNDCLASSA m_wc;               // +0x1e8  registered window class
     CREATESTRUCTA m_createStruct; // +0x210  the CreateWindowEx parameters
-    i32 m_240;                    // +0x240
-    i32 m_244;                    // +0x244
-    i32 m_248;                    // +0x248  error-reported guard
-    i32 m_24c;                    // +0x24c  error code
-    i32 m_250;                    // +0x250  error detail
+    i32 m_appActive;              // +0x240  app-active flag (WM_ACTIVATEAPP wParam; idle gate)
+    i32 m_running;                // +0x244  run/resume gate (paired with m_appActive at idle)
+    i32 m_errorReported;          // +0x248  error-reported guard (report-once)
+    i32 m_errorCode;              // +0x24c  error message id (ShowError; default 0x8009)
+    i32 m_errorDetail;            // +0x250  error detail (sprintf "(%i)")
 
-    // Engine-label backlog stubs.
-
-    void Stub_080dd0();
+    // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
+    // CloseResources, decrement the live-instance counter, then the delete-flag tail.
+    void* Stub_080dd0(unsigned int flags);
 };
 
 #endif // WAP32_H

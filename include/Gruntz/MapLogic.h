@@ -20,29 +20,12 @@
 #define GRUNTZ_MAPLOGIC_H
 
 #include <rva.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/UserLogic.h>
 
-// ---------------------------------------------------------------------------
-// CArchive-like serializer object the Serialize methods drive through its vtable.
-// Modeled polymorphic (slot decls only, never defined -> no ??_7 here) so
-// `ar->Read(buf,n)` lowers to the exact `mov eax,[ar]; push n; push buf;
-// mov ecx,ar; call [eax+0x2c]` __thiscall dispatch. The two general slots used
-// here are at +0x2c (read, mode 7) and +0x30 (write, mode 4).
-struct CMapArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);  // +0x2c
-    virtual i32 Write(void* buf, i32 n); // +0x30
-};
+// The CArchive-like serializer object the Serialize methods drive is the shared WAP32
+// CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `CMapArchive` view is folded away.
 
 // The serializable float curve (a monotone lookup ramp in .data at VA 0x64cfb0;
 // 0xec230 reads/writes a 12-float slice). Modeled extern + DATA() so the
@@ -61,6 +44,7 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 // MFC array layout: {vtable@+0, m_pData@+4, m_nSize@+8, m_nMaxSize@+0xc,
 // m_nGrowBy@+0x10} = 0x14 bytes. SetSize @0x1b4f75 (__thiscall, ret 8) is called
 // on it with ecx = &m_arr. Modeled with a no-body SetSize so the call reloc-masks.
+SIZE_UNKNOWN(CMapPtrArray);
 struct CMapPtrArray {
     void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
     void* m_vtbl;                    // +0x00
@@ -76,6 +60,7 @@ struct CMapPtrArray {
 // The CUserLogic base occupies +0x00..+0x3f; this leaf's grid/array members start
 // past it.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMapLogic);
 class CMapLogic : public CUserLogic {
 public:
     CMapLogic();           // no-arg shape (only the teardown is here)
@@ -84,8 +69,8 @@ public:
     // The +0x7c pointer-array serializer (0x082430) + its tear-down helper
     // (0x085480). __thiscall; both free the array's nodes back to g_freeList,
     // resize the CObArray via SetSize, and dispatch the archive read/write slots.
-    i32 SerializeNodes(CMapArchive* ar, i32 mode, i32 a2, i32 a3); // 0x082430
-    void FreeNodes();                                              // 0x085480
+    i32 SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x082430
+    void FreeNodes();                                                 // 0x085480
 
     // The grid-reset cleanup the tear-down chains (0x9ec30, __thiscall, no args).
     // External/no-body so the `mov ecx,this; call rel32` reloc-masks (it shares the
@@ -102,13 +87,14 @@ public:
 // 0xec230: the float-curve serializer. __cdecl free function (caller-cleanup,
 // `ret`); drives the archive's read/write slots over the g_mapCurve slice keyed by
 // `mode` (7=read via +0x2c, 4=write via +0x30). Declared at namespace scope.
-i32 MapSerializeCurve(CMapArchive* ar, i32 mode); // 0x0ec230
+i32 MapSerializeCurve(CSerialArchive* ar, i32 mode); // 0x0ec230
 
 // 0x9f7f0: a tiny polymorphic Visit - reads [ecx] as a vtable and calls slot +0x08
 // (mode 4) or +0x0c (mode 7) with the buffer arg, returning 1 unless the slot
 // returned non-zero. __thiscall (ecx=this) with 4 stack args (ret 0x10), only the
 // first two used. The visited object's slots +0x08 / +0x0c are modeled polymorphic
 // (decls only) so `mov edx,[ecx]; push buf; call [edx+8]` falls out.
+SIZE_UNKNOWN(CMapVisitTarget);
 struct CMapVisitTarget {
     virtual i32 Slot00();
     virtual i32 Slot04();

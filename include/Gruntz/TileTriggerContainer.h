@@ -13,6 +13,11 @@
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
 #include <Ints.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
+
+// The owning container; back-stamped into the list elements (m_14 / m_20).
+class CTileTriggerContainer;
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.
@@ -30,28 +35,33 @@ extern void* g_tileGridCmdVtbl; // 0x5eaea4
 // before free).  Reloc-masked DIR32 datum.
 extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 
-// A keyed element found by SetCell's lookup: four state flags at +0x18..+0x24 and
-// a slot-0 Notify (called with its own vtable pointer).  __thiscall callee.
+// A keyed element found by SetCell's lookup: a 4-slot state-flag array at
+// +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
+// __thiscall callee.
+struct TtcKeyedElemVtbl; // the keyed element's vtable (contents owned elsewhere)
 struct TtcKeyedElem {
-    void Notify(void* a); // 0x149c
-    void* m_vptr;         // +0x00
+    void Notify(void* a);     // 0x149c
+    TtcKeyedElemVtbl* m_vptr; // +0x00
     char _pad04[0x18 - 0x04];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
-    i32 m_20; // +0x20
-    i32 m_24; // +0x24
+    i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
+SIZE_UNKNOWN(TtcKeyedElem);
 
 // A singly-walked CObList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).
 struct TtcNode {
     TtcNode* m_next; // +0x00
     char _pad04[4];  // +0x04 (prev)
-    void* m_data;    // +0x08
+    // +0x08  the CObList node payload: a genuine heterogeneous CObject* slot - the
+    // four lists store DIFFERENT element types (TtcElem / TtcMark / TtcTrigElem /
+    // plain i32 records), downcast per walker. Authentic void* (MFC container payload).
+    void* m_data;
 };
+SIZE_UNKNOWN(TtcNode);
 
 // One MFC CObList sub-object (0x1c bytes): only m_pNodeHead (+0x04) is read by
 // the walkers; RemoveAt / AddTail are the reloc-masked rel32 callees.
+struct TtcObListVtbl; // ~CObList vtable (contents owned by MFC)
 class TtcObList {
 public:
     void RemoveAt(void* pos); // 0x1b4ac7
@@ -61,14 +71,13 @@ public:
     ~TtcObList() {
         Dtor();
     } // real subobject dtor: drives the container's /GX frame
-    void* m_vptr;             // +0x00
+    TtcObListVtbl* m_vptr;    // +0x00
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                 // +0x0c  element count (serialized by 117280)
     char _pad10[0x1c - 0x10]; // +0x10..0x1b
 };
-
-struct TtcStream;
+SIZE_UNKNOWN(TtcObList);
 
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
@@ -77,18 +86,19 @@ struct TtcMark {
     // Per-mark (de)serialize-and-fill helper used by the big serialize walk
     // (0x117280): reads the mark's fields from the stream and validates them.
     // __thiscall, returns nonzero on success.  Reloc-masked rel32 callee (0x113f10).
-    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x113f10
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x113f10
     i32 m_00;
     i32 m_04;
     i32 m_08;
     i32 m_0c;
-    i32 m_10; // +0x10  init flag
-    i32 m_14; // +0x14  owning container
+    i32 m_10;                    // +0x10  init flag
+    CTileTriggerContainer* m_14; // +0x14  owning container
     i32 m_18;
     i32 m_1c;
     i32 m_20;
     i32 m_24;
 };
+SIZE_UNKNOWN(TtcMark);
 // The mark allocator/ctor: RezAlloc(0x28) then the __thiscall ctor (0x1e1a).
 extern "C" TtcMark* TtcMarkCtor(TtcMark* p); // 0x1e1a (reloc-masked)
 
@@ -100,12 +110,12 @@ struct TtcBaseElem {
     i32 m_04; // +0x04  type tag (0x16)
     i32 m_08;
     i32 m_0c;
-    i32 m_10;
+    i32* m_10; // +0x10  the 9-dword source block (AddToList1's block9 arg)
     i32 m_14;
     i32 m_18;
-    i32 m_1c; // +0x1c  init flag
-    i32 m_20;
-    i32 m_24; // +0x24  clock snapshot
+    i32 m_1c;                    // +0x1c  init flag
+    CTileTriggerContainer* m_20; // +0x20  owning container
+    i32 m_24;                    // +0x24  clock snapshot
     i32 m_28;
     i32 m_2c;
     i32 m_30;
@@ -116,41 +126,37 @@ struct TtcBaseElem {
     i32 m_c0;    // +0xc0
     i32 m_c4;    // +0xc4
 };
+SIZE_UNKNOWN(TtcBaseElem);
 extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
 
-// A serialization stream (its slot-12 / +0x30 Transfer copies n bytes); only the
-// vtable slot offset matters.  Reloc-masked virtual call.
-struct TtcStream {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void ReadCount(void* buf, i32 n); // +0x2c  read path (slot 11)
-    virtual void Transfer(void* buf, i32 n);  // +0x30  write path (slot 12)
+// The serialize helpers operate on the factory-built trigger-logic element - a
+// CTrigLogic (the object CTileTriggerFactory::Build @0x117800 Rez-allocates,
+// constructs, and registers).  Its +0x04 is the serialized type TAG that drives the
+// dispatch below; the appliers reached here are CTrigLogic's OWN register thunks
+// Reg277f (0x277f) / Reg1d39 (0x1d39) / Reg1abe (0x1abe) - the very thunks the
+// factory calls (confirmed by the caller graph: each of 0x277f / 0x1d39 / 0x1abe is
+// called by both 0x117630 / 0x117710 here AND 0x117800 Build).  Reloc-masked
+// __thiscall callees returning nonzero on success.
+//
+// Modeled as an honest local view (NOT CTileTriggerSwitchLogic - a different class /
+// layout, vtable 0x5eae8c; the earlier TtcSwitchObj->CTileTriggerSwitchLogic fold was
+// a mis-attribution).  Correctness-not-artifacts: an honest placeholder named for its
+// true CTrigLogic identity beats a wrong class name.
+struct TtcTrigElem {
+    i32 Reg277f(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f (SerializeApplyA)
+    i32 Reg1d39(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (SerializeApplyB tag 0x16)
+    i32 Reg1abe(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe (SerializeApplyB else)
+    i32 m_00;                                               // +0x00
+    i32 m_04; // +0x04  serialized type tag (the factory's switch id)
 };
-
-// A switch-logic object operated on by the tag-dispatched serialize helpers; m_04
-// is its serialized type tag.  ApplyA/ApplyB are the per-helper appliers
-// (reloc-masked __thiscall callees) returning nonzero on success.
-struct TtcSwitchObj {
-    i32 ApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x277f (117630)
-    i32 ApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (117710)
-    i32 ApplyC(TtcStream* s, i32 a2, i32 a3, i32 a4); // 0x1abe (117710)
-    void* m_vptr;
-    i32 m_04; // +0x04  type tag
-};
+SIZE_UNKNOWN(TtcTrigElem);
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
-// functions: stream the object's tag, then dispatch on it.
-i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117630
-i32 __stdcall SerializeApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o); // 0x117710
+// functions: stream the element's tag, then dispatch to its register thunks.
+i32 __stdcall
+SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117630
+i32 __stdcall
+SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
@@ -185,16 +191,17 @@ public:
     // via SerializeApplyA/B and the per-element helpers.  op 7 = load: RemoveAll,
     // then for each list reads a count and LoadElement's that many elements, AddTail'd
     // into the matching list (m_list3 marks are alloc'd inline).  Returns 1/0.  /GX.
-    i32 Serialize(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117280
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117280
 
     // Per-element LOAD helper of Serialize op 7: allocates+deserializes one element
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
-    void* LoadElement(TtcStream* s, i32 op, i32 a3, i32 a4); // 0x117800
+    void* LoadElement(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117800
 
-    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  Method117e70
-    // closes the load (op 7); Method117e20 closes the save (op 4).  __thiscall.
-    i32 Method117e70(TtcStream* s); // 0x117e70
-    i32 Method117e20(TtcStream* s); // 0x117e20
+    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  LoadFlag74
+    // closes the load (op 7); TransferFlag74 closes the save (op 4).  __thiscall.
+    // (Real fn: CTileTriggerSwitchLogic::LoadFlag74 / ::TransferFlag74; called on this.)
+    i32 LoadFlag74(CSerialArchive* s);     // 0x117e70
+    i32 TransferFlag74(CSerialArchive* s); // 0x117e20
 
     // Empties all four lists (m_base + m_list1/2/3), inline-destroying every
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.
@@ -216,7 +223,8 @@ public:
     TtcObList m_list2; // +0x38 (head @ +0x3c)
     TtcObList m_list3; // +0x54 (head @ +0x58)
     i32 m_70;          // +0x70
-    void* m_74;        // +0x74  gates DtorBase's RemoveAll call, then cleared
+    i32 m_74;          // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
+SIZE_UNKNOWN(CTileTriggerContainer);
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

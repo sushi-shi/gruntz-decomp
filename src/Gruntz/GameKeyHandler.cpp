@@ -161,3 +161,5 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
 
 #undef I32
 #undef PTR
+
+SIZE_UNKNOWN(CGamePlayInput);

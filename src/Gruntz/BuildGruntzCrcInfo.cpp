@@ -190,3 +190,9 @@ void CrcOwner::BuildGruntzCrcInfo() {
     }
     m_4->WriteLog((char*)(const char*)info, 0);
 }
+
+SIZE_UNKNOWN(CrcGrunt);
+SIZE_UNKNOWN(CrcGruntPos);
+SIZE_UNKNOWN(CrcLevelHolder);
+SIZE_UNKNOWN(CrcOwner);
+SIZE_UNKNOWN(CrcSink);

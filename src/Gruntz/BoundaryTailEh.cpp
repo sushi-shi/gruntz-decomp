@@ -34,6 +34,7 @@ struct CFmb1578b0 {
     void ResetBase(); // 0x157a40 (base vtable slot +0xc)
     ~CFmb1578b0();
 };
+SIZE_UNKNOWN(CFmb1578b0);
 RVA(0x001578b0, 0x51)
 CFmb1578b0::~CFmb1578b0() {
     m_vtbl = (void*)&g_fileMemBaseVtbl;

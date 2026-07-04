@@ -1,20 +1,6 @@
 // FileStream.cpp - CFileIO, the engine's KERNEL32 file-I/O wrapper (MFC CFile
 // work-alike). This class gates ALL engine file I/O (RezMgr, WwdFile, save/load).
 //
-// Functions matched in this TU; 9/10 BYTE-EXACT:
-//   CFileIO::CFileIO()              - ctor
-//   CFileIO::CFileIO(HANDLE)        - adopt-handle ctor
-//   CFileIO::`scalar deleting dtor`
-//   CFileIO::~CFileIO()             - dtor
-//   CFileIO::Read                   - ReadFile
-//   CFileIO::Write                  - WriteFile
-//   CFileIO::Seek                   - SetFilePointer
-//   CFileIO::GetPosition            - SetFilePointer
-//   CFileIO::Close                  - CloseHandle
-//   CFileIO::Open                   - CreateFileA
-//                                   (95.5%: one share-switch case-body layout
-//                                    coin-flip remains; logic/control-flow exact)
-//
 // All KERNEL32 calls go through the IAT (FF15 [slot]); the NAFXCW helpers
 // (CObject base vtable + CString ctor/dtor/assign/Empty, the throw helpers, the
 // path canonicalizer) are modeled as external/no-body callees so their reloc
@@ -99,11 +85,11 @@ void CFileIO::Write(const void* lpBuf, u32 nCount) {
     }
 
     if (!WriteFile(m_handle, (LPVOID)lpBuf, nCount, &nWritten, 0)) {
-        AfxThrowOsError((LONG)GetLastError(), (const char*)m_name);
+        AfxThrowOsError((LONG)GetLastError(), m_name);
     }
 
     if (nWritten != nCount) {
-        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, (const char*)m_name);
+        AfxThrowFileError(0xd /*diskFull*/, (LONG)-1, m_name);
     }
 }
 
@@ -152,23 +138,11 @@ void CFileIO::Close() {
     }
 }
 
-// The CFileException the failure path fills in: m_cause@+0x8, m_lOsError@+0xc,
-// m_strFileName (CString)@+0x10. The os-error -> exception-cause mapper is the
-// NAFXCW static helper (external no-body callee, reloc-masked).
-struct CFileExceptionLite {
-    char pad0[8];          // +0x00  (CObject vtable + base)
-    i32 m_cause;           // +0x08
-    LONG m_lOsError;       // +0x0c
-    CString m_strFileName; // +0x10
-};
-extern "C" i32 __stdcall AfxOsErrorToException(LONG lOsError);
-
-// A minimal SECURITY_ATTRIBUTES (we don't pull in <windows.h>).
-struct SecurityAttributes {
-    DWORD nLength;              // +0x00 (== 0xc)
-    void* lpSecurityDescriptor; // +0x04
-    BOOL bInheritHandle;        // +0x08
-};
+// The failure path fills in the REAL MFC CFileException (m_cause@+0x8,
+// m_lOsError@+0xc, m_strFileName (CString)@+0x10 - CObject vptr + CException's
+// m_bReadyForDelete occupy +0x00..+0x08). The os-error -> cause mapper is the real
+// NAFXCW static CFileException::OsErrorToException (reloc-masked). SECURITY_ATTRIBUTES
+// comes from <windows.h> (pulled via <Mfc.h> in FileStream.h).
 
 // ---------------------------------------------------------------------------
 // CFileIO::Open
@@ -220,7 +194,7 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
             break;
     }
 
-    SecurityAttributes sa;
+    SECURITY_ATTRIBUTES sa;
     sa.nLength = 0xc;
     sa.lpSecurityDescriptor = 0;
     sa.bInheritHandle = ((~nOpenFlags) >> 7) & 1; // !(nOpenFlags & modeNoInherit)
@@ -235,10 +209,10 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
     HANDLE h =
         CreateFileA(lpszFileName, dwAccess, dwShare, (LPSECURITY_ATTRIBUTES)&sa, dwCreate, 0x80, 0);
     if (h == (HANDLE)-1) {
-        CFileExceptionLite* pe = (CFileExceptionLite*)pError;
+        CFileException* pe = (CFileException*)pError;
         if (pe != 0) {
             pe->m_lOsError = (LONG)GetLastError();
-            pe->m_cause = AfxOsErrorToException(pe->m_lOsError);
+            pe->m_cause = CFileException::OsErrorToException(pe->m_lOsError);
             pe->m_strFileName = lpszFileName;
         }
         return 0;
@@ -252,53 +226,41 @@ BOOL CFileIO::Open(const char* lpszFileName, u32 nOpenFlags, void* pError) {
 // ---------------------------------------------------------------------------
 // CFileIO::GetLength
 // Snapshot the current position (Seek 0,current), seek to the end for the length
-// (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is the
-// CFile-family virtual at vtable slot 12 (+0x30) - dispatched through a small
-// placeholder-virtual view (slots 0-11 fix the offset) so each Seek reloads the
-// vptr (matching the retail virtual call) without disturbing CFileIO's own
-// reloc-masked vtable.
-class CFileIODispatch {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual LONG Seek(LONG off, i32 from); // +0x30  slot 12
-};
+// (Seek 0,end), then restore (Seek cur,begin); return the length. Seek is a real
+// CFileIO virtual (slot 12, +0x30); `this` has unknown dynamic type so each
+// this->Seek() lowers to the retail `mov eax,[this]; call [eax+0x30]`.
 RVA(0x001bf505, 0x2d)
 u32 CFileIO::GetLength() {
-    CFileIODispatch* f = (CFileIODispatch*)this;
-    LONG cur = f->Seek(0, 1 /*current*/);
-    LONG len = f->Seek(0, 2 /*end*/);
-    f->Seek(cur, 0 /*begin*/);
+    LONG cur = Seek(0, 1 /*current*/);
+    LONG len = Seek(0, 2 /*end*/);
+    Seek(cur, 0 /*begin*/);
     return (u32)len;
 }
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: med
-// @source: call-xref
-// @stub
+// The shared global file object at 0x646778 (bound as C646778 in
+// BoundaryLowerThunks.cpp). Referenced here for its Open (0x1bf200 == CFileIO::Open)
+// + close (0x1bf426); both calls are reloc-masked rel32.
+struct C646778 {
+    BOOL Open(char* path, u32 flags, void* pError); // 0x1bf200
+    void M1bf426();                                 // 0x1bf426
+};
+extern C646778 g_obj646778;
+
+// CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
+// `this`; the single stack arg is the path.
+// @early-stop
+// regalloc-tiebreak wall: both `path` (3x push arg) and `&g_obj646778` (3x ecx) are
+// used 3 times; retail pins `path` in esi + re-materializes the global address as an
+// immediate each call, cl pins the global address in esi + re-pushes path from the
+// stack. Same code shape, opposite callee-saved pick; not source-steerable (~79%).
 RVA(0x000bd3e0, 0x34)
-void CFileIO::Stub_0bd3e0() {}
+void CFileIO::ReopenSharedFile(char* path) {
+    g_obj646778.Open(path, 0x1000, 0);
+    g_obj646778.M1bf426();
+    g_obj646778.Open(path, 1, 0);
+}
 
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x000e5550, 0x9a)
-void CFileIO::Stub_0e5550() {}
-
-// @confidence: med
-// @source: call-xref
-// @stub
-RVA(0x000e5700, 0x9e)
-void CFileIO::Stub_0e5700() {}
+// Class-metadata (CFileIO / CFileIODispatch) lives atop their decls in FileStream.h.

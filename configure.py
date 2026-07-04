@@ -288,8 +288,18 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                        f"--merge-globals $globfrags --globals-out {GLOBALS_JSON}",
                description="merge_labels -> symbol_names.csv + functions/globals.json",
                restat=True)
+        # The merge step also scans src/ + include/ tree-wide for VTBL() vtable-
+        # catalog macros (labels.py:vtbl_labels), which live in HEADERS, not the
+        # per-TU .cpp frags. So a VTBL edit must re-trigger the merge: list every
+        # VTBL-bearing file as an implicit dep (re-globbed each configure run, i.e.
+        # each `nix develop .#build` entry).
+        vtbl_dep = sorted(
+            str(p.relative_to(REPO))
+            for p in list((REPO / "include").rglob("*.h")) + list((REPO / "src").rglob("*.cpp"))
+            if "VTBL(" in p.read_text(errors="ignore"))
         w.build([GEN_NAMES, FUNCTIONS_JSON, GLOBALS_JSON], "merge_labels",
-                inputs=frags + func_frags + glob_frags, implicit=[GEN_LABELS],
+                inputs=frags + func_frags + glob_frags,
+                implicit=[GEN_LABELS] + vtbl_dep,
                 variables={"csvfrags": " ".join(frags),
                            "funcfrags": " ".join(func_frags),
                            "globfrags": " ".join(glob_frags)})

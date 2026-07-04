@@ -10,11 +10,13 @@
 struct CNetThingBase {
     ~CNetThingBase(); // 0x1b48c6 (external, reloc-masked)
 };
+SIZE_UNKNOWN(CNetThingBase); // dtor-chain view; retail size TBD
 
 struct CNetThing : CNetThingBase {
     void Cleanup(); // 0x379a0 (external, reloc-masked; may throw)
     ~CNetThing();
 };
+SIZE_UNKNOWN(CNetThing); // dtor-only view; retail size TBD
 
 RVA(0x000c5280, 0x49)
 CNetThing::~CNetThing() {

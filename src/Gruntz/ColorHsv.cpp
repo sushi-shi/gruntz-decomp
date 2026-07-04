@@ -57,3 +57,5 @@ void RgbToHsv(ColorHSV* out, u32 color) {
     out->s = s;
     out->v = v;
 }
+
+SIZE_UNKNOWN(ColorHSV);

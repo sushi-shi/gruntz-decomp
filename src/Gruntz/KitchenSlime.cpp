@@ -1,7 +1,14 @@
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
+#include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
+#include <Globals.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -12,7 +19,7 @@
 // load-bearing; names are placeholders for the recovered engine identities.
 // CButeMgr g_buteMgr / the CUserLogic base hierarchy come from <Gruntz/UserLogic.h>.
 
-struct CSprite;
+// CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
 
 // The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
 // Tick advances it once per frame via its 0x55c360 method (one int arg).
@@ -35,19 +42,8 @@ struct CSlimeAnimPlayer {
     CSlimeSubMgr m_1a0; // +0x1a0  per-frame sub-mgr (Advance)
 };
 
-// The looked-up direction sprite (frame table @+0x14, valid range [m_64..m_68]).
-struct CSprite {
-    void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame
-
-    char m_pad0[0x14];
-    i32** m_14; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64
-    i32 m_68; // +0x68
-};
-
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
-// (1..4); m_5c/m_60 = per-step pixel deltas; m_134..m_140 = the on-screen tile
+// (1..4); m_5c/m_posX = per-step pixel deltas; m_134..m_140 = the on-screen tile
 // window; m_12c = a "lock direction" flag; m_7c = the level/timing object whose
 // +0xbc overrides the per-tile time.
 // The level/timing object at CSlimeLevel+0x7c; its +0xbc overrides the per-tile time.
@@ -74,14 +70,9 @@ struct CSlimeLevel {
     i32 m_144; // +0x144 on-screen rect base (Tick passes &m_144 to the cue gate)
 };
 
-// The level tile map reached via g_gameReg->m_70. m_c/m_10 = grid extents,
-// m_8 = the row table (row[gy][gx*7] is the tile-flags word).
-struct CTileMap {
-    char m_pad0[0x8];
-    i32** m_8; // +0x08  row table
-    i32 m_c;   // +0x0c  grid width
-    i32 m_10;  // +0x10  grid height
-};
+// The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
+// (<Gruntz/TileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
+// (row[gy][gx*7] is the tile-flags word).
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
 // QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a
 // scroll; modeled NO-body so both calls reloc-mask.
@@ -91,18 +82,10 @@ struct CSlimeCueGate {
     void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);                    // 0x6bcb0
 };
 
-struct CGameReg {
-    char m_pad0[0x68];
-    CSlimeCueGate* m_68; // +0x68  on-screen visibility/cue gate
-    char m_pad6c[0x70 - 0x6c];
-    CTileMap* m_70; // +0x70
-    char m_pad74[0x118 - 0x74];
-    i32 m_118; // +0x118 has-window flag
-    char m_pad11c[0x134 - 0x11c];
-    i32 m_134; // +0x134 mode discriminator (==1 -> skip the visibility scroll)
-};
+// The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
+// (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The entity QueryAt returns; +0x258 is its type/state tag (0x38 == the slime
 // itself, so its own footprint is ignored when probing the destination tile).
@@ -112,9 +95,8 @@ struct CSlimeEntity {
 };
 
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator).
-extern const double g_slimeSpeedNum; // VA 0x5ea3e0
 
-// Per-frame scroll/scale factor (.data int) Tick multiplies into m_58 to get the
+// Per-frame scroll/scale factor (.data int) Tick multiplies into m_speed to get the
 // per-frame pixel step.
 DATA(0x00245584)
 extern i32 g_slimeFrameScale; // VA 0x645584
@@ -144,20 +126,31 @@ public:
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b2ff0
     i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (inherited base chain)
     i32 LoadSprites();
-    CKitchenSlime(CGameObject* obj); // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
-    ~CKitchenSlime();                // 0x013100 (folds the CUserLogic teardown)
+    CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
+    virtual ~CKitchenSlime() OVERRIDE; // 0x013100 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    // The bound CGameObject (inherited m_object==m_38) viewed as the slime's typed
+    // level / anim-player data (same object, non-overlapping field windows). The one
+    // reinterpret lives here so the bodies read Level()->/Anim()-> with no cast;
+    // codegen-neutral (each call is the same `mov reg,[this+0x10]` / `+0x38`).
+    CSlimeLevel* Level() {
+        return (CSlimeLevel*)m_object;
+    }
+    CSlimeAnimPlayer* Anim() {
+        return (CSlimeAnimPlayer*)m_38;
+    }
+
+    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
-    double m_58; // +0x58  per-frame speed
-    double m_60; // +0x60  accumulated dx (double)
-    double m_68; // +0x68  accumulated dy (double)
-    double m_70; // +0x70  (cleared)
-    double m_78; // +0x78  (cleared)
-    i32 m_80;    // +0x80  current tile X
-    i32 m_84;    // +0x84  current tile Y
-    i32 m_88;    // +0x88  (per-step magnitude / cleared)
-    i32 m_8c;    // +0x8c  (cleared)
+    double m_speed;  // +0x58  per-frame speed (g_slimeSpeedNum / timePerTile)
+    double m_posX;   // +0x60  sub-pixel X position accumulator
+    double m_posY;   // +0x68  sub-pixel Y position accumulator
+    double m_dirX;   // +0x70  unit X travel direction (-1.0 / 0.0 / +1.0)
+    double m_dirY;   // +0x78  unit Y travel direction (-1.0 / 0.0 / +1.0)
+    i32 m_tileX;     // +0x80  current target tile X (pixels)
+    i32 m_tileY;     // +0x84  current target tile Y (pixels)
+    i32 m_stepMag;   // +0x88  per-step magnitude double {lo,hi}, overlaid as int pair
+    i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
 };
 
 // ---------------------------------------------------------------------------
@@ -185,15 +178,8 @@ struct CKSlimeColl2 {
 };
 extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_kslimeLo;
-extern i32 g_kslimeHi;
-extern char* g_kslimeBase;
-extern i32 g_kslimeStride;
-extern CKSlimeEntry* g_kslimeCur;
-extern i32 g_kslimeScratch;
 DATA(0x00246228)
 extern CKSlimeColl g_kslimeColl;
-extern CKSlimeColl2* g_kslimeColl2;
 DATA(0x002bf464)
 extern void* g_actCache;
 DATA(0x002bf428)
@@ -256,7 +242,7 @@ struct CSlimeMiniStr {
 };
 
 // The bound CGameObject viewed by the ctor (m_10 == m_38). The slime reads the
-// screen position (m_5c/m_60), the layer key (m_74), the flags (m_08), the travel
+// screen position (m_5c/m_posX), the layer key (m_74), the flags (m_08), the travel
 // window (m_134..m_140) clamped from the raw target tile (m_164/m_168), the
 // direction name (m_194+0x24), and re-seeds the rect (m_144..m_150). Only the
 // touched offsets are modeled.
@@ -289,8 +275,8 @@ struct CSlimeCtorObj {
 };
 
 // CKitchenSlime::CKitchenSlime @0x0b23a0 - fold the shared CUserLogic(obj) init,
-// snap the bound object to the tile grid (m_60/m_68 doubles + m_74 layer key +
-// the m_80/m_84 tile coords), scale the raw target tile (m_164/m_168) to pixels
+// snap the bound object to the tile grid (m_posX/m_posY doubles + m_74 layer key +
+// the m_tileX/m_tileY tile coords), scale the raw target tile (m_164/m_168) to pixels
 // and compute the travel window (min/max of the start and target), match the
 // slime's direction name (LEVEL_KITCHENSLIME_{NORTH,EAST,SOUTH,WEST}) into the
 // direction id, then run LoadSprites for the first leg, bind the "A" bute node +
@@ -305,26 +291,26 @@ struct CSlimeCtorObj {
 // re-stamp position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000b23a0, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x2000002;
+    m_38->m_flags |= 0x2000002;
 
-    CSlimeCtorObj* o = (CSlimeCtorObj*)m_10;
+    CSlimeCtorObj* o = (CSlimeCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
     i32 snapY = (o->m_60 & ~0x1f) + 0x10;
     o->m_5c = snapX;
-    m_60 = (double)snapX;
+    m_posX = (double)snapX;
     o->m_60 = snapY;
-    m_68 = (double)snapY;
+    m_posY = (double)snapY;
     if (o->m_74 != 0x13) {
         o->m_74 = 0x13;
         o->m_08 |= 0x20000;
     }
-    m_84 = snapY;
-    m_80 = snapX;
+    m_tileY = snapY;
+    m_tileX = snapX;
 
     o->m_164 = (o->m_164 << 5) + 0x10;
     o->m_168 = (o->m_168 << 5) + 0x10;
     if (o->m_5c == o->m_164 && o->m_60 == o->m_168) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
         return;
     }
     o->m_134 = (o->m_5c < o->m_164) ? o->m_5c : o->m_164;
@@ -332,7 +318,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
     o->m_138 = (o->m_60 >= o->m_168) ? o->m_168 : o->m_60;
     o->m_140 = (o->m_60 <= o->m_168) ? o->m_168 : o->m_60;
 
-    CSlimeCtorObj* obj38 = (CSlimeCtorObj*)m_38;
+    CSlimeAnimPlayer* obj38 = Anim();
     if (obj38->m_194 != 0) {
         CSlimeMiniStr name;
         name = (char*)obj38->m_194 + 0x24;
@@ -348,14 +334,14 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
         }
     }
 
-    m_88 = 0;
-    m_8c = 0;
+    m_stepMag = 0;
+    m_stepMagHi = 0;
     if (LoadSprites() == 0) {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_40 = m_38->m_1b4;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     o->m_144 = 0;
     o->m_14c = 0;
@@ -399,16 +385,6 @@ extern i32 g_typeCounter;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
 extern CButeTree g_buteTree;
-
-// The CString helpers the entry teardown/assign reach (free 0x1b9b93 __thiscall,
-// operator= 0x1b9e74 __thiscall) - external/reloc-masked.
-struct CStringNode {
-    void* m_0;   // +0x00 (4-byte stride; the slot the walking pointer steps over)
-    void Free(); // 0x1b9b93 (CString teardown, __thiscall on the slot address)
-};
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74 (CString::operator=)
-};
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {
@@ -490,7 +466,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // sub-mgr, runs the on-screen visibility/scroll gate (unless the registry is in
 // the no-scroll mode), and if the slime has reached its destination tile asks
 // LoadSprites for the next leg; otherwise integrates the sub-pixel movement
-// vector (m_70/m_78 unit signs * the per-frame step) into m_60/m_68, snapping to
+// vector (m_dirX/m_dirY unit signs * the per-frame step) into m_posX/m_posY, snapping to
 // the target tile on overshoot and writing the new grid position back to m_10.
 // The integer scaffolding + visibility/already-arrived blocks are byte-exact.
 // @early-stop
@@ -500,119 +476,102 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    ((CSlimeAnimPlayer*)m_38)->m_1a0.Advance(g_slimeTick);
+    Anim()->m_1a0.Advance(g_slimeTick);
 
-    CGameReg* reg = g_gameReg;
-    if (reg->m_118 == 0 || reg->m_134 != 1) {
-        CSlimeLevel* lvl = (CSlimeLevel*)m_10;
+    CGameRegistry* reg = g_gameReg;
+    if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
+        CSlimeLevel* lvl = Level();
         i32 outX, outY;
-        CSlimeEntity* ent =
-            (CSlimeEntity*)reg->m_68->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
+        CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_68)
+                                ->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
         if (ent && ent->m_258 != 0x38) {
-            g_gameReg->m_68->ScrollTo(outY, outX, 5, -1);
+            ((CSlimeCueGate*)g_gameReg->m_68)->ScrollTo(outY, outX, 5, -1);
         }
     }
 
-    CSlimeLevel* lvl = (CSlimeLevel*)m_10;
-    if (lvl->m_5c == m_80 && lvl->m_60 == m_84 && LoadSprites() == 0) {
-        ((CSlimeAnimPlayer*)m_38)->m_8 |= 0x10000;
+    CSlimeLevel* lvl = Level();
+    if (lvl->m_5c == m_tileX && lvl->m_60 == m_tileY && LoadSprites() == 0) {
+        Anim()->m_8 |= 0x10000;
         return 0;
     }
 
-    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_58;
-    double* m88d = (double*)&m_88;
+    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_speed;
+    double* m88d = (double*)&m_stepMag;
 
     i32 newX;
-    if (m_70 > g_slimeZero) {
-        double t = (m_60 = m_60 + step);
+    if (m_dirX > g_slimeZero) {
+        double t = (m_posX = m_posX + step);
         newX = (i32)floor(t);
-        i32 tx = m_80;
-        *m88d = fabs(m_60 - (double)tx);
+        i32 tx = m_tileX;
+        *m88d = fabs(m_posX - (double)tx);
         // The X axis never clamps (unlike Y), but retail still emits the compare
         // (a min/max fold whose result equals the input); the empty-body test
-        // reproduces the cmp + m_80 stack-spill shared with the fabs.
+        // reproduces the cmp + m_tileX stack-spill shared with the fabs.
         if (newX > tx) {
             newX = newX;
         }
-    } else if (m_70 < g_slimeZero) {
-        double t = (m_60 = m_60 - step);
+    } else if (m_dirX < g_slimeZero) {
+        double t = (m_posX = m_posX - step);
         newX = (i32)ceil(t);
-        i32 tx = m_80;
-        *m88d = fabs(m_60 - (double)tx);
+        i32 tx = m_tileX;
+        *m88d = fabs(m_posX - (double)tx);
         if (newX < tx) {
             newX = newX;
         }
     } else {
-        newX = (i32)floor(m_60);
+        newX = (i32)floor(m_posX);
     }
 
     i32 newY;
-    if (m_78 > g_slimeZero) {
-        double t = (m_68 = m_68 + step);
+    if (m_dirY > g_slimeZero) {
+        double t = (m_posY = m_posY + step);
         newY = (i32)floor(t);
-        i32 ty = m_84;
-        *m88d = fabs(m_68 - (double)ty);
+        i32 ty = m_tileY;
+        *m88d = fabs(m_posY - (double)ty);
         if (newY > ty) {
-            ((CSlimeLevel*)m_10)->m_5c = newX;
-            ((CSlimeLevel*)m_10)->m_60 = ty;
+            Level()->m_5c = newX;
+            Level()->m_60 = ty;
             return 0;
         }
-    } else if (m_78 < g_slimeZero) {
-        double t = (m_68 = m_68 - step);
+    } else if (m_dirY < g_slimeZero) {
+        double t = (m_posY = m_posY - step);
         newY = (i32)ceil(t);
-        i32 ty = m_84;
-        *m88d = fabs(m_68 - (double)ty);
+        i32 ty = m_tileY;
+        *m88d = fabs(m_posY - (double)ty);
         if (newY < ty) {
-            ((CSlimeLevel*)m_10)->m_5c = newX;
-            ((CSlimeLevel*)m_10)->m_60 = ty;
+            Level()->m_5c = newX;
+            Level()->m_60 = ty;
             return 0;
         }
     } else {
-        newY = (i32)floor(m_68);
+        newY = (i32)floor(m_posY);
     }
 
-    ((CSlimeLevel*)m_10)->m_5c = newX;
-    ((CSlimeLevel*)m_10)->m_60 = newY;
+    Level()->m_5c = newX;
+    Level()->m_60 = newY;
     return 0;
 }
 
-// The serialization stream: vtable slot 0x2c (index 11) reads n bytes into a
-// buffer, slot 0x30 (index 12) transfers n bytes. Only the slot offsets are
-// load-bearing (the virtual call is reloc-masked), as in CSBI_RectOnly::Serialize.
-class CSlimeStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);     // +0x2c (slot 11)
-    virtual void Transfer(void* buf, i32 n); // +0x30 (slot 12)
-};
+// The serialization stream is the shared CSerialArchive: slot +0x2c (index 11) Read
+// reads n bytes into a buffer, slot +0x30 (index 12) Write transfers n bytes (was
+// the per-TU CSlimeStream view; only the slot offsets are load-bearing, the virtual
+// call is reloc-masked, as in CSBI_RectOnly::Serialize).
 
 // The +0x34 serializable sub-object the slime chains into after the shared
-// CUserLogic::SerializeChain (same archetype as CFortressFlag::Serialize).
-struct CSlimeSerialSub {
-    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00 (via 0x1aff thunk)
-};
+// CUserLogic::SerializeChain is the shared CSerialObjRef (Chain @0x8c00 via the
+// 0x1aff thunk); same archetype as CFortressFlag::Serialize.
 
 // CKitchenSlime::Serialize @0x0b2ff0 - the slime's serialize override. For the
-// read tag (7) read the seven motion quadwords (m_58..m_88) through the stream's
+// read tag (7) read the seven motion quadwords (m_speed..m_88) through the stream's
 // Read slot; for the transfer tag (4) transfer them through the Transfer slot.
 // Then chain the shared CUserLogic serialize on `this` (bail on failure) and the
 // +0x34 sub-object's chain, returning whether that chain succeeded.
-// The seven 8-byte fields span the doubles m_58..m_78 plus the (m_80,m_84) and
-// (m_88,m_8c) int pairs, so they are addressed by offset (codegen-neutral here).
+// The seven 8-byte fields span the doubles m_speed..m_78 plus the (m_tileX,m_tileY) and
+// (m_stepMag,m_stepMagHi) int pairs, so they are addressed by offset (codegen-neutral here).
 RVA(0x000b2ff0, 0x11b)
 i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     char* B = (char*)this;
-    CSlimeStream* s = (CSlimeStream*)stream;
+    CSerialArchive* s = (CSerialArchive*)stream;
     // Written as `if (tag != 4) { if (tag == 7) Read... } else Transfer...` so
     // MSVC lays the tag-7 (Read) block physically first (cmp 4/je else; cmp 7/jne;
     // Read; jmp; else: Transfer) - the retail dispatch order.
@@ -627,18 +586,19 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
             s->Read(B + 0x88, 8);
         }
     } else {
-        s->Transfer(B + 0x58, 8);
-        s->Transfer(B + 0x60, 8);
-        s->Transfer(B + 0x68, 8);
-        s->Transfer(B + 0x70, 8);
-        s->Transfer(B + 0x78, 8);
-        s->Transfer(B + 0x80, 8);
-        s->Transfer(B + 0x88, 8);
+        s->Write(B + 0x58, 8);
+        s->Write(B + 0x60, 8);
+        s->Write(B + 0x68, 8);
+        s->Write(B + 0x70, 8);
+        s->Write(B + 0x78, 8);
+        s->Write(B + 0x80, 8);
+        s->Write(B + 0x88, 8);
     }
     if (SerializeChain(stream, tag, c, d) == 0) {
         return 0;
     }
-    return ((CSlimeSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) != 0;
+    return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d)
+           != 0;
 }
 
 // @early-stop
@@ -648,36 +608,36 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
 // our 0x14 - an extra direction-magnitude stack temp). ~69%, logic exact.
 RVA(0x000b3160, 0x339)
 i32 CKitchenSlime::LoadSprites() {
-    i32 savedDir = ((CSlimeLevel*)m_10)->m_124;
+    i32 savedDir = Level()->m_124;
 
     i32 tileX, tileY;
     i32 found = 0;
     for (i32 i = 0; i <= 4;) {
-        CSlimeLevel* lvl = (CSlimeLevel*)m_10;
+        CSlimeLevel* lvl = Level();
         i32 sw = lvl->m_124 - 1;
         switch (sw) {
             case 0:
-                tileX = m_80;
-                tileY = m_84 - 0x20;
+                tileX = m_tileX;
+                tileY = m_tileY - 0x20;
                 break; // north
             case 1:
-                tileX = m_80 + 0x20;
-                tileY = m_84;
+                tileX = m_tileX + 0x20;
+                tileY = m_tileY;
                 break; // east
             case 2:
-                tileX = m_80;
-                tileY = m_84 + 0x20;
+                tileX = m_tileX;
+                tileY = m_tileY + 0x20;
                 break; // south
             case 3:
-                tileX = m_80 - 0x20;
-                tileY = m_84;
+                tileX = m_tileX - 0x20;
+                tileY = m_tileY;
                 break; // west
         }
 
         i32 gx = tileX >> 5;
         i32 gy = tileY >> 5;
         i32 tileFlags;
-        CTileMap* map = g_gameReg->m_70;
+        CTileGrid* map = g_gameReg->m_tileGrid;
         if ((u32)gx >= (u32)map->m_c || (u32)gy >= (u32)map->m_10) {
             tileFlags = 1;
         } else {
@@ -696,13 +656,13 @@ i32 CKitchenSlime::LoadSprites() {
 
         if (lvl->m_12c == 1) {
             lvl->m_124 = sw;
-            if (((CSlimeLevel*)m_10)->m_124 <= 0) {
-                ((CSlimeLevel*)m_10)->m_124 = 4;
+            if (Level()->m_124 <= 0) {
+                Level()->m_124 = 4;
             }
         } else {
             lvl->m_124++;
-            if (((CSlimeLevel*)m_10)->m_124 > 4) {
-                ((CSlimeLevel*)m_10)->m_124 = 1;
+            if (Level()->m_124 > 4) {
+                Level()->m_124 = 1;
             }
         }
     }
@@ -710,88 +670,103 @@ i32 CKitchenSlime::LoadSprites() {
         return 0;
     }
 
-    m_60 = 0;
-    m_68 = 0;
-    i32 changed = (((CSlimeLevel*)m_10)->m_124 != savedDir);
-    switch (((CSlimeLevel*)m_10)->m_124 - 1) {
+    m_posX = 0;
+    m_posY = 0;
+    i32 changed = (Level()->m_124 != savedDir);
+    switch (Level()->m_124 - 1) {
         case 0: // north
-            m_68 = -(double)*(i32*)&m_88;
-            m_70 = 0;
-            m_78 = 0;
-            *(i32*)&m_78 = 0;
-            *((i32*)&m_70 + 1) = 0;
-            *((i32*)&m_78 + 1) = 0xbff00000;
+            m_posY = -(double)*(i32*)&m_stepMag;
+            m_dirX = 0;
+            m_dirY = 0;
+            *(i32*)&m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0;
+            *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
-            *(i32*)&m_60 = m_88;
-            *((i32*)&m_60 + 1) = *((i32*)&m_88 + 1);
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_70 + 1) = 0x3ff00000;
-            *((i32*)&m_78 + 1) = 0;
+            *(i32*)&m_posX = m_stepMag;
+            *((i32*)&m_posX + 1) = *((i32*)&m_stepMag + 1);
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0x3ff00000;
+            *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
-            *(i32*)&m_68 = m_88;
-            *((i32*)&m_68 + 1) = *((i32*)&m_88 + 1);
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_78 + 1) = 0x3ff00000;
-            *((i32*)&m_70 + 1) = 0;
+            *(i32*)&m_posY = m_stepMag;
+            *((i32*)&m_posY + 1) = *((i32*)&m_stepMag + 1);
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirY + 1) = 0x3ff00000;
+            *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
-            m_60 = -(double)*(i32*)&m_88;
-            m_70 = 0;
-            m_78 = 0;
-            *((i32*)&m_70 + 1) = 0xbff00000;
-            *((i32*)&m_78 + 1) = 0;
+            m_posX = -(double)*(i32*)&m_stepMag;
+            m_dirX = 0;
+            m_dirY = 0;
+            *((i32*)&m_dirX + 1) = 0xbff00000;
+            *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CSlimeAnimPlayer*)m_38)->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_60 = (double)((CSlimeLevel*)m_10)->m_5c + m_60;
-    m_68 = (double)((CSlimeLevel*)m_10)->m_60 + m_68;
+    m_posX = (double)Level()->m_5c + m_posX;
+    m_posY = (double)Level()->m_60 + m_posY;
 
     u32 time;
-    if (((CSlimeLevel*)m_10)->m_7c->m_bc != 0) {
-        time = ((CSlimeLevel*)m_10)->m_7c->m_bc;
+    if (Level()->m_7c->m_bc != 0) {
+        time = Level()->m_7c->m_bc;
     } else {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
-    m_58 = g_slimeSpeedNum / (double)(i64)(u64)time;
-    m_80 = tileX;
-    m_84 = tileY;
+    m_speed = g_slimeSpeedNum / (double)(i64)(u64)time;
+    m_tileX = tileX;
+    m_tileY = tileY;
 
-    CSlimeAnimPlayer* player = (CSlimeAnimPlayer*)m_38;
+    CSlimeAnimPlayer* player = Anim();
     CSprite* spr = player->m_194;
     if (changed != 0 && spr != 0) {
-        if (spr->m_64 <= 1 && spr->m_68 >= 1) {
+        if (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) {
             player->m_190 = 1;
-            player->m_198 = spr->m_14[1];
-            m_88 = 0;
-            m_8c = 0;
+            player->m_198 = spr->m_frames.m_pData[1];
+            m_stepMag = 0;
+            m_stepMagHi = 0;
             return 1;
         }
         player->m_190 = 1;
         player->m_198 = 0;
-        m_88 = 0;
-        m_8c = 0;
+        m_stepMag = 0;
+        m_stepMagHi = 0;
         return 1;
     }
-    m_88 = 0;
-    m_8c = 0;
+    m_stepMag = 0;
+    m_stepMagHi = 0;
     return 1;
 }
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CKitchenSlime, 0x90);
+
+SIZE_UNKNOWN(CKSlimeColl);
+SIZE_UNKNOWN(CKSlimeColl2);
+SIZE_UNKNOWN(CKSlimeEntry);
+SIZE_UNKNOWN(CSlimeAnimPlayer);
+SIZE_UNKNOWN(CSlimeCtorObj);
+SIZE_UNKNOWN(CSlimeCueGate);
+SIZE_UNKNOWN(CSlimeEntity);
+SIZE_UNKNOWN(CSlimeLevel);
+SIZE_UNKNOWN(CSlimeMiniStr);
+SIZE_UNKNOWN(CSlimeSubMgr);
+SIZE_UNKNOWN(CSlimeTiming);
+SIZE_UNKNOWN(CSprite);
+SIZE_UNKNOWN(CStringNode);
+SIZE_UNKNOWN(CTypeNameEntryView);

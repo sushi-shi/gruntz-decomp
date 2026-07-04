@@ -12,7 +12,7 @@
 extern "C" {
     void free(void* block); // 0x120c30 (CRT free)
 
-    // 0x1b9b82 - resource free wrapper: forward the block straight to the CRT free.
+    // resource free wrapper: forward the block straight to the CRT free.
     RVA(0x001b9b82, 0xb)
     SYMBOL(_RezFree)
     void RezFree(void* block) {

@@ -20,35 +20,13 @@
 // flags (a real ??0 emits `mov eax,ecx`; placement-new emits a null guard).
 // They stay in the src/Stub/ backlog as the documented COMDAT-duplication case.
 #include <Gruntz/GruntzCommand.h>
+#include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 
-// The network (de)serialization stream (a CArchive/CSocketFile-family object):
-// Read @ vtable slot 11 (+0x2c), Write @ slot 12 (+0x30). Modeled polymorphic so
-// the thiscall dispatch `mov edx,[s]; mov ecx,s; call [edx+N]` falls out at the
-// right slot; the 11 leading virtuals are placeholders fixing the offsets.
-class CmdStream {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Read(void* buf, i32 len);  // +0x2c  slot 11
-    virtual void Write(void* buf, i32 len); // +0x30  slot 12
-};
-
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Save/Load
-// no-op unless its +0x30 active-game gate is non-null (same gate the cmd-mgr taps).
-struct WwdGameReg {
-    char m_pad0[0x30];
-    void* m_30; // +0x30  active-game gate
-};
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). Save/Load no-op
+// unless its +0x30 active-game gate (m_world) is non-null (same gate the cmd-mgr
+// taps); this TU only null-tests it, so the m_world facet type is irrelevant here.
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
@@ -228,6 +206,19 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     return new CGruntzSingleCommand;
 }
 
+// The CGruntzCommand base vftable (0x5e9674; == ??_7CGruntzCommand@@6B@ this TU
+// emits). The two out-of-line stamps store it into [this]; the operand reloc-
+// masks against the base vftable via this DATA-named extern (re-homed from
+// src/Stub/CGruntzCommand.cpp).
+DATA(0x001e9674)
+extern void* const g_cmdBaseVtbl[];
+
+// CGruntzCommand::CGruntzCommand_0242f0() - out-of-line base-vftable stamp.
+RVA(0x000242f0, 0x7)
+void CGruntzCommand::CGruntzCommand_0242f0() {
+    *(void**)this = (void*)g_cmdBaseVtbl;
+}
+
 // ---------------------------------------------------------------------------
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.
 // ---------------------------------------------------------------------------
@@ -237,6 +228,12 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
         return (CGruntzMultiCommand*)g_multiCmdList.RemoveTail();
     }
     return new CGruntzMultiCommand;
+}
+
+// CGruntzCommand::CGruntzCommand_024430() - out-of-line base-vftable stamp.
+RVA(0x00024430, 0x7)
+void CGruntzCommand::CGruntzCommand_024430() {
+    *(void**)this = (void*)g_cmdBaseVtbl;
 }
 
 // ---------------------------------------------------------------------------
@@ -277,11 +274,11 @@ void CGruntzMultiCommand::FreeAll() {
 // stream is non-null AND the registry's active-game gate (g_gameReg+0x30) is set.
 // ---------------------------------------------------------------------------
 RVA(0x00024520, 0x98)
-i32 CGruntzCommand::Save(CmdStream* s) {
+i32 CGruntzCommand::Save(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Write(&m_4, 1);
@@ -300,11 +297,11 @@ i32 CGruntzCommand::Save(CmdStream* s) {
 // fields read back through the stream's Read (vtable slot +0x2c).
 // ---------------------------------------------------------------------------
 RVA(0x000245f0, 0x98)
-i32 CGruntzCommand::Load(CmdStream* s) {
+i32 CGruntzCommand::Load(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Read(&m_4, 1);
@@ -325,11 +322,11 @@ i32 CGruntzCommand::Load(CmdStream* s) {
 // pair. Reached only through the vtable (reloc-masked); modeled non-virtual.
 // ---------------------------------------------------------------------------
 RVA(0x000247d0, 0x8b)
-i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
+i32 CGruntzMultiCommand::NetLoad(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
-    if (!g_gameReg->m_30) {
+    if (!g_gameReg->m_world) {
         return 0;
     }
     s->Read(&m_4, 1);
@@ -343,10 +340,7 @@ i32 CGruntzMultiCommand::NetLoad(CmdStream* s) {
 }
 
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CGruntzMultiCommand, 0x14);
 // size 0x14 from operator-new vtable attribution (gruntz.analysis.news)
-SIZE(CGruntzSingleCommand, 0x14);
-SIZE(CGruntzCommand, 0x14);
 
 // The 1<<i bit table (0x5e9608) the mask builder/scanner indexes. DATA-pinned so
 // the *(short*)... mask loop's address operands reloc-mask against it.

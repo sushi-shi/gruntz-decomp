@@ -20,6 +20,7 @@ struct CTrigParam {
     i32 m0, m4, m8, mc;
     CTrigParam() : m0(0), m4(0), m8(0), mc(0) {} // VC5 won't value-init -> zero by ctor
 };
+SIZE_UNKNOWN(CTrigParam);
 
 class CTileTriggerWiring {
 public:
@@ -46,5 +47,6 @@ public:
     // 0x1163b0: forward with six default (zeroed) parameter blocks.
     void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
 };
+SIZE_UNKNOWN(CTileTriggerWiring);
 
 #endif // GRUNTZ_TILETRIGGERWIRING_H

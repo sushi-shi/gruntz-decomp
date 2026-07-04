@@ -17,7 +17,9 @@
 // `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
-#include <Bute/ButeMgr.h> // CButeMgr (GetIntDef) + CString
+#include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
+#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
@@ -31,24 +33,9 @@ extern CButeMgr g_buteMgr;     // 0x6453d8  the global bute manager
 static const char s_Powerupz[] = "Powerupz";                                 // 0x60d9b4
 static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 0x60d900
 
-// The CRecReader the record reads from: Read(buf, len) is virtual slot 0x2c
-// (index 11). 11 placeholder virtuals put Read at +0x2c; all external (no body)
-// so no vtable is emitted here and `ar->Read` lowers to `mov edx,[ar];
-// call [edx+0x2c]`.
-struct CRecReader {
-    virtual void rv00();
-    virtual void rv01();
-    virtual void rv02();
-    virtual void rv03();
-    virtual void rv04();
-    virtual void rv05();
-    virtual void rv06();
-    virtual void rv07();
-    virtual void rv08();
-    virtual void rv09();
-    virtual void rv10();
-    virtual void Read(void* buf, i32 len); // slot 11 -> +0x2c
-};
+// The record reads from the shared WAP32 CSerialArchive stream (Read @ vtable +0x2c),
+// now the one modeled class in <Gruntz/SerialArchive.h> - the former local `CRecReader`
+// view is folded away. `ar->Read` lowers to `mov edx,[ar]; call [edx+0x2c]`.
 
 // A directory object whose runtime type tag (virtual slot 0x20 = index 8) gates
 // the serial-ref store (only tag==5 objects are accepted).
@@ -73,7 +60,7 @@ struct CNameMap {
     i32 Lookup(const char* key, void** out); // 0x1b8438
 };
 
-// The engine object directory (g_mgrSettings->m_30): the serial-map host at +8
+// The engine object directory (g_mgrSettings->m_world): the serial-map host at +8
 // (map at +0x48), the name-map host at +0x2c (map at +0x10).
 struct CObjDir {
     char _00[8];
@@ -82,18 +69,15 @@ struct CObjDir {
     char* m_nameHost; // +0x2c  (name map @ +0x10)
 };
 
-// The game-manager settings singleton: the directory at +0x30, an engine helper
-// at +0x74 the tail invokes (0x4165).
+// The game-manager singleton (the one true CGruntzMgr shape lives in
+// <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
+// here as the serial/name-map host), an engine helper at +0x74 the tail invokes
+// (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
 struct CMgr74 {
     i32 Compute(i32 a, i32 flag); // 0x4165 __thiscall(a, flag)
 };
-struct CGameMgrSettings {
-    char _00[0x30];
-    CObjDir* m_dir; // +0x30
-    char _34[0x74 - 0x34];
-    CMgr74* m_74; // +0x74
-};
-extern "C" CGameMgrSettings* g_mgrSettings; // 0x64556c
+DATA(0x0024556c)
+extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
 
 // The event/command buffer at this+0x10 the tail writes (type/value/flag slots).
 struct CCmdBuf {
@@ -113,7 +97,7 @@ struct CRecPtrList {
 
 // A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
 struct CSubRecord {
-    i32 Load(CRecReader* ar); // 0x3ee0 __thiscall(ar) -> bool
+    i32 Load(CSerialArchive* ar); // 0x3ee0 __thiscall(ar) -> bool
 };
 
 // Global operator new / free (engine NAFXCW; reloc-masked).
@@ -122,7 +106,7 @@ extern "C" void RecFree(void* p); // 0x1b9b82  (operator delete / free)
 
 class CGameStateRecord {
 public:
-    i32 Load(CRecReader* ar);
+    i32 Load(CSerialArchive* ar);
 };
 
 // The three repeating block shapes, expanded inline + unrolled (retail unrolls
@@ -188,12 +172,12 @@ public:
 // effect). The documented large-function regalloc/frame-layout wall; reconstructed
 // in full per the no-stub mandate.
 RVA(0x000555e0, 0x12f8)
-i32 CGameStateRecord::Load(CRecReader* ar) {
+i32 CGameStateRecord::Load(CSerialArchive* ar) {
     char* p = (char*)this;
     if (ar == 0) {
         return 0;
     }
-    CObjDir* dir = g_mgrSettings->m_dir;
+    CObjDir* dir = (CObjDir*)g_mgrSettings->m_world;
     if (dir == 0) {
         return 0;
     }
@@ -417,7 +401,7 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
     i32 m170 = *(i32*)(p + 0x170);
     i32 m1f4 = *(i32*)(p + 0x1f4);
     i32 flag = (m170 >= 0x17);
-    i32 r = g_mgrSettings->m_74->Compute(m1f4, flag);
+    i32 r = ((CMgr74*)g_mgrSettings->m_74)->Compute(m1f4, flag);
     CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
     cb->m_58 = 1;
     cb->m_50 = 0xa;
@@ -425,10 +409,20 @@ i32 CGameStateRecord::Load(CRecReader* ar) {
 
     if (*(i32*)(p + 0x258) == 0x36) {
         CCmdBuf* cb2 = *(CCmdBuf**)(p + 0x10);
-        i32 v = g_buteMgr.GetIntDef((char*)s_Powerupz, (char*)s_GruntGhostTransparencyOn, 0xe0);
+        i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
         cb2->m_58 = 1;
         cb2->m_50 = 0xb;
         cb2->m_54 = v;
     }
     return 1;
 }
+
+SIZE_UNKNOWN(CDirObj);
+SIZE_UNKNOWN(CSerialMap);
+SIZE_UNKNOWN(CNameMap);
+SIZE_UNKNOWN(CObjDir);
+SIZE_UNKNOWN(CMgr74);
+SIZE_UNKNOWN(CCmdBuf);
+SIZE_UNKNOWN(CRecPtrList);
+SIZE_UNKNOWN(CSubRecord);
+SIZE_UNKNOWN(CGameStateRecord);

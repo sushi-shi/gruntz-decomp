@@ -18,78 +18,16 @@
 
 #include <rva.h> // RVA()/RVAU() label macros the included stub files use
 
-#include "ImplementedLabels.cpp"
-#include "Backlog.cpp"
+// Backlog.cpp fully re-homed to real class TUs (semantic stub-elim); file removed.
 #include "ApiCallers.cpp"
-// CButeTree defines CButeTree + g_buteTree, shared by the game-object ctors that
-// remain here (and by GameObjectCtors.cpp / UserLogic.cpp) -> include early.
-#include "CButeTree.cpp"
-#include "CActionArea.cpp"
-#include "CBoomerang.cpp"
-#include "CBrickz.cpp"
-// reloc-correlation extern stubs (split from GenExterns):
-#include "CButeMgrHelper.cpp"
-#include "CButeNodeBase.cpp"
-#include "CFileIO.cpp"
-#include "CFileImageDecode.cpp"
-// CGMMenuUI.cpp removed: it was a duplicate candidate body set (carrying NO RVA
-// bindings, so it diffed nothing) of the CChatBox menu-drive methods
-// (0x182c70..0x183150) already bound + 100% byte-exact in src/Gruntz/ChatBox.cpp.
-// CGMMenuUI == CChatBox (same RVAs).
-#include "CGameModeBase.cpp"
-#include "CGruntzCmdList.cpp"
-#include "CImageBlit.cpp"
-#include "CNetMgr.cpp"
-#include "CNetSession.cpp"
-#include "CPlay.cpp"
-#include "CRegSink.cpp"
-#include "CStatusBarMgr.cpp"
-#include "EngineExternFns.cpp"
-#include "MinervaInner.cpp"
-#include "RezColl.cpp"
-#include "RezMgr.cpp"
-#include "RezNode.cpp"
-#include "VoldemortObj.cpp"
-#include "CCoveredPowerup.cpp"
-#include "CCursorSnapSprite.cpp"
-#include "CDirectDrawMgr.cpp"
-#include "CDoNothing.cpp"
-#include "CDoNothingNormal.cpp"
-#include "CDroppedObject.cpp"
-#include "CDroppedObjectShadow.cpp"
-#include "CExplosion.cpp"
-#include "CEyeCandyAni.cpp"
-#include "CFortressFlag.cpp"
-#include "CGameMgrDerived.cpp"
-#include "CGiantRock.cpp"
-#include "CGruntCreationPoint.cpp"
-#include "CGruntPuddle.cpp"
-#include "CGruntStartingPoint.cpp"
-#include "CGruntVoice.cpp"
-#include "CGruntzCommand.cpp"
-#include "CGruntzMapMgr.cpp"
-#include "CGruntzMgr.cpp"
-#include "CGuardPoint.cpp"
-#include "CInGameIcon.cpp"
-#include "CInGameText.cpp"
-#include "CKitchenSlime.cpp"
-#include "CLevelTime.cpp"
-#include "CLightFx.cpp"
-#include "CMovingLogic.cpp"
-#include "CObjectDropper.cpp"
-#include "CPathHazard.cpp"
-#include "CProjectile.cpp"
-#include "CRollingBall.cpp"
-#include "CSBI_Image.cpp"
-#include "CSBI_SideTab.cpp"
-#include "CSplashState.cpp"
-#include "CSpotLight.cpp"
-#include "CStatusBarSprite.cpp"
-#include "CTeleporter.cpp"
-#include "CTileSecretTrigger.cpp"
-#include "CToyPeek.cpp"
-#include "CUserLogic.cpp"
-#include "CWayPoint.cpp"
-#include "DirectSoundMgr.cpp"
-#include "RezSync.cpp"
-#include "MallocConstructors.cpp"
+// CButeTree.cpp removed: it only re-declared the shared g_buteTree DATA binding
+// (0x2bf620), already bound by TypeKeyColl.cpp (the real dyn-initializer) + the
+// game-object ctor TUs; nothing left in this aggregate referenced it.
+// EngineExternFns.cpp removed: its 4 ILT `jmp` islands (CheckExePath / StartupGate /
+// Eng_RegionCueA / MultiDispatch) were carved to config/library_labels.csv
+// (asm-carveout), and its 2 real bodies re-homed - RezAssertFail (0x184e00) ->
+// src/Gruntz/DebugPrintf.cpp, RelayHwnd (0x1437e0) -> src/Gruntz/BoundaryUpper2.cpp.
+// MallocConstructors.cpp removed: its 21 op-new/malloc-site ctors were all
+// SEMANTICALLY re-homed (Bute CButeValue setters + CButeNodeBase node -> src/Bute;
+// DSoundCloneCtor/CSymTab/CRez/CWwd/CAniRecord ctors -> their real class TUs; the
+// MSVC iostream (LIBCIMT) ctors -> config/library_labels.csv FID carve-out).

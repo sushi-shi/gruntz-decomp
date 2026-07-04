@@ -20,81 +20,84 @@
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
-#include <Mfc.h> // CObList (+0x204 member)
-#include <Gruntz/UserLogic.h>
+#include <Mfc.h>                // CObList (+0x204 member)
+#include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
-// The default coordinate bounds the CMovingLogic ctor seeds. Retail copies them
-// from a shared 8-byte .rdata double (0x5f04b0 = MIN, 0x5f04b8 = MAX) via plain
-// integer dword moves - so they are modeled as named double constants the ctor
-// reads, not foldable literals (a literal would materialize 32-bit immediates).
-// -0x7fffffff and +0x7ffffffe as doubles.
-extern const double g_movingLogicMin; // 0x5f04b0 (-2147483647.0)
-extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
-
-// ---------------------------------------------------------------------------
-// CMovingLogic : CUserLogic - moving-object motion state. 17 virtuals
-// (vftable 0x5e87ac); only the offsets the ctor initializes are modeled.
-//
-// The +0x38..+0x10c band is a set of int pairs zeroed at construction; the
-// +0xa8..+0x13f band is twelve doubles seeded to the default min/max bounds.
-// ---------------------------------------------------------------------------
-class CMovingLogic : public CUserLogic {
-public:
-    CMovingLogic();
-    virtual ~CMovingLogic() OVERRIDE; // most-derived dtor (slot 0)
-    // CMovingLogic adds three virtuals over the CUserBase/CUserLogic chain; the
-    // last lands at vtable offset 0x40 (the slot ReleaseDeferred dispatches).
-    virtual i32 MovingLogicVfunc();  // slot 14
-    virtual i32 MovingLogicVfunc2(); // slot 15
-    virtual i32 MovingLogicVfunc3(); // slot 16 (offset 0x40)
-
-    // CMovingLogic's own data begins at +0x40 (CUserLogic ends at +0x40). The
-    // ctor also re-zeroes the inherited CUserLogic m_38/m_3c.
-    // +0x40..+0x8f: twenty motion ints.
-    i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
-    i32 m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84, m_88, m_8c;
-    char m_pad90[0xa8 - 0x90];
-    // +0xa8..+0xd7: three "ranges", each {double lo, double hi}.
-    double m_a8, m_b0, m_b8; // the three lo bounds (default MIN)
-    double m_c0, m_c8, m_d0; // the three hi bounds (default MAX)
-    char m_padd8[0xf0 - 0xd8];
-    i32 m_f0;                     // +0xf0
-    char m_padf4[0xf8 - 0xf4];    // gap
-    i32 m_f8, m_fc, m_100, m_104; // +0xf8..+0x107
-    i32 m_108, m_10c;             // +0x108..+0x10f
-    // +0x110..+0x13f: six doubles, all seeded to MAX.
-    double m_110, m_118, m_120, m_128, m_130, m_138;
+// The animation sub-object embedded in a render object at +0x1a0; its setter
+// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation, and
+// Setup (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite.
+SIZE_UNKNOWN(CProjAnim);
+struct CProjAnim {
+    i32 SetAnim(u32 mode);   // 0x15c360
+    i32 Setup(void* frame0); // 0x15c2d0
 };
 
-// The animation sub-object embedded in a render object at +0x1a0; its setter
-// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation.
-struct CProjAnim {
-    i32 SetAnim(u32 mode); // 0x15c360
+// The name->sprite geometry map the sprite object owns (the CMapStringToOb the
+// loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
+SIZE_UNKNOWN(CProjSpriteMap);
+struct CProjSpriteMap {
+    i32 Lookup(const char* key, void** out); // 0x1b8438 (__thiscall, ret 8)
+};
+SIZE_UNKNOWN(CProjSpriteMgr);
+struct CProjSpriteMgr {
+    char m_pad00[0x10];
+    CProjSpriteMap m_10; // +0x10  the lookup map
+};
+SIZE_UNKNOWN(CProjResMgr);
+struct CProjResMgr {
+    char m_pad00[0x2c];
+    CProjSpriteMgr* m_2c; // +0x2c
 };
 
 // A render object the projectile owns/points at (the +0x154 sprite/animation and
 // the +0x1fc shadow companion). Only the offsets the reconstructed methods touch
-// are modeled: +0x08 flag word, +0x40 flag word, +0x5c/+0x60 screen position,
-// +0x1a0 animation sub-object, +0x1c0/+0x1c8 state gates.
+// are modeled: +0x08 flag word, +0x0c resource host (frame lookup), +0x40 flag
+// word, +0x5c/+0x60 screen position, +0x1a0 animation sub-object, +0x1b4 geometry
+// word, +0x1c0/+0x1c8 state gates.
+SIZE_UNKNOWN(CProjRenderObj);
 struct CProjRenderObj {
     char m_pad00[0x08];
-    u32 m_08; // +0x08  flag word (|= 0x10000)
-    char m_pad0c[0x40 - 0x0c];
+    u32 m_08;         // +0x08  flag word (|= 0x10000)
+    CProjResMgr* m_c; // +0x0c  resource host (name->sprite map via m_2c)
+    char m_pad10[0x40 - 0x10];
     u32 m_40; // +0x40  flag word (&= ~1)
     char m_pad44[0x5c - 0x44];
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
-    char m_pad64[0x1a0 - 0x64];
+    char m_pad64[0x7c - 0x64];
+    struct CProjShadowVtbl* m_7c; // +0x7c  shadow sub-table (Init @+0x10, host @+0x18)
+    char m_pad80[0x1a0 - 0x80];
     CProjAnim m_1a0; // +0x1a0  animation sub-object (SetAnim(g_6bf3bc))
-    char m_pad1a4[0x1c0 - 0x1a4];
+    char m_pad1a4[0x1b4 - 0x1a4];
+    i32 m_1b4; // +0x1b4  geometry word (saved into CProjectile::m_savedFrameGeo)
+    char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
+
+    void CacheFirstFrame(const char* name);             // 0x150540 (__thiscall, ret 4)
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (__thiscall, ret 8)
+};
+
+// The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
+// +0x10 (fired with the shadow) and an "activation host" at +0x18 whose Activate
+// (0x9d520) installs the shadow's two frame names.
+SIZE_UNKNOWN(CProjShadowActivate);
+struct CProjShadowActivate {
+    void Activate(const char* shadowName, const char* baseName, i32 a, i32 b); // 0x9d520
+};
+SIZE_UNKNOWN(CProjShadowVtbl);
+struct CProjShadowVtbl {
+    char m_pad00[0x10];
+    void (*Init)(CProjRenderObj* self); // +0x10
+    char m_pad14[0x18 - 0x14];
+    CProjShadowActivate* m_18; // +0x18
 };
 
 // The CSample-like sound sample object the projectile launches (+0x200). Its
 // StopAndRewind (0x135380) is reached as an out-of-line engine method.
+SIZE_UNKNOWN(CProjSample);
 struct CProjSample {
     i32 StopAndRewind();                        // 0x135380 (__thiscall, 0 args)
     i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
@@ -106,9 +109,11 @@ struct CProjSample {
 // (+0x140..+0x258). Field names are placeholders; the OFFSETS + code bytes are
 // the load-bearing facts.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CProjectile);
 class CProjectile : public CMovingLogic {
 public:
     CProjectile();                   // 0x126e0 (no-arg)
+    CProjectile(CGameObject* owner); // 0xdec60 (1-arg spawn ctor)
     virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
     virtual i32 ProjectileVfunc();   // one added slot anchors the new vftable
 
@@ -119,79 +124,52 @@ public:
     void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
     void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
     i32 LaunchSound(const char* key); // 0xe2190 (create + play the launch CSample)
+    // Level-load: resolve the projectile's per-type sprite frames + trajectory
+    // (0xdf050, /GX) and the impact/particle effects (0xdfd00). Args are the two
+    // grid endpoints + z + the target/owner ids.
+    i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
+    void LoadProjectileEffects();                                                      // 0xdfd00
 
-    char m_pad140[0x150 - 0x140];
-    i32 m_150;                    // +0x150
-    CProjRenderObj* m_154;        // +0x154  primary render object
-    i32 m_158;                    // +0x158
-    char m_pad15c[0x170 - 0x15c]; //
-    i32 m_170, m_174, m_178;      // +0x170..+0x17b  (grid cell + target id)
-    i32 m_17c, m_180;             // +0x17c/+0x180   (last screen position)
-    char m_pad184[0x198 - 0x184]; //
-    double m_198;                 // +0x198  per-frame scale
-    double m_1a0;                 // +0x1a0  render X (double)
-    double m_1a8;                 // +0x1a8  render Y (double)
-    char m_pad1b0[0x1ec - 0x1b0]; //
-    i32 m_1ec, m_1f0;             // +0x1ec/+0x1f0  spawn cell key
-    char m_pad1f4[0x1fc - 0x1f4]; //
-    CProjRenderObj* m_1fc;        // +0x1fc  shadow render companion
-    CProjSample* m_200;           // +0x200  launch sound sample
-    CObList m_204;                // +0x204  tracked-hit list (block size 10)
-    i32 m_220, m_224;             // +0x220/+0x224  read by ScanTargets
+    // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
+    // now (its Update/Serialize round-trip touches them); CProjectile's own data
+    // resumes at +0x150.
+    i32 m_150;                    // +0x150  (= owner; write-only here, role unproven)
+    CProjRenderObj* m_sprite;     // +0x154  primary sprite/render object (== owner)
+    i32 m_158;                    // +0x158  (= owner->m_7c; write-only here)
+    i32 m_savedFrameGeo;          // +0x15c  saved m_sprite->m_1b4 before each anim Setup
+    char m_pad160[0x170 - 0x160]; //
+    i32 m_kind;                   // +0x170  projectile kind (ProjectileKind; 0x16=WINGZ)
+    i32 m_srcRow, m_srcCol;       // +0x174/+0x178  launcher grid cell (row/col)
+    i32 m_targetX, m_targetY;     // +0x17c/+0x180  destination tile-centre screen pos
+    i32 m_184;                    // +0x184  (unreferenced in this TU)
+    double m_flightDist;          // +0x188  launch distance sqrt(dx^2+dy^2), kept as fabs
+    i32 m_timePerTile;            // +0x190  <Kind>ProjectileTimePerTile (GetDwordDef ms)
+    i32 m_194;                    // +0x194  (unreferenced in this TU)
+    double m_velScale;            // +0x198  per-frame velocity scale (dist / totalTime)
+    double m_posX;                // +0x1a0  render position X (double)
+    double m_posY;                // +0x1a8  render position Y (double)
+    double m_velX;                // +0x1b0  velocity X basis (unit dir)
+    double m_velY;                // +0x1b8  velocity Y basis (unit dir)
+    i32 m_roundXLo, m_roundXHi;   // +0x1c0/+0x1c4  X round-bias double {lo,hi} (0.0/+-0.5)
+    i32 m_roundYLo, m_roundYHi;   // +0x1c8/+0x1cc  Y round-bias double {lo,hi}
+    i32 m_curX, m_curY;           // +0x1d0/+0x1d4  current screen pos (init = owner muzzle)
+    i32 m_isArcing;               // +0x1d8  arced trajectory (per-type; drives 5-tier sprites)
+    i32 m_arrived;                // +0x1dc  one-shot arrival latch (gates LoadProjectileEffects)
+    void* m_frame1;               // +0x1e0  sprite frame "<base>1"
+    void* m_frame2;               // +0x1e4  sprite frame "<base>2"
+    void* m_frame3;               // +0x1e8  sprite frame "<base>3"
+    void *m_frame4, *m_frame5;    // +0x1ec/+0x1f0  sprite frames "<base>4"/"5"
+    void* m_impactSprite;         // +0x1f4  "<base>IMPACT" sprite
+    void* m_fallSprite;           // +0x1f8  "<base>FALL" sprite
+    CProjRenderObj* m_shadow;     // +0x1fc  LightFx shadow render companion
+    CProjSample* m_sound;         // +0x200  launch sound sample
+    CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
+    i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
     char m_pad228[0x230 - 0x228]; //
-    double m_230, m_238;          // +0x230/+0x238  velocity basis
-    double m_240, m_248, m_250;   // +0x240/+0x248/+0x250  position accumulators
-    i32 m_258;                    // +0x258  "launched" flag
+    double m_dirX, m_dirY;        // +0x230/+0x238  trajectory direction basis
+    double m_originX, m_originY;  // +0x240/+0x248  trajectory origin (base position)
+    double m_phase;               // +0x250  trajectory parameter (sin/cos arg; phase gate)
+    i32 m_launched;               // +0x258  launched flag
 };
-
-// Inline CMovingLogic init - folds into every leaf (and the out-of-line ctor).
-// Zeroes the +0x38..+0x10c motion ints and seeds the twelve coordinate-bound
-// doubles to the default [MIN,MAX] box.
-inline CMovingLogic::CMovingLogic() {
-    // The zero-init writes the +0x38..+0x10c motion band. MSVC schedules the
-    // stores in an interleaved "column" order (all .a fields of the 8-byte pairs,
-    // then all .b); listed here in that retail order.
-    m_78 = 0;
-    m_80 = 0;
-    m_88 = 0;
-    m_60 = 0;
-    m_68 = 0;
-    m_70 = 0;
-    m_48 = 0;
-    m_50 = 0;
-    m_58 = 0;
-    m_38 = 0; // inherited CUserLogic field (re-zeroed in the no-arg path)
-    m_40 = 0;
-    m_f8 = 0;
-    m_100 = 0;
-    m_108 = 0;
-    m_7c = 0;
-    m_84 = 0;
-    m_8c = 0;
-    m_64 = 0;
-    m_6c = 0;
-    m_74 = 0;
-    m_4c = 0;
-    m_54 = 0;
-    m_5c = 0;
-    m_3c = 0; // inherited CUserLogic field
-    m_44 = 0;
-    m_fc = 0;
-    m_104 = 0;
-    m_10c = 0;
-    m_f0 = 0;
-    m_a8 = g_movingLogicMin;
-    m_c0 = g_movingLogicMax;
-    m_b0 = g_movingLogicMin;
-    m_c8 = g_movingLogicMax;
-    m_b8 = g_movingLogicMin;
-    m_d0 = g_movingLogicMax;
-    m_110 = g_movingLogicMax;
-    m_118 = g_movingLogicMax;
-    m_120 = g_movingLogicMax;
-    m_128 = g_movingLogicMax;
-    m_130 = g_movingLogicMax;
-    m_138 = g_movingLogicMax;
-}
 
 #endif // GRUNTZ_PROJECTILE_H

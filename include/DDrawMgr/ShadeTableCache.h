@@ -19,7 +19,8 @@
 #ifndef GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
-#include <Ints.h>
+#include <rva.h>          // Ints + the OVERRIDE/SIZE/VTBL label macros
+#include <Wap32/Object.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
 
 // A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
 // m_alloc/m_size/m_data; 0x1501a0 Alloc(size,key) frees+reallocs m_data; 0x1503c0
@@ -36,25 +37,45 @@ struct CShadeTable {
     void Free();              // 0x150190
     i32 Alloc(i32 sz, i32 k); // 0x1501a0 -> bool
     void Destroy();           // 0x1503c0
-    // The two AddFrom* element loaders (sibling element TU, reloc-masked).
-    i32 Load(struct CStr& s, i32 key);                 // 0x150250
-    i32 LoadFile(struct CMemFile* f, i32 size, i32 k); // 0x150330
+    // The two AddFrom* element loaders (sibling element TU, reloc-masked). These
+    // are really CDataBuffer::LoadFromFile / LoadFromMem: Load takes a filesystem
+    // path (via a CString temp the caller builds), LoadFile a raw (buf,len,id)
+    // memory blob - it wraps the buffer in its OWN CMemFile internally, so the
+    // caller passes the raw pointer, not a CMemFile.
+    i32 Load(struct CStr& s, i32 key);        // 0x150250  CDataBuffer::LoadFromFile
+    i32 LoadFile(void* buf, i32 size, i32 k); // 0x150330  CDataBuffer::LoadFromMem
 };
 
-// The growable element-array subobject (lives at class +0x04). Polymorphic: its
-// own vftable is at +0x00. Its destructor restores the array vtable, frees
-// m_pData, and restores the grand-base vtable - the cache dtor inlines this.
-struct CShadeTableArray {
-    void* m_vtbl;          // +0x00 (parent +0x04)
-    CShadeTable** m_pData; // +0x04 (parent +0x08)
-    i32 m_nSize;           // +0x08 (parent +0x0c)
-    i32 m_nMaxSize;        // +0x0c (parent +0x10)
-    i32 m_nGrowBy;         // +0x10 (parent +0x14)
+// The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a
+// real RTTI class (??_7CShadeTableArray @0x5efb28) that derives from the shared WAP
+// grand-base Wap::CObject (RTTI "CObject", grand-base vtable @0x5e8cb4). Its 5-slot
+// vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid / Dump):
+// slots 0/3/4 are inherited, and it overrides slot 1 (dtor 0x150020) + slot 2
+// (Serialize 0x14fe90 = FUN_004028ec). dump_target proves the classic 2-level CObject
+// codegen - the cache ctor (0x14de30) stamps ONLY 0x5efb28 (the dead CObject base stamp
+// elided), the dtor (0x14de50) stamps 0x5efb28 then the CObject-destruction base
+// (0x5e8cb4).
+//
+// Wap::CObject is the MFC-free engine CObject (namespace Wap, no windows.h dependency) -
+// the same grand-base the Net nodes / CGruntzSoundInnerZ derive from - so this header
+// compiles in the PURE-WIN32 includers (LightEffectSetup.cpp pulls <Win32.h> = windows.h
+// FIRST, where <Mfc.h>'s real CObject HARD-ERRORS) as well as the MFC ones. cl inherits
+// the 5 base slots, auto-emits both vtables + auto-stamps/resets the vptr, reproducing
+// retail's exact stamp schedule (the cache ctor/dtor are already 100%).
+struct CShadeTableArray : Wap::CObject {
+    CShadeTable** m_pData; // +0x04 (cache +0x08)
+    i32 m_nSize;           // +0x08 (cache +0x0c)
+    i32 m_nMaxSize;        // +0x0c (cache +0x10)
+    i32 m_nGrowBy;         // +0x10 (cache +0x14)
 
     CShadeTableArray();
-    ~CShadeTableArray();
+    virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides Wap::CObject dtor slot 1
+    virtual void FUN_004028ec()
+        OVERRIDE; // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
+// SIZE/VTBL for CShadeTableArray are kept in ShadeTableCache.cpp (out of this
+// windows.h-adjacent header, whose includers pull the Win32 SIZE struct type).
 
 // The live 256-entry RGB palette base (0x6bf224), each entry a 4-byte
 // {r,g,b,pad} record. The sort/remap builders publish the working palette here
@@ -73,18 +94,19 @@ public:
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.
     CShadeTable* FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 startPct, i32 endPct);
-    CShadeTable* HsvShiftTable(PalEntry* pal, i32 steps, i32 packedColor); // 0x14e540
-    CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);  // 0x14e830
-    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);            // 0x14e9f0
-    CShadeTable* LumaSortTable(PalEntry* pal);                             // 0x14ec00
-    CShadeTable* HueSortTable(PalEntry* pal);                              // 0x14ede0
-    CShadeTable* AddFromArray(const char* name);                           // 0x14f6c0
-    CShadeTable* AddFromFile(const char* name, i32 size);                  // 0x14f8b0
-    CShadeTable* GreyTable();                                              // 0x14eef0
-    CShadeTable* AddTable(float scale);                                    // 0x14f080
-    CShadeTable* SubTable(i32 color);                                      // 0x14f310
-    CShadeTable* AlphaTable(u8* pal);                                      // 0x14f5b0
-    void FindRemove(CShadeTable* t);                                       // 0x14fb80
+    CShadeTable*
+    HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg); // 0x14e540
+    CShadeTable* HueRampTable(PalEntry* pal, i32 steps, i32 packedColor);     // 0x14e830
+    CShadeTable* GammaTable(PalEntry* pal, i32 wRow, i32 wCol);               // 0x14e9f0
+    CShadeTable* LumaSortTable(PalEntry* pal);                                // 0x14ec00
+    CShadeTable* HueSortTable(PalEntry* pal);                                 // 0x14ede0
+    CShadeTable* AddFromArray(const char* name);                              // 0x14f6c0
+    CShadeTable* AddFromFile(const char* name, i32 size);                     // 0x14f8b0
+    CShadeTable* GreyTable();                                                 // 0x14eef0
+    CShadeTable* AddTable(float scale);                                       // 0x14f080
+    CShadeTable* SubTable(i32 color);                                         // 0x14f310
+    CShadeTable* AlphaTable(u8* pal);                                         // 0x14f5b0
+    void FindRemove(CShadeTable* t);                                          // 0x14fb80
 
     // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
     static i32 __cdecl CompareHue(const void* a, const void* b);

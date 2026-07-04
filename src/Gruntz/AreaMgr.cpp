@@ -292,3 +292,10 @@ CSpawnEntryN* CSpawnList::Extract(char* name) {
     }
     return 0;
 }
+
+SIZE_UNKNOWN(AreaPtrList);
+SIZE_UNKNOWN(AreaPtrListBase);
+SIZE_UNKNOWN(CAreaMgr);
+SIZE_UNKNOWN(CSpawnEntryN);
+SIZE_UNKNOWN(CSpawnList);
+SIZE_UNKNOWN(CSpawnNode);

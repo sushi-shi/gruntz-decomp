@@ -179,8 +179,10 @@ def _blank_noncode(text):
 def _scan_blocks_in_text(path, text):
     """Yield Block for every DATA(rva)+extern in one file's text."""
     out = []
+    spans = _linkage_spans(text)
     for m in DATA_RE.finditer(_blank_noncode(text)):
         rva = m.group(1).lower()
+        in_linkage = any(o < m.start() < c for o, c in spans)
         # The declaration starts right after DATA(...) - possibly same line
         # (one-line form) or on a following line. Skip whitespace + line-comments.
         i = m.end()
@@ -229,17 +231,21 @@ def _scan_blocks_in_text(path, text):
             end = line_end
         else:
             end = decl_end + 1
-        out.append(_parse_block(path, rva, m.start(), end, raw, comment))
+        out.append(_parse_block(path, rva, m.start(), end, raw, comment,
+                                in_linkage))
     return out
 
 
-def _parse_block(path, rva, start, end, raw, comment):
+def _parse_block(path, rva, start, end, raw, comment, in_linkage=False):
     # strip block/line comments inside raw, collapse whitespace
     raw_nc = re.sub(r"/\*.*?\*/", " ", raw, flags=re.S)
     raw_nc = re.sub(r"//[^\n]*", " ", raw_nc)
     decl = re.sub(r"\s+", " ", raw_nc).strip()
     is_def = ("=" in decl) or ("{" in raw)
-    extern_c = bool(re.match(r'extern\s+"C"\b', decl))
+    # C linkage comes either inline (`extern "C" T g;`) or from an enclosing
+    # `extern "C" { ... }` block (in_linkage): both give the C-decorated mangled
+    # name, so a member of a linkage block must be re-wrapped when rendered alone.
+    extern_c = bool(re.match(r'extern\s+"C"\b', decl)) or in_linkage
     body = re.sub(r'^extern\s+("C"\s+)?', "", decl).strip().rstrip(";").strip()
     # var name = last identifier before a trailing [..] / ( for funcptr / end.
     # funcptr: `T(__stdcall* name)(args)` -> name is inside the first (...).
@@ -258,10 +264,50 @@ def _parse_block(path, rva, start, end, raw, comment):
     return b
 
 
+def _linkage_spans(text):
+    """[(open_pos, close_pos)] for every `extern "C" { ... }` (or `extern "C++"`)
+    LINKAGE block. A linkage-specification block does NOT introduce a new scope:
+    the externs inside it are file scope (just C-decorated). The plain brace-depth
+    heuristic below would otherwise count the `{` and flag such a global as
+    block-scope (not file scope), needlessly skipping it; and its members' decl
+    text lacks the `extern "C"` (that sits on the block), so a member consolidated
+    into Globals.cpp must be re-wrapped in `extern "C"` to keep its C-decorated
+    mangled name. Braces inside comments / string-char literals are blanked first,
+    so only real code braces are matched."""
+    nc = _blank_noncode(text)
+    spans = []
+    for m in re.finditer(r'\bextern\s*"[^"]*"\s*\{', nc):
+        bpos = m.end() - 1                      # the opening '{'
+        d, i, n = 0, bpos, len(nc)
+        while i < n:
+            ch = nc[i]
+            if ch == "{":
+                d += 1
+            elif ch == "}":
+                d -= 1
+                if d == 0:
+                    spans.append((bpos, i))     # ('{', matching '}')
+                    break
+            i += 1
+    return spans
+
+
+def _linkage_brace_positions(text):
+    """The `{` / `}` char offsets of every linkage block (see _linkage_spans)."""
+    skip = set()
+    for o, c in _linkage_spans(text):
+        skip.add(o)
+        skip.add(c)
+    return skip
+
+
 def _brace_depth_at(text, positions):
     """{pos: net-brace-depth at pos}, ignoring braces in comments / string-char
-    literals - so a DATA() inside a function body is detected (depth > 0)."""
+    literals AND the braces of `extern "C" {}` linkage blocks (those are file
+    scope) - so a DATA() inside a function body is detected (depth > 0) but one in
+    a file-scope linkage block is not."""
     want = sorted(set(positions))
+    skip = _linkage_brace_positions(text)
     out, wi, n = {}, 0, len(text)
     d, i, st = 0, 0, "code"
     while i < n:
@@ -283,9 +329,11 @@ def _brace_depth_at(text, positions):
             elif c == "'":
                 st = "chr"
             elif c == "{":
-                d += 1
+                if i not in skip:
+                    d += 1
             elif c == "}":
-                d -= 1
+                if i not in skip:
+                    d -= 1
         elif st == "str":
             if c == "\\":
                 i += 2
@@ -487,6 +535,18 @@ def normalise(decl):
     return re.sub(r"\s+", " ", decl.strip()).rstrip(";").strip()
 
 
+def from_linkage_block(block):
+    """True if `block` is a member of an `extern "C" { ... }` linkage block: its
+    extern_c flag is set (C linkage) yet its OWN decl text lacks an inline
+    `extern "C"` (that sat on the enclosing block). Such a global must be rendered
+    back inside an `extern "C" { }` wrapper - re-wrapping it as a standalone
+    `extern "C" T g;` would make its decl text DIVERGE from the consuming TU's
+    linkage-block member (`extern T g;`), so name_decls would see two spellings,
+    flag the name polluted, and DROP it on the next run (non-idempotent + lost
+    binding). Wrapping preserves the raw decl text AND the C-decorated mangling."""
+    return block.extern_c and not re.match(r'extern\s+"C"\b', normalise(block.decl))
+
+
 def plan(blocks, only_dups=False):
     """Group blocks by rva and decide consolidatable vs skipped.
 
@@ -627,12 +687,30 @@ def _preamble(consolidate):
     return lines
 
 
+def _split_linkage(consolidate):
+    """(plain, clink) - the consolidated globals partitioned into file-scope decls
+    and members of an `extern "C" {}` linkage block, each sorted by rva."""
+    key = lambda c: int(c[0], 16)
+    plain = sorted((c for c in consolidate if not from_linkage_block(c[1])), key=key)
+    clink = sorted((c for c in consolidate if from_linkage_block(c[1])), key=key)
+    return plain, clink
+
+
 def render_globals_h(consolidate):
     lines = [HEADER_BANNER, "#ifndef GRUNTZ_GLOBALS_H", "#define GRUNTZ_GLOBALS_H", ""]
     lines += _preamble(consolidate)
     lines.append("")
-    for rva, canon, sites, inc, fd in sorted(consolidate, key=lambda c: int(c[0], 16)):
+    plain, clink = _split_linkage(consolidate)
+    for rva, canon, sites, inc, fd in plain:
         lines.append(normalise(canon.decl) + ";")
+    if clink:
+        # C-linkage globals declared inside an `extern "C" {}` block in their TU:
+        # keep them wrapped so the C-decorated mangled name is reproduced and the
+        # member decl text matches the TU (idempotency; see from_linkage_block).
+        lines += ["", 'extern "C" {']
+        for rva, canon, sites, inc, fd in clink:
+            lines.append(normalise(canon.decl) + ";")
+        lines.append("}")
     lines += ["", "#endif // GRUNTZ_GLOBALS_H", ""]
     return "\n".join(lines)
 
@@ -645,9 +723,16 @@ def render_globals_cpp(consolidate):
     lines = [CPP_BANNER]
     lines += _preamble(consolidate)
     lines.append("")
-    for rva, canon, sites, inc, fd in sorted(consolidate, key=lambda c: int(c[0], 16)):
+    plain, clink = _split_linkage(consolidate)
+    for rva, canon, sites, inc, fd in plain:
         cmt = f"  {canon.comment}" if canon.comment else ""
         lines.append(f"DATA({rva}) {normalise(canon.decl)};{cmt}")
+    if clink:
+        lines += ["", 'extern "C" {']
+        for rva, canon, sites, inc, fd in clink:
+            cmt = f"  {canon.comment}" if canon.comment else ""
+            lines.append(f"DATA({rva}) {normalise(canon.decl)};{cmt}")
+        lines.append("}")
     lines.append("")
     return "\n".join(lines)
 

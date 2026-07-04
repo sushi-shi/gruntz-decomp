@@ -5,6 +5,17 @@
 // CGruntzMgr ctor.  The base WAP32::CGameMgr is the genuine 0x2c engine class;
 // all the 0xa30 of per-game state lives HERE.
 //
+// SAME OBJECT AS THE g_gameReg SINGLETON (*0x24556c): CGruntzMgr is the RTTI-true,
+// fully-typed MFC VIEW of the very object that <Gruntz/GameRegistry.h>'s
+// CGameRegistry models as a plain (MFC-free) struct for the ~60 engine/Win32 TUs.
+// Proof: CGruntzMgr::ReportError == CGameRegistry::Ack (both @0x08dc60); m_curState
+// ==CGameRegistry::m_2c, m_sound==m_48, m_modeW==m_8c, etc. The two headers are the
+// ONE canonical layout expressed twice: CGameRegistry.h is the field-offset source
+// of truth (its comments carry these descriptive names). They CANNOT be a single
+// header - CGameRegistry.h is included by pure-Win32 TUs (`<Win32.h>`->windows.h)
+// and this MFC class pulls afx (C1189 "MFC apps must not #include <windows.h>").
+// See docs/vtable-conversion-log.md ("0x24556c dual-view: MFC/Win32 wall").
+//
 // Only the offsets the matched methods touch are load-bearing:
 //   +0xc8 CString, +0xd0 CD drive-letter cache (char) / +0xd4 probed flag,
 //   +0xd8 CByteArray, +0xec/+0xf0 CString, +0x150 a 0x238-byte options object
@@ -15,28 +26,21 @@
 #define GRUNTZ_GRUNTZ_GRUNTZMGR_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
 #include <Wap32/Wap32.h>
-#include <Gruntz/CString.h>
-#include <Gruntz/GameLevel.h> // CByteArray
-#include <Gruntz/CState.h>    // CState (m_curState game-state; Update() at slot 4)
+#include <Gruntz/String.h>
+#include <Gruntz/GameLevel.h>     // CByteArray
+#include <Gruntz/State.h>         // CState (m_curState game-state; Update() at slot 4)
+#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ / CGruntzSoundInnerZ (m_sound @ +0x48)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
 // and its dtor (FUN_0051f640) takes (this, 0x238, 4, &LoadOptions); both are
 // out-of-line so the calls reloc-mask. Only the size (0x238) + that it is a
 // destructible member (EH state 4) are load-bearing.
+SIZE_UNKNOWN(CGruntzMgrOptions);
 struct CGruntzMgrOptions {
     CGruntzMgrOptions();
     ~CGruntzMgrOptions();
     char m_pad[0x238];
-};
-
-// Minimal sound/DirectSound-ish object held at CGruntzMgr +0x48. Its two
-// reloc-masked __thiscall helpers (this in ecx) only need the right call shape;
-// the inner object at +0x1c carries the per-frame busy poll.
-struct CGruntzSoundInnerZ {
-    char m_pad0[0x48];
-    i32 m_48;     // +0x48  per-bank restart flag
-    i32 IsBusy(); // FUN_00538f60 (this) -> ret (busy state-id 4/0x10)
 };
 
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
@@ -46,6 +50,7 @@ struct CGruntzSoundInnerZ {
 // stored elements are CState* (the pushed game states) whose Update() (slot 4,
 // +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
 // NAFXCW helpers (reloc-masked).
+SIZE_UNKNOWN(CStateStackZ);
 struct CStateStackZ {
     void* m_vptr;                        // +0x00 CObject vptr
     CState** m_pData;                    // +0x04 element store
@@ -56,71 +61,88 @@ struct CStateStackZ {
     void SetAtGrow(i32 i, CState* elem); // @0x5b5144
     void RemoveAt(i32 i, i32 n);         // @0x5b5200
 };
-struct CGruntzSoundZ {
-    void StopBank(i32 flag);    // FUN_00538900 (this, 1)  -> ret 4
-    void StopAll();             // FUN_005388f0 (this)
-    void StopBank2();           // FUN_00538920 (this)     -> ret 4 (busy-driven stop)
-    i32 Restart_1388c0(i32 a1); // FUN_005388c0 (this, 1) re-launch current bank
-    i32 GetMusicVolume();       // FUN_005389c0 (this) -> current music volume (UnknownClose save)
-    char m_pad0[0x1c];          // +0x00..+0x1c
-    CGruntzSoundInnerZ* m_1c;   // +0x1c  inner object IsBusy/StopAll deref / m_pCurrent
-};
-
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
 // CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 a
 // sub-controller whose +0x2c object carries a teardown thiscall; +0x520 a 4-slot
 // status array the paused-state poll walks (status id at each slot's +0x20).
+SIZE_UNKNOWN(CWorldSub2c);
 struct CWorldSub2c {
     void Teardown(); // FUN_00537a80 (this)
 };
+SIZE_UNKNOWN(CWorldSub28);
 struct CWorldSub28 {
     char m_pad[0x2c];
     CWorldSub2c* m_2c; // +0x2c
 };
 struct CWorldView;
+// The world's +0x10 recolor lookup holder (its own +0x10 is an embedded CColorLookup);
+// CWorldZ::m_10 is a pointer, so a forward declaration suffices - the holder's full
+// layout lives in GruntzMgr.cpp, the only TU that walks it.
+struct CWorldLookupHolder;
 // A polymorphic sub-object held in the world at +0x1c, dispatched through a
-// pointer-to-pointer (`*m_1c`) then vtbl slot 10 (+0x28).
-struct CWorldDispatch {
-    struct Vtbl {
-        void* s0[10];
-        void(__stdcall* Slot0a)(CWorldDispatch*); // +0x28
-    }* vtbl;
-};
+// pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
+// definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
+// it; here CWorldZ::m_1c is a pointer, so a forward declaration suffices (keeps this
+// widely-included class header free of the <ComDefs.h> STDMETHOD footprint).
+struct CWorldDispatch;
 // The world's +0x4 sub-object exposes a map-index field at +0x14.
+SIZE_UNKNOWN(CWorldSub4);
 struct CWorldSub4 {
     char m_pad0[0x14];
     i32 m_14; // +0x14
 };
+// The real loaded-world/map object (CGruntzMgr::m_world). One object; each manager
+// method that touches it reads a different facet: the +0x4 map sub-object, the +0x10
+// recolor lookup holder, the +0x1c polymorphic dispatch, the +0x24 active view, the
+// +0x28 sound/state sub-controller and the +0x38 load-status code.
+SIZE_UNKNOWN(CWorldZ);
 struct CWorldZ {
     char m_pad0[0x4];
     CWorldSub4* m_4; // +0x04
-    char m_pad8[0x1c - 0x8];
+    char m_pad8[0x10 - 0x8];
+    CWorldLookupHolder* m_10; // +0x10  recolor lookup holder
+    char m_pad14[0x1c - 0x14];
     CWorldDispatch** m_1c; // +0x1c
     char m_pad20[0x24 - 0x20];
     CWorldView* m_24;  // +0x24  active world view
     CWorldSub28* m_28; // +0x28
+    char m_pad2c[0x38 - 0x2c];
+    u32 m_38; // +0x38  load-status code (ReportWorldStatus maps it to a message id)
 };
 
 // Minimal IDirectPlayLobby-shaped COM surface used by
-// InitializeLobbyConnectionSettings: only the two vtable slots it calls are
-// needed - Release (slot 2, +0x8) and GetConnectionSettings (slot 8, +0x20,
-// called twice in the size-probe / fill-buffer idiom). The call rel32/IAT
-// displacements reloc-mask; only the slot offsets + arg shapes are load-bearing.
-struct IDirectPlayLobbyZ {
-    struct Vtbl {
-        void *slot0, *slot1;
-        i32(__stdcall* Release)(IDirectPlayLobbyZ*); // +0x08
-        void *slot3, *slot4, *slot5, *slot6, *slot7;
-        i32(__stdcall* GetConnectionSettings)(
-            IDirectPlayLobbyZ*,
-            u32 appId,
-            void* lpData,
-            u32* lpdwSize
-        ); // +0x20
-    }* vtbl;
-};
+// InitializeLobbyConnectionSettings (Release slot 2 / GetConnectionSettings slot 8,
+// called twice in the size-probe / fill idiom). The full COM-interface definition
+// (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on it; the
+// CGruntzMgr::m_lobby member is a pointer, so a forward declaration suffices here.
+struct IDirectPlayLobbyZ;
 
+// The +0x54 input/state object (Flush/Arm/Disarm/InitInput/Method0/Method1/
+// StoreFlag). Full view lives in GruntzMgr.cpp; the m_inputState member is a
+// pointer, so a forward declaration suffices here.
+struct CInput54;
+
+// The manager's owned engine sub-objects, each a real class reached only through a
+// reloc-masked thiscall / vtable slot from GruntzMgr.cpp; the members are pointers,
+// so forward declarations suffice here. Each unifies what were previously several
+// per-method facet views of the SAME object into its one real class (defined in
+// GruntzMgr.cpp): the teardown-only slots share EngObj (Teardown()), and the
+// multi-facet slots carry all their facets' fields + methods.
+struct EngObj;          // teardown-only sub-object (Teardown())
+class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
+struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
+struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
+struct HudGuard44;      // +0x44 HUD first-frame guard (m_124)
+struct SaveSink58;      // +0x58 save-record sink (Store)
+struct CChatLog;        // +0x5c chat/message log (Insert)
+struct TimerObj;        // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
+struct CCmdGrid;        // +0x68 world delta-table grid + command sink
+struct CmdSink;         // +0x6c command sub-manager sink (Command)
+class CmdSinkV;         // +0x70 polymorphic command sink (slot 1) + cell-height notify
+struct ScoreHud;        // +0x7c HUD/score accumulator + command sink
+
+SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();
@@ -132,11 +154,11 @@ public:
     void* ScalarDeletingDtor(u32 flags); // @0x083330
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
-    void UnknownClose() OVERRIDE; // @0x0855e0 (member teardown)
-    void AccrueScoreTime();       // @0x0861e0 (per-state HUD time/score accrual + state push)
-    void OnCheckpointReached();   // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
-    void DelayedQuit();           // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
-    i32 SaveGameAs();             // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
+    void Close() OVERRIDE;      // @0x0855e0 (member teardown)
+    void AccrueScoreTime();     // @0x0861e0 (per-state HUD time/score accrual + state push)
+    void OnCheckpointReached(); // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
+    void DelayedQuit();         // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
+    i32 SaveGameAs();           // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
@@ -186,20 +208,21 @@ public:
     void LogLine(char* s);           // @0x1b54 thunk  log the resolution line
 
     // Level cycle + debug layer toggles (proximity-attributed, reconstructed).
-    i32 GoToNextLevel();              // @0x08d850 (PLAY: advance current level index, wrap)
-    i32 GoToPrevLevel();              // @0x08d910 (PLAY: retreat current level index, wrap)
-    i32 ToggleObjectLayer();          // @0x08efe0 (toggle the "current" object layer visible bit)
-    i32 ToggleHeightLayer();          // @0x08f060 (toggle the m_5c sub-layer visible bit)
+    i32 GoToNextLevel();     // @0x08d850 (PLAY: advance current level index, wrap)
+    i32 GoToPrevLevel();     // @0x08d910 (PLAY: retreat current level index, wrap)
+    i32 ToggleObjectLayer(); // @0x08efe0 (toggle the "current" object layer visible bit)
+    i32
+    ToggleHeightLayer(); // @0x08f060 (toggle the height sub-layer (m_world->m_24->m_5c) visible bit)
     i32 ToggleBaseLayer();            // @0x08f0b0 (toggle layer[0]'s visible bit)
     i32 PollUnlessIdle();             // @0x08f2f0 (CheckPlayState() unless state idle (5); ret 0)
-    i32 AppendChatMessage(char* msg); // @0x08f9c0 (-> m_5c chat-log insert)
+    i32 AppendChatMessage(char* msg); // @0x08f9c0 (-> m_chatLog insert)
     i32 ShowToggleMessage(char* itemName, i32 on); // @0x08f9f0 ("<item> is ON/OFF")
 
     i32 IsMoviePathValid();        // @0x0901d0 (bool-normalized FileExists(m_strMoviePath))
     void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
     i32 LoadMonologoSprite();      // @0x090d10 (PLAY-only: find/toggle/create the MONOLITH logo)
     i32 SetGruntColor(i32 sink, i32 key, i32 idx); // @0x0910d0 (recolor a sink cell)
-    i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_severusCounterB color by depth)
+    i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_surfaceColorKey color by depth)
     i32 LoadWorldMode(i32 mode);     // @0x091a40 (switch the world video/color mode + reload)
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
     void StopBankIfActive();         // @0x092000 (if m_sound && m_14: m_sound->StopAll())
@@ -212,15 +235,21 @@ public:
     CString GetWorldFileName(); // @0x0928c0 (return a copy of m_strWorldFile)
     i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
     i32 SyncOptionsState();     // @0x093170 (reload each options slot's config; dual-slot)
-    void SetCellHeight(i32 r, i32 c, i32 v);              // @0x111ec0 (write the world height grid)
-    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2);     // @0x08d780
-    i32 SwitchToNextState();                              // @0x08d6a0
-    void EnterModalUI(i32 arg);                           // @0x08ef10
-    i32 ExitModalUI(class CModalDialog* dlg, i32 notify); // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
+    void SetCellHeight(i32 r, i32 c, i32 v);          // @0x111ec0 (write the world height grid)
+    i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2); // @0x08d780
+    i32 SwitchToNextState();                          // @0x08d6a0
+    // @0x08b960: the /GX state-machine factory - tear down the current state
+    // (push it or scalar-delete + drain the stack), then build the new game-state
+    // object for `stateId` (switch/new + ctor + vtable), install it, run its
+    // slot-1 activate; ret 1 (0 on new/activate failure). Lives in an eh sibling TU.
+    i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
+    void FlushStateStack();     // @0x090a50 (scalar-delete + drain the pushed state stack)
+    void EnterModalUI(i32 arg); // @0x08ef10
+    i32 ExitModalUI(class CModalDialog* dlg, i32 notify);   // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);                // @0x08e980
     i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(class CSerializerZ* ar);                  // @0x093620
-    i32 LoadState(class CSerializerZ* ar);                  // @0x093920 (deserialize counterpart)
+    i32 SaveState(struct CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
+    i32 LoadState(struct CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
     void UpdateScoreHud();                                  // @0x0860b0
     i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);      // @0x093460
     void RecomputeViewScale();                              // @0x08f7f0
@@ -290,27 +319,33 @@ public:
     i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_curState;               // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_world;                 // +0x30  loaded world/map object (also a draw gate)
-    i32 m_34, m_38, m_3c, m_40, m_44; // +0x34..+0x44  (+0x44 -> HudGuard44 first-frame guard)
-    CGruntzSoundZ* m_sound;           // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c, m_50;                   // +0x4c, +0x50
-    // +0x54..+0x78 sub-controllers (4-byte object pointers; each is reached only
-    // through a reloc-masked thiscall on a TU-local view, so kept i32-wide):
-    i32 m_inputState;     // +0x54  input/state object (Method0/Method1/StoreFlag)
-    i32 m_saveSink;       // +0x58  save-record sink (SaveSink58::Store)
-    i32 m_5c;             // +0x5c
-    i32 m_timer;          // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
-    i32 m_64;             // +0x64
-    i32 m_cmdGrid;        // +0x68  world delta-table grid + command sink (Reset/Flush)
-    i32 m_cmdSubMgr;      // +0x6c  command sub-manager sink
-    i32 m_cmdNotify;      // +0x70  command sink (vtbl slot 1) + cell-height notify
-    i32 m_74, m_78;       // +0x74, +0x78
-    i32 m_scoreHud;       // +0x7c  HUD/score accumulator + command sink
-    i32 m_numRuns;        // +0x80  "Num_Runs"   (launch counter; UnknownClose WriteInt)
-    i32 m_numMovies;      // +0x84  "Num_Movies" (movie-playback counter)
-    i32 m_colorDepth;     // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
-    i32 m_modeW, m_modeH; // +0x8c, +0x90  live video mode (w, h)
+    CState* m_curState;              // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_world;                // +0x30  loaded world/map object (also a draw gate)
+    CRezSurface94* m_recolorSurface; // +0x34  color-depth recolor surface
+    CSettingsWriter* m_settings;     // +0x38  settings/registry writer (WriteInt)
+    CWorldDelete* m_3c;              // +0x3c  engine sub-object (vtable-slot-1 teardown)
+    EngObj* m_40;                    // +0x40  engine sub-object (teardown-only)
+    HudGuard44* m_hudGuard;          // +0x44  HUD first-frame seed guard (+0x124)
+    CGruntzSoundZ* m_sound;          // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c;                        // +0x4c
+    EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
+    // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
+    // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
+    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
+    SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
+    CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
+    TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
+    i32 m_64;               // +0x64
+    CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
+    CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
+    CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
+    EngObj* m_74;           // +0x74  engine sub-object (teardown-only)
+    EngObj* m_78;           // +0x78  engine sub-object (teardown-only)
+    ScoreHud* m_scoreHud;   // +0x7c  HUD/score accumulator + command sink
+    i32 m_numRuns;          // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
+    i32 m_numMovies;        // +0x84  "Num_Movies" (movie-playback counter)
+    i32 m_colorDepth;       // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)
+    i32 m_modeW, m_modeH;   // +0x8c, +0x90  live video mode (w, h)
     i32 m_savedModeW, m_savedModeH; // +0x94, +0x98  saved/last-good mode (w, h)
     i32 m_lobbyResult;              // +0x9c  lobby-connect success flag (1/0)
     i32 m_lobbyProbed;              // +0xa0  one-shot lobby-connect guard

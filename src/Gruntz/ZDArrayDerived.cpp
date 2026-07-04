@@ -7,6 +7,11 @@
 #include <Ints.h>
 #include <rva.h>
 
+// KEEP (faithful, not a hack): the vptr store lives in the non-ctor two-phase
+// Construct() helper (returns `this` after the base build), so cl cannot auto-emit
+// it as a real ??_7 stamp - a real ctor would relocate the base-ctor call + the
+// derived stamp and diverge (vtable-realization-ctor-boundary). g_zDArrayVtbl
+// (0x5e70fc) is the shared CTypeKeyColl-family derived table. 100% matched.
 DATA(0x001e70fc)
 extern void* g_zDArrayVtbl; // 0x5e70fc
 
@@ -26,3 +31,4 @@ CZDArrayDerived* CZDArrayDerived::Construct(i32 lo, i32 hi) {
     m_vtbl = &g_zDArrayVtbl;
     return this;
 }
+SIZE_UNKNOWN(CZDArrayDerived);

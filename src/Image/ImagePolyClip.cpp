@@ -8,7 +8,7 @@
 // moment a pass empties the polygon, else publishes the final vertex count to
 // 0x6becf8 and returns 1. The four int clip args are converted to float in the
 // prologue (fild/fstp). Field names are placeholders; offsets + code bytes are
-// load-bearing. See <Gruntz/CDDrawShadeBlit.h> family for the surrounding blit.
+// load-bearing. See <DDrawMgr/DDrawShadeBlit.h> family for the surrounding blit.
 #include <Ints.h>
 
 #include <rva.h>
@@ -31,7 +31,7 @@ DATA(0x002becf8)
 extern i32 g_polyClipCount; // 0x6becf8
 
 // ===========================================================================
-// 0x1461b0 - clip `poly` (n verts) to the rect [a2 (left) .. a4 (right)] x
+// Clip `poly` (n verts) to the rect [a2 (left) .. a4 (right)] x
 // [a3 (top) .. a5 (bottom)] in four inlined Sutherland-Hodgman passes.
 // ===========================================================================
 // @early-stop
@@ -168,3 +168,5 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     g_polyClipCount = n4;
     return 1;
 }
+
+SIZE(PolyVtx, 0x1c); // clip-buffer vertex {x,y,attr[5]} (g_polyBuf* array element)

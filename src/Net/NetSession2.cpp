@@ -4,7 +4,19 @@
 // Reset re-inits them; Init wires the three owner pointers then Resets; Verify
 // validates the slots against a windowed sequence. All cross-class callees are
 // external (reloc-masked). Field names are placeholders; offsets are load-bearing.
+//
+// DELIBERATELY a local CNetSession2 / CNetCmdSlot2 model, NOT folded onto the
+// canonical CNetSession / CNetCmdSlot (NetMgr.h) even though it IS the same 0x20bb0
+// object. Folding was attempted: it is byte-neutral (the compiled code is identical -
+// Reset still shows only its documented rep-stos scheduling swap), but renaming the
+// three methods to CNetSession::* UNPAIRS them in objdiff: the delinker packs all
+// three target functions into one .text section (Init@0, Reset@0x54, Verify@0xac) and
+// only the offset-0 symbol (Init) re-pairs with the base's separate COMDAT sections
+// under the CNetSession name, dropping Reset+Verify to 0% (unit 67%->30%). A pure
+// delinker/objdiff symbol-packing artifact, but a real measured-% loss - so the leaner
+// shadow is kept until the final sweep can fold it without the scoring regression.
 #include <Ints.h>
+#include <Net/NetMgr.h> // shared CNetMgr (m_cmdDelay @+0x5a4) + CNetResyncEntry
 #include <rva.h>
 #include <string.h>
 
@@ -19,17 +31,7 @@ struct CNetCmdSlot2 {
     void FullReset(); // 0xc0c20 (external, reloc-masked)
     i32 Ready();      // 0xc1320 (external, reloc-masked)
 };
-
-struct CNetResyncEntry {
-    i32 m_0; // +0x00
-    i32 m_4; // +0x04
-    u8 m_8;  // +0x08
-    char m_pad9[0xc - 9];
-    i32 m_c; // +0x0c
-    char m_pad10[0x410 - 0x10];
-};
-
-struct CNetMgr;
+SIZE(CNetCmdSlot2, 0x64); // fully-known inline command slot (array stride 0x64)
 
 struct CNetSession2 {
     void* m_0;    // +0x00  owner a1
@@ -48,12 +50,7 @@ struct CNetSession2 {
     i32 Init(void* a1, CNetMgr* a2, void* a3); // 0xbef80
     i32 Verify(i32 n);                         // 0xc0290
 };
-
-// The owning net manager: only +0x5a4 (cached by Init) is read.
-struct CNetMgr {
-    char m_pad0[0x5a4];
-    i32 m_cmdDelay; // +0x5a4
-};
+SIZE(CNetSession2, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entries
 
 // @early-stop
 // rep-stos setup scheduling wall (94.1%): logic + every other byte exact. The ONLY
@@ -98,6 +95,13 @@ i32 CNetSession2::Init(void* a1, CNetMgr* a2, void* a3) {
     return 1;
 }
 
+// @early-stop
+// slot-pointer anchor + member re-read wall (~89.5%): logic byte-faithful (the
+// per-slot armed==3 / resetGuard gate, the baseSeq window test, the Ready()+
+// latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_resetGuard) and
+// re-reads resetGuard with `cmp $0,(esi)` each test; cl CSEs the read into a reg
+// and anchors at +0x34 (m_baseSeq). Splitting the else-if into two ifs regressed
+// it (87.2%); the anchor is a non-steerable addressing-mode tie-break. Final sweep.
 RVA(0x000c0290, 0x63)
 i32 CNetSession2::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {

@@ -15,30 +15,13 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Gruntz/SerialArchive.h> // the serialized reader is the shared CSerialArchive (Read @ +0x2c)
+#include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82, both __cdecl)
 
-// The Rez heap throwing new / nothrow free (0x1b9b46 / 0x1b9b82, both __cdecl).
-void* operator new(u32 size);  // 0x1b9b46
-void operator delete(void* p); // 0x1b9b82
+// The serialized type id is read off the shared CSerialArchive stream (Read @
+// vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
 
-// The serialized reader the type id is read off: vtable slot 11 (+0x2c) is a
-// Read(void* buf, i32 n). Modeled polymorphically so `mov eax,[r]; call [eax+0x2c]`
-// falls out with no cast; the vtable is owned elsewhere (no emit here).
-struct CTrigReader {
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v0a();
-    virtual void Read(void* buf, i32 n); // slot 11 (+0x2c)
-};
-
-// A board tile-object reached via g_mgrSettings->m_30->m_24->m_4c[tile]; slot 8 (+0x20)
+// A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
 struct CTileObj {
     virtual void s0();
@@ -51,8 +34,9 @@ struct CTileObj {
     virtual void s7();
     virtual i32 TypeId(); // slot 8 (+0x20)
 };
+SIZE_UNKNOWN(CTileObj);
 
-// The board geometry (g_mgrSettings->m_30->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
+// The board geometry (g_mgrSettings->m_world->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
 // bounds, m_5c->m_24 the row base, m_5c->m_20 the cell->tile map, m_4c the tile-object
 // table. Reached by raw offset (engine struct, modeled minimally).
 struct CTrigBoardGeo {
@@ -60,23 +44,39 @@ struct CTrigBoardGeo {
     i32* m_24row;                     // +0x24  row base (cell index = m_24row[y] + x)
     char m_pad28[0x20 - 0x28 + 0x20]; // pad to +0x20-relative kept raw below
 };
+SIZE_UNKNOWN(CTrigBoardGeo);
 struct CTrigBoard {
     char m_pad00[0x4c];
     CTileObj** m_4c; // +0x4c  tile-object table (indexed by the resolved tile id & 0xffff)
+    char m_pad50[0x5c - 0x50];
+    i32* m_5c; // +0x5c  board geometry block (bounds @0x28/0x2c, row-base @0x24, cell-map @0x20)
 };
+SIZE_UNKNOWN(CTrigBoard);
 struct CTrigMgrInner {
     char m_pad00[0x24];
     CTrigBoard* m_24; // +0x24
 };
+SIZE_UNKNOWN(CTrigMgrInner);
 struct CTrigMgr {
     char m_pad00[0x30];
-    CTrigMgrInner* m_30; // +0x30
+    CTrigMgrInner* m_world; // +0x30
 };
+SIZE_UNKNOWN(CTrigMgr);
 extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 
 // The built trigger-logic object. The 14 distinct ctor thunks (0-arg __thiscall,
 // returning the object) and the 3 register thunks (4-arg __thiscall, returning success)
 // are reloc-masked externals reached through the incremental-link thunk table.
+//
+// DISPOSITION (CTrigLogic8c/9c/C8): these are NOT single classes - each is a SIZE
+// BUCKET (0x8c/0x9c/0xc8 bytes) that the switch allocates for SEVERAL distinct real
+// leaf classes (e.g. CTrigLogic8c covers ctor thunks 0x3206/0x3eb3/0x4192/0x2db5/
+// 0x332d/0x2f72 = 6 different trigger-logic leaves). A single real class name can't
+// stand for a size bucket, so they are kept as honest size-tagged models; the real
+// per-id leaf classes (CTileMultiTriggerSwitchLogic, CGiantRockLogic, ... in
+// TileTriggerDerivedCtors.cpp) each name themselves where individually reconstructed.
+struct CTileTriggerFactory; // the owning factory (this); back-stamped into m_20/m_24
+
 struct CTrigLogic {
     struct Ctor3206Tag {};
     struct Ctor3eb3Tag {};
@@ -90,15 +90,14 @@ struct CTrigLogic {
     struct Ctor310cTag {};
     struct Ctor2a4fTag {};
 
-    i32 m_00;   // +0x00
-    void* m_04; // +0x04  type id
-    i32 m_08;   // +0x08  (id 21: board x)
-    i32 m_0c;   // +0x0c  (id 21: board y)
+    i32 m_00; // +0x00
+    i32 m_04; // +0x04  type id (the switch id 1..26)
+    i32 m_08; // +0x08  (id 21: board x)
+    i32 m_0c; // +0x0c  (id 21: board y)
     char m_pad10[0x20 - 0x10];
-    void* m_20; // +0x20  owner (1abe / 1d39 group)
-    void* m_24; // +0x24  owner (277f group)
-    char m_pad28[0x70 - 0x28];
-    void* m_70; // +0x70  (unused by the object itself; this->m_70 is what id 21 latches)
+    CTileTriggerFactory* m_20; // +0x20  owner (1abe / 1d39 group)
+    CTileTriggerFactory* m_24; // +0x24  owner (277f group)
+    char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
 
     CTrigLogic* Ctor3206();                      // 0x3206 (ids 1,2,5)
     CTrigLogic* Ctor3eb3();                      // 0x3eb3 (id 3)
@@ -115,6 +114,7 @@ struct CTrigLogic {
     i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
     i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
 };
+SIZE_UNKNOWN(CTrigLogic);
 
 struct CTrigLogic8c : public CTrigLogic {
     inline CTrigLogic8c(CTrigLogic::Ctor3206Tag) {
@@ -138,6 +138,7 @@ struct CTrigLogic8c : public CTrigLogic {
 
     char m_sizePad[0x8c - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogic8c);
 
 struct CTrigLogic9c : public CTrigLogic {
     inline CTrigLogic9c(CTrigLogic::Ctor43b3Tag) {
@@ -155,6 +156,7 @@ struct CTrigLogic9c : public CTrigLogic {
 
     char m_sizePad[0x9c - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogic9c);
 
 struct CTrigLogicC8 : public CTrigLogic {
     inline CTrigLogicC8(CTrigLogic::Ctor2c3eTag) {
@@ -163,21 +165,23 @@ struct CTrigLogicC8 : public CTrigLogic {
 
     char m_sizePad[0xc8 - 0x74];
 };
+SIZE_UNKNOWN(CTrigLogicC8);
 
 // The factory container (this): the built object's owner; id 21 latches the object
 // into this->m_70.
 struct CTileTriggerFactory {
     char m_pad00[0x70];
-    void* m_70; // +0x70
+    CTrigLogic* m_70; // +0x70  id-21 latches the built object here
 
-    void* Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3); // 0x117800
+    void* Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3); // 0x117800
 };
+SIZE_UNKNOWN(CTileTriggerFactory);
 
 // Build the 277f-group object: alloc 0x8c, run `ctor`, register, stamp owner+id.
 static void* Reg277fTail(
     CTileTriggerFactory* self,
     CTrigLogic* obj,
-    CTrigReader* reader,
+    CSerialArchive* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -186,7 +190,7 @@ static void* Reg277fTail(
         return 0;
     }
     obj->m_24 = self;
-    obj->m_04 = (void*)id;
+    obj->m_04 = id;
     return obj;
 }
 
@@ -194,7 +198,7 @@ static void* Reg277fTail(
 static void* Reg1abeTail(
     CTileTriggerFactory* self,
     CTrigLogic* obj,
-    CTrigReader* reader,
+    CSerialArchive* reader,
     i32 a2,
     i32 a3,
     i32 id
@@ -203,7 +207,7 @@ static void* Reg1abeTail(
         return 0;
     }
     obj->m_20 = self;
-    obj->m_04 = (void*)id;
+    obj->m_04 = id;
     return obj;
 }
 
@@ -216,7 +220,7 @@ static void* Reg1abeTail(
 // MSVC tail-merges differently from the helper-factored spelling here) + the differently
 // -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
 RVA(0x00117800, 0x47f)
-void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) {
+void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
     if (reader == 0) {
         return 0;
     }
@@ -258,12 +262,12 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
                 return 0;
             }
             obj->m_20 = this;
-            obj->m_04 = (void*)id;
+            obj->m_04 = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
-            CTrigBoard* board = g_mgrSettings->m_30->m_24;
+            CTrigBoard* board = g_mgrSettings->m_world->m_24;
             i32 x = obj->m_08;
             i32 y = obj->m_0c;
-            i32* geo = *(i32**)((char*)board + 0x5c);
+            i32* geo = board->m_5c;
             if (x < 0) {
                 x = 0;
             } else if (x >= geo[0x28 / 4]) {
@@ -294,7 +298,7 @@ void* CTileTriggerFactory::Build(CTrigReader* reader, i32 kind, i32 a2, i32 a3) 
                 return 0;
             }
             obj->m_20 = this;
-            obj->m_04 = (void*)id;
+            obj->m_04 = id;
             return obj;
         }
         case 23: {

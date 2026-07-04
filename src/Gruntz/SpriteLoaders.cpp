@@ -1,5 +1,9 @@
 #include <rva.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
+#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -14,7 +18,7 @@
 //       g_gameReg (->+0x30 ->+0x10). Caches frames 10/11 and bails to
 //       0 if any required frame is missing.
 //   LoadLoadingBarSprite - the loading-screen
-//       progress-bar sprite ("GAME_LOADINGBAR"); looked up through this->m_c
+//       progress-bar sprite ("GAME_LOADINGBAR"); looked up through this->m_resMgr
 //       (->+0x10). Caches frames 1/2/3 and a loaded flag.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
@@ -30,46 +34,11 @@
 // (returning a found-flag). Modeled minimally so the `ecx=<map>; call <helper>`
 // shape reloc-masks against the matched lookup helper.
 // ---------------------------------------------------------------------------
-struct CSprite;
-class CSpriteHashTable {
-public:
-    i32 Lookup(char* szName, CSprite** ppOut);
-};
+// CSprite (frame-data value) + CSpriteHashTable come from <Gruntz/Sprite.h>;
+// CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
+// The registry's embedded name->sprite hash table is <registry>->m_10map.
 
-// The engine sprite (animation) object. Only the load-bearing members are
-// reconstructed: a frame-pointer table at +0x14 and the inclusive valid frame
-// range [m_64 .. m_68].
-struct CSprite {
-    char m_pad00[0x14];
-    i32** m_14; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  first valid frame number
-    i32 m_68; // +0x68  last valid frame number
-};
-
-// The sprite manager: its name->sprite hash table is embedded at +0x10 (the
-// `add ecx,0x10` before the lookup call addresses it).
-struct CSpriteMgr {
-    char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10  the name->sprite hash table
-};
-
-// The world/key lookup table the Tick expiry path probes (FindByKey, RVA
-// 0x1b8760 / "Lookup", external). Reached at resmgr->m_8 + 0x48.
-struct CKeyTable {
-    i32 FindByKey(i32 key, i32* outFound);
-};
-
-// The intermediate resource object both loaders reach the sprite manager through:
-// its +0x10 slot points at the CSpriteMgr; +0x8 holds the world key table.
-struct CResMgr {
-    char m_pad00[0x8];
-    CKeyTable* m_8; // +0x8
-    char m_padc[0x10 - 0xc];
-    CSpriteMgr* m_10; // +0x10
-};
-
-// The per-level state object hung off g_gameReg->m_2c: the expiry path stamps a
+// The per-level state object hung off g_gameReg->m_curState: the expiry path stamps a
 // "time up" command (m_4f4/m_400/m_404) and the clock snapshot (m_3f8/m_3fc).
 struct CLevelState {
     char m_pad00[0x3f8];
@@ -86,29 +55,19 @@ struct CLevelNotify {
     void Notify(i32 idx);
 };
 
-// One per-player timer slot in the g_gameReg->m_150 array (stride 0x238 bytes);
-// the expiry path sets m_24 = 1.
-struct CTimerSlot {
-    char m_pad00[0x24];
-    i32 m_24; // +0x24
-};
+// The per-player timer slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
+// (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
+// holds the level/entity key.
 
-// The loading bar reaches the resource object through this->m_c.
-// The game-manager singleton (g_gameReg) reaches it through g_gameReg->m_30.
-// The expiry path also touches m_2c (level state), m_68 (notify), a per-player
-// timer-slot array at +0x150 (stride 0x238) and m_15c (a sub-object whose first
-// slot overlaps the array, so it is read via the raw offset).
-struct CGameReg {
-    char m_pad00[0x2c];
-    CLevelState* m_2c; // +0x2c
-    CResMgr* m_30;     // +0x30
-    char m_pad34[0x68 - 0x34];
-    CLevelNotify* m_68; // +0x68
-    char m_pad6c[0x150 - 0x6c];
-    char m_150[0x238]; // +0x150  base of the per-player timer-slot array (stride 0x238)
-};
+// The loading bar reaches the resource object through this->m_resMgr (its own CResMgr).
+// The canonical CGameRegistry view of the singleton (*0x24556c). The resource mgr
+// (+0x30, typed CSpriteFactoryHolder) is reached without a cast; its +0x08 factory
+// exposes both CreateSprite (grunt cluster) and the key-lookup facet (cast to
+// CKeyTable here). The current-state (+0x2c) is typed CState*; the notify target
+// (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
+// at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CLoadingBar::LoadLoadingBarSprite
@@ -118,34 +77,35 @@ public:
     i32 LoadLoadingBarSprite();
 
     char m_pad00[0xc];
-    CResMgr* m_c; // +0xc
+    CResMgr* m_resMgr; // +0xc
     char m_pad10[0x4bc - 0x10];
-    i32 m_4bc;  // +0x4bc loaded flag (set to 1)
-    i32* m_4c0; // +0x4c0 frame 2
-    i32* m_4c4; // +0x4c4 frame 3
-    i32* m_4c8; // +0x4c8 frame 1
+    i32 m_loaded;  // +0x4bc loaded flag (set to 1)
+    i32* m_frame2; // +0x4c0 frame 2
+    i32* m_frame3; // +0x4c4 frame 3
+    i32* m_frame1; // +0x4c8 frame 1
 };
 
 RVA(0x000d7440, 0xad)
 i32 CLoadingBar::LoadLoadingBarSprite() {
     CSprite* spr = 0;
-    m_c->m_10->m_10map.Lookup("GAME_LOADINGBAR", &spr);
+    m_resMgr->m_10->m_10map.Lookup("GAME_LOADINGBAR", &spr);
     if (!spr) {
         return 0;
     }
 
-    m_4c8 = (spr->m_64 <= 1 && spr->m_68 >= 1) ? spr->m_14[1] : 0;
-    m_4c0 = (spr->m_64 <= 2 && spr->m_68 >= 2) ? spr->m_14[2] : 0;
-    m_4c4 = (spr->m_64 <= 3 && spr->m_68 >= 3) ? spr->m_14[3] : 0;
-    m_4bc = 1;
+    m_frame1 = (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frames.m_pData[1] : 0;
+    m_frame2 = (spr->m_firstFrame <= 2 && spr->m_lastFrame >= 2) ? spr->m_frames.m_pData[2] : 0;
+    m_frame3 = (spr->m_firstFrame <= 3 && spr->m_lastFrame >= 3) ? spr->m_frames.m_pData[3] : 0;
+    m_loaded = 1;
     return 1;
 }
 
 // ---------------------------------------------------------------------------
 // CTimer - the on-screen game timer (C:\Proj\Gruntz). Holds the looked-up
-// digit/colon sprite frames (m_10..m_20), the 64-bit base (m_28/m_2c) and
-// accumulated (m_30/m_34) clock times, a running flag (m_48) and the decoded
-// current value (m_4c). Methods below are in retail-RVA order.
+// digit/colon sprite frames (m_frameMinTens..m_frameColon), the 64-bit base
+// (m_baseTimeLo/m_baseTimeHi) and accumulated (m_accumLo/m_accumHi) clock times, a
+// running flag (m_running) and the decoded current value (m_currentMs). Methods
+// below are in retail-RVA order.
 // ---------------------------------------------------------------------------
 
 // The drawable timer-frame object (one cached animation frame). Its draw entry
@@ -155,26 +115,9 @@ struct CTimerFrame {
     void RenderFrame(i32 pSurf, i32 x, i32 y, i32 z);
 };
 
-// The archive/order object passed to HandleEvent + Serialize. The field-transfer
-// entries are the virtuals at vtable byte-offsets 0x2c (Read) and 0x30 (Write),
-// each taking a buffer ptr + a byte count. Modeled polymorphic (slot decls only,
-// never defined -> no ??_7 here) so `ar->Write(buf,n)` lowers to the exact
-// `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
-struct CTimerArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c
-    virtual void Write(void* buf, i32 n); // +0x30
-};
+// The archive/order object passed to HandleEvent + Serialize is the shared WAP32
+// CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `CTimerArchive` view is folded away.
 
 class CTimer {
 public:
@@ -185,30 +128,32 @@ public:
     i32 Draw(i32 x, i32 pSurf);
     void SetTime(i32 a, i32 b);
     void AddTime(i32 seconds, i32 minutes);
-    i32 HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4);
-    i32 Serialize(CTimerArchive* ar);   // 0x9c2e0 (this cluster)
-    i32 Deserialize(CTimerArchive* ar); // 0x9c650 (external, declared-not-defined)
+    i32 HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4);
+    i32 Serialize(CSerialArchive* ar);   // 0x9c2e0 (this cluster)
+    i32 Deserialize(CSerialArchive* ar); // 0x9c650 (external, declared-not-defined)
 
-    i32* m_0;  // +0x00 base x
-    i32* m_4;  // +0x04 base y
-    i32* m_8;  // +0x08 the looked-up sprite
-    i32 m_c;   // +0x0c visible/active flag
-    i32* m_10; // +0x10 digit-frame 10s-min
-    i32* m_14; // +0x14 digit-frame 1s-min
-    i32* m_18; // +0x18 colon-frame
-    i32* m_1c; // +0x1c digit-frame 10s-sec
-    i32* m_20; // +0x20 digit-frame 1s-sec
+    i32 m_baseX;       // +0x00 base x (screen origin)
+    i32 m_baseY;       // +0x04 base y
+    CSprite* m_sprite; // +0x08 the looked-up "GAME_TIMER" sprite set
+    i32 m_active;      // +0x0c visible/active flag
+    // The five cached MM:SS frames, laid out L->R by Draw at x-0x22..x+0x22 and
+    // reassigned per Tick's digit decode: [MinTens][MinOnes][:][SecTens][SecOnes].
+    i32* m_frameMinTens; // +0x10 tens-of-minutes digit frame
+    i32* m_frameMinOnes; // +0x14 units-of-minutes digit frame
+    i32* m_frameSecTens; // +0x18 tens-of-seconds digit frame
+    i32* m_frameSecOnes; // +0x1c units-of-seconds digit frame
+    i32* m_frameColon;   // +0x20 colon frame (static frame 11, drawn centre)
     char m_pad24[0x28 - 0x24];
-    i32 m_28; // +0x28 base time lo
-    i32 m_2c; // +0x2c base time hi
-    i32 m_30; // +0x30 accumulated lo
-    i32 m_34; // +0x34 accumulated hi
-    i32 m_38; // +0x38
-    i32 m_3c; // +0x3c
-    i32 m_40; // +0x40
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48 running flag
-    i32 m_4c; // +0x4c decoded current value (ms within hour)
+    i32 m_baseTimeLo; // +0x28 base (limit) time lo
+    i32 m_baseTimeHi; // +0x2c base (limit) time hi
+    i32 m_accumLo;    // +0x30 accumulated added-time lo
+    i32 m_accumHi;    // +0x34 accumulated added-time hi
+    i32 m_38;         // +0x38  (serialized 64-bit pair m_38:m_3c; role unproven)
+    i32 m_3c;         // +0x3c
+    i32 m_40;         // +0x40  (serialized 64-bit pair m_40:m_44; cleared on expiry)
+    i32 m_44;         // +0x44
+    i32 m_running;    // +0x48 running flag
+    i32 m_currentMs;  // +0x4c decoded current/remaining value (ms within hour)
 };
 
 // ---------------------------------------------------------------------------
@@ -216,22 +161,22 @@ public:
 // ---------------------------------------------------------------------------
 RVA(0x0009bab0, 0x35)
 CTimer* CTimer::Init() {
-    m_28 = 0;
-    m_30 = 0;
-    m_2c = 0;
-    m_34 = 0;
+    m_baseTimeLo = 0;
+    m_accumLo = 0;
+    m_baseTimeHi = 0;
+    m_accumHi = 0;
     m_38 = 0;
     m_40 = 0;
     m_3c = 0;
     m_44 = 0;
-    m_8 = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_20 = 0;
-    m_18 = 0;
-    m_1c = 0;
-    m_c = 0;
-    m_48 = 0;
+    m_sprite = 0;
+    m_frameMinTens = 0;
+    m_frameMinOnes = 0;
+    m_frameColon = 0;
+    m_frameSecTens = 0;
+    m_frameSecOnes = 0;
+    m_active = 0;
+    m_running = 0;
     return this;
 }
 
@@ -241,37 +186,42 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CSprite* spr = 0;
-    g_gameReg->m_30->m_10->m_10map.Lookup("GAME_TIMER", &spr);
-    m_8 = (i32*)spr;
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_TIMER", &spr);
+    m_sprite = spr;
     if (!spr) {
         return 0;
     }
 
-    m_10 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_10) {
+    m_frameMinTens =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
+    if (!m_frameMinTens) {
         return 0;
     }
-    m_14 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_14) {
+    m_frameMinOnes =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
+    if (!m_frameMinOnes) {
         return 0;
     }
-    m_20 = (spr->m_64 <= 11 && spr->m_68 >= 11) ? spr->m_14[11] : 0;
-    if (!m_20) {
+    m_frameColon =
+        (spr->m_firstFrame <= 11 && spr->m_lastFrame >= 11) ? spr->m_frames.m_pData[11] : 0;
+    if (!m_frameColon) {
         return 0;
     }
-    m_18 = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_18) {
+    m_frameSecTens =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
+    if (!m_frameSecTens) {
         return 0;
     }
-    m_1c = (spr->m_64 <= 10 && spr->m_68 >= 10) ? spr->m_14[10] : 0;
-    if (!m_1c) {
+    m_frameSecOnes =
+        (spr->m_firstFrame <= 10 && spr->m_lastFrame >= 10) ? spr->m_frames.m_pData[10] : 0;
+    if (!m_frameSecOnes) {
         return 0;
     }
 
-    m_0 = (i32*)a; /* the two args captured at the tail */
-    m_4 = (i32*)b;
-    m_c = 1;
-    m_48 = 0;
+    m_baseX = a; /* the two args captured at the tail */
+    m_baseY = b;
+    m_active = 1;
+    m_running = 0;
     return 1;
 }
 
@@ -280,13 +230,13 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 RVA(0x0009bc70, 0x18)
 void CTimer::Reset() {
-    m_8 = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_20 = 0;
-    m_18 = 0;
-    m_1c = 0;
-    m_c = 0;
+    m_sprite = 0;
+    m_frameMinTens = 0;
+    m_frameMinOnes = 0;
+    m_frameColon = 0;
+    m_frameSecTens = 0;
+    m_frameSecOnes = 0;
+    m_active = 0;
 }
 
 // The clock + frame-gate globals the Tick/Draw paths read (external delinked
@@ -330,38 +280,38 @@ struct CTimerNotifyObj {
 // Deferred to the final sweep / a leaf-first redo.
 RVA(0x0009bca0, 0x25d)
 i32 CTimer::Tick(i32 dt) {
-    if (!m_48) {
+    if (!m_running) {
         return 1;
     }
-    // remaining = (m_30:m_34) - g_645588 + (m_28:m_2c), clamped at 0.
-    i64 rem = *(i64*)&m_30 - (u32)g_645588 + *(i64*)&m_28;
+    // remaining = (m_accumLo:m_accumHi) - g_645588 + (m_baseTimeLo:m_baseTimeHi), clamped at 0.
+    i64 rem = *(i64*)&m_accumLo - (u32)g_645588 + *(i64*)&m_baseTimeLo;
     i32 v = (rem > 0) ? (i32)rem : 0;
-    m_4c = v;
+    m_currentMs = v;
 
     if (v == 0) {
         // expired: clear, stamp the level "time up" command + clock snapshot.
         m_40 = 0;
         m_44 = 0;
-        m_30 = 0;
-        m_34 = 0;
-        m_48 = 0;
-        m_4c = 0;
-        CLevelState* ls = g_gameReg->m_2c;
+        m_accumLo = 0;
+        m_accumHi = 0;
+        m_running = 0;
+        m_currentMs = 0;
+        CLevelState* ls = (CLevelState*)g_gameReg->m_curState;
         ls->m_4f4 = 1;
         ls->m_400 = 0x1f4;
         ls->m_404 = 0;
         ls->m_3f8 = g_645588;
         ls->m_3fc = 0;
-        g_gameReg->m_68->Notify(g_644c54);
-        CTimerSlot* slot = (CTimerSlot*)((char*)&g_gameReg->m_150 + g_644c54 * 0x238);
+        ((CLevelNotify*)g_gameReg->m_68)->Notify(g_644c54);
+        CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
         if (slot != 0) {
             slot->m_24 = 1;
         }
-        i32* key = *(i32**)((char*)g_gameReg + 0x15c);
+        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)g_gameReg->m_30->m_8->FindByKey((i32)key, &found);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
+                                       ->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->ResolveDeathAnimation();
@@ -371,11 +321,11 @@ i32 CTimer::Tick(i32 dt) {
     }
 
     if ((u32)v < 0xea60) {
-        i32* key = *(i32**)((char*)g_gameReg + 0x15c);
+        i32* key = (i32*)g_gameReg->m_focusSlots[0].m_0c;
         if (key != 0) {
             i32 found = 0;
-            CTimerNotifyObj* obj =
-                (CTimerNotifyObj*)g_gameReg->m_30->m_8->FindByKey((i32)key, &found);
+            CTimerNotifyObj* obj = (CTimerNotifyObj*)((CKeyTable*)g_gameReg->m_world->m_8)
+                                       ->FindByKey((i32)key, &found);
             CTimerNotifyObj* hit = found ? obj : (CTimerNotifyObj*)key;
             if (hit != 0 && hit->m_7c->m_18 != 0) {
                 hit->m_7c->m_18->NotifyFortUnderAttack();
@@ -401,11 +351,19 @@ i32 CTimer::Tick(i32 dt) {
         d1sec = 10;
     }
 
-    CSprite* spr = (CSprite*)m_8;
-    m_10 = (spr->m_64 <= d10min && d10min <= spr->m_68) ? spr->m_14[d10min] : 0;
-    m_14 = (spr->m_64 <= d1min && d1min <= spr->m_68) ? spr->m_14[d1min] : 0;
-    m_18 = (spr->m_64 <= d10sec && d10sec <= spr->m_68) ? spr->m_14[d10sec] : 0;
-    m_1c = (spr->m_64 <= d1sec && d1sec <= spr->m_68) ? spr->m_14[d1sec] : 0;
+    CSprite* spr = m_sprite;
+    m_frameMinTens = (spr->m_firstFrame <= d10min && d10min <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d10min]
+                         : 0;
+    m_frameMinOnes = (spr->m_firstFrame <= d1min && d1min <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d1min]
+                         : 0;
+    m_frameSecTens = (spr->m_firstFrame <= d10sec && d10sec <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d10sec]
+                         : 0;
+    m_frameSecOnes = (spr->m_firstFrame <= d1sec && d1sec <= spr->m_lastFrame)
+                         ? spr->m_frames.m_pData[d1sec]
+                         : 0;
     return 1;
 }
 
@@ -415,33 +373,33 @@ i32 CTimer::Tick(i32 dt) {
 // ---------------------------------------------------------------------------
 RVA(0x0009bfa0, 0xb4)
 i32 CTimer::Draw(i32 pSurf, i32 force) {
-    if (!m_48) {
+    if (!m_running) {
         return 1;
     }
-    if (force == 0 && (u32)m_4c < 0x2710 && (u32)g_6455a0 >= 0xfa) {
+    if (force == 0 && (u32)m_currentMs < 0x2710 && (u32)g_6455a0 >= 0xfa) {
         return 1;
     }
-    if (m_10) {
-        ((CTimerFrame*)m_10)->RenderFrame(pSurf, (i32)m_0 - 0x22, (i32)m_4, 0);
+    if (m_frameMinTens) {
+        ((CTimerFrame*)m_frameMinTens)->RenderFrame(pSurf, m_baseX - 0x22, m_baseY, 0);
     }
-    if (m_14) {
-        ((CTimerFrame*)m_14)->RenderFrame(pSurf, (i32)m_0 - 0x10, (i32)m_4, 0);
+    if (m_frameMinOnes) {
+        ((CTimerFrame*)m_frameMinOnes)->RenderFrame(pSurf, m_baseX - 0x10, m_baseY, 0);
     }
-    if (m_20) {
-        ((CTimerFrame*)m_20)->RenderFrame(pSurf, (i32)m_0, (i32)m_4, 0);
+    if (m_frameColon) {
+        ((CTimerFrame*)m_frameColon)->RenderFrame(pSurf, m_baseX, m_baseY, 0);
     }
-    if (m_18) {
-        ((CTimerFrame*)m_18)->RenderFrame(pSurf, (i32)m_0 + 0x10, (i32)m_4, 0);
+    if (m_frameSecTens) {
+        ((CTimerFrame*)m_frameSecTens)->RenderFrame(pSurf, m_baseX + 0x10, m_baseY, 0);
     }
-    if (m_1c) {
-        ((CTimerFrame*)m_1c)->RenderFrame(pSurf, (i32)m_0 + 0x22, (i32)m_4, 0);
+    if (m_frameSecOnes) {
+        ((CTimerFrame*)m_frameSecOnes)->RenderFrame(pSurf, m_baseX + 0x22, m_baseY, 0);
     }
     return 1;
 }
 
 // ---------------------------------------------------------------------------
 // CTimer::SetTime (0x9c090) - set the decoded current value (+0x4c) from a
-// (a<=0x63, b<=0x3b) pair: m_4c = (a*60 + b) * 1000 (ms). The two args are
+// (a<=0x63, b<=0x3b) pair: m_currentMs = (a*60 + b) * 1000 (ms). The two args are
 // clamped, scaled to the minute, and the *1000 falls out as the lea chain
 // (a*15, b+a*60, *5, *5, <<3).
 // ---------------------------------------------------------------------------
@@ -455,7 +413,7 @@ void CTimer::SetTime(i32 a, i32 b) {
     if (bv > 0x3b) {
         bv = 0x3b;
     }
-    m_4c = (i32)((av * 60 + bv) * 1000);
+    m_currentMs = (i32)((av * 60 + bv) * 1000);
 }
 
 // ---------------------------------------------------------------------------
@@ -464,7 +422,7 @@ void CTimer::SetTime(i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 RVA(0x0009c0e0, 0xa3)
 void CTimer::AddTime(i32 seconds, i32 minutes) {
-    if (!m_48) {
+    if (!m_running) {
         return;
     }
     u32 mins = (u32)minutes;
@@ -475,7 +433,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
     if (secs > 0x63) {
         secs = 0x63;
     }
-    u32 cur = (u32)m_4c;
+    u32 cur = (u32)m_currentMs;
     // carry = 1 unless (the minute already on the clock + new minutes) fits in 0x3b.
     u32 carry = 1;
     if (cur % 60000 / 1000 + mins <= 0x3b) {
@@ -486,14 +444,14 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
         secs = 0x63 - cur / 60000 - carry;
     }
     u32 total = (mins + secs * 60) * 1000;
-    *(u64*)&m_30 += total;
+    *(u64*)&m_accumLo += total;
 }
 
 // ---------------------------------------------------------------------------
 // CTimer::HandleEvent (0x9c1c0) - load (kind==4) / save (kind==7) the timer
 // through the archive: dispatch the whole-object (de)serializer (kind 4 ->
 // Deserialize 0x9c650, kind 7 -> Serialize 0x9c2e0) then stream the two 64-bit
-// clock pairs (m_28/m_30 and m_38/m_40) field by field via the archive's
+// clock pairs (m_baseTimeLo/m_accumLo and m_38/m_40) field by field via the archive's
 // Read(+0x2c)/Write(+0x30) virtuals.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -502,7 +460,7 @@ void CTimer::AddTime(i32 seconds, i32 minutes) {
 // per-block `cmp kind` + `lea edi,[this+N]`. Logic (call mapping, slot mapping,
 // pointer-advance, ret 0x10) exact; see docs/patterns/zero-register-pinning.md.
 RVA(0x0009c1c0, 0xdb)
-i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
+i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -518,7 +476,7 @@ i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
         }
     }
 
-    i32* p = &m_28;
+    i32* p = &m_baseTimeLo;
     if (kind == 4) {
         ar->Read(p, 8);
         p += 2;
@@ -543,11 +501,11 @@ i32 CTimer::HandleEvent(CTimerArchive* ar, i32 kind, i32 a3, i32 a4) {
     return 1;
 }
 
-// Per-serialize round counter the CString archive helpers bump (g_serialCount,
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter,
 // = DAT_00629ad0). The frame-name reverse-lookup helper (0x155630) lives on the
-// sprite registry (g_gameReg->m_30->m_10); modeled with NO body -> reloc-masks.
+// sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
 DATA(0x00629ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
 };
@@ -565,85 +523,92 @@ struct CStrReader {
 // gives `zero` its own slot, shifting every frame-size immediate by 4. Body
 // (vtable Transfer dispatch + inlined memset/strcpy + name lookup) exact.
 RVA(0x0009c2e0, 0x2b6)
-i32 CTimer::Serialize(CTimerArchive* ar) {
+i32 CTimer::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CResMgr* mgr = g_gameReg->m_30;
+    CSpriteFactoryHolder* mgr = g_gameReg->m_world;
     if (mgr == 0) {
         return 0;
     }
 
-    ar->Write(&m_0, 4);
-    ar->Write(&m_4, 4);
+    ar->Write(&m_baseX, 4);
+    ar->Write(&m_baseY, 4);
 
     char tmp[0x80];
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
-    if (m_8) {
-        strcpy(tmp, (char*)m_8 + 0x24);
+    if (m_sprite) {
+        strcpy(tmp, (char*)m_sprite + 0x24);
     }
     ar->Write(tmp, 0x80);
 
-    ar->Write(&m_c, 4);
+    ar->Write(&m_active, 4);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_10) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_10, tmp, &zero);
+        if (m_frameMinTens) {
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_14) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_14, tmp, &zero);
+        if (m_frameMinOnes) {
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_18) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_18, tmp, &zero);
+        if (m_frameSecTens) {
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_1c) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_1c, tmp, &zero);
+        if (m_frameSecOnes) {
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
-        if (m_20) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_20, tmp, &zero);
+        if (m_frameColon) {
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
     }
 
-    ar->Write(&m_48, 4);
-    ar->Write(&m_4c, 4);
+    ar->Write(&m_running, 4);
+    ar->Write(&m_currentMs, 4);
     return 1;
 }
+SIZE_UNKNOWN(CGruntRef);
+SIZE_UNKNOWN(CKeyTable);
+SIZE_UNKNOWN(CLevelNotify);
+SIZE_UNKNOWN(CLoadingBar);
+SIZE_UNKNOWN(CTimer);
+SIZE_UNKNOWN(CTimerFrame);
+SIZE_UNKNOWN(CTimerNotifyObj);

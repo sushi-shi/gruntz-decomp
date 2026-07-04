@@ -26,34 +26,32 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
+#include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
 #include <stdio.h>  // sprintf
 #include <stdlib.h> // atoi
 #include <string.h> // memcpy + inline strcpy/strlen (rep movs / repne scas)
+#include <Globals.h>
 
 // The shared map-name scratch buffer GetMapBaseName strcpy's the path into
 // (0x62c010), plus its 4-byte predecessor slot (0x62c00c) the extension-truncation
 // store indexes through. Reloc-masked DATA pins.
-extern char g_mapNamePre[4];
-extern char g_mapNameBuf[0x200];
 
 // ---------------------------------------------------------------------------
 // The game registry global (?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c). Only the
 // chain ValidateMainBlock walks is modeled here (m_slot -> m_wwdPath, a filename);
-// the full CGameReg layout lives in src/Gruntz/CStatusBarMgr.cpp. Offsets are the
+// the full CGameReg layout lives in src/Gruntz/StatusBarMgr.cpp. Offsets are the
 // only load-bearing thing (campaign doctrine), so a TU-local view is matching-neutral.
+// authentic: reduced local view of the cross-TU CGameReg world slot; only the +0x24
+// path field ValidateMainBlock reads is modeled (offset-faithful, mangling-neutral).
 struct WwdGameRegSlot {
     char pad_0[0x24];
     char* m_wwdPath; // +0x24  a WWD path / numeric-tail string CheckHeader validates
 };
-struct WwdGameReg {
-    char pad_0[0x30];
-    WwdGameRegSlot* m_slot; // +0x30
-};
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CPlaneRender::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
@@ -107,7 +105,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. g_gameReg->m_slot->m_wwdPath (a filename) must be non-null;
+//   2. ((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath (a filename) must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -118,11 +116,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (g_gameReg->m_slot->m_wwdPath == 0) {
+    if (((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(g_gameReg->m_slot->m_wwdPath, header) == 0) {
+    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath, header) == 0) {
         return -1;
     }
 
@@ -235,7 +233,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
 }
 
 // ---------------------------------------------------------------------------
-// CGameLevelPlanes::ReadObjectPlane (0x15d9a0) - the object-plane sibling of
+// CGameLevelPlanes::ReadObjectPlane - the object-plane sibling of
 // ReadPlane: `new CPlane(m_field0c, m_planeCount, 0)`, then drive the plane's
 // +0x24 object-block reader with the six forwarded args, &m_planeCtx (7th), and
 // the trailing arg (8th). Append/record/delete identically to ReadPlane.
@@ -281,7 +279,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
     if (src->wwdSignature > 0x5f4) { // header size (== 1524)
         return 0;
     }
-    if ((src->flags & 0x2) == 0) { // require COMPRESS
+    if ((src->flags & 0x2) == 0) { // require COMPRESS (WwdFlags bit1)
         return 0;
     }
     if (src->mainBlockLength == 0) {
@@ -307,7 +305,7 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
 }
 
 // ===========================================================================
-// CPlaneRender::SetTileSize (0x161f00, __thiscall, ret 8) - given the tile pixel
+// CPlaneRender::SetTileSize (__thiscall, ret 8) - given the tile pixel
 // size (tileW, tileH), derive the plane's pixel-wrap dims (grid count * tile px),
 // the tile px size, the (0,0,tileW,tileH) default fill rect, and the two log2
 // shift amounts. The retail code derives BOTH shifts from tileW (the shiftY loop
@@ -487,20 +485,26 @@ struct WwdObjAnimInit {
 };
 
 // MFC CMapStringToOb::Lookup(key, &valueOut) const. __thiscall, ret 0x8.
+// authentic: reached at a COMPUTED address (m_assetOwner+0x14+0x10), not a typed
+// member, so the reloc-masked Lookup extern is modeled as a method a raw pointer
+// is cast through - there is no member to fold it into.
 struct WwdStringToObMap {
     i32 Lookup(const char* key, void*& out) const;
 };
 
 // Level register: append the finished object to the level. __thiscall, ret 0x4.
+// authentic: reached at a COMPUTED address (loader+0xb0); helper method view over a
+// raw pointer, same rationale as WwdStringToObMap.
 struct WwdObjList {
     void Add(WwdGameObj* obj);
 };
 
-// The two retail vtables stamped into the object and its sub-object (transitional
-// manual stamp; reloc-masked DATA externs).
+// The object's own vtable (transitional manual stamp; reloc-masked DATA extern).
 DATA(0x001f00a8)
 extern void* g_wwdObjVtbl[]; // 0x5f00a8
-DATA(0x001f0128)
+// The sub-object vtable is realized as ??_7CAniAdvanceCursor@@6B@ (0x5f0128) in
+// CAniAdvanceCursor.cpp; referenced here as an UNPINNED extern (the VTBL there
+// owns the 0x1f0128 datum name) so this sub-object stamp reloc-masks against it.
 extern void* g_wwdSubVtbl[]; // 0x5f0128
 
 // ---------------------------------------------------------------------------
@@ -509,7 +513,7 @@ extern void* g_wwdSubVtbl[]; // 0x5f0128
 // pairs (CGameReg->m_24->[+0xb0..+0xdc]), and run ReadPlaneObjects `count` times.
 // The throwing operator-new + partial-construct cleanup gives the /GX frame.
 // ---------------------------------------------------------------------------
-extern void* g_severusWorkerDtorVtbl; // 0x5e8cb4
+extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // The level header reached via this->m_assetOwner->m_24 (six geometry pairs at +0xb0).
 struct WwdPlaneHdr {
@@ -531,15 +535,27 @@ struct WwdPlaneRender {
     i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5);
 };
 
-DATA(0x001f02a8)
-extern void* g_planeRenderVtbl; // 0x5f02a8
+// 0x5f02a8 is realized as ??_7CWwdGridIter (5 slots, dtor at slot 1) in
+// src/Gruntz/WwdSpatialMgr.cpp, which OWNS the RVA catalog name via VTBL. UNPINNED
+// here so RebuildPlanes' inline +0x70 embedded-cursor stamp reloc-masks against the
+// real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
+extern void* g_planeRenderVtbl; // 0x5f02a8  (realized CWwdGridIter, factory inline-construction)
 
+// authentic: documented offset access into WwdFile's own wide layout (the +0xb0
+// plane-render worker slot + the +0xc reg-owner slot); only the offset is
+// load-bearing, and RebuildPlanes is @early-stop, so the raw-offset form is kept.
 #define WLOADER(t, off) (*(t*)((char*)this + (off)))
 
 // @early-stop
-// throwing-new EH-frame wall: the worker rebuild + the 6-pair init + the
-// ReadPlaneObjects loop are faithful, but the partial-construct exception
-// cleanup frame's trylevel/handler bytes are not source-steerable.
+// throwing-new EH-frame + embedded-vtable-stamp wall: the worker rebuild + the
+// 6-pair init + the ReadPlaneObjects loop are faithful, but (a) the
+// partial-construct exception cleanup frame's trylevel/handler bytes are not
+// source-steerable, and (b) the worker's EMBEDDED sub-object at +0x70 has its
+// vtable stamped manually (g_planeRenderVtbl @0x5f02a8 = ??_7CWwdGridIter, realized
+// in WwdSpatialMgr.cpp; and g_wapObjectDtorVtbl @0x5e8cb4 = the CObject base-dtor
+// table on the fail path). The worker's own +0x00 vptr is ZEROED here (not a
+// polymorphic outer object), so `new WwdPlaneRender` cannot express this; the
+// embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
 i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     if (base == 0) {
@@ -587,7 +603,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
         WwdPlaneRender* w = WLOADER(WwdPlaneRender*, 0xb0);
         if (w) {
             w->DtorBody();
-            *(void**)((char*)w + 0x70) = &g_severusWorkerDtorVtbl;
+            *(void**)((char*)w + 0x70) = &g_wapObjectDtorVtbl;
             ::operator delete(w);
         }
         worker = 0;
@@ -604,6 +620,16 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     return 1;
 }
 
+// @early-stop
+// non-ctor factory-stamp wall: this is a factory, not a ??0 ctor - the 0x1dc game
+// object and its +0x1A0 sub-object are brought up by the EXTERNAL engine ctors
+// (Construct 0x15b390 / 0x156cb0, unmatched), then their derived vtables are
+// re-stamped by address (g_wwdObjVtbl @0x5f00a8 = ??_7CWwdGameObjectA / g_wwdSubVtbl
+// @0x5f0128 = ??_7CAniAdvanceCursor, both realized real-polymorphic in their own
+// TUs but ORPHAN-bound to those g_ DATA symbols). A `new`-based rewrite is
+// impossible here (the construction is external engine code), and a VTBL on the
+// realized classes would dup-DATA the factory's bound g_ symbols -> the manual
+// re-stamp is the only expressible form (compiler-model wall). Logic byte-faithful.
 RVA(0x00162af0, 0x806)
 i32 WwdFile::ReadPlaneObjects(const i32* src) {
     if (src == 0) {
@@ -1174,7 +1200,7 @@ void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// WwdFile::GetMapBaseName (0x3bb50, static __cdecl, returns CString by value)
+// WwdFile::GetMapBaseName (static __cdecl, returns CString by value)
 // Copy the path into the shared 0x62c010 scratch buffer, drop the 4-char
 // extension (write a NUL at len-4 via the preceding 0x62c00c slot), then return
 // the filename portion after the last backslash. Empty/short (<= 4 char) paths
@@ -1215,3 +1241,45 @@ CString WwdFile::GetMapBaseName(CString path) {
     }
     return result;
 }
+
+// ===========================================================================
+// Class-metadata annotations for the Wwd classes (EOF-hosted: WwdFile.h is pulled
+// into GameLevel.h and this is a large /O2 TU with several @early-stop bodies, so
+// keep every completeness typedef after the last function to avoid a reschedule).
+//
+// VTBL skips (logged, none catalogable here):
+//   CPlane / CWwdStream / CPlaneRenderPoly - external/abstract engine shells;
+//     their virtuals are declared-not-defined so cl emits no ??_7 vtable and the
+//     retail RVA is not modeled in-TU.
+//   WwdGameObj - manual re-stamp; its retail vtable 0x5f00a8 is already bound as
+//     ?g_wwdObjVtbl (a VTBL would dup that rva).
+// ===========================================================================
+// --- WwdFile.h header classes ---
+SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
+SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
+SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
+SIZE_UNKNOWN(CPlaneScroll);
+SIZE_UNKNOWN(CPlaneSurfDesc);
+SIZE_UNKNOWN(CPlaneSurf);
+SIZE_UNKNOWN(CPlanePalArr);
+SIZE_UNKNOWN(CPlanePalOwner);
+SIZE_UNKNOWN(CPlanePalHost);
+SIZE_UNKNOWN(CPlaneMapData);
+SIZE_UNKNOWN(CWwdStream);       // abstract serialize-stream slot view
+SIZE_UNKNOWN(CPlaneRenderPoly); // slot-dispatch view
+SIZE_UNKNOWN(CPlaneRender);
+SIZE_UNKNOWN(CGameLevelPlanes);
+SIZE_UNKNOWN(CPlanePtrArray); // CArray<CPlane*> method-only view
+SIZE_UNKNOWN(WwdFile);        // namespace-class (method-only)
+// --- WwdFile.cpp local views ---
+SIZE_UNKNOWN(WwdGameRegSlot);
+SIZE_UNKNOWN(WwdLevelLoader);
+SIZE(WwdGameObj, 0x1dc); // RE'd operator-new'd game object (0x1DC)
+SIZE_UNKNOWN(WwdGameObjMethods);
+SIZE_UNKNOWN(WwdSubMgrCtor);
+SIZE_UNKNOWN(WwdObjAnimInit);
+SIZE_UNKNOWN(WwdStringToObMap);
+SIZE_UNKNOWN(WwdObjList);
+SIZE_UNKNOWN(WwdPlaneHdr);
+SIZE_UNKNOWN(WwdRegOwner);
+SIZE_UNKNOWN(WwdPlaneRender);

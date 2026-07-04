@@ -18,6 +18,7 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
+#include <rva.h>
 #include <Ints.h>
 
 typedef u32 gz_size_t;
@@ -27,6 +28,7 @@ void* operator new(gz_size_t);
 // list). Only RemoveTail() is reached (a __thiscall returning the recycled
 // node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
 // else operator new(0x14) the object + stamp its vftable.
+SIZE_UNKNOWN(CGruntzCmdList);
 struct CGruntzCmdList {
     void* RemoveTail();
 };
@@ -35,13 +37,14 @@ struct CGruntzCmdList {
 // big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is
 // external to this TU (reloc-masked); modeled here as a method on a tiny opaque
 // helper so `mov ecx,p; push args...; call` falls out with no stack cleanup.
+SIZE_UNKNOWN(CGruntzCmdTarget);
 struct CGruntzCmdTarget {
     i32 Exec(char kind, char index, char a2, i16 a3, i16 a4, char a5, char a6);
 };
 
-// The network (de)serialization stream the base command Save/Load drive (defined in
-// the .cpp). Forward-declared as a class so the member mangling agrees across clang/MSVC.
-class CmdStream;
+// The network (de)serialization stream the base command Save/Load drive: the shared
+// WAP32 archive interface (Read @+0x2c / Write @+0x30), forward-declared here.
+struct CSerialArchive;
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.
@@ -64,6 +67,7 @@ class CmdStream;
 //   +0x11 m_11  char  } setters/getters) AND as a 16-bit flag mask (the bit
 //                       loop), so it is read/written via *(short*)&m_10.
 // ---------------------------------------------------------------------------
+SIZE(CGruntzCommand, 0x14);
 class CGruntzCommand {
 public:
     char m_4;  // +0x04
@@ -96,8 +100,14 @@ public:
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
     // The network (de)serializers (0x024520 / 0x0245f0): no-op unless the
     // registry's active-game gate is set, then stream the 8 scalar fields.
-    i32 Save(CmdStream* s); // 0x024520  via stream Write (+0x30)
-    i32 Load(CmdStream* s); // 0x0245f0  via stream Read  (+0x2c)
+    i32 Save(CSerialArchive* s); // 0x024520  via stream Write (+0x30)
+    i32 Load(CSerialArchive* s); // 0x0245f0  via stream Read  (+0x2c)
+
+    // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
+    // `mov [this],&vftable; ret` (void, no eax-return, no null guard) - an
+    // out-of-line materialization of the inlined base-vftable store.
+    void CGruntzCommand_0242f0();
+    void CGruntzCommand_024430();
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.
@@ -109,6 +119,7 @@ extern const u16 g_cmdBitTable[16]; // 0x1e9608
 // per-class free list if non-empty, else operator new(0x14) + inline ctor
 // (the ctor just stamps the leaf vftable - empty body, so it folds inline).
 // ---------------------------------------------------------------------------
+SIZE(CGruntzSingleCommand, 0x14);
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
@@ -124,6 +135,7 @@ public:
 // CGruntzMultiCommand - multi-target command (0x14 bytes; vtable 0x5e96b4).
 // Same new-or-recycle allocator shape as the single-target command.
 // ---------------------------------------------------------------------------
+SIZE(CGruntzMultiCommand, 0x14);
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
     CGruntzMultiCommand() {}
@@ -137,7 +149,7 @@ public:
     // 0x5e96b4): no-op unless the stream is non-null AND the registry's active-game
     // gate is set, then read the 8 scalar fields, taking the +0x10 flag word as a
     // single 16-bit READ (vs the base Load's two 1-byte reads).
-    i32 NetLoad(CmdStream* s);
+    i32 NetLoad(CSerialArchive* s);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

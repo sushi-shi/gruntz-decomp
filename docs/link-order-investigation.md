@@ -117,3 +117,32 @@ functions to retail-RVA order (fixes intra-TU layout); **(b)** drive the link wi
 the objects in retail-block order (fixes cross-TU layout); **(c)** split the
 flagged conflated units. `gruntz link` + `link_order.py` make each step verifiable
 against the real linker before committing to source.
+
+## Whole-EXE metric: `gruntz exe-diff`
+
+`gruntz link` gives the candidate; **`gruntz exe-diff`**
+(`gruntz.analysis.exe_diff`) diffs that whole image against retail — one level up
+from per-object objdiff. It parses both PEs (headers / section table), name-aligns
+every reconstructed function (candidate `.map` RVA ⇄ retail `symbol_names.csv` RVA),
+and reports layout + linked-byte fidelity. The tracked numbers, measured at
+1868/3354 objdiff-exact (65.5% fuzzy):
+
+| number | now | what moves it |
+|---|---|---|
+| `exe-layout-order%` | 29.5% | funcs whose TU is in retail intra-TU order — the **reorder** lever; reordering all flagged `.cpp`s takes this toward 100% |
+| `exe-layout-block%` | 1.9% | funcs in a *byte-exact contiguous* retail block (order **and** every func at the retail offset-from-anchor) — reorder **+** byte-exact bodies |
+| `exe-byte%` | 32.9% | name-aligned linked-`.text` byte identity (relocations applied) — rises with matching **and** coverage |
+| `exe-byte(exact)%` | **87.5%** | same, over the objdiff-exact subset — the ~12% residual is *purely* unresolved-extern displacement bytes (`/FORCE`→0), i.e. code purity is high; the gap is coverage, not codegen |
+| `abs-rva%` | 0% | funcs at the correct **absolute** retail RVA — the final target |
+
+**What drives the gap (measured).** `abs-rva%` is 0 and *stays 0 even after a
+counterfactual relink with the retail-inferred cross-TU order* — because absolute
+placement needs the correct link order **and** full coverage (every preceding object
+present at retail size); with ~38%-of-retail bytes reconstructed, a single missing
+object shifts everything downstream. So today the RVA-reorder campaign's payoff is in
+the **relative** numbers: it drives `exe-layout-order%` → 100% and lets byte-exact TUs
+become byte-exact *blocks* (`exe-layout-block%`), which is the prerequisite that makes
+`abs-rva%` climb once coverage nears complete. The `exe-byte%` numbers are
+placement-independent (name-aligned), so they are a clean code-fidelity signal now:
+`exe-byte(exact)%`=87.5% confirms the reconstructed code is genuinely right and the
+whole-EXE byte gap is dominated by not-yet-reconstructed callees, not by wrong bytes.

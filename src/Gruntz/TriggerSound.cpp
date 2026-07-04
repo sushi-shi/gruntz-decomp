@@ -5,6 +5,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+SIZE_UNKNOWN(CTriggerSound);
 struct CTriggerSound {
     i32 CheckCue();    // 0x1106b0 (external worker, reloc-masked)
     i32 IsCueActive(); // 0x112860

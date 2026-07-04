@@ -37,6 +37,7 @@ struct CheatEntry {
     i32 commandId; // +0x00  the WM_COMMAND id this cheat fires
     i32 flag;      // +0x04  enable flag (always 1 for the built-ins)
 };
+SIZE_UNKNOWN(CheatEntry);
 
 // ---------------------------------------------------------------------------
 // CCheatMgr - the cheat-code dictionary (no vtable; a value bag).
@@ -59,6 +60,7 @@ public:
     i32 m_120; // +0x120
     i32 m_124; // +0x124
 };
+SIZE_UNKNOWN(CCheatMgr);
 
 // ---------------------------------------------------------------------------
 // The 19 built-in cheat-code strings (obfuscated byte buffers in .data). Each is

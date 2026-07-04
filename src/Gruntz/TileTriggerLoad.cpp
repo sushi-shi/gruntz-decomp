@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 // TileTriggerLoad.cpp - the version-4 deserialize handler (0x1138b0) for a tile
 // trigger-data record. Reached through the per-version Load dispatcher (0x513860,
 // sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed
@@ -26,32 +27,30 @@ public:
 };
 
 // The game registry singleton; only its m_30 sub-manager gates this load.
-struct WwdGameReg {
-    char m_pad00[0x30];
-    void* m_30; // +0x30
-};
-DATA(0x0064556c)
-extern WwdGameReg* g_gameReg; // ?g_gameReg (0x64556c)
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg; // ?g_gameReg (0x64556c)
 
 // The tile trigger-data record being loaded. Reads land at +0x08..+0x20, +0x28
 // (NB: +0x24 is skipped), then a 24-dword run from +0x2c.
+struct CTileTriggerDataVtbl; // the record's own vtable (contents owned elsewhere)
 class CTileTriggerData {
 public:
     i32 LoadV4(CSerialArchive* ar); // 0x1138b0
 
-    void* m_vptr; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
-    i32 m_18;     // +0x18
-    i32 m_1c;     // +0x1c
-    i32 m_20;     // +0x20
-    i32 m_24;     // +0x24 (not read here)
-    i32 m_28;     // +0x28
-    i32 m_2c[24]; // +0x2c..+0x88
+    CTileTriggerDataVtbl* m_vptr; // +0x00
+    i32 m_04;                     // +0x04
+    i32 m_08;                     // +0x08
+    i32 m_0c;                     // +0x0c
+    i32 m_10;                     // +0x10
+    i32 m_14;                     // +0x14
+    i32 m_18;                     // +0x18
+    i32 m_1c;                     // +0x1c
+    i32 m_20;                     // +0x20
+    i32 m_24;                     // +0x24 (not read here)
+    i32 m_28;                     // +0x28
+    i32 m_2c[24];                 // +0x2c..+0x88
 };
+SIZE_UNKNOWN(CTileTriggerData);
 
 // ===========================================================================
 // 0x1138b0 - read the trigger-data block from the archive. Bails if the archive
@@ -63,7 +62,7 @@ i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     ar->Read(&m_08, 4);

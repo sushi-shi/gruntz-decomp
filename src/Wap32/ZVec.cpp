@@ -2,18 +2,22 @@
 // See include/Wap32/ZVec.h for the recovered layout + the RTTI-confirmed
 // hierarchy  zDArray<int (CUserLogic::*)(void)> : _zdvec : _zvec : zErrHandling.
 //
-// The class is polymorphic but its full vtable contents live in other TUs, so
-// the vptr stores are modeled as manual stamps of the retail vtables (the
-// transitional workaround; reloc-masked DATA() externs) rather than letting the
-// compiler emit a divergent ??_7.
+// REAL-POLYMORPHIC now: the virtual dtor lets cl emit ??_7zDArray and auto-stamp
+// the implicit vptr at ~zDArray entry (VTBL binds it at the retail dtor-vtable RVA).
+// The one manual store that survives is Destroy()'s re-stamp of the LIVE vtable
+// (0x5e70fc) - a NON-ctor/dtor re-stamp cl cannot express (the vtable-realization-
+// ctor-boundary wall), so it stays as an explicit `*(void**)this` store of the
+// reloc-masked live-vtable datum.
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <Globals.h>
 
-// The retail vtables this cluster stamps (reloc-masked address operands).
+// The live zDArray<...> vtable (0x5e70fc) Destroy() re-stamps (reloc-masked address
+// operand). cl auto-stamps the emitted ??_7zDArray in the dtor; VTBL binds that
+// emitted vtable at the retail ~zDArray-entry vtable RVA (0x5f04d4).
 DATA(0x001e70fc)
-extern void* const g_zDArrayVtbl; // 0x5e70fc  live zDArray<...> vtable
-DATA(0x001f04d4)
-extern void* const g_zDArrayDtorVtbl; // 0x5f04d4  ~zDArray entry vtable
+extern void* const zDArrayLiveTable; // 0x5e70fc
+VTBL(zDArray, 0x001f04d4);           // ~zDArray-entry vtable (0x5f04d4)
 
 // Externs the cluster reaches (reloc-masked rel32 callees).
 extern "C" void* realloc(void* p, u32 n);               // 0x125180
@@ -35,8 +39,6 @@ struct zMemberPtrSlot {
 };
 
 // The error-report globals + the "out of memory" message.
-extern u32 g_zvecErrSentinel; // 0x6bf464
-extern void* g_zvecErrToken;  // 0x6bf428
 DATA(0x0021adf4)
 extern const char s_out_of_memory[]; // 0x61adf4
 
@@ -50,7 +52,7 @@ extern const char s_out_of_memory[]; // 0x61adf4
 RVA(0x00008750, 0x15)
 i32 zDArray::Destroy() {
     i32 tmp = m_base;
-    m_vptr = (void*)&g_zDArrayVtbl;
+    *(void**)this = (void*)&zDArrayLiveTable; // re-stamp LIVE vtable (non-dtor wall)
     this->~zDArray();
     return tmp;
 }
@@ -155,14 +157,21 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     return p;
 }
 
-// zDArray::~zDArray() - re-stamp the derived dtor vtable, free the band, chain
-// to the base dtor. 0x16df40.
+// zDArray::~zDArray() - cl auto-stamps the derived dtor vtable (??_7zDArray) at
+// entry, then frees the band and chains to the base dtor. 0x16df40. Real-polymorphic
+// now: the manual dtor-vtable stamp is drained (cl's implicit dtor-entry stamp
+// replaces it, reloc-masked) and the result is byte-exact.
 RVA(0x0016df40, 0x22)
 zDArray::~zDArray() {
     i32 p = m_base;
-    m_vptr = (void*)&g_zDArrayDtorVtbl;
     if (p) {
         free((void*)p);
     }
     // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
 }
+
+// ZVec.h + local class metadata (hosted at .cpp EOF; header untouched).
+SIZE_UNKNOWN(_zvec);          // dynamic-vector base (partial: no true base chain)
+SIZE_UNKNOWN(zDArray);        // derived; adds override, no storage
+SIZE_UNKNOWN(zErrHandling);   // error-reporter subobject view
+SIZE_UNKNOWN(zMemberPtrSlot); // member-ptr slot fixup view

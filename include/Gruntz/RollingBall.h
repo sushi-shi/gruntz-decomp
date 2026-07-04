@@ -23,38 +23,11 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
 
-// ---------------------------------------------------------------------------
-// The +0x34 serializable sub-object's chain (0x8c00, __thiscall ret 0x10). Run
-// on `&this->m_34` (reached via `lea ecx,[edi+0x34]`). External/no-body so the
-// call reloc-masks; the body is pinned in src/Stub/Discovered.cpp. Mirror of
-// CSecretTeleporterTrigger's CSerialSub34 (UserLogic.cpp).
-// ---------------------------------------------------------------------------
-struct CRbSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
+#include <Gruntz/SerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
-// ---------------------------------------------------------------------------
-// The CArchive-like serializer the record is streamed through (Serialize's arg1).
-// Modeled polymorphic (slot decls only, never defined -> no ??_7 emitted) so
-// `ar->Read(buf,n)`/`ar->Write(buf,n)` lower to `mov eax,[ar]; push n; push buf;
-// mov ecx,ar; call [eax+0x2c|0x30]`. Mirror of TileActionEvent.h's
-// CTileActionArchive: +0x2c = Read (mode 7 = load), +0x30 = Write (mode 4 = store).
-// ---------------------------------------------------------------------------
-struct CRbArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual i32 Read(void* buf, i32 n);  // +0x2c
-    virtual i32 Write(void* buf, i32 n); // +0x30
-};
+// The CArchive-like serializer the record is streamed through (Serialize's arg1) is
+// the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
+// <Gruntz/SerialObjRef.h> above - the former local `CRbArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
 // CRollingBall : CUserLogic (vftable 0x5e86fc). Own state from +0x40 onward.
@@ -73,27 +46,27 @@ public:
     // name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0aff40
 
-    i32 Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
-    i32 Update();                                         // 0x0b0140
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x0b0fe0 (vtable slot 1)
+    i32 Update();                                             // 0x0b0140
 
-    // --- CRollingBall own fields (placeholders; offsets load-bearing) ---
-    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    // --- CRollingBall own fields (offsets load-bearing) ---
+    i32 m_savedGeoId;          // +0x40  saved m_38->m_1b4 geometry id
     char m_pad44[0x58 - 0x44]; // CUserLogic ends +0x40
-    double m_58;               // +0x58  per-tile move time (1000/RollingBallTimePerTile)
-    double m_60;               // +0x60  sub-tile X position
-    double m_68;               // +0x68  sub-tile Y position
-    i32 m_70;                  // +0x70  X step direction (-1/0/1)
-    i32 m_74;                  // +0x74  Y step direction (-1/0/1)
-    i32 m_78;                  // +0x78  target tile X (<<5)
-    i32 m_7c;                  // +0x7c  target tile Y (<<5)
-    i32 m_80;                  // +0x80  explosion latch
-    i32 m_84;                  // +0x84  fall latch
-    i32 m_88;                  // +0x88  explosion start ms (lo)
-    i32 m_8c;                  // +0x8c  explosion start ms (hi)
-    i32 m_90;                  // +0x90  explosion window lo
-    i32 m_94;                  // +0x94  explosion window hi
-    i32 m_98;                  // +0x98  move delta lo
-    i32 m_9c;                  // +0x9c  move delta hi
+    double m_moveSpeed;        // +0x58  per-frame speed (numerator / RollingBallTimePerTile)
+    double m_subX;             // +0x60  sub-tile X position
+    double m_subY;             // +0x68  sub-tile Y position
+    i32 m_stepDirX;            // +0x70  X step direction (-1/0/1)
+    i32 m_stepDirY;            // +0x74  Y step direction (-1/0/1)
+    i32 m_targetX;             // +0x78  target tile X (<<5)
+    i32 m_targetY;             // +0x7c  target tile Y (<<5)
+    i32 m_explodeLatch;        // +0x80  explosion one-shot latch
+    i32 m_fallLatch;           // +0x84  fall one-shot latch
+    i32 m_explodeStartLo;      // +0x88  explosion start clock (i64 lo)
+    i32 m_explodeStartHi;      // +0x8c  explosion start clock (i64 hi)
+    i32 m_explodeWindowLo;     // +0x90  explosion window (i64 lo)
+    i32 m_explodeWindowHi;     // +0x94  explosion window (i64 hi)
+    i32 m_moveDeltaLo;         // +0x98  move delta (i64 lo)
+    i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
 };
 
 SIZE(CRollingBall, 0xa0);

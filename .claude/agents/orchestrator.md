@@ -195,10 +195,13 @@ or misordered caller/inline-callee in the same TU — isolate to confirm, above)
   **Dispatch matchers on *labeled* targets** (so the worker knows the function's
   identity + prototype before reading it), prioritized by Section 2.
   **Batch each matcher with a whole TU / contiguous cluster of related new-leaf
-  functions — not one tiny function.** A cluster shares headers/types/symbol-set, so
-  the worker amortizes the dispatch and contains the entropy blast radius (§2.4); a
-  lone 6-byte stub is never worth a deep dispatch (§2.3). Commit the batch centrally
-  (§7), never inside the worker.
+  functions — target ≥20 functions per matcher, never one tiny function.** A cluster
+  shares headers/types/symbol-set, so the worker amortizes the dispatch and contains
+  the entropy blast radius (§2.4); matcher cost is ~flat regardless of batch size
+  (measured — see the batch-size experiment), so bigger batches mean more yield per
+  dispatch. A lone 6-byte stub is never worth a deep dispatch (§2.3). If one TU can't
+  supply 20, extend the batch to a sibling TU / related class cluster to reach it.
+  Commit the batch centrally (§7), never inside the worker.
 
 Labels make matching faster — a matcher handed `CGruntzMgr::Init(...)` with a
 prototype starts far ahead of one staring at `FUN_00482f50`.

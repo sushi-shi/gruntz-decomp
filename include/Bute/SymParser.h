@@ -1,4 +1,4 @@
-// SymParser.h - CSymParser, the Remus parser/owner that builds the CSymTab scope
+// SymParser.h - CSymParser, the ButeMgr parser/owner that builds the CSymTab scope
 // tree (the object CSymTab::m_owner @+0x18 points back to). Recovered from the
 // ctor (0x13aa10), the /GX scalar destructor (0x13abc0), the Clear method
 // (0x13b850) and the three path-resolution thunks (0x13bff0/0x13c030/0x13c210),
@@ -25,47 +25,7 @@
 #include <Ints.h>
 
 #include <Bute/Hash.h>
-
-// CSymTab (SymTab.h) and Hash.h both model the engine hash table with conflicting
-// CHashEntry/CHashTable shapes, so SymParser pulls in Hash.h (for the +0x80
-// CHashBase / +0x88 CHashSlotList members) and declares only the three CSymTab
-// methods it calls on the heap root scope (~CSymTab + the two path-resolvers),
-// reloc-masked externals. The full CSymTab layout lives in SymTab.h.
-class CSymParser; // the owner the CSymTab ctor links back to (defined below)
-
-class CSymTab {
-public:
-    // The 8-arg ctor (0x139de0) ParseBuffer builds the root scope with; uses the Rez
-    // heap so `new CSymTab(...)` drives the operator-new + ctor-throw /GX cleanup.
-    CSymTab(
-        CSymParser* owner,
-        void* p1,
-        const char* name,
-        void* p3,
-        void* p4,
-        void* p5,
-        i32 subN,
-        i32 symN
-    );
-    ~CSymTab(); // 0x139ee0
-    void* operator new(u32 n) {
-        return RezAlloc(n);
-    }
-    void operator delete(void* p) {
-        RezFree(p);
-    }
-    void* ResolvePath(const char* path);                // 0x13bae0
-    i32 ResolveQualified(const char* name, void* arg);  // 0x13be40
-    i32 ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a580
-    // The directory-load helpers ParseRecords drives on the current scope node (all
-    // reloc-masked externals on the node CSymTab):
-    void* FindSub(const char* name);                   // 0x13a230
-    CSymTab* CreateSub(const char* name);              // 0x13a330
-    void* FindOrAddSym(i32 key);                       // 0x13a940
-    i32 Insert(const char* key, void* arg);            // 0x13a000
-    i32 Method4b0(void* a, void* b, void* c, void* d); // 0x13a4b0
-    i32 Method530(void* rec, void* found);             // 0x13a530
-};
+#include <Bute/SymTab.h> // the single full CSymTab layout (+ the CSymParser fwd-decl)
 
 // The name->key map / seed builder ParseBuffer reaches: MakeSymSeed (0x13ba70, cdecl,
 // the leftover-stack-args ctor trick) returns a seed left on the stack. Reloc-masked.
@@ -74,12 +34,10 @@ i32 MakeSymSeed(); // 0x13ba70
 // The shared empty-string literal (?g_emptyString) the root scope is named with.
 extern const char g_emptyString[]; // 0x6293f4
 
-// The two retail vtable groups for the class (0x5ef750 primary, 0x5ef760 the
-// abstract list-interface sub-object). The class is modeled with manual vtable
-// stamps (its virtuals point into other, unmatched TUs), so reference the retail
-// vtables by address -> reloc-masked DATA() externs.
-extern void* CSymParser_vftable;      // 0x5ef750
-extern void* CObjList_purecall_vftbl; // 0x5ef760
+// CSymParser's own primary vtable (0x5ef750) is REAL POLYMORPHIC (??_7CSymParser@@6B@,
+// 3-slot, non-virtual dtor) - see the class below. The +0x10 CObjList sub-object is
+// also real polymorphic now (??_7CObjList @0x5ef760); the ctor/dtor vptr stamps
+// reloc-mask against it.
 
 // A polymorphic list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries a
 // scalar-deleting dtor at slot 1 (+0x4, a delete-flag arg) and a teardown/detach
@@ -98,35 +56,41 @@ public:
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
 };
+SIZE(CObjNode, 0xc); // base subobject { vptr, next, prev }
 
 // The CObjList sub-object embedded at +0x10: an intrusive doubly-linked list of
 // polymorphic nodes. Its Remove (0x1852e0, __thiscall on the list head) unlinks a
-// node from the {head@+4, tail@+8} pair.
+// node from the {head@+4, tail@+8} pair. REAL POLYMORPHIC (ALL-VTABLES): the +0x00
+// abstract list-interface vtable is the implicit vptr (virtual dtor). The enclosing
+// CSymParser ctor auto-stamps the vptr and its /GX dtor auto-restores it as the
+// last member-destruct - both reloc-mask against ??_7CObjList (0x5ef760); retail's
+// distinct ctor(0x5ef75c)/dtor(0x5ef760) sub-vtable addresses collapse to one.
+VTBL(CObjList, 0x005ef760);
 struct CObjList {
-    void* m_vtbl;     // +0x00 (this+0x10): abstract list-interface vtable
-    CObjNode* m_head; // +0x04 (this+0x14)
-    CObjNode* m_tail; // +0x08 (this+0x18)
-    i32 m_count;      // +0x0c (this+0x1c)
+    virtual ~CObjList() {} // +0x00 (this+0x10): abstract list-interface vptr
+    CObjNode* m_head;      // +0x04 (this+0x14)
+    CObjNode* m_tail;      // +0x08 (this+0x18)
+    i32 m_count;           // +0x0c (this+0x1c)
 
     // Remove(node): unlink a node from the chain (0x1852e0).
     void Remove(CObjNode* node);
     // Link(node): splice a freshly-built reader node onto the list (0x1851e0).
     void Link(void* node);
-
-    // The list sub-object's teardown restores its vptr to the abstract base
-    // (0x5ef760) - the `[this+0x10]=0x5ef760` the owning /GX dtor emits as the
-    // last member-destruct, after the +0x80 hash's RemoveAll.
-    ~CObjList() {
-        m_vtbl = &CObjList_purecall_vftbl;
-    }
 };
+SIZE(CObjList, 0x10); // { vptr, head, tail, count }
 
-// A node owned by the +0x88 CHashSlotList: it owns a buffer at +0x08; the list
-// uses the CHashSlotList::Unlink (0x1391e0) machinery from Hash.h.
+// The parse-slot record block CSlotNode owns (an array of n*0x3c-byte slots);
+// full definition in SymParser.cpp.
+struct CParseSlot;
+
+// A node owned by the +0x88 CHashSlotList: its intrusive chain link is at +0x00
+// (so the list head points straight at it) and it owns a buffer at +0x08; the
+// list uses the CHashSlotList::Link/Unlink (0x1390e0/0x1391e0) machinery from Hash.h.
 struct CSlotNode {
-    char m_pad00[0x8];
-    void* m_buffer; // +0x08  owned buffer (RezFree'd)
+    CHashLink m_link;     // +0x00  intrusive chain node { next, prev }
+    CParseSlot* m_buffer; // +0x08  owned parse-slot block (RezFree'd)
 };
+SIZE(CSlotNode, 0xc);
 
 // The +0x80 hash member. CHashBase carries no destructor (a standalone CHashBase
 // value member in the shared hash/symtab TUs must stay trivially-destructible to
@@ -142,21 +106,27 @@ struct CParserHash : public CHashBase {
         RemoveAll();
     }
 };
-
-// The +0x10 list sub-object vtable the CONSTRUCTORS stamp (0x5ef75c) - 4 bytes ahead
-// of the 0x5ef760 the destructor restores (a distinct MI sub-vtable slot). Reloc-
-// masked DATA() extern.
-extern void* CObjList_ctor_vftbl; // 0x5ef75c
+SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 
 // ---------------------------------------------------------------------------
-// CSymParser - the Remus parser/owner.
+// CSymParser - the ButeMgr parser/owner. REAL POLYMORPHIC (ALL-VTABLES phase):
+// primary vtable ??_7CSymParser@@6B@ @0x5ef750 (3 non-dtor slots; the dtor is
+// non-virtual - not in the vtable). cl auto-stamps the vptr @+0 at the start of
+// the ctor AND the (non-virtual, but polymorphic-class) dtor - the manual
+// CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
+// manual vptr stamps (embedded-member "incorrect load into struct").
 // ---------------------------------------------------------------------------
+VTBL(CSymParser, 0x001ef750);
 class CSymParser {
 public:
-    // The default ctor (0x13aa10) lives in another (unmatched) TU - declared (no body)
-    // so the 3-arg ctor's discarded temp `CSymParser tmp;` lowers to a reloc-masked
-    // call; and the 3-arg buffer ctor (0x13ab00) defined in SymParser.cpp.
-    CSymParser();                          // 0x13aa10 (external)
+    virtual void V0(); // slot 0 (sub_13b9f0)
+    virtual void V1(); // slot 1 (sub_13ba00)
+    virtual void V2(); // slot 2 (sub_13ba10)
+
+    // The default ctor (0x13aa10, defined in SymParser.cpp) seeds the parse-config
+    // defaults; the 3-arg buf-ctor's discarded temp `CSymParser tmp;` lowers to a
+    // (reloc-masked) call to it. The 3-arg buffer ctor (0x13ab00) is also in the .cpp.
+    CSymParser();                          // 0x13aa10
     CSymParser(void* buf, i32 a2, i32 a3); // 0x13ab00
 
     // ~CSymParser (0x13abc0): the /GX scalar destructor. Clear(0) if armed, tear
@@ -181,6 +151,13 @@ public:
     // builds the right reader + the root scope and folds the records into it.
     i32 ParseBuffer(void* buf, i32 a, i32 b); // 0x13ad00
 
+    // LoadEntry (0x13b0c0): mount one archive entry named `name`. Ghidra-mislabeled
+    // CRezDir::Stub_13b0c0; the real owner is CSymParser (it sits between ParseBuffer
+    // and ParseRecords and drives ParseRecords/ApplyRecursive on `this`). A directory
+    // builds a CRezDir node + recurses ParseRecords; a file builds a CRezItm node,
+    // reads its 0xa8-byte header and runs the root scope's ApplyRecursive.
+    i32 LoadEntry(char* name, i32 flag); // 0x13b0c0
+
     // ParseRecords (0x13b300): the recursive directory/record loader ParseBuffer drives
     // (__thiscall, 4 args). Enumerates `path` via _findfirst/_findnext, building child
     // scopes (CreateSub) per subdir and leaf records per file, recursing into each dir.
@@ -203,15 +180,23 @@ public:
     // pop the first. Returns the popped record (or 0 on allocation failure).
     void* PopParseSlot(); // 0x13c0c0
 
+    // MakeSeed: the name-keyed seed builder (0x13ba70) dispatched __thiscall on the
+    // parser (ecx = this) - the same physical seed builder MakeSymSeed calls as a
+    // free cdecl, reached here with a `this` (SymTab.cpp Method4b0). Bare decl (no
+    // RVA - the RVA is carried by MakeSymSeed); the rel32 call reloc-masks.
+    i32 MakeSeed(); // 0x13ba70 (__thiscall view of the seed builder)
+
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified
     void* ResolvePath(const char* path);               // 0x13c030 -> root->ResolvePath
     void AddNode(void* rec);                           // 0x13c210 -> m_hash insert
 
-    void* m_vtbl;               // +0x00
-    char* m_ownedBuffer;        // +0x04
+    // vptr implicit @ +0x00 (??_7CSymParser@@6B@)
+    // +0x04  owned delimiter-set buffer: the tokenizer split set the CSymTab path
+    //         resolvers read (SymTab.cpp m_owner->m_delims), RezFree'd in the dtor.
+    char* m_delims;
     i32 m_08;                   // +0x08  (=1)
-    void* m_parseArmed;         // +0x0c  Clear guard
+    i32 m_parseArmed;           // +0x0c  Clear guard (0/1 flag)
     CObjList m_list;            // +0x10  (+0x10..+0x1c)
     CObjNode* m_activeNode;     // +0x20  detached+removed+deleted first in Clear
     i32 m_24;                   // +0x24
@@ -227,16 +212,20 @@ public:
     i32 m_4c;                   // +0x4c
     i32 m_50;                   // +0x50  (=1)
     i32 m_54;                   // +0x54
-    i32 m_58;                   // +0x58
-    i32 m_5c;                   // +0x5c
+    i32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
+    i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp Method4b0)
     i32 m_60;                   // +0x60
-    void* m_cachedSourceBuffer; // +0x64
-    char m_pad68[0x78 - 0x68];
-    i32 m_subTabBucketCount;   // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
-    i32 m_symbolBucketCount;   // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
-    CParserHash m_hash;        // +0x80
-    CHashSlotList m_nodes;     // +0x88  { head, tail }
-    i32 m_parseSlotBlockCount; // +0x90  number of parse-slot records per allocated block
+    char* m_cachedSourceBuffer; // +0x64  strdup'd source buffer (RezFree'd)
+    i32 m_68;                   // +0x68  flag forwarded to the +0x38 walk (m_68 == 0)
+    i32 m_6c;                   // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
+    i32 m_70;                   // +0x70  leaf-record ctor arg
+    i32 m_74;                   // +0x74  leaf-record ctor arg (Init4 only)
+    i32 m_subTabBucketCount;    // +0x78  child-scope m_subTabs bucket count (CSymTab ctor subN)
+    i32 m_symbolBucketCount;    // +0x7c  child-scope m_symbols bucket count (CSymTab ctor symN)
+    CParserHash m_hash;         // +0x80
+    CHashSlotList m_nodes;      // +0x88  { head, tail }
+    i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
+SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
 
 #endif // SRC_BUTE_SYMPARSER_H

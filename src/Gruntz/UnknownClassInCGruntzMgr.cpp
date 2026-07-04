@@ -95,3 +95,5 @@ CGruntSpawnLevel::CGruntSpawnLevel() {
 // once the GruntzPlayer/CGruntSpawnLevel identity is unified.
 RVA(0x00083260, 0x57)
 CGruntSpawnLevel::~CGruntSpawnLevel() {}
+SIZE_UNKNOWN(CGruntSpawnLevel);
+SIZE_UNKNOWN(Mgr38);

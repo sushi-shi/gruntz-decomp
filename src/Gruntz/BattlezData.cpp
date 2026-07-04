@@ -5,16 +5,14 @@
 // of per-map records, plus a flat Serialize.
 #include <Gruntz/BattlezData.h>
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
+#include <Globals.h>
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.
-struct CGameReg {
-    char m_pad00[0x118];
-    i32 m_118; // +0x118
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind
 // the record array. (The object is raw-`operator new`d by the game manager and
@@ -45,7 +43,7 @@ void CBattlezData::Init() {
     m_24 = 0;
     m_28 = 0;
     m_2c = 0;
-    m_44 = 0;
+    m_scoreValue = 0;
     m_34 = 0;
     m_30 = 0;
     m_38 = 0;
@@ -196,12 +194,12 @@ i32 CBattlezData::AllRecordsInBounds() {
     return 1;
 }
 
-// 0xfcd70 - gated "within bounds" test: only meaningful when m_44 is set; then
+// 0xfcd70 - gated "within bounds" test: only meaningful when m_scoreValue is set; then
 // the m_30..m_40 band must each stay <= the m_14..m_2c band. Takes one (unused)
 // stack argument (retail cleans 4 bytes on return).
 RVA(0x000fcd70, 0x61)
 i32 CBattlezData::InBounds(i32 unused) {
-    if (m_44 == 0) {
+    if (m_scoreValue == 0) {
         return 0;
     }
     if (m_30 > m_14) {
@@ -222,7 +220,6 @@ i32 CBattlezData::InBounds(i32 unused) {
 // 0xfce00 - ratio over the current group of 4 records: (Sum m_24) / (Sum m_3c),
 // or 0 when the m_3c sum is zero. Both sums are accumulated in float (fild);
 // g_zeroF (0.0f) seeds the accumulators and the divide-by-zero guard.
-extern float g_zeroF;
 RVA(0x000fce00, 0x56)
 float CBattlezData::GroupRatio() {
     float den = g_zeroF;
@@ -393,7 +390,7 @@ i32 CBattlezData::SumGroupField08() {
     return sum;
 }
 
-// 0xfced0 - the record's win/score value at the wrap index, or m_44 when the
+// 0xfced0 - the record's win/score value at the wrap index, or m_scoreValue when the
 // wrapped index lands on the last record.
 // @early-stop
 // ~76%, logic byte-exact. Two non-steerable codegen choices: retail's `lea
@@ -404,13 +401,13 @@ i32 CBattlezData::GetRecordValue(i32 b) {
     i32 last = m_count - 1;
     i32 idx = b + last / 4 * 4;
     if (idx == last) {
-        return m_44;
+        return m_scoreValue;
     }
     return m_records[idx].m_scoreValue;
 }
 
 // 0xfd330 - fill the record at `index` (0x40-byte stride, biased -0x40) from the
-// current m_10..m_44 band; phase 0 writes the head fields (+m_118 from the
+// current m_10..m_scoreValue band; phase 0 writes the head fields (+m_118 from the
 // registry), any other phase writes the tail.
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
@@ -425,8 +422,8 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
         rec[7] = m_24;
         rec[8] = m_28;
         rec[9] = m_2c;
-        rec[10] = m_44;
-        rec[1] = g_gameReg->m_118;
+        rec[10] = m_scoreValue;
+        rec[1] = g_gameReg->m_isEasyMode;
     } else {
         rec[11] = m_30;
         rec[12] = m_34;
@@ -437,7 +434,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 }
 
 // 0xfd3f0 - flat serialize: op 7 reads, op 4 writes. The 17 leading scalars
-// (m_count..m_44) are streamed UNROLLED; the m_48 band and the four nested 4xN
+// (m_count..m_scoreValue) are streamed UNROLLED; the m_48 band and the four nested 4xN
 // grids/bands are streamed in counted loops. The op==4 (write) test is the
 // forward `je`; op==7 (read) is the fall-through block.
 // @early-stop
@@ -446,7 +443,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 // edi/ebx past the null guard (pushing only ecx/ebp/esi upfront), which shifts
 // every spill-slot offset (`[esp+0x18]` vs `[esp+0x14]`) downstream. Not source-steerable.
 RVA(0x000fd3f0, 0x425)
-i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
+i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     i32* p;
     i32 i;
     i32 r;
@@ -472,7 +469,7 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
             s->Read(&m_38, 4);
             s->Read(&m_3c, 4);
             s->Read(&m_40, 4);
-            s->Read(&m_44, 4);
+            s->Read(&m_scoreValue, 4);
             for (p = m_48, i = 0; i < 4; i++, p++) {
                 s->Read(p, 4);
             }
@@ -531,7 +528,7 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
     s->Write(&m_38, 4);
     s->Write(&m_3c, 4);
     s->Write(&m_40, 4);
-    s->Write(&m_44, 4);
+    s->Write(&m_scoreValue, 4);
     for (p = m_48, i = 0; i < 4; i++, p++) {
         s->Write(p, 4);
     }
@@ -573,3 +570,6 @@ i32 CBattlezData::Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(BattlezRecord);
+SIZE_UNKNOWN(CBattlezData);

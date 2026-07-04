@@ -1,23 +1,25 @@
 // WwdFile.h - Gruntz WWD level-file loader (Monolith-faithful reconstruction).
 //
-// On-disk WWD header layout is pinned in src/Stub/types/wwd.h; this header
-// reproduces the load-bearing fields the loaders actually touch.
+// This header reproduces the load-bearing on-disk WWD fields the loaders
+// actually touch (WwdHeader, 0x5F4); the full plane/object on-disk formats are
+// not yet modeled in a matched TU.
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
+#include <rva.h>
 
 typedef u8 Bytef;
 typedef u32 uLong;
 typedef u32 uLongf;
 
 // WWD file header (1524 = 0x5F4 bytes on disk). Only the fields the loaders
-// read are named; the rest is padding to preserve offsets. See formats/wwd.h.
+// read are named; the rest is padding to preserve offsets.
 struct WwdHeader {
     u32 wwdSignature; // +0x000  == 1524 (header size)
     u32 field_4;      // +0x004
-    u32 flags;        // +0x008  bit1 (0x2) = COMPRESS
+    u32 flags;        // +0x008  bit0 (0x1) USE_Z_COORDS, bit1 (0x2) COMPRESS
     u8 pad_c[0x10 - 0x0c];
     char levelName[0x2d0 - 0x10]; // +0x010  (name/author/paths block)
     i32 startX;                   // +0x2D0
@@ -51,7 +53,17 @@ public:
     i32 Read(void* buf, i32 len);
 
 private:
-    void* m_vtbl;   // +0x00
+    // +0x00 is the engine vtable pointer of this EXTERNAL binary-file-stream class
+    // (its ctor/dtor/Open/Read are all unmatched engine code, reloc-masked). Our
+    // code never touches this slot; it is a pure layout placeholder so m_handle
+    // lands at +0x04. Modeling it as C++ virtuals would make cl emit a WRONG,
+    // incomplete vtable in this TU (its real virtuals are unmodeled) and regress
+    // the neighbouring Save -> kept as an opaque leading word.
+    // authentic: opaque foreign slots - m_00 is the EXTERNAL stream class's engine
+    // vptr (its virtuals are unmatched; declaring them would emit a wrong ??_7 and
+    // regress Save), m_handle is a Win32 HANDLE, m_name the engine CString buffer.
+    // None are dereferenced here; they are pure layout placeholders. Kept void*.
+    void* m_00;     // +0x00  engine vptr (opaque)
     void* m_handle; // +0x04  HANDLE (-1 when closed)
     i32 m_open;     // +0x08  open/refcount flag
     void* m_name;   // +0x0C  CString filename buffer
@@ -67,6 +79,7 @@ private:
 // slot 0x1 (offset 0x4) = the scalar-deleting destructor. m_flags@+0x8 carries
 // the plane flags (bit0 = MAIN). None of these have bodies here.
 // ---------------------------------------------------------------------------
+SIZE(CPlane, 0x158); // RE'd CPlane object size (0x158)
 class CPlane {
 public:
     // Construct from (a, planeIndex, c); reloc-masked engine ctor.
@@ -100,24 +113,21 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CDDSurface - the engine DirectDraw surface. UNMATCHED; modeled as an external
-// shell so the plane draw methods' Blt calls reloc-mask. The plane embeds its
-// scratch DDBLTFX-ish blit param at +0xF4 (passed by address into BltEx). Only
-// the two blit virtuals the renderer uses are declared.
-class CDDSurface {
-public:
-    // BltEx(srcRect, a, b, flags, blitParam) - the "fill / colorkey-clear" blit;
-    // __thiscall, 5 stack args. Reloc-masked engine code.
-    i32 BltEx(void* srcRect, i32 a, i32 b, i32 flags, void* blitParam);
-    // BltFast(x, y, src, srcRect, blitParam) - the per-tile fast blit; __thiscall,
-    // 5 stack args. Reloc-masked engine code.
-    i32 BltFast(i32 x, i32 y, void* src, void* srcRect, void* blitParam);
-};
+// PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
+// (its ADDRESS is passed into CDDSurface::BltEx by CPlaneRender::Draw). It is NOT
+// the engine CDDSurface wrapper (the canonical class - the real BltEx/BltFast
+// `this` reached via ctx->m_2c - lives in <DDrawMgr/DDSurface.h>); this is only a
+// zero-size marker so the +0xF4 field lands in CPlane without pulling the real
+// 0xc0-byte surface into the plane layout. Draw is still a deferred stub, so no
+// surface methods are referenced from this TU yet.
+SIZE_UNKNOWN(PlaneBlitScratch);
+struct PlaneBlitScratch {};
 
 // A drawable plane source-frame (one entry of the tile/image lookup the renderer
 // dereferences through m_planeArray[handle>>16]). Only the fields the draw loop
 // reads are pinned: the cell-bounds (+0x64/+0x68), the frame table (+0x14), and
 // the per-frame blit src (+0x28 surface, +0x2c srcRect).
+SIZE_UNKNOWN(CPlaneFrame);
 struct CPlaneFrame {
     u8 pad_0[0x14];
     void** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
@@ -127,6 +137,7 @@ struct CPlaneFrame {
 };
 
 // One resolved tile/sprite frame: +0x28 = the source surface, +0x2c = its srcRect.
+SIZE_UNKNOWN(CPlaneTile);
 struct CPlaneTile {
     u8 pad_0[0x28];
     void* m_surface; // +0x28
@@ -230,6 +241,9 @@ struct CWwdStream {
 // CPlaneRender's own vtable dispatch view (the +0x14 "is-loaded" virtual the tile
 // validator gates on). Modeled as a polymorphic interface so the vtable call falls
 // out; no vtable is emitted here (no virtual is defined in this TU).
+// authentic: CPlaneRender cannot be made polymorphic in-TU (its full retail vtable
+// is unmatched engine code; real virtuals would make cl emit a wrong ??_7). This
+// declared-only interface is the recommended manual-dispatch form.
 struct CPlaneRenderPoly {
     virtual void v00();
     virtual void v04();
@@ -290,9 +304,9 @@ public:
     i32 m_94, m_98, m_9c;       // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
-    CPlaneScroll* m_scroll;   // +0xb0
-    char m_name[0xf4 - 0xb4]; // +0xb4  plane name (serialized as a fixed 0x80 field)
-    CDDSurface m_surface;     // +0xf4  (empty model, sizeof 1)
+    CPlaneScroll* m_scroll;     // +0xb0
+    char m_name[0xf4 - 0xb4];   // +0xb4  plane name (serialized as a fixed 0x80 field)
+    PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (empty marker, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];
     i32 m_colorKey; // +0x144  the color-key palette index, packed in place to RGB565
 };
@@ -329,6 +343,10 @@ public:
 
 // MFC CArray<CPlane*>::SetAtGrow(index, value).
 // Grows the backing store to fit `index` then stores value at [index].
+// authentic: the +0x34 CArray sub-object is an embedded member reached by address
+// (`&m_planes`), not a typed pointer; the cast targets that embedded array's method
+// set (binary-proven CArray<CPlane*> shape). A typed member here shifted GameLevel's
+// ctor 89.5%->72% in a prior probe, so the by-address method view is retained.
 struct CPlanePtrArray {
     void SetAtGrow(i32 index, CPlane* value);
 };

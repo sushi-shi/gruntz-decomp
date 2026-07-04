@@ -76,7 +76,7 @@ public:
     void Scroll(i32 delta);
     i32 TypeChar(i32 ch, i32 a2);
     void EndInput();
-    ~CFontConfig();
+    ~CFontConfig() OVERRIDE;
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
     CString m_inputText;       // +0x1c  scratch input string
@@ -385,3 +385,6 @@ RVA(0x00022360, 0x2f4)
 i32 CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32) {
     return 0;
 }
+
+SIZE_UNKNOWN(FontItem);
+SIZE_UNKNOWN(CFontConfig);

@@ -16,9 +16,10 @@
 
 // The owning level/world object reached through this+0xc; its SoundDevice hangs
 // off +0x20. Modeled as an opaque view (offsets load-bearing).
+struct LeafSoundDevice; // defined below
 struct LeafSoundOwner {
     char m_pad0[0x20];
-    void* m_sound; // +0x20  the global SoundDevice (null until brought up)
+    LeafSoundDevice* m_sound; // +0x20  the global SoundDevice (null until brought up)
 };
 
 // The SoundDevice (Dsndmgr) the loaders dispatch into. Only the two acquire/decode
@@ -40,10 +41,10 @@ public:
 
 // ===========================================================================
 
-// 0x1586e0 - acquire the element's sound through SoundDevice::Acquire; cache it.
+// acquire the element's sound through SoundDevice::Acquire; cache it.
 RVA(0x001586e0, 0x34)
 i32 LeafElementObj::LoadSoundA(void* src) {
-    LeafSoundDevice* dev = (LeafSoundDevice*)m_c->m_sound;
+    LeafSoundDevice* dev = m_c->m_sound;
     if (!dev) {
         return 0;
     }
@@ -51,13 +52,16 @@ i32 LeafElementObj::LoadSoundA(void* src) {
     return m_10 != 0;
 }
 
-// 0x158720 - acquire the element's sound through SoundDevice::Decode; cache it.
+// acquire the element's sound through SoundDevice::Decode; cache it.
 RVA(0x00158720, 0x34)
 i32 LeafElementObj::LoadSoundB(void* src) {
-    LeafSoundDevice* dev = (LeafSoundDevice*)m_c->m_sound;
+    LeafSoundDevice* dev = m_c->m_sound;
     if (!dev) {
         return 0;
     }
     m_10 = dev->Decode(src, 0x100ea, 0);
     return m_10 != 0;
 }
+
+SIZE_UNKNOWN(LeafSoundDevice);
+SIZE_UNKNOWN(LeafSoundOwner);

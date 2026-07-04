@@ -7,8 +7,8 @@
 //     the DirectInputCreateA bring-up (Create) and the EnumDevices wrapper.
 //   * CInputDevice (InputDevice.cpp) - thin IDirectInputDevice wrapper thunks
 //     (Create/SetDataFormat/SetCooperativeLevel/SetProperty/Acquire). Each does
-//     iface->vtbl->Method(iface, args...) so the retail `call *off(reg)` COM
-//     dispatch falls out; on a nonzero HRESULT it reports via GetErrorString.
+//     iface->Method(args...) so the retail `call *off(reg)` COM dispatch falls
+//     out; on a nonzero HRESULT it reports via GetErrorString.
 //
 // GetErrorString maps a DirectInput error code to a "<DIERR_NAME> (<code>) -
 // <description>" string and, depending on three reporting-mode globals, beeps,
@@ -31,18 +31,13 @@
 
 // MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
 // <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
-// MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
-// the "hand" icon, whose real windows.h value is 0x10.
+// MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
-// DInput SDK constants (real <dinput.h> names/values; the full header isn't
-// included because its hand-rolled COM interfaces / GUIDs here are matched by
-// shape - see IDirectInputZ above). Same immediates, so matching-neutral.
-#define DIRECTINPUT_VERSION 0x0500 // DirectInputCreateA version arg
-#define DIDEVTYPE_JOYSTICK 4       // EnumDevices device type
-#define DIEDFL_ATTACHEDONLY 1      // EnumDevices flags (attached devices only)
-#define DISCL_NONEXCLUSIVE 2       // SetCooperativeLevel: share the device
-#define DISCL_FOREGROUND 4         // SetCooperativeLevel: foreground-only access
+// The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
+// DISCL_* / DIPROP_RANGE / DIPROP_DEADZONE / DIERR_*) now come from the real
+// <dinput.h> (via DirectInputMgr2.h). DIPROP_RANGE/DEADZONE are the SDK's MAKEDIPROP(4)
+// / MAKEDIPROP(5) magic-pointer GUIDs, passed by REFGUID to SetProperty.
 
 // DirectInputMgr2::Create flags: each bit, when SET, SKIPS one sub-initializer.
 #define DIDF_NO_DEVICE_B 2    // skip InitB (device B)
@@ -56,25 +51,18 @@
 // GetDeviceState snapshot buffer: 256 bytes (one per keyboard scan code).
 #define STATE_BUFFER_SIZE 0x100
 
-// The two DIERR HRESULTs ReadState recovers from by re-Acquiring the device.
-#define DIERR_INPUTLOST 0x8007001e   // access to the device was lost
-#define DIERR_NOTACQUIRED 0x8007000c // device not acquired
-
 // The __FILE__ strings the wrappers pass to GetErrorString - two source-path
 // $SG pooled constants ($SG at 0x6199bc / 0x619ed8) referenced across the run.
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-// DINPUT.dll DirectInputCreateA - called via a direct `e8 rel32` to its
-// incremental-link thunk (the thunk is `jmp ds:[IAT]`); reloc-masked, like
-// DirectSoundCreate / DirectDrawCreate, not an `ff 15 [IAT]` indirect.
-extern "C" i32 __stdcall
-DirectInputCreateA(void* hinst, u32 version, IDirectInputZ** ppDI, void* punkOuter);
-
-// IID_IDirectInputDevice2A - a dxguid GUID constant in .rdata (0x5ef458),
-// passed to the device QueryInterface. Reloc-masked DATA() extern.
+// IID_IDirectInputDevice2A - the dxguid GUID constant in .rdata (0x5ef458) passed to
+// the device QueryInterface. <dinput.h> declares it (EXTERN_C const GUID); we redeclare
+// it only to pin its retail RVA so objdiff names the reloc target. DirectInputCreateA
+// itself is the real <dinput.h> import decl (a direct `e8 rel32` to its ILT thunk,
+// reloc-masked, like DirectSoundCreate / DirectDrawCreate - not an `ff 15 [IAT]`).
 DATA(0x001ef458)
-extern const u8 IID_IDirectInputDevice2A[16]; // 0x5ef458
+extern "C" const GUID IID_IDirectInputDevice2A;
 
 // The static DIEnumDevicesCallbackA the EnumDevices wrapper passes by address
 // (0x532fc0, a separate DinMgr2.cpp callback not yet matched). Referenced only
@@ -97,21 +85,15 @@ extern "C" i32 g_thirdEnabled; // 0x653ab0
 DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// The engine allocator / deallocator (global operator new / delete) - reloc-
-// masked rel32 (cdecl: callers `add esp,4`). Same address every TU.
-void* operator new(u32);
-void operator delete(void*);
+// The global operator new / delete (the engine allocator) are the language's
+// implicitly-declared allocation functions - no local re-declaration needed; their
+// `call rel32` displacements reloc-mask in objdiff exactly the same.
 
-// The foreign device-config vftable InitA stamps into its new'd 0x338 object
-// (@0x5ef628). Referenced as DIR32 data; we never emit this vtable. The deleting-
-// destructor chain (0x133300) walks two base-subobject vtables in turn (@0x5ef680
-// then @0x5ef670) as it tears the object down. All three are reloc-masked DIR32.
-DATA(0x001ef628)
-extern void* g_deviceConfigVtblA; // 0x5ef628
-DATA(0x001ef680)
-extern void* g_deviceConfigVtblB; // 0x5ef680
-DATA(0x001ef670)
-extern void* g_deviceConfigVtblC; // 0x5ef670
+// The three device-config vtables (0x5ef628 keyboard / 0x5ef640 mouse / 0x5ef658
+// joystick) and their two base-subobject vtables (0x5ef680 / 0x5ef670) are now
+// EMITTED by cl from the real CInputDev* hierarchy (see the header): the ctors/dtor
+// auto-stamp the implicit vptr, so there is no manual device-config vptr stamp any
+// more. The VTBL() catalog bindings below name each emitted ??_7 at its retail RVA.
 
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
 // (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
@@ -137,45 +119,24 @@ extern const u8 g_joystickDataFormat[]; // 0x591590
 DATA(0x001ef548)
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 
-// The device-B config object (InputDevice.cpp sibling of CDeviceConfigA): a 0x2c8-
-// byte object with the SAME prefix layout (m_device/+4, m_device2/+8, +0x29c..+0x2b4)
-// but stamped with its own foreign vftable (@0x5ef640) and brought up via a distinct
-// CreateDev entry (0x1342c0). Modeled with no body so the calls reloc-mask; the
-// vtable + config-blob are reloc-masked DIR32 operands.
-DATA(0x001ef640)
-extern void* g_deviceConfigVtblB2; // 0x5ef640 - device-B foreign vftable
-
 DATA(0x001ef538)
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
-struct CDeviceConfigB {
-    inline CDeviceConfigB();
+// ---------------------------------------------------------------------------
+// Vtable catalog: cl EMITS these five ??_7 vtables from the real CInputDev*
+// hierarchy (header, where each class also carries its SIZE). Bind each emitted
+// ??_7 at its retail RVA.
+// ---------------------------------------------------------------------------
+VTBL(CInputDevRoot, 0x001ef670);  // grand-base vtable (4 slots)
+VTBL(CInputDevBase, 0x001ef680);  // middle-base vtable (6 slots)
+VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
+VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
+VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 
-    i32 CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
-    // The joystick-device sibling bring-up (0x134630) + its DI axis configurator
-    // (0x134710); IsReady (0x1343a0) is the device-B CreateDev success check.
-    // The non-keyboard device-config objects share the CInputDevice IDirectInputDevice-
-    // wrapper prefix, so these call the shared wrappers (CreateDeviceWrap/SetDataFormat/
-    // SetCooperativeLevel/SetProperty) by reinterpreting `this` as CInputDevice*.
-    i32 CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags); // 0x134630
-    i32 SetupAxes();                                                                   // 0x134710
-    i32 IsReady();                                                                     // 0x1343a0
-
-    void* m_vptr;                   // +0x000  stamped to g_deviceConfigVtblB2 (@0x5ef640)
-    IDirectInputDeviceZ* m_device;  // +0x004
-    IDirectInputDeviceZ* m_device2; // +0x008
-    char m_padc[0x29c - 0x0c];
-    void* m_hwnd;          // +0x29c
-    void* m_stateBuffer;   // +0x2a0
-    u32 m_stateBufferSize; // +0x2a4  (untouched by InitB)
-    i32 m_latchedKeys;     // +0x2a8  (= -1)
-    u32 m_currentKeys;     // +0x2ac
-    u32 m_edgeKeys;        // +0x2b0
-    i32 m_2b4;             // +0x2b4  (= 0)
-    char m_pad2b8[0x2c8 - 0x2b8];
-}; // 0x2c8
-
-inline CInputDevice::CInputDevice() {
+// Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
+// `new CInputDevice` / InitB's `new CDeviceConfigB`; cl auto-stamps the implicit
+// vptr (no manual device-config vptr store any more).
+inline CInputDevRoot::CInputDevRoot() {
     m_device = 0;
     m_device2 = 0;
     m_hwnd = 0;
@@ -183,21 +144,35 @@ inline CInputDevice::CInputDevice() {
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;
-    m_vptr = &g_deviceConfigVtblA;
+}
+inline CInputDevBase::CInputDevBase() {}
+
+inline CInputDevice::CInputDevice() {
     memset(m_keyTable, 0, sizeof(m_keyTable));
     m_modeFlags = 0;
 }
 
 inline CDeviceConfigB::CDeviceConfigB() {
-    m_device = 0;
-    m_device2 = 0;
-    m_hwnd = 0;
-    m_stateBuffer = 0;
+    m_flags = 0;
+}
+
+// The root/base virtual-slot bodies. IsValid (slot 3, 0x1332b0) reports whether the
+// device came up; Poll (slot 4, 0x133410) is the base per-frame poll stub the leaves
+// override; ResetState (slot 5, 0x1332c0) clears the press-edge latch.
+RVA(0x001332b0, 0xb)
+i32 CInputDevRoot::IsValid() {
+    return m_device2 != 0;
+}
+RVA(0x00133410, 0x3)
+i32 CInputDevBase::Poll() {
+    return 0;
+}
+RVA(0x001332c0, 0x1e)
+i32 CInputDevBase::ResetState() {
     m_latchedKeys = -1;
     m_currentKeys = 0;
     m_edgeKeys = 0;
-    m_vptr = &g_deviceConfigVtblB2;
-    m_2b4 = 0;
+    return 1;
 }
 
 // ===========================================================================
@@ -228,7 +203,7 @@ i32 DirectInputMgr2::Create(void* owner, void* hinst, u32 flags) {
     if (hinst == 0) {
         return 0;
     }
-    i32 hr = DirectInputCreateA(hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
+    i32 hr = DirectInputCreateA((HINSTANCE)hinst, DIRECTINPUT_VERSION, &m_directInput, 0);
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0x32, hr);
         return 0;
@@ -264,23 +239,23 @@ void DirectInputMgr2::Shutdown() {
         return;
     }
     if (m_deviceB != 0) {
-        m_deviceB->ScalarDtor(1);
+        delete m_deviceB;
         m_deviceB = 0;
     }
     if (m_deviceA != 0) {
-        m_deviceA->ScalarDtor(1);
+        delete m_deviceA;
         m_deviceA = 0;
     }
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
+        CInputDevBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
         if (d != 0) {
-            d->ScalarDtor(1);
+            delete d;
         }
     }
     m_devices.SetSize(0, -1);
     FreeDeviceList();
-    m_directInput->vtbl->Release(m_directInput);
+    m_directInput->Release();
     m_directInput = 0;
 }
 
@@ -294,15 +269,15 @@ void DirectInputMgr2::Shutdown() {
 // scheduling, no /O2 source lever flips it. 86.5%.
 RVA(0x00132e20, 0xb1)
 i32 DirectInputMgr2::InitA(u32 flags) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
     CDeviceConfigA* dev = new CDeviceConfigA;
-    m_deviceA = (CInputDeviceBase*)dev;
+    m_deviceA = dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigA, m_owner, flags) == 0) {
         if (m_deviceA != 0) {
-            m_deviceA->ScalarDtor(1);
+            delete m_deviceA;
         }
         m_deviceA = 0;
         return 0;
@@ -317,15 +292,15 @@ i32 DirectInputMgr2::InitA(u32 flags) {
 // scalar-deletes it (m_deviceB) and returns 0; on success keeps it in m_deviceB.
 RVA(0x00132ee0, 0x9a)
 i32 DirectInputMgr2::InitB(u32 flags) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
     CDeviceConfigB* dev = new CDeviceConfigB;
-    m_deviceB = (CInputDeviceBase*)dev;
+    m_deviceB = dev;
     if (dev->CreateDev(m_directInput, g_deviceConfigB, m_owner, flags) == 0) {
         if (m_deviceB != 0) {
-            m_deviceB->ScalarDtor(1);
+            delete m_deviceB;
         }
         m_deviceB = 0;
         return 0;
@@ -339,15 +314,14 @@ i32 DirectInputMgr2::InitB(u32 flags) {
 // failed HRESULT and returns 0, else 1.
 RVA(0x00132f80, 0x3d)
 i32 DirectInputMgr2::EnumGameControllers(u32) {
-    IDirectInputZ* di = m_directInput;
+    IDirectInputA* di = m_directInput;
     if (di == 0) {
         return 0;
     }
-    i32 hr = di->vtbl->EnumDevices(
-        di,
+    i32 hr = di->EnumDevices(
         DIDEVTYPE_JOYSTICK,
-        (void*)&DinEnumDevicesCallback,
-        (void*)this,
+        (LPDIENUMDEVICESCALLBACKA)DinEnumDevicesCallback,
+        this,
         DIEDFL_ATTACHEDONLY
     );
     if (hr != 0) {
@@ -363,10 +337,10 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
 RVA(0x00133080, 0x4a)
 i32 DirectInputMgr2::PollAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
+    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->PollA() == 0) {
+    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayA() == 0) {
@@ -382,8 +356,8 @@ i32 DirectInputMgr2::PollArrayA() {
     i32 failed = 0;
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = m_devices.m_data[i];
-        if (d != 0 && d->PollA() == 0) {
+        CInputDevBase* d = m_devices.m_data[i];
+        if (d != 0 && d->Poll() == 0) {
             failed = 1;
         }
     }
@@ -395,10 +369,10 @@ i32 DirectInputMgr2::PollArrayA() {
 RVA(0x00133110, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
     i32 failed = 0;
-    if (m_deviceA != 0 && m_deviceA->PollA() == 0) {
+    if (m_deviceA != 0 && m_deviceA->Poll() == 0) {
         failed = 1;
     }
-    if (m_deviceB != 0 && m_deviceB->PollA() == 0) {
+    if (m_deviceB != 0 && m_deviceB->Poll() == 0) {
         failed = 1;
     }
     if (PollArrayB() == 0) {
@@ -414,8 +388,8 @@ i32 DirectInputMgr2::PollArrayB() {
     i32 failed = 0;
     i32 n = m_devices.m_size;
     for (i32 i = 0; i < n; i++) {
-        CInputDeviceBase* d = m_devices.m_data[i];
-        if (d != 0 && d->PollB() == 0) {
+        CInputDevBase* d = m_devices.m_data[i];
+        if (d != 0 && d->ResetState() == 0) {
             failed = 1;
         }
     }
@@ -431,9 +405,9 @@ void DirectInputMgr2::FreeDeviceList() {
     while (node != 0) {
         CDeviceListNode* cur = node;
         node = node->m_next;
-        void* payload = cur->m_payload;
+        CDeviceListNode* payload = cur->m_payload;
         if (payload != 0) {
-            ((CDeviceListNode*)payload)->ConfigDtor();
+            payload->ConfigDtor();
             operator delete(payload);
         }
     }
@@ -449,15 +423,7 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
     if (count == 0) {
         return 0;
     }
-    void* raw = operator new(0x88);
-    CDeviceListNode* node;
-    if (raw != 0) {
-        ((CDeviceListNode*)raw)->m_next = 0;
-        ((CDeviceListNode*)raw)->m_004 = 0;
-        node = (CDeviceListNode*)raw;
-    } else {
-        node = 0;
-    }
+    CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
     if (node->ConfigCreate(count, a2, a3) == 0) {
         if (node != 0) {
             node->ConfigDtor();
@@ -490,27 +456,36 @@ void DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
 // GetErrorString); the rest of its methods follow GetErrorString below.
 // ===========================================================================
 
-// CInputDevice::~CInputDevice (__thiscall). The /GX deleting-destructor chain: with
-// the EH frame live it stamps the most-derived vftable (@0x5ef628), tears the object
-// down (Teardown frees the snapshot buffer + releases the COM devices), then walks
-// the two base-subobject vftables (@0x5ef680 then @0x5ef670) re-releasing as it
-// unwinds, advancing the [esp+0x10] try-level stamp (0 / 1 / -1) after each step.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md), 42.7%:
-// body content is byte-correct (3 vptr stamps @0x5ef628/0x5ef680/0x5ef670 + Teardown +
-// ReleaseDevices x2, all reloc-masked) but retail wraps it in a /GX EH frame (push -1 /
-// push handler / mov fs:0) with [esp+0x10] try-level stamps (0/1/-1) advanced after each
-// step - that frame comes from real base-subobject dtors, unreachable under the
-// manual-vptr non-polymorphic shape this class needs (its foreign vtable @0x5ef628 isn't
-// reproducible). Deferred to the final sweep.
+// (The two base-subobject destructors are defined inline in the header - each a
+// single ReleaseDevices cleanup - so cl inlines the full base unwind, stamp-by-stamp,
+// into every leaf's /GX destructor. The standalone base dtor 0x1333b0 lives in
+// BoundaryUpper2Eh.cpp; cl's copies here are unbound and only drive the leaf unwinds
+// + force ??_7CInputDevRoot / ??_7CInputDevBase emission.)
+
+// CInputDevice::~CInputDevice (__thiscall, 0x133300). Now a REAL polymorphic /GX
+// multilevel deleting-dtor: cl auto-emits the EH frame + the vptr re-stamp down the
+// chain (0x5ef628 keyboard -> 0x5ef680 base -> 0x5ef670 root) with the [esp+0x10]
+// try-level stamps, then Teardown()s the leaf and inlines each base cleanup
+// (ReleaseDevices). Replaces the manual-vptr stamp shape that capped this at 42.7%.
 RVA(0x00133300, 0x6a)
 CInputDevice::~CInputDevice() {
-    m_vptr = &g_deviceConfigVtblA;
     Teardown();
-    m_vptr = &g_deviceConfigVtblB;
-    ReleaseDevices();
-    m_vptr = &g_deviceConfigVtblC;
-    ReleaseDevices();
+}
+
+// CDeviceConfigC::~CDeviceConfigC (joystick, 0x133460) and CDeviceConfigB::~CDeviceConfigB
+// (mouse, 0x1334f0): the two sibling /GX multilevel deleting-dtors, same shape as
+// ~CInputDevice - cl auto-emits the EH frame + vptr re-stamp (leaf 0x5ef658/0x5ef640 ->
+// base 0x5ef680 -> root 0x5ef670) with the [esp+0x10] try-level stamps, then calls the
+// leaf teardown (Free6d0 / Free360, bodies in BoundaryUpper.cpp - reloc-masked) and
+// inlines each base cleanup (ReleaseDevices). Replaces the manual-vptr DevCfgChain
+// stamps that were @early-stop in BoundaryUpper2Eh.cpp.
+RVA(0x00133460, 0x6a)
+CDeviceConfigC::~CDeviceConfigC() {
+    Free6d0();
+}
+RVA(0x001334f0, 0x6a)
+CDeviceConfigB::~CDeviceConfigB() {
+    Free360();
 }
 
 // ---------------------------------------------------------------------------
@@ -643,7 +618,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 // flag, seeds the scan-code table, sets the keyboard data format + cooperative level,
 // then allocates the 0x100-byte GetDeviceState snapshot buffer (+0x2a0/+0x2a4).
 RVA(0x00133b50, 0x97)
-i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
@@ -655,7 +630,7 @@ i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32
     }
     m_modeFlags = flags;
     SetupKeyTable();
-    if (SetDataFormat((void*)g_keyboardDataFormat) == 0) {
+    if (SetDataFormat(g_keyboardDataFormat) == 0) {
         return 0;
     }
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
@@ -665,7 +640,7 @@ i32 CInputDevice::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = STATE_BUFFER_SIZE;
     return 1;
 }
@@ -680,7 +655,7 @@ void CInputDevice::Teardown() {
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
-    ReleaseDevices();
+    CInputDevRoot::ReleaseDevices(); // qualified -> direct call (reloc-masked)
 }
 
 // CInputDevice::SetupKeyTable (__thiscall, no args). Zeroes the m_keyTable scan-code
@@ -781,7 +756,7 @@ i32 CInputDevice::Poll() {
             m_currentKeys |= 0x80000000;
         }
     } else {
-        u8* buf = (u8*)m_stateBuffer;
+        u8* buf = m_stateBuffer->keys;
         if (buf[m_keyTable[0]] & 0x80) {
             m_currentKeys |= 1;
         }
@@ -952,17 +927,17 @@ i32 CInputDevice::Poll() {
 // hwnd), runs the CreateDevice+QI bring-up (Create), then dispatches the +0x14
 // configure virtual through the stamped foreign vtable. Returns 1 on success.
 RVA(0x00134260, 0x43)
-i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hwnd) {
+i32 CInputDevBase::CreateDeviceWrap(IDirectInputA* di, const void* guid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
     if (hwnd == 0) {
         return 0;
     }
-    if (Create(di, guid, hwnd) == 0) {
+    if (CInputDevRoot::Create(di, guid, hwnd) == 0) { // qualified -> direct call 0x134cb0
         return 0;
     }
-    ((CInputDeviceVtblView*)this)->Slot14();
+    ResetState(); // +0x14 dispatch (virtual, slot 5)
     return 1;
 }
 
@@ -973,27 +948,27 @@ i32 CInputDevice::CreateDeviceWrap(IDirectInputZ* di, const void* guid, void* hw
 // cooperative level, then returns whether the device came up (IsReady). The shared
 // wrapper thunks live on CInputDevice (the device-config objects share its prefix).
 RVA(0x001342c0, 0x95)
-i32 CDeviceConfigB::CreateDev(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
     if (owner == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
-    m_2b4 = flags;
-    if (((CInputDevice*)this)->SetDataFormat((void*)g_mouseDataFormat) == 0) {
+    m_flags = flags;
+    if (SetDataFormat(g_mouseDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x10);
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = 0x10;
-    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+    if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
     return IsReady() != 0;
@@ -1005,16 +980,6 @@ RVA(0x001343a0, 0xb)
 i32 CDeviceConfigB::IsReady() {
     return m_device2 != 0;
 }
-
-// The DirectInput mouse snapshot the +0x2a0 buffer holds for a mouse device
-// (DIMOUSESTATE): the relative axis deltas + the four button-down bytes (bit 0x80
-// is "down"). PollMouse reads lX/lY (lZ is ignored) and rgbButtons[0..3].
-struct DIMouseStateZ {
-    i32 lX;           // +0x00
-    i32 lY;           // +0x04
-    i32 lZ;           // +0x08 (unread)
-    u8 rgbButtons[4]; // +0x0c
-};
 
 // The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
 // button-down bits (low nibble) + the four direction bits (the top nibble).
@@ -1055,7 +1020,7 @@ i32 CInputDevice::PollMouse() {
     if (ReadState() == 0) {
         return 0;
     }
-    DIMouseStateZ* ms = (DIMouseStateZ*)m_stateBuffer;
+    DIMouseStateZ* ms = &m_stateBuffer->mouse;
     if (ms == 0) {
         return 0;
     }
@@ -1095,16 +1060,6 @@ i32 CInputDevice::PollMouse() {
     return 1;
 }
 
-// The DirectInput joystick snapshot the +0x2a0 buffer holds for a joystick device
-// (DIJOYSTATE2): the lX/lY axes then, at +0x30, the 128-button array (bit 0x80 is
-// "down"). PollJoystick reads lX/lY and the first ten buttons.
-struct DIJoyState2Z {
-    i32 lX; // +0x00
-    i32 lY; // +0x04
-    char pad08[0x30 - 0x08];
-    u8 rgbButtons[10]; // +0x30 (DIJOYSTATE2 has 128; only ten are mapped)
-};
-
 // CInputDevice::PollJoystick (0x1347d0, __thiscall no args). Poll() the device,
 // ReadState the +0x2a0 DIJOYSTATE2, pack the axis-direction + ten button-down bits
 // into m_currentKeys, then edge-reconcile each of the fourteen bits against
@@ -1119,7 +1074,7 @@ i32 CInputDevice::PollJoystick() {
     if (ReadState() == 0) {
         return 0;
     }
-    DIJoyState2Z* js = (DIJoyState2Z*)m_stateBuffer;
+    DIJoyState2Z* js = &m_stateBuffer->joy;
     if (js == 0) {
         return 0;
     }
@@ -1188,27 +1143,27 @@ i32 CInputDevice::PollJoystick() {
 // joystick data format, a 0x110-byte DIJOYSTATE2 snapshot buffer, and a SetupAxes()
 // finalizer that configures the DI axis ranges + dead zones.
 RVA(0x00134630, 0x98)
-i32 CDeviceConfigB::CreateDevJoystick(IDirectInputZ* di, const void* cfg, void* owner, u32 flags) {
+i32 CDeviceConfigB::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags) {
     if (di == 0) {
         return 0;
     }
     if (owner == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->CreateDeviceWrap(di, cfg, owner) == 0) {
+    if (CreateDeviceWrap(di, cfg, owner) == 0) {
         return 0;
     }
-    m_2b4 = flags;
-    if (((CInputDevice*)this)->SetDataFormat((void*)g_joystickDataFormat) == 0) {
+    m_flags = flags;
+    if (SetDataFormat(g_joystickDataFormat) == 0) {
         return 0;
     }
     void* buf = operator new(0x110);
     if (buf == 0) {
         return 0;
     }
-    m_stateBuffer = buf;
+    m_stateBuffer = (DeviceState*)buf;
     m_stateBufferSize = 0x110;
-    if (((CInputDevice*)this)->SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
+    if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
     return SetupAxes() != 0;
@@ -1224,31 +1179,24 @@ i32 CDeviceConfigB::SetupAxes() {
     if (m_device2 == 0) {
         return 0;
     }
-    struct DIPropRange {
-        u32 dwSize;       // +0x00
-        u32 dwHeaderSize; // +0x04
-        u32 dwObj;        // +0x08
-        u32 dwHow;        // +0x0c
-        i32 lMin;         // +0x10
-        i32 lMax;         // +0x14
-    } range;
-    range.dwSize = 0x18;
-    range.dwHeaderSize = 0x10;
-    range.dwObj = 0;
-    range.dwHow = 1;
+    DIPROPRANGE range; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, lMin, lMax}
+    range.diph.dwSize = 0x18;
+    range.diph.dwHeaderSize = 0x10;
+    range.diph.dwObj = 0;
+    range.diph.dwHow = 1;
     range.lMin = -1000;
     range.lMax = 1000;
-    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+    if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
-    range.dwObj = 4;
-    if (((CInputDevice*)this)->SetProperty((const void*)4, &range) == 0) {
+    range.diph.dwObj = 4;
+    if (SetProperty(DIPROP_RANGE, &range) == 0) {
         return 0;
     }
-    if (((CInputDevice*)this)->SetPropertyDword((const void*)5, 0, 1, 0x1388) == 0) {
+    if (SetPropertyDword(DIPROP_DEADZONE, 0, 1, 0x1388) == 0) {
         return 0;
     }
-    return ((CInputDevice*)this)->SetPropertyDword((const void*)5, 4, 1, 0x1388) != 0;
+    return SetPropertyDword(DIPROP_DEADZONE, 4, 1, 0x1388) != 0;
 }
 
 // CInputDevice::Create (__thiscall, ret 0xc => 3 args). Caches the
@@ -1256,7 +1204,7 @@ i32 CDeviceConfigB::SetupAxes() {
 // IDirectInput::CreateDevice into m_device, then QueryInterfaces it to the v2 device
 // interface (m_device2). Each COM failure is reported; returns whether m_device2 is non-null.
 RVA(0x00134cb0, 0x94)
-i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) {
+i32 CInputDevRoot::Create(IDirectInputA* di, const void* deviceGuid, void* hwnd) {
     if (di == 0) {
         return 0;
     }
@@ -1264,7 +1212,7 @@ i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
         return 0;
     }
     m_hwnd = hwnd;
-    i32 hr = di->vtbl->CreateDevice(di, deviceGuid, &m_device, 0);
+    i32 hr = di->CreateDevice(*(const GUID*)deviceGuid, &m_device, 0);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x32, hr);
         return 0;
@@ -1272,7 +1220,7 @@ i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
     if (m_device == 0) {
         return 0;
     }
-    hr = m_device->vtbl->QueryInterface(m_device, IID_IDirectInputDevice2A, (void**)&m_device2);
+    hr = m_device->QueryInterface(IID_IDirectInputDevice2A, (void**)&m_device2);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x3e, hr);
         return 0;
@@ -1284,13 +1232,13 @@ i32 CInputDevice::Create(IDirectInputZ* di, const void* deviceGuid, void* hwnd) 
 // device (m_device2), Releases the created device (m_device), then clears the device handles +
 // the cached hwnd / state buffer pointer.
 RVA(0x00134d50, 0x3b)
-void CInputDevice::ReleaseDevices() {
+void CInputDevRoot::ReleaseDevices() {
     if (m_device2 != 0) {
         Unacquire();
-        m_device2->vtbl->Release(m_device2);
+        m_device2->Release();
     }
     if (m_device != 0) {
-        m_device->vtbl->Release(m_device);
+        m_device->Release();
     }
     m_device = 0;
     m_device2 = 0;
@@ -1304,11 +1252,11 @@ void CInputDevice::ReleaseDevices() {
 // reported and yields 0. Returns the +0x2a0 buffer pointer on success. (Helper that
 // Poll calls; reloc-masked direct call from 0x133d00.)
 RVA(0x00134d90, 0x60)
-void* CInputDevice::ReadState() {
+DeviceState* CInputDevice::ReadState() {
     if (m_stateBuffer == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->GetDeviceState(m_device2, m_stateBufferSize, m_stateBuffer);
+    i32 hr = m_device2->GetDeviceState(m_stateBufferSize, m_stateBuffer);
     if (hr != 0) {
         if (hr != (i32)DIERR_INPUTLOST && hr != (i32)DIERR_NOTACQUIRED) {
             DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x84, hr);
@@ -1324,11 +1272,11 @@ void* CInputDevice::ReadState() {
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
 RVA(0x00134eb0, 0x3b)
-i32 CInputDevice::SetDataFormat(void* fmt) {
+i32 CInputDevRoot::SetDataFormat(const void* fmt) {
     if (fmt == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->SetDataFormat(m_device2, fmt);
+    i32 hr = m_device2->SetDataFormat((LPCDIDATAFORMAT)fmt);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x108, hr);
         return 0;
@@ -1340,8 +1288,8 @@ i32 CInputDevice::SetDataFormat(void* fmt) {
 // IDirectInputDevice::SetCooperativeLevel with the cached hwnd (m_hwnd) and the
 // given flags; report on failure.
 RVA(0x00134ef0, 0x3c)
-i32 CInputDevice::SetCooperativeLevel(u32 flags) {
-    i32 hr = m_device2->vtbl->SetCooperativeLevel(m_device2, m_hwnd, flags);
+i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
+    i32 hr = m_device2->SetCooperativeLevel((HWND)m_hwnd, flags);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x128, hr);
         return 0;
@@ -1352,11 +1300,11 @@ i32 CInputDevice::SetCooperativeLevel(u32 flags) {
 // CInputDevice::SetProperty (__thiscall, ret 8 => 2 args). Pass-through to
 // IDirectInputDevice::SetProperty; report on failure.
 RVA(0x00134f30, 0x40)
-i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
+i32 CInputDevRoot::SetProperty(REFGUID rguid, void* prop) {
     if (prop == 0) {
         return 0;
     }
-    i32 hr = m_device2->vtbl->SetProperty(m_device2, rguid, prop);
+    i32 hr = m_device2->SetProperty(rguid, (LPCDIPROPHEADER)prop);
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x148, hr);
         return 0;
@@ -1370,19 +1318,13 @@ i32 CInputDevice::SetProperty(const void* rguid, void* prop) {
 // to SetProperty(rguid, &prop). The data fields are filled from the args first,
 // then the two fixed size words.
 RVA(0x00134f70, 0x40)
-i32 CInputDevice::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 dwData) {
-    struct DIPropDword {
-        u32 dwSize;       // +0x00
-        u32 dwHeaderSize; // +0x04
-        u32 dwObj;        // +0x08
-        u32 dwHow;        // +0x0c
-        u32 dwData;       // +0x10
-    } prop;
-    prop.dwObj = dwObj;
-    prop.dwHow = dwHow;
+i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData) {
+    DIPROPDWORD prop; // {diph{dwSize,dwHeaderSize,dwObj,dwHow}, dwData}
+    prop.diph.dwObj = dwObj;
+    prop.diph.dwHow = dwHow;
     prop.dwData = dwData;
-    prop.dwSize = 0x14;
-    prop.dwHeaderSize = 0x10;
+    prop.diph.dwSize = 0x14;
+    prop.diph.dwHeaderSize = 0x10;
     return SetProperty(rguid, &prop);
 }
 
@@ -1390,7 +1332,7 @@ i32 CInputDevice::SetPropertyDword(const void* rguid, u32 dwObj, u32 dwHow, u32 
 // IDirectInputDevice::Acquire; report on failure.
 RVA(0x00134fb0, 0x29)
 i32 CInputDevice::Acquire() {
-    i32 hr = m_device2->vtbl->Acquire(m_device2);
+    i32 hr = m_device2->Acquire();
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x17a, hr);
         return 0;
@@ -1401,8 +1343,8 @@ i32 CInputDevice::Acquire() {
 // CInputDevice::Unacquire (__thiscall, no args). IDirectInputDevice::Unacquire
 // (slot +0x20); returns whether the HRESULT was success (0).
 RVA(0x00134fe0, 0x13)
-i32 CInputDevice::Unacquire() {
-    i32 hr = m_device2->vtbl->Unacquire(m_device2);
+i32 CInputDevRoot::Unacquire() {
+    i32 hr = m_device2->Unacquire();
     return hr == 0;
 }
 
@@ -1413,7 +1355,7 @@ i32 CInputDevice::Unacquire() {
 // (InputDevice.cpp:0x1e5); returns whether the final HRESULT was success (0).
 RVA(0x00135040, 0x65)
 i32 CInputDevice::PollDevice() {
-    i32 hr = m_device2->vtbl->Poll(m_device2);
+    i32 hr = m_device2->Poll();
     if (hr == 0) {
         return 1;
     }
@@ -1421,7 +1363,7 @@ i32 CInputDevice::PollDevice() {
         if (Acquire() == 0) {
             return 0;
         }
-        hr = m_device2->vtbl->Poll(m_device2);
+        hr = m_device2->Poll();
     }
     if (hr != 0) {
         DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1e5, hr);

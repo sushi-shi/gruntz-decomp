@@ -21,7 +21,7 @@ extern "C" void EngStr_RenderText(
     i32 a8
 ); // 0x115930
 
-// The render config the forwarder fetches: arg0->m_04->m_10 is the config; its
+// The render config the forwarder fetches: arg0->m_sub->m_10 is the config; its
 // +0x2c is the font draw-method pointer injected as the 4th render arg.
 struct EngStrRenderCfg {
     char m_pad00[0x2c]; // +0x00
@@ -32,12 +32,12 @@ struct EngStrRenderSub {
     EngStrRenderCfg* m_cfg; // +0x10
 };
 struct EngStrRenderObj {
-    void* m_vptr;          // +0x00
-    EngStrRenderSub* m_04; // +0x04
+    void* m_vptr;           // +0x00  (foreign object's vptr; layout only)
+    EngStrRenderSub* m_sub; // +0x04
 };
 
 // EngStr text-draw forwarder (__cdecl). Fetches the render config off
-// obj->m_04->m_10; when present, forwards eight caller args to the text-render
+// obj->m_sub->m_10; when present, forwards eight caller args to the text-render
 // worker with the config's font draw-method pointer spliced in as the 4th arg.
 // 0x115440.
 // @early-stop
@@ -57,21 +57,24 @@ void EngStr_DrawText(
     i32 a7,
     i32 a8
 ) {
-    EngStrRenderCfg* cfg = obj->m_04->m_cfg;
+    EngStrRenderCfg* cfg = obj->m_sub->m_cfg;
     if (cfg == 0) {
         return;
     }
     EngStr_RenderText(obj, a1, a2, cfg->m_drawFn, a3, a4, a5, a6, a7, a8);
 }
 
-// CContainerErr::~CContainerErr() - re-stamp the live vtable, then unregister the
-// error handler. 0x16da60.
-DATA(0x001f04cc)
-extern void* const g_CContainerErrVtbl; // 0x5f04cc
+// CContainerErr::~CContainerErr() - the compiler auto-stamps ??_7CContainerErr at
+// dtor entry (matching retail's stamp-first order), then unregisters the error
+// handler. 0x16da60. VTBL binds the emitted vtable at the retail RVA (reloc-masked).
+// Real-polymorphic now (manual vptr-field stamp drained): cl's implicit dtor-entry
+// store lands stamp-first, exactly as retail does here, so this is byte-exact. (The
+// CTOR at 0x16d9c0 - another TU - is where cl's vptr-first vs retail vptr-last store
+// order would diverge; not in this TU.)
+VTBL(CContainerErr, 0x001f04cc);
 
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
-    m_vptr = (void*)&g_CContainerErrVtbl;
     m_err->Remove(this, 0);
 }
 
@@ -108,3 +111,9 @@ i32 zBitVec::SetSize(i32 nbits) {
     m_capacity = 0x20;
     return 1;
 }
+
+// EngStr.h + local render-family class metadata (hosted at .cpp EOF).
+SIZE_UNKNOWN(zErrRegistry);    // handle-table registry view (EngStr.h)
+SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
+SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
+SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)

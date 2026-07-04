@@ -1,13 +1,14 @@
 // ChatBoxOwner.cpp - the on-screen chat/text-box owner page (C:\Proj\Gruntz):
 // place/clear/configure/hit-test/render helpers. The box origin comes from the
-// active viewport (g_gameReg->m_8c/m_90, the viewport X/Y). Only offsets / code
+// active viewport (g_gameReg->m_modeW/m_90, the viewport X/Y). Only offsets / code
 // bytes are load-bearing; helpers are reloc-masked externals.
 #include <rva.h>
 
-#include <Gruntz/CGameRegistry.h>
+#include <ComDefs.h> // STDMETHOD - the DDRAW IDirectDrawSurface COM interface macros
+#include <Gruntz/GameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
 
-DATA(0x0064556c)
+DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
@@ -35,21 +36,53 @@ struct CChatBoxRegRoot { // m_18 points here
     char m_pad00[0x10];
     CChatBoxRegistry* m_10; // +0x10
 };
-// arg1->m_2c->m_8: a polymorphic DC source. GetDC (slot +0x44 == #17) and Done
-// (slot +0x68 == #26) are __stdcall slots taking the object explicitly.
-struct CChatBoxDcVtbl;
-struct CChatBoxDcSrc {
-    CChatBoxDcVtbl* m_vptr;
-};
-struct CChatBoxDcVtbl {
-    void* s0[0x11];                                   // slots 0..16
-    void(__stdcall* GetDC)(CChatBoxDcSrc*, HDC* out); // slot 17 == +0x44
-    void* s18[0x68 / 4 - 0x12];                       // slots 18..25
-    void(__stdcall* Done)(CChatBoxDcSrc*, HDC);       // slot 26 == +0x68
+// arg1->m_2c->m_8: the game's IDirectDrawSurface (DDRAW COM). GetDC is slot 17
+// (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the
+// hidden `this`. A local SDK-named interface (real DX6 slot names) so
+// `surf->GetDC(&hdc)` lowers to the same `push &hdc; push surf; mov reg,[surf];
+// call [reg+slot]` the manual vtbl-struct view did; pointer-only -> no vtable
+// emitted in this TU.
+struct IDirectDrawSurfaceZ {
+    STDMETHOD(QueryInterface)() PURE;        // slot 0
+    STDMETHOD_(u32, AddRef)() PURE;          // slot 1
+    STDMETHOD_(u32, Release)() PURE;         // slot 2
+    STDMETHOD(AddAttachedSurface)() PURE;    // slot 3
+    STDMETHOD(AddOverlayDirtyRect)() PURE;   // slot 4
+    STDMETHOD(Blt)() PURE;                   // slot 5
+    STDMETHOD(BltBatch)() PURE;              // slot 6
+    STDMETHOD(BltFast)() PURE;               // slot 7
+    STDMETHOD(DeleteAttachedSurface)() PURE; // slot 8
+    STDMETHOD(EnumAttachedSurfaces)() PURE;  // slot 9
+    STDMETHOD(EnumOverlayZOrders)() PURE;    // slot 10
+    STDMETHOD(Flip)() PURE;                  // slot 11
+    STDMETHOD(GetAttachedSurface)() PURE;    // slot 12
+    STDMETHOD(GetBltStatus)() PURE;          // slot 13
+    STDMETHOD(GetCaps)() PURE;               // slot 14
+    STDMETHOD(GetClipper)() PURE;            // slot 15
+    STDMETHOD(GetColorKey)() PURE;           // slot 16
+    STDMETHOD(GetDC)(HDC* phdc) PURE;        // slot 17 == +0x44
+    STDMETHOD(GetFlipStatus)() PURE;         // slot 18
+    STDMETHOD(GetOverlayPosition)() PURE;    // slot 19
+    STDMETHOD(GetPalette)() PURE;            // slot 20
+    STDMETHOD(GetPixelFormat)() PURE;        // slot 21
+    STDMETHOD(GetSurfaceDesc)() PURE;        // slot 22
+    STDMETHOD(Initialize)() PURE;            // slot 23
+    STDMETHOD(IsLost)() PURE;                // slot 24
+    STDMETHOD(Lock)() PURE;                  // slot 25
+    STDMETHOD(ReleaseDC)(HDC hdc) PURE;      // slot 26 == +0x68
+    STDMETHOD(Restore)() PURE;               // slot 27
+    STDMETHOD(SetClipper)() PURE;            // slot 28
+    STDMETHOD(SetColorKey)() PURE;           // slot 29
+    STDMETHOD(SetOverlayPosition)() PURE;    // slot 30
+    STDMETHOD(SetPalette)() PURE;            // slot 31
+    STDMETHOD(Unlock)() PURE;                // slot 32
+    STDMETHOD(UpdateOverlay)() PURE;         // slot 33
+    STDMETHOD(UpdateOverlayDisplay)() PURE;  // slot 34
+    STDMETHOD(UpdateOverlayZOrder)() PURE;   // slot 35
 };
 struct CChatBoxDcHost { // arg1->m_2c points here
     char m_pad00[0x8];
-    CChatBoxDcSrc* m_8; // +0x08
+    IDirectDrawSurfaceZ* m_8; // +0x08
 };
 struct CChatBoxCtx { // arg1 points here
     char m_pad00[0x2c];
@@ -58,7 +91,7 @@ struct CChatBoxCtx { // arg1 points here
 // 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
 void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 
-// Attach @0x204e0 - latch the source registry root + text host, raise active.
+// Attach - latch the source registry root + text host, raise active.
 // @early-stop
 // constant-materialization wall: retail emits `mov eax,1; ...; mov [m_c],eax`
 // (1 register-materialized, stored last) where our cl folds the direct immediate
@@ -70,13 +103,13 @@ void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
     m_c = 1;
 }
 
-// Deactivate @0x20510 - lower the active flag.
+// Deactivate - lower the active flag.
 RVA(0x00020510, 0x8)
 void CChatBoxOwner::Deactivate() {
     m_c = 0;
 }
 
-// GetField1c @0x20ef0 - return the box's caption/key CString (m_1c) by value
+// GetField1c - return the box's caption/key CString (m_1c) by value
 // (copy-construct it into the caller's sret slot; the return slot pointer flows
 // back in eax). The CString copy ctor is NAFXCW (reloc-masked).
 RVA(0x00020ef0, 0x20)
@@ -84,27 +117,27 @@ CString CChatBoxOwner::GetField1c() {
     return m_1c;
 }
 
-// Configure @0x20530 - origin from the viewport for the given mode; mark dirty.
+// Configure - origin from the viewport for the given mode; mark dirty.
 // @early-stop
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
 // spills the unused viewport width to a dead `[esp]` slot per arm; our cl DCEs it.
 RVA(0x00020530, 0x61)
 void CChatBoxOwner::Configure(i32 mode) {
     m_8 = mode;
-    // The dev read both viewport coords (g_gameReg->m_8c width + m_90 height) but
+    // The dev read both viewport coords (g_gameReg->m_modeW width + m_90 height) but
     // uses only height here; retail keeps the dead width load+spill (see the marker
     // above + docs/patterns/dead-global-read-spill-dce.md).
     if (mode == 1 || mode == 3) {
         m_0 = 0;
-        m_4 = g_gameReg->m_90 - 66;
+        m_4 = g_gameReg->m_modeH - 66;
     } else if (mode == 2) {
         m_0 = 0xa0;
-        m_4 = g_gameReg->m_90 - 66;
+        m_4 = g_gameReg->m_modeH - 66;
     }
     m_14->m_34 = 1;
 }
 
-// HitTest @0x21140 - is screen point (x,y) over the box for the current mode.
+// HitTest - is screen point (x,y) over the box for the current mode.
 // @early-stop
 // dead-global-read-spill wall (docs/patterns/dead-global-read-spill-dce.md): retail
 // keeps 4 dead viewport-width loads+spills (`mov [esp+8],reg`); our cl DCEs them all,
@@ -119,20 +152,20 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     // + docs/patterns/dead-global-read-spill-dce.md).
     if (m_8 == 3) {
         if (x < 0x40) {
-            if (y >= g_gameReg->m_90 - 0x40) {
+            if (y >= g_gameReg->m_modeH - 0x40) {
                 return 1;
             }
         }
         if (x <= 0x40) {
             return 0;
         }
-        if (y < g_gameReg->m_90 - 0x20) {
+        if (y < g_gameReg->m_modeH - 0x20) {
             return 0;
         }
         return 1;
     }
     if (x < 0x40) {
-        if (y >= g_gameReg->m_90 - 0x40) {
+        if (y >= g_gameReg->m_modeH - 0x40) {
             return 1;
         }
     }
@@ -142,20 +175,20 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (x >= m_0 + 0x1e0) {
         return 0;
     }
-    if (y < g_gameReg->m_90 - 0x20) {
+    if (y < g_gameReg->m_modeH - 0x20) {
         return 0;
     }
     return 1;
 }
 
 // ===========================================================================
-// CChatBoxOwner::ProcessCheatInput  (0x205c0, 0x741 = 1857 B) - cheat processor
+// CChatBoxOwner::ProcessCheatInput - cheat processor
 // ===========================================================================
 // Fired when the player submits a line in the chat box. DECODED BEHAVIOR (for the
 // final sweep; see the disasm at RVA 0x205c0):
 //
 //   if (m_14->IsAcceptingInput() == 0) goto done;       // 0x3508 on m_14
-//   mode = g_gameReg->m_2c->vtbl->GetInputMode();        // [m_2c]->[vtbl+0x10]
+//   mode = g_gameReg->m_curState->vtbl->GetInputMode();        // [m_2c]->[vtbl+0x10]
 //   if (mode == 0x11) {                                  // a "paste/special" key
 //       CString s = m_14->GetText();                     // 0x12a3
 //       m_14->host->Dispatch(s, 1, 1, 0);                // 0x2243
@@ -204,7 +237,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 }
 
 // ===========================================================================
-// CChatBoxOwner::LoadChatBoxSprite (0x20f40) - look up the "GAME_CHATBOX" sprite
+// CChatBoxOwner::LoadChatBoxSprite - look up the "GAME_CHATBOX" sprite
 // set, blit the frame for the current mode, then stamp the caption text via the
 // DC source. int(BOOL) return; the m_10==0 / hdc==0 guards return 1, the
 // m_2c==0 / spr==0 / frame==0 guards return 0.
@@ -215,8 +248,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 // the arg pushes (cl hoists) and SINKS the rect[1] struct store past `push &rect`
 // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
 // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
-// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%; moved from
-// src/Stub/ApiCallers.cpp (was ThisStubOwnerUnknown::LoadChatBoxSprite).
+// source diff closes these (hoisting rect[0] regressed 83->82%). ~83%.
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     CChatBoxOwner* self = this;
@@ -251,7 +283,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     HDC hdc = 0;
-    host->m_8->m_vptr->GetDC(host->m_8, &hdc);
+    host->m_8->GetDC(&hdc);
     if (!hdc) {
         return 1;
     }
@@ -273,6 +305,16 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[3] = (void*)(self->m_4 + 0x37);
         self->m_14->StampText(hdc, 0x17b, rect);
     }
-    host->m_8->m_vptr->Done(host->m_8, hdc);
+    host->m_8->ReleaseDC(hdc);
     return 1;
 }
+
+// SIZE metadata for the .cpp-local engine views (CChatBoxOwner + CChatBoxTextHost
+// live in ChatBoxOwner.h).
+SIZE_UNKNOWN(CChatBoxCtx);
+SIZE_UNKNOWN(CChatBoxDcHost);
+SIZE_UNKNOWN(IDirectDrawSurfaceZ);
+SIZE_UNKNOWN(CChatBoxFrame);
+SIZE_UNKNOWN(CChatBoxHash);
+SIZE_UNKNOWN(CChatBoxRegRoot);
+SIZE_UNKNOWN(CChatBoxRegistry);

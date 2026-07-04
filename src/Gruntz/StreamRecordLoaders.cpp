@@ -2,7 +2,7 @@
 // unrelated game classes deserialize a fixed field sequence from a stream-reader
 // object (a virtual Read at vtable +0x2c), with string-valued fields read into a
 // scratch buffer and interned against the game registry's name->object map
-// (g_gameReg->m_30->m_10 + 0x10, CMapStringToPtr::Lookup @0x1b8008). A global
+// (g_gameReg->m_world->m_10 + 0x10, CMapStringToPtr::Lookup @0x1b8008). A global
 // sequence counter (g_serialCounter) ticks once per string read. Each Load is a
 // __thiscall taking the reader (ret 4); names are placeholders, only the field
 // offsets + code bytes are load-bearing.
@@ -13,35 +13,25 @@
 #include <rva.h>
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
-#include <Gruntz/CSerialSub34.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
-                                 // leaf + KeyOfValue), CSerialObj - shared with the
-                                 // embedded +0x150 sub-record of CProjLoadRec below
+#include <Gruntz/SerialObjRef.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
+#include <Gruntz/GameRegistry.h>
+#include <Globals.h>
+// leaf + KeyOfValue), CSerialObj - shared with the
+// embedded +0x150 sub-record of CProjLoadRec below
 
 // ---------------------------------------------------------------------------
-// CStreamReader - the input stream the records read from. Only the +0x2c virtual
-// (Read(buf, count)) is touched; modeled polymorphically so `mov edx,[esi]; call
-// [edx+0x2c]` falls out. Never instantiated here, so no vtable is emitted.
+// Every record here streams through the shared WAP32 CSerialArchive (Read @ vtable
+// +0x2c = load, Write @ +0x30 = store), pulled in via <Gruntz/SerialObjRef.h> above
+// - the former local CStreamReader / CArchiveReader / CDualReader views are all folded
+// away. `s->Read` lowers to `mov edx,[esi]; call [edx+0x2c]`; `s->Write` to
+// `call [edx+0x30]`. (The +0x30-only CArchiveLoadRec store-serializer reaches Write;
+// the dual-mode CGruntStateRec/CProjLoadRec reach both slots off the one type.)
 // ---------------------------------------------------------------------------
-class CStreamReader {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void Read(void* buf, i32 count); // +0x2c
-};
 
 // ---------------------------------------------------------------------------
 // The game registry's string->object name map (CMapStringToPtr::Lookup @0x1b8008,
 // __thiscall): Lookup(key, &out) writes the found object (or leaves out untouched).
-// Reached as g_gameReg->m_30->m_10 + 0x10.
+// Reached as g_gameReg->m_world->m_10 + 0x10.
 // ---------------------------------------------------------------------------
 struct CRegNameMap {
     i32 Lookup(char* key, void** out); // 0x1b8008
@@ -55,25 +45,21 @@ struct CRegSub30 {
     char m_pad00[0x10];
     CRegNameTable* m_10; // +0x10  the name table
 };
-struct WwdGameReg {
-    char m_pad00[0x30];
-    CRegSub30* m_30; // +0x30  the name-table sub-registry
-};
 
 // The looked-up "type table" value an indexed field resolves through: a bounded
 // array (m_14[m_64 .. m_68]) whose element at the read index becomes the field.
 struct CRegTypeTable {
     char m_pad00[0x14];
-    void** m_14; // +0x14  element array
+    void** m_elems; // +0x14  element array
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  lower bound (inclusive)
-    i32 m_68; // +0x68  upper bound (inclusive)
+    i32 m_lowerBound; // +0x64  lower bound (inclusive)
+    i32 m_upperBound; // +0x68  upper bound (inclusive)
 };
 
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.
 DATA(0x0024556c)
-extern "C" WwdGameReg* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.
@@ -88,7 +74,7 @@ extern i32 g_serialCounter;
 // the stream / registry is absent.
 // ===========================================================================
 struct CTriggerLoadRec {
-    i32 Load(CStreamReader* s);
+    i32 Load(CSerialArchive* s);
 
     i32 m_0, m_4, m_8, m_c; // +0x00..+0x0c  raw
     void* m_10;             // +0x10  indexed type ref
@@ -112,15 +98,15 @@ struct CTriggerLoadRec {
 // this-expression and a map-receiver temp (regressed to 89%); the store position
 // is the MSVC5 scheduler coin-flip, source-invariant.
 RVA(0x00009bb0, 0x367)
-i32 CTriggerLoadRec::Load(CStreamReader* s) {
+i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    WwdGameReg* gr = g_mgrSettings;
+    CGameRegistry* gr = g_mgrSettings;
     if (gr == 0) {
         return 0;
     }
-    CRegSub30* reg = gr->m_30;
+    CRegSub30* reg = (CRegSub30*)gr->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -176,8 +162,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -195,8 +181,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -214,8 +200,8 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -236,7 +222,7 @@ i32 CTriggerLoadRec::Load(CStreamReader* s) {
 // the m_30 sub-registry.
 // ===========================================================================
 struct CEventLoadRec {
-    i32 Load(CStreamReader* s);
+    i32 Load(CSerialArchive* s);
 
     i32 m_0, m_4; // +0x00,+0x04  raw
     void* m_8;    // +0x08  name ref
@@ -256,11 +242,11 @@ struct CEventLoadRec {
 // sinks, cl hoists). The idx-in-callee-saved-reg regalloc is steered by the
 // `i32 i = idx;` copy. ~92%.
 RVA(0x0009c650, 0x372)
-i32 CEventLoadRec::Load(CStreamReader* s) {
+i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -293,8 +279,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -312,8 +298,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -331,8 +317,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -350,8 +336,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -369,8 +355,8 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
         reg->m_10->m_10map.Lookup(buf, &out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {
-            r = tt->m_14[i];
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
+            r = tt->m_elems[i];
         } else {
             r = 0;
         }
@@ -386,31 +372,15 @@ i32 CEventLoadRec::Load(CStreamReader* s) {
 }
 
 // ===========================================================================
-// The CArchive-read / CString-default flavor of the record loader: a larger
-// record whose stream reader's virtual Read sits at vtable +0x30 (not +0x2c),
-// and whose string fields take a CString/default-buffer copy rather than the
-// name-registry Lookup. `this` is held in ebp; the reader in ebx. __thiscall,
-// ret 4; returns 0 when the reader or the bound manager (m_c) is absent, else 1.
+// The CArchive-store / CString-default flavor of the record serializer: a larger
+// record streamed through the shared CSerialArchive's +0x30 slot (Write, the store
+// entry - not the +0x2c load slot the sibling loaders use), whose string fields take
+// a CString/default-buffer copy rather than the name-registry Lookup. `this` is held
+// in ebp; the archive in ebx. `s->Write(buf,n)` lowers to `mov edx,[ebx]; call
+// [edx+0x30]`. __thiscall, ret 4; returns 0 when the archive or the bound manager
+// (m_c) is absent, else 1. NB the CArchiveLoadRec::Load method name is the recovered-
+// symbol placeholder; only the +0x30 slot offset is load-bearing.
 // ===========================================================================
-
-// The +0x30-Read stream reader (one more vtable slot than CStreamReader). Modeled
-// polymorphically so `mov edx,[ebx]; call [edx+0x30]` falls out.
-class CArchiveReader {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void Read(void* buf, i32 count); // +0x30
-};
 
 // The bound manager (this->m_c): the string-default helper at 0x155630 is a
 // __thiscall on its +0x10 sub-object, taking (obj, scratch, &outInt).
@@ -419,11 +389,15 @@ struct CArchiveDefaultSub {
 };
 struct CArchiveMgr {
     char m_pad00[0x10];
-    CArchiveDefaultSub* m_10; // +0x10
+    CArchiveDefaultSub* m_10;   // +0x10
+    char m_pad14[0x24 - 0x14];  //
+    char m_name24[0x80 - 0x24]; // +0x24  inline name string (default-copied into scratch)
 };
 
+// The +0x188 default-int object one raw field seeds from (m_4e4 below).
+struct CArchiveDefInt;
+
 // The global default sink one raw field reads into (DAT_00612618).
-extern i32 g_archiveDefault612618;
 
 // One outer entry of the m_3a8 nested-array block: {void** base; i32 count}.
 struct CArchiveSubArray {
@@ -433,7 +407,7 @@ struct CArchiveSubArray {
 };
 
 struct CArchiveLoadRec {
-    i32 Load(CArchiveReader* s);
+    i32 Load(CSerialArchive* s);
 
     char m_pad00[0x0c];
     CArchiveMgr* m_c; // +0x0c  bound manager (null -> bail)
@@ -452,36 +426,36 @@ struct CArchiveLoadRec {
     i32 m_2f8;        // +0x2f8
     i32 m_2fc, m_300; // +0x2fc  (8 bytes)
     char m_pad304[0x360 - 0x304];
-    i32 m_360, m_364; // +0x360  (8 bytes)
-    i32 m_368;        // +0x368
-    i32 m_36c;        // +0x36c
-    i32 m_370;        // +0x370
-    void** m_374;     // +0x374  element-ptr array (paired count m_378)
-    i32 m_378;        // +0x378  element count
+    i32 m_360, m_364;   // +0x360  (8 bytes)
+    i32 m_368;          // +0x368
+    i32 m_36c;          // +0x36c
+    i32 m_370;          // +0x370
+    void** m_elemArray; // +0x374  element-ptr array (paired count m_elemCount)
+    i32 m_elemCount;    // +0x378  element count
     char m_pad37c[0x384 - 0x37c];
     char m_384[0x3a8 - 0x384]; // +0x384  4 fixed 8-byte entries
     CArchiveSubArray m_3a8[4]; // +0x3a8  4 nested {base,count} sub-arrays
     char m_pad3f8[0x408 - 0x3f8];
     i32 m_408;                             // +0x408
     i32 m_40c;                             // +0x40c
-    char* m_410;                           // +0x410  default string (copied into the scratch)
+    char* m_defaultStr;                    // +0x410  default string (copied into the scratch)
     i32 m_414, m_418, m_41c, m_420, m_424; // +0x414..+0x424
     i16 m_428;                             // +0x428  (2 bytes)
     char m_pad42a[0x470 - 0x42a];
     i32 m_470, m_474, m_478, m_47c, m_480, m_484; // +0x470..+0x484
     char m_pad488[0x48c - 0x488];
-    void** m_48c; // +0x48c  trailing element-ptr array (paired count m_490)
-    i32 m_490;    // +0x490  trailing element count
+    void** m_tailArray; // +0x48c  trailing element-ptr array (paired count m_tailCount)
+    i32 m_tailCount;    // +0x490  trailing element count
     char m_pad494[0x49c - 0x494];
     i32 m_49c; // +0x49c
     char m_pad4a0[0x4b0 - 0x4a0];
     i32 m_4b0; // +0x4b0
     char m_pad4b4[0x4cc - 0x4b4];
-    CArchiveMgr* m_4cc;            // +0x4cc  object whose +0x24 is an inline name string
-    void* m_4d0;                   // +0x4d0  object passed to the default helper
-    i32 m_4d4;                     // +0x4d4
-    i32 m_4d8, m_4dc, m_4e0;       // +0x4d8..+0x4e0
-    CArchiveDefaultSub* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
+    CArchiveMgr* m_4cc;        // +0x4cc  object whose +0x24 is an inline name string
+    void* m_4d0;               // +0x4d0  object passed to the default helper
+    i32 m_4d4;                 // +0x4d4
+    i32 m_4d8, m_4dc, m_4e0;   // +0x4d8..+0x4e0
+    CArchiveDefInt* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
     i32 m_4e8, m_4ec, m_4f0, m_4f4, m_4f8, m_4fc, m_500, m_504; // +0x4e8..+0x504
     char m_pad508[0x514 - 0x508];
     i32 m_514; // +0x514
@@ -494,7 +468,7 @@ struct CArchiveDefInt {
 };
 
 // @early-stop
-// scratch-slot scheduling tail (~99.8%): every Read field/size, the two unsigned
+// scratch-slot scheduling tail (~99.8%): every serialize field/size, the two unsigned
 // count loops, the nested sub-array loop, the inline strlen/strcpy default copies,
 // the g_serialCounter bumps, the conditional default-helper call and the final
 // signed element loop are byte-faithful. The sole residual is the MSVC5 scheduler
@@ -502,7 +476,7 @@ struct CArchiveDefInt {
 // store positions - the entropy tail the CTriggerLoadRec/CEventLoadRec siblings
 // share; not source-steerable.
 RVA(0x000d79d0, 0x537)
-i32 CArchiveLoadRec::Load(CArchiveReader* s) {
+i32 CArchiveLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -511,53 +485,53 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
         return 0;
     }
 
-    s->Read(&m_1bc, 4);
-    s->Read(&m_1c0, 4);
-    s->Read(&m_1cc, 4);
-    s->Read(&m_2d8, 4);
-    s->Read(&m_2ec, 4);
-    s->Read(&m_2f0, 4);
-    s->Read(&m_2f4, 4);
-    s->Read(&m_2f8, 4);
-    s->Read(&m_2fc, 8);
-    s->Read(&m_360, 8);
-    s->Read(&m_368, 4);
-    s->Read(&m_36c, 4);
+    s->Write(&m_1bc, 4);
+    s->Write(&m_1c0, 4);
+    s->Write(&m_1cc, 4);
+    s->Write(&m_2d8, 4);
+    s->Write(&m_2ec, 4);
+    s->Write(&m_2f0, 4);
+    s->Write(&m_2f4, 4);
+    s->Write(&m_2f8, 4);
+    s->Write(&m_2fc, 8);
+    s->Write(&m_360, 8);
+    s->Write(&m_368, 4);
+    s->Write(&m_36c, 4);
 
-    i32 c0 = m_378;
-    s->Read(&c0, 4);
+    i32 c0 = m_elemCount;
+    s->Write(&c0, 4);
     for (u32 i0 = 0; i0 < (u32)c0; i0++) {
-        s->Read((void*)m_374[i0], 8);
+        s->Write(m_elemArray[i0], 8);
     }
 
     char* p = m_384;
     for (i32 k0 = 4; k0 != 0; k0--) {
-        s->Read(p, 8);
+        s->Write(p, 8);
         p += 8;
     }
 
     CArchiveSubArray* e = m_3a8;
     for (i32 k1 = 4; k1 != 0; k1--) {
         i32 cnt = e->m_count;
-        s->Read(&cnt, 4);
+        s->Write(&cnt, 4);
         for (u32 i1 = 0; i1 < (u32)cnt; i1++) {
-            s->Read((void*)e->m_base[i1], 8);
+            s->Write(e->m_base[i1], 8);
         }
         e++;
     }
 
-    s->Read(&m_408, 4);
+    s->Write(&m_408, 4);
 
     g_serialCounter++;
     {
         char buf[0x200];
         memset(buf, 0, sizeof(buf));
-        strcpy(buf, m_410);
-        s->Read(buf, 0x200);
+        strcpy(buf, m_defaultStr);
+        s->Write(buf, 0x200);
     }
 
-    s->Read(&m_40c, 4);
-    s->Read(&g_archiveDefault612618, 4);
+    s->Write(&m_40c, 4);
+    s->Write(&g_archiveDefault612618, 4);
 
     g_serialCounter++;
     {
@@ -567,8 +541,8 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
         if (m_4d0 != 0) {
             mc->m_10->FillDefault(m_4d0, buf, &v);
         }
-        s->Read(buf, 0x80);
-        s->Read(&v, 4);
+        s->Write(buf, 0x80);
+        s->Write(&v, 4);
     }
 
     g_serialCounter++;
@@ -576,56 +550,56 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
         char buf[0x80];
         memset(buf, 0, sizeof(buf));
         if (m_4cc != 0) {
-            strcpy(buf, (char*)m_4cc + 0x24);
+            strcpy(buf, m_4cc->m_name24);
         }
-        s->Read(buf, 0x80);
+        s->Write(buf, 0x80);
     }
 
-    s->Read(&m_4d8, 4);
-    s->Read(&m_4dc, 4);
-    s->Read(&m_4e0, 4);
+    s->Write(&m_4d8, 4);
+    s->Write(&m_4dc, 4);
+    s->Write(&m_4e0, 4);
 
     g_serialCounter++;
     {
         i32 v = 0;
         if (m_4e4_obj != 0) {
-            v = ((CArchiveDefInt*)m_4e4_obj)->m_188;
+            v = m_4e4_obj->m_188;
         }
-        s->Read(&v, 4);
+        s->Write(&v, 4);
     }
 
-    s->Read(&m_4e8, 4);
-    s->Read(&m_4ec, 4);
-    s->Read(&m_4f4, 4);
-    s->Read(&m_1c4, 4);
-    s->Read(&m_484, 4);
-    s->Read(&m_4f8, 4);
-    s->Read(&m_4fc, 4);
-    s->Read(&m_500, 4);
-    s->Read(&m_4f0, 4);
-    s->Read(&m_504, 4);
-    s->Read(&m_414, 4);
-    s->Read(&m_418, 4);
-    s->Read(&m_41c, 4);
-    s->Read(&m_420, 4);
-    s->Read(&m_424, 4);
-    s->Read(&m_428, 2);
-    s->Read(&m_470, 4);
-    s->Read(&m_474, 4);
-    s->Read(&m_478, 4);
-    s->Read(&m_47c, 4);
-    s->Read(&m_480, 4);
-    s->Read(&m_4b0, 4);
-    s->Read(&m_4d4, 4);
-    s->Read(&m_49c, 4);
-    s->Read(&m_514, 4);
+    s->Write(&m_4e8, 4);
+    s->Write(&m_4ec, 4);
+    s->Write(&m_4f4, 4);
+    s->Write(&m_1c4, 4);
+    s->Write(&m_484, 4);
+    s->Write(&m_4f8, 4);
+    s->Write(&m_4fc, 4);
+    s->Write(&m_500, 4);
+    s->Write(&m_4f0, 4);
+    s->Write(&m_504, 4);
+    s->Write(&m_414, 4);
+    s->Write(&m_418, 4);
+    s->Write(&m_41c, 4);
+    s->Write(&m_420, 4);
+    s->Write(&m_424, 4);
+    s->Write(&m_428, 2);
+    s->Write(&m_470, 4);
+    s->Write(&m_474, 4);
+    s->Write(&m_478, 4);
+    s->Write(&m_47c, 4);
+    s->Write(&m_480, 4);
+    s->Write(&m_4b0, 4);
+    s->Write(&m_4d4, 4);
+    s->Write(&m_49c, 4);
+    s->Write(&m_514, 4);
 
-    i32 c1 = m_490;
-    s->Read(&c1, 4);
-    for (i32 fi = 0; fi < m_490; fi++) {
-        void* el = m_48c[fi];
+    i32 c1 = m_tailCount;
+    s->Write(&c1, 4);
+    for (i32 fi = 0; fi < m_tailCount; fi++) {
+        void* el = m_tailArray[fi];
         if (el != 0) {
-            s->Read(el, 8);
+            s->Write(el, 8);
         }
     }
 
@@ -635,35 +609,20 @@ i32 CArchiveLoadRec::Load(CArchiveReader* s) {
 // ===========================================================================
 // CGruntStateRec::Load (0x0ea990) - the dual-mode grunt-state record loader. A
 // __thiscall taking (reader, mode, a2, a3), ret 0x10. Bails (0) when the reader
-// or the registry sub-object (g_mgrSettings->m_30) is absent. Mode 7 loads the
+// or the registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 loads the
 // fields as registry refs (the CEventLoadRec indexed-type-ref / name-ref idiom,
-// the reader's Read at vtable +0x2c); mode 4 loads them as nested sub-records (the
-// CArchiveLoadRec FillDefault + sub-reader idiom, Read at vtable +0x30). Either
+// the reader's Read at vtable +0x2c); mode 4 stores them as nested sub-records (the
+// CArchiveLoadRec FillDefault + sub-reader idiom, Write at vtable +0x30). Either
 // way it tail-chains the base loader (0x1848) and normalises its result to 0/1.
 // ===========================================================================
 
-// The reader exposes BOTH serialize entries: Read at vtable +0x2c (mode 7) and
-// Read30 at +0x30 (mode 4). Modeled polymorphically; never instantiated.
-class CDualReader {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void Read(void* buf, i32 count);   // +0x2c  (mode 7)
-    virtual void Read30(void* buf, i32 count); // +0x30  (mode 4)
-};
+// The reader is the shared WAP32 CSerialArchive: it exposes BOTH serialize entries -
+// Read at vtable +0x2c (mode 7 = load) and Write at +0x30 (mode 4 = store) - so the
+// dual-mode loader below reaches both slots off the one type (from CSerialObjRef.h).
 
 struct CGruntStateRec {
-    i32 Load(CDualReader* s, i32 mode, i32 a2, i32 a3);
-    i32 ChainLoad(CDualReader* s, i32 mode, i32 a2, i32 a3); // 0x1848 (base chain)
+    i32 Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3);
+    i32 ChainLoad(CSerialArchive* s, i32 mode, i32 a2, i32 a3); // 0x1848 (base chain)
 
     char m_pad00[0x30];
     void* m_30; // +0x30  ref / sub-record
@@ -694,11 +653,11 @@ struct CGruntStateRec {
 // byte-faithful; residual is the MSVC5 scratch-buffer slot assignment + the
 // outparam zero-init store positions. Not source-steerable.
 RVA(0x000ea990, 0xa72)
-i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
+i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = g_mgrSettings->m_30;
+    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -710,7 +669,7 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
 
     switch (mode) {
         case 4:
-            // --- mode 4: nested sub-records via FillDefault + the +0x30 reader ---
+            // --- mode 4 (store): nested sub-records via FillDefault + Write @ +0x30 ---
 #define GS_SUBREC(field)                                                                           \
     g_serialCounter++;                                                                             \
     memset(buf, 0, sizeof(buf));                                                                   \
@@ -718,25 +677,25 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
     if (field != 0) {                                                                              \
         reg->m_10->FillDefault(field, buf, &v);                                                    \
     }                                                                                              \
-    s->Read30(buf, 0x80);                                                                          \
-    s->Read30(&v, 4)
+    s->Write(buf, 0x80);                                                                           \
+    s->Write(&v, 4)
 
             GS_SUBREC(m_30);
             GS_SUBREC(m_34);
-            s->Read30(&m_38, 4);
+            s->Write(&m_38, 4);
             GS_SUBREC(m_3c);
             GS_SUBREC(m_40);
-            s->Read30(&m_44, 4);
+            s->Write(&m_44, 4);
             GS_SUBREC(m_48);
             GS_SUBREC(m_4c);
-            s->Read30(&m_50, 4);
+            s->Write(&m_50, 4);
             GS_SUBREC(m_54);
             GS_SUBREC(m_58);
-            s->Read30(&m_5c, 4);
+            s->Write(&m_5c, 4);
             GS_SUBREC(m_6c);
-            s->Read30(&m_70, 4);
-            s->Read30(&m_60, 4);
-            s->Read30(&m_64, 4);
+            s->Write(&m_70, 4);
+            s->Write(&m_60, 4);
+            s->Write(&m_64, 4);
 #undef GS_SUBREC
 
             g_serialCounter++;
@@ -744,14 +703,14 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
             if (m_74 != 0) {
                 strcpy(buf, (char*)m_74 + 0x24);
             }
-            s->Read30(buf, 0x80);
+            s->Write(buf, 0x80);
 
             g_serialCounter++;
             memset(buf, 0, sizeof(buf));
             if (m_68 != 0) {
                 strcpy(buf, (char*)m_68 + 0x24);
             }
-            s->Read30(buf, 0x80);
+            s->Write(buf, 0x80);
             break;
 
         case 7:
@@ -766,8 +725,8 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
         reg->m_10->m_10map.Lookup(buf, &out);                                                      \
         CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
         void* r;                                                                                   \
-        if (tt != 0 && i >= tt->m_64 && i <= tt->m_68) {                                           \
-            r = tt->m_14[i];                                                                       \
+        if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {                           \
+            r = tt->m_elems[i];                                                                    \
         } else {                                                                                   \
             r = 0;                                                                                 \
         }                                                                                          \
@@ -814,14 +773,14 @@ i32 CGruntStateRec::Load(CDualReader* s, i32 mode, i32 a2, i32 a3) {
 // ===========================================================================
 // CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
 // loader. A __thiscall(reader, mode, a2, a3), ret 0x10, bailing (0) when the
-// registry sub-object (g_mgrSettings->m_30) is absent. Mode 7 = READ: a fixed run
+// registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 = READ: a fixed run
 // of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
 // gated on the looked-up object's type code (virtual +0x20 == 5), then a g_freeList
 // node-splice loop appending 8-byte payloads onto m_204 (CObList::AddTail @0x1b4991).
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
-// embedded CSerialSub34 record at +0x150 (read/write a key name + 0x10 blob, resolve
+// embedded CSerialObjRef record at +0x150 (read/write a key name + 0x10 blob, resolve
 // through a3->m_7c->m_c->m_2c). Names are placeholders; offsets + bytes load-bearing.
 // ===========================================================================
 
@@ -836,32 +795,42 @@ struct CProjObjReg {
     CMapPtrToPtr m_48; // +0x48
 };
 
-// settings->m_30 viewed by this loader: the object map at +0x8 and the name leaf at
-// +0x2c (the same CDDrawSubMgrLeaf type CSerialSub34 resolves through).
-struct CProjReg {
+// g_mgrSettings->m_world (the game registry's +0x30 sub-registry) viewed by this
+// loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
+// CDDrawSubMgrLeaf type CSerialObjRef resolves through). +0x8 is a CProjObjReg*
+// (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
+SIZE_UNKNOWN(CProjRegSub30);
+struct CProjRegSub30 {
     char _00[0x8];
     CProjObjReg* m_8; // +0x08
     char _0c[0x2c - 0xc];
     CDDrawSubMgrLeaf* m_2c; // +0x2c
 };
 
-// The CMapPtrToPtr-resolved object whose type code (virtual slot +0x20) gates the
-// m_1fc latch; its default-int is read from +0x188 on the write path. Pointer-only,
-// never constructed -> no vtable emitted.
+// The FOREIGN CMapPtrToPtr-resolved object whose type code (vtable slot +0x20) gates
+// the m_1fc latch; its default-int is read from +0x188 on the write path. Only that
+// one slot is dispatched (rest is unreconstructed engine code); pointer-only, never
+// constructed. Honest model = a manual vptr into a typed vtable struct naming ONLY
+// the used slot as a 4-byte thiscall PMF + char pad[], NO fake virtuals. The vptr
+// (m_vtbl) sits at +0x00 exactly where the fake virtuals' vptr did, so the object
+// layout (_24 pad, m_188) is byte-identical.
+struct CProjTypeObjVtbl;
 class CProjTypeObj {
 public:
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual i32 GetTypeCode(); // +0x20
+    CProjTypeObjVtbl* m_vtbl; // +0x00
     char _24[0x188 - 0x24];
-    i32 m_188; // +0x188
+    i32 m_188;             // +0x188
+    i32 CallGetTypeCode(); // vtbl +0x20
 };
+typedef i32 (CProjTypeObj::*ProjTypeFn)();
+struct CProjTypeObjVtbl {
+    char m_pad00[0x20];
+    ProjTypeFn GetTypeCode; // +0x20
+};
+SIZE_UNKNOWN(CProjTypeObjVtbl);
+inline i32 CProjTypeObj::CallGetTypeCode() {
+    return (this->*(m_vtbl->GetTypeCode))();
+}
 
 // One spliced freelist node: next at +0, payload pointer at +8.
 struct CProjNode {
@@ -888,7 +857,7 @@ struct CProjLoadRec {
     CSerialObj* m_150;                     // +0x150  a3
     CSerialObj* m_154;                     // +0x154  a3
     CSerialNameHolder* m_158;              // +0x158  a3->m_7c
-    void* m_15c;                           // +0x15c  resolved value
+    CObject* m_15c;                        // +0x15c  resolved value (CMapStringToOb entry)
     i32 m_160, m_164, m_168, m_16c;        // +0x160  the 0x10-byte blob
     i32 m_170, m_174, m_178, m_17c, m_180; // +0x170
     i32 _184;
@@ -903,7 +872,7 @@ struct CProjLoadRec {
     i32 m_1c0, m_1c4;               // +0x1c0 (8)
     i32 m_1c8, m_1cc;               // +0x1c8 (8)
     i32 m_1d0, m_1d4, m_1d8, m_1dc; // +0x1d0
-    void* m_1e0[7];                 // +0x1e0..+0x1f8  name/idx refs
+    CObject* m_1e0[7];              // +0x1e0..+0x1f8  name refs (CMapStringToOb entries)
     CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
     i32 m_200;                      // +0x200
     CProjList m_204;                // +0x204  AddTail target
@@ -924,7 +893,7 @@ struct CProjLoadRec {
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
-    CProjReg* reg = (CProjReg*)(void*)g_mgrSettings->m_30;
+    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_mgrSettings->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -977,7 +946,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             } else if (found == 0) {
                 r = 0;
             } else {
-                r = (((CProjTypeObj*)found)->GetTypeCode() == 5) ? (i32)found : 0;
+                r = (((CProjTypeObj*)found)->CallGetTypeCode() == 5) ? (i32)found : 0;
             }
             m_1fc = (CProjTypeObj*)r;
             if (m_1fc == 0 && key != 0) {
@@ -987,11 +956,11 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             i32 cnt;
             s->Read(&cnt, 4);
             for (i32 ci = 0; ci < cnt; ci++) {
-                void* node = g_freeList;
+                CProjNode* node = (CProjNode*)g_freeList;
                 void* payload = 0;
-                if (*(void**)node != 0) {
-                    g_freeList = *(void**)node;
-                    payload = (char*)node + 4;
+                if (node->m_next != 0) {
+                    g_freeList = node->m_next;
+                    payload = &node->m_04;
                 }
                 s->Read(payload, 8);
                 m_204.AddTail(payload);
@@ -1025,7 +994,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                 g_serialCounter++;
                 memset(buf, 0, sizeof(buf));
                 if (m_1e0[wi] != 0) {
-                    CString nm = reg->m_2c->KeyOfValue_152d30((CObject*)m_1e0[wi]);
+                    CString nm = reg->m_2c->KeyOfValue_152d30(m_1e0[wi]);
                     strcpy(buf, nm);
                 }
                 s->Write(buf, 0x80);
@@ -1059,7 +1028,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
         char blob[0x80];
         memset(blob, 0, sizeof(blob));
         if (m_15c != 0) {
-            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30((CObject*)m_15c);
+            CString nm = m_158->m_0c->m_2c->KeyOfValue_152d30(m_15c);
             strcpy(blob, nm);
         }
         s->Write(blob, 0x80);
@@ -1084,3 +1053,20 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
     m_15c = out;
     return 1;
 }
+SIZE_UNKNOWN(CArchiveDefInt);
+SIZE_UNKNOWN(CArchiveDefaultSub);
+SIZE_UNKNOWN(CArchiveLoadRec);
+SIZE_UNKNOWN(CArchiveMgr);
+SIZE_UNKNOWN(CArchiveSubArray);
+SIZE_UNKNOWN(CEventLoadRec);
+SIZE_UNKNOWN(CGruntStateRec);
+SIZE_UNKNOWN(CProjList);
+SIZE_UNKNOWN(CProjLoadRec);
+SIZE_UNKNOWN(CProjNode);
+SIZE_UNKNOWN(CProjObjReg);
+SIZE_UNKNOWN(CProjTypeObj);
+SIZE_UNKNOWN(CRegNameMap);
+SIZE_UNKNOWN(CRegNameTable);
+SIZE_UNKNOWN(CRegSub30);
+SIZE_UNKNOWN(CRegTypeTable);
+SIZE_UNKNOWN(CTriggerLoadRec);

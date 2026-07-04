@@ -162,6 +162,14 @@ def engine_universe():
             continue
         if rva < ilt_end or is_thunk:      # ILT jmp-table + Ghidra thunk_*
             k = "thunk"
+        elif sz <= 7 and (name.startswith("FUN_") or name.startswith("Unmatched_")):
+            # Scattered import/glue thunks the leading-ILT + thunk_* filters miss:
+            # 6-byte `FF25 jmp [__imp__...]` IAT thunks + tiny (1-5B) compiler-glue
+            # stubs/mis-carves, all still on placeholder names (a real game function
+            # is far larger; a legit tiny method that gets reconstructed becomes
+            # `claimed` above and re-counts as real). Verified: the unclaimed
+            # <=7B FUN_/Unmatched_ set is entirely glue, no genuine targets.
+            k = "thunk"
         elif rva in lib:
             k = "lib"
         elif name.startswith("Unwind@"):   # compiler /GX EH unwind funclet

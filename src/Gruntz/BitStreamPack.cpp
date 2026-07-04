@@ -67,3 +67,6 @@ void BitEmitMarker(BitState* o) {
     }
     o->m_16ac = 7;
 }
+
+SIZE_UNKNOWN(BitMarker);
+SIZE_UNKNOWN(BitState);

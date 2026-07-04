@@ -15,15 +15,17 @@ struct GlyphTable {
     void Set(int v, int c);
 };
 
-// 0xc0430 - Get: m_1b0[ (c & 0xff) % 128 ].  MSVC5 lowers signed `% 128` to the
+// Get: m_1b0[ (c & 0xff) % 128 ].  MSVC5 lowers signed `% 128` to the
 // abs-then-restore-sign idiom (one cdq, two xor/sub pairs around `& 0x7f`).
 RVA(0x000c0430, 0x1f)
 int GlyphTable::Get(int c) {
     return m_1b0[(c & 0xff) % 128];
 }
 
-// 0xc03f0 - Set: m_1b0[ (m_10 + (c & 0xff)) % 128 ] = v.
+// Set: m_1b0[ (m_10 + (c & 0xff)) % 128 ] = v.
 RVA(0x000c03f0, 0x29)
 void GlyphTable::Set(int v, int c) {
     m_1b0[(m_10 + (c & 0xff)) % 128] = v;
 }
+
+SIZE_UNKNOWN(GlyphTable);

@@ -116,7 +116,7 @@ i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
     CFile file;
-    if (!file.Open((const char*)szFileName, 0, 0)) {
+    if (!file.Open(szFileName, 0, 0)) {
         return 0;
     }
 
@@ -155,7 +155,7 @@ i32 Font::LoadFont(CString szFileName) {
 RVA(0x001799f0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
-    if (!file.Open((const char*)szFileName, 0x1001, 0)) {
+    if (!file.Open(szFileName, 0x1001, 0)) {
         return 0;
     }
 
@@ -260,7 +260,7 @@ void** Font::GetSurface(u8 c) {
 // Font::GetGlyph
 //
 RVA(0x00179b80, 0x22)
-void Font::GetGlyph(u8 c, Glyph& out) {
+void Font::GetGlyph(Glyph& out, u8 c) {
     out = m_glyphs[c];
 }
 
@@ -296,8 +296,8 @@ void FontRenderer::SetColor(i32 color) {
 // FontRenderer::GetChar
 //
 RVA(0x0017b4f0, 0xc)
-u8 FontRenderer::GetChar(i32 i) {
-    return ((u8*)m_font)[i];
+u8 CharCursor::GetChar(i32 i) {
+    return m_str[i];
 }
 
 // =========================================================================
@@ -332,8 +332,8 @@ TextExtent FontRenderer::MeasureText(CString text) {
     }
     for (i = 0; i < text.GetLength(); i++) {
         Glyph g;
-        u8 c = ((const u8*)(const char*)text)[i];
-        m_font->GetGlyph(c, g);
+        u8 c = text[i];
+        m_font->GetGlyph(g, c);
         width += g.width;
     }
     ext.width = width;
@@ -368,76 +368,382 @@ void FontRenderer::DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, 
 }
 
 // =========================================================================
-// FontRenderer::Stub_17a460  ==  DrawWrapped (~2 KB), the cluster's largest.
-// Word-wrap layout + draw: greedily breaks the run into lines (measuring with
-// MeasureText) and draws each via DrawLine. Deferred to the final sweep - a
-// CString-temp-heavy /GX body (Left/Mid/fill, ~6 nested temps with cycling EH
-// states) that needs a leaf-first redo to converge past the eh-state-numbering
-// wall. Backlog stub retained, RVA-tracked under its real class (FontRenderer).
-// @confidence: high
-// @source: this-trace
-// @stub
+// FontRenderer::DrawWrapped  (0x17a460, 0x7ec = 2028 B), the cluster's largest.
+// Word-wrap layout + draw: measures the block (MeasureWrapped) for vertical
+// centering when `hcenter` is set, then greedily breaks the run into lines (the
+// same skeleton as MeasureWrapped) and draws each line via DrawLine - centered
+// horizontally within [x0, right] using TextRange::Span (the {x0, top, right}
+// arg triple reinterpreted as a TextRange) when `hcenter` is set.
+// @early-stop
+// ~73% (from 0.5%): logic + control flow + the full call set (6 DrawLine, 8
+// MeasureText, 5 Span, 2 Left, 17 CString ctors, 8 operator=, ...) byte-match.
+// Residual is the temp-layout/regalloc/EH-state wall shared with its siblings,
+// plus a codegen-form split on the MeasureWrapped-arg block (retail materializes
+// the 4-int {x0,top,right,bottom} arg tuple via `sub esp,0x10`+stores; cl emits
+// pushes). Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017a460, 0x7ec)
-void FontRenderer::Stub_17a460() {}
+void FontRenderer::DrawWrapped(
+    CString text,
+    DrawRect* p,
+    i32 x0,
+    i32 top,
+    i32 right,
+    i32 bottom,
+    i32 z,
+    i32 hcenter,
+    i32 spacing
+) {
+    i32 lineAdvance = m_font->GetMaxHeight() + spacing;
+    if (hcenter) {
+        TextExtent m = MeasureWrapped(text, x0, top, right, bottom);
+        top = top + (bottom - top) / 2 - m.height / 2;
+    }
+
+    i32 y = top;
+    i32 x = x0;
+
+    CString line;
+    while (y < bottom) {
+        i32 len = text.GetLength();
+        if (len <= 0) {
+            break;
+        }
+
+        i32 nl = 0;
+        for (i32 k = 0; k < len; k++) {
+            if (text[k] == '\n') {
+                nl = 1;
+                break;
+            }
+        }
+
+        TextExtent e = MeasureText(text);
+        if (e.width + x <= right && !nl) {
+            line += text;
+            text = "";
+            if (y + lineAdvance <= bottom) {
+                if (hcenter) {
+                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    DrawLine(line, p, cx, y, z);
+                } else {
+                    DrawLine(line, p, x0, y, z);
+                }
+            }
+            line = "";
+        } else {
+            i32 i = 0;
+            i32 breakNL = 0;
+            while (i < len) {
+                u8 ch = text[i];
+                if (ch == ' ' || ch == '\n') {
+                    break;
+                }
+                i++;
+            }
+            if (i < len && text[i] == '\n') {
+                breakNL = 1;
+            }
+            CString head;
+            if (breakNL) {
+                head = text.Left(i);
+            } else {
+                head = text.Left(i + 1);
+            }
+            i32 headW = MeasureText(head).width;
+            text = text.Right(len - i - 1);
+            if (headW + x < right) {
+                line += head;
+                x = headW + x;
+            } else if (headW < right - x0) {
+                if (hcenter) {
+                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    DrawLine(line, p, cx, y, z);
+                } else {
+                    DrawLine(line, p, x0, y, z);
+                }
+                y = y + lineAdvance;
+                x = x0;
+                line = "";
+                if (lineAdvance + y < bottom) {
+                    line += head;
+                    x = headW + x0;
+                }
+            } else {
+                if (head.GetLength() > 0) {
+                    while (y < bottom) {
+                        i32 chW =
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
+                        if (chW + x > right) {
+                            if (hcenter) {
+                                i32 cx = x0 + ((TextRange*)&x0)->Span() / 2
+                                         - MeasureText(line).width / 2;
+                                DrawLine(line, p, cx, y, z);
+                            } else {
+                                DrawLine(line, p, x0, y, z);
+                            }
+                            y = y + lineAdvance;
+                            x = x0;
+                            line = "";
+                        }
+                        if (lineAdvance + y >= bottom) {
+                            break;
+                        }
+                        line += head[0];
+                        x += chW;
+                        if (head.GetLength() <= 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (breakNL) {
+                if (hcenter) {
+                    i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+                    DrawLine(line, p, cx, y, z);
+                } else {
+                    DrawLine(line, p, x0, y, z);
+                }
+                y = y + lineAdvance;
+                x = x0;
+                line = "";
+            }
+        }
+    }
+    if (y + lineAdvance <= bottom && line.GetLength() > 0) {
+        if (hcenter) {
+            i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
+            DrawLine(line, p, cx, y, z);
+        } else {
+            DrawLine(line, p, x0, y, z);
+        }
+    }
+}
 
 // =========================================================================
-// FontRenderer::Stub_17ad10  ==  MeasureWrapped (~1 KB).
-// Greedy word-wrap bounding-box measurer: returns {maxLineWidth, totalHeight}.
-// Same CString-temp / EH-state density as DrawWrapped; deferred to the final
-// sweep for a leaf-first redo. Backlog stub retained, RVA-tracked.
-// @confidence: high
-// @source: this-trace
-// @stub
+// FontRenderer::MeasureWrapped  (0x17ad10, 0x402 = 1026 B)
+// Greedy word-wrap bounding-box measurer. Walks `text` line by line from y=top
+// down to y<bottom, greedily breaking on spaces/newlines, and returns the box
+// {maxLineWidth - x0 + 1, lineHeight + (y - top) + 1}. A destructible CString
+// `line` accumulator plus per-break Left/Right temps under the /GX EH frame.
+// GetChar is dispatched on the `head` temp (the retail call takes a CString as
+// `this` - modeled by reinterpreting &head as the FontRenderer accessor, which
+// reads the same +0 char*; reloc-masked).
+// @early-stop
+// ~75.5% (from 0.13%): logic + control flow + CString-op sequence byte-exact.
+// Residual is the temp-layout/regalloc wall - cl pins `this` in edi (retail esi)
+// and DSE-eliminates the dead `e.height` store the retail keeps, so the /GX frame
+// is 0x50 vs retail's 0x54; that 4-byte shift cascades every [esp+N] offset.
+// Verified base-vs-target with llvm-objdump -dr.
 RVA(0x0017ad10, 0x402)
-void FontRenderer::Stub_17ad10() {}
+TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom) {
+    TextExtent ext;
+    i32 maxWidth = 0;
+    i32 y = top;
+    i32 x = x0;
+
+    CString line;
+    while (y < bottom) {
+        i32 len = text.GetLength();
+        if (len <= 0) {
+            break;
+        }
+
+        i32 nl = 0;
+        for (i32 k = 0; k < len; k++) {
+            if (text[k] == '\n') {
+                nl = 1;
+                break;
+            }
+        }
+
+        TextExtent e = MeasureText(text);
+        if (e.width + x <= right && !nl) {
+            line += text;
+            text = "";
+            if (m_font->GetMaxHeight() + y <= bottom) {
+                i32 w = MeasureText(line).width;
+                if (maxWidth <= w) {
+                    maxWidth = w;
+                }
+            }
+        } else {
+            i32 i = 0;
+            i32 breakNL = 0;
+            while (i < len) {
+                u8 ch = text[i];
+                if (ch == ' ' || ch == '\n') {
+                    break;
+                }
+                i++;
+            }
+            if (i < len && text[i] == '\n') {
+                breakNL = 1;
+            }
+            CString head = text.Left(i + 1);
+            i32 headW = MeasureText(head).width;
+            text = text.Right(len - i - 1);
+            if (headW + x < right) {
+                line += head;
+                x = headW + x;
+            } else if (headW < right - x0) {
+                i32 w = MeasureText(line).width;
+                if (maxWidth <= w) {
+                    maxWidth = w;
+                }
+                y = y + m_font->GetMaxHeight();
+                x = x0;
+                line = "";
+                if (m_font->GetMaxHeight() + y < bottom) {
+                    line += head;
+                    x = headW + x0;
+                }
+            } else {
+                i32 headLen = head.GetLength();
+                if (headLen > 0) {
+                    i32 j = 0;
+                    while (y < bottom) {
+                        i32 chW =
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(j), 1)).width;
+                        if (chW + x > right) {
+                            y = y + m_font->GetMaxHeight();
+                            x = x0;
+                            i32 w = MeasureText(line).width;
+                            if (maxWidth <= w) {
+                                maxWidth = w;
+                            }
+                        }
+                        if (m_font->GetMaxHeight() + y >= bottom) {
+                            break;
+                        }
+                        line += head[j];
+                        x += chW;
+                        j++;
+                        if (j >= head.GetLength()) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (breakNL) {
+                y = y + m_font->GetMaxHeight();
+                x = x0;
+                line = "";
+            }
+        }
+    }
+    ext.width = maxWidth - x0 + 1;
+    ext.height = m_font->GetMaxHeight() + (y - top) + 1;
+    return ext;
+}
 
 // =========================================================================
 // FontRenderer::LayoutWrapped  (0x17b120, 0x3c6 = 966 B) - the third wrap entry.
-// =========================================================================
-// Greedily lays out `text` from y=`begin` down to y<`bottom`, line by line. DECODED
-// STRUCTURE (for the final sweep; ret 0x1c -> sret + 6 args; disasm @0x17b120):
-//   ext.width  = x0;  y = begin;  totalChars = 0;
-//   CString line;                                    // [esp+0x10] accumulator
-//   while (y < bottom) {
-//       int len = text.GetLength();  if (len <= 0) break;
-//       bool hasNL = text.Find('\n') >= 0;           // newline scan
-//       TextExtent e = MeasureText(text);            // 0x17ac50
-//       if (e.width + x0 <= right && !hasNL) {        // remainder fits, last line
-//           line = text;  text = "";                 // 0x1ba104 / 0x1b9e74
-//           if (m_font->GetMaxHeight() + y <= bottom) totalChars += line.GetLength();
-//       } else {                                     // must break a line
-//           int sp = first space/newline index;       // word scan
-//           CString head = text.Left(sp + 1); ...     // 0x1b2944 / 0x1b28c7 Left/Mid
-//           ... measure the candidate, shrink word-by-word until it fits,
-//           ... append the trailing char (0x1ba0ef) / GetChar (0x17b4f0),
-//           ... advancing x0 (ebp) and accumulating per-line widths into totalChars.
-//       }
-//       y = line-advance;                            // run += m_font->GetMaxHeight()
-//   }
-//   if (*outLen) *outLen = totalChars;               // [arg6] = accumulated chars
-//   ext.width  = x0 (final cursor x);
-//   ext.height = m_font->GetMaxHeight() + y + 1;     // final cursor y + line height
-//   return ext;
-//
+// Greedily lays out `text` from y=`begin` down to y<`bottom`, line by line, the
+// same greedy-break skeleton as MeasureWrapped but accumulating a per-line char
+// count (totalChars) instead of a max width. Returns the final cursor
+// {x, lineHeight + y + 1} and writes totalChars to *outLen. The char-split path
+// consumes head[0] (index 0, unlike MeasureWrapped's per-char index).
 // @early-stop
-// DEFERRED to the final sweep. A 966-byte CString-temp-heavy /GX layout (~6 nested
-// Left/Mid line/word temps, cycling EH states, GetChar/+=char concatenation) - the
-// same eh-state-numbering wall as its two siblings (Stub_17a460/Stub_17ad10) and
-// the cheat processor. Homed by RVA as a complete-intent placeholder; the exact
-// greedy-break control flow + EH-state schedule are a leaf-first redo.
+// ~79.2% (from 4.2%): logic + control flow + CString-op sequence byte-exact.
+// Same temp-layout/regalloc wall as MeasureWrapped (dead measure-height store DSE
+// + a callee-saved-register pin shift); verified base-vs-target with llvm-objdump.
 RVA(0x0017b120, 0x3c6)
 TextExtent
 FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom, i32* outLen) {
-    (void)text;
-    (void)begin;
-    (void)right;
-    (void)bottom;
     TextExtent ext;
-    ext.width = x0;
-    ext.height = 0;
-    if (outLen) {
-        *outLen = 0;
+    i32 totalChars = 0;
+    i32 y = begin;
+    i32 x = x0;
+
+    CString line;
+    while (y < bottom) {
+        i32 len = text.GetLength();
+        if (len <= 0) {
+            break;
+        }
+
+        i32 nl = 0;
+        for (i32 k = 0; k < len; k++) {
+            if (text[k] == '\n') {
+                nl = 1;
+                break;
+            }
+        }
+
+        TextExtent e = MeasureText(text);
+        if (e.width + x <= right && !nl) {
+            line += text;
+            text = "";
+            if (m_font->GetMaxHeight() + y <= bottom) {
+                totalChars += line.GetLength();
+            }
+            line = "";
+        } else {
+            i32 i = 0;
+            i32 breakNL = 0;
+            while (i < len) {
+                u8 ch = text[i];
+                if (ch == ' ' || ch == '\n') {
+                    break;
+                }
+                i++;
+            }
+            if (i < len && text[i] == '\n') {
+                breakNL = 1;
+            }
+            CString head = text.Left(i + 1);
+            i32 headW = MeasureText(head).width;
+            text = text.Right(len - i - 1);
+            if (headW + x < right) {
+                line += head;
+                x = headW + x;
+            } else if (headW < right - x0) {
+                totalChars += line.GetLength();
+                y = y + m_font->GetMaxHeight();
+                x = x0;
+                line = "";
+                if (m_font->GetMaxHeight() + y < bottom) {
+                    line += head;
+                    x = headW + x0;
+                }
+            } else {
+                if (head.GetLength() > 0) {
+                    while (y < bottom) {
+                        i32 chW =
+                            MeasureText(CString((char)((CharCursor*)&head)->GetChar(0), 1)).width;
+                        if (chW + x > right) {
+                            y = y + m_font->GetMaxHeight();
+                            x = x0;
+                            totalChars += line.GetLength();
+                            line = "";
+                        }
+                        if (m_font->GetMaxHeight() + y >= bottom) {
+                            break;
+                        }
+                        line += head[0];
+                        x += chW;
+                        if (head.GetLength() <= 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (breakNL) {
+                totalChars += line.GetLength();
+                y = y + m_font->GetMaxHeight();
+                x = x0;
+                line = "";
+            }
+        }
     }
+    if (m_font->GetMaxHeight() + y <= bottom && line.GetLength() > 0) {
+        totalChars += line.GetLength();
+    }
+    if (outLen) {
+        *outLen = totalChars;
+    }
+    ext.width = x;
+    ext.height = m_font->GetMaxHeight() + y + 1;
     return ext;
 }
 
@@ -446,14 +752,17 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
 // Public single-line entry: measure the run, reject it if it would overflow
 // the box's vertical limit (p->m_bottom), otherwise build the destination Rect
 // and hand off to DrawLineClipped. No-op when no font is loaded.
+// Real arg order (confirmed from the disasm + the sole caller DrawWrapped): the
+// CString text is arg1 (measured first), p is arg2 (its +0x18 vertical limit),
+// then x, y, z.
 // @early-stop
 // arg-bundle/frame wall: the 9-dword DrawLineClipped call is assembled from a
 // heterogeneous bundle (the 029ac0 Rect result + p + a Rect field + the CString
 // temp) whose exact field grouping isn't fully recovered; retail reserves 2
 // extra stack dwords, skewing every [esp+N]. Control flow + measure/clip/draw
-// logic are exact; residual is push scheduling + frame size (~85%).
+// logic are exact; residual is push scheduling + frame size.
 RVA(0x00179c30, 0xdb)
-void FontRenderer::DrawLine(DrawRect* p, i32 x, i32 y, CString text, i32 a4) {
+void FontRenderer::DrawLine(CString text, DrawRect* p, i32 x, i32 y, i32 z) {
     TextExtent ext = MeasureText(text);
     if (m_font == 0) {
         return;
@@ -462,5 +771,5 @@ void FontRenderer::DrawLine(DrawRect* p, i32 x, i32 y, CString text, i32 a4) {
     if (m_font->GetMaxHeight() + y > limit) {
         return;
     }
-    DrawLineClipped(text, a4, Rect(0, 0, x, y), x, y, p->left);
+    DrawLineClipped(text, z, Rect(0, 0, x, y), x, y, p->left);
 }

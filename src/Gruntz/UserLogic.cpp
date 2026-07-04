@@ -10,9 +10,26 @@
 // The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
-#include <Mfc.h> // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
+#include <Gruntz/AniCycle.h>    // the canonical CAniCycle class (ctor defined below)
+#include <Gruntz/BehindCandy.h> // the canonical CBehindCandy class (ctor defined below)
+#include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
+#include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
+#include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
+#include <Gruntz/SimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
+#include <Gruntz/SingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
+#include <Gruntz/SingleFrameMessage.h> // the canonical CSingleFrameMessage class (ctor defined below)
+#include <Gruntz/TeleSpriteFactory.h> // shared teleporter HUD-sprite factory
+#include <Gruntz/ToobSpikez.h>        // the canonical CToobSpikez class (ctor defined below)
+#include <Gruntz/Trigger.h>           // shared point-probe result object
+#include <Gruntz/Viewport.h>          // shared world->screen transform
+#include <Gruntz/SerialObjRef.h>      // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // CButeTree (declared in <Bute/ButeMgr.h>, pulled via UserLogic.h) - the engine
@@ -23,6 +40,15 @@
 // ---------------------------------------------------------------------------
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
+
+// The two out-of-line base-ctor COMDATs (CUserLogic() @0x138d0 / CUserLogic(obj)
+// @0x58cd0) are emitted + @rva-symbol pinned in a SEPARATE unit,
+// src/Gruntz/UserLogicCtorEmit.cpp. They must NOT be forced here: the 1-arg copy
+// needs an inline (Lookup-based) BuildLogicTypeTable body to match retail's
+// inlined registration, and that body, if visible in THIS TU, folds into every
+// leaf 1-arg ctor at depth 2 and regresses them all (retail leaves CALL 0x8a40 at
+// depth 2). Isolating the forcer + inline body in its own TU keeps the leaves here
+// calling the out-of-line helper.
 
 // ---------------------------------------------------------------------------
 // Out-of-line vtable anchors. These give each base class a real vftable in this
@@ -70,6 +96,12 @@ i32 CUserLogic::UserLogicVfuncA() {
 i32 CUserLogic::UserLogicVfuncB() {
     return 0;
 }
+i32 CUserLogic::UserLogicVfuncC() {
+    return 0;
+}
+i32 CUserLogic::UserLogicVfuncD() {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
@@ -77,11 +109,9 @@ i32 CUserLogic::UserLogicVfuncB() {
 // so the calls reloc-mask:
 //   * CUserLogic::SerializeChain (0x16e7f0) - run on `this`.
 //   * the +0x34 serializable sub-object's chain (0x8c00) - run on `&this->m_34`
-//     (reached via `lea ecx,[esi+0x34]`). Modeled as a method on a tiny helper.
+//     (reached via `lea ecx,[esi+0x34]`). Modeled by the shared CSerialObjRef
+//     (Chain @0x8c00, <Gruntz/SerialObjRef.h>).
 // (Both bodies are pinned in src/Stub/Discovered.cpp.)
-struct CSerialSub34 {
-    i32 Chain(i32 a, i32 b, i32 c, i32 d); // 0x8c00
-};
 // ===========================================================================
 // Class declarations (one vftable each; some have both ctor shapes).
 // ===========================================================================
@@ -100,6 +130,7 @@ public:
 // were previously stubbed (manual-vptr) in src/Stub/{CTileSecretTrigger,CGiantRock,
 // CCoveredPowerup}.cpp; modeled polymorphically here so the /GX EH-frame dtor folds
 // (a manual-vptr model is frameless - see docs/patterns/eh-dtor-needs-base-subobject.md).
+SIZE_UNKNOWN(CTileSecretTrigger);
 class CTileSecretTrigger : public CTileTrigger {
 public:
     CTileSecretTrigger(CGameObject* obj); // 0x10fa60
@@ -110,12 +141,14 @@ public:
     i32 Act_10f970();           // 0x10f970 ("B" handler)
 };
 
+SIZE_UNKNOWN(CGiantRock);
 class CGiantRock : public CTileTrigger {
 public:
     CGiantRock(CGameObject* obj); // 0x10fa90
     virtual ~CGiantRock() OVERRIDE;
 };
 
+SIZE_UNKNOWN(CCoveredPowerup);
 class CCoveredPowerup : public CTileTrigger {
 public:
     CCoveredPowerup(CGameObject* obj); // 0x10fac0
@@ -134,7 +167,7 @@ public:
 
 class CVoiceTrigger : public CUserLogic {
 public:
-    i32 GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
+    LogicTypeId GetTypeTag(); // 0x133b0 (per-class logic-type id, 0x426)
     CVoiceTrigger();
     virtual ~CVoiceTrigger() OVERRIDE;
 };
@@ -149,6 +182,7 @@ public:
     void EnterField2();         // 0x27d9 (this-method, no body)
 };
 
+SIZE_UNKNOWN(CSecretTeleporterTrigger);
 class CSecretTeleporterTrigger : public CUserLogic {
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
@@ -167,6 +201,7 @@ public:
     i32 SpawnTeleporter(); // 0x042b80
 };
 
+SIZE_UNKNOWN(CWarpStonePad);
 class CWarpStonePad : public CUserLogic {
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
@@ -177,6 +212,7 @@ public:
     i32 AdvanceAnim();          // 0x10dc20
 };
 
+SIZE_UNKNOWN(CTileTriggerSwitch);
 class CTileTriggerSwitch : public CUserLogic {
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
@@ -189,35 +225,13 @@ public:
 // CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
 // live in src/Gruntz/TileTriggerTransition.cpp.
 
-class CToobSpikez : public CUserLogic {
-public:
-    CToobSpikez(CGameObject* obj); // 0x1145c0
-    virtual ~CToobSpikez() OVERRIDE;
-    i32 m_40; // +0x40
-};
+// CToobSpikez comes from <Gruntz/ToobSpikez.h> (folded; ctor 0x1145c0 defined below).
 
-class CParticlez : public CUserLogic {
-public:
-    i32 GetTypeTag();             // 0x12cd0 (per-class logic-type id, 0x41c)
-    CParticlez(CGameObject* obj); // 0x046ad0
-    virtual ~CParticlez() OVERRIDE;
-};
+// CParticlez comes from <Gruntz/Particlez.h> (folded; ctor 0x046ad0 + GetTypeTag 0x012cd0 below).
 
-class CAniCycle : public CUserLogic {
-public:
-    CAniCycle(CGameObject* obj); // 0x0aad20
-    virtual ~CAniCycle() OVERRIDE;
-    i32 m_40; // +0x40
-};
+// CAniCycle comes from <Gruntz/AniCycle.h> (folded; ctor 0x0aad20 defined below).
 
-class CSingleAnimation : public CUserLogic {
-public:
-    CSingleAnimation(CGameObject* obj); // 0x0ae7f0
-    virtual ~CSingleAnimation() OVERRIDE;
-    static void InitActReg();   // 0x0ae9a0
-    static void RegisterActs(); // 0x0aeb80
-    i32 AdvanceAnim();          // 0x0aed80
-};
+// CSingleAnimation comes from <Gruntz/SingleAnimation.h> (folded; ctor 0x0ae7f0 defined below).
 
 // ---------------------------------------------------------------------------
 // The CGruntSprite-family leaves (1-arg ctors). Each folds the inline
@@ -254,51 +268,39 @@ public:
 // World/BigActHeight, then toggle the +0x7c sub-object's flag bits. m_40 caches
 // the geometry token where a tail reuses it.
 // ---------------------------------------------------------------------------
-class CSingleFrameMessage : public CUserLogic {
-public:
-    CSingleFrameMessage(CGameObject* obj); // 0x0ab310
-    virtual ~CSingleFrameMessage() OVERRIDE;
-};
+// CSingleFrameMessage comes from <Gruntz/SingleFrameMessage.h> (folded; ctor 0x0ab310 defined below).
 
-class CSimpleAnimation : public CUserLogic {
-public:
-    CSimpleAnimation(CGameObject* obj); // 0x0ab940
-    virtual ~CSimpleAnimation() OVERRIDE;
-};
+// CSimpleAnimation comes from <Gruntz/SimpleAnimation.h> (folded; ctor 0x0ab940 defined below).
 
+SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic {
 public:
     CFrontCandy(CGameObject* obj); // 0x0abfa0
     virtual ~CFrontCandy() OVERRIDE;
 };
 
-class CBehindCandy : public CUserLogic {
-public:
-    CBehindCandy(CGameObject* obj); // 0x0ac3f0
-    virtual ~CBehindCandy() OVERRIDE;
-};
+// CBehindCandy comes from <Gruntz/BehindCandy.h> (folded; ctor 0x0ac3f0 defined below).
 
-class CEyeCandy : public CUserLogic {
-public:
-    CEyeCandy(CGameObject* obj); // 0x0ac620
-    virtual ~CEyeCandy() OVERRIDE;
-};
+// CEyeCandy comes from <Gruntz/EyeCandy.h> (folded; ctor 0x0ac620 defined below).
 
+// This local is ONLY the genuine CFrontCandyAni ctor 0x0acf40 (vptr 0x5e83e4, Ghidra
+// RTTI-confirmed) - a partial view, NOT foldable into <Gruntz/FrontCandyAni.h>. The
+// RegisterActs 0x0acd10 (registry 0x646060) + AdvanceAnim 0x0acf10 that used to sit
+// here were a MIS-ATTRIBUTION: layout order proves they belong to CEyeCandyAni (ctor
+// 0xac870) - the candy cluster runs {ctor 0xac870, InitActReg 0xacb30 -> 0x646060,
+// FireActivation, RegisterActs 0xacd10, AdvanceAnim 0xacf10} contiguously, all in
+// CEyeCandyAni's run BEFORE this ctor. They have been re-homed to src/Gruntz/
+// CEyeCandyAni.cpp (0x646060 is CEyeCandyAni's registry). The real CFrontCandyAni
+// acts (registry 0x6460b0) stay in src/Gruntz/FrontCandyAni.cpp at 0x0ad310/0x0ad510,
+// so ?RegisterActs@CFrontCandyAni@@SAXXZ is now emitted at ONE RVA (0x0ad310), not two.
 class CFrontCandyAni : public CUserLogic {
 public:
     CFrontCandyAni(CGameObject* obj); // 0x0acf40
     virtual ~CFrontCandyAni() OVERRIDE;
-    static void RegisterActs(); // 0x0acd10
-    i32 AdvanceAnim();          // 0x0acf10
-    i32 m_40;                   // +0x40
-};
-
-class CBehindCandyAni : public CUserLogic {
-public:
-    CBehindCandyAni(CGameObject* obj); // 0x0ad540
-    virtual ~CBehindCandyAni() OVERRIDE;
     i32 m_40; // +0x40
 };
+
+// CBehindCandyAni comes from <Gruntz/BehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
 class CMenuSparkle : public CUserLogic {
 public:
@@ -328,14 +330,16 @@ public:
 // The global game registry several tails poll for level flags (WwdGameReg, the
 // same symbol wwdfile labels at RVA 0x24556c; only the fields these tails read
 // are modeled). Declared extern only - wwdfile owns the DATA label.
+SIZE_UNKNOWN(WwdGameRegAux);
 struct WwdGameRegAux {
     char m_pad00[0x3c];
     i32 m_3c; // +0x3c
 };
 
-// The on-screen-cue receiver (g_gameReg->m_60). The teleporter spawn fires a
+// The on-screen-cue receiver (g_gameReg->m_cueSink). The teleporter spawn fires a
 // 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
 // (reloc-masked).
+SIZE_UNKNOWN(CTeleCueSink);
 struct CTeleCueSink {
     void CueA(void* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
 };
@@ -344,66 +348,34 @@ struct CTeleCueSink {
 // and returns the trigger object hit (or 0). 5-arg __thiscall ret 0x14, via the
 // 0x35f3 thunk (-> 0x75af0). External/no-body (reloc-masked).
 struct CTrigger; // the trigger object the probe returns / the cue receives
+SIZE_UNKNOWN(CTriggerProbe);
 struct CTriggerProbe {
     CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
 };
 
-// The viewport rect base reached as g_gameReg->m_30->m_24->m_5c + 0x40; the
+// The viewport rect base reached as g_gameReg->m_world->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
+SIZE_UNKNOWN(CViewRect);
 struct CViewRect {
-    i32 m_0; // left
-    i32 m_4; // top
-    i32 m_8; // right
-    i32 m_c; // bottom
+    i32 m_left;   // +0x00
+    i32 m_top;    // +0x04
+    i32 m_right;  // +0x08
+    i32 m_bottom; // +0x0c
 };
-struct CViewport {
-    char m_pad0[0x5c];
-    char* m_5c; // +0x5c  rect-base pointer (test reads (CViewRect*)(m_5c + 0x40))
-};
+// CViewport (world->screen transform) is the shared <Gruntz/Viewport.h> class;
+// here only the +0x5c visible-rect base pointer is read.
 
 // The HUD sprite object the teleporter spawn produces / reads its template from
-// (the trigger's m_10). The spawn copies its tile/teleport-link fields. Only the
-// touched offsets are modeled.
-struct CTeleHudAux {
-    char m_pad0[0xbc];
-    i32 m_bc; // +0xbc  teleport-link id
-};
-struct CTeleHudSprite {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  screen x
-    i32 m_60; // +0x60  screen y
-    char m_pad64[0x7c - 0x64];
-    CTeleHudAux* m_7c; // +0x7c
-    char m_pad80[0x114 - 0x80];
-    i32 m_114; // +0x114  tile col
-    i32 m_118; // +0x118  tile row
-    i32 m_11c; // +0x11c
-    i32 m_120; // +0x120
-    i32 m_124; // +0x124  state
-    i32 m_128; // +0x128
-    char m_pad12c[0x164 - 0x12c];
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168
-};
+// (the trigger's m_10) is the shared CGameObject (the same engine object as in
+// CTeleporter.cpp) - the spawn copies its tile/teleport-link fields directly (+0x114/
+// +0x118/+0x11c/+0x120/+0x124/+0x128/+0x164/+0x168, and the +0x7c aux's +0xbc link id).
 
-// The HUD sprite factory the spawn calls (g_gameReg->m_30->m_8->CreateSprite).
-struct CTeleSpriteFactory {
-    CTeleHudSprite* CreateSprite(
-        i32 kind,
-        i32 gx,
-        i32 gy,
-        i32 hint,
-        const char* name,
-        i32 flags
-    ); // 0x1597b0
-};
+// The HUD sprite factory the spawn calls (g_gameReg->m_world->m_8->CreateSprite) is the
+// shared <Gruntz/TeleSpriteFactory.h> class; its result is cast to CGameObject*.
 
-// The trigger object the probe returns (its m_10 is the HUD sprite read for the
-// on-screen cue's coordinates).
-struct CTrigger {
-    char m_pad0[0x10];
-    CTeleHudSprite* m_10; // +0x10
-};
+// CTrigger (the object the probe returns; its m_10 is the HUD sprite read for the
+// on-screen cue's coordinates) is the shared <Gruntz/Trigger.h> class.
+SIZE_UNKNOWN(CTeleResHolder);
 struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     char m_pad0[0x8];
     CTeleSpriteFactory* m_8; // +0x08
@@ -411,24 +383,10 @@ struct CTeleResHolder { // the +0x30 resource/sprite-factory holder
     CViewport* m_24; // +0x24  viewport (visible-bounds source)
 };
 
-struct WwdGameReg {
-    // Fills the passed RECT with the on-screen message bounds and returns it
-    // (0x2cb1 thunk; __thiscall). Modeled NO-body so the call reloc-masks.
-    RECT* GetMessageBounds(RECT* out);
-    char m_pad00[0x30];
-    CTeleResHolder* m_30; // +0x30  sprite-factory/viewport holder
-    char m_pad34[0x60 - 0x34];
-    CTeleCueSink* m_60; // +0x60  on-screen cue receiver
-    char m_pad64[0x68 - 0x64];
-    CTriggerProbe* m_68; // +0x68  point-probe sink
-    char m_pad6c[0x7c - 0x6c];
-    WwdGameRegAux* m_7c; // +0x7c
-    char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118
-    char m_pad11c[0x130 - 0x11c];
-    i32 m_130; // +0x130
-    i32 m_134; // +0x134
-};
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). These teleporter
+// tails reach its facet: m_world downcast to CTeleResHolder*, m_cueSink to
+// CTeleCueSink*, m_68 to CTriggerProbe*, m_7c to WwdGameRegAux*; GetMessageBounds
+// returns the on-screen message-bounds RECT.
 extern WwdGameReg* g_gameReg;
 
 // The CRT rand() (0x11fee0); CMenuSparkle seeds its +0x130 timer from it.
@@ -444,63 +402,25 @@ extern "C" i32 rand(void);
 // fn-ptr table; a nonzero entry's handler is called __thiscall on `this`.
 // All globals are unnamed BSS (DATA-pinned here so the loads reloc-mask); the
 // collection methods are external/no-body.
+// CActColl / CActColl2 / ActAlloc + g_actCache (0x6bf464) / g_actAllocResult
+// (0x6bf428) are the shared coordinate-registry collection primitives from
+// <Gruntz/ActReg.h>. g_actColl (0x644688) is this TU's own collection singleton.
 struct CActEntry; // an entry: first dword is the registered handler vtable
-struct CActColl {
-    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-};
-struct CActColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-extern "C" i32 ActAlloc(); // 0x16d990
 
-extern i32 g_actLo;
-extern i32 g_actHi;
-extern char* g_actBase;
-extern i32 g_actStride;
-extern CActEntry* g_actCur;
-extern i32 g_actScratch;
 DATA(0x00244688)
 extern CActColl g_actColl;
-extern CActColl2* g_actColl2;
-DATA(0x002bf464)
-extern void* g_actCache;
-DATA(0x002bf428)
-extern void* g_actAllocResult;
 
 // The shared per-leaf activation-coordinate registry singleton each CUserLogic
 // leaf's RegisterActs binds its id->handler entry in - same [2000,2010] range
-// shape as g_actColl but a distinct per-class instance. ResolveEntry folds the
-// VActLookup archetype inline (constant `this` -> the field loads become absolute
-// addresses); the slow Insert is __thiscall on m_coll2.
-struct CLeafActReg {
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-    void* m_vptr;                   // +0x00
-    CActColl2* m_coll2;             // +0x04
-    i32 m_lo;                       // +0x08
-    i32 m_hi;                       // +0x0c
-    char* m_base;                   // +0x10
-    char* m_cur;                    // +0x14
-    i32 m_stride;                   // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
-DATA(0x00246060)
-extern CLeafActReg g_frontCandyActReg; // 0x646060
+// shape as g_actColl but a distinct per-class instance. CLeafActReg is the shared
+// <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its layout +
+// ResolveEntry); it keeps its own placeholder name so the DATA-pinned globals below
+// are unchanged.
+SIZE_UNKNOWN(CLeafActReg);
+struct CLeafActReg : public CActReg {};
+// (g_frontCandyActReg @0x646060 was the mis-attributed CEyeCandyAni registry - it
+// re-homed to src/Gruntz/EyeCandyAni.cpp as g_eyeCandyActReg; 0x646060's DATA symbol
+// is pinned in src/Gruntz/LogicDispatchInit.cpp as g_logicDispatch_646060.)
 DATA(0x00245f70)
 extern CLeafActReg g_singleAnimActReg; // 0x645f70
 DATA(0x0024e6a0)
@@ -513,28 +433,30 @@ DATA(0x0024e7e8)
 extern CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
 
 // Each leaf's handler entry: its first dword receives the per-frame handler PMF
-// (AdvanceAnim, a 4-byte code ptr on the single-inheritance class).
-typedef i32 (CFrontCandyAni::*FrontCandyHandler)();
-struct CFrontCandyActEntry {
-    FrontCandyHandler m_fn;
-};
+// (AdvanceAnim, a 4-byte code ptr on the single-inheritance class). (CFrontCandyAni's
+// entry re-homed to src/Gruntz/EyeCandyAni.cpp with its RegisterActs.)
 typedef i32 (CSingleAnimation::*SingleAnimHandler)();
+SIZE_UNKNOWN(CSingleAnimActEntry);
 struct CSingleAnimActEntry {
     SingleAnimHandler m_fn;
 };
 typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
+SIZE_UNKNOWN(CWarpStonePadActEntry);
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;
 };
 typedef i32 (CTileTrigger::*TileTriggerHandler)();
+SIZE_UNKNOWN(CTileTriggerActEntry);
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
 };
 typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
+SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;
 };
 typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
+SIZE_UNKNOWN(CTileSecretTriggerActEntry);
 struct CTileSecretTriggerActEntry {
     TileSecretTriggerHandler m_fn;
 };
@@ -546,6 +468,7 @@ class CSecretTeleporterTrigger;
 // (single inheritance -> a 4-byte code pointer); FireActivation invokes it on
 // `this`, emitting `mov ecx,this; call [entry]`.
 typedef void (CSecretTeleporterTrigger::*ActHandler)();
+SIZE_UNKNOWN(CActEntry);
 struct CActEntry {
     ActHandler m_fn; // [entry]
 };
@@ -600,10 +523,7 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Gruntz/ActName.h> // CActName (shared)
 
 // The id->name-slot resolve (the fast range path + the slow Find/ActAlloc/Insert
 // rebuild). Folded inline by RegisterActs once, in the new-id branch.
@@ -624,6 +544,7 @@ static inline char* ActNameLookup(i32 id) {
 // The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
 // on the complete single-inheritance class).
 typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
+SIZE_UNKNOWN(CTelActEntry);
 struct CTelActEntry {
     SpawnHandler m_fn;
 };
@@ -640,7 +561,8 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialSub34*)((char*)this + 0x34))->Chain(a, b, c, d) != 0;
+    return ((CSerialObjRef*)((char*)this + 0x34))->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d)
+           != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -697,8 +619,8 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // CVoiceTrigger::GetTypeTag @0x133b0 - the per-class logic-type id (0x426), the
 // 6-byte `mov eax,<id>; ret` archetype (plain dtor @0x13400 still a Boundary stub).
 RVA(0x000133b0, 0x6)
-i32 CVoiceTrigger::GetTypeTag() {
-    return 0x426;
+LogicTypeId CVoiceTrigger::GetTypeTag() {
+    return LOGIC_VOICETRIGGER; // 0x426
 }
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
@@ -707,9 +629,9 @@ CVoiceTrigger::CVoiceTrigger() {}
 // Copies the bound object's screen position into the out point.
 RVA(0x00029a50, 0x15)
 void CUserLogic::GetScreenPos(ScreenPoint* out) {
-    CGameObject* o = m_10;
-    i32 y = o->m_60;
-    i32 x = o->m_5c;
+    CGameObject* o = m_object;
+    i32 y = o->m_screenY;
+    i32 x = o->m_screenX;
     out->x = x;
     out->y = y;
 }
@@ -717,9 +639,9 @@ void CUserLogic::GetScreenPos(ScreenPoint* out) {
 // --- CUserLogic::IsAtSavedScreenPos (0x029a80) ---
 RVA(0x00029a80, 0x29)
 i32 CUserLogic::IsAtSavedScreenPos() {
-    CGameObject* o = m_10;
+    CGameObject* o = m_object;
     i32 sx = *(i32*)((char*)this + 0x17c);
-    if (o->m_5c == sx && o->m_60 == *(i32*)((char*)this + 0x180)) {
+    if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
         return 1;
     }
     return 0;
@@ -733,13 +655,13 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
     m_60 = 0;
     m_5c = 0;
     m_64 = 0;
-    m_38->m_08 |= 0x2000002;
-    if (m_10->m_74 != 0x1869f) {
-        m_10->m_74 = 0x1869f;
-        m_10->m_08 |= 0x20000;
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0x1869f) {
+        m_object->m_latchedAnimId = 0x1869f;
+        m_object->m_flags |= 0x20000;
     }
-    m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-    m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     EnterField1();
     EnterField2();
 }
@@ -747,20 +669,20 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
-    if (g_gameReg->m_118 == 0 && g_gameReg->m_134 == 1) {
-        m_38->m_08 |= 0x10000;
+    if (g_gameReg->m_isEasyMode == 0 && g_gameReg->m_134 == 1) {
+        m_38->m_flags |= 0x10000;
     } else {
-        m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-        m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-        if (m_10->m_74 != 0) {
-            m_10->m_74 = 0;
-            m_10->m_08 |= 0x20000;
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
-        m_38->m_08 |= 2;
-        m_38->m_40 |= 1;
-        m_30 = m_14->m_1c;
-        m_14->m_1c = g_buteTree.Find("A");
-        g_gameReg->m_7c->m_3c++;
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
+        ((WwdGameRegAux*)g_gameReg->m_7c)->m_3c++;
     }
 }
 
@@ -822,18 +744,18 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
-        m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
-        m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-        if (m_10->m_74 != 0) {
-            m_10->m_74 = 0;
-            m_10->m_08 |= 0x20000;
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
         }
-        m_38->m_08 |= 2;
-        m_38->m_40 |= 1;
-        m_30 = m_14->m_1c;
-        m_14->m_1c = g_buteTree.Find("A");
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
     } else {
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
 }
 
@@ -846,12 +768,13 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
-    CTeleHudSprite* o = (CTeleHudSprite*)m_10;
-    CTrigger* hit = g_gameReg->m_68->Probe(o->m_5c, o->m_60, &loc0, &loc4, 1);
+    CGameObject* o = m_object;
+    CTrigger* hit =
+        ((CTriggerProbe*)g_gameReg->m_68)->Probe(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
-        o = (CTeleHudSprite*)m_10;
-        CTeleSpriteFactory* fac = g_gameReg->m_30->m_8;
-        CTeleHudSprite* spr = fac->CreateSprite(
+        o = m_object;
+        CTeleSpriteFactory* fac = ((CTeleResHolder*)g_gameReg->m_world)->m_8;
+        CGameObject* spr = (CGameObject*)fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,
@@ -861,24 +784,24 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
         );
         if (spr) {
             spr->m_124 = 2;
-            spr->m_7c->m_bc = ((CTeleHudSprite*)m_10)->m_7c->m_bc;
-            spr->m_164 = ((CTeleHudSprite*)m_10)->m_164;
-            spr->m_168 = ((CTeleHudSprite*)m_10)->m_168;
-            spr->m_11c = ((CTeleHudSprite*)m_10)->m_11c;
-            spr->m_120 = ((CTeleHudSprite*)m_10)->m_120;
-            spr->m_114 = ((CTeleHudSprite*)m_10)->m_114;
-            spr->m_118 = ((CTeleHudSprite*)m_10)->m_118;
-            spr->m_128 = 0;
-            CTeleHudSprite* eo = hit->m_10;
+            spr->m_7c->m_bc = m_object->m_7c->m_bc;
+            spr->m_164 = m_object->m_164;
+            spr->m_168 = m_object->m_168;
+            spr->m_11c = m_object->m_11c;
+            spr->m_120 = m_object->m_120;
+            spr->m_114 = m_object->m_114;
+            spr->m_118 = m_object->m_118;
+            spr->m_placeMode = 0;
+            CGameObject* eo = hit->m_10;
             WwdGameReg* g = g_gameReg;
-            i32 ey = eo->m_60;
-            i32 ex = eo->m_5c;
-            CViewRect* rc = (CViewRect*)(g->m_30->m_24->m_5c + 0x40);
-            if (ex < rc->m_8 && ex >= rc->m_0 && ey < rc->m_c && ey >= rc->m_4) {
-                g->m_60->CueA(hit, 0x3fc, -1, 0, -1, -1);
+            i32 ey = eo->m_screenY;
+            i32 ex = eo->m_screenX;
+            CViewRect* rc = (CViewRect*)(((CTeleResHolder*)g->m_world)->m_24->m_5c + 0x40);
+            if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
+                ((CTeleCueSink*)g->m_cueSink)->CueA(hit, 0x3fc, -1, 0, -1, -1);
             }
         }
-        m_38->m_08 |= 0x10000;
+        m_38->m_flags |= 0x10000;
     }
     return 0;
 }
@@ -888,19 +811,19 @@ CParticlez::~CParticlez() {}
 // CParticlez::GetTypeTag @0x12cd0 - the per-class logic-type id (0x41c), the
 // 6-byte `mov eax,<id>; ret` archetype.
 RVA(0x00012cd0, 0x6)
-i32 CParticlez::GetTypeTag() {
-    return 0x41c;
+LogicTypeId CParticlez::GetTypeTag() {
+    return LOGIC_PARTICLEZ; // 0x41c
 }
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
-    if (m_10->m_74 != 0xcf84f) {
-        m_10->m_74 = 0xcf84f;
-        m_10->m_08 |= 0x20000;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0xcf84f) {
+        m_object->m_latchedAnimId = 0xcf84f;
+        m_object->m_flags |= 0x20000;
     }
-    m_10->m_38 = 0;
+    m_object->m_38 = 0;
 }
 
 // --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc ---
@@ -908,13 +831,13 @@ CGruntSelectedSprite::~CGruntSelectedSprite() {}
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    if (m_10->m_74 != 0x14) {
-        m_10->m_74 = 0x14;
-        m_10->m_08 |= 0x20000;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_object->m_latchedAnimId != 0x14) {
+        m_object->m_latchedAnimId = 0x14;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -922,12 +845,12 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x0007eb00, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
     m_5c = 0x64;
-    if (m_10->m_74 != 0xdbba0) {
-        m_10->m_74 = 0xdbba0;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
     }
     m_60 = -0x19;
 }
@@ -937,12 +860,12 @@ CGruntToySprite::~CGruntToySprite() {}
 RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_40 |= 1;
-    if (m_10->m_74 != 0xdbba0) {
-        m_10->m_74 = 0xdbba0;
-        m_10->m_08 |= 0x20000;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_stateFlags |= 1;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
     }
     m_5c = 0;
 }
@@ -952,60 +875,60 @@ CGruntPowerupSprite::~CGruntPowerupSprite() {}
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_10->m_74 != 0x15) {
-        m_10->m_74 = 0x15;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0x15) {
+        m_object->m_latchedAnimId = 0x15;
+        m_object->m_flags |= 0x20000;
     }
-    m_38->m_40 |= 1;
+    m_38->m_stateFlags |= 1;
 }
 
 // --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
 CAniCycle::~CAniCycle() {}
 RVA(0x000aad20, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 1;
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    m_38->m_flags |= 1;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
 }
 
 // --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c ---
 // The tail asks g_gameReg for the on-screen message-bounds RECT (0x2cb1 thunk),
 // copies it into a local via the CopyRect Win32 import, then centers the object
-// (m_10->m_5c/m_60) inside it. ApplyLookupSprite takes m_38->m_04 as its flag.
+// (m_object->m_5c/m_60) inside it. ApplyLookupSprite takes m_38->m_04 as its flag.
 CSingleFrameMessage::~CSingleFrameMessage() {}
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_10->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
     RECT bounds;
     RECT r;
     CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
-    m_10->m_5c = r.left + (r.right - r.left) / 2;
-    m_10->m_60 = r.top + (r.bottom - r.top) / 2;
+    m_object->m_screenX = r.left + (r.right - r.left) / 2;
+    m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }
 
 // --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 ---
 CSimpleAnimation::~CSimpleAnimation() {}
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    CGameObjLayer* aux = m_10->m_198;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1015,19 +938,19 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
 CFrontCandy::~CFrontCandy() {}
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
-    if (m_10->m_74 != 0xf4240) {
-        m_10->m_74 = 0xf4240;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
     }
-    CGameObjLayer* aux = m_10->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1037,18 +960,18 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 CBehindCandy::~CBehindCandy() {}
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
-    if (m_10->m_198 != 0) {
-        if (m_10->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1058,75 +981,46 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
 CEyeCandy::~CEyeCandy() {}
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
-    CGameObject* o = m_10;
-    if (o->m_74 == 0 && o->m_198 != 0) {
-        i32 v = o->m_198->m_1c + o->m_60 + 0x186a0;
-        if (o->m_74 != v) {
-            o->m_74 = v;
-            o->m_08 |= 0x20000;
+    CGameObject* o = m_object;
+    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+        if (o->m_latchedAnimId != v) {
+            o->m_latchedAnimId = v;
+            o->m_flags |= 0x20000;
         }
     }
-    CGameObjLayer* aux = m_10->m_198;
+    CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {
-        if (aux->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
 }
 
-// --- CFrontCandyAni::RegisterActs (0x0acd10) ---
-// Bind the per-frame handler (AdvanceAnim @0x0acf10) to the activation key "A"
-// via the shared name registry, then bind id->entry in the class's coordinate
-// registry (g_frontCandyActReg). The SAME archetype as
-// CSecretTeleporterTrigger::RegisterActs.
-//
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
-RVA(0x000acd10, 0x18d)
-void CFrontCandyAni::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
-    if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
-        char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
-        while (n-- != 0) {
-            if (list != 0) {
-                ((CActName*)list)->Free();
-            }
-            list++;
-        }
-        ((CActName*)slot)->Assign(s_actKeyA);
-        g_nextActId++;
-    }
-    ((CFrontCandyActEntry*)g_frontCandyActReg.ResolveEntry(id))->m_fn =
-        &CFrontCandyAni::AdvanceAnim;
-}
+// --- CFrontCandyAni::RegisterActs (0x0acd10) + AdvanceAnim (0x0acf10) re-homed ---
+// These were a mis-attribution of CEyeCandyAni's acts (registry 0x646060) and now
+// live in src/Gruntz/EyeCandyAni.cpp, killing the ?RegisterActs@CFrontCandyAni
+// dup-RVA (they emit as ?RegisterActs@CEyeCandyAni / ?AdvanceAnim@CEyeCandyAni).
 
 // --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
 CFrontCandyAni::~CFrontCandyAni() {}
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_10->m_74 != 0xf4240) {
-        m_10->m_74 = 0xf4240;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -1134,24 +1028,24 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
 CBehindCandyAni::~CBehindCandyAni() {}
 RVA(0x000ad540, 0x1f0)
 CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    if (m_38->m_1b4 == 0) {
-        m_40 = m_38->m_1b4;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
-    if (m_10->m_198 != 0) {
-        if (m_10->m_198->m_10 >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_10->m_198->m_14 >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_10->m_7c != 0) {
-                m_10->m_7c->m_08 &= ~6;
-                m_10->m_7c->m_08 |= 1;
-                m_38->m_08 &= ~0x1000002;
-                m_38->m_08 |= 0x800000;
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
             }
         }
     }
@@ -1162,20 +1056,20 @@ CMenuSparkle::~CMenuSparkle() {}
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
     m_38->ApplyName("MENU_SPARKLE");
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_14->m_130 = rand() % 0xfa1 + 0x3e8;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_objAux->m_130 = rand() % 0xfa1 + 0x3e8;
 }
 
 // --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---
 CSingleAnimation::~CSingleAnimation() {}
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
 }
 
 // --- CSingleAnimation::InitActReg (0x0ae9a0) ---
@@ -1224,14 +1118,14 @@ void CSingleAnimation::RegisterActs() {
 CWarpStonePad::~CWarpStonePad() {}
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
     if (g_gameReg->m_134 == 1) {
-        m_38->m_40 |= 1;
-        m_38->m_08 |= 0x10000;
+        m_38->m_stateFlags |= 1;
+        m_38->m_flags |= 0x10000;
     }
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
 }
 
 // --- CWarpStonePad::InitActReg (0x10d840) ---
@@ -1299,11 +1193,11 @@ RVA(0x000110f0, 0x44)
 CTileTriggerSwitch::~CTileTriggerSwitch() {}
 RVA(0x0010dc40, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    m_38->m_40 |= 1;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
 }
 
 // --- CTileTriggerSwitch::InitActReg (0x10de20) ---
@@ -1351,14 +1245,14 @@ void CTileTriggerSwitch::RegisterActs() {
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_38->m_08 |= 1;
-    m_38->m_40 |= 1;
-    m_10->m_164 = m_10->m_5c >> 5;
-    m_10->m_168 = m_10->m_60 >> 5;
-    m_10->m_04 = (m_10->m_164 << 8) + m_10->m_168;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
+    m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
 // --- CTileTrigger::InitActReg (0x10e420) ---
@@ -1480,16 +1374,16 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 CToobSpikez::~CToobSpikez() {}
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
-    m_40 = m_38->m_1b4;
+    m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 2;
-    m_10->m_164 = m_10->m_5c >> 5;
-    m_10->m_168 = m_10->m_60 >> 5;
-    if (m_10->m_74 != 0xc) {
-        m_10->m_74 = 0xc;
-        m_10->m_08 |= 0x20000;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
+    if (m_object->m_latchedAnimId != 0xc) {
+        m_object->m_latchedAnimId = 0xc;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -1501,11 +1395,114 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:PostMessageA
-// @stub
+// winapi_064540 (0x64540): a per-frame "warp-to-level" trigger on a large grunt-logic
+// leaf (the `this` extends CUserLogic out to +0x360; the leaf isn't modeled, so its
+// fields are reached through a TU-local offset view). Poke the +0x1a0 arrival sub-object;
+// if it has arrived (m_28) and isn't busy (m_20), and this is warp-mode 0xc, format the
+// destination "WORLDZ\LEVEL%i" key and (if that level exists) PostMessage a WM_COMMAND
+// (0x807f) to the mgr's top-level window; then, unless suppressed (m_36c), fire the
+// arrival anim (m_260->Anim2a72), and latch the object dirty (m_154->m_8 |= 0x10000).
+// The CString + Format + the sub-object/anim/level-lookup callees all reloc-mask.
+SIZE_UNKNOWN(CWarpArrivalSub);
+struct CWarpArrivalSub {    // the +0x1a0 arrival sub-object of *m_154
+    void Poke15c360(i32 z); // 0x15c360
+    char m_pad04[0x20];
+    i32 m_20; // +0x20 busy gate
+    i32 m_24;
+    i32 m_28; // +0x28 arrived gate
+};
+SIZE_UNKNOWN(CWarpM154);
+struct CWarpM154 {
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 dirty flags
+    char m_pad0c[0x1a0 - 0xc];
+    CWarpArrivalSub m_1a0; // +0x1a0
+};
+SIZE_UNKNOWN(CWarpAnimObj);
+struct CWarpAnimObj {
+    void Anim2a72(i32 a, i32 b, i32 c); // 0x2a72
+};
+SIZE_UNKNOWN(CWarpTagObj);
+struct CWarpTagObj {
+    i32 Find13be40(char* name, i32 tag); // 0x13be40 (level-exists probe)
+};
+SIZE_UNKNOWN(CWarpLevelReg);
+struct CWarpLevelReg {
+    char m_pad00[0x1c];
+    i32 m_baseLevel; // +0x1c base level number
+    char m_pad20[0x28 - 0x20];
+    CWarpTagObj* m_28; // +0x28
+};
+SIZE_UNKNOWN(CWarpMgrWnd);
+struct CWarpMgrWnd {
+    char m_pad00[0x4];
+    void* m_4; // +0x04 top-level HWND
+};
+SIZE_UNKNOWN(CWarpMgr);
+struct CWarpMgr {
+    char m_pad00[0x4];
+    CWarpMgrWnd* m_4; // +0x04
+    char m_pad08[0x2c - 0x8];
+    CWarpLevelReg* m_curState; // +0x2c
+};
+SIZE_UNKNOWN(CWarpLeaf);
+struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
+    char m_pad000[0x154];
+    CWarpM154* m_drawState; // +0x154
+    char m_pad158[0x1ec - 0x158];
+    i32 m_animArg0; // +0x1ec anim arg 0
+    i32 m_animArg1; // +0x1f0 anim arg 1
+    char m_pad1f4[0x260 - 0x1f4];
+    CWarpAnimObj* m_animObj; // +0x260
+    char m_pad264[0x360 - 0x264];
+    i32 m_warpMode; // +0x360 warp mode
+    char m_pad364[0x36c - 0x364];
+    i32 m_animSuppress; // +0x36c anim-suppress gate
+};
+// The frame-clock snapshot fed to the arrival poke (ds:0x6bf3bc).
+extern "C" i32 g_6bf3bc;
+// The mgr singleton (same 0x64556c datum) + the WM_COMMAND PostMessageA IAT slot.
+DATA(0x0024556c)
+extern "C" CWarpMgr* g_mgrSettings;
+typedef i32(WINAPI* WarpPostFn)(void* hwnd, unsigned msg, unsigned wp, i32 lp);
+DATA(0x002c44c8)
+extern WarpPostFn g_pPostMessageA;
+// MFC CString the destination key formats into (ctor 0x1b9b93 / dtor 0x1b9cde) + the
+// free formatter helper (0x1b2cf5); modeled so the calls reloc-mask.
+SIZE_UNKNOWN(CWarpStr);
+struct CWarpStr {
+    char* m_pchData; // +0x00
+    CWarpStr();
+    ~CWarpStr();
+};
+extern "C" void FormatWarpStr(CWarpStr* dst, const char* fmt, ...); // 0x1b2cf5
+// @early-stop
+// 86.4%: logic byte-faithful. Residual is the leaf's offset-view register scheduling
+// (the m_drawState reloads) + the /GX CString unwind state ordering; not source-steerable.
 RVA(0x00064540, 0x11c)
 i32 CUserLogic::winapi_064540_PostMessageA() {
+    CWarpLeaf* self = (CWarpLeaf*)this;
+    self->m_drawState->m_1a0.Poke15c360(g_6bf3bc);
+    CWarpArrivalSub* sub = &self->m_drawState->m_1a0;
+    if (sub->m_28 == 0) {
+        return 0;
+    }
+    if (sub->m_20 != 0) {
+        return 0;
+    }
+    if (self->m_warpMode == 0xc) {
+        CWarpLevelReg* reg = g_mgrSettings->m_curState;
+        i32 lvl = reg->m_baseLevel + 0x64;
+        CWarpStr s;
+        FormatWarpStr(&s, "WORLDZ\\LEVEL%i", lvl);
+        if (reg->m_28->Find13be40(s.m_pchData, 0x575744)) {
+            g_pPostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807f, lvl);
+        }
+    }
+    if (self->m_animSuppress == 0) {
+        self->m_animObj->Anim2a72(self->m_animArg0, self->m_animArg1, 1);
+    }
+    self->m_drawState->m_8 |= 0x10000;
     return 0;
 }
 
@@ -1529,20 +1526,243 @@ void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
 RVA(0x0005d210, 0x1443)
 void CUserLogic::LoadGruntTuningConstants(i32) {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// The per-frame grunt "decay/wand" AI (0x612a0 / 0x61570 / 0x65a60). These run on
+// a grunt-behavior leaf that extends CUserLogic (base at +0) with a decay-timer +
+// anim state (modeled below as CGruntBehaviorLeaf; placeholder name, only offsets +
+// code bytes are load-bearing). The timer (m_830 start / m_838 duration, both
+// hi=0) drives a 0..256 fixed-point fill bar on the bound object's draw command;
+// m_object is the real inherited CGameObject. The bute/anim callees are reloc-masked
+// __thiscall externs. g_645588 = running ms clock.
+// ---------------------------------------------------------------------------
+extern "C" u32 g_645588;   // running game clock (ms)
+extern CButeMgr g_buteMgr; // 0x6453d8 - getters reloc-mask
+extern char k_60bebc[];    // interned bute-node name "R"
+
+SIZE_UNKNOWN(CDecayArrival);
+struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
+    i32 Poke15c360(i32 clock); // 0x15c360 (this, clock) -> phase 0..0x63
+    char m_pad00[0x20];
+    i32 m_20; // +0x20 busy gate
+    i32 m_24;
+    i32 m_28; // +0x28 arrived gate
+};
+SIZE_UNKNOWN(CDecayM194);
+struct CDecayM194 {          // m_154->m_194 (real: CImageSet)
+    void SetAllTypes(i32 a); // 0x152480 = CImageSet::SetAllTypes
+};
+SIZE_UNKNOWN(CDecayMgr);
+struct CDecayMgr { // m_154 - the bound draw-state manager
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 dirty flags
+    char m_pad0c[0x40 - 0xc];
+    i32 m_40; // +0x40 flags
+    char m_pad44[0x194 - 0x44];
+    CDecayM194* m_194; // +0x194
+    char m_pad198[0x1a0 - 0x198];
+    CDecayArrival m_1a0; // +0x1a0
+};
+SIZE_UNKNOWN(CDecayAnim);
+struct CDecayAnim {                                            // m_260 - anim/sprite controller
+    void Anim2a72(i32 a, i32 b, i32 c);                        // 0x2a72
+    void Method1073(i32 a, i32 b, i32 c, i32 d);               // 0x1073
+    void Method3003(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3003
+    void Method2e96(i32 a, i32 b, i32 c, i32 d);               // 0x2e96
+    void Method3945(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
+};
+
+SIZE_UNKNOWN(CGruntBehaviorLeaf);
+class CGruntBehaviorLeaf : public CUserLogic {
+public:
+    i32 LoadGruntDecayConfig();    // 0x612a0
+    i32 LoadGruntDecayConfig2();   // 0x61570
+    i32 LoadWandGruntItemConfig(); // 0x65a60
+    // Leaf's own reloc-masked __thiscall helpers.
+    void Method22de();                    // 0x22de
+    void Method3c29(i32 a);               // 0x3c29
+    void Method136b(i32 a, i32 b, i32 c); // 0x136b
+
+    // Members beyond CUserLogic's 0x40 base.
+    char m_pad40[0x154 - 0x40];
+    CDecayMgr* m_drawState; // +0x154 bound draw-state manager
+    char m_pad158[0x170 - 0x158];
+    i32 m_gruntSubState; // +0x170 grunt sub-state
+    char m_pad174[0x1c0 - 0x174];
+    char* m_gruntTypeTag; // +0x1c0 grunt-type bute tag
+    i32 m_1c4;            // +0x1c4
+    char m_pad1c8[0x1e4 - 0x1c8];
+    i32 m_downtimeLatch; // +0x1e4 latch flag
+    char m_pad1e8[0x1ec - 0x1e8];
+    i32 m_animArg0; // +0x1ec anim arg
+    i32 m_animArg1; // +0x1f0 anim arg
+    i32 m_animArg2; // +0x1f4 anim arg
+    char m_pad1f8[0x258 - 0x1f8];
+    i32 m_typeDisc; // +0x258 type discriminator (0x3b = no-downtime)
+    char m_pad25c[0x260 - 0x25c];
+    CDecayAnim* m_animCtrl; // +0x260 anim controller
+    char m_pad264[0x360 - 0x264];
+    i32 m_gruntMode; // +0x360 grunt mode
+    char m_pad364[0x36c - 0x364];
+    i32 m_animSuppress; // +0x36c anim-suppress gate
+    char m_pad370[0x380 - 0x370];
+    i32 m_380; // +0x380
+    char m_pad384[0x3e4 - 0x384];
+    i32 m_3e4;    // +0x3e4
+    i32 m_3e8;    // +0x3e8
+    i32 m_health; // +0x3ec health
+    i32 m_3f0;    // +0x3f0
+    char m_pad3f4[0x460 - 0x3f4];
+    i32 m_460; // +0x460
+    char m_pad464[0x830 - 0x464];
+    i32 m_decayTimerLo;    // +0x830 timer start (lo)
+    i32 m_decayTimerHi;    // +0x834 (hi, always 0)
+    i32 m_decayDurationLo; // +0x838 timer duration (lo)
+    i32 m_decayDurationHi; // +0x83c (hi, always 0)
+    char m_pad840[0x860 - 0x840];
+    i32 m_wandTimerLo;    // +0x860 wand timer start (lo)
+    i32 m_wandTimerHi;    // +0x864 (hi)
+    i32 m_wandDowntimeLo; // +0x868 wand downtime (lo)
+    i32 m_wandDowntimeHi; // +0x86c (hi)
+};
+
+// LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
+// anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
+// @early-stop
+// 90.5%: logic byte-faithful. Residual is CSE/regalloc of the 64-bit timer delta -
+// retail keeps g_645588 pinned in eax and re-does the m_decayTimerLo subtraction in the fill
+// tail, while cl shares the whole `(i64)clock - m_decayTimerLo` delta, shifting the lo dword
+// off eax and cascading register names + the epilogue merge. Not source-steerable.
 RVA(0x000612a0, 0x23c)
-void CUserLogic::LoadGruntDecayConfig() {}
+i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
+    if (m_gruntMode == 0) {
+        return 0;
+    }
+    if (m_drawState->m_1a0.Poke15c360(g_6bf3bc) == 1) {
+        if (m_gruntSubState == 1 && m_gruntMode != 5) {
+            m_animCtrl->Method1073(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
+        } else {
+            m_animCtrl->Method3003(
+                m_object->m_screenX,
+                m_object->m_screenY,
+                m_animArg0,
+                m_animArg2,
+                m_gruntMode != 5,
+                0x19
+            );
+        }
+    }
+    CDecayArrival* sub = &m_drawState->m_1a0;
+    if (sub->m_28 == 0) {
+        return 0;
+    }
+    if (sub->m_20 != 0) {
+        return 0;
+    }
+    i32 mode = m_gruntMode;
+    if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find(k_60bebc);
+        if (m_animSuppress == 0) {
+            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+        }
+        i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
+        if (m_object->m_drawFillCmd == 0xb) {
+            m_decayDurationLo = dt;
+            m_decayTimerLo = (i32)g_645588 - m_object->m_fillFraction * dt / 256;
+            m_decayDurationHi = 0;
+        } else {
+            m_decayDurationLo = dt;
+            m_decayDurationHi = 0;
+            m_decayTimerLo = (i32)g_645588;
+        }
+        m_decayTimerHi = 0;
+        i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
+        u32 elapsed = e < 0 ? 0 : (u32)e;
+        i32 r = (i32)((double)elapsed * 256.0
+                      / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        m_object->m_drawActive = 1;
+        m_object->m_drawFillCmd = 0xb;
+        m_object->m_fillFraction = r;
+        return 0;
+    }
+    if (m_animSuppress == 0) {
+        m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+    }
+    m_drawState->m_8 |= 0x10000;
+    return 0;
+}
 
-// @confidence: low
-// @source: decomp-xref
-// @stub
+// LoadGruntDecayConfig2 (0x61570): if the timer has fully elapsed, fire the finish
+// (flag + finish anim); else refresh the 0..256 fill fraction on the draw command.
+// @early-stop
+// ~77%: logic byte-faithful. Same CSE/regalloc wall as LoadGruntDecayConfig -
+// retail loads g_645588 once into eax and recomputes the m_decayTimerLo subtraction in the
+// fill branch (eax preserved -> lo stays in eax); cl CSEs the whole 64-bit delta and
+// pins lo in ecx, cascading a register-name mismatch through the tail. Hoisting the
+// clock into a local regressed it. Not source-steerable.
 RVA(0x00061570, 0x11d)
-void CUserLogic::LoadGruntDecayConfig2() {}
+i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
+    if ((i64)(u32)g_645588 - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
+        m_drawState->m_40 |= 1;
+        m_drawState->m_194->SetAllTypes(1);
+        if (m_animSuppress == 0) {
+            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+        }
+        m_drawState->m_8 |= 0x10000;
+        return 0;
+    }
+    i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
+    u32 elapsed = e < 0 ? 0 : (u32)e;
+    i32 r =
+        (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = 0xb;
+    m_object->m_fillFraction = r;
+    return 0;
+}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// LoadWandGruntItemConfig (0x65a60): per-frame wand-grunt item logic. Advance the
+// arrival probe; on the peak phase (0x63) latch the item downtime timer, tick the
+// wand health loss, and fire the depletion anim; every active frame run the wand
+// projectile step; finally, once arrived + idle, clear the latch + run the reset.
+// @early-stop
+// ~95%: whole body byte-identical (incl. the branchless max(0,hp) sub/sets/dec/and
+// idiom) except cl schedules the `if (m_1c4)` load a few slots earlier than retail
+// (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
-void CUserLogic::LoadWandGruntItemConfig() {}
+i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
+    i32 phase = m_drawState->m_1a0.Poke15c360(g_6bf3bc);
+    if (phase > 0) {
+        if (phase == 0x63) {
+            m_downtimeLatch = 1;
+            u32 downtime = g_buteMgr.GetDword(m_gruntTypeTag, "ItemDowntime");
+            if (m_typeDisc == 0x3b) {
+                downtime = 0;
+            }
+            m_wandDowntimeLo = downtime;
+            m_wandDowntimeHi = 0;
+            m_wandTimerLo = g_645588;
+            m_wandTimerHi = 0;
+            m_460 = 0;
+            m_3f0 = 0;
+            if (m_1c4 != 0) {
+                Method22de();
+            }
+            if (m_gruntSubState == 0x13) {
+                Method3c29(m_380);
+                i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
+                m_health = hp < 0 ? 0 : hp;
+                if (m_health <= 0) {
+                    m_animCtrl->Method2e96(m_animArg0, m_animArg1, 1, -1);
+                }
+            }
+        }
+        m_animCtrl->Method3945(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
+    }
+    CDecayArrival* sub = &m_drawState->m_1a0;
+    if (sub->m_28 != 0 && sub->m_20 == 0) {
+        m_downtimeLatch = 0;
+        Method136b(1, 0, 0);
+    }
+    return 0;
+}

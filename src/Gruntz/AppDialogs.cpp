@@ -12,6 +12,7 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS, control IDs,
 // and code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
 #include <stdio.h> // engine sprintf (reloc-masked)
 
 // The USER32 dialog API (EndDialog / GetDlgItemInt / SetDlgItemInt /
@@ -19,6 +20,7 @@
 // WM_INITDIALOG/WM_COMMAND ids all come from the real <windows.h> (via Win32.h;
 // pure-Win32 TU, no MFC).
 #include <Win32.h>
+#include <Globals.h>
 
 // The engine's registry/config helper (Utils::RegistryHelper) - only the one
 // method this proc calls is declared, to keep the symbol set tiny.
@@ -29,51 +31,39 @@ namespace Utils {
     };
 } // namespace Utils
 
-// The game-registry singleton. Only the offsets this proc walks are modeled:
-//   g_gameReg->m_2c->m_1c   the current level number
-//   g_gameReg->m_38         the Utils::RegistryHelper the values persist through
-//   g_gameReg->m_30->m_24->m_5c->m_84 / ->m_88   the seed X/Y for WM_INITDIALOG
-struct CGameRegLevel {
+// The game-registry singleton (CGameRegistry.h). This proc reaches three owned
+// slots through AUTHENTIC per-site downcasts (their concrete class lives in other
+// clusters, so CGameRegistry keeps the base/void* type and the consumer casts):
+//   ((CGameRegLevel*)g_gameReg->m_curState)->m_1c   current level number
+//                                            (CState* base -> concrete level view)
+//   ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(...)
+//                                            (void* m_settings -> RegistryHelper)
+//   ((CGameRegWarp*)g_gameReg->m_world->m_24->m_5c)->m_84 / ->m_88  seed X/Y
+//                                            (viewport addr stored i32 -> +0x84/+0x88)
+struct CGameRegLevel { // downcast view of CState* m_curState (+0x1c level number)
     char m_pad00[0x1c];
     i32 m_1c;
 };
-struct CGameRegWarp {
+struct CGameRegWarp { // reinterpret view of the m_5c viewport (+0x84/+0x88 seed X/Y)
     char m_pad00[0x84];
     i32 m_84;
     i32 m_88;
 };
-struct CGameRegSub24 {
-    char m_pad00[0x5c];
-    CGameRegWarp* m_5c;
-};
-struct CGameRegSub30 {
-    char m_pad00[0x24];
-    CGameRegSub24* m_24;
-};
-struct CGameReg {
-    char m_pad00[0x2c];
-    CGameRegLevel* m_2c; // +0x2c  level info
-    CGameRegSub30* m_30; // +0x30  warp seed chain
-    char m_pad34[0x38 - 0x34];
-    Utils::RegistryHelper* m_38; // +0x38  registry helper
-};
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // File-scope sinks the IDOK path stores the two edit-field values into before
 // the (optional) registry write (reloc-masked DIR32 stores).
-extern i32 g_warpX; // 0x612610
-extern i32 g_warpY; // 0x612614
 
 // ---------------------------------------------------------------------------
 // WarpDialogProc - the warp-cheat dialog callback.
 RVA(0x0008e4e0, 0x172)
-INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
 
     switch (msg) {
         case WM_INITDIALOG: {
-            CGameRegWarp* warp = g_gameReg->m_30->m_24->m_5c;
+            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_world->m_24->m_5c;
             i32 seedX = warp->m_84;
             i32 seedY = warp->m_88;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);
@@ -92,11 +82,23 @@ INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
-                    sprintf(szValue, "Level %i Warp X", g_gameReg->m_2c->m_1c);
-                    g_gameReg->m_38->SetValueDword(szValue, valX);
-                    sprintf(szValue, "Level %i Warp Y", g_gameReg->m_2c->m_1c);
-                    g_gameReg->m_38->SetValueDword(szValue, valY);
-                    g_gameReg->m_38->SetValueDword("Last Warp Level", g_gameReg->m_2c->m_1c);
+                    sprintf(
+                        szValue,
+                        "Level %i Warp X",
+                        ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                    );
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valX);
+                    sprintf(
+                        szValue,
+                        "Level %i Warp Y",
+                        ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                    );
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valY);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)
+                        ->SetValueDword(
+                            "Last Warp Level",
+                            ((CGameRegLevel*)g_gameReg->m_curState)->m_1c
+                        );
                 }
                 EndDialog(hDlg, 1);
                 return 1;
@@ -105,3 +107,6 @@ INT_PTR __stdcall WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
     return 0;
 }
+
+SIZE_UNKNOWN(CGameRegLevel);
+SIZE_UNKNOWN(CGameRegWarp);

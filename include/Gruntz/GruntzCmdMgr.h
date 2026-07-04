@@ -23,7 +23,9 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
+#include <rva.h>
 #include <Ints.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
 // One CObList sub-object (0x1c bytes). Only the engine methods the cluster
 // reaches are declared; all are reloc-masked thiscall callees in the engine
@@ -31,6 +33,7 @@
 //   m_4  head node (CObList m_pNodeHead)
 //   m_8  tail node (CObList m_pNodeTail)
 //   m_c  m_nCount (the queue length the loops test)
+SIZE_UNKNOWN(GzObList);
 struct GzObList {
     char m_pad0[4]; // +0x00
     void* m_4;      // +0x04  head node
@@ -53,6 +56,7 @@ class GzStateProvider; // defined below; Select() takes the +0x38 state sub-obje
 // flags word at +0x0c, and dispatch the object's own vtable slots +0x24/+0x28.
 // Modeled polymorphically so `obj->Select()` emits the thiscall virtual dispatch
 // at the right slots (the 9 leading virtuals are placeholders fixing the offsets).
+SIZE_UNKNOWN(GzTargetObj);
 class GzTargetObj {
 public:
     virtual void Slot0();                      // +0x00
@@ -77,6 +81,7 @@ public:
 // The +0x38 manager pointer's state sub-object: ->GetStateId() (vtable slot +0x10)
 // reports the current game-state id (compared against 0x11 / 0x3 / 0x4). Modeled
 // polymorphically; the 4 leading virtuals fix GetStateId at slot 4 (+0x10).
+SIZE_UNKNOWN(GzStateProvider);
 class GzStateProvider {
 public:
     virtual void Slot0();     // +0x00
@@ -85,39 +90,26 @@ public:
     virtual void Slot3();     // +0x0c
     virtual i32 GetStateId(); // +0x10 (slot 4)
 };
+SIZE_UNKNOWN(GzMgr);
 struct GzMgr {
     char m_pad0[0x2c];
     GzStateProvider* m_2c; // +0x2c  state provider
 };
 
-// The serialization stream the dispatcher reads/writes the command queue through.
-// vtable slot +0x2c (index 11) = Read(buf, len); +0x30 (index 12) = Write(buf,
-// len). Modeled polymorphically so the thiscall dispatch hits the right slots.
-class GzStream {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Read(void* buf, i32 len);  // +0x2c (index 11)
-    virtual void Write(void* buf, i32 len); // +0x30 (index 12)
-};
+// The serialization stream the dispatcher reads/writes the command queue through is
+// the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one
+// modeled class in <Gruntz/SerialArchive.h> - the former local `GzStream` view is
+// folded away.
 
 // A queued command as the dispatcher serializes it: vtable slot +0x04 (index 1) =
 // Serialize(stream, mode, a, b) -> i32; slot +0x18 (index 6) = GetTag() -> i32.
 // Modeled independently of CGruntzCommand so this TU's serialize dispatch does not
 // disturb the matched CGruntzCommand vtable.
+SIZE_UNKNOWN(GzSerCmd);
 class GzSerCmd {
 public:
     virtual void Slot0();
-    virtual i32 Serialize(GzStream* s, i32 mode, i32 a, i32 b); // +0x04 (index 1)
+    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a, i32 b); // +0x04 (index 1)
     virtual void Slot2();
     virtual void Slot3();
     virtual void Slot4();
@@ -126,12 +118,14 @@ public:
 };
 
 // One node of the base CObList the write pass walks: next@+0x00, payload@+0x08.
+SIZE_UNKNOWN(GzCmdNode);
 struct GzCmdNode {
     GzCmdNode* m_0; // +0x00  next node
     char m_pad4[4];
     GzSerCmd* m_8; // +0x08  payload command
 };
 
+SIZE_UNKNOWN(CGruntzCmdMgr);
 class CGruntzCmdMgr {
 public:
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
@@ -157,9 +151,13 @@ public:
     //            phase from the manager state. flag != 0 -> also AddTail onto
     //            the nested +0x1c list (with the phase tag).
     void EnqueueCommand(i32 flag, void* cmd);
+    // 0x423b40 (via ILT 0x2a63) - re-dispatch a queued command by sequence during
+    // the net resend pass (CNetMgr::ResetPlayerCommands: m_4->m_6c->Dispatch).
+    // External/no-body here (reloc-masked thiscall).
+    void Dispatch(i32 cmdHead, i32 seq);
     // 0x024890 - the command-queue (de)serializer. mode 4 = write the queue to
     // the stream; mode 7 = read it back, rebuilding the queue.
-    i32 Serialize(GzStream* stream, i32 mode, i32 a3, i32 a4);
+    i32 Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4);
     // 0x024a90 - predicate: is the registry's multiplayer slot active?
     i32 IsActive(i32 enable);
     // 0x085bd0 - the /GX destructor.

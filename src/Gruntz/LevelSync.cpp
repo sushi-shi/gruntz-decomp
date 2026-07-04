@@ -12,37 +12,26 @@
 // stream / sub-object vtable structs for the dispatches. External engine helpers are
 // reloc-masked.
 #include <Ints.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
 #include <rva.h>
 
-// The stream/archive object: a vtable whose +0x2c slot (#11) is Read(buf,n) and +0x30
-// (#12) is Write(buf,n). Modeled as an abstract class so the slots land by index.
-struct SyncStream {
-    virtual void v0() = 0;
-    virtual void v1() = 0;
-    virtual void v2() = 0;
-    virtual void v3() = 0;
-    virtual void v4() = 0;
-    virtual void v5() = 0;
-    virtual void v6() = 0;
-    virtual void v7() = 0;
-    virtual void v8() = 0;
-    virtual void v9() = 0;
-    virtual void v10() = 0;
-    virtual void Read(void* buf, i32 n) = 0;  // slot 11 / +0x2c
-    virtual void Write(void* buf, i32 n) = 0; // slot 12 / +0x30
-};
+// The stream/archive object is the shared WAP32 CSerialArchive (Read @ vtable +0x2c /
+// Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h> - the former
+// local `SyncStream` view is folded away.
 
 // An owned serializable sub-object: vtable slot 1 (+0x4) is its Serialize.
 struct SyncSub {
     virtual void v0() = 0;
-    virtual i32 Serialize(SyncStream* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
+    virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
 };
 
 // The lazily-allocated +0x54c child (operator new(0x40) + ctor 0x401271).
+class CLevelSync; // owner (defined below); m_3c back-links to it
 struct CLevelSyncChild {
     char pad[0x3c];
-    void* m_3c; // +0x3c back-link to the owner
+    CLevelSync* m_3c; // +0x3c back-link to the owner (= `this` in Sync)
     CLevelSyncChild();
 };
 
@@ -50,25 +39,21 @@ struct CLevelSyncChild {
 struct MgrReset {
     void Reset(); // 0x403d55 (__thiscall)
 };
-struct GameReg {
-    char pad[0x2c];
-    MgrReset* m_2c; // +0x2c
-};
-DATA(0x0064556c)
-extern GameReg* g_gameReg;
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 class CLevelSync {
 public:
-    i32 Sync(SyncStream* s, i32 op, i32 p4, i32 p5);
+    i32 Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5);
 
     // Reloc-masked engine helpers (this-methods unless noted):
-    i32 PreWriteValidate(SyncStream* s);                  // 0x4016b8
-    i32 PreReadValidate(SyncStream* s);                   // 0x402b53
-    void SubResetA();                                     // 0x402b8a
-    void SubResetB();                                     // 0x402d5b
-    i32 ChildSync(SyncStream* s, i32 op, i32 p4, i32 p5); // 0x402306 (child __thiscall)
-    void PostBlockFixup();                                // 0x403a08
-    void Finalize();                                      // 0x40125d
+    i32 PreWriteValidate(CSerialArchive* s);                  // 0x4016b8
+    i32 PreReadValidate(CSerialArchive* s);                   // 0x402b53
+    void SubResetA();                                         // 0x402b8a
+    void SubResetB();                                         // 0x402d5b
+    i32 ChildSync(CSerialArchive* s, i32 op, i32 p4, i32 p5); // 0x402306 (child __thiscall)
+    void PostBlockFixup();                                    // 0x403a08
+    void Finalize();                                          // 0x40125d
 
     i32 m[0x160];
 };
@@ -81,7 +66,7 @@ public:
 // across the ~80 member reloads do not reproduce instruction-for-instruction.
 // Final-sweep candidate (eh-state-numbering + serialize-reload regalloc walls).
 RVA(0x001084d0, 0x96c)
-i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
+i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
     if (s == 0) {
         return 0;
     }
@@ -94,7 +79,7 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
             return 0;
         }
     } else if (op == 8) {
-        g_gameReg->m_2c->Reset();
+        ((MgrReset*)g_gameReg->m_curState)->Reset();
         if (m[0] == 0) {
             SubResetA();
             SubResetB();
@@ -333,3 +318,8 @@ i32 CLevelSync::Sync(SyncStream* s, i32 op, i32 p4, i32 p5) {
     Finalize();
     return 1;
 }
+
+SIZE_UNKNOWN(CLevelSync);
+SIZE_UNKNOWN(CLevelSyncChild);
+SIZE_UNKNOWN(MgrReset);
+SIZE_UNKNOWN(SyncSub);

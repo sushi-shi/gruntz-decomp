@@ -22,7 +22,7 @@ public:
 };
 
 // ===========================================================================
-// 0x118040 - validate + store the record's names. Returns 0 on any rejection,
+// validate + store the record's names. Returns 0 on any rejection,
 // 1 on success. memset(&m_04,0,212) clears +0x04..+0xd7 before the copies.
 // ===========================================================================
 // @early-stop
@@ -52,3 +52,5 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
     m_08 = 1;
     return 1;
 }
+
+SIZE_UNKNOWN(CNameRecord);

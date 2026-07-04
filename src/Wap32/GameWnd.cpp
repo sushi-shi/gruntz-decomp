@@ -29,7 +29,7 @@ CGameWnd* g_activeGameWnd;
 // SHOWNORMAL). Bails (returning 0) if params/owner is null or a window is
 // already active.
 RVA(0x0013cf20, 0x8f)
-i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
+i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     if (!pParams) {
         return (i32)pParams;
     }
@@ -46,17 +46,17 @@ i32 CGameWnd::CreateAndShow(CGameWndCreateParams* pParams, void* pOwner) {
 
     m_hwnd = CreateWindowExA(
         pParams->dwExStyle,
-        pParams->lpClassName,
-        pParams->lpWindowName,
-        pParams->dwStyle,
-        pParams->X,
-        pParams->Y,
-        pParams->nWidth,
-        pParams->nHeight,
-        pParams->hWndParent,
+        pParams->lpszClass,
+        pParams->lpszName,
+        pParams->style,
+        pParams->x,
+        pParams->y,
+        pParams->cx,
+        pParams->cy,
+        pParams->hwndParent,
         pParams->hMenu,
         pParams->hInstance,
-        pParams->lpParam
+        pParams->lpCreateParams
     );
     if (!m_hwnd) {
         return 0;
@@ -96,11 +96,11 @@ i32 CGameWnd::OnClose() {
 
 // -------------------------------------------------------------------------
 // CGameWnd::OnActivateApp (WM_ACTIVATEAPP handler, vtable slot 12). Records the
-// app-active flag (wParam) into the owning CGameApp's m_240 and reports "not
+// app-active flag (wParam) into the owning CGameApp's m_appActive and reports "not
 // handled" (0) so GameWindowProc falls through to DefWindowProcA.
 RVA(0x0013d470, 0xd)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
-    ((CGameApp*)m_owner)->m_240 = wParam;
+    m_owner->m_appActive = wParam;
     return 0;
 }
 
@@ -110,9 +110,9 @@ i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM /*lParam*/) {
 // error, then posts WM_QUIT.
 RVA(0x0013d490, 0x29)
 i32 CGameWnd::QuitMessageLoop() {
-    ((CGameApp*)m_owner)->FreeGameManager();
-    if (((CGameApp*)m_owner)->m_248) {
-        ((CGameApp*)m_owner)->ShowError();
+    m_owner->FreeGameManager();
+    if (m_owner->m_errorReported) {
+        m_owner->ShowError();
     }
     PostQuitMessage(0);
     return 0;
@@ -153,7 +153,7 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
 // Point messages (WM_MOVE / mouse) split lParam into LOWORD(x)/HIWORD(y); the
 // (int) low/high words come straight off lParam (& 0xffff / >> 16).
 RVA(0x0013cff0, 0x35c)
-LRESULT __stdcall CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = g_activeGameWnd;
     if (!pWnd) {
         return DefWindowProcA(hwnd, uMsg, wParam, lParam);

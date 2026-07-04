@@ -134,3 +134,7 @@ i32 CConfigStore::GetInt(char* szSection, char* szKey, i32 nDefault) {
 
     return GetPrivateProfileIntA(szSection, szKey, nDefault, m_90);
 }
+
+// CConfigStore is defined in the shared ConfigStore.h (also included by
+// ConfigStoreWrite.cpp); its SIZE stays here to avoid touching that header.
+SIZE_UNKNOWN(CConfigStore);

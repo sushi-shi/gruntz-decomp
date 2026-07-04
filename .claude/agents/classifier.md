@@ -27,6 +27,14 @@ the exceptional case** where the source is genuinely ambiguous and a single inst
 (e.g. confirming whether `m_30` is read as `int` or `short` at one site) — and say so in your report.
 This keeps you fast and keeps you honest to what was actually matched.
 
+**EXCEPTION — naming a whole placeholder/codename class (HP-rename: Severus/Draco/…, RVA-suffixed,
+ClassUnknown_N):** here the source uses the placeholder name everywhere, so the C++ alone can't tell
+you what the class IS. Use GHIDRA XREFS — `python -m gruntz.analysis.xref <rva|name>` (retail
+caller/callee graph) + the Ghidra decomp's xrefs — as a PRIMARY tool: who `new`s the class and stores
+it where, who calls its methods on what `this`, which subsystem owns it, what the sibling
+already-named classes in the same call cluster are. Name the class from that demonstrated role. This
+is standard, not a last resort (it unblocked the MallocConstructors/Backlog/Discovered attributions).
+
 ## Precondition — only run on a WELL-MATCHED class
 
 This only makes sense when **most of the class's methods are reconstructed** (byte-exact or

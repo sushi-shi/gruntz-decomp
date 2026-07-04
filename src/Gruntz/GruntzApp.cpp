@@ -45,8 +45,8 @@ static char g_errorText[0x100]; // error message buffer
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
 // CGruntzApp - the game's CGameApp subclass, defined once in <Gruntz/GruntzApp.h>.
-// The matched methods touch only BASE CGameApp fields: ShowError reads m_c
-// (hInstance @+0xc), m_24c (error message id @+0x24c) and m_250 (error detail
+// The matched methods touch only BASE CGameApp fields: ShowError reads m_hInstance
+// (@+0xc), m_errorCode (error message id @+0x24c) and m_errorDetail (error detail
 // @+0x250); the dtor / InitializeGameManager touch no CGruntzApp-specific field.
 #include <Gruntz/GruntzApp.h>
 
@@ -61,14 +61,14 @@ RVA(0x00080850, 0x12)
 CGruntzApp::CGruntzApp() {}
 
 // ---------------------------------------------------------------------------
-// CGruntzApp::VirtualUnknownMethod03
+// CGruntzApp::Init
 // CGruntzApp's override of the base init virtual (CGameApp vtbl slot +0x8). It
 // re-pushes all 7 launch args in order and tail-forwards to the base
-// CGameApp::VirtualUnknownMethod03 (`this` left in ecx untouched),
+// CGameApp::Init (`this` left in ecx untouched),
 // then normalises the int result to a bool: `!= 0` emits the
 // `neg eax; sbb eax,eax; neg eax` (0/1) idiom.
 RVA(0x00080930, 0x31)
-i32 CGruntzApp::VirtualUnknownMethod03(
+i32 CGruntzApp::Init(
     HINSTANCE hInstance,
     char* szWindowName,
     char* szGameIdentifier,
@@ -77,7 +77,7 @@ i32 CGruntzApp::VirtualUnknownMethod03(
     i32 windowWidth,
     i32 windowHeight
 ) {
-    return CGameApp::VirtualUnknownMethod03(
+    return CGameApp::Init(
                hInstance,
                szWindowName,
                szGameIdentifier,
@@ -108,23 +108,23 @@ CGruntzApp::~CGruntzApp() {
 // CGruntzApp::ShowError
 // Virtual override. Builds the error
 // message into g_errorText then shows the ERROR dialog:
-//   id = m_24c ? m_24c : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
-//   detail[0] = 0; if (m_250 > 0) sprintf(detail, "(%i)", m_250);  // +0x250
-//   if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0 &&
-//       LoadStringA(m_c, 0x8009, g_errorText, 0xfa) <= 0)
+//   id = m_errorCode ? m_errorCode : IDS_DEFAULT_ERROR;     // +0x24c, default 0x8009
+//   detail[0] = 0; if (m_errorDetail > 0) sprintf(detail, "(%i)", m_errorDetail);  // +0x250
+//   if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0 &&
+//       LoadStringA(m_hInstance, 0x8009, g_errorText, 0xfa) <= 0)
 //       strcpy(g_errorText, "Unable to continue game.");
 //   strcat(g_errorText, detail);
 //   while (ShowCursor(TRUE) < 0) ;              // force the cursor visible
-//   DialogBoxParamA(m_c, "ERROR", 0, ErrorDialogProc, 0);
+//   DialogBoxParamA(m_hInstance, "ERROR", 0, ErrorDialogProc, 0);
 // LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
-    // The two error fields are read up front (the optimiser hoists the m_250
+    // The two error fields are read up front (the optimiser hoists the m_errorDetail
     // load above the id-default branch, keeping it live in eax across it).
-    i32 id = m_24c;
-    i32 detailVal = m_250;
+    i32 id = m_errorCode;
+    i32 detailVal = m_errorDetail;
     if (id == 0) {
         id = IDS_DEFAULT_ERROR;
     }
@@ -135,8 +135,8 @@ void CGruntzApp::ShowError() {
         sprintf(detail, "(%i)", detailVal);
     }
 
-    if (LoadStringA(m_c, id, g_errorText, 0xfa) <= 0
-        && LoadStringA(m_c, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
+    if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0
+        && LoadStringA(m_hInstance, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
         strcpy(g_errorText, "Unable to continue game.");
     }
 
@@ -145,7 +145,7 @@ void CGruntzApp::ShowError() {
     while (ShowCursor(1) < 0)
         ;
 
-    DialogBoxParamA(m_c, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -170,12 +170,8 @@ WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
 // (No SYMBOL() override: the real HWND signature mangles to PAUHWND__ identically
 // on both sides - like the sibling DialogProcs - so the natural name pairs.)
 RVA(0x00080c70, 0x55)
-INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
-    HWND hWnd,
-    UINT message,
-    WPARAM wParam,
-    LPARAM lParam
-) {
+INT_PTR CALLBACK
+CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     g_errorHwnd = hWnd;
 
     switch (message) {
@@ -184,7 +180,7 @@ INT_PTR __stdcall CGruntzApp::ErrorDialogProc(
             return 1;
 
         case WM_COMMAND:
-            if (wParam == 1 || wParam == 2) { // IDOK / IDCANCEL
+            if (wParam == IDOK || wParam == IDCANCEL) {
                 EndDialog(hWnd, 0);
                 return 1;
             }
@@ -207,11 +203,11 @@ i32 CGruntzApp::VirtualUnknownMethod04(i32 a, i32 b, i32 c) {
 // Copies the message into the shared g_errorText buffer (inline strcpy) then
 // shows the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]) with MsgDialogProc -
 // the dialog proc lives in another TU, so it is taken via an extern thunk.
-extern "C" INT_PTR __stdcall MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" INT_PTR CALLBACK MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
-    DialogBoxParamA(m_c, "MESSAGE", hParent, &MsgDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &MsgDialogProc, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -233,11 +229,13 @@ void* CreateU10O() {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: tomalla
-// @stub
+// Boolified forward to the switch-down-sprite loader (thiscall on `this`, retail
+// 0x110570). `!= 0` lowers to the int->bool neg/sbb/neg normalize.
 RVA(0x00112820, 0xc)
-void CGruntzApp::Stub_112820() {}
+i32 CGruntzApp::Stub_112820() {
+    return LoadSwitchDownSprite() != 0;
+}
 
 // size 0x254 recovered from operator-new sites (gruntz.analysis.news)
-SIZE(CGruntzApp, 0x254);
+
+SIZE_UNKNOWN(U10O);

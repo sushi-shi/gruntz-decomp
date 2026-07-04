@@ -30,13 +30,14 @@ public:
 };
 
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
+// REAL-POLYMORPHIC (implicit vptr@0): the virtual dtor drains the manual vptr field.
 class _zvec {
 public:
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     i32 IndexToPtr(i32 idx);       // 0x312a0  (the plain base accessor)
-    ~_zvec();                      // 0x16da60 (base scalar dtor, external TU)
+    virtual ~_zvec();              // 0x16da60 (base scalar dtor, external TU; implicit vptr@0)
 
-    void* m_vptr;        // +0x00
+    // vptr @+0x00 (implicit, polymorphic)
     zErrHandling* m_err; // +0x04
     i32 m_lo;            // +0x08
     i32 m_hi;            // +0x0c
@@ -51,9 +52,9 @@ public:
 // member-function pointers; its accessor override fixes up freshly-grown slots.
 class zDArray : public _zvec {
 public:
-    i32 Destroy();         // 0x8750  (re-stamp + run ~zDArray)
-    i32 IndexToPtr(i32 i); // 0x310f0 (base accessor + per-slot member-ptr init)
-    ~zDArray();            // 0x16df40
+    i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~zDArray)
+    i32 IndexToPtr(i32 i);       // 0x310f0 (base accessor + per-slot member-ptr init)
+    virtual ~zDArray() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
 };
 
 #endif // GRUNTZ_WAP32_ZVEC_H

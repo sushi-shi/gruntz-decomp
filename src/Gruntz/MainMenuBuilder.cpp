@@ -32,6 +32,7 @@
 // final sweep: match the CObList ctor/dtor + the page ctor as leaves so the
 // trylevel-slot threading can be reproduced, then re-attack.
 
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
 
 typedef u32 u32;
@@ -70,6 +71,7 @@ static i32 FinalMovieAvailable(void* sub) {
     return ((MovieProbe*)sub)->IsAvailable();
 }
 typedef void (MenuItem::*MenuItemFn)(i32);
+SIZE_UNKNOWN(MenuItemVtbl);
 struct MenuItemVtbl {
     char m_pad00[0x18];
     MenuItemFn m_18; // +0x18
@@ -133,12 +135,10 @@ struct MenuProgress {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  area progress
 };
-struct MenuGameReg {
-    char m_pad00[0x58];
-    MenuProgress* m_58; // +0x58
-};
-DATA(0x0064556c)
-extern MenuGameReg* g_gameReg;
+// The canonical CGameRegistry view of the singleton (*0x24556c); its +0x58 host
+// (MenuProgress*) is cast locally at the deref sites.
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 // The multiplayer-availability gate (DAT_006455ec): nonzero disables the
 // multiplayer/network-gated items.
@@ -304,7 +304,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
     it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
@@ -323,7 +323,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
     page->AddSub(s_AREA1, s_MENU_QUESTZ_AREA1, 0x8149, 0x1, 0, s_AREA1, 0);
     it = page->AddSub(s_AREA2, s_MENU_QUESTZ_AREA2, 0x8149, 0x2, 0, s_AREA2, 0);
@@ -365,7 +365,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x25, 0, 0, 0);
     page->AddSub(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x26, 0, 0, 0);
     page->AddSub(s_STAGE3, s_MENU_AREAS_STAGE3, 0x807f, 0x27, 0, 0, 0);
@@ -381,7 +381,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1, 0, 0, 0);
     it = page->AddSub(s_STAGE2, s_MENU_AREAS_STAGE2, 0x807f, 0x2, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1) {
@@ -406,7 +406,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x5, 0, 0, 0);
     if (progress > 0x24 || progress < 0x4) {
         it->Disable(3);
@@ -434,7 +434,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x9, 0, 0, 0);
     if (progress > 0x24 || progress < 0x8) {
         it->Disable(3);
@@ -462,7 +462,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0xd, 0, 0, 0);
     if (progress > 0x24 || progress < 0xc) {
         it->Disable(3);
@@ -490,7 +490,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x11, 0, 0, 0);
     if (progress > 0x24 || progress < 0x10) {
         it->Disable(3);
@@ -518,7 +518,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x15, 0, 0, 0);
     if (progress > 0x24 || progress < 0x14) {
         it->Disable(3);
@@ -546,7 +546,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x19, 0, 0, 0);
     if (progress > 0x24 || progress < 0x18) {
         it->Disable(3);
@@ -574,7 +574,7 @@ void BuildMainMenuTree(void* arg) {
         delete page;
         return;
     }
-    progress = g_gameReg->m_58->m_1c;
+    progress = ((MenuProgress*)g_gameReg->m_58)->m_1c;
     it = page->AddSub(s_STAGE1, s_MENU_AREAS_STAGE1, 0x807f, 0x1d, 0, 0, 0);
     if (progress > 0x24 || progress < 0x1c) {
         it->Disable(3);
@@ -596,3 +596,11 @@ void BuildMainMenuTree(void* arg) {
         return;
     }
 }
+
+SIZE_UNKNOWN(MenuHost);
+SIZE_UNKNOWN(MenuItem);
+SIZE_UNKNOWN(MenuList);
+SIZE_UNKNOWN(MenuPage);
+SIZE_UNKNOWN(MenuProgress);
+SIZE_UNKNOWN(MenuStr);
+SIZE_UNKNOWN(MovieProbe);

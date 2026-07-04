@@ -1,60 +1,65 @@
-// WapMisc.cpp - assorted tiny engine leaves (anonymous owners).
+// WapMisc.cpp - assorted tiny engine leaves.
 //
-//  0x11d100 - vtable-stamp leaf: *this = &vtbl (a ctor/teardown that only sets vptr).
-//  0x1c7e6d - CView-derived destructor: reset vptr then tail-jmp the base ~CView.
-//  0x1155b0 - forward a no-arg call to a method on the g_largeFont global (tail-jmp).
-//  0x1bae5d - forward (-1) to a method on a global CWnd-like object.
-//  0xc76d0  - forward (0x7d0,0x7da) to a method on a global object.
+//  0x11d100 - a CNoTrackObject base-subobject vptr stamp (*this = &??_7CNoTrackObject);
+//             transitional stamp - the class lives in ComHelperThunks.cpp.
+//  0x1155b0 - construct the g_largeFont global (tail-jmp to ??0Font).
+//  0x1bae5d - forward (-1) to a CWnd method on a global framework object.
+//  0xc76d0  - construct g_64bf00 (CZDArrayDerived::Construct(0x7d0,0x7da)).
 #include <rva.h>
+#include <Ints.h>
 
-// --- 0x11d100 : vtable-stamp leaf --------------------------------------------
-extern void* const Vtbl_5ec26c;
-struct CStamp11d100 {
+// --- 0x11d100 : CNoTrackObject vptr stamp ------------------------------------
+// Stamps the ??_7CNoTrackObject vtable (VA 0x5ec26c = the vtable ComHelperThunks.cpp
+// models as CNoTrackObject). Kept as a bare stamp leaf: making it a real CNoTrackObject
+// ctor would add a `mov eax,ecx` (return-this) the 7-byte retail body does not carry
+// (the vtable-realization boundary - matcher.md). CNoTrackObject itself lives in a
+// different TU, so the stamp is modeled locally against the same vtable symbol.
+extern void* const Vtbl_5ec26c; // ??_7CNoTrackObject@@6B@
+struct CNoTrackObjectStamp {
     void* vptr;
     void Stamp();
 };
 RVA(0x0011d100, 0x7)
-void CStamp11d100::Stamp() {
+void CNoTrackObjectStamp::Stamp() {
     vptr = (void*)&Vtbl_5ec26c;
 }
 
-// --- 0x1c7e6d : CView-derived dtor (vptr reset + tail-jmp base ~CView) --------
-extern void* const Vtbl_5ed854;
-extern "C" void DtorCView_1c8e3a(); // 0x1c8e3a ~CView
-RVA(0x001c7e6d, 0xb)
-__declspec(naked) void Dtor_1c7e6d() {
-    __asm {
-        mov dword ptr [ecx], OFFSET Vtbl_5ed854
-        jmp DtorCView_1c8e3a
-    }
-}
-
-// --- 0x1155b0 : forward to a g_largeFont method ------------------------------
+// --- 0x1155b0 : construct the g_largeFont global -----------------------------
+// Tail-jmp to ??0Font (0x179700 == the Font default ctor); a dynamic-initializer
+// thunk that constructs the global font. Font is the real engine font class.
 struct Font {
-    void Method_179700(); // 0x179700
+    void Construct(); // 0x179700 (??0Font@@QAE@XZ)
 };
 extern Font g_largeFont; // ?g_largeFont@@3VFont@@A (0x64eac0)
 RVA(0x001155b0, 0xa)
 void Unmatched_1155b0() {
-    g_largeFont.Method_179700();
+    g_largeFont.Construct();
 }
 
-// --- 0x1bae5d : forward (-1) to a global CWnd-like method --------------------
-struct WndLike {
-    void Method_1baf15(int); // 0x1baf15
+// --- 0x1bae5d : forward (-1) to a CWnd method on a global object -------------
+// g_652e80 is an MFC framework global; 0x1baf15 is a CWnd method (Ghidra: CWnd)
+// taking an int, shared with ComHelperThunks' g_com652f00 forwarder. The exact
+// CWnd-family class of the global is not recoverable from this one call site.
+struct CWndFwd {
+    void Method_1baf15(int); // 0x1baf15 (CWnd method)
 };
-extern WndLike g_652e80;
+extern CWndFwd g_652e80;
 RVA(0x001bae5d, 0xd)
 void Unmatched_1bae5d() {
     g_652e80.Method_1baf15(-1);
 }
 
-// --- 0xc76d0 : forward (0x7d0,0x7da) to a global object's method -------------
-struct Obj64bf00 {
-    void Method_8710(int, int); // 0x8710
+// --- 0xc76d0 : construct the g_64bf00 global (CZDArrayDerived) ----------------
+// 0x8710 == CZDArrayDerived::Construct (the 2D typed-array build in ZDArrayDerived.cpp);
+// this leaf builds the global with (0x7d0, 0x7da). Local decl matches that class.
+struct CZDArrayDerived {
+    CZDArrayDerived* Construct(i32 lo, i32 hi); // 0x8710
 };
-extern Obj64bf00 g_64bf00;
+extern CZDArrayDerived g_64bf00;
 RVA(0x000c76d0, 0x15)
 void Unmatched_c76d0() {
-    g_64bf00.Method_8710(0x7d0, 0x7da);
+    g_64bf00.Construct(0x7d0, 0x7da);
 }
+
+SIZE_UNKNOWN(CNoTrackObjectStamp); // CNoTrackObject vptr-stamp leaf
+SIZE_UNKNOWN(CWndFwd);             // MFC CWnd-family global forward (class not recoverable)

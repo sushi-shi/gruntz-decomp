@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------
 // GruntDataRecord::SerializeStrings (0x56da0, __thiscall, 1 stdcall arg).
 RVA(0x00056da0, 0xc7)
-i32 GruntDataRecord::SerializeStrings(DataWriter* ar) {
+i32 GruntDataRecord::SerializeStrings(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -38,7 +38,7 @@ i32 GruntDataRecord::SerializeStrings(DataWriter* ar) {
 // each 0x80-byte name field into a temp and assign it to the owned CString member
 // (CString::operator= @0x1b9e74, reloc-masked), then read the four fixed blocks.
 RVA(0x00056eb0, 0x94)
-i32 GruntDataRecord::DeserializeStrings(DataWriter* ar) {
+i32 GruntDataRecord::DeserializeStrings(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }

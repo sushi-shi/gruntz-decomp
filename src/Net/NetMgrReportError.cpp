@@ -22,16 +22,17 @@
 // The function self-identifies its module via the strings it references (every
 // DPERR_* name + "Net Manager"); names of locals/globals are placeholders, the
 // switch case VALUES and string contents are load-bearing.
-#include <Net/CNetMgrError.h>
+#include <Net/NetMgr.h> // the single shared CNetMgr (ReportError is a static member)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
+#include <Globals.h>
 
-// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real
-// <windows.h> (via Win32.h; pure-Win32 TU, no MFC). The reporter's uType is
+// MessageBeep / MessageBoxA + BOOL/HWND/LPCSTR/UINT come from the real <windows.h>
+// (pulled in by <Net/NetMgr.h> -> <Mfc.h> -> <afx.h>; Win32.h would double-pull
+// windows.h and hard-conflict with the MFC header). The reporter's uType is
 // MB_ICONEXCLAMATION (0x30); the old hand-rolled macro mislabeled that value as
 // the "hand" icon, whose real windows.h value is 0x10.
-#include <Win32.h>
 
 // ---------------------------------------------------------------------------
 // Module-global state (all in .data). Unlike the DDraw/DInput/DSound siblings
@@ -46,12 +47,6 @@ DATA(0x002bf6f0)
 extern "C" i32 g_beepEnabled; // 0x6bf6f0  - gates the startup beep
 DATA(0x002bf6f4)
 extern "C" i32 g_thirdEnabled; // 0x6bf6f4  - third "any output wanted" gate
-
-extern "C" i32 g_hr;   // 0x6bf6f8  - the raw HRESULT, saved at entry
-extern "C" i32 g_code; // 0x6bf6fc  - hr & 0xffff (the (%i) arg)
-
-extern "C" char g_szCode[]; // 0x6bf700  - error-code name buffer
-extern "C" char g_szMsg[];  // 0x6bf740  - description buffer
 
 // Empty mutable string in .data copied into the working line up front.
 DATA(0x002293f4)

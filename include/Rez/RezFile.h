@@ -29,6 +29,11 @@
 
 #include <rva.h>
 
+// The shared intrusive list hierarchy: CObjNode / CRezListNode nodes, CObjList base
+// (Remove 0x1852e0) and CRezList : public CObjList (AddHead 0x1851e0). CRezFile is one
+// of the stored nodes; the manager's open/closed lists are CRezList.
+#include <Rez/RezList.h>
+
 // The buffered-FILE stdio + heap helpers (statically-linked CRT in retail; external
 // no-body so each `call rel32` is reloc-masked). __cdecl, args on the stack.
 extern "C" void* Eng_fopen(const char* path, const char* mode); // 0x11f870
@@ -51,36 +56,23 @@ DATA(0x0021a0a8)
 extern const char s_wPlusB[];
 
 // The recover/keep-going gate (CRezItmBase's owner shape): slot-2 Retry returns
-// nonzero to retry an I/O op, zero to give up. Modeled polymorphic so
-// `mov eax,[ecx]; call [eax+8]` falls out (reloc-masked indirect call).
-class CRezItmOwner {
-public:
-    virtual void v0();   // +0x00
-    virtual void v1();   // +0x04
-    virtual i32 Retry(); // +0x08  (slot 2)
-};
+// nonzero to retry an I/O op, zero to give up.
+#include <Rez/RezItmOwner.h>
 
 class CRezFile;
 
-// The intrusive open/closed LRU list embedded at CRezFileMgr+0x10 / +0x1c. Remove
-// (0x1852e0, the engine CObjList::Remove) unlinks a node; Append (0x1851e0) splices
-// one in. Both __thiscall on the {vtbl,head,tail} head; external no-body so the
-// `lea/add ecx,&list; push node; call` shapes fall out, reloc-masked.
-struct CObjList {
-    void* m_vtbl;     // +0x00
-    CRezFile* m_head; // +0x04
-    CRezFile* m_tail; // +0x08  (the LRU eviction candidate when read off +0x18)
-
-    void Remove(void* node); // 0x1852e0
-    void Append(void* node); // 0x1851e0
-};
-
-// The file-handle cache that owns + bounds the open CRezFile handles.
+// The file-handle cache that owns + bounds the open CRezFile handles. The open/closed
+// LRU lists at +0x10 / +0x1c are the shared CRezList (: public CObjList): AddHead
+// (0x1851e0) enrols a CRezFile, the inherited CObjList::Remove (0x1852e0) unlinks it.
+// The stored nodes are CRezFile (which derives CRezListNode : CObjNode), so
+// CloseAllOpen / Open retrieve the head/tail as CRezFile* (the typed intrusive-list
+// access). Both list ops are external no-body, so the `lea/add ecx,&list; push node;
+// call` shapes reloc-mask.
 struct CRezFileMgr {
     char m_pad0[0x0c];
     CRezItmOwner* m_gate;  // +0x0c
-    CObjList m_openList;   // +0x10  (0x10..0x1b; tail @+0x18)
-    CObjList m_closedList; // +0x1c  (0x1c..0x27)
+    CRezList m_openList;   // +0x10  (0x10..0x1b; tail @+0x18)
+    CRezList m_closedList; // +0x1c  (0x1c..0x27)
     i32 m_openCount;       // +0x28
     i32 m_maxOpen;         // +0x2c
     i32 m_readonly;        // +0x30
@@ -90,11 +82,12 @@ struct CRezFileMgr {
     // @+0x14), Close()-ing each until the list drains. Returns 1.
     i32 CloseAllOpen();
 };
+SIZE_UNKNOWN(CRezFileMgr); // >= 0x38 (fields to +0x34); full alloc size not pinned here
 
 // ---------------------------------------------------------------------------
 // CRezFile - one managed archive FILE*.
 // ---------------------------------------------------------------------------
-class CRezFile {
+class CRezFile : public CRezListNode {
 public:
     // Read `count` bytes at `pos` into buf, ensuring the handle is open and
     // recovering through the manager's gate on seek/short-read failure (0x13cc00).
@@ -119,10 +112,13 @@ public:
     // (no handle / closed) or 0 (the gate gave up).
     i32 Close();
 
-    char m_pad0[0x10];
-    char* m_name;       // +0x10
-    void* m_handle;     // +0x14  FILE*
-    CRezFileMgr* m_mgr; // +0x18
+    // CRezListNode (: CObjNode) supplies the intrusive links: element base @+0x00,
+    // next @+0x04, prev @+0x08 (written by CRezList::AddHead / CObjList::Remove).
+    char m_pad0c[0x10 - 0x0c]; // +0x0c
+    char* m_name;              // +0x10  filename passed to fopen
+    void* m_handle;            // +0x14  opaque CRT FILE* (0 = closed); passed to RezF* by value
+    CRezFileMgr* m_mgr;        // +0x18  owning handle cache
 };
+SIZE_UNKNOWN(CRezFile); // >= 0x1c; the cache's alloc size is not pinned here
 
 #endif // SRC_REZ_REZFILE_H

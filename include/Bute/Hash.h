@@ -2,7 +2,7 @@
 // CSymTab at +0x38 (child scopes) and +0x40 (leaf symbols). 8 bytes:
 // { u32 m_count; CHashSlot* m_buckets; }.
 //
-// Shape recovered from the call graph (callers all in the 0x139../0x13a.. Remus
+// Shape recovered from the call graph (callers all in the 0x139../0x13a.. ButeMgr
 // parser region): a NON-TEMPLATE base with the key-agnostic slot machinery
 // (Lookup 0x184b40, Remove 0x184ab0, RemoveAll 0x184a40 - ONE physical copy each,
 // called by both instances) and a TEMPLATE CHash<T> adding the key-typed lookups
@@ -15,17 +15,17 @@
 // placeholders - campaign doctrine - so this is matching-neutral). See SymTab.h.
 //
 // Bucket array: m_buckets points just past a 4-byte count cookie (RezAlloc'd as
-// CHashSlot[count]); each CHashSlot is 16 bytes { ?, ?, head, tail } - an
-// intrusive doubly-linked list head at slot+8/+0xc. A live entry is reached
-// through the "biased +4" convention: the chain threads node=entry+4, so the
-// chain pointer is entry+4 and the engine subtracts 4 to recover the entry. An
-// entry is { ? ; node(next@+4, prev@+8) ; u32 m_bucket@+0x10 ; void* m_record@+0x14 }.
-// The record at +0x14 carries the key first ([rec+0] = char* key for the string
-// table, or the raw int key for the int table).
+// CHashSlot[count]); each CHashSlot is 16 bytes { pad, CHashSlotList } - the
+// intrusive doubly-linked chain head at slot+8/+0xc. A stored record embeds a
+// CHashElement (the vtable-bearing key-hash prefix); the chain threads the
+// element's link at element+4, so the chain pointer IS &element->m_link and the
+// engine recovers the element via container_of (link - 4). The element carries the
+// owning table @+0xc, the computed bucket @+0x10 and the (key,value) record @+0x14.
 #ifndef SRC_BUTE_HASH_H
 #define SRC_BUTE_HASH_H
 
 #include <Ints.h>
+#include <rva.h>
 
 // The Rez heap alloc/free (0x1b9b46 _RezAlloc = operator new / 0x1b9b82 _RezFree,
 // both __cdecl); reloc-masked.
@@ -37,7 +37,7 @@ extern "C" void RezFree(void* p);
 // __stdcall (callee-cleanup: retail has no `add esp,0x10` after the call); the
 // reloc to it is masked. (TriggerMgrEh models the cdecl-shaped sibling; here the
 // caller-side cleanup is absent, so this site's helper is __stdcall.)
-void __stdcall Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
+void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()); // 0x11f640
 
 // The no-op per-element bucket-slot destructor (0x584a30, a bare `ret`); its
 // address is passed to the array-delete. Modeled as a stub so the DIR32 reloc to
@@ -48,75 +48,88 @@ void CHashSlot_Dtor(); // 0x584a30 (retail "empty_stub")
 extern "C" i32 __cdecl _strcmpi(const char* a, const char* b); // 0x11fdf0
 extern "C" i32 strcmp(const char* a, const char* b);           // inline byte loop
 
-// The intrusive doubly-linked-list helpers (__thiscall on the slot's {head,tail}
-// pair): Link splices `node` in (0x1390e0), Unlink removes it (0x1391e0). The
-// biased node is entry+4. Modeled on a tiny head struct so `mov ecx,&slot.head;
-// call` falls out reloc-masked.
+// The intrusive doubly-linked chain node threaded through each stored element at
+// element+0x04 (next@+0, prev@+4). Chains store &element->m_link; the element is
+// recovered via container_of (link - offsetof(CHashElement, m_link) == link - 4).
+struct CHashLink {
+    CHashLink* m_next; // +0x00 (element+0x04)
+    CHashLink* m_prev; // +0x04 (element+0x08)
+};
+SIZE(CHashLink, 0x8);
+
+class CHashBase;
+
+// The intrusive {head,tail} chain-head embedded at each bucket slot's +0x08, and
+// used standalone as CSymParser::m_nodes. Link splices `node` in (0x1390e0),
+// Unlink removes it (0x1391e0); both __thiscall on the {head,tail} pair.
 struct CHashSlotList {
-    void* m_head;            // slot+8
-    void* m_tail;            // slot+0xc
-    void Link(void* node);   // 0x1390e0
-    void Unlink(void* node); // 0x1391e0
+    CHashLink* m_head;            // +0x00  (slot+0x08)
+    CHashLink* m_tail;            // +0x04  (slot+0x0c)
+    void Link(CHashLink* node);   // 0x1390e0
+    void Unlink(CHashLink* node); // 0x1391e0
 };
+SIZE(CHashSlotList, 0x8);
 
-// The entry as seen by Insert: its first dword is a vtable whose slot 0 is the
-// virtual hash (returns the bucket index for this entry's key). Insert stamps the
-// owning table at +0xc and the computed bucket at +0x10, then links entry+4 into
-// the bucket chain. Modeled as a polymorphic class so the `mov eax,[node]; call
-// [eax]` dispatch falls out (no cast); the vtable is owned elsewhere (this TU
-// never emits it - only declares the pure virtual to drive the dispatch shape).
-class CHashInsertNode {
-public:
-    virtual u32 Hash() = 0; // slot 0 (the key-typed bucket hash)
-    char m_pad04[0x0c - 0x04];
-    void* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
-    u32 m_bucket;  // +0x10  computed bucket (Insert stamps this)
-};
-
-// A 16-byte bucket slot; its per-element destructor (0x584a30, a bare `ret`) is
-// empty (the slot owns nothing). { ?, ?, head, tail }.
+// A 16-byte bucket slot: two opaque words then the intrusive chain head. Its
+// per-element destructor (0x584a30) is a bare `ret` (the slot owns nothing).
 struct CHashSlot {
-    void* m_00;
-    void* m_04;
-    void* m_head; // +0x08
-    void* m_tail; // +0x0c
+    char m_pad00[0x8];     // +0x00
+    CHashSlotList m_chain; // +0x08  { head, tail }
 };
-
-// A live hash entry. The chain threads node=entry+4 (next@+4, prev@+8 of the
-// entry); the helpers bias by +/-4. m_bucket@+0x10 records the owning slot;
-// m_record@+0x14 is the (key,value) record, key first.
-struct CHashEntry {
-    void* m_00;   // +0x00
-    void* m_next; // +0x04  node.next (biased; chain stores entry+4)
-    void* m_prev; // +0x08  node.prev
-    char m_pad0c[0x10 - 0x0c];
-    u32 m_bucket;   // +0x10
-    void* m_record; // +0x14
-};
+SIZE(CHashSlot, 0x10);
 
 // ---------------------------------------------------------------------------
 // CHashBase - the key-agnostic slot machinery (one physical copy of each method,
 // shared by both CHash<T> instantiations).
 // ---------------------------------------------------------------------------
+
+// A stored record's hash-element prefix: the vtable-bearing key-hash node the
+// engine splices into a bucket chain. Records EMBED one as a member (CSymRec::
+// m_symNode @+0x04, CSymLeafBuilder/CParseSlot::m_node @+0x1c). Its slot-0 virtual
+// returns the bucket index for the element's key; Insert dispatches it and stamps
+// the owning table (+0xc) and computed bucket (+0x10); the payload sits at +0x14.
+// Hash() is left DECLARED-but-undefined (not pure) so the class is embeddable AND
+// polymorphic - the real vtable is stamped by the record's own (external) engine
+// ctor, and cl never constructs a CHashElement here (the containing records are
+// RezAlloc'd, never C++-default-constructed), so no spurious ??_7CHashElement
+// vtable is emitted.
+class CHashElement {
+public:
+    virtual u32 Hash(); // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)
+    CHashLink m_link;   // +0x04  intrusive chain node { next, prev }
+    CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
+    u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)
+    void* m_record;     // +0x14  the stored (key,value) payload (key first);
+                        //        genuinely heterogeneous (CSymRec / CSymTab / ...)
+};
+SIZE(CHashElement, 0x18);
+
 class CHashBase {
 public:
     // First live entry in iteration order (0x184ae0), or 0.
-    CHashEntry* First(); // 0x184ae0
-    // Chain head for bucket `idx`, biased back to the entry (head - 4), or 0.
-    CHashEntry* Lookup(u32 idx); // 0x184b40
-    // Unlink `entry` (its biased node = entry+4) from its owning slot's chain.
-    void Remove(CHashEntry* entry); // 0x184ab0
+    CHashElement* First(); // 0x184ae0
+    // Chain head for bucket `idx`, biased back to the element (head - 4), or 0.
+    CHashElement* Lookup(u32 idx); // 0x184b40
+    // Unlink `entry` (its chain node = &entry->m_link) from its owning slot's chain.
+    void Remove(CHashElement* entry); // 0x184ab0
     // Drop every entry: array-delete the bucket array (no-op per-slot dtor + free
     // the count-cookie). The table's destructor.
     void RemoveAll(); // 0x184a40
-    // Insert `node` into the table (0x184a70): ask the entry for its bucket (the
-    // slot-0 virtual hash), stamp the owning table + bucket into the entry, then
-    // splice entry+4 into the bucket chain.
-    void Insert(CHashInsertNode* node); // 0x184a70
+    // Insert `node` into the table (0x184a70): ask the element for its bucket (the
+    // slot-0 virtual hash), stamp the owning table + bucket into it, then splice
+    // its m_link (element+4) into the bucket chain.
+    void Insert(CHashElement* node); // 0x184a70
+
+    // Recover the containing element from a chain link (container_of, -4). Genuine
+    // intrusive-list back-cast: the chain stores &element->m_link.
+    static CHashElement* FromLink(CHashLink* link) {
+        return link ? (CHashElement*)((char*)link - 4) : 0;
+    }
 
     u32 m_count;          // +0x00
     CHashSlot* m_buckets; // +0x04
 };
+SIZE(CHashBase, 0x8);
 
 // ---------------------------------------------------------------------------
 // CHash - the leaf-symbol instantiation ("_a").
@@ -128,6 +141,7 @@ public:
     u32 HashInt(u32 key);                 // 0x13c350
     void* FindInt(u32 key);               // 0x13c360
 };
+SIZE(CHash, 0x8);
 
 // ---------------------------------------------------------------------------
 // CHashB - the child-scope instantiation ("_b"): identical HashStr/Walk source,
@@ -138,5 +152,6 @@ public:
     u32 HashStr(const char* s);           // 0x13c3c0
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };
+SIZE(CHashB, 0x8);
 
 #endif // SRC_BUTE_HASH_H

@@ -4,12 +4,23 @@
 // owner+0x80). The record carries a flat block of replayable state (offsets
 // 0x10..0x178) read/written through a stream object whose vtable exposes
 // Write@slot 0x2c and Read@slot 0x30 (CArchive/IStream-like). Non-RTTI vtable
-// (0x5efb80) - the class has plain virtuals on CObject but no DECLARE_DYNAMIC,
+// (0x1efb80) - the class has plain virtuals on CObject but no DECLARE_DYNAMIC,
 // so the name is a reconstruction placeholder; only offsets + code bytes are
 // load-bearing.
+//
+// IDENTITY: this 0x17c-byte class IS the "AnimWorkerObj" worker modeled in
+// src/DDrawMgr/DDrawWorkerCache.cpp - same size, same most-derived vtable 0x1efb80
+// (cl-emitted there as ??_7AnimWorkerObj via VTBL(), so the same RVA can't carry
+// two names). The two coexist as a REQUIRED dual-view (vtable-realization-ctor-
+// boundary): the CDDrawWorkerCache factory needs the real-polymorphic form so cl
+// emits the ??_7 + implicit ctor vptr stamp, while this @early-stop /GX dtor still
+// needs the manual-vptr non-polymorphic form (its frame needs the real base
+// subobject). Unify into one shared class in the final vtable-reunification sweep,
+// once ~CLogicRecord can be a real polymorphic dtor.
 #ifndef GRUNTZ_LOGICRECORD_H
 #define GRUNTZ_LOGICRECORD_H
 
+#include <rva.h>
 #include <Ints.h>
 
 // The serializer the record reads/writes itself through. Its vtable exposes the
@@ -17,6 +28,7 @@
 // 12); modeled as a polymorphic class with the leading slots as dummy virtuals
 // so `ar->Read(...)` lowers to `mov edx,[ar]; call [edx+0x30]` (__thiscall, no
 // cleanup). External (engine) - no bodies emitted here.
+SIZE_UNKNOWN(LogicArchive);
 class LogicArchive {
 public:
     virtual void Slot00();
@@ -36,12 +48,14 @@ public:
 
 // The polymorphic sub-record held at m_18: virtual slot 0 is the (scalar-
 // deleting) destructor, slot 1 a per-frame step. External.
+SIZE_UNKNOWN(LogicSub);
 class LogicSub {
 public:
     virtual void Destroy(u32 flags);                     // slot 0x00
     virtual i32 Step(i32 a, i32 mode, void* c, void* d); // slot 0x04
 };
 
+SIZE_UNKNOWN(CLogicRecord);
 class CLogicRecord {
 public:
     // Non-polymorphic model: the retail vtable (0x5efb80) lives in other TUs, so
@@ -73,6 +87,7 @@ public:
 };
 
 // m_170 points at an object exposing the cached value at +0x188.
+SIZE_UNKNOWN(LogicTarget);
 struct LogicTarget {
     char m_pad[0x188];
     i32 m_188;
@@ -81,9 +96,11 @@ struct LogicTarget {
 // The resolver sub-object embedded at m_0c->m_08 + 0x48; its method
 // (engine helper 0x1b8760, __thiscall) resolves a slot into an out-pointer and
 // returns whether it succeeded.
+SIZE_UNKNOWN(LogicResolver);
 struct LogicResolver {
     i32 Resolve(void* slot, void** out); // 0x1b8760
 };
+SIZE_UNKNOWN(LogicContext);
 struct LogicContext {
     void* m_00;
     void* m_04;

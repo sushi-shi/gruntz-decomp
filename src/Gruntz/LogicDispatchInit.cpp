@@ -31,19 +31,19 @@ extern LogicFnTable g_logicDispatch_6447f8; // 0x6447f8  (proximity: CParticlez 
 DATA(0x00246060)
 extern LogicFnTable g_logicDispatch_646060; // 0x646060  (proximity: CEyeCandy | CFrontCandyAni)
 
-// 0x000406d0 - construct the dispatch table at 0x6445e8 over [0x7d0, 0x7da].
+// construct the dispatch table at 0x6445e8 over [0x7d0, 0x7da].
 RVA(0x000406d0, 0x15)
 void InitLogicDispatch_6445e8() {
     g_logicDispatch_6445e8.Construct(0x7d0, 0x7da);
 }
 
-// 0x000472d0 - construct the dispatch table at 0x6447f8 over [0x7d0, 0x7da].
+// construct the dispatch table at 0x6447f8 over [0x7d0, 0x7da].
 RVA(0x000472d0, 0x15)
 void InitLogicDispatch_6447f8() {
     g_logicDispatch_6447f8.Construct(0x7d0, 0x7da);
 }
 
-// 0x000acb30 - construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
+// construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)
 void InitLogicDispatch_646060() {
     g_logicDispatch_646060.Construct(0x7d0, 0x7da);

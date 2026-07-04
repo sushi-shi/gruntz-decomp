@@ -1,23 +1,20 @@
-// SymTab.cpp - CSymTab, the Remus/ButeMgr hierarchical symbol table (the tree of
+// SymTab.cpp - CSymTab, the ButeMgr hierarchical symbol table (the tree of
 // named scopes the .bute parser builds). Recovered from the this/ecx trace group
 // "ClassUnknown_12" (4 methods at 0x139ee0/0x13a230/0x13bae0/0x13be40), all on a
 // single object shape with two embedded engine hash tables at +0x38/+0x40 and the
 // owning parser at +0x18. See include/Bute/SymTab.h for the full layout.
 #include <rva.h>
 
-#include <Bute/SymTab.h>
+#include <Bute/SymParser.h>     // full CSymParser (m_owner layout) + CSymTab via SymParser.h
+#include <Gruntz/ParseSource.h> // canonical CParseSource (EndParse @0x1399d0)
 
 // The child-scope hash-node vtable (the key-hash interface a scope exposes to its
 // parent's m_subTabs). Manual-stamp model -> reloc-masked DATA() extern.
-DATA(0x005ef748)
+DATA(0x001ef748)
 void* CSymTab_node_vftable;
 
-// A leaf record's parse stream: EndParse releases its inline buffer (0x1399d0,
-// CRemusReadStream); reloc-masked __thiscall, modeled with no body here.
-class CRemusReadStream {
-public:
-    i32 EndParse(); // 0x1399d0
-};
+// A leaf record's parse stream is the canonical CParseSource (included above);
+// EndParse (0x1399d0) releases its inline buffer, reloc-masked __thiscall.
 
 // The tokenizer's "is this character part of a token" predicate, inlined at each
 // scan site. When the parser supplies a delimiter set, a token char is one NOT in
@@ -25,7 +22,7 @@ public:
 // punctuation/space .. '.', digits, upper, lower. The `== 0` coercion emits the
 // neg/sbb/inc int->bool normalize that retail uses (docs/patterns/
 // int-to-bool-normalize.md).
-static i32 IsTokenChar(const char* delims, char ch) {
+static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {
         return strchr(delims, ch) == 0;
     }
@@ -63,19 +60,19 @@ struct CSymLeafBuilder {
         void* f6,
         void* arr,
         void* stream
-    );                  // 0x139710
-    char* m_name;       // +0x00  strdup(name) (or null)
-    void* m_record;     // +0x04  rec
-    void* m_08;         // +0x08  f2
-    i32 m_0c;           // +0x0c  f3   (read by ApplyRange)
-    void* m_ownerScope; // +0x10  owning scope
-    i32 m_14;           // +0x14  f1   (read by ApplyRange)
-    i32 m_18;           // +0x18  = 0
-    char m_pad1c[0x30 - 0x1c];
-    void* m_self;         // +0x30  self
+    );                    // 0x139710
+    char* m_name;         // +0x00  strdup(name) (or null)
+    void* m_record;       // +0x04  rec
+    void* m_08;           // +0x08  f2
+    i32 m_0c;             // +0x0c  f3   (read by ApplyRange)
+    void* m_ownerScope;   // +0x10  owning scope
+    i32 m_14;             // +0x14  f1   (read by ApplyRange)
+    i32 m_18;             // +0x18  = 0
+    CHashElement m_node;  // +0x1c  hash-node prefix (m_node.m_record @0x30 = this)
     void* m_sourceStream; // +0x34  source stream
     i32 m_38;             // +0x38  = 0
 };
+SIZE(CSymLeafBuilder, 0x3c); // leaf-record parse slot (fields through m_38 @0x38)
 
 // CSymLeafBuilder::Build (0x139710): populate a freshly-popped leaf-record slot from a
 // parse-stream record. The name is duplicated through the throwing ::operator new
@@ -117,7 +114,7 @@ void CSymLeafBuilder::Build(
     m_08 = f2;
     m_38 = 0;
     m_18 = 0;
-    m_self = this;
+    m_node.m_record = this;
 }
 
 // ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
@@ -156,7 +153,7 @@ CSymTab::CSymTab(
     m_0c = 0;
     m_buf48 = 0;
     m_1c = p1;
-    m_34 = (void*)this;
+    m_34 = this;
 }
 
 // ~CSymTab (0x139ee0): tear down the scope tree. Walk the leaf-symbol table
@@ -166,11 +163,15 @@ CSymTab::CSymTab(
 // reverse declaration order (m_symbols then m_subTabs) at descending trylevels --
 // the /GX member-teardown frame (docs/patterns/eh-dtor-model-members-as-
 // destructible.md).
+// @early-stop
+// this-register + /GX-frame wall (88.7%): logic + both member-teardown walks are
+// byte-faithful; retail pins this->ebp where cl uses ebx, and the /GX scopetable push
+// immediate (0xb vs 0x0) is reloc-masked. A callee-saved coin-flip. Final sweep.
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
-    CHashEntry* cur;
+    CHashTableEntry* cur;
     for (cur = m_symbols.First(); cur != 0;) {
-        CHashEntry* next = m_symbols.Next(cur);
+        CHashTableEntry* next = m_symbols.Next(cur);
         m_symbols.Remove(cur);
         CSymRec* rec = (CSymRec*)cur->m_payload;
         if (rec) {
@@ -180,7 +181,7 @@ CSymTab::~CSymTab() {
         cur = next;
     }
     for (cur = m_subTabs.First(); cur != 0;) {
-        CHashEntry* next = m_subTabs.Next(cur);
+        CHashTableEntry* next = m_subTabs.Next(cur);
         m_subTabs.Remove(cur);
         CSymTab* sub = (CSymTab*)cur->m_payload;
         if (sub) {
@@ -212,14 +213,13 @@ CSymTab::~CSymTab() {
 // this scope's leaf table (m_symbols, +0x40); if present, walk its embedded
 // sub-table (record+0x24) for `key`, forwarding m_owner->m_68 == 0 as the flag.
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
-// (Trace-discovered; was the ClassUnknown_3 stub.)
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
-    void* rec = m_symbols.Find((const char*)arg);
+    CSymRec* rec = (CSymRec*)m_symbols.Find((const char*)arg);
     if (!rec) {
         return (i32)rec;
     }
-    return (i32)((CHashTable*)((char*)rec + 0x24))->Walk(key, m_owner->m_68 == 0);
+    return (i32)rec->m_valTable.Walk(key, m_owner->m_68 == 0);
 }
 
 // Find (0x13a040): split `path` into its components, derive the leaf record's value
@@ -258,7 +258,7 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
         while (rec) {
             void* sub = NextSym2(rec);
             while (sub) {
-                ((CRemusReadStream*)sub)->EndParse();
+                ((CParseSource*)sub)->EndParse();
                 sub = NextSym3(sub);
             }
             rec = NextSym(rec);
@@ -380,7 +380,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     if (!child) {
         return 0;
     }
-    m_subTabs.Insert((char*)child + 0x20);
+    m_subTabs.Insert(&child->m_node20);
     if (m_owner->m_longestScopeNameLen <= (i32)strlen(name)) {
         m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
@@ -396,30 +396,14 @@ CSymTab* CSymTab::CreateSub(const char* name) {
 // 0x13ba70 is reached here as a __thiscall on the owning parser (Method4b0 reloads
 // ecx=m_owner before the call), unlike the free-call ctor sites; same physical seed
 // builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
-struct CSymSeedOwner {
-    i32 MakeSeed(); // 0x13ba70 (__thiscall on m_owner)
-};
-
 RVA(0x0013a4b0, 0x75)
 i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
     CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
     if (slot == 0) {
         return (i32)slot;
     }
-    slot->Build(
-        this,
-        (const char*)a1,
-        a0,
-        a2,
-        0,
-        0,
-        0,
-        (void*)((CSymSeedOwner*)m_owner)->MakeSeed(),
-        0,
-        0,
-        a3
-    );
-    ((CHashTable*)((char*)a2 + 0x24))->Insert((char*)slot + 0x1c);
+    slot->Build(this, (const char*)a1, a0, a2, 0, 0, 0, (void*)m_owner->MakeSeed(), 0, 0, a3);
+    ((CSymRec*)a2)->m_valTable.Insert(&slot->m_node);
     u32 len = strlen((char*)a1);
     if ((u32)m_owner->m_longestLeafNameLen <= len) {
         m_owner->m_longestLeafNameLen = len + 1;
@@ -469,14 +453,13 @@ struct CSymRangeStream {
     virtual void s1();
     virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
 };
+SIZE(CSymRangeStream, 0x4); // interface view (vptr only)
 
 // CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
 
-// The owner's parse-slot pool (CSymParser::PopParseSlot @0x13c0c0). Reloc-masked.
-struct CSymSlotPool {
-    void* PopParseSlot(); // 0x13c0c0
-};
+// PopParseSlot is CSymParser::PopParseSlot (0x13c0c0); ApplyRange/Method4b0 call it
+// directly on m_owner (SymParser.h is in scope), so no receiver-view struct is needed.
 
 // @early-stop
 // >512 B (0x2f7) /GX leaf-builder loop: the body reproduces both record arms (sub-scope
@@ -489,7 +472,7 @@ struct CSymSlotPool {
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
     m_10 = 0;
-    m_0c = (void*)-1;
+    m_0c = -1;
     i32 maxVal = 0;
     char* buf = (char*)::operator new((u32)a2);
     if (!buf) {
@@ -525,7 +508,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                     o->m_subTabBucketCount,
                     o->m_symbolBucketCount
                 );
-                m_subTabs.Insert((char*)node + 0x20);
+                m_subTabs.Insert(&node->m_node20);
             } else {
                 ((CSymTab*)existing)->m_04 = fA;
                 ((CSymTab*)existing)->m_08 = fB;
@@ -545,9 +528,9 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             p += 4;
             char* name1 = p;
             p += strlen(name1) + 1;
-            void* rec = (void*)FindOrAddSym((i32)f5);
+            CSymRec* rec = FindOrAddSym((i32)f5);
             i32 skip = 0;
-            void* found = ((CHashTable*)((char*)rec + 0x24))->Walk(name1, 1);
+            void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
                 if (a3 != 0) {
                     Method530(rec, found);
@@ -573,12 +556,12 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                 arr = 0;
             }
             if (!skip) {
-                CSymLeafBuilder* slot = (CSymLeafBuilder*)((CSymSlotPool*)m_owner)->PopParseSlot();
+                CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
                 slot->Build(this, name1, f4, rec, str2, f3, f1, f2, f6, arr, (void*)a0);
-                ((CHashTable*)((char*)rec + 0x24))->Insert((char*)slot + 0x1c);
-                m_10 = (void*)((i32)m_10 + slot->m_0c);
-                if ((u32)slot->m_14 < (u32)(i32)m_0c) {
-                    m_0c = (void*)slot->m_14;
+                rec->m_valTable.Insert(&slot->m_node);
+                m_10 = m_10 + slot->m_0c;
+                if ((u32)slot->m_14 < (u32)m_0c) {
+                    m_0c = slot->m_14;
                 }
                 if ((u32)slot->m_14 > (u32)maxVal) {
                     maxVal = slot->m_14;
@@ -602,8 +585,8 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 // uses only three and recomputes it, swapping key/&table register roles throughout.
 // Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
-void* CSymTab::FindOrAddSym(i32 key) {
-    void* found = m_symbols.Find((const char*)key);
+CSymRec* CSymTab::FindOrAddSym(i32 key) {
+    CSymRec* found = (CSymRec*)m_symbols.Find((const char*)key);
     if (found) {
         return found;
     }
@@ -614,15 +597,17 @@ void* CSymTab::FindOrAddSym(i32 key) {
         rec = new CSymRec(key, this, m_owner->m_70);
     }
     if (rec) {
-        m_symbols.Insert((char*)rec + 4);
+        m_symbols.Insert(&rec->m_symNode);
     }
     return rec;
 }
 
 // @early-stop
-// recursive path tokenizer; the inlined IsTokenChar (3x) + the working-pointer arg
-// reuse + the FindSub recursion schedule against a documented regalloc/scheduling
-// wall. Logic complete; byte-match parked for the final sweep.
+// ~95% (was 33% until IsTokenChar was marked __inline - /Ob1 wouldn't inline the plain
+// static, so retail's 3x-inlined tokenizer showed as out-of-line calls). Sole residual:
+// the token-copy loop's induction-variable representation - retail strength-reduces
+// buf[n] to a running [edi+esi] base-offset pointer (edi = &buf - p) where cl keeps the
+// indexed buf[n], plus the this->ebp/ebx regalloc coin-flip. Logic byte-faithful.
 RVA(0x0013bae0, 0x1b9)
 void* CSymTab::ResolvePath(const char* path) {
     char buf[0x30];
@@ -659,9 +644,11 @@ void* CSymTab::ResolvePath(const char* path) {
 }
 
 // @early-stop
-// last-delimiter split + scope resolve; inlined IsTokenChar (2x) + the rep-movs token
-// copy + the Find tail. The read counterpart of ResolveQualified (below) -- same
-// regalloc/scheduling wall (inlined tokenizer + working-pointer reuse). Logic complete.
+// ~95% (was 51%): the two fixes were IsTokenChar __inline (2x) and the `qual` copy as
+// the strcpy intrinsic strcpy(qual,tail) - retail inlines it (repnz-scas strlen +
+// rep-movsd/movsb of strlen+1) where strncpy(...,strlen+1) stayed an out-of-line call.
+// The `key` copy is a genuine strncpy(0x120340) call (kept). Residual is the tokenizer
+// induction-variable + this-register regalloc coin-flip. Read peer of ResolveQualified.
 RVA(0x0013bca0, 0x19c)
 void* CSymTab::FindQualified(const char* name) {
     char qual[0x100];
@@ -685,7 +672,7 @@ void* CSymTab::FindQualified(const char* name) {
         return 0;
     }
     const char* tail = p + i + 1;
-    strncpy(qual, tail, strlen(tail) + 1);
+    strcpy(qual, tail);
     if (i <= 1) {
         return Find(qual);
     }
@@ -699,8 +686,10 @@ void* CSymTab::FindQualified(const char* name) {
 }
 
 // @early-stop
-// last-delimiter split + scope resolve; inlined IsTokenChar + the rep-movs token
-// copy + the SymTab_InsertResolved tail. Logic complete; byte-match parked.
+// ~92% (was 52%): same two fixes as FindQualified - IsTokenChar __inline + the `qual`
+// copy as strcpy(qual,tail) (intrinsic). Residual is the this-register regalloc coin-flip
+// (retail keeps `this` in esi; cl uses edx + extra stack reloads) + the tokenizer
+// induction variable. The write peer (Insert tail) of FindQualified. Logic byte-faithful.
 RVA(0x0013be40, 0x1ac)
 i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     char qual[0x100];
@@ -724,7 +713,7 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
         return 0;
     }
     const char* tail = p + i + 1;
-    strncpy(qual, tail, strlen(tail) + 1);
+    strcpy(qual, tail);
     if (i <= 0) {
         return Insert(qual, arg);
     }
@@ -736,3 +725,28 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     }
     return scope->Insert(qual, arg);
 }
+
+// ---------------------------------------------------------------------------
+// CSymList::Construct (0x184960) - the sym-subsystem's array-backed list container
+// ctor, re-homed from src/Stub/MallocConstructors. op-news (count<<4)+4 bytes (an
+// int header + count 16-byte elements), stores count at +0x00 and the data ptr at
+// +0x04, element-constructs via 0x11f5a0. xref (gruntz.analysis.xref): built by the
+// CSymTab entry ctors (0x139bf0/0x139c80), CSymTab::CSymTab (0x139de0),
+// CSymParser::CSymParser (0x13ab00) and CSymParseConfig (0x13aa10) - i.e. the
+// list members throughout the symbol table/parser. Modeled as a plain shell;
+// reconstruction deferred.
+struct CSymList {
+    CSymList* Construct(int count); // 0x184960
+};
+SIZE(CSymList, 0x8); // array-backed list container { count, data }
+// @confidence: high
+// @source: xref
+// @stub
+RVA(0x00184960, 0x70)
+CSymList* CSymList::Construct(int count) {
+    return this;
+}
+
+// All SIZE()s are annotated atop their class definitions (this TU's .cpp-local
+// structs above, SymTab.h for CHashTable/CHashTableEntry/CSymRec/CSymTab,
+// Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.

@@ -70,6 +70,13 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIPT_DIR)
 INC = str(REPO / "include")   # repo-local headers (mirror src/) live here; on the clang -I path
+# Vendored third-party SDK headers live one dir deep under vendor/<sdk>/ (e.g.
+# vendor/miles/Mss32.h, vendor/smacker/smack.h) so `#include <Mss32.h>` resolves
+# like the original toolchain's SDK include dirs.
+VENDOR_INCS = sorted(str(d) for d in (REPO / "vendor").iterdir() if d.is_dir()) \
+    if (REPO / "vendor").is_dir() else []
+INC_CL = [f"/I{p}" for p in (INC, *VENDOR_INCS)]   # clang-cl driver (/I)
+INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 
 # The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
 # TRUSTED: the base obj is all unused externs (no symbols), so the authority
@@ -85,6 +92,19 @@ MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern
 # annotations). The address is bound to the AST VarDecl below it.
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
+# VTBL(Class, 0x...) macro (src/rva.h) - the single-source-of-truth vtable-catalog
+# annotation placed atop a class. It expands (under clang) to a `gruntz_clsmeta_*`
+# annotate carrier that DOES reach the IR, but it is read from source text
+# TREE-WIDE (src/ + include/) in the merge step rather than per-TU IR: the scan is
+# include-independent, so a VTBL in a header not pulled into any built TU is still
+# catalogued (and its invocation syntax is placement-independent, so atop-the-class
+# and legacy .cpp-EOF sites parse identically). It is lowered to a `??_7<Class>@@6B@`
+# DATA row. The name is TARGET-side (the EXE has no debug symbols) and reloc-masked,
+# so it is matching-neutral tracking, not a match lever (hence NO authority check -
+# it names the datum in the catalog regardless of whether any base obj references
+# it yet). Only simple global-namespace class names lower cleanly here;
+# templated/namespaced vtables stay in vtable_names.csv.
+VTBL_MACRO_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 # `// @rva-symbol: <mangled> <rva> [<size>]` - a self-contained function label for
 # a compiler-generated thunk that has NO source definition to hang an RVA()
 # attribute on (a `??_G` scalar-deleting destructor). The mangled name is given
@@ -215,7 +235,7 @@ def emit_ir(clang, tu, flags, cl_flags=None):
         with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
             ll = tf.name
         try:
-            cmd = [clang, "--driver-mode=cl", "/c", *cl_flags, f"/I{INC}",
+            cmd = [clang, "--driver-mode=cl", "/c", *cl_flags, *INC_CL,
                    "-Xclang", "-emit-llvm", "-o", ll, tu]
             res = subprocess.run(cmd, capture_output=True, text=True)
             ir = Path(ll).read_text() if os.path.getsize(ll) else ""
@@ -228,7 +248,7 @@ def emit_ir(clang, tu, flags, cl_flags=None):
             log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
             return None
         return ir
-    cmd = [clang, *MS_FLAGS, *flags, f"-I{INC}", "-S", "-emit-llvm", "-o", "-", tu]
+    cmd = [clang, *MS_FLAGS, *flags, *INC_GCC, "-S", "-emit-llvm", "-o", "-", tu]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if not res.stdout:
         log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
@@ -292,8 +312,14 @@ def collect_vars(ast, main_file):
     def visit(node):
         if isinstance(node, dict):
             update_file(node)
+            # `gruntz_clsmeta_*` are the SIZE/SIZE_UNKNOWN/VTBL class-metadata
+            # carriers (src/rva.h): file-scope `used` statics that DO carry a
+            # mangledName. Skip them so a carrier written between a DATA(...) and
+            # its extern can never steal the DATA binding (data_labels picks the
+            # first VarDecl below the macro).
             if (state["in_main"] and node.get("kind") == "VarDecl"
-                    and "mangledName" in node and not node.get("isImplicit")):
+                    and "mangledName" in node and not node.get("isImplicit")
+                    and not (node.get("name") or "").startswith("gruntz_clsmeta_")):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
@@ -307,10 +333,10 @@ def collect_vars(ast, main_file):
 
 def clang_ast(clang, tu, flags, cl_flags=None):
     if cl_flags is not None:
-        cmd = [clang, "--driver-mode=cl", *cl_flags, f"/I{INC}", tu, "-fsyntax-only",
+        cmd = [clang, "--driver-mode=cl", *cl_flags, *INC_CL, tu, "-fsyntax-only",
                "-Xclang", "-ast-dump=json"]
     else:
-        cmd = [clang, *MS_FLAGS, *flags, f"-I{INC}", tu, "-fsyntax-only",
+        cmd = [clang, *MS_FLAGS, *flags, *INC_GCC, tu, "-fsyntax-only",
                "-Xclang", "-ast-dump=json"]
     res = subprocess.run(cmd, capture_output=True, text=True)
     try:
@@ -752,13 +778,41 @@ def merge_json_fragments(frags, out, label, key="rva"):
     return merged
 
 
+def vtbl_labels(repo):
+    """[(rva, "??_7<Class>@@6B@")] for every VTBL(Class, 0x..) macro under src/ +
+    include/ (comments blanked). The vtable-catalog single source of truth: a
+    class's VTBL(...) annotation lives in the class's header, so it is scanned
+    tree-wide here (in the once-per-build merge step) rather than per-TU. The
+    emitted name is TARGET-side and reloc-masked -> matching-neutral, so it is
+    NOT authority-checked. De-duplicated on (rva, name); a genuinely conflicting
+    name at one rva is left for write_symbol_names to WARN + keep-last."""
+    repo = Path(repo)
+    seen, out = set(), []
+    for root in (repo / "src", repo / "include"):
+        if not root.exists():
+            continue
+        for path in sorted(list(root.rglob("*.h")) + list(root.rglob("*.cpp"))):
+            try:
+                text = blank_comments(path.read_text())
+            except OSError:
+                continue
+            for m in VTBL_MACRO_RE.finditer(text):
+                rva = int(m.group(2), 16)
+                name = f"??_7{m.group(1)}@@6B@"
+                if (rva, name) not in seen:
+                    seen.add((rva, name))
+                    out.append((rva, name))
+    return out
+
+
 def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                     globals_frags=None, globals_out=None):
     """Combine per-TU fragment CSVs into symbol_names.csv, re-applying the cross-TU
     duplicate-RVA guard + DATA dedup. Each fragment is a symbol_names.csv slice
     (rva,name,unit,size,kind) emitted by one --tu run. The per-TU functions.json /
     globals.json fragments are merged the same way (last per rva wins) so apply.py
-    sees EVERY unit's signatures/global types, not just the last TU built."""
+    sees EVERY unit's signatures/global types, not just the last TU built. VTBL()
+    vtable-catalog rows are folded in here too (tree-wide source scan)."""
     import csv as _csv
     rows, addr_sites = [], {}
     for frag in frags:
@@ -771,6 +825,10 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
                 rows.append((rva, r["name"], r["unit"], size, kind))
                 if kind != "data":
                     addr_sites.setdefault(rva, []).append((r["unit"], r["name"]))
+    # VTBL(Class, 0x..) catalog rows (kind=data, cosmetic "vtables" unit - synth_pdb
+    # ignores the unit for data symbols, keying the datum rename by rva->name).
+    for rva, name in vtbl_labels(REPO):
+        rows.append((rva, name, "vtables", None, "data"))
     rc = write_symbol_names(rows, addr_sites, out)
     if rc != 0:
         return rc

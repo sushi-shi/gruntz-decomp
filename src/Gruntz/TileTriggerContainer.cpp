@@ -21,14 +21,16 @@
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
+struct TtcElemVtbl; // the command element's vtable (contents owned elsewhere)
 class TtcElem {
 public:
     i32 Classify(void* arg); // 0x112970
-    void* m_vptr;            // +0x00
+    TtcElemVtbl* m_vptr;     // +0x00
     char _pad04[0x18 - 0x04];
     i32 m_18;
     i32 m_1c; // +0x1c  cleared before delete
 };
+SIZE_UNKNOWN(TtcElem);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::DtorBase
@@ -286,12 +288,12 @@ i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
     TtcKeyedElem* elem = FindByKey(key);
     if (elem != 0) {
         if (verb == 5) {
-            elem->m_18 = 1;
-            elem->m_1c = 1;
-            elem->m_20 = 1;
-            elem->m_24 = 1;
+            elem->m_flags[0] = 1;
+            elem->m_flags[1] = 1;
+            elem->m_flags[2] = 1;
+            elem->m_flags[3] = 1;
         } else {
-            (&elem->m_18)[verb] = 1;
+            elem->m_flags[verb] = 1;
         }
         elem->Notify(elem->m_vptr);
         return 1;
@@ -347,7 +349,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     m->m_1c = a6;
     m->m_24 = a8;
     m->m_00 = a1;
-    m->m_14 = (i32)this;
+    m->m_14 = this;
     m->m_10 = 1;
     m->m_20 = a7;
     m->Notify((void*)a1);
@@ -388,8 +390,8 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     e->m_0c = a2;
     e->m_04 = 0x16;
     e->m_08 = a1;
-    e->m_10 = (i32)block9;
-    e->m_20 = (i32)this;
+    e->m_10 = block9;
+    e->m_20 = this;
     e->m_1c = 1;
     e->m_38 = 0;
     e->m_24 = (i32)g_645588;
@@ -454,7 +456,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     m->m_0c = a4;
     m->m_20 = b;
     m->m_00 = a1;
-    m->m_14 = (i32)this;
+    m->m_14 = this;
     m->m_10 = 1;
     m->m_18 = d;
     m->m_1c = c;
@@ -484,7 +486,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
 // list/helper dispatch + count read/write identical.
 // See docs/patterns/rezalloc-placement-new-no-eh-frame.md
 RVA(0x00117280, 0x2ec)
-i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
+i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
@@ -492,34 +494,34 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         // SAVE
         TtcNode* node;
         i32 cnt = m_base.m_0c;
-        s->Transfer(&cnt, 4);
+        s->Write(&cnt, 4);
         for (node = m_base.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyA(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+            if (SerializeApplyA(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
         cnt = m_list1.m_0c;
-        s->Transfer(&cnt, 4);
+        s->Write(&cnt, 4);
         for (node = m_list1.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
         cnt = m_list2.m_0c;
-        s->Transfer(&cnt, 4);
+        s->Write(&cnt, 4);
         for (node = m_list2.m_pNodeHead; node != 0; node = node->m_next) {
-            if (SerializeApplyB(s, 4, a3, a4, (TtcSwitchObj*)node->m_data) == 0) {
+            if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
         cnt = m_list3.m_0c;
-        s->Transfer(&cnt, 4);
+        s->Write(&cnt, 4);
         for (node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
             if (((TtcMark*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
                 return 0;
             }
         }
-        if (Method117e20(s) == 0) {
+        if (TransferFlag74(s) == 0) {
             return 0;
         }
         return 1;
@@ -532,7 +534,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
     i32 n;
     i32 i;
     void* e;
-    s->ReadCount(&n, 4);
+    s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, 7, a3, a4);
         if (e == 0) {
@@ -540,7 +542,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         }
         m_base.AddTail(e);
     }
-    s->ReadCount(&n, 4);
+    s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, 7, a3, a4);
         if (e == 0) {
@@ -548,7 +550,7 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         }
         m_list1.AddTail(e);
     }
-    s->ReadCount(&n, 4);
+    s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         e = LoadElement(s, 7, a3, a4);
         if (e == 0) {
@@ -556,17 +558,17 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
         }
         m_list2.AddTail(e);
     }
-    s->ReadCount(&n, 4);
+    s->Read(&n, 4);
     for (i = 0; i < n; i++) {
         TtcMark* raw = (TtcMark*)RezAlloc(0x28);
         TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
         if (m->Serialize(s, 7, a3, a4) == 0) {
             return 0;
         }
-        m->m_14 = (i32)this;
+        m->m_14 = this;
         m_list3.AddTail(m);
     }
-    if (Method117e70(s) == 0) {
+    if (LoadFlag74(s) == 0) {
         return 0;
     }
     return 1;
@@ -584,12 +586,12 @@ i32 CTileTriggerContainer::Serialize(TtcStream* s, i32 op, i32 a3, i32 a4) {
 // 8-tag switch to a jmp[tbl+(tag-1)*4] table, the recompile to a range-check tree
 // (the two identical case bodies collapse).  See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117630, 0x82)
-i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o) {
+i32 __stdcall SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o) {
     if (o == 0) {
         return 0;
     }
     i32 tag = o->m_04;
-    s->Transfer(&tag, 4);
+    s->Write(&tag, 4);
     switch (tag) {
         case 1:
         case 2:
@@ -598,9 +600,9 @@ i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj
         case 5:
         case 6:
         case 7:
-            return o->ApplyA(s, a2, a3, a4) != 0;
+            return o->Reg277f(s, a2, a3, a4) != 0;
         case 8:
-            return o->ApplyA(s, a2, a3, a4) != 0;
+            return o->Reg277f(s, a2, a3, a4) != 0;
         default:
             return 0;
     }
@@ -617,22 +619,22 @@ i32 __stdcall SerializeApplyA(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj
 // 6-tag switch to a jmp[tbl+(tag-0x15)*4] table, the recompile to a cmp tree.
 // See docs/patterns/switch-cmpje-tree-vs-jumptable.md
 RVA(0x00117710, 0xa6)
-i32 __stdcall SerializeApplyB(TtcStream* s, i32 a2, i32 a3, i32 a4, TtcSwitchObj* o) {
+i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o) {
     if (o == 0) {
         return 0;
     }
     i32 tag = o->m_04;
-    s->Transfer(&tag, 4);
+    s->Write(&tag, 4);
     switch (tag) {
         case 0x16:
-            return o->ApplyB(s, a2, a3, a4) != 0;
+            return o->Reg1d39(s, a2, a3, a4) != 0;
         case 0x15:
         case 0x17:
         case 0x18:
         case 0x19:
-            return o->ApplyC(s, a2, a3, a4) != 0;
+            return o->Reg1abe(s, a2, a3, a4) != 0;
         case 0x1a:
-            return o->ApplyC(s, a2, a3, a4) != 0;
+            return o->Reg1abe(s, a2, a3, a4) != 0;
         default:
             return 0;
     }

@@ -18,30 +18,59 @@ extern "C" void* SdOperatorNew(unsigned int); // 0x1b9b46
 // The fallback the default case hands the active handler to (__cdecl, 1 arg).
 extern "C" void SdFallback(void* handler); // 0x16e4f0
 
-// The active/created handler: a polymorphic object whose dispatched slots live at
-// vtable byte offsets 0x18/0x28/0x2c/0x30/0x34/0x38/0x3c.  Declared-only virtuals
-// (no ??_7 emitted here; the object is constructed elsewhere / stamped by its own
-// ctor) reach those slots; v18 is the post-construction init.
+// The active/created handler: a FOREIGN 0x54-byte engine object. Its ??_7 and the
+// dispatched slot bodies (0x18 init, 0x28/0x2c/0x30/0x34/0x38/0x3c) are
+// unreconstructed engine code, so the honest model is a manual vptr at +0 into a
+// vtable struct naming ONLY the used slots (the gaps are documented `char` pad),
+// NOT a fabricated run of virtuals. The fresh handler is operator-new'd + stamped
+// by its own external ctor (0x404d). Class COMPLETE before the T::* typedef so the
+// PMF stays 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
+struct CStateHandlerVtbl;
 struct CStateHandler {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18(); // +0x18 init
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28(); // +0x28
-    virtual void v2c(); // +0x2c
-    virtual void v30(); // +0x30
-    virtual void v34(); // +0x34
-    virtual void v38(); // +0x38
-    virtual void v3c(); // +0x3c
-    // The fresh-handler ctor (ILT thunk 0x404d): returns this in eax.
-    CStateHandler* Ctor(void* ctx); // 0x404d
+    CStateHandlerVtbl* vptr; // +0x00
+    char _pad[0x54 - 4];
+    CStateHandler* Ctor(void* ctx); // 0x404d ctor: returns this in eax
+    void Slot18();                  // +0x18 init
+    void Slot28();                  // +0x28
+    void Slot2c();                  // +0x2c
+    void Slot30();                  // +0x30
+    void Slot34();                  // +0x34
+    void Slot38();                  // +0x38
+    void Slot3c();                  // +0x3c
 };
+typedef void (CStateHandler::*StateFn)();
+struct CStateHandlerVtbl {
+    char _00[0x18];
+    StateFn s18; // +0x18
+    char _1c[0x28 - 0x1c];
+    StateFn s28; // +0x28
+    StateFn s2c; // +0x2c
+    StateFn s30; // +0x30
+    StateFn s34; // +0x34
+    StateFn s38; // +0x38
+    StateFn s3c; // +0x3c
+};
+inline void CStateHandler::Slot18() {
+    (this->*(vptr->s18))();
+}
+inline void CStateHandler::Slot28() {
+    (this->*(vptr->s28))();
+}
+inline void CStateHandler::Slot2c() {
+    (this->*(vptr->s2c))();
+}
+inline void CStateHandler::Slot30() {
+    (this->*(vptr->s30))();
+}
+inline void CStateHandler::Slot34() {
+    (this->*(vptr->s34))();
+}
+inline void CStateHandler::Slot38() {
+    (this->*(vptr->s38))();
+}
+inline void CStateHandler::Slot3c() {
+    (this->*(vptr->s3c))();
+}
 
 struct CStateObj {
     char m_pad00[0x18];
@@ -71,27 +100,27 @@ i32 __stdcall StateDispatch(CStateCtx* ctx, i32 a1, i32 a2) {
             } else {
                 h = 0;
             }
-            h->v18();
+            h->Slot18();
             st->m_18 = h;
             break;
         }
         case 0x1d:
-            st->m_18->v2c();
+            st->m_18->Slot2c();
             break;
         case 0x1e:
-            st->m_18->v28();
+            st->m_18->Slot28();
             break;
         case 0x50:
-            st->m_18->v38();
+            st->m_18->Slot38();
             break;
         case 0x51:
-            st->m_18->v34();
+            st->m_18->Slot34();
             break;
         case 0x52:
-            st->m_18->v30();
+            st->m_18->Slot30();
             break;
         case 0x53:
-            st->m_18->v3c();
+            st->m_18->Slot3c();
             break;
         case 0x3e8:
             break;
@@ -101,3 +130,7 @@ i32 __stdcall StateDispatch(CStateCtx* ctx, i32 a1, i32 a2) {
     }
     return 1;
 }
+SIZE_UNKNOWN(CStateCtx);
+SIZE_UNKNOWN(CStateHandler);
+SIZE_UNKNOWN(CStateHandlerVtbl);
+SIZE_UNKNOWN(CStateObj);

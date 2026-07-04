@@ -15,7 +15,8 @@
 //   +0x18  m_tree       : the parsed store root (CButeTree). The getters do
 //                         `lea ecx,[this+0x18]; Find(tag)` for the tag-group,
 //                         then `Find(key)` on it for the typed value record.
-//   +0x44  m_pNode      : void* - last-created store node (set by ParseTagLine).
+//   +0x44  m_pNode      : CButeTree* - last-created store node (a CButeNode, which
+//                         is-a keyed store; ParseAttributeFile Find/Inserts through it).
 //   +0xa4  m_pText      : ptr to a value-text accumulator host; the parser
 //                         appends to its +0xc CString (CString::operator+=).
 //   +0xa8  m_curChar    : char  - the lexer's current character.
@@ -29,11 +30,11 @@
 #ifndef SRC_BUTE_BUTEMGR_H
 #define SRC_BUTE_BUTEMGR_H
 
-#include <Ints.h>
+#include <rva.h>
 
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // The CButeValue::type discriminant. Recovered from the type-tag each getter
 // compares against (GetInt==0, GetDword==1, GetDouble==2, GetFloat==3,
@@ -81,88 +82,51 @@ struct CButeValue {
     CButeValue* SetDword(i32 type, u32 val);
     CButeValue* SetFloat(i32 type, float val);
     CButeValue* SetDouble(i32 type, double val);
+    // The struct/string value setters: op-new a payload block, copy-construct the
+    // source into it, store the type-tag (+0x00) + payload ptr (+0x04). SetString
+    // boxes a CString (kButeString, /GX unwind on the throwing copy-ctor),
+    // SetRef5/SetRef8 a 16-byte struct (kButeRef5/kButeRef8), SetRef7 a 24-byte
+    // struct (kButeRef7). Re-homed from src/Stub/MallocConstructors (were
+    // BoxedStr/Boxed16a/Boxed16b/Boxed24).
+    CButeValue* SetString(i32 type, const CString& src);
+    CButeValue* SetRef5(i32 type, const struct ButeRef16* src);
+    CButeValue* SetRef7(i32 type, const struct ButeRef24* src);
+    CButeValue* SetRef8(i32 type, const struct ButeRef16* src);
 
     // CopyValue (@0x172040): copy `other`'s payload into this value's storage,
     // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns
     // this.
     CButeValue* CopyValue(CButeValue* other);
 };
+SIZE(CButeValue, 0x8); // { type @0, pValue @4 }
+
+// The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
+// it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
+struct ButeRef16 {
+    i32 w[4];
+};
+SIZE(ButeRef16, 0x10); // 16-byte kButeRef5/kButeRef8 payload
 
 // The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the
 // retail `rep movsd` (6 dwords).
 struct ButeRef24 {
     i32 w[6];
 };
+SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
 
-// The engine helper embedded at CButeMgr+0x14 (the .bute compiler/registry
-// sub-object). FuncA/FuncB are the cleanup pair ClearHelper drives (reloc-masked
-// __thiscall externs, no body). The rest is the constructor + the sub-object
-// setter (SetSub) + the virtual-base vtable-init thunks reconstructed below.
-//
-// Layout recovered from the ctor's field-init list (0x169c00):
-//   +0x00  m_vptr    : vptr (0x5f03bc, shared with the dtor's vtable restore)
-//   +0x04  m_pSub    : void* - a sub-object pointer (the dtor/Set delete-and-
-//                      replace target; its slot-0 is a scalar deleting dtor)
-//   +0x08  m_flags   : int   - flag word (Set toggles bit 0x4 from sub nullness)
-//   +0x0c  m_0c      : int   - zero-init
-//   +0x10  m_10      : int   - zero-init
-//   +0x14  m_14[8]   : padding to +0x1c
-//   +0x1c  m_ownsSub : int   - "owns sub-object" guard (Set checks it)
-//   +0x20  m_20      : int   - zero-init
-//   +0x24  m_24      : int   - zero-init
-//   +0x28  m_28      : int   - 6
-//   +0x2c  m_2c      : char  - 0x20
-//   +0x30  m_30      : int   - zero-init
-//   +0x34  m_34      : int   - -1
-//   +0x38  m_cs      : CRITICAL_SECTION (per-instance, Initialize/Delete'd)
-class CButeMgrHelper {
-public:
-    void FuncA();
-    void FuncB();
+// The statically-linked MSVC 5.0 <iostream.h> `ios` base (RTTI `.?AVios@@`, vtable
+// 0x5f03bc) that CButeMgr embeds at +0x14 is LIBRARY code (LIBCP.LIB / LIBCMT), not
+// game scope: its ctor/dtor/streambuf-setter + the virtual-base construction thunks
+// are carved out in config/library_labels.csv and are NOT reconstructed here. The
+// parser's own ios view lives in ButeMgrParse.cpp (struct ButeIos); the one game
+// consumer, CButeMgr::ClearHelper, calls the two library entry points it needs
+// through a tiny caller-side receiver defined locally in ButeMgr.cpp.
 
-    // The constructor: zero-init the fields, stamp the vptr, set the constants,
-    // init the per-instance critical section, and one-time-init the shared
-    // critical section under a ref-count guard.
-    CButeMgrHelper* Construct();
-    // Replace the sub-object at +0x4 (delete the old one through its vtable when
-    // owned), then toggle bit 0x4 of m_flags from the new pointer's nullness.
-    void SetSub(void* p);
-    // The virtual-base vtable-init thunks (compiler vbase ctor closures): each
-    // stamps a virtual-base subobject's vptr through the this-relative vbtable;
-    // the A/B pair tail into the C/D ret-only thunks.
-    void InitVbaseA();
-    void InitVbaseB();
-    void InitVbaseC();
-    void InitVbaseD();
-
-    void* m_vptr;              // +0x00
-    void* m_pSub;              // +0x04
-    i32 m_flags;               // +0x08  flag word (SetSub toggles bit 0x4)
-    i32 m_0c;                  // +0x0c
-    i32 m_10;                  // +0x10
-    char m_pad14[0x1c - 0x14]; // +0x14
-    i32 m_ownsSub;             // +0x1c  "owns sub-object" guard (SetSub checks it)
-    i32 m_20;                  // +0x20
-    i32 m_24;                  // +0x24
-    i32 m_28;                  // +0x28
-    char m_2c;                 // +0x2c
-    char m_pad2d[0x30 - 0x2d]; // +0x2d
-    i32 m_30;                  // +0x30
-    i32 m_34;                  // +0x34
-    CRITICAL_SECTION m_cs;     // +0x38
-};
-
-class CButeTree {
-public:
-    // The shared find-by-key helper (__thiscall).
-    void* Find(const char* key);
-    // Insert a key/value node (__thiscall). Returns the stored value (the retail
-    // body's trailing `mov eax,value`); callers discard it. Body in src/Bute/ButeTree.cpp.
-    void* Insert(const char* key, void* pNode);
-    // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
-    // callee-cleanup). Reloc-masked external/no-body.
-    void Walk(void (*fn)(), void* ctx, i32 flag);
-};
+// CButeTree - the shared crit-bit trie store (Find/Insert/Walk). CButeMgr's owned
+// sub-trees (m_tree/m_tree48/m_tree74) are instances of it, addressed through the
+// Tree()/Tree48() accessors below. Canonical definition (one shape) lives in
+// <Bute/ButeTree.h>.
+#include <Bute/ButeTree.h>
 
 // ---------------------------------------------------------------------------
 // CButeStore - one owned keyed-store sub-tree (CButeMgr's m_tree / m_tree48 /
@@ -170,16 +134,17 @@ public:
 // at +8, both polymorphic (two vptrs). The mgr's /GX destructor tears each one
 // down inline at its own trylevel; the member destructor reproduces that
 // multiply-derived teardown:
-//   (1) re-stamp the two most-derived vptrs (g_storeVtblA @+0, g_storeVtblB @+8),
+//   (1) re-stamp the two most-derived vptrs (0x5e94ac @+0, 0x5e949c @+8),
 //   (2) run the derived clear body (recursive node-free, __thiscall(this, 0)),
 //   (3) restore the second base's vptr (__thiscall on the masked `this+8`,
 //       `neg ecx; sbb ecx,ecx; and ecx,ebx` second-base-this adjust),
 //   (4) run the primary-base destructor (__thiscall(this)).
 // Only the SIZE + the two-vptr teardown are load-bearing; the interior is opaque.
-// The two vptr values are reloc-masked externals; the three teardown callees are
-// __thiscall engine functions (no body) so `mov ecx,this; call` falls out masked.
-extern "C" void g_storeVtblA(); // 0x5e94ac  most-derived (scalar-deleting) vptr
-extern "C" void g_storeVtblB(); // 0x5e949c  second-base vptr
+// REAL POLYMORPHIC (ALL-VTABLES): CButeStore is modeled as a real multiply-derived
+// class (a primary store base at +0x00 == 0x5e94ac, a second base at +0x08 ==
+// 0x5e949c), so the /GX dtor auto-stamps both most-derived vptrs (== the old manual
+// store-vtable re-stamps), reloc-masked; the three teardown callees are __thiscall
+// engine functions (no body) so `mov ecx,this; call` falls out masked.
 
 // The second-base subobject at +0x8: its vptr restore (0x16dfc0) is a __thiscall
 // `mov [ecx],<vtbl>; ret`. Modeled as a tiny receiver so the call lands the
@@ -187,19 +152,46 @@ extern "C" void g_storeVtblB(); // 0x5e949c  second-base vptr
 struct CButeStoreBase2 {
     void RestoreVptr(); // 0x16dfc0
 };
+SIZE(CButeStoreBase2, 0x24); // receiver view of the +0x08 second base
 
-struct CButeStore {
-    void* m_vptrA;             // +0x00  most-derived vptr
-    char m_pad04[4];           // +0x04
-    void* m_vptrB;             // +0x08  second-base vptr
-    char m_pad0c[0x14 - 0xc];  // +0x0c  opaque keyed-store interior
-    i32 m_14;                  // +0x14  reset-to-empty field (Parse zeros it)
-    void* m_root18;            // +0x18  tree root (Parse zeros it)
-    char m_pad1c[0x28 - 0x1c]; // +0x1c  opaque
-    i32 m_28;                  // +0x28  reset-to-empty field (Parse zeros it)
-    // The derived clear body (0x16e070): recursively frees the keyed nodes.
-    // __thiscall(this, recurse); callee-cleans 4.
-    void ClearRecursive(i32 recurse);
+// A keyed-store tree node the recursive clear (CButeStore::ClearRecursive,
+// ButeStoreClear.cpp) walks: left/right children, the heap-order key, the owned
+// name string, and the value the store's per-value callback consumes+frees.
+struct CButeStoreNode {
+    CButeStoreNode* m_left;  // +0x00
+    CButeStoreNode* m_right; // +0x04
+    i32 m_key;               // +0x08  order key
+    char* m_str;             // +0x0c  owned name string (freed)
+    void* m_val;             // +0x10  value the per-value callback consumes (freed);
+                             //        genuinely heterogeneous, so void*
+};
+SIZE(CButeStoreNode, 0x14);
+
+// The primary store base at +0x00 (most-derived scalar-deleting vptr 0x5e94ac).
+struct CButeStorePrimary {
+    virtual void P0(); // +0x00  most-derived (scalar-deleting) vptr
+    char m_pad04[4];   // +0x04
+};
+SIZE(CButeStorePrimary, 0x8); // { vptr, pad }
+
+// The second base at +0x08 (second-base vptr 0x5e949c); carries the keyed-store
+// interior fields (offsets shown relative to the enclosing CButeStore).
+struct CButeStoreSecond {
+    virtual void S0();          // +0x00 (this+0x08)  second-base vptr
+    void(__cdecl* m_cb)(void*); // +0x04 (+0x0c)  per-value callback (ClearRecursive fires)
+    char m_flags;               // +0x08 (+0x10)  flag byte (bit 2 gates the callback)
+    char m_pad09[0x0c - 0x09];  // +0x09 (+0x11)  opaque keyed-store interior
+    i32 m_14;                   // +0x0c (+0x14)  reset-to-empty field (Parse zeros it)
+    CButeStoreNode* m_root18;   // +0x10 (+0x18)  tree root (Parse zeros it)
+    char m_pad14[0x20 - 0x14];  // +0x14 (+0x1c)  opaque
+    i32 m_28;                   // +0x20 (+0x28)  reset-to-empty field (Parse zeros it)
+};
+SIZE(CButeStoreSecond, 0x24); // second base (spans +0x08..+0x2c of CButeStore)
+
+struct CButeStore : public CButeStorePrimary, public CButeStoreSecond {
+    // The derived clear body (0x16e070): recursively frees the keyed nodes from
+    // `node` (or the tree root when null). __thiscall(this, node); callee-cleans 4.
+    void ClearRecursive(CButeStoreNode* node);
     // Reset-to-empty: free the nodes, then zero the root + the two reset fields.
     // Inlined into CButeMgr::Parse (the tree-base pointer lands in a register).
     void Reset() {
@@ -211,8 +203,8 @@ struct CButeStore {
     // The primary-base destructor (0x16da60): restore vptr + tear down [this+4].
     void BaseDtor(); // __thiscall(this)
     ~CButeStore() {
-        m_vptrA = (void*)&g_storeVtblA;
-        m_vptrB = (void*)&g_storeVtblB;
+        // cl auto-stamps the two most-derived vptrs (0x5e94ac @+0, 0x5e949c @+8) at
+        // dtor entry (== the old manual re-stamps), reloc-masked.
         ClearRecursive(0);
         // The second base lives at this+8; the compiler null-masks the adjust
         // (`neg ecx; sbb ecx,ecx; and ecx,ebx`) -> RestoreVptr on (this?this+8:0).
@@ -221,6 +213,7 @@ struct CButeStore {
         BaseDtor();
     }
 };
+SIZE(CButeStore, 0x2c); // MI: CButeStorePrimary @0 + CButeStoreSecond @8
 
 // The 1-byte embedded object at CButeMgr+0x10f. Its destructor (0x16f6b0) is a
 // bare `ret` (trivial teardown), but it is a NON-trivial member of the mgr (the
@@ -233,42 +226,56 @@ struct CButeTail {
         Dtor();
     }
 };
+SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 
 // ---------------------------------------------------------------------------
 // CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
-// via `new CButeNode(2, descriptor)`: the engine ctor runs, then the
-// derived class's two vtable pointers are written inline at +0x00 / +0x08
-// (a multiply-derived node with two vptrs). Modeled
-// with an external (no-body) ctor; the vtable stores are emitted by the source
-// `new` expression and are reloc-masked.
-// ---------------------------------------------------------------------------
-// The two derived vtables the node carries. External/
-// reloc-masked file-scope addresses.
-extern void* g_nodeVtblA;
-extern void* g_nodeVtblB;
+// via `new CButeNode(2, descriptor)`: the engine base ctor runs, then the derived
+// class's two vtable pointers are written at +0x00 / +0x08 (a multiply-derived node
+// with two vptrs). REAL POLYMORPHIC (ALL-VTABLES): the derived ctor auto-stamps
+// ??_7CButeNode @+0x00 and the second sub-object's vptr @+0x08.
 
-// CButeNodeBase - the engine base subobject ctor (__thiscall(this,
-// desc, n)). Declared external/no-body so the `mov ecx,this; call` __thiscall
-// shape (callee-cleanup) falls out reloc-masked.
-class CButeNodeBase {
+// zPTree - the engine base subobject ctor (__thiscall(this, desc, n), retail
+// 0x16dff0). RTTI-real name (was fabricated "CButeNodeBase"; see ButeNode.cpp for
+// the full multiply-derived zPTree model + the vtable_hierarchy evidence). Here it
+// is only the call-site stand-in for the `new CButeNode` path (empty external base,
+// ctor reloc-masked), a separate model from ButeNode.cpp's to avoid an ODR conflict.
+//
+// zPTree's RTTI-real primary base is zErrHandling (the container-library exception
+// base; full model in ButeNode.cpp, where the real zPTree derives it). This stand-in
+// is intentionally kept base-less: any structural change here (even an EBO-neutral
+// empty base) perturbs MSVC5's /O2 regalloc in this hot header's many includers
+// (measured: gruntcombatanim / grunt / cplay fuzzy-% regressed). The vtable_hierarchy
+// INHERIT audit therefore still flags this stand-in decl; the substantive fix lives
+// in ButeNode.cpp's real model.
+class zPTree {
 public:
-    CButeNodeBase(void* desc, i32 n);
+    zPTree(void* desc, i32 n);
 };
 
-class CButeNode : public CButeNodeBase {
+// The +0x08 second sub-object: a small polymorphic node subobject whose implicit
+// vptr the CButeNode ctor auto-stamps (== the old raw second-vtable store). Modeled
+// as an embedded polymorphic member so the second vptr lands at +0x08, reloc-masked.
+class CButeNodeSub {
 public:
-    // Inline derived ctor: run the engine base ctor, then write the two derived
-    // vtable pointers at +0x00 / +0x08 (reproduces ParseTagLine's inline
-    // `call ctor; mov [node],vtblA; mov [node+8],vtblB`).
-    CButeNode(void* desc, i32 n) : CButeNodeBase(desc, n) {
-        m_vtblA = &g_nodeVtblA;
-        m_vtblB = &g_nodeVtblB;
-    }
-    void* m_vtblA;            // +0x00
+    virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
+};
+SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
+
+// CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
+// engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's
+// implicit vptr @+0x08 (== the old two hand-rolled node vtable stores).
+class CButeNode : public zPTree {
+public:
+    virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
+
+    CButeNode(void* desc, i32 n) : zPTree(desc, n) {}
+    // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
     char m_pad04[4];          // +0x04
-    void* m_vtblB;            // +0x08
+    CButeNodeSub m_sub;       // +0x08  second sub-object (implicit vptr)
     char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
+SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree base + m_sub @0x08
 
 // CString::operator+= one char. Appends to the accumulator.
 extern "C" void AfxString_AppendChar(void* pStr, char c);
@@ -291,21 +298,25 @@ struct CButeRef5 { // 16 bytes
     ~CButeRef5();
     DWORD a, b, c, d;
 };
+SIZE(CButeRef5, 0x10);
 struct CButeRef6 { // 8 bytes
     CButeRef6() : a(0), b(0) {}
     ~CButeRef6();
     DWORD a, b;
 };
+SIZE(CButeRef6, 0x8);
 struct CButeRef7 { // 24 bytes
     CButeRef7() : a(0), b(0), c(0), d(0), e(0), f(0) {}
     ~CButeRef7();
     DWORD a, b, c, d, e, f;
 };
+SIZE(CButeRef7, 0x18);
 struct CButeRef8 { // 16 bytes
     CButeRef8() : a(0), b(0), c(0), d(0) {}
     ~CButeRef8();
     DWORD a, b, c, d;
 };
+SIZE(CButeRef8, 0x10);
 
 // ---------------------------------------------------------------------------
 // CString member helper - an MFC-style CString (a single char* @+0). Only the
@@ -314,7 +325,7 @@ struct CButeRef8 { // 16 bytes
 //   - operator=  (CString::operator=, NAFXCW)
 //   - the literal-ctor (CString::CString(const char*)) used by the
 //     one-shot default-string init in GetString.
-// (CString itself comes from <Gruntz/CString.h>, included at the top.)
+// (CString itself comes from <Gruntz/String.h>, included at the top.)
 // ---------------------------------------------------------------------------
 
 // CRT helpers (minimal external decls; reloc-masked engine CRT thunks).
@@ -329,14 +340,14 @@ typedef void(__cdecl* ErrCallback)(const char*);
 // ---------------------------------------------------------------------------
 class CButeMgr {
 public:
-    i32 GetIntDef(char* tag, char* key, i32 def);
-    i32 GetInt(char* tag, char* key);
-    DWORD GetDwordDef(char* tag, char* key, DWORD def);
-    DWORD GetDword(char* tag, char* key);
-    float GetFloat(char* tag, char* key);
-    double GetDouble(char* tag, char* key);
-    CString* GetStringDef(char* tag, char* key, CString* def);
-    char* GetString(char* tag, char* key);
+    i32 GetIntDef(const char* tag, const char* key, i32 def);
+    i32 GetInt(const char* tag, const char* key);
+    DWORD GetDwordDef(const char* tag, const char* key, DWORD def);
+    DWORD GetDword(const char* tag, const char* key);
+    float GetFloat(const char* tag, const char* key);
+    double GetDouble(const char* tag, const char* key);
+    CString* GetStringDef(const char* tag, const char* key, CString* def);
+    char* GetString(const char* tag, const char* key);
 
     bool ScanToken(i32 expectType);
     bool ParseTagLine();
@@ -355,6 +366,11 @@ public:
     // Callback trampoline + sub-object cleanup.
     void* InvokeCallback(void* (*fn)(CButeMgr*));
     void ClearHelper();
+
+    // Reset/teardown of the manager's stores (0x170210, 280 B): restamps the store
+    // vtables and tears the sub-trees down through the scalar-deleting-destructor
+    // path. No-body extern (reloc-masked); the low-RVA thunk pool tail-forwards it.
+    void Term();
 
     // Lexer sub-helpers (engine functions, reloc-masked external/no-body).
     // PeekClass classifies the current char (returns a token-class word);
@@ -391,7 +407,7 @@ public:
     bool ParseGroup();
     // Key existence probe: Find(tag); if no key requested, hit on the group;
     // else require the key under it.
-    bool Exists(char* tag, char* key);
+    bool Exists(const char* tag, const char* key);
 
     // The /GX (EH-frame) scalar destructor (0x213c0): tears down the three owned
     // CButeStore sub-trees + the five CStrings + the +0x10f tail object, each at
@@ -417,7 +433,7 @@ public:
     CString m_errStr;             // +0x10  scratch the error reporter formats into
     ErrCallback m_errCallback;    // +0x14  optional error-callback fn-ptr
     CButeStore m_tree;            // +0x18  the keyed store root (0x2c bytes)
-    void* m_pNode;                // +0x44
+    CButeTree* m_pNode;           // +0x44  active store node (a CButeNode used as a keyed tree)
     CButeStore m_tree48;          // +0x48  second store sub-tree
     CButeStore m_tree74;          // +0x74  third store sub-tree
     void* m_stream;               // +0xa0  the input source stream object
@@ -431,17 +447,22 @@ public:
     CString m_str104;             // +0x104  second scratch string
     CString m_str108;             // +0x108  third scratch string
     char m_captureText;           // +0x10c  capture value text into m_pText accumulator
-    char m_10d;                   // +0x10d  build-suppress / group-walk mode (role unproven)
+    char m_writeMode;             // +0x10d  0 = STORE (parse text -> build tree); non-zero =
+                                  //         WRITE-BACK (read tree via getters -> reconstruct
+                                  //         text into m_pText). Gates dup-check + node-alloc off
+                                  //         and the getter/accumulator readback on (ParseTagLine,
+                                  //         ParseAttributeFile, ParseGroup).
     char m_10e;                   // +0x10e
     CButeTail m_10f;              // +0x10f  1-byte embedded object (non-trivial dtor)
 
     // The typed-reference getters (tag5-8). Each returns a pointer to the typed
     // value record's storage on a type hit, or a shared zero-default static on
     // any miss (no tag / no key / type mismatch), reporting the specific failure.
-    CButeRef5* GetRef5(char* tag, char* key);
-    CButeRef6* GetRef6(char* tag, char* key);
-    CButeRef7* GetRef7(char* tag, char* key);
-    CButeRef8* GetRef8(char* tag, char* key);
+    CButeRef5* GetRef5(const char* tag, const char* key);
+    CButeRef6* GetRef6(const char* tag, const char* key);
+    CButeRef7* GetRef7(const char* tag, const char* key);
+    CButeRef8* GetRef8(const char* tag, const char* key);
 };
+SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
 #endif // SRC_BUTE_BUTEMGR_H

@@ -81,3 +81,6 @@ void CCluster0c::Cleanup() {
     }
     Destroy_1bbb7c();
 }
+
+SIZE_UNKNOWN(CCluster0c);
+SIZE_UNKNOWN(Sub60);

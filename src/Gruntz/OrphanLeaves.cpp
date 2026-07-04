@@ -6,10 +6,10 @@
 // are external/no-body so their call rel32 / DIR32 reloc-mask.
 #include <Ints.h>
 #include <rva.h>
+#include <Globals.h>
 
 // ---------------------------------------------------------------------------
 // 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
-extern void* g_5e8e98;
 
 RVA(0x000183d0, 0x6)
 void* GetGlobal5e8e98() {
@@ -41,7 +41,9 @@ struct CSubObj8 {
     void BaseDtor(); // 0x169d70
 };
 struct COwnerWithSubs {
-    char _00[0x0c];
+    char _00[0x08];
+    CSubObj8 m_08; // +0x08  (empty reloc-masked view)
+    char _09[0x0c - 0x09];
     CSubObjC m_0c;   // +0x0c
     void DtorSubC(); // 0x3cbc0
     void DtorSub8(); // 0x3cbf0  (acts on +0x08)
@@ -49,14 +51,14 @@ struct COwnerWithSubs {
 
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
-    CSubObjC* s = (CSubObjC*)((char*)this + 0xc);
+    CSubObjC* s = &m_0c;
     s->Clear();
     s->BaseDtor();
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
-    CSubObj8* s = (CSubObj8*)((char*)this + 8);
+    CSubObj8* s = &m_08;
     s->Clear();
     s->BaseDtor();
 }
@@ -99,3 +101,9 @@ i32 RunHelper2914() {
     Helper2914();
     return 0;
 }
+SIZE_UNKNOWN(CActReg6446d8);
+SIZE_UNKNOWN(CGlobalStr);
+SIZE_UNKNOWN(COwnerWithSubs);
+SIZE_UNKNOWN(CPairXY);
+SIZE_UNKNOWN(CSubObj8);
+SIZE_UNKNOWN(CSubObjC);

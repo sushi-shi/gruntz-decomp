@@ -24,6 +24,7 @@ public:
     i32 InitLan();   // 0x37e10
     i32 InitNet();   // 0x37f00
 };
+SIZE_UNKNOWN(CConnSlotList); // method-only CObList-derived view; retail size TBD
 
 // ===========================================================================
 // 0x37c30 - populate the modem/ramped latency ladder: ping thresholds climb

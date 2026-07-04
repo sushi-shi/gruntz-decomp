@@ -2,6 +2,8 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_GruntMachine.h>
+#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
+#include <Gruntz/ResMgr.h>       // CDrawTarget (m_world->m_drawTarget->m_drawContext)
 // SBI_GruntMachine.cpp - Gruntz CSBI_GruntMachine (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_GruntMachine@@; a sibling leaf of the SBI family
 //   CSBI_GruntMachine : CStatusBarItem. Vtable @0x5eadbc. The /GX-framed scalar
@@ -14,7 +16,7 @@
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Render reads is modeled.
 DATA(0x0024556c)
-extern CGmGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 
@@ -53,19 +55,24 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     idx = m_40;
     m_3c = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
 
-    i32 ctx = g_gameReg->m_30->m_4->m_14;
+    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
 
-    CGmFrame* f = m_44;
+    CImage* f = m_44;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
     }
     f = m_3c;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18 + 0x2c, m_18 + f->m_1c, 0);
+        f->RenderFrame(
+            (void*)ctx,
+            (void*)(m_14 + f->m_anchorX + 0x2c),
+            (void*)(m_18 + f->m_anchorY),
+            0
+        );
     }
     f = m_34;
     if (f) {
-        f->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
     }
     return 1;
 }

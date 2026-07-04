@@ -34,7 +34,9 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
+#include <Wap32/Object.h>       // Wap::CObject grand-base (slots 0-4) for the CImageSetN variants
+#include <Gruntz/ParseSource.h> // canonical CParseSource (BeginParse/EndParse)
+#include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -48,9 +50,10 @@
 // CGameLevel. Each touches the level's own members through their named fields
 // (m_planeCtx@+0x10, m_planes/m_imageSets, m_owner@+0x0c, m_04@+0x04, the
 // m_b0..m_dc default-extents block, m_header@+0xe0). The per-plane / edit-state /
-// visit-context objects they dispatch into are UNMATCHED engine classes, modeled
-// as typed window structs (PlaneGeom/LevelPlane/MainPlane/LevelScroll/VisitCtx/
-// EditSink) that view the same object at the offsets each method touches.
+// visit-context objects they dispatch into are the real CPlane (WwdFile.h) for the
+// per-plane objects, and UNMATCHED engine classes for the edit-state / visit-context
+// objects, modeled as typed window structs (LevelScroll/ScrollTarget/EditTarget/
+// VisitCtx/EditSink) that view the same object at the offsets each method touches.
 //
 // The shared "default extents" block at +0xb0..+0xdc is stamped with the same
 // constants by the ctor and several edit methods (StampParamBlock):
@@ -61,83 +64,25 @@
 
 // (LevelCoordRect - the 4-int coord record at +0x10 - is defined in GameLevel.h.)
 
-// The parse-source object LoadFromSource drives: BeginParse (FUN_00539960
-// @0x139960) opens/primes it and returns a handle; EndParse (FUN_005399d0
-// @0x1399d0) tears it down. Both are unmatched engine leaves taking the source as
-// `this`; declared with no body so the thiscall sites reloc-mask in objdiff.
-struct RemusParseSource {
-    i32 BeginParse();
-    void EndParse();
-};
+// The parse-source object LoadFromSource drives is the canonical CParseSource
+// (included above): BeginParse (0x139960) opens/primes it and returns a handle;
+// EndParse (0x1399d0) tears it down. Both are unmatched engine leaves taking the
+// source as `this`; declared with no body so the thiscall sites reloc-mask.
 
-// CGameLevelChild - placeholder for whatever class lives in the pointer arrays
-// at +0x38 and +0x4c. Only vtable slot 4 (+0x04, virtual Release(1)) is used.
-class CGameLevelChild {
-public:
-    virtual void Dummy();
-    virtual void Release(i32 arg);
-};
+// The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
+// view of the engine plane, GameLevel.h), m_imageSets -> CImageSet*. Both carry the
+// +0x04 release slot (CLevelPlane::dtor / CImageSet::Release). The per-plane object.s
+// tile grid, extents, coord-recompute outputs, tile->pixel shifts and name are all
+// named CLevelPlane members reached without a per-site cast off m_mainPlane.
 
-// PlaneGeom - the in-memory plane the level recomputes coords on. This is the
-// same object as CPlane (WwdFile.h), viewed at the offsets RecomputePlaneCoords
-// touches; RecomputePlaneCoords is a __thiscall taking the plane as `this` (the
-// retail call site is a bare `call` with the plane already in ecx - NO pushed
-// argument), so it is modeled as a method here per the matcher __thiscall idiom.
-// Layout (a window onto CPlane):
-//   +0x08 flags  (bit2 = wrap X, bit3 = wrap Y)
-//   +0x10/+0x14  scaledX / scaledY (float scroll origin, pre-stored by LoadWwd)
-//   +0x30/+0x34  tilesWide / tilesHigh (int wrap modulus)
-//   +0x40/+0x44  out: tile-origin X / Y     +0x48/+0x4c out: tile-extent X / Y
-//   +0x70/+0x74  viewport tiles across/down +0x78/+0x7c view-anchor X / Y
-//   +0x84/+0x88  out: integer scaledX / scaledY
-struct PlaneGeom {
-    char pad_0[0x08];
-    u32 flags; // +0x08
-    char pad_c[0x10 - 0x0c];
-    float scaledX; // +0x10
-    float scaledY; // +0x14
-    char pad_18[0x30 - 0x18];
-    i32 tilesWide; // +0x30
-    i32 tilesHigh; // +0x34
-    char pad_38[0x40 - 0x38];
-    i32 originX; // +0x40
-    i32 originY; // +0x44
-    i32 extentX; // +0x48
-    i32 extentY; // +0x4c
-    char pad_50[0x70 - 0x50];
-    i32 viewW;   // +0x70
-    i32 viewH;   // +0x74
-    i32 anchorX; // +0x78
-    i32 anchorY; // +0x7c
-    char pad_80[0x84 - 0x80];
-    i32 intX; // +0x84
-    i32 intY; // +0x88
-
-    void RecomputePlaneCoords();
-};
-
-// The two-phase vftables. The inlined CSeverusWorker ctor (in GameLevel.h) stamps the
-// base vftable; the derived CGameLevel ctor below stamps the derived one after the
-// three array members are constructed. Both stores are reloc-masked DIR32.
-DATA(0x001efc30)
-extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
-DATA(0x001f0150)
-extern void* g_gameLevelVtbl; // derived CGameLevel vftable
-// The base-subobject vftable the destructor restores after the member dtors run
-// (CSeverusWorker::~CSeverusWorker's vptr store - a different table from the base CTOR's).
+// The two-phase vptr stores are now cl-emitted: the inlined CLoadable ctor (in
+// GameLevel.h) auto-stamps the base vptr (&??_7CLoadable, orphan reloc-masked
+// against retail 0x5efc30) and the derived CGameLevel ctor auto-stamps the derived
+// vptr (&??_7CGameLevel, bound @0x5f0150 via VTBL below) after the three array
+// members are constructed. The only remaining manual vtable store is the grand-base
+// teardown vftable ~CLoadable restamps after the member dtors run (@0x5e8cb4).
 DATA(0x001e8cb4)
-extern void* g_severusWorkerDtorVtbl;
-
-// The three CImageSet variant vftables stamped by ReadImageSet (kind 1/2/3). Their
-// contents are UNMATCHED engine code, so the factory stamps the RETAIL tables by
-// address (reloc-masked DIR32) rather than letting the compiler emit a divergent
-// vtable. (Transitional manual-stamp workaround per matcher doctrine.)
-DATA(0x001f0198)
-extern void* g_imageSet1Vtbl; // kind 1 (0x10-byte variant)
-DATA(0x001f01e0)
-extern void* g_imageSet2Vtbl; // kind 2 (0x24-byte variant)
-DATA(0x001f0228)
-extern void* g_imageSet3Vtbl; // kind 3 (0x18-byte variant)
+extern void* g_wapObjectDtorVtbl;
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
@@ -148,12 +93,9 @@ static const i32 LEVEL_COORD_UNSET = (i32)0x80000000;
 static const i32 TILE_UNINIT = (i32)0xeeeeeeee;
 static const i32 TILE_CLEAR = -1;
 
-static inline void StampLevelVtbl(CGameLevel* o) {
-    *(void**)o = &g_gameLevelVtbl;
-}
-static inline void StampSeverusWorkerDtorVtbl(CGameLevel* o) {
-    *(void**)o = &g_severusWorkerDtorVtbl;
-}
+// The +0x134 axis-low bracket's "unset" sentinel (INT_MIN): WalkColumnDown and
+// BroadPhase test it before treating an object's AABB as a live box.
+static const i32 AXIS_UNSET = (i32)0x80000000;
 
 // Stamps the shared +0xb0..+0xdc "default parameters" block. Defined inline so it
 // folds into each method exactly as the retail compiler emitted the block inline.
@@ -173,27 +115,31 @@ static inline void StampParamBlock(CGameLevel* o) {
 }
 
 // ===========================================================================
-// CGameLevel ("UnknownRemus") constructor. Three args (ret 0xc): they land at
-// +0x4, +0x8, +0xc. Inlined base ctor (CSeverusWorker, in the header) stamps the
-// SeverusWorker base vftable @0x5efc30 and the args, then the three MFC arrays at
+// CGameLevel ("CDDrawResolveSubMgrLayout") constructor. Three args (ret 0xc): they land at
+// +0x4, +0x8, +0xc. Inlined base ctor (CLoadable, in the header) stamps the
+// CLoadable base vftable @0x5efc30 and the args, then the three MFC arrays at
 // +0x20/+0x34/+0x48 are constructed, then the derived CGameLevel vftable @0x5f0150
 // is stamped and the +0x10 sentinel, the +0x5c/+0x60 main-plane fields, the
 // +0x64/+0x68 pair (0x40), and the shared +0xb0..+0xdc default-parameter block are
 // written. Carries the /GX EH frame because the three array members are
 // destructible.
 //
-// RESIDUE (~89%, NOT a logic/offset/type/CFG error): the body is byte-for-byte
-// identical to retail (both two-phase vptr stores, both 0x40/0xfa/0x3e8/param-block
-// constants, the EH frame, the ret 0xc, every member offset) EXCEPT two pure
-// compiler-internal scheduling choices: (1) MSVC's funcinfo EH-state numbering base
-// is shifted by one (retail tags the three array ctors 0/1/2; this build uses the
-// -1 entry state for the first, then 0/1) and (2) one immediate (0xfa) lands in a
-// different register (eax vs ecx) because `this` is reloaded for the fs:0 restore
-// one slot earlier here. Logic + all offsets + the two-phase construction + CFG +
-// the EH frame are exact; this is the documented store-scheduling / EH-state-base
-// entropy plateau (matching-patterns.md §entropy, .claude/agents/orchestrator.md §2a/§8).
+// @early-stop
+// reloc-name mask + store-scheduling entropy plateau (~94%). Re-pinning the arrays to
+// their genuine shape (CByteArray + two CDWordArrays, all out-of-line ctors) fixed the
+// whole array-construction prologue: the three `leal +0x20/+0x34/+0x48; movb EH-state
+// 0/1/2; call ??0..Array` sequence and the two cl-emitted vptr stores (base ??_7CLoadable
+// orphan + derived ??_7CGameLevel @0x5f0150) now match retail exactly (48.8%->94.4%).
+// Two residuals remain, neither source-steerable: (1) reloc-name masks - retail ICF-
+// folded the identical CByteArray/CDWordArray default ctors to ONE `CByteArray` symbol,
+// so our two `??0CDWordArray@@QAE@XZ` calls + the `push $handler` funcinfo mask against
+// retail's folded names; (2) the tail store scheduling - cl parks the 0xfa immediate in
+// eax and stamps the ??_7CGameLevel vptr before the m_b4/m_c0 stores, while retail keeps
+// 0xfa in ecx and floats the vptr stamp later (matching-patterns.md §entropy: an
+// independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
+// CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
+CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
     m_scrollStepX = 0x40;
     m_scrollStepY = 0x40;
     m_b4 = 250;
@@ -201,7 +147,7 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
     m_b8 = 1000;
     m_bc = 1000;
 
-    StampLevelVtbl(this);
+    // cl auto-stamps &??_7CGameLevel here (the derived phase of the two-phase store).
     m_planeCtx.minX = LEVEL_COORD_UNSET;
     m_mainPlane = 0;
     m_mainIndex = -1;
@@ -218,7 +164,7 @@ CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CSeverusWorker(a1, a2, a3) {
 
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
-    Reset(); // vtable +0x44
+    ReleaseChildren(); // vtable +0x44 (slot 17), the pre-load reset
 
     if (hdr->wwdSignature > 0x5f4) { // signature must be <= 1524
         return 0;
@@ -233,7 +179,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // retail compiler pins `block` in the callee-saved register and reloads `hdr`'s
     // own fields through a spilled pointer for the rest of the function.
     char* block = (char*)hdr;
-    char* ehAlloc = 0; // inflate buffer freed on every exit path
+    Bytef* ehAlloc = 0; // inflate buffer freed on every exit path
 
     // The flags field is read twice (the COMPRESS test and the m_flags store); the
     // retail compiler materializes &hdr->flags once and dereferences it both times,
@@ -243,12 +189,12 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     if (*pflags & 0x2) // COMPRESS: inflate the main block
     {
         u32 allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
-        char* buf = (char*)operator new(allocSize);
+        Bytef* buf = (Bytef*)operator new(allocSize);
         if (buf == 0) {
             return 0;
         }
 
-        block = (char*)WwdFile_InflateMainBlock((WwdHeader*)hdr, (Bytef*)buf, allocSize - 0x20);
+        block = (char*)WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20);
         if (block == 0) {
             operator delete(buf);
             return 0;
@@ -257,7 +203,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     strcpy(m_levelName, hdr->levelName); // inline strlen + rep movs
-    m_flags = *pflags;
+    m_08 = *pflags;
     m_checksum = hdr->checksum;
 
     i32 result = 0; // image-set result (the >=0 success / -1 failure sentinel)
@@ -316,7 +262,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     {
         i32 startX = hdr->startX;
         i32 startY = hdr->startY;
-        CPlane* mp = m_mainPlane;
+        CLevelPlane* mp = m_mainPlane;
         if (mp->m_flags & 1) {
             mp->m_scaledX = (float)startX;
             mp->m_scaledY = (float)startY;
@@ -324,7 +270,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             mp->m_scaledX = (float)startX * mp->m_scaleX;
             mp->m_scaledY = (float)startY * mp->m_scaleY;
         }
-        ((PlaneGeom*)mp)->RecomputePlaneCoords();
+        mp->RecomputePlaneCoords();
 
         // Re-derive the start coords from the main plane's origin for the rest.
         i32 ox = m_mainPlane->m_originX;
@@ -333,7 +279,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
             if (i2 != m_mainIndex) {
-                CPlane* p = (CPlane*)m_planes[i2];
+                CLevelPlane* p = (CLevelPlane*)m_planes[i2];
                 if (p->m_flags & 1) {
                     p->m_scaledX = (float)ox;
                     p->m_scaledY = (float)oy;
@@ -341,7 +287,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
                     p->m_scaledX = (float)ox * p->m_scaleX;
                     p->m_scaledY = (float)oy * p->m_scaleY;
                 }
-                ((PlaneGeom*)p)->RecomputePlaneCoords();
+                p->RecomputePlaneCoords();
             }
             ++i2;
         }
@@ -365,7 +311,7 @@ fail:
 // they only touch member offsets (written as raw casts on `this`), an argument
 // struct, and sibling virtuals via the object's own vtable.
 //
-// The three 184-byte siblings (Unknown24/28/2C) are identical except for which
+// The three 184-byte siblings (variant24/28/2C) are identical except for which
 // sibling virtual they dispatch to: vtable +0x38 / +0x3c / +0x40 respectively.
 // Each loads the +0x10 record from a caller struct, stamps the param block, then
 // calls that sibling virtual with arg1; on a 0 result it invokes the +0x1c
@@ -373,13 +319,13 @@ fail:
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// Remus adds a +0x10 sentinel check before the common parent/status predicate.
+// CGameLevel::IsLoaded (0x161190) adds a +0x10 sentinel check before the common parent/status predicate.
 RVA(0x00161190, 0x1f)
 i32 CGameLevel::IsLoaded() {
     if (m_planeCtx.minX == LEVEL_COORD_UNSET) {
         goto fail;
     }
-    if (m_owner == 0) {
+    if (m_0c == 0) {
         goto fail;
     }
     if (m_04 != -1) {
@@ -406,6 +352,11 @@ fail:
 // slip or regressed the eax(0x3e8)/edx(0xfa) allocation (b8,bc,b0,b4 order ->
 // ~75%); calling the param block before the +0x10 writes moves the whole block
 // ahead (wrong). Logic + offsets + CFG are exact, so this is left as the plateau.
+// @early-stop
+// store-scheduling entropy (~84%): the body is byte-exact EXCEPT the independent
+// m_b0=500 direct-immediate store, which cl hoists into the w-read/dec window while
+// retail emits it after the m_b8/m_bc=1000 stores. Inlining the block in retail's
+// store order regressed it further (74.8%); not source-steerable. Deferred.
 RVA(0x0015d030, 0x8f)
 i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     m_planeCtx.minX = 0;
@@ -417,7 +368,7 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs (merged from UnknownRemus).
+// Engine-label backlog stubs (merged from CDDrawResolveSubMgrLayout).
 // -------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -441,7 +392,7 @@ i32 CGameLevel::LoadFromFile(const char* path) {
     }
 
     file.Read(buf, file.GetLength());
-    if (Vfunc38((i32)buf) == 0) {
+    if (LoadWwd((WwdHeader*)buf) == 0) { // vtable +0x38 (slot 14) load virtual
         operator delete(buf);
         return 0;
     }
@@ -456,12 +407,12 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 // +0x38 result (1/0). BeginParse/EndParse are unmatched engine leaves on the arg
 // object (reloc-masked thiscall).
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::LoadFromSource(RemusParseSource* arg) {
+i32 CGameLevel::LoadFromSource(CParseSource* arg) {
     i32 handle = arg->BeginParse();
     if (handle == 0) {
         return 0;
     }
-    if (Vfunc38(handle) == 0) {
+    if (LoadWwd((WwdHeader*)handle) == 0) { // vtable +0x38 (slot 14) load virtual
         arg->EndParse();
         return 0;
     }
@@ -482,15 +433,15 @@ void* CGameLevel::ScalarDtor(u32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// Destructor: stamp the derived vftable, run the level cleanup, let the three
-// array members destruct (reverse construction order), then ~CSeverusWorker
-// restores the base subobject (resets m_04/m_flags/m_owner + the base dtor
-// vftable). The destructible array members give the /GX EH frame.
+// Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
+// (polymorphic), then runs the level cleanup, lets the three array members destruct
+// (reverse construction order), then ~CLoadable restores the base subobject
+// (resets m_04/m_08/m_0c + the grand-base dtor vftable @0x5e8cb4). The
+// destructible array members give the /GX EH frame.
 RVA(0x001611e0, 0x82)
 CGameLevel::~CGameLevel() {
-    StampLevelVtbl(this); // derived vftable @0x5f0150 (dtor entry)
-    Unload();             // level cleanup (releases children, clears the header)
-    // m_imageSets / m_planes / m_array20 auto-destruct here; ~CSeverusWorker follows.
+    Unload(); // level cleanup (releases children, clears the header)
+    // m_imageSets / m_planes / m_array20 auto-destruct here; ~CLoadable follows.
 }
 
 // ---------------------------------------------------------------------------
@@ -501,16 +452,16 @@ RVA(0x0015d1f0, 0x87)
 i32 CGameLevel::Unload() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->Release(1); // release/free hook (+0x04)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -529,16 +480,16 @@ RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     i32 i;
     for (i = 0; i < m_planes.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_planes.GetData()[i];
+        CLevelPlane* child = (CLevelPlane*)m_planes.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->dtor(1); // scalar-deleting dtor (+0x04)
         }
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CGameLevelChild* child = (CGameLevelChild*)m_imageSets.GetData()[i];
+        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
         if (child) {
-            child->Release(1);
+            child->Release(1); // release/free hook (+0x04)
         }
     }
     m_imageSets.SetSize(0, -1);
@@ -551,7 +502,7 @@ void CGameLevel::ReleaseChildren() {
 // ---------------------------------------------------------------------------
 RVA(0x001611b0, 0x6)
 i32 CGameLevel::GetClassId() {
-    return 0x19;
+    return CLASSID_GAMELEVEL;
 }
 
 // --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
@@ -561,8 +512,8 @@ RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc40(arg1) == 0) {
-        Vfunc1C();
+    if (LoadFromFile((const char*)arg1) == 0) { // vtable +0x40 (slot 16)
+        Unload();                               // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -574,8 +525,8 @@ RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc3C(arg1) == 0) {
-        Vfunc1C();
+    if (LoadFromSource((CParseSource*)arg1) == 0) { // vtable +0x3c (slot 15)
+        Unload();                                   // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -589,8 +540,8 @@ RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords) {
     m_planeCtx = *coords;
     StampParamBlock(this);
-    if (Vfunc38(arg1) == 0) {
-        Vfunc1C();
+    if (LoadWwd((WwdHeader*)arg1) == 0) { // vtable +0x38 (slot 14)
+        Unload();                         // vtable +0x1c (slot 7), fail/reset hook
         return 0;
     }
     return 1;
@@ -616,53 +567,116 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 // references the retail tables by address (reloc-masked DIR32). NOTE: retail
 // invokes Parse unconditionally - even when the allocation failed and the
 // pointer is null - so the deref is written without a guard, matching the bytes.
-// The three CImageSet variants the factory allocates. Each is a non-polymorphic
-// shell whose INLINE ctor manually stamps the matching external vftable (and
-// zeroes its count/cursor fields), so `new CImageSetN` lowers to exactly the
-// retail `operator new(size); if (p) { stamp }` shape - the allocation result
-// stays in eax across the field stores, then folds into the shared merge. The
-// padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18.
-struct CImageSet1 {
+// The engine routes object allocation through the Rez heap (RezAlloc @0x1b9b46 =
+// nothrow operator new / RezFree @0x1b9b82). ReadImageSet `new`s its variants
+// through RezAlloc, so each class models it as the class allocator: `new CImageSetN`
+// emits a direct `push size; call RezAlloc` instead of the global `??2`.
+extern "C" void* RezAlloc(u32 size); // 0x1b9b46
+extern "C" void RezFree(void* p);    // 0x1b9b82
+
+// The three CImageSet variants the factory allocates. REAL-POLYMORPHIC: each is an
+// 18-slot class deriving the Wap::CObject grand-base (slots 0-4 inherited, slot 1 =
+// its virtual dtor), so cl emits its ??_7CImageSetN@@6B@ (bound below via VTBL to the
+// retail vtable) and AUTO-stamps the vptr in the INLINE ctor - the base-subobject
+// stamp dead-store-elides, lowering `new CImageSetN` to exactly the retail
+// `RezAlloc(size); if (p) { stamp vptr; zero fields }` shape. Only slot 5 (+0x14
+// Parse) is a matched body; the inherited base thunks + engine slots are declared-
+// only (their vtable entries reloc-mask). The vptr sits at +0x00 (implicit); the
+// padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18. Slot RVAs
+// (from retail 0x5f0198/01e0/0228) noted per class.
+struct CImageSet1 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor; cl auto-
+    // stamps this vptr in the inline ctor, the base stamp dead-store-elides).
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
+    virtual void s18();              // [6]  0x161330
+    virtual void s1c();              // [7]  0x161340
+    virtual void s20();              // [8]  0x161380
+    virtual void s24();              // [9]  +0x24  0x161410 (GetStride slot)
+    virtual void s28();              // [10] 0x161390
+    virtual void s2c();              // [11] 0x1613a0
+    virtual void s30();              // [12] 0x1613b0
+    virtual void s34();              // [13] 0x1613c0
+    virtual void s38();              // [14] 0x1613d0
+    virtual void s3c();              // [15] 0x1613e0
+    virtual void s40();              // [16] 0x1613f0
+    virtual void s44();              // [17] 0x161400
     CImageSet1() {
-        *(void**)this = &g_imageSet1Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet1 first
     }
-    void DtorBase();         // 0x161370  base-subobject dtor (vtable restamp)
-    i32 Parse(void* record); // 0x166d40  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04
-    i32 m_08;                // +0x08
-    i32 m_0c;                // +0x0c
+    void* operator new(size_t n) {
+        return RezAlloc(n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
+    }
+    void DtorBase(); // 0x161370  base-subobject dtor (vtable restamp)
+    i32 m_04;        // +0x04
+    i32 m_08;        // +0x08
+    i32 m_0c;        // +0x0c
 };
-struct CImageSet2 {
+struct CImageSet2 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166990
+    virtual void s18();              // [6]  0x161420
+    virtual void s1c();              // [7]  0x161430
+    virtual void s20();              // [8]  0x161470
+    virtual void s24();              // [9]  +0x24  0x1614a0 (GetStride slot)
+    virtual void s28();              // [10] 0x1669e0
+    virtual void s2c();              // [11] 0x166a40
+    virtual void s30();              // [12] 0x166b90
+    virtual void s34();              // [13] 0x166bf0
+    virtual void s38();              // [14] 0x166ab0
+    virtual void s3c();              // [15] 0x166b20
+    virtual void s40();              // [16] 0x166c60
+    virtual void s44();              // [17] 0x166cd0
     CImageSet2() {
-        *(void**)this = &g_imageSet2Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet2 first
     }
-    i32 Parse(void* record); // 0x166990  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04
-    i32 m_08;                // +0x08
-    i32 m_0c;                // +0x0c
-    i32 m_10;                // +0x10
-    i32 m_14;                // +0x14
-    i32 m_18;                // +0x18
-    i32 m_1c;                // +0x1c
-    i32 m_20;                // +0x20
+    void* operator new(size_t n) {
+        return RezAlloc(n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
+    }
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
+    i32 m_18; // +0x18
+    i32 m_1c; // +0x1c
+    i32 m_20; // +0x20
 };
-struct CImageSet3 {
+struct CImageSet3 : Wap::CObject {
+    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
+    virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
+    virtual void s18();              // [6]  0x1614b0
+    virtual void s1c();              // [7]  0x1614d0
+    virtual void s20();              // [8]  0x161570
+    virtual void s24();              // [9]  +0x24  0x161590 (GetStride slot)
+    virtual void s28();              // [10] 0x166e00
+    virtual void s2c();              // [11] 0x166e60
+    virtual void s30();              // [12] 0x166eb0
+    virtual void s34();              // [13] 0x166f20
+    virtual void s38();              // [14] 0x166f80
+    virtual void s3c();              // [15] 0x166ff0
+    virtual void s40();              // [16] 0x167050
+    virtual void s44();              // [17] 0x1670d0
     CImageSet3() {
-        *(void**)this = &g_imageSet3Vtbl;
-        m_04 = 0;
+        m_04 = 0; // cl auto-stamps &??_7CImageSet3 first
         m_14 = 0;
     }
-    i32 Parse(void* record); // 0x166d70  vtbl slot +0x14
-    void* m_vtbl;            // +0x00
-    i32 m_04;                // +0x04  tile width
-    i32 m_08;                // +0x08  tile height
-    i32 m_0c;                // +0x0c  log2(height)
-    i32 m_10;                // +0x10  width*height (byte size)
-    void* m_14;              // +0x14  owned pixel buffer
+    void* operator new(size_t n) {
+        return RezAlloc(n);
+    }
+    void operator delete(void* p) {
+        RezFree(p);
+    }
+    i32 m_04;   // +0x04  tile width
+    i32 m_08;   // +0x08  tile height
+    i32 m_0c;   // +0x0c  log2(height)
+    i32 m_10;   // +0x10  width*height (byte size)
+    void* m_14; // +0x14  owned pixel buffer
 };
 
 RVA(0x0015d820, 0xa3)
@@ -685,31 +699,38 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
             return 0;
     }
 
-    if (set->Parse(record) != 0) {
-        return set;
+    if (set->Parse(record) == 0) {
+        if (set != 0) {
+            set->Release(1);
+        }
+        return 0;
     }
-    if (set != 0) {
-        set->Release(1);
-    }
-    return 0;
+    return set;
 }
 
 // CImageSet1::DtorBase (0x161370) - the base-subobject destructor invoked by the
 // scalar-deleting-destructor (g_imageSet1Vtbl slot +0x04, unmatched). The base
 // has no members, so it only restamps the base-subobject (CObject-like) dtor
-// vftable @0x5e8cb4 - the same table the level family's ~CSeverusWorker restores.
+// vftable @0x5e8cb4 - the same table the level family's ~CLoadable restores.
 RVA(0x00161370, 0x7)
 void CImageSet1::DtorBase() {
-    *(void**)this = &g_severusWorkerDtorVtbl;
+    *(void**)this = &g_wapObjectDtorVtbl;
 }
 
-// CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Reads three dwords
-// from the WWD record at +0x08/+0x0c/+0x10 into m_04/m_08/m_0c and returns TRUE.
+// CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
+// from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
+// pointer (retail's `add eax,8; mov (eax); add eax,4` cursor walk) and returns TRUE.
+// @early-stop
+// tail-peephole wall (same as CImageSet2/3): retail keeps the 2nd store's `add eax,4`
+// then reads the 3rd via [eax]; cl folds that advance into the 3rd's +4 displacement.
+// The advancing-cursor prologue + first read are byte-exact; the final fold is the
+// documented entropy-tail wall (docs/patterns/header-fields-through-cursor-not-index.md).
 RVA(0x00166d40, 0x24)
 i32 CImageSet1::Parse(void* record) {
-    m_04 = *(i32*)((char*)record + 0x08);
-    m_08 = *(i32*)((char*)record + 0x0c);
-    m_0c = *(i32*)((char*)record + 0x10);
+    i32* p = (i32*)((char*)record + 8);
+    m_04 = *p++;
+    m_08 = *p++;
+    m_0c = *p++;
     return 1;
 }
 
@@ -767,103 +788,103 @@ i32 CImageSet3::Parse(void* record) {
 }
 
 // ---------------------------------------------------------------------------
-// PlaneGeom::RecomputePlaneCoords - recompute one plane's scaled scroll origin
+// CLevelPlane::RecomputePlaneCoords - recompute one plane's scaled scroll origin
 // and visible-tile extents from its (already-scaled) float coords. __thiscall
 // with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the
 // CRT __ftol helper (the (int)float casts). X and Y are computed identically:
 // wrap (flags bit set) folds the coord modulo the tile count into [0, count);
 // else it clamps to [0, count-1].
 RVA(0x00161c90, 0x1e4)
-void PlaneGeom::RecomputePlaneCoords() {
-    PlaneGeom* p = this;
-    u32 flags = p->flags;
+void CLevelPlane::RecomputePlaneCoords() {
+    CLevelPlane* p = this;
+    u32 flags = p->m_flags;
     i32 wrapX = flags & 4;
 
     // --- X axis: wrap/clamp scaledX into the tile grid -----------------------
     if (wrapX) {
-        if (p->scaledX < 0.0f) {
+        if (p->m_scaledX < 0.0f) {
             do {
-                p->scaledX += (float)p->tilesWide;
-            } while (p->scaledX < 0.0f);
+                p->m_scaledX += (float)p->m_wrapW;
+            } while (p->m_scaledX < 0.0f);
         }
-        if (p->scaledX >= (float)p->tilesWide) {
-            float t = p->scaledX;
+        if (p->m_scaledX >= (float)p->m_wrapW) {
+            float t = p->m_scaledX;
             do {
-                t -= (float)p->tilesWide;
-            } while (t >= (float)p->tilesWide);
-            p->scaledX = t;
+                t -= (float)p->m_wrapW;
+            } while (t >= (float)p->m_wrapW);
+            p->m_scaledX = t;
         }
     } else {
-        if (p->scaledX < 0.0f) {
-            p->scaledX = 0;
-        } else if ((float)p->tilesWide <= p->scaledX) {
-            p->scaledX = (float)(p->tilesWide - 1);
+        if (p->m_scaledX < 0.0f) {
+            p->m_scaledX = 0;
+        } else if ((float)p->m_wrapW <= p->m_scaledX) {
+            p->m_scaledX = (float)(p->m_wrapW - 1);
         }
     }
 
     // --- Y axis: identical wrap/clamp on scaledY/tilesHigh -------------------
     i32 wrapY = flags & 8;
     if (wrapY) {
-        if (p->scaledY < 0.0f) {
+        if (p->m_scaledY < 0.0f) {
             do {
-                p->scaledY += (float)p->tilesHigh;
-            } while (p->scaledY < 0.0f);
+                p->m_scaledY += (float)p->m_wrapH;
+            } while (p->m_scaledY < 0.0f);
         }
-        if (p->scaledY >= (float)p->tilesHigh) {
-            float t = p->scaledY;
+        if (p->m_scaledY >= (float)p->m_wrapH) {
+            float t = p->m_scaledY;
             do {
-                t -= (float)p->tilesHigh;
-            } while (t >= (float)p->tilesHigh);
-            p->scaledY = t;
+                t -= (float)p->m_wrapH;
+            } while (t >= (float)p->m_wrapH);
+            p->m_scaledY = t;
         }
     } else {
-        if (p->scaledY < 0.0f) {
-            p->scaledY = 0;
-        } else if ((float)p->tilesHigh <= p->scaledY) {
-            p->scaledY = (float)(p->tilesHigh - 1);
+        if (p->m_scaledY < 0.0f) {
+            p->m_scaledY = 0;
+        } else if ((float)p->m_wrapH <= p->m_scaledY) {
+            p->m_scaledY = (float)(p->m_wrapH - 1);
         }
     }
 
     // --- snap to integer + derive the tile origin ----------------------------
-    i32 ix = (i32)p->scaledX;
-    p->intX = ix;
-    i32 iy = (i32)p->scaledY;
-    p->intY = iy;
+    i32 ix = (i32)p->m_scaledX;
+    p->m_originX = ix;
+    i32 iy = (i32)p->m_scaledY;
+    p->m_originY = iy;
 
-    i32 ox = ix - p->anchorX;
-    p->originX = ox;
+    i32 ox = ix - p->m_anchorX;
+    p->m_tileOriginX = ox;
     if (ox < 0) {
         if (wrapX) {
-            p->originX = p->tilesWide + ox;
+            p->m_tileOriginX = p->m_wrapW + ox;
         } else {
-            p->originX = 0;
+            p->m_tileOriginX = 0;
         }
     }
 
-    i32 oy = iy - p->anchorY;
-    p->originY = oy;
+    i32 oy = iy - p->m_anchorY;
+    p->m_tileOriginY = oy;
     if (oy < 0) {
         if (wrapY) {
-            p->originY = p->tilesHigh + oy;
+            p->m_tileOriginY = p->m_wrapH + oy;
         } else {
-            p->originY = 0;
+            p->m_tileOriginY = 0;
         }
     }
 
     // --- derive the far tile extents (clamped, unless wrapping) ---------------
-    i32 ex = p->viewW + p->originX - 1;
-    i32 ey = p->viewH + p->originY - 1;
-    p->extentX = ex;
-    p->extentY = ey;
-    if (ex >= p->tilesWide && wrapX == 0) {
-        i32 over = ex - p->tilesWide + 1;
-        p->extentX = ex - over;
-        p->originX = p->originX - over;
+    i32 ex = p->m_viewW + p->m_tileOriginX - 1;
+    i32 ey = p->m_viewH + p->m_tileOriginY - 1;
+    p->m_tileExtentX = ex;
+    p->m_tileExtentY = ey;
+    if (ex >= p->m_wrapW && wrapX == 0) {
+        i32 over = ex - p->m_wrapW + 1;
+        p->m_tileExtentX = ex - over;
+        p->m_tileOriginX = p->m_tileOriginX - over;
     }
-    if (ey >= p->tilesHigh && wrapY == 0) {
-        i32 over = ey - p->tilesHigh + 1;
-        p->extentY = ey - over;
-        p->originY = p->originY - over;
+    if (ey >= p->m_wrapH && wrapY == 0) {
+        i32 over = ey - p->m_wrapH + 1;
+        p->m_tileExtentY = ey - over;
+        p->m_tileOriginY = p->m_tileOriginY - over;
     }
 }
 
@@ -873,40 +894,9 @@ void PlaneGeom::RecomputePlaneCoords() {
 // callees that reloc-mask (no string/global relocations except the jump tables).
 // ===========================================================================
 
-// LevelPlane - a window onto the per-plane object stored in m_planes (CPlane*),
-// viewed at the offsets this cluster touches. The named slot methods are UNMATCHED
-// engine __thiscall leaves modeled with no body (their call sites reloc-mask):
-//   Build(coords)  @0x161e80  - re-place + recompute one plane's coords
-//   Sync(arg)      @0x162010  - per-plane visit helper
-//   Refresh()      @0x163670  - per-plane refresh hook
-// Fields: +0x08 flags, +0x20 tileBase, +0x24 rowOfs, +0x28 width, +0x2c height,
-//   +0x74 limit, +0x80 cap, +0xb4 name[].
-struct LevelPlane {
-    char pad_0[0x08];
-    u32 flags; // +0x08
-    char pad_c[0x20 - 0x0c];
-    i32* tileBase; // +0x20
-    i32* rowOfs;   // +0x24
-    i32 width;     // +0x28
-    i32 height;    // +0x2c
-    char pad_30[0x74 - 0x30];
-    i32 limit; // +0x74
-    char pad_78[0x80 - 0x78];
-    i32 cap; // +0x80
-    char pad_84[0xb4 - 0x84];
-    char name[4]; // +0xb4
-
-    void Build(LevelCoordRect* coords); // @0x161e80 (ret 4)
-    void Sync(i32 arg);                 // @0x162010 (ret 4)
-    void Refresh();                     // @0x163670 (ret)
-};
-
-// Three zero-arg __thiscall methods on the main plane the forwarders tail into.
-struct MainPlane {
-    i32 QueryA();  // @0x163300
-    i32 QueryB();  // @0x163370
-    void Notify(); // @0x163420
-};
+// The per-plane object stored in m_planes is CLevelPlane (GameLevel.h). CGameLevel drives
+// its Build(coords)/Sync(arg)/Refresh() slots (unmatched engine __thiscall leaves,
+// reloc-masked call sites) and reads its tile grid / extents / name directly.
 
 // __strcmpi (CRT) - reloc-masked. Declared with no header to keep the cdecl shape.
 extern "C" i32 __cdecl _strcmpi(const char*, const char*);
@@ -916,6 +906,7 @@ extern "C" i32 __cdecl _strcmpi(const char*, const char*);
 // brush-kind all live on the same object that elsewhere is the level container.
 // Accessed via raw offsets so the codegen is naming-independent (the same offsets
 // are typed differently by the level-load methods).
+SIZE_UNKNOWN(LevelScroll);
 struct LevelScroll {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -941,6 +932,7 @@ extern "C" i32 __stdcall EditSubDispatch12(LevelScroll* lvl, i32 a, i32 b, i32 c
 // and the +0x138/+0x140 axis limits. The level itself is the handler's `this`; the
 // target is the explicit first argument. Accessed via named fields here (a window
 // onto the same offsets LevelScroll types differently for the simple path).
+SIZE_UNKNOWN(ScrollTarget);
 struct ScrollTarget {
     char pad_0[0x08];
     u32 flags; // +0x08  (bit4 = held)
@@ -984,6 +976,7 @@ struct ScrollTarget {
 // EditTarget - the explicit target arg the brush handlers drive. A window onto the
 // edit-state object (the same offsets ScrollTarget names for the simple path, plus
 // the +0x134/+0x13c axis-low brackets and the +0xf8/+0xfc per-axis step strides).
+SIZE_UNKNOWN(EditTarget);
 struct EditTarget {
     char pad_0[0x08];
     u32 flags; // +0x08
@@ -1007,6 +1000,7 @@ struct EditTarget {
 // ProbeObj - the candidate object AltStepValidate fits against (a game object hanging
 // off the owner's chain). Its world-space bounding box is the +0x144/+0x14c tile span
 // and +0x148 row, offset by the +0x5c/+0x60 origin; +0x178 is a clamp adjustment.
+SIZE_UNKNOWN(ProbeObj);
 struct ProbeObj {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X
@@ -1019,21 +1013,10 @@ struct ProbeObj {
     i32 m_178; // +0x178
 };
 
-// ProbePlane - the main plane the tile probe reads. Same object as CPlane/CPlaneRender,
-// viewed at the probe offsets: the wrap moduli at +0x30/+0x34 (clamp bounds), the
-// log2-tile shift amounts at +0x8c/+0x90, the column-offset table at +0x24 and the
-// tile grid at +0x20.
-struct ProbePlane {
-    char pad_0[0x20];
-    i32* tileGrid;   // +0x20
-    i32* colOffsets; // +0x24
-    char pad_28[0x30 - 0x28];
-    i32 wrapW; // +0x30
-    i32 wrapH; // +0x34
-    char pad_38[0x8c - 0x38];
-    i32 shiftX; // +0x8c
-    i32 shiftY; // +0x90
-};
+// The tile probe reads the main plane (CLevelPlane) at its probe offsets: the wrap moduli
+// m_wrapW/m_wrapH (+0x30/+0x34, clamp bounds), the log2-tile shifts m_shiftX/m_shiftY
+// (+0x8c/+0x90), the column-offset table m_colOffsets (+0x24) and the tile grid
+// m_tileGrid (+0x20).
 
 // PROBE_TILE - the inlined per-coord tile probe (== AxisProbe @0x161270). Written as
 // a do/while macro so each of the (up to four) copies in a single function schedules
@@ -1048,27 +1031,27 @@ struct ProbePlane {
         if (px_ < 0) {                                                                             \
             px_ = 0;                                                                               \
         } else {                                                                                   \
-            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (px_ >= pc_->wrapW) {                                                               \
-                px_ = pc_->wrapW - 1;                                                              \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (px_ >= pc_->m_wrapW) {                                                             \
+                px_ = pc_->m_wrapW - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
         if (py_ < 0) {                                                                             \
             py_ = 0;                                                                               \
         } else {                                                                                   \
-            ProbePlane* pc_ = (ProbePlane*)(LVL)->m_mainPlane;                                     \
-            if (py_ >= pc_->wrapH) {                                                               \
-                py_ = pc_->wrapH - 1;                                                              \
+            CLevelPlane* pc_ = (LVL)->m_mainPlane;                                                 \
+            if (py_ >= pc_->m_wrapH) {                                                             \
+                py_ = pc_->m_wrapH - 1;                                                            \
             }                                                                                      \
         }                                                                                          \
-        ProbePlane* pl_ = (ProbePlane*)(LVL)->m_mainPlane;                                         \
-        i32 qx_ = px_ >> pl_->shiftX;                                                              \
-        i32 qy_ = py_ >> pl_->shiftY;                                                              \
+        CLevelPlane* pl_ = (LVL)->m_mainPlane;                                                     \
+        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
+        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
         i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->shiftX);                                                    \
-        i32 idx_ = pl_->colOffsets[qy_] + col_;                                                    \
-        i32 subY_ = py_ - (qy_ << pl_->shiftY);                                                    \
-        i32 tile_ = pl_->tileGrid[idx_];                                                           \
+        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
+        i32 idx_ = pl_->m_colOffsets[qy_] + col_;                                                  \
+        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 tile_ = pl_->m_tileGrid[idx_];                                                         \
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = 0;                                                                          \
         } else {                                                                                   \
@@ -1091,28 +1074,28 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (px < 0) {
         px = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (px >= pc->wrapW) {
-            px = pc->wrapW - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (px >= pc->m_wrapW) {
+            px = pc->m_wrapW - 1;
         }
     }
     i32 py = limit;
     if (py < 0) {
         py = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (py >= pc->wrapH) {
-            py = pc->wrapH - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (py >= pc->m_wrapH) {
+            py = pc->m_wrapH - 1;
         }
     }
-    ProbePlane* pl = (ProbePlane*)m_mainPlane;
-    i32 qx = px >> pl->shiftX;
-    i32 qy = py >> pl->shiftY;
+    CLevelPlane* pl = m_mainPlane;
+    i32 qx = px >> pl->m_shiftX;
+    i32 qy = py >> pl->m_shiftY;
     i32 col = qx;
-    i32 subX = px - (qx << pl->shiftX);
-    i32 idx = pl->colOffsets[qy] + col;
-    i32 subY = py - (qy << pl->shiftY);
-    i32 tile = pl->tileGrid[idx];
+    i32 subX = px - (qx << pl->m_shiftX);
+    i32 idx = pl->m_colOffsets[qy] + col;
+    i32 subY = py - (qy << pl->m_shiftY);
+    i32 tile = pl->m_tileGrid[idx];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
@@ -1122,6 +1105,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
 // EditSink - the serializer `arg0` of EditDispatch: a polymorphic object whose slots
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
+SIZE_UNKNOWN(EditSink);
 struct EditSink {
     virtual void v00();
     virtual void v04();
@@ -1158,25 +1142,25 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 // referenced image set's slot +0x20 with (0, 0). ret 8.
 RVA(0x00082600, 0x73)
 i32 CGameLevel::LookupTile(i32 x, i32 y) {
-    LevelPlane* mp;
+    CLevelPlane* mp;
     if (x < 0) {
         x = 0;
     } else {
-        mp = (LevelPlane*)m_mainPlane;
-        if (x >= mp->width) {
-            x = mp->width - 1;
+        mp = m_mainPlane;
+        if (x >= mp->m_width) {
+            x = mp->m_width - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        mp = (LevelPlane*)m_mainPlane;
-        if (y >= mp->height) {
-            y = mp->height - 1;
+        mp = m_mainPlane;
+        if (y >= mp->m_height) {
+            y = mp->m_height - 1;
         }
     }
-    mp = (LevelPlane*)m_mainPlane;
-    i32 tile = mp->tileBase[mp->rowOfs[y] + x];
+    mp = m_mainPlane;
+    i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
@@ -1189,7 +1173,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
 RVA(0x000cedf0, 0xf)
 i32 CGameLevel::MainPlaneQueryA() {
     if (m_mainPlane != 0) {
-        return ((MainPlane*)m_mainPlane)->QueryA();
+        return (m_mainPlane)->QueryA();
     }
     return 0;
 }
@@ -1197,7 +1181,7 @@ i32 CGameLevel::MainPlaneQueryA() {
 RVA(0x000cee10, 0xf)
 i32 CGameLevel::MainPlaneQueryB() {
     if (m_mainPlane != 0) {
-        return ((MainPlane*)m_mainPlane)->QueryB();
+        return (m_mainPlane)->QueryB();
     }
     return 0;
 }
@@ -1205,7 +1189,7 @@ i32 CGameLevel::MainPlaneQueryB() {
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
-        ((MainPlane*)m_mainPlane)->Notify();
+        (m_mainPlane)->Notify();
     }
 }
 
@@ -1215,7 +1199,7 @@ RVA(0x0015da80, 0x47)
 void CGameLevel::BuildAllPlanes(LevelCoordRect* coords) {
     m_planeCtx = *coords;
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((LevelPlane*)m_planes[i])->Build(coords);
+        ((CLevelPlane*)m_planes[i])->Build(coords);
     }
 }
 
@@ -1256,7 +1240,7 @@ i32 CGameLevel::SetExtentsAndBuildAll(i32 w, i32 h) {
     i32 i = 0;
     if (m_planes.GetSize() > 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Build(&rect);
+            ((CLevelPlane*)m_planes.GetData()[i])->Build(&rect);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1272,7 +1256,7 @@ void CGameLevel::SyncToMainIndex(i32 arg) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i <= m_mainIndex);
     }
@@ -1286,7 +1270,7 @@ void CGameLevel::SyncAfterMainIndex(i32 arg) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            ((LevelPlane*)m_planes.GetData()[i])->Sync(arg);
+            ((CLevelPlane*)m_planes.GetData()[i])->Sync(arg);
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1386,8 +1370,8 @@ i32 CGameLevel::ClampScroll(void* target, i32 arg1, i32 arg2, i32 arg3) {
 RVA(0x0015dde0, 0x5c)
 CPlane* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        LevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes[i] : 0;
-        if (_strcmpi(name, p->name) == 0) {
+        CLevelPlane* p = (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes[i] : 0;
+        if (_strcmpi(name, p->m_name) == 0) {
             return (CPlane*)p;
         }
     }
@@ -1398,6 +1382,7 @@ CPlane* CGameLevel::FindPlaneByName(const char* name) {
 // hangs off +0x14 (the node list) and whose +0x28 hook is dispatched in the
 // non-origin-fixed path. ObjNode - one node in that chain (next@+0, payload@+8);
 // the payload object carries a depth key at +0x74 and a +0x2c draw hook.
+SIZE_UNKNOWN(ObjPayload);
 struct ObjPayload {
     virtual void v00();
     virtual void v04();
@@ -1414,6 +1399,7 @@ struct ObjPayload {
     char pad_4[0x74 - 0x04];
     i32 depth; // +0x74
 };
+SIZE_UNKNOWN(ObjNode);
 struct ObjNode {
     ObjNode* next;    // +0x00
     char pad_4[0x04]; // +0x04
@@ -1423,10 +1409,12 @@ struct ObjNode {
 // sub-record at +0x10 whose +0x04 field is the head node; the engine takes the
 // ADDRESS of the +0x10 record (lea), null-checks it (always live), then loads the
 // head. The +0x28 hook is dispatched in the non-origin-fixed path.
+SIZE_UNKNOWN(VisitChain);
 struct VisitChain {
     char pad_0[0x04];
     ObjNode* head; // +0x04 (i.e. VisitCtx+0x14)
 };
+SIZE_UNKNOWN(VisitCtx);
 struct VisitCtx {
     virtual void v00();
     virtual void v04();
@@ -1451,37 +1439,39 @@ struct VisitCtx {
 // every Sync/Draw/Hook receives; `ctx` (2nd param) owns the chain.
 //
 // @early-stop
-// register-scheduling wall (~86%): the interleaved object-chain walk + per-plane Sync
-// loop pins ebp/esi/ebx across calls in an order MSVC reproduces only for one spilling
-// of the chain cursor; logic + offsets + CFG are exact. Deferred to the final sweep.
+// register-scheduling wall (~92%): the inner draw-gate branch polarity now matches
+// retail (`if (depth < cap) Draw; else block` -> jge block, Draw fall-through). Residue
+// is the chain cursor's saved-reg shuffle - retail keeps a 2nd copy of `cur` in edx and
+// reloads `cap` from spill each iteration; cl keeps cap live in edx and restores via the
+// surviving eax. Logic + offsets + CFG exact; allocator coin-flip. Deferred to the final sweep.
 RVA(0x0015dc90, 0x141)
 void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     VisitCtx* c = (VisitCtx*)ctx;
     VisitChain* chain = &c->m_chain;
 
-    if ((m_flags & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
-        ((LevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
+    if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
+        ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync((i32)visitor);
         ObjNode* node = chain->head;
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                LevelPlane* p =
-                    (i >= 0 && i < m_planes.GetSize()) ? (LevelPlane*)m_planes.GetData()[i] : 0;
-                i32 cap = p->cap;
+                CLevelPlane* p =
+                    (i >= 0 && i < m_planes.GetSize()) ? (CLevelPlane*)m_planes.GetData()[i] : 0;
+                i32 cap = p->m_cap;
                 i32 blocked = 0;
                 while (node != 0 && blocked == 0) {
                     ObjNode* cur = node;
                     node = node->next;
                     ObjPayload* pl = cur->obj;
-                    if (pl->depth >= cap) {
+                    if (pl->depth < cap) {
+                        pl->Draw((i32)visitor);
+                    } else {
                         node = cur;
                         blocked = 1;
-                    } else {
-                        pl->Draw((i32)visitor);
                     }
                 }
-                ((LevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
+                ((CLevelPlane*)m_planes.GetData()[i])->Sync((i32)visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -1498,7 +1488,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((LevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[idx])->Sync((i32)visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
@@ -1506,7 +1496,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            ((LevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
+            ((CLevelPlane*)m_planes.GetData()[j])->Sync((i32)visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }
@@ -1517,7 +1507,7 @@ void CGameLevel::VisitVisible(void* visitor, i32 ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((LevelPlane*)m_planes[i])->Refresh();
+        ((CLevelPlane*)m_planes[i])->Refresh();
     }
 }
 
@@ -1532,7 +1522,7 @@ void CGameLevel::NotifyAllPlanes() {
 // between the arg pushes (2 regs), MSVC pre-loads all three (eax/ecx/edx). See
 // docs/patterns/pin-local-for-callee-saved-reg.md. Entropy tail; deferred.
 RVA(0x00167130, 0x83)
-i32 __stdcall CGameLevel::ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
+i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c) {
     LevelScroll* s = (LevelScroll*)lvl;
     i32 eax = 0;
     i32 prevX = s->scrollX;
@@ -1626,28 +1616,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = yLo;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1720,28 +1710,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = yLo;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 col = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + col;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + col;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1814,28 +1804,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = fixedY;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1908,28 +1898,28 @@ looptop: {
         if (cx < 0) {
             cx = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cx >= pc->wrapW) {
-                cx = pc->wrapW - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cx >= pc->m_wrapW) {
+                cx = pc->m_wrapW - 1;
             }
         }
         i32 cy = fixedY;
         if (cy < 0) {
             cy = 0;
         } else {
-            ProbePlane* pc = (ProbePlane*)m_mainPlane;
-            if (cy >= pc->wrapH) {
-                cy = pc->wrapH - 1;
+            CLevelPlane* pc = m_mainPlane;
+            if (cy >= pc->m_wrapH) {
+                cy = pc->m_wrapH - 1;
             }
         }
-        ProbePlane* pl = (ProbePlane*)m_mainPlane;
-        i32 qx = cx >> pl->shiftX;
-        i32 qy = cy >> pl->shiftY;
+        CLevelPlane* pl = m_mainPlane;
+        i32 qx = cx >> pl->m_shiftX;
+        i32 qy = cy >> pl->m_shiftY;
         i32 c = qx;
-        i32 subX = cx - (qx << pl->shiftX);
-        i32 idx = pl->colOffsets[qy] + c;
-        i32 subY = cy - (qy << pl->shiftY);
-        i32 tile = pl->tileGrid[idx];
+        i32 subX = cx - (qx << pl->m_shiftX);
+        i32 idx = pl->m_colOffsets[qy] + c;
+        i32 subY = cy - (qy << pl->m_shiftY);
+        i32 tile = pl->m_tileGrid[idx];
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = 0;
         } else {
@@ -1996,10 +1986,12 @@ done_eq:
 // A game object in the broad-phase chain. The brackets at +0x134..+0x140 are the
 // object-local AABB (added to the +0x5c/+0x60 world origin); +0x90 is the notifier
 // dispatcher (its +0x10 slot is the callback); +0xe8/+0xf4 the collision masks.
+SIZE_UNKNOWN(BPNotifier);
 struct BPNotifier {
     char pad_0[0x10];
     i32 (*notify)(void* obj); // +0x10
 };
+SIZE_UNKNOWN(BPObj);
 struct BPObj {
     char pad_0[0x08];
     u32 flags; // +0x08  (bit 0x100 = active)
@@ -2022,15 +2014,18 @@ struct BPObj {
 
 // The owner's object chain: this->m_owner (+0xc) -> +0x8 (chain mgr) -> +0x14 (head).
 // Each node holds the next link at +0x00 and the object pointer at +0x08.
+SIZE_UNKNOWN(BPNode);
 struct BPNode {
     BPNode* next; // +0x00
     char pad_4[0x08 - 0x04];
     BPObj* obj; // +0x08
 };
+SIZE_UNKNOWN(BPChainMgr);
 struct BPChainMgr {
     char pad_0[0x14];
     BPNode* head; // +0x14
 };
+SIZE_UNKNOWN(BPOwner);
 struct BPOwner {
     char pad_0[0x08];
     BPChainMgr* mgr; // +0x08
@@ -2044,15 +2039,15 @@ i32 CGameLevel::BroadPhase(ScrollTarget* tp, i32 candX, i32 candY) {
     if (!(t->flags & 0x100)) {
         return 0;
     }
-    BPNode* node = ((BPOwner*)m_owner)->mgr->head;
+    BPNode* node = ((BPOwner*)m_0c)->mgr->head;
     if (node == 0) {
         return 0;
     }
     do {
         BPNode* nx = node->next;
         BPObj* obj = node->obj;
-        if (obj != t && (obj->flags & 0x100) && (t->maskB & obj->maskA)
-            && t->boxL != (i32)0x80000000 && obj->boxL != (i32)0x80000000) {
+        if (obj != t && (obj->flags & 0x100) && (t->maskB & obj->maskA) && t->boxL != AXIS_UNSET
+            && obj->boxL != AXIS_UNSET) {
             i32 tLeft = t->boxL + t->originX;
             i32 tBot = t->boxB + t->originY;
             i32 tRight = t->originX + t->boxR;
@@ -2142,7 +2137,7 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
 // Logic/offsets/CFG exact; deferred to the final sweep.
 RVA(0x0015dfb0, 0x15b)
 i32 CGameLevel::EditSwitch(void* target, i32 a1, i32 a2, i32 a3) {
-    if (m_flags & 4) {
+    if (m_08 & 4) {
         return ApplyScroll((CGameLevel*)target, a1, a2, a3);
     }
 
@@ -2748,12 +2743,15 @@ i32 CGameLevel::StepAxisAlt(void* target, i32 a1, i32 a2, i32* outY, i32 a3) {
         return 0;
     }
 
-    ObjNode* node = *(ObjNode**)((char*)((char**)m_owner)[2] + 0x14);
+    // Walk the owner's object chain (the same links BroadPhase models: owner+0x8 -> mgr,
+    // mgr+0x14 -> head) and validate each candidate whose collision category (+0xe8) is
+    // exactly 0x80.
+    BPNode* node = ((BPOwner*)m_0c)->mgr->head;
     while (node != 0) {
-        ObjNode* cur = node;
+        BPNode* cur = node;
         node = node->next;
-        ObjPayload* pl = cur->obj;
-        if (*(i32*)((char*)pl + 0xe8) == 0x80) {
+        BPObj* pl = cur->obj;
+        if (pl->maskA == 0x80) {
             if (AltStepValidate(t, pl, a1, a2, outY, a3) != 0) {
                 t->editKind = 1;
                 t->holdAnchor = (i32)pl;
@@ -2852,6 +2850,7 @@ fail:
 // add chain - retail keeps tMid/tLoA both live (boxL via a combined lea) while our cl
 // spills tLoA to [esp+0x24]. Reordering the local computes regresses it (84%); not
 // source-steerable. Deferred to the final sweep.
+SIZE_UNKNOWN(HoldPayload);
 struct HoldPayload {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X
@@ -2905,45 +2904,42 @@ i32 CGameLevel::HoldMove(void* t, i32 anchor, i32 a1, i32 a2, i32 a3) {
 // = that + the image set's width (+0x04) - 1. Returns 1 (0 for an empty/clear tile).
 // An inlined tile probe that, unlike AxisProbe, keeps the tile-aligned coord and
 // reads the image set's width field instead of dispatching slot +0x20. ret 0x10.
-struct SpanImageSet {
-    char pad_0[0x04];
-    i32 m_04; // +0x04  tile (column) width
-};
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (x < 0) {
         x = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (x >= pc->wrapW) {
-            x = pc->wrapW - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (x >= pc->m_wrapW) {
+            x = pc->m_wrapW - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
-        ProbePlane* pc = (ProbePlane*)m_mainPlane;
-        if (y >= pc->wrapH) {
-            y = pc->wrapH - 1;
+        CLevelPlane* pc = m_mainPlane;
+        if (y >= pc->m_wrapH) {
+            y = pc->m_wrapH - 1;
         }
     }
-    ProbePlane* pl = (ProbePlane*)m_mainPlane;
-    i32 qx = x >> pl->shiftX;
-    i32 alignedX = qx << pl->shiftX;
-    i32 qy = y >> pl->shiftY;
-    i32 idx = pl->colOffsets[qy] + qx;
-    i32 tile = pl->tileGrid[idx];
+    CLevelPlane* pl = m_mainPlane;
+    i32 qx = x >> pl->m_shiftX;
+    i32 alignedX = qx << pl->m_shiftX;
+    i32 qy = y >> pl->m_shiftY;
+    i32 idx = pl->m_colOffsets[qy] + qx;
+    i32 tile = pl->m_tileGrid[idx];
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    SpanImageSet* set = (SpanImageSet*)m_imageSets[tile & 0xffff];
+    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
     *outLo = alignedX;
-    *outHi = alignedX + set->m_04 - 1;
+    *outHi = alignedX + set->m_width - 1;
     return 1;
 }
 
 // ProbeTarget - the edit target ProbeColumn/WalkColumnDown drive: its +0x5c/+0x60
 // scroll origin and the +0x134/+0x138/+0x140 axis brackets.
+SIZE_UNKNOWN(ProbeTarget);
 struct ProbeTarget {
     char pad_0[0x5c];
     i32 m_5c; // +0x5c  origin X
@@ -2992,7 +2988,7 @@ i32 CGameLevel::ProbeColumn(void* target, i32 dx) {
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     ProbeTarget* t = (ProbeTarget*)target;
-    if (t->m_134 == (i32)0x80000000) {
+    if (t->m_134 == AXIS_UNSET) {
         return 0;
     }
     if (m_mainPlane == 0) {
@@ -3011,7 +3007,7 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
             break;
         }
         ++row;
-        if (row >= ((ProbePlane*)m_mainPlane)->wrapH) {
+        if (row >= (m_mainPlane)->m_wrapH) {
             return 0;
         }
         PROBE_TILE(this, px, row, result);
@@ -3021,3 +3017,16 @@ i32 CGameLevel::WalkColumnDown(void* target, i32 unused) {
     t->m_60 += final;
     return 1;
 }
+
+// --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /
+// g_imageSet1/2/3Vtbl manual stamps + vtbl-placeholders placeholders). cl now emits
+// each ??_7 (18 slots), matched slots pointing at the real methods (RVA-bound), the
+// base-thunk/engine slots reloc-masked declared-only externs. -------------------
+VTBL(CGameLevel, 0x001f0150); // ??_7CGameLevel (was g_gameLevelVtbl)
+VTBL(CImageSet1, 0x001f0198); // ??_7CImageSet1 (was g_imageSet1Vtbl)
+VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
+VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
+SIZE(CImageSet1, 0x10);
+SIZE(CImageSet2, 0x24);
+SIZE_UNKNOWN(CGameLevel);
+SIZE_UNKNOWN(CImageSet);

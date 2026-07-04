@@ -14,21 +14,18 @@
 //   - three __stdcall helpers over a 3-int player-id set (find/add/clear), and
 //   - a session-readiness check on an as-yet-unidentified owner object that
 //     holds a CNetMgr* at +0x1c and a per-slot ack-flag array at +0x3c.
-#include <Net/NetMgr.h> // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+#include <Net/NetMgr.h>          // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+#include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c real command manager (EnqueueCommand)
 #include <rva.h>
-
-// One queued command: only the +0x0 sequence number is inspected here.
-struct CNetCmd {
-    i32 m_seq; // +0x0  command sequence number
-};
 
 // The CObList node shape (CObject list): +0x0 next, +0x4 prev, +0x8 payload.
 // Used to walk the queue and to name the position the removal targets.
 struct CObListNode {
     CObListNode* m_next; // +0x0
     CObListNode* m_prev; // +0x4
-    void* m_data;        // +0x8
+    CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
 };
+SIZE_UNKNOWN(CObListNode); // CObList node walk-view; retail size TBD
 
 // Return a finished command to the engine's free pool (0xbf580, __cdecl): it
 // AddTail's the node onto a global recycle list. External (reloc-masked).
@@ -76,27 +73,15 @@ public:
     static CGruntzMultiCommand* Allocate(); // 0x24360
 };
 
-// The per-game command manager reached through CNetMgr->m_4->m_6c; ProcessCmd
-// hands each parsed grunt command to it.
-struct CGruntzCmdMgr {
-    void EnqueueCommand(i32 a, void* cmd); // 0x23d10
-};
-struct CNetMgrSub {
-    char m_pad0[0x6c];
-    CGruntzCmdMgr* m_cmdMgr; // +0x6c
-};
+// The per-game command manager reached through CNetMgr->m_4->m_6c is the real
+// CGruntzCmdMgr (EnqueueCommand @0x23d10); ProcessCmd hands each parsed grunt
+// command to it. Shared via the canonical CNetGameMgr::m_6c (folds the former
+// local CGruntzCmdMgr/CNetMgrSub placeholders).
 
-// The CNetMgr the slot caches at +0x1c, seen here through three members: the +0x4
-// sub-object (whose +0x6c is the grunt command manager), the DirectPlay session at
-// +0x520, and DispatchRecvMsg (0xb9750) for the high-bit relay command.
-struct CNetMgrView {
-    char m_pad0[4];
-    CNetMgrSub* m_sub; // +0x04
-    char m_pad8[0x520 - 8];
-    CNetSession* m_session; // +0x520  the session sub-object
-
-    i32 DispatchRecv(i32 sender, void* buf, i32 size); // 0xb9750
-};
+// The slot's +0x1c owner is the shared CNetMgr (NetMgr.h): ProcessCmd reaches its
+// +0x4 game-mgr sub-object (CNetGameMgr; +0x6c is the grunt command manager), the
+// DirectPlay session at +0x520 (FindCmdSlot), and DispatchRecvMsg (0xb9750) for the
+// high-bit relay - all real typed members now, no reduced view.
 
 // The command record's fixed header (after the opcode/parity prefix): a sequence
 // number, two control words and a per-entry count byte; the payload follows.
@@ -106,17 +91,19 @@ struct CNetCmdHdr {
     i32 m_flags;      // +0x8  flags word
     u8 m_entryCount;  // +0xc  entry count
 };
+SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record size TBD
 
 // The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
 // the payload length and the inline payload copy.
 struct CNetCmdPacket {
-    i32 m_sequence; // +0x0  sequence
-    void* m_owner;  // +0x4  owning slot (this)
-    u8 m_flags;     // +0x8  flag byte
+    i32 m_sequence;       // +0x0  sequence
+    CNetCmdSlot* m_owner; // +0x4  owning slot (this)
+    u8 m_flags;           // +0x8  flag byte
     char m_pad9[0xc - 9];
     i32 m_payloadLength; // +0xc  payload length
     char m_payload[1];   // +0x10 payload
 };
+SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
@@ -125,13 +112,13 @@ struct CNetCmdPacket {
 RVA(0x000c0070, 0x15)
 void CNetSession::ResetCmdBuffers() {
     for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_10 = 0;
+        m_slots[i].m_latency = 0;
     }
 }
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe: zero every scalar
-// field (incl. m_0/m_c/m_1c), drain the queue, then splat both command ranges.
+// field (incl. m_state/m_cmdHead/m_owner), drain the queue, then splat both ranges.
 // ---------------------------------------------------------------------------
 // @early-stop
 // zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
@@ -141,21 +128,21 @@ void CNetSession::ResetCmdBuffers() {
 // this TU (docs/patterns/zero-register-pinning.md); not source-steerable. Final sweep.
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetAll() {
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 0;
+    m_state = 0;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = 0;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
+    m_owner = 0;
     ClearCmds();
-    m_3c = 0;
-    m_40 = 0;
-    m_44 = 0;
-    m_48 = 0;
-    ResetTriple(m_4c);
-    ResetTriple(m_58);
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
 }
 
 // ---------------------------------------------------------------------------
@@ -187,19 +174,19 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     u8 opcode = *(u8*)rec;
     i32 odd = opcode & 1;
     char* p = (char*)rec + 1;
-    if (m_0 != 3) {
+    if (m_state != 3) {
         return 1;
     }
     if (opcode & 0x80) {
-        return ((CNetMgrView*)m_1c)->DispatchRecv(m_c[6], rec, size);
+        return m_owner->DispatchRecvMsg(m_cmdHead[6], (char*)rec, size);
     }
     if (odd == 0) {
-        if (m_4 != 0) {
+        if (m_resetGuard != 0) {
             return 1;
         }
     }
     if (odd) {
-        if (m_4 == 0) {
+        if (m_resetGuard == 0) {
             return 1;
         }
     }
@@ -217,32 +204,32 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     char* cursor = p + 13;
     rem -= 13;
 
-    if (m_4 != 0 && odd) {
-        CNetCmdSlot* slot = ((CNetMgrView*)m_1c)->m_session->FindCmdSlot(playerId);
+    if (m_resetGuard != 0 && odd) {
+        CNetCmdSlot* slot = m_owner->m_session->FindCmdSlot(playerId);
         if (slot == 0) {
             return 0;
         }
         if (opcode & 2) {
-            i32 pid = slot->m_c[0] & 0xff;
-            (&m_3c)[pid] = 1;
-            if (seq > m_8) {
-                m_8 = seq;
+            i32 pid = slot->m_cmdHead[0] & 0xff;
+            m_ackFlags[pid] = 1;
+            if (seq > m_latchedSeq) {
+                m_latchedSeq = seq;
             }
         }
     }
 
     RaiseMax(base);
     if (opcode & 0x10) {
-        NetCmdIdAdd(m_58, base + 2);
+        NetCmdIdAdd(m_rangeB, base + 2);
     } else if (opcode & 0x20) {
-        NetCmdIdAdd(m_58, base + 3);
+        NetCmdIdAdd(m_rangeB, base + 3);
     }
-    NetCmdIdClear(m_58, base + 1);
+    NetCmdIdClear(m_rangeB, base + 1);
 
-    if (m_14 >= seq) {
+    if (m_baseSeq >= seq) {
         return 1;
     }
-    if (NetCmdIdFind(m_4c, seq)) {
+    if (NetCmdIdFind(m_rangeA, seq)) {
         return 1;
     }
     AdvanceSeq(seq);
@@ -267,7 +254,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
         }
         i32 consumed = obj->Parse(cursor, rem);
         obj->m_submitted = 1;
-        ((CNetMgrView*)m_1c)->m_sub->m_cmdMgr->EnqueueCommand(0, obj);
+        m_owner->m_4->m_6c->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;
     }
@@ -287,15 +274,15 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
 // this-residency idiom; not source-steerable here. Final sweep.
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::AdvanceSeq(i32 id) {
-    if (m_14 + 1 == id) {
-        NetCmdIdClear(m_4c, m_14);
-        m_14++;
-        while (NetCmdIdFind(m_4c, m_14 + 1)) {
-            m_14++;
-            NetCmdIdClear(m_4c, m_14);
+    if (m_baseSeq + 1 == id) {
+        NetCmdIdClear(m_rangeA, m_baseSeq);
+        m_baseSeq++;
+        while (NetCmdIdFind(m_rangeA, m_baseSeq + 1)) {
+            m_baseSeq++;
+            NetCmdIdClear(m_rangeA, m_baseSeq);
         }
     } else {
-        NetCmdIdAdd(m_4c, id);
+        NetCmdIdAdd(m_rangeA, id);
     }
 }
 
@@ -304,8 +291,8 @@ void CNetCmdSlot::AdvanceSeq(i32 id) {
 // ---------------------------------------------------------------------------
 RVA(0x000c0fa0, 0x11)
 void CNetCmdSlot::RaiseMax(i32 v) {
-    if (v > m_18) {
-        m_18 = v;
+    if (v > m_maxSeq) {
+        m_maxSeq = v;
     }
 }
 
@@ -391,7 +378,7 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
     while (node != 0) {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
             if (node != 0) {
                 m_cmds.RemoveAt((POSITION)node->m_prev);
@@ -427,7 +414,7 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     do {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (cmd->m_seq > *pMax) {
             *pMax = cmd->m_seq;
         }
@@ -447,7 +434,7 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
     while (node != 0) {
         CObListNode* cur = node;
         node = node->m_next;
-        CNetCmd* cmd = (CNetCmd*)cur->m_data;
+        CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
             return cmd;
         }
@@ -481,10 +468,11 @@ struct CNetSyncCheck {
 
     i32 AllSlotsReady(); // c1320
 };
+SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active
-// (m_0==3), unreset (m_4==0) command slot has not yet been acked locally
+// (m_state==3), unreset (m_resetGuard==0) command slot has not yet been acked locally
 // (m_3c[i]==0); true (1) otherwise.
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -504,7 +492,7 @@ i32 CNetSyncCheck::AllSlotsReady() {
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0 && m_localAckFlags[i] == 0) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && m_localAckFlags[i] == 0) {
             return 0;
         }
     }
@@ -517,8 +505,8 @@ i32 CNetSyncCheck::AllSlotsReady() {
 // ---------------------------------------------------------------------------
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::Touch() {
-    if (m_4 == 0) {
-        m_4 = 1;
-        m_8 = m_14;
+    if (m_resetGuard == 0) {
+        m_resetGuard = 1;
+        m_latchedSeq = m_baseSeq;
     }
 }

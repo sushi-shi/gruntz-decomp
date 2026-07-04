@@ -45,6 +45,7 @@ Subcommands
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -146,6 +147,45 @@ def summarize(report: dict) -> None:
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
+    # Cleanliness scoreboard - part of the report so agents see their cast /
+    # placeholder / view deltas (vs the committed baseline) immediately alongside
+    # the match %, and steer on their own change. See docs/cleanliness-metrics.md.
+    try:
+        from gruntz.match.cleanliness import count, report_lines, save_baseline
+        rows = count()
+        for line in report_lines(rows):
+            print(f"  {line}")
+        # Roll the baseline forward as part of the build: the delta printed above is
+        # 'change since the last committed build', and the refreshed baseline is a
+        # tracked build artifact (committed with the work, like the README score
+        # block / match baseline). Keeps it from silently freezing.
+        save_baseline(rows)
+    except Exception as exc:  # never let the scoreboard break a build report
+        print(f"  cleanliness: (unavailable: {exc})")
+    # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the
+    # hierarchy discrepancies that a topological override analysis finds - INHERIT
+    # (derive the real base instead of re-listing its slots), REDECLARE (drop
+    # redeclared inherited slots), OVERRIDE (unmarked overrides), MISSING (fewer
+    # decls than slots) - plus the UNANCHORED src vtables not yet in the hierarchy
+    # ('the proper ones not in the hierarchy'). Reducing these is what drives the
+    # 'placeholder vtable slots' text metric to 0 AND removes placeholder view
+    # classes. See `gruntz.analysis.vtable_hierarchy --audit / --coverage`.
+    try:
+        import re as _re
+        def _vh(mode: str) -> str:
+            return subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", mode],
+                                  capture_output=True, text=True, cwd=str(REPO)).stdout
+        aud, cov = _vh("--audit"), _vh("--coverage")
+        def _n(txt: str, pat: str) -> str:
+            m = _re.search(pat, txt)
+            return m.group(1) if m else "?"
+        inh, red = _n(aud, r"#\s*INHERIT\s*:\s*(\d+)"), _n(aud, r"#\s*REDECLARE\s*:\s*(\d+)")
+        ovr, mis = _n(aud, r"#\s*OVERRIDE\s*:\s*(\d+)"), _n(aud, r"#\s*MISSING\s*:\s*(\d+)")
+        anch, unanch = _n(cov, r"#\s*anchored\s*:\s*(\d+)"), _n(cov, r"UNANCHORED[^:]*:\s*(\d+)")
+        print(f"  vtable health (-> 0; binary-proven): INHERIT {inh}  REDECLARE {red}  "
+              f"OVERRIDE-unmarked {ovr}  MISSING {mis}  |  anchored {anch}, UNANCHORED {unanch}")
+    except Exception as exc:  # never let the vtable probe break a build report
+        print(f"  vtable health: (unavailable: {exc})")
 
 
 # --- subcommands -----------------------------------------------------------
@@ -193,6 +233,22 @@ def cmd_build(args) -> None:
         log("regressions vs baseline ...")
         subprocess.run([sys.executable, "-m", "gruntz.match.status",
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
+
+    # Class-metadata invariants. Every vtable-bearing class should carry a
+    # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
+    # class added without one is caught here, not later.
+    # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
+    # without SIZE/SIZE_UNKNOWN fails the build (class_sizes exits nonzero).
+    run([sys.executable, "-m", "gruntz.match.class_sizes"])
+    # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
+    # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
+    r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
+                       cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    n = sum(1 for ln in (r.stdout + r.stderr).splitlines()
+            if re.match(r"\s*\S+:\d+:", ln))
+    if n:
+        log(f"VTBL: {n} class(es) missing VTBL() "
+            f"(python -m gruntz.match.class_vtables for the list)")
 
 
 def cmd_labels(args) -> None:
@@ -526,6 +582,34 @@ def cmd_link(args) -> None:
              "--names", str(GEN_NAMES)])
 
 
+def cmd_exe_diff(args) -> None:
+    """Whole-EXE comparison: candidate GRUNTZ.EXE vs retail (layout + bytes).
+
+    One level up from per-object objdiff: reads the candidate EXE + .map produced
+    by `gruntz link` and diffs the whole image against retail - PE headers/section
+    table, .text RVA layout fidelity (the RVA-reorder lever), and name-aligned
+    linked-byte identity. Prints the proposed tracked EXE-match numbers. Run
+    `gruntz link` first to (re)generate the candidate. See gruntz.analysis.exe_diff.
+    """
+    cmd = [sys.executable, "-m", "gruntz.analysis.exe_diff"]
+    if args.json:
+        cmd += ["--json"]
+    run(cmd)
+
+
+def cmd_lint(args) -> None:
+    """On-demand clang-tidy DE-HACK finder (READ-ONLY worklist; never auto-fix).
+
+    Thin alias for `python -m gruntz.analysis.tidy_audit`: runs the curated
+    finder config (config/tidy-audit.yaml, deliberately OFF the editor's
+    always-on path) over src/ and prints the categorized de-hack backlog -
+    C-style/reinterpret casts, dead/unused decls, bugprone smells - with
+    per-check totals + top files by cast count. Pass paths to scope it, --csv
+    to dump file,line,check,message. Never runs with `-fix`.
+    """
+    run([sys.executable, "-m", "gruntz.analysis.tidy_audit", *args.rest])
+
+
 def cmd_todo(args) -> None:
     """Obj symbols with no @address yet (the matching worklist) - a discovery aid.
 
@@ -630,8 +714,18 @@ def main() -> None:
     lk.add_argument("--analyze", action="store_true",
                     help="print the layout/link-order report after linking")
     lk.set_defaults(func=cmd_link)
+    xd = sub.add_parser("exe-diff", help="whole-EXE diff: candidate vs retail "
+                        "(layout + linked bytes; needs `gruntz link` first)")
+    xd.add_argument("--json", action="store_true", help="emit the JSON summary only")
+    xd.set_defaults(func=cmd_exe_diff)
     sub.add_parser("todo", help="obj symbols lacking an @address (worklist)"
                    ).set_defaults(func=cmd_todo)
+    ln = sub.add_parser("lint", help="on-demand clang-tidy de-hack finder "
+                        "(read-only worklist; casts/dead/unused; never auto-fix)")
+    ln.add_argument("rest", nargs=argparse.REMAINDER,
+                    help="args passed through to gruntz.analysis.tidy_audit "
+                         "(paths, --csv FILE, --top N, -j N)")
+    ln.set_defaults(func=cmd_lint)
     sub.add_parser("clean", help="nuke build/ + stray artifacts (HEAVY re-init after)"
                    ).set_defaults(func=cmd_clean)
 

@@ -17,7 +17,7 @@
 //
 // Structure (the verified top):
 //   * resolve the SOURCE tile cell from the grid (clamp the descriptor's
-//     +0x8/+0xc tile coord to the map [g_gameReg->m_30->m_24->m_5c] bounds,
+//     +0x8/+0xc tile coord to the map [g_gameReg->m_world->m_24->m_5c] bounds,
 //     index the row table m_24[y]+x into the cell array m_20, read the cell id,
 //     and when valid dispatch the cell object's vtable +0x20 to a class id);
 //   * the PtInRect trigger gate: bound the descriptor's screen rect against the
@@ -113,7 +113,7 @@ public:
 RVA(0x00110c10, 0xe3f)
 void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
     void* desc = this;               // edi
-    void* map = PTR(g_64556c, 0x30); // g_gameReg->m_30
+    void* map = PTR(g_64556c, 0x30); // g_gameReg->m_world
     void* grid = PTR(map, 0x24);     // the level grid
     i32 srcId = 0;                   // [esp+0x1c]
     i32 transId = 0;                 // [esp+0x18] resolved id

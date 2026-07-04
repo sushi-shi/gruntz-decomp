@@ -6,7 +6,7 @@
 //
 // Hierarchy (recovered from RTTI ClassHierarchyDescriptors in GRUNTZ.EXE):
 //     CUserBase                       vftable 0x5e70b4  (3 virtuals)
-//       +-- CUserLogic : CUserBase    vftable 0x5e705c  (12 virtuals)
+//       +-- CUserLogic : CUserBase    vftable 0x5e705c  (16 virtuals)
 //             +-- CSecretLevelTrigger, CTileTrigger, CTeleporter, CWarpStonePad,
 //                 CToobSpikez, ...    (the tile-logic game-object leaves)
 //
@@ -31,41 +31,9 @@
 
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// EngStr - the engine's small string class (the "incs" CString clone). Layout
-// {vptr@0, ?@4, len@8, buf@0xc}; size 0x10. Used by the +0x18 link's name field
-// and as the throw-away temp the 1-arg ctors build from the global empty string.
-// Its three operations live in the engine string TU, modeled NO-body so the
-// calls reloc-mask:
-//   EngStr(char const*, int) = 0x16d3a0  (836B; construct from a C string)
-//   operator=(EngStr const&) = 0x16d2f0  (172B; deep copy-assign)
-//   ~EngStr()                = 0x16d2a0  (38B)
-// ---------------------------------------------------------------------------
-struct EngStr {
-    EngStr(); // default (unused; lets the link's empty ctor stub compile)
-    EngStr(const char* s, i32 n);
-    ~EngStr();
-    EngStr& operator=(const EngStr& o);
-    void* m_0;
-    i32 m_4;
-    i32 m_8;
-    char* m_c;
-};
-
-// The global empty C string the link's name field is seeded from (0x6293f4).
-extern "C" char g_emptyString[];
-
-// ---------------------------------------------------------------------------
-// CUserBaseLink - the destructible sub-object embedded at CUserLogic+0x18. Its
-// only field is an EngStr name. Its ctor (0x16d710) is the one out-of-line
-// constructor the whole game-object family chains; it can throw, which is what
-// makes MSVC emit the /GX EH frame in every leaf ctor.
-// ---------------------------------------------------------------------------
-struct CUserBaseLink {
-    CUserBaseLink();    // 0x16d710 (out-of-line; can throw)
-    ~CUserBaseLink() {} // inline: folds to the embedded ~EngStr call in leaf dtors
-    EngStr m_str;       // +0x00  (its name field; the 0x5f04c8 EngStr vptr)
-};
+// EngStr + the destructible +0x18 link sub-object (CUserBaseLink), shared with
+// the CGrunt world so both embed the identical link (see Gruntz/EngStr.h).
+#include <Gruntz/EngStr.h>
 
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
@@ -77,17 +45,18 @@ struct CUserBaseLink {
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
-// 0x17c-byte "sirius worker" SiriusWorkerHandlers.cpp models): foreign vtable
+// 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
 // 0x5efb80, the existing worker's slot-7 reuses it (vtbl[0x1c]), and the freshly-
 // built one is fed CGameObject->m_10's payload through slot 9 (vtbl[0x24]).
 // Modeled as a polymorphic class so both `mov eax,[w]; call [eax+N]` dispatches
 // fall out; its vtable lives in another TU (the worker ctor stamps 0x5efb80 by
-// address - g_siriusWorkerVtbl - so this TU never emits one).
+// address - g_animWorkerVtbl - so this TU never emits one).
 // Polymorphic so the vtable-slot dispatches (`mov eax,[w]; call [eax+0x1c]` and
 // `call [eax+0x24]`) fall out; the vtable itself is the foreign 0x5efb80 stamped
 // by address in the ctor, so this class never emits one (the named virtuals only
 // drive the dispatch shape - slot 7 @ +0x1c, slot 9 @ +0x24).
-class CSiriusWorker {
+SIZE_UNKNOWN(CAnimWorker);
+class CAnimWorker {
 public:
     virtual void Slot00();              // +0x00
     virtual void Slot01();              // +0x04
@@ -115,18 +84,20 @@ public:
 
 // The foreign worker vftable (0x5efb80); the worker ctor stamps it by address so
 // the DIR32 vptr store reloc-masks. Owned by another TU.
-extern void* g_siriusWorkerVtbl;
+extern void* g_animWorkerVtbl;
 
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.
+SIZE_UNKNOWN(CGameObjLayer);
 struct CGameObjLayer {
     char m_pad00[0x10];
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
-    char m_pad18[0x1c - 0x18];
-    i32 m_1c; // +0x1c
+    i32 m_zClampLo; // +0x10  z-clamp bound (eyecandy)
+    i32 m_zClampHi; // +0x14  z-clamp bound (eyecandy)
+    i32 m_baseX;    // +0x18  layer base X (path/dropper screen-rect origin)
+    i32 m_1c;       // +0x1c  layer base Y / base offset
 };
 
+SIZE_UNKNOWN(CGameObject);
 struct CGameObject {
     void AddLogicHit(char* key);                        // 0x150f50
     void AddLogicAttack(char* key);                     // 0x151030
@@ -138,59 +109,89 @@ struct CGameObject {
     void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
     char m_pad00[0x04];
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
-    i32 m_10; // +0x10  (worker getters pass src->m_10 through slot 9)
+    i32 m_04;    // +0x04
+    i32 m_flags; // +0x08
+    i32 m_0c;    // +0x0c
+    i32 m_10;    // +0x10  (worker getters pass src->m_10 through slot 9)
     char m_pad14[0x38 - 0x14];
     i32 m_38; // +0x38
     char m_pad3c[0x40 - 0x3c];
-    i32 m_40; // +0x40
+    i32 m_stateFlags; // +0x40
     char m_pad44[0x4c - 0x44];
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
-    char m_pad54[0x58 - 0x54];
-    i32 m_58; // +0x58
-    i32 m_5c; // +0x5c
-    i32 m_60; // +0x60
-    char m_pad64[0x74 - 0x64];
-    i32 m_74; // +0x74
+    i32 m_drawFillArg;  // +0x4c
+    i32 m_drawFillCmd;  // +0x50  draw-fill command type (0xb = decay fill-bar)
+    i32 m_fillFraction; // +0x54  fill fraction (0..256)
+    i32 m_drawActive;   // +0x58  dirty/active flag
+    i32 m_screenX;      // +0x5c  screen x
+    i32 m_screenY;      // +0x60  screen y
+    i32 m_64;           // +0x64  captured config triple (checkpoint state slots 12..14)
+    i32 m_68;           // +0x68
+    i32 m_6c;           // +0x6c
+    char m_pad70[0x74 - 0x70];
+    i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c;   // +0x7c
-    CSiriusWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
+    CGameObjAux* m_7c; // +0x7c
+    CAnimWorker* m_80; // +0x80  lazily-built worker (EnsureWorker80)
     char m_pad84[0x88 - 0x84];
-    CSiriusWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
+    CAnimWorker* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
-    CSiriusWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
-    char m_pad94[0x118 - 0x94];
-    i32 m_118; // +0x118  CSpotLight ctor: pi/0 mode gate
-    i32 m_11c; // +0x11c  CSpotLight ctor: settings-table index
-    i32 m_120; // +0x120  CSpotLight ctor: SpotLightTime override
-    i32 m_124; // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
-    i32 m_128; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
-    i32 m_12c; // +0x12c  CSpotLight ctor: m_58 scale gate
-    char m_pad130[0x144 - 0x130];
-    i32 m_144; // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    char m_pad154[0x164 - 0x154];
-    i32 m_164; // +0x164
-    i32 m_168; // +0x168
-    char m_pad16c[0x198 - 0x16c];
-    CGameObjLayer* m_198; // +0x198
+    CAnimWorker* m_90; // +0x90  lazily-built worker (EnsureWorker90)
+    char m_pad94[0xe4 - 0x94];
+    i32 m_e4; // +0xe4  (CProjectile ctor seeds it to 7)
+    char m_pade8[0x114 - 0xe8];
+    i32 m_114;       // +0x114  (teleporter spawn: source-tile coordinate mirror)
+    i32 m_118;       // +0x118  CSpotLight ctor: pi/0 mode gate
+    i32 m_11c;       // +0x11c  CSpotLight ctor: settings-table index
+    i32 m_120;       // +0x120  CSpotLight ctor: SpotLightTime override
+    i32 m_124;       // +0x124  sprite-selector row key (leaf ctors pass it to ApplyLookupSprite)
+    i32 m_placeMode; // +0x128  visibility/place mode (1 or 2; the on-screen gate discriminator)
+    i32 m_12c;       // +0x12c  CSpotLight ctor: m_58 scale gate
+    i32 m_130;       // +0x130  (CUFO ctor: seeds the spotlight's m_120)
+    i32 m_134;       // +0x134  per-side tile-span config (checkpoint/voice/exit/slime bounds)
+    i32 m_138;       // +0x138
+    i32 m_13c;       // +0x13c
+    i32 m_140;       // +0x140
+    i32 m_144;       // +0x144  (CSpotLight ctor zeros 0x144/0x148/0x14c/0x150)
+    i32 m_148;       // +0x148
+    i32 m_14c;       // +0x14c
+    i32 m_150;       // +0x150
+    i32 m_154;       // +0x154  captured config block (checkpoint state slots 8..11)
+    i32 m_158;       // +0x158
+    i32 m_15c;       // +0x15c
+    i32 m_160;       // +0x160
+    i32 m_164;       // +0x164
+    i32 m_168;       // +0x168
+    char m_pad16c[0x188 - 0x16c];
+    i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
+    char m_pad18c[0x194 - 0x18c];
+    char* m_194;            // +0x194  object source-def record (its class-name string is at +0x24)
+    CGameObjLayer* m_layer; // +0x198
+    // +0x1a0: the most-derived game object embeds a per-CLASS anim sub-object here
+    // (WwdAnimSub / CPathSubMgr / CAnimSink / CTeleAnimSink / CWarlordAnimSub /
+    // DropperAnim / CWormGeoSub / CGruntPuddleSink / ...). Its concrete type is
+    // determined by the leaf class, so the base CGameObject* view legitimately can
+    // only reach it by address: `((LeafSub*)((char*)m_38 + 0x1a0))->...`. The sink's
+    // +0x20/+0x28 fields surface below as m_1c0/m_1c8. Kept as documented authentic
+    // raw-offset access (a single base field can't type a per-leaf embedded object).
     char m_pad19c[0x1b4 - 0x19c];
-    i32 m_1b4; // +0x1b4
+    i32 m_geoId; // +0x1b4
+    char m_pad1b8[0x1c0 - 0x1b8];
+    i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
+    char m_pad1c4[0x1c8 - 0x1c4];
+    i32 m_1c8; // +0x1c8  the +0x1a0 anim sub-mgr's active flag (sink+0x28)
 };
 
 // The +0x7c sub-object: its +0x08 flags, +0x1c bute-node and +0x130 timer are
 // touched by the eyecandy/sparkle ctors.
+SIZE_UNKNOWN(CGameObjAux);
 struct CGameObjAux {
     char m_pad00[0x08];
     i32 m_08; // +0x08
     char m_pad0c[0x1c - 0x0c];
     void* m_1c; // +0x1c
-    char m_pad20[0x130 - 0x20];
+    char m_pad20[0xbc - 0x20];
+    i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
+    char m_padc0[0x130 - 0xc0];
     i32 m_130; // +0x130
 };
 
@@ -225,10 +226,22 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CUserLogic : CUserBase - 12 virtuals (vftable 0x5e705c). Owns the shared data
-// layout + the link sub-object. The default ctor just constructs the link (used
-// by the no-arg leaves). The inline 1-arg ctor folds the full shared init into
-// each leaf's 1-arg ctor.
+// CUserLogic : CUserBase (vftable 0x5e705c, 16 slots; ALL 16 modeled here -
+// CUserBase slots 0..2 + UserLogicVfunc1..D at slots 3..15). Owns the shared data
+// layout + the +0x18 link sub-object. The full 16-slot model lets CUserLogic-derived
+// leaves that add their OWN virtuals (CMovingLogic::Update @slot 16, CPathHazard's
+// Tick..HitTest @slots 16..20) land them at the true retail offsets with no filler.
+// The default ctor just constructs the link (used by the no-arg leaves). The
+// inline 1-arg ctor folds the full shared init into each leaf's 1-arg ctor.
+//
+// TRUE SIZE = 0x30 (see the NOTE below). This "fat" view extends the class to
+// 0x40 by ABSORBING the tile-logic leaves' common tail m_30/m_34/m_38/m_3c into
+// the base - a byte-neutral modeling convenience (all tile-logic leaves set
+// m_34/m_38/m_3c = obj/obj/obj->m_7c right after the folded base init, so folding
+// the tail into the base ctor reproduces every leaf's bytes without spelling it
+// out per leaf). The CGrunt world (<Gruntz/Grunt.h>) models the SAME class at its
+// true 0x30 boundary, because CGrunt uses 0x30..0x3c for its OWN (different)
+// fields. Both are correct expressions of one class - see the NOTE.
 // ---------------------------------------------------------------------------
 class CUserLogic : public CUserBase {
 public:
@@ -246,21 +259,23 @@ public:
     virtual i32 UserLogicVfunc9();
     virtual i32 UserLogicVfuncA();
     virtual i32 UserLogicVfuncB();
+    virtual i32 UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
+    virtual i32 UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
 
     // The shared serialize-chain helper (0x16e7f0, __thiscall ret 0x10). Run on
     // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;
     // pinned in src/Stub/Discovered.cpp).
     i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0
 
-    // Copies the bound object's screen position into the out point (m_10->m_5c =
-    // x, m_10->m_60 = y). 0x29a50, __thiscall ret 4.
+    // Copies the bound object's screen position into the out point (m_object->m_5c
+    // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4.
     struct ScreenPoint {
         i32 x;
         i32 y;
     };
     void GetScreenPos(ScreenPoint* out); // 0x29a50
 
-    // True when the bound object's current screen pos (m_10->m_5c/m_60) still
+    // True when the bound object's current screen pos (m_object->m_5c/m_60) still
     // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
     // CUserLogic's 0x40 - read via offset since the leaf isn't modeled). 0x29a80.
     i32 IsAtSavedScreenPos(); // 0x29a80
@@ -278,49 +293,79 @@ public:
     i32 winapi_0ee800_IntersectRect_PtInRect();
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
-    void LoadGruntDecayConfig();
-    void LoadGruntDecayConfig2();
-    void LoadWandGruntItemConfig();
 
-    i32 m_04;             // +0x04
-    i32 m_08;             // +0x08
-    CGameObject* m_0c;    // +0x0c
-    CGameObject* m_10;    // +0x10
-    CGameObjAux* m_14;    // +0x14
-    CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
-    i32 m_28;             // +0x28
-    i32 m_2c;             // +0x2c
-    void* m_30;           // +0x30
-    CGameObject* m_34;    // +0x34
-    CGameObject* m_38;    // +0x38
-    CGameObjAux* m_3c;    // +0x3c
+    i32 m_04;          // +0x04
+    i32 m_08;          // +0x08
+    CGameObject* m_0c; // +0x0c
+    CGameObject*
+        m_object; // +0x10  bound game object (primary handle: position/logic/draw; == m_38)
+    CGameObjAux* m_objAux; // +0x14  the object's +0x7c aux sub-object (obj->m_7c)
+    CUserBaseLink m_link;  // +0x18..+0x27 (ctor 0x16d710, can throw)
+    i32 m_28;              // +0x28
+    i32 m_2c;              // +0x2c
+    void*
+        m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
+    CGameObject* m_34;     // +0x34
+    CGameObject* m_38;     // +0x38
+    CGameObjAux* m_3c;     // +0x3c
 };
-// NOTE: CUserLogic is 0x40 (proven: CPathHazard's ctor is byte-exact with this
-// size). The 0x54 a thin leaf new's is the leaf's OWN size = CUserLogic(0x40) +
-// 0x14 leaf fields - NOT evidence that CUserLogic is 0x54.
+SIZE(
+    CUserLogic,
+    0x40
+); // this header's fat-view size (tail absorbed); see the NOTE re the true 0x30
+// NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
+//   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
+//     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It
+//     never writes 0x30..0x3c. -> the base object ends at 0x30.
+//   * CGrunt : CUserLogic (<Gruntz/Grunt.h>) places its OWN, byte-exact-matched
+//     members at 0x30 (m_prevAnimSetNode), 0x38 (anim player), 0x40 (activeAnim)
+//     - proving the base it inherits is exactly 0x30.
+//   * The ??_7CUserLogic@@6B@ vftable is 16 slots (0x40 bytes); ??_7CUserBase is
+//     3 slots (config/vtable_names.csv).
+// m_prevAnimSetNode/m_34/m_38/m_3c above are NOT base fields: they are the tile-logic leaves'
+// common tail (each LEAF's 1-arg ctor sets m_34/m_38/m_3c itself; the standalone
+// base ctor 0x58cd0 does not). This header folds them into the base purely so the
+// shared inline ctor can spell them once; the layout is byte-identical to a true
+// 0x30 base + a 0x10 leaf tail. A thin leaf new's 0x54 = 0x30 base + 0x24 leaf
+// (0x10 tail + 0x14 own) - either boundary label gives the same offsets/size.
+// UNIFYING the two class names into one 0x30 def would need a CTileLogic
+// intermediate reparenting ~50 leaves + ~30 tuned 1-arg ctors (inline-depth /
+// macro-controlled tail, UserLogicCtorEmit.cpp) - a byte-neutral change with real
+// de-tuning risk and NO correctness gain (both views already encode the true
+// 0x30). Kept as a documented byte-compatible dual-model; the two never coexist
+// in a TU (the CGrunt-HUD sprites that bridge them include only Grunt.h).
 
 // Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
 // CUserLogic vptr, then the full init. Defined here (not the .cpp) because only
 // an inline base ctor is folded into the derived ctors.
 inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_0c = obj;
-    m_10 = obj;
-    m_14 = obj->m_7c;
+    m_object = obj;
+    m_objAux = obj->m_7c;
     {
         EngStr tmp(g_emptyString, 0);
         m_link.m_str = tmp;
     }
     RegisterLogicTypesOnce();
-    m_10->AddLogicHit("LogicHit");
-    m_10->AddLogicAttack("LogicAttack");
-    m_10->AddLogicBump("LogicBump");
+    m_object->AddLogicHit("LogicHit");
+    m_object->AddLogicAttack("LogicAttack");
+    m_object->AddLogicBump("LogicBump");
     m_04 = 0;
     m_08 = 0;
     m_28 = 0x3e9;
     m_2c = 2;
+#ifndef USERLOGIC_STANDALONE_CTOR
+    // The REAL out-of-line base ctor (retail 0x58cd0) does NOT set these three -
+    // each game-object LEAF sets m_34/m_38/m_3c itself, right after the folded
+    // base init (e.g. CTeleporter @0x410f9). They live in the base inline here so
+    // the folded-into-a-leaf copies reproduce the leaf's bytes without every leaf
+    // ctor having to spell them out. src/Gruntz/UserLogicCtorEmit.cpp defines
+    // USERLOGIC_STANDALONE_CTOR to drop them for the byte-exact standalone COMDAT;
+    // every other TU (all leaves) compiles this branch unchanged -> matching-neutral.
     m_34 = obj;
     m_38 = obj;
     m_3c = obj->m_7c;
+#endif
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
@@ -337,6 +382,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // they get a single class definition. Ctors/dtor are out-of-line in
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CTileTrigger);
 class CTileTrigger : public CUserLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)

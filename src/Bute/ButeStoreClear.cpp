@@ -12,47 +12,26 @@
 // bit 2 - runs the store's per-value callback (+0x0c fn-ptr) on the node's value
 // (+0x10) and frees it, and finally frees the node itself. Field names are
 // placeholders; only offsets + code bytes are load-bearing.
+#include <Bute/ButeMgr.h> // shared CButeStore / CButeStoreNode
 #include <rva.h>
 
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p); // 0x1b9b82
 
-// A keyed-store tree node: left/right children, the order key, the owned name
-// string, and the value the callback consumes.
-struct CButeStoreNode {
-    CButeStoreNode* m_left;  // +0x00
-    CButeStoreNode* m_right; // +0x04
-    i32 m_key;               // +0x08  order key
-    void* m_str;             // +0x0c  owned name string (freed)
-    void* m_val;             // +0x10  value (callback target, freed)
-};
-
-// Local CButeStore view: only the three fields ClearRecursive reads (the +0x0c
-// callback, the +0x10 flag byte, the +0x18 tree root). The full class lives in
-// <Bute/ButeMgr.h>; the mangled method name is layout-independent.
-struct CButeStore {
-    char m_pad0[0xc];
-    void(__cdecl* m_cb)(void*); // +0x0c  per-value callback
-    char m_flags;               // +0x10  flag byte (bit 2 gates the callback)
-    char m_pad11[0x18 - 0x11];
-    CButeStoreNode* m_root; // +0x18  tree root
-    void ClearRecursive(i32 node);
-};
-
 RVA(0x0016e070, 0x7b)
-void CButeStore::ClearRecursive(i32 node) {
-    CButeStoreNode* n = (CButeStoreNode*)node;
+void CButeStore::ClearRecursive(CButeStoreNode* node) {
+    CButeStoreNode* n = node;
     if (n == 0) {
-        n = m_root;
+        n = m_root18;
         if (n == 0) {
             return;
         }
     }
     if (n->m_left != 0 && n->m_left->m_key > n->m_key) {
-        ClearRecursive((i32)n->m_left);
+        ClearRecursive(n->m_left);
     }
     if (n->m_right != 0 && n->m_right->m_key > n->m_key) {
-        ClearRecursive((i32)n->m_right);
+        ClearRecursive(n->m_right);
     }
     RezFree(n->m_str);
     if (m_flags & 2) {

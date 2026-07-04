@@ -85,3 +85,6 @@ void TArray::Serialize(ArcSer* ar) {
         ar->ReadData(m_data, m_size * 4);
     }
 }
+
+SIZE_UNKNOWN(ArcSer);
+SIZE_UNKNOWN(TArray);

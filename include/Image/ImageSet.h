@@ -46,7 +46,29 @@ class CImageFrame {
 public:
     inline CImageFrame(void* owner, i32 index);
 
-    void* m_vptr;  // +0x00  (manual-stamped to g_imageFrameVtbl @0x5eaa2c by the factory)
+    // The frame element IS an RTTI CImage: its vtable is the SHARED ??_7CImage@@6B@
+    // at RVA 0x1eaa2c (VA 0x5eaa2c, 18 slots / 0x48; cataloged in
+    // config/vtable_names.csv). Real-polymorphic: cl auto-stamps the CImageFrame vptr
+    // at ctor entry; the declared-only slots reloc-mask. Slots are named by their
+    // retail vtable-slot RVA read from the 0x1eaa2c .rdata (FUN_<rva>); the low ones
+    // (0x1000-0x7c20) are ILT jmp-thunks into the CObject/MFC base. NO VTBL() here -
+    // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
+    // would collide/misname the datum. The manual image-frame vptr stamp is removed
+    // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
+    virtual void* FUN_001bef01();                         // [0]  +0x00
+    virtual void* FUN_00002adb(i32 flags);                // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual void* FUN_000028ec();                         // [2]  +0x08 (ILT)
+    virtual void* FUN_0000106e();                         // [3]  +0x0c (ILT)
+    virtual void* FUN_00004034();                         // [4]  +0x10 (ILT)
+    virtual void* FUN_000013b6();                         // [5]  +0x14 (ILT)
+    virtual void* FUN_00001c08();                         // [6]  +0x18 (ILT)
+    virtual void* FUN_00153260();                         // [7]  +0x1c  CImage::FreeAll
+    virtual void* FUN_000042aa();                         // [8]  +0x20 (ILT)
+    virtual i32 FUN_001530e0(i32 a, i32 b, i32 c);        // [9]  +0x24  CImage::Create24
+    virtual i32 FUN_00152fb0(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  CImage::LoadDispatch
+    virtual void* FUN_00152f20();                         // [11] +0x2c  CImage::Resolve
+    virtual i32 FUN_00152e90(i32 a, i32 b);               // [12] +0x30  CImage::Create
+
     i32 m_index;   // +0x04  frame index
     i32 m_8;       // +0x08
     void* m_owner; // +0x0c  owner (the CImageSet's +0xc)

@@ -8,13 +8,14 @@
 #include <Bute/ButeMgr.h> // CButeTree
 #include <rva.h>
 
+#include <Gruntz/StringNode.h> // the type-name teardown slot
+#include <Globals.h>
+#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/TypeColl2.h>
+
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
-struct CTypeColl {
-    i32 Find(i32 key, i32 z); // 0x16da80
-};
-struct CTypeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
+// CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;
@@ -44,14 +45,6 @@ extern "C" i32 ProjActAlloc(); // 0x16d990
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74
-};
-
 // The R4 per-class activation table (g_actReg4 @0x6446d8 is the collection; the
 // lo/hi/base/cur/stride/scratch fields are separate DATA-pinned BSS globals).
 struct CActReg4 {
@@ -59,13 +52,6 @@ struct CActReg4 {
 };
 DATA(0x002446d8)
 extern CActReg4 g_actReg4;
-extern struct CActReg4Coll2* g_actReg4Coll2;
-extern i32 g_actReg4Lo;
-extern i32 g_actReg4Hi;
-extern char* g_actReg4Base;
-extern struct R4Entry* g_actReg4Cur;
-extern i32 g_actReg4Stride;
-extern i32 g_actReg4Scratch;
 struct CActReg4Coll2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850
 };
@@ -132,3 +118,8 @@ void ActReg4RegisterType() {
     }
     *(void**)R4Lookup(id) = (void*)&ActReg4Handler;
 }
+
+SIZE_UNKNOWN(CActReg4);
+SIZE_UNKNOWN(CActReg4Coll2);
+SIZE_UNKNOWN(CTypeColl2);
+SIZE_UNKNOWN(R4Entry);

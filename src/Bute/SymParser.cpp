@@ -1,4 +1,4 @@
-// SymParser.cpp - CSymParser, the Remus parser/owner that builds + owns the
+// SymParser.cpp - CSymParser, the ButeMgr parser/owner that builds + owns the
 // CSymTab scope tree (the object CSymTab::m_owner @+0x18 points back to). The five
 // methods (trace group "ClassUnknown_11") all operate on one object shape that
 // owns a heap root CSymTab at +0x44, an intrusive polymorphic-object list at +0x10
@@ -8,15 +8,6 @@
 
 #include <Bute/SymParser.h>
 
-// The two retail vtable groups (manual-stamp model; their virtuals live in other,
-// unmatched TUs). Reloc-masked DATA() externs.
-DATA(0x005ef750)
-void* CSymParser_vftable;
-DATA(0x005ef760)
-void* CObjList_purecall_vftbl;
-DATA(0x005ef75c)
-void* CObjList_ctor_vftbl;
-
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
 // build-then-discard a default CSymParser temp, then drive the buffer through
@@ -24,26 +15,21 @@ void* CObjList_ctor_vftbl;
 // ret 0xc; returns `this`. (The default ctor 0x13aa10 the temp uses lives in another,
 // unmatched TU - a reloc-masked call.)
 // @early-stop
-// ~77%, all teardown/build bytes exact: the /GX frame, the member-init store sequence
-// (m_list head/tail/vtbl 0x5ef75c, the +0x80 hash Init(1), the +0x88 node-list
-// head/tail, the primary vtbl 0x5ef750), the discarded default-temp ctor/dtor pair and
-// the ParseBuffer 3-arg tail are byte-identical. The residual is the documented /GX
-// trylevel state-NUMBERING wall (docs/patterns/eh-state-numbering-base.md): retail
-// seeds the member-cleanup trylevel slot [esp+0xac] to 0 (edi) and the temp's state
-// byte [esp+0xa8] to 2, where our cl seeds [esp+0xac] to 1 - an off-by-one in the
-// state base - plus a 1-instruction scheduling coin-flip (retail emits the m_list
-// stores before the hash `push 1`; cl hoists the push) and the reloc-named default-ctor
-// / 0x184960 / ParseBuffer operands (scoring artifact). Logic complete; parked for the
-// final sweep.
+// ~74.8% (real polymorphic now, ALL-VTABLES phase): the primary vptr is auto-
+// stamped by cl @+0 at ctor entry (was the hand-rolled mid-body vptr store); the
+// /GX frame, the member-init store sequence (m_list, the +0x80 hash Init(1), the
+// +0x88 node-list), the discarded default-temp ctor/dtor pair and the ParseBuffer
+// 3-arg tail are byte-faithful. Residual is the /GX trylevel state-NUMBERING wall
+// (docs/patterns/eh-state-numbering-base.md) + the vptr-first schedule. Final sweep.
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
+    // cl auto-stamps ??_7CSymParser @+0 at ctor entry, and the m_list member ctor
+    // auto-stamps ??_7CObjList @+0x10 (== the old CObjList_ctor_vftbl stamp).
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    m_list.m_vtbl = &CObjList_ctor_vftbl;
     m_hash.Init(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
-    m_vtbl = &CSymParser_vftable;
     {
         CSymParser tmp;
     }
@@ -55,15 +41,13 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 // CSymTab + the owned buffers, drain the +0x88 node list, then RemoveAll the +0x80
 // hash member (the trylevel-0 /GX member-teardown) and re-stamp the +0x10 list
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
-// @early-stop
-// ~98%, all teardown bytes exact. Residual is the /GX EH-state machine + reloc
-// naming: retail entry trylevel 2 + vptr-stamp scheduled into state 0 (early), vs
-// recompile trylevel 1 + stamp after the trylevel write (eh-dtor-vptr-stamp-vs-
-// trylevel-order wall), plus the differently-named Unwind/__except_list/PTR_*
-// reloc operands (scoring artifact). Logic complete; parked for the final sweep.
+// 100% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
+// the vptr @+0 at dtor entry (into EH-state 0, early) - which is exactly the retail
+// schedule, closing the old eh-dtor-vptr-stamp-vs-trylevel-order wall that capped
+// this at ~98% while the vptr was a hand-rolled store.
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
-    m_vtbl = &CSymParser_vftable;
+    // cl auto-stamps ??_7CSymParser @+0 at dtor entry (polymorphic class).
     if (m_parseArmed) {
         Clear(0);
     }
@@ -85,10 +69,11 @@ CSymParser::~CSymParser() {
         RezFree(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
     }
-    if (m_ownedBuffer) {
-        RezFree(m_ownedBuffer);
-        m_ownedBuffer = 0;
+    if (m_delims) {
+        RezFree(m_delims);
+        m_delims = 0;
     }
+    // chain head points at &node->m_link (offset 0 in CSlotNode) - direct reinterpret
     CSlotNode* node = (CSlotNode*)m_nodes.m_head;
     m_parseArmed = 0;
     m_activeNode = 0;
@@ -102,15 +87,15 @@ CSymParser::~CSymParser() {
     m_4c = 0;
     m_50 = 1;
     m_54 = 0;
-    m_58 = 0;
-    m_5c = 0;
+    m_longestScopeNameLen = 0;
+    m_longestLeafNameLen = 0;
     m_60 = 0;
     m_08 = 1;
     m_cachedSourceBuffer = 0;
     if (node) {
         do {
             RezFree(node->m_buffer);
-            m_nodes.Unlink(node);
+            m_nodes.Unlink(&node->m_link);
             RezFree(node);
             node = (CSlotNode*)m_nodes.m_head;
         } while (node);
@@ -119,17 +104,22 @@ CSymParser::~CSymParser() {
     // in reverse declaration order, under the /GX member-teardown trylevels.
 }
 
-// The two reader constructors ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
+// The two concrete reader nodes ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
 // binary @0x13c540 ctor(this)). Both __thiscall on a freshly allocated reader block.
-// Reloc-masked externs.
-struct CTextReaderInit {
-    char m_storage[0x38];
+// Reloc-masked externs. Each is a real CObjNode leaf (the intrusive-list-node base:
+// vptr + next/prev at +0..+0xb, the Read/ReadRaw reader vtable), so `new T(...)` is a
+// plain CObjNode* upcast (base @ offset 0) - no reinterpret cast, and the list-Link /
+// Read / ReadRaw dispatches fall out of the inherited base.
+struct CTextReaderInit : public CObjNode {
     CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
+    char m_body[0x38 - 0xc];               // own text-reader state (past the CObjNode base)
 };
-struct CBinReaderInit {
-    char m_storage[0x24];
+SIZE(CTextReaderInit, 0x38); // text-reader alloc block (operator new)
+struct CBinReaderInit : public CObjNode {
     CBinReaderInit(CSymParser* p); // 0x13c540
+    char m_body[0x24 - 0xc];       // own binary-reader state (past the CObjNode base)
 };
+SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
 
 // CRT strdup-style helpers + the inline strlen/strcpy the buffer-recache emits.
 extern "C" u32 strlen(const char* s);
@@ -161,7 +151,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (m_40 == 0) {
             return 0;
         }
-        CObjNode* reader = (CObjNode*)new CTextReaderInit(this, m_2c);
+        CObjNode* reader = new CTextReaderInit(this, m_2c);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -173,7 +163,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (reader->Read(buf, a, b) == 0) {
             return 0;
         }
-        m_parseArmed = (void*)1;
+        m_parseArmed = 1;
         CSymTab* node = new CSymTab(
             this,
             0,
@@ -185,11 +175,11 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             m_symbolBucketCount
         );
         m_root = node;
-        ParseRecords(reader, node, (char*)m_cachedSourceBuffer, 0);
+        ParseRecords(reader, node, m_cachedSourceBuffer, 0);
         return 1;
     }
     // binary stream
-    CObjNode* reader = (CObjNode*)new CBinReaderInit(this);
+    CObjNode* reader = new CBinReaderInit(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
@@ -201,7 +191,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     if (reader->Read(buf, a, b) == 0) {
         return 0;
     }
-    m_parseArmed = (void*)1;
+    m_parseArmed = 1;
     if (b != 0) {
         m_3c = 0xa8;
         m_4c = 1;
@@ -228,8 +218,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_3c = *(i32*)(hdr + 0x8f);
     m_48 = *(i32*)(hdr + 0x93);
     m_54 = *(i32*)(hdr + 0x97);
-    m_58 = *(i32*)(hdr + 0x9b);
-    m_5c = *(i32*)(hdr + 0x9f);
+    m_longestScopeNameLen = *(i32*)(hdr + 0x9b);
+    m_longestLeafNameLen = *(i32*)(hdr + 0x9f);
     m_60 = *(i32*)(hdr + 0xa3);
     m_08 = *(i32*)(hdr + 0xa7) & 0xff;
     if (hdr[0] != 0x0d || hdr[0x3f] != 0x0a || hdr[0x7e] != 0x1a || b != 1) {
@@ -250,6 +240,117 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// The two archive-tree node classes LoadEntry builds. A directory node (ctor
+// 0x13c940 = CRezDir, size 0x38) and a file node (ctor 0x13c540 = CRezItm, size
+// 0x24). Both expose Read at vtable slot 2 (+0x08) and Open at slot 4 (+0x10) -
+// modeled as a shared local interface (ctors extern/reloc-masked, no vtable
+// emitted in this TU) so the `call [reg+8]` / `call [reg+0x10]` dispatches and
+// the `new X(...)` operator-new(size)+ctor sequences fall out.
+SIZE(CRezNode, 0x4); // abstract reader base (vptr only)
+struct CRezNode {
+    virtual void nv0();                                        // slot 0 (+0x00)
+    virtual void nv1();                                        // slot 1 (+0x04)
+    virtual i32 Read(i32 off, i32 base, u32 count, void* buf); // slot 2 (+0x08)
+    virtual void nv3();                                        // slot 3 (+0x0c)
+    virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
+};
+SIZE(CRezDirNodeN, 0x38); // directory reader node (operator new 0x38)
+struct CRezDirNodeN : CRezNode {
+    CRezDirNodeN(void* parent, void* rezMgr); // 0x13c940 (extern)
+    char m_pad[0x38 - 0x04];
+};
+SIZE(CRezFileNodeN, 0x24); // file reader node (operator new 0x24)
+struct CRezFileNodeN : CRezNode {
+    CRezFileNodeN(void* parent); // 0x13c540 (extern)
+    char m_pad[0x24 - 0x04];
+};
+
+// ---------------------------------------------------------------------------
+// LoadEntry (0x13b0c0) - mount one archive entry `name` into the scope tree.
+// Gate on m_40; cache `name` into m_cachedSourceBuffer; Classify() it. A
+// directory (Classify != 0) builds a CRezDir node, links it into m_list, opens
+// it and recurses ParseRecords into it. A file builds a CRezItm node, opens it,
+// Reads its 0xa8-byte header to fold the running max dims (+0x54..+0x60) and
+// runs the root scope's ApplyRecursive over it. The two `new X(...)` sites carry
+// the MSVC5 nothrow-new null check + /GX ctor-throw cleanup (trylevel 0 for the
+// dir new, 1 for the file new). Called by RezSync::Init to mount GRUNTZ.VRZ/.ZZZ/
+// .XXX. Ghidra-mislabeled CRezDir::Stub_13b0c0 (re-homed from src/Rez/RezMgr.cpp).
+// @early-stop
+// 98.3% - STRUCTURALLY byte-exact (verified llvm-objdump -dr base vs target): every
+// opcode/ModRM, both nothrow-new null checks AND all three /GX ctor-throw state
+// writes (mov [esp+ehstate], 0 / 1 / -1) match retail exactly. The sole residual is
+// the MSVC5 scratch-register coin-flip on ~5 load-then-push arg sites (the two m_64
+// free cleanups, the ParseRecords/ApplyRecursive/Read arg loads): retail rotates
+// eax<-ecx<-edx where cl picks ecx<-edx<-eax for the same temps - identical
+// instruction stream, opposite scratch assignment, not source-steerable
+// (docs/patterns regalloc coin-flip). Plus the reloc-masked node-ctor / operator-new
+// / ParseRecords / ApplyRecursive operands. Parked for the final sweep.
+RVA(0x0013b0c0, 0x238)
+i32 CSymParser::LoadEntry(char* name, i32 flag) {
+    if (m_40 == 0) {
+        return 0;
+    }
+    m_08 = 0;
+    if (m_cachedSourceBuffer) {
+        ::operator delete(m_cachedSourceBuffer);
+    }
+    char* buf = (char*)::operator new(strlen(name) + 1);
+    m_cachedSourceBuffer = buf;
+    strcpy(buf, name);
+
+    if (Classify(name)) {
+        CRezDirNodeN* node = new CRezDirNodeN(this, (void*)m_2c);
+        if (node == 0) {
+            ::operator delete(m_cachedSourceBuffer);
+            m_cachedSourceBuffer = 0;
+            return 0;
+        }
+        m_list.Link(node);
+        m_list.m_count++;
+        if (node->Open(name, 1, 0) == 0) {
+            return 0;
+        }
+        m_parseArmed = 1;
+        ParseRecords(node, m_root, m_cachedSourceBuffer, flag);
+        return 1;
+    }
+
+    CRezFileNodeN* node = new CRezFileNodeN(this);
+    if (node == 0) {
+        ::operator delete(m_cachedSourceBuffer);
+        m_cachedSourceBuffer = 0;
+        return 0;
+    }
+    m_list.Link(node);
+    m_list.m_count++;
+    if (node->Open(name, 1, 0) == 0) {
+        return 0;
+    }
+
+    char hdr[0xa8];
+    node->Read(0, 0, 0xa8, hdr);
+    u32 v;
+    v = *(u32*)(hdr + 0x97);
+    if (v > (u32)m_54) {
+        m_54 = v;
+    }
+    v = *(u32*)(hdr + 0x9b);
+    if (v > (u32)m_longestScopeNameLen) {
+        m_longestScopeNameLen = v;
+    }
+    v = *(u32*)(hdr + 0x9f);
+    if (v > (u32)m_longestLeafNameLen) {
+        m_longestLeafNameLen = v;
+    }
+    v = *(u32*)(hdr + 0xa3);
+    if (v > (u32)m_60) {
+        m_60 = v;
+    }
+    m_root->ApplyRecursive((i32)node, *(i32*)(hdr + 0x83), *(i32*)(hdr + 0x87), flag);
+    return 1;
+}
+
 // ParseRecords' CRT directory-walk family (_findfirst/_findnext/_findclose @0x11f900/
 // 0x11fa30/0x11fb50), _strlwr (0x18d330), _splitpath (0x18c530), atoi (0x11ff10) and the
 // per-file leaf builders (0x13b970 / 0x13cac0). All reloc-masked. The "." / ".." / "\\"
@@ -260,6 +361,7 @@ struct SymFindData {
     i32 m_size; // +0x1c
     char m_name[0x108];
 };
+SIZE(SymFindData, 0x128); // CRT _finddata_t view { attrib, size @0x1c, name @0x20 }
 extern "C" i32 SymFindFirst(const char* spec, SymFindData* fd);                       // 0x11f900
 extern "C" i32 SymFindNext(i32 h, SymFindData* fd);                                   // 0x11fa30
 extern "C" i32 SymFindClose(i32 h);                                                   // 0x11fb50
@@ -414,26 +516,26 @@ i32 CSymParser::ReParse() {
     return ParseBuffer(m_cachedSourceBuffer, 1, 0);
 }
 
-// AddNode (0x13c210): splice a record's intrusive node (rec+0x1c) into the +0x80
-// hash table, when rec is non-null.
-RVA(0x0013c210, 0x1a)
-void CSymParser::AddNode(void* rec) {
-    if (rec) {
-        m_hash.Insert((CHashInsertNode*)((char*)rec + 0x1c));
-    }
-}
-
-// A parse-slot record (0x3c bytes): a CRemusReadStream whose hash-node prefix is at
-// +0x1c (stamped by Init) and whose self-ptr lives at +0x30. Init (0x1396f0) stamps
-// the node vtable + nulls the body; reloc-masked __thiscall, no body here.
+// A parse-slot record (0x3c bytes): a CParseSource whose hash-node prefix is at
+// +0x1c (stamped by Init) and whose self-ptr lives at +0x30 (= m_node.m_record).
+// Init (0x1396f0) stamps the node vtable + nulls the body; reloc-masked __thiscall,
+// no body here.
 struct CParseSlot {
     char m_pad00[0x1c];
-    void* m_node1c; // +0x1c  hash-node vtable prefix (the insert handle)
-    char m_pad20[0x30 - 0x20];
-    void* m_self; // +0x30
+    CHashElement m_node; // +0x1c  hash-node prefix (m_node.m_record @0x30 = self)
     char m_pad34[0x3c - 0x34];
     void Init(); // 0x1396f0
 };
+SIZE(CParseSlot, 0x3c); // parse-slot record (RezAlloc n*0x3c)
+
+// AddNode (0x13c210): splice a parse-slot record's intrusive node (its m_node @0x1c)
+// into the +0x80 hash table, when rec is non-null.
+RVA(0x0013c210, 0x1a)
+void CSymParser::AddNode(void* rec) {
+    if (rec) {
+        m_hash.Insert(&((CParseSlot*)rec)->m_node);
+    }
+}
 
 // PopParseSlot (0x13c0c0): see SymParser.h. The /GX frame guards the freshly Rez-
 // alloc'd slot block while its elements are being initialized + registered.
@@ -444,7 +546,7 @@ struct CParseSlot {
 // operands are differently named. Banked for the final sweep.
 RVA(0x0013c0c0, 0x14b)
 void* CSymParser::PopParseSlot() {
-    CHashEntry* e = m_hash.First();
+    CHashElement* e = m_hash.First();
     void* rec = e ? e->m_record : 0;
     if (rec == 0) {
         CSlotNode* node = (CSlotNode*)RezAlloc(0xc);
@@ -472,16 +574,16 @@ void* CSymParser::PopParseSlot() {
             return 0;
         }
         for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {
-            CParseSlot* el = (CParseSlot*)((char*)node->m_buffer + j * 0x3c);
-            el->m_self = el;
-            m_hash.Insert((CHashInsertNode*)((char*)el + 0x1c));
+            CParseSlot* el = &node->m_buffer[j];
+            el->m_node.m_record = el;
+            m_hash.Insert(&el->m_node);
         }
-        m_nodes.Link(node);
+        m_nodes.Link(&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }
     if (rec) {
-        m_hash.Remove((CHashEntry*)((char*)rec + 0x1c));
+        m_hash.Remove(&((CParseSlot*)rec)->m_node);
     }
     return rec;
 }
@@ -489,7 +591,7 @@ void* CSymParser::PopParseSlot() {
 // CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
 // chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
 // null prev/next means `node` was the head/tail. __thiscall on the list head,
-// callee-cleanup of the single arg. (Trace-discovered; was the ClassUnknown_47 stub.)
+// callee-cleanup of the single arg.
 RVA(0x001852e0, 0x35)
 void CObjList::Remove(CObjNode* node) {
     if (node->m_prev) {
@@ -503,3 +605,59 @@ void CObjList::Remove(CObjNode* node) {
         m_tail = node->m_prev;
     }
 }
+
+// ---------------------------------------------------------------------------
+// CSymParser::CSymParser() (0x13aa10) - the DEFAULT ctor (Ghidra-mislabeled
+// CSymParseConfig::Construct; xref proves it: the 3-arg buf-ctor 0x13ab00 builds
+// its discarded `CSymParser tmp;` through it, and RezSync::Init (0x83450) +
+// CGruntzMgr::LoadWorldMode (0x91a40) new one). cl auto-stamps ??_7CSymParser @+0;
+// the m_list member ctor auto-stamps ??_7CObjList @+0x10; m_hash.Init(1) builds the
+// +0x80 list. Seeds the parse-config defaults; leaves m_34/m_38 untouched. The
+// destructible m_hash/m_list members force the /GX EH frame.
+// @early-stop
+// vptr-first-schedule wall (~72.6%, the SAME plateau as the sibling buf-ctor
+// 0x13ab00): every field store + the member Init call is byte-faithful. Residual:
+// making CSymParser real-polymorphic makes cl auto-stamp ??_7CSymParser @+0 at ctor
+// ENTRY, where retail defers it to AFTER the m_hash member ctor (late) - and that
+// pressure shift makes cl cache the constant 1 in ebx (extra push/pop ebx + reg
+// stores) where retail re-materializes the `$1` immediates. Plus the /GX scopetable
+// state-numbering (push 0xb vs relative 0). Non-source-steerable; see
+// docs/patterns/eh-state-numbering-base.md + the buf-ctor's note.
+RVA(0x0013aa10, 0xdc)
+CSymParser::CSymParser() {
+    m_list.m_head = 0;
+    m_list.m_tail = 0;
+    m_hash.Init(1);
+    m_nodes.m_head = 0;
+    m_nodes.m_tail = 0;
+    m_parseArmed = 0;
+    m_activeNode = 0;
+    m_list.m_count = 0;
+    m_30 = 0;
+    m_3c = 0;
+    m_root = 0;
+    m_48 = 0;
+    m_4c = 0;
+    m_50 = 0;
+    m_54 = 0;
+    m_longestScopeNameLen = 0;
+    m_longestLeafNameLen = 0;
+    m_60 = 0;
+    m_cachedSourceBuffer = 0;
+    m_delims = 0;
+    m_68 = 0;
+    m_6c = 0;
+    m_70 = 0x13;
+    m_74 = 0x13;
+    m_24 = 1;
+    m_nextGeneratedFileKey = 0x77359400;
+    m_40 = 1;
+    m_08 = 1;
+    m_2c = 3;
+    m_subTabBucketCount = 5;
+    m_symbolBucketCount = 9;
+    m_parseSlotBlockCount = 0x64;
+}
+
+// All Bute-module class SIZE()s are annotated atop their class definitions (this
+// TU's .cpp-local structs below, and SymParser.h / SymTab.cpp for the shared ones).

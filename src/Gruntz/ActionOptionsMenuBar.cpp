@@ -12,59 +12,23 @@
 
 // ---------------------------------------------------------------------------
 // Engine objects reached through the game-manager singleton (g_gameReg).
+// CSprite (frame-data) + CSpriteHashTable come from <Gruntz/Sprite.h>; the
+// resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
-struct CSprite;
-class CSpriteHashTable {
-public:
-    i32 Lookup(char* szName, CSprite** ppOut);
-};
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
+#include <Gruntz/Viewport.h>      // shared world->screen transform
+#include <Gruntz/ResMgr.h>
+#include <Gruntz/Sprite.h>
 
-struct CSprite {
-    char m_pad00[0x14];
-    i32** m_frameTable; // +0x14  frame-pointer table
-    char m_pad18[0x64 - 0x18];
-    i32 m_firstFrame; // +0x64  first valid frame number
-    i32 m_lastFrame;  // +0x68  last valid frame number
-};
+// CViewport (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
+// <Gruntz/Viewport.h> class: m_worldWidth (+0x30) clamps the bar position;
+// WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
+// (WwdFile::WwdFile_00a000).
 
-struct CSpriteMgr {
-    char m_pad00[0x10];
-    CSpriteHashTable m_spriteMap; // +0x10  the name->sprite hash table
-};
-
-// The world->screen transform object (g_gameReg->m_resMgr->m_view->m_viewport). m_worldWidth is the
-// world width used to clamp the bar position. WrapCoord is NO-body so its
-// __thiscall `call 0xa000` reloc-masks (WwdFile::WwdFile_00a000).
-struct CViewport {
-    void WrapCoord(i32* px, i32* py);
-    char m_pad00[0x30];
-    i32 m_worldWidth; // +0x30  world width
-};
-
-// The level/view object (g_gameReg->m_resMgr->m_view): +0x10 is the on-screen bar RECT,
-// +0x5c the viewport transform.
-struct CMenuViewObj {
-    char m_pad00[0x10];
-    i32 m_barRect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
-    char m_pad20[0x5c - 0x20];
-    CViewport* m_viewport; // +0x5c
-};
-
-// The active draw surface (g_gameReg->m_resMgr->m_drawTarget): +0x14 is the draw context.
-struct CDrawTarget {
-    char m_pad00[0x14];
-    i32 m_drawContext; // +0x14  draw context
-};
-
-// The game's resource/level manager (g_gameReg->m_resMgr).
-struct CResMgr {
-    char m_pad00[0x4];
-    CDrawTarget* m_drawTarget; // +0x04  active draw surface
-    char m_pad08[0x10 - 0x8];
-    CSpriteMgr* m_spriteMgr; // +0x10  sprite manager (LoadAssets lookups)
-    char m_pad14[0x24 - 0x14];
-    CMenuViewObj* m_view; // +0x24  level/view object
-};
+// The level/view object (g_gameReg->m_world->m_24) is the canonical CGameViewport
+// (<Gruntz/GameRegistry.h>): +0x10 the on-screen bar RECT, +0x5c the viewport.
+// CDrawTarget + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
 // the bar polls a handful of its fields to pick which mode-chip to light.
@@ -78,50 +42,27 @@ struct CGruntRec {
     i32 m_primaryModeValue; // +0x19c  primary mode value
 };
 
-struct CGameReg {
-    char m_pad00[0x30];
-    CResMgr* m_resMgr; // +0x30
-    char m_pad34[0x68 - 0x34];
-    CGruntRec** m_gridObjects; // +0x68  grid object table (grid-linear index)
-};
+// The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
+// (+0x30, typed CSpriteFactoryHolder) is reached without a cast; the grid object
+// table (+0x68) is a genuinely reused slot cast locally (see below).
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The menu-bar frame (this->m_frame) doubles as the engine drawable that paints the
 // bar/chips; +0x10 is its draw entry. NO-body so `call 0x153810` reloc-masks
-// (ClassUnknown_31::ClassUnknown_31_153810).
+// (tomalla-31::Ctor_153810).
 struct CMenuBarFrame {
     void Draw(i32 ctx, i32 x, i32 y, i32* rect, i32 flag);
 };
 
-// Per-serialize round counter the CString archive helpers bump (g_serialCount).
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter).
 DATA(0x00229ad0)
-extern i32 g_serialCount;
+extern i32 g_serialCounter;
 
-// The CString-read helper (0x155630): receiver = g_gameReg->m_resMgr->m_spriteMgr.
+// The CString-read helper (0x155630): receiver = g_gameReg->m_world->m_10.
 // NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
 struct CStrReader {
     void ReadField(i32 dst, char* tmp, i32* outZero);
-};
-
-// The archive (CArchive) passed to Serialize; the read/write entry is the virtual
-// at vtable byte-offset 0x30 (slot 12). Modeled polymorphic (slot decls only, never
-// defined -> no ??_7 here) so `ar->Transfer(buf,n)` lowers to the exact
-// `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
-struct CMenuArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Transfer(void* buf, i32 n); // +0x30
 };
 
 // ---------------------------------------------------------------------------
@@ -138,14 +79,14 @@ public:
     i32 HitClick(i32 mx, i32 my);
     i32 HitHover(i32 mx, i32 my);
     void Deactivate();
-    i32 Serialize(CMenuArchive* ar);
+    i32 Serialize(CSerialArchive* ar);
     i32 LoadAssets();
 
     i32 m_gridX;               // +0x00  grid X
     i32 m_gridY;               // +0x04  grid Y
     i32 m_screenX;             // +0x08  screen X (clamped)
     i32 m_screenY;             // +0x0c  screen Y (adjusted)
-    i32* m_frame;              // +0x10  menu-bar frame 1 (the drawable)
+    CMenuBarFrame* m_frame;    // +0x10  menu-bar frame 1 (the drawable)
     i32 m_button0State;        // +0x14  button[0] state
     i32 m_button1State;        // +0x18  button[1] state
     i32 m_button0Frame;        // +0x1c  button[0] resolved frame
@@ -195,28 +136,30 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 
     m_active = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
-    m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frameTable[1] : 0;
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
+    m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
+                  ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
+                  : 0;
     if (!m_frame) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_resMgr->m_spriteMgr->m_spriteMap.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -238,7 +181,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = g_gameReg->m_resMgr->m_view->m_viewport->m_worldWidth;
+        i32 limit = ((CViewport*)g_gameReg->m_world->m_24->m_5c)->m_worldWidth;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -281,7 +224,7 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGruntRec* grunt = g_gameReg->m_gridObjects[m_gridX * 15 + m_gridY];
+    CGruntRec* grunt = ((CGruntRec**)g_gameReg->m_68)[m_gridX * 15 + m_gridY];
     if (grunt != 0) {
         m_button1Icon = grunt->m_secondaryIcon;
         if (grunt->m_kind >= 0x17) {
@@ -319,20 +262,23 @@ i32 CActionOptionsMenuBar::Refresh() {
         switch (p[-4]) {
             case 1: {
                 CSprite* s = m_normChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             case 2: {
                 CSprite* s = m_highChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             case 3: {
                 CSprite* s = m_greyChipSprite;
-                frame =
-                    (*p < s->m_firstFrame || *p > s->m_lastFrame) ? 0 : (i32)s->m_frameTable[*p];
+                frame = (*p < s->m_firstFrame || *p > s->m_lastFrame)
+                            ? 0
+                            : (i32)s->m_frames.m_pData[*p];
                 break;
             }
             default:
@@ -360,32 +306,32 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    g_gameReg->m_resMgr->m_view->m_viewport->WrapCoord(&sx, &sy);
+    ((CViewport*)g_gameReg->m_world->m_24->m_5c)->WrapCoord(&sx, &sy);
 
     i32 r[4];
-    i32* src = g_gameReg->m_resMgr->m_view->m_barRect;
-    i32 ctx = g_gameReg->m_resMgr->m_drawTarget->m_drawContext;
+    i32* src = g_gameReg->m_world->m_24->m_barRect;
+    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];
     r[3] = src[3];
-    ((CMenuBarFrame*)m_frame)->Draw(ctx, sy, sx, r, 0);
+    m_frame->Draw(ctx, sy, sx, r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = g_gameReg->m_resMgr->m_view->m_barRect;
+        i32* src2 = g_gameReg->m_world->m_24->m_barRect;
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
         r[3] = src2[3];
-        ((CMenuBarFrame*)m_frame)->Draw(ctx, sy - 0xc, sx + 2, r, 0);
+        m_frame->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = g_gameReg->m_resMgr->m_view->m_barRect;
+        i32* src3 = g_gameReg->m_world->m_24->m_barRect;
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];
         r[3] = src3[3];
-        ((CMenuBarFrame*)m_frame)->Draw(ctx, sy + 0x10, sx + 2, r, 0);
+        m_frame->Draw(ctx, sy + 0x10, sx + 2, r, 0);
     }
     return 1;
 }
@@ -402,7 +348,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    if (g_gameReg->m_gridObjects[m_gridX * 15 + m_gridY] == 0) {
+    if (((CGruntRec**)g_gameReg->m_68)[m_gridX * 15 + m_gridY] == 0) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).
@@ -470,87 +416,96 @@ void CActionOptionsMenuBar::Deactivate() {
 // CActionOptionsMenuBar::Serialize - read this bar's state from an archive.
 // ---------------------------------------------------------------------------
 // @early-stop
-// Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_resMgr spill slot
+// Stack-packing wall (~96%): retail reuses the dead g_gameReg->m_world spill slot
 // ([esp+0x10]) for the per-block `zero` int, giving a 0x84 frame; our cl gives
 // `zero` its own slot -> 0x88 frame, which shifts every frame-size immediate and
-// arg offset by 4. Body (vtable Transfer dispatch + inlined memset/strcpy) exact.
+// arg offset by 4. Body (vtable Write dispatch @+0x30 + inlined memset/strcpy) exact.
 RVA(0x00009810, 0x2df)
-i32 CActionOptionsMenuBar::Serialize(CMenuArchive* ar) {
+i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg == 0) {
         return 0;
     }
-    CResMgr* mgr = reg->m_resMgr;
+    CSpriteFactoryHolder* mgr = reg->m_world;
     if (mgr == 0) {
         return 0;
     }
 
-    ar->Transfer(this, 8);
-    ar->Transfer(&m_screenX, 4);
-    ar->Transfer(&m_screenY, 4);
-    ar->Transfer(&m_loaded, 4);
-    ar->Transfer(&m_active, 4);
-    ar->Transfer(&m_button0State, 8);
-    ar->Transfer(&m_button0Icon, 8);
+    ar->Write(this, 8);
+    ar->Write(&m_screenX, 4);
+    ar->Write(&m_screenY, 4);
+    ar->Write(&m_loaded, 4);
+    ar->Write(&m_active, 4);
+    ar->Write(&m_button0State, 8);
+    ar->Write(&m_button0Icon, 8);
 
     char tmp[0x80];
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_normChipSprite) {
         strcpy(tmp, (char*)m_normChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_highChipSprite) {
         strcpy(tmp, (char*)m_highChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_greyChipSprite) {
         strcpy(tmp, (char*)m_greyChipSprite + 0x24);
     }
-    ar->Transfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
         if (m_frame) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField((i32)m_frame, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frame, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField((i32)m_button0Frame, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField((i32)m_button0Frame, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
 
-    g_serialCount++;
+    g_serialCounter++;
     {
         i32 zero = 0;
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            ((CStrReader*)mgr->m_spriteMgr)->ReadField(v20, tmp, &zero);
+            ((CStrReader*)mgr->m_10)->ReadField(v20, tmp, &zero);
         }
-        ar->Transfer(tmp, 0x80);
-        ar->Transfer(&zero, 4);
+        ar->Write(tmp, 0x80);
+        ar->Write(&zero, 4);
     }
     return 1;
 }
+
+SIZE_UNKNOWN(CActionOptionsMenuBar);
+SIZE_UNKNOWN(CDrawTarget);
+SIZE_UNKNOWN(CGruntRec);
+SIZE_UNKNOWN(CMenuBarFrame);
+SIZE_UNKNOWN(CSpriteHashTable);
+SIZE_UNKNOWN(CSpriteMgr);
+SIZE_UNKNOWN(CStrReader);
+SIZE_UNKNOWN(CViewport);

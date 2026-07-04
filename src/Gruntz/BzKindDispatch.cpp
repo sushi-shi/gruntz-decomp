@@ -59,3 +59,5 @@ i32 CBzKindDispatch::Dispatch(i32 kind) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(CBzKindDispatch);

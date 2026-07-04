@@ -30,5 +30,6 @@ public:
     i32 PopulateModemSlow(); // 0x37b40 (param column = 10)
     i32 PopulateModemFast(); // 0x37d20 (param column = 30)
 };
+SIZE_UNKNOWN(CLatencyList); // method-only CObList-derived view; retail size TBD
 
 #endif // GRUNTZ_NET_LATENCYLIST_H

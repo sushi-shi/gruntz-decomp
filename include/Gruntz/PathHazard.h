@@ -1,0 +1,154 @@
+// PathHazard.h - the path-following hazard game object (C:\Proj\Gruntz).
+//
+// CPathHazard : CUserLogic (RTTI; most-derived vftable 0x5e7394, the
+// CPathHazard base ctor 0xb35a0 stamps it; CRainCloud / CUFO derive from it).
+// A hazard that walks a precomputed waypoint path each frame: BeginLeg
+// (0xb47e0, virtual slot 19) computes the unit-vector toward the current
+// waypoint, and Tick (0xb4020, virtual slot 16) integrates the sub-pixel
+// movement vector into the bound object's tile position each frame, snapping to
+// the waypoint on overshoot. The leaf dtor (0x13340) folds the bare CUserLogic
+// teardown (the /GX leaf-dtor archetype shared with CTimeBomb / CKitchenSlime).
+//
+// CUserLogic / CUserBase / EngStr / CGameObject come from <Gruntz/UserLogic.h>.
+// Only the OFFSETS + the code bytes are load-bearing; field names are
+// placeholders for the recovered engine identities.
+#ifndef GRUNTZ_CPATHHAZARD_H
+#define GRUNTZ_CPATHHAZARD_H
+
+#include <rva.h>
+
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
+#include <Gruntz/UserLogic.h>
+
+// The waypoint the path array (this+0x90, 8-byte stride) stores: {x:int, y:int}.
+struct CPathWaypoint {
+    i32 x; // +0x00
+    i32 y; // +0x04
+};
+
+// The hazard reads its bound CGameObject (this->m_10 == this->m_38) directly:
+// screen pos (+0x5c/+0x60), the +0x7c aux (per-tile time m_7c->m_bc), leg/segment
+// count (+0x120), the on-screen rect base (+0x144, passed to QueryAt) and the
+// +0x198 layer descriptor (CGameObjLayer, its +0x18/+0x1c base offsets) - all
+// modeled on CGameObject / CGameObjLayer in <Gruntz/UserLogic.h>, no per-TU view.
+
+// The entity QueryAt returns; +0x258 is its type/state tag (0x38 == this hazard
+// itself, so its own footprint is ignored).
+struct CPathEntity {
+    char m_pad00[0x258];
+    i32 m_258; // +0x258
+};
+
+// The visibility / cue gate reached as g_gameReg->m_68; QueryAt resolves the
+// entity under a screen rect. Same shared engine fn (0x75c60) KitchenSlime uses;
+// modeled NO-body so the call reloc-masks.
+struct CPathCueGate {
+    void* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32* outC); // 0x75c60
+    void Strike(i32 a, i32 b, i32 c, i32 d); // 0x402e96 (the strike cue, __thiscall)
+};
+
+DATA(0x0024556c)
+extern CGameRegistry* g_pathGameReg;
+
+// The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
+// __thiscall ret 4, takes the g_pathTick frame counter as its int arg).
+struct CPathSubMgr {
+    void Advance(i32 tick); // 0x15c360
+};
+
+// A frame/tick counter (BSS, @0x6bf3bc) the sub-mgr Advance consumes. Already
+// named g_6bf3bc in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
+DATA(0x002bf3bc)
+extern "C" u32 g_pathTick;
+
+// The integer step seed the integrator scales by the per-frame speed
+// (g_645584 = .data int). Already used as g_slimeFrameScale in KitchenSlime.cpp.
+DATA(0x00245584)
+extern i32 g_pathStepSeed; // VA 0x645584
+
+// A bute-type tag (g_645588 = .data int) stashed into +0x108 when a new leg with
+// remaining segments begins.
+DATA(0x00245588)
+extern i32 g_pathLegTag; // VA 0x645588
+
+// 0.0 (the velocity-sign comparand). Already g_slimeZero in KitchenSlime.cpp.
+DATA(0x001ea400)
+extern const double g_pathZero; // VA 0x5ea400
+
+// 0.03125 (= 1/32, the per-tile-time -> speed reciprocal scale).
+DATA(0x001ea408)
+extern const double g_pathTimeScale; // VA 0x5ea408
+
+// 1.0 (the unit-vector numerator).
+DATA(0x001ea410)
+extern const double g_pathOne; // VA 0x5ea410
+
+// The "B" bute key the new-leg path query passes (0x60d1bc) - the SAME rdata as
+// CInGameIcon.h's g_iconBute; reuse the identical declaration so the reloc pairs.
+DATA(0x0020d1bc)
+extern char g_iconBute[]; // DAT_0060d1bc
+
+// The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
+// Owned by another TU; declared extern so `ecx=&g_buteTree; call Find` masks.
+#include <Bute/ButeMgr.h>
+extern CButeTree g_buteTree;
+
+// sqrt lowers inline (d9 fa); __ftol (0x11f570) lowers the (int) casts.
+extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed)
+
+// ---------------------------------------------------------------------------
+// CPathHazard : CUserLogic - the path-following hazard. The inherited m_10/m_38
+// (CUserLogic) hold the bound CGameObject; the hazard reads it directly. The
+// leaf adds the movement-integrator state at +0x58 and the path/waypoint state
+// at +0x90.. The CUserLogic base gives the +0x18 destructible link, so the dtor
+// folds the shared teardown (the /GX leaf-dtor archetype).
+// ---------------------------------------------------------------------------
+class CPathHazard : public CUserLogic {
+public:
+    CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
+    i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
+    // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
+    LogicTypeId GetTypeTag();
+    // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
+    // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
+    // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
+    virtual i32 Tick();        // slot 16 (body 0xb4020): the per-frame driver.
+    virtual i32 SiblingTick(); // slot 17 (body 0xb43f0, ?SiblingTick@CLightningHazard@@QAEHXZ)
+    virtual void Arrive();     // slot 18 (declared-only; the "arrived" handler)
+    // BeginLeg (slot 19, body 0xb47e0): compute the unit vector toward the current
+    // waypoint (m_f8) and seed the movement state. Returns 1.
+    virtual i32 BeginLeg();        // slot 19
+    virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
+    // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
+    // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
+    void ForwardTick();
+    virtual ~CPathHazard() OVERRIDE; // 0x13340 (folds the CUserLogic teardown; slot 0)
+
+    i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
+    char m_pad44[0x58 - 0x44];
+    double m_speed;         // +0x58  per-frame speed (1 / (m_bc / 32))
+    double m_posX;          // +0x60  sub-pixel X position accumulator
+    double m_posY;          // +0x68  sub-pixel Y position accumulator
+    double m_unitX;         // +0x70  unit-vector x (toward waypoint)
+    double m_unitY;         // +0x78  unit-vector y
+    double m_roundBiasX;    // +0x80  sign(unitX) * 0.5 (round-to-tile bias)
+    double m_roundBiasY;    // +0x88  sign(unitY) * 0.5
+    CPathWaypoint m_wp[13]; // +0x90  waypoint path (wp[0]=start, wp[1..12]=scaled)
+    i32 m_wpIndex;          // +0xf8  current waypoint index
+    i32 m_wpX;              // +0xfc  current waypoint X (int)
+    i32 m_wpY;              // +0x100 current waypoint Y (int)
+    i32 m_wpCount;          // +0x104 waypoint count (path length)
+    i32 m_legTag;           // +0x108 leg bute tag (i64 lo)
+    i32 m_legTagHi;         // +0x10c          (i64 hi)
+    i32 m_legSegs;          // +0x110 leg segments remaining (i64 lo)
+    i32 m_legSegsHi;        // +0x114          (i64 hi)
+    char m_pad118[0x120 - 0x118];
+    i32 m_strikeDeadline;   // +0x120 strike deadline (i64 lo; used by CLightningHazard view)
+    i32 m_strikeDeadlineHi; // +0x124          (i64 hi)
+    i32 m_strikeWindow;     // +0x128 strike window (i64 lo)
+    i32 m_strikeWindowHi;   // +0x12c          (i64 hi)
+};
+SIZE(CPathHazard, 0x130);
+
+#endif // GRUNTZ_CPATHHAZARD_H

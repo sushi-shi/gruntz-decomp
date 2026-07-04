@@ -21,7 +21,8 @@
 typedef int INT_PTR;
 
 // WINMM timeGetTime (the engine's frame clock). It lives in <mmsystem.h> (modern
-// <timeapi.h>), which we don't pull in for one function; declared once here.
-extern "C" __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
+// <timeapi.h>), which we don't pull in for one function; declared once here in the
+// real <mmsystem.h> form (WINAPI == __stdcall, resolved from the windows.h above).
+extern "C" __declspec(dllimport) unsigned long WINAPI timeGetTime(void);
 
 #endif // GRUNTZ_MFC_H

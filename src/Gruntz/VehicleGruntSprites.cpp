@@ -15,29 +15,19 @@
 
 #include <rva.h>
 
-// g_mgrSettings (0x64556c) - the game registry. m_2c registers a named sprite set;
-// m_70 is the tile grid (m_8 = row-pointer array; each cell is 0x1c bytes with the
-// tile code at +0x10, indexed by the >>5 tile coords).
+#include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
+#include <Gruntz/GruntzMgr.h>  // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
+#include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
+
+// The game registry singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view.
+// Its +0x2c slot registers a named sprite set (cast to CSpriteSetReg); its +0x70
+// tile grid (m_cmdNotify, cast to CTileGrid) has m_8 = row-pointer array, each cell
+// 0x1c bytes with the tile code at +0x10, indexed by the >>5 tile coords.
 struct CSpriteSetReg {
     void Register(CString* name, i32 a, i32 b, i32 c); // 0x2bc1 __thiscall
 };
-struct CTileCell {
-    char m_pad0[0x10];
-    i32 m_code; // +0x10  tile code ('A'/'B' = action tile)
-    char m_pad14[0x1c - 0x14];
-};
-struct CTileGrid {
-    char m_pad0[0x8];
-    CTileCell** m_8; // +0x08  row-pointer array
-};
-struct CGameReg {
-    char m_pad0[0x2c];
-    CSpriteSetReg* m_2c; // +0x2c
-    char m_pad30[0x70 - 0x30];
-    CTileGrid* m_70; // +0x70
-};
 DATA(0x0024556c)
-extern "C" CGameReg* g_mgrSettings; // 0x64556c
+extern CGruntzMgr* g_gameReg;
 
 // The grunt-command object's follow-up registrar (this->m_260).
 struct CGruntCmdObj;
@@ -71,6 +61,12 @@ struct CGruntCmdObj {
     i32 m_region1[4]; // +0x2c0
 };
 
+// The toy/vehicle-grunt kind LoadVehicleGruntSprites dispatches on (kind, 0x17..0x20)
+// is the toy band of PickupType, the shared object/pickup/grunt-kind id space in
+// <Gruntz/PickupType.h>. Each name is confirmed by its case's "<NAME>GRUNT" sprite key;
+// the ids are byte-verified to equal PickupType's toys (BABYWALKER=0x17..YOYO=0x20).
+// Same immediates as the bare labels -> naming is matching-neutral.
+
 // @early-stop
 // ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
 // tile-A-B gate + the two registrations all model retail). Residual is a /O2
@@ -89,7 +85,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     CString name;
     i32* r0;
     switch (kind) {
-        case 0x17:
+        case PICKUP_BABYWALKER:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -102,7 +98,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BABYWALKERGRUNT";
             break;
-        case 0x18:
+        case PICKUP_BEACHBALL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -115,7 +111,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BEACHBALLGRUNT";
             break;
-        case 0x19:
+        case PICKUP_BIGWHEEL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -128,7 +124,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "BIGWHEELGRUNT";
             break;
-        case 0x1a:
+        case PICKUP_GOKART:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -141,7 +137,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "GOKARTGRUNT";
             break;
-        case 0x1b:
+        case PICKUP_JACKINTHEBOX:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -154,7 +150,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "JACKINTHEBOXGRUNT";
             break;
-        case 0x1c:
+        case PICKUP_JUMPROPE:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -167,7 +163,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "JUMPROPEGRUNT";
             break;
-        case 0x1d:
+        case PICKUP_POGOSTICK:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -180,7 +176,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "POGOSTICKGRUNT";
             break;
-        case 0x1e:
+        case PICKUP_SCROLL:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -193,7 +189,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "SCROLLGRUNT";
             break;
-        case 0x1f:
+        case PICKUP_SQUEAKTOY:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -206,7 +202,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             r0[3] = 0;
             name = "SQUEAKTOYGRUNT";
             break;
-        case 0x20:
+        case PICKUP_YOYO:
             r0 = m_region0;
             r0[0] = -1;
             r0[1] = -1;
@@ -223,9 +219,9 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
             break;
     }
 
-    g_mgrSettings->m_2c->Register(&name, 1, 1, 0);
+    ((CSpriteSetReg*)g_gameReg->m_curState)->Register(&name, 1, 1, 0);
 
-    i32 code = g_mgrSettings->m_70->m_8[m_180 >> 5][m_17c >> 5].m_code;
+    i32 code = ((i32*)((CTileGrid*)g_gameReg->m_cmdNotify)->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
             m_260->RegisterA(this, m_17c, m_180);
@@ -234,3 +230,8 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     }
     return 1;
 }
+SIZE_UNKNOWN(CGruntAnchor);
+SIZE_UNKNOWN(CGruntCmdObj);
+SIZE_UNKNOWN(CGruntRegistrar);
+SIZE_UNKNOWN(CSpriteSetReg);
+SIZE_UNKNOWN(CTileCell);

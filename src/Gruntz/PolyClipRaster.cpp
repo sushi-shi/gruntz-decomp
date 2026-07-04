@@ -180,3 +180,5 @@ i32 RotateRasterize(
     RasterSpans(g_clipB, n, a4, a4, a5, a6);
     return 1;
 }
+SIZE_UNKNOWN(ClipImg);
+SIZE_UNKNOWN(ClipVtx);

@@ -9,17 +9,11 @@
 #include <rva.h>
 #include <string.h> // memset (inlined rep stos over the resync scratch block)
 
-// A queued command, as the slot list holds it: +0x0 sequence, +0x4 a payload
-// word Verify compares against the resync entry.
-struct CNetCmd {
-    i32 m_seq; // +0x0
-    i32 m_4;   // +0x4
-};
-
 // CNetCmdSlot helper reached only here (0xc0bb0, __thiscall, external).
 struct CNetCmdSlotReset {
     void Reset0bb0();
 };
+SIZE_UNKNOWN(CNetCmdSlotReset); // method-only helper view; retail size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetAll (0xbbf80, __thiscall) - full session reset: zero the
@@ -51,21 +45,21 @@ void CNetSession::ResetAll() {
     i32 i;
     CNetCmdSlot* slot = m_slots;
     for (i = 4; i != 0; i--) {
-        slot->m_0 = 0;
-        slot->m_4 = 0;
-        slot->m_8 = 0;
-        slot->m_c = 0;
-        slot->m_10 = 0;
-        slot->m_14 = 0;
-        slot->m_18 = 0;
-        slot->m_1c = 0;
+        slot->m_state = 0;
+        slot->m_resetGuard = 0;
+        slot->m_latchedSeq = 0;
+        slot->m_cmdHead = 0;
+        slot->m_latency = 0;
+        slot->m_baseSeq = 0;
+        slot->m_maxSeq = 0;
+        slot->m_owner = 0;
         slot->ClearCmds();
-        slot->m_3c = 0;
-        slot->m_40 = 0;
-        slot->m_44 = 0;
-        slot->m_48 = 0;
-        slot->ResetTriple(slot->m_4c);
-        slot->ResetTriple(slot->m_58);
+        slot->m_ackFlags[0] = 0;
+        slot->m_ackFlags[1] = 0;
+        slot->m_ackFlags[2] = 0;
+        slot->m_ackFlags[3] = 0;
+        slot->ResetTriple(slot->m_rangeA);
+        slot->ResetTriple(slot->m_rangeB);
         slot++;
     }
 
@@ -95,7 +89,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     ((CNetCmdSlotReset*)slot)->Reset0bb0();
-    return slot->Init(m_4, &m_0[index].m_150, owner) ? slot : 0;
+    return slot->Init(m_4, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,7 +99,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
 RVA(0x000c00a0, 0x31)
 CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
-        if (m_slots[i].m_c[6] == playerId) {
+        if (m_slots[i].m_cmdHead[6] == playerId) {
             return &m_slots[i];
         }
     }
@@ -113,14 +107,15 @@ CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetSession::CheckLatency (0xc04a0, __thiscall) - 0 if any active (m_0==3),
-// unreset (m_4==0) slot's latency (m_10) exceeds the cap; 1 otherwise.
+// CNetSession::CheckLatency (0xc04a0, __thiscall) - 0 if any active (m_state==3),
+// unreset (m_resetGuard==0) slot's latency (m_latency) exceeds the cap; 1 otherwise.
 // ---------------------------------------------------------------------------
 RVA(0x000c04a0, 0x37)
 i32 CNetSession::CheckLatency(i32 cap) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
-        if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0 && (u32)slot->m_10 > (u32)cap) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0
+            && (u32)slot->m_latency > (u32)cap) {
             return 0;
         }
     }
@@ -139,7 +134,7 @@ i32 CNetSession::Verify() {
     if (e != 0) {
         for (i32 i = 0; i < 4; i++) {
             CNetCmdSlot* slot = &m_slots[i];
-            if (slot != 0 && slot->m_0 == 3 && slot->m_4 == 0) {
+            if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0) {
                 CNetCmd* c = (CNetCmd*)slot->FindCmd(seq);
                 if (c != 0 && c->m_4 != e->m_4) {
                     return 0;
@@ -169,20 +164,20 @@ i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    m_1c = a1;
-    m_0 = a3;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = a2;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
+    m_owner = (CNetMgr*)a1; // the session passes its owning CNetMgr in as an i32 handle
+    m_state = a3;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = a2;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
     ClearCmds();
-    m_3c = 0;
-    m_40 = 0;
-    m_44 = 0;
-    m_48 = 0;
-    ResetTriple(m_4c);
-    ResetTriple(m_58);
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
     return 1;
 }

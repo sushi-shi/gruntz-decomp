@@ -20,32 +20,10 @@
 // Global operator new (NAFXCW new-handler loop).
 extern void* operator new(u32 size);
 
-// The retail CImageFrame vtable (.?AVCImage@@ @0x5eaa2c) the factory manually
-// stamps into a freshly allocated frame (the frame's own virtuals are unmatched
-// engine code, so the stamp is a transitional reloc-masked DATA ref, not an
-// emitted ??_7).
-DATA(0x001eaa2c)
-extern void* g_imageFrameVtbl[];
-
-// The frame seen through its (unmatched) vtable: the loader virtual each factory
-// overload runs, plus the scalar-deleting dtor at slot +0x04. A polymorphic view
-// so the __thiscall vtable dispatch falls out; no vtable is emitted (no slot is
-// defined here).
-struct CImageFrameLoader {
-    virtual void* v00();
-    virtual void* Delete(i32 flags); // +0x04  scalar-deleting dtor
-    virtual void* v08();
-    virtual void* v0c();
-    virtual void* v10();
-    virtual void* v14();
-    virtual void* v18();
-    virtual void* v1c();
-    virtual void* v20();
-    virtual i32 Load24(i32 a, i32 b, i32 c);        // +0x24
-    virtual i32 Load28(i32 a, i32 b, i32 c, i32 d); // +0x28
-    virtual void* v2c();
-    virtual i32 Load30(i32 a, i32 b); // +0x30
-};
+// CImageFrame is now real-polymorphic (its 13 slots are declared on the class in
+// ImageSet.h; the foreign CImage @0x5eaa2c virtuals stay unmatched -> declared-
+// only, reloc-masked). cl auto-stamps the vptr (??_7CImageFrame@@6B@) in the
+// ctor; the manual image-frame vtable extern + stamp are gone (all-vtables mandate).
 
 // MFC CObArray::SetAtGrow on the embedded frame array (CImageSet::m_array @+0x10).
 struct CImageFrameArray {
@@ -56,14 +34,13 @@ inline CImageFrame::CImageFrame(void* owner, i32 index) {
     m_index = index;
     m_8 = 0;
     m_owner = owner;
-    m_vptr = &g_imageFrameVtbl;
     m_width = 0;
     m_height = 0;
     m_surface = 0;
     m_format = 0;
 }
 
-// CreateFrame30 - 0x151fb0 (__thiscall, ret 0xc). Refuse if a frame already
+// CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
 // occupies `index`; else allocate a CImageFrame (manual vtable stamp), run its
 // loader virtual at slot +0x30, insert it (SetAtGrow at `index`) and widen the
 // populated index range. The frame's loader/dtor are unmatched -> reloc-masked.
@@ -75,9 +52,9 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load30(a0, a2) == 0) {
+    if (nf->FUN_00152e90(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -92,7 +69,7 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
     return nf;
 }
 
-// CreateFrame28 - 0x152060 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x28 and takes (a0, a1, a3, 1).
 RVA(0x00152060, 0xab)
 CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
@@ -102,9 +79,9 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load28(a0, a1, a3, 1) == 0) {
+    if (nf->FUN_00152fb0(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -119,7 +96,7 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     return nf;
 }
 
-// CreateFrame24 - 0x152110 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x24 and takes (a0, a1, a3).
 RVA(0x00152110, 0xa9)
 CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
@@ -129,9 +106,9 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (((CImageFrameLoader*)nf)->Load24(a0, a1, a3) == 0) {
+    if (nf->FUN_001530e0(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
-            ((CImageFrameLoader*)nf)->Delete(1);
+            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -146,7 +123,7 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     return nf;
 }
 
-// GetMemoryUsage - 0x1523f0 (__thiscall, ret 4). Walk every populated frame in
+// GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
 // [m_minIndex, m_maxIndex] (the same inlined bounds-checked GetAt) and accumulate its
 // decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
 // 24bpp, overridden by the owned object's exact count when one is present, plus a fixed
@@ -181,7 +158,7 @@ i32 CImageSet::GetMemoryUsage(i32 raw) {
     return sum;
 }
 
-// SetAllTypes - 0x152480 (__thiscall, ret 4). Returns the number of frames touched.
+// SetAllTypes (__thiscall, ret 4). Returns the number of frames touched.
 RVA(0x00152480, 0x4e)
 i32 CImageSet::SetAllTypes(i32 type) {
     i32 count = 0;
@@ -195,7 +172,7 @@ i32 CImageSet::SetAllTypes(i32 type) {
     return count;
 }
 
-// SetAllField18 - 0x1524d0 (__thiscall, ret 4). Walk every populated frame in
+// SetAllField18 (__thiscall, ret 4). Walk every populated frame in
 // [m_minIndex, m_maxIndex] and write `value` into its format helper's +0x18 field;
 // returns the count touched. Unlike SetAllFormats there is no up-front null guard -
 // the empty range simply yields count 0 (the `jg` skips straight to the return).
@@ -212,7 +189,7 @@ i32 CImageSet::SetAllField18(i32 value) {
     return count;
 }
 
-// SetAllFormats - 0x152520 (__thiscall, ret 4). Returns the number of frames touched.
+// SetAllFormats (__thiscall, ret 4). Returns the number of frames touched.
 RVA(0x00152520, 0x4b)
 i32 CImageSet::SetAllFormats(i32 format) {
     if (!format) {
@@ -229,7 +206,7 @@ i32 CImageSet::SetAllFormats(i32 format) {
     return count;
 }
 
-// FindFrame - 0x1525c0 (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
+// FindFrame (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
 RVA(0x001525c0, 0x76)
 i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
     if (frame) {
@@ -248,3 +225,13 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
     }
     return 0;
 }
+
+// Class-metadata annotations (EOF-hosted; ImageSet.h is pulled into Gruntz/
+// LightFxMgr.cpp). CImageFrame is real-polymorphic (cl emits ??_7CImageFrame). Its
+// vtable is the SHARED ??_7CImage@@6B@ (0x1eaa2c, in config/vtable_names.csv) - no
+// per-class VTBL(CImageFrame) (would collide/misname that datum). Exact size 0x34:
+// `new CImageFrame` allocates the 0x34-byte raw CImage (layout ends at m_format+0x30).
+SIZE_UNKNOWN(CImageFormat);
+SIZE_UNKNOWN(CImageFrameSurface);
+SIZE(CImageFrame, 0x34);
+SIZE_UNKNOWN(CImageFrameArray);

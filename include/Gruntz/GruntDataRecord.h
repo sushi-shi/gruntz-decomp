@@ -12,31 +12,16 @@
 #ifndef SRC_GRUNTZ_GRUNTDATARECORD_H
 #define SRC_GRUNTZ_GRUNTDATARECORD_H
 
-#include <Ints.h>
+#include <rva.h>
 
-// The binary writer the record serializes through: an MFC-CArchive-like object
-// whose virtual Write(const void* buf, u32 len) sits at vtable slot 12 (+0x30).
-// Modeled polymorphic so `ar->Write(buf,len)` emits the retail __thiscall virtual
-// dispatch `mov edx,[ar]; mov ecx,ar; call [edx+0x30]` (writer in ecx, two args
-// pushed, callee cleanup). The 12 preceding slots are placeholder virtuals; their
-// bodies live in NAFXCW / elsewhere so the call reloc-masks.
-struct DataWriter {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Read(void* buf, u32 len);        // +0x2c  slot 11
-    virtual void Write(const void* buf, u32 len); // +0x30  slot 12
-};
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+
+// The binary writer the record serializes through is the shared WAP32 CSerialArchive
+// (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `DataWriter` view is folded away.
 
 // The 0x68-byte record. SerializeStrings is the only matched method.
+SIZE_UNKNOWN(GruntDataRecord);
 struct GruntDataRecord {
     char* m_str[5];  // +0x00..+0x10  five owned name strings
     char m_14[0x10]; // +0x14
@@ -47,11 +32,11 @@ struct GruntDataRecord {
 
     // Write the five names (as fixed 0x80 fields) + the four fixed blocks through
     // `ar`; returns 0 if `ar` is null, else 1. (0x56da0, __thiscall, 1 stdcall arg.)
-    i32 SerializeStrings(DataWriter* ar);
+    i32 SerializeStrings(CSerialArchive* ar);
     // The read counterpart (0x56eb0): read each fixed 0x80 name field into a temp
     // and assign it to the owned CString member (CString::operator=), then read the
     // four fixed blocks back verbatim. Returns 0 if `ar` is null, else 1.
-    i32 DeserializeStrings(DataWriter* ar);
+    i32 DeserializeStrings(CSerialArchive* ar);
 };
 
 #endif // SRC_GRUNTZ_GRUNTDATARECORD_H

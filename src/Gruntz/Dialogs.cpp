@@ -14,9 +14,10 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
-// g_gameReg->m_2c into the file-scope sink g_64bd5c (both reloc-masked DIR32).
+// g_gameReg->m_curState into the file-scope sink g_64bd5c (both reloc-masked DIR32).
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x0024556c)
@@ -26,8 +27,6 @@ extern i32 g_64bd5c; // the file-scope int sink (reloc-masked DATA symbol)
 
 // The per-dialog static MFC message maps (each GetMessageMap returns &<map>).
 // Referenced as reloc-masked DATA externs (RVA = VA - 0x400000).
-extern const i32 g_msgmap_CBattlezDlgColors;
-extern const i32 g_msgmap_CCheckpointDlg;
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg multiplayer-setup helpers (BuildSlotList / UpdateSlot model).
@@ -48,9 +47,9 @@ struct CMultiRegSub {
 struct CMultiReg {
     char m_pad000[0x524];
     CMultiRegSub* m_524; // +0x524
-    void* m_528;         // +0x528  mode/team latch
+    i32 m_528;           // +0x528  mode/team latch (read only as a nonzero test)
     char m_pad52c[0x588 - 0x52c];
-    void* m_588; // +0x588  forced-count latch
+    i32 m_588; // +0x588  forced-count latch (read only as a nonzero test)
     char m_pad58c[0x5a4 - 0x58c];
     i32 m_5a4; // +0x5a4
     i32 m_5a8; // +0x5a8
@@ -66,7 +65,7 @@ struct CMultiSlot {
     char m_pad170[0x238 - 0x170];
 };
 
-// The player-slot list (m_60): a CObList member (its ctor sets the vptr) plus one
+// The player-slot list (m_slotList): a CObList member (its ctor sets the vptr) plus one
 // trailing dword; allocated 0x20 bytes. The three add/refresh methods reloc-mask.
 struct CMultiSlotList {
     CObList m_list; // +0x00  (CObList, 0x1c bytes)
@@ -74,16 +73,16 @@ struct CMultiSlotList {
     CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
         m_1c = 0;
     }
-    void Method1546(i32 a);                      // 0x37910
-    void Method2a45(i32 a, i32 b);               // 0x37ff0
-    void Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150
+    void Method1546(i32 a);                     // 0x37910
+    void Method2a45(i32 a, i32 b);              // 0x37ff0
+    i32 Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150 (own body below)
 };
 
 // ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
-    m_5c = a0;
-    m_68 = 0;
+    m_slots = a0;
+    m_customNameFlag = 0;
 }
 
 // ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW
@@ -129,8 +128,8 @@ struct CImgHolderBase {
 // reloc-masked), then the folded base teardown re-stamps the base vtable. The /GX EH
 // frame guards the base teardown if DeleteImageList throws.
 struct CImgHolder : CImgHolderBase {
-    void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
-    virtual ~CImgHolder();  // 0x016500
+    void DeleteImageList();         // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
+    virtual ~CImgHolder() OVERRIDE; // 0x016500
 };
 
 RVA(0x00016500, 0x46)
@@ -142,22 +141,55 @@ CImgHolder::~CImgHolder() {
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
-// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_5c, then chain the
+// ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
 // NAFXCW ~CDialog base dtor. /GX EH frame for the member unwind.
 // @early-stop
 // vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): same
 // as ~CBattlezDlg - one extra most-derived vptr re-stamp our polymorphic model emits
 // that retail elided; chain otherwise byte-exact. ~94.4%.
 RVA(0x00017140, 0x47)
-CBattlezDlgCustom::~CBattlezDlgCustom() {}
+inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
+
+// ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
+// on IDOK, if its custom-name CString m_customName is non-empty, uppercase it and shove it
+// into the child window of the 0x4ff combo (GetWindow(GW_CHILD) -> FromHandle ->
+// SetWindowText), then latch m_68. The /GX EH frame + inlined ~CBattlezDlgCustom
+// (member ~CString m_customName + base ~CDialog) unwind the local dialog. The dialog ctor
+// (0x1ccb thunk), DoModal, MakeUpper, GetDlgItem, FromHandle, SetWindowText, and
+// the CString ctor/dtor are all NAFXCW/thunk calls that reloc-mask. Marking
+// ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
+// inlined it too - separate ~CString + ~CDialog calls, not one ??1 call).
+// @early-stop
+// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): the
+// inlined ~CBattlezDlgCustom teardown emits one extra `mov [esp+4],&??_7CBattlezDlgCustom`
+// vptr re-stamp before ~CString that retail elided (its vtable already equals the base
+// through the dtor). The ctor/DoModal/GetLength/MakeUpper/GetDlgItem/GetWindow/FromHandle/
+// SetWindowText chain + the /GX frame are byte-exact; the restamp shifts the tail and its
+// EH trylevel numbering (retail 0/1/2/-1 vs 0/1/-1) + the child!=0 branch polarity. Same
+// wall the out-of-line ~CBattlezDlgCustom (0x17140) hits; not source-steerable. ~92.9%.
+RVA(0x00017030, 0xc1)
+void CBattlezDlg::ShowCustomDlg() {
+    CBattlezDlgCustom dlg(0);
+    if (dlg.DoModal() == 1) {
+        if (dlg.m_customName.GetLength() != 0) {
+            dlg.m_customName.MakeUpper();
+            CWnd* item = GetDlgItem(0x4ff);
+            CWnd* child = CWnd::FromHandle(GetWindow(item->m_hWnd, GW_CHILD));
+            if (child != 0) {
+                child->SetWindowTextA(dlg.m_customName);
+                m_customNameFlag = 1;
+            }
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 RVA(0x00017930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     : CDialog(0xc2, pParent) {
-    m_5c = a0;
-    m_60 = a1;
-    m_64 = 0;
+    m_slots = a0;
+    m_slotIndex = a1;
+    m_pickedColor = 0;
     m_68 = a2;
 }
 
@@ -170,9 +202,9 @@ const void* CBattlezDlgColors::GetMessageMap() {
 // ---------------------------------------------------------------------------
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), m_74(0xa) {
-    m_5c = a0;
+    m_host = a0;
     m_6c = 0;
-    m_60 = 0;
+    m_slotList = 0;
     g_64bd5c = g_gameReg[0x2c / 4];
 }
 
@@ -187,7 +219,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
-    m_60 = (i32) new CMultiSlotList(0xa);
+    m_slotList = new CMultiSlotList(0xa);
     CMultiReg* reg = (CMultiReg*)g_64bd5c;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_524->m_70;
@@ -207,10 +239,10 @@ void CMultiStartDlg::BuildSlotList() {
             count = 4;
         }
     }
-    ((CMultiSlotList*)m_60)->Method1546(count);
+    m_slotList->Method1546(count);
     i32 v = GetSafe1c();
-    ((CMultiSlotList*)m_60)->Method2a45(v, 0x527);
-    ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+    m_slotList->Method2a45(v, 0x527);
+    m_slotList->Method3396(v, 0x527, 0, 0);
     reg->m_600 = 1;
 }
 
@@ -233,7 +265,7 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 enable;
     if (reg->m_528) {
         i32 idx = GetSlotIndex();
-        enable = (((CMultiSlot*)m_5c)[idx].m_16c == 0);
+        enable = (((CMultiSlot*)m_host)[idx].m_16c == 0);
     } else {
         enable = 0;
     }
@@ -241,11 +273,44 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 v = GetSafe1c();
     CMultiReg* reg2 = (CMultiReg*)g_64bd5c;
     if (reg2->m_600) {
-        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, 0, 0);
+        m_slotList->Method3396(v, 0x527, 0, 0);
     } else {
-        ((CMultiSlotList*)m_60)->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
+        m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_5a8);
     }
     return 1;
+}
+
+// CMultiSlotList::Method3396 (0x38150) - re-homed from the ApiCallerStubs stub.
+// Find the list item in control `id` of dialog `hDlg` whose item-data equals
+// MAKELONG(lo, hi) and select it (LB_SETCURSEL); returns 1 if found, else 0. The
+// method ignores `this` (a dialog-item scan) - ecx is unused, so the __thiscall
+// body is byte-identical to the former __stdcall stub. hDlg/id carry the caller's
+// i32 (GetSafe1c/control-id); cast to HWND only at the Win32 boundary.
+RVA(0x00038150, 0x91)
+i32 CMultiSlotList::Method3396(i32 hDlg, i32 id, i32 lo, i32 hi) {
+    HWND list = GetDlgItem((HWND)hDlg, id);
+    if (!list) {
+        return 0;
+    }
+    i32 searching = 1;
+    i32 i = 0;
+    while (searching) {
+        i32 data = SendMessageA(list, 0x150, i, 0);
+        if (data != -1) {
+            i32 itemLo = data & 0xffff;
+            i32 itemHi = (u32)data >> 0x10;
+            if (itemLo == lo && itemHi == hi) {
+                if (SendMessageA(list, 0x147, 0, 0) != i) {
+                    SendMessageA(list, 0x14e, i, 0);
+                }
+                return 1;
+            }
+        } else {
+            searching = 0;
+        }
+        i++;
+    }
+    return 0;
 }
 
 // -------------------------------------------------------------------------
@@ -459,6 +524,35 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     return result;
 }
 
+// Listbox helpers over the GetCtrlA/GetCtrlC control families (0x15cc0/d00/d30/
+// d70): each resolves its control via a sibling GetCtrl (ecx=this is preserved
+// across the call, so no reload is emitted - same shape as SetCtrlBText) then
+// drives its listbox via SendMessageA (LB_GETCURSEL 0x147 / LB_SETCURSEL 0x14e).
+// SetCurSelA/C set the selection; Query015d00/Query015d30 read it.
+RVA(0x00015cc0, 0x23)
+i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
+    CWnd* c = GetCtrlA(id);
+    return SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+}
+
+RVA(0x00015d00, 0x20)
+i32 CBattlezDlg::Query015d00(i32 slot) {
+    CWnd* c = GetCtrlA(slot);
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0);
+}
+
+RVA(0x00015d30, 0x21)
+i32 CBattlezDlg::Query015d30(i32 id) {
+    CWnd* c = GetCtrlC(id);
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+}
+
+RVA(0x00015d70, 0x24)
+i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
+    CWnd* c = GetCtrlC(id);
+    return SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
+}
+
 // SetCtrlBText - resolve control `index` via GetCtrlB (through the thunk) and
 // push `text` into it via CWnd::SetWindowTextA (both NAFXCW, reloc-masked).
 RVA(0x00015db0, 0x19)
@@ -470,11 +564,11 @@ void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
 // ApplyOption0..3 (0x15de0/15e60/15ee0/15f60): set the active option N, refresh
 // the dialog, then enable IDOK (GetDlgItem(1)) when any of slots 1..3 is occupied
 // (the short-circuit `||` reuses the failed-probe's zero in eax on the false path).
-// The Sub015fe0/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
+// The ToggleRow/Sub0173e0/Query015d00 calls reloc-mask (own CBattlezDlg methods
 // homed as RVA stubs in src/Stub/ApiCallers.cpp).
 RVA(0x00015de0, 0x5f)
 void CBattlezDlg::ApplyOption0() {
-    Sub015fe0(0);
+    ToggleRow(0);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -485,7 +579,7 @@ void CBattlezDlg::ApplyOption0() {
 
 RVA(0x00015e60, 0x5f)
 void CBattlezDlg::ApplyOption1() {
-    Sub015fe0(1);
+    ToggleRow(1);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -496,7 +590,7 @@ void CBattlezDlg::ApplyOption1() {
 
 RVA(0x00015ee0, 0x5f)
 void CBattlezDlg::ApplyOption2() {
-    Sub015fe0(2);
+    ToggleRow(2);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -507,7 +601,7 @@ void CBattlezDlg::ApplyOption2() {
 
 RVA(0x00015f60, 0x5f)
 void CBattlezDlg::ApplyOption3() {
-    Sub015fe0(3);
+    ToggleRow(3);
     Sub0173e0();
     if (Query015d00(1) || Query015d00(2) || Query015d00(3)) {
         GetDlgItem(1)->EnableWindow(1);
@@ -517,54 +611,110 @@ void CBattlezDlg::ApplyOption3() {
 }
 
 // -------------------------------------------------------------------------
-// Engine-label backlog stubs (relocated from src/Stub/ - own this class here).
+// Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): pop the modal
+// CBattlezDlgColors picker for slot N (a0=m_slots, a1=N), and on IDOK store the
+// picked value (dlg.m_pickedColor) into slot N, refresh (Sub0173e0), then invalidate the
+// swatch control (0x501 + 2*N). The /GX EH frame unwinds the local dialog; the
+// ctor/DoModal/dtor + SetSlotValue/Sub0173e0/GetDlgItem chain + InvalidateRect
+// import all reloc-mask. The four bodies differ only in N (the a1 arg, the
+// SetSlotValue index, and the control ID).
 // -------------------------------------------------------------------------
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md):
+// the /GX frame + CBattlezDlgColors-local ctor/DoModal/dtor + SetSlotValue/Sub0173e0/
+// GetDlgItem chain + InvalidateRect import are byte-exact, but the local dtor's polymorphic
+// teardown emits one extra vptr re-stamp retail elided (same wall the neighboring dialog
+// dtors + ShowCustomDlg hit). All four bodies score an identical 91.1% -> shared structural
+// residual, not the per-N push form. Not source-steerable.
+// The InvalidateRect import (call ff 15 [ptr]); reloc-masked DIR32.
 RVA(0x00016cd0, 0x98)
-i32 CBattlezDlg::winapi_016cd0_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot0() {
+    CBattlezDlgColors dlg(m_slots, 0, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(0, dlg.m_pickedColor)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016dc0, 0x97)
-i32 CBattlezDlg::winapi_016dc0_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot1() {
+    CBattlezDlgColors dlg(m_slots, 1, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(1, dlg.m_pickedColor)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016e90, 0x98)
-i32 CBattlezDlg::winapi_016e90_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot2() {
+    CBattlezDlgColors dlg(m_slots, 2, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(2, dlg.m_pickedColor)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:InvalidateRect
-// @stub
+// @early-stop
+// eh-dtor vptr-restamp wall (see ApplyColorSlot0); 91.1%, logic byte-exact.
 RVA(0x00016f60, 0x98)
-i32 CBattlezDlg::winapi_016f60_InvalidateRect() {
-    return 0;
+void CBattlezDlg::ApplyColorSlot3() {
+    CBattlezDlgColors dlg(m_slots, 3, 0, 0);
+    if (dlg.DoModal() == 1) {
+        if (SetSlotValue(3, dlg.m_pickedColor)) {
+            Sub0173e0();
+            InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
+        }
+    }
 }
 
-// @confidence: low
-// @source: winapi:GetWindow;SendMessageA
-// @stub
+// CopyComboSelToChild (0x171b0): read the current selection text of the 0x4ff
+// combo (CB_GETCURSEL via the g_pSendMessageA global fn-ptr, then GetLBText into a
+// local CString) and, if non-empty, push it into the combo's child edit
+// (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
+// frame unwinds the local CString.
+DATA(0x006c44a4)
+extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
+// @early-stop
+// 96.8%: full logic byte-exact (combo GetCurSel via g_pSendMessageA, GetLBText into the
+// local CString, GetWindow(GW_CHILD)/FromHandle/SetWindowText, m_68 latch). Residual is the
+// local CString's /GX unwind vptr/state ordering (same EH-restamp family), not steerable.
 RVA(0x000171b0, 0xca)
-i32 CBattlezDlg::winapi_0171b0_GetWindow_SendMessageA() {
-    return 0;
+void CBattlezDlg::CopyComboSelToChild() {
+    CWnd* combo = GetDlgItem(0x4ff);
+    if (combo == 0) {
+        return;
+    }
+    long sel = g_pSendMessageA(combo->m_hWnd, 0x147, 0, 0);
+    if (sel == -1) {
+        return;
+    }
+    CString s;
+    combo->GetLBText1ce7db(sel, s);
+    if (s.GetLength() != 0) {
+        CWnd* child = CWnd::FromHandle(GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+        if (child != 0) {
+            child->SetWindowTextA(s);
+            m_customNameFlag = 0;
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
 // SetSlotValue - store `val` into the 0x158 field of slot `index` in the slot
-// array based at m_5c (0x238 bytes/slot). Returns TRUE.
+// array based at m_slots (0x238 bytes/slot). Returns TRUE.
 RVA(0x00017460, 0x22)
 i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    *(i32*)((char*)((CBattlezSlot*)m_5c + index) + 0x158) = val;
+    ((CBattlezSlot*)m_slots)[index].m_158 = val;
     return 1;
 }
 
@@ -575,7 +725,7 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
 // trailing inlined-strlen block unmodeled (~69%): after GetWindowText, retail measures
 // the filled buffer with an inline `repnz scas` (using edi as the scan pointer, hence an
 // extra `push edi`) and DISCARDS the result. MSVC drops a discarded intrinsic strlen, so
-// the scas can't be re-emitted without the original (unknown) use of the length. The
+// the scas can't be re-emitted without the original (unresolved) use of the length. The
 // missing `push edi` shifts every [esp+N] reference by 4, depressing the byte score even
 // though the CString ctor/dtor + GetCtrlB->GetWindowText + /GX frame are structurally exact.
 RVA(0x00017340, 0x73)
@@ -608,16 +758,12 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
 // that. All control flow + the logic (modal run, m_528/FindRec/m_538 teardown,
 // the registry GAME_KEY cue throttle, Sleep) is byte-aligned; only the three
 // cleanup sites differ.
-DATA(0x00248ce0)
-extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
 DATA(0x002bf3c0)
 extern i32 g_killCueClock; // _g_killCueClock
-DATA(0x00211ec4)
-extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
 
 // The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
 struct CCueEmitter {
@@ -639,8 +785,10 @@ struct CRegBute {
     i32 Lookup(const char* key, CNetCueRec** out);
 };
 struct CNetCfgSub { // m_c->m_28
-    char m_pad0[0x30];
-    i32 m_30; // +0x30
+    char m_pad0[0x10];
+    CRegBute m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
+    char m_pad11[0x30 - 0x11]; // to +0x30
+    i32 m_30;                  // +0x30
 };
 struct CNetCfg { // m_c
     char m_pad0[0x28];
@@ -699,7 +847,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
     } else {
         if (m_c->m_28->m_30 == 0) {
             CNetCueRec* rec = 0;
-            ((CRegBute*)((char*)m_c->m_28 + 0x10))->Lookup(s_GameKey, &rec);
+            m_c->m_28->m_10.Lookup(s_GameKey, &rec);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -726,3 +874,18 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
 // at entry that retail elided; the member/base teardown chain is otherwise byte-exact.
 RVA(0x000b8960, 0x59)
 CMultiStartDlg::~CMultiStartDlg() {}
+
+SIZE_UNKNOWN(CMultiPlayerInfo);
+SIZE_UNKNOWN(CMultiRegSub);
+SIZE_UNKNOWN(CMultiReg);
+SIZE_UNKNOWN(CMultiSlot);
+SIZE_UNKNOWN(CMultiSlotList);
+SIZE_UNKNOWN(CImgHolderBase);
+SIZE_UNKNOWN(CImgHolder);
+SIZE_UNKNOWN(CCueEmitter);
+SIZE_UNKNOWN(CNetCueRec);
+SIZE_UNKNOWN(CRegBute);
+SIZE_UNKNOWN(CNetCfgSub);
+SIZE_UNKNOWN(CNetCfg);
+SIZE_UNKNOWN(CNetDlgHost);
+SIZE_UNKNOWN(CNetMgrLite);

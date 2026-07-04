@@ -22,44 +22,19 @@
 // all carry (slot-vs-id callee-saved coloring -> free-loop count materialization).
 // Logic + offsets + every call/immediate/branch/store are byte-faithful.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>          // the shared activation-registrar archetype (CActReg)
+#include <Globals.h>
 
 // The second activation key string "B" (0x60d1bc); g_nextActId/s_actKeyA + the
 // name registry come from <Gruntz/ActNameRegistry.h>.
 DATA(0x0020d1bc)
 extern char s_actKeyB[];
 
-// ---------------------------------------------------------------------------
-// The per-class activation registry / logic dispatch table the final store
-// targets. Same [lo,hi] fast-range + slow Find/rebuild shape as CWormholeActReg:
-// scratch zeroed first, base+(id-lo)*stride yields the slot, cur is the slow
-// result. The slow rebuild (ActAlloc + Insert) is written inline; MSVC outlines
-// it to the shared 0x34960 helper at most sites.
-// ---------------------------------------------------------------------------
-struct CActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14  (slow-path result slot)
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The per-class activation registry / logic dispatch table the final store targets
+// is the shared <Gruntz/ActReg.h> CActReg archetype ([lo,hi] fast-range + slow
+// Find/rebuild; scratch zeroed first, base+(id-lo)*stride yields the slot, cur is
+// the slow result). The slow rebuild is written inline; MSVC outlines it to the
+// shared 0x34960 helper at most sites.
 
 // The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameList() {
@@ -74,15 +49,16 @@ static inline void FreeNameList() {
 }
 
 // The per-class logic dispatch table (RTTI ULogicFnTable, @0x6445e8); same field
-// layout as CActReg. Modeled with its canonical name so the field DIR32s match.
+// layout as CActReg. Kept local (a distinct zDArray-based LogicFnTable view lives
+// in CInGameIcon.cpp et al.; unifying those needs the zDArray hierarchy).
 struct LogicFnTable : public CActReg {};
 DATA(0x002445e8)
 extern LogicFnTable g_logicDispatch_6445e8; // 0x6445e8
 
 // The class registries the per-key handler entries live in. g_teleporterActReg
-// (RTTI UCTeleporterActReg, @0x6446b0) is CTeleporter's named registry; the rest
-// are untyped .data named by address. Same CActReg field layout.
-struct CTeleporterActReg : public CActReg {};
+// (RTTI UCTeleporterActReg, @0x6446b0) is CTeleporter's named registry (the shared
+// <Gruntz/ActReg.h> CTeleporterActReg alias); the rest are untyped .data named by
+// address, typed CActReg.
 DATA(0x002446b0)
 extern CTeleporterActReg g_teleporterActReg; // 0x6446b0
 DATA(0x00246188)
@@ -272,12 +248,9 @@ void CTeleporter_RegisterActs() {
 // ===========================================================================
 // With 19 call sites MSVC outlines the whole [lo,hi]-range + slow-rebuild lookup
 // to the shared 0x3864 helper - a __thiscall method on the collection (ecx=coll,
-// push id, returns slot). Modeled as a no-body method so both the name-registry
-// and the table lookup emit `mov ecx,coll; push id; call` (reloc-masked); inlined
-// at the small-registrar sites above, it folds to the same global field reads.
-struct CLookupColl {
-    char* Lookup(i32 id); // 0x3864
-};
+// push id, returns slot). CLookupColl is the shared <Gruntz/ActReg.h> CActReg-derived
+// alias; its Lookup emits `mov ecx,coll; push id; call` (reloc-masked); inlined at
+// the small-registrar sites above, it folds to the same global field reads.
 DATA(0x002bf650)
 extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry, == g_nameReg)
 DATA(0x00244af0)
@@ -285,23 +258,10 @@ extern CLookupColl g_reg_644af0; // 0x644af0  (per-class table)
 
 // The 19 action-key strings (s_actKeyA/B come from above; the rest are .rdata
 // string constants named by address). Referenced so the `push key` reloc-masks.
-extern char k_60cc90[];
 extern char k_60cca4[];
 extern char k_60d2ec[];
-extern char k_60d2e8[];
-extern char k_60cc9c[];
-extern char k_60d7fc[];
-extern char k_60cca0[];
 extern char k_60cc94[];
 extern char k_60d7f8[];
-extern char k_60cc98[];
-extern char k_60d7f4[];
-extern char k_60dc04[];
-extern char k_60dc0c[];
-extern char k_60beb8[];
-extern char k_60dc08[];
-extern char k_60bebc[];
-extern char k_60df94[];
 
 // The 19 per-action handler entries (ILT thunks), referenced by address.
 extern "C" void H_402ac2();

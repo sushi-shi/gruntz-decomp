@@ -1,6 +1,6 @@
-// SymTab.h - CSymTab, the Remus/ButeMgr hierarchical symbol table.
+// SymTab.h - CSymTab, the ButeMgr hierarchical symbol table.
 //
-// The Remus parser (RemusParseSource @0x139800/0x139960/0x1399d0, right next to
+// The ButeMgr parser (CParseSource @0x139800/0x139960/0x1399d0, right next to
 // these methods) builds a tree of named scopes through CSymTab. Each node is a
 // two-level keyed store reached through two hash tables:
 //   +0x38  m_subTabs  - child CSymTab scopes (nested namespaces); freed by
@@ -31,6 +31,8 @@
 #define SRC_BUTE_SYMTAB_H
 
 #include <Ints.h>
+
+#include <Bute/Hash.h> // CHashElement (the embeddable hash-node prefix records carry)
 
 // The engine resource alloc/free (RezAlloc @0x1b9b46 = operator new / RezFree
 // @0x1b9b82, both __cdecl one-arg); reloc-masked. The scope-name buffer is allocated
@@ -68,29 +70,20 @@ i32 MakeSymSeed(); // 0x13ba70 (Boundary stub; cdecl, no args of its own)
 // Entry is a 16-byte slot; a live slot's payload pointer is [slot+0]-4 (the
 // engine offsets entries by 4), and the resolved record sits at [entry+0x14].
 // ---------------------------------------------------------------------------
-struct CHashEntry {
+struct CHashTableEntry {
     char* m_key;            // +0x00  (the engine stores key+4; First/Next adjust by -4)
     char m_pad04[0x14 - 4]; // +0x04
-    void* m_payload;        // +0x14  the resolved (key,node) record
+    void* m_payload;        // +0x14  the resolved (key,node) record (heterogeneous)
 };
+SIZE(CHashTableEntry, 0x18); // { key, ..., payload @0x14 }
 
-// The embedded table iterates RezColl (collection) / RezNode (entry): one
-// physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
-// RVAs. First() is __thiscall on the collection; Next() is __thiscall on the
-// entry. The returned node's payload (the resolved record) sits at node+0x14.
-// (The iteration accessors below add the collection/entry offset into ecx, so
-// the call shapes fall out; both are reloc-masked externals.)
-struct RezNode;
-
-struct RezColl {
-    RezNode* First(); // 0x184ae0
-};
-
-struct RezNode {
-    RezNode* Next();   // 0x1848b0
-    char m_pad0[0x14]; // +0x00
-    void* m_14;        // +0x14  the resolved record
-};
+// The embedded table iterates the shared RezColl (collection) / RezNode (entry):
+// one physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
+// RVAs (bodies in src/Rez/RezColl.cpp; shared def in <Rez/RezColl.h>). The
+// CSymTab iterators reinterpret-cast a CHashTable* / a record-relative offset to
+// RezColl* / RezNode* and call First/Next; the returned node's payload (the
+// resolved record) sits at RezNode::m_14 (+0x14). Both are reloc-masked externals.
+#include <Rez/RezColl.h>
 
 class CHashTable {
 public:
@@ -103,11 +96,11 @@ public:
     void Init(i32 n); // 0x184960
 
     // First live entry (0x184ae0), or null.
-    CHashEntry* First();
+    CHashTableEntry* First();
     // Entry after `e` in iteration order (0x1848b0).
-    CHashEntry* Next(CHashEntry* e);
+    CHashTableEntry* Next(CHashTableEntry* e);
     // Remove `e` and return the next entry (0x184ab0).
-    CHashEntry* Remove(CHashEntry* e);
+    CHashTableEntry* Remove(CHashTableEntry* e);
     // Drop every entry (0x184a40) - the table's destructor.
     void RemoveAll();
     // Find the (key,node) record for `name`, or null (0x13c360).
@@ -125,34 +118,17 @@ public:
         RemoveAll();
     }
 
-    u32 m_count;     // +0x00
-    void* m_buckets; // +0x04
+    u32 m_count;                // +0x00
+    CHashTableEntry* m_buckets; // +0x04  the RezAlloc'd 16-byte-slot bucket array
 };
+SIZE(CHashTable, 0x8); // { count, buckets }
 
-// ---------------------------------------------------------------------------
-// CSymParser - the owning Remus parser (this+0x18). Only the two fields the
-// resolvers read are modeled; the rest is unmapped here.
-// ---------------------------------------------------------------------------
-struct CSymParser {
-    // Map an upcased extension/name to its int key (0x13b910); reloc-masked __thiscall.
-    void* ResolveName(const char* s); // 0x13b910
-    // Pop the first parse-slot record out of the parser's hash pool (0x13c0c0);
-    // reloc-masked __thiscall. Method4b0 builds a leaf record into a fresh slot.
-    void* PopParseSlot(); // 0x13c0c0
-
-    char m_pad00[0x4];
-    const char* m_delims; // +0x04  delimiter set the tokenizer splits on
-    char m_pad08[0x58 - 0x8];
-    i32 m_longestScopeNameLen; // +0x58  longest scope-name length seen (tracked when adding scopes)
-    i32 m_longestLeafNameLen;  // +0x5c  longest leaf-name length seen (tracked by Method4b0)
-    char m_pad60[0x68 - 0x60];
-    i32 m_68;                // +0x68  flag forwarded to the +0x38 walk (passed as m_68 == 0)
-    i32 m_6c;                // +0x6c  selects the leaf-record ctor variant (Init4 vs Init3)
-    i32 m_70;                // +0x70  leaf-record ctor arg
-    i32 m_74;                // +0x74  leaf-record ctor arg (Init4 only)
-    i32 m_subTabBucketCount; // +0x78  child-scope m_subTabs bucket count
-    i32 m_symbolBucketCount; // +0x7c  child-scope m_symbols bucket count
-};
+// CSymParser - the owning ButeMgr parser (CSymTab::m_owner @+0x18 points back to it).
+// The single full definition lives in <Bute/SymParser.h>; here it is only a
+// forward-declaration (m_owner is a pointer, so the layout is not needed in this
+// header). The methods that deref m_owner live in SymTab.cpp, which includes
+// SymParser.h for the full layout.
+class CSymParser;
 
 // ---------------------------------------------------------------------------
 // CSymRec - the leaf symbol record stored in m_symbols (0x139cf0/0x1397a0). Its
@@ -173,8 +149,14 @@ public:
     void operator delete(void* p) {
         RezFree(p);
     }
-    char m_pad[0x30]; // sizeof == 0x30 (the leaf-record allocation size)
+
+    i32 m_key;                 // +0x00  int key (m_symbols hashes on this)
+    CHashElement m_symNode;    // +0x04  hash-node prefix spliced into m_symbols
+    char m_pad1c[0x24 - 0x1c]; // +0x1c
+    CHashTable m_valTable;     // +0x24  the record's value sub-table
+    char m_pad2c[0x30 - 0x2c]; // +0x2c
 };
+SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
 
 // ---------------------------------------------------------------------------
 // CSymTab - the recursive scope node.
@@ -217,7 +199,7 @@ public:
 
     // FindOrAddSym (0x13a940): find the int-keyed leaf record, or build one (the ctor
     // variant chosen by m_owner->m_6c) and insert it into m_symbols. Returns it.
-    void* FindOrAddSym(i32 key);
+    CSymRec* FindOrAddSym(i32 key);
 
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.
@@ -283,8 +265,8 @@ public:
     char* m_name;        // +0x00
     void* m_04;          // +0x04
     void* m_08;          // +0x08
-    void* m_0c;          // +0x0c
-    void* m_10;          // +0x10
+    i32 m_0c;            // +0x0c  min-accumulator in ApplyRange (starts at -1)
+    i32 m_10;            // +0x10  sum-accumulator in ApplyRange
     void* m_14;          // +0x14  (role unproven; only nulled in dtor)
     CSymParser* m_owner; // +0x18
     void* m_1c;          // +0x1c
@@ -296,5 +278,6 @@ public:
     CHashTable m_symbols; // +0x40  (destructed first: trylevel 0)
     char* m_buf48;        // +0x48
 };
+SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
 #endif // SRC_BUTE_SYMTAB_H

@@ -19,9 +19,11 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
+#include <rva.h>
 #include <Ints.h>
 
-class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWindowText
+class CString; // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
+struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
 
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
@@ -34,29 +36,38 @@ class CString; // full def via <Gruntz/CString.h> below; needed by CWnd::GetWind
 // is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
+SIZE_UNKNOWN(CWnd);
 class CWnd {
 public:
     void SetWindowTextA(const char* lpszString);
     void EnableWindow(i32 bEnable);        // NAFXCW __thiscall (reloc-masked)
     void GetWindowTextA(CString& rString); // NAFXCW __thiscall (reloc-masked)
                                            // (GetWindowText macro-expands to this)
+    // CComboBox::GetLBText(int, CString&) (0x1ce7db) - reloc-masked __thiscall.
+    void GetLBText1ce7db(i32 nIndex, CString& rString);
+    // NAFXCW static (HWND -> CWnd*), reached by call-rel32 (reloc-masks). MFC
+    // declares it PASCAL (__stdcall).
+    static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
+    char m_pad00[0x1c];                              // +0x00
+    HWND__* m_hWnd;                                  // +0x1c  wrapped window handle
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
 // string members the dialog ctors construct in place).
 // m_pchData = *_afxEmptyString.
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // CObList - the MFC object list. Only the block-size ctor is touched (the
 // embedded list CMultiStartDlg constructs with nBlockSize=0xa).
 // 0x1c bytes (vptr + 5 scalar fields).
-#include <Gruntz/CObList.h>
+#include <Gruntz/ObList.h>
 
 // CDialog - the MFC dialog base. The subclass ctors store their OWN vptr at
 // [this] AFTER chaining this base ctor, so CDialog must be polymorphic (a
 // virtual decl gives it a vptr at +0x00 and makes the derived vptr-store fall
 // out of the ctor). It is padded to 0x5c bytes so the subclass members land at
 // the offsets the disasm pins (+0x5c upward).
+SIZE_UNKNOWN(CDialog);
 class CDialog {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
@@ -65,29 +76,41 @@ public:
     // reached by call-rel32 (external/no-body so it reloc-masks). Inherited by the
     // dialog subclasses; their accessors tail-call it on `this`.
     CWnd* GetDlgItem(i32 nID) const;
+    // DoModal - the NAFXCW modal loop (reloc-masked). Modeled non-virtual: retail
+    // calls it directly on a known-type local (devirtualized), so a plain method
+    // reproduces the `call rel32`.
+    i32 DoModal();         // 0x1ba9d2
     char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
 };
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg
-//   base CDialog(0xc0, pParent); m_5c = a0; CString @+0x6c; m_68 = 0.
+//   base CDialog(0xc0, pParent); m_slots = a0; CString @+0x6c; m_68 = 0.
 // ---------------------------------------------------------------------------
-// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_5c).
+// A player-slot record in the battle dialog's slot array (CBattlezDlg::m_slots).
 // 0x238 bytes/slot (the disasm scales index by 0x238 = lea x71, *8); only the
 // +0x158 int field (set by SetSlotValue) and the size are load-bearing.
+SIZE_UNKNOWN(CBattlezSlot);
 struct CBattlezSlot {
-    char pad[0x238];
+    char pad0[0x158];
+    i32 m_158; // +0x158  slot value (SetSlotValue)
+    char pad15c[0x238 - 0x15c];
 };
 
+// The player-slot list CMultiStartDlg::BuildSlotList allocates (defined in
+// Dialogs.cpp); only a pointer is needed here.
+struct CMultiSlotList;
+
+SIZE_UNKNOWN(CBattlezDlg);
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
-    ~CBattlezDlg(); // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    ~CBattlezDlg() OVERRIDE; // 0x14c90 (destroy CString m_6c, chain ~CDialog)
 
-    i32 m_5c;        // +0x5c  (= a0; also reused as the CBattlezSlot* slot-array base)
-    char m_pad60[8]; // +0x60
-    i32 m_68;        // +0x68  (= 0)
-    CString m_6c;    // +0x6c  (default CString)
+    i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
+    char m_pad60[8];      // +0x60
+    i32 m_customNameFlag; // +0x68  1 = custom level name typed, 0 = picked from list
+    CString m_6c;         // +0x6c  (default CString)
 
     // Control accessors: switch(index) -> GetDlgItem(constID). Four families,
     // each over a 4-entry control-ID table.
@@ -95,6 +118,12 @@ public:
     CWnd* GetCtrlB(i32 index);
     CWnd* GetCtrlC(i32 index);
     CWnd* GetCtrlD(i32 index);
+    // Listbox cur-sel helpers over the GetCtrlA/GetCtrlC families (own
+    // RVA-annotated bodies in Dialogs.cpp; 0x15cc0/d30/d70).
+    i32 SetCurSelA(i32 id, i32 sel); // 0x015cc0  LB_SETCURSEL(GetCtrlA)
+    i32 Query015d00(i32 slot);       // 0x015d00  LB_GETCURSEL(GetCtrlA)
+    i32 Query015d30(i32 id);         // 0x015d30  LB_GETCURSEL(GetCtrlC) + 1
+    i32 SetCurSelC(i32 id, i32 sel); // 0x015d70  LB_SETCURSEL(GetCtrlC, sel-1)
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
     void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
@@ -105,13 +134,17 @@ public:
     // half-built local CString.
     void ReadCtrlBText(i32 index);
 
+    // ShowCustomDlg (0x17030): run a CBattlezDlgCustom modally; on IDOK, uppercase
+    // its (non-empty) custom-name string and push it into the 0x4ff control's child.
+    void ShowCustomDlg();
+
     // Slot/option helpers reached via ILT thunks (own CBattlezDlg methods, owned
     // as RVA stubs in src/Stub/ApiCallers.cpp; external/no-body here so the calls
-    // reloc-mask). Sub015fe0 sets the active option N; Sub0173e0 refreshes; the
-    // Query015d00(slot) probes whether a slot is occupied.
-    void Sub015fe0(i32 option); // 0x015fe0
-    void Sub0173e0();           // 0x0173e0
-    i32 Query015d00(i32 slot);  // 0x015d00
+    // reloc-mask). ToggleRow sets the active option N; Sub0173e0 refreshes.
+    i32 ToggleRow(
+        i32 option
+    );                // 0x015fe0 (canonical ?ToggleRow@CBattlezDlg, homed in BattlezDlgRow.cpp)
+    void Sub0173e0(); // 0x0173e0
 
     // The four per-option apply handlers (0x15de0/15e60/15ee0/15f60): set option N,
     // refresh, then enable IDOK when any of slots 1..3 is occupied.
@@ -120,29 +153,35 @@ public:
     void ApplyOption2();
     void ApplyOption3();
 
-    i32 winapi_016cd0_InvalidateRect();
-    i32 winapi_016dc0_InvalidateRect();
-    i32 winapi_016e90_InvalidateRect();
-    i32 winapi_016f60_InvalidateRect();
-    i32 winapi_0171b0_GetWindow_SendMessageA();
+    // Per-color-slot apply handlers (0x16cd0/16dc0/16e90/16f60): run the modal
+    // CBattlezDlgColors picker for slot N, store its result into the slot, refresh,
+    // and invalidate the swatch control.
+    void ApplyColorSlot0();
+    void ApplyColorSlot1();
+    void ApplyColorSlot2();
+    void ApplyColorSlot3();
+    // Copy the 0x4ff combo's current selection text into its child edit (0x171b0).
+    void CopyComboSelToChild();
 };
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgCustom
 //   base CDialog(0xc3, pParent); CString @+0x5c.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CBattlezDlgCustom);
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
-    ~CBattlezDlgCustom(); // 0x17140 (destroy CString m_5c, chain ~CDialog)
+    ~CBattlezDlgCustom() OVERRIDE; // 0x17140 (destroy CString m_customName, chain ~CDialog)
 
-    CString m_5c; // +0x5c  (default CString)
+    CString m_customName; // +0x5c  (default CString)
 };
 
 // ---------------------------------------------------------------------------
 // CBattlezDlgColors (NO EH frame - no embedded C++ object).
-//   base CDialog(0xc2, pParent); m_5c = a0; m_60 = a1; m_64 = 0; m_68 = a2.
+//   base CDialog(0xc2, pParent); m_slots = a0; m_slotIndex = a1; m_pickedColor = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CBattlezDlgColors);
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
@@ -151,21 +190,22 @@ public:
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
     const void* GetMessageMap();
 
-    i32 m_5c; // +0x5c  (= a0)
-    i32 m_60; // +0x60  (= a1)
-    i32 m_64; // +0x64  (= 0)
-    i32 m_68; // +0x68  (= a2)
+    i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
+    i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
+    i32 m_pickedColor; // +0x64  (= 0; the picked value read after DoModal)
+    i32 m_68;          // +0x68  (= a2; always 0 at call sites; role unproven)
 };
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg
-//   base CDialog(0xc5, pParent); m_5c = a0; m_60 = 0; m_6c = 0;
-//   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_2c.
+//   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
+//   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CMultiStartDlg);
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
-    ~CMultiStartDlg(); // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
+    ~CMultiStartDlg() OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
@@ -178,6 +218,12 @@ public:
     i32 UpdateSlot();
     // GetSlotIndex (0xc4b30): the current slot index (own method, reloc-masked).
     i32 GetSlotIndex();
+
+    // SetupWorldCombo (0xc1840): fill the 0x4ff world combo from the GAME_MULTI
+    // registry path, read-only its edit child, and subclass its wndproc.
+    i32 SetupWorldCombo();
+    // Sub_c3e30 (0xc3e30 via ILT thunk): post-setup self-call (reloc-masked).
+    void Sub_c3e30();
 
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as
@@ -194,15 +240,16 @@ public:
         return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
     }
 
-    i32 m_5c;        // +0x5c  (= a0)
-    i32 m_60;        // +0x60  (= 0)
-    char m_pad64[8]; // +0x64
-    i32 m_6c;        // +0x6c  (= 0)
-    CString m_70;    // +0x70  (default CString)
-    CObList m_74;    // +0x74  (CObList(0xa))
+    i32 m_host;                 // +0x5c  (= a0; the CNetDlgHost*/slot-array base)
+    CMultiSlotList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
+    char m_pad64[8];            // +0x64
+    i32 m_6c;                   // +0x6c  (= 0)
+    CString m_70;               // +0x70  (default CString)
+    CObList m_74;               // +0x74  (CObList(0xa))
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
+SIZE_UNKNOWN(CCheckpointDlg);
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);

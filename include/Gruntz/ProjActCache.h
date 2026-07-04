@@ -29,8 +29,7 @@ DATA(0x002bf464)
 extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA)
 DATA(0x002bf428)
 extern void* g_projActAllocResult; // 0x6bf428 (?g_projActAllocResult@@3PAXA)
-DATA(0x002bf454)
-extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
+extern void* g_projActName;        // 0x6bf454 (the bad-arg diagnostic record cell)
 
 // _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
 // the failing allocation was requested. Reloc-masked (no body).
@@ -51,6 +50,7 @@ extern "C" void* memcpy(void* d, const void* s, u32 n);
 
 // One crit-bit trie node (20 bytes): two child links, the crit-bit index, the
 // owned key copy, and the stored value.
+SIZE_UNKNOWN(CTrieNode);
 struct CTrieNode {
     CTrieNode* m_0; // +0x0  child[0]
     CTrieNode* m_4; // +0x4  child[1]
@@ -60,6 +60,7 @@ struct CTrieNode {
 };
 
 // The +0x04 error sink: on a sizing failure the container reports through it.
+SIZE_UNKNOWN(CVariantSlot);
 class CVariantSlot {
 public:
     void Set(void* obj, i32 a, i32 b); // 0x16d850
@@ -95,7 +96,7 @@ public:
 class zBitVec : public CContainerErr {
 public:
     zBitVec(i32 idx, i32 sizehint); // 0x16d790
-    virtual ~zBitVec();             // [0] override; ??_G/dtor @0x16d2d0
+    virtual ~zBitVec() OVERRIDE;    // [0] override; ??_G/dtor @0x16d2d0
     i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z, external)
     i32 EnsureSize(i32 nbits);      // 0x1936e0 (grow + preserve, reports OOM)
 };
@@ -103,6 +104,7 @@ public:
 // The string-keyed crit-bit trie (the projectile-action name -> value map). Shares
 // the CContainerErr error-record idiom (the +0x04 CVariantSlot error sink). The
 // working state spans +0x14..+0x28. Field names are placeholders.
+SIZE_UNKNOWN(CProjActMap);
 class CProjActMap {
 public:
     void* Insert(const char* key, void* value); // 0x1933b0

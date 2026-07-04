@@ -1,9 +1,12 @@
 #include <rva.h>
-#include <Gruntz/CString.h>
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/String.h>
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory + CSpriteIconNode shape
+#include <Gruntz/PickupType.h>    // the shared object/pickup/grunt-kind type id space
 #include <Bute/ButeMgr.h>
 // IconLoaders.cpp - the in-game-icon / powerup / explosion / camera / booty-perfect
 // sprite loaders (C:\Proj\Gruntz). Each builds a named sprite-set key, asks the
-// global HUD sprite factory (g_gameReg->m_factoryHolder->m_factory->CreateSprite) for the sprite,
+// global HUD sprite factory (g_gameReg->m_world->m_8->CreateSprite) for the sprite,
 // then caches/forwards something off it through the shared sprite-resource leaves
 // (CGruntSprite::CacheFirstFrame, CGruntAnimPlayer::ApplyLookupGeometry - both in
 // the spriteresource unit, reloc-masked). Only offsets / code bytes are
@@ -12,35 +15,18 @@
 // ---------------------------------------------------------------------------
 // Shared engine objects, modeled minimally (mirroring SpriteLoaders.cpp's idiom).
 // ---------------------------------------------------------------------------
-struct CSprite; // the created HUD/anim sprite
-
-// An entry in the factory's live-icon list (m_liveIcons): the next-link at +0 and the
-// owned CSprite at +8.  LoadToyBoxIcon walks it to de-dup by class + tile.
-struct CSpriteIconNode {
-    CSpriteIconNode* next; // +0x00
-    char m_pad4[0x8 - 0x4];
-    CSprite* m_sprite; // +0x08
-};
-
-// The HUD sprite factory reached via g_gameReg->m_factoryHolder->m_factory. CreateSprite looks the
-// template up by class-NAME (the 5th arg) and builds it; __thiscall ret 0x18.
-struct CSpriteFactory {
-    CSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-    char m_pad0[0x14];
-    CSpriteIconNode* m_liveIcons; // +0x14  live-icon list head
-};
+// CSpriteFactory + CSpriteIconNode + the CIconSprite forward-decl now live in the
+// shared <Gruntz/SpriteFactory.h> (included above); CIconSprite is defined below.
 
 // Two icon-class vtable-slot fns the toybox de-dup test compares an existing
-// icon's CSprite::m_initVtbl->Init against (the in-game-icon / in-game-text classes).
+// icon's CIconSprite::m_initVtbl->Init against (the in-game-icon / in-game-text classes).
 // Declared extern so each `cmp esi, OFFSET fn` immediate carries a DIR32 reloc
 // that pairs with retail's reloc at 0x40288d / 0x402bad (names are reloc-masked).
 extern "C" void IconClassInitA(); // 0x40288d
 extern "C" void IconClassInitB(); // 0x402bad
 
-struct CSpriteFactoryHolder {
-    char m_pad0[0x8];
-    CSpriteFactory* m_factory; // +0x08
-};
+// CSpriteFactoryHolder (the singleton's +0x30 slot, also this icon class's +0x22c
+// member) is the canonical <Gruntz/GameRegistry.h> type (its m_8 == m_factory).
 
 // The game-manager singleton (g_gameReg, *0x64556c). Different loaders read a
 // handful of its slots (viewport +0x8c/+0x90, a level-tracker +0x2c, the
@@ -49,20 +35,12 @@ struct CResourceTracker {
     char m_pad0[0x1c];
     i32 m_levelNumber; // +0x1c  (Level number source)
 };
-struct CGameReg {
-    void Report(i32 code, i32 sub); // 0x40346d __thiscall (icon-overflow report)
-
-    char m_pad0[0x2c];
-    CResourceTracker* m_resourceTracker;   // +0x2c
-    CSpriteFactoryHolder* m_factoryHolder; // +0x30
-    char m_pad34[0x8c - 0x34];
-    i32 m_viewportX; // +0x8c  viewport X
-    i32 m_viewportY; // +0x90  viewport Y
-    char m_pad94[0x134 - 0x94];
-    i32 m_visibleBoundsMode; // +0x134 visible-bounds mode gate (==1)
-};
+// The canonical CGameRegistry view of the singleton (*0x24556c). The resource
+// tracker (+0x2c -> CResourceTracker) is cast locally; the sprite-factory holder
+// (+0x30 -> m_30), viewport X/Y (+0x8c/+0x90 -> m_8c/m_90), the visible-bounds
+// gate (+0x134 -> m_134) and Report() are exposed by the canonical layout.
 DATA(0x0024556c)
-extern CGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The attribute manager (butemgr unit), reached as the g_buteMgr singleton.
 extern CButeMgr g_buteMgr;
@@ -73,14 +51,15 @@ extern "C" i32 rand(void);
 // The created sprite. CacheFirstFrame caches its first valid frame; the icon
 // loader pushes a pile of configuration ints into the +0x114..+0x130 block. The
 // per-sprite animation player @+0x38 carries ApplyLookupGeometry.
-// The CSprite "init interface" vtable embedded at CSprite+0x7c; slot +0x10 is the
+// The CIconSprite "init interface" vtable embedded at CIconSprite+0x7c; slot +0x10 is the
 // init function the camera loader runs after CreateSprite.
 struct CSpriteVtbl {
-    void* m_slot0[4];       // +0x00  slots 0..3
-    void (*Init)(CSprite*); // +0x10  the init "virtual" (takes the sprite)
+    void* m_slot0[4];           // +0x00  slots 0..3
+    void (*Init)(CIconSprite*); // +0x10  the init "virtual" (takes the sprite)
 };
 
-struct CSprite {
+SIZE_UNKNOWN(CIconSprite);
+struct CIconSprite {
     void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame @0x150540
     i32 ApplyLookupGeometry(const char* name, i32 applyDefault); // CGruntAnimPlayer @0x1505b0
 
@@ -104,7 +83,7 @@ struct CSprite {
 
 // the matched leaves live in the spriteresource unit; declared here so the
 // `call rel32` reloc-masks (the mangled name + arg shape are load-bearing).
-// CGruntSprite::CacheFirstFrame == CSprite::CacheFirstFrame here.
+// CGruntSprite::CacheFirstFrame == CIconSprite::CacheFirstFrame here.
 // (mangled ?CacheFirstFrame@CGruntSprite@@QAEXPBD@Z / etc. fall out of the names.)
 
 // The format wrapper (NAFXCW CString::Format, called cdecl-style with the dst
@@ -124,9 +103,9 @@ public:
     char m_pad00[0x22c];                   // +0x000
     CSpriteFactoryHolder* m_factoryHolder; // +0x22c  sprite-factory holder
     char m_pad230[0x23c - 0x230];          // +0x230
-    CSprite* m_cameraSprite;               // +0x23c  cached camera sprite
+    CIconSprite* m_cameraSprite;           // +0x23c  cached camera sprite
     char m_pad240[0x2f8 - 0x240];          // +0x240
-    CSprite* m_bootyPerfectSprite;         // +0x2f8  booty-perfect anim sprite
+    CIconSprite* m_bootyPerfectSprite;     // +0x2f8  booty-perfect anim sprite
 };
 
 // ===========================================================================
@@ -139,8 +118,8 @@ public:
 
 RVA(0x0001c070, 0x59)
 i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
-    CSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                       ->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
+    CIconSprite* spr =
+        g_gameReg->m_world->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_bootyPerfectSprite = spr;
     if (!spr) {
         return 0;
@@ -166,9 +145,9 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         return 0;
     }
 
-    i32 vx = g_gameReg->m_viewportX;
-    i32 vy = g_gameReg->m_viewportY;
-    i32 count = *(*(i32**)((char*)g_gameReg->m_resourceTracker + 0x2dc));
+    i32 vx = g_gameReg->m_modeW;
+    i32 vy = g_gameReg->m_modeH;
+    i32 count = *(*(i32**)((char*)g_gameReg->m_curState + 0x2dc));
 
     i32 ax, cx;
     if (count == 0) {
@@ -179,8 +158,8 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         cx = vy - 0x28;
     }
 
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
-    CSprite* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
+    CSpriteFactory* fac = m_factoryHolder->m_8;
+    CIconSprite* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_cameraSprite = spr;
     spr->m_initVtbl->Init(spr);
     m_cameraSprite->CacheFirstFrame("GAME_CAMERASPRITE");
@@ -192,7 +171,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
 // ===========================================================================
 //
 // Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
-// the factory's live-icon list (m_factoryHolder->m_factory->m_liveIcons) and bails (return 0) if an
+// the factory's live-icon list (m_factoryHolder->m_8->m_liveIcons) and bails (return 0) if an
 // existing icon of one of the two icon classes already sits on that tile;
 // otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
 // slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
@@ -203,7 +182,7 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
 
 RVA(0x0007a3f0, 0xd7)
 i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
+    CSpriteFactory* fac = m_factoryHolder->m_8;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
 
@@ -211,7 +190,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
     while (node != 0) {
         CSpriteIconNode* cur = node;
         node = node->next;
-        CSprite* obj = cur->m_sprite;
+        CIconSprite* obj = cur->m_sprite;
         void* init = (void*)obj->m_initVtbl->Init;
         if (init == (void*)&IconClassInitA || init == (void*)&IconClassInitB) {
             i32 ox = obj->m_subTileX >> 5;
@@ -222,7 +201,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
         }
     }
 
-    CSprite* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    CIconSprite* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         g_gameReg->Report(0x8009, 0x402);
         return 0;
@@ -245,8 +224,8 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 
 RVA(0x0007b330, 0xc6)
 i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
-    CSpriteFactory* fac = m_factoryHolder->m_factory;
-    CSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
+    CSpriteFactory* fac = m_factoryHolder->m_8;
+    CIconSprite* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
     if (spr) {
         i32 v = variant;
         if (v == 0) {
@@ -272,6 +251,14 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 // runs its own CreateSprite("TimeBomb", ...) + a CoveredTimeBombTime default.
 // __thiscall-free ret 0x18 (6 args). Returns 1 on success.
 
+// The in-game-icon type id LoadPowerupIconSprites dispatches on (type) is PickupType,
+// the shared object/pickup/grunt-kind id space in <Gruntz/PickupType.h>. Each name is
+// confirmed by its case's GAME_INGAMEICONZ_* sprite key + verified against the retail
+// jump table (VA 0x47c9e8/0x47cab4); the ids AGREE with CGrunt's LoadPickupSprites (both
+// traced to the retail switch). Same immediates as the bare labels -> matching-neutral.
+// (The warp-letter cases are PICKUP_W/A/R/P; the icon-only covered timebomb is
+// PICKUP_COVEREDTIMEBOMB = 99.)
+
 RVA(0x0007c620, 0x3c5)
 i32 EngineLabelBacklog::LoadPowerupIconSprites(
     i32 type,
@@ -287,166 +274,166 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
 
     CString name;
     switch (type) {
-        case 1:
+        case PICKUP_BOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
             break;
-        case 2:
+        case PICKUP_BOOMERANG:
             name = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
             break;
-        case 3:
+        case PICKUP_BRICK:
             name = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
             break;
-        case 4:
+        case PICKUP_CLUB:
             name = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
             break;
-        case 5:
+        case PICKUP_GAUNTLETZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
             break;
-        case 6:
+        case PICKUP_GLOVEZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
             break;
-        case 7:
+        case PICKUP_GOOBER:
             name = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
             break;
-        case 8:
+        case PICKUP_GRAVITYBOOTZ:
             name = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
             break;
-        case 9:
+        case PICKUP_GUNHAT:
             name = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
             break;
-        case 10:
+        case PICKUP_NERFGUN:
             name = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
             break;
-        case 11:
+        case PICKUP_ROCK:
             name = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
             break;
-        case 12:
+        case PICKUP_SHIELD:
             name = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
             break;
-        case 13:
+        case PICKUP_SHOVEL:
             name = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
             break;
-        case 14:
+        case PICKUP_SPRING:
             name = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
             break;
-        case 15:
+        case PICKUP_SPY:
             name = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
             break;
-        case 16:
+        case PICKUP_SWORD:
             name = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
             break;
-        case 17:
+        case PICKUP_TIMEBOMB:
             name = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
             break;
-        case 18:
+        case PICKUP_TOOB:
             name = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
             break;
-        case 19:
+        case PICKUP_WAND:
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
-        case 20:
-            if (g_gameReg->m_visibleBoundsMode == 1) {
-                CResourceTracker* rt = g_gameReg->m_resourceTracker;
+        case PICKUP_WARPSTONE:
+            if (g_gameReg->m_134 == 1) {
+                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_curState;
                 CString lvl;
                 lvl.Format("Level%i", rt->m_levelNumber);
                 name.Format(
                     "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
-                    g_buteMgr.GetInt("WarpStone", (char*)(const char*)lvl)
+                    g_buteMgr.GetInt("WarpStone", (const char*)lvl)
                 );
             } else {
                 name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);
             }
             break;
-        case 21:
+        case PICKUP_WELDER:
             name = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
             break;
-        case 22:
+        case PICKUP_WINGZ:
             name = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
             break;
-        case 23:
+        case PICKUP_BABYWALKER:
             name = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
             break;
-        case 24:
+        case PICKUP_BEACHBALL:
             name = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
             break;
-        case 25:
+        case PICKUP_BIGWHEEL:
             name = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
             break;
-        case 26:
+        case PICKUP_GOKART:
             name = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
             break;
-        case 27:
+        case PICKUP_JACKINTHEBOX:
             name = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
             break;
-        case 28:
+        case PICKUP_JUMPROPE:
             name = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
             break;
-        case 29:
+        case PICKUP_POGOSTICK:
             name = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
             break;
-        case 30:
+        case PICKUP_SCROLL:
             name = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
             break;
-        case 31:
+        case PICKUP_SQUEAKTOY:
             name = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
             break;
-        case 32:
+        case PICKUP_YOYO:
             name = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
             break;
-        case 50:
+        case PICKUP_MEGAPHONE:
             name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
             break;
-        case 51:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
-            break;
-        case 52:
-            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
-            break;
-        case 53:
+        case PICKUP_HEALTH1:
             name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
             break;
-        case 57:
+        case PICKUP_HEALTH2:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
+            break;
+        case PICKUP_HEALTH3:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
+            break;
+        case PICKUP_CONVERSION:
             name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
             break;
-        case 58:
+        case PICKUP_DEATHTOUCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
             break;
-        case 54:
+        case PICKUP_GHOST:
             name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
             break;
-        case 60:
+        case PICKUP_REACTIVEARMOR:
             name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
             break;
-        case 59:
+        case PICKUP_ROIDZ:
             name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
             break;
-        case 56:
+        case PICKUP_INVULNERABILITY:
             name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
             break;
-        case 55:
+        case PICKUP_SUPERSPEED:
             name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
             break;
-        case 90:
+        case PICKUP_W:
             name = "GAME_INGAMEICONZ_SECRETW";
             break;
-        case 91:
+        case PICKUP_A:
             name = "GAME_INGAMEICONZ_SECRETA";
             break;
-        case 92:
+        case PICKUP_R:
             name = "GAME_INGAMEICONZ_SECRETR";
             break;
-        case 93:
+        case PICKUP_P:
             name = "GAME_INGAMEICONZ_SECRETP";
             break;
-        case 75:
+        case PICKUP_STOPWATCH:
             name = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
             break;
-        case 80:
+        case PICKUP_COIN:
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
-        case 99: {
-            CSprite* tb = g_gameReg->m_factoryHolder->m_factory
-                              ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+        case PICKUP_COVEREDTIMEBOMB: {
+            CIconSprite* tb =
+                g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -456,8 +443,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             return 0;
     }
 
-    CSprite* spr = g_gameReg->m_factoryHolder->m_factory
-                       ->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    CIconSprite* spr =
+        g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }
@@ -471,4 +458,168 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
     spr->m_12c = 0;
     spr->m_130 = m130;
     return 1;
+}
+
+SIZE_UNKNOWN(CResourceTracker);
+SIZE_UNKNOWN(CSpriteVtbl);
+SIZE_UNKNOWN(EngineLabelBacklog);
+
+// ---------------------------------------------------------------------------
+// BuildPowerupIconKeys (0x1e720) - seeds the "GAME_INGAMEICONZ" icon-key group,
+// then appends one tool/toy/powerup key string selected by `key` (a sparse switch;
+// out-of-range / gap keys fall through to POWERUPZ_COIN). Sibling of the
+// LoadPowerupIconSprites loader above (same GAME_INGAMEICONZ subsystem); re-homed
+// from src/Stub/Backlog.cpp. The registry object (arg1=esi): SetGroup() seeds the
+// group key, Add() appends one entry (both __thiscall, reloc-masked externals).
+// @early-stop
+// jump-table-data-overlap scoring wall (~53%): code bytes byte-exact vs retail
+// (verified by raw byte-compare; only the index-table/jump-table base reloc
+// operands + $L labels differ). See docs/patterns/jumptable-data-overlap.md.
+SIZE_UNKNOWN(PowerupKeyRegistry);
+class PowerupKeyRegistry {
+public:
+    void SetGroup(char* key); // FUN_001b9e74 __thiscall
+    void Add(char* key);      // FUN_001ba0c8 __thiscall
+};
+
+RVA(0x0001e720, 0x2fe)
+void __stdcall BuildPowerupIconKeys(PowerupKeyRegistry* reg, i32 key) {
+    reg->SetGroup("GAME_INGAMEICONZ");
+    switch (key) {
+        case 1:
+            reg->Add("TOOLZ_BOMBZ");
+            return;
+        case 2:
+            reg->Add("TOOLZ_BOOMERANGZ");
+            return;
+        case 3:
+            reg->Add("TOOLZ_BRICKZ");
+            return;
+        case 4:
+            reg->Add("TOOLZ_CLUBZ");
+            return;
+        case 5:
+            reg->Add("TOOLZ_GAUNTLETZ");
+            return;
+        case 6:
+            reg->Add("TOOLZ_GLOVEZ");
+            return;
+        case 7:
+            reg->Add("TOOLZ_GOOBERZ");
+            return;
+        case 8:
+            reg->Add("TOOLZ_GRAVITYBOOTZ");
+            return;
+        case 9:
+            reg->Add("TOOLZ_GUNHATZ");
+            return;
+        case 10:
+            reg->Add("TOOLZ_NERFGUNZ");
+            return;
+        case 11:
+            reg->Add("TOOLZ_ROCKZ");
+            return;
+        case 12:
+            reg->Add("TOOLZ_SHIELDZ");
+            return;
+        case 13:
+            reg->Add("TOOLZ_SHOVELZ");
+            return;
+        case 14:
+            reg->Add("TOOLZ_SPRINGZ");
+            return;
+        case 15:
+            reg->Add("TOOLZ_SPYZ");
+            return;
+        case 16:
+            reg->Add("TOOLZ_SWORDZ");
+            return;
+        case 17:
+            reg->Add("TOOLZ_TIMEBOMBZ");
+            return;
+        case 18:
+            reg->Add("TOOLZ_TOOBZ");
+            return;
+        case 19:
+            reg->Add("TOOLZ_WANDZ");
+            return;
+        case 20:
+            reg->Add("TOOLZ_WARPSTONEZ1");
+            return;
+        case 21:
+            reg->Add("TOOLZ_WELDERZ");
+            return;
+        case 22:
+            reg->Add("TOOLZ_WINGZ");
+            return;
+        case 23:
+            reg->Add("TOYZ_BABYWALKERZ");
+            return;
+        case 24:
+            reg->Add("TOYZ_BEACHBALLZ");
+            return;
+        case 25:
+            reg->Add("TOYZ_BIGWHEELZ");
+            return;
+        case 26:
+            reg->Add("TOYZ_GOKARTZ");
+            return;
+        case 27:
+            reg->Add("TOYZ_JACKINTHEBOXZ");
+            return;
+        case 28:
+            reg->Add("TOYZ_JUMPROPEZ");
+            return;
+        case 29:
+            reg->Add("TOYZ_POGOSTICKZ");
+            return;
+        case 30:
+            reg->Add("TOYZ_SCROLLZ");
+            return;
+        case 31:
+            reg->Add("TOYZ_SQUEAKTOYZ");
+            return;
+        case 32:
+            reg->Add("TOYZ_YOYOZ");
+            return;
+        case 50:
+            reg->Add("POWERUPZ_MEGAPHONEZ");
+            return;
+        case 54:
+            reg->Add("POWERUPZ_GHOST");
+            return;
+        case 55:
+            reg->Add("POWERUPZ_SUPERSPEED");
+            return;
+        case 56:
+            reg->Add("POWERUPZ_INVULNERABILITY");
+            return;
+        case 57:
+            reg->Add("POWERUPZ_CONVERSION");
+            return;
+        case 58:
+            reg->Add("POWERUPZ_DEATHTOUCH");
+            return;
+        case 59:
+            reg->Add("POWERUPZ_ROIDZ");
+            return;
+        case 60:
+            reg->Add("POWERUPZ_REACTIVEARMOR");
+            return;
+        case 61:
+            reg->Add("POWERUPZ_RANDOMCOLORZ");
+            return;
+        case 62:
+            reg->Add("POWERUPZ_SCREENSHAKE");
+            return;
+        case 63:
+            reg->Add("POWERUPZ_BLACKSCREEN");
+            return;
+        case 64:
+            reg->Add("POWERUPZ_MINICAM");
+            return;
+        default:
+            reg->Add("POWERUPZ_COIN");
+            return;
+    }
 }

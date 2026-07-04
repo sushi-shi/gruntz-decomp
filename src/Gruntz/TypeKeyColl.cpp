@@ -18,8 +18,12 @@
 //   `dynamic initializer for g_typeColl' 0x16e730
 //   CButeTree::`scalar deleting destructor' 0x16e9c0
 #include <Mfc.h>
+#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot (one shape)
 #include <rva.h>
 #include <string.h> // memset
+
+#include <Gruntz/StringNode.h> // the type-name teardown slot
+#include <Globals.h>
 
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
@@ -66,7 +70,6 @@ DATA(0x002bf66c)
 extern void* g_typeNodes;
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
-extern u8 g_zArrayTag;
 
 // The "Inconsistent bounds" / "out of memory" message strings are emitted as
 // literals (their DIR32 references reloc-mask against the retail $SG symbols).
@@ -76,6 +79,7 @@ extern u8 g_zArrayTag;
 // ===========================================================================
 // The error sink the array ctor reports a fatal alloc/bounds failure to (the
 // owner stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code).
+SIZE_UNKNOWN(CZErrSink);
 struct CZErrSink {
     void Report(void* arr, const char* msg, i32 code); // 0x16d850
 };
@@ -97,20 +101,22 @@ extern CKSlimeColl2* g_typeColl2;
 
 // The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
 // from the data tag and one-time-inits the global tables.
+SIZE_UNKNOWN(CZArrayRoot);
 class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
     virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
-    void* m_owner;          // +0x04  error-sink / owner
+    CZErrSink* m_owner;     // +0x04  error-sink / owner
 };
 
 // The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
 // allocates the element buffer (+ a scratch element) and reports a fatal failure
 // through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
+SIZE_UNKNOWN(CZArray2D);
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
-    virtual ~CZArray2D();                                 // [0] ??_G 0x16df20 (external)
+    virtual ~CZArray2D() OVERRIDE;                        // [0] ??_G 0x16df20 (external)
     i32 m_lo;                                             // +0x08  index low bound
     i32 m_hi;                                             // +0x0c  index high bound
     void* m_buf;                                          // +0x10  primary element buffer
@@ -123,11 +129,12 @@ public:
 class CTypeKeyColl : public CZArray2D {
 public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
-    virtual ~CTypeKeyColl();                                 // [0] ??_G 0x16dde0 (external)
+    virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
     void* m_cursor;                                          // +0x1c  (== m_buf)
     i32 m_count;                                             // +0x20  (== m_hi - m_lo + 1)
 };
+VTBL(CTypeKeyColl, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
@@ -137,11 +144,6 @@ extern "C" void ZFree(void* p); // 0x1b9b82 (CRT free / operator delete)
 extern "C" i32 ProjActAlloc();  // 0x16d990
 
 // The CString slot teardown the node-array free loop walks (one per 4-byte slot).
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
-
 // ===========================================================================
 // CTypeKeyColl::CTypeKeyColl (0x16dda0) - the derived ctor. Forwards the four
 // arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
@@ -184,7 +186,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_projActAllocResult = AllocFail();
-        ((CZErrSink*)m_owner)->Report(this, "Inconsistent bounds", 0x16);
+        m_owner->Report(this, "Inconsistent bounds", 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -201,7 +203,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_projActAllocResult = AllocFail();
-    ((CZErrSink*)m_owner)->Report(this, "out of memory", 0xc);
+    m_owner->Report(this, "out of memory", 0xc);
 }
 
 // ===========================================================================
@@ -210,6 +212,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
 // (0x16e1d0) bisects g_keyArray (12-byte records, g_keyCount entries) for `key`,
 // recording the found index (or the insertion point) into +0x04.
 // ===========================================================================
+SIZE_UNKNOWN(CKeyFinder);
 struct CKeyFinder {
     void* m_vtbl;            // +0x00
     i32 m_index;             // +0x04  found index / insertion point
@@ -269,9 +272,11 @@ i32 CKeyFinder::Find(i32 key) {
 // The archive record (`ar`) the serializer drives. Its vtable slots +0x0c/+0x10/
 // +0x14 are the per-field transfer hooks; +0x14 holds the field descriptor whose
 // +0x1c is the type id.
+SIZE_UNKNOWN(CXferField);
 struct CXferField {
     i32 m_1c; // +0x1c  the type id
 };
+SIZE_UNKNOWN(CXferArchive);
 struct CXferArchive {
     void Xfer0c(void* name); // vtbl +0x0c
     void Xfer10(i32 id);     // vtbl +0x10
@@ -281,6 +286,7 @@ struct CXferArchive {
     CXferField* m_14; // +0x14
 };
 // The resolved entry's name accessor (CString c_str, __thiscall(i32)).
+SIZE_UNKNOWN(CTypeNameEntry);
 struct CTypeNameEntry {
     void* GetName(i32 z); // 0x1ba11c
 };
@@ -338,21 +344,17 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // `dynamic initializer for g_buteTree' (0x16e6a0) - construct the global bute
 // tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
 // ===========================================================================
-struct CButeTree {
-    void* m_vtbl; // +0x00
-    char pad_04[0x08 - 0x04];
-    void* m_08;                     // +0x08
-    void Construct(void* a, i32 b); // 0x16dff0
-};
+// g_buteTree is the canonical CButeTree (crit-bit trie, include/Bute/ButeTree.h);
+// Construct (0x16dff0) runs the deeper base ctor. The +0x00 / +0x08 runtime vptrs are
+// stamped via raw casts (CButeTree is now real-polymorphic MI, no manual vptr fields).
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
 
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
     g_buteTree.Construct(&g_buteTreeArg, 0);
     *(void**)&g_buteTree = &g_buteTreeVtbl;
-    g_buteTree.m_08 = &g_buteTreeSubVtbl;
+    *(void**)((char*)&g_buteTree + 8) = &g_buteTreeSubVtbl;
 }
 
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
@@ -402,24 +404,12 @@ void DynInitTypeColl() {
 // vtables, run the member + base teardown, and free the object when bit0 of the
 // flag is set. Returns `this`.
 // ===========================================================================
-struct CButeNode {
-    void Dtor(); // 0x16dfc0 (the +0x08 sub-object dtor, null-guarded by `this`)
-};
-struct CButeTreeFull {
-    void* m_vtbl; // +0x00
-    char pad_04[0x08 - 0x04];
-    void* m_08vtbl;              // +0x08
-    void Teardown(i32 z);        // 0x16e070
-    void BaseDtor();             // 0x16da60
-    void* ScalarDtor(u32 flags); // 0x16e9c0
-};
-
 RVA(0x0016e9c0, 0x45)
-void* CButeTreeFull::ScalarDtor(u32 flags) {
-    m_vtbl = &g_buteTreeDtorVtbl;
-    m_08vtbl = &g_buteTreeDtorSubVtbl;
-    Teardown(0);
-    ((CButeNode*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
+void* CButeTree::ScalarDtor(u32 flags) {
+    *(void**)this = &g_buteTreeDtorVtbl;
+    *(void**)((char*)this + 8) = &g_buteTreeDtorSubVtbl;
+    ClearRecursive(0);
+    ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
     BaseDtor();
     if (flags & 1) {
         ZFree(this);
@@ -433,6 +423,7 @@ void* CButeTreeFull::ScalarDtor(u32 flags) {
 // reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
 // int, both __thiscall) as reloc-masked no-body methods.
 // ===========================================================================
+SIZE_UNKNOWN(CConfigReader);
 class CConfigReader {
 public:
     void ReadDouble(void* field); // 0x191fe0
@@ -489,6 +480,7 @@ CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
 // ===========================================================================
 // The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
 // a word slot at +4.  Reloc-masked DATA extern (base 0x6bf49c).
+SIZE_UNKNOWN(CVarTableEntry);
 struct CVarTableEntry {
     void(__cdecl* fn)(i32 a, i32 b); // +0x00
     u16 w;                           // +0x04
@@ -504,17 +496,8 @@ extern void* g_varProbeEnabled; // 0x6bf618
 // The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
-class CVariantSlot {
-public:
-    void Set(void* key, i32 arg2, i32 arg3);     // 0x16d850
-    void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
-    i32 m_04;                                    // +0x04 probe index slot
-    u16 m_08;                                    // +0x08 word storage
-    u16 m_0a;                                    // +0x0a
-    i32 m_0c;                                    // +0x0c type tag (1/2/4)
-    i32 m_10;                                    // +0x10
-    char* m_14;                                  // +0x14 label / format text
-};
+// CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
+// is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
 
 RVA(0x0016d850, 0x11e)
 void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {

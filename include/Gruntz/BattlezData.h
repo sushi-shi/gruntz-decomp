@@ -11,7 +11,7 @@
 //   +0x08            : spare (zeroed, serialized)
 //   +0x0c  m_allDone : "every record in the current group of 4 is populated" flag
 //   +0x10..+0x44     : 14 scalar progress/bound fields (serialized one-by-one).
-//                      0fcd70 gates on m_44 then compares the m_30..m_40 band
+//                      0fcd70 gates on m_scoreValue then compares the m_30..m_40 band
 //                      against the m_14..m_2c band (a "within bounds" test).
 //   +0x48  m_48[4]   : a 4-int scalar band (serialized as a run of 4).
 //   +0x58  m_wins[16]: 4x4 head-to-head win matrix. 0fcc50 bumps [y][x] for
@@ -28,8 +28,10 @@
 
 #include <Ints.h>
 
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+
 // The per-map record the m_records array points at (0x40 bytes / record): 16
-// ints mirroring the owner's m_10..m_44 progress/bound band (see FillRecord's
+// ints mirroring the owner's m_10..m_scoreValue progress/bound band (see FillRecord's
 // rec[0..15] stores). +0x00 = populated flag; +0x28 = win/score value. The
 // proximity accessors below sum/test these per-record fields over the records
 // in the "current group of 4" (index (m_count-1)/4*4) or over all 0x20.
@@ -41,68 +43,49 @@ struct BattlezRecord {
     i32 m_2c, m_30, m_34, m_38, m_3c;
 };
 
-// The serialization sink passed to Serialize: a stream/archive whose vtable
-// holds Read at slot +0x2c (index 11) and Write at slot +0x30 (index 12).
-// Modeled as a polymorphic class so the compiler emits the `mov ecx,self; call
-// [vtbl+0x2c/0x30]` thiscall dispatch. The 11 leading virtuals are placeholders
-// that only fix Read/Write at the right slots; the body is never reproduced
-// (external, reloc-masked).
-class BattlezStream {
-public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Read(void* buf, i32 len);  // +0x2c (index 11)
-    virtual void Write(void* buf, i32 len); // +0x30 (index 12)
-};
+// The serialization sink passed to Serialize is the shared WAP32 CSerialArchive
+// (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `BattlezStream` view is folded away.
 
 class CBattlezData {
 public:
-    i32 InitWithRecords(void* records);                      // 0xfc9c0
-    void Init();                                             // 0xfca10
-    void SetCount(i32 count);                                // 0xfcad0
-    void MarkFlag(i32 y, i32 x);                             // 0xfcb50
-    void ClearFlags();                                       // 0xfcb90
-    i32 SumFlags(i32 y);                                     // 0xfcbc0
-    i32 GetFlag(i32 x, i32 y);                               // 0xfcc10
-    void BumpWin(i32 y, i32 x);                              // 0xfcc50
-    void ClearWins();                                        // 0xfcc90
-    i32 SumWinRow(i32 y);                                    // 0xfccb0
-    i32 InBounds(i32 unused);                                // 0xfcd70
-    i32 AllRecordsInBounds();                                // 0xfccf0
-    float GroupRatio();                                      // 0xfce00
-    i32 GroupAllScored();                                    // 0xfce80
-    i32 SumGroupField0c();                                   // 0xfcf20
-    i32 SumGroupField2c();                                   // 0xfcf70
-    i32 SumGroupField10();                                   // 0xfcfc0
-    i32 SumGroupField30();                                   // 0xfd010
-    i32 SumGroupField1c();                                   // 0xfd060
-    i32 SumGroupField34();                                   // 0xfd0b0
-    i32 SumGroupField20();                                   // 0xfd100
-    i32 SumGroupField38();                                   // 0xfd150
-    i32 SumGroupField24();                                   // 0xfd1a0
-    i32 SumGroupField3c();                                   // 0xfd1f0
-    i32 SumGroupField18();                                   // 0xfd240
-    i32 SumGroupField14();                                   // 0xfd290
-    i32 SumGroupField08();                                   // 0xfd2e0
-    i32 GetRecordValue(i32 b);                               // 0xfced0
-    void FillRecord(i32 index, i32 phase);                   // 0xfd330
-    i32 Serialize(BattlezStream* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
+    i32 InitWithRecords(void* records);                       // 0xfc9c0
+    void Init();                                              // 0xfca10
+    void SetCount(i32 count);                                 // 0xfcad0
+    void MarkFlag(i32 y, i32 x);                              // 0xfcb50
+    void ClearFlags();                                        // 0xfcb90
+    i32 SumFlags(i32 y);                                      // 0xfcbc0
+    i32 GetFlag(i32 x, i32 y);                                // 0xfcc10
+    void BumpWin(i32 y, i32 x);                               // 0xfcc50
+    void ClearWins();                                         // 0xfcc90
+    i32 SumWinRow(i32 y);                                     // 0xfccb0
+    i32 InBounds(i32 unused);                                 // 0xfcd70
+    i32 AllRecordsInBounds();                                 // 0xfccf0
+    float GroupRatio();                                       // 0xfce00
+    i32 GroupAllScored();                                     // 0xfce80
+    i32 SumGroupField0c();                                    // 0xfcf20
+    i32 SumGroupField2c();                                    // 0xfcf70
+    i32 SumGroupField10();                                    // 0xfcfc0
+    i32 SumGroupField30();                                    // 0xfd010
+    i32 SumGroupField1c();                                    // 0xfd060
+    i32 SumGroupField34();                                    // 0xfd0b0
+    i32 SumGroupField20();                                    // 0xfd100
+    i32 SumGroupField38();                                    // 0xfd150
+    i32 SumGroupField24();                                    // 0xfd1a0
+    i32 SumGroupField3c();                                    // 0xfd1f0
+    i32 SumGroupField18();                                    // 0xfd240
+    i32 SumGroupField14();                                    // 0xfd290
+    i32 SumGroupField08();                                    // 0xfd2e0
+    i32 GetRecordValue(i32 b);                                // 0xfced0
+    void FillRecord(i32 index, i32 phase);                    // 0xfd330
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
 
     BattlezRecord* m_records;               // +0x00
     i32 m_count;                            // +0x04
     i32 m_08;                               // +0x08
     i32 m_allDone;                          // +0x0c
     i32 m_10, m_14, m_18, m_1c, m_20, m_24; // +0x10..
-    i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_44;
+    i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;
     i32 m_48[4];        // +0x48
     i32 m_wins[16];     // +0x58  4x4
     i32 m_flags[16];    // +0x98  4x4

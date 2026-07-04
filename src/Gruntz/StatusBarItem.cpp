@@ -7,24 +7,15 @@
 // however, inlines this tiny ctor at every instantiation we can synthesize, so it
 // will not emit a labelable standalone ??0 from the canonical inline form.
 //
-// To keep the 0x1005d0 byte-match, this TU therefore does NOT include the header:
-// it locally redeclares the class with an OUT-OF-LINE ctor purely so MSVC emits a
-// standalone ??0 we can label. This is a tooling workaround for the inline-ctor
-// COMDAT, NOT a second class the developers wrote.
+// To keep the 0x1005d0 byte-match, this TU takes the canonical class from
+// <Gruntz/StatusBarItem.h> but #defines SBI_ITEM_OWN_CTOR first: that flips the
+// header's inline ctor to an out-of-line DECLARATION, so MSVC emits a standalone ??0
+// this TU labels with the RVA-keyed body below. Same one class, out-of-line-ctor
+// facet; a tooling workaround for the inline-ctor COMDAT, NOT a second class.
 #include <rva.h>
 
-class CStatusBarItem {
-public:
-    CStatusBarItem();
-    virtual ~CStatusBarItem();
-    virtual i32 SbiVfunc0();
-
-    i32 m_4;                  // +0x04
-    i32 m_8;                  // +0x08
-    char m_padc[0x24 - 0x0c]; // +0x0c..0x23
-    i32 m_24;                 // +0x24
-    i32 m_28;                 // +0x28
-};
+#define SBI_ITEM_OWN_CTOR
+#include <Gruntz/StatusBarItem.h>
 
 // ---------------------------------------------------------------------------
 // CStatusBarItem::CStatusBarItem()

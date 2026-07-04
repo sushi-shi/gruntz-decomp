@@ -36,9 +36,14 @@ extern const double g_motionNegHalf; // 0x5f04f8 (-0.5)
 extern const double g_motionZero;    // 0x5f0500 (0.0)
 extern const double g_motionNegTwo;  // 0x5f0508 (-2.0)
 
+SIZE_UNKNOWN(CMotionState);
 class CMotionState {
 public:
     CMotionState(); // 0x136d0
+    // The out-of-line ctor entry (0x136d0) the fat-world CMovingLogic leaf ctors
+    // invoke via a `+0x38` cast (the band is not a direct member of a fat-CUserLogic
+    // CMovingLogic; see Gruntz/MovingLogic.h). Same address as the ctor; reloc-masked.
+    void Init(); // 0x136d0
     i32 SetParams(
         double a0,
         double a1,

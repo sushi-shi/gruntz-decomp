@@ -4,14 +4,19 @@
 // cache slots (g_projActCache / g_projActAllocResult) via a grid + bute-tree lookup.
 // This TU sits between Utils/ApplyRange and Wap32/ZVec in retail-RVA order. Field
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
+#include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
+#include <Globals.h>
+#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeColl.h>
+#include <Gruntz/TypeColl2.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
 // bare CUserLogic teardown (the established /GX leaf-dtor archetype).
 class CProjActOwner : public CUserLogic {
 public:
-    ~CProjActOwner();
+    virtual ~CProjActOwner() OVERRIDE;
 };
 
 // The global registry object at VA 0x629388. SetActiveRange reaches it through an
@@ -28,13 +33,6 @@ extern CProjReg g_projReg;
 // the collection; the lo/hi/base/cur/stride/scratch fields are separate
 // DATA-pinned BSS globals reached by direct ds: loads). Same archetype as the
 // kitchen-slime / projectile activation tables.
-extern struct CProjReg2* g_projRegColl2; // 0x62938c  (Insert dispatcher)
-extern i32 g_projRegLo;                  // 0x629390
-extern i32 g_projRegHi;                  // 0x629394
-extern char* g_projRegBase;              // 0x629398
-extern struct R3Entry* g_projRegCur;     // 0x62939c
-extern i32 g_projRegStride;              // 0x6293a0
-extern i32 g_projRegScratch;             // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 DATA(0x002bf464)
@@ -106,13 +104,8 @@ void CProjActObj::FireActivation(i32 coord) {
 // through, keyed by the per-type id the global bute-tree assigns to a class name.
 // Same fast-range/slow-Find/rebuild lookup as the per-class R3 table. All globals
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
-// external/no-body.
-struct CTypeColl {
-    i32 Find(i32 key, i32 z); // 0x16da80
-};
-struct CTypeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
+// external/no-body. CTypeColl2 (the Insert facet) is the shared def in
+// <Gruntz/TypeColl2.h>.
 struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;
@@ -139,15 +132,6 @@ extern i32 g_typeCounter; // 0x61aea8
 // 0x16db90) - the class-name -> type-id map.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
-
-// The CString helpers the entry teardown/assign reach.
-struct CStringNode {
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
-struct CTypeNameEntryView {
-    void Assign(const char* name); // 0x1b9e74
-};
 
 // R1 lookup: the type-id -> R1 entry resolution shared with the per-class table.
 static inline CTypeNameEntry* TypeLookup(i32 key) {
@@ -201,3 +185,8 @@ void CProjActObj::RegisterType() {
     }
     *(void**)R3Lookup(id) = (void*)&ProjActHandlerThunk;
 }
+SIZE_UNKNOWN(CProjActObj);
+SIZE_UNKNOWN(CProjActOwner);
+SIZE_UNKNOWN(CProjReg);
+SIZE_UNKNOWN(CProjReg2);
+SIZE_UNKNOWN(R3Entry);

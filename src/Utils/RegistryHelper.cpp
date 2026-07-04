@@ -1,7 +1,7 @@
-// RegistryHelper.cpp - Utils::RegistryHelper value-getters (config wrapper over
-// ADVAPI32!Reg*). Matched leaf methods:
-//   GetValueString
-//   GetValueDword
+// RegistryHelper.cpp - Utils::RegistryHelper, the engine's registry/config wrapper
+// over ADVAPI32!Reg*: opens a chain of nested subkeys (Open/InitializeLastKey),
+// reads/writes values from the deepest one (GetValue*/SetValue*), and closes the
+// chain (Close). GetRegistryKey is the shared create-or-open primitive.
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
 #include <string.h>
@@ -12,7 +12,7 @@ namespace Utils {
     // RegistryHelper::Open
     // Opens/creates a 4-deep chain of nested registry subkeys (rooted at hKey,
     // default top subkey "Software") via GetRegistryKey, saving szKeyName2 and
-    // szLastKey into the m_1c/m_11c buffers, then resolves the deepest value key
+    // szLastKey into the m_keyNameBuf/m_lastKeyBuf buffers, then resolves the deepest value key
     // through InitializeLastKey. Returns 1 on full success, 0 on any failure.
     RVA(0x00139210, 0x11c)
     i32 RegistryHelper::Open(
@@ -23,45 +23,46 @@ namespace Utils {
         HKEY hKey,
         char* szSubKey
     ) {
-        strcpy(m_1c, szKeyName2);
+        strcpy(m_keyNameBuf, szKeyName2);
         if (szLastKey) {
-            strcpy(m_11c, szLastKey);
+            strcpy(m_lastKeyBuf, szLastKey);
         } else {
-            m_11c[0] = 0;
+            m_lastKeyBuf[0] = 0;
         }
 
-        m_4 = hKey;
+        m_baseKey = hKey;
 
         char szSoftware[] = "Software";
 
-        if (GetRegistryKey(hKey, szSubKey ? szSubKey : szSoftware, &m_8)
-            && GetRegistryKey(m_8, szKeyName1, &m_c) && GetRegistryKey(m_c, szKeyName2, &m_10)
-            && GetRegistryKey(m_10, szKeyName3, &m_14)) {
-            m_0 = 1;
+        if (GetRegistryKey(hKey, szSubKey ? szSubKey : szSoftware, &m_key1)
+            && GetRegistryKey(m_key1, szKeyName1, &m_key2)
+            && GetRegistryKey(m_key2, szKeyName2, &m_key3)
+            && GetRegistryKey(m_key3, szKeyName3, &m_key4)) {
+            m_open = 1;
             if (InitializeLastKey(szLastKey)) {
                 return 1;
             }
-            m_0 = 0;
+            m_open = 0;
         }
         return 0;
     }
 
     // -------------------------------------------------------------------------
     // RegistryHelper::InitializeLastKey
-    // Resolves m_18 (the deepest value key): when szLastKey is null it aliases
-    // m_14; otherwise it opens szLastKey under m_14 via GetRegistryKey.
+    // Resolves m_valueKey (the deepest value key): when szLastKey is null it aliases
+    // m_key4; otherwise it opens szLastKey under m_key4 via GetRegistryKey.
     RVA(0x00139370, 0x37)
     i32 RegistryHelper::InitializeLastKey(char* szLastKey) {
-        if (!m_0) {
+        if (!m_open) {
             return 0;
         }
 
         if (!szLastKey) {
-            m_18 = m_14;
+            m_valueKey = m_key4;
             return 1;
         }
 
-        return GetRegistryKey(m_14, szLastKey, &m_18) != 0;
+        return GetRegistryKey(m_key4, szLastKey, &m_valueKey) != 0;
     }
 
     // -------------------------------------------------------------------------
@@ -78,9 +79,9 @@ namespace Utils {
     ) {
         DWORD dwType;
 
-        if (m_0 && szValueName && szValueBuffer && *pValueBufferSize > 0) {
+        if (m_open && szValueName && szValueBuffer && *pValueBufferSize > 0) {
             if (RegQueryValueExA(
-                    m_18,
+                    m_valueKey,
                     szValueName,
                     0,
                     &dwType,
@@ -111,9 +112,9 @@ namespace Utils {
         DWORD dwData;
         DWORD cbData;
 
-        if (m_0 && szValueName) {
+        if (m_open && szValueName) {
             cbData = 4;
-            if (RegQueryValueExA(m_18, szValueName, 0, &dwType, (LPBYTE)&dwData, &cbData) == 0
+            if (RegQueryValueExA(m_valueKey, szValueName, 0, &dwType, (LPBYTE)&dwData, &cbData) == 0
                 && dwType == 4 /*REG_DWORD*/) {
                 return dwData;
             }
@@ -128,7 +129,7 @@ namespace Utils {
     // Returns nonzero on success.
     RVA(0x001393b0, 0x58)
     i32 RegistryHelper::SetValueString(char* szValueName, char* szValue) {
-        if (!m_0) {
+        if (!m_open) {
             return 0;
         }
         if (!szValueName) {
@@ -138,7 +139,7 @@ namespace Utils {
             return 0;
         }
         return RegSetValueExA(
-                   m_18,
+                   m_valueKey,
                    szValueName,
                    0,
                    1 /*REG_SZ*/,
@@ -153,13 +154,13 @@ namespace Utils {
     // Writes value as a 4-byte REG_DWORD value. Returns nonzero on success.
     RVA(0x00139460, 0x33)
     i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
-        if (!m_0) {
+        if (!m_open) {
             return 0;
         }
         if (!szValueName) {
             return 0;
         }
-        return RegSetValueExA(m_18, szValueName, 0, 4 /*REG_DWORD*/, (LPBYTE)&value, 4) == 0;
+        return RegSetValueExA(m_valueKey, szValueName, 0, 4 /*REG_DWORD*/, (LPBYTE)&value, 4) == 0;
     }
 
     // -------------------------------------------------------------------------
@@ -168,15 +169,15 @@ namespace Utils {
     // the last two keys are the same handle).
     RVA(0x00139330, 0x3d)
     void RegistryHelper::Close() {
-        if (m_0) {
-            m_0 = 0;
-            RegCloseKey(m_8);
-            RegCloseKey(m_c);
-            RegCloseKey(m_10);
-            if (m_14 != m_18) {
-                RegCloseKey(m_14);
+        if (m_open) {
+            m_open = 0;
+            RegCloseKey(m_key1);
+            RegCloseKey(m_key2);
+            RegCloseKey(m_key3);
+            if (m_key4 != m_valueKey) {
+                RegCloseKey(m_key4);
             }
-            RegCloseKey(m_18);
+            RegCloseKey(m_valueKey);
         }
     }
 

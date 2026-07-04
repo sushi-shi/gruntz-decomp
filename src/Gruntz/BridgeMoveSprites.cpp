@@ -148,3 +148,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             return;
     }
 }
+
+SIZE_UNKNOWN(BmGameReg);
+SIZE_UNKNOWN(BmSndEntry);
+SIZE_UNKNOWN(BmSndMgr);
+SIZE_UNKNOWN(BmSndSet);
+SIZE_UNKNOWN(CPlayLevelLoad);

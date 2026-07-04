@@ -6,17 +6,20 @@
 // vtable - virtuals dispatched, never defined), a command-dispatch sub-object
 // at +0x1a0 (CmdMap), and a back-pointer to its owning manager at +0x0c.
 //
-// Field names are placeholders m_<hexoffset>; only the OFFSETS + emitted bytes
-// are load-bearing (campaign doctrine). The large object (size >0x1a0) is
-// accessed via documented raw this-offset reads - a deliberate, justified choice
-// for naming-independent codegen (the family TUs do the same).
+// Fields are typed named members of CWwdGameObject at their retail offsets
+// (matching-neutral: a named member at offset N lowers to the same [this+N] as
+// the raw this-offset read it replaced). Provable roles are named (pos/clip/
+// worker/mgr/name/flags/command-map/sub-list); the opaque serialized state block
+// keeps m_<hexoffset> placeholders. Only the OFFSETS + emitted bytes are
+// load-bearing (campaign doctrine).
 //
 // These are plain /O2 /MT leaves: NO SEH frame (the throwing ctor lives in the
 // eh unit). External callees (the sub-object ctor/find, archive Read/Write
 // virtual [+0x30], CString dtor, NAFXCW Lookup, sibling readers) are modeled
 // with no body so their rel32 calls reloc-mask.
 #include <rva.h>
-#include <string.h> // inlined memset / strcpy (rep stos / repne scas + rep movs)
+#include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
+#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 
 // ---------------------------------------------------------------------------
@@ -27,39 +30,96 @@
 struct CmdMap {
     void Construct(void* owner);              // 0x15c290
     i32 Find(i32 a1, i32 a2, i32 a3, i32 a4); // 0x15c900
+    char m_body[0x3c];                        // embedded sub-object body (+0x1a0..+0x1dc)
 };
 
-// The owning manager at +0x0c and its nested helpers (reached as [[+0xc]+slot]).
-// Modeled via typed vtable-style structs so the chained derefs match exactly.
-// A CString-like value (4-byte handle = pointer to the heap char data). The
-// engine's CString is one pointer; its data starts at the pointed-to address.
+// The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
+// list nodes {next@0, prev@4, data@8}; RemoveAll (0x1b5a0b) frees the node cells.
+struct WwdSubDel {
+    virtual void Slot00();
+    virtual void DeleteSelf(i32 flag); // +0x04  scalar deleting dtor
+};
+struct WwdSubNode {
+    WwdSubNode* m_next; // +0x00
+    WwdSubNode* m_prev; // +0x04
+    WwdSubDel* m_data;  // +0x08  owned polymorphic payload
+};
+struct WwdSubList {
+    void RemoveAll_1b5a0b(); // 0x1b5a0b  CObList::RemoveAll (reloc-masked)
+    void* m_vtbl;            // +0x00
+    WwdSubNode* m_head;      // +0x04
+};
+
+// The owning manager at +0x0c, modeled as a real typed object (WwdMgr, below)
+// with its nested reader/map sub-objects, so the chained derefs lower to the
+// exact [[mgr+slot]+off] loads with no cast.
+//
+// The name->object lookup maps each reader sub-object embeds at +0x10 (each a
+// distinct NAFXCW CMapStringTo* instantiation -> distinct Lookup body) and the
+// kill-cue map at +0x48. Reloc-masked no-body callees.
+struct MapLookupA {
+    i32 Lookup(const char* key, void** out); // 0x1b8008
+};
+struct MapLookupB {
+    i32 Lookup(const char* key, void** out); // 0x1b8438
+};
+struct CMapStringToObLite {
+    i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
+};
+
+// The engine CString value returned by-value from Op/Build: one pointer to the
+// heap char data (data starts at the pointed-to address). Modeled as a POD (no
+// C++ ctor/dtor) so cl emits none implicitly and the teardown is the EXPLICIT
+// reloc-masked engine ~CString call (Dtor, 0x1b9cde) - a real CString local's
+// implicit dtor would perturb the codegen this reconstruction pins.
+// authentic: POD CString-value view; Dtor is the modeled engine ~CString extern.
 struct EngStr {
     const char* m_data; // +0x00  -> the char buffer
-};
-struct MgrSub158570 {
-    EngStr* Op(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+    void Dtor();        // 0x1b9cde  NAFXCW ~CString (reloc-masked, __thiscall)
 };
 
-// The archive/stream passed to ReadState/Serialize/WriteSnapshot. Its op is the
-// virtual at +0x30: a fixed-size element transfer (read or write `size` bytes).
-struct Archive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void ReadBuf(void* buf, i32 size); // +0x2c (the read/load direction)
-    virtual void Xfer(void* buf, i32 size);    // +0x30 (the write/store direction)
+// mgr+0x28 reader: a name-resolver (Op -> CString) with its lookup map at +0x10.
+struct MgrSub158570 {
+    EngStr* Op(EngStr* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+    char m_pad00[0x10];
+    MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
-struct EngStr;
+
+// The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/WriteSnapshot
+// is the shared WAP32 CSerialArchive (Read @ vtable +0x2c - the read/load direction;
+// Write @ +0x30 - the store direction), now the one modeled class in
+// <Gruntz/SerialArchive.h> - the former local `Archive` view is folded away.
+// authentic: the retail mangling of those methods carries an `int` param (`H`, e.g.
+// ?ReadState@CWwdGameObject@@QAEHH@Z) - the archive enters as an int handle, so the
+// source param stays `int` (dev-faithful) and the `(CSerialArchive*)` reinterpret of
+// that handle is the real operation. Retyping the param would rewrite the symbol and
+// diverge from what the devs wrote.
+// mgr+0x14 reader: a name-builder (Build -> CString) with its lookup map at +0x10.
 struct MgrSub165360 {
     EngStr* Build(EngStr* out, void* obj); // 0x165360  __thiscall -> CString
+    char m_pad00[0x10];
+    MapLookupA m_map; // +0x10  name -> object (0x1b8008)
+};
+
+// mgr+0x08 sub-object: holds the per-frame kill-cue name map at +0x48.
+struct WwdMgrSub08 {
+    char m_pad00[0x48];
+    CMapStringToObLite m_map; // +0x48  name -> object (0x1b8760)
+};
+// mgr+0x10 sub-object: a name->object resolver (lookup map at +0x10).
+struct WwdMgrSub10 {
+    char m_pad00[0x10];
+    MapLookupA m_map; // +0x10  (0x1b8008)
+};
+// CWwdGameObject+0x0c owning manager: four typed reader/map sub-objects.
+struct WwdMgr {
+    char m_pad00[0x08];
+    WwdMgrSub08* m_08; // +0x08  kill-cue map holder
+    char m_pad0c[0x10 - 0x0c];
+    WwdMgrSub10* m_10;  // +0x10  name resolver
+    MgrSub165360* m_14; // +0x14  name builder + resolver map
+    char m_pad18[0x28 - 0x18];
+    MgrSub158570* m_28; // +0x28  name resolver (Op) + secondary map
 };
 
 // The 0xa0-byte snapshot record WriteSnapshot assembles on the stack.
@@ -74,40 +134,20 @@ struct WwdSnapshot {
     i32 m_98;          // m_60
     i32 m_9c;          // m_74
 };
-struct CMapStringToObLite {
-    i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
-};
-
-// The two name->object maps Sub150c30 (the read direction) resolves through,
-// each a distinct NAFXCW CMapStringTo* instantiation (different Lookup body).
-// Found via the owning mgr's sub-objects at mgr+0x10 and mgr+0x28; the map sits
-// 0x10 into each sub-object. Reloc-masked no-body callees.
-struct MapLookupA {
-    i32 Lookup(const char* key, void** out); // 0x1b8008
-};
-struct MapLookupB {
-    i32 Lookup(const char* key, void** out); // 0x1b8438
-};
 
 // CString::operator=(LPCSTR) on the +0xdc name member (NAFXCW, reloc-masked).
+// authentic: m_name is the engine's bare CString handle (one `char*`); its
+// operator= is an out-of-line extern, so it is modeled as a method on a tiny
+// helper the &m_name handle is reinterpreted through (no member to fold into).
 struct CStringAssign {
     void Assign(const char* s); // 0x1b9e74
-};
-
-// CString stack-local destructor (NAFXCW out-of-line, reloc-masked rel32).
-struct CStringDtor {
-    void Dtor(); // 0x1b9cde
-};
-
-// AnimWorker extra non-virtual method (0x164830, __thiscall, 4 args).
-struct AnimWorkerEx {
-    i32 Method164830(i32 a1, i32 type, i32 a3, i32 a4); // 0x164830
 };
 
 // ---------------------------------------------------------------------------
 // CWwdGameObject layout (raw-offset access; only offsets are load-bearing).
 // ---------------------------------------------------------------------------
 struct WwdRenderCtx;
+struct WwdSurface; // defined below; m_2c holds the destination surface
 class CWwdGameObject {
 public:
     // Dispatch entry (0x150a70) and the methods it routes to.
@@ -134,10 +174,101 @@ public:
     i32 Resolve150f90(void* obj); // 0x150f90
     i32 Resolve151070(void* obj); // 0x151070
 
-    void* m_00;                // +0x00  vptr (self virtuals at +0x20/+0x40)
-    i32 m_04;                  // +0x04
-    i32 m_08;                  // +0x08  flag bits
-    char m_pad0c[0x0c - 0x0c]; // (no gap)
+    void* m_00;       // +0x00  vptr (self virtuals dispatched via WwdSelf cast)
+    i32 m_04;         // +0x04
+    i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
+    WwdMgr* m_mgr;    // +0x0c  owning manager
+    i32 m_10;         // +0x10
+    i32 m_14;         // +0x14
+    i32 m_lastX;      // +0x18  last-drawn column (cached by RenderDot)
+    i32 m_lastY;      // +0x1c  last-drawn row
+    i32 m_20;         // +0x20
+    i32 m_24;         // +0x24
+    i32 m_28;         // +0x28
+    i32 m_2c;         // +0x2c
+    i32 m_30;         // +0x30  set 1 on a successful plot
+    i32 m_34;         // +0x34  set 1 on a successful plot
+    i32 m_clipResult; // +0x38  clip result (0 plotted / -1 rejected)
+    char m_pad3c[0x40 - 0x3c];
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    char m_pad4c[0x50 - 0x4c];
+    i32 m_50;         // +0x50
+    i32 m_54;         // +0x54
+    i32 m_58;         // +0x58
+    i32 m_posX;       // +0x5c  position column
+    i32 m_posY;       // +0x60  position row
+    i32 m_clipLeft;   // +0x64  clip rect (0x80000000 = unbounded)
+    i32 m_clipTop;    // +0x68
+    i32 m_clipRight;  // +0x6c
+    i32 m_clipBottom; // +0x70
+    i32 m_74;         // +0x74
+    char m_pad78[0x7c - 0x78];
+    AnimWorker* m_worker; // +0x7c  sprite-animation worker
+    void* m_80;           // +0x80  object ref (serialized by name)
+    i32 m_84;             // +0x84
+    void* m_88;           // +0x88  object ref
+    i32 m_8c;             // +0x8c
+    void* m_90;           // +0x90  object ref
+    i32 m_94;             // +0x94
+    void* m_98;           // +0x98  linked object (reads its +0x188)
+    char m_pad9c[0xac - 0x9c];
+    i32 m_ac;               // +0xac  copy of m_posX
+    i32 m_b0;               // +0xb0  copy of m_posY
+    CWwdGameObject* m_self; // +0xb4  = this
+    char m_b8[0x24];        // +0xb8  serialized state block
+    char* m_name;           // +0xdc  CString name (handle = buffer pointer)
+    i32 m_e0;               // +0xe0
+    i32 m_e4;               // +0xe4
+    i32 m_e8;               // +0xe8
+    i32 m_ec;               // +0xec
+    i32 m_f0;               // +0xf0
+    i32 m_f4;               // +0xf4
+    i32 m_f8;               // +0xf8
+    i32 m_fc;               // +0xfc
+    i32 m_100;              // +0x100
+    i32 m_104;              // +0x104
+    i32 m_108;              // +0x108
+    i32 m_10c;              // +0x10c
+    i32 m_110;              // +0x110
+    i32 m_114;              // +0x114
+    i32 m_118;              // +0x118
+    i32 m_11c;              // +0x11c
+    i32 m_120;              // +0x120
+    i32 m_124;              // +0x124
+    i32 m_128;              // +0x128
+    i32 m_12c;              // +0x12c
+    i32 m_130;              // +0x130
+    i32 m_134;              // +0x134  block head (0x80000000 sentinel)
+    i32 m_138;              // +0x138
+    i32 m_13c;              // +0x13c
+    i32 m_140;              // +0x140
+    i32 m_144;              // +0x144  block head (0x80000000 sentinel)
+    i32 m_148;              // +0x148
+    i32 m_14c;              // +0x14c
+    i32 m_150;              // +0x150
+    i32 m_154;              // +0x154  block head (0x80000000 sentinel)
+    i32 m_158;              // +0x158
+    i32 m_15c;              // +0x15c
+    i32 m_160;              // +0x160
+    i32 m_164;              // +0x164
+    i32 m_168;              // +0x168
+    i32 m_16c;              // +0x16c
+    i32 m_170;              // +0x170
+    i32 m_174;              // +0x174
+    i32 m_178;              // +0x178
+    i32 m_17c;              // +0x17c
+    i32 m_180;              // +0x180
+    i32 m_184;              // +0x184
+    i32 m_188;              // +0x188
+    i32 m_dotColor;         // +0x18c  low byte = dot color / setup flag
+    i32 m_190;              // +0x190
+    void* m_194;            // +0x194  resolved object ref
+    i32 m_198;              // +0x198
+    void* m_19c;            // +0x19c  resolved object ref
+    CmdMap m_cmdMap;        // +0x1a0  command-dispatch sub-object
+    WwdSubList m_subList;   // +0x1dc  CObList of owned sub-objects
 };
 
 // The sub-object hung off the worker at AnimWorker+0x18 (own vtable; its +0x8
@@ -152,6 +283,10 @@ public:
 // CWwdGameObject's own polymorphic interface (vtable @0x5f0020). Declared-only
 // virtuals at the slots WriteSnapshot dispatches (+0x20, +0x40); cast `this` to
 // this interface so `mov eax,[this]; call [eax+off]` falls out as __thiscall.
+// authentic: CWwdGameObject cannot be made polymorphic in-TU (its full retail
+// vtable is unmatched engine code; declaring real virtuals would make cl emit a
+// wrong ??_7). This declared-only interface is the recommended manual-dispatch
+// form until the class's whole vtable is modeled.
 class WwdSelf {
 public:
     virtual void Slot00();
@@ -180,7 +315,7 @@ struct WwdRenderCtx {
     i32 m_10; // +0x10  clip width
     i32 m_14; // +0x14  clip height
     char m_pad18[0x2c - 0x18];
-    void* m_2c; // +0x2c  destination surface
+    WwdSurface* m_2c; // +0x2c  destination surface
 };
 
 // The 8-bit destination surface: GetRowBase (0x13e6d0) yields the buffer base
@@ -189,6 +324,9 @@ struct WwdRenderCtx {
 struct WwdSurface {
     i32 GetRowBase(i32 a); // 0x13e6d0  __thiscall -> base offset
     char m_pad00[0x08];
+    // authentic: +0x08 is a foreign engine notifier whose vtable slot +0x80 holds
+    // a FREE function fn(self, 0) (not a __thiscall method) - a manual vtable read
+    // through an untyped slot is the only faithful form; kept void*.
     void* m_08; // +0x08
     char m_pad0c[0x20 - 0x0c];
     i32 m_20; // +0x20  row pitch
@@ -196,7 +334,10 @@ struct WwdSurface {
     i32 m_b0; // +0xb0  per-column stride
 };
 
-// Raw this-offset helpers (documented offset access for the wide object).
+// Raw this-offset read of a foreign engine object reached as an opaque void*/int
+// handle (found-object refs, the a4 setup source). authentic: these referents are
+// heterogeneous unmodeled engine objects (no single concrete class to type), so a
+// documented offset read is the deliberate access - only the offset is load-bearing.
 #define F(p, off, ty) (*(ty*)((char*)(p) + (off)))
 
 // ---------------------------------------------------------------------------
@@ -208,7 +349,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (((CmdMap*)((char*)this + 0x1a0))->Find(a1, type, a3, a4) == 0) {
+    if (m_cmdMap.Find(a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -232,33 +373,33 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x00150b00, 0x12b)
 i32 CWwdGameObject::ReadState(i32 src) {
-    Archive* ar = (Archive*)src;
+    CSerialArchive* ar = (CSerialArchive*)src;
     if (ar == 0) {
         return 0;
     }
-    ar->Xfer((char*)this + 0x18c, 4);
-    ar->Xfer((char*)this + 0x190, 4);
+    ar->Write(&m_dotColor, 4);
+    ar->Write(&m_190, 4);
     i32 flag = 0;
-    if (F(this, 0x198, i32) != 0) {
+    if (m_198 != 0) {
         flag = 1;
     }
-    ar->Xfer(&flag, 4);
+    ar->Write(&flag, 4);
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
-    if (F(this, 0x194, void*) != 0) {
-        strcpy(tmp, (char*)F(this, 0x194, void*) + 0x24);
+    if (m_194 != 0) {
+        strcpy(tmp, (char*)m_194 + 0x24);
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     {
         EngStr str;
-        ((MgrSub158570*)F(F(this, 0xc, void*), 0x28, void*))->Op(&str, F(this, 0x19c, i32));
+        m_mgr->m_28->Op(&str, (i32)m_19c);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
     return 1;
 }
 
@@ -272,41 +413,41 @@ i32 CWwdGameObject::ReadState(i32 src) {
 // ---------------------------------------------------------------------------
 RVA(0x00150c30, 0x130)
 i32 CWwdGameObject::Sub150c30(i32 src) {
-    Archive* ar = (Archive*)src;
+    CSerialArchive* ar = (CSerialArchive*)src;
     if (ar == 0) {
         return 0;
     }
-    ar->ReadBuf((char*)this + 0x18c, 4);
-    ar->ReadBuf((char*)this + 0x190, 4);
+    ar->Read(&m_dotColor, 4);
+    ar->Read(&m_190, 4);
     i32 flag;
-    ar->ReadBuf(&flag, 4);
-    F(this, 0x194, i32) = 0;
+    ar->Read(&flag, 4);
+    m_194 = 0;
 
     char name[0x100];
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        void* mgr = F(this, 0xc, void*);
-        ((MapLookupA*)((char*)F(mgr, 0x10, void*) + 0x10))->Lookup(name, &found);
-        F(this, 0x194, void*) = found;
+        WwdMgr* mgr = m_mgr;
+        mgr->m_10->m_map.Lookup(name, &found);
+        m_194 = found;
         if (found != 0 && flag == 1) {
-            i32 idx = F(this, 0x190, i32);
+            i32 idx = m_190;
             if (idx >= F(found, 0x64, i32) && idx <= F(found, 0x68, i32)) {
                 idx = ((i32*)F(found, 0x14, void*))[idx];
             } else {
                 idx = 0;
             }
-            F(this, 0x198, i32) = idx;
+            m_198 = idx;
         }
     }
 
-    F(this, 0x19c, i32) = 0;
-    ar->ReadBuf(name, 0x80);
+    m_19c = 0;
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        void* mgr = F(this, 0xc, void*);
-        ((MapLookupB*)((char*)F(mgr, 0x28, void*) + 0x10))->Lookup(name, &found);
-        F(this, 0x19c, void*) = found;
+        WwdMgr* mgr = m_mgr;
+        mgr->m_28->m_map.Lookup(name, &found);
+        m_19c = found;
     }
     return 1;
 }
@@ -323,53 +464,53 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
 RVA(0x00150d60, 0x14d)
 i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     Helper164790(a1, a2);
-    F(this, 0x5c, i32) = a1;
-    F(this, 0x60, i32) = a2;
-    F(this, 0x74, i32) = a3;
-    F(this, 0x104, i32) = a1;
-    AnimWorker* w = (AnimWorker*)F(this, 0x7c, void*);
-    F(this, 0x108, i32) = a2;
-    F(this, 0x10c, i32) = a3;
-    F(this, 0xf8, i32) = 10;
-    F(this, 0xfc, i32) = 10;
-    F(this, 0x118, i32) = 0;
-    F(this, 0x114, i32) = 0;
-    F(this, 0x128, i32) = 0;
-    F(this, 0x124, i32) = 0;
-    F(this, 0x11c, i32) = 0;
-    F(this, 0x120, i32) = 0;
-    F(this, 0x12c, i32) = 0;
-    F(this, 0x130, i32) = 0;
-    F(this, 0x164, i32) = 0;
-    F(this, 0x168, i32) = 0;
-    F(this, 0xe0, i32) = 0;
-    F(this, 0x180, i32) = 0;
+    m_posX = a1;
+    m_posY = a2;
+    m_74 = a3;
+    m_104 = a1;
+    AnimWorker* w = m_worker;
+    m_108 = a2;
+    m_10c = a3;
+    m_f8 = 10;
+    m_fc = 10;
+    m_118 = 0;
+    m_114 = 0;
+    m_128 = 0;
+    m_124 = 0;
+    m_11c = 0;
+    m_120 = 0;
+    m_12c = 0;
+    m_130 = 0;
+    m_164 = 0;
+    m_168 = 0;
+    m_e0 = 0;
+    m_180 = 0;
     if (w->Init(F((void*)a4, 0x10, i32), F((void*)a4, 0x8, i32)) == 0) {
         return 0;
     }
-    F(this, 0x80, i32) = 0;
-    F(this, 0x88, i32) = 0;
-    F(this, 0x90, i32) = 0;
-    F(this, 0x84, i32) = 0;
-    F(this, 0x8c, i32) = 0;
-    F(this, 0x94, i32) = 0;
-    F(this, 0xe8, i32) = 0;
-    F(this, 0xec, i32) = 0;
-    F(this, 0xf0, i32) = 0;
-    F(this, 0xf4, i32) = 0;
-    F(this, 0x134, i32) = (i32)0x80000000;
-    F(this, 0x144, i32) = (i32)0x80000000;
-    F(this, 0x154, i32) = (i32)0x80000000;
-    F(this, 0xb4, void*) = this;
-    F(this, 0xac, i32) = F(this, 0x5c, i32);
-    F(this, 0xb0, i32) = F(this, 0x60, i32);
-    i32 wf = ((AnimWorker*)F(this, 0x7c, void*))->m_08;
+    m_80 = 0;
+    m_88 = 0;
+    m_90 = 0;
+    m_84 = 0;
+    m_8c = 0;
+    m_94 = 0;
+    m_e8 = 0;
+    m_ec = 0;
+    m_f0 = 0;
+    m_f4 = 0;
+    m_134 = (i32)0x80000000;
+    m_144 = (i32)0x80000000;
+    m_154 = (i32)0x80000000;
+    m_self = this;
+    m_ac = m_posX;
+    m_b0 = m_posY;
+    i32 wf = m_worker->m_08;
     if (wf & 1) {
-        F(this, 0x8, i32) |= 0x800000;
+        m_flags |= 0x800000;
         return 1;
     }
     if (wf & 2) {
-        F(this, 0x8, i32) |= 0x1000000;
+        m_flags |= 0x1000000;
     }
     return 1;
 }
@@ -395,18 +536,18 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     i32 node;
     switch (type) {
         case 3: {
-            F(this, 0x184, i32) = 0;
-            if (F(this, 0x98, void*) != 0) {
-                F(this, 0x184, i32) = F(F(this, 0x98, void*), 0x188, i32);
+            m_184 = 0;
+            if (m_98 != 0) {
+                m_184 = F(m_98, 0x188, i32);
             }
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = 0x50;
             w->Advance(this);
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w->m_1c == 0x50) {
                 w->m_1c = saved;
             }
@@ -416,14 +557,14 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             if (Serialize(a1) == 0) {
                 return 0;
             }
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = 0x51;
             w->Advance(this);
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w->m_1c == 0x51) {
                 w->m_1c = saved;
             }
@@ -433,48 +574,47 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             if (Sub151780(a1) == 0) {
                 return 0;
             }
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = 0x52;
             w->Advance(this);
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w->m_1c == 0x52) {
                 w->m_1c = saved;
             }
             break;
         }
         case 8: {
-            node = F(this, 0x184, i32);
+            node = m_184;
             if (node != 0) {
                 void* found = 0;
-                CMapStringToObLite* map =
-                    (CMapStringToObLite*)((char*)F(F(this, 0xc, void*), 0x8, void*) + 0x48);
+                CMapStringToObLite* map = &m_mgr->m_08->m_map;
                 if (map->Lookup((const char*)node, &found) == 0) {
-                    F(this, 0x98, void*) = 0;
+                    m_98 = 0;
                 } else {
-                    F(this, 0x98, void*) = found;
+                    m_98 = found;
                 }
             } else {
-                F(this, 0x98, i32) = 0;
+                m_98 = 0;
             }
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w == 0) {
                 return 0;
             }
             saved = w->m_1c;
             w->m_1c = 0x53;
             w->Advance(this);
-            w = (AnimWorker*)F(this, 0x7c, void*);
+            w = m_worker;
             if (w->m_1c == 0x53) {
                 w->m_1c = saved;
             }
             break;
         }
     }
-    return ((AnimWorkerEx*)F(this, 0x7c, void*))->Method164830(a1, type, a3, a4) != 0;
+    return m_worker->Method164830(a1, type, a3, a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -482,89 +622,89 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x00151320, 0x454)
 i32 CWwdGameObject::Serialize(i32 arParam) {
-    Archive* ar = (Archive*)arParam;
+    CSerialArchive* ar = (CSerialArchive*)arParam;
     if (ar == 0) {
         return 0;
     }
 
-    ar->Xfer((char*)this + 0xb8, 0x24);
+    ar->Write(m_b8, 0x24);
 
     char tmp[0x80];
     memset(tmp, 0, sizeof(tmp));
-    strcpy(tmp, (char*)F(this, 0xdc, void*));
-    ar->Xfer(tmp, 0x80);
+    strcpy(tmp, m_name);
+    ar->Write(tmp, 0x80);
 
-    ar->Xfer((char*)this + 0xe4, 4);
-    ar->Xfer((char*)this + 0xe8, 4);
-    ar->Xfer((char*)this + 0xec, 4);
-    ar->Xfer((char*)this + 0xf0, 4);
-    ar->Xfer((char*)this + 0xf4, 4);
-    ar->Xfer((char*)this + 0xf8, 4);
-    ar->Xfer((char*)this + 0xfc, 4);
-    ar->Xfer((char*)this + 0x100, 4);
-    ar->Xfer((char*)this + 0x104, 4);
-    ar->Xfer((char*)this + 0x108, 4);
-    ar->Xfer((char*)this + 0x10c, 4);
-    ar->Xfer((char*)this + 0x110, 4);
-    ar->Xfer((char*)this + 0x114, 4);
-    ar->Xfer((char*)this + 0x118, 4);
-    ar->Xfer((char*)this + 0x11c, 4);
-    ar->Xfer((char*)this + 0x120, 4);
-    ar->Xfer((char*)this + 0x124, 4);
-    ar->Xfer((char*)this + 0x128, 4);
-    ar->Xfer((char*)this + 0x12c, 4);
-    ar->Xfer((char*)this + 0x130, 4);
-    ar->Xfer((char*)this + 0x134, 0x10);
-    ar->Xfer((char*)this + 0x144, 0x10);
-    ar->Xfer((char*)this + 0x154, 0x10);
-    ar->Xfer((char*)this + 0x164, 4);
-    ar->Xfer((char*)this + 0x168, 4);
-    ar->Xfer((char*)this + 0x16c, 4);
-    ar->Xfer((char*)this + 0x170, 4);
-    ar->Xfer((char*)this + 0x174, 4);
-    ar->Xfer((char*)this + 0x178, 4);
-    ar->Xfer((char*)this + 0x17c, 4);
-    ar->Xfer((char*)this + 0x180, 4);
-    ar->Xfer((char*)this + 0x10, 4);
-    ar->Xfer((char*)this + 0x14, 4);
-    ar->Xfer((char*)this + 0x18, 0x24);
-    ar->Xfer((char*)this + 0x40, 4);
-    ar->Xfer((char*)this + 0x44, 4);
-    ar->Xfer((char*)this + 0x48, 4);
-    ar->Xfer((char*)this + 0x50, 4);
-    ar->Xfer((char*)this + 0x54, 4);
-    ar->Xfer((char*)this + 0x58, 4);
-    ar->Xfer((char*)this + 0x64, 0x10);
-    ar->Xfer((char*)this + 0x4, 4);
-    ar->Xfer((char*)this + 0x8, 4);
-    ar->Xfer((char*)this + 0x184, 4);
-
-    memset(tmp, 0, sizeof(tmp));
-    if (F(this, 0x80, void*) != 0) {
-        EngStr str;
-        ((MgrSub165360*)F(F(this, 0xc, void*), 0x14, void*))->Build(&str, F(this, 0x80, void*));
-        strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
-    }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(&m_e4, 4);
+    ar->Write(&m_e8, 4);
+    ar->Write(&m_ec, 4);
+    ar->Write(&m_f0, 4);
+    ar->Write(&m_f4, 4);
+    ar->Write(&m_f8, 4);
+    ar->Write(&m_fc, 4);
+    ar->Write(&m_100, 4);
+    ar->Write(&m_104, 4);
+    ar->Write(&m_108, 4);
+    ar->Write(&m_10c, 4);
+    ar->Write(&m_110, 4);
+    ar->Write(&m_114, 4);
+    ar->Write(&m_118, 4);
+    ar->Write(&m_11c, 4);
+    ar->Write(&m_120, 4);
+    ar->Write(&m_124, 4);
+    ar->Write(&m_128, 4);
+    ar->Write(&m_12c, 4);
+    ar->Write(&m_130, 4);
+    ar->Write(&m_134, 0x10);
+    ar->Write(&m_144, 0x10);
+    ar->Write(&m_154, 0x10);
+    ar->Write(&m_164, 4);
+    ar->Write(&m_168, 4);
+    ar->Write(&m_16c, 4);
+    ar->Write(&m_170, 4);
+    ar->Write(&m_174, 4);
+    ar->Write(&m_178, 4);
+    ar->Write(&m_17c, 4);
+    ar->Write(&m_180, 4);
+    ar->Write(&m_10, 4);
+    ar->Write(&m_14, 4);
+    ar->Write(&m_lastX, 0x24); // +0x18 render-state block
+    ar->Write(&m_40, 4);
+    ar->Write(&m_44, 4);
+    ar->Write(&m_48, 4);
+    ar->Write(&m_50, 4);
+    ar->Write(&m_54, 4);
+    ar->Write(&m_58, 4);
+    ar->Write(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Write(&m_04, 4);
+    ar->Write(&m_flags, 4);
+    ar->Write(&m_184, 4);
 
     memset(tmp, 0, sizeof(tmp));
-    if (F(this, 0x88, void*) != 0) {
+    if (m_80 != 0) {
         EngStr str;
-        ((MgrSub165360*)F(F(this, 0xc, void*), 0x14, void*))->Build(&str, F(this, 0x88, void*));
+        m_mgr->m_14->Build(&str, m_80);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
-    if (F(this, 0x90, void*) != 0) {
+    if (m_88 != 0) {
         EngStr str;
-        ((MgrSub165360*)F(F(this, 0xc, void*), 0x14, void*))->Build(&str, F(this, 0x90, void*));
+        m_mgr->m_14->Build(&str, m_88);
         strcpy(tmp, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
-    ar->Xfer(tmp, 0x80);
+    ar->Write(tmp, 0x80);
+
+    memset(tmp, 0, sizeof(tmp));
+    if (m_90 != 0) {
+        EngStr str;
+        m_mgr->m_14->Build(&str, m_90);
+        strcpy(tmp, str.m_data);
+        str.Dtor();
+    }
+    ar->Write(tmp, 0x80);
     return 1;
 }
 
@@ -577,84 +717,84 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 // ---------------------------------------------------------------------------
 RVA(0x00151780, 0x40d)
 i32 CWwdGameObject::Sub151780(i32 arParam) {
-    Archive* ar = (Archive*)arParam;
+    CSerialArchive* ar = (CSerialArchive*)arParam;
     if (ar == 0) {
         return 0;
     }
 
-    ar->ReadBuf((char*)this + 0xb8, 0x24);
+    ar->Read(m_b8, 0x24);
 
     char name[0x80];
-    ar->ReadBuf(name, 0x80);
-    ((CStringAssign*)((char*)this + 0xdc))->Assign(name);
+    ar->Read(name, 0x80);
+    ((CStringAssign*)&m_name)->Assign(name);
 
-    ar->ReadBuf((char*)this + 0xe4, 4);
-    ar->ReadBuf((char*)this + 0xe8, 4);
-    ar->ReadBuf((char*)this + 0xec, 4);
-    ar->ReadBuf((char*)this + 0xf0, 4);
-    ar->ReadBuf((char*)this + 0xf4, 4);
-    ar->ReadBuf((char*)this + 0xf8, 4);
-    ar->ReadBuf((char*)this + 0xfc, 4);
-    ar->ReadBuf((char*)this + 0x100, 4);
-    ar->ReadBuf((char*)this + 0x104, 4);
-    ar->ReadBuf((char*)this + 0x108, 4);
-    ar->ReadBuf((char*)this + 0x10c, 4);
-    ar->ReadBuf((char*)this + 0x110, 4);
-    ar->ReadBuf((char*)this + 0x114, 4);
-    ar->ReadBuf((char*)this + 0x118, 4);
-    ar->ReadBuf((char*)this + 0x11c, 4);
-    ar->ReadBuf((char*)this + 0x120, 4);
-    ar->ReadBuf((char*)this + 0x124, 4);
-    ar->ReadBuf((char*)this + 0x128, 4);
-    ar->ReadBuf((char*)this + 0x12c, 4);
-    ar->ReadBuf((char*)this + 0x130, 4);
-    ar->ReadBuf((char*)this + 0x134, 0x10);
-    ar->ReadBuf((char*)this + 0x144, 0x10);
-    ar->ReadBuf((char*)this + 0x154, 0x10);
-    ar->ReadBuf((char*)this + 0x164, 4);
-    ar->ReadBuf((char*)this + 0x168, 4);
-    ar->ReadBuf((char*)this + 0x16c, 4);
-    ar->ReadBuf((char*)this + 0x170, 4);
-    ar->ReadBuf((char*)this + 0x174, 4);
-    ar->ReadBuf((char*)this + 0x178, 4);
-    ar->ReadBuf((char*)this + 0x17c, 4);
-    ar->ReadBuf((char*)this + 0x180, 4);
-    ar->ReadBuf((char*)this + 0x10, 4);
-    ar->ReadBuf((char*)this + 0x14, 4);
-    ar->ReadBuf((char*)this + 0x18, 0x24);
-    ar->ReadBuf((char*)this + 0x40, 4);
-    ar->ReadBuf((char*)this + 0x44, 4);
-    ar->ReadBuf((char*)this + 0x48, 4);
-    ar->ReadBuf((char*)this + 0x50, 4);
-    ar->ReadBuf((char*)this + 0x54, 4);
-    ar->ReadBuf((char*)this + 0x58, 4);
-    ar->ReadBuf((char*)this + 0x64, 0x10);
-    ar->ReadBuf((char*)this + 0x4, 4);
-    ar->ReadBuf((char*)this + 0x8, 4);
-    ar->ReadBuf((char*)this + 0x184, 4);
+    ar->Read(&m_e4, 4);
+    ar->Read(&m_e8, 4);
+    ar->Read(&m_ec, 4);
+    ar->Read(&m_f0, 4);
+    ar->Read(&m_f4, 4);
+    ar->Read(&m_f8, 4);
+    ar->Read(&m_fc, 4);
+    ar->Read(&m_100, 4);
+    ar->Read(&m_104, 4);
+    ar->Read(&m_108, 4);
+    ar->Read(&m_10c, 4);
+    ar->Read(&m_110, 4);
+    ar->Read(&m_114, 4);
+    ar->Read(&m_118, 4);
+    ar->Read(&m_11c, 4);
+    ar->Read(&m_120, 4);
+    ar->Read(&m_124, 4);
+    ar->Read(&m_128, 4);
+    ar->Read(&m_12c, 4);
+    ar->Read(&m_130, 4);
+    ar->Read(&m_134, 0x10);
+    ar->Read(&m_144, 0x10);
+    ar->Read(&m_154, 0x10);
+    ar->Read(&m_164, 4);
+    ar->Read(&m_168, 4);
+    ar->Read(&m_16c, 4);
+    ar->Read(&m_170, 4);
+    ar->Read(&m_174, 4);
+    ar->Read(&m_178, 4);
+    ar->Read(&m_17c, 4);
+    ar->Read(&m_180, 4);
+    ar->Read(&m_10, 4);
+    ar->Read(&m_14, 4);
+    ar->Read(&m_lastX, 0x24); // +0x18 render-state block
+    ar->Read(&m_40, 4);
+    ar->Read(&m_44, 4);
+    ar->Read(&m_48, 4);
+    ar->Read(&m_50, 4);
+    ar->Read(&m_54, 4);
+    ar->Read(&m_58, 4);
+    ar->Read(&m_clipLeft, 0x10); // +0x64 clip rect
+    ar->Read(&m_04, 4);
+    ar->Read(&m_flags, 4);
+    ar->Read(&m_184, 4);
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve150eb0(found) == 0) {
             return 0;
         }
     }
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve150f90(found) == 0) {
             return 0;
         }
     }
 
-    ar->ReadBuf(name, 0x80);
+    ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((MapLookupA*)((char*)F(F(this, 0xc, void*), 0x14, void*) + 0x10))->Lookup(name, &found);
+        m_mgr->m_14->m_map.Lookup(name, &found);
         if (Resolve151070(found) == 0) {
             return 0;
         }
@@ -672,11 +812,11 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 // stores schedule one slot off retail. Logic complete; not steerable.
 RVA(0x00151c00, 0x118)
 i32 CWwdGameObject::WriteSnapshot(i32 dst) {
-    Archive* ar = (Archive*)dst;
+    CSerialArchive* ar = (CSerialArchive*)dst;
     if (ar == 0) {
         return 0;
     }
-    AnimWorker* w = (AnimWorker*)F(this, 0x7c, void*);
+    AnimWorker* w = m_worker;
     if (w == 0) {
         return 0;
     }
@@ -690,29 +830,29 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
         ebx = self->Vfunc40();
     }
 
-    w = (AnimWorker*)F(this, 0x7c, void*);
+    w = m_worker;
     i32 edi = 0;
     if (w->m_18 != 0) {
-        edi = ((WorkerSub*)w->m_18)->Vfunc8();
+        edi = w->m_18->Vfunc8();
     }
 
     WwdSnapshot rec;
-    rec.m_00 = F(this, 0x4, i32);
+    rec.m_00 = m_04;
     rec.m_08 = self->Vfunc20();
-    rec.m_04 = F(this, 0x188, i32);
-    rec.m_94 = F(this, 0x5c, i32);
-    rec.m_98 = F(this, 0x60, i32);
-    rec.m_9c = F(this, 0x74, i32);
+    rec.m_04 = m_188;
+    rec.m_94 = m_posX;
+    rec.m_98 = m_posY;
+    rec.m_9c = m_74;
     rec.m_0c = ebx;
     rec.m_10 = edi;
 
     {
         EngStr str;
-        ((MgrSub165360*)F(F(this, 0xc, void*), 0x14, void*))->Build(&str, F(this, 0x7c, void*));
+        m_mgr->m_14->Build(&str, m_worker);
         strcpy(rec.m_name, str.m_data);
-        ((CStringDtor*)&str)->Dtor();
+        str.Dtor();
     }
-    ar->Xfer(&rec, 0xa0);
+    ar->Write(&rec, 0xa0);
     return 1;
 }
 
@@ -721,27 +861,10 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 // ---------------------------------------------------------------------------
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
-    F(this, 0x19c, i32) = 0;
-    ((CmdMap*)((char*)this + 0x1a0))->Construct(this);
+    m_19c = 0;
+    m_cmdMap.Construct(this);
     return Setup(a1, a2, a3, a4);
 }
-
-// The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
-// list nodes {next@0, prev@4, data@8}; RemoveAll (0x1b5a0b) frees the node cells.
-struct WwdSubDel {
-    virtual void Slot00();
-    virtual void DeleteSelf(i32 flag); // +0x04  scalar deleting dtor
-};
-struct WwdSubNode {
-    WwdSubNode* m_next; // +0x00
-    WwdSubNode* m_prev; // +0x04
-    WwdSubDel* m_data;  // +0x08  owned polymorphic payload
-};
-struct WwdSubList {
-    void RemoveAll_1b5a0b(); // 0x1b5a0b  CObList::RemoveAll (reloc-masked)
-    void* m_vtbl;            // +0x00
-    WwdSubNode* m_head;      // +0x04
-};
 
 // ---------------------------------------------------------------------------
 // ResetAndSetup (0x1665e0): delete every owned sub-object in the +0x1dc CObList
@@ -757,7 +880,7 @@ struct WwdSubList {
 // ---------------------------------------------------------------------------
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    WwdSubNode* n = F(this, 0x1e0, WwdSubNode*);
+    WwdSubNode* n = m_subList.m_head;
     while (n != 0) {
         WwdSubNode* next = n->m_next;
         WwdSubDel* p = n->m_data;
@@ -766,7 +889,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
         }
         n = next;
     }
-    ((WwdSubList*)((char*)this + 0x1dc))->RemoveAll_1b5a0b();
+    m_subList.RemoveAll_1b5a0b();
     return Setup(a1, a2, a3, a4) != 0;
 }
 
@@ -776,7 +899,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    F(this, 0x18c, char) = (char)flag;
+    *(char*)&m_dotColor = (char)flag;
     return Setup(a1, a2, a3, a4);
 }
 
@@ -807,14 +930,14 @@ i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
 // ---------------------------------------------------------------------------
 RVA(0x001660f0, 0xd1)
 void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
-    i32 x = F(this, 0x5c, i32);
-    i32 m64 = F(this, 0x64, i32);
+    i32 x = m_posX;
+    i32 m64 = m_clipLeft;
     i32 y;
     if (m64 == (i32)0x80000000) {
         if (x < 0) {
             goto reject;
         }
-        y = F(this, 0x60, i32);
+        y = m_posY;
         if (y < 0) {
             goto reject;
         }
@@ -828,35 +951,55 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
         if (x < m64) {
             goto reject;
         }
-        y = F(this, 0x60, i32);
-        if (y < F(this, 0x68, i32)) {
+        y = m_posY;
+        if (y < m_clipTop) {
             goto reject;
         }
-        if (x > F(this, 0x6c, i32)) {
+        if (x > m_clipRight) {
             goto reject;
         }
-        if (y > F(this, 0x70, i32)) {
+        if (y > m_clipBottom) {
             goto reject;
         }
     }
 
     {
-        WwdSurface* surf = (WwdSurface*)a->m_2c;
+        WwdSurface* surf = a->m_2c;
         i32 base = surf->GetRowBase(0);
         if (base != 0) {
             i32 row = surf->m_20 * y;
             i32 col = surf->m_b0 * x;
-            *(char*)(base + row + col) = F(this, 0x18c, char);
+            *(char*)(base + row + col) = *(char*)&m_dotColor;
             void* n = surf->m_08;
             (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
     }
-    F(this, 0x18, i32) = F(this, 0x5c, i32);
-    F(this, 0x1c, i32) = F(this, 0x60, i32);
-    F(this, 0x30, i32) = 1;
-    F(this, 0x34, i32) = 1;
-    F(this, 0x38, i32) = 0;
+    m_lastX = m_posX;
+    m_lastY = m_posY;
+    m_30 = 1;
+    m_34 = 1;
+    m_clipResult = 0;
     return;
 reject:
-    F(this, 0x38, i32) = -1;
+    m_clipResult = -1;
 }
+
+// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CMapStringToObLite);
+SIZE_UNKNOWN(CStringAssign);
+SIZE(CmdMap, 0x3c);
+SIZE_UNKNOWN(MapLookupA);
+SIZE_UNKNOWN(MapLookupB);
+SIZE_UNKNOWN(MgrSub158570);
+SIZE_UNKNOWN(MgrSub165360);
+SIZE_UNKNOWN(WorkerSub);
+SIZE_UNKNOWN(WwdMgr);
+SIZE_UNKNOWN(WwdMgrSub08);
+SIZE_UNKNOWN(WwdMgrSub10);
+SIZE_UNKNOWN(WwdRenderCtx);
+SIZE_UNKNOWN(WwdSelf);
+SIZE_UNKNOWN(WwdSnapshot);
+SIZE_UNKNOWN(WwdSubDel);
+SIZE_UNKNOWN(WwdSubList);
+SIZE_UNKNOWN(WwdSubNode);
+SIZE_UNKNOWN(WwdSurface);

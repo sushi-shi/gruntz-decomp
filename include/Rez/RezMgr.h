@@ -14,37 +14,32 @@
 // CRezItmBase (16 bytes) - the shared base of every directory-tree node. Both
 // ctors call the same base ctor (stores base vtbl @+0 and
 // the parent pointer @+0xc).
-//   +0x00  m_vtbl   : vtable pointer (base; the derived ctor
+//   +0x00  vptr     : vtable pointer (base; the derived ctor
 //                     overwrites it - two-phase construction).
-//   +0x04  m_4      : (not written by these ctors)
-//   +0x08  m_8      : (not written by these ctors; OpenSub zeroes its owner's +8)
+//   +0x04  m_next   : intrusive sibling link (written by CRezList::AddHead)
+//   +0x08  m_prev   : intrusive sibling link (written by CRezList::AddHead)
 //   +0x0c  m_parent : owning/parent pointer (the one base-ctor arg).
 //
 // ---------------------------------------------------------------------------
 // CRezItm : CRezItmBase (0x24 = 36 bytes) - a leaf resource (file) node.
 // (derived vtbl)
-//   +0x10  m_10  : 0      +0x14  m_14 : 0      +0x20  m_20 : -1
+//   +0x10  m_fp  : 0      +0x14  m_readBuf : 0      +0x20  m_pos : -1
 //   (+0x18/+0x1c set by the virtual load, not the ctor)
 //
 // ---------------------------------------------------------------------------
-// CRezDir : CRezItmBase (>= 0x38; ctor builds 0x38 = 56 bytes) - a subdirectory
-// node (derived vtbl). The ctor inits an embedded child collection
-// sub-object (two vtables at +0x10 and +0x1c) and bookkeeping; the
-// higher fields (+0x40..+0x64) are written by Load/OpenSub at runtime.
-//   +0x10  m_vtblA : (collection vtable #1)
-//   +0x14  m_14    : 0        (collection head)
-//   +0x18  m_18    : 0        (collection tail)
-//   +0x1c  m_vtblB : (collection vtable #2)
-//   +0x20  m_20 :0  +0x24 m_24:0  +0x28 m_28:0  +0x34 m_34:0
-//   +0x2c  m_2c    : ctor arg2 (the owning RezMgr back-pointer)
+// CRezDir : CRezItmBase (exactly 0x38 = 56 bytes) - a subdirectory node
+// (derived vtbl). The ctor inits an embedded child collection sub-object (two
+// vtables at +0x10 and +0x1c) and bookkeeping. (The +0x38..+0x64 fields an
+// earlier model listed here belong to CRezDirNode, a distinct class the loader
+// walks - see the RezMgr.cpp note - not to this 0x38 ctor's object.)
+//   +0x10  listA   : (embedded child collection #1: vptr,head,tail)
+//   +0x14  ..head  : 0        (collection head)
+//   +0x18  ..tail  : 0        (collection tail)
+//   +0x1c  listB   : (embedded child collection #2: vptr,head,tail)
+//   +0x28  m_28    : 0
+//   +0x2c  m_rezMgr : ctor arg2 (the owning-manager back-pointer)
 //   +0x30  m_30    : 1        ("valid"/initialized flag)
-// Runtime fields (NOT ctor-initialized; pinned from Load/OpenSub):
-//   +0x38  m_coll2 : a second/child collection base (Load iterates &this+0x38)
-//   +0x40  m_loaded: OpenSub's load gate (return 0 if zero)
-//   +0x44  m_44    : passed to the recursive walker
-//   +0x48  m_loaded2: Load's already-loaded gate (return 1 if nonzero)
-//   +0x54  m_w     +0x58 m_h  +0x5c m_x  +0x60 m_y : running max dims (OpenSub)
-//   +0x64  m_name  : cached lookup-name buffer (operator new'd / freed)
+//   +0x34  m_34    : 0
 #ifndef SRC_REZ_REZMGR_H
 #define SRC_REZ_REZMGR_H
 #include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
@@ -52,6 +47,10 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA, used by MakeRezPath)
 // plus CString / CObject; the engine helpers below stay minimal externs.
 #include <Mfc.h>
+
+// The shared RezColl (hash-bucket child collection) + RezNode (chain node)
+// definition. CRezDirNode embeds a RezColl (m_kids) and walks it with First/Next.
+#include <Rez/RezColl.h>
 
 // ---------------------------------------------------------------------------
 // External engine helpers, modeled with NO body so their `call rel32`
@@ -79,9 +78,8 @@ class CRezDir;
 // external no-body, __thiscall - the collection/node arrives in ecx, no stack
 // args). Modeled as member functions (First on the collection, Next on a node)
 // so the `lea ecx,[..]; call` / `mov ecx,..; call` shapes fall out, reloc-masked.
-//   RezColl::First()  -> first child node
+//   RezColl::First()  -> first child node   (shared def in <Rez/RezColl.h>)
 //   RezNode::Next()   -> next sibling node
-struct RezNode;
 
 // The engine assert/trace sink: prints/logs the message string.
 extern "C" void RezAssertFail(const char* msg);
@@ -99,26 +97,22 @@ extern "C" i32 RezStricmp(const char* a, const char* b);
 // Polymorphic so the vptr lands at +0x00 and the two-phase vtable stores fall
 // out; the ctor takes the parent pointer (stored @+0xc).
 // ---------------------------------------------------------------------------
-// The owning node reached at CRezItmBase+0xc. CRezItm's stream methods poll it
-// through a virtual at slot index 2 ([vtbl+0x8]) - a "keep going / recover from a
-// short read or seek failure?" gate (nonzero => retry, zero => give up). Modeled
-// polymorphic with the slot indices kept so `mov eax,[ecx]; call [eax+8]` falls
-// out (reloc-masked indirect call); slots 0/1 are placeholders.
-class CRezItmOwner {
-public:
-    virtual void v0();   // +0x00
-    virtual void v1();   // +0x04
-    virtual i32 Retry(); // +0x08  (slot 2) - recover/keep-going gate
-};
+// The owning node reached at CRezItmBase+0xc: CRezItm's stream methods poll its
+// slot-2 Retry gate on a short read / seek failure.
+#include <Rez/RezItmOwner.h>
 
 class CRezItmBase {
 public:
     CRezItmBase(void* parent);
     virtual ~CRezItmBase();
 
-    void* m_4;      // +0x04
-    void* m_8;      // +0x08
-    void* m_parent; // +0x0c  (a CRezItmOwner*; cast at use in CRezItm's methods)
+    // +0x04/+0x08 are the node's intrusive sibling links, written by
+    // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
+    // list (see CRezParseNode below). The ctors here never touch them; typed as
+    // the node base rather than left as raw void*.
+    CRezItmBase* m_next;    // +0x04
+    CRezItmBase* m_prev;    // +0x08
+    CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
 };
 
 // ---------------------------------------------------------------------------
@@ -147,11 +141,13 @@ public:
     // (vtable slot 5)
     i32 Close();
 
-    void* m_10; // +0x10  FILE* (= 0)
-    void* m_14; // +0x14  read buffer (= 0)
-    i32 m_18;   // +0x18  (set by load)
-    i32 m_1c;   // +0x1c  (set by load)
-    i32 m_20;   // +0x20  position cursor (= -1)
+    // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
+    // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
+    void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
+    void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
+    i32 m_18;        // +0x18  (set by the virtual load, not this TU; role unproven)
+    i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
+    i32 m_pos;       // +0x20  position cursor (= -1)
 };
 
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
@@ -165,7 +161,28 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 // ---------------------------------------------------------------------------
 // CRezDir (ctor builds 0x38 = 56 bytes; runtime fields extend to +0x68) - a
 // subdirectory node + the directory the loader walks (Load/OpenSub/FindEntry).
+// Own (derived) vtable @0x1ef7a8: cl auto-emits ??_7CRezDir (real polymorphic
+// derived of CRezItmBase, whose ctor 0x13c940 stamps it). Retrofit the retail
+// datum name (was the anonymous Vtbl_1ef7a8 in UnknownVTables.h); reloc-masked,
+// matching-neutral.
 // ---------------------------------------------------------------------------
+// The embedded child collection sub-object CRezDir carries twice (an intrusive
+// {vptr,head,tail} list at +0x10 and +0x1c). REAL POLYMORPHIC (ALL-VTABLES): each
+// is a polymorphic list whose implicit vptr the CRezDir ctor auto-stamps (both
+// resolve to the same child-collection vtable 0x1ef7c8). The default ctor zeroes
+// the head/tail links.
+VTBL(CRezDirList, 0x001ef7c8);
+struct CRezDirList {
+    CRezDirList() {
+        m_head = 0;
+        m_tail = 0;
+    }
+    virtual ~CRezDirList(); // +0x00  vptr (external no-body dtor)
+    CRezItmBase* m_head;    // +0x04  child chain head (CRezItmBase-derived nodes)
+    CRezItmBase* m_tail;    // +0x08  child chain tail
+};
+
+VTBL(CRezDir, 0x001ef7a8);
 class CRezDir : public CRezItmBase {
 public:
     CRezDir(void* parent, void* rezMgr);
@@ -174,33 +191,36 @@ public:
     i32 FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
 
-    // --- ctor-initialized embedded child collection (+0x10..+0x34) ---
-    void* m_vtblA; // +0x10  (collection vtable)
-    i32 m_14;      // +0x14  (= 0, collection head)
-    i32 m_18;      // +0x18  (= 0, collection tail)
-    void* m_vtblB; // +0x1c  (collection vtable)
-    i32 m_20;      // +0x20  (= 0)
-    i32 m_24;      // +0x24  (= 0)
-    i32 m_28;      // +0x28  (= 0)
-    void* m_2c;    // +0x2c  (= ctor arg2)
-    i32 m_30;      // +0x30  (= 1)
-    i32 m_34;      // +0x34  (= 0)
-    // --- runtime-only fields (NOT set by the ctor) ---
-    i32 m_38;      // +0x38  (second collection base; Load walks &this+0x38)
-    i32 m_3c;      // +0x3c
-    i32 m_loaded;  // +0x40  (OpenSub gate)
-    i32 m_44;      // +0x44
-    i32 m_loaded2; // +0x48  (Load gate)
-    i32 m_4c;      // +0x4c
-    i32 m_50;      // +0x50
-    i32 m_54;      // +0x54  (max width)
-    i32 m_58;      // +0x58  (max height)
-    i32 m_5c;      // +0x5c  (max x)
-    i32 m_60;      // +0x60  (max y)
-    void* m_name;  // +0x64  (cached lookup-name buffer)
+    // Exactly 0x38 bytes (verified: CSymParser::ParseBuffer does `push 0x38; new;
+    // call 0x13c940`). The +0x38..+0x64 "runtime" fields that an earlier model kept
+    // here actually belong to CRezDirNode (a distinct class walked by Load/OpenSub -
+    // see the RezMgr.cpp note); this TU only touches the ctor-set members below.
+    // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
+    CRezDirList m_listA; // +0x10  {vptr,head,tail}
+    CRezDirList m_listB; // +0x1c  {vptr,head,tail}
+    i32 m_28;            // +0x28  (= 0; role unproven)
+    void* m_rezMgr;      // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
+    i32 m_30;            // +0x30  (= 1; "valid"/initialized flag)
+    i32 m_34;            // +0x34  (= 0; role unproven)
+};
 
-    // Engine-label backlog stubs.
-    void Stub_13b0c0();
+// ---------------------------------------------------------------------------
+// CRezParseNode : CRezItmBase (0x1c bytes; ctor 0x13cac0) - a .rez parse-tree
+// node, the third CRezItmBase-derived class alongside CRezItm/CRezDir. Built by
+// CSymParser::ParseRecords (`push 0x1c; new; ctor`); base-ctors CRezItmBase(parent),
+// heap-copies its name into +0x10, records the owner @+0x18 and links itself into
+// the owner's child list (a CRezList embedded at owner+0x1c) via AddHead. Real
+// polymorphic (its own derived vtable 0x1ef7d0, whose datum FinalVtables.cpp
+// binds as CVtbl_1ef7d0; the reloc-masked vptr store here matches whichever symbol
+// names that address, so this class carries no VTBL of its own).
+class CRezParseNode : public CRezItmBase {
+public:
+    CRezParseNode(void* parent, char* nameSrc, void* owner);
+    virtual void v0(); // new virtual - forces the distinct derived vtable (+0x1ef7d0)
+
+    char* m_10; // +0x10  heap-copied name
+    i32 m_14;   // +0x14  (= 0; role unproven)
+    void* m_18; // +0x18  owner (its child list is the CRezList at owner+0x1c)
 };
 
 // ---------------------------------------------------------------------------
@@ -242,13 +262,9 @@ struct RezSrc {
     RezStream* m_stream; // +0x20  (the polymorphic read stream)
 };
 
-// The child collection embedded at CRezDirNode+0x38 (First/Next iterated).
-// First() is __thiscall: returns the first child node or 0.
-struct RezColl {
-    RezNode* First();
-    char m_pad[0x10];
-};
-
+// The child collection embedded at CRezDirNode+0x38 is the shared RezColl
+// (First/Next iterated) - defined in <Rez/RezColl.h>. Its 8-byte engine size
+// {count, buckets} is fixed by CSymTab's dual embedding (Bute/SymTab.h).
 class CRezDirNode {
 public:
     i32 Load(i32 childFlag);
@@ -261,18 +277,14 @@ public:
     void* m_subdir; // +0x14  (unused by Load on `this`)
     RezSrc* m_src;  // +0x18  (archive source object)
     char m_pad1c[0x38 - 0x1c];
-    RezColl m_kids; // +0x38..+0x47  (child collection, 0x10 bytes)
-    void* m_buf;    // +0x48  (payload buffer / loaded gate)
+    RezColl m_kids;  // +0x38..+0x3f  (8-byte engine child collection)
+    char m_pad40[8]; // +0x40..+0x47
+    void* m_buf;     // +0x48  (payload buffer / loaded gate)
 };
 
-// A child entry node in a CRezDirNode's collection: holds the sub-dir node ptr
-// at +0x14 that Load recurses into. Next() is __thiscall: returns the
-// next sibling node or 0.
-struct RezNode {
-    RezNode* Next();
-    char m_pad0[0x14];
-    CRezDirNode* m_14; // +0x14  (sub-dir node; Load recurses on it)
-};
+// The child chain node walked by Load carries the recursion target (the sub-dir
+// CRezDirNode*) in the shared RezNode's payload slot RezNode::m_14 (void*; cast
+// to CRezDirNode* at the Load call site).
 
 // ---------------------------------------------------------------------------
 // CString - the minimal MFC CString model (a single char* m_pchData @+0; an
@@ -285,7 +297,7 @@ struct RezNode {
 //             wrapper that defers to the v-formatter.
 // Modeled so the path builder's CString churn is reloc-masked.
 // ---------------------------------------------------------------------------
-#include <Gruntz/CString.h>
+#include <Gruntz/String.h>
 
 // Format(dst, fmt, ...) - the file-scope cdecl CString-format wrapper
 // (takes the destination CString by address as its first stack arg).
@@ -370,9 +382,13 @@ public:
     i32 MakeRezPath();
 
     // The frame-clock advance helper (a non-virtual member; also
-    // installed at vtable slot +0x38). External/no-body so its direct call is
-    // reloc-masked.
-    void UpdateClock();
+    // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
+    // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
+    i32 UpdateClock();
+    // Its two external/no-body __thiscall callees (reloc-masked): the busy-wait
+    // pacing limiter (0x13dec0) and the window-start time sampler (0x13de70).
+    void SpinWaitUntil(i32 target); // 0x13dec0
+    void InitTimeFields(i32 reset); // 0x13de70
 
     // The extension-dispatch image loaders (external, reloc-masked).
     i32 LoadBmp(void* a, void* b);
@@ -391,9 +407,14 @@ public:
     i32 CheckDbgVal(const char* key, i32 defVal, i32 flag);
 
     // --- layout (vptr occupies +0x00) ---------------------------------------
-    RezMgrOwner* m_4;          // +0x04  owning window holder (m_4->m_hWnd = HWND)
-    char m_pad8[0x2c - 0x08];  // +0x08..+0x2b
-    CGameMode* m_mode;         // +0x2c  (active game-mode driven per frame)
+    RezMgrOwner* m_4;         // +0x04  owning window holder (m_4->m_hWnd = HWND)
+    char m_pad8[0x18 - 0x08]; // +0x08..+0x17
+    i32 m_smoothedFrameCount; // +0x18  smoothed frame count (UpdateClock: m_frameCounter>>1 window)
+    i32 m_pacingGate;         // +0x1c  active gate (>0 enables per-frame pacing)
+    i32 m_frameCounter;       // +0x20  frame counter (incremented each tick)
+    i32 m_windowStartTick;    // +0x24  window-start tick
+    i32 m_frameBudgetMs;      // +0x28  target ms-per-frame (pacing budget)
+    CGameMode* m_mode;        // +0x2c  (active game-mode driven per frame)
     char m_pad30[0xb0 - 0x30]; // +0x30..+0xaf
     i32 m_renderGate;          // +0xb0  (nonzero => skip the post-step)
     char m_padb4[0xec - 0xb4]; // +0xb4..+0xeb

@@ -6,8 +6,9 @@
 // WwdFile::ReadPlane per plane) and the image-set descriptors before
 // computing the scaled start coordinates on the main plane.
 //
-// Only the members LoadWwd touches are pinned. The on-disk WWD layout is in
-// src/Stub/types/wwd.h. The plane object (CPlane) + the per-plane block reader
+// Only the members LoadWwd touches are pinned. The on-disk WWD header/plane
+// layout is validated inline by the loaders (WwdFile::IsValidWwd / this LoadWwd:
+// 0x5F4 header signature, 0xA0 plane stride). The plane object (CPlane) + the per-plane block reader
 // + the image-set factory + the coord-recompute helper are UNMATCHED engine code,
 // modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
@@ -17,13 +18,16 @@
 #include <Wwd/WwdFile.h> // CPlane, WwdHeader, operator new, uncompress
 
 // The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
-// +0x20 (m_array20) is a CByteArray; +0x34 m_planes and +0x48 m_imageSets are CDWordArray
-// (CLevelPtrArray). The retail stores the plane / image-set pointers as raw DWORDs - a
-// genuine CDWordArray, NOT a typed pointer array: a CTypedPtrArray<CPtrArray,...> drops
-// the ctor from 89.5% to 72%, so the DWORD storage (and the pointer<->DWORD casts at the
-// use sites) is the devs' real shape. SetAtGrow stores the pointer; operator[] reads it.
-#include <Mfc.h>
-typedef CDWordArray CLevelPtrArray;
+// The ctor builds three MFC arrays at +0x20/+0x34/+0x48; the retail ctor/dtor
+// construct/destroy all three via the SAME out-of-line CByteArray ctor/dtor (COMDAT-
+// folded in the retail image). +0x20 (m_array20) is a CByteArray; +0x34 m_planes and
+// +0x48 m_imageSets are the DWORD-array-of-pointers the devs used - genuine CDWordArrays
+// storing CLevelPlane*/CImageSet* cast to DWORD (afxcoll layout {DWORD* m_pData; int
+// m_nSize; int m_nMaxSize; int m_nGrowBy}). A typed CArray<T*>/CTypedPtrArray<CPtrArray>
+// inlines its template ctor and diverges the CGameLevel ctor/dtor codegen; the plain
+// CDWordArray is the byte-exact shape, so the (CLevelPlane*)/(DWORD) casts at the use
+// sites are the devs' authentic pointer<->DWORD storage casts (they stay).
+#include <Mfc.h> // CByteArray, CDWordArray (afxcoll)
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
@@ -46,84 +50,152 @@ public:
     virtual i32 dummy7();             // +0x1c
     virtual i32 dummy8(i32 a, i32 b); // +0x20
     virtual i32 GetStride();          // +0x24  record byte length (cursor advance)
+
+    i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
 // to the level-load/edit methods. Used as a half-open tile-bounds box
 // [minX,maxX) x [minY,maxY) (PointInBounds) and as the shared plane-read context
 // (LoadWwd's 3rd arg). minX==0x80000000 is the "unset" sentinel the ctor writes.
+SIZE_UNKNOWN(LevelCoordRect);
 struct LevelCoordRect {
     i32 minX, minY, maxX, maxY;
 };
 
-// The parse-source object passed to LoadFromSource. Defined in
-// GameLevel.cpp; only the pointer type appears here so a forward decl suffices.
-struct RemusParseSource;
+// ---------------------------------------------------------------------------
+// CLevelPlane - CGameLevel's full, typed view of the per-plane object (the real
+// engine plane, CPlane in WwdFile.h; CPlaneRender is its render facet). The tile
+// probes, the coord-recompute and the per-plane visit/build helpers all reach the
+// SAME object through these named members. It is a gamelevel-local view because the
+// canonical CPlane cannot be widened in the shared WwdFile.h without disturbing the
+// wwdfile TU's codegen (MSVC leaks scheduling across a modified class). The scalar-
+// deleting dtor (+0x04) is the array-release slot; Build/Sync/Refresh/Query*/Notify
+// and RecomputePlaneCoords are the engine __thiscall leaves the level drives per
+// plane (RecomputePlaneCoords is matched in GameLevel.cpp; the rest reloc-mask).
+SIZE(CLevelPlane, 0x158);
+class CLevelPlane {
+public:
+    virtual i32 dummy0();
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor (array release)
+
+    void Build(LevelCoordRect* coords); // 0x161e80  re-place + recompute one plane
+    void Sync(i32 arg);                 // 0x162010  per-plane visit helper
+    void Refresh();                     // 0x163670  per-plane refresh hook
+    i32 QueryA();                       // 0x163300  main-plane query
+    i32 QueryB();                       // 0x163370  main-plane query
+    void Notify();                      // 0x163420  main-plane notify
+    void RecomputePlaneCoords();        // 0x161c90  wrap/clamp scaled coords (matched)
+
+    u8 pad_4[0x4]; // +0x04
+    u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
+    u8 pad_c[0x10 - 0xc];
+    float m_scaledX;   // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
+    float m_scaledY;   // +0x14  scroll origin Y
+    float m_scaleX;    // +0x18  X parallax factor
+    float m_scaleY;    // +0x1c  Y parallax factor
+    i32* m_tileGrid;   // +0x20  tile-id grid (row-indexed)
+    i32* m_colOffsets; // +0x24  per-row column base offsets
+    i32 m_width;       // +0x28  tile-grid width (LookupTile clamp)
+    i32 m_height;      // +0x2c  tile-grid height
+    i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
+    i32 m_wrapH;       // +0x34  tile count down
+    u8 pad_38[0x40 - 0x38];
+    i32 m_tileOriginX; // +0x40  out: near tile-origin X
+    i32 m_tileOriginY; // +0x44  out: near tile-origin Y
+    i32 m_tileExtentX; // +0x48  out: far tile-extent X
+    i32 m_tileExtentY; // +0x4c  out: far tile-extent Y
+    u8 pad_50[0x70 - 0x50];
+    i32 m_viewW;   // +0x70  viewport tiles across
+    i32 m_viewH;   // +0x74  viewport tiles down
+    i32 m_anchorX; // +0x78  view-anchor X
+    i32 m_anchorY; // +0x7c  view-anchor Y
+    i32 m_cap;     // +0x80
+    i32 m_originX; // +0x84  out: integer scaledX (snapped)
+    i32 m_originY; // +0x88  out: integer scaledY
+    i32 m_shiftX;  // +0x8c  tile->pixel shift X
+    i32 m_shiftY;  // +0x90  tile->pixel shift Y
+    u8 pad_94[0xb4 - 0x94];
+    char m_name[4];          // +0xb4  plane name (FindPlaneByName)
+    u8 pad_b8[0x158 - 0xb8]; // pad to the real plane size (0x158)
+};
+
+// The parse-source object passed to LoadFromSource: the canonical CParseSource
+// (include/Gruntz/ParseSource.h); only the pointer type appears here so a
+// forward decl suffices.
+class CParseSource;
+
+// CGameLevel::GetClassId (slot 8) type tag. Mirrors the canonical
+// LoadableClassId enum in <Gruntz/Loadable.h> (CLASSID_GAMELEVEL = 0x19); named
+// here rather than pulled in because this TU keeps its own (B)-form CLoadable
+// struct below (a second `class CLoadable` would ODR-clash the canonical one).
+// A named enumerator lowers to the same `mov eax,0x19` immediate (matching-neutral).
+enum LoadableClassId {
+    CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
+};
 
 // ---------------------------------------------------------------------------
-// CSeverusWorker - the engine base CGameLevel derives from (its methods live on
-// g_severusWorkerVtbl). The constructor (INLINE, in the header, so MSVC folds it
-// into the derived ctor and keeps the members-before-derived-vptr schedule)
-// stamps the base vftable into +0x00 and stores the three ctor args at
-// +0x04/+0x08/+0x0c. Non-polymorphic extra (no new vtable slots), so CGameLevel's
-// own vptr sits at +0x00 and its virtual slots are unchanged; the base merely
-// owns the +0x04..+0x0c data the base ctor writes.
+// CLoadable - the engine base CGameLevel derives from. Its 9-slot base vftable
+// is @0x5efc30 (the SAME class the canonical <Gruntz/Loadable.h> models; slots
+// verified against the retail vtable: [1] 0x155720 ??_G, [5] 0x155700 IsLoaded,
+// [7] 0x155740 Unload, [8] 0x154a00 GetClassId).
+//
+// (B)-FORM DEFERRAL (why this local struct, not the canonical CLoadable): this
+// models slot 1 as a REGULAR-virtual `ScalarDtor(u32)` so CGameLevel can OVERRIDE
+// it with an explicit `void* ScalarDtor(u32) OVERRIDE` whose ??_G body is RVA-
+// pinned at 0x1611c0 (100% exact). The canonical CLoadable derives from
+// CWapObj : Wap::CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
+// cannot be overridden by a non-dtor `ScalarDtor` in C++; switching CGameLevel to
+// the canonical (A) form would force cl to AUTO-generate the ??_G, which rva.h
+// cannot RVA-pin (it needs a source definition for the @llvm.global.annotations
+// carrier) -> the currently-100% ??_G would drop out of the matched set. So the
+// (B) leaf keeps its local base (documented deferral; a final-sweep item that
+// needs the whole CLoadable family flipped to the (B) explicit-ScalarDtor form).
+//
+// The INLINE ctor stores the three args (cl AUTO-stamps the base vptr
+// &??_7CLoadable - an orphan reloc-masked against retail 0x5efc30); the INLINE
+// dtor resets the fields then restamps the grand-base teardown vftable
+// (g_wapObjectDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
+// ctor/dtor, giving retail's classic two-phase vptr-store schedule. Field names
+// (m_04/m_08/m_0c) mirror the canonical CLoadable header.
 // ---------------------------------------------------------------------------
-extern void* g_severusWorkerBaseVtbl; // base (SeverusWorker) vftable
-extern void* g_severusWorkerDtorVtbl; // base vftable restored by ~CSeverusWorker (@0x5e8cb4)
+extern void* g_wapObjectDtorVtbl; // base vftable restored by ~CLoadable (@0x5e8cb4)
 
-// CSeverusWorker is POLYMORPHIC (it owns the engine SeverusWorker vtable
-// @0x5efc30): its inline ctor stamps that base vftable, which is why retail keeps
-// the base vptr store live across the derived member construction before
-// CGameLevel's ctor overwrites it with the derived vtable @0x5f0150 (the classic
-// two-phase vptr-store schedule). The vtable shape (v00..Reset) lives here;
-// CGameLevel overrides the whole interface to get its own vtable, leaving slot
-// numbering (Vfunc1C@+0x1c, Vfunc38/3C/40, Reset@+0x44) unchanged.
-struct CSeverusWorker {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void Vfunc1C(); // +0x1c  fail/reset hook
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void v2c();
-    virtual void v30();
-    virtual void v34();
-    virtual i32 Vfunc38(i32 arg1); // +0x38
-    virtual i32 Vfunc3C(i32 arg1); // +0x3c
-    virtual i32 Vfunc40(i32 arg1); // +0x40
-    virtual void Reset();          // +0x44
+struct CLoadable {
+    virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
+    virtual void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
+    virtual void v08();                  // [2] +0x08  engine thunk (0x0028ec)
+    virtual void v0c();                  // [3] +0x0c  engine thunk (0x00106e)
+    virtual void v10();                  // [4] +0x10  engine thunk (0x004034)
+    virtual i32 IsLoaded();              // [5] +0x14  CGameLevel overrides (0x161190)
+    virtual void v18();                  // [6] +0x18  engine thunk (0x001c08)
+    virtual i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
+    virtual i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
 
-    CSeverusWorker(i32 a1, i32 a2, i32 a3) {
-        *(void**)this = &g_severusWorkerBaseVtbl;
+    CLoadable(i32 a1, i32 a2, i32 a3) {
         m_04 = a2;
-        m_flags = a3;
-        m_owner = a1;
+        m_08 = a3;
+        m_0c = a1;
     }
     // The base-subobject destructor: resets the three base fields and restores the
-    // base-class vftable. INLINE (in the header) so it folds into ~CGameLevel after
-    // the member array dtors, exactly as the retail compiler emitted the base-dtor
-    // tail. Stamps a different table from the ctor (the dtor-vtable @0x5e8cb4).
-    ~CSeverusWorker() {
+    // grand-base teardown vftable. INLINE (in the header) so it folds into
+    // ~CGameLevel after the member array dtors, exactly as the retail compiler
+    // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
+    ~CLoadable() {
         m_04 = -1;
-        m_flags = 0;
-        m_owner = 0;
-        *(void**)this = &g_severusWorkerDtorVtbl;
+        m_08 = 0;
+        m_0c = 0;
+        *(void**)this = &g_wapObjectDtorVtbl;
     }
-    i32 m_04;    // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
-    i32 m_flags; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
-    i32 m_owner; // +0x0c  (ctor arg1; the owning context, checked nonzero by IsLoaded)
+    i32 m_04; // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
+    i32 m_08; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
+    i32 m_0c; // +0x0c  (ctor arg1; the owning context, checked nonzero by IsLoaded)
 };
 
 // ---------------------------------------------------------------------------
 // CGameLevel - the level container. Member offsets pinned from LoadWwd:
 //   +0x00 vtable           (slot 0x44 = the pre-load reset, slot 0x38 = LoadWwd)
-//   +0x08 m_flags          = WwdHeader::flags
+//   +0x08 m_08             = WwdHeader::flags
 //   +0x10 m_planeCtx       &m_planeCtx -> CPlane::Read 3rd arg (the shared ctx)
 //   +0x34 m_planes         CArray<CPlane*>  (m_data@+0x38, m_size@+0x3c)
 //   +0x3c m_planeCount     == m_planes.m_size (the running plane count/index)
@@ -139,72 +211,38 @@ struct CSeverusWorker {
 // in GameLevel.cpp; only the pointer type appears in the class below.
 struct ScrollTarget;
 
-class CGameLevel : public CSeverusWorker {
+class CGameLevel : public CLoadable {
 public:
-    // The vtable: LoadWwd is slot 0x38 (index 14) and the pre-load reset is slot
-    // 0x44 (index 17). We declare enough virtuals so `Reset` lands at offset 0x44.
-    // Several slots carry signatures the merged CDDrawLevelData methods dispatch
-    // through (Vfunc1C @+0x1c fail/reset hook; Vfunc38/3C/40 the load variants);
-    // the rest are external engine virtuals never called from this TU.
-    virtual void v00() OVERRIDE;
-    virtual void v04() OVERRIDE;
-    virtual void v08() OVERRIDE;
-    virtual void v0c() OVERRIDE;
-    virtual void v10() OVERRIDE;
-    virtual void v14() OVERRIDE;
-    virtual void v18() OVERRIDE;
-    virtual void Vfunc1C() OVERRIDE; // +0x1c  fail/reset hook
-    virtual void v20() OVERRIDE;
-    virtual void v24() OVERRIDE;
-    virtual void v28() OVERRIDE;
-    virtual void v2c() OVERRIDE;
-    virtual void v30() OVERRIDE;
-    virtual void v34() OVERRIDE;
-    // slot 0x38 (index 14) is LoadWwd itself; we keep it non-virtual below and let
-    // these dispatched-variant virtuals carry the slot numbering for Reset's offset.
-    virtual i32 Vfunc38(i32 arg1) OVERRIDE; // +0x38  load virtual (SetCoordsAndLoad38)
-    virtual i32 Vfunc3C(i32 arg1) OVERRIDE; // +0x3c  load virtual (SetCoordsAndLoad3C)
-    virtual i32 Vfunc40(i32 arg1) OVERRIDE; // +0x40  load virtual (SetCoordsAndLoad40)
-    // Pre-load reset (vtable slot 0x44 / index 17) - external engine virtual.
-    virtual void Reset() OVERRIDE;
+    // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
+    // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
+    // with those slots pointing at the matched functions; the engine-thunk base
+    // slots (0/2/3/4/6) are inherited declared-only from CLoadable. Slots 9..17
+    // are new virtuals CGameLevel adds. cl auto-stamps this vptr in the ctor (the
+    // derived phase of the two-phase store); VTBL(CGameLevel, 0x001f0150) binds it.
+    //
+    // The three SetCoordsAndLoadNN siblings copy *coords into m_planeCtx, stamp the
+    // default-extents block, then dispatch the corresponding load virtual (slot
+    // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
+    // run Unload (slot +0x1c, the fail/reset hook).
+    void* ScalarDtor(u32 flags) OVERRIDE; // [1]  +0x04  0x1611c0
+    i32 IsLoaded() OVERRIDE;              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
+    i32 Unload() OVERRIDE;                // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    i32 GetClassId() OVERRIDE;            // [8]  +0x20  0x1611b0  class type tag (0x19)
+    virtual i32 SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
+    virtual i32 SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords); // [10] +0x28  0x15ceb0
+    virtual i32 SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords); // [11] +0x2c  0x15cdf0
+    virtual i32 SetCoords(LevelCoordRect* coords);                    // [12] +0x30  0x15d0d0
+    virtual i32 SetCoordExtents(i32 w, i32 h);                        // [13] +0x34  0x15d030
+    virtual i32 LoadWwd(WwdHeader* hdr);           // [14] +0x38  0x15d280  1=ok 0=fail
+    virtual i32 LoadFromSource(CParseSource* arg); // [15] +0x3c  0x15d630
+    virtual i32 LoadFromFile(const char* path);    // [16] +0x40  0x15d500
+    virtual void
+    ReleaseChildren(); // [17] +0x44  0x15d680  pre-load reset (LoadWwd dispatches this)
 
     // Constructor: three args stored at +0x4/+0x8/+0xc; inits the array members,
     // the +0x10 sentinel and the +0xb0.. default-parameter block. (LevelCoordRect/
     // body in GameLevel.cpp.)
     CGameLevel(i32 a1, i32 a2, i32 a3);
-
-    // LoadWwd (vtable slot 0x38). Returns 1 on
-    // success, 0 on failure.
-    i32 LoadWwd(WwdHeader* hdr);
-
-    // --- merged from CDDrawLevelData: the matched leaves -----------------------
-    // Declared non-virtual (like LoadWwd) so the out-of-line defs in GameLevel.cpp
-    // compile; their bodies are what we match, not their slot numbers. LevelCoordRect
-    // is the file-scope coordinate record forward-declared above.
-    // The three SetCoordsAndLoadNN siblings copy *coords into m_planeCtx, stamp the
-    // default-extents block, then dispatch the corresponding load virtual (slot
-    // +0x38/+0x3c/+0x40); on a 0 result they run the +0x1c fail/reset hook.
-    i32 SetCoordsAndLoad38(i32 arg1, LevelCoordRect* coords);
-    i32 SetCoordsAndLoad3C(i32 arg1, LevelCoordRect* coords);
-    i32 SetCoordsAndLoad40(i32 arg1, LevelCoordRect* coords);
-    // Zeroes the min corner, stores (w-1,h-1) as the max corner, stamps the block.
-    i32 SetCoordExtents(i32 w, i32 h);
-    // Copies *coords into m_planeCtx, stamps the block, returns 1 (no dispatch).
-    i32 SetCoords(LevelCoordRect* coords);
-    // Readiness predicate: coord sentinel set + owner set + m_04 == -1 -> 1, else 0.
-    i32 IsLoaded();
-    // Full unload: releases every child, resets both arrays, resets the coord
-    // sentinel + main-plane fields, and zeroes the WwdHeader buffer.
-    i32 Unload();
-    // Releases every child + resets both arrays + the main-plane fields (no header zero).
-    void ReleaseChildren();
-    // Returns the class type tag (constant 0x19).
-    i32 GetClassId();
-    // Opens `path`, slurps it whole into a heap buffer, and feeds the buffer to the
-    // +0x38 load virtual. Returns 1 on success, 0 on any failure.
-    i32 LoadFromFile(const char* path);
-    // Drives a parse/load through `arg` (BeginParse/feed +0x38/EndParse).
-    i32 LoadFromSource(RemusParseSource* arg);
 
     // --- merged from the trace-discovered CGameLevel cluster -------------------
     // Tests a tile coord (x, y) against the bounds record. Free (cdecl) helper; the
@@ -273,7 +311,7 @@ public:
     // Forwards a method (vtable +0x28/+0x2c) across every plane.
     void NotifyAllPlanes();
 
-    // VisitVisible: when this level is flagged origin-fixed (m_flags & 1) walk ctx's
+    // VisitVisible: when this level is flagged origin-fixed (m_08 & 1) walk ctx's
     // object chain dispatching each object's +0x2c hook (above a depth cap) and Sync
     // the planes; otherwise Sync every plane and dispatch ctx's +0x28 hook. `visitor`
     // is the arg every dispatch receives; `ctx` owns the chain.
@@ -282,11 +320,6 @@ public:
     // String/state edit dispatch: arg1 selects a name get/set on `sink` (a
     // serializer), then forwards (arg2, arg2, arg3) to a level-resolve helper.
     i32 EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3);
-
-    // The scroll-state setter the clamp drivers tail into. Takes the level
-    // explicitly (the edit-state +0xe4 machine viewed as scroll x/y at +0x5c/+0x60).
-    // __stdcall (callee-cleans its 4 stack args: ret 0x10).
-    static i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
 
     // ScrollKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis scroll
     // dispatcher ApplyScroll fans brush-kinds 1..2 into. For each axis, when the
@@ -309,15 +342,12 @@ public:
     // nonzero result) the object's own +0x90 notifier, returning 1. 0 if none. ret 0xc.
     i32 BroadPhase(ScrollTarget* t, i32 candX, i32 candY);
 
-    // Destructor (vtable slot 1, the ~CGameLevel @0x1611e0). Stamps the derived
-    // vftable, runs the level cleanup (Unload), then the three array members destruct
-    // and ~CSeverusWorker restores the base subobject. Declared so the member dtors
-    // + EH frame fall out; the body (manual vtable stamps) is in the .cpp.
+    // Destructor (the ~CGameLevel @0x1611e0). cl auto-stamps the derived vftable at
+    // dtor entry (polymorphic), runs the level cleanup (Unload), then the three array
+    // members destruct and ~CLoadable restores the base subobject. Non-virtual;
+    // ScalarDtor (vtable slot 1) calls it. Declared so the member dtors + EH frame
+    // fall out.
     ~CGameLevel();
-
-    // The scalar-deleting destructor (vtable slot 1 thunk @0x1611c0): calls the
-    // destructor, then operator delete(this) when bit0 of the flag is set; returns this.
-    void* ScalarDtor(u32 flags);
 
 private:
     // The per-plane reader (WwdFile::ReadPlane). Same body as the one in
@@ -349,12 +379,12 @@ private:
 
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
-    // CSeverusWorker members (m_04/m_flags/m_owner); the plane-read ctx begins at +0x10.
-    LevelCoordRect m_planeCtx;     // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
-    CByteArray m_array20;          // +0x20  (built by the ctor; EH state 0)
-    CLevelPtrArray m_planes;       // +0x34  (m_size@+0x3c == m_planeCount; EH state 1)
-    CLevelPtrArray m_imageSets;    // +0x48  (EH state 2)
-    CPlane* m_mainPlane;           // +0x5C
+    // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
+    LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
+    CByteArray m_array20;      // +0x20  (built by the ctor; EH state 0)
+    CDWordArray m_planes; // +0x34  CLevelPlane* as DWORD (m_size@+0x3c == m_planeCount; EH state 1)
+    CDWordArray m_imageSets;       // +0x48  CImageSet* as DWORD (EH state 2)
+    CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_scrollStepX;             // +0x64  per-axis scroll step limit (ClampScroll)
     i32 m_scrollStepY;             // +0x68
@@ -365,5 +395,13 @@ public:
     i32 m_d0, m_d4, m_d8, m_dc;    // +0xD0  individual roles unproven - left as offsets)
     WwdHeader m_header;            // +0xE0  (1524 B copy)
 };
+
+// ApplyScroll (@0x00167130): the scroll-state setter the clamp/edit drivers tail
+// into. Takes the level explicitly (the edit-state +0xe4 machine viewed as scroll
+// x/y at +0x5c/+0x60) and is __stdcall (callee-cleans its 4 stack args: ret 0x10).
+// A free helper, not a CGameLevel member: it is a __stdcall callee (the ecx trace's
+// class owner is stale for those) and EditSwitch calls it with an explicit level
+// (ApplyScroll(target, ...)), not a `this` dispatch.
+i32 __stdcall ApplyScroll(CGameLevel* lvl, i32 a, i32 b, i32 c);
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

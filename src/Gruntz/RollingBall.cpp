@@ -37,10 +37,12 @@
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/RollingBall.h>     // CRollingBall : CUserLogic (+ the /GX CString temps)
 
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
+#include <Globals.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
@@ -50,37 +52,12 @@ struct CRollingBallActEntry {
     RollingBallHandler m_fn;
 };
 
-// The class's activation-coordinate registry singleton (@0x6461b0). Same
-// [2000,2010] fixed-range shape as CBehindCandyActReg, built by the shared
-// registry ctor (0x408710, __thiscall ret 8). ResolveEntry folds the VActLookup
-// archetype; the slow Insert is __thiscall on m_coll2.
-struct CRollingBallActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
-
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The class's activation-coordinate registry singleton (@0x6461b0): the fixed
+// [2000,2010] range built by the shared registry ctor (0x408710). CRollingBallActReg
+// is the shared <Gruntz/ActReg.h> CActReg archetype (was a per-file duplicate of its
+// layout + ResolveEntry); it keeps its own placeholder name so the DATA-pinned
+// global symbol is unchanged.
+struct CRollingBallActReg : public CActReg {};
 DATA(0x002461b0)
 extern CRollingBallActReg g_rollingBallActReg; // 0x6461b0
 
@@ -161,7 +138,7 @@ struct CRbCtorObj {
     char m_pad78[0x7c - 0x78];
     CRbCtorSub* m_7c; // +0x7c
     char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118 active flag (snapshot into m_90)
+    i32 m_118; // +0x118 active flag (snapshot into m_explodeWindowLo)
     char m_pad11c[0x124 - 0x11c];
     i32 m_124; // +0x124 place mode (== 1 -> no time bonus)
     char m_pad128[0x12c - 0x128];
@@ -172,7 +149,7 @@ struct CRbCtorObj {
     i32 m_14c; // +0x14c
     i32 m_150; // +0x150
     char m_pad154[0x194 - 0x154];
-    void* m_194; // +0x194 sprite/name record (dir name at +0x24)
+    char* m_194; // +0x194 sprite/name record (dir name at +0x24); char* like CGameObject::m_194
     char m_pad198[0x1b4 - 0x198];
     i32 m_1b4; // +0x1b4 cycle-geometry id
 };
@@ -181,7 +158,7 @@ struct CRbCtorObj {
 // m_118 the has-window gate; m_134 the mode discriminator (the time-bonus gate).
 struct CRbReg {
     char m_pad00[0x118];
-    i32 m_118; // +0x118
+    i32 m_isEasyMode; // +0x118
     char m_pad11c[0x134 - 0x11c];
     i32 m_134; // +0x134
 };
@@ -189,7 +166,6 @@ struct CRbReg {
 // 32.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea3e0
 // (?g_slimeSpeedNum@@3NB; the consolidated global is pinned via <Globals.h>, so
 // reference it as a plain extern - the same way KitchenSlime's LoadSprites does).
-extern const double g_slimeSpeedNum;
 
 // g_buteTree (the "A" node store) comes from <Gruntz/ActNameRegistry.h>; g_buteMgr
 // (the per-tile-time GetDwordDef) from <Bute/ButeMgr.h> via UserLogic.h.
@@ -210,23 +186,23 @@ extern const double g_slimeSpeedNum;
 // position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
-    m_88 = 0;
-    m_90 = 0;
-    m_8c = 0;
-    m_94 = 0;
-    m_40 = m_38->m_1b4;
+    m_explodeStartLo = 0;
+    m_explodeWindowLo = 0;
+    m_explodeStartHi = 0;
+    m_explodeWindowHi = 0;
+    m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_30 = m_14->m_1c;
-    m_14->m_1c = g_buteTree.Find("A");
-    m_38->m_08 |= 0x2000002;
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 0x2000002;
 
-    CRbCtorObj* o = (CRbCtorObj*)m_10;
+    CRbCtorObj* o = (CRbCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
     i32 snapY = (o->m_60 & ~0x1f) + 0x10;
     o->m_5c = snapX;
-    m_60 = (double)snapX;
+    m_subX = (double)snapX;
     o->m_60 = snapY;
-    m_68 = (double)snapY;
+    m_subY = (double)snapY;
     if (o->m_74 != snapY + 0x186a0) {
         o->m_74 = snapY + 0x186a0;
         o->m_08 |= 0x20000;
@@ -235,24 +211,24 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     CRbCtorObj* obj38 = (CRbCtorObj*)m_38;
     if (obj38->m_194 != 0) {
         CRbMiniStr name;
-        name = (char*)obj38->m_194 + 0x24;
+        name = obj38->m_194 + 0x24;
         const char* s = name.m_buf;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;
-            m_70 = 0;
-            m_74 = -1;
+            m_stepDirX = 0;
+            m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
             o->m_12c = 2;
-            m_70 = 1;
-            m_74 = 0;
+            m_stepDirX = 1;
+            m_stepDirY = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
             o->m_12c = 3;
-            m_70 = 0;
-            m_74 = 1;
+            m_stepDirX = 0;
+            m_stepDirY = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
             o->m_12c = 4;
-            m_70 = -1;
-            m_74 = 0;
+            m_stepDirX = -1;
+            m_stepDirY = 0;
         }
     }
 
@@ -261,24 +237,24 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CRbReg* reg = (CRbReg*)g_64556c;
-    if (reg->m_118 != 0 && reg->m_134 == 1 && o->m_124 != 1) {
+    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
-    m_90 = o->m_118;
-    m_94 = 0;
-    m_88 = g_645588;
-    m_8c = 0;
-    m_78 = snapY;
-    m_7c = snapY;
-    m_80 = 0;
-    m_84 = 0;
-    m_58 = g_slimeSpeedNum / (double)(i64)(u32)time;
+    m_explodeWindowLo = o->m_118;
+    m_explodeWindowHi = 0;
+    m_explodeStartLo = g_645588;
+    m_explodeStartHi = 0;
+    m_targetX = snapY;
+    m_targetY = snapY;
+    m_explodeLatch = 0;
+    m_fallLatch = 0;
+    m_moveSpeed = g_slimeSpeedNum / (double)(i64)(u32)time;
     o->m_144 = 0;
     o->m_14c = 0;
     o->m_148 = 0;
     o->m_150 = 0;
-    m_98 = 0;
-    m_9c = 0;
+    m_moveDeltaLo = 0;
+    m_moveDeltaHi = 0;
 }
 
 // CRollingBall::InitActReg @0x0afd60 - construct the class's activation-coordinate
@@ -572,11 +548,11 @@ i32 CRollingBall::Update() {
 // The +0x88/+0x90 explosion-timing pair is streamed first, then the move/state
 // field list (+0x58..+0x98).
 RVA(0x000b0fe0, 0x1ab)
-i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
+i32 CRollingBall::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain((i32)ar, tag, c, d)) {
         return 0;
     }
-    if (!((CRbSerialSub34*)((char*)this + 0x34))->Chain((i32)ar, tag, c, d)) {
+    if (!((CSerialObjRef*)((char*)this + 0x34))->Chain(ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
 
@@ -603,27 +579,33 @@ i32 CRollingBall::Serialize(CRbArchive* ar, i32 tag, i32 c, i32 d) {
     // The move/state field list (+0x58..+0x98).
     switch (tag) {
         case 4:
-            ar->Write(&m_58, 8);
-            ar->Write(&m_60, 8);
-            ar->Write(&m_68, 8);
-            ar->Write(&m_70, 4);
-            ar->Write(&m_74, 4);
-            ar->Write(&m_78, 8);
-            ar->Write(&m_80, 4);
-            ar->Write(&m_84, 4);
-            ar->Write(&m_98, 8);
+            ar->Write(&m_moveSpeed, 8);
+            ar->Write(&m_subX, 8);
+            ar->Write(&m_subY, 8);
+            ar->Write(&m_stepDirX, 4);
+            ar->Write(&m_stepDirY, 4);
+            ar->Write(&m_targetX, 8);
+            ar->Write(&m_explodeLatch, 4);
+            ar->Write(&m_fallLatch, 4);
+            ar->Write(&m_moveDeltaLo, 8);
             break;
         case 7:
-            ar->Read(&m_58, 8);
-            ar->Read(&m_60, 8);
-            ar->Read(&m_68, 8);
-            ar->Read(&m_70, 4);
-            ar->Read(&m_74, 4);
-            ar->Read(&m_78, 8);
-            ar->Read(&m_80, 4);
-            ar->Read(&m_84, 4);
-            ar->Read(&m_98, 8);
+            ar->Read(&m_moveSpeed, 8);
+            ar->Read(&m_subX, 8);
+            ar->Read(&m_subY, 8);
+            ar->Read(&m_stepDirX, 4);
+            ar->Read(&m_stepDirY, 4);
+            ar->Read(&m_targetX, 8);
+            ar->Read(&m_explodeLatch, 4);
+            ar->Read(&m_fallLatch, 4);
+            ar->Read(&m_moveDeltaLo, 8);
             break;
     }
     return 1;
 }
+SIZE_UNKNOWN(CRbCtorObj);
+SIZE_UNKNOWN(CRbCtorSub);
+SIZE_UNKNOWN(CRbMiniStr);
+SIZE_UNKNOWN(CRbReg);
+SIZE_UNKNOWN(CRollingBallActEntry);
+SIZE_UNKNOWN(CRollingBallActReg);

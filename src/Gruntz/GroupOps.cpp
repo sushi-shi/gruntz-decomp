@@ -13,35 +13,28 @@
 // leaves (map lookups, the centre helper, the diagnostics sink) are external /
 // reloc-masked.
 #include <rva.h>
+#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
 
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
 // ===========================================================================
-// The view-centre helper reached as g_gameReg->m_2c->Center(x, y) (0x2e28 thunk).
+// The view-centre helper reached as g_gameReg->m_curState->Center(x, y) (0x2e28 thunk).
 struct CCenterTarget {
     i32 Center(i32 x, i32 y); // 0x2e28
 };
-// The map dimensions: gameReg->m_30->m_24->m_5c -> {width @0x30, height @0x34}.
-struct CMapDims {
-    char m_pad00[0x30];
-    i32 m_30; // +0x30 width
-    i32 m_34; // +0x34 height
-};
+// The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
+// CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
 struct CMapHolderB {
     char m_pad00[0x5c];
-    CMapDims* m_5c; // +0x5c
+    CViewport* m_5c; // +0x5c
 };
 struct CMapHolderA {
     char m_pad00[0x24];
     CMapHolderB* m_24; // +0x24
 };
-struct CGameRegSel {
-    char m_pad00[0x2c];
-    CCenterTarget* m_2c; // +0x2c
-    CMapHolderA* m_30;   // +0x30
-};
 DATA(0x0024556c)
-extern CGameRegSel* g_gameRegSel; // 0x64556c
+extern CGameRegistry* g_gameRegSel; // 0x64556c
 
 // A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
 struct CSelGrunt {
@@ -50,7 +43,7 @@ struct CSelGrunt {
     i32 m_60; // +0x60 y
 };
 // A grid cell: +0x10 the grunt, +0x1ec/+0x1f0 the latch values.
-struct CGridCell {
+struct CSelGridCell {
     char m_pad00[0x10];
     CSelGrunt* m_10; // +0x10
     char m_pad14[0x1ec - 0x14];
@@ -70,9 +63,17 @@ struct CSelNode {
 
 struct CGroupSel {
     char m_pad00[0x1c];
-    CGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
-    // ... the latch / state fields below live well past the grid; reached by
-    // offset so the modeled array stays size-1.
+    CSelGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
+    // The latch / state fields below live well past the grid; the modeled grid
+    // stays size-1 (indexed past its end) so these keep their true offsets.
+    char m_pad20[0x230 - 0x20];
+    i32 m_230; // +0x230  select-latch gate
+    i32 m_234; // +0x234  latched x
+    i32 m_238; // +0x238  latched y
+    char m_pad23c[0x244 - 0x23c];
+    CSelNode* m_244; // +0x244  selection list head
+    char m_pad248[0x24c - 0x248];
+    i32 m_24c;                       // +0x24c  single-selection flag
     i32 CenterOnGroup(i32 doSelect); // 0x7cf40
     i32 TrySelect(i32 a, i32 b);     // 0x33aa
     void Commit();                   // 0x3d1e
@@ -84,20 +85,20 @@ struct CGroupSel {
 // residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
 RVA(0x0007cf40, 0x12e)
 i32 CGroupSel::CenterOnGroup(i32 doSelect) {
-    CSelNode* n = *(CSelNode**)((char*)this + 0x244);
+    CSelNode* n = m_244;
     if (n == 0) {
         return 0;
     }
-    CMapDims* dims = g_gameRegSel->m_30->m_24->m_5c;
-    i32 minX = dims->m_30 - 1;
-    i32 minY = dims->m_34 - 1;
+    CViewport* dims = (CViewport*)g_gameRegSel->m_world->m_24->m_5c;
+    i32 minX = dims->m_worldWidth - 1;
+    i32 minY = dims->m_worldHeight - 1;
     i32 maxX = 0;
     i32 maxY = 0;
     i32 count = 0;
     do {
         CSelKey* k = n->m_8;
         n = n->m_next;
-        CGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
+        CSelGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
         if (cell != 0) {
             count++;
             CSelGrunt* g = cell->m_10;
@@ -119,17 +120,17 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     } while (n != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = g_gameRegSel->m_2c->Center(cx, cy);
-    if (r != 0 && count == 1 && *(i32*)((char*)this + 0x24c) == 1) {
-        CSelKey* head = (*(CSelNode**)((char*)this + 0x244))->m_8;
-        CGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
+    i32 r = ((CCenterTarget*)g_gameRegSel->m_curState)->Center(cx, cy);
+    if (r != 0 && count == 1 && m_24c == 1) {
+        CSelKey* head = m_244->m_8;
+        CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
         if (cell2 != 0) {
             i32 v1f0 = cell2->m_1f0;
             i32 v1ec = cell2->m_1ec;
             if (TrySelect(v1ec, v1f0)) {
-                *(i32*)((char*)this + 0x234) = v1ec;
-                *(i32*)((char*)this + 0x238) = v1f0;
-                *(i32*)((char*)this + 0x230) = 1;
+                m_234 = v1ec;
+                m_238 = v1f0;
+                m_230 = 1;
                 Commit();
             }
         }
@@ -141,27 +142,47 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
 // Broadcast (0x112080)
 // ===========================================================================
 // The diagnostics sink reached as g_gameReg->Report(id, line) (0x346d thunk).
-struct CGameRegDiag {
-    i32 Report(i32 id, i32 line); // 0x346d
-};
 DATA(0x0024556c)
-extern CGameRegDiag* g_gameRegDiag; // 0x64556c
+extern CGameRegistry* g_gameRegDiag; // 0x64556c
 
-// A resolved map node: virtual prepare at slot +0x0c, +0x10 the key, +0x14 a flag.
+// A resolved map node (FOREIGN engine object): only vtable slot +0x0c (prepare) is
+// dispatched; slots 0/4/8 are unreconstructed engine code. Honest model = manual
+// vptr into a typed vtable struct naming ONLY the used slot as a 4-byte thiscall PMF
+// + char pad, so `CallPrepare()` still lowers to `mov eax,[o]; mov ecx,o; call [eax+0xc]`.
+struct CFindNodeVtbl;
 struct CFindNode {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c(); // +0x0c prepare
-    char m_pad10[0x10 - 0x04];
-    i32 m_10; // +0x10 key
-    i32 m_14; // +0x14 flag
+    CFindNodeVtbl* m_vtbl; // +0x00
+    char m_pad04[0x10 - 0x04];
+    i32 m_10;           // +0x10 key
+    i32 m_14;           // +0x14 flag
+    void CallPrepare(); // vtbl +0x0c
 };
-// An inner-list member: virtual destroy at slot 0, non-virtual Match (0x1fa5).
+typedef void (CFindNode::*FindNodeFn)();
+struct CFindNodeVtbl {
+    char m_pad00[0x0c];
+    FindNodeFn Prepare; // +0x0c
+};
+SIZE_UNKNOWN(CFindNodeVtbl);
+inline void CFindNode::CallPrepare() {
+    (this->*(m_vtbl->Prepare))();
+}
+// An inner-list member (FOREIGN): virtual destroy at slot 0 (unreconstructed), plus a
+// non-virtual Match (0x1fa5). Honest model = manual vptr into a typed vtable naming the
+// one dispatched slot as a 4-byte thiscall PMF.
+struct CBcastMemberVtbl;
 struct CBcastMember {
-    virtual void v00(); // +0x00 destroy
-    i32 Match(i32 key); // 0x1fa5
+    CBcastMemberVtbl* m_vtbl; // +0x00
+    i32 Match(i32 key);       // 0x1fa5
+    void CallDestroy();       // vtbl +0x00 slot 0
 };
+typedef void (CBcastMember::*BcastMemberFn)();
+struct CBcastMemberVtbl {
+    BcastMemberFn Destroy; // +0x00 slot 0
+};
+SIZE_UNKNOWN(CBcastMemberVtbl);
+inline void CBcastMember::CallDestroy() {
+    (this->*(m_vtbl->Destroy))();
+}
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00
     void* m_pad04;
@@ -205,12 +226,12 @@ i32 CGroupBroadcast::Broadcast() {
             return 0;
         }
         if (node->m_10 != m_10 && node->m_14 != 0) {
-            node->v0c();
+            node->CallPrepare();
             i32 any = 0;
             for (CBcastListNode* it = m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
                 if (o != 0 && o->Match(node->m_10)) {
-                    o->v00();
+                    o->CallDestroy();
                     counter++;
                     any = 1;
                 }
@@ -229,3 +250,19 @@ i32 CGroupBroadcast::Broadcast() {
     } while (!done);
     return 1;
 }
+
+SIZE_UNKNOWN(CCenterTarget);
+SIZE_UNKNOWN(CMapHolderB);
+SIZE_UNKNOWN(CMapHolderA);
+SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CSelGrunt);
+SIZE_UNKNOWN(CSelGridCell);
+SIZE_UNKNOWN(CSelKey);
+SIZE_UNKNOWN(CSelNode);
+SIZE_UNKNOWN(CGroupSel);
+SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CFindNode);
+SIZE_UNKNOWN(CBcastMember);
+SIZE_UNKNOWN(CBcastListNode);
+SIZE_UNKNOWN(CBcastMap);
+SIZE_UNKNOWN(CGroupBroadcast);

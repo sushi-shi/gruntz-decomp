@@ -3,7 +3,7 @@
 // CHash<T> over a non-template key-agnostic base; the two byte-identical
 // instantiations are modeled as CHashBase + CHash ("_a") / CHashB ("_b"). See
 // include/Bute/Hash.h for the layout + the call-graph evidence. Recovered from
-// the trace group "ClassUnknown_13" (callers all in the Remus parser region).
+// the trace group "ClassUnknown_13" (callers all in the ButeMgr parser region).
 #include <rva.h>
 
 #include <Bute/Hash.h>
@@ -13,48 +13,45 @@
 // ---------------------------------------------------------------------------
 
 // RemoveAll (0x184a40): array-delete the bucket array. The count cookie sits one
-// word before m_buckets; each 16-byte slot's dtor is a no-op; RezFree the cookie.
+// word before m_buckets (the RezAlloc header); each 16-byte slot's dtor is a
+// no-op; RezFree the cookie. The cookie read is a deliberate alloc-header offset.
 RVA(0x00184a40, 0x27)
 void CHashBase::RemoveAll() {
     if (m_buckets) {
         u32* cookie = (u32*)((char*)m_buckets - 4);
-        Tm_DestroyArray(m_buckets, 0x10, (i32)*cookie, (void*)&CHashSlot_Dtor);
+        Tm_DestroyArray(m_buckets, 0x10, *cookie, &CHashSlot_Dtor);
         RezFree(cookie);
     }
 }
 
-// Insert (0x184a70): ask the entry for its bucket index (the slot-0 virtual
-// hash), stamp the owning table (+0xc) and the bucket (+0x10) into the entry,
-// then splice the biased node (entry+4) into the bucket's chain. The `?:` keeps
-// the null-check `lea ecx,[esi+4]/xor ecx,ecx` even though the engine never feeds
-// a null entry here.
+// Insert (0x184a70): ask the element for its bucket index (the slot-0 virtual
+// hash), stamp the owning table (+0xc) and the bucket (+0x10), then splice the
+// chain node (element+4) into the bucket's chain. The `?:` keeps the null-check
+// `lea ecx,[esi+4]/xor ecx,ecx` even though the engine never feeds a null node.
+// @early-stop
+// SIB base/index coin-flip (99.55%): retail `lea [eax+ecx+8]` (idx<<4 as base) vs
+// cl `lea [ecx+eax+8]` (m_buckets as base); operand-typing/reorder do not flip it.
 RVA(0x00184a70, 0x34)
-void CHashBase::Insert(CHashInsertNode* node) {
+void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;
     u32 idx = node->Hash();
     node->m_bucket = idx;
-    void* biased = node ? (void*)((char*)node + 4) : 0;
-    CHashSlotList* slot = (CHashSlotList*)((idx << 4) + (char*)m_buckets + 8);
-    slot->Link(biased);
+    CHashLink* biased = node ? &node->m_link : 0;
+    m_buckets[idx].m_chain.Link(biased);
 }
 
-// Remove (0x184ab0): unlink `entry` (its biased node = entry+4) from the owning
-// bucket's intrusive {head,tail} chain.
+// Remove (0x184ab0): unlink `entry` (its chain node = &entry->m_link) from the
+// owning bucket's intrusive {head,tail} chain.
 RVA(0x00184ab0, 0x25)
-void CHashBase::Remove(CHashEntry* entry) {
-    void* node = entry ? (void*)((char*)entry + 4) : 0;
-    CHashSlotList* slot = (CHashSlotList*)((entry->m_bucket << 4) + (char*)m_buckets + 8);
-    slot->Unlink(node);
+void CHashBase::Remove(CHashElement* entry) {
+    CHashLink* node = entry ? &entry->m_link : 0;
+    m_buckets[entry->m_bucket].m_chain.Unlink(node);
 }
 
-// Lookup (0x184b40): chain head for bucket `idx`, biased back to the entry, or 0.
+// Lookup (0x184b40): chain head for bucket `idx`, biased back to the element, or 0.
 RVA(0x00184b40, 0x1d)
-CHashEntry* CHashBase::Lookup(u32 idx) {
-    void* head = m_buckets[idx].m_head;
-    if (head) {
-        return (CHashEntry*)((char*)head - 4);
-    }
-    return 0;
+CHashElement* CHashBase::Lookup(u32 idx) {
+    return FromLink(m_buckets[idx].m_chain.m_head);
 }
 
 // ---------------------------------------------------------------------------
@@ -78,21 +75,21 @@ u32 CHash::HashStr(const char* s) {
 
 // Walk (0x13c270): hash the key, look up the bucket chain, scan for a matching
 // record. `ci` selects _strcmpi over the record key ([record+0]) vs the inline
-// byte-loop strcmp; on a match returns the record ([entry+0x14]).
+// byte-loop strcmp; on a match returns the record ([element+0x14]). The record's
+// first word is its key (a genuinely heterogeneous payload, so read via void*).
 RVA(0x0013c270, 0xca)
 void* CHash::Walk(const char* name, i32 ci) {
     if (!name) {
         return 0;
     }
-    CHashEntry* e = Lookup(HashStr(name));
+    CHashElement* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
             const char* key = *(const char**)e->m_record;
             if (_strcmpi(key, name) == 0) {
                 return e->m_record;
             }
-            CHashEntry* n = (CHashEntry*)e->m_next;
-            e = n ? (CHashEntry*)((char*)n - 4) : n;
+            e = FromLink(e->m_link.m_next);
         }
         return 0;
     }
@@ -101,8 +98,7 @@ void* CHash::Walk(const char* name, i32 ci) {
         if (strcmp(key, name) == 0) {
             return e->m_record;
         }
-        CHashEntry* n = (CHashEntry*)e->m_next;
-        e = n ? (CHashEntry*)((char*)n - 4) : n;
+        e = FromLink(e->m_link.m_next);
     }
     return 0;
 }
@@ -117,13 +113,12 @@ u32 CHash::HashInt(u32 key) {
 // record whose key int ([record+0]) equals `key`.
 RVA(0x0013c360, 0x47)
 void* CHash::FindInt(u32 key) {
-    CHashEntry* e = Lookup(HashInt(key));
+    CHashElement* e = Lookup(HashInt(key));
     while (e) {
         if (*(u32*)e->m_record == key) {
             return e->m_record;
         }
-        CHashEntry* n = (CHashEntry*)e->m_next;
-        e = n ? (CHashEntry*)((char*)n - 4) : n;
+        e = FromLink(e->m_link.m_next);
     }
     return 0;
 }
@@ -153,15 +148,14 @@ void* CHashB::Walk(const char* name, i32 ci) {
     if (!name) {
         return 0;
     }
-    CHashEntry* e = Lookup(HashStr(name));
+    CHashElement* e = Lookup(HashStr(name));
     if (ci) {
         while (e) {
             const char* key = *(const char**)e->m_record;
             if (_strcmpi(key, name) == 0) {
                 return e->m_record;
             }
-            CHashEntry* n = (CHashEntry*)e->m_next;
-            e = n ? (CHashEntry*)((char*)n - 4) : n;
+            e = FromLink(e->m_link.m_next);
         }
         return 0;
     }
@@ -170,8 +164,7 @@ void* CHashB::Walk(const char* name, i32 ci) {
         if (strcmp(key, name) == 0) {
             return e->m_record;
         }
-        CHashEntry* n = (CHashEntry*)e->m_next;
-        e = n ? (CHashEntry*)((char*)n - 4) : n;
+        e = FromLink(e->m_link.m_next);
     }
     return 0;
 }

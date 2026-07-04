@@ -5,7 +5,22 @@
 #define STATUSBARITEM_H
 
 #include <Ints.h>
+#include <rva.h>
 
+// TWO-VIEW SPLIT (genuinely cannot merge to one C++ spelling): this header is the
+// FRAMELESS view - the small 2-virtual inline-ctor base that the ctor-side/builder
+// TUs (SBI_RectOnly.cpp, SBI_Image.cpp, CStatusBarMgr.h) use so MSVC5 FOLDS the tiny
+// ctor at each instantiation with no /GX frame. <Gruntz/SbiDtorChain.h> is the CHAIN
+// view - the full 11-virtual 0x60-byte grand-base with an INLINE DtorStatus dtor that
+// the *Eh.cpp dtor TUs use so the multilevel destructor chain + /GX EH frame emits.
+// The two are NEVER co-included (verified) precisely because one class cannot be both:
+// a class carrying the inline DtorStatus dtor + 11 virtuals would force the ctor-side
+// TUs to inline that dtor (a destructible-base /GX frame retail does not have there),
+// and a 2-virtual declared-dtor class cannot emit the dtor chain. Same retail class,
+// two deliberate reconstruction views. (StatusBarItem.cpp + StatusBarGameMenu.cpp add
+// two further LABELING-DEVICE redefs whose class NAME must stay "CStatusBarItem" so
+// their ctor-call symbols pair with the 0x1005d0 ctor.)
+//
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family. One class, one definition.
 //
@@ -30,15 +45,25 @@ struct SbiRect {
     i32 m_8; // +0x08 (rel +0x1c)
     i32 m_c; // +0x0c (rel +0x20)
 };
+SIZE_UNKNOWN(SbiRect);
 
 class CStatusBarItem {
 public:
+    // The ctor is INLINE in every builder/ctor-side TU (so the derived CSBI_RectOnly
+    // folds it). The standalone complete-object ctor COMDAT (0x1005d0) is labeled by
+    // src/Gruntz/StatusBarItem.cpp, which #defines SBI_ITEM_OWN_CTOR to take the
+    // out-of-line declaration + supply the RVA-keyed body (mirrors SbiDtorChain.h's
+    // SBI_OWN_*_DTOR device); NOT a second class.
+#ifdef SBI_ITEM_OWN_CTOR
+    CStatusBarItem();
+#else
     CStatusBarItem() {
         m_4 = 0;
         m_8 = 0;
         m_24 = 0;
         m_28 = 0;
     }
+#endif
     virtual ~CStatusBarItem();
     virtual i32 SbiVfunc0();
 
@@ -52,5 +77,6 @@ public:
     i32 m_24;         // +0x24  Setup arg2
     i32 m_28;         // +0x28
 };
+SIZE_UNKNOWN(CStatusBarItem);
 
 #endif // STATUSBARITEM_H

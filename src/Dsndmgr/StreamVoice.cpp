@@ -1,61 +1,47 @@
 // StreamVoice.cpp - the per-stream voice wrapper (Dsndmgr module,
 // C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable 0x5ef6d8 + feeder-override
-// 0x5ef6e0). It is the 0xb0-byte DirectSoundMgr-derived buffer wrapper RezAlloc'd
-// + constructed by SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10 holds
-// the owning SoundStream (m_owner), +0x6c is the embedded streaming feeder
+// 0x5ef6e0). It is the 0xb0-byte DirectSoundMgr-derived buffer wrapper (operator
+// new(0xb0)) constructed by SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10
+// holds the owning SoundStream (m_owner), +0x6c is the embedded streaming feeder
 // sub-object (whose vptr the voice overrides to 0x5ef6e0), and the standard
-// DirectSoundMgr base fields (m_3c the avg-bytes divisor) come from below +0x6c.
-//
-// The trace conflated this with the StreamFeeder ctor at 0x1375b0 ("MallocCtor_
-// 1375b0") and grouped four sibling methods under it; the distinct vtable
-// (0x5ef6d8 voice / 0x5ef6e0 feeder-override) proves the voice is its own class.
-// Field names are placeholders; offsets + emitted bytes are load-bearing.
+// DirectSoundMgr base fields (m_avgBytesPerSec) come from below +0x6c.
+#include <Dsndmgr/SoundStream.h> // the owning SoundStream (m_owner): ParseWave + m_initialized
 #include <Dsndmgr/StreamVoice.h>
 #include <Win32.h>
 #include <rva.h>
 
-namespace {
-
-    // The voice's retail primary vftable (0x5ef6d8, restamped by the dtor) and the
-    // feeder-override vftable (0x5ef6e0, stamped over the embedded feeder by the
-    // ctor) - transitional reloc-masked DIR32 stores while the voice's virtuals
-    // (its scalar-deleting dtor 0x137630 + the feeder-override slots 0x537380..) live
-    // in other TUs, so the class stays non-polymorphic and the compiler emits no
-    // vtable of its own.
-    DATA(0x001ef6d8)
-    extern void* const g_StreamVoiceVtbl[];
-    DATA(0x001ef6e0)
-    extern void* const g_StreamVoiceFeederVtbl[];
-
-} // namespace
+// StreamVoice is a REAL polymorphic class (its lone virtual is the destructor, see
+// StreamVoice.h). cl manages the vptr - it auto-stamps ??_7StreamVoice at ctor
+// entry and auto-resets it at dtor entry (was the manual voice-vptr DIR32 stores).
 
 // ---------------------------------------------------------------------------
-// StreamVoice::StreamVoice (0x1375b0, __thiscall, /GX EH frame). Construct the
-// DirectSoundMgr base + the embedded feeder, restamp both vptrs to the voice's
-// own tables, cache the two ctor args (m_64/m_60) and clear m_68.
+// StreamVoice::StreamVoice (__thiscall, /GX EH frame). Run the DirectSoundMgr
+// base init + construct the embedded feeder, cache the two ctor args (a->+0x60,
+// b->+0x64) and clear the position (+0x68).
 // @early-stop
 // EH-ctor wall (docs/patterns/eh-ctor-vptr-store-plateau.md): the base-ctor +
 // feeder-ctor calls, both vptr restamps, and the field stores are byte-exact, but
 // the /GX ctor-in-flight EH frame retail emits for the non-trivial base subobject
-// is unreachable while the class is modeled non-polymorphically (manual vptr
-// stamps, no real base/member dtors). Defer to the final sweep once the whole
+// is unreachable while the flat class can only model the base run as reloc-masked
+// method calls (no real base/member dtors). Defer to the final sweep once the whole
 // Dsndmgr class family is modeled.
 RVA(0x001375b0, 0x77)
 StreamVoice::StreamVoice(IDirectSoundBufferZ* buf, DirectSoundMgr* owner, i32 a, i32 b) {
+    // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
     BaseInit(buf, owner);
-    *(void**)this = (void*)g_StreamVoiceVtbl;
-    m_64 = a;
-    *(void**)&m_feeder = (void*)g_StreamVoiceFeederVtbl;
-    m_60 = b;
-    m_68 = 0;
+    m_streamArgB = b;
+    // m_feeder (StreamVoiceFeeder) is cl-constructed (0x5ef6f0 then 0x5ef6e0) as a
+    // member before this body - the manual feeder-override store is gone.
+    m_streamArgA = a;
+    m_streamPos = 0;
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::SetSource (0x1374c0, __thiscall, 1 arg). Ask the owning
+// StreamVoice::SetSource (__thiscall, 1 arg). Ask the owning
 // SoundStream (m_owner) to parse the RIFF/WAVE source into a scratch
 // WAVEFORMATEX + data (off, len), then arm the embedded feeder's window over it.
 RVA(0x001374c0, 0x5d)
-i32 StreamVoice::SetSource(StreamSource* src) {
+i32 StreamVoice::SetSource(CParseSource* src) {
     if (src == 0) {
         return 0;
     }
@@ -70,7 +56,7 @@ i32 StreamVoice::SetSource(StreamSource* src) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::Configure (0x137520, __thiscall, 4 args). Apply the cached
+// StreamVoice::Configure (__thiscall, 4 args). Apply the cached
 // volume/pan/frequency indices through the DirectSoundMgr base setters, stash the
 // loop flag in m_feeder.m_loop, then resume the embedded feeder - ANDing every step's
 // success into the returned flag.
@@ -97,26 +83,27 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::ComputeRatio (0x137590, __thiscall, no args). m_feeder.m_windowLength * 1000 / m_3c
-// (a position->time ratio; the *1000 is open-coded as *5*5*5*8).
+// StreamVoice::ComputeRatio (__thiscall, no args).
+// m_feeder.m_windowLength * 1000 / m_avgBytesPerSec (a position->time ratio; the
+// *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
-    return m_feeder.m_windowLength * 1000 / m_3c;
+    return m_feeder.m_windowLength * 1000 / m_avgBytesPerSec;
 }
 
 // ---------------------------------------------------------------------------
-// StreamVoice::~StreamVoice (0x137650, __thiscall, /GX EH frame). Restamp the
-// voice vptr, reset + tear down the embedded feeder, then run the DirectSoundMgr
-// base destructor.
+// StreamVoice::~StreamVoice (__thiscall, /GX EH frame). Reset + tear down the
+// embedded feeder, then run the DirectSoundMgr base destructor; cl auto-resets the
+// vptr to ??_7StreamVoice at entry.
 // @early-stop
-// EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the vptr restamp,
+// EH-dtor wall (docs/patterns/eh-dtor-needs-base-subobject.md): the vptr reset,
 // feeder FeederReset(0)/Cleanup, and ~base call are byte-exact, but the /GX EH
 // frame retail emits for the non-trivial feeder member + base subobject is
-// unreachable while the class is modeled non-polymorphically. Sibling of
-// ~DirectSoundMgr (0x135bb0); defer to the final sweep.
+// unreachable while the flat class models the base dtor as a reloc-masked call.
+// Sibling of ~DirectSoundMgr (0x135bb0); defer to the final sweep.
 RVA(0x00137650, 0x64)
 StreamVoice::~StreamVoice() {
-    *(void**)this = (void*)g_StreamVoiceVtbl;
+    // cl auto-resets the vptr to ??_7StreamVoice at dtor entry (was the manual store).
     m_feeder.FeederReset(0);
     m_feeder.Cleanup();
     BaseDtor();

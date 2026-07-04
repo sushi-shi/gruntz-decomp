@@ -2,6 +2,9 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WarlordHead.h>
+#include <DDrawMgr/DDrawShadeBlit.h> // full CImage::m_owned (CDDrawShadeBlit) for the +0x1c latch
+#include <Gruntz/GameRegistry.h>     // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
+#include <Gruntz/ResMgr.h>           // CDrawTarget (m_world->m_drawTarget->m_drawContext)
 // SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
 // chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
@@ -15,7 +18,7 @@
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Render reads is modeled.
 DATA(0x0024556c)
-extern CWhGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 
@@ -23,13 +26,13 @@ extern CWhGameReg* g_gameReg;
 // through the stream's Read/WriteBytes, then chain to the CSBI_ImageSet base
 // serialize and normalize its result to a bool. mode 7 = load, mode 4 = save;
 // any other mode just chains to the base. Bails early when the stream is null or
-// the active game manager (g_gameReg->m_30) is gone.
+// the active game manager (g_gameReg->m_world) is gone.
 RVA(0x000e7cd0, 0xf8)
 i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     switch (mode) {
@@ -102,32 +105,32 @@ i32 CSBI_WarlordHead::SetupImage(
 // `call WhShowItem` (0x14dd90) rel32 are reloc-masked against a differently-named
 // symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
-i32 CSBI_WarlordHead::ShowFrames(i32 show, i32 arg2) {
+i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
     CWhConfig* cfg = m_34;
     if (cfg == 0) {
         return 0;
     }
 
-    CWhFrame* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
+    CImage* f = (cfg->m_64 <= 1 && cfg->m_68 >= 1) ? cfg->m_14[1] : 0;
     if (f == 0) {
         return 0;
     }
-    if (f->m_30) {
+    if (f->m_owned) {
         WhShowItem(show, 0);
     }
-    if (arg2 && f->m_30) {
-        ((CWhFrame*)f->m_30)->m_1c = arg2;
+    if (palDescr && f->m_owned) {
+        f->m_owned->m_palDescr = palDescr;
     }
 
     f = (cfg->m_64 <= 2 && cfg->m_68 >= 2) ? cfg->m_14[2] : 0;
     if (f == 0) {
         return 0;
     }
-    if (f->m_30) {
+    if (f->m_owned) {
         WhShowItem(show, 0);
     }
-    if (arg2 && f->m_30) {
-        ((CWhFrame*)f->m_30)->m_1c = arg2;
+    if (palDescr && f->m_owned) {
+        f->m_owned->m_palDescr = palDescr;
     }
     return 1;
 }
@@ -161,25 +164,25 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         return 1;
     }
     m_28--;
-    i32 ctx = g_gameReg->m_30->m_4->m_14;
+    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
 
     CWhConfig* cfg = m_34;
-    CWhFrame* f;
+    CImage* f;
     if (m_3c == 1) {
         f = (cfg->m_64 > 3 || cfg->m_68 < 3) ? 0 : cfg->m_14[3];
     } else {
         f = (cfg->m_64 > 4 || cfg->m_68 < 4) ? 0 : cfg->m_14[4];
     }
     if (f) {
-        ((CWhRenderTarget*)f)->RenderFrame(ctx, m_14 + f->m_18, m_18 + f->m_1c, 0);
+        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
     }
 
     cfg = m_34;
     i32 idx = m_38;
-    CWhFrame* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
+    CImage* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
     m_30 = g;
     if (g) {
-        ((CWhRenderTarget*)g)->RenderFrame(ctx, m_14 + g->m_18, m_18 + g->m_1c, 0);
+        g->RenderFrame((void*)ctx, (void*)(m_14 + g->m_anchorX), (void*)(m_18 + g->m_anchorY), 0);
     }
     return 1;
 }

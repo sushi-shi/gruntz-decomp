@@ -33,10 +33,26 @@ public:
     virtual void Op53();   // 0x3c  slot 15 (state 0x53)
 };
 
+// The record's state tag (m_1c). State kLogicStateInit lazily builds the sub-record
+// then latches kLogicStateBuilt; each Op<NN> state dispatches the like-named
+// LogicSubRec vtable slot; kLogicStateBuilt is the built/idle no-op. Same immediates
+// as the bare labels -> naming is matching-neutral. m_1c stays u32 so the switch key
+// keeps its unsigned ja/jbe codegen (retyping it to the enum would flip to signed).
+enum LogicRecordState {
+    kLogicStateInit = 0,      // build the sub-record, then -> kLogicStateBuilt
+    kLogicStateOp1d = 0x1d,   // dispatch LogicSubRec::Op1d()
+    kLogicStateOp1e = 0x1e,   // dispatch LogicSubRec::Op1e()
+    kLogicStateOp50 = 0x50,   // dispatch LogicSubRec::Op50()
+    kLogicStateOp51 = 0x51,   // dispatch LogicSubRec::Op51()
+    kLogicStateOp52 = 0x52,   // dispatch LogicSubRec::Op52()
+    kLogicStateOp53 = 0x53,   // dispatch LogicSubRec::Op53()
+    kLogicStateBuilt = 0x3e8, // sub-record built / idle (no-op)
+};
+
 struct LogicDispatchRecord {
     char m_pad00[0x18];
     LogicSubRec* m_18; // +0x18 owned sub-record
-    u32 m_1c;          // +0x1c state tag (unsigned switch key -> ja/jbe)
+    u32 m_1c;          // +0x1c state tag (LogicRecordState; unsigned switch key -> ja/jbe)
 };
 
 struct LogicDispatchOwner {
@@ -81,33 +97,33 @@ RVA(0x000fb660, 0xf1)
 i32 LogicDispatchA(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-        case 0:
-            rec->m_1c = 0x3e8;
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
             {
                 LogicSubRecA* obj = new LogicSubRecA(owner);
                 obj->Init();
                 rec->m_18 = obj;
             }
             break;
-        case 0x1d:
+        case kLogicStateOp1d:
             rec->m_18->Op1d();
             break;
-        case 0x1e:
+        case kLogicStateOp1e:
             rec->m_18->Op1e();
             break;
-        case 0x50:
+        case kLogicStateOp50:
             rec->m_18->Op50();
             break;
-        case 0x51:
+        case kLogicStateOp51:
             rec->m_18->Op51();
             break;
-        case 0x52:
+        case kLogicStateOp52:
             rec->m_18->Op52();
             break;
-        case 0x53:
+        case kLogicStateOp53:
             rec->m_18->Op53();
             break;
-        case 0x3e8:
+        case kLogicStateBuilt:
             break;
         default:
             LogicSubDefault_16e4f0(rec->m_18);
@@ -121,33 +137,33 @@ RVA(0x00046850, 0xf1)
 i32 LogicDispatchC(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-        case 0:
-            rec->m_1c = 0x3e8;
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
             {
                 LogicSubRecC* obj = new LogicSubRecC(owner);
                 obj->Init();
                 rec->m_18 = obj;
             }
             break;
-        case 0x1d:
+        case kLogicStateOp1d:
             rec->m_18->Op1d();
             break;
-        case 0x1e:
+        case kLogicStateOp1e:
             rec->m_18->Op1e();
             break;
-        case 0x50:
+        case kLogicStateOp50:
             rec->m_18->Op50();
             break;
-        case 0x51:
+        case kLogicStateOp51:
             rec->m_18->Op51();
             break;
-        case 0x52:
+        case kLogicStateOp52:
             rec->m_18->Op52();
             break;
-        case 0x53:
+        case kLogicStateOp53:
             rec->m_18->Op53();
             break;
-        case 0x3e8:
+        case kLogicStateBuilt:
             break;
         default:
             LogicSubDefault_16e4f0(rec->m_18);
@@ -161,33 +177,33 @@ RVA(0x000deb20, 0xf1)
 i32 LogicDispatchD(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-        case 0:
-            rec->m_1c = 0x3e8;
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
             {
                 LogicSubRecD* obj = new LogicSubRecD(owner);
                 obj->Init();
                 rec->m_18 = obj;
             }
             break;
-        case 0x1d:
+        case kLogicStateOp1d:
             rec->m_18->Op1d();
             break;
-        case 0x1e:
+        case kLogicStateOp1e:
             rec->m_18->Op1e();
             break;
-        case 0x50:
+        case kLogicStateOp50:
             rec->m_18->Op50();
             break;
-        case 0x51:
+        case kLogicStateOp51:
             rec->m_18->Op51();
             break;
-        case 0x52:
+        case kLogicStateOp52:
             rec->m_18->Op52();
             break;
-        case 0x53:
+        case kLogicStateOp53:
             rec->m_18->Op53();
             break;
-        case 0x3e8:
+        case kLogicStateBuilt:
             break;
         default:
             LogicSubDefault_16e4f0(rec->m_18);
@@ -201,33 +217,33 @@ RVA(0x0010d3d0, 0xf1)
 i32 LogicDispatchB(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
     switch (rec->m_1c) {
-        case 0:
-            rec->m_1c = 0x3e8;
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
             {
                 LogicSubRecB* obj = new LogicSubRecB(owner);
                 obj->Init();
                 rec->m_18 = obj;
             }
             break;
-        case 0x1d:
+        case kLogicStateOp1d:
             rec->m_18->Op1d();
             break;
-        case 0x1e:
+        case kLogicStateOp1e:
             rec->m_18->Op1e();
             break;
-        case 0x50:
+        case kLogicStateOp50:
             rec->m_18->Op50();
             break;
-        case 0x51:
+        case kLogicStateOp51:
             rec->m_18->Op51();
             break;
-        case 0x52:
+        case kLogicStateOp52:
             rec->m_18->Op52();
             break;
-        case 0x53:
+        case kLogicStateOp53:
             rec->m_18->Op53();
             break;
-        case 0x3e8:
+        case kLogicStateBuilt:
             break;
         default:
             LogicSubDefault_16e4f0(rec->m_18);
@@ -235,3 +251,7 @@ i32 LogicDispatchB(LogicDispatchOwner* owner) {
     }
     return 1;
 }
+
+SIZE_UNKNOWN(LogicDispatchOwner);
+SIZE_UNKNOWN(LogicDispatchRecord);
+SIZE_UNKNOWN(LogicSubRec);

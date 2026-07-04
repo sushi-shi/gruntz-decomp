@@ -221,10 +221,20 @@ a real mismatch: the delinked *target* emits a vftable/global reference as
 emits `IMAGE_REL_I386_DIR32` against the mangled symbol (`??_7Class@@6B@`). The
 **code bytes match**; only the relocation's type/target-name differ across
 sides, so objdiff won't score it "exact". **Confirm by direct byte-compare**
-(reloc-covered slots masked) before chasing a phantom diff. (Fix on the backlog:
-type absolute `.text→data` stores as DIR32 + name the vftable RVA by its
-`??_7…@@6B@` in `synth_pdb`.) This hits essentially every constructor, so expect
-it.
+(reloc-covered slots masked) before chasing a phantom diff.
+
+**FIXED + SCOPED (2026-07, measured):** the DIR32 fix is DONE — the pinned
+`vostok-delinker` types absolute `.text→data` stores as DIR32, and vtables/globals/
+pooled strings are named (`config/vtable_names.csv`, `labels.py` `@data-symbol`, the
+`coff_oracle` string oracle). So a **named** DIR32 data referent now scores exact; an
+**unnamed** one is fixed simply by naming it (DATA()/vtable_names). CRUCIALLY, objdiff
+**MASKS `REL32` call/branch reloc target-names and `call [disp32]` import operands**
+(name-insensitive — measured: renaming 5909 call/ILT-thunk relocs + adding 788 `__imp__`
+relocs moved the score **0.0%**). Therefore a code-byte-exact function that STILL caps
+below 100% is EITHER an unnamed DIR32 data referent (→ name it) OR a **real codegen diff**
+(regalloc/scheduling/inlining) — it is **NEVER** a call/import/ILT-thunk name artifact.
+Do not build a thunk/import-name delinker fix (one was prototyped: 0 delta). See
+`docs/wall-instructions.md`.
 
 ---
 

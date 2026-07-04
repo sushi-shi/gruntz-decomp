@@ -29,20 +29,24 @@ public:
 };
 
 // The container-error reporting base: vptr + the error-handler subobject.
+// REAL-POLYMORPHIC: the virtual dtor lets cl emit ??_7CContainerErr and auto-stamp
+// the implicit vptr (VTBL binds it at 0x1f04cc); the former manual vtable stamp is gone.
 class CContainerErr {
 public:
-    ~CContainerErr(); // 0x16da60
+    virtual ~CContainerErr(); // 0x16da60 (implicit vptr@0)
 
-    void* m_vptr;        // +0x00  vtable (0x5f04cc)
+    // vptr @+0x00 (implicit, polymorphic; vtable 0x5f04cc)
     zErrRegistry* m_err; // +0x04  the registered error handler
 };
 
 // A dynamic bit array (capacity in bits at +0x08, the DWORD word band at +0x0c).
+// Polymorphic base (implicit vptr@0); SetSize never touches it.
 class zBitVec {
 public:
+    virtual ~zBitVec();     // (external TU; implicit vptr@0)
     i32 SetSize(i32 nbits); // 0x16e100
 
-    void* m_vptr;   // +0x00
+    // vptr @+0x00 (implicit, polymorphic)
     void* m_pad04;  // +0x04
     i32 m_capacity; // +0x08  capacity in bits
     u32* m_words;   // +0x0c  the DWORD word band

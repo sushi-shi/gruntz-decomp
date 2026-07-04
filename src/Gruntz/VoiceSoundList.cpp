@@ -1,5 +1,6 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
 
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <rva.h>
 // VoiceSoundList.cpp - CVoiceBuilder::BuildVoiceSoundList (0x11c210, 669 B): build
 // the CStringList of valid "VOICES_<dir>[_<sub>]" sound names for speech-group `n`,
@@ -15,7 +16,7 @@ struct VoiceResolver {
 };
 struct VoiceRoot { // this->m_0
     char m_pad00[0x34];
-    VoiceResolver* m_34; // +0x34
+    VoiceResolver* m_resolver; // +0x34  the 'WAV' resource resolver
 };
 struct VoiceList;
 struct CVoiceBuilder {
@@ -24,12 +25,9 @@ struct CVoiceBuilder {
 };
 
 // CButeMgr getter (g_buteMgr @ 0x6453d8): GetStringDef(tag, key, def) returns the
-// stored CString (or `def`) - FUN_00173180 __thiscall, ret CString*.
-struct VoiceButeMgr {
-    CString* GetStringDef(const char* tag, const char* key, CString* def); // 0x173180
-};
+// stored CString (or `def`) - 0x173180 __thiscall. On the canonical CButeMgr.
 DATA(0x002453d8)
-extern VoiceButeMgr g_buteMgr;
+extern CButeMgr g_buteMgr;
 
 // The format-into-CString helper (FUN_001b2cf5, reloc-masked free fn).
 void EngFmt(CString* out, const char* fmt, ...); // 0x1b2cf5
@@ -87,7 +85,7 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
             } else {
                 EngFmt(&name, "VOICES_%s_%s", (LPCTSTR)scratch, (LPCTSTR)sub);
             }
-            void* res = m_0->m_34->Resolve((LPCTSTR)name, 0x574156);
+            void* res = m_0->m_resolver->Resolve((LPCTSTR)name, 0x574156);
             if (res != 0) {
                 CString tmp = name;
                 list->AddName(tmp);
@@ -100,3 +98,7 @@ VoiceList* CVoiceBuilder::BuildVoiceSoundList(i32 n) {
     }
     return list;
 }
+SIZE_UNKNOWN(CVoiceBuilder);
+SIZE_UNKNOWN(VoiceList);
+SIZE_UNKNOWN(VoiceResolver);
+SIZE_UNKNOWN(VoiceRoot);

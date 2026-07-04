@@ -15,49 +15,24 @@
 //
 // All engine callees are reloc-masked (no body). Functions in ascending retail-RVA
 // order. The leaf's own fields are named from usage; the CUserLogic base fields
-// (m_14/m_30/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
+// (m_14/m_prevAnimSetNode/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
+#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
 
-// The CTileTriggerTransition activation-coordinate registry @0x64e720 - the same
-// VActLookup / CKSlimeColl coord-map archetype as CSecretActReg (see
-// src/Gruntz/CSecretLevelTrigger.cpp): the [lo,hi] fast path + the slow
-// Find/ActAlloc/Insert rebuild. Its 0x8710 ctor reserves the [0x7d0, 0x7da]
-// coordinate range for this class. The registry object + its methods are external
-// (no body) so the loads/calls reloc-mask. g_buteTree, the shared name registry,
-// and the CActColl/CActColl2/ActAlloc helpers come via <Gruntz/ActNameRegistry.h>.
-struct TileActReg {
-    void* m_vptr;       // +0x00
-    CActColl2* m_coll2; // +0x04
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14
-    i32 m_stride;       // +0x18
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_scratch; // +0x20
-
-    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall ret 8, the shared ctor)
-
-    // id -> handler-entry resolve (folds the VActLookup archetype): fast [lo,hi]
-    // range, the slow Find path, then the ActAlloc/Insert rebuild.
-    char* ResolveEntry(i32 id) {
-        m_scratch = 0;
-        if (id >= m_lo && id <= m_hi) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        if (((CActColl*)this)->Find(id, 0)) {
-            return m_base + (id - m_lo) * m_stride;
-        }
-        void* item = g_actCache;
-        g_actAllocResult = (void*)ActAlloc();
-        m_coll2->Insert(this, item, 0xc);
-        return m_cur;
-    }
-};
+// The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed
+// [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor
+// (0x408710). TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype (was a
+// per-file duplicate of its layout + ResolveEntry); it keeps its own placeholder
+// name so the DATA-pinned global symbol is unchanged. g_buteTree, the shared name
+// registry, and the CActColl/CActColl2/ActAlloc helpers come via
+// <Gruntz/ActNameRegistry.h>.
+struct TileActReg : public CActReg {};
+SIZE_UNKNOWN(TileActReg);
 DATA(0x0024e720)
 extern TileActReg g_tileActReg;
 
@@ -70,7 +45,7 @@ public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     virtual ~CTileTriggerTransition() OVERRIDE;
 
-    i32 GetTypeTag();                             // 0x011730
+    LogicTypeId GetTypeTag();                     // 0x011730
     void Register_10fc90();                       // 0x10fc90
     void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
@@ -82,6 +57,7 @@ public:
     i32 m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
 };
+SIZE_UNKNOWN(CTileTriggerTransition);
 
 // The per-class registry entry: its first dword receives the per-frame handler PMF
 // (a 4-byte code pointer on this complete single-inheritance class). RegisterActs
@@ -90,6 +66,7 @@ typedef i32 (CTileTriggerTransition::*TileActHandler)();
 struct TileActEntry {
     TileActHandler m_fn;
 };
+SIZE_UNKNOWN(TileActEntry);
 
 // ---------------------------------------------------------------------------
 // CTileTriggerTransition::~CTileTriggerTransition - empty leaf dtor; folds the
@@ -101,8 +78,8 @@ CTileTriggerTransition::~CTileTriggerTransition() {}
 // GetTypeTag (0x011730) - returns the class's logic-type id.
 // ---------------------------------------------------------------------------
 RVA(0x00011730, 0x6)
-i32 CTileTriggerTransition::GetTypeTag() {
-    return 0x405;
+LogicTypeId CTileTriggerTransition::GetTypeTag() {
+    return LOGIC_TILETRIGGERTRANSITION; // 0x405
 }
 
 // ---------------------------------------------------------------------------
@@ -126,10 +103,10 @@ i32 CTileTriggerTransition::GetTypeTag() {
 // machine ordering). Body byte-identical otherwise.
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
-    m_38->m_08 |= 0x1000000;
-    if (m_10->m_74 != 0) {
-        m_10->m_74 = 0;
-        m_10->m_08 |= 0x20000;
+    m_38->m_flags |= 0x1000000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
     }
 }
 
@@ -140,7 +117,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 // ---------------------------------------------------------------------------
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
-    g_tileActReg.Reserve8710(0x7d0, 0x7da);
+    g_tileActReg.Construct(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------
@@ -186,15 +163,15 @@ void CTileTriggerTransition::RegisterActs() {
 // ---------------------------------------------------------------------------
 RVA(0x00110070, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
-    m_activeAnimDesc = m_38->m_1b4;
+    m_activeAnimDesc = m_38->m_geoId;
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_1b4;
+    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_geoId;
     CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_14);
-    m_30 = m_14->m_1c; // save the prev anim-set node (CUserLogic base field)
-    m_14->m_1c = g_buteTree.Find("A");
+    m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
+    m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
 }
 

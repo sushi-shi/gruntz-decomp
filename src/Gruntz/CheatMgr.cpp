@@ -170,27 +170,19 @@ void CCheatMgr::LoadCheatConfig() {
     if (g_buteMgr.GetIntDef(s_Cheatz, s_NumCheatz, 0) >= 1) {
         do {
             group.Format(s_Cheat_i, i);
-            char* grp = (char*)(const char*)group;
+            const char* grp = (const char*)group;
             i32 expMonth = g_buteMgr.GetIntDef(grp, s_ExpMonth, 0);
-            i32 expYear = g_buteMgr.GetIntDef((char*)(const char*)group, s_ExpYear, 0);
+            i32 expYear = g_buteMgr.GetIntDef((const char*)group, s_ExpYear, 0);
             if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
-                if (g_buteMgr.Exists((char*)(const char*)group, s_Text)) {
-                    if (g_buteMgr.GetIntDef((char*)(const char*)group, s_NonCheat, 0) == 1) {
-                        char* code = (char*)(const char*)*g_buteMgr
-                                         .GetStringDef((char*)(const char*)group, s_Text, &defStr);
-                        AddCheat(
-                            code,
-                            g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b),
-                            1
-                        );
+                if (g_buteMgr.Exists((const char*)group, s_Text)) {
+                    if (g_buteMgr.GetIntDef((const char*)group, s_NonCheat, 0) == 1) {
+                        const char* code = (const char*)*g_buteMgr
+                                               .GetStringDef((const char*)group, s_Text, &defStr);
+                        AddCheat(code, g_buteMgr.GetIntDef((const char*)group, s_Value, 0x807b), 1);
                     } else {
-                        char* code = (char*)(const char*)*g_buteMgr
-                                         .GetStringDef((char*)(const char*)group, s_Text, &defStr);
-                        AddCheat(
-                            code,
-                            g_buteMgr.GetIntDef((char*)(const char*)group, s_Value, 0x807b),
-                            0
-                        );
+                        const char* code = (const char*)*g_buteMgr
+                                               .GetStringDef((const char*)group, s_Text, &defStr);
+                        AddCheat(code, g_buteMgr.GetIntDef((const char*)group, s_Value, 0x807b), 0);
                     }
                 }
             }

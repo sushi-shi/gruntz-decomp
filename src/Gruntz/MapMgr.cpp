@@ -235,3 +235,6 @@ void CMapMgr::Vfunc2() {}
 void CMapMgr::Vfunc3() {}
 void CMapMgr::Vfunc4() {}
 void CMapMgr::Vfunc5() {}
+
+SIZE_UNKNOWN(MapElemA);
+SIZE_UNKNOWN(MapElemB);

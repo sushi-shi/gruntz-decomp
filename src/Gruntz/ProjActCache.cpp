@@ -220,3 +220,4 @@ fail:
     m_4->Set(this, (i32)cache, 0xc);
     return 0;
 }
+SIZE_UNKNOWN(zBitVec);

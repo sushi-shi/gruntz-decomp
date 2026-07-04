@@ -5,24 +5,26 @@
 // NO-body so their rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
-#include <string.h> // inline strlen / memset intrinsics
-
-// The retail CUserBase vtable (?g_vtbl_CUserBase@@3PAPAXA @ VA 0x5e70b4). Both
-// stamp helpers store its address by name (the transitional manual-stamp form),
-// so the DIR32 operand reloc-masks against the matched symbol.
-extern void** g_vtbl_CUserBase;
+#include <string.h>              // inline strlen / memset intrinsics
+#include <Win32.h>               // WINAPI (windows.h) for the g_p* import-pointer types
+#include <Gruntz/GameRegistry.h> // canonical Win32-safe game-manager singleton view
+#include <Globals.h>
 
 // ===========================================================================
-// 0x0087b0 - stamp the CUserBase vtable into [this] and return (no return-this,
-// so a plain method - a ctor would emit `mov eax,ecx`). __thiscall, no args.
+// 0x0087b0 - CUserBase base destructor: cl's implicit vptr-restore stamps
+// ??_7CUserBase@@6B@ (0x5e70b4, config/vtable_names.csv) then returns (7-byte
+// `mov [ecx],offset ??_7CUserBase + ret`, the empty final-base dtor). Real
+// polymorphic dtor; 3 vtable slots (0xc) so the emitted ??_7 pairs the retail vtable.
+// __thiscall, no args.
 // ===========================================================================
-struct CVtblStamp87b0 {
-    void StampVptr();
+struct CUserBase {
+    virtual ~CUserBase(); // 0x87b0  slot 0 (+0x00)
+    virtual void s1();
+    virtual void s2();
 };
+SIZE_UNKNOWN(CUserBase);
 RVA(0x000087b0, 0x7)
-void CVtblStamp87b0::StampVptr() {
-    *(void**)this = (void*)&g_vtbl_CUserBase;
-}
+CUserBase::~CUserBase() {}
 
 // ===========================================================================
 // 0x008b90 - a finalize/teardown that fires up to two registered __thiscall
@@ -34,6 +36,7 @@ struct CFinalizeSub8b90 {
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c
 };
+SIZE_UNKNOWN(CFinalizeSub8b90);
 struct CFinalize8b90 {
     typedef void (CFinalize8b90::*PMF)(); // single-inheritance, non-virtual -> 4 bytes
     void* m_0;                            // +0x00
@@ -45,6 +48,7 @@ struct CFinalize8b90 {
     i32 m_28; // +0x28
     void Finalize(i32 arg);
 };
+SIZE_UNKNOWN(CFinalize8b90);
 RVA(0x00008b90, 0x40)
 void CFinalize8b90::Finalize(i32 arg) {
     if (m_4 == 0) {
@@ -63,28 +67,26 @@ void CFinalize8b90::Finalize(i32 arg) {
 // 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
 // __cdecl free function.
 // ===========================================================================
-DATA(0x002295d8)
-extern "C" i32 g_dat6295d8;
 RVA(0x0000af50, 0xb)
 void ResetDat6295d8() {
     g_dat6295d8 = 0;
 }
 
 // ===========================================================================
-// 0x00b940 - stamp the CUserBase vtable into [this] and zero members at +0x04 and
-// +0x3c (reloc-masked against retail's CUserBase vtable 0x5e70b4). __thiscall
-// method (no return-this).
+// 0x00b940 - a CUserBase-derived vptr restore: cl's implicit vptr-restore stamps the
+// CUserBase base vtable (0x5e70b4) then zeros members at +0x04 and +0x3c. Placeholder
+// polymorphic class (a distinct restore, not the 0x87b0 final-base dtor, so its ??_7
+// reloc-masks by shape). __thiscall (no return-this).
 // ===========================================================================
-struct CVtblStampB940 {
-    void* m_vptr; // +0x00
-    i32 m_4;      // +0x04
+struct CUserBaseSubB940 {
+    i32 m_4; // +0x04
     char m_pad8[0x3c - 0x08];
     i32 m_3c; // +0x3c
-    void StampVptr();
+    virtual ~CUserBaseSubB940();
 };
+SIZE_UNKNOWN(CUserBaseSubB940);
 RVA(0x0000b940, 0xf)
-void CVtblStampB940::StampVptr() {
-    m_vptr = (void*)&g_vtbl_CUserBase;
+CUserBaseSubB940::~CUserBaseSubB940() {
     m_4 = 0;
     m_3c = 0;
 }
@@ -102,6 +104,7 @@ struct CGuardedDispatch1f870 {
     i32 Handle();           // 0xfac70 (non-virtual; reloc-masked)
     i32 Run();
 };
+SIZE_UNKNOWN(CGuardedDispatch1f870);
 RVA(0x0001f870, 0x1d)
 i32 CGuardedDispatch1f870::Run() {
     if (!IsActive()) {
@@ -117,6 +120,7 @@ i32 CGuardedDispatch1f870::Run() {
 struct CGlobalContainer {
     void Register(i32 n); // 0x1b4867 (reloc-masked)
 };
+SIZE_UNKNOWN(CGlobalContainer);
 DATA(0x0022b5d0)
 extern CGlobalContainer g_container62b5d0;
 DATA(0x0022b640)
@@ -137,20 +141,13 @@ void Init23960() {
 // slot is non-null (0 when the arg is null). __stdcall, one arg (ret 4). The
 // singleton is the already-pinned _g_mgrSettings (VA 0x64556c / RVA 0x24556c).
 // ===========================================================================
-struct CMgrSettingsView {
-    char m_pad0[0x30];
-    void* m_30; // +0x30
-    char m_pad34[0x10c - 0x34];
-    i32 m_10c; // +0x10c
-    i32 m_110; // +0x110
-};
-extern "C" CMgrSettingsView* g_mgrSettings;
+extern "C" CGameRegistry* g_mgrSettings;
 RVA(0x00024ac0, 0x20)
 i32 __stdcall HasMgrSlot30(void* a) {
     if (a == 0) {
         return 0;
     }
-    return g_mgrSettings->m_30 != 0;
+    return g_mgrSettings->m_world != 0;
 }
 
 // ===========================================================================
@@ -158,7 +155,7 @@ i32 __stdcall HasMgrSlot30(void* a) {
 // +0x110 flags into two dialog check-boxes (IDs 0x46f / 0x4d5) via the cached
 // CheckDlgButton import pointer (VA 0x6c44b4). __cdecl, one HWND arg.
 // ===========================================================================
-typedef int(__stdcall* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
+typedef int(WINAPI* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
 DATA(0x002c44b4)
 extern PFN_CheckDlgButton p_CheckDlgButton;
 // @early-stop
@@ -172,8 +169,8 @@ void DialogInit37870(void* hwnd) {
         return;
     }
     PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
-    fn(hwnd, 0x46f, g_mgrSettings->m_10c);
-    fn(hwnd, 0x4d5, g_mgrSettings->m_110);
+    fn(hwnd, 0x46f, g_mgrSettings->m_isHighDetail);
+    fn(hwnd, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
 }
 
 // ===========================================================================
@@ -228,6 +225,7 @@ struct CClear212a0 {
     void ClearRecursive(i32); // 0x16e070 (reloc-masked)
     void Reset();
 };
+SIZE_UNKNOWN(CClear212a0);
 RVA(0x000212a0, 0x21)
 void CClear212a0::Reset() {
     ClearRecursive(0);
@@ -243,10 +241,12 @@ void CClear212a0::Reset() {
 struct AfxThread18430 {
     void EndWaitCursor(); // 0x1beb10 (reloc-masked)
 };
+SIZE_UNKNOWN(AfxThread18430);
 struct AfxModuleState18430 {
     void* m_pad0;             // +0x00
     AfxThread18430* m_thread; // +0x04
 };
+SIZE_UNKNOWN(AfxModuleState18430);
 extern AfxModuleState18430* AfxGetModuleState18430(); // 0x1d3631 (reloc-masked)
 RVA(0x00018430, 0xd)
 void EndWaitCursor18430() {
@@ -262,6 +262,7 @@ extern "C" int rand(void);
 struct CTileSwitch29af0 {
     void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (via 0x1640)
 };
+SIZE_UNKNOWN(CTileSwitch29af0);
 RVA(0x00029af0, 0x3b)
 void __stdcall TileSwitch29af0(CTileSwitch29af0* a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (a4) {

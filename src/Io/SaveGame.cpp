@@ -7,36 +7,28 @@
 // dtor put a C++ EH frame on those methods -> /GX (the `mfc` /O1 profile, matching
 // FileStream.cpp). The leaf accessors are frameless register-frame functions.
 //
-// All cross-class callees (CFileIO, CString, WwdGameReg, the CRT _strncpy, the
+// All cross-class callees (CFileIO, CString, CGameRegistry, the CRT _strncpy, the
 // MFC wait-cursor helpers) are modeled as external/no-body so their reloc
 // operands are masked in objdiff.
 #include <Io/SaveGame.h>
 #include <rva.h>
 
-// The save-slot dialog labeller (winapi_0e3e80_SetDlgItemTextA, ApiCallers.cpp):
-// labels one slot into four dialog controls. Declared with its real namespace +
-// signature so the rel32 call pairs by mangled name; the slot pointer flows in as
-// the NameItem_09e2d0* it expects (a forward-declared opaque). Reloc-masked.
+#include <stdlib.h> // _itoa
+#include <string.h> // memset -> inline rep stos
+
+// The two per-slot dialog labellers (0x0e3e80 for the save dialog, 0x9e2d0 for the
+// GAME_INFO dialog): each labels one CSaveGame::GetSlot() record into four dialog
+// controls (same signature, different control-state side effects). Their real owner
+// TU (they walk this file's save slots); forward-declared here (the FillSaveDialog /
+// FillGameInfoDialog callers precede them in retail-RVA order), DEFINED at the end.
+// The slot pointer flows in as the real Io/SaveGame.h SaveSlot* GetSlot() returns.
+// Check2694 (0x2694 -> 0xe5700) is the slot-occupancy probe. All reloc-masked.
 namespace ApiCallerStubs {
-    struct NameItem_09e2d0;
-    void winapi_0e3e80_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    );
-    // The GAME_INFO dialog's variant of the same per-slot labeller (0x9e2d0); same
-    // signature, different control-state side effects. Reloc-masked no-body callee.
-    void winapi_09e2d0_SetDlgItemTextA(
-        HWND hWnd,
-        NameItem_09e2d0* item,
-        i32 id3,
-        i32 id4,
-        i32 id5,
-        i32 id6
-    );
+    i32 Check2694(SaveSlot* item); // 0x2694 (jmp-thunk -> 0xe5700)
+    void
+    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
+    void
+    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
 } // namespace ApiCallerStubs
 
 // ---------------------------------------------------------------------------
@@ -49,86 +41,16 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_0e3e80_SetDlgItemTextA;
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
-        0x435,
-        0x490,
-        0x49a,
-        0x4a4
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
-        0x436,
-        0x491,
-        0x49b,
-        0x4a5
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
-        0x437,
-        0x492,
-        0x49c,
-        0x4a6
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
-        0x438,
-        0x493,
-        0x49d,
-        0x4a7
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
-        0x439,
-        0x494,
-        0x49e,
-        0x4a8
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
-        0x43a,
-        0x495,
-        0x49f,
-        0x4a9
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
-        0x43b,
-        0x496,
-        0x4a0,
-        0x4aa
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
-        0x43c,
-        0x497,
-        0x4a1,
-        0x4ab
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
-        0x43d,
-        0x498,
-        0x4a2,
-        0x4ac
-    );
-    winapi_0e3e80_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
-        0x43e,
-        0x499,
-        0x4a3,
-        0x4ad
-    );
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
+    winapi_0e3e80_SetDlgItemTextA(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
 }
 
 // ---------------------------------------------------------------------------
@@ -143,86 +65,16 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
         return;
     }
     using ApiCallerStubs::winapi_09e2d0_SetDlgItemTextA;
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(0),
-        0x435,
-        0x490,
-        0x49a,
-        0x4a4
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(1),
-        0x436,
-        0x491,
-        0x49b,
-        0x4a5
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(2),
-        0x437,
-        0x492,
-        0x49c,
-        0x4a6
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(3),
-        0x438,
-        0x493,
-        0x49d,
-        0x4a7
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(4),
-        0x439,
-        0x494,
-        0x49e,
-        0x4a8
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(5),
-        0x43a,
-        0x495,
-        0x49f,
-        0x4a9
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(6),
-        0x43b,
-        0x496,
-        0x4a0,
-        0x4aa
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(7),
-        0x43c,
-        0x497,
-        0x4a1,
-        0x4ab
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(8),
-        0x43d,
-        0x498,
-        0x4a2,
-        0x4ac
-    );
-    winapi_09e2d0_SetDlgItemTextA(
-        hWnd,
-        (ApiCallerStubs::NameItem_09e2d0*)sg->GetSlot(9),
-        0x43e,
-        0x499,
-        0x4a3,
-        0x4ad
-    );
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
+    winapi_09e2d0_SetDlgItemTextA(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
 }
 
 // ---------------------------------------------------------------------------
@@ -232,6 +84,35 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 RVA(0x00085b50, 0x56)
 CSaveGame::~CSaveGame() {
     Reset();
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::SaveGameFile
+// Seed the roster from a directory: m_str0 = dir, m_name = dir +
+// "Gruntz.sav", zero the 0xa1c header, Init() + Load() the roster, then for each
+// of the ten slots that exists format its per-slot file path dir + "Slot" +
+// (i+1) + ".sav" into the slot record at +0x35 (wsprintfA hoists the IAT pointer
+// into ebx across the loop). The chained CString operator+ temps + the assigned
+// CString member force the /GX EH frame.
+RVA(0x000e4b60, 0x158)
+i32 CSaveGame::SaveGameFile(const char* dir) {
+    if (dir == 0) {
+        return 0;
+    }
+    m_str0 = dir;
+    m_name = m_str0 + "Gruntz.sav";
+    memset(m_header, 0, 0xa1c);
+    Init();
+    Load();
+    for (i32 i = 0; i < 10; i++) {
+        SaveSlot* slot = GetSlot(i);
+        if (slot != 0) {
+            char numbuf[16];
+            _itoa(i + 1, numbuf, 10);
+            wsprintfA(slot->m_savePath, m_str0 + "Slot" + numbuf + ".sav");
+        }
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +129,7 @@ void CSaveGame::Reset() {
 // Header field @+0x18 = 0x25, then zero all ten 0x100-byte slot records.
 RVA(0x000e4d50, 0x2f)
 void CSaveGame::Init() {
-    m_18 = 0x25;
+    m_maxLevel = 0x25;
     for (i32 i = 0; i < 10; i++) {
         SaveSlot* p = GetSlot(i);
         if (p != 0) {
@@ -265,10 +146,10 @@ void CSaveGame::Init() {
 RVA(0x000e4d90, 0xcc)
 i32 CSaveGame::Load() {
     CFileIO file;
-    if (!file.Open((const char*)m_name, 0, 0)) {
+    if (!file.Open(m_name, 0, 0)) {
         return 0;
     }
-    file.Read(m_08, 0xa1c);
+    file.Read(m_header, 0xa1c);
     file.Read(m_slots, 0xa00);
     file.Close();
     if (!Verify()) {
@@ -288,11 +169,11 @@ RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(i32 a, i32 b) {
     CFileIO file;
     i32 ok = 0;
-    if (file.Open((const char*)m_name, 0x1000, 0)) {
+    if (file.Open(m_name, 0x1000, 0)) {
         file.Close();
-        if (file.Open((const char*)m_name, 1, 0)) {
+        if (file.Open(m_name, 1, 0)) {
             ComputeAll();
-            file.Write(m_08, 0xa1c);
+            file.Write(m_header, 0xa1c);
             file.Write(m_slots, 0xa00);
             file.Close();
             ok = 1;
@@ -316,10 +197,10 @@ void CSaveGame::ComputeAll() {
     for (i32 i = 0; i < 10; i++) {
         sum += Encode((u8*)GetSlot(i));
     }
-    *(i32*)&m_08[0] = 0;
-    *(i32*)&m_08[4] = 1;
-    *(i32*)&m_08[8] = sum;
-    *(i32*)&m_08[0xc] = 0;
+    *(i32*)&m_header[0] = 0;
+    *(i32*)&m_header[4] = 1;
+    *(i32*)&m_header[8] = sum;
+    *(i32*)&m_header[0xc] = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -331,11 +212,16 @@ i32 CSaveGame::Verify() {
     for (i32 i = 0; i < 10; i++) {
         sum += Decode((u8*)GetSlot(i));
     }
-    return *(i32*)&m_08[8] == sum;
+    return *(i32*)&m_header[8] == sum;
 }
 
 // ---------------------------------------------------------------------------
 // CSaveGame::FillSlot  (0x000e5130)
+// `src` is the live game-state object being captured; only two of its members are
+// probed here (a level ptr @+0x2c whose +0x1c is the level id, and a world ptr
+// @+0x44 whose +0x124 flags a custom world). That object's class is not modeled in
+// this TU, so the two fields are read as binary-proven pointer arithmetic (the same
+// forced opaque cross-class read the doctrine allows for un-recovered externs).
 RVA(0x000e5130, 0x78)
 i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
     if (dst == 0) {
@@ -345,13 +231,13 @@ i32 CSaveGame::FillSlot(SaveSlot* dst, const char* name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_04 = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
-    dst->m_08 = 0;
-    dst->m_0c = 1;
+    dst->m_levelId = *(i32*)((char*)*(void**)((char*)src + 0x2c) + 0x1c);
+    dst->m_count = 0;
+    dst->m_active = 1;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
     }
-    strncpy(dst->m_14, name, 0x20);
+    strncpy(dst->m_name, name, 0x20);
     dst->m_checksum = Register(dst);
     return 1;
 }
@@ -367,9 +253,9 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
         return 0;
     }
     dst->m_type = src->m_type;
-    dst->m_04 = src->m_04;
-    dst->m_08 = src->m_08;
-    dst->m_0c = src->m_0c;
+    dst->m_levelId = src->m_levelId;
+    dst->m_count = src->m_count;
+    dst->m_active = src->m_active;
     dst->m_checksum = src->m_checksum;
     dst->m_checksum = Register(dst);
     return 1;
@@ -386,8 +272,8 @@ i32 CSaveGame::FillSlot2(SaveSlot* dst, i32 name, void* src) {
         return 0;
     }
     dst->m_type = 1;
-    dst->m_04 = name;
-    dst->m_08 = 0;
+    dst->m_levelId = name;
+    dst->m_count = 0;
     if (*(i32*)((char*)*(void**)((char*)src + 0x44) + 0x124) != 0) {
         dst->m_type = 3;
     }
@@ -414,11 +300,11 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = *(i32*)((char*)slot + 0xfc);
-    i32 f8 = *(i32*)((char*)slot + 0xf8);
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    i32 fc = slot->m_pathHi;
+    i32 f8 = slot->m_pathLo;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
-    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
     if (r == 0) {
         g_gameReg->LogError(
             "The level that this game was saved on does not exist!\n\nThis "
@@ -451,11 +337,11 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == 0) {
         return 0;
     }
-    i32 fc = *(i32*)((char*)slot + 0xfc);
-    i32 f8 = *(i32*)((char*)slot + 0xf8);
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : ((char*)slot + 0x75);
+    i32 fc = slot->m_pathHi;
+    i32 f8 = slot->m_pathLo;
+    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
     CString s(name);
-    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_04);
+    return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId);
 }
 
 // ---------------------------------------------------------------------------
@@ -483,6 +369,12 @@ i32 CSaveGame::Encode(u8* buf) {
 
 // ---------------------------------------------------------------------------
 // CSaveGame::Decode  (0x000e5460)
+// @early-stop
+// regalloc-tiebreak churn (~84%): body byte-identical to the pre-pristine 100%
+// match; the pristine field renames elsewhere in the TU perturbed MSVC5's
+// identifier-interning-driven register coloring, tipping this Encode/Decode
+// checksum-loop family's fragile edi/edx spill choice (same wall as Encode). Not
+// source-steerable; deferred to the final sweep (recover the edi/edx pin).
 RVA(0x000e5460, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
     if (buf == 0) {
@@ -515,52 +407,147 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     return FillSlot2(GetSlot(idx), name, src);
 }
 
+// A save-slot record probed by the two temp-file helpers below: an int/flag at
+// +0x00 (bit0 = "has a temp file"; cleared to 0 by the closer) and the temp-file
+// path string at +0x35. Only these two offsets are touched.
+SIZE_UNKNOWN(SaveTempRec);
+struct SaveTempRec {
+    i32 m_flags;        // +0x00  flags (bit0) / cleared to 0 by the closer
+    char m_pad04[0x31]; // +0x04..+0x34
+    char m_path[1];     // +0x35  the temp-file path
+};
+
+// DeleteFileA wrapper at 0x1bf559 (__stdcall; throws the OS error on failure).
+extern "C" void __stdcall FileDelete_1bf559(char* lpszFileName);
+
 // ---------------------------------------------------------------------------
-// CSaveGame::SetField18  (0x000e5620)
-// @early-stop
-// regalloc wall (~96%): logic + all (unsigned) comparisons exact; retail holds
-// the param in edx and m_18 in eax, recompile swaps them (eax<->edx). 1-2 bytes.
-RVA(0x000e5620, 0x27)
-void CSaveGame::SetField18(i32 v) {
-    if (v < 0x21) {
-        if ((u32)v > m_18) {
-            m_18 = v;
-            return;
-        }
-        if (m_18 > 0x24) {
-            m_18 = v;
-            return;
-        }
+// CloseTempFile  (0x000e5550) - if the record's temp file opens (read), close
+// and delete it, then clear the record's flag. Returns 1 once the record was
+// processed (0 only for a null record). Free __stdcall helper (callee-cleans).
+RVA(0x000e5550, 0x9a)
+int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
+    if (p == 0) {
+        return 0;
     }
-    if (m_18 <= 0x24) {
-        return;
+    CFileIO file;
+    if (file.Open(p->m_path, 0, 0)) {
+        file.Close();
+        FileDelete_1bf559(p->m_path);
     }
-    if ((u32)v <= m_18) {
-        return;
-    }
-    m_18 = v;
+    p->m_flags = 0;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::SetField1c  (0x000e5660)
+// CSaveGame::SetMaxLevel  (0x000e5620)
+// @early-stop
+// regalloc wall (~96%): logic + all (unsigned) comparisons exact; retail holds
+// the param in edx and m_maxLevel in eax, recompile swaps them (eax<->edx). 1-2 bytes.
+RVA(0x000e5620, 0x27)
+void CSaveGame::SetMaxLevel(i32 v) {
+    if (v < 0x21) {
+        if ((u32)v > m_maxLevel) {
+            m_maxLevel = v;
+            return;
+        }
+        if (m_maxLevel > 0x24) {
+            m_maxLevel = v;
+            return;
+        }
+    }
+    if (m_maxLevel <= 0x24) {
+        return;
+    }
+    if ((u32)v <= m_maxLevel) {
+        return;
+    }
+    m_maxLevel = v;
+}
+
+// ---------------------------------------------------------------------------
+// CSaveGame::SetCurLevel  (0x000e5660)
 RVA(0x000e5660, 0x1e)
-void CSaveGame::SetField1c(i32 v) {
+void CSaveGame::SetCurLevel(i32 v) {
     if (v >= 0x21) {
         return;
     }
-    if (v <= m_1c) {
+    if (v <= m_curLevel) {
         return;
     }
-    m_1c = v;
+    m_curLevel = v;
     if (v == 0x20) {
         Init();
     }
 }
 
 // ---------------------------------------------------------------------------
-// CSaveGame::CheckField20  (0x000e5690)
+// CSaveGame::CheckMagic  (0x000e5690)
 RVA(0x000e5690, 0xf)
-i32 CSaveGame::CheckField20() {
-    i32 v = m_20;
+i32 CSaveGame::CheckMagic() {
+    i32 v = m_magic;
     return v == 0x42a;
 }
+
+// ---------------------------------------------------------------------------
+// TempFileExists  (0x000e5700) - probe whether the record's flagged temp file
+// can be opened for read: if bit0 is set and the path opens, close it and return
+// 1, else 0. Free __cdecl helper (caller cleans the argument).
+RVA(0x000e5700, 0x9e)
+int TempFileExists_e5700(SaveTempRec* p) {
+    if (p != 0 && (p->m_flags & 1)) {
+        CFileIO file;
+        if (file.Open(p->m_path, 0, 0)) {
+            file.Close();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// The two per-slot dialog labellers (re-homed from src/Stub/ApiCallers.cpp - they
+// walk this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
+// label the slot's short name (m_name) into id3, "(Empty)" when Check2694 (0x2694 ->
+// 0xe5700 slot-occupancy probe) fails; then set the four control enables.
+namespace ApiCallerStubs {
+    // 0x9e2d0 (GAME_INFO dialog variant): all four enables track occupancy.
+    RVA(0x0009e2d0, 0x84)
+    void
+    winapi_09e2d0_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+        i32 flag;
+        if (Check2694(item)) {
+            SetDlgItemTextA(hWnd, id3, item->m_name);
+            flag = 1;
+        } else {
+            SetDlgItemTextA(hWnd, id3, "(Empty)");
+            flag = 0;
+        }
+        EnableWindow(GetDlgItem(hWnd, id3), flag);
+        EnableWindow(GetDlgItem(hWnd, id4), flag);
+        EnableWindow(GetDlgItem(hWnd, id5), flag);
+        EnableWindow(GetDlgItem(hWnd, id6), flag);
+    }
+
+    // 0xe3e80 (save dialog variant): first two enables unconditional, last two
+    // track occupancy.
+    RVA(0x000e3e80, 0x86)
+    void
+    winapi_0e3e80_SetDlgItemTextA(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+        i32 flag;
+        if (Check2694(item)) {
+            SetDlgItemTextA(hWnd, id3, item->m_name);
+            flag = 1;
+        } else {
+            SetDlgItemTextA(hWnd, id3, "(Empty)");
+            flag = 0;
+        }
+        EnableWindow(GetDlgItem(hWnd, id3), 1);
+        EnableWindow(GetDlgItem(hWnd, id4), 1);
+        EnableWindow(GetDlgItem(hWnd, id5), flag);
+        EnableWindow(GetDlgItem(hWnd, id6), flag);
+    }
+} // namespace ApiCallerStubs
+
+// Class-metadata annotations (EOF-hosted).
+SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
+SIZE_UNKNOWN(CSaveGame); // fully modeled but tail not proven; owner may upgrade

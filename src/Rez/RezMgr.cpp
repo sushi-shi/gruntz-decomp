@@ -2,47 +2,24 @@
 // CRezDir subdirectory nodes) and the directory walk over a Gruntz.REZ /
 // GRUNTZ.VRZ archive.
 //
-// Functions matched in this TU:
-//   CRezItm::CRezItm(parent)        BYTE-EXACT  - leaf ctor (new 0x24)
-//   CRezItmBase::~CRezItmBase()     BYTE-EXACT  - base dtor (vtbl restore + m_parent=0)
-//   CRezItm::~CRezItm()             BYTE-EXACT  - leaf dtor (/GX EH; Close + free buf)
-//   CRezItm::Read(off,base,n,buf)   99.8%       - buffered fseek/fread w/ owner Retry()
-//   CRezItm::Close()                81% (@early-stop) - fclose/free; esi<->edi regalloc wall
-//   CRezDir::CRezDir(parent,rezmgr) PLATEAU 78% - dir  ctor (new 0x38)
-//   CRezDir::FindEntry(name)        BYTE-EXACT  - is-this-a-dir? stat
-//   CRezDirNode::Load(childFlag)    BYTE-EXACT  - recursive dir parse
-//   RezMgr::MakeImageKey(...)       BYTE-EXACT  - ext-dispatch image load (.BMP/.PCX/.PID)
-//   RezMgr::MakeRezPath()           PLATEAU 92% - archive-path builder (EH/CString entropy)
-//   RezMgr::PerFrameTick()          BYTE-EXACT  - THE per-frame game tick (heart of the loop, vtbl +0x10)
+// Both ctors share the base ctor CRezItmBase::CRezItmBase (stores the base vtable
+// and the parent pointer @+0xc), then overwrite the vtable with the derived one
+// (two-phase construction; all vtable stores reloc-masked). `operator new` sizes
+// 0x24 (leaf) / 0x38 (dir) confirm the layouts. The "File is not sorted!" assert
+// string is a reloc-masked file-scope literal.
 //
-// Both ctors share the base ctor CRezItmBase::CRezItmBase (stores the
-// base vtable and the parent pointer @+0xc), then overwrite the vtable
-// with the derived one (two-phase construction; all vtable stores reloc-masked).
-// `operator new` sizes 0x24 (leaf) / 0x38 (dir) confirm the layouts. The
-// "File is not sorted!" assert string is a reloc-masked file-scope literal.
-//
-// CRezDir ctor PLATEAU (78%): all 14 member stores go to the correct offsets
-// with the correct values, but MSVC5 schedules the +0x10/+0x1c collection-vtable
-// stores and the +0x14/+0x18 head/tail zeros in a different (still-correct) order
-// than the target, and materializes the vtbl constant before the zero (vs after).
-// No source lever flips it (tried 6 store orderings + an embedded collection
-// sub-object - the sub-object emits an out-of-line ctor call, far worse). The
-// vtable operands are reloc-masked. Entropy-class residue, left per the doctrine.
-//
-// OpenSub is NOT matched here: it runs on a THIRD, distinct
-// node layout (it uses +0x1c as a child COUNT and +0x10 as a list-append target,
-// directly conflicting with the 0x38 CRezDir ctor's vtable stores at those same
-// offsets, AND with CRezDirNode's +0x10 size / +0x18 source - so all three
-// "CRezDir"-labeled functions are actually three different classes). It also
-// needs a faithful C++ EH frame, the inline CString strlen+strcpy, the embedded
-// list-append helper, two-slot virtual dispatch on the allocated child, a
-// 0xA8-byte item-header parse feeding running max-dims, and two large external
-// tail calls (a recursive FS walk + an item-record reader). >512 B of high
-// EH/CString/virtual entropy; deferred to a dedicated worker per the prompt's
-// "don't sacrifice a green fn" guidance. The container layouts it would confirm
-// are already pinned by the two ctors below.
+// OpenSub is NOT matched here: it runs on a THIRD, distinct node layout (it uses
+// +0x1c as a child COUNT and +0x10 as a list-append target, conflicting with both
+// the 0x38 CRezDir ctor's vtable stores and CRezDirNode's +0x10 size / +0x18 source
+// - so the three "CRezDir"-labeled functions are actually three different classes).
+// The container layouts it would confirm are already pinned by the two ctors below.
 #include <Rez/RezMgr.h>
 #include <rva.h>
+
+// The owner's embedded child list a CRezParseNode enrolls itself into is the
+// shared CRezList (AddHead = 0x1851e0). Included in the .cpp only (NOT in RezMgr.h,
+// which is pulled into /O2-sensitive TUs like Image.cpp).
+#include <Rez/RezList.h>
 
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)
@@ -50,18 +27,22 @@
 //   the derived ctors emit a `call` to it.
 RVA(0x0013c4e0, 0x12)
 CRezItmBase::CRezItmBase(void* parent) {
-    m_parent = parent;
+    // Language-forced cast: the ctor's parameter is `void*` in the retail ABI
+    // (mangled ??0CRezItmBase@@QAE@PAX@Z = PAX), while the stored member is the
+    // typed Retry-gate CRezItmOwner*. Storing the void* param into the typed
+    // member requires the reinterpret.
+    m_parent = (CRezItmOwner*)parent;
 }
 
 // ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
-// Base ctor (vtbl + parent), then derived vtbl, m_10 = 0,
-// m_14 = 0, m_20 = -1. m_18/m_1c untouched.
+// Base ctor (vtbl + parent), then derived vtbl, m_fp = 0,
+// m_readBuf = 0, m_pos = -1. m_18/m_1c untouched.
 RVA(0x0013c540, 0x28)
 CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
-    m_10 = 0;
-    m_14 = 0;
-    m_20 = -1;
+    m_fp = 0;
+    m_readBuf = 0;
+    m_pos = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -79,11 +60,11 @@ CRezItmBase::~CRezItmBase() {
 // the base dtor. A destructible state -> the /GX EH frame (push -1 / handler).
 RVA(0x0013c590, 0x66)
 CRezItm::~CRezItm() {
-    if (m_10 != 0) {
+    if (m_fp != 0) {
         Close();
     }
-    if (m_14 != 0) {
-        RezFree(m_14);
+    if (m_readBuf != 0) {
+        RezFree(m_readBuf);
     }
 }
 
@@ -111,31 +92,31 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 
     i32 pos = base + off;
 
-    if (m_20 != pos) {
-        while (RezFSeek(m_10, pos, 0) != 0) {
-            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
-                m_20 = -1;
+    if (m_pos != pos) {
+        while (RezFSeek(m_fp, pos, 0) != 0) {
+            if (m_parent->Retry() == 0) {
+                m_pos = -1;
                 return 0;
             }
         }
     }
 
-    u32 got = RezFRead(buf, 1, count, m_10);
+    u32 got = RezFRead(buf, 1, count, m_fp);
     while (got != count) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
-            m_20 = -1;
+        if (m_parent->Retry() == 0) {
+            m_pos = -1;
             return 0;
         }
-        got = RezFRead(buf, 1, count, m_10);
+        got = RezFRead(buf, 1, count, m_fp);
     }
 
-    m_20 = got + pos;
+    m_pos = got + pos;
     return got;
 }
 
 // ---------------------------------------------------------------------------
 // CRezItm::Write(base, off, count, buf)
-// The write counterpart of Read: invalidate the cursor (m_20 = -1), seek to the
+// The write counterpart of Read: invalidate the cursor (m_pos = -1), seek to the
 // absolute position (base+off) recovering through the owner's Retry() gate on a
 // seek failure, then fwrite `count` bytes from buf, retrying the write through
 // the same gate on a short write. Returns 0 on a zero count or a gate that gives
@@ -150,25 +131,25 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 // - identical `call rel32`, a delinker bare-name artifact (not steerable from src).
 RVA(0x0013c6c0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
-    m_20 = -1;
+    m_pos = -1;
     if (count <= 0) {
         return 0;
     }
 
     i32 pos = off + base;
 
-    while (RezFSeek(m_10, pos, 0) != 0) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+    while (RezFSeek(m_fp, pos, 0) != 0) {
+        if (m_parent->Retry() == 0) {
             return 0;
         }
     }
 
-    u32 put = RezFWrite(buf, 1, count, m_10);
+    u32 put = RezFWrite(buf, 1, count, m_fp);
     while (put != count) {
-        if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+        if (m_parent->Retry() == 0) {
             return 0;
         }
-        put = RezFWrite(buf, 1, count, m_10);
+        put = RezFWrite(buf, 1, count, m_fp);
     }
     return put;
 }
@@ -187,53 +168,47 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
 // swap is the documented MSVC5 callee-save coin-flip, not source-steerable.
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
-    if (m_10 == 0) {
+    if (m_fp == 0) {
         return 0;
     }
 
     i32 ok = 0;
     while (ok == 0) {
-        if (RezFClose(m_10) == 0) {
+        if (RezFClose(m_fp) == 0) {
             ok = 1;
         } else {
             ok = 0;
-            if (((CRezItmOwner*)m_parent)->Retry() == 0) {
+            if (m_parent->Retry() == 0) {
                 return 0;
             }
         }
     }
 
-    m_10 = 0;
-    if (m_14 != 0) {
-        RezFree(m_14);
+    m_fp = 0;
+    if (m_readBuf != 0) {
+        RezFree(m_readBuf);
     }
-    m_14 = 0;
-    m_20 = -1;
+    m_readBuf = 0;
+    m_pos = -1;
     return ok;
 }
 
-// The embedded child-collection vftable both CRezDir sub-objects install (a
-// vftable in .rdata; modeled as a labeled datum so taking its address
-// reloc-matches the engine instead of a bare immediate).
-DATA(0x001ef7c8)
-extern i32 g_rezDirChildVtbl;
-
 // ---------------------------------------------------------------------------
 // CRezDir::CRezDir(parent, rezMgr)
-// Base ctor, then: m_14=0, m_18=0, m_vtblA=m_vtblB=&g_rezDirChildVtbl (embedded
-// child collection's two vtables), m_20=m_24=m_28=m_34=0, derived vtbl,
-// m_2c=rezMgr, m_30=1.
+// Base ctor, then the two embedded child-collection list members auto-construct
+// (each stamps ??_7CRezDirList @0x1ef7c8 and zeroes head/tail), the derived vtbl
+// is stamped, then m_28=0, m_34=0, m_rezMgr=rezMgr, m_30=1.
+// @early-stop
+// vptr-schedule wall (ALL-VTABLES): real-polymorphic list members auto-stamp their
+// vptr FIRST (vptr,head,tail) and the compiler zeroes m_28/m_34 after the derived
+// vptr, vs retail's head,tail,vtbl store order + pre-vptr field zeroing. The two
+// child collections + the CRezItmBase base are byte-faithful; converted per the
+// ALL-VTABLES mandate (was the hand-rolled child-collection double-stamp).
 RVA(0x0013c940, 0x46)
 CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
-    m_14 = 0;
-    m_18 = 0;
-    m_vtblA = (void*)&g_rezDirChildVtbl;
-    m_vtblB = (void*)&g_rezDirChildVtbl;
-    m_20 = 0;
-    m_24 = 0;
     m_28 = 0;
     m_34 = 0;
-    m_2c = rezMgr;
+    m_rezMgr = rezMgr;
     m_30 = 1;
 }
 
@@ -250,6 +225,9 @@ i32 CRezDir::FindEntry(char* name) {
     if (RezStatEntry(name, &rec) != 0) {
         return 0;
     }
+    // Language-forced int-view over the fixed byte record: the entry's attribute
+    // dword sits at the packed (unaligned) offset +6 of the 0x24-byte find-record;
+    // bit 0x4000 marks a directory. Reading a dword from a byte buffer needs the cast.
     return (*(i32*)(rec.raw + 6) & 0x4000) == 0x4000;
 }
 
@@ -287,7 +265,10 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     if (childFlag != 0) {
         for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
-            n->m_14->Load(1);
+            // RezNode::m_14 is the shared hash-collection's generic (void*) payload
+            // slot - it holds a CSymTab*/CSymRec* in Bute and a CRezDirNode* here;
+            // typed to the concrete element type at this use site.
+            ((CRezDirNode*)n->m_14)->Load(1);
         }
     }
     return 1;
@@ -376,10 +357,10 @@ i32 RezMgr::MakeRezPath() {
     {
         CString rez(s_rezName);
         m_haveRez = 0;
-        RezFormat(&m_pathA, s_join, cwd, (const char*)rez);
+        RezFormat(&m_pathA, s_join, cwd, (LPCTSTR)rez);
         if (!RezFileExists(m_pathA)) {
             if (drive) {
-                RezFormat(&m_pathA, s_dataPath, drive, (const char*)rez);
+                RezFormat(&m_pathA, s_dataPath, drive, (LPCTSTR)rez);
                 if (RezFileExists(m_pathA)) {
                     m_haveRez = 1;
                 } else {
@@ -398,15 +379,15 @@ i32 RezMgr::MakeRezPath() {
 
     m_haveMoviez = 0;
     i32 movFound = 0;
-    RezFormat(&m_pathB, s_join, cwd, (const char*)fec);
+    RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fec);
     if (!m_inGameDir && !RezFileExists(m_pathB) && !g_rezLowDetail) {
-        RezFormat(&m_pathB, s_join, cwd, (const char*)fecHi);
+        RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fecHi);
         if (RezFileExists(m_pathB)) {
             movFound = 1;
         }
     }
     if (!movFound && drive) {
-        RezFormat(&m_pathB, s_moviezPath, drive, (const char*)fec);
+        RezFormat(&m_pathB, s_moviezPath, drive, (LPCTSTR)fec);
         if (RezFileExists(m_pathB)) {
             m_haveMoviez = 1;
         }
@@ -436,6 +417,13 @@ static i32 g_timer100;   // (seed 0x64 ms)
 static i32 g_timer200;   // (seed 0xc8 ms)
 static i32 g_timer400;   // (seed 0x190 ms)
 static i32 g_timer500;   // (seed 0x1f4 ms)
+
+// The run-state / pacing globals UpdateClock (0x13ddc0) maintains alongside the
+// frame clock above (reloc-masked; modeled as file-scope like g_now). g_clockReset
+// is unsigned so its `!=0` gate + the elapsed<budget test emit the unsigned compare.
+static i32 g_run7c;      // (run-state countdown; reseeded from g_run80)
+static i32 g_run80;      // (run-state reload value)
+static u32 g_clockReset; // (last clock-reset tick; == ?g_wap32ClockReset@@3HA @0x253c78)
 
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
@@ -558,11 +546,107 @@ i32 RezMgr::HandleDebugPosition() {
     return r != 0;
 }
 
+// The frame clock. Retail does NOT call the WINMM import thunk directly; it caches
+// timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
+// in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
+// canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
+extern "C" u32(WINAPI* g_pTimeGetTime)();
+
+// -------------------------------------------------------------------------
+// RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick
+// calls (re-homed from src/Stub/RezMgr.cpp). Sample timeGetTime, derive the
+// per-frame delta into g_now/g_frameDelta, run down the run-state countdown, then
+// (when the pacing gate m_pacingGate is armed) busy-wait to the ms budget and, every
+// ~2s window, fold the frame count into m_smoothedFrameCount and rearm the window.
+// @confidence: med
+// @source: reloc-correlation (1 caller)
+RVA(0x0013ddc0, 0xaa)
+i32 RezMgr::UpdateClock() {
+    // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
+    // reuses it across the three samples (call edi), exactly as retail does.
+    u32(WINAPI * pTGT)() = g_pTimeGetTime;
+    u32 now = pTGT();
+    u32 delta = now - (u32)g_now;
+    g_now = now;
+    g_frameDelta = delta;
+    u32 run7c = g_run7c;
+    if (run7c == 0) {
+        g_run7c = g_run80;
+    } else if (delta >= run7c) {
+        g_run7c = 0;
+    } else {
+        g_run7c = run7c - delta;
+    }
+
+    if (m_pacingGate > 0) {
+        if (g_clockReset > 0) {
+            u32 elapsed = pTGT() - g_clockReset;
+            if (elapsed < (u32)m_frameBudgetMs) {
+                SpinWaitUntil(m_frameBudgetMs - elapsed);
+            }
+        }
+        g_clockReset = pTGT();
+    }
+
+    u32 count = m_frameCounter + 1;
+    m_frameCounter = count;
+    if ((u32)g_now - (u32)m_windowStartTick >= 0x7d0) {
+        m_smoothedFrameCount = count >> 1;
+        InitTimeFields(0);
+    }
+    return 1;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
-// @confidence: high
-// @source: rez-trace
-// @stub
-RVA(0x0013b0c0, 0x238)
-void CRezDir::Stub_13b0c0() {}
+// (CRezDir::Stub_13b0c0 @0x13b0c0 was a Ghidra mislabel: its real owner is
+// CSymParser - it sits between ParseBuffer and ParseRecords and drives them on
+// `this`. Reconstructed as CSymParser::LoadEntry in src/Bute/SymParser.cpp.)
+
+// -------------------------------------------------------------------------
+// CRezParseNode::CRezParseNode(parent, nameSrc, owner)  (0x13cac0; class in
+// RezMgr.h). Base-ctors CRezItmBase(parent), stamps its distinct derived vtable
+// (0x1ef7d0), records the owner @+0x18, heap-copies the name into +0x10, and links
+// itself into the owner's embedded child list (a CRezList at owner+0x1c) via
+// AddHead. Real-polymorphic (CRezItmBase-derived) so the base-ctor call +
+// derived-vptr stamp + /GX base-cleanup frame fall out; the derived vtable stays a
+// reloc-masked COMDAT here (retail datum 0x1ef7d0 emitted by FinalVtables).
+RVA(0x0013cac0, 0x9b)
+CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItmBase(parent) {
+    m_18 = owner;
+    m_14 = 0;
+    // operator new returns void*; char* needed for strcpy (language-forced).
+    char* buf = (char*)::operator new(strlen(nameSrc) + 1);
+    m_10 = buf;
+    strcpy(buf, nameSrc);
+    // Enroll into the owner's child list. The owner (m_18) is a foreign parser
+    // object whose embedded CRezList sits at +0x1c - documented offset access (the
+    // codegen reloads it from this+0x18: `mov ecx,[ebx+0x18]; add ecx,0x1c`). The
+    // node cast is the generic intrusive-list insertion (CRezList links any node
+    // type by its +4/+8 slots, which CRezItmBase carries).
+    CRezList* kids = (CRezList*)((char*)m_18 + 0x1c);
+    kids->AddHead((CRezListNode*)this);
+}
+
+// ===========================================================================
+// Class-metadata annotations for the RezMgr.h classes. Hosted at EOF of this TU
+// (not in the header): RezMgr.h is pulled into the /O2-sensitive Image.cpp for
+// RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
+// (verified). Placed after all function bodies so this TU is unperturbed too.
+// ===========================================================================
+SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner);    // abstract Retry-gate interface (no storage/vtable here)
+SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
+VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
+SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
+VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
+SIZE(CRezDirList, 0xc);        // embedded child-collection list {vptr,head,tail}
+SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
+SIZE(CRezParseNode, 0x1c);     // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
+SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
+SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
+SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node
+SIZE_UNKNOWN(CGameMode);       // abstract per-frame mode interface (no storage here)
+SIZE_UNKNOWN(RezMgrOwner);     // partial view of the owning-window holder (+0x04 HWND)
+SIZE(RezMgr, 0xa30);           // the CGruntzMgr (WAP32::CGameMgr); alloc 0xa30, modeled to +0xfc

@@ -4,16 +4,15 @@
 #include <Gruntz/MotionState.h>
 #include <math.h>
 #include <rva.h>
+#include <Globals.h>
 
 // The shared .rdata bound/easing doubles the methods read by plain dword loads.
 DATA(0x001f04b0)
 extern const double g_motionMin;
 DATA(0x001f04b8)
 extern const double g_motionMax;
-extern const double g_motionNegHalf;
 DATA(0x001f0500)
 extern const double g_motionZero;
-extern const double g_motionNegTwo;
 
 // ---------------------------------------------------------------------------
 RVA(0x000136d0, 0x184)

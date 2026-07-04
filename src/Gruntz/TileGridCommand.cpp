@@ -34,28 +34,28 @@ void CTileGridCommand::RecordMove() {
 // block through the stream's Transfer (vtable slot 12) and returns 1.
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
-i32 CTileGridCommand::Serialize(TgcStream* s) {
+i32 CTileGridCommand::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Transfer(&m_08, 4);
-    s->Transfer(&m_0c, 4);
-    s->Transfer(&m_10, 4);
-    s->Transfer(&m_14, 4);
-    s->Transfer(&m_18, 4);
-    s->Transfer(&m_1c, 4);
-    s->Transfer(&m_28, 4);
-    s->Transfer(&m_2c, 4);
-    s->Transfer(&m_30, 4);
-    s->Transfer(&m_34, 4);
-    s->Transfer(&m_38, 4);
-    s->Transfer(&m_24, 4);
+    s->Write(&m_08, 4);
+    s->Write(&m_0c, 4);
+    s->Write(&m_10, 4);
+    s->Write(&m_14, 4);
+    s->Write(&m_18, 4);
+    s->Write(&m_1c, 4);
+    s->Write(&m_28, 4);
+    s->Write(&m_2c, 4);
+    s->Write(&m_30, 4);
+    s->Write(&m_34, 4);
+    s->Write(&m_dutyOn, 4);
+    s->Write(&m_24, 4);
     i32* p = m_grid;
     for (i32 i = 0; i < 24; i++) {
-        s->Transfer(p, 4);
+        s->Write(p, 4);
         p++;
     }
     return 1;
@@ -68,11 +68,11 @@ i32 CTileGridCommand::Serialize(TgcStream* s) {
 // write slot (+0x30). Reads the 12 scalar fields then the 24-dword grid block.
 // ---------------------------------------------------------------------------
 RVA(0x00113c10, 0xe8)
-i32 CTileGridCommand::Deserialize(TgcStream* s) {
+i32 CTileGridCommand::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    if (g_gameReg->m_30 == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     s->Read(&m_08, 4);
@@ -85,7 +85,7 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
     s->Read(&m_2c, 4);
     s->Read(&m_30, 4);
     s->Read(&m_34, 4);
-    s->Read(&m_38, 4);
+    s->Read(&m_dutyOn, 4);
     s->Read(&m_24, 4);
     i32* p = m_grid;
     for (i32 i = 0; i < 24; i++) {
@@ -100,7 +100,7 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
 // Drives the command's on/off duty cycle off the running game clock: while the
 // elapsed time is within the lead-in (m_2c) it stays active (+1); past it, the
 // remainder modulo the on+off period (m_28+m_30) selects the on or off phase,
-// firing the slot-0 tick and latching m_38 on each edge.  Returns +1 (active),
+// firing the slot-0 tick and latching m_dutyOn on each edge.  Returns +1 (active),
 // 0 (just turned on, one-shot of type 0x18) or -1 (just turned off, not 0x17).
 // ---------------------------------------------------------------------------
 // @early-stop
@@ -109,42 +109,42 @@ i32 CTileGridCommand::Deserialize(TgcStream* s) {
 RVA(0x00112970, 0xad)
 i32 CTileGridCommand::Classify(i32 arg) {
     u32 elapsed = g_645588 - m_24;
-    if (elapsed <= (u32)m_2c) {
+    if (elapsed <= m_2c) {
         goto ret1;
     }
     elapsed -= m_2c;
     {
-        u32 period = (u32)m_30 + (u32)m_28;
+        u32 period = m_30 + m_28;
         if (elapsed > period) {
-            if (m_04 == 0x18) {
-                ((TgcTickView*)this)->Tick();
+            if (m_typeTag == 0x18) {
+                Tick();
                 return 0;
             }
-            if (m_04 != 0x17) {
-                if (m_38 == 1) {
-                    ((TgcTickView*)this)->Tick();
+            if (m_typeTag != 0x17) {
+                if (m_dutyOn == 1) {
+                    Tick();
                 }
                 return -1;
             }
         }
         u32 rem = elapsed % period;
-        if (rem < (u32)m_28) {
-            if (m_38 != 0) {
+        if (rem < m_28) {
+            if (m_dutyOn != 0) {
                 goto ret1;
             }
-            ((TgcTickView*)this)->Tick();
-            m_38 = 1;
-            if (m_04 == 0x18) {
+            Tick();
+            m_dutyOn = 1;
+            if (m_typeTag == 0x18) {
                 return 0;
             }
             goto ret1;
         }
-        if (m_38 != 1) {
+        if (m_dutyOn != 1) {
             goto ret1;
         }
-        ((TgcTickView*)this)->Tick();
-        m_38 = 0;
-        if (m_04 == 0x17) {
+        Tick();
+        m_dutyOn = 0;
+        if (m_typeTag == 0x17) {
             goto ret1;
         }
         return -1;
@@ -164,12 +164,12 @@ ret1:
 // uses scale-1, propagating through both cell accesses.
 RVA(0x00112b70, 0x5a)
 i32 CTileGridCommand::BumpCell() {
-    TgcGameReg* reg = g_gameReg;
-    TgcLayer* layer = reg->m_30->m_24->m_5c;
-    i32 v = layer->m_20[m_08 + layer->m_24[m_0c]] + 1;
-    TgcLayer* layer2 = reg->m_30->m_24->m_5c;
-    layer2->m_20[m_08 + layer2->m_24[m_0c]] = v;
-    reg->m_70->MarkCell(m_08, m_0c, v);
+    CGameRegistry* reg = g_gameReg;
+    CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] + 1;
+    CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
+    ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
     m_14 = 1;
     return 1;
 }
@@ -189,46 +189,47 @@ RVA(0x00112590, 0x166)
 i32 CTileGridCommand::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
-        TgcGameReg* reg = g_gameReg;
-        TgcLayer* L = reg->m_30->m_24->m_5c;
-        L->m_20[L->m_24[m_0c] + m_08] = m_34;
+        CGameRegistry* reg = g_gameReg;
+        CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+        L->m_cells[L->m_rowBase[m_0c] + m_08] = m_34;
         v = m_34;
-        reg->m_70->MarkCell(m_08, m_0c, v);
+        ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
-                v = L->m_20[L->m_24[m_0c] + m_08] + 1;
-                TgcLayer* L2 = reg->m_30->m_24->m_5c;
-                L2->m_20[L2->m_24[m_0c] + m_08] = v;
-                reg->m_70->MarkCell(m_08, m_0c, v);
+                CGameRegistry* reg = g_gameReg;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                v = L->m_cells[L->m_rowBase[m_0c] + m_08] + 1;
+                CViewport* L2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L2->m_cells[L2->m_rowBase[m_0c] + m_08] = v;
+                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
-                L->m_20[L->m_24[m_0c] + m_08] = 0x5b;
-                reg->m_70->MarkCell(m_08, m_0c, 0x5b);
+                CGameRegistry* reg = g_gameReg;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5b;
+                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
-                TgcGameReg* reg = g_gameReg;
-                TgcLayer* L = reg->m_30->m_24->m_5c;
-                L->m_20[L->m_24[m_0c] + m_08] = 0x5a;
-                reg->m_70->MarkCell(m_08, m_0c, 0x5a);
+                CGameRegistry* reg = g_gameReg;
+                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5a;
+                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5a);
                 break;
             }
             default:
                 break;
         }
     }
-    TgcGameReg* reg = g_gameReg;
+    CGameRegistry* reg = g_gameReg;
     i32 py = (m_0c << 5) + 0x10;
     i32 px = (m_08 << 5) + 0x10;
-    reg->m_68->MarkRect(m_28, px, py, m_30, 1, 0);
+    ((TgcRegion*)reg->m_68)->MarkRect(m_28, px, py, m_30, 1, 0);
     if (m_2c != 0) {
-        TgcReport* rec = reg->m_30->m_08->Report(0, px, py, 95000, "InGameText", 0x40003);
+        TgcReport* rec =
+            ((TgcGameMgr*)reg->m_world)->m_08->Report(0, px, py, 95000, "InGameText", 0x40003);
         if (rec != 0) {
             rec->m_124 = m_2c;
         }

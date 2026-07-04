@@ -15,6 +15,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 // --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
 struct CGruntSub10 { // grunt->m_10
@@ -24,7 +25,7 @@ struct CGruntSub10 { // grunt->m_10
 struct CMoveListNode {     // pending-coord node
     CMoveListNode* m_next; // +0x00
     i32 _04;
-    void* m_8; // +0x08
+    i32 m_8; // +0x08  recycled coord-node handle (fed to g_coordPool.Drop)
 };
 struct CMoveObList {           // CGrunt::m_31c (CObList view)
     void* Find1de8(void** it); // 0x1de8
@@ -60,6 +61,12 @@ struct CMoveGridDims { // mover->m_c
     i32 m_c, m_10; // +0x0c grid width, +0x10 grid height
 };
 
+// The mover's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
+struct CMoveBoard {
+    char _00[0x1c];
+    CGruntM* m_grid[60]; // +0x1c
+};
+
 struct CGruntMover {                                              // this (edi)
     i32 Step(CGruntM* g);                                         // 0x031610
     CGruntM* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // 0x4098
@@ -68,7 +75,7 @@ struct CGruntMover {                                              // this (edi)
     void Finish3e4f(CGruntM* g, CGruntM* a);                      // 0x3e4f
 
     char _00[0x8];
-    void* m_8;          // +0x08  board (CGruntM*[])
+    CMoveBoard* m_8;    // +0x08  board (CGruntM*[] grid at +0x1c)
     CMoveGridDims* m_c; // +0x0c
     char _10[0x94 - 0x10];
     i32 m_94, m_98; // +0x94, +0x98
@@ -78,12 +85,9 @@ struct CGruntMover {                                              // this (edi)
     i32 m_c0; // +0xc0
 };
 
-// The shared coord-node pool (0x645540): Recycle163b returns a node to the pool.
-struct CMoveCoordPool {
-    void Recycle163b(void* node); // 0x163b
-};
+// The shared coord-node pool (0x645540): Drop returns a node to the pool.
 DATA(0x00245540)
-extern CMoveCoordPool g_coordPool;
+extern CStepList2 g_coordPool;
 
 // Integer board-distance: the retail form is `fild;fsqrt;call __ftol`; modeled as a
 // plain int sqrt here (no /Oi) - see the @early-stop note.
@@ -98,7 +102,7 @@ static i32 isqrt(i32 v) {
             CMoveListNode* cur = nd;                                                               \
             nd = nd->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Recycle163b(cur->m_8);                                                 \
+                g_coordPool.Drop(cur->m_8);                                                        \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll1b48a6();                                                              \
@@ -122,7 +126,7 @@ i32 CGruntMover::Step(CGruntM* g) {
         // ---- in-flight: advance / reroute along the path ----
         i32 col = g->m_2f0;
         i32 row = g->m_2f4;
-        CGruntM* cur = *(CGruntM**)((char*)m_8 + (15 * col + row) * 4 + 0x1c);
+        CGruntM* cur = m_8->m_grid[15 * col + row];
         i32 dimX3 = (i32)((u32)m_c->m_c / 3);
         i32 dimY3 = (i32)((u32)m_c->m_10 / 3);
         CCoordXY c0;
@@ -238,8 +242,8 @@ i32 CGruntMover::Step(CGruntM* g) {
                 if (nd != 0) {
                     do {
                         void* r = g->m_31c.Find1de8((void**)&nd);
-                        if (*(void**)r != 0) {
-                            g_coordPool.Recycle163b(*(void**)r);
+                        if (*(i32*)r != 0) {
+                            g_coordPool.Drop(*(i32*)r);
                         }
                     } while (nd != 0);
                 }
@@ -250,3 +254,12 @@ i32 CGruntMover::Step(CGruntM* g) {
         return 1;
     }
 }
+
+SIZE_UNKNOWN(CCoordXY);
+SIZE_UNKNOWN(CGruntM);
+SIZE_UNKNOWN(CGruntMover);
+SIZE_UNKNOWN(CGruntSub10);
+SIZE_UNKNOWN(CMoveBoard);
+SIZE_UNKNOWN(CMoveGridDims);
+SIZE_UNKNOWN(CMoveListNode);
+SIZE_UNKNOWN(CMoveObList);
