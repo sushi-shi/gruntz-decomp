@@ -1,0 +1,102 @@
+<html>
+<head>
+    <title>RollingBallz</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=2><font size="+3">Rolling Ballz</font><br/></th>
+  </tr>
+  <tr>
+    <th colspan=2>The RollingBall logic is used to control the rolling ball hazardz in each area (e.g. the Boulder in Area <font color="FF0000">1</font> Rocky Roadz).<br/>
+        A RollingBall will always travel in a straight line, until it reaches an <a href="Tilez201-209.html">Arrow</a> (in which case it moves in the direction the Arrow is pointing), or a <a href="TileAttributez.html">Solid Tile</a> which will destroy it.  It will roll at least eleven Tilez before it disintegratez (old age).<br/>        The Image Set: value will determine the <i>initial</i> direction the RollingBall will travel.<br/><br/></th>  </tr>  <tr>    <th colspan=2><font size="+2"><a href="EditObjects.html">Edit Objects</font> Dialog Box</a></th>  </tr>  <tr>    <th width=11% align="left">Logic:</th>    <th align="left"><font color="FFB903">RollingBall</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Image Set:</th>
+    <th>
+      <table>
+        <tr valign="top" align="left">
+          <th><font color="FFB903">LEVEL_ROLLINGBALL_</font></th>
+          <th align="right">+</th>
+          <th><font color="FFB903">EAST</font></th>
+          <th>ball startz rolling toward the east</th>
+        </tr>
+        <tr align="left">
+          <th colspan=2 align="right">or</th>
+          <th><font color="FFB903">NORTH</font></th>
+          <th>ball startz rolling toward the north</th>
+        </tr>
+        <tr align="left">
+          <th colspan=2 align="right">or</th>
+          <th><font color="FFB903">SOUTH</font></th>
+          <th>ball startz rolling toward the south</th>
+        </tr>
+        <tr align="left">
+          <th colspan=2 align="right">or</th>
+          <th><font color="FFB903">WEST</font></th>
+          <th>ball startz rolling toward the west</th>
+        </tr>
+      </table>
+    <th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Speed:</th>
+    <th><font color="FFB903">0</font> (default) speed of the RollingBall in milliseconds.<br/>
+        The value is the time the RollingBall takes to travel the distance of one <a href="Tilez001-036.html">Tile</a> in any direction.<br/>
+        For example, a value of <font color="FFB903">1000</font> means the RollingBall takes 1 second to travel 1 Tile.
+    </th>
+  </tr>
+  <tr>
+    <th colspan=2>
+      <table>
+        <tr align="left">
+          <th>Area</th>
+          <th>Graphicz set</th>
+          <th>Image</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">1</font></th>
+          <th>Rocky Roadz</th>
+          <th><img src="../images/RollingRock1.gif"> Rock 1</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">2</font></th>
+          <th>Gruntziclez</th>
+          <th><img src="../images/RollingSnowBall.gif"> Snow Ball</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">3</font></th>
+          <th>Trouble in the Tropicz</th>
+          <th><img src="../images/RollingRock3.gif"> Rock 3 (Coconut)</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">4</font></th>
+          <th>High on Sweetz</th>
+          <th><img src="../images/RollingMaltedMilkBall.gif"> Malted-milk Ball</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">5</font></th>
+          <th>High Rollerz</th>
+          <th><img src="../images/Rolling8Ball.gif"> 8 Ball</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">6</font></th>
+          <th>Honey, I Shrunk the Gruntz</th>
+          <th><img src="../images/RollingOlive.gif"> Olive</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">7</font></th>
+          <th>The Miniature Masterz</th>
+          <th><img src="../images/RollingGolfBall.gif"> Golf Ball</th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th align="right"><font color="FF0000">8</font></th>
+          <th>Gruntz in Space</th>
+          <th><img src="../images/RollingRock8.gif"> Rock 8</th>
+        </tr>
+      </table>
+    </th>
+  </tr>
+</table>
+</body>
+</html>

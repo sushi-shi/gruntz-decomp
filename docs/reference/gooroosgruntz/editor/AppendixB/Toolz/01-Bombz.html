@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>BombzGrunt</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr valign="top">    <th colspan=2><font size="+4"><img src="../../../images/ToolzBomb.gif"> <font color="FFB903">1</font> - Bombz</font> <img src="../../../images/bomb.gif"><br/></th>  </tr>  <tr valign="top" align="left">    <th colspan=2><font size="+3">Method number 1:</font><font size="+2"> Enter the game with it.</font><br/><br/>        <center><font size="+2"><a href="../../EditObjects.html">Edit Objects</a> Dialog Box</font></center><br/></th>
+  </tr>  <tr valign="top" align="left">    <th width=12%>Logic:</th>    <th width=88%><a href="../../GruntStartingPoint.html"><font color="FFB903">GruntStartingPoint</font></a></th>
+  </tr>  <tr valign="top" align="left">    <th>Image Set:</th>
+    <th><font color="FFB903">GAME_WAPWORLDONLY_TRIGGER</font> some <font color="00FFFF">Designerz</font> use <font color="FFB903">GAME_WAPWORLDONLY_GUARDPOINT</font></th>  </tr>  <tr valign="top" align="left">
+    <th>Points:</th>    <th><font color="FFB903">0</font> (default ... not used, solver's <font color="FFB903">Grunt</font>)<br/>        See <a href="../../AppendixC/EnemyAITypez.html">AppendixC/EnemyAITypez</a> for value, if Smarts: (team) is <font color="FF0000">1</font>, <font color="32CD32">2</font> or <font color="0000FF">3</font>
+    </th>
+  </tr>
+  <tr valign="top" align="left">    <th>Smarts:</th>    <th><font color="FFB903">0</font> ... default ... the player controlz this <font color="FFB903">Grunt.</font><br/>
+        <font color="32CD32">1</font> enemy team number.<br/>        <font color="0000FF">2</font> enemy team number.<br/>
+        <font color="FF0000">3</font> enemy team number.<br/>        <font color="CCCC00">Note:</font>  <font color="FFB903">Gruntz</font> will attack any other Grunt with a <font color="32CD32">different</font> <font color="0000FF">team</font> <font color="FF0000">number</font>!
+    </th>  </tr>  <tr valign="top" align="left">
+    <th>Powerup:</th>
+    <th><font color="FFB903">0</font> (default ... Bare-handed)<br/>        1 ... Bomb
+    </th>  </tr>  <tr valign="top" align="left">    <th>X Min:</th>    <th><font color="FFB903">0</font> (default, solver's <font color="FFB903">Grunt</font>)<br/>        If Points: definez an enemy <a href="../../AppendixC/06-ObjectGuardz.html"><font color="FF69B4">Object Guard Grunt</font></a>, this field<br/>        (along with Y Min:) is the 'address' of the Object being guarded.
+    </th>  </tr>  <tr valign="top" align="left">
+    <th>X Max:</th>    <th><font color="FFB903">0</font> (default, solver's <font color="FFB903">Grunt</font>)<br/>        If Points: definez an enemy <a href="../../AppendixC/06-ObjectGuardz.html"><font color="FF69B4">Object Guard Grunt</font></a>, this field<br/>
+        (along with X Min:) is the 'address' of the Object being guarded.
+    </th>
+  </tr>  <tr valign="top" align="left">
+    <th colspan=2><font size="+3">Method number 2:</font><font size="+2"> Cover it up.</font><br/>
+        <center><font size="+2"><a href="../../EditObjects.html">Edit Objects</a> Dialog Box</font></center><br/>
+        Use Logic: <a href="../../CoveredPowerUp.html"><font color="FFB903">CoveredPowerUp</font></a> with Powerup: = <font color="FFB903">1</font> ... other fieldz as necessary<br/><br/>        <font size="+3">Method number 3:</font><font size="+2"> Leave it in plain sight.</font><br/>        <center><font size="+2"><a href="../../EditObjects.html">Edit Objects</a> Dialog Box</font></center><br/>
+        Use Logic: <a href="../../InGameIcon.html"><font color="808000">InGameIcon</font></a> with Image_Set: = <font color="808000">GAME_INGAMEICONZ_TOOLZ_BOMBZ</font><br/><br/>
+        <font size="+3">Method number 4:</font><font size="+2"> Put it in a <a href="../../GiantRock.html">Giant Rock</a>.</font><br/>        No matter what 'team' they are on, a <a href="05-Gauntletz.html">Gauntletz Grunt</a>, <a href="01-Bombz.html">(Suicide) Bomber Grunt</a> or <a href="17-TimeBombz.html">Time Bombz Grunt</a> can break or blow up a <a href="../../GiantRock.html">Giant Rock</a>, or a <a href="13-Shovel.html">Shovel Grunt</a> can dig up a <a href="../Miscellaneous/99-TimeBombz.html">Time Bomb</a> next to a Giant Rock, revealing the Tool in the middle, where Tile #290 was placed.<br/><br/>        <font size="+3">Method number 5:</font><font size="+2"> Ask for it.</font><br/>
+        One of the solver's Gruntz can use a <a href="../PowerUpz/50-Megaphone.html">Megaphone</a> <img src="../../../images/InGameIconMegaphone.gif"> to call for the Tool.<br/><br/>        <font size="+3">Method number 6:</font><font size="+2"> Steal it (back).</font><br/>
+        Entice a <a href="../../AppendixC/13-ToolThievez.html">Tool Thief</a> carrying the Tool <img src="../../../images/AIToolThiefBomb.gif"> into making a <font color="FF0000">kamikaze</font> run, then pick up the Tool he leavez behind.    </th>
+  </tr>  <tr valign="top" align="left">
+    <th colspan=2>(Suicide)Bomb(er)z are one-time use Toolz; the Grunt using the Tool doesn't survive.<br/>
+        No, not even if he is under the influence of the <a href="../../AppendixB/PowerUpz/56-Invulnerability.html">Invulnerability</a> Powerup!<br/><br/>
+        These guyz really get hyped up, when they decide to use their Toolz. They can move three timez as fast as an ordinary Grunt can walk! That is rather handy when it is necessary to go from here to -> there in record time!<br/>
+        An enemy <a href="../../AppendixC/07-Bomberz.html">SuicideBomber</a> is always <font color="FF0000">Red</font> <img src="../../../images/AIBombz.gif">, and obviously not 'playing with a full deck'.<br/>        Any enemy Grunt may be given a Bomb, however, so you may see a <font color="808000">Yellow</font> (<a href="../../AppendixC/03-HitAndRunnerz.html">Hit And Runner</a>) Grunt carrying a Bomb.<br/>
+        If you listen carefully, you might hear one mumbling to himself, saying something like "Watch me light this puppy!".<br/>        Be prepared to get out of his way when he does light it!<br/>        That's the signal he's about to make a <font color="FF0000">kamikaze</font> run!  He'll come at you like greased lightning.<br/><br/>        A Grunt with a Bomb is also very fragile; place one in the middle of eight of his buddiez, and hit him with a Sponge, and all nine Gruntz leave the game ... violently!<br/><br/>
+    </th>  </tr>  <tr valign="top" align="left">    <th colspan=2>Travel speed: <font color="FFB903">600</font> millisecondz per Tile ... (<font color="44CC00">300</font> millisecondz per Tile with <a href="../PowerUpz/55-SuperSpeed.html">SuperSpeed</a>).<br/>        (200 millisecondz per Tile, when the fuse is lit.) <img src="../../../emoticons/BigWink.gif"><br/><br/>    </th>  </tr>
+  <tr valign="top" align="left">
+    <th colspan=2>
+      <table>        <tr valign="top" align="left">
+          <th colspan=6><font size="+1">Used as a weapon</font><br/></th>        </tr>        <tr valign="top" align="left">          <th colspan=6>'Hit' value: 20/20 ... any Grunt within one Tile of the explosion is toast, no Goo <img src="../../../images/OrangeGooPuddle.gif"><img src="../../../images/HotPinkGooPuddle.gif"> left to suck up!<br/><br/></th>        </tr>        <tr valign="top" align="left">          <th colspan=6>Assumption: Grunt teleportz into an enclosed area of two Tilez next to an enemy '<a href="../../AppendixC/05-PostGuardz.html">Post Guard</a>' Grunt (neither can move), and beginz the fight.</th>
+        </tr>
+        <tr valign="top" align="left">          <th width=3% valign="bottom">ID</th>
+          <th width=16% valign="bottom">Opponent</th>          <th width=4% valign="bottom">Hit</th>          <th width=8% valign="bottom">Result</th>
+          <th width=8%>Winner's<br/>              Health
+          </th>
+          <th width=61% valign="bottom">Reason for unusual resultz</th>        </tr>        <tr valign="top" align="left">          <th align="right">0</th>
+          <th><a href="00-Bare-handed.html">Bare-handed</a></th>
+          <th align="right">1</th>
+          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th>Nothing unusual here ... nobody wins!!!  (Everybody <font color="FF0000">lose</font>s!)</th>        </tr>        <tr valign="top" align="left">          <th align="right">1</th>          <th><font color="CD1076">Bombz</font></th>          <th align="right">20</th>         <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>
+        </tr>
+        <tr valign="top" align="left">          <th align="right">2</th>
+          <th><a href="02-Boomerangz.html">Boomerangz</a></th>          <th align="right">6</th>
+          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>
+        <tr valign="top" align="left">          <th align="right">3</th>
+          <th><a href="03-Brickz.html">Brick(layer)z</a></th>          <th align="right">4</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>         <th></th>        </tr>        <tr valign="top" align="left">          <th align="right">4</th>          <th><a href="04-Clubz.html">Clubz</a></th>          <th align="right">8</th>
+          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>
+        <tr valign="top" align="left">          <th align="right">5</th>
+          <th><a href="05-Gauntletz.html">Gauntletz</a></th>
+          <th align="right">5</th>          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>
+        <tr valign="top" align="left">          <th align="right">6</th>
+          <th><a href="06-Glovez.html">(Boxing) Glovez</a></th>          <th align="right">1</th>
+          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>        <tr valign="top" align="left">
+          <th align="right">7</th>          <th><a href="07-Gooberz.html">Goober(Straw)z</a></th>
+          <th align="right">2</th>
+          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>        <tr valign="top" align="left">
+          <th align="right">8</th>          <th><a href="08-GravityBootz.html">Gravity Bootz</a></th>
+          <th align="right">2</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>        </tr>
+        <tr valign="top" align="left">          <th align="right">9</th>          <th><a href="09-GunHatz.html">Gun Hatz</a></th>
+          <th align="right">10</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>        </tr>        <tr valign="top" align="left">          <th align="right">10</th>          <th><a href="10-NerfGunz.html">Sponge Gunz</a></th>
+          <th align="right">1</th>
+          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>        <tr valign="top" align="left">
+          <th align="right">11</th>
+          <th><a href="11-Rockz.html">Rockz</a></th>
+          <th align="right">8</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>
+        </tr>        <tr valign="top" align="left">          <th align="right">12</th>          <th><a href="12-Shieldz.html">Shieldz</a></th>          <th align="right">1</th>
+          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>
+        <tr valign="top" align="left">
+          <th align="right">13</th>
+          <th><a href="13-Shovel.html">Shovel</a></th>          <th align="right">6</th>
+          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>
+        <tr valign="top" align="left">
+          <th align="right">14</th>          <th><a href="14-Springz.html">Springz</a></th>
+          <th align="right">5</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>        <tr valign="top" align="left">          <th align="right">15</th>          <th><a href="15-SpyGear.html">Spy Gear</a></th>
+          <th align="right">4</th>
+          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>
+        <tr valign="top" align="left">          <th align="right">16</th>          <th><a href="16-Swordz.html">Swordz</a></th>          <th align="right">10</th>          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>        <tr valign="top" align="left">
+          <th align="right">17</th>          <th><a href="17-TimeBombz.html">TimeBombz</a></th>
+          <th align="right">20</th>
+          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>        </tr>
+        <tr valign="top" align="left">
+          <th align="right">18</th>          <th><a href="18-Toobz.html">Toobz</a></th>          <th align="right">2</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>
+          <th></th>
+        </tr>
+        <tr valign="top" align="left">
+          <th align="right">19</th>
+          <th><a href="19-Wandz.html">(Magic) Wandz</a></th>          <th align="right">?</th>          <th align="center"><font color="808000">draw</font></th>
+          <th align="right"><font color="FF0000">0</font></th>          <th>Won't fight.</th>
+        </tr>        <tr valign="top" align="left">          <th align="right">20</th>          <th><a href="20-Warpstone.html">Warpstone</a></th>          <th align="right">0</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th>can't fight ... and enemy Gruntz cannot carry a Warpstone piece <img src="../../../images/WarpstonePiece1.gif">!</th>        </tr>        <tr valign="top" align="left">          <th align="right">21</th>          <th><a href="21-WelderzKit.html">Welder's Kit</a></th>          <th align="right">20</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>        </tr>
+        <tr valign="top" align="left">          <th align="right">22</th>          <th><a href="22-Wingz.html">Wingz</a></th>
+          <th align="right">2</th>          <th align="center"><font color="808000">draw</font></th>          <th align="right"><font color="FF0000">0</font></th>          <th></th>        </tr>
+        <tr valign="top" align="left">
+          <th colspan=6>* GunHatz take no damage from a SpongeGun (but are moved) and half damage from any other ranged weapon Gruntz.<br/>              ** Shieldz take no damage from Bare-handed, (Boxing) Glovez or other Shield Gruntz, and they take half damage from many other Gruntz.<br/>
+              An opponent's 'Hit' value in <font color="CCCC00">Yellow</font> indicatez half damage.<br/>              An opponent's 'Hit' value of '0' in <font color="FF0000">Red</font> indicatez no damage.<br/>              An '<font color="CCCC00">undecided</font>' result is because of random delayz (flailing, etc.) by either opponent.<br/><br/>              Grade: <font color="FF0000">F</font> 14 <font color="00FF00">W6</font>-<font color="CCCC00">D2</font>-<font color="FF0000">L15</font> (<font color="FF0000">-159</font> -199)<br/><br/>              The solver, using "hit & run" tacticz, can greatly alter the resultz against most enemy Gruntz.
+          </th>
+        </tr>
+      </table>    </th>  </tr></table>
+</body>
+</html>

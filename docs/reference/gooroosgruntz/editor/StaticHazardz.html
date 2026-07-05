@@ -1,0 +1,266 @@
+<html>
+<head>
+    <title>StaticHazardz</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=3><font size="+4">Static Hazardz</font><br/>
+        Static Hazards, unlike (most of) the Hazards in the following Topics, do not move around; you just have to go around them, or go over them (at the proper time <img src="../emoticons/BigWink.gif">).  It doesn't matter which of the six areas you are working with, the entry is exactly the same, only the appearance of the hazard changes.<br/>
+    </th>
+  </tr>
+  <tr valign="bottom">
+    <th width=4%>Area</th>
+    <th width=19%>Background Tile(z)<br/>
+        (<i>usually</i> 193 & 194)</th>
+    <th align="left">Description of the hazard</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">3</font></th>
+    <th align="left"><img src="Tilez/3TT/TT193.jpg"><img src="Tilez/3TT/TT194.jpg"></th>
+    <th align="left"><img src="../images/LavaGeyser.gif"> Lava Geyser</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">4</font></th>
+    <th align="left"><img src="Tilez/4HS/HS193.jpg"><img src="Tilez/4HS/HS194.jpg"></th>
+    <th align="left"><img src="../images/BirthdayCandlezA.gif"> Birthday Candles</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">5</font></th>
+    <th align="left"><img src="Tilez/5HR/HR115.jpg"> (115) others(?)</th>
+    <th align="left"><img src="../images/TrapDoor.gif"> Trap Door</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">6</font></th>
+    <th align="left"><img src="Tilez/6Ho/Ho193.jpg"><img src="Tilez/6Ho/Ho194.jpg"></th>
+    <th align="left"><img src="../images/ElectricalOutlet.gif"> Electrical Outlet</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">7</font></th>
+    <th align="left"><img src="Tilez/7MM/MM193.jpg"><img src="Tilez/7MM/MM194.jpg"></th>
+    <th align="left"><img src="../images/JumpingGolfBall.gif"> Golf Ball Geyser</th>
+  </tr>
+  <tr valign="bottom">
+    <th><font color="FF0000">8</font></th>
+    <th align="left"><img src="Tilez/8GS/GS193.jpg"><img src="Tilez/8GS/GS194.jpg"></th>
+    <th align="left">Alien Goo Geyser</th>
+  </tr>
+</table>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=2><font size="+3">Edit Objects</font> <font size="+1">Dialog Box</font><br/>
+        <img src="Imagez/GLEEditObjects.jpg"><br/><br/>
+    </th>
+  </tr>
+  <tr>
+    <th width=100>Edit box name</th>
+    <th>Keyword and description of use</th>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+1">Identification</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>ID:</b></td>
+    <td><b>Calculated, after <a href="CalcCowID.html">CalcCowID</a> ... (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" bgcolor="FFD700"><font color="000000"><b>Buttons:</b></font></td>
+    <td>
+      <table bgcolor="D0D0D0">
+        <tr>
+          <td><font color="EE0000"><b>Paste<br/>
+              Copy<br/>
+              Delete</b>
+          </td>
+          <td><b><font color="EE0000">copy contentz of the clipboard into this logic (same as ctrl+v)<br/>
+              copy contentz of this logic into the clipboard (same as ctrl+c)<br/>
+              delete this logic from the map (same as ctrl+x)</b>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Name:</b></td>
+    <td><b>Optional, usually totally unnecessary</b></td>
+  </tr>
+  <tr>
+    <td><b>Logic:</b></td>
+    <td><font color="FFB903"><b>StaticHazard</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Image Set:</b></td>
+    <td><font color="FFB903"><b>LEVEL_STATICHAZARD</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Animation:</b></td>
+    <td><b>Empty, used only by EyeCandy type Objectz</b></td>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+1"><b>Location</b></font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>X:</b></td>
+    <td><b>Pixel location of the left edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF">Designer</font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00">8</font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any X:.</b>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Y:</b></td>
+    <td><b>Pixel location of the top edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Values established in the same manner as "X:".</b>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Z:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>I:</b></td>
+    <td><b><font color="FFB903">-1</font> (default)</b></td>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+1">Attributes</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>Score:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Points:</b></td>
+    <td><b><font color="FFB903">0</font> is the delay in milliseconds before the hazard operates for the first time.<br/>
+        This is normally used if you want many hazards to all have the same inactive periods, but you want to stagger their starting times.<br/>
+        <font color="FFB903">600</font> (6/10<sup>ths</sup> of a second) multiples works well for most <font color="FFB903">Gruntz</font>.<br/>
+        See <a href="GruntStartingPoint.html">GruntStartingPoint</a> for information about how fast different Gruntz travel.<br/>
+        Small, odd timez, such as <font color="FFB903">333</font> millisecondz make almost impassable hazardz.</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Smarts:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Powerup:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Damage:</b></td>
+    <td><b><font color="FFB903">0</font> is the time in milliseconds that the hazard is inactive.<br/>
+        <font color="FFB903">1500</font> would cause the hazard to be inactive for 1-1/2 seconds.<br/>
+        Small, odd timez, such as <font color="FFB903">333</font> millisecondz make almost impassable hazardz.<br/>
+        This is useful, in creating StaticHazard mini-puzzles (limitz possible routez).<br/>
+        The route you intend has 'normal' valuez (multiples of the Gruntz' movement speed).</b>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Health:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed X:</b></td>
+    <td><b><font color="FFB903">0</font> (default) ... X Tile coordinate, calculated, after <a href="CalcCowID.html">CalcCowID</a> ... (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed Y:</b></td>
+    <td><b><font color="FFB903">0</font> (default) ... Y Tile coordinate, calculated, after <a href="CalcCowID.html">CalcCowID</a> ... (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Face Dir:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>X Min:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>X Max:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>Direction:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>Y Min:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>Y Max:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td><b>Speed:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+  </tr>
+  <tr>
+    <td valign="top" bgcolor="FFD700"><font color="000000"><b>Buttons:</b></font></td>
+    <td>
+      <table bgcolor="D0D0D0">
+        <tr>
+          <td><b><font color="EE0000">CalcCow<br/>
+              CalcId</font><br/>
+              <font color="00FF00">CalcCowID</font></b>
+          </td>
+          <td><b><font color="EE0000">Calculate "Speed X:" and "Speed Y:"<br/>
+              Calculate "ID:" based upon the "Speed X:" and "Speed Y: valuez</font><br/>
+              <font color="00FF00">Calculate "Speed X:", "Speed Y:" and "ID:" based upon those valuez for this logic</font></b>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+1">Other</font></th>
+  </tr>
+  <tr>
+    <td valign="top" bgcolor="FFD700"><font color="000000"><b>Buttons:</b></font></td>
+    <td>
+      <table bgcolor="D0D0D0">
+        <tr>
+          <td><b><font color="EE0000"><a href="ObjectRects.html">Rects...</a><br/>
+              <a href="Imagez/GLEObjectPoints.jpg">Points</a>...<br/>
+              <a href="ObjectFlags.html">Flags...</a><br/>
+              <a href="Imagez/GLEObjectHits.jpg">Hits</a>...<br/>
+              <a href="Imagez/GLEObjectUser.jpg">User</a>...<br/>
+              <a href="Imagez/GLEObjectMisc.jpg">Misc></a>...</b>
+          </td>
+          <td><b><font color="EE0000">Associate TileTrigger(z) to TileTriggerSwitch(ez), etc.<br/>
+              Not used for the game of <font color="FFB903">Gruntz</font><br/>
+              A few are useful for the game of <font color="FFB903">Gruntz</font><br/>
+              Not used for the game of <font color="FFB903">Gruntz</font><br/>
+              Not used for the game of <font color="FFB903">Gruntz</font><br/>
+              Not used for the game of <font color="FFB903">Gruntz</font></b>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+1">Common area</font></th>
+  </tr>
+  <tr>
+    <td valign="top" bgcolor="FFD700"><font color="000000"><b>Buttons:</b></font></td>
+    <td>
+      <table bgcolor="D0D0D0">
+        <tr>
+          <td><font color="EE0000"><b>&#060&#060Prev<br/>
+              OK<br/>
+              Next&#062&#062</b>
+          </td>
+          <td><b><font color="EE0000">Accept changes and go to previous object logic defined<br/>
+              Accept changes<br/>
+              Accept changes and go to next object logic defined</b>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

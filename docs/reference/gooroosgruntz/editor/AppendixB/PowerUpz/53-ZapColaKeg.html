@@ -1,0 +1,183 @@
+<html>
+<head>
+<title>ZapColaKeg</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=3><font size="+3"><font color="00FF00">53</font> - Keg Of Zap Cola</font> <img src="../../../images/InGameIconKegZapCola.gif"><br/><br/></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+2">Edit Objects</font> <font size="+1">Dialog Box</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Identification</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th width=10% valign="top">ID:</th>
+    <th width=53%>Calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)
+    </th>
+    <th width=37% valign="top"><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Name:</th>
+    <th>Optional, usually totally unnecessary</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Logic:</th>
+    <th><a href="../../CoveredPowerUp.html"><font color="FFB903">CoveredPowerup</font></a></th>
+    <th>or <a href="../../InGameIcon.html"><font color="#CCCC00">InGameIcon</font></a></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Image Set:</th>
+    <th><font color="FFB903">GAME_WAPWORLDONLY_TRIGGER</font></th>
+    <th>or <font color="FF0000"><i><u>alwayz</u></i></font> <font color="CCCC00">GAME_INGAMEICONZ_</font> <font color="FF0000">+</font><br/>
+        <font color="CCCC00">POWERUPZ_HEALTH3</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Animation:</th>
+    <th>Not used (blank)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Location</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>X:</th>
+    <th>Pixel location of the left edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF">Designer</font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00">8</font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any X:.
+    </th>
+    <th><font color="FFB903">same</font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00">16</font>.<br/>
+        (Image centered in the tile.)
+    </th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Y:</th>
+    <th>Pixel location of the top edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF">Designer</font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00">8</font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any Y:.
+    </th>
+    <th><font color="FFB903">same</font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00">16</font>.<br/>
+        (Image centered in the tile.) 
+    </th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Z:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>I:</th>
+    <th><font color="FFB903">-1</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Attributes</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Score:</th>
+    <th><font color="FFB903">0</font> ... default</th>
+    <th>Same as for <font color="FFB903">CoveredPowerup</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Points:</th>
+    <th><font color="FFB903">0</font> ... default</th>
+    <th>Same as for <font color="FFB903">CoveredPowerup</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Smarts:</th>
+    <th><font color="FFB903">0</font> (default) Tile 1 or 9 selected;<br/>
+        or <a href="../../TileAttributez.html">Clear</a> Tile (<font color="FFB903">1</font> through <font color="FFB903">301</font>) to replace the<br/>
+        <a href="../../Tilez077-084.html">Rock</a> <img src="../../Tilez/8GS/GS077.jpg"> or <a href="../../Tilez195-198.html">Hole/Mound</a> <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> when broken/dug up.<br/>
+        Objectz on an <a href="../../Tilez201-209.html">Arrow</a> Tile <font color="FF0000">may never be acquired!</font>
+    </th>
+    <th><font color="FFB903">0</font> (default ... not used)</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Powerup:</th>
+    <th><font color="00FF00">53</font> specifies the object is a Keg Of Zap Cola.</th>
+    <th><font color="FFB903">0</font> (default ... not used)</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Damage:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Health:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Speed X:</th>
+    <th><font color="FFB903">0</font> (default)<br/>
+        X Tile coordinate, calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)
+    </th>
+    <th>Same as for <font color="FFB903">CoveredPowerup</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Speed Y:</th>
+    <th><font color="FFB903">0</font> (default)<br/>
+        Y Tile coordinate, calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)
+    </th>
+    <th>Same as for <font color="FFB903">CoveredPowerup</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Face Dir:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>X Min:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>X Max:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Direction:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Y Min:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Y Max:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Speed:</th>
+    <th><font color="FFB903">0</font> (default)</th>
+    <th><font color="FFB903">same</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th colspan=3>This can go in a <a href="../../Tilez077-084.html">Rock</a> <img src="../../Tilez/8GS/GS077.jpg"> or <a href="../../Tilez195-198.html">Hole/Mound</a> <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> (<a href="../../CoveredPowerUp.html"><font color="FFB903">CoveredPowerUp</font></a>), or just lay in plain sight (<a href="../../InGameIcon.html"><font color="CCCC00">InGameIcon</font></a>).<br/>
+        When the Rock <img src="../../Tilez/8GS/GS077.jpg"> is broken (or the Mound <img src="../../Tilez/8GS/GS195.jpg"> dug up), the solver pickz up the Object.<br/>
+        <font color="FF0000" size="+1">Zap Cola</font> ... a <font color="FFB903">Grunt's</font> favorite form of refreshment ... Keg = 100% of health (20 unitz) restored.</th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+2"><a href="51-ZapColaCan.html">Smallest <img src="../../../images/InGameIconCanZapCola.gif"></a> - <a href="52-ZapColaBottle.html">Big <img src="../../../images/InGameIconBottleZapCola.gif"></a> - <font size="+4">Biggest <img src="../../../images/InGameIconKegZapCola.gif"></a></font></font></th>
+  </tr>
+</table>
+</body>
+</html>

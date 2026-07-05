@@ -1,0 +1,191 @@
+<html>
+<head>
+    <title>ReactiveArmor</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=3><font size="+3"><font color="00FF00">60</font> - Reactive Armor</font> <img src="../../../images/InGameIconPowerupReactiveArmor.gif"><br/><br/></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+2"><b>Edit Objects</b> Dialog Box</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Identification</font></th>
+  </tr>
+  <tr>
+    <td width=10% valign="top"><b>ID:</b></td>
+    <td width=56%><b>Calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+    <td width=34% valign="top"><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Name:</b></td>
+    <td><b>Optional, usually totally unnecessary</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Logic:</b></td>
+    <td><a href="../../CoveredPowerUp.html"><font color="FFB903"><b>CoveredPowerup</b></font></a></td>
+    <td><b>or <a href="../../InGameIcon.html"><font color="#cccc00">InGameIcon</font></a></b></td>
+  </tr>
+  <tr>
+    <td><b>Image Set:</b></td>
+    <td><font color="FFB903"><b>GAME_WAPWORLDONLY_TRIGGER</b></font></td>
+    <td><b>or <font color="FF0000"><i><u>alwayz</u></i></font> <font color="CCCC00">GAME_INGAMEICONZ_</font> <font color="FF0000">+</font><br/><font color="CCCC00">POWERUPZ_REACTIVEARMOR</b></font></b></td>
+  </tr>
+  <tr>
+    <td><b>Animation:</b></td>
+    <td><b>Not used (blank)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Location</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>X:</b></td>
+    <td><b>Pixel location of the left edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF">Designer</font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00">8</font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any X:.</b>
+    </td>
+    <td valign="top"><b><font color="FFB903">same</font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00">16</font>.<br/>
+        (Image centered in the tile.)</b>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Y:</b></td>
+    <td><b>Pixel location of the top edge of the logic box, + <font color="00FF00">8</font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF">Designer</font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00">8</font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any Y:.</b>
+    </td>
+    <td valign="top"><b><font color="FFB903">same</font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00">16</font>.<br/>
+        (Image centered in the tile.)</b> 
+    </td>
+  </tr>
+  <tr>
+    <td><b>Z:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>I:</b></td>
+    <td><b><font color="FFB903">-1</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Attributes</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>Score:</b></td>
+    <td><b><font color="FFB903">0</font> ... default</b></td>
+    <td valign="top"><b>Same as for <font color="FFB903">CoveredPowerup</font></b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Points:</b></td>
+    <td><b><font color="FFB903">0</font> ... default</b></td>
+    <td valign="top"><b>Same as for <font color="FFB903">CoveredPowerup</font></b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Smarts:</b></td>
+    <td><b><font color="FFB903">0</font> (default) Tile 1 or 9 selected;<br/>
+        or <a href="../../TileAttributez.html">Clear</a> <b>Tile (<font color="FFB903">1</font> through <font color="FFB903">301</font>) to replace the<br/>
+        <a href="../../Tilez077-084.html">Rock</a> <img src="../../Tilez/8GS/GS077.jpg"> or <a href="../../Tilez195-198.html">Hole/Mound</a> <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> when broken/dug up.<br/>
+        Objectz on an <a href="../../Tilez201-209.html"><b>Arrow</b></a> Tile <font color="FF0000"><b>may never be acquired!</font></b>
+    </td>
+    <td valign="top"><b><font color="FFB903">0</font> (default ... not used)</b></td>
+  </tr>
+  <tr>
+    <td><b>Powerup:</b></td>
+    <td><font color="00FF00"><b>60</b></font></td>
+    <td><b><font color="FFB903">0</font> (default ... not used)</b></td>
+  </tr>
+  <tr>
+    <td><b>Damage:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Health:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed X:</b></td>
+    <td><b><font color="FFB903">0</font> (default)<br/>
+        X Tile coordinate, calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+    <td valign="top"><b>Same as for <font color="FFB903">CoveredPowerup</font></b></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed Y:</b></td>
+    <td><b><font color="FFB903">0</font> (default)<br/>
+        Y Tile coordinate, calculated, after <a href="../../CalcCowID.html">CalcCowID</a><br/>
+        (<font size="+1" color="FF0000">Highly recommended!</font>)</b>
+    </td>
+    <td valign="top"><b>Same as for <font color="FFB903">CoveredPowerup</font></b></td>
+  </tr>
+  <tr>
+    <td><b>Face Dir:</b></td>
+    <td><b><font color="FFB903">0</font> (default ... 60000 millisecondz)<br/>
+        <sub>xx</sub>000 how long the Powerup will last.</b></td>
+    <td><b>Same</b></td>
+  </tr>
+  <tr>
+    <td><b>X Min:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>X Max:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Direction:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Min:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Max:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Speed:</b></td>
+    <td><b><font color="FFB903">0</font> (default)</b></td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td colspan=3><b>This can go in a Rock <img src="../../Tilez/8GS/GS077.jpg"> or Hole/Mound <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> (CoveredPowerUp), or just lay in plain
+sight (InGameIcon).<br/><br/>
+When the Rock <img src="../../Tilez/8GS/GS077.jpg"> is broken (or the Mound <img src="../../Tilez/8GS/GS195.jpg"> dug up), the solver pickz up the Object,<br/>
+which lookz like a spinning "breast plate" <img src="../../../images/InGameIconPowerupReactiveArmor.gif">.<br/><br/>
+This PowerUp actz a bit like a solid rubber ball ... hit it, and the object you hit it with fliez back at you.<br/><br/>
+What happenz is, when an enemy strikez your <font color="FF0000">plus five magical plate</font>
+with his weapon, you receive 25% of the normal damage of that weapon, and the other 75% bouncez back to the weapon wielder! Meanwhile, anything you do in striking back (with whatever weapon you have) doez 100% of it's normal damage to the enemy.<br/><br/>
+A healthy Gauntletz <font color="FFB903">Grunt</font> with this PowerUp can easily defeat two Sword Gruntz!<br/>
+Two strokez from the Sword Gruntz and the Sword Gruntz's health is lowered to 25% of full health, while the Gauntletz <font color="FFB903">Grunt'z</font> own two blowz finish those two Sword Gruntz off.<br/>
+The Gauntletz <font color="FFB903">Grunt</font> only sufferz 50% total health loss in the process.<br/><br/>
+The amount of time the effect will last dependz on the Level designer;<br/>
+lazy onez will let the time default (usually 60 secondz);<br/>
+mean onez will set the time just a little too short to be able to complete the task,<br/>
+so you have to scramble when the effect wearz off.</b></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<html>
+<head>
+    <title>CursorMenu</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=5><font size="+4">Cursor Menu</font><br/>
+        <img src="../Imagez/GLECursor.jpg"><br/><br/>
+    </th>
+  </tr>
+  <tr valign="top" align-"left">
+    <th colspan=5>Example: map is 32 Tilez in width and 24 Tilez in height, cursor currently at X=<font color="32CD32">10</font>, Y=<font color="FF0000">10</font>; result is shown as X=<font color="32CD32">X</font>, Y=<font color="FF0000">Y</font>.<br/><br/></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th width=20%><font size="+1">Cursor Movement</font></th>
+    <th width=20%><font size="+1">Key combination</font></th>
+    <th colspan=2><font size="+1">Result</font></th>
+    <th><font size="+1">Description</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Move Left</th>
+    <th>Left Arrow</th>
+    <th width=3% align="right"><font color="32CD32">9</font></th>
+    <th width=3% align="right"><font color="FF0000">10</font></th>
+    <th>Move cursor one Tile to the left</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Move Right</th>
+    <th>Right Arrow</th>
+    <th align="right"><font color="32CD32">11</font></th>
+    <th align="right"><font color="FF0000">10</font></th>
+    <th>Move cursor one Tile to the right</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Move Up</th>
+    <th>Up Arrow</th>
+    <th align="right"><font color="32CD32">10</font></th>
+    <th align="right"><font color="FF0000">9</font></th>
+    <th>Move cursor one Tile toward the top</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Move Down</th>
+    <th>Down Arrow</th>
+    <th align="right"><font color="32CD32">10</font></th>
+    <th align="right"><font color="FF0000">11</font></th>
+    <th>Move cursor one Tile toward the bottom</th>
+  </tr>
+  <tr>
+    <th colspan=5><font color="C00000" size="+2">Note:</font> The Arrow keys will move one Tile if tapped, or move continuously if held down.</th>
+  </tr>
+  <tr>
+    <th colspan=5 bgcolor="333333"><hr></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Upper Left Corner</th>
+    <th>Ctrl+Home</th>
+    <th align="right"><font color="32CD32">0</font></th><th align="right"><font color="FF0000">0</font></th>
+    <th>Move cursor to X=0, Y=0</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Upper Right Corner</th>
+    <th>Ctrl+Page Up</th>
+    <th align="right"><font color="32CD32">31</font></th>
+    <th align="right"><font color="FF0000">0</font></th>
+    <th>Move cursor (up) to X=(width-1), Y=0</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Lower Right Corner</th>
+    <th>Ctrl+Page Down</th>
+    <th align="right"><font color="32CD32">31</font></th>
+    <th align="right"><font color="FF0000">23</font></th>
+    <th>Move cursor (down) to X=(width-1), Y=(height-1)</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Lower Left Corner</th>
+    <th>Ctrl+End</th>
+    <th align="right"><font color="32CD32">0</font></th>
+    <th align="right"><font color="FF0000">23</font></th>
+    <th>Move cursor (down) to X=0, Y=(height-1)</th>
+  </tr>
+    <th colspan=5 bgcolor="333333"><hr></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Row Start</th>
+    <th>Shift+Home</th>
+    <th align="right"><font color="32CD32">0</font></th>
+    <th align="right"><font color="FF0000">10</font></th>
+    <th>Move cursor to X=0, Y=(current)</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Row End</th>
+    <th>Shift+End</th>
+    <th align="right"><font color="32CD32">31</font></th>
+    <th align="right"><font color="FF0000">10</font></th>
+    <th>Move cursor to X=(width-1), Y=(current)</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Column Start</th>
+    <th>Shift+Page Up</th>
+    <th align="right"><font color="32CD32">10</font></th>
+    <th align="right"><font color="FF0000">0</font></th>
+    <th>Move cursor to X=current), Y=0</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Column End</th>
+    <th>Shift+Page Down</th>
+    <th align="right"><font color="32CD32">10</font></th>
+    <th align="right"><font color="FF0000">23</font></th>
+    <th>Move cursor to X=current), Y=(height-1)</th>
+  </tr>
+    <th colspan=5 bgcolor="333333"><hr></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>AutoMove</th>
+    <th>(un)checkmark</th>
+    <th colspan=2></th>
+    <th>This feature ((un)checkmarked) specifies whether or not you would like the next tile (to the right) to be highlighted when placing a tile.  For example, when you use the spacebar to place a tile, after the new tile is placed the tile to the right will then be highlighted.  This allows the user to hold the spacebar down and replace multiple tiles with the one currently selected in the "Tile Selection Window."</th>
+  </tr>
+</table>
+</body>
+</html>

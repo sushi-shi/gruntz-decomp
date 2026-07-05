@@ -1,0 +1,71 @@
+<html>
+<head><title>16-ScrollGrunt</title>
+</head>
+<body><table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=2><font size="+4"><font color="00FF00">16</font> - <font color="8B864E">Scroll Grunt</font> <img src="../../images/AIScroller.gif"></font><br/></th>
+  </tr>
+  <tr>    <th colspan=3><font size="+2"><a href="../EditObjects.html">Edit Objects</font> Dialog Box</a></th>  </tr>
+  <tr valign="top" align="left">    <th width=12%>Logic:</th>
+    <th><a href="../GruntStartingPoint.html"><font color="FFB903">GruntStartingPoint</font></a></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Image Set:</th>    <th><font color="FFB903">GAME_WAPWORLDONLY_TRIGGER</font> some <font color="00FFFF">Designerz</font> use <font color="FFB903">GAME_WAPWORLDONLY_GUARDPOINT</font></th>  </tr>
+  <tr valign="top" align="left">    <th>Points:</th>
+    <th><font color="FFB903">0</font> see <a href="EnemyAITypez.html">Enemy AI Types</a> for Points: value; Smarts: must contain a value other than <font color="FFB903">0</font>.<br/>
+        <font color="00FF00">16</font> identifies this enemy Grunt as type "<font color="8B864E">Scroll Grunt</font>"
+    </th>
+  </tr>
+  <tr valign="top" align="left">    <th>Smarts:</th>    <th><font color="FFB903">0</font> ... default ... the player controlz this <font color="FFB903">Grunt.</font><br/>        <font color="32CD32">1</font> enemy team number.<br/>
+        <font color="0000FF">2</font> enemy team number.<br/>        <font color="FF0000">3</font> enemy team number.<br/>
+        <font color="CCCC00">Note:</font>  Gruntz will attack any other Grunt with a different team number!</th>  </tr>
+  <tr valign="top" align="left">    <th>Powerup:</th>
+    <th><font color="FFB903">0</font> bare-handed <font color="FFB903">Grunt</font>; see <a href="../AppendixB/Toolz/Toolz.html">Toolz</a> for other values.</th>  </tr>
+  <tr valgn="top" align="left">    <th>Face Dir:</<tr>    <th><font color="FFB903">0</font> default, <a href="../AppendixB/Spellz/0-RandomSpell.html">Random Spellz</a> (specifying 1 through 6 does not seem to work)<br/>      <table>        <tr valign="bottom" align="left">          <th width=3%><font color="FFB903">1</font></th>          <th width=21%><a href="../AppendixB/Spellz/1-Freeze.html"> <img src="../../images/ToyScrollFreeze.gif"> Freeze</a></th>
+          <th width=76%>all of the Gruntz near the reader are turned into <font color="ADD8E6">Gruntziclez</font> (even friendz).</th>
+        </tr>        <tr valign="bottom" align="left">
+          <th><font color="FFB903">2</font></th>          <th><a href="../AppendixB/Spellz/2-Health.html"> <img src="../../images/ToyScrollHealth.gif"> Health</a></th>          <th>all of the Gruntz near the reader are restored to full <font color="32CD32">Health</font> (even enemies!).</th>        </tr>
+        <tr valign="bottom" align="left">          <th><font color="FFB903">3</font></th>
+          <th><a href="../AppendixB/Spellz/3-Resurrection.html"> <img src="../../images/ToyScrollResurrection.gif"> Resurrection</a><br/><br/></th>          <th>all of the Grunt Puddlez <img src="../../images/OrangeGooPuddle.gif"><img src="../../images/GreenGooPuddle.gif"> near the reader are restored to <font color="FF0000">l</font>ife <img src="../../images/Bare-handed.gif"><img src="../../images/AIDumbChaserBarehanded.gif"> (thin red line, but alive).</th>
+        </tr>        <tr valign="bottom" align="left">
+          <th><font color="FFB903">4</font></th>          <th><a href="../AppendixB/Spellz/4-RandomToyz.html"> <img src="../../images/ToyScrollRandomToyz.gif"> Random Toyz</a></th>          <th>all of the Gruntz near the reader receive Toyz to play with.</th>
+        </tr>
+        <tr valign="bottom" align="left">          <th><font color="FFB903">5</font></th>
+          <th><a href="../AppendixB/Spellz/5-Teleport.html"> <img src="../../images/ToyScrollRandomTeleporter.gif"> Teleport</a><br/><br/></th>
+          <th>all of the Gruntz near the reader are teleported <img src="../../images/BlueWarp.gif"> to random locationz.</th>
+        </tr>
+          <tr valign="bottom" align="left">          <th><font color="FFB903">6</font></th>          <th><a href="../AppendixB/Spellz/6-RollingBallz.html"> <img src="../../images/ToyScrollRollingBallz.gif"> Rolling Ballz</a><br/><br/></th>
+          <th><a href="../RollingBallz.html">Giant Ballz <img src="../../images/RollingGolfBall.gif"></a> roll outward from the reader in the four cardinal directions.</th>
+        </tr>      </table>
+    </th>  </tr>
+  <tr valign="top" align="left">    <th>Direction:</th>
+    <th><font color="FFB903">0</font> (default, solver's <font color="FFB903">Grunt</font> and <a href="05-PostGuardz.html"><font color="FF69B4">Post Guardz</font></a> ... not used)<br/>
+        For any other <a href="EnemyAITypez.html">enemy Grunt</a>, this is the number of Tilez away he will sense <font color="32CD32">any</font> <font color="0000FF">other</font> <font color="FF0000">team's</font> <font color="FFB903">Grunt</font>.
+    </th>
+  </tr>  <tr>
+    <th colspan=2><a href="../ObjectRects.html"><font size="+2">Object Rectangles</font> Dialog Box</a></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th><font size="+1">Move Rect:</font><br/>
+        Left<br/><br/>
+        Top<br/><br/>
+        Right<br/><br/>
+        Bottom<br/>
+    </th>
+    <th><font size="+1">Defines Grunt movement limitz in four cardinal directionz<br/>
+        (Definitely <u>does</u> apply to this enemy AI type.)</font><br/>
+        <font color="FFB903">0</font> This field specifies the number of Tiles to the left of the original position that the Grunt will wander randomly.<br/>
+        <font color="FFB903">0</font> This field specifies the number of Tiles above the original position that the Grunt        will wander randomly.<br/>
+        <font color="FFB903">0</font> This field specifies the number of Tiles to the right of the original position that the Grunt will wander randomly.<br/>
+        <font color="FFB903">0</font> This field specifies the number of Tiles below the original position that the Grunt will wander randomly.
+    </th>  </tr>
+  <tr valign="top" align="left">
+    <th colspan=2><font color="8B864E"><img src="../../images/AIScroller.gif"> Scroll Gruntz</font> are a newly discovered grunt type.<br/>
+        These gruntz will stand at a location, and when they sense your grunt they will go up to him and give him a scroll to read.<br/>
+        However, they also attack immediately after giving the scroll.<br/>
+        Unlike most gruntz, <img src="../../images/AIScroller.gif"> <font color="8B864E">Scroll Gruntz</font> will not chase your grunt until after they fully regain their stamina.<br/><br/>        Puzzle Use: Using <font color="8B864E">Scroll Gruntz</font> is a tricky business, the only way to get your grunt to finish reading the scroll he is given is to give the <font color="8B864E">Scroll Grunt</font> a toy simultaneously. So be sure to provide the player'z grunt a toy to give! Note: giving the grunt a toy simultaneously is not as easy as it lookz, you will have to practice a couple of timez before getting the hang of it.
+    </th>
+  </tr>
+</table>
+</body>
+</html>

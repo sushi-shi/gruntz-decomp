@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>Super Speed</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=3><font size="+3"><font color="00FF00">55</font> - Super Speed</font> <img src="../../../images/InGameIconPowerupSuperSpeed.gif"><br/><br/></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+2"><b>Edit Objects</b> Dialog Box</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Identification</font></th>
+  </tr>
+  <tr>
+    <td width=10% valign="top"><b>ID:</b></td>
+    <td width=53%>Calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td width=37% valign="top"><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Name:</b></td>
+    <td>Optional, usually totally unnecessary</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Logic:</b></td>
+    <td><a href="../../CoveredPowerUp.html"><font color="FFB903"><b>CoveredPowerup</b></font></a></td>
+    <td>or <a href="../../InGameIcon.html"><font color="#cccc00"><b>InGameIcon</b></font></a></td>
+  </tr>
+  <tr>
+    <td><b>Image Set:</b></td>
+    <td><font color="#ffb903"><b>GAME_WAPWORLDONLY_TRIGGER</b></font></td>
+    <td>or <font color="FF0000"><b><i><u>alwayz</u></i></b></font> <font color="CCCC00"><b>GAME_INGAMEICONZ_</b></font> <font color="FF0000"><b>+</b></font><br/><font color="CCCC00"><b>POWERUPZ_SUPERSPEED</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Animation:</b></td>
+    <td>Not used (blank)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Location</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>X:</b></td>
+    <td>Pixel location of the left edge of the logic box, + <font color="00FF00"><b>8</b></font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF"><b>Designer</b></font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00"><b>8</b></font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any X:.
+    </td>
+    <td valign="top"><font color="FFB903"><b>same</b></font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00"><b>16</b></font>.<br/>
+        (Image centered in the tile.)
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Y:</b></td>
+    <td>Pixel location of the top edge of the logic box, + <font color="00FF00"><b>8</b></font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF"><b>Designer</b></font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00"><b>8</b></font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any Y:.
+    </td>
+    <td valign="top"><font color="FFB903"><b>same</b></font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00"><b>16</b></font>.<br/>
+        (Image centered in the tile.) 
+    </td>
+  </tr>
+  <tr>
+    <td><b>Z:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>I:</b></td>
+    <td><font color="FFB903"><b>-1</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Attributes</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>Score:</b></td>
+    <td><font color="FFB903"><b>0</b></font> ... default</td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Points:</b></td>
+    <td><font color="FFB903"><b>0</b></font> ... default</td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Smarts:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default) Tile 1 or 9 selected;<br/>
+        or <a href="../../TileAttributez.html"><b>Clear</b></a> <b>Tile (<font color="FFB903">1</font> through <font color="FFB903">301</font>)</b> to replace the<br/>
+        <a href="../../Tilez077-084.html"><b>Rock</b></a> <img src="../../Tilez/8GS/GS077.jpg"> or <a href="../../Tilez195-198.html"><b>Hole/Mound</b></a> <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> when broken/dug up.<br/>
+        Objectz on an <a href="../../Tilez201-209.html"><b>Arrow</b></a> Tile <font color="FF0000"><b>may never be acquired!</b></font>
+    </td>
+    <td valign="top"><font color="FFB903"><b>0</b></font> (default ... not used)</td>
+  </tr>
+  <tr>
+    <td><b>Powerup:</b></td>
+    <td><font color="00FF00"><b>55</b></font></td>
+    <td><font color="FFB903"><b>0</b></font> (default ... not used)</td>
+  </tr>
+  <tr>
+    <td><b>Damage:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Health:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed X:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)<br/>
+        X Tile coordinate, calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed Y:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)<br/>
+        Y Tile coordinate, calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Face Dir:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default ... 60000 millisecondz)<br/>
+        <b><sub>xx</sub>000</b> how long the Powerup will last.</td>
+    <td>Same</td>
+  </tr>
+  <tr>
+    <td><b>X Min:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>X Max:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Direction:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Min:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Max:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Speed:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td colspan=3>This can go in a Rock <img src="../../Tilez/8GS/GS077.jpg"> or Hole/Mound <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> (CoveredPowerUp), or just lay in plain
+sight (InGameIcon).<br/><br/>
+When the Rock <img src="../../Tilez/8GS/GS077.jpg"> is broken (or the Mound <img src="../../Tilez/8GS/GS195.jpg"> dug up), the
+solver pickz up the Object, which lookz like<br/>the spinning wheel <img src="../../../images/InGameIconPowerupSuperSpeed.gif"> of a motor vehicle.<br/><br/>
+With this PowerUp, you can run between raindropz without getting wet! Well, almost, anyway.<br/>
+You're the Road Runner (<font color="FF0000"><b>meepmeep</b></font>), flashing by Wile E. Coyote.<br/>
+You will be just a blur, able to flash by enemy Gruntz before they can react to your presence.<br/>
+Leap tall buildings ... no, that's another story.<br/>
+You get the idea, though ... for a brief amount of time you'll have Carl Lewis eating your dust.</td>
+  </tr>
+</table>
+</body>
+</html>

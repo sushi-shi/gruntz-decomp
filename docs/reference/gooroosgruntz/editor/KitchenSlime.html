@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>KitchenSlime</title>
+</head>
+<body><table width=758 frame=border rules=all>
+  <tr>
+    <th colspan=2><img src="../images/KitchenSlimeAni.gif"> <font size=+3><font size=+3>Kitchen Slime</font> <img src="../images/KitchenSlimeAni.gif"></th>
+  </tr>
+  <tr align=left>
+    <th colspan=2><font size=+2>KitchenSlime</font> is the logic for the hazard used in Area <font color="FF0000">6</font> - Honey, I Shrunk the Gruntz.<br/><br/>        The KitchenSlime is limitted to travelling in a rectangular path.<br/><br/>        <img src="Tilez/8GS/GS217.jpg"><img src="Tilez/6Ho/Ho001.jpg"><img src="Tilez/6Ho/Ho009.jpg"><img src="Tilez/6Ho/Ho001.jpg"><img src="Tilez/6Ho/Ho009.jpg"><img src="Tilez/8GS/GS233.jpg"><br/>        <img src="Tilez/6Ho/Ho001.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><br/>        <img src="Tilez/6Ho/Ho009.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><br/>        <img src="Tilez/8GS/GS229.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><img src="Tilez/8GS/GS221.jpg"><img src="Tilez/8GS/GS225.jpg"><br/><br/>        To place a KitchenSlime, place it on the <a href="TileAttributez.html">Clear Tile</a> that is the upper left-hand <img src="Tilez/8GS/GS217.jpg">, upper right-hand <img src="Tilez/8GS/GS233.jpg">, lower left-hand <img src="Tilez/8GS/GS229.jpg"> or lower right-hand <img src="Tilez/8GS/GS225.jpg"> corner of its path (the Switchez, in the example), then set the tile coordinates of the diagonally opposite corner of its path in the Speed X: and Speed Y: fields.<br/><br/>        In this example, if the <font size=+2>KitchenSlime</font> is placed on the Black One-Time switch, it should have its initial direction either <font color=FFB903>EAST</font> (clockwise) or <font color=FFB903>SOUTH</font> (counter-clockwise), and the Speed X: and Speed Y: fields should be the Tile coordinatez of one of the the Blue Toggle Switchez, or one of the Yellow Toggle Switchez.<br/><br/>        Note: to find the tile coordinates of a particular Tile, go into <a href="Featurez/TileMenu.html">Tile mode</a> and click on a Tile; displayed in the bottom right of the screen will be the tile coordinates of the selected Tile.<br/><br/>    </th>  </tr>  <tr>    <th colspan=2><a href="EditObjects.html"><font size=+2>Edit Objects</font> Dialog Box</a></th>
+  </tr>  <tr valign=top align=left>
+    <th width=11%>Logic:</th>
+    <th><font color=FFB903>KitchenSlime</font></th>
+  </tr>
+  <tr valign=top align=left>
+    <th>Image Set:</th>
+    <th>
+      <table>        <tr valign=top align=left>
+          <th><font color=FFB903>LEVEL_KITCHENSLIME_</font></th>
+          <th align=right>+</th>          <th><font color=FFB903>EAST</font></th>          <th>Slime crawlz toward the east <img src="../images/KitchenSlimeAni.gif"></th>
+        </tr>
+        <tr>
+          <th colspan=2 align=right>or</th>
+          <th><font color=FFB903>NORTH</font></th>
+          <th>Slime crawlz toward the north</th>        </tr>        <tr>
+          <th colspan=2 align=right>or</th>
+          <th><font color=FFB903>SOUTH</font></th>          <th>Slime crawlz toward the south</th>        </tr>        <tr>          <th colspan=2 align=right>or</th>
+          <th><font color=FFB903>WEST</font></th>          <th>Slime crawlz toward the west</th>        </tr>      </table>
+    <th>
+  </tr>
+  <tr valign=top align=left>
+    <th>Speed X:</th>    <th><font color=FFB903>0</font>; put the <font color=00C000>X</font> coordinate of the Tile that defines the diagonally opposite corner of the path.</th>  </tr>
+  <tr valign=top align=left>    <th>Speed Y:</th>
+    <th><font color=FFB903>0</font>; put the <font color=C00000>Y</font> coordinate of the Tile that defines the diagonally opposite corner of the path.</th>
+  </tr>
+  <tr valign=top align=left>
+    <th>Direction:</th>
+    <th><font color=FFB903>0</font>; default; the KitchenSlime travels clockwise.<br/>
+        <font color=FF0000 size=+1>1</font>; the KitchenSlime travels counter-clockwise.
+    <th>
+  </tr>
+</table>
+</body>
+</html>

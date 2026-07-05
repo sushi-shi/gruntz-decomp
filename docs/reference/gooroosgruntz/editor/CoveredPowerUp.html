@@ -1,0 +1,48 @@
+<html>
+<head>
+    <title>CoveredPowerup</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=2><font size="+3">CoveredPowerup<br/></font></th>  </tr>  <tr>    <th colspan=2><a href="EditObjects.html"><font size="+2">Edit Objects</font> Dialog Box</a></th>  </tr>  <tr valign="top" align="left">
+    <th width=11%>Edit box</th>
+    <th>Keyword and description of use</th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Logic:</th>
+    <th><font color="FFB903">CoveredPowerup</font></th>  </tr>
+  <tr valign="top" align="left">    <th>Image Set:</th>    <th><font color="FFB903">GAME_WAPWORLDONLY_TRIGGER</font></th>  </tr>
+  <tr valign="top" align="left">
+    <th>Score:</th>    <th><font color="FFB903">0</font> ... default<br/>        This field has special meaning if the Object enclosed is a <a href="AppendixB/PowerUpz/50-Megaphone.html">Megaphone</a>.<br/>        Megaphones do not behave as one would expect them to; the order in which Megaphones are used does not determine what Object will be called-for!<br/>
+        This field sets the order of Objects called-for, and <font color="FF0000">if <i>any</i> Megaphone has a value of "0" in it, <u>no Megaphone will work</u>!</font><br/>        A good idea would be to create a <a href="../hintz/Custom/GooRoo/SecretSoduko1/Megaphonez.html">table of Megaphones</a> (on paper, or a Notepad-type file), showing X,Y coordinates; "Score" and Object called-for.<br/>
+        That way, if it became necessary to add another Megaphone, changing the sequence of Objects needed to solve the puzzle, it will be easier to change the "Score" values of affected Megaphones.<br/>
+        Just locate the Megaphone with the highest "Score" and add 1 to the value, working backwards to lower "Scores" until you have made room for the new Megaphone.<br/>        Don't forget to keep your table of Megaphones updated!<br/>        <hr>        This field also was intended to have special meaning if the Object is a <a href="AppendixB/Miscellaneous/85-ToyBox.html">ToyBox</a>; it indicates the 'team' that owns the ToyBox ... values <font color="FFB903">0</font>, <font color="44CC00">1</font>, <font color="FF0000">2</font> or <font color="0000FF">3</font>.<br/>        This is most important for 'Battlez' Custom Levelz.
+    </th>
+  </tr>
+  <tr valign="top" align="left">    <th>Points:</th>    <th><font color="FFB903">0</font> ... default<br/>
+        If the covered item is a <a href="AppendixB/PowerUpz/50-Megaphone.html">Megaphone</a>, then this field contains the ID number for the <a href="AppendixB/Toolz/Toolz.html">Tool</a>, <a href="AppendixB/Toyz/Toyz.html">Toy</a> or <a href="AppendixB/Brickz/Brickz.html">Brick</a> that will appear in the GruntMachine on the Resource tab of the status bar.
+        <hr>        <font color="FF0000" size="+2">It simply does not work to place a curse or Toy Box within a <a href="../../CoveredPowerUp.html">CoveredPowerup</a>!</font><br/><font color="FF0000">If the covered item is a <a href="AppendixB/Miscellaneous/85-ToyBox.html">ToyBox</a>, then this field was intended to have special meaning, namely to contain the ID number <font size=+3>(but it doesn't work!)</font> for the <a href="AppendixB/Toyz/Toyz.html">Toy</a> which will be found inside. Instead, what is revealed is the NOTE InGameIcon.</font>
+    </th>
+  </tr>
+  <tr valign="top" align="left">    <th>Smarts:</th>    <th><font color="FFB903">0</font> ... default<br/>        The Tile revealed when the <a href="Tilez195-198.html">diggable Tile</a> (#195->#198) is dug up, or the <a href="Tilez077-084.html">breakable Tile</a> (#77->#84) is broken, will be the default Tile.  "Gruntz In Space" graphicz set, for example:<br/>        <img src="Tilez/8GS/GS077.jpg"><img src="Tilez/8GS/GS078.jpg"><img src="Tilez/8GS/GS079.jpg"><img src="Tilez/8GS/GS080.jpg"><img src="Tilez/8GS/GS195.jpg"> <img src="Tilez/8GS/GS208.jpg"> <img src="Tilez/8GS/GS001.jpg"> <font size="+4">Tile #<font color="FF0000">1</font></font><br/>
+        <img src="Tilez/8GS/GS081.jpg"><img src="Tilez/8GS/GS082.jpg"><img src="Tilez/8GS/GS083.jpg"><img src="Tilez/8GS/GS084.jpg"><img src="Tilez/8GS/GS197.jpg"> <img src="Tilez/8GS/GS208.jpg"> <img src="Tilez/8GS/GS009.jpg"> <font size="+4">Tile #<font color="FF0000">9</font></font>
+        <hr>        Other values (recommended maximum <font color="FFB903">302</font>) specify the Tile number to be revealed.<br/>        Objectz on an <a href="Tilez201-209.html">Arrow</a> Tile <font color="FF0000">may never be acquired!</font>  (But <a href="AppendixB/Miscellaneous/99-TimeBombz.html">TimeBombz</a> will work.)<br/>        The <a href="TileAttributez.html">Tile Attribute</a> of the replacement Tile should be 'Clear' or 'User'.<br/>
+        (No <a href="Brickz.html">Brickz</a> please.)<br/>        If the revealed Tile is a Brick results are unpredictable, even with <font color="FF0000">Brickz</font> logics!
+        <hr>
+        <font color="FF0000">Important:</font> An invalid Tile # will cause the game to exit!
+        <hr>        <font color="FF0000">Important:</font> If the revealed Tile is a <a href="Switchez.html">Switch</a>, you must also place a <font color="FF0000">TileTriggerSwitch</font> logic in this space.<br/>
+        Failure to do so will cause the game to exit!    </th>  </tr>  <tr valign="top" align="left">    <th>Powerup:</th>    <th><font color="FFB903">0</font> ... default<br/>
+        No Object will be found under the diggable/breakable Tile.
+        <hr>        See the <font color="FF0000">Powerup</font> column of Appendix B:
+        <ul>          <li><a href="AppendixB/Toolz/Toolz.html">Toolz</a></li>          <li><a href="AppendixB/Toyz/Toyz.html">Toyz</a></li>
+          <li><a href="AppendixB/PowerUpz/PowerUpz.html">PowerUpz</a></li>          <li><a href="AppendixB/Miscellaneous/Miscellaneous.html">Miscellaneous</a></li>
+          <li><a href="AppendixB/Spellz/0-RandomSpell.html">Spellz</a></li>        </ul>
+        for the ID numberz of all of the Objects which may be placed within a CoveredPowerup.
+    </th>  </tr>  <tr valign="top" align="left">
+    <th>Face Dir:</th>    <th><font color="FFB903">0</font> ... default<br/>
+        This field is used if the covered item is a timed Powerup or Curse.<br/>
+        This value will provide the game's default time.<br/>
+        Otherwise, the time is set in milliseconds, so that "<font color="FFB903">30000</font>" would set the time to 30 seconds.
+        <hr>
+        If the covered item is a <a href="AppendixB/Spellz/0-RandomSpell.html">Scroll</a> or a <a href="AppendixB/Toolz/19-Wandz.html">Magic Wand</a>, then this field will contain the ID number for the Spell to be cast.  (See <a href="AppendixB/Spellz/0-RandomSpell.html">Spellz</a>.)    </th>  </tr></table></body></html>

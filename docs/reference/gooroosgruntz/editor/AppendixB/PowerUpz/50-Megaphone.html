@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<title>Megaphone</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=3><font size="+3"><font color="00FF00">50</font> - Megaphone</font> <img src="../../../images/InGameIconMegaphone.gif"><br/><br/></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+2">Edit Objects</font> <font size="+1">Dialog Box</font></th>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Identification</font></th>
+  </tr>
+  <tr>
+    <td width=10% valign="top"><b>ID:</b></td>
+    <td width=53%>Calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td width=37% valign="top"><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Name:</b></td>
+    <td>Optional, use to keep track of objectz of this type<br/>(Megaphone #?)</td>
+    <td valign="top"><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Logic:</b></td>
+    <td><a href="../../CoveredPowerUp.html"><font color="FFB903"><b>CoveredPowerUp</b></font></a></td><td>or <a href="../../InGameIcon.html"><font color="#cccc00"><b>InGameIcon</b></font></a></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Image Set:</b></td>
+    <td valign="top"><font color="FFB903"><b>GAME_WAPWORLDONLY_TRIGGER</b></font></td>
+    <td>or <font color="FF0000"><b><i><u>alwayz</u></i></b></font> <font color="CCCC00"><b>GAME_INGAMEICONZ_</b></font> <font color="FF0000"><b>+</b></font><br/><font color="CCCC00"><b>POWERUPZ_MEGAPHONE</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Animation:</b></td>
+    <td>Not used (blank)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Location</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>X:</b></td>
+    <td>Pixel location of the left edge of the logic box, + <font color="00FF00"><b>8</b></font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF"><b>Designer</b></font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00"><b>8</b></font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any X:.
+    </td>
+    <td valign="top"><font color="FFB903"><b>same</b></font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00"><b>16</b></font>.<br/>
+        (Image centered in the tile.)
+    </td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Y:</b></td>
+    <td>Pixel location of the top edge of the logic box, + <font color="00FF00"><b>8</b></font> (center point).<br/>
+        Determined by the Gruntz Level Editor at creation time.<br/>
+        Changed by the Gruntz Level Editor after 'nudge' or 'shove'.<br/>
+        May be modified by the <font color="00FFFF"><b>Designer</b></font>.<br/>
+        (Ideally, value divided by 16 should leave a remainder of <font color="00FF00"><b>8</b></font>.)<br/>
+        The uncovered object is alwayz centered in the tile, for any Y:.
+    </td>
+    <td valign="top"><font color="FFB903"><b>same</b></font>, except ideally,<br/>
+        value divided by 32 should leave a remainder of <font color="00FF00"><b>16</b></font>.<br/>
+        (Image centered in the tile.) 
+    </td>
+  </tr>
+  <tr>
+    <td><b>Z:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>I:</b></td>
+    <td><font color="FFB903"><b>-1</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <th colspan=3><font size="+1">Attributes</font></th>
+  </tr>
+  <tr>
+    <td valign="top"><b>Score:</b></td>
+    <td><font color="FFB903"><b>0</b></font> the sequence number of the item to be called for from the GruntzMachine.<br/>
+        <b><font color="FF0000">Important!</font></b><color=Green> </font>this field must <u>not</u> remain <font color="FFB903"><b>0</b></font>!!!<br/>If it is, no items will ever be in the GruntzMachine!</td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Points:</b></td>
+    <td><font color="FFB903"><b>0</b></font> is the ID number of the <a href="../Toolz/Toolz.html"><b>Tool</b></a>, <a href="../Toyz/Toyz.html"><b>Toy</b></a>, or <a href="../Brickz/Brickz.html"><b>Brick</b></a> that will appear in the GruntzMachine.</td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Smarts:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default) Tile 1 or 9 selected;<br/>
+        or <a href="../../TileAttributez.html"><b>Clear</b></a> <b>Tile (<font color="FFB903">1</font> through <font color="FFB903">301</font>)</b> to replace the<br/>
+        <a href="../../Tilez077-084.html"><b>Rock</b></a> <img src="../../Tilez/8GS/GS077.jpg"> or <a href="../../Tilez195-198.html"><b>Hole/Mound</b></a> <img src="../../Tilez/8GS/GS196.jpg"><img src="../../Tilez/8GS/GS195.jpg"> when broken/dug up.<br/>
+        Objectz on an <a href="../../Tilez201-209.html"><b>Arrow</b></a> Tile <font color="FF0000"><b>may never be acquired!</b></font>
+    </td>
+    <td valign="top"><font color="FFB903"><b>0</b></font> (default ... not used)</td>
+  </tr>
+  <tr>
+    <td><b>Powerup:</b></td>
+    <td><font color="FFB903"><b>50</b></font> specifies the object is a Megaphone.</td>
+    <td><font color="FFB903"><b>0</b></font> (default ... not used)</td>
+  </tr>
+  <tr>
+    <td><b>Damage:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Health:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed X:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)<br/>
+        X Tile coordinate, calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td valign="top"><b>Speed Y:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)<br/>
+        Y Tile coordinate, calculated, after <a href="../../CalcCowID.html"><b>CalcCowID</b></a><br/>
+        (<font size="+1" color="FF0000"><b>Highly recommended!</b></font>)
+    </td>
+    <td valign="top">Same as for <font color="FFB903"><b>CoveredPowerup</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Face Dir:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>X Min:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>X Max:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Direction:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Min:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Y Max:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td><b>Speed:</b></td>
+    <td><font color="FFB903"><b>0</b></font> (default)</td>
+    <td><font color="FFB903"><b>same</b></font></td>
+  </tr>
+  <tr>
+    <td colspan=3><font size="+3" color="FF0000"><b>Note:</b></font> due to an error in the Gruntz game engine, a Megaphone within a CoveredPowerup will co-inhabit the space with an empty note <img src="../../../images/Note.gif">, which will cause any grunt of the solver to stop and read the (empty) note in that space.<br/>
+So the use of the <font color="CCCC00"><b>InGameIcon</b></font> is preferred over a <font color="FFB903"><b>CoveredPowerup</b></font>.</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<html>
+<head>
+    <title>Brickz</title>
+</head>
+<body>
+<table width=758 frame="border" rules="all">
+  <tr>
+    <th colspan=2><font size="+4">Brickz</font><br/>
+        <font color="FF0000">Important!</font> This logic <u>ALWAYS</u> needs to be placed on ANY <a href="Tilez303-329.html"><b>Brick tile</b></a>.<br/>
+        If you try to break a brick that does not have the "Brickz" object, the game will exit!<br/>
+        The other purpose of the "Brickz" object is to specify what players (Battlez)<br/>
+        will be able to see the true color of brickz (use the Move Rects fields to specify this).<br/>
+    </th>
+  </tr>
+  <tr>
+    <th colspan=2>
+      <table>
+        <tr valign="bottom" align="left">
+          <th width=29%></th>
+          <th><img src="Tilez/8GS/GS303.jpg"><img src="Tilez/8GS/GS304.jpg"><img src="Tilez/8GS/GS305.jpg"></th>
+          <th>'Brown' Brickz</th>
+          <th width=30%></th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th></th>
+          <th><img src="Tilez/8GS/GS306.jpg"><img src="Tilez/8GS/GS307.jpg"><img src="Tilez/8GS/GS308.jpg"><img src="Tilez/8GS/GS309.jpg"><img src="Tilez/8GS/GS310.jpg"><img src="Tilez/8GS/GS311.jpg"></th>
+          <th>'Red' Brickz</th>
+          <th></th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th></th>
+          <th><img src="Tilez/8GS/GS312.jpg"><img src="Tilez/8GS/GS313.jpg"><img src="Tilez/8GS/GS314.jpg"><img src="Tilez/8GS/GS315.jpg"><img src="Tilez/8GS/GS316.jpg"><img src="Tilez/8GS/GS317.jpg"></th>
+          <th>'Blue' Brickz</th>
+          <th></th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th></th>
+          <th><img src="Tilez/8GS/GS318.jpg"><img src="Tilez/8GS/GS319.jpg"><img src="Tilez/8GS/GS320.jpg"><img src="Tilez/8GS/GS321.jpg"><img src="Tilez/8GS/GS322.jpg"><img src="Tilez/8GS/GS323.jpg"></th>
+          <th>'Gold' Brickz</th>
+          <th></th>
+        </tr>
+        <tr valign="bottom" align="left">
+          <th></th>
+          <th><img src="Tilez/8GS/GS324.jpg"><img src="Tilez/8GS/GS325.jpg"><img src="Tilez/8GS/GS326.jpg"><img src="Tilez/8GS/GS327.jpg"><img src="Tilez/8GS/GS328.jpg"><img src="Tilez/8GS/GS329.jpg"></th>
+          <th>'Black' Brickz</th>
+          <th></th>
+        </tr>
+      </table>
+    </th>
+  </tr>
+  <tr>
+    <th colspan=2><a href="EditObjects.html"><font size="+2">Edit Objects</font> Dialog Box</a><br/></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th width=12%>Logic:</th>
+    <th><font color="FFB903">Brickz</font></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Image Set:</th>
+    <th><font color="FFB903">GAME_WAPWORLDONLY_BRICK</font></th>
+  </tr>
+  <tr>
+    <th colspan=2><a href="ObjectRects.html"><font size="+2">Object Rectangles</font> Dialog Box</a><br/></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Move Rect:</th>
+    <th>Description (default)<br/>
+        <hr>
+        Description (other choice)
+    </th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Left</th>
+    <th><font color="FFB903">0</font> - Player 1 cannot see the colored brick.  <font color="FF0000">Note:</font> In Questz, the player is treated as player 1.<br/>
+        Therefore using the "Move Rect: Left" field will specify whether the player sees a colored brick.<br/>
+        <hr>
+        <font color="FF0000">1</font> - Player 1 can see true color.</td>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Top</th>
+    <th><font color="FFB903">0</font> - Player 2 cannot see the colored brick.<br/>
+        <hr>
+        <font color="FF0000">1</font> - Player 2 can see true color.</td>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Right</th>
+    <th><font color="FFB903">0</font> - Player 3 cannot see the colored brick.<br/>
+        <hr>
+        <font color="FF0000">1</font> - Player 3 can see true color.</td>
+  </tr>
+  <tr valign="top" align="left">
+    <th>Bottom</th>
+    <th><font color="FFB903">0</font> - Player 4 cannot see the colored brick.<br/>
+        <hr>
+        <font color="FF0000">1</font> - Player 4 can see true color.</td>
+  </tr>
+  <tr>
+    <td colspan=2><b><br/><font color="FF0000">Note:</font> When a Bricklayer addz a Brick <img src="Tilez/8GS/GS303.jpg"> to a stack <img src="Tilez/8GS/GS325.jpg">, (other) playerz can no longer see the color of the Brickz in the stack <img src="Tilez/8GS/GS305.jpg">, even if the Move Rect: logic value is '<font color="FFB903"><b>1</b></font>'!<br/><br/></b>
+    </td>
+  </tr>
+  <tr>
+    <th colspan=2><font size="+2"><a href="ObjectFlags.html">Object Flags</font> Dialog Box</a></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>No Draw</th>
+    <th><font color="FFB903">Checked</font></th>
+  </tr>
+</table>
+</body>
+</html>

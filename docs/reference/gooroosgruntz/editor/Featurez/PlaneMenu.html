@@ -1,0 +1,121 @@
+<html>
+<head>
+    <title>PlaneMenu</title>
+</head>
+<body>
+<table width=758>
+  <tr>
+    <th><font size="+4">Plane Menu</font><br/><img src="../Imagez/GLEPlane.jpg"><br/></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th><font size="+2">Add…(Ctrl+A)</font><br/>
+        This feature is used to add a plane.  It is recommended that you use the template levels since doing so will prevent you from having to use this feature.<br/>
+        Note: In <font color="FFb903">Gruntz</font>, there are no levels that have a front plane.  In the 'Standard' Levelz, only Area <font color="FF0000">4</font> (High on Sweetz), Area <font color="FF0000">5</font> (High Rollerz), and Area <font color="FF0000">8</font> (Gruntz in Space) use this feature to create a parallaxing background plane.<br/>
+        See <a href="../../custom/3DLava.WWD">3D lava</a> for an example of a Custom Level in the Area <font color="FF0000">3</font> (Trouble In The Tropicz) graphicz set with a BACK Plane.<br/><br/>
+        <font size="+2">Delete…</font><br/>
+        This feature is used to delete a plane.
+        <hr>
+        <font size="+2">Goto X,Y Position… (Ctrl+Alt+P)</font><br/>
+        This feature allows the user to go to any position (defined by the X and Y coordinates) in the current level.  This feature is also used to set the Warp coordinates to allow the player to use the Goto Warp Position feature (described below).<br/><br/>
+        <font size="+2">Goto Start Position… (Ctrl+Alt+S)</font><br/>
+        This feature allows the user to go to the start position (defined by the start position coordinates set in the World | Properties menu).<br/>
+        Note: The start position in <font color="FFb903">Gruntz</font> is where the level will be centered when the level first starts.<br/><br/>
+        <font size="+2">Go to Warp Position… (Ctrl+Alt+W)</font><br/>This feature allows the user to quickly go to the position in the current level specified by the Warp coordinates.<br/>
+        Note: the Warp coordinates are specified by using the Goto X,Y Position… feature.
+        <hr>
+        <font size="+2">Properties (Alt+Enter)</font><br/>
+        The following fields are used in Plane Properties for <font color="FFb903">Gruntz</font>.<br/>
+          <ul>
+            <li><font size="+1">Info</font>
+              <ul>
+                <li>Name: <font color="FFB903">Action</font> (or <font color="CCCC00">Back</font>)</li>
+              </ul>
+            </li>
+            <li><font size="+1">Image Sets</font>
+              <ul>
+                <li><font color="FFB903">ACTION</font>
+                  <ul>
+                    <li><font size="+1">Attributes</font> (check boxez)
+                      <ul>
+                        <li>Main Plane (<font color="FFB903">checked</font>)</li>
+                        <li>No Draw (usually unchecked)</li>
+                        <li>Main Plane (usually unchecked)</li>
+                        <li>Auto Tile Size (usually unchecked)</li>
+                        <li>X Wrapping (usually unchecked)</li>
+                        <li>Y Wrapping (usually unchecked)</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li><font color="CCCC00">BACK</font>
+                  <ul>
+                    <li><font size="+1">Attributes</font> (check boxez)
+                      <ul>
+                        <li>Main Plane (<font color="FFB903">unchecked</font>)</li>
+                        <li>No Draw (usually unchecked)</li>
+                        <li>Main Plane (usually unchecked)</li>
+                        <li>Auto Tile Size (usually unchecked)</li>
+                        <li>X Wrapping (usually <font color="CCCC00">checked</font>)</li>
+                        <li>Y Wrapping (usually <font color="CCCC00">checked</font>)</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><font size="+1">Tiles</font> (in pixels)
+              <ul>
+                <li>Width: <font color="FF0000">32</font> (do not change!)</li>
+                <li>Height: <font color="FF0000">32</font> (do not change!)</li>
+              </ul>
+            </li>
+            <li><font size="+1">Dimensions</font>
+              <ul>
+                <li>Tiles Wide: - This determines the width of the level in number of tiles.</li>
+                <li>Tiles High: - This determines the height of the level in number of tiles.</li>
+              </ul>
+            </li>
+            <li><font size="+1">Movement</font> (percentage of a window/screen)
+              <ul>
+                <li>X Percent: <font color="FFb903">100</font></li>
+                <li>Y Percent: <font color="FFb903">100</font></li>
+              </ul>
+            </li>
+            <li><font size="+1">Misc</font>
+              <ul>
+                <li>Fill Color: <font color="FFb903">128</font></li>
+                <li>Z Coord: <font color="FFb903">0</font></li>
+              </ul>
+            </li>
+            <li>Tile Stats.. button
+              <table>
+                <tr>
+                  <th>Used:</th>
+                  <th>list of the Tile numbers used in this WWD</th>
+                </tr>
+                <tr>
+                  <th>Frequency:</th>
+                  <th>count of times each Tile number used, listed by frequency of use</th>
+                </tr>
+                <tr>
+                  <th>Unused:</th>
+                  <th>list of the Tile numbers never used in this WWD</th>
+                </tr>
+                <tr>
+                  <th>Available:</th>
+                  <th>list of the Tile numbers not defined for this WWD</th>
+                </tr>
+                <tr>
+                  <th>Delete Script</th>
+                  <th>list of scripts to delete Tile numbers (make available?)</th>
+                </tr>
+              </table>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </th>
+  </tr>
+</table>
+</body>
+</html>

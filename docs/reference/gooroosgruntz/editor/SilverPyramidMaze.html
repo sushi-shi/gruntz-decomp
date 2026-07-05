@@ -1,0 +1,100 @@
+<html>
+<head>
+    <title>SilverPyramidMaze</title></head><body>
+<table width=758>  <tr valign="top">    <th><font size="+4" color="FFD700">Silver Pyramid Maze</font><br/></th>  </tr>
+  <tr valign="top">    <th><font size="+2">by <font color="FF0000">GooRoo</font></font><br/></th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>My first <font color="C0C0C0">Silver Pyramidz Maze</font> (<font color="C0C0C0">SPM</font>) was in "<a href="../custom/YellowPeril,Proverbs14-12.WWD">Yellow Peril, Proverbs 14-12</a>". That was a 15 X 12 matrix, or 180 Tile (less a few non <font color="C0C0C0">Silver Pyramid</font> <img src="Tilez/8GS/GS245.jpg"> Tilez) array. I gave cluez as to where the solver should head as soon as the <font color="C0C0C0">Silver Timer Switch</font> <img src="Tilez/8GS/GS243.jpg"> (<font color="C0C0C0">STS</font>) was pressed, and just before the solver could possibly arrive there, the next direction to take. While the solver moved from the <font color="C0C0C0">STS</font> to the first safe Tile in the <font color="C0C0C0">SPM</font>, I flashed "GooRoo" both raised and depressed. Complicated stuff!<br/><br/>
+        The messy result.  <img src="../hintz/Custom/GooRoo/YellowPeril/SilverPyramidMazeRaw.jpg"><br/>
+        Can you tell where I made the changez to fix the problemz?  (Five logicz can be easily seen.)<br/><br/>
+        Well, I lost track of what I was doing somehow, and really bolloxed the <font color="C0C0C0">SPM</font>! Then I discovered what a hard row to hoe I had created for myself in the manner in which I placed the <font color="C0C0C0">SPM</font> logicz. I had absolutely no way of telling what happened in sequence #1, or #2 or any sequence, because there was no pattern in the logicz per Tile. Painfully, I worked out a solution. The solution is now rule #1 in my Custom Level designing.<br/><br/>        If a puzzle is on a 48 X 48 map, then the <font color="00CC00">x</font> values range between 0 and 47, as do the <font color="00CC00">y</font> values. The (impractical) limit of a Gruntz map is 256 X 256. That is 65,536 Tilez to place! (Now, each Tile is 32 X 32 pixels. Remember that ... it is part of my solution.) And the possibility of hundreds of thousands of logics, if one did something (sometimes more than once) on every Tile!<br/><br/>
+        What I have acquired as a habit in my Custom Level (CL) designing is to ensure that logics have a logical  pattern to their placements. Remember, Tilez are numbered from 0 to (width - 1 ... or height - 1), and Tile Height and Width are both 32.<br/><br/>        Let's set some mathematical terminology:<br/>        <font color="00CC00">x</font> is the horizontal Tile number;<br/>
+        <font color="00CC00">y</font> is the vertical Tile number;<br/>
+        X is the pixel number on the horizontal plane.<br/>
+        Y is the pixel number on the vertical plane.<br/><br/>        A logic marker is 16 X 16 pixels in size, so the middle of a logic is at relative 8,8.<br/><br/>
+        <font color="FF0000">GooRoo</font>'s logic placement rulez:<br/><br/>        X=8, Y=8 is the basic pixel address from which to relate all Tile pixel addresses.<br/><br/>    </th>
+  </tr>
+  <tr valign="top" align="left">
+    <th>
+      <table>
+        <tr valign="top" align="left">
+          <th align="bottom">Beginning with just a single Silver Pyramid:</th>          <th align="bottom"><img src="SilverPyramidRaw.jpg"></th>
+        </tr>
+        <tr valign="top" align="left">          <th align="bottom">Add Logic #1:<br/>
+              X = 8 + 32<font color="00CC00">x</font><br/>
+              Y = 8 + 32<font color="00CC00">y</font>
+          <th align="bottom"><img src="SilverPyramidLogic1.jpg"></th>        </tr>        <tr valign="top" align="left">          <th align="bottom">Add Logic #2;<br/>
+              X = 24 + 32<font color="00CC00">x</font> ... (8 + 32/2 = 8 + 16 = 24)<br/>
+              Y = 8 + 32<font color="00CC00">y</font></th>          <th align="bottom"><img src="SilverPyramidLogic2.jpg"></th>        </tr>        <tr valign="top" align="left">          <th align="bottom">Add Logic #3;<br/>              X = 8 + 32<font color="00CC00">x</font><br/>              Y = 24 + 32<font color="00CC00">y</font></th>
+          <th align="bottom"><img src="SilverPyramidLogic3.jpg"></th>        <tr valign="top" align="left">          <th align="bottom">Add Logic #4;<br/>              X = 24 + 32<font color="00CC00">x</font><br/>
+              Y = 24 + 32<font color="00CC00">y</font></th>          <th align="bottom"><img src="SilverPyramidLogic4.jpg"></th>        <tr valign="top" align="left">          <th align="bottom">Add Logic #5;<br/>
+              X = 16 + 32<font color="00CC00">x</font><br/>
+              Y = 16 + 32<font color="00CC00">y</font></th>          <th align="bottom"><img src="SilverPyramidLogic5.jpg"></th>
+        <tr valign="top" align="left">      </table>
+    </th>
+  </tr>
+    <th align="bottom">Logic #6;<br/>
+        Give it up! You're likely in 'way over your head!  But if you <i><u>must</u></i> have 6 or more logicz on a single Tile, you might want to consider this:<br/><br/>
+    </th>
+  </tr>  <tr valign="top" align="left">
+    <th>      <table>        <tr valign="top" align="left">          <th align="bottom">Add Logic #5a;<br/>              X = 16 + 32<font color="00CC00">x</font><br/>              Y = 8 + 32<font color="00CC00">y</font> (upper center of the Tile)</th>          <th align="bottom"><img src="SilverPyramidLogic5a.jpg"></th>
+        <tr valign="top" align="left">
+          <th align="bottom">Add Logic #6;<br/>              X = 8 + 32<font color="00CC00">x</font><br/>              Y = 16 + 32<font color="00CC00">y</font> (center left of the Tile)</th>
+          <th align="bottom"><img src="SilverPyramidLogic6.jpg"></th>        <tr valign="top" align="left">          <th align="bottom">Add Logic #7;<br/>              X = 24 + 32<font color="00CC00">x</font><br/>              Y = 8 + 32<font color="00CC00">y</font> (center  right of the Tile)</th>
+          <th align="bottom"><img src="SilverPyramidLogic7.jpg"></th>
+        <tr valign="top" align="left">          <th align="bottom">Add Logic #8;<br/>
+              X = 8 + 32<font color="00CC00">x</font><br/>
+              Y = 24 + 32<font color="00CC00">y</font> (bottom center of the Tile)</th>
+          <th align="bottom"><img src="SilverPyramidLogic8.jpg"></th>        <tr valign="top" align="left">
+      </table>
+    </th>
+  </tr>  <tr valign="top" align="left">
+    <th>The result is that the upper left-hand corner of a Tile is part of the first sequence of logics associated with that Tile; the upper right-hand corner is the second sequence; the lower left-hand corner is the third sequence; the lower right-hand corner is the fourth sequence; and (lastly, for practical purposes) right smack dab in the middle is the fifth sequence.  It is quite easy to select any of the five logicz on the Tile.  A quick scan of the area tells you what is happening in each sequence of your maze. It also becomes fairly obvious when you have omitted a logic from a certain sequence on a certain Tile! (There is a visible 'hole' where that logic should be.) Also, in an 'all but these Tilez' situation ( as in my "GooRoo" ) you actually see that "GooRoo" in empty spaces in a certain corner of the Tilez.  The same is true in the 'only these' situation ... you can read "GooRoo" as the only places where there are logics.  Even in the (IMHO) ridiculous situation of eight logicz on a single tile, some part of all eight logic boxez is visible, and easily selected.  I hope a word to the wise is sufficient. <br/><br/>
+        What I also do is to do a "<a href="CalcCowID.html">CalcCowID</a>" on every single logic I place in the level. Every one! That is where I am able to so precisely align my logicz; where you see under "Location" there are titles of X:, Y: Z:, etc. with an entry box following each one. Do not be concerned with Z: or anything else in that box; but fill in the values you calculated for X and Y in (you guessed it) the X: and Y: entry fields. It is then easy to get into the habit of doing CalcCowID to finish the process.<br/><br/>
+        A similar maze from SecretSoduko1.  You can follow the path by multiple logicz on certain Tilez.<br/><img src="../hintz/Custom/GooRoo/SecretSoduko1/SilverPyramidMaze.jpg"><br/><br/>
+        What I have described isn't going to help you create <font color="C0C0C0">SPM</font>z ... but it will certainly help when you mess up somewhere, and need to find out where you went wrong!<br/><br/>        So now let's discuss entering valuez into those logicz, now that we know that we can tell in what sequence they will operate.<br/>
+        First, you need to consider the equipment the Grunt you intend to negotiate the maze is going to have, since it may be a determining factor in how quickly those Silver Pyramidz should change state.<br/>        Most Gruntz travel at 600 millisecondz per tile ... a (very) few faster than that ... a few more slowly than that.<br/>        For a 'straight line' path (as in <a href="../hintz/Custom/Acid/ImaginIceon/ImaginIceon.jpg">ImaginIceon</a> ... lower right-hand quadrant) with a Grunt with a lit Bomb <img src="../images/ToolzBomb.gif">, the timing can be as little as 200 millisecondz (from top to bottom, in this example) for each successive logic.  Since there is only one sequence involved, all of the logicz are placed in the upper left-hand corner ... not much can go wrong.<br/>
+        Most Gruntz, however, fall into the 600 millisecond category, so each successive tile (if altering sequentially) would have an additional 600 millisecondz in the "Points:" field ... perhapz a bit more, in consideration of the poor solver.<br/>        When the Grunt must also pick up some object (Coin, Tool, Toy or Powerup) additional delay is required before the next logic action happenz.<br/>        Whatever you do ... <font size="+2" color="FF0000">TEST</font> the timing of the maze ... frequently!  I (<u>now</u>) use a temporary Grunt (properly equipped) at the <font color="C0C0C0">Silver Timer Switch</font>, and walk him through the maze every time I add about five logicz ... and as soon as I add something he has to pick up ... or break ... or dig up!  That way, I don't have so many logicz to be corrected, to make the maze solvable.<br/>
+        Remember that certain Gruntz move even more slowly ... as when carrying the Warpstone piece <img src="../images/WarpstonePiece1.gif"> ... and need more time.<br/>
+        I can think of a rather tricky timing problem (both for the solverz AND for the Designer!) ... a change of Grunt movement speed in the middle of a Silver Pyramid maze.  For example, a Springz Grunt enterz the maze, and there is a Spikez tile he cannot avoid in the path (such as a Hole before the Spikez <img src="Tilez/8GS/GS196.jpg"><img src="Tilez/8GS/GS191.jpg"> ... or two consecutive Spikez tilez <img src="Tilez/8GS/GS191.jpg"><img src="Tilez/8GS/GS191.jpg">), so that he beginz at 800 millisecondz per tile, then jumpz (in 800 millisecondz) onto the Spikez where he losez his Springz, and continuez at 600 millisecondz per tile.<br/><br/>
+        If your maze has the solver turning several cornerz, build in some 'slack time' for the human delay of recognizing that the next move is not straight ahead in the direction s/he was already going.<br/><br/>        And it is definitely 'not nice' to design in false leadz dozenz of stepz into a very large maze ... unless you take the time to run the entire maze through at a rate impossible for any Grunt to move, showing what will happen, before you actually allow the Grunt to make the attempt.<br/>
+        In other wordz, 100 to 400 millisecond changez (too fast to move), followed by some sort of "now get ready ... here comez the real thing" signal.<br/><br/><br/>
+        I have memorized the following 25 pixel valuez, and can now quickly 'force' a logic to my desired location:<br/>        <table>          <tr valign="top" align="left">            <th align="right">8<br>
+			  40<br>
+			  72<br>
+			  104<br>
+			  136<br>
+			  168<br>
+			  200<br>
+			  232<br>
+			  264<br>
+			  296<br>
+			  328<br>
+			  360<br>
+			  392<br>
+			  424<br>
+			  456<br>
+			  488<br>
+			  520<br>
+			  552<br>
+			  584<br>
+			  616<br>
+			  648<br>
+			  680<br>
+			  712<br>
+			  744<br>
+			  776
+		    </th>
+            <th align="right">808</th>
+            <th align="right">1608</th>
+            <th align="right">2408</th>
+          </tr>
+        </table>
+<br/>        Since 776 + 32 = 808 ... the valuez repeat every 800 pixelz (25 tilez) and 25 valuez are all you need to memorize.<br/>
+        That coverz X and Y Tilez from 0 through 24; higher X and/or Y Tile numberz require adding 800 (or 1600, or 2400) to these 25 valuez to locate a logic in the upper left-hand corner of a Tile.<br/><br/>        Add 16 to an X value to place the logic in the right half, instead of the left half.<br/><br/>        Add 16 to a Y value to place the logic in the bottom half, instead of the top half.<br/><br/>
+        Add 8 to both X and Y to place the logic in the center of the tile ... as for InGameIconz.    </th>
+  </tr>
+</table>
+</body>
+</html>
