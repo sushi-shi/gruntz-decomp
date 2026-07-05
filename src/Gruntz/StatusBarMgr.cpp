@@ -323,6 +323,47 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_370 = (i32)it;
+            // BELT: 3 unrolled CSBI_ImageSet belt segments (config-d from m_2c4/m_2dc/m_2f4,
+            // cached to m_308/m_30c/m_310).
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = bx + 0x19;
+            r.top = by + 0x11c;
+            r.right = bx + 0x3c;
+            r.bottom = by + 0x130;
+            if (!it->Configure(this, code, 0xcb, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2c4, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_308 = (i32)it;
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = bx + 0x40;
+            r.top = by + 0x11c;
+            r.right = bx + 0x63;
+            r.bottom = by + 0x130;
+            if (!it->Configure(this, code, 0xcc, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2dc, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_30c = (i32)it;
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = bx + 0x68;
+            r.top = by + 0x11c;
+            r.right = bx + 0x8b;
+            r.bottom = by + 0x130;
+            if (!it->Configure(this, code, 0xcd, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2f4, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_310 = (i32)it;
             return 1;
 
         case 4: // ---- Multiplayer tab ----
