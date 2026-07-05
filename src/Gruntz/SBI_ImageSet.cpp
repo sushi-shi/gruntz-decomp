@@ -3,7 +3,7 @@
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
-#include <Gruntz/SbiImageSetViews.h> // CImageSetGameReg (g_gameReg singleton view)
+#include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CSpriteFactoryHolder m_world)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -21,10 +21,8 @@
 // registry's embedded m_10map (CSpriteHashTable, Lookup 0x1b8008) - the same map
 // shape SetupImage uses, reached as reg->m_10->m_10map.
 
-// CImageSetGameReg (the g_gameReg singleton view) moved to
-// <Gruntz/SbiImageSetViews.h>.
 DATA(0x0024556c)
-extern CImageSetGameReg* g_gameReg;
+extern CGameRegistry* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
 DATA(0x00229ad0)
@@ -47,7 +45,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     if (s == 0) {
         return 0;
     }
-    CResMgr* reg = g_gameReg->m_world;
+    CSpriteFactoryHolder* reg = g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
