@@ -1,4 +1,4 @@
-// NetGameDlgWatch.cpp - CNetDlgWatch::Watchdog (0x0c46b0): the multiplayer lobby
+// NetGameDlgWatch.cpp - CMultiStartDlg::Watchdog (0x0c46b0): the multiplayer lobby
 // dialog's per-timer session watchdog. Guarded by a re-entrancy flag (g_64bdc4),
 // it refreshes the per-slot roster display, advances two blink counters
 // (g_64bdc8 / g_64bdcc), then walks the net-session status flags and, on any
@@ -8,18 +8,14 @@
 // and the game-registry slot array (*0x64556c) are modeled with ONLY the offsets
 // this method touches. Engine callees + Win32 imports are external (reloc-masked);
 // field/class names are placeholders (campaign doctrine).
-#include <Mfc.h>          // wsprintfA / KillTimer (imports reloc-mask through their IAT ptrs)
-#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Mfc.h>            // wsprintfA / KillTimer (imports reloc-mask through their IAT ptrs)
+#include <Gruntz/Dialogs.h> // CMultiStartDlg (this) + CWnd (the GetDlgItem child controls)
+#include <Gruntz/Multi.h>   // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Ints.h>
 #include <rva.h>
 
 // The game-registry singleton pointer (the scoring symbol CPlay reaches too).
 extern "C" void* g_mgrSettings; // 0x64556c
-
-// A child dialog control (GetDlgItem result); SetWindowTextA is a NAFXCW __thiscall.
-struct WatchCtrl {
-    void SetWindowTextA(const char* text); // 0x1be520 (reloc-masked)
-};
 
 // The multiplayer game-state singleton at 0x64bd5c is a CMulti. The former per-TU
 // WatchSess / WatchSess524 lens types (same-memory aliases of this pointer and its
@@ -28,7 +24,10 @@ struct WatchCtrl {
 // helpers are genuine CMulti / CMultiReportGate methods - see <Gruntz/Multi.h>.
 extern CMulti* g_64bd5c; // 0x64bd5c
 
-// The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot).
+// The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot) - the CGruntzMgr
+// options table (the reserved g_mgrSettings @0x64556c domain). Kept as a local slot view
+// here (only the +0x14/+0x20/+0x22c fields this watchdog reads are pinned); the canonical
+// CGruntzMgr options table is matcher-2's domain, so not folded onto it.
 struct WatchRegSlot {
     char m_pad00[0x14];
     i32 m_14; // +0x14 present flag
@@ -52,24 +51,13 @@ extern "C" i32 g_watchBlinkA;    // 0x64bdc8
 extern "C" i32 g_watchBlinkB;    // 0x64bdcc
 extern "C" i32 g_playerLeftFlag; // 0x648ce4
 
-// The lobby dialog whose window handle drives KillTimer + roster refresh.
-struct CNetDlgWatch {
-    char m_pad00[0x1c];
-    HWND m_hWnd; // +0x1c
-
-    WatchCtrl* GetDlgItem(i32 id); // 0x1be27d (CWnd::GetDlgItem)
-    void EnableWindow(i32 enable); // 0x1be6a7 (CWnd::EnableWindow on this)
-    void M1bab37(i32);             // 0x1bab37
-    void M16db(i32);               // 0x16db
-    void M227a();                  // 0x227a
-    void M2c0c();                  // 0x2c0c
-    void M38d2();                  // 0x38d2
-
-    void Watchdog(); // 0x0c46b0
-};
+// The lobby dialog whose window handle drives KillTimer + roster refresh IS the
+// canonical CMultiStartDlg (<Gruntz/Dialogs.h>): its M16db/M227a/M2c0c/M38d2 are that
+// class's Sync16db/Sync227a/Sync2c0c/Sync38d2 roster methods, GetDlgItem/EnableWindow
+// are its inherited CWnd/CDialog methods, and m_hWnd is CWnd::m_hWnd @+0x1c.
 
 // ===========================================================================
-// CNetDlgWatch::Watchdog  (0x0c46b0)
+// CMultiStartDlg::Watchdog  (0x0c46b0)
 // ===========================================================================
 // @early-stop
 // ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):
@@ -79,7 +67,7 @@ struct CNetDlgWatch {
 // KillTimer temps into ecx/edx instead of retail's eax/ecx; plus a 2-instr
 // timeGetTime `this`-load schedule. Not source-steerable. docs/patterns/zero-register-pinning.md.
 RVA(0x000c46b0, 0x371)
-void CNetDlgWatch::Watchdog() {
+void CMultiStartDlg::Watchdog() {
     if (g_watchBusy != 0) {
         return;
     }
@@ -120,8 +108,8 @@ void CNetDlgWatch::Watchdog() {
     if (g_watchBlinkB == 0) {
         for (i32 i = 0; i < 4; i++) {
             WatchRegSlot* slot = &((WatchReg*)g_mgrSettings)->m_slots[i];
-            WatchCtrl* item1;
-            WatchCtrl* item2;
+            CWnd* item1;
+            CWnd* item2;
             switch (i) {
                 case 0:
                     item1 = GetDlgItem(0x531);
@@ -183,16 +171,16 @@ void CNetDlgWatch::Watchdog() {
         msg = "version";
     } else {
         if (g_playerLeftFlag != 0) {
-            M16db(1);
-            M227a();
-            M2c0c();
-            M38d2();
+            Sync16db(1);
+            Sync227a();
+            Sync2c0c();
+            Sync38d2();
             g_playerLeftFlag = 0;
         }
         if (g_64bd5c->m_58c != 0) {
-            M227a();
-            M2c0c();
-            M38d2();
+            Sync227a();
+            Sync2c0c();
+            Sync38d2();
             g_64bd5c->m_58c = 0;
         }
         g_watchBusy = 0;
@@ -203,7 +191,5 @@ void CNetDlgWatch::Watchdog() {
     g_watchBusy = 0;
 }
 
-SIZE_UNKNOWN(CNetDlgWatch);
-SIZE_UNKNOWN(WatchCtrl);
 SIZE_UNKNOWN(WatchReg);
 SIZE_UNKNOWN(WatchRegSlot);

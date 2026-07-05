@@ -79,8 +79,10 @@ public:
     // DoModal - the NAFXCW modal loop (reloc-masked). Modeled non-virtual: retail
     // calls it directly on a known-type local (devirtualized), so a plain method
     // reproduces the `call rel32`.
-    i32 DoModal();         // 0x1ba9d2
-    char m_body[0x5c - 4]; // pad to 0x5c (vptr occupies +0x00)
+    i32 DoModal();             // 0x1ba9d2
+    char m_pad04[0x1c - 4];    // +0x04 (vptr occupies +0x00)
+    HWND__* m_hWnd;            // +0x1c  wrapped window handle (the CWnd-base field)
+    char m_pad20[0x5c - 0x20]; // +0x20  pad to 0x5c (subclass members land at +0x5c)
 };
 
 // ---------------------------------------------------------------------------
@@ -276,6 +278,12 @@ public:
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
     void OnOK();                    // 0x1bacc3 (CDialog::OnOK)
+    void M1bab37(i32);              // 0x1bab37 (NAFXCW forwarder; the Watchdog abort/reshow)
+
+    // Watchdog (0xc46b0): the per-timer multiplayer-session watchdog (body in
+    // NetGameDlgWatch.cpp) - refresh the roster, advance the blink counters, then walk
+    // the CMulti session status flags and tear down on any terminal condition.
+    void Watchdog();
 
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as
