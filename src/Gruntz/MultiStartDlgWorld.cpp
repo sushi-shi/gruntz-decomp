@@ -9,6 +9,7 @@
 // engine / import thunk that reloc-masks; the "GAME_MULTI" $SG literal reloc-masks
 // against the matched string symbol; only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <rva.h>
 #include <Globals.h>
 
@@ -17,6 +18,13 @@
 // The subclass window-proc installed on the combo's edit child (0x4c1a10). Only
 // its address is taken (push offset -> DIR32 reloc-masks).
 extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+// The multiplayer game-state singleton (a CMulti, xref-proven); Sub_c3e30 commits
+// the selected world/host name into it. DATA reloc-masks against ReconBatch2's home.
+DATA(0x0024bd5c)
+extern CMulti* g_64bd5c;
+// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
+extern "C" char g_emptyString[];
 
 // The GAME_MULTI registry path -> a name registry (m_host is the CNetDlgHost* the
 // ctor stored as i32; its m_registry is the world registry). ResolvePath returns a
@@ -90,6 +98,34 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     SetWindowLongA(h, GWL_WNDPROC, (i32)WndProc_c1a10);
     Sub_c3e30();
     return 1;
+}
+
+// CMultiStartDlg::Sub_c3e30 (0xc3e30) - re-homed from src/Stub/ApiCallers.cpp
+// (ReplayDlg_c3e30::OnReset); the caller SetupWorldCombo runs it as a self-call. When
+// this is the host, read the current selection of the 0x4ff world combo, and if its
+// text is non-empty commit it as the game's world/host name into the CMulti game-state
+// (m_5b4 = name, m_5b8 = "", m_5b0 = 0, Commit3ada). The /GX EH frame unwinds the local
+// scratch CString. GetLBText (CComboBox::GetLBText 0x1ce7db) / operator= / Commit3ada /
+// SendMessageA all reloc-mask; only offsets + code bytes are load-bearing.
+RVA(0x000c3e30, 0xfe)
+void CMultiStartDlg::Sub_c3e30() {
+    if (g_64bd5c->m_isHost != 0) {
+        CWnd* item = GetDlgItem(0x4ff);
+        if (item != 0) {
+            i32 r = SendMessageA(item->m_hWnd, 0x147, 0, 0);
+            if (r != -1) {
+                CString name;
+                item->GetLBText1ce7db(r, name);
+                if (name.GetLength() != 0) {
+                    m_6c = 0;
+                }
+                g_64bd5c->m_5b0 = 0;
+                g_64bd5c->m_5b8 = g_emptyString;
+                g_64bd5c->m_5b4 = (LPCTSTR)name;
+                g_64bd5c->Commit3ada(0);
+            }
+        }
+    }
 }
 
 SIZE_UNKNOWN(EngStrAssign);

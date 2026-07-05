@@ -865,49 +865,9 @@ namespace ApiCallerStubs {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
-    // A dialog-item CWnd (HWND at +0x1c) refreshed from the model.
-    struct CWndItem_c3e30 {
-        char m_pad0[0x1c];
-        HWND m_1c;                                 // +0x1c
-        void Refresh1ce7db(i32 sel, CString* out); // thiscall RVA 0x1ce7db
-    };
-    // The replay/recording model singleton at 0x64bd5c IS the CMulti multiplayer
-    // game-state (xref-proven). Now that this TU is MFC (see the <Gruntz/Multi.h>
-    // include up top -- the old <Win32.h> wall is broken), OnReset drives it through
-    // REAL CMulti members/methods: m_isHost (+0x528), m_5b0, the CString members
-    // m_5b4/m_5b8, and Commit3ada (ILT 0x3ada -> 0xbccd0). The semantic name is kept.
-    // ReconBatch2.cpp owns the canonical DATA; this extern reloc-masks against it.
-    DATA(0x0024bd5c)
-    extern CMulti* g_replayModel;
-    extern "C" char g_emptyStr_6293f4[]; // 0x6293f4
-    // The host dialog; m_6c is a dirty flag, GetItem27d resolves a child CWnd.
-    struct ReplayDlg_c3e30 {
-        char m_pad0[0x6c];
-        i32 m_6c;                           // +0x6c
-        CWndItem_c3e30* GetItem27d(i32 id); // thiscall RVA 0x1be27d
-        void OnReset();
-    };
-    // __thiscall(): reset the replay name field and refresh the selected item.
-    RVA(0x000c3e30, 0xfe)
-    void ReplayDlg_c3e30::OnReset() {
-        if (g_replayModel->m_isHost != 0) {
-            CWndItem_c3e30* item = GetItem27d(0x4ff);
-            if (item != 0) {
-                i32 r = SendMessageA(item->m_1c, 0x147, 0, 0);
-                if (r != -1) {
-                    CString name;
-                    item->Refresh1ce7db(r, &name);
-                    if (name.GetLength() != 0) {
-                        m_6c = 0;
-                    }
-                    g_replayModel->m_5b0 = 0;
-                    g_replayModel->m_5b8 = g_emptyStr_6293f4;
-                    g_replayModel->m_5b4 = (LPCTSTR)name;
-                    g_replayModel->Commit3ada(0);
-                }
-            }
-        }
-    }
+    // (0xc3e30 ReplayDlg_c3e30::OnReset re-homed to CMultiStartDlg::Sub_c3e30 in
+    // src/Gruntz/MultiStartDlgWorld.cpp - it is a post-setup self-call from
+    // CMultiStartDlg::SetupWorldCombo, driving the real CMulti game-state.)
 
     // The Battlez multiplayer setup dialog (CBattlezDlg). Refreshes all four player
     // slots' controls (name edit / kind combo / ready checkbox / colour) from the
