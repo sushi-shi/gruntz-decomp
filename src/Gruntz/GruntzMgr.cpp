@@ -1950,8 +1950,8 @@ i32 CGruntzMgr::TickStateMgrs() {
 // flag (CGameMgr::m_10) and, when it changes AND a world is loaded, runs the
 // transition side-effects: tear down the world's inner controller
 // (m_world->m_28->m_2c, guarded), mirror the new state into the g_61ab20 gate,
-// then flush the +0x54 input object - Method1 when entering the run state
-// (m_10 != 0), Method0 when leaving it. A no-op when the value is unchanged, and
+// then flush the +0x54 input object - Arm (thunk 0x18e8) when entering the run
+// state (m_10 != 0), Disarm (thunk 0x29b9) when leaving it. A no-op when the value is unchanged, and
 // the whole side-effect chain is skipped when no world is loaded.
 // @early-stop
 // 99.62% global-store regalloc tiebreak: logic byte-exact. The lone residual is
@@ -1974,9 +1974,9 @@ void CGruntzMgr::SetRunState(i32 v) {
     }
     g_61ab20 = m_soundEnabled;
     if (m_soundEnabled) {
-        m_inputState->Method1();
+        m_inputState->Arm();
     } else {
-        m_inputState->Method0();
+        m_inputState->Disarm();
     }
 }
 
@@ -2580,7 +2580,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 
     if (full) {
         if (m_inputState) {
-            m_inputState->Method0();
+            m_inputState->Disarm();
         }
         if (m_world) {
             CWorldSub28* sub = m_world->m_28;
@@ -2603,7 +2603,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
     }
     if (m_soundEnabled) {
-        m_inputState->Method1();
+        m_inputState->Arm();
         if (m_cmdGrid && m_soundEnabled) {
             m_cmdGrid->Reset();
         }

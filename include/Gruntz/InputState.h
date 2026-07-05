@@ -43,11 +43,9 @@ struct CInput54 {
     char m_pad0[0x24];
     i32 m_armed;   // +0x24  ambient-arm flag (== the ambient TU's object-count/playable gate)
     void Flush();  // 0x1082-thunk (this) reloc-masked
-    void Arm();    // FUN_0040bcf0 (this) reloc-masked
-    void Disarm(); // FUN_0040bc80 (this) reloc-masked
+    void Arm();    // FUN_0040bcf0 (this) reloc-masked (ghidra "Resume"; ILT thunk 0x18e8)
+    void Disarm(); // FUN_0040bc80 (this) reloc-masked (ghidra "Stop"; ILT thunk 0x29b9)
     i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
-    void Method0();                                 // FUN @ 0x29b9 thunk (reloc-masked)
-    void Method1();                                 // FUN @ 0x18e8 thunk (reloc-masked)
     void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
     void Teardown();                                // (this) reloc-masked (Close)
 };

@@ -91,9 +91,6 @@ namespace GruntzMgrCmd {
         char _p94[0x15c - 0x94];
         void* m_15c; // +0x15c  monologo/death sprite key
     };
-    struct GZSoundZ {                            // manager m_48 (CGruntzSoundZ*)
-        i32 PlayByName(const char* name, i32 f); // 0x138840 __thiscall
-    };
     struct GZGruntLevel {   // grunt->m_2dc
         void Fn2982(i32 n); // 0x2982
         void Fn33cd(i32 n); // 0x33cd
@@ -247,8 +244,8 @@ namespace GruntzMgrCmd {
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
-        GZM44* m_44;       // 0x44 (engine sub-object; +0x124 flag)
-        GZSoundZ* m_sound; // 0x48
+        GZM44* m_44;            // 0x44 (engine sub-object; +0x124 flag)
+        CGruntzSoundZ* m_sound; // 0x48 (PlayByName @0x138840)
         char _p4c[0x54 - 0x4c];
         CInput54* m_inputState; // 0x54 (world-present toolbar Method1/Method0)
         GZObj58* m_saveSink;    // 0x58 (has +0x18)
@@ -1318,9 +1315,9 @@ namespace GruntzMgrCmd {
                 m_10 = v;
                 g_61ab20 = v;
                 if (v == 0) {
-                    m_inputState->Method0();
+                    m_inputState->Disarm(); // 0x29b9->0xbc80 (== CInput54::Disarm, ghidra "Stop")
                 } else {
-                    m_inputState->Method1();
+                    m_inputState->Arm(); // 0x18e8->0xbcf0 (== CInput54::Arm, ghidra "Resume")
                 }
                 return 1;
             }

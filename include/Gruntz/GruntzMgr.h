@@ -129,7 +129,7 @@ struct CWorldZ {
 struct IDirectPlayLobby;
 
 // CInput54 (+0x54 active-level input/spatial-sound object; Flush/Arm/Disarm/InitInput/
-// Method0/Method1/StoreFlag; the ambient TU reads its +0x24 armed==playable gate + its
+// StoreFlag; the ambient TU reads its +0x24 armed==playable gate + its
 // +0x08 spatial voice CObList) is defined by the <Gruntz/InputState.h> include above.
 
 // The manager's owned engine sub-objects, each a real class reached only through a
@@ -356,7 +356,7 @@ public:
     EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
-    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Method0/Method1/StoreFlag)
+    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Disarm/StoreFlag)
     SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
     CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
     TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
