@@ -120,12 +120,14 @@ public:
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
 SIZE(CGameObject, 0x1dc);
 struct CGameObject {
-    void AddLogicHit(char* key);                        // 0x150f50
-    void AddLogicAttack(char* key);                     // 0x151030
-    void AddLogicBump(char* key);                       // 0x151110
-    void ApplyLookupSprite(const char* key, i32 flag);  // 0x1504d0
-    void ApplyName(const char* name);                   // 0x150540
+    void Construct(void* owner, i32 id, i32 z);        // 0x15b390  the engine ctor (base subobject)
+    void AddLogicHit(char* key);                       // 0x150f50
+    void AddLogicAttack(char* key);                    // 0x151030
+    void AddLogicBump(char* key);                      // 0x151110
+    void ApplyLookupSprite(const char* key, i32 flag); // 0x1504d0
+    void ApplyName(const char* name);                  // 0x150540
     i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    void LookupAnimSprite(const char* name);            // 0x150610  (anim-set cache)
     i32 EnsureWorker80(CGameObject* src);               // 0x150eb0  (lazy worker @ +0x80, dispatch)
     void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
@@ -138,22 +140,23 @@ struct CGameObject {
 
     // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
     // no vtable is ever emitted from source - every dispatch reloc-masks). Slot
-    // roles are unrecovered except [11] Draw: CGameLevel::VisitVisible dispatches
-    // it (+0x2c) per object during the between-planes render walk, passing the
-    // render visitor. [10] (+0x28) is the sibling hook the object-chain owner
-    // also carries - unnamed here (no direct evidence on the object).
-    virtual void v00();           // [0]  +0x00
-    virtual void v04();           // [1]  +0x04
-    virtual void v08();           // [2]  +0x08
-    virtual void v0c();           // [3]  +0x0c
-    virtual void v10();           // [4]  +0x10
-    virtual void v14();           // [5]  +0x14
-    virtual void v18();           // [6]  +0x18
-    virtual void v1c();           // [7]  +0x1c
-    virtual void v20();           // [8]  +0x20
-    virtual void v24();           // [9]  +0x24
-    virtual void v28(void* arg);  // [10] +0x28
-    virtual void Draw(void* arg); // [11] +0x2c  per-object draw hook (VisitVisible)
+    // roles: [1] Delete = scalar-deleting dtor (WwdFile::ReadPlaneObjects `push 1;
+    // call [+4]`); [10] Load = the record-load virtual (ReadPlaneObjects pushes 4
+    // args + checks the int return: `push;push;push;push; call [+0x28]`); [11] Draw:
+    // CGameLevel::VisitVisible dispatches it (+0x2c) per object during the
+    // between-planes render walk, passing the render visitor.
+    virtual void v00();                           // [0]  +0x00
+    virtual void* Delete(i32 flag);               // [1]  +0x04  scalar-deleting dtor
+    virtual void v08();                           // [2]  +0x08
+    virtual void v0c();                           // [3]  +0x0c
+    virtual void v10();                           // [4]  +0x10
+    virtual void v14();                           // [5]  +0x14
+    virtual void v18();                           // [6]  +0x18
+    virtual void v1c();                           // [7]  +0x1c
+    virtual void v20();                           // [8]  +0x20
+    virtual void v24();                           // [9]  +0x24
+    virtual i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load virtual
+    virtual void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
 
     i32 m_04;    // +0x04
     i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;
@@ -168,16 +171,16 @@ struct CGameObject {
     i32 m_stateFlags; // +0x40  bit0 = visible/active (set by the icon/glitter/booty
                       //        creators; cleared to hide - IconLoaders/GameMode/BzState)
     char m_pad44[0x4c - 0x44];
-    i32 m_drawFillArg;  // +0x4c
-    i32 m_drawFillCmd;  // +0x50  draw-fill command type (0xb = decay fill-bar)
-    i32 m_fillFraction; // +0x54  fill fraction (0..256)
-    i32 m_drawActive;   // +0x58  dirty/active flag
-    i32 m_screenX;      // +0x5c  screen x
-    i32 m_screenY;      // +0x60  screen y
-    i32 m_64;           // +0x64  captured config triple (checkpoint state slots 12..14)
-    i32 m_68;           // +0x68
-    i32 m_6c;           // +0x6c
-    char m_pad70[0x74 - 0x70];
+    i32 m_drawFillArg;   // +0x4c
+    i32 m_drawFillCmd;   // +0x50  draw-fill command type (0xb = decay fill-bar)
+    i32 m_fillFraction;  // +0x54  fill fraction (0..256)
+    i32 m_drawActive;    // +0x58  dirty/active flag
+    i32 m_screenX;       // +0x5c  screen x
+    i32 m_screenY;       // +0x60  screen y
+    i32 m_64;            // +0x64  captured config triple (checkpoint state slots 12..14)
+    i32 m_68;            // +0x68
+    i32 m_6c;            // +0x6c
+    i32 m_70;            // +0x70  (WwdFile record clipRect bottom)
     i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
     CGameObjAux* m_7c; // +0x7c
@@ -201,7 +204,8 @@ struct CGameObject {
     i32 m_moveMode;     // +0xe4
     u32 m_collCategory; // +0xe8  collision category bits (0x80 = carrier/platform;
                         //        BroadPhase tests other->m_collCategory & t->m_collMask)
-    char m_padec[0xf4 - 0xec];
+    i32 m_ec;           // +0xec  (WwdFile record scatter target)
+    char m_padf0[0xf4 - 0xf0];
     u32 m_collMask; // +0xf4  which categories this object collides with
     i32 m_strideX;  // +0xf8  tile-probe stride X (the move steppers' scan step)
     i32 m_strideY;  // +0xfc  tile-probe stride Y
@@ -244,9 +248,10 @@ struct CGameObject {
     i32 m_deltaX; // +0x174
     i32 m_deltaY; // +0x178
     char m_pad17c[0x188 - 0x17c];
-    i32 m_188; // +0x188  object id (warlord battle-event id / game-object archive-cue id)
-    char m_pad18c[0x194 - 0x18c];
-    char* m_194;            // +0x194  object source-def record (its class-name string is at +0x24)
+    i32 m_188;   // +0x188  object id (warlord battle-event id / game-object archive-cue id)
+    i32 m_18c;   // +0x18c  (WwdFile stamp: -1; CWwdGameObject low byte = dot color / setup flag)
+    i32 m_190;   // +0x190  (WwdFile stamp: -1)
+    char* m_194; // +0x194  object source-def record (its class-name string is at +0x24)
     CGameObjLayer* m_layer; // +0x198
     // +0x1a0: the most-derived game object embeds a per-CLASS anim sub-object here
     // (WwdAnimSub / CPathSubMgr / CAnimSink / CTeleAnimSink / CWarlordAnimSub /
@@ -255,7 +260,8 @@ struct CGameObject {
     // only reach it by address: `((LeafSub*)((char*)m_38 + 0x1a0))->...`. The sink's
     // +0x20/+0x28 fields surface below as m_1c0/m_1c8. Kept as documented authentic
     // raw-offset access (a single base field can't type a per-leaf embedded object).
-    char m_pad19c[0x1b4 - 0x19c];
+    i32 m_19c; // +0x19c  (WwdFile stamp: 0)
+    char m_pad1a0[0x1b4 - 0x1a0];
     i32 m_geoId; // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0  the +0x1a0 anim sub-mgr's idle flag  (sink+0x20)
@@ -367,7 +373,7 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}       // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 Serialize(); // slot 1
+    virtual i32 Serialize();      // slot 1
     virtual i32 UserBaseVfunc2(); // slot 2
 };
 
