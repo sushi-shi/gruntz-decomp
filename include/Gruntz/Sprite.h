@@ -22,14 +22,18 @@
 struct CSprite;
 struct CFrameWorker;
 struct CObject;
+struct CFrameGrid; // the frame-grid value the image registry's map yields (CPlay::m_grid)
 
 // The engine string-keyed sprite-set hash table embedded at a registry's +0x10
 // (the `add ecx,0x10` before the call addresses it). Lookup() hashes the class-name
-// key and writes the found sprite through *ppOut, returning a found-flag. Modeled
+// key and writes the found object through *ppOut, returning a found-flag. Modeled
 // with NO body so the `ecx=<map>; call <helper>` shape reloc-masks (engine 0x1b8008).
+// The map stores CObject-derived values; overloads type the out-ptr per consumer so
+// the found value is typed cast-free (same reloc-masked call either way).
 class CSpriteHashTable {
 public:
     i32 Lookup(const char* szName, CSprite** ppOut);
+    i32 Lookup(const char* szName, CFrameGrid** ppOut); // frame-grid value (CPlay::BeginGridWalk)
 };
 
 // The CSprite frame table is a CObArray of CImage frame-workers living AT

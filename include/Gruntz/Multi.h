@@ -20,7 +20,7 @@
 // here: CMulti's low-offset members (m_logic +0x04, m_stateReg +0x08, m_view +0x0c,
 // m_curState +0x2c, ...) occupy exactly the CPlay/CState sub-object range and are
 // read by ~30 methods across this TU. A real `: public CPlay` (CPlay.h pulls Mfc /
-// CGameRegistry / CView / CState) forces removing every one of those members and
+// CGameRegistry / CSpriteFactoryHolder / CState) forces removing every one of those members and
 // re-mapping each access through the base sub-objects - reshuffling the /O2 regalloc
 // of a 73%-partial TU whose functions already sit on documented EH/regalloc walls.
 // It also cannot help the sole inheritance-shaped function, ~CMulti @0x8d270, whose

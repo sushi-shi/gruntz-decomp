@@ -7,11 +7,11 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Mfc.h> // real MFC (CPtrList/CString) + windows.h via afx.h (superset of Win32.h)
 
-#include <DDrawMgr/DDSurface.h>            // canonical CDDSurface (Blt @0x13ee60)
+#include <DDrawMgr/DDSurface.h>           // canonical CDDSurface (Blt @0x13ee60)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (RemoveKeysEqual_157c70)
-#include <Gruntz/Multi.h>                  // real CMulti (the 0x64bd5c multiplayer singleton)
-#include <Font/Font.h>          // real Font (the g_mediumFont global)
-#include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <Gruntz/Multi.h>                 // real CMulti (the 0x64bd5c multiplayer singleton)
+#include <Font/Font.h>                    // real Font (the g_mediumFont global)
+#include <sfman32.h>                      // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
 
 // ===========================================================================
@@ -215,9 +215,9 @@ void CGameModeBase::Reset() {
 // distinct real DDraw objects (every sub-object call is direct/reloc-masked, so the
 // typing below is matching-neutral):
 //   SubView_faec0.Refresh  = CDDrawWorkerMgr::Method_158c70 (0x158c70, ddrawsubmgr, EXACT)
-//   CView.m_2c .Flip       = CDDSurface::Flip               (0x13e850, directdrawmgr, EXACT)
-//   CView.m_2c .CopyRect   = CFileImage::ShadeRect          (0x13f460, lutshaderect, src-claim ~67%)
-// unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CView hops -- the
+//   CSpriteFactoryHolder.m_2c .Flip       = CDDSurface::Flip               (0x13e850, directdrawmgr, EXACT)
+//   CSpriteFactoryHolder.m_2c .CopyRect   = CFileImage::ShadeRect          (0x13f460, lutshaderect, src-claim ~67%)
+// unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CSpriteFactoryHolder hops -- the
 // only inbound edge is ILT thunk 0x1ec9 (no clean ctor/new trace).
 // ===========================================================================
 struct SurfCtl_faec0 { // +0x2c surface controller (CDDSurface for Flip / CFileImage for the blit)

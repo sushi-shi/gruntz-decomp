@@ -7,7 +7,7 @@
 // scalar list and seeds four fields to 0x40). The two reconstructions modeled
 // the same owner/view sub-objects under different names: the +0x04 owner back-
 // ptr is the game-manager singleton `CGruntzMgr *` (gamemode/cplay downcast it to
-// their local CGMOwner/CWorld facet views); the +0x0c view holder is `CView *`
+// their local CGMOwner/CWorld facet views); the +0x0c holder is `CSpriteFactoryHolder *`
 // (cplay dereferences it directly, gamemode casts to CGMView). Both are 4-byte
 // pointer slots, so the casts are codegen-neutral.
 //
@@ -25,12 +25,14 @@
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
-struct CView;      // +0x0c view holder; defined fully in CView.h, opaque elsewhere
-struct CBankMgr;   // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
-struct CResSource; // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
-class CGruntzMgr;  // +0x04 owner back-ptr: the game-manager singleton (*g_64556c).
-                   // Forward-declared (MFC-free) so this widely-included header stays
-                   // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
+struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m_world;
+                             // defined in <Gruntz/GameRegistry.h> (its render sub-object
+                             // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
+struct CBankMgr;             // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
+struct CResSource;           // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_64556c).
+                             // Forward-declared (MFC-free) so this widely-included header stays
+                             // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
 
 class CState {
 public:
@@ -100,13 +102,15 @@ public:
     // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
     CGruntzMgr* m_4;
     CBankMgr* m_8; // +0x08  asset-bank manager (CPlay loaders: Lookup GRUNTZ/GAME banks)
-    // +0x0c  view/render/resource context (the shared CView). VERIFIED (matcher-2, sema):
-    // this is the SAME object as CGameRegistry::m_world (+0x30) - non-polymorphic, its +0x04
-    // sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0 @0x158ee0) and its
-    // +0x10 registrar is a CDDrawWorkerRegistry (Install/LoadTree +0x48, LoadNamespace +0x4c).
-    // The state activators (CBootyState/CMultiBootyState/CImageState slot-8 loaders) reach it
-    // through this one CView; their old per-TU StateMgr/BootyAssetRoot shadows are folded away.
-    CView* m_c; // +0x0c
+    // +0x0c  render/resource context. VERIFIED (matcher-2, sema): the SAME object as
+    // CGameRegistry::m_world (+0x30) == the canonical CSpriteFactoryHolder - non-polymorphic;
+    // its +0x04 sub-object is the DDraw worker manager (CDDrawSubMgrPages::Method_158ee0
+    // @0x158ee0) and its +0x10 registrar is CImageRegistry (Install/LoadTree +0x48,
+    // LoadNamespace +0x4c). The state activators (CBootyState/CMultiBootyState/CImageState
+    // slot-8 loaders) reach it through this one holder; their old per-TU StateMgr/BootyAssetRoot
+    // shadows are folded away. (The former `CView`/`CSpriteFactoryHolder` render view is folded onto
+    // CSpriteFactoryHolder; its render sub-object facets live in <Gruntz/View.h>.)
+    CSpriteFactoryHolder* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     i32 m_14;         // +0x14
     i32 m_18;         // +0x18

@@ -241,7 +241,7 @@ i32 CSBI_MenuItem::DecCounter() {
         CImage* f = (CImage*)m_30;
         if (f) {
             f->RenderFrame(
-                (void*)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_drawContext,
+                (void*)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
                 (void*)(m_14 + f->m_anchorX),
                 (void*)(m_18 + f->m_anchorY),
                 0

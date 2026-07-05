@@ -42,6 +42,15 @@
 #include <math.h>
 #include <rva.h>
 #include <stdio.h> // sprintf - the ATTRACT/title stack-buffer string builders
+// Real MFC CRgn/CGdiObject for the credits clip region (CreditsScrollSelf::m_1e8).
+// GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
+// the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines.
+// See docs/patterns/afxwin-clang-label-step-skip-inl.md. (Game CView is now CSpriteFactoryHolder,
+// so afxwin's real MFC CView no longer collides.)
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 
 // ===========================================================================
 // CState - the base game-state class.
@@ -135,7 +144,7 @@ i32 CState::Vslot11(i32, i32, i32) {
 
 // The CState +0x0c resource-release facet (registry @+0x10, sound registry +
 // pooled resource @+0x28, third registry @+0x2c, worker list @+0x0c, render/flip
-// view @+0x04) is the RESOURCE facet of the one shared CView (<Gruntz/View.h>);
+// view @+0x04) is the RESOURCE facet of the one shared CSpriteFactoryHolder (<Gruntz/View.h>);
 // the leaf-state teardown paths reach it through m_c directly (no cast).
 
 // CState::~CState() chains the WAP32 base cleanup; the leaf `??1`s re-stamp the
@@ -233,14 +242,14 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
     // The view (m_c) is re-read for every access (retail does not cache it).
-    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
+    CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
     if (r) {
         r->Free();
     }
-    m_c->m_soundRegistry->Release("BOOTY", "_");
-    m_c->m_soundRegistry->Release("GRUNTZ_WANDGRUNT", "_");
-    m_c->m_imageRegistry->Release("BOOTY", "_");
-    m_c->m_imageRegistry->Release("GRUNTZ_GOKARTGRUNT", "_");
+    ((CSoundRegistry*)m_c->m_28)->Release("BOOTY", "_");
+    ((CSoundRegistry*)m_c->m_28)->Release("GRUNTZ_WANDGRUNT", "_");
+    m_c->m_10->Release("BOOTY", "_");
+    m_c->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -274,22 +283,22 @@ GameStateId CBootyState::Update() {
 // ===========================================================================
 
 // CCreditsState::Render(): the canonical Render spine.
-//   1. INPUT POLL: i = m_c->m_renderState->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
+//   1. INPUT POLL: i = m_c->m_drawTarget->m_10->m_2c->m_8; if (i && i->vtbl[+0x60](i))
 //      skip the input-virtual; else
 //   2. INPUT VIRTUAL: if (this->vtbl[+0x20]()) { m_4->Post(0x8006,0xfa0); return 0; }
-//   3. CURSOR ANIM: if (m_c->m_soundRegistry->m_2c) GM_SimpleAnim(-1);
+//   3. CURSOR ANIM: if (((CSoundRegistry*)m_c->m_28)->m_2c) GM_SimpleAnim(-1);
 //   4. ENTITY UPDATE LOOP: for each e in g_entityList: e->Update();
 //   5. MESSAGE SCAN: first e with (e->m_2ac & 0xffffff) -> PostMessageA(hwnd,
 //      WM_COMMAND, m_24==5 ? 0x8023 : 0x8027, 0); m_4->m_8->m_244 = 0;
 //   6. SUB-STEPS: Sub1(); Sub2();
-//   7. DRAW: m_c->m_renderState->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
+//   7. DRAW: m_c->m_drawTarget->m_10->m_2c->Draw(0); m_c->m_4->m_14->Blit(m_c->m_4->m_18);
 //   8. ONE-SHOT FX (+0x1b4 latch): if (!m_1b4 && m_4->m_14) {
 //        m_4->m_48->Play("CREDITZ",1); m_1b4 = 1; }
 //   9. CONDITIONAL FX (+0x1c4 gate): if (m_1c4) { s = m_4->m_48->Find("MONOLITH");
 //        if (s && !s->Query()) Sub3(); }   return 1;
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
-    CGMInputObj* in = m_c->m_renderState->m_10->m_2c->m_8;
+    CGMInputObj* in = m_c->m_drawTarget->m_10->m_2c->m_8;
     if (!in || in->vtbl->Poll(in)) {
         if (!InputVirtual()) {
             ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
@@ -297,7 +306,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    if (m_c->m_soundRegistry->m_2c) {
+    if (((CSoundRegistry*)m_c->m_28)->m_2c) {
         GM_SimpleAnim(-1);
     }
 
@@ -335,7 +344,7 @@ i32 CCreditsState::Render() {
     Sub2();
 
     // draw: cache m_c->m_4 (the target keeps it in esi for the three derefs).
-    CView::RenderState* v4 = m_c->m_renderState;
+    CDrawTarget* v4 = m_c->m_drawTarget;
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((i32)v4->m_18);
 
@@ -488,18 +497,11 @@ struct CreditsScrollView {
     char p0[0x4];
     CreditsView4* m_4; // +0x04
 };
-// IDENTITY CONFIRMED = the real MFC CRgn/CGdiObject (m_hObject @+0x4; the
-// `pRgn != 0 ? m_hObject : 0` ternary at the SelectClipRgn site is MFC's inline
-// CRgn::operator HRGN null-this check verbatim). NOT foldable in THIS TU: CRgn
-// lives in <afxwin.h>, which also defines MFC's CView - colliding with the game's
-// OWN RTTI-real CView (Gruntz/View.h, pulled via GameMode.h) - the same constraint
-// retail's devs had. Fold blocked by a genuine name collision, not a wall
-// preference; afxwin-capable TUs fold it (cf. ApiWrappers CreditzRgn -> CRgn).
-SIZE_UNKNOWN(CreditsGdiObj);
-struct CreditsGdiObj { // == MFC CRgn/CGdiObject (fold blocked by the CView collision)
-    char p0[0x4];
-    void* m_hObject; // +0x04
-};
+// The credits clip region at CreditsScrollSelf+0x1e8 is the real MFC CRgn/CGdiObject
+// (vptr @+0x0, m_hObject @+0x4): the `(&m_1e8 != 0) ? m_hObject : 0` ternary at the
+// SelectClipRgn site is CGdiObject::operator HRGN's null-this check verbatim. Folded
+// to the real <afxwin.h> CRgn (the former local CreditsGdiObj view is gone); the
+// game CView->CSpriteFactoryHolder rename cleared the afxwin CView collision that blocked it.
 SIZE_UNKNOWN(CreditsScrollSelf);
 struct CreditsScrollSelf {
     char m_pad00[0xc];
@@ -510,7 +512,7 @@ struct CreditsScrollSelf {
     i32 m_1c4;           // +0x1c4 second-caption gate
     RECT m_src;          // +0x1c8 source caption RECT
     RECT m_dst;          // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
-    CreditsGdiObj m_1e8; // +0x1e8 clip region
+    CRgn m_1e8;          // +0x1e8 clip region (real MFC CRgn: vptr + m_hObject)
     char* m_1f0;         // +0x1f0 caption CString buffer
     u32 m_1f4;           // +0x1f4 reseed timer A (unsigned countdown)
     double m_1f8;        // +0x1f8 scroll accumulator
@@ -573,9 +575,10 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (hdc != 0) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
         if (g_62bf74 != 0) {
-            CreditsGdiObj* pRgn = &self->m_1e8;
-            HRGN rgn = (pRgn != 0) ? (HRGN)pRgn->m_hObject : 0;
-            SelectClipRgn(hdc, rgn);
+            SelectClipRgn(
+                hdc,
+                self->m_1e8
+            ); // CRgn -> HRGN via CGdiObject::operator HRGN (null-this)
         }
         i32 oldColor = SetTextColor(hdc, self->GetFlashColor());
         DrawTextA(hdc, self->m_1f0, -1, &self->m_dst, 0x50);
@@ -695,7 +698,7 @@ extern CButeMgr g_buteMgr;        // ?g_buteMgr@@3VCButeMgr@@A
 extern char* g_wormholeSpawnKey;  // ?g_wormholeSpawnKey@@3PADA ("Wormhole" bute tag @0x60a7ac)
 extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte flag)
 
-// The go-kart install target reached via m_c->m_10 is the shared CView image
+// The go-kart install target reached via m_c->m_10 is the shared CSpriteFactoryHolder image
 // registry (Install at vtable slot 18 / +0x48; <Gruntz/View.h>).
 // The namespace/image registry at this+0x30 (resolves a named image handle).
 SIZE_UNKNOWN(CEffNamespace);
@@ -715,14 +718,14 @@ DATA(0x0020b8fc)
 extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 
 // Typed self-view for this in-game effect loader. The +0x0c view is the shared
-// CView; but its effect-sprite members below (m_224/m_2fc.. arrays) sit at offsets
+// CSpriteFactoryHolder; but its effect-sprite members below (m_224/m_2fc.. arrays) sit at offsets
 // (0x304..0x318) that CPlay's own reconstruction models as drag-clamp/HUD-rect
 // scalars - a genuine unresolved offset-reuse ambiguity, so the sprite block stays a
 // documented self-view (offset access) rather than being folded into CPlay's layout.
 SIZE_UNKNOWN(CEffLoaderSelf);
 struct CEffLoaderSelf {
     char m_pad00[0xc];
-    CView* m_c; // +0x0c  the shared view/render/resource context
+    CSpriteFactoryHolder* m_c; // +0x0c  the shared view/render/resource context
     char m_pad10[0x30 - 0x10];
     CEffNamespace* m_30; // +0x30  image namespace
     char m_pad34[0x224 - 0x34];
@@ -764,7 +767,7 @@ i32 CState::LoadGruntEffectSprites() {
     if (img == 0) {
         return 0;
     }
-    self->m_c->m_imageRegistry->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
+    self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
     CSpriteFactory* f = g_mgrSettings->m_world->m_8;
 
@@ -1257,12 +1260,12 @@ struct CCreditsDrawRoot {
 RVA(0x00038f00, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_c) {
-        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
+        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
             r->Free();
         }
-        m_c->m_soundRegistry->Release("CREDITZ", "_");
-        m_c->m_imageRegistry->Release("CREDITZ", "_");
+        ((CSoundRegistry*)m_c->m_28)->Release("CREDITZ", "_");
+        m_c->m_10->Release("CREDITZ", "_");
         m_c->m_animRegistry->Release("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
@@ -1372,12 +1375,12 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    m_c->m_imageRegistry->Release("MENU", "_");
-    m_c->m_soundRegistry->Release("MENU", "_");
+    m_c->m_10->Release("MENU", "_");
+    ((CSoundRegistry*)m_c->m_28)->Release("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
-        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
+        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
             r->Free();
         }
@@ -1711,11 +1714,11 @@ i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
 // the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
 RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
-    CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
+    CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
     if (r) {
         r->Free();
     }
-    m_c->m_soundRegistry->Release("BOOTY", "_");
+    ((CSoundRegistry*)m_c->m_28)->Release("BOOTY", "_");
     ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
@@ -1735,7 +1738,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    m_c->m_renderState->Flush();
+    m_c->m_drawTarget->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -1968,7 +1971,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        CViewPooledRes* r = m_c->m_soundRegistry->m_2c;
+        CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
             r->TickAnim(-1);
         }
@@ -1979,8 +1982,8 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    m_c->m_renderState->Flush();
-    m_c->m_renderState->m_10->m_2c->Flip(0);
+    m_c->m_drawTarget->Flush();
+    m_c->m_drawTarget->m_10->m_2c->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();
     while (timeGetTime() < start + m_1b8)

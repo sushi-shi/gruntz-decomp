@@ -1,35 +1,28 @@
-// View.h - the ONE shared shape of the CState +0x0c view/render/resource context.
+// View.h - the two MFC-dependent render sub-object classes of the CState::m_c holder.
 //
-// CState::m_c is the real RTTI class `CView` (vftable ??_7CView@@6B@ @0x5ee1c4, RVA
-// 0x1ee1c4). It is a SINGLE object that every game-state reaches through one of
-// several facets, each of which used to be a bespoke per-TU reinterpret view:
-//   * CPlay::Render (this TU-family) walks the RENDER facet: the renderer-state
-//     object (+0x04), renderer A/B (+0x08/+0x0c), the frame-grid lookup (+0x10),
-//     the frame profiler (+0x20) and the draw surface (+0x24).
-//   * the leaf states' ReleaseResources/dispose walk the RESOURCE facet: the
-//     image/name registry (+0x10 Release/Register/Has/Install), the sound registry
-//     (+0x28, + its pooled resource at +0x2c) and the anim registry (+0x2c), plus a
-//     render/flip view (+0x04 Flush + m_10->m_2c Flip) and a worker list (+0x0c).
-// These are ONE object: the +0x10 image registry's embedded name->object map IS the
-// frame-grid lookup, the +0x0c renderer-B IS the worker holder, etc. The two facets
-// touch the same offsets with different (compatible) method sets, so they are folded
-// here into one class - additive method/member decls never move an offset, so the
-// render facet stays byte-identical while the resource facet becomes cast-free.
+// The holder at CState::m_c (+0x0c) is the canonical `CSpriteFactoryHolder`
+// (<Gruntz/GameRegistry.h>) - the SAME object as CGameRegistry::m_world (+0x30), verified
+// NON-polymorphic (offset 0 is padding, no vtable on the object itself). The former fake
+// `CView` name (a MISATTRIBUTION: `sema class CView` shows 0x5ee1c4 is the *real MFC*
+// `CView : CWnd` vtable, an unrelated library class that collided with MFC's CView and
+// blocked pulling <afxwin.h> for CRgn) is GONE - CView is folded onto
+// CSpriteFactoryHolder, and its sub-object facets onto the ONE real classes:
+//   * +0x04 render-pump / draw target  -> CDrawTarget      (<Gruntz/ResMgr.h>)
+//   * +0x10 image/name registry        -> CImageRegistry   (<Gruntz/ResMgr.h>)
+//   * +0x28 sound registry (+0x2c res) -> CSoundRegistry    (<Gruntz/ResMgr.h>)
+//   * +0x2c anim registry              -> CAnimRegistry     (<Gruntz/ResMgr.h>)
+// Only the +0x08/+0x0c renderer and the +0x24 draw-surface facet stay HERE (they need the
+// polymorphic renderer vtable / the MFC RECT that the afx-neutral ResMgr.h can't carry).
 //
-// IDENTITY (matcher-2, verified via sema disasm/rva/xref): the +0x0c object is ALSO
-// the game-registry world holder CGameRegistry::m_world (+0x30, the CSpriteFactoryHolder
-// view in GameRegistry.h) - same +0x04/+0x08/+0x10/+0x24/+0x28 sub-object layout. It is
-// NON-polymorphic (no vtable dispatched on the object itself; offset 0 is padding). Its
-// +0x04 sub-object is the DDraw worker manager (CDDrawWorkerMgr, ddrawsubmgr unit);
-// its +0x10 registrar has BOTH the Install (slot +0x48) and LoadNamespace (slot +0x4c)
-// resource-facet ops. The task hypothesis that the +0x0c object is itself in the DDraw
-// sub-mgr family was off by one level - the DDraw family is the +0x04 SUB-object; the
-// container is this render/resource world holder. (Full CSpriteFactoryHolder<->CView
-// unification is a cross-module dedup left as follow-up; both live in headers.)
-//
-// The per-TU shadows of this object all fold here: StateImages' StateMgr, the
-// BootyStateActivate BootyAssetRoot, PlayStateActivate's GLSAssetRoot - each modeled
-// only the sub-slots its state touched (+0x04 loader, +0x10 registrar).
+// REMAINING CASTS (binary-authentic dual-use, NOT removable views - the doctrine's
+// "int-pair overlaid as a struct view" allowance): the MFC state TUs reach these two from
+// the canonical holder members by cast because the field is genuinely used two ways:
+//   * (CRenderer*)holder->m_8   - +0x08 is the sprite factory (CreateSprite, 60+ sites) AND
+//                                 renderer A (BeginScene/plane-list); one polymorphic object.
+//   * (CDrawSurface*)holder->m_24 - +0x24's m_5c is an int for `m_5c+0x40` pointer-arith in
+//                                 40+ Grunt.cpp sites but a CameraGeom* here (int-vs-pointer).
+//   * (CSoundRegistry*)holder->m_28 - +0x28 is CSndHost (cue: m_10 CSndFinder, m_2c stream)
+//                                 AND CSoundRegistry (named-set: m_10map hash, m_2c pooled).
 //
 // This header is pulled by the MFC state TUs (CPlay.h, GameMode.h) AFTER <Mfc.h>;
 // CState.h keeps only a forward decl so the ~60 pure-Win32 TUs stay afx-neutral.
@@ -43,7 +36,7 @@
 // full vtable layout lives in GameMode.h (the only TU that polls it).
 struct CGMInputObj;
 
-// The render-flip surface at RenderState::m_14->m_2c: the real CDDSurface
+// The render-flip surface at CDrawTarget::SurfaceB::m_2c: the real CDDSurface
 // (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -
 // held IDirectDrawSurface at its +0x08). Pointer-only here; the dispatching TUs
 // include the real header.
@@ -58,7 +51,7 @@ struct CWarlordListHead {
     CWarlordListNode* m_4; // +0x04  first node
 };
 
-// The renderer/draw object (m_c->m_8 = renderer A, m_c->m_c = renderer B). A
+// The renderer/draw object (holder->m_8 = renderer A facet, holder->m_rendererB = renderer B). A
 // FOREIGN engine class (its ??_7 and most slots are unreconstructed engine code),
 // modeled POLYMORPHIC: placeholder slots anchor the two dispatched virtuals at
 // their true vtable offsets - begin-scene at slot 9 (+0x24, 1 arg) and present at
@@ -66,7 +59,7 @@ struct CWarlordListHead {
 // via pointer + virtual dispatch), so MSVC emits no ??_7 and the calls fold to
 // `mov eax,[ecx]; call [eax+0x24]` / `call [eax+0x34]` - the same shape the old
 // manual CRendererVtbl PMF table produced; real virtuals are the byte-correct
-// form (the CImageRegistry/DecCounter precedent below).
+// form (the CImageRegistry/DecCounter precedent in ResMgr.h).
 SIZE_UNKNOWN(CRenderer);
 struct CRenderer {
     virtual void v00();
@@ -123,132 +116,15 @@ struct CDrawSurface {
     }* m_5c; // +0x5c camera geom
 };
 
-// The pooled resource the leaf states free before releasing their namespaces
-// (m_c->m_28->m_2c). Reloc-masked __thiscall.
-SIZE_UNKNOWN(CViewPooledRes);
-struct CViewPooledRes {
-    void Free();          // FUN_00137a80, no-arg
-    void TickAnim(i32 z); // FUN_00136e20, ret 4
-};
-
-// m_c (the real CView: render + resource context).
-struct CView {
-    char p0[0x4];
-    struct RenderState { // +0x04  the renderer-state object / render-flip view
-        // The +0x04 sub-object is the DDraw worker manager (its real class is
-        // CDDrawWorkerMgr, <DDrawMgr/DDrawWorkerMgr.h>, ddrawsubmgr unit). This method
-        // is RVA 0x158ee0 == CDDrawWorkerMgr::Method_158ee0 (the FUN_00558ee0 spelling
-        // is that RVA's Ghidra VA: VA == RVA + 0x400000). The render/credits path uses
-        // it as a flip-prep; the state activators (CBootyState/CMultiBootyState/
-        // CMenuState) call the SAME function as the resource worker-apply on activate.
-        void Flush(); // 0x158ee0 (== CDDrawWorkerMgr::Method_158ee0)
-        char p0[0x10];
-        struct SurfaceA {
-            char p0[0x2c];
-            // +0x2c the frame surface: passed by-ptr to the engine flush/begin-scene
-            // (CPlay casts it to its CProfFlush view), flipped by the slot-10 poll and
-            // (credits) drawn to; its +0x08 holds the per-frame input object.
-            struct Surface2c {
-                void Flip(i32 z); // FUN_0013e850 (resource-facet flip, ret 4)
-                void Draw(i32 z); // credits draw-target draw (thiscall)
-                char p0[0x8];
-                CGMInputObj* m_8; // +0x08  input obj (credits input poll source)
-            }* m_2c;
-        }* m_10; // +0x10 -> +0x2c surface
-        struct SurfaceB {
-            void Blit(i32 arg); // credits blit-target blit (thiscall)
-            char p0[0x2c];
-            // +0x2c: the real CDDSurface (ClampViewport apply-tail = Fill @0x13e760;
-            // NotifyVisibleEntities' clip push = Restore @0x13e7d0, ret 8 - the old
-            // 1-arg NotifyClip signature was disproven by the retail `push 0` +
-            // `push &r` pair; the DC host chain reads its +0x08 IDirectDrawSurface).
-            CDDSurface* m_2c;
-        }* m_14;            // +0x14 -> +0x2c draw surface (view obj)
-        void* m_18;         // +0x18  the present target
-    }* m_renderState;       // +0x04  renderer-state / render-flip view (draw pump)
-    CRenderer* m_rendererA; // +0x08  renderer A (begin-scene / world draw; owns plane list)
-    CRenderer* m_rendererB; // +0x0c  renderer B (present) / resource worker holder
-    // +0x10 -> the image/name registry. Its REAL class is CDDrawWorkerRegistry
-    // (<DDrawMgr/DDrawAssetRegistryViews.h>, ddrawworkerregistry unit) - the 0x155360
-    // Register/Release and 0x155550 Has entries are CDDrawWorkerRegistry::RemoveKeysEqual_155360
-    // / HasKeyEqual_155550, and the +0x10 map is a CMapStringToOb (Lookup 0x1b8008). It is
-    // modeled THREE ways in-tree (this CView facet, ResMgr.h's top-level CImageRegistry, and
-    // CDDrawWorkerRegistry). NAME-RECONCILED with ResMgr.h: the +0x10 map member is now
-    // `m_10map` (was `m_10`) and the 0x155360 method carries both `Register` (loader alias)
-    // and `Release` (the RemoveKeysEqual role) - the same names ResMgr.h's CImageRegistry
-    // uses. The remaining TYPE merge (this nested CMap-Lookup(i32,void*&) facet vs ResMgr.h's
-    // CSpriteHashTable-Lookup(const char*,CSprite**) facet - divergent Lookup signatures - and
-    // the polymorphic 18-slot vtable, which the DecCounter wall below pins to real-virtual
-    // form) stays deferred: unifying the type would force one Lookup signature and break the
-    // other facet's cast-free consumers. Kept as a CView-local facet; see the reports.
-    //
-    // POLYMORPHIC (18 placeholder engine slots anchor the two dispatched slots at their true
-    // vtable offsets - Install (slot 18, +0x48) and LoadNamespace (slot 19, +0x4c), __thiscall).
-    // Never instantiated here (reached only via pointer + virtual dispatch), so MSVC emits no
-    // ??_7 and the calls fold to `mov eax,[ecx]; call [eax+0x48]` / `call [eax+0x4c]`. The
-    // v00..v17 slots are genuinely unrecovered engine methods - ResMgr.h's sibling and
-    // CDDrawWorkerRegistry leave the SAME 18 slots as vNN/sNN placeholders (naming them is
-    // the DDraw-family worker's job; not invented here). ResMgr.h proved this MUST stay
-    // polymorphic real-virtual: the PMF-into-typed-vtbl form flips CSBI_MenuItem::DecCounter
-    // (0xe82a0) 100->92%, so real virtuals are the byte-correct form.
-    struct CImageRegistry {
-        virtual void v00();
-        virtual void v01();
-        virtual void v02();
-        virtual void v03();
-        virtual void v04();
-        virtual void v05();
-        virtual void v06();
-        virtual void v07();
-        virtual void v08();
-        virtual void v09();
-        virtual void v10();
-        virtual void v11();
-        virtual void v12();
-        virtual void v13();
-        virtual void v14();
-        virtual void v15();
-        virtual void v16();
-        virtual void v17();
-        // slot 18 (+0x48): install a resolved set under a name; the 3rd arg is a namespace
-        // key ("_") for the level loaders and a byte-flag out-ptr for the effect-sprite
-        // install (that site casts its unsigned char*). == CDDrawWorkerRegistry::LoadTree.
-        virtual void Install(void* set, const char* szName, const char* szKey);
-        // slot 19 (+0x4c): register a resolved symbol tree under a prefix (returns -1 on
-        // failure) - the RESOURCE-facet op the game-state activators reach (CBootyState/
-        // CMultiBootyState/CMenuState/CAttract slot-8 loaders): ResolvePath an "IMAGEZ" tree
-        // off the state's asset source (CState::m_2c etc.), hand it here under "MENU"/"BOOTY"/
-        // "GRUNTZ"/"LEVEL". Same +0x10 registrar object as Install - one more adjacent slot,
-        // so folding the per-TU registrar shadows (StateImages' WorkerReg, BootyStateActivate's
-        // BootyRegistrar) onto CView is additive. (Not yet on CDDrawWorkerRegistry - deferred.)
-        virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
-        // Non-virtual __thiscall helpers (reloc-masked engine calls).
-        void Release(const char* szName, const char* szKey);  // 0x155360 (RemoveKeysEqual_155360)
-        void Register(const char* szName, const char* szKey); // 0x155360 (loader alias)
-        i32 Has(const char* szName);                          // 0x155550 (HasKeyEqual_155550)
-        char p04[0x10 - 0x4];                                 // after the implicit vptr (+0x00)
-        struct CMap {
-            void Lookup(i32 key, void*& out); // 0x1b8008 (CMapStringToOb::Lookup, thiscall)
-        } m_10map;                            // +0x10  the name->object map / frame grid
-    }; // (name reconciled with ResMgr.h's CImageRegistry::m_10map)
-    CImageRegistry* m_imageRegistry; // +0x10  image/name registry (Release/Register/Has/Install)
-    char p14[0x20 - 0x14];
-    void* m_frameProfiler;       // +0x20  frame profiler timer (timeGetTime x2)
-    CDrawSurface* m_drawSurface; // +0x24  the draw-surface (PushView / Pre/PostStep)
-    // Resource facet (offsets the render facet does not touch):
-    struct SoundRegistry {                                    // +0x28
-        void Release(const char* szName, const char* szKey);  // FUN_00157c70
-        void Register(const char* szName, const char* szKey); // FUN_00157c70 (loader alias)
-        i32 Has(const char* szName);                          // FUN_001583c0 -> found
-        void Install(void* set, const char* szName, const char* szKey); // FUN_00157ee0
-        char p0[0x2c];
-        CViewPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
-    }* m_soundRegistry;       // +0x28  sound registry + pooled resource
-    struct AnimRegistry {     // +0x2c
-        void Release(const char* szName, const char* szKey); // FUN_00152720 (credits reg)
-        i32 Has(const char* szName);                         // FUN_00152c50 -> found
-        void Install(void* set, const char* szName, const char* szKey); // FUN_00152ad0
-    }* m_animRegistry; // +0x2c  anim/third registry
-};
+// The remaining shared sub-objects of CSpriteFactoryHolder are the ONE real classes,
+// NOT View.h views (all former CSpriteFactoryHolder facet views are folded away):
+//   * +0x04 render-pump / draw target -> CDrawTarget      (<Gruntz/ResMgr.h>)
+//   * +0x08 renderer A / +0x0c renderer B -> CRenderer    (below; polymorphic engine class)
+//   * +0x10 image/name registry -> CImageRegistry         (<Gruntz/ResMgr.h>)
+//   * +0x24 draw surface / viewport -> CDrawSurface        (below; the RECT/CameraGeom view)
+//   * +0x28 sound registry (+0x2c pooled res) -> CSoundRegistry (<Gruntz/ResMgr.h>)
+//   * +0x2c anim registry -> CAnimRegistry                 (<Gruntz/ResMgr.h>)
+// The two classes kept here need the MFC/RECT + the polymorphic renderer vtable, so they
+// stay in this afx-pulling header (the ResMgr.h classes are afx-neutral).
 
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

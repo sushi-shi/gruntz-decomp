@@ -63,7 +63,7 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 RVA(0x000e99c0, 0x4c)
 i32 CSBI_SideTab::Render(i32 z) {
     if (m_58) {
-        i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
+        i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
         m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
         m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
     }

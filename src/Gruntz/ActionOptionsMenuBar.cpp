@@ -307,7 +307,7 @@ i32 CActionOptionsMenuBar::Render() {
 
     i32 r[4];
     i32* src = g_gameReg->m_world->m_24->m_barRect;
-    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
+    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
     r[0] = src[0];
     r[1] = src[1];
     r[2] = src[2];

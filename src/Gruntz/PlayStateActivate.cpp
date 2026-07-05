@@ -17,7 +17,7 @@
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
-#include <Gruntz/View.h>       // canonical CView sub-objects (CRenderer @+0xc)
+#include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
 
@@ -46,12 +46,12 @@ struct GLSSubA {  // m_c->m_4
 struct GLSObj24 {                    // m_c->m_24
     void Wire(GLSSub14* a, void* b); // FUN_0015dc90 __thiscall
 };
-// The asset root (CPlay+0xc) is the canonical CView (Play.h): m_c is CView's
-// renderer-B (CView+0xc, the real class CRenderer, View.h), and the dispatched
+// The asset root (CPlay+0xc) is the canonical CSpriteFactoryHolder (Play.h): m_c is CSpriteFactoryHolder's
+// renderer-B (CSpriteFactoryHolder+0xc, the real class CRenderer, View.h), and the dispatched
 // slot 13 (+0x34) is CRenderer::Present. Uses the real class - no local view.
-struct GLSAssetRoot { // this->m_c (== CView, View.h)
+struct GLSAssetRoot { // this->m_c (== CSpriteFactoryHolder, View.h)
     char m_pad00[0x4];
-    GLSSubA* m_4;         // +0x04  CView render-state (CDDrawSubMgrPages family)
+    GLSSubA* m_4;         // +0x04  CSpriteFactoryHolder render-state (CDDrawSubMgrPages family)
     void* m_8;            // +0x08  renderer A
     CRenderer* m_c;       // +0x0c  renderer B (CRenderer, Present slot 13)
     CImageRegistry* m_10; // +0x10  the image/tile registrar

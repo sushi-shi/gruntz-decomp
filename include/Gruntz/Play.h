@@ -44,10 +44,11 @@ struct CLoadNotify;
 
 struct CHitMarker; // +0x374 start-point marker element {x,y}; defined in CPlay.cpp
 
-// The CState +0x0c view/render/resource context (the real RTTI class CView) and
+// The CState +0x0c view/render/resource context (the canonical CSpriteFactoryHolder) and
 // its render sub-objects (CRenderer, CDrawSurface, the placed-object warlord list)
 // now live in the shared <Gruntz/View.h> so the leaf-state TUs share the one shape.
 #include <Gruntz/View.h>
+#include <Gruntz/ResMgr.h> // the real CState::m_c sub-object classes (CDrawTarget / CImageRegistry / CSoundRegistry / CAnimRegistry)
 // The world's per-kind warlord counter block (CWorld::m_7c). LoadWarlordSprites
 // bumps m_30/m_34/m_38/m_40 by object-type range.
 SIZE_UNKNOWN(CWarlordCounters);
@@ -215,6 +216,19 @@ struct CPlaySerialChild {
 // drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
 // running/current block ("Ah, who needed that stupid timer anyway?").
 #include <Gruntz/Timer.h>
+// The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
+// so the CState::m_c->m_10 image-registry map can return it typed (CSpriteHashTable::Lookup
+// frame-grid overload), cast-free.
+SIZE_UNKNOWN(CFrameGrid);
+struct CFrameGrid {
+    void SetDelay(i32 d);    // 0x552480 (thiscall)
+    void SetSprite(void* s); // 0x552520 (thiscall)
+    char p0[0x14];
+    i32* m_rowTable; // +0x14  row/frame table
+    char p18[0x64 - 0x18];
+    i32 m_firstRow; // +0x64  first frame index
+    i32 m_lastRow;  // +0x68  last frame index
+};
 
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
@@ -329,11 +343,11 @@ public:
     // DrawDebugStats.cpp; called by Render's tail + CMulti::PumpB). Was misnamed
     // "ProfFlushTail" here and re-declared on a fake CDbgView view - one method.
     void DrawDebugStats();
-    i32 DispatchHudClick(i32, i32, i32);        // 0x0ce530 (THIS TU)
-    i32 BeginGridWalk(i32, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
-    i32 StepGridWalk(i32 dt);                   // 0x0d0a60 (THIS TU)
-    i32 HandleDragMove(i32 a, i32 x, i32 y);    // 0x0d0db0 (THIS TU)
-    i32 ResetGoals(i32, i32);                   // 0x0d5f00 (THIS TU)
+    i32 DispatchHudClick(i32, i32, i32);                // 0x0ce530 (THIS TU)
+    i32 BeginGridWalk(const char*, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
+    i32 StepGridWalk(i32 dt);                           // 0x0d0a60 (THIS TU)
+    i32 HandleDragMove(i32 a, i32 x, i32 y);            // 0x0d0db0 (THIS TU)
+    i32 ResetGoals(i32, i32);                           // 0x0d5f00 (THIS TU)
     // The status-bar HUD (SBI_RectOnly) reaches these on the current play-state
     // (g_gameReg->m_curState downcast to CPlay); reloc-masked, bodies out-of-line.
     i32 SetState(i32 cur, i32 prev); // 0x0d5b20  set the highlight-cursor state pair
@@ -573,17 +587,8 @@ public:
     i32 m_revealFrame; // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
-    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk:
-    //   m_grid -> a grid object (+0x64 first row, +0x68 last row, +0x14 row table)
-    struct CFrameGrid {
-        void SetDelay(i32 d);    // 0x552480 (thiscall)
-        void SetSprite(void* s); // 0x552520 (thiscall)
-        char p0[0x14];
-        i32* m_rowTable; // +0x14  row/frame table
-        char p18[0x64 - 0x18];
-        i32 m_firstRow;   // +0x64  first frame index
-        i32 m_lastRow;    // +0x68  last frame index
-    }* m_grid;            // +0x4cc  level grid object
+    // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (CFrameGrid, above)
+    CFrameGrid* m_grid;   // +0x4cc  level grid object
     i32 m_gridCurFrame;   // +0x4d0  current tile/frame id
     i32 m_gridHasSprite;  // +0x4d4  has-grid-sprite flag
     i32 m_gridDelayBase;  // +0x4d8  step-delay base

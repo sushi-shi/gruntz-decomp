@@ -106,9 +106,9 @@ i32 MenuCommit(MenuHudObj* obj, i32 idx);                                    // 
 
 // CMenuState is the canonical <Gruntz/GameMode.h> `CMenuState : CState`. The MENU
 // asset loader reaches the CState base region through the SAME facets the game-state
-// hierarchy documents (CState.h: the +0x04 owner and +0x0c CView holder are downcast
+// hierarchy documents (CState.h: the +0x04 owner and +0x0c CSpriteFactoryHolder holder are downcast
 // to each TU's local facet views): m_4 (CGruntzMgr owner) -> MenuRoot cursor gate,
-// m_8 (CBankMgr) -> MenuRegSet, m_c (CView) -> MenuAssetMgr resource holder, m_2c
+// m_8 (CBankMgr) -> MenuRegSet, m_c (CSpriteFactoryHolder) -> MenuAssetMgr resource holder, m_2c
 // (CResSource) -> the STATEZ_MENU MenuRegObj. m_1b4 (CGMMenuUI) is the heap MenuHudObj
 // the routine builds. Only offsets / code bytes are load-bearing.
 

@@ -91,6 +91,16 @@ class CSpriteRefTable;
 // array consumers index. `new`'d in the bootstrap (0x83450), torn down by Close
 // (CLightFxMgr::Reset @0x9dc80). Forward-declared to keep this ~60-TU view light.
 class CLightFxMgr;
+// Render-facet sub-object types (defined in <Gruntz/View.h>, MFC). This holder is ALSO
+// CState::m_c (verified same object; the former `CView`/`CSpriteFactoryHolder` render view is now
+// folded here). Its 3 render-only slots below point to these; the MFC state TUs reach the
+// 5 SHARED slots (+0x04/+0x08/+0x10/+0x24/+0x28) by casting the canonical members to the
+// other View.h facet types (CRenderState/CGameImageRegistry/CDrawSurface/CViewSoundRegistry)
+// - the deferred int-vs-pointer sub-object reconciliation (see View.h). Forward-declared so
+// this ~60-TU MFC-free header never pulls View.h; the ~60 pure-Win32 m_world consumers
+// never touch these render-only slots.
+struct CRenderer;     // +0x0c  renderer B (present) / resource worker holder (View.h)
+struct CAnimRegistry; // +0x2c  anim/third registry (ResMgr.h, real class)
 
 // The level/view object reached as g->m_30->m_24: +0x10 the on-screen bar RECT
 // (the action/option menu bar), +0x5c the world->screen viewport (WrapCoord;
@@ -113,18 +123,21 @@ struct CGameViewport {
 // level/view object (+0x24) and the sound/anim registry (+0x28).
 struct CSpriteFactoryHolder {
     char m_pad0[0x4];
-    CDrawTarget* m_drawTarget; // +0x04  active draw surface
-    CSpriteFactory* m_8;       // +0x08  sprite/object factory (CreateSprite / key lookup)
-    char m_pad0c[0x10 - 0xc];
-    CImageRegistry* m_10; // +0x10  image/tile registry (name->sprite map)
-    char m_pad14[0x24 - 0x14];
-    CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport)
-    CSndHost* m_28;      // +0x28  sound/anim cue registry (CSndHost, <Gruntz/SoundCue.h>:
-                         //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate).
-                         //         Forward-declared above so consumers reach it cast-free; TUs that
-                         //         deref it include SoundCue.h. (Was void*; typed per the
-                         //         model-the-class mandate - the header /O2 type-table wobble is
-    //         the accepted clean-room cost, diagnosed via the butterfly levers.)
+    CDrawTarget* m_drawTarget; // +0x04  active draw surface / render-flip pump (CDrawTarget:
+                               //         Flush + the frame/draw surface pages; render TUs use it)
+    CSpriteFactory* m_8;       // +0x08  sprite/object factory (CreateSprite / key lookup); the
+                               //         render facet reaches it as renderer A (cast to CRenderer)
+    CRenderer* m_rendererB;    // +0x0c  renderer B (present) / resource worker holder (View.h)
+    CImageRegistry* m_10;      // +0x10  image/name registry (real ResMgr.h class: Install/Has/
+                               //         Register/Release/LoadNamespace + the m_10map hash)
+    char m_pad14[0x20 - 0x14];
+    void* m_frameProfiler; // +0x20  frame profiler timer (timeGetTime x2)
+    CGameViewport* m_24;   // +0x24  level/view object (bar RECT + viewport); the render facet
+                           //         reaches it as the draw surface (cast to CDrawSurface)
+    CSndHost* m_28;        // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
+                           //         render/resource facet reaches it as CSoundRegistry, cast).
+                           //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
+    CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class)
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
@@ -244,7 +257,7 @@ struct CGameRegistry {
                                    //         the sprite factory via m_world->m_8). ONE object,
                                    //         two type-views (verified): the retail CResMgr resource
                                    //         facet (ResMgr.h) here, the CWorldZ world facet in
-    //         GruntzMgr.h, and CState::m_c's CView world-holder (View.h)
+    //         GruntzMgr.h, and CState::m_c's CSpriteFactoryHolder world-holder (View.h)
     char m_pad34[0x38 - 0x34];
     void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
     //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.

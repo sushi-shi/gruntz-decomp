@@ -1,6 +1,6 @@
 // PlayPlaneScan.cpp - two CPlay per-frame plane-list sub-steps re-homed from
 // src/Stub/Discovered.cpp (trace-attributed to CPlay: this->m_view at +0xc is the
-// CView, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
+// CSpriteFactoryHolder, m_view->m_renderer the renderer that owns the plane list, m_view->m_drawSurf the draw
 // surface). Both walk the renderer's embedded plane list (a CObList-style
 // {pNext,pPrev,data} node chain rooted at renderer+0x14) and dispatch on the
 // plane descriptor's type field (m_desc->m_typeId, a reloc-masked fn-ptr compare).
@@ -109,7 +109,7 @@ struct DrawSurf {
 
 // The plane list the scans walk is the SAME placed-object display list the warlord
 // loader walks (shared CRenderer::m_10 CWarlordListHead, at rendererA+0x10); this TU
-// reaches it through the canonical CView (m_c->m_rendererA / m_c->m_drawSurface).
+// reaches it through the canonical CSpriteFactoryHolder (((CRenderer*)m_c->m_8) / ((CDrawSurface*)m_c->m_24)).
 // The draw surface's +0x5c tile-grid facet (GridGeom) differs from the shared
 // CDrawSurface's +0x5c camera facet, so the draw-surface facet is reached by cast.
 
@@ -186,7 +186,7 @@ extern "C" {
 }
 
 // CPlay's plane-scan sub-objects live on the canonical CState/CPlay members,
-// reached through this TU's local facet views: m_c (+0x0c) is the CView the plane
+// reached through this TU's local facet views: m_c (+0x0c) is the CSpriteFactoryHolder the plane
 // list hangs off; the guts sink at +0x2dc (m_guts) receives the extra pointer
 // insert, the begin-marker sink at +0x2e4 (m_beginMarker) the rebuilt records.
 
@@ -205,8 +205,8 @@ extern "C" {
 // struct-copy and array spellings both still hoist. All logic/relocs byte-match.
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CView* v = m_c;
-    PlaneList* pl = (PlaneList*)&v->m_rendererA->m_10;
+    CSpriteFactoryHolder* v = m_c;
+    PlaneList* pl = (PlaneList*)&((CRenderer*)v->m_8)->m_10;
     if (pl == 0) {
         return 0;
     }
@@ -259,7 +259,7 @@ i32 CPlay::ScanBuildTiles() {
             }
             p->m_flags |= 0x10000;
         } else if (vf == PlaneType_Covered) {
-            DrawSurf* ds = (DrawSurf*)(v->m_drawSurface);
+            DrawSurf* ds = (DrawSurf*)(((CDrawSurface*)v->m_24));
             i32 x = p->m_x;
             i32 y = p->m_y;
             if (x < 0) {
@@ -342,8 +342,8 @@ i32 CPlay::ScanBuildTiles() {
 // RNG-helper idiom is deferred to the final sweep.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
-    CView* v = m_c;
-    PlaneList* pl = (PlaneList*)&v->m_rendererA->m_10;
+    CSpriteFactoryHolder* v = m_c;
+    PlaneList* pl = (PlaneList*)&((CRenderer*)v->m_8)->m_10;
     if (pl == 0) {
         return 0;
     }

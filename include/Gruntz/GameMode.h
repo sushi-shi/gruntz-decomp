@@ -130,7 +130,7 @@ struct CGMOwner {
 extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 
 // The view/draw holder (CState+0xc) render facet the credits poll walks is the same
-// shared CView (<Gruntz/View.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
+// shared CSpriteFactoryHolder (<Gruntz/View.h>): m_c->m_4->m_10->m_2c->m_8 (input obj), the draw
 // block m_c->m_4->{m_10->m_2c (Draw), m_14 (Blit), m_18 (blit arg)}, m_28->m_2c
 // (cursor gate). Reached through m_c directly (no cast).
 
@@ -165,10 +165,12 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // CState - the base game-state class. One canonical definition, shared via
 // <Gruntz/State.h> (full 41-slot vftable + ctor-pinned layout). The leaf states
 // below derive from it; the gamemode TU casts the owner member (CGruntzMgr* m_4)
-// to its own CGMOwner reconstruction and reaches the +0x0c CView resource facet
+// to its own CGMOwner reconstruction and reaches the +0x0c CSpriteFactoryHolder resource facet
 // (m_c, the shared <Gruntz/View.h> class) directly.
 #include <Gruntz/State.h>
-#include <Gruntz/View.h> // the shared CState::m_c view/render/resource class
+#include <Gruntz/View.h> // the CState::m_c render sub-object facets (CRenderer/CDrawSurface)
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the CState::m_c holder itself)
+#include <Gruntz/ResMgr.h> // its real sub-object classes (CDrawTarget/CImageRegistry/CSoundRegistry/CAnimRegistry)
 
 // Single-type leaf-state sub-object views, defined in GameMode.cpp; forward-
 // declared so the leaf members below are typed to their real class (no per-site
@@ -226,7 +228,7 @@ public:
     void FormatHudText(CString* buf, i32 sel);
 
     // MENU asset loader (0x9fe50, MenuStateAssets.cpp): registers the MENU
-    // IMAGEZ/SOUNDZ namespaces through the m_c (CView) resource facet, primes the
+    // IMAGEZ/SOUNDZ namespaces through the m_c (CSpriteFactoryHolder) resource facet, primes the
     // state core, then builds the menu HUD object + wires its keys/sound cues.
     i32 LoadAssets(i32 a1, i32 a2, i32 a3);
     // Base namespace loader chained first (reloc-masked near call).

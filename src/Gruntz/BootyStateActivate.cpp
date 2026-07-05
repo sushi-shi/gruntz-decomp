@@ -6,10 +6,10 @@
 //   0x1f6f0 = CMultiBootyState slot 8 (+0x20)  vtbl 0x5e9bdc  (InputVirtual / OnActivate2)
 // The two are CONFIRMED-distinct siblings over CState (<Gruntz/GameMode.h>). The old
 // per-TU CBootyState/CMultiBootyState views (with BootyAssetRoot @+0x0c, BootyRegistrar,
-// BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CView facets:
-//   - m_c (+0x0c)  == CView (the shared render/resource context - see <Gruntz/View.h>).
-//     The +0x04 loader (was CGruntDataLoader::Load) is CView's m_renderState->Flush
-//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CView's
+// BootyNamespace @+0x2c/+0x28/+0x30) are folded away here onto the CState + CSpriteFactoryHolder facets:
+//   - m_c (+0x0c)  == CSpriteFactoryHolder (the shared render/resource context - see <Gruntz/View.h>).
+//     The +0x04 loader (was CGruntDataLoader::Load) is CSpriteFactoryHolder's m_renderState->Flush
+//     (0x158ee0); the +0x10 registrar (was BootyRegistrar::CallRegister) is CSpriteFactoryHolder's
 //     m_imageRegistry->LoadNamespace (vtable slot +0x4c).
 //   - the +0x2c/+0x28/+0x30 asset sources (were BootyNamespace) are CState::m_2c /
 //     m_levelBank / m_gruntzBank (CResSource; LookupSet == the old Lookup, 0x13bae0).
@@ -19,13 +19,13 @@
 #include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h>  // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
-#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CView facet
+#include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
+#include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
 
 // ---------------------------------------------------------------------------
 // The game-registry (*0x24556c == g_mgrSettings, the CGameRegistry singleton) WORLD
 // sound set, re-triggered by CBootyState::Vslot09's ambient BOOTY_LOOP poll. This is a
-// SEPARATE object web from the +0x0c CView context (the world holder's sound SET, reached
+// SEPARATE object web from the +0x0c CSpriteFactoryHolder context (the world holder's sound SET, reached
 // as reg->m_world(+0x30)->m_28); the vfunc_9 global-load path reads it off the singleton,
 // not off `this`, so it stays a local facet view here pending a canonical world-sound
 // model. Reloc-masked __thiscall entries.
@@ -72,7 +72,7 @@ extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
 // ---------------------------------------------------------------------------
 // CBootyState::Vslot09 (slot 9, 0x18d30) - the booty "bg" activation tick: hide the
-// cursor, fade in the "bg" title, kick the render worker apply (m_c->m_renderState->Flush)
+// cursor, fade in the "bg" title, kick the render worker apply (m_c->m_drawTarget->Flush)
 // + the booty page timer, and (when the BOOTY_LOOP ambient sound entry exists and is
 // enabled by g_sndEnabled) re-trigger it on a rate-limited timer keyed off the
 // g_killCueClock frame counter vs the entry's last-played stamp + interval.
@@ -87,7 +87,7 @@ i32 CBootyState::Vslot09(i32) {
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
         return 0;
     }
-    m_c->m_renderState->Flush();
+    m_c->m_drawTarget->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     BzGameReg* reg = g_mgrSettings;
@@ -110,7 +110,7 @@ i32 CBootyState::Vslot09(i32) {
 // ---------------------------------------------------------------------------
 // CMultiBootyState::InputVirtual (slot 8, 0x1f6f0) - on state activation: chain the base
 // image-load gate, hide the cursor, resolve+register the BOOTY/GRUNTZ/LEVEL "IMAGEZ" sets
-// through the CView image registry (LoadNamespace +0x4c), fade in the "multi" title, run
+// through the CSpriteFactoryHolder image registry (LoadNamespace +0x4c), fade in the "multi" title, run
 // the post-activate hook, then kick the render worker apply + the page timer.
 RVA(0x0001f6f0, 0x10b)
 i32 CMultiBootyState::InputVirtual() {
@@ -125,7 +125,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    CView::CImageRegistry* reg = m_c->m_imageRegistry;
+    CImageRegistry* reg = m_c->m_10;
     if (reg->LoadNamespace(tree, "BOOTY", "_") == -1) {
         return 0;
     }
@@ -134,7 +134,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_imageRegistry;
+    reg = m_c->m_10;
     if (reg->LoadNamespace(tree, "GRUNTZ", "_") == -1) {
         return 0;
     }
@@ -143,7 +143,7 @@ i32 CMultiBootyState::InputVirtual() {
     if (!tree) {
         return 0;
     }
-    reg = m_c->m_imageRegistry;
+    reg = m_c->m_10;
     if (reg->LoadNamespace(tree, "LEVEL", "_") == -1) {
         return 0;
     }
@@ -153,7 +153,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     OnActivated();
-    m_c->m_renderState->Flush();
+    m_c->m_drawTarget->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }

@@ -1,20 +1,20 @@
 // StateImages.cpp - two state-family vfunc-8 image-namespace loaders, folded onto the
-// canonical CState/CView facets (<Gruntz/State.h> + <Gruntz/View.h>):
+// canonical CState/CSpriteFactoryHolder facets (<Gruntz/State.h> + <Gruntz/View.h>):
 //   - CImageState::LoadStateImages (0xa09a0): a CState-derived "MENU" image loader.
 //   - CBootyState::InputVirtual   (0x1c8a0): the REAL CBootyState (vtbl 0x5e9cec) slot 8
 //     (GameMode.h declares this slot @0x01c8a0 declared-only; homed here) - the booty
 //     "bg"/secret-bonus activation loader; NOT its sibling CMultiBootyState (0x5e9bdc).
 //
 // Both resolve an "IMAGEZ" tree off the state's asset source (CState::m_2c/m_gruntzBank,
-// CResSource::LookupSet == 0x13bae0) and register it through the CView image registry
-// (m_c->m_imageRegistry->LoadNamespace, vtable slot +0x4c). The old per-TU StateMgr /
+// CResSource::LookupSet == 0x13bae0) and register it through the CSpriteFactoryHolder image registry
+// (m_c->m_10->LoadNamespace, vtable slot +0x4c). The old per-TU StateMgr /
 // WorkerReg / CSymTab shadows of the +0x0c/+0x2c facets are folded away. Field names are
 // placeholders; only offsets + code bytes are load-bearing.
 #include <Mfc.h> // GameMode.h needs the afx umbrella (WINAPI/windows.h come with it)
 
 #include <rva.h>
-#include <Gruntz/BankMgr.h>  // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
-#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CView facet
+#include <Gruntz/BankMgr.h> // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
+#include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CSpriteFactoryHolder facet
 
 // The engine helper at 0xface0 (returns nonzero when the state may load images; the same
 // image-load gate CMultiBootyState reaches as BaseOnActivate).
@@ -28,7 +28,7 @@ extern i32(WINAPI* g_ShowCursor)(i32);
 // CImageState - a CState-derived front-end state whose slot-8 loader installs the "MENU"
 // image namespace. Its concrete RTTI name is unrecovered (the 0xa09a0 body is reached
 // non-virtually via an ILT thunk), so it is modeled as a minimal CState subclass: the
-// +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CView/CResSource facets, and
+// +0x0c view (m_c) and +0x2c source (m_2c) are the inherited CSpriteFactoryHolder/CResSource facets, and
 // the per-state image hook is CState's slot 6 (Vslot06).
 SIZE_UNKNOWN(CImageState);
 class CImageState : public CState {
@@ -45,7 +45,7 @@ i32 CImageState::LoadStateImages() {
     if (tree == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(tree, "MENU", "_") == -1) {
+    if (m_c->m_10->LoadNamespace(tree, "MENU", "_") == -1) {
         return 0;
     }
     if (Vslot06() == 0) { // the per-state image hook (slot 6, +0x18)
@@ -63,7 +63,7 @@ i32 CImageState::LoadStateImages() {
 // CBootyState::InputVirtual (slot 8, 0x1c8a0): hide the cursor, load the BOOTY + GRUNTZ
 // image namespaces, then either pop the secret-bonus toast (when m_activation == 200) or
 // fade the "bg" title and show the level-complete toast, kick the render worker apply
-// (m_c->m_renderState->Flush) and build the booty page.
+// (m_c->m_drawTarget->Flush) and build the booty page.
 RVA(0x0001c8a0, 0xec)
 i32 CBootyState::InputVirtual() {
     if (Unmatched_0face0() == 0) {
@@ -78,14 +78,14 @@ i32 CBootyState::InputVirtual() {
     if (booty == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
+    if (m_c->m_10->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
     void* gruntz = m_gruntzBank->LookupSet("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }
-    if (m_c->m_imageRegistry->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
+    if (m_c->m_10->LoadNamespace(gruntz, "GRUNTZ", "_") == -1) {
         return 0;
     }
     if (m_activation != 200) {
@@ -96,7 +96,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_c->m_renderState->Flush();
+    m_c->m_drawTarget->Flush();
     BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }

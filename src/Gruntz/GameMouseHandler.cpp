@@ -132,7 +132,7 @@ i32 __stdcall SbiPointInChild(i32 x, i32 y);
 
 // The CPlay members this dispatcher reaches map onto the canonical CState/CPlay
 // layout, cast to this TU's status-bar facet views: m_4 (CState owner) -> SbiHost,
-// m_c (CView) -> SbiRectHost, m_guts (+0x2dc) -> SbiChild, m_hitTest (+0x2e0) ->
+// m_c (CSpriteFactoryHolder) -> SbiRectHost, m_guts (+0x2dc) -> SbiChild, m_hitTest (+0x2e0) ->
 // SbiToggle, m_markerData (+0x374) -> SbiEntry**. The base-handler at vtable slot
 // +0x38 (CState::Vslot0e) is now a real virtual call.
 

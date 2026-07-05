@@ -25,7 +25,7 @@ public:
 // (0x153790, the shared frame-worker blit reached by SBI_MenuItem/SBI_SideTab/etc.);
 // modeled directly on AniCel (CAniPlayer.h) so no reinterpret cast is needed.
 
-// The active render context is reached as g_gameReg->m_world->m_drawTarget->m_drawContext:
+// The active render context is reached as g_gameReg->m_world->m_drawTarget->m_14:
 // g_gameReg->m_world is the canonical CResMgr (ResMgr.h), whose m_drawTarget (+0x04) is the
 // active draw surface and whose +0x14 (m_drawContext) is the surface context handed to
 // RenderFrame - the same chain SBI_SideTab / SBI_MenuItem walk. Previously modeled as a
@@ -114,7 +114,7 @@ i32 CAniPlayer::Tick() {
         }
         m_cel = cel;
         if (cel != 0) {
-            i32 surfaceCtx = g_gameReg->m_world->m_drawTarget->m_drawContext;
+            i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
             cel->RenderFrame(surfaceCtx, cel->m_offsetX + m_rect[0], cel->m_offsetY + m_rect[1], 0);
         }
         u32 now = timeGetTime();

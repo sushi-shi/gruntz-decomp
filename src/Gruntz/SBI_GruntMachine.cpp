@@ -3,7 +3,7 @@
 #include <Ints.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton + CSpriteFactoryHolder m_world
-#include <Gruntz/ResMgr.h>       // CDrawTarget (m_world->m_drawTarget->m_drawContext)
+#include <Gruntz/ResMgr.h>       // CDrawTarget (m_world->m_drawTarget->m_14)
 // SBI_GruntMachine.cpp - Gruntz CSBI_GruntMachine (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_GruntMachine@@; a sibling leaf of the SBI family
 //   CSBI_GruntMachine : CStatusBarItem. Vtable @0x5eadbc. The /GX-framed scalar
@@ -55,7 +55,7 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     idx = m_40;
     m_3c = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
 
-    i32 ctx = g_gameReg->m_world->m_drawTarget->m_drawContext;
+    i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
 
     CImage* f = m_44;
     if (f) {

@@ -8,7 +8,7 @@
 // shows the callers are ?Render@CPlay (0xc8cf0) and CMulti::PumpB (CMulti : CPlay
 // per RTTI), Play.h already declared the SAME RVA as its reloc-masked
 // "ProfFlushTail", and every deref maps onto the canonical shapes: m_4/m_c are
-// CState's CGruntzMgr*/CView*, the fps is CGameMgr::m_fps (+0x18), the object
+// CState's CGruntzMgr*/CSpriteFactoryHolder*, the fps is CGameMgr::m_fps (+0x18), the object
 // count CRenderer::m_1c (renderer A), the position CDrawSurface::m_5c->CameraGeom
 // {m_84,m_88}, the DC host the render-flip CDDSurface (RenderState::m_14->m_2c)
 // whose +0x08 holds the real IDirectDrawSurface (GetDC slot 17 +0x44 / ReleaseDC
@@ -28,8 +28,8 @@
 #include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Play.h>        // the real CPlay : CState (the method owner)
-#include <Gruntz/View.h>        // the CView chain (renderer A, render state, draw surface)
+#include <Gruntz/Play.h> // the real CPlay : CState (the method owner)
+#include <Gruntz/View.h> // the CSpriteFactoryHolder chain (renderer A, render state, draw surface)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <Gruntz/GruntzMgr.h>   // CGruntzMgr (base CGameMgr::m_fps @+0x18)
 #include <stdio.h>              // engine sprintf (reloc-masked)
@@ -73,11 +73,11 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x1) {
-        sprintf(scratch, " Objs = %i ", m_c->m_rendererA->m_1c);
+        sprintf(scratch, " Objs = %i ", ((CRenderer*)m_c->m_8)->m_1c);
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x4) {
-        CDrawSurface::CameraGeom* p = m_c->m_drawSurface->m_5c;
+        CDrawSurface::CameraGeom* p = ((CDrawSurface*)m_c->m_24)->m_5c;
         sprintf(scratch, " Pos = %i,%i", p->m_84, p->m_88);
         strcat(buf, scratch);
     }
@@ -102,7 +102,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
 
-    CDDSurface* host = m_c->m_renderState->m_14->m_2c;
+    CDDSurface* host = m_c->m_drawTarget->m_14->m_2c;
     HDC hdc = 0;
     host->m_8->GetDC(&hdc);
     if (hdc == 0) {

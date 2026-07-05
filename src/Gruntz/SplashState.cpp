@@ -8,11 +8,11 @@
 //   * m_4  (CGruntzMgr*)  - RestoreVideoMode (re-assert the 640x480 display mode).
 //   * m_8  (CBankMgr*)    - Lookup the "STATEZ_SPLASH" bank -> CResSource.
 //   * m_2c (CResSource*)  - the cached splash bank; LoadGroup its "SOUNDZ" set.
-//   * m_c  (CView*)       - its +0x28 sound registry Install()s the loaded set.
+//   * m_c  (CSpriteFactoryHolder*)       - its +0x28 sound registry Install()s the loaded set.
 // The 0x48ddd0/0x53c030/0x53a230/0x557ee0 call targets are the VA form (RVA +
 // 0x400000 image base) of CGruntzMgr::RestoreVideoMode (0x08ddd0), CBankMgr::Lookup
-// (0x13c030), CResSource::LoadGroup (0x13a230) and CView SoundRegistry::Install
-// (0x157ee0) - the SAME engine methods the in-game CPlay/CView resource facet
+// (0x13c030), CResSource::LoadGroup (0x13a230) and CSoundRegistry::Install
+// (0x157ee0) - the SAME engine methods the in-game CPlay resource facet
 // already models; here they are reloc-masked externals.
 //
 // The gating global g_assetRoot is the REAL MFC CString: CString::GetLength() inlines
@@ -20,10 +20,12 @@
 // eax,ds:g; mov ecx,[eax-8]; test ecx,ecx` guard.
 #include <Mfc.h> // CString + <windows.h> (SetCursor)
 
-#include <Gruntz/BankMgr.h>   // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
-#include <Gruntz/State.h>     // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
-#include <Gruntz/View.h>      // CView SoundRegistry Install (m_c->m_28 facet)
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr::RestoreVideoMode (m_4 facet)
+#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
+#include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
+#include <Gruntz/View.h>         // CState::m_c render sub-object facets
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)
+#include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
+#include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet)
 #include <rva.h>
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
@@ -37,7 +39,7 @@ class CSplashState : public CState {
 public:
     // The 11 overridden CState slots (vtbl@0x1e9d74; the other 15 inherited). Their
     // bodies live in the class's other TUs; declared-only here (never instantiated in
-    // this loader TU) so cl emits no ??_7CSplashState (CView.h declared-only pattern),
+    // this loader TU) so cl emits no ??_7CSplashState (CState.h declared-only pattern),
     // leaving LoadSounds' member-offset codegen unchanged.
     virtual ~CSplashState() OVERRIDE;            // slot 0
     virtual void Vfunc1() OVERRIDE;              // slot 1
@@ -83,7 +85,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 
     void* soundz = m_2c->LoadGroup("SOUNDZ");
     if (soundz) {
-        m_c->m_soundRegistry->Install(soundz, g_emptyString, "_");
+        ((CSoundRegistry*)m_c->m_28)->Install(soundz, g_emptyString, "_");
     }
     return 1;
 }
