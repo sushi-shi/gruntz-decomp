@@ -12,9 +12,9 @@
 // and the level/plane objects are still full UNMATCHED engine classes, so member fields
 // typed as void*/char are cast to the file-local opaque shells at their use sites (that
 // keeps those reads / calls reloc-masked). The three embedded MFC containers (base CObList
-// @0, record CObList @0x240, byte-table CByteArray @0x260) still have their base address
-// reinterpreted through the file-local list/array helpers for the reloc-masked engine
-// method bodies - their head/count scalars ARE broken out as named members.
+// @0, record CObList @0x240, byte-table CByteArray @0x260) and the ten selection lists
+// (@0x2d0) are REAL typed members (CTmObList / CTmByteArray) - the leaves call their methods
+// directly and ~CTriggerMgr auto-emits their member teardown (no this+offset casts).
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
 #include <rva.h>

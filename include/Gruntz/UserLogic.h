@@ -154,7 +154,8 @@ struct CGameObject {
     virtual void v14();                           // [5]  +0x14
     virtual void v18();                           // [6]  +0x18
     virtual void v1c();                           // [7]  +0x1c
-    virtual void v20();                           // [8]  +0x20
+    virtual i32 GetTypeId();                      // [8]  +0x20  (serialize type-id getter;
+                                                  //       CTriggerMgr::Load checks ==5)
     virtual void v24();                           // [9]  +0x24
     virtual i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load virtual
     virtual void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
