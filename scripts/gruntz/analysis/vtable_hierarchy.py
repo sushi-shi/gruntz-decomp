@@ -864,7 +864,7 @@ def cmd_audit(aud):
             print("  %-9s %-30s %s  %s" % (k.lower() + ":", name, detail, loc))
 
 
-def cmd_tree(aud):
+def cmd_tree(aud, focus=None):
     """Build the full inheritance FOREST from the binary and emit a topological work
     QUEUE. Edges come from the RTTI Class-Hierarchy-Descriptor spine for RTTI classes
     (authoritative - includes abstract intermediates like CWapObj that emit no vtable);
@@ -897,7 +897,20 @@ def cmd_tree(aud):
 
     def modeled(n):
         src_base = aud.src_base.get(n)
-        return "" if src_base == parent.get(n, src_base) else "  <- source says %s" % (src_base or "no base")
+        bin_p = parent.get(n, src_base)
+        if src_base == bin_p:
+            return ""
+        # binary evidence is a COARSENING: it cannot see a no-new-virtuals
+        # intermediate (e.g. CTileLogic between a leaf and CUserLogic). If the
+        # source base's own chain reaches the binary parent, source refines -
+        # not contradicts - the binary; only chain-incompatible bases are flagged.
+        hop, seen_chain = src_base, set()
+        while hop and hop not in seen_chain:
+            seen_chain.add(hop)
+            hop = aud.src_base.get(hop)
+            if hop == bin_p:
+                return "  (src refines: via %s)" % src_base
+        return "  <- source says %s" % (src_base or "no base")
 
     def kind(n):
         if n in inter:
@@ -906,7 +919,6 @@ def cmd_tree(aud):
             return "  [uncataloged]"
         return modeled(n)
 
-    print("# INHERITANCE FOREST (binary-proven: RTTI spine + size-oriented slot-prefix)")
     seen = set()
 
     def walk(n, depth):
@@ -917,8 +929,28 @@ def cmd_tree(aud):
         print("  " + "  " * depth + n + kind(n))
         for c in sorted(children.get(n, [])):
             walk(c, depth + 1)
-    for r in roots:
-        walk(r, 0)
+
+    scope = None  # focus mode: restrict the queue to the subtree
+    if focus:
+        match = next((n for n in nodes if n.lower() == focus.lower()), None) or \
+            next((n for n in sorted(nodes) if focus.lower() in n.lower()), None)
+        if not match:
+            print("class '%s' not in the binary-proven forest (check --coverage)" % focus)
+            return
+        crumb, hop = [], match
+        while hop in parent and hop not in crumb:
+            crumb.append(hop)
+            hop = parent[hop]
+        crumb.append(hop)
+        print("# SUBTREE of %s (binary-proven; ancestors as breadcrumb)" % match)
+        print("  " + " <- ".join(reversed([c + kind(c) for c in crumb])))
+        print()
+        walk(match, 0)
+        scope = set(seen)
+    else:
+        print("# INHERITANCE FOREST (binary-proven: RTTI spine + size-oriented slot-prefix)")
+        for r in roots:
+            walk(r, 0)
 
     print("\n# TOPOLOGICAL QUEUE (model/re-base a base BEFORE its derived classes)")
     order, done = [], set()
@@ -931,9 +963,11 @@ def cmd_tree(aud):
             emit(parent[n], stack)
         done.add(n)
         order.append(n)
-    for n in sorted(nodes):
+    for n in sorted(scope if scope else nodes):
         emit(n, set())
     for i, n in enumerate(order):
+        if scope and n not in scope:
+            continue
         needs = kind(n)
         if needs.strip():
             print("  %3d  %-32s parent=%-16s%s" % (i, n, parent.get(n, "(root)"), needs))
@@ -975,7 +1009,7 @@ def main():
         if args.tree:
             if args.coverage or args.name_audit or args.audit:
                 print()
-            cmd_tree(aud)
+            cmd_tree(aud, focus=args.klass)
         return
 
     reg, _ = build_registry()
