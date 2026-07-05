@@ -45,9 +45,10 @@ struct CInput54 {
     void Flush();  // 0x1082-thunk (this) reloc-masked
     void Arm();    // FUN_0040bcf0 (this) reloc-masked (ghidra "Resume"; ILT thunk 0x18e8)
     void Disarm(); // FUN_0040bc80 (this) reloc-masked (ghidra "Stop"; ILT thunk 0x29b9)
-    i32 InitInput(void* worldSub28, i32 inputFlag); // FUN_0040b5e0 (this, sub28, flag)
-    void StoreFlag(i32 v);                          // FUN_004385e0-family (this, v)
-    void Teardown();                                // (this) reloc-masked (Close)
+    i32 InitInput(struct CSndHost* host, i32 inputFlag); // FUN_0040b5e0 (this, the
+                                                         // world's +0x28 cue host, flag)
+    void StoreFlag(i32 v);                               // FUN_004385e0-family (this, v)
+    void Teardown();                                     // (this) reloc-masked (Close)
 };
 
 #endif // GRUNTZ_GRUNTZ_INPUTSTATE_H

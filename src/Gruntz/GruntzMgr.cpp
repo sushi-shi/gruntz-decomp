@@ -20,6 +20,7 @@
 #include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
 #include <Gruntz/InputState.h> // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
@@ -148,28 +149,12 @@ struct StateScoreView {
     char m_pad20[0x3f4 - 0x20];
     LevelClock* m_3f4; // +0x3f4
 };
-// (m_cmdGrid's scored flag +0x288 is a field of the unified CCmdGrid, defined below.)
+// (m_cmdGrid's scored flag +0x288 is CTriggerMgr::m_288.)
 
-// DelayedQuit's menu lookup. The world's +0x28 sub-object holds a keyed map at
-// +0x10; Lookup(key, &out) resolves a named menu node, whose +0x10 sub-object's
-// +0x28 holds a base timestamp (offset by 0x1f4). Each engine call is reloc-masked.
-// Distinct from MenuPage.cpp's CMenuMap (CMapStringToPtr, Lookup 0x1b8008): this
-// world-menu keyed map's Lookup targets FUN_005b8438.
-struct CWorldMenuMap {
-    void Lookup(const char* key, void** out); // FUN_005b8438 (this, key, &out)
-};
-struct CMenuNodeSub {
-    char m_pad0[0x28];
-    i32 m_28; // +0x28
-};
-struct CMenuNode {
-    char m_pad0[0x10];
-    CMenuNodeSub* m_10; // +0x10
-};
-struct CWorldMenuHolder {
-    char m_pad0[0x10];
-    CWorldMenuMap m_10; // +0x10  embedded keyed map (sub-object)
-};
+// DelayedQuit's menu lookup goes through the world's CSndHost (+0x28): the former
+// CWorldMenuMap/CMenuNode/CMenuNodeSub/CWorldMenuHolder views were the SoundCue.h
+// canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
+// is the CSndEmitter whose m_10 CSoundCueMgr carries the +0x28 cue duration).
 
 // Close's teardown vocabulary. Most owned sub-objects share a parameterless
 // thiscall teardown then operator delete (modeled as one EngObj type - the per-call
@@ -278,23 +263,11 @@ struct ScoreSub2c { // g_gameReg->m_curState
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
-// The +0x68 world command-grid object (CGruntzMgr::m_cmdGrid). One object; each
-// manager method reads a different facet: the two per-world delta tables at
-// +0x20c/+0x21c (UpdateScoreHud, indexed by g_644c54), the "scored" flag at +0x288
-// (AccrueScoreTime), the 4-arg command sink (BroadcastCmd), the Reset/Flush sub-
-// controller (ResetWorldState/UnloadSoundChain), and the shared Teardown +
-// operator-delete (Close). All engine entrypoints are reloc-masked thiscalls.
-struct CCmdGrid {
-    char m_pad0[0x20c];
-    i32 m_arr20c[4]; // +0x20c..+0x21c  score delta table
-    i32 m_arr21c[4]; // +0x21c          time delta table
-    char m_pad22c[0x288 - 0x22c];
-    i32 m_288;                               // +0x288  per-grid scored flag
-    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
-    void Flush();                            // (this) reloc-masked
-    void Reset();                            // (this) reloc-masked (FUN @ 0x15c3 thunk)
-    void Teardown();                         // (this) reloc-masked
-};
+// The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
+// included above) - the former CCmdGrid facet view is dissolved onto it, thunk-proven:
+// "Teardown" 0x3b1b == ~CTriggerMgr, "Reset"/"Flush" 0x15c3 == DestroyAllAnims,
+// "Command" 0x4250 == RebuildOverlay; the +0x20c/+0x21c delta tables are
+// m_rowStateB/m_rowStateC and the +0x288 scored flag is m_288.
 
 // The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
 // score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
@@ -566,7 +539,7 @@ struct OptionsSlot {
 };
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
-// +0x68 grid (CCmdGrid), the live source object (via GetSaveSource), the +0x6c
+// +0x68 grid (CTriggerMgr), the live source object (via GetSaveSource), the +0x6c
 // sub-mgr (m_cmdSubMgr), the +0x70 polymorphic object (m_cmdNotify, vtbl slot 1),
 // and the +0x7c HUD (ScoreHud). Each returns nonzero to keep broadcasting. The
 // +0x6c sub-mgr also shares the Teardown + operator delete (Close). All
@@ -1947,9 +1920,9 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (m_world == 0) {
         return;
     }
-    CWorldSub2c* sub = m_world->m_28->m_2c;
+    SoundStream* sub = m_world->m_28->m_2c;
     if (sub) {
-        sub->Teardown();
+        sub->Stop();
     }
     g_61ab20 = m_soundEnabled;
     if (m_soundEnabled) {
@@ -2319,7 +2292,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
         slot = (OptionsSlot*)((char*)slot + 0x238);
     }
 
-    if (m_cmdGrid->Command(a0, cmd, a2, a3) == 0) {
+    if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (((CmdSink*)GetSaveSource())->Command(a0, cmd, a2, a3) == 0) {
@@ -2353,8 +2326,8 @@ void CGruntzMgr::UpdateScoreHud() {
     }
     ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_curState;
 
-    m_scoreHud->m_1c += m_cmdGrid->m_arr20c[g_644c54];
-    m_scoreHud->m_20 += m_cmdGrid->m_arr21c[g_644c54];
+    m_scoreHud->m_1c += m_cmdGrid->m_rowStateB[g_644c54];
+    m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_644c54];
 
     if (m_strWorldFile.GetLength() != 0) {
         m_scoreHud->Refresh(1);
@@ -2561,9 +2534,9 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
             m_inputState->Disarm();
         }
         if (m_world) {
-            CWorldSub28* sub = m_world->m_28;
+            CSndHost* sub = m_world->m_28;
             if (sub && sub->m_2c) {
-                sub->m_2c->Teardown();
+                sub->m_2c->Stop();
             }
         }
         if ((m_sound->m_pCurrent ? m_sound->m_pCurrent->IsBusy() : 0) && stopBank) {
@@ -2583,7 +2556,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     if (m_soundEnabled) {
         m_inputState->Arm();
         if (m_cmdGrid && m_soundEnabled) {
-            m_cmdGrid->Reset();
+            m_cmdGrid->DestroyAllAnims();
         }
     }
     m_curState->Vslot19();
@@ -2652,7 +2625,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
         m_timer->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
-        m_cmdGrid->Flush();
+        m_cmdGrid->DestroyAllAnims();
     }
     if (m_world) {
         if (notify && m_curState && m_curState->Update() != 5) {
@@ -2772,11 +2745,11 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
 RVA(0x0008f740, 0x46)
 void CGruntzMgr::UnloadSoundChain() {
     if (m_world) {
-        CWorldSub28* sub = m_world->m_28;
+        CSndHost* sub = m_world->m_28;
         if (sub) {
-            CWorldSub2c* obj = sub->m_2c;
+            SoundStream* obj = sub->m_2c;
             if (obj) {
-                obj->Teardown();
+                obj->Stop(); // direct call 0x137a80 (SoundStream::Stop)
             }
         }
     }
@@ -3002,7 +2975,7 @@ void CGruntzMgr::Close() {
         m_spriteFactory = 0;
     }
     if (m_cmdGrid) {
-        m_cmdGrid->Teardown();
+        m_cmdGrid->~CTriggerMgr(); // real dtor (thunk 0x3b1b; body in the trigger eh TU)
         operator delete(m_cmdGrid);
         m_cmdGrid = 0;
     }
@@ -3179,12 +3152,12 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_a4 = 1;
-    void* out = 0;
-    ((CWorldMenuHolder*)m_world->m_28)->m_10.Lookup("MENU_ACTIVATE", &out);
+    CSndEmitter* out = 0;
+    m_world->m_28->m_10.Lookup("MENU_ACTIVATE", &out);
     i32 base;
     if (out != 0) {
-        ((CWorldMenuHolder*)m_world->m_28)->m_10.Lookup("MENU_ACTIVATE", &out);
-        base = ((CMenuNode*)out)->m_10->m_28 + 0x1f4;
+        m_world->m_28->m_10.Lookup("MENU_ACTIVATE", &out);
+        base = out->m_10->m_28 + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
     }
@@ -3226,7 +3199,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         m_timer->Stop();
     }
     if (m_cmdGrid && m_soundEnabled) {
-        m_cmdGrid->Flush();
+        m_cmdGrid->DestroyAllAnims();
     }
     if (m_world) {
         if (flag && m_curState && m_curState->Update() != 5) {
@@ -3693,9 +3666,6 @@ SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CWorldMenuMap);
-SIZE_UNKNOWN(CMenuNode);
-SIZE_UNKNOWN(CMenuNodeSub);
 SIZE_UNKNOWN(CModalDialog);
 SIZE_UNKNOWN(CMonoCellArray);
 SIZE_UNKNOWN(CMonoConfigHolder);
@@ -3714,11 +3684,9 @@ SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
 SIZE_UNKNOWN(CWorldLookupHolder);
-SIZE_UNKNOWN(CWorldMenuHolder);
 SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CWorldRegistrar);
 SIZE_UNKNOWN(CWorldView);
-SIZE_UNKNOWN(CCmdGrid);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
 SIZE_UNKNOWN(DirectInputMgr2);

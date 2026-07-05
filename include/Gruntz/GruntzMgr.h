@@ -71,18 +71,12 @@ struct CStateStackZ {
 };
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
 // CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
-// the active world view (the scroll/camera holder the FP scaler reads); +0x28 a
-// sub-controller whose +0x2c object carries a teardown thiscall; +0x520 a 4-slot
-// status array the paused-state poll walks (status id at each slot's +0x20).
-SIZE_UNKNOWN(CWorldSub2c);
-struct CWorldSub2c {
-    void Teardown(); // FUN_00537a80 (this)
-};
-SIZE_UNKNOWN(CWorldSub28);
-struct CWorldSub28 {
-    char m_pad[0x2c];
-    CWorldSub2c* m_2c; // +0x2c
-};
+// the active world view (the scroll/camera holder the FP scaler reads); +0x28 the
+// sound/anim cue host (the CSndHost of <Gruntz/SoundCue.h>, included above):
+// the former CWorldSub28/CWorldSub2c "sub-controller + teardown" views were IT -
+// FUN_00537a80 == RVA 0x137a80 == SoundStream::Stop, and the +0x10 keyed map ==
+// CSndFinder (Lookup 0x1b8438). +0x520 is a 4-slot status array the paused-state
+// poll walks (status id at each slot's +0x20).
 struct CWorldView;
 // The world's +0x10 recolor lookup holder (its own +0x10 is an embedded CColorLookup);
 // CWorldZ::m_10 is a pointer, so a forward declaration suffices - the holder's full
@@ -108,13 +102,17 @@ SIZE_UNKNOWN(CWorldZ);
 struct CWorldZ {
     char m_pad0[0x4];
     CWorldSub4* m_4; // +0x04
-    char m_pad8[0x10 - 0x8];
+    // +0x08 the sprite/object factory (== CSpriteFactoryHolder::m_8 in the
+    // GameRegistry.h view of this same object; its +0x48 embedded map hosts the
+    // 0x8106 death lookup). Fwd-declared; Grunt.h carries the full def.
+    struct CSpriteFactory* m_8; // +0x08
+    char m_padc[0x10 - 0xc];
     CWorldLookupHolder* m_10; // +0x10  recolor lookup holder
     char m_pad14[0x1c - 0x14];
     CWorldDispatch** m_1c; // +0x1c
     char m_pad20[0x24 - 0x20];
-    CWorldView* m_24;  // +0x24  active world view
-    CWorldSub28* m_28; // +0x28
+    CWorldView* m_24; // +0x24  active world view
+    CSndHost* m_28;   // +0x28  sound/anim cue host (finder m_10 / stream m_2c / gate m_30)
     char m_pad2c[0x38 - 0x2c];
     u32 m_38; // +0x38  load-status code (ReportWorldStatus maps it to a message id)
 };
@@ -150,7 +148,11 @@ struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
 // sink) are defined by the <Gruntz/SaveInfo.h> include above.
 struct CChatLog; // +0x5c chat/message log (Insert)
 struct TimerObj; // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
-struct CCmdGrid; // +0x68 world delta-table grid + command sink
+// +0x68: the world command/trigger grid is the ONE CTriggerMgr (TriggerMgr.h) -
+// the former CCmdGrid view is dtor-proven the same object (Close's teardown thunk
+// 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
+// +0x288 scored flag == m_288).
+class CTriggerMgr;
 struct CmdSink;  // +0x6c command sub-manager sink (Command)
 class CmdSinkV;  // +0x70 polymorphic command sink (slot 1) + cell-height notify
 struct ScoreHud; // +0x7c HUD/score accumulator + command sink
@@ -368,7 +370,7 @@ public:
     CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
     TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
     i32 m_64;               // +0x64
-    CCmdGrid* m_cmdGrid;    // +0x68  world delta-table grid + command sink (Reset/Flush)
+    CTriggerMgr* m_cmdGrid; // +0x68  world command/trigger grid (CTriggerMgr)
     CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
     CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
