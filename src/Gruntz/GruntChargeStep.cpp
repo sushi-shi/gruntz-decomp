@@ -124,14 +124,22 @@ struct Grunt {
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// shared-tail / stack-spill structural wall (~21%, topic:scheduling topic:wall):
-// complete + logically faithful (validated against the Ghidra decomp), but retail
-// reserves a 0xc-byte frame and spills the target grunt's coords to fixed temps
-// [esp+0x14]/[esp+0x18]/[esp+0x28] which feed a SHARED FaceTarget(0x40302b) tail
-// block jumped to from two states (llvm-objdump -dr base vs target: frame is
-// `sub esp,0xc` retail vs `push ecx` here). Reproducing that shared block +
-// spill layout needs a leaf-first goto-structured redo; deferred to the final
-// sweep. All member offsets + reloc-masked engine callees are modeled.
+// ~21%: complete + logically faithful; the first ~33 insns (m_300/m_304 stash, tile-mgr
+// Find, hitGate probe) are byte-close. Re-derived 2026-07-05 vs llvm-objdump -dr; the
+// powered-up (m_220) block was flattened to retail's sequential guard-gotos + the
+// >=100/<100 stamina branch was flipped so the >=100 IsBusy path is the fall-through
+// (matches retail 0x8e-0x140). TWO structural walls remain, both requiring a leaf-first
+// goto-reorder that is a large uncertain rewrite (deferred to the final sweep):
+//   1. STATE DISPATCH IS REVERSE-LAID-OUT. Retail's `sub eax,m_2d4; je state0(0x3e6);
+//      dec; je state1(0x27d); dec; jne return; [state2 fall-through @0x173]` places
+//      state 2 (arrived) as the fall-through and state 0 (scan) FARTHEST; my if/else-if
+//      lays state 0 first. Needs the 3 state bodies physically reversed (state2, state1,
+//      state0) behind a switch/goto ladder - same lever that took GruntMoveStep 18->69.
+//   2. SHARED FaceTarget(0x40302b) TAIL. Retail reserves `sub esp,0xc` and spills the
+//      target's {m_tileOwnerHi,m_tileOwnerLo,m_lastTilePxX,m_lastTilePxY} to fixed temps
+//      feeding ONE shared FaceTarget call jumped to from states 0/1/2; my source inlines
+//      a FaceTarget per state (frame `push ecx`). This tail-merge caps the residual even
+//      after the dispatch reorder. All offsets + reloc-masked engine callees are modeled.
 RVA(0x000ef6b0, 0x61d)
 i32 Grunt::ChargeStep() {
     m_defenderX = m_lastTilePxX;
@@ -151,28 +159,43 @@ i32 Grunt::ChargeStep() {
             m_neighborValid = 0;
             return 1;
         }
-        if (m_combatActive == 0) {
-            if (m_stamina < 100) {
-                if (hitGate == 0 && m_poweredUp != 0 && m_neighborValid == 0) {
-                    m_entranceActive = 0;
-                    m_combatActive = 0;
-                    m_neighborValid = 0;
-                    m_poweredUp = 0;
-                    StopMove(1, 0, 0);
-                    return 1;
-                }
-            } else {
-                if (IsBusy(1) == 0 && (hitGate == 0 || g != 0) && m_poweredUp != 0
-                    && m_neighborValid == 0) {
-                    m_entranceActive = 0;
-                    m_combatActive = 0;
-                    m_neighborValid = 0;
-                    m_poweredUp = 0;
-                    StopMove(1, 0, 0);
-                    return 1;
-                }
-            }
+        if (m_combatActive != 0) {
+            return 1;
         }
+        if (m_stamina >= 100) {
+            if (IsBusy(1) != 0) {
+                return 1;
+            }
+            if (hitGate != 0 && g == 0) {
+                return 1;
+            }
+            if (m_poweredUp == 0) {
+                return 1;
+            }
+            if (m_neighborValid != 0) {
+                return 1;
+            }
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            StopMove(1, 0, 0);
+            return 1;
+        }
+        if (hitGate != 0) {
+            return 1;
+        }
+        if (m_poweredUp == 0) {
+            return 1;
+        }
+        if (m_neighborValid != 0) {
+            return 1;
+        }
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
+        StopMove(1, 0, 0);
         return 1;
     }
 
