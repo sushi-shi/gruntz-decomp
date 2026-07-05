@@ -78,6 +78,10 @@ def _covered_bitmap(lo, hi):
             rva = int(r["rva"], 16)
         except (ValueError, KeyError):
             continue
+        # Skip our OWN prior output so re-running is idempotent (a committed Gap_* stub
+        # must not count as "covered" - otherwise the tool never re-discovers/refilters it).
+        if "Gap_" in (r.get("name") or ""):
+            continue
         try:
             sz = int((r.get("size") or "").strip(), 0)
         except ValueError:
@@ -156,6 +160,13 @@ def find_lost(lo, hi, cov, libs):
             continue
         if n < MIN_BODY:
             tiny += 1
+            continue
+        # A real MSVC .text function is 16-byte aligned. An UNALIGNED block start is
+        # a false boundary: uncovered code butting a covered fn with no padding, i.e.
+        # a run of packed micro-stubs (`mov eax,imm; ret` accessors) merged into one
+        # bogus block, or a Ghidra mis-boundary. Reject it.
+        if s & 0xF:
+            rejected += 1
             continue
         if s in libs or b0 not in PROLOGUE or n > MAX_BODY or not _terminates(s, e):
             rejected += 1

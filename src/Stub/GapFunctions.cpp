@@ -1216,22 +1216,6 @@ RVA(0x0011c700, 0x20)
 i32 Gap_11c700(void) {
     return 0;
 } // @stub
-RVA(0x0011e0c3, 0x36)
-i32 Gap_11e0c3(void) {
-    return 0;
-} // @stub
-RVA(0x0011e12d, 0x36)
-i32 Gap_11e12d(void) {
-    return 0;
-} // @stub
-RVA(0x00123d9c, 0x21)
-i32 Gap_123d9c(void) {
-    return 0;
-} // @stub
-RVA(0x0012466a, 0x2b)
-i32 Gap_12466a(void) {
-    return 0;
-} // @stub
 RVA(0x00132fc0, 0xb8)
 i32 Gap_132fc0(void) {
     return 0;
@@ -1514,10 +1498,6 @@ i32 Gap_1506b0(void) {
 } // @stub
 RVA(0x001508a0, 0x117)
 i32 Gap_1508a0(void) {
-    return 0;
-} // @stub
-RVA(0x001512c5, 0x50)
-i32 Gap_1512c5(void) {
     return 0;
 } // @stub
 RVA(0x00151b90, 0x70)
@@ -2276,38 +2256,6 @@ RVA(0x00186550, 0xc6)
 i32 Gap_186550(void) {
     return 0;
 } // @stub
-RVA(0x0018e9cd, 0x4b)
-i32 Gap_18e9cd(void) {
-    return 0;
-} // @stub
-RVA(0x0018ea19, 0x4b)
-i32 Gap_18ea19(void) {
-    return 0;
-} // @stub
-RVA(0x0018eacd, 0x4b)
-i32 Gap_18eacd(void) {
-    return 0;
-} // @stub
-RVA(0x0018eb19, 0x4b)
-i32 Gap_18eb19(void) {
-    return 0;
-} // @stub
-RVA(0x0018ebf7, 0x205)
-i32 Gap_18ebf7(void) {
-    return 0;
-} // @stub
-RVA(0x0018edfd, 0xb1)
-i32 Gap_18edfd(void) {
-    return 0;
-} // @stub
-RVA(0x0018eeaf, 0x205)
-i32 Gap_18eeaf(void) {
-    return 0;
-} // @stub
-RVA(0x0018f0b5, 0xc6)
-i32 Gap_18f0b5(void) {
-    return 0;
-} // @stub
 RVA(0x00191720, 0xdd)
 i32 Gap_191720(void) {
     return 0;
@@ -2318,61 +2266,5 @@ i32 Gap_192360(void) {
 } // @stub
 RVA(0x00193680, 0x5e)
 i32 Gap_193680(void) {
-    return 0;
-} // @stub
-RVA(0x001b311f, 0x40)
-i32 Gap_1b311f(void) {
-    return 0;
-} // @stub
-RVA(0x001b5fd8, 0x49)
-i32 Gap_1b5fd8(void) {
-    return 0;
-} // @stub
-RVA(0x001b6022, 0x47)
-i32 Gap_1b6022(void) {
-    return 0;
-} // @stub
-RVA(0x001bbdb9, 0x2e)
-i32 Gap_1bbdb9(void) {
-    return 0;
-} // @stub
-RVA(0x001bd4ef, 0x2c)
-i32 Gap_1bd4ef(void) {
-    return 0;
-} // @stub
-RVA(0x001beb84, 0x2b)
-i32 Gap_1beb84(void) {
-    return 0;
-} // @stub
-RVA(0x001bffc3, 0x7d)
-i32 Gap_1bffc3(void) {
-    return 0;
-} // @stub
-RVA(0x001c9918, 0x6a)
-i32 Gap_1c9918(void) {
-    return 0;
-} // @stub
-RVA(0x001ca0e1, 0x35)
-i32 Gap_1ca0e1(void) {
-    return 0;
-} // @stub
-RVA(0x001ca28e, 0x35)
-i32 Gap_1ca28e(void) {
-    return 0;
-} // @stub
-RVA(0x001cca73, 0x21)
-i32 Gap_1cca73(void) {
-    return 0;
-} // @stub
-RVA(0x001d3236, 0x4e)
-i32 Gap_1d3236(void) {
-    return 0;
-} // @stub
-RVA(0x001d4a95, 0x12b)
-i32 Gap_1d4a95(void) {
-    return 0;
-} // @stub
-RVA(0x001d528b, 0x2a)
-i32 Gap_1d528b(void) {
     return 0;
 } // @stub
