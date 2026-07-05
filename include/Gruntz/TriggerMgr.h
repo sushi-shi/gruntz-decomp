@@ -320,7 +320,7 @@ public:
     // reloc-masked self-calls mangle onto this class with no `((CTmSelf*)this)` cast. Reset3/
     // RefreshB cover several retail RVAs of the same shape (all masked).
     i32 Reset3(i32 a, i32 b, i32 c);
-    void RecallCell(i32 x, i32 y, CTmCell* cell);
+    void RecallCell(CTmCell* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
     void RefreshB(i32 a);
     void RefreshC();
     i32 Probe4(void* obj);

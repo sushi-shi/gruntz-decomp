@@ -88,8 +88,8 @@ struct CTmCell {
     char p158[0x170 - 0x158];
     i32 m_170; // +0x170  logic kind
     char p174[0x17c - 0x174];
-    i32 m_17c; // +0x17c  world x (tile-snapped)
-    i32 m_180; // +0x180  world y (tile-snapped)
+    CTrigPoint m_pos; // +0x17c  world (x,y), tile-snapped - a real point pair
+                      //         (NotifyCell copies it whole)
     char p184[0x198 - 0x184];
     i32 m_198; // +0x198  alt kind
     i32 m_19c; // +0x19c  remapped kind
@@ -524,10 +524,10 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
 // register names; not source-steerable. topic:wall topic:regalloc.
 RVA(0x00077f80, 0xab)
 CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
-    i32 tx = g->m_17c >> 5;
+    i32 tx = g->m_pos.x >> 5;
     i32 rowIdx = g->m_1ec;
     CTmCell** cell = &m_grid[rowIdx * 15];
-    i32 ty = g->m_180 >> 5;
+    i32 ty = g->m_pos.y >> 5;
     CTmCell* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 i = 15;
@@ -1296,7 +1296,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
             alt = cell->m_19c;
         }
         if (alt == 0x13) {
-            g_gameReg->m_68->Spawn(cell->m_17c, cell->m_180, 0, 0, 0, 2, 1);
+            g_gameReg->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
@@ -1768,8 +1768,8 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
         return 0;
     }
     CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_17c) {
-        if (o->m_60 != cell->m_180) {
+    if (o->m_5c != cell->m_pos.x) {
+        if (o->m_60 != cell->m_pos.y) {
             return -1;
         }
     }
@@ -1804,12 +1804,12 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
         return 0;
     }
     CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_17c) {
-        if (o->m_60 != cell->m_180) {
+    if (o->m_5c != cell->m_pos.x) {
+        if (o->m_60 != cell->m_pos.y) {
             return -1;
         }
     }
-    if (o->m_5c == cell->m_17c && o->m_60 == cell->m_180 && cell->m_198 != 0x1e && g_6455b0 == 0) {
+    if (o->m_5c == cell->m_pos.x && o->m_60 == cell->m_pos.y && cell->m_198 != 0x1e && g_6455b0 == 0) {
         return 0;
     }
     i32 by = (a2c & ~0x1f) + 0x10;
@@ -1993,58 +1993,62 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
 // bit + reset the plane cell, null the grid slot, decrement the per-row count and, when z
 // set, bump the per-row alt count and re-arm; mark the cell notified. (__stdcall: ret 0xc.)
 // @early-stop
-// regalloc + tile-attr plane-walk wall: the [esi+0x17c]>>5 / plane double-index sequence
-// pins eax/ecx/ebp differently than retail and the z-branch (count++ / re-arm) schedules its
-// post-merge stores in a different order. Logic + offsets byte-exact. topic:wall.
+// 50.7->76.6 this audit: fixed the tile-attr column stride (*28 = 7 dwords, the SAME grid
+// HitTestCell walks - the old *8 was a logic bug), RecallCell's real arg order (cell,x,y),
+// tg cached once (only ->m_8 re-read: retail holds the CTileGrid ptr in edx across both
+// stores), and the z!=0 path inline / z==0 far. Residual: retail homes the pos pair to a
+// sub esp,8 frame with two DEAD stores while forwarding the regs (its spill pick; plain
+// locals / whole-struct copy / inlined out-param getter all get DSE'd by our cl - measured
+// 75.4/76.6/75.4), which cascades into the esi<->edi coloring + the late push ebp.
+// topic:wall topic:regalloc.
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = col * 15 + row; // grid[col][row] base
     CTmCell* cell = m_grid[idx];
-    if (cell == 0 || cell->m_36c != 0) {
+    if (cell == 0) {
+        return;
+    }
+    if (cell->m_36c != 0) {
         return;
     }
     if (cell->m_1e8 == 0) {
-        this->RecallCell(cell->m_17c, cell->m_180, cell);
+        this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
     }
-    i32 cx = cell->m_17c;
-    i32 cy = cell->m_180;
-    i32** plane = g_gameReg->m_tileGrid->m_8;
-    i32 colByte = (cx >> 5) * 8;
-    char* row0 = (char*)plane[cy >> 5];
-    row0[colByte + 0x3] &= 0xdf;
-    i32** plane2 = g_gameReg->m_tileGrid->m_8;
-    char* row2 = (char*)plane2[cy >> 5];
-    *(i32*)(row2 + colByte + 0x4) = -1;
+    CTrigPoint pt = cell->m_pos;
+    CTmTileGrid* tg = g_gameReg->m_tileGrid;
+    i32 rowIdx = pt.y >> 5;
+    i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
+    ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
+    *(i32*)((char*)tg->m_8[rowIdx] + colByte + 0x4) = -1;
     m_grid[idx] = 0;
-    i32* perRow = m_rowCount + col;
-    *perRow = *perRow - 1;
-    if (z == 0) {
+    m_rowCount[col] -= 1;
+    if (z != 0) {
+        m_cellFlag[idx] = 1;
+        m_rowStateB[col] += 1;
         i32 k = cell->m_170;
         if (k > 0x16) {
             k = cell->m_19c;
         }
         if (k == 0x14) {
-            this->RefreshC();
+            if (g_gameReg->m_134 == 1) {
+                CTmPendingFx* fx = m_pendingFx;
+                if (fx != 0) {
+                    fx->Pulse();
+                }
+            }
+            this->RefreshB(1);
         }
-        m_rowStateC[col] += 1;
         cell->m_36c = 1;
         return;
     }
-    m_cellFlag[idx] = 1;
-    m_rowStateB[col] += 1;
     i32 k = cell->m_170;
     if (k > 0x16) {
         k = cell->m_19c;
     }
     if (k == 0x14) {
-        if (g_gameReg->m_134 == 1) {
-            CTmPendingFx* fx = m_pendingFx;
-            if (fx != 0) {
-                fx->Pulse();
-            }
-        }
-        this->RefreshB(1);
+        this->RefreshC();
     }
+    m_rowStateC[col] += 1;
     cell->m_36c = 1;
 }
 
@@ -2344,7 +2348,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         OverlayTick();
         return 1;
     }
-    g_gameReg->m_68->ResetGroup(cell->m_17c, cell->m_180, 0, 0, 0, 2, 1);
+    g_gameReg->m_68->ResetGroup(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
     OverlayTick();
     return 1;
 }
