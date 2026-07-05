@@ -807,63 +807,6 @@ namespace ApiCallerStubs {
         }
     }
 
-    // The DirectPlay application GUID (DAT_0060fab8), passed by value to Connect.
-    DATA(0x0020fab8)
-    extern GUID g_dplayAppGuid;
-    DATA(0x00248cf0)
-    extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
-    struct DPlayConn_0b77a0 {
-        i32 Connect(i32 sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
-    };
-    struct DPlaySub_0b77a0 {
-        void Init(); // thiscall, RVA 0x158dc0
-    };
-    struct DPlayHolder_0b77a0 {
-        char m_pad0[4];
-        DPlaySub_0b77a0* m_4; // +0x04
-    };
-    struct DPlayHost_0b77a0 {
-        char m_pad0[0xc];
-        DPlayHolder_0b77a0* m_c; // +0x0c
-        char m_pad10[0x524 - 0x10];
-        DPlayConn_0b77a0* m_524;                                // +0x524
-        i32 m_528;                                              // +0x528
-        void Configure(char* name, i32 a, i32 b, i32 c, i32 d); // RVA 0x3445
-        i32 Build();                                            // RVA 0x3db9
-        i32 HostStart();                                        // RVA 0x39bd
-        i32 JoinStart();                                        // RVA 0x2487
-        i32 Open();
-    };
-    // __thiscall(): configure the session, build it, connect via DirectPlay using
-    // the app GUID, then host- or join-start depending on g_isHost_648cf0.
-    RVA(0x000b77a0, 0xb5)
-    i32 DPlayHost_0b77a0::Open() {
-        if (!m_524) {
-            return 0;
-        }
-        Configure("BACKGND", 0, 0, 1, 0);
-        m_c->m_4->Init();
-        i32 sessionFlags = Build();
-        if (!sessionFlags) {
-            return 0;
-        }
-        if (!m_524->Connect(sessionFlags, g_dplayAppGuid)) {
-            return 0;
-        }
-        if (g_isHost_648cf0) {
-            m_528 = 1;
-            if (!HostStart()) {
-                return 0;
-            }
-        } else {
-            m_528 = 0;
-            if (!JoinStart()) {
-                return 0;
-            }
-        }
-        return 1;
-    }
-
     // App-instance chain: this->m_4->m_8->m_c is the HINSTANCE for LoadString.
     struct AppRes_0b7ec0 {
         char m_pad0[0xc];

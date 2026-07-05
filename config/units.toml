@@ -2061,6 +2061,11 @@ source = "src/Net/NetSessionNode.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "netsessionopen"
+source = "src/Net/NetSessionOpen.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
 flags = "base"
