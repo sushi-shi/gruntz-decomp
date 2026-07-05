@@ -9,20 +9,24 @@
 // +0x14 list dispatching one of the child's sibling virtuals, some following with a
 // dispatch of the object's own +0x2c virtual (see DDrawChildGroup.cpp for bodies).
 //
-// NOTE: the same +0x08 object is reached, in the game-object collection role, as
-// CWwdObjMgr in src/DDrawMgr/DDrawSubMgr.cpp (list @+0x10, two maps @+0x2c/+0x48,
-// per-frame kill-cue tick 0x159a70) and, in the serializer-blit role, as the local
-// CDDrawChildGroupOps view in DDrawSurfaceMgrSerialize.cpp. Those two are further
-// method-sets on THIS class; a full CWwdObjMgr<->CDDrawChildGroup consolidation is a
-// separate pass (the map/list sub-object typings disagree - CObList vs CPtrList,
-// CMapStringToOb vs CMapPtrToPtr - and must be reconciled first).
+// IDENTITY: CDDrawChildGroup IS CWwdObjMgr - the SAME +0x08 object, reached in the
+// game-object collection role as CWwdObjMgr in src/DDrawMgr/DDrawSubMgr.cpp (list
+// @+0x10, two maps @+0x2c/+0x48, per-frame kill-cue tick 0x159a70) and, in the
+// serializer-blit role, as the local CDDrawChildGroupOps view in
+// DDrawSurfaceMgrSerialize.cpp. Those are further method-sets on THIS class.
+// The two maps @+0x2c/+0x48 are CMapPtrToPtr, PROVEN by the Wwd worker: their Lookup
+// is 0x001b8760 = ?Lookup@CMapPtrToPtr@@QBEHPAXAAPAX@Z (FID-confirmed), NOT the
+// CMapStringToOb the shell previously assumed (matching-neutral here - the only use in
+// DDrawChildGroup.cpp is RemoveAll, a reloc-masked call, same 0x1c-byte CMap layout).
+// A full CWwdObjMgr<->CDDrawChildGroup method-set consolidation is still a separate pass
+// (the +0x10 list sub-object typing - CObList vs CPtrList - remains to be reconciled).
 //
 // Field names are placeholders; only OFFSETS + emitted code bytes are load-bearing
 // (campaign doctrine).
 
 #include <rva.h>
 #include <Ints.h>
-#include <Gruntz/MapStringToOb.h> // CMapStringToOb - the +0x2c / +0x48 collections
+#include <Mfc.h> // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
 
 // The child object dispatched per list node. Slots laid out so the broadcast
 // virtuals land at +0x34 / +0x38, with +0x2c and +0x30 used by other methods.
@@ -95,8 +99,8 @@ public:
     char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
     CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
     char m_pad18[0x2c - 0x18]; // +0x18..0x2b (rest of the +0x10 CObList)
-    CMapStringToOb m_map2c;    // +0x2c
-    CMapStringToOb m_map48;    // +0x48
+    CMapPtrToPtr m_map2c;      // +0x2c  (CMapPtrToPtr::Lookup 0x1b8760, FID-confirmed)
+    CMapPtrToPtr m_map48;      // +0x48
 
     // Engine-label backlog stubs.
     void Stub_1591f0();
