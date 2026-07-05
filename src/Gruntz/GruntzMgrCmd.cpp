@@ -222,6 +222,9 @@ namespace GruntzMgrCmd {
         ~GZStr();
         void Empty();             // 0x1b9c69
         void operator=(GZStr& o); // 0x1b9e25
+        i32 GetLength() {
+            return ((i32*)m_p)[-2];
+        } // inline CString::GetLength (header at m_p-8)
     };
     DATA(0x00645524)
     extern GZStr g_str645524; // brick-display CStrings cleared by 0x8068/0x806f
@@ -860,32 +863,40 @@ namespace GruntzMgrCmd {
                 return 0;
             // ---- remaining UI command bodies (physically after the epilogue) ----
             case 0x807e: {
-                void* bc = m_saveInfoRec;
-                if (!bc || !(*(u8*)bc & 1)) {
+                GZSaveInfo* si = m_saveInfoRec;
+                if (!si) {
                     return 1;
                 }
-                GZStr tmp(*(const char**)&bc + 0x75);
+                if (!(*(u8*)si & 1)) {
+                    return 1;
+                }
                 m_114 = 1;
+                GZStr tmp((const char*)si + 0x75);
                 m_strWorldFile = tmp;
                 (void)p1;
-                if (m_saveInfoRec->m_fc) {
-                    if (m_saveInfoRec->m_f8) {
-                        m_128 = 0;
-                        m_130 = 1;
-                        m_134 = 3;
+                if (tmp.GetLength()) {
+                    if (si->m_fc) {
+                        if (si->m_f8) {
+                            m_128 = 0;
+                            m_130 = 1;
+                            m_134 = 3;
+                        } else {
+                            m_128 = 1;
+                            m_130 = 0;
+                            m_134 = 3;
+                        }
                     } else {
-                        m_128 = 1;
-                        m_130 = 0;
-                        m_134 = 3;
+                        m_134 = 1;
+                        m_130 = 1;
                     }
                 } else {
                     m_134 = 1;
-                    m_130 = 1;
+                    m_130 = 0;
                 }
-                if (!PassClick(m_saveInfoRec->m_4, 0, 1)) {
+                if (!PassClick(si->m_4, 0, 1)) {
                     ReportErr(0x8005, 0x421);
                 }
-                if (!Board2144(this, &m_saveInfoRec->m_35)) {
+                if (!Board2144(this, &si->m_35)) {
                     ReportErr(0x8005, 0x465);
                 }
                 Func12ee();
