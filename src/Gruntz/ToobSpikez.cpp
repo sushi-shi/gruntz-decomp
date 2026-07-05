@@ -35,14 +35,16 @@
 //   phase 0x51 -> UserLogicVfuncB (slot 13, +0x34)
 //   phase 0x50 -> UserLogicVfuncC (slot 14, +0x38)
 //   phase 0x53 -> UserLogicVfuncD (slot 15, +0x3c)
-struct CToobLogicRec {
-    char m_pad00[0x18];
-    CToobSpikez* m_18; // +0x18 live instance (the real leaf class)
-    u32 m_1c;          // +0x1c phase code (unsigned -> ja/jae switch compares)
-};
-struct CGameObjLogic {
-    char m_pad00[0x7c];
-    CToobLogicRec* m_7c; // +0x7c
+// The game object's +0x7c logic-control record: the generic CGameObjAux slot typed
+// for THIS logic subsystem's use (m_18 = the live CToobSpikez leaf, m_1c = the phase
+// code). m_18/m_1c are genuinely-generic engine slots (m_18 holds a CProjectile /
+// LightFx / this leaf across TUs; m_1c holds a phase int here but a bute-tree animset
+// node pointer in StaticHazard) - so the logic pumps type them per use (cf. the
+// sibling AnimWorkerHandlers). One reinterpret at entry keeps the dispatch cast-free.
+struct CToobRec {
+    char _00[0x18];
+    CToobSpikez* m_18; // +0x18  live instance (the real leaf class)
+    u32 m_1c;          // +0x1c  phase code (unsigned -> ja/jae switch compares)
 };
 
 // The shared logic-error reporter (0x16e4f0, __cdecl) for an unresolved phase.
@@ -50,12 +52,12 @@ extern void ToobLogicError(CToobSpikez* inst);
 
 // 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
-i32 ToobSpikezLogic(CGameObjLogic* obj) {
-    CToobLogicRec* rec = obj->m_7c;
+i32 ToobSpikezLogic(CGameObject* obj) {
+    CToobRec* rec = (CToobRec*)obj->m_7c;
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CToobSpikez* inst = new CToobSpikez((CGameObject*)obj);
+            CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate(); // slot 6
             rec->m_18 = inst;
             break;
@@ -289,8 +291,6 @@ void CToobSpikez::RegisterActs() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CGameObjLogic);
 SIZE_UNKNOWN(CToobColl);
 SIZE_UNKNOWN(CToobColl2);
 SIZE_UNKNOWN(CToobEntry);
-SIZE_UNKNOWN(CToobLogicRec);
