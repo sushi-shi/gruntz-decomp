@@ -2140,9 +2140,10 @@ unit = "circleshadeblit"
 source = "src/DDrawMgr/CircleShadeBlit.cpp"
 flags = "base"
 [[unit]]
+# retail kept the ebp frame here (push ebp;mov ebp,esp;locals via [ebp-N]) -> /Oy-.
 unit = "warptextureblit"
 source = "src/Image/WarpTextureBlit.cpp"
-flags = "base"
+flags = "framed"
 [[unit]]
 unit = "imagerotate"
 source = "src/Image/ImageRotate.cpp"

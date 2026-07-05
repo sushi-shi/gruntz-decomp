@@ -63,12 +63,15 @@ static i32 warpFtol(double v) {
 }
 
 // @early-stop
-// x87/global-scratch scheduling wall (shared with the sibling FP rasterizers): the
-// power-of-2 gate, the per-edge fixed-point gradient build into the left/right edge
-// tables, the surface lock/unlock, the span u/v interpolation and the three inner
-// pixel loops (copy / skip-zero / skip-colorkey) are reconstructed in shape/order.
-// Residue is the MSVC /O2 x87 fld/fmul/__ftol pipeline interleave + the ~15 global
-// scratch reloc operands, not source-steerable from clean C.
+// x87/regalloc scheduling wall (~52%). STRUCTURAL FIX applied: retail keeps the ebp
+// frame (push ebp;mov ebp,esp; locals via [ebp-N]) -> this TU is now the `framed`
+// (/Oy-) profile, not `base` (was FPO, 50.9->51.6). Residual is regalloc + x87: retail
+// keeps minY/maxY MEMORY-resident ([ebp-8]/[ebp-4], immediate stores) under the edge-
+// build's x87 register pressure while this /O2 build registers minY in esi, and the
+// per-edge fixed-point gradient build is the same MSVC x87 fild/fmul/__ftol pipeline
+// interleave + ~15 global-scratch reloc operands as the sibling FP rasterizers - not
+// source-steerable from clean C. The three inner pixel loops (copy/skip-zero/skip-
+// colorkey), the surface lock/unlock and the span u/v interpolation match by shape.
 RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
