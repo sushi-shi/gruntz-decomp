@@ -1960,7 +1960,7 @@ gruntarrivalscan	?ArrivalScanA@CGrunt@@QAEHXZ	51.3030	51.3030	2	1d84df91db5c	0xe
 gruntarrivalscan	?ArrivalScanB@CGrunt@@QAEHXZ	45.3379	45.3379	2	4b78b0ee02d4	0xf0e20
 gruntarrivalscan	?ArrivalScanC@CGrunt@@QAEHXZ	45.3877	45.3877	2	49d570720bcc	0xf36a0
 gruntarrivalstep	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	69.8771	69.8771	6	99f3e41c39f7	0xf1c70
-gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	23.7161	23.7161	2	033216e5a1be	0x2c690
+gruntarriveresolve	?Resolve2c690@CArriveMgr@@QAEHPAUCArriveGrunt@@@Z	54.8340	54.8340	3	a893cbac1e6c	0x2c690
 gruntassetloaders	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	6	7032a7134879	0x57100
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z	87.0599	87.0599	8	4402cac43405	0x60150
 gruntassetloaders	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	75.5349	75.5349	5	01efdd985aab	0x68880
