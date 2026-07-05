@@ -170,6 +170,16 @@ namespace modeinit {
     //    manager (a1+0x164/+0x170 == CNetGameMgr::m_channels[0].m_14/m_20, and the
     //    0x1d98 callee == CNetGameMgr::ResetClockGlobals). Fold to <Gruntz/Play.h>
     //    as the follow-up.
+    //  * FIELD MAP CONFIRMED vs canonical CPlay (Play.h, 2026-07-05 - matcher-6):
+    //    ModeObj m_2dc==CPlay m_guts (guts/UI subsystem = Worker630 0x630),
+    //    m_2e0==m_hitTest (Ctl1c 0x1c control/hit-test sink), m_320==m_overlayActive,
+    //    m_3f4==m_frameMarker (CPlaySerialChild = Rec50 0x50), m_470==m_region0Gate,
+    //    m_4e4==m_scrollSink (Peer). The FOLD BLOCKER is a leaf-first cascade: CPlay
+    //    holds m_guts/m_hitTest/m_frameMarker as ANONYMOUS struct-ptr members, so the
+    //    typed sub-object construction here (Worker630::Init10b4/Ctl1c::Init3e77/
+    //    Rec78 4xStrRec/Rec50::Init286f + the EhVecCtor arrays) needs those 5 sub-
+    //    object classes MODELED as real canonicals first (else the fold re-introduces
+    //    casts). Do it WITH the scoped-out /GX-frame rewrite above (both leaf-first).
     //  * All four allocations are genuine `new T` with class operator new/delete ==
     //    RezAlloc/RezFree: Ctl1c (inline nothrow ctor: m_18,m_14,m_c,m_10,m_0,m_4,
     //    m_8=1 -> NO EH state), Worker630 (inline ctor -> states 0/1; inline dtor
