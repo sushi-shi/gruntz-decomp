@@ -26,33 +26,11 @@
 // virtual [+0x30], CString dtor, NAFXCW Lookup, sibling readers) are modeled
 // with no body so their rel32 calls reloc-mask.
 
-// ---------------------------------------------------------------------------
-// The +0x1a0 command-dispatch sub-object. Ctor 0x15c290 (1 arg = owner),
-// Find 0x15c900 (4 args). Modeled as a tiny class so the __thiscall dispatch
-// lowers to `lea ecx,[this+0x1a0]; call` with no cast.
-// ---------------------------------------------------------------------------
-struct CmdMap {
-    void Construct(void* owner);              // 0x15c290
-    i32 Find(i32 a1, i32 a2, i32 a3, i32 a4); // 0x15c900
-    char m_body[0x3c];                        // embedded sub-object body (+0x1a0..+0x1dc)
-};
-
-// The +0x1dc CObList of owned sub-objects (CObject base vtbl@+0, head@+4) and its
-// list nodes {next@0, prev@4, data@8}; RemoveAll (0x1b5a0b) frees the node cells.
-struct WwdSubDel {
-    virtual void Slot00();
-    virtual void DeleteSelf(i32 flag); // +0x04  scalar deleting dtor
-};
-struct WwdSubNode {
-    WwdSubNode* m_next; // +0x00
-    WwdSubNode* m_prev; // +0x04
-    WwdSubDel* m_data;  // +0x08  owned polymorphic payload
-};
-struct WwdSubList {
-    void RemoveAll_1b5a0b(); // 0x1b5a0b  CObList::RemoveAll (reloc-masked)
-    void* m_vtbl;            // +0x00
-    WwdSubNode* m_head;      // +0x04
-};
+// CmdMap (+0x1a0), the CObList m_subList (+0x1dc) and the CWwdGameObject class
+// itself now live in the canonical <Gruntz/WwdGameObject.h> (included above). The
+// list holds MFC CObject payloads (their scalar-deleting dtor is slot 1, exactly
+// CObject::~CObject); ResetAndSetup walks it with the real CObList::GetNext +
+// `delete` - no walk-view struct.
 
 // The owning manager at +0x0c, modeled as a real typed object (WwdMgr, below)
 // with its nested reader/map sub-objects, so the chained derefs lower to the
@@ -136,160 +114,11 @@ struct CStringAssign {
     void Assign(const char* s); // 0x1b9e74
 };
 
-// ---------------------------------------------------------------------------
-// CWwdGameObject layout (raw-offset access; only offsets are load-bearing).
-// ---------------------------------------------------------------------------
+// CWwdGameObject is defined in <Gruntz/WwdGameObject.h> (canonical). These two
+// render sub-objects are defined further below; forward-declare them for the
+// method bodies + WwdRenderCtx::m_2c.
 struct WwdRenderCtx;
-struct WwdSurface; // defined below; m_2c holds the destination surface
-class CWwdGameObject {
-public:
-    // ---- the object's real polymorphic interface (folds the former WwdSelf view) ----
-    // The vptr at +0x00 dispatches through the engine's manually-assembled table
-    // ?g_wwdGameObjectVtbl@@3PAXA (VA 0x5f0020, 17 slots, read from .rdata). The
-    // methods it routes to are NON-virtual CWwdGameObject/foreign functions whose
-    // addresses the engine hand-placed into the table (so retail calls them DIRECTLY
-    // via rel32 - see Dispatch->Play/Init->Setup), hence Setup/Play/Helper164790 stay
-    // plain methods below; these 17 declared-only virtuals only model the table SHAPE so
-    // WriteSnapshot dispatches slot 8/16 through the real vptr with no cast. Slot RVAs
-    // are the binary's ground truth (never fabricated); unrecovered slots carry @rva.
-    virtual i32 Slot00();       // slot 0  @0x1bef01  const-getter (mov eax,0x5eb848;ret) == Vfunc40
-    virtual void ScalarDtor();  // slot 1  @0x15b4c0  scalar-deleting dtor (??_G)
-    virtual void Slot08();      // slot 2  @0x0028ec -> 0x14bc0  (unrecovered engine method)
-    virtual void Slot0C();      // slot 3  @0x00106e -> 0x14be0  (unrecovered engine method)
-    virtual void Slot10();      // slot 4  @0x004034 -> 0x14c00  (unrecovered engine method)
-    virtual void Slot14();      // slot 5  @0x15b370  (worker-gate; reads [this+0x7c])
-    virtual void Slot18();      // slot 6  @0x001c08 -> 0xd5da0  (unrecovered engine method)
-    virtual void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
-    virtual i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
-    virtual i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
-    virtual i32 Slot28();       // slot 10 @0x150d60  == Setup (below)
-    virtual void Slot2C();      // slot 11 @0x11fec0  __purecall
-    virtual void Slot30();      // slot 12 @0x11fec0  __purecall
-    virtual void Slot34();      // slot 13 @0x11fec0  __purecall
-    virtual void Slot38();      // slot 14 @0x11fec0  __purecall
-    virtual i32 Slot3C();       // slot 15 @0x151150  == Play (below)
-    virtual i32 Vfunc40();      // slot 16 @0x1bef01  const-getter (== slot 0) read by WriteSnapshot
-
-    // Dispatch entry (0x150a70) and the methods it routes to.
-    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
-    i32 ReadState(i32 src);                                     // 0x150b00
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);                  // 0x150d60 (vtbl +0x28)
-    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);                 // 0x151150 (vtbl +0x3c)
-    i32 Serialize(i32 ar);                                      // 0x151320
-    i32 WriteSnapshot(i32 dst);                                 // 0x151c00
-    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);                   // 0x15b940
-    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x1665e0
-    i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0
-    i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30
-    void RenderDot(WwdRenderCtx* a);                            // 0x1660f0
-
-    // Sibling helpers (modeled as same-class methods so ecx=this matches).
-    i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
-    i32 Sub150c30(i32 a1);            // 0x150c30
-    i32 Sub151780(i32 a1);            // 0x151780
-
-    // The three "resolve object reference" setters Sub151780 dispatches the
-    // deserialized name lookups into (sibling __thiscall methods, reloc-masked).
-    i32 Resolve150eb0(void* obj); // 0x150eb0
-    i32 Resolve150f90(void* obj); // 0x150f90
-    i32 Resolve151070(void* obj); // 0x151070
-
-    // +0x00 is the implicit vptr (the 17 virtuals above); m_04 follows at +0x04.
-    i32 m_04;         // +0x04
-    i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
-    WwdMgr* m_mgr;    // +0x0c  owning manager
-    i32 m_10;         // +0x10
-    i32 m_14;         // +0x14
-    i32 m_lastX;      // +0x18  last-drawn column (cached by RenderDot)
-    i32 m_lastY;      // +0x1c  last-drawn row
-    i32 m_20;         // +0x20
-    i32 m_24;         // +0x24
-    i32 m_28;         // +0x28
-    i32 m_2c;         // +0x2c
-    i32 m_30;         // +0x30  set 1 on a successful plot
-    i32 m_34;         // +0x34  set 1 on a successful plot
-    i32 m_clipResult; // +0x38  clip result (0 plotted / -1 rejected)
-    char m_pad3c[0x40 - 0x3c];
-    i32 m_40; // +0x40
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
-    char m_pad4c[0x50 - 0x4c];
-    i32 m_50;         // +0x50
-    i32 m_54;         // +0x54
-    i32 m_58;         // +0x58
-    i32 m_posX;       // +0x5c  position column
-    i32 m_posY;       // +0x60  position row
-    i32 m_clipLeft;   // +0x64  clip rect (0x80000000 = unbounded)
-    i32 m_clipTop;    // +0x68
-    i32 m_clipRight;  // +0x6c
-    i32 m_clipBottom; // +0x70
-    i32 m_74;         // +0x74
-    char m_pad78[0x7c - 0x78];
-    AnimWorker* m_worker; // +0x7c  sprite-animation worker
-    void* m_80;           // +0x80  object ref (serialized by name)
-    i32 m_84;             // +0x84
-    void* m_88;           // +0x88  object ref
-    i32 m_8c;             // +0x8c
-    void* m_90;           // +0x90  object ref
-    i32 m_94;             // +0x94
-    void* m_98;           // +0x98  linked object (reads its +0x188)
-    char m_pad9c[0xac - 0x9c];
-    i32 m_ac;               // +0xac  copy of m_posX
-    i32 m_b0;               // +0xb0  copy of m_posY
-    CWwdGameObject* m_self; // +0xb4  = this
-    char m_b8[0x24];        // +0xb8  serialized state block
-    char* m_name;           // +0xdc  CString name (handle = buffer pointer)
-    i32 m_e0;               // +0xe0
-    i32 m_e4;               // +0xe4
-    i32 m_e8;               // +0xe8
-    i32 m_ec;               // +0xec
-    i32 m_f0;               // +0xf0
-    i32 m_f4;               // +0xf4
-    i32 m_f8;               // +0xf8
-    i32 m_fc;               // +0xfc
-    i32 m_100;              // +0x100
-    i32 m_104;              // +0x104
-    i32 m_108;              // +0x108
-    i32 m_10c;              // +0x10c
-    i32 m_110;              // +0x110
-    i32 m_114;              // +0x114
-    i32 m_118;              // +0x118
-    i32 m_11c;              // +0x11c
-    i32 m_120;              // +0x120
-    i32 m_124;              // +0x124
-    i32 m_128;              // +0x128
-    i32 m_12c;              // +0x12c
-    i32 m_130;              // +0x130
-    i32 m_134;              // +0x134  block head (0x80000000 sentinel)
-    i32 m_138;              // +0x138
-    i32 m_13c;              // +0x13c
-    i32 m_140;              // +0x140
-    i32 m_144;              // +0x144  block head (0x80000000 sentinel)
-    i32 m_148;              // +0x148
-    i32 m_14c;              // +0x14c
-    i32 m_150;              // +0x150
-    i32 m_154;              // +0x154  block head (0x80000000 sentinel)
-    i32 m_158;              // +0x158
-    i32 m_15c;              // +0x15c
-    i32 m_160;              // +0x160
-    i32 m_164;              // +0x164
-    i32 m_168;              // +0x168
-    i32 m_16c;              // +0x16c
-    i32 m_170;              // +0x170
-    i32 m_174;              // +0x174
-    i32 m_178;              // +0x178
-    i32 m_17c;              // +0x17c
-    i32 m_180;              // +0x180
-    i32 m_184;              // +0x184
-    i32 m_188;              // +0x188
-    i32 m_dotColor;         // +0x18c  low byte = dot color / setup flag
-    i32 m_190;              // +0x190
-    void* m_194;            // +0x194  resolved object ref
-    i32 m_198;              // +0x198
-    void* m_19c;            // +0x19c  resolved object ref
-    CmdMap m_cmdMap;        // +0x1a0  command-dispatch sub-object
-    WwdSubList m_subList;   // +0x1dc  CObList of owned sub-objects
-};
+struct WwdSurface;
 
 // The sub-object hung off the worker at AnimWorker+0x18 (own vtable; its +0x8
 // virtual is read in WriteSnapshot).
@@ -857,29 +686,23 @@ i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// ResetAndSetup (0x1665e0): delete every owned sub-object in the +0x1dc CObList
-// (its payload at node+8, via the deleting dtor), empty the list, then re-run
-// Setup with the four forwarded args. Returns Setup() != 0.
-//
-// @early-stop
-// shrink-wrapped-callee-save-push wall (~80%, inverted): retail pushes esi+edi
-// together upfront; cl pushes edi upfront and sinks `push esi` into the
-// list-walk loop (esi only live there). Loop body + delete + Setup-forward
-// byte-equivalent; the push placement + arg-reload offsets cascade, not
-// source-steerable (docs/patterns/shrink-wrapped-callee-save-push.md).
+// ResetAndSetup (0x1665e0): delete every owned Wap::CObject in the +0x1dc CObList
+// (walked with the real CObList::GetHeadPosition/GetNext + `delete`), empty the
+// list, then re-run Setup with the four forwarded args. Returns Setup() != 0.
+// EXACT: modeling the list as a real CObList of Wap::CObject payloads (was a
+// fabricated node/payload walk-view) reproduced retail's register schedule that the
+// view could not - the former ~80% "shrink-wrapped-push" wall is closed.
 // ---------------------------------------------------------------------------
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    WwdSubNode* n = m_subList.m_head;
-    while (n != 0) {
-        WwdSubNode* next = n->m_next;
-        WwdSubDel* p = n->m_data;
+    POSITION pos = m_subList.GetHeadPosition();
+    while (pos != 0) {
+        CObject* p = (CObject*)(void*)m_subList.GetNext(pos);
         if (p != 0) {
-            p->DeleteSelf(1);
+            delete p;
         }
-        n = next;
     }
-    m_subList.RemoveAll_1b5a0b();
+    m_subList.RemoveAll();
     return Setup(a1, a2, a3, a4) != 0;
 }
 
@@ -977,7 +800,8 @@ reject:
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
-SIZE(CmdMap, 0x3c);
+// CmdMap is SIZE-annotated in the canonical header; m_subList is a real MFC CObList
+// of Wap::CObject payloads (both real classes, no walk-view).
 SIZE_UNKNOWN(MapLookupA);
 // CDDrawSubMgrLeafScan (mgr+0x28) is the canonical class (its own header's SIZE);
 // CDDrawWorkerRegistry is annotated on its real def (DDrawMgr unit) - this TU only
@@ -988,9 +812,6 @@ SIZE_UNKNOWN(WwdMgrSub08);
 SIZE_UNKNOWN(WwdMgrSub10);
 SIZE_UNKNOWN(WwdRenderCtx);
 SIZE_UNKNOWN(WwdSnapshot);
-SIZE_UNKNOWN(WwdSubDel);
-SIZE_UNKNOWN(WwdSubList);
-SIZE_UNKNOWN(WwdSubNode);
 SIZE_UNKNOWN(WwdSurface);
 
 // ============================================================================
