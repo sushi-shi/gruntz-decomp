@@ -5,7 +5,15 @@
 // combat-region scan. Placeholder class/field names (m_<hexoffset>); only the
 // offsets + code bytes are load-bearing. Compiled base+/GX to mirror the
 // original stub-unit environment.
-#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape); MFC-first (pulls afx)
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape); MFC-first (pulls afx)
+#ifdef __clang__
+// The label-step clang can't parse MFC's afxwin1.inl (CMenu::operator==/!= rely on the
+// implicit-int return MSVC5 accepts). We only need afxwin.h's class DECLARATIONS for
+// symbol mangling here, not the inline bodies, so skip the *.inl for clang; the real
+// MSVC5 base compile keeps _AFX_ENABLE_INLINES (defined in afxver_.h) + the inlines.
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>               // real MFC CRgn/CGdiObject (the credits clip region: Attach)
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
 #include <Win32.h>
 #include <ddraw.h> // real IDirectDrawSurface (the credits offscreen-DC object: GetDC/ReleaseDC)
@@ -183,10 +191,8 @@ namespace m4 {
     // m_text is the real MFC CString (Assign @0x1b9e74 = CString::operator=(const
     // char*), verified); was a hand-rolled CreditzStr view. Its LPCTSTR (the +0x00
     // m_pszData) is what DrawTextA reads.
-    struct CreditzRgn { // CRgn / CGdiObject at this->m_clipRgn
-        char m_pad0[8];
-        i32 Attach(void* hrgn); // RVA 0x1c6a05
-    };
+    // m_clipRgn is the real MFC CRgn (Attach @0x1c6a05 = CGdiObject::Attach, the
+    // clip region built from CreateRectRgn); was a hand-rolled CreditzRgn view.
     // The offscreen-DC object is the real IDirectDrawSurface (<ddraw.h>): the two
     // dispatched slots are GetDC (slot 17, +0x44: HDC*) and ReleaseDC (slot 26,
     // +0x68: HDC) - exact IDirectDrawSurface vtable offsets (the batch-1 DcSink
@@ -208,14 +214,14 @@ namespace m4 {
         char m_pad10[0x2c - 0x10];
         CSymTab* m_sectionSrc; // +0x2c  the section symbol table (Insert = section lookup)
         char m_pad30[0x1c8 - 0x30];
-        RECT m_scrollRect;    // +0x1c8
-        RECT m_textRect;      // +0x1d8
-        CreditzRgn m_clipRgn; // +0x1e8
-        CString m_text;       // +0x1f0  (real MFC CString; m_pszData at +0x00)
-        i32 m_1f4;            // +0x1f4
-        i32 m_1f8;            // +0x1f8
-        i32 m_1fc;            // +0x1fc
-        double m_scrollStep;  // +0x200
+        RECT m_scrollRect;   // +0x1c8
+        RECT m_textRect;     // +0x1d8
+        CRgn m_clipRgn;      // +0x1e8  (real MFC CRgn; vptr + m_hObject)
+        CString m_text;      // +0x1f0  (real MFC CString; m_pszData at +0x00)
+        i32 m_1f4;           // +0x1f4
+        i32 m_1f8;           // +0x1f8
+        i32 m_1fc;           // +0x1fc
+        double m_scrollStep; // +0x200
         i32 BuildText();
     };
 
