@@ -43,7 +43,8 @@
 // ---------------------------------------------------------------------------
 #include <rva.h>
 
-#include <Gruntz/CoordNode.h> // the shared coord-list node
+#include <Gruntz/CoordNode.h>    // the shared coord-list node
+#include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/BattlezMapConfig.h>
 #include <Bute/ButeMgr.h> // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>
@@ -290,14 +291,8 @@ struct UnitGeom {
 };
 
 // The coord-node free pool (?DAT_00645540): an intrusive-list allocator whose
-// Recycle(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
-// freelist headed at this->m_04. Reloc-masked DATA; modeled as a tiny object so
-// the `mov ecx,0x645540; push elem; call` falls out.
-struct FreeNodePool {
-    void Recycle(void* elem); // 0x0311b0 (real symbol ?Push@FreeNodePool; local view
-                              // uses void* to avoid casts at the CoordNode* call sites)
-};
-// SIZE_UNKNOWN(FreeNodePool) is hosted once, on the real def in DiscoveredSmall.cpp.
+// Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
+// freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>.
 DATA(0x00245540)
 extern FreeNodePool g_coordPool;
 
@@ -1364,7 +1359,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                         CoordNode* c2 = p;
                         p = p->m_next;
                         if (c2->m_coord != 0) {
-                            g_coordPool.Recycle(c2->m_coord);
+                            g_coordPool.Push(c2->m_coord);
                         }
                     }
                     ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -2901,7 +2896,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
             CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                g_coordPool.Recycle(cur->m_coord);
+                g_coordPool.Push(cur->m_coord);
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -3369,7 +3364,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                     while (pos != 0) {
                         void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
                         if (coord != 0) {
-                            g_coordPool.Recycle(coord);
+                            g_coordPool.Push(coord);
                         }
                     }
                     ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -3446,7 +3441,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
         while (pos != 0) {
             void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
             if (coord != 0) {
-                g_coordPool.Recycle(coord);
+                g_coordPool.Push(coord);
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -3514,7 +3509,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                     do {
                         void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
                         if (coord != 0) {
-                            g_coordPool.Recycle(coord);
+                            g_coordPool.Push(coord);
                         }
                     } while (pos != 0);
                 }
@@ -3635,7 +3630,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                     CoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
-                        g_coordPool.Recycle(cur->m_coord);
+                        g_coordPool.Push(cur->m_coord);
                     }
                 }
                 ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -4096,7 +4091,7 @@ recycleBail:
             CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                g_coordPool.Recycle(cur->m_coord);
+                g_coordPool.Push(cur->m_coord);
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -4904,7 +4899,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    g_coordPool.Recycle(cur->m_coord);
+                    g_coordPool.Push(cur->m_coord);
                 }
             }
         }
@@ -5050,7 +5045,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                g_coordPool.Recycle(cur->m_coord);
+                g_coordPool.Push(cur->m_coord);
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();

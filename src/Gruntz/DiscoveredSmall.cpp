@@ -6,6 +6,7 @@
 #include <Mfc.h> // real MFC CString (embedded name member; ~CString @0x1b9cde)
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/FreeNodePool.h> // canonical FreeNodePool (Push + fields)
 
 // The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p);
@@ -18,18 +19,9 @@ extern void* g_wapObjectDtorVtbl;
 // offset (m_c) from the freed pointer, chain it onto the head (m_4). __thiscall,
 // 1 stack arg.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(FreeNodePool);
-class FreeNodePool {
-public:
-    void Push(char* p);
-    i32 m_0;
-    void* m_4; // free-list head
-    i32 m_8;
-    i32 m_c; // node link offset
-};
 RVA(0x000311b0, 0x14)
-void FreeNodePool::Push(char* p) {
-    char* node = p - m_c;
+void FreeNodePool::Push(void* p) {
+    char* node = (char*)p - m_c;
     *(void**)node = m_4;
     m_4 = node;
 }

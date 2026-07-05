@@ -8,11 +8,12 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/ActReg.h>    // shared activation-registrar archetype (CActReg + aliases)
-#include <Gruntz/HaznColl.h>  // shared coordinate/activation-registry collection
-#include <Gruntz/TBombColl.h> // shared coordinate/activation-registry collection
-#include <Io/FileStream.h>    // real CFileIO (the static MFC CFile global at 0x646778)
-#include <Font/Font.h>        // real Font / FontRenderer (the global font objects)
+#include <Gruntz/ActReg.h>       // shared activation-registrar archetype (CActReg + aliases)
+#include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
+#include <Gruntz/HaznColl.h>     // shared coordinate/activation-registry collection
+#include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
+#include <Io/FileStream.h>       // real CFileIO (the static MFC CFile global at 0x646778)
+#include <Font/Font.h>           // real Font / FontRenderer (the global font objects)
 #include <Globals.h>
 
 // ===========================================================================
@@ -127,10 +128,6 @@ void Register82aa0() {
 // pool globals (head @0x645540, freelist @0x645544, scratch @0x645548, bias
 // @0x64554c). __cdecl. The three pinned-elsewhere globals reuse their names.
 // ===========================================================================
-struct FreeNodePool {
-    void Recycle(void* elem); // 0x0311b0
-};
-// SIZE_UNKNOWN(FreeNodePool) hosted once, on the real def in DiscoveredSmall.cpp.
 extern FreeNodePool g_coordPool; // 0x645540 (the BattlezMapConfig RUN-phase unit)
 extern void* g_freeList;         // 0x645544 (Projectile.cpp)
 extern i32 g_freeListNodeBias;   // 0x64554c (Projectile.cpp)
