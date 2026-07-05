@@ -37,7 +37,7 @@ assetnamespaceprefixes	1	0
 attract	17	9
 battlezdata	30	27
 battlezdlgrow	1	0
-battlezmapconfig	42	10
+battlezmapconfig	42	11
 behindcandy	3	3
 behindcandyani	6	5
 bitarray	1	1
@@ -654,7 +654,7 @@ battlezmapconfig	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.6087	75.6087	1	ac19
 battlezmapconfig	?Method_026470@CBattlezMapConfig@@QAEHH@Z	83.1071	83.1071	1	f738071bf7eb	0x26470
 battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	1	7a02ee4067ce	0x29b40
 battlezmapconfig	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	58.8333	58.8333	1	153a79ebaa48	0x2ad40
-battlezmapconfig	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	80.7188	80.7188	1	fe7f661a90a5	0x2bfc0
+battlezmapconfig	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	100.0000	100.0000	2	243000db0de8	0x2bfc0
 battlezmapconfig	?Method_02c080@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	12c95bbed6a4	0x2c080
 battlezmapconfig	?Method_02c0a0@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	1	25dcdc6b14d7	0x2c0a0
 battlezmapconfig	?Method_02d800@CBattlezMapConfig@@QAEHHHHH@Z	20.0022	20.0022	1	3909cb2fb704	0x2d800
@@ -682,7 +682,7 @@ battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8750	7
 battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	84.1995	84.1995	1	a24ad9260ad0	0x2ae00
 battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	69.0547	69.0547	1	a87aa74b62c7	0x2c140
 battlezmapconfig	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.6554	59.6554	1	4c95bd3474f1	0x2dfa0
-battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	58.1940	58.1940	1	d0d0be3859a7	0x2e3a0
+battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	58.2019	58.2019	1	d0d0be3859a7	0x2e3a0
 battlezmapconfig	?winapi_031ca0_IntersectRect@CBattlezMapConfig@@QAEHH@Z	80.6009	80.6009	1	a0304c8a4ba2	0x31ca0
 battlezmapconfig	?winapi_032060_IntersectRect@CBattlezMapConfig@@QAEHH@Z	44.6788	44.6788	1	f7d5e710746a	0x32060
 behindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
@@ -696,7 +696,7 @@ behindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	b1dc7d44c3
 behindcandyani	?Serialize@CBehindCandyAni@@QAEHHHHH@Z	100.0000	100.0000	1	7f1ba101ba81	0x10050
 bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	2	02204f979262	0x193640
 bitstreamblowfish	?BitStreamBlowfishDecode@@YGXPAUBitReader@@PAUSink@@@Z	99.9792	99.9792	2	d285eb0a8441	0x16f760
-bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	59.1309	59.1309	1	741128f022a8	0x188860
+bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	96.0000	96.0000	2	3add648536cb	0x188860
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
