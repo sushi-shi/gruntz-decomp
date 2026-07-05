@@ -316,8 +316,16 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    // __thiscall(x, _, y): if (x,y) is in the 0..0x64 box, run the click handler;
-    // otherwise post a 0x111 command (0x8023/0x8027 by mode). Always returns 1.
+    // __thiscall(x, _, y): if (x,y) is in the 0..0x64 box, run the click handler
+    // (0x3d41); otherwise post a 0x111 command (0x8023/0x8027 by mode). Always ret 1.
+    // NOT re-homed: the worklist attributed this to CGruntzMgr on a thunk-band
+    // mis-read - the thunk that UpdateScoreHud/AccrueScoreTime actually call (0x1884
+    // "SetCount") jmps to 0xfcad0 (the real ScoreHud::Refresh, 1-arg), NOT here. This
+    // 3-arg (ret 0xc) hit-test is reached only via the adjacent 0x1889 thunk, which
+    // has no indexed rel32 caller, so its owning class is unrecovered. Left put.
+    // @early-stop
+    // owner unresolved (thunk-band mis-chase, see above) + RECT/POINT stack-frame
+    // codegen plateau; logic (PtInRect hit-test -> Activate else WM_COMMAND) is exact.
     struct ClickWnd_0394b0 {
         char m_pad0[4];
         ClickWnd_0394b0* m_4; // +0x04 -> m_4 -> m_4 = HWND
@@ -592,49 +600,10 @@ namespace ApiCallerStubs {
         }
     }
 
-    struct QlWnd_092710 {
-        char m_pad0[4];
-        HWND m_4; // +0x04
-    };
-    struct Sub58_092710 {
-        i32 Check(i32* save); // thiscall, RVA 0x12f3
-    };
-    struct Sub5c_092710 {
-        void Notify(const char* msg, i32 a, i32 b); // thiscall, RVA 0x1483
-    };
-    struct Sub60_092710 {
-        void Flush(); // thiscall, RVA 0x20a4
-    };
-    struct QlHost_092710 {
-        char m_pad0[4];
-        QlWnd_092710* m_4; // +0x04
-        char m_pad8[0x58 - 8];
-        Sub58_092710* m_58; // +0x58
-        Sub5c_092710* m_5c; // +0x5c
-        Sub60_092710* m_60; // +0x60
-        char m_pad64[0xbc - 0x64];
-        i32* m_bc; // +0xbc
-        i32 Quickload();
-        i32 Fallback(); // thiscall, RVA 0x29a0
-    };
-    RVA(0x00092710, 0x77)
-    i32 QlHost_092710::Quickload() {
-        if (!m_58) {
-            return 0;
-        }
-        if (m_60) {
-            m_60->Flush();
-        }
-        if (m_bc && (*m_bc & 1)) {
-            if (m_58->Check(m_bc) == 0) {
-                return 1;
-            }
-            PostMessageA(m_4->m_4, 0x111, 0x807e, 0);
-            m_5c->Notify("Game Quickloaded successfully.", 0, 0x11);
-            return 1;
-        }
-        return Fallback();
-    }
+    // (0x92710 Quickload re-homed to src/Gruntz/GruntzMgr.cpp as the real
+    // CGruntzMgr::Quickload - HandleCommand (0x862f0) calls it on `this`=CGruntzMgr;
+    // the m_58/m_5c/m_60 subs are the canonical m_saveSink/m_chatLog/m_timer, and the
+    // Fallback (0x29a0->0x92500) is CGruntzMgr::RunLoadGameDialog.)
 
     // (0x92ab0 numeric settings DlgProc + its 12 g_dlgVal_* field caches re-homed to
     // src/Gruntz/GruntzCommand.cpp - the command dialog CGruntzCommand::ApplyOne /
@@ -937,66 +906,11 @@ namespace ApiCallerStubs {
     // - a non-virtual shared base-class top-window paint poll that CAttract::Vslot07,
     // CMultiBootyState::ReadyAndPaint and CGuardedDispatch::Run each call on `this`.)
 
-    // Free init helper at RVA 0x500930 (__stdcall(int)).
-    void __stdcall Prep_500930(i32 flag);
-    // A sub-object reached via g_gameReg->m_curState whose Refresh() is at RVA 0x4d8c60.
-    struct SubMgr_0fe460 {
-        void Refresh(); // RVA 0x4d8c60
-    };
-    // The screen object this method initialises (RVA 0xfe460).
-    struct Screen_0fe460 {
-        i32 m_0; // +0x00
-        char m_pad4[0x10 - 4];
-        RECT m_10; // +0x10
-        char m_pad20[0x10c - 0x20];
-        i32 m_10c; // +0x10c
-        char m_pad110[0x548 - 0x110];
-        i32 m_548; // +0x548
-        i32 Open();
-        void Resize(i32 n);          // RVA 0x4fe3e0
-        i32 Validate();              // RVA 0x4ffde0 (thunk via 0x3a08)
-        void Activate(i32 a, i32 n); // RVA 0x500d70
-    };
-    // __thiscall: lay out the 0xa0x0x1e0 screen, validate it, else report error.
-    RVA(0x000fe460, 0x83)
-    i32 Screen_0fe460::Open() {
-        if (m_548 == 0 && m_0 != 1) {
-            Prep_500930(1);
-            SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
-            Resize(1);
-            ((SubMgr_0fe460*)g_gameReg->m_curState)->Refresh();
-            if (!Validate()) {
-                g_gameReg->ReportError(0x80e4, 0x448);
-                return 0;
-            }
-            Activate(m_10c, 3);
-        }
-        return 1;
-    }
-
-    void __stdcall Prep_12fd(i32 mode); // RVA 0x12fd
-    struct CGameWnd_fe600 {
-        i32 Sub3d55(); // thiscall, RVA 0x3d55 (on g_gameReg->m_curState)
-    };
-    struct RectWnd_fe600 {
-        i32 m_0; // +0x00
-        char m_pad4[0x10 - 4];
-        RECT m_10; // +0x10
-        char m_pad20[0x548 - 0x20];
-        i32 m_548; // +0x548
-        i32 Reset();
-        void Sub194c(i32 v); // thiscall, RVA 0x194c
-    };
-    RVA(0x000fe600, 0x49)
-    i32 RectWnd_fe600::Reset() {
-        if (!m_548 && m_0 != 2) {
-            Prep_12fd(1);
-            SetRect(&m_10, -1, -1, -1, -1);
-            Sub194c(2);
-            ((CGameWnd_fe600*)g_gameReg->m_curState)->Sub3d55();
-        }
-        return 1;
-    }
+    // (0xfe460 Screen::Open + 0xfe600 RectWnd::Reset re-homed to src/Gruntz/GruntzMgr.cpp
+    // as ONE class ScreenRegionMgr - the screen/video-region sub-object reached as
+    // [owner+0x2dc]. They share the Prep_12fd/Sub194c/Sub3d55 helpers, proving one
+    // class; the worklist's "0xfe600 -> play/sbi split" was a thunk-band mis-read, so
+    // both are homed together in gruntzmgr. See that file for the disasm note.)
 
     // The blit target reached through the layer node (node->m_2c); Blit13ef90 paints
     // a rect-source into a destination rect with the given mode flags.

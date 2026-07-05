@@ -346,6 +346,7 @@ struct TimerObj {
     void Stop();       // (this) reloc-masked
     void Tick();       // (this) reloc-masked (BroadcastCmd cmd 4/7)
     void Teardown();   // (this) reloc-masked (Close)
+    void Flush();      // (this) reloc-masked (Quickload; @0x11c7b0)
 };
 
 // One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
@@ -379,6 +380,7 @@ struct SaveInfo {
 struct SaveSink58 {
     void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
     void Teardown();                      // (this) reloc-masked (Close)
+    i32 Check(i32 rec);                   // (this, rec) reloc-masked (Quickload load; @0xe52c0)
 };
 
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
@@ -2116,6 +2118,31 @@ i32 CGruntzMgr::Quicksave() {
     return 1;
 }
 
+// CGruntzMgr::Quickload (0x092710) - the quickload counterpart of Quicksave (above).
+// Bails (0) with no save sink; otherwise flushes the timer, and on a valid quicksave
+// record (m_saveInfoRec bit 0) loads it via the sink (SaveSink58::Check @0xe52c0),
+// notifies the window (WM_COMMAND 0x807e via g_pPostMessageA) and logs "Game
+// Quickloaded successfully." into the chat log; if no valid record, falls back to
+// RunLoadGameDialog (0x092500). Re-homed from the ApiCaller stubs at 100%.
+RVA(0x00092710, 0x77)
+i32 CGruntzMgr::Quickload() {
+    if (m_saveSink == 0) {
+        return 0;
+    }
+    if (m_timer) {
+        m_timer->Flush();
+    }
+    if (m_saveInfoRec && (*(char*)m_saveInfoRec & 1)) {
+        if (m_saveSink->Check(m_saveInfoRec) == 0) {
+            return 1;
+        }
+        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+        m_chatLog->Insert("Game Quickloaded successfully.", 0, 0x11);
+        return 1;
+    }
+    return RunLoadGameDialog();
+}
+
 // -------------------------------------------------------------------------
 // CGruntzMgr::RunDebugGruntTypeDialog (0x0929e0; ret). Only in the PLAY state (id
 // 3), shows the "DEBUG_GRUNTTYPE" modal dialog (flag 1); returns whether it ran
@@ -3627,6 +3654,66 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
 }
 
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
+
+// ---------------------------------------------------------------------------
+// The screen/video-region manager (a sub-object reached as [owner+0x2dc], e.g.
+// from CGruntzMgr::SetVideoMode and CPlay::OnKeyCommand), re-homed from the
+// ApiCaller stubs. Two methods, ONE class (they share the Prep_12fd/Sub194c/
+// Sub3d55 helpers): Open (0x0fe460) lays out the 0xa0x0x1e0 (160x480) region,
+// resizes it, refreshes the live state, validates it (else g_gameReg->ReportError
+// 0x80e4/0x448) and activates it; Reset (0x0fe600) collapses the region to (-1)
+// and refreshes. The ApiCaller worklist split 0x0fe600 to play/sbi_rectonly on a
+// thunk-band mis-read of its callers - disasm proves it is the SAME class as
+// 0x0fe460, so both are homed here. Field NAMES are placeholders (only offsets +
+// code bytes are load-bearing); the region object's concrete RTTI name is not yet
+// recovered.
+void __stdcall Prep_12fd(i32 mode); // 0x12fd (free __stdcall region-prep helper)
+// The live game-state sub-call (g_gameReg->m_curState->Sub3d55, 0x3d55) both
+// methods make; reloc-masked thiscall (the state's concrete method not recovered).
+struct ScreenCurState {
+    void Sub3d55();
+};
+struct ScreenRegionMgr {
+    i32 m_0; // +0x00  state (1 == open, 2 == reset)
+    char m_pad4[0x10 - 4];
+    RECT m_10; // +0x10  region rect
+    char m_pad20[0x10c - 0x20];
+    i32 m_10c; // +0x10c  activate arg
+    char m_pad110[0x548 - 0x110];
+    i32 m_548; // +0x548  busy/one-shot flag
+    i32 Open();                  // 0x0fe460
+    i32 Reset();                 // 0x0fe600
+    void Sub194c(i32 v);         // 0x194c  thiscall (resize/layout)
+    i32 Validate();              // 0x3a08  thiscall
+    void Activate(i32 a, i32 n); // 0x1d61  thiscall
+};
+SIZE_UNKNOWN(ScreenCurState);
+SIZE_UNKNOWN(ScreenRegionMgr);
+RVA(0x000fe460, 0x83)
+i32 ScreenRegionMgr::Open() {
+    if (m_548 == 0 && m_0 != 1) {
+        Prep_12fd(1);
+        SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
+        Sub194c(1);
+        ((ScreenCurState*)g_gameReg->m_curState)->Sub3d55();
+        if (!Validate()) {
+            g_gameReg->ReportError(0x80e4, 0x448);
+            return 0;
+        }
+        Activate(m_10c, 3);
+    }
+    return 1;
+}
+RVA(0x000fe600, 0x49)
+i32 ScreenRegionMgr::Reset() {
+    if (m_548 == 0 && m_0 != 2) {
+        Prep_12fd(1);
+        SetRect(&m_10, -1, -1, -1, -1);
+        Sub194c(2);
+        ((ScreenCurState*)g_gameReg->m_curState)->Sub3d55();
+    }
+    return 1;
+}
 
 SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);

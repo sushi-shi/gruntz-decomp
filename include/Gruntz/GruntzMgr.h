@@ -308,8 +308,13 @@ public:
     // Sound/level-loaded sync (@0x0923b0): set the base level-loaded flag (m_14)
     // and, when it changes and a sound bank is bound, drive the bank.
     void SetSoundLevelState(i32 loaded);
-    i32 RunLoadGameDialog();       // @0x092500 (GAME_LOAD dialog; ret 1)
+    i32 RunLoadGameDialog();       // @0x092500 (GAME_LOAD dialog; ret 1)  == Quickload's Fallback
     i32 Quicksave();               // @0x092530 (quicksave the game; /GX)
+    // @0x092710 - the quickload counterpart: if a save sink + a valid quicksave
+    // record (m_saveInfoRec bit 0) exist, flush the timer, load via the sink
+    // (SaveSink58::Check), notify the window (WM_COMMAND 0x807e) and log to the
+    // chat log; else fall back to RunLoadGameDialog (0x092500).
+    i32 Quickload();
     i32 RunDebugGruntTypeDialog(); // @0x0929e0 (DEBUG_GRUNTTYPE dialog when PLAY)
     // @0x092d50 - if in play state and the options slot is not yet loaded, assign
     // its name CString. 7 raw args (only the slot index + the value string used).
