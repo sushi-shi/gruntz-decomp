@@ -521,6 +521,20 @@ SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 // owned by NetSessionNode.cpp's VTBLs), so no VTBL is attached -> no dup-DATA.
 
 // ---------------------------------------------------------------------------
+// The 0x50-byte DPSESSIONDESC2 CNetPlayerListNode::Init deep-copies into +0x04:
+// the full descriptor with dwSize@+0 (forced to 0x50 by Init) and the two name
+// pointers Init strdup's in place (lpszSessionName@+0x30, lpszPassword@+0x34).
+// ---------------------------------------------------------------------------
+struct CNetSessionDesc {
+    i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
+    char m_pad04[0x30 - 0x04];
+    char* m_lpszName;     // +0x30  lpszSessionName
+    char* m_lpszPassword; // +0x34  lpszPassword
+    char m_pad38[0x50 - 0x38];
+};
+SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
+
+// ---------------------------------------------------------------------------
 // The managed-player object node the +0x38 player list holds. AddPlayerNode
 // (0x1786d0) `new`-builds a 0x58-byte node (vptr 0x5f0760), whose ctor zeroes its
 // body (0x14 dwords from +0x4) + m_54, then inits it from the DirectPlay player
@@ -530,8 +544,9 @@ SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 // ---------------------------------------------------------------------------
 class CNetPlayerListNode : public Wap::CObject {
 public:
-    char m_body[0x54 - 0x4]; // +0x04  the 0x50-byte player descriptor + name ptr
-    __POSITION* m_54;        // +0x54  cached AddTail position
+    CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
+                            //        (name/password strdup'd in place at +0x34/+0x38)
+    __POSITION* m_54;       // +0x54  cached AddTail position
 
     // Zero the 0x14-dword body + m_54 (the retail ctor sequence AddPlayerNode
     // inlines: single coalesced vptr stamp 0x5f0760 then the zero loop).
@@ -543,8 +558,9 @@ public:
         m_54 = 0;
     }
     virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)
-    i32 Init(void* playerDesc);             // 0x1795a0  copy + trim the descriptor
+    i32 Init(CNetSessionDesc* desc);        // 0x1795a0  copy + trim the descriptor
 };
+SIZE(CNetPlayerListNode, 0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 
 // ---------------------------------------------------------------------------
 // The session-list node the +0x54 list holds: AddSessionNode (0x178b30,
@@ -583,6 +599,7 @@ public:
     // engine routine reached through an incremental-link thunk (no body here).
     CString GetName();
 };
+SIZE(CNetSessionNode, 0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
 
 // (The shared CObject grand-base dtor vptr @0x5e8cb4 that ~CNetMgr re-installs is no
 // longer a manual stamp: CNetMgr derives from Wap::CObject, whose inline dtor cl folds

@@ -23,8 +23,8 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing.
 #include <Ints.h>
-#include <Mfc.h>          // /GX EH-frame helpers
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (vtbl 0x5e8cb4)
+#include <Font/Font.h>  // canonical CWapNodeB (string-cleanup base, ?FreeStrings@CWapNodeB@)
+#include <Net/NetMgr.h> // canonical CNetPlayerListNode / CNetSessionNode / CNetSessionDesc
 #include <rva.h>
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
@@ -38,59 +38,10 @@
 // dtor, and the destructible base subobject supplies the leaf dtor's /GX EH frame.
 // The node factories (AddPlayerNode/AddSessionNode, NetMgr.cpp) `new` these classes
 // so cl auto-stamps the own vtables (0x5f0760 / 0x5f0778) in the ctors - no manual
-// stamp anywhere.
-
-// The shared CWapNodeB string-cleanup helper (Font.cpp 0x179680): frees the two
-// owned buffers at +0x34/+0x38 and clears +0x04. Declared here only so
-// ~CNetPlayerListNode's call to it reloc-masks against ?FreeStrings@CWapNodeB@@QAEXXZ.
-struct CWapNodeB {
-    void FreeStrings();
-};
-
-// The DPSESSIONDESC2 Init deep-copies (and the shape the node embeds at +0x04):
-// the full 0x50-byte struct, with dwSize@+0 and the two name pointers Init
-// duplicates (lpszSessionName@+0x30, lpszPassword@+0x34).
-struct CNetSessionDesc {
-    i32 m_dwSize; // +0x00  dwSize (forced to 0x50 by Init)
-    char m_pad04[0x30 - 0x04];
-    char* m_lpszName;     // +0x30  lpszSessionName
-    char* m_lpszPassword; // +0x34  lpszPassword
-    char m_pad38[0x50 - 0x38];
-};
-SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
-
-// ---------------------------------------------------------------------------
-// CNetPlayerListNode - a deep copy of a DPSESSIONDESC2 + its duplicated names.
-// ---------------------------------------------------------------------------
-class CNetPlayerListNode : public Wap::CObject {
-public:
-    virtual ~CNetPlayerListNode() OVERRIDE;
-    i32 Init(CNetSessionDesc* desc);
-
-    CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
-                            //        (name/password strdup'd in place)
-};
-SIZE(CNetPlayerListNode, 0x58);       // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
+// stamp anywhere. Class defs are canonical in <Net/NetMgr.h>; the own-vtable VTBLs
+// live here (this TU owns the two ??_7 RVAs, so no dup-DATA with the header).
 VTBL(CNetPlayerListNode, 0x001f0760); // own (most-derived) vtable
-
-// ---------------------------------------------------------------------------
-// CNetSessionNode - two CString members + two raw heap buffers.
-// ---------------------------------------------------------------------------
-class CNetSessionNode : public Wap::CObject {
-public:
-    virtual ~CNetSessionNode() OVERRIDE;
-
-    i32 m_sessionId;      // +0x04  cleared on teardown
-    CString m_08;         // +0x08  name CString
-    CString m_0c;         // +0x0c  name CString
-    i32 m_10;             // +0x10
-    char* m_ownedBufferB; // +0x14  owned buffer (freed second)
-    char* m_ownedBufferA; // +0x18  owned buffer (freed first)
-    i32 m_1c;             // +0x1c
-    i32 m_listPosition;   // +0x20  cleared on teardown
-};
-SIZE(CNetSessionNode, 0x24);       // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
-VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
+VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
 
 // ===========================================================================
 // CNetPlayerListNode::~CNetPlayerListNode  @0x1793b0

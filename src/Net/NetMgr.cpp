@@ -2909,7 +2909,7 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
 
     CNetPlayerListNode* node = new CNetPlayerListNode();
 
-    if (node->Init(playerDesc) == 0) {
+    if (node->Init((CNetSessionDesc*)playerDesc) == 0) {
         delete node;
         return 0;
     }
