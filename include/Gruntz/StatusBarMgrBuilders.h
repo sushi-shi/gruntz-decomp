@@ -87,6 +87,32 @@ public:
     void SetDirection(i32 a, i32 b); // 0x0ea0f0
     void SetState(i32 s);            // thunk 0x11e5  (Multiplayer HEAD-loop state set)
     void ShowFrames(i32 a, i32 b);   // thunk 0x23dd  (Multiplayer HEAD-loop frame set)
+    void SetArrowMode(i32 a, i32 b); // Statz arrow: the m_114-gated 2-arg sink (reloc `M`)
+
+    // Cross-tab builders invoked on freshly-created items (reloc-masked rel32 calls;
+    // the real bodies live in StatusBarTabBuilders.cpp). `statusbar` is the mgr's
+    // saved owner pointer (`code`); `g` is the by-value geometry rect.
+    i32 BuildResourceTabStatusBar(
+        CStatusBarMgr* parent,
+        i32 statusbar,
+        i32 p3,
+        i32 p4,
+        SbRect g,
+        const char* key,
+        i32 idxA,
+        i32 idxB
+    ); // 0xe8a70
+    i32 BuildMultiplayerTabStatusBar(
+        CStatusBarMgr* parent,
+        i32 statusbar,
+        i32 p3,
+        i32 p4,
+        SbRect g,
+        const char* key,
+        i32 p10,
+        i32 p11,
+        i32 selMode
+    ); // 0xea1f0
 
     i32 m_4; // +0x04
     i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
@@ -145,6 +171,127 @@ public:
     char _pad38[0x40 - 0x38];
 };
 SIZE(CSBI_MultiSlot, 0x40);
+
+// CSBI_ImageSetAni (Resource SHREDDER conveyor): out-of-line base ctor + own vtable;
+// tag 8, m_3c seeded 0x64. Configured via ConfigureEx (slot +0x34).
+class CSBI_ImageSetAni : public CSbConfigItem { // vtable 0x5eae3c, size 0x54
+public:
+    CSBI_ImageSetAni() {
+        m_30 = 0;
+        m_8 = 8;
+        m_34 = 0;
+        m_44 = 0;
+        m_3c = 0x64;
+    }
+    i32 m_34; // +0x34
+    char _pad38[0x3c - 0x38];
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    char _pad48[0x54 - 0x48];
+};
+SIZE(CSBI_ImageSetAni, 0x54);
+
+// CSBI_StatzTabArrow (Statz tab arrows): out-of-line base ctor + own vtable; tag 5,
+// m_3c seeded 0x64. Configured via ConfigureEx (slot +0x34) then SetDirection/M.
+class CSBI_StatzTabArrow : public CSbConfigItem { // vtable 0x5eaebc, size 0x54
+public:
+    CSBI_StatzTabArrow() {
+        m_30 = 0;
+        m_34 = 0;
+        m_44 = 0;
+        m_3c = 0x64;
+        m_8 = 5;
+    }
+    i32 m_34; // +0x34
+    char _pad38[0x3c - 0x38];
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    char _pad48[0x54 - 0x48];
+};
+SIZE(CSBI_StatzTabArrow, 0x54);
+
+// The two shredder/machine widgets stamp their retail vtable by ADDRESS (a manual
+// vptr store), because their retail ctors inline the whole base (no out-of-line base
+// call) - the reloc-masked DIR32 to ??_7... pairs the same as an auto-emitted vtable.
+extern void* g_vtblCSBI_GruntMachine;    // 0x5eadbc ??_7CSBI_GruntMachine@@6B@
+extern void* g_vtblCSBI_StatzTabGruntBar; // ??_7CSBI_StatzTabGruntBar@@6B@
+
+// CSBI_GruntMachine (Resource MACHINE): retail ctor inlines the base (manual vptr),
+// tag 9. Built through BuildResourceTabStatusBar. size 0x48.
+class CSBI_GruntMachine {
+public:
+    CSBI_GruntMachine() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+        *(void**)this = &g_vtblCSBI_GruntMachine;
+        m_8 = 9;
+        m_34 = 0;
+        m_3c = 0;
+        m_44 = 0;
+        m_30 = 0;
+    }
+    void* m_vptr; // +0x00
+    i32 m_4;      // +0x04
+    i32 m_8;      // +0x08 tag 9
+    char _pad0c[0x24 - 0x0c];
+    i32 m_24; // +0x24
+    i32 m_28; // +0x28
+    char _pad2c[0x30 - 0x2c];
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    char _pad38[0x3c - 0x38];
+    i32 m_3c; // +0x3c
+    char _pad40[0x44 - 0x40];
+    i32 m_44; // +0x44
+};
+SIZE(CSBI_GruntMachine, 0x48);
+
+// CSBI_StatzTabGruntBar (Multiplayer SMALLICONZ + Statz per-grunt bar): retail ctor
+// inlines the base (manual vptr), tag 6; four fields (m_38/m_44/m_50/m_70) seed -1.
+// Built through BuildMultiplayerTabStatusBar. size 0x88.
+class CSBI_StatzTabGruntBar {
+public:
+    CSBI_StatzTabGruntBar() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+        m_78 = 0;
+        m_80 = 0;
+        m_7c = 0;
+        m_84 = 0;
+        *(void**)this = &g_vtblCSBI_StatzTabGruntBar;
+        m_8 = 6;
+        m_34 = 0;
+        m_40 = 0;
+        m_4c = 0;
+        m_58 = 0;
+        m_74 = 0;
+        m_30 = 0;
+        m_3c = 0;
+        m_48 = 0;
+        m_54 = 0;
+        m_50 = -1;
+        m_44 = -1;
+        m_38 = -1;
+        m_5c = 0;
+        m_68 = 0;
+        m_70 = -1;
+        m_6c = 0;
+    }
+    void* m_vptr; // +0x00
+    i32 m_4;      // +0x04
+    i32 m_8;      // +0x08 tag 6
+    char _pad0c[0x24 - 0x0c];
+    i32 m_24, m_28; // +0x24,+0x28
+    char _pad2c[0x30 - 0x2c];
+    i32 m_30, m_34, m_38, m_3c, m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c; // +0x30..+0x5c
+    char _pad60[0x68 - 0x60];
+    i32 m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84; // +0x68..+0x84
+};
+SIZE(CSBI_StatzTabGruntBar, 0x88);
 
 // The shared item helpers driven on a freshly created icon-set item.
 class CSbItemHelp {

@@ -539,19 +539,59 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 pi = 0;
                 i32 off = 0;
                 do {
-                    char* pp = (char*)g_gameReg + off;
-                    if (*(i32*)(pp + 0x178) != 0 && *(i32*)(pp + 0x17c) == 0) {
-                        i32 sel = g_gameReg->m_spriteFactory->GetSel(*(i32*)(pp + 0x158), 0);
-                        if (pi != m_62c) {
-                            sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                    i32 sel;
+                    if (*(i32*)((char*)g_gameReg + off + 0x178) != 0 &&
+                        *(i32*)((char*)g_gameReg + off + 0x17c) == 0) {
+                        sel = g_gameReg->m_spriteFactory->GetSel(
+                            *(i32*)((char*)g_gameReg + off + 0x158),
+                            0
+                        );
+                        if (pi == m_62c) {
+                            ((CSbConfigItem*)*slot)->SetState(1);
                         }
+                    } else {
+                        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                         ((CSbConfigItem*)*slot)->SetState(2);
-                        ((CSbConfigItem*)*slot)->ShowFrames(0xa, sel);
                     }
+                    ((CSbConfigItem*)*slot)->ShowFrames(0xa, sel);
                     slot++;
                     pi++;
                     off += 0x238;
                 } while (off < 0x8e0);
+            }
+            // SMALLICONZ: 15 per-player CSBI_StatzTabGruntBar stat bars built via
+            // BuildMultiplayerTabStatusBar. y steps 0x12; the id p3 = 0x13b + k and
+            // the per-slot index p11 = k. bx is reused as the loop counter (its two
+            // rect offsets bx+0x17/bx+0x52 are precomputed to stack locals).
+            {
+                i32 by17 = bx + 0x17;
+                i32 by52 = bx + 0x52;
+                i32 y = by + 0xd9;
+                for (i = 0; i < 15; i++) {
+                    it = (CSbConfigItem*)new CSBI_StatzTabGruntBar;
+                    r.left = by17;
+                    r.top = y - 0x11;
+                    r.right = by52;
+                    r.bottom = y;
+                    if (!it->BuildMultiplayerTabStatusBar(
+                            this,
+                            code,
+                            0x13b + i,
+                            4,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
+                            m_62c,
+                            i,
+                            0
+                        )) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_9c.AddTail(it);
+                    y += 0x12;
+                }
             }
             return 1;
 
