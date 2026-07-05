@@ -22,15 +22,15 @@ SIZE_UNKNOWN(SaveInfo);
 struct SaveInfo {
     u8 m_flags; // +0x00  bit 0 = record valid (the Quickload/0x807e gate)
     char m_pad1[0x4 - 0x1];
-    i32 m_4; // +0x04  quick-load level id (PassClickToPlayState arg)
+    i32 m_levelId; // +0x04  saved level id (0x807e passes it to PassClickToPlayState)
     char m_pad8[0x14 - 0x8];
-    char m_14[0x20]; // +0x14  snapshot block
+    char m_snapshot[0x20]; // +0x14  snapshot block (FillSaveInfo EngineCopy dst)
     char m_pad34[0x1];
     char m_serial[0x75 - 0x35]; // +0x35  serial/name buffer (ParseSerial; 0x81a7 notify)
-    char m_75[0x80];            // +0x75  level name buffer
+    char m_levelName[0x80];     // +0x75  level name (strcpy'd from GetLevelName())
     char m_padf5[0xf8 - 0xf5];
-    i32 m_f8; // +0xf8  save-state int (0x807e: sub-mode select)
-    i32 m_fc; // +0xfc  save-state int (0x807e: save-present gate)
+    i32 m_f8;    // +0xf8  mirror of the manager's m_130 sub-mode gate (role unproven there)
+    i32 m_isWon; // +0xfc  "won" flag (FillSaveInfo writes m_134 == 3)
 };
 
 // The +0x58 manager save-record sink. FillSaveInfo forwards the record +
@@ -41,7 +41,8 @@ struct SaveInfo {
 SIZE_UNKNOWN(SaveSink58);
 struct SaveSink58 {
     char m_pad0[0x18];
-    i32 m_18;                             // +0x18  saved current-level id (0x8174 restart source)
+    i32 m_curLevel;                       // +0x18  saved current-level id (0x8174 restart source;
+                                          //         SetCurLevel's target slot)
     void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
     void Teardown();                      // (this) reloc-masked (Close)
     i32 Check(SaveInfo* rec);             // (this, rec) reloc-masked (Quickload load; @0x0e52c0)

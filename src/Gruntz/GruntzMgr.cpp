@@ -226,18 +226,18 @@ extern "C" {
     extern i32 g_61ab24; // DAT_0061ab24  (last-stored input flag mirror)
     extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
-    extern i32 g_629ad0; // DAT_00629ad0  (save serial counter)
-    extern i32 g_64558c; // DAT_0064558c
-    extern i32 g_645590; // DAT_00645590
-    extern i32 g_645594; // DAT_00645594
-    extern i32 g_645598; // DAT_00645598
-    extern i32 g_64559c; // DAT_0064559c
-    extern i32 g_6455a0; // DAT_006455a0
-    extern i32 g_6455e8; // DAT_006455e8
-    extern i32 g_6452a4; // DAT_006452a4
-    extern i32 g_6452cc; // DAT_006452cc
-    extern i32 g_645508; // DAT_00645508
-    extern i32 g_64550c; // DAT_0064550c
+    extern i32 g_629ad0;        // DAT_00629ad0  (save serial counter)
+    extern i32 g_64558c;        // DAT_0064558c
+    extern i32 g_645590;        // DAT_00645590
+    extern i32 g_645594;        // DAT_00645594
+    extern i32 g_645598;        // DAT_00645598
+    extern i32 g_64559c;        // DAT_0064559c
+    extern i32 g_6455a0;        // DAT_006455a0
+    extern i32 g_monologoShown; // DAT_006455e8 (the MONOLITH logo is on screen)
+    extern i32 g_6452a4;        // DAT_006452a4
+    extern i32 g_6452cc;        // DAT_006452cc
+    extern i32 g_645508;        // DAT_00645508
+    extern i32 g_64550c;        // DAT_0064550c
 }
 
 extern "C" {
@@ -245,8 +245,8 @@ extern "C" {
 }
 
 // The reentrancy/run-state gate SetRunState mirrors the new run-state into
-// (?g_61ab20@@3HA; reloc-masked DATA store - the same global ChatBox/GameMode touch).
-extern i32 g_61ab20; // DAT_0061ab20
+// (?g_sndEnabled@@3HA; reloc-masked DATA store - the same global ChatBox/GameMode touch).
+extern i32 g_sndEnabled; // DAT_0061ab20 (?g_sndEnabled@@3HA)
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
@@ -612,13 +612,15 @@ extern "C" {
     extern u32 g_6bf3c0; // draw-clock (timeGetTime stamp)
     extern u32 g_6bf3bc; // draw-clock delta (cleared)
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked).
-    extern u32 g_645600; // DAT_00645600
-    extern u32 g_6455b0; // DAT_006455b0
-    extern u32 g_6455a4; // DAT_006455a4
-    extern u32 g_6455a8; // DAT_006455a8
-    extern u32 g_6455ac; // DAT_006455ac
-    extern u32 g_6455f8; // DAT_006455f8
-    extern u32 g_6455f4; // DAT_006455f4
+    extern u32 g_645600;            // DAT_00645600
+    extern u32 g_traitorMode;       // DAT_006455b0 ("Traitor Mode" cheat toggle)
+    extern u32 g_gruntDestruction;  // DAT_006455a4 ("Grunt destruction" cheat toggle)
+    extern u32 g_gruntCreation;     // DAT_006455a8 ("Grunt creation" cheat toggle)
+    extern u32 g_gooPuddlez;        // DAT_006455ac ("Goo puddlez" cheat toggle)
+    extern u32 g_explosionz;        // DAT_006455f8 ("Explosionz" cheat toggle)
+    extern u32 g_debugDisplayFlags; // DAT_006455f4 (debug-display bit set: 1 obj count,
+                                    // 4 world pos, 0x10 frame rate, 0x40/0x100 brick
+                                    // text, 0x80 elapsed time)
 }
 
 // The two engine input/state singletons TickStateMgrs drives once per call
@@ -1266,12 +1268,12 @@ i32 CGruntzMgr::CheckSavedMode() {
 RVA(0x0008f4f0, 0x26)
 void CGruntzMgr::ResetClockGlobals() {
     g_645600 = 0;
-    g_6455b0 = 0;
-    g_6455a4 = 0;
-    g_6455a8 = 0;
-    g_6455ac = 0;
-    g_6455f8 = 0;
-    g_6455f4 = 0;
+    g_traitorMode = 0;
+    g_gruntDestruction = 0;
+    g_gruntCreation = 0;
+    g_gooPuddlez = 0;
+    g_explosionz = 0;
+    g_debugDisplayFlags = 0;
 }
 
 // -------------------------------------------------------------------------
@@ -1442,7 +1444,7 @@ void CGruntzMgr::ReportWorldStatus(i32 a) {
 // CGruntzMgr::LoadMonologoSprite (0x090d10). PLAY-state only (m_curState->Update()
 // == 3): look "GAME_MONOLITH" up in the world config map (m_world->m_10), then
 // find-or-create the "MONOLITH" logo sprite in the world view (m_world->m_24). An
-// existing sprite TOGGLES its visible bit (m_8 & 2) + the g_6455e8 shown-flag; a
+// existing sprite TOGGLES its visible bit (m_8 & 2) + the g_monologoShown shown-flag; a
 // fresh sprite gets its cell grid checkerboard-seeded with the config index / -1 and
 // the flag set to 1. No destructible local -> no /GX frame (the sprite-grid loop).
 // (placeholder fields; only offsets + code bytes load-bearing.)
@@ -1537,15 +1539,15 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             }
             parity ^= 1;
         }
-        g_6455e8 = 1;
+        g_monologoShown = 1;
         return 1;
     }
     if (found->m_8 & 2) {
         found->m_8 &= ~2;
-        g_6455e8 = 1;
+        g_monologoShown = 1;
     } else {
         found->m_8 |= 2;
-        g_6455e8 = 0;
+        g_monologoShown = 0;
     }
     return 1;
 }
@@ -1901,14 +1903,14 @@ i32 CGruntzMgr::TickStateMgrs() {
 // CGruntzMgr::SetRunState (0x092340; __thiscall; ret 4). Sets the base run-state
 // flag (CGameMgr::m_10) and, when it changes AND a world is loaded, runs the
 // transition side-effects: tear down the world's inner controller
-// (m_world->m_28->m_2c, guarded), mirror the new state into the g_61ab20 gate,
+// (m_world->m_28->m_2c, guarded), mirror the new state into the g_sndEnabled gate,
 // then flush the +0x54 input object - Arm (thunk 0x18e8) when entering the run
 // state (m_10 != 0), Disarm (thunk 0x29b9) when leaving it. A no-op when the value is unchanged, and
 // the whole side-effect chain is skipped when no world is loaded.
 // @early-stop
 // 99.62% global-store regalloc tiebreak: logic byte-exact. The lone residual is
-// the g_61ab20 store - retail re-reads m_10 into eax and uses the `a3` accumulator
-// store (mov ds:g_61ab20,eax), MSVC here loads it into ecx (mov [g_61ab20],ecx,
+// the g_sndEnabled store - retail re-reads m_10 into eax and uses the `a3` accumulator
+// store (mov ds:g_sndEnabled,eax), MSVC here loads it into ecx (mov [g_sndEnabled],ecx,
 // 89 0d). A 1-instruction eax<->ecx pick on the global store; no source spelling
 // flips it (see docs/patterns/select-zero-mask-dest-register.md, regalloc family).
 RVA(0x00092340, 0x49)
@@ -1924,7 +1926,7 @@ void CGruntzMgr::SetRunState(i32 v) {
     if (sub) {
         sub->Stop();
     }
-    g_61ab20 = m_soundEnabled;
+    g_sndEnabled = m_soundEnabled;
     if (m_soundEnabled) {
         m_inputState->Arm();
     } else {
@@ -2384,13 +2386,13 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     ar->Write(&g_645598, 4);
     ar->Write(&g_64559c, 4);
     ar->Write(&g_6455a0, 4);
-    ar->Write(&g_6455b0, 4);
-    ar->Write(&g_6455a8, 4);
-    ar->Write(&g_6455a4, 4);
-    ar->Write(&g_6455ac, 4);
-    ar->Write(&g_6455f8, 4);
+    ar->Write(&g_traitorMode, 4);
+    ar->Write(&g_gruntCreation, 4);
+    ar->Write(&g_gruntDestruction, 4);
+    ar->Write(&g_gooPuddlez, 4);
+    ar->Write(&g_explosionz, 4);
     ar->Write(&m_isEasyMode, 4);
-    ar->Write(&g_6455e8, 4);
+    ar->Write(&g_monologoShown, 4);
     ar->Write(&g_6452a4, 4);
     ar->Write(&g_6452cc, 4);
     ar->Write(&g_645508, 4);
@@ -2439,13 +2441,13 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     ar->Read(&g_645598, 4);
     ar->Read(&g_64559c, 4);
     ar->Read(&g_6455a0, 4);
-    ar->Read(&g_6455b0, 4);
-    ar->Read(&g_6455a8, 4);
-    ar->Read(&g_6455a4, 4);
-    ar->Read(&g_6455ac, 4);
-    ar->Read(&g_6455f8, 4);
+    ar->Read(&g_traitorMode, 4);
+    ar->Read(&g_gruntCreation, 4);
+    ar->Read(&g_gruntDestruction, 4);
+    ar->Read(&g_gooPuddlez, 4);
+    ar->Read(&g_explosionz, 4);
     ar->Read(&m_isEasyMode, 4);
-    ar->Read(&g_6455e8, 4);
+    ar->Read(&g_monologoShown, 4);
     ar->Read(&g_6452a4, 4);
     ar->Read(&g_6452cc, 4);
     ar->Read(&g_645508, 4);
@@ -2481,13 +2483,13 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     // edi,[eax]`) instead of re-addressing a stack slot, and - with no throwing
     // call live during the temp's range (the strcpy is inlined rep-movs) - /GX
     // still elides the EH frame, matching retail's frameless body.
-    strcpy(dst->m_75, GetLevelName());
-    dst->m_fc = (m_134 == 3);
+    strcpy(dst->m_levelName, GetLevelName());
+    dst->m_isWon = (m_134 == 3);
     dst->m_f8 = m_130;
     m_saveSink->Store(dst, src + 0x1d0);
     m_saveInfoRec = dst;
     if (snapshot) {
-        EngineCopy(dst->m_14, snapshot, 0x20);
+        EngineCopy(dst->m_snapshot, snapshot, 0x20);
     }
     return 1;
 }
