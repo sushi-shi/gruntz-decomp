@@ -4816,6 +4816,13 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CObList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
 // ===========================================================================
+// @early-stop
+// 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize_02b950's
+// recycle loops: retail's `g_freeList = head` store reads esi (head's callee-saved home,
+// which also holds slot after `head=slot`); our cl folds it to `mov g_freeList,eax`
+// (slot's register). 1-byte residual (89 35 vs a3), pure operand selection - proven a
+// coin-flip by CTriggerMgr's twin alloc loops (0x7ad40 direct vs 0x7ad9b copy). All
+// logic byte-exact. Deferred to the final sweep.
 RVA(0x000343f0, 0x47)
 void GridUnit::RecycleCoords() {
     if (m_coordCount == 0) {
