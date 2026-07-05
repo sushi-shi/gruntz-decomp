@@ -93,7 +93,7 @@ def callers_of(targets, d, secs, names, fstarts, raw=False):
     tb = d[trp:trp + trsz]
     tset = set(targets)
     found = {t: [] for t in targets}
-    n = len(tb) - 5
+    n = len(tb) - 4  # -4: an E8/E9 in the last 5 bytes still counts
     i = 0
     while i < n:
         op = tb[i]
@@ -138,7 +138,7 @@ def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
     tname, tva, tvsz, trp, trsz = _text(secs)
     tb = d[trp:trp + trsz]
     idx = {}  # callee entry-rva -> [(site, op)] over the WHOLE .text, one scan
-    n = len(tb) - 5
+    n = len(tb) - 4  # -4: an E8/E9 in the last 5 bytes still counts
     i = 0
     while i < n:
         op = tb[i]
@@ -198,7 +198,8 @@ def callees_of(targets, d, secs, names, fstarts):
         print(f"\n==== callees of 0x{t:08x}  {tn}  (span 0x{start:x}..0x{end:x}) ====")
         b = d[trp + (start - tva):trp + (end - tva)]
         seen = set()
-        for i in range(len(b) - 5):
+        indirect = 0
+        for i in range(max(0, len(b) - 4)):  # -4: an E8/E9 in the LAST 5 bytes counts
             if b[i] in (0xE8, 0xE9):
                 rel = struct.unpack_from("<i", b, i + 1)[0]
                 tgt = start + i + 5 + rel
@@ -206,6 +207,13 @@ def callees_of(targets, d, secs, names, fstarts):
                     seen.add(tgt)
                     nm, unit = names.get(tgt, (f"FUN_{tgt:x}", "?"))
                     print(f"  -> 0x{tgt:08x} {nm} [{unit}]")
+            elif b[i] == 0xFF and i + 1 < len(b) and ((b[i + 1] >> 3) & 7) in (2, 4):
+                indirect += 1  # call/jmp r/m32 - vtable/IAT/fn-ptr dispatch
+        if not seen:
+            print("  (no direct call/jmp rel32 callee)")
+        if indirect:
+            print(f"  (~{indirect} indirect call/jmp site(s) - vtable/IAT/fn-ptr; "
+                  "invisible to rel32 xref, use the Ghidra decomp for those)")
 
 
 def main():
