@@ -88,6 +88,9 @@ Gotchas baked in from reading the delinker source:
   `gruntz.match.verify_stubs`' stub-vs-matched cross-check. The goal is to **move
   each stub into its real class's TU** and reconstruct it there; `src/Stub/`
   shrinks toward empty. See `src/Stub/All.cpp`.
+- **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
+  `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
+  Score/Points/Powerup/Damage/Smarts/Health.
 - **Function-state markers (comments, ignored by tooling):** `// @stub` = empty/backlog
   body in `src/Stub/`; `// @early-stop` (reason on the next line) = a complete
   reconstruction parked below 100% match. A reconstructed method is either ~100%

@@ -739,11 +739,20 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     obj->m_flags |= (u32)*p++; // dynamicFlags       (+0x08)
     obj->m_stateFlags = *p++;  // drawFlags          (+0x40)
     sub[0x28 / 4] = *p++;      // userFlags
+    // The six-int "user-value" union (+0x114..+0x128). These are the WWD object
+    // record's canonical Score/Points/Powerup/Damage/Smarts/Health fields (the
+    // names the Gruntz Level Editor's Edit-Objects "Attributes" dialog uses), each
+    // REINTERPRETED per CUserLogic leaf - e.g. for a GruntStartingPoint enemy Grunt
+    // Points=AI type (1-16), Smarts=team (0-3), Powerup=carried Tool/Toy id; for a
+    // CoveredPowerup Powerup=covered object id (0-99), Smarts=revealed tile, Score=
+    // megaphone order. Same physical fields, different views (this is why UserLogic.h
+    // labels them by their spotlight/teleporter meaning). Authoritative field
+    // semantics + the id spaces: docs/domain/README.md.
     obj->m_114 = *p++;         // score              (+0x114)
-    obj->m_118 = *p++;         // points             (+0x118)
-    obj->m_11c = *p++;         // powerup            (+0x11c)
+    obj->m_118 = *p++;         // points  (enemy AI type / megaphone tool id)   (+0x118)
+    obj->m_11c = *p++;         // powerup (CoveredPowerup id 0-99 / carried tool) (+0x11c)
     obj->m_120 = *p++;         // damage             (+0x120)
-    obj->m_124 = *p++;         // smarts             (+0x124)
+    obj->m_124 = *p++;         // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
     obj->m_placeMode = *p++;   // health             (+0x128)
     obj->m_extentL = *p++;     // moveRect.l         (+0x134)
     obj->m_extentT = *p++;     // moveRect.t         (+0x138)
