@@ -23,7 +23,5 @@ CLevelTime::CLevelTime(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_flags |= 2;
 }
 
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-#include <rva.h>
-SIZE_UNKNOWN(CLevelTime);
+// class-metadata SIZE sweep (misc-Gruntz A-C): SIZE(CLevelTime, 0x54) now lives in
+// <Gruntz/LevelTimeDtor.h> (pinned by the StateDispatch new-site push 0x54).

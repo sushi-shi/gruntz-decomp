@@ -21,6 +21,13 @@ class CLevelTime : public CTileLogic {
 public:
     CLevelTime(CGameObject* obj);   // 0x9b8b0
     virtual ~CLevelTime() OVERRIDE; // 0x00011a50 (folds the CUserLogic teardown)
+
+    // +0x40..+0x53: the level-timer state tail. NOT initialized by the ctor
+    // (0x9b8b0 writes nothing past +0x3c - lazily-used fields); their existence +
+    // the 0x54 size are pinned by the StateDispatch new-site (0x9b770: push 0x54
+    // before operator new, then the bare `call ??0CLevelTime` thunk 0x404d).
+    char m_pad40[0x54 - 0x40];
 };
+SIZE(CLevelTime, 0x54); // `new CLevelTime` @0x9b77f pushes 0x54
 
 #endif // GRUNTZ_CLEVELTIMEDTOR_H
