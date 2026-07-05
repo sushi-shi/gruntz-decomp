@@ -303,14 +303,18 @@ public:
     i32 FinishState();
     i32 StepVideo();
     i32 FlashColor();
+    // LoadCreditzAssets (0x39dc0, CreditzAssets.cpp): the credits music-bank swap
+    // tick - toggles m_1c4, (re)starts CREDITZ / hands MONOLITH to the mixer via
+    // the canonical CGruntzSoundZ transport slots.
+    void LoadCreditzAssets();
 
     // --- CCreditsState members the Render path pins (placeholders) ---
     char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 one-shot FX latch
     i32 m_1b8; // +0x1b8 packed random RGB flash color
     i32 m_1bc; // +0x1bc flash re-roll timer
-    char m_pad1c0[0x1c4 - 0x1c0];
-    i32 m_1c4; // +0x1c4 conditional-FX gate
+    i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
+    i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
     char m_pad1c8[0x1e8 - 0x1c8];
     CCreditsImageList m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
     CString m_caption;       // +0x1f0 credits caption CString (freed by ~CCreditsState)
