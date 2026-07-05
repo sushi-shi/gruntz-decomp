@@ -455,6 +455,119 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     c++;
                 }
             }
+            // MACHINE: a CSBI_GruntMachine built through BuildResourceTabStatusBar
+            // (its retail ctor inlines the base -> manual vptr stamp), cross-configured
+            // from the two idx sources m_334/m_31c.
+            it = (CSbConfigItem*)new CSBI_GruntMachine;
+            r.left = bx;
+            r.top = by + 0xc8;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0xfa;
+            if (!it->BuildResourceTabStatusBar(
+                    this,
+                    code,
+                    0xd1,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
+                    m_334,
+                    m_31c
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_348 = (i32)it;
+            m_80.AddTail(it);
+            // Machine foreground: a CSBI_Image whose retail ctor is inlined at the site.
+            it = (CSbConfigItem*)new CSBI_ImageInline;
+            r.left = bx;
+            r.top = by + 0x1a6; // @refine: retail reads a precomputed slot here
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1df;
+            if (!it->Configure(
+                    this,
+                    code,
+                    0xd2,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEFOREGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_368 = (i32)it;
+            // Conveyor top (CSBI_ImageSetAni via ConfigureEx).
+            it = (CSbConfigItem*)new CSBI_ImageSetAni;
+            r.left = bx;
+            r.top = by + 0x1bf;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1cc;
+            if (!it->ConfigureEx(
+                    this,
+                    code,
+                    0xce,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORTOP",
+                    -1,
+                    -1,
+                    0x64,
+                    1,
+                    1
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            // Machine chip well (CSBI_ImageSet, rect from cached m_504..m_510, cache m_500).
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = m_504 + bx;
+            r.top = m_508 + by;
+            r.right = m_50c + bx;
+            r.bottom = m_510 + by;
+            if (!it->Configure(this, code, 0xe0, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", m_4ec, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_500 = (i32)it;
+            it->m_4 = 0;
+            // Conveyor bottom (CSBI_ImageSetAni via ConfigureEx).
+            it = (CSbConfigItem*)new CSBI_ImageSetAni;
+            r.left = bx;
+            r.top = by + 0x1c7;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1df;
+            if (!it->ConfigureEx(
+                    this,
+                    code,
+                    0xd0,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORBOTTOM",
+                    -1,
+                    -1,
+                    0x64,
+                    1,
+                    1
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
             return 1;
 
         case 4: // ---- Multiplayer tab ----

@@ -217,8 +217,33 @@ SIZE(CSBI_StatzTabArrow, 0x54);
 // The two shredder/machine widgets stamp their retail vtable by ADDRESS (a manual
 // vptr store), because their retail ctors inline the whole base (no out-of-line base
 // call) - the reloc-masked DIR32 to ??_7... pairs the same as an auto-emitted vtable.
-extern void* g_vtblCSBI_GruntMachine;    // 0x5eadbc ??_7CSBI_GruntMachine@@6B@
+extern void* g_vtblCSBI_GruntMachine;     // 0x5eadbc ??_7CSBI_GruntMachine@@6B@
 extern void* g_vtblCSBI_StatzTabGruntBar; // ??_7CSBI_StatzTabGruntBar@@6B@
+extern void* g_vtblCSBI_Image;            // 0x5eac0c ??_7CSBI_Image@@6B@
+
+// A CSBI_Image whose retail ctor is INLINED at the call site (manual vptr, no base
+// call) - one Resource-tab machine-background item is built this way (a per-site MSVC
+// inlining choice that the out-of-line-base CSBI_Image cannot reproduce). Same layout
+// / vtable as CSBI_Image; the manual stamp matches the inline codegen.
+class CSBI_ImageInline {
+public:
+    CSBI_ImageInline() {
+        m_4 = 0;
+        m_24 = 0;
+        m_28 = 0;
+        *(void**)this = &g_vtblCSBI_Image;
+        m_8 = 3;
+        m_30 = 0;
+    }
+    void* m_vptr; // +0x00
+    i32 m_4;      // +0x04
+    i32 m_8;      // +0x08 tag 3
+    char _pad0c[0x24 - 0x0c];
+    i32 m_24, m_28; // +0x24,+0x28
+    char _pad2c[0x30 - 0x2c];
+    i32 m_30; // +0x30
+};
+SIZE(CSBI_ImageInline, 0x34);
 
 // CSBI_GruntMachine (Resource MACHINE): retail ctor inlines the base (manual vptr),
 // tag 9. Built through BuildResourceTabStatusBar. size 0x48.
