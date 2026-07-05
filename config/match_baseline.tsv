@@ -2624,7 +2624,7 @@ multistartdlgroster	?OnSlotSelect2@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	32
 multistartdlgroster	?OnSlotSelect3@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	c8500b856c7b	0xc4fd0
 multistartdlgroster	?SetListCurSel@@YGXHH@Z	100.0000	100.0000	1	0e7a3c67dc8b	0xc2980
 multistartdlgroster	?ToggleReady@CMultiStartDlg@@QAEXH@Z	97.6531	97.6531	1	4724c2918482	0xc50f0
-multistartdlgroster	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	62.1892	62.1892	1	47d4efa99d90	0xc4230
+multistartdlgroster	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	62.1892	62.1892	2	0ec221b07355	0xc4230
 multistartdlgworld	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
 multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	3	70fdea68da3a	0xc1840
 multistartdlgworld	?Sub_c3e30@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	11d8026a75d8	0xc3e30
@@ -2652,9 +2652,9 @@ netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	3	b68d370eecac	0xc0bb0
 netcmdslot	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	2	8f369c189a5f	0xc0070
 netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	1	a247b7dd0f0c	0xc10a0
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	2	58e54d2b70c0	0xc1390
-netgamedlg	?EnableControls@CNetGameDlg@@QAEHXZ	84.2549	84.2549	2	c7a91ac91451	0xc4120
-netgamedlg	?UpdateSlot@CNetGameDlg@@QAEXH@Z	69.3281	69.3281	3	b0d7829d986d	0xc2ab0
-netgamedlg	?VerifyCustomLevel@CNetGameDlg@@QAEXXZ	51.9027	51.9027	2	20a979c7bec8	0xc4c00
+netgamedlg	?EnableControls@CMultiStartDlg@@QAEHXZ	84.2549	84.2549	1	7df49750a43e	0xc4120
+netgamedlg	?SyncChannelSlot@CMultiStartDlg@@QAEXH@Z	69.3281	69.3281	1	01208a6cfbe7	0xc2ab0
+netgamedlg	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	51.9027	51.9027	1	611b5fd40f00	0xc4c00
 netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	3	a22437af594e	0xc46b0
 netlobbydialogs	?AppendEditLine@NetLobby@@YGXPAUHWND__@@PAD@Z	100.0000	100.0000	1	e874b28df082	0xbb3e0
 netlobbydialogs	?Load@StrHost_0b7ec0@NetLobby@@QAEXHH@Z	100.0000	100.0000	1	a649bef784d4	0xb7ec0
@@ -2760,10 +2760,10 @@ netmgr	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	5	5676879b5f9c	0xbca50
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0	0x1776a0
 netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	5	eb4aa4c0f818	0xba620
 netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120
-netmgrmisc	?Drive@CNetConnCoord@@QAEXXZ	100.0000	100.0000	4	a24869a13ab8	0xc40b0
+netmgrmisc	?ConnectStep@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	a13e74e1628b	0xc2a20
+netmgrmisc	?Drive@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	33ae5e44a959	0xc40b0
 netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
 netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
-netmgrmisc	?Step@CNetConnCoord@@QAEXXZ	100.0000	100.0000	1	de12e712a594	0xc2a20
 netmgrwait	?Poll@CNetMgr@@QAEHH@Z	94.2222	94.2222	4	edf7a7c2d667	0xbba10
 netmgrwait	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.0380	75.0380	4	1ac72297a2fb	0xbb700
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
