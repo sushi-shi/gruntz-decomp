@@ -494,7 +494,7 @@ winapicdrom	1	0
 winapimodule	1	0
 winmain	1	1
 worldlevelkey	1	1
-worldlevelpath	1	0
+worldlevelpath	1	1
 worldsoundset	13	5
 wormhole	8	5
 wormholeacts	2	1
@@ -653,7 +653,7 @@ battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.9933	
 battlezmapconfig	?Method_025c20@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	1	0609a50d52b9	0x25c20
 battlezmapconfig	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.6087	75.6087	1	ac19523724a5	0x25d90
 battlezmapconfig	?Method_026470@CBattlezMapConfig@@QAEHH@Z	83.1071	83.1071	1	f738071bf7eb	0x26470
-battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	1	7a02ee4067ce	0x29b40
+battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	24.7804	24.7804	2	928736a7fb6c	0x29b40
 battlezmapconfig	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	58.8333	58.8333	1	153a79ebaa48	0x2ad40
 battlezmapconfig	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	100.0000	100.0000	2	243000db0de8	0x2bfc0
 battlezmapconfig	?Method_02c080@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	12c95bbed6a4	0x2c080
@@ -662,7 +662,7 @@ battlezmapconfig	?Method_02d800@CBattlezMapConfig@@QAEHHHHH@Z	20.0022	20.0022	1	
 battlezmapconfig	?Method_02ed90@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	33838fae2481	0x2ed90
 battlezmapconfig	?Method_02edb0@CBattlezMapConfig@@QAEHHHHH@Z	78.5986	78.5986	1	db684341ff5d	0x2edb0
 battlezmapconfig	?Method_02f620@CBattlezMapConfig@@QAEHH@Z	48.6144	48.6144	1	9172d9b389c6	0x2f620
-battlezmapconfig	?Method_0300c0@CBattlezMapConfig@@QAEHHHHHHH@Z	63.8443	63.8443	1	2f40154a62c4	0x300c0
+battlezmapconfig	?Method_0300c0@CBattlezMapConfig@@QAEHHHHHHH@Z	63.8443	63.8443	2	20efb3a0e00c	0x300c0
 battlezmapconfig	?Method_0302c0@CBattlezMapConfig@@QAEHHHHHH@Z	70.7935	70.7935	1	0574c75e8a6f	0x302c0
 battlezmapconfig	?Method_030530@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	259ffb19e6fb	0x30530
 battlezmapconfig	?Method_0305b0@CBattlezMapConfig@@QAEHHHH@Z	46.6224	46.6224	1	a085aa6bee42	0x305b0
@@ -671,21 +671,21 @@ battlezmapconfig	?Method_030990@CBattlezMapConfig@@QAEHHH@Z	94.5714	94.5714	1	5a
 battlezmapconfig	?Method_030b20@CBattlezMapConfig@@QAEHHHH@Z	69.2299	69.2299	1	b68bf35226af	0x30b20
 battlezmapconfig	?Method_030f20@CBattlezMapConfig@@QAEPAXPAXHH@Z	58.3333	58.3333	1	751c0b1ae827	0x30f20
 battlezmapconfig	?Method_034460@CBattlezMapConfig@@QAEHH@Z	80.6851	80.6851	1	30c90f11c87f	0x34460
-battlezmapconfig	?Method_034c70@CBattlezMapConfig@@QAEHH@Z	48.9556	48.9556	1	ce7242ff99e9	0x34c70
+battlezmapconfig	?Method_034c70@CBattlezMapConfig@@QAEHH@Z	48.9556	48.9556	2	0256aed8c8eb	0x34c70
 battlezmapconfig	?Method_0350d0@CBattlezMapConfig@@QAEHH@Z	72.3595	72.3595	1	d4dbf534fb2c	0x350d0
-battlezmapconfig	?Method_0358a0@CBattlezMapConfig@@QAEHH@Z	83.2775	83.2775	1	cae4c4c58659	0x358a0
+battlezmapconfig	?Method_0358a0@CBattlezMapConfig@@QAEHH@Z	83.2775	83.2775	2	d4b05c217faa	0x358a0
 battlezmapconfig	?RecycleCoords@GridUnit@@QAEXXZ	99.7826	99.7826	1	9a0fd4263348	0x343f0
 battlezmapconfig	?Report@ZErrTarget@@QAEXHH@Z	100.0000	100.0000	3	350b577c670f	0x34960
 battlezmapconfig	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	1	fdd97ca487c8	0x2b420
 battlezmapconfig	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	1	ff6203669340	0x267c0
-battlezmapconfig	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	60.6182	60.6182	1	1cba316a44c5	0x2a570
+battlezmapconfig	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	60.6182	60.6182	2	c2743126197e	0x2a570
 battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.8750	77.8661	1	177facd861d5	0x2ab80
 battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	84.1995	84.1995	1	a24ad9260ad0	0x2ae00
 battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	69.0547	69.0547	1	a87aa74b62c7	0x2c140
 battlezmapconfig	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.6554	59.6554	1	4c95bd3474f1	0x2dfa0
-battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	58.2019	58.1940	1	d0d0be3859a7	0x2e3a0
-battlezmapconfig	?winapi_031ca0_IntersectRect@CBattlezMapConfig@@QAEHH@Z	80.6009	80.6009	1	a0304c8a4ba2	0x31ca0
-battlezmapconfig	?winapi_032060_IntersectRect@CBattlezMapConfig@@QAEHH@Z	44.6788	44.6788	1	f7d5e710746a	0x32060
+battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	58.2098	58.2098	1	d0d0be3859a7	0x2e3a0
+battlezmapconfig	?winapi_031ca0_IntersectRect@CBattlezMapConfig@@QAEHH@Z	80.6009	80.6009	2	352133ec78a3	0x31ca0
+battlezmapconfig	?winapi_032060_IntersectRect@CBattlezMapConfig@@QAEHH@Z	44.6788	44.6788	2	5e93a1b0c737	0x32060
 behindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	5c9c55aab0c6	0xfc30
 behindcandy	?GetTypeTag@CBehindCandy@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c4eecf75a5b7	0xfb70
 behindcandy	?Serialize@CBehindCandy@@QAEHHHHH@Z	100.0000	100.0000	1	a6413196f2a6	0xfb90
@@ -1492,7 +1492,7 @@ discoveredsmall	?DestroyStr@CU35Host@@QAEXXZ	100.0000	100.0000	2	09e6c4075c29	0x
 discoveredsmall	?FirstDiffBit@@YAHPBD0@Z	100.0000	100.0000	1	e97675b29f12	0x16e480
 discoveredsmall	?FreeBuffers@DualBufferOwner@@QAEXXZ	100.0000	100.0000	1	6f9474d85807	0x148d10
 discoveredsmall	?ListNodeAdvance@@YGPAXPAPAX@Z	100.0000	100.0000	1	1e41b8b08631	0x29a30
-discoveredsmall	?Push@FreeNodePool@@QAEXPAD@Z	100.0000	100.0000	1	ceb8e2ebe09b	0x311b0
+discoveredsmall	?Push@FreeNodePool@@QAEXPAX@Z	100.0000	100.0000	1	d3e14e87e26c	0x311b0
 discoveredsmall	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	1	8b8796dcac10	0x1397a0
 donothing	??0CDoNothing@@QAE@PAUCGameObject@@@Z	92.2991	92.2991	2	a271b488b6f2	0xac1d0
 donothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	a06511f63ae0	0xf770
@@ -2796,7 +2796,7 @@ orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	4	078e9e0297bd	0xb4350
 packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	1	34d60f4d27ed	0xbef10
 packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	2	16dc77800421	0xbf530
 palettebmp	?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z	98.4889	98.4889	2	dc1d1e374304	0x177480
-palettecopy	?UploadPalette@CDDScreen@@QAEXXZ	61.1613	61.1613	3	b2cc38e040f2	0x17ca10
+palettecopy	?UploadPalette@CDDScreen@@QAEXXZ	61.1613	61.1613	4	69b8ccf9f509	0x17ca10
 palettelerp	?Tick@PaletteLerp@@QAEHXZ	100.0000	100.0000	3	9f5457dbe99d	0x1480a0
 particlez	??1CParticlez@@UAE@XZ	100.0000	100.0000	1	4b9c461cd6b8	0x12d90
 particlez	?FireActivation@CParticlez@@QAEXH@Z	100.0000	100.0000	1	13bf97e742a3	0x46d30
@@ -3329,7 +3329,7 @@ streamvoice	??1StreamVoice@@UAE@XZ	42.4643	42.4643	1	35c051fa0c80	0x137650
 streamvoice	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	3	e205205d9fe4	0x137590
 streamvoice	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	0b1e8d24ac07	0x137520
 streamvoice	?SetSource@StreamVoice@@QAEHPAVCParseSource@@@Z	100.0000	100.0000	1	956c9fa84161	0x1374c0
-surfacepalette	?ResetPalette@CDDScreen@@QAEXXZ	100.0000	100.0000	1	2899d9bf6a16	0x17ca60
+surfacepalette	?ResetPalette@CDDScreen@@QAEXXZ	100.0000	100.0000	2	10097a1adb40	0x17ca60
 symparser	??0CSymParser@@QAE@PAXHH@Z	72.8781	72.8781	4	ac66ff132730	0x13ab00
 symparser	??0CSymParser@@QAE@XZ	72.6250	72.6250	1	ac66ff132730	0x13aa10
 symparser	??1CSymParser@@QAE@XZ	99.9908	99.9908	6	58ce94420e1c	0x13abc0
@@ -3673,8 +3673,8 @@ winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	7	6588fcebd04
 winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	4	c6ba621c6bbe	0x1fde0
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	4	f574baeadf5f	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	9	a03b3b19839f	0x11c860
-worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	5	903faa405b04	0x3c0e0
-worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	98.7444	98.7444	4	d519657cb81b	0xdbc80
+worldlevelkey	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	6	71c9a57e54ac	0x3c0e0
+worldlevelpath	?BuildWorldLevelPath@CWorldState@@QAEHH@Z	100.0000	100.0000	5	ee6dbf9d3cf9	0xdbc80
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	1	575205cf84c8	0x85ed0
 worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.4528	95.4528	4	338fc373cbf8	0xb7b0
 worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAUSoundChannelNew@@HHHHH@Z	95.6182	95.6182	4	7c39f57b6833	0xb6a0
