@@ -153,15 +153,21 @@ namespace modeinit {
     }
 
     // @early-stop
-    // EH-state + array-ctor wall. Complete correct reconstruction: the owner-flag
-    // stamps, the four owned sub-objects (0x1c/0x630/0x78/0x50) allocated + inited +
-    // attached with their per-step teardown-and-return-0 failure paths, the ShowCursor
-    // drain, the geometry/timer reset (rep-stos block + timeGetTime), the two vtable
-    // init slots + bind slot, and the peer flag all align by shape (llvm-objdump -dr).
-    // Residual: MSVC5 generates the 0x630 worker's inline field init as its own
-    // scheduled store order + coalesced rep-stos runs interleaved with the __ehvec/
-    // __vec array ctors, and stamps the /GX unwind-state ([esp+N]=1..4) at object
-    // boundaries that a manual init can't reproduce from source - not steerable.
+    // EH-frame-absence wall (~55%, RE-PROVEN 2026-07-05). Root cause pinned via --diff:
+    // retail emits the full /GX C++-EH frame (mov eax,fs:0; push handler; push scope;
+    // mov fs:0,esp) because the 0x630 worker's field arrays are REAL C++ array members
+    // whose element ctors (__ehvec_ctor 0x11f5a0) register per-element unwind cleanup;
+    // this reconstruction builds them via manual RezAlloc + extern-"C" EhVecCtor/VecCtor
+    // CALLS, which carry no EH semantics, so MSVC5 emits NO fs:0 frame at all (the unit
+    // is already `eh`/​/GX - the flag can't help without a destructible C++ construct).
+    // That absent frame shifts every arg/[esp+N] and flips the this/zero regalloc
+    // (retail this=ebx/zero=ebp vs base this=ebp/zero=ebx). Reproducing it needs the
+    // four element classes (0x403774/0x403a3a ctors, 0x5b48c6 dtor) modeled as real
+    // array members of a Worker630 class so `new`/placement-construct emits the ehvec
+    // ctors + the EH state stamps - a large modeling job for the final sweep. The logic
+    // (owner-flag stamps, 4 owned sub-objects with per-step teardown-and-return-0,
+    // ShowCursor drain, geometry/timer reset, the two vtable inits + bind + peer flag)
+    // is complete + correct by shape.
     RVA(0x000c7ec0, 0x5f5)
     i32 ModeObj::Init0c7ec0(Arg1* a1, i32 a2, i32 a3) {
         if (a1 == 0) {
