@@ -7,27 +7,23 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Rez/RezMgr.h>
+#include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
 #include <Globals.h>
 
 #include <string.h> // memcpy, memset
 
-// --- The networking endpoint reached through CNetMgr::m_endpoint.  Its dispatch
-// table at +0 holds __stdcall fn ptrs (the object is the explicit 1st arg). ------
-struct CNetEndpoint;
-struct CNetEndpointVtbl {
-    char pad00[0x44];
-    i32(__stdcall* Recv)(CNetEndpoint*, i32, i32*); // +0x44
-    char pad48[0x64 - 0x48];
-    i32(__stdcall* Read)(CNetEndpoint*, i32*, i32*, i32, void*, i32*); // +0x64
-};
-struct CNetEndpoint {
-    CNetEndpointVtbl* vtbl;
-};
+// --- The networking endpoint reached through CNetMgr::m_endpoint (+0x18) is the
+// real DirectPlay session interface (IDirectPlay4, <dplay.h>): the two dispatched
+// COM slots are GetMessageCount (slot 17, +0x44: DPID/LPDWORD -> pending-msg count)
+// and Receive (slot 25, +0x64: from/to DPID, flags, buf, size -> read a message).
+// Was a hand-rolled CNetEndpointVtbl PMF view naming only those two slots; folded to
+// the real SDK interface (the IDirectDrawSurface precedent). The DPID/i32 out-params
+// keep their engine i32 type with a width-neutral (LPDWORD)/(LPDPID) reinterpret. --
 
 // --- CNetMgr (only the slots we call) ------------------------------------------
 struct CNetMgr {
     char pad00[0x18];
-    CNetEndpoint* m_endpoint;                             // +0x18 endpoint
+    IDirectPlay4* m_endpoint;                             // +0x18 endpoint (DirectPlay session)
     i32 SetData(i32 a, i32 b, i32 c, void* buf, i32 len); // 0x178fc0
 };
 
@@ -507,8 +503,8 @@ i32 CLobbySync::Poll(i32 delta) {
         avail = 0;
     } else {
         i32 got;
-        CNetEndpoint* ep = m_netMgr->m_endpoint;
-        i32 r = ep->vtbl->Recv(ep, m_localDesc->m_playerId, &got);
+        IDirectPlay4* ep = m_netMgr->m_endpoint;
+        i32 r = ep->GetMessageCount(m_localDesc->m_playerId, (LPDWORD)&got);
         avail = (r == 0) ? got : 0;
     }
 
@@ -517,8 +513,8 @@ i32 CLobbySync::Poll(i32 delta) {
     while (avail > 0 && m_session->m_busy == 0) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
-        CNetEndpoint* ep = m_netMgr->m_endpoint;
-        i32 st = ep->vtbl->Read(ep, &a, &chan, 1, g_649858, &len);
+        IDirectPlay4* ep = m_netMgr->m_endpoint;
+        i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_649858, (LPDWORD)&len);
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
             if (st != 0) {
@@ -567,8 +563,7 @@ i32 CLobbySync::Tick() {
 }
 
 SIZE_UNKNOWN(CLobbySync);
-SIZE_UNKNOWN(CNetEndpoint);
-SIZE_UNKNOWN(CNetEndpointVtbl);
+
 SIZE_UNKNOWN(CSyncObj);
 SIZE_UNKNOWN(GruntRec);
 SIZE_UNKNOWN(LobbyMsg);
