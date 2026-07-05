@@ -70,16 +70,18 @@ struct CSerialArchive;
 SIZE(CGruntzCommand, 0x14);
 class CGruntzCommand {
 public:
-    char m_4;  // +0x04
-    char m_5;  // +0x05
-    char m_6;  // +0x06
-    char m_7;  // +0x07 (unused by this cluster)
-    i16 m_8;   // +0x08
-    i16 m_a;   // +0x0a
-    i32 m_c;   // +0x0c (unused by this cluster)
-    char m_10; // +0x10
-    char m_11; // +0x11
-    i16 m_12;  // +0x12 (pad -> 0x14)
+    char m_4;        // +0x04
+    char m_5;        // +0x05
+    char m_6;        // +0x06
+    char m_7;        // +0x07 (unused by this cluster)
+    i16 m_8;         // +0x08
+    i16 m_a;         // +0x0a
+    i32 m_submitted; // +0x0c  submit-context latch (serialized by Save/Load): net
+                     //         parse path sets =1, the cmd-mgr sets =2 (playing) /
+                     //         =4 (ready) by game state before enqueue
+    char m_10;       // +0x10
+    char m_11;       // +0x11
+    i16 m_12;        // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
     virtual void Vfunc1();       // slot 1
@@ -88,9 +90,12 @@ public:
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
-    virtual i32 Vslot05();  // slot 5 (+0x14)
-    virtual char Vslot06(); // slot 6  (the type/tag byte the packers write first)
-    virtual void Vslot07(); // slot 7
+    virtual i32 Vslot05(); // slot 5 (+0x14) - base returns 1 (role unrecovered: P2)
+    virtual char GetTag(); // slot 6 - the command's type/tag byte (Pack writes it first)
+    // slot 7 - parse a flat command buffer in place; the leaves (Single/Multi)
+    // override it with real parsers, the base anchor is a no-op. Consumed-byte
+    // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
+    virtual i32 Parse(void* data, i32 len);
 
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
@@ -125,7 +130,7 @@ public:
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
-    // 0x024050 - pack this command into a flat byte buffer: tag (Vslot06), then the
+    // 0x024050 - pack this command into a flat byte buffer: tag (GetTag), then the
     // five scalar params, then m_10, and conditionally m_11 (when m_5 >= 8). Returns
     // the number of bytes written.
     i32 Pack(char* buf, i32 unused);
@@ -141,7 +146,7 @@ public:
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
-    // 0x0240d0 - pack this command into a flat byte buffer: tag (Vslot06), the five
+    // 0x0240d0 - pack this command into a flat byte buffer: tag (GetTag), the five
     // scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
     // of bytes written.
     i32 Pack(char* buf, i32 unused);

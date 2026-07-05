@@ -200,9 +200,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
     }
     if (flag) {
         if (m_38->m_2c->GetStateId() == 3) {
-            ((CGruntzCommand*)cmd)->m_c = 2;
+            ((CGruntzCommand*)cmd)->m_submitted = 2; // submit-context = playing
         } else if (m_38->m_2c->GetStateId() == 0x11) {
-            ((CGruntzCommand*)cmd)->m_c = 4;
+            ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
         }
         m_1c.AddTail(cmd);
     }

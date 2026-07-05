@@ -14,8 +14,9 @@
 //   - three __stdcall helpers over a 3-int player-id set (find/add/clear), and
 //   - a session-readiness check on an as-yet-unidentified owner object that
 //     holds a CNetMgr* at +0x1c and a per-slot ack-flag array at +0x3c.
-#include <Net/NetMgr.h>          // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
-#include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c real command manager (EnqueueCommand)
+#include <Net/NetMgr.h>           // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+#include <Gruntz/GruntzCmdMgr.h>  // CNetGameMgr::m_6c real command manager (EnqueueCommand)
+#include <Gruntz/GruntzCommand.h> // canonical CGruntzCommand/Single/Multi (slot-7 Parse)
 #include <rva.h>
 
 #include <string.h> // memcpy (see #pragma intrinsic below)
@@ -47,32 +48,11 @@ void __stdcall NetCmdIdClear(i32* arr, i32 v);
 // the global packet pool. Modeled by its delinker name so the call is named.
 void* Unmatched_bf530(i32 zero); // 0xbf530
 
-// A parsed grunt command the record's per-entry stream produces. Allocated by one
-// of two static factories, parsed in place through vtable slot 7, then enqueued.
-// Modeled polymorphically so `obj->Parse()` emits the slot-7 thiscall dispatch; no
-// virtual is defined here so cl emits no vtable.
-class CGruntzCommand {
-public:
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual i32 Parse(void* data, i32 len); // +0x1c (slot 7)
-
-    char m_pad4[0xc - 0x4];
-    i32 m_submitted; // +0x0c  "submitted" flag
-};
-class CGruntzSingleCommand : public CGruntzCommand {
-public:
-    static CGruntzSingleCommand* Allocate(); // 0x24220
-};
-class CGruntzMultiCommand : public CGruntzCommand {
-public:
-    static CGruntzMultiCommand* Allocate(); // 0x24360
-};
+// The parsed grunt command the record's per-entry stream produces is the canonical
+// command family (<Gruntz/GruntzCommand.h>): CGruntzSingleCommand/CGruntzMultiCommand
+// each Allocate() from their recycle list, Parse() in place through vtable slot 7,
+// then get enqueued. (Formerly a reduced local polymorphic view of the same three
+// classes.)
 
 // The per-game command manager reached through CNetMgr->m_4->m_6c is the real
 // CGruntzCmdMgr (EnqueueCommand @0x23d10); ProcessCmd hands each parsed grunt
@@ -254,7 +234,7 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
             continue;
         }
         i32 consumed = obj->Parse(cursor, rem);
-        obj->m_submitted = 1;
+        obj->m_submitted = 1; // "submitted" latch
         m_owner->m_4->m_6c->EnqueueCommand(0, obj);
         rem -= consumed;
         cursor += consumed;

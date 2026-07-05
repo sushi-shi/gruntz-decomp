@@ -49,10 +49,12 @@ void CGruntzCommand::Vfunc3() {}
 i32 CGruntzCommand::Vslot05() {
     return 1;
 }
-char CGruntzCommand::Vslot06() {
+char CGruntzCommand::GetTag() {
     return 0;
 }
-void CGruntzCommand::Vslot07() {}
+i32 CGruntzCommand::Parse(void*, i32) {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand::SetParams() - 0x023e20 (vtable slot 4). The base "set the
@@ -118,7 +120,7 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
 RVA(0x00024050, 0x57)
 i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
-    *buf = (char)Vslot06();
+    *buf = (char)GetTag();
     *++buf = m_4;
     *++buf = m_5;
     *++buf = m_6;
@@ -144,7 +146,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32 /*unused*/) {
 RVA(0x000240d0, 0x4d)
 i32 CGruntzMultiCommand::Pack(char* buf, i32 /*unused*/) {
     char* start = buf;
-    *buf = (char)Vslot06();
+    *buf = (char)GetTag();
     *++buf = m_4;
     *++buf = m_5;
     *++buf = m_6;
@@ -287,7 +289,7 @@ i32 CGruntzCommand::Save(CSerialArchive* s) {
     s->Write(&m_6, 1);
     s->Write(&m_8, 2);
     s->Write(&m_a, 2);
-    s->Write(&m_c, 4);
+    s->Write(&m_submitted, 4);
     s->Write(&m_10, 1);
     s->Write(&m_11, 1);
     return 1;
@@ -310,7 +312,7 @@ i32 CGruntzCommand::Load(CSerialArchive* s) {
     s->Read(&m_6, 1);
     s->Read(&m_8, 2);
     s->Read(&m_a, 2);
-    s->Read(&m_c, 4);
+    s->Read(&m_submitted, 4);
     s->Read(&m_10, 1);
     s->Read(&m_11, 1);
     return 1;
@@ -335,7 +337,7 @@ i32 CGruntzMultiCommand::NetLoad(CSerialArchive* s) {
     s->Read(&m_6, 1);
     s->Read(&m_8, 2);
     s->Read(&m_a, 2);
-    s->Read(&m_c, 4);
+    s->Read(&m_submitted, 4);
     s->Read(&m_10, 2);
     return 1;
 }
