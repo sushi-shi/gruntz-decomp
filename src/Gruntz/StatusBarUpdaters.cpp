@@ -63,6 +63,14 @@ extern CGameRegistry* g_gameReg; // the game-manager singleton
 // the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
 // at 0x1a (completion - flips m_state to 2 and runs the COOKINGCOMPLETE advance), and
 // pushes the new frame into the widget when it changes (the +0x30 virtual).
+// @early-stop
+// ~79.9%: logic + every store/offset/advance-tail is byte-faithful. Residual is the
+// 64-bit signed-clamp `elapsed = (d>=0)?(i32)d:0` codegen: retail emits the un-folded
+// `cmp hi,ebx(0); jg; jl; cmp lo,ebx; jae` compare then a branch-select `xor esi,esi;
+// jmp / mov esi,eax(lo)` keeping the raw lo in a temp, whereas this toolchain FOLDS it
+// to the sbb sign-flag (`js`) and fuses lo directly into the elapsed reg (esi) - i.e.
+// cl here is MORE optimized than retail's exact MSVC5 build. A toolchain-microversion
+// codegen wall, not source-steerable; deferred to the final sweep.
 RVA(0x00105310, 0x11a)
 void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
     CTabWidget** slot = m_slots;
@@ -177,6 +185,13 @@ void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
 // re-stamps the grinder rect-target widget (m_500) from the scroll origin. When
 // the conveyor runs out (m_508 >= 0x1c7) it stops (m_4e8 = 0). A final
 // ChipGrinderFinishStep runs while the widget is live and a step happened.
+// @early-stop
+// ~80.7%: instruction count matches retail exactly (164==164); logic + all offsets/
+// stores/advance-tail are byte-faithful. Residual is a pervasive zero-register-pinning
+// role swap (docs/patterns/zero-register-pinning.md): retail pins 0 in ebx and the
+// phase-constant 3 in edi, this toolchain pins 0 in edi + spills a second zero into
+// ebp - a 1-instr phase shift cascading through every `mov [field],0` store. A
+// regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
 void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
     i32* m = (i32*)this;
@@ -254,6 +269,14 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
 // __thiscall ret 8. Always returns 1.
 
 // RegUnitTable moved to <Gruntz/StatusBarUpdatersViews.h>.
+// @early-stop
+// ~80.8%: logic + offsets + the advance-tail are byte-faithful. Residual is a
+// constant/register-pinning coin-flip: retail keeps a 4th callee-saved reg (ebp) live
+// and PINS the constant 1 in ecx, reusing it for `item->m_active=1`, the `==1` gate
+// and the Toggle(...,1) arg (`mov ecx,1; ... push ecx`); this toolchain uses fewer
+// registers and emits the 1 as inline immediates instead. Already spelled with a
+// shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
+// pressure coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x00104e60, 0xed)
 i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     i32* m = (i32*)this;
@@ -388,6 +411,14 @@ i32 EngineLabelBacklog::LoadSwitchUpSprite() {
 // (a per-phase pixel offset off the tab base m_3c->m_10/m_14), the euclidean
 // distance to the source (srcX/srcY), and the per-axis fly velocity scaled by
 // FlyTime, then runs the GAME_WARPSTONEFLY status-bar advance. __thiscall ret 0x10.
+// @early-stop
+// ~81.2%: logic + the sqrt/fly-velocity FP block + the advance-tail are byte-faithful.
+// Residuals are two regalloc/scheduling coin-flips: (1) the prologue orders the
+// `mov [esp+X],0` stack-init vs the `lea ecx,[esp+X]` differently, and (2) the frame
+// lookup `(spr && n in range) ? spr->m_frames[n] : 0` keeps the loaded pointer in a
+// temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
+// load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
+// as the 64-bit clamp; not source-steerable; deferred to the final sweep.
 RVA(0x00109bd0, 0x1b5)
 i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY) {
     i32* m = (i32*)this;
