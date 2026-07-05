@@ -24,55 +24,12 @@
 #include <Win32.h>
 #include <ddraw.h>
 
-#include <string.h> // memset - inlined to rep stos
+#include <DDrawMgr/DDScreen.h> // canonical CDDScreen + CTileInfo (needs the DX/Win32 types above)
+#include <string.h>            // memset - inlined to rep stos
 
 // The engine heap allocator (NAFXCW operator new replacement) - 16-byte RECT
 // nodes Configure allocates for the explicit-blit case. _RezAlloc (named, rel32).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-
-// The tile-size descriptor m_tileInfo points at (only the tile width/height are read;
-// unsigned so the validation/divide lower to `ja`/`div`).
-struct CTileInfo {
-    i32 m_0;      // +0x0
-    u32 m_width;  // +0x4  tile width
-    u32 m_height; // +0x8  tile height
-};
-
-class CDDScreen {
-public:
-    void HandleError();  // 0x17cc80
-    void ResetPalette(); // 0x17ca60 (body in PaletteReset.cpp; clears the +0x108 table)
-    i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);        // 0x17cdf0
-    i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
-    i32 CheckGrid();                                               // 0x17cbe0 (sibling, external)
-    void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
-
-    char m_pad00[0x0c];
-    i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
-    CTileInfo* m_tileInfo;         // +0x10
-    IDirectDraw2* m_dd2;           // +0x14   IDirectDraw2
-    IDirectDraw* m_dd;             // +0x18   IDirectDraw
-    IDirectDrawSurface* m_primary; // +0x1c   primary surface
-    IDirectDrawSurface* m_20;      // +0x20   surface (only Release'd here; role unproven)
-    IDirectDrawSurface* m_srcSurf; // +0x24   blit source surface
-    IDirectDrawSurface* m_28;      // +0x28   surface (only Release'd here; role unproven)
-    IDirectDrawPalette* m_palette; // +0x2c
-    char m_pad30[0x50c - 0x30];
-    i32 m_50c; // +0x50c   reset to 0 by Configure
-    char m_pad510[0x514 - 0x510];
-    i32 m_514;            // +0x514  set in mode-2 fallback (unproven)
-    u32 m_screenWidth;    // +0x518
-    u32 m_screenHeight;   // +0x51c
-    i32 m_bpp;            // +0x520
-    i32 m_tilesAcross;    // +0x524
-    i32 m_tilesDown;      // +0x528
-    i32 m_originX;        // +0x52c
-    i32 m_originY;        // +0x530
-    RECT* m_destRect;     // +0x534  explicit dest rect (or 0)
-    i32 m_forceSingleRow; // +0x538
-    char m_pad53c[0x86a0 - 0x53c];
-    i32 m_86a0; // +0x86a0   reset to 0 by Configure
-};
 
 // ===========================================================================
 // 0x17cc80 - HandleError: release owned interfaces; if still mid-bringup black
@@ -335,6 +292,3 @@ i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
     m_86a0 = 0;
     return 1;
 }
-
-SIZE_UNKNOWN(CDDScreen);
-SIZE_UNKNOWN(CTileInfo);

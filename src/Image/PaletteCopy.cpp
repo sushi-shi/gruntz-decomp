@@ -10,21 +10,12 @@
 // `mov eax,[pal]; call [eax+0x18]` the old manual `struct Vtbl` view emitted -
 // self is pushed as the __stdcall implicit first stack arg.
 #include <DDrawMgr/DirectDrawMgr.h>
-#include <Win32.h> // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h> // real IDirectDrawPalette dispatch (SetEntries)
+#include <Win32.h>             // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>             // real IDirectDrawPalette dispatch (SetEntries)
+#include <DDrawMgr/DDScreen.h> // canonical CDDScreen (shared layout)
 
-// The screen object (CDDScreen). Only the palette-upload offsets are pinned here;
-// the full layout lives in CDDScreen.cpp (which declares UploadPalette + BlitRegion).
-struct CDDScreen {
-    char m_pad0[0x10];
-    u8* m_10; // +0x10  RGB source base (frame palette entries at +0x6c)
-    char m_pad14[0x2c - 0x14];
-    IDirectDrawPalette* m_palette; // +0x2c  held DirectDraw palette
-    char m_pad30[0x108 - 0x30];
-    u8 m_slots[0x400]; // +0x108  256 * 4-byte PALETTEENTRY slots
-
-    void UploadPalette(); // 0x17ca10
-};
+// The frame's 3-byte-per-entry RGB palette source is at m_tileInfo+0x6c (the +0x10
+// descriptor read as bytes here); the 4-byte-per-entry slot array is m_colorSlots.
 
 // ---------------------------------------------------------------------------
 // 0x17ca10 - copy RGB triples into the slot array (alpha byte left untouched),
@@ -39,8 +30,8 @@ struct CDDScreen {
 // register coin-flip; not source-steerable. Logic 100% correct; deferred.
 RVA(0x0017ca10, 0x49)
 void CDDScreen::UploadPalette() {
-    u8* src = m_10 + 0x6c;
-    u8* dst = m_slots;
+    u8* src = (u8*)m_tileInfo + 0x6c;
+    u8* dst = m_colorSlots;
     int n = 0x100;
     do {
         dst[0] = src[0];
@@ -49,5 +40,5 @@ void CDDScreen::UploadPalette() {
         dst += 4;
         src += 3;
     } while (--n);
-    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_slots);
+    m_palette->SetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_colorSlots);
 }
