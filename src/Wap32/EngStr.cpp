@@ -1,7 +1,8 @@
-// EngStr.cpp - WAP32 engine string / bit-vector / container-error helpers around
-// the Ghidra `EngStr` text routine (C:\Proj\incs). See include/Wap32/EngStr.h
-// for the recovered (heterogeneous) class identities.
-#include <Wap32/EngStr.h>
+// EngStr.cpp - WAP32 engine text-render forwarder + container-error helpers around
+// the Ghidra `EngStr` text routine (C:\Proj\incs). The container classes it touches
+// (CContainerErr, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
+#include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Remove/Set)
+#include <Wap32/zBitVec.h> // canonical CContainerErr + zBitVec (was <Wap32/EngStr.h>)
 #include <rva.h>
 
 #include <stdlib.h> // malloc (0x120b60) - the bit band allocator
@@ -78,7 +79,7 @@ VTBL(CContainerErr, 0x001f04cc);
 
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
-    m_err->Remove(this, 0);
+    m_errSink->Remove(this, 0);
 }
 
 // zBitVec::SetSize(nbits) - round the requested bit count up to whole 32-bit
@@ -112,7 +113,6 @@ i32 zBitVec::SetSize(i32 nbits) {
 }
 
 // EngStr.h + local render-family class metadata (hosted at .cpp EOF).
-SIZE_UNKNOWN(zErrRegistry);    // handle-table registry view (EngStr.h)
 SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
 SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
 SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)

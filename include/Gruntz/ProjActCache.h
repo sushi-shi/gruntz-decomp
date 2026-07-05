@@ -16,25 +16,14 @@
 #define GRUNTZ_PROJACTCACHE_H
 
 #include <Ints.h>
+#include <Wap32/zBitVec.h> // canonical CContainerErr + zBitVec + CVariantSlot
 #include <rva.h>
 
 #include <string.h> // strlen/strcmp/memcpy the trie insert lowers to inlines
 
-// Globals the OOM path touches (.data). g_containerName is the const-char* anchor
-// the base ctor records; g_defaultSize is the fallback capacity; g_projActCache /
-// g_retAddrBreadcrumb are the diagnostic record cells. Reloc-masked.
-DATA(0x002bf408)
-extern char g_containerName[]; // 0x6bf408 (base ctor const char* arg)
-DATA(0x0021ad28)
-extern i32 g_defaultProjActSize; // 0x61ad28
-DATA(0x002bf464)
-extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA)
-extern void* g_retAddrBreadcrumb; // 0x6bf428 (?g_retAddrBreadcrumb@@3PAXA)
-extern void* g_projActName;        // 0x6bf454 (the bad-arg diagnostic record cell)
-
-// _ReturnAddress()-style helper (0x16e0f0: mov eax,[ebp+4]; ret) - records where
-// the failing allocation was requested. Reloc-masked (no body).
-void* GetCallerRetAddr(); // 0x16e0f0
+// The container-error diagnostic globals (g_containerName / g_defaultProjActSize /
+// g_projActCache / g_retAddrBreadcrumb / g_projActName) and GetCallerRetAddr (0x16e0f0)
+// are the shared container infrastructure from <Wap32/zBitVec.h>.
 
 // The engine heap allocator (NAFXCW operator new replacement). _RezAlloc (named).
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
@@ -54,47 +43,9 @@ struct CTrieNode {
     void* m_10;     // +0x10 stored value
 };
 
-// The +0x04 error sink: on a sizing failure the container reports through it.
-SIZE_UNKNOWN(CVariantSlot);
-class CVariantSlot {
-public:
-    void Set(void* obj, i32 a, i32 b); // 0x16d850
-};
-
-// The CContainerErr error-tracking container base. REAL polymorphic base: its 7-slot
-// vtable (??_7CContainerErr @0x5f04cc) is built by the external ctor (0x16d9c0) and
-// re-stamped by the external dtor (0x16da60), so this TU references but does not emit
-// it. The implicit vptr lands at +0x00; slot 0 is the (scalar-deleting) destructor,
-// slots 1..6 are declared-only engine virtuals living in other TUs (reloc-masked
-// references). The destructible base is what forces zBitVec's /GX ctor-unwind frame.
-class CContainerErr {
-public:
-    CContainerErr(const char* name); // 0x16d9c0 (??0CContainerErr@@QAE@PBD@Z)
-    virtual ~CContainerErr();        // [0] 0x16da40 (??_G slot); real ~ at 0x16da60
-
-    virtual void Slot04_16dde0(); // [1] 0x16dde0 (declared-only)
-    virtual void Slot08_16df20(); // [2] 0x16df20 (declared-only)
-    virtual void Slot0C_16dfa0(); // [3] 0x16dfa0 (declared-only)
-    virtual void Slot10_16ea80(); // [4] 0x16ea80 (declared-only)
-    virtual void Slot14_16e9c0(); // [5] 0x16e9c0 (declared-only)
-    virtual void Slot18_16ea20(); // [6] 0x16ea20 (declared-only)
-
-    CVariantSlot* m_4; // +0x04 (error sink)
-    u32 m_8;           // +0x08 (capacity; unsigned -> jbe)
-    void* m_c;         // +0x0c (inline DWORD when m_8 <= 0x20, else heap DWORD*)
-};
-
-// zBitVec - the derived bit-vector. Its own vtable (??_7zBitVec @0x5f04c8) is stamped
-// by the ctor (0x16d790) right after the base ctor returns; the virtual dtor override
-// is what makes cl emit that distinct most-derived vtable + the implicit re-stamp (no
-// more manual `*(void**)this = &g_projActVtbl`). vptr inherited at +0x00.
-class zBitVec : public CContainerErr {
-public:
-    zBitVec(i32 idx, i32 sizehint); // 0x16d790
-    virtual ~zBitVec() OVERRIDE;    // [0] override; ??_G/dtor @0x16d2d0
-    i32 SetSize(i32 n);             // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z, external)
-    i32 EnsureSize(i32 nbits);      // 0x1936e0 (grow + preserve, reports OOM)
-};
+// CContainerErr (+0x04 CVariantSlot error sink) and zBitVec : CContainerErr (the
+// small-buffer bit-vector; SetSize 0x16e100, EnsureSize 0x1936e0) are the canonical
+// classes from <Wap32/zBitVec.h>.
 
 // The string-keyed crit-bit trie (the projectile-action name -> value map). Shares
 // the CContainerErr error-record idiom (the +0x04 CVariantSlot error sink). The

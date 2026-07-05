@@ -3,6 +3,7 @@
 // it returns - real polymorphic shape, no manual stamp), size the bit-vector to cover
 // `idx`, then set bit `idx`; on a sizing failure record the caller return address
 // and fire the error sink. The destructible polymorphic base forces the /GX frame.
+#include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Set)
 #include <Gruntz/ProjActCache.h>
 
 #include <stdlib.h> // realloc (0x125180), malloc (0x120b60)
@@ -46,9 +47,9 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
     if (!SetSize((i32)n)) {
         void* cache = g_projActCache;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_4->Set(this, (i32)cache, 0xc);
+        m_errSink->Set(this, (i32)cache, 0xc);
     } else {
-        u32* base = (m_8 > 0x20) ? (u32*)m_c : (u32*)&m_c;
+        u32* base = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
         u32* slot = base + ((u32)idx >> 5);
         *slot |= 1u << (idx & 0x1f);
     }
@@ -196,12 +197,12 @@ RVA(0x001936e0, 0xd3)
 i32 zBitVec::EnsureSize(i32 nbits) {
     u32 ndwords = ((nbits & 0x1f) != 0 ? 1 : 0) + ((u32)nbits >> 5);
     void* nbuf;
-    if (m_8 > 0x20) {
-        nbuf = realloc(m_c, ndwords * 4);
+    if ((u32)m_capacity > 0x20) {
+        nbuf = realloc(m_words, ndwords * 4);
         if (!nbuf) {
             goto fail;
         }
-        u32 oldn = m_8 >> 5;
+        u32 oldn = (u32)m_capacity >> 5;
         memset((u32*)nbuf + oldn, 0, (ndwords - oldn) * 4);
     } else {
         nbuf = malloc(ndwords * 4);
@@ -209,15 +210,14 @@ i32 zBitVec::EnsureSize(i32 nbits) {
             goto fail;
         }
         memset(nbuf, 0, ndwords * 4);
-        memcpy(nbuf, &m_c, 4);
+        memcpy(nbuf, &m_words, 4);
     }
-    m_c = nbuf;
-    m_8 = ndwords * 32;
+    m_words = (u32*)nbuf;
+    m_capacity = ndwords * 32;
     return 1;
 fail:
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_4->Set(this, (i32)cache, 0xc);
+    m_errSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
-SIZE_UNKNOWN(zBitVec);

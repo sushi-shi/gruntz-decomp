@@ -4,24 +4,26 @@
 // what makes MSVC emit the /GX EH frame). NOT MATCHED here: the RVA()/DATA()
 // pins pin the symbols so the leaf ctors' calls/loads reloc-resolve on both base
 // and target sides.
+#include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Set on the OOM paths)
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
-// The +0x18 link: an EngStr name, ctor at 0x16d710 (can throw).
+// The +0x18 link: a zBitVec name field, ctor at 0x16d710 (can throw).
 RVA(0x0016d710, 0x76)
 CUserBaseLink::CUserBaseLink() {}
 
-// EngStr - the engine string class (incs CString clone). Bodies live in the
-// engine string TU; pinned here so the ctors' temp-construct/assign/destruct
-// sequence reloc-masks.
+// zBitVec - the container the Ghidra "EngStr" label really names (see
+// <Wap32/zBitVec.h>). Its ~ (0x16d2a0), deep-copy operator= (0x16d2f0) and the 836B
+// whitespace/'-' number-list PARSER ctor (0x16d3a0) live here; pinned so the leaf
+// ctors' construct/assign/destruct reloc-mask. (Bodies reconstructed below.)
 RVA(0x0016d3a0, 0x344)
-EngStr::EngStr(const char*, i32) {}
+zBitVec::zBitVec(const char*, i32) : CContainerErr(g_containerName) {}
 RVA(0x0016d2f0, 0xac)
-EngStr& EngStr::operator=(const EngStr&) {
+zBitVec& zBitVec::operator=(const zBitVec&) {
     return *this;
 }
 RVA(0x0016d2a0, 0x26)
-EngStr::~EngStr() {}
+zBitVec::~zBitVec() {}
 
 // operator new the engine uses (0x1b9b46, __cdecl); reloc-masked rel32.
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46

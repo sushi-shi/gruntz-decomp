@@ -18,12 +18,17 @@
 
 #include <rva.h>
 
-// The +0x04 error sink the trie/registry reports a fatal failure through.
+// The +0x04 error sink the trie/registry/container reports a fatal failure through.
 // __thiscall(this; obj, a, b); the delinker names 0x16d850
 // ?Set@CVariantSlot@@QAEXPAXHH@Z. The registry seeds its +0x00 callback slot and
-// stores a probe index / word / type-tag / label (used by the hot Set switch).
+// stores a probe index / word / type-tag / label (used by the hot Set switch). This
+// is ALSO CContainerErr::m_errSink (<Wap32/zBitVec.h>): the container OOM paths call
+// Set here, and ~CContainerErr unregisters via Remove (0x16e360) - the old
+// zErrRegistry/Reg23 view of the same +0x04 object is folded in.
+SIZE_UNKNOWN(CVariantSlot);
 struct CVariantSlot {
     void Set(void* obj, i32 a, i32 b);           // 0x16d850
+    i32 Remove(void* obj, i32 flag);             // 0x16e360 (~CContainerErr unregister)
     void(__cdecl* m_callback)(char* buf, i32 v); // +0x00 (call [this])
     i32 m_04;                                    // +0x04 probe index slot
     u16 m_08;                                    // +0x08 word storage

@@ -31,9 +31,9 @@
 
 #include <rva.h>
 
-// EngStr + the destructible +0x18 link sub-object (CUserBaseLink), shared with
-// the CGrunt world so both embed the identical link (see Gruntz/EngStr.h).
-#include <Gruntz/EngStr.h>
+// The destructible +0x18 link sub-object (CUserBaseLink, embedding a zBitVec name),
+// shared with the CGrunt world so both embed the identical link.
+#include <Gruntz/UserBaseLink.h>
 
 // ---------------------------------------------------------------------------
 // CGameObject - the engine object the 1-arg ctors are handed (read into edi).
@@ -532,7 +532,7 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_object = obj;
     m_objAux = obj->m_7c;
     {
-        EngStr tmp(g_emptyString, 0);
+        zBitVec tmp(g_emptyString, 0);
         m_link.m_str = tmp;
     }
     RegisterLogicTypesOnce();
