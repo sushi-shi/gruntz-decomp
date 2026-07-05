@@ -110,15 +110,17 @@ struct CArriveMgr { // this (edi)
     }
 
 // @early-stop
-// large grunt arrival/tile-effect resolver reconstruction (final-sweep candidate):
-// the Gate1a14 + m_328 latch, the destination + own cell copies (rep-movs cell copy /
-// out-of-bounds 0x01010101 fill), the door(0x4)/gate(0x4000/0x8000)/0x2/0x8/0x20/0x40
-// flag + grunt-type dispatch into the Move14bf / Trigger1640 / teleport / neighbour
-// handlers, the g_coordPool + g_freeList recycles and the /GX CString gate are
-// byte-shaped and the DATA refs (g_coordPool / g_freeList family / IntersectRect)
-// pair. Residual walls: the coalesced GetTilePos/cell-copy stack-slot schedule, the
-// per-branch EH-state stamps and the heavy callee-saved regalloc (this->edi /
-// g->ebp) diverge from retail - re-attack leaf-first in the final sweep.
+// large grunt arrival/tile-effect resolver reconstruction (final-sweep candidate).
+// 2026-07-05: fixed a structural placeholder - the OWN cell copy was wrongly reusing
+// the dest coords (m_8[gy][gx]); retail indexes it by the head-coord fcx on both axes
+// (m_8[fcx][fcx], bounds fcx<width && fcx<height, verified vs llvm-objdump -dr). Now
+// the Gate1a14 + m_328 latch, BOTH cell copies (rep-movs 7-dword / out-of-bounds
+// 0x01010101 rep-stos fill), the door(0x4)/gate(0x4000/0x8000)/0x2/0x8/0x20/0x40 flag +
+// grunt-type dispatch into the Move14bf / Trigger1640 / teleport / neighbour handlers,
+// the g_coordPool + g_freeList recycles and the /GX CString gate are correct in shape.
+// Residual walls: the coalesced GetTilePos/cell-copy stack-slot schedule, the per-branch
+// EH-state stamps and the heavy callee-saved regalloc (this->edi / g->ebp) diverge from
+// retail - re-attack leaf-first in the final sweep.
 RVA(0x0002c690, 0xdb4)
 i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
     if (Gate1a14()) {
@@ -149,20 +151,21 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
     }
     dest = *dsrc;
 
-    // the grunt's own cell (from m_170)
+    // the grunt's own cell: retail indexes it by the head-coord fcx on BOTH axes
+    // (m_8[fcx][fcx], in-bounds iff fcx<width && fcx<height); OOB fills 0x01010101
+    // (rep stosl). (llvm-objdump -dr 0xfe/0x10b: cmp width,fcx / cmp height,fcx; the
+    // row load and the *7 column offset both use fcx.)
     CArriveCell own;
     CArriveCell fill2;
     CArriveCell* osrc;
-    i32 flags = own.m_0; // placeholder init; overwritten below
-    if (fcx < grid->m_c) {
-        // (own-cell selection mirrors dest; kept simple)
-        osrc = &grid->m_8[gy][gx];
+    if ((u32)fcx < (u32)grid->m_c && (u32)fcx < (u32)grid->m_10) {
+        osrc = &grid->m_8[fcx][fcx];
     } else {
         memset(&fill2, 1, 0x1c);
         osrc = &fill2;
     }
     own = *osrc;
-    flags = own.m_0;
+    i32 flags = own.m_0;
 
     i32 maskFlags = flags & 0xdfffffff;
     i32 type = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
