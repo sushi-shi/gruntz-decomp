@@ -16,33 +16,19 @@
 
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
+#include <Gruntz/View.h>       // canonical CView sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
 
 // The global empty C string (0x6293f4).
 extern "C" char g_emptyString[];
 
-// The namespace registrar reached via m_c->m_10. This is a FOREIGN engine class:
-// its ??_7 and the intermediate slots 0..18 are unreconstructed engine code, so the
-// honest model is the ONE dispatched slot. Its vtable slot +0x4c registers a
-// looked-up image set under a name + separator (returns -1 on failure), modeled as a
-// 4-byte PMF loaded from the vtable (`char m_pad00[0x4c]` documents the un-recovered
-// slots) so the call falls out as `mov edx,[ecx]; call [edx+0x4c]`.
-struct GLSRegistrarVtbl;
-struct GLSRegistrar {
-    GLSRegistrarVtbl* m_vtbl; // +0x00
-    i32 CallRegister(i32 handle, char* name, char* sep);
-};
-typedef i32 (GLSRegistrar::*GLSRegFn)(i32 handle, char* name, char* sep);
-struct GLSRegistrarVtbl {
-    char m_pad00[0x4c];
-    GLSRegFn Register; // +0x4c
-};
-inline i32 GLSRegistrar::CallRegister(i32 handle, char* name, char* sep) {
-    return (this->*(m_vtbl->Register))(handle, name, sep);
-}
-struct GLSNamespace {         // m_28 / m_30
-    i32 Lookup(char* szName); // FUN_0013bae0 __thiscall
+// The +0x10 image registrar is the canonical CImageRegistry (ResMgr.h): the
+// namespace-register op here is its LoadNamespace slot-19 (+0x4c) virtual. Uses the
+// real class - no local registrar view.
+struct GLSNamespace {           // m_28 / m_30
+    void* Lookup(char* szName); // FUN_0013bae0 __thiscall (resolved namespace tree)
 };
 struct GLSSub2c {
     void Step(i32); // FUN_0013e760 __thiscall
@@ -60,27 +46,15 @@ struct GLSSubA {  // m_c->m_4
 struct GLSObj24 {                    // m_c->m_24
     void Wire(GLSSub14* a, void* b); // FUN_0015dc90 __thiscall
 };
-// m_c->m_c: a FOREIGN engine class - its ??_7 and slots 0..12 are unreconstructed,
-// so the honest model is the ONE dispatched slot +0x34 (a 4-byte PMF from the vtable).
-struct GLSPolyCVtbl;
-struct GLSPolyC {
-    GLSPolyCVtbl* m_vtbl; // +0x00
-    void CallSlot34(GLSSub14* a, void* b);
-};
-typedef void (GLSPolyC::*GLSPolyCFn)(GLSSub14* a, void* b);
-struct GLSPolyCVtbl {
-    char m_pad00[0x34];
-    GLSPolyCFn Slot34; // +0x34
-};
-inline void GLSPolyC::CallSlot34(GLSSub14* a, void* b) {
-    (this->*(m_vtbl->Slot34))(a, b);
-}
-struct GLSAssetRoot { // this->m_c
+// The asset root (CPlay+0xc) is the canonical CView (Play.h): m_c is CView's
+// renderer-B (CView+0xc, the real class CRenderer, View.h), and the dispatched
+// slot 13 (+0x34) is CRenderer::Present. Uses the real class - no local view.
+struct GLSAssetRoot { // this->m_c (== CView, View.h)
     char m_pad00[0x4];
-    GLSSubA* m_4;       // +0x04
-    void* m_8;          // +0x08
-    GLSPolyC* m_c;      // +0x0c
-    GLSRegistrar* m_10; // +0x10
+    GLSSubA* m_4;         // +0x04  CView render-state (CDDrawSubMgrPages family)
+    void* m_8;            // +0x08  renderer A
+    CRenderer* m_c;       // +0x0c  renderer B (CRenderer, Present slot 13)
+    CImageRegistry* m_10; // +0x10  the image/tile registrar
     char m_pad14[0x24 - 0x14];
     GLSObj24* m_24; // +0x24
 };
@@ -130,11 +104,11 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    i32 h = p->m_28->Lookup("TILEZ");
+    void* h = p->m_28->Lookup("TILEZ");
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->CallRegister(h, g_emptyString, "_") == -1) {
+    if (p->m_c->m_10->LoadNamespace(h, g_emptyString, "_") == -1) {
         return 0;
     }
 
@@ -142,7 +116,7 @@ i32 CPlay::OnActivate() {
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->CallRegister(h, "LEVEL", "_") == -1) {
+    if (p->m_c->m_10->LoadNamespace(h, "LEVEL", "_") == -1) {
         return 0;
     }
 
@@ -150,7 +124,7 @@ i32 CPlay::OnActivate() {
     if (!h) {
         return 0;
     }
-    if (p->m_c->m_10->CallRegister(h, "GRUNTZ", "_") == -1) {
+    if (p->m_c->m_10->LoadNamespace(h, "GRUNTZ", "_") == -1) {
         return 0;
     }
 
@@ -165,7 +139,7 @@ i32 CPlay::OnActivate() {
         p->Method1ae6();
     } else {
         p->m_c->m_24->Wire(p->m_c->m_4->m_14, p->m_c->m_8);
-        p->m_c->m_c->CallSlot34(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
+        p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
     }
 
     p->m_2dc->Finalize();
@@ -180,10 +154,6 @@ SIZE_UNKNOWN(GLSAssetRoot);
 SIZE_UNKNOWN(GLSMapMgr);
 SIZE_UNKNOWN(GLSNamespace);
 SIZE_UNKNOWN(GLSObj24);
-SIZE_UNKNOWN(GLSPolyC);
-SIZE_UNKNOWN(GLSPolyCVtbl);
-SIZE_UNKNOWN(GLSRegistrar);
-SIZE_UNKNOWN(GLSRegistrarVtbl);
 SIZE_UNKNOWN(GLSResetMgr);
 SIZE_UNKNOWN(GLSSub14);
 SIZE_UNKNOWN(GLSSub2c);

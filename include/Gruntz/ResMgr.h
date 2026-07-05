@@ -71,6 +71,10 @@ struct CImageRegistry {
     virtual void v16();
     virtual void v17();
     virtual void Install(void* set, char* szName, char* szKey); // slot 18 (+0x48)
+    // slot 19 (+0x4c): register a resolved symbol tree under a prefix (returns -1 on
+    // failure) - the RESOURCE-facet op the game-state activators reach (CBootyState/
+    // CMenuState/CPlay slot-8 loaders). Same +0x10 registrar object as Install.
+    virtual i32 LoadNamespace(void* tree, char* szName, char* szKey);
 
     char m_pad04[0x10 - 0x4]; // vptr occupies +0x00..+0x03
     CSpriteHashTable m_10map; // +0x10  the name->sprite hash table
