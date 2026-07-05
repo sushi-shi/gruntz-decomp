@@ -137,26 +137,23 @@ i32 __stdcall SbiPointInChild(i32 x, i32 y);
 // +0x38 (CState::Vslot0e) is now a real virtual call.
 
 // @early-stop
-// regalloc/frame-slot wall (~52%): logic complete + verified instruction-by-
-// instruction vs retail (every guard, the Dispatch/vtable delegates, the mode-2
-// cue arm, HitTest/Select, the rect test, Probe, and the tile-align spawn loop all
-// match), and dropping the `m_2dc` local cache already pinned `this` to edi exactly
-// like retail. The sole residual: retail's 0x10 frame reuses the dead x-arg home for
-// the Probe out-param, while this /O2 build gives it a fresh 5th slot ([esp+0x10]) ->
-// a 0x14 frame that +4-shifts every [esp+N] operand. Not source-steerable. See
-// docs/patterns/zero-register-pinning.md + identical-return-epilogue-tailmerge.md.
+// 4-byte stack-coalesce wall (~84%, body byte-exact). The prior park (~52%) blamed
+// only the frame, but the REAL blocker was return-epilogue tail-merge: retail funnels
+// the two `return 1` guards to ONE shared epilogue and the two `return Dispatch()`
+// guards to another, while a per-guard `if(a)return; if(b)return;` INLINES each
+// epilogue. Fix: combine each paired guard with `||` (`if(m_484||!m_2dc)return 1;`
+// short-circuits to the shared return with two tests + one exit) -> 51.7 -> 84.2.
+// Residual is a uniform +4 frame shift (sub esp,0x14 vs 0x10): retail packs every
+// local into the 16-byte RECT + path-dependent reuse of the dead x/y arg homes for
+// the Probe/Find out-params; this build spills one out-param to a fresh 5th slot.
+// A documented stack-slot-coalesce coin-flip (docs/patterns/stack-slot-coalesce-
+// frame-4b.md), not source-steerable; ZERO logic differences remain.
 RVA(0x000ce660, 0x362)
 i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
-    if (m_hudSuppressed != 0) {
+    if (m_hudSuppressed != 0 || m_guts == 0) {
         return 1;
     }
-    if (m_guts == 0) {
-        return 1;
-    }
-    if (m_overlayDrag != 0) {
-        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
-    }
-    if (g_sbiMgr->m_68->m_400 == 0) {
+    if (m_overlayDrag != 0 || g_sbiMgr->m_68->m_400 == 0) {
         return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
