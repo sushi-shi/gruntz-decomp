@@ -3708,7 +3708,7 @@ wwdfile	?InitScrollRects@CPlaneRender@@QAEXXZ	99.9157	99.9157	2	1579a21bda11	0x1
 wwdfile	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	465739db8fa7	0x1638c0
 wwdfile	?ReadObjectPlane@CGameLevelPlanes@@QAEPAVCPlane@@HHHHHHH@Z	99.5949	99.5949	1	c608fad16767	0x15d9a0
 wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	4	1345c133fc23	0x15d8d0
-wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	7	5c4ca68d51d5	0x162af0
+wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	77.1667	77.1667	8	0067e4b68c7a	0x162af0
 wwdfile	?RebuildPlanes@WwdFile@@QAEHHH@Z	50.6600	50.6600	3	e3aac9c2921b	0x1628f0
 wwdfile	?ResolveColorKey@CPlaneRender@@QAEXXZ	66.6078	66.6078	3	aead1d8e7cec	0x163670
 wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	99.9833	1	0557ec6d7f43	0x163780
