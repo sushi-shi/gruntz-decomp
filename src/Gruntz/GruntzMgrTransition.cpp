@@ -225,6 +225,14 @@ struct CBootyState : CTsBaseA { // param 10, 0x320
     char m_pad2f8[0x320 - 0x2f8];
     CBootyState();
 };
+// NOTE for matcher-4 (the vtbl-stamp owner of this file): the canonical
+// CCreditsState : CState EXISTS in <Gruntz/GameMode.h> (RTTI vtbl@0x1e9c64) and
+// CreditzAssets.cpp now folds onto it. This local shell + its g_stCCreditsStateVtbl
+// ctor stamp is the SAME Bucket-C whole-family pattern documented on CMenuState
+// above; when the family converts, union THIS view's field knowledge into the
+// canonical (m_1c8/m_1d8 rect subs; m_1e8's CTsSub45 ctor 0x8c3b0 is the canonical
+// CCreditsImageList's; m_1f0 == m_caption; m_208/m_210 == m_videoPlaying/
+// m_videoHandle - offsets agree, no conflation).
 struct CCreditsState : CTsBaseA { // param 8, 0x218
     i32 m_1b4;                    // +0x1b4
     i32 m_1b8;                    // +0x1b8

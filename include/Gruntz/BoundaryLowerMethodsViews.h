@@ -8,6 +8,50 @@
 // counts -> identical codegen) and gives a sibling/final-sweep TU one definition to
 // reuse. The serialize/archive object folds to the canonical CSerialArchive (Read
 // @ +0x2c / Write @ +0x30).
+// AXE WORKLIST (user mandate 2026-07-05: every struct here is a fake view to be
+// dissolved onto its real class). Folded so far: C99ba0/C9a420 -> CAreaMgr/
+// CSpawnList, C8e880/C915d0 -> CGruntzMgr. Caller evidence gathered for the rest
+// (sema xref --tree; VERIFY before folding - the post-rename xref cache was
+// degraded when captured):
+//   C213a0   <- CChatBoxOwner::ProcessCheatInput (vbtable getter; cheat family)
+//   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (act/logic type coll;
+//                sibling of CTypeKeyColl : CZArray2D - unify there)
+//   C50ca0   <- CGrunt::RunEntranceMove (grunt-sized owner, +0x1a0/1a4 pair)
+//   C77dc0   <- CTerrainTileLoader::Load + CPlayLevelLoad::LoadPyramidBridge
+//                (tile-plane cell setter; candidate CTileGrid/plane facet)
+//   C9cab0   == the logic-type registry (its m_10 sub's Get @0x1b8008 is
+//                CLogicTypeMap::Lookup) - THIRD dup of the CLogicRegistry views in
+//                LogicTypeTable.cpp + UserLogicCtorEmit.cpp; unify all three.
+//                Callers: CLevelTime/CLightFx 1-arg ctors.
+//   C0b4c40  <- thunk band names it CVoiceTrigger (voice-trigger family)
+//   Cbd450   <- RegisterGameObjectTypes (the c:\gruntz.log opener init)
+//   Ccef50   <- ~CLobbySlot + CPlay::ResetForMode (view/world teardown w/
+//                CDDrawWorkerMgr - matcher-4 stamp-family adjacency, coordinate)
+//   Cd5e20   <- HandlerAF0A0/CRollingBall (slot +0x3c/+0x40 forwarder - likely a
+//                CUserLogic-family virtual pair)
+//   Cdb200   <- CNetMgr::DispatchRecvMsg (net holder swap)
+//   Cdb2f0   == IsBattlezMapFile per the thunk label <- CustomLevelDlg::Populate +
+//                FillCustomLevelList (the custom-level map-file object)
+//   Cdb750   <- CPlayLevelLoad::LoadByMode; its CSymTab (ResolvePath 0x13bae0) is
+//                the SAME class as LoadObjectResources.cpp's ObjResLookup - unify.
+//   Cea170   <- CStatusBarMgr::LoadTabSprites + LoadStatzTabToggleSprite (SBI family)
+//   Ceb970 + C113e70 <- CTileTriggerSwitchLogic::ApplyByType (tile-trigger
+//                serializers; CSerialArchive already canonical)
+//   Cfa150   == CState/CGameModeBase::BaseCleanup (the thunk band names it
+//                BaseCleanup; callers CAttract/CBootyState::ReleaseResources; see
+//                State.h's dtor `((CGameModeBase*)this)->BaseCleanup()`) - STRONG.
+//   C104c80  <- FillGameInfoDialog (savegame blit release)
+//   C104dd0  <- CSBI_RectOnly::SetState/TryActivate (its lazy StatusBarSprite
+//                creator - fold onto the CSBI_RectOnly canonical)
+//   C10bbe0  <- CGrunt::LoadPickupSprites (+0x528 table on a CPlay-sized object -
+//                candidate CPlay method; check Play.h +0x528)
+//   C112bf0  <- CTriggerMgr::ClearGridRange/ResetCell (matcher-3's TriggerMgr
+//                domain - DEFER to that worker)
+//   Gate113860 <- SerializeApplyA/CTileTriggerFactory::Build (trigger factory)
+//   Fwd114ec0/Fwd114f00 <- CGruntzMgr::HandleCommand thunk ShowHudMessageAlt
+//                (HUD-message forwarders; candidate CGruntzMgr cmd family)
+//   C1181d0  <- CMenuState::LoadAssets (thunk BuildMainMenuTree)
+//   C118260  <- ScrollDialog (thunk SaveVideoCheckboxes; video-options dialog)
 #ifndef GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 #define GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 
