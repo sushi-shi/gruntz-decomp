@@ -299,3 +299,24 @@ SIZE_UNKNOWN(CAreaMgr);
 SIZE_UNKNOWN(CSpawnEntryN);
 SIZE_UNKNOWN(CSpawnList);
 SIZE_UNKNOWN(CSpawnNode);
+
+// ---------------------------------------------------------------------------
+// The area/zone dialog's OnInitDialog (0x0c2cb0), re-homed from the ApiCaller
+// stubs: CAreaMgr::Dispatch (0x099d40) drives this dialog, whose HWND lives at
+// +0x1c (the CWnd::m_hWnd slot of a CDialog subclass). It chains the base
+// CDialog::OnInitDialog (0x1bac5e, reloc-masked) then arms a 50 ms repaint
+// timer. A CDialog-derived class whose concrete identity is not yet recovered;
+// modeled minimally (offsets + code bytes load-bearing).
+struct AreaTimerDlg {
+    char m_pad0[0x1c];
+    HWND m_hWnd;            // +0x1c  CWnd::m_hWnd
+    i32 OnInitDialog();     // 0x0c2cb0
+    i32 BaseOnInitDialog(); // 0x1bac5e (CDialog::OnInitDialog)
+};
+SIZE_UNKNOWN(AreaTimerDlg);
+RVA(0x000c2cb0, 0x1f)
+i32 AreaTimerDlg::OnInitDialog() {
+    BaseOnInitDialog();
+    SetTimer(m_hWnd, 1, 0x32, 0);
+    return 1;
+}

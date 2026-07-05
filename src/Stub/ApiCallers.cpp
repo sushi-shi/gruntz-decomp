@@ -785,20 +785,8 @@ namespace ApiCallerStubs {
     // (0xc2980 winapi_0c2980 -> SetListCurSel in src/Gruntz/MultiStartDlgRoster.cpp,
     // a CMultiStartDlg roster listbox helper.)
 
-    // __thiscall OnInitDialog: chain to CDialog::OnInitDialog (RVA 0x1bac5e),
-    // then arm a 50 ms timer on this dialog's HWND (m_1c). Returns TRUE.
-    struct TimerDlg_0c2cb0 {
-        char m_pad0[0x1c];
-        HWND m_1c; // +0x1c
-        i32 OnInitDialog();
-        i32 BaseOnInitDialog(); // RVA 0x1bac5e (CDialog::OnInitDialog)
-    };
-    RVA(0x000c2cb0, 0x1f)
-    i32 TimerDlg_0c2cb0::OnInitDialog() {
-        BaseOnInitDialog();
-        SetTimer(m_1c, 1, 0x32, 0);
-        return 1;
-    }
+    // (0xc2cb0 TimerDlg::OnInitDialog re-homed to AreaMgr.cpp (AreaTimerDlg): the
+    // area/zone dialog CAreaMgr::Dispatch drives.)
 
     // (0xc2ce0 EditAppendHost::Append, 0xc3e30 OnReset, 0xc4230 UpdatePlayers,
     // 0xc4ee0/f30/f80/fd0 SelHost::Update0..3, 0xc50f0 RosterHost::Toggle re-homed to
