@@ -81,22 +81,26 @@ void CSbConfigItem::SetDirection(i32 a, i32 b) {
 // frame (the just-created item is EH-rolled-back if a later Configure throws).
 //
 // @early-stop
-// ~43% (was 24%); REGISTER LAYOUT NOW MATCHES retail's Order-A (this->esi, bx->ebx, by->ebp).
-// THE UNLOCK (docs/patterns/gx-this-esi-via-cache-store-pressure.md): the out-of-line
+// ~44.8% (was 24.1%); REGISTER LAYOUT NOW MATCHES retail's Order-A (this->esi, bx->ebx,
+// by->ebp). THE UNLOCK (docs/patterns/gx-this-esi-via-cache-store-pressure.md): the out-of-line
 // CSbConfigItem base ctor (CSBCONFIGITEM_OUTOFLINE_CTOR) raises the /GX frame, but on the
 // bare partial it lands this->ebp/edi (Order-B) - retail keeps `code` in MEMORY [esp+0x10]
 // and dedicates edi to the zero-constant, which needs the WHOLE body's register pressure.
 // Reconstructing the esi-relative cache stores (m_204/m_218/m_224/m_364..m_628) + the Game
-// WARPSTONE run + Resource BELT + Multiplayer HEAD slots supplied that pressure: cl spills
-// `code`, dedicates edi=0, and puts `this` in esi - exactly retail. Cases are emitted in
-// retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game).
+// WARPSTONE run + Resource BELT + Multiplayer HEAD slots/loop supplied that pressure: cl
+// spills `code`, dedicates edi=0, and puts `this` in esi - byte-exact retail prologue. Cases
+// are emitted in retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game). COMPLETE
+// cases: Gruntz (TITLE+GRUNTOVEN loop+WELL/OVENZ/WELLTEXT/WELLGOO), Game (TITLE+WARPSTONE
+// Probe-gated run+BuildGameMenu). PARTIAL: Resource (through BELT), Multiplayer (through HEAD
+// loop), Statz (TITLE).
 //
-// RESIDUAL (the remaining ConfigureEx/cross-call/ebp-reuse runs - each raises %, none needs
-// a new idea, just the decode): ResourceTab MACHINE (CSBI_GruntMachine 0x48 -> BuildResource-
-// TabStatusBar cross-call) + SHREDDER ConfigureEx loop; MultiplayerTab HEAD-loop
-// (GetSel/SetState/ShowFrames) + WARLORDHEAD -> BuildMultiplayerTabStatusBar; StatzTab
-// ARROW + SMALLICONZ 15-iter loop + WARLORDHEAD. The stack frame is 0x28 vs retail 0x34
-// (the missing loop induction locals shift [esp+N] throughout - fixed as those loops land).
+// RESIDUAL (the ConfigureEx/cross-call/ebp-reuse tails - each raises %, none needs a new idea,
+// just the byte-level decode of the ebp-reuse loops): ResourceTab SHREDDER (GREYCHIPZ/NORMCHIPZ
+// ConfigureEx loop, ebp=item) + MACHINE (CSBI_GruntMachine 0x48 -> BuildResourceTabStatusBar
+// cross-call, inline ctor + manual vtable 0x5eadbc); MultiplayerTab WARLORDHEAD (0x88 ->
+// BuildMultiplayerTabStatusBar); StatzTab mode-gate + SMALLICONZ 15-iter loop (CSBI_StatzTab-
+// GruntBar ConfigureEx + SetA/SetDirection + WARLORDHEAD). Stack frame 0x28 vs retail 0x34
+// (the missing ebp-reuse loop induction locals shift [esp+N] - closes as those loops land).
 RVA(0x00102250, 0x1dcd)
 i32 CStatusBarMgr::LoadTabSprites() {
     i32 code = m_code; // the Configure `code` arg (saved to [esp+0x10] in retail)
