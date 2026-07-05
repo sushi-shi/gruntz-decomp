@@ -336,6 +336,14 @@ public:
     i32 PlaceB(i32 a, i32 b, i32 c);
     void Fx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
+    // 0x7c620: FireCommand(cmd,x,y,slot,a5,a6) - the /GX cell-effect command dispatcher
+    // (jump table on `cmd`, ids 1..99). Called on the +0x68 registry m_cmdGrid by the tile
+    // effect loaders (TileTriggerSwitchLogic::BuildRockBreakInGameText, the tile-grid command
+    // region). UNRECONSTRUCTED (mislabeled ?LoadPowerupIconSprites@EngineLabelBacklog in the
+    // iconloaders unit); declared-only here so consumer self/method calls mangle onto this
+    // class and reloc-mask. No body/RVA in this TU.
+    i32 FireCommand(i32 cmd, i32 x, i32 y, i32 slot, i32 a5, i32 a6);
+
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CObList @0, record CObList @0x240, byte-table
     // CByteArray @0x260) and the ten-slot selection-list array (@0x2d0, stride 0x1c) are

@@ -35,10 +35,12 @@
 // RESOLVED: +0x74 is CSpriteRefTable* (<Gruntz/SpriteRefTable.h>) - one object,
 // RTTI/teardown-proven (Close tears it down via CSpriteRefTable::Reset @0xe2290; the
 // GetByIndex/LoadSprite consumer facets are its GetSel/LoadSprite methods, all cast-free).
-// The slots at 0x54/0x58/0x68/0x6c/0x78/0x7c are SUSPECT / UN-RECOVERED, NOT
+// RESOLVED: +0x68 is CTriggerMgr* (see the m_cmdGrid fwd-decl block below) - the ~10
+// per-TU downcasts were all views of the ONE non-polymorphic CTriggerMgr, proven by
+// shared method RVAs (HitTestCell 0x75af0, CellDispatch 0x6bcb0) + the +0x1c cell grid.
+// The slots at 0x54/0x58/0x6c/0x78/0x7c are SUSPECT / UN-RECOVERED, NOT
 // confirmed-authentic. Today each TU downcasts the void* to a different concrete type
-// (+0x68: a placement/cue grid in single-player, the goo-well mgr in battlez, a
-// light-fx SURFACE in the fx TUs; +0x7c: a "draw object" in GameMode vs GruntPickupStats
+// (+0x7c: a "draw object" in GameMode vs GruntPickupStats
 // in the pickup loader). That per-TU divergence is a RED FLAG per no-sane-dev-test: a
 // real CGruntzMgr field has ONE type, so "a different type per TU" almost always means
 // the real single type - or the common base the mode objects derive - was never
@@ -51,6 +53,11 @@
 #define GRUNTZ_GRUNTZ_CGAMEREGISTRY_H
 
 #include <Ints.h>
+// +0x30->+0x28 sound/anim cue registry (CSndHost). Included (not fwd-declared) as the
+// lightweight Ints.h-only SoundCue.h: a full def does NOT count toward this ~60-TU
+// header's file-scope forward-decl budget, so typing m_28 CSndHost* costs 0 fwd decls
+// (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md - the include-as-lever).
+#include <Gruntz/SoundCue.h>
 
 struct CSpriteFactory; // +0x30 -> +0x08 factory (CreateSprite); Grunt.h completes it
 class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or, in
@@ -59,6 +66,16 @@ class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or
                        // data-less method handle, so layout-neutral, no cross-cast)
 class CState;          // +0x2c current game-state; CState.h completes it
 struct CInput54;       // +0x54 active-level input/spatial-sound object (InputState.h)
+// +0x68 world command/trigger grid. RESOLVED -> CTriggerMgr (<Gruntz/TriggerMgr.h>):
+// the ~10 per-TU downcasts (CTeleIconTable/CTriggerSink/CSbIconSet/CSlimeCueGate/
+// CPathCueGate/TgcRegion/MgrObj/RbCmdGrid/...) are all VIEWS of the ONE non-polymorphic
+// CTriggerMgr. Proven by shared non-virtual method RVAs: the 5-arg Probe/HitTestCell
+// == CTriggerMgr::HitTestCell @0x75af0, the 4-arg ScrollTo/Strike/RbMarkRect ==
+// CTriggerMgr::CellDispatch @0x6bcb0 (both FID-tagged ?...@CTriggerMgr@@), and the
+// +0x1c 15-column grid every array-consumer indexes == CTriggerMgr::m_grid. Forward-
+// declared (not included) to keep this ~60-TU header MFC-free (TriggerMgr.h pulls
+// <Mfc.h>); consumers include TriggerMgr.h to reach methods cast-free.
+class CTriggerMgr;
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
 // <Gruntz/Viewport.h>; forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
@@ -102,16 +119,12 @@ struct CSpriteFactoryHolder {
     CImageRegistry* m_10; // +0x10  image/tile registry (name->sprite map)
     char m_pad14[0x24 - 0x14];
     CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport)
-    void* m_28;          // +0x28  sound/anim cue registry. The ONE real class is CSndHost
-                         //         (<Gruntz/SoundCue.h>: CSndFinder @+0x10 name->CSndEmitter
-                         //         map + the +0x30 emit gate) - the per-TU RbSoundReg/GZGateB
-                         //         views modeled it. Kept void* on this ~60-TU header (consumers
-                         //         reinterpret at the use site, like m_cmdGrid/m_scoreHud below):
-                         //         naming CSndHost here bumps the header's /O2 type-table and
-                         //         butterflies matched TUs (measured: sbi_rectonly
-                         //         LoadMainStatusBarSprite 95.6->88.6, gamemode FlashColor
-                         //         70.4->66.6). The recovered type is documented; the swap is
-                         //         net-negative, so consumers cast (SoundCue.h names the class).
+    CSndHost* m_28;      // +0x28  sound/anim cue registry (CSndHost, <Gruntz/SoundCue.h>:
+                         //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate).
+                         //         Forward-declared above so consumers reach it cast-free; TUs that
+                         //         deref it include SoundCue.h. (Was void*; typed per the
+                         //         model-the-class mandate - the header /O2 type-table wobble is
+    //         the accepted clean-room cost, diagnosed via the butterfly levers.)
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
@@ -248,10 +261,14 @@ struct CGameRegistry {
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)
     char m_pad64[0x68 - 0x64];
-    void* m_cmdGrid;       // +0x68  world command-grid (ONE object; the per-mode downcasts -
-                           //         placement/cue grid in single-player, goo-well mgr in battlez,
-                           //         light-fx target in fx - are the unrecovered-type artifact).
-    void* m_cmdSubMgr;     // +0x6c  secondary grid/cmd sub-object
+    CTriggerMgr*
+        m_cmdGrid;     // +0x68  world command/trigger grid (CTriggerMgr, <Gruntz/TriggerMgr.h>).
+                       //         RESOLVED (see fwd-decl above): the per-TU downcasts to
+                       //         CTeleIconTable/CTriggerSink/CSbIconSet/etc. are all views of the
+                       //         ONE CTriggerMgr; its 5-arg HitTestCell @0x75af0 + 4-arg
+                       //         CellDispatch @0x6bcb0 are FID-tagged CTriggerMgr methods and its
+                       //         +0x1c m_grid is the 15-column cell grid every consumer indexes.
+    void* m_cmdSubMgr; // +0x6c  secondary grid/cmd sub-object
     CTileGrid* m_tileGrid; // +0x70  tile occupancy grid + tile-system notifier
                            //         (GruntzMgr m_cmdNotify: cmd sink writes cell heights)
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (ONE object,

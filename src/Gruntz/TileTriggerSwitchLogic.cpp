@@ -25,6 +25,8 @@
 #include <Gruntz/Viewport.h>      // CViewport (the level plane: cells + row-base table)
 #include <Gruntz/SoundCue.h>      // the ONE sound-cue registry (CSndHost/CSndFinder/
                                   // CSndEmitter/CSoundCueMgr) - folds the former Rb* views
+#include <Gruntz/TriggerMgr.h>    // CTriggerMgr - the ONE +0x68 m_cmdGrid class (FireCommand
+                                  // @0x7c620) - folds the former RbCmdGrid method-only view
 
 // CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
 // header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
@@ -499,16 +501,6 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 // are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
 // ConfigureItem 0x1360d0).
 
-// The world command-grid effect sink (g_gameReg->m_cmdGrid, reg+0x68). This is the ONE
-// genuinely-unrecovered +0x68 slot GameRegistry.h documents as a red flag: every TU
-// downcasts m_cmdGrid to a DIFFERENT concrete type (CSbIconSet/CTeleIconTable/CTriggerSink/
-// CGruntRec**/...), so a single real class is not recovered. Kept as a method-only view
-// (identity-recovery TODO), consistent with all other m_cmdGrid consumers.
-struct RbCmdGrid {
-    void Fire(i32 key, i32 x, i32 y, i32 slot, i32 a, i32 b); // 0x152d
-};
-SIZE_UNKNOWN(RbCmdGrid);
-
 // `this` stays in esi; tile (x, y) are re-read from +0x8/+0xc at each use (retail
 // caches neither, so caching them here would spill the frame from 0x14 to 0x38).
 #define TX (*(i32*)(self + 0x8))
@@ -572,8 +564,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
     i32 cx = (TX << 5) + 0x10;
     i32 cy = (TY << 5) + 0x10;
-    ((RbCmdGrid*)g_gameReg->m_cmdGrid)
-        ->Fire(*(i32*)(self + 0xc0), cx, cy, *(i32*)(self + 0x30), 1, 0);
+    g_gameReg->m_cmdGrid->FireCommand(*(i32*)(self + 0xc0), cx, cy, *(i32*)(self + 0x30), 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
     if (*(i32*)(self + 0xc4) != 0) {
@@ -591,8 +582,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
         || (TY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
-    CSndHost* sreg = (CSndHost*)gameMgr->m_28; // m_28 kept void* on the 60-TU holder (see
-                                               // GameRegistry.h); CSndHost is the real class
+    CSndHost* sreg = gameMgr->m_28; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
     if (sreg->m_30 != 0) {
         return;
     }
