@@ -1,32 +1,39 @@
-// DrawDebugStats.cpp - the in-game debug-overlay text renderer (0xcf770), a
-// __thiscall HUD method on the PLAY game-state object. Recovered from the $SG
-// string set ("Fps = %i ", " Objs = %i ", " Pos = %i,%i", " Timing = On ",
-// " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu") + the GDI call set
-// (SetBkMode/SetTextColor/SetBkColor/DrawTextA/TextOutA).
+// DrawDebugStats.cpp - CPlay::DrawDebugStats (0xcf770), the in-game debug-overlay
+// text renderer. Recovered from the $SG string set ("Fps = %i ", " Objs = %i ",
+// " Pos = %i,%i", " Timing = On ", " Sent = %i, Rcvd = %i, Frame = %i Counter =
+// %lu") + the GDI call set (SetBkMode/SetTextColor/SetBkColor/DrawTextA/TextOutA).
+//
+// IDENTITY (fake-view burndown, 2026-07-05): the former TU-local "CDbgView" owner
+// + its Dbg* sub-views were a per-TU shadow of the real CPlay: `sema xref 0xcf770`
+// shows the callers are ?Render@CPlay (0xc8cf0) and CMulti::PumpB (CMulti : CPlay
+// per RTTI), Play.h already declared the SAME RVA as its reloc-masked
+// "ProfFlushTail", and every deref maps onto the canonical shapes: m_4/m_c are
+// CState's CGruntzMgr*/CView*, the fps is CGameMgr::m_fps (+0x18), the object
+// count CRenderer::m_1c (renderer A), the position CDrawSurface::m_5c->CameraGeom
+// {m_84,m_88}, the DC host the render-flip CDDSurface (RenderState::m_14->m_2c)
+// whose +0x08 holds the real IDirectDrawSurface (GetDC slot 17 +0x44 / ReleaseDC
+// slot 26 +0x68, __stdcall), and the net counters are CPlay +0x2d0/+0x2d4.
+// GetFrame (slot 27, +0x6c) and PostSetup (slot 37, +0x94) are the inherited
+// CState fat-interface virtuals (State.h).
 //
 // Structure: a debug-flags byte (g_debugFlags @0x6455f4) gates the whole thing
 // (bit 0x20 = master off) and each text piece (0x10 Fps, 0x1 Objs, 0x4 Pos,
 // 0x40 Timing, 0x80 elapsed-time, 0x2 net stats). Each piece sprintf's into a
 // scratch buffer and inline-strcat's onto the accumulator; the 0x80 piece builds
 // a CString (FormatElapsed @0x1190f0, "%i:%02i:%02i") which gives the routine its
-// /GX exception frame, so it lives in an `eh` unit. The tail grabs a DC from a
-// polymorphic source (m_c->m_4->m_14->m_2c->m_8; the IDirectDrawSurface COM slots
-// GetDC = +0x44, ReleaseDC = +0x68, both __stdcall), sets text attrs,
-// runs the owner's post-setup virtual (slot +0x94), and draws the accumulated
-// text bottom-aligned in the level's rect (g_dbgMgr->GetRect, then DrawTextA when
+// /GX exception frame, so it lives in an `eh` unit. The tail draws the text
+// bottom-aligned in the level's rect (g_dbgMgr->GetRect, then DrawTextA when
 // rect.left>0 else TextOutA).
-//
-// CARCASS doctrine: the owning class + the m_4/m_c sub-objects are unmatched
-// engine classes accessed by raw this+offset; every callee is a reloc-masked
-// external __thiscall/__stdcall/__cdecl thunk; the format strings are $SG
-// literals reloc-masked against the matched string symbols. Only the offsets /
-// code bytes are load-bearing.
 
 #include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcat/strlen intrinsics (/O2)
+#include <Gruntz/Play.h>        // the real CPlay : CState (the method owner)
+#include <Gruntz/View.h>        // the CView chain (renderer A, render state, draw surface)
+#include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
+#include <Gruntz/GruntzMgr.h>   // CGruntzMgr (base CGameMgr::m_fps @+0x18)
+#include <stdio.h>              // engine sprintf (reloc-masked)
+#include <string.h>             // inline strcat/strlen intrinsics (/O2)
 
 #include <rva.h>
 #include <Globals.h>
@@ -38,110 +45,10 @@ extern "C" u32 g_645588; // a wrap-safe draw/elapsed counter (FormatElapsed arg 
 // CString (copy-construct into the caller's hidden return slot).
 CString FormatElapsed(i32 count);
 
-// The fps source (this->m_4).
-struct DbgFpsSrc {
-    char m_pad00[0x18];
-    i32 m_18; // +0x18  fps
-};
-// The object-count source (this->m_c->m_8).
-struct DbgObjsSrc {
-    char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  active object count
-};
-// The position source (this->m_c->m_24->m_5c).
-struct DbgPos {
-    char m_pad00[0x84];
-    i32 m_84; // +0x84  x
-    i32 m_88; // +0x88  y
-};
-struct DbgPosRoot { // this->m_c->m_24
-    char m_pad00[0x5c];
-    DbgPos* m_5c; // +0x5c
-};
-// The DC source reached through this->m_c->m_4->m_14->m_2c->m_8: the game's real
-// IDirectDrawSurface (<ddraw.h>). GetDC is slot 17 (+0x44), ReleaseDC slot 26
-// (+0x68); both __stdcall with the surface as the hidden `this`, so
-// `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
-// call [reg+slot]` - pointer-only, no vtable emitted in this TU.
-struct DbgDcHost { // this->m_c->m_4->m_14->m_2c
-    char m_pad00[0x8];
-    IDirectDrawSurface* m_8; // +0x08
-};
-struct DbgL14 { // this->m_c->m_4->m_14
-    char m_pad00[0x2c];
-    DbgDcHost* m_2c; // +0x2c
-};
-struct DbgDcRoot { // this->m_c->m_4
-    char m_pad00[0x14];
-    DbgL14* m_14; // +0x14
-};
-struct DbgMc { // this->m_c
-    char m_pad00[0x4];
-    DbgDcRoot* m_4;  // +0x04  DC chain root
-    DbgObjsSrc* m_8; // +0x08  object-count source
-    char m_pad0c[0x24 - 0xc];
-    DbgPosRoot* m_24; // +0x24  position root
-};
 // The *0x64556c game-registry singleton, this method's typed alias: GetRect
 // returns the level's text rect by out-param + value.
 DATA(0x0024556c)
 extern CGameRegistry* g_dbgMgr; // *0x64556c, this method's alias
-
-// The debug-HUD owner is a big polymorphic engine/state class (its full identity +
-// most slots are unrecovered engine code, declared structurally so the two dispatched
-// slots land at their true offsets). Real polymorphic dispatch: this->GetFrame() /
-// this->PostSetup(hdc) lower to `mov eax,[this]; call [eax+slot]` (never constructed
-// here, so cl emits no ??_7).
-class CDbgView {
-public:
-    virtual void Vslot00();         // +0x00
-    virtual void Vslot01();         // +0x04
-    virtual void Vslot02();         // +0x08
-    virtual void Vslot03();         // +0x0c
-    virtual void Vslot04();         // +0x10
-    virtual void Vslot05();         // +0x14
-    virtual void Vslot06();         // +0x18
-    virtual void Vslot07();         // +0x1c
-    virtual void Vslot08();         // +0x20
-    virtual void Vslot09();         // +0x24
-    virtual void Vslot10();         // +0x28
-    virtual void Vslot11();         // +0x2c
-    virtual void Vslot12();         // +0x30
-    virtual void Vslot13();         // +0x34
-    virtual void Vslot14();         // +0x38
-    virtual void Vslot15();         // +0x3c
-    virtual void Vslot16();         // +0x40
-    virtual void Vslot17();         // +0x44
-    virtual void Vslot18();         // +0x48
-    virtual void Vslot19();         // +0x4c
-    virtual void Vslot20();         // +0x50
-    virtual void Vslot21();         // +0x54
-    virtual void Vslot22();         // +0x58
-    virtual void Vslot23();         // +0x5c
-    virtual void Vslot24();         // +0x60
-    virtual void Vslot25();         // +0x64
-    virtual void Vslot26();         // +0x68
-    virtual i32 GetFrame();         // slot 27  +0x6c  current frame number
-    virtual void Vslot28();         // +0x70
-    virtual void Vslot29();         // +0x74
-    virtual void Vslot30();         // +0x78
-    virtual void Vslot31();         // +0x7c
-    virtual void Vslot32();         // +0x80
-    virtual void Vslot33();         // +0x84
-    virtual void Vslot34();         // +0x88
-    virtual void Vslot35();         // +0x8c
-    virtual void Vslot36();         // +0x90
-    virtual void PostSetup(HDC dc); // slot 37  +0x94  per-draw text-attr setup
-
-    void DrawDebugStats(); // 0xcf770
-
-    DbgFpsSrc* m_4; // +0x004  (implicit vptr at +0x00)
-    char m_pad08[0xc - 0x8];
-    DbgMc* m_c; // +0x00c
-    char m_pad10[0x2d0 - 0x10];
-    i32 m_2d0; // +0x2d0  packets received
-    i32 m_2d4; // +0x2d4  packets sent
-};
 
 // @source: string-xref
 // Code bytes are byte-EXACT vs retail (verified instruction-by-instruction with
@@ -152,7 +59,7 @@ public:
 // delink form, and the /GX __except_list/__CxxFrameHandler EH-table relocs + the
 // CString cleanup unwind funclet. No instruction-byte difference - green-enough (§2a).
 RVA(0x000cf770, 0x35e)
-void CDbgView::DrawDebugStats() {
+void CPlay::DrawDebugStats() {
     if (g_debugFlags & 0x20) {
         return;
     }
@@ -162,15 +69,15 @@ void CDbgView::DrawDebugStats() {
     buf[0] = 0;
 
     if (g_debugFlags & 0x10) {
-        sprintf(scratch, "Fps = %i ", m_4->m_18);
+        sprintf(scratch, "Fps = %i ", m_4->m_fps);
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x1) {
-        sprintf(scratch, " Objs = %i ", m_c->m_8->m_1c);
+        sprintf(scratch, " Objs = %i ", m_c->m_rendererA->m_1c);
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x4) {
-        DbgPos* p = m_c->m_24->m_5c;
+        CDrawSurface::CameraGeom* p = m_c->m_drawSurface->m_5c;
         sprintf(scratch, " Pos = %i,%i", p->m_84, p->m_88);
         strcat(buf, scratch);
     }
@@ -187,15 +94,15 @@ void CDbgView::DrawDebugStats() {
         sprintf(
             scratch,
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
-            m_2d4,
-            m_2d0,
+            m_packetsSent,
+            m_packetsRcvd,
             GetFrame(),
             g_645588
         );
         strcat(buf, scratch);
     }
 
-    DbgDcHost* host = m_c->m_4->m_14->m_2c;
+    CDDSurface* host = m_c->m_renderState->m_14->m_2c;
     HDC hdc = 0;
     host->m_8->GetDC(&hdc);
     if (hdc == 0) {
@@ -223,14 +130,3 @@ void CDbgView::DrawDebugStats() {
     }
     host->m_8->ReleaseDC(hdc);
 }
-
-SIZE_UNKNOWN(DbgFpsSrc);
-SIZE_UNKNOWN(DbgObjsSrc);
-SIZE_UNKNOWN(DbgPos);
-SIZE_UNKNOWN(DbgPosRoot);
-SIZE_UNKNOWN(DbgDcHost);
-SIZE_UNKNOWN(DbgL14);
-SIZE_UNKNOWN(DbgDcRoot);
-SIZE_UNKNOWN(DbgMc);
-SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CDbgView);
