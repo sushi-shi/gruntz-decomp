@@ -1388,8 +1388,9 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
 // return value; `ret 4` -> callee cleans the out-ptr.
 RVA(0x000759e0, 0x18)
 CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
-    out->x = *(i32*)((char*)this + 0x174);
-    out->y = *(i32*)((char*)this + 0x178);
+    // the cached origin pair lives in the parallel flag grid at +0x58/+0x5c (== +0x174/+0x178)
+    out->x = m_cellFlag[0x16];
+    out->y = m_cellFlag[0x17];
     return out;
 }
 
