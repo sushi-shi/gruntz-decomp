@@ -317,10 +317,13 @@ public:
     i32 DrawWorldFrames();   // 0x0c9cc0 (THIS TU)
     // The two timeGetTime-instrumented frame variants (the dev profiler builds the
     // "Delta=.." / "Input=.." timing lines via the cached g_pTimeGetTime fn-ptr).
-    i32 ProfileDeltaFrame();             // 0x0ca0a0 (THIS TU)
-    i32 ProfileInputFrame();             // 0x0c9e40 (THIS TU)
-    void ProfFlushTail();                // 0x0cf770 (thiscall on this, reloc-masked tail step)
-    i32 DispatchHudClick(i32, i32, i32); // 0x0ce530 (THIS TU)
+    i32 ProfileDeltaFrame(); // 0x0ca0a0 (THIS TU)
+    i32 ProfileInputFrame(); // 0x0c9e40 (THIS TU)
+    // 0x0cf770: the Fps/Objs/Pos/Timing/Sent debug-overlay renderer (body defined in
+    // DrawDebugStats.cpp; called by Render's tail + CMulti::PumpB). Was misnamed
+    // "ProfFlushTail" here and re-declared on a fake CDbgView view - one method.
+    void DrawDebugStats();
+    i32 DispatchHudClick(i32, i32, i32);        // 0x0ce530 (THIS TU)
     i32 BeginGridWalk(i32, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
     i32 StepGridWalk(i32 dt);                   // 0x0d0a60 (THIS TU)
     i32 HandleDragMove(i32 a, i32 x, i32 y);    // 0x0d0db0 (THIS TU)
@@ -442,7 +445,10 @@ public:
     CString m_1b4; // +0x1b4
     char m_pad1b8[0x1cc - 0x1b8];
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
-    char m_pad1d0[0x2dc - 0x1d0];
+    char m_pad1d0[0x2d0 - 0x1d0];
+    i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
+    i32 m_packetsSent; // +0x2d4  net packets sent (debug HUD "Sent = %i")
+    char m_pad2d8[0x2dc - 0x2d8];
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
     // dispatches run on (the click/drag/clear entry points + the busy-state words).
     struct GutsSubsystem {

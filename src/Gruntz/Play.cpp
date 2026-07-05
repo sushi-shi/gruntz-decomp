@@ -68,7 +68,8 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <rva.h>
-#include <Gruntz/ResMgr.h> // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
+#include <Gruntz/ResMgr.h>      // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
+#include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface: Fill/Restore)
 
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
@@ -940,7 +941,7 @@ i32 CPlay::ClampViewport(i32 inset) {
     }
 
     m_c->m_drawSurface->SetClipRect(&r);
-    m_c->m_renderState->m_14->m_2c->Prepare(0);
+    m_c->m_renderState->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
     m_4w()->ClampApply();
     return 1;
@@ -1009,7 +1010,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     }
 
     m_c->m_drawSurface->SetClipRect(&r);
-    m_c->m_renderState->m_14->m_2c->Prepare(0);
+    m_c->m_renderState->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
     m_4w()->ClampApply();
     return 1;
@@ -1204,7 +1205,7 @@ i32 CPlay::NotifyVisibleEntities() {
     r.top = vp[1];
     r.right = vp[2] + 1;
     r.bottom = vp[3] + 1;
-    held->m_2c->NotifyClip(&r);
+    held->m_2c->Restore(&r, 0);
 
     while (node != 0) {
         CVisEntity* o = node->m_8;
@@ -1504,7 +1505,7 @@ i32 CPlay::ProfileDeltaFrame() {
         presentMs,
         updates
     );
-    ProfFlushTail();
+    DrawDebugStats();
     ((CProfFlush*)m_c->m_renderState->m_10->m_2c)->Flush(0);
     if (m_c->m_drawSurface->m_5c != 0) {
         m_c->m_drawSurface->m_5c->DrawB();
@@ -1586,7 +1587,7 @@ i32 CPlay::ProfileInputFrame() {
         g_profAccB
     );
 
-    ProfFlushTail();
+    DrawDebugStats();
     g_profAccB = (i32)tg();
     ((CProfFlush*)m_c->m_renderState->m_10->m_2c)->Flush(0);
     g_profAccB = (i32)(tg() - (u32)g_profAccB);

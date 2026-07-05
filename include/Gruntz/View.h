@@ -43,6 +43,12 @@
 // full vtable layout lives in GameMode.h (the only TU that polls it).
 struct CGMInputObj;
 
+// The render-flip surface at RenderState::m_14->m_2c: the real CDDSurface
+// (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -
+// held IDirectDrawSurface at its +0x08). Pointer-only here; the dispatching TUs
+// include the real header.
+class CDDSurface;
+
 // The placed-object display list the warlord-sprite loader walks (hung off
 // renderer A at +0x10; see CRenderer::m_10). Each node's +0x8 is a placed object.
 struct CWarlordListNode; // fully defined in CPlay.cpp
@@ -85,7 +91,9 @@ struct CRenderer {
     // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
     // walks it in-level; the implicit vptr is at +0x00, so data starts at +0x04).
     char p04[0x10 - 0x4];
-    CWarlordListHead m_10; // +0x10  placed-object list head
+    CWarlordListHead m_10; // +0x10  placed-object list head (0x10..0x17)
+    char p18[0x1c - 0x18];
+    i32 m_1c; // +0x1c  live game-object count (CPlay::DrawDebugStats "Objs = %i")
 };
 
 // The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
@@ -150,10 +158,11 @@ struct CView {
         struct SurfaceB {
             void Blit(i32 arg); // credits blit-target blit (thiscall)
             char p0[0x2c];
-            struct Held {
-                void Prepare(i32 z);      // 0x13e760 (thiscall) ClampViewport apply-tail
-                void NotifyClip(RECT* r); // 0x13e7d0 (thiscall) NotifyVisibleEntities
-            }* m_2c;
+            // +0x2c: the real CDDSurface (ClampViewport apply-tail = Fill @0x13e760;
+            // NotifyVisibleEntities' clip push = Restore @0x13e7d0, ret 8 - the old
+            // 1-arg NotifyClip signature was disproven by the retail `push 0` +
+            // `push &r` pair; the DC host chain reads its +0x08 IDirectDrawSurface).
+            CDDSurface* m_2c;
         }* m_14;            // +0x14 -> +0x2c draw surface (view obj)
         void* m_18;         // +0x18  the present target
     }* m_renderState;       // +0x04  renderer-state / render-flip view (draw pump)
