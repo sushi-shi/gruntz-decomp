@@ -3,7 +3,7 @@
 // from SoundDevice (DSNDMGR.CPP, 0x5ef6c4): the dtor restamps its own vptr then
 // tail-calls ~SoundDevice. The streaming half parses a RIFF/WAVE source, asks
 // the inherited IDirectSound device for a secondary buffer, wraps it in a
-// per-stream StreamVoiceNode (the 0xb0-byte DirectSoundMgr-derived voice, ctor
+// per-stream StreamVoice (the 0xb0-byte DirectSoundMgr-derived voice, ctor
 // 0x1375b0) and threads that voice on its own +0x94 voice list.
 //
 // Trace called all three Dsndmgr classes "MinervaInner"; the distinct vtables
@@ -22,7 +22,7 @@
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
 // Placement new (construct in place into the RezAlloc'd block); no allocation, so
-// it is matching-neutral - it just runs the StreamVoiceNode ctor (0x1375b0) on the
+// it is matching-neutral - it just runs the StreamVoice ctor (0x1375b0) on the
 // raw RezAlloc result, exactly as the retail RezAlloc-then-construct does.
 inline void* operator new(u32, void* p) {
     return p;
@@ -58,17 +58,17 @@ SoundStream::~SoundStream() {}
 // ---------------------------------------------------------------------------
 // SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate
 // the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound
-// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoiceNode
+// device (+0x14) for a secondary buffer, then RezAlloc + construct a StreamVoice
 // wrapping it, thread it on the +0x94 list, and seed its duration fields.
 // @early-stop
 // RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
 // the body (fmt copy, CreateSoundBuffer, RezAlloc, ctor, list insert, ComputeDuration)
 // is byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
 // ctor-in-flight EH frame that MSVC5's placement-new cannot reproduce. Deferred to
-// the final sweep once the StreamVoiceNode ctor (0x1375b0) is modelled and a real
+// the final sweep once the StreamVoice ctor (0x1375b0) is modelled and a real
 // `new T` allocator path emits the frame.
 RVA(0x00137780, 0x171)
-StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
+StreamVoice* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c) {
     if (m_initialized == 0) {
         return 0;
     }
@@ -109,16 +109,16 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
     }
 
     void* mem = RezAlloc(0xb0);
-    StreamVoiceNode* voice;
+    StreamVoice* voice;
     if (mem == 0) {
         voice = 0;
     } else {
-        voice = new (mem) StreamVoiceNode(out, this, b, c);
+        voice = new (mem) StreamVoice(out, this, b, c);
     }
     m_voices.InsertHead(voice ? &voice->m_link : 0);
-    voice->m_avgBytes = fmt->nAvgBytesPerSec;
-    voice->m_avgBytesDiv = fmt->nAvgBytesPerSec;
-    voice->m_byteLength = bytes;
+    voice->m_rateBase = fmt->nAvgBytesPerSec;
+    voice->m_sampleRate = fmt->nAvgBytesPerSec;
+    voice->m_sampleCount = bytes;
     voice->ComputeDuration();
     return voice;
 }
@@ -134,8 +134,7 @@ StreamVoiceNode* SoundStream::CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i3
 // docs/patterns/zero-register-pinning.md / pin-local-for-callee-saved-reg.md.
 // Logic complete, deferred to the final sweep.
 RVA(0x00137900, 0xc6)
-StreamVoiceNode*
-SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
+StreamVoice* SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5) {
     if (src == 0) {
         return 0;
     }
@@ -145,7 +144,7 @@ SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
     if (ParseWave(src, &wf, &dataOff, &dataLen) == 0) {
         return 0;
     }
-    StreamVoiceNode* voice = CreateStreamBuffer(&wf, p1, p3, p4, p5);
+    StreamVoice* voice = CreateStreamBuffer(&wf, p1, p3, p4, p5);
     if (voice == 0) {
         return 0;
     }
@@ -157,7 +156,7 @@ SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
     feeder->m_sourceOffset = 0;
     // voice IS-A DirectSoundMgr buffer wrapper; this upcast is authentic. The +0x04
     // link-overlap blocker is now resolved (DirectSoundMgr carries a DSoundLink m_link
-    // at +0x04, matcher-6); making StreamVoiceNode actually derive the per-buffer base
+    // at +0x04, matcher-6); making StreamVoice actually derive the per-buffer base
     // (so this upcast becomes implicit) is a separate StreamVoice class-modeling task
     // (its ctor/dtor/vtable 0x5ef6d8), left for the StreamVoice matcher.
     if (feeder->FeederStart(this, &wf, p1, p2, (DirectSoundMgr*)voice, -1) == 0) {
@@ -172,7 +171,7 @@ SoundStream::OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p
 // feeder, reap its queued channel voices, release its IDirectSoundBuffer, unlink
 // it from the +0x94 list, then run its scalar-deleting destructor (vtable slot 0).
 RVA(0x001379d0, 0x5f)
-void SoundStream::DestroyVoice(StreamVoiceNode* voice) {
+void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
         // Reap the inherited SoundDevice voice sub-list (m_voiceList @ +0x0c), keyed

@@ -4,7 +4,7 @@
 // new(0xb0)) constructed by SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10
 // holds the owning SoundStream (m_owner), +0x6c is the embedded streaming feeder
 // sub-object (whose vptr the voice overrides to 0x5ef6e0), and the standard
-// DirectSoundMgr base fields (m_avgBytesPerSec) come from below +0x6c.
+// DirectSoundMgr base fields (m_sampleRate, stream: avg-bytes-per-sec) come from below +0x6c.
 #include <Dsndmgr/SoundStream.h> // the owning SoundStream (m_owner): ParseWave + m_initialized
 #include <Dsndmgr/StreamVoice.h>
 #include <Win32.h>
@@ -29,7 +29,7 @@
 // method calls (no real base/member dtors). Defer to the final sweep once the whole
 // Dsndmgr class family is modeled.
 RVA(0x001375b0, 0x77)
-StreamVoice::StreamVoice(IDirectSoundBuffer* buf, DirectSoundMgr* owner, i32 a, i32 b) {
+StreamVoice::StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b) {
     // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
     BaseInit(buf, owner);
     m_retireWhenIdle = b;
@@ -87,11 +87,11 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
 
 // ---------------------------------------------------------------------------
 // StreamVoice::ComputeRatio (__thiscall, no args).
-// m_feeder.m_windowLength * 1000 / m_avgBytesPerSec (a position->time ratio; the
+// m_feeder.m_windowLength * 1000 / m_sampleRate (a position->time ratio; the
 // *1000 is open-coded as *5*5*5*8).
 RVA(0x00137590, 0x18)
 u32 StreamVoice::ComputeRatio() {
-    return m_feeder.m_windowLength * 1000 / m_avgBytesPerSec;
+    return m_feeder.m_windowLength * 1000 / m_sampleRate;
 }
 
 // ---------------------------------------------------------------------------

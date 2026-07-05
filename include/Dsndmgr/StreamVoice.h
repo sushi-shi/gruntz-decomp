@@ -1,11 +1,12 @@
 // StreamVoice.h - the per-stream voice wrapper (Dsndmgr module,
 // C:\Proj\Dsndmgr\DSndMgSR.CPP, retail vftable 0x5ef6d8). The 0xb0-byte
-// DirectSoundMgr-derived buffer wrapper (operator new(0xb0)) constructed by
-// SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x10 holds the owning
-// SoundStream (m_owner), +0x6c is the embedded StreamVoiceFeeder sub-object (whose
-// vptr the voice overrides to 0x5ef6e0), and the DirectSoundMgr base fields below
-// +0x6c (m_avgBytesPerSec the position->time divisor) come from the shared
-// per-buffer this-shape.
+// DirectSoundMgr-derived buffer wrapper (RezAlloc(0xb0)) constructed by
+// SoundStream::CreateStreamBuffer (ctor 0x1375b0): +0x04 the intrusive instance-
+// list link, +0x0c the IDirectSoundBuffer, +0x10 the owning SoundStream (m_owner),
+// +0x28..+0x3c the DirectSoundMgr duration block, +0x60..+0x68 the idle-policy
+// flags TickSubManagers polls, +0x6c the embedded StreamVoiceFeeder (whose vptr the
+// voice overrides to 0x5ef6e0). ONE class: the former SoundStream.h StreamVoiceNode
+// and DirectSoundMgr.cpp SubNode/SubInnerList/SubGuard views are folded here (wave 3).
 #ifndef DSNDMGR_STREAMVOICE_H
 #define DSNDMGR_STREAMVOICE_H
 
@@ -51,8 +52,17 @@ struct StreamVoice {
                                   //        m_instanceHead threads voice+4; elemOf<> unbias)
     IDirectSoundBuffer* m_buffer; // +0x0c  the IDirectSoundBuffer to release
     SoundStream* m_owner;         // +0x10  owning SoundStream (also the base m_owner)
-    char m_pad14[0x3c - 0x14];
-    u32 m_avgBytesPerSec; // +0x3c  position->time divisor (DirectSoundMgr base field)
+    char m_pad14[0x28 - 0x14];
+    // +0x28..+0x3c: the DirectSoundMgr base duration block (canonical names from
+    // <Dsndmgr/DirectSoundMgr.h>; ComputeDuration = m_sampleCount*1000/m_sampleRate).
+    // For a STREAM voice the creator fills them with byte units: m_sampleCount = the
+    // data byte length, m_rateBase = m_sampleRate = fmt->nAvgBytesPerSec - so the
+    // base duration formula and ComputeRatio's position->time divide still hold.
+    u32 m_durationMs;  // +0x28  duration-ms (ComputeDuration 0x1359a0)
+    u32 m_sampleCount; // +0x2c  sample/byte count (stream: data byte length)
+    char m_pad30[0x38 - 0x30];
+    i32 m_rateBase;   // +0x38  rate base (stream: avg-bytes-per-sec)
+    u32 m_sampleRate; // +0x3c  rate divisor (stream: avg-bytes-per-sec; ComputeRatio)
     char m_pad40[0x60 - 0x40];
     // ctor args a/b are the idle-policy flags SoundDevice::TickSubManagers (0x137ac0)
     // polls each frame; +0x68 is zero-init then updated with the IsPlaying result.
@@ -66,19 +76,25 @@ struct StreamVoice {
     // (m_windowLength).
     StreamVoiceFeeder m_feeder;
 
-    // ctor 0x1375b0(buf, owner, a, b): run the base init, cache a/b, clear the
-    // position; the feeder is default-constructed (its ctor 0x137cd0) between.
-    StreamVoice(IDirectSoundBuffer* buf, DirectSoundMgr* owner, i32 a, i32 b);
+    // ctor 0x1375b0(buf, owner, a, b): run the base init, cache the idle-policy
+    // flags a/b, clear the active latch; the feeder is default-constructed (its
+    // ctor 0x137cd0) between. `owner` is the creating SoundStream
+    // (SoundStream::CreateStreamBuffer passes `this`).
+    StreamVoice(IDirectSoundBuffer* buf, SoundStream* owner, i32 a, i32 b);
     i32 SetSource(CParseSource* src);                    // 0x1374c0
     i32 Configure(i32 vol, i32 pan, i32 freq, i32 loop); // 0x137520
     u32 ComputeRatio();                                  // 0x137590
 
     // DirectSoundMgr base run, reloc-masked __thiscall (defined in their own TUs).
-    void BaseInit(IDirectSoundBuffer* buf, DirectSoundMgr* owner); // 0x135b10
-    void BaseDtor();                                               // 0x135bb0
-    i32 SetVolumeByIndex(i32 idx);                                 // 0x1355c0
-    i32 SetPanByIndex(i32 idx);                                    // 0x1357a0
-    i32 SetFreqByIndex(i32 idx);                                   // 0x135920
+    // BaseInit == the DSoundCloneInst ctor 0x135b10 (its 2nd param is the owning
+    // SoundDevice, so a SoundStream* upcasts implicitly).
+    void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10
+    void BaseDtor();                                            // 0x135bb0
+    i32 SetVolumeByIndex(i32 idx);                              // 0x1355c0
+    i32 SetPanByIndex(i32 idx);                                 // 0x1357a0
+    i32 SetFreqByIndex(i32 idx);                                // 0x135920
+    void ComputeDuration(); // 0x1359a0  (DirectSoundMgr base: m_durationMs =
+                            //  m_sampleCount*1000/m_sampleRate; reloc-masked)
 };
 SIZE(StreamVoice, 0xb0);       // 0xb0 bytes via operator new (ctor 0x1375b0)
 VTBL(StreamVoice, 0x001ef6d8); // 1-slot ??_7StreamVoice (slot 0 = scalar-deleting dtor 0x137650)

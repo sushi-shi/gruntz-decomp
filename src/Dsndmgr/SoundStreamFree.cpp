@@ -2,7 +2,7 @@
 // voice list, then run the base device Shutdown. SoundStream is the Dsndmgr
 // streaming-DirectSound class (retail vftable 0x5ef6ec, derives SoundDevice); see
 // <Dsndmgr/SoundStream.h> for the layout. Its voice list is the typed DSoundList
-// m_voices at +0x94; each StreamVoiceNode threads through its DSoundLink m_link
+// m_voices at +0x94; each StreamVoice threads through its DSoundLink m_link
 // (biased +4 MFC-POSITION-style, recovered with elemOf<>).
 //
 // The list HEAD is the inherited SoundDevice::m_instanceHead (+0x94); only the tail
@@ -16,8 +16,8 @@
 // 0x137740 - drain the voice list, then shut the device down.
 RVA(0x00137740, 0x3e)
 void SoundStream::Free() {
-    for (StreamVoiceNode* p = elemOf<StreamVoiceNode>(m_instanceHead); p != 0;
-         p = elemOf<StreamVoiceNode>(m_instanceHead)) {
+    for (StreamVoice* p = elemOf<StreamVoice>(m_instanceHead); p != 0;
+         p = elemOf<StreamVoice>(m_instanceHead)) {
         DestroyVoice(p);
     }
     Shutdown();
