@@ -30,7 +30,8 @@ extern Font g_tinyFont;
 // NAFXCW (which lives at 0x1b9xxx). Kept as a local view.
 struct WapRect {
     i32 left, top, right, bottom;
-    WapRect(const RECT& r); // 0x115b30 (Wap32-local, reloc-masked)
+    WapRect(const RECT& r); // 0x115b30 (Wap32-local, reloc-masked); the compiler-
+                            // generated trivial copy ctor is what the shadow pass uses.
 };
 
 // The global text renderer g_textObj (DAT_0064ead8) is a FontRenderer (the WAP32
@@ -47,16 +48,18 @@ DATA(0x0064ead8)
 extern FontRenderer g_textObj;
 
 // @early-stop
-// Complete + correct (~53%). Wall = by-value WapRect argument materialization: retail
-// builds the render's by-value rect temp *transiently* at each call (inline 4-mov
-// field copy in the shadow pass; the 0x37c4/0x115b30 CopyRect wrapper in the main
-// pass) so its persistent frame is one 0x10 RECT; MSVC5 here instead calls the
-// external WapRect(const RECT&) ctor and hoists a persistent 0x10 rect slot into the
-// frame (sub esp,0x20 vs retail's 0x10), which shifts every stack-arg offset and
-// cascades. No source spelling forces MSVC5 to inline the ctor (it is external) /
-// build the temp transiently. The null-guard chain, the font-size byte-index jump
-// table, the RGB(r,g,b) assembly, both SetColor/SetFont calls and the shadow
-// CopyRect/OffsetRect all match; only the two by-value render-arg builds diverge.
+// WapRect-by-value wall CRACKED (53 -> 60): the two render-arg builds now match retail
+// exactly. Retail SPLITS the two by-value WapRect builds - the shadow pass INLINES a
+// 4-mov copy of the local sh, the main pass CALLs the converting ctor 0x115b30 (the
+// "Copy" reloc). The trick: pass the shadow's rect as a WapRect lvalue (*(WapRect*)&sh)
+// so the compiler-generated TRIVIAL COPY ctor inlines, while `WapRect(*rc)` in the main
+// pass keeps the EXTERNAL converting ctor -> a call. That collapses the persistent rect
+// slot, so the frame drops sub esp,0x20 -> 0x10 and every [esp+N] realigns; all 10
+// callees (SetFont/CopyRect/OffsetRect/SetColor x2/CString x2/RenderText x2 + the
+// WapRect Copy) now pair. Residual: the font-size sparse switch byte-index-table +
+// jump-table are separate $L COMDATs (delinker-inline artifact, docs/patterns/
+// switch-jumptable-separate-comdat.md) plus a 2-byte `add eax,-100` imm8-vs-imm32
+// encoding in the switch prologue - not source-steerable.
 RVA(0x00115930, 0x15b)
 SYMBOL(_EngStr_RenderText)
 extern "C" i32 EngStr_RenderText(
@@ -104,7 +107,9 @@ extern "C" i32 EngStr_RenderText(
         CopyRect(&sh, rc);
         OffsetRect(&sh, 2, 3);
         g_textObj.SetColor(0);
-        g_textObj.RenderText(*str, drawFn, WapRect(sh), 1, flag, 0);
+        // retail inlines the shadow's by-value rect build (4-mov copy of the local sh)
+        // via the trivial copy ctor; the main pass below CALLs the converting ctor.
+        g_textObj.RenderText(*str, drawFn, *(WapRect*)&sh, 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
     g_textObj.RenderText(*str, drawFn, WapRect(*rc), 1, flag, 0);
