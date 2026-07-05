@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Globals.h>
+#include <Gruntz/RangeSet.h> // canonical CRangeSet (the debug-channel set viewed on the sink)
 
 // The debug-output sink object; its first dword is reset, then it is configured
 // from the parsed keyword string.
@@ -27,9 +28,6 @@ extern CDebugSink g_6bf850;
 // vsprintf / sink call relocs are reloc-masked). va_list is spelled `(char*)(&fmt+1)`
 // to avoid <stdarg.h>. Contains is external - only its mangled name is load-bearing.
 // ---------------------------------------------------------------------------
-struct CRangeSet {
-    bool Contains(u32 value); // 0x184ba0 (src/Gruntz/RangeSet.cpp, external)
-};
 extern "C" {
     int vsprintf(char* buf, const char* fmt, char* va); // 0x121770 (CRT)
     void DebugSink_184df0(char* line);                  // 0x184df0 (1-byte sink)

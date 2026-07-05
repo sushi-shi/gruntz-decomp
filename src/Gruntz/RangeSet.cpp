@@ -8,28 +8,11 @@
 //
 // RTTI name does not survive; the class name is a placeholder (campaign doctrine -
 // matching-neutral). Only offsets + code bytes are load-bearing.
+#include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange
 #include <Ints.h>
 #include <rva.h>
 #include <stdlib.h> // atol
 #include <string.h> // inline strcpy (rep movs / repne scasb), strpbrk
-
-// this engine strstr). Returns the position of the marker in the string (used as
-// a char* cursor here). __cdecl, haystack first. Reloc-masked.
-
-struct CRange {
-    u32 lo; // +0x00
-    u32 hi; // +0x04
-};
-
-class CRangeSet {
-public:
-    bool Contains(u32 value);      // 0x184ba0
-    void AddRange(u32 lo, u32 hi); // 0x184be0
-    void AddFromString(char* str); // 0x184c10
-
-    u32 m_count;        // +0x00
-    CRange m_pairs[16]; // +0x04
-};
 
 // ===========================================================================
 // 0x184ba0 - Contains(value): true if any stored [lo,hi] range (unsigned)
@@ -128,8 +111,3 @@ void CRangeSet::AddFromString(char* str) {
         AddRange(lo, hi);
     } while (*str != 0);
 }
-
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CRange);
-SIZE_UNKNOWN(CRangeSet);
