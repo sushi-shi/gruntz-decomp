@@ -1,5 +1,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
@@ -154,6 +155,7 @@ struct CTmOverlay {
     void Clear();                 // 0x92e0  (reloc-masked) - destruct without freeing
     void Forward(i32 a, i32 b);   // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
     i32 Load(CSerialArchive* ar); // 0x9bb0  (reloc-masked) - the overlay deserializer
+    void Dtor();                  // in-place dtor (DestroyGroup teardown, reloc-masked)
     inline void* operator new(u32) {
         return ::operator new(0x40);
     }
@@ -179,6 +181,7 @@ struct CTmPtrList {
     void RemoveAll();     // 0x1b48a6
     void RemoveAt(void*); // 0x1b4ac7
     void AddTail(void*);  // 0x1b4991  (returns POSITION; ret ignored here)
+    void Dtor();          // ~CTriggerMgr embedded-list dtor (reloc-masked)
     CTmPtrListVtbl* m_0;  // +0x00  vptr
     CTmNode* m_head;      // +0x04  list head node
 };
@@ -193,9 +196,12 @@ extern i32 g_644c54;
 // body @0x10bb90; the reset path also reads its mode (m_0), sub-state (m_10c) and frees
 // its pending buffer (m_54c).
 struct CTmStatusItem {
-    void SetMode(i32 mode); // 0x10bb90 (reloc-masked)
-    void Notify();          // 0x104d60 (reloc-masked) - build-state notifier
-    i32 m_0;                // +0x00  mode
+    void SetMode(i32 mode);         // 0x10bb90 (reloc-masked)
+    void Notify();                  // 0x104d60 (reloc-masked) - build-state notifier
+    void Reset();                   // ReinitGroup re-init (reloc-masked)
+    i32 Place(i32 a, i32 b, i32 c); // ReinitGroup place/re-arm (reloc-masked)
+    void Run();                     // ReinitGroup notifier (reloc-masked)
+    i32 m_0;                        // +0x00  mode
     char p4[0x10c - 0x4];
     i32 m_10c; // +0x10c  sub-state
     char p110[0x548 - 0x110];
@@ -226,6 +232,7 @@ struct CTmWorld {
     void Center(i32 cx, i32 cy);                // 0xd5f00 (scroll-center on a tile)
     void StopFx2(i32 a, i32 b);                 // 0xd0b3a
     i32 OnRegion4(i32 z);                       // 0xd8bc0
+    void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
     char p0[0x2dc];
     CTmStatusItem* m_2dc; // +0x2dc  status-bar item
     char p2e0[0x384 - 0x2e0];
@@ -242,6 +249,7 @@ struct CTmWorld {
 // g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
 // (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
 struct CTmGridHolder {
+    void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
     char p0[0x5c];
     CViewport* m_5c; // +0x5c  the grid object
 };
@@ -2144,9 +2152,11 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
 // The +0x260 CByteArray: RemoveAt (ResetSpawnState), plus SetSize/SetAtGrow (the Load
 // deserializer). One shape for the one embedded byte array (former CTmSerByteArray folded in).
 struct CTmObArray {
-    void RemoveAt(i32 idx, i32 n); // 0x1b5525
-    void SetSize(i32 n, i32 grow); // 0x1b52e8
-    void SetAtGrow(i32 i, i32 v);  // 0x1b5485
+    void RemoveAt(i32 idx, i32 n);   // 0x1b5525
+    void SetSize(i32 n, i32 grow);   // 0x1b52e8
+    void SetAtGrow(i32 i, i32 v);    // 0x1b5485
+    void Place(i32 a, i32 b, i32 c); // ReinitGroup drop-last (reloc-masked)
+    void Dtor();                     // ~CTriggerMgr member-array dtor (reloc-masked)
 };
 extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
 extern void __cdecl operator delete(void*);
@@ -2533,33 +2543,11 @@ SIZE_UNKNOWN(CTmLevelView);
 // Format are the static MFC bodies (reloc-masked); the destructible temp forces the /GX
 // frame. (Former CTmStr view folded onto the canonical CString.)
 
-// A logic/cell/list opaque shell whose reloc-masked __thiscall hooks the drivers dispatch.
-struct CTmObj {
-    inline CTmObj();
-    inline void* operator new(u32);
-
-    void* m_vt;                      // +0x00
-    char _padToEnd[0x40 - 0x4];      // shell; real object is 0x40 B (the new(0x40) operand)
-    i32 Apply();                     // vtbl +0x20
-    void Run();                      // vtbl +0xc
-    i32 Probe();                     // 0x6da... thiscall, no arg
-    i32 Place(i32 a, i32 b, i32 c);  // thiscall placement
-    void Reset();                    // thiscall
-    void Ctor();                     // 0x49ce8 in-place ctor
-    void Dtor();                     // 0x5b48c6 list dtor
-    void Snap(i32* outR, i32* outC); // thiscall snap-to-cell
-};
-SIZE(CTmObj, 0x40); // measured: new(0x40) -> ctor 0x49ce8
-void* operator new(u32);
-void operator delete(void*);
-
-inline CTmObj::CTmObj() {
-    Ctor();
-}
-
-inline void* CTmObj::operator new(u32) {
-    return ::operator new(0x40);
-}
+// (The former generic CTmObj cross-cast shell is axed: its heterogeneous dispatch is
+// routed to each object's real type - the switch/trigger logic objects to the canonical
+// CUserLogic virtual slots (Apply @slot8/+0x20, Run @slot3/+0xc), the manager's own
+// placement/probe self-calls to CTriggerMgr methods, the overlay/status-item/grid-holder
+// and the embedded container dtors to their existing views.)
 
 // The destroy-array CRT helper (reloc-masked @0x51f640) used by the destructor.
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
@@ -2836,8 +2824,8 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     if (attr == (i32)0xeeeeeeee || attr == -1) {
         kind = 0;
     } else {
-        CTmObj* logic = (CTmObj*)*(void**)(*(char**)(view + 0x4c) + (attr & 0xffff) * 4);
-        kind = logic->Apply();
+        CUserLogic* logic = (CUserLogic*)*(void**)(*(char**)(view + 0x4c) + (attr & 0xffff) * 4);
+        kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
     }
     i32 op = kind - 0x34;
     if ((u32)op > 0xe) {
@@ -2845,14 +2833,14 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     }
     i32 cx = x;
     i32 cy = y;
-    CTmObj* obj = (CTmObj*)*(void**)(*(char**)(plane + 0x2e4) + 0);
+    CUserLogic* obj = (CUserLogic*)*(void**)(*(char**)(plane + 0x2e4) + 0);
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
         g_gameReg->ReportError(0x80dd, 0x3f7);
         return 0;
     }
-    obj->Run();
+    obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
     return 1;
 }
 
@@ -2867,12 +2855,11 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     (void)force;
-    CTmObj* ov = (CTmObj*)m_overlay;
+    CTmOverlay* ov = m_overlay;
     if (ov == 0) {
-        CTmObj* fresh = new CTmObj;
-        m_overlay = (CTmOverlay*)fresh; // generic-driver view of the overlay sub-object
-        if (((CTmObj*)this)->Probe() == 0) {
-            CTmObj* o2 = (CTmObj*)m_overlay;
+        m_overlay = new CTmOverlay;
+        if (this->Probe() == 0) {
+            CTmOverlay* o2 = m_overlay;
             if (o2 != 0) {
                 o2->Dtor();
                 operator delete(o2);
@@ -2882,7 +2869,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         }
         return 0;
     }
-    if (*(i32*)((char*)ov + 0x2c) != 0 || m_recCount != 1) {
+    if (ov->m_2c != 0 || m_recCount != 1) {
         return 0;
     }
     i32* rec = *(i32**)((char*)m_recHead + 0x8);
@@ -2890,14 +2877,14 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
         return 0;
     }
-    if (((CTmObj*)this)->Place(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
+    if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
         return 0;
     }
     char* view = *(char**)((char*)m_level + 0x24);
     char* sc = *(char**)(view + 0x5c) + 0x40;
     i32 ox = *(i32*)(sc) - *(i32*)(view + 0x14) + row;
     i32 oy = *(i32*)(sc + 0x4) - *(i32*)(view + 0x10) + col;
-    ((CTmObj*)this)->Place(oy, ox, 1);
+    this->PlaceCell(oy, ox, 1);
     return 1;
 }
 
@@ -2924,27 +2911,27 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
         || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
-        ((CTmObj*)lvl)->Place(hy, hx, 0);
+        ((CTmWorld*)lvl)->Place2(hy, hx, 0);
     }
-    char* plane = *(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
+    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
     i32 outR = col;
     i32 outC = row;
-    ((CTmObj*)plane)->Snap(&outR, &outC);
-    char* sbi = *(char**)((char*)lvl + 0x2dc);
-    if (*(i32*)(sbi + 0x548) == 0) {
-        if (*(i32*)sbi == 2) {
-            ((CTmObj*)sbi)->Reset();
+    plane->Snap(&outR, &outC);
+    CTmStatusItem* sbi = (CTmStatusItem*)*(char**)((char*)lvl + 0x2dc);
+    if (sbi->m_548 == 0) {
+        if (sbi->m_0 == 2) {
+            sbi->Reset();
         }
-        if (*(i32*)(sbi + 0x10c) != 5) {
-            ((CTmObj*)sbi)->Place(5, 3, 0);
+        if (sbi->m_10c != 5) {
+            sbi->Place(5, 3, 0);
         }
-        ((CTmObj*)sbi)->Place(5, 1, 0);
-        ((CTmObj*)sbi)->Run();
+        sbi->Place(5, 1, 0);
+        sbi->Run();
     }
-    if (((CTmObj*)(*(char**)((char*)lvl + 0x2dc)))->Place(color, outR, outC) != 0) {
-        *(i32*)(*(char**)((char*)lvl + 0x2dc) + 0x548) = 1;
+    if (sbi->Place(color, outR, outC) != 0) {
+        sbi->m_548 = 1;
     } else {
-        ((CTmObj*)((char*)this + 0x260))->Place(m_byteCount, 0, 0);
+        ((CTmObArray*)((char*)this + 0x260))->Place(m_byteCount, 0, 0);
     }
     m_284 = 1;
     return 1;
@@ -2962,7 +2949,7 @@ RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
     Tm_DestroyArray(m_selLists, 0x1c, 0xa, 0);
-    ((CTmObj*)((char*)this + 0x260))->Dtor();
-    ((CTmObj*)((char*)this + 0x240))->Dtor();
-    ((CTmObj*)this)->Dtor();
+    ((CTmObArray*)((char*)this + 0x260))->Dtor();
+    ((CTmPtrList*)((char*)this + 0x240))->Dtor();
+    ((CTmPtrList*)this)->Dtor();
 }
