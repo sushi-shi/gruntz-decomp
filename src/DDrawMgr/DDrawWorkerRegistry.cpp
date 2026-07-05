@@ -30,7 +30,8 @@
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in Stub_154f80 / Stub_155160)
 #include <Globals.h>
-class CDDrawWorkerRegistry;
+// The canonical CDDrawWorkerRegistry + its unified own-vtable view CWorkerVtableView.
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 
 // CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
 // GetNextAssoc writes the key output into it.
@@ -65,40 +66,6 @@ public:
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names.
 #include <Gruntz/MapStringToOb.h>
-
-// Self-view of CDDrawWorkerRegistry's OWN vtable (0x5efd28); each slot named from its
-// retail slot-function RVA (the registry's own methods - ResetScratch/Shutdown/
-// DispatchKeyed*/Forward*/Stub_*/RemoveWorker/RemoveByKey/MapTeardown). Only slot +0x58
-// (MapTeardown 0x1552b0) is dispatched here (by Shutdown). Kept a view rather than
-// folded into a polymorphic CDDrawWorkerRegistry: the registry vtable interleaves with
-// the adjacent manager-family vtables, so virtualizing it is the deferred vtable-family-
-// unification pass (see RegView48).
-class CWorkerVtableView {
-public:
-    virtual void Slot00_1bef01();      // slot 0  0x1bef01 (CObject thunk)
-    virtual void Slot04_156df0();      // slot 1  0x156df0 (ScalarDtor)
-    virtual void Slot08_28ec();        // slot 2  0x0028ec (CObject thunk)
-    virtual void Slot0C_106e();        // slot 3  0x00106e (CObject thunk)
-    virtual void Slot10_4034();        // slot 4  0x004034 (CObject thunk)
-    virtual void Slot14_156dc0();      // slot 5  0x156dc0
-    virtual void Slot18_154aa0();      // slot 6  0x154aa0 (ResetScratch)
-    virtual void Slot1C_154ac0();      // slot 7  0x154ac0 (Shutdown)
-    virtual void Slot20_156de0();      // slot 8  0x156de0 (GetStateId)
-    virtual void Slot24_154df0();      // slot 9  0x154df0 (DispatchKeyed2C)
-    virtual void Slot28_154f60();      // slot 10 0x154f60 (Forward2C)
-    virtual void Slot2C_154f40();      // slot 11 0x154f40 (Forward30)
-    virtual void Slot30_154ce0();      // slot 12 0x154ce0 (DispatchKeyed30)
-    virtual void Slot34_154f20();      // slot 13 0x154f20 (Forward38)
-    virtual void Slot38_154ae0();      // slot 14 0x154ae0 (DispatchKeyed38)
-    virtual void Slot3C_154f00();      // slot 15 0x154f00 (Forward34)
-    virtual void Slot40_154be0();      // slot 16 0x154be0 (DispatchKeyed34)
-    virtual void Slot44_156e80();      // slot 17 0x156e80 (Stub_156e80)
-    virtual void Slot48_154f80();      // slot 18 0x154f80 (Stub_154f80)
-    virtual void Slot4C_155160();      // slot 19 0x155160 (Stub_155160)
-    virtual void Slot50_155280();      // slot 20 0x155280 (RemoveWorker)
-    virtual void Slot54_156ec0();      // slot 21 0x156ec0 (RemoveByKey)
-    virtual void MapTeardown_1552b0(); // slot 22 (+0x58) 0x1552b0 (dispatched by Shutdown)
-};
 
 // Real polymorphic two-level model (ALL-VTABLES mandate): CLoadable carries
 // the 9-slot base vtable (masks 0x5efc30), CDDrawWorker adds slots 9..14 and
@@ -142,51 +109,6 @@ struct CDDrawWorker : public CLoadable {
 DATA(0x002bf37c)
 extern i32 g_resourceInstallActive;
 
-// ---------------------------------------------------------------------------
-// CDDrawWorkerRegistry - only the load-bearing offset is modeled: the CMapStringToOb at
-// +0x10. The matched method occupies a lower vtable slot (slot number not load-
-// bearing, only body), placed last.
-// ---------------------------------------------------------------------------
-class CDDrawWorkerRegistry {
-public:
-    i32 IsReady();
-    i32 ResetScratch();
-    void Shutdown();
-    StateId GetStateId();
-    i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
-    i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
-    i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
-    i32 DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
-    i32 Forward38(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
-    i32 DispatchKeyed38(i32 a1, const char* key, i32 a3, i32 a4);
-    i32 Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
-    i32 DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4);
-    void RemoveWorker(CDDrawWorker* worker);
-    void RemoveByKey(const char* key);
-    void DestroyAll();
-    void MapTeardown_1552b0();
-    i32 StringCopy_155810(const char* src);
-
-    // Map-scan helpers (non-virtual; direct-called from the worker code region).
-    i32 RemoveKeysEqual_155360(const char* base, const char* str);
-    i32 SumSizesEqual_155460(const char* str, i32 a2);
-    i32 HasKeyEqual_155550(const char* str);
-    i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
-    CString FindKeyOfValue_165360(CWorkerMapValue* target);
-
-    void* m_vptr;              // +0x00
-    i32 m_status;              // +0x04  initialized to -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent/root handle
-    CMapStringToOb m_map;      // +0x10  worker-by-key map
-
-    // Engine-label backlog stubs.
-    i32 Stub_154f80(class RegDirHandle* dir, const char* sub, const char* prefix);
-    i32 Stub_155160(class RegDirHandle* dir, const char* sub, const char* prefix);
-    void* Stub_156df0(i32 flag);
-    i32 Stub_156e80(class RegProbeChain* a1, i32 a2);
-};
-
 // operator delete + the member-teardown host (real ~ at 0x156e10, CDDrawSubMgr.cpp,
 // as CDDrawRegistryDtorHost::~) that this class's ??_G scalar-dtor (0x156df0) calls.
 void operator delete(void*);
@@ -204,43 +126,6 @@ public:
 };
 DATA(0x006293f4)
 extern char g_emptyString[]; // 0x6293f4
-
-// Self-view of CDDrawWorkerRegistry's OWN vtable, reaching slots +0x48/+0x4c/+0x54
-// (Vfunc48/4C/54) that the Stub_154f80/155160/156e80 scans dispatch on `this`.
-// NOT yet folded into a real polymorphic CDDrawWorkerRegistry: the class carries a
-// manual m_vptr@0 and is never constructed in this TU (no vptr stamp here), and its
-// slots interleave with a whole family of adjacent manager vtables (the same slot
-// bodies - DispatchKeyed2C etc. - appear at DIFFERENT offsets across the
-// sibling vtables around 0x5efd00). Virtualizing the 17 keyed
-// slot bodies (defined here, called by name Q-mangled) would ripple the whole
-// family + emit a vtable that competes with the siblings, regressing Stub_155160
-// (currently 100%). A dedicated vtable-family unification pass owns this; the view
-// is the correct transitional device until then. [final-sweep worklist]
-class RegView48 {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual i32 Vfunc48(void* a, const char* b, void* c); // +0x48
-    virtual i32 Vfunc4C(void* a, const char* b, void* c); // +0x4c
-    virtual void s50();
-    virtual void Vfunc54(const char* key); // +0x54
-};
 
 // A directory-tree cursor: 0x13a260 (first child), 0x13a280 (next child); each entry's
 // +0x00 is a name string.
@@ -672,7 +557,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const 
         } else {
             strcpy(buf, e->m_name);
         }
-        count += ((RegView48*)this)->Vfunc48(e, buf, (void*)prefix);
+        count += ((CWorkerVtableView*)this)->Vfunc48(e, buf, (void*)prefix);
         e = dir->Next_13a280(e);
     }
     if (sub != 0 && *sub != 0) {
@@ -682,7 +567,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const 
         }
         ((RegWorkerValue*)w)->Slot28_1521f0((i32)dir);
         if (((RegWorkerValue*)w)->m_18 == 0) {
-            ((RegView48*)this)->Vfunc54(sub);
+            ((CWorkerVtableView*)this)->Vfunc54(sub);
         } else {
             ++count;
         }
@@ -712,7 +597,7 @@ i32 CDDrawWorkerRegistry::Stub_155160(RegDirHandle* dir, const char* sub, const 
         } else {
             strcpy(buf, e->m_name);
         }
-        i32 r = ((RegView48*)this)->Vfunc4C(e, buf, (void*)prefix);
+        i32 r = ((CWorkerVtableView*)this)->Vfunc4C(e, buf, (void*)prefix);
         if (r < 0) {
             operator delete(buf);
             return -1;
@@ -761,18 +646,16 @@ i32 CDDrawWorkerRegistry::Stub_156e80(RegProbeChain* arg1, i32 arg2) {
     if (result == 0) {
         return 0;
     }
-    return ((RegView48*)this)->Vfunc48(result, g_emptyString, &g_dat60b588);
+    return ((CWorkerVtableView*)this)->Vfunc48(result, g_emptyString, &g_dat60b588);
 }
 
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 SIZE_UNKNOWN(RegProbeChain);
-SIZE_UNKNOWN(RegView48);
 SIZE_UNKNOWN(RegDirEntry);
 SIZE_UNKNOWN(RegDirHandle);
 SIZE_UNKNOWN(RegWorkerValue);
 SIZE_UNKNOWN(CWorkerMapValue);
 SIZE_UNKNOWN(CWorkerValue);
 SIZE(CDDrawWorker, 0x6c);
-SIZE_UNKNOWN(CWorkerVtableView);
 VTBL(CLoadable, 0x001efc30);    // ??_7CLoadable (was g_loadableVtbl, 9 slots)
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker (was g_ddrawWorkerVtbl, 17 slots)
