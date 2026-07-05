@@ -31,7 +31,7 @@ extern void* g_freeList;
 DATA(0x0024554c)
 extern i32 g_freeListNodeBias;
 
-// The draw-clock delta global passed to the render object's SetAnim on detach.
+// The draw-clock delta global fed to the render object's anim Tick on detach.
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
@@ -141,13 +141,11 @@ const double g_movingLogicMax = 2147483646.0;
 // ---------------------------------------------------------------------------
 // Out-of-line vtable anchors. Give CMovingLogic / CProjectile real vftables in
 // this TU so the inline ctors emit their vptr stores. Bodies are not matched.
-// (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.)
+// (slot 16 Update is defined in MovingLogicUpdate.cpp, referenced externally.
+// CProjectile's slot-17 anchor is the real LoadProjectileSprites body below -
+// the old `ProjectileVfunc` placeholder is dissolved into it.)
 // ---------------------------------------------------------------------------
 CMovingLogic::~CMovingLogic() {}
-
-i32 CProjectile::ProjectileVfunc() {
-    return 0;
-}
 
 // @confidence: high
 // @source: rtti-vptr
@@ -844,7 +842,7 @@ void CProjectile::LoadProjectileEffects() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    m_sprite->m_1a0.SetAnim(g_6bf3bc);
+    m_sprite->m_1a0.Tick(g_6bf3bc);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;

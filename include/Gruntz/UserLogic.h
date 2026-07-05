@@ -334,9 +334,10 @@ struct CGameObjAux {
     void (*Init)(CGameObject* obj); // +0x10
     char m_pad14[0x18 - 0x14];
     // +0x18  the per-class setup/logic object bound to the created sprite. Its
-    // concrete type follows the CreateSprite class-name key (CProjSetup for
-    // "Projectile"/"Boomerang", the LightFx flash config for "LightFx", the
-    // voice stream handle for "GruntVoice"; ExitTrigger snapshots it raw as the
+    // concrete type follows the CreateSprite class-name key (a real CProjectile
+    // for "Projectile"/"Boomerang" - the grunt fire step dispatches its slot-17
+    // LoadProjectileSprites virtual on it, the LightFx flash config for "LightFx",
+    // the voice stream handle for "GruntVoice"; ExitTrigger snapshots it raw as the
     // warlord id), so the creating TU downcasts per site - a proven-heterogeneous
     // slot, kept generically typed like m_1c.
     void* m_18; // +0x18

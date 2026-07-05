@@ -24,12 +24,16 @@
 #include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
-// The animation sub-object embedded in a render object at +0x1a0; its setter
-// FUN_0055c360 (0x15c360, __thiscall, 1 arg) re-targets the active animation, and
-// Setup (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite.
+// The animation sub-object embedded in a render object at +0x1a0. Tick
+// (0x15c360, __thiscall, 1 arg) advances the active animation by the draw clock
+// (every call site feeds g_6bf3bc) and returns the anim state (2 = the fire/cue
+// point - the grunt fire step gates on ==2; the detach path discards it). Setup
+// (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite. The two
+// state gates the fire step's finish tail reads live at +0x20/+0x28 of this
+// sub-object == CProjRenderObj::m_1c0/m_1c8.
 SIZE_UNKNOWN(CProjAnim);
 struct CProjAnim {
-    i32 SetAnim(u32 mode);   // 0x15c360
+    i32 Tick(u32 clock);     // 0x15c360 (was SetAnim - same fn, clock-fed)
     i32 Setup(void* frame0); // 0x15c2d0
 };
 
@@ -115,7 +119,16 @@ public:
     CProjectile();                   // 0x126e0 (no-arg)
     CProjectile(CGameObject* owner); // 0xdec60 (1-arg spawn ctor)
     virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
-    virtual i32 ProjectileVfunc();   // one added slot anchors the new vftable
+    // slot 17 (+0x44) - the ONE added virtual (anchors the new vftable; retail slot
+    // holds thunk 0x13bb -> 0xdf050, and 0xdf050's only direct caller IS that thunk,
+    // so every call is a virtual dispatch). Spawn-time load: resolve the projectile's
+    // per-type sprite frames + launch trajectory (/GX). The grunt fire step
+    // (ProjectileUpdate.cpp @0x61cb0) dispatches it on the fresh CreateSprite
+    // result's aux->m_18 setup object: `mov eax,[ecx]; call [eax+0x44]`. Args: the
+    // launcher grid cell (a,b), the target pixel pos (sx,sy; tile-snapped into
+    // m_targetX/m_targetY), and t0/t1 -> m_targetId/m_ownerId.
+    virtual i32
+    LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
 
     static void RegisterRange();   // 0xdf920 (seed the activation-table fast range)
     static void RegisterType();    // 0xdfb00 (level-load class registrar)
@@ -124,11 +137,7 @@ public:
     void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
     void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
     i32 LaunchSound(const char* key); // 0xe2190 (create + play the launch CSample)
-    // Level-load: resolve the projectile's per-type sprite frames + trajectory
-    // (0xdf050, /GX) and the impact/particle effects (0xdfd00). Args are the two
-    // grid endpoints + z + the target/owner ids.
-    i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
-    void LoadProjectileEffects();                                                      // 0xdfd00
+    void LoadProjectileEffects();     // 0xdfd00 (impact/particle effects)
 
     // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
     // now (its Update/Serialize round-trip touches them); CProjectile's own data
