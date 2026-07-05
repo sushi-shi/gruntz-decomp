@@ -68,18 +68,20 @@ public:
         i32 d,
         i32 e
     ); // +0x2c
+    virtual void s30_pad(); // +0x30 (filler between Configure and ConfigureEx)
     virtual i32 ConfigureEx(
         CStatusBarMgr* mgr,
-        i32 a0,
-        SbRect rect,
-        const char* key,
+        i32 a,
         i32 b,
         i32 c,
+        SbRect rect,
+        const char* key,
         i32 d,
         i32 e,
-        i32 f
+        i32 f,
+        i32 g,
+        i32 h
     );                                                             // +0x34
-    virtual void s34_pad();                                        // +0x34 (filler)
     virtual void ApplyDir(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38 (SetDirection sink)
 
     // SetDirection (0xea0f0): pick one of four direction tuples from the two

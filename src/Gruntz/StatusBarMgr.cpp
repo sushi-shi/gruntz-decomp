@@ -617,6 +617,81 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_48.AddTail(it);
+            // Per-grunt STATZ rows: 15 iterations, each an arrow (CSBI_StatzTabArrow via
+            // ConfigureEx + SetDirection/mode) plus a stat bar (CSBI_StatzTabGruntBar via
+            // BuildMultiplayerTabStatusBar). The arrow's rect x-span (bx+aOff..bx+cOff) is
+            // mode-gated on *this; the id p = 0x13b + k. arrows cache to m_18c[k].
+            {
+                i32 aOff, cOff;
+                if (*(i32*)this == 1) {
+                    aOff = 0x7d;
+                    cOff = 0x95;
+                } else {
+                    aOff = 0xa;
+                    cOff = 0x21;
+                }
+                i32 arrowL = bx + aOff;
+                i32 arrowR = bx + cOff;
+                i32 y = by + 0xd9;
+                i32* p = &m_114;
+                for (i = 0; i < 15; i++) {
+                    i32 id = 0x13b + i;
+                    it = (CSbConfigItem*)new CSBI_StatzTabArrow;
+                    r.left = arrowL;
+                    r.top = y - 0x11;
+                    r.right = arrowR;
+                    r.bottom = y;
+                    if (!it->ConfigureEx(
+                            this,
+                            code,
+                            id - 0xf,
+                            1,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
+                            -1,
+                            -1,
+                            0x64,
+                            0,
+                            0
+                        )) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_48.AddTail(it);
+                    p[0x1e] = (i32)it;
+                    if (p[0] != 0) {
+                        it->SetArrowMode(*(i32*)this, 0);
+                    } else {
+                        it->SetDirection(*(i32*)this, 0);
+                    }
+                    it = (CSbConfigItem*)new CSBI_StatzTabGruntBar;
+                    r.left = bx + 0x28;
+                    r.top = y - 0x11;
+                    r.right = bx + 0x77;
+                    r.bottom = y;
+                    if (!it->BuildMultiplayerTabStatusBar(
+                            this,
+                            code,
+                            id,
+                            1,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
+                            g_curPlayer,
+                            i,
+                            1
+                        )) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_48.AddTail(it);
+                    p++;
+                    y += 0x12;
+                }
+            }
             return 1;
 
         case 5: // ---- Game tab ----
