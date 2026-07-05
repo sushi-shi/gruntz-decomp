@@ -734,7 +734,12 @@ namespace GruntzMgrCmd {
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x8175:
-                            PLAYCUE("GAME_WAWA");
+                            if (m_world->m_28->m_30 == 0) {
+                                GZSound* _c = CueLookup("GAME_WAWA");
+                                if (_c) {
+                                    _c->Play(0x64, 0, 0, 0);
+                                }
+                            }
                             AppendChat("WA WA WA WA WA WA!");
                             return 1;
                         case 0x807a:
@@ -796,7 +801,7 @@ namespace GruntzMgrCmd {
                             RunModal("PSYCHE", (void*)0x402649, 0);
                             return 1;
                         case 0x81d7:
-                            PLAYCUE("GAME_MINORCHEAT");
+                            PLAYCUE("GAME_MAJORCHEAT");
                             m_44->m_124 = 0;
                             AppendChat("Cheatz cleared");
                             return 1;
