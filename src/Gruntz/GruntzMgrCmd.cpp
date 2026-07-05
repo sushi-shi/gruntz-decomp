@@ -50,10 +50,14 @@ namespace GruntzMgrCmd {
         void* m_90; // +0x90
     };
     struct GZSound {
-        void Play(i32 a, i32 b, i32 c, i32 d);
-    }; // 0x1f940 __thiscall
+        void Play(i32 a, i32 b, i32 c, i32 d); // 0x25fe __thiscall (cue result)
+    };
+    struct GZSoundZ {                             // manager m_48 (CGruntzSoundZ*)
+        i32 PlayByName(const char* name, i32 f);  // 0x138840 __thiscall
+    };
     struct GZGrunt {         // from 0x355d
         void SetItem(i32 n); // 0x17a8
+        i32 Flip();          // 0x1df2  (ambient variant index)
         void G3904(i32 n);   // 0x3904
         void G3792(i32 n);   // 0x3792
         void G3a85(i32 n);   // 0x3a85
@@ -180,8 +184,8 @@ namespace GruntzMgrCmd {
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
-        GZM44* m_44;   // 0x44 (engine sub-object; +0x124 flag)
-        void* m_sound; // 0x48
+        GZM44* m_44;      // 0x44 (engine sub-object; +0x124 flag)
+        GZSoundZ* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
         GZInput* m_inputState; // 0x54
         GZObj58* m_saveSink; // 0x58 (has +0x18)
@@ -208,6 +212,7 @@ namespace GruntzMgrCmd {
         void ReportErr(i32 a, i32 b);                 // 0x346d
         i32 Dispatch(i32 a, i32 b, i32 c, i32 d);     // 0x12d0
         i32 Base092f00();                             // 0x115e
+        i32 InPlay2();                                // 0x2a27
         i32 InPlay();                                 // 0x1a46
         i32 CheckPlay();                              // 0x1bd6
         void ChangeState(i32 n);                      // 0x201d
@@ -417,14 +422,23 @@ namespace GruntzMgrCmd {
                         case 0x8086: {
                             GZGrunt* _g = PickState();
                             if (!_g) {
-                                return 0;
+                                return 1;
                             }
-                            if (!InPlay()) {
-                                return 0;
+                            if (!InPlay2()) {
+                                return 1;
                             }
-                            // AMBIENT%d sound (uses m_04->m_4 / m_sound)
                             PLAYCUE("GAME_MONOLITH");
                             AppendChat("Monolith Rulez...");
+                            if (!m_14) {
+                                return 1;
+                            }
+                            if (g_6455e8) {
+                                m_sound->PlayByName("MONOLITH", 1);
+                                return 1;
+                            }
+                            char buf[128];
+                            g_pwsprintfA(buf, "AMBIENT%d", _g->Flip());
+                            m_sound->PlayByName(buf, 1);
                             return 1;
                         }
                         case 0x8087:
