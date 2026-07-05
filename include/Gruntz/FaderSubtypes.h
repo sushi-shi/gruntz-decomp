@@ -56,9 +56,9 @@ SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
 class CFaderMesh : public CFader {
 public:
-    CFaderMesh();               // 0x17e940
-    virtual void v1() OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
-    virtual void v2() OVERRIDE; // slot 2 -> 0x17f120 (overrides CFader pure)
+    CFaderMesh();                    // 0x17e940
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f120 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x6c);
@@ -71,16 +71,15 @@ public:
     // ApplyInit latches the transition descriptor into these fields, then walks an
     // (m_50 x m_54) grid emitting projected mesh records into the m_58 buffer.
     // m_38/m_3c hold the active dst/src box pointers (stored as dwords via SetTimers).
-    char _pad34[0x38 - 0x34]; // +0x34 (unused by ApplyInit)
-    i32 m_38;                 // +0x38  active dst box (ptr-as-dword)
-    i32 m_3c;                 // +0x3c  active src box (ptr-as-dword)
-    i32 m_40;                 // +0x40
-    i32 m_44;                 // +0x44
-    i32 m_48;                 // +0x48
-    i32 m_4c;                 // +0x4c  record-order flag
-    i32 m_50;                 // +0x50  columns
-    i32 m_54;                 // +0x54  rows
-    CFaderMeshSub m_58;       // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
+    i32 m_38;           // +0x38  active dst box (ptr-as-dword)
+    i32 m_3c;           // +0x3c  active src box (ptr-as-dword)
+    i32 m_40;           // +0x40
+    i32 m_44;           // +0x44
+    i32 m_48;           // +0x48
+    i32 m_4c;           // +0x4c  record-order flag
+    i32 m_50;           // +0x50  columns
+    i32 m_54;           // +0x54  rows
+    CFaderMeshSub m_58; // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
 };
 
 // ===========================================================================
@@ -90,10 +89,10 @@ SIZE(CFaderSine, 0x7d5c);
 VTBL(CFaderSine, 0x001f0848);
 class CFaderSine : public CFader {
 public:
-    CFaderSine();                   // 0x17fdb0
-    virtual ~CFaderSine() OVERRIDE; // 0x17fdf0
-    virtual void v1() OVERRIDE;     // slot 1 -> 0x17ff30 (overrides CFader pure)
-    virtual void v2() OVERRIDE;     // slot 2 -> 0x180400 (overrides CFader pure)
+    CFaderSine();                    // 0x17fdb0
+    virtual ~CFaderSine() OVERRIDE;  // 0x17fdf0
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17ff30 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x180400 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x7d5c);
@@ -101,7 +100,7 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x17fe00 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17fe00 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
+    char _pad38[0x4c - 0x38]; // +0x38..+0x4b
     i32 m_4c;                 // +0x4c
     i32 m_50;                 // +0x50
 };
@@ -113,9 +112,9 @@ SIZE(CFaderFlat, 0x50);
 VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
 public:
-    CFaderFlat();               // 0x17f530
-    virtual void v1() OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
-    virtual void v2() OVERRIDE; // slot 2 -> 0x17f950 (overrides CFader pure)
+    CFaderFlat();                    // 0x17f530
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f950 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x50);
@@ -123,7 +122,7 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x17f5e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17f5e0 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x4c - 0x34]; // +0x34..+0x4b
+    char _pad38[0x4c - 0x38]; // +0x38..+0x4b
     i32 m_4c;                 // +0x4c
 };
 
@@ -134,9 +133,9 @@ SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
-    CFaderLight();              // 0x180410
-    virtual void v1() OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
-    virtual void v2() OVERRIDE; // slot 2 -> 0x1814f0 (overrides CFader pure)
+    CFaderLight();                   // 0x180410
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x1814f0 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x206c);
@@ -144,7 +143,7 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x1804a0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
+    char _pad38[0x40 - 0x38]; // +0x38..+0x3f
     i32 m_40;                 // +0x40
 };
 
@@ -155,9 +154,9 @@ SIZE(CFaderRadial, 0x5c);
 VTBL(CFaderRadial, 0x001f0810);
 class CFaderRadial : public CFader {
 public:
-    CFaderRadial();             // 0x17f9a0
-    virtual void v1() OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
-    virtual void v2() OVERRIDE; // slot 2 -> 0x17fda0 (overrides CFader pure)
+    CFaderRadial();                  // 0x17f9a0
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17fda0 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x5c);
@@ -165,7 +164,7 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x17fa40 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x40 - 0x34]; // +0x34..+0x3f
+    char _pad38[0x40 - 0x38]; // +0x38..+0x3f
     i32 m_40;                 // +0x40
     i32 m_44;                 // +0x44
     i32 m_48;                 // +0x48
@@ -182,8 +181,8 @@ class CFaderShape : public CFader {
 public:
     CFaderShape();                   // 0x1816c0
     virtual ~CFaderShape() OVERRIDE; // slot 0 -> 0x181720 (body in Obj5f0890Dtor.cpp)
-    virtual void v1() OVERRIDE;      // slot 1 -> 0x181b00 (overrides CFader pure)
-    virtual void v2() OVERRIDE;      // slot 2 -> 0x182900 (overrides CFader pure)
+    virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
+    virtual i32 v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
 
     void* operator new(u32) {
         return ::operator new(0x494);
@@ -191,7 +190,7 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x1817e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1817e0 (same method; copy from the pInit descriptor)
 
-    char _pad34[0x44 - 0x34];    // +0x34..+0x43
+    char _pad38[0x44 - 0x38];    // +0x38..+0x43
     i32 m_44;                    // +0x44
     i32 m_48;                    // +0x48
     i32 m_4c;                    // +0x4c

@@ -18,6 +18,7 @@
 // original file's provenance comment.
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
+#include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
 #include <Ints.h>
 #include <Win32.h>  // GetTickCount / WINAPI / RECT (reloc-masked imports)
 #include <math.h>   // acos/sin (fsin) / sqrt (fsqrt) intrinsics
@@ -211,43 +212,13 @@ CFaderShape::CFaderShape() {
 // The busy-wait spinner (0x17e510): spins until GetTickCount() >= now + delay.
 // Reloc-masked rel32 callee, __thiscall (ignores its this).
 
-// The COM-style fade sink reached through this->m_2c (a pointer-to-interface-
-// pointer): *m_2c is the interface, whose first field is a C-vtable; slot 0x58
-// (== slot 22) is poked __stdcall(this, 1, 0) once per newly-reached frame.
-// SDK CHECK (batch-2 interface-recovery task): NOT a vendored DX interface - slot 22
-// of IDirectDrawSurface is GetSurfaceDesc (1 arg, mismatch) and IDirectSoundBuffer
-// has only ~21 slots, so no ddraw/dsound method has a 22nd slot taking (this,i32,i32).
-// This is a genuine ENGINE-INTERNAL fade-notify sink (IDENTITY-RECOVERY TODO: its
-// concrete class lives in the fade-owner TU, unrecovered here). Kept as a named
-// 1-slot placeholder (only used in this TU); no fabricated fold. External/reloc-masked.
-struct IFadeSink;
-SIZE_UNKNOWN(IFadeSinkVtbl);
-struct IFadeSinkVtbl {
-    char _00[0x58];
-    void(__stdcall* m_58)(IFadeSink*, i32, i32); // +0x58
-};
-SIZE_UNKNOWN(IFadeSink);
-struct IFadeSink {
-    IFadeSinkVtbl* vtbl; // +0x00  C-vtable
-};
-
-SIZE_UNKNOWN(FaderRun);
-class FaderRun {
-public:
-    virtual ~FaderRun();    // slot 0
-    virtual void v1(i32 f); // slot 1  render frame f
-    virtual i32 v2();       // slot 2  frame count
-    virtual void v3();      // slot 3  begin
-    virtual void v4();      // slot 4  end
-    void Wait(i32 delay);   // 0x17e510
-
-    void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
-
-    char _04[0x2c - 0x04]; // +0x04
-    IFadeSink** m_2c;      // +0x2c  fade sink (pointer-to-interface-pointer)
-    char _30[0x34 - 0x30]; // +0x30
-    i32 m_34;              // +0x34  measured frame rate
-};
+// The COM-style fade sink IFadeSink (P2 placeholder, <Gruntz/FadeSink.h>) is reached
+// through m_set2cArg (an IFadeSink** stored as a dword via Set2c): *sink is the
+// interface whose slot 0x58 is poked __stdcall(this, 1, 0) once per newly-reached frame.
+// (Was the standalone FaderRun view; dissolved onto the real CFader base - RunFade is a
+// CFader method @0x17e620, Wait/v1/v2/v3/v4 are the base's, m_2c==m_set2cArg, m_34 is the
+// base's trailing frame-rate field. The v1(i32)/i32 v2() slot signatures the driver needs
+// are now the CFader canonical, fixing the old void-signature mismodel.)
 
 // @early-stop
 // Complete + correct (~86%). Wall = the x87 loop-invariant conversion block: retail
@@ -259,7 +230,7 @@ public:
 // ordering of the three float decls pins the fxch batching. Loop body, guards, sink
 // COM-call and the m_34 frame-rate store (0.001f const) are byte-exact.
 RVA(0x0017e620, 0x13b)
-void FaderRun::RunFade(u32 dur, i32 lead, i32 notify) {
+void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
     i32 prev = 0;
     i32 frame = 0;
     i32 count = v2();
@@ -278,8 +249,8 @@ void FaderRun::RunFade(u32 dur, i32 lead, i32 notify) {
         do {
             frame = (i32)(((float)GetTickCount() - fStart) / fDur * fCount);
             if (prev != frame && frame <= count && frame > 0) {
-                if (notify && m_2c) {
-                    IFadeSink* o = *m_2c;
+                if (notify && m_set2cArg) {
+                    IFadeSink* o = *(IFadeSink**)m_set2cArg;
                     o->vtbl->m_58(o, 1, 0);
                 }
                 v1(frame);
