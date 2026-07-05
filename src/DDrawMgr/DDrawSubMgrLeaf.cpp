@@ -29,7 +29,8 @@
 // bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 
-#include <Mfc.h> // real MFC CObject / CMapStringToOb / CString / POSITION
+#include <Mfc.h>                          // real MFC CObject / CMapStringToOb / CString / POSITION
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
 
 // The looked-up catalog value: only the scalar-deleting destructor slot (+0x04)
 // is load-bearing. Declarations only - never defined here, so no ??_7 is emitted.
@@ -40,25 +41,13 @@ public:
 };
 
 // CDDrawSubMgrLeafScan: the real sibling class (its full body + own vtable 0x5efca0
-// live in CDDrawSubMgrLeafScan.cpp). Three of its methods landed in THIS TU: the
-// readiness predicate (vtable slot [5], 0x157530), the map-clear (0x157bc0), and the
-// ??_G scalar-deleting dtor (0x157550, which forwards to the real member-teardown
-// ~CDDrawSubMgrLeafScan at 0x157570 in the sibling TU). It owns a name-keyed map at
-// +0x10 plus two flag fields at +0x2c/+0x30. Polymorphic (vptr @+0x00); the virtual
-// dtor's key function is out-of-line (own TU), so no ??_7 is emitted here.
-class CDDrawSubMgrLeafScan {
-public:
-    virtual ~CDDrawSubMgrLeafScan(); // 0x157570 (member-teardown, own TU)
-    i32 IsReady();                   // 0x157530  (vtable slot [5], readiness predicate)
-    void ClearMap();                 // 0x157bc0
-    void* ScalarDtor(i32 flag);      // 0x157550  (??_G scalar-deleting dtor)
-
-    // vptr @+0x00 (implicit)
-    char m_pad04[0x10 - 0x04]; // +0x04 .. +0x0f
-    CMapStringToOb m_10;       // +0x10  name-keyed value map (0x10..0x2b)
-    i32 m_2c;                  // +0x2c
-    i32 m_30;                  // +0x30
-};
+// live in CDDrawSubMgrLeafScan.cpp) now comes from the shared
+// <DDrawMgr/DDrawSubMgrLeafScan.h> (included above). Three of its methods landed in
+// THIS TU: the readiness predicate (vtable slot [5], 0x157530), the map-clear
+// (0x157bc0), and the ??_G scalar-deleting dtor (0x157550, which forwards to the real
+// member-teardown ~CDDrawSubMgrLeafScan at 0x157570 in the sibling TU). The virtual
+// dtor's key function is out-of-line (own TU), so no ??_7 is emitted here (the ??_G is
+// hand-written + SYMBOL-pinned, not an auto scalar-deleting dtor).
 
 // CDDrawSubMgrGrandBase - the CObject-like family grand-base (vptr + the three header
 // fields +0x04..+0x0c). Modeled as a REAL polymorphic base (its 5-slot vtable is
@@ -385,7 +374,7 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 }
 
 SIZE_UNKNOWN(CCatalogNode);
-SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
+// CDDrawSubMgrLeafScan SIZE_UNKNOWN now lives in the shared header.
 SIZE_UNKNOWN(CDDrawSubMgrGrandBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)

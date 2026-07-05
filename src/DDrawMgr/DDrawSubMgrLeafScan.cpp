@@ -29,7 +29,8 @@
 // mangle to the retail names (the relocs pair instead of staying fuzzy).
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundDevice.h>
-#include <Gruntz/ParseSource.h> // canonical CParseSource (BeginParse/EndParse)
+#include <Gruntz/ParseSource.h>            // canonical CParseSource (BeginParse/EndParse)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan + LeafScanBase
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -
@@ -200,77 +201,12 @@ extern "C" void RezFree(void* p);
 void* operator new(u32 n);
 void operator delete(void* p);
 
-// ---------------------------------------------------------------------------
-// The shared CObject-like grand-base: vptr + status word at +0x04 + handle at
-// +0x0c. Modeled as a REAL polymorphic base (its 5-slot vtable is the shared
-// g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
-// (masks 0x5e8cb4) at the derived dtor's tail -- no manual `*(void**)this = &g_*Vtbl`.
-// Its virtual ~ holds the field resets; the base transition stamp is implicit. This
-// is the tail the derived dtor chains into AFTER the map member is destroyed.
-// ---------------------------------------------------------------------------
-// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
-// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
-// CObject (would ODR-clash + collapse the /GX dtor teardown level).
-class LeafScanBase {
-public:
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~LeafScanBase();     // [1] scalar-deleting dtor
-    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
-
-    i32 m_04;                  // +0x04  -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                  // +0x0c  parent/root handle
-    LeafScanBase() {}
-};
-
-inline LeafScanBase::~LeafScanBase() {
-    m_04 = -1;
-    *(i32*)&m_pad08[0] = 0; // +0x08 = 0
-    m_0c = 0;
-}
-
-// ---------------------------------------------------------------------------
-// The cache sub-manager. Map at +0x10 (CMapStringToOb, 0x1c bytes -> ends at
-// +0x2c). m_2c is a held sub-object (a second keyed store / scanner), m_30 the
-// busy guard, m_34 a redraw arg. The map's m_nCount (class+0x1c, GetCount
-// inlined) drives the GetNextAssoc start-position trick.
-// ---------------------------------------------------------------------------
-class CDDrawSubMgrLeafScan : public LeafScanBase {
-public:
-    // The leaf vtable (??_7CDDrawSubMgrLeafScan @0x5efca0) is 9 slots: 5 shared
-    // CObject slots from LeafScanBase (slot 1 = the virtual dtor below), then 4 leaf
-    // virtuals at slots 5..8. Slots 5/7 point to functions in the sibling
-    // CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0) and 6/8 are unreconstructed, so all
-    // four are declared-only here -> reloc-masked vtable references.
-    virtual i32 IsReady();       // [5] 0x157530 (= CDDrawSubMgrLeafScan::IsReady, other TU)
-    virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void ClearContext(); // [7] 0x157ae0 (= CDDrawSubMgrLeaf::ClearContext, other TU)
-    virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
-
-    i32 RefreshAsset_114120(const char* key);
-    LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
-    LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
-    i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
-
-    CObject* Lookup_05b7e0(const char* key);
-    i32 RemoveKeysEqual_157c70(const char* base, const char* str);
-    i32 SumField_1580b0(const char* str);
-    LeafScanValue* GetFirstValue_158210();
-    i32 ProbeFirst_1584a0(i32 arg);
-    i32 HasKeyEqual_1583c0(const char* str);
-    CString FindKeyOfValue_158570(LeafScanValue* target);
-    i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
-
-    virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
-
-    CMapStringToOb m_10; // +0x10  keyed asset cache (ends +0x2c)
-    SoundDevice* m_2c;   // +0x2c  held DSound device
-    i32 m_30;            // +0x30  busy/loading guard
-    i32 m_34;            // +0x34  redraw arg
-};
+// The canonical CDDrawSubMgrLeafScan + its LeafScanBase grand-base now live in the
+// shared <DDrawMgr/DDrawSubMgrLeafScan.h> (included above): the class def is the
+// single-source union of this TU's method set and the sibling CDDrawSubMgrLeaf TU's
+// ??_G/IsReady/ClearMap. The body-only dep types (LeafElementObj / DirNode /
+// LeafScanValue / LeafScanSoundArg) are forward-declared in the header and fully
+// defined above so the method bodies below can dereference them.
 
 // Read the map count at parent+0x1c (inside the CMapStringToOb's internal area,
 // its m_nCount). A separate inline so its read schedules before the handle read,
@@ -747,7 +683,7 @@ SIZE_UNKNOWN(LeafCuePlayer);
 SIZE_UNKNOWN(LeafElementBase);
 SIZE(LeafElementObj, 0x1c);
 SIZE_UNKNOWN(LeafRootHandle);
-SIZE_UNKNOWN(LeafScanBase);
+// LeafScanBase / CDDrawSubMgrLeafScan SIZE_UNKNOWN now live in the shared header.
 SIZE_UNKNOWN(LeafScanSoundArg);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
