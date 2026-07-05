@@ -474,6 +474,35 @@ SIZE(
 // de-tuning risk and NO correctness gain (both views already encode the true
 // 0x30). Kept as a documented byte-compatible dual-model; the two never coexist
 // in a TU (the CGrunt-HUD sprites that bridge them include only Grunt.h).
+//
+// RIDER EVIDENCE (matcher-2, 2026-07-05) - the parallel CUserBase/CUserLogic in
+// <Gruntz/Grunt.h>:~1119/1130 is ODR-incompatible with THIS canonical pair. The
+// member-by-member diff (offsets identical; only owner/type/name differ):
+//   * Field-owner boundary: canonical CUserBase is EMPTY (just the vptr); every
+//     +0x04..+0x2c field lives on CUserLogic (base ctor 0x58cd0 writes them). Grunt.h
+//     puts +0x04..+0x14 on CUserBase - a modeling choice, not evidence (CUserBase's
+//     ctor writes nothing). Canonical boundary is the correct one.
+//   * +0x10: canonical m_object (CGameObject*) == Grunt.h m_10 (CGruntHud*). CGruntHud
+//     IS CGameObject: its m_8(0x20000 dirty)/m_40/m_4c/m_50/m_58/m_5c/m_60/m_74/m_e4/
+//     m_11c/m_134..m_140/m_188 all match CGameObject's offsets exactly. CGruntHud is a
+//     redundant partial view -> delete on merge.
+//   * +0x14: canonical m_objAux (CGameObjAux*, == obj->m_7c) == Grunt.h m_14
+//     (CAnimLookupNode*). CAnimLookupNode's only field m_1c matches CGameObjAux::m_1c;
+//     CMovingLogic reads (obj->m_7c)->+0x2c/+0x30/+0x34/+0x38 (movement bounds) through
+//     it -> CAnimLookupNode is a partial CGameObjAux view.
+//   * Vtable: 16 slots, same order. Grunt.h's SerializeMove(1)/UbSlot08(2)/
+//     InitDirVectors(6)/FreeNameList(11) are CGrunt-SPECIFIC OVERRIDE names (semantic
+//     for the CGrunt override, NOT the base slot's role - other leaves override slot 6
+//     as "activate", see LogicWorkerHandlers.cpp). So the base slot names must stay
+//     generic (UserBaseVfunc*/UserLogicVfunc*); the semantic names belong on CGrunt's
+//     overrides, which C++ forces to share the base virtual's name -> a per-slot
+//     reconciliation decision, not a mechanical fold.
+// The full merge (delete Grunt.h's defs, Grunt.h includes this header) is a DEDICATED
+// refactor: m_10/m_14 are lexically ambiguous across 60+ grunt-family .cpp (399 refs in
+// Grunt.cpp alone, most on OTHER classes' m_10/m_14), 6 files reference the canonical
+// virtual names, and the two widest headers demand a butterfly harness - all under the
+// hard "grunt unit % must hold" constraint, for ZERO match-% gain (matching-neutral
+// cleanup). Deferred to that pass; evidence banked here so it need not be re-derived.
 
 // Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
 // CUserLogic vptr, then the full init. Defined here (not the .cpp) because only

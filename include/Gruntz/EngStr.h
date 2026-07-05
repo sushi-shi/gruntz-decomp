@@ -13,6 +13,19 @@
 //   EngStr(char const*, int) = 0x16d3a0  (836B; construct from a C string)
 //   operator=(EngStr const&) = 0x16d2f0  (172B; deep copy-assign)
 //   ~EngStr()                = 0x16d2a0  (38B)
+//
+// IDENTITY (matcher-2, proven 2026-07-05): this "EngStr" IS the zBitVec /
+// CContainerErr small-buffer container already modeled in <Gruntz/ProjActCache.h>
+// (RTTI-less vtable 0x5f04c8 == ??_7zBitVec; base CContainerErr @0x16d9c0/0x16da60;
+// SetSize @0x16e100 == zBitVec::SetSize). ~EngStr @0x16d2a0 stamps 0x5f04c8, frees
+// buf when cap>0x20, chains ~CContainerErr; operator= @0x16d2f0 reallocs+memcpys
+// cap/8 bytes; the 836B ctor @0x16d3a0 is a whitespace-delimited numeric-token
+// PARSER (not a string copy). Reconstructing the four requires the polymorphic
+// zBitVec/CContainerErr shape here, but this class is embedded in EVERY leaf ctor
+// (CUserBaseLink::m_str), CContainerErr is defined THREE times (here as EngStr,
+// <Wap32/EngStr.h>, <Gruntz/ProjActCache.h>), and the two consumers are the game's
+// two widest headers -> a dedicated 3-way-dedup + butterfly pass, not a drive-by.
+// Kept NO-body (correctly reloc-masking the leaf ctors) pending that pass.
 #ifndef GRUNTZ_ENGSTR_H
 #define GRUNTZ_ENGSTR_H
 
