@@ -13,8 +13,9 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h>    // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Net/LatencyList.h> // CLatencyList (m_slotList; SelectItem body below)
+#include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
+#include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Net/LatencyList.h>     // CLatencyList (m_slotList; SelectItem body below)
 #include <rva.h>
 #include <Globals.h>
 
@@ -23,7 +24,7 @@
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
 // delinked target DATA symbol (RVA = VA - 0x400000).
 DATA(0x0024556c)
-extern i32* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
+extern CGameRegistry* g_gameReg; // the CGameRegistry pointer (reloc-masked DATA symbol)
 // State-machine invariant: 0x64bd5c holds the multiplayer game-state singleton (a
 // CMulti, xref-proven). The ctor snapshots it from g_gameReg->m_curState (+0x2c); the
 // dialog reads it through genuine CMulti members - the former per-TU CMultiReg /
@@ -187,7 +188,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
     m_host = a0;
     m_6c = 0;
     m_slotList = 0;
-    g_64bd5c = (CMulti*)g_gameReg[0x2c / 4];
+    g_64bd5c = (CMulti*)g_gameReg->m_curState;
 }
 
 // CMultiStartDlg::BuildSlotList (0xc1e60): allocate the player-slot list, derive
