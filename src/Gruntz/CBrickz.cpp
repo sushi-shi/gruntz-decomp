@@ -30,7 +30,7 @@ CBrickz::~CBrickz() {}
 // residue is this ctor's own __ehfuncinfo + a 1-slot pop-edi scheduling delta in
 // the tail. Not source-steerable; ~92%. Parked for the final sweep.
 RVA(0x0010e800, 0x17d)
-CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
+CBrickz::CBrickz(CGameObject* obj) : CTileLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;

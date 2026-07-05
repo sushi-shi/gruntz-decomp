@@ -42,17 +42,17 @@ struct Owner;
 // lowers to push sizeof(T); call operator new; mov ecx,raw; push owner; call
 // <ctor>, all reloc-masked, and the post-construction activate + pump dispatches
 // lower to `mov eax,[obj]; call [eax+N]` through the inherited 16-slot vtable.
-struct CWormhole : public CUserLogic {
+struct CWormhole : public CTileLogic {
     CWormhole(Owner* owner); // 0x03fc70
     char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
-struct CGruntSelectedSprite : public CUserLogic {
+struct CGruntSelectedSprite : public CTileLogic {
     CGruntSelectedSprite(Owner* owner); // 0x07e3e0
     char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
-struct CGruntToySprite : public CUserLogic {
+struct CGruntToySprite : public CTileLogic {
     CGruntToySprite(Owner* owner); // 0x07f350
     char m_body[0x60 - 0x40];
 }; // sizeof = 0x60

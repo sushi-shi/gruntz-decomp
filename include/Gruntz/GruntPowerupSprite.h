@@ -12,7 +12,7 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
 
-class CGruntPowerupSprite : public CUserLogic {
+class CGruntPowerupSprite : public CTileLogic {
 public:
     ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 

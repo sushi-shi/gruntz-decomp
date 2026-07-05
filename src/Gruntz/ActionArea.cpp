@@ -14,7 +14,7 @@ extern CButeTree g_buteTree;
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00007da0, 0x17e)
-CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
+CActionArea::CActionArea(CGameObject* obj) : CTileLogic(obj) {
     m_58 = 0;
     m_60 = 0;
     m_5c = 0;

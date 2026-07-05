@@ -30,7 +30,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CGruntHealthSprite : CUserLogic)
 
 SIZE_UNKNOWN(CGruntHealthSprite);
-class CGruntHealthSprite : public CUserLogic {
+class CGruntHealthSprite : public CTileLogic {
 public:
     static void InitActReg();   // 0x07ecf0 (construct g_healthActReg over [2000,2010])
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)

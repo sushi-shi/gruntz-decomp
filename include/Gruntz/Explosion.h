@@ -8,7 +8,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CExplosion : public CUserLogic {
+class CExplosion : public CTileLogic {
 public:
     CExplosion(CGameObject* obj);   // 0x470e0
     virtual ~CExplosion() OVERRIDE; // 0x12ec0 (folds the CUserLogic teardown)

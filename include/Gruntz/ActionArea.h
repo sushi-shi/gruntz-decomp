@@ -11,7 +11,7 @@
 #include <Gruntz/UserLogic.h>
 
 SIZE_UNKNOWN(CActionArea);
-class CActionArea : public CUserLogic {
+class CActionArea : public CTileLogic {
 public:
     CActionArea(CGameObject* obj); // 0x7da0
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic

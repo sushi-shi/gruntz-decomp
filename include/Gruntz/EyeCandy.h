@@ -22,7 +22,7 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CEyeCandy : CUserLogic)
 
 SIZE_UNKNOWN(CEyeCandy);
-class CEyeCandy : public CUserLogic {
+class CEyeCandy : public CTileLogic {
 public:
     CEyeCandy(CGameObject* obj); // 0x0ac620 (ctor body in UserLogic.cpp)
     LogicTypeId GetTypeTag();    // 0x00fca0 (returns the class logic-type id 0x3f1)

@@ -7,7 +7,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CCheckpointTrigger : public CUserLogic {
+class CCheckpointTrigger : public CTileLogic {
 public:
     CCheckpointTrigger(CGameObject* obj);   // 0x10ee20 (1-arg leaf ctor)
     virtual ~CCheckpointTrigger() OVERRIDE; // 0x011480 (folds the CUserLogic teardown)

@@ -29,6 +29,8 @@
 #include <Gruntz/Grunt.h>       // CUserLogic base + CGrunt (the accessor's bound grunt)
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 
+// Grunt.h-world class (includes Grunt.h for CGrunt); NOT part of the canonical-world
+// CTileLogic reparent - stays `: CUserLogic` (Grunt.h's true-0x30) until stage 5.
 class CGruntStaminaSprite : public CUserLogic {
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).

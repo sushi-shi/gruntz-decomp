@@ -24,7 +24,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandyAni : CUserLogic)
 
-class CBehindCandyAni : public CUserLogic {
+class CBehindCandyAni : public CTileLogic {
 public:
     CBehindCandyAni(CGameObject* obj); // 0x0ad540 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry (g_behindCandyActReg

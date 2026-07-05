@@ -179,7 +179,7 @@ CObjectDropper::~CObjectDropper() {}
 // alloc (ebx pinned to 1 across the first loop), the /GX leaf-vptr re-stamp position
 // + the shared dy=0 store fold. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000c59f0, 0x3e3)
-CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
+CObjectDropper::CObjectDropper(CGameObject* obj) : CTileLogic(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
     m_geomId = m_38->m_geoId;

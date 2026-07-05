@@ -375,7 +375,7 @@ extern char s_actKeyA[]; // "A" (0x60a454)
 // position (docs/patterns/eh-ctor-vptr-restamp-position.md). The SAME plateau as
 // CVoiceTrigger / CTimeBomb / the other bute ctors; not source-steerable.
 RVA(0x0003fc70, 0x1db)
-CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
+CWormhole::CWormhole(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_flags |= 0x2000002;
     m_38->ApplyName("GAME_WORMHOLE");
     m_prevAnimNode = m_38->m_geoId;

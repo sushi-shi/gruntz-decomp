@@ -60,7 +60,7 @@ struct CProjBoundCfg {
 // CMovingLogic : CUserLogic - moving-object motion state.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMovingLogic);
-class CMovingLogic : public CUserLogic {
+class CMovingLogic : public CTileLogic {
 public:
     CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
     CMovingLogic(CGameObject* owner); // 1-arg (folds into CProjectile(owner))
@@ -160,7 +160,7 @@ inline CMovingLogic::CMovingLogic() {
 // Motion() cast), seeds the four coordinate bounds from the per-type config (m_14,
 // default MIN/MAX when 0), then the 11-double coordinate setter (0x58bc0) and the
 // default-Z band.
-inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
+inline CMovingLogic::CMovingLogic(CGameObject* owner) : CTileLogic(owner) {
     Motion()->Init();
     // Each bound: 0 => the shared MIN/MAX double copied dword-wise; else the int
     // widened via fild. Written as if/else (not ?:) so the constant branch stays a

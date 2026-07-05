@@ -42,6 +42,6 @@ CGuardPoint::~CGuardPoint() {}
 // body byte-identical (incl. the unrolled logic-type registration); residual is the
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ae5f0, 0x18f)
-CGuardPoint::CGuardPoint(CGameObject* obj) : CUserLogic(obj) {
+CGuardPoint::CGuardPoint(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_stateFlags |= 1;
 }

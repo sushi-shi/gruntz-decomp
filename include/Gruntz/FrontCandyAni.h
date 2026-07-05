@@ -14,7 +14,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CFrontCandyAni : CUserLogic)
 
-class CFrontCandyAni : public CUserLogic {
+class CFrontCandyAni : public CTileLogic {
 public:
     // Construct the class's activation-coordinate registry (g_frontCandyActReg
     // @0x6460b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.

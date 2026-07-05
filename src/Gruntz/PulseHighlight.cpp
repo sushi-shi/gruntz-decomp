@@ -25,7 +25,7 @@ struct CPulseAnim {
     CPulseSink* m_194; // +0x194
 };
 
-class CPulseHighlight : public CUserLogic {
+class CPulseHighlight : public CTileLogic {
 public:
     i32 Tick();                                               // 0x8440
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x8600

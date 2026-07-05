@@ -33,7 +33,7 @@
 // (states 3/4 around ApplyName) differently than retail. Logic complete; the same
 // store-schedule + eh-state walls the sibling Setup (0x11a7e0) carries. Final sweep.
 RVA(0x001198a0, 0x195)
-CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
+CGruntVoice::CGruntVoice(CGameObject* obj) : CTileLogic(obj) {
     m_icon = 0;
     m_5c = 0;
     m_durationMs = 0;

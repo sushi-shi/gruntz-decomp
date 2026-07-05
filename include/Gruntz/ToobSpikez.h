@@ -23,7 +23,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CToobSpikez : CUserLogic)
 
-class CToobSpikez : public CUserLogic {
+class CToobSpikez : public CTileLogic {
 public:
     CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods

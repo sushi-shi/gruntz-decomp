@@ -32,7 +32,7 @@
 // CInGameText : CUserLogic. Its own state begins at +0x54 (within the inherited
 // layout the dtor folds the bare CUserLogic teardown).
 // ---------------------------------------------------------------------------
-class CInGameText : public CUserLogic {
+class CInGameText : public CTileLogic {
 public:
     CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
     virtual ~CInGameText() OVERRIDE; // 0x011dc0

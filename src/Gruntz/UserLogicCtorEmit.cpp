@@ -20,10 +20,10 @@
 // from ~90% to ~10-50%). Isolating the forcer + the inline body in this TU emits
 // the standalone COMDATs while UserLogic.cpp's leaves keep calling the helper.
 #include <Mfc.h> // operator new + the afx-first windows.h order UserLogic.h needs
-// Drop the leaf-only m_34/m_38/m_3c stores from the inline CUserLogic(obj) so the
-// standalone COMDAT matches retail 0x58cd0 (which does not set them). This macro
-// is defined ONLY in this TU, so every leaf TU compiles the ctor unchanged.
-#define USERLOGIC_STANDALONE_CTOR
+// The inline CUserLogic(obj) now inits only through m_2c (the true-0x30 base), so the
+// standalone COMDAT it forces already matches retail 0x58cd0 with no macro. The leaf-
+// only m_34/m_38/m_3c tail stores moved to CTileLogic(obj) (see <Gruntz/UserLogic.h>);
+// CProjectile/CDoNothingNormal/Grunt call this same base ctor out-of-line via 0x3828.
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 

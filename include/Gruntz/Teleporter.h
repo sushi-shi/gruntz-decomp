@@ -65,7 +65,7 @@ extern CButeTree g_buteTree;
 // state at +0x40 (CUserLogic ends at +0x40). The CUserLogic base gives the +0x18
 // destructible link, so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
-class CTeleporter : public CUserLogic {
+class CTeleporter : public CTileLogic {
 public:
     // InitActReg (0x414a0): construct the class's activation-coordinate registry
     // singleton (g_teleporterActReg @0x6446b0) over the fixed [2000, 2010] range.

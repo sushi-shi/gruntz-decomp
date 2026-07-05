@@ -45,6 +45,6 @@ CWayPoint::~CWayPoint() {}
 // body byte-identical (incl. the unrolled built-in logic-type registration); residual
 // is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ae3f0, 0x18f)
-CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj) {
+CWayPoint::CWayPoint(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_stateFlags |= 1;
 }

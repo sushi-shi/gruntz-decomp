@@ -226,7 +226,7 @@ CStaticHazard::~CStaticHazard() {}
 // against retail's stack-slot schedule and the jump-table data region scores as
 // the jumptable-data-overlap artifact. Parked for the final sweep.
 RVA(0x000fb7a0, 0x2d4)
-CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
+CStaticHazard::CStaticHazard(CGameObject* obj) : CTileLogic(obj) {
     // re-arm the IDLE geometry + STATICHAZARD sprite (SetAnimEx idiom).
     m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);

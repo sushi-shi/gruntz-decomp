@@ -35,22 +35,22 @@
 // reloc-masked. Deriving the real CUserLogic base lets the post-construction
 // activate + pump dispatches lower to `mov eax,[obj]; call [eax+N]` through the
 // inherited 16-slot CUserLogic vtable (no fabricated view class).
-struct CDoNothing : public CUserLogic {
+struct CDoNothing : public CTileLogic {
     CDoNothing(Owner* owner); // 0x0ac1d0
     char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
-struct CBehindCandyAni : public CUserLogic {
+struct CBehindCandyAni : public CTileLogic {
     CBehindCandyAni(Owner* owner); // 0x0ad540
     char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
-struct CWayPoint : public CUserLogic {
+struct CWayPoint : public CTileLogic {
     CWayPoint(Owner* owner); // 0x0ae3f0
     char m_body[0x54 - 0x40];
 }; // sizeof = 0x54
 
-struct CRollingBall : public CUserLogic {
+struct CRollingBall : public CTileLogic {
     CRollingBall(Owner* owner); // 0x0af820
     char m_body[0xa0 - 0x40];
 }; // sizeof = 0xa0

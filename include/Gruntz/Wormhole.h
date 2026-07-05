@@ -15,7 +15,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CWormhole : CUserLogic)
 
 SIZE_UNKNOWN(CWormhole);
-class CWormhole : public CUserLogic {
+class CWormhole : public CTileLogic {
 public:
     static void InitActReg();                     // 0x03f210
     static void RegisterActs();                   // 0x03f3f0

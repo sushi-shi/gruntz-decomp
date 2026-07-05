@@ -34,7 +34,7 @@ CGruntPuddle::~CGruntPuddle() {}
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x00040490, 0x1ab)
-CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
+CGruntPuddle::CGruntPuddle(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_flags |= 2;
     if (m_object->m_latchedAnimId != 0xa) {
         m_object->m_latchedAnimId = 0xa;

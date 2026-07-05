@@ -21,7 +21,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CExitTrigger : CUserLogic)
 
-class CExitTrigger : public CUserLogic {
+class CExitTrigger : public CTileLogic {
 public:
     CExitTrigger(CGameObject* obj);   // 0x03ecf0 (1-arg leaf ctor)
     LogicTypeId GetTypeTag();         // 0x010870 (returns the class logic-type id 0x3f7)

@@ -20,7 +20,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CParticlez : CUserLogic)
 
-class CParticlez : public CUserLogic {
+class CParticlez : public CTileLogic {
 public:
     CParticlez(CGameObject* obj);   // 0x046ad0 (ctor body in UserLogic.cpp)
     LogicTypeId GetTypeTag();       // 0x012cd0 (per-class logic-type id, 0x41c)

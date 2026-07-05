@@ -84,7 +84,7 @@ extern CGameRegistry* g_exitGameReg;
 // CUserLogic-init wall) + the `and al,0xe0` byte-AND codegen pick. The SAME plateau
 // as CTimeBomb / the other bute ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0003ecf0, 0x292)
-CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
+CExitTrigger::CExitTrigger(CGameObject* obj) : CTileLogic(obj) {
     m_38->m_flags |= 2;
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);

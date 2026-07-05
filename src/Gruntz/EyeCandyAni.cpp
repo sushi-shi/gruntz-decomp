@@ -61,7 +61,7 @@ i32 CEyeCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac870, 0x20e)
-CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
+CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CTileLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     if (m_38->m_geoId == 0) {

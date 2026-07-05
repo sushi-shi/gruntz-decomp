@@ -12,7 +12,7 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
 SIZE_UNKNOWN(CGruntSelectedSprite);
-class CGruntSelectedSprite : public CUserLogic {
+class CGruntSelectedSprite : public CTileLogic {
 public:
     ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
 

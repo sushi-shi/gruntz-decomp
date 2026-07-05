@@ -30,6 +30,11 @@
 #include <Gruntz/Grunt.h>       // CUserLogic base + CGrunt (the accessor's bound grunt)
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 
+// NOTE: modeled against Grunt.h's true-0x30 CUserLogic (this header includes Grunt.h
+// for CGrunt); it is NOT part of the canonical-world CTileLogic reparent (that world's
+// UserLogic.h cannot coexist with Grunt.h in one TU). Stays `: CUserLogic` until the
+// stage-5 CGrunt/canonical ODR merge. Adds no members + tail, so 0x30-vs-0x40 is a
+// no-op for its GetTypeTag + link-teardown dtor.
 class CGruntWingzTimeSprite : public CUserLogic {
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).

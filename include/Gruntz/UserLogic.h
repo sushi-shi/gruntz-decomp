@@ -448,17 +448,10 @@ public:
     CGameObjAux* m_objAux; // +0x14  the object's +0x7c aux sub-object (obj->m_7c)
     CUserBaseLink m_link;  // +0x18..+0x27 (ctor 0x16d710, can throw)
     i32 m_28;              // +0x28
-    i32 m_2c;              // +0x2c
-    void*
-        m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
-    CGameObject* m_34;     // +0x34
-    CGameObject* m_38;     // +0x38
-    CGameObjAux* m_3c;     // +0x3c
+    i32 m_2c;              // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
 };
-SIZE(
-    CUserLogic,
-    0x40
-); // this header's fat-view size (tail absorbed); see the NOTE re the true 0x30
+SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
+                        // 0x30..0x3c tail lives on CTileLogic (below).
 // NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
 //   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
 //     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It
@@ -528,9 +521,12 @@ SIZE(
 // defs remain a documented byte-necessary dual-model that never coexists in a TU (no TU
 // includes both headers). Evidence banked; do not re-derive.
 
-// Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
-// CUserLogic vptr, then the full init. Defined here (not the .cpp) because only
-// an inline base ctor is folded into the derived ctors.
+// Shared true-0x30 base init the leaves fold in. Inline so MSVC inlines it; stores
+// the CUserLogic vptr, then inits fields through m_2c (exactly retail 0x58cd0, whose
+// highest write is `mov [esi+0x2c],2`). Defined here (not the .cpp) because only an
+// inline base ctor is folded into the derived ctors. The tile-logic leaves' 0x30-0x3c
+// tail is seeded by CTileLogic(obj) below (retail: each leaf sets m_34/m_38/m_3c right
+// after this folded base init, e.g. CTeleporter @0x410f9).
 inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_0c = obj;
     m_object = obj;
@@ -547,18 +543,6 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_08 = 0;
     m_28 = 0x3e9;
     m_2c = 2;
-#ifndef USERLOGIC_STANDALONE_CTOR
-    // The REAL out-of-line base ctor (retail 0x58cd0) does NOT set these three -
-    // each game-object LEAF sets m_34/m_38/m_3c itself, right after the folded
-    // base init (e.g. CTeleporter @0x410f9). They live in the base inline here so
-    // the folded-into-a-leaf copies reproduce the leaf's bytes without every leaf
-    // ctor having to spell them out. src/Gruntz/UserLogicCtorEmit.cpp defines
-    // USERLOGIC_STANDALONE_CTOR to drop them for the byte-exact standalone COMDAT;
-    // every other TU (all leaves) compiles this branch unchanged -> matching-neutral.
-    m_34 = obj;
-    m_38 = obj;
-    m_3c = obj->m_7c;
-#endif
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
@@ -569,14 +553,56 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 }
 
 // ---------------------------------------------------------------------------
-// CTileTrigger : CUserLogic (vftable 0x5e7f14). Adds no data members. Three
+// CTileLogic : CUserLogic - the fat tile-logic intermediate (SIZE 0x40). The true
+// CUserLogic base ends at 0x30 (base ctor 0x58cd0 writes only through m_2c); the
+// tile-logic game-object leaves (EyeCandy, Teleporter, Projectile, SpotLight, the
+// TileTrigger family, ...) share a common 0x10-byte tail m_30/m_34/m_38/m_3c that
+// their 1-arg ctors seed to obj/obj/obj->m_7c right after the folded base init. This
+// intermediate carries that tail + the tail-setting ctor so the leaves fold both the
+// base and the tail as one flat sequence, exactly as retail emits them.
+//
+// Adds NO new/overridden virtual (its vtable == CUserLogic's 16 slots), so MSVC emits
+// no distinct ??_7CTileLogic and no extra vptr stamp in leaf ctors/dtors - byte-
+// identical to the old fat-CUserLogic view (verified: guardpoint holds its exact
+// dtor/Serialize; whole-sweep exacts unchanged).
+//
+// Naming basis: no RTTI / leaked-path / string evidence names this intermediate (it
+// is COMDAT-folded into every leaf and never instantiated standalone with its own
+// vftable). "CTileLogic" is a descriptive placeholder for the tile-logic-leaf common
+// tail owner; kept generic like the m_<hex> field placeholders. Only the 0x30-vs-0x40
+// boundary + the tail offsets are load-bearing.
+// ---------------------------------------------------------------------------
+class CTileLogic : public CUserLogic {
+public:
+    CTileLogic() {}
+    CTileLogic(CGameObject* obj);
+
+    void*
+        m_prevAnimSetNode; // +0x30  saved prior aux lookup node (m_objAux->m_1c) before installing "A"
+    CGameObject* m_34;     // +0x34
+    CGameObject* m_38;     // +0x38  (== the bound object; leaves read m_38->m_flags etc.)
+    CGameObjAux* m_3c;     // +0x3c
+};
+SIZE(CTileLogic, 0x40);
+
+// The tail-setting 1-arg ctor: chains the true-0x30 CUserLogic(obj) base init, then
+// seeds the leaf-shared tail. Inline so MSVC folds it (base + tail) into each leaf's
+// 1-arg ctor as one flat sequence.
+inline CTileLogic::CTileLogic(CGameObject* obj) : CUserLogic(obj) {
+    m_34 = obj;
+    m_38 = obj;
+    m_3c = obj->m_7c;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTrigger : CTileLogic (vftable 0x5e7f14). Adds no data members. Three
 // trace-discovered leaf classes derive from it (CTileSecretTrigger /
 // CGiantRock / CCoveredPowerup, each in its own src/Stub/ TU) - shared here so
 // they get a single class definition. Ctors/dtor are out-of-line in
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CTileTrigger);
-class CTileTrigger : public CUserLogic {
+class CTileTrigger : public CTileLogic {
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)

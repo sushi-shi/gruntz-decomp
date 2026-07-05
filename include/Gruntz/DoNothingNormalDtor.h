@@ -21,7 +21,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDoNothingNormal : CUserLogic)
 
 SIZE_UNKNOWN(CDoNothingNormal);
-class CDoNothingNormal : public CUserLogic {
+class CDoNothingNormal : public CTileLogic {
 public:
     virtual ~CDoNothingNormal() OVERRIDE; // 0x0000f8a0 (folds the CUserLogic teardown)
 };

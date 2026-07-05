@@ -8,7 +8,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CGruntStartingPoint : public CUserLogic {
+class CGruntStartingPoint : public CTileLogic {
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30
     virtual ~CGruntStartingPoint() OVERRIDE; // 0x10670 (folds the CUserLogic teardown)

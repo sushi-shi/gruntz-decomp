@@ -20,7 +20,7 @@ extern i32 g_645588;
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids
 // + the leaf-field zero-init schedule (CToyPeek's wider +0x58..+0x64 init block).
 RVA(0x00098140, 0x18e)
-CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj) {
+CToyPeek::CToyPeek(CGameObject* obj) : CTileLogic(obj) {
     m_startClockLo = 0;
     m_countdownLo = 0;
     m_startClockHi = 0;

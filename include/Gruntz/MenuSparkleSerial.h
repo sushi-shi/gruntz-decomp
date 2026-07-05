@@ -24,6 +24,10 @@
 // object-reference; folded onto the canonical CSerialObjRef (Chain @0x8c00).
 #include <Gruntz/SerialObjRef.h>
 
+// Grunt.h-world view of CMenuSparkle (includes Grunt.h; overrides Grunt.h's
+// CUserLogic::SerializeMove slot-1). NOT the canonical CTileLogic reparent - stays
+// `: CUserLogic` (Grunt.h's) until stage 5. (The canonical CMenuSparkle in
+// UserLogic.cpp is the CTileLogic one; documented dual-model, never coexist in a TU.)
 class CMenuSparkle : public CUserLogic {
 public:
     // slot-1 override (0xae1c0); overrides CUserLogic::SerializeMove.

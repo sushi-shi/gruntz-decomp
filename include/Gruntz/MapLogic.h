@@ -61,7 +61,7 @@ struct CMapPtrArray {
 // past it.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapLogic);
-class CMapLogic : public CUserLogic {
+class CMapLogic : public CTileLogic {
 public:
     CMapLogic();           // no-arg shape (only the teardown is here)
     ~CMapLogic() OVERRIDE; // 0x0113c0 (bare CUserLogic teardown, /GX frame)

@@ -42,7 +42,7 @@ extern CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 // CSpotLight : CUserLogic - the light eyecandy logic. Own fields begin past the
 // CUserLogic base (+0x40): the rotation/offset doubles + the per-tick state ints.
-class CSpotLight : public CUserLogic {
+class CSpotLight : public CTileLogic {
 public:
     CSpotLight(CGameObject* obj); // 0xb1200
     virtual ~CSpotLight() OVERRIDE;
@@ -75,7 +75,7 @@ RVA(0x000b1200, 0x2cb)
 // that derives m_60/m_68/m_80/m_88 from m_70/m_78 - its fld/fsub/fxch stack
 // ordering is not steerable from C (same wall as CSpotLight::Update @0xb1ee0).
 // Logic complete; deferred to the final sweep.
-CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
+CSpotLight::CSpotLight(CGameObject* obj) : CTileLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 2;

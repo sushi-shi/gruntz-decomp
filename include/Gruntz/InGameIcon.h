@@ -101,7 +101,7 @@ struct CIconRecord {
 // +0x40). The dtor (0x11d00) adds no destructible members, so it folds the bare
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
-class CInGameIcon : public CUserLogic {
+class CInGameIcon : public CTileLogic {
 public:
     CInGameIcon(CGameObject* obj);   // 0x095b10  (the HUD-icon builder ctor)
     virtual ~CInGameIcon() OVERRIDE; // 0x011d00

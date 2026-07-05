@@ -18,7 +18,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CGruntToyTimeSprite : public CUserLogic {
+class CGruntToyTimeSprite : public CTileLogic {
 public:
     ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];

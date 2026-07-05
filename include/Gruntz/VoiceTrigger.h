@@ -16,7 +16,7 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CVoiceTrigger : CUserLogic)
 
 SIZE_UNKNOWN(CVoiceTrigger);
-class CVoiceTrigger : public CUserLogic {
+class CVoiceTrigger : public CTileLogic {
 public:
     CVoiceTrigger();                   // 0x013470 (no-arg ctor; body in UserLogic.cpp)
     CVoiceTrigger(CGameObject* obj);   // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)

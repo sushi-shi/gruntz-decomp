@@ -34,7 +34,7 @@
 // The dtor (0x12f80) adds no destructible members, so it folds the bare
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
-class CRollingBall : public CUserLogic {
+class CRollingBall : public CTileLogic {
 public:
     CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
     virtual ~CRollingBall() OVERRIDE; // 0x012f80 (folds the bare CUserLogic teardown)

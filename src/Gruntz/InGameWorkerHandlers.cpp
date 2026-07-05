@@ -38,17 +38,17 @@
 // reloc-masked. Deriving the real CUserLogic base lets the post-construction
 // activate + pump dispatches lower to `mov eax,[obj]; call [eax+N]` through the
 // inherited 16-slot CUserLogic vtable (no fabricated view class).
-struct CInGameIcon : public CUserLogic {
+struct CInGameIcon : public CTileLogic {
     CInGameIcon(Owner* owner); // 0x095b10
     char m_body[0x80 - 0x40];
 }; // sizeof = 0x80
 
-struct CInGameText : public CUserLogic {
+struct CInGameText : public CTileLogic {
     CInGameText(Owner* owner); // 0x099110
     char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
-struct CEyeCandy : public CUserLogic {
+struct CEyeCandy : public CTileLogic {
     CEyeCandy(Owner* owner); // 0x0ac620
     char m_body[0x54 - 0x40];
 }; // sizeof = 0x54

@@ -28,7 +28,7 @@
 // so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CCursorSnapSprite);
-class CCursorSnapSprite : public CUserLogic {
+class CCursorSnapSprite : public CTileLogic {
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
     // then (only on success) the +0x34 sub-object's chain; both run the same

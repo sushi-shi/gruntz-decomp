@@ -17,7 +17,7 @@
 
 #include <Gruntz/UserLogic.h>
 
-class CLightFx : public CUserLogic {
+class CLightFx : public CTileLogic {
 public:
     CLightFx(CGameObject* obj); // 0x9cf00
     // 0x9d140  InitActReg - construct the class's coordinate registry singleton
