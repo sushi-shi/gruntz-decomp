@@ -72,6 +72,15 @@ struct CTmCell {
     i32 Type13Check();                                      // 0x71f80
     void Apply13(i32 a, i32 b);                             // 0x70520
     i32 Dispatch(i32 kind, i32 a);                          // per-kind dispatch
+    // ApplyTriggerA's per-kind hooks (thunk targets resolved via sema xref; all are
+    // the placed grunt's real methods - CGrunt/CUserLogic bodies, reloc-masked):
+    void RunMoveConfig(i32 x, i32 y);                    // 0x65630 (CGrunt)
+    i32 RectContains(i32 x, i32 y);                      // 0x51850 (CGrunt)
+    i32 CommitNeighbor(i32 r, i32 c, i32 x, i32 y);      // 0x5b050 (CGrunt)
+    i32 BeginAttack(i32 x, i32 y);                       // 0x5b570 (CGrunt)
+    void PlayMoveSound(i32 x, i32 y);                    // 0x511b0 (CGrunt)
+    void ResetEntranceAnimation(i32 a, i32 b, i32 c);    // 0x62e10 (CGrunt)
+    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d); // 0x4dd50 (CUserLogic base)
 
     char p0[0x10];
     CTmDisplay* m_10;    // +0x10  display sub-object (world pos / hit gate / archive id)
@@ -94,14 +103,18 @@ struct CTmCell {
     i32 m_198; // +0x198  alt kind
     i32 m_19c; // +0x19c  remapped kind
     char p1a0[0x1e4 - 0x1a0];
-    i32 m_1e4; // +0x1e4  pending/triggered flag
+    i32 m_1e4; // +0x1e4  pending/triggered flag (also cleared by the k=0x14 entrance reset)
     i32 m_1e8; // +0x1e8  recall-done flag
     i32 m_1ec; // +0x1ec  owning area index
     i32 m_1f0; // +0x1f0  owner sub-id
     i32 m_1f4; // +0x1f4  move-icon (stash source)
     i32 m_1f8; // +0x1f8  stashed move-icon (-1 idle)
     i32 m_1fc; // +0x1fc  alive flag
-    char p200[0x248 - 0x200];
+    char p200[0x218 - 0x200];
+    i32 m_218; // +0x218  entrance-anim state   (ApplyTriggerA k=0x14 reset clears 218/21c/220)
+    i32 m_21c; // +0x21c  entrance-anim gate
+    i32 m_220; // +0x220  entrance-anim pending
+    char p224[0x248 - 0x224];
     i32 m_248; // +0x248  state flags
     char p24c[0x2d0 - 0x24c];
     i32 m_2d0; // +0x2d0
@@ -117,7 +130,9 @@ struct CTmCell {
     i32 m_36c;            // +0x36c  notified flag
     char p370[0x384 - 0x370];
     i32 m_384; // +0x384  applier scratch
-    char p388[0x3e4 - 0x388];
+    char p388[0x38c - 0x388];
+    i32 m_38c; // +0x38c  fx param (the k=0x14 spawn's 5th arg)
+    char p390[0x3e4 - 0x390];
     i32 m_3e4; // +0x3e4  fx pose x
     i32 m_3e8; // +0x3e8  fx pose y
     char p3ec[0x420 - 0x3ec];
