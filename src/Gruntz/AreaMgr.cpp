@@ -1,9 +1,14 @@
-// AreaMgr.cpp - Gruntz CAreaMgr (C:\Proj\Gruntz).
+// AreaMgr.cpp - Gruntz CAreaMgr + the CSpawnList/CSpawnEntry methods of its
+// retail TU band (0x99ba0..0x9b430), C:\Proj\Gruntz.
 //
-// A small global area/zone state object (current-index word + embedded CPtrList +
-// two ints).  Reset clears the index; Dispatch records a 1..40 index then calls
-// the matching per-area handler; SameGroup is the level-loader's mod-36
-// group-of-four adjacency test; the /GX dtor tears the CPtrList down.
+// CAreaMgr = {current-index word, embedded CSpawnList} (<Gruntz/AreaMgr.h> /
+// <Gruntz/SpawnList.h>). The ctor folds the member list's inline ctor; the /GX
+// dtor clears the index then inline-folds the member ~CSpawnList (EH state 1).
+// The list/record methods here (FindEntry/FindByName/ClearFlags/DeleteAllEntries/
+// GetName/GetTail) were previously scattered as per-TU views (CSpawnEntryN/
+// CSpawnNode/local CSpawnList here, C99ba0/C9a420 in BoundaryLowerMethods,
+// EmptyVoiceList/~CSpawnEntry in GruntSpawnConfig, Obj09a260) - all folded onto
+// the two canonical classes (see SpawnList.h's unification proof).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
@@ -11,27 +16,53 @@
 #include <Mfc.h>
 #include <Gruntz/AreaMgr.h>
 
-// CSpawnEntry - a spawn-point record held (by pointer) in CAreaMgr's +0x04 list.
-// Its leading member is the entry name CString (+0x00); the class is non-
-// polymorphic (no vtable, the CString is genuinely first). Only GetTail is
-// reconstructed here, so the minimal layout suffices (single-TU helper).
-class CSpawnEntry {
-public:
-    CString GetTail(); // 0x09a830
-    CString m_name;    // +0x00  entry name ("GGGGNNNN..."); the tail is past col 8
-};
+#include <string.h> // inline strcmp
+
+// The name-match helper (__cdecl(entry-name, search-name, len), 0x120440).
+extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
+
+// ---------------------------------------------------------------------------
+// CAreaMgr::CAreaMgr  (0x099ba0)
+// The member CSpawnList's inline ctor folds in: CObList(block size 10), scan
+// cursor = 0, last-picked = -1; then the index word clears (body, last).
+// ---------------------------------------------------------------------------
+RVA(0x00099ba0, 0x29)
+CAreaMgr::CAreaMgr() {
+    m_currentAreaIndex = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnList::~CSpawnList  (0x099ca0)
+// DeleteAllEntries, then the embedded CObList member dtor frees its blocks (the
+// trailing ~CObList under the /GX frame). Defined INLINE in this TU (its retail
+// home) so it folds into ~CAreaMgr's member-teardown below exactly as retail
+// (call DeleteAllEntries + call ~CObList, EH states 1 -> -1); other TUs see only
+// the SpawnList.h declaration and emit the retail extern call (e.g.
+// CGruntSpawnConfig::Clear's explicit dtor + RezFree). The standalone COMDAT
+// copy is forced by the depth-0 forcer and pinned by mangled name:
+// @rva-symbol: ??1CSpawnList@@QAE@XZ 0x00099ca0 0x49
+// ---------------------------------------------------------------------------
+inline CSpawnList::~CSpawnList() {
+    DeleteAllEntries();
+}
+static CSpawnList* volatile g_forceDtorSink;
+#pragma inline_depth(0)
+void ForceEmitSpawnListDtor() {
+    g_forceDtorSink->~CSpawnList();
+}
+#pragma inline_depth()
 
 // ---------------------------------------------------------------------------
 // CAreaMgr::~CAreaMgr  (0x099c20)
-// The /GX destructor: clears the current-index word (the +0x00 member teardown,
-// trylevel 0) then auto-destroys the embedded CPtrList (trylevel 1 -> -1, its
-// RemoveAllNodes + ~CPtrList).
+// The /GX destructor: clears the current-index word (Reset, trylevel 0) then the
+// member CSpawnList's dtor inline-folds (DeleteAllEntries, trylevel 1, then the
+// member ~CObList, trylevel -1).
 // ---------------------------------------------------------------------------
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {
     Reset();
-    // m_spawnEntryList (the CPtrList) is auto-destroyed here by the compiler-emitted /GX
-    // member teardown: RemoveAllNodes then ~CPtrList.
+    // m_spawnEntryList (the CSpawnList) is torn down here by the compiler-emitted
+    // /GX member teardown: the inline ~CSpawnList above folds in.
 }
 
 // ---------------------------------------------------------------------------
@@ -151,6 +182,126 @@ void CAreaMgr::Reset() {
 }
 
 // ---------------------------------------------------------------------------
+// CSpawnList::FindEntry (0x09a0d0) - find an entry by name, either via the
+// SpawnNameCmp hash helper (useHash) or an inline strcmp.  The search key is a
+// by-value CString (destroyed on exit); each node yields a CString name temp.
+// @early-stop
+// /GX CString-temp EH wall: the list walk, the per-node GetName temp + its
+// teardown, the hash / inline-strcmp branches and the by-value-param destruction
+// are logically faithful, but the EH-state frame + CString temp spill layout do
+// not reproduce byte-for-byte (the documented CString-temp-in-loop residual).
+// ---------------------------------------------------------------------------
+RVA(0x0009a0d0, 0x133)
+CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
+    for (CSpawnNode* n = (CSpawnNode*)m_list.GetHeadPosition(); n != 0; n = n->m_next) {
+        CSpawnEntry* e = n->m_entry;
+        if (e == 0) {
+            continue;
+        }
+        if (useHash != 0) {
+            CString nm = e->GetName();
+            if (SpawnNameCmp(nm, name, nm.GetLength()) == 0) {
+                return e;
+            }
+        } else {
+            CString nm = e->GetName();
+            if (strcmp(name, nm) == 0) {
+                return e;
+            }
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnEntry::GetName  (0x09a260)
+// Return the record name by value (NRVO into the hidden return slot): a single
+// CString copy-ctor (0x1b9ba3) from m_name into *retptr. Re-homed from the
+// Obj09a260 placeholder TU - and 66.7% -> 100% here: the "dead 4-byte stack
+// local" residual was the /GX EH machinery this retail TU compiles with (the
+// old obj09a260 unit was flags=base), not a codegen artifact.
+// ---------------------------------------------------------------------------
+RVA(0x0009a260, 0x1d)
+CString CSpawnEntry::GetName() {
+    return m_name;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnList::FindByName (0x09a290) - like FindEntry but the search key arrives
+// by reference (retail pushes the CString's ADDRESS - the old areamgr Extract
+// (char*) signature was refuted by the caller's `lea ecx,[esp+0x10]; push ecx`);
+// per node it inline-compares, and on a miss re-checks through SpawnNameCmp
+// against an empty CString before moving on. Was also declared as
+// CObjResBuilder::FindAdd by the LoadObject* reconcilers - same one function.
+// @early-stop
+// /GX CString-temp EH wall: same family as FindEntry; logic faithful, EH-state +
+// CString temp layout is the byte residual (retail's key build is an operator+
+// against a global char - 0x1b9f81 with g_dat60b588 - not a plain copy; part of
+// the parked residual).
+// ---------------------------------------------------------------------------
+RVA(0x0009a290, 0x138)
+CSpawnEntry* CSpawnList::FindByName(const CString& name) {
+    CString key(name);
+    for (CSpawnNode* n = (CSpawnNode*)m_list.GetHeadPosition(); n != 0; n = n->m_next) {
+        CSpawnEntry* e = n->m_entry;
+        if (e == 0) {
+            continue;
+        }
+        CString nm = e->GetName();
+        if (strcmp(key, nm) == 0) {
+            return e;
+        }
+        CString empty;
+        if (SpawnNameCmp(nm, empty, nm.GetLength()) == 0) {
+            return e;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnList::ClearFlags  (0x09a420)
+// Walk the node chain and zero every entry's "wanted" mark (re-homed from the
+// BoundaryLowerMethods C9a420 view; the LoadObject* reconcilers' reset pass).
+// ---------------------------------------------------------------------------
+RVA(0x0009a420, 0x1c)
+void CSpawnList::ClearFlags() {
+    CSpawnNode* p = (CSpawnNode*)m_list.GetHeadPosition();
+    if (p == 0) {
+        return;
+    }
+    do {
+        CSpawnNode* node = p;
+        p = node->m_next;
+        CSpawnEntry* e = node->m_entry;
+        if (e != 0) {
+            e->m_flag = 0;
+        }
+    } while (p != 0);
+}
+
+// ---------------------------------------------------------------------------
+// CSpawnList::DeleteAllEntries  (0x09a450)
+// Walk the CObList node chain; `delete` each held CSpawnEntry (the implicit
+// ~CString + the engine operator delete = RezFree), then m_list.RemoveAll().
+// No destructible local, so no /GX frame even under eh flags. (Was
+// CSpawnEntry::EmptyVoiceList / AreaPtrList::RemoveAllNodes.)
+// ---------------------------------------------------------------------------
+RVA(0x0009a450, 0x36)
+void CSpawnList::DeleteAllEntries() {
+    CSpawnNode* node = (CSpawnNode*)m_list.GetHeadPosition();
+    while (node != 0) {
+        CSpawnNode* cur = node;
+        node = node->m_next;
+        CSpawnEntry* e = cur->m_entry;
+        if (e != 0) {
+            delete e;
+        }
+    }
+    m_list.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
 // CSpawnEntry::GetTail  (0x09a830)  (/GX EH frame)
 // Return the entry name past its 8-char group prefix; an empty string when the
 // name is empty or 8 chars or shorter. NRV: build a local, copy-construct it
@@ -198,107 +349,6 @@ i32 CAreaMgr::SameGroup(i32 a) {
     i32 gc = (m_currentAreaIndex - 1) % 36 / 4 + 1;
     return gc == ga;
 }
-
-// ===========================================================================
-// CSpawnList - the CPtrList-derived list of CSpawnEntry* (m_pNodeHead @+0x04)
-// that CAreaMgr hangs spawn points off.  FindEntry / Extract walk it comparing
-// each entry's name against a search key, building a CString temp per node and
-// tearing it down (the /GX CString-temp EH that drives both functions' frames).
-//
-// Field names are placeholders; only the OFFSETS + emitted code bytes matter.
-// ===========================================================================
-#include <string.h> // inline strcmp
-
-// Each entry exposes its name as a CString by value (NRV, 0x2a1d thunk).
-class CSpawnEntryN {
-public:
-    CString GetName(); // 0x2a1d
-};
-
-struct CSpawnNode {
-    CSpawnNode* m_next; // +0x00
-    void* m_pad04;
-    CSpawnEntryN* m_entry; // +0x08
-};
-
-class CSpawnList {
-public:
-    CSpawnEntryN* FindEntry(CString name, i32 useHash); // 0x09a0d0
-    CSpawnEntryN* Extract(char* name);                  // 0x09a290
-
-    void* m_vptr;       // +0x00 CPtrList vptr
-    CSpawnNode* m_head; // +0x04 m_pNodeHead
-};
-
-// The name-match helper (__cdecl(entry-name, search-name, len), 0x120440).
-extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
-
-// ---------------------------------------------------------------------------
-// CSpawnList::FindEntry (0x09a0d0) - find an entry by name, either via the
-// SpawnNameCmp hash helper (useHash) or an inline strcmp.  The search key is a
-// by-value CString (destroyed on exit); each node yields a CString name temp.
-// @early-stop
-// /GX CString-temp EH wall: the list walk, the per-node GetName temp + its
-// teardown, the hash / inline-strcmp branches and the by-value-param destruction
-// are logically faithful, but the EH-state frame + CString temp spill layout do
-// not reproduce byte-for-byte (the documented CString-temp-in-loop residual).
-// ---------------------------------------------------------------------------
-RVA(0x0009a0d0, 0x133)
-CSpawnEntryN* CSpawnList::FindEntry(CString name, i32 useHash) {
-    for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
-        CSpawnEntryN* e = n->m_entry;
-        if (e == 0) {
-            continue;
-        }
-        if (useHash != 0) {
-            CString nm = e->GetName();
-            if (SpawnNameCmp(nm, name, nm.GetLength()) == 0) {
-                return e;
-            }
-        } else {
-            CString nm = e->GetName();
-            if (strcmp(name, nm) == 0) {
-                return e;
-            }
-        }
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// CSpawnList::Extract (0x09a290) - like FindEntry but the search key arrives as a
-// raw char* wrapped into a CString up front; per node it inline-compares, and on
-// a miss re-checks through SpawnNameCmp against an empty CString before moving on.
-// @early-stop
-// /GX CString-temp EH wall: same family as FindEntry; logic faithful, EH-state +
-// CString temp layout is the byte residual.
-// ---------------------------------------------------------------------------
-RVA(0x0009a290, 0x138)
-CSpawnEntryN* CSpawnList::Extract(char* name) {
-    CString key(name);
-    for (CSpawnNode* n = m_head; n != 0; n = n->m_next) {
-        CSpawnEntryN* e = n->m_entry;
-        if (e == 0) {
-            continue;
-        }
-        CString nm = e->GetName();
-        if (strcmp(key, nm) == 0) {
-            return e;
-        }
-        CString empty;
-        if (SpawnNameCmp(nm, empty, nm.GetLength()) == 0) {
-            return e;
-        }
-    }
-    return 0;
-}
-
-SIZE_UNKNOWN(AreaPtrList);
-SIZE_UNKNOWN(AreaPtrListBase);
-SIZE_UNKNOWN(CAreaMgr);
-SIZE_UNKNOWN(CSpawnEntryN);
-SIZE_UNKNOWN(CSpawnList);
-SIZE_UNKNOWN(CSpawnNode);
 
 // ---------------------------------------------------------------------------
 // The area/zone dialog's OnInitDialog (0x0c2cb0), re-homed from the ApiCaller

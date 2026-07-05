@@ -103,39 +103,9 @@ struct C915d0 {
 };
 SIZE_UNKNOWN(C915d0);
 
-// 0x099ba0 - ctor: build the +0x04 sub-object, seed the bookkeeping fields.
-struct CSub99ba0 {
-    char pad0[0x1c];
-    i32 m_1c;         // +0x1c (== owner +0x20)
-    i32 m_20;         // +0x20 (== owner +0x24)
-    void Init(i32 n); // 0x1b4867
-};
-SIZE_UNKNOWN(CSub99ba0);
-struct C99ba0 {
-    void* m_0;       // +0x00
-    CSub99ba0 m_sub; // +0x04
-    C99ba0* Ctor();
-};
-SIZE_UNKNOWN(C99ba0);
-
-// 0x09a420 - walk the +0x04 linked list, clear each node's back-pointer +0x04.
-struct CBack9a420 {
-    char pad0[4];
-    i32 m_4; // +0x04
-};
-SIZE_UNKNOWN(CBack9a420);
-struct CNode9a420 {
-    CNode9a420* m_next; // +0x00
-    char pad4[8 - 4];
-    CBack9a420* m_8; // +0x08
-};
-SIZE_UNKNOWN(CNode9a420);
-struct C9a420 {
-    char pad0[4];
-    CNode9a420* m_head; // +0x04
-    void Clear();
-};
-SIZE_UNKNOWN(C9a420);
+// (C99ba0/CSub99ba0 [0x99ba0] and C9a420/CNode9a420/CBack9a420 [0x9a420] were
+// views of CAreaMgr / CSpawnList / CSpawnEntry - dissolved onto the canonicals;
+// see <Gruntz/AreaMgr.h> + <Gruntz/SpawnList.h>.)
 
 // 0x09cab0 - out-param wrapper over the +0x10 sub's method (0x1b8008).
 struct CSub9cab0 {

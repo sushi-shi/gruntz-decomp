@@ -25,53 +25,9 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
     Clear();
 }
 
-// ===========================================================================
-// CSpawnEntry::~CSpawnEntry  (0x99ca0)
-// ===========================================================================
-// Empty the voice-sound node list (EmptyVoiceList), then the embedded CObList
-// member dtor frees its blocks (the trailing ~CObList in the /GX frame). The
-// destructible m_list forces the EH frame; the trylevel 0->-1 wraps EmptyVoiceList
-// so the member ~CObList still runs on unwind.
-//
-// @early-stop
-// /GX EH-state wall (docs/patterns/eh-dtor-model-members-as-destructible.md,
-// topic:eh/topic:wall): EmptyVoiceList + the member ~CObList sequence and the
-// frame are byte-exact; the residual is the trylevel-slot threading the /GX
-// state machine emits. Logic complete; deferred to the final sweep.
-RVA(0x00099ca0, 0x49)
-CSpawnEntry::~CSpawnEntry() {
-    EmptyVoiceList();
-}
-
-// ===========================================================================
-// CSpawnEntry::EmptyVoiceList  (0x9a450)
-// ===========================================================================
-// Walk the CObList node chain (head @ m_list+0x4, each CObNode = {next,prev,data});
-// `delete (CVoiceSound*)node->data` on each held element (~CString + the engine
-// operator delete = RezFree), then m_list.RemoveAll(). No destructible local, so
-// no /GX frame even under eh flags.
-RVA(0x0009a450, 0x36)
-void CSpawnEntry::EmptyVoiceList() {
-    struct CObNode {
-        CObNode* m_next;     // +0x00
-        void* m_prev;        // +0x04
-        CVoiceSound* m_data; // +0x08
-    };
-    struct Layout {
-        void* m_vptr;    // +0x00
-        CObNode* m_head; // +0x04  CObList::m_pNodeHead
-    };
-    CObNode* node = ((Layout*)&m_list)->m_head;
-    while (node != 0) {
-        CObNode* cur = node;
-        node = node->m_next;
-        CVoiceSound* v = cur->m_data;
-        if (v != 0) {
-            delete v;
-        }
-    }
-    m_list.RemoveAll();
-}
+// (0x99ca0 ~CSpawnList + 0x9a450 CSpawnList::DeleteAllEntries re-homed to
+// src/Gruntz/AreaMgr.cpp - their retail TU band - so the dtor inline-folds into
+// ~CAreaMgr exactly as retail. Clear() below keeps the retail extern-call shape.)
 
 // ===========================================================================
 // CGruntSpawnConfig::Init  (0x11adc0)
@@ -119,9 +75,9 @@ BOOL CGruntSpawnConfig::Init(CSpawnOwner* owner) {
 RVA(0x0011ae30, 0x95)
 void CGruntSpawnConfig::Clear() {
     for (i32 i = 0; i < m_18.GetSize(); i++) {
-        CSpawnEntry* e = (CSpawnEntry*)m_18[i];
+        CSpawnList* e = (CSpawnList*)m_18[i];
         if (e != 0) {
-            e->~CSpawnEntry();
+            e->~CSpawnList(); // extern call (dtor defined in AreaMgr.cpp) - retail shape
             RezFree(e);
         }
     }
@@ -485,16 +441,18 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 }
 
 // ===========================================================================
-// CSpawnEntry::AddVoiceSound  (0x11c560)
+// CSpawnList::AddVoiceSound  (0x11c560)
 // ===========================================================================
-// Allocate a voice-sound node (operator new 0xc), construct it from the (by-value)
-// name CString AND the `flag` arg (CVoiceSound's 2nd ctor param, stored at m_08),
-// and append it to the list (AddTail). The by-value CString param + the inner copy
-// construct the /GX frame. EXACT once the flag is passed through (the earlier
-// "frame-size wall" was really the dropped 2nd ctor arg - a whole `push flag`).
+// Allocate a record (operator new 0xc), construct it from the (by-value) name
+// CString AND the `flag` arg (CSpawnEntry's 2nd ctor param, stored at m_data),
+// and append it to the list (AddTail). The by-value CString param + the inner
+// copy construct the /GX frame. EXACT once the flag is passed through (the
+// earlier "frame-size wall" was really the dropped 2nd ctor arg - a `push flag`).
+// The (CObject*) cast is language-forced: CObList stores raw non-CObject records
+// here exactly as retail does.
 RVA(0x0011c560, 0x91)
-void CSpawnEntry::AddVoiceSound(CString s, i32 flag) {
-    CVoiceSound* node = new CVoiceSound(s, flag);
+void CSpawnList::AddVoiceSound(CString s, i32 flag) {
+    CSpawnEntry* node = new CSpawnEntry(s, flag);
     if (node != 0) {
         m_list.AddTail((CObject*)node);
     }
@@ -551,15 +509,15 @@ void CGruntSpawnConfig::DtorBody() {
 // ===========================================================================
 // CGruntSpawnConfig::ResetPicks  (0x11c7f0)
 // ===========================================================================
-// Run the sprite-pair teardown (DtorBody @0x11c7b0), then walk the m_18 entry
-// array and reset every non-null entry's last-picked index (+0x20) to -1.
+// Run the sprite-pair teardown (DtorBody @0x11c7b0), then walk the m_18 voice-list
+// array and reset every non-null list's last-picked index (+0x20) to -1.
 RVA(0x0011c7f0, 0x2b)
 void CGruntSpawnConfig::ResetPicks() {
     DtorBody();
     for (i32 i = 0; i < m_18.GetSize(); i++) {
-        CSpawnEntry* e = (CSpawnEntry*)m_18[i];
+        CSpawnList* e = (CSpawnList*)m_18[i];
         if (e != 0) {
-            e->m_20 = -1;
+            e->m_lastPicked = -1;
         }
     }
 }
@@ -576,7 +534,6 @@ BOOL CGruntSpawnConfig::IsReady() {
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);
 SIZE_UNKNOWN(CSpawnButeTarget);
-SIZE_UNKNOWN(CSpawnEntry);
 SIZE_UNKNOWN(CSpawnGate);
 SIZE_UNKNOWN(CSpawnGateInner);
 SIZE_UNKNOWN(CSpawnOwner);
@@ -586,4 +543,3 @@ SIZE_UNKNOWN(CSpawnStream);
 SIZE_UNKNOWN(CSpawnTree);
 SIZE_UNKNOWN(CSpawnVoice);
 SIZE_UNKNOWN(CSpriteReleasable);
-SIZE_UNKNOWN(CVoiceSound);

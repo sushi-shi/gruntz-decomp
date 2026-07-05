@@ -129,39 +129,14 @@ void C915d0::M64(void* arg) {
     m_48->m_1c->SetVolume(0x64, (i32)arg);
 }
 
-// ===========================================================================
-// 0x099ba0 - ctor: build the +0x04 sub-object (0x1b4867, arg 0xa), seed +0x20 = 0,
-// +0x24 = -1, +0x00 = 0; return this. __thiscall.
-// ===========================================================================
-RVA(0x00099ba0, 0x29)
-C99ba0* C99ba0::Ctor() {
-    CSub99ba0* sub = &m_sub;
-    sub->Init(0xa);
-    sub->m_1c = 0;
-    sub->m_20 = -1;
-    m_0 = 0;
-    return this;
-}
+// (0x099ba0 C99ba0::Ctor re-homed to src/Gruntz/AreaMgr.cpp as the real
+// CAreaMgr::CAreaMgr - C99ba0 was a view of CAreaMgr {index, CSpawnList@+4};
+// the 0x1b4867 sub Init is the embedded CObList block-size-10 ctor.)
 
-// ===========================================================================
-// 0x09a420 - walk the +0x04 linked list; for each node clear the back-pointer's
-// +0x04 (node->m_8->m_4 = 0). __thiscall.
-// ===========================================================================
-RVA(0x0009a420, 0x1c)
-void C9a420::Clear() {
-    CNode9a420* p = m_head;
-    if (p == 0) {
-        return;
-    }
-    do {
-        CNode9a420* node = p;
-        p = node->m_next;
-        CBack9a420* b = node->m_8;
-        if (b != 0) {
-            b->m_4 = 0;
-        }
-    } while (p != 0);
-}
+// (0x09a420 C9a420::Clear re-homed to src/Gruntz/AreaMgr.cpp as the real
+// CSpawnList::ClearFlags - the walked chain is the CSpawnList node list and the
+// cleared back-pointer word is CSpawnEntry::m_flag. See <Gruntz/SpawnList.h>
+// for the six-view unification proof.)
 
 // ===========================================================================
 // 0x09cab0 - out-param wrapper: call the +0x10 sub's method (0x1b8008) with a

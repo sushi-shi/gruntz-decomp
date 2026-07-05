@@ -958,16 +958,11 @@ source = "src/Gruntz/GameInfoString.cpp"
 flags = "base"
 
 [[unit]]
-# ClassUnknown_30::GetStr (CString-by-value return) re-homed from Discovered.cpp.
-unit = "obj09a260"
-source = "src/Gruntz/Obj09a260.cpp"
-flags = "base"
-
-[[unit]]
-# CVoiceSound ctor (by-value CString name + flag -> /GX); the CSpawnEntry voice-list
-# node. Folded from the Obj11c630 placeholder onto the canonical CVoiceSound.
-unit = "cvoicesound"
-source = "src/Gruntz/CVoiceSound.cpp"
+# CSpawnEntry ctor (by-value CString name + data -> /GX); the named spawn/voice
+# record (<Gruntz/SpawnList.h>, the CVoiceSound/CSpawnEntryN/CObjResNode/Obj09a260
+# unification). GetName (ex-obj09a260 unit) re-homed to areamgr, its retail band.
+unit = "cspawnentry"
+source = "src/Gruntz/SpawnEntry.cpp"
 flags = "eh"
 
 [[unit]]

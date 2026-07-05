@@ -2,7 +2,7 @@
 //
 // A plain (non-CObject) helper that loads grunt-spawn parameters from the bute
 // config (g_buteMgr) and the game registry (g_gameReg), then builds + serves a
-// CArray of voice/spawn entries (tomalla-25 / element @0x99ca0). Recovered
+// CDWordArray of per-grunt CSpawnList voice lists (element dtor @0x99ca0). Recovered
 // from the spawn-config method family at 0x11axxx-0x11cxxx: LoadGruntSpawnConfig
 // (0x11afb0) reads "GruntPercent"/"GruntPriority"/"GruntVoice", BuildVoiceSoundList
 // (0x11c210) reads the "VOICES_%s" bute sections, and the random-weighted picker
@@ -28,6 +28,7 @@
 #include <Mfc.h> // CDWordArray + <windows.h>
 
 #include <Gruntz/GameRegistry.h>  // WwdGameReg / g_gameReg
+#include <Gruntz/SpawnList.h>     // canonical CSpawnList / CSpawnEntry (voice lists)
 #include <Gruntz/SpriteFactory.h> // the shared CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 
@@ -39,49 +40,17 @@ struct CSpawnStream;
 struct CSpawnTree;
 
 // ---------------------------------------------------------------------------
-// The per-grunt voice/spawn record (the CGruntSpawnConfig CDWordArray element;
-// trace-placeholder tomalla-25). It IS a CObList (block size 0xa) of voice-
-// sound nodes (CVoiceSound, tomalla-26) plus two trailing ints: m_1c (= 0 at
-// ctor, the CObList count overlaps its own m_nCount at +0xc) and m_20 (= -1, the
-// last-picked index the random picker reads).
-//
-//   ~CSpawnEntry  0x99ca0  - empties the node list (EmptyVoiceList) then the
-//                            embedded CObList member dtor frees its blocks (the
-//                            trailing ~CObList in the /GX frame). Called as an
-//                            explicit dtor (e->~CSpawnEntry()) + RezFree(e) by
-//                            CGruntSpawnConfig::Clear (a manual `delete e`).
-//   EmptyVoiceList 0x9a450  - walks the CObList nodes, `delete (CVoiceSound*)node`
-//                            on each held element, then m_list.RemoveAll().
-//   AddVoiceSound  0x11c560 - new CVoiceSound(s); m_list.AddTail(node).
-//
-// GetAt (0x429a30) / FillName (0x49a260) serve entries; external/no-body.
+// The per-grunt voice list (the CGruntSpawnConfig CDWordArray element) is the
+// canonical CSpawnList of CSpawnEntry records (<Gruntz/SpawnList.h>). The old
+// local "CSpawnEntry" here was a MISNOMER view of the LIST (its CObList@+0x00,
+// m_1c cursor, m_20 last-picked) and "CVoiceSound" a view of the RECORD - both
+// folded onto the canonicals (see SpawnList.h's six-view unification proof).
+// The methods live where retail homed them: ~CSpawnList @0x99ca0 /
+// DeleteAllEntries @0x9a450 / ClearFlags @0x9a420 in AreaMgr.cpp;
+// AddVoiceSound @0x11c560 stays defined in GruntSpawnConfig.cpp; the record
+// ctor @0x11c630 in SpawnEntry.cpp. (The old GetAt/FillName decls were stale
+// Ghidra copies: 0x9a260 is CSpawnEntry::GetName.)
 // ---------------------------------------------------------------------------
-
-// A voice-sound node held in the CSpawnEntry CObList. 12 bytes: a CString name,
-// a zeroed int, and the AddVoiceSound `flag` argument. Its ctor (0x11c630,
-// __thiscall, ret 8) takes the name by value + the flag; reconstructed in
-// src/Gruntz/CVoiceSound.cpp. Its teardown is `~CString + operator delete` (no
-// vtable - a plain value node).
-struct CVoiceSound {
-    CVoiceSound(CString s, i32 flag); // 0x11c630 (__thiscall, ret 8)
-    CString m_str;                    // +0x00
-    i32 m_04;                         // +0x04  = 0
-    i32 m_08;                         // +0x08  = the AddVoiceSound flag arg
-};
-
-struct CSpawnEntry {
-    CSpawnEntry();
-    ~CSpawnEntry();                          // 0x99ca0  (empties the list, then ~CObList member)
-    void EmptyVoiceList();                   // 0x9a450  delete every held CVoiceSound, RemoveAll
-    void AddVoiceSound(CString s, i32 flag); // 0x11c560
-
-    void* GetAt(void* out);       // FUN_00429a30 (__thiscall)
-    void* FillName(void* outStr); // FUN_0049a260 (__thiscall)
-
-    CObList m_list; // +0x00  the voice-sound node list (block size 0xa); count @+0xc
-    i32 m_1c;       // +0x1c  = 0
-    i32 m_20;       // +0x20  = -1  last-picked index
-};
 
 // The bute key getter (0x11bba0) is handed a (config, target) pair; it returns a
 // pointer to one of `target`'s fields, chosen by config->m_170 (a 0..0x20 switch)
@@ -102,10 +71,17 @@ struct CSpawnButeTarget {
 
 // The owner the spawn loader hangs off (m_00). Only its m_100 (a "ready" flag)
 // and m_30 (the config tree m_04) are touched by this class.
+// The 'WAV' resource resolver reached through owner->m_34 (0x13bff0 __thiscall;
+// the voice builder's name filter + the weighted picker's tail both call it).
+struct CSpawnResolver {
+    void* Resolve(const char* name, i32 tag); // 0x13bff0 (ret resource, 0 absent)
+};
+SIZE_UNKNOWN(CSpawnResolver);
 struct CSpawnOwner {
     char m_00[0x30];
-    CSpawnTree* m_30; // +0x30  -> the config tree stashed in m_04
-    char m_34[0x100 - 0x34];
+    CSpawnTree* m_30;     // +0x30  -> the config tree stashed in m_04
+    CSpawnResolver* m_34; // +0x34  the 'WAV' resource resolver
+    char m_38[0x100 - 0x38];
     i32 m_100; // +0x100 the "ready" flag the @0x11c830 probe tests
 };
 
@@ -130,12 +106,12 @@ public:
     // on the /GX single-epilogue wall; the return-0 stub scores higher). 0x11b7c0 is
     // a file-scope __stdcall sibling (see the .cpp).
     i32 SpawnVoiceDriver(i32, i32, i32, i32, i32, i32); // 0x11b3b0
-    void* BuildVoiceSoundList(i32 i); // 0x11c210 (defined in another TU; reloc-masked)
-    void StopVoice(i32 id);           // 0x11c730 (selective per-id voice teardown)
-    void DtorBody();                  // 0x11c7b0 (the 2-iter pair teardown)
-    void ResetPicks();                // 0x11c7f0 (DtorBody + reset entry m_20s)
-    BOOL IsReady();                   // 0x11c830
-    ~CGruntSpawnConfig();             // 0x85df0
+    CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
+    void StopVoice(i32 id); // 0x11c730 (selective per-id voice teardown)
+    void DtorBody();        // 0x11c7b0 (the 2-iter pair teardown)
+    void ResetPicks();      // 0x11c7f0 (DtorBody + reset entry m_20s)
+    BOOL IsReady();         // 0x11c830
+    ~CGruntSpawnConfig();   // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
     CSpawnOwner* m_00;  // +0x00
