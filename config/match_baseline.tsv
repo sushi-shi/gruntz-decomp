@@ -486,7 +486,7 @@ wallproject	1	0
 wanderidlestep	1	0
 wapmisc	4	4
 wapuncompress	1	0
-warlord	10	3
+warlord	10	4
 warpstonefly	3	2
 warptextureblit	1	0
 waypoint	4	3
@@ -3655,8 +3655,8 @@ warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	9	78b6267fc086	0x44d10
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	8	319de0f4b536	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	1	c2ca723a74ad	0x45270
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	3	3ecdaa320316	0x44bb0
-warlord	?RegisterWarlordActions@@YAXXZ	9.9959	9.9959	1	67ccb8ba741c	0x447a0
-warlord	?ResolveState@CWarlord@@QAEHH@Z	1.8667	1.8667	2	3a30038a541f	0x44640
+warlord	?RegisterWarlordActions@@YAXXZ	96.8930	96.8930	2	4c981cf12602	0x447a0
+warlord	?ResolveState@CWarlord@@QAEHH@Z	100.0000	100.0000	3	c3ab7bf2bd6a	0x44640
 warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	2	9b5ad652d3cb	0x109bb0
 warpstonefly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	4	06baaef0a953	0x10a2f0
 warpstonefly	?Tick@CWarpStoneFly@@QAEHH@Z	79.2857	79.2857	4	d5e9aa5ad76c	0x10a0f0
