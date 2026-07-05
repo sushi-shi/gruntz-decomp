@@ -1016,13 +1016,24 @@ void CSBI_RectOnly::SetMode(i32 mode) {
 // list, the active-tab list at +tab*0x1c+0x30, then the +0xd8 list); return the
 // first enabled rect whose span contains the point, else null. Same point-in-rect
 // predicate as HitTest, materialized to a bool per retail.
+// @early-stop
+// ~95.3%: the walk is now byte-exact instruction-for-instruction (the CObList
+// GetNext two-copy idiom - cur=n; n=n->m_next; r=cur->m_payload - reproduces retail's
+// `mov eax,esi; mov esi,[esi]; mov eax,[eax+8]` in all three loops; raised 94.08->95.27
+// from the old payload-first shape). Residual is a pure esi<->edx register-naming
+// SWAP: retail loads the loop cursor into the callee-saved esi (after `push esi`) and
+// puts the {enabled,hit} temps in edx; MSVC's prologue scheduler pulls the head-load
+// `mov edx,[ecx+0x30]` up BEFORE `push esi`, pinning the cursor in edx and forcing the
+// temps into esi. The whole allocation cascades from that one scheduling choice - the
+// same regalloc coin-flip as ResetWidgets/ClearTabGroup, not source-steerable. Logic
+// byte-correct; deferred to the final sweep.
 RVA(0x000ffcb0, 0xe2)
 CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
-    char* B = (char*)this;
-    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    CSbiNotifyNode* n = *(CSbiNotifyNode**)((char*)this + 0x30);
     while (n) {
-        CSbiRect* r = (CSbiRect*)n->m_payload;
+        CSbiNotifyNode* cur = n;
         n = n->m_next;
+        CSbiRect* r = (CSbiRect*)cur->m_payload;
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -1030,10 +1041,11 @@ CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
-    while (m) {
-        CSbiRect* r = (CSbiRect*)m->m_payload;
-        m = m->m_next;
+    n = *(CSbiNotifyNode**)((char*)this + m_activeTab * 0x1c + 0x30);
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        CSbiRect* r = (CSbiRect*)cur->m_payload;
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -1041,10 +1053,11 @@ CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    CSbiNotifyNode* k = m_listD4.m_head;
-    while (k) {
-        CSbiRect* r = (CSbiRect*)k->m_payload;
-        k = k->m_next;
+    n = m_listD4.m_head;
+    while (n) {
+        CSbiNotifyNode* cur = n;
+        n = n->m_next;
+        CSbiRect* r = (CSbiRect*)cur->m_payload;
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
