@@ -96,11 +96,9 @@ public:
 };
 SIZE_UNKNOWN(CMiSelf);
 
-// The frame-name reverse-lookup helper (0x155630) on the config registry.
-struct CMiNameReg {
-    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630
-};
-SIZE_UNKNOWN(CMiNameReg);
+// The frame-name reverse-lookup (0x155630) on the config registry is
+// CImageRegistry::ReadField (mgr->m_10, <Gruntz/ResMgr.h>); the former CMiNameReg
+// view is gone (wave 3).
 
 // The archive object passed to Serialize is the shared WAP32 CSerialArchive (Read @
 // vtable +0x2c / Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h>

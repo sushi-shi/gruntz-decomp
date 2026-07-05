@@ -59,11 +59,8 @@ struct CMenuBarFrame {
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// The CString-read helper (0x155630): receiver = g_gameReg->m_world->m_10.
-// NO-body -> reloc-masks (CDDrawWorkerRegistry::CDDrawWorkerRegistry_155630).
-struct CStrReader {
-    void ReadField(i32 dst, char* tmp, i32* outZero);
-};
+// The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10,
+// <Gruntz/ResMgr.h>); the former CStrReader view is gone (wave 3).
 
 // ---------------------------------------------------------------------------
 // CActionOptionsMenuBar
@@ -470,7 +467,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frame, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -481,7 +478,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_button0Frame, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_button0Frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -493,7 +490,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            ((CStrReader*)mgr->m_10)->ReadField(v20, tmp, &zero);
+            mgr->m_10->ReadField(v20, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -507,5 +504,4 @@ SIZE_UNKNOWN(CGruntRec);
 SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteHashTable);
 SIZE_UNKNOWN(CSpriteMgr);
-SIZE_UNKNOWN(CStrReader);
 SIZE_UNKNOWN(CViewport);

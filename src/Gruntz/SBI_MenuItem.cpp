@@ -59,7 +59,8 @@ extern "C" u32 g_6bf3c0;
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// CMiNameReg moved to <Gruntz/SBI_MenuItem.h>; the archive is the shared CSerialArchive.
+// The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,
+// <Gruntz/ResMgr.h>); the former CMiNameReg view is gone. The archive is CSerialArchive.
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::ClearFrame() - zero the resolved frame handle.
@@ -125,11 +126,12 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_30) {
-                // The registry's reverse name->id helper (0x155630) - reached by viewing
-                // the image registry as a name reader (same idiom as ActionOptionsMenuBar /
-                // SpriteLoaders; CImageRegistry cannot carry the method without a collateral
-                // codegen shift in its other consumers).
-                ((CMiNameReg*)mgr->m_10)->ReadField(m_30, name, &idx);
+                // The registry's reverse name->id helper: CImageRegistry::ReadField
+                // (0x155630) on mgr->m_10 (was the CMiNameReg protective view; folded to
+                // the canonical wave 3). Adding ReadField to CImageRegistry ripples this
+                // TU's DecCounter regalloc (100->74%, an accepted clean-room cost - the
+                // "protective" view is not a valid keep; logic byte-unchanged).
+                mgr->m_10->ReadField(m_30, name, &idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

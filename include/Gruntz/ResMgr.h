@@ -52,6 +52,9 @@ SIZE_UNKNOWN(CImageRegistry);
 struct CImageRegistry {
     i32 Has(char* szName);                    // 0x155550 __thiscall, ret found
     void Register(char* szName, char* szKey); // 0x155360 __thiscall
+    // Frame-name reverse-lookup (given a frame handle, write its name into tmp;
+    // *outZero gets a found-index). Was the CStrReader / CMiNameReg placeholder views.
+    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630 __thiscall
     virtual void v00();
     virtual void v01();
     virtual void v02();

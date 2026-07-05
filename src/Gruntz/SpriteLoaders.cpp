@@ -502,9 +502,8 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
 // sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
 DATA(0x00629ad0)
 extern i32 g_serialCounter;
-struct CStrReader {
-    void ReadField(i32 dst, char* tmp, i32* outZero);
-};
+// The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10);
+// the former CStrReader view is gone (wave 3).
 
 // ---------------------------------------------------------------------------
 // CTimer::Serialize (0x9c2e0) - write the timer through the save archive: the
@@ -547,7 +546,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinTens) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameMinTens, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -558,7 +557,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinOnes) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameMinOnes, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -569,7 +568,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecTens) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameSecTens, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -580,7 +579,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecOnes) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameSecOnes, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -591,7 +590,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameColon) {
-            ((CStrReader*)mgr->m_10)->ReadField((i32)m_frameColon, tmp, &zero);
+            mgr->m_10->ReadField((i32)m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
