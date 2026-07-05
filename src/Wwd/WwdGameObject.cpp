@@ -686,10 +686,10 @@ i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// ResetAndSetup (0x1665e0): delete every owned Wap::CObject in the +0x1dc CObList
+// ResetAndSetup (0x1665e0): delete every owned MFC CObject in the +0x1dc CObList
 // (walked with the real CObList::GetHeadPosition/GetNext + `delete`), empty the
 // list, then re-run Setup with the four forwarded args. Returns Setup() != 0.
-// EXACT: modeling the list as a real CObList of Wap::CObject payloads (was a
+// EXACT: modeling the list as a real CObList of MFC CObject payloads (was a
 // fabricated node/payload walk-view) reproduced retail's register schedule that the
 // view could not - the former ~80% "shrink-wrapped-push" wall is closed.
 // ---------------------------------------------------------------------------
@@ -801,7 +801,7 @@ reject:
 SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
 // CmdMap is SIZE-annotated in the canonical header; m_subList is a real MFC CObList
-// of Wap::CObject payloads (both real classes, no walk-view).
+// of MFC CObject payloads (both real classes, no walk-view).
 SIZE_UNKNOWN(MapLookupA);
 // CDDrawSubMgrLeafScan (mgr+0x28) is the canonical class (its own header's SIZE);
 // CDDrawWorkerRegistry is annotated on its real def (DDrawMgr unit) - this TU only
@@ -829,10 +829,13 @@ SIZE_UNKNOWN(WwdSurface);
 // retail engine vtables. Field names are placeholders; only offsets + code bytes
 // are load-bearing.
 
-// The wap-object teardown grand-base is Wap::CObject (vtable 0x5e8cb4, shared
-// ??_7Wap@@CObject; Wap32/Object.h). Its empty inline dtor re-stamps only, folded
-// LAST (sinking the base vptr store to the function tail, preceded by call-free
-// field writes) - was the manual `m_vptr = &g_wapObjectDtorVtbl` store.
+// The teardown grand-base is Wap::CObject (the SAME class as the flat model's MFC
+// CObject - one ??_7CObject@0x1e8cb4, VA 0x5e8cb4). The EH dtors intentionally use
+// the Wap::CObject reconstruction rather than the real <Mfc.h> CObject because its
+// INLINE empty dtor folds into each derived dtor's vptr re-stamp (call-free); the
+// real MFC ~CObject is out-of-line in NAFXCW, so cl would emit a CALL and break the
+// fold. (The non-dtor flat CWwdGameObject has no dtor to fold, so it uses real MFC
+// CObject.) Folded LAST - was the manual `m_vptr = &g_wapObjectDtorVtbl` store.
 
 // An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).

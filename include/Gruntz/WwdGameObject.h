@@ -66,9 +66,8 @@ struct CmdMap {
 };
 
 // (The +0x1dc member is the real MFC CObList, folded below - the former
-// WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup / the EH
-// dtors walk its raw nodes via GetHeadPosition() + a CObListNode walk-view, the
-// established afxcoll raw-walk idiom, e.g. NetCmdSlot.cpp.)
+// WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup walks it with
+// the real CObList::GetHeadPosition/GetNext + `delete` on each MFC CObject payload.)
 
 // The owning manager (+0x0c) and the render context (RenderDot's arg) are typed
 // engine objects whose full layouts live in WwdGameObject.cpp (the only TU that
