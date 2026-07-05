@@ -388,6 +388,59 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_9c.AddTail(it);
+            // 4 player HEAD slots (CSBI_MultiSlot, y steps 0x43; cached m_61c..m_628).
+            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            r.left = bx + 0x53;
+            r.top = by + 0xcf;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x10a;
+            if (!it->Configure(this, code, 0x190, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1", 1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_9c.AddTail(it);
+            m_61c = (i32)it;
+            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            r.left = bx + 0x53;
+            r.top = by + 0x112;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x14d;
+            if (!it->Configure(this, code, 0x191, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2", 1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_9c.AddTail(it);
+            m_620 = (i32)it;
+            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            r.left = bx + 0x53;
+            r.top = by + 0x155;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x190;
+            if (!it->Configure(this, code, 0x192, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3", 1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_9c.AddTail(it);
+            m_624 = (i32)it;
+            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            r.left = bx + 0x53;
+            r.top = by + 0x197;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x1d2;
+            if (!it->Configure(this, code, 0x193, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4", 1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_9c.AddTail(it);
+            m_628 = (i32)it;
             return 1;
 
         case 1: // ---- Statz tab ----

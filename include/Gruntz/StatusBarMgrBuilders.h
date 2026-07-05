@@ -132,6 +132,18 @@ public:
 };
 SIZE(CSBI_WellGoo, 0x6c);
 
+class CSBI_MultiSlot : public CSbConfigItem { // vtable 0x5ead24, tag 0xb, size 0x40 (multiplayer HEAD)
+public:
+    CSBI_MultiSlot() {
+        m_30 = 0;
+        m_8 = 0xb;
+        m_34 = 0;
+    }
+    i32 m_34; // +0x34
+    char _pad38[0x40 - 0x38];
+};
+SIZE(CSBI_MultiSlot, 0x40);
+
 // The shared item helpers driven on a freshly created icon-set item.
 class CSbItemHelp {
 public:
