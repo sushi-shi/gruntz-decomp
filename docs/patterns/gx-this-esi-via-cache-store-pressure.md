@@ -53,8 +53,21 @@ byte-for-byte Order-A (`mov esi,ecx`). Each reconstructed item run stepped the %
 
 Corollary: do NOT judge the out-of-line-ctor / register layout on a partial (it looks like a
 regression, 24%->20.6%); it is a whole-body property. Reconstruct the runs first, THEN read
-the prologue. Residual after the flip: stack frame 0x28 vs retail 0x34 (the still-missing
-ConfigureEx/ebp-reuse loop induction locals shift `[esp+N]`; they close as those loops land).
+the prologue.
+
+Phase 2 (full body reconstructed, 44.8% -> 83.7%): completing every case - the Resource
+SHREDDER 4x3 grid + MACHINE cross-call + conveyor items, the Multiplayer SMALLICONZ 15-loop,
+and the Statz mode-gated arrow/grunt-bar 15-loop - each stepped the % up (+9.6/+15.7/+8.8) and
+finished the prologue flip: `code` now spills to `[esp+0x10]`, `bx->ebx`, `by->ebp`, all
+byte-for-byte Order-A. The remaining residual is NOT the prologue but a **by<->it callee-saved
+swap in the SEQUENTIAL tail items** (the MACHINE-tail items that follow the SHREDDER loop):
+retail spills `by` GLOBALLY to `[esp+0x20]` (so ebp holds the item pointer `it` across the
+whole item chain, loops AND the trailing sequential items) and reads `by` from memory there;
+cl instead RESTORES `by` to ebp after the SHREDDER loop and spills `it` to a stack slot for
+the sequential tail - the same callee-saved coin-flip (which of `by`/`it` wins ebp) that drives
+the whole allocation, only it tips the other way once the loop releases ebp. This also pins the
+frame at 0x30 vs retail 0x34 (the missing globally-spilled `by` dword). It is a genuine MSVC5
+allocator coin-flip, not source-steerable from the item-run structure - a documented wall.
 
 ## See also
 
