@@ -35,13 +35,17 @@ extern ClipVtx g_clipB[]; // 0x6a21f8
 extern "C" void RasterSpans(ClipVtx* poly, i32 n, i32 a3, i32 a4, i32 a5, i32 a6); // 0x146a20
 
 // @early-stop
-// x87 scheduling wall (~25-35%, complete + correct): the four-plane
-// Sutherland-Hodgman structure, the ping-pong buffers, the /28 vertex-count magic
-// divide and the rasterizer hand-off are faithful, but the per-edge crossing
-// interpolation `(bound - P)/(C - P)` lerp is dense fld/fxch/fdivp/fmulp x87 whose
-// schedule MSVC does not expose to source ordering (same wall as the sibling
-// ImageRotateBlit 0x145f60 and CFaderRadial::Build). Retail inlines all four clip
-// passes; this reconstruction does too, to keep the body shape.
+// x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
+// "25-35%" note was stale). Dominant residual confirmed via --diff: retail's per-edge
+// crossing lerp RE-COMPUTES the division (cur->x - prev->x) and reloads cur->x/prev->x
+// for EACH of the three interpolated attributes (x87 stack pressure won't hold `t`),
+// emitting its own fld/fld/fsub/fxch/fsub/fdivp/fmulp/fadd interleave per attribute;
+// this build computes `t` once and reuses it (fdivp once + fmul st,st(1)). MSVC5 does
+// not expose that x87 recompute/fxch schedule to source ordering - same wall as the
+// sibling ImageRotateBlit 0x145f60 and CFaderRadial::Build. Secondary steerable diffs
+// (the clip-crossing `(A>=B)!=(C>=B)` materializes a 0/1 bool where retail re-branches
+// on fcom; the clipFlag `-1` compares against a memory operand not an imm) are below
+// the x87 ceiling and not worth chasing per the x87 re-prove-and-move doctrine.
 RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
