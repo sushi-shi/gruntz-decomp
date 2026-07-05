@@ -14,7 +14,10 @@
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/Warlord.h>
+#include <Gruntz/ActReg.h>      // the shared CActReg (g_actionTable @0x644610)
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+
+#include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
 #include <rva.h>
 
@@ -63,16 +66,12 @@ CWarlord::~CWarlord() {}
 RVA(0x00042d40, 0x73e)
 CWarlord::CWarlord(i32) {}
 
-// The file-static per-action handler dispatch array (g_actionTable @0x644610), a
-// VActColl-shaped growable table: InitActReg builds it over the fixed [2000, 2010]
-// range via the shared registry ctor (0x408710, __thiscall ret 8); ElementAt
-// resolves a per-type slot (used by RegisterWarlordActions below).
-struct CActionTable {
-    void** ElementAt(i32 id);       // -> &slot (thunked CArray ElementAt)
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8)
-};
+// The file-static per-action handler dispatch array (g_actionTable @0x644610) is
+// the shared CActReg archetype (<Gruntz/ActReg.h>): InitActReg builds it over the
+// fixed [2000, 2010] range via Construct (0x408710); Lookup (0x3864) resolves a
+// per-type slot (used by RegisterWarlordActions below).
 DATA(0x00244610)
-extern CActionTable g_actionTable; // 0x644610
+extern CActReg g_actionTable; // 0x644610
 
 // ===========================================================================
 // CWarlord::InitActReg  (0x0445c0)
@@ -133,15 +132,12 @@ i32 CWarlord::ResolveState(i32 key) {
 //   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
 //       (global scheduling); logic identical. Deferred to the final sweep.
 
-// The Gruntz type-registry globals (.data). g_buteTree maps an action-key string
-// to a 1-based type id (0 = absent); g_typeColl is the parallel growable key
-// collection; g_actionTable holds the per-type action-handler pointer slots.
-struct CTypeNameTree {
-    i32 FindType(const char* key);         // 0x16d190 (-> type id, 0 = absent)
-    void AddType(const char* key, i32 id); // 0x16db90
-};
+// The Gruntz type-registry globals (.data). g_buteTree (the real shared CButeTree)
+// maps an action-key string to a 1-based type id (0 = absent, via Find/Insert);
+// g_typeColl is the parallel growable key collection; g_actionTable holds the
+// per-type action-handler pointer slots.
 DATA(0x002bf620)
-extern CTypeNameTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
+extern CButeTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
 
 // CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
@@ -168,9 +164,9 @@ extern "C" void Act_F(); // 0x402725
 // The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
-        i32 id_ = g_buteTree.FindType(key);                                                        \
+        i32 id_ = (i32)g_buteTree.Find(key);                                                       \
         if (id_ == 0) {                                                                            \
-            g_buteTree.AddType(key, g_typeCounter);                                                \
+            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id_ = g_typeCounter;                                                                   \
             CString* slot_ = (CString*)g_typeColl.IndexToPtr(id_);                                 \
             CString* p_ = (CString*)g_typeColl.m_cursor;                                           \
@@ -180,7 +176,7 @@ extern "C" void Act_F(); // 0x402725
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = g_actionTable.ElementAt(id_);                                              \
+        void** aslot_ = (void**)g_actionTable.Lookup(id_);                                         \
         *aslot_ = (void*)(handler);                                                                \
     } while (0)
 
@@ -319,10 +315,8 @@ void CWarlord::NotifyFortUnderAttack() {}
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CActionTable);
 SIZE_UNKNOWN(CRegBattleEvent);
 SIZE_UNKNOWN(CRegThreatHelper);
-SIZE_UNKNOWN(CTypeNameTree);
 SIZE_UNKNOWN(CWarlord);
 SIZE_UNKNOWN(CWarlordAnimSub);
 SIZE_UNKNOWN(CWarlordMission);
