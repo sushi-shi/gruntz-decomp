@@ -1,3 +1,4 @@
+#include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -69,26 +70,12 @@ struct CMapStringToObLite {
     i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
 };
 
-// CStringVal - the engine MFC CString value returned by-value (RVO) from
-// FindKeyOfValue (Op/Build): one pointer to the heap char data. This is NOT the
-// container "EngStr"/zBitVec (that folded to <Wap32/zBitVec.h>); it is a real MFC
-// CString value. Modeled as a POD (no C++ ctor/dtor) so cl emits none implicitly and
-// the teardown is the EXPLICIT reloc-masked engine ~CString call (Dtor, 0x1b9cde) -
-// a real MFC `CString` local's implicit default ctor + dtor would perturb the codegen
-// this reconstruction pins, and this lean TU pulls no <Mfc.h>. authentic: RVO
-// CString-value POD; Dtor is the modeled engine ~CString extern.
-SIZE_UNKNOWN(CStringVal);
-struct CStringVal {
-    const char* m_data; // +0x00  -> the char buffer
-    void Dtor();        // 0x1b9cde  NAFXCW ~CString (reloc-masked, __thiscall)
-};
-
 // mgr+0x28: the real CDDrawSubMgrLeafScan (full def in DDrawMgr units) -
-// FindKeyOfValue_158570 reverse-looks-up a key CString by LeafScanValue (modeled
-// here as i32) through its +0x10 map. Reloc-masked reader view onto the real class.
+// FindKeyOfValue_158570 reverse-looks-up a key CString by LeafScanValue (modeled here
+// as i32) through its +0x10 map, returning the found name CString BY VALUE (RVO; the
+// callers' implicit ~CString is the 0x1b9cde teardown). Reloc-masked reader view.
 struct CDDrawSubMgrLeafScan {
-    CStringVal*
-    FindKeyOfValue_158570(CStringVal* out, i32 a); // 0x158570  __thiscall, returns out (CString)
+    CString FindKeyOfValue_158570(i32 a); // 0x158570  __thiscall -> CString (by value)
     char m_pad00[0x10];
     MapLookupB m_map; // +0x10  name -> object (0x1b8438)
 };
@@ -106,8 +93,7 @@ struct CDDrawSubMgrLeafScan {
 // FindKeyOfValue_165360 reverse-looks-up a key CString by CWorkerMapValue through
 // its +0x10 map. Reloc-masked reader view onto the real class.
 struct CDDrawWorkerRegistry {
-    CStringVal*
-    FindKeyOfValue_165360(CStringVal* out, void* obj); // 0x165360  __thiscall -> CString
+    CString FindKeyOfValue_165360(void* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
     MapLookupA m_map; // +0x10  name -> object (0x1b8008)
 };
@@ -411,10 +397,8 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CStringVal str;
-        m_mgr->m_28->FindKeyOfValue_158570(&str, (i32)m_19c);
-        strcpy(tmp, str.m_data);
-        str.Dtor();
+        CString str = m_mgr->m_28->FindKeyOfValue_158570((i32)m_19c);
+        strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
     return 1;
@@ -698,28 +682,22 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CStringVal str;
-        m_mgr->m_14->FindKeyOfValue_165360(&str, m_80);
-        strcpy(tmp, str.m_data);
-        str.Dtor();
+        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_80);
+        strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CStringVal str;
-        m_mgr->m_14->FindKeyOfValue_165360(&str, m_88);
-        strcpy(tmp, str.m_data);
-        str.Dtor();
+        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_88);
+        strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
-        CStringVal str;
-        m_mgr->m_14->FindKeyOfValue_165360(&str, m_90);
-        strcpy(tmp, str.m_data);
-        str.Dtor();
+        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_90);
+        strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
     return 1;
@@ -864,10 +842,8 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
     rec.m_10 = edi;
 
     {
-        CStringVal str;
-        m_mgr->m_14->FindKeyOfValue_165360(&str, m_worker);
-        strcpy(rec.m_name, str.m_data);
-        str.Dtor();
+        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_worker);
+        strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);
     return 1;
