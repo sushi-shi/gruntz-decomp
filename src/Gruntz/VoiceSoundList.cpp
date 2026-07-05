@@ -63,8 +63,9 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             }
             void* res = m_00->m_34->Resolve((LPCTSTR)name, 0x574156);
             if (res != 0) {
-                CString tmp = name;
-                list->AddVoiceSound(tmp, 0);
+                // retail copy-ctors `name` straight into the by-value arg slot
+                // (push 0; push ecx; mov ecx,esp; copy-ctor) - no local temp.
+                list->AddVoiceSound(name, 0);
                 sub.Format("S%i", i);
                 sub = *g_buteMgr.GetStringDef((LPCTSTR)scratch, (LPCTSTR)sub, &dir);
             } else {
