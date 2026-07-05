@@ -432,9 +432,14 @@ i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialArchive* s) {
 // first nonzero probe result, else 0.
 // ---------------------------------------------------------------------------
 // @early-stop
-// spill-scheduling wall (~76%): logic exact, inner loop + ProbeCell call/regs
-// match; retail reserves 8B of frame (sub esp,8) and hoists the inner (y-1,y+2)
-// bounds out of the outer loop, vs our tighter frame. Final-sweep.
+// regalloc wall (~76%): logic exact, inner loop + ProbeCell call/regs match.
+// Retail reserves an 8B frame (sub esp,8), keeps the inner bound py_end in a
+// callee-saved REGISTER (ebp, hoisted once) and spills px/base to stack, whereas
+// MSVC5 keeps px/base in registers and reloads py_end from the frame each inner
+// step. The strength-reduced form (base += 0x100 accumulator) reproduces retail's
+// outer tail but flips the same 2 callee-saved registers the other way (72%), so
+// the plain double-for is the closest. Which of {px,base,py_end} wins the two
+// callee-saved regs is a non-steerable regalloc pick. Final-sweep.
 RVA(0x00117ec0, 0x7f)
 i32 CTileTriggerSwitchLogic::ScanNeighborhood(i32 x, i32 y) {
     for (i32 px = x - 1; px < x + 2; px++) {
