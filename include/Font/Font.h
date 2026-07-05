@@ -70,9 +70,11 @@ public:
     i32 LoadFont(CString szFileName);
     i32 SaveFont(CString szFileName); // 0x1799f0
 
-    // Accessors matched in this module cluster.
+    // Accessors matched in this module cluster. GetGlyph returns the out
+    // reference (retail callers read the metric pair back through eax:
+    // DrawGlyphRun does `call GetGlyph; mov ebp,[eax]`).
     void** GetSurface(u8 c);
-    void GetGlyph(Glyph& out, u8 c);
+    Glyph& GetGlyph(Glyph& out, u8 c);
     i32 GetMaxHeight();
 
     i32 m_ready;       // +0x00
@@ -105,27 +107,22 @@ SIZE(TextExtent, 0x8); // sret 8-byte {w,h} pair
 // A 16-byte rectangle bundle passed by value to the inner glyph-blit
 // (DrawGlyphRun) - four ints carried as one block on the stack. Built by the
 // out-of-line Rect(i32,i32,i32,i32) ctor at 0x29ac0 (external/no-body here).
+// Field roles proven by DrawGlyphRun 0x179e70: IntersectRect writes the RECT
+// {left,top,right,bottom} through (RECT*)&rc.
 struct Rect {
-    Rect(i32 a, i32 b, i32 c, i32 d); // 0x29ac0
-    i32 a;                            // +0x00
-    i32 b;                            // +0x04
-    i32 c;                            // +0x08
-    i32 d;                            // +0x0c
+    Rect(i32 l, i32 t, i32 r, i32 b); // 0x29ac0
+    i32 left;                         // +0x00
+    i32 top;                          // +0x04
+    i32 right;                        // +0x08
+    i32 bottom;                       // +0x0c
 };
 SIZE(Rect, 0x10); // 16-byte by-value rectangle bundle
 
-// The layout/draw rectangle the public draw entry points receive a pointer to:
-// a destination box plus alignment/limit fields. Only the offsets the matched
-// methods read are load-bearing.
-struct DrawRect {
-    i32 left;                 // +0x00
-    i32 top;                  // +0x04
-    i32 right;                // +0x08
-    i32 bottom;               // +0x0c
-    char _pad10[0x18 - 0x10]; // +0x10..0x17  (not read by the matched draw methods)
-    i32 m_bottom;             // +0x18  (vertical limit, clip test in DrawLine)
-};
-SIZE_UNKNOWN(DrawRect); // caller-owned layout rect (allocated in the draw caller's TU)
+// The draw target of the whole draw family is the DirectDraw surface wrapper
+// (proven by DrawGlyphRun 0x179e70: arg2 is Lock()ed / m_width / m_height /
+// m_pitch read / m_8->Unlock(0), and DrawLine's vertical limit [p+0x18] is its
+// dwHeight). The former per-TU "DrawRect" view of it is dissolved.
+class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 
 class FontRenderer {
 public:
@@ -135,13 +132,16 @@ public:
     // Text geometry + drawing (the ClassUnknown_52 cluster).
     TextExtent MeasureText(CString text); // 0x17ac50
 
-    // The inner glyph-run blit (0x179e70). External (no body here) so its
-    // call reloc-masks; the 9-dword arg shape (CString + 1 int + Rect{4} + 3
-    // ints) reproduces the retail `ret 0x24` and the caller's pushes.
-    void DrawGlyphRun(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179e70
+    // The inner glyph-run blit (0x179e70, src/Stub/ApiCallers.cpp until its
+    // re-home): clip `rc` against the surface + the measured text extent, Lock
+    // the surface, then blit each glyph's 8bpp coverage bitmap as the packed
+    // 16bpp m_color - alpha-blended per pixel when `blend` is set, opaque
+    // threshold otherwise.
+    void DrawGlyphRun(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 blend);
 
-    void DrawLine(CString text, DrawRect* p, i32 x, i32 y, i32 z);            // 0x179c30
-    void DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
+    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z); // 0x179c30
+    void
+    DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
 
     // Word-wrap entry points (the two big greedy-wrap methods).
     //   MeasureWrapped - bounding {w,h} of greedily wrapped text (0x17ad10)
@@ -150,7 +150,7 @@ public:
     TextExtent MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom); // 0x17ad10
     void DrawWrapped(
         CString text,
-        DrawRect* p,
+        CDDSurface* surf,
         i32 x0,
         i32 top,
         i32 right,

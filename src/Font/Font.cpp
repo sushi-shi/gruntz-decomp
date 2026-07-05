@@ -19,6 +19,7 @@
 // `push -1; push &handler; mov fs:0`). The NAFXCW callees (operator new/delete,
 // CFile::*, CArchive::*, CString::~CString) are external/no-body so their
 // `call rel32` displacements reloc-mask in objdiff.
+#include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
 #include <Font/Font.h>
 #include <rva.h>
 #include <string.h> // memcmp (InterfaceObject::IsInterfaceX)
@@ -258,10 +259,12 @@ void** Font::GetSurface(u8 c) {
 
 // =========================================================================
 // Font::GetGlyph
-//
+// Returns the out reference: retail callers (DrawGlyphRun) read the copied
+// metric pair back through eax (`call GetGlyph; mov ebp,[eax]`).
 RVA(0x00179b80, 0x22)
-void Font::GetGlyph(Glyph& out, u8 c) {
+Glyph& Font::GetGlyph(Glyph& out, u8 c) {
     out = m_glyphs[c];
+    return out;
 }
 
 // =========================================================================
@@ -349,22 +352,22 @@ TextExtent FontRenderer::MeasureText(CString text) {
 // the inner glyph-blit (DrawGlyphRun, external). The CString is taken by value
 // (destroyed by the EH frame).
 RVA(0x00179d10, 0x15c)
-void FontRenderer::DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
         SetColor(0xffffff);
-        DrawGlyphRun(text, a1, rc, x, y, z);
+        DrawGlyphRun(text, surf, rc, x, y, z);
         x++;
         y++;
     }
     if (m_surface) {
         SetColor(0);
         x += 2;
-        DrawGlyphRun(text, a1, rc, x, y, z);
+        DrawGlyphRun(text, surf, rc, x, y, z);
         x -= 2;
     }
     SetColor(savedColor);
-    DrawGlyphRun(text, a1, rc, x, y, z);
+    DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
 // =========================================================================
@@ -384,7 +387,7 @@ void FontRenderer::DrawLineClipped(CString text, i32 a1, Rect rc, i32 x, i32 y, 
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
-    DrawRect* p,
+    CDDSurface* surf,
     i32 x0,
     i32 top,
     i32 right,
@@ -424,9 +427,9 @@ void FontRenderer::DrawWrapped(
             if (y + lineAdvance <= bottom) {
                 if (hcenter) {
                     i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
-                    DrawLine(line, p, cx, y, z);
+                    DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, p, x0, y, z);
+                    DrawLine(line, surf, x0, y, z);
                 }
             }
             line = "";
@@ -457,9 +460,9 @@ void FontRenderer::DrawWrapped(
             } else if (headW < right - x0) {
                 if (hcenter) {
                     i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
-                    DrawLine(line, p, cx, y, z);
+                    DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, p, x0, y, z);
+                    DrawLine(line, surf, x0, y, z);
                 }
                 y = y + lineAdvance;
                 x = x0;
@@ -477,9 +480,9 @@ void FontRenderer::DrawWrapped(
                             if (hcenter) {
                                 i32 cx = x0 + ((TextRange*)&x0)->Span() / 2
                                          - MeasureText(line).width / 2;
-                                DrawLine(line, p, cx, y, z);
+                                DrawLine(line, surf, cx, y, z);
                             } else {
-                                DrawLine(line, p, x0, y, z);
+                                DrawLine(line, surf, x0, y, z);
                             }
                             y = y + lineAdvance;
                             x = x0;
@@ -499,9 +502,9 @@ void FontRenderer::DrawWrapped(
             if (breakNL) {
                 if (hcenter) {
                     i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
-                    DrawLine(line, p, cx, y, z);
+                    DrawLine(line, surf, cx, y, z);
                 } else {
-                    DrawLine(line, p, x0, y, z);
+                    DrawLine(line, surf, x0, y, z);
                 }
                 y = y + lineAdvance;
                 x = x0;
@@ -512,9 +515,9 @@ void FontRenderer::DrawWrapped(
     if (y + lineAdvance <= bottom && line.GetLength() > 0) {
         if (hcenter) {
             i32 cx = x0 + ((TextRange*)&x0)->Span() / 2 - MeasureText(line).width / 2;
-            DrawLine(line, p, cx, y, z);
+            DrawLine(line, surf, cx, y, z);
         } else {
-            DrawLine(line, p, x0, y, z);
+            DrawLine(line, surf, x0, y, z);
         }
     }
 }
@@ -750,26 +753,20 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
 // =========================================================================
 // FontRenderer::DrawLine
 // Public single-line entry: measure the run, reject it if it would overflow
-// the box's vertical limit (p->m_bottom), otherwise build the destination Rect
-// and hand off to DrawLineClipped. No-op when no font is loaded.
-// Real arg order (confirmed from the disasm + the sole caller DrawWrapped): the
-// CString text is arg1 (measured first), p is arg2 (its +0x18 vertical limit),
-// then x, y, z.
-// @early-stop
-// arg-bundle/frame wall: the 9-dword DrawLineClipped call is assembled from a
-// heterogeneous bundle (the 029ac0 Rect result + p + a Rect field + the CString
-// temp) whose exact field grouping isn't fully recovered; retail reserves 2
-// extra stack dwords, skewing every [esp+N]. Control flow + measure/clip/draw
-// logic are exact; residual is push scheduling + frame size.
+// the destination surface's height, otherwise hand off to DrawLineClipped with
+// the full-extent rect {0,0,ext.width,ext.height}. No-op when no font is
+// loaded. Real arg flow (0x179c30 disasm): arg2 is the CDDSurface* itself
+// (its +0x18 dwHeight is the vertical limit), forwarded as DrawLineClipped's
+// surface; z is forwarded unchanged (the blend flag).
 RVA(0x00179c30, 0xdb)
-void FontRenderer::DrawLine(CString text, DrawRect* p, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     TextExtent ext = MeasureText(text);
     if (m_font == 0) {
         return;
     }
-    i32 limit = p->m_bottom;
+    i32 limit = surf->m_height;
     if (m_font->GetMaxHeight() + y > limit) {
         return;
     }
-    DrawLineClipped(text, z, Rect(0, 0, x, y), x, y, p->left);
+    DrawLineClipped(text, surf, Rect(0, 0, ext.width, ext.height), x, y, z);
 }

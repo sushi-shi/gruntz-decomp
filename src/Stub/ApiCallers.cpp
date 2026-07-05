@@ -1,6 +1,9 @@
 #include <Mfc.h> // real MFC (CObject/CString/CPtrList) + windows.h via afx.h (superset of Win32.h)
 
-#include <Gruntz/Multi.h> // real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <DDrawMgr/DDSurface.h> // CDDSurface - FontRenderer::DrawGlyphRun's destination surface
+#include <ddraw.h>              // real IDirectDrawSurface (surf->m_8->Unlock(0))
+#include <Font/Font.h>          // FontRenderer/Font/Glyph/Rect/TextExtent (DrawGlyphRun 0x179e70)
+#include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 // smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
@@ -33,8 +36,10 @@
 //   [ORPHAN]   real bodies on ANONYMOUS RVA-named placeholder hosts (CmdHost_*, Grid_*,
 //              QlHost_*, EditAppendHost_*, Region_*, ...) whose true owning class is
 //              not yet recovered; moving them would force-guess an owner - LEFT put.
-//   [BIG]      >512B @early-stop bodies (0x14d00/0x1a700/0x179e70/0xe6020) kept at
-//              their return-0/artifact plateau per the >512B REVERT rule (final sweep).
+//   [BIG]      >512B @early-stop bodies (0x14d00/0x1a700/0xe6020) kept at their
+//              return-0/artifact plateau per the >512B REVERT rule (final sweep).
+//              (0x179e70 reconstructed as FontRenderer::DrawGlyphRun and re-homed
+//              to src/Font/Font.cpp.)
 //   [ORPHAN-2] 0x0394b0 (ClickHost hit-test) - the worklist's CGruntzMgr attribution
 //              was a thunk-band mis-chase; real owner unrecovered, so LEFT put (see it).
 
@@ -1062,18 +1067,11 @@ namespace ApiCallerStubs {
     // (0x1775f0 PalHost::Apply (with g_palModule_6bf6e0) re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)
 
-    // @confidence: low
-    // @source: winapi:IntersectRect
-    // @early-stop
-    // Rect-clipping pass over the global viewport rect g_683ea0/ea4/eac/eb0/eb4
-    // (GAME code, 1516 B), intersecting via the PTR_IntersectRect function pointer.
-    // Deferred to the leaf-first final sweep: a >512B branchy geometry body; a
-    // partial under-counts AND diverges its regalloc, so the return-0 normalization
-    // artifact is kept per the >512B REVERT rule.
-    RVA(0x00179e70, 0x5ec)
-    i32 __stdcall winapi_179e70_IntersectRect(i32, i32, i32, i32, i32, i32, i32, i32, i32) {
-        return 0;
-    }
+
+    // (0x179e70 winapi_179e70_IntersectRect reconstructed as the real
+    // FontRenderer::DrawGlyphRun and re-homed to src/Font/Font.cpp - the inner
+    // 16bpp glyph-run alpha-blit DrawLineClipped triple-calls; arg2 proven to be
+    // the CDDSurface* destination (Lock/m_width/m_height/m_pitch/m_8->Unlock).)
 
     // (0x17caa0 RenderFrame re-homed to src/Io/SmackerVideoWindow.cpp as the real
     // CSmackWin::Frame - class identity proven (CSmackWin::Pump calls it on this=
