@@ -30,10 +30,13 @@ struct CFrameGrid; // the frame-grid value the image registry's map yields (CPla
 // with NO body so the `ecx=<map>; call <helper>` shape reloc-masks (engine 0x1b8008).
 // The map stores CObject-derived values; overloads type the out-ptr per consumer so
 // the found value is typed cast-free (same reloc-masked call either way).
+struct CueObj; // named-cue value (the status-bar holder's cue registry; StatusBarCueHolder.h)
 class CSpriteHashTable {
 public:
     i32 Lookup(const char* szName, CSprite** ppOut);
     i32 Lookup(const char* szName, CFrameGrid** ppOut); // frame-grid value (CPlay::BeginGridWalk)
+    i32
+    Lookup(const char* szName, CueObj** ppOut); // named-cue value (LevelPreview/FinishLevelSprite)
 };
 
 // The CSprite frame table is a CObArray of CImage frame-workers living AT

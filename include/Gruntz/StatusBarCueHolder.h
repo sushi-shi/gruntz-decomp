@@ -21,6 +21,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (ConfigureItem @0x1360d0, +0x28 cue duration)
+#include <Gruntz/Sprite.h> // CSpriteHashTable - the ONE name->CObject map (both cue + sprite views)
 
 class SoundDevice;
 
@@ -34,18 +35,16 @@ struct CueObj {
 };
 SIZE_UNKNOWN(CueObj);
 
-// The embedded name->cue hash table (Lookup @0x1b8438, __thiscall, ret 8).
-class CCueHashTable {
-public:
-    i32 Lookup(const char* szName, CueObj** ppOut); // 0x1b8438
-};
-SIZE_UNKNOWN(CCueHashTable);
+// The embedded name->object map is the ONE CSpriteHashTable (Sprite.h) - the MFC
+// CMapStringToOb whose Lookup (0x1b8438 == 0x1b8008, both CMapStringToOb::Lookup)
+// every consumer calls; the CueObj** overload types the cue value cast-free. (The
+// former local CCueHashTable was a second view of it - folded away.)
 
-// The status-bar holder: name->cue hash table at +0x10, audio-kill sound mgr at
-// +0x2c, live-surface gate at +0x30.
+// The status-bar holder: name->object map at +0x10, audio-kill sound mgr at +0x2c,
+// live-surface gate at +0x30.
 struct CStatusBarHolder {
     char m_pad00[0x10];
-    CCueHashTable m_10map; // +0x10
+    CSpriteHashTable m_10map; // +0x10  the ONE name->CObject map (Sprite.h)
     char m_pad14[0x2c - 0x14];
     SoundDevice* m_2c; // +0x2c  audio-kill sound mgr
     i32 m_30;          // +0x30  live-surface gate
