@@ -55,7 +55,7 @@ struct Board;
 // ---- Load-phase engine object pointers (config view) ------------------------
 // The same three slots hold level-info-derived handles during LoadConfig (the
 // object is filled from a CLevelInfo before the run phase reinterprets the slots).
-struct CLevelInfo;
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg)
 struct CMapDims;
 struct CLevelSpawnInfo;
 

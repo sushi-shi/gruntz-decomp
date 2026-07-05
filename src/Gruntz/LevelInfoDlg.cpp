@@ -10,24 +10,13 @@
 // CFileIO local force the exception frame. Field names are placeholders
 // (m_<hexoffset>); only the offsets + code bytes are load-bearing.
 
-#include <Mfc.h>           // CString + <windows.h> (wsprintfA/SetDlgItemTextA) FIRST
-#include <Io/FileStream.h> // CFileIO (Open/Read/Seek/Close, all reloc-masked)
-#include <string.h>        // strrchr/strchr (out-of-line) + strcat (inline /Oi)
+#include <Mfc.h>              // CString + <windows.h> (wsprintfA/SetDlgItemTextA) FIRST
+#include <Io/FileStream.h>    // CFileIO (Open/Read/Seek/Close, all reloc-masked)
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (arg3; shared with LoadConfig)
+#include <string.h>           // strrchr/strchr (out-of-line) + strcat (inline /Oi)
 
 #include <rva.h>
 #include <Globals.h>
-
-// The per-level descriptor (arg3). m_4 = level number; m_35 = on-disk path;
-// m_75 = display name / custom path; m_f8/m_fc = battlez/custom mode flags.
-struct CLevelInfo {
-    char m_pad00[0x4];
-    i32 m_4; // +0x04  level number (1..)
-    char m_pad08[0x35 - 0x8];
-    char m_35[0x75 - 0x35]; // +0x35  level file path (Open)
-    char m_75[0xf8 - 0x75]; // +0x75  display name / custom level path
-    i32 m_f8;               // +0xf8  flag: custom level
-    i32 m_fc;               // +0xfc  flag: battlez (vs questz)
-};
 
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
@@ -64,28 +53,28 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
         return;
     }
 
-    // m_f8/m_fc are re-read at each use (not cached) to match retail's reloads.
-    if (lev->m_f8 == 0 && lev->m_fc == 0) {
+    // m_isCustom/m_isBattlez are re-read at each use (not cached) to match retail's reloads.
+    if (lev->m_isCustom == 0 && lev->m_isBattlez == 0) {
         // Standard questz/training level. The "Training" CString lives inside the
         // wsprintf full-expression so its construction is branch-conditional and
         // its destruction flag-guarded (the /GX temp).
-        i32 n = lev->m_4;
+        i32 n = lev->m_levelNum;
         wsprintfA(
             title,
             "Questz: Stage %d of %s",
             (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
             (n > 0x24 && n < 0x29) ? (const char*)CString("Training") : g_areaNames[(n - 1) / 4]
         );
-    } else if (lev->m_f8 == 0) {
+    } else if (lev->m_isCustom == 0) {
         // Battlez level (named).
-        wsprintfA(title, "Battlez: %s", lev->m_75);
+        wsprintfA(title, "Battlez: %s", lev->m_name);
     } else {
         // Custom level: format "Custom <mode> Level[: <basename>]". The mode-keyed
         // format strings are branched (if/else) so cl tail-merges to one wsprintf
         // call with two literal pushes (boolarg-branch-push-not-sete).
-        char* bs = strrchr(lev->m_75, '\\');
+        char* bs = strrchr(lev->m_name, '\\');
         if (bs != 0) {
-            if (lev->m_fc) {
+            if (lev->m_isBattlez) {
                 wsprintfA(title, "Custom Battlez Level: ");
             } else {
                 wsprintfA(title, "Custom Questz Level: ");
@@ -96,7 +85,7 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
                 *dot = 0;
             }
         } else {
-            if (lev->m_fc) {
+            if (lev->m_isBattlez) {
                 wsprintfA(title, "Custom Battlez Level");
             } else {
                 wsprintfA(title, "Custom Questz Level");
@@ -108,7 +97,7 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
     // (Open == 0 / Read != full) put the g_previewImage=0 failure store inline
     // after each test (retail's jne-to-success / je-to-success layout).
     CFileIO f;
-    if (f.Open(lev->m_35, 0x8000, 0) == 0) {
+    if (f.Open(lev->m_path, 0x8000, 0) == 0) {
         g_previewImage = 0;
     } else {
         f.Seek(-0x3843a, 2);

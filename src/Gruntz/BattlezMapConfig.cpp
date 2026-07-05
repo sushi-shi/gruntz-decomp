@@ -46,7 +46,8 @@
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
 #include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/BattlezMapConfig.h>
-#include <Bute/ButeMgr.h> // CButeMgr (LoadConfig reads the g_buteMgr singleton)
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg1)
+#include <Bute/ButeMgr.h>     // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
@@ -639,16 +640,9 @@ struct CLevelList {
     CLevelNode* m_64; // +0x64  GetNext cursor
 };
 
-// The source level-info object (arg1, in EBP). Only the load-bearing reads.
-struct CLevelInfo {
-    char m_pad00[0x2c];
-    CLevelSpawnInfo* m_2c; // +0x2c  copied to this+0x10
-    CLevelList* m_30;      // +0x30  object-list root (its m_8 is the walked list)
-    char m_pad34[0x68 - 0x34];
-    void* m_68; // +0x68  copied to this+0x8
-    char m_pad6c[0x70 - 0x6c];
-    CMapDims* m_70; // +0x70  copied to this+0xc
-};
+// The source level-info object (arg1) is the canonical CLevelInfo
+// (<Gruntz/LevelInfo.h>, included above): m_spawnInfo(+0x2c)/m_objList(+0x30)/
+// m_68(+0x68)/m_dims(+0x70) are the load-bearing reads here.
 
 // The 2-int coord-pair node pulled off the freelist (the slot the SetAtGrow array
 // stores). The freelist links through node->m_0; the usable pair is m_4/m_8.
@@ -706,8 +700,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_levelInfo = lvl;
     m_ownerId = id;
     m_8 = lvl->m_68;
-    m_dims = lvl->m_70;
-    m_10 = lvl->m_2c;
+    m_dims = lvl->m_dims;
+    m_10 = lvl->m_spawnInfo;
     m_14 = m_10->m_2e4;
     m_0 = 1;
 
@@ -724,10 +718,10 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 1: append EVERY type-1 start marker to the +0xdc array. The marker
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
-    //     The list is re-derived (lvl->m_30->m_8) and advanced via the GetNext
+    //     The list is re-derived (lvl->m_objList->m_8) and advanced via the GetNext
     //     cursor idiom on every step. ---
-    for (CLevelObj* cur = ListGetFirst(lvl->m_30->m_8); cur != 0;
-         cur = ListGetNext(lvl->m_30->m_8)) {
+    for (CLevelObj* cur = ListGetFirst(lvl->m_objList->m_8); cur != 0;
+         cur = ListGetNext(lvl->m_objList->m_8)) {
         if (cur->m_7c->m_10 == (i32)(g_typeDesc1 + 5) && cur->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
             i32* slot = 0;
@@ -743,8 +737,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 2: find the FIRST type-2 marker, stamp m_markerX/m_markerY with its /32 coords,
     //     and stop (fall straight into loop 3). ---
-    for (CLevelObj* cur2 = ListGetFirst(lvl->m_30->m_8); cur2 != 0;
-         cur2 = ListGetNext(lvl->m_30->m_8)) {
+    for (CLevelObj* cur2 = ListGetFirst(lvl->m_objList->m_8); cur2 != 0;
+         cur2 = ListGetNext(lvl->m_objList->m_8)) {
         if (cur2->m_7c->m_10 == (i32)(g_typeDesc2 + 5) && cur2->m_124 == id) {
             m_markerX = cur2->m_5c / 32;
             m_markerY = cur2->m_60 / 32;
@@ -754,8 +748,8 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 3: append EVERY type-3 marker to the +0xf0 array, scaled by >>5
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
-    for (CLevelObj* cur3 = ListGetFirst(lvl->m_30->m_8); cur3 != 0;
-         cur3 = ListGetNext(lvl->m_30->m_8)) {
+    for (CLevelObj* cur3 = ListGetFirst(lvl->m_objList->m_8); cur3 != 0;
+         cur3 = ListGetNext(lvl->m_objList->m_8)) {
         if (cur3->m_7c->m_10 == (i32)(g_typeDesc3 + 5) && cur3->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
             i32* slot = 0;
@@ -5131,7 +5125,6 @@ SIZE_UNKNOWN(UnitPlace);
 SIZE_UNKNOWN(ViewMapper);
 SIZE_UNKNOWN(ZErrTarget);
 SIZE_UNKNOWN(CCoordPair);
-SIZE_UNKNOWN(CLevelInfo);
 SIZE_UNKNOWN(CLevelList);
 SIZE_UNKNOWN(CLevelNode);
 SIZE_UNKNOWN(CLevelObj);
