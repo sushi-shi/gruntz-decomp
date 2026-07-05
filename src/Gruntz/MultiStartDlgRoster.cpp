@@ -5,8 +5,10 @@
 // RosterHost_0c50f0 / BattlezDlg_c4230 / EditAppendHost_0c2ce0) were placeholder
 // duplicates of this class, proven by their shared control accessors (GetCtrlA..D
 // @0xc26c0/40/c0/40) and self-call into Drive (@0xc40b0). The net-game-config facets
-// CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord (NetMgrMisc.cpp) are the SAME dialog
-// (they call the same GetCtrlA..D on `this`); folding those two is a noted follow-up.
+// CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord (NetMgrMisc.cpp) were the SAME dialog
+// too and are now FOLDED into CMultiStartDlg (matcher-5): their methods dispatch this
+// class's per-slot accessors (0x1929/0x298c/GetCtrlD/0x1753/0x1159) on `this` and
+// self-call Drive/UpdatePlayers - bodies stay in their own units (delinker packing).
 //
 // Homed in its own unit (not Dialogs.cpp) so it can't perturb that TU's parked dtors;
 // it reuses the shared Dialogs.h dialog models, the canonical CGameRegistry spine
