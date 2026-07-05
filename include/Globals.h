@@ -32,7 +32,7 @@ struct CPartColl2;
 struct CPartEntry;
 class CImagePool; // g_previewMgr (canonical <Image/ImagePool.h>; was CPreviewMgr view)
 struct CProjActEntry;
-struct CProjColl2;
+struct CActColl2;
 struct CTBombColl2;
 struct CTBombEntry;
 struct CToobColl2;
@@ -217,7 +217,7 @@ extern i32 g_dropStride;
 extern i32 g_dropScratch;
 extern ScrollView* g_backView;
 extern "C" i32 g_64c3f0[17];
-extern CProjColl2* g_projActColl2;
+extern CActColl2* g_projActColl2;
 extern i32 g_projActLo;
 extern i32 g_projActHi;
 extern char* g_projActBase;

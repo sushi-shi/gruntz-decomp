@@ -12,6 +12,8 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/StringNode.h>    // the shared type-name teardown slot (CStringNode::Free)
+#include <Gruntz/ActColl.h>       // shared registry collection (CActColl/CActColl2 Find/Insert/
+                                  // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
 #include <Bute/ButeMgr.h>         // CButeTree (the type-registry funnel)
 #include <math.h>                 // sin / cos (StepMotion's parabola)
 #include <string.h>               // memset (1-arg spawn ctor's +0x1e0 zero-fill)
@@ -440,25 +442,13 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
 extern CButeTree g_buteTree;
 
-// The activation-collection methods (shared with the per-class registries):
-//   Find  0x16da80 (__thiscall ret 8), Insert 0x16d850 (__thiscall ret 0xc),
-//   GetRetAddr 0x16d990, RegisterRange 0x408710 (via 0x3742 thunk).
-SIZE_UNKNOWN(CProjColl);
-struct CProjColl {
-    i32 Find(i32 coord, i32 z);         // 0x16da80
-    void RegisterRange(i32 lo, i32 hi); // 0x408710 (0x0df920 callee)
-};
-SIZE_UNKNOWN(CProjColl2);
-struct CProjColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
-extern void* GetRetAddr(); // 0x16d990
-DATA(0x002bf464)
-extern void* g_projActCache;      // 0x6bf464 (shared alloc cache)
-extern void* g_retAddrBreadcrumb; // 0x6bf428
+// The activation-collection primitives are the shared CActColl/CActColl2
+// (<Gruntz/ActColl.h>): Find 0x16da80, RegisterRange 0x3742-thunk (-> 0x408710),
+// Insert 0x16d850, plus GetRetAddr 0x16d990 and the shared g_actCache (0x6bf464) /
+// g_retAddrBreadcrumb scratch. The per-registry field globals below form the CActReg
+// bodies (g_projTypeColl @0x6bf650, g_projActColl @0x64c758) around those coll objects.
 
 // R1 - the shared type-name table (@0x6bf650).
-
 DATA(0x002bf658)
 extern i32 g_projTypeLo;
 DATA(0x002bf65c)
@@ -472,9 +462,9 @@ extern CTypeNameEntry* g_projTypeCur;
 DATA(0x002bf670)
 extern i32 g_projTypeCount;
 DATA(0x002bf650)
-extern CProjColl g_projTypeColl;
+extern CActColl g_projTypeColl;
 DATA(0x002bf654)
-extern CProjColl2* g_projTypeColl2;
+extern CActColl2* g_projTypeColl2;
 DATA(0x002bf66c)
 extern void* g_projTypeNodes;
 DATA(0x0021aea8)
@@ -483,7 +473,7 @@ extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
 // R2 - the projectile's per-coordinate activation table (@0x64c758).
 struct CProjActEntry;
 DATA(0x0024c758)
-extern CProjColl g_projActColl;
+extern CActColl g_projActColl;
 
 // The per-slot CString teardown node the type-name table walks is the shared
 // CStringNode (<Gruntz/StringNode.h>: m_0 slot + Free 0x1b9b93 __thiscall); name
@@ -501,7 +491,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     if (g_projActColl.Find(coord, 0)) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
-    void* item = g_projActCache;
+    void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_projActColl2->Insert(&g_projActColl, item, 0xc);
     return g_projActCur;
@@ -516,7 +506,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     if (g_projTypeColl.Find(key, 0)) {
         return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
-    void* item = g_projActCache;
+    void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_projTypeColl2->Insert(&g_projTypeColl, item, 0xc);
     return g_projTypeCur;
