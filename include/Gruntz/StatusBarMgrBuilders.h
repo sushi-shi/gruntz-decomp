@@ -160,6 +160,7 @@ SIZE_UNKNOWN(CSbIconSet);
 class CStatusBarMgr {
 public:
     i32 LoadTabSprites();
+    void BuildGameMenu(); // 0x101580 (the GAMETAB menu builder; called at the Game-tab tail)
 
     char m_pad00[0xc];
     i32 m_code; // +0x0c  the Configure `code` arg (== BuildGameMenu m_code)

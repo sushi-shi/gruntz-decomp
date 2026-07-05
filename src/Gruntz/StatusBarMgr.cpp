@@ -27,7 +27,8 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h> // the by-value geometry rect the Configure virtuals take
+#include <Gruntz/SbRect.h>        // the by-value geometry rect the Configure virtuals take
+#include <Gruntz/SpriteRefTable.h> // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
 // The retail out-of-line base-ctor call raises the /GX frame; with the esi-relative cache
 // stores below giving retail's register pressure, this now lands this->esi/Order-A.
 #define CSBCONFIGITEM_OUTOFLINE_CTOR
@@ -154,6 +155,15 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
                 m_64.AddTail(it);
                 (&m_204)[i] = (i32)it;
+                i32 sel = g_gameReg->m_spriteFactory->GetSel(
+                    *(i32*)((char*)g_gameReg + 0x158 + g_curPlayer * 0x238),
+                    0
+                );
+                if (sel == 0) {
+                    sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                }
+                ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Init(10);
+                ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Push(sel);
             }
             it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x4c;
@@ -385,6 +395,85 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_b8.AddTail(it);
+            // WARPSTONE: item 0 unconditional, items 1..4 each gated on m_cmdGrid->Probe(i).
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = bx;
+            r.top = by;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x7f;
+            if (!it->Configure(this, code, 0x2bc, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 1, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_b8.AddTail(it);
+            if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(1)) {
+                it = (CSbConfigItem*)new CSBI_ImageSet;
+                r.left = bx + 0x17;
+                r.top = by + 0xe;
+                r.right = bx + 0x52;
+                r.bottom = by + 0x44;
+                if (!it->Configure(this, code, 0x2bd, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 2, 0)) {
+                    if (it) {
+                        delete it;
+                    }
+                    return 0;
+                }
+                m_b8.AddTail(it);
+                if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(2)) {
+                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    r.left = bx + 0x4c;
+                    r.top = by + 0xf;
+                    r.right = bx + 0x87;
+                    r.bottom = by + 0x3e;
+                    if (!it->Configure(this, code, 0x2be, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 3, 0)) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_b8.AddTail(it);
+                    if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(3)) {
+                        it = (CSbConfigItem*)new CSBI_ImageSet;
+                        r.left = bx + 0x1b;
+                        r.top = by + 0x3b;
+                        r.right = bx + 0x52;
+                        r.bottom = by + 0x71;
+                        if (!it->Configure(this, code, 0x2bf, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 4, 0)) {
+                            if (it) {
+                                delete it;
+                            }
+                            return 0;
+                        }
+                        m_b8.AddTail(it);
+                        if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(4)) {
+                            it = (CSbConfigItem*)new CSBI_ImageSet;
+                            r.left = bx + 0x4a;
+                            r.top = by + 0x35;
+                            r.right = bx + 0x89;
+                            r.bottom = by + 0x74;
+                            if (!it->Configure(
+                                    this,
+                                    code,
+                                    0x2c0,
+                                    5,
+                                    r,
+                                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                                    5,
+                                    0
+                                )) {
+                                if (it) {
+                                    delete it;
+                                }
+                                return 0;
+                            }
+                            m_b8.AddTail(it);
+                        }
+                    }
+                }
+            }
+            BuildGameMenu();
             return 1;
     }
     return 1;
