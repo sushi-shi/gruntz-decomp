@@ -140,7 +140,7 @@ drawtext	3	0
 droppedobject	6	3
 droppedobjectshadow	2	1
 dsoundvoice	2	1
-engine_label_stubs	64	51
+engine_label_stubs	62	51
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	3	2
@@ -325,6 +325,7 @@ netmgrwait	2	0
 netsession	2	1
 netsession2	3	1
 netsessionnode	3	2
+netsessionopen	1	1
 netthingdtor	1	1
 obj09a260	1	0
 obj0f7d90	1	0
@@ -352,7 +353,7 @@ projectile	13	4
 projectileupdate	1	0
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
-randomambientsound	9	3
+randomambientsound	10	3
 rangeset	3	2
 reconbatch2	19	14
 reconbatch2o1	5	4
@@ -1514,7 +1515,7 @@ engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
 engine_label_stubs	?Dispatch@Dispatcher_0cfbd0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xcfbd0
-engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2816	75.2816	1	cpp:e832e75e29a5	0x77df0
+engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PAUWorld_77df0@2@@Z	75.2816	75.2621	1	cpp:e832e75e29a5	0x77df0
 engine_label_stubs	?GetRect@RectQuery_08e3a0@ApiCallerStubs@@QAEXPAUtagRECT@@@Z	85.1200	85.1200	1	cpp:6bf52155264d	0x8e3a0
 engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0@2@HPAUtagRECT@@HHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x182ab0
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
@@ -1525,7 +1526,6 @@ engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
 engine_label_stubs	?OnReset@ReplayDlg_c3e30@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0xc3e30
-engine_label_stubs	?Open@DPlayHost_0b77a0@ApiCallerStubs@@QAEHXZ	98.3607	98.3607	1	cpp:6bf52155264d	0xb77a0
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
@@ -1534,7 +1534,7 @@ engine_label_stubs	?Quickload@QlHost_092710@ApiCallerStubs@@QAEHXZ	100.0000	100.
 engine_label_stubs	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:966e3696e854	0x17caa0
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
 engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd00a0
-engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.4815	98.4815	1	cpp:6bf52155264d	0x8ee70
+engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.5185	98.5185	1	cpp:6bf52155264d	0x8ee70
 engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
 engine_label_stubs	?Update0@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4ee0
 engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4f30
@@ -1543,7 +1543,6 @@ engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.00
 engine_label_stubs	?UpdatePlayers@BattlezDlg_c4230@ApiCallerStubs@@QAEHH@Z	62.1892	62.1892	1	cpp:7e3328e11dac	0xc4230
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
-engine_label_stubs	?winapi_00c840_CopyRect_SetRect@ApiCallerStubs@@YAHPAUObj_c840@1@@Z	93.8598	93.8598	1	cpp:e832e75e29a5	0xc840
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
 engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1	cpp:e1535087fe94	0x1a700
 engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x38220
@@ -2777,6 +2776,7 @@ netsession2	?Verify@CNetSession2@@QAEHH@Z	89.5349	89.5349	2	0412e5b98227	0xc0290
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x1793b0
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
+netsessionopen	?Open@NetSessionOpener@@QAEHXZ	100.0000	100.0000	1	7dc448e92127	0xb77a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
 obj09a260	?GetStr_09a260@Obj09a260@@QAE?AVCString@@XZ	66.7273	66.7273	1	2a61f6af2b38	0x9a260
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	2	e86016f06750	0xf7d90
@@ -2921,6 +2921,7 @@ pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000
 pulsehighlight	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	2	ce40306814bb	0x8440
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.3373	7.3373	5	f341b56d4746	0x110c10
 randomambientsound	??0CRandomAmbientSound@@QAE@XZ	73.0000	73.0000	1	9fe4968b914e	0xbb40
+randomambientsound	?CommitSpriteAction@@YAHPAUPosSoundObj@@@Z	93.8598	93.8598	1	46818aa92f1b	0xc840
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	2	1309d2bb8bac	0xbe50
 randomambientsound	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	2	da2589e0ad0a	0xc4b0
 randomambientsound	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	2	d2919d8a4749	0xc530
