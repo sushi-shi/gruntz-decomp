@@ -1,9 +1,28 @@
 // GruntArriveResolve.cpp - CArriveMgr::Resolve2c690 (0x02c690, __thiscall ret 4, /GX).
-// The grunt arrival/tile-effect resolver. `this` (the board/logic object, kept spilled)
-// IS g->m_10 - the caller does g->m_10->Resolve2c690(g); grid = this->m_c, the origin is
-// g->m_10->m_5c/m_60, the physics-call owners are this->m_8 (Move14bf) / this->m_14
-// (Find/FindByField0C) / this itself (Effect/Probe/Impact/Ready). The argument (ebp) is
-// the CGrunt whose head pending-coord just arrived.
+// The grunt arrival/tile-effect resolver. `this` (kept spilled) is the BATTLEZ
+// board/logic object, NOT the grunt's CGameObject HUD (see IDENTITY below); grid =
+// this->m_c, the origin is this->m_5c/m_60, the physics-call owners are this->m_8
+// (Move14bf) / this->m_14 (Find/FindByField0C) / this itself (Effect/Probe/Impact/
+// Ready). The argument (ebp/esi) is the CGrunt whose head pending-coord just arrived
+// (CArriveGrunt == CGrunt, proven: +0x19c/+0x31c/+0x2d4 match canonical CGrunt).
+//
+// IDENTITY (investigated 2026-07-05): CArriveMgr IS CBattlezMapConfig (the run-phase
+// reinterpretation of its slots), NOT CGrunt::m_10 / CGruntHud. CONFIRMED by exact
+// offset match against <Gruntz/BattlezMapConfig.h>'s documented layout: +0x08 (this
+// view's mover == BattlezMapConfig's config-view m_8/lvl->m_68), +0x0c (grid ==
+// m_dims), +0x10 (sub-object -> its +0x2e4 == CArriveSub10b::m_2e4 cell-setter), +0x14,
+// +0x18, +0x5c and +0x60 all line up. And Resolve2c690 (0x2c690) sits inside
+// CBattlezMapConfig's RVA band (0x25020..0x358a0), reached only from CBattlezMapConfig
+// code (Method_025d90 0x25d90 -> winapi_0267c0 0x267c0, whose 0x282f1 site does
+// `mov ecx,ebp; push esi; call Resolve`, itself dispatching the same GetTilePos36c0/
+// RemoveAll/LoadPickup cluster). So its +0x08 is a POINTER (board mover), whereas the
+// CGameObject HUD's +0x08 is a flags word - two different classes; the former
+// "this IS g->m_10" note conflated them on the coincident +0x5c/+0x60 origin. CArriveGrunt
+// (the arg) IS CGrunt (its +0x19c/+0x31c/+0x2d4 match canonical CGrunt). TODO fold: the
+// CArrive* views promote onto CBattlezMapConfig - Resolve2c690 becomes a CBattlezMapConfig
+// method (offset-0 in this unit, so the owner rename re-pairs; 0x2c690 is claimed only
+// here, no dup); needs the <Mfc.h> umbrella (BattlezMapConfig.h pulls it) + the run-phase
+// slot types added to the canonical. Offsets are correct as-is (deferred, wall @54.8%).
 //
 // After a gate (Gate1a14) and the pending-coord latch (g->m_328), it copies the
 // destination tile cell (grid[gy][gx] from GetTilePos>>5) and the grunt's own cell

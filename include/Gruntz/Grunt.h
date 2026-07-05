@@ -99,11 +99,28 @@ struct CCueRect {
 // ---------------------------------------------------------------------------
 // this->m_10 (a HUD/level geometry source). The factory's two geometry args are
 // m_10->m_5c and m_10->m_60 (the latter optionally minus a per-sprite constant).
+//
+// NOT the same object as GruntArriveResolve.cpp's CArriveMgr (investigated - a prior
+// note wrongly conflated them). The two only share coords at +0x5c/+0x60 (coincident
+// offset in two classes), but DIVERGE at +0x08: CGruntHud (this, a CGameObject-derived
+// sprite) uses +0x08 as the standard CGameObject FLAGS word (the `m_flags |= 0x20000`
+// pattern shared by ~dozen TUs; corroborated by +0xe4 CGameObject update-state, +0x74
+// latched anim id, +0x134-140 view-cull). CArriveMgr uses +0x08 as a MOVER POINTER
+// (mov ecx,[this+0x8]; call Move14bf) because it is a different class entirely: the
+// BATTLEZ board/logic object. Proof it is not this HUD - CArriveMgr's method
+// Resolve2c690 (0x2c690) sits inside CBattlezMapConfig's RVA band (0x25020..0x358a0)
+// and is reached only from CBattlezMapConfig code (Method_025d90 @0x25d90 ->
+// winapi_0267c0 @0x267c0, which at 0x282f1 does `mov ecx,ebp; push esi; call Resolve`),
+// and its shape (cell-grid @+0x0c, mover @+0x08, finder @+0x14) is a board manager, not
+// a sprite. So there is NO single object with both a flags word and a mover at +0x08;
+// the "conflict" was a spurious cross-class merge. CArriveMgr IS CBattlezMapConfig
+// (run-phase view; offsets +0x08/+0x0c/+0x10(->+0x2e4)/+0x14/+0x18/+0x5c/+0x60 match
+// BattlezMapConfig.h exactly) - it folds there, NOT onto CGruntHud.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntHud);
 struct CGruntHud {
     char m_pad0[0x8];
-    i32 m_8; // +0x08   (dirty-flag word; BuildEntrance |= 0x20000)
+    i32 m_8; // +0x08   CGameObject flags word (BuildEntrance |= 0x20000; NOT the battlez mover)
     char m_padc[0x40 - 0xc];
     i32 m_40; // +0x40   (sprite-state flag word; ExitAnim/RunConfig clears bit 8)
     char m_pad44[0x4c - 0x44];
@@ -1232,7 +1249,7 @@ class CMovingLogic : public CUserLogic {
 public:
     CMovingLogic(void* owner);        // inlined into CGrunt::CGrunt (out-of-line 0x13940)
     virtual ~CMovingLogic() OVERRIDE; // trivial; most-derived vptr restamp DCE'd
-    virtual void MovingSlot40a(); // slot 16
+    virtual void MovingSlot40a();     // slot 16
     // slot 17 (+0x44) - canonically CProjectile's ONE added virtual (RVA 0xdf050;
     // full model + definition in <Gruntz/Projectile.h>/Projectile.cpp, the sibling
     // chain). Declared at the base here so the attack-fire step (UlSlot24) can
@@ -1331,8 +1348,8 @@ public:
     // delivers the melee hit to the neighbor-cell grunt, then applies the
     // "AttackDowntime" timer. Returns 0.
     i32 UlSlot24() OVERRIDE;
-    void FreeNameList() OVERRIDE;                                            // slot 11 @0x48360
-    virtual void StepCoordResolve();                                         // slot 16 @0x5f310
+    void FreeNameList() OVERRIDE;    // slot 11 @0x48360
+    virtual void StepCoordResolve(); // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
@@ -1480,10 +1497,10 @@ public:
     // the slot multiplexes the current-action kind; reconcile the name when the
     // entrance machines' reading is re-verified.
     i32 m_entranceReason;
-    i32 m_entrancePxX;    // +0x174 (SetEntrancePos: committed entrance position X, pixel)
-    i32 m_entrancePxY;    // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
-    i32 m_lastTilePxX;    // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
-    i32 m_lastTilePxY;    // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
+    i32 m_entrancePxX; // +0x174 (SetEntrancePos: committed entrance position X, pixel)
+    i32 m_entrancePxY; // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
+    i32 m_lastTilePxX; // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
+    i32 m_lastTilePxY; // +0x180 (LoadEntranceConfig: last occupied tile Y, pixel; -1 = none)
     i32 m_commitPxX; // +0x184 (committed position snapshot X, pixel; = m_lastTilePxX after switch)
     i32 m_commitPxY; // +0x188 (committed position snapshot Y, pixel; = m_lastTilePxY after switch)
     i32 m_18c;       // +0x18c
@@ -1696,10 +1713,10 @@ public:
     // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
     // from m_860). The attack-fire step (UlSlot24) stamps it at each impact:
     // clock = g_645588 (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
-    i32 m_860;               // +0x860 (attack timer: anchor clock lo = g_645588)
-    i32 m_864;               // +0x864 (attack timer: anchor clock hi = 0)
-    i32 m_attackDowntimeLo;  // +0x868 (attack timer: duration lo = AttackDowntime config)
-    i32 m_attackDowntimeHi;  // +0x86c (attack timer: duration hi = 0)
+    i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_645588)
+    i32 m_864;              // +0x864 (attack timer: anchor clock hi = 0)
+    i32 m_attackDowntimeLo; // +0x868 (attack timer: duration lo = AttackDowntime config)
+    i32 m_attackDowntimeHi; // +0x86c (attack timer: duration hi = 0)
     // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
     i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_645588; i64 w/ m_combatClockHi)
     i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
@@ -1727,7 +1744,7 @@ public:
     CGrunt(void* owner);
 
     // Engine-label backlog stubs. (0x048400 is CGrunt::ReadConfigFromButeMgr, declared above.)
-    void LoadCellAnimNames(i32 a, i32 b);        // (2-arg; called from LoadEntranceConfig tail)
+    void LoadCellAnimNames(i32 a, i32 b); // (2-arg; called from LoadEntranceConfig tail)
     void ResetEntranceAnimation(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
     void ResolveEntranceArrival();
     void EntrancePrepare(); // thunk_FUN_0044b240 (void this-method, external)
@@ -1843,15 +1860,15 @@ public:
     // screen pos; the target's reaction machinery takes over. thunk_0x1bf9, 8 args.
     void
     TakeHit(i32 kind, i32 a2, i32 ownerHi, i32 ownerLo, i32 px, i32 py, i32 a7, i32 attackerKind);
-    void OnMoveFinishA(i32 a);                             // thunk_0x3ea4 (1-arg finish)
-    void CommitMoveA(i32 a, i32 b, i32 c);                 // thunk_0x3dfa (3-arg move commit)
-    void StepCoordTick();                                  // thunk_0x245a (0-arg coord tick)
-    void OnCoordCommit(i32 a);                             // thunk_0x1e47 (1-arg commit)
-    void NotifyDrop();                                     // thunk_0x119a (0-arg drop notify)
-    i32 ProbeRetry();                                      // thunk_0x3c0b (retry predicate)
-    void OnReanchor(i32 a);                                // thunk_0x3cce (1-arg reanchor)
-    void StepDropApply();                                  // thunk (drop-apply tail)
-    i32 ApplyMoveMode(i32 v); // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
+    void OnMoveFinishA(i32 a);             // thunk_0x3ea4 (1-arg finish)
+    void CommitMoveA(i32 a, i32 b, i32 c); // thunk_0x3dfa (3-arg move commit)
+    void StepCoordTick();                  // thunk_0x245a (0-arg coord tick)
+    void OnCoordCommit(i32 a);             // thunk_0x1e47 (1-arg commit)
+    void NotifyDrop();                     // thunk_0x119a (0-arg drop notify)
+    i32 ProbeRetry();                      // thunk_0x3c0b (retry predicate)
+    void OnReanchor(i32 a);                // thunk_0x3cce (1-arg reanchor)
+    void StepDropApply();                  // thunk (drop-apply tail)
+    i32 ApplyMoveMode(i32 v);              // thunk_0x3b75 -> 0x50ca0 (the >=0x32 / <0x17 mode arm)
 
     // ---- chunk-2 attributed targets (RearmAttack family + entrance-move tail) ----
     // @0x5b570 (ret 8) - begin the grunt's attack/combat reaction: gated on the
