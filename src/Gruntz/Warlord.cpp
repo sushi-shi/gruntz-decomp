@@ -87,24 +87,23 @@ void CWarlord::InitActReg() {
 // ===========================================================================
 // CWarlord::ResolveState  (0x044640)  - slot-4 override (the animation dispatcher)
 // ===========================================================================
-// Bounds-check the state key against a file-static growable handler array
-// (g_644610: lo @+0x18 / hi @+0x1c / base @+0x20 / elem-size @+0x28); on a miss,
-// grow it via the engine CArray-grow helper (FUN_0056da80) down the AfxThrow-style
-// out-of-memory path (FUN_0056d990 + the variadic FUN_0056d850). Then, if the
-// resolved slot holds a handler, dispatch `(*slot)(this)`; returns the slot value.
-//
-// @early-stop
-// DEFERRED to the final sweep / a leaf-first redo. This is a 0x102-byte function
-// whose whole body is a deeply-INLINED engine collection access (an MFC-style
-// CArray<>::ElementAt + grow + the AfxThrow out-of-memory funnel over the file-
-// static table). Reproducing the exact template instantiation + regalloc is a
-// large, high-wall task (the orchestrator flagged it as a likely regalloc wall);
-// per breadth-first doctrine it is parked as a complete-intent placeholder rather
-// than half-reconstructed (a partial would under-count AND diverge its regalloc).
+// Resolve the per-state handler slot for `key` in the g_actionTable registry, and
+// if it holds a handler, dispatch it on `this`. The lookup is the shared
+// CActReg::ResolveEntry (fast [lo,hi] range -> slow Find -> Insert rebuild); it is
+// side-effecting (seeds m_scratch, the Insert breadcrumb), so cl inlines it TWICE -
+// once to test `*slot != 0`, once to fetch the slot for dispatch. When the slot is
+// empty, the ResolveEntry return pointer falls straight out in eax as the result.
 RVA(0x00044640, 0x102)
 i32 CWarlord::ResolveState(i32 key) {
-    (void)key;
-    return 0;
+    void** slot = (void**)g_actionTable.ResolveEntry(key);
+    if (*slot != 0) {
+        // the handler is a __thiscall dispatched on this warlord (`mov ecx,this;
+        // call [slot2]`); a complete-class PMF gives the plain 4-byte code-ptr call.
+        typedef i32 (CWarlord::*StateHandler)();
+        StateHandler h = *(StateHandler*)g_actionTable.ResolveEntry(key);
+        return (this->*h)();
+    }
+    return (i32)slot;
 }
 
 // ===========================================================================
