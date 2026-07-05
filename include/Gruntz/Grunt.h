@@ -972,9 +972,16 @@ struct CGruntCellRec {
     char m_pad38[0x40 - 0x38];
     i32 m_40; // +0x40  (serialized record dword)
     i32 m_44; // +0x44  (serialized record dword)
-    i32 m_48; // +0x48  (serialized record dword)
-    char m_pad4c[0x64 - 0x4c];
-    i32 m_64;         // +0x64  (serialized record dword)
+    // The per-direction movement vector (abs +0x4b0.. as the "+0x4b0 dir-vector
+    // table", cell index 3*col+row, stride 0x68): unit direction {m_dirX, m_dirY}
+    // + half-tile step offsets {m_stepX, m_stepY}. InitDirVectors (@0x5caa0)
+    // writes them as doubles ([ecx+13a*8+0x4b0..0x4c8]); the movement-integration
+    // tail of StepCoordResolve (@0x5f310) reads all four. The serialize/load path
+    // streams raw 4-byte halves of these (the (char*)+4 spellings in Load).
+    double m_dirX;    // +0x48  unit direction X
+    double m_dirY;    // +0x50  unit direction Y
+    double m_stepX;   // +0x58  half-tile step X (+-0.5)
+    double m_stepY;   // +0x60  half-tile step Y (+-0.5)
     CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
 };

@@ -4012,11 +4012,13 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     char buf80b[0x80];
     ar->Read(buf80b, 0x80);
     void* entry2 = 0;
+    // +0x4cc: the serialize path streams a raw 4-byte slice over m_cells[0].m_stepY's
+    // high half (the same (char*)+4 raw-slice style as the m_408/m_410 reads).
     if (strlen(buf80b) == 0) {
-        m_cells[0].m_64 = 0;
+        *(i32*)((char*)&m_cells[0].m_stepY + 4) = 0;
     } else {
         ((GruntNameIdMap*)(res->m_10 + 0x10))->LookupNode(buf80b, &entry2);
-        m_cells[0].m_64 = (i32)entry2;
+        *(i32*)((char*)&m_cells[0].m_stepY + 4) = (i32)entry2;
     }
 
     ar->Read(&m_cells[1].m_walk, 4);
