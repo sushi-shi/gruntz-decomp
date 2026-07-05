@@ -8,22 +8,228 @@
 #include <Gruntz/UserLogic.h>
 #include <rva.h>
 
-// The +0x18 link: a zBitVec name field, ctor at 0x16d710 (can throw).
+#include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
+#include <stdlib.h> // malloc (0x120b60) / free (0x120c30)
+#include <string.h> // memcpy (0x121960) / strchr (0x120120)
+
+// The parser calls the isspace/isdigit LIBRARY functions (retail does, not the table
+// macro), and memcpy out-of-line; force both.
+#undef isspace
+#undef isdigit
+#pragma function(memcpy)
+
+// The engine free (_RezFree, 0x1b9b82) - operator= releases the old band through it
+// (the ctor/dtor use CRT free/malloc; operator= uses RezFree, matching retail).
+extern "C" void RezFree(void* p); // 0x1b9b82
+
+// The bad-argument / bad-character diagnostic name cell the parser reports through
+// (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
+extern void* g_projActName2; // 0x6bf45c
+
+// The container "name" the Ghidra "EngStr" label really names is a zBitVec (see
+// <Wap32/zBitVec.h>). Its default ctor, deep-copy operator=, ~ and the 836B parser
+// ctor live here; the leaf ctors' construct/assign/destruct reloc-mask against them.
+
+// zBitVec() default ctor - build the base, size to g_defaultProjActSize, no bit set.
+// INLINE so it folds into CUserBaseLink::CUserBaseLink() (0x16d710), the only site
+// that default-constructs the link's zBitVec name.
+inline zBitVec::zBitVec() : CContainerErr(g_containerName) {
+    if (!SetSize(g_defaultProjActSize)) {
+        void* cache = g_projActCache;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, (i32)cache, 0xc);
+    }
+}
+
+// The +0x18 link: a zBitVec name field, default-constructed (0x16d710; can throw ->
+// the /GX EH frame every leaf ctor inherits).
 RVA(0x0016d710, 0x76)
 CUserBaseLink::CUserBaseLink() {}
 
-// zBitVec - the container the Ghidra "EngStr" label really names (see
-// <Wap32/zBitVec.h>). Its ~ (0x16d2a0), deep-copy operator= (0x16d2f0) and the 836B
-// whitespace/'-' number-list PARSER ctor (0x16d3a0) live here; pinned so the leaf
-// ctors' construct/assign/destruct reloc-mask. (Bodies reconstructed below.)
+// zBitVec(const char* tokens, int minSize) - the 836B whitespace/','/'-' number-list
+// PARSER ctor (0x16d3a0). Pass 1 validates the token syntax and finds the max index
+// (to size the bit-set to max(minSize, maxIndex)); pass 2 re-scans and sets each
+// listed bit, expanding "N-M" ranges. Bad arg / bad char fire the container error sink.
+// @early-stop
+// regalloc wall (zero-register-pinning.md family): the two-pass logic, the
+// isspace/isdigit/strchr(" ,-") validation, the max-index sizing, the SBO bit-set and
+// the "N-M" range expansion are all byte-faithful, but cl pins the pass-1 cursor in
+// edi where retail keeps it in esi (retail: esi=cursor, ebp=value, edi=sawSep flag).
+// That swap spills the flag to an extra [esp+0x10] slot and cascades esi/edi through
+// every [cursor] access. Splitting the pass-2 cursor into its own var did not move the
+// pass-1 assignment; no source lever reaches the allocator here. ~79.8%, logic
+// complete; deferred to the final sweep.
 RVA(0x0016d3a0, 0x344)
-zBitVec::zBitVec(const char*, i32) : CContainerErr(g_containerName) {}
+zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerName) {
+    i32 maxv = 0;
+    const char* start;
+    const char* q;
+    if (tokens == 0) {
+        void* name = g_projActName;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, (i32)name, 0x16);
+        return;
+    }
+    if (minSize == 0) {
+        minSize = g_defaultProjActSize;
+    }
+
+    const char* p = tokens;
+    if (isspace(*p)) {
+        do {
+            ++p;
+        } while (isspace(*p));
+    }
+    if (*p == 0) {
+        if (!SetSize(minSize)) {
+            goto oom;
+        }
+        return;
+    }
+    if (!isdigit(*p)) {
+        goto badchar;
+    }
+
+    // ---- pass 1: validate + find max index ----
+    start = p;
+    while (*p != 0) {
+        i32 v = 0;
+        i32 sawSep = 0;
+        while (isdigit(*p)) {
+            v = v * 10 + (*p - '0');
+            ++p;
+        }
+        if ((u32)v > (u32)maxv) {
+            maxv = v;
+        }
+        while (*p != 0) {
+            if (isdigit(*p)) {
+                break;
+            }
+            if (sawSep && *p != ' ') {
+                goto badchar;
+            }
+            if (strchr(" ,-", *p) == 0) {
+                goto badchar;
+            }
+            if (*p != ' ') {
+                sawSep = 1;
+            }
+            ++p;
+        }
+    }
+
+    if ((u32)minSize > (u32)maxv) {
+        maxv = minSize;
+    }
+    if (!SetSize(maxv)) {
+        goto oom;
+    }
+
+    // ---- pass 2: set the bits ----
+    q = start;
+    while (*q != 0) {
+        i32 v = 0;
+        while (isdigit(*q)) {
+            v = v * 10 + (*q - '0');
+            ++q;
+        }
+        {
+            u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+            band[(u32)v >> 5] |= 1u << (v & 0x1f);
+        }
+        if (*q == 0) {
+            break;
+        }
+        if (isspace(*q)) {
+            while (isspace(q[1])) {
+                ++q;
+            }
+        }
+        char sep = *q;
+        ++q;
+        if (isspace(*q)) {
+            while (isspace(q[1])) {
+                ++q;
+            }
+        }
+        if (sep == '-') {
+            i32 v2 = 0;
+            while (isdigit(*q)) {
+                v2 = v2 * 10 + (*q - '0');
+                ++q;
+            }
+            if (v > v2) {
+                i32 t = v;
+                v = v2;
+                v2 = t;
+            }
+            for (i32 b = v + 1; b <= v2; ++b) {
+                u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+                band[(u32)b >> 5] |= 1u << (b & 0x1f);
+            }
+            while (*q != 0 && !isdigit(*q)) {
+                ++q;
+            }
+        }
+    }
+    return;
+
+oom: {
+    void* cache = g_projActCache;
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errSink->Set(this, (i32)cache, 0xc);
+    return;
+}
+badchar: {
+    void* name = g_projActName2;
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errSink->Set(this, (i32)name, 0x16);
+    return;
+}
+}
+
+// zBitVec::operator= (0x16d2f0) - deep-copy the DWORD band. If the capacities differ,
+// release this band (RezFree) and reallocate to the source's word count (or OOM), then
+// memcpy m_capacity/8 bytes from the source (heap band or inline SBO word).
+// @early-stop
+// regalloc wall: 1 instruction of 172 differs - `m_capacity = that.m_capacity` on the
+// capacities-differ path picks ecx in cl vs eax in retail (retail reuses the freed
+// malloc-result register). 99.84%, no source lever for the scratch register.
 RVA(0x0016d2f0, 0xac)
-zBitVec& zBitVec::operator=(const zBitVec&) {
+zBitVec& zBitVec::operator=(const zBitVec& that) {
+    if (this != &that) {
+        if (m_capacity != that.m_capacity) {
+            if ((u32)m_capacity > 0x20) {
+                RezFree(m_words);
+            }
+            if ((u32)that.m_capacity > 0x20) {
+                m_words = (u32*)malloc(((u32)that.m_capacity >> 5) * 4);
+                if (!m_words) {
+                    void* cache = g_projActCache;
+                    g_retAddrBreadcrumb = GetCallerRetAddr();
+                    m_errSink->Set(this, (i32)cache, 0xc);
+                    m_capacity = 0x20;
+                    return *this;
+                }
+            }
+            m_capacity = that.m_capacity;
+        }
+        const u32* src = ((u32)that.m_capacity > 0x20) ? that.m_words : (const u32*)&that.m_words;
+        u32* dst = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+        memcpy(dst, src, (u32)m_capacity >> 3);
+    }
     return *this;
 }
+
+// zBitVec::~zBitVec() (0x16d2a0) - free the heap band when out of SBO range, then
+// chain ~CContainerErr (implicit).
 RVA(0x0016d2a0, 0x26)
-zBitVec::~zBitVec() {}
+zBitVec::~zBitVec() {
+    if ((u32)m_capacity > 0x20) {
+        free(m_words);
+    }
+}
 
 // operator new the engine uses (0x1b9b46, __cdecl); reloc-masked rel32.
 extern "C" void* RezAlloc(u32 n); // 0x1b9b46
