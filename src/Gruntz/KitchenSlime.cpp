@@ -8,7 +8,7 @@
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
@@ -341,7 +341,6 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CTileLogic(obj) {
 // it into R1's entry (after freeing any CString nodes the slot held), and bumping
 // the global type counter. All globals are BSS (DATA-pinned so the loads
 // reloc-mask); the collection / CString helpers are external/no-body.
-struct CTypeNameEntry; // an R1 entry: a CString-array holder (operator= sets it)
 DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)
@@ -417,7 +416,7 @@ void CKitchenSlime::RegisterType() {
                 nodes++;
             } while (--cnt);
         }
-        ((CTypeNameEntryView*)slot)->Assign("A");
+        slot->m_name = "A";
         g_typeCounter++;
     }
     *(void**)KSlimeLookup(id) = (void*)&KSlimeActivationHandler;
@@ -751,4 +750,3 @@ SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);
-SIZE_UNKNOWN(CTypeNameEntryView);

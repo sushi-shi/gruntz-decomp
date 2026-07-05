@@ -10,13 +10,12 @@
 
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Globals.h>
-#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 // CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
-struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)
@@ -112,7 +111,7 @@ void ActReg4RegisterType() {
                 nodes++;
             } while (--cnt);
         }
-        ((CTypeNameEntryView*)slot)->Assign("A");
+        slot->m_name = "A";
         g_typeCounter++;
     }
     *(void**)R4Lookup(id) = (void*)&ActReg4Handler;

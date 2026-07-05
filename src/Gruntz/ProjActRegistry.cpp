@@ -4,10 +4,11 @@
 // cache slots (g_projActCache / g_retAddrBreadcrumb) via a grid + bute-tree lookup.
 // This TU sits between Utils/ApplyRange and Wap32/ZVec in retail-RVA order. Field
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
+#include <Mfc.h>               // real MFC CString (the type-name record's +0x00 member)
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
-#include <Gruntz/TypeNameEntryView.h>
+#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 
@@ -105,7 +106,6 @@ void CProjActObj::FireActivation(i32 coord) {
 // are BSS (DATA-pinned so the loads reloc-mask); collection/CString helpers are
 // external/no-body. CTypeColl2 (the Insert facet) is the shared def in
 // <Gruntz/TypeColl2.h>.
-struct CTypeNameEntry;
 DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)
@@ -179,7 +179,7 @@ void CProjActObj::RegisterType() {
                 nodes++;
             } while (--cnt);
         }
-        ((CTypeNameEntryView*)slot)->Assign("A");
+        slot->m_name = "A";
         g_typeCounter++;
     }
     *(void**)R3Lookup(id) = (void*)&ProjActHandlerThunk;

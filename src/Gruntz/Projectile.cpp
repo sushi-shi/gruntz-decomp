@@ -9,7 +9,7 @@
 #include <Gruntz/Projectile.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/TypeNameEntryView.h> // shared type-name-entry Assign view (0x1b9e74)
+#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Bute/ButeMgr.h>             // CButeTree (the type-registry funnel)
 #include <math.h>                     // sin / cos (StepMotion's parabola)
 #include <string.h>                   // memset (1-arg spawn ctor's +0x1e0 zero-fill)
@@ -503,7 +503,7 @@ extern void* g_projActCache;      // 0x6bf464 (shared alloc cache)
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 
 // R1 - the shared type-name table (@0x6bf650).
-struct CProjTypeEntry;
+
 DATA(0x002bf658)
 extern i32 g_projTypeLo;
 DATA(0x002bf65c)
@@ -513,7 +513,7 @@ extern char* g_projTypeBase;
 DATA(0x002bf668)
 extern i32 g_projTypeStride;
 DATA(0x002bf664)
-extern CProjTypeEntry* g_projTypeCur;
+extern CTypeNameEntry* g_projTypeCur;
 DATA(0x002bf670)
 extern i32 g_projTypeCount;
 DATA(0x002bf650)
@@ -558,13 +558,13 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
 }
 
 // R1 lookup (shared type-name table).
-static inline CProjTypeEntry* ProjTypeLookup(i32 key) {
+static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     g_projTypeCount = 0;
     if (key >= g_projTypeLo && key <= g_projTypeHi) {
-        return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+        return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
     if (g_projTypeColl.Find(key, 0)) {
-        return (CProjTypeEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
+        return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
@@ -595,7 +595,7 @@ void CProjectile::RegisterType() {
         g_buteTree.Insert("A", (void*)g_projTypeCounter);
         i32 key = g_projTypeCounter;
         id = key;
-        CProjTypeEntry* slot = ProjTypeLookup(key);
+        CTypeNameEntry* slot = ProjTypeLookup(key);
         i32 cnt = g_projTypeCount;
         CProjStringNode* nodes = (CProjStringNode*)g_projTypeNodes;
         if (cnt != 0) {
@@ -606,7 +606,7 @@ void CProjectile::RegisterType() {
                 nodes++;
             } while (--cnt);
         }
-        ((CTypeNameEntryView*)slot)->Assign("A");
+        slot->m_name = "A";
         g_projTypeCounter++;
     }
     *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;

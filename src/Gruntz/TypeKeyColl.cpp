@@ -25,6 +25,7 @@
 
 #include <Gruntz/StringNode.h>  // the type-name teardown slot
 #include <Gruntz/TypeKeyColl.h> // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
+#include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Globals.h>
 
 // ===========================================================================
@@ -238,11 +239,6 @@ struct CXferArchive {
     char pad_04[0x14 - 0x04];
     CXferField* m_14; // +0x14
 };
-// The resolved entry's name accessor (CString c_str, __thiscall(i32)).
-SIZE_UNKNOWN(CTypeNameEntry);
-struct CTypeNameEntry {
-    void* GetName(i32 z); // 0x1ba11c
-};
 DATA(0x002bf664)
 extern CTypeNameEntry* g_typeCur;
 
@@ -284,12 +280,12 @@ RVA(0x0016e4f0, 0x19b)
 i32 ProjTypeXfer(CXferArchive* ar) {
     CTypeNameEntry* entry = (CTypeNameEntry*)TypeResolve(ar->m_14->m_1c);
     FreeNodes();
-    ar->Xfer0c(entry->GetName(0));
+    ar->Xfer0c(entry->m_name.GetBuffer(0)); // 0x1ba11c ?GetBuffer@CString@@QAEPADH@Z
     ar->Xfer10(ar->m_14->m_1c);
 
     entry = (CTypeNameEntry*)TypeResolve(ar->m_14->m_1c);
     FreeNodes();
-    ar->Xfer14(entry->GetName(0));
+    ar->Xfer14(entry->m_name.GetBuffer(0));
     return 1;
 }
 
