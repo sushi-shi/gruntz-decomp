@@ -382,6 +382,79 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_310 = (i32)it;
+            // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
+            // rect members m_514..m_520 + bx/by; config source m_4cc, id 0xdf.
+            it = (CSbConfigItem*)new CSBI_ImageSet;
+            r.left = m_514 + bx;
+            r.top = m_518 + by;
+            r.right = m_51c + bx;
+            r.bottom = m_520 + by;
+            if (!it->Configure(this, code, 0xdf, 3, r, "GAME_INGAMEICONZ_GREYCHIPZ", m_4cc, 0)) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_80.AddTail(it);
+            m_4e0 = (i32)it;
+            it->m_4 = 0;
+            // SHREDDER: a 4-row x 3-column NORMCHIPZ grid. y steps 0x20 per row;
+            // the three columns sit at x = bx+0x1d/0x45/0x6d (width 0x17, top y-0x17).
+            // The config sources are read off a column-1 pointer (&m_3dc[row]) at
+            // -0x60/0/+0x60; the created items cache off a column-1 pointer
+            // (&m_4a8[row]) at -0x10/0/+0x10; the id `c` walks 0xd7.. and each column
+            // uses c-4/c/c+4. ebp is reused as the item pointer (by is dead here).
+            {
+                i32* cfgp = &m_3dc;
+                i32* cachep = &m_4a8;
+                i32 y = by + 0x155;
+                i32 c = 0xd7;
+                for (i = 0; i < 4; i++) {
+                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    r.left = bx + 0x1d;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x34;
+                    r.bottom = y;
+                    if (!it->Configure(this, code, c - 4, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[-24], 0)) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_80.AddTail(it);
+                    cachep[-4] = (i32)it;
+                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    r.left = bx + 0x45;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x5c;
+                    r.bottom = y;
+                    if (!it->Configure(this, code, c, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[0], 0)) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_80.AddTail(it);
+                    cachep[0] = (i32)it;
+                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    r.left = bx + 0x6d;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x84;
+                    r.bottom = y;
+                    if (!it->Configure(this, code, c + 4, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[24], 0)) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_80.AddTail(it);
+                    cachep[4] = (i32)it;
+                    cfgp += 6;
+                    cachep += 1;
+                    y += 0x20;
+                    c++;
+                }
+            }
             return 1;
 
         case 4: // ---- Multiplayer tab ----
