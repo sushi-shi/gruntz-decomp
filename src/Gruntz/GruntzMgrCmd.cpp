@@ -30,8 +30,14 @@ namespace GruntzMgrCmd {
     struct GZGate2c {
         void Fn137a80(); // 0x137a80 __thiscall
     };
+    struct GZSound;
+    struct GZStrMap {                                // CMapStringToOb view at GZGateB+0x10
+        i32 Lookup(const char* key, GZSound*& out); // 0x1b8438 __thiscall
+    };
     struct GZGateB {
-        char _p[0x2c];
+        char _p[0x10];
+        GZStrMap m_soundMap; // +0x10 (cue name->sound map)
+        char _p11[0x2c - 0x11];
         GZGate2c* m_2c; // +0x2c
         i32 m_30;       // +0x30
     };
@@ -49,8 +55,15 @@ namespace GruntzMgrCmd {
         void* m_8c; // +0x8c
         void* m_90; // +0x90
     };
-    struct GZSound {
-        void Play(i32 a, i32 b, i32 c, i32 d); // 0x25fe __thiscall (cue result)
+    struct GZCueMgr {
+        i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d); // 0x1360d0 __thiscall
+    };
+    struct GZSound {                           // cue object (CueLookup result)
+        char _p0[0x10];
+        GZCueMgr* m_10; // +0x10 config sub-object
+        i32 m_14;       // +0x14 last-play time
+        i32 m_18;       // +0x18 min replay interval
+        void Play(i32 a, i32 b, i32 c, i32 d); // 0x25fe __thiscall
     };
     struct GZSoundZ {                             // manager m_48 (CGruntzSoundZ*)
         i32 PlayByName(const char* name, i32 f);  // 0x138840 __thiscall
@@ -253,6 +266,15 @@ namespace GruntzMgrCmd {
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_28->m_30 == 0) {                                                                \
         GZSound* _c = CueLookup(TAG);                                                              \
+        if (_c)                                                                                    \
+            _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
+    }
+// Cue via the world's own name->sound map (m_28+0x10) with a stack out-ptr; used
+// by a handful of cheats instead of the free CueLookup(0x2cca).
+#define PLAYCUE_MAP(TAG)                                                                           \
+    if (m_world->m_28->m_30 == 0) {                                                                \
+        GZSound* _c = 0;                                                                           \
+        m_world->m_28->m_soundMap.Lookup(TAG, _c);                                                 \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
     }
@@ -782,51 +804,50 @@ namespace GruntzMgrCmd {
                             return 1;
                         case 0x8240:
                             PLAYCUE("GAME_MINORCHEAT");
-                            AppendChat("Warp to High Rollerz activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(8);
-                            }
+                            AppendChat("Warp to Trouble in the Tropicz activated!");
+                            m_saveSink->Set58(8);
                             return 1;
                         case 0x8241:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to High on Sweetz activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(0xc);
-                            }
+                            m_saveSink->Set58(0xc);
                             return 1;
                         case 0x8242:
                             PLAYCUE("GAME_MINORCHEAT");
-                            AppendChat("Warp to Trouble in the Tropicz activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(0x10);
-                            }
+                            AppendChat("Warp to High Rollerz activated!");
+                            m_saveSink->Set58(0x10);
                             return 1;
                         case 0x8243:
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Warp to Honey, I Shrunk the Gruntz activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(0x14);
-                            }
+                            m_saveSink->Set58(0x14);
                             return 1;
                         case 0x8244:
-                            PLAYCUE("GAME_MINORCHEAT");
+                            PLAYCUE_MAP("GAME_MINORCHEAT");
                             AppendChat("Warp to The Miniature Masterz activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(0x18);
-                            }
+                            m_saveSink->Set58(0x18);
                             return 1;
                         case 0x8245:
-                            PLAYCUE("GAME_MINORCHEAT");
+                            PLAYCUE_MAP("GAME_MINORCHEAT");
                             AppendChat("Warp to Gruntz in Space activated!");
-                            if (m_saveSink) {
-                                m_saveSink->Set58(0x1c);
-                            }
+                            m_saveSink->Set58(0x1c);
                             return 1;
-                        case 0x8247:
+                        case 0x8247: {
                             g_6455f8 ^= 1;
-                            PLAYCUE("GAME_MAJORCHEAT");
+                            if (m_world->m_28->m_30 == 0) {
+                                GZSound* _c = 0;
+                                m_world->m_28->m_soundMap.Lookup("GAME_MAJORCHEAT", _c);
+                                if (_c && g_61ab20) {
+                                    i32 now = g_time6bf3c0;
+                                    if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {
+                                        _c->m_14 = now;
+                                        _c->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                                    }
+                                }
+                            }
                             ToggleMsg("Explosionz", g_6455f8);
                             return 1;
+                        }
                     }
                 }
                 return 0;
