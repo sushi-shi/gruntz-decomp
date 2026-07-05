@@ -108,12 +108,12 @@ void CAssetLoader::LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3) {
         m_workerHolder->m_imageReg->LoadTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_workerHolder->m_soundScan->HasKeyEqual("GAME") == 0) {
+    if (m_workerHolder->m_soundScan->HasKeyEqual_1583c0("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
             return;
         }
-        m_workerHolder->m_soundScan->ScanTree(snd, "GAME", "_");
+        m_workerHolder->m_soundScan->ScanTree_157ee0((DirNode*)snd, "GAME", "_");
     }
     if (m_workerHolder->m_aniScan->HasKeyPrefix("GAME") == 0) {
         void* aniz = m_symParser->ResolvePath("GAME_ANIZ");

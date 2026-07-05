@@ -123,10 +123,10 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
                 FinishAssetLoad();
             }
         }
-        if (m_c->m_28->HasKeyEqual("GRUNTZ_" + name) == 0) {
+        if (m_c->m_28->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
             void* tree = m_30->ResolvePath("SOUNDZ_" + name);
             if (tree != 0) {
-                m_c->m_28->ScanTree(tree, "GRUNTZ_" + name, "_");
+                m_c->m_28->ScanTree_157ee0((DirNode*)tree, "GRUNTZ_" + name, "_");
             }
         }
         if (m_c->m_2c->HasKeyPrefix("GRUNTZ_" + name) == 0) {
@@ -147,7 +147,7 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
             FinishAssetLoad();
         }
     }
-    if (m_c->m_28->HasKeyEqual("GRUNTZ_" + name) != 0) {
+    if (m_c->m_28->HasKeyEqual_1583c0("GRUNTZ_" + name) != 0) {
         m_c->m_28->RemoveKeysEqual_157c70("GRUNTZ_" + name, "_");
     }
     if (m_c->m_2c->HasKeyPrefix("GRUNTZ_" + name) != 0) {
@@ -160,7 +160,7 @@ done:
 
 SIZE_UNKNOWN(AssetRoot);
 SIZE_UNKNOWN(CDDrawSubMgrAni);
-SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
+// CDDrawSubMgrLeafScan SIZE_UNKNOWN now comes from its canonical DDrawSubMgrLeafScan.h.
 SIZE_UNKNOWN(CNamespaceLoader);
 SIZE_UNKNOWN(CSymTree);
 SIZE_UNKNOWN(GRAssetMgr);

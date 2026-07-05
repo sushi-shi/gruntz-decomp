@@ -18,6 +18,12 @@
 
 #include <Ints.h>
 
+// The GRUNTZ_/GAME sound leaf-scan view (owner+0x28) is no longer re-declared here:
+// it is the canonical CDDrawSubMgrLeafScan (folded onto its single-source header). Both
+// asset loaders call it by its canonical method names (HasKeyEqual_1583c0 / ScanTree_157ee0
+// / RemoveKeysEqual_157c70) so the reloc pairs with the definitions in DDrawSubMgrLeafScan.cpp.
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+
 // GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load.
 class CDDrawWorkerRegistry {
@@ -43,16 +49,6 @@ public:
     virtual void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
     i32 HasKeyEqual(const char* key);                                       // 0x155550
     void LoadTreeDirect(const char* prefix, const char* sep);               // 0x155360
-};
-
-// GRUNTZ_/GAME sound leaf-scan (owner+0x28): non-virtual key probe + tree scan.
-class CDDrawSubMgrLeafScan {
-public:
-    i32 HasKeyEqual(const char* key);                               // 0x1583c0
-    void ScanTree(void* tree, const char* prefix, const char* sep); // 0x157ee0
-    // 0x157c70 is authoritatively ?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@ (EXACT
-    // in DDrawSubMgrLeafScan.cpp); use that single name so the caller reloc pairs.
-    i32 RemoveKeysEqual_157c70(const char* base, const char* str); // 0x157c70
 };
 
 // GRUNTZ_/GAME aniz sub-manager (owner+0x2c): prefix probe + tree scan.
