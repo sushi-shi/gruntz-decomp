@@ -140,7 +140,7 @@ drawtext	3	0
 droppedobject	6	3
 droppedobjectshadow	2	1
 dsoundvoice	2	1
-engine_label_stubs	62	51
+engine_label_stubs	50	39
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	3	2
@@ -317,6 +317,7 @@ netcmdsession	6	4
 netcmdslot	16	11
 netgamedlg	3	0
 netgamedlgwatch	1	0
+netlobbydialogs	12	12
 netmgr	89	50
 netmgrerror	1	1
 netmgrmenuselect	1	1
@@ -1521,7 +1522,6 @@ engine_label_stubs	?Init@Region_182ab0@ApiCallerStubs@@QAEHPAUTileSrcHost_182ab0
 engine_label_stubs	?Key@CmdHost_014720@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x14720
 engine_label_stubs	?Key@CmdHost_039440@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0x39440
 engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0x953f0
-engine_label_stubs	?Load@StrHost_0b7ec0@ApiCallerStubs@@QAEXHH@Z	100.0000	100.0000	1	cpp:e1535087fe94	0xb7ec0
 engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x8f480
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
@@ -1548,17 +1548,6 @@ engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1
 engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x38220
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x92ab0
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x9dff0
-engine_label_stubs	?winapi_0bb3e0_GetWindowTextLengthA@ApiCallerStubs@@YGXPAUHWND__@@PAD@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbb3e0
-engine_label_stubs	?winapi_0bda00_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbda00
-engine_label_stubs	?winapi_0bdb90_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbdb90
-engine_label_stubs	?winapi_0bdc00_EndDialog_KillTimer@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbdc00
-engine_label_stubs	?winapi_0bdd60_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbdd60
-engine_label_stubs	?winapi_0bdfe0_GetDlgItem_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbdfe0
-engine_label_stubs	?winapi_0be0a0_EndDialog_KillTimer_PostMessageA@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbe0a0
-engine_label_stubs	?winapi_0be2f0_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbe2f0
-engine_label_stubs	?winapi_0be400_GetWindowTextA_SetWindowTextA@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbe400
-engine_label_stubs	?winapi_0be490_EndDialog_KillTimer@ApiCallerStubs@@YAXPAUHWND__@@PAUSessionHost_0be490@1@@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbe490
-engine_label_stubs	?winapi_0be760_GetDlgItem_SetDlgItemTextA_SetTimer@ApiCallerStubs@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xbe760
 engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe3a40
@@ -2670,6 +2659,18 @@ netgamedlg	?EnableControls@CNetGameDlg@@QAEHXZ	84.2549	84.2549	2	c7a91ac91451	0x
 netgamedlg	?UpdateSlot@CNetGameDlg@@QAEXH@Z	69.3281	69.3281	3	b0d7829d986d	0xc2ab0
 netgamedlg	?VerifyCustomLevel@CNetGameDlg@@QAEXXZ	51.9027	51.9027	2	20a979c7bec8	0xc4c00
 netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	3	a22437af594e	0xc46b0
+netlobbydialogs	?AppendEditLine@NetLobby@@YGXPAUHWND__@@PAD@Z	100.0000	100.0000	1	e874b28df082	0xbb3e0
+netlobbydialogs	?Load@StrHost_0b7ec0@NetLobby@@QAEXHH@Z	100.0000	100.0000	1	a649bef784d4	0xb7ec0
+netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	9f665fd030dd	0xbdc00
+netlobbydialogs	?NetChatSubmit@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	e338d245e2a6	0xbe400
+netlobbydialogs	?NetDlgInitDropIn@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	cb3bf19951dd	0xbe760
+netlobbydialogs	?NetDlgInitDropWait@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	d82378623422	0xbe2f0
+netlobbydialogs	?NetDlgInit_bda00@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	ef6c9a6bf88c	0xbda00
+netlobbydialogs	?NetDlgInit_bdb90@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	1b340c23a145	0xbdb90
+netlobbydialogs	?NetDlgInit_bdd60@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	9f4f021ac91d	0xbdd60
+netlobbydialogs	?NetDlgInit_bdfe0@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	46dae572def2	0xbdfe0
+netlobbydialogs	?NetDlgSessionStop@NetLobby@@YAXPAUHWND__@@PAUCNetMgrView@1@@Z	100.0000	100.0000	1	3956836d4c7e	0xbe490
+netlobbydialogs	?NetGameDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	edc87ebfa36a	0xbe0a0
 netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	3	d0088e3b7463	0xbbec0
 netmgr	??1CNetMgr@@UAE@XZ	44.2963	44.2963	1	6e6d009cef61	0xb6000
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	2	3dda1d693889	0xba590
