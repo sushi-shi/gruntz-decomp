@@ -557,18 +557,15 @@ struct GruntEntranceCell {
 // reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
-// The on-screen viewport the movement-step spawn-cue gate reaches through the
-// sound category: (world->m_24->m_5c + 0x40) is the visible CCueRect (m_5c is a
-// base address, so +0x40 is a cast - the same CCueRect pattern).
-SIZE_UNKNOWN(CGruntViewMid);
-struct CGruntViewMid {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c  base address of the visible rect (-0x40)
-};
 SIZE_UNKNOWN(GruntSoundCat);
-struct GruntSoundCat {   // m_30: the sound-category object
-    char m_pad0[0x24];
-    CGruntViewMid* m_24; // +0x24  -> the visible-viewport gate (movement spawn cue)
+struct GruntSoundCat { // m_30: the sound-category / world-resource holder object
+    char m_pad0[0x8];
+    // +0x08  the sprite/object factory (CreateSprite @0x1597b0, <Gruntz/
+    // SpriteFactory.h>) - the attack-fire step (UlSlot24, ProjectileUpdate.cpp)
+    // spawns the projectile eye-candy sprites through it. Same slot GameRegistry.h's
+    // CSpriteFactoryHolder models (this holder object is that facet's grunt view).
+    struct CSpriteFactory* m_8;
+    char m_padc[0x28 - 0xc];
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
@@ -771,11 +768,6 @@ public:
 // rect. External/no-body (reloc-masked).
 i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
-// The drop-ready predicate the per-tick move step calls (FUN_00429b40, thunk 0x1807,
-// __stdcall(grunt) - callee-cleans (no `add esp,4` at the site); nonzero when the
-// grunt cannot yet drop. External/reloc-masked.
-i32 __stdcall GruntDropReady029b40(CGrunt* g);
-
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
 // canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
 // defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
@@ -972,16 +964,9 @@ struct CGruntCellRec {
     char m_pad38[0x40 - 0x38];
     i32 m_40; // +0x40  (serialized record dword)
     i32 m_44; // +0x44  (serialized record dword)
-    // The per-direction movement vector (abs +0x4b0.. as the "+0x4b0 dir-vector
-    // table", cell index 3*col+row, stride 0x68): unit direction {m_dirX, m_dirY}
-    // + half-tile step offsets {m_stepX, m_stepY}. InitDirVectors (@0x5caa0)
-    // writes them as doubles ([ecx+13a*8+0x4b0..0x4c8]); the movement-integration
-    // tail of StepCoordResolve (@0x5f310) reads all four. The serialize/load path
-    // streams raw 4-byte halves of these (the (char*)+4 spellings in Load).
-    double m_dirX;    // +0x48  unit direction X
-    double m_dirY;    // +0x50  unit direction Y
-    double m_stepX;   // +0x58  half-tile step X (+-0.5)
-    double m_stepY;   // +0x60  half-tile step Y (+-0.5)
+    i32 m_48; // +0x48  (serialized record dword)
+    char m_pad4c[0x64 - 0x4c];
+    i32 m_64;         // +0x64  (serialized record dword)
     CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
 };
@@ -1007,10 +992,6 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
     void RemoveAll(); // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
-    // The step machines pop/push the occupied-coord CObList head directly (the
-    // stored value IS the GruntCoord*). External/reloc-masked (MFC CObList slots).
-    struct GruntCoord* RemoveHead(); // 0x1b4a03 (CObList::RemoveHead - returns the coord)
-    void AddHead(void* p);           // 0x1b4967 (CObList::AddHead - push a coord)
     GruntListSub() {
         CtorImpl(0xa);
     }
@@ -1226,9 +1207,14 @@ class CMovingLogic : public CUserLogic {
 public:
     CMovingLogic(void* owner);        // inlined into CGrunt::CGrunt (out-of-line 0x13940)
     virtual ~CMovingLogic() OVERRIDE; // trivial; most-derived vptr restamp DCE'd
-    virtual void MovingSlot40a();     // slot 16
-    virtual void MovingSlot40b();     // slot 17
-    virtual void MovingSlot40c();     // slot 18
+    virtual void MovingSlot40a(); // slot 16
+    // slot 17 (+0x44) - canonically CProjectile's ONE added virtual (RVA 0xdf050;
+    // full model + definition in <Gruntz/Projectile.h>/Projectile.cpp, the sibling
+    // chain). Declared at the base here so the attack-fire step (UlSlot24) can
+    // dispatch it on the created sprite's setup object: `mov eax,[ecx];
+    // call [eax+0x44]`. Declared-only in this chain (reloc-masked).
+    virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1);
+    virtual void MovingSlot40c(); // slot 18
 };
 inline CMovingLogic::~CMovingLogic() {}
 inline CMovingLogic::CMovingLogic(void* owner) : CUserLogic(owner) {
@@ -1283,6 +1269,25 @@ inline CMovingLogic::CMovingLogic(void* owner) : CUserLogic(owner) {
 }
 
 // ---------------------------------------------------------------------------
+// CProjectile : CMovingLogic - the projectile game-object's expression in THIS
+// (grunt) header chain. The CANONICAL full model lives in <Gruntz/Projectile.h>
+// (which rides the sibling CUserLogic/CMovingLogic chain and cannot coexist in
+// one TU with this header's - the documented dual-chain). Modeled here only as
+// far as the attack-fire step (UlSlot24, ProjectileUpdate.cpp) needs it: the
+// created "Projectile"/"Boomerang" sprite's aux (m_7c->m_18) setup object IS a
+// CProjectile; the step dispatches its slot-17 LoadProjectileSprites (declared
+// on CMovingLogic above) and, on failure, retires its +0x154 sprite. Never
+// instantiated in this chain (dispatch-only; no vtable emitted).
+// ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CProjectile);
+class CProjectile : public CMovingLogic {
+public:
+    char m_pad30[0x154 - 0x30];
+    CHudSprite* m_sprite; // +0x154  bound render sprite (== the created CHudSprite;
+                          //         same name as <Gruntz/Projectile.h>'s canonical)
+};
+
+// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGrunt);
 class CGrunt : public CMovingLogic {
 public:
@@ -1295,7 +1300,12 @@ public:
     void UlSlot14() OVERRIDE;                                                // slot 5  (0x5ecd0)
     void InitDirVectors() OVERRIDE;                                          // slot 6  @0x5caa0
     void UlSlot20() OVERRIDE;                                                // slot 8  (0x62b40)
-    void UlSlot24() OVERRIDE;                                                // slot 9  (0x61cb0)
+    // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
+    // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
+    // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
+    // delivers the melee hit to the neighbor-cell grunt, then applies the
+    // "AttackDowntime" timer. Returns 0.
+    i32 UlSlot24() OVERRIDE;
     void FreeNameList() OVERRIDE;                                            // slot 11 @0x48360
     virtual void StepCoordResolve();                                         // slot 16 @0x5f310
 
@@ -1438,7 +1448,13 @@ public:
     struct CGruntSndResMgr* m_158;             // +0x158 (ability/sound resource mgr)
     CEntranceAnimDescColl* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
-    i32 m_entranceReason; // +0x170 (entrance-reason / movement state)
+    // +0x170 (entrance-reason / movement state). The attack-fire step (UlSlot24)
+    // reads this slot as the grunt's current TOOL/attack kind (switched over the
+    // GRUNTZ tool ids 2=Boomerang/9=Gunhat/10=Nerfgun/11=Rock/17=TimeBomb/
+    // 21=Welder/22=Wingz; >0x16 = melee) and forwards it as the projectile kind -
+    // the slot multiplexes the current-action kind; reconcile the name when the
+    // entrance machines' reading is re-verified.
+    i32 m_entranceReason;
     i32 m_entrancePxX;    // +0x174 (SetEntrancePos: committed entrance position X, pixel)
     i32 m_entrancePxY;    // +0x178 (SetEntrancePos: committed entrance position Y, pixel)
     i32 m_lastTilePxX;    // +0x17c (LoadEntranceConfig: last occupied tile X, pixel; -1 = none)
@@ -1651,8 +1667,14 @@ public:
     i32 m_854;                // +0x854
     i32 m_858;                // +0x858 (entrance: = 0)
     i32 m_85c;                // +0x85c (entrance: = 0)
-    i32 m_860;                // +0x860 (timer record base, SerializeMove)
-    char m_pad864[0x870 - 0x864];
+    // +0x860..+0x86f: the attack-downtime timer record (same {clock i64, duration
+    // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
+    // from m_860). The attack-fire step (UlSlot24) stamps it at each impact:
+    // clock = g_645588 (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
+    i32 m_860;               // +0x860 (attack timer: anchor clock lo = g_645588)
+    i32 m_864;               // +0x864 (attack timer: anchor clock hi = 0)
+    i32 m_attackDowntimeLo;  // +0x868 (attack timer: duration lo = AttackDowntime config)
+    i32 m_attackDowntimeHi;  // +0x86c (attack timer: duration hi = 0)
     // Combat/wingz state timers (the GruntAssetLoaders cluster fills them).
     i32 m_combatClockLo; // +0x870 (combat timer: anchor clock lo = g_645588; i64 w/ m_combatClockHi)
     i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
@@ -1786,6 +1808,16 @@ public:
     void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
     void ReseedIdleReset(i32 a, i32 b, i32 c);             // thunk_0x136b (3-arg idle reset)
+    // Attack-fire step (UlSlot24 @0x61cb0, ProjectileUpdate.cpp) helpers
+    // (external/no-body thunks, reloc-masked; names = observed roles):
+    void GetSpawnPos(i32* out); // thunk_0x1a73 (TimeBomb placement pos, {x,y} out-pair)
+    void FinishAttackPowered(); // thunk_0x3dd7 (finish-tail hook when m_poweredUp is set)
+    void NotifyAttackImpact();  // thunk_0x22de (impact hook when m_healthSprite exists)
+    // Melee hit delivery: the attacker's fire step runs this ON THE TARGET grunt
+    // (the neighbor-cell m_grid occupant) with the attacker's tool kind, cell and
+    // screen pos; the target's reaction machinery takes over. thunk_0x1bf9, 8 args.
+    void
+    TakeHit(i32 kind, i32 a2, i32 ownerHi, i32 ownerLo, i32 px, i32 py, i32 a7, i32 attackerKind);
     void OnMoveFinishA(i32 a);                             // thunk_0x3ea4 (1-arg finish)
     void CommitMoveA(i32 a, i32 b, i32 c);                 // thunk_0x3dfa (3-arg move commit)
     void StepCoordTick();                                  // thunk_0x245a (0-arg coord tick)

@@ -52,44 +52,41 @@ struct CWarlordListHead {
     CWarlordListNode* m_4; // +0x04  first node
 };
 
-// The renderer/draw object (m_c->m_8 = renderer A, m_c->m_c = renderer B). This is
-// a FOREIGN engine class: its ??_7 and the intermediate slots are unreconstructed
-// engine code, so the honest model names only the TWO dispatched slots - begin-scene
-// at +0x24 (1 arg) and present at +0x34 (2 args), both __thiscall. They are modeled
-// as 4-byte member-function pointers loaded from the vtable (`char m_pad` runs
-// document the un-recovered slots) so the indirect `call [eax+0x24]` / `[eax+0x34]`
-// shapes fall out. Class COMPLETE before the T::* typedefs so each PMF stays 4 bytes
-// (docs/patterns/pmf-complete-class-4byte.md).
-struct CRendererVtbl;
+// The renderer/draw object (m_c->m_8 = renderer A, m_c->m_c = renderer B). A
+// FOREIGN engine class (its ??_7 and most slots are unreconstructed engine code),
+// modeled POLYMORPHIC: placeholder slots anchor the two dispatched virtuals at
+// their true vtable offsets - begin-scene at slot 9 (+0x24, 1 arg) and present at
+// slot 13 (+0x34, 2 args), both __thiscall. Never instantiated here (reached only
+// via pointer + virtual dispatch), so MSVC emits no ??_7 and the calls fold to
+// `mov eax,[ecx]; call [eax+0x24]` / `call [eax+0x34]` - the same shape the old
+// manual CRendererVtbl PMF table produced; real virtuals are the byte-correct
+// form (the CImageRegistry/DecCounter precedent below).
+SIZE_UNKNOWN(CRenderer);
 struct CRenderer {
-    CRendererVtbl* m_vtbl;          // +0x00
-    void BeginScene(i32 z);         // slot 9  (+0x24) via vtbl
-    void Present(void* a, void* b); // slot 13 (+0x34) via vtbl
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void BeginScene(i32 z); // slot 9  (+0x24)
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void Present(void* a, void* b); // slot 13 (+0x34)
     // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
     void Refresh(); // 0x159ef0 (thiscall, no arg)
     // Renderer B (+0x0c) is also the resource-facet worker holder the leaf-state
     // dispose path tears down (CMenuState::ReleaseResources); reloc-masked leaf.
     void DisposeWorkers(); // 0x163c60 (thiscall, no arg)
     // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
-    // walks it in-level; m_vtbl is at +0x00, so data starts at +0x04).
+    // walks it in-level; the implicit vptr is at +0x00, so data starts at +0x04).
     char p04[0x10 - 0x4];
     CWarlordListHead m_10; // +0x10  placed-object list head
 };
-typedef void (CRenderer::*CRendererBeginFn)(i32 z);
-typedef void (CRenderer::*CRendererPresentFn)(void* a, void* b);
-SIZE_UNKNOWN(CRendererVtbl);
-struct CRendererVtbl {
-    char m_pad00[0x24];
-    CRendererBeginFn BeginScene; // +0x24
-    char m_pad28[0x34 - 0x28];
-    CRendererPresentFn Present; // +0x34
-};
-inline void CRenderer::BeginScene(i32 z) {
-    (this->*(m_vtbl->BeginScene))(z);
-}
-inline void CRenderer::Present(void* a, void* b) {
-    (this->*(m_vtbl->Present))(a, b);
-}
 
 // The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
 // the ViewPreStep/PostStep sub-steps). Its +0x5c holds the camera geometry the
