@@ -459,13 +459,13 @@ void WAP32::CGameMgr::Close() {
 
 // -------------------------------------------------------------------------
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
-// Zeroes m_elapsedMs, samples the start tick into m_startTick, and (when reset) arms m_prevTick.
+// Zeroes m_elapsedMs, samples the start tick into m_startTick, and (when reset) arms m_fps.
 RVA(0x0013de70, 0x23)
 void WAP32::CGameMgr::InitTimeFields(i32 reset) {
     m_elapsedMs = 0;
     m_startTick = timeGetTime();
     if (reset) {
-        m_prevTick = -1;
+        m_fps = -1;
     }
 }
 

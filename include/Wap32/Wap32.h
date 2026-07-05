@@ -138,7 +138,8 @@ namespace WAP32 {
         i32 m_frameGate;     // +0x0c  nonzero suppresses the per-frame advance
         i32 m_soundEnabled;  // +0x10  sound-on flag (=1 in ctor; WriteInt "Sound")
         i32 m_musicEnabled;  // +0x14  music-on flag (=1 in ctor; WriteInt "Music")
-        i32 m_prevTick;      // +0x18  frame-clock reset sentinel (=-1 on reset)
+        i32 m_fps;           // +0x18  measured frames-per-second (debug HUD "Fps = %i"; =-1 on
+                             //        frame-clock reset = no measurement yet)
         i32 m_pauseFlag;     // +0x1c  run-state companion (cleared by ctor/Run; inferred)
         i32 m_elapsedMs;     // +0x20  frame-clock accumulator (cleared by InitTimeFields)
         i32 m_startTick;     // +0x24  start tick (timeGetTime, by InitTimeFields)
