@@ -52,6 +52,21 @@ with open(SYMS) as f:
             syms[rva] = r['name']
         byname.setdefault(r['name'], rva)
 
+# src claims (build/gen/symbol_names.csv): rva -> (name, size). The AUTHORITY for
+# functions Ghidra never carved (an RVA()+size stub pins the boundary); used as the
+# size fallback below so `disasm --target` can dump a freshly-carved function too.
+gen = {}
+GEN = REPO / "build/gen/symbol_names.csv"
+if GEN.exists():
+    with open(GEN) as f:
+        for r in csv.DictReader(f):
+            try: rva = int(r['rva'], 16)
+            except Exception: continue
+            try: sz = int((r.get('size') or '').strip(), 0)
+            except Exception: sz = 0
+            gen[rva] = (r['name'], sz)
+            byname.setdefault(r['name'], rva)
+
 # PE base relocations (IMAGE_REL_BASED_HIGHLOW=3) = the real DIR32 address-operand
 # sites. data dir index 5 = base reloc table.
 import bisect
@@ -107,10 +122,15 @@ def main():
         rva = int(a, 16) if a.lower().startswith("0x") else byname.get(a)
         if rva is None:
             print(f"!! unknown target: {a}"); continue
-        name, size = frows.get(rva, (resolve(rva) or "?", 0))
+        name, size = frows.get(rva, (None, 0))
+        if size == 0 and rva in gen:   # Ghidra never carved it: the src RVA()+size is authoritative
+            gname, size = gen[rva]
+            name = name or gname
+        if name is None:
+            name = resolve(rva) or "?"
         print(f"\n{'='*72}\n{name}  @ RVA 0x{rva:06x}  (VA 0x{rva+IMAGEBASE:08x})  size {size} B\n{'='*72}")
         if size == 0:
-            print("  (no boundary in functions.csv — recovery gap; size unknown)"); continue
+            print("  (no boundary in functions.csv / symbol_names.csv — recovery gap; size unknown)"); continue
         rl = relocs_in(rva, rva+size)
         if rl:
             print("Relocations (address operands — reloc-masked in objdiff):")
