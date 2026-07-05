@@ -2066,6 +2066,14 @@ source = "src/Net/NetSessionOpen.cpp"
 flags = "eh"
 
 [[unit]]
+# NetMgr lobby / in-game network DialogProcs + their init helpers, re-homed from
+# src/Stub/ApiCallers.cpp. A destructible CString status-banner local (0xbe2f0)
+# forces the /GX EH frame -> "eh" (== the engine_label_stubs base+/GX it came from).
+unit = "netlobbydialogs"
+source = "src/Net/LobbyDialogs.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
 flags = "base"
