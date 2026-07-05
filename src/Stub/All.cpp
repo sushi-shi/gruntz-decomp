@@ -20,6 +20,9 @@
 
 // Backlog.cpp fully re-homed to real class TUs (semantic stub-elim); file removed.
 #include "ApiCallers.cpp"
+// Discovered.cpp - gap-analysis finds (functions Ghidra never carved), surfaced by
+// the size-bounded `sema xref`. One RVA()+size stub each; reconstruct + re-home out.
+#include "Discovered.cpp"
 // CButeTree.cpp removed: it only re-declared the shared g_buteTree DATA binding
 // (0x2bf620), already bound by TypeKeyColl.cpp (the real dyn-initializer) + the
 // game-object ctor TUs; nothing left in this aggregate referenced it.
