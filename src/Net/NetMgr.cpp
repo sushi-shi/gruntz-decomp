@@ -2628,7 +2628,7 @@ void CNetMgr::AnnounceVersion(i32 param) {
 // base into esi-relative stores and assigns c/d->eax/ecx. Not source-steerable (a
 // scheduling/addressing choice); §2a scoring-tail. Final sweep.
 RVA(0x001780b0, 0xbb)
-i32 CNetMgr::InitFromProvider(void* a, i32 c, i32 d, i32 e, i32 f) {
+i32 CNetMgr::InitFromProvider(void* a, GUID appGuid) {
     void* guid = *(void**)((char*)a + 4);
     if (guid == 0) {
         return 0;
@@ -2650,13 +2650,14 @@ i32 CNetMgr::InitFromProvider(void* a, i32 c, i32 d, i32 e, i32 f) {
     m_playerSelId = 0;
     m_sessionSelId = 0;
     i32* base = (i32*)((char*)this + 4);
-    base[0] = c;
+    const i32* g = (const i32*)&appGuid; // the app GUID's 4 dwords -> the m_4 setup block
+    base[0] = g[0];
     m_groupSel = (i32)a;
     m_playerSel = 0;
-    base[1] = d;
+    base[1] = g[1];
     m_sessionSel = 0;
-    base[2] = e;
-    base[3] = f;
+    base[2] = g[2];
+    base[3] = g[3];
     return 1;
 }
 

@@ -912,10 +912,14 @@ public:
     // EnumServiceProviders refills the +0x1c group list via DirectPlayEnumerate;
     // AddGroupNode operator-new's a 0x10 InterfaceObject node onto the +0x1c list;
     // EnumGroupsInto probes a group's players + adds a player node (0x1786d0).
-    i32 InitFromProvider(void* a, i32 c, i32 d, i32 e, i32 f); // 0x1780b0
-    i32 EnumServiceProviders(i32 validated);                   // 0x178280
-    i32 AddGroupNode(void* guid, void* name);                  // 0x178360
-    i32 EnumGroupsInto(void* a, void* b, i32 c, i32 d);        // 0x1788a0
+    // a = the provider/session descriptor (its +0x4 is the DirectPlay GUID pointer);
+    // appGuid = the application GUID passed BY VALUE (its 4 dwords are recorded into the
+    // m_4 setup block). Proven by the NetSessionOpen.cpp caller (0xb77dd: sub esp,0x10 +
+    // 4 GUID stores + push descriptor) - the by-value struct IS the 4 trailing dwords.
+    i32 InitFromProvider(void* a, GUID appGuid);        // 0x1780b0
+    i32 EnumServiceProviders(i32 validated);            // 0x178280
+    i32 AddGroupNode(void* guid, void* name);           // 0x178360
+    i32 EnumGroupsInto(void* a, void* b, i32 c, i32 d); // 0x1788a0
 
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
