@@ -5,6 +5,7 @@
 #include <Font/Font.h>          // FontRenderer/Font/Glyph/Rect/TextExtent (DrawGlyphRun 0x179e70)
 #include <Gruntz/GruntzMgr.h>   // real CGruntzMgr (the 0x24556c game-manager singleton)
 #include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/Play.h> // real CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown@+0x510)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 // smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
@@ -51,16 +52,6 @@
 // @0x92990 (the FindStateById(3) accessor). Reloc-masked DATA symbol.
 DATA(0x0024556c)
 extern CGruntzMgr* g_gameReg;
-
-// The play/paused state's pending-result field, poked at +0x510 on the CState*
-// PickPlayOrPausedState returns - a concrete-state (CPlay-family) field reached via
-// the base CState* exactly as retail does (`mov [eax+0x510],2`). A cast-only view of
-// the derived state's field; base CState (State.h) ends well before 0x510.
-SIZE_UNKNOWN(PlayStateResult);
-struct PlayStateResult {
-    char m_pad0[0x510];
-    i32 m_510; // +0x510
-};
 
 // (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
 // g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
@@ -619,9 +610,11 @@ namespace ApiCallerStubs {
         switch (msg) {
             case 0x111:
                 if (wParam == 2 || wParam == 1) {
-                    PlayStateResult* obj = (PlayStateResult*)g_gameReg->PickPlayOrPausedState();
+                    // PickPlayOrPausedState (FindStateById(3)) returns the concrete
+                    // CPlay via its CState* base; set its +0x510 step-countdown to 2.
+                    CPlay* obj = (CPlay*)g_gameReg->PickPlayOrPausedState();
                     if (obj) {
-                        obj->m_510 = 2;
+                        obj->m_stepCountdown = 2;
                     }
                     EndDialog(hDlg, 0);
                     return 1;
