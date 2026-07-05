@@ -12,6 +12,14 @@ side complement of `dump_target` (which shows a function's callees/relocs).
 Names are resolved best-first: build/gen/symbol_names.csv (matched src/ names +
 their units) -> ghidra functions.csv -> a FUN_<rva> fallback.
 
+Attribution is SIZE-BOUNDED: a call site is credited to a function only if it lies
+within that function's [start, start+size) body (sizes from symbol_names/functions.csv).
+A site in the unrecovered GAP between two carved functions is reported as
+`(unrecovered fn @ ~0x..)` rather than misattributed to the previous one - the old
+nearest-start-only heuristic manufactured phantom edges (a call 0x479 B past a 46-byte
+function got blamed on it). Likewise `--callees` scans only the fn's own body, not up
+to the next start, so it no longer reports phantom callees from the gap.
+
 Usage (inside nix develop, or plain - only reads files + $GRUNTZ_EXE):
     python3 -m gruntz.analysis.xref 0x136180 0x139bf0        # callers of each
     python3 -m gruntz.analysis.xref CGameApp::CloseResources # by name (symbol_names)
@@ -51,18 +59,39 @@ def _text(secs):
     return next(s for s in secs if s[0] == ".text")
 
 
+def _psize(x):
+    """Parse a size cell -> int bytes or None. symbol_names is hex (0x2e),
+    functions.csv is decimal (46); int(_, 0) reads both. 0/blank -> None (unknown)."""
+    x = str(x).strip()
+    if not x:
+        return None
+    try:
+        return int(x, 0) or None
+    except ValueError:
+        return None
+
+
 # name maps: rva -> (name, unit). symbol_names first (matched src/), then ghidra.
+# fstarts/fsize: the recovered function starts + their byte sizes. symbol_names sizes
+# are authoritative for reconstructed fns (and their starts are boundaries Ghidra may
+# have missed); functions.csv fills the rest. _owner() bounds attribution by size, so
+# a call site in an unrecovered GAP after a fn's body is reported as unrecovered rather
+# than misattributed to the previous fn (the old nearest-start-only bug).
 def _names():
-    names = {}
+    names, fsize, starts, byname = {}, {}, set(), {}
     if SYMCSV.exists():
         with open(SYMCSV) as f:
             for r in csv.DictReader(f):
                 try:
-                    names[int(r["rva"], 16)] = (r["name"], r.get("unit", ""))
+                    rva = int(r["rva"], 16)
                 except Exception:
-                    pass
-    fstarts = []
-    byname = {}
+                    continue
+                names[rva] = (r["name"], r.get("unit", ""))
+                if (r.get("kind") or "func") == "func":  # data/vtable rows aren't fn starts
+                    starts.add(rva)
+                    sz = _psize(r.get("size", ""))
+                    if sz:
+                        fsize[rva] = sz
     if FUNCS.exists():
         with open(FUNCS) as f:
             for r in csv.DictReader(f):
@@ -70,13 +99,32 @@ def _names():
                     rva = int(r["entry_rva"], 16)
                 except Exception:
                     continue
-                fstarts.append(rva)
+                starts.add(rva)
+                if rva not in fsize:  # symbol_names size wins (reconstructed authority)
+                    sz = _psize(r.get("byte_size", ""))
+                    if sz:
+                        fsize[rva] = sz
                 names.setdefault(rva, (r["name"], "ghidra"))
                 byname.setdefault(r["name"], rva)
     for rva, (nm, _u) in names.items():
         byname.setdefault(nm, rva)
-    fstarts.sort()
-    return names, byname, fstarts
+    return names, byname, sorted(starts), fsize
+
+
+def _owner(rva, fstarts, fsize):
+    """The recovered function CONTAINING `rva`, or None if `rva` is in an unrecovered
+    gap. Nearest start <= rva, bounded by that fn's known size: a call site past
+    start+size sits between carved functions and must NOT be pinned on the previous
+    one - that manufactured phantom caller edges (e.g. a boomerang-ctor call 0x479 B
+    past Cancel's body was blamed on Cancel). Size unknown -> unbounded (old behavior)."""
+    k = bisect.bisect_right(fstarts, rva) - 1
+    if k < 0:
+        return None
+    start = fstarts[k]
+    sz = fsize.get(start)
+    if sz and rva >= start + sz:
+        return None
+    return start
 
 
 def _resolve(arg, byname):
@@ -88,7 +136,7 @@ def _resolve(arg, byname):
         sys.exit(f"[xref] '{arg}' not an RVA and not found in symbol_names/functions.csv")
 
 
-def callers_of(targets, d, secs, names, fstarts, raw=False):
+def callers_of(targets, d, secs, names, fstarts, fsize, raw=False):
     tname, tva, tvsz, trp, trsz = _text(secs)
     tb = d[trp:trp + trsz]
     tset = set(targets)
@@ -105,10 +153,6 @@ def callers_of(targets, d, secs, names, fstarts, raw=False):
                 found[tgt].append((src, op))
         i += 1
 
-    def owner(rva):
-        k = bisect.bisect_right(fstarts, rva) - 1
-        return fstarts[k] if k >= 0 else None
-
     for t in targets:
         tn = names.get(t, (f"FUN_{t:x}", "?"))[0]
         print(f"\n==== callers of 0x{t:08x}  {tn} ====")
@@ -117,19 +161,24 @@ def callers_of(targets, d, secs, names, fstarts, raw=False):
             continue
         seen = set()
         for src, op in found[t]:
-            o = owner(src)
-            nm, unit = names.get(o, (f"FUN_{o:x}" if o else "?", "?"))
+            o = _owner(src, fstarts, fsize)
             kind = "call" if op == 0xE8 else "jmp "
+            if o is None:  # site sits in an unrecovered gap - don't misattribute it
+                if raw:
+                    print(f"  {kind} @0x{src:08x}  in (unrecovered fn - no carved start)")
+                elif ("gap", src) not in seen:
+                    seen.add(("gap", src))
+                    print(f"  {kind} in (unrecovered fn @ ~0x{src:08x})")
+                continue
+            nm, unit = names.get(o, (f"FUN_{o:x}", "?"))
             if raw:
                 print(f"  {kind} @0x{src:08x}  in 0x{o:08x} {nm} [{unit}]")
-            else:
-                if o in seen:
-                    continue
+            elif o not in seen:
                 seen.add(o)
                 print(f"  {kind} in 0x{o:08x} {nm} [{unit}]")
 
 
-def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
+def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
     """Recursive caller ancestry: expand callers-of-callers until roots, chasing
     ILT jmp-thunks transparently (a thunk is just a node whose own callers get
     expanded). Dedup: a function already expanded prints as (*seen). depth_cap=0
@@ -149,10 +198,6 @@ def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
                 idx.setdefault(tgt, []).append((tva + i, op))
         i += 1
 
-    def owner(rva):
-        k = bisect.bisect_right(fstarts, rva) - 1
-        return fstarts[k] if k >= 0 else None
-
     def label(rva):
         nm, unit = names.get(rva, (f"FUN_{rva:x}", "?"))
         thunk = "  (thunk-band)" if rva < 0x7c20 else ""
@@ -167,33 +212,50 @@ def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
                 print("  " * depth + "  ... (--depth cap)")
                 return
             sites = idx.get(rva, [])
-            owners = []  # dedup per parent, preserve site order
+            owners = []  # (owner_or_None, op, site) - dedup per parent, keep site order
+            uniq = set()
             for site, op in sites:
-                o = owner(site)
-                if o is not None and o != rva and (o, op) not in owners:
-                    owners.append((o, op))
+                o = _owner(site, fstarts, fsize)
+                if o == rva:
+                    continue  # self-recursion / intra-fn
+                key = (o, op) if o is not None else ("gap", site)
+                if key in uniq:
+                    continue
+                uniq.add(key)
+                owners.append((o, op, site))
             if not owners:
                 if depth == 0:
                     print("  (no direct call/jmp rel32 caller in .text)")
                 return
-            for o, op in owners:
+            for o, op, site in owners:
                 kind = "call" if op == 0xE8 else "jmp "
+                pad = "  " * (depth + 1)
+                if o is None:  # caller is in an unrecovered gap - a leaf, can't expand
+                    print(pad + f"<- {kind} (unrecovered fn @ ~0x{site:08x})")
+                    continue
                 if o in seen:
-                    print("  " * (depth + 1) + f"<- {kind} {label(o)} (*seen)")
+                    print(pad + f"<- {kind} {label(o)} (*seen)")
                     continue
                 seen.add(o)
-                print("  " * (depth + 1) + f"<- {kind} {label(o)}")
+                print(pad + f"<- {kind} {label(o)}")
                 walk(o, depth + 1)
         walk(t, 0)
 
 
-def callees_of(targets, d, secs, names, fstarts):
+def callees_of(targets, d, secs, names, fstarts, fsize):
     tname, tva, tvsz, trp, trsz = _text(secs)
-    # size of a function = next-start - start (from fstarts)
     for t in targets:
         k = bisect.bisect_right(fstarts, t) - 1
         start = fstarts[k] if k >= 0 and fstarts[k] == t else t
-        end = fstarts[bisect.bisect_right(fstarts, t)] if bisect.bisect_right(fstarts, t) < len(fstarts) else t + 0x400
+        # span the fn's OWN body: prefer its known size (so we don't scan the
+        # unrecovered gap up to the next start and report phantom callees); fall
+        # back to next-start only when the size is unknown.
+        sz = fsize.get(start)
+        if sz:
+            end = start + sz
+        else:
+            j = bisect.bisect_right(fstarts, start)
+            end = fstarts[j] if j < len(fstarts) else start + 0x400
         tn = names.get(t, (f"FUN_{t:x}", "?"))[0]
         print(f"\n==== callees of 0x{t:08x}  {tn}  (span 0x{start:x}..0x{end:x}) ====")
         b = d[trp + (start - tva):trp + (end - tva)]
@@ -237,14 +299,14 @@ def main():
     if not rest:
         sys.exit(__doc__)
     d, secs = _load()
-    names, byname, fstarts = _names()
+    names, byname, fstarts, fsize = _names()
     targets = [_resolve(a, byname) for a in rest]
     if mode == "callees":
-        callees_of(targets, d, secs, names, fstarts)
+        callees_of(targets, d, secs, names, fstarts, fsize)
     elif mode == "tree":
-        caller_tree(targets, d, secs, names, fstarts, depth_cap=depth)
+        caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=depth)
     else:
-        callers_of(targets, d, secs, names, fstarts, raw=raw)
+        callers_of(targets, d, secs, names, fstarts, fsize, raw=raw)
 
 
 if __name__ == "__main__":
