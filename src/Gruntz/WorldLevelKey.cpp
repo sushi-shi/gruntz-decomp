@@ -8,40 +8,14 @@
 
 #include <Ints.h>
 
-#include <Bute/SymTab.h> // the shared CSymTab (ResolveQualified 0x13be40)
+#include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
+#include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/17 + non-virtuals)
 
-// The loaded level record (CGameLevel / CLoadable), viewed as a FOREIGN dispatch
-// object here: the full class + its vtable live in the gamelevel TU; only the
-// namespace-load hook (slot 15, +0x3c) and Reset (slot 17, +0x44) are dispatched from
-// this TU. Honest model = a manual vptr into a typed vtable struct naming ONLY those
-// two slots as 4-byte thiscall PMFs + char pad[], NO fake virtuals; m_vtbl sits at
-// +0x00 exactly where the fake vptr did, so the object layout (m_8 @ +0x08) is
-// byte-identical. NotifyAllPlanes is a non-virtual (0x160f40).
-struct CGameLevelVtbl;
-class CGameLevel {
-public:
-    CGameLevelVtbl* m_vtbl; // +0x00
-    char m_pad04[0x8 - 0x4];
-    i32 m_8;                    // +0x08 dirty flags
-    i32 CallLoadHook(i32 node); // vtbl +0x3c
-    void CallReset();           // vtbl +0x44
-    void NotifyAllPlanes();     // 0x160f40 (non-virtual)
-};
-typedef i32 (CGameLevel::*GlLoadFn)(i32);
-typedef void (CGameLevel::*GlResetFn)();
-struct CGameLevelVtbl {
-    char m_pad00[0x3c];
-    GlLoadFn LoadHook; // +0x3c
-    char m_pad40[0x44 - 0x40];
-    GlResetFn Reset; // +0x44
-};
-SIZE_UNKNOWN(CGameLevelVtbl);
-inline i32 CGameLevel::CallLoadHook(i32 node) {
-    return (this->*(m_vtbl->LoadHook))(node);
-}
-inline void CGameLevel::CallReset() {
-    (this->*(m_vtbl->Reset))();
-}
+// The loaded level record IS the canonical CGameLevel (<Gruntz/GameLevel.h>): this TU
+// dispatches slot 15 LoadFromSource (+0x3c) and slot 17 ReleaseChildren (+0x44) through
+// the real vtable, and calls the non-virtual NotifyAllPlanes (0x160f40); the dirty-flag
+// word is CLoadable's m_08. `node` is the resolved parse-source record (CParseSource*).
+class CParseSource;
 
 SIZE_UNKNOWN(LevelMgr);
 struct LevelMgr {
@@ -61,17 +35,17 @@ public:
 
 RVA(0x0003c0e0, 0xfb)
 i32 CWorldState::BuildWorldLevelKey(i32 unused) {
-    m_0c->m_24->CallReset();
+    m_0c->m_24->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
     i32 node = m_28->ResolveQualified(key, (void*)0x575744);
     if (node == 0) {
         return 0;
     }
-    if (m_0c->m_24->CallLoadHook(node) == 0) {
+    if (m_0c->m_24->LoadFromSource((CParseSource*)node) == 0) {
         return 0;
     }
     m_0c->m_24->NotifyAllPlanes();
-    m_0c->m_24->m_8 |= 4;
+    m_0c->m_24->m_08 |= 4;
     return 1;
 }
