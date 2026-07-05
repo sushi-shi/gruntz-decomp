@@ -24,8 +24,17 @@ struct CSndEmitter {
     CSoundCueMgr* m_10; // +0x10  the play-object
     u32 m_14;           // +0x14  last-play clock
     u32 m_18;           // +0x18  cooldown interval
+    // 0x1f940 (via ILT 0x25fe): play this cue directly (the CGruntzMgr cheat dispatcher
+    // calls it on a CueLookup result). Declared-only (reloc-masked __thiscall).
+    void Play(i32 a, i32 b, i32 c, i32 d);
 };
 SIZE_UNKNOWN(CSndEmitter);
+
+// The DirectSound stream hung off CSndHost+0x2c; Stop() halts it.
+struct SoundStream {
+    void Stop(); // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
+};
+SIZE_UNKNOWN(SoundStream);
 
 // The named-cue registry embedded at CSndHost+0x10; Lookup fills an out-param.
 struct CSndFinder {
@@ -33,11 +42,13 @@ struct CSndFinder {
 };
 SIZE_UNKNOWN(CSndFinder);
 
-// Holds the finder (+0x10 embedded) and an emit gate (+0x30, must be 0 to emit).
+// Holds the finder (+0x10 embedded), a DirectSound stream (+0x2c) and an emit gate
+// (+0x30, must be 0 to emit).
 struct CSndHost {
     char m_pad00[0x10];
     CSndFinder m_10;           // +0x10  embedded finder
-    char m_pad11[0x30 - 0x11]; // -> +0x30
+    char m_pad11[0x2c - 0x11]; // -> +0x2c
+    SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop)
     i32 m_30;                  // +0x30  gate (must be 0 to emit)
 };
 SIZE_UNKNOWN(CSndHost);

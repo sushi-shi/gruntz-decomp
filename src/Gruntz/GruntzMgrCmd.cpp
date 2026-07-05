@@ -9,6 +9,12 @@
 #include <rva.h>
 #include <string.h>
 
+// The sound-cue cluster (CSndHost/CSndFinder/CSndEmitter/CSoundCueMgr/SoundStream) and
+// the world resource holder (CSpriteFactoryHolder) are the ONE canonical shapes - the
+// former GZGateA/GZGateB/GZStrMap/GZSound/GZCueMgr/GZGate2c views are dissolved onto them.
+// GameRegistry.h is MFC-free (pulls SoundCue.h), so it enters this <Win32.h> TU cleanly.
+#include <Gruntz/GameRegistry.h>
+
 namespace GruntzMgrCmd {
     // ================= RVA 0x862f0 : CGruntzMgr::HandleCommand =================
     // The game's WM_COMMAND / accelerator + cheat-code dispatcher.  A 116-entry
@@ -19,33 +25,31 @@ namespace GruntzMgrCmd {
     // per-cheat code; the special cheats (AMBIENT/monologo/save-load/settings) are
     // hand-written.  Reloc-masked engine callees are modeled as bodyless methods/fns.
     //
-    // NOTE: this GruntzMgrCmd::CGruntzMgr is a genuine (but namespaced) view of the
-    // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>); its members use the canonical
-    // GruntzMgr.h names (m_curState/m_world/m_sound/m_strWorldFile/m_cmdGrid/...).
-    // It is NOT merged to the canonical header - the WM_COMMAND/cheat dispatcher is a
-    // documented ~67.8% jump-table+regalloc megafunction (see the @early-stop below)
-    // reached through a dozen local sub-object helper types
-    // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
-    // need a full body rewrite at high regression risk for no % gain. The namespace
-    // keeps it from ODR-clashing with the canonical class.
-    struct GZGate2c {
-        void Fn137a80(); // 0x137a80 __thiscall
-    };
-    struct GZSound;
-    struct GZStrMap {                               // CMapStringToOb view at GZGateB+0x10
-        i32 Lookup(const char* key, GZSound*& out); // 0x1b8438 __thiscall
-    };
-    struct GZGateB {
-        char _p[0x10];
-        GZStrMap m_soundMap; // +0x10 (cue name->sound map)
-        char _p11[0x2c - 0x11];
-        GZGate2c* m_2c; // +0x2c
-        i32 m_30;       // +0x30
-    };
-    struct GZGateA {
-        char _p[0x28];
-        GZGateB* m_28;
-    };
+    // NOTE: this GruntzMgrCmd::CGruntzMgr is a namespaced view of the one true CGruntzMgr
+    // (<Gruntz/GruntzMgr.h>), using the canonical GruntzMgr.h member names. VIEW-FOLD IN
+    // PROGRESS (the "megafunction excuse" is abolished - this is sequenced, not a wall):
+    //   DONE: the whole sound path is canonical (GameRegistry.h -> SoundCue.h). m_world is a
+    //   CSpriteFactoryHolder whose m_28 is a CSndHost (finder m_10, stream m_2c==SoundStream,
+    //   gate m_30); CueLookup / the finder yield a CSndEmitter (Play @0x1f940, m_10 the
+    //   CSoundCueMgr with ConfigureItem @0x1360d0). The former GZGateA/GZGateB/GZStrMap/
+    //   GZSound/GZCueMgr/GZGate2c views are deleted (body byte-neutral: megafunction held
+    //   67.77%). The SoundStream/m_2c + CSndEmitter::Play additions to the 60-TU-wide
+    //   SoundCue.h re-flip the butterfly-sensitive wwdfile CPlaneRender Save/Load pair
+    //   100->99.98 (diffuse ripple from a binary-proven-correct shape - accepted per the
+    //   cleanup mandate, diagnosed: SoundCue.h type-count via GameRegistry.h->wwdfile).
+    //   DEFERRED FOLD (identity map, verified RVAs - promote onto the canonical classes):
+    //     GruntzMgrCmd::CGruntzMgr   -> canonical CGruntzMgr (GruntzMgr.h) - HandleCommand
+    //       + the ~35 helper methods (PickState 0x355d, PassClick 0x17c1, ...) move onto it
+    //     GZLogic (m_curState)       -> CState (State.h); vf10/vf54 are real vtable slots
+    //       (need the slot RVAs before declaring them - do NOT invent slots)
+    //     GZBoard  (m_cmdGrid @0x68) -> CTriggerMgr (TriggerMgr.h) - m_cells==m_grid+0x1c,
+    //       Board18e3/Board3616 are CTriggerMgr methods
+    //     GZGrunt  (PickState result)-> CGrunt; GZGruntLevel==grunt->m_2dc active-level obj
+    //     GZInput  (m_inputState)    -> CInput54 (InputState.h)
+    //     GZMgrSettings (*0x64556c)  -> CGameRegistry (== g_gameReg); the death path is a
+    //       real CMapPtrToPtr (Lookup 0x1b8760) hung off m_world->m_8->+0x48
+    //   Each needs canonical-header method additions (mostly non-virtual = other-TU-neutral)
+    //   + field re-expression; sequenced to keep this session's blast radius bounded.
     struct GZInput {     // manager m_54 (input/toolbar sub-object)
         void Disp18e8(); // 0x18e8 world-present toolbar on
         void Disp29b9(); // 0x29b9 world-present toolbar off
@@ -83,16 +87,6 @@ namespace GruntzMgrCmd {
         void* m_90; // +0x90
         char _p94[0x15c - 0x94];
         void* m_15c; // +0x15c  monologo/death sprite key
-    };
-    struct GZCueMgr {
-        i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d); // 0x1360d0 __thiscall
-    };
-    struct GZSound { // cue object (CueLookup result)
-        char _p0[0x10];
-        GZCueMgr* m_10;                        // +0x10 config sub-object
-        i32 m_14;                              // +0x14 last-play time
-        i32 m_18;                              // +0x18 min replay interval
-        void Play(i32 a, i32 b, i32 c, i32 d); // 0x25fe __thiscall
     };
     struct GZSoundZ {                            // manager m_48 (CGruntzSoundZ*)
         i32 PlayByName(const char* name, i32 f); // 0x138840 __thiscall
@@ -180,7 +174,7 @@ namespace GruntzMgrCmd {
         i32 m_fc; // +0xfc  save-present flag
     };
 
-    extern "C" GZSound* __stdcall CueLookup(const char* name); // 0x2cca
+    extern "C" CSndEmitter* __stdcall CueLookup(const char* name); // 0x2cca
 
     DATA(0x0061ab24)
     extern i32 g_sndCueTag;
@@ -245,8 +239,8 @@ namespace GruntzMgrCmd {
         i32 m_10; // 0x10
         i32 m_14; // 0x14
         char _p18[0x2c - 0x18];
-        GZLogic* m_curState; // 0x2c
-        GZGateA* m_world;    // 0x30
+        GZLogic* m_curState;           // 0x2c
+        CSpriteFactoryHolder* m_world; // 0x30 (canonical: m_28 == CSndHost cue registry)
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
@@ -316,16 +310,16 @@ namespace GruntzMgrCmd {
 
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_28->m_30 == 0) {                                                                \
-        GZSound* _c = CueLookup(TAG);                                                              \
+        CSndEmitter* _c = CueLookup(TAG);                                                          \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
     }
-// Cue via the world's own name->sound map (m_28+0x10) with a stack out-ptr; used
+// Cue via the world's own name->sound map (m_28+0x10 finder) with a stack out-ptr; used
 // by a handful of cheats instead of the free CueLookup(0x2cca).
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_28->m_30 == 0) {                                                                \
-        GZSound* _c = 0;                                                                           \
-        m_world->m_28->m_soundMap.Lookup(TAG, _c);                                                 \
+        CSndEmitter* _c = 0;                                                                       \
+        m_world->m_28->m_10.Lookup(TAG, &_c);                                                      \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
     }
@@ -488,7 +482,7 @@ namespace GruntzMgrCmd {
                     switch (nID & 0xffff) {
                         case 0x803b: {
                             if (m_world->m_28->m_30 == 0) {
-                                GZSound* _c = CueLookup("GAME_MINORCHEAT");
+                                CSndEmitter* _c = CueLookup("GAME_MINORCHEAT");
                                 if (_c) {
                                     _c->Play(g_sndCueTag, 0, 0, 0);
                                 }
@@ -747,7 +741,7 @@ namespace GruntzMgrCmd {
                             return 1;
                         case 0x8175:
                             if (m_world->m_28->m_30 == 0) {
-                                GZSound* _c = CueLookup("GAME_WAWA");
+                                CSndEmitter* _c = CueLookup("GAME_WAWA");
                                 if (_c) {
                                     _c->Play(0x64, 0, 0, 0);
                                 }
@@ -850,8 +844,8 @@ namespace GruntzMgrCmd {
                         case 0x8247: {
                             g_6455f8 ^= 1;
                             if (m_world->m_28->m_30 == 0) {
-                                GZSound* _c = 0;
-                                m_world->m_28->m_soundMap.Lookup("GAME_MAJORCHEAT", _c);
+                                CSndEmitter* _c = 0;
+                                m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", &_c);
                                 if (_c && g_61ab20) {
                                     i32 now = g_time6bf3c0;
                                     if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {
@@ -1312,9 +1306,9 @@ namespace GruntzMgrCmd {
             }
             case 0x8009: { // 0x89f08  world-position display toggle
                 if (m_world) {
-                    GZGate2c* p = m_world->m_28->m_2c;
+                    SoundStream* p = m_world->m_28->m_2c;
                     if (p) {
-                        p->Fn137a80();
+                        p->Stop();
                     }
                 }
                 i32 v = m_10 ^ 1;
