@@ -4,19 +4,23 @@
 // class is not mixed with unrelated api-caller stubs; RVA() binds the symbol by
 // address regardless of which file/unit it lives in.
 #include <Ints.h>
-#include <Win32.h>
+// <Mfc.h> (superset of <Win32.h>) so the canonical MFC classes below (CGruntzMgr,
+// CPlay/CState, CTriggerMgr, CGrunt, CString) enter this TU - the GZ* per-TU views
+// are all dissolved onto them.
+#include <Mfc.h>
 
 #include <rva.h>
 #include <string.h>
 
 // The sound-cue cluster (CSndHost/CSndFinder/CSndEmitter/CSoundCueMgr/SoundStream) and
-// the world resource holder (CSpriteFactoryHolder) are the ONE canonical shapes - the
-// former GZGateA/GZGateB/GZStrMap/GZSound/GZCueMgr/GZGate2c views are dissolved onto them.
-// GameRegistry.h is MFC-free (pulls SoundCue.h), so it enters this <Win32.h> TU cleanly.
+// the world resource holder (CSpriteFactoryHolder) are the ONE canonical shapes.
 #include <Gruntz/GameRegistry.h>
-// InputState.h (CInput54, the +0x54 input/spatial-sound object) is MFC-free (Ints.h only),
-// so it enters cleanly - the former GZInput view is dissolved onto CInput54.
-#include <Gruntz/InputState.h>
+#include <Gruntz/InputState.h>    // CInput54 (+0x54 input/spatial-sound object)
+#include <Gruntz/GruntzMgr.h>     // the real polymorphic CGruntzMgr (: WAP32::CGameMgr)
+#include <Gruntz/Play.h>          // CState / CPlay (m_curState game-state)
+#include <Gruntz/TriggerMgr.h>    // CTriggerMgr (+0x68 command/trigger grid)
+#include <Gruntz/Grunt.h>         // CGrunt (PickState result) + CSpriteFactory
+#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (+0x48 sound object)
 
 namespace GruntzMgrCmd {
     // ================= RVA 0x862f0 : CGruntzMgr::HandleCommand =================
