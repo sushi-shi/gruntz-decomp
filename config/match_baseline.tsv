@@ -1555,7 +1555,7 @@ engine_label_stubs	?winapi_179e70_IntersectRect@ApiCallerStubs@@YGHHHHHHHHHH@Z	0
 engstr	??1CContainerErr@@UAE@XZ	100.0000	100.0000	2	8d7d517ce92d	0x16da60
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	3	5e4fe0732acf	0x115440
 engstr	?SetSize@zBitVec@@QAEHH@Z	98.7234	98.7234	1	fcee90903128	0x16e100
-engstrrendertext	_EngStr_RenderText	53.0916	53.0916	3	47307c0994c0	0x115930
+engstrrendertext	_EngStr_RenderText	60.0763	60.0763	4	b60671aac6d3	0x115930
 exittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	89.4121	89.4121	5	6d97e62ab28a	0x3ecf0
 exittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	db4d24e6c64d	0x108c0
 exittrigger	?GetTypeTag@CExitTrigger@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	b758b1ebc8e1	0x10870
@@ -1633,7 +1633,7 @@ filemem	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	8df80faaf0af	0x157a40
 filemem	?SetName@CFileMemBase@@UAEHPBDHH@Z	100.0000	100.0000	1	87fed6342cd4	0x165e30
 filemem	?Write@CFileMem@@UAEHPBXH@Z	100.0000	100.0000	2	4a8a74d6fd73	0x165f50
 filestream	?ReopenSharedFile@CFileIO@@QAEXPAD@Z	79.0625	79.0625	2	7233269d343f	0xbd3e0
-finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	58.1863	58.1863	1	a942491207f6	0x7c3d0
+finishlevelsprite	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	61.0294	61.0294	2	364228046888	0x7c3d0
 fixedptrarray32	?Add@CFixedPtrArray32@@QAEHPAX@Z	100.0000	100.0000	1	2797f241ff3c	0x134c80
 fixedptrarray32	?Clear@CFixedPtrArray32@@QAEXXZ	100.0000	100.0000	1	096306e621bc	0x134c60
 fixedptrarray32	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	1	9d1ec6c23328	0x134be0
@@ -1825,7 +1825,7 @@ gamemodeobjlifecycle	?ClearPlacedObjects@CGameModeObj@@QAEHXZ	53.9750	53.9750	3	
 gamemodeobjlifecycle	?FlushPendingOps@CGameModeObj@@QAEHXZ	100.0000	100.0000	1	27f585a8a2ff	0xda2d0
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	036396bebe2f	0xd6560
 gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	1	98c98e0a8044	0xd1b30
-gamemousehandler	?HandleMousePress@CPlay@@QAEHHHH@Z	51.7213	51.7213	1	e0dd3dc83bd9	0xce660
+gamemousehandler	?HandleMousePress@CPlay@@QAEHHHH@Z	84.2056	84.2056	2	3179adbe848f	0xce660
 gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	78648e5abb8f	0x7fae0
 gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	f407cff34d78	0x7fbd0
 gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	5	8cb48a1dc8f0	0x7fcc0
@@ -2581,7 +2581,7 @@ mgrlistfind	?MgrListFind@@YAHHH@Z	73.2188	73.2188	3	bb4e0b32eb6f	0xf0db0
 mgrobjserialize	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	4	c436f1fa9117	0xface0
 mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	ec865d81c997	0xfb1c0
 mgrsettings	?Serialize@CMgrSettings@@QAEHPAUCSerialArchive@@HHH@Z	89.0526	89.0526	1	c6368e13b9d0	0x109e00
-mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	54.9057	54.9057	4	44b31121e4cc	0x1128b0
+mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	87.6226	87.6226	5	376368c3ccce	0x1128b0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
 modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	54.8679	54.8679	4	6dc29db8e914	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
@@ -3659,7 +3659,7 @@ warlord	?ResolveState@CWarlord@@QAEHH@Z	100.0000	100.0000	3	c3ab7bf2bd6a	0x44640
 warpstonefly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	2	9b5ad652d3cb	0x109bb0
 warpstonefly	?Draw@CWarpStoneFly@@QAEHXZ	100.0000	100.0000	4	06baaef0a953	0x10a2f0
 warpstonefly	?Tick@CWarpStoneFly@@QAEHH@Z	79.2857	79.2857	4	d5e9aa5ad76c	0x10a0f0
-warptextureblit	?WarpTextureBlit@@YAHPAUWarpVtx@@HPAUWarpSurf@@1HH@Z	50.9407	50.9407	1	c7a36b11143e	0x146a20
+warptextureblit	?WarpTextureBlit@@YAHPAUWarpVtx@@HPAUWarpSurf@@1HH@Z	51.6000	51.6000	1	c7a36b11143e	0x146a20
 waypoint	??0CWayPoint@@QAE@PAUCGameObject@@@Z	94.7727	94.7727	2	fb5ace95aab7	0xae3f0
 waypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	1	1792dd04db91	0x102e0
 waypoint	?GetTypeTag@CWayPoint@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	1b614c823b7d	0x10220
