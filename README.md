@@ -43,8 +43,8 @@ _Excluded from the % above — generated/library code, not independent reconstru
 | Category             | Functions | Code (B) | Why excluded                                      |
 | :------------------- | --------: | -------: | :------------------------------------------------ |
 | `EH unwind funclets` |     2,618 |   26,779 | compiler /GX EH; match with their parent function |
-| `CRT/MFC library`    |     2,224 |  204,973 | FID-identified, statically linked                 |
-| `jump thunks`        |     1,670 |    8,251 | linker ILT jmp-table (RVA <0x7c20) + thunk_*      |
+| `CRT/MFC library`    |     2,224 |  204,974 | FID-identified, statically linked                 |
+| `jump thunks`        |     1,670 |    8,250 | linker ILT jmp-table (RVA <0x7c20) + thunk_*      |
 <!-- match-score:end -->
 
 ## Repo layout

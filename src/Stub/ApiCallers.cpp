@@ -291,7 +291,7 @@ namespace ApiCallerStubs {
 
     // (0x2b340 ClipHost::Clip re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
-    // (0x38150 find-and-select re-homed to CMultiSlotList::Method3396 in Dialogs.cpp.)
+    // (0x38150 find-and-select re-homed to CLatencyList::SelectItem in Dialogs.cpp.)
 
     // (0x38220 winapi_038220 -> GetSelItemData in src/Gruntz/MultiStartDlgRoster.cpp,
     // a CMultiStartDlg roster listbox helper.)
@@ -1066,7 +1066,6 @@ namespace ApiCallerStubs {
 
     // (0x1775f0 PalHost::Apply (with g_palModule_6bf6e0) re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)
-
 
     // (0x179e70 winapi_179e70_IntersectRect reconstructed as the real
     // FontRenderer::DrawGlyphRun and re-homed to src/Font/Font.cpp - the inner

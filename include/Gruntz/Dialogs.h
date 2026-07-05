@@ -97,9 +97,9 @@ struct CBattlezSlot {
     char pad15c[0x238 - 0x15c];
 };
 
-// The player-slot list CMultiStartDlg::BuildSlotList allocates (defined in
-// Dialogs.cpp); only a pointer is needed here.
-struct CMultiSlotList;
+// The connection-latency slot list CMultiStartDlg::BuildSlotList allocates: the
+// canonical CLatencyList (<Net/LatencyList.h>); only a pointer is needed here.
+class CLatencyList;
 
 SIZE_UNKNOWN(CBattlezDlg);
 class CBattlezDlg : public CDialog {
@@ -266,9 +266,11 @@ public:
     // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
     // "SyncKind3ffd".
     void SyncChannelSlot(i32 ch);
-    i32 EnableControls();     // 0xc4120  re-enable the four player-config controls (was CNetGameDlg)
-    void VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level (was CNetGameDlg)
-    void ConnectStep();       // 0xc2a20  one connect step: reconcile slot 1 then Drive (was CNetConnCoord::Step)
+    i32 EnableControls(); // 0xc4120  re-enable the four player-config controls (was CNetGameDlg)
+    void
+    VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level (was CNetGameDlg)
+    void
+    ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive (was CNetConnCoord::Step)
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
@@ -289,12 +291,12 @@ public:
         return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
     }
 
-    i32 m_host;                 // +0x5c  (= a0; the CNetDlgHost*/slot-array base)
-    CMultiSlotList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
-    char m_pad64[8];            // +0x64
-    i32 m_6c;                   // +0x6c  (= 0)
-    CString m_70;               // +0x70  (default CString)
-    CObList m_74;               // +0x74  (CObList(0xa))
+    i32 m_host;               // +0x5c  (= a0; the CNetDlgHost*/slot-array base)
+    CLatencyList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
+    char m_pad64[8];          // +0x64
+    i32 m_6c;                 // +0x6c  (= 0)
+    CString m_70;             // +0x70  (default CString)
+    CObList m_74;             // +0x74  (CObList(0xa))
 };
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.

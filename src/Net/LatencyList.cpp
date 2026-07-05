@@ -8,10 +8,10 @@
 #include <Net/LatencyList.h>
 
 // ===========================================================================
-// CLatencyList::PopulateModemSlow  (0x37b40)  - param column = 10
+// CLatencyList::Populate1  (0x37b40, mode 1)  - param column = 10
 // ===========================================================================
 RVA(0x00037b40, 0xb3)
-i32 CLatencyList::PopulateModemSlow() {
+i32 CLatencyList::Populate1() {
     if (!AddItem("Automatic", 0, 0)) {
         return 0;
     }
@@ -37,10 +37,10 @@ i32 CLatencyList::PopulateModemSlow() {
 }
 
 // ===========================================================================
-// CLatencyList::PopulateModemFast  (0x37d20)  - param column = 30
+// CLatencyList::Populate3  (0x37d20, mode 3)  - param column = 30
 // ===========================================================================
 RVA(0x00037d20, 0xb3)
-i32 CLatencyList::PopulateModemFast() {
+i32 CLatencyList::Populate3() {
     if (!AddItem("Automatic", 0, 0)) {
         return 0;
     }

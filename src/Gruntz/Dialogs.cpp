@@ -13,7 +13,8 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/Multi.h>    // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Net/LatencyList.h> // CLatencyList (m_slotList; SelectItem body below)
 #include <rva.h>
 #include <Globals.h>
 
@@ -49,18 +50,15 @@ struct CMultiSlot {
     char m_pad170[0x238 - 0x170];
 };
 
-// The player-slot list (m_slotList): a CObList member (its ctor sets the vptr) plus one
-// trailing dword; allocated 0x20 bytes. The three add/refresh methods reloc-mask.
-struct CMultiSlotList {
-    CObList m_list; // +0x00  (CObList, 0x1c bytes)
-    i32 m_1c;       // +0x1c
-    CMultiSlotList(i32 nBlockSize) : m_list(nBlockSize) {
-        m_1c = 0;
-    }
-    void Method1546(i32 a);                     // 0x37910
-    void Method2a45(i32 a, i32 b);              // 0x37ff0
-    i32 Method3396(i32 a, i32 b, i32 c, i32 d); // 0x38150 (own body below)
-};
+// The player-slot list (m_slotList) is the canonical CLatencyList (a CObList of
+// {CString,int,int} connection-latency rows + a mode int @+0x1c). Formerly a
+// per-TU CMultiSlotList view here; folded to <Net/LatencyList.h> (wave 3). PROOF
+// this is CLatencyList: BuildSlotList @0xc1e60 news 0x20 bytes, runs the CObList
+// block-size ctor 0x1b4867 (block size 0xa) + `mov [obj+0x1c],0`, then dispatches
+// the connection mode via 0x37910 (CLatencyList::Dispatch) and fills/selects the
+// 0x527 combo via 0x37ff0/0x38150 - the same object CConnSlotList's populators
+// (0x37c30/e10/f00) append to. (The wave-2 "count@+0x14" flag mis-read CObList:
+// +0x14 is m_pBlocks; m_nCount is at +0xc, exactly what 0x37ff0 reads at [this+0xc].)
 
 // ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
@@ -203,7 +201,7 @@ CMultiStartDlg::CMultiStartDlg(i32 a0, CWnd* pParent) : CDialog(0xc5, pParent), 
 // count/pi/selection values (ebp-vs-edi choice) cascading into push scheduling. ~89%.
 RVA(0x000c1e60, 0x115)
 void CMultiStartDlg::BuildSlotList() {
-    m_slotList = new CMultiSlotList(0xa);
+    m_slotList = new CLatencyList(0xa);
     CMulti* reg = g_64bd5c;
     i32 count = 5;
     CMultiPlayerInfo* pi = reg->m_netGate->m_70;
@@ -223,10 +221,10 @@ void CMultiStartDlg::BuildSlotList() {
             count = 4;
         }
     }
-    m_slotList->Method1546(count);
+    m_slotList->Dispatch(count);
     i32 v = GetSafe1c();
-    m_slotList->Method2a45(v, 0x527);
-    m_slotList->Method3396(v, 0x527, 0, 0);
+    m_slotList->FillCombo(v, 0x527);
+    m_slotList->SelectItem(v, 0x527, 0, 0);
     reg->m_600 = 1;
 }
 
@@ -257,21 +255,21 @@ i32 CMultiStartDlg::UpdateSlot() {
     i32 v = GetSafe1c();
     CMulti* reg2 = g_64bd5c;
     if (reg2->m_600) {
-        m_slotList->Method3396(v, 0x527, 0, 0);
+        m_slotList->SelectItem(v, 0x527, 0, 0);
     } else {
-        m_slotList->Method3396(v, 0x527, reg2->m_5a4, reg2->m_drainReload);
+        m_slotList->SelectItem(v, 0x527, reg2->m_5a4, reg2->m_drainReload);
     }
     return 1;
 }
 
-// CMultiSlotList::Method3396 (0x38150) - re-homed from the ApiCallerStubs stub.
+// CLatencyList::SelectItem (0x38150) - re-homed from the ApiCallerStubs stub.
 // Find the list item in control `id` of dialog `hDlg` whose item-data equals
 // MAKELONG(lo, hi) and select it (LB_SETCURSEL); returns 1 if found, else 0. The
 // method ignores `this` (a dialog-item scan) - ecx is unused, so the __thiscall
 // body is byte-identical to the former __stdcall stub. hDlg/id carry the caller's
 // i32 (GetSafe1c/control-id); cast to HWND only at the Win32 boundary.
 RVA(0x00038150, 0x91)
-i32 CMultiSlotList::Method3396(i32 hDlg, i32 id, i32 lo, i32 hi) {
+i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
     HWND list = GetDlgItem((HWND)hDlg, id);
     if (!list) {
         return 0;
@@ -860,7 +858,6 @@ RVA(0x000b8960, 0x59)
 CMultiStartDlg::~CMultiStartDlg() {}
 
 SIZE_UNKNOWN(CMultiSlot);
-SIZE_UNKNOWN(CMultiSlotList);
 SIZE_UNKNOWN(CImgHolderBase);
 SIZE_UNKNOWN(CImgHolder);
 SIZE_UNKNOWN(CCueEmitter);

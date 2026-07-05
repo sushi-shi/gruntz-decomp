@@ -1,22 +1,14 @@
-// BzKindDispatch.cpp - a battlez-setup kind dispatcher (C:\Proj\Gruntz).
+// BzKindDispatch.cpp - CLatencyList::Dispatch (0x37910), the connection-latency
+// slot-list mode dispatcher (C:\Proj\Gruntz).
 //
-// Dispatch @0x37910 stores the incoming kind at +0x1c and routes kinds 1..5 to the
-// matching per-kind handler, reporting whether the handler succeeded (else 0 for an
-// out-of-range kind). The handlers are modeled NO-body so their calls reloc-mask.
-// Class name + handler names are placeholders; only OFFSETS + code bytes matter.
+// Dispatch latches the incoming mode at +0x1c and routes modes 1..5 to the matching
+// per-mode populator (Populate1..5 @ 0x37b40/c30/d20/e10/f00, reached via ILT thunks
+// 0x3760/3008/41ce/1eab/1cc1 - verified), reporting whether the populator succeeded
+// (else 0 for an out-of-range mode). Folded from the former CBzKindDispatch view onto
+// the canonical CLatencyList (wave 3); same object CMultiStartDlg::BuildSlotList
+// dispatches on. The populators are reloc-masked cross-unit calls (bodies elsewhere).
+#include <Net/LatencyList.h>
 #include <rva.h>
-
-class CBzKindDispatch {
-public:
-    i32 Dispatch(i32 kind); // 0x37910
-    i32 Handler1();         // 0x3760 (ILT thunk)
-    i32 Handler2();         // 0x3008
-    i32 Handler3();         // 0x41ce
-    i32 Handler4();         // 0x1eab
-    i32 Handler5();         // 0x1cc1
-    char m_pad0[0x1c];
-    i32 m_1c; // +0x1c  latched kind
-};
 
 // @early-stop
 // 79%: the CODE is byte-exact (confirmed llvm-objdump base vs target). The residual
@@ -26,31 +18,31 @@ public:
 // jmp's table reloc + the table data don't pair. See docs/patterns/switch-jumptable-
 // separate-comdat.md - a delinker artifact, not source-fixable.
 RVA(0x00037910, 0x5a)
-i32 CBzKindDispatch::Dispatch(i32 kind) {
-    m_1c = kind;
-    switch (kind) {
+i32 CLatencyList::Dispatch(i32 mode) {
+    m_mode = mode;
+    switch (mode) {
         case 1:
-            if (Handler1()) {
+            if (Populate1()) {
                 break;
             }
             return 0;
         case 2:
-            if (Handler2()) {
+            if (Populate2()) {
                 break;
             }
             return 0;
         case 3:
-            if (Handler3()) {
+            if (Populate3()) {
                 break;
             }
             return 0;
         case 4:
-            if (Handler4()) {
+            if (Populate4()) {
                 break;
             }
             return 0;
         case 5:
-            if (Handler5()) {
+            if (Populate5()) {
                 break;
             }
             return 0;
@@ -59,5 +51,3 @@ i32 CBzKindDispatch::Dispatch(i32 kind) {
     }
     return 1;
 }
-
-SIZE_UNKNOWN(CBzKindDispatch);
