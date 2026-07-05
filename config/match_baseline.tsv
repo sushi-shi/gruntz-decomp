@@ -453,7 +453,7 @@ terraintileloader	1	0
 tileactionevent	7	4
 tilegridcommand	6	3
 tilescan	1	0
-tileswitchlogic	17	9
+tileswitchlogic	17	10
 tiletriggercontainer	15	4
 tiletriggerderivedctors	9	9
 tiletriggerfactory	1	0
@@ -3396,7 +3396,7 @@ tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	
 tilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	71.2269	71.2269	1	f98f3f2ec20a	0x35f10
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	6	529bf9cb6306	0x110430
 tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	3	52356dd82278	0x113d40
-tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	0.5464	0.5464	1	a6548c9bdd8e	0x1122a0
+tileswitchlogic	?BuildRockBreakInGameText@CTileTriggerSwitchLogic@@QAEXXZ	69.0219	69.0219	2	4d58a6af314d	0x1122a0
 tileswitchlogic	?CTileTriggerSwitchLogic_115f60@CTileTriggerSwitchLogic@@QAEXXZ	0.2198	0.2198	2	fedab5b88bae	0x115f60
 tileswitchlogic	?FindByField0C@CTileTriggerSwitchLogic@@QAEPAV1@H@Z	100.0000	100.0000	3	6582a426f6a6	0x1171d0
 tileswitchlogic	?FindChild@CTileTriggerSwitchLogic@@QAEPAV1@HH@Z	100.0000	100.0000	3	2f1c58a7f853	0x116ee0
@@ -3404,7 +3404,7 @@ tileswitchlogic	?FindIndexByKey@CTileTriggerSwitchLogic@@QAEHH@Z	100.0000	100.00
 tileswitchlogic	?GetFlag74@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	2	89a90096d3b7	0x115f00
 tileswitchlogic	?LoadFlag74@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	7ce38bd1fca3	0x117e70
 tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	eddf999aaa72	0x1139a0
-tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	93.9535	93.9535	4	f6aa29eab618	0x116320
+tileswitchlogic	?RemoveByKeys@CTileTriggerSwitchLogic@@QAEHHH@Z	100.0000	100.0000	5	a95bd503b9b3	0x116320
 tileswitchlogic	?ScanNeighborhood@CTileTriggerSwitchLogic@@QAEHHH@Z	76.2600	76.2600	2	a020770dd925	0x117ec0
 tileswitchlogic	?SerializeMatrix@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	95.0909	95.0909	1	ac6424f5dd4f	0x113dd0
 tileswitchlogic	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	b8c9e312c50b	0x117e20

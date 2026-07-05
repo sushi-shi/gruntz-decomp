@@ -497,27 +497,32 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 struct RbCueSound {
     void Play(i32 tag, i32 a, i32 b, i32 c); // 0x1360d0
 };
+SIZE_UNKNOWN(RbCueSound);
 struct RbCueRec {
     char m_pad0[0x10];
     RbCueSound* m_10; // +0x10  the cue sound
     i32 m_14;         // +0x14  last-play clock
     i32 m_18;         // +0x18  cooldown ticks
 };
+SIZE_UNKNOWN(RbCueRec);
 // The sound/anim registry (g->m_world->m_28): a name->record table at +0x10, gated by
 // the +0x30 active-override flag.
 struct RbLookupTable {
     void Lookup(const char* name, RbCueRec** out); // 0x1b8438
 };
+SIZE_UNKNOWN(RbLookupTable);
 struct RbSoundReg {
     char m_pad0[0x10];
     RbLookupTable m_10; // +0x10  name->record table (Lookup receiver)
     char m_pad14[0x30 - 0x14];
     void* m_30; // +0x30  active-override gate
 };
+SIZE_UNKNOWN(RbSoundReg);
 // The world command-grid effect sink (g->m_cmdGrid, reg+0x68).
 struct RbCmdGrid {
     void Fire(i32 key, i32 x, i32 y, i32 slot, i32 a, i32 b); // 0x152d
 };
+SIZE_UNKNOWN(RbCmdGrid);
 
 // `this` stays in esi; tile (x, y) are re-read from +0x8/+0xc at each use (retail
 // caches neither, so caching them here would spill the frame from 0x14 to 0x38).
