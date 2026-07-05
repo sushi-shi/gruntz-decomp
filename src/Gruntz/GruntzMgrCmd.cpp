@@ -223,6 +223,10 @@ namespace GruntzMgrCmd {
         void Empty();             // 0x1b9c69
         void operator=(GZStr& o); // 0x1b9e25
     };
+    DATA(0x00645524)
+    extern GZStr g_str645524; // brick-display CStrings cleared by 0x8068/0x806f
+    DATA(0x00645528)
+    extern GZStr g_str645528;
 
     struct GZWndSub {
         char _p0[4];
@@ -510,14 +514,14 @@ namespace GruntzMgrCmd {
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x8068:
-                            g_6455f4 = (g_6455f4 ^ 0x40) & ~0x4000;
-                            m_strWorldFile.Empty();
-                            m_strWorldFile.Empty();
+                            g_6455f4 = (g_6455f4 ^ 0x40) & ~0x100;
+                            g_str645524.Empty();
+                            g_str645528.Empty();
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x806f:
                             g_6455f4 = (g_6455f4 ^ 0x100) & ~0x40;
-                            m_strWorldFile.Empty();
+                            g_str645524.Empty();
                             PLAYCUE("GAME_MINORCHEAT");
                             return 1;
                         case 0x806e:
