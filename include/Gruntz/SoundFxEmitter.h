@@ -59,6 +59,7 @@ namespace Utils {
 struct FaderRun : public CFader {
     void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
 };
+SIZE_UNKNOWN(FaderRun); // CFader subclass, no new members (size == CFader)
 
 // The DDraw surface pair CDDrawSubMgrPages holds at +0x10/+0x14/+0x18 (front/back/
 // overlay). Only its +0x2c channel surface (m_surface) is read here; the ONE
