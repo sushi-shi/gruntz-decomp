@@ -5,16 +5,11 @@
 // externals. Only offsets / code bytes are load-bearing.
 #include <Win32.h> // GetDlgItem / SendMessageA / DialogBoxParamA
 
+#include <Gruntz/GameKeyStr.h> // canonical GameKeyStr (g_pathStr/g_levelStr builders)
 #include <rva.h>
 
-// The global key-string builders (Set=FUN_001b9e74, Append=FUN_001ba0c8,
-// Reset=FUN_001b9c69, the same builder used by BuildPowerupIconKeys).
-struct GameKeyStr {
-    char* m_str;          // +0x00  the built C-string
-    void Set(char* s);    // FUN_001b9e74 __thiscall
-    void Append(char* s); // FUN_001ba0c8 __thiscall
-    void Reset();         // FUN_001b9c69 __thiscall
-};
+// The global key-string builders are the canonical GameKeyStr (<Gruntz/GameKeyStr.h>,
+// included below); the same builder BuildPowerupIconKeys uses.
 DATA(0x0022c25c)
 extern GameKeyStr g_pathStr; // 0x62c25c  full path builder
 DATA(0x0022c260)

@@ -9,6 +9,7 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>       // shared activation-registrar archetype (CActReg + aliases)
+#include <Gruntz/GameKeyStr.h>   // canonical GameKeyStr (g_levelStr; Free1b9b93)
 #include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/HaznColl.h>     // shared coordinate/activation-registry collection
 #include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
@@ -24,12 +25,8 @@
 // null check; see docs/patterns/explicit-ctor-call-inplace-tail-jmp.md). The globals
 // stay the REAL MFC CString so their ?...@@3VCString@@A relocs are authentic.
 // g_levelStr is a genuinely distinct type (?g_levelStr@@3UGameKeyStr@@A, NOT
-// VCString), keep it.
+// VCString): the canonical GameKeyStr (<Gruntz/GameKeyStr.h>).
 // ===========================================================================
-struct GameKeyStr {
-    void Free1b9b93(); // 0x1b9b93 (reloc-masked)
-};
-SIZE_UNKNOWN(GameKeyStr);
 extern CString g_str62c264;   // 0x62c264 (pinned in CustomWorldDialog.cpp)
 extern GameKeyStr g_levelStr; // 0x62c260 (pinned in Backlog.cpp)
 extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
