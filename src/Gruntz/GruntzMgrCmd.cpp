@@ -32,7 +32,7 @@ namespace GruntzMgrCmd {
         void Fn137a80(); // 0x137a80 __thiscall
     };
     struct GZSound;
-    struct GZStrMap {                                // CMapStringToOb view at GZGateB+0x10
+    struct GZStrMap {                               // CMapStringToOb view at GZGateB+0x10
         i32 Lookup(const char* key, GZSound*& out); // 0x1b8438 __thiscall
     };
     struct GZGateB {
@@ -63,14 +63,14 @@ namespace GruntzMgrCmd {
         char _p0[0x7c];
         GZDeathSub* m_7c; // +0x7c
     };
-    struct GZPtrMap {                              // CMapPtrToPtr view
-        i32 Lookup(void* key, GZDeathObj*& out);   // 0x1b8760 __thiscall
+    struct GZPtrMap {                            // CMapPtrToPtr view
+        i32 Lookup(void* key, GZDeathObj*& out); // 0x1b8760 __thiscall
     };
     struct GZSettingsMapHost { // settings->m_30->m_8
         char _p0[0x48];
         GZPtrMap m_48; // +0x48
     };
-    struct GZSettingsSub {           // settings->m_30
+    struct GZSettingsSub { // settings->m_30
         char _p0[0x8];
         GZSettingsMapHost* m_8; // +0x8
     };
@@ -87,17 +87,17 @@ namespace GruntzMgrCmd {
     struct GZCueMgr {
         i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d); // 0x1360d0 __thiscall
     };
-    struct GZSound {                           // cue object (CueLookup result)
+    struct GZSound { // cue object (CueLookup result)
         char _p0[0x10];
-        GZCueMgr* m_10; // +0x10 config sub-object
-        i32 m_14;       // +0x14 last-play time
-        i32 m_18;       // +0x18 min replay interval
+        GZCueMgr* m_10;                        // +0x10 config sub-object
+        i32 m_14;                              // +0x14 last-play time
+        i32 m_18;                              // +0x18 min replay interval
         void Play(i32 a, i32 b, i32 c, i32 d); // 0x25fe __thiscall
     };
-    struct GZSoundZ {                             // manager m_48 (CGruntzSoundZ*)
-        i32 PlayByName(const char* name, i32 f);  // 0x138840 __thiscall
+    struct GZSoundZ {                            // manager m_48 (CGruntzSoundZ*)
+        i32 PlayByName(const char* name, i32 f); // 0x138840 __thiscall
     };
-    struct GZGruntLevel {  // grunt->m_2dc
+    struct GZGruntLevel {   // grunt->m_2dc
         void Fn2982(i32 n); // 0x2982
         void Fn33cd(i32 n); // 0x33cd
     };
@@ -250,11 +250,11 @@ namespace GruntzMgrCmd {
         char _p34[0x38 - 0x34];
         void* m_38; // 0x38
         char _p3c[0x44 - 0x3c];
-        GZM44* m_44;      // 0x44 (engine sub-object; +0x124 flag)
+        GZM44* m_44;       // 0x44 (engine sub-object; +0x124 flag)
         GZSoundZ* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
         GZInput* m_inputState; // 0x54
-        GZObj58* m_saveSink; // 0x58 (has +0x18)
+        GZObj58* m_saveSink;   // 0x58 (has +0x18)
         char _p5c[0x68 - 0x5c];
         GZBoard* m_cmdGrid; // 0x68
         char _p6c[0xa0 - 0x6c];
@@ -303,8 +303,8 @@ namespace GruntzMgrCmd {
         i32 HandleCommand(i32 p1, i32 nID, i32 p3);
     };
     // free/cdecl helpers reached from a couple of first-switch bodies
-    extern "C" i32 Board2144(CGruntzMgr* self, void* p);                                    // 0x2144
-    extern "C" void Board277a(void* a, CGruntzMgr* self, void* b, void* c, i32 d, i32 e);   // 0x277a
+    extern "C" i32 Board2144(CGruntzMgr* self, void* p);                                  // 0x2144
+    extern "C" void Board277a(void* a, CGruntzMgr* self, void* b, void* c, i32 d, i32 e); // 0x277a
     DATA(0x0064556c)
     extern GZMgrSettings* g_mgrSettings;
     struct GZObj58 {
@@ -349,7 +349,7 @@ namespace GruntzMgrCmd {
     }
 // Grid-select the addressed cell (m_cmdGrid), grant a brick pickup (0x3c6a) and
 // announce.  Retail inlines the whole grid walk (no BrickPickup helper call).
-#define BRICKPICKUP(ID, MSG)                                                                        \
+#define BRICKPICKUP(ID, MSG)                                                                       \
     {                                                                                              \
         if (!PickState())                                                                          \
             return 0;                                                                              \
@@ -361,16 +361,16 @@ namespace GruntzMgrCmd {
             return 0;                                                                              \
         if (_cell->m_1ec != g_classId644c54)                                                       \
             return 0;                                                                              \
-        GZCell* _c2 = m_cmdGrid->m_cells[_cell->m_1f0 + _cell->m_1ec * 15];                         \
-        i32 _r = (_c2 && _c2->m_1fc) ? _c2->LoadPickup(ID, 0, 0, 0, 1) : 0;                         \
-        if (!_r)                                                                                    \
+        GZCell* _c2 = m_cmdGrid->m_cells[_cell->m_1f0 + _cell->m_1ec * 15];                        \
+        i32 _r = (_c2 && _c2->m_1fc) ? _c2->LoadPickup(ID, 0, 0, 0, 1) : 0;                        \
+        if (!_r)                                                                                   \
             return 0;                                                                              \
-        PLAYCUE("GAME_MAJORCHEAT");                                                                 \
-        AppendChat(MSG);                                                                            \
+        PLAYCUE("GAME_MAJORCHEAT");                                                                \
+        AppendChat(MSG);                                                                           \
         return 1;                                                                                  \
     }
 // Grid-select the addressed cell, grant an ability (0x3c29) and announce.
-#define BRICKABILITY(N, MSG)                                                                        \
+#define BRICKABILITY(N, MSG)                                                                       \
     {                                                                                              \
         if (!PickState())                                                                          \
             return 0;                                                                              \
@@ -382,10 +382,10 @@ namespace GruntzMgrCmd {
             return 0;                                                                              \
         if (_cell->m_1ec != g_classId644c54)                                                       \
             return 0;                                                                              \
-        if (!_cell->LoadAbility(N))                                                                 \
+        if (!_cell->LoadAbility(N))                                                                \
             return 0;                                                                              \
-        PLAYCUE("GAME_MAJORCHEAT");                                                                 \
-        AppendChat(MSG);                                                                            \
+        PLAYCUE("GAME_MAJORCHEAT");                                                                \
+        AppendChat(MSG);                                                                           \
         return 1;                                                                                  \
     }
 // Level-restart (0x8170/0x8171/0x8173): stop chain, drain cursor, change state,
@@ -396,7 +396,7 @@ namespace GruntzMgrCmd {
         GZLogic* mus = 0;                                                                          \
         if (st == 5) {                                                                             \
             mus = m_curState;                                                                      \
-            m_curState->StopChain();                                                              \
+            m_curState->StopChain();                                                               \
             if (g_ShowCursor(0) >= 0)                                                              \
                 while (g_ShowCursor(0) >= 0) {                                                     \
                 }                                                                                  \
@@ -417,7 +417,7 @@ namespace GruntzMgrCmd {
         GZLogic* mus = 0;                                                                          \
         if (st == 5) {                                                                             \
             mus = m_curState;                                                                      \
-            m_curState->StopChain();                                                              \
+            m_curState->StopChain();                                                               \
         }                                                                                          \
         ChangeState(N);                                                                            \
         if (mus)                                                                                   \
@@ -684,7 +684,8 @@ namespace GruntzMgrCmd {
                             BRICKPICKUP(0x38, "Super Grunt to the rescue!");
                         case 0x8133:
                             BRICKPICKUP(
-                                0x3c, "This is gonna hurt them more than it will hurt you."
+                                0x3c,
+                                "This is gonna hurt them more than it will hurt you."
                             );
                         case 0x8134:
                             BRICKPICKUP(0x3b, "How did you swallow that?");
@@ -1177,7 +1178,7 @@ namespace GruntzMgrCmd {
                 }
                 ReportErr(0x8005, 0x42e);
                 return 1;
-            case 0x8007: {                           // 0x89b97
+            case 0x8007: { // 0x89b97
                 i32 st = m_curState->vf10();
                 if (st == 3 || st == 0x11) {
                     if (m_curState->m_4f8) {
@@ -1201,7 +1202,7 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             }
-            case 0x816e: {                           // 0x89c19
+            case 0x816e: { // 0x89c19
                 i32 st = m_curState->vf10();
                 if (st == 3 || st == 0x11) {
                     i32 f = m_0c ^ 1;
@@ -1223,7 +1224,7 @@ namespace GruntzMgrCmd {
                 m_lobbyProbed = 0;
                 g_pPostMessageA(m_04->m_4, 0x111, 0x8025, 0);
                 return 1;
-            case 0x800e:                             // 0x89c92
+            case 0x800e: // 0x89c92
                 if (!CheckPlay()) {
                     return 1;
                 }
@@ -1236,35 +1237,35 @@ namespace GruntzMgrCmd {
                 }
                 ReportErr(0x8005, 0x430);
                 return 1;
-            case 0x8042:                             // 0x89d00
+            case 0x8042: // 0x89d00
                 if (g_6455ec) {
                     return 1;
                 }
                 Func415b();
                 return 1;
-            case 0x8075:                             // 0x89d1e
+            case 0x8075: // 0x89d1e
                 if (GoNext()) {
                     return 1;
                 }
                 ReportErr(0x8007, 0x431);
                 return 1;
-            case 0x800f:                             // 0x89d37 -> falls into 0x8006
+            case 0x800f: // 0x89d37 -> falls into 0x8006
                 if (m_curState->vf10() == 3 || m_curState->vf10() == 0x11) {
                     GoPrev();
                     return 1;
                 }
                 // fall through
-            case 0x8006:                             // 0x89d62
+            case 0x8006: // 0x89d62
                 m_curState->m_40 = 1;
                 if (Dispatch(5, 1, 0, 0)) {
                     return 1;
                 }
                 ReportErr(0x8005, 0x432);
                 return 1;
-            case 0x8008:                             // 0x89d8d
+            case 0x8008: // 0x89d8d
                 Func3f62();
                 return 1;
-            case 0x8035: {                           // 0x89d9e
+            case 0x8035: { // 0x89d9e
                 i32 st = m_curState->vf10();
                 if (st == 9 || st == 0xd || st == 0xf || st == 0xe || st == 8 || st == 0xa
                     || st == 0x12 || st == 0x11) {
@@ -1276,7 +1277,7 @@ namespace GruntzMgrCmd {
                 ReportErr(0x8005, 0x433);
                 return 1;
             }
-            case 0x80e2: {                           // 0x89e58  CONFIG_SETTINGS modal
+            case 0x80e2: { // 0x89e58  CONFIG_SETTINGS modal
                 i32 st = m_curState->vf10();
                 GZLogic* mus = 0;
                 if (st == 5) {
@@ -1289,7 +1290,7 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             }
-            case 0x800a: {                           // 0x89e9f  elapsed-time / sound toggle
+            case 0x800a: { // 0x89e9f  elapsed-time / sound toggle
                 if (m_0c) {
                     return 1;
                 }
@@ -1309,7 +1310,7 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             }
-            case 0x8009: {                           // 0x89f08  world-position display toggle
+            case 0x8009: { // 0x89f08  world-position display toggle
                 if (m_world) {
                     GZGate2c* p = m_world->m_28->m_2c;
                     if (p) {
@@ -1326,25 +1327,25 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             }
-            case 0x802c:                             // 0x89f5a
+            case 0x802c: // 0x89f5a
                 if (!InPlay()) {
                     return 1;
                 }
                 Func34ef(0);
                 return 1;
-            case 0x802a:                             // 0x89f7c
+            case 0x802a: // 0x89f7c
                 if (!InPlay()) {
                     return 1;
                 }
                 Func424b();
                 return 1;
-            case 0x802b:                             // 0x89f9c
+            case 0x802b: // 0x89f9c
                 if (!InPlay()) {
                     return 1;
                 }
                 Func22a2();
                 return 1;
-            case 0x8070: {                           // 0x89fbc  world-present toolbar
+            case 0x8070: { // 0x89fbc  world-present toolbar
                 Board277a(m_38, this, g_mgrSettings->m_8c, g_mgrSettings->m_90, 0, 0);
                 return 1;
             }
