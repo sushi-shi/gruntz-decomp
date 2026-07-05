@@ -957,22 +957,26 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
 // TickSubManagers @0x137ac0 - per-frame sub-manager tick. Walk m_instanceHead; per
 // sub: advance inner list (+0x6c), poll guard (m_guard); when idle(0) && m_active, stop
 // inner list (if m_stopFlag) and retire (if m_retireFlag); record guard back to m_active.
-// Inner voice list embedded at SubNode+0x6c - a call-view over its advance/stop
-// helpers. IDENTITY UNRECOVERED (identity-recovery TODO): Tick (0x137e30) and Stop
-// (0x1380d0) COMDAT-fold with two DISTINCT ApiMisc placeholders (Throttle_137e30::Tick
-// / Timer_1380d0::Tick, both EXACT in apimischelpers), so the embedded object's real
-// class cannot be attributed here - kept a documented call-view.
-struct SubInnerList {
-    void Tick(i32 t); // 0x137e30  advance the inner voice list (folds Throttle_137e30::Tick)
-    void Stop(i32 x); // 0x1380d0  stop the inner voice list (folds Timer_1380d0::Tick)
+// IDENTITY CONFIRMED (wave 3): SubNode IS the canonical StreamVoice (<Dsndmgr/
+// StreamVoice.h>, DirectSoundMgr-derived, ctor 0x1375b0) - m_instanceHead@+0x94 is the
+// SoundStream StreamVoice list - and SubInnerList IS its embedded StreamVoiceFeeder
+// (StreamVoice::m_feeder @+0x6c). SubInnerList's Tick(0x137e30)/Stop(0x1380d0) are the
+// feeder pump entries (0x1380d0 == StreamFeeder::TickPump; both COMDAT-fold with the
+// ApiMisc Throttle_137e30/Timer_1380d0 placeholders, which is why they read as those).
+// CLEAN FOLD DEFERRED: SoundDevice::TickSubManagers (0x137ac0, below) is 100%-EXACT and
+// a byte-safe fold needs StreamVoice.h/StreamFeeder.h extended with the +0x60..+0x68
+// flags, the +0x74 DirectSoundMgr guard, and the folded feeder-method names - a
+// DirectSound-module task; kept a documented call-view so the 100% match holds.
+struct SubInnerList { // == StreamVoiceFeeder (StreamVoice::m_feeder @+0x6c)
+    void Tick(i32 t); // 0x137e30  advance the feeder (folds Throttle_137e30::Tick)
+    void Stop(i32 x); // 0x1380d0  StreamFeeder::TickPump (folds Timer_1380d0::Tick)
 };
-SIZE(SubInnerList, 0x1); // call-view embedded at SubNode+0x6c
-// Stream-instance node in the device instance list: link@+0x04, stop/retire/active
-// flags @+0x60..+0x68, inner list @+0x6c, guard @+0x74 (partial view; trailing
-// unmodeled). Real node class unrecovered (identity-recovery TODO); m_guard IS the
-// canonical DirectSoundMgr (its Poll is DirectSoundMgr::IsPlaying @0x1353f0, folded
-// wave 3 - the per-voice buffer manager that owns the idle-check).
-struct SubNode {
+SIZE(SubInnerList, 0x1); // call-view over StreamVoice::m_feeder @+0x6c
+// == StreamVoice (see note above): link@+0x04, stop/retire/active flags @+0x60..+0x68,
+// feeder @+0x6c, guard @+0x74. m_guard IS the canonical DirectSoundMgr (its Poll is
+// DirectSoundMgr::IsPlaying @0x1353f0, folded wave 3 - StreamVoice IS DirectSoundMgr-
+// derived, so the guard is the per-voice buffer manager owning the idle-check).
+struct SubNode { // == StreamVoice (<Dsndmgr/StreamVoice.h>); fold deferred (see note)
     char m_pad0[0x4];
     DSoundLink* m_next; // +0x04  instance-list forward link (biased +4)
     char m_pad8[0x60 - 0x8];
