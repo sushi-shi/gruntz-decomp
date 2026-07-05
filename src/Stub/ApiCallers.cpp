@@ -31,10 +31,11 @@
 // notes. The rest are the BLOCKED residual, each parked here for one of):
 //   [CRT]      Win32 CRITICAL_SECTION wrappers 0x16c9c0/d0/e0/f0 - not game code;
 //              STAY per the game-not-CRT matcher policy (no owning game class).
-//   [SPINE]    the g_gameReg / CGameReg spine + CGruntzMgr cluster (settings/menu
-//              DlgProcs + SelHost/RosterHost/Dispatcher/ActionHost/Screen/RectWnd
-//              /BattlezDlg). They deref a PLACEHOLDER CGameReg here; re-homing needs
-//              the REAL spine (GruntzMgr.cpp/.h) typed first - out of this TU's scope.
+//   [SPINE]    the g_gameReg DlgProc cluster. Its receiver view was FOLDED onto the
+//              canonical CGruntzMgr (<Gruntz/GruntzMgr.h>) - the DlgProcs stay here
+//              (they are __stdcall CALLBACKs, not methods of a re-homeable class), but
+//              they now deref the real singleton (m_gameWnd/m_saveSink/
+//              PickPlayOrPausedState) instead of a placeholder CGameReg.
 //   [ORPHAN]   real bodies on ANONYMOUS RVA-named placeholder hosts (CmdHost_*, Grid_*,
 //              QlHost_*, EditAppendHost_*, Region_*, ...) whose true owning class is
 //              not yet recovered; moving them would force-guess an owner - LEFT put.
