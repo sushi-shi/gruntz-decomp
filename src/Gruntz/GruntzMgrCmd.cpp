@@ -22,7 +22,7 @@ namespace GruntzMgrCmd {
     // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>); its members use the canonical
     // GruntzMgr.h names (m_curState/m_world/m_sound/m_strWorldFile/m_cmdGrid/...).
     // It is NOT merged to the canonical header - the
-    // WM_COMMAND/cheat dispatcher is a documented ~29.7% jump-table+regalloc
+    // WM_COMMAND/cheat dispatcher is a documented ~39% jump-table+regalloc
     // megafunction wall reached through a dozen local sub-object helper types
     // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
     // need a full body rewrite at high regression risk for no % gain. The namespace
@@ -306,16 +306,28 @@ namespace GruntzMgrCmd {
         return 1;                                                                                  \
     }
 
-    // @early-stop
-    // Complete two-level dispatcher (116 UI-command cases + ~90 mode-gated cheat
-    // cases across four nested sub-switches).  ~29.7% code-byte match: the
-    // templated cheat/warp/toggle bodies land byte-exact, but the two big
-    // jump-table dispatch shapes (byte-index tables + the cheat binary-search
-    // tree) and the whole-function esi/edi/ebx regalloc are MSVC-internal walls
-    // (jump-table-typing + regalloc), verified vs `llvm-objdump -dr`.  The
-    // grid-navigation brick cheats + the /GX config-command frame are modeled
-    // via helper calls rather than inlined, another delta.  Reconstructed from
-    // the retail disasm at 0x862f0 (up from the ~0% return-0 stub).
+    // @early-stop  (~39.1%, up from 29.7% - dispatch cracked, cheat-block tail parked)
+    // Complete two-level dispatcher (117 outer UI cases + the mode==3 cheat
+    // sub-switch).  The OUTER dispatch now matches retail byte-for-byte: it is a
+    // packed byte-index table (lea eax,[nID-0x8005]; cmp eax,0x1d0; mov cl,[eax+T1];
+    // jmp [ecx*4+T2]).  Getting there required the two missing labels 0x806b/0x80d7
+    // - they cross MSVC5's switch DENSITY threshold; with only 115 of 117 cases the
+    // compiler emits a binary-search tree instead (proven by minimal probe; see
+    // docs/patterns/switch-density-byte-index-table-vs-tree.md).  The outer case
+    // bodies are in retail physical order and the simple ones land byte-exact
+    // (verified 0x8005 base==target via llvm-objdump -dr).
+    //
+    // RESIDUAL (the parked ~60%): the mode-gated cheat block (0x86403..0x8875c) is
+    // ~58% of the 15706-byte function and is reconstructed as templated macros
+    // (PLAYCUE/ITEMCHEAT/WARP) - logically complete but NOT byte-exact: retail
+    // inlines per-cheat CString announce buffers (lea ecx,[esp+0xc/0x10/0x1c]),
+    // the AMBIENT%d wsprintf, and the brick-grid select cheats.  Those local
+    // buffers are what drive retail's whole-function frame (sub esp,0x94) and its
+    // 3rd callee-saved reg (push ebx) - my simpler cheat block reserves less stack
+    // and never needs ebx, so the prologue + every esp-relative access diverges.
+    // This is the documented holistic megafunction frame/regalloc wall
+    // (docs/patterns/megafunction-cached-locals-vs-reload-regalloc.md); closing it
+    // means reconstructing the 9KB cheat sub-block leaf-first (a final-sweep job).
     RVA(0x000862f0, 0x3d5a)
     i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
         switch (nID) {
