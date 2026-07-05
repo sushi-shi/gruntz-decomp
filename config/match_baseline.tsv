@@ -140,7 +140,7 @@ drawtext	3	0
 droppedobject	6	3
 droppedobjectshadow	2	1
 dsoundvoice	2	1
-engine_label_stubs	50	39
+engine_label_stubs	40	31
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	3	2
@@ -310,7 +310,8 @@ movinglogic	6	2
 msgdispatch	3	3
 multi	18	7
 multicolordlg	1	0
-multistartdlgworld	2	2
+multistartdlgroster	9	7
+multistartdlgworld	3	3
 namerecord	1	0
 netcmdmgr	1	1
 netcmdsession	6	4
@@ -1511,7 +1512,6 @@ droppedobjectshadow	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	86.0467	86.0
 droppedobjectshadow	??1CDroppedObjectShadow@@UAE@XZ	100.0000	100.0000	1	590f3131b16f	0x12670
 dsoundvoice	?Stop@DSoundVoice@@UAEHXZ	100.0000	100.0000	1	3535e3da3a46	0x1370d0
 dsoundvoice	?Tick@DSoundVoice@@UAEHH@Z	95.6977	95.6977	1	da8ff59627bf	0x137060
-engine_label_stubs	?Append@EditAppendHost_0c2ce0@ApiCallerStubs@@QAEXPAD@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2ce0
 engine_label_stubs	?Begin@ActionHost_0d7220@ApiCallerStubs@@QAEHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd7220
 engine_label_stubs	?Cancel@CmdHost_0de590@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xde590
 engine_label_stubs	?Check@KeyHost_01f8a0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x1f8a0
@@ -1525,7 +1525,6 @@ engine_label_stubs	?Key@CmdHost_0953f0@ApiCallerStubs@@QAEHHH@Z	100.0000	100.000
 engine_label_stubs	?Notify@ModeHost_08f480@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x8f480
 engine_label_stubs	?OnClick@ClickHost_0394b0@ApiCallerStubs@@QAEHHHH@Z	50.5500	50.5500	1	cpp:e1535087fe94	0x394b0
 engine_label_stubs	?OnInitDialog@TimerDlg_0c2cb0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc2cb0
-engine_label_stubs	?OnReset@ReplayDlg_c3e30@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e832e75e29a5	0xc3e30
 engine_label_stubs	?Open@Screen_0fe460@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xfe460
 engine_label_stubs	?Paint@PaintHost_0fac70@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfac70
 engine_label_stubs	?Pick0183f0@DlgHost@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x183f0
@@ -1535,20 +1534,12 @@ engine_label_stubs	?RenderFrame@MoviePlayer_17caa0@ApiCallerStubs@@QAEHXZ	100.00
 engine_label_stubs	?Reset@RectWnd_fe600@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xfe600
 engine_label_stubs	?Show@BlitHost_0d00a0@ApiCallerStubs@@QAEXH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xd00a0
 engine_label_stubs	?Show@MsgHost_08ee70@ApiCallerStubs@@QAEHHH@Z	98.5185	98.5185	1	cpp:6bf52155264d	0x8ee70
-engine_label_stubs	?Toggle@RosterHost_0c50f0@ApiCallerStubs@@QAEXH@Z	97.6531	97.6531	1	cpp:6bf52155264d	0xc50f0
-engine_label_stubs	?Update0@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4ee0
-engine_label_stubs	?Update1@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4f30
-engine_label_stubs	?Update3@SelHost_0c4ee0@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:6bf52155264d	0xc4fd0
-engine_label_stubs	?Update@SelHost_0c4f80@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	1	cpp:e1535087fe94	0xc4f80
-engine_label_stubs	?UpdatePlayers@BattlezDlg_c4230@ApiCallerStubs@@QAEHH@Z	62.1892	62.1892	1	cpp:7e3328e11dac	0xc4230
 engine_label_stubs	?Validate@VrHost_094bc0@ApiCallerStubs@@QAEHXZ	100.0000	100.0000	1	cpp:6bf52155264d	0x94bc0
 engine_label_stubs	?directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate@ApiCallerStubs@@YGHHH@Z	98.5714	98.5714	1	cpp:6bf52155264d	0x137720
 engine_label_stubs	?winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA@ApiCallerStubs@@YGHH@Z	0.2387	0.2387	1	cpp:6bf52155264d	0x14d00
 engine_label_stubs	?winapi_01a700_CopyRect@ApiCallerStubs@@YAHXZ	0.3934	0.3934	1	cpp:e1535087fe94	0x1a700
-engine_label_stubs	?winapi_038220_GetDlgItem@ApiCallerStubs@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x38220
 engine_label_stubs	?winapi_092ab0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x92ab0
 engine_label_stubs	?winapi_09dff0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0x9dff0
-engine_label_stubs	?winapi_0c2980_SendMessageA@ApiCallerStubs@@YGXHH@Z	100.0000	100.0000	1	cpp:6bf52155264d	0xc2980
 engine_label_stubs	?winapi_0e35f0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe35f0
 engine_label_stubs	?winapi_0e3a40_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe3a40
 engine_label_stubs	?winapi_0e3b20_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe3b20
@@ -2629,8 +2620,18 @@ multi	?StartTitle@CMulti@@QAEHXZ	36.2880	36.2880	1	89dcb866edcc	0xb72c0
 multi	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	1	8499295ac675	0xb6110
 multi	?Tick@CMulti@@QAEHXZ	86.6074	86.6074	1	c91ba236d5fb	0xb6890
 multicolordlg	?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ	89.7165	89.7165	2	53eac404de52	0xc1aa0
+multistartdlgroster	?AppendChatLine@CMultiStartDlg@@QAEXPAD@Z	100.0000	100.0000	1	b94654538670	0xc2ce0
+multistartdlgroster	?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z	100.0000	100.0000	1	969d1b14e0df	0x38220
+multistartdlgroster	?OnSlotSelect0@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	37ad7e6a7f83	0xc4ee0
+multistartdlgroster	?OnSlotSelect1@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	8543204c383d	0xc4f30
+multistartdlgroster	?OnSlotSelect2@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	32299ba7e462	0xc4f80
+multistartdlgroster	?OnSlotSelect3@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	c8500b856c7b	0xc4fd0
+multistartdlgroster	?SetListCurSel@@YGXHH@Z	100.0000	100.0000	1	0e7a3c67dc8b	0xc2980
+multistartdlgroster	?ToggleReady@CMultiStartDlg@@QAEXH@Z	97.6531	97.6531	1	4724c2918482	0xc50f0
+multistartdlgroster	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	62.1892	62.1892	1	47d4efa99d90	0xc4230
 multistartdlgworld	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
 multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	3	70fdea68da3a	0xc1840
+multistartdlgworld	?Sub_c3e30@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	11d8026a75d8	0xc3e30
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	5	83eba46172b3	0xc4b60
 netcmdsession	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	2	2c89a119d9b7	0xc04a0
