@@ -2181,7 +2181,7 @@ gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	96.6667	96.6667	3	d2ca0ab27636	0
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	d1407d256efd	0x90980
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	3	12d3051e213d	0x8f740
 gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	7	ac2094890f6d	0x860b0
-gruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	29.7155	29.7155	1	df2b13aa0099	0x862f0
+gruntzmgrcmd	?HandleCommand@CGruntzMgr@GruntzMgrCmd@@QAEHHHH@Z	39.0768	39.0768	2	81fce98a20a7	0x862f0
 gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	43.0952	43.0952	5	423adce967f7	0x8b960
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	2	d21c9c879458	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	2	d21c9c879458	0xda960
