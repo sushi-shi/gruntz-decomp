@@ -557,9 +557,18 @@ struct GruntEntranceCell {
 // reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
+// The on-screen viewport the movement-step spawn-cue gate reaches through the
+// sound category: (world->m_24->m_5c + 0x40) is the visible CCueRect (m_5c is a
+// base address, so +0x40 is a cast - the same CCueRect pattern).
+SIZE_UNKNOWN(CGruntViewMid);
+struct CGruntViewMid {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c  base address of the visible rect (-0x40)
+};
 SIZE_UNKNOWN(GruntSoundCat);
-struct GruntSoundCat { // m_30: the sound-category object
-    char m_pad0[0x28];
+struct GruntSoundCat {   // m_30: the sound-category object
+    char m_pad0[0x24];
+    CGruntViewMid* m_24; // +0x24  -> the visible-viewport gate (movement spawn cue)
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
@@ -761,6 +770,11 @@ public:
 // kind and the grunt's HUD point, returns whether it falls inside the live view
 // rect. External/no-body (reloc-masked).
 i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
+
+// The drop-ready predicate the per-tick move step calls (FUN_00429b40, thunk 0x1807,
+// __stdcall(grunt) - callee-cleans (no `add esp,4` at the site); nonzero when the
+// grunt cannot yet drop. External/reloc-masked.
+i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
 // canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
@@ -986,6 +1000,10 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
     void RemoveAll(); // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
+    // The step machines pop/push the occupied-coord CObList head directly (the
+    // stored value IS the GruntCoord*). External/reloc-masked (MFC CObList slots).
+    struct GruntCoord* RemoveHead(); // 0x1b4a03 (CObList::RemoveHead - returns the coord)
+    void AddHead(void* p);           // 0x1b4967 (CObList::AddHead - push a coord)
     GruntListSub() {
         CtorImpl(0xa);
     }
