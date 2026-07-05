@@ -3729,7 +3729,7 @@ wwdgameobject	??1CWwdGameObjectF@@UAE@XZ	93.4466	93.4466	1	b230a9476ec3	0x15bad0
 wwdgameobject	?Dispatch@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	3	515f3d5259be	0x150a70
 wwdgameobject	?Init@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	2	5e2c824b4214	0x15b940
 wwdgameobject	?Play@CWwdGameObject@@QAEHHHHH@Z	0.0000	0.0000	5	370328b6857f	0x151150
-wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3491	99.3491	8	8a9013b9e70d	0x150b00
+wwdgameobject	?ReadState@CWwdGameObject@@QAEHH@Z	99.3868	99.3868	9	28f4f9c51545	0x150b00
 wwdgameobject	?RenderDot@CWwdGameObject@@QAEXPAUWwdRenderCtx@@@Z	57.5135	57.5135	5	b66881fd7b58	0x1660f0
 wwdgameobject	?ResetAndSetup@CWwdGameObject@@QAEHHHHH@Z	80.4706	80.4706	2	0e895435c8b2	0x1665e0
 wwdgameobject	?Serialize@CWwdGameObject@@QAEHH@Z	99.5745	99.5745	7	0d3184136c66	0x151320
@@ -3747,7 +3747,7 @@ wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	ea8c19f6d6f0	0x191800
 wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	3	68bcd2e8a5c6	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	40d0b5598a9f	0x191890
 wwdobjmgr	?LoadObjects@CWwdObjMgr@@QAEHPAUCSerialArchive@@IH@Z	54.9009	54.9009	1	ad55546af906	0x15ad30
-wwdobjmgrfactories	?Construct@CWwdGameObj15b390@@QAEPAU1@HHH@Z	1.7722	1.7722	1	60f69b40a04f	0x15b390
+wwdobjmgrfactories	??0CWwdGameObj15b390@@QAE@HHH@Z	59.7468	59.7468	1	760a70c678c5	0x15b390
 wwdobjmgrfactories	?CreateObject_159250@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHHH@Z	73.6752	73.6752	1	97d9a7859a47	0x159250
 wwdobjmgrfactories	?CreateObject_159440@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHH@Z	72.0273	72.0273	1	65d8bc199a5e	0x159440
 wwdobjmgrfactories	?CreateObject_1598d0@CWwdObjMgr@@QAEPAVCWwdGameObject@@HHHHHH@Z	71.2200	71.2200	1	32c8d844f6b5	0x1598d0
