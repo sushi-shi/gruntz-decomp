@@ -172,19 +172,9 @@ struct CTmGoal {
     i32 m_8; // +0x08  flags
 };
 
-// The MFC pointer-list at CTriggerMgr+0x240 and at each +0x2d0[i] selection slot;
-// RemoveAll/RemoveAt are the reloc-masked engine bodies (@0x1b48a6 / @0x1b4ac7).
-// Modeled as a tiny __thiscall helper so the `mov ecx,list; jmp/call` falls out
-// with no stack cleanup. The intrusive list head sits at +0x04 of the object.
-struct CTmPtrListVtbl; // the embedded CObList's vtable (owned by MFC)
-struct CTmPtrList {
-    void RemoveAll();     // 0x1b48a6
-    void RemoveAt(void*); // 0x1b4ac7
-    void AddTail(void*);  // 0x1b4991  (returns POSITION; ret ignored here)
-    void Dtor();          // ~CTriggerMgr embedded-list dtor (reloc-masked)
-    CTmPtrListVtbl* m_0;  // +0x00  vptr
-    CTmNode* m_head;      // +0x04  list head node
-};
+// The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
+// slots) is the canonical CTmObList real member (see <Gruntz/TriggerMgr.h>); the leaves
+// call m_recList/m_baseList/m_selLists[i] methods directly (no this+offset cast).
 
 // The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on
 // (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
@@ -592,7 +582,7 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
     if (fromSelection != 0) {
-        CTmPtrList* list = (CTmPtrList*)m_selLists;
+        CTmObList* list = m_selLists;
         i32 k = 10;
         do {
             CTmNode* n = list->m_head;
@@ -607,11 +597,11 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
                     list->RemoveAt(cur);
                 }
             }
-            list = (CTmPtrList*)((char*)list + 0x1c);
+            list++;
             k--;
         } while (k != 0);
     }
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     if (n == 0) {
         return 0;
     }
@@ -627,7 +617,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
     } while (n != 0);
     return 0;
 found:
-    if (m_recCount == 1) {
+    if (m_recList.m_count == 1) {
         StopPendingFx();
     }
     CTmCell* cell = m_grid[y + x * 15];
@@ -649,7 +639,7 @@ found:
     void** slot = (void**)((char*)p - g_freeListNodeBias);
     *slot = g_freeList;
     g_freeList = slot;
-    ((CTmPtrList*)((char*)this + 0x240))->RemoveAt(cur);
+    m_recList.RemoveAt(cur);
     return 1;
 }
 
@@ -664,7 +654,7 @@ found:
 // /GX unit. Accepted per the cleanup-over-% mandate.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     if (n != 0) {
         do {
             CTmNode* cur = n;
@@ -680,7 +670,7 @@ void CTriggerMgr::ResetAll() {
             }
         } while (n != 0);
     }
-    ((CTmPtrList*)((char*)this + 0x240))->RemoveAll();
+    m_recList.RemoveAll();
     StopPendingFx();
     CTmGoal* goal = m_goal;
     if (goal != 0) {
@@ -697,7 +687,7 @@ void CTriggerMgr::ResetAll() {
 // `xor eax,eax`. docs/patterns/identical-return-epilogue-tailmerge.md
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     if (n == 0) {
         return 0;
     }
@@ -721,7 +711,7 @@ i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
 // with the pushes. docs/patterns/zero-store-before-loop-inline-bound.md
 RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     if (n != 0) {
         i32 bias = g_freeListNodeBias;
         void* head = g_freeList;
@@ -734,7 +724,7 @@ void CTriggerMgr::ClearRecords() {
             g_freeList = head;
         } while (n != 0);
     }
-    ((CTmPtrList*)((char*)this + 0x240))->RemoveAll();
+    m_recList.RemoveAll();
 }
 
 // 0x78a30: OverlayTick - dispatch the overlay sub-object's Tick when present.
@@ -765,8 +755,8 @@ i32 CTriggerMgr::OverlayRelease() {
 // and the table in esi (SIB `[esi+eax]`, cl temp). Not source-steerable. topic:wall.
 RVA(0x00079b30, 0x3e)
 i32 CTriggerMgr::ByteTableHas(i32 b) {
-    i32 n = m_byteCount;
-    u8* tbl = m_byteData;
+    i32 n = m_byteArr.m_count;
+    u8* tbl = m_byteArr.m_data;
     for (i32 i = 0; i < n; i++) {
         if (b == tbl[i]) {
             return 1;
@@ -791,7 +781,7 @@ void CTriggerMgr::StopPendingFx() {
 // to the free list (skipping null-payload nodes), RemoveAll each list, reset +0x3e8.
 RVA(0x0007d0c0, 0x57)
 void CTriggerMgr::ClearSelections() {
-    CTmPtrList* list = (CTmPtrList*)m_selLists;
+    CTmObList* list = m_selLists;
     i32 k = 10;
     do {
         CTmNode* n = list->m_head;
@@ -810,7 +800,7 @@ void CTriggerMgr::ClearSelections() {
             } while (n != 0);
         }
         list->RemoveAll();
-        list = (CTmPtrList*)((char*)list + 0x1c);
+        list++;
         k--;
     } while (k != 0);
     m_selSentinel = -1;
@@ -889,9 +879,9 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     }
     i32 result = 0;
     i32 i = 0;
-    CTmNode** head = (CTmNode**)(m_selLists + 4);
+    CTmObList* list = m_selLists;
     do {
-        CTmNode* n = *head;
+        CTmNode* n = list->m_head;
         while (n != 0) {
             CTmNode* cur = n;
             n = n->m_next;
@@ -904,7 +894,7 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
             }
         }
         i++;
-        head = (CTmNode**)((char*)head + 0x1c);
+        list++;
     } while (i < 10);
     return result;
 }
@@ -1074,8 +1064,8 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
         g_gameReg->ReportError(0x8009, 0x401);
         return 0;
     }
-    CTmRecNode* n = m_objListHead;
-    i32 manyFlag = (m_objListCount > 0x3b) ? 1 : 0;
+    CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
+    i32 manyFlag = (m_baseList.m_count > 0x3b) ? 1 : 0;
     i32 unlinked = 0;
     while (n != 0 && unlinked == 0) {
         CTmRecNode* cur = n;
@@ -1087,23 +1077,23 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
                 return 0;
             }
             o->m_38->m_8 |= 0x10000;
-            ((CTmPtrList*)((char*)this))->RemoveAt(cur);
+            m_baseList.RemoveAt(cur);
             unlinked = 1;
         }
     }
     if (manyFlag != 0 && unlinked == 0) {
-        n = m_objListHead;
+        n = (CTmRecNode*)m_baseList.m_head;
         while (n != 0) {
             CTmRecNode* cur = n;
             n = n->m_next;
             CTmPuddleTarget* o = cur->m_obj;
             if (o->m_5c == 0) {
                 o->m_38->m_8 |= 0x10000;
-                ((CTmPtrList*)((char*)this))->RemoveAt(cur);
+                m_baseList.RemoveAt(cur);
             }
         }
     }
-    ((CTmPtrList*)((char*)this))->AddTail(tgt);
+    m_baseList.AddTail(tgt);
     return 1;
 }
 
@@ -1246,7 +1236,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         slot[1] = row;
         g_freeList = *(void**)g_freeList;
     }
-    ((CTmPtrList*)((char*)this + 0x240))->AddTail(slot);
+    m_recList.AddTail(slot);
     return cell->ResetMagic();
 }
 
@@ -1314,10 +1304,10 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         return 0;
     }
     CTmCell* cell;
-    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = m_recHead->m_payload;
+        i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     CTmWorld* world = g_gameReg->m_curState;
@@ -1511,10 +1501,10 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
     }
     u8 bytes[0x88];
     u8 count = 0;
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     while (n != 0) {
         CTmNode* next = n->m_next;
-        u8* payload = *(u8**)((char*)n + 0x8);
+        u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
         if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
             bytes[count] = payload[4];
@@ -1544,10 +1534,10 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
     }
     u8 bytes[0x88];
     u8 count = 0;
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     while (n != 0) {
         CTmNode* next = n->m_next;
-        u8* payload = *(u8**)((char*)n + 0x8);
+        u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
         if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
             bytes[count] = payload[4];
@@ -1613,32 +1603,32 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(m_cellFlag, 0xf0);
     ar->Write(m_rowStateB, 0x10);
     ar->Write(m_rowStateC, 0x10);
-    i32 cnt = m_byteCount;
+    i32 cnt = m_byteArr.m_count;
     ar->Write(&cnt, 4);
     for (i32 i = 0; i < cnt; i++) {
-        u8 b = m_byteData[i];
+        u8 b = m_byteArr.m_data[i];
         ar->Write(&b, 1);
     }
-    i32 flag24c = m_recCount;
+    i32 flag24c = m_recList.m_count;
     ar->Write(&flag24c, 4);
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     while (n != 0) {
         CTmNode* cur = n;
         n = n->m_next;
-        ar->Write(*(void**)((char*)cur + 0x8), 8);
+        ar->Write(cur->m_payload, 8);
     }
-    CTmNode** lists = (CTmNode**)(m_selLists + 4);
+    CTmObList* list = m_selLists;
     i32 k = 10;
     do {
-        i32 cnt2 = *(i32*)((char*)lists + 0x8);
+        i32 cnt2 = list->m_count;
         ar->Write(&cnt2, 4);
-        CTmNode* m = *lists;
+        CTmNode* m = list->m_head;
         while (m != 0) {
             CTmNode* cur = m;
             m = m->m_next;
-            ar->Write(*(void**)((char*)cur + 0x8), 8);
+            ar->Write(cur->m_payload, 8);
         }
-        lists = (CTmNode**)((char*)lists + 0x1c);
+        list++;
         k--;
     } while (k != 0);
     void* goal = m_goal;
@@ -1654,13 +1644,13 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     }
     ar->Write(&ovId, 4);
     ar->Write(m_274, 0x10);
-    i32 cntC = m_objListCount;
+    i32 cntC = m_baseList.m_count;
     ar->Write(&cntC, 4);
-    CTmNode* rn = (CTmNode*)m_objListHead;
+    CTmNode* rn = m_baseList.m_head;
     while (rn != 0) {
         CTmNode* cur = rn;
         rn = rn->m_next;
-        void* obj = *(void**)((char*)cur + 0x8);
+        void* obj = cur->m_payload;
         if (obj == 0) {
             return 0;
         }
@@ -1717,10 +1707,10 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     }
     CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
     CTmCell* cell;
-    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = m_recHead->m_payload;
+        i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     i32 sel;
@@ -1952,10 +1942,10 @@ i32 CTriggerMgr::PlaceObject(
 RVA(0x00078a50, 0x845)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     CTmCell* cell;
-    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = m_recHead->m_payload;
+        i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     if (cell == 0 || cell->m_1ec != g_644c54) {
@@ -2147,17 +2137,9 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
 // CTriggerMgr::ResetSpawnState  (0x79d90)
 // ===========================================================================
 
-// The +0x260 CObArray RemoveAt helper (0x1b5525) + the two build-state notifiers
-// (0x100930 self-ish / 0x104d60) + the pending-fx Pulse (0x3a1c) + RefreshB (0x3e81).
-// The +0x260 CByteArray: RemoveAt (ResetSpawnState), plus SetSize/SetAtGrow (the Load
-// deserializer). One shape for the one embedded byte array (former CTmSerByteArray folded in).
-struct CTmObArray {
-    void RemoveAt(i32 idx, i32 n);   // 0x1b5525
-    void SetSize(i32 n, i32 grow);   // 0x1b52e8
-    void SetAtGrow(i32 i, i32 v);    // 0x1b5485
-    void Place(i32 a, i32 b, i32 c); // ReinitGroup drop-last (reloc-masked)
-    void Dtor();                     // ~CTriggerMgr member-array dtor (reloc-masked)
-};
+// The +0x260 byte table is the canonical CTmByteArray real member m_byteArr (see
+// <Gruntz/TriggerMgr.h>): RemoveAt (ResetSpawnState) + SetSize/SetAtGrow (Load) called
+// directly. Plus the two build-state notifiers (0x100930 / 0x104d60).
 extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
 extern void __cdecl operator delete(void*);
 
@@ -2176,8 +2158,8 @@ void CTriggerMgr::ResetSpawnState() {
         st->m_54c = 0;
     }
     (world->m_2dc)->m_548 = 0;
-    if (m_byteCount > 0) {
-        ((CTmObArray*)((char*)this + 0x260))->RemoveAt(m_byteCount - 1, 1);
+    if (m_byteArr.m_count > 0) {
+        m_byteArr.RemoveAt(m_byteArr.m_count - 1, 1);
         CTmStatusItem* ctx = world->m_2dc;
         if (ctx->m_0 != 2 && ctx->m_10c == 5) {
             Eng_BuildNotifyA(0);
@@ -2238,8 +2220,8 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
 // pins this/idx-base differently across the two list walks. topic:wall.
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    CTmPtrList* sel = (CTmPtrList*)(m_selLists + idx * 0x1c);
-    CTmNode* n = *(CTmNode**)(m_selLists + idx * 0x1c + 4);
+    CTmObList* sel = &m_selLists[idx];
+    CTmNode* n = m_selLists[idx].m_head;
     if (n != 0) {
         void* head = g_freeList;
         do {
@@ -2255,7 +2237,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         } while (n != 0);
     }
     sel->RemoveAll();
-    CTmNode* rec = m_recHead;
+    CTmNode* rec = m_recList.m_head;
     while (rec != 0) {
         CTmNode* cur = rec;
         rec = rec->m_next;
@@ -2295,7 +2277,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     if (ov != 0 && ov->m_2c != 0) {
         OverlayTick();
     }
-    CTmNode* n = *(CTmNode**)(m_selLists + slot * 0x1c + 4);
+    CTmNode* n = m_selLists[slot].m_head;
     if (n == 0) {
         m_selSentinel = -1;
         return 0;
@@ -2334,7 +2316,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
             void** node = (void**)((char*)payload - g_freeListNodeBias);
             *node = g_freeList;
             g_freeList = node;
-            ((CTmPtrList*)(m_selLists + slot * 0x1c))->RemoveAt(cur);
+            m_selLists[slot].RemoveAt(cur);
         }
     } while (n != 0);
     if (m_selSentinel == slot) {
@@ -2367,10 +2349,10 @@ i32 CTriggerMgr::ToggleRegionA() {
     m_pendingFxKind = 0;
     // negated-condition-far-block: the lookup body lands FAR, cell=0 inline (retail layout)
     CTmCell* cell;
-    if (m_recCount != 1) {
+    if (m_recList.m_count != 1) {
         cell = 0;
     } else {
-        i32* rec = m_recHead->m_payload;
+        i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
     if (cell == 0) {
@@ -2414,10 +2396,10 @@ i32 CTriggerMgr::ToggleRegionB() {
     }
     m_pendingFxKind = 0;
     CTmCell* cell;
-    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
         cell = 0;
     } else {
-        i32* rec = m_recHead->m_payload;
+        i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
     if (cell == 0) {
@@ -2463,7 +2445,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     u8 buf[0x68];
     u8 count = 0;
     char x = 0;
-    CTmNode* n = m_recHead;
+    CTmNode* n = m_recList.m_head;
     if (n != 0) {
         i32 magic = g_644c54;
         do {
@@ -2495,7 +2477,6 @@ SIZE_UNKNOWN(CTmDisplay);
 SIZE_UNKNOWN(CTmCellConfig);
 SIZE_UNKNOWN(CTmOverlay);
 SIZE_UNKNOWN(CTmGoal);
-SIZE_UNKNOWN(CTmPtrList);
 SIZE_UNKNOWN(CTmStatusItem);
 SIZE_UNKNOWN(CTmWorld);
 SIZE_UNKNOWN(CTmScoreSub);
@@ -2516,7 +2497,6 @@ SIZE_UNKNOWN(CTmFxMgr);
 SIZE_UNKNOWN(CTmUserLogic);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmTileGrid);
-SIZE_UNKNOWN(CTmObArray);
 SIZE_UNKNOWN(CTmSoundChan);
 SIZE_UNKNOWN(CTmScroll);
 SIZE_UNKNOWN(CTmLevelView);
@@ -2548,9 +2528,6 @@ SIZE_UNKNOWN(CTmLevelView);
 // CUserLogic virtual slots (Apply @slot8/+0x20, Run @slot3/+0xc), the manager's own
 // placement/probe self-calls to CTriggerMgr methods, the overlay/status-item/grid-holder
 // and the embedded container dtors to their existing views.)
-
-// The destroy-array CRT helper (reloc-masked @0x51f640) used by the destructor.
-void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 
 // ---------------------------------------------------------------------------
 // Load (0x7abc0) collaborators. The manager reads its state through the archive
@@ -2593,8 +2570,8 @@ struct CTmSerMap {
 };
 SIZE_UNKNOWN(CTmSerMap);
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
-// selection lists @+0x2d0) reuse the CTmPtrList helper; the +0x260 byte array reuses
-// CTmObArray; the +0x25c overlay sub-object reuses CTmOverlay (all defined above).
+// selection lists @+0x2d0) are the real CTmObList members; the +0x260 byte array is the
+// real CTmByteArray member; the +0x25c overlay sub-object reuses CTmOverlay (all above).
 void RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown)
 
 // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state (see the header). The
@@ -2653,7 +2630,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     i32 count;
     u32 ci;
     ar->Read(&count, 4);
-    CTmObArray* arr = (CTmObArray*)((char*)this + 0x260);
+    CTmByteArray* arr = &m_byteArr;
     arr->SetSize(0, -1);
     for (ci = 0; ci < (u32)count; ci++) {
         i32 b;
@@ -2664,7 +2641,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // the +0x240 record list (nodes pulled off the shared free-list)
     ar->Read(&count, 4);
-    CTmPtrList* rec = (CTmPtrList*)((char*)this + 0x240);
+    CTmObList* rec = &m_recList;
     for (ci = 0; ci < (u32)count; ci++) {
         char* fl = (char*)g_freeList;
         void* node = 0;
@@ -2677,7 +2654,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     }
 
     // the ten selection lists (+0x2d0, stride 0x1c)
-    char* sel = m_selLists;
+    CTmObList* sel = m_selLists;
     i32 slot = 0xa;
     do {
         ar->Read(&count, 4);
@@ -2689,9 +2666,9 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
                 g_freeList = *(void**)fl;
             }
             ar->Read(node, 8);
-            ((CTmPtrList*)sel)->AddTail(node);
+            sel->AddTail(node);
         }
-        sel += 0x1c;
+        sel++;
     } while (--slot != 0);
 
     // the type-5 singleton (+0x23c)
@@ -2731,7 +2708,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // the base object list (this+0): reload from count keys
     ar->Read(m_274, 0x10);
-    ((CTmPtrList*)this)->RemoveAll();
+    m_baseList.RemoveAll();
     ar->Read(&count, 4);
     for (ci = 0; ci < (u32)count; ci++) {
         i32 key;
@@ -2748,7 +2725,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (obj == 0) {
             return 0;
         }
-        ((CTmPtrList*)this)->AddTail(obj);
+        m_baseList.AddTail(obj);
     }
 
     // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
@@ -2869,10 +2846,10 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         }
         return 0;
     }
-    if (ov->m_2c != 0 || m_recCount != 1) {
+    if (ov->m_2c != 0 || m_recList.m_count != 1) {
         return 0;
     }
-    i32* rec = *(i32**)((char*)m_recHead + 0x8);
+    i32* rec = m_recList.m_head->m_payload;
     char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
     if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
         return 0;
@@ -2931,25 +2908,21 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (sbi->Place(color, outR, outC) != 0) {
         sbi->m_548 = 1;
     } else {
-        ((CTmObArray*)((char*)this + 0x260))->Place(m_byteCount, 0, 0);
+        m_byteArr.Place(m_byteArr.m_count, 0, 0);
     }
     m_284 = 1;
     return 1;
 }
 
-// 0x85c50: ~CTriggerMgr - the /GX destructor: Cleanup (drain the lists), then destruct the 10
-// selection lists (+0x2d0, stride 0x1c, EH state 2), the +0x260 list (state 1), the +0x240
-// list (state 0) and the embedded base list (state -1). (__thiscall, ret.) Reconstructed to
-// plateau.
+// 0x85c50: ~CTriggerMgr - the /GX destructor: Cleanup (drain the lists), then the compiler
+// auto-emits the reverse-order member teardown - the 10 selection lists (+0x2d0, EH state 2),
+// the +0x260 byte array (state 1), the +0x240 record list (state 0) and the embedded base
+// list (state -1) - from the real CTmObList / CTmByteArray members' destructors. (__thiscall.)
 // @early-stop
-// /GX member-array dtor wall: the destroy-array helper + the four staged member-dtor EH
-// states number differently than retail's __ehfuncinfo; the teardown sequence is faithful.
+// /GX member-array dtor wall: the compiler-emitted member destructors + vector-dtor helper
+// number their __ehfuncinfo states differently than retail; the teardown sequence is faithful.
 // topic:wall topic:eh.
 RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
-    Tm_DestroyArray(m_selLists, 0x1c, 0xa, 0);
-    ((CTmObArray*)((char*)this + 0x260))->Dtor();
-    ((CTmPtrList*)((char*)this + 0x240))->Dtor();
-    ((CTmPtrList*)this)->Dtor();
 }
