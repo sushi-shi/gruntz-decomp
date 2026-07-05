@@ -49,11 +49,39 @@ namespace GruntzMgrCmd {
         void Disp18e8(); // 0x18e8 world-present toolbar on
         void Disp29b9(); // 0x29b9 world-present toolbar off
     };
-    // The settings singleton at *0x64556c (only +0x8c/+0x90 touched here).
+    // Global thermal-nuclear-war (0x8106) reaches a per-cell death record through the
+    // settings singleton and a CMapPtrToPtr; only the touched offsets are modeled.
+    struct GZDeath {
+        void ResolveDeathAnimation(); // 0x3a1c __thiscall
+    };
+    struct GZDeathSub {
+        char _p0[0x18];
+        GZDeath* m_18; // +0x18
+    };
+    struct GZDeathObj {
+        char _p0[0x7c];
+        GZDeathSub* m_7c; // +0x7c
+    };
+    struct GZPtrMap {                              // CMapPtrToPtr view
+        i32 Lookup(void* key, GZDeathObj*& out);   // 0x1b8760 __thiscall
+    };
+    struct GZSettingsMapHost { // settings->m_30->m_8
+        char _p0[0x48];
+        GZPtrMap m_48; // +0x48
+    };
+    struct GZSettingsSub {           // settings->m_30
+        char _p0[0x8];
+        GZSettingsMapHost* m_8; // +0x8
+    };
+    // The settings singleton at *0x64556c.
     struct GZMgrSettings {
-        char _p0[0x8c];
+        char _p0[0x30];
+        GZSettingsSub* m_30; // +0x30
+        char _p34[0x8c - 0x34];
         void* m_8c; // +0x8c
         void* m_90; // +0x90
+        char _p94[0x15c - 0x94];
+        void* m_15c; // +0x15c  monologo/death sprite key
     };
     struct GZCueMgr {
         i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d); // 0x1360d0 __thiscall
@@ -582,20 +610,22 @@ namespace GruntzMgrCmd {
                             ITEMCHEAT(0x1f, "Squeak Toyz are cool!");
                         case 0x8104:
                             ITEMCHEAT(0x20, "Yo-Yoz are cool!");
-                        case 0x8128:
-                            ITEMCHEAT(0x26, "Bomb Brickz are cool!");
-                        case 0x8129:
-                            ITEMCHEAT(0x25, "Indestructible Brickz are cool!");
-                        case 0x812b:
-                            ITEMCHEAT(0x23, "Gauntlet-Breaker Brickz are cool!");
-                        case 0x812a:
-                            ITEMCHEAT(0x24, "Teleport Brickz are cool!");
                         case 0x8106: {
-                            GZGrunt* _g = PickState();
-                            if (!_g) {
+                            if (!PickState()) {
                                 return 0;
                             }
                             m_cmdGrid->Board18e3(5);
+                            GZMgrSettings* _s = g_mgrSettings;
+                            void* _key = _s->m_15c;
+                            if (_key) {
+                                GZDeathObj* _dr = 0;
+                                if (_s->m_30->m_8->m_48.Lookup(_key, _dr) && _dr) {
+                                    GZDeath* _d = _dr->m_7c->m_18;
+                                    if (_d) {
+                                        _d->ResolveDeathAnimation();
+                                    }
+                                }
+                            }
                             PLAYCUE("GAME_MINORCHEAT");
                             AppendChat("Global thermal nuclear war!");
                             return 1;
@@ -616,6 +646,14 @@ namespace GruntzMgrCmd {
                             AppendChat("Ah, who needed that stupid timer anyway?");
                             return 1;
                         }
+                        case 0x8128:
+                            ITEMCHEAT(0x26, "Bomb Brickz are cool!");
+                        case 0x8129:
+                            ITEMCHEAT(0x25, "Indestructible Brickz are cool!");
+                        case 0x812b:
+                            ITEMCHEAT(0x23, "Gauntlet-Breaker Brickz are cool!");
+                        case 0x812a:
+                            ITEMCHEAT(0x24, "Teleport Brickz are cool!");
                         // ---- "pickup brick" cheats: grid-select a cell, LoadPickup(id) ----
                         case 0x8130:
                             BRICKPICKUP(0x39, "Oh yes, they will be assimilated!");
