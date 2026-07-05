@@ -16,6 +16,7 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameRegistry.h>       // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
+#include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
 #include <rva.h>
 #include <Globals.h>
 
@@ -77,22 +78,9 @@ public:
 // FramePoll (0x143e0) sub-object models.
 // ---------------------------------------------------------------------------
 
-// The render-busy object hung off the flip surface (m_04->m_10->m_2c + 0x8). It
-// is reached through a C-style function-pointer table (vtbl in ecx, self pushed,
-// callee-cleaned) so slot +0x60 reports whether the page is still busy.
-struct AttractBusyVtbl {
-    char m_pad00[0x60];
-    i32(__stdcall* Poll)(void* self); // +0x60
-};
-struct AttractBusyObj {
-    AttractBusyVtbl* m_vtbl; // +0x00
-};
-// A TU-local view onto the flip surface that exposes its +0x8 busy object without
-// perturbing the shared CDDSurface type (which only models Flip).
-struct AttractSurfaceExt {
-    char m_pad00[0x8];
-    AttractBusyObj* m_8; // +0x08
-};
+// The render-busy check dispatches IDirectDrawSurface::IsLost (slot 24, +0x60,
+// __stdcall self-on-stack) on the flip surface's held DirectDraw COM interface
+// (CDDSurface::m_8) to see whether the page still needs a restore.
 
 // The per-frame actor list (global pointer DAT_00645574): m_count at +0x4 and an
 // inline array of actor pointers at +0x8. Each actor's slot-4 (+0x10) virtual is
@@ -202,8 +190,8 @@ i32 CAttract::FrameSlot28(i32 arg) {
 // reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
 RVA(0x000143e0, 0xfb)
 i32 CAttract::Render() {
-    AttractBusyObj* busy = ((AttractSurfaceExt*)menuRoot()->m_04->m_10->m_2c)->m_8;
-    if (busy == 0 || busy->m_vtbl->Poll(busy) != 0) {
+    IDirectDrawSurface* busy = menuRoot()->m_04->m_10->m_2c->m_8;
+    if (busy == 0 || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
             owner()->ReportError(0x8006, 0x3e8);
             return 0;
@@ -654,9 +642,6 @@ i32 StatePaintHost::Paint() {
 
 SIZE_UNKNOWN(AttractActor);
 SIZE_UNKNOWN(AttractActorList);
-SIZE_UNKNOWN(AttractBusyObj);
-SIZE_UNKNOWN(AttractBusyVtbl);
-SIZE_UNKNOWN(AttractSurfaceExt);
 SIZE_UNKNOWN(AttractWndHolder);
 SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CAttractHost);
