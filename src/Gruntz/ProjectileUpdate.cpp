@@ -17,10 +17,24 @@
 //   bound object's z-order key (m_object->m_latchedAnimId = screenY + 100000)
 //   and runs the m_poweredUp/m_1c4 teardown hooks.
 //
-// IDENTITY (proven, fold DEFERRED): the owner is CGrunt and 0x61cb0 is CGrunt's
-// VTABLE SLOT 9 (thunk 0x119f, `sema class CGrunt` slot [9] override, origin
-// CUserLogic slot 9 == UserLogicVfunc7 by decl order - anchored by slots 14/15
-// == 0x1730/0x3607). Field agreement with <Gruntz/Grunt.h> (read-proven):
+// IDENTITY (proven, fold DEFERRED on the CGrunt ODR merge): the owner is CGrunt and
+// 0x61cb0 is CGrunt's VTABLE SLOT 9 (== CGrunt::UlSlot24, now declared OVERRIDE in
+// Grunt.h; thunk 0x119f, origin CUserLogic slot 9 - anchored by slots 14/15 ==
+// 0x1730/0x3607).
+//
+// WHY NOT FOLDED (real blocker = ODR, not ownership): this method spawns CProjectiles
+// and dispatches their slot-17 (LoadProjectileSprites), so it MUST include
+// <Gruntz/Projectile.h> (-> the canonical <Gruntz/MovingLogic.h> CMovingLogic). But
+// <Gruntz/Grunt.h> REDEFINES the whole CUserBase/CUserLogic/CMovingLogic/CProjectile
+// family with a different (CGruntHud*-m_10, inline-ctor, i32-vtable) layout, so the two
+// headers ODR-CONFLICT in one TU (empirically verified: `redefinition of CProjectile/
+// CMovingLogic/CUserLogic/CUserBase`). Defining this as CGrunt::UlSlot24 therefore needs
+// the documented CGrunt/CMovingLogic ODR merge (MovingLogic.h NOTE) to land first -
+// then this view dissolves mechanically (its member names already mirror Grunt.h). Until
+// then the grunt `this` is a CGrunt facet; the sub-objects it reaches ARE folded onto
+// the shared canonicals (m_object CGameObject*, m_154 CProjRenderObj*, the spawned setup
+// object CProjectile*, g_gameReg CGameRegistry*, g_buteMgr CButeMgr).
+// Field agreement with <Gruntz/Grunt.h> (read-proven):
 // +0x1c0 m_animSetName (CString - the bute section), +0x1ec/+0x1f0 m_tileOwnerHi/
 // Lo (== LoadProjectileSprites' launcher-cell args), +0x200/+0x204 m_neighborCol/
 // m_neighborRow (the melee cell index), +0x218 m_combatActive (cleared after
