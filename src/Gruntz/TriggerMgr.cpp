@@ -145,16 +145,23 @@ struct CTmCell {
 };
 
 // The small overlay sub-object allocated at CTriggerMgr+0x25c (0x40 bytes). Only its
-// reloc-masked __thiscall hooks are dispatched from the reconstructed leaves.
+// reloc-masked __thiscall hooks are dispatched from the reconstructed leaves. The Load
+// deserializer new+Loads a fresh one (former CTmSerOverlay folded in).
 struct CTmOverlay {
-    void Tick();                // 0x97f0  (reloc-masked)
-    i32 Release();              // 0x94c0  (reloc-masked) - ret used by OverlayRelease
-    void Clear();               // 0x92e0  (reloc-masked) - destruct without freeing
-    void Forward(i32 a, i32 b); // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
-    i32 m_0;                    // +0x00  owned x
-    i32 m_4;                    // +0x04  owned y
+    CTmOverlay();                 // 0x9090  (ctor via new, reloc-masked)
+    void Tick();                  // 0x97f0  (reloc-masked)
+    i32 Release();                // 0x94c0  (reloc-masked) - ret used by OverlayRelease
+    void Clear();                 // 0x92e0  (reloc-masked) - destruct without freeing
+    void Forward(i32 a, i32 b);   // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
+    i32 Load(CSerialArchive* ar); // 0x9bb0  (reloc-masked) - the overlay deserializer
+    inline void* operator new(u32) {
+        return ::operator new(0x40);
+    }
+    i32 m_0; // +0x00  owned x
+    i32 m_4; // +0x04  owned y
     char p8[0x2c - 0x8];
     i32 m_2c; // +0x2c  active flag gating the per-frame OverlayTick
+    char p30[0x40 - 0x30];
 };
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
@@ -2134,8 +2141,12 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
 
 // The +0x260 CObArray RemoveAt helper (0x1b5525) + the two build-state notifiers
 // (0x100930 self-ish / 0x104d60) + the pending-fx Pulse (0x3a1c) + RefreshB (0x3e81).
+// The +0x260 CByteArray: RemoveAt (ResetSpawnState), plus SetSize/SetAtGrow (the Load
+// deserializer). One shape for the one embedded byte array (former CTmSerByteArray folded in).
 struct CTmObArray {
     void RemoveAt(i32 idx, i32 n); // 0x1b5525
+    void SetSize(i32 n, i32 grow); // 0x1b52e8
+    void SetAtGrow(i32 i, i32 v);  // 0x1b5485
 };
 extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
 extern void __cdecl operator delete(void*);
@@ -2594,30 +2605,8 @@ struct CTmSerMap {
 };
 SIZE_UNKNOWN(CTmSerMap);
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
-// selection lists @+0x2d0) and the +0x260 byte array; reloc-masked MFC bodies.
-struct CTmSerList {
-    void RemoveAll();      // 0x1b48a6
-    void AddTail(void* p); // 0x1b4991
-};
-SIZE_UNKNOWN(CTmSerList);
-struct CTmSerByteArray {
-    void SetSize(i32 n, i32 grow); // 0x1b52e8
-    void SetAtGrow(i32 i, i32 v);  // 0x1b5485
-};
-SIZE_UNKNOWN(CTmSerByteArray);
-// The overlay sub-object (this->m_25c): new(0x40) + ctor, its own Load, and a
-// Clear + custom free on teardown.
-struct CTmSerOverlay {
-    CTmSerOverlay();              // 0x9090 (ctor via new)
-    void Clear();                 // 0x92e0
-    i32 Load(CSerialArchive* ar); // 0x9bb0
-    inline void* operator new(u32);
-    char m_body[0x40];
-};
-SIZE_UNKNOWN(CTmSerOverlay);
-inline void* CTmSerOverlay::operator new(u32) {
-    return ::operator new(0x40);
-}
+// selection lists @+0x2d0) reuse the CTmPtrList helper; the +0x260 byte array reuses
+// CTmObArray; the +0x25c overlay sub-object reuses CTmOverlay (all defined above).
 void RezFree(void* p); // 0x1b9b82 (__cdecl free used by the overlay teardown)
 
 // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state (see the header). The
@@ -2676,7 +2665,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     i32 count;
     u32 ci;
     ar->Read(&count, 4);
-    CTmSerByteArray* arr = (CTmSerByteArray*)((char*)this + 0x260);
+    CTmObArray* arr = (CTmObArray*)((char*)this + 0x260);
     arr->SetSize(0, -1);
     for (ci = 0; ci < (u32)count; ci++) {
         i32 b;
@@ -2687,7 +2676,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // the +0x240 record list (nodes pulled off the shared free-list)
     ar->Read(&count, 4);
-    CTmSerList* rec = (CTmSerList*)((char*)this + 0x240);
+    CTmPtrList* rec = (CTmPtrList*)((char*)this + 0x240);
     for (ci = 0; ci < (u32)count; ci++) {
         char* fl = (char*)g_freeList;
         void* node = 0;
@@ -2712,7 +2701,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
                 g_freeList = *(void**)fl;
             }
             ar->Read(node, 8);
-            ((CTmSerList*)sel)->AddTail(node);
+            ((CTmPtrList*)sel)->AddTail(node);
         }
         sel += 0x1c;
     } while (--slot != 0);
@@ -2754,7 +2743,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
 
     // the base object list (this+0): reload from count keys
     ar->Read(m_274, 0x10);
-    ((CTmSerList*)this)->RemoveAll();
+    ((CTmPtrList*)this)->RemoveAll();
     ar->Read(&count, 4);
     for (ci = 0; ci < (u32)count; ci++) {
         i32 key;
@@ -2771,11 +2760,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         if (obj == 0) {
             return 0;
         }
-        ((CTmSerList*)this)->AddTail(obj);
+        ((CTmPtrList*)this)->AddTail(obj);
     }
 
     // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
-    CTmSerOverlay* old = (CTmSerOverlay*)m_overlay;
+    CTmOverlay* old = m_overlay;
     if (old != 0) {
         old->Clear();
         RezFree(old);
@@ -2784,8 +2773,8 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     i32 hasOverlay;
     ar->Read(&hasOverlay, 4);
     if (hasOverlay != 0) {
-        CTmSerOverlay* ov = new CTmSerOverlay;
-        m_overlay = (CTmOverlay*)ov; // serialize-view of the overlay sub-object
+        CTmOverlay* ov = new CTmOverlay;
+        m_overlay = ov;
         if (ov->Load(ar) == 0) {
             return 0;
         }
