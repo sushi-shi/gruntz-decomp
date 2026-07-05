@@ -23,9 +23,10 @@
 #include <stdlib.h> // malloc (0x120b60)
 #include <string.h> // memset
 
-#include <Gruntz/StringNode.h>  // the type-name teardown slot
-#include <Gruntz/TypeKeyColl.h> // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
+#include <Gruntz/StringNode.h>    // the type-name teardown slot
+#include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
+#include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Globals.h>
 
 // ===========================================================================
@@ -223,22 +224,8 @@ i32 CKeyFinder::Find(i32 key) {
 // +0x0c) and id (slot +0x10); a second identical resolve xfers the name through
 // slot +0x14. Returns 1.
 // ===========================================================================
-// The archive record (`ar`) the serializer drives. Its vtable slots +0x0c/+0x10/
-// +0x14 are the per-field transfer hooks; +0x14 holds the field descriptor whose
-// +0x1c is the type id.
-SIZE_UNKNOWN(CXferField);
-struct CXferField {
-    i32 m_1c; // +0x1c  the type id
-};
-SIZE_UNKNOWN(CXferArchive);
-struct CXferArchive {
-    void Xfer0c(void* name); // vtbl +0x0c
-    void Xfer10(i32 id);     // vtbl +0x10
-    void Xfer14(void* name); // vtbl +0x14
-    void* m_00;              // +0x00  vtable
-    char pad_04[0x14 - 0x04];
-    CXferField* m_14; // +0x14
-};
+// The archive record (`ar`) the serializer drives is the canonical CXferArchive
+// (<Gruntz/XferArchive.h>, included above).
 DATA(0x002bf664)
 extern CTypeNameEntry* g_typeCur;
 
