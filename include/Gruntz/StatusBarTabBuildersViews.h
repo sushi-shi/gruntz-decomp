@@ -128,7 +128,7 @@ namespace StatusBarTabBuilders {
         i32 m_34;                // +0x34
         i32 m_38;                // +0x38
         i32 m_3c;                // +0x3c
-        i32 m_40;                // +0x40
+        i32 m_frameIdx;          // +0x40  frame/format index into m_imageSet->m_formats[]
         i32 m_44;                // +0x44
         i32 m_48;                // +0x48
         i32 m_4c;                // +0x4c

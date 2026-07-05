@@ -40,7 +40,7 @@ namespace StatusBarTabBuilders {
     // `cmp idx,[hi]; jg` after spelling them `idx > m_idxHi` instead of `m_idxHi < idx`). Residual:
     // (1) the 3 mid `return 0` guards inline `jne;pop;pop;ret` in retail (eax already 0) but my
     // compile tail-merges all 5 guards into one shared `pop;xor;pop;ret`; (2) the final range-check
-    // lands m_imageSet/m_40 in the opposite regs (eax<->ecx free-list coin-flip). ~80.4%; both
+    // lands m_imageSet/m_frameIdx in the opposite regs (eax<->ecx free-list coin-flip). ~80.4%; both
     // residuals are documented non-steerable walls. Logic complete.
     RVA(0x000e8a70, 0x18c)
     i32 CSbTab::BuildResourceTabStatusBar(
@@ -87,7 +87,7 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         m_38 = idxA;
-        m_40 = idxB;
+        m_frameIdx = idxB;
         i32 s;
         if (idxA < m_imageSet->m_idxLo || idxA > m_imageSet->m_idxHi) {
             s = 0;
@@ -106,10 +106,10 @@ namespace StatusBarTabBuilders {
         m_imageSet->SetAllTypes(10);
         m_imageSet->SetAllFormats(sel);
         i32 val;
-        if (m_40 < m_imageSet->m_idxLo || m_40 > m_imageSet->m_idxHi) {
+        if (m_frameIdx < m_imageSet->m_idxLo || m_frameIdx > m_imageSet->m_idxHi) {
             val = 0;
         } else {
-            val = m_imageSet->m_formats[m_40];
+            val = m_imageSet->m_formats[m_frameIdx];
         }
         m_3c = val;
         return val != 0;
@@ -157,7 +157,7 @@ namespace StatusBarTabBuilders {
             m_04 = 1;
         }
         m_3c = p10;
-        m_40 = p11;
+        m_frameIdx = p11;
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
