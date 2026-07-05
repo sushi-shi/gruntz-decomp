@@ -14,6 +14,9 @@
 // former GZGateA/GZGateB/GZStrMap/GZSound/GZCueMgr/GZGate2c views are dissolved onto them.
 // GameRegistry.h is MFC-free (pulls SoundCue.h), so it enters this <Win32.h> TU cleanly.
 #include <Gruntz/GameRegistry.h>
+// InputState.h (CInput54, the +0x54 input/spatial-sound object) is MFC-free (Ints.h only),
+// so it enters cleanly - the former GZInput view is dissolved onto CInput54.
+#include <Gruntz/InputState.h>
 
 namespace GruntzMgrCmd {
     // ================= RVA 0x862f0 : CGruntzMgr::HandleCommand =================
@@ -50,10 +53,6 @@ namespace GruntzMgrCmd {
     //       real CMapPtrToPtr (Lookup 0x1b8760) hung off m_world->m_8->+0x48
     //   Each needs canonical-header method additions (mostly non-virtual = other-TU-neutral)
     //   + field re-expression; sequenced to keep this session's blast radius bounded.
-    struct GZInput {     // manager m_54 (input/toolbar sub-object)
-        void Disp18e8(); // 0x18e8 world-present toolbar on
-        void Disp29b9(); // 0x29b9 world-present toolbar off
-    };
     // Global thermal-nuclear-war (0x8106) reaches a per-cell death record through the
     // settings singleton and a CMapPtrToPtr; only the touched offsets are modeled.
     struct GZDeath {
@@ -247,8 +246,8 @@ namespace GruntzMgrCmd {
         GZM44* m_44;       // 0x44 (engine sub-object; +0x124 flag)
         GZSoundZ* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
-        GZInput* m_inputState; // 0x54
-        GZObj58* m_saveSink;   // 0x58 (has +0x18)
+        CInput54* m_inputState; // 0x54 (world-present toolbar Method1/Method0)
+        GZObj58* m_saveSink;    // 0x58 (has +0x18)
         char _p5c[0x68 - 0x5c];
         GZBoard* m_cmdGrid; // 0x68
         char _p6c[0xa0 - 0x6c];
@@ -1315,9 +1314,9 @@ namespace GruntzMgrCmd {
                 m_10 = v;
                 g_61ab20 = v;
                 if (v == 0) {
-                    m_inputState->Disp29b9();
+                    m_inputState->Method0();
                 } else {
-                    m_inputState->Disp18e8();
+                    m_inputState->Method1();
                 }
                 return 1;
             }
