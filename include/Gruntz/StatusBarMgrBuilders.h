@@ -67,7 +67,7 @@ public:
         const char* key,
         i32 d,
         i32 e
-    ); // +0x2c
+    );                      // +0x2c
     virtual void s30_pad(); // +0x30 (filler between Configure and ConfigureEx)
     virtual i32 ConfigureEx(
         CStatusBarMgr* mgr,
@@ -162,9 +162,10 @@ public:
 };
 SIZE(CSBI_WellGoo, 0x6c);
 
-class CSBI_MultiSlot : public CSbConfigItem { // vtable 0x5ead24, tag 0xb, size 0x40 (multiplayer HEAD)
+class CSBI_WarlordHead
+    : public CSbConfigItem { // vtable 0x5ead24, tag 0xb, size 0x40 (multiplayer HEAD)
 public:
-    CSBI_MultiSlot() {
+    CSBI_WarlordHead() {
         m_30 = 0;
         m_8 = 0xb;
         m_34 = 0;
@@ -172,7 +173,7 @@ public:
     i32 m_34; // +0x34
     char _pad38[0x40 - 0x38];
 };
-SIZE(CSBI_MultiSlot, 0x40);
+SIZE(CSBI_WarlordHead, 0x40);
 
 // CSBI_ImageSetAni (Resource SHREDDER conveyor): out-of-line base ctor + own vtable;
 // tag 8, m_3c seeded 0x64. Configured via ConfigureEx (slot +0x34).

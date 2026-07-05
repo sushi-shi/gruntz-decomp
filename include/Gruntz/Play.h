@@ -165,7 +165,7 @@ struct CWorld {
         i32 m_400; // +0x400  active-region gate (HandleTileClick)
     }* m_68;       // +0x68  -> +0x230 substep gate
     void* m_6c;    // +0x6c  a frame-timer object (Eng_FrameTimerStep)
-    void* m_70; // +0x70  an input sub-object
+    void* m_70;    // +0x70  an input sub-object
     // +0x74: the sprite/animation ref table (== g_gameReg->m_spriteFactory; this
     // CWorld view is the CGruntzMgr singleton). BeginGridWalk loads the grid's frame
     // sprite via its LoadSprite(desc, flag) facet. Full class in <Gruntz/SpriteRefTable.h>.

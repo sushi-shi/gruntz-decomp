@@ -15,7 +15,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <math.h> // sqrt (intrinsic fsqrt for the board-distance)
+#include <math.h>             // sqrt (intrinsic fsqrt for the board-distance)
 #include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
 
 #pragma intrinsic(sqrt)
@@ -179,98 +179,97 @@ i32 CGruntMover::Step(CGruntM* g) {
     if (g->m_2d4 != 2) {
         return 1;
     }
-inflight:
-    {
-        // ---- in-flight: advance / reroute along the path ----
-        i32 col = g->m_2f0;
-        i32 row = g->m_2f4;
-        CGruntM* cur = m_8->m_grid[15 * col + row];
-        i32 W = m_c->m_c;
-        i32 H = m_c->m_10;
-        CCoordXY c0;
-        g->GetTilePos36c0(&c0);
-        c0.x >>= 5;
-        c0.y >>= 5;
-        CGruntM* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+inflight: {
+    // ---- in-flight: advance / reroute along the path ----
+    i32 col = g->m_2f0;
+    i32 row = g->m_2f4;
+    CGruntM* cur = m_8->m_grid[15 * col + row];
+    i32 W = m_c->m_c;
+    i32 H = m_c->m_10;
+    CCoordXY c0;
+    g->GetTilePos36c0(&c0);
+    c0.x >>= 5;
+    c0.y >>= 5;
+    CGruntM* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
 
-        if (cur == 0) {
-            goto L_clear;
+    if (cur == 0) {
+        goto L_clear;
+    }
+    if (nb != 0 && cur != nb) {
+        if (g->m_328 != 0) {
+            MOVE_RECYCLE(g);
         }
-        if (nb != 0 && cur != nb) {
-            if (g->m_328 != 0) {
-                MOVE_RECYCLE(g);
-            }
-            g->m_2f0 = nb->m_1ec;
-            g->m_2f4 = nb->m_1f0;
-            g->m_2d4 = 2;
-            g->m_2ec = 0;
-            {
-                CGruntSub10* s = nb->m_10;
-                if (g->Probe1640(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) == 0) {
-                    return 1;
-                }
-            }
-            cur = nb; // loc34
-        }
-        // L_900
-        if (cur == 0) {
-            goto L_clear;
-        }
+        g->m_2f0 = nb->m_1ec;
+        g->m_2f4 = nb->m_1f0;
+        g->m_2d4 = 2;
+        g->m_2ec = 0;
         {
-            CGruntSub10* s = cur->m_10;
-            if (g->Check3c4c(s->m_5c, s->m_60) != 0) {
-                // arrived on this tile: latch the move
-                g->m_2f0 = -1;
-                g->m_2f4 = -1;
-                Finish3e4f(g, cur);
-                g->m_2d4 = 0;
+            CGruntSub10* s = nb->m_10;
+            if (g->Probe1640(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) == 0) {
                 return 1;
             }
         }
-        // 3198f: not arrived - reroute by board distance
-        if ((u32)g->m_2ec <= (u32)m_b4) {
+        cur = nb; // loc34
+    }
+    // L_900
+    if (cur == 0) {
+        goto L_clear;
+    }
+    {
+        CGruntSub10* s = cur->m_10;
+        if (g->Check3c4c(s->m_5c, s->m_60) != 0) {
+            // arrived on this tile: latch the move
+            g->m_2f0 = -1;
+            g->m_2f4 = -1;
+            Finish3e4f(g, cur);
+            g->m_2d4 = 0;
             return 1;
         }
-        {
-            CCoordXY here;
-            g->GetTilePos36c0(&here);
-            i32 x5 = here.x >> 5;
-            i32 y5 = here.y >> 5;
-            CCoordXY nbpos;
-            cur->Probe3143(&nbpos);
-            i32 dx = nbpos.x - x5;
-            i32 dy = nbpos.y - y5;
-            i32 adx = dx < 0 ? -dx : dx;
-            i32 ady = dy < 0 ? -dy : dy;
-            i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
-            if (dist > m_c0) {
-                if (g->m_328 != 0) {
-                    MOVE_RECYCLE(g);
-                }
-                goto L_clearAt;
-            }
+    }
+    // 3198f: not arrived - reroute by board distance
+    if ((u32)g->m_2ec <= (u32)m_b4) {
+        return 1;
+    }
+    {
+        CCoordXY here;
+        g->GetTilePos36c0(&here);
+        i32 x5 = here.x >> 5;
+        i32 y5 = here.y >> 5;
+        CCoordXY nbpos;
+        cur->Probe3143(&nbpos);
+        i32 dx = nbpos.x - x5;
+        i32 dy = nbpos.y - y5;
+        i32 adx = dx < 0 ? -dx : dx;
+        i32 ady = dy < 0 ? -dy : dy;
+        i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
+        if (dist > m_c0) {
             if (g->m_328 != 0) {
                 MOVE_RECYCLE(g);
             }
-            CGruntSub10* s = cur->m_10;
-            if (g->Probe1640(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) != 0) {
-                g->m_2ec = 0;
-                return 1;
-            }
+            goto L_clearAt;
         }
-    L_clearAt:
-        g->m_2f0 = -1;
-        g->m_2f4 = -1;
-        g->m_2d4 = 0;
-        g->m_2ec = 0;
-        return 1;
-
-    L_clear:
-        g->m_2f0 = -1;
-        g->m_2d4 = 0;
-        g->m_2f4 = -1;
-        return 1;
+        if (g->m_328 != 0) {
+            MOVE_RECYCLE(g);
+        }
+        CGruntSub10* s = cur->m_10;
+        if (g->Probe1640(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) != 0) {
+            g->m_2ec = 0;
+            return 1;
+        }
     }
+L_clearAt:
+    g->m_2f0 = -1;
+    g->m_2f4 = -1;
+    g->m_2d4 = 0;
+    g->m_2ec = 0;
+    return 1;
+
+L_clear:
+    g->m_2f0 = -1;
+    g->m_2d4 = 0;
+    g->m_2f4 = -1;
+    return 1;
+}
 }
 
 SIZE_UNKNOWN(CCoordXY);

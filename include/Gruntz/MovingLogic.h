@@ -29,7 +29,7 @@
 #define GRUNTZ_CMOVINGLOGIC_H
 
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h>     // CUserLogic (0x30) / CTileLogic (0x40) base, CGameObject, CGameObjAux
+#include <Gruntz/UserLogic.h> // CUserLogic (0x30) / CTileLogic (0x40) base, CGameObject, CGameObjAux
 #include <Gruntz/MotionState.h>   // CMotionState (+0x38 band) + Init/SetParams/SetZ
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Serialize arg)
 #include <rva.h>

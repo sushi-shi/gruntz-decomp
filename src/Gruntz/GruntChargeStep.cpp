@@ -222,7 +222,14 @@ i32 Grunt::ChargeStep() {
                     if (CanReach(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
                         return 1;
                     }
-                    if (Attack(g->m_10->m_pixelX >> 5, g->m_10->m_pixelY >> 5, 0, m_arrivalFlags, 1, 0)
+                    if (Attack(
+                            g->m_10->m_pixelX >> 5,
+                            g->m_10->m_pixelY >> 5,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        )
                         != 0) {
                         Snap(1, 1);
                         m_arrivalCol = g->m_tileOwnerHi;
@@ -292,7 +299,8 @@ i32 Grunt::ChargeStep() {
                 MoveTo6(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
-            if (m_poweredUp == 0 && m_stamina >= 100 && AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) != 0
+            if (m_poweredUp == 0 && m_stamina >= 100
+                && AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) != 0
                 && t->m_10->m_pixelX == t->m_lastTilePxX && t->m_10->m_pixelY == t->m_lastTilePxY) {
                 FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
                 m_defenderState = 2;
@@ -313,7 +321,8 @@ i32 Grunt::ChargeStep() {
                 if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
                     return 1;
                 }
-                if (AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) == 0 || t->m_10->m_pixelX != t->m_lastTilePxX
+                if (AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) == 0
+                    || t->m_10->m_pixelX != t->m_lastTilePxX
                     || t->m_10->m_pixelY != t->m_lastTilePxY) {
                     m_defenderState = 1;
                     m_dwell = 0x1f4;

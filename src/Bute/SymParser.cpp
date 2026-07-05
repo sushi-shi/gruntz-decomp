@@ -362,10 +362,10 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 // .rodata literals.
 void SymBuildLeaf(CSymParser* p, void* recArg, void* extKey); // 0x13b970
 void SymBindRecord(void* rec, char* name, i32 h);             // 0x13cac0
-extern const char g_sepSlash[];                                 // 0x60cff0  "\\"
-extern const char g_wildcard[];                                 // 0x61a0a0  "*.*"
-extern const char g_dotDot[];                                   // 0x5ee8ec  ".."
-extern const char g_dot[];                                      // 0x60cf90  "."
+extern const char g_sepSlash[];                               // 0x60cff0  "\\"
+extern const char g_wildcard[];                               // 0x61a0a0  "*.*"
+extern const char g_dotDot[];                                 // 0x5ee8ec  ".."
+extern const char g_dot[];                                    // 0x60cf90  "."
 
 // @early-stop
 // 0x545 (1349 B) /GX recursive directory loader: enumerates `path` with

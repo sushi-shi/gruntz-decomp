@@ -3,7 +3,7 @@
 #include <Gruntz/LightFx.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
+#include <Gruntz/LightFxMgr.h>           // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 // LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
@@ -45,7 +45,6 @@ struct LfxMapSource {
     char m_pad00[0xc];
     LfxMapHolder* m_0c; // +0xc
 };
-
 
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
 // read here. (Declared as the engine's CGameRegistry via the existing DATA label.)

@@ -22,7 +22,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
-#include <Gruntz/InputState.h>     // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
+#include <Gruntz/InputState.h> // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.

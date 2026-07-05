@@ -26,7 +26,7 @@ extern CMulti* g_64bd5c;
 
 // The shared channel/color-slot array accessors (ChannelSlots.cpp, __cdecl). The
 // multiplayer color picker reads/stamps a player's slot through them.
-i32 ChannelSlots_Get(i32 i);       // 0xdb2d0  (color-taken read)
+i32 ChannelSlots_Get(i32 i);         // 0xdb2d0  (color-taken read)
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0  (color-flag stamp)
 
 RVA(0x000c4b60, 0x77)

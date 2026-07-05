@@ -224,7 +224,7 @@ struct CView {
         struct CMap {
             void Lookup(i32 key, void*& out); // 0x1b8008 (CMapStringToOb::Lookup, thiscall)
         } m_10map;                            // +0x10  the name->object map / frame grid
-    };                                        // (name reconciled with ResMgr.h's CImageRegistry::m_10map)
+    }; // (name reconciled with ResMgr.h's CImageRegistry::m_10map)
     CImageRegistry* m_imageRegistry; // +0x10  image/name registry (Release/Register/Has/Install)
     char p14[0x20 - 0x14];
     void* m_frameProfiler;       // +0x20  frame profiler timer (timeGetTime x2)

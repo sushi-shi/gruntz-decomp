@@ -36,9 +36,9 @@ extern CProjReg g_projReg;
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 DATA(0x002bf464)
-extern void* g_projActCache; // 0x6bf464
+extern void* g_projActCache;      // 0x6bf464
 extern void* g_retAddrBreadcrumb; // 0x6bf428
-extern void* GetRetAddr();     // 0x16d990
+extern void* GetRetAddr();        // 0x16d990
 
 struct CProjReg2 {
     void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)

@@ -26,9 +26,9 @@ i32 C213a0::Get() {
 // 0x0464e0 - type-id -> entry resolver (the projectile/act fast-range + Find +
 // grow-on-miss lookup; same shape as TypeKeyColl's TypeResolve). __thiscall(key).
 // ===========================================================================
-extern void* g_projActCache;       // 0x6bf464 (pinned in CStaticHazard.cpp)
+extern void* g_projActCache;      // 0x6bf464 (pinned in CStaticHazard.cpp)
 extern void* g_retAddrBreadcrumb; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
-extern void* GetRetAddr();     // 0x16d990
+extern void* GetRetAddr();        // 0x16d990
 // @early-stop
 // esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
 // this->edi). Full fast-range/Find/grow logic + offsets byte-faithful (same shape as

@@ -206,7 +206,7 @@ struct CGameRegistry {
                                    //         the sprite factory via m_world->m_8). ONE object,
                                    //         two type-views (verified): the retail CResMgr resource
                                    //         facet (ResMgr.h) here, the CWorldZ world facet in
-                                   //         GruntzMgr.h, and CState::m_c's CView world-holder (View.h)
+    //         GruntzMgr.h, and CState::m_c's CView world-holder (View.h)
     char m_pad34[0x38 - 0x34];
     void* m_settings; // +0x38  settings/registry writer (== GruntzMgr m_settings; consumers cast
     //         to RegistryHelper: SetValueDword/LogPos/QueryPos). void* -> cast at use.
@@ -217,8 +217,8 @@ struct CGameRegistry {
                             //         proven: the mgr's input facet == the ambient TU's
                             //         active-level facet, +0x24 armed==playable gate,
                             //         +0x08 CObList spatial voice list; see InputState.h)
-    void* m_saveSink; // +0x58  save-record sink (consumers read save-game progress:
-                      //         MenuProgress->m_1c / final-movie availability)
+    void* m_saveSink;       // +0x58  save-record sink (consumers read save-game progress:
+                            //         MenuProgress->m_1c / final-movie availability)
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)
@@ -233,11 +233,11 @@ struct CGameRegistry {
                                       //         RTTI/teardown-proven: LoadSprite in CPlay,
                                       //         GetByIndex==GetSel in InGameIcon; Grunt.h GetSel)
     CLightFxMgr* m_logicPump; // +0x78  light-FX / shade-table pump (ONE object, teardown-proven:
-                              //         Push@0x9dcb0; m_tables[10]@+0x14 is the effect->table array)
-    void* m_scoreHud;  // +0x7c  HUD/score accumulator + cmd sink;
-                       //         battlez views it as the CBzData score tracker facet.
-    i32 m_numRuns;     // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
-                       //         varies the attract title screen by m_numRuns % N + 1)
+    //         Push@0x9dcb0; m_tables[10]@+0x14 is the effect->table array)
+    void* m_scoreHud; // +0x7c  HUD/score accumulator + cmd sink;
+                      //         battlez views it as the CBzData score tracker facet.
+    i32 m_numRuns;    // +0x80  launch counter "Num_Runs" (== GruntzMgr m_numRuns; CMulti
+                      //         varies the attract title screen by m_numRuns % N + 1)
     char m_pad84[0x8c - 0x84];
     i32 m_modeW;      // +0x8c  live video-mode width (cmp ...,0x280==640)
     i32 m_modeH;      // +0x90  live video-mode height (==480)

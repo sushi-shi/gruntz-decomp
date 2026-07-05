@@ -27,7 +27,7 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h>        // the by-value geometry rect the Configure virtuals take
+#include <Gruntz/SbRect.h>         // the by-value geometry rect the Configure virtuals take
 #include <Gruntz/SpriteRefTable.h> // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
 // The retail out-of-line base-ctor call raises the /GX frame; with the esi-relative cache
 // stores below giving retail's register pressure, this now lands this->esi/Order-A.
@@ -81,26 +81,30 @@ void CSbConfigItem::SetDirection(i32 a, i32 b) {
 // frame (the just-created item is EH-rolled-back if a later Configure throws).
 //
 // @early-stop
-// ~44.8% (was 24.1%); REGISTER LAYOUT NOW MATCHES retail's Order-A (this->esi, bx->ebx,
-// by->ebp). THE UNLOCK (docs/patterns/gx-this-esi-via-cache-store-pressure.md): the out-of-line
-// CSbConfigItem base ctor (CSBCONFIGITEM_OUTOFLINE_CTOR) raises the /GX frame, but on the
-// bare partial it lands this->ebp/edi (Order-B) - retail keeps `code` in MEMORY [esp+0x10]
-// and dedicates edi to the zero-constant, which needs the WHOLE body's register pressure.
-// Reconstructing the esi-relative cache stores (m_204/m_218/m_224/m_364..m_628) + the Game
-// WARPSTONE run + Resource BELT + Multiplayer HEAD slots/loop supplied that pressure: cl
-// spills `code`, dedicates edi=0, and puts `this` in esi - byte-exact retail prologue. Cases
-// are emitted in retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game). COMPLETE
-// cases: Gruntz (TITLE+GRUNTOVEN loop+WELL/OVENZ/WELLTEXT/WELLGOO), Game (TITLE+WARPSTONE
-// Probe-gated run+BuildGameMenu). PARTIAL: Resource (through BELT), Multiplayer (through HEAD
-// loop), Statz (TITLE).
+// ~83.7% (was 24.1% -> 44.8% -> here); the BODY IS COMPLETE - all five tabs fully
+// reconstructed in retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game):
+//   Gruntz    - TITLE + GRUNTOVEN loop + WELL/OVENZ/WELLTEXT/WELLGOO
+//   Resource  - TITLE + MAIN/UPPER/WINDOW bg + BELT x3 + GREYCHIPZ + SHREDDER 4x3 grid
+//               + MACHINE (CSBI_GruntMachine -> BuildResourceTabStatusBar) + machine
+//               foreground (CSBI_ImageInline) + 2 conveyor CSBI_ImageSetAni + NORMCHIPZ
+//   Multi     - TITLE + 4 WARLORDHEAD slots + HEAD per-player loop + SMALLICONZ 15-loop
+//   Statz     - TITLE + mode-gated 15-iter arrow(ConfigureEx)/grunt-bar loop
+//   Game      - TITLE + WARPSTONE Probe-gated run + BuildGameMenu
+// The prologue is byte-exact Order-A (this->esi, code spilled [esp+0x10], bx->ebx,
+// by->ebp; docs/patterns/gx-this-esi-via-cache-store-pressure.md) and every loop
+// (SHREDDER/SMALLICONZ/Statz/HEAD) reproduces retail's ebp=item induction byte-for-byte.
 //
-// RESIDUAL (the ConfigureEx/cross-call/ebp-reuse tails - each raises %, none needs a new idea,
-// just the byte-level decode of the ebp-reuse loops): ResourceTab SHREDDER (GREYCHIPZ/NORMCHIPZ
-// ConfigureEx loop, ebp=item) + MACHINE (CSBI_GruntMachine 0x48 -> BuildResourceTabStatusBar
-// cross-call, inline ctor + manual vtable 0x5eadbc); MultiplayerTab WARLORDHEAD (0x88 ->
-// BuildMultiplayerTabStatusBar); StatzTab mode-gate + SMALLICONZ 15-iter loop (CSBI_StatzTab-
-// GruntBar ConfigureEx + SetA/SetDirection + WARLORDHEAD). Stack frame 0x28 vs retail 0x34
-// (the missing ebp-reuse loop induction locals shift [esp+N] - closes as those loops land).
+// RESIDUALS (all documented regalloc/codegen coin-flips, none a logic error):
+//  (1) by<->it swap in the SEQUENTIAL tail items: retail spills `by` to [esp+0x20]
+//      GLOBALLY (freeing ebp for the item pointer across the MACHINE-tail sequential
+//      items) and reads by from memory there; cl here restores `by` to ebp after the
+//      SHREDDER loop and spills `it` to a stack slot instead - the same callee-saved
+//      coin-flip as the whole-body allocation (only tips with by permanently evicted).
+//      This also holds the frame at 0x30 vs retail 0x34 (the missing by-spill dword).
+//  (2) m_368 machine-foreground rect.top: retail reads a precomputed stack slot; cl
+//      recomputes `leal 0x1a6(ebp)` inline (value is a best-fit placeholder).
+//  (3) per-item store-scheduling / vtable-stamp-position coin-flips in the inline ctors.
+// All are matcher.md regalloc/scheduling walls; logic + offsets + call shape are exact.
 RVA(0x00102250, 0x1dcd)
 i32 CStatusBarMgr::LoadTabSprites() {
     i32 code = m_code; // the Configure `code` arg (saved to [esp+0x10] in retail)
@@ -188,7 +192,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xc8;
             r.right = bx + 0x97;
             r.bottom = by + 0x1cd;
-            if (!it->Configure(this, code, 0x69, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL", -1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x69,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
+                    -1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -243,7 +256,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xf8;
             r.right = bx + 0xef;
             r.bottom = by + 0x1b3;
-            if (!it->Configure(this, code, 0x6a, 2, r, "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO", m_298, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x6a,
+                    2,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
+                    m_298,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -348,7 +370,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x3c;
             r.bottom = by + 0x130;
-            if (!it->Configure(this, code, 0xcb, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2c4, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0xcb,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_2c4,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -361,7 +392,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x63;
             r.bottom = by + 0x130;
-            if (!it->Configure(this, code, 0xcc, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2dc, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0xcc,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_2dc,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -374,7 +414,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x8b;
             r.bottom = by + 0x130;
-            if (!it->Configure(this, code, 0xcd, 3, r, "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT", m_2f4, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0xcd,
+                    3,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_2f4,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -415,7 +464,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x34;
                     r.bottom = y;
-                    if (!it->Configure(this, code, c - 4, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[-24], 0)) {
+                    if (!it->Configure(
+                            this,
+                            code,
+                            c - 4,
+                            3,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[-24],
+                            0
+                        )) {
                         if (it) {
                             delete it;
                         }
@@ -428,7 +486,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x5c;
                     r.bottom = y;
-                    if (!it->Configure(this, code, c, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[0], 0)) {
+                    if (!it->Configure(
+                            this,
+                            code,
+                            c,
+                            3,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[0],
+                            0
+                        )) {
                         if (it) {
                             delete it;
                         }
@@ -441,7 +508,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x84;
                     r.bottom = y;
-                    if (!it->Configure(this, code, c + 4, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", cfgp[24], 0)) {
+                    if (!it->Configure(
+                            this,
+                            code,
+                            c + 4,
+                            3,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[24],
+                            0
+                        )) {
                         if (it) {
                             delete it;
                         }
@@ -592,13 +668,22 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_9c.AddTail(it);
-            // 4 player HEAD slots (CSBI_MultiSlot, y steps 0x43; cached m_61c..m_628).
-            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            // 4 player HEAD slots (CSBI_WarlordHead, y steps 0x43; cached m_61c..m_628).
+            it = (CSbConfigItem*)new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0xcf;
             r.right = bx + 0x8e;
             r.bottom = by + 0x10a;
-            if (!it->Configure(this, code, 0x190, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1", 1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x190,
+                    4,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
+                    1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -606,12 +691,21 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_61c = (i32)it;
-            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            it = (CSbConfigItem*)new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x112;
             r.right = bx + 0x8e;
             r.bottom = by + 0x14d;
-            if (!it->Configure(this, code, 0x191, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2", 1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x191,
+                    4,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
+                    1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -619,12 +713,21 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_620 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            it = (CSbConfigItem*)new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x155;
             r.right = bx + 0x8e;
             r.bottom = by + 0x190;
-            if (!it->Configure(this, code, 0x192, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3", 1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x192,
+                    4,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
+                    1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -632,12 +735,21 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_624 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_MultiSlot;
+            it = (CSbConfigItem*)new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x197;
             r.right = bx + 0x8e;
             r.bottom = by + 0x1d2;
-            if (!it->Configure(this, code, 0x193, 4, r, "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4", 1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x193,
+                    4,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
+                    1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -653,8 +765,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 off = 0;
                 do {
                     i32 sel;
-                    if (*(i32*)((char*)g_gameReg + off + 0x178) != 0 &&
-                        *(i32*)((char*)g_gameReg + off + 0x17c) == 0) {
+                    if (*(i32*)((char*)g_gameReg + off + 0x178) != 0
+                        && *(i32*)((char*)g_gameReg + off + 0x17c) == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(
                             *(i32*)((char*)g_gameReg + off + 0x158),
                             0
@@ -835,7 +947,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by;
             r.right = bx + 0x9f;
             r.bottom = by + 0x7f;
-            if (!it->Configure(this, code, 0x2bc, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 1, 0)) {
+            if (!it->Configure(
+                    this,
+                    code,
+                    0x2bc,
+                    5,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                    1,
+                    0
+                )) {
                 if (it) {
                     delete it;
                 }
@@ -848,7 +969,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 r.top = by + 0xe;
                 r.right = bx + 0x52;
                 r.bottom = by + 0x44;
-                if (!it->Configure(this, code, 0x2bd, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 2, 0)) {
+                if (!it->Configure(
+                        this,
+                        code,
+                        0x2bd,
+                        5,
+                        r,
+                        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                        2,
+                        0
+                    )) {
                     if (it) {
                         delete it;
                     }
@@ -861,7 +991,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = by + 0xf;
                     r.right = bx + 0x87;
                     r.bottom = by + 0x3e;
-                    if (!it->Configure(this, code, 0x2be, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 3, 0)) {
+                    if (!it->Configure(
+                            this,
+                            code,
+                            0x2be,
+                            5,
+                            r,
+                            "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                            3,
+                            0
+                        )) {
                         if (it) {
                             delete it;
                         }
@@ -874,7 +1013,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         r.top = by + 0x3b;
                         r.right = bx + 0x52;
                         r.bottom = by + 0x71;
-                        if (!it->Configure(this, code, 0x2bf, 5, r, "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", 4, 0)) {
+                        if (!it->Configure(
+                                this,
+                                code,
+                                0x2bf,
+                                5,
+                                r,
+                                "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                                4,
+                                0
+                            )) {
                             if (it) {
                                 delete it;
                             }

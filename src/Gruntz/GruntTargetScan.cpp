@@ -275,216 +275,219 @@ i32 CGruntScan::ScanNearestTarget() {
     // through; default (m_2d4 not 0/1/2) returns 1). Case bodies lay out case 2 nearest,
     // case 0 (seek/wander) farthest, matching retail.
     switch (F(this, 0x2d4)) {
-    case 0: {
-        // seek / commit toward `best`, else idle wander.
-        if (best == 0) {
-            goto L_wander;
-        }
-        if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 100 && F(P(best, 0x10), 0x5c) == F(best, 0x17c)
-            && F(P(best, 0x10), 0x60) == F(best, 0x180)) {
-            i32 pa;
-            PRIO(pa, F(this, 0x170));
-            i32 pb;
-            PRIO(pb, F(best, 0x170));
-            if (pa <= pb && this->TileProbe(F(P(best, 0x10), 0x5c), F(P(best, 0x10), 0x60)) != 0) {
-                CommitMove(F(best, 0x1ec), F(best, 0x1f0), F(best, 0x17c), F(best, 0x180));
-                return 1;
-            }
-        }
-
-        // seek: probe-move toward best's center, stamp the move, fire the cue.
-        if (best == 0) {
-            goto L_wander;
-        }
-        {
-            i32 pa;
-            PRIO(pa, F(this, 0x170));
-            i32 pb;
-            PRIO(pb, F(best, 0x170));
-            if (pa > pb) {
+        case 0: {
+            // seek / commit toward `best`, else idle wander.
+            if (best == 0) {
                 goto L_wander;
             }
-        }
-        if ((u32)F(this, 0x2ec) <= 0x3e8) {
-            goto L_wander;
-        }
-        F(this, 0x300) = F(this, 0x17c);
-        F(this, 0x304) = F(this, 0x180);
-        {
-            i32 pa;
-            PRIO(pa, F(this, 0x170));
-            i32 pb;
-            PRIO(pb, F(best, 0x170));
-            if (pa > pb) {
-                goto L_scanDone;
+            if (F(this, 0x220) == 0 && F(this, 0x3f0) >= 100
+                && F(P(best, 0x10), 0x5c) == F(best, 0x17c)
+                && F(P(best, 0x10), 0x60) == F(best, 0x180)) {
+                i32 pa;
+                PRIO(pa, F(this, 0x170));
+                i32 pb;
+                PRIO(pb, F(best, 0x170));
+                if (pa <= pb
+                    && this->TileProbe(F(P(best, 0x10), 0x5c), F(P(best, 0x10), 0x60)) != 0) {
+                    CommitMove(F(best, 0x1ec), F(best, 0x1f0), F(best, 0x17c), F(best, 0x180));
+                    return 1;
+                }
             }
-        }
-        if (this->OwnsTile(F(best, 0x1ec), F(best, 0x1f0)) == 0) {
-            goto L_scanDone;
-        }
-        {
-            i32 cc[4];
-            best->ReadCenter(cc);
-            if (this->ProbeMove(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) == 0) {
-                goto L_scanDone;
-            }
-        }
-        StampMove(1, 1);
-        F(this, 0x2f0) = F(best, 0x1ec);
-        F(this, 0x2f4) = F(best, 0x1f0);
-        F(this, 0x2d4) = 1;
-        {
-            CScanReg* mgr = g_mgrSettings;
-            if (BoardTest(
-                    mgr->m_world->m_24->m_5c + 0x40,
-                    F(P(this, 0x10), 0x5c),
-                    F(P(this, 0x10), 0x60)
-                )
-                != 0) {
-                mgr->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
-            }
-        }
-    L_scanDone:
-        F(this, 0x2ec) = 0;
-        return 1;
 
-    L_wander:
-        if (F(this, 0x244) != 0 || F(this, 0x318) == 0 || (u32)F(this, 0x2ec) <= 0xbb8) {
+            // seek: probe-move toward best's center, stamp the move, fire the cue.
+            if (best == 0) {
+                goto L_wander;
+            }
+            {
+                i32 pa;
+                PRIO(pa, F(this, 0x170));
+                i32 pb;
+                PRIO(pb, F(best, 0x170));
+                if (pa > pb) {
+                    goto L_wander;
+                }
+            }
+            if ((u32)F(this, 0x2ec) <= 0x3e8) {
+                goto L_wander;
+            }
+            F(this, 0x300) = F(this, 0x17c);
+            F(this, 0x304) = F(this, 0x180);
+            {
+                i32 pa;
+                PRIO(pa, F(this, 0x170));
+                i32 pb;
+                PRIO(pb, F(best, 0x170));
+                if (pa > pb) {
+                    goto L_scanDone;
+                }
+            }
+            if (this->OwnsTile(F(best, 0x1ec), F(best, 0x1f0)) == 0) {
+                goto L_scanDone;
+            }
+            {
+                i32 cc[4];
+                best->ReadCenter(cc);
+                if (this->ProbeMove(cc[0] >> 5, cc[1] >> 5, 0, F(this, 0x248), 1, 0) == 0) {
+                    goto L_scanDone;
+                }
+            }
+            StampMove(1, 1);
+            F(this, 0x2f0) = F(best, 0x1ec);
+            F(this, 0x2f4) = F(best, 0x1f0);
+            F(this, 0x2d4) = 1;
+            {
+                CScanReg* mgr = g_mgrSettings;
+                if (BoardTest(
+                        mgr->m_world->m_24->m_5c + 0x40,
+                        F(P(this, 0x10), 0x5c),
+                        F(P(this, 0x10), 0x60)
+                    )
+                    != 0) {
+                    mgr->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                }
+            }
+        L_scanDone:
+            F(this, 0x2ec) = 0;
             return 1;
-        }
-        // 64-bit elapsed = g_clock - {m_308:m_30c}; compare with window {m_310:m_314}.
-        {
-            i32 lo = (i32)g_clock - F(this, 0x308);
-            i32 hi = 0 - F(this, 0x30c) - ((u32)(i32)g_clock < (u32)F(this, 0x308) ? 1 : 0);
-            i32 winHi = F(this, 0x314);
-            if (hi > winHi || (hi == winHi && (u32)lo >= (u32)F(this, 0x310))) {
-                // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
-                ResetEntrance(1, 1, 0);
-                F(this, 0x308) = 0;
-                F(this, 0x310) = 0;
-                F(this, 0x30c) = 0;
-                F(this, 0x314) = 0;
-                F(this, 0x310) = rand() % 0x7530 + 0x7530;
-                F(this, 0x314) = 0;
-                F(this, 0x308) = (i32)g_clock;
-                F(this, 0x30c) = 0;
-            } else {
-                // not elapsed: jitter to a random nearby board cell.
-                char* hud = P(this, 0x10);
-                i32 baseCol = F(hud, 0x134);
-                i32 spanX = F(hud, 0x13c) - baseCol;
-                i32 baseRow = F(hud, 0x138);
-                spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
-                i32 spanY = F(hud, 0x140) - baseRow;
-                spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
-                if (spanX != 0) {
-                    baseCol += rand() % spanX;
-                }
-                if (spanY != 0) {
-                    baseRow += rand() % spanY;
-                }
-                CScanGrid* grid = g_mgrSettings->m_tileGrid;
-                if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
-                    this->ProbeMove(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
-                }
-                if (F(this, 0x328) != 0) {
-                    if (spanX > spanY) {
-                        spanX = spanY;
+
+        L_wander:
+            if (F(this, 0x244) != 0 || F(this, 0x318) == 0 || (u32)F(this, 0x2ec) <= 0xbb8) {
+                return 1;
+            }
+            // 64-bit elapsed = g_clock - {m_308:m_30c}; compare with window {m_310:m_314}.
+            {
+                i32 lo = (i32)g_clock - F(this, 0x308);
+                i32 hi = 0 - F(this, 0x30c) - ((u32)(i32)g_clock < (u32)F(this, 0x308) ? 1 : 0);
+                i32 winHi = F(this, 0x314);
+                if (hi > winHi || (hi == winHi && (u32)lo >= (u32)F(this, 0x310))) {
+                    // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
+                    ResetEntrance(1, 1, 0);
+                    F(this, 0x308) = 0;
+                    F(this, 0x310) = 0;
+                    F(this, 0x30c) = 0;
+                    F(this, 0x314) = 0;
+                    F(this, 0x310) = rand() % 0x7530 + 0x7530;
+                    F(this, 0x314) = 0;
+                    F(this, 0x308) = (i32)g_clock;
+                    F(this, 0x30c) = 0;
+                } else {
+                    // not elapsed: jitter to a random nearby board cell.
+                    char* hud = P(this, 0x10);
+                    i32 baseCol = F(hud, 0x134);
+                    i32 spanX = F(hud, 0x13c) - baseCol;
+                    i32 baseRow = F(hud, 0x138);
+                    spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
+                    i32 spanY = F(hud, 0x140) - baseRow;
+                    spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
+                    if (spanX != 0) {
+                        baseCol += rand() % spanX;
                     }
-                    if (F(this, 0x328) > spanX) {
-                        StampMove(1, 1);
+                    if (spanY != 0) {
+                        baseRow += rand() % spanY;
+                    }
+                    CScanGrid* grid = g_mgrSettings->m_tileGrid;
+                    if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
+                        this->ProbeMove(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
+                    }
+                    if (F(this, 0x328) != 0) {
+                        if (spanX > spanY) {
+                            spanX = spanY;
+                        }
+                        if (F(this, 0x328) > spanX) {
+                            StampMove(1, 1);
+                        }
                     }
                 }
             }
-        }
-        F(this, 0x2ec) = 0;
-        return 1;
-    }
-    case 1: {
-        CGruntScan* sg = ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
-        if (best != 0 && best != sg) {
-            F(this, 0x2f0) = -1;
-            F(this, 0x2d4) = 0;
-            F(this, 0x2f4) = -1;
-            return 1;
-        }
-        if (sg == 0) {
-            goto L_clearMode;
-        }
-        i32 pa;
-        PRIO(pa, F(this, 0x170));
-        i32 pb;
-        PRIO(pb, F(sg, 0x170));
-        if (pa > pb) {
-            goto L_clearMode;
-        }
-        if (F(sg, 0x1fc) == 0) {
-            goto L_clearMode;
-        }
-        if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
-            goto L_clearMode;
-        }
-        if ((u32)F(this, 0x2ec) > 0x1f4) {
-            ProbeMoveB(F(sg, 0x17c), F(sg, 0x180), F(this, 0x248), 0, 1, 0);
             F(this, 0x2ec) = 0;
-        }
-        if (F(this, 0x220) != 0 || F(this, 0x3f0) < 100) {
             return 1;
         }
-        if (this->TileProbe(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
-            return 1;
-        }
-        if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
-            return 1;
-        }
-        CommitMove(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
-        F(this, 0x2d4) = 2;
-        return 1;
-    L_clearMode:
-        F(this, 0x2d4) = 0;
-        return 1;
-    }
-    case 2: {
-        if (F(this, 0x220) != 0) {
+        case 1: {
             CGruntScan* sg =
                 ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+            if (best != 0 && best != sg) {
+                F(this, 0x2f0) = -1;
+                F(this, 0x2d4) = 0;
+                F(this, 0x2f4) = -1;
+                return 1;
+            }
             if (sg == 0) {
-                goto L_setLock;
+                goto L_clearMode;
             }
             i32 pa;
             PRIO(pa, F(this, 0x170));
             i32 pb;
             PRIO(pb, F(sg, 0x170));
             if (pa > pb) {
-                goto L_setLock;
-            }
-            if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
-                goto L_setLock;
+                goto L_clearMode;
             }
             if (F(sg, 0x1fc) == 0) {
-                goto L_setLock;
+                goto L_clearMode;
             }
-            if (F(this, 0x21c) != 0 || F(this, 0x218) != 0 || F(this, 0x3f0) < 100) {
+            if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+                goto L_clearMode;
+            }
+            if ((u32)F(this, 0x2ec) > 0x1f4) {
+                ProbeMoveB(F(sg, 0x17c), F(sg, 0x180), F(this, 0x248), 0, 1, 0);
+                F(this, 0x2ec) = 0;
+            }
+            if (F(this, 0x220) != 0 || F(this, 0x3f0) < 100) {
                 return 1;
             }
             if (this->TileProbe(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
-                goto L_setLock;
+                return 1;
             }
             if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
-                goto L_setLock;
+                return 1;
             }
             CommitMove(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
             F(this, 0x2d4) = 2;
             return 1;
-        L_setLock:
+        L_clearMode:
+            F(this, 0x2d4) = 0;
+            return 1;
+        }
+        case 2: {
+            if (F(this, 0x220) != 0) {
+                CGruntScan* sg =
+                    ((CScanTileMgr*)P(this, 0x260))->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+                if (sg == 0) {
+                    goto L_setLock;
+                }
+                i32 pa;
+                PRIO(pa, F(this, 0x170));
+                i32 pb;
+                PRIO(pb, F(sg, 0x170));
+                if (pa > pb) {
+                    goto L_setLock;
+                }
+                if (this->OwnsTile(F(sg, 0x1ec), F(sg, 0x1f0)) == 0) {
+                    goto L_setLock;
+                }
+                if (F(sg, 0x1fc) == 0) {
+                    goto L_setLock;
+                }
+                if (F(this, 0x21c) != 0 || F(this, 0x218) != 0 || F(this, 0x3f0) < 100) {
+                    return 1;
+                }
+                if (this->TileProbe(F(P(sg, 0x10), 0x5c), F(P(sg, 0x10), 0x60)) == 0) {
+                    goto L_setLock;
+                }
+                if (F(P(sg, 0x10), 0x5c) != F(sg, 0x17c) || F(P(sg, 0x10), 0x60) != F(sg, 0x180)) {
+                    goto L_setLock;
+                }
+                CommitMove(F(sg, 0x1ec), F(sg, 0x1f0), F(sg, 0x17c), F(sg, 0x180));
+                F(this, 0x2d4) = 2;
+                return 1;
+            L_setLock:
+                F(this, 0x2d4) = 1;
+                F(this, 0x2ec) = 0x1f4;
+                return 1;
+            }
             F(this, 0x2d4) = 1;
             F(this, 0x2ec) = 0x1f4;
             return 1;
         }
-        F(this, 0x2d4) = 1;
-        F(this, 0x2ec) = 0x1f4;
-        return 1;
-    }
     }
     return 1;
 }

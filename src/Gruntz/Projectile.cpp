@@ -499,7 +499,7 @@ struct CProjColl2 {
 };
 extern void* GetRetAddr(); // 0x16d990
 DATA(0x002bf464)
-extern void* g_projActCache; // 0x6bf464 (shared alloc cache)
+extern void* g_projActCache;      // 0x6bf464 (shared alloc cache)
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 
 // R1 - the shared type-name table (@0x6bf650).

@@ -568,7 +568,11 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
                 CGameObject* spr = gameMgr->m_8->CreateSprite(
-                    0, ((i + TX) << 5) - 0x10, ((j + TY) << 5) - 0x10, 0xcf84f, "Particlez",
+                    0,
+                    ((i + TX) << 5) - 0x10,
+                    ((j + TY) << 5) - 0x10,
+                    0xcf84f,
+                    "Particlez",
                     0x40003
                 );
                 if (spr != 0) {
@@ -597,8 +601,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     }
 
     // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
-    if ((TX << 5) + 0x10 >= g_gameReg->m_viewOriginR
-        || (TX << 5) + 0x10 < g_gameReg->m_viewOriginL
+    if ((TX << 5) + 0x10 >= g_gameReg->m_viewOriginR || (TX << 5) + 0x10 < g_gameReg->m_viewOriginL
         || (TY << 5) + 0x10 >= g_gameReg->m_viewOriginB
         || (TY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
