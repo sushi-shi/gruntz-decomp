@@ -212,8 +212,14 @@ CFaderShape::CFaderShape() {
 // Reloc-masked rel32 callee, __thiscall (ignores its this).
 
 // The COM-style fade sink reached through this->m_2c (a pointer-to-interface-
-// pointer): *m_2c is the interface, whose first field is a C-vtable; slot 0x58 is
-// poked (arg 1, 0) once per newly-reached frame. External / reloc-masked.
+// pointer): *m_2c is the interface, whose first field is a C-vtable; slot 0x58
+// (== slot 22) is poked __stdcall(this, 1, 0) once per newly-reached frame.
+// SDK CHECK (batch-2 interface-recovery task): NOT a vendored DX interface - slot 22
+// of IDirectDrawSurface is GetSurfaceDesc (1 arg, mismatch) and IDirectSoundBuffer
+// has only ~21 slots, so no ddraw/dsound method has a 22nd slot taking (this,i32,i32).
+// This is a genuine ENGINE-INTERNAL fade-notify sink (IDENTITY-RECOVERY TODO: its
+// concrete class lives in the fade-owner TU, unrecovered here). Kept as a named
+// 1-slot placeholder (only used in this TU); no fabricated fold. External/reloc-masked.
 struct IFadeSink;
 SIZE_UNKNOWN(IFadeSinkVtbl);
 struct IFadeSinkVtbl {

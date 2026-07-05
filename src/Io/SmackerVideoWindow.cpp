@@ -49,6 +49,12 @@ AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
 // no net gain. Honest model = a manual vptr into a typed vtable struct naming ONLY the
 // two dispatched slots as 4-byte thiscall PMFs (rest is padding), NO fake virtuals; the
 // dispatch is the same `mov ecx,[wnd]; mov eax,[ecx]; call [eax+slot]` either way.
+// SDK CHECK (batch-2 interface-recovery task): identity CONFIRMED = the real MFC CWnd
+// (afxwin.h), slot 1 = CObject scalar-deleting dtor, slot 24 = a CWnd finalize virtual.
+// It is NOT foldable to the real class here: <Mfc.h> deliberately excludes afxwin.h
+// (afx.h + afxcoll.h only), and the no-fabricated-nameless-fillers mandate forbids the
+// 23 intervening filler slots a full CWnd vtable would need. The 2-named-slot PMF view
+// is the minimum-fabrication honest terminal model (zero invented virtuals).
 SIZE_UNKNOWN(CursSink);
 struct CursSinkVtbl;
 struct CursSink {
@@ -128,10 +134,10 @@ struct CSmackWin {
     i32 CloseSmacker();                                     // 0x17c9b0
     i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
     i32 Frame();                                            // 0x17caa0
-    void SnapshotPalette();                                 // 0x17ca10 (Frame: new-palette snapshot)
-    void BlitDirty(i32 x, i32 y, i32 w, i32 h);             // 0x17cdf0 (Frame: dirty-rect blit)
-    void Free17d6b0();                                      // 0x17d6b0
-    void Free17cc80();                                      // 0x17cc80
+    void SnapshotPalette();                     // 0x17ca10 (Frame: new-palette snapshot)
+    void BlitDirty(i32 x, i32 y, i32 w, i32 h); // 0x17cdf0 (Frame: dirty-rect blit)
+    void Free17d6b0();                          // 0x17d6b0
+    void Free17cc80();                          // 0x17cc80
 };
 
 // @early-stop
