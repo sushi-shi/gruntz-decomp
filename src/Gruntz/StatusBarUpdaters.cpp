@@ -112,6 +112,14 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
 // latches state 1); each step is gated on the retrigger clock having elapsed past
 // DestructButtonWarningDelay, after which the 64-bit retrigger clock is restamped
 // and the new frame pushed into the widget (the +0x30 virtual). State 0 = idle.
+// @early-stop
+// ~94.7%: logic + the 64-bit compare + every field store are byte-exact. The sole
+// residual (in BOTH symmetric cases) is a store-scheduling coin-flip: retail emits
+// `mov [+560],retriggerLo; mov [+564],0; mov ecx,[+570](widget)` in source order,
+// while MSVC's scheduler hoists the widget load between the two retrigger stores and
+// defers the `m_retriggerHi=0` store past it. Tried a single 64-bit retrigger store
+// and an inlined widget test; neither pins the store order. Not source-steerable;
+// deferred to the final sweep.
 RVA(0x0010b320, 0x167)
 void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
     CDestructBlock* b = &m_destruct;
