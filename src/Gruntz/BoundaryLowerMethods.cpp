@@ -5,6 +5,8 @@
 // NO-body so their rel32/DIR32 operands reloc-mask. Defined in retail-RVA order.
 // The per-use owner/referent views now live in <Gruntz/BoundaryLowerMethodsViews.h>
 // (pure code motion); the archive object folds to the canonical CSerialArchive.
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (MFC side; umbrella-first) - the
+                              // 0x8e880/0x915d0/0x91620 owners + CGruntzSoundZ
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>              // canonical game-manager singleton (0x24556c) view
@@ -72,9 +74,9 @@ void C77dc0::Set(i32 base, i32 idx, i32 value) {
 // ===========================================================================
 extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
 RVA(0x0008e880, 0x27)
-i32 C8e880::M() {
-    if (m_2c->GetState() == 3) {
-        Cmd2bb7("DEBUG_SETSKILL", (void*)&Lab401947, 1);
+i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
+        RegisterDebugCommand("DEBUG_SETSKILL", (void*)&Lab401947, 1);
     }
     return 0;
 }
@@ -85,48 +87,48 @@ i32 C8e880::M() {
 // (0x138fd0). __thiscall(arg). The two differ only in the constant (0 vs 0x64).
 // ===========================================================================
 RVA(0x000915d0, 0x3f)
-void C915d0::M0(void* arg) {
-    if (m_48 == 0) {
+void CGruntzMgr::MuteMusicIfActive(i32 ms) {
+    if (m_sound == 0) {
         return;
     }
-    if (m_14 == 0) {
+    if (m_musicEnabled == 0) {
         return;
     }
     i32 ok;
-    if (m_48->m_1c != 0) {
-        ok = m_48->m_1c->IsBusy();
+    if (m_sound->m_pCurrent != 0) {
+        ok = m_sound->m_pCurrent->IsBusy();
     } else {
         ok = 0;
     }
     if (ok == 0) {
         return;
     }
-    if (m_48->m_1c == 0) {
+    if (m_sound->m_pCurrent == 0) {
         return;
     }
-    m_48->m_1c->SetVolume(0, (i32)arg);
+    m_sound->m_pCurrent->SetVolume(0, ms);
 }
 RVA(0x00091620, 0x3f)
-void C915d0::M64(void* arg) {
-    if (m_48 == 0) {
+void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
+    if (m_sound == 0) {
         return;
     }
-    if (m_14 == 0) {
+    if (m_musicEnabled == 0) {
         return;
     }
     i32 ok;
-    if (m_48->m_1c != 0) {
-        ok = m_48->m_1c->IsBusy();
+    if (m_sound->m_pCurrent != 0) {
+        ok = m_sound->m_pCurrent->IsBusy();
     } else {
         ok = 0;
     }
     if (ok == 0) {
         return;
     }
-    if (m_48->m_1c == 0) {
+    if (m_sound->m_pCurrent == 0) {
         return;
     }
-    m_48->m_1c->SetVolume(0x64, (i32)arg);
+    m_sound->m_pCurrent->SetVolume(0x64, ms);
 }
 
 // (0x099ba0 C99ba0::Ctor re-homed to src/Gruntz/AreaMgr.cpp as the real

@@ -239,6 +239,14 @@ public:
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
     void StopBankIfActive();         // @0x092000 (if m_sound && m_14: m_sound->StopAll())
     void StopBank0IfActive();        // @0x092030 (if m_sound && m_14: m_sound->StopBank(0))
+    // Music-volume guards on the same m_sound/m_14 gate (BoundaryLowerMethods.cpp;
+    // the former C915d0 view): fade the CURRENT bank to 0 / back to 100 over `ms`.
+    void MuteMusicIfActive(i32 ms);          // @0x0915d0 (m_pCurrent->SetVolume(0, ms))
+    void RestoreMusicVolumeIfActive(i32 ms); // @0x091620 (m_pCurrent->SetVolume(100, ms))
+    // Debug-command hook (the former C8e880 view): when the current state is
+    // GAMESTATE_PLAY, register the DEBUG_SETSKILL command (via ILT thunk 0x2bb7).
+    i32 RegisterSetSkillDebugCmd();                               // @0x08e880
+    void RegisterDebugCommand(const char* name, void* fn, i32 n); // ILT 0x2bb7 (reloc-masked)
 
     i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
     void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
@@ -308,8 +316,8 @@ public:
     // Sound/level-loaded sync (@0x0923b0): set the base level-loaded flag (m_14)
     // and, when it changes and a sound bank is bound, drive the bank.
     void SetSoundLevelState(i32 loaded);
-    i32 RunLoadGameDialog();       // @0x092500 (GAME_LOAD dialog; ret 1)  == Quickload's Fallback
-    i32 Quicksave();               // @0x092530 (quicksave the game; /GX)
+    i32 RunLoadGameDialog(); // @0x092500 (GAME_LOAD dialog; ret 1)  == Quickload's Fallback
+    i32 Quicksave();         // @0x092530 (quicksave the game; /GX)
     // @0x092710 - the quickload counterpart: if a save sink + a valid quicksave
     // record (m_saveInfoRec bit 0) exist, flush the timer, load via the sink
     // (SaveSink58::Check), notify the window (WM_COMMAND 0x807e) and log to the

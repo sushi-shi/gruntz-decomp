@@ -64,44 +64,12 @@ struct C77dc0 {
 };
 SIZE_UNKNOWN(C77dc0);
 
-// 0x08e880 - debug command hook: if the +0x2c sub-object's state slot (vtbl +0x10)
-// reports 3, register the DEBUG_SETSKILL command.
-struct CState8e {
-    virtual i32 v0();
-    virtual i32 v1();
-    virtual i32 v2();
-    virtual i32 v3();
-    virtual i32 GetState(); // slot +0x10
-};
-SIZE_UNKNOWN(CState8e);
-struct C8e880 {
-    char pad0[0x2c];
-    CState8e* m_2c;                                  // +0x2c
-    void Cmd2bb7(const char* name, void* fn, i32 n); // 0x2bb7
-    i32 M();
-};
-SIZE_UNKNOWN(C8e880);
-
-// 0x0915d0 / 0x091620 - guarded dispatch through the +0x48 sub's +0x1c probe.
-struct CGruntzSoundInnerZ {
-    i32 IsBusy();                 // 0x138f60
-    void SetVolume(i32 a, i32 b); // 0x138fd0
-};
-SIZE_UNKNOWN(CGruntzSoundInnerZ);
-struct CMid915 {
-    char pad0[0x1c];
-    CGruntzSoundInnerZ* m_1c; // +0x1c
-};
-SIZE_UNKNOWN(CMid915);
-struct C915d0 {
-    char pad0[0x14];
-    void* m_14; // +0x14
-    char pad18[0x48 - 0x18];
-    CMid915* m_48; // +0x48
-    void M0(void* arg);
-    void M64(void* arg);
-};
-SIZE_UNKNOWN(C915d0);
+// (C8e880/CState8e [0x8e880] and C915d0/CMid915 + the duplicate CGruntzSoundInnerZ
+// [0x915d0/0x91620] were views of CGruntzMgr - m_2c == m_curState (slot +0x10 ==
+// CState::Update, the state id), m_14 == the level-loaded gate, m_48 == m_sound
+// (canonical CGruntzSoundZ, m_1c == m_pCurrent). Dissolved onto <Gruntz/GruntzMgr.h>
+// (RegisterSetSkillDebugCmd / MuteMusicIfActive / RestoreMusicVolumeIfActive) +
+// <Dsndmgr/GruntzSoundZ.h>.)
 
 // (C99ba0/CSub99ba0 [0x99ba0] and C9a420/CNode9a420/CBack9a420 [0x9a420] were
 // views of CAreaMgr / CSpawnList / CSpawnEntry - dissolved onto the canonicals;
