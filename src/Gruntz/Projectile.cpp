@@ -7,12 +7,14 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
-#include <Gruntz/GameRegistry.h>
-#include <Gruntz/SpriteFactory.h>     // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/GameRegistry.h>  // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
+#include <Gruntz/State.h>         // CState (reg->m_curState: the level-type descriptor)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
-#include <Bute/ButeMgr.h>             // CButeTree (the type-registry funnel)
-#include <math.h>                     // sin / cos (StepMotion's parabola)
-#include <string.h>                   // memset (1-arg spawn ctor's +0x1e0 zero-fill)
+#include <Gruntz/StringNode.h>    // the shared type-name teardown slot (CStringNode::Free)
+#include <Bute/ButeMgr.h>         // CButeTree (the type-registry funnel)
+#include <math.h>                 // sin / cos (StepMotion's parabola)
+#include <string.h>               // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
 
@@ -35,42 +37,14 @@ extern i32 g_freeListNodeBias;
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Modeled here with
-// the offsets the projectile sound/hit-scan paths touch; the DATA pin reloc-masks
-// the `mov ecx,ds:g_gameReg` load against the already-named symbol.
-struct CProjSoundEntry; // map value: the per-effect sound table entry
-struct CProjSoundInner; // reg->m_world->m_28: holds the CMapStringToOb at +0x10
-// The HUD sprite factory (reg->m_world->m_8) is the canonical CSpriteFactory
-// (<Gruntz/SpriteFactory.h>); the created instance is cast to this TU's B-view
-// CProjRenderObj (== the shared CGameObject; the B-family fold is deferred, see
-// SpriteResource.cpp's DUAL-MODEL note).
-SIZE_UNKNOWN(CProjSoundCat);
-struct CProjSoundCat { // reg->m_world: the sound-category facet (the +0x28 slot)
-    char m_pad00[0x28];
-    CProjSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
-};
-// The level "type" descriptor (reg->m_curState); LoadProjectileEffects switches on its
-// +0x20 terrain-class id to pick the level death effect.
-SIZE_UNKNOWN(CProjLevelInfo);
-struct CProjLevelInfo {
-    char m_pad00[0x20];
-    i32 m_20; // +0x20  terrain-class id (switch key)
-};
-// The level terrain plane (reg->m_tileGrid): a width x height grid of 28-byte tiles
-// reached row-major through the +0x8 row-pointer array; tile dword 0 is the
-// terrain flags LoadProjectileEffects tests (water 0x900 / death 0x2 / gate 0x40).
-SIZE_UNKNOWN(CTerrainTile);
-struct CTerrainTile {
-    u32 m_0; // +0x0  terrain flags
-    char m_pad04[0x1c - 0x4];
-};
-SIZE_UNKNOWN(CTerrainPlane);
-struct CTerrainPlane {
-    char m_pad00[0x8];
-    CTerrainTile** m_8; // +0x8  row pointers
-    i32 m_c;            // +0xc  width (tiles)
-    i32 m_10;           // +0x10 height (tiles)
-};
+// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The DATA pin
+// reloc-masks the `mov ecx,ds:g_gameReg` load against the already-named symbol.
+// The projectile sound/hit-scan/effects paths reach the canonical sub-objects
+// through it: reg->m_world (CSpriteFactoryHolder) -> m_8 the HUD sprite factory
+// (CSpriteFactory) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
+// reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
+// LoadProjectileEffects tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
+// the level-type descriptor (CState, +0x20 terrain-class id switch key).
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
@@ -107,28 +81,11 @@ struct CHitKey {
     i32 m_4;
 };
 
-// The map value the launch-sound lookup returns: its +0x10 sub-object owns the
-// sample factory (GetItem 0x135d70, __thiscall) the projectile clones from.
-SIZE_UNKNOWN(CProjSampleFactory);
-struct CProjSampleFactory {
-    CProjSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
-};
-SIZE_UNKNOWN(CProjSoundEntry);
-struct CProjSoundEntry {
-    char m_pad00[0x10];
-    CProjSampleFactory* m_10; // +0x10
-};
-// The CMapStringToOb the category exposes (its Lookup is the engine method
-// 0x1b8438). Embedded inside reg->m_world->m_28 at +0x10.
-SIZE_UNKNOWN(CProjSoundMap);
-struct CProjSoundMap {
-    i32 Lookup(const char* key, CProjSoundEntry** out); // 0x1b8438 (ret 8)
-};
-SIZE_UNKNOWN(CProjSoundInner);
-struct CProjSoundInner {
-    char m_pad00[0x10];
-    CProjSoundMap m_10; // +0x10  the lookup map
-};
+// The launch-sound lookup path is the canonical positional-cue subsystem
+// (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_28 is the
+// CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a CSndEmitter,
+// whose CSoundCueMgr (m_10) GetItem (0x135d70) clones the DirectSound buffer the
+// projectile owns as its CProjSample (m_sound).
 
 // The shared default-bound doubles the CMovingLogic ctor copies into the twelve
 // coordinate-bound members (retail .rdata 0x5f04b0 / 0x5f04b8). Defined here with
@@ -528,14 +485,9 @@ struct CProjActEntry;
 DATA(0x0024c758)
 extern CProjColl g_projActColl;
 
-// The CString slot teardown (0x1b9b93 __thiscall) + name assign (0x1b9e74).
-SIZE_UNKNOWN(CProjStringNode);
-struct CProjStringNode {
-    // authentic: opaque 4-byte string-slot node; never dereferenced in this TU (only
-    // stride-walked + Free()'d), so its payload type is unrecoverable here - kept void*.
-    void* m_0;
-    void Free(); // 0x1b9b93
-};
+// The per-slot CString teardown node the type-name table walks is the shared
+// CStringNode (<Gruntz/StringNode.h>: m_0 slot + Free 0x1b9b93 __thiscall); name
+// assign into the resolved record is the real CString::operator= (0x1b9e74).
 
 // The projectile's activation handler (LAB_00403896, an ILT thunk).
 extern "C" void ProjActivationHandler(); // 0x403896
@@ -595,7 +547,7 @@ void CProjectile::RegisterType() {
         id = key;
         CTypeNameEntry* slot = ProjTypeLookup(key);
         i32 cnt = g_projTypeCount;
-        CProjStringNode* nodes = (CProjStringNode*)g_projTypeNodes;
+        CStringNode* nodes = (CStringNode*)g_projTypeNodes;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
@@ -766,14 +718,14 @@ void CProjectile::LoadProjectileEffects() {
     i32 tier = 0;
     if (m_kind != 0x16) {
         CGameRegistry* reg = g_gameReg;
-        CTerrainPlane* plane = (CTerrainPlane*)reg->m_tileGrid;
+        CTileGrid* plane = reg->m_tileGrid;
         i32 tileX = m_targetX >> 5;
         i32 tileY = m_targetY >> 5;
         u32 flags;
         if ((u32)tileX >= (u32)plane->m_c || (u32)tileY >= (u32)plane->m_10) {
             flags = 1;
         } else {
-            flags = plane->m_8[tileY][tileX].m_0;
+            flags = plane->m_8[tileY][tileX * 7]; // cell dword 0 = terrain flags
         }
         if (flags & 0x900) {
             // water tile: spill a splash then hide the projectile
@@ -794,7 +746,7 @@ void CProjectile::LoadProjectileEffects() {
             if (flags & 0x40) {
                 tier = 1;
             } else {
-                switch (((CProjLevelInfo*)reg->m_curState)->m_20) {
+                switch (reg->m_curState->m_levelType) {
                     case 4:
                     case 5:
                     case 8:
@@ -1024,16 +976,17 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (reg->m_soundEnabled == 0) {
         return 0;
     }
-    CProjSoundCat* cat = (CProjSoundCat*)reg->m_world;
-    CProjSoundEntry* entry = 0;
-    cat->m_28->m_10.Lookup(key, &entry);
+    CSndEmitter* entry = 0;
+    reg->m_world->m_28->m_10.Lookup(key, &entry);
     if (entry == 0) {
         return 0;
     }
     if (entry->m_10 == 0) {
         return 0;
     }
-    m_sound = entry->m_10->GetItem();
+    // GetItem returns the pooled DirectSound buffer (CStatusBarItem2 in the cue-mgr
+    // view); the projectile owns the same buffer as its CProjSample sound sample.
+    m_sound = (CProjSample*)entry->m_10->GetItem();
     if (m_sound == 0) {
         return 0;
     }

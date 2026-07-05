@@ -115,8 +115,10 @@ public:
     i32 m_14;         // +0x14
     i32 m_18;         // +0x18
     i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
-    char m_pad20[0x24 - 0x20];
-    i32 m_24;                // +0x24
+    i32 m_levelType;  // +0x20  level terrain-class id; CProjectile::LoadProjectileEffects
+                      //         switches on it (4/5/8 land-death, 6 no-death) to pick the
+                      //         level death effect
+    i32 m_24;         // +0x24
     CResSource* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
