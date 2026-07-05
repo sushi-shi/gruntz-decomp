@@ -4,7 +4,7 @@
 // (from the delinked ??0zBitVec@@QAE@HH@Z / ?SetSize@zBitVec / ?EnsureSize@zBitVec
 // symbols) derived from CContainerErr (its ??_7CContainerErr@@6B@ RTTI-less vtable).
 //
-// CANONICAL home for the container family that was modeled 3x: <Gruntz/EngStr.h>
+// CANONICAL home for the container family that was modeled 3x: <Gruntz/UserBaseLink.h>
 // (as the Ghidra label "EngStr"), <Wap32/EngStr.h> (as unrelated CContainerErr +
 // zBitVec), and <Gruntz/ProjActCache.h> (as zBitVec : CContainerErr). The "EngStr"
 // class IS zBitVec: its ~ (0x16d2a0), operator= (0x16d2f0) and the 836B ctor
@@ -97,7 +97,7 @@ public:
 };
 
 // NOTE: the CUserBaseLink link sub-object (which embeds a zBitVec) lives in
-// <Gruntz/EngStr.h>, NOT here - putting it in this header pulls it into
+// <Gruntz/UserBaseLink.h>, NOT here - putting it in this header pulls it into
 // src/Wap32/EngStr.cpp and header-fattens/reschedules zBitVec::SetSize (measured
 // 98.7% -> 85.3%). EngStr.cpp needs only the container classes above.
 

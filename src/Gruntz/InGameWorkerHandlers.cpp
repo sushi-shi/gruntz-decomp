@@ -61,7 +61,7 @@ i32 Handler095750(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CInGameIcon(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -99,7 +99,7 @@ i32 Handler095890(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CInGameText(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -137,7 +137,7 @@ i32 Handler0aa6e0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CEyeCandy(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }

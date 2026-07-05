@@ -88,7 +88,7 @@ i32 Handler03d670(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CWormhole(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -126,7 +126,7 @@ i32 Handler07db20(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CGruntSelectedSprite(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -164,7 +164,7 @@ i32 Handler07dda0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CGruntToySprite(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }

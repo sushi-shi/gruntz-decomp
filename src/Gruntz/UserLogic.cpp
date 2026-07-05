@@ -60,7 +60,7 @@ extern CButeTree g_buteTree;
 // (~CUserBase / ~CUserLogic are now inline in the header so leaf dtors fold the
 // whole base teardown; the remaining out-of-line virtuals still anchor the
 // vftables.)
-i32 CUserBase::UserBaseVfunc1() {
+i32 CUserBase::Serialize() {
     return 0;
 }
 i32 CUserBase::UserBaseVfunc2() {
@@ -76,7 +76,7 @@ i32 CUserLogic::UserLogicVfunc2() {
 i32 CUserLogic::UserLogicVfunc3() {
     return 0;
 }
-i32 CUserLogic::UserLogicVfunc4() {
+i32 CUserLogic::Activate() {
     return 0;
 }
 i32 CUserLogic::UserLogicVfunc5() {

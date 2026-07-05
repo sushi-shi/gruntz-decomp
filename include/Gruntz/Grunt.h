@@ -984,7 +984,7 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     }
 };
 // The +0x18 CUserLogic link is the shared CUserBaseLink (EngStr, ~EngStr 0x16d2a0)
-// from <Gruntz/EngStr.h> - identical sub-object to the tile-logic family's.
+// from <Gruntz/UserBaseLink.h> - identical sub-object to the tile-logic family's.
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
 // slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
@@ -1111,7 +1111,7 @@ public:
 // (NOT the fat 0x40 the tile-logic family's <Gruntz/UserLogic.h> view uses, which
 // absorbs those leaves' shared 0x30..0x3c tail - a byte-neutral boundary label;
 // see the size NOTE in UserLogic.h + docs/vtable-conversion-log.md). The +0x18
-// EngStr link is the SHARED CUserBaseLink (<Gruntz/EngStr.h>), so this world and
+// EngStr link is the SHARED CUserBaseLink (<Gruntz/UserBaseLink.h>), so this world and
 // the tile-logic world tear it down via the identical ~EngStr (0x16d2a0). The two
 // CUserLogic class views still never coexist in one TU; the CGrunt-HUD sprites
 // that read CGrunt fields (CGruntStaminaSprite/CGruntWingzTimeSprite) include only

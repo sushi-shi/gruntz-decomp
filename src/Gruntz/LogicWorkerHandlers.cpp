@@ -67,7 +67,7 @@ i32 HandlerA9CC0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CDoNothing(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -105,7 +105,7 @@ i32 HandlerAA5A0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CBehindCandyAni(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -143,7 +143,7 @@ i32 HandlerAA960(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CWayPoint(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }
@@ -181,7 +181,7 @@ i32 HandlerAF0A0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CRollingBall(owner);
-            sub->UserLogicVfunc4(); // slot 6 (+0x18): activate
+            sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
         }

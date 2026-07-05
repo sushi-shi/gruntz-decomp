@@ -367,7 +367,7 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}       // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 UserBaseVfunc1(); // slot 1
+    virtual i32 Serialize(); // slot 1
     virtual i32 UserBaseVfunc2(); // slot 2
 };
 
@@ -397,7 +397,7 @@ public:
     virtual i32 UserLogicVfunc1();
     virtual i32 UserLogicVfunc2();
     virtual i32 UserLogicVfunc3();
-    virtual i32 UserLogicVfunc4();
+    virtual i32 Activate();
     virtual i32 UserLogicVfunc5();
     virtual i32 UserLogicVfunc6();
     virtual i32 UserLogicVfunc7();
