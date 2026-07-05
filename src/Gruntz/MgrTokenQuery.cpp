@@ -8,14 +8,8 @@
 // (the int->bool neg/sbb/neg normalize). Both manager methods are external
 // (reloc-masked); the singleton is a file-scope object.
 #include <Ints.h>
+#include <Gruntz/TokenMgr.h> // canonical CTokenMgr (Reset/Dispatch on g_tokenMgr)
 #include <rva.h>
-
-// The singleton manager: only Reset() + Dispatch() are reached here, both
-// __thiscall on g_tokenMgr. The body/layout live in another TU.
-struct CTokenMgr {
-    void Reset();      // 0x49a0b0 - mov [this],0; ret
-    i32 Dispatch(i32); // 0x499d40 - __thiscall(this, int), 40-case jump table
-};
 
 // g_0x6459b0 - the manager singleton (ecx for both calls). Reloc-masked.
 DATA(0x002459b0)

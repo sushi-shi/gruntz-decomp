@@ -3,7 +3,8 @@
 // COMDAT-folded one-liners, so the owning class names are placeholders; only the
 // OFFSETS + code bytes are load-bearing. Unmodeled engine callees/globals are
 // declared NO-body so their rel32/DIR32 operands reloc-mask.
-#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
+#include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
+#include <Gruntz/TokenMgr.h> // canonical CTokenMgr (g_tokenMgr; Reset)
 #include <Ints.h>
 #include <rva.h>
 
@@ -86,14 +87,10 @@ void ProfSinkTick82f20() {
 // 0x099b80 - tail-forward a no-arg call to the token-manager singleton
 // (?g_tokenMgr@@3UCTokenMgr@@A @ VA 0x6459b0). __cdecl, no args.
 // ===========================================================================
-struct CTokenMgr {
-    void Reset3bac(); // 0x3bac (thunk; reloc-masked)
-};
-SIZE_UNKNOWN(CTokenMgr);
 extern CTokenMgr g_tokenMgr;
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
-    g_tokenMgr.Reset3bac();
+    g_tokenMgr.Reset(); // reaches Reset (0x49a0b0) via the ILT thunk 0x3bac (reloc-masked)
 }
 
 // ===========================================================================
