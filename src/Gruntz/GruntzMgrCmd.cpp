@@ -96,6 +96,10 @@ namespace GruntzMgrCmd {
     struct GZSoundZ {                             // manager m_48 (CGruntzSoundZ*)
         i32 PlayByName(const char* name, i32 f);  // 0x138840 __thiscall
     };
+    struct GZGruntLevel {  // grunt->m_2dc
+        void Fn2982(i32 n); // 0x2982
+        void Fn33cd(i32 n); // 0x33cd
+    };
     struct GZGrunt {         // from 0x355d
         void SetItem(i32 n); // 0x17a8
         i32 Flip();          // 0x1df2  (ambient variant index)
@@ -103,7 +107,9 @@ namespace GruntzMgrCmd {
         void G3792(i32 n);   // 0x3792
         void G3a85(i32 n);   // 0x3a85
         i32 CanQuickSave();  // 0x3da5
-        char _p0[0x3f4];
+        char _p0[0x2dc];
+        GZGruntLevel* m_2dc; // +0x2dc  active-level sub-object
+        char _p2e0[0x3f4 - 0x2e0];
         i32* m_3f4; // +0x3f4  timer/state sub-object (i32[] the timer-cheat clears)
     };
     struct GZCell {
@@ -738,7 +744,7 @@ namespace GruntzMgrCmd {
                             if (!_g) {
                                 return 0;
                             }
-                            m_strWorldFile.Empty(); // placeholder for m_2dc access
+                            _g->m_2dc->Fn2982(0x1387);
                             AppendChat(
                                 "My name is Kevin Lambert.  You typed in my cheat "
                                 "code.  Prepare to die."
@@ -756,6 +762,10 @@ namespace GruntzMgrCmd {
                             if (!_g) {
                                 return 0;
                             }
+                            if (!_g->m_2dc) {
+                                return 0;
+                            }
+                            _g->m_2dc->Fn33cd(0x64);
                             PLAYCUE("GAME_MAJORCHEAT");
                             AppendChat("May your Wellz be full of Goo!");
                             return 1;
