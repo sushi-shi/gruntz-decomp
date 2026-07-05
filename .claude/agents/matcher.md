@@ -66,6 +66,11 @@ disasm work proves, fold/delete local view structs onto the canonicals, and conv
 `*Vtbl` structs / `m_vtbl`/`m_vptr` fields / PMF tables to real C++ virtuals (slot order
 from `gruntz sema class` + config/vtable_names.csv; the PMF→real-virtual conversion is
 PROVEN better, the MFC wall is dead, the foreign-vtable view exception is abolished).
+**ALL manual vtables go (user mandate 2026-07-05): stamp-position/EH-frame/ctor-layout
+"walls" are NOT keeps — realize the real polymorphic class anyway and take the % drop
+(clean-room). Slots must be evidence-backed (the binary's real vtable slot RVAs via
+`sema class`, declared-only + @rva-symbol where unreconstructed) — never fabricated
+nameless fillers. The tooling exists for exactly this; use it.**
 Every batch reports BOTH deltas: match % UP and the cleanliness counters DOWN.
 
 **MODEL THE CLASS, NOT THE VIEW (hard rule, user mandate 2026-07-05):** when your work
