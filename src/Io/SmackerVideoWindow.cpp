@@ -27,6 +27,7 @@
 #undef s64
 
 #include <Gruntz/Wnd.h>
+#include <ddraw.h> // real IDirectDrawSurface (m_24/m_28: Lock/Restore/Unlock/Release)
 
 // LPCTSTR AFXAPI AfxRegisterWndClass(UINT, HCURSOR=0, HBRUSH=0, HICON=0). __stdcall.
 // (In afxwin.h, not the afx.h lean subset, so keep the local decl.)
@@ -75,17 +76,12 @@ inline void CursSink::CallFinish() {
 // The Rez allocator's free (RVA 0x1b9b82).
 extern "C" void RezFree_call(void* p);
 
-// A releasable sub-buffer reached via its vtable (Release at slot 2 == +0x08).
-// Foreign engine object: the slots are __stdcall (retail dispatch pushes the object
-// as an explicit stack arg -- `mov ecx,[obj]; push obj; call [ecx+8]`, not ecx), so
-// Release is a __stdcall virtual on a real (declare-only) polymorphic class. The
-// indirect call is the same codegen as the old hand-rolled SmkBufVtbl.
-SIZE_UNKNOWN(SmkBuf);
-struct SmkBuf {
-    virtual void v0();
-    virtual void v1();
-    virtual void __stdcall Release(); // slot 2 == +0x08
-};
+// m_24/m_28 are real IDirectDrawSurface COM interfaces (<ddraw.h>): the open/close
+// paths Release them (slot 2 == +0x08) and the per-frame Frame() decodes into them
+// via Lock (slot 25 == +0x64), Restore (slot 27 == +0x6c) and Unlock (slot 32 ==
+// +0x80). The former hand-rolled SmkBuf placeholder (only Release) is dissolved into
+// the real interface, so both dispatch families use ONE type, cast-free.
+
 // The embedded sub-player whose Shutdown() lives at RVA 0x17b570.
 SIZE_UNKNOWN(SmackSub);
 struct SmackSub {
@@ -101,13 +97,21 @@ struct CSmackWin {
     char _14[0x1c - 0x14];
     i32 m_command; // +0x1c pending command
     char _20[0x24 - 0x20];
-    SmkBuf* m_24; // +0x24
-    SmkBuf* m_28; // +0x28
-    char _2c[0x508 - 0x2c];
+    IDirectDrawSurface* m_24; // +0x24  primary DDraw surface (Lock/Restore/Unlock/Release)
+    IDirectDrawSurface* m_28; // +0x28  secondary DDraw surface (Release)
+    char _2c[0x9c - 0x2c];
+    char m_desc[0xac - 0x9c]; // +0x9c  DDSURFACEDESC head (Lock's out-param)
+    i32 m_lPitch;             // +0xac  desc.lPitch (surface stride)
+    char _b0[0xc0 - 0xb0];
+    void* m_lpSurface; // +0xc0  desc.lpSurface (locked pixel base)
+    char _c4[0x508 - 0xc4];
     void* m_directSound; // +0x508 DirectSound
-    char _50c[0x514 - 0x50c];
-    i32 m_514; // +0x514
-    char _518[0x534 - 0x518];
+    i32 m_50c;           // +0x50c  frame-locked flag
+    i32 m_510;           // +0x510  SmackToBuffer blit flags
+    i32 m_514;           // +0x514  full-frame flag
+    char _518[0x520 - 0x518];
+    i32 m_520; // +0x520  palette-mode state (8 => snapshot on new palette)
+    char _524[0x534 - 0x524];
     void* m_rezBuffer; // +0x534 Rez buffer
     i32 m_useDS;       // +0x538
     CWnd* m_videoWnd;  // +0x53c  the video window
@@ -123,7 +127,9 @@ struct CSmackWin {
     i32 Advance(i32 cmd, i32 loops);                        // 0x17c8e0
     i32 CloseSmacker();                                     // 0x17c9b0
     i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
-    i32 Frame();                                            // 0x17caa0 (external)
+    i32 Frame();                                            // 0x17caa0
+    void SnapshotPalette();                                 // 0x17ca10 (Frame: new-palette snapshot)
+    void BlitDirty(i32 x, i32 y, i32 w, i32 h);             // 0x17cdf0 (Frame: dirty-rect blit)
     void Free17d6b0();                                      // 0x17d6b0
     void Free17cc80();                                      // 0x17cc80
 };
@@ -361,6 +367,52 @@ i32 CSmackWin::CloseSmacker() {
         m_rezBuffer = 0;
     }
     m_streamOpen = 0;
+    return 1;
+}
+
+// CSmackWin::Frame (0x17caa0) - the per-frame renderer CSmackWin::Pump drives, re-homed
+// from the ApiCaller stubs (was MoviePlayer_17caa0::RenderFrame; class identity proven -
+// Pump calls it on this=CSmackWin, and CSmackWin already declared Frame @0x17caa0).
+// Locks the DDraw surface (retrying on DDERR_SURFACELOST), decodes the current Smacker
+// frame into it, blits the changed region(s), then advances to the next frame (0 once
+// the last frame has played). m_24 is now the real IDirectDrawSurface (the former
+// SmkBuf/manual-vtable views are folded into it).
+RVA(0x0017caa0, 0x13b)
+i32 CSmackWin::Frame() {
+    if (m_smackHandle->NewPalette && m_520 == 8) {
+        SnapshotPalette();
+    }
+    i32 hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+    while (hr == (i32)0x887601c2) {
+        if (m_24->Restore() != 0) {
+            goto afterLock;
+        }
+        hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+    }
+    if (hr == 0) {
+        SmackToBuffer(m_smackHandle, 0, 0, m_lPitch, m_smackHandle->Height, m_lpSurface, m_510);
+        SmackDoFrame(m_smackHandle);
+        m_50c = 1;
+        m_24->Unlock(m_lpSurface);
+    }
+afterLock:
+    if (m_514 != 1) {
+        while (SmackToBufferRect(m_smackHandle, 0) != 0) {
+            BlitDirty(
+                m_smackHandle->LastRectx,
+                m_smackHandle->LastRecty,
+                m_smackHandle->LastRectw,
+                m_smackHandle->LastRecth
+            );
+        }
+    } else {
+        BlitDirty(0, 0, m_smackHandle->Width, m_smackHandle->Height);
+    }
+    Smack* s = m_smackHandle;
+    if (s->FrameNum == s->Frames - 1) {
+        return 0;
+    }
+    SmackNextFrame(s);
     return 1;
 }
 SIZE_UNKNOWN(CSmackWin);

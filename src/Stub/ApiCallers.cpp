@@ -35,8 +35,8 @@
 //              not yet recovered; moving them would force-guess an owner - LEFT put.
 //   [BIG]      >512B @early-stop bodies (0x14d00/0x1a700/0x179e70/0xe6020) kept at
 //              their return-0/artifact plateau per the >512B REVERT rule (final sweep).
-//   [DEFER]    MoviePlayer_17caa0::RenderFrame - CMoviePlayer/CSmackWin, deferred by a
-//              documented m_10/m_24 field-typing conflict with its moved siblings.
+//   [ORPHAN-2] 0x0394b0 (ClickHost hit-test) - the worklist's CGruntzMgr attribution
+//              was a thunk-band mis-chase; real owner unrecovered, so LEFT put (see it).
 
 // A window-host chain hung off the game registry: its m_4 is the top-level HWND.
 SIZE_UNKNOWN(GameWnd);
@@ -1075,83 +1075,12 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // CSmackWin::Frame (0x17caa0, the per-frame renderer Pump/Advance call) + its
-    // palette-snapshot helper (0x17cd90) - both CSmackWin methods (src/Gruntz/
-    // SmackerVideoWindow.cpp), left here for the final sweep: RenderFrame reads m_10 as
-    // a Smack* and m_24 as a DDraw surface where the moved open/pump/close use m_10 as
-    // an i32 handle / m_24 as a SmkBuf, so folding them into the shared CSmackWin view
-    // needs those two fields typed once + casts (verify class identity first).
-    // Smacker imports (SmackToBuffer/SmackDoFrame/SmackToBufferRect/SmackNextFrame)
-    // + the Smack stream handle come from <smack.h>.
-    // The DirectDraw surface the frame is locked/blitted into (manual vtable).
-    struct DDSurf_17caa0;
-    struct DDSurfVtbl_17caa0 {
-        void* s0[25];                                                   // +0x00..+0x60
-        i32(__stdcall* Lock)(DDSurf_17caa0*, void*, void*, u32, void*); // +0x64
-        void* s26;                                                      // +0x68
-        i32(__stdcall* Restore)(DDSurf_17caa0*);                        // +0x6c
-        void* s28[4];                                                   // +0x70..+0x7c
-        i32(__stdcall* Unlock)(DDSurf_17caa0*, void*);                  // +0x80
-    };
-    struct DDSurf_17caa0 {
-        DDSurfVtbl_17caa0* vptr;
-    };
-    // The decoded Smacker stream header is the vendored `Smack` (see <smack.h>).
-    struct MoviePlayer_17caa0 {
-        char m_pad0[0x10];
-        Smack* m_10; // +0x10  decoded Smacker stream
-        char m_pad14[0x24 - 0x14];
-        DDSurf_17caa0* m_24; // +0x24
-        char m_pad28[0x9c - 0x28];
-        char m_desc[0xac - 0x9c]; // +0x9c DDSURFACEDESC head
-        i32 m_ac;                 // +0xac desc.lPitch
-        char m_padb0[0xc0 - 0xb0];
-        void* m_c0; // +0xc0 desc.lpSurface
-        char m_padc4[0x50c - 0xc4];
-        i32 m_50c; // +0x50c
-        i32 m_510; // +0x510 flags
-        i32 m_514; // +0x514 full-frame flag
-        char m_pad518[0x520 - 0x518];
-        i32 m_520;                          // +0x520
-        void Sub17ca10();                   // RVA 0x17ca10
-        void Sub17cdf0(i32, i32, i32, i32); // RVA 0x17cdf0 (blit dirty rect)
-        i32 RenderFrame();
-    };
-    // __thiscall(): lock the surface, decode the current frame into it, blit the
-    // changed region, then advance to the next frame (0 once the last frame plays).
-    RVA(0x0017caa0, 0x13b)
-    i32 MoviePlayer_17caa0::RenderFrame() {
-        if (m_10->NewPalette && m_520 == 8) {
-            Sub17ca10();
-        }
-        i32 hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
-        while (hr == (i32)0x887601c2) {
-            if (m_24->vptr->Restore(m_24) != 0) {
-                goto afterLock;
-            }
-            hr = m_24->vptr->Lock(m_24, 0, m_desc, 1, 0);
-        }
-        if (hr == 0) {
-            SmackToBuffer(m_10, 0, 0, m_ac, m_10->Height, m_c0, m_510);
-            SmackDoFrame(m_10);
-            m_50c = 1;
-            m_24->vptr->Unlock(m_24, m_c0);
-        }
-    afterLock:
-        if (m_514 != 1) {
-            while (SmackToBufferRect(m_10, 0) != 0) {
-                Sub17cdf0(m_10->LastRectx, m_10->LastRecty, m_10->LastRectw, m_10->LastRecth);
-            }
-        } else {
-            Sub17cdf0(0, 0, m_10->Width, m_10->Height);
-        }
-        Smack* s = m_10;
-        if (s->FrameNum == s->Frames - 1) {
-            return 0;
-        }
-        SmackNextFrame(s);
-        return 1;
-    }
+    // (0x17caa0 RenderFrame re-homed to src/Io/SmackerVideoWindow.cpp as the real
+    // CSmackWin::Frame - class identity proven (CSmackWin::Pump calls it on this=
+    // CSmackWin, which already declared Frame @0x17caa0). The m_24 field-typing conflict
+    // is resolved: it is the real IDirectDrawSurface (open/close Release it @slot 2, this
+    // method Lock/Restore/Unlock it @slots 25/27/32), so the former SmkBuf/manual-vtable
+    // views folded into one <ddraw.h> interface.)
 
     // (0x17cd90 PalCache::Snapshot re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)
