@@ -3,8 +3,19 @@
 // returned by CSpawnList::FindEntry/Extract (areamgr, returning CSpawnEntryN*),
 // CObjResTree::LoadObject{Image,Sound,Anim}Resources (loadobjectresources) and
 // CGruntSpawnConfig::PickWeighted (gruntspawnconfig) - i.e. it is the by-value name
-// getter of the spawn-entry record (likely CSpawnEntryN). RTTI name unrecovered
-// (Ghidra placeholder "Obj09a260").
+// getter of the spawn-entry record.
+//
+// IDENTITY CONFIRMED (matcher-5): Obj09a260 == CSpawnEntryN. The canonical class
+// already exists as a .cpp-local view in src/Gruntz/AreaMgr.cpp (`class CSpawnEntryN
+// { CString GetName(); // 0x2a1d };`), and GetName's thunk 0x2a1d jmps to THIS body
+// at 0x9a260 - so GetStr_09a260 IS CSpawnEntryN::GetName's out-of-line body.
+// DEFERRED FOLD (not done here to avoid regressing the matched areamgr unit + a name
+// hazard): the clean fold is to hoist CSpawnEntryN/CSpawnNode/CSpawnList out of
+// AreaMgr.cpp into a shared header and reconstruct this as CSpawnEntryN::GetName.
+// CAVEAT: AreaMgr.cpp ALSO defines a DIFFERENT `class CSpawnEntry` (name record,
+// GetTail@0x9a830) and GruntSpawnConfig.h a THIRD `struct CSpawnEntry` (voice list,
+// CObList@+0) - resolve that CSpawnEntry name collision first (real distinct classes,
+// not one). RTTI name still a Ghidra placeholder ("Obj09a260").
 //
 // Obj09a260::GetStr (0x09a260, __thiscall) returns the
 // leading CString member by value (NRVO into the hidden return slot): a single
