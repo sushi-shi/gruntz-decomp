@@ -385,16 +385,21 @@ void CTriggerMgr::Cleanup() {
 // flag each live cell's goal (+0x154) done and clear the cell, its parallel grid slot
 // (+0x11c) and the per-row state words (+0x10c/+0x20c/+0x21c); then ClearSelections.
 // @early-stop
-// regalloc + constant-hoist wall: retail pins this->ebx, startRow->esi and hoists the
-// 0x10000 done-bit into edi for an `or [mem],reg` RMW; our cl homes this->esi and
-// emits the 3-instr mov/or/mov. Logic + offsets byte-exact. topic:wall.
+// 60->65: the "5 = all" decode is now the if/else form (jmp-merge). Residual is a
+// byte-or-vs-dword-RMW regalloc cascade: our cl pins the zero constant in ebp and peepholes
+// `m_8 |= 0x10000` to `or byte [mem+2],1` (frees a reg -> keeps `this` in ebx); retail pins
+// zero in ebx and emits the full `mov r,[m_8];or r,0x10000;mov [m_8],r` RMW (the reg temp
+// forces `this` to spill to [esp+0x10] + one extra `push ecx` frame slot). Same expr matches
+// as dword-RMW in the lower-pressure ResetAll; not source-steerable here. topic:wall topic:regalloc.
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::ClearGridRange(i32 startRow) {
-    i32 row = startRow;
-    i32 last = startRow;
+    i32 row, last;
     if (startRow == 5) {
         row = 0;
         last = 3;
+    } else {
+        last = startRow;
+        row = startRow;
     }
     ResetAll();
     if (row <= last) {
@@ -467,15 +472,20 @@ void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 st
 // (px,py). startRow==5 means "rows 0..3"; otherwise just that one row. Writes the hit
 // (row,col) through the out-ptrs and returns the cell pointer (0 when none).
 // @early-stop
-// regalloc wall: retail pins row->ebp and px->ebx across the scan (cached once); our cl
-// keeps row in [esp+0x2c]/edx and reloads px each compare. Logic + offsets byte-exact.
+// 70.9->71.2: the "5 = all" decode is now the if/else form (row/last kept in eax/edx).
+// Residual regalloc wall: retail spills px to [esp+0x1c] and reloads it for each box-edge
+// compare (freeing esi to precompute y0+30), and tail-merges the loop exit; our cl pins px
+// in ebx. High register pressure (5 args + this + nested loop) -> different spill picks.
+// Logic + offsets byte-exact. topic:wall topic:regalloc.
 RVA(0x0006bea0, 0xe2)
 void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
-    i32 row = startRow;
-    i32 last = startRow;
+    i32 row, last;
     if (startRow == 5) {
         row = 0;
         last = 3;
+    } else {
+        last = startRow;
+        row = startRow;
     }
     while (row <= last) {
         CTmCell** cell = &m_grid[row * 15];
