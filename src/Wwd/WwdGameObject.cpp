@@ -143,6 +143,33 @@ struct WwdRenderCtx;
 struct WwdSurface; // defined below; m_2c holds the destination surface
 class CWwdGameObject {
 public:
+    // ---- the object's real polymorphic interface (folds the former WwdSelf view) ----
+    // The vptr at +0x00 dispatches through the engine's manually-assembled table
+    // ?g_wwdGameObjectVtbl@@3PAXA (VA 0x5f0020, 17 slots, read from .rdata). The
+    // methods it routes to are NON-virtual CWwdGameObject/foreign functions whose
+    // addresses the engine hand-placed into the table (so retail calls them DIRECTLY
+    // via rel32 - see Dispatch->Play/Init->Setup), hence Setup/Play/Helper164790 stay
+    // plain methods below; these 17 declared-only virtuals only model the table SHAPE so
+    // WriteSnapshot dispatches slot 8/16 through the real vptr with no cast. Slot RVAs
+    // are the binary's ground truth (never fabricated); unrecovered slots carry @rva.
+    virtual i32 Slot00();       // slot 0  @0x1bef01  const-getter (mov eax,0x5eb848;ret) == Vfunc40
+    virtual void ScalarDtor();  // slot 1  @0x15b4c0  scalar-deleting dtor (??_G)
+    virtual void Slot08();      // slot 2  @0x0028ec -> 0x14bc0  (unrecovered engine method)
+    virtual void Slot0C();      // slot 3  @0x00106e -> 0x14be0  (unrecovered engine method)
+    virtual void Slot10();      // slot 4  @0x004034 -> 0x14c00  (unrecovered engine method)
+    virtual void Slot14();      // slot 5  @0x15b370  (worker-gate; reads [this+0x7c])
+    virtual void Slot18();      // slot 6  @0x001c08 -> 0xd5da0  (unrecovered engine method)
+    virtual void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
+    virtual i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
+    virtual i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
+    virtual i32 Slot28();       // slot 10 @0x150d60  == Setup (below)
+    virtual void Slot2C();      // slot 11 @0x11fec0  __purecall
+    virtual void Slot30();      // slot 12 @0x11fec0  __purecall
+    virtual void Slot34();      // slot 13 @0x11fec0  __purecall
+    virtual void Slot38();      // slot 14 @0x11fec0  __purecall
+    virtual i32 Slot3C();       // slot 15 @0x151150  == Play (below)
+    virtual i32 Vfunc40();      // slot 16 @0x1bef01  const-getter (== slot 0) read by WriteSnapshot
+
     // Dispatch entry (0x150a70) and the methods it routes to.
     i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
     i32 ReadState(i32 src);                                     // 0x150b00
@@ -167,7 +194,7 @@ public:
     i32 Resolve150f90(void* obj); // 0x150f90
     i32 Resolve151070(void* obj); // 0x151070
 
-    void* m_00;       // +0x00  vptr (self virtuals dispatched via WwdSelf cast)
+    // +0x00 is the implicit vptr (the 17 virtuals above); m_04 follows at +0x04.
     i32 m_04;         // +0x04
     i32 m_flags;      // +0x08  bit flags (|=0x800000 / 0x1000000)
     WwdMgr* m_mgr;    // +0x0c  owning manager
@@ -273,33 +300,8 @@ public:
     virtual i32 Vfunc8(); // +0x08
 };
 
-// CWwdGameObject's own polymorphic interface (vtable @0x5f0020). Declared-only
-// virtuals at the slots WriteSnapshot dispatches (+0x20, +0x40); cast `this` to
-// this interface so `mov eax,[this]; call [eax+off]` falls out as __thiscall.
-// authentic: CWwdGameObject cannot be made polymorphic in-TU (its full retail
-// vtable is unmatched engine code; declaring real virtuals would make cl emit a
-// wrong ??_7). This declared-only interface is the recommended manual-dispatch
-// form until the class's whole vtable is modeled.
-class WwdSelf {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual i32 Vfunc20(); // +0x20
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Slot30();
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual void Slot3C();
-    virtual i32 Vfunc40(); // +0x40
-};
+// (WwdSelf folded onto CWwdGameObject's real 17-slot virtual interface above -
+// WriteSnapshot now dispatches Vfunc20/Vfunc40 through `this` with no cast.)
 
 // The render context RenderDot (0x1660f0) plots into: a clip extent at +0x10/
 // +0x14 and the destination surface at +0x2c.
@@ -815,10 +817,9 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
         w->Advance(this);
     }
 
-    WwdSelf* self = (WwdSelf*)this;
     i32 ebx = 0;
-    if (self->Vfunc20() == 0x1c) {
-        ebx = self->Vfunc40();
+    if (this->Vfunc20() == 0x1c) {
+        ebx = this->Vfunc40();
     }
 
     w = m_worker;
@@ -829,7 +830,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 
     WwdSnapshot rec;
     rec.m_00 = m_04;
-    rec.m_08 = self->Vfunc20();
+    rec.m_08 = this->Vfunc20();
     rec.m_04 = m_188;
     rec.m_94 = m_posX;
     rec.m_98 = m_posY;
@@ -986,7 +987,6 @@ SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdMgrSub08);
 SIZE_UNKNOWN(WwdMgrSub10);
 SIZE_UNKNOWN(WwdRenderCtx);
-SIZE_UNKNOWN(WwdSelf);
 SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(WwdSubDel);
 SIZE_UNKNOWN(WwdSubList);
