@@ -4,6 +4,7 @@
 // class; offsets + emitted bytes are load-bearing. The moves are byte-neutral
 // (only FindResource/LoadResource/GDI + sprintf).
 #include <Win32.h>
+#include <ddraw.h> // IDirectDrawSurface (the counter window's GetDC/ReleaseDC source)
 #include <rva.h>
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
@@ -173,35 +174,13 @@ namespace ResLoaders {
         return Apply(a, pal, c);
     }
 
-    // A FOREIGN polymorphic DC source: only GetDC (slot 17, vtbl +0x44) and Done
-    // (slot 26, vtbl +0x68) are dispatched; the rest are unreconstructed engine code.
-    // Honest model = a manual vptr into a typed vtable struct naming ONLY the two used
-    // slots as 4-byte thiscall PMFs + char pad[], NO fake virtuals; each dispatch is
-    // the same `mov eax,[s]; mov ecx,s; call [eax+slot]`.
-    struct DcSink_164380Vtbl;
-    struct DcSink_164380 {
-        DcSink_164380Vtbl* m_vtbl; // +0x00
-        i32 CallGetDC(HDC* out);   // slot 17 == vtable +0x44
-        void CallDone(HDC dc);     // slot 26 == vtable +0x68
-    };
-    typedef i32 (DcSink_164380::*DcGetDCFn)(HDC* out);
-    typedef void (DcSink_164380::*DcDoneFn)(HDC dc);
-    struct DcSink_164380Vtbl {
-        char m_pad00[0x44];
-        DcGetDCFn GetDC; // +0x44 slot 17
-        char m_pad48[0x68 - 0x48];
-        DcDoneFn Done; // +0x68 slot 26
-    };
-    SIZE_UNKNOWN(DcSink_164380Vtbl);
-    inline i32 DcSink_164380::CallGetDC(HDC* out) {
-        return (this->*(m_vtbl->GetDC))(out);
-    }
-    inline void DcSink_164380::CallDone(HDC dc) {
-        (this->*(m_vtbl->Done))(dc);
-    }
+    // The counter window's DC source at +0x08 is a real IDirectDrawSurface COM
+    // interface (<ddraw.h>): GetDC (slot 17, +0x44) and ReleaseDC (slot 26, +0x68)
+    // are the standard __stdcall COM slots (self pushed on the stack), so the calls
+    // fold to `push arg; push surface; call [vtbl+slot]` cast-free.
     struct CounterWnd_164380 {
         char m_pad0[8];
-        DcSink_164380* m_8; // +0x08
+        IDirectDrawSurface* m_8; // +0x08  DC-capable DirectDraw surface
     };
     struct DrawHost_164380 {
         char m_pad0[0x2c];
@@ -218,14 +197,14 @@ namespace ResLoaders {
             return;
         }
         HDC hdc = 0;
-        w->m_8->CallGetDC(&hdc);
+        w->m_8->GetDC(&hdc);
         if (!hdc) {
             return;
         }
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, 0xffffff);
         DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
-        w->m_8->CallDone(hdc);
+        w->m_8->ReleaseDC(hdc);
     }
 
     struct DrawHost2_164420 {
@@ -241,14 +220,14 @@ namespace ResLoaders {
             return;
         }
         HDC hdc = 0;
-        w->m_8->CallGetDC(&hdc);
+        w->m_8->GetDC(&hdc);
         if (!hdc) {
             return;
         }
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, 0xffffff);
         DrawTextA(hdc, text, strlen(text), rc, 0x25);
-        w->m_8->CallDone(hdc);
+        w->m_8->ReleaseDC(hdc);
     }
 
     struct PalHost_1775f0 {
