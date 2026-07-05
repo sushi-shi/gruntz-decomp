@@ -6,6 +6,7 @@
 // imports come from <Win32.h> (call [__imp_*]); the install/assert helpers are
 // modeled with NO body so their rel32 references reloc-mask.
 #include <Win32.h>
+#include <ddraw.h> // real IDirectDrawPalette (the palette snapshotted via GetEntries slot 4)
 
 #include <rva.h>
 
@@ -22,18 +23,12 @@ struct LogPal256 {
 // The Rez heap allocator (_RezAlloc), backing the lazily-cloned working copy.
 extern "C" void* RezAlloc(u32 size);
 
-// The surface the palette describes: vtable slot 4 (+0x10) fills a 256-entry
-// system-palette snapshot into a caller buffer.
-struct PalSurface;
-SIZE_UNKNOWN(PalSurfVtbl);
-struct PalSurfVtbl {
-    void* s0[4];
-    i32(__stdcall* Snapshot)(PalSurface*, i32, i32, i32 count, void* dst); // +0x10
-};
-SIZE_UNKNOWN(PalSurface);
-struct PalSurface {
-    PalSurfVtbl* m_vptr;
-};
+// The palette snapshotted into the working buffer is the real IDirectDrawPalette
+// (<ddraw.h>): vtable slot 4 (+0x10) is GetEntries(dwFlags, dwBase, dwNumEntries,
+// lpEntries) - the call m_4->GetEntries(0, 0, 0x100, entries) reads all 256 entries
+// into the caller buffer. Was a hand-rolled PalSurfVtbl PMF view naming only that
+// slot; folded to the real SDK interface (the IDirectDrawSurface/IDirectPlay4
+// precedent). Byte-neutral COM dispatch (`mov eax,[m_4]; call [eax+0x10]`).
 
 // A second class in DIRPAL.CPP: the DirectDraw palette-fade context. Rebuilds the
 // palette snapshot, caches the fade params (3 bytes at +0x1c), timestamps, lazily
@@ -41,7 +36,7 @@ struct PalSurface {
 // both reach the same DIRPAL.CPP error logger (0x141400) as DirPal::Capture below.
 struct PalCtx {
     char m_pad0[4];
-    PalSurface* m_4; // +0x04
+    IDirectDrawPalette* m_4; // +0x04  the DirectDraw palette (GetEntries snapshot)
     char m_pad8[0xc - 8];
     char* m_c; // +0x0c (the 0x400 source palette buffer)
     char m_pad10[0x14 - 0x10];
@@ -70,7 +65,7 @@ void PalCtx::Setup6(i32 a, i32 b, char c3, char c4, char c5, i32 a6) {
     if (m_34) {
         Teardown();
     }
-    i32 err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
+    i32 err = m_4->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_c);
     if (err) {
         ErrLog_141400("C:\\Proj\\DDrawMgr\\DIRPAL.CPP", 0x311, err);
     }
@@ -100,7 +95,7 @@ void PalCtx::Setup4(i32 a, i32 b, i32 a3, i32 a4) {
     if (m_34) {
         Teardown();
     }
-    i32 err = m_4->m_vptr->Snapshot(m_4, 0, 0, 0x100, m_c);
+    i32 err = m_4->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_c);
     if (err) {
         ErrLog_141400("C:\\Proj\\DDrawMgr\\DIRPAL.CPP", 0x34b, err);
     }
