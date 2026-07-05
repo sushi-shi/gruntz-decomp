@@ -4,7 +4,8 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>                 // Wap::CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
 // WwdGameObject.cpp - leaf methods of CWwdGameObject, a runtime "plane object"
 // deserialized from WWD level data (constructed by WwdFile::ReadPlaneObjects,
 // 0x162af0, via the EH-frame ctor at 0x15b390 which is NOT reconstructed here).
@@ -63,22 +64,17 @@ struct WwdSubList {
 struct MapLookupA {
     i32 Lookup(const char* key, void** out); // 0x1b8008
 };
-struct MapLookupB {
-    i32 Lookup(const char* key, void** out); // 0x1b8438
-};
 struct CMapStringToObLite {
     i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
 };
 
-// mgr+0x28: the real CDDrawSubMgrLeafScan (full def in DDrawMgr units) -
-// FindKeyOfValue_158570 reverse-looks-up a key CString by LeafScanValue (modeled here
-// as i32) through its +0x10 map, returning the found name CString BY VALUE (RVO; the
-// callers' implicit ~CString is the 0x1b9cde teardown). Reloc-masked reader view.
-struct CDDrawSubMgrLeafScan {
-    CString FindKeyOfValue_158570(i32 a); // 0x158570  __thiscall -> CString (by value)
-    char m_pad00[0x10];
-    MapLookupB m_map; // +0x10  name -> object (0x1b8438)
-};
+// mgr+0x28 is the canonical CDDrawSubMgrLeafScan (<DDrawMgr/DDrawSubMgrLeafScan.h>,
+// included above). FindKeyOfValue_158570(LeafScanValue* target) reverse-looks-up a key
+// CString by the map value, and its +0x10 CMapStringToOb (m_10) resolves a name ->
+// CObject (Lookup @0x1b8438). The former local reader-slice + its MapLookupB view are
+// folded onto that single-source header (disasm 0x158570: the arg is a pointer compared
+// for equality -> LeafScanValue*; 0x1b8438 delinks to ?Lookup@CMapStringToOb, the same
+// carve-out symbol SerialObjRef binds - so both use-sites stay reloc-masked).
 
 // The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/WriteSnapshot
 // is the shared WAP32 CSerialArchive (Read @ vtable +0x2c - the read/load direction;
@@ -397,7 +393,7 @@ i32 CWwdGameObject::ReadState(i32 src) {
 
     memset(tmp, 0, 0x80);
     {
-        CString str = m_mgr->m_28->FindKeyOfValue_158570((i32)m_19c);
+        CString str = m_mgr->m_28->FindKeyOfValue_158570((LeafScanValue*)m_19c);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -445,9 +441,9 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     m_19c = 0;
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        void* found = 0;
+        CObject* found = 0;
         WwdMgr* mgr = m_mgr;
-        mgr->m_28->m_map.Lookup(name, &found);
+        mgr->m_28->m_10.Lookup(name, found);
         m_19c = found;
     }
     return 1;
@@ -982,9 +978,9 @@ SIZE_UNKNOWN(CMapStringToObLite);
 SIZE_UNKNOWN(CStringAssign);
 SIZE(CmdMap, 0x3c);
 SIZE_UNKNOWN(MapLookupA);
-SIZE_UNKNOWN(MapLookupB);
-// CDDrawSubMgrLeafScan / CDDrawWorkerRegistry are annotated on their real defs
-// (DDrawMgr units); this TU only holds the reloc-masked reader views.
+// CDDrawSubMgrLeafScan (mgr+0x28) is the canonical class (its own header's SIZE);
+// CDDrawWorkerRegistry is annotated on its real def (DDrawMgr unit) - this TU only
+// holds the reloc-masked reader views.
 SIZE_UNKNOWN(WorkerSub);
 SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdMgrSub08);
