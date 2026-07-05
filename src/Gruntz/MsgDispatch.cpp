@@ -7,9 +7,7 @@
 // all three. Placeholder names; only OFFSETS + code bytes are load-bearing.
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // the real CUserLogic base (handler is a CUserLogic leaf)
-
-struct CMsg;
+#include <Gruntz/UserLogic.h> // CTileLogic base + CGameObject / CGameObjAux (+0x7c record)
 
 // The handler object (m_18): a 0x54-byte CTileLogic (CUserLogic) logic leaf (the SAME
 // archetype as CToobSpikez - phase codes 0/0x1d/0x1e/0x50-0x53 select the inherited
@@ -20,7 +18,7 @@ struct CMsg;
 // ctor (reloc-masked) stamps the real vtable.
 class CObj : public CTileLogic {
 public:
-    CObj(CMsg* arg);           // external, reloc-masked
+    CObj(CGameObject* arg);    // external, reloc-masked
     char m_pad40[0x54 - 0x40]; // to the true 0x54 leaf size (CTileLogic is 0x40)
     //   phase-0 init   = Activate        (slot 6,  +0x18)
     //   phase 0x1e     = UserLogicVfunc8 (slot 10, +0x28)
@@ -31,15 +29,10 @@ public:
     //   phase 0x53     = UserLogicVfuncD (slot 15, +0x3c)
 };
 
-struct CSub {
-    char _00[0x18];
-    CObj* m_18; // +0x18
-    u32 m_1c;   // +0x1c  command id (unsigned switch)
-};
-struct CMsg {
-    char _00[0x7c];
-    CSub* m_7c; // +0x7c
-};
+// The record is the game object's +0x7c sub-object (canonical CGameObjAux): its
+// generic m_18 holds the live logic leaf (a CObj here - a proven-heterogeneous slot,
+// so the leaf downcasts at the call sites) and its generic m_1c carries the phase
+// code (unsigned switch: 0 build, 0x1d/0x1e/0x50-0x53 dispatch, 0x3e8 idle).
 
 // The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
 // "dispatch default" - it is the shared CTypeKeyColl serializer ProjTypeXfer
@@ -52,52 +45,50 @@ i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
 // The dispatcher body, identical across the three instantiations (the only
 // retail difference is the reloc-masked ctor + EH funclet).
 #define DISPATCH_BODY                                                                              \
-    CSub* sub = arg->m_7c;                                                                         \
-    switch (sub->m_1c) {                                                                           \
+    CGameObjAux* rec = arg->m_7c;                                                                  \
+    switch ((u32)rec->m_1c) {                                                                      \
         case 0: {                                                                                  \
-            sub->m_1c = 0x3e8;                                                                     \
+            rec->m_1c = (void*)0x3e8;                                                              \
             CObj* o = new CObj(arg);                                                               \
             o->Activate();                                                                         \
-            sub->m_18 = o;                                                                         \
+            rec->m_18 = o;                                                                         \
             break;                                                                                 \
         }                                                                                          \
         case 0x1d:                                                                                 \
-            sub->m_18->UserLogicVfunc9();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfunc9();                                                 \
             break;                                                                                 \
         case 0x1e:                                                                                 \
-            sub->m_18->UserLogicVfunc8();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfunc8();                                                 \
             break;                                                                                 \
         case 0x50:                                                                                 \
-            sub->m_18->UserLogicVfuncC();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfuncC();                                                 \
             break;                                                                                 \
         case 0x51:                                                                                 \
-            sub->m_18->UserLogicVfuncB();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfuncB();                                                 \
             break;                                                                                 \
         case 0x52:                                                                                 \
-            sub->m_18->UserLogicVfuncA();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfuncA();                                                 \
             break;                                                                                 \
         case 0x53:                                                                                 \
-            sub->m_18->UserLogicVfuncD();                                                          \
+            ((CObj*)rec->m_18)->UserLogicVfuncD();                                                 \
             break;                                                                                 \
         case 0x3e8:                                                                                \
             break;                                                                                 \
         default:                                                                                   \
-            ProjTypeXfer((CXferArchive*)sub->m_18);                                                \
+            ProjTypeXfer((CXferArchive*)rec->m_18);                                                \
             break;                                                                                 \
     }                                                                                              \
     return 1;
 
 RVA(0x000aa0a0, 0xf1)
-i32 Dispatch_aa0a0(CMsg* arg){DISPATCH_BODY}
+i32 Dispatch_aa0a0(CGameObject* arg){DISPATCH_BODY}
 
 RVA(0x000aa1e0, 0xf1)
-i32 Dispatch_aa1e0(CMsg* arg){DISPATCH_BODY}
+i32 Dispatch_aa1e0(CGameObject* arg){DISPATCH_BODY}
 
 RVA(0x000aa460, 0xf1)
-i32 Dispatch_aa460(CMsg* arg){DISPATCH_BODY}
+i32 Dispatch_aa460(CGameObject* arg){DISPATCH_BODY}
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CMsg);
 SIZE_UNKNOWN(CObj);
-SIZE_UNKNOWN(CSub);
