@@ -1,6 +1,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
+#include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
@@ -247,14 +248,8 @@ struct CTmRegSub30 {
     char p0[0x24];
     CTmGridHolder* m_24; // +0x24
 };
-// The tile occupancy grid at g_gameReg->m_tileGrid (+0x70): a row-pointer table
-// (m_8), width (m_c), height (m_10). Reached also by SpawnTileFx / NotifyCell.
-struct CTmTileGrid {
-    char p0[0x8];
-    i32** m_8; // +0x08  row-pointer table
-    i32 m_c;   // +0x0c  width (tiles)
-    i32 m_10;  // +0x10  height (tiles)
-};
+// The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
+// (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
 
 // The HUD/score board at g_gameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
 // a running score (+0x10) and the per-row placed-object counters (+0x48).
@@ -293,7 +288,7 @@ struct CTmGameReg {
     char p1[0x34];               // +0x34
     CTmFxMgr* m_68;              // +0x68  reused per-mode slot (fx/target sub-mgr here)
     CTmCmdMgr* m_6c;             // +0x6c  command/report sub-mgr
-    CTmTileGrid* m_tileGrid;     // +0x70  tile occupancy grid
+    CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
     char p2[0x8];                // +0x74..0x78
     CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
     char p3[0x134 - 0x80];       // +0x80
@@ -1422,7 +1417,7 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 // ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
 RVA(0x00075af0, 0x111)
 i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
-    CTmTileGrid* plane = g_gameReg->m_tileGrid;
+    CTileGrid* plane = g_gameReg->m_tileGrid;
     i32 ix = x >> 5;
     i32 iy = y >> 5;
     i32 attr;
@@ -1863,7 +1858,7 @@ i32 CTriggerMgr::PlaceObject(
         special = 0x100;
         wantSlot = 1;
     }
-    CTmTileGrid* plane = g_gameReg->m_tileGrid;
+    CTileGrid* plane = g_gameReg->m_tileGrid;
     i32 attr;
     if ((ax >> 5) >= plane->m_c || (ay >> 5) >= plane->m_10) {
         attr = 1;
@@ -2021,7 +2016,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
     }
     CTrigPoint pt = cell->m_pos;
-    CTmTileGrid* tg = g_gameReg->m_tileGrid;
+    CTileGrid* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
     ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
@@ -2094,7 +2089,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     if (g_gameReg->m_134 != 1) {
         return 0;
     }
-    CTmTileGrid* grid = g_gameReg->m_tileGrid;
+    CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
@@ -2478,7 +2473,6 @@ SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmFxMgr);
 SIZE_UNKNOWN(CTmCursorMgr);
-SIZE_UNKNOWN(CTmTileGrid);
 SIZE_UNKNOWN(CTmSoundChan);
 SIZE_UNKNOWN(CTmScroll);
 SIZE_UNKNOWN(CTmLevelView);
