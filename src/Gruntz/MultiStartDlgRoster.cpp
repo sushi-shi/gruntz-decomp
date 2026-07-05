@@ -40,23 +40,11 @@ extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 DATA(0x002c4520)
 extern HWND(WINAPI* g_pGetFocus)();
 
-// The per-player roster record - the CMultiStartDlg (battlez multiplayer) mode's facet
-// of CGameRegistry::m_focusSlots[] (+0x150 array, stride 0x238). The +0x10..+0x20
-// offsets are the ones GameRegistry.h flags as per-game-mode overlays, so the roster
-// interpretation stays local here rather than being pinned into that ~60-TU header.
-struct RosterSlot {
-    char m_pad0[0x10];
-    i32 m_10; // +0x10  combo index base
-    i32 m_14; // +0x14  human/computer flag
-    i32 m_18; // +0x18  colour id
-    i32 m_1c; // +0x1c  ready flag
-    i32 m_20; // +0x20  in-use flag
-    char m_pad24[0x228 - 0x24];
-    i32 m_228;                 // +0x228  combo/selection value
-    CString FormatName_3e54(); // __thiscall RVA 0x3e54  format the player's display name
-    char m_pad22c[0x238 - 0x22c];
-};
-SIZE_UNKNOWN(RosterSlot);
+// The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
+// CGameRegistry::m_focusSlots[] +0x150, stride 0x238) - the former local RosterSlot
+// facet is dissolved: its roster fields (m_10/m_18/m_1c/m_228/m_16c + the mode-reused
+// m_14/m_20 roles + FormatName_3e54) now live on the canonical (name-preserving
+// union; no offset conflicted, so no conflation to split).
 
 // Dialog-item resolvers (push id; __stdcall) that rely on the caller's live ecx=this:
 // each is really a thiscall control accessor spelled __stdcall so the byte stream omits
@@ -67,7 +55,7 @@ CWnd* __stdcall ResolveItem_1159(i32 idx);  // 0x01159
 CWnd* __stdcall ResolveItem_c27c0(i32 id);  // 0xc27c0
 // Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
-void __stdcall Refresh185c(RosterSlot* slot); // 0x0185c
+void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
 
 // __thiscall(str): resolve control 0x511 (the chat/message log edit) and append `str`
 // to it - CRLF-prefixed when the control already has text, then scroll the caret into
@@ -143,10 +131,10 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     i32 f18 = 0;
     i32 idx = 0;
     i32 t = this->LocalSlot2d4c();
-    i32 localColour = g_64bd5c->m_isHost ? *(i32*)((char*)m_host + t * 0x238 + 0x16c) : 1;
+    i32 localColour = g_64bd5c->m_isHost ? ((CFocusSlot*)m_host)[t].m_16c : 1;
     i32 off = 0;
     do {
-        RosterSlot* slot = (RosterSlot*)((char*)g_gameReg + off + 0x150);
+        CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + off + 0x150);
         if (slot) {
             if (slot->m_18 != g_64bd5c->m_hostIndex && slot->m_14 && slot->m_20) {
                 f18 = 1;
@@ -230,28 +218,28 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = ResolveItem_1753(0)->m_hWnd;
-    ((RosterSlot*)&g_gameReg->m_focusSlots[0])->m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[0].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnSlotSelect1() {
     HWND h = ResolveItem_1753(1)->m_hWnd;
-    ((RosterSlot*)&g_gameReg->m_focusSlots[1])->m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[1].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnSlotSelect2() {
     HWND h = ResolveItem_c27c0(2)->m_hWnd;
-    ((RosterSlot*)&g_gameReg->m_focusSlots[2])->m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[2].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnSlotSelect3() {
     HWND h = ResolveItem_1753(3)->m_hWnd;
-    ((RosterSlot*)&g_gameReg->m_focusSlots[3])->m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[3].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
@@ -271,7 +259,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         return;
     }
     i32 sel = SendMessageA(it->m_hWnd, 0xf0, 0, 0);
-    RosterSlot* slot = (RosterSlot*)((char*)g_gameReg + idx * 0x238 + 0x150);
+    CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + idx * 0x238 + 0x150);
     if (!slot) {
         return;
     }

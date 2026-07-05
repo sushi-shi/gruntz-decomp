@@ -124,17 +124,33 @@ struct CSpriteFactoryHolder {
 struct CFocusSlot {
     char m_pad0[0x0c];
     i32 m_0c; // +0x0c  per-mode id / sound id / key word
-    char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14  arrival/load gate (grunt step; not-yet-loaded test)
-    char m_pad18[0x20 - 0x18];
-    i32 m_20; // +0x20  live/active gate
+    i32 m_10; // +0x10  multiplayer roster: combo index base (slot-kind selection;
+              //         UpdatePlayers seeds the kind combo with m_10+1)
+    i32 m_14; // +0x14  arrival/load gate (grunt step; not-yet-loaded test) / roster:
+              //         human-vs-computer flag
+    i32 m_18; // +0x18  roster: colour id (compared against CMulti::m_hostIndex)
+    i32 m_1c; // +0x1c  roster: ready flag (ToggleReady checkbox state)
+    i32 m_20; // +0x20  live/active gate / roster: slot-in-use flag
     i32 m_24; // +0x24  "already cleared this round" mark / timer-expiry flag
     i32 m_28; // +0x28  joined
     i32 m_2c; // +0x2c  done
-    char m_pad30[0x220 - 0x30];
+    char m_pad30[0x16c - 0x30];
+    i32 m_16c; // +0x16c  roster: colour/lock value (UpdatePlayers reads the LOCAL
+               //          slot's m_16c as its per-refresh colour gate)
+    char m_pad170[0x220 - 0x170];
     i32 m_220; // +0x220  snapped focus X
     i32 m_224; // +0x224  snapped focus Y
-    char m_pad228[0x238 - 0x228];
+    i32 m_228; // +0x228  roster: combo/selection value (OnSlotSelectN caches sel+1;
+               //          UpdatePlayers relays it to SyncColour)
+    char m_pad22c[0x238 - 0x22c];
+
+    // Format the player's display name (multiplayer roster; __thiscall @0x3e54 ILT
+    // thunk). Returns CString BY VALUE, declared via the elaborated-type-specifier
+    // (NO file-scope `class CString;` fwd-decl: this Win32-wide header's fwd-decl
+    // COUNT is /O2 type-table state - see header-fwd-decl-count-regalloc-butterfly);
+    // CString is complete only in the MFC caller TUs, which is legal for a
+    // declaration-only use.
+    class CString FormatName_3e54();
 };
 
 struct CGameRegistry {
