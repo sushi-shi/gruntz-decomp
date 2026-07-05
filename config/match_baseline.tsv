@@ -98,6 +98,7 @@ customlevellist	1	0
 customworlddialog	2	1
 customworldinfodlg	1	1
 customwwdpath	1	1
+cvoicesound	1	1
 databuffer	8	6
 ddpagemgr	2	1
 ddrawblterrthunk	1	1
@@ -205,7 +206,7 @@ gruntpowerupsprite	6	5
 gruntpuddle	5	2
 gruntresurrectradius	1	0
 gruntselectedsprite	5	3
-gruntspawnconfig	18	9
+gruntspawnconfig	18	10
 gruntspawnlevel	2	0
 gruntsprintanim	1	0
 gruntstaminasprite	3	3
@@ -331,7 +332,6 @@ netsessionopen	1	1
 netthingdtor	1	1
 obj09a260	1	0
 obj0f7d90	1	0
-obj11c630	1	1
 objectdropper	4	3
 orphanleaves	7	7
 orphanmethods	4	2
@@ -1062,6 +1062,7 @@ customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	4	b698ba8d6aa0	0x3ad90
 customworldinfodlg	?LoadCustomWorldInfo@@YAHPAX@Z	100.0000	100.0000	1	7279864a0176	0x3b7c0
 customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
+cvoicesound	??0CVoiceSound@@QAE@VCString@@H@Z	100.0000	100.0000	1	3dcdba84ce56	0x11c630
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	2	d7580b5c6bf2	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	7b2b9a9bf281	0x1503c0
 databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
@@ -1982,7 +1983,7 @@ gruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	1	
 gruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	2	5da9bb5b09e3	0x7e9f0
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
 gruntspawnconfig	??1CSpawnEntry@@QAE@XZ	100.0000	100.0000	1	e13ba4d042b0	0x99ca0
-gruntspawnconfig	?AddVoiceSound@CSpawnEntry@@QAEXVCString@@H@Z	92.4667	92.4667	1	525105e1ee06	0x11c560
+gruntspawnconfig	?AddVoiceSound@CSpawnEntry@@QAEXVCString@@H@Z	100.0000	100.0000	2	cdc3a693c6a5	0x11c560
 gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	0766873d02f8	0x11c1a0
 gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	3	8a0452cdc043	0x11ae30
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	67.8000	67.8000	1	c10e44170b11	0x11af90
@@ -2777,8 +2778,7 @@ netsessionopen	?Open@NetSessionOpener@@QAEHXZ	100.0000	100.0000	1	7dc448e92127	0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
 obj09a260	?GetStr_09a260@Obj09a260@@QAE?AVCString@@XZ	66.7273	66.7273	1	2a61f6af2b38	0x9a260
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	2	e86016f06750	0xf7d90
-obj11c630	??0Obj11c630@@QAE@VCString@@PAX@Z	100.0000	100.0000	1	d26351c8be17	0x11c630
-objectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	85.4947	85.4947	4	d7bf8f8c4399	0xc59f0
+objectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	85.4947	85.4947	5	05f9ec9a757e	0xc59f0
 objectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
 objectdropper	?GetTypeTag@CObjectDropper@@QAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	0f2ba896b8d9	0x124a0
 objectdropper	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	2	4a96215f6c05	0xc62e0
