@@ -779,6 +779,8 @@ namespace GruntzMgrCmd {
                 return 1;
             }
             case 0x80b8:
+                return 1;
+            case 0x80d7:
                 if (m_curState && m_curState->vf10() == 0x11) {
                     m_curState->Post36e8(p3);
                 }
@@ -1207,6 +1209,17 @@ namespace GruntzMgrCmd {
                 }
                 m_strWorldFile =
                     m_strWorldFile; // op= on m_strWorldFile (approx of the 0x1b9e25 tail)
+                if (!PassClick(m_curState->m_1c, 0, 1)) {
+                    ReportErr(0x8007, 0x434);
+                }
+                return 1;
+            }
+            case 0x806b: {
+                GZGrunt* _g = PickState();
+                if (!_g) {
+                    return 1;
+                }
+                m_strWorldFile = m_strWorldFile; // 0x1b9e25 op=
                 if (!PassClick(m_curState->m_1c, 0, 1)) {
                     ReportErr(0x8007, 0x434);
                 }
