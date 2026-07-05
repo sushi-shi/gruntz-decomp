@@ -3,7 +3,8 @@
 // file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
 // engine singletons. All callees/globals are external (reloc-masked).
 #include <Ints.h>
-#include <Gruntz/Multi.h> // the g_64bd5c singleton is a CMulti (xref-proven)
+#include <Gruntz/Dialogs.h> // CMultiStartDlg (the connect-coordinator IS this dialog)
+#include <Gruntz/Multi.h>   // the g_64bd5c singleton is a CMulti (xref-proven)
 #include <rva.h>
 #include <string.h>
 
@@ -16,22 +17,20 @@
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 
-// The +0x5c sub-object whose Transform the else-branch calls.
+// The +0x5c host sub-object (CMultiStartDlg::m_host) whose Transform the else-branch
+// calls; m_host is stored as i32 and cast at the use-site (the established roster/world
+// idiom - cf. MultiStartDlgWorld.cpp's ((MpDlgHost*)m_host)).
 struct CNetXform {
     i32 Transform(i32); // 0x92e80 (via thunk 0x2e00)
 };
 SIZE_UNKNOWN(CNetXform); // method-only transform view; retail size TBD
 
-// The connect-state coordinator object ('this').
-struct CNetConnCoord {
-    char m_pad0[0x5c];
-    CNetXform* m_transform; // +0x5c
-    void Drive();           // c40b0
-    void Step();            // c2a20
-    void OpA(i32);          // c2ab0  external
-    void OpC(i32);          // c4230  external
-};
-SIZE_UNKNOWN(CNetConnCoord); // connect-coordinator view (only +0x5c pinned); size TBD
+// NOTE: the connect-state coordinator ('this') is CMultiStartDlg, PROVEN (matcher-5):
+// Drive reads [this+0x5c] (== m_host) and self-calls UpdatePlayers (0xc4230) + the
+// reconcile method (0xc2ab0) - both this class's own methods on `this`. The former
+// placeholder `struct CNetConnCoord` is folded into <Gruntz/Dialogs.h>'s CMultiStartDlg;
+// Step -> ConnectStep, Drive -> CMultiStartDlg::Drive. These bodies stay in this unit so
+// the delinker packing is undisturbed.
 
 // A slot object whose +0x3c..+0x48 range is cleared.
 struct CNetSlotAux {
@@ -79,26 +78,26 @@ i32 NetPollE25c() {
 }
 
 // ---------------------------------------------------------------------------
-// One connect step: option A then the connect drive.
+// One connect step: reconcile slot 1 (0xc2ab0) then the connect drive (0xc40b0).
 // ---------------------------------------------------------------------------
 RVA(0x000c2a20, 0x13)
-void CNetConnCoord::Step() {
-    OpA(1);
+void CMultiStartDlg::ConnectStep() {
+    SyncChannelSlot(1);
     Drive();
 }
 
 // ---------------------------------------------------------------------------
-// Drive the connect state off the file-scope CNetMgr: if the gate is
-// set, drop + advance; else transform the local id and submit it.
+// Drive the connect state off the file-scope CMulti: if this is the host, broadcast
+// the channel table + refresh players; else transform the local id and submit it.
 // ---------------------------------------------------------------------------
 RVA(0x000c40b0, 0x42)
-void CNetConnCoord::Drive() {
+void CMultiStartDlg::Drive() {
     CMulti* netMgr = g_64bd5c;
     if (netMgr->m_isHost != 0) {
         netMgr->BroadcastChannelTable(0);
-        OpC(1);
+        UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = m_transform->Transform(netMgr->m_hostIndex);
+        i32 transformedPlayerId = ((CNetXform*)m_host)->Transform(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }

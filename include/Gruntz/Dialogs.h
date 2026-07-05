@@ -232,7 +232,10 @@ public:
     // EditAppendHost) were placeholder duplicates of CMultiStartDlg (proven: they
     // share GetCtrlA..D at 0xc26c0/40/c0/40 and self-call Drive @0xc40b0). The
     // net-game-config facets CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord
-    // (NetMgrMisc.cpp) are the same dialog too - an open dedup, noted for follow-up.
+    // (NetMgrMisc.cpp) are the SAME dialog - PROVEN and folded here (matcher-5):
+    // their methods dispatch this class's per-slot accessors 0x1929/0x298c/0x1753/
+    // 0x1159/GetCtrlD(0xc2840) on `this` and self-call Drive @0xc40b0. See the
+    // "net-game-config facet" block below.
     void AppendChatLine(char* str); // 0xc2ce0  append a line to the 0x511 log edit
     i32 UpdatePlayers(i32 force);   // 0xc4230  refresh every player row from the roster
     void OnSlotSelect0();           // 0xc4ee0  cache slot 0's list cursel + re-drive
@@ -242,7 +245,7 @@ public:
     void ToggleReady(i32 idx);      // 0xc50f0  toggle slot idx's ready flag from its box
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
-    void Drive();                  // 0xc40b0  re-drive the connect state (== CNetConnCoord::Drive)
+    void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)
     void Sync16db(i32);            // 0x016db
     void Sync227a();               // 0x0227a
     void Sync2c0c();               // 0x02c0c
@@ -253,7 +256,23 @@ public:
     CWnd* ReadyCheck1159(i32 idx); // 0x01159  ready checkbox for slot idx
     CWnd* ColourBtn1753(i32 idx);  // 0x01753  colour button for slot idx
     void SyncColour3a5d(i32 idx, i32 v); // 0x03a5d
-    void SyncKind3ffd(i32 idx);          // 0x03ffd
+
+    // --- Net-game-config facet (folded from CNetGameDlg / CNetConnCoord; bodies
+    // stay in their own units NetGameDlg.cpp / NetMgrMisc.cpp so delinker packing
+    // is undisturbed). PROVEN same class as CMultiStartDlg (matcher-5): every one
+    // of these runs this class's per-slot accessors on `this`. ---
+    // SyncChannelSlot (0xc2ab0; also reached via ILT thunk 0x3ffd as the
+    // UpdatePlayers-loop per-row reconcile call) - reconcile one channel's player
+    // slot after a join/leave. Was CNetGameDlg::UpdateSlot / the roster's
+    // "SyncKind3ffd".
+    void SyncChannelSlot(i32 ch);
+    i32 EnableControls();     // 0xc4120  re-enable the four player-config controls (was CNetGameDlg)
+    void VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level (was CNetGameDlg)
+    void ConnectStep();       // 0xc2a20  one connect step: reconcile slot 1 then Drive (was CNetConnCoord::Step)
+    // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
+    // reloc-masked; CDialog is modeled without its CWnd base so declare here).
+    void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
+    void OnOK();                    // 0x1bacc3 (CDialog::OnOK)
 
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as

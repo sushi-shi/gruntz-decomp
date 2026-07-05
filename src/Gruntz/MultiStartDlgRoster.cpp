@@ -202,7 +202,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 this->NameEdit298c(idx)->SetWindowTextA(g_emptyString);
                 g_pSendMessageA(this->KindCombo1929(idx)->m_hWnd, 0x14e, 0, 0);
             }
-            this->SyncKind3ffd(idx);
+            this->SyncChannelSlot(idx); // 0x3ffd thunk -> 0xc2ab0 reconcile (== SyncChannelSlot)
         }
     next:
         off += 0x238;
