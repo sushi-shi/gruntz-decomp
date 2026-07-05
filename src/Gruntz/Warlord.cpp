@@ -295,10 +295,23 @@ i32 CWarlord::LoadAttributes2() {
 // Re-arm the geo sub-player, and when ready-to-move, spawn the fort splash
 // particle at the warlord's clamped screen position (registry effect dispatch),
 // arm the panic timer on the registry sub-object, then flag the anim player.
+// DECODED (for the final sweep):
+//   sub->SetGeoSourceR(g_defaultGeo);                      // m_38+0x1a0, 0x15c360
+//   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
+//   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
+//   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {
+//     spr = reg->m_30->m_08->CreateSprite(0, x-30, y+10, 0xcf84f, "..."@0x60a96c, 0x40003);
+//     if (spr) { spr->CacheFirstFrame("..."@0x60d30c);    // 0x150540
+//               spr->ApplyLookupGeometry("..."@0x60d30c, 0); } // 0x1505b0
+//   }
+//   ... panic sub reg->m_68 (m_288/m_2a0/m_290 timer arm to 0x3e8/g_645588) ...
+//   ... reg->m_150[o->m_124 * 0x48].m_0c = 0 (owner-array slot) ...
 // @early-stop
-// DEFERRED to the final sweep: 0x127-byte function over a dozen CGameRegistry offsets
-// (viewport bounds, the +0x30 effect-spawn dispatch, the +0x68 panic sub-object
-// + its +0x290 timer, the +0x150 owner-array slot). Homed so the RVA is labeled.
+// DEFERRED to the final sweep WITH the sprite models: the effect spawn is
+// CSpriteFactory::CreateSprite (0x1597b0) + CGruntSprite::CacheFirstFrame (0x150540)
+// + CGruntAnimPlayer::ApplyLookupGeometry (0x1505b0) - all in the sprite-worker-owned
+// spriteresource domain (excluded from this brief). Best reconstructed alongside
+// those class models; homed so the RVA is labeled.
 RVA(0x00044f80, 0x127)
 void CWarlord::BuildFortSplashParticles() {}
 
