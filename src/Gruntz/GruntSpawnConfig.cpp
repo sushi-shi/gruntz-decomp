@@ -488,19 +488,13 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 // CSpawnEntry::AddVoiceSound  (0x11c560)
 // ===========================================================================
 // Allocate a voice-sound node (operator new 0xc), construct it from the (by-value)
-// name CString, and append it to the list (AddTail). The trailing `flag` arg is
-// unused. The by-value CString param + the inner copy construct the /GX frame.
-//
-// @early-stop
-// /GX frame-size wall (docs/patterns/gx-scoped-local-eh-frame-size.md, topic:eh):
-// instruction selection is byte-identical, but retail reserves the CString temp
-// in ONE dword (`push ecx`) while the recompile reserves two (`sub esp,8`) - the
-// by-value param slot is reused as the temp in retail, allocated fresh here - so
-// every [esp+N] is shifted +4. ~92.5%; not source-steerable. Logic complete.
+// name CString AND the `flag` arg (CVoiceSound's 2nd ctor param, stored at m_08),
+// and append it to the list (AddTail). The by-value CString param + the inner copy
+// construct the /GX frame. EXACT once the flag is passed through (the earlier
+// "frame-size wall" was really the dropped 2nd ctor arg - a whole `push flag`).
 RVA(0x0011c560, 0x91)
 void CSpawnEntry::AddVoiceSound(CString s, i32 flag) {
-    (void)flag;
-    CVoiceSound* node = new CVoiceSound(s);
+    CVoiceSound* node = new CVoiceSound(s, flag);
     if (node != 0) {
         m_list.AddTail((CObject*)node);
     }

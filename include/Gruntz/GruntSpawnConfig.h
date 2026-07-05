@@ -57,15 +57,16 @@ struct CSpawnTree;
 // GetAt (0x429a30) / FillName (0x49a260) serve entries; external/no-body.
 // ---------------------------------------------------------------------------
 
-// A voice-sound node held in the CSpawnEntry CObList. 12 bytes: a CString name +
-// an int + a cached char* of the name's data. Its ctor (FUN_0051c630, the
-// tomalla-26 placeholder) is reloc-masked (defined in another TU); its
-// teardown is `~CString + operator delete` (no vtable - a plain value node).
+// A voice-sound node held in the CSpawnEntry CObList. 12 bytes: a CString name,
+// a zeroed int, and the AddVoiceSound `flag` argument. Its ctor (0x11c630,
+// __thiscall, ret 8) takes the name by value + the flag; reconstructed in
+// src/Gruntz/CVoiceSound.cpp. Its teardown is `~CString + operator delete` (no
+// vtable - a plain value node).
 struct CVoiceSound {
-    CVoiceSound(CString s); // 0x11c630 (__thiscall, ret 8)
-    CString m_str;          // +0x00
-    i32 m_04;               // +0x04  = 0
-    char* m_08;             // +0x08  = m_str.m_pchData
+    CVoiceSound(CString s, i32 flag); // 0x11c630 (__thiscall, ret 8)
+    CString m_str;                    // +0x00
+    i32 m_04;                         // +0x04  = 0
+    i32 m_08;                         // +0x08  = the AddVoiceSound flag arg
 };
 
 struct CSpawnEntry {

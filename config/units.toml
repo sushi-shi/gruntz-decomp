@@ -964,9 +964,10 @@ source = "src/Gruntz/Obj09a260.cpp"
 flags = "base"
 
 [[unit]]
-# ClassUnknown_9 ctor (by-value CString arg -> /GX) re-homed from Discovered.cpp.
-unit = "obj11c630"
-source = "src/Gruntz/Obj11c630.cpp"
+# CVoiceSound ctor (by-value CString name + flag -> /GX); the CSpawnEntry voice-list
+# node. Folded from the Obj11c630 placeholder onto the canonical CVoiceSound.
+unit = "cvoicesound"
+source = "src/Gruntz/CVoiceSound.cpp"
 flags = "eh"
 
 [[unit]]
