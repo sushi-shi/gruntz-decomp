@@ -808,13 +808,50 @@ def _disasm_lite(text: str) -> str:
 
 
 def _disasm_norm(text: str) -> list:
-    """Lite + mask absolute-address immediates (poor-man's reloc masking) for --diff."""
+    """Lite + case/whitespace-unify + mask absolute-address immediates for --diff.
+    base (llvm-objdump, 'dword ptr') and target (dump_target, 'DWORD PTR') disagree
+    on case and spacing - lowercase + collapse runs so only real diffs survive."""
     import re as _re
+    # reloc-aware pre-pass (base side only): llvm-objdump -dr emits IMAGE_REL_ lines
+    # after the owning insn - mask that insn's placeholder imm (often 0x0) as <addr>
+    raw = text.splitlines()
+    for i, ln in enumerate(raw):
+        if "IMAGE_REL_I386_" not in ln:
+            continue
+        for j in range(i - 1, -1, -1):
+            if "IMAGE_REL_I386_" in raw[j] or not _re.search(r"0x[0-9a-f]+", raw[j]):
+                continue
+            m = _re.search(r":\s+(?:[0-9a-f]{2} )+\s*([a-z]\w*)", raw[j])
+            if m and _re.fullmatch(r"call|jmp|j[a-z]{1,2}|loop\w*", m.group(1)):
+                break  # rel32 target - the <tgt> rule owns these
+            # DIR32 on a memory disp32 (pure-absolute bracket) beats an imm32 guess
+            raw[j], n = _re.subn(r"\[0x[0-9a-f]+\]", "[<addr>]", raw[j], count=1)
+            if not n:
+                raw[j] = _re.sub(r"0x[0-9a-f]+(?=[^x]*$)", "<addr>", raw[j], count=1)
+            break
+    text = "\n".join(raw)
     lines = []
     for ln in _disasm_lite(text).splitlines():
         if not ln.startswith("    "):
             continue  # instructions only in the diff body
-        lines.append(_re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln.strip()))
+        ln = _re.sub(r"[ \t]+", " ", ln.strip().lower())
+        if _re.fullmatch(r"(?:[0-9a-f]{2} )*[0-9a-f]{2}", ln):
+            continue  # byte-dump continuation of a long insn (dump_target wrap)
+        ln = _re.sub(r"0x[0-9a-f]{6,8}\b", "<addr>", ln)
+        ln = _re.sub(r" ?([,+*]) ?", r"\1", ln)   # 'ebp, ecx'/'esp + 0xc' -> tight
+        ln = ln.replace("ds:", "")                 # default-segment prefix (dump_target)
+        ln = _re.sub(r"\bptr (<addr>|0x[0-9a-f]+)(?![\w\]])", r"ptr [\1]", ln)  # bare -> bracketed
+        ln = _re.sub(r"\[(0x[0-9a-f]+|<addr>)\]", "[<addr>]", ln)  # absolute mem ref
+        # bare <addr> as a mov-class operand is a memory ref (dump_target drops brackets)
+        ln = _re.sub(r"(?<=[ ,])<addr>(?=,|$)", "[<addr>]",
+                     ln) if not ln.startswith(("push", "j", "call", "loop")) else ln
+        ln = _re.sub(r"(dword|word|byte) ptr \[<addr>\]", "[<addr>]", ln)
+        # direct jump/call targets: base prints rel+symbol, target prints absolute
+        ln = _re.sub(r"^((?:j[a-z]{1,3}|call|loop\w*) )(0x[0-9a-f]+|<addr>)( <[^>]*>)?$",
+                     r"\1<tgt>", ln)
+        lines.append(ln)
+    while lines and lines[-1] == "nop":
+        lines.pop()  # COMDAT alignment padding (base only; absent in delinked target)
     return lines
 
 
@@ -930,6 +967,9 @@ def cmd_sema_disasm(args) -> None:
             sys.exit(0)
         print(f"[diff: BASE (compiled) vs TARGET (retail) @ {args.rva}; "
               "addresses masked as <addr>]")
+        print("[caveat: base prints reloc-site immediates as their placeholder "
+              "(e.g. 'push 0x0') where target shows the resolved '<addr>' - such "
+              "lone pairs are usually NOT real diffs; objdiff is reloc-aware truth]")
         for ln in difflib.unified_diff(base, tgt, "base", "target", lineterm=""):
             print(ln)
         sys.exit(1)

@@ -3091,7 +3091,7 @@ sbi_rectonly	?ExitMode@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	2	5d911334937f	0x
 sbi_rectonly	?FindReadySlot@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	2	a54b1bfe5f25	0x109a90
 sbi_rectonly	?HitTest@CSBI_RectOnly@@QAEHHH@Z	80.6250	80.6250	3	38b32ad34aa8	0x105280
 sbi_rectonly	?HitTestLayer@CSBI_RectOnly@@QAEHHH@Z	100.0000	100.0000	1	1c0ecee659da	0xfe8a0
-sbi_rectonly	?HitTestRects@CSBI_RectOnly@@QAEPAVCSbiRect@@HH@Z	94.0761	94.0761	1	457cf5e32002	0xffcb0
+sbi_rectonly	?HitTestRects@CSBI_RectOnly@@QAEPAVCSbiRect@@HH@Z	95.2717	95.2717	2	077cc5848fe7	0xffcb0
 sbi_rectonly	?HlClickGroup0@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	7	2919564ed767	0x10b5d0
 sbi_rectonly	?HlClickGroup1@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	7	172c24e707d4	0x10b6f0
 sbi_rectonly	?HlClickGroup2@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	7	314def303cd9	0x10b810
