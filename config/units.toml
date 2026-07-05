@@ -358,6 +358,11 @@ source = "src/Gruntz/MultiStartDlgWorld.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "multistartdlgroster"
+source = "src/Gruntz/MultiStartDlgRoster.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "lobbygrouplist"
 source = "src/Gruntz/LobbyGroupList.cpp"
 flags = "eh"

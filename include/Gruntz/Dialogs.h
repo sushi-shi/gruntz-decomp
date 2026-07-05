@@ -222,8 +222,38 @@ public:
     // SetupWorldCombo (0xc1840): fill the 0x4ff world combo from the GAME_MULTI
     // registry path, read-only its edit child, and subclass its wndproc.
     i32 SetupWorldCombo();
-    // Sub_c3e30 (0xc3e30 via ILT thunk): post-setup self-call (reloc-masked).
+    // Sub_c3e30 (0xc3e30): post-setup self-call - commit the selected world/host
+    // name into the CMulti game-state (defined in MultiStartDlgWorld.cpp).
     void Sub_c3e30();
+
+    // --- Multiplayer roster refresh cluster (bodies in MultiStartDlgRoster.cpp) ---
+    // The whole 0xc2000-0xc5000 method band drives ONE dialog (this class); the
+    // former per-fn ApiCaller host views (SelHost/RosterHost/BattlezDlg_c4230/
+    // EditAppendHost) were placeholder duplicates of CMultiStartDlg (proven: they
+    // share GetCtrlA..D at 0xc26c0/40/c0/40 and self-call Drive @0xc40b0). The
+    // net-game-config facets CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord
+    // (NetMgrMisc.cpp) are the same dialog too - an open dedup, noted for follow-up.
+    void AppendChatLine(char* str); // 0xc2ce0  append a line to the 0x511 log edit
+    i32 UpdatePlayers(i32 force);   // 0xc4230  refresh every player row from the roster
+    void OnSlotSelect0();           // 0xc4ee0  cache slot 0's list cursel + re-drive
+    void OnSlotSelect1();           // 0xc4f30  slot 1
+    void OnSlotSelect2();           // 0xc4f80  slot 2 (list via GetCtrlC)
+    void OnSlotSelect3();           // 0xc4fd0  slot 3
+    void ToggleReady(i32 idx);      // 0xc50f0  toggle slot idx's ready flag from its box
+    // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
+    // live in sibling units / ApiCaller stubs).
+    void Drive();                  // 0xc40b0  re-drive the connect state (== CNetConnCoord::Drive)
+    void Sync16db(i32);            // 0x016db
+    void Sync227a();               // 0x0227a
+    void Sync2c0c();               // 0x02c0c
+    void Sync38d2();               // 0x038d2
+    i32 LocalSlot2d4c();           // 0x02d4c  current local slot index
+    CWnd* NameEdit298c(i32 idx);   // 0x0298c  name edit for slot idx
+    CWnd* KindCombo1929(i32 idx);  // 0x01929  human/computer combo for slot idx
+    CWnd* ReadyCheck1159(i32 idx); // 0x01159  ready checkbox for slot idx
+    CWnd* ColourBtn1753(i32 idx);  // 0x01753  colour button for slot idx
+    void SyncColour3a5d(i32 idx, i32 v); // 0x03a5d
+    void SyncKind3ffd(i32 idx);          // 0x03ffd
 
     // Per-slot control accessors: switch(index) over a 4-entry control-ID table,
     // each case returning this->GetDlgItem(constID). SAME shape as
