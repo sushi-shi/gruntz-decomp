@@ -461,65 +461,65 @@ SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic l
 //     - proving the base it inherits is exactly 0x30.
 //   * The ??_7CUserLogic@@6B@ vftable is 16 slots (0x40 bytes); ??_7CUserBase is
 //     3 slots (config/vtable_names.csv).
-// m_prevAnimSetNode/m_34/m_38/m_3c above are NOT base fields: they are the tile-logic leaves'
-// common tail (each LEAF's 1-arg ctor sets m_34/m_38/m_3c itself; the standalone
-// base ctor 0x58cd0 does not). This header folds them into the base purely so the
-// shared inline ctor can spell them once; the layout is byte-identical to a true
-// 0x30 base + a 0x10 leaf tail. A thin leaf new's 0x54 = 0x30 base + 0x24 leaf
-// (0x10 tail + 0x14 own) - either boundary label gives the same offsets/size.
-// UNIFYING the two class names into one 0x30 def would need a CTileLogic
-// intermediate reparenting ~50 leaves + ~30 tuned 1-arg ctors (inline-depth /
-// macro-controlled tail, UserLogicCtorEmit.cpp) - a byte-neutral change with real
-// de-tuning risk and NO correctness gain (both views already encode the true
-// 0x30). Kept as a documented byte-compatible dual-model; the two never coexist
-// in a TU (the CGrunt-HUD sprites that bridge them include only Grunt.h).
+//   * Corroboration (matcher-2, 0x9b8b0 - a tile-logic leaf ctor, vptr 0x5e801c): the
+//     retail fold is base-init-through-m_2c (m_04/m_08=0, m_28=0x3e9, m_2c=2) THEN the
+//     tail `mov [esi+0x34],edi; mov [esi+0x38],edi; mov eax,[edi+0x7c]; mov [esi+0x3c],
+//     eax` THEN the leaf vptr `mov [esi],0x5e801c` - i.e. m_34/m_38/m_3c are set AFTER
+//     the base ends and BEFORE the leaf vptr, exactly what CTileLogic(obj) below emits.
 //
-// RIDER EVIDENCE (matcher-2, 2026-07-05) - the parallel CUserBase/CUserLogic in
-// <Gruntz/Grunt.h>:~1119/1130 is ODR-incompatible with THIS canonical pair. The
-// member-by-member diff (offsets identical; only owner/type/name differ):
+// REPARENT DONE (matcher-2, 2026-07-05): the CTileLogic intermediate now exists and the
+// tile-logic leaves (~90: EyeCandy/Teleporter/Projectile/SpotLight/TileTrigger family/
+// CMovingLogic/...) derive from it; CUserLogic is slimmed to its TRUE 0x30 and the tail
+// lives on CTileLogic. Byte-neutral (full sweep 1847 exacts unchanged). This RESOLVES two
+// of the four CGrunt-ODR-merge blockers below.
+//
+// RIDER EVIDENCE (matcher-2) - the parallel CUserBase/CUserLogic in <Gruntz/Grunt.h>:
+// ~1119/1130 is still a separate ODR view. Member diff (offsets identical; owner/type/
+// name differ):
 //   * Field-owner boundary: canonical CUserBase is EMPTY (just the vptr); every
 //     +0x04..+0x2c field lives on CUserLogic (base ctor 0x58cd0 writes them). Grunt.h
-//     puts +0x04..+0x14 on CUserBase - a modeling choice, not evidence (CUserBase's
-//     ctor writes nothing). Canonical boundary is the correct one.
-//   * +0x10: canonical m_object (CGameObject*) == Grunt.h m_10 (CGruntHud*). CGruntHud
-//     IS CGameObject: its m_8(0x20000 dirty)/m_40/m_4c/m_50/m_58/m_5c/m_60/m_74/m_e4/
-//     m_11c/m_134..m_140/m_188 all match CGameObject's offsets exactly. CGruntHud is a
-//     redundant partial view -> delete on merge.
+//     puts +0x04..+0x14 on CUserBase - a modeling choice (CUserBase's ctor writes
+//     nothing). Canonical boundary is the correct one.
+//   * +0x10: canonical m_object (CGameObject*) == Grunt.h m_10 (CGruntHud*, a redundant
+//     partial CGameObject view -> delete on merge).
 //   * +0x14: canonical m_objAux (CGameObjAux*, == obj->m_7c) == Grunt.h m_14
-//     (CAnimLookupNode*). CAnimLookupNode's only field m_1c matches CGameObjAux::m_1c;
-//     CMovingLogic reads (obj->m_7c)->+0x2c/+0x30/+0x34/+0x38 (movement bounds) through
-//     it -> CAnimLookupNode is a partial CGameObjAux view.
+//     (CAnimLookupNode*, a partial CGameObjAux view).
 //   * Vtable: 16 slots, same order. Grunt.h's SerializeMove(1)/UbSlot08(2)/
-//     InitDirVectors(6)/FreeNameList(11) are CGrunt-SPECIFIC OVERRIDE names (semantic
-//     for the CGrunt override, NOT the base slot's role - other leaves override slot 6
-//     as "activate", see LogicWorkerHandlers.cpp). So the base slot names must stay
-//     generic (UserBaseVfunc*/UserLogicVfunc*); the semantic names belong on CGrunt's
-//     overrides, which C++ forces to share the base virtual's name -> a per-slot
-//     reconciliation decision, not a mechanical fold.
-// MERGE ATTEMPTED 2026-07-05 (matcher-2) -> BLOCKED, NOT matching-neutral. Making CGrunt
-// derive from THIS canonical CUserLogic is a hard-gate regression: the two views are
-// incompatible in FOUR dimensions, not just name/owner -
-//   (1) SIZE (empirically proven): this view is fat 0x40; CGrunt needs the true 0x30
-//       (its own members sit at 0x30/0x38/0x40). Fattening CGrunt's base 0x30->0x40
-//       craters it 16->5 exacts (overall 1847->1833). Unifiable only by the CTileLogic
-//       reparenting the size NOTE above defers (~50 leaves under CUserLogic: EyeCandy,
-//       Teleporter, Projectile, SpotLight, the TileTrigger family, ...).
-//   (2) +0x38 TYPE: canonical m_38 = CGameObject* (fat tail) vs CGrunt m_38 =
-//       CGruntAnimState* (anim player) - same offset, different class/type.
-//   (3) CTOR MODEL: tile-logic leaves INLINE the base ctor (the inline body below - full
-//       AddLogic* init); CGrunt calls 0x58cd0 OUT-OF-LINE (declared-only). An inline body
-//       visible to CGrunt would fold into CGrunt::CGrunt -> wrong bytes.
-//   (4) VTABLE SIGNATURE: canonical slots are `i32 f()` (i32 return; the tile-logic
-//       callers spell sub->UserLogicVfunc4() "activate", Anim/LogicWorkerHandlers.cpp),
-//       while Grunt.h models the same slots `void f()` + slot-1 SerializeMove(ar,mode,..),
-//       matched by CGrunt's real C++ overrides. One signature set breaks the other world.
-// Plus the m_10/m_14 retype needs CGameObject visible in Grunt.h (pulls in the fat base)
-// and a tree-wide rename of ~all `h->m_5c`-style HUD accesses to CGameObject's semantic
-// names across Grunt.cpp - large/risky, ZERO % gain. So the dedup is BLOCKED on the
-// CTileLogic-reparenting prerequisite (true-0x30 base + a fat tile-logic intermediate +
-// per-slot signature reconciliation) - a dedicated pass, NOT a rider. Until then the two
-// defs remain a documented byte-necessary dual-model that never coexists in a TU (no TU
-// includes both headers). Evidence banked; do not re-derive.
+//     InitDirVectors(6)/FreeNameList(11) are CGrunt-SPECIFIC OVERRIDE names; the base
+//     slot names stay generic (UserBaseVfunc*/UserLogicVfunc*).
+//
+// PER-SLOT SIGNATURE TABLE (stage 4, disasm evidence). The dispatch call sites
+// (Anim/Logic/InGameWorkerHandlers, StateDispatch 0x9b...) DISCARD the returns, so the
+// CALLER bytes are i32/void-neutral; the IMPL decides. i32-return is proven/corroborated:
+//   slot 1  Serialize   base 0x16e7f0 -> `mov eax,1; ret 0x10`            = i32 (proven)
+//   slots 6/10/11/12/13/14/15  consumed as i32 by three independent dispatchers
+//     (Logic/AnimWorkerHandlers + StateDispatch's vtbl 0x18/0x28/0x2c/0x30/0x34/0x38/
+//      0x3c) -> i32 (corroborated). Canonical models ALL 16 as `i32 f()` and matches.
+//   Grunt.h models the SAME slots `void f()` and ALSO matches (its impls that don't set
+//     eax pair with a void prototype). Retail base is i32; a void override of an i32
+//     virtual is a C++ error, so a merged CGrunt must switch its `void` overrides to
+//     `i32` - which ADDS a `mov eax` to any CGrunt impl that does NOT already set eax,
+//     breaking those exacts. => signature reconciliation is NOT free; it breaks whichever
+//     world adopts the other's prototype.
+//
+// CGrunt ODR MERGE - STILL BLOCKED after the reparent. Of the four blockers:
+//   (1) SIZE      : RESOLVED - canonical CUserLogic is now the true 0x30; CGrunt's own
+//                   0x30/0x38/0x40 members no longer collide with a fat base.
+//   (2) +0x38 TYPE: RESOLVED - m_38 is no longer a CUserLogic field (it moved to
+//                   CTileLogic); CGrunt places its OWN m_38 (CGruntAnimState*) with no
+//                   base clash.
+//   (3) CTOR MODEL: BLOCKS. tile-logic leaves NEED an INLINE CUserLogic(obj) (they fold
+//                   the full AddLogic* init, e.g. 0x9b8b0); CGrunt NEEDS it OUT-OF-LINE
+//                   (it CALLs the standalone 0x58cd0 via ILT 0x3828). One shared header
+//                   cannot be both inline and out-of-line -> whichever choice breaks the
+//                   other world. Unresolvable by reparenting.
+//   (4) SIGNATURE : BLOCKS (see the table): i32 base breaks CGrunt's void impls; void
+//                   base breaks the canonical i32 world.
+// => merge deferred (stage 5 NOT executed): blockers (3)+(4) each force a choice that
+//    breaks one world, exactly the STOP-and-report condition. The two defs remain a
+//    documented ODR dual-model that never coexists in a TU. Evidence banked; do not
+//    re-derive. (Also deferred: fold StateDispatch.cpp's local 16-slot CUserLogic view
+//    onto this class - safe once merge (3)/(4) are cracked.)
 
 // Shared true-0x30 base init the leaves fold in. Inline so MSVC inlines it; stores
 // the CUserLogic vptr, then inits fields through m_2c (exactly retail 0x58cd0, whose

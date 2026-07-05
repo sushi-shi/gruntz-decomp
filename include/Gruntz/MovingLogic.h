@@ -1,33 +1,35 @@
-// MovingLogic.h - the ONE canonical CMovingLogic : CUserLogic (RTTI
+// MovingLogic.h - the ONE canonical CMovingLogic : CTileLogic (RTTI
 // .?AVCMovingLogic@@, vftable 0x5e87ac). Replaces the former per-TU reduced-view
-// definitions - the fat/tile-logic world now shares this single class. C:\Proj\Gruntz.
+// definitions - the tile-logic world now shares this single class. C:\Proj\Gruntz.
 //
 // CMovingLogic is the moving-object logic base (parent of CProjectile). It owns:
-//   * the CUserLogic base (vptr + the +0x18 link + back-pointers);
+//   * the CTileLogic base (true-0x30 CUserLogic + the 0x30-0x3c tail = 0x40 total; the
+//     vptr + the +0x18 link + back-pointers);
 //   * a 0x108-byte CMotionState kinematic band embedded at +0x38 (the real dev
-//     subobject). Because the fat CUserLogic base ends at +0x40, the band at +0x38
-//     cannot be a direct member here, so it is reached through the Motion() accessor
+//     subobject). Because the CTileLogic base ends at +0x40, the band at +0x38
+//     overlaps the tail m_38/m_3c, so it is reached through the Motion() accessor
 //     (a `+0x38` cast) while the flat-int ctor zero-init view overlays the same
-//     bytes - the established byte-proven fat-world idiom (see Projectile.cpp);
+//     bytes - the established byte-proven idiom (see Projectile.cpp);
 //   * twelve default-bound doubles the ctor seeds to the [MIN,MAX] box;
 //   * four trailing ints (+0x140..+0x14c) the per-frame Update / bute Serialize touch.
 //
 // Vtable (17 slots, per vtable_hierarchy --class CMovingLogic): all 16 inherited from
-// CUserLogic (now fully modeled at 16 slots) + exactly ONE new virtual, Update
+// CUserLogic (fully modeled at 16 slots) + exactly ONE new virtual, Update
 // (slot 16 / offset 0x40, RVA 0x16ea90).
 // Serialize (0x16f4a0, slot 1 override) and the leaf dtor (slot 0, 0x13bd0) are the
 // class's own remaining methods.
 //
 // NOTE (dual-world): the CGrunt world (<Gruntz/Grunt.h>) models CMovingLogic against
-// its OWN true-0x30 CUserBase/CUserLogic (CGruntHud* m_10), so it cannot include this
-// fat-CUserLogic view - the two never coexist in a TU. That split is the downstream
-// of the campaign's documented CUserLogic 0x30-vs-0x40 dual-model (see the size NOTE
-// in UserLogic.h), unifiable only by a CTileLogic reparenting that is out of scope here.
+// its OWN CUserBase/CUserLogic (CGruntHud* m_10), so it cannot include this canonical
+// view - the two never coexist in a TU. The CUserLogic 0x30 base is now UNIFIED (this
+// world's CUserLogic is the true 0x30; CTileLogic is the fat tile-logic intermediate);
+// only the remaining CGrunt ODR merge stays deferred (blocked on the inline-vs-out-of-
+// line ctor model + the i32/void vtable-signature split - see the NOTE in UserLogic.h).
 #ifndef GRUNTZ_CMOVINGLOGIC_H
 #define GRUNTZ_CMOVINGLOGIC_H
 
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h>     // CUserLogic base (fat 0x40), CGameObject, CGameObjAux
+#include <Gruntz/UserLogic.h>     // CUserLogic (0x30) / CTileLogic (0x40) base, CGameObject, CGameObjAux
 #include <Gruntz/MotionState.h>   // CMotionState (+0x38 band) + Init/SetParams/SetZ
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Serialize arg)
 #include <rva.h>
@@ -57,7 +59,7 @@ struct CProjBoundCfg {
 };
 
 // ---------------------------------------------------------------------------
-// CMovingLogic : CUserLogic - moving-object motion state.
+// CMovingLogic : CTileLogic - moving-object motion state.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMovingLogic);
 class CMovingLogic : public CTileLogic {
@@ -81,8 +83,8 @@ public:
         return (CMotionState*)((char*)this + 0x38);
     }
 
-    // CMovingLogic's own data begins at +0x40 (fat CUserLogic ends at +0x40). The
-    // ctor also re-zeroes the inherited CUserLogic m_38/m_3c (the band's first double).
+    // CMovingLogic's own data begins at +0x40 (CTileLogic base ends at +0x40). The
+    // ctor also re-zeroes the inherited CTileLogic m_38/m_3c (the band's first double).
     // +0x40..+0x8f: twenty motion ints (zeroed dword-wise; overlay Motion()).
     i32 m_40, m_44, m_48, m_4c, m_50, m_54, m_58, m_5c;
     i32 m_60, m_64, m_68, m_6c, m_70, m_74, m_78, m_7c, m_80, m_84, m_88, m_8c;
@@ -120,7 +122,7 @@ inline CMovingLogic::CMovingLogic() {
     m_48 = 0;
     m_50 = 0;
     m_58 = 0;
-    m_38 = 0; // inherited CUserLogic field (re-zeroed in the no-arg path)
+    m_38 = 0; // inherited CTileLogic field (re-zeroed in the no-arg path)
     m_40 = 0;
     m_f8 = 0;
     m_100 = 0;
@@ -134,7 +136,7 @@ inline CMovingLogic::CMovingLogic() {
     m_4c = 0;
     m_54 = 0;
     m_5c = 0;
-    m_3c = 0; // inherited CUserLogic field
+    m_3c = 0; // inherited CTileLogic field
     m_44 = 0;
     m_fc = 0;
     m_104 = 0;
