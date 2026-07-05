@@ -557,6 +557,14 @@ struct GruntEntranceCell {
 // reaches. All external (reloc-masked).
 struct GruntSoundEntry; // map value: per-effect sound entry (factory at +0x10)
 struct GruntSoundInner; // m_30->m_28: holds the lookup map at +0x10
+// The on-screen viewport the movement-step spawn-cue gate reaches through the
+// sound category: (world->m_24->m_5c + 0x40) is the visible CCueRect (m_5c is a
+// base address, so +0x40 is a cast - the same CCueRect pattern).
+SIZE_UNKNOWN(CGruntViewMid);
+struct CGruntViewMid {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c  base address of the visible rect (-0x40)
+};
 SIZE_UNKNOWN(GruntSoundCat);
 struct GruntSoundCat { // m_30: the sound-category / world-resource holder object
     char m_pad0[0x8];
@@ -565,7 +573,8 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
     // spawns the projectile eye-candy sprites through it. Same slot GameRegistry.h's
     // CSpriteFactoryHolder models (this holder object is that facet's grunt view).
     struct CSpriteFactory* m_8;
-    char m_padc[0x28 - 0xc];
+    char m_padc[0x24 - 0xc];
+    CGruntViewMid* m_24;   // +0x24  -> the visible-viewport gate (movement spawn cue)
     GruntSoundInner* m_28; // +0x28  -> the lookup map lives at (*m_28)+0x10
 };
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
@@ -768,6 +777,11 @@ public:
 // rect. External/no-body (reloc-masked).
 i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 
+// The drop-ready predicate the per-tick move step calls (FUN_00429b40, thunk 0x1807,
+// __stdcall(grunt) - callee-cleans (no `add esp,4` at the site); nonzero when the
+// grunt cannot yet drop. External/reloc-masked.
+i32 __stdcall GruntDropReady029b40(CGrunt* g);
+
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
 // canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
 // defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
@@ -964,9 +978,16 @@ struct CGruntCellRec {
     char m_pad38[0x40 - 0x38];
     i32 m_40; // +0x40  (serialized record dword)
     i32 m_44; // +0x44  (serialized record dword)
-    i32 m_48; // +0x48  (serialized record dword)
-    char m_pad4c[0x64 - 0x4c];
-    i32 m_64;         // +0x64  (serialized record dword)
+    // The per-direction movement vector (abs +0x4b0.. as the "+0x4b0 dir-vector
+    // table", cell index 3*col+row, stride 0x68): unit direction {m_dirX, m_dirY}
+    // + half-tile step offsets {m_stepX, m_stepY}. InitDirVectors (@0x5caa0)
+    // writes them as doubles ([ecx+13a*8+0x4b0..0x4c8]); the movement-integration
+    // tail of StepCoordResolve (@0x5f310) reads all four. The serialize/load path
+    // streams raw 4-byte halves of these (the (char*)+4 spellings in Load).
+    double m_dirX;    // +0x48  unit direction X
+    double m_dirY;    // +0x50  unit direction Y
+    double m_stepX;   // +0x58  half-tile step X (+-0.5)
+    double m_stepY;   // +0x60  half-tile step Y (+-0.5)
     CGruntCellRec();  // 0x401e9c (per-element ctor; the __ehvec_ctor callback)
     ~CGruntCellRec(); // 0x4023a6 (per-element dtor; reloc-masked)
 };
@@ -992,6 +1013,10 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
     void RemoveAll(); // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
+    // The step machines pop/push the occupied-coord CObList head directly (the
+    // stored value IS the GruntCoord*). External/reloc-masked (MFC CObList slots).
+    struct GruntCoord* RemoveHead(); // 0x1b4a03 (CObList::RemoveHead - returns the coord)
+    void AddHead(void* p);           // 0x1b4967 (CObList::AddHead - push a coord)
     GruntListSub() {
         CtorImpl(0xa);
     }
@@ -1155,7 +1180,7 @@ public:
     virtual void InitDirVectors();                                           // slot 6  (0x88d0)
     virtual void UlSlot1c();     // slot 7  (inherited by CGrunt)
     virtual void UlSlot20();     // slot 8
-    virtual void UlSlot24();     // slot 9
+    virtual i32 UlSlot24();      // slot 9 (returns 0; i32 per the proven slot family)
     virtual void UlSlot28();     // slot 10 (inherited)
     virtual void FreeNameList(); // slot 11 (0x8970)
     virtual void UlSlot30();     // slot 12 (inherited)

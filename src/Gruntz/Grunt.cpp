@@ -4061,7 +4061,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     ar->Read(&m_cells[0].m_item, 4);
     ar->Read(&m_cells[0].m_14, 4);
     ar->Read(&m_cells[0].m_18, 4);
-    ar->Read(&m_cells[0].m_48, 4);
+    ar->Read(&m_cells[0].m_dirX, 4); // raw low half of the +0x48 dir-vector double
     ar->Read(&m_cells[1].m_struck, 4);
     ar->Read(&m_cells[0].m_34, 4);
     m_cells[1].m_40 = 2;
