@@ -9,6 +9,9 @@
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
 #include <Win32.h>
 #include <ddraw.h> // real IDirectDrawSurface (the credits offscreen-DC object: GetDC/ReleaseDC)
+#include <DDrawMgr/DDSurface.h> // real CDDSurface (the credits DC chain's surface holder: m_8)
+#include <Bute/SymTab.h>        // real CSymTab (the credits section source: Insert)
+#include <Gruntz/ParseSource.h> // real CParseSource (the resolved CREDITZ section: BeginParse/EndParse)
 
 #include <Ints.h>
 #include <rva.h>
@@ -172,17 +175,14 @@ namespace m4 {
     // config store into the scroll CString, measure it against the offscreen DC,
     // and set up the scroll rect + per-frame scroll step. thiscall, returns BOOL.
 
-    struct CreditzText { // config section handle (this->m_sectionSrc->GetSection result)
-        char m_pad0[0xc];
-        i32 m_length;    // +0xc  byte length
-        char* GetData(); // RVA 0x139960
-        void Release();  // RVA 0x1399d0
-    };
+    // The resolved CREDITZ section is the real CParseSource (<Gruntz/ParseSource.h>):
+    // disasm-verified callees GetData = BeginParse @0x139960, Release = EndParse
+    // @0x1399d0, m_length @+0x0c (matching layout). Both return an H used as a data
+    // pointer. Was a hand-rolled CreditzText view; folded to the canonical class.
 
-    struct CreditzStr { // MFC-style CString (data ptr at +0)
-        char* m_data;
-        void Assign(const char* s); // RVA 0x1b9e74
-    };
+    // m_text is the real MFC CString (Assign @0x1b9e74 = CString::operator=(const
+    // char*), verified); was a hand-rolled CreditzStr view. Its LPCTSTR (the +0x00
+    // m_pszData) is what DrawTextA reads.
     struct CreditzRgn { // CRgn / CGdiObject at this->m_clipRgn
         char m_pad0[8];
         i32 Attach(void* hrgn); // RVA 0x1c6a05
@@ -193,9 +193,10 @@ namespace m4 {
     // precedent). Was a hand-rolled CreditzDcVtbl PMF view naming only those two
     // slots; folded to the real SDK interface (ddraw.h supplies the full vtable, so
     // no fabricated fillers). Byte-neutral COM dispatch (`mov eax,[dc]; call [eax+N]`).
-    struct CreditzSectionSrc {                              // this->m_sectionSrc
-        CreditzText* GetSection(const char* name, i32 tag); // RVA 0x13a000
-    };
+    // The section source (m_sectionSrc) is the real CSymTab (<Bute/SymTab.h>): the
+    // "GetSection(name,tag)" lookup is CSymTab::Insert(key, arg) @0x13a000 (insert-or-
+    // resolve), returning the section's CParseSource as an H (used as a pointer). Was
+    // a hand-rolled CreditzSectionSrc view; folded to the canonical class.
 
     extern double g_5e96f8;
     extern double g_5e96f0;
@@ -205,12 +206,12 @@ namespace m4 {
         char m_pad0[0xc];
         char* m_dcChain; // +0xc  (chain to the offscreen-DC object)
         char m_pad10[0x2c - 0x10];
-        CreditzSectionSrc* m_sectionSrc; // +0x2c
+        CSymTab* m_sectionSrc; // +0x2c  the section symbol table (Insert = section lookup)
         char m_pad30[0x1c8 - 0x30];
         RECT m_scrollRect;    // +0x1c8
         RECT m_textRect;      // +0x1d8
         CreditzRgn m_clipRgn; // +0x1e8
-        CreditzStr m_text;    // +0x1f0
+        CString m_text;       // +0x1f0  (real MFC CString; m_pszData at +0x00)
         i32 m_1f4;            // +0x1f4
         i32 m_1f8;            // +0x1f8
         i32 m_1fc;            // +0x1fc
@@ -227,9 +228,12 @@ namespace m4 {
     // __stdcall COM interface (was 98% with the __cdecl free-fn-ptr view).
     RVA(0x00039a60, 0x179)
     i32 CreditzScreen::BuildText() {
-        CreditzText* sect = m_sectionSrc->GetSection("CREDITZ", 0x545854);
+        // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
+        // (== 0x545854, a tag value not an address); it returns the section's
+        // CParseSource as an H, used here as a pointer.
+        CParseSource* sect = (CParseSource*)m_sectionSrc->Insert("CREDITZ", (void*)'TXT');
         if (sect) {
-            char* src = sect->GetData();
+            char* src = (char*)sect->BeginParse();
             if (!src) {
                 return 0;
             }
@@ -240,22 +244,20 @@ namespace m4 {
             }
             memcpy(buf, src, len);
             buf[len] = 0;
-            m_text.Assign(buf);
-            sect->Release();
+            m_text = buf;
+            sect->EndParse();
             operator delete(buf);
         }
         m_clipRgn.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
         char* b = *(char**)(m_dcChain + 4);
         char* c2 = *(char**)(b + 0x14);
-        char* d = *(char**)(c2 + 0x2c);
-        IDirectDrawSurface* dc = *(IDirectDrawSurface**)(d + 8);
+        CDDSurface* d = *(CDDSurface**)(c2 + 0x2c);
         HDC hdc = 0;
-        dc->GetDC(&hdc);
+        d->m_8->GetDC(&hdc);
         if (hdc) {
-            i32 h = DrawTextA(hdc, m_text.m_data, -1, &m_textRect, 0x450);
+            i32 h = DrawTextA(hdc, (const char*)m_text, -1, &m_textRect, 0x450);
             SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
-            IDirectDrawSurface* dc2 = *(IDirectDrawSurface**)(d + 8);
-            dc2->ReleaseDC(hdc);
+            d->m_8->ReleaseDC(hdc);
         }
         m_1f8 = 0;
         m_1fc = 0;
