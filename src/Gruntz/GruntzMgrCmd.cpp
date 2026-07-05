@@ -80,16 +80,27 @@ namespace GruntzMgrCmd {
     };
     struct GZCell {
         char _p[0x1ec];
-        void* m_1ec; // +0x1ec class-id
-        i32 m_1f0;   // +0x1f0
+        i32 m_1ec; // +0x1ec class-id
+        i32 m_1f0; // +0x1f0
         char _p2[0x1fc - 0x1f4];
         void* m_1fc;                                       // +0x1fc
         i32 LoadPickup(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x3c6a
         i32 LoadAbility(i32 n);                            // 0x3c29
     };
+    struct GZSel { // grid->m_244->m_8 (selected cell x/y)
+        i32 m_0;   // x
+        i32 m_4;   // y
+    };
+    struct GZBoardSel {
+        char _p0[8];
+        GZSel* m_8; // +0x8
+    };
     struct GZBoard {
         char _p0[0x1c];
-        void* m_cells[1];             // +0x1c: cell-ptr grid [x*15 + y]
+        GZCell* m_cells[(0x244 - 0x1c) / 4]; // +0x1c: cell-ptr grid [x*15 + y]
+        GZBoardSel* m_244;                   // +0x244
+        char _p248[0x24c - 0x248];
+        i32 m_24c;                    // +0x24c  select-valid flag
         void Board18e3(i32 n);        // 0x18e3
         void Board3616(i32 a, i32 b); // 0x3616
     };
@@ -159,7 +170,7 @@ namespace GruntzMgrCmd {
     DATA(0x006bf3c0)
     extern i32 g_time6bf3c0;
     DATA(0x00644c54)
-    extern void* g_classId644c54;
+    extern i32 g_classId644c54;
     DATA(0x00648cf0)
     extern i32 g_isHost_648cf0;
     DATA(0x006c44c0)
@@ -245,8 +256,6 @@ namespace GruntzMgrCmd {
         void Func3f62();                              // 0x3f62
         void Func415b();                              // 0x415b
         i32 Func1cf3();                               // 0x1cf3
-        i32 BrickPickup(i32 id);                      // grid-select + 0x3c6a (inlined in retail)
-        i32 BrickAbility(i32 n);                      // grid-select + 0x3c29 (inlined in retail)
         void Sound1388c0(i32 n);                      // 0x1388c0
         void Sound1388f0();                           // 0x1388f0
         i32 HandleCommand(i32 p1, i32 nID, i32 p3);
@@ -294,6 +303,47 @@ namespace GruntzMgrCmd {
         m_strWorldFile.Empty();                                                                    \
         if (!PassClick((N), 0, 1))                                                                 \
             ReportErr(0x8005, (ERR));                                                              \
+        return 1;                                                                                  \
+    }
+// Grid-select the addressed cell (m_cmdGrid), grant a brick pickup (0x3c6a) and
+// announce.  Retail inlines the whole grid walk (no BrickPickup helper call).
+#define BRICKPICKUP(ID, MSG)                                                                        \
+    {                                                                                              \
+        if (!PickState())                                                                          \
+            return 0;                                                                              \
+        GZCell* _cell =                                                                            \
+            m_cmdGrid->m_24c == 1                                                                  \
+                ? m_cmdGrid->m_cells[m_cmdGrid->m_244->m_8->m_4 + m_cmdGrid->m_244->m_8->m_0 * 15] \
+                : 0;                                                                               \
+        if (!_cell)                                                                                \
+            return 0;                                                                              \
+        if (_cell->m_1ec != g_classId644c54)                                                       \
+            return 0;                                                                              \
+        GZCell* _c2 = m_cmdGrid->m_cells[_cell->m_1f0 + _cell->m_1ec * 15];                         \
+        i32 _r = (_c2 && _c2->m_1fc) ? _c2->LoadPickup(ID, 0, 0, 0, 1) : 0;                         \
+        if (!_r)                                                                                    \
+            return 0;                                                                              \
+        PLAYCUE("GAME_MAJORCHEAT");                                                                 \
+        AppendChat(MSG);                                                                            \
+        return 1;                                                                                  \
+    }
+// Grid-select the addressed cell, grant an ability (0x3c29) and announce.
+#define BRICKABILITY(N, MSG)                                                                        \
+    {                                                                                              \
+        if (!PickState())                                                                          \
+            return 0;                                                                              \
+        GZCell* _cell =                                                                            \
+            m_cmdGrid->m_24c == 1                                                                  \
+                ? m_cmdGrid->m_cells[m_cmdGrid->m_244->m_8->m_4 + m_cmdGrid->m_244->m_8->m_0 * 15] \
+                : 0;                                                                               \
+        if (!_cell)                                                                                \
+            return 0;                                                                              \
+        if (_cell->m_1ec != g_classId644c54)                                                       \
+            return 0;                                                                              \
+        if (!_cell->LoadAbility(N))                                                                 \
+            return 0;                                                                              \
+        PLAYCUE("GAME_MAJORCHEAT");                                                                 \
+        AppendChat(MSG);                                                                            \
         return 1;                                                                                  \
     }
 // Level-restart (0x8170/0x8171/0x8173): stop chain, drain cursor, change state,
@@ -465,15 +515,8 @@ namespace GruntzMgrCmd {
                         }
                         case 0x8087:
                             return 1;
-                        case 0x808d: {
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            // monologo sprite via m_cmdGrid grid; approximated
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Hey, where did you go?");
-                            return 1;
-                        }
+                        case 0x808d:
+                            BRICKPICKUP(0x36, "Hey, where did you go?");
                         // ---- item cheats 0x80e5..0x8104 (SetItem N, announce) ----
                         case 0x80e5:
                             ITEMCHEAT(1, "Bombz are cool!");
@@ -575,68 +618,23 @@ namespace GruntzMgrCmd {
                         }
                         // ---- "pickup brick" cheats: grid-select a cell, LoadPickup(id) ----
                         case 0x8130:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x39)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Oh yes, they will be assimilated!");
-                            return 1;
+                            BRICKPICKUP(0x39, "Oh yes, they will be assimilated!");
                         case 0x8131:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x3a)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat(
+                            BRICKPICKUP(
+                                0x3a,
                                 "Ladies and gentlemen, please welcome... death... "
                                 "He'll be here all week."
                             );
-                            return 1;
                         case 0x8132:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x38)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Super Grunt to the rescue!");
-                            return 1;
+                            BRICKPICKUP(0x38, "Super Grunt to the rescue!");
                         case 0x8133:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x3c)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("This is gonna hurt them more than it will hurt you.");
-                            return 1;
+                            BRICKPICKUP(
+                                0x3c, "This is gonna hurt them more than it will hurt you."
+                            );
                         case 0x8134:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x3b)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("How did you swallow that?");
-                            return 1;
+                            BRICKPICKUP(0x3b, "How did you swallow that?");
                         case 0x8135:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickPickup(0x37)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("There is no running allowed by the pool!");
-                            return 1;
+                            BRICKPICKUP(0x37, "There is no running allowed by the pool!");
                         case 0x8136:
                             if (!PickState()) {
                                 return 0;
@@ -676,65 +674,17 @@ namespace GruntzMgrCmd {
                             return 1;
                         }
                         case 0x813c:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(1)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Freeze spellz are coooooooooooooooooool!");
-                            return 1;
+                            BRICKABILITY(1, "Freeze spellz are coooooooooooooooooool!");
                         case 0x813d:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(2)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("For only $9.95, you too can have the healing power!");
-                            return 1;
+                            BRICKABILITY(2, "For only $9.95, you too can have the healing power!");
                         case 0x813e:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(3)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Aaahh!  Zombiez!");
-                            return 1;
+                            BRICKABILITY(3, "Aaahh!  Zombiez!");
                         case 0x813a:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(4)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("It's party time!");
-                            return 1;
+                            BRICKABILITY(4, "It's party time!");
                         case 0x813f:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(5)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Oh where oh where did the teleported Gruntz go?");
-                            return 1;
+                            BRICKABILITY(5, "Oh where oh where did the teleported Gruntz go?");
                         case 0x813b:
-                            if (!PickState()) {
-                                return 0;
-                            }
-                            if (!BrickAbility(6)) {
-                                return 0;
-                            }
-                            PLAYCUE("GAME_MAJORCHEAT");
-                            AppendChat("Rollin, rollin, rollin.");
-                            return 1;
+                            BRICKABILITY(6, "Rollin, rollin, rollin.");
                         case 0x816f:
                             g_6455f4 ^= 0x400;
                             PLAYCUE("GAME_MINORCHEAT");
