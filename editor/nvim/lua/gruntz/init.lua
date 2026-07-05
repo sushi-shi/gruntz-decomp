@@ -285,6 +285,7 @@ local function fill(buf, lines, ctx)
   vim.keymap.set("n", "q", "<cmd>close<cr>", opts)
   vim.keymap.set("n", "<CR>", function() M.follow() end, opts)
   vim.keymap.set("n", "V", function() M.follow() end, opts)
+  vim.keymap.set("n", "vg", function() M.goto_rva() end, opts)  -- 0x.. under cursor -> src def
 end
 
 -- Replace a scratch view's content in place (re-render after a build). The view
@@ -1132,9 +1133,11 @@ function M.xrefs()
   with_root(function(root)
     local sym, err = symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])
     if not sym then return notify(err, vim.log.levels.WARN) end
-    run_sema(root, { "xref", sym.addr }, function(callers)
+    -- callers via --tree: it chases ILT jmp-thunks to the REAL callers (a bare
+    -- `jmp in 0x.. Foo [ghidra]` thunk is not useful) and expands the ancestry.
+    run_sema(root, { "xref", "--tree", sym.addr }, function(callers)
       run_sema(root, { "xref", "--callees", sym.addr }, function(callees)
-        local lines = { ("; xrefs of %s  (%s)   <CR>/V on a 0x.. navigates"):format(
+        local lines = { ("; xrefs of %s  (%s)   <CR>/V or vg on a 0x.. navigates"):format(
           sym.name, sym.addr), "" }
         vim.list_extend(lines, callers)
         lines[#lines + 1] = ""
@@ -1184,6 +1187,60 @@ function M.inherit()
   end)
 end
 
+--- A window showing a real file (buftype == "", not a gruntz:// scratch view), so
+--- vg from a plugin view opens the definition in the source window, not over the view.
+local function first_file_win()
+  local cur = vim.api.nvim_get_current_win()
+  local function is_file(win)
+    local b = vim.api.nvim_win_get_buf(win)
+    return vim.bo[b].buftype == "" and not (vim.b[b] and vim.b[b].gruntz)
+  end
+  if is_file(cur) then return cur end
+  for _, w in ipairs(vim.api.nvim_list_wins()) do
+    if is_file(w) then return w end
+  end
+  return cur
+end
+
+--- vg: jump to the SOURCE DEFINITION of the function whose 0x.. is at the cursor -
+--- works in ANY buffer (source, a comment, or a plugin view), unlike <CR>/V (plugin
+--- views only, and they open the diff). Resolution order for the hex: the token under
+--- the cursor, else a `// 0x..` comment RVA, else the first 0x.. on the line.
+--- `sema rva` does the work: it chases ILT jmp-thunks (so a vtable-slot RVA resolves
+--- to its method body) and reports the `RVA(..)` macro's file:line. Padding-agnostic.
+function M.goto_rva()
+  local root = (vim.b.gruntz and vim.b.gruntz.root) or project_root(0)
+  if not root then
+    return notify("no " .. ROOT_MARKER .. " above this file - not a gruntz checkout",
+      vim.log.levels.ERROR)
+  end
+  local w = vim.fn.expand("<cword>")
+  local hex = w:match("^0[xX]%x+$")
+  if not hex then
+    local line = vim.api.nvim_get_current_line()
+    hex = line:match("//.-(0[xX]%x+)") or line:match("(0[xX]%x+)")
+  end
+  if not hex then
+    return notify("no 0x.. RVA under the cursor / on this line", vim.log.levels.INFO)
+  end
+  run_sema(root, { "rva", hex }, function(out)
+    local file, lnum, claim
+    for _, l in ipairs(out) do
+      local nm = l:match("src claim%s*:%s*([^%s(]%S*)")
+      if nm then claim = nm end
+      local f, n = l:match("src loc%s*:%s*(%S+):(%d+)")
+      if f then file, lnum = f, tonumber(n) end
+    end
+    if not file then
+      return notify(hex .. ": no source definition" ..
+        (claim and ("  (" .. claim .. ")") or "  (not reconstructed under src/)"),
+        vim.log.levels.WARN)
+    end
+    vim.api.nvim_set_current_win(first_file_win())
+    vim.cmd(("edit +%d %s"):format(lnum, vim.fn.fnameescape(root .. "/" .. file)))
+  end)
+end
+
 function M.attach_keymaps(buf)
   local maps = {
     vt = function() M.view("target") end,  -- view target asm
@@ -1192,6 +1249,7 @@ function M.attach_keymaps(buf)
     vs = function() M.status() end,        -- status overview
     vx = function() M.xrefs() end,         -- xrefs (callers+callees; 0x.. navigable)
     vi = function() M.inherit() end,       -- inheritance + vtable of class under cursor
+    vg = function() M.goto_rva() end,      -- goto source def of the fn whose RVA is at cursor
     vB = function() M.build({}) end,       -- build
     vq = function() M.close() end,         -- close all gruntz views
   }

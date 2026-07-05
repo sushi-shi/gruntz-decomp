@@ -31,8 +31,9 @@ Buffer-local chords on C/C++ buffers:
 | `vb`  | **base** asm                                                   |
 | `vd`  | **diff** — target ∣ base side-by-side (the "objdiff look")      |
 | `vs`  | **status** — match-% overview, current unit's functions listed |
-| `vx`  | **xrefs** — callers + callees of the fn at the cursor (`0x..` are navigable with `<CR>`/`V`) |
+| `vx`  | **xrefs** — callers (thunk-chased) + callees of the fn at the cursor (`0x..` navigable with `<CR>`/`V`/`vg`) |
 | `vi`  | **inheritance + vtable** of the class/`VTBL(..)` under the cursor (`sema class` slots + `--tree` spine) |
+| `vg`  | **goto definition** — jump to the *source* def of the fn whose `0x..` is under the cursor (chases vtable-slot thunks; works in source, comments, and views) |
 | `vB`  | **build** (`:GruntzBuild`)                                     |
 | `vq`  | **close** all open gruntz views                                |
 | `V`   | **peek** — match % + metadata (size, rva, unit) in a float     |

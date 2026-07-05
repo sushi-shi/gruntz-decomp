@@ -95,12 +95,18 @@ SYM_BY_NAME = load_symbol_name_to_rva()
 
 
 def slot_name(idx, fn_rva):
-    """Best readable name for a slot's function; unknown -> Slot<NN>_<rva>."""
-    fn = vs.FN.get(fn_rva)  # functions.csv exact-start name (readable: FreeAll, ~CFader, __purecall)
-    if fn:
-        return fn[0]
-    if fn_rva in SYM:
-        return SYM[fn_rva]
+    """Best readable name for a slot's function; unknown -> Slot<NN>_<rva>.
+    Slots point at ILT jmp-thunks, so on a direct miss we chase the thunk to the
+    body and name THAT - functions.csv (readable: FreeAll, ~CFader, __purecall)
+    then symbol_names.csv (the reconstructed src name)."""
+    for r in (fn_rva, vs.chase_thunk(fn_rva)):
+        if r is None:
+            continue
+        fn = vs.FN.get(r)
+        if fn:
+            return fn[0]
+        if r in SYM:
+            return SYM[r]
     return "Slot%02d_%06x" % (idx, fn_rva)
 
 

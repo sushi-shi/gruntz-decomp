@@ -69,6 +69,20 @@ def cstr(rva, n=512):
     o = off(rva)
     if o is None: return None
     end = d.find(b'\0', o, o+n); return d[o:end].decode('latin1') if end != -1 else None
+def chase_thunk(rva):
+    """Follow an ILT jmp-thunk (`E9 rel32`) to the body it jumps to; None if `rva`
+    is not such a thunk. C++ vtable slots point at these one-instruction thunks in
+    the incremental-link band (rva < 0x7c20), not at the method bodies - so a slot's
+    real name/definition is found at chase_thunk(slot_rva), not slot_rva itself."""
+    w = u32(rva)
+    if w is None or (w & 0xFF) != 0xE9:
+        return None
+    rel = u32(rva + 1)
+    if rel is None:
+        return None
+    if rel & 0x80000000:
+        rel -= 0x100000000
+    return (rva + 5 + rel) & 0xFFFFFFFF
 
 # --- base relocations ---
 rr = struct.unpack_from('<I', d, opt+96+5*8)[0]; rs = struct.unpack_from('<I', d, opt+96+5*8+4)[0]

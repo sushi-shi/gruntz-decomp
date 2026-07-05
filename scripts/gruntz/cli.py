@@ -1087,6 +1087,28 @@ def _csv_find(path: Path, rva: int, key: str = "rva"):
     return None
 
 
+def _src_loc_of(rva: int):
+    """(relpath, lineno) of the RVA(0x..)/RVAU(0x..) macro that defines the fn at
+    `rva`, scanning src/ + include/. None if the fn is not annotated in source.
+    Padding-agnostic: matches 0x0*<hex> so 0x0017fa40 and 0x17fa40 both hit."""
+    import re
+    pat = re.compile(r"\bRVAU?\s*\(\s*0x0*%x\s*[,)]" % rva, re.IGNORECASE)
+    for sub in ("src", "include"):
+        base = REPO / sub
+        if not base.is_dir():
+            continue
+        for f in sorted(base.rglob("*")):
+            if f.suffix not in (".c", ".cpp", ".cc", ".cxx", ".h", ".hpp"):
+                continue
+            try:
+                for i, line in enumerate(f.read_text(errors="ignore").splitlines(), 1):
+                    if pat.search(line):
+                        return (f.relative_to(REPO).as_posix(), i)
+            except OSError:
+                continue
+    return None
+
+
 def cmd_sema_rva(args) -> None:
     """One-shot address dossier: joins symbol_names.csv, library_labels.csv,
     Ghidra functions.csv and objdiff report.json - pure lookups, no analysis."""
@@ -1096,20 +1118,34 @@ def cmd_sema_rva(args) -> None:
         die(f"'{args.addr}' is not a hex RVA (e.g. 0x00080850)")
     print(f"RVA 0x{rva:08x}")
 
+    # A vtable-slot RVA is an ILT jmp-thunk, not a body: on a miss, chase it to the
+    # body and report THAT (so `sema rva <slot>` and nvim's vg resolve the method).
     claim = _csv_find(GEN_NAMES, rva)
+    def_rva, via = rva, None
+    if not claim:
+        from gruntz.analysis import vtable_scan as vs
+        body = vs.chase_thunk(rva)
+        if body is not None:
+            c2 = _csv_find(GEN_NAMES, body)
+            if c2:
+                claim, def_rva, via = c2, body, body
     if claim:
+        via_s = f"  (via ILT thunk -> 0x{via:08x})" if via is not None else ""
         print(f"  src claim : {claim['name']}  [{claim['unit']}] "
-              f"({claim.get('kind', '?')})")
+              f"({claim.get('kind', '?')}){via_s}")
+        loc = _src_loc_of(def_rva)
+        if loc:
+            print(f"  src loc   : {loc[0]}:{loc[1]}")
     else:
         print("  src claim : (none - not reconstructed under src/)")
 
-    librow = _csv_find(REPO / "config" / "library_labels.csv", rva)
+    librow = _csv_find(REPO / "config" / "library_labels.csv", def_rva)
     if librow:
         print(f"  library   : {librow['name']}  {librow['lib']} / "
               f"{librow['confidence']} / {librow['source']}  "
               f"(carve-out: excluded from the match %)")
 
-    grow = _csv_find(GHIDRA_FUNCTIONS, rva, key="entry_rva")
+    grow = _csv_find(GHIDRA_FUNCTIONS, def_rva, key="entry_rva")
     if grow:
         print(f"  ghidra    : {grow['name']}  size {grow['byte_size']} B")
     else:
@@ -1150,7 +1186,7 @@ def _add_sema(sub) -> None:
         "  gruntz sema refs  include/X.h 30       every ref (USR-exact; no grep collisions)\n"
         "  gruntz sema hover src/X.cpp 42         type/decl at point\n"
         "  gruntz sema rename include/X.h 40 m_new --dry-run   tree-wide rename preview\n"
-        "  gruntz sema rva   0x00080850           address dossier (claim/lib/ghidra/%)\n"
+        "  gruntz sema rva   0x00080850           address dossier (claim/src loc/lib/ghidra/%; chases ILT thunks)\n"
         "  gruntz sema class CImage               vtable slots + hierarchy tags\n"
         "  gruntz sema match cplay                per-fn % of a unit (or an RVA)\n"
         "  gruntz sema disasm 0x00080850          retail disasm + relocs\n"
@@ -1191,7 +1227,9 @@ def _add_sema(sub) -> None:
                     help="preview the edit set (file:line: old -> new); write nothing")
     sr.set_defaults(func=cmd_sema_rename)
 
-    srv = ss.add_parser("rva", help="address dossier (src claim / lib / ghidra / match)")
+    srv = ss.add_parser("rva",
+                        help="address dossier (src claim + file:line / lib / ghidra / "
+                             "match; chases ILT jmp-thunks to the body)")
     srv.add_argument("addr", help="hex RVA, e.g. 0x00080850")
     srv.set_defaults(func=cmd_sema_rva)
 
