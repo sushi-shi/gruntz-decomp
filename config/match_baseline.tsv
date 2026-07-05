@@ -31,7 +31,7 @@ apiwrappers	7	2
 appdialogs	1	1
 apphelpers	3	3
 applyrange	1	1
-areamgr	8	3
+areamgr	13	8
 arrayserialize	1	0
 assetnamespaceprefixes	1	0
 attract	18	10
@@ -50,7 +50,7 @@ bootystateactivate	2	1
 bootywalkanim	2	0
 boundaryleaflogic	15	15
 boundarylowerdtors	6	5
-boundarylowermethods	30	19
+boundarylowermethods	28	17
 boundarylowerthunks	26	26
 boundarymisc	13	11
 boundarytail	8	2
@@ -92,13 +92,13 @@ creditzassets	1	1
 cremusentrylist	2	2
 cremusnode	4	1
 cremusreadstream	6	4
+cspawnentry	1	1
 cursorsnapsprite	3	2
 customleveldlg	1	0
 customlevellist	1	0
 customworlddialog	2	1
 customworldinfodlg	1	1
 customwwdpath	1	1
-cvoicesound	1	1
 databuffer	8	6
 ddpagemgr	2	1
 ddrawblterrthunk	1	1
@@ -206,7 +206,7 @@ gruntpowerupsprite	6	5
 gruntpuddle	5	2
 gruntresurrectradius	1	0
 gruntselectedsprite	5	3
-gruntspawnconfig	18	10
+gruntspawnconfig	16	8
 gruntspawnlevel	2	0
 gruntsprintanim	1	0
 gruntstaminasprite	3	3
@@ -330,7 +330,6 @@ netsession2	3	1
 netsessionnode	3	2
 netsessionopen	1	1
 netthingdtor	1	1
-obj09a260	1	0
 obj0f7d90	1	0
 objectdropper	4	3
 orphanleaves	7	7
@@ -383,7 +382,7 @@ sbi_image_eh	1	1
 sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	12	8
+sbi_menuitem	12	7
 sbi_menuitem_eh	1	1
 sbi_rectonly	70	33
 sbi_rectonly_eh	2	1
@@ -585,10 +584,15 @@ apphelpers	?Handle@CHandlerB4@@QAEHHHHH@Z	100.0000	100.0000	4	fd0c82cba9f9	0xb4c
 apphelpers	?OnStart@CTitleApp@@QAEHH@Z	100.0000	100.0000	2	6e064a9a13ad	0xf9880
 apphelpers	?Unmatched_be030@@YAXPAXPAUDlgData@@@Z	100.0000	100.0000	1	37cff8f1518d	0xbe030
 applyrange	?ApplyToRange@@YGXPAVApplyElem@@HHP81@AEXXZ@Z	100.0000	100.0000	1	b977df9605c7	0x7c20
-areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	2	d404543b3e36	0x99c20
+areamgr	??0CAreaMgr@@QAE@XZ	100.0000	100.0000	1	c9a24abc801d	0x99ba0
+areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	3	a4818e6b0a01	0x99c20
+areamgr	??1CSpawnList@@QAE@XZ	100.0000	100.0000	1	300ac8464c18	0x99ca0
+areamgr	?ClearFlags@CSpawnList@@QAEXXZ	100.0000	100.0000	1	df0c13b3aef6	0x9a420
+areamgr	?DeleteAllEntries@CSpawnList@@QAEXXZ	100.0000	100.0000	1	8405baea7c13	0x9a450
 areamgr	?Dispatch@CAreaMgr@@QAEHH@Z	78.8584	78.8584	2	8ad3a3a2f40a	0x99d40
-areamgr	?Extract@CSpawnList@@QAEPAVCSpawnEntryN@@PAD@Z	80.3838	80.3838	2	032f194946b0	0x9a290
-areamgr	?FindEntry@CSpawnList@@QAEPAVCSpawnEntryN@@VCString@@H@Z	73.7755	73.7755	2	18d43b7695ac	0x9a0d0
+areamgr	?FindByName@CSpawnList@@QAEPAVCSpawnEntry@@ABVCString@@@Z	80.3838	80.3838	1	0663d22e6f43	0x9a290
+areamgr	?FindEntry@CSpawnList@@QAEPAVCSpawnEntry@@VCString@@H@Z	73.7755	73.7755	1	a0a34fc45468	0x9a0d0
+areamgr	?GetName@CSpawnEntry@@QAE?AVCString@@XZ	100.0000	100.0000	1	01b5c3eef6d9	0x9a260
 areamgr	?GetTail@CSpawnEntry@@QAE?AVCString@@XZ	66.3774	66.3774	2	ff3c45c9e6be	0x9a830
 areamgr	?OnInitDialog@AreaTimerDlg@@QAEHXZ	100.0000	100.0000	1	c01945fe9960	0xc2cb0
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	2	7937e088d16b	0x9a0b0
@@ -732,9 +736,7 @@ boundarylowerdtors	??1CHolder8c400@@UAE@XZ	100.0000	100.0000	1	47fdc9867dbb	0x8c
 boundarylowerdtors	??1CMenuState8d000@@UAE@XZ	95.2381	95.2381	1	c644d9d15524	0x8d000
 boundarylowerdtors	??1CWorker39f20@@UAE@XZ	100.0000	100.0000	2	a57c1f9c30ff	0x39f20
 boundarylowermethods	?Cleanup@Cfa150@@QAEXXZ	94.5238	94.5238	1	69f55d2193cb	0xfa150
-boundarylowermethods	?Clear@C9a420@@QAEXXZ	100.0000	100.0000	1	d56d6d4b82af	0x9a420
 boundarylowermethods	?Create@C104dd0@@QAEHXZ	93.4250	93.4250	4	abf769f6b050	0x104dd0
-boundarylowermethods	?Ctor@C99ba0@@QAEPAU1@XZ	100.0000	100.0000	1	f768343292bc	0x99ba0
 boundarylowermethods	?Free@C104c80@@QAEXXZ	100.0000	100.0000	1	d055528d887b	0x104c80
 boundarylowermethods	?Fwd114ec0@@YAXHHHHHH@Z	100.0000	100.0000	1	6571a1de1b21	0x114ec0
 boundarylowermethods	?Fwd114f00@@YAXHHHHHH@Z	87.6923	87.6923	1	39bf71cda414	0x114f00
@@ -742,12 +744,9 @@ boundarylowermethods	?Gate113860@@YGHPAXHHH@Z	93.3333	93.3333	2	7f822b9ad1f5	0x1
 boundarylowermethods	?Get@C213a0@@QAEHXZ	97.5000	97.5000	1	e9072e1a413f	0x213a0
 boundarylowermethods	?Handle@C0b4c40@@QAEHHHHH@Z	100.0000	100.0000	1	74f75fb541db	0xb4c40
 boundarylowermethods	?Init@Cbd450@@QAEXXZ	100.0000	100.0000	1	ebf1f0f48fb6	0xbd450
-boundarylowermethods	?M0@C915d0@@QAEXPAX@Z	99.6154	99.6154	2	89f989dfa672	0x915d0
-boundarylowermethods	?M64@C915d0@@QAEXPAX@Z	99.6154	99.6154	2	ae3af8441904	0x91620
 boundarylowermethods	?M@C10bbe0@@QAEHXZ	100.0000	100.0000	2	099b81a04951	0x10bbe0
 boundarylowermethods	?M@C112bf0@@QAEHXZ	73.1351	73.1351	3	516e9807671c	0x112bf0
 boundarylowermethods	?M@C50ca0@@QAEXH@Z	100.0000	100.0000	1	11c1d1ca433b	0x50ca0
-boundarylowermethods	?M@C8e880@@QAEHXZ	100.0000	100.0000	1	7b60c94e0487	0x8e880
 boundarylowermethods	?M@C9cab0@@QAEHH@Z	100.0000	100.0000	1	070ae2eb8c8e	0x9cab0
 boundarylowermethods	?M@Ccef50@@QAEHXZ	100.0000	100.0000	1	ba6e61cf8eb5	0xcef50
 boundarylowermethods	?M@Cd5e20@@QAEXPAX@Z	100.0000	100.0000	1	098367b3a6b2	0xd5e20
@@ -755,7 +754,10 @@ boundarylowermethods	?M@Cdb200@@QAEHPAX@Z	100.0000	100.0000	1	ff892c8680fb	0xdb2
 boundarylowermethods	?M@Cdb2f0@@QAEHXZ	100.0000	100.0000	1	f83855148178	0xdb2f0
 boundarylowermethods	?M@Cdb750@@QAEHPAX@Z	100.0000	100.0000	2	a0e5a39eecea	0xdb750
 boundarylowermethods	?M@Cea170@@QAEXHH@Z	100.0000	100.0000	1	511242493f60	0xea170
+boundarylowermethods	?MuteMusicIfActive@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	1	8ae5890e7073	0x915d0
+boundarylowermethods	?RegisterSetSkillDebugCmd@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	d23af6c0627f	0x8e880
 boundarylowermethods	?Resolve@CTypeColl464@@QAEPAXH@Z	83.7778	83.7778	4	6e632c81f03c	0x464e0
+boundarylowermethods	?RestoreMusicVolumeIfActive@CGruntzMgr@@QAEXH@Z	99.6154	99.6154	1	7fc0eee5780c	0x91620
 boundarylowermethods	?Serialize@C113e70@@QAEHPAUCSerialArchive@@@Z	95.0909	95.0909	1	b437a090d051	0x113e70
 boundarylowermethods	?Serialize@Ceb970@@QAEHPAUCSerialArchive@@HHH@Z	92.4444	92.4444	1	8a394336e792	0xeb970
 boundarylowermethods	?Set@C77dc0@@QAEXHHH@Z	100.0000	100.0000	1	af13ce28d5a0	0x77dc0
@@ -1040,7 +1042,7 @@ comhelperthunks	?ComPump3210@@YAXXZ	100.0000	100.0000	2	a4a28e58c597	0x1d4c0c
 connslotlist	?Populate2@CLatencyList@@QAEHXZ	100.0000	100.0000	1	1aac48d1bd61	0x37c30
 connslotlist	?Populate4@CLatencyList@@QAEHXZ	100.0000	100.0000	1	f8f08c73fae1	0x37e10
 connslotlist	?Populate5@CLatencyList@@QAEHXZ	100.0000	100.0000	1	661cd3808040	0x37f00
-creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	1	301211db2fb6	0x39dc0
+creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	2	3d04cd544040	0x39dc0
 cremusentrylist	??1CAniElement@@UAE@XZ	100.0000	100.0000	2	330ab79ee01f	0x152e30
 cremusentrylist	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	4	b746afcd38e6	0x165730
 cremusnode	??0CResolveNode@@QAE@HHH@Z	61.5882	61.5882	2	f200addcc214	0x15b2c0
@@ -1053,6 +1055,7 @@ cremusreadstream	?GetEntryTag@CParseSource@@QAEHXZ	100.0000	100.0000	2	b51b134dc
 cremusreadstream	?Read@CParseSource@@QAEHPAXIH@Z	91.1957	91.1957	2	653c77ef1179	0x139af0
 cremusreadstream	?ReadAt@CParseSource@@QAEHPAXHI@Z	100.0000	100.0000	2	d87c5b6fea37	0x139a40
 cremusreadstream	?SetPos@CParseSource@@QAEHH@Z	100.0000	100.0000	2	581a7caca929	0x139ae0
+cspawnentry	??0CSpawnEntry@@QAE@VCString@@H@Z	100.0000	100.0000	1	235a3df7ebe1	0x11c630
 cursorsnapsprite	??0CCursorSnapSprite@@QAE@PAUCGameObject@@@Z	95.3663	95.3663	2	48b925a3af8d	0x3a340
 cursorsnapsprite	??1CCursorSnapSprite@@UAE@XZ	100.0000	100.0000	1	2eab333c770e	0x11920
 cursorsnapsprite	?Serialize@CCursorSnapSprite@@QAEHHHHH@Z	100.0000	100.0000	1	2550abdcb9fc	0x11880
@@ -1062,7 +1065,6 @@ customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z	72.6905	72.6905	4	b698ba8d6aa0	0x3ad90
 customworldinfodlg	?LoadCustomWorldInfo@@YAHPAX@Z	100.0000	100.0000	1	7279864a0176	0x3b7c0
 customwwdpath	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	5fdf7d205a8d	0x3b940
-cvoicesound	??0CVoiceSound@@QAE@VCString@@H@Z	100.0000	100.0000	1	3dcdba84ce56	0x11c630
 databuffer	??0CDataBuffer@@QAE@XZ	100.0000	100.0000	2	d7580b5c6bf2	0x150180
 databuffer	?Free@CDataBuffer@@QAEXXZ	100.0000	100.0000	2	7b2b9a9bf281	0x1503c0
 databuffer	?LoadFromFile@CDataBuffer@@QAEHPBDH@Z	71.5593	71.5593	1	00ebc2b35d96	0x150250
@@ -1982,20 +1984,18 @@ gruntselectedsprite	?RegisterActs@CGruntSelectedSprite@@SAXXZ	92.9130	92.9130	1	
 gruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	1	370c625704ce	0x7e9c0
 gruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	99.2424	99.2424	2	5da9bb5b09e3	0x7e9f0
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	1	b4d92e06a1a7	0x85df0
-gruntspawnconfig	??1CSpawnEntry@@QAE@XZ	100.0000	100.0000	1	e13ba4d042b0	0x99ca0
-gruntspawnconfig	?AddVoiceSound@CSpawnEntry@@QAEXVCString@@H@Z	100.0000	100.0000	2	cdc3a693c6a5	0x11c560
+gruntspawnconfig	?AddVoiceSound@CSpawnList@@QAEXVCString@@H@Z	100.0000	100.0000	1	16c3cd9a4290	0x11c560
 gruntspawnconfig	?BuildVoiceList@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	0766873d02f8	0x11c1a0
-gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	3	8a0452cdc043	0x11ae30
+gruntspawnconfig	?Clear@CGruntSpawnConfig@@QAEXXZ	68.0517	68.0517	4	b6effda94df8	0x11ae30
 gruntspawnconfig	?ClearSprites@CGruntSpawnConfig@@QAEXXZ	67.8000	67.8000	1	c10e44170b11	0x11af90
 gruntspawnconfig	?DtorBody@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	2	f3a593e234c7	0x11c7b0
-gruntspawnconfig	?EmptyVoiceList@CSpawnEntry@@QAEXXZ	100.0000	100.0000	3	f24d1d15c812	0x9a450
 gruntspawnconfig	?GetButeSlot@CGruntSpawnConfig@@QAEPAXPAUCSpawnButeConfig@@PAUCSpawnButeTarget@@@Z	73.3468	73.3468	2	190cfa3edafe	0x11bba0
 gruntspawnconfig	?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z	55.3478	55.3478	1	daee427fc5f3	0x11adc0
 gruntspawnconfig	?IsReady@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	1	920e1a592c09	0x11c830
 gruntspawnconfig	?LoadGruntSpawnConfig@CGruntSpawnConfig@@QAEHHHHHH@Z	76.7935	76.7935	5	8b4e2306c33e	0x11afb0
 gruntspawnconfig	?LoadGruntVoices@CGruntSpawnConfig@@QAEHXZ	100.0000	100.0000	6	509829b84db7	0x11af00
 gruntspawnconfig	?PickWeighted@CGruntSpawnConfig@@QAEHHH@Z	1.0870	1.0870	1	b9cc209559f5	0x11bee0
-gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	1	6d4d20bac4c4	0x11c7f0
+gruntspawnconfig	?ResetPicks@CGruntSpawnConfig@@QAEXXZ	100.0000	100.0000	2	0dbdee6c03c0	0x11c7f0
 gruntspawnconfig	?SpawnVoiceDriver@CGruntSpawnConfig@@QAEHHHHHHH@Z	0.7336	0.7336	1	165f5c3fbfea	0x11b3b0
 gruntspawnconfig	?SpawnVoiceDriverStd@@YGHHHHHH@Z	0.8299	0.8299	1	db4c60a0ae79	0x11b7c0
 gruntspawnconfig	?StopVoice@CGruntSpawnConfig@@QAEXH@Z	100.0000	100.0000	2	31d475ea8ce8	0x11c730
@@ -2447,9 +2447,9 @@ lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.4458	77.4322	1	e353a843eb8e	0xa7
 lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.3738	73.3526	1	2ac3e51a74b2	0xa7d50
 lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	70.0544	70.0243	1	41419e5ec730	0xa8900
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	35.5258	35.5258	6	f25d736cb132	0xca200
-loadobjectresources	?LoadObjectAnimResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	3f06cd9e89f7	0x9ac20
-loadobjectresources	?LoadObjectImageResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.6611	88.6611	2	7108924e4055	0x9a510
-loadobjectresources	?LoadObjectSoundResources@CObjResTree@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	6ace20e25485	0x9a910
+loadobjectresources	?LoadObjectAnimResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	bf2a3c7d2c8f	0x9ac20
+loadobjectresources	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.6611	88.6611	1	ac8efc7dd5b5	0x9a510
+loadobjectresources	?LoadObjectSoundResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAUObjResLookup@@@Z	88.3103	88.3103	1	b3660c4238f7	0x9a910
 lobbygrouplist	?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z	78.5714	78.5714	2	b12a431d0050	0x178470
 lobbyobjb	??1CLobbyObjB@@QAE@XZ	100.0000	100.0000	1	b5b66af40091	0xb6220
 lobbyobjb	??1CLobbySlot@@QAE@XZ	100.0000	100.0000	1	312133bbe621	0xb62a0
@@ -2776,7 +2776,6 @@ netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x17942
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
 netsessionopen	?Open@NetSessionOpener@@QAEHXZ	100.0000	100.0000	1	7dc448e92127	0xb77a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
-obj09a260	?GetStr_09a260@Obj09a260@@QAE?AVCString@@XZ	66.7273	66.7273	1	2a61f6af2b38	0x9a260
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	3	707f19c2fa86	0xf7d90
 objectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	85.4947	85.4947	5	05f9ec9a757e	0xc59f0
 objectdropper	??1CObjectDropper@@UAE@XZ	100.0000	100.0000	1	c595e9e386aa	0x124f0
@@ -3050,7 +3049,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	1	7354647071fa	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	89b04f10c391	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	54de26b0f1b5	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	b89098c623b9	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	6	c93d7b401eb6	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	74.0714	6	c93d7b401eb6	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	3	b886f2f7a9c1	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	1	624cf65074d2	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	3	47486f9c52db	0xe81e0
@@ -3631,7 +3630,7 @@ videoconfig	?GetResolutionCode@@YAHXZ	100.0000	100.0000	3	f43cfbc063eb	0x363a0
 videoconfig	?LoadVideoResolutionConfig@@YAXPAXHH@Z	97.2737	97.2737	8	e6f5fec6b5c4	0x36f30
 videoconfig	?SaveVideoCheckboxes@@YAXPAX@Z	99.5000	99.5000	2	cdd8f7042c0b	0x378c0
 videoconfig	?SaveVideoResolutionConfig@@YAXPAX0@Z	88.8148	88.8148	7	3668fb144dff	0x370a0
-voicesoundlist	?BuildVoiceSoundList@CVoiceBuilder@@QAEPAUVoiceList@@H@Z	79.3141	79.3141	5	3f8b3de5c928	0x11c210
+voicesoundlist	?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@Z	87.7592	87.7592	1	7f29b4ed68b5	0x11c210
 voicetrigger	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	88.6000	88.6000	3	8e1a6e82b89e	0x119b50
 voicetrigger	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	8939b1cb3841	0x135a0
 voicetrigger	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	a1ec03ca782c	0x11a320
