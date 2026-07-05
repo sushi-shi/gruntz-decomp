@@ -503,12 +503,30 @@ SIZE(
 //     generic (UserBaseVfunc*/UserLogicVfunc*); the semantic names belong on CGrunt's
 //     overrides, which C++ forces to share the base virtual's name -> a per-slot
 //     reconciliation decision, not a mechanical fold.
-// The full merge (delete Grunt.h's defs, Grunt.h includes this header) is a DEDICATED
-// refactor: m_10/m_14 are lexically ambiguous across 60+ grunt-family .cpp (399 refs in
-// Grunt.cpp alone, most on OTHER classes' m_10/m_14), 6 files reference the canonical
-// virtual names, and the two widest headers demand a butterfly harness - all under the
-// hard "grunt unit % must hold" constraint, for ZERO match-% gain (matching-neutral
-// cleanup). Deferred to that pass; evidence banked here so it need not be re-derived.
+// MERGE ATTEMPTED 2026-07-05 (matcher-2) -> BLOCKED, NOT matching-neutral. Making CGrunt
+// derive from THIS canonical CUserLogic is a hard-gate regression: the two views are
+// incompatible in FOUR dimensions, not just name/owner -
+//   (1) SIZE (empirically proven): this view is fat 0x40; CGrunt needs the true 0x30
+//       (its own members sit at 0x30/0x38/0x40). Fattening CGrunt's base 0x30->0x40
+//       craters it 16->5 exacts (overall 1847->1833). Unifiable only by the CTileLogic
+//       reparenting the size NOTE above defers (~50 leaves under CUserLogic: EyeCandy,
+//       Teleporter, Projectile, SpotLight, the TileTrigger family, ...).
+//   (2) +0x38 TYPE: canonical m_38 = CGameObject* (fat tail) vs CGrunt m_38 =
+//       CGruntAnimState* (anim player) - same offset, different class/type.
+//   (3) CTOR MODEL: tile-logic leaves INLINE the base ctor (the inline body below - full
+//       AddLogic* init); CGrunt calls 0x58cd0 OUT-OF-LINE (declared-only). An inline body
+//       visible to CGrunt would fold into CGrunt::CGrunt -> wrong bytes.
+//   (4) VTABLE SIGNATURE: canonical slots are `i32 f()` (i32 return; the tile-logic
+//       callers spell sub->UserLogicVfunc4() "activate", Anim/LogicWorkerHandlers.cpp),
+//       while Grunt.h models the same slots `void f()` + slot-1 SerializeMove(ar,mode,..),
+//       matched by CGrunt's real C++ overrides. One signature set breaks the other world.
+// Plus the m_10/m_14 retype needs CGameObject visible in Grunt.h (pulls in the fat base)
+// and a tree-wide rename of ~all `h->m_5c`-style HUD accesses to CGameObject's semantic
+// names across Grunt.cpp - large/risky, ZERO % gain. So the dedup is BLOCKED on the
+// CTileLogic-reparenting prerequisite (true-0x30 base + a fat tile-logic intermediate +
+// per-slot signature reconciliation) - a dedicated pass, NOT a rider. Until then the two
+// defs remain a documented byte-necessary dual-model that never coexists in a TU (no TU
+// includes both headers). Evidence banked; do not re-derive.
 
 // Shared 1-arg init the leaves fold in. Inline so MSVC inlines it; stores the
 // CUserLogic vptr, then the full init. Defined here (not the .cpp) because only
