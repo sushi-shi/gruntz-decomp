@@ -35,10 +35,21 @@ extern "C" {
 // this TU cannot pull the full canonical header (its transitive CDDSurface clashes
 // with this TU's local DirectDraw surface view). Named distinctly so it is not
 // mistaken for the WAP32::CGameMgr engine base class.
+// The mgr's window-owner chain: CGruntzMgr(+0x04) -> link(+0x04) -> top HWND. A
+// minimal reloc-masked-member view (this TU can't pull the full CGameWnd header),
+// same pattern as CSoundMgr / PreviewMgr below.
+SIZE_UNKNOWN(MgrWndLink);
+struct MgrWndLink {
+    i32 m_0;
+    HWND m_4; // +0x04  top window
+};
 SIZE_UNKNOWN(CGruntzMgrErrSink);
 class CGruntzMgrErrSink {
 public:
     void ReportError(i32 code, i32 flags); // 0x8dc60  CGruntzMgr::ReportError
+    void DelayedQuit(); // 0x8f530  CGruntzMgr::DelayedQuit (menu-delay -> WM_CLOSE)
+    i32 m_0;
+    MgrWndLink* m_4; // +0x04  window-owner chain -> HWND
 };
 
 // The countdown's audio kill hook (the sound mgr at the status-bar holder's +0x2c;
@@ -219,31 +230,20 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// The preview-cancel command host (0x0de590), re-homed from the ApiCaller stubs:
-// CPreviewState::Tick / LoadLevelPreviewScreen drive it. When the global gate
-// (g_flag64c69c) is set it forwards to the +0x04 chain's handler (0x3f62);
-// otherwise it posts WM_COMMAND 0x8027 to the top window (m_4->m_4->m_4). A
-// placeholder host whose concrete class is not yet recovered; offsets + code
-// bytes load-bearing.
+// CPreviewState::Cancel (0x0de590), driven by LoadLevelPreviewScreen (on a failed
+// fade) and by the level-preview command router (0x4de3c0, tag 0x1b) - both invoke
+// it on the CPreviewState `this` (xref-confirmed). When the global gate (g_flag64c69c)
+// is set it delegates to the game mgr's delayed-quit (m_04 == CGruntzMgr, DelayedQuit
+// @0x8f530); otherwise it posts WM_COMMAND 0x8027 to the mgr's top window
+// (m_04->m_4->m_4). The old PreviewCancelHost/PreviewCancelWnd placeholders were a
+// second view of CPreviewState + CGruntzMgr; dissolved onto the real ones.
 DATA(0x0024c69c)
 extern i32 g_flag64c69c; // DAT_0064c69c
-struct PreviewCancelWnd {
-    i32 m_0;
-    PreviewCancelWnd* m_4; // +0x04
-    void Forward();        // thiscall, RVA 0x3f62
-};
-struct PreviewCancelHost {
-    i32 m_0;
-    PreviewCancelWnd* m_4; // +0x04
-    void Cancel();
-};
-SIZE_UNKNOWN(PreviewCancelWnd);
-SIZE_UNKNOWN(PreviewCancelHost);
 RVA(0x000de590, 0x2e)
-void PreviewCancelHost::Cancel() {
+void CPreviewState::Cancel() {
     if (g_flag64c69c) {
-        m_4->Forward();
+        m_04->DelayedQuit();
         return;
     }
-    PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
+    PostMessageA((HWND)(m_04->m_4->m_4), 0x111, 0x8027, 0);
 }
