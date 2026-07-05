@@ -34,6 +34,11 @@ public:
     virtual void Vf3(); // slot 3 -> 0x0037e2
 
     CTileTriggerSwitchLogic();
+    // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).
+    // A polymorphic class's dtor restamps the vptr, so an explicit call inlines
+    // `mov [this],offset ??_7; mov [this+0x20],0` - exactly retail's inlined delete
+    // in RemoveByKeys.
+    ~CTileTriggerSwitchLogic() { m_20 = 0; }
     i32 FindIndexByKey(i32 key);
     i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
     i32 VerifyBlockLinks();  // 0x112c70

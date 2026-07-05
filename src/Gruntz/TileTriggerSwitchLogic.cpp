@@ -320,28 +320,27 @@ i32 CTileTriggerSwitchLogic::GetFlag74() {
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::RemoveByKeys
-// Walks the child list (head @ +0x04); on the first child whose +0x04 == k2 and
-// +0x10 == k1, deletes the child (inlined ~ + RezFree), unlinks the node via
-// CObList::RemoveAt, and returns 1.  Returns 0 if no match.
+// Walks the child list (head @ +0x04, an MFC CObList: node next@0, prev@4, data@8);
+// on the first child whose +0x04 == k2 and +0x10 == k1, deletes the child (inlined
+// dtor vptr-restamp + RezFree), unlinks the node via CObList::RemoveAt, returns 1.
+// Returns 0 if no match. The loop is the inlined CObList::GetNext idiom: a saved
+// position (cur, esi) + the GetNext local (pn, ecx) are two distinct node copies;
+// pn advances node then derefs data, so retail materializes the extra `mov ecx,eax`
+// copy and defers the data load past the advance.
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc wall (~96%): logic + key/reg mapping exact; retail materializes the
-// node in a 2nd reg (ecx) to deref data while keeping cur in esi for RemoveAt,
-// vs our single live-node deref. Loop-body copy scheduling only; final-sweep.
 RVA(0x00116320, 0x66)
 i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
     ListNode* node = (ListNode*)m_04;
     while (node) {
-        ListNode* cur = node;
-        CTileTriggerSwitchLogic* data = node->m_data;
+        ListNode* cur = node; // savePos (esi)
+        ListNode* pn = node;  // GetNext local (ecx)
         node = node->m_next;
+        CTileTriggerSwitchLogic* data = pn->m_data;
         if (data->m_04 == k2 && data->m_key1 == k1) {
             if (data) {
-                // NOTE: retail inlines a vptr restamp (mov [data],offset ??_7)
-                // here; with the manual g_...Vtbl removed it's omitted in this
-                // demo (RemoveByKeys was already @early-stop). The real fix is to
-                // model the inlined ~CTileTriggerSwitchLogic.
-                data->m_20 = 0;
+                // The inlined `delete data`: the dtor restamps the vptr
+                // (`mov [data],offset ??_7`) + clears m_20, then RezFree frees it.
+                data->~CTileTriggerSwitchLogic();
                 RezFree(data);
             }
             ListRemoveAt(cur);
