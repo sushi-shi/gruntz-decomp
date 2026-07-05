@@ -8,6 +8,7 @@
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape); MFC-first (pulls afx)
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (g_mgrSettings->m_48 sound bank)
 #include <Win32.h>
+#include <ddraw.h> // real IDirectDrawSurface (the credits offscreen-DC object: GetDC/ReleaseDC)
 
 #include <Ints.h>
 #include <rva.h>
@@ -186,32 +187,12 @@ namespace m4 {
         char m_pad0[8];
         i32 Attach(void* hrgn); // RVA 0x1c6a05
     };
-    // The offscreen-DC object: a FOREIGN COM-style __stdcall interface (`this` is
-    // pushed as the leftmost arg, callee cleans). Only GetDC (slot 17, +0x44) and
-    // ReleaseDC (slot 26, +0x68) are dispatched; the rest are unreconstructed engine
-    // code. Honest model = a manual vptr into a typed vtable struct naming ONLY the
-    // two used slots as __stdcall fn-ptrs (the DirectX/COM idiom, `this` explicit) +
-    // char pad[], NO fake virtuals; `dc->CallGetDC(&hdc)` still emits
-    // `mov eax,[dc]; push &hdc; push dc; call [eax+0x44]`.
-    struct CreditzDcVtbl;
-    struct CreditzDc {
-        CreditzDcVtbl* m_vtbl;       // +0x00
-        void CallGetDC(i32* out);    // slot 17 (+0x44)
-        void CallReleaseDC(i32 hdc); // slot 26 (+0x68)
-    };
-    struct CreditzDcVtbl {
-        char m_pad00[0x44];
-        void(__stdcall* GetDC)(CreditzDc* self, i32* out); // +0x44 slot 17
-        char m_pad48[0x68 - 0x48];
-        void(__stdcall* ReleaseDC)(CreditzDc* self, i32 hdc); // +0x68 slot 26
-    };
-    SIZE_UNKNOWN(CreditzDcVtbl);
-    inline void CreditzDc::CallGetDC(i32* out) {
-        m_vtbl->GetDC(this, out);
-    }
-    inline void CreditzDc::CallReleaseDC(i32 hdc) {
-        m_vtbl->ReleaseDC(this, hdc);
-    }
+    // The offscreen-DC object is the real IDirectDrawSurface (<ddraw.h>): the two
+    // dispatched slots are GetDC (slot 17, +0x44: HDC*) and ReleaseDC (slot 26,
+    // +0x68: HDC) - exact IDirectDrawSurface vtable offsets (the batch-1 DcSink
+    // precedent). Was a hand-rolled CreditzDcVtbl PMF view naming only those two
+    // slots; folded to the real SDK interface (ddraw.h supplies the full vtable, so
+    // no fabricated fillers). Byte-neutral COM dispatch (`mov eax,[dc]; call [eax+N]`).
     struct CreditzSectionSrc {                              // this->m_sectionSrc
         CreditzText* GetSection(const char* name, i32 tag); // RVA 0x13a000
     };
@@ -267,14 +248,14 @@ namespace m4 {
         char* b = *(char**)(m_dcChain + 4);
         char* c2 = *(char**)(b + 0x14);
         char* d = *(char**)(c2 + 0x2c);
-        CreditzDc* dc = *(CreditzDc**)(d + 8);
-        i32 hdc = 0;
-        dc->CallGetDC(&hdc);
+        IDirectDrawSurface* dc = *(IDirectDrawSurface**)(d + 8);
+        HDC hdc = 0;
+        dc->GetDC(&hdc);
         if (hdc) {
-            i32 h = DrawTextA((HDC)hdc, m_text.m_data, -1, &m_textRect, 0x450);
+            i32 h = DrawTextA(hdc, m_text.m_data, -1, &m_textRect, 0x450);
             SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
-            CreditzDc* dc2 = *(CreditzDc**)(d + 8);
-            dc2->CallReleaseDC(hdc);
+            IDirectDrawSurface* dc2 = *(IDirectDrawSurface**)(d + 8);
+            dc2->ReleaseDC(hdc);
         }
         m_1f8 = 0;
         m_1fc = 0;
