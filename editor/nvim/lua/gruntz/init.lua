@@ -1104,12 +1104,94 @@ function M.dispatch(arg)
     vim.log.levels.WARN)
 end
 
+-- Run `gruntz sema <args...>` async (direct in the build env, else wrapped in
+-- `nix develop`, like do_build). cb receives the stdout split into lines.
+local function run_sema(root, args, cb)
+  local direct = in_build_env()
+  local cmd = direct and { "gruntz", "sema" }
+              or { "nix", "develop", "--command", "gruntz", "sema" }
+  vim.list_extend(cmd, args)
+  local jenv = direct and nil or { GRUNTZ_SKIP_INIT = "1" }
+  log("sema " .. table.concat(args, " ") .. "  [" .. root .. "]")
+  vim.system(cmd, { cwd = root, text = true, env = jenv }, function(res)
+    vim.schedule(function()
+      local out = (res.stdout or ""):gsub("%s+$", "")
+      if res.code ~= 0 and out == "" then
+        return notify("gruntz sema " .. table.concat(args, " ") .. " failed: " ..
+          ((res.stderr or ""):gsub("%s+$", "")), vim.log.levels.ERROR)
+      end
+      cb(vim.split(out, "\n", { plain = true }))
+    end)
+  end)
+end
+
+--- vx: cross-references for the function at the cursor - its callers (attribution)
+--- then its callees. Every `0x..` in the rendered view is navigable with <CR>/V
+--- (M.follow jumps to that function's diff), so you can walk the call graph.
+function M.xrefs()
+  with_root(function(root)
+    local sym, err = symbol_at(root, 0, vim.api.nvim_win_get_cursor(0)[1])
+    if not sym then return notify(err, vim.log.levels.WARN) end
+    run_sema(root, { "xref", sym.addr }, function(callers)
+      run_sema(root, { "xref", "--callees", sym.addr }, function(callees)
+        local lines = { ("; xrefs of %s  (%s)   <CR>/V on a 0x.. navigates"):format(
+          sym.name, sym.addr), "" }
+        vim.list_extend(lines, callers)
+        lines[#lines + 1] = ""
+        vim.list_extend(lines, callees)
+        show_split(lines, { root = root, tag = "xref/" .. sym.name, kind = "sema" })
+      end)
+    end)
+  end)
+end
+
+--- Resolve the class to inspect for vi: a VTBL(Name,..)/SIZE(Name,..)/class Name/
+--- struct Name on the current line wins; else <cword> (sema class takes a
+--- case-insensitive substring); else the class parsed from the function-at-cursor's
+--- mangled symbol (?Method@Class@@...).
+local function class_at_cursor(root, buf, lnum)
+  local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1] or ""
+  local m = line:match("VTBL%s*%(%s*([%w_:]+)")
+        or line:match("SIZE[_%w]*%s*%(%s*([%w_:]+)")
+        or line:match("^%s*class%s+([%w_]+)")
+        or line:match("^%s*struct%s+([%w_]+)")
+  if m then return m end
+  local w = vim.fn.expand("<cword>")
+  if w:match("^%a[%w_]*$") and #w > 2 then return w end
+  local sym = select(1, symbol_at(root, buf, lnum))
+  if sym and sym.name then return (sym.name:match("@([%w_]+)@@")) end
+  return nil
+end
+
+--- vi: inheritance forest + the vtable-slot table (VTBL) of the class/vtable under
+--- the cursor. Shows `sema class <Name>` (slots + SIZE/VTBL + methods, slot RVAs
+--- navigable) followed by `sema class <Name> --tree` (the RTTI inheritance subtree).
+function M.inherit()
+  with_root(function(root)
+    local name = class_at_cursor(root, 0, vim.api.nvim_win_get_cursor(0)[1])
+    if not name or name == "" then
+      return notify("no class / VTBL / struct under the cursor", vim.log.levels.WARN)
+    end
+    run_sema(root, { "class", name }, function(vtbl)
+      run_sema(root, { "class", name, "--tree" }, function(tree)
+        local lines = { ("; inheritance + vtable of %s"):format(name), "" }
+        vim.list_extend(lines, vtbl)
+        lines[#lines + 1] = ""
+        vim.list_extend(lines, tree)
+        show_split(lines, { root = root, tag = "class/" .. name, kind = "sema" })
+      end)
+    end)
+  end)
+end
+
 function M.attach_keymaps(buf)
   local maps = {
     vt = function() M.view("target") end,  -- view target asm
     vb = function() M.view("base") end,    -- view base asm
     vd = function() M.view("diff") end,    -- view diff (the objdiff look)
     vs = function() M.status() end,        -- status overview
+    vx = function() M.xrefs() end,         -- xrefs (callers+callees; 0x.. navigable)
+    vi = function() M.inherit() end,       -- inheritance + vtable of class under cursor
     vB = function() M.build({}) end,       -- build
     vq = function() M.close() end,         -- close all gruntz views
   }

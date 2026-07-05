@@ -238,8 +238,8 @@ def emit_ir(clang, tu, flags, cl_flags=None):
         with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
             ll = tf.name
         try:
-            cmd = [clang, "--driver-mode=cl", "/c", *cl_flags, *INC_CL,
-                   "-Xclang", "-emit-llvm", "-o", ll, tu]
+            cmd = [clang, "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
+                   *cl_flags, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
             res = subprocess.run(cmd, capture_output=True, text=True)
             ir = Path(ll).read_text() if os.path.getsize(ll) else ""
         finally:
@@ -251,7 +251,8 @@ def emit_ir(clang, tu, flags, cl_flags=None):
             log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
             return None
         return ir
-    cmd = [clang, *MS_FLAGS, *flags, *INC_GCC, "-S", "-emit-llvm", "-o", "-", tu]
+    cmd = [clang, "-DGRUNTZ_EMIT_META", *MS_FLAGS, *flags, *INC_GCC,
+           "-S", "-emit-llvm", "-o", "-", tu]
     res = subprocess.run(cmd, capture_output=True, text=True)
     if not res.stdout:
         log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")

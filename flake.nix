@@ -209,7 +209,7 @@
           chmod +x "$_gnv_bin/nvim"
           export PATH="$_gnv_bin:$PATH"
           export GRUNTZ_NVIM_WRAPPED=1
-          echo "[gruntz] nvim       : WRAPPED -> nvim now auto-loads editor/nvim (:Gruntz, vt/vb/vd/vs/V). Plain nvim is unchanged outside this shell." >&2
+          echo "[gruntz] nvim       : WRAPPED -> nvim now auto-loads editor/nvim (:Gruntz, vt/vb/vd/vs/vx/vi/V). Plain nvim is unchanged outside this shell." >&2
         fi
       '';
 

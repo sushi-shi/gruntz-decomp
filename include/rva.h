@@ -60,7 +60,14 @@
 // (typedefs only) -> matching-neutral.
 #include <Ints.h>
 
-#ifdef __clang__
+// The clsmeta carriers are OPT-IN: emitted only when the label step (labels.py's
+// clang -emit-llvm pass) defines GRUNTZ_EMIT_META. clangd (the editor LSP) shares
+// the same compile_commands.json but does NOT define it, so the carriers are
+// compiled out there - clangd's preamble PCH restarts __COUNTER__ across the
+// header/main boundary, which would otherwise double-emit `gruntz_clsmeta_0` and
+// flood the editor with bogus "redefinition" errors. The real base compile (wine
+// cl, non-clang) takes the empty branch below regardless.
+#if defined(__clang__) && defined(GRUNTZ_EMIT_META)
 
 #define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))
 #define RVAU(addr) __attribute__((annotate("rva:" #addr)))
