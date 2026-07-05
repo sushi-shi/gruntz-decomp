@@ -22,10 +22,9 @@
 // The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
 // "fallback" - it is the shared CTypeKeyColl serializer ProjTypeXfer (0x16e4f0,
 // owned + matched in TypeKeyColl.cpp), which resolves the handler's type-registry
-// entry (ar->m_14->m_1c) and xfers it through the handler's own vtable slots. The
-// active handler (aux m_18) is passed as the archive-record arg.
-struct CXferArchive;                // TypeKeyColl.cpp-local archive-record view (P2: dissolve)
-i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
+// entry and xfers it through the handler's own vtable slots. The active handler (the
+// logic leaf) is passed as the record arg (CUserLogic -> cast-free).
+i32 ProjTypeXfer(CUserLogic* rec); // 0x16e4f0
 
 // @early-stop
 // throwing-operator-new /GX frame wall (docs/patterns/gx-frame-outofline-ctor.md +
@@ -51,31 +50,31 @@ i32 __stdcall StateDispatch(CGameObject* obj, i32 a1, i32 a2) {
             aux->m_1c = (void*)0x3e8;
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
-            aux->m_18 = h;
+            aux->m_logic = h;
             break;
         }
         case 0x1d:
-            ((CUserLogic*)aux->m_18)->UserLogicVfunc9();
+            aux->m_logic->UserLogicVfunc9();
             break;
         case 0x1e:
-            ((CUserLogic*)aux->m_18)->UserLogicVfunc8();
+            aux->m_logic->UserLogicVfunc8();
             break;
         case 0x50:
-            ((CUserLogic*)aux->m_18)->UserLogicVfuncC();
+            aux->m_logic->UserLogicVfuncC();
             break;
         case 0x51:
-            ((CUserLogic*)aux->m_18)->UserLogicVfuncB();
+            aux->m_logic->UserLogicVfuncB();
             break;
         case 0x52:
-            ((CUserLogic*)aux->m_18)->UserLogicVfuncA();
+            aux->m_logic->UserLogicVfuncA();
             break;
         case 0x53:
-            ((CUserLogic*)aux->m_18)->UserLogicVfuncD();
+            aux->m_logic->UserLogicVfuncD();
             break;
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer((CXferArchive*)aux->m_18);
+            ProjTypeXfer(aux->m_logic);
             break;
     }
     return 1;

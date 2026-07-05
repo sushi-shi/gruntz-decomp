@@ -364,7 +364,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
             sl->m_118 = i;
             sl->m_120 = m_object->m_130;
             sub->Init(sl);
-            ((CSpotLightSetup*)sl->m_7c->m_18)->m_owner = m_object;
+            ((CSpotLightSetup*)sl->m_7c->m_logic)->m_owner = m_object;
         }
     }
     m_object->m_drawActive = 1;

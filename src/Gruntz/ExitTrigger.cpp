@@ -115,7 +115,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CTileLogic(obj) {
         e->m_124 = m_object->m_124;
         e->m_7c->Init(e);
         // pointer-as-id snapshot of the aux setup slot (authentic DWORD storage)
-        m_warlordId = (i32)e->m_7c->m_18;
+        m_warlordId = (i32)e->m_7c->m_logic;
         if (m_object->m_124 == g_644c54) {
             ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = m_warlordId;
         }

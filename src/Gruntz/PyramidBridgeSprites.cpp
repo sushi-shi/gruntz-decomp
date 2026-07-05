@@ -170,7 +170,7 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
                 goto done;
             }
             trig->m_7c->Init(trig);
-            transId = (i32)trig->m_7c->m_18;
+            transId = (i32)trig->m_7c->m_logic;
         }
     }
 

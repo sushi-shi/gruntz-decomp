@@ -159,7 +159,7 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     for (; i < 2; i++, slot++) {
         CGameObject* spr = m_04->m_08->CreateSprite(0, 0, 0, 0xdbba1, "GruntVoice", 0x4040003);
         spr->m_7c->Init(spr);
-        void* got = spr->m_7c->m_18;
+        void* got = spr->m_7c->m_logic;
         *slot = got;
         if (got == 0) {
             return 0;

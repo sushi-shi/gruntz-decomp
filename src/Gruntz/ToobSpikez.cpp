@@ -35,55 +35,48 @@
 //   phase 0x51 -> UserLogicVfuncB (slot 13, +0x34)
 //   phase 0x50 -> UserLogicVfuncC (slot 14, +0x38)
 //   phase 0x53 -> UserLogicVfuncD (slot 15, +0x3c)
-// The game object's +0x7c logic-control record: the generic CGameObjAux slot typed
-// for THIS logic subsystem's use (m_18 = the live CToobSpikez leaf, m_1c = the phase
-// code). m_18/m_1c are genuinely-generic engine slots (m_18 holds a CProjectile /
-// LightFx / this leaf across TUs; m_1c holds a phase int here but a bute-tree animset
-// node pointer in StaticHazard) - so the logic pumps type them per use (cf. the
-// sibling AnimWorkerHandlers). One reinterpret at entry keeps the dispatch cast-free.
-struct CToobRec {
-    char _00[0x18];
-    CToobSpikez* m_18; // +0x18  live instance (the real leaf class)
-    u32 m_1c;          // +0x1c  phase code (unsigned -> ja/jae switch compares)
-};
+// The record is the game object's +0x7c sub-object (canonical CGameObjAux): m_logic
+// is its bound logic leaf (typed CUserLogic*, so the shared virtual slots dispatch
+// cast-free) and m_1c the phase code (a generic int|ptr slot - here a phase int; the
+// int reinterpret at the site is authentic, cf. the field note in UserLogic.h).
 
 // The shared logic-error reporter (0x16e4f0, __cdecl) for an unresolved phase.
-extern void ToobLogicError(CToobSpikez* inst);
+extern void ToobLogicError(CUserLogic* inst);
 
 // 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
 i32 ToobSpikezLogic(CGameObject* obj) {
-    CToobRec* rec = (CToobRec*)obj->m_7c;
-    switch (rec->m_1c) {
+    CGameObjAux* rec = obj->m_7c;
+    switch ((u32)rec->m_1c) {
         case 0: {
-            rec->m_1c = 0x3e8;
+            rec->m_1c = (void*)0x3e8;
             CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate(); // slot 6
-            rec->m_18 = inst;
+            rec->m_logic = inst;
             break;
         }
         case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11
+            rec->m_logic->UserLogicVfunc9(); // slot 11
             break;
         case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10
+            rec->m_logic->UserLogicVfunc8(); // slot 10
             break;
         case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14
+            rec->m_logic->UserLogicVfuncC(); // slot 14
             break;
         case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13
+            rec->m_logic->UserLogicVfuncB(); // slot 13
             break;
         case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12
+            rec->m_logic->UserLogicVfuncA(); // slot 12
             break;
         case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15
+            rec->m_logic->UserLogicVfuncD(); // slot 15
             break;
         case 0x3e8:
             break;
         default:
-            ToobLogicError(rec->m_18);
+            ToobLogicError(rec->m_logic);
             break;
     }
     return 1;

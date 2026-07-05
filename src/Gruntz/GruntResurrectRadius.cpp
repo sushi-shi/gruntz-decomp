@@ -173,7 +173,8 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             CGameObject* spr =
                 g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((ResLightCfg*)spr->m_7c->m_18)->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
+            ((ResLightCfg*)spr->m_7c->m_logic)
+                ->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
         }
     }
     return 1;

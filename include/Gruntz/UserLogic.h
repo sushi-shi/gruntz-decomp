@@ -44,6 +44,7 @@
 // ---------------------------------------------------------------------------
 struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
 struct CGameObject; // fwd (CAnimWorker's collide callback takes the object)
+class CUserLogic;   // fwd (CGameObjAux::m_logic is the object's bound logic leaf)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
 // 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
@@ -333,15 +334,19 @@ struct CGameObjAux {
     // same slot post-attach).
     void (*Init)(CGameObject* obj); // +0x10
     char m_pad14[0x18 - 0x14];
-    // +0x18  the per-class setup/logic object bound to the created sprite. Its
-    // concrete type follows the CreateSprite class-name key (a real CProjectile
-    // for "Projectile"/"Boomerang" - the grunt fire step dispatches its slot-17
-    // LoadProjectileSprites virtual on it, the LightFx flash config for "LightFx",
-    // the voice stream handle for "GruntVoice"; ExitTrigger snapshots it raw as the
-    // warlord id), so the creating TU downcasts per site - a proven-heterogeneous
-    // slot, kept generically typed like m_1c.
-    void* m_18; // +0x18
-    void* m_1c; // +0x1c
+    // +0x18  the per-class logic leaf bound to the created object - a CUserLogic in
+    // every recovered case (a real CProjectile for "Projectile"/"Boomerang" (the grunt
+    // fire step dispatches slot-17 LoadProjectileSprites on it), a CToobSpikez/CObj in
+    // the logic pumps, a CMovingLogic leaf, ...). Typed as the common CUserLogic base so
+    // the logic dispatchers reach the shared virtual slots cast-free; sites needing the
+    // concrete leaf (ProjectileUpdate) downcast. The "LightFx flash"/"voice handle"/
+    // "warlord id" sites reach a DIFFERENT concrete type through their own local sprite
+    // views (CHudSprite etc.), not this canonical slot.
+    CUserLogic* m_logic; // +0x18
+    void* m_1c;          // +0x1c  generic slot: a logic phase/state int in the logic
+                         //         pumps, a bute-tree animset node ptr in StaticHazard
+                         //         (a genuine int|ptr union - no union per the toolchain,
+                         //         so kept void*; the int uses reinterpret at the site)
     char m_pad20[0xbc - 0x20];
     i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
     char m_padc0[0x130 - 0xc0];

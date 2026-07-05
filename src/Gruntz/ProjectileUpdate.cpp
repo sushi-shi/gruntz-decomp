@@ -82,7 +82,7 @@ struct CTargetGruntView {
 SIZE_UNKNOWN(CGruntTileMgrView);
 struct CGruntTileMgrView {
     char m_pad00[0x1c];
-    CTargetGruntView* m_1c[1];                    // +0x1c  cells, [m_neighborRow + m_neighborCol*15]
+    CTargetGruntView* m_1c[1]; // +0x1c  cells, [m_neighborRow + m_neighborCol*15]
     void Cleanup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x2e96 thunk
 };
 // The [Grunt]/attribute-tuning registry singleton (canonical CButeMgr):
@@ -182,7 +182,7 @@ i32 CGruntFireView::Update() {
                     0x40003
                 );
                 spr->m_7c->Init(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_18;
+                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,
                         m_tileOwnerHi,
@@ -192,8 +192,7 @@ i32 CGruntFireView::Update() {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
-                    == 0)
-                {
+                    == 0) {
                     s->m_sprite->m_08 |= 0x10000;
                 }
                 break;
@@ -208,7 +207,7 @@ i32 CGruntFireView::Update() {
                     0x40003
                 );
                 spr->m_7c->Init(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_18;
+                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,
                         m_tileOwnerHi,
@@ -218,8 +217,7 @@ i32 CGruntFireView::Update() {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
-                    == 0)
-                {
+                    == 0) {
                     s->m_sprite->m_08 |= 0x10000;
                 }
                 break;
@@ -245,7 +243,7 @@ i32 CGruntFireView::Update() {
                     0x40003
                 );
                 spr->m_7c->Init(spr);
-                CProjectile* s = (CProjectile*)spr->m_7c->m_18;
+                CProjectile* s = (CProjectile*)spr->m_7c->m_logic;
                 if (s->LoadProjectileSprites(
                         m_toolKind,
                         m_tileOwnerHi,
@@ -255,8 +253,7 @@ i32 CGruntFireView::Update() {
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
-                    == 0)
-                {
+                    == 0) {
                     s->m_sprite->m_08 |= 0x10000;
                 }
                 break;
