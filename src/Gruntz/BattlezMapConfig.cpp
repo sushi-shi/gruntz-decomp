@@ -97,9 +97,9 @@ inline void EmitArg::CallEmit30(void* coord, i32 count) {
 // modeled class in <Gruntz/SerialArchive.h> - the former local `Serializer` view is
 // folded away. Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
 
-// A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; nonzero result
-// means "skip the emit". __stdcall (callee pops its one arg — no add esp at the
-// call site). External, reloc-masked.
+// A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; NONZERO result means
+// "valid, proceed to emit" (a zero result bails Method_02bfc0 with 0). __stdcall
+// (callee pops its one arg — no add esp at the call site). External, reloc-masked.
 i32 __stdcall Validate_01146a(EmitArg*);
 
 // The kind-4 validator (RVA 0x022040), a __thiscall method on the array bundle.
@@ -499,6 +499,18 @@ struct SceneHit {
 // compiler frames the ctor and advances the EH try-level after each constructed
 // member - then seeds the scalar config block. Returns `this`.
 // ===========================================================================
+// @early-stop
+// 93.3% - const-materialize/scheduling wall (docs/patterns/const-materialize-into-reg-vs-immediate.md).
+// The body assignment order ALREADY matches retail's store order exactly (verified
+// against --target); the two residuals are pure MSVC5 scheduling coin-flips:
+//   (1) retail holds 0x7d0 in edx AND 0xbb8 in eax simultaneously (materializes
+//       `mov edx,0x7d0` early, before the intervening =0 stores), reusing edx for the
+//       three 0x7d0 stores (m_09c/0a0/0b8); our cl finishes the 0xbb8 stores then
+//       reuses eax (`mov eax,0x7d0`) - same values/offsets, one register differs.
+//   (2) the /GX member-init-list zero stores emit 78,7c,80,84 (declaration order)
+//       but retail schedules them 78,80,7c,84 across the array-ctor calls.
+// Neither is source-steerable (reordering the init list is a no-op - VC5 emits
+// declaration order; reordering declarations would break the offsets). Final sweep.
 RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
     // The four 0x78..0x87 fields are member-init-list initializations (NOT body
@@ -1855,38 +1867,42 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
 
 // ===========================================================================
 // CBattlezMapConfig::Method_02bfc0  @0x02bfc0
-// Validate an EmitArg by kind (4 or 7); on success, dispatch through its vtable
-// to emit a {x,y} pair into the bundle's m_scratch78/m_scratch80 scratch via slot +0x2c
-// (kind 7) or +0x30 (kind 4).
-// ===========================================================================
-// @early-stop
-// branch-layout wall (~81%): logic + both reloc-masked validate calls + the
-// vtable-slot dispatch are byte-exact, but retail lays the kind==4 arm out of
-// line in both if-ladders (cmp 4; je <fwd>) where MSVC5 keeps our first arm
-// inline (cmp 4; jne). No steerable source spelling found (switch would add a
-// jump table). Deferred to the final sweep.
+// Validate an EmitArg by kind (4 or 7): the kind's validator must return NONZERO to
+// proceed (zero => bail with 0). On a valid arg, dispatch through the arg's vtable to
+// emit a {x,y} pair into the bundle's m_scratch78/m_scratch80 scratch via slot +0x30
+// (kind 4) or +0x2c (kind 7). Two 2-sparse-case switches (NOT if-ladders): MSVC5 emits
+// each as a `cmp 4; je L4; cmp 7; jne skip` compare chain (no jump table) with the
+// case-7 body INLINE and case-4 OUT OF LINE - retail's exact block layout. (An if-else
+// ladder inlines the FIRST arm instead, and the wrong `!= 0` validate sense emitted
+// `je;xor eax,eax` in place of retail's `jne emit`, together capping it at ~81%.)
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     EmitArg* obj = (EmitArg*)objArg;
     i32 kind = (i32)(i32)kindArg;
-    if (kind == 4) {
-        if (((Kind4Validator*)this)->Validate(obj) != 0) {
-            return 0;
-        }
-    } else if (kind == 7) {
-        if (Validate_01146a(obj) != 0) {
-            return 0;
-        }
+    switch (kind) {
+        case 4:
+            if (((Kind4Validator*)this)->Validate(obj) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (Validate_01146a(obj) == 0) {
+                return 0;
+            }
+            break;
     }
     char* scratch = (char*)&m_scratch78;
-    if (kind == 4) {
-        obj->CallEmit30(scratch, 8);
-        scratch += 8;
-        obj->CallEmit30(scratch, 8);
-    } else if (kind == 7) {
-        obj->CallEmit2c(scratch, 8);
-        scratch += 8;
-        obj->CallEmit2c(scratch, 8);
+    switch (kind) {
+        case 4:
+            obj->CallEmit30(scratch, 8);
+            scratch += 8;
+            obj->CallEmit30(scratch, 8);
+            break;
+        case 7:
+            obj->CallEmit2c(scratch, 8);
+            scratch += 8;
+            obj->CallEmit2c(scratch, 8);
+            break;
     }
     return 1;
 }
@@ -4927,7 +4943,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // The zvec error globals + the return-capture helper + the reporter (the same set
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
 extern void* GetRetAddr(); // 0x16d990
-struct ZErrTargetVtbl;           // the zvec error target's vtable (owned elsewhere)
+struct ZErrTargetVtbl;     // the zvec error target's vtable (owned elsewhere)
 struct ZErrTarget {
     ZErrTargetVtbl* m_vptr;
     struct ZErrReporter {

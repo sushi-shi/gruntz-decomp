@@ -42,20 +42,20 @@ extern "C" void BitFlush(BitState* s); // 0x18a190
 // branch (raw ush member load + per-use extension) - collapsing it to one `int`
 // param pre-masks the load and hoists the extend out of the taken branch. put_short
 // is inlined as its two put_byte low/high reads of the ush accumulator.
-#define send_bits(s, value, length) \
-    { \
-        int len = length; \
-        if ((s)->m_biValid > 16 - len) { \
-            int val = value; \
-            (s)->m_biBuf |= (u16)(val << (s)->m_biValid); \
-            (s)->m_pendingBuf[(s)->m_pending++] = (u8)((s)->m_biBuf & 0xff); \
-            (s)->m_pendingBuf[(s)->m_pending++] = (u8)((u16)(s)->m_biBuf >> 8); \
-            (s)->m_biBuf = (u16)val >> (16 - (s)->m_biValid); \
-            (s)->m_biValid += len - 16; \
-        } else { \
-            (s)->m_biBuf |= (u16)(value << (s)->m_biValid); \
-            (s)->m_biValid += len; \
-        } \
+#define send_bits(s, value, length)                                                                \
+    {                                                                                              \
+        int len = length;                                                                          \
+        if ((s)->m_biValid > 16 - len) {                                                           \
+            int val = value;                                                                       \
+            (s)->m_biBuf |= (u16)(val << (s)->m_biValid);                                          \
+            (s)->m_pendingBuf[(s)->m_pending++] = (u8)((s)->m_biBuf & 0xff);                       \
+            (s)->m_pendingBuf[(s)->m_pending++] = (u8)((u16)(s)->m_biBuf >> 8);                    \
+            (s)->m_biBuf = (u16)val >> (16 - (s)->m_biValid);                                      \
+            (s)->m_biValid += len - 16;                                                            \
+        } else {                                                                                   \
+            (s)->m_biBuf |= (u16)(value << (s)->m_biValid);                                        \
+            (s)->m_biValid += len;                                                                 \
+        }                                                                                          \
     }
 
 // send_code(s, END_BLOCK, static_ltree) == send_bits(s, static_ltree[256].Code,
