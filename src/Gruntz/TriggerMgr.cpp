@@ -798,16 +798,17 @@ i32 CTriggerMgr::ClearRow(i32 row) {
 
 // 0x7d1d0: NearestCellDist - the minimum squared (>>5 tile) distance from (px,py) to
 // any live, clickable grid cell, scanning rows 0..3 but skipping row `skipRow`.
-// @early-stop
-// regalloc wall: the squared-distance body is byte-exact, but retail spills the row/col
-// loop vars to different stack slots than our cl. Logic + offsets correct. topic:wall.
+// CRACKED (77->100): (1) branchless abs() on the squared sum -> cdq;xor;sub (the
+// `if(d<0)d=-d` branch form emits jns;neg); (2) the m_5c distance term declared/evaluated
+// BEFORE m_60 (load-order); (3) `r` declared before `row` + `r++` before `row+=15` so the
+// loop counter takes the [esp+0x20] slot. docs/patterns/signed-modulo-pow2-abs-restore.md.
 RVA(0x0007d1d0, 0x9d)
 i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
     i32 tx = px >> 5;
     i32 ty = py >> 5;
     i32 best = 0x7fffffff;
-    CTmCell** row = m_grid;
     i32 r = 0;
+    CTmCell** row = m_grid;
     do {
         if (r != skipRow) {
             i32 i = 15;
@@ -816,12 +817,9 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
                 CTmCell* g = *cell;
                 if (g != 0 && g->m_1fc != 0) {
                     CTmDisplay* o = g->m_10;
-                    i32 dy = (o->m_60 >> 5) - ty;
                     i32 dx = (o->m_5c >> 5) - tx;
-                    i32 d = dx * dx + dy * dy;
-                    if (d < 0) {
-                        d = -d;
-                    }
+                    i32 dy = (o->m_60 >> 5) - ty;
+                    i32 d = abs(dx * dx + dy * dy);
                     if (d < best) {
                         best = d;
                     }
@@ -830,8 +828,8 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
                 i--;
             } while (i != 0);
         }
-        row += 15;
         r++;
+        row += 15;
     } while (r < 4);
     return best;
 }
