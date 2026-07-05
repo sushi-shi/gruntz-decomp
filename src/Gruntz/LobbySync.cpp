@@ -27,7 +27,14 @@ struct CNetMgr {
     i32 SetData(i32 a, i32 b, i32 c, void* buf, i32 len); // 0x178fc0
 };
 
-// --- A per-channel serializable grunt object (idMap table element). -----------
+// --- The synced game object stored in the id-map (CLobbySync::m_idMap[id&0x7f],
+// returned by GetSlotPtr 0xc0430 as CSyncObj*).  A real polymorphic engine object
+// (>=9 vtable slots; slot 8 @+0x20 is its serializer, returning the bytes written).
+// IDENTITY-RECOVERY TODO: this is a genuine external polymorphic class (a synced
+// unit/grunt), NOT a data record - its concrete identity (which CGameObject-family
+// class populates the id-map) lives in the net-game insert path in another TU and
+// is not yet recovered, so it stays a minimal slot-8-only placeholder (no fabricated
+// class name / no guessed fold).  v0..v7 are unused-here padding slots. -----------
 struct CSyncObj {
     virtual void v0();
     virtual void v1();
@@ -60,7 +67,10 @@ struct SlotInfo {
     i32 m_dirty; // +0x2c set on slot re-init
 };
 
-// --- A grunt record in the +0x3b0 table (stride 0x410) -------------------------
+// --- A grunt record in the +0x3b0 table (stride 0x410).  A CLobbySync-local nested
+// data record (no vtable, embedded array member m_records; verified not shared with
+// any other TU) - the replay/reconcile protocol layout owned by this class, not an
+// external-class view. --------------------------------------------------------------
 struct GruntRec {
     i32 m_seq;             // +0x00 sequence number
     i32 m_checksum;        // +0x04 state checksum
@@ -114,7 +124,9 @@ struct CSessionMgr {
     void WriteTag(const char* tag);       // 0xbd4a0 (no-op stub)
 };
 
-// --- A control/command message (CLobbySync messages) ---------------------------
+// --- A control/command message (CLobbySync messages).  A CLobbySync-local message
+// header (Dispatch/DispatchMsg param; verified not shared with any other TU) - the
+// net protocol's own 3-word header, not an external-class view. --------------------
 struct LobbyMsg {
     i32 m_type; // +0x00 message type
     i32 m_04;   // +0x04
@@ -131,7 +143,7 @@ struct CLobbySync {
     i32 m_seq;                // +0x18 reconcile-period sequence
     i32 m_period;             // +0x1c ticks per period (modulus)
     CCluster0c m_slots[4];    // +0x20 .. +0x1b0
-    i32 m_idMap[0x80];        // +0x1b0 .. +0x3b0
+    CSyncObj* m_idMap[0x80];  // +0x1b0 .. +0x3b0  synced-object ptr table (GetSlotPtr)
     GruntRec m_records[0x80]; // +0x3b0 grunt-record table
 
     // my targets
