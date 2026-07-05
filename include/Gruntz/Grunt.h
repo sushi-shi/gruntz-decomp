@@ -541,6 +541,16 @@ struct GruntBoard {
     i32 m_c;    // +0x0c  x bound
     i32 m_10;   // +0x10  y bound
 };
+// The entrance-cell triple at CGrunt+0x43c: {col, row, reason}. Several CGrunt step
+// methods take a by-value copy of it (GruntEntranceCell cell = *ptr) before indexing
+// the m_cells table by 3*col+row; MSVC5 /O2 loads all three ints and dead-spills the
+// unread `reason`, reserving `sub esp,0xc` (the frame several methods must reproduce).
+SIZE(GruntEntranceCell, 0xc);
+struct GruntEntranceCell {
+    i32 col;
+    i32 row;
+    i32 reason;
+};
 // The per-effect sound-table object reached via g_gameReg->m_world (the sound
 // category), whose m_28 holds a CMapStringToOb at +0x10 (the launch-sound lookup
 // the struck-voice creator @0x57c40 queries). Same shape Projectile's LaunchSound

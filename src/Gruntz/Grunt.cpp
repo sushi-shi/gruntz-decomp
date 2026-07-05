@@ -1351,7 +1351,7 @@ i32 CGrunt::StepEntranceReinit() {
     // idx == base*13, so idx*8 == base*0x68: MSVC's strength-reduced form of the
     // &m_cells[base].m_walk address. Kept raw so cl re-emits the same lea chain
     // (m_cells[base].m_walk would regenerate base*0x68 as an imul and diverge).
-    char* nm = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
+    char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
     m_154->SetAnimName(nm);
     return 0;
 }
@@ -1398,7 +1398,7 @@ i32 CGrunt::RunEntranceMove() {
         i32 base = cell[0] + col;
         i32 row = base * 3;
         i32 idx = base + row * 4;
-        char* nm = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
+        char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
         m_154->SetAnimName(nm);
     } else {
         ReseedIdleReset(1, 0, 0);
@@ -4453,13 +4453,11 @@ i32 CGrunt::BuildGruntExitAnimation() {
 // kind (m_170 0x1a=gokart, 0x19=bigwheel).
 //
 // @early-stop
-// ~93.8%: CFG, every member offset, the 64-bit elapsed-time compares, all three
-// visibility gates + cue ids, and the kind dispatch are byte-faithful. Residue =
-// (a) the TU-wide GruntStrGetBuffer model is __cdecl(str,minLen) but retail calls
-// it __thiscall(this=&m_448) (`lea ecx; push 0; call` vs my `push 0; push &str;
-// call; add esp,8`) - a Grunt.h-wide model change touching ~14 matched callers,
-// deferred to the final sweep; (b) the toy-break-setup edx/eax push-order +
-// elapsed `xor` register coin-flips (the documented regalloc tail).
+// ~95.4%: CFG, every member offset, the 64-bit elapsed-time compares, all three
+// visibility gates + cue ids, and the kind dispatch are byte-faithful. GruntStrGetBuffer
+// is now the real __thiscall CString::GetBuffer(this=&m_448) (`lea ecx; push 0; call`).
+// Residue = the toy-break-setup edx/eax push-order + elapsed `xor` register coin-flips
+// (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
     m_154->m_1a0.SetGeoSourceR(g_defaultGeo);
@@ -4506,7 +4504,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
 
             CEntranceAnimDescColl* desc = m_154->m_1b4;
             i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
-            char* buf = GruntStrGetBuffer(&m_448, 0);
+            char* buf = ((CString*)&m_448)->GetBuffer(0);
             m_154->GameApplyLookupSprite(buf, elem[0x14 / 4]);
 
             CGruntHud* h = m_10;
@@ -4660,7 +4658,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 col = m_entranceCell[0];
     i32 row = m_entranceCell[1];
     char* cell = (char*)this + (3 * col + row + 0xb) * 0x68;
-    char* name = GruntStrGetBuffer(cell, 0);
+    char* name = ((CString*)cell)->GetBuffer(0);
     m_154->GameApplyName(name);
 }
 
@@ -4703,7 +4701,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = elem[0x14 / 4];
 
-        char* buf = GruntStrGetBuffer(&m_448, 0);
+        char* buf = ((CString*)&m_448)->GetBuffer(0);
         m_154->SetAnimFrame(buf, frame);
 
         m_entranceStamped = 1;
@@ -4765,18 +4763,17 @@ i32 CGrunt::UpdateEntranceAnim() {
 // geometry + first frame). __thiscall, ret 0.
 //
 // @early-stop
-// big-state-machine fuzzy-desync wall (docs/patterns/big-seh-fuzzy-desync +
-// zero-register-pinning): the 10-way type-code cascade (the inline-strcmp `bool eq`
-// setcc form, both the GetNameRecord and scratch-teardown GetNameRecords variants),
-// every dispatch arm, the m_1a0 mode sub-dispatch, the align-down/drop-ready block,
-// and the DEATHZ_FREEZE finalize are reconstructed in shape/order; instruction
-// multiset is close (mov 238/256, push 75/74, call 40/40 exact). Residue collapses
-// the fuzzy% to ~2%: retail reserves a `sub esp,0xc` scratch frame (one dead cell[2]
-// spill in the J-block) my frameless body omits, shifting the epilogue + every block;
-// and retail tests the strcmp results with `test eax,eax` while my m_1fc==0 gate pins
-// `xor ebx,ebx` at entry so all 10 arms emit `cmp eax,ebx`. Pure regalloc/frame
-// (no source lever); the alignment desync rolls the faithful 0x850 carcass up to ~2%.
-// Deferred to the final sweep.
+// global zero-pin regalloc wall (~1.8%): the J-block `sub esp,0xc` frame is NOW
+// reproduced (GruntEntranceCell by-value copy) and GruntStrGetBuffer is the real
+// __thiscall CString::GetBuffer. The alignment-collapsing residue is a GLOBAL
+// register-allocation decision: retail SINKS `xor ebx,ebx` (ebx=0 for the finalize
+// sprite-clear/m_1a4 stores + the GetBuffer arg) to after the 10-way strcmp cascade,
+// so every arm tests with `test eax,eax`/`mov bl,[edi]` scratch; my 0x850 body's many
+// zero-uses drive cl to HOIST `xor ebx,ebx` to entry, so all 10 arms emit `cmp eax,ebx`
+// and the literal byte can't land in bl. Proven not locally steerable: a standalone
+// repro of the exact first-check + `bool eq` cascade does NOT pin (uses test) - the pin
+// only emerges at this body's size/zero-density. No source lever; the entry-vs-sunk
+// materialization desync rolls the faithful carcass to ~2%. Final sweep.
 RVA(0x000692f0, 0x850)
 i32 CGrunt::StepArrivalCommit() {
     if (m_entranceCommitted == 0) {
@@ -4848,9 +4845,11 @@ i32 CGrunt::StepArrivalCommit() {
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
-            i32* cell = m_entranceCell;
-            i32 base = 3 * cell[0] + cell[1];
-            char* nm = GruntStrGetBuffer(&m_cells[base].m_walk, 0);
+            GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+            i32 colv = cell.row + cell.col * 2;
+            i32 base = cell.col + colv;
+            i32 idx = base + base * 3 * 4;
+            char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
             m_154->SetAnimName(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
@@ -5895,7 +5894,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             CEntranceAnimDescColl* desc = m_154->m_1b4;
             i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
             i32 frame = el[0x14 / 4];
-            char* buf = GruntStrGetBuffer(&m_448, 0);
+            char* buf = ((CString*)&m_448)->GetBuffer(0);
             m_154->SetAnimFrame(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
@@ -5948,7 +5947,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         i32 colv = cell[1] + cell[0] * 2;
         i32 basev = cell[0] + colv;
         i32 idxv = basev + basev * 12;
-        char* nm = GruntStrGetBuffer((char*)this + idxv * 8 + 0x470, 0);
+        char* nm = ((CString*)((char*)this + idxv * 8 + 0x470))->GetBuffer(0);
         m_154->SetAnimName(nm);
 
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
@@ -5999,7 +5998,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         CEntranceAnimDescColl* desc = m_154->m_1b4;
         i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
         i32 frame = el[0x14 / 4];
-        char* buf = GruntStrGetBuffer(&m_448, 0);
+        char* buf = ((CString*)&m_448)->GetBuffer(0);
         m_154->SetAnimFrame(buf, frame);
     }
 
@@ -6170,7 +6169,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 cr = cell[1];
     i32 base = cc + (cr + 2 * cc);
     i32 idx2 = base + base * 12;
-    char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
+    char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
     m_154->SetAnimFrame(buf, frame);
     m_214 = 1;
     return 0;
@@ -6206,7 +6205,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 row = cell[1];
     i32 base = col + (row + 2 * col);
     i32 idx2 = base + base * 12;
-    char* buf = GruntStrGetBuffer((char*)this + idx2 * 8 + 0x468, 0);
+    char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
     m_154->SetAnimFrame(buf, frame);
     m_214 = 1;
     return 0;
@@ -6484,7 +6483,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             i32 base = cell[0] + col;
             i32 row = base * 3;
             i32 idx = base + row * 4;
-            char* cn = GruntStrGetBuffer((char*)this + idx * 8 + 0x470, 0);
+            char* cn = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
             m_154->GameApplyName(cn);
         } else {
             ReseedIdleReset(1, 0, 0);
@@ -6610,7 +6609,7 @@ tail:
         i32 base = cell[0] + col;
         i32 row = base * 3;
         i32 idx = base + row * 4;
-        char* cn = GruntStrGetBuffer((char*)this + idx * 8 + 0x46c, 0);
+        char* cn = ((CString*)((char*)this + idx * 8 + 0x46c))->GetBuffer(0);
         m_154->GameApplyLookupSprite(cn, frame);
     }
     {
@@ -7215,10 +7214,13 @@ i32 CGrunt::StepArrivalDefenseLean() {
 // on-screen spawn cue when in view, drive the _ITEM geometry, and re-stamp the
 // entrance-cell frame name. Returns 0.
 // @early-stop
-// frame-slot wall: the instruction stream is byte-identical to retail EXCEPT the
-// 0xc-byte stack frame retail reserves for a DEAD m_entranceCell[2] spill (a missed
-// MSVC5 optimization not reproducible from clean source - the dead local is DCE'd
-// here). Missing `sub esp,0xc`/`add esp,0xc`+spill (~93.4%, body exact). Final sweep.
+// ~98.7%: FRAME NOW REPRODUCED. The dead m_entranceCell[2] spill (`sub esp,0xc`) IS
+// a by-value 3-int struct copy (GruntEntranceCell cell = *ptr) - MSVC5 loads all
+// three, dead-stores `reason`; the prior "un-reproducible DCE miss" verdict was wrong
+// (a 3-explicit-locals source DCEs it, a struct copy does not). GruntStrGetBuffer is
+// the real __thiscall CString::GetBuffer (ecx=&cell). Residue = an edx<->ecx coin-flip
+// in the m_prevEntranceDesc/SetGeometry(m_poseItem) tail + the m_5c/m_60 load-order
+// schedule in the PlayMoveSoundAtTile block (pure regalloc, no source lever).
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     StepAnimDispatchB();
@@ -7296,10 +7298,11 @@ i32 CGrunt::StartBombGruntRun() {
     }
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseItem);
-    i32 col = m_entranceCell[1] + m_entranceCell[0] * 2;
-    i32 base = m_entranceCell[0] + col + 0xb;
+    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    i32 col = cell.row + cell.col * 2;
+    i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
-    char* cn = GruntStrGetBuffer((char*)this + idx * 8, 0);
+    char* cn = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
     m_154->GameApplyName(cn);
     return 0;
 }
