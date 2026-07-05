@@ -507,16 +507,17 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
 // of grid row g->m_1ec for the live cell whose display object (cell->m_10) is nearest g's
 // tile position, but only when that squared distance is below the cutoff 2*g->m_2dc.
 // @early-stop
-// regalloc wall (~84%): retail homes tx in ebp / ty in eax (relocating both out of their
-// load registers), and `o` in edx; our cl keeps tx/ty in the load registers (ebx/ebp) and
-// `o` in ecx. Every instruction + offset matches modulo register names; not source-
-// steerable. topic:wall (same family as NearestCellDist/DestroyAllAnims @early-stops).
+// 84->89.5: the m_5c distance term now loads BEFORE m_60 (dx declared before dy) matching
+// retail's load order. Residual (~89.5%) is the tx/ty callee-saved coloring: retail homes
+// tx->ebp (via `mov ebp,edx`) and ty->eax, computing tx>>5 before rowIdx*15; our cl colors
+// tx->ebx, ty->ebp and schedules rowIdx*15 first. Every instruction + offset matches modulo
+// register names; not source-steerable. topic:wall topic:regalloc.
 RVA(0x00077f80, 0xab)
 CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
     i32 tx = g->m_17c >> 5;
     i32 rowIdx = g->m_1ec;
-    i32 ty = g->m_180 >> 5;
     CTmCell** cell = &m_grid[rowIdx * 15];
+    i32 ty = g->m_180 >> 5;
     CTmCell* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 i = 15;
@@ -524,8 +525,8 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
         CTmCell* c = *cell;
         if (c != 0) {
             CTmDisplay* o = c->m_10;
-            i32 dy = (o->m_60 >> 5) - ty;
             i32 dx = (o->m_5c >> 5) - tx;
+            i32 dy = (o->m_60 >> 5) - ty;
             i32 d = dx * dx + dy * dy;
             if (d < bestDist && d < g->m_2dc * 2) {
                 best = c;
