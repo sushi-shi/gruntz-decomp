@@ -1,6 +1,8 @@
 #include <rva.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
-#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
+#include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
 #include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
@@ -38,22 +40,16 @@
 // CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
 // The registry's embedded name->sprite hash table is <registry>->m_10map.
 
-// The per-level state object hung off g_gameReg->m_curState: the expiry path stamps a
-// "time up" command (m_4f4/m_400/m_404) and the clock snapshot (m_3f8/m_3fc).
-struct CLevelState {
-    char m_pad00[0x3f8];
-    i32 m_3f8; // +0x3f8
-    i32 m_3fc; // +0x3fc
-    i32 m_400; // +0x400
-    i32 m_404; // +0x404
-    char m_pad408[0x4f4 - 0x408];
-    i32 m_4f4; // +0x4f4
-};
+// The state hung off g_gameReg->m_curState is the canonical CPlay (<Gruntz/Play.h>);
+// the former CLevelState view is gone (wave 3). On level-timer expiry the handler
+// resets the play state's AMBIENT-cue timer group (m_cueTimerLo/Hi @+0x3f8/+0x3fc,
+// m_cueInterval @+0x400, m_cueIntervalHi @+0x404) and raises the win/lose banner
+// (m_winLoseBanner @+0x4f4). It is the PLAY state, so m_curState (CState*) downcasts
+// to CPlay* (CPlay : CState single-inheritance, offset-0).
 
-// A notify target reached off g_gameReg->m_68 (Notify, RVA 0x7a510, external).
-struct CLevelNotify {
-    void Notify(i32 idx);
-};
+// The command-grid reached off g_gameReg->m_cmdGrid (+0x68) is the canonical
+// CTriggerMgr (<Gruntz/TriggerMgr.h>); the expiry path calls its ClearRowAndRefresh
+// (0x7a510). The former CLevelNotify::Notify view is gone (wave 3).
 
 // The per-player timer slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
 // (<Gruntz/GameRegistry.h>); the expiry path sets its m_24 = 1, and slot 0's m_0c
@@ -296,13 +292,13 @@ i32 CTimer::Tick(i32 dt) {
         m_accumHi = 0;
         m_running = 0;
         m_currentMs = 0;
-        CLevelState* ls = (CLevelState*)g_gameReg->m_curState;
-        ls->m_4f4 = 1;
-        ls->m_400 = 0x1f4;
-        ls->m_404 = 0;
-        ls->m_3f8 = g_645588;
-        ls->m_3fc = 0;
-        ((CLevelNotify*)g_gameReg->m_cmdGrid)->Notify(g_644c54);
+        CPlay* ls = (CPlay*)g_gameReg->m_curState;
+        ls->m_winLoseBanner = 1;
+        ls->m_cueInterval = 0x1f4;
+        ls->m_cueIntervalHi = 0;
+        ls->m_cueTimerLo = g_645588;
+        ls->m_cueTimerHi = 0;
+        ((CTriggerMgr*)g_gameReg->m_cmdGrid)->ClearRowAndRefresh(g_644c54);
         CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
         if (slot != 0) {
             slot->m_24 = 1;
@@ -607,7 +603,6 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
 }
 SIZE_UNKNOWN(CGruntRef);
 SIZE_UNKNOWN(CKeyTable);
-SIZE_UNKNOWN(CLevelNotify);
 SIZE_UNKNOWN(CLoadingBar);
 SIZE_UNKNOWN(CTimer);
 SIZE_UNKNOWN(CTimerFrame);

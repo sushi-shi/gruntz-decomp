@@ -104,9 +104,10 @@ public:
     // through this one CView; their old per-TU StateMgr/BootyAssetRoot shadows are folded away.
     CView* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
-    i32 m_14; // +0x14
-    i32 m_18; // +0x18
-    char m_pad1c[0x24 - 0x1c];
+    i32 m_14;         // +0x14
+    i32 m_18;         // +0x18
+    i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)
+    char m_pad20[0x24 - 0x20];
     i32 m_24;                // +0x24
     CResSource* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup

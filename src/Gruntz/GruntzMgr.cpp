@@ -704,13 +704,8 @@ CGruntzMgrOptions::~CGruntzMgrOptions() {}
 // carries a flag word at +0x8 whose bit 1 (0x2) is a visibility toggle the level-cycle
 // / debug methods flip.
 
-// The live state's +0x1c "current level index" the next/prev cycle reads/writes
-// (a CState field inside the +0x1c..+0x24 gap; the offset is load-bearing, so a
-// small TU-local view avoids touching the shared CState header).
-struct CLevelState {
-    char m_pad0[0x1c];
-    i32 m_levelIndex; // +0x1c
-};
+// The live state's +0x1c "current level index" the next/prev cycle reads is now the
+// real CState::m_levelIndex (<Gruntz/State.h>); the TU-local CLevelState view is gone.
 
 // The +0x5c chat/message-log object: AppendChatMessage routes one message line
 // (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
@@ -738,7 +733,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     }
     m_strWorldFile.Empty();
     CState* st = m_curState;
-    i32 next = ((CLevelState*)st)->m_levelIndex + 1;
+    i32 next = st->m_levelIndex + 1;
     if (next > 0x28) {
         next = 1;
     }
@@ -764,7 +759,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     }
     m_strWorldFile.Empty();
     CState* st = m_curState;
-    i32 prev = ((CLevelState*)st)->m_levelIndex - 1;
+    i32 prev = st->m_levelIndex - 1;
     if (prev <= 0) {
         prev = 0x28;
     }
@@ -3680,7 +3675,7 @@ struct ScreenRegionMgr {
     char m_pad20[0x10c - 0x20];
     i32 m_10c; // +0x10c  activate arg
     char m_pad110[0x548 - 0x110];
-    i32 m_548; // +0x548  busy/one-shot flag
+    i32 m_548;                   // +0x548  busy/one-shot flag
     i32 Open();                  // 0x0fe460
     i32 Reset();                 // 0x0fe600
     void Sub194c(i32 v);         // 0x194c  thiscall (resize/layout)
@@ -3720,7 +3715,6 @@ SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CLevelState);
 SIZE_UNKNOWN(CWorldMenuMap);
 SIZE_UNKNOWN(CMenuNode);
 SIZE_UNKNOWN(CMenuNodeSub);
