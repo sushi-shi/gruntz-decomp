@@ -10,6 +10,7 @@
 // vtable 0x5e713c); no manual vptr store (see the header note).
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
+#include <Win32.h>                // RECT / CopyRect / SetRect (CommitSpriteAction, re-homed from ApiCallers)
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/InputState.h> // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <rva.h>
@@ -416,6 +417,121 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     }
     m_lastPosition = vol;
     m_isPlaying = 1;
+}
+
+// ---------------------------------------------------------------------------
+// CommitSpriteAction (0x0000c840, __cdecl) - CRandomAmbientSound::UpdateAt's
+// sprite-action commit helper (re-homed from src/Stub/ApiCallers.cpp). When the
+// object's pending action record is still fresh (m_1c==0), set the placed/spawn flag
+// bits, resolve its handler-vs-default flag, and - when a tex slot and the input
+// layer are live - emit its sprite into the active layer (full vs simple by m_138),
+// copy the placed RECT back, then latch the action record consumed. Returns 1.
+// @early-stop
+// arg-load scheduling wall (~94%): body byte-exact through the flag math and both
+// exits; the residual is MSVC's just-in-time vs pre-load interleaving of the Emit*
+// member-arg loads (same push order, same args) + the g_gameReg->m_inputState test
+// landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
+// NOTE(view-dissolution): SpriteActionObj's offsets (m_8 flags, m_40 stateFlags, m_7c
+// aux, m_120, m_134..m_140 extents, m_144/m_154 rects, m_19c) match the real CGameObject
+// (include/Gruntz/UserLogic.h) - it is very likely CGameObject. Held as a local view for
+// now because the inner m_7c record here reads +0x1c as an int STATE (0/5) and +0x2c..0x38
+// as src-rect ints, conflicting with the modeled CGameObjAux (+0x1c void* setup, +0x2c
+// padding); forcing that type would mis-model, so this awaits clearer CGameObjAux evidence.
+struct SpriteActionRec { // the object's m_7c action/logic record
+    char m_pad0[0x10];
+    void* m_10; // +0x10 handler fn ptr (compared vs the default at 0x402d15)
+    char m_pad14[0x1c - 0x14];
+    i32 m_1c; // +0x1c state
+    char m_pad20[0x2c - 0x20];
+    i32 m_2c; // +0x2c src left
+    i32 m_30; // +0x30 src right
+    i32 m_34; // +0x34 src top
+    i32 m_38; // +0x38 src bottom
+};
+struct PlacedSpriteRec { // the record returned by the emit helpers; its RECT is at +0x28
+    char m_pad0[0x28];
+    RECT m_28; // +0x28
+};
+struct SpriteTexSlot {
+    char m_pad0[0x10];
+    void* m_10; // +0x10 texture
+};
+struct SpriteActionObj {
+    char m_pad0[8];
+    i32 m_8; // +0x08 flags
+    char m_pad0c[0x40 - 0xc];
+    i32 m_40; // +0x40 flags
+    char m_pad44[0x7c - 0x44];
+    SpriteActionRec* m_7c; // +0x7c
+    char m_pad80[0x120 - 0x80];
+    i32 m_120; // +0x120
+    char m_pad124[0x134 - 0x124];
+    i32 m_134;  // +0x134
+    i32 m_138;  // +0x138
+    i32 m_13c;  // +0x13c
+    i32 m_140;  // +0x140
+    RECT m_144; // +0x144
+    RECT m_154; // +0x154 (m_158 == m_154.top)
+    char m_pad164[0x19c - 0x164];
+    SpriteTexSlot* m_19c; // +0x19c
+};
+extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
+PlacedSpriteRec* __stdcall EmitSpriteFull_3c97(
+    void* tex,
+    i32 z,
+    RECT* rc,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // RVA 0x3c97
+PlacedSpriteRec* __stdcall EmitSpriteSimple_2ad6(void* tex, i32 z, RECT* rc, i32 a, i32 b); // 0x2ad6
+RVA(0x0000c840, 0x13d)
+i32 CommitSpriteAction(SpriteActionObj* obj) {
+    SpriteActionRec* rec = obj->m_7c;
+    if (rec->m_1c == 0) {
+        obj->m_8 |= 1;
+        obj->m_40 |= 1;
+        if (rec->m_10 == (void*)DefaultActionHandler_2d15) {
+            obj->m_8 |= 2;
+        } else {
+            obj->m_8 &= ~2;
+        }
+        SpriteTexSlot* slot = obj->m_19c;
+        if (slot && g_gameReg) {
+            RECT rc;
+            CopyRect(&rc, &obj->m_144);
+            if (rec->m_2c > 0 || rec->m_30 > 0) {
+                SetRect(&rc, rec->m_2c, rec->m_34, rec->m_30, rec->m_38);
+            }
+            if (g_gameReg->m_inputState) {
+                PlacedSpriteRec* placed;
+                if (obj->m_138 > 0) {
+                    placed = EmitSpriteFull_3c97(
+                        slot->m_10,
+                        0x64,
+                        &rc,
+                        obj->m_120,
+                        obj->m_134,
+                        obj->m_138,
+                        obj->m_13c,
+                        obj->m_140,
+                        0
+                    );
+                } else {
+                    placed = EmitSpriteSimple_2ad6(slot->m_10, 0x64, &rc, obj->m_120, 0);
+                }
+                if (placed && obj->m_154.top > 0) {
+                    placed->m_28 = obj->m_154;
+                }
+            }
+        }
+        obj->m_8 |= 0x10000;
+        rec->m_1c = 5;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
