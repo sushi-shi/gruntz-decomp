@@ -153,11 +153,11 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recCount == 1                                                             \
-                ? (CGrunt*)m_cmdGrid                                                               \
-                      ->m_grid[m_cmdGrid->m_recHead->m_pt->y + m_cmdGrid->m_recHead->m_pt->x * 15] \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.m_count == 1                                          \
+                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
+                                  [m_cmdGrid->m_recList.m_head->m_pt->y                            \
+                                   + m_cmdGrid->m_recList.m_head->m_pt->x * 15]                    \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_644c54)                                                      \
@@ -176,11 +176,11 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recCount == 1                                                             \
-                ? (CGrunt*)m_cmdGrid                                                               \
-                      ->m_grid[m_cmdGrid->m_recHead->m_pt->y + m_cmdGrid->m_recHead->m_pt->x * 15] \
-                : 0;                                                                               \
+        CGrunt* _cell = m_cmdGrid->m_recList.m_count == 1                                          \
+                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
+                                  [m_cmdGrid->m_recList.m_head->m_pt->y                            \
+                                   + m_cmdGrid->m_recList.m_head->m_pt->x * 15]                    \
+                            : 0;                                                                   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_644c54)                                                      \
