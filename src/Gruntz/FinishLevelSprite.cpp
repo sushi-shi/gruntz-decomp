@@ -55,12 +55,18 @@ public:
 };
 
 // @early-stop
-// Dense 6-case switch: code is the right shape but MSVC emits the jump table as a
-// separate $L COMDAT while the delinker inlines it into the fn (the jmp table-reloc
-// + table data don't pair) - documented ~79% ceiling, docs/patterns/
-// switch-jumptable-separate-comdat.md. The case-1 block also carries a /O2
-// regalloc/CSE residual (g_sndEnabled/g_sndCueTag hoist, m_22c re-read vs cache).
-// Logic + externs match retail. Final sweep.
+// Dense 6-case switch (~61%). Two stacked residuals, both confirmed by llvm-objdump
+// -dr base vs target: (1) the jump-table artifact - MSVC emits the table as a
+// separate $L COMDAT (jmp reloc -> $L19166), the delinker inlines it at fn+0x1b0
+// (jmp reloc -> fn) - documented ~79% ceiling, docs/patterns/
+// switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling below that ceiling:
+// caching CStatusBarHolder* h28 = m_22c->m_28 recovered the m_28 share between the
+// m_30 check and the 2nd Lookup (58->61), but MSVC still (a) re-materializes edi=0
+// with a redundant `xor edi,edi` (the header zero doesn't propagate through the
+// indirect switch jmp in this build) and (b) HOISTS the m_22c reload for h28 up into
+// the m_298 computation, which reorders the independent m_298/m_29c stores. Cases
+// 2-6 are byte-identical to retail; only case-1 instruction scheduling diverges,
+// not source-steerable.
 RVA(0x0007c3d0, 0x1ae)
 void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
     switch (state) {
@@ -72,9 +78,10 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                 m_29c = 0;
                 m_290 = g_645588;
                 m_294 = 0;
-                if (m_22c->m_28->m_30 == 0) {
+                CStatusBarHolder* h28 = m_22c->m_28;
+                if (h28->m_30 == 0) {
                     p = 0;
-                    m_22c->m_28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
+                    h28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
                     if (p != 0 && g_sndEnabled != 0
                         && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
                         p->m_14 = g_killCueClock;
