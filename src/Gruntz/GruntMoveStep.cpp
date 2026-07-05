@@ -15,7 +15,10 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <math.h> // sqrt (intrinsic fsqrt for the board-distance)
 #include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
+
+#pragma intrinsic(sqrt)
 
 // --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
 struct CGruntSub10 { // grunt->m_10
@@ -89,12 +92,6 @@ struct CGruntMover {                                              // this (edi)
 DATA(0x00245540)
 extern CStepList2 g_coordPool;
 
-// Integer board-distance: the retail form is `fild;fsqrt;call __ftol`; modeled as a
-// plain int sqrt here (no /Oi) - see the @early-stop note.
-static i32 isqrt(i32 v) {
-    return (i32)(double)v;
-}
-
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
         CMoveListNode* nd = (g)->m_320;                                                            \
@@ -109,29 +106,92 @@ static i32 isqrt(i32 v) {
     }
 
 // @early-stop
-// large movement-step reconstruction (final-sweep candidate): the m_2d4/m_328 state
-// branch, the /3 grid-dim divides, the >>5 tile coords, the QueryTile/Probe/Plan/
-// Commit/Finish dispatch, the g_coordPool recycle loops + m_31c RemoveAll and the
-// abs()+board-distance reroute are the correct shape. Residual: the inline fsqrt/
-// __ftol integer distance (modeled as a placeholder int sqrt without /Oi), several
-// best-read internal-helper signatures, and the heavy shared-landing-pad regalloc -
-// re-attack leaf-first in the final sweep.
+// CRACKED 18%->72% (2026-07-05). The 18% park was STRUCTURAL, not a wall: my source
+// laid the in-flight path first, but retail lays the FRESH path as the fall-through.
+// Fixes applied, each verified against llvm-objdump -dr:
+//   * block order: wrap fresh in `if(m_328==0){...}` so cl emits `jne handle328` and
+//     falls into fresh (was `if(m_328!=0)goto` which cl inverted to fall into the short
+//     handle328) - the single change that moved 18->69;
+//   * board distance is real `(int)sqrt((double)(adx*adx+ady*ady))` inlined -> retail's
+//     `fild [sum]; fsqrt; call __ftol` (the fake identity isqrt both mis-computed AND
+//     dropped the [esp] spill that sizes the frame to 0x20);
+//   * W/H read raw before GetTilePos, /3 divided after (deferred-division);
+//   * `c0.x/c0.y/c1.x/c1.y >>= 5` in place (retail stores the shifted coords back);
+//   * m_2ec vs m_b8/m_b4 are UNSIGNED compares (jbe, not jle).
+// Residual ~28% is a genuine register-COLORING cascade: retail colors `this`(mover)->edi
+// and `g`(arg)->esi; this cl colors `this`->ebx, freeing one reg so it spills/reloads
+// fewer temps (base 352 insns vs retail 395 - retail re-materializes push-0/or-1 and
+// reloads spills that this cl keeps in the extra reg). No source spelling reassigns the
+// callee-saved `this` register. Final-sweep candidate.
 RVA(0x00031610, 0x501)
 i32 CGruntMover::Step(CGruntM* g) {
-    if (g->m_328 != 0 && g->m_2d4 != 2) {
+    if (g->m_328 == 0) {
+        if (g->m_2d4 == 2) {
+            goto inflight;
+        }
+
+        // ---- fresh: re-query the move grid for the target tile ----
+        i32 W = m_c->m_c;
+        i32 H = m_c->m_10;
+        CCoordXY c0;
+        g->GetTilePos36c0(&c0);
+        c0.x >>= 5;
+        c0.y >>= 5;
+        CGruntM* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+        if (nb != 0) {
+            CCoordXY c1;
+            nb->GetTilePos36c0(&c1);
+            c1.x >>= 5;
+            c1.y >>= 5;
+            if (g->Probe1640(c1.x, c1.y, 0xd87, 0, 1, 0) == 0) {
+                return 1;
+            }
+            g->m_2f0 = nb->m_1ec;
+            g->m_2f4 = nb->m_1f0;
+            g->m_2d4 = 2;
+            g->m_2ec = 0;
+            Commit42e1(g);
+            return 1;
+        }
+        // nb == 0: replan / drain
+        if ((u32)g->m_2ec > (u32)m_b8) {
+            CCoordXY here;
+            g->GetTilePos36c0(&here);
+            Plan293c(g, here.x >> 5, here.y >> 5, m_ac, m_b0, -1);
+            if (g->m_328 > m_98 + m_94 && g->m_328 != 0) {
+                CMoveListNode* nd = g->m_320;
+                if (nd != 0) {
+                    do {
+                        void* r = g->m_31c.Find1de8((void**)&nd);
+                        if (*(i32*)r != 0) {
+                            g_coordPool.Drop(*(i32*)r);
+                        }
+                    } while (nd != 0);
+                }
+                g->m_31c.RemoveAll1b48a6();
+            }
+            g->m_2ec = 0;
+        }
         return 1;
     }
 
-    if (g->m_2d4 == 2) {
+    // m_328 != 0
+    if (g->m_2d4 != 2) {
+        return 1;
+    }
+inflight:
+    {
         // ---- in-flight: advance / reroute along the path ----
         i32 col = g->m_2f0;
         i32 row = g->m_2f4;
         CGruntM* cur = m_8->m_grid[15 * col + row];
-        i32 dimX3 = (i32)((u32)m_c->m_c / 3);
-        i32 dimY3 = (i32)((u32)m_c->m_10 / 3);
+        i32 W = m_c->m_c;
+        i32 H = m_c->m_10;
         CCoordXY c0;
         g->GetTilePos36c0(&c0);
-        CGruntM* nb = QueryTile4098(c0.x >> 5, c0.y >> 5, dimX3, dimY3);
+        c0.x >>= 5;
+        c0.y >>= 5;
+        CGruntM* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
 
         if (cur == 0) {
             goto L_clear;
@@ -168,7 +228,7 @@ i32 CGruntMover::Step(CGruntM* g) {
             }
         }
         // 3198f: not arrived - reroute by board distance
-        if (g->m_2ec <= m_b4) {
+        if ((u32)g->m_2ec <= (u32)m_b4) {
             return 1;
         }
         {
@@ -182,7 +242,7 @@ i32 CGruntMover::Step(CGruntM* g) {
             i32 dy = nbpos.y - y5;
             i32 adx = dx < 0 ? -dx : dx;
             i32 ady = dy < 0 ? -dy : dy;
-            i32 dist = isqrt(adx * adx + ady * ady);
+            i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
             if (dist > m_c0) {
                 if (g->m_328 != 0) {
                     MOVE_RECYCLE(g);
@@ -209,48 +269,6 @@ i32 CGruntMover::Step(CGruntM* g) {
         g->m_2f0 = -1;
         g->m_2d4 = 0;
         g->m_2f4 = -1;
-        return 1;
-    }
-
-    // ---- fresh: re-query the move grid for the target tile ----
-    {
-        i32 dimX3 = (i32)((u32)m_c->m_c / 3);
-        i32 dimY3 = (i32)((u32)m_c->m_10 / 3);
-        CCoordXY c0;
-        g->GetTilePos36c0(&c0);
-        CGruntM* nb = QueryTile4098(c0.x >> 5, c0.y >> 5, dimX3, dimY3);
-        if (nb != 0) {
-            CCoordXY c1;
-            nb->GetTilePos36c0(&c1);
-            if (g->Probe1640(c1.x >> 5, c1.y >> 5, 0xd87, 0, 1, 0) == 0) {
-                return 1;
-            }
-            g->m_2f0 = nb->m_1ec;
-            g->m_2f4 = nb->m_1f0;
-            g->m_2d4 = 2;
-            g->m_2ec = 0;
-            Commit42e1(g);
-            return 1;
-        }
-        // nb == 0: replan / drain
-        if (g->m_2ec > m_b8) {
-            CCoordXY here;
-            g->GetTilePos36c0(&here);
-            Plan293c(g, here.x >> 5, here.y >> 5, m_ac, m_b0, -1);
-            if (g->m_328 > m_98 + m_94 && g->m_328 != 0) {
-                CMoveListNode* nd = g->m_320;
-                if (nd != 0) {
-                    do {
-                        void* r = g->m_31c.Find1de8((void**)&nd);
-                        if (*(i32*)r != 0) {
-                            g_coordPool.Drop(*(i32*)r);
-                        }
-                    } while (nd != 0);
-                }
-                g->m_31c.RemoveAll1b48a6();
-            }
-            g->m_2ec = 0;
-        }
         return 1;
     }
 }

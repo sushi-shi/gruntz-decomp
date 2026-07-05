@@ -69,155 +69,88 @@ struct CGruntCmdObj {
 
 // @early-stop
 // ~37%: COMPLETE + correct (prologue/dispatch/jump-table/common CString-tail/
-// tile-A-B gate + the two registrations all model retail). Residual is a /O2
-// constant-hoisting regalloc wall, NOT a source bug: the 10 switch arms share the
-// {-1,-1,1,1}/{0,0,0,0} region constants, so this cl hoists -1/1/0 into callee-
-// saved ebx/ebp/edi above the CString ctor (one esi-relative store per field),
-// whereas retail re-materializes them per-arm (lea ebx,[esi+0x2b0]; or eax,-1; mov
-// [ebx],eax ...) keeping kind/this in edi/esi. Same /O2 /Oy /GX frame; pointer-vs-
-// index spelling is normalized away (verified identical bytes both ways), so the
-// hoist is a cl build-8034 heuristic difference. Deferred to the final sweep.
+// tile-A-B gate + the two registrations all model retail). Residual is a GLOBAL
+// register-COLORING wall, re-proven 2026-07-05 with llvm-objdump -dr base vs target:
+//   * The A/B tile-code tail computes `code = grid->m_8[m_180>>5][(m_17c>>5)*7+4]`.
+//     RETAIL colors its temps into callee-saved ebp ((x>>5)*7 via shl3/sub) and ebx
+//     (grid->m_8 row table); THIS cl colors the same temps into volatile edi/edx and
+//     leaves ebp/ebx free.
+//   * Because ebp/ebx are free across the switch here, this cl HOISTS the shared
+//     {-1,-1,1,1}/{0,0,0,0} region constants into ebx(-1)/ebp(1)/edi(0) -> each of the
+//     10 arms is 10 esi-relative stores. Retail, denied ebp/ebx by the tail, instead
+//     re-materializes per-arm (lea ebx,[esi+0x2b0]; or eax,-1; or ecx,-1; mov edx,1;
+//     store; xor-recycle to 0; store region1) -> each arm ~20 insns. The 2x-longer
+//     arm x10 + the prologue reg diff is the whole 63% residual.
+// Not a source-shape bug: paired-column vs sequential region writes + pointer-vs-index
+// spellings were tried (identical bytes / hoist unchanged). The hoist is downstream of
+// the tail's callee-saved coloring, which cl build-8034 assigns opposite to retail and
+// which no source spelling of the tail expression reorders. Deferred to the final sweep.
 RVA(0x00050ce0, 0x399)
 i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     m_198 = kind;
     m_1a0 = -1;
 
     CString name;
-    i32* r0;
+    // Region init is copy-pasted into every arm (retail repeats it 10x, byte-identical):
+    // region0 = {-1,-1,1,1}, region1 = {0,0,0,0}, in address order.
+#define REGION_INIT()                                                                              \
+    do {                                                                                           \
+        i32* r0 = m_region0;                                                                       \
+        r0[0] = -1;                                                                                \
+        r0[1] = -1;                                                                                \
+        r0[2] = 1;                                                                                 \
+        r0[3] = 1;                                                                                 \
+        r0 = m_region1;                                                                            \
+        r0[0] = 0;                                                                                 \
+        r0[1] = 0;                                                                                 \
+        r0[2] = 0;                                                                                 \
+        r0[3] = 0;                                                                                 \
+    } while (0)
     switch (kind) {
         case PICKUP_BABYWALKER:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "BABYWALKERGRUNT";
             break;
         case PICKUP_BEACHBALL:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "BEACHBALLGRUNT";
             break;
         case PICKUP_BIGWHEEL:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "BIGWHEELGRUNT";
             break;
         case PICKUP_GOKART:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "GOKARTGRUNT";
             break;
         case PICKUP_JACKINTHEBOX:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "JACKINTHEBOXGRUNT";
             break;
         case PICKUP_JUMPROPE:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "JUMPROPEGRUNT";
             break;
         case PICKUP_POGOSTICK:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "POGOSTICKGRUNT";
             break;
         case PICKUP_SCROLL:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "SCROLLGRUNT";
             break;
         case PICKUP_SQUEAKTOY:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "SQUEAKTOYGRUNT";
             break;
         case PICKUP_YOYO:
-            r0 = m_region0;
-            r0[0] = -1;
-            r0[1] = -1;
-            r0[2] = 1;
-            r0[3] = 1;
-            r0 = m_region1;
-            r0[0] = 0;
-            r0[1] = 0;
-            r0[2] = 0;
-            r0[3] = 0;
+            REGION_INIT();
             name = "YOYOGRUNT";
             break;
         default:
             break;
     }
+#undef REGION_INIT
 
     ((CSpriteSetReg*)g_gameReg->m_curState)->Register(&name, 1, 1, 0);
 
