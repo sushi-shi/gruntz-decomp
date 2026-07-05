@@ -1121,10 +1121,22 @@ extern "C" i32 g_645584;                          // 0x645584
 extern "C" i32 g_645588;                          // 0x645588
 extern "C" void ChannelSlots_InitAll();           // 0x2da1 (thunk) - no `this` (stale-ecx callee)
 
-// The un-catalogued CNetMgr vtable slots the driver dispatches on `this`, modeled
-// as pointers-to-member loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr
-// keyword; PMFs of the complete, non-polymorphic CNetMgr are 4 bytes and emit
-// `mov edx,[this]; call [edx+off]` - see docs/patterns/pmf-complete-class-4byte.md).
+// VTABLE CATALOGUE (2026-07-05, read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
+// vtable ??_7CNetMgr@@ (0x5ea42c) is the small 5-slot CObject vtable and NOTHING more -
+// [0]0x1bef01 [1]0x00260d(override) [2]0x0028ec [3]0x00106e [4]0x004034, then slots 5-6
+// are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectVtbl slots the driver
+// dispatches (+0x08 Abort, +0x74 OnStart, +0x78 OnConnect, +0x90 OnReady) are NOT on
+// 0x5ea42c - they live on the DRIVER `this`'s own, much larger vtable. That `this` (used
+// by CNetMgr::Stub_0b5460: a CSymParser @+0x08, host flag @+0x528, g_mgrSettings, m_4
+// game-mgr, m_peer) is the CMulti-shaped multiplayer state, NOT the 0x8c DirectPlay
+// CNetMgr the peer stamps. CONVERTING these PMFs to real virtuals is DEFERRED WORK (not
+// done here): it requires modeling that driver class polymorphic over its full CPlay/
+// CState/CMulti vtable chain - a task <Gruntz/Multi.h> explicitly holds for the final
+// sweep ("real-chain modeling stays a final-sweep task") and which also reaches the
+// reserved g_mgrSettings (0x64556c) domain. Until then the slots stay pointers-to-member
+// loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr keyword; PMFs of the
+// complete, non-polymorphic class are 4 bytes and emit `mov edx,[this]; call [edx+off]`
+// - see docs/patterns/pmf-complete-class-4byte.md).
 typedef i32 (CNetMgr::*NmSlotRet)();
 typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
 typedef void (CNetMgr::*NmSlotVoid)();
@@ -1169,10 +1181,14 @@ struct CSymParserView {
 // stamp the FINAL vptr 0x5ea42c (== ??_7CNetMgr@@; the peer shares CNetMgr's vtable
 // but is a distinct 0x8c object). Modeled as `: public Wap::CObject` so cl emits the
 // base-phase vptr stamp (reloc-masks 0x5e8cb4) at ctor entry and runs the CObList
-// member ctors under its /GX new-cleanup frame - only the FINAL stamp stays manual,
-// because 0x5ea42c is CNetMgr's own (un-catalogued) vtable that cl cannot re-emit
-// here (a divergent ??_7CNetPeer would result). This is a genuine terminal manual
-// stamp per docs vtable-realization-ctor-boundary.
+// member ctors under its /GX new-cleanup frame - only the FINAL stamp stays manual.
+// CATALOGUE (above): 0x5ea42c is the 5-slot CObject vtable with slot 1 overridden
+// (0x00260d); to compiler-emit it here the peer would have to be `: public CNetMgr`
+// with CNetMgr modeled as the REAL small 5-slot DirectPlay wrapper declaring those 5
+// virtuals. That class is currently conflated (the NetMgr.h `CNetMgr` is the BIG
+// multiplayer view), so realizing it + re-parenting the peer is a deferred split, not
+// done here (would otherwise emit a divergent ??_7CNetPeer). Terminal stamp kept per
+// docs vtable-realization-ctor-boundary until that split lands.
 SIZE_UNKNOWN(CNetPeer);
 struct CNetPeer : public Wap::CObject {
     char m_pad4[0x1c - 4]; // +0x04 (incl. +0x14 / +0x18)
