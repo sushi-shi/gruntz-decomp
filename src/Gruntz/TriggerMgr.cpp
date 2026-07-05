@@ -934,20 +934,24 @@ void CTriggerMgr::DestroyAllAnims() {
 // 0x7a510: ClearRowAndRefresh(startRow) - Recall every live, hook-less cell of rows
 // startRow..3 (5 = all); clear +0x400 when startRow is the magic group; then refresh
 // the world, bump a stat, and re-arm the status item. ret 1.
-// @early-stop
-// regalloc wall: retail pins this->esi and startRow->ebp across the body; our cl homes
-// this->ebp and reloads startRow for the g_644c54 test. Logic + offsets byte-exact.
+// CRACKED (72->100): the "5 = all rows" decode as an explicit if/else (row=0/last=3 vs
+// row=last=startRow) matches retail's jmp-merge (the default-then-override form reserves an
+// extra frame slot + spills last); assign `last` before `row` in the else; declare `cell`
+// (row*15) BEFORE `n` so the two lea chains interleave into edx. Cluster idiom for all the
+// "startRow==5" range decoders (ClearGridRange/HitTestCell/CellHitTest).
 RVA(0x0007a510, 0x9e)
 i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
-    i32 row = startRow;
-    i32 last = startRow;
+    i32 row, last;
     if (startRow == 5) {
         row = 0;
         last = 3;
+    } else {
+        last = startRow;
+        row = startRow;
     }
     if (row <= last) {
-        i32 n = last - row + 1;
         CTmCell** cell = &m_grid[row * 15];
+        i32 n = last - row + 1;
         do {
             i32 i = 15;
             do {
