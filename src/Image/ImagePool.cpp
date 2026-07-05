@@ -27,9 +27,10 @@
 // reloc-masked via library labels) and (de)allocates nodes through the engine
 // RezAlloc/RezFree. Field names are placeholders; only OFFSETS + code bytes are
 // load-bearing.
-#include <Mfc.h>         // CObList / POSITION + <windows.h> PALETTEENTRY
-#include <Image/Image.h> // CRezImage - the shared DIB-surface class (the pool's surface node)
-#include <Rez/RezMgr.h>  // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
+#include <Mfc.h>             // CObList / POSITION + <windows.h> PALETTEENTRY
+#include <Image/Image.h>     // CRezImage - the shared DIB-surface class (the pool's surface node)
+#include <Image/ImagePool.h> // the canonical CImagePool (this TU owns its bodies)
+#include <Rez/RezMgr.h>      // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <rva.h>
 
 // The selected-image resource module handle, latched into the engine global
@@ -84,43 +85,11 @@ public:
     i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (foreign, reloc-masked)
 };
 
-using ApiCallerStubs::CImagePaletteNode;
-
-// ---------------------------------------------------------------------------
-// CImagePool - holds the two node lists + three head scalars. The five surface
-// factories below RezAlloc a fresh CRezImage node (0x45c bytes) then forward to one
-// of its decoders (DecodeBmpHeader/DecodeBlit/LoadFromRez/DispatchDecode/Convert8To16,
-// defined in Image.cpp / CScanlineSurface.cpp) - external here, the `call rel32`
-// reloc-masks against the owning TU's CRezImage symbol.
-// ---------------------------------------------------------------------------
-class CImagePool {
-public:
-    i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
-    void Clear();                                                                 // 0x174eb0
-    void Free(CRezImage* node);                                                   // 0x174ed0
-    void RemovePalette(CImagePaletteNode* node);                                  // 0x174f30
-    void ClearSurfaces();                                                         // 0x174f60
-    void ClearPalettes();                                                         // 0x174fa0
-    CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);       // 0x1754f0
-    CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
-    CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
-    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
-    void B(CRezImage* node, i32 a, i32 b);                                        // 0x175780
-
-    CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0
-    CRezImage* AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag); // 0x1750e0
-    CRezImage* AddSurfaceOp(i32 buf, i32 kind, i32 ctrl);                              // 0x1751f0
-    CRezImage* AddSurfaceRez(i32 name, i32 ctrl);                                      // 0x1752f0
-    CRezImage* AddSurfaceConvert(i32 src, i32 pal);                                    // 0x1753f0
-
-    HINSTANCE m_resourceModuleHandle; // +0x00  resource module handle (-> g_hResModule)
-    HWND m_sourceHwnd;                // +0x04  source HWND (GetDC/ReleaseDC)
-    i32 m_08;                         // +0x08
-    HPALETTE m_selectedPalette;       // +0x0c  selected HPALETTE to restore
-    CObList m_surfaces;               // +0x10  GDI surface nodes (m_pHead @+0x14)
-    CObList m_palettes;               // +0x2c  palette nodes (m_pHead @+0x30)
-    i32 m_48;                         // +0x48
-};
+// CImagePool is the canonical class in <Image/ImagePool.h> (included above); this
+// TU owns its method bodies. The five surface factories below RezAlloc a fresh
+// CRezImage node (0x45c bytes) then forward to one of its decoders (DecodeBmpHeader/
+// DecodeBlit/LoadFromRez/DispatchDecode/Convert8To16, defined in Image.cpp /
+// CScanlineSurface.cpp) - external here, the `call rel32` reloc-masks.
 
 // ===========================================================================
 // CImagePool::SetHandles (ret 0xc) - seed the three head scalars.
@@ -325,7 +294,7 @@ CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCou
 // @early-stop
 // regalloc tie-break: node<->edi / zero<->ebx swap vs retail (see AddSurfaceBmp).
 RVA(0x001751f0, 0xf9)
-CRezImage* CImagePool::AddSurfaceOp(i32 buf, i32 kind, i32 ctrl) {
+CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
     CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
@@ -345,7 +314,7 @@ CRezImage* CImagePool::AddSurfaceOp(i32 buf, i32 kind, i32 ctrl) {
     } else {
         node = 0;
     }
-    if (node->DispatchDecode((void*)buf, kind, (void*)hdc, (void*)ctrl) == 0) {
+    if (node->DispatchDecode(buf, kind, (void*)hdc, (void*)ctrl) == 0) {
         if (m_selectedPalette) {
             SelectPalette(hdc, m_selectedPalette, FALSE);
             m_selectedPalette = 0;
@@ -764,5 +733,3 @@ namespace ApiCallerStubs {
         ReleaseDC(0, hdc);
     }
 } // namespace ApiCallerStubs
-
-SIZE_UNKNOWN(CImagePool);

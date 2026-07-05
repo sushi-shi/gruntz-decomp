@@ -13,6 +13,7 @@
 #include <Mfc.h>              // CString + <windows.h> (wsprintfA/SetDlgItemTextA) FIRST
 #include <Io/FileStream.h>    // CFileIO (Open/Read/Seek/Close, all reloc-masked)
 #include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (arg3; shared with LoadConfig)
+#include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr; AddSurfaceOp)
 #include <string.h>           // strrchr/strchr (out-of-line) + strcat (inline /Oi)
 
 #include <rva.h>
@@ -21,18 +22,9 @@
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
 
-// The preview-image loader singleton g_previewMgr. IDENTITY RECOVERED (wave 3):
-// this is CImagePool and LoadImage IS CImagePool::AddSurfaceOp @0x1751f0
-// (?AddSurfaceOp@CImagePool@@QAEPAVCRezImage@@HHH@Z, reconstructed in
-// src/Image/ImagePool.cpp). Full fold to CImagePool is DEFERRED: it needs
-// CImagePool extracted from ImagePool.cpp into a shared include/Image/ImagePool.h
-// (a ~20-method class, touching ImagePool.cpp's 95.98% AddSurfaceOp) and the real
-// (int,int,int) signature adds an authentic (i32)&buf ptr-as-int cast the current
-// void* view hides. Kept as a documented placeholder view until that extraction.
-// TODO(identity): g_previewMgr -> CImagePool*, LoadImage -> AddSurfaceOp.
-struct CPreviewMgr {
-    void* LoadImage(void* pData, i32 fmt, i32 flags); // 0x1751f0 == CImagePool::AddSurfaceOp
-};
+// The preview-image loader singleton g_previewMgr is the canonical CImagePool
+// (<Image/ImagePool.h>); the former CPreviewMgr view is gone (wave 3). The preview
+// blit goes through CImagePool::AddSurfaceOp @0x1751f0.
 
 // @early-stop  (94.46% - logic/frame/branches all faithful)
 // Residual is three documented walls, not logic:
@@ -113,10 +105,8 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
             f.Close();
         } else {
             f.Close();
-            g_previewImage = g_previewMgr->LoadImage(&readBuf[0xe], 2, 0);
+            g_previewImage = g_previewMgr->AddSurfaceOp(&readBuf[0xe], 2, 0);
             SetDlgItemTextA(hDlg, 0x4b3, title);
         }
     }
 }
-
-SIZE_UNKNOWN(CPreviewMgr);

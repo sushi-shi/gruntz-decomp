@@ -30,7 +30,7 @@ struct CKSlimeColl2;
 struct CKSlimeEntry;
 struct CPartColl2;
 struct CPartEntry;
-struct CPreviewMgr;
+class CImagePool; // g_previewMgr (canonical <Image/ImagePool.h>; was CPreviewMgr view)
 struct CProjActEntry;
 struct CProjColl2;
 struct CTBombColl2;
@@ -333,7 +333,7 @@ extern char g_mapNameBuf[0x200];
 extern void* g_renderCtx;
 extern char* g_areaNames[];
 extern GLSResetMgr* g_glsResetMgr;
-extern CPreviewMgr* g_previewMgr;
+extern CImagePool* g_previewMgr;
 extern void* g_previewImage;
 extern i32 g_buildNumber;
 extern i32 g_pfRedShift;
