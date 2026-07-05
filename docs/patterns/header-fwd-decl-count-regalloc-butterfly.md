@@ -52,3 +52,15 @@ file-scope fwd decl, so the count drops even though the type is now MORE complet
 prefer the zero-own-fwd-decl headers, and measure. A same-address global reached under different
 per-TU extern NAMES (0x24556c `g_gameReg` vs `_g_mgrSettings`) is NOT this bug and needs no name
 pin: DATA relocs pair by RVA/mask, so DecCounter is byte-EXACT with its `g_gameReg` DIR32 reloc.
+
+THIRD FIRING (same fn + a sibling, GruntzMgr.h again, 2026-07-05 gzstar megafold): folding the
+CWorldSub28/CWorldSub2c defs onto CSndHost (SoundCue.h include OR a `struct CSndHost;` fwd decl -
+both spellings measured IDENTICAL), retyping m_cmdGrid CCmdGrid->CTriggerMgr (fwd-decl swap) and
+typing CWorldZ::m_8 `struct CSpriteFactory*` (elaborated) re-cratered DecCounter 100->74.04 AND
+CPlay::StepScroll 81.62->63.52 (+ LoadMainStatusBarSprite -7.09, FlashColor -3.85). Net closure
+fwd-decl delta ~+2 with no zero-own-fwd-decl include available to shed (the remaining GruntzMgr.h
+fwd decls are all GruntzMgr.cpp-local classes with no headers). Both lever spellings tried, no
+movement -> ACCEPTED as the clean-room cost of the binary-proven folds (the same commit RAISED
+HandleCommand +2.71 by fixing the views' fake call shapes). Re-attack when the CWorld*/EngObj
+locals get real headers (each include-as-lever conversion sheds one decl).
+
