@@ -216,6 +216,18 @@ fail:
 // could write the stamp last, but that is the decompiler hack we are removing - real
 // devs' polymorphic shape per correctness-not-artifacts). Plus the reloc-masked EH
 // Unwind/handler/member-dtor/vtable symbol names. Logic complete.
+//
+// RE-TESTED 2026-07-05 (matcher-2) against eh-dtor-implicit-vptr-stamp-first.md
+// sub-case 2 (move the m_04/08/0c resets into the DERIVED body, empty base dtor):
+// codegen is IDENTICAL (verified `sema disasm 0x156d20 --diff`). Sub-case 2 does NOT
+// apply here because THREE destructible CMapStringToOb members (m_map1/2/3) intervene:
+// retail's order is [DestroyAll, ~map3/2/1, resets, stamp-grand] with the resets
+// sequenced BETWEEN the member dtors and the grand stamp. In clean C++ the member
+// dtors run after the leaf body and the grand-base vptr re-stamp lands at the FIRST
+// base-subobject dtor ENTRY (right after the maps) - so the stamp is unavoidably
+// emitted before ANY base body (resets), regardless of whether the resets sit in the
+// base body or the derived body. Only the manual stamp-last hack could flip it. WALL
+// RE-PROVEN for the clean polymorphic model.
 RVA(0x00156d20, 0x82)
 CDDrawWorkerMapSmall::~CDDrawWorkerMapSmall() {
     DestroyAll();
