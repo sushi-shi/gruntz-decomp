@@ -10,7 +10,7 @@
 // vtable 0x5e713c); no manual vptr store (see the header note).
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
-#include <Gruntz/UserLogic.h>     // real CGameObject + <Mfc.h> RECT/CopyRect/SetRect (CommitSpriteAction)
+#include <Win32.h>                // RECT / CopyRect / SetRect (PosSoundObj rects + CommitSpriteAction)
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/InputState.h> // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <rva.h>
@@ -35,11 +35,19 @@ public:
     char m_pad18[0x3c - 0x18];
     void* m_spatialNode; // +0x3c  spatial-mgr list node
 };
-// The aux sub-object (CGameObject+0x7c): the request state + the live voice slot.
+// The aux sub-object (CGameObject+0x7c): the init/action handler, the request state,
+// the emit src-clip and the live voice slot.
 struct PosSoundAux {
-    char m_pad00[0x1c];
+    char m_pad00[0x10];
+    void* m_handler; // +0x10  the object's init/action handler (vs the default at 0x402d15)
+    char m_pad14[0x1c - 0x14];
     i32 m_requestState; // +0x1c  request state (0 spawn / 0x1e stop / 5 spawned)
-    char m_pad20[0x168 - 0x20];
+    char m_pad20[0x2c - 0x20];
+    i32 m_srcL; // +0x2c  emit src clip: left
+    i32 m_srcR; // +0x30                   right
+    i32 m_srcT; // +0x34                   top
+    i32 m_srcB; // +0x38                   bottom
+    char m_pad3c[0x168 - 0x3c];
     PosSoundVoice* m_voice; // +0x168  the live voice
 };
 // The CGameObject the request rides on (only the touched offsets).
@@ -55,7 +63,14 @@ struct PosSoundObj {
     PosSoundAux* m_aux; // +0x7c  the aux
     char m_pad80[0x120 - 0x80];
     i32 m_120; // +0x120
-    char m_pad124[0x19c - 0x124];
+    char m_pad124[0x134 - 0x124];
+    i32 m_extentL; // +0x134  per-side emit extents (L/T/R/B)
+    i32 m_extentT; // +0x138
+    i32 m_extentR; // +0x13c
+    i32 m_extentB; // +0x140
+    RECT m_area;   // +0x144  emit source area (CopyRect base)
+    RECT m_placed; // +0x154  placed rect written back on emit
+    char m_pad164[0x19c - 0x164];
     void* m_layer; // +0x19c  layer/desc (its +0x10 feeds the factory)
 };
 // The spatial-sound voice CObList lives at g_gameReg->m_inputState + 0x08 (the same
@@ -420,49 +435,29 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
 }
 
 // ---------------------------------------------------------------------------
-// CommitSpriteAction (0x0000c840, __cdecl) - CRandomAmbientSound::UpdateAt's
-// sprite-action commit helper (re-homed from src/Stub/ApiCallers.cpp). When the
-// object's pending action record is still fresh (m_1c==0), set the placed/spawn flag
-// bits, resolve its handler-vs-default flag, and - when a tex slot and the input
-// layer are live - emit its sprite into the active layer (full vs simple by m_138),
-// copy the placed RECT back, then latch the action record consumed. Returns 1.
+// CommitSpriteAction (0x0000c840, __cdecl) - a sibling of SpawnPosSound in the
+// positional-sound spawn path (re-homed from src/Stub/ApiCallers.cpp). On a fresh
+// spawn request (aux->m_requestState == 0) it stamps the object's placed/spawn flag
+// bits, resolves the handler-vs-default flag, and - when the layer and the input mgr
+// are live - emits the sound-sprite into the active layer through the world sound-set
+// factory (full vs simple by the +0x138 extent), copies the placed rect back, then
+// latches the request "spawned" (5). Returns 1.
 // @early-stop
 // arg-load scheduling wall (~94%): body byte-exact through the flag math and both
-// exits; the residual is MSVC's just-in-time vs pre-load interleaving of the Emit*
+// exits; the residual is MSVC's just-in-time vs pre-load interleaving of the factory
 // member-arg loads (same push order, same args) + the g_gameReg->m_inputState test
 // landing in eax vs retail's ecx. Same instructions, different temp-register rotation.
-// The object is the real CGameObject (UserLogic.h): its m_flags/m_stateFlags, the m_7c
-// aux record, m_120, the m_extent{L,T,R,B} block and the two RECT-shaped int blocks at
-// +0x144 (m_area{L,T,R,B}) / +0x154 all match. Two sub-objects CGameObject does not
-// model concretely stay as small local views: the emit-helper return record (its RECT is
-// at +0x28) and the +0x19c texture holder (its texture at +0x10). The m_7c aux record is
-// read here through a documented view because this path uses CGameObjAux's heterogeneous
-// +0x1c slot as an int STATE (0/5) and its +0x2c..+0x38 as src-rect ints.
-struct SpriteActionRec { // CGameObject::m_7c aux record, as this commit path views it
-    char m_pad0[0x10];
-    void* m_10; // +0x10 handler fn ptr (compared vs the default at 0x402d15)
-    char m_pad14[0x1c - 0x14];
-    i32 m_1c; // +0x1c state
-    char m_pad20[0x2c - 0x20];
-    i32 m_2c; // +0x2c src left
-    i32 m_30; // +0x30 src right
-    i32 m_34; // +0x34 src top
-    i32 m_38; // +0x38 src bottom
-};
-struct PlacedSpriteRec { // the record returned by the emit helpers; its RECT is at +0x28
+struct PosSoundPlaced { // the create-helper return record; its placed RECT is at +0x28
     char m_pad0[0x28];
     RECT m_28; // +0x28
 };
-struct SpriteTexSlot { // CGameObject+0x19c -> texture holder (texture at +0x10)
-    char m_pad0[0x10];
-    void* m_10; // +0x10 texture
-};
-SIZE_UNKNOWN(SpriteActionRec);
-SIZE_UNKNOWN(PlacedSpriteRec);
-SIZE_UNKNOWN(SpriteTexSlot);
+SIZE_UNKNOWN(PosSoundPlaced);
 extern "C" void DefaultActionHandler_2d15(); // LAB_00402d15 (address only)
-PlacedSpriteRec* __stdcall EmitSpriteFull_3c97(
-    void* tex,
+// The world sound-set factory create calls (CWorldSoundSet::CreateRandom @0xbb60 via
+// thunk 0x3c97 / CreateAmbient5 @0xb7b0 via thunk 0x2ad6); modeled __stdcall exactly
+// like the sibling PosSoundSpawn - the factory ptr (layer +0x10) leads the arg list.
+PosSoundPlaced* __stdcall WorldSoundCreateFull(
+    void* factory,
     i32 z,
     RECT* rc,
     i32 a,
@@ -471,31 +466,31 @@ PlacedSpriteRec* __stdcall EmitSpriteFull_3c97(
     i32 d,
     i32 e,
     i32 f
-); // RVA 0x3c97
-PlacedSpriteRec* __stdcall EmitSpriteSimple_2ad6(void* tex, i32 z, RECT* rc, i32 a, i32 b); // 0x2ad6
+); // 0xbb60
+PosSoundPlaced* __stdcall WorldSoundCreateSimple(void* factory, i32 z, RECT* rc, i32 a, i32 b); // 0xb7b0
 RVA(0x0000c840, 0x13d)
-i32 CommitSpriteAction(CGameObject* obj) {
-    SpriteActionRec* rec = (SpriteActionRec*)obj->m_7c;
-    if (rec->m_1c == 0) {
-        obj->m_flags |= 1;
-        obj->m_stateFlags |= 1;
-        if (rec->m_10 == (void*)DefaultActionHandler_2d15) {
-            obj->m_flags |= 2;
+i32 CommitSpriteAction(PosSoundObj* obj) {
+    PosSoundAux* aux = obj->m_aux;
+    if (aux->m_requestState == 0) {
+        obj->m_flags08 |= 1;
+        obj->m_flags40 |= 1;
+        if (aux->m_handler == (void*)DefaultActionHandler_2d15) {
+            obj->m_flags08 |= 2;
         } else {
-            obj->m_flags &= ~2;
+            obj->m_flags08 &= ~2;
         }
-        SpriteTexSlot* slot = *(SpriteTexSlot**)((char*)obj + 0x19c);
-        if (slot && g_gameReg) {
+        void* layer = obj->m_layer;
+        if (layer && g_gameReg) {
             RECT rc;
-            CopyRect(&rc, (RECT*)&obj->m_areaL);
-            if (rec->m_2c > 0 || rec->m_30 > 0) {
-                SetRect(&rc, rec->m_2c, rec->m_34, rec->m_30, rec->m_38);
+            CopyRect(&rc, &obj->m_area);
+            if (aux->m_srcL > 0 || aux->m_srcR > 0) {
+                SetRect(&rc, aux->m_srcL, aux->m_srcT, aux->m_srcR, aux->m_srcB);
             }
             if (g_gameReg->m_inputState) {
-                PlacedSpriteRec* placed;
+                PosSoundPlaced* placed;
                 if (obj->m_extentT > 0) {
-                    placed = EmitSpriteFull_3c97(
-                        slot->m_10,
+                    placed = WorldSoundCreateFull(
+                        *(void**)((char*)layer + 0x10),
                         0x64,
                         &rc,
                         obj->m_120,
@@ -506,15 +501,16 @@ i32 CommitSpriteAction(CGameObject* obj) {
                         0
                     );
                 } else {
-                    placed = EmitSpriteSimple_2ad6(slot->m_10, 0x64, &rc, obj->m_120, 0);
+                    placed =
+                        WorldSoundCreateSimple(*(void**)((char*)layer + 0x10), 0x64, &rc, obj->m_120, 0);
                 }
-                if (placed && ((RECT*)&obj->m_154)->top > 0) {
-                    placed->m_28 = *(RECT*)&obj->m_154;
+                if (placed && obj->m_placed.top > 0) {
+                    placed->m_28 = obj->m_placed;
                 }
             }
         }
-        obj->m_flags |= 0x10000;
-        rec->m_1c = 5;
+        obj->m_flags08 |= 0x10000;
+        aux->m_requestState = 5;
     }
     return 1;
 }
