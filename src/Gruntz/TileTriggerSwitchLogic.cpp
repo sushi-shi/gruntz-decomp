@@ -19,6 +19,11 @@
 // code bytes are load-bearing (campaign doctrine).
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
+#include <Mfc.h>                  // PtInRect (via <windows.h>) for BuildRockBreakInGameText
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez/InGameText sprites)
+#include <Gruntz/Viewport.h>      // CViewport (the level plane: cells + row-base table)
+
 // CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
 // header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
 // `*(void**)this = &g_...Vtbl` struct stamp is gone. The target-side vtable name
@@ -462,8 +467,156 @@ i32 CTileTriggerSwitchLogic::ScanNeighborhood(i32 x, i32 y) {
 RVA(0x00115f60, 0x2de)
 void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
 
-// @confidence: med
-// @source: decomp-xref
-// @stub
+// ---------------------------------------------------------------------------
+// BuildRockBreakInGameText - the rock-break tile-effect loader (RVA 0x1122a0).
+//
+// MISLABELED: the delinker filed this __thiscall(void) under CTileTriggerSwitchLogic
+// (Ghidra RTTI-vptr guess), but xref shows its real callers are CTerrainTileLoader::
+// Load (0x75e90) and CRockBreakMgr::BuildRockBreakParticles (0x7b440), and `this` is
+// a tile-command object whose +0x8/+0xc are the tile (x, y) and +0x9c a 9-cell value
+// block. The RVA is locked to this class name (moving it craters the delinker pack),
+// so it is reconstructed here by raw this+offset - only the offsets/bytes are load-
+// bearing. It: (1) gates on whether the tile center sits inside the view rect;
+// (2) walks the 3x3 neighborhood writing each saved cell value back into the level
+// plane + notifying the tile grid (and, when in-rect, spawning a Particlez/
+// LEVEL_ROCKBREAK sprite per cell); (3) fires the command-grid effect at the tile
+// center; (4) when +0xc4 is set spawns an InGameText sprite carrying it; (5) if the
+// tile is on-screen with no active override, plays the LEVEL_ROCKBREAK cue (rate-
+// limited by the kill-cue clock).
+// ---------------------------------------------------------------------------
+
+// Kill-cue clock + sound flags (named so the DIR32 datum reloc-masks).
+extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
+extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA @0x61ab20
+extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
+
+// The registry sound-cue record (the sound-registry Lookup result): its clock/cooldown
+// (m_14 last-play, m_18 ticks) rate-limits the cue sound (m_10). Carcass sub-objects of
+// the game-registry reached by the engine's thiscall callees (declared no-body ->
+// reloc-masked rel32).
+struct RbCueSound {
+    void Play(i32 tag, i32 a, i32 b, i32 c); // 0x1360d0
+};
+struct RbCueRec {
+    char m_pad0[0x10];
+    RbCueSound* m_10; // +0x10  the cue sound
+    i32 m_14;         // +0x14  last-play clock
+    i32 m_18;         // +0x18  cooldown ticks
+};
+// The sound/anim registry (g->m_world->m_28): a name->record table at +0x10, gated by
+// the +0x30 active-override flag.
+struct RbLookupTable {
+    void Lookup(const char* name, RbCueRec** out); // 0x1b8438
+};
+struct RbSoundReg {
+    char m_pad0[0x10];
+    RbLookupTable m_10; // +0x10  name->record table (Lookup receiver)
+    char m_pad14[0x30 - 0x14];
+    void* m_30; // +0x30  active-override gate
+};
+// The world command-grid effect sink (g->m_cmdGrid, reg+0x68).
+struct RbCmdGrid {
+    void Fire(i32 key, i32 x, i32 y, i32 slot, i32 a, i32 b); // 0x152d
+};
+
+// `this` stays in esi; tile (x, y) are re-read from +0x8/+0xc at each use (retail
+// caches neither, so caching them here would spill the frame from 0x14 to 0x38).
+#define TX (*(i32*)(self + 0x8))
+#define TY (*(i32*)(self + 0xc))
+
+// @early-stop
+// loop-body regalloc wall (~69%): complete + correct reconstruction - the frame
+// (0x14, 5 locals), the PtInRect gate, and ALL of steps 3-5 (the m_cmdGrid Fire, the
+// InGameText sprite + m_124 stamp, the view-rect bounds cascade, the sound-registry
+// Lookup + kill-cue-clock cooldown Play) are byte-exact. The residual is confined to
+// the 3x3 loop body: retail spills BOTH counters i (edi) and j (ebx) to the frame and
+// reloads them, chaining the plane through a 2nd register so g_gameReg stays live in
+// edi for the +0x70 tileGrid read; MSVC5 here keeps i in ebx and re-loads g_gameReg,
+// which also duplicates the inner-tail (an extra jmp + a 2nd copy). Source nudges
+// (read-order swap, an explicit g_gameReg loop local, px/py caching) all leave the
+// i->edi / j->ebx spill-and-reload assignment unmoved - a non-steerable regalloc pick
+// inside the hottest block. Deferred to the final sweep.
 RVA(0x001122a0, 0x241)
-void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {}
+void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
+    char* self = (char*)this;
+    CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
+
+    // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
+    i32 inRect = 0;
+    POINT pt;
+    pt.y = (TY << 5) + 0x10;
+    pt.x = (TX << 5) + 0x10;
+    if (PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
+        inRect = 1;
+    }
+
+    // (2) 3x3 neighborhood: write each saved cell value into the level plane + notify
+    // the tile grid; when in-rect, spawn a Particlez/LEVEL_ROCKBREAK sprite per cell.
+    i32* cursor = (i32*)(self + 0x9c);
+    for (i32 j = 0; j <= 2; j++) {
+        for (i32 i = 0; i <= 2; i++) {
+            i32 value = *cursor;
+            i32 px = i + TX - 1;
+            i32 py = j + TY - 1;
+            CViewport* plane = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+            plane->m_cells[plane->m_rowBase[py] + px] = value;
+            g_gameReg->m_tileGrid->Notify(px, py, value);
+            if (inRect) {
+                CGameObject* spr = gameMgr->m_8->CreateSprite(
+                    0, ((i + TX) << 5) - 0x10, ((j + TY) << 5) - 0x10, 0xcf84f, "Particlez",
+                    0x40003
+                );
+                if (spr != 0) {
+                    spr->ApplyName("LEVEL_ROCKBREAK");
+                    spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
+                }
+            }
+            cursor++;
+        }
+    }
+
+    // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
+    i32 cx = (TX << 5) + 0x10;
+    i32 cy = (TY << 5) + 0x10;
+    ((RbCmdGrid*)g_gameReg->m_cmdGrid)
+        ->Fire(*(i32*)(self + 0xc0), cx, cy, *(i32*)(self + 0x30), 1, 0);
+
+    // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
+    if (*(i32*)(self + 0xc4) != 0) {
+        CGameObject* txt =
+            g_gameReg->m_world->m_8->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
+        if (txt == 0) {
+            return;
+        }
+        txt->m_124 = *(i32*)(self + 0xc4);
+    }
+
+    // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
+    if ((TX << 5) + 0x10 >= g_gameReg->m_viewOriginR
+        || (TX << 5) + 0x10 < g_gameReg->m_viewOriginL
+        || (TY << 5) + 0x10 >= g_gameReg->m_viewOriginB
+        || (TY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
+        return;
+    }
+    RbSoundReg* sreg = (RbSoundReg*)gameMgr->m_28;
+    if (sreg->m_30 != 0) {
+        return;
+    }
+    RbCueRec* out = 0;
+    sreg->m_10.Lookup("LEVEL_ROCKBREAK", &out);
+    if (out == 0) {
+        return;
+    }
+    if (g_sndEnabled == 0) {
+        return;
+    }
+    i32 kc = g_killCueClock;
+    if ((u32)(kc - out->m_14) < (u32)out->m_18) {
+        return;
+    }
+    out->m_14 = kc;
+    out->m_10->Play(g_sndCueTag, 0, 0, 0);
+}
+
+#undef TX
+#undef TY
