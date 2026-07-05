@@ -37,6 +37,7 @@
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/InputState.h>     // CInput54 (+0x54)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
+#include <Gruntz/SaveInfo.h> // SaveInfo (m_saveInfoRec) + SaveSink58 (+0x58) + HudGuard44 (+0x44)
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
@@ -145,14 +146,14 @@ class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9d
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
 struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
 struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
-struct HudGuard44;      // +0x44 HUD first-frame guard (m_124)
-struct SaveSink58;      // +0x58 save-record sink (Store)
-struct CChatLog;        // +0x5c chat/message log (Insert)
-struct TimerObj;        // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
-struct CCmdGrid;        // +0x68 world delta-table grid + command sink
-struct CmdSink;         // +0x6c command sub-manager sink (Command)
-class CmdSinkV;         // +0x70 polymorphic command sink (slot 1) + cell-height notify
-struct ScoreHud;        // +0x7c HUD/score accumulator + command sink
+// HudGuard44 (+0x44 HUD first-frame guard) and SaveSink58 (+0x58 save-record
+// sink) are defined by the <Gruntz/SaveInfo.h> include above.
+struct CChatLog; // +0x5c chat/message log (Insert)
+struct TimerObj; // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
+struct CCmdGrid; // +0x68 world delta-table grid + command sink
+struct CmdSink;  // +0x6c command sub-manager sink (Command)
+class CmdSinkV;  // +0x70 polymorphic command sink (slot 1) + cell-height notify
+struct ScoreHud; // +0x7c HUD/score accumulator + command sink
 
 SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
@@ -265,16 +266,16 @@ public:
     i32 TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4);
     void FlushStateStack();     // @0x090a50 (scalar-delete + drain the pushed state stack)
     void EnterModalUI(i32 arg); // @0x08ef10
-    i32 ExitModalUI(class CModalDialog* dlg, i32 notify);   // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);                // @0x08e980
-    i32 FillSaveInfo(struct SaveInfo* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(struct CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
-    i32 LoadState(struct CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
-    void UpdateScoreHud();                                  // @0x0860b0
-    i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);      // @0x093460
-    void RecomputeViewScale();                              // @0x08f7f0
-    i32 PrepCmd4(i32 a0);                                   // reloc-masked sibling (cmd-4 arm gate)
-    i32 PrepCmd7(i32 a0);                                   // reloc-masked sibling (cmd-7 arm gate)
+    i32 ExitModalUI(class CModalDialog* dlg, i32 notify); // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
+    i32 FillSaveInfo(SaveInfo* dst, void* snapshot);      // @0x0927b0
+    i32 SaveState(struct CSerialArchive* ar);             // @0x093620 (shared CSerialArchive)
+    i32 LoadState(struct CSerialArchive* ar);             // @0x093920 (deserialize counterpart)
+    void UpdateScoreHud();                                // @0x0860b0
+    i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);    // @0x093460
+    void RecomputeViewScale();                            // @0x08f7f0
+    i32 PrepCmd4(i32 a0);                                 // reloc-masked sibling (cmd-4 arm gate)
+    i32 PrepCmd7(i32 a0);                                 // reloc-masked sibling (cmd-7 arm gate)
     struct CActiveObj* GetActiveObj(); // reloc-masked sibling (active game object)
     void RunWinHook();                 // reloc-masked sibling (win/level-complete hook)
     i32 CheckLevelActive();            // reloc-masked sibling (level-active predicate)
@@ -312,6 +313,12 @@ public:
     // i32; reloc-masked). The leading Ghidra label winapi_090260_DialogBoxParamA
     // is the engine's DialogBoxParamA wrapper.
     i32 RunModalDialog(const char* tmpl, void* dlgProc, i32 flag); // @0x090260
+
+    // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
+    // largest function; body in GruntzMgrCmd.cpp).
+    i32 HandleCommand(i32 p1, i32 nID, i32 p3); // @0x0862f0
+    // Shell-launch the given URL in the default browser (0x8038 handler sibling).
+    void LaunchWebBrowser(const char* url); // @0x08f120 (thunk 0x235b)
 
     // Sound/level-loaded sync (@0x0923b0): set the base level-loaded flag (m_14)
     // and, when it changes and a sound bank is bound, drive the bank.
@@ -380,7 +387,7 @@ public:
     i32 m_modalBusy;                  // +0xac  modal-UI/cursor-busy gate
     i32 m_b0, m_b4;                   // +0xb0, +0xb4
     i32 m_isCheckpointPrompts;        // +0xb8  "Checkpoint_Prompts" enable (=1 in ctor)
-    i32 m_saveInfoRec;                // +0xbc  last FillSaveInfo dst record
+    SaveInfo* m_saveInfoRec;          // +0xbc  last FillSaveInfo dst record
     struct IDirectPlayLobby* m_lobby; // +0xc0  the DirectPlay lobby interface (Released/recreated)
     void* m_connSettings;             // +0xc4  the launch connection-settings buffer
     CString m_strWorldFile;           // +0xc8  world file name (EH state 0)

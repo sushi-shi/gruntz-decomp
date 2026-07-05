@@ -50,6 +50,13 @@ struct CSndHost {
     char m_pad11[0x2c - 0x11]; // -> +0x2c
     SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop)
     i32 m_30;                  // +0x30  gate (must be 0 to emit)
+    // Resolve a cue name to its emitter via the +0x10 finder (@0x05b7e0, thunk
+    // 0x2cca): a real CSndHost __thiscall - `push ecx` out-slot, `add ecx,0x10`,
+    // tail into CSndFinder's map Lookup (0x1b8438), return the emitter (0 on
+    // miss). Reloc-masked (no body). Was mis-modeled as an extern "C" __stdcall
+    // free fn (the bytes matched only because ecx was coincidentally the host at
+    // every call site).
+    CSndEmitter* CueLookup(const char* name); // 0x05b7e0
 };
 SIZE_UNKNOWN(CSndHost);
 

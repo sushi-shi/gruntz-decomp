@@ -156,9 +156,34 @@ struct CGruntHud {
 // (factory-this = g->m_30->m_8) + the 6-arg push fall out; external/no-body so
 // the `call rel32` reloc-masks.
 // ---------------------------------------------------------------------------
+// The object-table entry resolved through the factory's +0x48 map (Lookup
+// 0x1b8760). Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
+// +0x7c is the same inner-object slot CHudSprite carries (CSpriteInner: its
+// +0x18 receiver takes the death resolve in HandleCommand's 0x8106 cheat).
+SIZE_UNKNOWN(GruntObjEntry);
+class GruntObjEntry {
+public:
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual i32 Kind(); // vtable slot +0x20
+    char m_pad04[0x7c - 0x04];
+    CSpriteInner* m_7c; // +0x7c  inner object (m_18 = the registrar/logic receiver)
+};
+SIZE_UNKNOWN(GruntObjMap);
+struct GruntObjMap {                            // CSpriteFactory + 0x48
+    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
+};
 SIZE_UNKNOWN(CSpriteFactory);
 struct CSpriteFactory {
     CHudSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
+    char m_pad0[0x48];
+    GruntObjMap m_objMap; // +0x48  embedded object-key -> GruntObjEntry map (Lookup @0x1b8760)
 };
 // CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
 
@@ -919,25 +944,8 @@ struct GruntNameIdMap {                              // res->m_10 + 0x10
     i32 Lookup(const char* key, GruntIdEntry** out); // 0x1b8008
     i32 LookupNode(const char* key, void** out);     // 0x1b8008 (2nd block: raw entry)
 };
-// The object-table entry resolved through res->m_8's map (+0x48, Lookup 0x1b8760).
-// Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
-SIZE_UNKNOWN(GruntObjEntry);
-class GruntObjEntry {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual i32 Kind(); // vtable slot +0x20
-};
-SIZE_UNKNOWN(GruntObjMap);
-struct GruntObjMap {                            // res->m_8 + 0x48
-    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
-};
+// GruntObjEntry / GruntObjMap moved above CSpriteFactory (the map is its +0x48
+// embedded member); the declarations stay canonical there.
 // The resource manager (g_gameReg->m_world): m_8 owns the object map, m_10 the
 // sprite/name manager (with the CMapStringToOb at +0x10).
 SIZE_UNKNOWN(GruntResMgr);

@@ -200,15 +200,21 @@ struct Edge {
 };
 
 // The two serialize sub-objects SyncState (0x0d7520) round-trips through the
-// archive via a reloc-masked 4-arg serialize entry. Real classes:
-// m_frameMarker = CTimer (HandleEvent 0x9c1c0), m_beginMarker =
-// CTileTriggerContainer (Serialize 0x117280); unified here as one serialize-entry
-// interface because the call is reloc-masked and the archive arg is passed
-// through unchanged (no per-class archive-view is needed at the call site).
+// archive via a reloc-masked 4-arg serialize entry. m_frameMarker is the real
+// CTimer (below); m_beginMarker = CTileTriggerContainer (Serialize 0x117280),
+// still unified as this serialize-entry interface because the call is
+// reloc-masked and the archive arg is passed through unchanged.
 SIZE_UNKNOWN(CPlaySerialChild);
 struct CPlaySerialChild {
     i32 Sync(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3);
 };
+
+// The per-frame level timer (m_frameMarker's real class): the full canonical
+// CTimer lives in <Gruntz/Timer.h> (extracted from SpriteLoaders.cpp). Its
+// serialize entry is HandleEvent (0x9c1c0) - the reloc-masked call SyncState
+// drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
+// running/current block ("Ah, who needed that stupid timer anyway?").
+#include <Gruntz/Timer.h>
 
 // ===========================================================================
 // CPlay - the in-game PLAY state. Extends CState from +0x1a8. The per-frame
@@ -341,6 +347,12 @@ public:
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
     i32 PauseGame();  // 0x0cee90
     i32 ResumeGame(); // 0x0cef00
+    // The HandleCommand cheat receivers (reloc-masked; reached via the play-state
+    // lookup PickPlayOrPausedState): SetCursorFrame gives the selected grunt item
+    // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the
+    // AMBIENT%d variant index for the 0x8086 Monolith cheat (thunk 0x1df2).
+    i32 SetCursorFrame(i32 item); // 0x0d1b30
+    i32 Flip();                   // 0x0da200
     // ArmSnapshot (0x0d9240): latch the snapshot timer (base=clock, dur=arg2) and
     // the active flag (arg1). CanQuickSave (0x0da3b0): all-idle predicate gating
     // the auto/quick path. PostHudRect (0x0da440): post the HUD rect to the world
@@ -531,8 +543,9 @@ public:
     // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
     CByteArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
-    CByteArray m_3a4[4];             // +0x3a4  (4 * 0x14)
-    CPlaySerialChild* m_frameMarker; // +0x3f4  frame-marker/timeline object (SyncState serialize)
+    CByteArray m_3a4[4]; // +0x3a4  (4 * 0x14)
+    CTimer*
+        m_frameMarker; // +0x3f4  frame-marker/timeline CTimer (SyncState serialize; 0x8107 cheat)
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,
         m_cueIntervalHi; // +0x3f8  AMBIENT-cue 64-bit timer
     i32 m_cueToggle;     // +0x408  AMBIENT-cue on/off toggle

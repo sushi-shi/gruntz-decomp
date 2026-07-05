@@ -311,12 +311,8 @@ struct ScoreHud {
     void Teardown();                         // (this) reloc-masked (Close)
 };
 
-// The +0x44 object carrying a one-shot guard at +0x124.
-struct HudGuard44 {
-    char m_pad0[0x124];
-    i32 m_124;       // +0x124
-    void Teardown(); // (this) reloc-masked (Close)
-};
+// HudGuard44 (+0x44 one-shot guard) now comes from <Gruntz/SaveInfo.h> (via
+// GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
 
 // The archive/serializer object SaveState/LoadState stream every clock/scroll/warp
 // field through: the shared WAP32 CSerialArchive stream interface (Read @ vtbl +0x2c,
@@ -363,25 +359,8 @@ struct CPlayStateView {
     PlayStatusSlot* m_520; // +0x520
 };
 
-// The save-slot info record FillSaveInfo populates: a 0x20-byte snapshot block at
-// +0x14, the level name at +0x75, and the two state ints at +0xf8/+0xfc.
-struct SaveInfo {
-    char m_pad0[0x14];
-    char m_14[0x20]; // +0x14  snapshot block
-    char m_pad34[0x75 - 0x34];
-    char m_75[0x80]; // +0x75  level name buffer
-    char m_padf5[0xf8 - 0xf5];
-    i32 m_f8; // +0xf8
-    i32 m_fc; // +0xfc
-};
-
-// The +0x58 manager FillSaveInfo forwards the record + source-state ptr to
-// (reloc-masked thiscall).
-struct SaveSink58 {
-    void Store(SaveInfo* dst, char* src); // (this, dst, src) reloc-masked
-    void Teardown();                      // (this) reloc-masked (Close)
-    i32 Check(i32 rec);                   // (this, rec) reloc-masked (Quickload load; @0xe52c0)
-};
+// SaveInfo (the save-slot record) and SaveSink58 (the +0x58 sink) now come from
+// <Gruntz/SaveInfo.h> (via GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
 
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
 // the inlined rep-movs memcpy intrinsic); modeled as a plain __cdecl free fn so
@@ -2094,7 +2073,7 @@ i32 CGruntzMgr::Quicksave() {
         EnterModalUI((i32)(const char*)name);
         return 1;
     }
-    if (m_saveInfoRec == 0 || !(*(char*)m_saveInfoRec & 1)) {
+    if (m_saveInfoRec == 0 || !(m_saveInfoRec->m_flags & 1)) {
         return LoadSaveMessageSprite();
     }
     if ((char*)m_curState + 0x1d0 == 0) { // inlined GetSaveSource() non-null guard
@@ -2103,9 +2082,8 @@ i32 CGruntzMgr::Quicksave() {
     if (m_timer) {
         m_timer->Stop();
     }
-    FillSaveInfo((SaveInfo*)m_saveInfoRec, 0);
-    if (((ScoreNotifier*)g_gameReg->m_saveSink)
-            ->Notify((i32)((char*)m_saveInfoRec + 0x35), 0x81a7)) {
+    FillSaveInfo(m_saveInfoRec, 0);
+    if (((ScoreNotifier*)g_gameReg->m_saveSink)->Notify((i32)m_saveInfoRec->m_serial, 0x81a7)) {
         m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -2127,7 +2105,7 @@ i32 CGruntzMgr::Quickload() {
     if (m_timer) {
         m_timer->Flush();
     }
-    if (m_saveInfoRec && (*(char*)m_saveInfoRec & 1)) {
+    if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
         if (m_saveSink->Check(m_saveInfoRec) == 0) {
             return 1;
         }
@@ -2534,7 +2512,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     dst->m_fc = (m_134 == 3);
     dst->m_f8 = m_130;
     m_saveSink->Store(dst, src + 0x1d0);
-    m_saveInfoRec = (i32)dst;
+    m_saveInfoRec = dst;
     if (snapshot) {
         EngineCopy(dst->m_14, snapshot, 0x20);
     }
@@ -3746,14 +3724,11 @@ SIZE_UNKNOWN(CmdSinkV);
 SIZE_UNKNOWN(DirectInputMgr2);
 SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);
-SIZE_UNKNOWN(HudGuard44);
 SIZE_UNKNOWN(LevelClock);
 SIZE_UNKNOWN(OptionsSlot);
 SIZE_UNKNOWN(OptionsTickSub);
 SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);
-SIZE_UNKNOWN(SaveInfo);
-SIZE_UNKNOWN(SaveSink58);
 SIZE_UNKNOWN(ScoreHud);
 SIZE_UNKNOWN(ScoreNotifier);
 SIZE_UNKNOWN(ScoreSub2c);
