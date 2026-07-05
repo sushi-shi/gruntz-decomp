@@ -1556,13 +1556,9 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
     }
 }
 
-// The serialization archive ScanGroup writes through: Write(buf, size) at vtbl slot +0x30,
-// plus the per-object id-write helper @0x5b8760 (writes an object's +0x188 archive id).
-struct CTmArchiveVtbl; // the archive's vtable (Write @slot +0x30; owned elsewhere)
-struct CTmArchive {
-    CTmArchiveVtbl* m_vt;
-    void Write(const void* buf, i32 n); // vtbl +0x30
-};
+// The serialization archive ScanGroup writes through is the shared CSerialArchive
+// (<Gruntz/SerialArchive.h>, pulled via TriggerMgr.h): its Write @ vtable slot +0x30
+// (real virtual dispatch). Plus the per-object id-write helper @0x5b8760.
 void Ar_WriteId(void* id, i32 stride, void* archive); // 0x1b8760
 
 // 0x7a760: ScanGroup(ar) - serialize the whole manager into archive `ar`: the 4x15 grid of
@@ -1573,7 +1569,7 @@ void Ar_WriteId(void* id, i32 stride, void* archive); // 0x1b8760
 // big serializer wall: 60+ archive Write calls; the grid/list write loops pin esi(ar)/ebx
 // /edi differently than retail and the scratch slots differ. Logic + offsets byte-exact.
 RVA(0x0007a760, 0x373)
-i32 CTriggerMgr::ScanGroup(CTmArchive* ar) {
+i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1828,7 +1824,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
             return -1;
         }
     }
-    if (o->m_5c == cell->m_pos.x && o->m_60 == cell->m_pos.y && cell->m_198 != 0x1e && g_6455b0 == 0) {
+    if (o->m_5c == cell->m_pos.x && o->m_60 == cell->m_pos.y && cell->m_198 != 0x1e
+        && g_6455b0 == 0) {
         return 0;
     }
     i32 by = (a2c & ~0x1f) + 0x10;
@@ -2496,7 +2493,6 @@ SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmFxMgr);
 SIZE_UNKNOWN(CTmUserLogic);
-SIZE_UNKNOWN(CTmArchive);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmTileGrid);
 SIZE_UNKNOWN(CTmObArray);
@@ -2522,16 +2518,9 @@ SIZE_UNKNOWN(CTmLevelView);
 // superset carrying the same ReportError @0x8dc60 + m_curState @+0x2c). The two
 // EH methods that took m_curState as char* now cast it (matching-neutral).
 
-// A CString temporary as the error-Format path uses it (ctor/dtor + Format are the static MFC
-// bodies, reloc-masked); the destructible temp forces the /GX frame.
-struct CTmStr {
-    CTmStr();                                   // 0x5b9b93
-    ~CTmStr();                                  // 0x5b9cde
-    void Format(const char* fmt, i32 a, i32 b); // 0x5b2cf5
-    const char* c_str() const;                  // identity getter (inlined)
-    char* m_buf;
-};
-SIZE_UNKNOWN(CTmStr);
+// The error-Format temporaries are the real MFC CString (from <Mfc.h>): its ctor/dtor +
+// Format are the static MFC bodies (reloc-masked); the destructible temp forces the /GX
+// frame. (Former CTmStr view folded onto the canonical CString.)
 
 // A logic/cell/list opaque shell whose reloc-masked __thiscall hooks the drivers dispatch.
 struct CTmObj {
@@ -2869,7 +2858,7 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     i32 cy = y;
     CTmObj* obj = (CTmObj*)*(void**)(*(char**)(plane + 0x2e4) + 0);
     if (obj == 0) {
-        CTmStr msg;
+        CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
         g_gameReg->ReportError(0x80dd, 0x3f7);
         return 0;
@@ -2939,9 +2928,9 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
         return 0;
     }
     char* lvl = (char*)g_gameReg->m_curState;
-    CTmStr name;
+    CString name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
-    i32 color = g_buteMgr.GetIntDef((char*)name.c_str(), "WarpStone", 0);
+    i32 color = g_buteMgr.GetIntDef((char*)(const char*)name, "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)

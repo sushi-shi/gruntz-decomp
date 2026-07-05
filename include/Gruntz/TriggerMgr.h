@@ -46,7 +46,6 @@ struct CTmLevel;
 struct CTmSoundChan;
 struct CTmNode;
 struct CTmRecNode;
-struct CTmArchive;   // the serialize archive ScanGroup writes through (eh sibling completes it)
 struct CTmOverlay;   // the allocated overlay sub-object (+0x25c); completed in each TU
 struct CTmGoal;      // the goal object (+0x23c); completed in each TU
 struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
@@ -261,11 +260,11 @@ public:
 
     // 0x7a760: ScanGroup - the magic-group scanner/applier; for each live cell of the
     // group, dispatch its logic and tally. Reconstructed to plateau. (__thiscall.)
-    i32 ScanGroup(CTmArchive* ar);
+    i32 ScanGroup(CSerialArchive* ar);
 
     // 0x7df8: the overlay-serialize self-call ScanGroup tails into (writes the overlay into
     // the archive). Still-UNRECONSTRUCTED; declared so the reloc-masked self-call is clean.
-    i32 SerializeOverlay(CTmArchive* ar, i32 b, i32 c);
+    i32 SerializeOverlay(CSerialArchive* ar, i32 b, i32 c);
 
     // 0x7b1b0: TriggerCell(x, y) - look up the (x,y) cell, switch on its logic kind and
     // spawn the matching fx sprite (+0x2a8), then refresh + record. (ret 0x8.)
