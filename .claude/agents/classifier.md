@@ -135,6 +135,13 @@ several `.cpp` may use it). One definition, renamed consistently everywhere.
 
 ## Part B — de-hack audit (cast hackery written only to compile/squeeze %)
 
+**MODEL THE CLASS, NOT THE VIEW (user mandate 2026-07-05):** a `.cpp`-local view/slice/facet
+of a class that has a canonical definition is itself a de-hack target — dissolve it by
+adding the proven members to the CANONICAL header and deleting the view. A view is never a
+wall and never a "documented exception" (not "protective", not "the header combo is
+untested", not "the megafunction is special"). Only a genuinely identity-unrecovered
+class may keep a local placeholder — and that is a flagged identity-TODO, not a keep.
+
 Hunt the class's source for the placeholder/reinterpret casts `matcher.md` § 1 forbids, and replace
 each with the real shape (matching-neutral — re-verify):
 

@@ -68,6 +68,26 @@ from `gruntz sema class` + config/vtable_names.csv; the PMF→real-virtual conve
 PROVEN better, the MFC wall is dead, the foreign-vtable view exception is abolished).
 Every batch reports BOTH deltas: match % UP and the cleanliness counters DOWN.
 
+**MODEL THE CLASS, NOT THE VIEW (hard rule, user mandate 2026-07-05):** when your work
+proves members of a class that has (or should have) a canonical definition, UPDATE THE
+CANONICAL CLASS HEADER — do not declare a `.cpp`-local view/slice/facet of it. The
+canonical header is NOT authoritative — the retail BINARY is; the header is a living
+reconstruction you are EXPECTED to improve. "The base class already says X" is never a
+reason to route around it with a local view: if your bytes prove a member/type/slot the
+canonical lacks or contradicts, edit the canonical (evidence cited), and the tree
+rebuild verifies it. A view of
+a known class is reconstruction scaffolding: it may exist mid-session, but it is
+dissolved onto the canonical before you commit. **A view is NEVER a wall** and never a
+"documented exception": not "protective" (a % wobble from including the real header is
+the accepted clean-room cost), not "the megafunction is special", not "the header combo
+is untested" (test it — the MFC-wall precedent says umbrella supersets work), not
+"per-TU divergent offsets" (two views disagreeing on a field at one offset is a
+CONFLATION to split into real classes, or one of them is wrong — investigate). The only
+legitimate local placeholder is a class whose IDENTITY is genuinely unrecovered — and
+that is an identity-recovery TODO (flag it), not a keep. If a canonical-header edit is
+blocked because another worker owns it, the fold is DEFERRED WORK you report — never
+re-justified as a wall.
+
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
