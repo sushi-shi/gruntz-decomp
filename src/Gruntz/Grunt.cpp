@@ -5942,9 +5942,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeL);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        i32* cell = m_entranceCell;
-        i32 colv = cell[1] + cell[0] * 2;
-        i32 basev = cell[0] + colv;
+        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        i32 colv = cell.row + cell.col * 2;
+        i32 basev = cell.col + colv;
         i32 idxv = basev + basev * 12;
         char* nm = ((CString*)((char*)this + idxv * 8 + 0x470))->GetBuffer(0);
         m_154->SetAnimName(nm);
@@ -6163,9 +6163,9 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
     i32 frame = el[0x14 / 4];
 
-    i32* cell = m_entranceCell;
-    i32 cc = cell[0];
-    i32 cr = cell[1];
+    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    i32 cc = cell.col;
+    i32 cr = cell.row;
     i32 base = cc + (cr + 2 * cc);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
@@ -6199,9 +6199,9 @@ i32 CGrunt::RearmAttackAnim2() {
     i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
     i32 frame = el[0x14 / 4];
 
-    i32* cell = m_entranceCell;
-    i32 col = cell[0];
-    i32 row = cell[1];
+    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    i32 col = cell.col;
+    i32 row = cell.row;
     i32 base = col + (row + 2 * col);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
@@ -6477,9 +6477,9 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
-            i32* cell = m_entranceCell;
-            i32 col = cell[1] + cell[0] * 2;
-            i32 base = cell[0] + col;
+            GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+            i32 col = cell.row + cell.col * 2;
+            i32 base = cell.col + col;
             i32 row = base * 3;
             i32 idx = base + row * 4;
             char* cn = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
@@ -6603,9 +6603,9 @@ tail:
         frame = elem[0x14 / 4];
     }
     {
-        i32* cell = m_entranceCell;
-        i32 col = cell[1] + cell[0] * 2;
-        i32 base = cell[0] + col;
+        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        i32 col = cell.row + cell.col * 2;
+        i32 base = cell.col + col;
         i32 row = base * 3;
         i32 idx = base + row * 4;
         char* cn = ((CString*)((char*)this + idx * 8 + 0x46c))->GetBuffer(0);
