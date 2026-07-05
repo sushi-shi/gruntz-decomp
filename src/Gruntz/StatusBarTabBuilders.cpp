@@ -35,11 +35,13 @@ namespace StatusBarTabBuilders {
     // ===========================================================================
     // @early-stop
     // identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md,
-    // topic:wall): prologue + body are byte-exact (the geometry block now groups via the
-    // struct-copy idiom, struct-copy-block-store-base-reg.md), but the 3 fail-path `return 0`
-    // sites tail-merge to one shared pop;pop;ret where retail duplicates the epilogue inline,
-    // and the final range-check lands m_imageSet/m_40 in the opposite regs (a regalloc coin-flip).
-    // ~79%; both residuals are documented non-steerable walls. Logic complete.
+    // topic:wall): prologue + body are byte-exact (the geometry block groups via the struct-copy
+    // idiom, struct-copy-block-store-base-reg.md; the variable-index range checks now emit retail's
+    // `cmp idx,[hi]; jg` after spelling them `idx > m_idxHi` instead of `m_idxHi < idx`). Residual:
+    // (1) the 3 mid `return 0` guards inline `jne;pop;pop;ret` in retail (eax already 0) but my
+    // compile tail-merges all 5 guards into one shared `pop;xor;pop;ret`; (2) the final range-check
+    // lands m_imageSet/m_40 in the opposite regs (eax<->ecx free-list coin-flip). ~80.4%; both
+    // residuals are documented non-steerable walls. Logic complete.
     RVA(0x000e8a70, 0x18c)
     i32 CSbTab::BuildResourceTabStatusBar(
         CSbParent* parent,
@@ -87,7 +89,7 @@ namespace StatusBarTabBuilders {
         m_38 = idxA;
         m_40 = idxB;
         i32 s;
-        if (idxA < m_imageSet->m_idxLo || m_imageSet->m_idxHi < idxA) {
+        if (idxA < m_imageSet->m_idxLo || idxA > m_imageSet->m_idxHi) {
             s = 0;
         } else {
             s = m_imageSet->m_formats[idxA];
@@ -104,7 +106,7 @@ namespace StatusBarTabBuilders {
         m_imageSet->SetAllTypes(10);
         m_imageSet->SetAllFormats(sel);
         i32 val;
-        if (m_40 < m_imageSet->m_idxLo || m_imageSet->m_idxHi < m_40) {
+        if (m_40 < m_imageSet->m_idxLo || m_40 > m_imageSet->m_idxHi) {
             val = 0;
         } else {
             val = m_imageSet->m_formats[m_40];
