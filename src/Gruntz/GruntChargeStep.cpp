@@ -14,13 +14,13 @@
 // the pixel coords; +0x134..+0x140 the random-wander bounding rect.
 struct PosObj {
     char pad0[0x5c];
-    i32 m_5c; // +0x5c  x
-    i32 m_60; // +0x60  y
+    i32 m_pixelX; // +0x5c  x
+    i32 m_pixelY; // +0x60  y
     char pad64[0x134 - 0x64];
-    i32 m_134; // +0x134 wander minX
-    i32 m_138; // +0x138 wander minY
-    i32 m_13c; // +0x13c wander maxX
-    i32 m_140; // +0x140 wander maxY
+    i32 m_wanderMinX; // +0x134
+    i32 m_wanderMinY; // +0x138
+    i32 m_wanderMaxX; // +0x13c
+    i32 m_wanderMaxY; // +0x140
 };
 
 struct Grunt;
@@ -40,7 +40,7 @@ struct MgrGrid {
 };
 struct MgrSubB {
     char pad0[0x5c];
-    MgrGrid* m_5c; // +0x5c
+    MgrGrid* m_grid; // +0x5c
 };
 struct MgrSubA {
     char pad0[0x24];
@@ -124,22 +124,22 @@ struct Grunt {
 
 // ---------------------------------------------------------------------------
 // @early-stop
-// ~21%: complete + logically faithful; the first ~33 insns (m_300/m_304 stash, tile-mgr
-// Find, hitGate probe) are byte-close. Re-derived 2026-07-05 vs llvm-objdump -dr; the
-// powered-up (m_220) block was flattened to retail's sequential guard-gotos + the
-// >=100/<100 stamina branch was flipped so the >=100 IsBusy path is the fall-through
-// (matches retail 0x8e-0x140). TWO structural walls remain, both requiring a leaf-first
-// goto-reorder that is a large uncertain rewrite (deferred to the final sweep):
-//   1. STATE DISPATCH IS REVERSE-LAID-OUT. Retail's `sub eax,m_2d4; je state0(0x3e6);
-//      dec; je state1(0x27d); dec; jne return; [state2 fall-through @0x173]` places
-//      state 2 (arrived) as the fall-through and state 0 (scan) FARTHEST; my if/else-if
-//      lays state 0 first. Needs the 3 state bodies physically reversed (state2, state1,
-//      state0) behind a switch/goto ladder - same lever that took GruntMoveStep 18->69.
-//   2. SHARED FaceTarget(0x40302b) TAIL. Retail reserves `sub esp,0xc` and spills the
-//      target's {m_tileOwnerHi,m_tileOwnerLo,m_lastTilePxX,m_lastTilePxY} to fixed temps
-//      feeding ONE shared FaceTarget call jumped to from states 0/1/2; my source inlines
-//      a FaceTarget per state (frame `push ecx`). This tail-merge caps the residual even
-//      after the dispatch reorder. All offsets + reloc-masked engine callees are modeled.
+// CRACKED 21%->57.6% (2026-07-05). The state machine is a `switch (m_defenderState)`
+// (NOT if/else) - that alone produced retail's `sub eax; je state0; dec; je state1; dec;
+// jne return; [state2 fall-through]` dispatch and the state2/state1/state0 reverse layout
+// (+30% in one build). Also fixed: the powered-up (m_220) block flattened to retail's
+// guard-gotos with the >=100 stamina path as fall-through; a real bug - the state 0/1/2
+// AtTile args were reversed (must be AtTile(m_5c, m_60) like the top hitGate); state1's
+// dwell compare is unsigned (jbe). Residual ~42% is three genuine walls (final sweep):
+//   1. State-2 powered-up recheck (0x198, 57 insns) is DEAD in-source (the switch is only
+//      reached with m_220==0, verified: 0x157 has one pred = the m_220==0 guard) so THIS
+//      cl dead-code-eliminates it; retail's cl emits it. Pure DCE-behavior artifact - no
+//      clean C spelling forces the dead block without a goto/opaque hack.
+//   2. Zero-register swap cascade: retail pins the ubiquitous 0 constant in ebp and hitGate
+//      in ebx; this cl swaps them (ebx=0, ebp=hitGate), flipping every `cmp <zero>,x`.
+//   3. Shared FaceTarget(0x40302b) tail-merge (states 0 and 2 share one FaceTarget;return 1
+//      tail via `sub esp,0xc` coord spills) + the surrounding regalloc permutations.
+//   All member offsets + reloc-masked engine callees are modeled.
 RVA(0x000ef6b0, 0x61d)
 i32 Grunt::ChargeStep() {
     m_defenderX = m_lastTilePxX;
@@ -148,8 +148,8 @@ i32 Grunt::ChargeStep() {
     i32 hitGate = 0;
     if (g != 0) {
         PosObj* gp = g->m_10;
-        if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
-            && AtTile(gp->m_5c, gp->m_60)) {
+        if (gp->m_pixelX == g->m_lastTilePxX && gp->m_pixelY == g->m_lastTilePxY
+            && AtTile(gp->m_pixelX, gp->m_pixelY)) {
             hitGate = 1;
         }
     }
@@ -199,129 +199,129 @@ i32 Grunt::ChargeStep() {
         return 1;
     }
 
-    // ---- m_poweredUp == 0: the charge state machine ----
-    if (m_defenderState == 0) {
-        // scan for a target on the wander tile
-        if (g == 0) {
-            goto arrive0;
-        }
-        if (hitGate != 0) {
-            if (m_stamina >= 100) {
-                PosObj* gp = g->m_10;
-                if (gp->m_5c == g->m_lastTilePxX && gp->m_60 == g->m_lastTilePxY
-                    && AtTile(gp->m_60, gp->m_5c)) {
-                    FaceTarget(
-                        g->m_tileOwnerHi,
-                        g->m_tileOwnerLo,
-                        g->m_lastTilePxX,
-                        g->m_lastTilePxY
-                    );
+    // ---- m_poweredUp == 0: the charge state machine (switch -> sub/dec/dec dispatch;
+    // states 0 and 2 both end with FaceTarget(...);return 1 and MSVC tail-merges them). ----
+    switch (m_defenderState) {
+        case 0: {
+            // scan for a target on the wander tile
+            if (g != 0) {
+                if (hitGate != 0 && m_stamina >= 100) {
+                    PosObj* gp = g->m_10;
+                    if (gp->m_pixelX == g->m_lastTilePxX && gp->m_pixelY == g->m_lastTilePxY
+                        && AtTile(gp->m_pixelX, gp->m_pixelY)) {
+                        FaceTarget(
+                            g->m_tileOwnerHi,
+                            g->m_tileOwnerLo,
+                            g->m_lastTilePxX,
+                            g->m_lastTilePxY
+                        );
+                        return 1;
+                    }
+                }
+                if (m_dwell > 500) {
+                    if (CanReach(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+                        return 1;
+                    }
+                    if (Attack(g->m_10->m_pixelX >> 5, g->m_10->m_pixelY >> 5, 0, m_arrivalFlags, 1, 0)
+                        != 0) {
+                        Snap(1, 1);
+                        m_arrivalCol = g->m_tileOwnerHi;
+                        m_arrivalRow = g->m_tileOwnerLo;
+                        m_defenderState = 1;
+                        PosObj* mp = m_10;
+                        GameMgr* mgr = g_64556c;
+                        i32 los = GruntLos1127(
+                            mgr->m_world->m_24->m_grid->m_30 + 0x40,
+                            mp->m_pixelX,
+                            mp->m_pixelY
+                        );
+                        if (los != 0) {
+                            mgr->m_cueSink->Notify(this, 0x366, -1, 0, -1, -1);
+                        }
+                    }
+                    m_dwell = 0;
                     return 1;
                 }
             }
-        }
-        if (g != 0 && m_dwell > 500) {
-            if (CanReach(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
-                return 1;
-            }
-            if (Attack(g->m_10->m_5c >> 5, g->m_10->m_60 >> 5, 0, m_arrivalFlags, 1, 0) != 0) {
-                Snap(1, 1);
-                m_arrivalCol = g->m_tileOwnerHi;
-                m_arrivalRow = g->m_tileOwnerLo;
-                m_defenderState = 1;
+            if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
                 PosObj* mp = m_10;
+                i32 baseX = mp->m_wanderMinX;
+                i32 spanX = mp->m_wanderMaxX - baseX;
+                spanX = spanX < 0 ? -spanX : spanX;
+                i32 baseY = mp->m_wanderMinY;
+                i32 spanY = mp->m_wanderMaxY - baseY;
+                spanY = spanY < 0 ? -spanY : spanY;
+                if (spanX != 0) {
+                    baseX += rand() % spanX;
+                }
+                if (spanY != 0) {
+                    baseY += rand() % spanY;
+                }
                 GameMgr* mgr = g_64556c;
-                i32 los = GruntLos1127(mgr->m_world->m_24->m_5c->m_30 + 0x40, mp->m_5c, mp->m_60);
-                if (los != 0) {
-                    mgr->m_cueSink->Notify(this, 0x366, -1, 0, -1, -1);
+                if ((u32)baseX < mgr->m_tileGrid->m_c && (u32)baseY < mgr->m_tileGrid->m_10) {
+                    Attack(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
-            }
-            m_dwell = 0;
-            return 1;
-        }
-    arrive0:
-        if (m_resetApplied == 0 && m_318 != 0 && m_dwell > 3000) {
-            PosObj* mp = m_10;
-            i32 baseX = mp->m_134;
-            i32 spanX = mp->m_13c - baseX;
-            spanX = spanX < 0 ? -spanX : spanX;
-            i32 baseY = mp->m_138;
-            i32 spanY = mp->m_140 - baseY;
-            spanY = spanY < 0 ? -spanY : spanY;
-            if (spanX != 0) {
-                baseX += rand() % spanX;
-            }
-            if (spanY != 0) {
-                baseY += rand() % spanY;
-            }
-            GameMgr* mgr = g_64556c;
-            if ((u32)baseX < mgr->m_tileGrid->m_c && (u32)baseY < mgr->m_tileGrid->m_10) {
-                Attack(baseX, baseY, 0, m_arrivalFlags, 1, 0);
-            }
-            if (m_coordCount != 0) {
-                if (spanX <= spanY) {
-                    spanX = spanY;
+                if (m_coordCount != 0) {
+                    if (spanX <= spanY) {
+                        spanX = spanY;
+                    }
+                    if (spanX < m_coordCount) {
+                        Snap(1, 1);
+                    }
                 }
-                if (spanX < m_coordCount) {
-                    Snap(1, 1);
-                }
+                m_dwell = 0;
             }
-            m_dwell = 0;
+            break;
         }
-    } else if (m_defenderState == 1) {
-        // moving to the arrival tile
-        Grunt* t = m_tileMgr->entries[m_arrivalRow + m_arrivalCol * 0xf];
-        Grunt* cur = m_tileMgr->Find(this);
-        if (cur != 0 && cur != t) {
-            m_arrivalCol = -1;
-            m_defenderState = 0;
-            m_arrivalRow = -1;
-            return 1;
-        }
-        if (t == 0 || t->m_entranceCommitted == 0
-            || CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
-            m_defenderState = 0;
-            return 1;
-        }
-        if (m_dwell > 500) {
-            MoveTo6(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
-            m_dwell = 0;
-        }
-        if (m_poweredUp == 0 && m_stamina >= 100 && AtTile(t->m_10->m_60, t->m_10->m_5c) != 0
-            && t->m_10->m_5c == t->m_lastTilePxX && t->m_10->m_60 == t->m_lastTilePxY) {
-            FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
-            m_defenderState = 2;
-            return 1;
-        }
-    } else if (m_defenderState == 2) {
-        // arrived: re-check target then hold
-        if (m_poweredUp != 0) {
+        case 1: {
+            // moving to the arrival tile
             Grunt* t = m_tileMgr->entries[m_arrivalRow + m_arrivalCol * 0xf];
-            if (t == 0) {
-                goto rearm2;
-            }
-            if (CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
-                goto rearm2;
-            }
-            if (t->m_entranceCommitted == 0) {
-                goto rearm2;
-            }
-            if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+            Grunt* cur = m_tileMgr->Find(this);
+            if (cur != 0 && cur != t) {
+                m_arrivalCol = -1;
+                m_defenderState = 0;
+                m_arrivalRow = -1;
                 return 1;
             }
-            if (AtTile(t->m_10->m_60, t->m_10->m_5c) == 0) {
-                goto rearm2;
+            if (t == 0 || t->m_entranceCommitted == 0
+                || CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0) {
+                m_defenderState = 0;
+                return 1;
             }
-            if (t->m_10->m_5c != t->m_lastTilePxX || t->m_10->m_60 != t->m_lastTilePxY) {
-                goto rearm2;
+            if ((u32)m_dwell > 500) {
+                MoveTo6(t->m_lastTilePxX, t->m_lastTilePxY, 0, m_arrivalFlags, 1, 0);
+                m_dwell = 0;
             }
-            FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
-            return 1;
-        rearm2:
-            m_defenderState = 1;
-            m_dwell = 0x1f4;
-            return 1;
-        } else {
+            if (m_poweredUp == 0 && m_stamina >= 100 && AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) != 0
+                && t->m_10->m_pixelX == t->m_lastTilePxX && t->m_10->m_pixelY == t->m_lastTilePxY) {
+                FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
+                m_defenderState = 2;
+                return 1;
+            }
+            break;
+        }
+        case 2: {
+            // arrived: re-check target then hold
+            if (m_poweredUp != 0) {
+                Grunt* t = m_tileMgr->entries[m_arrivalRow + m_arrivalCol * 0xf];
+                if (t == 0 || CanReach(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
+                    || t->m_entranceCommitted == 0) {
+                    m_defenderState = 1;
+                    m_dwell = 0x1f4;
+                    return 1;
+                }
+                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < 100) {
+                    return 1;
+                }
+                if (AtTile(t->m_10->m_pixelX, t->m_10->m_pixelY) == 0 || t->m_10->m_pixelX != t->m_lastTilePxX
+                    || t->m_10->m_pixelY != t->m_lastTilePxY) {
+                    m_defenderState = 1;
+                    m_dwell = 0x1f4;
+                    return 1;
+                }
+                FaceTarget(t->m_tileOwnerHi, t->m_tileOwnerLo, t->m_lastTilePxX, t->m_lastTilePxY);
+                return 1;
+            }
             m_defenderState = 1;
             m_dwell = 0x1f4;
             return 1;
