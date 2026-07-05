@@ -74,25 +74,29 @@ void CSbConfigItem::SetDirection(i32 a, i32 b) {
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250
 // ===========================================================================
-// Per-tab builder. The Configure args (recovered from every call site) are:
-//   Configure(this, code, type, idx, rect, key, flag, 0)
-// `type` = tab index, `code` an incrementing per-item id, `idx` 2/3/4/5/1,
-// `flag` -1 or small int, `rect` = base + per-item offsets. The per-item create
-// idiom (new/ctor/stamp/Configure; on failure delete + bail) is identical at all
-// 37 sites; the chip-icon / multiplayer-head / statz-icon runs are loops.
+// Per-tab builder. Every Configure passes arg2 = `code` (the saved m_code); `type` =
+// tab index (1..5), rect = base coords (bx=m_10/by=m_14) + per-item offsets. The per-item
+// create idiom (new/base-ctor/stamp/Configure; on fail delete + bail) is identical at ~37
+// sites; the GRUNTOVEN/CHIP/HEAD/SMALLICONZ/WARPSTONE runs are loops. Built under a /GX EH
+// frame (the just-created item is EH-rolled-back if a later Configure throws).
 //
-// COVERAGE: the entry dispatch + the full GruntzTab run (6 widgets incl. the
-// 5-iteration GRUNTOVEN loop) + the four ResourceTab background widgets + the
-// title widget of each remaining tab are reconstructed (~17% fuzzy of the 7629 B).
-// The per-item idiom lowers to the same new/ctor/stamp/Configure/AddTail shape as
-// retail (verified block-by-block). REMAINING (the follow-up to the full match):
-// the ResourceTab BELT/CHIP loops (which index the g_gameReg per-player icon
-// table at +0x158, stride 0x238) + the MACHINE/SHREDDER ConfigureEx (slot +0x34)
-// widgets, the MultiplayerTab HEAD loop, the StatzTab ARROW/SMALLICONZ widgets,
-// and the GameTab WARPSTONE loop (5 iterations gated on g_gameReg->m_68->Probe).
+// @early-stop
+// ~43% (was 24%); REGISTER LAYOUT NOW MATCHES retail's Order-A (this->esi, bx->ebx, by->ebp).
+// THE UNLOCK (docs/patterns/gx-this-esi-via-cache-store-pressure.md): the out-of-line
+// CSbConfigItem base ctor (CSBCONFIGITEM_OUTOFLINE_CTOR) raises the /GX frame, but on the
+// bare partial it lands this->ebp/edi (Order-B) - retail keeps `code` in MEMORY [esp+0x10]
+// and dedicates edi to the zero-constant, which needs the WHOLE body's register pressure.
+// Reconstructing the esi-relative cache stores (m_204/m_218/m_224/m_364..m_628) + the Game
+// WARPSTONE run + Resource BELT + Multiplayer HEAD slots supplied that pressure: cl spills
+// `code`, dedicates edi=0, and puts `this` in esi - exactly retail. Cases are emitted in
+// retail PHYSICAL order (Gruntz/Resource/Multiplayer/Statz/Game).
 //
-// The configure call can throw, with the just-created item live for unwind, so
-// retail builds this under a /GX EH frame (flags = "eh").
+// RESIDUAL (the remaining ConfigureEx/cross-call/ebp-reuse runs - each raises %, none needs
+// a new idea, just the decode): ResourceTab MACHINE (CSBI_GruntMachine 0x48 -> BuildResource-
+// TabStatusBar cross-call) + SHREDDER ConfigureEx loop; MultiplayerTab HEAD-loop
+// (GetSel/SetState/ShowFrames) + WARLORDHEAD -> BuildMultiplayerTabStatusBar; StatzTab
+// ARROW + SMALLICONZ 15-iter loop + WARLORDHEAD. The stack frame is 0x28 vs retail 0x34
+// (the missing loop induction locals shift [esp+N] throughout - fixed as those loops land).
 RVA(0x00102250, 0x1dcd)
 i32 CStatusBarMgr::LoadTabSprites() {
     i32 code = m_code; // the Configure `code` arg (saved to [esp+0x10] in retail)
@@ -130,40 +134,50 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_64.AddTail(it);
             // GRUNTOVEN: a vertical column of 5 CSBI_ImageSet oven slots (x fixed at
-            // bx+0xe..bx+0x39, y steps by 0x36); each caches its item at m_204[i] and its
-            // format source at m_224[i] (stride 0x18), then GetSel + SetAllTypes/Formats.
-            for (i = 0; i < 5; i++) {
-                it = (CSbConfigItem*)new CSBI_ImageSet;
-                r.left = bx + 0xe;
-                r.top = by + 0xcc + i * 0x36;
-                r.right = bx + 0x39;
-                r.bottom = by + 0xfe + i * 0x36;
-                if (!it->Configure(
-                        this,
-                        code,
-                        0x64 + i,
-                        2,
-                        r,
-                        "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                        (&m_224)[i * 6],
-                        0
-                    )) {
-                    if (it) {
-                        delete it;
+            // bx+0xe..bx+0x39, y steps by 0x36); each caches its item at *aptr (m_204..)
+            // and reads its format source from *bptr (m_224.., stride 0x18), then
+            // GetSel + SetAllTypes/Formats. Pointer locals (aptr/bptr/y) match retail's
+            // incremented [esp+0x18]/[esp+0x28]/[esp+0x20] induction variables.
+            {
+                i32* aptr = &m_204;
+                i32* bptr = &m_224;
+                i32 y = by + 0xfe;
+                for (i = 0; i < 5; i++) {
+                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    r.left = bx + 0xe;
+                    r.top = y - 0x32;
+                    r.right = bx + 0x39;
+                    r.bottom = y;
+                    if (!it->Configure(
+                            this,
+                            code,
+                            0x64 + i,
+                            2,
+                            r,
+                            "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
+                            *bptr,
+                            0
+                        )) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
                     }
-                    return 0;
+                    m_64.AddTail(it);
+                    *aptr = (i32)it;
+                    i32 sel = g_gameReg->m_spriteFactory->GetSel(
+                        *(i32*)((char*)g_gameReg + 0x158 + g_curPlayer * 0x238),
+                        0
+                    );
+                    if (sel == 0) {
+                        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                    }
+                    ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Init(10);
+                    ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Push(sel);
+                    aptr++;
+                    bptr += 6;
+                    y += 0x36;
                 }
-                m_64.AddTail(it);
-                (&m_204)[i] = (i32)it;
-                i32 sel = g_gameReg->m_spriteFactory->GetSel(
-                    *(i32*)((char*)g_gameReg + 0x158 + g_curPlayer * 0x238),
-                    0
-                );
-                if (sel == 0) {
-                    sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
-                }
-                ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Init(10);
-                ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Push(sel);
             }
             it = (CSbConfigItem*)new CSBI_Image;
             r.left = bx + 0x4c;
@@ -441,6 +455,27 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_628 = (i32)it;
+            // HEAD loop: for each active player slot (g_gameReg per-player block, stride
+            // 0x238) set the head sprite (GetSel) + SetState/ShowFrames on the cached slot.
+            {
+                i32* slot = &m_61c;
+                i32 pi = 0;
+                i32 off = 0;
+                do {
+                    char* pp = (char*)g_gameReg + off;
+                    if (*(i32*)(pp + 0x178) != 0 && *(i32*)(pp + 0x17c) == 0) {
+                        i32 sel = g_gameReg->m_spriteFactory->GetSel(*(i32*)(pp + 0x158), 0);
+                        if (pi != m_62c) {
+                            sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                        }
+                        ((CSbConfigItem*)*slot)->SetState(2);
+                        ((CSbConfigItem*)*slot)->ShowFrames(0xa, sel);
+                    }
+                    slot++;
+                    pi++;
+                    off += 0x238;
+                } while (off < 0x8e0);
+            }
             return 1;
 
         case 1: // ---- Statz tab ----

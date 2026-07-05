@@ -85,6 +85,8 @@ public:
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.
     void SetDirection(i32 a, i32 b); // 0x0ea0f0
+    void SetState(i32 s);            // thunk 0x11e5  (Multiplayer HEAD-loop state set)
+    void ShowFrames(i32 a, i32 b);   // thunk 0x23dd  (Multiplayer HEAD-loop frame set)
 
     i32 m_4; // +0x04
     i32 m_8; // +0x08 type tag (3/4/5/6/7/8/9/0xb)
