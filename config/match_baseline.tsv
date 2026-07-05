@@ -1736,7 +1736,7 @@ gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z	100.0000	100.0000	
 gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	4	b03128b7bcf9	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6960	57.6960	2	b3ad527d25a8	0xc0590
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	1	e9b5224f1312	0x1183b0
-gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	5.4164	5.4164	2	8f5ddc83713c	0xcbcc0
+gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	78.4859	78.4859	3	1abb09f6a248	0xcbcc0
 gamelevel	??0CGameLevel@@QAE@HHH@Z	94.4528	94.4528	8	ca12fb188b96	0x15ccd0
 gamelevel	??1CGameLevel@@QAE@XZ	100.0000	100.0000	5	7e872536db3c	0x1611e0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	93.5194	93.5194	2	7e1d14f4a7e3	0x15f1c0
@@ -3295,7 +3295,7 @@ statichazard	?RegisterActs@CStaticHazard@@SAXXZ	78.5473	78.5473	1	0845d748d7be	0
 statusbargamemenu	?BuildGameMenu@CGameMenuMgr@@QAEXXZ	62.9137	62.9137	7	0910343a31c4	0x101580
 statusbaritem	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	3	5a450f5db35b	0x1005d0
 statusbaritem	??_GCStatusBarItem@@UAEPAXI@Z	91.6667	91.6667	1	cpp:08500b778fe1	0x100620
-statusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	54.3832	54.3832	2	c8c51713a2fd	0x102250
+statusbarmgr	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	54.3832	44.7886	2	c8c51713a2fd	0x102250
 statusbarmgr	?SetDirection@CSbConfigItem@@QAEXHH@Z	100.0000	100.0000	1	08446db56992	0xea0f0
 statusbarmgrgetitem	?GetItem@CSoundCueMgr@@QAEPAVCStatusBarItem2@@XZ	90.3125	90.3125	1	a61e21caadd2	0x135d70
 statusbarspriteacts	??0CStatusBarSprite@@QAE@PAUCGameObject@@@Z	92.5000	92.5000	2	94fcdee95b1b	0x10c230
