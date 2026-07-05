@@ -33,28 +33,22 @@
 // neighbour-pick (rand%3) handlers - recycling the pending-coord list onto
 // g_coordPool / RemoveAll on each exit. The stack CString (block, ctor 0x1b4867 / dtor
 // 0x1b48c6) forces the /GX EH frame. Big body (0xdb4, frame 0x94).
+#include <Mfc.h> // RECT + IntersectRect (afx-first; Grunt.h is MFC-transitive, so no <Win32.h>)
 #include <rva.h>
 
 #include <Ints.h>
-#include <Win32.h>            // RECT + IntersectRect
-#include <stdlib.h>           // rand
-#include <string.h>           // memset (out-of-bounds cell fill)
-#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
+#include <stdlib.h>       // rand
+#include <string.h>       // memset (out-of-bounds cell fill)
+#include <Gruntz/Grunt.h> // real CGrunt (grunt arg) + CGruntHud (g->m_10) + GruntCoordPool g_coordPool
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
 
-extern CStepList2 g_coordPool; // ?g_coordPool@@3UCoordPool@@A (0x645540): Drop recycles a node
-
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-struct CArriveCoord {
-    i32 x, y;
-};
-struct CArriveNode {     // g->m_320 node
-    CArriveNode* m_next; // +0x00
-    i32 _04;
-    i32 m_8; // +0x08 coord ptr (head) / recycled coord-node handle (fed to g_coordPool.Drop)
-};
+// The arriving grunt (arg) is the real CGrunt; its head pending-coord list nodes are
+// GruntCoordNode (+0x08 GruntCoord*) and the tile-coord pairs are GruntTilePos - all
+// from <Gruntz/Grunt.h>. (The former CArriveGrunt/CArriveCoord/CArriveNode/CArriveList
+// views are dissolved onto those real classes.)
 struct CArriveCell { // 0x1c bytes/cell
     i32 m_0;         // +0x00 flags
     char _04[0x10 - 4];
@@ -89,21 +83,12 @@ struct CArriveSub10b { // this->m_10
     char _00[0x2e4];
     CArriveCellSetter* m_2e4; // +0x2e4
 };
-struct CArriveList {           // g->m_31c (CObList) - spans +0x31c..+0x328
-    void RemoveAll1b48a6();    // 0x1b48a6
-    void AddTail1b4991(i32 v); // 0x1b4991
-    i32 _00;                   // +0x00 (CObList head @ g+0x31c)
-    CArriveNode* m_320;        // +0x04 (g+0x320)
-    CArriveNode* m_324;        // +0x08 (g+0x324)
-    i32 m_328;                 // +0x0c (g+0x328) pending latch
-};
 struct CArriveStr {     // scratch CString/CObList (block) - forces /GX
     CArriveStr(i32 n);  // 0x1b4867
     ~CArriveStr();      // 0x1b48c6
     void* Head1b4a03(); // 0x1b4a03
     char _00[0x18];
 };
-struct CArriveGrunt;
 struct CArriveMover {                          // this->m_8
     void Move14bf(i32 a, i32 b, i32 x, i32 y); // 0x14bf
 };
@@ -111,13 +96,13 @@ struct CArriveFinder {                       // this->m_14
     CArriveFind2* Find1c21(i32 key, i32 n);  // 0x1c21
     CArriveFind* FindByField0C2838(i32 key); // 0x2838
 };
-struct CArriveMgr {                                            // this (== g->m_10)
-    i32 Gate1a14(CArriveGrunt* g);                             // 0x1a14
-    void Effect374c(CArriveGrunt* g, i32 kind);                // 0x374c
-    i32 Probe1a4b(CArriveGrunt* g, i32 a, i32 b);              // 0x1a4b
-    void Impact25e5(CArriveGrunt* g, i32 a, i32 b, i32 c);     // 0x25e5
-    void SelfImpact2b58(CArriveGrunt* g, i32 a, i32 b, i32 c); // 0x2b58
-    i32 Ready27ed(CArriveGrunt* g);                            // 0x27ed
+struct CArriveMgr {                                      // this (the CBattlezMapConfig board)
+    i32 Gate1a14(CGrunt* g);                             // 0x1a14
+    void Effect374c(CGrunt* g, i32 kind);                // 0x374c
+    i32 Probe1a4b(CGrunt* g, i32 a, i32 b);              // 0x1a4b
+    void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);     // 0x25e5
+    void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c); // 0x2b58
+    i32 Ready27ed(CGrunt* g);                            // 0x27ed
 
     char _00[8];
     CArriveMover* m_8;   // +0x08
@@ -128,43 +113,23 @@ struct CArriveMgr {                                            // this (== g->m_
     char _1c[0x5c - 0x1c];
     i32 m_5c, m_60; // +0x5c, +0x60 origin coords (raw px)
 
-    i32 Resolve2c690(CArriveGrunt* g);
-};
-struct CArriveGrunt {                                          // g (ebp)
-    void GetTilePos36c0(CArriveCoord* out);                    // 0x36c0
-    i32 Trigger1640(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x1640
-    i32 Check3c4c(i32 a, i32 b);                               // 0x3c4c
-
-    char _00[0x10];
-    CArriveMgr* m_10; // +0x10  (== this)
-    char _14[0x170 - 0x14];
-    i32 m_170; // +0x170 type
-    i32 m_174, m_178;
-    char _17c[0x19c - 0x17c];
-    i32 m_19c; // +0x19c alt type
-    char _1a0[0x1ec - 0x1a0];
-    i32 m_1ec, m_1f0; // +0x1ec, +0x1f0
-    char _1f4[0x2d4 - 0x1f4];
-    i32 m_2d4; // +0x2d4 state
-    i32 m_2d8; // +0x2d8 state2
-    char _2dc[0x2ec - 0x2dc];
-    i32 m_2ec; // +0x2ec
-    char _2f0[0x31c - 0x2f0];
-    CArriveList m_31c; // +0x31c..+0x328 (list head + m_320/m_324/m_328)
+    i32 Resolve2c690(CGrunt* g);
 };
 
-// Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_328).
-#define ARR_RECYCLE(list)                                                                          \
-    if ((list)->m_328 != 0) {                                                                      \
-        CArriveNode* nd = (list)->m_320;                                                           \
+// Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_coordCount).
+// The occupied-coord CObList head is g->m_320 (GruntCoordNode); its +0x08 GruntCoord*
+// is the recycled coord-node handle Drop takes (as its i32 arg).
+#define ARR_RECYCLE(g)                                                                             \
+    if ((g)->m_coordCount != 0) {                                                                  \
+        GruntCoordNode* nd = (g)->m_320;                                                           \
         while (nd != 0) {                                                                          \
-            CArriveNode* cur = nd;                                                                 \
+            GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
-            if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Drop(cur->m_8);                                                        \
+            if (cur->m_coord != 0) {                                                               \
+                g_coordPool.Recycle(cur->m_coord);                                                 \
             }                                                                                      \
         }                                                                                          \
-        (list)->RemoveAll1b48a6();                                                                 \
+        (g)->m_31c.RemoveAll();                                                                    \
     }
 
 // cell flags at (col,row), out-of-bounds -> 0x01010101.
@@ -205,26 +170,25 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 //       so it can't reach byte-exact regardless. Reconstructed as a structural CString-EH loop
 //       (forces the /GX frame); the exact 700-B transform + tail are a dedicated final-sweep job.
 RVA(0x0002c690, 0xdb4)
-i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
-    CArriveList* list = &g->m_31c;
+i32 CArriveMgr::Resolve2c690(CGrunt* g) {
     if (Gate1a14(g)) {
         return 1;
     }
-    if (list->m_328 == 0) {
+    if (g->m_coordCount == 0) {
         return 0;
     }
 
-    CArriveCoord* fc = (CArriveCoord*)list->m_320->m_8;
-    i32 fcx = fc->x; // grunt head coord x (long-lived)
-    i32 fcy = fc->y; // grunt head coord y
+    GruntCoord* fc = g->m_320->m_coord;
+    i32 fcx = fc->m_x; // grunt head coord x (long-lived)
+    i32 fcy = fc->m_y; // grunt head coord y
 
-    CArriveCoord a;
-    g->GetTilePos36c0(&a);
-    i32 gy = a.y >> 5;
-    i32 gx = a.x >> 5;
-    CArriveCoord b;
-    g->GetTilePos36c0(&b);
-    i32 bx = b.x >> 5;
+    GruntTilePos a;
+    g->GetTilePos(&a);
+    i32 gy = a.m_y >> 5;
+    i32 gx = a.m_x >> 5;
+    GruntTilePos b;
+    g->GetTilePos(&b);
+    i32 bx = b.m_x >> 5;
 
     // destination cell = grid[gy][bx]; OOB fills the dest buffer itself (self-copy).
     CArriveCell dest;
@@ -250,16 +214,16 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
     own = *osrc;
 
     i32 maskFlags = own.m_0 & 0xdfffffff;
-    i32 type = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+    i32 type = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
 
     // ---- door (dest.flags & 0x400, m_2d4==3, type!=8) ----
-    if ((dest.m_0 & 0x400) && g->m_2d4 == 3 && type != 8) {
+    if ((dest.m_0 & 0x400) && g->m_defenderState == 3 && type != 8) {
         if (own.m_0 & 0x4000) {
             // door-open transform: build a search rect from the grunt pos, then a per-cell
             // CString-EH loop recycling edge nodes onto g_freeList. (Byte-walled: retail
             // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
-            CArriveCoord da;
-            g->GetTilePos36c0(&da);
+            GruntTilePos da;
+            g->GetTilePos(&da);
             for (i32 drow = m_c->m_60.top; drow < m_c->m_60.bottom; drow++) {
                 for (i32 dcol = m_c->m_60.left; dcol < m_c->m_60.right; dcol++) {
                     CArriveStr cs(0xa);
@@ -292,34 +256,34 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- door body flag (dest.flags & 4) ----
     if ((dest.m_0 & 4) && g->m_2d8 != 0xb) {
-        CArriveCoord tp;
+        GruntTilePos tp;
         i32 keyHi = g->m_10->m_5c >> 5;
-        g->GetTilePos36c0(&tp);
-        i32 key = (keyHi << 8) + (tp.y >> 5);
-        (void)(tp.x >> 5);
+        g->GetTilePos(&tp);
+        i32 key = (keyHi << 8) + (tp.m_y >> 5);
+        (void)(tp.m_x >> 5);
         CArriveFind2* r = m_14->Find1c21(key, 0);
         if (r->m_4 == 2) {
-            g->m_2d4 = 0;
-            ARR_RECYCLE(list);
+            g->m_defenderState = 0;
+            ARR_RECYCLE(g);
             g->m_2d8 = 0xb;
-            g->m_2ec = 0;
+            g->m_dwell = 0;
             return 0;
         }
     }
 
     // ---- 0x8000 gate, type 3 ----
     if ((maskFlags & 0x8000) && type == 3 && g->m_2d8 == 0xa) {
-        m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
-        ARR_RECYCLE(list);
+        m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+        ARR_RECYCLE(g);
         return 0;
     }
 
     // ---- 0x4000 gate, type 3 ----
     if ((maskFlags & 0x4000) && type == 3 && g->m_2d8 == 0xa) {
         if (m_c->m_8[fcy][fcx].m_10 != 0x99) {
-            m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+            m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
         }
-        ARR_RECYCLE(list);
+        ARR_RECYCLE(g);
         return 0;
     }
 
@@ -338,10 +302,15 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- 0x20 -> type dispatch ----
     if (maskFlags & 0x20) {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 1 || t == 0x11) {
             if (t == 1) {
-                m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+                m_8->Move14bf(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
                 return 1;
             }
             // t == 0x11: scan the 3x3 neighbourhood for the first in-bounds cell
@@ -352,8 +321,13 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
                         if (cf & 0x939) {
                             return 1;
                         }
-                        if (g->Check3c4c((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
-                            m_8->Move14bf(g->m_1ec, g->m_1f0, (col << 5) + 0x10, (row << 5) + 0x10);
+                        if (g->IsInCombatRange((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
+                            m_8->Move14bf(
+                                g->m_tileOwnerHi,
+                                g->m_tileOwnerLo,
+                                (col << 5) + 0x10,
+                                (row << 5) + 0x10
+                            );
                         }
                         return 1;
                     }
@@ -364,16 +338,21 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- 0x4000 path, type 0xf (teleport) ----
     if (maskFlags & 0x4000) {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0xf) {
             CArriveFind* r = m_14->FindByField0C2838((fcx << 8) + fcy);
             if (r != 0) {
                 if (r->m_arr[m_18] != 0) {
-                    ARR_RECYCLE(list);
+                    ARR_RECYCLE(g);
                     Impact25e5(g, fcx, fcy, 1);
                     return 1;
                 }
-                m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+                m_8->Move14bf(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
                 return 1;
             }
         }
@@ -381,9 +360,9 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- 0x8000 path, type 0xf ----
     if (maskFlags & 0x8000) {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0xf) {
-            ARR_RECYCLE(list);
+            ARR_RECYCLE(g);
             Impact25e5(g, fcx, fcy, 1);
             return 1;
         }
@@ -391,7 +370,7 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- 0x20 path, type 5 ----
     if (maskFlags & 0x20) {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
                 CArriveFind* r = m_14->FindByField0C2838((fcx << 8) + fcy);
@@ -408,7 +387,7 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
                     }
                 }
             }
-            m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+            m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
             return 0;
         }
         if (t == 0x11 || t == 1) {
@@ -430,11 +409,16 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
 
     // ---- 0x40 path ----
     if (maskFlags & 0x40) {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t != 0x16) {
-            i32 t2 = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+            i32 t2 = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
             if (t2 == 0xd) {
-                m_8->Move14bf(g->m_1ec, g->m_1f0, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+                m_8->Move14bf(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
                 return 0;
             }
             Effect374c(g, 0xd);
@@ -448,7 +432,7 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
         return 1;
     }
     {
-        i32 t = (g->m_170 > 0x16) ? g->m_19c : g->m_170;
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0x16) {
             return 1;
         }
@@ -472,23 +456,19 @@ i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
         if (c0 & 0x20000000) {
             return 1;
         }
-        g->Trigger1640(col, row, 0x987, 0, 1, 0);
+        g->TileSwitch(col, row, 0x987, 0, 1, 0);
     }
     return 1;
 }
 
 SIZE_UNKNOWN(CArriveCell);
-SIZE_UNKNOWN(CArriveCoord);
 SIZE_UNKNOWN(CArriveCellSetter);
 SIZE_UNKNOWN(CArriveFind);
 SIZE_UNKNOWN(CArriveFind2);
 SIZE_UNKNOWN(CArriveFinder);
 SIZE_UNKNOWN(CArriveGrid);
-SIZE_UNKNOWN(CArriveGrunt);
-SIZE_UNKNOWN(CArriveList);
 SIZE_UNKNOWN(CArriveMgr);
 SIZE_UNKNOWN(CArriveMover);
-SIZE_UNKNOWN(CArriveNode);
 SIZE_UNKNOWN(CArriveQuad);
 SIZE_UNKNOWN(CArriveStr);
 SIZE_UNKNOWN(CArriveSub10b);

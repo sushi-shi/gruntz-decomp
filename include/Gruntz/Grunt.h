@@ -1978,6 +1978,8 @@ public:
     );                                                 // call 0x1451
     i32 IsInCombatRange(i32 x, i32 y);                 // call 0x3c4c (2-arg predicate)
     void CommitCombatMove(i32 a, i32 b, i32 c, i32 d); // call 0x302b (4-arg)
+    // Battlez arrival resolver's neighbour-pick trigger (CGrunt_TileSwitch).
+    i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // thunk 0x1640
 
     // CombatCue per-grunt spell effects (external/no-body, reloc-masked):
     //   TeleportMove(dx,dy,a,b) thunk 0x2f3b (ret 0x10; nonzero = moved)
