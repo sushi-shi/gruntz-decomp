@@ -3,6 +3,37 @@
 // handlers and config writers. Field names are placeholders (m_<hexoffset>);
 // only the OFFSETS and code bytes are load-bearing.
 //
+// OWNERSHIP RESOLVED (netmgr-vs-cmulti, 2026-07-05): the CNetMgr class below is
+// a CONFLATION of TWO retail objects; kept in one shape until the mass split
+// (every method is byte-anchored - owner renames must go unit-by-unit against
+// the delinker-packing rule):
+//   1. The REAL CNetMgr (RTTI `CNetMgr : CObject`, ??_7 @0x1ea42c, ??1
+//      @0x0b6000): the small DirectPlay wrapper - the +0x14/+0x18 COM
+//      interfaces, the +0x1c/+0x38/+0x54 managed CObLists (exactly what
+//      ~CNetMgr @0xb6000 tears down before the Wap::CObject restamp; it never
+//      touches anything past +0x54), the +0x28/+0x44 counts, the +0x70..+0x84
+//      selection latches, and the 0x178xxx method cluster (Init/Destroy/
+//      Clear*List/Enum*/Add*Node/FindPlayerById/SetData.../Populate*List).
+//   2. CMulti, the multiplayer game-state (RTTI `CMulti : CPlay : CState`,
+//      <Gruntz/Multi.h>): EVERY field here >= +0x2d8 (m_session/m_peer/
+//      m_localPlayer/m_configSection/m_cmdDelay/...) and the whole
+//      0xb5xxx-0xbdxxx method cluster (SetupServices/PollSession/
+//      DispatchRecvMsg/SendStat*/BroadcastChatLine/WaitForConnect/
+//      CreateSession/VerifyCustomLevel/...) are CMulti's. Proof: CMulti::
+//      CMulti (the 0x8b960 TransitionState factory) zero-inits +0x520/+0x524/
+//      +0x5b0/+0x600; ~CMulti (0x8d270) destroys the +0x59c..+0x604 CString/
+//      CByteArray run; CMulti::Teardown (0xb6110) reads +0x520/+0x524/+0x5bc/
+//      +0x580 on the SAME `this` it passes to SendNetStat; the lobby DlgProcs
+//      (0xbdc00/0xbe0a0) bind g_gameReg->m_curState (the current game-state ==
+//      CMulti) and call PollSession/SendNetStat/BroadcastChatLine on it.
+//   The LINK: CMulti+0x524 (m_peer below; m_netGate in <Gruntz/Multi.h>) HOLDS
+//   the real CNetMgr. Every 0xbxxxx method reaches the DirectPlay wrapper
+//   through it, never on its own `this`:
+//     SendStatBuf 0xb91f0:        mov ecx,[ecx+0x524]; call 0x179090 (SetGroupDataFrom)
+//     ResolveLocalPlayer 0xba7d0: mov ecx,[esi+0x524]; call 0x178e90 (FindPlayerById)
+//     PollSession 0xb95f0:        mov eax,[esi+0x524]; mov eax,[eax+0x18]
+//                                 (the peer's IDirectPlay4); call [.+0x44]
+//
 // The DirectPlay COM interfaces and the DPLAYX exports are EXTERNAL - never
 // matched here. The handlers in this TU touch only:
 //   - a reentrancy-guard global pair (per-message guards + a shared one),
@@ -742,9 +773,9 @@ public:
 
     // The menu-select event handler (0xba620, defined in NetMgrMenuSelect.cpp). Its
     // event arg is that TU's local MenuSelectEvent view -> typed void* here so the
-    // shared class needs no menu-only type. It reaches the +0x524 player sub-object
-    // (its own GetPlayerData/AddSessionNode shapes, a genuine RE ambiguity vs the
-    // CNetMgr methods at the same RVAs) through a cast of m_peer to that TU's PlayerMgr.
+    // shared class needs no menu-only type. It reaches the +0x524 sub-object (the
+    // REAL CNetMgr, see the header verdict - its GetPlayerData/AddSessionNode are
+    // genuine CNetMgr methods) through a cast of m_peer to that TU's PlayerMgr view.
     i32 LoadMenuSelectSprite(void* ev); // 0xba620
 
     // Find (0x179270): walk the +0x1c group CObList (m_pHead @+0x20, running
@@ -1024,7 +1055,9 @@ public:
     i32 m_2d8; // +0x2d8  a command-timing config word (LoadConfig copies cfg+0x118)
     char m_pad2dc[0x520 - 0x2dc];
     CNetSession* m_session; // +0x520  the DirectPlay session sub-object (command slots)
-    CNetMgr* m_peer;        // +0x524  peer net-manager (owns the player list); null => no session
+    CNetMgr* m_peer; // +0x524  THE REAL CNetMgr (RTTI CNetMgr:CObject, ??1 @0xb6000; ==
+                     // <Gruntz/Multi.h> CMulti::m_netGate); null => no session. See the
+                     // header verdict: this class from +0x2d8 down is really CMulti.
     i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
     i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
     i32 m_530;               // +0x530  config-loaded / connection-active gate
