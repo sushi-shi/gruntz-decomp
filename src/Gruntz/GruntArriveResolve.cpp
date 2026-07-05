@@ -110,17 +110,20 @@ struct CArriveMgr { // this (edi)
     }
 
 // @early-stop
-// large grunt arrival/tile-effect resolver reconstruction (final-sweep candidate).
-// 2026-07-05: fixed a structural placeholder - the OWN cell copy was wrongly reusing
-// the dest coords (m_8[gy][gx]); retail indexes it by the head-coord fcx on both axes
-// (m_8[fcx][fcx], bounds fcx<width && fcx<height, verified vs llvm-objdump -dr). Now
-// the Gate1a14 + m_328 latch, BOTH cell copies (rep-movs 7-dword / out-of-bounds
-// 0x01010101 rep-stos fill), the door(0x4)/gate(0x4000/0x8000)/0x2/0x8/0x20/0x40 flag +
-// grunt-type dispatch into the Move14bf / Trigger1640 / teleport / neighbour handlers,
-// the g_coordPool + g_freeList recycles and the /GX CString gate are correct in shape.
-// Residual walls: the coalesced GetTilePos/cell-copy stack-slot schedule, the per-branch
-// EH-state stamps and the heavy callee-saved regalloc (this->edi / g->ebp) diverge from
-// retail - re-attack leaf-first in the final sweep.
+// STRUCTURALLY INCOMPLETE (not a regalloc wall - corrected 2026-07-05). base is only
+// ~389 insns vs retail's ~1078 (frame sub esp,0x60 vs retail 0x94): the flag-dispatch
+// SKELETON + the branch CONDITIONS are byte-correct (Gate1a14 + m_328 latch; both cell
+// copies now right - dest=m_8[gy][gx], own=m_8[fcx][fcx] with the 0x01010101 rep-stos
+// OOB fill, verified vs llvm-objdump -dr; door `dest.m_0&0x4000000 && m_2d4==3 &&
+// type!=8 && own.m_0&0x4000`, the 0x8000/0x4000/0x2/0x8/0x20/0x40 masks + the
+// type=(m_170>0x16?m_19c:m_170) gate all match), BUT the handler BODIES are simplified
+// placeholders that emit ~1/3 of retail. Concretely still to reconstruct leaf-first:
+//   * door-open transform (retail 0x1ad-0x46e: GetTilePos + tile-coord math + the real
+//     CObList/g_freeList recycle - my body's `IntersectRect(&rb,&ra,&ra)` is a stub),
+//   * the teleport (0x2838) and random neighbour-pick handlers,
+//   * the full per-branch g_coordPool/g_freeList recycle walks.
+// The own-cell fix + the honest scoping are done; a full handler reconstruction is a
+// dedicated pass (689 missing insns) beyond this batch.
 RVA(0x0002c690, 0xdb4)
 i32 CArriveMgr::Resolve2c690(CArriveGrunt* g) {
     if (Gate1a14()) {
