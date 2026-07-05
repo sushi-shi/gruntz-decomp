@@ -17,12 +17,24 @@
 // `mov ecx,ebp; push esi; call Resolve`, itself dispatching the same GetTilePos36c0/
 // RemoveAll/LoadPickup cluster). So its +0x08 is a POINTER (board mover), whereas the
 // CGameObject HUD's +0x08 is a flags word - two different classes; the former
-// "this IS g->m_10" note conflated them on the coincident +0x5c/+0x60 origin. CArriveGrunt
-// (the arg) IS CGrunt (its +0x19c/+0x31c/+0x2d4 match canonical CGrunt). TODO fold: the
-// CArrive* views promote onto CBattlezMapConfig - ResolveArrival becomes a CBattlezMapConfig
-// method (offset-0 in this unit, so the owner rename re-pairs; 0x2c690 is claimed only
-// here, no dup); needs the <Mfc.h> umbrella (BattlezMapConfig.h pulls it) + the run-phase
-// slot types added to the canonical. Offsets are correct as-is (deferred, wall @54.8%).
+// "this IS g->m_10" note conflated them on the coincident +0x5c/+0x60 origin.
+//
+// DONE (arg cluster): the arriving grunt arg IS the real CGrunt (<Gruntz/Grunt.h>) -
+// CArriveGrunt/CArriveCoord/CArriveNode/CArriveList/CArriveStr and the CStepList2 coord
+// pool are all dissolved onto CGrunt / GruntCoord / GruntCoordNode / GruntTilePos /
+// GruntListSub / GruntCoordPool (real names). Umbrella switched to <Mfc.h> (Grunt.h is
+// MFC-transitive). ResolveArrival 54.83 -> 55.65%.
+//
+// REMAINING (this cluster): `this` (CArriveMgr) IS CBattlezMapConfig; the CArrive*
+// sub-object views (Mover/Grid/Finder/Sub10b/Cell/Quad/Find) promote onto its run-phase
+// slots. The helper thunks resolve to CBattlezMapConfig's OWN (still address-named)
+// siblings - Gate1a14->winapi_02a570, Effect374c->Method_02c0a0, Probe1a4b->Method_030b20,
+// Impact25e5->winapi_02dfa0, SelfImpact2b58->Method_02edb0, Ready27ed->Method_030530; the
+// sub-object methods have decent ghidra names (Move14bf->ApplyTriggerA, Find1c21->FindChild,
+// FindByField0C2838->FindByField0C, SetCell2f45->SetCell). The this-side owner fold is thus
+// entangled with giving those CBattlezMapConfig siblings real names + reconciling their
+// (i32-placeholder) arg types with the CGrunt* the resolver passes + the grid/finder
+// concrete identity - a coordinated CBattlezMapConfig-unit pass, not an isolated rename.
 //
 // After a gate (Gate1a14) and the pending-coord latch (g->m_328), it copies the
 // destination tile cell (grid[gy][gx] from GetTilePos>>5) and the grunt's own cell
