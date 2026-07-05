@@ -18,7 +18,7 @@
 
 #include <Ints.h>
 #include <rva.h>                   // SIZE_UNKNOWN/VTBL class-metadata macros used below
-#include <Gruntz/EngStr.h>         // shared CUserBaseLink (+0x18 EngStr link; ~EngStr 0x16d2a0)
+#include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 #include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
 
