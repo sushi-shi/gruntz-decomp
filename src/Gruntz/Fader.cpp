@@ -20,9 +20,10 @@
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
 #include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
 #include <Ints.h>
-#include <Win32.h>  // GetTickCount / WINAPI / RECT (reloc-masked imports)
-#include <math.h>   // acos/sin (fsin) / sqrt (fsqrt) intrinsics
-#include <string.h> // rep-movs / memset element copies
+#include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
+#include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the FrSurface view)
+#include <math.h>               // acos/sin (fsin) / sqrt (fsqrt) intrinsics
+#include <string.h>             // rep-movs / memset element copies
 #include <rva.h>
 
 // ApplyInit's two .rdata FP constants. Kept as minimal externs (not a fat
@@ -673,7 +674,16 @@ SIZE_UNKNOWN(CFaderElem);
 
 extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
-struct FrSurface; // defined below; FrConfig holds a FrSurface* surface override
+// The radial-fade FP constants (retail .rdata): fade divisor half, the sqrt->units
+// scale, and the two -1.0 bias subtractions the per-cell fade formula applies.
+DATA(0x005f0828)
+extern const float g_faderHalf; // 0.5
+DATA(0x005f0830)
+extern const double g_faderScale; // 10000.0
+DATA(0x005f0838)
+extern const double g_faderBiasR; // -1.0  (r - K == r + 1.0)
+DATA(0x005f0840)
+extern const float g_faderBiasFade; // -1.0  (fade - K == fade + 1.0)
 
 // The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle
 // at +0x0c that seeds BuildSurface.
@@ -685,26 +695,11 @@ struct FrImageSrc {
 // The source config arg.
 struct FrConfig {
     char p0[0x4];
-    void* m_paletteArg;      // +0x04
-    FrSurface* m_surfaceArg; // +0x08
+    void* m_paletteArg;       // +0x04
+    CDDSurface* m_surfaceArg; // +0x08  (was the FrSurface view; real CDDSurface)
     char p0c[0x10 - 0xc];
     FrImageSrc* m_imageSrc;  // +0x10  (-> m_0c surface)
     void* m_providedSurface; // +0x14
-};
-
-// The source surface (this->m_srcSurface): dims at +0x18/+0x1c, GetRowBase @0x13e6d0,
-// pixel buffer at +0x08, row pitch at +0x20, post-plot notifier @[+8] slot 0x80.
-struct FrSurface {
-    i32 GetRowBase(i32 row); // 0x13e6d0  __thiscall
-    char p0[0x8];
-    void* m_pixels; // +0x08  pixel buffer
-    char p0c[0x18 - 0xc];
-    i32 m_width;  // +0x18  width
-    i32 m_height; // +0x1c  height
-    char p20[0x24 - 0x20];
-    i32 m_pitch; // +0x20  row pitch
-    char p24[0xb0 - 0x24];
-    i32 m_colStride; // +0xb0  column stride
 };
 
 // The 16-byte fade cell.
@@ -723,13 +718,13 @@ struct CFaderRadialApply {
     char p0[0x1c];
     void* m_workSurface; // +0x1c  resolved surface handle
     char p20[0x24 - 0x20];
-    void* m_defaultPalette;      // +0x24  default palette
-    FrSurface* m_defaultSurface; // +0x28  default surface
+    void* m_defaultPalette;       // +0x24  default palette
+    CDDSurface* m_defaultSurface; // +0x28  default surface (real CDDSurface)
     char p2c[0x30 - 0x2c];
     i32 m_ownsSurface; // +0x30  owns-surface flag
     char p34[0x38 - 0x34];
-    FrSurface* m_srcSurface; // +0x38  source surface
-    void* m_palette;         // +0x3c  resolved palette
+    CDDSurface* m_srcSurface; // +0x38  source surface (real CDDSurface)
+    void* m_palette;          // +0x3c  resolved palette
     char p40[0x44 - 0x40];
     i32 m_maxRadius; // +0x44  max-radius scale
     char p48[0x4c - 0x48];
@@ -740,13 +735,18 @@ struct CFaderRadialApply {
 };
 
 // @early-stop
-// x87 scheduling wall: the surface/palette resolution + the radial cell loop are
-// faithful, but MSVC's fild/fxch/fsqrt interleave over the per-cell distance math
-// is not source-steerable (~62%). TRIGGER: dropped 63.27%->61.64% at the Phase-1
-// Fader merge - a regalloc leak from the merged TU's added headers/eh profile
-// (Win32.h/windows.h + /GX), NOT a logic change (body untouched); confirmed not
-// Globals.h (removing it did not recover the %). Accepted per the cleanup-over-%
-// mandate; the final sweep re-attacks the x87 schedule.
+// Re-reconstructed 61.64%->73.70% by fixing three structural bugs the prior model
+// carried (it was NOT an x87 wall): (1) m_maxRadius was `ftol(cx^2+cy^2)` - the real
+// formula is `ftol(sqrt(cx^2+cy^2) * 10000)`; (2) the per-cell dy was `0-centerY`
+// (the y term dropped) - it is `y - centerY`; (3) the pixel read used m_pixels(=the
+// m_8 COM surface) as the byte base and a phantom GetRowBase(row) - the real code
+// Lock()s the surface (0x13e6d0 returns the locked lpSurface base) then reads
+// `base[colStride*x + pitch*y]` and UnlockThunk()s. The FrSurface view is now the
+// real CDDSurface; the manual m_8->vtbl[0x80] unlock is the real UnlockThunk. The
+// K constants (0.5/10000/-1.0/-1.0) are the reloc-masked .rdata doubles/floats.
+// Residual is a callee-saved regalloc coloring (retail pins this->esi/zero->ebp;
+// our cl picks edi/ebx) + the x87 temp-slot frame (sub esp,0x18 vs 0xc) - genuine
+// MSVC5 scheduling, not logic. Accepted per the cleanup-over-% mandate.
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadialApply::Build(FrConfig* cfg) {
     CFaderRadialApply* self = this;
@@ -773,36 +773,37 @@ i32 CFaderRadialApply::Build(FrConfig* cfg) {
         return 0;
     }
 
-    FrSurface* s = self->m_srcSurface;
-    self->m_fadeDivisor = (float)s->m_height * 1.0; // K(0x5f0828)
-    self->m_centerX = s->m_height / 2;
-    self->m_centerY = s->m_width / 2;
-    self->m_cells = (FrCell*)::operator new(s->m_width * s->m_height * 16);
+    // The source surface is the real CDDSurface: width @+0x1c, height @+0x18, pitch
+    // @+0x20, column stride @+0xb0, held IDirectDrawSurface @m_8. Lock() (0x13e6d0)
+    // returns the locked pixel base; UnlockThunk() is the m_8->vtbl[0x80] COM unlock.
+    CDDSurface* s = self->m_srcSurface;
+    self->m_fadeDivisor = (float)s->m_width * g_faderHalf; // width * 0.5
+    self->m_centerX = s->m_width / 2;
+    self->m_centerY = s->m_height / 2;
+    self->m_cells = (FrCell*)::operator new(s->m_height * s->m_width * 16);
 
     i32 cx = self->m_centerX;
     i32 cy = self->m_centerY;
-    self->m_maxRadius = __ftol((double)(cx * cx + cy * cy));
+    self->m_maxRadius = (i32)(sqrt((double)(cx * cx + cy * cy)) * g_faderScale);
 
-    for (i32 y = 0; y < s->m_width; y++) {
-        for (i32 x = 0; x < s->m_height; x++) {
+    for (i32 y = 0; y < self->m_srcSurface->m_height; y++) {
+        for (i32 x = 0; x < self->m_srcSurface->m_width; x++) {
             i32 dx = x - self->m_centerX;
-            i32 dy = 0 - self->m_centerY; // (y term folded into the per-row base)
-            float r = (float)self->m_maxRadius - (float)__ftol((double)(dx * dx + dy * dy));
-            float fade = r / self->m_fadeDivisor;
+            i32 dy = y - self->m_centerY;
+            float r = (float)((double)self->m_maxRadius
+                              - sqrt((double)(dx * dx + dy * dy)) * g_faderScale - g_faderBiasR);
+            float fade = r / self->m_fadeDivisor - g_faderBiasFade;
             i32 vx = (i32)((float)dx * fade);
             i32 vy = (i32)((float)dy * fade);
             u8 pix;
-            i32 rb = self->m_srcSurface->GetRowBase(y);
-            if (rb != 0) {
-                FrSurface* ss = self->m_srcSurface;
-                i32 col = ss->m_colStride * x;
-                i32 rowbase = ss->m_pitch * y;
-                pix = ((u8*)ss->m_pixels)[rowbase + rb + col];
-                (*(void (**)(void*, i32))(*(void***)ss->m_pixels + 0x80 / 4))(ss->m_pixels, 0);
+            i32 base = self->m_srcSurface->Lock(0);
+            if (base != 0) {
+                pix = *(u8*)(base + self->m_srcSurface->m_b0 * x + self->m_srcSurface->m_pitch * y);
+                self->m_srcSurface->UnlockThunk();
             } else {
                 pix = 0;
             }
-            FrCell* cell = &self->m_cells[y * self->m_srcSurface->m_height + x];
+            FrCell* cell = &self->m_cells[y * self->m_srcSurface->m_width + x];
             cell->vx = vx;
             cell->vy = vy;
             cell->fade = (i32)fade;
@@ -814,7 +815,6 @@ i32 CFaderRadialApply::Build(FrConfig* cfg) {
 
 SIZE_UNKNOWN(FrImageSrc);
 SIZE_UNKNOWN(FrConfig);
-SIZE_UNKNOWN(FrSurface);
 SIZE_UNKNOWN(FrCell);
 SIZE_UNKNOWN(CFaderRadialApply);
 
