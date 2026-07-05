@@ -17,6 +17,9 @@ Usage (inside nix develop, or plain - only reads files + $GRUNTZ_EXE):
     python3 -m gruntz.analysis.xref CGameApp::CloseResources # by name (symbol_names)
     python3 -m gruntz.analysis.xref --callees 0x136180       # forward: its call targets
     python3 -m gruntz.analysis.xref --raw 0x136180           # list every call site (no dedup)
+    python3 -m gruntz.analysis.xref --tree 0x0e35f0          # FULL caller ancestry, thunks
+                                                             # chased automatically
+    python3 -m gruntz.analysis.xref --tree --depth 3 0x0e35f0  # cap the expansion
 """
 import os, sys, struct, csv, bisect
 from pathlib import Path
@@ -126,6 +129,63 @@ def callers_of(targets, d, secs, names, fstarts, raw=False):
                 print(f"  {kind} in 0x{o:08x} {nm} [{unit}]")
 
 
+def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
+    """Recursive caller ancestry: expand callers-of-callers until roots, chasing
+    ILT jmp-thunks transparently (a thunk is just a node whose own callers get
+    expanded). Dedup: a function already expanded prints as (*seen). depth_cap=0
+    means unlimited ('as far as possible'); cycles terminate via the seen set."""
+    tname, tva, tvsz, trp, trsz = _text(secs)
+    tb = d[trp:trp + trsz]
+    idx = {}  # callee entry-rva -> [(site, op)] over the WHOLE .text, one scan
+    n = len(tb) - 5
+    i = 0
+    while i < n:
+        op = tb[i]
+        if op == 0xE8 or op == 0xE9:
+            rel = struct.unpack_from("<i", tb, i + 1)[0]
+            tgt = tva + i + 5 + rel
+            if tva <= tgt < tva + tvsz:
+                idx.setdefault(tgt, []).append((tva + i, op))
+        i += 1
+
+    def owner(rva):
+        k = bisect.bisect_right(fstarts, rva) - 1
+        return fstarts[k] if k >= 0 else None
+
+    def label(rva):
+        nm, unit = names.get(rva, (f"FUN_{rva:x}", "?"))
+        thunk = "  (thunk-band)" if rva < 0x7c20 else ""
+        return f"0x{rva:08x} {nm} [{unit}]{thunk}"
+
+    for t in targets:
+        print(f"\n==== caller tree of {label(t)} ====")
+        seen = set()
+
+        def walk(rva, depth):
+            if depth_cap and depth > depth_cap:
+                print("  " * depth + "  ... (--depth cap)")
+                return
+            sites = idx.get(rva, [])
+            owners = []  # dedup per parent, preserve site order
+            for site, op in sites:
+                o = owner(site)
+                if o is not None and o != rva and (o, op) not in owners:
+                    owners.append((o, op))
+            if not owners:
+                if depth == 0:
+                    print("  (no direct call/jmp rel32 caller in .text)")
+                return
+            for o, op in owners:
+                kind = "call" if op == 0xE8 else "jmp "
+                if o in seen:
+                    print("  " * (depth + 1) + f"<- {kind} {label(o)} (*seen)")
+                    continue
+                seen.add(o)
+                print("  " * (depth + 1) + f"<- {kind} {label(o)}")
+                walk(o, depth + 1)
+        walk(t, 0)
+
+
 def callees_of(targets, d, secs, names, fstarts):
     tname, tva, tvsz, trp, trsz = _text(secs)
     # size of a function = next-start - start (from fstarts)
@@ -151,12 +211,18 @@ def main():
     args = sys.argv[1:]
     mode = "callers"
     raw = False
+    depth = 0
     rest = []
-    for a in args:
+    it = iter(args)
+    for a in it:
         if a == "--callees":
             mode = "callees"
         elif a == "--raw":
             raw = True
+        elif a == "--tree":
+            mode = "tree"
+        elif a == "--depth":
+            depth = int(next(it, "0"))
         else:
             rest.append(a)
     if not rest:
@@ -166,6 +232,8 @@ def main():
     targets = [_resolve(a, byname) for a in rest]
     if mode == "callees":
         callees_of(targets, d, secs, names, fstarts)
+    elif mode == "tree":
+        caller_tree(targets, d, secs, names, fstarts, depth_cap=depth)
     else:
         callers_of(targets, d, secs, names, fstarts, raw=raw)
 

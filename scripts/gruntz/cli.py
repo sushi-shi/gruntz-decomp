@@ -735,6 +735,10 @@ def _point_argv(args) -> list:
 
 def cmd_sema_xref(args) -> None:
     flags = (["--callees"] if args.callees else []) + (["--raw"] if args.raw else [])
+    if args.tree:
+        flags.append("--tree")
+    if args.depth:
+        flags += ["--depth", str(args.depth)]
     sys.exit(_sema_tool("gruntz.analysis.xref", flags + args.target))
 
 
@@ -1157,6 +1161,11 @@ def _add_sema(sub) -> None:
     sx.add_argument("target", nargs="+", help="RVA(s) (0x..) or symbol name(s)")
     sx.add_argument("--callees", action="store_true", help="forward: its call targets")
     sx.add_argument("--raw", action="store_true", help="every call site (no dedup)")
+    sx.add_argument("--tree", action="store_true",
+                    help="FULL caller ancestry tree - expands callers-of-callers to the "
+                         "roots, chasing ILT jmp-thunks automatically (attribution in one shot)")
+    sx.add_argument("--depth", type=int, default=0, metavar="N",
+                    help="cap --tree expansion at N levels (default 0 = unlimited)")
     sx.set_defaults(func=cmd_sema_xref)
 
     sy = ss.add_parser("symbol", help="fuzzy workspace-symbol search (clangd)")
