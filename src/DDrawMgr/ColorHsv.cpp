@@ -19,13 +19,18 @@ struct ColorHSV {
 };
 
 // @early-stop
-// x87 scheduling wall: the body logic + min/max macro are faithful, but MSVC's
-// exact fld/fxch interleave of the channel compares with the FP pipeline is not
-// source-steerable.
+// regalloc + x87-schedule wall (~46.7%): body logic + min/max macro + channel
+// extraction are faithful. The u16 `lo` local steers b1 toward the word-sized
+// extraction retail uses, but MSVC5 still picks `mov dl,ch` where retail emits
+// `mov cx,bx; shr cx,8`, pins `color` in ecx (retail: ebx), and lays a 0xc-byte
+// frame (retail 0x10 - a 4-byte gap for retail's early `(float)mn` fild/fstp
+// materialization). None is source-steerable; verified base-vs-target with
+// `gruntz sema disasm 0x0014fcc0 --diff`. docs/patterns/zero-register-pinning.md.
 RVA(0x0014fcc0, 0x16d)
 void RgbToHsv(ColorHSV* out, u32 color) {
-    u8 b0 = (u8)color;
-    u8 b1 = (u8)(color >> 8);
+    u16 lo = (u16)color;
+    u8 b0 = (u8)lo;
+    u8 b1 = (u8)(lo >> 8);
     u8 b2 = (u8)(color >> 16);
 
     int mx = HSV_MAX(HSV_MAX(b0, b1), b2);

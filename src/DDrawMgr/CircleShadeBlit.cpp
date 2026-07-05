@@ -36,12 +36,16 @@ struct CircleShadeBlit {
 };
 
 // @early-stop
-// x87/stack-temp scheduling wall (shared with the sibling fader rasterizers
+// regalloc-cascade wall (~54%; shared with the sibling fader rasterizers
 // CFaderRadial::Build / ImageRotateBlit, both ~30%): the circular-band walk, the
 // per-row integer sqrt, the table remap `table[pix*m_tableStride + clippedX]`, the
 // horizontal-mirror + vertical-mirror plots and the four bounds-clip loop variants
-// are reconstructed in shape/order. Residue is the MSVC /O2 stack-temp allocation
-// over the ~13 spilled locals + the arg-slot reuse, not source-steerable.
+// are reconstructed in shape/order. Residue cascades from the initial `this`
+// register pick: retail pins `this` in ESI + lays a 0x20-byte frame, MSVC5 here
+// picks EDI + a 0x24 frame, which re-assigns every spilled stack slot across the
+// circle-distance/imul block downstream. No source lever flips the `this` register;
+// verified base-vs-target with `gruntz sema disasm 0x00180fb0 --diff`.
+// docs/patterns/zero-register-pinning.md.
 RVA(0x00180fb0, 0x534)
 void CircleShadeBlit::Render(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 R = m_tableStride;
