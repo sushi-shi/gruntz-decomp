@@ -34,16 +34,21 @@ struct BmpFile {
     Stream m_8; // +0x08
     char p9[0xc - 0x9];
     Opener m_c; // +0x0c
-    char pad[0x440 - 0x10];
+    char pad[0x10 - 0xd]; // file object is 0x10 B on the frame (info sits at file+0x10)
 };
 
 // CRezImage::SaveBmp(filename, paletteObj), __thiscall (ret 8).
 // @early-stop
-// /GX-EH + stack-layout wall: the logic (header build, the RGBQUAD de-interleave, the
-// bottom-up scanline Write loop) and the reloc-masked CFile calls are faithful, but the
-// BMP header/info temporaries and the de-interleave's base-relative addressing land in
-// different stack slots than retail, and the EH frame shifts the whole allocation. A
-// complete, correct reconstruction parked on the documented EH/stack-slot wall. topic:wall.
+// zero-register-pinning regalloc wall (~57%). Fixed a REAL bug first: the CFile temp
+// is 0x10 B on the frame (ctor@[esp+0x24], info@[esp+0x34]=file+0x10), not 0x440 -
+// the oversized view had inflated the frame to sub esp,0x878; now 0x448 (retail 0x44c,
+// off by one consequent spill slot). The EH prologue matches (push -1 + scope-table
+// reloc + old-fs, reloc-masked). Residual: retail pins esi=0 as a whole-function zero
+// register and holds `this` in ebp, so every null-check is `cmp esi,edx` and every
+// BITMAPINFOHEADER zero-store reads esi; this build keeps `this` in esi + uses
+// `test`/immediate-0, diverging ~40% of the body. A documented regalloc coin-flip
+// (docs/patterns/zero-register-pinning.md), not source-steerable; logic + reloc-masked
+// CFile ctor/Open/Write/dtor all faithful. The +4 frame is the extra spill slot.
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
