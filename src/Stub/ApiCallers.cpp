@@ -635,7 +635,7 @@ namespace ApiCallerStubs {
         MsgWnd_08ee70* m_4; // +0x04
         char m_pad8[0x30 - 8];
         AudioObj_08ee70* m_30; // +0x30
-        i32 Show(i32 type, i32 text);
+        i32 Show(i32 text, i32 type);
     };
     // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
     void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
@@ -647,7 +647,7 @@ namespace ApiCallerStubs {
     // MessageBoxA arg setup all carry the same global re-colouring. Same
     // instructions, swapped registers; not source-steerable (~98.5%).
     RVA(0x0008ee70, 0x7c)
-    i32 MsgHost_08ee70::Show(i32 type, i32 text) {
+    i32 MsgHost_08ee70::Show(i32 text, i32 type) {
         if (m_30) {
             Stop_158c70(m_30->m_4->m_14);
             Poly08* p = *m_30->m_1c;
@@ -930,7 +930,7 @@ namespace ApiCallerStubs {
         i32 Connect(i32 sessionFlags, GUID guid); // thiscall, RVA 0x1780b0
     };
     struct DPlaySub_0b77a0 {
-        void Init(i32 handle); // thiscall, RVA 0x158dc0
+        void Init(); // thiscall, RVA 0x158dc0
     };
     struct DPlayHolder_0b77a0 {
         char m_pad0[4];
@@ -956,7 +956,7 @@ namespace ApiCallerStubs {
             return 0;
         }
         Configure("BACKGND", 0, 0, 1, 0);
-        m_c->m_4->Init(0);
+        m_c->m_4->Init();
         i32 sessionFlags = Build();
         if (!sessionFlags) {
             return 0;
