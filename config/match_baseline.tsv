@@ -326,7 +326,7 @@ netmgrmenuselect	1	1
 netmgrmisc	5	4
 netmgrwait	2	0
 netsession	2	1
-netsession2	3	2
+netsession2	3	1
 netsessionnode	3	2
 netsessionopen	1	1
 netthingdtor	1	1
@@ -2626,7 +2626,7 @@ multistartdlgroster	?SetListCurSel@@YGXHH@Z	100.0000	100.0000	1	0e7a3c67dc8b	0xc
 multistartdlgroster	?ToggleReady@CMultiStartDlg@@QAEXH@Z	97.6531	97.6531	2	c88be060b0c8	0xc50f0
 multistartdlgroster	?UpdatePlayers@CMultiStartDlg@@QAEHH@Z	62.1892	62.1892	3	2f73e1131143	0xc4230
 multistartdlgworld	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9a87d09f4fe0	0xc16b0
-multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	3	70fdea68da3a	0xc1840
+multistartdlgworld	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	4	0fbef10bceaf	0xc1840
 multistartdlgworld	?Sub_c3e30@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	11d8026a75d8	0xc3e30
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	2	2e5a80e5f1dd	0x118040
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	5	83eba46172b3	0xc4b60
@@ -2655,7 +2655,7 @@ netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	2	58e54d2b70c0	0xc1390
 netgamedlg	?EnableControls@CMultiStartDlg@@QAEHXZ	84.2549	84.2549	1	7df49750a43e	0xc4120
 netgamedlg	?SyncChannelSlot@CMultiStartDlg@@QAEXH@Z	69.3281	69.3281	1	01208a6cfbe7	0xc2ab0
 netgamedlg	?VerifyCustomLevel@CMultiStartDlg@@QAEXXZ	51.9027	51.9027	1	611b5fd40f00	0xc4c00
-netgamedlgwatch	?Watchdog@CNetDlgWatch@@QAEXXZ	93.9344	93.9344	4	df03a0490d56	0xc46b0
+netgamedlgwatch	?Watchdog@CMultiStartDlg@@QAEXXZ	93.9344	93.9344	1	e6998c40591c	0xc46b0
 netlobbydialogs	?AppendEditLine@NetLobby@@YGXPAUHWND__@@PAD@Z	100.0000	100.0000	1	e874b28df082	0xbb3e0
 netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	3ca7837073dd	0xbdc00
 netlobbydialogs	?NetChatSubmit@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	2523d48992d7	0xbe400
@@ -2709,7 +2709,7 @@ netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	6	fc991f77b746	0x178e
 netmgr	?HandleControlMsg@CNetMgr@@QAEHPAUCNetCtrlMsg@@H@Z	0.0000	0.0000	1	9761b53b87ce	0xba1a0
 netmgr	?HandleVersionCheck@CNetMgr@@QAEXPAUCNetVersionMsg@@@Z	100.0000	100.0000	6	932a6dabe9cf	0xbd0b0
 netmgr	?Init@CNetMgr@@QAEHPAXHHHH@Z	79.9296	79.9296	2	6cc49a2be8f2	0x178170
-netmgr	?InitFromProvider@CNetMgr@@QAEHPAXHHHH@Z	96.4133	96.4133	2	61285bfab4be	0x1780b0
+netmgr	?InitFromProvider@CNetMgr@@QAEHPAXU_GUID@@@Z	96.4133	96.4133	1	58227894e6da	0x1780b0
 netmgr	?InitSession@CNetSessionNode@@QAEHHPBD0H@Z	100.0000	100.0000	2	c88f7f193db3	0x1796c0
 netmgr	?JoinAndRegisterChannel@CNetMgr@@QAEHXZ	88.0270	88.0270	3	8a5894ec0423	0xb8b10
 netmgr	?LoadConfig@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	1	66e2eaddb4d0	0xbce80
@@ -2761,20 +2761,20 @@ netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	1	4c76abe210b0
 netmgrmenuselect	?LoadMenuSelectSprite@CNetMgr@@QAEHPAX@Z	100.0000	100.0000	5	eb4aa4c0f818	0xba620
 netmgrmisc	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	3bf776dc8916	0xbf120
 netmgrmisc	?ConnectStep@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	a13e74e1628b	0xc2a20
-netmgrmisc	?Drive@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	33ae5e44a959	0xc40b0
+netmgrmisc	?Drive@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	2	6ae0acff827c	0xc40b0
 netmgrmisc	?NetConfigureBe90@@YAXXZ	100.0000	100.0000	1	39468a8eca59	0xc5f00
 netmgrmisc	?NetPollE25c@@YAHXZ	100.0000	100.0000	1	2f309aba1fc2	0xf9710
 netmgrwait	?Poll@CNetMgr@@QAEHH@Z	94.2222	94.2222	4	edf7a7c2d667	0xbba10
 netmgrwait	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.0380	75.0380	4	1ac72297a2fb	0xbb700
 netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	3	86463cf80a31	0xb89e0
-netsession2	?Init@CNetSession2@@QAEHPAXPAVCNetMgr@@0@Z	100.0000	100.0000	1	4dd224a742e5	0xbef80
-netsession2	?Reset@CNetSession2@@QAEXXZ	94.1176	94.1176	1	81e94541388a	0xbf150
-netsession2	?Verify@CNetSession2@@QAEHH@Z	100.0000	100.0000	2	0412e5b98227	0xc0290
+netsession2	?Init@CNetSession@@QAEHPAXPAVCNetMgr@@0@Z	100.0000	100.0000	1	1d9dbd1d5e67	0xbef80
+netsession2	?Reset@CNetSession@@QAEXXZ	94.1176	94.1176	1	c865b2ba2070	0xbf150
+netsession2	?Verify@CNetSession@@QAEHH@Z	89.5349	89.5349	1	942c8bf16c5b	0xc0290
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x1793b0
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
-netsessionopen	?Open@NetSessionOpener@@QAEHXZ	100.0000	100.0000	1	7dc448e92127	0xb77a0
+netsessionopen	?Open@NetSessionOpener@@QAEHXZ	100.0000	100.0000	2	45613ddad38d	0xb77a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	1	893ac3836032	0xc5280
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	3	707f19c2fa86	0xf7d90
 objectdropper	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	85.4947	85.4947	5	05f9ec9a757e	0xc59f0
