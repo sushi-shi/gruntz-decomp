@@ -1189,7 +1189,7 @@ ddrawsubmgrleaf	?FUN_00552640@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	68e8f
 ddrawsubmgrleaf	?FreeAll_152720@CDDrawSubMgrLeaf@@QAEXXZ	94.6939	94.6939	1	c1b2f198b514	0x152720
 ddrawsubmgrleaf	?HasKeyPrefix_152c50@CDDrawSubMgrLeaf@@QAEHPBD@Z	100.0000	100.0000	1	7aefb5e457aa	0x152c50
 ddrawsubmgrleaf	?IsReady@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	f1a606ac0fa9	0x1577a0
-ddrawsubmgrleaf	?IsReady@CDDrawSubMgrLeafScan@@QAEHXZ	41.5000	41.5000	1	6ca78a407c81	0x157530
+ddrawsubmgrleaf	?IsReady@CDDrawSubMgrLeafScan@@UAEHXZ	41.5000	41.5000	1	6ca78a407c81	0x157530
 ddrawsubmgrleaf	?KeyOfValue_152d30@CDDrawSubMgrLeaf@@QAE?AVCString@@PAVCObject@@@Z	100.0000	100.0000	1	900de50bcdee	0x152d30
 ddrawsubmgrleaf	?LookupValue_06b2a0@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	fb4d26a5e2e6	0x6b2a0
 ddrawsubmgrleaf	?RemoveKeysEqual_1527d0@CDDrawSubMgrLeaf@@QAEHPBD0@Z	100.0000	100.0000	1	b63189fdddea	0x1527d0
