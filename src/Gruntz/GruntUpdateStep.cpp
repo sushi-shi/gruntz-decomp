@@ -44,12 +44,16 @@ extern CStepList2 g_dropList;
 
 // ===========================================================================
 // @early-stop
-// Deep per-tick AI step: ~18 reloc-masked engine calls (mixed __thiscall receivers
-// on this/other-grunt/grid + the on-screen cue + __cdecl frees), the manager-grid
-// chain and the free-list splice. Logic reconstructed from the decomp faithfully;
-// MSVC5's register allocation across the long live ranges (the grunt-under-HUD
-// pointer, the clock, the grid bases) and the cold-block placement do not reproduce
-// instruction-for-instruction. Final-sweep candidate (deep-regalloc + branch-placement wall).
+// 23%->34% (2026-07-05): the phase dispatch is a `switch (m_defenderState)`, not
+// if/else - that produced retail's `sub eax; je phase0; dec; je phase1; dec; jne tail;
+// [phase2 fall-through]` ladder and the phase2/phase1/phase0 reverse layout, and the
+// `goto tail`s became `break`s. Residual walls (final sweep):
+//   * phase-2 powered-up recheck (~78 insns, retail 0x1cb-0x24d) is DEAD in-source (the
+//     switch runs only with m_220==0, which the top powered-up early-out proves) so THIS
+//     cl dead-code-eliminates it while retail emits it - the same DCE artifact as
+//     GruntChargeStep's state-2 recheck; no clean C spelling forces the dead block.
+//   * `if (!strcmp(name,"I"))` sete-bool vs my `!=0` branch, and the deep regalloc across
+//     the grunt-under-HUD pointer / clock / grid bases.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = g_typeColl.Lookup((i32)m_14->m_1c)->m_0;
@@ -110,15 +114,15 @@ i32 CGrunt::UpdateArrival() {
         return 1;
     }
 
-    i32 phase = F(this, 0x2d4);
-    if (phase == 0) {
+    switch (F(this, 0x2d4)) {
+    case 0:
         if (g != 0) {
             if (F(this, 0x3f0) > 99) {
                 i32 x = F(P(g, 0x10), 0x5c);
                 if (x == F(g, 0x17c) && F(P(g, 0x10), 0x60) == F(g, 0x180)
                     && g->RectContains(x, F(P(g, 0x10), 0x60)) != 0) {
                     CommitNeighbor(F(g, 0x1ec), F(g, 0x1f0), F(g, 0x17c), F(g, 0x180));
-                    goto tail;
+                    break;
                 }
             }
             if (g != 0 && (u32)F(this, 0x2ec) > 1000) {
@@ -141,7 +145,7 @@ i32 CGrunt::UpdateArrival() {
                     }
                 }
                 F(this, 0x2ec) = 0;
-                goto tail;
+                break;
             }
         }
         if (F(this, 0x244) == 0 && F(this, 0x318) != 0 && (u32)F(this, 0x2ec) > 3000) {
@@ -187,7 +191,8 @@ i32 CGrunt::UpdateArrival() {
             }
             F(this, 0x2ec) = 0;
         }
-    } else if (phase == 1) {
+        break;
+    case 1: {
         CGrunt* slot = m_tileMgr->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
         i32 cur = m_tileMgr->GetOccupant(this) ? 1 : 0;
         CGrunt* found = m_tileMgr->GetOccupant(this);
@@ -211,11 +216,13 @@ i32 CGrunt::UpdateArrival() {
             F(this, 0x2d4) = 0;
             F(this, 0x2f4) = -1;
         }
-    } else if (phase == 2) {
+        break;
+    }
+    case 2:
         F(this, 0x2d4) = 1;
+        break;
     }
 
-tail:
     if (F(this, 0x328) != 0) {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
