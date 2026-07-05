@@ -16,6 +16,7 @@
 #include <Bute/SymTab.h>
 #include <Gruntz/StatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
 #include <Gruntz/SoundCueMgr.h>        // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 
 extern "C" {
@@ -29,28 +30,11 @@ extern "C" {
 
 // CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>;
 // CueObj/CCueHashTable/CStatusBarHolder in <Gruntz/StatusBarCueHolder.h>.
-// The per-frame error sink: CGruntzMgr::ReportError (@0x8dc60, __thiscall, reloc-
-// masked). This is the CGruntzMgr game-manager singleton (the one true shape lives
-// in <Gruntz/GruntzMgr.h>); modeled here as a minimal reloc-masked-callee view -
-// this TU cannot pull the full canonical header (its transitive CDDSurface clashes
-// with this TU's local DirectDraw surface view). Named distinctly so it is not
-// mistaken for the WAP32::CGameMgr engine base class.
-// The mgr's window-owner chain: CGruntzMgr(+0x04) -> link(+0x04) -> top HWND. A
-// minimal reloc-masked-member view (this TU can't pull the full CGameWnd header),
-// same pattern as CSoundMgr / PreviewMgr below.
-SIZE_UNKNOWN(MgrWndLink);
-struct MgrWndLink {
-    i32 m_0;
-    HWND m_4; // +0x04  top window
-};
-SIZE_UNKNOWN(CGruntzMgrErrSink);
-class CGruntzMgrErrSink {
-public:
-    void ReportError(i32 code, i32 flags); // 0x8dc60  CGruntzMgr::ReportError
-    void DelayedQuit(); // 0x8f530  CGruntzMgr::DelayedQuit (menu-delay -> WM_CLOSE)
-    i32 m_0;
-    MgrWndLink* m_4; // +0x04  window-owner chain -> HWND
-};
+// The screen's manager (CPreviewState::m_04) is the canonical CGruntzMgr game-manager
+// singleton (<Gruntz/GruntzMgr.h>): the per-frame error sink (ReportError @0x8dc60),
+// the delayed-quit (DelayedQuit @0x8f530), and the window-owner chain to the top HWND
+// via the CGameMgr base (m_gameWnd -> CGameWnd::m_hwnd). The former local
+// CGruntzMgrErrSink / MgrWndLink placeholder views folded onto it.
 
 // The countdown's audio kill hook (the sound mgr at the status-bar holder's +0x2c;
 // __thiscall, arg -1 == "all"). 0x136e20, reloc-masked.
@@ -109,9 +93,9 @@ public:
     void LoadLevelPreviewScreen();
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
 
-    CGruntzMgrErrSink* m_04; // +0x04
-    i32 m_08;                // +0x08
-    PreviewMgr* m_0c;        // +0x0c
+    CGruntzMgr* m_04; // +0x04  game-manager singleton
+    i32 m_08;         // +0x08
+    PreviewMgr* m_0c; // +0x0c
     char m_pad10[0x2c - 0x10];
     CSymTab* m_2c; // +0x2c
     char m_pad30[0x1b8 - 0x30];
@@ -245,5 +229,5 @@ void CPreviewState::Cancel() {
         m_04->DelayedQuit();
         return;
     }
-    PostMessageA((HWND)(m_04->m_4->m_4), 0x111, 0x8027, 0);
+    PostMessageA((HWND)(m_04->m_gameWnd->m_hwnd), 0x111, 0x8027, 0);
 }
