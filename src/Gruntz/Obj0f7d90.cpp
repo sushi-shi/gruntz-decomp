@@ -1,32 +1,47 @@
 // Obj0f7d90.cpp (renamed from ClassUnknown43.cpp) - Obj0f7d90, a per-tick game-object
 // manager. XREF: Update (0xf7d90) is reached (via ILT 0x2806) from
-// CUserLogic::LoadGruntTuningConstants (0x5d210, userlogic); it reads the game
-// registry g_mgrSettings (0x64556c). RTTI name unrecovered (Ghidra placeholder
-// "Obj0f7d90"); the caller ties it to the CUserLogic tuning/registry cluster.
+// CUserLogic::LoadGruntTuningConstants (0x5d210, userlogic), itself reached from
+// RegisterGameObjectTypes (0xa3b0) - so this is one of the registered game-object types.
+// It reads the game registry singleton (0x64556c). RTTI name unrecovered (Ghidra
+// placeholder "Obj0f7d90", a P2 identity TODO); the caller ties it to the CUserLogic
+// game-object-type cluster.
 //
-// 0x0f7d90 is a per-tick Update on the Obj0f7d90
-// manager: it mirrors a coord pair
-// (m_17c/m_180 -> m_300/m_304), early-outs when m_198 is clear, otherwise pulls a
-// peer object from m_260 and either re-syncs its position via g_mgrSettings->m_68
-// or (after a >1000 throttle) re-snaps + screen-bounds-checks before firing
-// g_mgrSettings->m_cueSink. Field names are placeholders (offsets are load-bearing);
-// engine callees + g_mgrSettings are external (reloc-masked).
+// 0x0f7d90 is a per-tick Update: it mirrors a coord pair (m_17c/m_180 -> m_300/m_304),
+// early-outs when m_198 is clear, otherwise pulls a peer object from m_260 and either
+// re-syncs its position via the registry's trigger grid (m_cmdGrid = CTriggerMgr) or
+// (after a >1000 throttle) re-snaps + screen-bounds-checks before firing the registry's
+// on-screen cue sink (m_cueSink = CGruntCueSink). Field names are placeholders (offsets
+// are load-bearing); engine callees are external (reloc-masked).
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>
-#include <Mfc.h>
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (registry m_cmdGrid, +0x68)
+#include <Gruntz/Grunt.h> // canonical CGruntCueSink (registry m_cueSink, +0x60) + CGameRegistry
 
 class Obj0f7d90;
 
+// The CGameRegistry view of the 0x24556c singleton (the SAME object as WwdGameReg* g_gameReg,
+// the 0x24556c dual-view): typed CGameRegistry so its m_cmdGrid (CTriggerMgr) / m_cueSink
+// (CGruntCueSink) slots are reached cast-free. Bound here (Win32 dual-view convention).
+DATA(0x0024556c)
+extern "C" CGameRegistry* g_mgrSettings;
+
+// The managed object's screen-position sub-object (m_10): its +0x5c/+0x60 are the screen
+// (x,y). A genuinely-distinct engine display object (identity unrecovered).
 struct Box5c {
     char pad[0x5c];
-    int m_5c; // 0x5c
-    int m_60; // 0x60
+    int m_5c; // 0x5c  screen x
+    int m_60; // 0x60  screen y
 };
 
+// The peer-object getter reached through this manager's m_260 slot.
 struct Obj260 {
     Obj0f7d90* Get253b(Obj0f7d90* self);
 };
 
+// The registry's viewport-bounds path (g_mgrSettings->m_world->m_24->m_5c->rect): the same
+// m_world(+0x30)->m_24(+0x24)->m_5c(+0x5c) chain CTriggerMgr walks (landing on the shared
+// CViewport, whose +0x40 is the screen rect). The registry world's sub-object chain is not
+// yet broken out on the canonical CSpriteFactoryHolder/CViewport (a shared-chain modeling
+// TODO); the rect is the on-screen clip bounds.
 struct Rect4 {
     int left;   // 0x0
     int top;    // 0x4
@@ -35,29 +50,22 @@ struct Rect4 {
 };
 struct Reg5c {
     char pad[0x40];
-    Rect4 rect; // 0x40
+    Rect4 rect; // 0x40  the viewport screen rect
 };
 struct Reg24 {
     char pad[0x5c];
-    Reg5c* m_5c; // 0x5c
+    Reg5c* m_5c; // 0x5c  the CViewport
 };
 struct Reg30 {
     char pad[0x24];
     Reg24* m_24; // 0x24
 };
-struct MgrObj {
-    void Func3030(int a, int b, int c, int d);
-    void Func39f4(void* a, int b, int c, int d, int e, int f);
-};
-
-DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
 
 SIZE_UNKNOWN(Obj0f7d90);
 class Obj0f7d90 {
 public:
     char pad00[0x10];
-    Box5c* m_10; // 0x10
+    Box5c* m_10; // 0x10  the managed object's screen-position holder
     char pad14[0x17c - 0x14];
     int m_17c; // 0x17c
     int m_180; // 0x180
@@ -113,7 +121,7 @@ int Obj0f7d90::Update_0f7d90() {
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
-        ((MgrObj*)g_mgrSettings->m_cmdGrid)->Func3030(m_1ec, m_1f0, b->m_5c, b->m_60);
+        g_mgrSettings->m_cmdGrid->ReportObjectAt(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
     if (m_2ec <= 0x3e8) {
@@ -132,7 +140,7 @@ int Obj0f7d90::Update_0f7d90() {
         int x = c->m_5c;
         Rect4* r = &((Reg30*)g->m_world)->m_24->m_5c->rect;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            ((MgrObj*)g->m_cueSink)->Func39f4(this, 0x366, -1, 0, -1, -1);
+            g->m_cueSink->CueEvent(this, 0x366, -1, 0, -1, -1);
         }
     }
     m_390 = 0;
@@ -140,8 +148,6 @@ int Obj0f7d90::Update_0f7d90() {
 }
 
 SIZE_UNKNOWN(Box5c);
-SIZE_UNKNOWN(MgrObj);
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(Obj260);
 SIZE_UNKNOWN(Rect4);
 SIZE_UNKNOWN(Reg24);

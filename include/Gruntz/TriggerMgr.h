@@ -352,6 +352,9 @@ public:
     i32 Reset3(i32 a, i32 b, i32 c);
     i32 Probe();                        // DestroyGroup overlay-took self-probe (reloc-masked)
     i32 PlaceCell(i32 a, i32 b, i32 c); // DestroyGroup placement self-call (reloc-masked)
+    // 0x3030: the per-tick game-object managers (Obj0f7d90::Update) report an object's
+    // (area,sub) id + screen pos to the trigger grid through the registry's m_cmdGrid slot.
+    void ReportObjectAt(i32 area, i32 sub, i32 screenX, i32 screenY);
     void RecallCell(CTmCell* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
     void RefreshB(i32 a);
     void RefreshC();
