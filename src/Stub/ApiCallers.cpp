@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDSurface.h> // CDDSurface - FontRenderer::DrawGlyphRun's destination surface
 #include <ddraw.h>              // real IDirectDrawSurface (surf->m_8->Unlock(0))
 #include <Font/Font.h>          // FontRenderer/Font/Glyph/Rect/TextExtent (DrawGlyphRun 0x179e70)
+#include <Gruntz/GruntzMgr.h>   // real CGruntzMgr (the 0x24556c game-manager singleton)
 #include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
@@ -43,50 +44,23 @@
 //   [ORPHAN-2] 0x0394b0 (ClickHost hit-test) - the worklist's CGruntzMgr attribution
 //              was a thunk-band mis-chase; real owner unrecovered, so LEFT put (see it).
 
-// A window-host chain hung off the game registry: its m_4 is the top-level HWND.
-SIZE_UNKNOWN(GameWnd);
-struct GameWnd {
-    char m_pad0[4];
-    HWND m_4; // +0x04
-};
-// The CGameRegistry singleton (reloc-masked DATA symbol ?g_gameReg@@3PAUCGameReg@@A).
-// Declared at global scope so it keeps the retail (un-namespaced) mangling.
-struct CGameReg {
-    char m_pad0[4];
-    GameWnd* m_4; // +0x04 (m_4->m_4 is the top-level HWND)
-    char m_pad8[0x2c - 8];
-    void* m_curState; // +0x2c
-    char m_pad30[0x54 - 0x30];
-    void* m_54; // +0x54
-    void* m_58; // +0x58
-    char m_pad5c[0x100 - 0x5c];
-    i32 m_isVoiceEnabled; // +0x100
-    char m_pad104[0x118 - 0x104];
-    i32 m_isEasyMode; // +0x118
-    char m_pad11c[0x130 - 0x11c];
-    i32 m_130; // +0x130
-    i32 m_134; // +0x134
-    char m_pad138[0x378 - 0x138];
-    i32 m_378; // +0x378
-    char m_pad37c[0x5b0 - 0x37c];
-    i32 m_5b0; // +0x5b0
-    char m_pad5b4[0x7e8 - 0x5b4];
-    i32 m_7e8; // +0x7e8
-    char m_pad7ec[0xa20 - 0x7ec];
-    i32 m_a20;                          // +0xa20
-    void Method92340(i32 state);        // __thiscall helper at RVA 0x92340
-    void Method3df5(i32 state);         // __thiscall helper at RVA 0x3df5
-    void ReportError(u32, i32);         // CGruntzMgr::ReportError, RVA 0x346d
-    struct GameObj510* GetActive355d(); // __thiscall accessor, RVA 0x355d
-};
-SIZE_UNKNOWN(CGameReg); // (its own placeholder view; the SBI CGameReg facet was dissolved)
-SIZE_UNKNOWN(GameObj510);
-struct GameObj510 {
+// The game-manager singleton at RVA 0x24556c is the canonical CGruntzMgr
+// (<Gruntz/GruntzMgr.h>): the old per-TU CGameReg / GameWnd placeholder views were
+// folded onto it. The DlgProcs below touch only its window (m_gameWnd->m_hwnd, the
+// base CGameWnd), its +0x58 save-sink slot (m_saveSink), and PickPlayOrPausedState()
+// @0x92990 (the FindStateById(3) accessor). Reloc-masked DATA symbol.
+DATA(0x0024556c)
+extern CGruntzMgr* g_gameReg;
+
+// The play/paused state's pending-result field, poked at +0x510 on the CState*
+// PickPlayOrPausedState returns - a concrete-state (CPlay-family) field reached via
+// the base CState* exactly as retail does (`mov [eax+0x510],2`). A cast-only view of
+// the derived state's field; base CState (State.h) ends well before 0x510.
+SIZE_UNKNOWN(PlayStateResult);
+struct PlayStateResult {
     char m_pad0[0x510];
     i32 m_510; // +0x510
 };
-DATA(0x0024556c)
-extern CGameReg* g_gameReg;
 
 // (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
 // g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
@@ -284,7 +258,7 @@ namespace ApiCallerStubs {
     RVA(0x0001f8a0, 0x30)
     i32 KeyHost_01f8a0::Check() {
         if (m_1b8 == 0xc7) {
-            PostMessageA(g_gameReg->m_4->m_4, 0x111, 0x8023, 0);
+            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
         }
         return 1;
     }
@@ -645,7 +619,7 @@ namespace ApiCallerStubs {
         switch (msg) {
             case 0x111:
                 if (wParam == 2 || wParam == 1) {
-                    GameObj510* obj = g_gameReg->GetActive355d();
+                    PlayStateResult* obj = (PlayStateResult*)g_gameReg->PickPlayOrPausedState();
                     if (obj) {
                         obj->m_510 = 2;
                     }
@@ -659,7 +633,7 @@ namespace ApiCallerStubs {
             default:
                 return 0;
             case 0x110: {
-                i32 v = (i32)g_gameReg->m_58;
+                i32 v = (i32)g_gameReg->m_saveSink;
                 g_dlg645ca4 = v;
                 DlgInit_2ee6(hDlg, v);
                 return 1;
@@ -785,7 +759,7 @@ namespace ApiCallerStubs {
             default:
                 return 0;
             case 0x110: {
-                i32 v = (i32)g_gameReg->m_58;
+                i32 v = (i32)g_gameReg->m_saveSink;
                 g_dlgSel613a9c = -1;
                 g_dlg64c86c = v;
                 DlgInit_2e05(hDlg, v);
@@ -816,7 +790,7 @@ namespace ApiCallerStubs {
                     EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
                     return 1;
                 }
-                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_58, g_dlgInfoText);
+                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
                 return 1;
             case 0x111:
                 if (wParam == 2) {
@@ -824,8 +798,8 @@ namespace ApiCallerStubs {
                     return 1;
                 }
                 if (wParam == 1) {
-                    ((DlgSub58_0e3a40*)g_gameReg->m_58)->M1834(g_dlgInfoText);
-                    ((DlgSub58_0e3a40*)g_gameReg->m_58)->M2d97(0, 0x81a6);
+                    ((DlgSub58_0e3a40*)g_gameReg->m_saveSink)->M1834(g_dlgInfoText);
+                    ((DlgSub58_0e3a40*)g_gameReg->m_saveSink)->M2d97(0, 0x81a6);
                     EndDialog(hDlg, 1);
                     return 1;
                 }
@@ -843,7 +817,7 @@ namespace ApiCallerStubs {
                     EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
                     return 1;
                 }
-                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_58, g_dlgInfoText);
+                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
                 return 1;
             case 0x111:
                 if (wParam == 2) {
