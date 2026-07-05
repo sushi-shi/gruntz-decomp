@@ -7,8 +7,9 @@
 // modeled with NO body so their rel32 calls reloc-mask.
 #include <Mfc.h> // real MFC (CPtrList/CString) + windows.h via afx.h (superset of Win32.h)
 
-#include <DDrawMgr/DDSurface.h> // canonical CDDSurface (Blt @0x13ee60)
-#include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer singleton)
+#include <DDrawMgr/DDSurface.h>            // canonical CDDSurface (Blt @0x13ee60)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (RemoveKeysEqual_157c70)
+#include <Gruntz/Multi.h>                  // real CMulti (the 0x64bd5c multiplayer singleton)
 #include <Font/Font.h>          // real Font (the g_mediumFont global)
 #include <sfman32.h>            // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
 #include <Globals.h>
@@ -138,10 +139,8 @@ public:
     SoundStream* m_2c; // +0x2c
     void ClearMap();   // 0x157bc0
 };
-class CDDrawSubMgrLeafScan {
-public:
-    i32 RemoveKeysEqual_157c70(const char* a, const char* b); // 0x157c70
-};
+// CDDrawSubMgrLeafScan (the RemoveKeysEqual_157c70 reader) now comes from the shared
+// <DDrawMgr/DDrawSubMgrLeafScan.h> (included below the file's other headers).
 struct Holder_f9840 {
     char m_pad0[0x28];
     CDDrawMapHolder* m_28; // +0x28
