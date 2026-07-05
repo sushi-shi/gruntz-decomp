@@ -145,44 +145,25 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
 DATA(0x0024556c)
 extern CGameRegistry* g_gameRegDiag; // 0x64556c
 
-// A resolved map node (FOREIGN engine object): only vtable slot +0x0c (prepare) is
-// dispatched; slots 0/4/8 are unreconstructed engine code. Honest model = manual
-// vptr into a typed vtable struct naming ONLY the used slot as a 4-byte thiscall PMF
-// + char pad, so `CallPrepare()` still lowers to `mov eax,[o]; mov ecx,o; call [eax+0xc]`.
-struct CFindNodeVtbl;
+// A resolved map node (FOREIGN engine object): only vtable slot 3 (+0x0c, Prepare)
+// is dispatched; slots 0/1/2 are unreconstructed engine code, declared structurally
+// so Prepare lands at slot 3. Real polymorphic model - `node->Prepare()` lowers to
+// the same `mov ecx,node; mov eax,[node]; call [eax+0xc]` virtual dispatch.
 struct CFindNode {
-    CFindNodeVtbl* m_vtbl; // +0x00
+    virtual void Vslot00(); // slot 0  +0x00
+    virtual void Vslot01(); // slot 1  +0x04
+    virtual void Vslot02(); // slot 2  +0x08
+    virtual void Prepare(); // slot 3  +0x0c
     char m_pad04[0x10 - 0x04];
-    i32 m_10;           // +0x10 key
-    i32 m_14;           // +0x14 flag
-    void CallPrepare(); // vtbl +0x0c
+    i32 m_10; // +0x10 key
+    i32 m_14; // +0x14 flag
 };
-typedef void (CFindNode::*FindNodeFn)();
-struct CFindNodeVtbl {
-    char m_pad00[0x0c];
-    FindNodeFn Prepare; // +0x0c
-};
-SIZE_UNKNOWN(CFindNodeVtbl);
-inline void CFindNode::CallPrepare() {
-    (this->*(m_vtbl->Prepare))();
-}
-// An inner-list member (FOREIGN): virtual destroy at slot 0 (unreconstructed), plus a
-// non-virtual Match (0x1fa5). Honest model = manual vptr into a typed vtable naming the
-// one dispatched slot as a 4-byte thiscall PMF.
-struct CBcastMemberVtbl;
+// An inner-list member (FOREIGN): virtual Destroy at slot 0, plus a non-virtual
+// Match (0x1fa5). Real polymorphic model (implicit vptr at +0x00).
 struct CBcastMember {
-    CBcastMemberVtbl* m_vtbl; // +0x00
-    i32 Match(i32 key);       // 0x1fa5
-    void CallDestroy();       // vtbl +0x00 slot 0
+    virtual void Destroy(); // slot 0  +0x00
+    i32 Match(i32 key);     // 0x1fa5 (non-virtual)
 };
-typedef void (CBcastMember::*BcastMemberFn)();
-struct CBcastMemberVtbl {
-    BcastMemberFn Destroy; // +0x00 slot 0
-};
-SIZE_UNKNOWN(CBcastMemberVtbl);
-inline void CBcastMember::CallDestroy() {
-    (this->*(m_vtbl->Destroy))();
-}
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00
     void* m_pad04;
@@ -226,12 +207,12 @@ i32 CGroupBroadcast::Broadcast() {
             return 0;
         }
         if (node->m_10 != m_10 && node->m_14 != 0) {
-            node->CallPrepare();
+            node->Prepare();
             i32 any = 0;
             for (CBcastListNode* it = m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
                 if (o != 0 && o->Match(node->m_10)) {
-                    o->CallDestroy();
+                    o->Destroy();
                     counter++;
                     any = 1;
                 }
