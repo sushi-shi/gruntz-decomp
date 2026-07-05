@@ -1,4 +1,4 @@
-m_<hex> fields	14729
+m_<hex> fields	14690
 Unknown ids	5
 g_<hex> globals	1267
 Method/Stub/FUN	266
@@ -10,6 +10,6 @@ g_*Vtbl globals	138
 m_vtbl/m_vptr members	162
 )this casts	283
 )m_ casts	816
-(char*) casts	871
+(char*) casts	867
 (const char*) casts	109
-void* m_ members	408
+void* m_ members	403

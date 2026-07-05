@@ -17,9 +17,9 @@ Usage (inside nix develop, or plain - only reads files + $GRUNTZ_EXE):
     python3 -m gruntz.analysis.xref CGameApp::CloseResources # by name (symbol_names)
     python3 -m gruntz.analysis.xref --callees 0x136180       # forward: its call targets
     python3 -m gruntz.analysis.xref --raw 0x136180           # list every call site (no dedup)
-    python3 -m gruntz.analysis.xref --tree 0x0e35f0          # FULL caller ancestry, thunks
-                                                             # chased automatically
-    python3 -m gruntz.analysis.xref --tree --depth 3 0x0e35f0  # cap the expansion
+    python3 -m gruntz.analysis.xref --tree 0x0e35f0          # caller ancestry (depth 4),
+                                                             # thunks chased automatically
+    python3 -m gruntz.analysis.xref --tree --depth 0 0x0e35f0  # unlimited (can be huge)
 """
 import os, sys, struct, csv, bisect
 from pathlib import Path
@@ -133,7 +133,8 @@ def caller_tree(targets, d, secs, names, fstarts, depth_cap=0):
     """Recursive caller ancestry: expand callers-of-callers until roots, chasing
     ILT jmp-thunks transparently (a thunk is just a node whose own callers get
     expanded). Dedup: a function already expanded prints as (*seen). depth_cap=0
-    means unlimited ('as far as possible'); cycles terminate via the seen set."""
+    means unlimited; the default is 4 (a full tree can be huge); cycles terminate
+    via the seen set."""
     tname, tva, tvsz, trp, trsz = _text(secs)
     tb = d[trp:trp + trsz]
     idx = {}  # callee entry-rva -> [(site, op)] over the WHOLE .text, one scan
@@ -211,7 +212,7 @@ def main():
     args = sys.argv[1:]
     mode = "callers"
     raw = False
-    depth = 0
+    depth = 4  # --depth 0 = unlimited
     rest = []
     it = iter(args)
     for a in it:
@@ -222,7 +223,7 @@ def main():
         elif a == "--tree":
             mode = "tree"
         elif a == "--depth":
-            depth = int(next(it, "0"))
+            depth = int(next(it, "4"))
         else:
             rest.append(a)
     if not rest:

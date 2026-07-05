@@ -78,9 +78,9 @@ BEFORE you conclude. They live under one group (`gruntz sema -h`; each is a thin
 wrapper, still runnable as `python -m gruntz.<...>`):
 - `gruntz sema xref <rva|name> [--callees] [--raw] [--tree [--depth N]]` — retail
   caller/callee call-jmp graph; caller-side complement of `sema disasm`. `--tree`
-  prints the FULL caller ancestry (callers-of-callers to the roots), chasing ILT
-  jmp-thunks automatically — attribution in ONE command instead of a manual
-  fn→thunk→fn chase; `--depth N` caps it.
+  prints the caller ancestry (callers-of-callers), chasing ILT jmp-thunks
+  automatically — attribution in ONE command instead of a manual fn→thunk→fn
+  chase. Default depth 4; `--depth 0` = unlimited (can be huge).
 - `gruntz sema def|refs|hover|symbol …` — clangd (LSP) over src; true def/ref/type
   where grep returns collision noise (same-named members, per-TU shadows, overloads).
   The harness **LSP** tool (def/refs/hover/symbol/incoming+outgoing-calls) is the same.
@@ -123,8 +123,9 @@ reinterprets, delete local decl-only proximity hosts).
         <- call 0x000e3a40 ?winapi_0e3a40_EndDialog@... [engine_label_stubs]
           <- jmp  0x0000120d BuildVoiceList [ghidra]  (thunk-band)
             <- call 0x0011adc0 ?Init@CGruntSpawnConfig@@QAEHPAUCSpawnOwner@@@Z [gruntspawnconfig]
-    # -> whole ancestry in one shot, thunks expanded automatically; the first NAMED
-    #    class node up the chain is your attribution candidate. --depth N to cap.
+    # -> ancestry in one shot (default depth 4), thunks expanded automatically; the
+    #    first NAMED class node up the chain is your attribution candidate.
+    #    --depth N to widen/narrow; --depth 0 = unlimited (huge - only when needed).
 
     $ gruntz sema rva 0x00080850           # use when: "what is this address — already done?"
     RVA 0x00080850

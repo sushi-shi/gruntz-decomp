@@ -42,7 +42,6 @@ behindcandy	3	3
 behindcandyani	6	5
 bitarray	1	1
 bitstreamblowfish	1	0
-bitstreampack	1	0
 blowfish	4	3
 boomerang	1	0
 bootycheatstate	1	0
@@ -123,7 +122,7 @@ ddrawworkerregistry	26	18
 ddrawworkers	4	4
 ddscreen	3	2
 debugprintf	2	2
-deflate	9	9
+deflate	15	15
 demosetup	1	1
 destructbutton	1	1
 dialogs	42	20
@@ -304,13 +303,11 @@ mgrobjserialize	2	1
 mgrsettings	1	0
 mgrslotswap	1	0
 mgrtokenquery	1	1
-misc18	3	0
 modeobjinit	1	0
 motionstate	6	5
 movieplayer	2	1
 movinglogic	6	2
 msgdispatch	3	3
-msgpacket	2	2
 multi	18	7
 multicolordlg	1	0
 multistartdlgworld	2	2
@@ -370,7 +367,6 @@ rezlist	2	2
 rezmgr	16	12
 rezsync	1	0
 rezutil	1	1
-ringbuffer	2	2
 rockbreakparticles	1	0
 rollingball	6	3
 savegame	26	19
@@ -467,7 +463,7 @@ timesplit	1	1
 timestring	1	1
 toobspikez	7	6
 toypeek	1	0
-trees	19	19
+trees	21	21
 triggermgr	56	12
 triggersound	1	1
 trirecordserialize	2	2
@@ -696,7 +692,6 @@ behindcandyani	?RegisterActs@CBehindCandyAni@@SAXXZ	92.9130	92.9130	1	b1dc7d44c3
 behindcandyani	?Serialize@CBehindCandyAni@@QAEHHHHH@Z	100.0000	100.0000	1	7f1ba101ba81	0x10050
 bitarray	?SetBit@CBitArray@@QAEPAU1@I@Z	100.0000	100.0000	2	02204f979262	0x193640
 bitstreamblowfish	?BitStreamBlowfishDecode@@YGXPAUBitReader@@PAUSink@@@Z	99.9792	99.9792	2	d285eb0a8441	0x16f760
-bitstreampack	?BitEmitMarker@@YAXPAUBitState@@@Z	96.0000	96.0000	2	3add648536cb	0x188860
 blowfish	?Blowfish_InitKey@@YGXPAE@Z	100.0000	100.0000	1	181b6b1750bf	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.5000	99.5000	2	c61014aad094	0x16fc70
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	3b9987755e2b	0x16f7f0
@@ -1307,13 +1302,19 @@ ddscreen	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	2	adf69acad6c8	0x17cc8
 debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	1	9c7af45f7192	0x185000
 debugprintf	_RezAssertFail	100.0000	100.0000	1	afc4cb16914d	0x184e00
 deflate	_deflate	100.0000	100.0000	1	3bf3a6c067ea	0x186620
+deflate	_deflateCopy	100.0000	100.0000	1	cpp:343fdff5d853	0x186a20
+deflate	_deflateEnd	100.0000	100.0000	1	cpp:343fdff5d853	0x186990
 deflate	_deflateInit2_	100.0000	100.0000	1	08ae14d84bbd	0x1861b0
+deflate	_deflateInit_	100.0000	100.0000	1	cpp:343fdff5d853	0x186180
 deflate	_deflateReset	100.0000	100.0000	1	4326de2e8f87	0x1864d0
 deflate	_deflate_fast	100.0000	100.0000	1	3de2151b888f	0x186db0
 deflate	_deflate_slow	100.0000	100.0000	1	963869a51c2d	0x187170
 deflate	_deflate_stored	100.0000	100.0000	1	f3d8403d157d	0x186af0
 deflate	_fill_window	100.0000	100.0000	1	a110d36769c7	0x186c00
+deflate	_flush_pending	100.0000	100.0000	1	cpp:343fdff5d853	0x186910
+deflate	_lm_init	100.0000	100.0000	1	cpp:343fdff5d853	0x186a50
 deflate	_longest_match	100.0000	100.0000	1	18824b519e86	0x187000
+deflate	_putShortMSB	100.0000	100.0000	1	cpp:343fdff5d853	0x1868e0
 deflate	_read_buf	100.0000	100.0000	1	b66aa815658a	0x186d30
 demosetup	?SetupDemoActors@CDemoSetup@@QAEHXZ	100.0000	100.0000	1	3a0805880dd2	0x3c070
 destructbutton	?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	4	5822f8090d4a	0x10bc30
@@ -2603,9 +2604,6 @@ mgrobjserialize	?Save@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	100.0000	100.000
 mgrsettings	?Serialize@CMgrSettings@@QAEHPAUCSerialArchive@@HHH@Z	89.0526	89.0526	1	c6368e13b9d0	0x109e00
 mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	54.9057	54.9057	4	44b31121e4cc	0x1128b0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	1	33f0fb7f4951	0x99d10
-misc18	?BitFlush@@YAXPAUBitBuf@@@Z	83.5111	83.5111	2	d224c96d8cca	0x18a190
-misc18	?CoderReset@@YAXPAUCoder@@@Z	97.4792	97.4792	2	f27ee6bcf8b4	0x186a50
-misc18	?RecFree@@YAHPAUFreeOwner@@@Z	75.7936	75.7936	2	270be9416a5b	0x186990
 modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	54.8679	54.8679	4	6dc29db8e914	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	24ca6b679299	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	2	8ad390ea1d22	0x16f3c0
@@ -2624,8 +2622,6 @@ movinglogic	?WriteCurve@@YAAAVCButeText@@AAV1@ABVCMotionState@@@Z	100.0000	100.0
 msgdispatch	?Dispatch_aa0a0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	482f4c54567e	0xaa0a0
 msgdispatch	?Dispatch_aa1e0@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	1976412462fe	0xaa1e0
 msgdispatch	?Dispatch_aa460@@YAHPAUCMsg@@@Z	100.0000	100.0000	1	b1eb4d0efe29	0xaa460
-msgpacket	?CopyPacketHeader@@YAHPAUCMsgPacket@@0@Z	100.0000	100.0000	2	499b606c8e9c	0x186a20
-msgpacket	?WritePacketU16@@YAXPAUCMsgPacket@@I@Z	100.0000	100.0000	2	2a7f6a756128	0x1868e0
 multi	??1CMulti@@UAE@XZ	0.6452	0.6452	1	67d64112179d	0x8d270
 multi	?AckJoinFailure@CMulti@@QAEXXZ	100.0000	100.0000	1	3f857d4e3192	0xbc420
 multi	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	1	9da21aece386	0xb76c0
@@ -3007,8 +3003,6 @@ rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	3	6a03d9facd33	0x13ddc0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	4	a315a71e3526	0x13c6c0
 rezsync	?Init@RezSync@@QAEHPAXPAD@Z	63.4747	63.4747	3	ceba4972c25f	0x83450
 rezutil	_RezFree	100.0000	100.0000	1	fe93430adc1a	0x1b9b82
-ringbuffer	?deflateInit_@@YAHHHHH@Z	100.0000	100.0000	1	488cfe5747f6	0x186180
-ringbuffer	?flush_pending@@YAXPAUz_stream@@@Z	100.0000	100.0000	1	5b40120f1de9	0x186910
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	3	1973aee4e9e0	0x7b440
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.4674	78.4674	7	620228ed68ba	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	9f5ff559b5b3	0x12f80
@@ -3462,10 +3456,12 @@ toobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	1	5a4beef40a63
 toobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	1	1a581cf7ad26	0x12bc0
 toobspikez	?ToobSpikezLogic@@YAHPAUCGameObjLogic@@@Z	100.0000	100.0000	1	e1feac44164a	0x114480
 toypeek	??0CToyPeek@@QAE@PAUCGameObject@@@Z	86.5556	86.5556	2	7739d8cf5c0c	0x98140
+trees	__tr_align	100.0000	100.0000	1	cpp:0c188df83c46	0x188860
 trees	__tr_flush_block	100.0000	100.0000	1	54a1b09eba2f	0x188ad0
 trees	__tr_init	100.0000	100.0000	1	f616912904a3	0x188440
 trees	__tr_stored_block	100.0000	100.0000	1	36d19f528991	0x1887a0
 trees	__tr_tally	100.0000	100.0000	1	37e4574f1981	0x189b90
+trees	_bi_flush	100.0000	100.0000	1	cpp:0c188df83c46	0x18a190
 trees	_bi_reverse	100.0000	100.0000	1	eb8e22915664	0x18a170
 trees	_bi_windup	100.0000	100.0000	1	9f74cfcfbe85	0x18a220
 trees	_build_bl_tree	100.0000	100.0000	1	11325a0242f5	0x189230
@@ -3646,7 +3642,7 @@ wapmisc	?Stamp@CNoTrackObjectStamp@@QAEXXZ	100.0000	100.0000	1	a82e179dbf00	0x11
 wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	3	7865b68f2241	0x1155b0
 wapmisc	?Unmatched_1bae5d@@YAXXZ	100.0000	100.0000	1	c66d0b1641b5	0x1bae5d
 wapmisc	?Unmatched_c76d0@@YAXXZ	100.0000	100.0000	2	4f026db92f95	0xc76d0
-wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	2	9dfcfba82359	0x1853b0
+wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	3	b620f9a35ad0	0x1853b0
 warlord	??0CWarlord@@QAE@H@Z	3.5796	3.5796	1	b29f645c5e90	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	1	0524876559f2	0x107f0
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	1	46da92888935	0x44f80
