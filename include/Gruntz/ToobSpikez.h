@@ -35,7 +35,10 @@ public:
     void RegisterActs();                       // 0x1149c0 (binds the logic handler to key "A")
     virtual ~CToobSpikez() OVERRIDE;           // 0x012c60 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40 (leaf field, written by the ctor)
+    i32 m_40;                  // +0x40 (leaf field, written by the ctor)
+    char m_pad44[0x54 - 0x44]; // +0x44  leaf tail (true object size 0x54, per the
+                               //         `operator new(0x54)` at the phase-0 factory)
 };
+SIZE(CToobSpikez, 0x54);
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

@@ -20,77 +20,25 @@
 // the CToobSpikez (operator new(0x54) + ctor under the /GX ctor-in-flight frame),
 // runs its slot-6 init, latches it, and arms the idle sentinel (0x3e8). The phase
 // codes 0x1d/0x1e/0x50-0x53 map to the CUserLogic vtable slots; the idle sentinel
-// is a no-op; any other code falls to the shared logic-error reporter. The
-// instance is modeled as a local 0x54-byte polymorphic view (16 thiscall slots,
-// external ctor reloc-masked); only offsets + slot indices are load-bearing.
+// is a no-op; any other code falls to the shared logic-error reporter. The instance
+// is the real CToobSpikez (0x54 bytes, <Gruntz/ToobSpikez.h>); the phase handlers
+// are its inherited CUserLogic virtuals (real polymorphic dispatch, external ctor).
 // ===========================================================================
-struct CGameObjLogic;
-
-// The CToobSpikez logic instance, viewed through its CUserLogic+leaf vtable
-// (slots 6/10..15 are the dispatched phase handlers). This is a FOREIGN view: the
-// object IS a CToobSpikez : CUserLogic, but the dispatched slots are unreconstructed
-// engine code and the base CUserLogic hits the 14-vs-16 base-slot-count wall (slots
-// 14/15 exist in CUserLogic but aren't modeled), so deriving cannot reach them.
-// Honest model: a manual vptr into a typed vtable struct naming ONLY the used slots
-// (the rest is padding), NO fake virtuals. The slots are 4-byte thiscall PMFs loaded
-// from the vtable, so each `inst->CallSlot()` still lowers to `mov eax,[inst]; mov
-// ecx,inst; call [eax+slot]`. External ctor 0x1145c0 stamps the real vtable.
-struct CToobLogicInstVtbl;
-class CToobLogicInst {
-public:
-    CToobLogicInst(CGameObjLogic* obj); // 0x1145c0 (CToobSpikez ctor; reloc-masked)
-    CToobLogicInstVtbl* m_vtbl;         // +0x00
-    char m_pad04[0x54 - 0x04];
-    void CallInit();    // slot 6  (+0x18) phase-0 init
-    void CallPhase1e(); // slot 10 (+0x28) phase 0x1e
-    void CallPhase1d(); // slot 11 (+0x2c) phase 0x1d
-    void CallPhase52(); // slot 12 (+0x30) phase 0x52
-    void CallPhase51(); // slot 13 (+0x34) phase 0x51
-    void CallPhase50(); // slot 14 (+0x38) phase 0x50
-    void CallPhase53(); // slot 15 (+0x3c) phase 0x53
-};
-// CToobLogicInst is COMPLETE above -> the PMF is a 4-byte code pointer
-// (docs/patterns/pmf-complete-class-4byte.md).
-typedef void (CToobLogicInst::*ToobSlotFn)();
-struct CToobLogicInstVtbl {
-    char m_pad00[0x18];
-    ToobSlotFn Init; // +0x18 slot 6
-    char m_pad1c[0x28 - 0x1c];
-    ToobSlotFn Phase1e; // +0x28 slot 10
-    ToobSlotFn Phase1d; // +0x2c slot 11
-    ToobSlotFn Phase52; // +0x30 slot 12
-    ToobSlotFn Phase51; // +0x34 slot 13
-    ToobSlotFn Phase50; // +0x38 slot 14
-    ToobSlotFn Phase53; // +0x3c slot 15
-};
-SIZE_UNKNOWN(CToobLogicInstVtbl);
-inline void CToobLogicInst::CallInit() {
-    (this->*(m_vtbl->Init))();
-}
-inline void CToobLogicInst::CallPhase1e() {
-    (this->*(m_vtbl->Phase1e))();
-}
-inline void CToobLogicInst::CallPhase1d() {
-    (this->*(m_vtbl->Phase1d))();
-}
-inline void CToobLogicInst::CallPhase52() {
-    (this->*(m_vtbl->Phase52))();
-}
-inline void CToobLogicInst::CallPhase51() {
-    (this->*(m_vtbl->Phase51))();
-}
-inline void CToobLogicInst::CallPhase50() {
-    (this->*(m_vtbl->Phase50))();
-}
-inline void CToobLogicInst::CallPhase53() {
-    (this->*(m_vtbl->Phase53))();
-}
-
-// The bound object's logic record at CGameObject+0x7c.
+// The bound object's logic record at CGameObject+0x7c: the live CToobSpikez instance
+// (+0x18) and the current phase code (+0x1c). The dispatched phase handlers ARE
+// CToobSpikez's inherited CUserLogic virtual slots (real polymorphic dispatch on the
+// real class - no PMF vtable view):
+//   phase 0    -> Activate        (slot 6,  +0x18)  the fresh instance's init
+//   phase 0x1e -> UserLogicVfunc8 (slot 10, +0x28)
+//   phase 0x1d -> UserLogicVfunc9 (slot 11, +0x2c)
+//   phase 0x52 -> UserLogicVfuncA (slot 12, +0x30)
+//   phase 0x51 -> UserLogicVfuncB (slot 13, +0x34)
+//   phase 0x50 -> UserLogicVfuncC (slot 14, +0x38)
+//   phase 0x53 -> UserLogicVfuncD (slot 15, +0x3c)
 struct CToobLogicRec {
     char m_pad00[0x18];
-    CToobLogicInst* m_18; // +0x18 live instance
-    u32 m_1c;             // +0x1c phase code (unsigned -> ja/jae switch compares)
+    CToobSpikez* m_18; // +0x18 live instance (the real leaf class)
+    u32 m_1c;          // +0x1c phase code (unsigned -> ja/jae switch compares)
 };
 struct CGameObjLogic {
     char m_pad00[0x7c];
@@ -98,7 +46,7 @@ struct CGameObjLogic {
 };
 
 // The shared logic-error reporter (0x16e4f0, __cdecl) for an unresolved phase.
-extern void ToobLogicError(CToobLogicInst* inst);
+extern void ToobLogicError(CToobSpikez* inst);
 
 // 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
@@ -107,28 +55,28 @@ i32 ToobSpikezLogic(CGameObjLogic* obj) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CToobLogicInst* inst = new CToobLogicInst(obj);
-            inst->CallInit();
+            CToobSpikez* inst = new CToobSpikez((CGameObject*)obj);
+            inst->Activate(); // slot 6
             rec->m_18 = inst;
             break;
         }
         case 0x1d:
-            rec->m_18->CallPhase1d();
+            rec->m_18->UserLogicVfunc9(); // slot 11
             break;
         case 0x1e:
-            rec->m_18->CallPhase1e();
+            rec->m_18->UserLogicVfunc8(); // slot 10
             break;
         case 0x50:
-            rec->m_18->CallPhase50();
+            rec->m_18->UserLogicVfuncC(); // slot 14
             break;
         case 0x51:
-            rec->m_18->CallPhase51();
+            rec->m_18->UserLogicVfuncB(); // slot 13
             break;
         case 0x52:
-            rec->m_18->CallPhase52();
+            rec->m_18->UserLogicVfuncA(); // slot 12
             break;
         case 0x53:
-            rec->m_18->CallPhase53();
+            rec->m_18->UserLogicVfuncD(); // slot 15
             break;
         case 0x3e8:
             break;
@@ -345,6 +293,4 @@ SIZE_UNKNOWN(CGameObjLogic);
 SIZE_UNKNOWN(CToobColl);
 SIZE_UNKNOWN(CToobColl2);
 SIZE_UNKNOWN(CToobEntry);
-SIZE_UNKNOWN(CToobLogicInst);
 SIZE_UNKNOWN(CToobLogicRec);
-SIZE_UNKNOWN(CToobSpikez);
