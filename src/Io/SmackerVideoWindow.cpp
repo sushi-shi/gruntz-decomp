@@ -53,57 +53,13 @@ extern "C" void RezFree_call(void* p);
 // +0x80). The former hand-rolled SmkBuf placeholder (only Release) is dissolved into
 // the real interface, so both dispatch families use ONE type, cast-free.
 
-// The embedded sub-player whose Shutdown() lives at RVA 0x17b570.
-SIZE_UNKNOWN(SmackSub);
-struct SmackSub {
-    void Shutdown(); // RVA 0x17b570
-};
-
-struct CSmackWin {
-    i32 m_0;          // +0x00
-    i32 m_active;     // +0x04 active flag
-    i32 m_streamOpen; // +0x08 stream-open flag
-    char _0c[0x10 - 0xc];
-    Smack* m_smackHandle; // +0x10 Smacker stream handle (SmackOpen result)
-    char _14[0x1c - 0x14];
-    i32 m_command; // +0x1c pending command
-    char _20[0x24 - 0x20];
-    IDirectDrawSurface* m_24; // +0x24  primary DDraw surface (Lock/Restore/Unlock/Release)
-    IDirectDrawSurface* m_28; // +0x28  secondary DDraw surface (Release)
-    char _2c[0x9c - 0x2c];
-    char m_desc[0xac - 0x9c]; // +0x9c  DDSURFACEDESC head (Lock's out-param)
-    i32 m_lPitch;             // +0xac  desc.lPitch (surface stride)
-    char _b0[0xc0 - 0xb0];
-    void* m_lpSurface; // +0xc0  desc.lpSurface (locked pixel base)
-    char _c4[0x508 - 0xc4];
-    void* m_directSound; // +0x508 DirectSound
-    i32 m_50c;           // +0x50c  frame-locked flag
-    i32 m_510;           // +0x510  SmackToBuffer blit flags
-    i32 m_514;           // +0x514  full-frame flag
-    char _518[0x520 - 0x518];
-    i32 m_520; // +0x520  palette-mode state (8 => snapshot on new palette)
-    char _524[0x534 - 0x524];
-    void* m_rezBuffer; // +0x534 Rez buffer
-    i32 m_useDS;       // +0x538
-    CWnd* m_videoWnd;  // +0x53c  the video window
-    SmackSub m_540;    // +0x540 embedded sub-player
-    char _544[0x86a0 - 0x544];
-    i32 m_loopCount;                                        // +0x86a0 loop counter
-    int Init(HWND h, i32 a0, i32 a1);                       // 0x17c040
-    int CreateVideoWindow(i32 a0, i32 a1);                  // 0x17c2a0
-    void Teardown();                                        // 0x17c510
-    i32 OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c570
-    i32 OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5); // 0x17c630
-    i32 Pump(i32 flags, i32 count);                         // 0x17c790
-    i32 Advance(i32 cmd, i32 loops);                        // 0x17c8e0
-    i32 CloseSmacker();                                     // 0x17c9b0
-    i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
-    i32 Frame();                                            // 0x17caa0
-    void SnapshotPalette();                     // 0x17ca10 (Frame: new-palette snapshot)
-    void BlitDirty(i32 x, i32 y, i32 w, i32 h); // 0x17cdf0 (Frame: dirty-rect blit)
-    void Free17d6b0();                          // 0x17d6b0
-    void Free17cc80();                          // 0x17cc80
-};
+// The playback host IS the canonical CMoviePlayer (<Io/MoviePlayer.h>): the former
+// TU-local "CSmackWin" view duplicated its +0x04 active flag / +0x540 decode store /
+// the 0x17c510 Teardown + 0x17c630 OpenHi RVAs that header already claimed, and its
+// "SmackSub" +0x540 sub-player was a second view of CMovieDecodeStore (Shutdown ==
+// Abort @0x17b570). Both views are folded onto the canonical class (the union of
+// field knowledge migrated into MoviePlayer.h).
+#include <Io/MoviePlayer.h>
 
 // @early-stop
 // Complete + correct (~98%). Residual is two documented walls: (1) the /GX EH
@@ -114,7 +70,7 @@ struct CSmackWin {
 // `new CWnd`, CreateEx(8, cls, "Smacker Video Window", 0x90000000, 0,0, GSM(0), GSM(1),
 // 0,0,0), SetFocus, Init) + the GetSystemMetrics IAT-cache-in-ebp are byte-exact.
 RVA(0x0017c2a0, 0x14e)
-int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
+int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     CString cls(AfxRegisterWndClass(3, 0, 0, 0));
     if (m_videoWnd != 0) {
         return 0;
@@ -144,13 +100,13 @@ int CSmackWin::CreateVideoWindow(i32 a0, i32 a1) {
 // from ApiCallers (placeholder CursHost_17c510): its m_videoWnd (video window at +0x53c)
 // is the same CWnd CreateVideoWindow above `new`s, so this is the same CSmackWin.
 RVA(0x0017c510, 0x5e)
-void CSmackWin::Teardown() {
+void CMoviePlayer::Teardown() {
     if (!m_active) {
         return;
     }
     CloseSmacker();
     Free17d6b0();
-    m_0 = 0;
+    m_0 = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
     m_active = 0;
     Free17cc80();
     if (m_videoWnd) {
@@ -164,7 +120,7 @@ void CSmackWin::Teardown() {
 // __thiscall(src,a2,useDS,a4,a5): open a Smacker stream (0xfe000 flags, plus
 // 0x100000 when DirectSound is requested), begin playback, roll back on failure.
 RVA(0x0017c570, 0xc0)
-i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (!m_active) {
         return 0;
     }
@@ -202,7 +158,7 @@ i32 CSmackWin::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 
 // __thiscall(src,a2,useDS,a4,a5): same as OpenLo but with the 0xff000 flag set.
 RVA(0x0017c630, 0xc0)
-i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
     if (!m_active) {
         return 0;
     }
@@ -242,7 +198,7 @@ i32 CSmackWin::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
 // with 1/0x100 on a key/mouse event the abort flags select, else render the next
 // frame and re-loop until `count` plays elapse (count==-1 loops forever).
 RVA(0x0017c790, 0x14a)
-i32 CSmackWin::Pump(i32 flags, i32 count) {
+i32 CMoviePlayer::Pump(i32 flags, i32 count) {
     if (!m_active || count < -1 || count == 0) {
         return 0;
     }
@@ -291,7 +247,7 @@ i32 CSmackWin::Pump(i32 flags, i32 count) {
 // __thiscall(cmd, loops): wait for the stream, render a frame, and on EOF loop
 // back to the start until `loops` is exhausted (loops==-1 loops forever).
 RVA(0x0017c8e0, 0xca)
-i32 CSmackWin::Advance(i32 cmd, i32 loops) {
+i32 CMoviePlayer::Advance(i32 cmd, i32 loops) {
     if (!cmd || !m_active || loops < -1 || loops == 0) {
         return 0;
     }
@@ -321,11 +277,11 @@ i32 CSmackWin::Advance(i32 cmd, i32 loops) {
 
 // __thiscall: shut the sub-player, close the Smacker stream, free buffers.
 RVA(0x0017c9b0, 0x5b)
-i32 CSmackWin::CloseSmacker() {
+i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
     }
-    m_540.Shutdown();
+    m_540.Abort();
     if (!m_smackHandle) {
         return 0;
     }
@@ -339,7 +295,7 @@ i32 CSmackWin::CloseSmacker() {
     return 1;
 }
 
-// CSmackWin::Frame (0x17caa0) - the per-frame renderer CSmackWin::Pump drives, re-homed
+// CMoviePlayer::Frame (0x17caa0) - the per-frame renderer CMoviePlayer::Pump drives, re-homed
 // from the ApiCaller stubs (was MoviePlayer_17caa0::RenderFrame; class identity proven -
 // Pump calls it on this=CSmackWin, and CSmackWin already declared Frame @0x17caa0).
 // Locks the DDraw surface (retrying on DDERR_SURFACELOST), decodes the current Smacker
@@ -347,7 +303,7 @@ i32 CSmackWin::CloseSmacker() {
 // the last frame has played). m_24 is now the real IDirectDrawSurface (the former
 // SmkBuf/manual-vtable views are folded into it).
 RVA(0x0017caa0, 0x13b)
-i32 CSmackWin::Frame() {
+i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_520 == 8) {
         SnapshotPalette();
     }
@@ -384,4 +340,3 @@ afterLock:
     SmackNextFrame(s);
     return 1;
 }
-SIZE_UNKNOWN(CSmackWin);

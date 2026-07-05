@@ -9,7 +9,7 @@
 // in the cluster; they are declared (no body) so their rel32 calls reloc-mask.
 
 // ===========================================================================
-// 0x17c6f0 - Open: bail if the worker is inactive (m_4 == 0). Prepare the +0x540
+// 0x17c6f0 - Open: bail if the worker is inactive (m_active == 0). Prepare the +0x540
 // decode store (Begin); open the low-res source (OpenA(a1)); open the high-res
 // source (OpenB(a2)); finalize through OpenHi with the OpenB handle + the four
 // trailing args. Any failing step aborts the store and returns 0; full success
@@ -17,7 +17,7 @@
 // ===========================================================================
 RVA(0x0017c6f0, 0x9c)
 i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    if (m_4 == 0) {
+    if (m_active == 0) {
         return 0;
     }
     if (!m_540.Begin()) {
@@ -58,22 +58,20 @@ SIZE_UNKNOWN(CMovieFile);
 //
 //   0x038fc0  ~CMoviePlayer
 
-// The scratch embed's own vtable (foreign engine datum, reloc-masked DATA()).
-DATA(0x001e971c)
-extern void* g_movieScratchVtbl; // 0x5e971c
-// The shared base object dtor vtable (also stamped by CDDrawWorker).
-DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
+// The scratch embed is REAL polymorphic (CMovieScratch : Wap::CObject, header):
+// cl now emits the dtor's own-vtable stamp at entry (??_7CMovieScratch, bound to
+// the retail datum below) and the grand-base restamp (masks 0x5e8cb4, via the
+// inline ~Wap::CObject) at exit - the exact pair the deleted manual
+// g_movieScratchVtbl / g_wapObjectDtorVtbl stores hand-rolled.
+VTBL(CMovieScratch, 0x001e971c); // retail 0x5e971c (5-slot Wap::CObject shape)
 
-// The scratch embed (worker+0x868c) teardown: stamp its own vtable, RezFree the
-// owned buffer if present, then restore the shared base dtor vtable. Marked inline
-// so the worker dtor folds it (the embed is not a standalone retail function).
+// The scratch embed (worker+0x868c) teardown: RezFree the owned buffer if present.
+// Marked inline so the worker dtor folds it (the embed is not a standalone retail
+// function); the vptr stamps are compiler-emitted now.
 inline CMovieScratch::~CMovieScratch() {
-    m_vptr = &g_movieScratchVtbl;
     if (m_4) {
         RezFree(m_4);
     }
-    m_vptr = &g_wapObjectDtorVtbl;
 }
 
 // The decode store (worker+0x540) teardown: abort the active decode, then the
@@ -93,12 +91,11 @@ inline CMovieDecodeStore::~CMovieDecodeStore() {
 // is byte-faithful (Teardown, the embed stamp/RezFree/restore, the store Abort +
 // ~CByteArray + ~CFile in the right order at the right offsets), but retail's /GX
 // frame caches `&m_868c` in edi and writes the inline-member `this` into a frame
-// slot ([esp+0xc]) per subobject, with EH states 1/2/4/3/-1; the manual-stamp
-// model destroys the members in place (no edi cache, no member-this re-point,
-// states 1/2/3/2/-1). Not steerable without a real polymorphic subobject hierarchy
-// that would reshape the ctor and emit divergent vtables. Logic complete; deferred
-// to the final whole-class sweep.
-// docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md.
+// slot ([esp+0xc]) per subobject, with EH states 1/2/4/3/-1; our model destroys
+// the members in place (no edi cache, no member-this re-point, states 1/2/3/2/-1).
+// The scratch embed IS now real-polymorphic (ALL-VTABLES batch 3: compiler-emitted
+// stamps, % unchanged at 73.5) - the residual is the frame-slot/EH-state shape,
+// not the stamps. docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md.
 RVA(0x00038fc0, 0xa5)
 CMoviePlayer::~CMoviePlayer() {
     Teardown();
