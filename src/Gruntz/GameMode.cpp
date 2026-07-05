@@ -488,8 +488,15 @@ struct CreditsScrollView {
     char p0[0x4];
     CreditsView4* m_4; // +0x04
 };
+// IDENTITY CONFIRMED = the real MFC CRgn/CGdiObject (m_hObject @+0x4; the
+// `pRgn != 0 ? m_hObject : 0` ternary at the SelectClipRgn site is MFC's inline
+// CRgn::operator HRGN null-this check verbatim). NOT foldable in THIS TU: CRgn
+// lives in <afxwin.h>, which also defines MFC's CView - colliding with the game's
+// OWN RTTI-real CView (Gruntz/View.h, pulled via GameMode.h) - the same constraint
+// retail's devs had. Fold blocked by a genuine name collision, not a wall
+// preference; afxwin-capable TUs fold it (cf. ApiWrappers CreditzRgn -> CRgn).
 SIZE_UNKNOWN(CreditsGdiObj);
-struct CreditsGdiObj { // m_1e8 clip region (CGdiObject: m_hObject @+0x4)
+struct CreditsGdiObj { // == MFC CRgn/CGdiObject (fold blocked by the CView collision)
     char p0[0x4];
     void* m_hObject; // +0x04
 };
