@@ -1317,13 +1317,11 @@ i32 CGrunt::StepEntranceReinit() {
     } else {
         flag = ((i32*)b->m_8[co->m_y])[co->m_x * 7];
     }
-    i32* cell;
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_14->m_1c;
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        cell = m_entranceCell;
     } else {
         // The grunt's own HUD point is unobstructed (the 0x80 walkable bit).
         i32 tx = m_10->m_5c >> 5;
@@ -1342,10 +1340,10 @@ i32 CGrunt::StepEntranceReinit() {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        cell = m_entranceCell;
     }
-    i32 col = cell[1] + cell[0] * 2;
-    i32 base = cell[0] + col;
+    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    i32 col = cell.row + cell.col * 2;
+    i32 base = cell.col + col;
     i32 row = base * 3;
     i32 idx = base + row * 4;
     // idx == base*13, so idx*8 == base*0x68: MSVC's strength-reduced form of the
@@ -1393,9 +1391,9 @@ i32 CGrunt::RunEntranceMove() {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        i32* cell = m_entranceCell;
-        i32 col = cell[1] + cell[0] * 2;
-        i32 base = cell[0] + col;
+        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        i32 col = cell.row + cell.col * 2;
+        i32 base = cell.col + col;
         i32 row = base * 3;
         i32 idx = base + row * 4;
         char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
@@ -4655,10 +4653,11 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry((&m_poseItem)[poseIdx]);
 
-    i32 col = m_entranceCell[0];
-    i32 row = m_entranceCell[1];
-    char* cell = (char*)this + (3 * col + row + 0xb) * 0x68;
-    char* name = ((CString*)cell)->GetBuffer(0);
+    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    i32 col = cell.row + cell.col * 2;
+    i32 base = cell.col + col + 0xb;
+    i32 idx = base + base * 3 * 4;
+    char* name = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
     m_154->GameApplyName(name);
 }
 
