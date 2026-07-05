@@ -1,9 +1,13 @@
 #include <rva.h>
-// WapUncompress.cpp - the game's raw-deflate `uncompress` helper (0x1853b0). A
-// classic zlib uncompress shape over the game's statically-linked second zlib copy
-// (inflateInit2_ 0x186180 / inflate 0x186620 / inflateEnd 0x186990), but with
-// windowBits = -1 (raw deflate). The "1.0.4" version string is the zlib $SG
-// constant; the three zlib entry points are reloc-masked rel32 externs.
+// WapUncompress.cpp - the game's zlib `compress` helper (0x1853b0). Despite the
+// leaked "WapUncompress" name this is the COMPRESS side: its body is verbatim
+// zlib-1.0.4 compress.c `compress` shape (deflateInit at Z_DEFAULT_COMPRESSION,
+// deflate(Z_FINISH), deflateEnd) and it calls the DEFLATE entry points of the
+// single statically-linked zlib - deflateInit_ 0x186180, deflate 0x186620,
+// deflateEnd 0x186990 (all three now library-anchored; the earlier "second zlib
+// copy / inflate" note was a misread - there is one zlib and these are its
+// compressors). The "1.0.4" version string is the zlib $SG constant; the three
+// zlib entry points are reloc-masked rel32 externs.
 
 // The zlib z_stream (1.0.4 layout, sizeof 0x38) - modeled locally so the field
 // stores land at the retail offsets without pulling all of zlib.h.
@@ -26,28 +30,25 @@ struct GzStream {
 SIZE(GzStream, 0x38);
 
 extern "C" {
-    int
-    inflateInit2_(GzStream* strm, int windowBits, const char* version, int stream_size); // 0x186180
-    int inflate(GzStream* strm, int flush);                                              // 0x186620
-    int inflateEnd(GzStream* strm);                                                      // 0x186990
+    int deflateInit_(GzStream* strm, int level, const char* version, int stream_size); // 0x186180
+    int deflate(GzStream* strm, int flush);                                            // 0x186620
+    int deflateEnd(GzStream* strm);                                                    // 0x186990
 }
 
 // ===========================================================================
-// 0x1853b0 - raw-inflate the source block into dest; on success store the produced
-// length back through pDestLen and return inflateEnd's result. Returns the init
-// error if inflateInit2_ fails, Z_BUF_ERROR (-5) if inflate stops at Z_OK without
-// reaching Z_STREAM_END, else the inflate error.
+// 0x1853b0 - deflate the source block into dest at Z_DEFAULT_COMPRESSION (-1); on
+// success store the produced length back through pDestLen and return deflateEnd's
+// result. Returns the init error if deflateInit_ fails, Z_BUF_ERROR (-5) if deflate
+// stops at Z_OK without reaching Z_STREAM_END, else the deflate error.
 // ===========================================================================
 // @early-stop
-// ~86% (regalloc register-choice wall + reloc-name artifact): the control flow and
-// every instruction's shape are identical to retail. Two residuals, neither
-// source-steerable: (1) MSVC pins the long-lived pDestLen in ebx where retail uses
-// edi (the allocator's 2nd-callee-saved pick {esi,ebx} vs {esi,edi}), which also
-// flips the coupled avail_in/next_in store order at the top; (2) the three zlib
-// entry-point rel32 calls resolve to the game's still-unreconstructed second zlib
-// copy (?Unmatched_186180/186620/186990@@YAXXZ) so their masked relocs name
-// differently than our inflateInit2_/inflate/inflateEnd - they go exact for free
-// once that copy is named. Logic complete; deferred to the final sweep.
+// ~86% regalloc register-choice wall: control flow and every instruction's shape
+// are identical to retail. MSVC pins the long-lived pDestLen in ebx where retail
+// uses edi (the allocator's 2nd-callee-saved pick {esi,ebx} vs {esi,edi}), which
+// also flips the coupled avail_in/next_in store order at the top. The three zlib
+// entry-point rel32 calls are now correctly named (deflateInit_/deflate/deflateEnd
+// are library-anchored), so the earlier reloc-name artifact is resolved; only the
+// register-coloring residual remains. Not source-steerable.
 RVA(0x001853b0, 0xa6)
 int WapUncompress(
     unsigned char* dest,
@@ -63,18 +64,18 @@ int WapUncompress(
     s.zalloc = 0;
     s.zfree = 0;
     s.opaque = 0;
-    int err = inflateInit2_(&s, -1, "1.0.4", sizeof(GzStream));
+    int err = deflateInit_(&s, -1, "1.0.4", sizeof(GzStream));
     if (err != 0) {
         return err;
     }
-    err = inflate(&s, 4);
+    err = deflate(&s, 4);
     if (err != 1) {
-        inflateEnd(&s);
+        deflateEnd(&s);
         if (err == 0) {
             return -5;
         }
         return err;
     }
     *pDestLen = s.total_out;
-    return inflateEnd(&s);
+    return deflateEnd(&s);
 }
