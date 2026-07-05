@@ -82,7 +82,7 @@ i32 CGrunt::WanderStep() {
                 F(this, 0x218) = 0;
                 F(this, 0x21c) = 0;
                 F(this, 0x220) = 0;
-                Stub_062e10(1, 0, 0);
+                ResetEntranceAnimation(1, 0, 0);
             }
         }
         F(this, 0x2d4) = 5;
@@ -304,7 +304,7 @@ timeout:
         i32 hi = -(i32)((u32)g_clock < (u32)F(this, 0x308)) - F(this, 0x30c);
         i32 lo = (i32)(g_clock - (u32)F(this, 0x308));
         if (F(this, 0x314) < hi || (F(this, 0x314) == hi && (u32)lo >= (u32)F(this, 0x310))) {
-            Stub_062e10(1, 1, 0);
+            ResetEntranceAnimation(1, 1, 0);
             F(this, 0x308) = 0;
             F(this, 0x310) = 0;
             F(this, 0x30c) = 0;

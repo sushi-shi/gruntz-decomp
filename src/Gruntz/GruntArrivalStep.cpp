@@ -69,7 +69,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 

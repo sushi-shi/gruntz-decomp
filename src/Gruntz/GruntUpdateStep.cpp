@@ -92,7 +92,7 @@ i32 CGrunt::UpdateArrival() {
             this->m_combatActive = 0;
             this->m_neighborValid = 0;
             this->m_poweredUp = 0;
-            Stub_062e10(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
         if (FindGridNeighbor(1) != 0) {
@@ -111,7 +111,7 @@ i32 CGrunt::UpdateArrival() {
         this->m_combatActive = 0;
         this->m_neighborValid = 0;
         this->m_poweredUp = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
@@ -154,7 +154,7 @@ i32 CGrunt::UpdateArrival() {
             if (this->m_arrivalRerollWindowHi < cmp
                 || (this->m_arrivalRerollWindowHi <= cmp
                     && (u32)this->m_arrivalRerollWindowLo <= g_clock - (u32)this->m_arrivalRerollLo)) {
-                Stub_062e10(1, 1, 0);
+                ResetEntranceAnimation(1, 1, 0);
                 this->m_arrivalRerollLo = 0;
                 this->m_arrivalRerollWindowLo = 0;
                 this->m_arrivalRerollHi = 0;
@@ -428,7 +428,7 @@ i32 CGrunt::SeekTarget() {
                 this->m_combatActive = 0;
                 this->m_neighborValid = 0;
                 this->m_poweredUp = 0;
-                Stub_062e10(1, 0, 0);
+                ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
             if (FindGridNeighbor(1) != 0) {
@@ -447,7 +447,7 @@ i32 CGrunt::SeekTarget() {
             this->m_combatActive = 0;
             this->m_neighborValid = 0;
             this->m_poweredUp = 0;
-            Stub_062e10(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
         this->m_defenderX = this->m_lastTilePxX;

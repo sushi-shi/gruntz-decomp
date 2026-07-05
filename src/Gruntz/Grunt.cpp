@@ -788,7 +788,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::Stub_048470(kind, dirOnly)  @0x48470  (__thiscall, /GX, ret 8) - the
+// CGrunt::LoadCellAnimNames(kind, dirOnly)  @0x48470  (__thiscall, /GX, ret 8) - the
 // per-cell entrance sprite-name loader: for each of the 9 direction cells
 // (CGruntCellRec[9] @+0x468, five CString name fields at +0/+4/+8/+c/+10 =
 // ATTACK/STRUCK/WALK/IDLE/ITEM) build the frame key "GRUNTZ_" + m_animSetName +
@@ -850,7 +850,7 @@ static const char s_d48_SOUTHEAST[] = "_SOUTHEAST";
 static const char s_d48_BREAK[] = "_BREAK";
 
 RVA(0x00048470, 0x131b)
-void CGrunt::Stub_048470(i32 kind, i32 dirOnly) {
+void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
         m_cells[0].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
         m_cells[1].m_walk = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
@@ -1041,7 +1041,7 @@ static i32 s_entrancePreset1[3]; // DAT_00644ac0
 static i32 s_entrancePreset2[3]; // DAT_00644ad0
 
 RVA(0x00062e10, 0x47e)
-void CGrunt::Stub_062e10(i32 apply, i32 cycle, i32 cue) {
+void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
 
     i32 notIdle = strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), s_animKeyA) != 0;
@@ -1160,7 +1160,7 @@ latch:
 // destination tile it commits the "arrival" (claims the tile, seeds the
 // per-grunt defender bookkeeping, clears the view-cull state on m_10) and, when
 // the entrance window has elapsed + the grunt is off-screen/unfocused, runs the
-// entrance reset (Stub_062e10). __thiscall, ret 0.
+// entrance reset (ResetEntranceAnimation). __thiscall, ret 0.
 //
 //   * if the entrance is active (m_entranceActive) and the grunt has not moved off its
 //     last tile (m_5c==m_lastTilePxX, m_60==m_lastTilePxY) and that tile's high occupancy bit is
@@ -1173,10 +1173,10 @@ latch:
 //     m_defenderRadius/m_arrivalCol/m_arrivalRow, m_arrivalFlags |= 0x18040402),
 //     clear m_10's view-cull rect, run the arrival hook.
 //   * tail: if the entrance anim is done (m_154->m_1b4 != m_poseIdle[0]) run
-//     Stub_062e10(0,0,0) on the lookup-miss flags; else, when the idle window has
-//     elapsed and the geometry source is ready, run Stub_062e10(0,1,1).
+//     ResetEntranceAnimation(0,0,0) on the lookup-miss flags; else, when the idle window has
+//     elapsed and the geometry source is ready, run ResetEntranceAnimation(0,1,1).
 RVA(0x000633e0, 0x2ca)
-void CGrunt::Stub_0633e0() {
+void CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
         CGameRegistry* g = g_pGameRegistry;
         CTileGrid* grid = g->m_tileGrid;
@@ -1245,12 +1245,12 @@ void CGrunt::Stub_0633e0() {
 tail:
     if ((void*)m_154->m_1b4 != (void*)m_poseIdle[0]) {
         if (m_154->m_1c8 == 0 && m_154->m_1c0 != 0) {
-            Stub_062e10(0, 0, 0);
+            ResetEntranceAnimation(0, 0, 0);
         }
         return;
     }
     if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo && ready == 1) {
-        Stub_062e10(0, 1, 1);
+        ResetEntranceAnimation(0, 1, 1);
     }
 }
 
@@ -1442,7 +1442,7 @@ i32 CGrunt::RunEntranceMove() {
 // looks that sprite-set up in the entrance player's table (m_154->m_c->m_2c map),
 // fires a 6-arg on-screen "cue" when the grunt is visible/focused, copies the base
 // "GRUNTZ_ENTRANCEZ"/"GRUNTZ_DEATHZ_MELT" key into a CString, and finally either
-// runs the entrance reset (Stub_062e10(1,0,0)) on a lookup miss, or applies the
+// runs the entrance reset (ResetEntranceAnimation(1,0,0)) on a lookup miss, or applies the
 // resolved geometry to the player's sub-player (+0x1a0) plus the first frame.
 // /GX (the CString temp carries a C++ EH frame). __thiscall, ret 4.
 //
@@ -1547,7 +1547,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     key = base;
 
     if (!found) {
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     } else {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry((i32)found);
@@ -1574,7 +1574,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // tile and runs the on-released hook. Finally clears m_entranceActive, reloads the per-grunt
 // tuning (ReadConfigFromButeMgr), runs the two tail stubs, and when the entrance
 // sub-player is armed-but-not-running (m_28!=0 && m_20==0) runs the entrance
-// reset (Stub_062e10(1,0,0)). __thiscall, ret 0.
+// reset (ResetEntranceAnimation(1,0,0)). __thiscall, ret 0.
 //
 // ~78.8% fuzzy: CFG, every member offset, all constants, the tile-grid index math
 // (cell stride 0x1c, occupancy bit 0x20<<24, packed owner word), the config read,
@@ -1669,7 +1669,7 @@ void CGrunt::LoadEntranceConfig() {
         }
         m_entranceActive = 0;
         ReadConfigFromButeMgr();
-        Stub_048470(0, 0);
+        LoadCellAnimNames(0, 0);
         EntranceFinishWire(0, 0);
     }
 
@@ -1677,7 +1677,7 @@ void CGrunt::LoadEntranceConfig() {
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return;
     }
-    Stub_062e10(1, 0, 0);
+    ResetEntranceAnimation(1, 0, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -4402,7 +4402,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
 
     m_entranceActive = 1;
@@ -4601,7 +4601,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
 
     if (m_entranceReason == 1) {
@@ -4841,7 +4841,7 @@ i32 CGrunt::StepArrivalCommit() {
                 m_combatActive = 0;
                 m_neighborValid = 0;
                 m_poweredUp = 0;
-                Stub_062e10(1, 0, 0);
+                ResetEntranceAnimation(1, 0, 0);
             }
             m_35c = 0;
             m_prevAnimSetNode = m_14->m_1c;
@@ -4853,7 +4853,7 @@ i32 CGrunt::StepArrivalCommit() {
             char* nm = GruntStrGetBuffer(&m_cells[base].m_walk, 0);
             m_154->SetAnimName(nm);
         } else {
-            Stub_062e10(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
         }
         goto modeDispatch;
     }
@@ -4958,7 +4958,7 @@ finalize:
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
     }
     m_entranceActive = 1;
     m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1);
@@ -5063,7 +5063,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateGruntStatus() {
     if (m_poweredUp == 0) {
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 0;
     }
 
@@ -6337,9 +6337,9 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
             ReadConfigFromButeMgr();
-            Stub_048470(0, 0);
+            LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
-            Stub_062e10(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
             if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
                 m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
             }
@@ -6713,7 +6713,7 @@ L8a2:
     return 1;
 
 L8b5:
-    Stub_062e10(1, 1, 0);
+    ResetEntranceAnimation(1, 1, 0);
     m_arrivalRerollLo = 0;
     m_arrivalRerollWindowLo = 0;
     m_arrivalRerollHi = 0;
@@ -6952,7 +6952,7 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if ((i64)(u32)g_645588 - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
-                Stub_062e10(1, 1, 0);
+                ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
                 m_arrivalRerollWindowLo = 0;
                 m_arrivalRerollHi = 0;
@@ -7161,7 +7161,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             if ((i64)(u32)g_645588 - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
-                Stub_062e10(1, 1, 0);
+                ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;
                 m_arrivalRerollLo = (i32)g_645588;

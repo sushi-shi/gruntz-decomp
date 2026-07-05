@@ -266,7 +266,7 @@ public:
     void CueSpawn(CGrunt* g, i32 b, i32 c, i32 d, i32 e);    // via thunk 0x27ac (ret 0x14)
 };
 
-// The entrance-reset (Stub_062e10) cue-gate visibility helper (thunk_FUN_0046b330,
+// The entrance-reset (ResetEntranceAnimation) cue-gate visibility helper (thunk_FUN_0046b330,
 // __cdecl(viewport, x, y) ret int): tests whether the grunt's HUD point is inside
 // the viewport rect. External/no-body (reloc-masked).
 i32 CueVisible(i32 viewport, i32 x, i32 y);
@@ -925,7 +925,7 @@ public:
 
 // The +0x468 owned-cell array element (9 x 0x68), one per direction. Five per-pose
 // anim-name CStrings at +0/4/8/c/10 (ATTACK/STRUCK/WALK/IDLE/ITEM) the entrance
-// name loader (Stub_048470) fills; the serialized-record dwords at +0x14/+0x40/+0x64
+// name loader (LoadCellAnimNames) fills; the serialized-record dwords at +0x14/+0x40/+0x64
 // the Load path streams. Its per-element ctor/dtor are engine callbacks (0x401e9c /
 // 0x4023a6, external/reloc-masked); as a value-array member of CGrunt, MSVC auto-emits
 // the __ehvec_ctor/__ehvec_dtor(base, 0x68, 9, &CGruntCellRec::{ctor,dtor}).
@@ -1645,9 +1645,9 @@ public:
     CGrunt(void* owner);
 
     // Engine-label backlog stubs. (0x048400 is CGrunt::ReadConfigFromButeMgr, declared above.)
-    void Stub_048470(i32 a, i32 b);        // (2-arg; called from LoadEntranceConfig tail)
-    void Stub_062e10(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
-    void Stub_0633e0();
+    void LoadCellAnimNames(i32 a, i32 b);        // (2-arg; called from LoadEntranceConfig tail)
+    void ResetEntranceAnimation(i32 a, i32 b, i32 c); // (ret 0xc) - 3-arg entrance reset
+    void ResolveEntranceArrival();
     void EntrancePrepare(); // thunk_FUN_0044b240 (void this-method, external)
     void BuildEntranceAnimation(i32 mode);
     void LoadEntranceConfig();

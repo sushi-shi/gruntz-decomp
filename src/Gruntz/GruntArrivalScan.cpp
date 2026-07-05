@@ -164,7 +164,7 @@ i32 CGrunt::ArrivalScanA() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
@@ -385,7 +385,7 @@ i32 CGrunt::ArrivalScanB() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
@@ -616,7 +616,7 @@ i32 CGrunt::ArrivalScanC() {
             F(this, 0x218) = 0;
             F(this, 0x21c) = 0;
             F(this, 0x220) = 0;
-            Stub_062e10(1, 0, 0);
+            ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
         if (atTarget) {
@@ -632,7 +632,7 @@ i32 CGrunt::ArrivalScanC() {
         F(this, 0x218) = 0;
         F(this, 0x21c) = 0;
         F(this, 0x220) = 0;
-        Stub_062e10(1, 0, 0);
+        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 

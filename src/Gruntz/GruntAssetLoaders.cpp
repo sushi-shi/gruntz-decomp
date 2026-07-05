@@ -575,7 +575,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         m_combatActive = 0;
         m_neighborValid = 0;
         m_poweredUp = 0;
-        Stub_062e10(1, 0, 0); // 0x62e10
+        ResetEntranceAnimation(1, 0, 0); // 0x62e10
     }
     m_tileMgr->CommitStruckTile(m_tileOwnerHi, m_tileOwnerLo, 1); // 0x78260
 
