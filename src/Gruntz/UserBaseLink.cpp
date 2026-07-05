@@ -163,7 +163,7 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
 RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    CLogicHandlerMap* map = LogicMap();
     map->Lookup(key, &handler);
     EnsureWorker80(handler);
 }
@@ -173,7 +173,7 @@ void CGameObject::AddLogicHit(char* key) {
 RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    CLogicHandlerMap* map = LogicMap();
     map->Lookup(key, &handler);
     EnsureWorker88(handler);
 }
@@ -183,7 +183,7 @@ void CGameObject::AddLogicAttack(char* key) {
 RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
-    CLogicHandlerMap* map = (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    CLogicHandlerMap* map = LogicMap();
     map->Lookup(key, &handler);
     EnsureWorker90(handler);
 }

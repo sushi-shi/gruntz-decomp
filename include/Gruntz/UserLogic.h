@@ -130,6 +130,12 @@ struct CGameObject {
     void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
     void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
 
+    // The world's logic-handler name map (m_0c -> +0x14 -> +0x10). m_0c is the
+    // family's generically-typed world/context slot; reached by documented offset.
+    CLogicHandlerMap* LogicMap() {
+        return (CLogicHandlerMap*)(*(char**)((char*)m_0c + 0x14) + 0x10);
+    }
+
     // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
     // no vtable is ever emitted from source - every dispatch reloc-masks). Slot
     // roles are unrecovered except [11] Draw: CGameLevel::VisitVisible dispatches
