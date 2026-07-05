@@ -1992,6 +1992,12 @@ rva,name,lib,confidence,source
 0x184b80,___inittime,LIBCMT,LOW,anchored
 0x184df0,__fpclear,LIBCMT,LOW,anchored
 0x1855d0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
+0x186180,_deflateInit_,zlib,HIGH,anchored
+0x1868e0,_putShortMSB,zlib,HIGH,anchored
+0x186910,_flush_pending,zlib,HIGH,anchored
+0x186990,_deflateEnd,zlib,HIGH,anchored
+0x186a20,_deflateCopy,zlib,HIGH,anchored
+0x186a50,_lm_init,zlib,HIGH,anchored
 0x186af0,_deflate_stored,zlib,HIGH,anchored
 0x186c00,_fill_window,zlib,HIGH,anchored
 0x186d30,_read_buf,zlib,HIGH,anchored
@@ -2009,6 +2015,7 @@ rva,name,lib,confidence,source
 0x1886b0,_init_block,zlib,HIGH,anchored
 0x188720,_gen_codes,zlib,HIGH,anchored
 0x1887a0,__tr_stored_block,zlib,HIGH,anchored
+0x188860,__tr_align,zlib,HIGH,anchored
 0x188ad0,__tr_flush_block,zlib,HIGH,anchored
 0x188d00,_build_tree,zlib,HIGH,anchored
 0x188f40,_pqdownheap,zlib,HIGH,anchored
@@ -2021,6 +2028,7 @@ rva,name,lib,confidence,source
 0x189cb0,_compress_block,zlib,HIGH,anchored
 0x18a100,_set_data_type,zlib,HIGH,anchored
 0x18a170,_bi_reverse,zlib,HIGH,anchored
+0x18a190,_bi_flush,zlib,HIGH,anchored
 0x18a220,_bi_windup,zlib,HIGH,anchored
 0x18a290,_copy_block,zlib,HIGH,anchored
 0x18a330,_inflate_trees_bits,zlib,HIGH,anchored

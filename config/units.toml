@@ -2045,11 +2045,6 @@ source = "src/DDrawMgr/DDScreen.cpp"
 flags = "base"
 
 [[unit]]
-unit = "bitstreampack"
-source = "src/Wap32/BitStreamPack.cpp"
-flags = "base"
-
-[[unit]]
 unit = "imageset3"
 source = "src/Image/ImageSet3.cpp"
 flags = "base"
@@ -2296,10 +2291,6 @@ unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
 flags = "base"
 [[unit]]
-unit = "ringbuffer"
-source = "src/Wap32/RingBuffer.cpp"
-flags = "base"
-[[unit]]
 unit = "wapmisc"
 source = "src/Wap32/WapMisc.cpp"
 flags = "base"
@@ -2361,10 +2352,6 @@ unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
 flags = "base"
 [[unit]]
-unit = "msgpacket"
-source = "src/Net/MsgPacket.cpp"
-flags = "base"
-[[unit]]
 unit = "triggersound"
 source = "src/Gruntz/TriggerSound.cpp"
 flags = "base"
@@ -2413,10 +2400,6 @@ flags = "eh"
 [[unit]]
 unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
-flags = "base"
-[[unit]]
-unit = "misc18"
-source = "src/Wap32/Misc18.cpp"
 flags = "base"
 [[unit]]
 unit = "saverecload"

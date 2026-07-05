@@ -7,9 +7,15 @@ rva,name,unit,size,kind
 0x185be0,_inflate,inflate,,func
 0x186010,_inflateSetDictionary,inflate,,func
 0x1860a0,_inflateSync,inflate,,func
+0x186180,_deflateInit_,deflate,,func
 0x1861b0,_deflateInit2_,deflate,,func
 0x1864d0,_deflateReset,deflate,,func
 0x186620,_deflate,deflate,,func
+0x1868e0,_putShortMSB,deflate,,func
+0x186910,_flush_pending,deflate,,func
+0x186990,_deflateEnd,deflate,,func
+0x186a20,_deflateCopy,deflate,,func
+0x186a50,_lm_init,deflate,,func
 0x186af0,_deflate_stored,deflate,,func
 0x186c00,_fill_window,deflate,,func
 0x186d30,_read_buf,deflate,,func
@@ -29,6 +35,7 @@ rva,name,unit,size,kind
 0x1886b0,_init_block,trees,,func
 0x188720,_gen_codes,trees,,func
 0x1887a0,__tr_stored_block,trees,,func
+0x188860,__tr_align,trees,,func
 0x188ad0,__tr_flush_block,trees,,func
 0x188d00,_build_tree,trees,,func
 0x188f40,_pqdownheap,trees,,func
@@ -41,6 +48,7 @@ rva,name,unit,size,kind
 0x189cb0,_compress_block,trees,,func
 0x18a100,_set_data_type,trees,,func
 0x18a170,_bi_reverse,trees,,func
+0x18a190,_bi_flush,trees,,func
 0x18a220,_bi_windup,trees,,func
 0x18a290,_copy_block,trees,,func
 0x18a330,_inflate_trees_bits,inftrees,,func
