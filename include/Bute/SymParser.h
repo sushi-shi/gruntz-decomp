@@ -31,8 +31,10 @@
 // the leftover-stack-args ctor trick) returns a seed left on the stack. Reloc-masked.
 i32 MakeSymSeed(); // 0x13ba70
 
-// The shared empty-string literal (?g_emptyString) the root scope is named with.
-extern const char g_emptyString[]; // 0x6293f4
+// The shared empty-string literal the root scope is named with (0x6293f4; homed in
+// NetMgrReportError.cpp as extern "C" - the majority convention across the tree; the
+// DATA reference reloc-masks so the C linkage is matching-neutral).
+extern "C" char g_emptyString[]; // 0x6293f4
 
 // CSymParser's own primary vtable (0x5ef750) is REAL POLYMORPHIC (??_7CSymParser@@6B@,
 // 3-slot, non-virtual dtor) - see the class below. The +0x10 CObjList sub-object is

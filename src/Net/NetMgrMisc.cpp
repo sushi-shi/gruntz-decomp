@@ -3,8 +3,9 @@
 // file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
 // engine singletons. All callees/globals are external (reloc-masked).
 #include <Ints.h>
-#include <Gruntz/Dialogs.h> // CMultiStartDlg (the connect-coordinator IS this dialog)
-#include <Gruntz/Multi.h>   // the g_64bd5c singleton is a CMulti (xref-proven)
+#include <Gruntz/Dialogs.h>    // CMultiStartDlg (the connect-coordinator IS this dialog)
+#include <Gruntz/Multi.h>      // the g_64bd5c singleton is a CMulti (xref-proven)
+#include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (the +0x5c transform host)
 #include <rva.h>
 #include <string.h>
 
@@ -17,13 +18,11 @@
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 
-// The +0x5c host sub-object (CMultiStartDlg::m_host) whose Transform the else-branch
-// calls; m_host is stored as i32 and cast at the use-site (the established roster/world
-// idiom - cf. MultiStartDlgWorld.cpp's ((MpDlgHost*)m_host)).
-struct CNetXform {
-    i32 Transform(i32); // 0x92e80 (via thunk 0x2e00)
-};
-SIZE_UNKNOWN(CNetXform); // method-only transform view; retail size TBD
+// The +0x5c host sub-object (CMultiStartDlg::m_host) whose transform the else-branch
+// calls is the canonical CNetDlgHost (<Gruntz/NetDlgHost.h>, unified from the former
+// per-TU CNetXform + MultiStartDlgWorld's MpDlgHost/MpWorldReg views). m_host is a
+// heterogeneous handle (also a slot-array base elsewhere) so the host-facet cast stays.
+// (FindOptionsSlot @0x92e80 via thunk 0x2e00.)
 
 // NOTE: the connect-state coordinator ('this') is CMultiStartDlg, PROVEN (matcher-5):
 // Drive reads [this+0x5c] (== m_host) and self-calls UpdatePlayers (0xc4230) + the
@@ -97,7 +96,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = ((CNetXform*)m_host)->Transform(netMgr->m_hostIndex);
+        i32 transformedPlayerId = ((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }

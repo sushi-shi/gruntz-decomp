@@ -199,6 +199,7 @@ public:
 // ---------------------------------------------------------------------------
 // CMultiStartDlg
 //   base CDialog(0xc5, pParent); m_host = a0; m_slotList = 0; m_6c = 0;
+//   (m_host: heterogeneous handle - CNetDlgHost host-facet + slot-array base; see below.)
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
@@ -291,7 +292,10 @@ public:
         return this == 0 ? 0 : *(i32*)((char*)this + 0x1c);
     }
 
-    i32 m_host;               // +0x5c  (= a0; the CNetDlgHost*/slot-array base)
+    i32 m_host;               // +0x5c  (= a0) heterogeneous handle: a CMultiSlot[]/CFocusSlot[]
+                              //        slot-array base (Dialogs.cpp/MultiStartDlgRoster.cpp) AND
+                              //        the CNetDlgHost host-facet (FindOptionsSlot @0x92e80 +
+                              //        m_registry @+0x34) - each site casts to the type it needs.
     CLatencyList* m_slotList; // +0x60  (= 0; built in BuildSlotList)
     char m_pad64[8];          // +0x64
     i32 m_6c;                 // +0x6c  (= 0)

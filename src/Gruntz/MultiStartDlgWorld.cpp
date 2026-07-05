@@ -9,7 +9,9 @@
 // engine / import thunk that reloc-masks; the "GAME_MULTI" $SG literal reloc-masks
 // against the matched string symbol; only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (its +0x34 m_registry is a CSymParser)
+#include <Bute/SymParser.h>    // CSymParser::ResolvePath (0x13c030), the world name registry
 #include <rva.h>
 #include <Globals.h>
 
@@ -26,23 +28,19 @@ extern CMulti* g_64bd5c;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
 
-// The GAME_MULTI registry path -> a name registry (m_host is the CNetDlgHost* the
-// ctor stored as i32; its m_registry is the world registry). ResolvePath returns a
-// symbol table iterated by FirstSym/NextSym2 (first entry) then NextSym3 (advance).
+// The GAME_MULTI registry path -> a name registry. m_host is the canonical CNetDlgHost;
+// its +0x34 m_registry is the real Bute CSymParser (ResolvePath 0x13c030 - proven), which
+// returns a CSymTab symbol table. The table is iterated FirstSym/NextSym2 (first entry)
+// then NextSym3 (advance) - CSymTab methods; kept as this TU's iteration view MpSymTable
+// (each returned payload's +0x00 is the entry name). Folding MpSymTable onto CSymTab is
+// proven but DEFERRED (its payload/item identity - CSymRec vs child scope - is unsettled).
 struct MpSymItem {
     char* m_name; // +0x00  entry name (LPCSTR)
 };
 struct MpSymTable {
-    void* FirstSym();                  // 0x13a2b0 __thiscall
-    MpSymItem* NextSym2(void* pos);    // 0x13a2f0 __thiscall
-    MpSymItem* NextSym3(MpSymItem* p); // 0x13a310 __thiscall
-};
-struct MpWorldReg {
-    MpSymTable* ResolvePath(const char* path); // 0x13c030 __thiscall
-};
-struct MpDlgHost {
-    char m_pad0[0x34];
-    MpWorldReg* m_registry; // +0x34  world name registry
+    void* FirstSym();                  // 0x13a2b0 CSymTab __thiscall
+    MpSymItem* NextSym2(void* pos);    // 0x13a2f0 CSymTab __thiscall
+    MpSymItem* NextSym3(MpSymItem* p); // 0x13a310 CSymTab __thiscall
 };
 
 // ---------------------------------------------------------------------------
@@ -75,7 +73,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    MpSymTable* st = ((MpDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
+    MpSymTable* st = (MpSymTable*)((CNetDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
     if (st == 0) {
         return 0;
     }
@@ -129,7 +127,5 @@ void CMultiStartDlg::Sub_c3e30() {
 }
 
 SIZE_UNKNOWN(EngStrAssign);
-SIZE_UNKNOWN(MpDlgHost);
 SIZE_UNKNOWN(MpSymItem);
 SIZE_UNKNOWN(MpSymTable);
-SIZE_UNKNOWN(MpWorldReg);
