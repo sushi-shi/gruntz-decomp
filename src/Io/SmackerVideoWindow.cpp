@@ -10,7 +10,13 @@
 // their real NAFXCW mangled names differ but objdiff pairs the relocs by type. The
 // destructible CString local forces the /GX EH frame (this unit uses the `eh`
 // profile). Field NAMES are placeholders; offsets + call-site bytes load-bearing.
-#include <Mfc.h> // CString + windows.h (afx-first; CWnd.h's <Win32.h> is then a no-op)
+#include <Mfc.h> // CString + windows.h (afx-first)
+#ifdef __clang__
+// The label-step clang can't parse MFC's afxwin1.inl (implicit-int CMenu::operator==);
+// skip the *.inl for clang only - docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h> // the REAL MFC CWnd (m_videoWnd) + AfxRegisterWndClass
 #include <Ints.h>
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
@@ -26,57 +32,16 @@
 #undef s32
 #undef s64
 
-#include <Gruntz/Wnd.h>
 #include <ddraw.h> // real IDirectDrawSurface (m_24/m_28: Lock/Restore/Unlock/Release)
 
-// LPCTSTR AFXAPI AfxRegisterWndClass(UINT, HCURSOR=0, HBRUSH=0, HICON=0). __stdcall.
-// (In afxwin.h, not the afx.h lean subset, so keep the local decl.)
-extern "C" const char* __stdcall
-AfxRegisterWndClass(u32 style, void* cur, void* brush, void* icon); // 0x1bc09d
-
-// The created window is the shared MFC CWnd (0x3c bytes, m_hWnd at +0x1c; see
-// <Gruntz/Wnd.h>). Ctor/CreateEx/SetFocus are external (the CObject vtable is
-// stamped by the real ctor).
-
-// m_videoWnd is genuinely `new CWnd` (CreateVideoWindow: push 0x3c; call the CWnd
-// ctor 0x1baecf) - so these two Teardown dispatches go through MFC CWnd's OWN
-// vtable: slot 1 (+0x04) is CObject's scalar-deleting destructor (Destroy(1)),
-// slot 24 (+0x60) a CWnd finalize virtual (Finish). This is a FOREIGN-SDK vtable
-// view, not a game-class cross-cast: CWnd.h models MFC's CWnd with NO real virtuals
-// (its ctor is an external NAFXCW entrypoint, so cl never emits a CWnd vtable),
-// and declaring all 24 intervening MFC slots in the shared CWnd.h just to name
-// these two would fabricate 23 placeholder virtuals into a widely-shared header for
-// no net gain. Honest model = a manual vptr into a typed vtable struct naming ONLY the
-// two dispatched slots as 4-byte thiscall PMFs (rest is padding), NO fake virtuals; the
-// dispatch is the same `mov ecx,[wnd]; mov eax,[ecx]; call [eax+slot]` either way.
-// SDK CHECK (batch-2 interface-recovery task): identity CONFIRMED = the real MFC CWnd
-// (afxwin.h), slot 1 = CObject scalar-deleting dtor, slot 24 = a CWnd finalize virtual.
-// It is NOT foldable to the real class here: <Mfc.h> deliberately excludes afxwin.h
-// (afx.h + afxcoll.h only), and the no-fabricated-nameless-fillers mandate forbids the
-// 23 intervening filler slots a full CWnd vtable would need. The 2-named-slot PMF view
-// is the minimum-fabrication honest terminal model (zero invented virtuals).
-SIZE_UNKNOWN(CursSink);
-struct CursSinkVtbl;
-struct CursSink {
-    CursSinkVtbl* m_vtbl;      // +0x00
-    void CallDestroy(i32 del); // slot 1  == vtable +0x04
-    void CallFinish();         // slot 24 == vtable +0x60
-};
-typedef void (CursSink::*CursSinkDtorFn)(i32 del);
-typedef void (CursSink::*CursSinkFinFn)();
-struct CursSinkVtbl {
-    char m_pad00[0x04];
-    CursSinkDtorFn Destroy; // +0x04 slot 1
-    char m_pad08[0x60 - 0x08];
-    CursSinkFinFn Finish; // +0x60 slot 24
-};
-SIZE_UNKNOWN(CursSinkVtbl);
-inline void CursSink::CallDestroy(i32 del) {
-    (this->*(m_vtbl->Destroy))(del);
-}
-inline void CursSink::CallFinish() {
-    (this->*(m_vtbl->Finish))();
-}
+// m_videoWnd is the REAL MFC CWnd from <afxwin.h> (the former CursSink 2-slot PMF
+// view + the <Gruntz/Wnd.h> minimal view are both folded away). Layout verified
+// against retail: sizeof(CWnd) == 0x3c (`new CWnd` -> push 0x3c), m_hWnd at +0x1c,
+// and the two Teardown dispatches are the classic MFC teardown - slot 24 (+0x60) =
+// CWnd::DestroyWindow, slot 1 (+0x04) = the scalar-deleting dtor (`delete wnd`) -
+// slot indices confirmed with clang's MSVC-ABI -fdump-vtable-layouts over this
+// exact toolchain header state. Ctor/CreateEx/SetFocus/DestroyWindow stay external
+// NAFXCW entrypoints (reloc-masked); AfxRegisterWndClass now comes from afxwin.h.
 
 // Smacker imports (IAT) reached during open/pump/close come from <smack.h>.
 // The Rez allocator's free (RVA 0x1b9b82).
@@ -189,10 +154,8 @@ void CSmackWin::Teardown() {
     m_active = 0;
     Free17cc80();
     if (m_videoWnd) {
-        ((CursSink*)m_videoWnd)->CallFinish();
-        if (m_videoWnd) {
-            ((CursSink*)m_videoWnd)->CallDestroy(1);
-        }
+        m_videoWnd->DestroyWindow();
+        delete m_videoWnd; // virtual dtor -> the compiler's own null-guarded slot-1 dispatch
         m_videoWnd = 0;
     }
     ShowCursor(1);
