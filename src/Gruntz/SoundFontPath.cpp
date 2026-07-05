@@ -12,10 +12,10 @@
 
 #include <Win32.h> // GetCurrentDirectoryA / FreeLibrary
 
-#include <sfman32.h> // the SFMAN32 device interface (*0x64e0b0); Deselect (+0x14)
-#include <Globals.h> // g_sfDevice, g_sfReady, g_sfDeviceCount, g_sfDll
-#include <stdio.h>   // sprintf (0x11f890, _sprintf)
-#include <string.h>  // strlen (inline repne scas)
+#include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
+#include <Globals.h>           // g_sfDevice, g_sfReady, g_sfDeviceCount, g_sfDll
+#include <stdio.h>             // sprintf (0x11f890, _sprintf)
+#include <string.h>            // strlen (inline repne scas)
 
 // The config blocks A (0x64dacc) and the load token (0x64dd28) are the same WORD
 // globals SfDeviceInitKeys (ReconBatch2.cpp) seeds; reference its names so the
@@ -79,11 +79,19 @@ i32 BuildSoundFontPath(char drive) {
     }
     g_sfCurPath = hiVer ? g_sfLocal4 : g_sfLocal;
     if (Utils::WinAPI::FileExistsCopyF90F0(g_sfCurPath)) {
-        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfCfgA0, &g_sfCfgB0);
+        res = g_sfDevice->SF_LoadBank(
+            g_sfDeviceId,
+            (PSFMIDILOCATION)&g_sfCfgA0,
+            (PSFBUFFEROBJECT)&g_sfCfgB0
+        );
     }
     if (res != 0) {
         g_sfCurPath = hiVer ? g_sfMusic4 : g_sfMusic;
-        res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfCfgA0, &g_sfCfgB0);
+        res = g_sfDevice->SF_LoadBank(
+            g_sfDeviceId,
+            (PSFMIDILOCATION)&g_sfCfgA0,
+            (PSFBUFFEROBJECT)&g_sfCfgB0
+        );
     }
     return res == 0;
 }

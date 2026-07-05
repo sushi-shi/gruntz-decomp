@@ -11,7 +11,7 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (RemoveKeysEqual_157c70)
 #include <Gruntz/Multi.h>                 // real CMulti (the 0x64bd5c multiplayer singleton)
 #include <Font/Font.h>                    // real Font (the g_mediumFont global)
-#include <sfman32.h>                      // the *0x64e0b0 receiver (shared w/ SFSelectDevice)
+#include <Dsndmgr/SfManager.h>            // real SFMANL101API device (was the sfman32.h shadow)
 #include <Globals.h>
 
 // ===========================================================================
@@ -185,7 +185,8 @@ i32 SfDeviceInitKeys() {
     g_sfCfgA2 = 0;
     for (i32 i = 1; i <= 0x7f; i++) {
         g_sfCfgA0 = (WORD)i;
-        g_sfDevice->SF_GetLoadedBankPathname(g_sfDeviceId, &g_sfCfgA0);
+        ((SfGetLoadedBankPathname2)
+             g_sfDevice->SF_GetLoadedBankPathname)(g_sfDeviceId, (PSFMIDILOCATION)&g_sfCfgA0);
     }
     g_sfCfgA0 = 1;
     return 1;

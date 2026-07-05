@@ -30,7 +30,8 @@ struct CToobEntry;
 struct CVTrigColl2;
 struct CVTrigEntry;
 struct GLSResetMgr;
-struct SfManagerDevice;
+struct SFMANL101TAG;
+typedef struct SFMANL101TAG SFMANL101API;
 struct ScrollView;
 struct ShadeDescr;
 
@@ -461,7 +462,7 @@ extern u16 g_sfDeviceCount; // 0x64e0a4  SFMAN32 device count
 DATA(0x0024e0a8)
 extern void* g_sfDll; // 0x64e0a8  SFMAN32.DLL handle
 DATA(0x0024e0b0)
-extern SfManagerDevice* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
+extern SFMANL101API* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
 DATA(0x0024e0b8)
 extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
 DATA(0x0024e0c0)
