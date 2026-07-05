@@ -27,13 +27,27 @@ namespace GruntzMgrCmd {
     // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
     // need a full body rewrite at high regression risk for no % gain. The namespace
     // keeps it from ODR-clashing with the canonical class.
+    struct GZGate2c {
+        void Fn137a80(); // 0x137a80 __thiscall
+    };
     struct GZGateB {
-        char _p[0x30];
-        i32 m_30;
+        char _p[0x2c];
+        GZGate2c* m_2c; // +0x2c
+        i32 m_30;       // +0x30
     };
     struct GZGateA {
         char _p[0x28];
         GZGateB* m_28;
+    };
+    struct GZInput {     // manager m_54 (input/toolbar sub-object)
+        void Disp18e8(); // 0x18e8 world-present toolbar on
+        void Disp29b9(); // 0x29b9 world-present toolbar off
+    };
+    // The settings singleton at *0x64556c (only +0x8c/+0x90 touched here).
+    struct GZMgrSettings {
+        char _p0[0x8c];
+        void* m_8c; // +0x8c
+        void* m_90; // +0x90
     };
     struct GZSound {
         void Play(i32 a, i32 b, i32 c, i32 d);
@@ -62,6 +76,11 @@ namespace GruntzMgrCmd {
         void Board18e3(i32 n);        // 0x18e3
         void Board3616(i32 a, i32 b); // 0x3616
     };
+    struct GZLevel { // GZLogic::m_2dc  level sub-object
+        char _p0[0x550];
+        i32 m_550; // +0x550
+        i32 m_554; // +0x554
+    };
     struct GZLogic {             // this->m_curState
         i32 vf10();              // vtbl+0x10  play-state accessor
         i32 vf54();              // vtbl+0x54
@@ -74,6 +93,12 @@ namespace GruntzMgrCmd {
         i32 m_1c; // +0x1c  paused-select gate (PassClick source)
         char _p20[0x40 - 0x20];
         i32 m_40; // +0x40  state notify latch
+        char _p44[0x2dc - 0x44];
+        GZLevel* m_2dc; // +0x2dc  active level sub-object
+        char _p2e0[0x4ec - 0x2e0];
+        i32 m_4ec; // +0x4ec
+        char _p4f0[0x4f8 - 0x4f0];
+        i32 m_4f8; // +0x4f8
     };
 
     // The manager's +0x44 engine sub-object (only its +0x124 flag is touched here).
@@ -123,7 +148,7 @@ namespace GruntzMgrCmd {
     DATA(0x006c44c0)
     extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
     DATA(0x006c44c4)
-    extern i32(WINAPI* g_pRand6c44c4)(i32);
+    extern i32(WINAPI* g_ShowCursor)(i32); // ?g_ShowCursor@@3P6GHH@ZA
     DATA(0x006c44c8)
     extern i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32);
 
@@ -158,7 +183,7 @@ namespace GruntzMgrCmd {
         GZM44* m_44;   // 0x44 (engine sub-object; +0x124 flag)
         void* m_sound; // 0x48
         char _p4c[0x54 - 0x4c];
-        i32 m_inputState;    // 0x54
+        GZInput* m_inputState; // 0x54
         GZObj58* m_saveSink; // 0x58 (has +0x18)
         char _p5c[0x68 - 0x5c];
         GZBoard* m_cmdGrid; // 0x68
@@ -186,7 +211,7 @@ namespace GruntzMgrCmd {
         i32 InPlay();                                 // 0x1a46
         i32 CheckPlay();                              // 0x1bd6
         void ChangeState(i32 n);                      // 0x201d
-        void FinishLevel(i32 n);                      // 0x409d
+        void FinishLevel(i32 f, i32 flag);            // 0x409d
         i32 GoNext();                                 // 0x2149
         void GoPrev();                                // 0x3260
         void RunModal(const char* s, void* p, i32 n); // 0x2bb7
@@ -204,16 +229,15 @@ namespace GruntzMgrCmd {
         i32 Func1cf3();                               // 0x1cf3
         i32 BrickPickup(i32 id);                      // grid-select + 0x3c6a (inlined in retail)
         i32 BrickAbility(i32 n);                      // grid-select + 0x3c29 (inlined in retail)
-        void RestartLevel(i32 n);                     // 0x889d0 family helper
-        void RestartLevel2(i32 n);                    // 0x88a9a variant
         void Sound1388c0(i32 n);                      // 0x1388c0
         void Sound1388f0();                           // 0x1388f0
-        void Board277a();                             // 0x277a world-present
-        void ToggleDisplay(i32 v);                    // 0x18e8 / 0x29b9 pair
         i32 HandleCommand(i32 p1, i32 nID, i32 p3);
     };
     // free/cdecl helpers reached from a couple of first-switch bodies
-    extern "C" i32 Board2144(CGruntzMgr* self, void* p); // 0x2144  __cdecl
+    extern "C" i32 Board2144(CGruntzMgr* self, void* p);                                    // 0x2144
+    extern "C" void Board277a(void* a, CGruntzMgr* self, void* b, void* c, i32 d, i32 e);   // 0x277a
+    DATA(0x0064556c)
+    extern GZMgrSettings* g_mgrSettings;
     struct GZObj58 {
         char _p0[0x18];
         i32 m_18; // +0x18  paused-select gate (PassClick source)
@@ -243,6 +267,42 @@ namespace GruntzMgrCmd {
         m_strWorldFile.Empty();                                                                    \
         if (!PassClick((N), 0, 1))                                                                 \
             ReportErr(0x8005, (ERR));                                                              \
+        return 1;                                                                                  \
+    }
+// Level-restart (0x8170/0x8171/0x8173): stop chain, drain cursor, change state,
+// restart music, re-raise cursor.  Inlined by retail (not a helper call).
+#define RESTART(N)                                                                                 \
+    {                                                                                              \
+        i32 st = m_curState->vf10();                                                               \
+        GZLogic* mus = 0;                                                                          \
+        if (st == 5) {                                                                             \
+            mus = m_curState;                                                                      \
+            m_curState->StopChain();                                                              \
+            if (g_ShowCursor(0) >= 0)                                                              \
+                while (g_ShowCursor(0) >= 0) {                                                     \
+                }                                                                                  \
+        }                                                                                          \
+        ChangeState(N);                                                                            \
+        if (mus) {                                                                                 \
+            mus->StartMusic();                                                                     \
+            if (g_ShowCursor(1) < 0)                                                               \
+                while (g_ShowCursor(1) < 0) {                                                      \
+                }                                                                                  \
+        }                                                                                          \
+        return 1;                                                                                  \
+    }
+// Simpler restart variant (0x8172): no cursor drain.
+#define RESTART2(N)                                                                                \
+    {                                                                                              \
+        i32 st = m_curState->vf10();                                                               \
+        GZLogic* mus = 0;                                                                          \
+        if (st == 5) {                                                                             \
+            mus = m_curState;                                                                      \
+            m_curState->StopChain();                                                              \
+        }                                                                                          \
+        ChangeState(N);                                                                            \
+        if (mus)                                                                                   \
+            mus->StartMusic();                                                                     \
         return 1;                                                                                  \
     }
 
@@ -816,17 +876,13 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             case 0x8170:
-                RestartLevel(1);
-                return 1;
+                RESTART(1);
             case 0x8171:
-                RestartLevel(2);
-                return 1;
+                RESTART(2);
             case 0x8172:
-                RestartLevel2(2);
-                return 1;
+                RESTART2(2);
             case 0x8173:
-                RestartLevel(3);
-                return 1;
+                RESTART(3);
             case 0x800d:
                 WARP(1, 0x422);
             case 0x814a:
@@ -967,7 +1023,7 @@ namespace GruntzMgrCmd {
                 WARP(0x84, 0x479);
             case 0x8038:
                 if (m_curState->vf10() == 5 || m_curState->vf10() == 2) {
-                    while (g_pRand6c44c4(1) < 0) {
+                    while (g_ShowCursor(1) < 0) {
                     }
                     LaunchUrl("http://www.gruntzgoo.com/");
                 }
@@ -1052,24 +1108,37 @@ namespace GruntzMgrCmd {
                 }
                 ReportErr(0x8005, 0x42e);
                 return 1;
-            case 0x8007: {
+            case 0x8007: {                           // 0x89b97
                 i32 st = m_curState->vf10();
-                if (st != 3 && st != 0x11) {
-                    return 1;
+                if (st == 3 || st == 0x11) {
+                    if (m_curState->m_4f8) {
+                        return 1;
+                    }
+                    if (m_curState->m_4ec) {
+                        return 1;
+                    }
+                    GZLevel* lv = m_curState->m_2dc;
+                    if (lv) {
+                        if (lv->m_550) {
+                            return 1;
+                        }
+                        if (lv->m_554) {
+                            return 1;
+                        }
+                    }
+                    i32 f = m_0c ^ 1;
+                    m_0c = f;
+                    FinishLevel(f, 1);
                 }
-                i32 f = m_0c ^ 1;
-                m_0c = f;
-                FinishLevel(f);
                 return 1;
             }
-            case 0x816e: {
+            case 0x816e: {                           // 0x89c19
                 i32 st = m_curState->vf10();
-                if (st != 3 && st != 0x11) {
-                    return 1;
+                if (st == 3 || st == 0x11) {
+                    i32 f = m_0c ^ 1;
+                    m_0c = f;
+                    FinishLevel(f, 0);
                 }
-                i32 f = m_0c ^ 1;
-                m_0c = f;
-                FinishLevel(f);
                 return 1;
             }
             case 0x8084:
@@ -1085,7 +1154,7 @@ namespace GruntzMgrCmd {
                 m_lobbyProbed = 0;
                 g_pPostMessageA(m_04->m_4, 0x111, 0x8025, 0);
                 return 1;
-            case 0x800e:
+            case 0x800e:                             // 0x89c92
                 if (!CheckPlay()) {
                     return 1;
                 }
@@ -1093,40 +1162,40 @@ namespace GruntzMgrCmd {
                     return 1;
                 }
                 if (Dispatch(2, 1, 0, 0)) {
+                    g_pPostMessageA(m_04->m_4, 0x111, 0x8023, 0);
                     return 1;
                 }
                 ReportErr(0x8005, 0x430);
-                g_pPostMessageA(m_04->m_4, 0x111, 0x8023, 0);
                 return 1;
-            case 0x8042:
+            case 0x8042:                             // 0x89d00
                 if (g_6455ec) {
                     return 1;
                 }
                 Func415b();
                 return 1;
-            case 0x8075:
+            case 0x8075:                             // 0x89d1e
                 if (GoNext()) {
                     return 1;
                 }
                 ReportErr(0x8007, 0x431);
                 return 1;
-            case 0x800f: {
-                i32 st = m_curState->vf10();
-                if (st == 3 || st == 0x11) {
+            case 0x800f:                             // 0x89d37 -> falls into 0x8006
+                if (m_curState->vf10() == 3 || m_curState->vf10() == 0x11) {
                     GoPrev();
                     return 1;
                 }
+                // fall through
+            case 0x8006:                             // 0x89d62
                 m_curState->m_40 = 1;
                 if (Dispatch(5, 1, 0, 0)) {
                     return 1;
                 }
                 ReportErr(0x8005, 0x432);
                 return 1;
-            }
-            case 0x8006:
+            case 0x8008:                             // 0x89d8d
                 Func3f62();
                 return 1;
-            case 0x8008: {
+            case 0x8035: {                           // 0x89d9e
                 i32 st = m_curState->vf10();
                 if (st == 9 || st == 0xd || st == 0xf || st == 0xe || st == 8 || st == 0xa
                     || st == 0x12 || st == 0x11) {
@@ -1138,21 +1207,20 @@ namespace GruntzMgrCmd {
                 ReportErr(0x8005, 0x433);
                 return 1;
             }
-            case 0x8035: {
-                void* logic = m_curState;
+            case 0x80e2: {                           // 0x89e58  CONFIG_SETTINGS modal
                 i32 st = m_curState->vf10();
-                void* mus = 0;
+                GZLogic* mus = 0;
                 if (st == 5) {
-                    mus = logic;
-                    ((GZLogic*)logic)->StopChain();
+                    mus = m_curState;
+                    m_curState->StopChain();
                 }
                 RunModal("CONFIG_SETTINGS", (void*)0x403ae4, 0);
                 if (mus) {
-                    ((GZLogic*)mus)->StartMusic();
+                    mus->StartMusic();
                 }
                 return 1;
             }
-            case 0x80e2: {
+            case 0x800a: {                           // 0x89e9f  elapsed-time / sound toggle
                 if (m_0c) {
                     return 1;
                 }
@@ -1172,46 +1240,43 @@ namespace GruntzMgrCmd {
                 }
                 return 1;
             }
-            case 0x800a:
+            case 0x8009: {                           // 0x89f08  world-position display toggle
+                if (m_world) {
+                    GZGate2c* p = m_world->m_28->m_2c;
+                    if (p) {
+                        p->Fn137a80();
+                    }
+                }
+                i32 v = m_10 ^ 1;
+                m_10 = v;
+                g_61ab20 = v;
+                if (v == 0) {
+                    m_inputState->Disp29b9();
+                } else {
+                    m_inputState->Disp18e8();
+                }
+                return 1;
+            }
+            case 0x802c:                             // 0x89f5a
                 if (!InPlay()) {
                     return 1;
                 }
                 Func34ef(0);
                 return 1;
-            case 0x8009:
+            case 0x802a:                             // 0x89f7c
                 if (!InPlay()) {
                     return 1;
                 }
                 Func424b();
                 return 1;
-            case 0x802c:
+            case 0x802b:                             // 0x89f9c
                 if (!InPlay()) {
                     return 1;
                 }
                 Func22a2();
                 return 1;
-            case 0x802a: {
-                // world-present toolbar path (approx)
-                Board277a();
-                return 1;
-            }
-            case 0x802b: {
-                i32 v = m_10 ^ 1;
-                m_10 = v;
-                g_61ab20 = v;
-                ToggleDisplay(v);
-                return 1;
-            }
-            case 0x8070: {
-                GZGrunt* _g = PickState();
-                if (!_g) {
-                    return 0;
-                }
-                m_strWorldFile =
-                    m_strWorldFile; // op= on m_strWorldFile (approx of the 0x1b9e25 tail)
-                if (!PassClick(m_curState->m_1c, 0, 1)) {
-                    ReportErr(0x8007, 0x434);
-                }
+            case 0x8070: {                           // 0x89fbc  world-present toolbar
+                Board277a(m_38, this, g_mgrSettings->m_8c, g_mgrSettings->m_90, 0, 0);
                 return 1;
             }
             case 0x806b: {
