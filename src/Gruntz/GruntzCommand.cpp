@@ -19,6 +19,7 @@
 // will NOT emit as a standalone COMDAT from the canonical class under the locked
 // flags (a real ??0 emits `mov eax,ecx`; placement-new emits a null guard).
 // They stay in the src/Stub/ backlog as the documented COMDAT-duplication case.
+#include <Win32.h> // windows.h (USER32) for the numeric settings DialogProc (0x92ab0)
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
@@ -363,3 +364,77 @@ const u16 g_cmdBitTable[16] = {
     0x4000,
     0x8000
 };
+
+// ---------------------------------------------------------------------------
+// The numeric settings DialogProc (0x092ab0), re-homed from the ApiCaller stubs:
+// CGruntzCommand::ApplyOne / ApplyMask (0x024140/0x024190) drive the command
+// dialog it backs. WM_INITDIALOG loads the 12 cached numeric edit fields into
+// controls 0x4db..0x4e6; IDOK reads them back; IDCANCEL closes. The 12 field
+// caches are cluster-local globals (moved here with the DlgProc).
+// ---------------------------------------------------------------------------
+DATA(0x0024526c)
+extern i32 g_dlgVal_64526c;
+DATA(0x002452d0)
+extern i32 g_dlgVal_6452d0;
+DATA(0x00245268)
+extern i32 g_dlgVal_645268;
+DATA(0x00245568)
+extern i32 g_dlgVal_645568;
+DATA(0x00245538)
+extern i32 g_dlgVal_645538;
+DATA(0x002451a4)
+extern i32 g_dlgVal_6451a4;
+DATA(0x002452d4)
+extern i32 g_dlgVal_6452d4;
+DATA(0x002452a8)
+extern i32 g_dlgVal_6452a8;
+DATA(0x00245558)
+extern i32 g_dlgVal_645558;
+DATA(0x00245560)
+extern i32 g_dlgVal_645560;
+DATA(0x0024555c)
+extern i32 g_dlgVal_64555c;
+DATA(0x00245564)
+extern i32 g_dlgVal_645564;
+RVA(0x00092ab0, 0x20d)
+i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x110:
+            SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
+            SetDlgItemInt(hDlg, 0x4da, g_dlgVal_6452d0, 0);
+            SetDlgItemInt(hDlg, 0x4dc, g_dlgVal_645268, 0);
+            SetDlgItemInt(hDlg, 0x4dd, g_dlgVal_645568, 0);
+            SetDlgItemInt(hDlg, 0x4de, g_dlgVal_645538, 0);
+            SetDlgItemInt(hDlg, 0x4df, g_dlgVal_6451a4, 0);
+            SetDlgItemInt(hDlg, 0x4e0, g_dlgVal_6452d4, 0);
+            SetDlgItemInt(hDlg, 0x4e9, g_dlgVal_6452a8, 0);
+            SetDlgItemInt(hDlg, 0x4e3, g_dlgVal_645558, 0);
+            SetDlgItemInt(hDlg, 0x4e4, g_dlgVal_645560, 0);
+            SetDlgItemInt(hDlg, 0x4e5, g_dlgVal_64555c, 0);
+            SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
+            return 1;
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                g_dlgVal_64526c = GetDlgItemInt(hDlg, 0x4db, 0, 0);
+                g_dlgVal_6452d0 = GetDlgItemInt(hDlg, 0x4da, 0, 0);
+                g_dlgVal_645268 = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
+                g_dlgVal_645568 = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
+                g_dlgVal_645538 = GetDlgItemInt(hDlg, 0x4de, 0, 0);
+                g_dlgVal_6451a4 = GetDlgItemInt(hDlg, 0x4df, 0, 0);
+                g_dlgVal_6452d4 = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
+                g_dlgVal_6452a8 = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
+                g_dlgVal_645558 = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
+                g_dlgVal_645560 = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
+                g_dlgVal_64555c = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
+                g_dlgVal_645564 = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}

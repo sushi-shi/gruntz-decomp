@@ -636,75 +636,9 @@ namespace ApiCallerStubs {
         return Fallback();
     }
 
-    // The settings dialog's 12 numeric edit fields, cached as globals between the
-    // WM_INITDIALOG load and the IDOK store.
-    DATA(0x0024526c)
-    extern i32 g_dlgVal_64526c;
-    DATA(0x002452d0)
-    extern i32 g_dlgVal_6452d0;
-    DATA(0x00245268)
-    extern i32 g_dlgVal_645268;
-    DATA(0x00245568)
-    extern i32 g_dlgVal_645568;
-    DATA(0x00245538)
-    extern i32 g_dlgVal_645538;
-    DATA(0x002451a4)
-    extern i32 g_dlgVal_6451a4;
-    DATA(0x002452d4)
-    extern i32 g_dlgVal_6452d4;
-    DATA(0x002452a8)
-    extern i32 g_dlgVal_6452a8;
-    DATA(0x00245558)
-    extern i32 g_dlgVal_645558;
-    DATA(0x00245560)
-    extern i32 g_dlgVal_645560;
-    DATA(0x0024555c)
-    extern i32 g_dlgVal_64555c;
-    DATA(0x00245564)
-    extern i32 g_dlgVal_645564;
-    // __stdcall DlgProc(hDlg, msg, wParam, lParam): a numeric settings dialog.
-    RVA(0x00092ab0, 0x20d)
-    i32 CALLBACK winapi_092ab0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x110:
-                SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
-                SetDlgItemInt(hDlg, 0x4da, g_dlgVal_6452d0, 0);
-                SetDlgItemInt(hDlg, 0x4dc, g_dlgVal_645268, 0);
-                SetDlgItemInt(hDlg, 0x4dd, g_dlgVal_645568, 0);
-                SetDlgItemInt(hDlg, 0x4de, g_dlgVal_645538, 0);
-                SetDlgItemInt(hDlg, 0x4df, g_dlgVal_6451a4, 0);
-                SetDlgItemInt(hDlg, 0x4e0, g_dlgVal_6452d4, 0);
-                SetDlgItemInt(hDlg, 0x4e9, g_dlgVal_6452a8, 0);
-                SetDlgItemInt(hDlg, 0x4e3, g_dlgVal_645558, 0);
-                SetDlgItemInt(hDlg, 0x4e4, g_dlgVal_645560, 0);
-                SetDlgItemInt(hDlg, 0x4e5, g_dlgVal_64555c, 0);
-                SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
-                return 1;
-            case 0x111:
-                if (wParam == 2) {
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (wParam == 1) {
-                    g_dlgVal_64526c = GetDlgItemInt(hDlg, 0x4db, 0, 0);
-                    g_dlgVal_6452d0 = GetDlgItemInt(hDlg, 0x4da, 0, 0);
-                    g_dlgVal_645268 = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
-                    g_dlgVal_645568 = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
-                    g_dlgVal_645538 = GetDlgItemInt(hDlg, 0x4de, 0, 0);
-                    g_dlgVal_6451a4 = GetDlgItemInt(hDlg, 0x4df, 0, 0);
-                    g_dlgVal_6452d4 = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
-                    g_dlgVal_6452a8 = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
-                    g_dlgVal_645558 = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
-                    g_dlgVal_645560 = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
-                    g_dlgVal_64555c = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
-                    g_dlgVal_645564 = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
-                    EndDialog(hDlg, 1);
-                    return 1;
-                }
-                break;
-        }
-        return 0;
-    }
+    // (0x92ab0 numeric settings DlgProc + its 12 g_dlgVal_* field caches re-homed to
+    // src/Gruntz/GruntzCommand.cpp - the command dialog CGruntzCommand::ApplyOne /
+    // ApplyMask drive.)
 
     // (0x94bc0 VrHost::Validate re-homed to src/Gruntz/TerrainTileLoader.cpp
     // (ValidateHost) - the window-validate poll CTerrainTileLoader::Load drives.)
