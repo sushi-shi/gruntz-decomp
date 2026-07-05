@@ -196,6 +196,62 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// The tile-region initializer (0x0182ab0), re-homed from the ApiCaller stubs:
+// CMenuState::LoadAssets (0x09fe50) drives it. Stashes the source host + geometry
+// args; copies the given RECT, or defaults it to the source's tile extent
+// (src->m_4->m_10->m_10/m_14 - 1). A placeholder region record whose concrete
+// class is not yet recovered; offsets + code bytes load-bearing.
+struct TileExtent {
+    char m_pad0[0x10];
+    i32 m_10; // +0x10 width
+    i32 m_14; // +0x14 height
+};
+struct TileSrc {
+    char m_pad0[0x10];
+    TileExtent* m_10; // +0x10
+};
+struct TileSrcHost {
+    char m_pad0[4];
+    TileSrc* m_4; // +0x04
+};
+struct TileRegion {
+    TileSrcHost* m_0; // +0x00
+    i32 m_4;          // +0x04
+    RECT m_8;         // +0x08 (left/top/right/bottom = m_8/m_c/m_10/m_14)
+    i32 m_18;         // +0x18
+    i32 m_1c;         // +0x1c
+    i32 m_20;         // +0x20
+    char m_pad24[0x40 - 0x24];
+    i32 m_40; // +0x40
+    i32 Init(TileSrcHost* src, i32 a, RECT* rc, i32 d, i32 e, i32 f);
+};
+SIZE_UNKNOWN(TileExtent);
+SIZE_UNKNOWN(TileSrc);
+SIZE_UNKNOWN(TileSrcHost);
+SIZE_UNKNOWN(TileRegion);
+RVA(0x00182ab0, 0x7b)
+i32 TileRegion::Init(TileSrcHost* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
+    if (!src) {
+        return 0;
+    }
+    m_0 = src;
+    m_4 = a;
+    m_20 = f;
+    m_18 = d;
+    m_1c = e;
+    m_40 = 0;
+    if (rc) {
+        CopyRect(&m_8, rc);
+        return 1;
+    }
+    m_8.left = 0;
+    m_8.top = 0;
+    m_8.right = src->m_4->m_10->m_10 - 1;
+    m_8.bottom = src->m_4->m_10->m_14 - 1;
+    return 1;
+}
+
 SIZE_UNKNOWN(MenuAssetMgr);
 SIZE_UNKNOWN(MenuCueMap);
 SIZE_UNKNOWN(MenuCursorSub);

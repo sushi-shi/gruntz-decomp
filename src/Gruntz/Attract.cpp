@@ -617,6 +617,41 @@ i32 CAttract::Activate() {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// The top-window paint poll (0x0fac70), re-homed from the ApiCaller stubs. This
+// is a NON-VIRTUAL shared base-class method: CAttract::Vslot07 (0x0147b0),
+// CMultiBootyState::ReadyAndPaint (0x01ce30, gamemode) and CGuardedDispatch::Run
+// (0x01f870, boundarymisc) each `mov ecx,<this>; call 0x1136` on their OWN this,
+// so +0x04 (a wnd chain -> top-level HWND at m_4->m_4->m_4) is a base-layout
+// field they all share. If the window is present, it runs a null Begin/EndPaint
+// cycle and returns 1. Homed here (CAttract, the first/RTTI-named caller); the
+// common base class it truly belongs to is not yet recovered. Offsets + code
+// bytes load-bearing.
+struct StatePaintWnd {
+    char m_pad0[4];
+    StatePaintWnd* m_4; // +0x04
+};
+struct StatePaintHost {
+    char m_pad0[4];
+    StatePaintWnd* m_4; // +0x04
+    i32 Paint();
+};
+SIZE_UNKNOWN(StatePaintWnd);
+SIZE_UNKNOWN(StatePaintHost);
+RVA(0x000fac70, 0x4c)
+i32 StatePaintHost::Paint() {
+    if (!m_4) {
+        return 0;
+    }
+    if (!m_4->m_4) {
+        return 0;
+    }
+    PAINTSTRUCT ps;
+    BeginPaint((HWND)m_4->m_4->m_4, &ps);
+    EndPaint((HWND)m_4->m_4->m_4, &ps);
+    return 1;
+}
+
 SIZE_UNKNOWN(AttractActor);
 SIZE_UNKNOWN(AttractActorList);
 SIZE_UNKNOWN(AttractBusyObj);

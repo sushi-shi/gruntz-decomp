@@ -548,6 +548,43 @@ namespace ApiCallerStubs {
     }
 } // namespace ApiCallerStubs
 
+// ---------------------------------------------------------------------------
+// The save-flow "show" blit (0x0d00a0), re-homed from the ApiCaller stubs: the
+// object reached in the savegame temp-file path (via the 0x3b48 thunk from
+// TempFileExists_e5700). Copies its source object's RECT ([m_c->m_24 + 0x10])
+// into a stack rect and blits it (mode 8, flags 0x10) into the +0x5c draw sink.
+// A placeholder host whose concrete class is not yet recovered; offsets + code
+// bytes load-bearing.
+struct BlitDrawSink {
+    void Blit(i32 a, i32 b, RECT* rc, i32 d); // thiscall, RVA 0x3751
+};
+struct BlitDrawOwner {
+    char m_pad0[0x5c];
+    BlitDrawSink* m_5c; // +0x5c
+};
+struct BlitRectSrc {
+    char m_pad0[0x24];
+    char* m_24; // +0x24 (its [+0x10] is the source RECT)
+};
+struct BlitHost {
+    char m_pad0[4];
+    BlitDrawOwner* m_4; // +0x04
+    char m_pad8[0xc - 8];
+    BlitRectSrc* m_c; // +0x0c
+    void Show(i32 arg);
+};
+SIZE_UNKNOWN(BlitDrawSink);
+SIZE_UNKNOWN(BlitDrawOwner);
+SIZE_UNKNOWN(BlitRectSrc);
+SIZE_UNKNOWN(BlitHost);
+RVA(0x000d00a0, 0x5a)
+void BlitHost::Show(i32 arg) {
+    RECT src = *(RECT*)(m_c->m_24 + 0x10);
+    RECT dst;
+    CopyRect(&dst, &src);
+    m_4->m_5c->Blit(8, arg, &dst, 0x10);
+}
+
 // Class-metadata annotations (EOF-hosted).
 SIZE(SaveSlot, 0x100);   // 0x100-byte slot record (m_slots[] array stride)
 SIZE_UNKNOWN(CSaveGame); // fully modeled but tail not proven; owner may upgrade

@@ -706,31 +706,8 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // __thiscall(): if the sub-chain is live + ready, validate the whole window.
-    struct VrSub2_094bc0 {
-        i32 Ready(); // thiscall, RVA 0x2441
-    };
-    struct VrSub1_094bc0 {
-        char m_pad0[8];
-        VrSub2_094bc0* m_8; // +0x08
-    };
-    struct VrHost_094bc0 {
-        char m_pad0[4];
-        HWND m_4;           // +0x04
-        VrSub1_094bc0* m_8; // +0x08
-        i32 Validate();
-    };
-    RVA(0x00094bc0, 0x31)
-    i32 VrHost_094bc0::Validate() {
-        VrSub2_094bc0* sub = m_8->m_8;
-        if (sub && sub->Ready()) {
-            if (m_4) {
-                ValidateRect(m_4, 0);
-            }
-            return 1;
-        }
-        return 0;
-    }
+    // (0x94bc0 VrHost::Validate re-homed to src/Gruntz/TerrainTileLoader.cpp
+    // (ValidateHost) - the window-validate poll CTerrainTileLoader::Load drives.)
 
     // __thiscall(int code, int): on ESC/SPACE/ENTER post a 0x111 command. Returns 1.
     struct WndChain_0953f0 {
@@ -865,92 +842,18 @@ namespace ApiCallerStubs {
         return 1;
     }
 
-    struct DrawSink_0d00a0 {
-        void Blit(i32 a, i32 b, RECT* rc, i32 d); // thiscall, RVA 0x3751
-    };
-    struct DrawOwner_0d00a0 {
-        char m_pad0[0x5c];
-        DrawSink_0d00a0* m_5c; // +0x5c
-    };
-    struct RectSrc_0d00a0 {
-        char m_pad0[0x24];
-        char* m_24; // +0x24 (its [+0x10] is the source RECT)
-    };
-    struct BlitHost_0d00a0 {
-        char m_pad0[4];
-        DrawOwner_0d00a0* m_4; // +0x04
-        char m_pad8[0xc - 8];
-        RectSrc_0d00a0* m_c; // +0x0c
-        void Show(i32 arg);
-    };
-    RVA(0x000d00a0, 0x5a)
-    void BlitHost_0d00a0::Show(i32 arg) {
-        RECT src = *(RECT*)(m_c->m_24 + 0x10);
-        RECT dst;
-        CopyRect(&dst, &src);
-        m_4->m_5c->Blit(8, arg, &dst, 0x10);
-    }
+    // (0xd00a0 BlitHost::Show re-homed to src/Io/SaveGame.cpp (BlitHost) - the
+    // save-flow "show" blit reached from the savegame temp-file path.)
 
-    // __thiscall(arg): begin an action once (m_500 guards), arm it, notify the host.
-    struct ActionSub_0d7220 {
-        i32 Accept(i32 arg); // thiscall, RVA 0x1bedde (on this+0x410)
-    };
-    struct ActionPeer_0d7220 {
-        char m_pad0[0x40];
-        i32 m_40; // +0x40
-    };
-    struct ActionHost_0d7220 {
-        char m_pad0[0x40c];
-        i32 m_40c;              // +0x40c
-        ActionSub_0d7220 m_410; // +0x410 (empty view, 1 byte)
-        char m_pad411[0x4e4 - 0x411];
-        ActionPeer_0d7220* m_4e4; // +0x4e4
-        char m_pad4e8[0x500 - 0x4e8];
-        i32 m_500; // +0x500
-        char m_pad504[0x510 - 0x504];
-        i32 m_510; // +0x510
-        i32 Begin(i32 arg);
-    };
-    RVA(0x000d7220, 0x7b)
-    i32 ActionHost_0d7220::Begin(i32 arg) {
-        if (m_500) {
-            return 0;
-        }
-        if (!m_410.Accept(arg)) {
-            return 0;
-        }
-        m_40c = arg;
-        m_510 = 2;
-        m_500 = 1;
-        PostMessageA(g_gameReg->m_4->m_4, 0x111, 0x816e, 0);
-        if (m_4e4) {
-            m_4e4->m_40 |= 1;
-        }
-        return 1;
-    }
+    // (0xd7220 ActionHost::Begin re-homed to src/Gruntz/UserLogic.cpp
+    // (ActionBeginHost) - the one-shot begin-action on a game-object action state
+    // that CUserLogic::LoadGruntTypeTable drives.)
 
     // (0xda200 coin-flip re-homed to Rng::CoinFlip::Flip in src/Gruntz/Random.cpp.)
 
-    DATA(0x0024c69c)
-    extern i32 g_flag64c69c; // DAT_0064c69c
-    struct CmdWnd_0de590 {
-        i32 m_0;
-        CmdWnd_0de590* m_4; // +0x04
-        void Forward();     // thiscall, RVA 0x3f62 (on this->m_4)
-    };
-    struct CmdHost_0de590 {
-        i32 m_0;
-        CmdWnd_0de590* m_4; // +0x04
-        void Cancel();
-    };
-    RVA(0x000de590, 0x2e)
-    void CmdHost_0de590::Cancel() {
-        if (g_flag64c69c) {
-            m_4->Forward();
-            return;
-        }
-        PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
-    }
+    // (0xde590 CmdHost::Cancel + its g_flag64c69c gate re-homed to
+    // src/Gruntz/LevelPreview.cpp (PreviewCancelHost) - the preview-cancel
+    // command host CPreviewState::Tick / LoadLevelPreviewScreen drive.)
 
     DATA(0x0024c86c)
     extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
@@ -1096,29 +999,9 @@ namespace ApiCallerStubs {
 
     // (0xf8e20 soundfont-device DLL teardown re-homed to src/Gruntz/SoundFontPath.cpp.)
 
-    // __thiscall(): begin/end a paint cycle on the top-level window (m_4->m_4->m_4).
-    struct PaintWnd_0fac70 {
-        char m_pad0[4];
-        PaintWnd_0fac70* m_4; // +0x04
-    };
-    struct PaintHost_0fac70 {
-        char m_pad0[4];
-        PaintWnd_0fac70* m_4; // +0x04
-        i32 Paint();
-    };
-    RVA(0x000fac70, 0x4c)
-    i32 PaintHost_0fac70::Paint() {
-        if (!m_4) {
-            return 0;
-        }
-        if (!m_4->m_4) {
-            return 0;
-        }
-        PAINTSTRUCT ps;
-        BeginPaint((HWND)m_4->m_4->m_4, &ps);
-        EndPaint((HWND)m_4->m_4->m_4, &ps);
-        return 1;
-    }
+    // (0xfac70 PaintHost::Paint re-homed to src/Gruntz/Attract.cpp (StatePaintHost)
+    // - a non-virtual shared base-class top-window paint poll that CAttract::Vslot07,
+    // CMultiBootyState::ReadyAndPaint and CGuardedDispatch::Run each call on `this`.)
 
     // Free init helper at RVA 0x500930 (__stdcall(int)).
     void __stdcall Prep_500930(i32 flag);
@@ -1425,52 +1308,8 @@ namespace ApiCallerStubs {
     // (0x17cd90 PalCache::Snapshot re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)
 
-    // The source object whose m_4->m_10->m_10 carries the default tile extent.
-    struct TileExtent_182ab0 {
-        char m_pad0[0x10];
-        i32 m_10; // +0x10 width
-        i32 m_14; // +0x14 height
-    };
-    struct TileSrc_182ab0 {
-        char m_pad0[0x10];
-        TileExtent_182ab0* m_10; // +0x10
-    };
-    struct TileSrcHost_182ab0 {
-        char m_pad0[4];
-        TileSrc_182ab0* m_4; // +0x04
-    };
-    struct Region_182ab0 {
-        TileSrcHost_182ab0* m_0; // +0x00
-        i32 m_4;                 // +0x04
-        RECT m_8;                // +0x08 (left/top/right/bottom = m_8/m_c/m_10/m_14)
-        i32 m_18;                // +0x18
-        i32 m_1c;                // +0x1c
-        i32 m_20;                // +0x20
-        char m_pad24[0x40 - 0x24];
-        i32 m_40; // +0x40
-        i32 Init(TileSrcHost_182ab0* src, i32 a, RECT* rc, i32 d, i32 e, i32 f);
-    };
-    RVA(0x00182ab0, 0x7b)
-    i32 Region_182ab0::Init(TileSrcHost_182ab0* src, i32 a, RECT* rc, i32 d, i32 e, i32 f) {
-        if (!src) {
-            return 0;
-        }
-        m_0 = src;
-        m_4 = a;
-        m_20 = f;
-        m_18 = d;
-        m_1c = e;
-        m_40 = 0;
-        if (rc) {
-            CopyRect(&m_8, rc);
-            return 1;
-        }
-        m_8.left = 0;
-        m_8.top = 0;
-        m_8.right = src->m_4->m_10->m_10 - 1;
-        m_8.bottom = src->m_4->m_10->m_14 - 1;
-        return 1;
-    }
+    // (0x182ab0 Region::Init re-homed to src/Gruntz/MenuStateAssets.cpp (TileRegion)
+    // - the tile-region initializer CMenuState::LoadAssets drives.)
 
     // The 0x1ba677..0x1bbff4 cluster is statically-linked MFC (CDialog / CWnd
     // dialog-template + WndProc-subclass internals): they reference AfxDlgProc,

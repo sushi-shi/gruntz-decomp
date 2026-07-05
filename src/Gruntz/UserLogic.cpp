@@ -1750,3 +1750,63 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// The one-shot "begin action" (0x0d7220), re-homed from the ApiCaller stubs:
+// CUserLogic::LoadGruntTypeTable (0x04dd50) drives it on a game-object action
+// state (fields at +0x40c..+0x510). Guarded by m_500: if already begun, bail;
+// otherwise let the +0x410 sub accept the arg (0x1bedde), stash it, arm the
+// state, post WM_COMMAND 0x816e to the top window, and set bit 0 on the +0x4e4
+// peer. A placeholder host whose concrete class is not yet recovered; offsets +
+// code bytes load-bearing.
+// The base CGameMgr window-holder chain g_gameReg->m_gameWnd->m_hwnd that
+// WwdGameReg pads over (+0x04); reached via a minimal cast.
+struct ActionRegWnd {
+    char m_pad0[4];
+    HWND m_hwnd; // +0x04
+};
+struct ActionRegWndHolder {
+    char m_pad0[4];
+    ActionRegWnd* m_gameWnd; // +0x04
+};
+struct ActionAcceptSub {
+    i32 Accept(i32 arg); // thiscall, RVA 0x1bedde (on this+0x410)
+};
+struct ActionPeer {
+    char m_pad0[0x40];
+    i32 m_40; // +0x40
+};
+struct ActionBeginHost {
+    char m_pad0[0x40c];
+    i32 m_40c;             // +0x40c
+    ActionAcceptSub m_410; // +0x410 (empty view, 1 byte)
+    char m_pad411[0x4e4 - 0x411];
+    ActionPeer* m_4e4; // +0x4e4
+    char m_pad4e8[0x500 - 0x4e8];
+    i32 m_500; // +0x500
+    char m_pad504[0x510 - 0x504];
+    i32 m_510; // +0x510
+    i32 Begin(i32 arg);
+};
+SIZE_UNKNOWN(ActionRegWnd);
+SIZE_UNKNOWN(ActionRegWndHolder);
+SIZE_UNKNOWN(ActionAcceptSub);
+SIZE_UNKNOWN(ActionPeer);
+SIZE_UNKNOWN(ActionBeginHost);
+RVA(0x000d7220, 0x7b)
+i32 ActionBeginHost::Begin(i32 arg) {
+    if (m_500) {
+        return 0;
+    }
+    if (!m_410.Accept(arg)) {
+        return 0;
+    }
+    m_40c = arg;
+    m_510 = 2;
+    m_500 = 1;
+    PostMessageA(((ActionRegWndHolder*)g_gameReg)->m_gameWnd->m_hwnd, 0x111, 0x816e, 0);
+    if (m_4e4) {
+        m_4e4->m_40 |= 1;
+    }
+    return 1;
+}

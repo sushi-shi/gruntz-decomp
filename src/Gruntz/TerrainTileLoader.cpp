@@ -141,4 +141,39 @@ void CTerrainTileLoader::Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i
 
 #undef I32
 #undef PTR
+
+// ---------------------------------------------------------------------------
+// The window-validate poll (0x094bc0), re-homed from the ApiCaller stubs:
+// CTerrainTileLoader::Load (0x075e90) drives it. If the +0x08->+0x08 sub-chain is
+// live and its Ready() (0x2441) returns true, validate the +0x04 window (skip if
+// null). A placeholder host whose concrete class is not yet recovered; offsets +
+// code bytes load-bearing.
+struct ValidateReadySub {
+    i32 Ready(); // thiscall, RVA 0x2441
+};
+struct ValidateChain {
+    char m_pad0[8];
+    ValidateReadySub* m_8; // +0x08
+};
+struct ValidateHost {
+    char m_pad0[4];
+    HWND m_4;          // +0x04
+    ValidateChain* m_8; // +0x08
+    i32 Validate();
+};
+SIZE_UNKNOWN(ValidateReadySub);
+SIZE_UNKNOWN(ValidateChain);
+SIZE_UNKNOWN(ValidateHost);
+RVA(0x00094bc0, 0x31)
+i32 ValidateHost::Validate() {
+    ValidateReadySub* sub = m_8->m_8;
+    if (sub && sub->Ready()) {
+        if (m_4) {
+            ValidateRect(m_4, 0);
+        }
+        return 1;
+    }
+    return 0;
+}
+
 SIZE_UNKNOWN(CTerrainTileLoader);

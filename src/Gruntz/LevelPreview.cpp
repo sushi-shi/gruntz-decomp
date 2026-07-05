@@ -217,3 +217,33 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// The preview-cancel command host (0x0de590), re-homed from the ApiCaller stubs:
+// CPreviewState::Tick / LoadLevelPreviewScreen drive it. When the global gate
+// (g_flag64c69c) is set it forwards to the +0x04 chain's handler (0x3f62);
+// otherwise it posts WM_COMMAND 0x8027 to the top window (m_4->m_4->m_4). A
+// placeholder host whose concrete class is not yet recovered; offsets + code
+// bytes load-bearing.
+DATA(0x0024c69c)
+extern i32 g_flag64c69c; // DAT_0064c69c
+struct PreviewCancelWnd {
+    i32 m_0;
+    PreviewCancelWnd* m_4; // +0x04
+    void Forward();        // thiscall, RVA 0x3f62
+};
+struct PreviewCancelHost {
+    i32 m_0;
+    PreviewCancelWnd* m_4; // +0x04
+    void Cancel();
+};
+SIZE_UNKNOWN(PreviewCancelWnd);
+SIZE_UNKNOWN(PreviewCancelHost);
+RVA(0x000de590, 0x2e)
+void PreviewCancelHost::Cancel() {
+    if (g_flag64c69c) {
+        m_4->Forward();
+        return;
+    }
+    PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
+}
