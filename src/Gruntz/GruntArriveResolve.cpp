@@ -1,4 +1,4 @@
-// GruntArriveResolve.cpp - CArriveMgr::Resolve2c690 (0x02c690, __thiscall ret 4, /GX).
+// GruntArriveResolve.cpp - CArriveMgr::ResolveArrival (0x02c690, __thiscall ret 4, /GX).
 // The grunt arrival/tile-effect resolver. `this` (kept spilled) is the BATTLEZ
 // board/logic object, NOT the grunt's CGameObject HUD (see IDENTITY below); grid =
 // this->m_c, the origin is this->m_5c/m_60, the physics-call owners are this->m_8
@@ -11,7 +11,7 @@
 // offset match against <Gruntz/BattlezMapConfig.h>'s documented layout: +0x08 (this
 // view's mover == BattlezMapConfig's config-view m_8/lvl->m_68), +0x0c (grid ==
 // m_dims), +0x10 (sub-object -> its +0x2e4 == CArriveSub10b::m_2e4 cell-setter), +0x14,
-// +0x18, +0x5c and +0x60 all line up. And Resolve2c690 (0x2c690) sits inside
+// +0x18, +0x5c and +0x60 all line up. And ResolveArrival (0x2c690) sits inside
 // CBattlezMapConfig's RVA band (0x25020..0x358a0), reached only from CBattlezMapConfig
 // code (Method_025d90 0x25d90 -> winapi_0267c0 0x267c0, whose 0x282f1 site does
 // `mov ecx,ebp; push esi; call Resolve`, itself dispatching the same GetTilePos36c0/
@@ -19,7 +19,7 @@
 // CGameObject HUD's +0x08 is a flags word - two different classes; the former
 // "this IS g->m_10" note conflated them on the coincident +0x5c/+0x60 origin. CArriveGrunt
 // (the arg) IS CGrunt (its +0x19c/+0x31c/+0x2d4 match canonical CGrunt). TODO fold: the
-// CArrive* views promote onto CBattlezMapConfig - Resolve2c690 becomes a CBattlezMapConfig
+// CArrive* views promote onto CBattlezMapConfig - ResolveArrival becomes a CBattlezMapConfig
 // method (offset-0 in this unit, so the owner rename re-pairs; 0x2c690 is claimed only
 // here, no dup); needs the <Mfc.h> umbrella (BattlezMapConfig.h pulls it) + the run-phase
 // slot types added to the canonical. Offsets are correct as-is (deferred, wall @54.8%).
@@ -83,12 +83,7 @@ struct CArriveSub10b { // this->m_10
     char _00[0x2e4];
     CArriveCellSetter* m_2e4; // +0x2e4
 };
-struct CArriveStr {     // scratch CString/CObList (block) - forces /GX
-    CArriveStr(i32 n);  // 0x1b4867
-    ~CArriveStr();      // 0x1b48c6
-    void* Head1b4a03(); // 0x1b4a03
-    char _00[0x18];
-};
+// (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
 struct CArriveMover {                          // this->m_8
     void Move14bf(i32 a, i32 b, i32 x, i32 y); // 0x14bf
 };
@@ -113,7 +108,7 @@ struct CArriveMgr {                                      // this (the CBattlezMa
     char _1c[0x5c - 0x1c];
     i32 m_5c, m_60; // +0x5c, +0x60 origin coords (raw px)
 
-    i32 Resolve2c690(CGrunt* g);
+    i32 ResolveArrival(CGrunt* g);
 };
 
 // Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_coordCount).
@@ -170,7 +165,7 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 //       so it can't reach byte-exact regardless. Reconstructed as a structural CString-EH loop
 //       (forces the /GX frame); the exact 700-B transform + tail are a dedicated final-sweep job.
 RVA(0x0002c690, 0xdb4)
-i32 CArriveMgr::Resolve2c690(CGrunt* g) {
+i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     if (Gate1a14(g)) {
         return 1;
     }
@@ -226,9 +221,9 @@ i32 CArriveMgr::Resolve2c690(CGrunt* g) {
             g->GetTilePos(&da);
             for (i32 drow = m_c->m_60.top; drow < m_c->m_60.bottom; drow++) {
                 for (i32 dcol = m_c->m_60.left; dcol < m_c->m_60.right; dcol++) {
-                    CArriveStr cs(0xa);
+                    GruntListSub cs; // CObList block (default ctor -> CtorImpl(0xa))
                     if (!(m_c->m_8[drow][dcol].m_0 & 0x20000000)) {
-                        void* h = cs.Head1b4a03();
+                        void* h = cs.RemoveHead();
                         if (h != 0) {
                             void** node = (void**)((char*)h - g_freeListNodeBias);
                             *node = g_freeList;
@@ -470,5 +465,4 @@ SIZE_UNKNOWN(CArriveGrid);
 SIZE_UNKNOWN(CArriveMgr);
 SIZE_UNKNOWN(CArriveMover);
 SIZE_UNKNOWN(CArriveQuad);
-SIZE_UNKNOWN(CArriveStr);
 SIZE_UNKNOWN(CArriveSub10b);
