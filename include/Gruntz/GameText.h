@@ -22,18 +22,36 @@
 #include <Gruntz/String.h>
 
 // ---------------------------------------------------------------------------
-// CContainerErr - the Monolith container-library exception object (the class
-// whose vtable Ghidra's "__non_rtti_object" is an FID guess for).
-// Its ctor takes an optional custom message (defaulting to a shared base) and
-// lazily seeds a static table of 8 container-error message strings on first use.
-//   +0x00  m_vtbl : void*  - the vtable pointer.
-//   +0x04  m_msg  : const char*  - the error message this instance carries.
+// CContainerErr - the Monolith container-library exception object (vtable
+// ??_7CContainerErr@@6B@ @0x5f04cc). This is the SAME class the canonical
+// <Wap32/zBitVec.h> models (as zBitVec's polymorphic base); GameText.h and
+// zBitVec.h are ONE class expressed twice, a byte-forced DUAL-VIEW exactly like
+// the CGruntzMgr/CGameRegistry MFC/Win32 split (a required ODR split - the two
+// headers never coexist in one TU). zBitVec.h is the RTTI-true VIRTUAL view
+// (virtual dtor + 6 declared engine virtuals); THIS view is the NON-virtual
+// spelling the ctor's byte layout forces.
 //
-// Modeled as a NON-virtual class with an explicit vtable-pointer member so the
-// ctor stores m_msg THEN m_vtbl (the target order); a `virtual` decl would make
-// MSVC emit the implicit vptr store at ctor entry (before m_msg) instead.
-// EMPIRICALLY CONFIRMED (2026-07-01, vtable-conversion-log.md): converting to a
-// real `virtual` regresses this ctor 100%->non-exact (gametext 3/4->2/4).
+// WHY NON-VIRTUAL HERE (byte-proven CLASS-MODEL WALL, not a rogue view - a
+// real-class virtual spelling does NOT reproduce the bytes): the ctor at
+// 0x16d9c0 stores the message at +0x04 FIRST, then the vptr at +0x00 LAST:
+//     mov  ecx,DWORD PTR [esp+0x4]      ; ecx = msg arg
+//     test ecx,ecx / jne .. / mov ecx,0x6bf430   ; default msg
+//     mov  DWORD PTR [eax+0x4],ecx      ; m_msg   (+0x04 stored FIRST)
+//     mov  DWORD PTR [eax],0x5f04cc     ; vptr    (+0x00 stored LAST)
+// A `virtual` decl makes MSVC emit the implicit vptr store at ctor ENTRY (before
+// m_msg), inverting that order. Empirically confirmed (vtable-conversion-log.md
+// 2026-07-01 + the disasm above): the real-virtual spelling regresses this ctor
+// 100%->non-exact. So the non-virtual model with an explicit m_vtbl member is the
+// only byte-exact spelling; it is retained as a documented class-model wall (per
+// the matcher doctrine's allowance for a byte-proven CLASS wall).
+//   +0x00  m_vtbl : void*        - the vtable pointer (stamped LAST by the ctor).
+//   +0x04  m_msg  : const char*  - the message string (ctor stores the arg or the
+//          default here). NAME DIVERGENCE FLAG: zBitVec.h names this same +0x04
+//          field `CVariantSlot* m_errSink` (an error-sink pointer, from its
+//          Set 0x16d850 / Remove 0x16e360 usage). The CTOR evidence (a const char*
+//          message stored here) backs `m_msg`; the two are unreconciled - endgame
+//          to prove whether +0x04 is the message or a sink (or the sink reads the
+//          message through it). Not renamed either way pending disasm of Set/Remove.
 // ---------------------------------------------------------------------------
 extern void* g_containerErrVtbl;
 
@@ -43,7 +61,7 @@ public:
     CContainerErr(const char* msg);
 
 public:
-    void* m_vtbl;      // +0x00  the vtable pointer
+    void* m_vtbl;      // +0x00  the vtable pointer (stamped LAST - see wall note above)
     const char* m_msg; // +0x04  the error message this instance carries
 };
 
