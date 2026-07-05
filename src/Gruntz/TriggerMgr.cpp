@@ -1283,8 +1283,10 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     if (ov == 0 || ov->m_2c == 0) {
         return 0;
     }
-    CTmCell* cell = 0;
-    if (m_recCount == 1) {
+    CTmCell* cell;
+    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
         i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
@@ -1688,8 +1690,10 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         return 0;
     }
     CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
-    CTmCell* cell = 0;
-    if (m_recCount == 1) {
+    CTmCell* cell;
+    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
         i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
@@ -1920,8 +1924,10 @@ i32 CTriggerMgr::PlaceObject(
 // overlay/fx fast-paths are structurally faithful. Deferred to the final sweep. topic:wall.
 RVA(0x00078a50, 0x845)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
-    CTmCell* cell = 0;
-    if (m_recCount == 1) {
+    CTmCell* cell;
+    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
         i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
@@ -2311,10 +2317,13 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // for the active record cell of the magic group, gate on CanShowStamina and dispatch by its
 // logic kind (+0x170/+0x19c): kind 0x13 => ResetGroup, else set a pending fx (+0x2a8). ret 1.
 // @early-stop
-// regalloc + dead-spill wall (~54%): logic + offsets + the reloc-masked externs byte-exact,
-// but retail pins this->edi, reserves an 8-byte frame, and emits two DEAD spill stores
-// ([esp+0x20]/[esp+0x28]) of the ResetGroup args; our cl uses esi/no-frame. Not source-
-// steerable; the systematic esi<->edi swap + frame shift misaligns the score. topic:wall.
+// 58.8->76.6 this audit: the cell decode is the negated-far if/else (`count!=1 -> cell=0`
+// inline, lookup FAR - retail's je/xor/jmp layout) and the v==0x13 ResetGroup body sits
+// INLINE with the pending-fx tail far. Residual: the pos-pair dead-store frame (retail
+// homes cell->m_pos into a sub esp,8 frame while forwarding the regs into the ResetGroup
+// pushes; struct copy / unused copy / i32[2] array spellings all DSE'd by our cl - same
+// wall as NotifyCell) + the m_2a8=0 per-branch stores our cl hoists above the test.
+// topic:wall topic:regalloc.
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
@@ -2323,8 +2332,11 @@ i32 CTriggerMgr::ToggleRegionA() {
         return 0;
     }
     m_pendingFxKind = 0;
-    CTmCell* cell = 0;
-    if (m_recCount == 1) {
+    // negated-condition-far-block: the lookup body lands FAR, cell=0 inline (retail layout)
+    CTmCell* cell;
+    if (m_recCount != 1) {
+        cell = 0;
+    } else {
         i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
@@ -2342,13 +2354,14 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (v > 0x16) {
         v = cell->m_19c;
     }
-    if (v != 0x13) {
-        m_pendingFxKind = v + kPendingFxIdBase;
-        (g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    if (v == 0x13) {
+        CTrigPoint pt = cell->m_pos;
+        g_gameReg->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
     }
-    g_gameReg->m_68->ResetGroup(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
+    m_pendingFxKind = v + kPendingFxIdBase;
+    (g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -2367,8 +2380,10 @@ i32 CTriggerMgr::ToggleRegionB() {
         return 0;
     }
     m_pendingFxKind = 0;
-    CTmCell* cell = 0;
-    if (m_recCount == 1) {
+    CTmCell* cell;
+    if (m_recCount != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
         i32* rec = m_recHead->m_payload;
         cell = m_grid[rec[0] * 15 + rec[1]];
     }
