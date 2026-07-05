@@ -102,7 +102,16 @@ struct CSpriteFactoryHolder {
     CImageRegistry* m_10; // +0x10  image/tile registry (name->sprite map)
     char m_pad14[0x24 - 0x14];
     CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport)
-    void* m_28;          // +0x28  sound/anim registry (per-TU view)
+    void* m_28;          // +0x28  sound/anim cue registry. The ONE real class is CSndHost
+                         //         (<Gruntz/SoundCue.h>: CSndFinder @+0x10 name->CSndEmitter
+                         //         map + the +0x30 emit gate) - the per-TU RbSoundReg/GZGateB
+                         //         views modeled it. Kept void* on this ~60-TU header (consumers
+                         //         reinterpret at the use site, like m_cmdGrid/m_scoreHud below):
+                         //         naming CSndHost here bumps the header's /O2 type-table and
+                         //         butterflies matched TUs (measured: sbi_rectonly
+                         //         LoadMainStatusBarSprite 95.6->88.6, gamemode FlashColor
+                         //         70.4->66.6). The recovered type is documented; the swap is
+                         //         net-negative, so consumers cast (SoundCue.h names the class).
 };
 
 // The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in

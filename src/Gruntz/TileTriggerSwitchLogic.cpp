@@ -23,6 +23,8 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez/InGameText sprites)
 #include <Gruntz/Viewport.h>      // CViewport (the level plane: cells + row-base table)
+#include <Gruntz/SoundCue.h>      // the ONE sound-cue registry (CSndHost/CSndFinder/
+                                  // CSndEmitter/CSoundCueMgr) - folds the former Rb* views
 
 // CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
 // header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual
@@ -490,35 +492,18 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA @0x61ab20
 extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 
-// The registry sound-cue record (the sound-registry Lookup result): its clock/cooldown
-// (m_14 last-play, m_18 ticks) rate-limits the cue sound (m_10). Carcass sub-objects of
-// the game-registry reached by the engine's thiscall callees (declared no-body ->
-// reloc-masked rel32).
-struct RbCueSound {
-    void Play(i32 tag, i32 a, i32 b, i32 c); // 0x1360d0
-};
-SIZE_UNKNOWN(RbCueSound);
-struct RbCueRec {
-    char m_pad0[0x10];
-    RbCueSound* m_10; // +0x10  the cue sound
-    i32 m_14;         // +0x14  last-play clock
-    i32 m_18;         // +0x18  cooldown ticks
-};
-SIZE_UNKNOWN(RbCueRec);
-// The sound/anim registry (g->m_world->m_28): a name->record table at +0x10, gated by
-// the +0x30 active-override flag.
-struct RbLookupTable {
-    void Lookup(const char* name, RbCueRec** out); // 0x1b8438
-};
-SIZE_UNKNOWN(RbLookupTable);
-struct RbSoundReg {
-    char m_pad0[0x10];
-    RbLookupTable m_10; // +0x10  name->record table (Lookup receiver)
-    char m_pad14[0x30 - 0x14];
-    void* m_30; // +0x30  active-override gate
-};
-SIZE_UNKNOWN(RbSoundReg);
-// The world command-grid effect sink (g->m_cmdGrid, reg+0x68).
+// The sound-cue registry (g->m_world->m_28) + its Lookup result (the CSndEmitter cue
+// record whose m_14 last-play / m_18 cooldown rate-limit the CSoundCueMgr it plays) are
+// the canonical CSndHost/CSndFinder/CSndEmitter/CSoundCueMgr from <Gruntz/SoundCue.h>
+// (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
+// are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
+// ConfigureItem 0x1360d0).
+
+// The world command-grid effect sink (g_gameReg->m_cmdGrid, reg+0x68). This is the ONE
+// genuinely-unrecovered +0x68 slot GameRegistry.h documents as a red flag: every TU
+// downcasts m_cmdGrid to a DIFFERENT concrete type (CSbIconSet/CTeleIconTable/CTriggerSink/
+// CGruntRec**/...), so a single real class is not recovered. Kept as a method-only view
+// (identity-recovery TODO), consistent with all other m_cmdGrid consumers.
 struct RbCmdGrid {
     void Fire(i32 key, i32 x, i32 y, i32 slot, i32 a, i32 b); // 0x152d
 };
@@ -606,11 +591,12 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
         || (TY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
-    RbSoundReg* sreg = (RbSoundReg*)gameMgr->m_28;
+    CSndHost* sreg = (CSndHost*)gameMgr->m_28; // m_28 kept void* on the 60-TU holder (see
+                                               // GameRegistry.h); CSndHost is the real class
     if (sreg->m_30 != 0) {
         return;
     }
-    RbCueRec* out = 0;
+    CSndEmitter* out = 0;
     sreg->m_10.Lookup("LEVEL_ROCKBREAK", &out);
     if (out == 0) {
         return;
@@ -623,7 +609,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
         return;
     }
     out->m_14 = kc;
-    out->m_10->Play(g_sndCueTag, 0, 0, 0);
+    out->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
 }
 
 #undef TX
