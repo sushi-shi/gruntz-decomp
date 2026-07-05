@@ -262,6 +262,14 @@ def cmd_build(args) -> None:
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
             f"(python -m gruntz.match.class_vtables for the list)")
+    # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
+    # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
+    # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).
+    r = subprocess.run([sys.executable, "-m", "gruntz.match.view_debt"],
+                       cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    out = (r.stdout + r.stderr).strip()
+    if out:
+        log(out.splitlines()[0])
 
 
 def cmd_labels(args) -> None:
