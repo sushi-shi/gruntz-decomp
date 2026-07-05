@@ -14,16 +14,17 @@ namespace GruntzMgrCmd {
     // The game's WM_COMMAND / accelerator + cheat-code dispatcher.  A 116-entry
     // "UI command" jump-table switch on the command id, whose default path checks
     // the play-state and then runs the (mode==3-gated) cheat sub-switch.  The
-    // cheat bodies (item/level-warp/toggle/announce) are near-identical templates,
-    // reproduced here with macros exactly as the devs' source did (inline).
-    // Reloc-masked engine callees are modeled as bodyless methods/functions.
+    // near-identical cheat families (item/warp/brick/announce) use macros
+    // (ITEMCHEAT/WARP/BRICKPICKUP/BRICKABILITY/PLAYCUE) that expand to the retail
+    // per-cheat code; the special cheats (AMBIENT/monologo/save-load/settings) are
+    // hand-written.  Reloc-masked engine callees are modeled as bodyless methods/fns.
     //
     // NOTE: this GruntzMgrCmd::CGruntzMgr is a genuine (but namespaced) view of the
     // one true CGruntzMgr (see <Gruntz/GruntzMgr.h>); its members use the canonical
     // GruntzMgr.h names (m_curState/m_world/m_sound/m_strWorldFile/m_cmdGrid/...).
-    // It is NOT merged to the canonical header - the
-    // WM_COMMAND/cheat dispatcher is a documented ~39% jump-table+regalloc
-    // megafunction wall reached through a dozen local sub-object helper types
+    // It is NOT merged to the canonical header - the WM_COMMAND/cheat dispatcher is a
+    // documented ~67.8% jump-table+regalloc megafunction (see the @early-stop below)
+    // reached through a dozen local sub-object helper types
     // (GZLogic/GZGateA/GZBoard/GZGrunt/...) canonical does not model; a merge would
     // need a full body rewrite at high regression risk for no % gain. The namespace
     // keeps it from ODR-clashing with the canonical class.
@@ -424,28 +425,31 @@ namespace GruntzMgrCmd {
         return 1;                                                                                  \
     }
 
-    // @early-stop  (~39.1%, up from 29.7% - dispatch cracked, cheat-block tail parked)
+    // @early-stop  (~67.8%, up from 39.1% - dispatch cracked, cheat block reconstructed)
     // Complete two-level dispatcher (117 outer UI cases + the mode==3 cheat
-    // sub-switch).  The OUTER dispatch now matches retail byte-for-byte: it is a
-    // packed byte-index table (lea eax,[nID-0x8005]; cmp eax,0x1d0; mov cl,[eax+T1];
-    // jmp [ecx*4+T2]).  Getting there required the two missing labels 0x806b/0x80d7
-    // - they cross MSVC5's switch DENSITY threshold; with only 115 of 117 cases the
-    // compiler emits a binary-search tree instead (proven by minimal probe; see
-    // docs/patterns/switch-density-byte-index-table-vs-tree.md).  The outer case
-    // bodies are in retail physical order and the simple ones land byte-exact
-    // (verified 0x8005 base==target via llvm-objdump -dr).
+    // sub-switch).  The OUTER dispatch matches retail byte-for-byte (packed byte-index
+    // table; see docs/patterns/switch-density-byte-index-table-vs-tree.md).  Phase 2
+    // reconstructed the mode-gated cheat block (0x86403..0x8875c, ~58% of the 15706-byte
+    // fn) from templated macros to the REAL bodies, verified per-cheat vs the delinked
+    // target: AMBIENT%d wsprintf + char[128] buffer (0x8086), the inlined grid-cell
+    // select for all brick pickup/ability cheats (0x808d/0x8130-0x813f), the settings/
+    // CMapPtrToPtr death lookup (0x8106), the map-cue (CMapStringToOb::Lookup) warps
+    // (0x8244/0x8245) + throttled-Play Explosionz (0x8247), grunt->m_2dc cheats
+    // (0x8246/0x81a4), the 0x8068/0x806f global-CString clears, WAWA's Play(0x64), and
+    // per-cheat case order/ids/cue-strings corrected against the jump tables.  The
+    // char[128] AMBIENT buffer made retail's whole-function frame emerge (sub esp,0x84
+    // now, was none).
     //
-    // RESIDUAL (the parked ~60%): the mode-gated cheat block (0x86403..0x8875c) is
-    // ~58% of the 15706-byte function and is reconstructed as templated macros
-    // (PLAYCUE/ITEMCHEAT/WARP) - logically complete but NOT byte-exact: retail
-    // inlines per-cheat CString announce buffers (lea ecx,[esp+0xc/0x10/0x1c]),
-    // the AMBIENT%d wsprintf, and the brick-grid select cheats.  Those local
-    // buffers are what drive retail's whole-function frame (sub esp,0x94) and its
-    // 3rd callee-saved reg (push ebx) - my simpler cheat block reserves less stack
-    // and never needs ebx, so the prologue + every esp-relative access diverges.
-    // This is the documented holistic megafunction frame/regalloc wall
-    // (docs/patterns/megafunction-cached-locals-vs-reload-regalloc.md); closing it
-    // means reconstructing the 9KB cheat sub-block leaf-first (a final-sweep job).
+    // RESIDUAL (parked ~32%): the documented holistic megafunction frame/regalloc wall
+    // (docs/patterns/megafunction-cached-locals-vs-reload-regalloc.md).  Retail's frame
+    // is sub esp,0x94 = char[128] buffer(0x80) + FIVE distinct 4-byte out-ptr/CString
+    // slots (esp+0xc/0x10/0x14/0x18/0x1c) that MSVC5 keeps SEPARATE from the buffer;
+    // my wine-MSVC5 COALESCES those disjoint-scope out-params ONTO the AMBIENT buffer's
+    // space (frame sub esp,0x84 = buffer + 1 slot), so every special-cheat esp offset
+    // (the AMBIENT lea [esp+0x20], the map-cue [esp+0x1c/0x10], etc.) sits 0x10 lower
+    // than retail, and retail's ebx=1 constant pin (push ebx) never appears (my writes
+    // use immediate 'mov [mem],1').  These are source-uncontrollable MSVC5 stack-packing
+    // + regalloc coin-flips, same class as CGamePlayInput::DispatchKey's 78.5% cap.
     RVA(0x000862f0, 0x3d5a)
     i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
         switch (nID) {
