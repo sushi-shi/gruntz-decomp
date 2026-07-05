@@ -87,29 +87,60 @@ struct DbgMc { // this->m_c
 DATA(0x0024556c)
 extern CGameRegistry* g_dbgMgr; // *0x64556c, this method's alias
 
-struct DbgVtbl; // completed below (GetFrame @+0x6c, PostSetup @+0x94)
+// The debug-HUD owner is a big polymorphic engine/state class (its full identity +
+// most slots are unrecovered engine code, declared structurally so the two dispatched
+// slots land at their true offsets). Real polymorphic dispatch: this->GetFrame() /
+// this->PostSetup(hdc) lower to `mov eax,[this]; call [eax+slot]` (never constructed
+// here, so cl emits no ??_7).
 class CDbgView {
 public:
+    virtual void Vslot00();         // +0x00
+    virtual void Vslot01();         // +0x04
+    virtual void Vslot02();         // +0x08
+    virtual void Vslot03();         // +0x0c
+    virtual void Vslot04();         // +0x10
+    virtual void Vslot05();         // +0x14
+    virtual void Vslot06();         // +0x18
+    virtual void Vslot07();         // +0x1c
+    virtual void Vslot08();         // +0x20
+    virtual void Vslot09();         // +0x24
+    virtual void Vslot10();         // +0x28
+    virtual void Vslot11();         // +0x2c
+    virtual void Vslot12();         // +0x30
+    virtual void Vslot13();         // +0x34
+    virtual void Vslot14();         // +0x38
+    virtual void Vslot15();         // +0x3c
+    virtual void Vslot16();         // +0x40
+    virtual void Vslot17();         // +0x44
+    virtual void Vslot18();         // +0x48
+    virtual void Vslot19();         // +0x4c
+    virtual void Vslot20();         // +0x50
+    virtual void Vslot21();         // +0x54
+    virtual void Vslot22();         // +0x58
+    virtual void Vslot23();         // +0x5c
+    virtual void Vslot24();         // +0x60
+    virtual void Vslot25();         // +0x64
+    virtual void Vslot26();         // +0x68
+    virtual i32 GetFrame();         // slot 27  +0x6c  current frame number
+    virtual void Vslot28();         // +0x70
+    virtual void Vslot29();         // +0x74
+    virtual void Vslot30();         // +0x78
+    virtual void Vslot31();         // +0x7c
+    virtual void Vslot32();         // +0x80
+    virtual void Vslot33();         // +0x84
+    virtual void Vslot34();         // +0x88
+    virtual void Vslot35();         // +0x8c
+    virtual void Vslot36();         // +0x90
+    virtual void PostSetup(HDC dc); // slot 37  +0x94  per-draw text-attr setup
+
     void DrawDebugStats(); // 0xcf770
 
-    DbgVtbl* m_vptr; // +0x000
-    DbgFpsSrc* m_4;  // +0x004
+    DbgFpsSrc* m_4; // +0x004  (implicit vptr at +0x00)
     char m_pad08[0xc - 0x8];
     DbgMc* m_c; // +0x00c
     char m_pad10[0x2d0 - 0x10];
     i32 m_2d0; // +0x2d0  packets received
     i32 m_2d4; // +0x2d4  packets sent
-};
-// The owner's own virtuals, modeled as 4-byte PMFs off the vtable so MSVC emits
-// `mov edx,[this]; mov ecx,this; call [edx+slot]` - the class must be COMPLETE
-// before the typedefs (see docs/patterns/pmf-complete-class-4byte.md).
-typedef i32 (CDbgView::*DbgGetFrameFn)();
-typedef void (CDbgView::*DbgPostSetupFn)(HDC);
-struct DbgVtbl {
-    char m_pad00[0x6c];
-    DbgGetFrameFn GetFrame; // +0x6c  current frame number
-    char m_pad70[0x94 - 0x70];
-    DbgPostSetupFn PostSetup; // +0x94  per-draw text-attr setup
 };
 
 // @source: string-xref
@@ -158,7 +189,7 @@ void CDbgView::DrawDebugStats() {
             " Sent = %i, Rcvd = %i, Frame = %i Counter = %lu",
             m_2d4,
             m_2d0,
-            (this->*(m_vptr->GetFrame))(),
+            GetFrame(),
             g_645588
         );
         strcat(buf, scratch);
@@ -173,7 +204,7 @@ void CDbgView::DrawDebugStats() {
     SetBkMode(hdc, 1);
     SetTextColor(hdc, 0xffffff);
     SetBkColor(hdc, 0);
-    (this->*(m_vptr->PostSetup))(hdc);
+    PostSetup(hdc);
 
     if (buf[0] != 0) {
         RECT rb;
@@ -203,4 +234,3 @@ SIZE_UNKNOWN(DbgDcRoot);
 SIZE_UNKNOWN(DbgMc);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CDbgView);
-SIZE_UNKNOWN(DbgVtbl);
