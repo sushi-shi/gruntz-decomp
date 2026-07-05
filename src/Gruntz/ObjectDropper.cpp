@@ -14,19 +14,9 @@
 extern CButeTree g_buteTree;
 extern CButeMgr g_buteMgr;
 
-// The CString temp the direction-name match builds. Its three operations are the
-// static-linked MFC CString helpers, modeled NO-body so the calls reloc-mask:
-//   MiniStr()         = 0x1b9b93 (default-construct / empty)
-//   operator=(LPCSTR) = 0x1b9e74 (assign the C string)
-//   ~MiniStr()        = 0x1b9cde (destruct; the /GX temp-cleanup state)
-// The real C++ dtor makes MSVC emit the temp's EH cleanup state like retail.
-SIZE_UNKNOWN(MiniStr);
-struct MiniStr {
-    char* m_buf; // +0x00  the buffer pointer (the strcmp operand)
-    MiniStr();
-    ~MiniStr();
-    MiniStr& operator=(const char* s);
-};
+// The direction-name match builds a real MFC CString temp (default-ctor 0x1b9b93,
+// operator=(LPCSTR) 0x1b9e74, dtor 0x1b9cde - all reloc-masked, /GX temp-cleanup
+// state). Uses the real <Mfc.h> CString (via <Gruntz/String.h>), no local view.
 
 // The bound object's +0x198 geometry/footprint descriptor: the per-frame Update
 // polls its half-extents (+0x18, +0x1c) to build the wander box.
@@ -202,9 +192,9 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CTileLogic(obj) {
 
     CObjDropObj* obj38 = (CObjDropObj*)m_38;
     if (obj38->m_nameRec != 0) {
-        MiniStr name;
+        CString name;
         name = obj38->m_nameRec + 0x24;
-        const char* s = name.m_buf;
+        const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
             o->m_travelDir = 1;
             m_travelDx = 0;
