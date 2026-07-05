@@ -161,13 +161,49 @@ namespace modeinit {
     // CALLS, which carry no EH semantics, so MSVC5 emits NO fs:0 frame at all (the unit
     // is already `eh`/​/GX - the flag can't help without a destructible C++ construct).
     // That absent frame shifts every arg/[esp+N] and flips the this/zero regalloc
-    // (retail this=ebx/zero=ebp vs base this=ebp/zero=ebx). Reproducing it needs the
-    // four element classes (0x403774/0x403a3a ctors, 0x5b48c6 dtor) modeled as real
-    // array members of a Worker630 class so `new`/placement-construct emits the ehvec
-    // ctors + the EH state stamps - a large modeling job for the final sweep. The logic
-    // (owner-flag stamps, 4 owned sub-objects with per-step teardown-and-return-0,
-    // ShowCursor drain, geometry/timer reset, the two vtable inits + bind + peer flag)
-    // is complete + correct by shape.
+    // (retail this=ebx/zero=ebp vs base this=ebp/zero=ebx).
+    //
+    // FULL RETAIL RECIPE MAPPED (matcher-5 2026-07-05, from the complete 0x5f5-byte
+    // disasm; the rewrite was scoped out at session end - execute it verbatim):
+    //  * IDENTITY: 0xc7ec0 is CPlay's vtable slot 1 override `Init0c7ec0` (origin
+    //    CState; `gruntz sema class CPlay`) -> ModeObj IS CPlay, a1 IS the game
+    //    manager (a1+0x164/+0x170 == CNetGameMgr::m_channels[0].m_14/m_20, and the
+    //    0x1d98 callee == CNetGameMgr::ResetClockGlobals). Fold to <Gruntz/Play.h>
+    //    as the follow-up.
+    //  * All four allocations are genuine `new T` with class operator new/delete ==
+    //    RezAlloc/RezFree: Ctl1c (inline nothrow ctor: m_18,m_14,m_c,m_10,m_0,m_4,
+    //    m_8=1 -> NO EH state), Worker630 (inline ctor -> states 0/1; inline dtor
+    //    { PreDtor248c(); } used by a real `delete` in the fail path -> states 3/2),
+    //    Rec78 (inline ctor : 4x StrRec(0xa) members each WITH out-of-line dtor ->
+    //    states 4..7; body m_74=0; fail path = EXPLICIT ~Rec78() + RezFree, one null
+    //    check), Rec50 (out-of-line ctor 0x286f -> state 8; `if (!(m_3f4=new Rec50))
+    //    return 0`).
+    //  * Worker630 member kinds by construction order: Elem1c m_2c[8] (out-of-line
+    //    ctor 0x403774 + dtor 0x5b48c6 -> __ehvec_ctor); Elem18z m_228[5] (INLINE
+    //    ctor zeroing m_0,m_8,m_4,m_c of 0x18 -> the count-5 store loop; body also
+    //    pokes m_228[4].m_14/m_10 = 0); Elem10z (0x10, inline ctor zeroing
+    //    m_0,m_8,m_4,m_c) singles at 0x2a0,0x2b0,0x320,0x338,0x4d0,0x4f0,0x560;
+    //    Elem18c m_2c0[3]/m_378[12] (out-of-line ctor 0x403a3a, no dtor -> 4-arg
+    //    vector-ctor iterator); Sub530 @0x530 is 0x14 BYTES (0x544..0x554 are
+    //    Worker fields the ctor body writes: m_544=1). Ctor body store order == the
+    //    current w[] sequence with 0x1c8..0x200 as FIFTEEN INDIVIDUAL stores (not a
+    //    loop; m_618=0 scheduled between m_1f0/m_1f4) and memsets only at
+    //    0x114/0x150/0x18c (0xf dwords, rep stosd), 0x204 (5, unrolled), 0x498
+    //    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
+    //  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
+    //    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
+    //    m_2dc->Method1d98(); and m_40 is a DWORD store (i32 field), not u8.
+    //  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
+    //    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
+    //  * ShowCursor/timeGetTime go through the CACHED import pointers
+    //    ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4) / _g_pTimeGetTime (0x6c4650), not the
+    //    import thunks.
+    //  * Fail paths: `if (m_X == 0) return 0;` FIRST (je to the shared xor-eax
+    //    tail), then dtor+free; only Worker630's uses `delete` (keeps its own
+    //    second null check, je to the m_2dc=0 store).
+    // The logic (owner-flag stamps, 4 owned sub-objects with per-step
+    // teardown-and-return-0, ShowCursor drain, geometry/timer reset, the two
+    // vtable inits + bind + peer flag) is complete + correct by shape.
     RVA(0x000c7ec0, 0x5f5)
     i32 ModeObj::Init0c7ec0(Arg1* a1, i32 a2, i32 a3) {
         if (a1 == 0) {
