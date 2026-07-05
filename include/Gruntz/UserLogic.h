@@ -452,6 +452,12 @@ public:
     i32 winapi_0ee800_IntersectRect_PtInRect();
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
+    // Leaf placement/arm entrypoints reached through the bound-logic base pointer
+    // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's CGameObjAux::m_logic):
+    // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
+    // lighting/config arm). Reloc-masked leaf bodies.
+    i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
+    void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 
     i32 m_04;          // +0x04
     i32 m_08;          // +0x08

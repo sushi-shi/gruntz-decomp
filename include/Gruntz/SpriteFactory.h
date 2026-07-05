@@ -55,6 +55,10 @@ public:
     CResMgr* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
+    // +0x48: an embedded MFC CMapPtrToPtr (the serialize-time key->object map that
+    // CTriggerMgr::Load resolves record keys through, Lookup @0x1b8760). Not typed here
+    // because this Win32-included header must stay MFC-free (afx C1189); the MFC consumer
+    // reaches it as CMapPtrToPtr at the documented +0x48 offset.
 };
 SIZE_UNKNOWN(CSpriteFactory);
 

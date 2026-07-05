@@ -1335,25 +1335,9 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     return 1;
 }
 
-// The sprite's CUserLogic (sprite desc +0x18): its multi-arg Place driver (reloc-masked
-// @0x41c4 thunk) and the +0x154 goal whose +0x8 flags get the 0x10000 done-bit on failure.
-struct CTmUserLogic {
-    i32 Place(
-        i32 a,
-        i32 b,
-        i32 c,
-        i32 d,
-        i32 e,
-        i32 f,
-        i32 g,
-        i32 h,
-        i32 i,
-        i32 j,
-        i32 k,
-        i32 l
-    );                                                                     // 0x4c1c4
-    void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
-};
+// The sprite's bound logic (sprite desc +0x18) is the canonical CUserLogic
+// (<Gruntz/UserLogic.h>): its multi-arg Place driver (@0x4c1c4) and target-cursor Arm
+// (@0x4e517) are reached through the base pointer (former CTmUserLogic view folded away).
 
 // 0x7c110: SpawnGrunt(col, row, a18, a1c) - find the first free column of grid row `row`;
 // if full ret 0. Snap the source cell[col]'s display pos to a tile, run a prep self-call,
@@ -1394,7 +1378,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     }
     sprite->m_7c->Init(sprite);
     void* logic = sprite->m_7c->m_18;
-    if (((CTmUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
+    if (((CUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
         *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
         return 0;
     }
@@ -1768,8 +1752,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     }
     sprite->m_7c->Init(sprite);
     void* logic = sprite->m_7c->m_18;
-    ((CTmUserLogic*)logic)
-        ->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
+    ((CUserLogic*)logic)->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
     return 1;
 }
 
@@ -2494,7 +2477,6 @@ SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmFxMgr);
-SIZE_UNKNOWN(CTmUserLogic);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmTileGrid);
 SIZE_UNKNOWN(CTmSoundChan);
@@ -2541,12 +2523,8 @@ SIZE_UNKNOWN(CTmLevelView);
 // slot-8 virtual GetTypeId (+0x20) yields the serialize type-id, its +0x7c CGameObjAux holds
 // the bound logic (aux->m_logic @+0x18). (Former CTmSerMapObj/CTmSerMapObjVtbl PMF-vtable +
 // CTmSerAux views folded onto the real class + real virtual.)
-// The level object (this->m_22c); its +0x8 host (CSpriteFactory) owns the name->object map
-// at +0x48 - a genuinely-distinct engine map class (identity unrecovered), Lookup @0x1b8760.
-struct CTmSerMap {
-    i32 Lookup(i32 key, void** out); // 0x1b8760 (__thiscall, ret 8)
-};
-SIZE_UNKNOWN(CTmSerMap);
+// The serialize key->object map is the CSpriteFactory's embedded m_objMap (@factory+0x48,
+// see <Gruntz/SpriteFactory.h>); reached through the typed member, no this+offset cast.
 // The manager's embedded list nodes (base list @this+0, record @+0x240, the ten
 // selection lists @+0x2d0) are the real CTmObList members; the +0x260 byte array is the
 // real CTmByteArray member; the +0x25c overlay sub-object reuses CTmOverlay (all above).
@@ -2566,8 +2544,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    char* lvl = (char*)m_level;
-    if (lvl == 0) {
+    if (m_level == 0) {
         return 0;
     }
     m_soundChanA = 0;
@@ -2575,7 +2552,9 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     m_3f8 = 0;
     m_3fc = 0;
 
-    CTmSerMap* map = (CTmSerMap*)(*(char**)(lvl + 0x8) + 0x48);
+    // The factory's embedded serialize map is the real MFC CMapPtrToPtr at +0x48
+    // (Lookup @0x1b8760); documented embedded-member offset (see SpriteFactory.h).
+    CMapPtrToPtr* map = (CMapPtrToPtr*)((char*)m_level->m_8 + 0x48);
 
     // the 4x15 placed-object grid (this[7..66], byte offsets +0x1c..+0x108)
     for (i32 base = 7; base < 0x43; base += 0xf) {
@@ -2585,7 +2564,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
             void* cell = 0;
             if (key != 0) {
                 void* found = 0;
-                void* looked = map->Lookup(key, &found) ? found : 0;
+                void* looked = map->Lookup((void*)key, found) ? found : 0;
                 if (looked == 0) {
                     return 0;
                 }
@@ -2655,7 +2634,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         ar->Read(&key, 4);
         if (key != 0) {
             void* found = 0;
-            void* looked = map->Lookup(key, &found) ? found : 0;
+            void* looked = map->Lookup((void*)key, found) ? found : 0;
             void* obj = (looked != 0 && ((CGameObject*)looked)->GetTypeId() == 5) ? looked : 0;
             m_goal = (CTmGoal*)obj; // Eh's serialize-view reinterpret of the goal slot
             if (obj == 0) {
@@ -2670,7 +2649,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
         ar->Read(&key, 4);
         if (key != 0) {
             void* found = 0;
-            void* looked = map->Lookup(key, &found) ? found : 0;
+            void* looked = map->Lookup((void*)key, found) ? found : 0;
             if (looked == 0) {
                 return 0;
             }
@@ -2695,7 +2674,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
             return 0;
         }
         void* found = 0;
-        void* looked = map->Lookup(key, &found) ? found : 0;
+        void* looked = map->Lookup((void*)key, found) ? found : 0;
         if (looked == 0) {
             return 0;
         }
