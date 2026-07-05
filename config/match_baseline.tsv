@@ -326,7 +326,7 @@ netmgrmenuselect	1	1
 netmgrmisc	5	4
 netmgrwait	2	0
 netsession	2	1
-netsession2	3	1
+netsession2	3	2
 netsessionnode	3	2
 netsessionopen	1	1
 netthingdtor	1	1
@@ -2043,7 +2043,7 @@ gruntzcmdmgr	??1CGruntzCmdMgr@@QAE@XZ	100.0000	100.0000	1	d02a34496b22	0x85bd0
 gruntzcmdmgr	?Clear@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	779423d9febc	0x23c00
 gruntzcmdmgr	?ClearAndReset@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	5b76866c84ec	0x239f0
 gruntzcmdmgr	?DrainBase@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	1	f12916b39a32	0x23bc0
-gruntzcmdmgr	?EnqueueCommand@CGruntzCmdMgr@@QAEXHPAX@Z	100.0000	100.0000	1	09a6640d76df	0x23d10
+gruntzcmdmgr	?EnqueueCommand@CGruntzCmdMgr@@QAEXHPAX@Z	100.0000	100.0000	2	04026a753c4b	0x23d10
 gruntzcmdmgr	?EnqueueMulti@CGruntzCmdMgr@@QAEXHDHPAEDFFD@Z	100.0000	100.0000	2	de0c153dda76	0x23ca0
 gruntzcmdmgr	?EnqueueSingle@CGruntzCmdMgr@@QAEXHDDDFFDD@Z	100.0000	100.0000	2	0bf2ba14a8ee	0x23c30
 gruntzcmdmgr	?IsActive@CGruntzCmdMgr@@QAEHH@Z	100.0000	100.0000	3	dba9f386a5fb	0x24a90
@@ -2060,11 +2060,11 @@ gruntzcommand	?CGruntzCommand_0242f0@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	
 gruntzcommand	?CGruntzCommand_024430@CGruntzCommand@@QAEXXZ	100.0000	100.0000	1	698937fc0f7d	0x24430
 gruntzcommand	?FreeAll@CGruntzMultiCommand@@SAXXZ	100.0000	100.0000	1	a52eb4303e98	0x24490
 gruntzcommand	?FreeAll@CGruntzSingleCommand@@SAXXZ	100.0000	100.0000	1	4e0ead03e65c	0x24450
-gruntzcommand	?Load@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	b8b67c7b8c36	0x245f0
-gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	7678947eff40	0x247d0
-gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	1	dc044912d246	0x240d0
-gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	1	1f0d8b5dc220	0x24050
-gruntzcommand	?Save@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	2c7b77016b78	0x24520
+gruntzcommand	?Load@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	59f9eb0d7b50	0x245f0
+gruntzcommand	?NetLoad@CGruntzMultiCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	c13f00ec0608	0x247d0
+gruntzcommand	?Pack@CGruntzMultiCommand@@QAEHPADH@Z	100.0000	100.0000	2	eba97e48c98b	0x240d0
+gruntzcommand	?Pack@CGruntzSingleCommand@@QAEHPADH@Z	100.0000	100.0000	2	777c44a0dd6c	0x24050
+gruntzcommand	?Save@CGruntzCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	229c0abbfec0	0x24520
 gruntzcommand	?SetMaskFromList@CGruntzCommand@@QAEHDDDFFHPAE@Z	100.0000	100.0000	4	3127710483d2	0x23ed0
 gruntzcommand	?SetParams@CGruntzCommand@@UAEHDDDFF@Z	100.0000	100.0000	2	d1452a90a202	0x23e20
 gruntzcommand	?SetParamsEx@CGruntzCommand@@QAEHDDDFFDD@Z	100.0000	100.0000	2	6b462beb4099	0x23e60
@@ -2640,14 +2640,14 @@ netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	1	528aa8665
 netcmdslot	?AdvanceSeq@CNetCmdSlot@@QAEXH@Z	86.5686	86.5686	2	ad9996bd7875	0xc0f10
 netcmdslot	?AllSlotsReady@CNetSyncCheck@@QAEHXZ	78.6970	78.6970	3	c86204851d88	0xc1320
 netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	1	332af5aba420	0xc12e0
-netcmdslot	?FindCmd@CNetCmdSlot@@QAEPAUCNetCmd@@H@Z	100.0000	100.0000	2	92436775141b	0xc12b0
-netcmdslot	?GetRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	2	889baf812398	0xc1230
+netcmdslot	?FindCmd@CNetCmdSlot@@QAEPAUCNetCmd@@H@Z	100.0000	100.0000	3	8d6c1b85326b	0xc12b0
+netcmdslot	?GetRange@CNetCmdSlot@@QAEXPAH0@Z	100.0000	100.0000	3	4e674ffb7966	0xc1230
 netcmdslot	?NetCmdIdAdd@@YGXPAHH@Z	100.0000	100.0000	1	0ea326438a3a	0xc1010
 netcmdslot	?NetCmdIdClear@@YGXPAHH@Z	100.0000	100.0000	1	61ec535a3595	0xc1060
 netcmdslot	?NetCmdIdFind@@YGHPAHH@Z	100.0000	100.0000	1	e06feaba51c4	0xc0fd0
-netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	74.9950	74.9950	7	ad330114fca9	0xc0c70
+netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	74.9950	74.9950	8	a5d8e5c48b7c	0xc0c70
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	2	f112acf36202	0xc0fa0
-netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	2	164eb5cc7461	0xc11b0
+netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	3	798f13eb947d	0xc11b0
 netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	3	b68d370eecac	0xc0bb0
 netcmdslot	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	2	8f369c189a5f	0xc0070
 netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	1	a247b7dd0f0c	0xc10a0
@@ -2672,7 +2672,7 @@ netmgr	??0CNetCmdSlot@@QAE@XZ	78.8372	78.8372	3	d0088e3b7463	0xbbec0
 netmgr	??1CNetMgr@@UAE@XZ	44.2963	44.2963	1	6e6d009cef61	0xb6000
 netmgr	?AckDropPlayer@CNetMgr@@QAEXH@Z	100.0000	100.0000	2	3dda1d693889	0xba590
 netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	3	84c10b53b442	0x178360
-netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	82.3454	82.3454	3	0e16646379fd	0x1786d0
+netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	82.3454	82.3454	4	f5bef2cf03d2	0x1786d0
 netmgr	?AddSessionNode@CNetMgr@@QAEHHPBD0H@Z	68.6606	68.6606	1	40be2788dd35	0x178b30
 netmgr	?AnnounceVersion@CNetMgr@@QAEXH@Z	90.1000	90.1000	5	f9e1f9c715a8	0xbd180
 netmgr	?ApplyCmdDelayDefaults@CNetMgr@@QAEXXZ	100.0000	100.0000	6	f6fa2de8b3f2	0xb85a0
@@ -2770,7 +2770,7 @@ netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	1	b2f3e4307dc7	0xf93b0
 netsession	?FillPlayerList@@YAXPAUHWND__@@PAUSession@@@Z	91.5352	91.5352	3	86463cf80a31	0xb89e0
 netsession2	?Init@CNetSession2@@QAEHPAXPAVCNetMgr@@0@Z	100.0000	100.0000	1	4dd224a742e5	0xbef80
 netsession2	?Reset@CNetSession2@@QAEXXZ	94.1176	94.1176	1	81e94541388a	0xbf150
-netsession2	?Verify@CNetSession2@@QAEHH@Z	89.5349	89.5349	2	0412e5b98227	0xc0290
+netsession2	?Verify@CNetSession2@@QAEHH@Z	100.0000	100.0000	2	0412e5b98227	0xc0290
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	1	f7c44c68b70d	0x1793b0
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	2	668c9f162da2	0x179420
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	1	11b0fb1beb1f	0x1795a0
