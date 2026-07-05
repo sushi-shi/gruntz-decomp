@@ -24,7 +24,7 @@ struct WatchCtrl {
 // The multiplayer game-state singleton at 0x64bd5c is a CMulti. The former per-TU
 // WatchSess / WatchSess524 lens types (same-memory aliases of this pointer and its
 // +0x524 report gate) are gone: the status flags are genuine CMulti members
-// (m_isHost/m_52c/m_538/m_568/m_56c/m_570/m_58c/m_5ac/m_5bc/m_600) and the terminal
+// (m_isHost/m_sessionTerminated/m_538/m_568/m_56c/m_570/m_58c/m_5ac/m_5bc/m_600) and the terminal
 // helpers are genuine CMulti / CMultiReportGate methods - see <Gruntz/Multi.h>.
 extern CMulti* g_64bd5c; // 0x64bd5c
 
@@ -92,7 +92,7 @@ void CNetDlgWatch::Watchdog() {
     g_64bd5c->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = g_pTimeGetTime();
-        g_64bd5c->SendNetStat3(0x41f, (i32)t, 0);
+        g_64bd5c->SendNetStat(0x41f, (i32)t, 0);
     }
     if (g_64bd5c->m_isHost == 0) {
         if (g_watchBlinkA == 0) {
@@ -156,7 +156,7 @@ void CNetDlgWatch::Watchdog() {
     if (b > 0x31) {
         g_watchBlinkB = 0;
     }
-    if (g_64bd5c->m_52c != 0) {
+    if (g_64bd5c->m_sessionTerminated != 0) {
         KillTimer(m_hWnd, 1);
         g_64bd5c->ReportVersionMsg("terminated", 0);
         g_watchBusy = 0;

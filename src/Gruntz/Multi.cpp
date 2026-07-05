@@ -103,8 +103,10 @@ struct CState {
 // are placeholders; only the call shape (args / cleanup) is load-bearing.
 // ---------------------------------------------------------------------------
 
-// __stdcall free stat-channel writer (0x0b9290, ret 0xc): SendNetStat(chan, id, flag).
-extern void __stdcall SendNetStat(i32 chan, i32 id, i32 flag);
+// (The 0x0b9290 stat writer is CMulti::SendNetStat - a __thiscall member, declared
+// in Multi.h; the old free-__stdcall extern here was a byte-shape placeholder. The
+// Teardown call site relies on entry ecx still holding `this` - retail emits no
+// mov ecx before the call - which the member spelling reproduces.)
 
 // The engine heap free (CLobbyObjA/B teardown above pairs with it).
 extern "C" void RezFree(void* p); // 0x001b9b82 (_RezFree, __cdecl)
@@ -361,7 +363,7 @@ i32 CMulti::Tick() {
         m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
-    if (m_session->IsBusy() && m_564 == 0) {
+    if (m_session->IsBusy() && m_pollAbort == 0) {
         fin = 1;
     }
     vtbl()->PostRedraw(this);
@@ -966,7 +968,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
 // @early-stop
 // /GX EH + regalloc wall: the body is the complete, correct reconstruction (the
 // throttle gate off g_648d14/timeGetTime, the two FindSlot lookups, the slot host
-// name copied into g_6473d8 via the CString temp, then SendNetStat3 + OnDropPlayer).
+// name copied into g_6473d8 via the CString temp, then SendNetStat + OnDropPlayer).
 // Retail keeps the 2nd FindSlot result live in eax across the CString-temp
 // construction while our /O2 spills it to edi, and the EH-state funclet store order
 // differs - structure + the call/branch chain match, register/EH scheduling does
@@ -987,7 +989,7 @@ void CMulti::DropTimeout() {
     g_611d88 = *(i32*)((char*)slot->m_c + 0x18);
     CString nm;
     g_6473d8 = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_6473d8 = nm
-    SendNetStat3(0x40c, g_611d88, 1);
+    SendNetStat(0x40c, g_611d88, 1);
     OnDropPlayer();
 }
 

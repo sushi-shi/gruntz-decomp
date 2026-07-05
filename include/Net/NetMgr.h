@@ -1055,9 +1055,9 @@ public:
     i32 m_2d8; // +0x2d8  a command-timing config word (LoadConfig copies cfg+0x118)
     char m_pad2dc[0x520 - 0x2dc];
     CNetSession* m_session; // +0x520  the DirectPlay session sub-object (command slots)
-    CNetMgr* m_peer; // +0x524  THE REAL CNetMgr (RTTI CNetMgr:CObject, ??1 @0xb6000; ==
-                     // <Gruntz/Multi.h> CMulti::m_netGate); null => no session. See the
-                     // header verdict: this class from +0x2d8 down is really CMulti.
+    CNetMgr* m_peer;        // +0x524  THE REAL CNetMgr (RTTI CNetMgr:CObject, ??1 @0xb6000; ==
+                            // <Gruntz/Multi.h> CMulti::m_netGate); null => no session. See the
+                            // header verdict: this class from +0x2d8 down is really CMulti.
     i32 m_useChannelLatency; // +0x528  ack-latency source selector (set => inline m_channelLatency[])
     i32 m_sessionTerminated; // +0x52c  "the game session has been terminated"
     i32 m_530;               // +0x530  config-loaded / connection-active gate
