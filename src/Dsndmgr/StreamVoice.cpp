@@ -32,11 +32,11 @@ RVA(0x001375b0, 0x77)
 StreamVoice::StreamVoice(IDirectSoundBuffer* buf, DirectSoundMgr* owner, i32 a, i32 b) {
     // cl auto-stamps ??_7StreamVoice at ctor entry (was a manual voice-vptr store).
     BaseInit(buf, owner);
-    m_streamArgB = b;
+    m_retireWhenIdle = b;
     // m_feeder (StreamVoiceFeeder) is cl-constructed (0x5ef6f0 then 0x5ef6e0) as a
     // member before this body - the manual feeder-override store is gone.
-    m_streamArgA = a;
-    m_streamPos = 0;
+    m_stopWhenIdle = a;
+    m_active = 0;
 }
 
 // ---------------------------------------------------------------------------

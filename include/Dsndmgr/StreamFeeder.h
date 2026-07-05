@@ -75,7 +75,16 @@ struct StreamFeeder {
     i32 Pause();                             // 0x137f00
     i32 FillBuffer(u32 writePos, u32 bytes); // 0x137f30
 
-    // Tick (0x1380d0): sibling pump, external to this TU - reloc-masked.
+    // The two pump entries SoundDevice::TickSubManagers (0x137ac0) drives on the
+    // voice's embedded feeder. Bodies are homed (EXACT) in ApiMiscHelpers.cpp as the
+    // trace-tagged Throttle_137e30::Tick / Timer_1380d0::Tick placeholders - their
+    // field maps are 1:1 THIS class (+0x08 m_buffer, +0x0c m_bufferCursor, +0x10
+    // m_bufferLength, +0x28 m_lastTickMs, Work == FillBuffer 0x137f30); reloc-masked.
+    // Tick (0x137e30): per-frame throttled pump - gate on +0x1c, 100ms throttle via
+    // m_lastTickMs, read the buffer play position, FillBuffer-refill the consumed span.
+    i32 Tick(i32 timestamp); // 0x137e30  (timestamp -1 = "now")
+    // TickPump (0x1380d0): reset-and-reprime - zero the cursor, m_buffer->Prepare(0),
+    // FillBuffer the whole window (TickSubManagers fires it with -1 on idle+stop).
     i32 TickPump(i32 now);
 };
 SIZE(StreamFeeder, 0x44);       // embedded feeder sub-object (StreamVoice+0x6c..0xb0)

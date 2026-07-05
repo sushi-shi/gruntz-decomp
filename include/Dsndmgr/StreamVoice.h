@@ -12,6 +12,7 @@
 #include <Gruntz/ParseSource.h>
 #include <rva.h>
 
+#include <Dsndmgr/SoundVoiceList.h> // DSoundLink (the +0x04 intrusive instance-list link)
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/WaveFormatX.h>
 
@@ -46,14 +47,18 @@ struct StreamVoice {
     // 0x5ef6d8) and auto-stamps/auto-resets the vptr in the ctor/dtor.
     virtual ~StreamVoice(); // +0x00  0x137650  (slot 0 = scalar-deleting dtor)
 
-    char m_pad04[0x10 - 0x04];
-    SoundStream* m_owner; // +0x10  owning SoundStream (also the base m_owner)
+    DSoundLink m_link;            // +0x04  intrusive instance-list link (SoundDevice::
+                                  //        m_instanceHead threads voice+4; elemOf<> unbias)
+    IDirectSoundBuffer* m_buffer; // +0x0c  the IDirectSoundBuffer to release
+    SoundStream* m_owner;         // +0x10  owning SoundStream (also the base m_owner)
     char m_pad14[0x3c - 0x14];
     u32 m_avgBytesPerSec; // +0x3c  position->time divisor (DirectSoundMgr base field)
     char m_pad40[0x60 - 0x40];
-    i32 m_streamArgA; // +0x60  cached ctor arg a (arg3), consumed by the stream pump
-    i32 m_streamArgB; // +0x64  cached ctor arg b (arg4)
-    i32 m_streamPos;  // +0x68  zero-init position/state
+    // ctor args a/b are the idle-policy flags SoundDevice::TickSubManagers (0x137ac0)
+    // polls each frame; +0x68 is zero-init then updated with the IsPlaying result.
+    i32 m_stopWhenIdle;   // +0x60  ctor arg a: reprime the feeder when the buffer goes idle
+    i32 m_retireWhenIdle; // +0x64  ctor arg b: RemoveSub this voice when it goes idle
+    i32 m_active;         // +0x68  latched IsPlaying state (zero-init)
     // +0x6c  embedded streaming feeder sub-object, held as the DERIVED
     // StreamVoiceFeeder (retail vtable 0x5ef6e0) so cl auto-constructs it
     // base-then-derived (0x5ef6f0 then 0x5ef6e0). The voice's +0x9c / +0xa8 stores

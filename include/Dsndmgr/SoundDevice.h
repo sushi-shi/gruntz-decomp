@@ -45,7 +45,8 @@ struct ParseFmt {
 };
 SIZE(ParseFmt, 0x14); // 5-DWORD parser scratch descriptor (address escapes)
 
-struct SubNode; // TickSubManagers instance-list node (view; full def in DirectSoundMgr.cpp)
+struct StreamVoice; // TickSubManagers instance-list node: the canonical per-stream voice
+                    // (<Dsndmgr/StreamVoice.h>; former SubNode view, folded wave 3)
 
 class SoundDevice {
 public:
@@ -87,9 +88,9 @@ public:
     i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
     i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
     // Per-tick device-list housekeeping (also defined in DirectSoundMgr.cpp).
-    i32 PurgeVoiceList(i32 time);  // 0x136e20  reap finished voices from m_voiceList
-    void RemoveSub(SubNode* n);    // 0x1379d0  retire one instance-list sub-object (extern)
-    i32 TickSubManagers(i32 time); // 0x137ac0  tick each derived instance
+    i32 PurgeVoiceList(i32 time);   // 0x136e20  reap finished voices from m_voiceList
+    void RemoveSub(StreamVoice* n); // 0x1379d0  retire one instance-list stream voice (extern)
+    i32 TickSubManagers(i32 time);  // 0x137ac0  tick each derived instance
 
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).

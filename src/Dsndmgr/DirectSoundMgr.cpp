@@ -10,6 +10,7 @@
 #include <Win32.h>               // windows.h base types (dsound.h needs them)
 #include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
+#include <Dsndmgr/StreamVoice.h> // canonical StreamVoice + StreamVoiceFeeder (TickSubManagers)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
@@ -954,56 +955,31 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
 }
 
 // -------------------------------------------------------------------------
-// TickSubManagers @0x137ac0 - per-frame sub-manager tick. Walk m_instanceHead; per
-// sub: advance inner list (+0x6c), poll guard (m_guard); when idle(0) && m_active, stop
-// inner list (if m_stopFlag) and retire (if m_retireFlag); record guard back to m_active.
-// IDENTITY CONFIRMED (wave 3): SubNode IS the canonical StreamVoice (<Dsndmgr/
-// StreamVoice.h>, DirectSoundMgr-derived, ctor 0x1375b0) - m_instanceHead@+0x94 is the
-// SoundStream StreamVoice list - and SubInnerList IS its embedded StreamVoiceFeeder
-// (StreamVoice::m_feeder @+0x6c). SubInnerList's Tick(0x137e30)/Stop(0x1380d0) are the
-// feeder pump entries (0x1380d0 == StreamFeeder::TickPump; both COMDAT-fold with the
-// ApiMisc Throttle_137e30/Timer_1380d0 placeholders, which is why they read as those).
-// CLEAN FOLD DEFERRED: SoundDevice::TickSubManagers (0x137ac0, below) is 100%-EXACT and
-// a byte-safe fold needs StreamVoice.h/StreamFeeder.h extended with the +0x60..+0x68
-// flags, the +0x74 DirectSoundMgr guard, and the folded feeder-method names - a
-// DirectSound-module task; kept a documented call-view so the 100% match holds.
-struct SubInnerList { // == StreamVoiceFeeder (StreamVoice::m_feeder @+0x6c)
-    void Tick(i32 t); // 0x137e30  advance the feeder (folds Throttle_137e30::Tick)
-    void Stop(i32 x); // 0x1380d0  StreamFeeder::TickPump (folds Timer_1380d0::Tick)
-};
-SIZE(SubInnerList, 0x1); // call-view over StreamVoice::m_feeder @+0x6c
-// == StreamVoice (see note above): link@+0x04, stop/retire/active flags @+0x60..+0x68,
-// feeder @+0x6c, guard @+0x74. m_guard IS the canonical DirectSoundMgr (its Poll is
-// DirectSoundMgr::IsPlaying @0x1353f0, folded wave 3 - StreamVoice IS DirectSoundMgr-
-// derived, so the guard is the per-voice buffer manager owning the idle-check).
-struct SubNode { // == StreamVoice (<Dsndmgr/StreamVoice.h>); fold deferred (see note)
-    char m_pad0[0x4];
-    DSoundLink* m_next; // +0x04  instance-list forward link (biased +4)
-    char m_pad8[0x60 - 0x8];
-    i32 m_stopFlag;           // +0x60  stop-inner-list-when-idle flag
-    i32 m_retireFlag;         // +0x64  retire-when-idle flag
-    i32 m_active;             // +0x68  active flag (updated with the guard result)
-    SubInnerList m_innerList; // +0x6c  embedded inner voice list
-    char m_pad6d[0x74 - 0x6d];
-    DirectSoundMgr* m_guard; // +0x74  the stream's buffer manager (IsPlaying idle-check)
-};
-SIZE(SubNode, 0x78); // instance-list node view (fields end at +0x78)
+// TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the instance list
+// (m_instanceHead threads StreamVoice+4 links); per voice: pump the embedded feeder
+// (StreamFeeder::Tick @0x137e30), poll the per-stream buffer wrapper's IsPlaying
+// (feeder->m_buffer, i.e. voice+0x74); when it just went idle, reprime the feeder
+// (TickPump(-1) @0x1380d0) if m_stopWhenIdle and/or retire the voice (RemoveSub) if
+// m_retireWhenIdle; latch the IsPlaying result into m_active. The former SubNode /
+// SubInnerList / SubGuard views are gone (wave 3): the node IS the canonical
+// StreamVoice, the inner list IS its embedded StreamVoiceFeeder (m_feeder @+0x6c),
+// and the guard IS the feeder's DirectSoundMgr buffer wrapper (m_buffer @+0x08).
 RVA(0x00137ac0, 0xa2)
 i32 SoundDevice::TickSubManagers(i32 time) {
     if (time == -1) {
         time = (i32)g_pTimeGetTime();
     }
     DSoundLink* head = m_instanceHead;
-    SubNode* o = elemOf<SubNode>(head);
+    StreamVoice* o = elemOf<StreamVoice>(head);
     while (o) {
-        SubNode* next = elemOf<SubNode>(o->m_next);
-        o->m_innerList.Tick(time);
-        i32 r = o->m_guard->IsPlaying();
+        StreamVoice* next = elemOf<StreamVoice>(o->m_link.m_next);
+        o->m_feeder.Tick(time);
+        i32 r = o->m_feeder.m_buffer->IsPlaying();
         if (r == 0 && o->m_active != 0) {
-            if (o->m_stopFlag != 0) {
-                o->m_innerList.Stop(-1);
+            if (o->m_stopWhenIdle != 0) {
+                o->m_feeder.TickPump(-1);
             }
-            if (o->m_retireFlag != 0) {
+            if (o->m_retireWhenIdle != 0) {
                 RemoveSub(o);
                 o = 0;
             }
