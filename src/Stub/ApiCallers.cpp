@@ -5,7 +5,6 @@
 #include <Font/Font.h>          // FontRenderer/Font/Glyph/Rect/TextExtent (DrawGlyphRun 0x179e70)
 #include <Gruntz/GruntzMgr.h>   // real CGruntzMgr (the 0x24556c game-manager singleton)
 #include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/Play.h> // real CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown@+0x510)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 // smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
@@ -31,11 +30,10 @@
 // notes. The rest are the BLOCKED residual, each parked here for one of):
 //   [CRT]      Win32 CRITICAL_SECTION wrappers 0x16c9c0/d0/e0/f0 - not game code;
 //              STAY per the game-not-CRT matcher policy (no owning game class).
-//   [SPINE]    the g_gameReg DlgProc cluster. Its receiver view was FOLDED onto the
-//              canonical CGruntzMgr (<Gruntz/GruntzMgr.h>) - the DlgProcs stay here
-//              (they are __stdcall CALLBACKs, not methods of a re-homeable class), but
-//              they now deref the real singleton (m_gameWnd/m_saveSink/
-//              PickPlayOrPausedState) instead of a placeholder CGameReg.
+//   [SPINE]    the g_gameReg / CGameReg spine + CGruntzMgr cluster (settings/menu
+//              DlgProcs + SelHost/RosterHost/Dispatcher/ActionHost/Screen/RectWnd
+//              /BattlezDlg). They deref a PLACEHOLDER CGameReg here; re-homing needs
+//              the REAL spine (GruntzMgr.cpp/.h) typed first - out of this TU's scope.
 //   [ORPHAN]   real bodies on ANONYMOUS RVA-named placeholder hosts (CmdHost_*, Grid_*,
 //              QlHost_*, EditAppendHost_*, Region_*, ...) whose true owning class is
 //              not yet recovered; moving them would force-guess an owner - LEFT put.
@@ -53,6 +51,16 @@
 // @0x92990 (the FindStateById(3) accessor). Reloc-masked DATA symbol.
 DATA(0x0024556c)
 extern CGruntzMgr* g_gameReg;
+
+// The play/paused state's pending-result field, poked at +0x510 on the CState*
+// PickPlayOrPausedState returns - a concrete-state (CPlay-family) field reached via
+// the base CState* exactly as retail does (`mov [eax+0x510],2`). A cast-only view of
+// the derived state's field; base CState (State.h) ends well before 0x510.
+SIZE_UNKNOWN(PlayStateResult);
+struct PlayStateResult {
+    char m_pad0[0x510];
+    i32 m_510; // +0x510
+};
 
 // (The Miles Sound System (AIL) imports + g_ailMidiDriver/g_midiSeqCounter/
 // g_ailDriver64, and the RNG/coin state g_rngSeeded/g_rngState/g_coinRolled/
@@ -257,7 +265,7 @@ namespace ApiCallerStubs {
 
     // (0x2b340 ClipHost::Clip re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
-    // (0x38150 find-and-select re-homed to CLatencyList::SelectItem in Dialogs.cpp.)
+    // (0x38150 find-and-select re-homed to CMultiSlotList::Method3396 in Dialogs.cpp.)
 
     // (0x38220 winapi_038220 -> GetSelItemData in src/Gruntz/MultiStartDlgRoster.cpp,
     // a CMultiStartDlg roster listbox helper.)
@@ -611,11 +619,9 @@ namespace ApiCallerStubs {
         switch (msg) {
             case 0x111:
                 if (wParam == 2 || wParam == 1) {
-                    // PickPlayOrPausedState (FindStateById(3)) returns the concrete
-                    // CPlay via its CState* base; set its +0x510 step-countdown to 2.
-                    CPlay* obj = (CPlay*)g_gameReg->PickPlayOrPausedState();
+                    PlayStateResult* obj = (PlayStateResult*)g_gameReg->PickPlayOrPausedState();
                     if (obj) {
-                        obj->m_stepCountdown = 2;
+                        obj->m_510 = 2;
                     }
                     EndDialog(hDlg, 0);
                     return 1;
