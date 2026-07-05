@@ -234,23 +234,33 @@ public:
 // method (ecx = the object, no stack args) then handed to the engine free. The
 // CMulti session loop drives the lobby object (m_session) through a set of thiscall
 // entry points (all out-of-line -> reloc-masked); placeholder names.
+// IDENTITY-RECOVERY TODO (deferred multi-class reconciliation, flagged - NOT a keep):
+// this CMulti::m_session (+0x520) lobby-session object is the SAME 0x20bb0 object the
+// canonical CNetSession (<Net/NetMgr.h>) models - StartTick@0xbf150 == CNetSession::Reset,
+// IsStalled@0xc04f0 == CNetSession::Verify, CheckLatency@0xc04a0 == CNetSession::CheckLatency.
+// But its Step/Drain/IsBusy methods resolve to a THIRD class, CLobbySync (Poll@0xbf5a0,
+// Tick@0xbf9e0, Advance@0xc01d0), so m_session's dispatch spans CNetSession + CLobbySync.
+// Fully folding this (add the lobby/CLobbySync methods to CNetSession, delete this view,
+// retype m_session) needs a dedicated CNetSession<->CLobbySync reconciliation and pulls
+// the heavy <Net/NetMgr.h> into the widely-included Multi.h - deferred, not done here.
 class CNetSession2 { // m_session
 public:
     void Teardown();                      // 0x004b6220 (NOT a CMulti method)
     CLobbySlot* FindSlot(i32 key);        // 0x004c0460  scan the +0x20 4x0x64 slot table
-    void StartTick();                     // 0x000bf150
-    i32 Step(i32 dt);                     // 0x000bf5a0
-    i32 Drain();                          // 0x000bf9e0
-    i32 IsBusy();                         // 0x000c01d0
-    i32 IsStalled();                      // 0x000c04f0
+    void StartTick();                     // 0x000bf150 (== CNetSession::Reset)
+    i32 Step(i32 dt);                     // 0x000bf5a0 (== CLobbySync::Poll)
+    i32 Drain();                          // 0x000bf9e0 (== CLobbySync::Tick)
+    i32 IsBusy();                         // 0x000c01d0 (== CLobbySync::Advance)
+    i32 IsStalled();                      // 0x000c04f0 (== CNetSession::Verify)
     void ArmSlot(void* node, i32 parity); // 0x000c03f0
-    i32 CheckLatency(i32 cap); // 0x000c04a0 (thunk 0x148d)  any active slot's latency > cap?
-    void Step2437();           // per-frame poke (PumpA, thiscall)
+    i32 CheckLatency(i32 cap);            // 0x000c04a0 (thunk 0x148d)  == CNetSession::CheckLatency
+    void Step2437();                      // per-frame poke (PumpA, thiscall)
 
     char m_pad00_10[0x10];
     i32 m_10; // +0x10  slot-count / id base
 };
-class CLobbyObjA { // m_attractOverlay
+SIZE_UNKNOWN(CNetSession2); // CMulti lobby-session view (identity-recovery TODO above)
+class CLobbyObjA {          // m_attractOverlay
 public:
     void Teardown(); // 0x004a3360
 };

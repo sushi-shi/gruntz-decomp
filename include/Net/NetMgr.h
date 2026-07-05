@@ -312,6 +312,10 @@ struct CNetCmdSlot {
     i32
     Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
+    // Slot-readiness check CNetSession::Verify(i32) dispatches on each slot (0xc1320,
+    // reloc-masked). Retail owner is CNetSyncCheck::AllSlotsReady - a cross-object
+    // dispatch on the slot cursor; declared here so the __thiscall call shape falls out.
+    i32 Ready(); // c1320
 };
 SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x64)
 
@@ -384,27 +388,34 @@ struct CNetResyncEntry {
 SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
 
 struct CNetSession {
-    CNetCmdBuf* m_0;                 // +0x00  base of the per-slot command-buffer array
-    i32 m_4;                         // +0x04
-    i32 m_8;                         // +0x08
+    CNetCmdBuf* m_0;                 // +0x00  base of the per-slot command-buffer array (Init a1)
+    i32 m_4;                         // +0x04  owning net manager as an i32 handle (Init a2;
+                                     //        CreateSlot re-passes it to the slot's Init(i32))
+    void* m_8;                       // +0x08  peer/owner back-ptr (Init a3)
     i32 m_c;                         // +0x0c
     i32 m_10;                        // +0x10
     i32 m_14;                        // +0x14
     i32 m_18;                        // +0x18  resync tick base (Verify: (m_18-2)%128)
-    i32 m_1c;                        // +0x1c
+    i32 m_1c;                        // +0x1c  cached owner m_cmdDelay (Init)
     CNetCmdSlot m_slots[4];          // +0x20  four inline command slots (0x64 each)
-    i32 m_1b0[0x80];                 // +0x1b0  0x200-byte scratch block ResetAll memsets to 0
+    i32 m_1b0[0x80];                 // +0x1b0  0x200-byte scratch block ResetAll/Reset memsets to 0
     CNetResyncEntry m_entries[0x80]; // +0x3b0  resync entries (indexed signed, base here)
 
     CNetCmdSlot* FindCmdSlot(i32 playerId);        // c00a0
     void ResetCmdBuffers();                        // c0070
     i32 CheckLatency(i32 cap);                     // c04a0  any active slot with m_10 > cap?
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
-    i32 Verify();                                  // c04f0  resync consistency check
+    i32 Verify();                                  // c04f0  resync consistency check (0-arg)
     void ResetAll();                               // bbf80  full reset: header + 4 slots + entries
-    // Wiring init (retail symbol ?Init@CNetSession2@@; reloc-masked here): caches
-    // the owner pointers then resets the per-slot buffers. Returns TRUE on success.
-    i32 Init(void* gameSub, class CNetMgr* owner, class CNetMgr* peer); // bef80
+    // The per-game command-session methods (bodies in NetSession2.cpp, formerly the
+    // TU-local CNetSession2 shadow - folded here; the delinker packs these three into
+    // one .text section so Reset/Verify(i32) unpair vs their COMDAT base sections, an
+    // accepted scoring artifact).
+    void Reset();      // bf150  re-init header/slots/scratch/entries (session-level reset)
+    i32 Verify(i32 n); // c0290  slot-window validation against sequence n
+    // Wiring init (retail symbol ?Init@CNetSession2@@; the folded RVA owner): caches the
+    // owner pointers then Reset()s. Returns TRUE on success. a1=command-buffer array.
+    i32 Init(void* a1, class CNetMgr* a2, void* a3); // bef80
 
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.
