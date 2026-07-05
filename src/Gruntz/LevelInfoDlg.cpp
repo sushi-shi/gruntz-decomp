@@ -21,10 +21,17 @@
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
 
-// The preview-image loader singleton (m_14-style image manager) + the loaded
-// preview image slot the dialog blits.
+// The preview-image loader singleton g_previewMgr. IDENTITY RECOVERED (wave 3):
+// this is CImagePool and LoadImage IS CImagePool::AddSurfaceOp @0x1751f0
+// (?AddSurfaceOp@CImagePool@@QAEPAVCRezImage@@HHH@Z, reconstructed in
+// src/Image/ImagePool.cpp). Full fold to CImagePool is DEFERRED: it needs
+// CImagePool extracted from ImagePool.cpp into a shared include/Image/ImagePool.h
+// (a ~20-method class, touching ImagePool.cpp's 95.98% AddSurfaceOp) and the real
+// (int,int,int) signature adds an authentic (i32)&buf ptr-as-int cast the current
+// void* view hides. Kept as a documented placeholder view until that extraction.
+// TODO(identity): g_previewMgr -> CImagePool*, LoadImage -> AddSurfaceOp.
 struct CPreviewMgr {
-    void* LoadImage(void* pData, i32 fmt, i32 flags); // 0x1751f0 __thiscall
+    void* LoadImage(void* pData, i32 fmt, i32 flags); // 0x1751f0 == CImagePool::AddSurfaceOp
 };
 
 // @early-stop  (94.46% - logic/frame/branches all faithful)
