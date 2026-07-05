@@ -315,6 +315,38 @@ struct CNetCmdSlot {
 };
 SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x64)
 
+// One node of a slot's +0x20 command CObList (the MFC CObList CNode shape):
+// +0x0 next, +0x4 prev, +0x8 the queued CNetCmd payload. NetCmdSlot.cpp walks the
+// queue by casting the CObList's head POSITION to this node.
+struct CNetCmdNode {
+    CNetCmdNode* m_next; // +0x0
+    CNetCmdNode* m_prev; // +0x4
+    CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
+};
+SIZE_UNKNOWN(CNetCmdNode); // CObList node walk-view; retail size TBD
+
+// The command record's fixed header (after the opcode/parity prefix): a sequence
+// number, two control words and a per-entry count byte; the payload follows.
+struct CNetCmdHdr {
+    i32 m_sequence;   // +0x0  sequence
+    i32 m_windowBase; // +0x4  window base
+    i32 m_flags;      // +0x8  flags word
+    u8 m_entryCount;  // +0xc  entry count
+};
+SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record size TBD
+
+// The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
+// the payload length and the inline payload copy.
+struct CNetCmdPacket {
+    i32 m_sequence;       // +0x0  sequence
+    CNetCmdSlot* m_owner; // +0x4  owning slot (this)
+    u8 m_flags;           // +0x8  flag byte
+    char m_pad9[0xc - 9];
+    i32 m_payloadLength; // +0xc  payload length
+    char m_payload[1];   // +0x10 payload
+};
+SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
+
 // The DirectPlay session sub-object at CNetMgr+0x520. Two helpers are reached
 // here (external __thiscall thunks): FindCmdSlot linear-scans the four inline
 // command slots for the one whose player id matches; ResetCmdBuffers zeroes the

@@ -21,14 +21,9 @@
 
 #include <string.h> // memcpy (see #pragma intrinsic below)
 
-// The CObList node shape (CObject list): +0x0 next, +0x4 prev, +0x8 payload.
-// Used to walk the queue and to name the position the removal targets.
-struct CObListNode {
-    CObListNode* m_next; // +0x0
-    CObListNode* m_prev; // +0x4
-    CNetCmd* m_data;     // +0x8  (this queue holds CNetCmd)
-};
-SIZE_UNKNOWN(CObListNode); // CObList node walk-view; retail size TBD
+// CNetCmdNode (the slot's +0x20 command-queue CObList node), CNetCmdHdr (the record
+// header prefix) and CNetCmdPacket (the recycled queue packet) are the shared Net
+// protocol types - canonical in <Net/NetMgr.h> (included above).
 
 // Return a finished command to the engine's free pool (0xbf580, __cdecl): it
 // AddTail's the node onto a global recycle list. External (reloc-masked).
@@ -63,28 +58,6 @@ void* Unmatched_bf530(i32 zero); // 0xbf530
 // +0x4 game-mgr sub-object (CNetGameMgr; +0x6c is the grunt command manager), the
 // DirectPlay session at +0x520 (FindCmdSlot), and DispatchRecvMsg (0xb9750) for the
 // high-bit relay - all real typed members now, no reduced view.
-
-// The command record's fixed header (after the opcode/parity prefix): a sequence
-// number, two control words and a per-entry count byte; the payload follows.
-struct CNetCmdHdr {
-    i32 m_sequence;   // +0x0  sequence
-    i32 m_windowBase; // +0x4  window base
-    i32 m_flags;      // +0x8  flags word
-    u8 m_entryCount;  // +0xc  entry count
-};
-SIZE_UNKNOWN(CNetCmdHdr); // record header prefix (payload follows); full record size TBD
-
-// The recycled command packet AddCmd queues: sequence, owning slot, a flag byte,
-// the payload length and the inline payload copy.
-struct CNetCmdPacket {
-    i32 m_sequence;       // +0x0  sequence
-    CNetCmdSlot* m_owner; // +0x4  owning slot (this)
-    u8 m_flags;           // +0x8  flag byte
-    char m_pad9[0xc - 9];
-    i32 m_payloadLength; // +0xc  payload length
-    char m_payload[1];   // +0x10 payload
-};
-SIZE_UNKNOWN(CNetCmdPacket); // trailing-payload packet (flexible array); fixed size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
@@ -355,9 +328,9 @@ void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
 // ---------------------------------------------------------------------------
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
-    CObListNode* node = (CObListNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
     while (node != 0) {
-        CObListNode* cur = node;
+        CNetCmdNode* cur = node;
         node = node->m_next;
         CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
@@ -386,14 +359,14 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
     }
     *pMax = 0x80000001;
     *pMin = 0x7fffffff;
-    CObListNode* node = (CObListNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
     if (node == 0) {
         *pMax = 0;
         *pMin = 0;
         return;
     }
     do {
-        CObListNode* cur = node;
+        CNetCmdNode* cur = node;
         node = node->m_next;
         CNetCmd* cmd = cur->m_data;
         if (cmd->m_seq > *pMax) {
@@ -411,9 +384,9 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
 // ---------------------------------------------------------------------------
 RVA(0x000c12b0, 0x1f)
 CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
-    CObListNode* node = (CObListNode*)m_cmds.GetHeadPosition();
+    CNetCmdNode* node = (CNetCmdNode*)m_cmds.GetHeadPosition();
     while (node != 0) {
-        CObListNode* cur = node;
+        CNetCmdNode* cur = node;
         node = node->m_next;
         CNetCmd* cmd = cur->m_data;
         if (seq == cmd->m_seq) {
