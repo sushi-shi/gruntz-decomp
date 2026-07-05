@@ -10,6 +10,7 @@
 
 #include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/17 + non-virtuals)
+#include <Gruntz/WorldState.h> // canonical CWorldState + LevelMgr
 
 // The loaded level record IS the canonical CGameLevel (<Gruntz/GameLevel.h>): this TU
 // dispatches slot 15 LoadFromSource (+0x3c) and slot 17 ReleaseChildren (+0x44) through
@@ -17,21 +18,7 @@
 // word is CLoadable's m_08. `node` is the resolved parse-source record (CParseSource*).
 class CParseSource;
 
-SIZE_UNKNOWN(LevelMgr);
-struct LevelMgr {
-    char m_pad00[0x24];
-    CGameLevel* m_24; // +0x24
-};
-
-SIZE_UNKNOWN(CWorldState);
-class CWorldState {
-public:
-    i32 BuildWorldLevelKey(i32 unused);
-    char m_pad00[0x0c];
-    LevelMgr* m_0c; // +0x0c
-    char m_pad10[0x28 - 0x10];
-    CSymTab* m_28; // +0x28
-};
+// CWorldState + LevelMgr are the canonical <Gruntz/WorldState.h> (included below).
 
 RVA(0x0003c0e0, 0xfb)
 i32 CWorldState::BuildWorldLevelKey(i32 unused) {

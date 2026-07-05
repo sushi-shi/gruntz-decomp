@@ -14,6 +14,7 @@
 
 #include <Bute/SymTab.h>       // the shared CSymTab (ResolveQualified 0x13be40)
 #include <Gruntz/GameLevel.h>  // canonical CGameLevel (real virtual slots 15/16/17 + non-virtuals)
+#include <Gruntz/WorldState.h> // canonical CWorldState + LevelMgr
 
 // The loaded level record IS the canonical CGameLevel (<Gruntz/GameLevel.h>): this TU
 // dispatches slot 15 LoadFromSource (+0x3c), slot 16 LoadFromFile (+0x40) and slot 17
@@ -22,10 +23,7 @@
 // CLoadable's m_08. `node` is the resolved parse-source record (CParseSource*).
 class CParseSource;
 
-struct LevelMgr {
-    char m_pad00[0x24];
-    CGameLevel* m_24; // +0x24
-};
+// CWorldState + LevelMgr are the canonical <Gruntz/WorldState.h> (included below).
 
 // The world/game-registry object at +0x4: its rez-path name query (returns a CString
 // by value), the current world-name string, and the two mode gates.
@@ -38,21 +36,6 @@ public:
     char m_padcc[0x128 - 0xcc];
     i32 m_128; // +0x128 BATTLEZ mode gate
     i32 m_12c; // +0x12c MULTI mode gate
-};
-
-class CWorldState {
-public:
-    i32 BuildWorldLevelPath(i32 unused);
-    char m_pad00[0x4];
-    CWorldObj* m_4; // +0x04
-    char m_pad08[0xc - 0x8];
-    LevelMgr* m_0c; // +0x0c
-    char m_pad10[0x1c - 0x10];
-    i32 m_1c; // +0x1c level number
-    char m_pad20[0x28 - 0x20];
-    CSymTab* m_28; // +0x28 level-record symbol table
-    char m_pad2c[0x34 - 0x2c];
-    CSymTab* m_34; // +0x34 battlez/multi symbol table
 };
 
 // The "BACK" plane cache (reloc-masked DIR32 store).
