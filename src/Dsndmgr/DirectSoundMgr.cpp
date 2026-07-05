@@ -957,19 +957,21 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
 // TickSubManagers @0x137ac0 - per-frame sub-manager tick. Walk m_instanceHead; per
 // sub: advance inner list (+0x6c), poll guard (m_guard); when idle(0) && m_active, stop
 // inner list (if m_stopFlag) and retire (if m_retireFlag); record guard back to m_active.
-// Inner voice list embedded at SubNode+0x6c - a call-view over its advance/stop helpers.
+// Inner voice list embedded at SubNode+0x6c - a call-view over its advance/stop
+// helpers. IDENTITY UNRECOVERED (identity-recovery TODO): Tick (0x137e30) and Stop
+// (0x1380d0) COMDAT-fold with two DISTINCT ApiMisc placeholders (Throttle_137e30::Tick
+// / Timer_1380d0::Tick, both EXACT in apimischelpers), so the embedded object's real
+// class cannot be attributed here - kept a documented call-view.
 struct SubInnerList {
-    void Tick(i32 t); // 0x137e30  advance the inner voice list
-    void Stop(i32 x); // 0x1380d0  stop the inner voice list
+    void Tick(i32 t); // 0x137e30  advance the inner voice list (folds Throttle_137e30::Tick)
+    void Stop(i32 x); // 0x1380d0  stop the inner voice list (folds Timer_1380d0::Tick)
 };
 SIZE(SubInnerList, 0x1); // call-view embedded at SubNode+0x6c
-// Idle guard at SubNode+0x74 - call-view over its poll (shares IsPlaying RVA 0x1353f0).
-struct SubGuard {
-    i32 Poll(); // 0x1353f0  idle-check
-};
-SIZE(SubGuard, 0x1); // call-view over SubNode::m_guard
 // Stream-instance node in the device instance list: link@+0x04, stop/retire/active
-// flags @+0x60..+0x68, inner list @+0x6c, guard @+0x74 (partial view; trailing unmodeled).
+// flags @+0x60..+0x68, inner list @+0x6c, guard @+0x74 (partial view; trailing
+// unmodeled). Real node class unrecovered (identity-recovery TODO); m_guard IS the
+// canonical DirectSoundMgr (its Poll is DirectSoundMgr::IsPlaying @0x1353f0, folded
+// wave 3 - the per-voice buffer manager that owns the idle-check).
 struct SubNode {
     char m_pad0[0x4];
     DSoundLink* m_next; // +0x04  instance-list forward link (biased +4)
@@ -979,7 +981,7 @@ struct SubNode {
     i32 m_active;             // +0x68  active flag (updated with the guard result)
     SubInnerList m_innerList; // +0x6c  embedded inner voice list
     char m_pad6d[0x74 - 0x6d];
-    SubGuard* m_guard; // +0x74  idle guard object
+    DirectSoundMgr* m_guard; // +0x74  the stream's buffer manager (IsPlaying idle-check)
 };
 SIZE(SubNode, 0x78); // instance-list node view (fields end at +0x78)
 RVA(0x00137ac0, 0xa2)
@@ -992,7 +994,7 @@ i32 SoundDevice::TickSubManagers(i32 time) {
     while (o) {
         SubNode* next = elemOf<SubNode>(o->m_next);
         o->m_innerList.Tick(time);
-        i32 r = o->m_guard->Poll();
+        i32 r = o->m_guard->IsPlaying();
         if (r == 0 && o->m_active != 0) {
             if (o->m_stopFlag != 0) {
                 o->m_innerList.Stop(-1);
