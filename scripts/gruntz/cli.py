@@ -927,9 +927,10 @@ def _disasm_rich(rva: str, lite: bool) -> str:
         size = 0
     import re as _re
     row = _re.compile(r"^(\s*)([0-9a-f]+):\s+((?:[0-9a-f]{2}\s)+)\s*(\S.*)$")
-    out = [f"{name}  [{unit}]"]
+    out = [f"{name}  [{unit}]",
+           f"('NNNNN| code' = {source} source line; indented = asm)"]
     if bf is None:
-        out.append("(no /Z7 line info for this fn - bare asm)")
+        out[-1] = "(no /Z7 line info for this fn - bare asm)"
     current = None
     for ln in _disasm_base_text(rva).splitlines():
         m = row.match(ln)
@@ -942,9 +943,11 @@ def _disasm_rich(rva: str, lite: bool) -> str:
             break  # trailing COMDAT padding (nops) past the function
         want = linemap.get(off, bf if current is None else current)
         if want is not None and want != current:
-            out.append(src_text(want))
+            # 'NNN|' gutter keeps source unmistakable from asm - indented C++
+            # and --lite's bare asm are otherwise visually identical
+            out.append(f"{want:5d}| {src_text(want)}")
             current = want
-        out.append("    " + m.group(4).strip() if lite else ln)
+        out.append("      " + m.group(4).strip() if lite else ln)
     return "\n".join(out) + "\n"
 
 
