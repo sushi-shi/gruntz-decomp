@@ -11,6 +11,7 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>
+#include <Image/ImageSet.h>
 #include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
 #include <Gruntz/AniCycle.h>    // the canonical CAniCycle class (ctor defined below)
@@ -1525,10 +1526,6 @@ struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
     i32 m_24;
     i32 m_28; // +0x28 arrived gate
 };
-SIZE_UNKNOWN(CDecayM194);
-struct CDecayM194 {          // m_154->m_194 (real: CImageSet)
-    void SetAllTypes(i32 a); // 0x152480 = CImageSet::SetAllTypes
-};
 SIZE_UNKNOWN(CDecayMgr);
 struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad00[0x8];
@@ -1536,7 +1533,7 @@ struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad0c[0x40 - 0xc];
     i32 m_40; // +0x40 flags
     char m_pad44[0x194 - 0x44];
-    CDecayM194* m_194; // +0x194
+    CImageSet* m_194; // +0x194
     char m_pad198[0x1a0 - 0x198];
     CDecayArrival m_1a0; // +0x1a0
 };
