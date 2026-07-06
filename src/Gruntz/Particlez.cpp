@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Particlez.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Globals.h>
@@ -28,15 +29,11 @@
 // engine functions every registry calls). The alloc-cache pair (g_actCache
 // 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME shared global every registry
 // writes (already named by KitchenSlime.cpp - re-declared here, address-pinned).
-struct CPartEntry; // an entry: first dword is the registered handler
-struct CPartColl {
-    void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
-    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-};
+struct CPartEntry;         // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00244870)
-extern CPartColl g_partColl;
+extern CTypeKeyColl g_partColl;
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;
@@ -71,7 +68,7 @@ extern i32 g_nextActId;
 DATA(0x0020a454)
 extern char s_actKeyA[];
 DATA(0x002bf650)
-extern CPartColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
 extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
@@ -212,7 +209,6 @@ i32 CParticlez::Update() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CPartColl);
 SIZE_UNKNOWN(CPartEntry);
 SIZE_UNKNOWN(CPartEntryI32);
 SIZE_UNKNOWN(CParticlez);
