@@ -1,4 +1,6 @@
 #include <rva.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GameModeBase.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -97,9 +99,6 @@ void Host_c2a80::Run() {
 // 0x000c4b30 (31B) - resolve an options slot for a global config id; return the
 // stored value or -1 when absent.
 // ===========================================================================
-struct OptionsSlotHost_c4b30 {
-    i32* FindOptionsSlot(i32 key); // 0x2e00 (FindOptionsSlot)
-};
 // The multiplayer game-state singleton at 0x64bd5c is the real CMulti (xref-proven;
 // <Gruntz/Multi.h>, included above now that this TU is MFC -- the old <Win32.h> wall is
 // broken). This TU owns the canonical DATA; Resolve reads CMulti::m_hostIndex directly.
@@ -107,12 +106,12 @@ DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
 struct OptOwner_c4b30 {
     char m_pad0[0x5c];
-    OptionsSlotHost_c4b30* m_5c; // +0x5c
+    CGruntzMgr* m_5c; // +0x5c
     i32 Resolve();
 };
 RVA(0x000c4b30, 0x1f)
 i32 OptOwner_c4b30::Resolve() {
-    i32* slot = m_5c->FindOptionsSlot(g_64bd5c->m_hostIndex);
+    i32* slot = (i32*)m_5c->FindOptionsSlot(g_64bd5c->m_hostIndex);
     if (slot == 0) {
         return -1;
     }
@@ -140,14 +139,6 @@ public:
 struct Holder_f9840 {
     char m_pad0[0x28];
     CDDrawSubMgrLeafScan* m_28; // +0x28
-};
-class CGameModeBase {
-public:
-    char m_pad0[0xc];
-    Holder_f9840* m_c;   // +0x0c
-    void BaseCleanup();  // 0x3f53 thunk -> CGameModeBase::BaseCleanup
-    void Reset();        // 0x0f9840
-    void ResetPreview(); // 0x0de140
 };
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): same m_28-intermediate register
