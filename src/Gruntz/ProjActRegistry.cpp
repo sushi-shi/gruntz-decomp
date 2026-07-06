@@ -4,7 +4,8 @@
 // cache slots (g_projActCache / g_retAddrBreadcrumb) via a grid + bute-tree lookup.
 // This TU sits between Utils/ApplyRange and Wap32/ZVec in retail-RVA order. Field
 // names are placeholders; only OFFSETS + code bytes are load-bearing.
-#include <Mfc.h>               // real MFC CString (the type-name record's +0x00 member)
+#include <Mfc.h> // real MFC CString (the type-name record's +0x00 member)
+#include <Bute/ButeTree.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
 #include <Gruntz/UserLogic.h>
 #include <Globals.h>
@@ -143,7 +144,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Insert(&g_typeColl, item, 0xc);
+    ((CVariantSlot*)g_typeColl2)->Set(&g_typeColl, (i32)item, 0xc);
     return g_typeCur;
 }
 

@@ -10,8 +10,6 @@
 
 #include <Ints.h>
 
-struct CTypeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
+struct CTypeColl2 {};
 
 #endif // GRUNTZ_GRUNTZ_CTYPECOLL2_H

@@ -66,7 +66,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Insert(&g_typeColl, item, 0xc);
+    ((CVariantSlot*)g_typeColl2)->Set(&g_typeColl, (i32)item, 0xc);
     return g_typeCur;
 }
 

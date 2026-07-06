@@ -73,9 +73,7 @@ struct CSpawnButeTarget {
 // and m_30 (the config tree m_04) are touched by this class.
 // The 'WAV' resource resolver reached through owner->m_34 (0x13bff0 __thiscall;
 // the voice builder's name filter + the weighted picker's tail both call it).
-struct CSpawnResolver {
-    void* Resolve(const char* name, i32 tag); // 0x13bff0 (ret resource, 0 absent)
-};
+struct CSpawnResolver {};
 SIZE_UNKNOWN(CSpawnResolver);
 struct CSpawnOwner {
     char m_00[0x30];
