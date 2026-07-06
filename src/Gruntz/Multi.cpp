@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDSurface.h>
@@ -212,10 +213,6 @@ void CMulti::Teardown() {
 
 // FUN_00021bd0 is invoked both on `this` (CMulti) and on m_logic->m_5c; one symbol,
 // so it is modeled on a neutral helper and reached by cast at both sites.
-class CRefresh21bd0 {
-public:
-    void Refresh(); // 0x00021bd0
-};
 
 // ===========================================================================
 // CMulti::StartSession  @ 0x0b6580  - resolve the chosen host, reseed the RNG +
@@ -278,7 +275,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    ((CRefresh21bd0*)m_logic->m_5c)->Refresh();
+    ((CFontConfig*)m_logic->m_5c)->FreeNodes();
     m_session->StartTick();
     m_logic->m_60->StartTitleHook();
     return 1;
@@ -626,10 +623,6 @@ public:
 };
 // The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
 // CMultiMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
-class PBListSink {
-public:
-    void Tick441c(u32 clock); // 0x0000441c
-};
 class PBSub68 {
 public:
     char m_pad00_230[0x230];
@@ -712,7 +705,7 @@ void CMulti::PumpB() {
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    ((PBListSink*)m_logic->m_5c)->Tick441c(g_645584);
+    ((CFontConfig*)m_logic->m_5c)->Scroll(g_645584);
     CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;

@@ -12,6 +12,7 @@
 // multi-way error ladder) - the deliverable is the control-flow + offset +
 // ordered-call carcass, not a byte-perfect frame.
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <rva.h>
 #include <Ints.h>
@@ -136,13 +137,6 @@ struct CFaderMgr { // m_40 (0x28)
 // m_48 is the audio host = canonical CGruntzSoundZ (Init @0x138490 / SetXMidiVolume
 // @0x138950 / m_enabled @+0x28); `new CGruntzSoundZ` inlines its real CMapStringToOb
 // ctor (<Dsndmgr/GruntzSoundZ.h>).
-SIZE(CFontConfig, 0x44);
-struct CFontConfig {
-    char raw[0x44];
-    CFontConfig();
-    ~CFontConfig();
-    i32 LoadFontConfig(i32, i32); // 0x43db
-};
 SIZE(H70, 0x94);
 struct H70 {
     char raw[0x94];

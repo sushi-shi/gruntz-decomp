@@ -11,6 +11,7 @@
 // MFC wait-cursor helpers) are modeled as external/no-body so their reloc
 // operands are masked in objdiff.
 #include <Io/SaveGame.h>
+#include <Gruntz/FontConfig.h>
 #include <rva.h>
 
 #include <stdlib.h> // _itoa
@@ -555,12 +556,9 @@ namespace ApiCallerStubs {
 // into a stack rect and blits it (mode 8, flags 0x10) into the +0x5c draw sink.
 // A placeholder host whose concrete class is not yet recovered; offsets + code
 // bytes load-bearing.
-struct BlitDrawSink {
-    void Blit(i32 a, i32 b, RECT* rc, i32 d); // thiscall, RVA 0x3751
-};
 struct BlitDrawOwner {
     char m_pad0[0x5c];
-    BlitDrawSink* m_5c; // +0x5c
+    CFontConfig* m_5c; // +0x5c
 };
 struct BlitRectSrc {
     char m_pad0[0x24];
@@ -582,7 +580,7 @@ void BlitHost::Show(i32 arg) {
     RECT src = *(RECT*)(m_c->m_24 + 0x10);
     RECT dst;
     CopyRect(&dst, &src);
-    m_4->m_5c->Blit(8, arg, &dst, 0x10);
+    m_4->m_5c->winapi_022360_DrawTextA_SelectObject_SetTextColor(8, arg, (i32)&dst, 0x10);
 }
 
 // Class-metadata annotations (EOF-hosted).
