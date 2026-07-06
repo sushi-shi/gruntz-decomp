@@ -14,7 +14,8 @@
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
-#include <Gruntz/SoundCue.h>               // the ONE +0x28 cue holder (CSndHost / CSndEmitter)
+#include <Gruntz/State.h>    // the CState base this screen state derives (real vtable)
+#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / CSndEmitter)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
@@ -29,43 +30,46 @@ extern "C" {
     extern u32 g_killCueClock;
 }
 
-// CPreviewState::m_0c is the ONE world/resource holder (== g_gameReg->m_world ==
-// CState::m_c); modeled as CRegHolder (<Gruntz/StatusBarUpdatersViews.h>), shared with
-// the status-bar updater TU. The former local PreviewMgr view folded onto it.
-
+// CPreviewState - the level-preview screen state (shows PREVIEW%i, fades \SCREENZ\%s).
+// A real CState leaf: proven by the shared base layout (its m_4/m_8/m_c/m_2c coincide
+// with CState's, verified vs the other screen states) and the per-frame slot-8 virtual
+// Tick dispatches. It has NO distinct vtable of its own - the CState family is RTTI-
+// complete - so the four methods below are non-virtual command handlers the game's
+// command table dispatches, and the ONLY real virtual is the slot-8 per-frame poll
+// (== CState::InputVirtual). The former standalone class carried a hand-rolled
+// `virtual Vf0..Vf7 + Advance` vtable: that was a FICTION invented only so the
+// [vptr+0x20] dispatch would compile (which is why it had no VTBL() to anchor). It is
+// dissolved into real CState inheritance here - no phantom vtable.
+//
+// The +0x0c and +0x2c slots are unresolved dual-views (CRegHolder vs CState's
+// CSpriteFactoryHolder at m_c; CSymTab vs CResSource at m_2c) - reached with a view-cast
+// at each site, exactly as StatusBarUpdaters.cpp does, until those folds land.
+//
+// FadeInTitle (0xfa1f0) and RetireScene (0xfa8f0) are SHARED CState base methods, not
+// CPreviewState's own: the retail caller graph shows 8+ CState-derived siblings
+// (CBootyState/CCreditsState/CMulti/CAttract/...) invoke each on their own `this`. They
+// are defined under CAttract / CSoundFxEmitter today; declared-only here (reloc-masked
+// calls) until their cross-TU re-home onto CState lands.
 SIZE_UNKNOWN(CPreviewState);
-class CPreviewState {
+class CPreviewState : public CState {
 public:
-    // The screen's vtable (vptr @+0x00); only slot 8 (+0x20) - the per-frame
-    // "advance" - is dispatched. The leading slots are placeholders so the index
-    // lands at 8; the vtable itself lives in another TU (no ctor here -> none is
-    // emitted), so these never need a body.
-    virtual i32 Vf0();
-    virtual i32 Vf1();
-    virtual i32 Vf2();
-    virtual i32 Vf3();
-    virtual i32 Vf4();
-    virtual i32 Vf5();
-    virtual i32 Vf6();
-    virtual i32 Vf7();
-    virtual i32 Advance(); // slot 8 (+0x20)
+    // slot 8 (+0x20): the per-frame "advance" poll Tick dispatches, overriding the base
+    // CState::InputVirtual. Declared-only - its body is slot 8 of the real (existing
+    // CState-family) vtable, in another TU; so no ctor/vtable is emitted here.
+    i32 InputVirtual() OVERRIDE;
 
     i32 Tick();                                                     // 0x0de200
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
-    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0
+    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0 (CState base method)
+    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0 (CState base method)
     void Cancel();                                                  // 0x0de590
-    void LoadLevelPreviewScreen();
-    i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3); // 0x0fab90
+    void LoadLevelPreviewScreen();                                  // 0x0de420
+    i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3);         // 0x0fab90
 
-    CGruntzMgr* m_04; // +0x04  game-manager singleton
-    i32 m_08;         // +0x08
-    CRegHolder* m_0c; // +0x0c  world/resource holder (== g_gameReg->m_world)
-    char m_pad10[0x2c - 0x10];
-    CSymTab* m_2c; // +0x2c
-    char m_pad30[0x1b8 - 0x30];
-    u32 m_1b8;     // +0x1b8 countdown timer
-    CString m_1bc; // +0x1bc
-    i32 m_1c0;     // +0x1c0 preview counter
+    // CPreviewState-specific fields, past the CState base (which ends at +0x1a8):
+    char m_pad1a8[0x1b8 - 0x1a8];
+    u32 m_1b8;     // +0x1b8  countdown timer
+    CString m_1bc; // +0x1bc  scratch screen-name string (PREVIEW%i / \SCREENZ\%s)
+    i32 m_1c0;     // +0x1c0  preview counter
 };
 
 // CPreviewState::Tick (0x0de200) - the per-frame advance: if the live back surface
@@ -80,14 +84,14 @@ public:
 // Logic + control flow + all externs byte-exact. Final sweep.
 RVA(0x000de200, 0x85)
 i32 CPreviewState::Tick() {
-    IDirectDrawSurface* surf = m_0c->m_04->m_frontPair->m_surface->m_8;
+    IDirectDrawSurface* surf = ((CRegHolder*)m_c)->m_04->m_frontPair->m_surface->m_8;
     if (surf == 0 || surf->IsLost() != 0) {
-        if (Advance() == 0) {
-            m_04->ReportError(0x8006, 0xfa0);
+        if (InputVirtual() == 0) {
+            m_4->ReportError(0x8006, 0xfa0);
             return 0;
         }
     }
-    SoundStream* snd = m_0c->m_statusBar->m_2c;
+    SoundStream* snd = ((CRegHolder*)m_c)->m_statusBar->m_2c;
     if (snd != 0) {
         snd->PurgeVoiceList(-1);
     }
@@ -112,12 +116,12 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
     sprintf(buf, "\\SCREENZ\\%s", (const char*)m_1bc);
-    m_2c->ResolveQualified(buf, &g_screenTag);
+    ((CSymTab*)m_2c)->ResolveQualified(buf, &g_screenTag);
     i32 failed = 0;
     if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
-        CSndHost* h = m_0c->m_statusBar;
+        CSndHost* h = ((CRegHolder*)m_c)->m_statusBar;
         if (h->m_emitGate == 0) {
             CSndEmitter* p = 0;
             h->m_10.Lookup("GAME_TELEPORTEROPEN", &p);
@@ -153,10 +157,10 @@ void CPreviewState::LoadLevelPreviewScreen() {
 // Final sweep.
 RVA(0x000fab90, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
-    if (m_0c == 0) {
+    if (m_c == 0) {
         return 0;
     }
-    if (m_08 == 0) {
+    if (m_8 == 0) {
         return 0;
     }
     if (m_2c == 0) {
@@ -164,15 +168,15 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    i32 sym = m_2c->ResolveQualified(buf, &g_screenTag);
+    i32 sym = ((CSymTab*)m_2c)->ResolveQualified(buf, &g_screenTag);
     if (sym == 0) {
         return 0;
     }
-    if (m_0c->m_04->Method_158b40(sym, 1) == 0) {
+    if (((CRegHolder*)m_c)->m_04->Method_158b40(sym, 1) == 0) {
         return 0;
     }
     if (doFlip != 0) {
-        m_0c->m_04->m_frontPair->m_surface->Flip(0);
+        ((CRegHolder*)m_c)->m_04->m_frontPair->m_surface->Flip(0);
     }
     return 1;
 }
@@ -181,17 +185,17 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
 // CPreviewState::Cancel (0x0de590), driven by LoadLevelPreviewScreen (on a failed
 // fade) and by the level-preview command router (0x4de3c0, tag 0x1b) - both invoke
 // it on the CPreviewState `this` (xref-confirmed). When the global gate (g_flag64c69c)
-// is set it delegates to the game mgr's delayed-quit (m_04 == CGruntzMgr, DelayedQuit
+// is set it delegates to the game mgr's delayed-quit (m_4 == CGruntzMgr, DelayedQuit
 // @0x8f530); otherwise it posts WM_COMMAND 0x8027 to the mgr's top window
-// (m_04->m_4->m_4). The old PreviewCancelHost/PreviewCancelWnd placeholders were a
+// (m_4->m_gameWnd->m_hwnd). The old PreviewCancelHost/PreviewCancelWnd placeholders were a
 // second view of CPreviewState + CGruntzMgr; dissolved onto the real ones.
 DATA(0x0024c69c)
 extern i32 g_flag64c69c; // DAT_0064c69c
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
     if (g_flag64c69c) {
-        m_04->DelayedQuit();
+        m_4->DelayedQuit();
         return;
     }
-    PostMessageA((HWND)(m_04->m_gameWnd->m_hwnd), 0x111, 0x8027, 0);
+    PostMessageA((HWND)(m_4->m_gameWnd->m_hwnd), 0x111, 0x8027, 0);
 }
