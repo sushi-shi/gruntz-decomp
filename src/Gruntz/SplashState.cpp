@@ -19,6 +19,8 @@
 // to GetData()->nDataLength == m_pchData[-2], byte-identical to the load's `mov
 // eax,ds:g; mov ecx,[eax-8]; test ecx,ecx` guard.
 #include <Mfc.h> // CString + <windows.h> (SetCursor)
+#include <Bute/SymTab.h>
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
@@ -79,12 +81,12 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     SetCursor(0);
     m_4->RestoreVideoMode(0);
 
-    m_2c = m_8->Lookup("STATEZ_SPLASH");
+    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_SPLASH");
     if (!m_2c) {
         return 0;
     }
 
-    void* soundz = m_2c->LoadGroup("SOUNDZ");
+    void* soundz = ((CSymTab*)m_2c)->FindSub("SOUNDZ");
     if (soundz) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, g_emptyString, "_");
     }

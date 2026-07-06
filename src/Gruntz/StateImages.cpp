@@ -11,6 +11,8 @@
 // WorkerReg / CSymTab shadows of the +0x0c/+0x2c facets are folded away. Field names are
 // placeholders; only offsets + code bytes are load-bearing.
 #include <Mfc.h> // GameMode.h needs the afx umbrella (WINAPI/windows.h come with it)
+#include <Bute/SymTab.h>
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
@@ -42,7 +44,7 @@ i32 CImageState::LoadStateImages() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
-    void* tree = m_2c->LookupSet("IMAGEZ");
+    void* tree = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
     if (tree == 0) {
         return 0;
     }
@@ -75,14 +77,14 @@ i32 CBootyState::InputVirtual() {
     while (r >= 0) {
         r = sc(0);
     }
-    void* booty = m_2c->LookupSet("IMAGEZ");
+    void* booty = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
     if (booty == 0) {
         return 0;
     }
     if (m_c->m_10->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
-    void* gruntz = m_gruntzBank->LookupSet("IMAGEZ");
+    void* gruntz = ((CSymTab*)m_gruntzBank)->ResolvePath("IMAGEZ");
     if (gruntz == 0) {
         return 0;
     }

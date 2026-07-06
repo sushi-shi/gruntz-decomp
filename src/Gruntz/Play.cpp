@@ -66,6 +66,8 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Bute/SymTab.h>
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/FontConfig.h>
@@ -2914,11 +2916,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_8) {
         return 0;
     }
-    self->m_gruntzBank = self->m_8->Lookup("GRUNTZ");
+    self->m_gruntzBank = (CResSource*)((CSymParser*)self->m_8)->ResolvePath("GRUNTZ");
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = self->m_8->Lookup("GAME");
+    self->m_gameBank = (CResSource*)((CSymParser*)self->m_8)->ResolvePath("GAME");
     return self->m_gameBank != 0;
 }
 
@@ -2940,7 +2942,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     self->m_c->m_10->Register("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
-    void* tiles = self->m_levelBank->LookupSet("TILEZ");
+    void* tiles = ((CSymTab*)self->m_levelBank)->ResolvePath("TILEZ");
     if (!tiles) {
         return 0;
     }
@@ -2963,7 +2965,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 
     ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->RemoveKeysEqual_157c70("LEVEL", "_");
 
-    void* sounds = self->m_levelBank->LookupSet("SOUNDZ");
+    void* sounds = ((CSymTab*)self->m_levelBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -2987,7 +2989,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     self->m_c->m_10->Register("LEVEL", "_");
     g_resourceInstallActive = 0;
 
-    void* images = self->m_levelBank->LookupSet("IMAGEZ");
+    void* images = ((CSymTab*)self->m_levelBank)->ResolvePath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -3010,7 +3012,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     }
 
     g_resourceInstallActive = 1;
-    void* images = self->m_gameBank->LookupSet("IMAGEZ");
+    void* images = ((CSymTab*)self->m_gameBank)->ResolvePath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -3031,7 +3033,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 1;
     }
 
-    void* sounds = self->m_gameBank->LookupSet("SOUNDZ");
+    void* sounds = ((CSymTab*)self->m_gameBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -3051,7 +3053,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
         return 1;
     }
 
-    void* anims = self->m_gameBank->LookupSet("ANIZ");
+    void* anims = ((CSymTab*)self->m_gameBank)->ResolvePath("ANIZ");
     if (!anims) {
         return 0;
     }
@@ -3106,7 +3108,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     CMusicOwner* self = (CMusicOwner*)this;
     self->m_4->m_48->Clear();
 
-    CMusicSet* levelSet = self->m_levelBank->LookupSet("MIDIZ");
+    CMusicSet* levelSet = (CMusicSet*)((CSymTab*)self->m_levelBank)->ResolvePath("MIDIZ");
     if (levelSet) {
         CMusicEntry* e = levelSet->Resolve("AMBIENT0", MUSIC_TAG_XMI);
         if (e) {
@@ -3186,28 +3188,28 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
     }
 
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_NORMALGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_DEATHZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_ENTRANCEZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_EXITZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_EXITZ", "_");
@@ -3217,7 +3219,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_GRUNTPUDDLE");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_GRUNTPUDDLE", "_");
@@ -3227,7 +3229,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_PICKUPS")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_PICKUPS");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_PICKUPS", "_");
@@ -3237,7 +3239,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("SOUNDZ_BOMBGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_BOMBGRUNT", "_");
@@ -3264,7 +3266,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
     }
     g_resourceInstallActive = 1;
     if (!self->m_c->m_10->Has("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_NORMALGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
@@ -3274,7 +3276,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_DEATHZ")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_DEATHZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
@@ -3284,7 +3286,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_ENTRANCEZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
@@ -3294,7 +3296,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_EXITZ")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_EXITZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
@@ -3304,7 +3306,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_GRUNTPUDDLE");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
@@ -3314,7 +3316,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_PICKUPS")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_PICKUPS");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
@@ -3324,7 +3326,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("IMAGEZ_BOMBGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
@@ -3350,7 +3352,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         return 0;
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_NORMALGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_NORMALGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
@@ -3360,7 +3362,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_DEATHZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
@@ -3370,7 +3372,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_ENTRANCEZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
@@ -3380,7 +3382,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_EXITZ");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
@@ -3390,7 +3392,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_GRUNTPUDDLE");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
@@ -3400,7 +3402,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_PICKUPS");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
@@ -3410,7 +3412,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
-        void* s = self->m_gruntzBank->LookupSet("ANIZ_BOMBGRUNT");
+        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }

@@ -28,16 +28,11 @@
 // reaches m_levelBank/m_gameBank by the LookupSet name (full CResSource<->CSymTab merge
 // deferred; see the reports).
 SIZE_UNKNOWN(CResSource);
-struct CResSource {
-    void* LookupSet(char* szName); // 0x13bae0 __thiscall (== CSymTab::ResolvePath)
-    void* LoadGroup(char* szName); // 0x13a230 __thiscall (== CSymTab::FindSub)
-};
+struct CResSource {};
 
 // The bank/namespace manager at CState::m_8. Lookup resolves a named bank into a
 // CResSource (the in-game loader caches the result in m_30/m_34).
 SIZE_UNKNOWN(CBankMgr);
-struct CBankMgr {
-    CResSource* Lookup(char* szName); // 0x13c030 __thiscall
-};
+struct CBankMgr {};
 
 #endif // GRUNTZ_GRUNTZ_CBANKMGR_H

@@ -17,6 +17,8 @@
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
 #include <Gruntz/SoundCueMgr.h>
+#include <Bute/SymTab.h>
+#include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 
@@ -119,7 +121,7 @@ i32 CMultiBootyState::InputVirtual() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    void* tree = m_2c->LookupSet("IMAGEZ");
+    void* tree = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }
@@ -128,7 +130,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = m_gruntzBank->LookupSet("IMAGEZ");
+    tree = ((CSymTab*)m_gruntzBank)->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }
@@ -137,7 +139,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = m_levelBank->LookupSet("IMAGEZ");
+    tree = ((CSymTab*)m_levelBank)->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }
