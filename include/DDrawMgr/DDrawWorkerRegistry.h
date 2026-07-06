@@ -22,9 +22,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-struct CDDrawWorker;   // 0x6c-byte keyed worker (defined in the owning .cpp); struct-key
-                       // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
-                       // RemoveWorker method manglings that take CDDrawWorker*.
+struct CDDrawWorker; // 0x6c-byte keyed worker (defined in the owning .cpp); struct-key
+                     // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
+                     // RemoveWorker method manglings that take CDDrawWorker*.
+class CImageSet;
 class CWorkerMapValue; // a map value viewed for +0x10 + probe (foreign, other TU)
 class RegDirHandle;    // directory-tree cursor (foreign, other TU)
 class RegProbeChain;   // probe chain (foreign, other TU)
@@ -92,7 +93,7 @@ public:
     i32 SumSizesEqual_155460(const char* str, i32 a2);
     i32 HasKeyEqual_155550(const char* str);
     i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
-    CString FindKeyOfValue_165360(CWorkerMapValue* target);
+    CString FindKeyOfValue_165360(CImageSet* target);
 
     void* m_vptr;              // +0x00
     i32 m_status;              // +0x04  initialized to -1 when inactive

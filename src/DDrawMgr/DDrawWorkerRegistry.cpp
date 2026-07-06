@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Image/ImageSet.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerRegistry.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
@@ -52,15 +53,8 @@ public:
 // A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
 // in FindKeyOfValue_165360) and a non-virtual probe at RVA 0x152xc0 (called from
 // AnyValueMatches_155630). Modeled with a typed +0x10 field + the probe method so
-// `val->m_10field` and `val->Probe(...)` lower to the exact loads/thiscall; the
+// `val->m_frameArrayBase` and `val->Probe(...)` lower to the exact loads/thiscall; the
 // probe is declared only (its body is another TU), so it is a reloc-masked call.
-class CWorkerMapValue {
-public:
-    char m_pad00[0x10];
-    i32 m_10field; // +0x10
-    i32 Probe_1525c0(i32 a1, i32 a2, i32 a3);
-    i32 ComputeSize_1523f0(i32 a1); // 0x1523f0 reloc-masked __thiscall
-};
 
 // CMapStringToOb lives at CDDrawWorkerRegistry+0x10. Lookup/RemoveKey are out-of-line
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
@@ -457,7 +451,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                    total += ((CWorkerMapValue*)val)->ComputeSize_1523f0(a2);
+                    total += ((CImageSet*)val)->GetMemoryUsage(a2);
                 }
             }
         } while (pos != 0);
@@ -499,7 +493,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
     POSITION pos = m_map.GetStartPosition();
     while (pos != 0) {
         m_map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CWorkerMapValue*)val)->Probe_1525c0(a1, a2, a3)) {
+        if (val != 0 && ((CImageSet*)val)->FindFrame((CImageFrame*)a1, (char*)a2, (int*)a3)) {
             return 1;
         }
     }
@@ -513,13 +507,13 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
 // named `CString empty; return empty;` so cl materializes the empty temp + copy-
 // ctor exactly as retail (a bare `return CString()` RVOs it into the return slot).
 RVA(0x00165360, 0xf1)
-CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CWorkerMapValue* target) {
+CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
     CObject* val = 0;
     POSITION pos = m_map.GetStartPosition();
     CString key;
     while (pos != 0) {
         m_map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CWorkerMapValue*)val)->m_10field == target->m_10field) {
+        if (val != 0 && *(i32*)((CImageSet*)val)->m_array == *(i32*)target->m_array) {
             return key;
         }
     }
