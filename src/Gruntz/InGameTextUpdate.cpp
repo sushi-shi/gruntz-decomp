@@ -10,7 +10,8 @@
 // fields (m_screenX/m_screenY/m_124/m_stateFlags + the +0x1a0 per-leaf anim sub).
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
-#include <Gruntz/InGameText.h>  // the canonical CInGameText : CUserLogic model
+#include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h> // strcmp (inlined /O2)
@@ -31,7 +32,6 @@ SIZE_UNKNOWN(HbCellMgr);
 struct HbCellMgr { // g_mgrSettings->m_68
     // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
     // its (areaId, subId) out-params.
-    HbFoundObj* HitTestCell(i32 x, i32 y, i32* areaId, i32* subId, i32 flag);
 };
 SIZE_UNKNOWN(HbSub1a0);
 struct HbSub1a0 {         // the per-leaf anim sub-object embedded at CGameObject+0x1a0
@@ -122,7 +122,7 @@ i32 CInGameText::Update() {
     i32 areaId;
     i32 subId;
     HbFoundObj* found =
-        g_mgrSettings->m_68
+        (HbFoundObj*)((CTriggerMgr*)g_mgrSettings->m_68)
             ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
         m_cachedSubId = -1;
