@@ -1,4 +1,7 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/SBI_GruntMachine.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/LeafCue.h>
 // The g_gameReg spine slots are the REAL classes (the former per-TU CSbiSubMgr/
@@ -2492,7 +2495,7 @@ extern "C" {
 static __inline void HiCueFind() {
     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
-        void* obj = host->FindCue("GAME_TABHIGHLIGHT1");
+        void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
             ((LeafCue*)obj)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
         }
@@ -2808,7 +2811,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                 if (found) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
-                        CSbiDisplayObj* obj = (CSbiDisplayObj*)f->Build();
+                        CSbiDisplayObj* obj = (CSbiDisplayObj*)((CSoundCueMgr*)f)->GetItem();
                         m_destructButton = obj;
                         if (obj) {
                             obj->Configure(g_gameReg->m_inputFlag, 0, 0, 1);
@@ -3247,7 +3250,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
     }
 
     if (m_348) {
-        m_348->Update(pB->m_counter, pA->m_counter);
+        ((CSBI_GruntMachine*)m_348)->SetFrames(pB->m_counter, pA->m_counter);
     }
 }
 
@@ -3260,7 +3263,7 @@ void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
     SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 100));
     SetGaugeSpan(0x2b, 0, 0x7fffffff);
     if (m_348) {
-        m_348->Update(m_hudRectA_y, m_hudRectB_y);
+        ((CSBI_GruntMachine*)m_348)->SetFrames(m_hudRectA_y, m_hudRectB_y);
     }
     m_rezActive = 0;
     m_rezTick = 0;

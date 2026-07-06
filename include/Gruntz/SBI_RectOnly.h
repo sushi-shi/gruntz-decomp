@@ -175,9 +175,7 @@ SIZE_UNKNOWN(CSbiNotifyPayload);
 
 // A GAME_DESTRUCT-style sprite-config record: +0x10 is a factory whose no-arg
 // __thiscall builds the display object (returned, then Configure'd / Release'd).
-struct CSbiSpriteFactory {
-    void* Build(); // 0x135d70 (__thiscall, no args, returns the object)
-};
+struct CSbiSpriteFactory {};
 SIZE_UNKNOWN(CSbiSpriteFactory);
 struct CSbiDisplayObj {
     void Configure(i32 a, i32 b, i32 c, i32 d); // 0x136300 (__thiscall, 4 args)
@@ -246,9 +244,7 @@ extern CButeMgr g_buteMgr;
 
 // The rez-machine snooze display object at +0x348 (Update sets it from the HUD-rect
 // A/B y-coords). Reloc-masked __thiscall.
-struct CSbiMachineDisplay {
-    void Update(i32 a, i32 b); // 0x366b (2 args)
-};
+struct CSbiMachineDisplay {};
 SIZE_UNKNOWN(CSbiMachineDisplay);
 
 // A phase-timer record overlaid on a 24-byte slot (m_groupSlots element / the HUD-
@@ -604,7 +600,6 @@ SIZE_UNKNOWN(CSbiCuePlayer);
 // The music host chain: g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}
 // (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
-    void* FindCue(char* key);  // 0x2cca (ecx=host, returns the record directly)
     char m_pad0[0x10];         // +0x00..0x0f
     CSbiLookupMap m_map10;     // +0x10  cue lookup map (CMapStringToOb view)
     char m_pad11[0x30 - 0x11]; // +0x11..0x2f
