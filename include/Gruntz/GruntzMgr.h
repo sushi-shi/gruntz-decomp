@@ -140,6 +140,7 @@ struct IDirectPlayLobby;
 struct EngObj; // teardown-only sub-object (Teardown())
 // CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
 // defined by the <Gruntz/SpriteRefTable.h> include above.
+class CGruntSpawnConfig;
 class CGameLevel;
 class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
@@ -369,11 +370,12 @@ public:
     CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Disarm/StoreFlag)
     SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
     CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
-    TimerObj* m_timer;      // +0x60  per-frame timer/poll controller (Stop/Tick; +0x2c mirror)
-    i32 m_64;               // +0x64
-    CTriggerMgr* m_cmdGrid; // +0x68  world command/trigger grid (CTriggerMgr)
-    CmdSink* m_cmdSubMgr;   // +0x6c  command sub-manager sink
-    CmdSinkV* m_cmdNotify;  // +0x70  command sink (vtbl slot 1) + cell-height notify
+    CGruntSpawnConfig*
+        m_timer; // +0x60  per-frame timer/poll (== the spawn-config obj; Stop/Tick; m_2c mirror)
+    i32 m_64;    // +0x64
+    CTriggerMgr* m_cmdGrid;           // +0x68  world command/trigger grid (CTriggerMgr)
+    CmdSink* m_cmdSubMgr;             // +0x6c  command sub-manager sink
+    CmdSinkV* m_cmdNotify;            // +0x70  command sink (vtbl slot 1) + cell-height notify
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
     //         GetByIndex consumers; Close tears it down via Reset)
     CLightFxMgr* m_logicPump; // +0x78  light-FX/shade-table pump (Push + m_tables[10]@+0x14

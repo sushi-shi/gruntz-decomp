@@ -108,7 +108,10 @@ public:
     i32 SpawnVoiceDriver(i32, i32, i32, i32, i32, i32); // 0x11b3b0
     CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
     void StopVoice(i32 id); // 0x11c730 (selective per-id voice teardown)
-    void DtorBody();        // 0x11c7b0 (the 2-iter pair teardown)
+    void DtorBody();        // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
+    void Stop();            // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
+    void Tick();            // reloc-masked (BroadcastCmd 4/7)
+    void Teardown();        // reloc-masked (Close)
     void ResetPicks();      // 0x11c7f0 (DtorBody + reset entry m_20s)
     BOOL IsReady();         // 0x11c830
     ~CGruntSpawnConfig();   // 0x85df0

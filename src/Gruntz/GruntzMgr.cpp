@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -308,14 +309,6 @@ i32 CmdHook(i32 a, i32 b, i32 c, i32 d); // FUN @ 0x17da thunk
 // StoreInputState mirrors the latest input-state value into its +0x2c field; Stop
 // pauses it (Quicksave/AdvanceFrame/UnloadSoundChain); Tick fires it during a cmd-4/7
 // broadcast (BroadcastCmd); Teardown + operator delete tear it down (Close).
-struct TimerObj {
-    char m_pad0[0x2c];
-    i32 m_inputMirror; // +0x2c
-    void Stop();       // (this) reloc-masked
-    void Tick();       // (this) reloc-masked (BroadcastCmd cmd 4/7)
-    void Teardown();   // (this) reloc-masked (Close)
-    void Flush();      // (this) reloc-masked (Quickload; @0x11c7b0)
-};
 
 // One player-status slot in the PLAY state's 4-entry status array (m_curState->+0x520),
 // each 0x64 bytes; the status id is at +0x20 (3 == "won/done").
@@ -1854,9 +1847,9 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 RVA(0x00091a10, 0x17)
 i32 CGruntzMgr::StoreInputState(i32 v) {
     m_inputStateVal = v;
-    TimerObj* timer = m_timer;
+    CGruntSpawnConfig* timer = m_timer;
     if (timer) {
-        timer->m_inputMirror = v;
+        timer->m_2c = v;
     }
     return v;
 }
@@ -2050,7 +2043,7 @@ i32 CGruntzMgr::Quickload() {
         return 0;
     }
     if (m_timer) {
-        m_timer->Flush();
+        m_timer->DtorBody();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
         if (m_saveSink->Check(m_saveInfoRec) == 0) {
@@ -2920,7 +2913,7 @@ void CGruntzMgr::Close() {
             cfg->WriteInt("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_timer) {
-            cfg->WriteInt("Voice_Volume", m_timer->m_inputMirror);
+            cfg->WriteInt("Voice_Volume", m_timer->m_2c);
         }
         if (m_world && m_world->m_28) {
             cfg->WriteInt("Sound_Volume", g_61ab24);
