@@ -16,6 +16,7 @@
 // <Bute/ButeMgr.h> pulls <Mfc.h> (afx-first windows.h) - MUST precede any other
 // header that reaches windows.h, so it comes first.
 #include <Bute/ButeMgr.h>
+#include <Bute/SymTab.h>
 #include <Io/MoviePlayer.h>
 
 #include <rva.h>
@@ -43,12 +44,8 @@ extern i32 g_645588;
 // The registered namespace object (Register result): FindSub resolves a named
 // child set, ResolvePath resolves a namespaced path (both reloc-masked
 // __thiscall, no body).
-struct BcRegObj {
-    void* FindSub(char* name);     // FUN_0053a230
-    void* ResolvePath(char* name); // FUN_0053bae0
-};
-struct BcRegSet {                   // this->m_8
-    BcRegObj* Register(char* name); // FUN_0053c030
+struct BcRegSet {                  // this->m_8
+    CSymTab* Register(char* name); // FUN_0053c030
 };
 struct BcSoundRegistry {                            // this->m_c->m_28
     void Install(void* set, char* name, char* sep); // FUN_00557ee0
@@ -92,9 +89,9 @@ public:
     BcRegSet* m_8;    // +0x08
     BcAssetRoot* m_c; // +0x0c
     char m_pad10[0x2c - 0x10];
-    BcRegObj* m_2c; // +0x2c  STATEZ_BOOTY
-    BcRegObj* m_30; // +0x30  GRUNTZ
-    BcRegObj* m_34; // +0x34  GAME
+    CSymTab* m_2c; // +0x2c  STATEZ_BOOTY
+    CSymTab* m_30; // +0x30  GRUNTZ
+    CSymTab* m_34; // +0x34  GAME
     char m_pad38[0x1b8 - 0x38];
     i32 m_1b8; // +0x1b8
     char m_pad1bc[0x1c0 - 0x1bc];
@@ -220,7 +217,6 @@ fail:
 SIZE_UNKNOWN(BcAssetCore);
 SIZE_UNKNOWN(BcAssetRoot);
 SIZE_UNKNOWN(BcPumpHost);
-SIZE_UNKNOWN(BcRegObj);
 SIZE_UNKNOWN(BcRegSet);
 SIZE_UNKNOWN(BcSoundRegistry);
 SIZE_UNKNOWN(BcStateRoot);
