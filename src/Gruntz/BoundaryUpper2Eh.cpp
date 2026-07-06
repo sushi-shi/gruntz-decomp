@@ -3,6 +3,7 @@
 // base/member subobjects force the MSVC unwind frame. Only OFFSETS + code shape are
 // load-bearing.
 #include <Mfc.h> // real MFC CString (embedded m_24 name member; ctor 0x1b9b93 / op= 0x1b9e74)
+#include <Rez/RezList.h>
 #include <Ints.h>
 #include <rva.h>
 
@@ -59,13 +60,9 @@ CRezDir13c9b0::~CRezDir13c9b0() {
 // release the +0x10 buffer, detach via the +0x18 owner's +0x1c sub (0x1852e0), then
 // fold the base subobject. __thiscall.
 // ---------------------------------------------------------------------------
-struct RezSub1c {
-    void Detach(void* owner); // 0x1852e0
-};
-SIZE_UNKNOWN(RezSub1c);
 struct RezOwner18 {
     i32 _0[0x1c / 4];
-    RezSub1c m_1c; // +0x1c
+    CObjList m_1c; // +0x1c
 };
 SIZE_UNKNOWN(RezOwner18);
 struct CRezDir13cb80 : RezDirBase {
@@ -85,7 +82,7 @@ CRezDir13cb80::~CRezDir13cb80() {
     if (m_10) {
         RezFree(m_10);
     }
-    m_18->m_1c.Detach(this);
+    m_18->m_1c.Remove((CObjNode*)this);
 }
 
 // ---------------------------------------------------------------------------
