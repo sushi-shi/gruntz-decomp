@@ -274,12 +274,8 @@ struct ScoreHud {
     char m_pad0[0x8];
     i32 m_8; // +0x08  refresh flag
     char m_padc[0x1c - 0xc];
-    i32 m_1c;                                // +0x1c  accumulator A
-    i32 m_20;                                // +0x20  accumulator B
-    void Refresh(i32 score);                 // FUN @ 0x1884 thunk (this, score)
-    void Seed(i32 v, i32 z);                 // FUN @ 0x1c8f thunk (this, v, z)
-    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked (BroadcastCmd)
-    void Teardown();                         // (this) reloc-masked (Close)
+    i32 m_1c; // +0x1c  accumulator A
+    i32 m_20; // +0x20  accumulator B
 };
 
 // HudGuard44 (+0x44 one-shot guard) now comes from <Gruntz/SaveInfo.h> (via
@@ -2265,7 +2261,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (CmdHook(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
+    return ((CBattlezData*)m_scoreHud)->Command(a0, cmd, a2, a3) != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2288,18 +2284,18 @@ void CGruntzMgr::UpdateScoreHud() {
     m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_644c54];
 
     if (m_strWorldFile.GetLength() != 0) {
-        m_scoreHud->Refresh(1);
+        ((CBattlezData*)m_scoreHud)->SetCount(1);
         m_scoreHud->m_8 = 1;
         return;
     }
 
     if (m_hudGuard->m_124 == 0) {
-        m_scoreHud->Seed(sub->m_1c, 0);
+        ((CBattlezData*)m_scoreHud)->FillRecord(sub->m_1c, 0);
         ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_1c);
         ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_1c % 0x28) + 1);
         ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
     }
-    m_scoreHud->Refresh(sub->m_1c);
+    ((CBattlezData*)m_scoreHud)->SetCount(sub->m_1c);
     m_scoreHud->m_8 = 0;
 }
 
@@ -2943,7 +2939,7 @@ void CGruntzMgr::Close() {
         m_cmdNotify = 0;
     }
     if (m_scoreHud) {
-        m_scoreHud->Teardown();
+        ((CBattlezData*)m_scoreHud)->Teardown();
         operator delete(m_scoreHud);
         m_scoreHud = 0;
     }
