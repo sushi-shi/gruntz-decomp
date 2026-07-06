@@ -144,9 +144,9 @@ namespace ApiCallerStubs {
         void LoadGameAssetNamespaces(i32, i32, i32);
         void UpdateDestructButtonStatusBar2(i32);
         void DebugPrintf();
-        void Stub_1c152f(i32);
-        void Stub_1ccae7(i32, i32, i32);
-        void Stub_1ccbfc(i32, i32, i32, i32);
+        void InitConnectRecord(i32);
+        void WriteProfileValue(i32, i32, i32);
+        void ReadProfileValue(i32, i32, i32, i32);
     };
 
     // ---- Proximity-attributed owners (HIGH, both-sides RVA bracket;

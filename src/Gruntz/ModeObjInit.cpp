@@ -29,7 +29,7 @@ namespace modeinit {
         i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18; // +0x00..+0x18
         i32 Init3e77(i32 a, i32 b);               // 0x00003e77
         void Dtor285b();                          // 0x0000285b
-        void Method171c(i32 a);                   // 0x0000171c
+        void SetModeFlag(i32 a);                  // 0x0000171c
     };
 
     // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
@@ -127,7 +127,7 @@ namespace modeinit {
 
         i32 Init0c7ec0(Arg1* a1, i32 a2, i32 a3);
         i32 Setup43a9(Arg1* a1, i32 a2, i32 a3); // 0x000043a9
-        i32 Method35da(i32 a, i32 b);            // 0x000035da
+        i32 IsModeReady(i32 a, i32 b);           // 0x000035da
         i32 CallV74();                           // +0x74 slot 29
         i32 CallV78(i32 a, i32 b);               // +0x78 slot 30
         void CallV90();                          // +0x90 slot 36
@@ -262,7 +262,7 @@ namespace modeinit {
             return 0;
         }
         m_2e0->m_10 = 0;
-        m_2e0->Method171c(1);
+        m_2e0->SetModeFlag(1);
 
         Worker630* wk = (Worker630*)RezAlloc(0x630);
         if (wk) {
@@ -422,7 +422,7 @@ namespace modeinit {
         if (!CallV78(a2, 1)) {
             return 0;
         }
-        if (!Method35da(0, 0)) {
+        if (!IsModeReady(0, 0)) {
             return 0;
         }
         Peer* peer = m_4e4;

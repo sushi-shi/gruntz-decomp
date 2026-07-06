@@ -1517,12 +1517,12 @@ struct CDecayMgr { // m_154 - the bound draw-state manager
     CAniAdvanceCursor m_1a0; // +0x1a0
 };
 SIZE_UNKNOWN(CDecayAnim);
-struct CDecayAnim {                                            // m_260 - anim/sprite controller
-    void Anim2a72(i32 a, i32 b, i32 c);                        // 0x2a72
-    void Method1073(i32 a, i32 b, i32 c, i32 d);               // 0x1073
-    void Method3003(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3003
-    void Method2e96(i32 a, i32 b, i32 c, i32 d);               // 0x2e96
-    void Method3945(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
+struct CDecayAnim {                                               // m_260 - anim/sprite controller
+    void Anim2a72(i32 a, i32 b, i32 c);                           // 0x2a72
+    void DrawAnimAt(i32 a, i32 b, i32 c, i32 d);                  // 0x1073
+    void PlayAnimEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);    // 0x3003
+    void SetAnim(i32 a, i32 b, i32 c, i32 d);                     // 0x2e96
+    void PlayStateAnim(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
 };
 
 SIZE_UNKNOWN(CGruntBehaviorLeaf);
@@ -1532,9 +1532,9 @@ public:
     i32 LoadGruntDecayConfig2();   // 0x61570
     i32 LoadWandGruntItemConfig(); // 0x65a60
     // Leaf's own reloc-masked __thiscall helpers.
-    void Method22de();                    // 0x22de
-    void Method3c29(i32 a);               // 0x3c29
-    void Method136b(i32 a, i32 b, i32 c); // 0x136b
+    void RefreshDecay();                     // 0x22de
+    void SetDecayTarget(i32 a);              // 0x3c29
+    void InitAnimState(i32 a, i32 b, i32 c); // 0x136b
 
     // Members beyond CUserLogic's 0x40 base.
     char m_pad40[0x154 - 0x40];
@@ -1593,9 +1593,9 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     }
     if (m_drawState->m_1a0.Advance_15c360(g_6bf3bc) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
-            m_animCtrl->Method1073(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
+            m_animCtrl->DrawAnimAt(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
-            m_animCtrl->Method3003(
+            m_animCtrl->PlayAnimEx(
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_animArg0,
@@ -1700,23 +1700,23 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
             m_460 = 0;
             m_3f0 = 0;
             if (m_1c4 != 0) {
-                Method22de();
+                RefreshDecay();
             }
             if (m_gruntSubState == 0x13) {
-                Method3c29(m_380);
+                SetDecayTarget(m_380);
                 i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
-                    m_animCtrl->Method2e96(m_animArg0, m_animArg1, 1, -1);
+                    m_animCtrl->SetAnim(m_animArg0, m_animArg1, 1, -1);
                 }
             }
         }
-        m_animCtrl->Method3945(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
+        m_animCtrl->PlayStateAnim(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
     }
     CAniAdvanceCursor* sub = &m_drawState->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         m_downtimeLatch = 0;
-        Method136b(1, 0, 0);
+        InitAnimState(1, 0, 0);
     }
     return 0;
 }

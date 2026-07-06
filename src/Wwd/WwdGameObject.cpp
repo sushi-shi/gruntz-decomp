@@ -433,7 +433,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             break;
         }
     }
-    return m_worker->Method164830(a1, type, a3, a4) != 0;
+    return m_worker->QueryWorkerType(a1, type, a3, a4) != 0;
 }
 
 // ---------------------------------------------------------------------------
