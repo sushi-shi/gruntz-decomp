@@ -95,9 +95,9 @@ struct MfcStr {
     char* m_p;
 };
 struct MfcBytes {
+    virtual void VSlot0(); // vptr @+0x00 (real polymorphic; MFC CObject-like)
     MfcBytes();
     ~MfcBytes();
-    void* m_vptr;
     void* m_data;
     i32 m_size, m_max, m_grow;
 };
@@ -107,12 +107,12 @@ struct MfcBytes {
 // are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
 // stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
 struct CTsBaseA {
-    void* m_vptr;             // +0x00  stamped per-state (masks the retail vtable)
+    virtual void VSlot0();    // vptr @+0x00 (real polymorphic; per-state override)
     CTsBaseA();               // 0x8c750
     char m_cstate[0x1b4 - 4]; // +0x04..+0x1b4
 };
 struct CTsBaseB {
-    void* m_vptr;            // +0x00
+    virtual void VSlot0();   // vptr @+0x00 (real polymorphic)
     CTsBaseB();              // 0x8c9d0 (CPlay layout, 0x520)
     char m_cplay[0x520 - 4]; // +0x04..+0x520
 };
