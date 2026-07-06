@@ -10,6 +10,7 @@
 // umbrella must be the MFC superset kept first (PtInRect / RECT / POINT come with
 // it; docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md).
 #include <Mfc.h>
+#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/LightFx.h>
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -40,10 +41,6 @@ struct ResNode {
     char m_pad04[0x4];
     ResGrunt* m_grunt; // +0x08
 };
-SIZE_UNKNOWN(ResCfgSub38);
-struct ResCfgSub38 {         // config entry + 0x38
-    i32 Probe(i32 x, i32 y); // FUN @ 0x3fee __thiscall
-};
 SIZE_UNKNOWN(ResMgrCfgEntry);
 struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
     char m_pad00[0x14];
@@ -54,7 +51,7 @@ struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
     char m_pad28[0x2c - 0x28];
     i32 m_2c; // +0x2c
     char m_pad30[0x38 - 0x30];
-    ResCfgSub38 m_38; // +0x38
+    CBattlezMapConfig m_38; // +0x38
     char m_pad3c[0x238 - 0x3c];
 };
 // The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
@@ -159,7 +156,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
                 if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, 0, 0, 0, 0, 0) != -1) {
                     ok = 1;
                 }
-            } else if (cfg->m_38.Probe(g->m_54, g->m_58) != 0) {
+            } else if (cfg->m_38.Method_030990(g->m_54, g->m_58) != 0) {
                 ok = 1;
             }
         }
