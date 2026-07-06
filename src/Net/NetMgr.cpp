@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Gruntz/FontConfig.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/SBI_RectOnly.h>
@@ -551,7 +552,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     SetNetSlot(slot->m_008, 1);
 
     CString line = slot->GetName() + " has left the game.";
-    m_4->m_5c->AddItem((char*)(const char*)line, 0x20, 0x11);
+    ((CFontConfig*)m_4->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
 
     if (blob != 0) {
         m_peer->RemovePlayerObj(blob);
@@ -963,7 +964,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
         } else {
             GruntzPlayer* player = m_4->FindPlayer(m_localPlayerId);
             if (player != 0) {
-                m_4->m_5c->AddItem(line, 0x30, player->m_008);
+                ((CFontConfig*)m_4->m_5c)->AddItem(line, 0x30, player->m_008);
             }
         }
     }
@@ -1457,7 +1458,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     g_645580 = 0;
     g_645588 = 0;
     TF(0x1cc) = 0;
-    m_4->m_5c->FreeNodes();
+    ((CFontConfig*)m_4->m_5c)->FreeNodes();
     TF(0x580) = 1;
     return 1;
 
@@ -1970,7 +1971,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 1;
             }
-            m_4->m_5c->AddItem(msg->m_c, 0x30, player->m_008);
+            ((CFontConfig*)m_4->m_5c)->AddItem(msg->m_c, 0x30, player->m_008);
             CSndHost* host = m_c->m_28;
             if (host->m_emitGate != 0) {
                 break;
@@ -2200,7 +2201,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (g_dlgResultSink != 0) {
                 ShowChatLine((void*)g_dlgResultSink, result);
             } else {
-                m_4->m_5c->AddItem(result, 0, 0x11);
+                ((CFontConfig*)m_4->m_5c)->AddItem(result, 0, 0x11);
             }
             break;
         }

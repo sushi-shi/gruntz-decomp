@@ -700,10 +700,7 @@ SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size
 // Both helpers are external (incremental-link thunks); modeled no-body so the
 // `call rel32` reloc-masks. CFontConfig::AddItem (0x00421c60) is reached as
 // m_4->m_5c->AddItem(text, 0x20, 0x11).
-struct CNetChatLog {
-    i32 AddItem(const char* text, i32 type, i32 data); // 0x00421c60
-    void FreeNodes(); // 0x128a (thunk; formerly the per-TU CFreeNodesView shadow)
-};
+struct CNetChatLog {};
 SIZE_UNKNOWN(CNetChatLog); // method-only chat-display view; retail size TBD
 
 // The window object at CNetGameMgr+0x4: its own +0x4 holds the engine HWND. The

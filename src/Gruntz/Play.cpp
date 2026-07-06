@@ -4029,7 +4029,7 @@ void CPlay::CPlayDtorBody() {
         *(i32*)((char*)g_64556c + off - 0xc8) = 0;
     } while (off < 0x8e0);
     if (self->m_4 && self->m_4->m_5c) {
-        self->m_4->m_5c->FreeNodes();
+        ((CFontConfig*)self->m_4->m_5c)->FreeNodes();
     }
     if (self->m_guts) {
         self->m_guts->DtorMembers();
