@@ -102,7 +102,9 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 // at +0x90.. The CUserLogic base gives the +0x18 destructible link, so the dtor
 // folds the shared teardown (the /GX leaf-dtor archetype).
 // ---------------------------------------------------------------------------
-class CPathHazard : public CTileLogic {
+class CPathHazard : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)

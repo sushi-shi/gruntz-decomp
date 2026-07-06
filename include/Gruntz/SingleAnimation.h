@@ -17,7 +17,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleAnimation : CUserLogic)
 
-class CSingleAnimation : public CTileLogic {
+class CSingleAnimation : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
     static void InitActReg();   // 0x0ae9a0 (construct the activation registry over [2000,2010])

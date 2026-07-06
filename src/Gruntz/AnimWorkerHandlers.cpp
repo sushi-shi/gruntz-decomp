@@ -44,12 +44,16 @@ struct Owner;
 // <ctor>, all reloc-masked, and the post-construction activate + pump dispatches
 // lower to `mov eax,[obj]; call [eax+N]` through the inherited 16-slot vtable.
 
-struct CGruntSelectedSprite : public CTileLogic {
+struct CGruntSelectedSprite : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
     CGruntSelectedSprite(Owner* owner); // 0x07e3e0
     char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
-struct CGruntToySprite : public CTileLogic {
+struct CGruntToySprite : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
     CGruntToySprite(Owner* owner); // 0x07f350
     char m_body[0x60 - 0x40];
 }; // sizeof = 0x60

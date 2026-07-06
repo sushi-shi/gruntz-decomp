@@ -25,7 +25,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CStaticHazard : CUserLogic)
 
-class CStaticHazard : public CTileLogic {
+class CStaticHazard : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).

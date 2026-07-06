@@ -115,7 +115,8 @@ void CFortressFlag::HandleFortConquered() {}
 // body byte-identical (incl. the m_124 jump table); residual is the /GX leaf-vptr
 // re-stamp position + EH-state ids.
 RVA(0x00045d30, 0x203)
-CFortressFlag::CFortressFlag(CGameObject* obj) : CTileLogic(obj) {
+CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     CGameObject* o = m_object;
     i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
     if (o->m_latchedAnimId != v) {

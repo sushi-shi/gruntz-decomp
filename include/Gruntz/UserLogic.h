@@ -596,6 +596,19 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // tail owner; kept generic like the m_<hex> field placeholders. Only the 0x30-vs-0x40
 // boundary + the tail offsets are load-bearing.
 // ---------------------------------------------------------------------------
+// The tile-logic leaves' shared +0x30 tail, inlined per-leaf so each derives
+// CUserLogic DIRECTLY (matching RTTI - CTileLogic is not a retail class). Declare
+// FIRST in the leaf body so it lands at +0x30. Seed with TILE_LOGIC_SEED(obj).
+#define TILE_LOGIC_TAIL                                                                            \
+    void* m_prevAnimSetNode;                                                                       \
+    CGameObject* m_34;                                                                             \
+    CGameObject* m_38;                                                                             \
+    CGameObjAux* m_3c;
+#define TILE_LOGIC_SEED(obj)                                                                       \
+    m_34 = (obj);                                                                                  \
+    m_38 = (obj);                                                                                  \
+    m_3c = (obj)->m_7c;
+
 class CTileLogic : public CUserLogic {
 public:
     CTileLogic() {}
@@ -626,7 +639,9 @@ inline CTileLogic::CTileLogic(CGameObject* obj) : CUserLogic(obj) {
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CTileTrigger);
-class CTileTrigger : public CTileLogic {
+class CTileTrigger : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)

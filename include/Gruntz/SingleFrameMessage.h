@@ -12,7 +12,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSingleFrameMessage : CUserLogic)
 
-class CSingleFrameMessage : public CTileLogic {
+class CSingleFrameMessage : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton

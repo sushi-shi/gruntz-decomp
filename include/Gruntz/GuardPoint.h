@@ -10,7 +10,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
-class CGuardPoint : public CTileLogic {
+class CGuardPoint : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     // The class's own CUserLogic overrides, reconstructed as regular methods (the
     // fat <Gruntz/UserLogic.h> base models slots 1/2 with placeholder signatures, so

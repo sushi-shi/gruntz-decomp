@@ -160,7 +160,8 @@ extern CButeMgr g_buteMgr;
 // byte-AND codegen pick. The SAME plateau as CBrickz / the other bute ctors; not
 // source-steerable. Parked for the final sweep.
 RVA(0x000c68b0, 0x1f5)
-CDroppedObject::CDroppedObject(CGameObject* obj) : CTileLogic(obj) {
+CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");

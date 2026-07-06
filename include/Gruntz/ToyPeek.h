@@ -8,7 +8,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CToyPeek : public CTileLogic {
+class CToyPeek : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CToyPeek(CGameObject* obj); // 0x98140
 

@@ -19,7 +19,8 @@ CLevelTime::~CLevelTime() {}
 // body byte-identical (incl. the unrolled logic-type registration); residual is the
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009b8b0, 0x18f)
-CLevelTime::CLevelTime(CGameObject* obj) : CTileLogic(obj) {
+CLevelTime::CLevelTime(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 2;
 }
 

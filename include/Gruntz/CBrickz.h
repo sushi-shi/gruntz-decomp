@@ -17,7 +17,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBrickz : CUserLogic)
 
-class CBrickz : public CTileLogic {
+class CBrickz : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CBrickz(CGameObject* obj); // 0x10e800 (1-arg ctor)
     ~CBrickz() OVERRIDE;       // (folds the CUserLogic teardown; vtable anchor)

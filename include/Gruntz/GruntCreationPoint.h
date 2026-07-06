@@ -21,7 +21,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CGruntCreationPoint : CUserLogic)
 
-class CGruntCreationPoint : public CTileLogic {
+class CGruntCreationPoint : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CGruntCreationPoint(CGameObject* obj); // 0x3e520 (folds CUserLogic(obj) + tail)
     // Construct the class's activation-coordinate registry (g_creationPointActReg

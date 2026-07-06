@@ -15,7 +15,9 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
 SIZE_UNKNOWN(CSecretLevelTrigger);
-class CSecretLevelTrigger : public CTileLogic {
+class CSecretLevelTrigger : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CSecretLevelTrigger();                   // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
     CSecretLevelTrigger(CGameObject* obj);   // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)

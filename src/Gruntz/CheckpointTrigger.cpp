@@ -64,7 +64,8 @@ extern char s_actKeyA[]; // "A"
 // shared CUserLogic-init wall). The SAME plateau as CTimeBomb / the other bute
 // ctors; not source-steerable. Parked for the final sweep.
 RVA(0x0010ee20, 0x27d)
-CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CTileLogic(obj) {
+CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
     m_38->m_flags |= 2;

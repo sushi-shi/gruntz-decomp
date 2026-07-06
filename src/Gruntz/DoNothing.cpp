@@ -227,7 +227,8 @@ i32 HandlerA9E00(Owner* owner) {
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(CGameObject* obj) : CTileLogic(obj) {
+CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 1;
     CGameObjLayer* aux = m_object->m_layer;
     if (aux != 0) {

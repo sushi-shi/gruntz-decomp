@@ -21,7 +21,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDroppedObject : CUserLogic)
 
-class CDroppedObject : public CTileLogic {
+class CDroppedObject : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CDroppedObject(CGameObject* obj);   // 0x0c68b0 (1-arg leaf ctor)
     static void RegisterRange();        // 0x0c6b50 (seed the activation table's fast range)

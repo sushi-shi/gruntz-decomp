@@ -43,7 +43,9 @@ extern TileActReg g_tileActReg;
 // CTileTriggerTransition - the CUserLogic leaf the state machine builds. Layout
 // is plain CUserLogic (0x40) + the leaf tail; its methods are below.
 // ---------------------------------------------------------------------------
-class CTileTriggerTransition : public CTileLogic {
+class CTileTriggerTransition : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     virtual ~CTileTriggerTransition() OVERRIDE;
@@ -105,7 +107,8 @@ LogicTypeId CTileTriggerTransition::GetTypeTag() {
 // not 0 - see docs/patterns/eh-ctor-vptr-restamp-position.md (non-steerable EH-state
 // machine ordering). Body byte-identical otherwise.
 RVA(0x0010faf0, 0x128)
-CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CTileLogic(obj) {
+CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 0x1000000;
     if (m_object->m_latchedAnimId != 0) {
         m_object->m_latchedAnimId = 0;

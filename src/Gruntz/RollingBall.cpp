@@ -193,7 +193,8 @@ struct CRbReg {
 // result-reg alloc, the shared dy=0 store fold, and the /GX leaf-vptr re-stamp
 // position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000af820, 0x40d)
-CRollingBall::CRollingBall(CGameObject* obj) : CTileLogic(obj) {
+CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_explodeStartLo = 0;
     m_explodeWindowLo = 0;
     m_explodeStartHi = 0;

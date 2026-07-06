@@ -25,7 +25,8 @@ CExplosion::~CExplosion() {}
 // position + the EH-state ids, not source-steerable - the established leaf-ctor
 // baseline (cf. CMenuSparkle 92.8% / CEyeCandy 92.5% in userlogic).
 RVA(0x000470e0, 0x16b)
-CExplosion::CExplosion(CGameObject* obj) : CTileLogic(obj) {
+CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

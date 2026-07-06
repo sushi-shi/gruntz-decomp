@@ -93,7 +93,8 @@ extern CButeTree g_buteTree;
 // ebx (extra push ebx -> a 4th callee-saved reg, shifting every stack-slot offset).
 // Not source-steerable (global regalloc). ~80%.
 RVA(0x0003e520, 0x1fd)
-CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CTileLogic(obj) {
+CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 2;
     if (m_object->m_latchedAnimId != 5) {
         m_object->m_latchedAnimId = 5;

@@ -18,7 +18,9 @@
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
 // bare CUserLogic teardown (the established /GX leaf-dtor archetype).
-class CProjActOwner : public CTileLogic {
+class CProjActOwner : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     virtual ~CProjActOwner() OVERRIDE;
 };

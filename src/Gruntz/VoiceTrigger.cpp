@@ -201,7 +201,8 @@ CVoiceTrigger::~CVoiceTrigger() {}
 // byte-AND codegen pick. The SAME plateau as CTimeBomb / the other bute ctors; not
 // source-steerable. Parked for the final sweep.
 RVA(0x00119b50, 0x1ce)
-CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CTileLogic(obj) {
+CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;

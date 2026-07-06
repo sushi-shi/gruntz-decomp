@@ -24,7 +24,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CFortressFlag : CUserLogic)
 
-class CFortressFlag : public CTileLogic {
+class CFortressFlag : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CFortressFlag(CGameObject* obj); // 0x045d30
     // Construct the class's activation-coordinate registry (g_fortressFlagActReg

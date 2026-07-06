@@ -21,7 +21,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CTimeBomb : CUserLogic)
 
-class CTimeBomb : public CTileLogic {
+class CTimeBomb : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CTimeBomb(CGameObject* obj);    // 0x0e1b90 (1-arg leaf ctor)
     void FireActivation(i32 coord); // 0x0e1830

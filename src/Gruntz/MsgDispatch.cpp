@@ -16,7 +16,9 @@
 // such leaves; the specific leaf identity is unrecovered (1-of-3), so the class is a
 // structural CTileLogic leaf. Real polymorphic dispatch (no PMF view); the external
 // ctor (reloc-masked) stamps the real vtable.
-class CObj : public CTileLogic {
+class CObj : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CObj(CGameObject* arg);    // external, reloc-masked
     char m_pad40[0x54 - 0x40]; // to the true 0x54 leaf size (CTileLogic is 0x40)

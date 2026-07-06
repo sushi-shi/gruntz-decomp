@@ -22,7 +22,9 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
 SIZE_UNKNOWN(CDoNothing);
-class CDoNothing : public CTileLogic {
+class CDoNothing : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CDoNothing(CGameObject* obj);   // 0xac1d0
     LogicTypeId GetTypeTag();       // 0x00f6b0 (returns the class logic-type id 0x3ec)

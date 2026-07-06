@@ -23,7 +23,8 @@ CGruntStartingPoint::~CGruntStartingPoint() {}
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0003df30, 0x161)
-CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CTileLogic(obj) {
+CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_EXIT");
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");

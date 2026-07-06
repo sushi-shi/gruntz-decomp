@@ -182,7 +182,8 @@ extern CGameRegistry* g_gameReg;
 // CBrickz::CBrickz / CStaticHazard::CStaticHazard; not source-steerable. Parked
 // for the final sweep.
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(CGameObject* obj) : CTileLogic(obj) {
+CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 0x2000002;
     if (m_object->m_latchedAnimId != 0xf) {
         m_object->m_latchedAnimId = 0xf;

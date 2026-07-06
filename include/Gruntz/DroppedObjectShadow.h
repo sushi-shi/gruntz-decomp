@@ -11,7 +11,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
-class CDroppedObjectShadow : public CTileLogic {
+class CDroppedObjectShadow : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CDroppedObjectShadow(CGameObject* obj);   // 0xc7490 (1-arg leaf ctor)
     virtual ~CDroppedObjectShadow() OVERRIDE; // 0x12670 (folds the CUserLogic teardown)

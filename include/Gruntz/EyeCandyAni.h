@@ -12,7 +12,9 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic, CGameObject, g_buteMgr
 
 SIZE_UNKNOWN(CEyeCandyAni);
-class CEyeCandyAni : public CTileLogic {
+class CEyeCandyAni : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CEyeCandyAni(CGameObject* obj); // 0xac870
     LogicTypeId GetTypeTag();       // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)

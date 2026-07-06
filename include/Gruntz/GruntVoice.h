@@ -102,7 +102,9 @@ extern void* g_retAddrBreadcrumb;
 // (an extra adjust-load + `add this`), which diverges the first dispatch call.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntVoice);
-class CGruntVoice : public CTileLogic {
+class CGruntVoice : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
     virtual ~CGruntVoice() OVERRIDE; // 0x119ae0

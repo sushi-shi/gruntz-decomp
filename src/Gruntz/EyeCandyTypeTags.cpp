@@ -9,7 +9,9 @@
 #include <Gruntz/UserLogic.h>
 
 // 0xfa40 (id 0x3ef): eyecandy leaf between CSimpleAnimation and CBehindCandy.
-class CTileLogicTag3ef : public CTileLogic {
+class CTileLogicTag3ef : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     LogicTypeId GetTypeTag();
 };
@@ -19,7 +21,9 @@ LogicTypeId CTileLogicTag3ef::GetTypeTag() {
 }
 
 // 0x10f00 (id 0x429): tile-logic leaf after CFortressFlag.
-class CTileLogicTag429 : public CTileLogic {
+class CTileLogicTag429 : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     LogicTypeId GetTypeTag();
 };
@@ -29,7 +33,9 @@ LogicTypeId CTileLogicTag429::GetTypeTag() {
 }
 
 // 0x11bf0 (id 0x428): HUD/sprite leaf near CCursorSnapSprite.
-class CTileLogicTag428 : public CTileLogic {
+class CTileLogicTag428 : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     LogicTypeId GetTypeTag();
 };
@@ -39,7 +45,9 @@ LogicTypeId CTileLogicTag428::GetTypeTag() {
 }
 
 // 0x12ff0 (id 0x41d): tile-logic leaf between CRollingBall and CKitchenSlime.
-class CTileLogicTag41d : public CTileLogic {
+class CTileLogicTag41d : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     LogicTypeId GetTypeTag();
 };

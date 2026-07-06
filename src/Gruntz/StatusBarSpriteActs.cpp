@@ -17,7 +17,9 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-class CStatusBarSprite : public CTileLogic {
+class CStatusBarSprite : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
     static void InitActReg();           // 0x10c430
@@ -55,7 +57,8 @@ extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0010c230, 0x178)
-CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CTileLogic(obj) {
+CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_STATUSBARSPRITE");
     m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);

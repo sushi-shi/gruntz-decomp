@@ -251,7 +251,8 @@ CLightFx::~CLightFx() {}
 // body byte-identical (incl. the unrolled logic-type registration); residual is the
 // /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0009cf00, 0x1a5)
-CLightFx::CLightFx(CGameObject* obj) : CTileLogic(obj) {
+CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_anchorA = 2;
     m_anchorB = 1;
 }

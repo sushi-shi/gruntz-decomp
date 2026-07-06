@@ -47,7 +47,8 @@ CCursorSnapSprite::~CCursorSnapSprite() {}
 // eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md):
 // body byte-identical; residual is the /GX leaf-vptr re-stamp position + EH-state ids.
 RVA(0x0003a340, 0x16e)
-CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CTileLogic(obj) {
+CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->ApplyName("GAME_CURSORSNAPSPRITE");
     m_geoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);

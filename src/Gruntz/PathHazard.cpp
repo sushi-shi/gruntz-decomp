@@ -55,7 +55,9 @@ public:
 // the leaf dtor must fold the bare CUserLogic teardown inline to match 0x13280,
 // which an out-of-line CPathHazard base dtor would block. It shares CPathHazard's
 // vtable/layout only at the byte level (Tick reads the vtable raw).
-class CLightningHazard : public CTileLogic {
+class CLightningHazard : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     // Real virtuals at CUserLogic slots 16..20 (+0x40..+0x50), mirroring CPathHazard;
     // BeginLeg/HitTest were previously read raw via the CLightVtbl lens.
@@ -174,7 +176,8 @@ struct CPathCtorObj {
 // position + retail's walking-pointer reuse of the copy's ecx in the search loop
 // (a regalloc artifact, not source-steerable).
 RVA(0x000b35a0, 0x401)
-CPathHazard::CPathHazard(CGameObject* obj) : CTileLogic(obj) {
+CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     *(i64*)&m_legTag = 0;
     *(i64*)&m_legSegs = 0;
     *(i64*)&m_strikeDeadline = 0;

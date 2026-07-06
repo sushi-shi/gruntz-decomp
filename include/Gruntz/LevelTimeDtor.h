@@ -17,7 +17,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CLevelTime : CUserLogic)
 
-class CLevelTime : public CTileLogic {
+class CLevelTime : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CLevelTime(CGameObject* obj);   // 0x9b8b0
     virtual ~CLevelTime() OVERRIDE; // 0x00011a50 (folds the CUserLogic teardown)

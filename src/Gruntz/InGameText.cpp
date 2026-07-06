@@ -122,7 +122,8 @@ extern CGameRegistry* g_gameReg;
 // retail). Residual is the /GX leaf-vptr re-stamp position + the visibility-gate
 // branch-polarity (retail emits `je visible` where structured C emits `jne hide`).
 RVA(0x00099110, 0x215)
-CInGameText::CInGameText(CGameObject* obj) : CTileLogic(obj) {
+CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     if (g_gameReg->m_134 == 2) {
         m_38->m_flags |= 0x10000;
         return;

@@ -69,7 +69,9 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 // CUserLogic teardown.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntPuddle);
-class CGruntPuddle : public CTileLogic {
+class CGruntPuddle : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490
     virtual ~CGruntPuddle() OVERRIDE; // 0x010d10

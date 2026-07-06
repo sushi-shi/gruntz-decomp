@@ -184,7 +184,8 @@ CInGameIcon::~CInGameIcon() {}
 //   the block byte stream. Every call, string literal, field offset, immediate and
 //   control-flow edge matches retail. Deferred to the final sweep.
 RVA(0x00095b10, 0x15f0)
-CInGameIcon::CInGameIcon(CGameObject* obj) : CTileLogic(obj) {
+CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     // --- CInGameIcon own-field zero-init (retail store order @0x95c00) ---
     m_driftPos = 0;
     m_driftThresh = 0;

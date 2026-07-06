@@ -22,7 +22,9 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSimpleAnimation : CUserLogic)
 
-class CSimpleAnimation : public CTileLogic {
+class CSimpleAnimation : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CSimpleAnimation(CGameObject* obj); // 0x0ab940 (ctor body in UserLogic.cpp)
     i32 AdvanceAnim();                  // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)

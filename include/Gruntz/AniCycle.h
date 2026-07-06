@@ -14,7 +14,9 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CAniCycle : CUserLogic)
 
-class CAniCycle : public CTileLogic {
+class CAniCycle : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CAniCycle(CGameObject* obj); // 0x0aad20 (ctor body in UserLogic.cpp)
     // The vtable slot-2 logic-type id accessor (returns 0x3ea).

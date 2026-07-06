@@ -145,7 +145,9 @@ extern i32 g_slimeTick; // VA 0x6bf3bc
 // movement-integrator state at +0x58. The CUserLogic base gives the +0x18
 // destructible link, so ~CKitchenSlime folds the shared teardown (the /GX
 // leaf-dtor archetype, see UserLogic.cpp 0x10ab0).
-class CKitchenSlime : public CTileLogic {
+class CKitchenSlime : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)
     static void RegisterType();  // 0x0b2aa0 (level-load class registrar)
@@ -292,7 +294,8 @@ struct CSlimeCtorObj {
 // alloc, the cmov-vs-branch min/max selection polarity, and the /GX leaf-vptr
 // re-stamp position. Not source-steerable (global regalloc/EH numbering).
 RVA(0x000b23a0, 0x3f8)
-CKitchenSlime::CKitchenSlime(CGameObject* obj) : CTileLogic(obj) {
+CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_38->m_flags |= 0x2000002;
 
     CSlimeCtorObj* o = (CSlimeCtorObj*)m_object;

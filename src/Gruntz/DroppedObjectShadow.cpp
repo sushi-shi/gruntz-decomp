@@ -31,7 +31,8 @@ extern CGameRegistry* g_gameReg;
 // 1-slot callee-saved scheduling delta MSVC coin-flips. The SAME plateau as
 // CBrickz::CBrickz (~92%); not source-steerable. Parked for the final sweep.
 RVA(0x000c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CTileLogic(obj) {
+CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");

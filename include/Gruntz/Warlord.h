@@ -80,7 +80,9 @@ extern CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 // CWarlord
 // ---------------------------------------------------------------------------
-class CWarlord : public CTileLogic {
+class CWarlord : public CUserLogic {
+public:
+    TILE_LOGIC_TAIL
 public:
     CWarlord(i32);                // 0x42d40 (the warlord ctor: base init + name/state setup)
     virtual ~CWarlord() OVERRIDE; // 0x107f0 (the home-TU dtor: ~CString(m_54) + the base teardown)
