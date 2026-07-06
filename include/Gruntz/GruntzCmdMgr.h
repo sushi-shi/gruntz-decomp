@@ -128,6 +128,8 @@ struct GzCmdNode {
 SIZE_UNKNOWN(CGruntzCmdMgr);
 class CGruntzCmdMgr {
 public:
+    void
+    Spawn(i32 a1, char area, i32 a3, i32 a4, i32 px, i32 py, i32 a7, i32 a8); // reloc-masked (fold)
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
     // and remove+deselect it.
     void RemoveMatchingTarget(char indexByte, char typeByte);

@@ -12,6 +12,7 @@
 // way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
 // error ("MFC apps must not #include <windows.h>").
 #include <Gruntz/Play.h>
+#include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (Configure)
@@ -58,18 +59,13 @@ struct SbiProbe { // m_4->m_68
     // FUN @ 0x3cb0 __thiscall: probe the area map under (x,y).
     i32 Probe(i32 x, i32 y, i32* outArea, i32* outVal, i32 flag);
 };
-SIZE_UNKNOWN(SbiSpawner);
-struct SbiSpawner { // m_4->m_6c
-    // FUN @ 0x2095 __thiscall: spawn the tab eye-candy at a tile origin.
-    void Spawn(i32 a1, char area, i32 a3, i32 a4, i32 px, i32 py, i32 a7, i32 a8);
-};
 SIZE_UNKNOWN(SbiHost);
 struct SbiHost { // this->m_4
     char m_pad00[0x30];
     SbiHostInner* m_30; // +0x30
     char m_pad34[0x68 - 0x34];
-    SbiProbe* m_68;   // +0x68
-    SbiSpawner* m_6c; // +0x6c
+    SbiProbe* m_68;      // +0x68
+    CGruntzCmdMgr* m_6c; // +0x6c
 };
 SIZE_UNKNOWN(SbiRectSrc);
 struct SbiRectSrc { // this->m_c->m_24
