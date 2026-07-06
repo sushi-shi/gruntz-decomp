@@ -1214,13 +1214,7 @@ extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-mask
 // on CMovingLogic above) and, on failure, retires its +0x154 sprite. Never
 // instantiated in this chain (dispatch-only; no vtable emitted).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CProjectile);
-class CProjectile : public CMovingLogic {
-public:
-    char m_pad30[0x154 - 0x30];
-    CHudSprite* m_sprite; // +0x154  bound render sprite (== the created CHudSprite;
-                          //         same name as <Gruntz/Projectile.h>'s canonical)
-};
+class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGrunt);
