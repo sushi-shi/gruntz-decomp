@@ -1,4 +1,5 @@
 #include <Gruntz/SoundCueMgr.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/AniElement.h>
 #include <rva.h>
 
@@ -1453,7 +1454,6 @@ DATA(0x0021ab24)
 extern i32 g_aniCueItem; // 0x61ab24  the cue-item id played through PlayIfElapsed
 class CAniCue {
 public:
-    i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940  (ret 0x10)
 };
 
 class CAniAdvanceCursor {
@@ -1748,7 +1748,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                     entry = tbl[dd->Rand_15cbe0() % dd->m_randMod];
                 }
                 if (entry != 0) {
-                    ((CAniCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);
+                    ((LeafCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);
                 }
             }
         }

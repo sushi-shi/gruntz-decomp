@@ -22,7 +22,8 @@
 //   * the CPathHazard-based ctors (base 0xb35a0 via thunk 0x2fc2):
 //     CRainCloud / CUFO.
 // Functions are defined in ascending-RVA order.
-#include <Bute/ButeTree.h>     // canonical CButeTree (one shape)
+#include <Bute/ButeTree.h> // canonical CButeTree (one shape)
+#include <Gruntz/SerialObjRef.h>
 #include <Gruntz/PathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -393,9 +394,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 
 // The +0x34 serializable sub-object the UFO chains into (Chain @0x408c00 via the
 // 0x1aff thunk; same sub-chain CKitchenSlime uses).
-struct CHazardSerialSub {
-    i32 Chain(void* s, i32 tag, i32 c, i32 d); // 0x408c00
-};
+struct CHazardSerialSub {};
 
 // One tag-gated quad-pair (two adjacent 8-byte fields), shared between two state
 // vectors. Inlined with the field pointer as a parameter so cl computes the base
@@ -419,7 +418,7 @@ i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     if (SerializeChain(stream, tag, c, d) == 0) {
         return 0;
     }
-    if (((CHazardSerialSub*)(B + 0x34))->Chain(stream, tag, c, d) == 0) {
+    if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d) == 0) {
         return 0;
     }
     SerQuadPair(s, tag, B + 0x108);
