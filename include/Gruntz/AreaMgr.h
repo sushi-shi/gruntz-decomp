@@ -31,7 +31,7 @@
 // The per-spawn registry-holder + resolution-source args of the LoadObject*
 // reconcilers (full defs local to src/Gruntz/LoadObjectResources.cpp).
 struct ObjSpawnEntry;
-struct ObjResLookup;
+class CSymTab; // Bute/SymTab.h (ResolvePath)
 
 class CAreaMgr {
 public:
@@ -55,9 +55,9 @@ public:
     // The OBJECTZ_ namespace asset reconcilers (LoadObjectResources.cpp): walk
     // the entry's registry map, reconcile against m_spawnEntryList, install the
     // still-unwanted assets through the registry.
-    i32 LoadObjectImageResources(ObjSpawnEntry* entry, ObjResLookup* src); // 0x09a510
-    i32 LoadObjectSoundResources(ObjSpawnEntry* entry, ObjResLookup* src); // 0x09a910
-    i32 LoadObjectAnimResources(ObjSpawnEntry* entry, ObjResLookup* src);  // 0x09ac20
+    i32 LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a510
+    i32 LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a910
+    i32 LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src);  // 0x09ac20
 
     // The 40 per-area handlers (0x09af30..0x09b410, each `mov eax,1; ret`).  Each
     // is an external sibling method; reloc-masked rel32 callees of Dispatch.

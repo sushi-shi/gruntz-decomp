@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Bute/SymTab.h>
 #include <Mfc.h> // CString, CObList, CMapStringToOb/Ptr, POSITION (reloc-masked engine MFC)
 #include <Gruntz/AreaMgr.h> // CAreaMgr (this) + the canonical CSpawnList/CSpawnEntry
 #include <stdio.h>          // sprintf (reloc-masked engine CRT)
@@ -92,9 +93,6 @@ struct ObjSpawnEntry {
 
 // The resolution source (arg2): ResolvePath looks a namespaced key up, returning a
 // handle (0 if absent).
-struct ObjResLookup {
-    void* ResolvePath(char* key); // 0x13bae0 __thiscall
-};
 
 // @source: decomp-xref
 // @early-stop
@@ -110,7 +108,7 @@ struct ObjResLookup {
 // instruction selection is identical. Not source-steerable without reproducing the
 // elided-but-scaffolded temp. Reused for the Sound/Anim siblings below.
 RVA(0x0009a510, 0x275)
-i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, ObjResLookup* src) {
+i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src) {
     if (entry == 0) {
         return 0;
     }
@@ -184,7 +182,7 @@ i32 CAreaMgr::LoadObjectImageResources(ObjSpawnEntry* entry, ObjResLookup* src) 
 // the concrete entry->m_28 ProcessNew/Install, no install-gate bracket). Same phantom
 // guarded-CString +8 frame-shift wall documented on the Image arm above.
 RVA(0x0009a910, 0x261)
-i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, ObjResLookup* src) {
+i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
     if (entry == 0) {
         return 0;
     }
@@ -255,7 +253,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, ObjResLookup* src) 
 // ~88.3%: complete + correct Sound sibling (ANIZ_ key, the concrete entry->m_2c
 // ProcessNew/Install). Same phantom guarded-CString +8 frame-shift wall as above.
 RVA(0x0009ac20, 0x261)
-i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, ObjResLookup* src) {
+i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
     if (entry == 0) {
         return 0;
     }
@@ -323,6 +321,5 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, ObjResLookup* src) {
 
 SIZE_UNKNOWN(ObjAnimRegistry);
 SIZE_UNKNOWN(ObjImageRegistry);
-SIZE_UNKNOWN(ObjResLookup);
 SIZE_UNKNOWN(ObjSoundRegistry);
 SIZE_UNKNOWN(ObjSpawnEntry);
