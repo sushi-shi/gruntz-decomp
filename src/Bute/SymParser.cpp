@@ -5,6 +5,7 @@
 // (its own abstract sub-object vtable 0x5ef760) and an engine hash table at +0x80.
 // See include/Bute/SymParser.h for the layout + the call-graph evidence.
 #include <rva.h>
+#include <Dsndmgr/SoundVoiceList.h>
 #include <stdlib.h> // atoi (0x11ff10) / _splitpath (0x18c530)
 #include <string.h> // strlen/strcpy/strcmp (inline) / _strlwr (0x18d330)
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose
@@ -98,7 +99,7 @@ CSymParser::~CSymParser() {
     if (node) {
         do {
             RezFree(node->m_buffer);
-            m_nodes.Unlink(&node->m_link);
+            ((DSoundList*)&m_nodes)->Unlink((DSoundLink*)&node->m_link);
             RezFree(node);
             node = (CSlotNode*)m_nodes.m_head;
         } while (node);
@@ -573,7 +574,7 @@ void* CSymParser::PopParseSlot() {
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);
         }
-        m_nodes.Link(&node->m_link);
+        ((DSoundList*)&m_nodes)->InsertHead((DSoundLink*)&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }

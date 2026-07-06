@@ -5,6 +5,7 @@
 // include/Bute/Hash.h for the layout + the call-graph evidence. Recovered from
 // the trace group "ClassUnknown_13" (callers all in the ButeMgr parser region).
 #include <rva.h>
+#include <Dsndmgr/SoundVoiceList.h>
 
 #include <Bute/Hash.h>
 
@@ -37,7 +38,7 @@ void CHashBase::Insert(CHashElement* node) {
     u32 idx = node->Hash();
     node->m_bucket = idx;
     CHashLink* biased = node ? &node->m_link : 0;
-    m_buckets[idx].m_chain.Link(biased);
+    ((DSoundList*)&m_buckets[idx].m_chain)->InsertHead((DSoundLink*)biased);
 }
 
 // Remove (0x184ab0): unlink `entry` (its chain node = &entry->m_link) from the
@@ -45,7 +46,7 @@ void CHashBase::Insert(CHashElement* node) {
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
     CHashLink* node = entry ? &entry->m_link : 0;
-    m_buckets[entry->m_bucket].m_chain.Unlink(node);
+    ((DSoundList*)&m_buckets[entry->m_bucket].m_chain)->Unlink((DSoundLink*)node);
 }
 
 // Lookup (0x184b40): chain head for bucket `idx`, biased back to the element, or 0.

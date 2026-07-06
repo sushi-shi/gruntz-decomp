@@ -61,10 +61,8 @@ class CHashBase;
 // used standalone as CSymParser::m_nodes. Link splices `node` in (0x1390e0),
 // Unlink removes it (0x1391e0); both __thiscall on the {head,tail} pair.
 struct CHashSlotList {
-    CHashLink* m_head;            // +0x00  (slot+0x08)
-    CHashLink* m_tail;            // +0x04  (slot+0x0c)
-    void Link(CHashLink* node);   // 0x1390e0
-    void Unlink(CHashLink* node); // 0x1391e0
+    CHashLink* m_head; // +0x00  (slot+0x08)
+    CHashLink* m_tail; // +0x04  (slot+0x0c)
 };
 SIZE(CHashSlotList, 0x8);
 

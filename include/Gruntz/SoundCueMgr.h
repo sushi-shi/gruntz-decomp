@@ -69,8 +69,6 @@ SIZE_UNKNOWN(SBNode);
 struct SBList {
     SBNode* m_head;
     SBNode* m_tail;
-    void Unlink(SBLink*); // 0x1391e0 thiscall
-    void Append(SBLink*); // 0x139110 thiscall
 };
 SIZE_UNKNOWN(SBList);
 

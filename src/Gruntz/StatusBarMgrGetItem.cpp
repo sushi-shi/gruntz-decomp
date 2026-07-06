@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Dsndmgr/SoundVoiceList.h>
 
 #include <Gruntz/SoundCueMgr.h>
 // CStatusBarMgrGetItem.cpp - CSoundCueMgr::GetItem in its OWN dedicated unit.
@@ -55,7 +56,7 @@ CStatusBarItem2* CSoundCueMgr::GetItem() {
             return found;
         }
     }
-    m_58.Unlink(&found->m_link44);
-    m_58.Append(&found->m_link44);
+    ((DSoundList*)&m_58)->Unlink((DSoundLink*)&found->m_link44);
+    ((DSoundList*)&m_58)->InsertTail((DSoundLink*)&found->m_link44);
     return found;
 }
