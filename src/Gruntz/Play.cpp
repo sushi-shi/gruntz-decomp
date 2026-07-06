@@ -727,6 +727,11 @@ class CDDrawWorkerList {
 public:
     void ClearWorkers();
 };
+// The submgr leaf (FreeAll_152720 @0x152720); TU-local method view (header-less unit).
+class CDDrawSubMgrLeaf {
+public:
+    void FreeAll_152720();
+};
 // The view holder (this->m_c) as the exit walk reads it.
 struct CExitView {
     char p0[0x8];
@@ -737,12 +742,10 @@ struct CExitView {
     CExitV44* m_24; // +0x24  virtual slot 0x44
     struct M28 {
         char p0[0x2c];
-        SoundStream* m_2c; // +0x2c  (Stop @0x137a80)
-        void Release();    // 0x157bc0
-    }* m_28;               // +0x28
-    struct M2c {
-        void Teardown(); // 0x152720
-    }* m_2c;             // +0x2c
+        SoundStream* m_2c;  // +0x2c  (Stop @0x137a80)
+        void Release();     // 0x157bc0
+    }* m_28;                // +0x28
+    CDDrawSubMgrLeaf* m_2c; // +0x2c  (FreeAll_152720 @0x152720)
 };
 // The world (this->m_4) as the exit walk reads it.
 struct CExitWorld {
@@ -777,7 +780,7 @@ void CPlay::ModeCleanup() {
         ((CExitView*)m_c)->m_10->Teardown();
     }
     if (m_c) {
-        ((CExitView*)m_c)->m_2c->Teardown();
+        ((CExitView*)m_c)->m_2c->FreeAll_152720();
     }
     if (m_c) {
         ((CExitView*)m_c)->m_24->Teardown();
