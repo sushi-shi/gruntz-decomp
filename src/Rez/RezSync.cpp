@@ -132,75 +132,75 @@ struct CFaderMgr { // m_40 (0x28)
     char raw[0x28];
     i32 SetConfig(i32, i32, i32); // 0x17d980
 };
-SIZE(H44, 0x128);
-struct H44 {
+SIZE(CCheatMgr, 0x128);
+struct CCheatMgr {
     char raw[0x128];
-    H44();
-    ~H44();
-    i32 Fn1825(i32); // 0x1825
-    void Fn15b9();   // 0x15b9
+    CCheatMgr();
+    ~CCheatMgr();
+    i32 Init(i32);         // 0x1825
+    void RegisterCheats(); // 0x15b9
 };
 // m_48 is the audio host = canonical CGruntzSoundZ (Init @0x138490 / SetXMidiVolume
 // @0x138950 / m_enabled @+0x28); `new CGruntzSoundZ` inlines its real CMapStringToOb
 // ctor (<Dsndmgr/GruntzSoundZ.h>).
-SIZE_UNKNOWN(H50);
-struct H50 {
-    H50();
-    ~H50();
+SIZE_UNKNOWN(CShadeTableCache);
+struct CShadeTableCache {
+    CShadeTableCache();
+    ~CShadeTableCache();
     char raw[0x18];
-    i32 Init14dec0(); // 0x14dec0
+    i32 Init(); // 0x14dec0
 };
-SIZE(H54, 0x30);
-struct H54 {
+SIZE(CWorldSoundSet, 0x30);
+struct CWorldSoundSet {
     char raw0[8];            // +0x00
     char m_8[0x24 - 0x08];   // +0x08  MFC list sub-object (D_1b48c6 dtor)
     i32 m_24;                // +0x24  muted-state flag
     char raw28[0x30 - 0x28]; // +0x28
-    H54();
-    ~H54();
-    i32 Fn10b9(i32, i32); // 0x10b9
-    void Fn1082();        // 0x1082
-    void Fn18e8();        // 0x18e8
-    void Fn29b9();        // 0x29b9
+    CWorldSoundSet();
+    ~CWorldSoundSet();
+    i32 Init(i32, i32); // 0x10b9
+    void Fn1082();      // 0x1082
+    void Resume();      // 0x18e8
+    void Stop();        // 0x29b9
 };
-SIZE(H58, 0x1424);
-struct H58 {
+SIZE(CSaveGame, 0x1424);
+struct CSaveGame {
     char raw[0x1424];
-    H58();
-    ~H58();
-    i32 Fn402f(const char*); // 0x402f
-    void Fn3503();           // 0x3503
+    CSaveGame();
+    ~CSaveGame();
+    i32 SaveGameFile(const char*); // 0x402f
+    void Reset();                  // 0x3503
     void Fn10d7host(void*);
 };
-SIZE(H5c, 0x44);
-struct H5c {
+SIZE(CFontConfig, 0x44);
+struct CFontConfig {
     char raw[0x44];
-    H5c();
-    ~H5c();
-    i32 Fn43db(i32, i32); // 0x43db
+    CFontConfig();
+    ~CFontConfig();
+    i32 LoadFontConfig(i32, i32); // 0x43db
 };
-SIZE(H60, 0x30);
-struct H60 {
+SIZE(CGruntSpawnConfig, 0x30);
+struct CGruntSpawnConfig {
     char raw[0x30];
-    H60();
-    ~H60();
-    i32 Fn1bfe(void*); // 0x1bfe
+    CGruntSpawnConfig();
+    ~CGruntSpawnConfig();
+    i32 Init(void*); // 0x1bfe
 };
-SIZE(H68, 0x408);
-struct H68 {
+SIZE(CTriggerMgr, 0x408);
+struct CTriggerMgr {
     char raw[0x408];
-    H68();
-    ~H68();
-    i32 Fn4205(void*); // 0x4205
-    void Fn2239();     // 0x2239
+    CTriggerMgr();
+    ~CTriggerMgr();
+    i32 SetLevel(void*); // 0x4205
+    void Cleanup();      // 0x2239
 };
-SIZE(H6c, 0x3c);
-struct H6c {
+SIZE(CGruntzCmdMgr, 0x3c);
+struct CGruntzCmdMgr {
     char raw[0x3c];
-    H6c();
-    ~H6c();
-    i32 Fn37a1(void*); // 0x37a1
-    void Fn434f();     // 0x434f
+    CGruntzCmdMgr();
+    ~CGruntzCmdMgr();
+    i32 SetMgr(void*);    // 0x37a1
+    void ClearAndReset(); // 0x434f
 };
 SIZE(H70, 0x94);
 struct H70 {
@@ -208,18 +208,18 @@ struct H70 {
     H70();
     ~H70();
 };
-SIZE(H78, 0x3c);
-struct H78 {
+SIZE(CLightFxMgr, 0x3c);
+struct CLightFxMgr {
     char raw[0x3c];
-    void Fn3ba2();          // 0x3ba2 (dtor)
-    i32 Fn3085(i32, void*); // 0x3085
+    void Reset();         // 0x3ba2 (dtor)
+    i32 Init(i32, void*); // 0x3085
 };
-SIZE(H7c, 0x388);
-struct H7c {
-    H7c();
-    ~H7c();
+SIZE(CBattlezData, 0x388);
+struct CBattlezData {
+    CBattlezData();
+    ~CBattlezData();
     char raw[0x388];
-    i32 Fn10d7(void*); // 0x10d7
+    i32 InitWithRecords(void*); // 0x10d7
 };
 
 // GAME_ATTRIBUTEZ ButeMgr config load: the parse stream is the canonical
@@ -267,21 +267,21 @@ struct RezSync {
     RegHelper* m_38;
     char _p3c[0x40 - 0x3c];
     CFaderMgr* m_40;
-    H44* m_44;
+    CCheatMgr* m_44;
     CGruntzSoundZ* m_48; // audio host (Init/SetXMidiVolume/m_enabled)
     char _p4c[0x50 - 0x4c];
-    H50* m_50;
-    H54* m_54;
-    H58* m_58;
-    H5c* m_5c;
-    H60* m_60;
+    CShadeTableCache* m_50;
+    CWorldSoundSet* m_54;
+    CSaveGame* m_58;
+    CFontConfig* m_5c;
+    CGruntSpawnConfig* m_60;
     char _p64[0x68 - 0x64];
-    H68* m_68;
-    H6c* m_6c;
+    CTriggerMgr* m_68;
+    CGruntzCmdMgr* m_6c;
     H70* m_70;
     void* m_74;
-    H78* m_78;
-    H7c* m_7c;
+    CLightFxMgr* m_78;
+    CBattlezData* m_7c;
     i32 m_numRuns;   // Num Runs
     i32 m_numMovies; // Num Movies
     i32 m_88;
@@ -591,8 +591,8 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x40a);
         return 0;
     }
-    m_44 = new H44;
-    if (!m_44->Fn1825(*(i32*)((char*)m_04 + 4))) {
+    m_44 = new CCheatMgr;
+    if (!m_44->Init(*(i32*)((char*)m_04 + 4))) {
         Error2(0x800a, 0x40b);
         return 0;
     }
@@ -624,8 +624,8 @@ i32 RezSync::Init(void* a1, char* a2) {
         RezFree(m_54);
         m_54 = 0;
     }
-    m_54 = new H54;
-    if (!m_54->Fn10b9((i32)m_30->m_28, vSndVol)) {
+    m_54 = new CWorldSoundSet;
+    if (!m_54->Init((i32)m_30->m_28, vSndVol)) {
         Error2(0x800a, 0x40d);
         return 0;
     }
@@ -634,11 +634,11 @@ i32 RezSync::Init(void* a1, char* a2) {
         if (vMusVol != 0) {
             if (f == 0) {
                 m_54->m_24 = 1;
-                m_54->Fn18e8();
+                m_54->Resume();
             }
         } else if (f != 0) {
             m_54->m_24 = 0;
-            m_54->Fn29b9();
+            m_54->Stop();
         }
     }
     Fn40c0(vSndVol);
@@ -646,7 +646,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_musicVolume = vMusVol;
 
     // --- Phase 11: settings host (m_78, m_58) -----------------------
-    m_78 = (H78*)RezAlloc(0x3c);
+    m_78 = (CLightFxMgr*)RezAlloc(0x3c);
     if (m_78) {
         i32* z = (i32*)m_78;
         z[1] = z[2] = z[3] = z[4] = 0;
@@ -654,23 +654,23 @@ i32 RezSync::Init(void* a1, char* a2) {
             *(i32*)((char*)m_78 + 0x14 + k * 4) = 0;
         }
     }
-    if (!m_78->Fn3085(0, this)) {
+    if (!m_78->Init(0, this)) {
         if (m_78) {
-            m_78->Fn3ba2();
+            m_78->Reset();
             RezFree(m_78);
             m_78 = 0;
         }
         Error2(0x800a, 0x411);
         return 0;
     }
-    m_58 = new H58;
-    if (!m_58->Fn402f(g_lab545854)) {
+    m_58 = new CSaveGame;
+    if (!m_58->SaveGameFile(g_lab545854)) {
         // (uses g_emptyString 0x6293f4 in retail)
         Error2(0x800a, 0x412);
         return 0;
     }
-    m_7c = new H7c;
-    m_7c->Fn10d7((char*)m_58 + 0x24);
+    m_7c = new CBattlezData;
+    m_7c->InitWithRecords((char*)m_58 + 0x24);
 
     // --- Phase 12: attract host list (g_645578) ---------------------
     g_645578 = RezAlloc(0x28);
@@ -678,7 +678,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         i32* z = (i32*)g_645578;
         z[0] = z[1] = z[2] = z[4] = z[5] = 0;
     }
-    if (!((H60*)g_645578)->Fn1bfe(g_645570)) {
+    if (!((CGruntSpawnConfig*)g_645578)->Init(g_645570)) {
         if (g_645578) {
             i32* z = (i32*)g_645578;
             z[0] = z[1] = z[2] = z[4] = z[5] = 0;
@@ -690,8 +690,8 @@ i32 RezSync::Init(void* a1, char* a2) {
     }
 
     // --- Phase 13: fader list (m_6c) --------------------------------
-    m_6c = new H6c;
-    if (!m_6c->Fn37a1(this)) {
+    m_6c = new CGruntzCmdMgr;
+    if (!m_6c->SetMgr(this)) {
         Error2(0x800a, 0x414);
         return 0;
     }
@@ -710,7 +710,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             *(i32*)((char*)m_74 + 0x4c + k * 4) = 0;
         }
     }
-    if (!((H68*)m_74)->Fn4205(m_50)) {
+    if (!((CTriggerMgr*)m_74)->SetLevel(m_50)) {
         Error2(0x800a, 0x416);
         return 0;
     }
@@ -772,17 +772,17 @@ i32 RezSync::Init(void* a1, char* a2) {
     }
 
     // --- Phase 16: sound / movie config + attract title screens -----
-    m_44->Fn15b9();
-    m_5c = new H5c;
-    m_5c->Fn43db(0x1388, 0xbb8);
-    m_68 = new H68;
-    if (!m_68->Fn4205(m_30)) {
+    m_44->RegisterCheats();
+    m_5c = new CFontConfig;
+    m_5c->LoadFontConfig(0x1388, 0xbb8);
+    m_68 = new CTriggerMgr;
+    if (!m_68->SetLevel(m_30)) {
         Error2(0x800a, 0x41b);
         return 0;
     }
     g_60fa70 = (void*)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_60fa70);
-    m_60 = new H60;
-    if (!m_60->Fn1bfe(this)) {
+    m_60 = new CGruntSpawnConfig;
+    if (!m_60->Init(this)) {
         Error2(0x800a, 0x45f);
         return 0;
     }
