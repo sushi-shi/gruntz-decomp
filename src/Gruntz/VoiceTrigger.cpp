@@ -12,6 +12,7 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
+#include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameRegistry.h>
 #include <Globals.h>
@@ -34,16 +35,11 @@
 // -> g_actCache, Insert 0x16d850) yielding g_vtrigCur. All BSS globals DATA-pinned
 // so the loads reloc-mask; the collection methods are external/no-body.
 // ---------------------------------------------------------------------------
-struct CVTrigEntry; // an entry: first dword is the registered handler
-struct CVTrigColl {
-    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-};
-SIZE_UNKNOWN(CVTrigColl);
+struct CVTrigEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00251500)
-extern CVTrigColl g_vtrigColl;
+extern CTypeKeyColl g_vtrigColl;
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;
@@ -77,7 +73,7 @@ extern i32 g_nextActId;
 DATA(0x0020a454)
 extern char s_actKeyA[];
 DATA(0x002bf650)
-extern CVTrigColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
 extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)

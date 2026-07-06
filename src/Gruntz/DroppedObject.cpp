@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
@@ -30,15 +31,11 @@
 // alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
 // shared global every registry writes (already named by KitchenSlime.cpp -
 // re-declared here, address-pinned).
-struct CDropEntry; // an entry: first dword is the registered handler
-struct CDropColl {
-    i32 Find(i32 coord, i32 z);         // 0x16da80 (__thiscall ret 8)
-    void RegisterRange(i32 lo, i32 hi); // 0x408710 (zDArray fast-range ctor, __thiscall ret 8)
-};
+struct CDropEntry;         // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024bed8)
-extern CDropColl g_dropColl;
+extern CTypeKeyColl g_dropColl;
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;
@@ -58,7 +55,7 @@ extern char s_actKeyA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 DATA(0x002bf650)
-extern CDropColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
 extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
@@ -381,7 +378,6 @@ i32 CDroppedObject::ActA() {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CDropColl);
 SIZE_UNKNOWN(CDropEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);

@@ -65,6 +65,7 @@ public:
     virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
     void Construct(i32 lo, i32 hi);          // 0x408710 (reloc-masked; build registry)
+    void RegisterRange(i32 lo, i32 hi);      // 0x408710 (same slot, alt view name)
     void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)
     char** IndexToPtr(i32 idx);              // thunk 0x403864 -> node (*node == name)
     void* Resolve(void* id);                 // thunk 0x437c (__thiscall ret 4)
