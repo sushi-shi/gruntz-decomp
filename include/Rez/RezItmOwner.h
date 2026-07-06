@@ -11,9 +11,9 @@
 
 class CRezItmOwner {
 public:
-    virtual void v0();   // +0x00
-    virtual void v1();   // +0x04
-    virtual i32 Retry(); // +0x08  (slot 2)
+    void v0();   // +0x00
+    void v1();   // +0x04
+    i32 Retry(); // +0x08  (slot 2)
 };
 
 // --- vtable catalog ---

@@ -60,12 +60,12 @@ SIZE(CButeTreeBase2, 0x24); // receiver view of the +0x08 second base (spans +0x
 // casts; making the class polymorphic keeps the fields flat but drops the manual vptr
 // field names.
 struct CButeTreePrimary {
-    virtual void P0();         // +0x00  primary vptr
+    void P0();                 // +0x00  primary vptr
     CVariantSlot* m_errorSink; // +0x04
 };
 SIZE(CButeTreePrimary, 0x8); // { vptr, error-sink }
 struct CButeTreeSecond {
-    virtual void S0();              // +0x00 (this+0x08)  second-base vptr
+    void S0();                      // +0x00 (this+0x08)  second-base vptr
     char m_pad0c[0x14 - 0x0c];      // +0x04 (+0x0c)
     i32 m_nodeCount;                // +0x08 (+0x14)
     CButeTreeNode* m_root;          // +0x0c (+0x18)

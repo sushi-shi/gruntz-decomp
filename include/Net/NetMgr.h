@@ -530,8 +530,8 @@ SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object
 // ---------------------------------------------------------------------------
 class CNetPlayerObj {
 public:
-    virtual void GetRuntimeClass();      // +0x00  slot 0 (CObject GetRuntimeClass, 0x1bef01)
-    virtual void SelfDestruct(i32 flag); // +0x04  slot 1 (scalar-deleting dtor, flag arg)
+    void GetRuntimeClass();      // +0x00  slot 0 (CObject GetRuntimeClass, 0x1bef01)
+    void SelfDestruct(i32 flag); // +0x04  slot 1 (scalar-deleting dtor, flag arg)
 
     char m_pad4[0x20 - 0x4]; // +0x04
     __POSITION* m_20;        // +0x20  cached list position
@@ -601,8 +601,8 @@ public:
         }
         m_54 = 0;
     }
-    virtual ~CNetPlayerListNode() OVERRIDE; // 0x1793b0 (NetSessionNode.cpp)
-    i32 Init(CNetSessionDesc* desc);        // 0x1795a0  copy + trim the descriptor
+    ~CNetPlayerListNode();           // 0x1793b0 (NetSessionNode.cpp)
+    i32 Init(CNetSessionDesc* desc); // 0x1795a0  copy + trim the descriptor
 };
 SIZE(CNetPlayerListNode, 0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
 

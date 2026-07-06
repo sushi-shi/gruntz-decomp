@@ -1092,19 +1092,19 @@ struct CTmPendingFx {
 // task's "else leave"); RebuildOverlay is byte-exact (100%) so a speculative retype would
 // only risk it.
 struct CTmOverlaySrc {
-    virtual void vf00();
-    virtual void vf01();
-    virtual void vf02();
-    virtual void vf03();
-    virtual void vf04();
-    virtual void vf05();
-    virtual void vf06();
-    virtual void vf07();
-    virtual void vf08();
-    virtual void vf09();
-    virtual void vf10();
-    virtual void GetA(void* dst, i32 n); // [11] vtbl +0x2c
-    virtual void GetB(void* dst, i32 n); // [12] vtbl +0x30
+    void vf00();
+    void vf01();
+    void vf02();
+    void vf03();
+    void vf04();
+    void vf05();
+    void vf06();
+    void vf07();
+    void vf08();
+    void vf09();
+    void vf10();
+    void GetA(void* dst, i32 n); // [11] vtbl +0x2c
+    void GetB(void* dst, i32 n); // [12] vtbl +0x30
 };
 
 // 0x7a5e0: RebuildOverlay(obj, kind, ., .) - copy the source object's two pose getters into

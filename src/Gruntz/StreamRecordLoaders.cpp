@@ -811,15 +811,15 @@ struct CProjRegSub30 {
 // Real polymorphic view: GetTypeCode is slot 8 (+0x20), a real virtual (8 fillers).
 class CProjTypeObj {
 public:
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual i32 GetTypeCode(); // slot 8 (+0x20)
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    void Slot5();
+    void Slot6();
+    void Slot7();
+    i32 GetTypeCode(); // slot 8 (+0x20)
     char _24[0x188 - 0x24];
     i32 m_188; // +0x188
     i32 CallGetTypeCode() {

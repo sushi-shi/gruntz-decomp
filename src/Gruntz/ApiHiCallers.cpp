@@ -249,46 +249,46 @@ i32 Builder_168080::Init(
 // the callee cleans, so they are modeled as __stdcall fn-ptr vtables.
 // ===========================================================================
 struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
 };
 struct ObjA3_17c3f0 { // real polymorphic; fn31 is slot 31 (+0x7c)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual void Slot24();
-    virtual void Slot25();
-    virtual void Slot26();
-    virtual void Slot27();
-    virtual void Slot28();
-    virtual void Slot29();
-    virtual void Slot30();
-    virtual void __stdcall fn31(i32); // slot 31 (+0x7c)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot16();
+    void Slot17();
+    void Slot18();
+    void Slot19();
+    void Slot20();
+    void Slot21();
+    void Slot22();
+    void Slot23();
+    void Slot24();
+    void Slot25();
+    void Slot26();
+    void Slot27();
+    void Slot28();
+    void Slot29();
+    void Slot30();
+    void __stdcall fn31(i32); // slot 31 (+0x7c)
 };
 extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
 

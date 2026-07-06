@@ -60,11 +60,11 @@
 // Update) and the message scans test its flag word m_2ac.
 SIZE_UNKNOWN(CGMEntity);
 struct CGMEntity {
-    virtual void Gv0();
-    virtual void Gv1();
-    virtual void Gv2();
-    virtual void Gv3();
-    virtual void Update(); // slot 4 (+0x10) - per-entity per-frame step
+    void Gv0();
+    void Gv1();
+    void Gv2();
+    void Gv3();
+    void Update(); // slot 4 (+0x10) - per-entity per-frame step
     char m_pad4[0x2ac - 0x4];
     i32 m_2ac; // +0x2ac flag word (scanned with a bit mask)
 };
@@ -88,31 +88,31 @@ extern "C" CGMEntityList* g_645574; // (a pointer to the list)
 // fillers); in->Poll() lowers to the same call [eax+0x60].
 SIZE_UNKNOWN(CGMInputObj);
 struct CGMInputObj {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual i32 __stdcall Poll(); // +0x60 (slot 24)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot16();
+    void Slot17();
+    void Slot18();
+    void Slot19();
+    void Slot20();
+    void Slot21();
+    void Slot22();
+    void Slot23();
+    i32 __stdcall Poll(); // +0x60 (slot 24)
 };
 
 // The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
@@ -272,14 +272,14 @@ public:
 // dtor folds into ~CCreditsState as the final base-vptr restore.
 SIZE_UNKNOWN(CCreditsImgBase);
 struct CCreditsImgBase {
-    virtual ~CCreditsImgBase() {}
+    ~CCreditsImgBase() {}
 };
 SIZE_UNKNOWN(CCreditsImageList);
 struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
     // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
-    virtual ~CCreditsImageList() OVERRIDE {
+    ~CCreditsImageList() {
         DeleteImageList();
     }
     void* m_hImageList; // +0x04

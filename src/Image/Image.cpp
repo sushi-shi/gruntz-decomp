@@ -962,7 +962,7 @@ inline void* operator new(u32, void* p) {
 SIZE_UNKNOWN(CRezImageSource);
 class CRezImageSource {
 public:
-    virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
+    i32 Probe(void* magic, void** out); // slot 0 (@0x00)
 };
 
 // The data tag passed to the source probe (reloc-masked .rdata datum).
@@ -988,8 +988,8 @@ public:
 SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
 class CRezSurfaceItem {
 public:
-    virtual void* ImgItemScalarDtor(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
-    virtual i32 ImgItemLoad(void* src);         // slot 1 @+0x04  Load
+    void* ImgItemScalarDtor(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
+    i32 ImgItemLoad(void* src);         // slot 1 @+0x04  Load
     inline CRezSurfaceItem() {
         m_08 = 0;
         m_0c = 0;

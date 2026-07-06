@@ -48,7 +48,7 @@ struct Owner;
 // set m_34/m_38/m_3c (the leaf does). Modeled as a non-polymorphic base class so
 // the leaf record chains it; the throwing link ctor inside forces the /GX EH frame.
 struct CUserLogicOOL {
-    virtual void Vf0();          // +0x00  declared-only vptr anchor (polymorphic base)
+    void Vf0();                  // +0x00  declared-only vptr anchor (polymorphic base)
     CUserLogicOOL(Owner* owner); // 0x58cd0
     char m_pad04[0x34 - 0x04];   // +0x04..+0x33
     Owner* m_34;                 // +0x34
@@ -73,22 +73,22 @@ struct DnnRec : CUserLogicOOL {
 // [eax+N]`.
 class EngRec {
 public:
-    virtual void s0();       // +0x00
-    virtual void s1();       // +0x04
-    virtual void s2();       // +0x08
-    virtual void s3();       // +0x0c
-    virtual void s4();       // +0x10
-    virtual void s5();       // +0x14
-    virtual void Activate(); // +0x18  (slot 6)
-    virtual void s7();       // +0x1c
-    virtual void s8();       // +0x20
-    virtual void s9();       // +0x24
-    virtual void V28();      // +0x28
-    virtual void V2C();      // +0x2c
-    virtual void V30();      // +0x30
-    virtual void V34();      // +0x34
-    virtual void V38();      // +0x38
-    virtual void V3C();      // +0x3c
+    void s0();       // +0x00
+    void s1();       // +0x04
+    void s2();       // +0x08
+    void s3();       // +0x0c
+    void s4();       // +0x10
+    void s5();       // +0x14
+    void Activate(); // +0x18  (slot 6)
+    void s7();       // +0x1c
+    void s8();       // +0x20
+    void s9();       // +0x24
+    void V28();      // +0x28
+    void V2C();      // +0x2c
+    void V30();      // +0x30
+    void V34();      // +0x34
+    void V38();      // +0x38
+    void V3C();      // +0x3c
 };
 
 // The worker held at owner->m_7c; only the pump fields are modeled.

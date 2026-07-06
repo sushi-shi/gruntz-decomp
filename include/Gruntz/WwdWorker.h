@@ -11,11 +11,11 @@
 class CWwdWorker {
 public:
     void Ctor(i32 root, i32 a, i32 flags); // 0x15b300
-    virtual void V00();
-    virtual void V04();
-    virtual void V08();
-    virtual void V0C();
-    virtual i32 Kick(void* owner); // +0x10
+    void V00();
+    void V04();
+    void V08();
+    void V0C();
+    i32 Kick(void* owner); // +0x10
 };
 
 // --- vtable catalog ---

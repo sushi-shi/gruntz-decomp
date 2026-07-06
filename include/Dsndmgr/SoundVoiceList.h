@@ -48,8 +48,8 @@ template<class T> inline T* elemOf(DSoundLink* link) {
 // retail inline "mov [e],??_7PureSoundElem; RezFree(e)" - the reap teardown, with
 // NO manual vtable store.
 struct PureSoundElem {
-    virtual i32 Tick(i32 now) = 0; // +0x00  slot 0  __purecall (per-frame update)
-    virtual i32 Stop() = 0;        // +0x04  slot 1  __purecall
+    i32 Tick(i32 now);             // +0x00  slot 0  __purecall (per-frame update)
+    i32 Stop();                    // +0x04  slot 1  __purecall
     void operator delete(void* p); // Rez-heap free (RezFree, 0x1b9b82)
 };
 inline void PureSoundElem::operator delete(void* p) {

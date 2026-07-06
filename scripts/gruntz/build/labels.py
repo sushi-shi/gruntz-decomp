@@ -235,22 +235,28 @@ def emit_ir(clang, tu, flags, cl_flags=None):
     it back. The plain driver streams to stdout.
     """
     if cl_flags is not None:
-        with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
-            ll = tf.name
-        try:
-            cmd = [clang, "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
-                   *cl_flags, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
-            res = subprocess.run(cmd, capture_output=True, text=True)
-            ir = Path(ll).read_text() if os.path.getsize(ll) else ""
-        finally:
+        # Retry once: under heavy parallel label-regen the temp .ll can go missing
+        # (clang left nothing / a tmp race), which is transient - a re-run succeeds.
+        res = None
+        for _attempt in range(2):
+            with tempfile.NamedTemporaryFile(suffix=".ll", delete=False) as tf:
+                ll = tf.name
             try:
-                os.unlink(ll)
-            except OSError:
-                pass
-        if not ir:
-            log(f"ERROR {tu}: clang -emit-llvm produced no IR\n{res.stderr[:400]}")
-            return None
-        return ir
+                cmd = [clang, "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
+                       *cl_flags, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
+                res = subprocess.run(cmd, capture_output=True, text=True)
+                # exists-guard: getsize() FileNotFounds on a vanished temp; treat as no-IR.
+                ir = Path(ll).read_text() if (os.path.exists(ll) and os.path.getsize(ll)) else ""
+            finally:
+                try:
+                    os.unlink(ll)
+                except OSError:
+                    pass
+            if ir:
+                return ir
+        log(f"ERROR {tu}: clang -emit-llvm produced no IR\n"
+            f"{(res.stderr[:400] if res else '')}")
+        return None
     cmd = [clang, "-DGRUNTZ_EMIT_META", *MS_FLAGS, *flags, *INC_GCC,
            "-S", "-emit-llvm", "-o", "-", tu]
     res = subprocess.run(cmd, capture_output=True, text=True)

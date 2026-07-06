@@ -57,19 +57,19 @@ public:
     // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
     // would collide/misname the datum. The manual image-frame vptr stamp is removed
     // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
-    virtual void* GetRuntimeClass();                      // [0]  +0x00
-    virtual void* ImgScalarDtor(i32 flags);               // [1]  +0x04  scalar-deleting dtor (ILT)
-    virtual void* Serialize();                            // [2]  +0x08 (ILT)
-    virtual void* AssertValid();                          // [3]  +0x0c (ILT)
-    virtual void* Dump();                                 // [4]  +0x10 (ILT)
-    virtual void* HasFrames();                            // [5]  +0x14 (ILT)
-    virtual void* IsValidImage();                         // [6]  +0x18 (ILT)
-    virtual void* FreeAll();                              // [7]  +0x1c  CImage::FreeAll
-    virtual void* GetImageCategory();                     // [8]  +0x20 (ILT)
-    virtual i32 Create24(i32 a, i32 b, i32 c);            // [9]  +0x24  CImage::Create24
-    virtual i32 LoadDispatch(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  CImage::LoadDispatch
-    virtual void* Resolve();                              // [11] +0x2c  CImage::Resolve
-    virtual i32 Create(i32 a, i32 b);                     // [12] +0x30  CImage::Create
+    void* GetRuntimeClass();                      // [0]  +0x00
+    void* ImgScalarDtor(i32 flags);               // [1]  +0x04  scalar-deleting dtor (ILT)
+    void* Serialize();                            // [2]  +0x08 (ILT)
+    void* AssertValid();                          // [3]  +0x0c (ILT)
+    void* Dump();                                 // [4]  +0x10 (ILT)
+    void* HasFrames();                            // [5]  +0x14 (ILT)
+    void* IsValidImage();                         // [6]  +0x18 (ILT)
+    void* FreeAll();                              // [7]  +0x1c  CImage::FreeAll
+    void* GetImageCategory();                     // [8]  +0x20 (ILT)
+    i32 Create24(i32 a, i32 b, i32 c);            // [9]  +0x24  CImage::Create24
+    i32 LoadDispatch(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  CImage::LoadDispatch
+    void* Resolve();                              // [11] +0x2c  CImage::Resolve
+    i32 Create(i32 a, i32 b);                     // [12] +0x30  CImage::Create
 
     i32 m_index;   // +0x04  frame index
     i32 m_8;       // +0x08
@@ -106,7 +106,7 @@ public:
 
     // Three frame-creation overloads (0x151fb0/0x152060/0x152110). Each refuses if a
     // frame already occupies `index`, else allocates a CImageFrame, runs the frame's
-    // loader virtual (slot 0x30/0x28/0x24), inserts it (SetAtGrow), and widens the
+    // loader (slot 0x30/0x28/0x24), inserts it (SetAtGrow), and widens the
     // populated index range. Returns the new frame, or 0 on refusal/load failure.
     CImageFrame* CreateFrame30(i32 a0, i32 index, i32 a2);
     CImageFrame* CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3);

@@ -108,14 +108,14 @@ struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     char _p2c[0x40 - 0x2c];
     CDDrawSurfaceMgr();
     ~CDDrawSurfaceMgr();
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18)
-    void VMethod155f50(void*);                    // 0x155f50
+    void v0();
+    void v1();
+    void v2();
+    void v3();
+    void v4();
+    void v5();
+    i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18)
+    void VMethod155f50(void*);            // 0x155f50
 };
 struct CSymParser { // m_34 (0x94)
     CSymParser();

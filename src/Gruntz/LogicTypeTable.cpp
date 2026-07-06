@@ -44,16 +44,16 @@ class CLogicMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
 class CLogicRegistry {
 public:
     // slot +0x24: install (factoryFn, key, flags) for a not-yet-present type.
-    virtual void m_00();                                                // +0x00
-    virtual void m_04();                                                // +0x04
-    virtual void m_08();                                                // +0x08
-    virtual void m_0c();                                                // +0x0c
-    virtual void m_10();                                                // +0x10
-    virtual void m_14();                                                // +0x14
-    virtual void m_18();                                                // +0x18
-    virtual void m_1c();                                                // +0x1c
-    virtual void m_20();                                                // +0x20
-    virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
+    void m_00();                                                // +0x00
+    void m_04();                                                // +0x04
+    void m_08();                                                // +0x08
+    void m_0c();                                                // +0x0c
+    void m_10();                                                // +0x10
+    void m_14();                                                // +0x14
+    void m_18();                                                // +0x18
+    void m_1c();                                                // +0x1c
+    void m_20();                                                // +0x20
+    void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
 
     char m_pad04[0x10 - 4];
     CLogicMap m_10map; // +0x10  lookup sub-object

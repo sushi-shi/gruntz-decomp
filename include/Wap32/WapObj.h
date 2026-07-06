@@ -43,10 +43,10 @@ class CWapObj : public Wap::CObject {
 public:
     // slot 5 (@+0x14) default @0x0013b6: `return m_10 > 0`. Derived classes
     // (CLoadable::IsLoaded, CGameLevel::IsLoaded, ...) override; CImage keeps it.
-    virtual i32 IsLoaded();
+    i32 IsLoaded();
     // slot 6 (@+0x18) default @0x001c08: `return 1`. CImageSet1/2/3 override; the
     // rest of the family (CImage, CResolveNode, the workers, ...) keep it.
-    virtual i32 IsReady();
+    i32 IsReady();
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

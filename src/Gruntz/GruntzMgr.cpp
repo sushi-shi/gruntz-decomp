@@ -176,8 +176,8 @@ struct EngObj {
 };
 class CWorldDelete {
 public:
-    virtual void s0();            // slot 0 (+0x00)
-    virtual void Slot1(i32 flag); // slot 1 (+0x04) flagged scalar-delete
+    void s0();            // slot 0 (+0x00)
+    void Slot1(i32 flag); // slot 1 (+0x04) flagged scalar-delete
 };
 struct CSettingsWriter {
     // WriteInt IS Utils::RegistryHelper::SetValueDword; cast at each call.
@@ -205,7 +205,7 @@ struct CCheckpointDlg {
 // 0x1ba51d) - the two /GX destructibles this method's EH frame tracks.
 class CSaveDlgBase {
 public:
-    virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
+    ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
 };
 class CSaveNameDlg : public CSaveDlgBase {
 public:
@@ -337,55 +337,55 @@ void EngineCopy(void* dst, void* src, i32 n); // FUN_00520340
 // thiscall (MSVC 5.0 forbids the __thiscall keyword, so model it as a vtable).
 class CModalDialog {
 public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s0a();
-    virtual void s0b();
-    virtual void s0c();
-    virtual void s0d();
-    virtual void s0e();
-    virtual void s0f();
-    virtual void s10();
-    virtual void s11();
-    virtual void s12();
-    virtual void s13();
-    virtual void s14();
-    virtual void s15();
-    virtual void s16();
-    virtual void s17();
-    virtual void s18();
-    virtual void s19();
-    virtual void s1a();
-    virtual void s1b();
-    virtual void s1c();
-    virtual void s1d();
-    virtual void s1e();
-    virtual void s1f();
-    virtual void s20();
-    virtual void s21();
-    virtual void s22();
-    virtual void s23();
-    virtual void s24();
-    virtual void s25();
-    virtual void s26();
-    virtual void s27();
-    virtual void s28();
-    virtual void s29();
-    virtual void s2a();
-    virtual void s2b();
-    virtual void s2c();
-    virtual void s2d();
-    virtual void s2e();
-    virtual void s2f();
-    virtual i32 Run(); // slot 48 (+0xc0)
+    void s00();
+    void s01();
+    void s02();
+    void s03();
+    void s04();
+    void s05();
+    void s06();
+    void s07();
+    void s08();
+    void s09();
+    void s0a();
+    void s0b();
+    void s0c();
+    void s0d();
+    void s0e();
+    void s0f();
+    void s10();
+    void s11();
+    void s12();
+    void s13();
+    void s14();
+    void s15();
+    void s16();
+    void s17();
+    void s18();
+    void s19();
+    void s1a();
+    void s1b();
+    void s1c();
+    void s1d();
+    void s1e();
+    void s1f();
+    void s20();
+    void s21();
+    void s22();
+    void s23();
+    void s24();
+    void s25();
+    void s26();
+    void s27();
+    void s28();
+    void s29();
+    void s2a();
+    void s2b();
+    void s2c();
+    void s2d();
+    void s2e();
+    void s2f();
+    i32 Run(); // slot 48 (+0xc0)
 };
 
 // The +0x2dc sub-object's teardown + the active object's own finalize (both
@@ -477,14 +477,14 @@ struct CRezSurface94 {
 // so model it as a typed polymorphic class with anchor slots.
 class CWorldModeIface {
 public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual i32 SetVideoMode(i32 hwnd, i32 w, i32 h, i32 depth, i32 flag); // slot 6 (+0x18)
-    virtual void Notify();                                                 // slot 7 (+0x1c)
+    void s00();
+    void s01();
+    void s02();
+    void s03();
+    void s04();
+    void s05();
+    i32 SetVideoMode(i32 hwnd, i32 w, i32 h, i32 depth, i32 flag); // slot 6 (+0x18)
+    void Notify();                                                 // slot 7 (+0x1c)
 };
 // The mode-reset callback registration reached during LoadWorldMode: a non-virtual
 // thiscall on the world with a code-address callback (LAB_00403193) handed in. The
@@ -534,10 +534,10 @@ struct CmdSink {
 // delete (Close). Model it as a polymorphic class with anchor slot 0.
 class CmdSinkV {
 public:
-    virtual void s0();
-    virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
-    // Set @0x1b9b82 IS _RezFree (recv freed); call it.
-    // Teardown @0x3b1b IS ~CTriggerMgr; cast at the call.
+    void s0();
+    i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
+    void Set(i32 row, i32 col, i32 value);   // (this, row, col, value) reloc-masked
+    void Teardown();                         // (this) reloc-masked (Close)
 };
 
 // The world's layer/plane object is the shared CViewport (<Gruntz/Viewport.h>): an

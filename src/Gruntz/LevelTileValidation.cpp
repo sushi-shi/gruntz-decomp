@@ -89,11 +89,11 @@ struct TileObjList {
 // (Reading a virtual slot's address as data is the one thing plain C++ virtuals
 // can't spell, so the identity read below indexes the vptr directly.)
 struct GameObjAux7c {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void ClassId(); // slot 4 (+0x10): its fn address is the per-class identity
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void ClassId(); // slot 4 (+0x10): its fn address is the per-class identity
     char m_pad04[0xf0 - 0x04];
     RECT m_f0;  // +0xf0
     RECT m_100; // +0x100
@@ -180,15 +180,15 @@ static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";
 // virtual (8 filler slots precede it). Declared-only; tc->GetTypeId() lowers to the
 // same call [eax+0x20].
 struct TileClass {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual i32 GetTypeId(i32 a, i32 b); // +0x20 (slot 8)
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    void Slot5();
+    void Slot6();
+    void Slot7();
+    i32 GetTypeId(i32 a, i32 b); // +0x20 (slot 8)
 };
 // The world tile-grid geometry is the shared CViewport (<Gruntz/Viewport.h>).
 struct TileGrid {

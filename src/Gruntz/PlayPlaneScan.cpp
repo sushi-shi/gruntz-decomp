@@ -76,15 +76,15 @@ struct PlaneList {
 // A tile object reached through the covered-tile grid; slot 8 (+0x20) is the
 // per-cell query the covered draw passes its result to.
 struct TileObj {
-    virtual void s0();
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-    virtual void s6();
-    virtual void s7();
-    virtual i32 Query(i32 subX, i32 subY); // slot 8 (+0x20)
+    void s0();
+    void s1();
+    void s2();
+    void s3();
+    void s4();
+    void s5();
+    void s6();
+    void s7();
+    i32 Query(i32 subX, i32 subY); // slot 8 (+0x20)
 };
 
 // The grid geometry at drawSurf->m_grid.

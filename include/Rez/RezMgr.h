@@ -216,7 +216,7 @@ public:
 class CRezParseNode : public CRezItmBase {
 public:
     CRezParseNode(void* parent, char* nameSrc, void* owner);
-    virtual void v0(); // new virtual - forces the distinct derived vtable (+0x1ef7d0)
+    void v0(); // new  - forces the distinct derived vtable (+0x1ef7d0)
 
     char* m_10; // +0x10  heap-copied name
     i32 m_14;   // +0x14  (= 0; role unproven)
@@ -247,9 +247,9 @@ class CRezDirNode; // fwd (RezNode holds a CRezDirNode* sub-dir at +0x14)
 // So model it as a class with the read method at vtable slot index 2.
 class RezStream {
 public:
-    virtual void v0() = 0;
-    virtual void v1() = 0;
-    virtual i32 ReadAt(i32 off, i32 zero, u32 size, void* buf) = 0; // slot +0x08
+    void v0();
+    void v1();
+    i32 ReadAt(i32 off, i32 zero, u32 size, void* buf); // slot +0x08
 };
 
 // The archive source object that the dir node points to at +0x18. Load checks
@@ -322,12 +322,12 @@ extern i32 g_rezLowDetail;
 // ---------------------------------------------------------------------------
 class CGameMode {
 public:
-    virtual void v0();     // +0x00
-    virtual void v1();     // +0x04
-    virtual void v2();     // +0x08
-    virtual void v3();     // +0x0c
-    virtual i32 Update();  // +0x10  (slot 4) - per-frame state step
-    virtual void Render(); // +0x14  (slot 5) - per-frame post-step
+    void v0();     // +0x00
+    void v1();     // +0x04
+    void v2();     // +0x08
+    void v3();     // +0x0c
+    i32 Update();  // +0x10  (slot 4) - per-frame state step
+    void Render(); // +0x14  (slot 5) - per-frame post-step
 };
 
 // ---------------------------------------------------------------------------
@@ -376,12 +376,12 @@ struct RezMgrOwner {
 class RezMgr {
 public:
     // The per-frame game tick (vtable slot +0x10 / index 4).
-    virtual i32 PerFrameTick();
+    i32 PerFrameTick();
 
     i32 MakeImageKey(void* arg1, char* name, void* arg3);
     i32 MakeRezPath();
 
-    // The frame-clock advance helper (a non-virtual member; also
+    // The frame-clock advance helper (a non-member; also
     // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
     // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
     i32 UpdateClock();

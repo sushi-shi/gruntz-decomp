@@ -15,18 +15,18 @@
 // The held surface/display object: COM-ABI, so its virtuals are __stdcall with the
 // interface as the hidden first arg. Slot 11 (offset 0x2c) is the 2-RECT Blt.
 struct DDrawBltSurface {
-    virtual i32 __stdcall s00();
-    virtual i32 __stdcall s01();
-    virtual i32 __stdcall s02();
-    virtual i32 __stdcall s03();
-    virtual i32 __stdcall s04();
-    virtual i32 __stdcall s05();
-    virtual i32 __stdcall s06();
-    virtual i32 __stdcall s07();
-    virtual i32 __stdcall s08();
-    virtual i32 __stdcall s09();
-    virtual i32 __stdcall s10();
-    virtual i32 __stdcall Blt(void* dstRect, void* srcRect); // slot 11 (+0x2c)
+    i32 __stdcall s00();
+    i32 __stdcall s01();
+    i32 __stdcall s02();
+    i32 __stdcall s03();
+    i32 __stdcall s04();
+    i32 __stdcall s05();
+    i32 __stdcall s06();
+    i32 __stdcall s07();
+    i32 __stdcall s08();
+    i32 __stdcall s09();
+    i32 __stdcall s10();
+    i32 __stdcall Blt(void* dstRect, void* srcRect); // slot 11 (+0x2c)
 };
 
 // The display helper that owns the surface at +0 and the two RECTs at +8 / +0x184.

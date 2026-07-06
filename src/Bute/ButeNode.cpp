@@ -44,7 +44,7 @@ extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 class zErrHandling {
 public:
     zErrHandling(void* msg);
-    virtual ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
+    ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
 
     void* m_msg; // +0x04
 };

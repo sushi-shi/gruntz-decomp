@@ -51,19 +51,19 @@ class CObject;
 // reference count. Slot layout matches the child class in the engine.
 class CDDrawWorkerItem {
 public:
-    virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual i32 Vfunc28(i32 a1, i32 a2); // +0x28
-    char _pad04[0x74 - 0x04];            // +0x04..+0x73
-    i32 m_refCount;                      // +0x74  reference count
+    void Slot00();
+    i32 ScalarDtor(i32 flag); // +0x04
+    void Slot08();
+    void Slot0C();
+    void Slot10();
+    void Slot14();
+    void Slot18();
+    void Slot1C();
+    void Slot20();
+    void Slot24();
+    i32 Vfunc28(i32 a1, i32 a2); // +0x28
+    char _pad04[0x74 - 0x04];    // +0x04..+0x73
+    i32 m_refCount;              // +0x74  reference count
 };
 
 // Work nodes (CObList CNode-shaped: +0x00 = next, +0x08 = child pointer).
@@ -90,7 +90,7 @@ public:
     void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void PruneWorkers(i32 a1, i32 a2);
 
-    virtual void
+    void
     VSlot0(); // +0x00 (vptr; not stamped by these methods)  // real polymorphic vptr @+0x00 (was m_vptr)
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b
@@ -111,11 +111,11 @@ void operator delete(void*);
 
 class WorkerListSibBase {
 public:
-    virtual void s0();
-    virtual void* ScalarDtor(i32 flag);
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
+    void s0();
+    void* ScalarDtor(i32 flag);
+    void s2();
+    void s3();
+    void s4();
     ~WorkerListSibBase();
     i32 m_04; // +0x04
     i32 m_08; // +0x08

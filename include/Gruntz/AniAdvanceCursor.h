@@ -12,10 +12,10 @@ class CAniAdvanceCursor : public CLoadable {
 public:
     CAniAdvanceCursor() {} // default (view-embed)
     CAniAdvanceCursor(i32 owner, i32 field04, i32 field08);
-    virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1 (scalar-deleting dtor 0x15b6b0)
-    i32 IsLoaded() OVERRIDE;               // slot 5  0x15b6a0
-    i32 Unload() OVERRIDE;                 // slot 7  0x15c2c0
-    i32 Advance_15c360(u32 ctx);           // 0x15c360 (advance / set-geo-source)
+    ~CAniAdvanceCursor();        // slot 1 (scalar-deleting dtor 0x15b6b0)
+    i32 IsLoaded();              // slot 5  0x15b6a0
+    i32 Unload();                // slot 7  0x15c2c0
+    i32 Advance_15c360(u32 ctx); // 0x15c360 (advance / set-geo-source)
 
     i32 m_10; // +0x10
     i32 m_14; // +0x14

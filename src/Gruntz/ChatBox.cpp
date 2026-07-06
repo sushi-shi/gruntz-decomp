@@ -89,12 +89,12 @@ extern "C" void RezFree(void* p); // 0x1b9b82
 // The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
 // caller's fallback coords") and a virtual Measure() at vtable slot +0x14 (index 5).
 struct CChatSprite {
-    virtual void Vf0();
-    virtual void Vf1();
-    virtual void Vf2();
-    virtual void Vf3();
-    virtual void Vf4();
-    virtual i32 Measure(); // slot +0x14
+    void Vf0();
+    void Vf1();
+    void Vf2();
+    void Vf3();
+    void Vf4();
+    i32 Measure(); // slot +0x14
     char pad4[0x44 - 0x4];
     i32 m_44; // +0x44 anchor x
     i32 m_48; // +0x48 anchor y

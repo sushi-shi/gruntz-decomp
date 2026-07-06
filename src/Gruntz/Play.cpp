@@ -647,8 +647,8 @@ alt2:
 struct CRegExit {
     char p0[0x70];
     struct Teardown {
-        virtual void Shutdown(); // slot 0 (+0x0)
-    }* m_70;                     // +0x70
+        void Shutdown(); // slot 0 (+0x0)
+    }* m_70;             // +0x70
     char p74[0x128 - 0x74];
     i32 m_128; // +0x128
     char p12c[0x134 - 0x12c];
@@ -686,49 +686,49 @@ void CPlay::OnExit() {
 // Two renderer/draw sub-objects torn down through a vtable slot. Dummy virtuals
 // pad the slot index so `o->Teardown()` lowers to `mov edx,[o]; call [edx+slot]`.
 struct CExitV58 { // teardown at vtable +0x58 (slot 22)
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s0a();
-    virtual void s0b();
-    virtual void s0c();
-    virtual void s0d();
-    virtual void s0e();
-    virtual void s0f();
-    virtual void s10();
-    virtual void s11();
-    virtual void s12();
-    virtual void s13();
-    virtual void s14();
-    virtual void s15();
-    virtual void Teardown(); // slot 22 (+0x58)
+    void s00();
+    void s01();
+    void s02();
+    void s03();
+    void s04();
+    void s05();
+    void s06();
+    void s07();
+    void s08();
+    void s09();
+    void s0a();
+    void s0b();
+    void s0c();
+    void s0d();
+    void s0e();
+    void s0f();
+    void s10();
+    void s11();
+    void s12();
+    void s13();
+    void s14();
+    void s15();
+    void Teardown(); // slot 22 (+0x58)
 };
 struct CExitV44 { // teardown at vtable +0x44 (slot 17)
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s0a();
-    virtual void s0b();
-    virtual void s0c();
-    virtual void s0d();
-    virtual void s0e();
-    virtual void s0f();
-    virtual void s10();
-    virtual void Teardown(); // slot 17 (+0x44)
+    void s00();
+    void s01();
+    void s02();
+    void s03();
+    void s04();
+    void s05();
+    void s06();
+    void s07();
+    void s08();
+    void s09();
+    void s0a();
+    void s0b();
+    void s0c();
+    void s0d();
+    void s0e();
+    void s0f();
+    void s10();
+    void Teardown(); // slot 17 (+0x44)
 };
 // The worker-list leaf (ClearWorkers @0x163c60); TU-local method view of the real
 // ddrawworkerlist-unit class (no header yet).
@@ -1181,18 +1181,18 @@ struct CVisEntityType {
 };
 // Real polymorphic view: Notify is slot 11 (+0x2c), a real virtual (11 fillers).
 struct CVisEntity {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual void Slot8();
-    virtual void Slot9();
-    virtual void Slot10();
-    virtual void Notify(void* held); // slot 11 (+0x2c)
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    void Slot5();
+    void Slot6();
+    void Slot7();
+    void Slot8();
+    void Slot9();
+    void Slot10();
+    void Notify(void* held); // slot 11 (+0x2c)
     char p4[0x7c - 0x04];
     CVisEntityType* m_7c; // +0x7c
 };
@@ -3845,24 +3845,24 @@ struct CRtWorld { // this->m_4
 // + char pad[], NO fake virtuals.
 // Real polymorphic view: Teardown is slot 17 (+0x44), a real virtual (17 fillers).
 struct CRtImageReg { // m_c->m_24
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Teardown(); // slot 17 (+0x44)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot16();
+    void Teardown(); // slot 17 (+0x44)
     void CallTeardown() {
         Teardown();
     }
@@ -4020,40 +4020,40 @@ struct DtorWorld { // this->m_4
 // a real virtual (32 fillers); the compiler emits the vptr at +0x00 - byte-identical
 // layout. CallVfunc80() -> Vfunc80() lowers to the same call [eax+0x80].
 struct CDtorThis {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual void Slot24();
-    virtual void Slot25();
-    virtual void Slot26();
-    virtual void Slot27();
-    virtual void Slot28();
-    virtual void Slot29();
-    virtual void Slot30();
-    virtual void Slot31();
-    virtual void Vfunc80(); // slot 32 (+0x80)
-    void BaseDtor();        // 0x3f53 thunk  (base CState dtor)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot16();
+    void Slot17();
+    void Slot18();
+    void Slot19();
+    void Slot20();
+    void Slot21();
+    void Slot22();
+    void Slot23();
+    void Slot24();
+    void Slot25();
+    void Slot26();
+    void Slot27();
+    void Slot28();
+    void Slot29();
+    void Slot30();
+    void Slot31();
+    void Vfunc80();  // slot 32 (+0x80)
+    void BaseDtor(); // 0x3f53 thunk  (base CState dtor)
 
     char p0[0x4];
     DtorWorld* m_4; // +0x04
@@ -4175,20 +4175,20 @@ struct EmCWorld { // m_c->m_4 (real: CDDrawWorkerMgr)
     i32 m_18;      // +0x18
 };
 struct EmRendC { // m_c->m_c; real polymorphic, Present is slot 13 (+0x34)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void __stdcall Present(EmHdr14*, i32); // slot 13 (+0x34)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void __stdcall Present(EmHdr14*, i32); // slot 13 (+0x34)
 };
 struct EmResMgr { // this->m_c
     char p0[0x4];

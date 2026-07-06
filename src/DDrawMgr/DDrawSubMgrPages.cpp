@@ -39,11 +39,11 @@ inline void* operator new(u32, void* p) {
 // CDDrawSurfacePair (own vtable 0x5eff30, from <DDrawMgr/DDrawSurfacePair.h>).
 class CDDrawSurfaceChildA : public CWapObj {
 public:
-    i32 IsLoaded() OVERRIDE;                                      // slot 5 (@0x14) 0x159150
-    virtual void Slot07_1591d0();                                 // slot 7 (@0x1c) 0x1591d0
-    virtual void Slot08_159180();                                 // slot 8 (@0x20) 0x159180
-    virtual i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
-    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);              // 0x158f30
+    i32 IsLoaded();                                       // slot 5 (@0x14) 0x159150
+    void Slot07_1591d0();                                 // slot 7 (@0x1c) 0x1591d0
+    void Slot08_159180();                                 // slot 8 (@0x20) 0x159180
+    i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
+    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);      // 0x158f30
     char m_pad04[0x2c - 0x04];
     i32 m_2c; // +0x2c
 }; // 0x30

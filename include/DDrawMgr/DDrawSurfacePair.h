@@ -57,8 +57,8 @@ class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 SIZE_UNKNOWN(CSurfacePairBase);
 class CSurfacePairBase : public CWapObj {
 public:
-    ~CSurfacePairBase() OVERRIDE; // slot 1 (scalar-deleting dtor)
-    i32 IsLoaded() OVERRIDE;      // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
+    ~CSurfacePairBase(); // slot 1 (scalar-deleting dtor)
+    i32 IsLoaded();      // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_status;            // +0x04  status word (-1 inactive, 0x63 active)

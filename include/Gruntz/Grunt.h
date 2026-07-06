@@ -786,19 +786,19 @@ i32 __stdcall GruntDropReady029b40(CGrunt* g);
 SIZE_UNKNOWN(CGruntArchive);
 class CGruntArchive {
 public:
-    virtual void slot00();
-    virtual void slot04();
-    virtual void slot08();
-    virtual void slot0c();
-    virtual void slot10();
-    virtual void slot14();
-    virtual void slot18();
-    virtual void slot1c();
-    virtual void slot20();
-    virtual void slot24();
-    virtual void slot28();
-    virtual void Read(void* data, i32 size);        // vtable slot +0x2c
-    virtual void Write(const void* data, i32 size); // vtable slot +0x30
+    void slot00();
+    void slot04();
+    void slot08();
+    void slot0c();
+    void slot10();
+    void slot14();
+    void slot18();
+    void slot1c();
+    void slot20();
+    void slot24();
+    void slot28();
+    void Read(void* data, i32 size);        // vtable slot +0x2c
+    void Write(const void* data, i32 size); // vtable slot +0x30
 };
 
 // A grunt-embedded sub-record serializer (the CGrunt move/timer state has several
@@ -989,16 +989,16 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
 SIZE_UNKNOWN(CVtSlot9);
 class CVtSlot9 {
 public:
-    virtual void s0();
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-    virtual void s6();
-    virtual void s7();
-    virtual void s8();
-    virtual void Slot9();
+    void s0();
+    void s1();
+    void s2();
+    void s3();
+    void s4();
+    void s5();
+    void s6();
+    void s7();
+    void s8();
+    void Slot9();
 };
 
 // The name/animation cache collections UserLogicVfunc9 drains (sub-objects of CGrunt

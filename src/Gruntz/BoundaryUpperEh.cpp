@@ -22,7 +22,7 @@ void RezFree(void* p);
 // buffer, restamp the base dtor vtable (0x5e8cb4).
 // ---------------------------------------------------------------------------
 struct Sev17e240 {
-    virtual ~Sev17e240();
+    ~Sev17e240();
 };
 SIZE_UNKNOWN(Sev17e240);
 inline Sev17e240::~Sev17e240() {}
@@ -50,7 +50,7 @@ C17e240::~C17e240() {
 // keeps its own placeholder class.
 // ---------------------------------------------------------------------------
 struct Sev14fe30 {
-    virtual ~Sev14fe30();
+    ~Sev14fe30();
 };
 SIZE_UNKNOWN(Sev14fe30);
 inline Sev14fe30::~Sev14fe30() {}
@@ -71,7 +71,7 @@ C14fe30::~C14fe30() {
 // heap buffer and zero it, restamp the base dtor vtable (0x5e8cb4).
 // ---------------------------------------------------------------------------
 struct Sev161500 {
-    virtual ~Sev161500();
+    ~Sev161500();
 };
 SIZE_UNKNOWN(Sev161500);
 inline Sev161500::~Sev161500() {}
@@ -101,7 +101,7 @@ C161500::~C161500() {
 // (0x5f0328 has no RTTI name; exact class unconfirmed).
 // ---------------------------------------------------------------------------
 struct Sev168c10 {
-    virtual ~Sev168c10();
+    ~Sev168c10();
 };
 SIZE_UNKNOWN(Sev168c10);
 inline Sev168c10::~Sev168c10() {}
@@ -120,7 +120,7 @@ C168c10::~C168c10() {
 // exact class unconfirmed).
 // ---------------------------------------------------------------------------
 struct Sev15b6d0 {
-    virtual ~Sev15b6d0();
+    ~Sev15b6d0();
 };
 SIZE_UNKNOWN(Sev15b6d0);
 inline Sev15b6d0::~Sev15b6d0() {}
@@ -145,7 +145,7 @@ C15b6d0::~C15b6d0() {
 // base restamp). The base is a real subobject with a non-inline dtor.
 // ---------------------------------------------------------------------------
 struct FaderBase {
-    virtual ~FaderBase(); // out-of-line @0x17e4a0
+    ~FaderBase(); // out-of-line @0x17e4a0
 };
 SIZE_UNKNOWN(FaderBase);
 struct C17f9f0 : FaderBase {
@@ -173,7 +173,7 @@ C180450::~C180450() {
 // dtor (0x17e4a0). Members destruct before the base.
 // ---------------------------------------------------------------------------
 struct EmbedBase17e990 {
-    virtual ~EmbedBase17e990();
+    ~EmbedBase17e990();
 };
 SIZE_UNKNOWN(EmbedBase17e990);
 inline EmbedBase17e990::~EmbedBase17e990() {}
@@ -202,7 +202,7 @@ C17e990::~C17e990() {}
 // No most-derived vptr at offset 0.
 // ---------------------------------------------------------------------------
 struct Base163a40 {
-    virtual ~Base163a40();
+    ~Base163a40();
 };
 SIZE_UNKNOWN(Base163a40);
 inline Base163a40::~Base163a40() {}

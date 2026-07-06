@@ -47,18 +47,18 @@ public:
         m_28 = 0;
     }
 #endif
-    virtual ~CSbConfigItem();   // +0x00 (scalar deleting dtor)
-    virtual void Serialize();   // +0x04 (slot 1)
-    virtual void Setup();       // +0x08 (slot 2)
-    virtual void ClearFrame();  // +0x0c (slot 3)
-    virtual void Poll();        // +0x10 (slot 4)
-    virtual void Tick();        // +0x14 (slot 5)
-    virtual void HitHandlerA(); // +0x18 (slot 6)
-    virtual void HitHandlerB(); // +0x1c (slot 7)
-    virtual void HitHandlerC(); // +0x20 (slot 8)
-    virtual void HitHandlerD(); // +0x24 (slot 9)
-    virtual void Refresh();     // +0x28 (slot 10)
-    virtual i32 Configure(
+    ~CSbConfigItem();   // +0x00 (scalar deleting dtor)
+    void Serialize();   // +0x04 (slot 1)
+    void Setup();       // +0x08 (slot 2)
+    void ClearFrame();  // +0x0c (slot 3)
+    void Poll();        // +0x10 (slot 4)
+    void Tick();        // +0x14 (slot 5)
+    void HitHandlerA(); // +0x18 (slot 6)
+    void HitHandlerB(); // +0x1c (slot 7)
+    void HitHandlerC(); // +0x20 (slot 8)
+    void HitHandlerD(); // +0x24 (slot 9)
+    void Refresh();     // +0x28 (slot 10)
+    i32 Configure(
         CStatusBarMgr* mgr,
         i32 a,
         i32 b,
@@ -67,9 +67,9 @@ public:
         const char* key,
         i32 d,
         i32 e
-    );                      // +0x2c
-    virtual void s30_pad(); // +0x30 (filler between Configure and ConfigureEx)
-    virtual i32 ConfigureEx(
+    );              // +0x2c
+    void s30_pad(); // +0x30 (filler between Configure and ConfigureEx)
+    i32 ConfigureEx(
         CStatusBarMgr* mgr,
         i32 a,
         i32 b,
@@ -81,8 +81,8 @@ public:
         i32 f,
         i32 g,
         i32 h
-    );                                                             // +0x34
-    virtual void ApplyDir(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38 (SetDirection sink)
+    );                                                     // +0x34
+    void ApplyDir(i32 p0, i32 p1, i32 p2, i32 p3, i32 p4); // +0x38 (SetDirection sink)
 
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.

@@ -1010,3 +1010,5 @@ tail_default2:
 SIZE_UNKNOWN(CGamePlayInput);
 SIZE(RegArea, 0x238);
 SIZE_UNKNOWN(EO);
+
+VTBL(CObArray, 0x001ed494);

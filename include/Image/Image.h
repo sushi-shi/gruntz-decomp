@@ -147,7 +147,7 @@ public:
 // (unmatched) TU, so no ??_7/dtor body is emitted here - address never taken.
 class CFileImageElement {
 public:
-    virtual ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)
+    ~CFileImageElement(); // slot 0, @0x00 (scalar-deleting dtor ??_G)
 };
 
 // ---------------------------------------------------------------------------
@@ -164,7 +164,7 @@ SIZE_UNKNOWN(CFileImageSurface);
 class CFileImageSurface {
 public:
     void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
-    virtual ~CFileImageSurface();  // 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
+    ~CFileImageSurface();          // 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
     void FreeSurfaces();           // 0x13e4d0 (shared teardown, external/no-body)
 
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
@@ -189,39 +189,39 @@ public:
 // reconcile item - see docs/multi-view-worklist.md.]
 class CFileImageHeldSurface {
 public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual void s48();
-    virtual void s4c();
-    virtual void s50();
-    virtual void s54();
-    virtual void s58();
-    virtual void s5c();
-    virtual void s60();
-    virtual void s64();
-    virtual void s68();
-    virtual void s6c();
-    virtual void s70();
-    virtual void s74();
-    virtual void s78();
-    virtual void s7c();
-    virtual i32 Unlock(void* rect); // +0x80
+    void s00();
+    void s04();
+    void s08();
+    void s0c();
+    void s10();
+    void s14();
+    void s18();
+    void s1c();
+    void s20();
+    void s24();
+    void s28();
+    void s2c();
+    void s30();
+    void s34();
+    void s38();
+    void s3c();
+    void s40();
+    void s44();
+    void s48();
+    void s4c();
+    void s50();
+    void s54();
+    void s58();
+    void s5c();
+    void s60();
+    void s64();
+    void s68();
+    void s6c();
+    void s70();
+    void s74();
+    void s78();
+    void s7c();
+    i32 Unlock(void* rect); // +0x80
 };
 
 // The run-length source header handed to Decode (arg `src`): a +0x04/+0x06/+0x08/+0x0a

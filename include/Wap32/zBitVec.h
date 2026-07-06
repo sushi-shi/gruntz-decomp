@@ -63,14 +63,14 @@ SIZE_UNKNOWN(CContainerErr);
 class CContainerErr {
 public:
     CContainerErr(const char* msg); // 0x16d9c0 (??0CContainerErr@@QAE@PBD@Z)
-    virtual ~CContainerErr();       // [0] 0x16da40 (??_G slot); real ~ at 0x16da60
+    ~CContainerErr();               // [0] 0x16da40 (??_G slot); real ~ at 0x16da60
 
-    virtual void Slot04_16dde0(); // [1] 0x16dde0 (declared-only)
-    virtual void Slot08_16df20(); // [2] 0x16df20 (declared-only)
-    virtual void Slot0C_16dfa0(); // [3] 0x16dfa0 (declared-only)
-    virtual void Slot10_16ea80(); // [4] 0x16ea80 (declared-only)
-    virtual void Slot14_16e9c0(); // [5] 0x16e9c0 (declared-only)
-    virtual void Slot18_16ea20(); // [6] 0x16ea20 (declared-only)
+    void Slot04_16dde0(); // [1] 0x16dde0 (declared-only)
+    void Slot08_16df20(); // [2] 0x16df20 (declared-only)
+    void Slot0C_16dfa0(); // [3] 0x16dfa0 (declared-only)
+    void Slot10_16ea80(); // [4] 0x16ea80 (declared-only)
+    void Slot14_16e9c0(); // [5] 0x16e9c0 (declared-only)
+    void Slot18_16ea20(); // [6] 0x16ea20 (declared-only)
 
     CVariantSlot* m_errSink; // +0x04  the registered error handler / sink
 };
@@ -87,7 +87,7 @@ public:
     zBitVec(i32 idx, i32 sizehint);           // 0x16d790 (??0zBitVec@@QAE@HH@Z)
     zBitVec(const char* tokens, i32 minSize); // 0x16d3a0 (whitespace/'-' number-list parser)
     zBitVec& operator=(const zBitVec& o);     // 0x16d2f0 (deep copy of the word band)
-    virtual ~zBitVec() OVERRIDE;              // [0] 0x16d2a0 (real ~; ??_G thunk @0x16d2d0)
+    virtual ~zBitVec();                       // [0] 0x16d2a0 (real ~; ??_G thunk @0x16d2d0)
     i32 SetSize(i32 nbits);                   // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z)
     i32 EnsureSize(i32 nbits);                // 0x1936e0 (?EnsureSize@zBitVec@@QAEHH@Z)
 

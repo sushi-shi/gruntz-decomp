@@ -55,7 +55,7 @@ struct CAniSource {
 
 class CAniElement : public Wap::CObject {
 public:
-    virtual ~CAniElement() OVERRIDE;          // 0x152e30 (CAniElementCollection.cpp)
+    ~CAniElement();                           // 0x152e30 (CAniElementCollection.cpp)
     ::CObject* AtChecked_06b270(i32 i) const; // 0x06b270 (MFC ::CObject array element)
     i32 Build_165460(void* ctx, CAniSource* src, i32 flags); // 0x165460
     i32 Configure_1655c0(void* ctx, void* entry, i32 flags); // 0x1655c0

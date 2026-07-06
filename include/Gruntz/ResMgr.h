@@ -87,30 +87,30 @@ struct CImageRegistry {
     // Release @0x155360 IS CDDrawWorkerRegistry::RemoveKeysEqual_155360; cast at each call.
     // Frame-name reverse-lookup (given a frame handle, write its name into tmp;
     // *outZero gets a found-index). Was the CStrReader / CMiNameReg placeholder views.
-    // ReadField @0x155630 IS CDDrawWorkerRegistry::Method_155630; cast at each call.
-    virtual void v00();
-    virtual void v01();
-    virtual void v02();
-    virtual void v03();
-    virtual void v04();
-    virtual void v05();
-    virtual void v06();
-    virtual void v07();
-    virtual void v08();
-    virtual void v09();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void Install(void* set, const char* szName, const char* szKey); // slot 18 (+0x48)
+    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630 __thiscall
+    void v00();
+    void v01();
+    void v02();
+    void v03();
+    void v04();
+    void v05();
+    void v06();
+    void v07();
+    void v08();
+    void v09();
+    void v10();
+    void v11();
+    void v12();
+    void v13();
+    void v14();
+    void v15();
+    void v16();
+    void v17();
+    void Install(void* set, const char* szName, const char* szKey); // slot 18 (+0x48)
     // slot 19 (+0x4c): register a resolved symbol tree under a prefix (returns -1 on
     // failure) - the RESOURCE-facet op the game-state activators reach (CBootyState/
     // CMenuState/CPlay slot-8 loaders). Same +0x10 registrar object as Install.
-    virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
+    i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
 
     char m_pad04[0x10 - 0x4]; // vptr occupies +0x00..+0x03
     CSpriteHashTable m_10map; // +0x10  the name->sprite hash table

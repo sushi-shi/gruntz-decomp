@@ -1328,8 +1328,8 @@ struct CDdPoolSub {
     // Ctor @0x1b4f0b IS the CPtrArray in-place ctor; placement-new at the call.
 };
 struct CDdPoolItem {
-    virtual i32 Dtor(i32);   // slot 0 (+0x00) scalar-deleting dtor (delete-flag arg)
-    virtual i32 Init(void*); // slot 1 (+0x04)
+    i32 Dtor(i32);   // slot 0 (+0x00) scalar-deleting dtor (delete-flag arg)
+    i32 Init(void*); // slot 1 (+0x04)
 };
 
 RVA(0x00143630, 0x10d)

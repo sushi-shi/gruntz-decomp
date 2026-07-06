@@ -107,43 +107,43 @@ public:
 // -> +0x28 (4 args). All share the scalar-deleting dtor at +0x04.
 class CWwdFactoryA { // 159250 (+0x40, 5 args) and 1598d0 (+0x28, 4 args)
 public:
-    virtual void Vs00();
-    virtual int ScalarDtor(int flag); // +0x04
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual void Vs20();
-    virtual void Vs24();
-    virtual int Build4(int a, int b, int c, int d); // +0x28
-    virtual void Vs2C();
-    virtual void Vs30();
-    virtual void Vs34();
-    virtual void Vs38();
-    virtual void Vs3C();
-    virtual int Build5(int a, int b, int c, int d, int e); // +0x40
+    void Vs00();
+    int ScalarDtor(int flag); // +0x04
+    void Vs08();
+    void Vs0C();
+    void Vs10();
+    void Vs14();
+    void Vs18();
+    void Vs1C();
+    void Vs20();
+    void Vs24();
+    int Build4(int a, int b, int c, int d); // +0x28
+    void Vs2C();
+    void Vs30();
+    void Vs34();
+    void Vs38();
+    void Vs3C();
+    int Build5(int a, int b, int c, int d, int e); // +0x40
 };
 class CWwdFactoryB { // 159440 (+0x40, 2 args)
 public:
-    virtual void Vs00();
-    virtual int ScalarDtor(int flag); // +0x04
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual void Vs20();
-    virtual void Vs24();
-    virtual void Vs28();
-    virtual void Vs2C();
-    virtual void Vs30();
-    virtual void Vs34();
-    virtual void Vs38();
-    virtual void Vs3C();
-    virtual int Build2(int a, int b); // +0x40
+    void Vs00();
+    int ScalarDtor(int flag); // +0x04
+    void Vs08();
+    void Vs0C();
+    void Vs10();
+    void Vs14();
+    void Vs18();
+    void Vs1C();
+    void Vs20();
+    void Vs24();
+    void Vs28();
+    void Vs2C();
+    void Vs30();
+    void Vs34();
+    void Vs38();
+    void Vs3C();
+    int Build2(int a, int b); // +0x40
 };
 
 // CWwdObjMgr is the shared <Gruntz/WwdObjMgr.h> class; here only the +0x0c parent

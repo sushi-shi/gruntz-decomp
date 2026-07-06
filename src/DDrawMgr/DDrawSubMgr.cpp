@@ -49,7 +49,7 @@ public:
     CDDrawSubMgrBase(i32 x) {
         m_base04 = x;
     }
-    virtual ~CDDrawSubMgrBase() {}
+    ~CDDrawSubMgrBase() {}
     i32 m_base04; // +0x04
 };
 
@@ -61,11 +61,11 @@ public:
     // lives in CDDrawSubMgrPages.cpp. This ctor's class carries the CLoadable base
     // vtable (0x5efc30). The inline empty dtor only keeps the ctor polymorphic so the
     // (spurious, reloc-masked) ??_7CDDrawSubMgr vptr stamp still falls out.
-    virtual ~CDDrawSubMgr() OVERRIDE {}
-    virtual void IsReady();
-    virtual i32 Init();
-    virtual i32 OnDestroy();      // 0x1576c0 (state predicate, returns 1)
-    virtual StateId GetStateId(); // 0x157790 (state predicate, returns 1)
+    ~CDDrawSubMgr() {}
+    void IsReady();
+    i32 Init();
+    i32 OnDestroy();      // 0x1576c0 (state predicate, returns 1)
+    StateId GetStateId(); // 0x157790 (state predicate, returns 1)
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
     void* SubMgrScalarDtor(i32 flag);
@@ -90,11 +90,11 @@ namespace Rng {
 // Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
 // CDDrawSubMgrGrandBase / CDDrawWorkerCacheBase.
 struct FamilyMapBase {
-    virtual void s0();                  // [0]
-    virtual void* ScalarDtor(i32 flag); // [1]
-    virtual void s2();                  // [2]
-    virtual void s3();                  // [3]
-    virtual void s4();                  // [4]
+    void s0();                  // [0]
+    void* ScalarDtor(i32 flag); // [1]
+    void s2();                  // [2]
+    void s3();                  // [3]
+    void s4();                  // [4]
     ~FamilyMapBase();
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -134,7 +134,7 @@ struct CDDrawRegistryDtorHost : public FamilyMapBase {
 // destructor (0x155720) landed in this TU; referenced so the ??_G call reloc names it.
 class CDDrawSubMgrFar {
 public:
-    virtual ~CDDrawSubMgrFar();
+    ~CDDrawSubMgrFar();
 };
 
 // ---------------------------------------------------------------------------
@@ -806,22 +806,22 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
 
 class CWwdObject {
 public:
-    virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual i32 Slot10(void* a); // +0x10 (1-arg op, called from 159600)
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual i32 Slot20(); // status probe (5 == matched)
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Slot2C();
-    virtual void Slot30(); // +0x30 archive write
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
+    void Slot00();
+    i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    void Slot08();
+    void Slot0C();
+    i32 Slot10(void* a); // +0x10 (1-arg op, called from 159600)
+    void Slot14();
+    void Slot18();
+    void Slot1C();
+    i32 Slot20(); // status probe (5 == matched)
+    void Slot24();
+    void Slot28();
+    void Slot2C();
+    void Slot30(); // +0x30 archive write
+    void Slot34();
+    void Slot38();
+    i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
     char m_pad04[0x08 - 0x04];
     i32 m_flags;               // +0x08 flag word
     char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
@@ -1302,10 +1302,10 @@ public:
 // is the only dispatched op (the status probe, 5 == "ready").
 class CQueueProbeData : public Wap::CObject {
 public:
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual i32 Probe20(); // +0x20 status probe
+    void Slot14();
+    void Slot18();
+    void Slot1C();
+    i32 Probe20(); // +0x20 status probe
 };
 
 class CQueueDrainHost {
@@ -2009,17 +2009,17 @@ public:
 // modeled via a typed vtable interface so the call lowers exactly.
 class CWwdFactoryObject {
 public:
-    virtual void Vs00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual void Vs20();
-    virtual void Vs24();
-    virtual i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
+    void Vs00();
+    i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    void Vs08();
+    void Vs0C();
+    void Vs10();
+    void Vs14();
+    void Vs18();
+    void Vs1C();
+    void Vs20();
+    void Vs24();
+    i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
 
     // Reset/clear the wide object: release the four +0x7c..0x90 sub-objects and
     // reset the geometry/status fields.  Documented raw-offset access.

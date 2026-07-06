@@ -32,12 +32,12 @@ class DirectInputMgr2; // folded SbzInputManager
 SIZE_UNKNOWN(SbzInputDevice);
 class SbzInputDevice {
 public:
-    virtual i32 ScalarDtor(u32 flag); // slot 0  +0x00  0x1332e0 scalar-deleting dtor
-    virtual i32 CreateDeviceWrap();   // slot 1  +0x04  0x134260
-    virtual void Teardown();          // slot 2  +0x08  0x133bf0
-    virtual i32 IsValid();            // slot 3  +0x0c  0x1332b0
-    virtual i32 Poll();               // slot 4  +0x10  0x133d00 per-frame poll
-    virtual i32 ResetState();         // slot 5  +0x14  0x1332c0 clear the press-edge latch
+    i32 ScalarDtor(u32 flag); // slot 0  +0x00  0x1332e0 scalar-deleting dtor
+    i32 CreateDeviceWrap();   // slot 1  +0x04  0x134260
+    void Teardown();          // slot 2  +0x08  0x133bf0
+    i32 IsValid();            // slot 3  +0x0c  0x1332b0
+    i32 Poll();               // slot 4  +0x10  0x133d00 per-frame poll
+    i32 ResetState();         // slot 5  +0x14  0x1332c0 clear the press-edge latch
 
     char m_pad04[0x2ac - 0x04]; // +0x04 (after the auto-emitted vptr at +0x00)
     u32 m_currentKeys;          // +0x2ac  packed "press edges this frame" key word

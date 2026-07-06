@@ -82,7 +82,7 @@ struct CUserBaseSubB940 {
     i32 m_4; // +0x04
     char m_pad8[0x3c - 0x08];
     i32 m_3c; // +0x3c
-    virtual ~CUserBaseSubB940();
+    ~CUserBaseSubB940();
 };
 SIZE_UNKNOWN(CUserBaseSubB940);
 RVA(0x0000b940, 0xf)
@@ -97,11 +97,11 @@ CUserBaseSubB940::~CUserBaseSubB940() {
 // (the retail neg/sbb/neg idiom); else return 0. __thiscall, no args.
 // ===========================================================================
 struct CGuardedDispatch1f870 {
-    virtual i32 v0();
-    virtual i32 v1();
-    virtual i32 v2();
-    virtual i32 IsActive(); // slot +0x0c
-    i32 Handle();           // 0xfac70 (non-virtual; reloc-masked)
+    i32 v0();
+    i32 v1();
+    i32 v2();
+    i32 IsActive(); // slot +0x0c
+    i32 Handle();   // 0xfac70 (non-virtual; reloc-masked)
     i32 Run();
 };
 SIZE_UNKNOWN(CGuardedDispatch1f870);

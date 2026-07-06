@@ -458,23 +458,23 @@ extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 // Real polymorphic view: the two dispatched slots are real virtuals at their retail
 // offsets (+0x24 = slot 9, +0x40 = slot 16); declared-only, so no vtable is emitted.
 struct McObj {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot24(); // +0x24 (slot 9)
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot40(); // +0x40 (slot 16)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot24(); // +0x24 (slot 9)
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot40(); // +0x40 (slot 16)
     void CallSlot24() {
         Slot24();
     }
@@ -613,20 +613,20 @@ i32 CMulti::PumpA() {
 // The +0xc vfn host: dispatched through vtable slot +0x34 (index 13).
 class PBVfnHost {
 public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s10();
-    virtual void s11();
-    virtual void s12();
-    virtual void Blit34(void* a, void* b); // +0x34
+    void s00();
+    void s01();
+    void s02();
+    void s03();
+    void s04();
+    void s05();
+    void s06();
+    void s07();
+    void s08();
+    void s09();
+    void s10();
+    void s11();
+    void s12();
+    void Blit34(void* a, void* b); // +0x34
 };
 // The m_view->m_24 chain and its +0x5c compositor target.
 // The m_view manager sub-object tree.

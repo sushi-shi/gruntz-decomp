@@ -77,17 +77,17 @@ SIZE_UNKNOWN(CMiTabHost);
 // mov eax,[this]; mov ecx,this; call [eax+0x28] __thiscall dispatch.
 class CMiSelf {
 public:
-    virtual void Destroy();     // slot 0  scalar-deleting dtor
-    virtual void Serialize();   // slot 1
-    virtual void Setup();       // slot 2
-    virtual void ClearFrame();  // slot 3
-    virtual void Poll();        // slot 4
-    virtual void Tick();        // slot 5
-    virtual void HitHandlerA(); // slot 6
-    virtual void HitHandlerB(); // slot 7
-    virtual void HitHandlerC(); // slot 8
-    virtual void HitHandlerD(); // slot 9
-    virtual void Refresh();     // +0x28 (slot 10)
+    void Destroy();     // slot 0  scalar-deleting dtor
+    void Serialize();   // slot 1
+    void Setup();       // slot 2
+    void ClearFrame();  // slot 3
+    void Poll();        // slot 4
+    void Tick();        // slot 5
+    void HitHandlerA(); // slot 6
+    void HitHandlerB(); // slot 7
+    void HitHandlerC(); // slot 8
+    void HitHandlerD(); // slot 9
+    void Refresh();     // +0x28 (slot 10)
 };
 SIZE_UNKNOWN(CMiSelf);
 

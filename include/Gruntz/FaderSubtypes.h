@@ -39,7 +39,7 @@ struct CFaderInit;
 // ===========================================================================
 SIZE_UNKNOWN(CFaderMeshSub);
 struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
-    virtual void v0(); // one virtual -> its own vtable (reloc-masks 0x5f07d8)
+    void v0();         // one -> its own vtable (reloc-masks 0x5f07d8)
     i32 m_04;          // +0x5c
     i32 m_08;          // +0x60
     i32 m_0c;          // +0x64

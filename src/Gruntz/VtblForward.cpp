@@ -17,7 +17,7 @@
 // record sink @+0x2c.
 // ---------------------------------------------------------------------------
 struct CVtEmitRecv {
-    virtual i32 Dispatch(i32, i32, i32, i32, i32, i32, i32, i32); // vtbl slot 0
+    i32 Dispatch(i32, i32, i32, i32, i32, i32, i32, i32); // vtbl slot 0
     char m_pad4[0x20 - 4];
     i32 m_20; // +0x20  busy gate
     char m_pad24[0x2c - 0x24];

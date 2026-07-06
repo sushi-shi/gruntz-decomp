@@ -49,12 +49,12 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // virtuals are never defined here, so no vtable is emitted in this TU.
 class CObjNode {
 public:
-    virtual void Slot00();                                 // +0x00
-    virtual void Delete(i32 flag);                         // +0x04  slot 1 (scalar-deleting dtor)
-    virtual i32 ReadRaw(i32 a, i32 b, i32 len, void* buf); // +0x08  slot 2 (binary read)
-    virtual void Slot0c();                                 // +0x0c
-    virtual i32 Read(void* buf, i32 a, i32 b);             // +0x10  slot 4 (parse buffer)
-    virtual void* Detach();                                // +0x14  slot 5 (teardown/detach)
+    void Slot00();                                 // +0x00
+    void Delete(i32 flag);                         // +0x04  slot 1 (scalar-deleting dtor)
+    i32 ReadRaw(i32 a, i32 b, i32 len, void* buf); // +0x08  slot 2 (binary read)
+    void Slot0c();                                 // +0x0c
+    i32 Read(void* buf, i32 a, i32 b);             // +0x10  slot 4 (parse buffer)
+    void* Detach();                                // +0x14  slot 5 (teardown/detach)
 
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
@@ -119,9 +119,9 @@ SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 // ---------------------------------------------------------------------------
 class CSymParser {
 public:
-    virtual void V0(); // slot 0 (sub_13b9f0)
-    virtual void V1(); // slot 1 (sub_13ba00)
-    virtual void V2(); // slot 2 (sub_13ba10)
+    void V0(); // slot 0 (sub_13b9f0)
+    void V1(); // slot 1 (sub_13ba00)
+    void V2(); // slot 2 (sub_13ba10)
 
     // The default ctor (0x13aa10, defined in SymParser.cpp) seeds the parse-config
     // defaults; the 3-arg buf-ctor's discarded temp `CSymParser tmp;` lowers to a

@@ -94,28 +94,28 @@ SIZE_UNKNOWN(CDDWorkerFlatB);
 // @+0x138, int* table @+0x13c). Renamed off the real "CDDPageMgr" (a different class in
 // CDirectDrawMgr.h). Methods Init 0x17b510 / Close 0x17b570 / Free 0x17b5a0 / Lookup 0x17b840.
 struct DDPageSub {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual i32 v12(i32, i32); // slot 0x30
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21(); // slot 0x54
+    void v0();
+    void v1();
+    void v2();
+    void v3();
+    void v4();
+    void v5();
+    void v6();
+    void v7();
+    void v8();
+    void v9();
+    void v10();
+    void v11();
+    i32 v12(i32, i32); // slot 0x30
+    void v13();
+    void v14();
+    void v15();
+    void v16();
+    void v17();
+    void v18();
+    void v19();
+    void v20();
+    void v21(); // slot 0x54
 };
 SIZE_UNKNOWN(DDPageSub);
 struct DDPageArr {
@@ -301,17 +301,17 @@ SIZE_UNKNOWN(CPalObj143950);
 
 // 0x148af0 - CImageOwned setup (zero the 0x6c-byte transform, fill, Apply, commit).
 struct ImgOwnedX {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void Commit(); // slot 10 (+0x28)
+    void v0();
+    void v1();
+    void v2();
+    void v3();
+    void v4();
+    void v5();
+    void v6();
+    void v7();
+    void v8();
+    void v9();
+    void Commit(); // slot 10 (+0x28)
     i32 _4[(0x10 - 0x4) / 4];
     Blk6c m_10;                           // +0x10
     i32 Apply(i32 mode, const void* src); // 0x13e0a0

@@ -263,11 +263,11 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 // the `new X(...)` operator-new(size)+ctor sequences fall out.
 SIZE(CRezNode, 0x4); // abstract reader base (vptr only)
 struct CRezNode {
-    virtual void nv0();                                        // slot 0 (+0x00)
-    virtual void nv1();                                        // slot 1 (+0x04)
-    virtual i32 Read(i32 off, i32 base, u32 count, void* buf); // slot 2 (+0x08)
-    virtual void nv3();                                        // slot 3 (+0x0c)
-    virtual i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
+    void nv0();                                        // slot 0 (+0x00)
+    void nv1();                                        // slot 1 (+0x04)
+    i32 Read(i32 off, i32 base, u32 count, void* buf); // slot 2 (+0x08)
+    void nv3();                                        // slot 3 (+0x0c)
+    i32 Open(char* name, i32 flag, i32 x);             // slot 4 (+0x10)
 };
 SIZE(CRezDirNodeN, 0x38); // directory reader node (operator new 0x38)
 struct CRezDirNodeN : CRezNode {

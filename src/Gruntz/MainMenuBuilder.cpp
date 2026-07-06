@@ -55,13 +55,13 @@ struct MenuList {
 // the item. Modeled with a typed vtable so `mov edx,[item]; call [edx+0x18]`
 // (a __thiscall PMF loaded from the vtable) falls out, no manual cast.
 struct MenuItem {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Disable(i32 z); // slot 6 (+0x18)
+    void Slot0();
+    void Slot1();
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    void Slot5();
+    void Disable(i32 z); // slot 6 (+0x18)
     char m_pad04[0x58 - 0x4];
     void* m_58; // +0x58  the movie/availability sub-object the FINAL gate probes
 };

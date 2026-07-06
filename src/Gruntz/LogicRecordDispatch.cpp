@@ -15,22 +15,22 @@ void* operator new(u32 n);
 // the leading slots fix the vtable offsets. External (foreign vtable).
 class LogicSubRec {
 public:
-    virtual void Slot00(); // 0x00
-    virtual void Slot04(); // 0x04
-    virtual void Slot08(); // 0x08
-    virtual void Slot0c(); // 0x0c
-    virtual void Slot10(); // 0x10
-    virtual void Slot14(); // 0x14
-    virtual void Init();   // 0x18  slot 6  (state-0 init)
-    virtual void Slot1c(); // 0x1c
-    virtual void Slot20(); // 0x20
-    virtual void Slot24(); // 0x24
-    virtual void Op1e();   // 0x28  slot 10 (state 0x1e)
-    virtual void Op1d();   // 0x2c  slot 11 (state 0x1d)
-    virtual void Op52();   // 0x30  slot 12 (state 0x52)
-    virtual void Op51();   // 0x34  slot 13 (state 0x51)
-    virtual void Op50();   // 0x38  slot 14 (state 0x50)
-    virtual void Op53();   // 0x3c  slot 15 (state 0x53)
+    void Slot00(); // 0x00
+    void Slot04(); // 0x04
+    void Slot08(); // 0x08
+    void Slot0c(); // 0x0c
+    void Slot10(); // 0x10
+    void Slot14(); // 0x14
+    void Init();   // 0x18  slot 6  (state-0 init)
+    void Slot1c(); // 0x1c
+    void Slot20(); // 0x20
+    void Slot24(); // 0x24
+    void Op1e();   // 0x28  slot 10 (state 0x1e)
+    void Op1d();   // 0x2c  slot 11 (state 0x1d)
+    void Op52();   // 0x30  slot 12 (state 0x52)
+    void Op51();   // 0x34  slot 13 (state 0x51)
+    void Op50();   // 0x38  slot 14 (state 0x50)
+    void Op53();   // 0x3c  slot 15 (state 0x53)
 };
 
 // The record's state tag (m_1c). State kLogicStateInit lazily builds the sub-record

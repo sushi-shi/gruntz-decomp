@@ -60,7 +60,7 @@ public:
     CContainerErr(const char* msg);
 
 public:
-    virtual void
+    void
     VSlot0(); // +0x00  the vtable pointer (stamped LAST - see wall note above)  // real polymorphic vptr @+0x00 (was m_vtbl)
     const char* m_msg; // +0x04  the error message this instance carries
 };

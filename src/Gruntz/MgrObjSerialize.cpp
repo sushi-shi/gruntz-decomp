@@ -31,26 +31,26 @@ extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 // Real polymorphic view: Load is slot 19 (+0x4c), a real virtual (19 filler slots
 // precede it); declared-only. obj->Load() -> call [eax+0x4c].
 struct CMgrImageSet {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c)
+    void Slot00();
+    void Slot01();
+    void Slot02();
+    void Slot03();
+    void Slot04();
+    void Slot05();
+    void Slot06();
+    void Slot07();
+    void Slot08();
+    void Slot09();
+    void Slot10();
+    void Slot11();
+    void Slot12();
+    void Slot13();
+    void Slot14();
+    void Slot15();
+    void Slot16();
+    void Slot17();
+    void Slot18();
+    i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c)
 };
 
 // The level-data object (m_levelData) and the renderer it owns.

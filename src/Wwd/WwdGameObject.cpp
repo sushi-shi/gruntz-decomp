@@ -120,9 +120,9 @@ struct WwdSurface;
 // virtual is read in WriteSnapshot).
 class WorkerSub {
 public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual i32 Vfunc8(); // +0x08
+    void Slot00();
+    void Slot04();
+    i32 Vfunc8(); // +0x08
 };
 
 // (WwdSelf folded onto CWwdGameObject's real 17-slot virtual interface above -
@@ -824,8 +824,8 @@ SIZE_UNKNOWN(WwdSurface);
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
 class WwdWorker {
 public:
-    virtual void Slot00();
-    virtual void DeleteThis(i32 flag); // +0x04
+    void Slot00();
+    void DeleteThis(i32 flag); // +0x04
 };
 
 // The CString name at +0xdc (NAFXCW dtor 0x1b9cde, reloc-masked).

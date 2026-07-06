@@ -33,21 +33,21 @@
 // Declarations only - never defined, so no ??_7 is emitted.
 class CDDrawGroupChild {
 public:
-    virtual void Slot00();                        // +0x00
-    virtual i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
-    virtual void Slot08();                        // +0x08
-    virtual void Slot0C();                        // +0x0c
-    virtual void Slot10();                        // +0x10
-    virtual void Slot14();                        // +0x14
-    virtual void Slot18();                        // +0x18
-    virtual void Slot1C();                        // +0x1c
-    virtual void Slot20();                        // +0x20
-    virtual void Slot24();                        // +0x24
-    virtual void Slot28();                        // +0x28
-    virtual void Slot2C(i32 a1);                  // +0x2c
-    virtual void Slot30(i32 a1, i32 a2);          // +0x30
-    virtual void Vfunc34(i32 a1, i32 a2, i32 a3); // +0x34
-    virtual void Vfunc38(i32 a1, i32 a2, i32 a3); // +0x38
+    void Slot00();                        // +0x00
+    i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
+    void Slot08();                        // +0x08
+    void Slot0C();                        // +0x0c
+    void Slot10();                        // +0x10
+    void Slot14();                        // +0x14
+    void Slot18();                        // +0x18
+    void Slot1C();                        // +0x1c
+    void Slot20();                        // +0x20
+    void Slot24();                        // +0x24
+    void Slot28();                        // +0x28
+    void Slot2C(i32 a1);                  // +0x2c
+    void Slot30(i32 a1, i32 a2);          // +0x30
+    void Vfunc34(i32 a1, i32 a2, i32 a3); // +0x34
+    void Vfunc38(i32 a1, i32 a2, i32 a3); // +0x38
 
     // Data member used by ResetChildD8 (write to +0xd8).
     // vtable pointer at +0x00 (4 B); pad from +0x04 to +0xd7.
@@ -76,22 +76,22 @@ public:
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
     // --- vtable padding so the leaf virtuals land at their target slots ---
-    virtual void Slot00();                       // +0x00
-    virtual ~CDDrawChildGroup();                 // +0x04  slot 1 scalar-deleting dtor
-    virtual void Slot08();                       // +0x08
-    virtual void Slot0C();                       // +0x0c
-    virtual void Slot10();                       // +0x10
-    virtual void Slot14();                       // +0x14
-    virtual void Slot18();                       // +0x18
-    virtual void ForwardTo3C();                  // +0x1c  thunk -> +0x3c
-    virtual void Slot20();                       // +0x20
-    virtual void Slot24();                       // +0x24
-    virtual void WalkDispatch2C(i32 a1);         // +0x28
-    virtual void WalkDispatch30(i32 a1, i32 a2); // +0x2c
-    virtual void Slot30();                       // +0x30
-    virtual void Slot34();                       // +0x34
-    virtual void ResetChildD8();                 // +0x38
-    virtual void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
+    void Slot00();                       // +0x00
+    ~CDDrawChildGroup();                 // +0x04  slot 1 scalar-deleting dtor
+    void Slot08();                       // +0x08
+    void Slot0C();                       // +0x0c
+    void Slot10();                       // +0x10
+    void Slot14();                       // +0x14
+    void Slot18();                       // +0x18
+    void ForwardTo3C();                  // +0x1c  thunk -> +0x3c
+    void Slot20();                       // +0x20
+    void Slot24();                       // +0x24
+    void WalkDispatch2C(i32 a1);         // +0x28
+    void WalkDispatch30(i32 a1, i32 a2); // +0x2c
+    void Slot30();                       // +0x30
+    void Slot34();                       // +0x34
+    void ResetChildD8();                 // +0x38
+    void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b

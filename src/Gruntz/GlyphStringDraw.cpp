@@ -7,17 +7,17 @@
 #include <string.h> // strlen
 
 struct Drawable {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void Draw(i32 x, i32 y, i32 glyph, i32 z); // slot +0x28
+    void v0();
+    void v1();
+    void v2();
+    void v3();
+    void v4();
+    void v5();
+    void v6();
+    void v7();
+    void v8();
+    void v9();
+    void Draw(i32 x, i32 y, i32 glyph, i32 z); // slot +0x28
 };
 
 struct DrawCtx {

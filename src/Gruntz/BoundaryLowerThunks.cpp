@@ -175,7 +175,7 @@ struct CScalarDtor855a0 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     // inline base-vptr-restore dtor: `mov [ecx],offset ??_7 + call 0x13ddb0`. Inline
     // so ScalarDtor's explicit dtor call folds the stamp (like the ??_G thunk).
-    virtual ~CScalarDtor855a0() {
+    ~CScalarDtor855a0() {
         Base13ddb0();
     }
     void* ScalarDtor(u32 flags);

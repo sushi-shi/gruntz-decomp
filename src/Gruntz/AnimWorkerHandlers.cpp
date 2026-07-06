@@ -199,16 +199,16 @@ i32 Handler07dda0(Owner* owner) {
 // +0x08, a -> +0x0c), zeroing the rest. Manual `m_vptr = &g_animWorkerVtbl`
 // stamp + the extern removed per the all-vtables mandate.
 struct WorkerFull {
-    virtual void Slot00(); // +0x00  vptr
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
+    void Slot00(); // +0x00  vptr
+    void Slot04();
+    void Slot08();
+    void Slot0C();
+    void Slot10();
+    void Slot14();
+    void Slot18();
+    void Slot1C();
+    void Slot20();
+    void Slot24();
     WorkerFull(i32 a, i32 b, i32 c);
     i32 m_04; // +0x04  <- b
     i32 m_08; // +0x08  <- c

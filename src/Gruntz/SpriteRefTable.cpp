@@ -180,16 +180,16 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call.
 struct CPaletteHashTable {};
 struct CPaletteDestRegistry {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
+    void v0();
+    void v1();
+    void v2();
+    void v3();
+    void v4();
+    void v5();
+    void v6();
+    void v7();
+    void v8();
+    i32 Install(void* res, i32 a, i32 b); // slot 9 (+0x24)
     char m_pad04[0x10 - 0x4];
     CPaletteHashTable m_hash; // +0x10  hash sub-table Lookup runs on
 };

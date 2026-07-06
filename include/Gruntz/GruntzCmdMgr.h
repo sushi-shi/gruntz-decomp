@@ -59,17 +59,17 @@ class GzStateProvider; // defined below; Select() takes the +0x38 state sub-obje
 SIZE_UNKNOWN(GzTargetObj);
 class GzTargetObj {
 public:
-    virtual void Slot0();                      // +0x00
-    virtual void Slot1();                      // +0x04
-    virtual void Slot2();                      // +0x08
-    virtual void Slot3();                      // +0x0c
-    virtual void Slot4();                      // +0x10
-    virtual void Slot5();                      // +0x14
-    virtual void Slot6();                      // +0x18
-    virtual void Slot7();                      // +0x1c
-    virtual void Slot8();                      // +0x20
-    virtual void Select(GzStateProvider* mgr); // +0x24 (slot 9)
-    virtual void Deselect();                   // +0x28 (slot 10)
+    void Slot0();                      // +0x00
+    void Slot1();                      // +0x04
+    void Slot2();                      // +0x08
+    void Slot3();                      // +0x0c
+    void Slot4();                      // +0x10
+    void Slot5();                      // +0x14
+    void Slot6();                      // +0x18
+    void Slot7();                      // +0x1c
+    void Slot8();                      // +0x20
+    void Select(GzStateProvider* mgr); // +0x24 (slot 9)
+    void Deselect();                   // +0x28 (slot 10)
 
     u8 m_4; // +0x04  per-team index byte
     char m_pad5[0x6 - 0x5];
@@ -84,11 +84,11 @@ public:
 SIZE_UNKNOWN(GzStateProvider);
 class GzStateProvider {
 public:
-    virtual void Slot0();     // +0x00
-    virtual void Slot1();     // +0x04
-    virtual void Slot2();     // +0x08
-    virtual void Slot3();     // +0x0c
-    virtual i32 GetStateId(); // +0x10 (slot 4)
+    void Slot0();     // +0x00
+    void Slot1();     // +0x04
+    void Slot2();     // +0x08
+    void Slot3();     // +0x0c
+    i32 GetStateId(); // +0x10 (slot 4)
 };
 SIZE_UNKNOWN(GzMgr);
 struct GzMgr {
@@ -108,13 +108,13 @@ struct GzMgr {
 SIZE_UNKNOWN(GzSerCmd);
 class GzSerCmd {
 public:
-    virtual void Slot0();
-    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a, i32 b); // +0x04 (index 1)
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual i32 GetTag(); // +0x18 (index 6)
+    void Slot0();
+    i32 Serialize(CSerialArchive* s, i32 mode, i32 a, i32 b); // +0x04 (index 1)
+    void Slot2();
+    void Slot3();
+    void Slot4();
+    void Slot5();
+    i32 GetTag(); // +0x18 (index 6)
 };
 
 // One node of the base CObList the write pass walks: next@+0x00, payload@+0x08.

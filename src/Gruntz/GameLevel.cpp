@@ -1046,19 +1046,19 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
 // +0x2c (read a name into buf) and +0x30 (write buf as a name) are used.
 SIZE_UNKNOWN(EditSink);
 struct EditSink {
-    virtual void v00();
-    virtual void v04();
-    virtual void v08();
-    virtual void v0c();
-    virtual void v10();
-    virtual void v14();
-    virtual void v18();
-    virtual void v1c();
-    virtual void v20();
-    virtual void v24();
-    virtual void v28();
-    virtual void GetName(char* buf, i32 cap); // +0x2c
-    virtual void SetName(char* buf, i32 cap); // +0x30
+    void v00();
+    void v04();
+    void v08();
+    void v0c();
+    void v10();
+    void v14();
+    void v18();
+    void v1c();
+    void v20();
+    void v24();
+    void v28();
+    void GetName(char* buf, i32 cap); // +0x2c
+    void SetName(char* buf, i32 cap); // +0x30
 };
 
 // Resolve a level/name to a tile id (returns nonzero on success). __stdcall. @0x163710

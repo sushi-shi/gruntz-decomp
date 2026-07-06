@@ -31,19 +31,19 @@
 SIZE_UNKNOWN(LogicArchive);
 class LogicArchive {
 public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0c();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1c();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Write(void* buf, u32 cb); // slot 0x2c
-    virtual void Read(void* buf, u32 cb);  // slot 0x30
+    void Slot00();
+    void Slot04();
+    void Slot08();
+    void Slot0c();
+    void Slot10();
+    void Slot14();
+    void Slot18();
+    void Slot1c();
+    void Slot20();
+    void Slot24();
+    void Slot28();
+    void Write(void* buf, u32 cb); // slot 0x2c
+    void Read(void* buf, u32 cb);  // slot 0x30
 };
 
 // The polymorphic sub-record held at m_18: virtual slot 0 is the (scalar-
@@ -51,8 +51,8 @@ public:
 SIZE_UNKNOWN(LogicSub);
 class LogicSub {
 public:
-    virtual void Destroy(u32 flags);                     // slot 0x00
-    virtual i32 Step(i32 a, i32 mode, void* c, void* d); // slot 0x04
+    void Destroy(u32 flags);                     // slot 0x00
+    i32 Step(i32 a, i32 mode, void* c, void* d); // slot 0x04
 };
 
 SIZE_UNKNOWN(CLogicRecord);
