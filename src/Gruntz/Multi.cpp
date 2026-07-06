@@ -1,3 +1,5 @@
+#include <Mfc.h>
+#include <Gruntz/LightFxRender.h>
 // Multi.cpp - the multiplayer / lobby game-state (C:\Proj\Gruntz). Recovered
 // from RTTI (.?AVCMulti@@, vtable 0x5e9fe4) after the dynamic-this tracer
 // mis-attributed the 0x08d270 / 0x0b6110-0x0bc420 cluster to CPlay: every method
@@ -627,11 +629,6 @@ public:
     void Fire1398();  // 0x00001398
     void Reset2b85(); // 0x00002b85
 };
-class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
-public:
-    void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
-    void Render14dd(void* pane, RECT* rc); // 0x000014dd
-};
 // The compositor refresh helper (__cdecl free fn). 0x00002356
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 
@@ -697,9 +694,9 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            PBSub320* ov = (PBSub320*)m_attractOverlay;
-            ov->Tick1fa0(g_645584, 0);
-            ov->Render14dd(mgr->m_4->m_14, &rc);
+            CLightFxRender* ov = (CLightFxRender*)m_attractOverlay;
+            ov->Resize(g_645584, 0);
+            ov->ComputeRect((LfxBorderCtx*)mgr->m_4->m_14, (LfxRect*)&rc);
         }
     }
     ((CFontConfig*)m_logic->m_5c)->Scroll(g_645584);
@@ -989,7 +986,6 @@ SIZE_UNKNOWN(McHost);
 SIZE_UNKNOWN(McObj);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
-SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBSub68);
 SIZE_UNKNOWN(PBVfnHost);
