@@ -4016,11 +4016,44 @@ struct DtorWorld { // this->m_4
 // manual vptr into a typed vtable struct naming ONLY the used slot as a 4-byte
 // thiscall PMF + char pad[], NO fake virtuals. m_vtbl sits at +0x00 exactly where the
 // fake virtuals' vptr did, so the object layout (p0/m_4/... below) is byte-identical.
-struct CDtorThisVtbl;
+// FOREIGN view of CPlay's `this` for the dtor path: Vfunc80 is slot 32 (+0x80),
+// a real virtual (32 fillers); the compiler emits the vptr at +0x00 - byte-identical
+// layout. CallVfunc80() -> Vfunc80() lowers to the same call [eax+0x80].
 struct CDtorThis {
-    CDtorThisVtbl* m_vtbl; // +0x00
-    void CallVfunc80();    // slot 32 (+0x80)
-    // BaseDtor @0x3f53 IS Cfa150::Cleanup; cast at the call.
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void Slot31();
+    virtual void Vfunc80(); // slot 32 (+0x80)
+    void BaseDtor();        // 0x3f53 thunk  (base CState dtor)
 
     char p0[0x4];
     DtorWorld* m_4; // +0x04
@@ -4040,16 +4073,10 @@ struct CDtorThis {
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488
     i32 m_49c;    // +0x49c
+    void CallVfunc80() {
+        Vfunc80();
+    }
 };
-typedef void (CDtorThis::*CDtorVfunc)();
-struct CDtorThisVtbl {
-    char m_pad00[0x80];
-    CDtorVfunc Vfunc80; // +0x80 slot 32
-};
-SIZE_UNKNOWN(CDtorThisVtbl);
-inline void CDtorThis::CallVfunc80() {
-    (this->*(m_vtbl->Vfunc80))();
-}
 
 // @early-stop
 // hard-regalloc wall: ebp pinned to the zero-const + the cached free-list head
