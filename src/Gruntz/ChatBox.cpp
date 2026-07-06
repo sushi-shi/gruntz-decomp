@@ -13,6 +13,7 @@
 // (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
 // externs so their calls are reloc-masked.
 #include <Gruntz/SoundCueMgr.h>
+#include <Image/CImage.h>
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
@@ -56,14 +57,13 @@ struct CChatListNode {
 };
 
 // The per-row frame drawable each row blits through (0x153790). __thiscall.
-struct CChatFrame;
 
 // The animation/frame record the row-advance lookups return: a frame table m_14
 // indexed by the current frame m_64, plus a clamp range m_64..m_68.
 struct CChatAnim {
     void* vptr;
     char pad4[0x14 - 0x4];
-    CChatFrame** m_14; // +0x14 frame-drawable table
+    CImage** m_14; // +0x14 frame-drawable table
     char pad18[0x64 - 0x18];
     i32 m_64; // +0x64 current frame index
     i32 m_68; // +0x68 max frame
@@ -86,10 +86,6 @@ struct CChatCatalog {
 };
 
 extern "C" void RezFree(void* p); // 0x1b9b82
-
-struct CChatFrame {
-    void Blit(i32 a, i32 x, i32 y, i32 b); // 0x153790
-};
 
 // The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
 // caller's fallback coords") and a virtual Measure() at vtable slot +0x14 (index 5).
@@ -418,7 +414,7 @@ i32 CChatBox::Step(i32 delta) {
             m_row0Timer = m_row0Period;
             i32 f = m_row0FrameIdx + 1;
             m_row0FrameIdx = f;
-            CChatFrame* v;
+            CImage* v;
             if (f >= a->m_64 && f <= a->m_68) {
                 v = a->m_14[f];
             } else {
@@ -440,7 +436,7 @@ i32 CChatBox::Step(i32 delta) {
         m_row1Timer = m_row1Period;
         i32 f = m_row1FrameIdx + 1;
         m_row1FrameIdx = f;
-        CChatFrame* v;
+        CImage* v;
         if (f >= b->m_64 && f <= b->m_68) {
             v = b->m_14[f];
         } else {
@@ -476,11 +472,11 @@ i32 CChatBox::Draw(i32 a0, i32 sprite_, i32 arg2, i32 arg3) {
     }
     if (m_row0Frame) {
         i32 x = -(sprite->Measure() / 2) - m_row0Offset + anchorX;
-        m_row0Frame->Blit(arg2, x, anchorY, 0);
+        m_row0Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
     }
     if (m_row1Frame) {
         i32 x = sprite->Measure() / 2 + m_row1Offset + anchorX;
-        m_row1Frame->Blit(arg2, x, anchorY, 0);
+        m_row1Frame->RenderFrame((void*)arg2, (void*)x, (void*)anchorY, (void*)0);
     }
     return 1;
 }
@@ -604,7 +600,6 @@ i32 CChatBox::HitTest4() {
 // SIZE metadata for the .cpp-local engine views (CChatBox lives in ChatBox.h).
 SIZE_UNKNOWN(CChatAnim);
 SIZE_UNKNOWN(CChatCatalog);
-SIZE_UNKNOWN(CChatFrame);
 SIZE_UNKNOWN(CChatListNode);
 SIZE_UNKNOWN(CChatMap);
 SIZE_UNKNOWN(CChatPage);
