@@ -20,6 +20,7 @@
 // engine classes reached by raw this+offset; every callee is a reloc-masked
 // external; the strings are $SG literals reloc-masked against the matched symbols;
 // CopyRect is hoisted through a data function-pointer global (0x6c44bc).
+#include <Gruntz/BattlezData.h>
 #include <Mfc.h> // MFC CString (ctor 0x1b9b93 / dtor 0x1b9cde / op=(LPCTSTR) 0x1b9e74)
 #include <Gruntz/GameRegistry.h>
 #include <Win32.h> // RECT
@@ -57,9 +58,6 @@ extern RECT g_labelRects[]; // 0x5e9338 (7 category-label rects)
 
 // The per-player stat block reached through g_mgr->m_7c; SumWinRow (0x1230) folds
 // the win-row totals for a player.
-struct StatArray {
-    i32 SumWinRow(i32 player); // 0x1230
-};
 
 DATA(0x0024556c)
 extern CGameRegistry* g_mgr; // *0x64556c
@@ -72,7 +70,7 @@ public:
     void* m_c; // +0x0c  draw context
 };
 
-static __inline i32 sumRun(StatArray* base, i32 off, i32 n) {
+static __inline i32 sumRun(CBattlezData* base, i32 off, i32 n) {
     i32* p = (i32*)((char*)base + off);
     i32 s = 0;
     i32 k;
@@ -106,27 +104,27 @@ void CBattleStatsView::DrawBattleStats() {
     // Loop 1: 6 numeric stat columns per active player.
     for (i = 0; i < 4; i++) {
         if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
-            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
             copyRect(&rc, &g_col2Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
             copyRect(&rc, &g_col3Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", sumRun((StatArray*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
             copyRect(&rc, &g_col4Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", *(i32*)((char*)(StatArray*)g_mgr->m_scoreHud + 0x48 + i * 4));
+            s.Format("%d", *(i32*)((char*)(CBattlezData*)g_mgr->m_scoreHud + 0x48 + i * 4));
             copyRect(&rc, &g_col5Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
-            s.Format("%d", ((StatArray*)g_mgr->m_scoreHud)->SumWinRow(i));
+            s.Format("%d", ((CBattlezData*)g_mgr->m_scoreHud)->SumWinRow(i));
             copyRect(&rc, &g_col6Rects[i]);
             DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }

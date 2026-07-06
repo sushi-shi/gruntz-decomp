@@ -3,6 +3,7 @@
 // CSerialArchive's +0x2c slot (CSerialArchive::Read, virtual slot 11); the whole
 // pass is gated on the CGruntzMgr settings singleton (_g_mgrSettings) being live.
 // Offsets + code bytes are load-bearing; field/class names are best-guess placeholders.
+#include <Bute/SymParser.h>
 #include <Mfc.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (m_levelData->m_ready)
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (game-manager singleton; one true shape)
@@ -58,9 +59,6 @@ struct CDisplayMgr {
 };
 
 // The resource locator (m_rezLocator): maps a logical name to a rez path.
-struct CRezLocator {
-    char* ResolvePath(const char* name); // 0x13c030
-};
 
 // The on-screen splash params block built on the stack for EngStr_DrawText; its
 // leading slot is the loaded caption CString.
@@ -92,7 +90,7 @@ void EngStr_DrawText(
 struct CMgrPersistObj {
     i32 m_00;                  // +0x00
     CDisplayMgr* m_displayMgr; // +0x04
-    CRezLocator* m_rezLocator; // +0x08
+    CSymParser* m_rezLocator;  // +0x08
     CLevelData* m_levelData;   // +0x0c
     char m_pad10[0x1c - 0x10];
     i32 m_1c, m_20, m_24;
@@ -177,7 +175,7 @@ i32 CMgrPersistObj::Init() {
     while (sc(0) >= 0)
         ;
     g_64e35c = 0;
-    char* path = m_rezLocator->ResolvePath("GAME_IMAGEZ");
+    char* path = (char*)m_rezLocator->ResolvePath("GAME_IMAGEZ");
     if (path == 0) {
         return 0;
     }

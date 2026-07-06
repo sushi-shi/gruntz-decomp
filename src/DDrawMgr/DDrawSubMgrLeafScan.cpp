@@ -1,3 +1,4 @@
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 // DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
 // CDDrawSubMgrLeaf family (a CDirectDrawMgr surface/page sub-manager in the
@@ -29,7 +30,7 @@
 // mangle to the retail names (the relocs pair instead of staying fuzzy).
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundDevice.h>
-#include <Gruntz/ParseSource.h>            // canonical CParseSource (BeginParse/EndParse)
+#include <Gruntz/ParseSource.h>           // canonical CParseSource (BeginParse/EndParse)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan + LeafScanBase
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
@@ -79,12 +80,9 @@ struct LeafCue {
     i32 PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3); // 0x1f940 (ret 0x10)
 
     char m_pad0[0x10];
-    LeafCuePlayer* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;            // +0x14  last draw-clock
-    i32 m_18;            // +0x18  interval
-};
-struct LeafCuePlayer {
-    i32 ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
+    CSoundCueMgr* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;           // +0x14  last draw-clock
+    i32 m_18;           // +0x18  interval
 };
 // The reentrancy gate + cue-item id pair the refresh plays through, and the
 // draw-clock mirror (wrap-safe gate compare). Shared globals (see SBI_MenuItem).

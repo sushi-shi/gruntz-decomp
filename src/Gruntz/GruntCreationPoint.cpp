@@ -8,6 +8,7 @@
 // CGruntCreationPoint : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/GruntCreationPoint.h>
@@ -49,9 +50,6 @@ CGruntCreationPoint::~CGruntCreationPoint() {}
 // The level sprite-ref table (g_gameReg->m_74). GetSel(i, bAlt) (via the 0x4165
 // GetByIndex thunk) returns the selected sprite handle for ref-row i; modeled
 // NO-body so the call reloc-masks.
-struct CCreationSpriteRefTable {
-    i32 GetSel(i32 i, i32 bAlt); // 0x4165
-};
 // One ref-index array slot (8-byte stride; first dword is the ref-row index).
 struct CreationRefSlot {
     i32 m_idx; // +0x00  ref-row index
@@ -62,7 +60,7 @@ struct CreationRefSlot {
 // array at +0x158 (row stride 71 slots) resolves the selector.
 struct CreationGameReg {
     char m_pad0[0x74];
-    CCreationSpriteRefTable* m_74; // +0x74  level sprite-ref table
+    CSpriteRefTable* m_74; // +0x74  level sprite-ref table
     char m_pad78[0x134 - 0x78];
     i32 m_134; // +0x134 mode discriminator
     char m_pad138[0x158 - 0x138];
