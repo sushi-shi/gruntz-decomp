@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Io/SaveGame.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
@@ -3616,10 +3617,6 @@ struct CRpThis { // view-of-this
     i32 m_inGame;        // +0x4f8  in-game
 };
 // reg = g_64556c view.
-struct CRpReg58 {
-    void CueA(i32 id);       // 0x1c53 thunk __thiscall(id)
-    void CueB(i32 a, i32 b); // 0x2d97 thunk __thiscall(a, b)
-};
 struct CRpReg44 {
     char p0[0x124];
     i32 m_124; // +0x124
@@ -3636,7 +3633,7 @@ struct CRpReg {
     char p18[0x44 - 0x18];
     CRpReg44* m_44; // +0x44
     char p48[0x58 - 0x48];
-    CRpReg58* m_58; // +0x58
+    CSaveGame* m_58; // +0x58
     char p5c[0xc8 - 0x5c];
     i32* m_c8; // +0xc8  (reads m_c8[-2])
     char pcc[0x134 - 0xcc];
@@ -3693,11 +3690,11 @@ i32 CPlay::ResetPlayState() {
             if (reg->m_44->m_124 == 0) {
                 i32 id = self->m_1c;
                 if (id > 0x24 || id == 1) {
-                    reg->m_58->CueA(id);
+                    reg->m_58->SetMaxLevel(id);
                     reg = (CRpReg*)g_64556c;
                 }
             }
-            reg->m_58->CueB(0, 0x81a6);
+            reg->m_58->Save(0, 0x81a6);
         }
         CRpGeom* g = self->m_4->m_30->m_24;
         ResetGoalGeom(g->m_3b0, g->m_3b4);

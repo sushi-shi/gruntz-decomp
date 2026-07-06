@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/BattlezData.h>
@@ -252,11 +253,6 @@ extern i32 g_sndEnabled; // DAT_0061ab20 (?g_sndEnabled@@3HA)
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
 // `mov eax,ds:g_gameReg` load against the already-named symbol).
-struct ScoreNotifier {         // g_gameReg->m_58
-    void Bump(i32 wp);         // FUN @ 0x4408 thunk (this, wp)
-    void Tick(i32 wp);         // FUN @ 0x1c53 thunk (this, wp)
-    i32 Notify(i32 a, i32 wp); // FUN @ 0x2d97 thunk (this, a, wp) -> nonzero=ok
-};
 struct ScoreSub2c { // g_gameReg->m_curState
     char m_pad0[0x1c];
     i32 m_1c; // +0x1c  cumulative score
@@ -2017,7 +2013,7 @@ i32 CGruntzMgr::Quicksave() {
         m_timer->Stop();
     }
     FillSaveInfo(m_saveInfoRec, 0);
-    if (((ScoreNotifier*)g_gameReg->m_saveSink)->Notify((i32)m_saveInfoRec->m_serial, 0x81a7)) {
+    if (((CSaveGame*)g_gameReg->m_saveSink)->Save((i32)m_saveInfoRec->m_serial, 0x81a7)) {
         m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
@@ -2298,9 +2294,9 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (m_hudGuard->m_124 == 0) {
         m_scoreHud->Seed(sub->m_1c, 0);
-        ((ScoreNotifier*)g_gameReg->m_saveSink)->Bump(sub->m_1c);
-        ((ScoreNotifier*)g_gameReg->m_saveSink)->Tick((sub->m_1c % 0x28) + 1);
-        ((ScoreNotifier*)g_gameReg->m_saveSink)->Notify(0, 0x81a6);
+        ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_1c);
+        ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_1c % 0x28) + 1);
+        ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
     }
     m_scoreHud->Refresh(sub->m_1c);
     m_scoreHud->m_8 = 0;
