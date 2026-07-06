@@ -11,6 +11,7 @@
 #include <Wap32/ZVec.h>
 #include <rva.h>
 #include <Globals.h>
+#include <Bute/ButeTree.h>
 
 #include <stdlib.h> // realloc (0x125180), free (0x120c30)
 #include <string.h> // memcpy (0x121960), memset (rep stos)
@@ -67,7 +68,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     } else {
         i32 sentinel = g_zvecErrSentinel;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_err->Error(this, sentinel, 0xc);
+        ((CVariantSlot*)m_err)->Set((void*)this, sentinel, 0xc);
         r = m_spare;
     }
     char* slot = (char*)m_alloc;
@@ -105,7 +106,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
     }
     i32 sentinel = g_zvecErrSentinel;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_err->Error(this, sentinel, 0xc);
+    ((CVariantSlot*)m_err)->Set((void*)this, sentinel, 0xc);
     return m_spare;
 }
 
@@ -124,7 +125,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_err->Error(this, (u32)s_out_of_memory, 0x22);
+            ((CVariantSlot*)m_err)->Set((void*)this, (u32)s_out_of_memory, 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -141,7 +142,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_err->Error(this, (u32)s_out_of_memory, 0x22);
+        ((CVariantSlot*)m_err)->Set((void*)this, (u32)s_out_of_memory, 0x22);
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;

@@ -4919,7 +4919,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // CBattlezMapConfig cluster; __thiscall on a _zvec/zErrHandling-bearing object, ret
 // 0x8 => 2 args). Capture
 // the return address into the global error token, then dispatch the error reporter
-// (this->m_err->Error(this, sentinel, code)). This is the inlined zvec overflow
+// (((CVariantSlot*)this->m_err)->Set((void*)this, sentinel, code)). This is the inlined zvec overflow
 // path lifted out as a standalone helper.
 // ===========================================================================
 // The zvec error globals + the return-capture helper + the reporter (the same set
@@ -4936,7 +4936,7 @@ struct ZErrTarget {
 RVA(0x00034960, 0x24)
 void ZErrTarget::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
-    m_err->Error(this, sentinel, code);
+    ((CVariantSlot*)m_err)->Set((void*)this, sentinel, code);
 }
 
 // ===========================================================================

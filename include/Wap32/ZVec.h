@@ -26,7 +26,6 @@
 // zErrHandling subobject: the error reporter the accessor invokes on overflow.
 class zErrHandling {
 public:
-    void Error(void* who, u32 sentinel, i32 code); // 0x16d850
 };
 
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
