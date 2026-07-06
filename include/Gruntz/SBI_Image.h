@@ -32,7 +32,10 @@ struct CSbiConfigHost;
 // the virtual destructor and adds no fields; the frameless method view constructs
 // nothing here, so modeling it as a field-less intermediate is layout-identical to
 // deriving CStatusBarItem directly (matching-neutral) while recovering the real level.
-class CSBI_RectOnly : public CStatusBarItem {};
+class CSBI_RectOnly : public CStatusBarItem {
+public:
+    void InsertPtr(i32 a, i32 b); // 0x... (plane-scan object sink)
+};
 SIZE_UNKNOWN(CSBI_RectOnly);
 
 // CSBI_Image - the image status-bar item. Inherits the CStatusBarItem base-region

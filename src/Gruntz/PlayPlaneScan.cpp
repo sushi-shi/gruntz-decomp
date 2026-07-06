@@ -8,6 +8,7 @@
 // Self-contained (own class views) so the shared, matched CPlay.h stays
 // untouched. /GX EH frame: CPlay_0d53d0 has a stack CString error temp, and
 // CPlay_0d9290 has a stack CByteArray shuffle temp - both destructible.
+#include <Gruntz/SBI_Image.h>
 #include <Ints.h>
 #include <Gruntz/Play.h> // canonical CPlay (one shape)
 #include <Gruntz/GameRegistry.h>
@@ -138,9 +139,6 @@ struct ObjSink2e4 {
         i32 a130
     );
 };
-struct ObjSink2dc {
-    void InsertPtr(i32 a118, i32 a114); // 0x108410 (ILT 0x1d2f) thiscall
-};
 
 // The global game-manager singleton (*g_64556c) whose ReportError the error
 // paths call, and the error-formatting free helper.
@@ -255,7 +253,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((ObjSink2dc*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                ((CSBI_RectOnly*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         } else if (vf == PlaneType_Covered) {
@@ -317,7 +315,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((ObjSink2dc*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                ((CSBI_RectOnly*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         }

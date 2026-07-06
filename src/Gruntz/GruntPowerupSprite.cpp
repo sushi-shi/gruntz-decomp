@@ -9,6 +9,7 @@
 // The 0x44 is a DESTRUCTOR (stamps CUserLogic 0x5e705c then CUserBase 0x5e70b4,
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
+#include <Gruntz/SerialObjRef.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
 
@@ -18,10 +19,6 @@
 // The serializable sub-object overlaid at CUserLogic+0x34; its own serializer is
 // reached as `lea ecx,[this+0x34]; call` through the 0x1aff thunk (the SAME helper
 // the in-game-text leaf uses). External; no body.
-class PupSubObj {
-public:
-    i32 SerializeSub(void* ar, i32 mode, i32 a, i32 b); // 0x001aff (thunk)
-};
 
 // ~CGruntPowerupSprite @0x012370 - the CUserLogic-folded /GX leaf dtor.
 RVA(0x00012370, 0x44)
@@ -118,7 +115,7 @@ i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4)
     if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (((PupSubObj*)&m_34)->SerializeSub(ar, mode, a3, a4) == 0) {
+    if (((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) == 0) {
         return 0;
     }
     switch (mode) {
