@@ -1449,7 +1449,8 @@ public:
 
 class CAniAdvanceCursor {
 public:
-    i32 Advance_15c360(u32 elapsed); // 0x15c360
+    CAniAdvanceCursor(i32 owner, i32 field04, i32 field08); // 0x15b730 (external)
+    i32 Advance_15c360(u32 elapsed);                        // 0x15c360
 
     char m_pad00[0x10];      // +0x00..0x0f
     CAniRenderCtx* m_ctx;    // +0x10
@@ -1966,6 +1967,11 @@ void CAniRenderCtx::ClampLast_15cc90() {
 // Engine heap allocator (operator new / RezAlloc).  Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 
+// Placement new: construct a sub-object in place at a factory-computed offset.
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
 // The global object-id counter the factory stamps into +0x188 and post-increments.
 
 // The constructed wide object's first (CWwdGameObject) vtable, then its final
@@ -1995,11 +2001,6 @@ public:
 class CWwdLabel {
 public:
     void Ctor(); // 0x1b9b93
-};
-// The command-dispatch sub-object at +0x1a0 (CmdMap ctor 0x15b730, 3 args).
-class CWwdCmdMap {
-public:
-    void Ctor(i32 a, i32 b, i32 c); // 0x15b730
 };
 
 // The wide CWwdGameObject the factory builds.  Documented raw-offset access for
@@ -2418,7 +2419,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
         *(i32*)(obj + 0x90) = 0;
         *(i32*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        ((CWwdCmdMap*)(obj + 0x1a0))->Ctor(root, a1, flags);
+        new (obj + 0x1a0) CAniAdvanceCursor(root, a1, flags); // 0x15b730 sub-object ctor
         *(void**)obj = &g_wwdObjFinalVtbl;
         *(i32*)(obj + 0x18c) = -1;
         *(i32*)(obj + 0x190) = -1;
@@ -2466,7 +2467,6 @@ SIZE_UNKNOWN(CQueueProbeNode);
 SIZE_UNKNOWN(CDrawSubWorker);
 SIZE_UNKNOWN(CDrawSubWorkerBase);
 SIZE_UNKNOWN(CWwdBox);
-SIZE_UNKNOWN(CWwdCmdMap);
 SIZE_UNKNOWN(CWwdFactoryObject);
 SIZE_UNKNOWN(CWwdLabel);
 SIZE_UNKNOWN(CWwdNode);
