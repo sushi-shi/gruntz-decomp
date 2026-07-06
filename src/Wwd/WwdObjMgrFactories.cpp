@@ -26,6 +26,11 @@
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
+// Placement new: construct a sub-object in place at a factory-computed offset.
+inline void* operator new(unsigned int, void* p) {
+    return p;
+}
+
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14).
 
 // Wide-object vtables the factories INLINE-stamp mid-construction. The disasm
@@ -70,25 +75,23 @@ class CWwdGameObject;
 // models (no fabricated class names) pending a matcher that models `new T`.
 // Base "CResolveNode" 3-arg ctor (root, a, flags). 0x15b2c0 for the 159250/159440
 // objects, 0x15b390 for the 1598d0 object.
-class CWwdResolveBaseA {
+// ctor-only TU-local views of the real sub-object classes (defined in cremusnode/
+// ddrawsubmgr/discoveredsmall units); the factory placement-constructs them in place.
+class CResolveNode { // the wide object's base sub-object at +0x00 (0x15b2c0, 3-arg ctor)
 public:
-    void Ctor(int root, int a, int flags); // 0x15b2c0
+    CResolveNode(int root, int a, int flags);
 };
 class CWwdResolveBaseB {
 public:
     void Ctor(int root, int a, int flags); // 0x15b390
 };
-// The +0x9c sub-object (159250/159440): ctor 0x15b2a0, then its +0x18 is zeroed.
-class CWwdSub9c {
+class CWwdSlot9c { // the +0x9c sub-object (0x15b2a0, 0-arg ctor); +0x18 (obj+0xb4) then zeroed
 public:
-    void Ctor(); // 0x15b2a0
-    char m_pad00[0x18];
-    int m_18; // +0x18  -> obj+0xb4
+    CWwdSlot9c();
 };
-// The +0xb8 sub-object ctor. 0x15b270.
-class CWwdSubB8 {
+class Obj15b270 { // the +0xb8 sub-object (0x15b270, 0-arg ctor)
 public:
-    void Ctor(); // 0x15b270
+    Obj15b270();
 };
 // The CString label ctor at +0xdc. 0x1b9b93.
 class CWwdLabel {
@@ -171,11 +174,10 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a7);
-        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
-        s9c->Ctor();
-        s9c->m_18 = 0;
-        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
+        new (obj) CResolveNode(root, a1, a7);
+        new (obj + 0x9c) CWwdSlot9c();
+        *(int*)(obj + 0xb4) = 0;
+        new (obj + 0xb8) Obj15b270();
         ((CWwdLabel*)(obj + 0xdc))->Ctor();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(int*)(obj + 0x5c) = (int)0x80000000;
@@ -223,11 +225,10 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a4);
-        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
-        s9c->Ctor();
-        s9c->m_18 = 0;
-        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
+        new (obj) CResolveNode(root, a1, a4);
+        new (obj + 0x9c) CWwdSlot9c();
+        *(int*)(obj + 0xb4) = 0;
+        new (obj + 0xb8) Obj15b270();
         ((CWwdLabel*)(obj + 0xdc))->Ctor();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(int*)(obj + 0x5c) = (int)0x80000000;
@@ -503,10 +504,10 @@ SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdList1dc);
 SIZE_UNKNOWN(CWwdObjList);
 SIZE_UNKNOWN(CWwdObjMgrL);
-SIZE_UNKNOWN(CWwdResolveBaseA);
+SIZE_UNKNOWN(CResolveNode);
 SIZE_UNKNOWN(CWwdResolveBaseB);
-SIZE_UNKNOWN(CWwdSub9c);
-SIZE_UNKNOWN(CWwdSubB8);
+SIZE_UNKNOWN(CWwdSlot9c);
+SIZE_UNKNOWN(Obj15b270);
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)
 SIZE(WwdAnimWorker, 0x17c);      // the +0x7c anim worker
