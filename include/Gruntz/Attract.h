@@ -32,8 +32,6 @@ public:
 
 class CAttractVideo {
 public:
-    i32 RestoreVideoMode(i32 save);
-
     char m_pad00[0x48];
     CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
 };

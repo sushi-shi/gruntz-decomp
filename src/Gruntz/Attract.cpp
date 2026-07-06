@@ -456,7 +456,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         } while (showCursor(0) >= 0);
     }
 
-    video()->RestoreVideoMode(0);
+    ((CGruntzMgr*)video())->RestoreVideoMode(0);
 
     CAttractState* state = stateMgr()->LookupState(s_STATEZ_ATTRACT);
     m_2c = (CResSource*)state;

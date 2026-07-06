@@ -5,6 +5,7 @@
 // cluster callee (the node ctor/dtor, the hash Lookup, the engine alloc/free) is
 // modeled NO-body so its `call` reloc-masks.
 #include <Bute/SymParser.h>
+#include <DDrawMgr/ShadeTableCache.h>
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
@@ -126,7 +127,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (!sprite) {
         return 0;
     }
-    void* alpha = m_factory->AlphaTable(sprite);
+    void* alpha = ((CShadeTableCache*)m_factory)->AlphaTable((unsigned char*)sprite);
     if (!alpha) {
         return 0;
     }

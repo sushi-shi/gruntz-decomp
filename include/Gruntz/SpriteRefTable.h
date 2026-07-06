@@ -55,7 +55,6 @@ public:
 SIZE_UNKNOWN(CSpriteRefFactory);
 class CSpriteRefFactory {
 public:
-    void* AlphaTable(void* spriteData); // 0x14f5b0, __thiscall ret 0x4
 };
 
 SIZE_UNKNOWN(CSpriteRefTable);
