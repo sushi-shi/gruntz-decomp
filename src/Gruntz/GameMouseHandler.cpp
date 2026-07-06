@@ -12,6 +12,7 @@
 // way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
 // error ("MFC apps must not #include <windows.h>").
 #include <Gruntz/Play.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (Configure)
 
@@ -81,14 +82,8 @@ struct SbiRectHost { // this->m_c
     SbiRectSrc* m_24; // +0x24
 };
 SIZE_UNKNOWN(SbiChild);
-struct SbiChild {                        // this->m_2dc
-    i32 m_0;                             // +0x00  mode tag
-    i32 HitTest(i32 x, i32 y);           // FUN @ 0x3ad5 __thiscall, ret index/-1
-    void Select(i32 idx, i32 flag);      // FUN @ 0x20b8 __thiscall
-    void Refresh();                      // FUN @ 0x123f __thiscall
-    void Notify(i32 v);                  // FUN @ 0x4179 __thiscall
-    i32 Check();                         // FUN @ 0x3549 __thiscall, ret bool
-    i32 Dispatch(i32 msg, i32 x, i32 y); // FUN @ 0x1b81 __thiscall, ret result
+struct SbiChild { // this->m_2dc
+    i32 m_0;      // +0x00  mode tag
 };
 SIZE_UNKNOWN(SbiEntry);
 struct SbiEntry { // this->m_374[i]
@@ -148,7 +143,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         return 1;
     }
     if (m_overlayDrag != 0 || g_sbiMgr->m_68->m_400 == 0) {
-        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
+        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
         return this->Vslot0e(msg, x, y); // base handler at vtable slot +0x38
@@ -163,7 +158,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
                 e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
             }
         }
-        ((SbiChild*)m_guts)->Refresh();
+        ((CSBI_RectOnly*)m_guts)->RefreshState();
         if (((SbiChild*)m_guts)->m_0 == 1) {
             ((CChatBoxOwner*)m_hitTest)->Configure(2);
         } else {
@@ -172,9 +167,9 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         return 1;
     }
 
-    i32 idx = ((SbiChild*)m_guts)->HitTest(x, y);
+    i32 idx = ((CSBI_RectOnly*)m_guts)->HitTest(x, y);
     if (idx != -1) {
-        ((SbiChild*)m_guts)->Select(idx, 1);
+        ((CSBI_RectOnly*)m_guts)->PlaceCursorTarget(idx, 1);
         return 1;
     }
 
@@ -184,13 +179,13 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     i32 rr = rc->right;
     i32 rb = rc->bottom;
     if (x < rl || x > rr || y < rt || y > rb) {
-        return ((SbiChild*)m_guts)->Dispatch(msg, x, y);
+        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
     }
 
     i32 outArea;
     i32 outVal;
     if (((SbiHost*)m_4)->m_68->Probe(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
-        ((SbiChild*)m_guts)->Notify(outVal);
+        ((CSBI_RectOnly*)m_guts)->ToggleStat(outVal);
         return 1;
     }
 
@@ -217,7 +212,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         RECT er;
         SetRect(&er, e->m_0 - 0x10, e->m_4 - 0x10, e->m_0 + 0x10, e->m_4 + 0x10);
         if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
-            if (!((SbiChild*)m_guts)->Check()) {
+            if (!((CSBI_RectOnly*)m_guts)->FindReadySlot()) {
                 return 1;
             }
             char ab = (char)g_644c54;
