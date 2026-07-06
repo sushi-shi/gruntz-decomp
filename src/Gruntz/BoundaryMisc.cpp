@@ -256,17 +256,16 @@ void EndWaitCursor18430() {
 // dispatch a tile-switch (0x4b320 via the 0x1640 thunk) with a fixed
 // (a2, a3, 0, 0x9c7, 0, 0) tuple. __stdcall, 6 args (ret 0x18).
 // ===========================================================================
-struct CTileSwitch29af0 {
-    void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x4b320 (via 0x1640)
-};
-SIZE_UNKNOWN(CTileSwitch29af0);
+// The tile-switch dispatch (0x4b320 via the 0x1640 thunk) is the free __stdcall
+// CGrunt_TileSwitch(7 args); a1 is its first arg, not a receiver.
+i32 __stdcall CGrunt_TileSwitch(i32 grunt, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 RVA(0x00029af0, 0x3b)
-void __stdcall TileSwitch29af0(CTileSwitch29af0* a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+void __stdcall TileSwitch29af0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (a4) {
         rand();
     }
     if (a5) {
         rand();
     }
-    a1->Dispatch(a2, a3, 0, 0x9c7, 0, 0);
+    CGrunt_TileSwitch(a1, a2, a3, 0, 0x9c7, 0, 0);
 }
