@@ -129,7 +129,6 @@ inline WorkerListSibBase::~WorkerListSibBase() {
 
 class CDDrawWorkerListSib : public WorkerListSibBase {
 public:
-    void Cleanup_163bc0();  // declared-only teardown helper (0x163bc0)
     ~CDDrawWorkerListSib(); // 0x156f50
     CObList m_10;           // +0x10
 };
@@ -358,7 +357,7 @@ void CDDrawWorkerList::PruneWorkers(i32 a1, i32 a2) {
 // SEH prologue/epilogue + reloc-masked names are the residual. Re-home in the sweep.
 RVA(0x00156f50, 0x68)
 CDDrawWorkerListSib::~CDDrawWorkerListSib() {
-    Cleanup_163bc0();
+    ((CDDrawWorkerList*)this)->~CDDrawWorkerList();
     // implicit: ~m_10 (CObList) then ~WorkerListSibBase (field resets + base restamp).
 }
 
