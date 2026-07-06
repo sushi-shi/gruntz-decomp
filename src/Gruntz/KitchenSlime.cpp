@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
+#include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <rva.h>
@@ -176,7 +177,7 @@ struct CKSlimeEntry;       // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00246228)
-extern _zvec g_kslimeColl;
+extern CTypeKeyColl g_kslimeColl;
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;
@@ -349,7 +350,7 @@ extern CTypeNameEntry* g_typeCur;
 DATA(0x002bf670)
 extern i32 g_typeCount;
 DATA(0x002bf650)
-extern _zvec g_typeColl;
+extern CTypeKeyColl g_typeColl;
 DATA(0x002bf654)
 extern CVariantSlot* g_typeColl2;
 DATA(0x002bf66c)
