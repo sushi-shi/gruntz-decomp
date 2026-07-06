@@ -60,9 +60,7 @@ public:
 // `lea ecx,[this+0x1a0]; call` with no cast.
 SIZE(CmdMap, 0x3c);
 struct CmdMap {
-    void Construct(void* owner);              // 0x15c290
-    i32 Find(i32 a1, i32 a2, i32 a3, i32 a4); // 0x15c900
-    char m_body[0x3c];                        // embedded sub-object body (+0x1a0..+0x1dc)
+    char m_body[0x3c]; // embedded sub-object body (+0x1a0..+0x1dc)
 };
 
 // (The +0x1dc member is the real MFC CObList, folded below - the former

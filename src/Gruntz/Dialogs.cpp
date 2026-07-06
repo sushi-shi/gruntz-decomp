@@ -13,6 +13,7 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Net/InterfaceObject.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
@@ -210,16 +211,16 @@ void CMultiStartDlg::BuildSlotList() {
     if (reg->m_588) {
         count = 2;
     } else if (pi) {
-        if (pi->Q1794b0()) {
+        if (((InterfaceObject*)pi)->IsInterface1()) {
             count = 1;
         }
-        if (pi->Q1794e0()) {
+        if (((InterfaceObject*)pi)->IsInterface2()) {
             count = 2;
         }
-        if (pi->Q179510()) {
+        if (((InterfaceObject*)pi)->IsInterface3()) {
             count = 3;
         }
-        if (pi->Q179540()) {
+        if (((InterfaceObject*)pi)->IsInterface4()) {
             count = 4;
         }
     }

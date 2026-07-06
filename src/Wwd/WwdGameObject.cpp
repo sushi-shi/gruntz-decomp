@@ -164,7 +164,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (m_cmdMap.Find(a1, type, a3, a4) == 0) {
+    if (((CDDrawBlitParam*)&m_cmdMap)->Find((CSerialArchive*)a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -672,7 +672,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
-    m_cmdMap.Construct(this);
+    ((CDDrawBlitParam*)&m_cmdMap)->Construct(this);
     return Setup(a1, a2, a3, a4);
 }
 

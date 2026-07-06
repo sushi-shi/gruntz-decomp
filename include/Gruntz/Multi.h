@@ -193,10 +193,6 @@ class CMultiPlayer;
 // __thiscall leaves in the DirectPlay session cluster (0x1794xx).
 class CMultiPlayerInfo {
 public:
-    i32 Q1794b0(); // 0x1794b0  slot-1 occupancy probe
-    i32 Q1794e0(); // 0x1794e0  slot-2
-    i32 Q179510(); // 0x179510  slot-3
-    i32 Q179540(); // 0x179540  slot-4
 };
 SIZE_UNKNOWN(CMultiPlayerInfo);
 
