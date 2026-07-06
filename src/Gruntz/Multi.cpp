@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
@@ -461,17 +462,13 @@ struct McHost { // CMulti::m_view
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
 // CMultiMgr::m_48 is the CMultiSoundZ sound object (RECOVERED via xref: 0x138840
 // = CMultiSoundZ::Play_138840, 0x138730 = CMultiSoundZ::Lookup_138730 which
-// returns a CMultiSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
-class CMultiSoundInnerZ { // CMultiSoundZ::m_1c (Lookup_138730 result)
-public:
-    void Do139030(i32 flag); // 0x139030
-};
+// returns a CGruntzSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
 class CMultiSoundZ { // CMultiMgr::m_48
 public:
-    void Play_138840(char* name, i32 flag);       // 0x138840
-    CMultiSoundInnerZ* Lookup_138730(char* name); // 0x138730
+    void Play_138840(char* name, i32 flag);        // 0x138840
+    CGruntzSoundInnerZ* Lookup_138730(char* name); // 0x138730
     char m_pad0[0x1c];
-    CMultiSoundInnerZ* m_1c; // +0x1c
+    CGruntzSoundInnerZ* m_1c; // +0x1c
 };
 class CMultiSub68 { // CMultiMgr::m_68
 public:
@@ -512,12 +509,12 @@ i32 CMulti::PumpA() {
             if (g_64556c->m_14 != 0) {
                 m_logic->m_48->Play_138840(name, 1);
             } else {
-                CMultiSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
+                CGruntzSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
                 if (p) {
                     m_logic->m_48->m_1c = p;
                 }
                 if (m_logic->m_48->m_1c) {
-                    m_logic->m_48->m_1c->Do139030(1);
+                    m_logic->m_48->m_1c->SetLoop(1);
                 }
             }
             m_ambientArmed = 1;
@@ -1007,7 +1004,6 @@ SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CMultiSoundZ);
-SIZE_UNKNOWN(CMultiSoundInnerZ);
 SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSubDC);
