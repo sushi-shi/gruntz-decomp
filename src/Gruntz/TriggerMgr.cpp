@@ -1,4 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
@@ -312,9 +313,6 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 
 // A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
 // reloc-masked); DestroyAllAnims rewinds three channels.
-struct CTmSoundChan {
-    i32 StopAndRewind(); // 0x135380 (reloc-masked)
-};
 
 // The level's sprite factory (level->m_8) is the canonical CSpriteFactory
 // (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0, reloc-masked) builds a sprite
@@ -933,12 +931,12 @@ void CTriggerMgr::DestroyAllAnims() {
         }
     }
 
-    CTmSoundChan* ch0 = m_soundChanA;
+    DirectSoundMgr* ch0 = m_soundChanA;
     if (ch0 != 0) {
         ch0->StopAndRewind();
         m_soundChanA = 0;
     }
-    CTmSoundChan* ch1 = m_soundChanB;
+    DirectSoundMgr* ch1 = m_soundChanB;
     if (ch1 != 0) {
         ch1->StopAndRewind();
         m_soundChanB = 0;
@@ -947,10 +945,10 @@ void CTriggerMgr::DestroyAllAnims() {
     if (state != 0) {
         char* sub = *(char**)((char*)state + 0x2dc);
         if (sub != 0) {
-            CTmSoundChan* ch2 = *(CTmSoundChan**)(sub + 0x618);
+            DirectSoundMgr* ch2 = *(DirectSoundMgr**)(sub + 0x618);
             if (ch2 != 0) {
                 ch2->StopAndRewind();
-                *(CTmSoundChan**)(sub + 0x618) = 0;
+                *(DirectSoundMgr**)(sub + 0x618) = 0;
             }
         }
     }
@@ -2474,7 +2472,6 @@ SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
 SIZE_UNKNOWN(CTmFxMgr);
 SIZE_UNKNOWN(CTmCursorMgr);
-SIZE_UNKNOWN(CTmSoundChan);
 SIZE_UNKNOWN(CTmScroll);
 SIZE_UNKNOWN(CTmLevelView);
 
