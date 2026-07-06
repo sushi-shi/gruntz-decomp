@@ -158,7 +158,8 @@ extern char* g_actBase;
 extern CActEntry* g_actCur;
 extern i32 g_actStride;
 extern i32 g_actScratch;
-extern struct CActReg4Coll2* g_actReg4Coll2;
+class CVariantSlot; // Bute/ButeTree.h (Set @0x16d850)
+extern CVariantSlot* g_actReg4Coll2;
 extern i32 g_actReg4Lo;
 extern i32 g_actReg4Hi;
 extern char* g_actReg4Base;

@@ -6,6 +6,7 @@
 // activation handler (0x4040a2) into the R4 table at that id. Placeholder names;
 // only OFFSETS + code bytes are load-bearing.
 #include <Bute/ButeMgr.h> // CButeTree
+#include <Bute/ButeTree.h>
 #include <rva.h>
 
 #include <Gruntz/StringNode.h> // the type-name teardown slot
@@ -50,9 +51,6 @@ struct CActReg4 {
 };
 DATA(0x002446d8)
 extern CActReg4 g_actReg4;
-struct CActReg4Coll2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850
-};
 struct R4Entry {
     void* m_fn;
 };
@@ -84,7 +82,7 @@ static inline R4Entry* R4Lookup(i32 coord) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_actReg4Coll2->Insert(&g_actReg4, item, 0xc);
+    g_actReg4Coll2->Set(&g_actReg4, (i32)item, 0xc);
     return g_actReg4Cur;
 }
 
@@ -118,6 +116,5 @@ void ActReg4RegisterType() {
 }
 
 SIZE_UNKNOWN(CActReg4);
-SIZE_UNKNOWN(CActReg4Coll2);
 SIZE_UNKNOWN(CTypeColl2);
 SIZE_UNKNOWN(R4Entry);
