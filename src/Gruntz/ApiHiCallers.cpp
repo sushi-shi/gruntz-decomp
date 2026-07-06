@@ -439,3 +439,7 @@ SIZE(SubWidget_168080, 0x44);
 SIZE_UNKNOWN(VtblA2_17c3f0);
 SIZE_UNKNOWN(VtblA3_17c3f0);
 VTBL(SubWidget_168080, 0x001f0310); // ??_7SubWidget_168080 (was g_subVtbl_5f0310)
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(ObjA2_17c3f0, 0x001f085c);
+VTBL(ObjA3_17c3f0, 0x001f085c);

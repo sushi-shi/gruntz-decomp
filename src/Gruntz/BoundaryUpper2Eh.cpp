@@ -165,3 +165,7 @@ CFxModeT1::CFxModeT1() {
     m_24 = g_emptyString;
     m_28 = 0;
 }
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(RezDirBase, 0x001ef680);
+VTBL(RezListNode, 0x001ef680);

@@ -131,3 +131,6 @@ void ForceEmitCUserLogic1Arg(CGameObject* o) {
     g_forceEmitSink = new CUserLogic(o);
     g_forceEmitSink = new CUserLogic(o);
 }
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CLogicTypeRegistry, 0x001e705c);

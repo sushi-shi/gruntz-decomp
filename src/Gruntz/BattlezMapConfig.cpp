@@ -5100,3 +5100,8 @@ SIZE_UNKNOWN(CLevelObj);
 SIZE_UNKNOWN(CLevelSpawnInfo);
 SIZE_UNKNOWN(CMapDims);
 SIZE_UNKNOWN(CRttiRec);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(EmitArg, 0x001e96ec);
+VTBL(SceneObj, 0x001e96ec);
+VTBL(ZErrTarget, 0x001e96ec);

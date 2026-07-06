@@ -171,3 +171,6 @@ void __stdcall Forward853d0(void* a) {
 VTBL(CAbstract137330, 0x001ef760);
 VTBL(CAbstract13aaf0, 0x001ef6c8);
 VTBL(CStateSub8c470, 0x001ea21c);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CAbstract13ca30, 0x001ea21c);

@@ -127,4 +127,7 @@ public:
 };
 SIZE_UNKNOWN(CSBI_StatzTabGruntBar);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CStatzSelf, 0x001eace4);
+
 #endif // SBI_STATZTABGRUNTBAR_H

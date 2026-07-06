@@ -107,4 +107,8 @@ struct LogicContext {
     char* m_08; // grid object; the resolver sits at +0x48
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(LogicArchive, 0x001efb80);
+VTBL(LogicSub, 0x001efb80);
+
 #endif // GRUNTZ_LOGICRECORD_H

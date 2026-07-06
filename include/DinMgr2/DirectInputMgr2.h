@@ -335,4 +335,8 @@ public:
     void Free6d0(); // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CDeviceList, 0x001ef670);
+VTBL(CDevicePtrArray, 0x001ef670);
+
 #endif // DINMGR2_DIRECTINPUTMGR2_H

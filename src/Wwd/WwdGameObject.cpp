@@ -1202,3 +1202,6 @@ SIZE_UNKNOWN(WwdObList);
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(WwdBResolve, 0x001efbc0);
 VTBL(WwdWorker, 0x001e8cb4);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(WorkerSub, 0x001f0020);

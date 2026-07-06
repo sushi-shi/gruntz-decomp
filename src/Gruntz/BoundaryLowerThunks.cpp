@@ -381,3 +381,6 @@ i32 NotNull118310(void* p) {
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(CStatusBaseSub100780, 0x001eabcc);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CScalarDtor855a0, 0x001e9b0c);

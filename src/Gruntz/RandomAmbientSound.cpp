@@ -626,3 +626,6 @@ SIZE_UNKNOWN(AmbientPoint);
 SIZE_UNKNOWN(PosSoundAux);
 SIZE_UNKNOWN(PosSoundObj);
 SIZE_UNKNOWN(PosSoundVoice);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(PosSoundVoice, 0x001e713c);

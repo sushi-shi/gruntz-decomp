@@ -3641,3 +3641,10 @@ SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
 SIZE_UNKNOWN(TimerObj);
 SIZE_UNKNOWN(CGameRegistry);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CModalDialog, 0x001e9b64);
+VTBL(CSaveDlgBase, 0x001e9b64);
+VTBL(CWorldDelete, 0x001e9b64);
+VTBL(CWorldModeIface, 0x001e9b64);
+VTBL(CmdSinkV, 0x001e9b64);

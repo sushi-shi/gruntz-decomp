@@ -225,3 +225,6 @@ VTBL(Sev15b6d0, 0x001f0128);
 VTBL(Sev161500, 0x001e8cb4);
 VTBL(Sev168c10, 0x001f0328);
 VTBL(Sev17e240, 0x001e8cb4);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(FaderBase, 0x001e8cb4);

@@ -479,4 +479,8 @@ public:
     CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CGMEntity, 0x001e9bdc);
+VTBL(CGMInputObj, 0x001e9bdc);
+
 #endif // SRC_GRUNTZ_GAMEMODE_H

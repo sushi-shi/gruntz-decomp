@@ -877,3 +877,6 @@ i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a
 SIZE_UNKNOWN(CCachedSurface);
 SIZE_UNKNOWN(CPtrListNode);
 SIZE_UNKNOWN(SurfDesc);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CCachedSurface, 0x001ef7f0);

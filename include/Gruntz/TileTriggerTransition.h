@@ -77,4 +77,7 @@ SIZE_UNKNOWN(CTileTransitionController);
 // The default-state engine helper (FUN_0056e4f0, __cdecl, takes the state object).
 extern "C" void TileTransitionDefaultStep(CTileTransitionState* obj);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CTileTransitionState, 0x001e7db4);
+
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

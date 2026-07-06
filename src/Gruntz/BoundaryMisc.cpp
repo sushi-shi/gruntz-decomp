@@ -280,3 +280,6 @@ void __stdcall TileSwitch29af0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(CUserBaseSubB940, 0x001e70b4);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CGuardedDispatch1f870, 0x001e70b4);

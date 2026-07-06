@@ -431,4 +431,8 @@ public:
 // DispatchMove calls it with an explicit object, not a `this` dispatch.
 i32 __stdcall ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CImageSet, 0x001efc30);
+VTBL(CLevelPlane, 0x001efc30);
+
 #endif // SRC_GRUNTZ_GAMELEVEL_H

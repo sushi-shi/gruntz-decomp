@@ -646,3 +646,6 @@ VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker (was g_ddrawWorkerVtbl, 17 s
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(RegWorkerValue, 0x001efbe8);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CWorkerValue, 0x001efc30);

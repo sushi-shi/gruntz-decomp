@@ -113,4 +113,7 @@ public:
     HP_Callback m_callback;           // +0x3c  run/config callback
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CDDrawSurfaceMgr, 0x001efe08);
+
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSURFACEMGR_H

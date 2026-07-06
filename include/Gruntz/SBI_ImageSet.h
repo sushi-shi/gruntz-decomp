@@ -56,4 +56,7 @@ public:
 };
 SIZE(CSBI_ImageSet, 0x3c);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CImageSetStream, 0x001eac4c);
+
 #endif // GRUNTZ_SBI_IMAGESET_H

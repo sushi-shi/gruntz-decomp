@@ -227,4 +227,7 @@ public:
     CObList m_subList;      // +0x1dc  MFC CObList of owned sub-objects
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(AnimWorker, 0x001f0020);
+
 #endif // GRUNTZ_WWDGAMEOBJECT_H

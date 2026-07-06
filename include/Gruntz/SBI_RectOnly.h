@@ -888,4 +888,15 @@ public:
 };
 SIZE_UNKNOWN(CSbiHiWidget);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CSbiGaugeNotify, 0x001eab4c);
+VTBL(CSbiHiWidget, 0x001eab4c);
+VTBL(CSbiNotifyPayload, 0x001eab4c);
+VTBL(CSbiNotifyTarget, 0x001eab4c);
+VTBL(CSbiRect, 0x001eab4c);
+VTBL(CSbiSeqObj, 0x001eab4c);
+VTBL(CSbiSlotPtr, 0x001eab4c);
+VTBL(CSbiSprite, 0x001eab4c);
+VTBL(CSbiTab, 0x001eab4c);
+
 #endif // GRUNTZ_SBI_RECTONLY_H

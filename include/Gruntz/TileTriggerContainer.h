@@ -220,4 +220,8 @@ public:
 };
 SIZE_UNKNOWN(CTileTriggerContainer);
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(TtcKeyedElem, 0x001eaea4);
+VTBL(TtcObList, 0x001eaea4);
+
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

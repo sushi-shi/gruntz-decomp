@@ -494,4 +494,7 @@ public:
     CByteArray m_604; // +0x604
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CMultiReportGate, 0x001e9fe4);
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

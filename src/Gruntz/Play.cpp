@@ -5073,3 +5073,12 @@ SIZE_UNKNOWN(EmSink5c);
 SIZE_UNKNOWN(EmSub54);
 SIZE_UNKNOWN(EmThis);
 SIZE_UNKNOWN(EmWorld);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CDtorThis, 0x001eaa10);
+VTBL(CExitV44, 0x001eaa10);
+VTBL(CExitV58, 0x001eaa10);
+VTBL(CRegExit, 0x001eaa10);
+VTBL(CRtImageReg, 0x001eaa10);
+VTBL(CVisEntity, 0x001eaa10);
+VTBL(EmRendC, 0x001eaa10);

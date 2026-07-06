@@ -18,6 +18,7 @@
 // and container faithfully from the field stores; field names are placeholders.
 #ifndef GRUNTZ_BRICKZ_H
 #define GRUNTZ_BRICKZ_H
+#include <rva.h>
 
 class CBattlezData; // folded BrickzSerObj
 
@@ -188,5 +189,8 @@ public:
     BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
     CBattlezData* m_7c;       // +0x7c  serialize sub-object (unused in this TU)
 };
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(BrickzButeObj, 0x001e705c);
 
 #endif // GRUNTZ_BRICKZ_H

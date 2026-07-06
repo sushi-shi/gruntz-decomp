@@ -2838,3 +2838,6 @@ SIZE_UNKNOWN(CImageSet);
 #undef kTileSoft2
 #undef kTileHard
 #undef kTileSpecial
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(EditSink, 0x001efc30);

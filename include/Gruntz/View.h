@@ -124,4 +124,7 @@ struct CDrawSurface {
 // The two classes kept here need the MFC/RECT + the polymorphic renderer vtable, so they
 // stay in this afx-pulling header (the ResMgr.h classes are afx-neutral).
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CRenderer, 0x001ee1c4);
+
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

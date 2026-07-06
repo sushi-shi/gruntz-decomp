@@ -103,4 +103,7 @@ struct CMapVisitTarget {
     i32 Visit(void* buf, i32 mode, i32 a2, i32 a3); // 0x09f7f0 (__thiscall)
 };
 
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CMapVisitTarget, 0x001e705c);
+
 #endif // GRUNTZ_MAPLOGIC_H

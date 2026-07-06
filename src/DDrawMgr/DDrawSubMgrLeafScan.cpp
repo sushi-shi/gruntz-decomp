@@ -691,3 +691,6 @@ VTBL(LeafElementObj, 0x001eff08);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(LeafElementBase, 0x001e8cb4);
+
+// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(LeafScanValue, 0x001efca0);
