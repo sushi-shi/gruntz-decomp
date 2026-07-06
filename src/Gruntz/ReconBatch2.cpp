@@ -1,4 +1,6 @@
 #include <rva.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 // ReconBatch2.cpp - reconstructed engine/game leaf methods recovered from the
 // engine_unmatched worklist (matcher batch 2). Each function below is homed
 // against a best-guess class shape (placeholder m_<hexoffset> field names; only
@@ -221,23 +223,9 @@ void CGameModeBase::Reset() {
 // unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CSpriteFactoryHolder hops -- the
 // only inbound edge is ILT thunk 0x1ec9 (no clean ctor/new trace).
 // ===========================================================================
-struct SurfCtl_faec0 { // +0x2c surface controller (CDDSurface for Flip / CFileImage for the blit)
-    void CopyRect(i32 a, i32 b); // 0x13f460 (= CFileImage::ShadeRect)
-    void Flip(i32 a);            // 0x13e850 (= CDDSurface::Flip)
-};
-struct CView_faec0 {
-    char m_pad0[0x2c];
-    SurfCtl_faec0* m_2c; // +0x2c
-};
-struct SubView_faec0 { // = CDDrawWorkerMgr (Refresh = Method_158c70 @0x158c70)
-    char m_pad0[0x10];
-    CView_faec0* m_10;            // +0x10 (Flip target host)
-    CView_faec0* m_14;            // +0x14 (blit target host + Refresh arg)
-    void Refresh(CView_faec0* v); // 0x158c70
-};
 struct Mid_faec0 {
     char m_pad0[0x4];
-    SubView_faec0* m_4; // +0x04
+    CDDrawSubMgrPages* m_4; // +0x04
 };
 struct
     PresentHost_faec0 { // unidentified owner of Present @0xfaec0 (only inbound edge: ILT thunk 0x1ec9)
@@ -251,10 +239,10 @@ void PresentHost_faec0::Present(i32 arg0) {
         g_suppress_64e360 = 0;
         return;
     }
-    m_c->m_4->Refresh(m_c->m_4->m_14);
-    m_c->m_4->m_14->m_2c->CopyRect(arg0, 0);
-    m_c->m_4->m_10->m_2c->Flip(0);
-    m_c->m_4->Refresh(m_c->m_4->m_14);
+    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
+    m_c->m_4->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
+    m_c->m_4->m_frontPair->m_surface->Flip((CDDSurface*)0);
+    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
 }
 
 // ===========================================================================
@@ -501,7 +489,6 @@ void** Get_1b9b8d() {
     return &g_desc_6156f4;
 }
 
-SIZE_UNKNOWN(CView_faec0);
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(DlgData_be820);
 SIZE_UNKNOWN(Dst_16f6e0);
@@ -516,8 +503,6 @@ SIZE_UNKNOWN(OptOwner_c4b30);
 SIZE_UNKNOWN(OptionsSlotHost_c4b30);
 SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(Src_16f6e0);
-SIZE_UNKNOWN(SubView_faec0);
-SIZE_UNKNOWN(SurfCtl_faec0);
 SIZE_UNKNOWN(TNode_193340);
 SIZE_UNKNOWN(Tree_193340);
 SIZE_UNKNOWN(Worker181x_181x);
