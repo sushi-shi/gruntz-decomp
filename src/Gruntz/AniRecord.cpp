@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 // AniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
 // CAniElement (src/Gruntz/AniElement.cpp) into a CObArray of these. The
 // orchestrator placeholders tomalla-39 / _40 / _41 are ALL this ONE class
@@ -56,14 +57,6 @@ void RezFree(void* p);
 // holds at +0x1c a manager whose Alloc(handle, size) / Free(p) (re)allocate the
 // record's +0x10 work buffer from a fixed pool. Modeled as a tiny __thiscall
 // helper so `mov ecx,[owner+0x1c]; call` falls out with no stack cleanup.
-class CAniRecordPool {
-public:
-    void* Alloc1_142fc0(i32 handle, i32 size);        // 0x142fc0
-    void* Alloc2_142f40(i32 handle, i32 size);        // 0x142f40
-    void* Alloc3_1430c0(i32 a, i32 handle, i32 size); // 0x1430c0
-    void Free_142f10(void* p);                        // 0x142f10
-};
-
 // The owner node (record+0x0c). Its +0x08 is a flags word the buffer virtuals OR
 // a bit into; its +0x1c is the pool above.
 // DISPOSITION: CAniRecordOwner / CAniMapOwner are the record's owner nodes reached by
@@ -75,7 +68,7 @@ public:
     i32 m_00, m_04; // +0x00..+0x07
     i32 m_flags;    // +0x08  flags
     char _pad0c[0x1c - 0x0c];
-    CAniRecordPool* m_pool; // +0x1c  the pool allocator
+    CDDrawPtrCollections* m_pool; // +0x1c  the pool allocator
 };
 
 // The freshly-allocated +0x10 buffer's second-stage init (0x1485b0, __thiscall on
@@ -310,7 +303,7 @@ i32 CAniRecord::GetSize_168e50() {
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->MakeB2(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
@@ -327,7 +320,7 @@ void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->MakeB((void*)size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -343,7 +336,7 @@ void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
 // 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
+    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->MakeB3(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -362,7 +355,7 @@ RVA(0x00168fb0, 0x1f)
 void CAniRecord::FreeBuf_168fb0() {
     i32 buf = m_buf;
     if (buf != 0) {
-        m_owner->m_pool->Free_142f10((void*)buf);
+        m_owner->m_pool->RemoveItemB((CDDPalette*)buf);
         m_buf = 0;
     }
 }
@@ -389,7 +382,6 @@ SIZE_UNKNOWN(CAniRecord);
 SIZE_UNKNOWN(CAniRecordBase2);
 SIZE_UNKNOWN(CAniRecordBuf);
 SIZE_UNKNOWN(CAniRecordOwner);
-SIZE_UNKNOWN(CAniRecordPool);
 SIZE_UNKNOWN(CAniRecordPrimary);
 SIZE_UNKNOWN(CAniRecordObjBase);
 VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7 (was g_aniRecordVtbl, 5 slots)
