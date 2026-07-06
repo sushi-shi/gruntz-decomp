@@ -83,11 +83,8 @@ extern void* g_typeNodes;
 // CZErrSink (the fatal-alloc/bounds error sink stored at +0x04) is the shared
 // <Gruntz/TypeKeyColl.h> shape.
 // The CKSlimeColl2 dispatcher the type-name lookup grows the collection through.
-struct CKSlimeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (ret 0xc)
-};
 DATA(0x002bf654)
-extern CKSlimeColl2* g_typeColl2;
+extern CVariantSlot* g_typeColl2;
 
 // The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl and
 // the leaf ??_7CTypeKeyColl @0x5f04d0 are the shared <Gruntz/TypeKeyColl.h> shape.
@@ -240,7 +237,7 @@ static inline char* TypeResolve(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Insert(&g_typeColl, item, 0xc);
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
     return (char*)g_typeCur;
 }
 

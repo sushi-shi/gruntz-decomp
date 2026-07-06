@@ -16,7 +16,6 @@ struct CDropColl2;
 struct CDropEntry;
 struct CHaznColl2;
 struct CHaznEntry;
-struct CKSlimeColl2;
 struct CKSlimeEntry;
 struct CPartColl2;
 struct CPartEntry;
@@ -317,7 +316,7 @@ extern "C" i32 g_6455f0; // 0x6455f0
 DATA(0x002455f4)
 extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
 DATA(0x0024622c)
-extern CKSlimeColl2* g_kslimeColl2;
+extern CVariantSlot* g_kslimeColl2;
 DATA(0x00246230)
 extern i32 g_kslimeLo;
 DATA(0x00246234)

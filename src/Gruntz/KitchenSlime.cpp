@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
+#include <Bute/ButeTree.h>
 #include <rva.h>
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
 #include <string.h> // inline strcmp for the ctor's direction-name match
@@ -7,7 +8,7 @@
 #include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
@@ -175,9 +176,6 @@ struct CKSlimeColl {
     i32 Find(i32 coord, i32 z);         // 0x16da80 (__thiscall ret 8)
     void RegisterRange(i32 lo, i32 hi); // 0x408710 (zDArray fast-range ctor, __thiscall ret 8)
 };
-struct CKSlimeColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00246228)
@@ -206,7 +204,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_kslimeColl2->Insert(&g_kslimeColl, item, 0xc);
+    g_kslimeColl2->Set(&g_kslimeColl, (i32)item, 0xc);
     return g_kslimeCur;
 }
 
@@ -356,7 +354,7 @@ extern i32 g_typeCount;
 DATA(0x002bf650)
 extern CKSlimeColl g_typeColl;
 DATA(0x002bf654)
-extern CKSlimeColl2* g_typeColl2;
+extern CVariantSlot* g_typeColl2;
 DATA(0x002bf66c)
 extern void* g_typeNodes;
 
@@ -379,7 +377,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl2->Insert(&g_typeColl, item, 0xc);
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
     return g_typeCur;
 }
 
