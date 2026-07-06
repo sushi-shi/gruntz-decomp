@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -4117,18 +4118,13 @@ struct EmRendVtbl {
 struct EmRendC { // m_c->m_c
     EmRendVtbl* vtbl;
 };
-struct EmReg24Sub {                  // m_c->m_24
-    void BuildView(EmHdr14*, void*); // 0x15dc90
-    char p0[0x5c];
-    void* m_5c; // +0x5c
-};
 struct EmResMgr { // this->m_c
     char p0[0x4];
     EmCWorld* m_4; // +0x04
     void* m_8;     // +0x08
     EmRendC* m_c;  // +0x0c
     char p10[0x24 - 0x10];
-    EmReg24Sub* m_24; // +0x24
+    CGameLevel* m_24; // +0x24
 };
 struct EmWorld {    // this->m_4
     void Refresh(); // 0x3d23
@@ -4186,7 +4182,7 @@ i32 CPlay::EnterMode(i32 mode) {
         if (self->m_474 != 0) {
             self->DeferredDraw();
         } else {
-            self->m_c->m_24->BuildView(self->m_c->m_4->m_14, self->m_c->m_8);
+            self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
@@ -4196,7 +4192,7 @@ i32 CPlay::EnterMode(i32 mode) {
         if (self->m_474 != 0) {
             self->DeferredDraw();
         } else {
-            self->m_c->m_24->BuildView(self->m_c->m_4->m_14, self->m_c->m_8);
+            self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
@@ -4217,8 +4213,8 @@ i32 CPlay::EnterMode(i32 mode) {
 finish:
     self->m_c->m_4->Method_158e90();
     self->ArmTimer(0x50, 0x3e8, 0, 1);
-    if (self->m_c->m_24->m_5c != 0) {
-        ((CPlaneRender*)self->m_c->m_24->m_5c)->CenterScrollB();
+    if (self->m_c->m_24->m_mainPlane != 0) {
+        ((CPlaneRender*)self->m_c->m_24->m_mainPlane)->CenterScrollB();
     }
     self->m_4->Refresh();
     self->m_inputWarmup1 = 0;
