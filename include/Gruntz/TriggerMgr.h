@@ -100,6 +100,21 @@ public:
 
     // 0x78a30: forward to the overlay sub-object's helper when present, else ret.
     void OverlayTick();
+    i32 AddGrunt(
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32*
+    );                  // 0x40bb reloc-masked
     void Reset1b48a6(); // 0x1b48a6  reloc-masked
 
     // 0x79b00: forward-and-free the overlay sub-object when present; ret 1.

@@ -4254,27 +4254,9 @@ struct AgListHdr {
     char p0[0x4];
     AgNode* m_head; // +0x04
 };
-struct AgWorldSink { // this->m_4->m_68
-    // 0x40bb: register one grunt (13 args). __thiscall.
-    i32 AddGrunt(
-        i32 token,
-        i32 x,
-        i32 y,
-        i32 cap,
-        i32 z,
-        i32 a,
-        i32 b,
-        i32 c,
-        i32 d,
-        i32 cfg2,
-        i32 recA,
-        i32 recB,
-        i32* rec
-    );
-};
 struct AgWorld { // this->m_4
     char p0[0x68];
-    AgWorldSink* m_68; // +0x68
+    CTriggerMgr* m_68; // +0x68
 };
 struct AgResMgr { // this->m_c
     char p0[0x8];
@@ -4923,7 +4905,6 @@ SIZE_UNKNOWN(AgNode);
 SIZE_UNKNOWN(AgResMgr);
 SIZE_UNKNOWN(AgThis);
 SIZE_UNKNOWN(AgWorld);
-SIZE_UNKNOWN(AgWorldSink);
 SIZE_UNKNOWN(CAnimRegistry);
 SIZE_UNKNOWN(CCueState);
 SIZE_UNKNOWN(CDrawSurface);
