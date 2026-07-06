@@ -1,4 +1,5 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
@@ -37,19 +38,13 @@ struct MenuSndEntry {
 struct MenuCueMap {
     void Find(const char* name, MenuSndEntry** out); // 0x1b8438 __thiscall, typed out-param
 };
-struct MenuSndRegistry {                            // this->m_c->m_28  (sound registry)
-    i32 Has(char* name);                            // 0x1583c0 __thiscall, ret found
-    void Install(void* set, char* name, char* key); // 0x157ee0 __thiscall
-    char m_pad00[0x10];
-    MenuCueMap m_10; // +0x10  name->cue map (Find)
-};
 struct MenuAssetMgr { // this->m_c  (the CResMgr resource/level manager)
     char m_pad00[0x4];
     CDDrawSubMgrPages* m_4; // +0x04  state core (IsReady/Init)
     char m_pad08[0x10 - 0x8];
     CImageRegistry* m_10; // +0x10  image registry (canonical <Gruntz/ResMgr.h>)
     char m_pad14[0x28 - 0x14];
-    MenuSndRegistry* m_28; // +0x28  sound registry (cue map)
+    CDDrawSubMgrLeafScan* m_28; // +0x28  sound registry (cue map)
 };
 struct MenuRegObj {              // the registered STATEZ_MENU object (m_2c)
     void* LookupSet(char* name); // FUN_0053bae0 __thiscall, ret set ptr
@@ -143,12 +138,12 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         g_resourceInstallActive = 0;
     }
 
-    if (!((MenuAssetMgr*)m_c)->m_28->Has("MENU")) {
+    if (!((MenuAssetMgr*)m_c)->m_28->HasKeyEqual_1583c0("MENU")) {
         void* set = ((MenuRegObj*)m_2c)->LookupSet("SOUNDZ");
         if (set == 0) {
             return 0;
         }
-        ((MenuAssetMgr*)m_c)->m_28->Install(set, "MENU", "_");
+        ((MenuAssetMgr*)m_c)->m_28->ScanTree_157ee0((DirNode*)set, "MENU", "_");
     }
 
     if (!((MenuAssetMgr*)m_c)->m_4->Method_158d20()) {
@@ -175,9 +170,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     ((MenuHudObj*)m_1b4)->m_48 = "MENU_ACTIVATE";
 
     MenuSndEntry* e;
-    ((MenuAssetMgr*)m_c)->m_28->m_10.Find("MENU_ACTIVATE", &e);
+    ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (CObject*&)e);
     if (e != 0) {
-        ((MenuAssetMgr*)m_c)->m_28->m_10.Find("MENU_ACTIVATE", &e);
+        ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (CObject*&)e);
         m_1b8 = e->m_10->m_28;
     } else {
         m_1b8 = 0;
@@ -188,7 +183,8 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     MenuSndEntry* fm;
-    ((MenuSndRegistry*)g_menuMgrSettings->m_world->m_28)->m_10.Find("MENU_MENU", &fm);
+    ((CDDrawSubMgrLeafScan*)g_menuMgrSettings->m_world->m_28)
+        ->m_10.Lookup("MENU_MENU", (CObject*&)fm);
     m_1bc = (CMenuMusic*)fm;
     return 1;
 }
