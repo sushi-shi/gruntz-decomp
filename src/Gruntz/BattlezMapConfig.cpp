@@ -41,6 +41,7 @@
 //   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
+#include <Gruntz/TileTriggerSwitchLogic.h>
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
@@ -351,8 +352,7 @@ struct ViewMapper {
 // (0x0516f20 / 0x0516ee0) are its __thiscall cell/record lookups; the cell-index
 // probe (ProbeCell @0x046b6d0) is dispatched on its m_68 CTriggerMgr. Real class
 // undetermined (Ghidra FUN_ for the queries); file-local view of what this TU touches.
-struct CellResolver; // +0x14  the cell resolver (ResolveCell; defined below)
-struct SceneColl;    // the scene-object collection (scene->m_8; defined below)
+struct SceneColl; // the scene-object collection (scene->m_8; defined below)
 
 // The scene/surface manager held at ctx+0x30: its +0x08 is the scene-object
 // collection, and +0x24->+0x5c is the ViewMapper (world->screen).
@@ -371,8 +371,8 @@ SIZE_UNKNOWN(Scene);
 
 struct GruntSpawnCtx {
     char m_pad00[0x10];
-    UnitLevel* m_level;           // +0x10  the level geometry object
-    CellResolver* m_cellResolver; // +0x14  the cell resolver
+    UnitLevel* m_level;                      // +0x10  the level geometry object
+    CTileTriggerSwitchLogic* m_cellResolver; // +0x14  the cell resolver
     char m_pad18[0x30 - 0x18];
     Scene* m_scene; // +0x30  the scene/surface mgr (m_8 = scene collection,
                     //         m_24->m_5c = the ViewMapper)
@@ -4101,9 +4101,6 @@ endZero:
 
 // The query object held at this->m_anim: ResolveCell (RVA 0x011171d0... thunk
 // 0x02838) maps a packed (col<<8|row) to its cell record. __thiscall, reloc-masked.
-struct CellResolver {
-    void* ResolveCell(i32 packed); // 0x02838
-};
 
 // ===========================================================================
 // CBattlezMapConfig::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
@@ -4155,7 +4152,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             list.RemoveAll();
         }
         if (word & 0x400000) {
-            void* cell = m_ctx->m_cellResolver->ResolveCell((col << 8) + row);
+            void* cell = m_ctx->m_cellResolver->FindByField0C((col << 8) + row);
             if (m_curCell != 0) {
                 if (cell == 0) {
                     break;
@@ -5098,7 +5095,6 @@ SIZE_UNKNOWN(GruntSpawnCtx);
 SIZE_UNKNOWN(SceneColl);
 SIZE_UNKNOWN(SceneNode);
 SIZE_UNKNOWN(SceneObj);
-SIZE_UNKNOWN(CellResolver);
 SIZE_UNKNOWN(Coord);
 SIZE_UNKNOWN(CoordCheck);
 SIZE_UNKNOWN(CoordListWalk);

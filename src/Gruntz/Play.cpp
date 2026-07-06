@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <rva.h>
 #include <Gruntz/ResMgr.h>      // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
@@ -3552,9 +3553,6 @@ struct CRpM30 {
     char p0[0x24];
     CRpGeom* m_24; // +0x24
 };
-struct CRpWho7c {                  // m_4->m_7c
-    void Notify(i32 id, i32 flag); // 0x1c8f thunk __thiscall(id, flag)
-};
 struct CRpTimeline { // m_4->m_68 (the per-frame world timeline)
     char p0[0x288];
     i32 m_288; // +0x288
@@ -3587,7 +3585,7 @@ struct CRpWorld { // this->m_4
     char p4c[0x68 - 0x4c];
     CRpTimeline* m_68; // +0x68
     char p6c[0x7c - 0x6c];
-    CRpWho7c* m_7c; // +0x7c
+    CBattlezData* m_7c; // +0x7c
     char p80[0x134 - 0x80];
     i32 m_134; // +0x134  mode word
 };
@@ -3703,7 +3701,7 @@ i32 CPlay::ResetPlayState() {
     if (self->m_4->m_134 == 1) {
         CRpReg* reg = (CRpReg*)g_64556c;
         if (reg->m_c8[-2] == 0) {
-            self->m_4->m_7c->Notify(self->m_1c, 1);
+            self->m_4->m_7c->FillRecord(self->m_1c, 1);
             reg = (CRpReg*)g_64556c;
             if (reg->m_44->m_124 == 0) {
                 i32 id = self->m_1c;
@@ -5042,7 +5040,6 @@ SIZE_UNKNOWN(CRpScroll);
 SIZE_UNKNOWN(CRpSlot);
 SIZE_UNKNOWN(CRpThis);
 SIZE_UNKNOWN(CRpTimeline);
-SIZE_UNKNOWN(CRpWho7c);
 SIZE_UNKNOWN(CRpWorld);
 SIZE_UNKNOWN(CRtArr);
 SIZE_UNKNOWN(CRtArr2);
