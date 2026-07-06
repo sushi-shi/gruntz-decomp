@@ -46,6 +46,7 @@
 // g_coordPool / RemoveAll on each exit. The stack CString (block, ctor 0x1b4867 / dtor
 // 0x1b48c6) forces the /GX EH frame. Big body (0xdb4, frame 0x94).
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h> // RECT + IntersectRect (afx-first; Grunt.h is MFC-transitive, so no <Win32.h>)
 #include <rva.h>
@@ -95,9 +96,7 @@ struct CArriveSub10b { // this->m_10
     CTileTriggerContainer* m_2e4; // +0x2e4
 };
 // (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
-struct CArriveFinder {                       // this->m_14
-    CArriveFind2* Find1c21(i32 key, i32 n);  // 0x1c21
-    CArriveFind* FindByField0C2838(i32 key); // 0x2838
+struct CArriveFinder { // this->m_14
 };
 struct CArriveMgr {                                      // this (the CBattlezMapConfig board)
     i32 Gate1a14(CGrunt* g);                             // 0x1a14
@@ -264,7 +263,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         g->GetTilePos(&tp);
         i32 key = (keyHi << 8) + (tp.m_y >> 5);
         (void)(tp.m_x >> 5);
-        CArriveFind2* r = m_14->Find1c21(key, 0);
+        CArriveFind2* r = (CArriveFind2*)((CTileTriggerSwitchLogic*)m_14)->FindChild(key, 0);
         if (r->m_4 == 2) {
             g->m_defenderState = 0;
             ARR_RECYCLE(g);
@@ -353,7 +352,8 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     if (maskFlags & 0x4000) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0xf) {
-            CArriveFind* r = m_14->FindByField0C2838((fcx << 8) + fcy);
+            CArriveFind* r =
+                (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
             if (r != 0) {
                 if (r->m_arr[m_18] != 0) {
                     ARR_RECYCLE(g);
@@ -386,7 +386,8 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
-                CArriveFind* r = m_14->FindByField0C2838((fcx << 8) + fcy);
+                CArriveFind* r =
+                    (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
                 if (r != 0) {
                     i32 k = r->m_0;
                     if (r->m_arr[m_18] != 0) {

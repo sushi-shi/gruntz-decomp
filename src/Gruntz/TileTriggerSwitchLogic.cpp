@@ -26,7 +26,9 @@
 #include <Gruntz/SoundCue.h>      // the ONE sound-cue registry (CSndHost/CSndFinder/
                                   // CSndEmitter/CSoundCueMgr) - folds the former Rb* views
 #include <Gruntz/TriggerMgr.h>    // CTriggerMgr - the ONE +0x68 m_cmdGrid class (FireCommand
-                                  // @0x7c620) - folds the former RbCmdGrid method-only view
+extern CGameRegistry*
+    g_gameReg; // 0x64556c (moved from TileTriggerSwitchLogic.h to avoid Grunt.h clash)
+               // @0x7c620) - folds the former RbCmdGrid method-only view
 
 // CTileTriggerSwitchLogic is now a REAL polymorphic class (4 virtuals in the
 // header): cl emits the ??_7 vftable + the implicit ctor vptr-stamp - the manual

@@ -16,7 +16,7 @@
 
 // The CGameRegistry singleton (g_gameReg, RVA 0x64556c).  Only +0x30 (the active
 // game-manager pointer) is touched by the methods here; reloc-masked DIR32.
-extern CGameRegistry* g_gameReg;
+// g_gameReg decl dropped (convenience only; consumers include GameRegistry.h) - clashed with Grunt.h WwdGameReg* view
 
 // vftable.  Reconstructed from the methods below; fields only
 // cover the touched offsets.  Size ~0x8c (0x2c base + 0x60 m_block).
