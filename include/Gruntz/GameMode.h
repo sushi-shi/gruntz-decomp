@@ -84,15 +84,35 @@ extern "C" CGMEntityList* g_645574; // (a pointer to the list)
 // Its slot +0x60 is a fn-ptr the object is passed to as the explicit STACK arg
 // (NOT in ecx) and the CALLEE cleans the stack (no `add esp,4` at the call site)
 // -> __stdcall: `mov ecx,[obj]; push obj; call [ecx+0x60]`.
-struct CGMInputVtbl;
+// Real polymorphic view: Poll is slot 24 (+0x60), a real __stdcall virtual (24
+// fillers); in->Poll() lowers to the same call [eax+0x60].
 SIZE_UNKNOWN(CGMInputObj);
 struct CGMInputObj {
-    CGMInputVtbl* vtbl;
-}; // +0x00 vtable ptr
-SIZE_UNKNOWN(CGMInputVtbl);
-struct CGMInputVtbl {
-    char m_pad0[0x60];
-    i32(__stdcall* Poll)(CGMInputObj* self); // +0x60
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual i32 __stdcall Poll(); // +0x60 (slot 24)
 };
 
 // The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the

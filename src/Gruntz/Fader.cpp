@@ -253,7 +253,7 @@ void CFader::RunFade(u32 dur, i32 lead, i32 notify) {
             if (prev != frame && frame <= count && frame > 0) {
                 if (notify && m_set2cArg) {
                     IFadeSink* o = *(IFadeSink**)m_set2cArg;
-                    o->vtbl->m_58(o, 1, 0);
+                    o->FadeNotify(1, 0);
                 }
                 v1(frame);
                 loops++;

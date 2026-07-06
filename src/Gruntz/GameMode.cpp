@@ -337,7 +337,7 @@ GameStateId CBootyState::Update() {
 RVA(0x000391d0, 0x17c)
 i32 CCreditsState::Render() {
     CGMInputObj* in = m_c->m_drawTarget->m_10->m_2c->m_8;
-    if (!in || in->vtbl->Poll(in)) {
+    if (!in || in->Poll()) {
         if (!InputVirtual()) {
             ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
             return 0;
