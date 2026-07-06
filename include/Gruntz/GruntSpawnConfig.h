@@ -35,7 +35,7 @@
 // Forward decls so the manager's typed slots need no view-casts (defs below / in
 // the .cpp). m_04 is ONE config tree (its +0x08 sprite factory + +0x20 collection),
 // m_08/m_0c hold voice sprites, m_10/m_14 owned voice streams.
-struct CSpawnVoice;
+class CGruntVoice; // folded CGruntVoice
 struct CSpawnStream;
 struct CSpawnTree;
 
@@ -117,8 +117,8 @@ public:
     // --- fields (placeholders; offsets load-bearing) ---
     CSpawnOwner* m_00;  // +0x00
     CSpawnTree* m_04;   // +0x04  = owner->m_30 (config tree)
-    CSpawnVoice* m_08;  // +0x08  voice-sprite pair
-    CSpawnVoice* m_0c;  // +0x0c
+    CGruntVoice* m_08;  // +0x08  voice-sprite pair
+    CGruntVoice* m_0c;  // +0x0c
     CSpawnStream* m_10; // +0x10  owned voice-stream pair
     CSpawnStream* m_14; // +0x14
     CDWordArray m_18;   // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
@@ -137,14 +137,6 @@ public:
 // The voice-sprite stored in the m_08/m_0c pair. The teardown (0x11c7b0) calls
 // its Reset (0x11a870, __thiscall); reloc-masked. m_68 holds the voice id the
 // selective teardown (0x11c730) matches against.
-struct CSpawnVoice {
-    void Reset();                               // 0x11a870
-    i32 Setup(i32 a, i32 stream, i32 c, i32 d); // 0x11a7b7 (LoadGruntSpawnConfig play start)
-    char m_pad00[0x68];
-    i32 m_68; // +0x68  voice id
-    i32 m_6c; // +0x6c  priority/rank (LoadGruntSpawnConfig gates on it)
-};
-
 // The owned-object free path in Clear() (m_04->m_20 sub-object's remove).
 // The collection Clear() removes the m_08/m_0c entries from (reached as
 // m_04->m_20). Remove is __thiscall on that collection (ecx) with the item as

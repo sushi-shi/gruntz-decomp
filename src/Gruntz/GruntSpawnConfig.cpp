@@ -10,6 +10,7 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
 
@@ -226,9 +227,9 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             param_4 = g_buteMgr.GetIntDef("GruntPriority", (LPCTSTR)local_10, 1);
         }
     }
-    CSpawnVoice** voices = &m_08;
+    CGruntVoice** voices = &m_08;
     for (i32 i = 0; i < 2; i++) {
-        if (param_4 <= voices[i]->m_6c) {
+        if (param_4 <= voices[i]->m_playFlags) {
             return 0;
         }
     }
@@ -236,12 +237,12 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (src == 0 || m_04->m_20 == 0) {
         return 0;
     }
-    CSpawnVoice* v8 = m_08;
-    CSpawnVoice* v0c = m_0c;
-    i32 a = v8->m_6c;
-    i32 b = v0c->m_6c;
-    i32 c = v8->m_68;
-    i32 d = v0c->m_68;
+    CGruntVoice* v8 = m_08;
+    CGruntVoice* v0c = m_0c;
+    i32 a = v8->m_playFlags;
+    i32 b = v0c->m_playFlags;
+    i32 c = v8->m_source;
+    i32 d = v0c->m_source;
     CSpawnStream** streams = &m_10;
     CSpawnGate* gate = (CSpawnGate*)param_1;
     i32 chosen;
@@ -278,15 +279,15 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (stream->SetSource(src) != 0) {
         stream->Configure(vol, 0, 0, 0);
     }
-    CSpawnVoice* voice = voices[chosen];
-    return voice->Setup(gate->m_10->m_188, (i32)stream, param_4, 0) != 0;
+    CGruntVoice* voice = voices[chosen];
+    return voice->Setup(gate->m_10->m_188, (void*)stream, param_4, 0) != 0;
 }
 
 // ===========================================================================
 // CGruntSpawnConfig::SpawnVoiceDriver (0x11b3b0) + SpawnVoiceDriverStd (0x11b7c0)
 // ===========================================================================
 // The two sibling weighted grunt-voice spawn drivers (percent LCG gate @0x6c1288,
-// priority reject, weighted pick, lazy sprite create, CSpawnVoice::Setup tail).
+// priority reject, weighted pick, lazy sprite create, CGruntVoice::Setup tail).
 // Re-homed from the ApiCaller backlog by RVA proximity (dead-centre of the
 // 0x11axxx-0x11cxxx CGruntSpawnConfig family).
 //
@@ -468,8 +469,8 @@ void CSpawnList::AddVoiceSound(CString s, i32 flag) {
 // (m_08/m_0c) is set, reset it. Both ->m_68 are read eagerly (no null guard).
 RVA(0x0011c730, 0x5c)
 void CGruntSpawnConfig::StopVoice(i32 id) {
-    i32 tag08 = m_08->m_68;
-    i32 tag0c = m_0c->m_68;
+    i32 tag08 = m_08->m_source;
+    i32 tag0c = m_0c->m_source;
     if (tag08 == id) {
         if (m_10 != 0) {
             ((StreamFeeder*)&m_10->m_6c)->Pause();
@@ -501,7 +502,7 @@ void CGruntSpawnConfig::DtorBody() {
             ((StreamFeeder*)&((CSpawnStream*)p[2])->m_6c)->Pause();
         }
         if (p[0] != 0) {
-            ((CSpawnVoice*)p[0])->Reset();
+            ((CGruntVoice*)p[0])->Reset();
         }
         p++;
     }
@@ -542,5 +543,4 @@ SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CSpawnRemoveColl);
 SIZE_UNKNOWN(CSpawnStream);
 SIZE_UNKNOWN(CSpawnTree);
-SIZE_UNKNOWN(CSpawnVoice);
 SIZE_UNKNOWN(CSpriteReleasable);
