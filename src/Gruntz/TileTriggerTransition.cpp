@@ -18,7 +18,8 @@
 // (m_14/m_prevAnimSetNode/m_38/...) keep their m_<hexoffset> placeholders (shared base, named
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/AniElement.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h>
 
@@ -167,8 +168,8 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
         return 0;
     }
-    CAnimDescColl* desc = (CAnimDescColl*)m_38->m_geoId;
-    CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = (CAniElement*)m_38->m_geoId;
+    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
     m_38->ApplyLookupSprite(sprite, elem->m_14);
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_objAux->m_1c = g_buteTree.Find("A");

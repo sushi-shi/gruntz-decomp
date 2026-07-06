@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -354,8 +355,8 @@ i32 CGrunt::ResolveIdleAnimation() {
     m_activeAnimDesc = m_38->m_1b4;
     m_38->m_1a0.SetGeometry(m_idleGeoSrc[idx]);
 
-    CAnimDescColl* desc = m_38->m_1b4;
-    CAnimElem* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = m_38->m_1b4;
+    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
     i32 frame = elem->m_14;
 
     m_38->SetAnimEx(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
@@ -1153,8 +1154,8 @@ latch:
 
     CString key = (const char*)&m_cells[3 * col + row].m_idle;
 
-    CEntranceAnimDescColl* desc = m_154->m_1b4;
-    i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = m_154->m_1b4;
+    i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     EntranceApplyFrame(key, elem[0x14 / 4]);
 }
 
@@ -1553,8 +1554,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     } else {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry((i32)found);
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         EntranceApplyFrame(key, elem[0x14 / 4]);
     }
 }
@@ -2116,8 +2117,8 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseAttackIdle);
         {
-            CEntranceAnimDescColl* desc = m_154->m_1b4;
-            i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+            CAniElement* desc = m_154->m_1b4;
+            i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = elem[0x14 / 4];
             i32 col = m_entranceCell[0];
             i32 row = m_entranceCell[1];
@@ -2153,8 +2154,8 @@ idle:
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->SetGeometryEx(m_poseIdle[0], 0);
     {
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 col = rec.m_0;
         i32 row = rec.m_4;
@@ -4119,8 +4120,8 @@ i32 CGrunt::ResetGeometry() {
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseAttackIdle);
 
-    CEntranceAnimDescColl* desc = m_154->m_1b4;
-    i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = m_154->m_1b4;
+    i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = elem[0x14 / 4];
 
     i32 col = m_entranceCell[0];
@@ -4321,8 +4322,8 @@ void CGrunt::RearmEntranceDrop() {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseItem2);
 
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
 
         i32 col = m_entranceCell[0];
@@ -4439,7 +4440,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     }
 
     ((CEffect6b*)(&m_150))->Apply((i32)found, 0);
-    i32* elem = m_154->m_1b4->At(0);
+    i32* elem = (i32*)m_154->m_1b4->AtChecked_06b270(0);
     i32 frame = elem[0x14 / 4];
     m_154->GameApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
     return 0;
@@ -4507,8 +4508,8 @@ void CGrunt::LoadVehicleGruntAnimations() {
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseToyBreak, 0);
 
-            CEntranceAnimDescColl* desc = m_154->m_1b4;
-            i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+            CAniElement* desc = m_154->m_1b4;
+            i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             char* buf = ((CString*)&m_448)->GetBuffer(0);
             m_154->GameApplyLookupSprite(buf, elem[0x14 / 4]);
 
@@ -4703,8 +4704,8 @@ i32 CGrunt::UpdateEntranceAnim() {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseToyBreak);
 
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
 
         char* buf = ((CString*)&m_448)->GetBuffer(0);
@@ -4979,8 +4980,8 @@ finalize:
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         m_154->SetAnimFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
@@ -6378,8 +6379,8 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx((&m_poseToy1)[toyIdx], 0);
 
-            CEntranceAnimDescColl* desc = m_154->m_1b4;
-            i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+            CAniElement* desc = m_154->m_1b4;
+            i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = el[0x14 / 4];
             char* buf = ((CString*)&m_448)->GetBuffer(0);
             m_154->SetAnimFrame(buf, frame);
@@ -6477,13 +6478,13 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         sel = (r >= m_toyBlendPct) ? 1 : 0;
     }
 
-    CEntranceAnimDescColl* cur = m_154->m_1b4;
+    CAniElement* cur = m_154->m_1b4;
     i32 want = (&m_poseToy1)[sel];
     if ((i32)cur != want) {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(want);
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = el[0x14 / 4];
         char* buf = ((CString*)&m_448)->GetBuffer(0);
         m_154->SetAnimFrame(buf, frame);
@@ -6647,8 +6648,8 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_prevEntranceDesc = p->m_1b4;
     p->m_1a0.SetGeometry((&m_poseAttack1)[idx]);
 
-    CEntranceAnimDescColl* desc = m_154->m_1b4;
-    i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = m_154->m_1b4;
+    i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
@@ -6683,8 +6684,8 @@ i32 CGrunt::RearmAttackAnim2() {
     m_prevEntranceDesc = p->m_1b4;
     p->m_1a0.SetGeometry(m_poseAttack2);
 
-    CEntranceAnimDescColl* desc = m_154->m_1b4;
-    i32* el = desc->m_10 > 0 ? *desc->m_c : 0;
+    CAniElement* desc = m_154->m_1b4;
+    i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
     GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
@@ -7081,10 +7082,10 @@ tail:
     m_154->m_1a0.SetGeometry(pose);
     i32 frame;
     {
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
+        CAniElement* desc = m_154->m_1b4;
         i32* elem;
-        if (desc->m_10 > 0) {
-            elem = desc->m_c[0];
+        if (desc->m_records.m_nSize > 0) {
+            elem = (i32*)desc->m_records.m_pData[0];
         } else {
             elem = 0;
         }

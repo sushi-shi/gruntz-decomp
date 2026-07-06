@@ -16,6 +16,8 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+class CAniElement; // folded CEntranceAnimDescColl
+
 class FreeNodePool; // folded GruntCoordPool
 
 class CDDrawSubMgrLeaf; // folded CGruntNameMap
@@ -223,13 +225,6 @@ struct CAnimElem {
     i32 m_14; // +0x14
 };
 
-SIZE_UNKNOWN(CAnimDescColl);
-struct CAnimDescColl {
-    char m_pad0[0xc];
-    CAnimElem** m_c; // +0x0c  element vector (Idle reads *m_c = first elem)
-    i32 m_10;        // +0x10  element count (Idle: >0 gate)
-};
-
 SIZE_UNKNOWN(CGruntAnimSub);
 class CGruntAnimSub {
 public:
@@ -246,7 +241,7 @@ public:
     CGruntAnimSub m_1a0; // +0x1a0  (geometry sub-player)
     i32 m_1a4;           // +0x1a4
     char m_pad1a8[0x1b4 - 0x1a8];
-    CAnimDescColl* m_1b4; // +0x1b4  active-anim descriptor
+    CAniElement* m_1b4; // +0x1b4  active-anim descriptor
 };
 
 // The animation-set record the lookup tree (a CButeTree) returns;
@@ -338,17 +333,6 @@ struct CEntranceResMgr {
 
 // The active-anim descriptor the entrance player exposes (its first element's
 // +0x14 frame number is the 2nd arg the frame helper consumes).
-SIZE_UNKNOWN(CEntranceAnimDescColl);
-struct CEntranceAnimDescColl {
-    // Bounds-checked indexer (FUN_0046b270): returns the idx'th element ptr (or 0
-    // when out of range). The EXIT/RUN loaders read elem[+0x14] (frame number).
-    i32* At(i32 idx); // 0x6b270
-
-    char m_pad0[0xc];
-    i32** m_c; // +0x0c  element vector (first elem = *m_c)
-    i32 m_10;  // +0x10  element count (>0 gate)
-};
-
 SIZE_UNKNOWN(CEntranceAnimSub);
 class CEntranceAnimSub {
 public:
@@ -415,7 +399,7 @@ public:
     CEntranceAnimSub m_1a0; // +0x1a0 geometry sub-player
     i32 m_1a4;              // +0x1a4
     char m_pad1a8[0x1b4 - 0x1a8];
-    CEntranceAnimDescColl* m_1b4; // +0x1b4 active-anim descriptor
+    CAniElement* m_1b4; // +0x1b4 active-anim descriptor
     char m_pad1b8[0x1c0 - 0x1b8];
     i32 m_1c0; // +0x1c0 (entrance-done flag B: 0 -> run reset)
     char m_pad1c4[0x1c8 - 0x1c4];
@@ -1325,7 +1309,7 @@ public:
     char m_pad34[0x38 - 0x34];
     CGruntAnimState* m_38; // +0x38  (animation player)
     char m_pad3c[0x40 - 0x3c];
-    CAnimDescColl* m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
+    CAniElement* m_activeAnimDesc; // +0x40  (cached m_38->m_1b4)
     char m_pad44[0x54 - 0x44];
     // +0x54 grunt-type name. Stored as a raw CString body (a single char* -
     // m_pszData) so ~CGrunt does NOT auto-destruct it (retail's leaf dtor tears
@@ -1354,12 +1338,12 @@ public:
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag; == moveMinX double lo)
     i32 m_deathCueArg;  // +0xac  (cue arg; == moveMinX double hi)
     char m_padb0[0x148 - 0xb0];
-    i32 m_148;                                 // +0x148
-    i32 m_14c;                                 // +0x14c
-    void* m_150;                               // +0x150
-    CEntranceAnimPlayer* m_154;                // +0x154 (entrance animation player)
-    struct CGruntSndResMgr* m_158;             // +0x158 (ability/sound resource mgr)
-    CEntranceAnimDescColl* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
+    i32 m_148;                       // +0x148
+    i32 m_14c;                       // +0x14c
+    void* m_150;                     // +0x150
+    CEntranceAnimPlayer* m_154;      // +0x154 (entrance animation player)
+    struct CGruntSndResMgr* m_158;   // +0x158 (ability/sound resource mgr)
+    CAniElement* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
     // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
     // reads this slot as the grunt's current TOOL/attack kind (switched over the

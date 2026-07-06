@@ -10,6 +10,7 @@
 // reached by raw offset (the documented naming-independent-codegen exception).
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/AniElement.h>
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef / GetDwordDef)
@@ -197,8 +198,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     if (strcmp(rec->m_name, g_codeD) == 0) {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
@@ -211,8 +212,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     if (strcmp(rec2->m_name, g_codeA) == 0) {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseIdle[0]);
-        CEntranceAnimDescColl* desc = m_154->m_1b4;
-        i32* elem = desc->m_10 > 0 ? *desc->m_c : 0;
+        CAniElement* desc = m_154->m_1b4;
+        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
         i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
@@ -499,7 +500,8 @@ enum GruntDeathType {
 
 // Resolve the active-anim descriptor's first-element frame number.
 #define DEATH_FRAME()                                                                              \
-    (m_154->m_1b4->m_10 > 0 ? (*m_154->m_1b4->m_c)[0x14 / 4] : ((i32*)0)[0x14 / 4])
+    (m_154->m_1b4->m_records.m_nSize > 0 ? ((i32*)*m_154->m_1b4->m_records.m_pData)[0x14 / 4]      \
+                                         : ((i32*)0)[0x14 / 4])
 
 // Fire the on-screen death cue (CueA) when the grunt point is visible.
 #define DEATH_CUE(tag)                                                                             \

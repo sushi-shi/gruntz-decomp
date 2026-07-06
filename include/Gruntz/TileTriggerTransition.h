@@ -30,12 +30,6 @@ struct CAnimElem {
     i32 m_14; // +0x14  seed frame
 };
 
-struct CAnimDescColl {
-    char m_pad00[0x0c];
-    CAnimElem** m_c; // +0x0c  element vector (element[0] = *m_c)
-    i32 m_10;        // +0x10  element count (>0 gate)
-};
-
 // ---------------------------------------------------------------------------
 // CTileTransitionController - the per-object state machine that lives in the
 // CGameObject's aux sub-object (CGameObject::m_7c). StepController dispatches on
