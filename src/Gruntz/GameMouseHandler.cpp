@@ -1,3 +1,5 @@
+#include <Mfc.h>
+#include <Gruntz/TriggerMgr.h>
 // GameMouseHandler.cpp - the in-game pointer/click dispatcher (C:\Proj\Gruntz),
 // re-homed from src/Stub/Backlog.cpp (mis-labeled there as StatusBarItem::vfunc_16).
 //
@@ -54,17 +56,12 @@ struct SbiHostInner { // m_4->m_30
     SbiHost24* m_24; // +0x24
     SbiSndSet* m_28; // +0x28
 };
-SIZE_UNKNOWN(SbiProbe);
-struct SbiProbe { // m_4->m_68
-    // FUN @ 0x3cb0 __thiscall: probe the area map under (x,y).
-    i32 Probe(i32 x, i32 y, i32* outArea, i32* outVal, i32 flag);
-};
 SIZE_UNKNOWN(SbiHost);
 struct SbiHost { // this->m_4
     char m_pad00[0x30];
     SbiHostInner* m_30; // +0x30
     char m_pad34[0x68 - 0x34];
-    SbiProbe* m_68;      // +0x68
+    CTriggerMgr* m_68;   // +0x68
     CGruntzCmdMgr* m_6c; // +0x6c
 };
 SIZE_UNKNOWN(SbiRectSrc);
@@ -180,7 +177,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
 
     i32 outArea;
     i32 outVal;
-    if (((SbiHost*)m_4)->m_68->Probe(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
+    if (((SbiHost*)m_4)->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
         ((CSBI_RectOnly*)m_guts)->ToggleStat(outVal);
         return 1;
     }
