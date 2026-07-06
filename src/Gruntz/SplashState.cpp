@@ -92,3 +92,5 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     }
     return 1;
 }
+
+VTBL(CSplashState, 0x001e9d74); // real class binds its own vtable (was placeholder CEngObj_1e9d74)

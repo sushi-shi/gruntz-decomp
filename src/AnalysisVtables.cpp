@@ -14,37 +14,6 @@ struct CEngObj_1e94ac { // 1 slots (first=`scalar_deleting_destructor')
 SIZE_UNKNOWN(CEngObj_1e94ac);
 VTBL(CEngObj_1e94ac, 0x001e94ac);
 
-struct CEngObj_1e9d74 { // 26 slots (first=sub_0035ee)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual void Slot24();
-    virtual void Slot25();
-};
-SIZE_UNKNOWN(CEngObj_1e9d74);
-VTBL(CEngObj_1e9d74, 0x001e9d74);
-
 struct CEngObj_1ea474 { // 54 slots (first=sub_1d2fab)
     virtual void Slot00();
     virtual void Slot01();
