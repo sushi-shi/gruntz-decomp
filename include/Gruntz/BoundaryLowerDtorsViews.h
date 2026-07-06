@@ -13,29 +13,22 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Wap32/Object.h> // Wap::CObject - the real grand-base these placeholders modelled
 
 // 0x039f20 - ~CWorker39f20 (/GX): derived vtable stamp, RezFree the +0x04 heap
 // buffer, then fold the CObject base subobject. Byte-shape == ~CRezBufferObject.
-struct WorkerBase39f20 {
-    virtual ~WorkerBase39f20(); // base vptr @ +0x00 (folds 0x5e8cb4)
-};
-SIZE_UNKNOWN(WorkerBase39f20);
-inline WorkerBase39f20::~WorkerBase39f20() {}
-struct CWorker39f20 : WorkerBase39f20 {
-    char* m_4; // +0x04  heap buffer
+struct CWorker39f20
+    : Wap::CObject { // was : WorkerBase39f20 (fake base view; folded to real Wap::CObject)
+    char* m_4;       // +0x04  heap buffer
     ~CWorker39f20() OVERRIDE;
 };
 SIZE_UNKNOWN(CWorker39f20);
 
 // 0x08c400 - /GX dtor: derived vtable stamp, run the +0x00 teardown (0x1c6a5c ==
 // CImageList::DeleteImageList, MFC) -> owns an MFC CImageList; then fold the CObject base.
-struct WorkerBase8c400 {
-    virtual ~WorkerBase8c400(); // base vptr @ +0x00 (folds 0x5e8cb4)
-};
-SIZE_UNKNOWN(WorkerBase8c400);
-inline WorkerBase8c400::~WorkerBase8c400() {}
-struct CHolder8c400 : WorkerBase8c400 {
-    // Teardown1c6a5c @0x1c6a5c IS CImageList::DeleteImageList; cast at the call.
+struct CHolder8c400
+    : Wap::CObject {       // was : WorkerBase8c400 (fake base view; folded to real Wap::CObject)
+    void Teardown1c6a5c(); // 0x1c6a5c
     ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
