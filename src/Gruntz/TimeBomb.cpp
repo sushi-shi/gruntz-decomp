@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/StatusBarUpdatersViews.h>
+#include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
 #include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
@@ -28,11 +29,7 @@
 // engine functions both registries call). The alloc-cache pair (g_actCache
 // 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME shared global both registries
 // write (already named by KitchenSlime.cpp - re-declared here, address-pinned).
-struct CTBombEntry; // an entry: first dword is the registered handler
-struct CTBombColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-SIZE_UNKNOWN(CTBombColl2);
+struct CTBombEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
@@ -62,7 +59,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_tbombColl2->Insert(&g_tbombColl, item, 0xc);
+    g_tbombColl2->Set(&g_tbombColl, (i32)item, 0xc);
     return g_tbombCur;
 }
 
@@ -85,7 +82,7 @@ extern char s_actKeyA[];
 DATA(0x002bf650)
 extern CTBombColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CTBombColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -121,7 +118,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 
