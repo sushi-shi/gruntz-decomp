@@ -33,6 +33,7 @@
 // fully modeled for a leaf-first redo.
 
 #include <rva.h>
+#include <Gruntz/GameLevel.h>
 #include <Mfc.h>
 #include <Globals.h>
 
@@ -41,7 +42,7 @@
 typedef i32(__cdecl* SnapRunCallback)(void* mgr, void* ser, i32 mode, i32, i32);
 
 struct CDDrawChildGroupOps; // defined below (m_08's blit-op target)
-struct CGameLevelBlit;      // defined below (m_24's blit-op target)
+
 class CDDrawSurfaceMgr {
 public:
     i32 SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name, i32 arg3);
@@ -52,7 +53,7 @@ public:
     char m_pad00[0x08];        // +0x00..+0x07 (vptr + slot)
     CDDrawChildGroupOps* m_08; // +0x08  CDDrawChildGroup child (the blit-op target)
     char m_pad0c[0x24 - 0x0c];
-    CGameLevelBlit* m_24; // +0x24  CGameLevel child (the blit-op target)
+    CGameLevel* m_24; // +0x24  CGameLevel child (the blit-op target)
     char m_pad28[0x3c - 0x28];
     SnapRunCallback m_3c; // +0x3c  run-callback
 };
@@ -98,10 +99,6 @@ struct CDDrawChildGroupOps {
     void Refresh();                              // 0x159ef0  (load path, no arg)
     i32 LoadA(Serializer* s, i32 n, i32 arg);    // 0x15ad30  (load path)
     i32 LoadB(Serializer* s, i32 n, i32 arg);    // 0x15b0e0  (load path)
-};
-struct CGameLevelBlit {
-    i32 BlitD(Serializer* s, i32 mode, i32 a, i32 b); // 0x160f70
-    i32 MainPlaneQueryB();                            // 0xcee10 (load success tail)
 };
 
 // CTime helpers come from MFC (<Mfc.h>): CTime::CTime() (0x1b30b1) and
@@ -156,7 +153,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_08->BlitB(&S, 3, arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 3, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 3, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
@@ -165,7 +162,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_08->BlitC(&S, arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 4, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 4, 0, 0) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
@@ -174,7 +171,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_08->BlitB(&S, 5, arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 5, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 5, 0, 0) == 0) {
         return 0;
     }
 
@@ -240,7 +237,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_08->BlitB(&S, 6, arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 6, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 6, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
@@ -249,7 +246,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_08->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 7, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 7, 0, 0) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
@@ -258,7 +255,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_08->BlitB(&S, 8, arg3) == 0) {
         return 0;
     }
-    if (m_24->BlitD(&S, 8, 0, 0) == 0) {
+    if (m_24->EditDispatch((void*)&S, 8, 0, 0) == 0) {
         return 0;
     }
 
