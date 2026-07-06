@@ -1,4 +1,5 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <Gruntz/SoundCueMgr.h>
 #include <Rez/RezList.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
@@ -36,7 +37,7 @@ extern i32 g_dat645588;
 DATA(0x00244c54)
 extern i32 g_644c54;
 
-// CSbiLookupMap/CSbiCueRecord/CSbiCuePlayer/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
+// CSbiLookupMap/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
 // <Gruntz/SBI_RectOnly.h>.
 DATA(0x0024556c)

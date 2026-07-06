@@ -16,6 +16,7 @@
 #define SBI_MENUITEM_H
 
 #include <Ints.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -32,18 +33,14 @@ struct CSbiConfigHost;
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval).
-struct CMiCuePlayer; // defined below
+struct CSoundCueMgr; // defined below
 struct CMiCue {
     char m_pad0[0x10];
-    CMiCuePlayer* m_10; // +0x10  player (ConfigureItem this)
+    CSoundCueMgr* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;           // +0x14  last draw-clock
     i32 m_18;           // +0x18  interval
 };
 SIZE_UNKNOWN(CMiCue);
-struct CMiCuePlayer {
-    void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // 0x1360d0
-};
-SIZE_UNKNOWN(CMiCuePlayer);
 
 // The cue lookup map embedded at the music host's +0x10 (CMapStringToOb::Lookup,
 // 0x1b8438, ret 8) - the cue-facet map, distinct from the image registry's m_10map.

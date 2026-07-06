@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
@@ -33,7 +34,7 @@
 // (ResMgr.h): the draw surface context is m_drawTarget->m_drawContext (+0x04 ->
 // +0x14) and the config/name image registry is m_10 (its map embedded at +0x10).
 
-// CMiCue/CMiCuePlayer/CMiCueMap/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
+// CMiCue/CSoundCueMgr/CMiCueMap/CMiMusicHost moved to <Gruntz/SBI_MenuItem.h>.
 
 // The g_gameReg singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager

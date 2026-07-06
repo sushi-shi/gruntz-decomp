@@ -16,6 +16,7 @@
 #define GRUNTZ_SBI_RECTONLY_H
 
 #include <Ints.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 #include <Mfc.h>
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
@@ -569,20 +570,16 @@ SIZE_UNKNOWN(CSbiLookupMap);
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
-struct CSbiCuePlayer; // defined below
+struct CSoundCueMgr; // defined below
 struct CSbiCueRecord {
     char m_pad0[0x10];
-    CSbiCuePlayer* m_10; // +0x10  player (ConfigureItem this)
-    i32 m_14;            // +0x14  last draw-clock
-    i32 m_18;            // +0x18  interval
+    CSoundCueMgr* m_10; // +0x10  player (ConfigureItem this)
+    i32 m_14;           // +0x14  last draw-clock
+    i32 m_18;           // +0x18  interval
 };
 SIZE_UNKNOWN(CSbiCueRecord);
 
 // The cue player (ConfigureItem == FUN_005360d0, __thiscall, ret 0x10).
-struct CSbiCuePlayer {
-    void ConfigureItem(i32 item, i32 a, i32 b, i32 c);
-};
-SIZE_UNKNOWN(CSbiCuePlayer);
 
 // CONSOLIDATION NOTE (g_gameReg->m_world world/resource-mgr views): CSbiGameMgr is the
 // canonical CResMgr (<Gruntz/ResMgr.h>) - g_gameReg->m_world, whose m_8 (CKeyTable, the
