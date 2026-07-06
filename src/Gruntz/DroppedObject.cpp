@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -264,9 +265,6 @@ struct DropReg2c { // g_gameReg->m_curState
     char m_pad00[0x20];
     i32 m_20; // +0x20  fx-mode selector (the splash switch key)
 };
-struct DropTileMgr {                                  // g_gameReg->m_68
-    void PostMove(i32 x, i32 y, i32 a, i32 b, i32 c); // 0x7b930 (via the 0x400c thunk)
-};
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
@@ -296,7 +294,7 @@ extern "C" u32 g_6bf3bc;
 // target with llvm-objdump -dr) - the fall integration + __ftol, the >m_68 landing
 // inversion, the grid-cell lookup, the (cell&0x900)/(cell&2)/==0x40 split, the
 // fx-mode splash jump table, both CreateSprite/ApplyName/ApplyLookupGeometry splash
-// paths, and the hit/bute/PostMove tail all match. The sole residual is which
+// paths, and the hit/bute/CombatCue tail all match. The sole residual is which
 // callee-saved register holds the long-lived screen-X vs the short-lived grid
 // pointer: retail pins X->edi, grid->ebx; cl pins X->ebx, grid->edi, cascading the
 // modrm register field through the landing block. Not source-steerable (tried
@@ -370,7 +368,7 @@ i32 CDroppedObject::ActA() {
         m_38->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
-        ((DropTileMgr*)g_gameReg->m_cmdGrid)->PostMove(m_object->m_screenX, m_landY, 1, 7, -1);
+        ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->CombatCue(m_object->m_screenX, m_landY, 1, 7, -1);
         return 0;
     }
     m_object->m_screenY = landed;
@@ -383,4 +381,3 @@ SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DropReg2c);
-SIZE_UNKNOWN(DropTileMgr);
