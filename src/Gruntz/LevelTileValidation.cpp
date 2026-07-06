@@ -30,6 +30,8 @@
 // registrar should be matched as leaves first, then this re-attacked).
 
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/Viewport.h>   // the shared world tile-grid geometry
@@ -139,28 +141,8 @@ struct WwdGameGrid {
 // The trigger-grid manager (g_gameReg->m_68 = CTriggerMgr): PlaceObject builds and
 // registers a tile object, returning its grid index or -1 on failure. 0x6b6d0,
 // __thiscall, reloc-masked.
-struct PlaceGridMgr {
-    i32 PlaceObject(
-        i32 a8,
-        i32 ax,
-        i32 ay,
-        i32 col,
-        i32 row,
-        i32 kind,
-        i32 a18,
-        i32 a1c,
-        i32 a20,
-        i32 a24,
-        i32 a28,
-        i32 a2c,
-        i32 a30
-    ); // 0x6b6d0
-};
 // The command queue (g_gameReg->m_6c = CGruntzCmdMgr): EnqueueSingle broadcasts a
 // single placed-grunt op. 0x23c30, __thiscall, reloc-masked.
-struct StartCmdMgr {
-    void EnqueueSingle(i32 a, char b, char c, char d, i32 e, i32 f, char g, char h); // 0x23c30
-};
 // A per-player start record in the g_gameReg+0x150 array (stride 568 = 0x238); its
 // +0x228 is the cap on start gruntz to place for that player.
 struct WwdStartPlayer {
@@ -178,7 +160,7 @@ extern WwdGameReg* g_gameReg;
 // The recycled-node free-list head (?g_freeList@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
 DATA(0x00645544)
-extern void** g_freeList;
+extern void* g_freeList;
 extern i32 g_tileKindMagic;
 
 // The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).
@@ -323,7 +305,7 @@ i32 CLevelValidator::PlaceStartGruntz() {
             char* aux = (char*)obj->m_7c;
             void* who = *(void**)(aux + 0x10);
             if (who == (void*)0x4024a5) {
-                i32 idx = ((PlaceGridMgr*)reg->m_68)
+                i32 idx = ((CTriggerMgr*)reg->m_68)
                               ->PlaceObject(
                                   obj->m_kind,
                                   (obj->m_worldX & ~0x1f) + 0x10,
@@ -355,7 +337,7 @@ i32 CLevelValidator::PlaceStartGruntz() {
                        && obj->m_kind == g_tileKindMagic) {
                 WwdStartPlayer* e = &((WwdStartPlayer*)((char*)g_gameReg + 0x150))[g_tileKindMagic];
                 if (e != 0 && counter < e->m_228) {
-                    ((StartCmdMgr*)reg->m_6c)
+                    ((CGruntzCmdMgr*)reg->m_6c)
                         ->EnqueueSingle(
                             result,
                             (char)obj->m_kind,
@@ -491,11 +473,11 @@ i32 CLevelValidator::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x4017e4) {
             if (obj->m_kind == g_tileKindMagic) {
-                void** cell = g_freeList;
+                void** cell = (void**)g_freeList;
                 void* slot = 0;
                 if (*cell != 0) {
                     slot = (void*)(cell + 1);
-                    g_freeList = (void**)*cell;
+                    g_freeList = *cell;
                 }
                 if (slot != 0) {
                     ((i32*)slot)[0] = (obj->m_worldX & ~0x1f) + 0x10;
@@ -565,9 +547,9 @@ i32 CLevelValidator::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x401f0a) {
             if (g_gameReg->m_134 != ok) {
-                void** cell = g_freeList;
+                void** cell = (void**)g_freeList;
                 if (*cell != 0) {
-                    g_freeList = (void**)*cell;
+                    g_freeList = *cell;
                 }
             }
         }
@@ -672,11 +654,9 @@ SIZE_UNKNOWN(GameObjAux7cVtbl);
 SIZE_UNKNOWN(LvBridgePoint);
 SIZE_UNKNOWN(LvBridgeUi);
 SIZE_UNKNOWN(LvWorld);
-SIZE_UNKNOWN(PlaceGridMgr);
 SIZE_UNKNOWN(PlayMgr);
 SIZE_UNKNOWN(PlayMgrRenderer);
 SIZE_UNKNOWN(PlayfieldMgr);
-SIZE_UNKNOWN(StartCmdMgr);
 SIZE_UNKNOWN(StartList);
 SIZE_UNKNOWN(StartNode);
 SIZE_UNKNOWN(TileClass);
