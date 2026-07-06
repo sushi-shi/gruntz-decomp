@@ -3,17 +3,13 @@
 // CNetSession keeps four inline 0x64-byte command slots at +0x20, an array of
 // 0x238-byte command buffers at +0x0, and an array of 0x410-byte resync entries
 // at +0x3b0. These are self-contained (no DIR32 relocs); the only externals are
-// CNetCmdSlot helpers (ClearCmds/ResetTriple/FindCmd/Reset0bb0), reached as
+// CNetCmdSlot helpers (ClearCmds/ResetTriple/FindCmd/ResetAll), reached as
 // reloc-masked rel32 calls.
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stos over the resync scratch block)
 
 // CNetCmdSlot helper reached only here (0xc0bb0, __thiscall, external).
-struct CNetCmdSlotReset {
-    void Reset0bb0();
-};
-SIZE_UNKNOWN(CNetCmdSlotReset); // method-only helper view; retail size TBD
 
 // ---------------------------------------------------------------------------
 // CNetSession::ResetAll (0xbbf80, __thiscall) - full session reset: zero the
@@ -88,7 +84,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
     if (slot == 0) {
         return 0;
     }
-    ((CNetCmdSlotReset*)slot)->Reset0bb0();
+    ((CNetCmdSlot*)slot)->ResetAll();
     return slot->Init(m_4, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
 }
 
