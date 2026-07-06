@@ -66,6 +66,11 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Wwd/WwdFile.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/WwdObjMgr.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/LightFxRender.h>
@@ -3787,12 +3792,9 @@ struct CRtTimeline {      // m_4->m_68 (also g_64556c->m_68)
     char p288[0x2a0 - 0x288];
     i32 m_2a0; // +0x2a0
 };
-struct CRtSound {       // m_4->m_48
-    void Reset138530(); // 0x138530 thunk
-};
 struct CRtWorld { // this->m_4
     char p0[0x48];
-    CRtSound* m_48; // +0x48
+    CGruntzSoundZ* m_48; // +0x48
     char p4c[0x54 - 0x4c];
     CWorldSoundSet* m_54; // +0x54
     char p58[0x60 - 0x58];
@@ -3822,22 +3824,16 @@ struct CRtSoundReg { // m_c->m_28
     char p0[0x2c];
     SoundStream* m_2c; // +0x2c
 };
-struct CRtRendererA {   // m_c->m_8
-    void Reset15aa90(); // 0x15aa90 thunk
-};
 struct CRtRendererB {   // m_c->m_c
     void Reset163c60(); // 0x163c60 thunk
 };
 struct CRtResMgr { // this->m_c
     char p0[0x8];
-    CRtRendererA* m_8; // +0x08
+    CWwdObjMgr* m_8;   // +0x08
     CRtRendererB* m_c; // +0x0c
     char p10[0x24 - 0x10];
     CRtImageReg* m_24; // +0x24
     CRtSoundReg* m_28; // +0x28
-};
-struct CRtGuts {          // this->m_guts
-    void Guts12fd(i32 a); // 0x12fd thunk(a)
 };
 struct CRtMarker {     // a no-arg-reset leaf (begin/frame markers)
     void ResetBegin(); // 0x1d7f thunk (this->m_beginMarker)
@@ -3853,7 +3849,7 @@ struct CRtThis { // view-of-this
     char p8[0xc - 0x8];
     CRtResMgr* m_c; // +0x0c
     char p10[0x2dc - 0x10];
-    CRtGuts* m_guts; // +0x2dc  guts subsystem
+    CSBI_RectOnly* m_guts; // +0x2dc  guts subsystem
     char p2e0[0x2e4 - 0x2e0];
     CRtMarker* m_beginMarker; // +0x2e4  begin marker
     char p2e8[0x370 - 0x2e8];
@@ -3891,14 +3887,14 @@ void CPlay::FreeListTeardown() {
     if (self->m_c->m_28->m_2c != 0) {
         self->m_c->m_28->m_2c->Stop();
     }
-    self->m_4->m_48->Reset138530();
+    self->m_4->m_48->StopAndFlush();
     self->m_4->m_54->Teardown();
     self->m_4->m_60->ClearSprites();
     ((CRtReg*)g_64556c)->m_68->Reset15c3();
     self->m_c->m_24->CallTeardown();
-    self->m_c->m_8->Reset15aa90();
+    self->m_c->m_8->PruneList_15aa90();
     if (self->m_guts != 0) {
-        self->m_guts->Guts12fd(0);
+        self->m_guts->ResetWidgets(0);
     }
     if (self->m_beginMarker != 0) {
         self->m_beginMarker->ResetBegin();
@@ -3956,12 +3952,6 @@ void CPlay::FreeListTeardown() {
 // arrays, then chains the base (CState) dtor. Same free-list idiom as
 // FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
 // ---------------------------------------------------------------------------
-struct DtorWorkerB {
-    void Dtor(); // 0x1438 thunk  (m_guts)
-};
-struct DtorWorkerC {
-    void Dtor(); // 0x285b thunk  (m_hitTest)
-};
 struct DtorWorkerD {
     void Dtor(); // 0x1cad thunk  (m_beginMarker)
 };
@@ -3994,8 +3984,8 @@ struct CDtorThis {
     char p8[0x1d0 - 0x8];
     i32 m_1d0; // +0x1d0
     char p1d4[0x2dc - 0x1d4];
-    DtorWorkerB* m_guts;        // +0x2dc
-    DtorWorkerC* m_hitTest;     // +0x2e0
+    CSBI_RectOnly* m_guts;      // +0x2dc
+    CChatBoxOwner* m_hitTest;   // +0x2e0
     DtorWorkerD* m_beginMarker; // +0x2e4
     char p2e8[0x320 - 0x2e8];
     CLightFxRender* m_320; // +0x320
@@ -4046,12 +4036,12 @@ void CPlay::CPlayDtorBody() {
         self->m_4->m_5c->Dtor();
     }
     if (self->m_guts) {
-        self->m_guts->Dtor();
+        self->m_guts->DtorMembers();
         ::operator delete(self->m_guts);
         self->m_guts = 0;
     }
     if (self->m_hitTest) {
-        self->m_hitTest->Dtor();
+        self->m_hitTest->Deactivate();
         ::operator delete(self->m_hitTest);
         self->m_hitTest = 0;
     }
@@ -4108,9 +4098,6 @@ struct EmGuts {      // this->m_guts
     void StepZ(i32); // 0x34bd
     void Resume();   // 0x21b7
 };
-struct EmRegN {    // g_64556c
-    void Notify(); // 0x12ee
-};
 struct EmHdr14 {
     char p0[0x2c];
     CDDSurface* m_2c; // +0x2c
@@ -4150,12 +4137,6 @@ struct EmWorld {    // this->m_4
     char p14[0x54 - 0x14];
     void* m_54; // +0x54
 };
-struct EmSink5c {  // m_c->m_24->m_5c
-    void Notify(); // 0x163370
-};
-struct EmSub54 {  // m_4->m_54
-    void Reset(); // 0x18e8
-};
 
 struct EmThis {
     void DeferredDraw();               // 0x1ae6  (this)
@@ -4184,7 +4165,7 @@ struct EmThis {
 extern "C" i32 g_645588_clk; // 0x645588 (game clock latch)
 
 // Reuse the registry's external WorldSubstep thunk (0x2356).
-void EmRegWorldStep(EmRegN* reg, EmGuts* guts, i32 a); // 0x2356  cdecl(reg, guts, a)
+void EmRegWorldStep(CGruntzMgr* reg, EmGuts* guts, i32 a); // 0x2356  cdecl(reg, guts, a)
 
 // @early-stop
 // large state-machine wall: the mode dispatch + renderer reinstall + guts re-arm
@@ -4193,7 +4174,7 @@ void EmRegWorldStep(EmRegN* reg, EmGuts* guts, i32 a); // 0x2356  cdecl(reg, gut
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
     EmThis* self = (EmThis*)this;
-    ((EmRegN*)g_64556c)->Notify();
+    ((CGruntzMgr*)g_64556c)->CheckSavedMode();
     self->m_guts->Pause();
     self->m_guts->StepZ(0);
     self->m_4->Refresh();
@@ -4201,7 +4182,7 @@ i32 CPlay::EnterMode(i32 mode) {
     if (self->m_1c4 != 0) {
         self->m_1c4 = 0;
         self->m_c->m_4->m_14->m_2c->Fill(0);
-        EmRegWorldStep((EmRegN*)g_64556c, self->m_guts, self->m_470);
+        EmRegWorldStep((CGruntzMgr*)g_64556c, self->m_guts, self->m_470);
         if (self->m_474 != 0) {
             self->DeferredDraw();
         } else {
@@ -4237,14 +4218,14 @@ finish:
     self->m_c->m_4->Method_158e90();
     self->ArmTimer(0x50, 0x3e8, 0, 1);
     if (self->m_c->m_24->m_5c != 0) {
-        ((EmSink5c*)self->m_c->m_24->m_5c)->Notify();
+        ((CPlaneRender*)self->m_c->m_24->m_5c)->CenterScrollB();
     }
     self->m_4->Refresh();
     self->m_inputWarmup1 = 0;
     self->m_inputWarmup2 = 0;
     self->m_inputHalfSel = 0;
     if (self->m_4->m_10 != 0 && mode != 9) {
-        ((EmSub54*)self->m_4->m_54)->Reset();
+        ((CWorldSoundSet*)self->m_4->m_54)->Resume();
     }
     if (mode == 9) {
         g_645588_clk = self->m_savedClock;
@@ -5044,7 +5025,6 @@ SIZE_UNKNOWN(EmGuts);
 SIZE_UNKNOWN(EmHdr14);
 SIZE_UNKNOWN(EmHdr2c);
 SIZE_UNKNOWN(EmReg24Sub);
-SIZE_UNKNOWN(EmRegN);
 SIZE_UNKNOWN(EmRendC);
 SIZE_UNKNOWN(EmRendVtbl);
 SIZE_UNKNOWN(EmResMgr);
