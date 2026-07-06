@@ -10,6 +10,7 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
 
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef)
@@ -273,7 +274,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     }
     CSpawnStream* stream = streams[chosen];
     i32 vol = m_2c;
-    stream->m_6c.Release();
+    ((StreamFeeder*)&stream->m_6c)->Pause();
     if (stream->SetSource(src) != 0) {
         stream->Configure(vol, 0, 0, 0);
     }
@@ -471,14 +472,14 @@ void CGruntSpawnConfig::StopVoice(i32 id) {
     i32 tag0c = m_0c->m_68;
     if (tag08 == id) {
         if (m_10 != 0) {
-            m_10->m_6c.Release();
+            ((StreamFeeder*)&m_10->m_6c)->Pause();
         }
         if (m_08 != 0) {
             m_08->Reset();
         }
     } else if (tag0c == id) {
         if (m_14 != 0) {
-            m_14->m_6c.Release();
+            ((StreamFeeder*)&m_14->m_6c)->Pause();
         }
         if (m_0c != 0) {
             m_0c->Reset();
@@ -497,7 +498,7 @@ void CGruntSpawnConfig::DtorBody() {
     void** p = (void**)&m_08;
     for (i32 k = 0; k < 2; k++) {
         if (p[2] != 0) {
-            ((CSpawnStream*)p[2])->m_6c.Release();
+            ((StreamFeeder*)&((CSpawnStream*)p[2])->m_6c)->Pause();
         }
         if (p[0] != 0) {
             ((CSpawnVoice*)p[0])->Reset();

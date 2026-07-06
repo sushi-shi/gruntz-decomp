@@ -138,7 +138,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_owner->Report(this, "Inconsistent bounds", 0x16);
+        ((CVariantSlot*)m_owner)->Set((void*)this, (i32) "Inconsistent bounds", 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
@@ -155,7 +155,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_owner->Report(this, "out of memory", 0xc);
+    ((CVariantSlot*)m_owner)->Set((void*)this, (i32) "out of memory", 0xc);
 }
 
 // ===========================================================================

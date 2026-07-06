@@ -17,9 +17,7 @@
 // The error sink the array ctor reports a fatal alloc/bounds failure to (the owner
 // stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code) 0x16d850.
 SIZE_UNKNOWN(CZErrSink);
-struct CZErrSink {
-    void Report(void* arr, const char* msg, i32 code); // 0x16d850
-};
+struct CZErrSink {};
 
 // The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl. Each
 // level is a REAL polymorphic class: its retail vtable (0x5f04cc/0x5f04d4/0x5f04d0)

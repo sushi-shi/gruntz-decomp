@@ -168,9 +168,7 @@ struct CSpawnTree {
 
 // The sprite-release helper (FUN_00537f00) is __thiscall on the sub-object at
 // (object + 0x6c); modeled as a method so `lea ecx,[obj+0x6c]; call` falls out.
-struct CSpriteReleasable {
-    void Release(); // 0x137f00
-};
+struct CSpriteReleasable {};
 
 // The Rez heap free (0x1b9b82 _RezFree) the array-entry teardown runs after the
 // element destructor. Reloc-masked.
