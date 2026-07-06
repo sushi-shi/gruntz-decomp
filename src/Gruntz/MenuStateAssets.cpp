@@ -1,4 +1,5 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -42,13 +43,9 @@ struct MenuSndRegistry {                            // this->m_c->m_28  (sound r
     char m_pad00[0x10];
     MenuCueMap m_10; // +0x10  name->cue map (Find)
 };
-struct MenuStateCore {      // this->m_c->m_4  (the CResMgr +0x04 state core)
-    i32 IsReady();          // 0x158d20 __thiscall
-    i32 Init(i32 a, i32 b); // 0x158cb0 __thiscall
-};
 struct MenuAssetMgr { // this->m_c  (the CResMgr resource/level manager)
     char m_pad00[0x4];
-    MenuStateCore* m_4; // +0x04  state core (IsReady/Init)
+    CDDrawSubMgrPages* m_4; // +0x04  state core (IsReady/Init)
     char m_pad08[0x10 - 0x8];
     CImageRegistry* m_10; // +0x10  image registry (canonical <Gruntz/ResMgr.h>)
     char m_pad14[0x28 - 0x14];
@@ -154,8 +151,8 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         ((MenuAssetMgr*)m_c)->m_28->Install(set, "MENU", "_");
     }
 
-    if (!((MenuAssetMgr*)m_c)->m_4->IsReady()) {
-        if (!((MenuAssetMgr*)m_c)->m_4->Init(0, 0x30000)) {
+    if (!((MenuAssetMgr*)m_c)->m_4->Method_158d20()) {
+        if (!((MenuAssetMgr*)m_c)->m_4->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }

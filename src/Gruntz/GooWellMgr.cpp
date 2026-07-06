@@ -16,6 +16,7 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <Gruntz/BattlezData.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 #include <Bute/ButeMgr.h>        // CButeMgr (g_buteMgr.GetDwordDef)
@@ -57,10 +58,6 @@ struct CAnimObj {
 struct CObj7c {
     char _0[0x18];
     CAnimObj* m_anim; // +0x18
-};
-struct CSoundHandle {
-    void ApplyAndPlay(i32, i32, i32, i32); // 0x136300
-    void StopAndRewind();                  // 0x135380
 };
 struct CLookObj {
     char _0[0x10];
@@ -161,10 +158,10 @@ struct CGooWellMgr {
     i64 m_resourceTimerBase; // +0x2c0 resource timer base
     i64 m_resourceInterval;  // +0x2c8 resource interval
     char _2d0[0x3f0 - 0x2d0];
-    CSoundHandle* m_rollingballLoop; // +0x3f0 rollingball loop handle
-    CSoundHandle* m_teleportLoop;    // +0x3f4 teleportloop handle
-    i32 m_rollingballWanted;         // +0x3f8 rollingball wanted
-    i32 m_teleportWanted;            // +0x3fc teleportloop wanted
+    DirectSoundMgr* m_rollingballLoop; // +0x3f0 rollingball loop handle
+    DirectSoundMgr* m_teleportLoop;    // +0x3f4 teleportloop handle
+    i32 m_rollingballWanted;           // +0x3f8 rollingball wanted
+    i32 m_teleportWanted;              // +0x3fc teleportloop wanted
 
     i32 LoadTeleporterGooConfig(i32 off); // 0x6eb80
     void Notify(i32);                     // 0x7c3d0
@@ -193,7 +190,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
                 if (out && out->m_soundFactory) {
-                    m_rollingballLoop = (CSoundHandle*)out->m_soundFactory->GetItem();
+                    m_rollingballLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
@@ -210,7 +207,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out);
                 if (out && out->m_soundFactory) {
-                    m_teleportLoop = (CSoundHandle*)out->m_soundFactory->GetItem();
+                    m_teleportLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }

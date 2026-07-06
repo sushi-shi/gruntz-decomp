@@ -2,6 +2,7 @@
 // class. Each is modeled from its disassembly with PLACEHOLDER class/field names;
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -76,13 +77,9 @@ i32 CGridLookup::Lookup(i32 x, i32 y) {
 // 0x95140: a state-machine step - poke the input sub-object, gate on the worker
 // being busy or acquirable, then run the start sequence + report. Returns 1 on the
 // full path, 0 on either early-out.
-struct CWorkerObj95 {
-    i32 IsBusy();                 // 0x158d20
-    i32 TryAcquire(i32 a, i32 b); // 0x158cb0
-};
 struct CMenuHolder95 {
     char _00[4];
-    CWorkerObj95* m_4; // +0x04
+    CDDrawSubMgrPages* m_4; // +0x04
 };
 
 struct CState95 {
@@ -98,7 +95,7 @@ struct CState95 {
 RVA(0x00095140, 0x6e)
 i32 CState95::Step(i32 arg) {
     m_4->RestoreVideoMode(0);
-    if (m_c->m_4->IsBusy() == 0 && m_c->m_4->TryAcquire(0, 0x30000) == 0) {
+    if (m_c->m_4->Method_158d20() == 0 && m_c->m_4->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
     if (Start(&g_6111b0, 0, 0, 0, 0, 1) == 0) {
