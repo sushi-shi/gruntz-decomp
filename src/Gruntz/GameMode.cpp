@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+#include <DDrawMgr/DDSurface.h>
 #include <Bute/SymTab.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameMode.h>
@@ -1128,15 +1129,10 @@ i32 CCreditsState::InputVirtual() {
 // (m_8->LookupState) into m_2c, fade the title in (FadeInTitle), apply the configured
 // "Menu"/"BrightnessPercent" level, transition the page, and build the menu page.
 // The state/menu/self sub-calls + the g_buteMgr GetIntDef are reloc-masked externs.
-SIZE_UNKNOWN(CMenuBrightTgt);
-struct CMenuBrightTgt {
-    void SetBrightness(i32 value, i32 flags); // 0x13f460
-    void Fill(i32 z);                         // 0x13e760
-};
 SIZE_UNKNOWN(CMenuBrightHolder);
 struct CMenuBrightHolder {
     char m_pad00[0x2c];
-    CMenuBrightTgt* m_2c; // +0x2c
+    CDDSurface* m_2c; // +0x2c
 };
 SIZE_UNKNOWN(CMenuPageA);
 struct CMenuPageA {
@@ -1193,8 +1189,8 @@ i32 CCreditsState::InitAttractTitle() {
     if (faded == 0) {
         return 0;
     }
-    CMenuBrightTgt* tgt = root->m_04->m_14->m_2c;
-    tgt->SetBrightness(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    CDDSurface* tgt = root->m_04->m_14->m_2c;
+    tgt->ShadeRect(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     root->m_04->TransTitle();
     BuildMenuPage(0x50, 0x3e8, 0, 1);
     return 1;
