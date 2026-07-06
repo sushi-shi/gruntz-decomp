@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
@@ -514,14 +515,6 @@ void EndWaitCursor();   // 0x1beb10
 // 0x238 bytes). AdvanceOptionsCycle reads its arm flag (+0x14) + loaded flag
 // (+0x20) and ticks the +0x38 sub-object (reloc-masked thiscall); BroadcastCmd
 // forwards the 4-arg command into the slot itself.
-struct OptionsTickSub {
-    void Tick(); // (this) reloc-masked
-    // SyncOptionsState drives the slot's +0x38 sub-object: LoadConfig pulls the
-    // per-slot config from disk (mgr, slotIndex, configSelect) and the second
-    // thiscall arms the matched slot's just-loaded config. Both reloc-masked.
-    i32 LoadConfig(class CGruntzMgr* mgr, i32 slotIndex, i32 configSelect); // 0x18c0 thunk
-    void Activate();                                                        // FUN_0042ade0
-};
 struct OptionsSlot {
     char m_pad0[0x4];
     CString m_name; // +0x04  per-slot name/config string (LoadOptionsSlotName target)
@@ -532,7 +525,7 @@ struct OptionsSlot {
     char m_pad1c[0x20 - 0x1c];
     i32 m_20; // +0x20  loaded flag
     char m_pad24[0x38 - 0x24];
-    OptionsTickSub m_38;                     // +0x38
+    CBattlezMapConfig m_38;                  // +0x38
     i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
 };
 
@@ -2814,7 +2807,7 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
         OptionsSlot* slot = (OptionsSlot*)&m_options[i];
         if (cursor == i && slot->m_14 == 0 && slot->m_20 != 0) {
-            slot->m_38.Tick();
+            slot->m_38.Method_025d90();
             cursor = g_6455fc;
         }
     }
@@ -2853,7 +2846,7 @@ i32 CGruntzMgr::SyncOptionsState() {
     g_6455fc = 0;
 
     i32 idx = 0;
-    OptionsTickSub* tick = &((OptionsSlot*)m_options)->m_38;
+    CBattlezMapConfig* tick = &((OptionsSlot*)m_options)->m_38;
     i32* cfgp = &((OptionsSlot*)m_options)->m_10;
     i32* arm = &((OptionsSlot*)m_options)->m_14;
     for (i32 i = 0; i < m_optionsCount; i++) {
@@ -2864,20 +2857,20 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
                 return 0;
             }
-            tick->Activate();
+            tick->Clear_02ade0();
             arm = (i32*)((char*)arm + 0x238);
             cfgp = (i32*)((char*)cfgp + 0x238);
             idx++;
-            tick = (OptionsTickSub*)((char*)tick + 0x238);
+            tick = (CBattlezMapConfig*)((char*)tick + 0x238);
             *arm = 0;
             cfg = *cfgp;
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
                 return 0;
             }
         } else {
@@ -2886,14 +2879,14 @@ i32 CGruntzMgr::SyncOptionsState() {
             if (matched) {
                 cfg = 0;
             }
-            if (!tick->LoadConfig(this, idx, cfg)) {
+            if (!tick->LoadConfig((CLevelInfo*)this, idx, cfg)) {
                 return 0;
             }
         }
         idx++;
         arm = (i32*)((char*)arm + 0x238);
         cfgp = (i32*)((char*)cfgp + 0x238);
-        tick = (OptionsTickSub*)((char*)tick + 0x238);
+        tick = (CBattlezMapConfig*)((char*)tick + 0x238);
     }
     return 1;
 }
@@ -3693,7 +3686,6 @@ SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);
 SIZE_UNKNOWN(LevelClock);
 SIZE_UNKNOWN(OptionsSlot);
-SIZE_UNKNOWN(OptionsTickSub);
 SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);
 SIZE_UNKNOWN(ScoreHud);
