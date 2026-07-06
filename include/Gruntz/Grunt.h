@@ -1260,7 +1260,7 @@ class CMovingLogic : public CUserLogic {
 public:
     CMovingLogic(void* owner);        // inlined into CGrunt::CGrunt (out-of-line 0x13940)
     virtual ~CMovingLogic() OVERRIDE; // trivial; most-derived vptr restamp DCE'd
-    virtual void MovingSlot40a();     // slot 16
+    virtual void Update();            // slot 16 (canonical name; == MovingLogic.h Update @0x16ea90)
     // slot 17 (+0x44) - canonically CProjectile's ONE added virtual (RVA 0xdf050;
     // full model + definition in <Gruntz/Projectile.h>/Projectile.cpp, the sibling
     // chain). Declared at the base here so the attack-fire step (UlSlot24) can

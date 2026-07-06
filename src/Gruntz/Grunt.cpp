@@ -616,10 +616,6 @@ extern i32 g_gruntCtor64558c;                      // 0x64558c (-> m_438)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
-SIZE_UNKNOWN(CGruntUpdateThis);
-struct CGruntUpdateThis {
-    void Update(); // 0x16ea90
-};
 
 // @early-stop
 // member-init/body-split + Projectile-ctor residue wall (~78%, up from a 0% stub):
@@ -670,7 +666,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
     m_148 = 0;
     m_14c = 0;
     m_10->m_e4 = 7;
-    ((CGruntUpdateThis*)this)->Update();
+    ((CMovingLogic*)this)->Update();
     m_150 = owner;
     m_154 = (CEntranceAnimPlayer*)owner;
     m_158 = (CGruntSndResMgr*)*(void**)((char*)owner + 0x7c);
@@ -5310,45 +5306,66 @@ i32 CGrunt::StepGruntMovement() {
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> 5;
     tgtTileY = tgtPxY >> 5;
-    if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10)
+    if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10) {
         flagHead = ((i32*)bd->m_8[tgtTileY])[tgtTileX * 7];
-    else
+    } else {
         flagHead = 1;
+    }
 
     {
         i32 blockMove = 1;
         if (m_arrivalState == 6) {
-            if (((m_defenderX ^ tgtPxX) & 0xffffffe0) == 0 &&
-                ((m_defenderY ^ tgtPxY) & 0xffffffe0) == 0)
+            if (((m_defenderX ^ tgtPxX) & 0xffffffe0) == 0
+                && ((m_defenderY ^ tgtPxY) & 0xffffffe0) == 0) {
                 blockMove = 0;
+            }
         }
         if (blockMove != 0 && !(flagHead & 0x20000000)) {
             i32 mask = m_arrivalFlags & flagHead;
             if (!(mask & 0x20000000)) {
-                if (mask == 0) goto label_4c6e4;
-                if (flagHead & m_24c) goto label_4c6e4;
+                if (mask == 0) {
+                    goto label_4c6e4;
+                }
+                if (flagHead & m_24c) {
+                    goto label_4c6e4;
+                }
             }
         }
     }
-    if (m_entranceActive != 0) goto label_4c68b;
+    if (m_entranceActive != 0) {
+        goto label_4c68b;
+    }
     {
         i32 lastFlag;
         i32 ltx = m_lastTilePxX >> 5;
         i32 lty = m_lastTilePxY >> 5;
-        if ((u32)ltx < (u32)bd->m_c && (u32)lty < (u32)bd->m_10)
+        if ((u32)ltx < (u32)bd->m_c && (u32)lty < (u32)bd->m_10) {
             lastFlag = ((i32*)bd->m_8[lty])[ltx * 7];
-        else
+        } else {
             lastFlag = 1;
-        if (lastFlag & 0x80) goto label_4c68b;
+        }
+        if (lastFlag & 0x80) {
+            goto label_4c68b;
+        }
     }
-    if (m_arrivalState == 0x11) goto label_4cb2a;
-    if (m_coordCount == 0) goto label_4cb2a;
+    if (m_arrivalState == 0x11) {
+        goto label_4cb2a;
+    }
+    if (m_coordCount == 0) {
+        goto label_4cb2a;
+    }
     {
         i32 mask = m_arrivalFlags & flagHead;
-        if (mask & 0x20000000) goto label_4cb2a;
-        if (mask != 0 && !(flagHead & m_24c)) goto label_4cb2a;
+        if (mask & 0x20000000) {
+            goto label_4cb2a;
+        }
+        if (mask != 0 && !(flagHead & m_24c)) {
+            goto label_4cb2a;
+        }
     }
-    if (!(flagHead & 0x20000000)) goto label_4c6e4;
+    if (!(flagHead & 0x20000000)) {
+        goto label_4c6e4;
+    }
     {
         void* node = 0;
         void** head = (void**)g_gruntFreeList;
@@ -5366,7 +5383,9 @@ i32 CGrunt::StepGruntMovement() {
         return 0;
     }
     // ProbeRetry() != 0
-    if (m_coordCount == 0) goto label_4cb2a;
+    if (m_coordCount == 0) {
+        goto label_4cb2a;
+    }
     {
         GruntCoord* co = m_320->m_coord;
         i32 cx = co->m_x;
@@ -5430,10 +5449,11 @@ i32 CGrunt::StepGruntMovement() {
 label_4c68b:
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
-        if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10)
+        if ((u32)tgtTileX < (u32)bd->m_c && (u32)tgtTileY < (u32)bd->m_10) {
             owner = ((i32*)bd->m_8[tgtTileY])[tgtTileX * 7 + 1];
-        else
+        } else {
             owner = -1;
+        }
         m_tileMgr->ApplyCellEffect((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
     }
 
@@ -5451,27 +5471,35 @@ label_4c6e4:
         GruntScratchTeardown();
         bool ne;
         ne = (strcmp(r->m_name, g_codeL) != 0);
-        if (ne)
+        if (ne) {
             m_entranceActive = 0;
+        }
     }
 
     reason12 = 0;
     reason16 = 0;
     reason0e = 0;
-    if (m_entranceReason == 0x12)
+    if (m_entranceReason == 0x12) {
         reason12 = 1;
-    else if (m_entranceReason == 0x16)
+    } else if (m_entranceReason == 0x16) {
         reason16 = 1;
-    else if (m_entranceReason == 0xe)
+    } else if (m_entranceReason == 0xe) {
         reason0e = 1;
-    if (reason0e == 0) goto label_4cb4b;
+    }
+    if (reason0e == 0) {
+        goto label_4cb4b;
+    }
 
     // reason == 0xe: reflect one tile past the head and re-gate
     if (!(flagHead & 0x1400)) {
-        if (!(flagHead & 0x2)) goto label_4cb4b;
+        if (!(flagHead & 0x2)) {
+            goto label_4cb4b;
+        }
     }
     if (tgtPxX == m_entrancePxX && tgtPxY == m_entrancePxY) {
-        if ((flagHead & 0x939) == 0) goto label_4c92b;
+        if ((flagHead & 0x939) == 0) {
+            goto label_4c92b;
+        }
         goto label_4cb2a;
     }
     {
@@ -5481,11 +5509,14 @@ label_4c6e4:
         i32 bty = beyondPxY >> 5;
         i32 beyondFlag;
         GruntBoard* bd = g_gameReg->m_tileGrid;
-        if ((u32)btx < (u32)bd->m_c && (u32)bty < (u32)bd->m_10)
+        if ((u32)btx < (u32)bd->m_c && (u32)bty < (u32)bd->m_10) {
             beyondFlag = ((i32*)bd->m_8[bty])[btx * 7];
-        else
+        } else {
             beyondFlag = 1;
-        if (beyondFlag & 0x20000939) goto label_4cb2a;
+        }
+        if (beyondFlag & 0x20000939) {
+            goto label_4cb2a;
+        }
         if (m_coordCount != 0 && m_arrivalState != 0x11) {
             GruntCoord* co = m_31c.RemoveHead();
             if (co->m_x == btx && co->m_y == bty) {
@@ -5506,56 +5537,101 @@ label_4c6e4:
         tgtPxY = beyondPxY;
     }
 
-label_4c92b:
-    {
-        i32 lastTileX = m_lastTilePxX >> 5;
-        tgtTileX = tgtPxX >> 5;
-        i32 lastTileY = m_lastTilePxY >> 5;
-        tgtTileY = tgtPxY >> 5;
-        GruntBoard* bd = g_gameReg->m_tileGrid;
-        if (lastTileX == tgtTileX && lastTileY == tgtTileY) goto label_4cb4b;
-        i32 xbound = bd->m_c;
-        if ((u32)tgtTileX >= (u32)xbound) goto label_4cb2a;
-        if ((u32)tgtTileY >= (u32)bd->m_10) goto label_4cb2a;
-        char** rowtable = bd->m_8;
-        i32* tgtT = &((i32*)rowtable[tgtTileY])[tgtTileX * 7];
-        i32 tgtFlag = *tgtT;
-        i32 mask = m_arrivalFlags & tgtFlag;
-        if (mask & 0x20000000) goto label_4cb2a;
-        if (mask != 0 && !(tgtFlag & m_24c)) goto label_4cb2a;
-        i32* lastT = &((i32*)rowtable[lastTileY])[lastTileX * 7];
-        i32 dx = tgtTileX - lastTileX;
-        i32 dy = tgtTileY - lastTileY;
-        if (dx == 0) goto label_4cb4b;
-        if (dy == 0) goto label_4cb4b;
-        i32 rowB = xbound * 28;
-        if (dx > 0 && dy > 0) {
-            if (*(i32*)((char*)lastT + 0x1c) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)lastT + rowB) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) goto label_4cb2a;
-            if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) goto label_4cb4b;
-            goto label_4cb2a;
-        } else if (dx < 0 && dy > 0) {
-            if (*(i32*)((char*)lastT - 0x1c) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)lastT + rowB) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) goto label_4cb2a;
-            if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) goto label_4cb4b;
-            goto label_4cb2a;
-        } else if (dx > 0 && dy < 0) {
-            if (*(i32*)((char*)lastT + 0x1c) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)lastT - rowB) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) goto label_4cb2a;
-            if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) goto label_4cb4b;
-            goto label_4cb2a;
-        } else if (dx < 0 && dy < 0) {
-            if (*(i32*)((char*)lastT - 0x1c) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)lastT - rowB) & 0x2000) goto label_4cb2a;
-            if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) goto label_4cb2a;
-            if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) goto label_4cb4b;
-            goto label_4cb2a;
-        }
+label_4c92b: {
+    i32 lastTileX = m_lastTilePxX >> 5;
+    tgtTileX = tgtPxX >> 5;
+    i32 lastTileY = m_lastTilePxY >> 5;
+    tgtTileY = tgtPxY >> 5;
+    GruntBoard* bd = g_gameReg->m_tileGrid;
+    if (lastTileX == tgtTileX && lastTileY == tgtTileY) {
         goto label_4cb4b;
     }
+    i32 xbound = bd->m_c;
+    if ((u32)tgtTileX >= (u32)xbound) {
+        goto label_4cb2a;
+    }
+    if ((u32)tgtTileY >= (u32)bd->m_10) {
+        goto label_4cb2a;
+    }
+    char** rowtable = bd->m_8;
+    i32* tgtT = &((i32*)rowtable[tgtTileY])[tgtTileX * 7];
+    i32 tgtFlag = *tgtT;
+    i32 mask = m_arrivalFlags & tgtFlag;
+    if (mask & 0x20000000) {
+        goto label_4cb2a;
+    }
+    if (mask != 0 && !(tgtFlag & m_24c)) {
+        goto label_4cb2a;
+    }
+    i32* lastT = &((i32*)rowtable[lastTileY])[lastTileX * 7];
+    i32 dx = tgtTileX - lastTileX;
+    i32 dy = tgtTileY - lastTileY;
+    if (dx == 0) {
+        goto label_4cb4b;
+    }
+    if (dy == 0) {
+        goto label_4cb4b;
+    }
+    i32 rowB = xbound * 28;
+    if (dx > 0 && dy > 0) {
+        if (*(i32*)((char*)lastT + 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)lastT + rowB) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) {
+            goto label_4cb4b;
+        }
+        goto label_4cb2a;
+    } else if (dx < 0 && dy > 0) {
+        if (*(i32*)((char*)lastT - 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)lastT + rowB) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (!(*(i32*)((char*)tgtT - rowB) & 0x2000)) {
+            goto label_4cb4b;
+        }
+        goto label_4cb2a;
+    } else if (dx > 0 && dy < 0) {
+        if (*(i32*)((char*)lastT + 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)lastT - rowB) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)tgtT - 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) {
+            goto label_4cb4b;
+        }
+        goto label_4cb2a;
+    } else if (dx < 0 && dy < 0) {
+        if (*(i32*)((char*)lastT - 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)lastT - rowB) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (*(i32*)((char*)tgtT + 0x1c) & 0x2000) {
+            goto label_4cb2a;
+        }
+        if (!(*(i32*)((char*)tgtT + rowB) & 0x2000)) {
+            goto label_4cb4b;
+        }
+        goto label_4cb2a;
+    }
+    goto label_4cb4b;
+}
 
 label_4cb2a:
     PlaySound(0x3e8, rec);
@@ -5591,16 +5667,24 @@ label_4cb4b:
     m_arrivalPending = 1;
     if (reason12) {
         if (flagHead & 0x100) {
-            if (m_coordToggle != 0) goto label_ret1;
+            if (m_coordToggle != 0) {
+                goto label_ret1;
+            }
         } else {
-            if (m_coordToggle == 0) goto label_ret1;
+            if (m_coordToggle == 0) {
+                goto label_ret1;
+            }
         }
         RunMoveConfig(tgtTileX, tgtTileY);
         return 1;
     }
     if (reason16) {
-        if (!(flagHead & 0xd02)) goto label_ret1;
-        if (m_wingzEnabled != 0) goto label_ret1;
+        if (!(flagHead & 0xd02)) {
+            goto label_ret1;
+        }
+        if (m_wingzEnabled != 0) {
+            goto label_ret1;
+        }
         LoadWingzGruntSprites(1);
         return 1;
     }
