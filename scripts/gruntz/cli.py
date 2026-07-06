@@ -278,6 +278,19 @@ def cmd_build(args) -> None:
         die(f"VTBL: {mc.group(1)} rva(s) bound by >1 class (multiply-bound) - a vtable "
             f"datum has one ??_7 name; collapse to a single vtable / remove the fake views "
             f"(python -m gruntz.match.class_vtables for the list)")
+    # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
+    # function pointers) finds must be bound in source (symbol_names) or catalogued as
+    # MFC/CRT in config/library_vtables.csv. FATAL gate - a vtable can never go uncovered.
+    rc = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_coverage"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rc.returncode != 0:
+        for ln in (rc.stdout + rc.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
+            "or add MFC/CRT to config/library_vtables.csv "
+            "(python -m gruntz.match.vtable_coverage --list)")
+    else:
+        log((rc.stdout + rc.stderr).strip().splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
     # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).
