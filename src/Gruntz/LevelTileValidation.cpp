@@ -84,12 +84,16 @@ struct TileObjList {
 // The +0x7c identity sub-object. Its vtable slot +0x10 holds the per-class
 // identity address the validator compares against. The two trailing rects are
 // copied by value as switch args.
-struct GameObjAux7cVtbl {
-    char m_pad00[0x10];
-    void* m_10; // +0x10
-};
+// Real polymorphic identity object: the validator keys each object by the ADDRESS
+// held in its vtable slot 4 (+0x10) - which override is installed IS the class id.
+// (Reading a virtual slot's address as data is the one thing plain C++ virtuals
+// can't spell, so the identity read below indexes the vptr directly.)
 struct GameObjAux7c {
-    GameObjAux7cVtbl* m_vtbl; // +0x00
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void ClassId(); // slot 4 (+0x10): its fn address is the per-class identity
     char m_pad04[0xf0 - 0x04];
     RECT m_f0;  // +0xf0
     RECT m_100; // +0x100
@@ -172,12 +176,19 @@ static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";
 // holds the bounds (+0x30/+0x34), shift/stride (+0x8c/+0x90), the row offset
 // table (+0x24) and the cell table (+0x20); +0x4c is the tile-class table whose
 // entries carry the +0x20 "tile type id" virtual.
-struct TileClassVtbl {
-    char m_pad00[0x20];
-    i32 (*GetTypeId)(void* self, i32 a, i32 b); // +0x20
-};
+// Real polymorphic tile-class entry: the +0x20 "tile type id" is slot 8, a real
+// virtual (8 filler slots precede it). Declared-only; tc->GetTypeId() lowers to the
+// same call [eax+0x20].
 struct TileClass {
-    TileClassVtbl* m_vtbl;
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual i32 GetTypeId(i32 a, i32 b); // +0x20 (slot 8)
 };
 // The world tile-grid geometry is the shared CViewport (<Gruntz/Viewport.h>).
 struct TileGrid {
@@ -262,7 +273,7 @@ static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
         return 0;
     }
     TileClass* tc = grid->m_4c[cell & 0xffff];
-    return tc->m_vtbl->GetTypeId(tc, x - (tx << g->m_shiftX), y - (ty << g->m_shiftY));
+    return tc->GetTypeId(x - (tx << g->m_shiftX), y - (ty << g->m_shiftY));
 }
 
 // ===========================================================================
@@ -381,7 +392,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
             continue;
         }
 
-        void* who = obj->m_7c->m_vtbl->m_10;
+        void* who = (*(void***)obj->m_7c)[4];
         TileGrid* grid = m_playMgr->m_08->m_10;
 
         if (who == (void*)0x401799) {
@@ -650,7 +661,6 @@ done:
 
 SIZE_UNKNOWN(CLevelValidator);
 SIZE_UNKNOWN(GameObjAux7c);
-SIZE_UNKNOWN(GameObjAux7cVtbl);
 SIZE_UNKNOWN(LvBridgePoint);
 SIZE_UNKNOWN(LvBridgeUi);
 SIZE_UNKNOWN(LvWorld);
@@ -660,7 +670,6 @@ SIZE_UNKNOWN(PlayfieldMgr);
 SIZE_UNKNOWN(StartList);
 SIZE_UNKNOWN(StartNode);
 SIZE_UNKNOWN(TileClass);
-SIZE_UNKNOWN(TileClassVtbl);
 SIZE_UNKNOWN(TileGrid);
 SIZE_UNKNOWN(TileLogicObj);
 SIZE_UNKNOWN(TileObjList);
