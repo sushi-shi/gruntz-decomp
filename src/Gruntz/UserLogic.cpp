@@ -11,13 +11,14 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>
+#include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Image/ImageSet.h>
-#include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
-#include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
-#include <Gruntz/AniCycle.h>    // the canonical CAniCycle class (ctor defined below)
-#include <Gruntz/BehindCandy.h> // the canonical CBehindCandy class (ctor defined below)
+#include <Mfc.h>             // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
+#include <Gruntz/ActReg.h>   // shared CActColl/CVariantSlot/CActReg activation-registry archetype
+#include <Gruntz/AniCycle.h> // the canonical CAniCycle class (ctor defined below)
+#include <Gruntz/BehindCandy.h>        // the canonical CBehindCandy class (ctor defined below)
 #include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
 #include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
 #include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
@@ -392,7 +393,7 @@ extern WwdGameReg* g_gameReg;
 // fn-ptr table; a nonzero entry's handler is called __thiscall on `this`.
 // All globals are unnamed BSS (DATA-pinned here so the loads reloc-mask); the
 // collection methods are external/no-body.
-// CActColl / CActColl2 / GetRetAddr + g_actCache (0x6bf464) / g_retAddrBreadcrumb
+// CActColl / CVariantSlot / GetRetAddr + g_actCache (0x6bf464) / g_retAddrBreadcrumb
 // (0x6bf428) are the shared coordinate-registry collection primitives from
 // <Gruntz/ActReg.h>. g_actColl (0x644688) is this TU's own collection singleton.
 struct CActEntry; // an entry: first dword is the registered handler vtable
@@ -474,7 +475,7 @@ static inline CActEntry* ActLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_actColl2->Insert(&g_actColl, item, 0xc);
+    g_actColl2->Set(&g_actColl, (i32)item, 0xc);
     return g_actCur;
 }
 
@@ -495,7 +496,7 @@ extern char s_actKeyB[]; // "B"
 DATA(0x002bf650)
 extern CActColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CActColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -527,7 +528,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 

@@ -10,7 +10,7 @@
 
 // Forward declarations for pointer-to-engine-object globals.
 struct AttractActorList;
-struct CActColl2;
+struct CVariantSlot;
 struct CActEntry;
 class CDirectDrawMgr;
 struct CVariantSlot;
@@ -22,7 +22,7 @@ struct CVariantSlot;
 struct CPartEntry;
 class CImagePool; // g_previewMgr (canonical <Image/ImagePool.h>; was CPreviewMgr view)
 struct CProjActEntry;
-struct CActColl2;
+struct CVariantSlot;
 struct CVariantSlot;
 struct CTBombEntry;
 struct CVariantSlot;
@@ -252,7 +252,7 @@ extern i32 g_diffTier;
 DATA(0x0022c268)
 extern i32 g_dat62c268; // 0x62c268
 DATA(0x0024468c)
-extern CActColl2* g_actColl2;
+extern CVariantSlot* g_actColl2;
 DATA(0x00244690)
 extern i32 g_actLo;
 DATA(0x00244694)
@@ -385,7 +385,7 @@ extern ScrollView* g_backView; // 0x64c27c
 DATA(0x0024c3f0)
 extern "C" i32 g_64c3f0[17];
 DATA(0x0024c75c)
-extern CActColl2* g_projActColl2;
+extern CVariantSlot* g_projActColl2;
 DATA(0x0024c760)
 extern i32 g_projActLo;
 DATA(0x0024c764)

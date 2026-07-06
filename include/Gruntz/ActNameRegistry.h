@@ -22,10 +22,14 @@
 #ifndef GRUNTZ_ACTNAMEREGISTRY_H
 #define GRUNTZ_ACTNAMEREGISTRY_H
 
+#include <Bute/ButeTree.h>
+
+class CVariantSlot; // folded CActColl2
+
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_actCache/g_retAddrBreadcrumb
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
@@ -43,7 +47,7 @@ DATA(0x0020a454)
 extern char s_actKeyA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
-// CActColl2 / GetRetAddr + g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
+// CVariantSlot / GetRetAddr + g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
 // <Gruntz/ActColl.h> - the SAME engine functions/globals every registry reuses.
 
 // ---------------------------------------------------------------------------
@@ -57,7 +61,7 @@ extern char s_actKeyA[];
 DATA(0x002bf650)
 extern CActColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CActColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo; // 0x6bf658
 DATA(0x002bf65c)
@@ -93,7 +97,7 @@ static inline char* ActNameLookup(i32 id) {
     } else {
         void* item = g_actCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_nameReg2->Insert(&g_nameReg, item, 0xc);
+        g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
         slot = g_nameRegCur;
     }
     return slot;

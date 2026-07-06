@@ -17,6 +17,8 @@
 #ifndef GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 #define GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 
+class CVariantSlot; // folded CVActColl2
+
 #include <rva.h>
 
 #include <Mfc.h> // CObject base + <windows.h>
@@ -62,10 +64,6 @@ struct CVActColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
 };
-SIZE_UNKNOWN(CVActColl2);
-struct CVActColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x002514e0)
@@ -83,7 +81,7 @@ extern i32 g_vactScratch;
 DATA(0x002514d8)
 extern CVActColl g_vactColl;
 DATA(0x002514dc)
-extern CVActColl2* g_vactColl2;
+extern CVariantSlot* g_vactColl2;
 
 // The cache/alloc scratch globals shared with the trigger registry (reused
 // verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here
@@ -144,7 +142,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_vactColl2->Insert(&g_vactColl, item, 0xc);
+    g_vactColl2->Set(&g_vactColl, (i32)item, 0xc);
     return g_vactCur;
 }
 

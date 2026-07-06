@@ -15,7 +15,6 @@
 
 // ActNameRegistry.h
 SIZE_UNKNOWN(CActColl);
-SIZE_UNKNOWN(CActColl2);
 SIZE_UNKNOWN(CActName);
 // CGameRegistry.h
 SIZE_UNKNOWN(CGameRegistry);

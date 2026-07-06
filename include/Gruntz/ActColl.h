@@ -28,9 +28,6 @@ struct CActColl {
     // RegisterRange), so the same seed reaches it as `call 0x3742`. Reloc-masked.
     void RegisterRange(i32 lo, i32 hi); // 0x3742 (thunk -> 0x408710)
 };
-struct CActColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x002bf464)

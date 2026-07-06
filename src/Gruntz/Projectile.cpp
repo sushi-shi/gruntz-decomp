@@ -14,7 +14,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/StringNode.h>    // the shared type-name teardown slot (CStringNode::Free)
-#include <Gruntz/ActColl.h>       // shared registry collection (CActColl/CActColl2 Find/Insert/
+#include <Gruntz/ActColl.h>       // shared registry collection (CActColl/CVariantSlot Find/Insert/
                                   // RegisterRange + g_actCache/g_retAddrBreadcrumb/GetRetAddr)
 #include <Bute/ButeMgr.h>         // CButeTree (the type-registry funnel)
 #include <math.h>                 // sin / cos (StepMotion's parabola)
@@ -445,7 +445,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 / Insert 0x16db90).
 extern CButeTree g_buteTree;
 
-// The activation-collection primitives are the shared CActColl/CActColl2
+// The activation-collection primitives are the shared CActColl/CVariantSlot
 // (<Gruntz/ActColl.h>): Find 0x16da80, RegisterRange 0x3742-thunk (-> 0x408710),
 // Insert 0x16d850, plus GetRetAddr 0x16d990 and the shared g_actCache (0x6bf464) /
 // g_retAddrBreadcrumb scratch. The per-registry field globals below form the CActReg
@@ -467,7 +467,7 @@ extern i32 g_projTypeCount;
 DATA(0x002bf650)
 extern CActColl g_projTypeColl;
 DATA(0x002bf654)
-extern CActColl2* g_projTypeColl2;
+extern CVariantSlot* g_projTypeColl2;
 DATA(0x002bf66c)
 extern void* g_projTypeNodes;
 DATA(0x0021aea8)
@@ -496,7 +496,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projActColl2->Insert(&g_projActColl, item, 0xc);
+    g_projActColl2->Set(&g_projActColl, (i32)item, 0xc);
     return g_projActCur;
 }
 
@@ -511,7 +511,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projTypeColl2->Insert(&g_projTypeColl, item, 0xc);
+    g_projTypeColl2->Set(&g_projTypeColl, (i32)item, 0xc);
     return g_projTypeCur;
 }
 

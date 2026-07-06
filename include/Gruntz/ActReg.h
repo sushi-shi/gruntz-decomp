@@ -11,27 +11,31 @@
 //   Lookup        (0x3864)   the outlined ResolveEntry (used at large call sites)
 //   Construct     (0x408710) build the registry over a fixed range
 //
-// Reuses <Gruntz/ActColl.h> (CActColl/CActColl2/GetRetAddr + alloc-scratch globals);
+// Reuses <Gruntz/ActColl.h> (CActColl/CVariantSlot/GetRetAddr + alloc-scratch globals);
 // deliberately does NOT pull the bute-tree / MFC chain, so the boundary-thunk and
 // teleporter/checkpoint TUs can share it without a heavy include. Only offsets +
 // code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_GRUNTZ_ACTREG_H
 #define GRUNTZ_GRUNTZ_ACTREG_H
 
+#include <Bute/ButeTree.h>
+
+class CVariantSlot; // folded CActColl2
+
 #include <rva.h>
 
-#include <Gruntz/ActColl.h> // CActColl/CActColl2/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_actCache/g_retAddrBreadcrumb
 
 // The registry IS-A CActColl (its +0x00 collection object is the CActColl base);
 // the slow lookup is a direct base Find call, no (CActColl*)this view cast.
 struct CActReg : public CActColl {
     // m_coll (+0x00) comes from the CActColl base (Find's this == this).
-    CActColl2* m_coll2; // +0x04  Insert's this
-    i32 m_lo;           // +0x08
-    i32 m_hi;           // +0x0c
-    char* m_base;       // +0x10
-    char* m_cur;        // +0x14  slow-path result slot
-    i32 m_stride;       // +0x18
+    CVariantSlot* m_coll2; // +0x04  Insert's this
+    i32 m_lo;              // +0x08
+    i32 m_hi;              // +0x0c
+    char* m_base;          // +0x10
+    char* m_cur;           // +0x14  slow-path result slot
+    i32 m_stride;          // +0x18
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
@@ -49,7 +53,7 @@ struct CActReg : public CActColl {
         }
         void* item = g_actCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_coll2->Insert(this, item, 0xc);
+        m_coll2->Set(this, (i32)item, 0xc);
         return m_cur;
     }
 };
