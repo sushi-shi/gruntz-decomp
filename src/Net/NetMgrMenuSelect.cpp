@@ -26,10 +26,6 @@ SIZE_UNKNOWN(MenuSelectEvent); // event view (only touched offsets pinned); size
 
 // The session/player manager at CNetMgr+0x524.
 struct PlayerNode;
-struct PlayerMgr {
-    PlayerNode* GetPlayerData(i32 id);                         // 0x178eb0 (__thiscall)
-    PlayerNode* AddSessionNode(i32 id, i32 a, i32 b, void* c); // 0x178b30 (__thiscall)
-};
 SIZE_UNKNOWN(PlayerMgr); // method-only +0x524 sub-object view; retail size TBD
 
 // The "ready options" count is CNetGameMgr::CountActiveChannels @0x492e30 (via the
@@ -69,9 +65,11 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    PlayerNode* node = ((PlayerMgr*)m_peer)->GetPlayerData(ev->m_id);
+    PlayerNode* node = (PlayerNode*)((CNetMgr*)m_peer)->GetPlayerData(ev->m_id);
     if (node == 0) {
-        node = ((PlayerMgr*)m_peer)->AddSessionNode(ev->m_id, ev->m_20, ev->m_24, node);
+        node =
+            (PlayerNode*)((CNetMgr*)m_peer)
+                ->AddSessionNode(ev->m_id, (const char*)ev->m_20, (const char*)ev->m_24, (i32)node);
         if (node == 0) {
             return 0;
         }
