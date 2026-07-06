@@ -57,7 +57,13 @@ public:
 // vtable/layout only at the byte level (Tick reads the vtable raw).
 class CLightningHazard : public CTileLogic {
 public:
-    i32 SiblingTick();                    // 0x0b43f0 (virtual slot 16 override)
+    // Real virtuals at CUserLogic slots 16..20 (+0x40..+0x50), mirroring CPathHazard;
+    // BeginLeg/HitTest were previously read raw via the CLightVtbl lens.
+    virtual i32 SiblingTick();            // slot 16 (+0x40) 0x0b43f0
+    virtual void VSlot17();               // slot 17 (+0x44) filler
+    virtual void VSlot18();               // slot 18 (+0x48) filler
+    virtual i32 BeginLeg();               // slot 19 (+0x4c)
+    virtual i32 HitTest(i32 a, i32 b);    // slot 20 (+0x50)
     i32 ArmStrike(i32, i32);              // 0x0b4640 (arm the strike window + kill cue)
     virtual ~CLightningHazard() OVERRIDE; // 0x013280 (folds the CUserLogic teardown)
 
@@ -68,15 +74,6 @@ public:
     char m_pad11c[0x120 - 0x11c];
     i64 m_strikeDeadline; // +0x120 strike start-clock deadline (i64)
     i64 m_strikeWindow;   // +0x128 strike window duration      (i64)
-};
-
-// The sibling's vtable view (its own slot PMFs; same slot offsets as CPathHazard).
-typedef i32 (CLightningHazard::*LightBeginFn)();
-typedef i32 (CLightningHazard::*LightHitFn)(i32, i32);
-struct CLightVtbl {
-    char s0[0x4c];
-    LightBeginFn BeginLeg; // +0x4c  slot 19
-    LightHitFn HitTest;    // +0x50  slot 20
 };
 
 // The strike-clock + threshold globals the timer windows poll.
@@ -414,8 +411,7 @@ i32 CLightningHazard::SiblingTick() {
                                );
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
-                CLightVtbl* vt = *(CLightVtbl**)this;
-                if ((this->*(vt->HitTest))(outA, outB) == 0) {
+                if (this->HitTest(outA, outB) == 0) {
                     return 0;
                 }
             }
@@ -428,8 +424,7 @@ i32 CLightningHazard::SiblingTick() {
         o->m_drawActive = 1;
         o->m_drawFillCmd = 7;
         o->m_drawFillArg = (i32)g_lightGameReg->m_logicPump->m_tables[5]; // [m_78 + 0x28]
-        CLightVtbl* vt = *(CLightVtbl**)this;
-        (this->*(vt->BeginLeg))();
+        this->BeginLeg();
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
         m_strikeArmed = 0;
@@ -539,7 +534,6 @@ void CPathHazard::ForwardTick() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CLightVtbl);
 SIZE_UNKNOWN(CLightningHazard);
 SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
