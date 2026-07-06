@@ -4,6 +4,7 @@
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
 #include <rva.h>
+#include <Rez/RezList.h>
 #include <Gruntz/MapMgr.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 #include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
@@ -37,10 +38,6 @@ extern BrickzFreeRec* g_brickzFreeList;
 
 // CPtrList::AddHead (0x1b4967, __thiscall) - the list the matched search records
 // are handed off to as the result path; modeled no-body so the call reloc-masks.
-struct BrickzResultList {
-    void* AddHead(void* node); // 0x1b4967
-};
-
 // MapSerializeCurve (0x0ec230) - declared 4-arg __cdecl here: the Serialize
 // wrapper forwards all four of its args unchanged (the callee only reads the first
 // two). Modeled no-body so the call reloc-masks. Same symbol as the 2-arg form in
@@ -558,7 +555,7 @@ reached:
             rec->m_8 = p->m_4;
             g_brickzFreeList = (BrickzFreeRec*)rec->m_0;
         }
-        ((BrickzResultList*)list)->AddHead(slot);
+        ((CRezList*)list)->AddHead((CRezListNode*)slot);
         p = (BrickzNode*)p->m_1c;
     } while (p != 0);
     if (m_stepCb != 0) {
@@ -960,6 +957,5 @@ SIZE_UNKNOWN(BrickzGridDesc);
 SIZE_UNKNOWN(BrickzNode);
 SIZE_UNKNOWN(BrickzNodePoolA);
 SIZE_UNKNOWN(BrickzNodePoolB);
-SIZE_UNKNOWN(BrickzResultList);
 SIZE_UNKNOWN(BrickzSerObj);
 SIZE_UNKNOWN(CBrickzGrid);
