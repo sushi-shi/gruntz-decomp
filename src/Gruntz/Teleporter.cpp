@@ -7,6 +7,7 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/Teleporter.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
@@ -37,12 +38,6 @@
 
 // The logic record HitTestCell returns / the registry's active cell entry; its
 // m_10 is the bound CGameObject. StepAnimDispatchA (0x52fb0 via the 0x2f3b thunk).
-struct CTeleRecord {
-    void StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // 0x52fb0
-    char m_pad00[0x10];
-    CGameObject* m_10; // +0x10
-};
-
 // The camera/scroll sub-mgr at mgr->m_curState (ResetGoals 0xd5f00 via the 0x2e28 thunk).
 // The sprite factory reached as mgr->m_world->m_8 (CreateSprite 0x1597b0) is the
 // canonical CSpriteFactory (<Gruntz/SpriteFactory.h>). g_gameReg->m_world is already the
@@ -204,8 +199,8 @@ i32 CTeleporter::Update() {
 
     i32 outA;
     i32 outB;
-    CTeleRecord* found = (CTeleRecord*)((CTriggerMgr*)mgr->m_cmdGrid)
-                             ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
+    CGrunt* found = (CGrunt*)((CTriggerMgr*)mgr->m_cmdGrid)
+                        ->HitTestCell(o->m_screenX, o->m_screenY, &outB, &outA, 1);
     if (found == 0) {
         return 0;
     }
@@ -252,17 +247,17 @@ i32 CTeleporter::Update() {
     m_armed = 0;
     m_tickHandled = 1;
     mgr = g_gameReg;
-    CTeleRecord* current;
+    CGrunt* current;
     if (((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.m_count != 1) {
         current = 0;
     } else {
         i32* pair = ((CTeleSelHolder*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.m_head)->m_8;
         i32 row = pair[0];
         i32 col = pair[1];
-        current = ((CTeleRecord**)((char*)(CTriggerMgr*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];
+        current = ((CGrunt**)((char*)(CTriggerMgr*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];
     }
     if (found == current && outB == g_curPlayer) {
-        CGameObject* g = found->m_10;
+        CGameObject* g = found->m_object;
         ((CPlay*)mgr->m_curState)->ResetGoals(g->m_screenX, g->m_screenY);
     }
     return 0;
@@ -274,7 +269,6 @@ i32 CTeleporter::Update() {
 SIZE_UNKNOWN(CTeleAnimSink);
 SIZE_UNKNOWN(CTeleIconTable);
 SIZE_UNKNOWN(CTeleMgrSub);
-SIZE_UNKNOWN(CTeleRecord);
 SIZE_UNKNOWN(CTeleScroller);
 SIZE_UNKNOWN(CTeleSelHolder);
 SIZE_UNKNOWN(CTeleporter);
