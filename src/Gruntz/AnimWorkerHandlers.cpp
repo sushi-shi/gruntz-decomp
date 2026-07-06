@@ -26,6 +26,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/Wormhole.h>
 
 // The dispatched sub-records are real CUserLogic leaves (vftable 0x5e705c, 16
 // slots); the worker pump calls their inherited slots (slot 6 activate @+0x18,
@@ -42,10 +43,6 @@ struct Owner;
 // lowers to push sizeof(T); call operator new; mov ecx,raw; push owner; call
 // <ctor>, all reloc-masked, and the post-construction activate + pump dispatches
 // lower to `mov eax,[obj]; call [eax+N]` through the inherited 16-slot vtable.
-struct CWormhole : public CTileLogic {
-    CWormhole(Owner* owner); // 0x03fc70
-    char m_body[0x54 - 0x40];
-}; // sizeof = 0x54
 
 struct CGruntSelectedSprite : public CTileLogic {
     CGruntSelectedSprite(Owner* owner); // 0x07e3e0
@@ -87,7 +84,7 @@ i32 Handler03d670(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CWormhole(owner);
+            CUserLogic* sub = new CWormhole((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
