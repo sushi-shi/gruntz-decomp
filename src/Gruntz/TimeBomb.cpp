@@ -7,6 +7,7 @@
 // CTimeBomb : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
+#include <Gruntz/StatusBarUpdatersViews.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
 #include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
 #include <Gruntz/TimeBomb.h>
@@ -156,9 +157,6 @@ extern "C" u32 g_645588;
 // The registry's tile-manager (g_gameReg->m_68, a reused void* slot): the per-frame
 // detonate path posts the bomb's tile event to it via NotifyMoveAt (thunk 0x2fb3 ->
 // 0x7b330, 4 args). Modeled NO-body so the call reloc-masks.
-struct TBombTileMgr {
-    void NotifyMoveAt(i32 px, i32 py, i32 a, i32 b); // 0x7b330
-};
 SIZE_UNKNOWN(TBombTileMgr);
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -337,7 +335,7 @@ i32 CTimeBomb::LoadAttributes() {
     }
     m_38->m_flags |= 0x10000;
     TBombGridClear(m_object);
-    ((TBombTileMgr*)g_gameReg->m_cmdGrid)
-        ->NotifyMoveAt(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
+    ((EngineLabelBacklog*)g_gameReg->m_cmdGrid)
+        ->LoadExplosionSprites(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
 }

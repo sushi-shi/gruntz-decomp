@@ -19,6 +19,7 @@
 // $SG/$S literals reloc-masked against the matched string symbols. Only the
 // offsets / code bytes are load-bearing (campaign doctrine).
 
+#include <Gruntz/SpriteRefTable.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -37,9 +38,6 @@
 // returns the entry at [this + idx*4 + (flag ? 0x4c : 0x08)], 0 if idx >= 0x11.
 // The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
 // i32-typed here (no cast at the store).
-struct CGsSoundTable {
-    i32 Lookup(i32 idx, i32 flag); // 0xe23c0
-};
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_mgrSettings; // *0x64556c (canonical _g_mgrSettings view)
 
@@ -81,7 +79,7 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    i32 h = ((CGsSoundTable*)g_mgrSettings->m_spriteFactory)->Lookup(0, 0);
+    i32 h = ((CSpriteRefTable*)g_mgrSettings->m_spriteFactory)->GetSel(0, 0);
     if (!h) {
         return 0;
     }
