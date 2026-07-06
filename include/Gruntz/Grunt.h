@@ -326,11 +326,6 @@ struct CEntranceSpriteMgr {
 // The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before
 // the entrance player pointer). BuildGruntExitAnimation drives its Apply (0x6b2e0,
 // 2-arg __thiscall) with the resolved sprite. External/no-body (reloc-masked).
-SIZE_UNKNOWN(CGruntExitHolder);
-struct CGruntExitHolder {
-    void Apply(CSprite* spr, i32 flag); // 0x6b2e0
-};
-
 SIZE_UNKNOWN(CEntranceResMgr);
 struct CEntranceResMgr {
     char m_pad0[0x2c];

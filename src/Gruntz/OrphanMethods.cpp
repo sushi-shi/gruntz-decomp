@@ -2,6 +2,7 @@
 // class. Each is modeled from its disassembly with PLACEHOLDER class/field names;
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
+#include <Gruntz/Effect6b.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -29,13 +30,6 @@ struct CAnimSink2 {
 struct CAnimOwner6b {
     char _00[0x1b4];
     i32 m_1b4; // +0x1b4
-};
-struct CEffect6b {
-    char _00[4];
-    CAnimOwner6b* m_4; // +0x04
-    char _08[0xc - 8];
-    i32 m_c;                  // +0x0c
-    void Apply(i32 a, i32 b); // 0x6b2e0
 };
 
 RVA(0x0006b2e0, 0x39)
@@ -163,7 +157,6 @@ i32 CStrikeEffect::Tick() {
 }
 SIZE_UNKNOWN(CAnimOwner6b);
 SIZE_UNKNOWN(CAnimSink2);
-SIZE_UNKNOWN(CEffect6b);
 SIZE_UNKNOWN(CGridLookup);
 SIZE_UNKNOWN(CMenuHolder95);
 SIZE_UNKNOWN(CGameRegistry);

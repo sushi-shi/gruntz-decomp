@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
@@ -4433,7 +4434,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         }
     }
 
-    ((CGruntExitHolder*)(&m_150))->Apply(found, 0);
+    ((CEffect6b*)(&m_150))->Apply((i32)found, 0);
     i32* elem = m_154->m_1b4->At(0);
     i32 frame = elem[0x14 / 4];
     m_154->GameApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
