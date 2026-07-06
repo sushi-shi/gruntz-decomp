@@ -16,20 +16,13 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/TileGridCommand.h>
 #include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
 struct TtcElemVtbl; // the command element's vtable (contents owned elsewhere)
-class TtcElem {
-public:
-    i32 Classify(void* arg); // 0x112970
-    TtcElemVtbl* m_vptr;     // +0x00
-    char _pad04[0x18 - 0x04];
-    i32 m_18;
-    i32 m_1c; // +0x1c  cleared before delete
-};
 SIZE_UNKNOWN(TtcElem);
 
 // ---------------------------------------------------------------------------
@@ -64,8 +57,8 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
     do {
         TtcNode* cur = node;
         node = node->m_next;
-        TtcElem* elem = (TtcElem*)cur->m_data;
-        if (elem == (TtcElem*)data) {
+        CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
+        if (elem == (CTileGridCommand*)data) {
             if (elem != 0) {
                 *(void**)elem = &g_tileGridCmdVtbl;
                 elem->m_1c = 0;
@@ -138,8 +131,8 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
         do {
             TtcNode* cur = node;
             node = node->m_next;
-            TtcElem* elem = (TtcElem*)cur->m_data;
-            i32 r = elem->Classify(arg);
+            CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
+            i32 r = elem->Classify((i32)arg);
             if (r == 0) {
                 m_list2.RemoveAt(cur);
                 if (elem != 0) {

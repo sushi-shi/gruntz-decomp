@@ -1478,9 +1478,6 @@ extern "C" {
 extern "C" {}
 
 // The draw-surface flush sink (m_c->m_drawTarget->m_10->m_2c) torn through a thiscall flush.
-struct CProfFlush {
-    void Flush(i32 z); // 0x13e850 (thiscall)
-};
 
 // ===========================================================================
 // CPlay::ProfileDeltaFrame (0x0ca0a0) - the simple profiled frame: run the
@@ -1516,7 +1513,7 @@ i32 CPlay::ProfileDeltaFrame() {
         updates
     );
     DrawDebugStats();
-    ((CProfFlush*)m_c->m_drawTarget->m_10->m_2c)->Flush(0);
+    ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip(0);
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
         ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
     }
@@ -1602,7 +1599,7 @@ i32 CPlay::ProfileInputFrame() {
 
     DrawDebugStats();
     g_profAccB = (i32)tg();
-    ((CProfFlush*)m_c->m_drawTarget->m_10->m_2c)->Flush(0);
+    ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip(0);
     g_profAccB = (i32)(tg() - (u32)g_profAccB);
     g_profAccA = (i32)tg();
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
