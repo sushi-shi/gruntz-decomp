@@ -44,8 +44,8 @@ public:
 #include <Gruntz/SerialArchive.h>
 
 // RezAlloc/RezFree (0x1b9b46 / 0x1b9b82) - the engine block allocator.
-void* RezAlloc(i32 size); // 0x1b9b46
-void RezFree(void* p);    // 0x1b9b82
+extern "C" void* RezAlloc(i32 size); // 0x1b9b46
+extern "C" void RezFree(void* p);    // 0x1b9b82
 
 // ReadCurve (0x16d000): parse a CButeText accumulator back into the curve block.
 void ReadCurve(CButeText& accum, CMotionState& c); // 0x16d000

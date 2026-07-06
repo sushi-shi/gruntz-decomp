@@ -71,6 +71,8 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/SerialRecords.h>
+#include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
@@ -3452,7 +3454,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeAnimState(ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CGruntSubSer*)(&m_150))->Serialize(ar, mode, a3, a4) == 0) {
+    if (((CMovingLogicBase*)(&m_150))->Serialize((CSerialArchive*)ar, mode, a3, a4) == 0) {
         return 0;
     }
     switch (mode) {
@@ -3470,7 +3472,7 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
             m_tileMgr = (CGruntTileMgr*)g_gameReg->m_68;
             break;
     }
-    ((CGruntSubSer*)(&m_entranceCell))->Serialize(ar, mode, a3, a4);
+    ((CTriRecord*)(&m_entranceCell))->Serialize((CSerialArchive*)ar, mode, a3, a4);
     SerRecord(ar, mode, (char*)&m_toyClockLo);
     SerRecord(ar, mode, (char*)&m_idleAnchorLo);
     SerRecord(ar, mode, (char*)&m_idleTimerLo);
@@ -3479,12 +3481,12 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     SerRecord(ar, mode, (char*)&m_860);
     SerRecord(ar, mode, (char*)&m_combatClockLo);
     SerRecord(ar, mode, (char*)&m_880);
-    ((CGruntSubSer*)(&m_wingzClockLo))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)(&m_8a0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)(&m_8b0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)(&m_8c0))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)(&m_arrivalRerollLo))->Serialize(ar, mode, a3, a4);
-    ((CGruntSubSer*)(&m_278))->Serialize(ar, mode, a3, a4);
+    ((CPairRecord*)(&m_wingzClockLo))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    ((CPairRecord*)(&m_8a0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    ((CPairRecord*)(&m_8b0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    ((CPairRecord*)(&m_8c0))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    ((CPairRecord*)(&m_arrivalRerollLo))->Serialize((CSerialArchive*)ar, mode, a3, a4);
+    ((CPairRecord*)(&m_278))->Serialize((CSerialArchive*)ar, mode, a3, a4);
     return 1;
 }
 

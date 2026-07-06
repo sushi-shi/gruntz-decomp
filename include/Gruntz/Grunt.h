@@ -833,12 +833,6 @@ public:
 // at +0x150/+0x278/+0x308/+0x43c/+0x890..+0x8c0). Each is a __thiscall(ar, mode,
 // a3, a4) ret 0x10 reached through an incremental-link thunk; external/no-body so
 // the `lea ecx,[this+N]; call rel32` reloc-masks.
-SIZE_UNKNOWN(CGruntSubSer);
-class CGruntSubSer {
-public:
-    i32 Serialize(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
-};
-
 // The grunt's name-id resolver the Save reaches via m_158->m_c->m_2c: maps an
 // integer id to its name CString (returned by value). __thiscall, ret 4.
 // The +0x158 "type catalog" object: Save reads its m_c (a non-null owner that

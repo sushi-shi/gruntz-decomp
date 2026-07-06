@@ -4,13 +4,7 @@
 // Placeholder class name; only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <rva.h>
-
-struct CTriRecord {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x3c8f0
-};
+#include <Gruntz/SerialRecords.h>
 
 RVA(0x0003c8f0, 0x76)
 i32 CTriRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
@@ -30,11 +24,6 @@ i32 CTriRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
 }
 
 // 0x58ee0: the Serialize override of a 16-byte two-i64 record (m_0 / m_8).
-struct CPairRecord {
-    i64 m_0;
-    i64 m_8;
-    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0x58ee0
-};
 
 RVA(0x00058ee0, 0x5c)
 i32 CPairRecord::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
