@@ -13,6 +13,7 @@
 #define GRUNTZ_GRUNTZ_TIMER_H
 
 #include <Ints.h>
+#include <Image/CImage.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (HandleEvent/Serialize stream)
 #include <Gruntz/Sprite.h>        // CSprite (the looked-up "GAME_TIMER" sprite set)
@@ -20,11 +21,6 @@
 // The drawable timer-frame object (one cached animation frame). Its draw entry
 // (RenderFrame, RVA 0x153790, external/__thiscall) blits the frame at a screen
 // position. Modeled with no body so its call reloc-masks.
-SIZE_UNKNOWN(CTimerFrame);
-struct CTimerFrame {
-    void RenderFrame(i32 pSurf, i32 x, i32 y, i32 z);
-};
-
 SIZE_UNKNOWN(CTimer);
 class CTimer {
 public:

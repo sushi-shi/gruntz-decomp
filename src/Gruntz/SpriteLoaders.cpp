@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Image/CImage.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/Play.h>         // canonical CPlay (m_curState game-state; level-timer expiry)
@@ -6,7 +7,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
 #include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
-#include <Gruntz/Timer.h>         // CTimer + CTimerFrame (canonical; def was local here)
+#include <Gruntz/Timer.h>         // CTimer + CImage (canonical; def was local here)
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -105,7 +106,7 @@ i32 CLoadingBar::LoadLoadingBarSprite() {
 // below are in retail-RVA order.
 // ---------------------------------------------------------------------------
 
-// CTimer + CTimerFrame are the canonical <Gruntz/Timer.h> shapes now (shared
+// CTimer + CImage are the canonical <Gruntz/Timer.h> shapes now (shared
 // with CPlay::m_frameMarker / PlaySync's HandleEvent serialize entry). The
 // archive/order object passed to HandleEvent + Serialize is the shared WAP32
 // CSerialArchive (<Gruntz/SerialArchive.h>).
@@ -334,19 +335,24 @@ i32 CTimer::Draw(i32 pSurf, i32 force) {
         return 1;
     }
     if (m_frameMinTens) {
-        ((CTimerFrame*)m_frameMinTens)->RenderFrame(pSurf, m_baseX - 0x22, m_baseY, 0);
+        ((CImage*)m_frameMinTens)
+            ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x22), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameMinOnes) {
-        ((CTimerFrame*)m_frameMinOnes)->RenderFrame(pSurf, m_baseX - 0x10, m_baseY, 0);
+        ((CImage*)m_frameMinOnes)
+            ->RenderFrame((void*)(pSurf), (void*)(m_baseX - 0x10), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameColon) {
-        ((CTimerFrame*)m_frameColon)->RenderFrame(pSurf, m_baseX, m_baseY, 0);
+        ((CImage*)m_frameColon)
+            ->RenderFrame((void*)(pSurf), (void*)(m_baseX), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameSecTens) {
-        ((CTimerFrame*)m_frameSecTens)->RenderFrame(pSurf, m_baseX + 0x10, m_baseY, 0);
+        ((CImage*)m_frameSecTens)
+            ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x10), (void*)(m_baseY), (void*)(0));
     }
     if (m_frameSecOnes) {
-        ((CTimerFrame*)m_frameSecOnes)->RenderFrame(pSurf, m_baseX + 0x22, m_baseY, 0);
+        ((CImage*)m_frameSecOnes)
+            ->RenderFrame((void*)(pSurf), (void*)(m_baseX + 0x22), (void*)(m_baseY), (void*)(0));
     }
     return 1;
 }
