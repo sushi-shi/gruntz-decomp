@@ -27,6 +27,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
 // are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/InGameIcon.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/InGameText.h>
 
@@ -40,10 +41,7 @@
 // reloc-masked. Deriving the real CUserLogic base lets the post-construction
 // activate + pump dispatches lower to `mov eax,[obj]; call [eax+N]` through the
 // inherited 16-slot CUserLogic vtable (no fabricated view class).
-struct CInGameIcon : public CTileLogic {
-    CInGameIcon(Owner* owner); // 0x095b10
-    char m_body[0x80 - 0x40];
-}; // sizeof = 0x80
+// sizeof = 0x80
 
 // ---------------------------------------------------------------------------
 RVA(0x00095750, 0xf4)
@@ -52,7 +50,7 @@ i32 Handler095750(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameIcon(owner);
+            CUserLogic* sub = new CInGameIcon((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;

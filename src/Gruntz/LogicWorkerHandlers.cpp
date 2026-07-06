@@ -24,6 +24,10 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code
 // bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/RollingBall.h>
+#include <Gruntz/WayPoint.h>
+#include <Gruntz/BehindCandyAni.h>
+#include <Gruntz/DoNothing.h>
 
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + CUserLogic base
 
@@ -35,25 +39,13 @@
 // reloc-masked. Deriving the real CUserLogic base lets the post-construction
 // activate + pump dispatches lower to `mov eax,[obj]; call [eax+N]` through the
 // inherited 16-slot CUserLogic vtable (no fabricated view class).
-struct CDoNothing : public CTileLogic {
-    CDoNothing(Owner* owner); // 0x0ac1d0
-    char m_body[0x54 - 0x40];
-}; // sizeof = 0x54
+// sizeof = 0x54
 
-struct CBehindCandyAni : public CTileLogic {
-    CBehindCandyAni(Owner* owner); // 0x0ad540
-    char m_body[0x54 - 0x40];
-}; // sizeof = 0x54
+// sizeof = 0x54
 
-struct CWayPoint : public CTileLogic {
-    CWayPoint(Owner* owner); // 0x0ae3f0
-    char m_body[0x54 - 0x40];
-}; // sizeof = 0x54
+// sizeof = 0x54
 
-struct CRollingBall : public CTileLogic {
-    CRollingBall(Owner* owner); // 0x0af820
-    char m_body[0xa0 - 0x40];
-}; // sizeof = 0xa0
+// sizeof = 0xa0
 
 // ---------------------------------------------------------------------------
 // The switch key worker->m_1c is UNSIGNED (u32); MSVC5 then emits the range
@@ -66,7 +58,7 @@ i32 HandlerA9CC0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CDoNothing(owner);
+            CUserLogic* sub = new CDoNothing((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -104,7 +96,7 @@ i32 HandlerAA5A0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CBehindCandyAni(owner);
+            CUserLogic* sub = new CBehindCandyAni((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -142,7 +134,7 @@ i32 HandlerAA960(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CWayPoint(owner);
+            CUserLogic* sub = new CWayPoint((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
@@ -180,7 +172,7 @@ i32 HandlerAF0A0(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CRollingBall(owner);
+            CUserLogic* sub = new CRollingBall((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
