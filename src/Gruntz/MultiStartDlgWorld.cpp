@@ -9,6 +9,7 @@
 // engine / import thunk that reloc-masks; the "GAME_MULTI" $SG literal reloc-masks
 // against the matched string symbol; only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
+#include <Bute/SymTab.h>
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (its +0x34 m_registry is a CSymParser)
 #include <Bute/SymParser.h>    // CSymParser::ResolvePath (0x13c030), the world name registry
@@ -36,11 +37,6 @@ extern "C" char g_emptyString[];
 // proven but DEFERRED (its payload/item identity - CSymRec vs child scope - is unsettled).
 struct MpSymItem {
     char* m_name; // +0x00  entry name (LPCSTR)
-};
-struct MpSymTable {
-    void* FirstSym();                  // 0x13a2b0 CSymTab __thiscall
-    MpSymItem* NextSym2(void* pos);    // 0x13a2f0 CSymTab __thiscall
-    MpSymItem* NextSym3(MpSymItem* p); // 0x13a310 CSymTab __thiscall
 };
 
 // ---------------------------------------------------------------------------
@@ -73,16 +69,16 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     if (combo == 0) {
         return 0;
     }
-    MpSymTable* st = (MpSymTable*)((CNetDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
+    CSymTab* st = (CSymTab*)((CNetDlgHost*)m_host)->m_registry->ResolvePath("GAME_MULTI");
     if (st == 0) {
         return 0;
     }
-    MpSymItem* item = st->NextSym2(st->FirstSym());
+    MpSymItem* item = (MpSymItem*)st->NextSym2(st->FirstSym());
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
         SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
-        item = st->NextSym3(item);
+        item = (MpSymItem*)st->NextSym3(item);
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
     CWnd* child = CWnd::FromHandle(GetWindow(combo2->m_hWnd, GW_CHILD));
