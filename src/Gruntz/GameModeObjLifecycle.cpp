@@ -17,6 +17,7 @@
 // Members are accessed by raw this+offset (the naming-independent choice the
 // siblings use); only offsets / code bytes are load-bearing.
 #include <rva.h>
+#include <Gruntz/SBI_RectOnly.h>
 
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 operands reloc-mask; anchored in the
@@ -38,12 +39,6 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA @0x64554c
 // The +0x2dc worker sub-object: its teardown @0x50b210 is a no-arg __thiscall
 // (this in ecx); modeled as a method so `mov ecx,worker; call` falls out with no
 // stack cleanup. External (no body) so the `call rel32` reloc-masks.
-class CLevelWorker {
-public:
-    void Teardown();
-    void Worker142e(i32 a);          // (thiscall, 1 arg)  FlushPendingOps block A
-    void Worker213f(i32 a, i32 spr); // (thiscall, 2 args) FlushPendingOps block B
-};
 // CPtrArray::RemoveAt @0x1b5200 and CMapPtrToPtr::Lookup @0x1b8760 - MFC; modeled
 // as methods so the __thiscall `mov ecx,this; call` falls out reloc-masked.
 struct CPlacedObj; // defined below
@@ -133,9 +128,9 @@ i32 CGameModeObj::SetCursorFrame(i32 frame) {
 RVA(0x000d6560, 0x45)
 i32 CGameModeObj::ReleaseLevelOverlay(i32) {
     if (I32(this, 0x4fc) != 0) {
-        CLevelWorker* worker = (CLevelWorker*)PTR(this, 0x2dc);
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)PTR(this, 0x2dc);
         I32(this, 0x4fc) = 0;
-        worker->Teardown();
+        worker->ExitMode();
         if (I32(g_gameReg, 0x134) != 2) {
             g_dat645588 = I32(this, 0x1cc);
         }
@@ -240,17 +235,17 @@ i32 CGameModeObj::FlushPendingOps() {
     }
     i32 changed = 0;
     if (I32(this, 0x368) != 0) {
-        CLevelWorker* worker = (CLevelWorker*)PTR(this, 0x2dc);
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)PTR(this, 0x2dc);
         I32(this, 0x368) = 0;
-        worker->Worker142e(0);
+        worker->CommitSlot(0);
         Sub17a8(0);
         changed = 1;
     }
     if (I32(this, 0x36c) != 0) {
         i32 spr = I32(this, 0x2f4);
-        CLevelWorker* worker = (CLevelWorker*)PTR(this, 0x2dc);
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)PTR(this, 0x2dc);
         I32(this, 0x36c) = 0;
-        worker->Worker213f(0, spr);
+        worker->EnterHlRow(0, spr);
         Sub17a8(0);
         changed = 1;
     }
@@ -263,7 +258,6 @@ i32 CGameModeObj::FlushPendingOps() {
     return changed;
 }
 
-SIZE_UNKNOWN(CLevelWorker);
 SIZE_UNKNOWN(CPlacedArray);
 SIZE_UNKNOWN(CCellMap);
 SIZE_UNKNOWN(CPlacedObj);
