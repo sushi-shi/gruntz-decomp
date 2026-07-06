@@ -121,6 +121,20 @@ def _names():
     return names, byname, sorted(starts), fsize
 
 
+def _gap_start(site, fstarts, fsize):
+    """The likely START of the uncarved function containing `site` (which `_owner`
+    couldn't place): the end of the nearest preceding carved function, or that
+    function's start if its size is unknown. Uncarved caller sites are reported and
+    de-duped by this gap start - so a stray mid-function jump label (LAB_004de400) rolls
+    up to the one unrecovered function it lives in, not N phantom entries."""
+    k = bisect.bisect_right(fstarts, site) - 1
+    if k < 0:
+        return site
+    st = fstarts[k]
+    sz = fsize.get(st)
+    return st + sz if sz else st
+
+
 def _owner(rva, fstarts, fsize):
     """The recovered function CONTAINING `rva`, or None if `rva` is in an unrecovered
     gap. Nearest start <= rva, bounded by that fn's known size: a call site past
@@ -229,12 +243,13 @@ def callers_of(targets, d, secs, names, fstarts, fsize, raw=False):
         for src, op in found[t]:
             o = _owner(src, fstarts, fsize)
             kind = "call" if op == 0xE8 else "jmp "
-            if o is None:  # site sits in an unrecovered gap - don't misattribute it
+            if o is None:  # site sits in an unrecovered gap - roll it up to the gap start
+                gap = _gap_start(src, fstarts, fsize)
                 if raw:
-                    print(f"  {kind} @0x{src:08x}  in (unrecovered fn - no carved start)")
-                elif ("gap", src) not in seen:
-                    seen.add(("gap", src))
-                    print(f"  {kind} in (unrecovered fn @ ~0x{src:08x})")
+                    print(f"  {kind} @0x{src:08x}  in (unrecovered fn ~0x{gap:08x})")
+                elif ("gap", gap) not in seen:
+                    seen.add(("gap", gap))
+                    print(f"  {kind} in (unrecovered fn @ ~0x{gap:08x})")
                 continue
             nm, unit = names.get(o, (f"FUN_{o:x}", "?"))
             if raw:
@@ -316,7 +331,7 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
                 return
             owners, uniq = [], set()
             for o, op, site, via in effective_callers(rva, (), set()):
-                key = (o, op) if o is not None else ("gap", site)
+                key = (o, op) if o is not None else ("gap", _gap_start(site, fstarts, fsize))
                 if key in uniq:
                     continue
                 uniq.add(key)
@@ -333,7 +348,8 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
                 # without eating the line.
                 via_s = f"  (via {len(via)}t)" if via else ""
                 if o is None:  # a genuine unrecovered gap (not a thunk) - a real leaf
-                    print(pad + f"<- {kind} (unrecovered fn @ ~0x{site:08x}){via_s}")
+                    gap = _gap_start(site, fstarts, fsize)
+                    print(pad + f"<- {kind} (unrecovered fn @ ~0x{gap:08x}){via_s}")
                     continue
                 if o in seen:
                     print(pad + f"<- {kind} {label(o)}{via_s} (*seen)")
