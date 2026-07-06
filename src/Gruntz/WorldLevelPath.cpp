@@ -6,7 +6,8 @@
 // record's load hook + NotifyAllPlanes, raises its dirty bit, and caches the "BACK"
 // plane. Field names are placeholders; only offsets + code bytes are load-bearing.
 #include <Mfc.h> // real MFC CString (ctor(const char*) 0x1b9d4c / dtor 0x1b9cde /
-                 //   default ctor 0x1b9b93 / operator+(LPCTSTR,const CString&) 0x1b9ff5)
+#include <Gruntz/GruntzMgr.h>
+//   default ctor 0x1b9b93 / operator+(LPCTSTR,const CString&) 0x1b9ff5)
 #include <rva.h>
 
 #include <Ints.h>
@@ -27,16 +28,6 @@ class CParseSource;
 
 // The world/game-registry object at +0x4: its rez-path name query (returns a CString
 // by value), the current world-name string, and the two mode gates.
-SIZE_UNKNOWN(CWorldObj);
-class CWorldObj {
-public:
-    CString QueryLevelName(); // 0x4928c0 (via ILT 0x2531; __thiscall, returns by value)
-    char m_pad00[0xc8];
-    CString m_c8; // +0xc8 current world name
-    char m_padcc[0x128 - 0xcc];
-    i32 m_128; // +0x128 BATTLEZ mode gate
-    i32 m_12c; // +0x12c MULTI mode gate
-};
 
 // The "BACK" plane cache (reloc-masked DIR32 store).
 struct ScrollView;
@@ -45,9 +36,9 @@ struct ScrollView;
 RVA(0x000dbc80, 0x309)
 i32 CWorldState::BuildWorldLevelPath(i32 unused) {
     m_0c->m_24->ReleaseChildren();
-    if (m_4->m_c8.GetLength() != 0) {
+    if (m_4->m_strWorldFile.GetLength() != 0) {
         if (m_4->m_128 != 0) {
-            CString key = "BATTLEZ\\" + m_4->QueryLevelName();
+            CString key = "BATTLEZ\\" + m_4->GetWorldFileName();
             i32 node = m_34->ResolveQualified(key, (void*)0x575744);
             if (node == 0) {
                 return 0;
@@ -56,7 +47,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else if (m_4->m_12c != 0) {
-            CString key = "MULTI\\" + m_4->QueryLevelName();
+            CString key = "MULTI\\" + m_4->GetWorldFileName();
             i32 node = m_34->ResolveQualified(key, (void*)0x575744);
             if (node == 0) {
                 return 0;
@@ -65,7 +56,7 @@ i32 CWorldState::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else {
-            if (m_0c->m_24->LoadFromFile(m_4->QueryLevelName()) == 0) {
+            if (m_0c->m_24->LoadFromFile(m_4->GetWorldFileName()) == 0) {
                 return 0;
             }
         }

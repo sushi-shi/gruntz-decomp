@@ -8,7 +8,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CWorldObj;  // WorldLevelPath.cpp-local (CWorldState::m_4)
+class CGruntzMgr; // Gruntz/GruntzMgr.h (CWorldState::m_4 IS the game mgr)
 class CSymTab;    // <Bute/SymTab.h>
 class CGameLevel; // <Gruntz/GameLevel.h>
 
@@ -26,7 +26,7 @@ public:
     i32 BuildWorldLevelKey(i32 unused);  // (WorldLevelKey.cpp)
 
     char m_pad00[0x4];
-    CWorldObj* m_4; // +0x04
+    CGruntzMgr* m_4; // +0x04
     char m_pad08[0xc - 0x8];
     LevelMgr* m_0c; // +0x0c
     char m_pad10[0x1c - 0x10];
