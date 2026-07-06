@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/Grunt.h>
 #include <Image/CImage.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
@@ -206,19 +207,14 @@ extern u32 g_6455a0;
 
 // The grunt the expiry / under-attack notify fires target (external, reloc-masked).
 // ResolveDeathAnimation = "time up"; NotifyFortUnderAttack = "<60s remaining".
-struct CGruntRef {
-    void ResolveDeathAnimation(); // 0x455f0 (via thunk 0x3a1c)
-    void NotifyFortUnderAttack(); // 0x45270 (via thunk 0x3201)
-};
-
 // The object FindByKey returns (or the raw m_15c when not found): its m_7c->m_18
 // holds the grunt the notify fires on, gated non-null.
 struct CTimerNotifyObj {
     char m_pad00[0x7c];
     struct Inner {
         char m_pad00[0x18];
-        CGruntRef* m_18; // +0x18
-    }* m_7c;             // +0x7c
+        CGrunt* m_18; // +0x18
+    }* m_7c;          // +0x7c
 };
 
 // ---------------------------------------------------------------------------
@@ -564,7 +560,6 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     ar->Write(&m_currentMs, 4);
     return 1;
 }
-SIZE_UNKNOWN(CGruntRef);
 SIZE_UNKNOWN(CKeyTable);
 SIZE_UNKNOWN(CLoadingBar);
 SIZE_UNKNOWN(CTimerNotifyObj);

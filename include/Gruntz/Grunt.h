@@ -1350,7 +1350,8 @@ public:
     // --- animation resolvers (this TU's targets) ---
     i32 ResolveMovingAnimation();
     i32 ResolveDeathAnimation();
-    i32 ResolveAnimation(); // (generic / "_JOY")
+    void NotifyFortUnderAttack(); // 0x45270 (reloc-masked)
+    i32 ResolveAnimation();       // (generic / "_JOY")
     i32 ResolveIdleAnimation();
     i32 ResolveBattlecryAnimation();
 
