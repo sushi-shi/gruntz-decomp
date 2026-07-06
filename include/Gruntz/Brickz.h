@@ -173,15 +173,16 @@ public:
     char m_pad34[0x40 - 0x34];
     BrickzNode* m_freeList; // +0x40  bucket-node free list (linked via BrickzNode::m_8)
     char m_pad44[0x48 - 0x44];
-    void (*m_stepCb)(); // +0x48  per-step callback (engine hook)
-    i32 m_edgeMask;     // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
-    i32 m_maskA;        // +0x50  Search maskA: cell blocked when set (unless m_maskC bit)
-    i32 m_maskC;        // +0x54  Search maskC: allow-override for m_maskA
-    i32 m_maskB;        // +0x58  Search maskB: diagonal corner-cut reject mask
-    i32 m_dirty;        // +0x5c  dirty flag (UpdateDiagonals re-walk gate)
-    i32 m_originX;      // +0x60  grid origin x (also RECT.left of the +0x60 bound rect)
-    i32 m_originY;      // +0x64  grid origin y (RECT.top)
-    char m_pad68[0x70 - 0x68];
+    void (*m_stepCb)();       // +0x48  per-step callback (engine hook)
+    i32 m_edgeMask;           // +0x4c  edge-punch reject mask (SearchEdge; Expand pre-filter)
+    i32 m_maskA;              // +0x50  Search maskA: cell blocked when set (unless m_maskC bit)
+    i32 m_maskC;              // +0x54  Search maskC: allow-override for m_maskA
+    i32 m_maskB;              // +0x58  Search maskB: diagonal corner-cut reject mask
+    i32 m_dirty;              // +0x5c  dirty flag (UpdateDiagonals re-walk gate)
+    i32 m_originX;            // +0x60  grid origin x (also RECT.left of the +0x60 bound rect)
+    i32 m_originY;            // +0x64  grid origin y (RECT.top)
+    i32 m_boundRight;         // +0x68  (Board dirty-rect right)
+    i32 m_boundBottom;        // +0x6c  (Board dirty-rect bottom)
     i32 m_gridW;              // +0x70  grid width extent (cells)
     i32 m_gridH;              // +0x74  grid height extent (cells)
     BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)

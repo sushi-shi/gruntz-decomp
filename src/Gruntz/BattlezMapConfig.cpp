@@ -44,6 +44,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
 #include <rva.h>
@@ -262,28 +263,10 @@ struct Tile {
 // m_60.. is a "dirty rect" (left/top/right/bottom) recomputed by the
 // IntersectRect-clamp idiom, with the derived span at m_70 / m_74. FindPath and
 // Clip are its real methods, dispatched __thiscall on m_board.
-struct Board {
-    char m_pad00[0x08];
-    Tile** m_rows; // +0x08  rows[y][x] -> Tile
-    i32 m_w;       // +0x0c  x bound
-    i32 m_h;       // +0x10  y bound
-    char m_pad14[0x60 - 0x14];
-    i32 m_dirtyL; // +0x60  dirty-rect left
-    i32 m_dirtyT; // +0x64  top
-    i32 m_dirtyR; // +0x68  right
-    i32 m_dirtyB; // +0x6c  bottom
-    i32 m_dirtyW; // +0x70  right-left span
-    i32 m_dirtyH; // +0x74  bottom-top span
-    // The A* pathfinder (RVA 0x081e10, CBrickz::SearchEdge): a __thiscall on the
-    // board taking (srcX, srcY, dstX, dstY, CObList* out, ...). External,
-    // reloc-masked (no body); modeled here so `mov ecx,[this+0xc]; call` falls out.
-    i32 FindPath(i32 sx, i32 sy, i32 dx, i32 dy, CObList* out, i32, i32, i32);
-};
-
 // The board dirty-rect clip finaliser (RVA 0x02b340, ?Clip@ClipHost_02b340@...): a
-// __thiscall on m_board (facet of Board) taking a RECT* (null here). Kept as its own
+// __thiscall on m_board (facet of CBrickzGrid) taking a RECT* (null here). Kept as its own
 // view: the 0x2b340 stub carries a distinct delinker symbol, so folding Clip into
-// Board perturbs a neighbour (-0.09% on Method_0358a0). External, reloc-masked.
+// CBrickzGrid perturbs a neighbour (-0.09% on Method_0358a0). External, reloc-masked.
 struct ClipHost {
     void Clip(const RECT*); // 0x02b340
 };
@@ -1238,7 +1221,7 @@ i32 CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect() {
 // the board dirty-rect to a 13x13 box around its screen coord (IntersectRect copy-
 // back), then scan up to three of its coord-list nodes for one on a blocked (bit 0)
 // tile (or its own tail coord); for such a node build the FindPath flag word from
-// the unit's 0x12/0x16/0xe anim modes and ask Board::FindPath (flags 0x2000098f) for
+// the unit's 0x12/0x16/0xe anim modes and ask CBrickzGrid::FindPath (flags 0x2000098f) for
 // a route into a local CObList. On a route: recycle the route head + the unit's old
 // coords onto g_freeList/g_coordPool, empty its coord list, AddTail the new route,
 // re-clamp the board dirty-rect, stamp the unit's packed coord from the new tail, and
@@ -1262,21 +1245,21 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     void* pos = unit->m_coordHead;
     Coord center;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&center);
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
     RECT bounds;
-    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&bounds)->Set(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = cx - 6;
     box.top = cy - 6;
     box.right = (cx + 6) + 1;
     box.bottom = (cy + 6) + 1;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &box, &bounds)) {
-        *(RECT*)&board->m_dirtyL = box;
+    if (!IntersectRect((RECT*)&board->m_originX, &box, &bounds)) {
+        *(RECT*)&board->m_originX = box;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     Coord* tailCoord = (Coord*)(unit->m_coordTail)->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
@@ -1324,7 +1307,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
         if (prim == 0xe) {
             flags = 0x1000;
         }
-        if (board->FindPath(cx, cy, coord->m_x, coord->m_y, &list, 1, 0x2000098f, flags) != 0
+        if (board->SearchEdge(cx, cy, coord->m_x, coord->m_y, &list, 1, 0x2000098f, flags) != 0
             && list.GetCount() != 0) {
             void* head = list.RemoveHead();
             if (head != 0) {
@@ -1356,19 +1339,19 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
                 RECT b1;
-                ((RectInit*)&b1)->Set(0, 0, board->m_w, board->m_h);
+                ((RectInit*)&b1)->Set(0, 0, board->m_width, board->m_height);
                 RECT b2;
-                RECT* p2 = ((RectInit*)&b2)->Set(0, 0, board->m_w, board->m_h);
+                RECT* p2 = ((RectInit*)&b2)->Set(0, 0, board->m_width, board->m_height);
                 RECT rc;
                 rc.left = p2->left;
                 rc.top = p2->top;
                 rc.right = p2->right;
                 rc.bottom = p2->bottom;
-                if (!IntersectRect((RECT*)&board->m_dirtyL, &rc, &b1)) {
-                    *(RECT*)&board->m_dirtyL = rc;
+                if (!IntersectRect((RECT*)&board->m_originX, &rc, &b1)) {
+                    *(RECT*)&board->m_originX = rc;
                 }
-                board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-                board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+                board->m_gridW = board->m_boundRight - board->m_originX;
+                board->m_gridH = board->m_boundBottom - board->m_originY;
                 Coord* nt = (Coord*)(unit->m_coordTail)->m_coord;
                 unit->m_packedX = (nt->m_x << 5) + 0x10;
                 unit->m_packedY = (nt->m_y << 5) + 0x10;
@@ -1381,19 +1364,19 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     }
     // No route: re-clamp the board dirty-rect to the board bounds.
     RECT f1;
-    ((RectInit*)&f1)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&f1)->Set(0, 0, board->m_width, board->m_height);
     RECT f2;
-    RECT* pf = ((RectInit*)&f2)->Set(0, 0, board->m_w, board->m_h);
+    RECT* pf = ((RectInit*)&f2)->Set(0, 0, board->m_width, board->m_height);
     RECT fc;
     fc.left = pf->left;
     fc.top = pf->top;
     fc.right = pf->right;
     fc.bottom = pf->bottom;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &fc, &f1)) {
-        *(RECT*)&board->m_dirtyL = fc;
+    if (!IntersectRect((RECT*)&board->m_originX, &fc, &f1)) {
+        *(RECT*)&board->m_originX = fc;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     return 0;
 }
 
@@ -1565,7 +1548,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     i32 left = (tl2->m_worldX >> 5) - 5;
     i32 xcoord = (tl->m_worldX >> 5) + r2 - 5;
     i32 right = (tl2->m_worldX >> 5) + 5;
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     i32 bottom = (tl2->m_worldY >> 5) + 5;
     i32 top = (tl2->m_worldY >> 5) - 5;
     RECT box;
@@ -1576,13 +1559,13 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     RECT bounds;
     bounds.left = 0;
     bounds.top = 0;
-    bounds.right = board->m_w;
-    bounds.bottom = board->m_h;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &box, &bounds)) {
-        *(RECT*)&board->m_dirtyL = box;
+    bounds.right = board->m_width;
+    bounds.bottom = board->m_height;
+    if (!IntersectRect((RECT*)&board->m_originX, &box, &bounds)) {
+        *(RECT*)&board->m_originX = box;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     Method_0300c0(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
     ((ClipHost*)board)->Clip((const RECT*)0);
     return 1;
@@ -1994,19 +1977,19 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     Coord c4;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c4);
     box.left = (c4.m_x >> 5) - 3;
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     RECT bounds;
-    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&bounds)->Set(0, 0, board->m_width, board->m_height);
     RECT clamp;
     clamp.left = box.left;
     clamp.top = box.top;
     clamp.right = box.right + 1;
     clamp.bottom = box.bottom + 1;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &clamp, &bounds)) {
-        *(RECT*)&board->m_dirtyL = clamp;
+    if (!IntersectRect((RECT*)&board->m_originX, &clamp, &bounds)) {
+        *(RECT*)&board->m_originX = clamp;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     // Iterate the scene collection for kind-matching units inside the box.
     SceneColl* coll = m_ctx->m_scene->m_8;
     coll->m_cursor = coll->m_head;
@@ -2040,24 +2023,24 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             if (PtInRect(&box, pt)) {
                 if (special != 0 && unit->m_kind == 0) {
                     if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                        Board* bd = m_board;
+                        CBrickzGrid* bd = m_board;
                         RECT mb;
                         mb.left = 0;
                         mb.top = 0;
-                        mb.right = bd->m_w;
-                        mb.bottom = bd->m_h;
+                        mb.right = bd->m_width;
+                        mb.bottom = bd->m_height;
                         RECT tmp;
-                        RECT* p = ((RectInit*)&tmp)->Set(0, 0, bd->m_w, bd->m_h);
+                        RECT* p = ((RectInit*)&tmp)->Set(0, 0, bd->m_width, bd->m_height);
                         RECT bx;
                         bx.left = p->left;
                         bx.top = p->top;
                         bx.right = p->right;
                         bx.bottom = p->bottom;
-                        if (!IntersectRect((RECT*)&bd->m_dirtyL, &bx, &mb)) {
-                            *(RECT*)&bd->m_dirtyL = bx;
+                        if (!IntersectRect((RECT*)&bd->m_originX, &bx, &mb)) {
+                            *(RECT*)&bd->m_originX = bx;
                         }
-                        bd->m_dirtyW = bd->m_dirtyR - bd->m_dirtyL;
-                        bd->m_dirtyH = bd->m_dirtyB - bd->m_dirtyT;
+                        bd->m_gridW = bd->m_boundRight - bd->m_originX;
+                        bd->m_gridH = bd->m_boundBottom - bd->m_originY;
                         return 1;
                     }
                 } else {
@@ -2067,21 +2050,21 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                     }
                     if (p2 == 0) {
                         if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
-                            Board* bd = m_board;
+                            CBrickzGrid* bd = m_board;
                             RECT r1;
-                            ((RectInit*)&r1)->Set(0, 0, bd->m_w, bd->m_h);
+                            ((RectInit*)&r1)->Set(0, 0, bd->m_width, bd->m_height);
                             RECT r2;
-                            RECT* p2r = ((RectInit*)&r2)->Set(0, 0, bd->m_w, bd->m_h);
+                            RECT* p2r = ((RectInit*)&r2)->Set(0, 0, bd->m_width, bd->m_height);
                             RECT rc;
                             rc.left = p2r->left;
                             rc.top = p2r->top;
                             rc.right = p2r->right;
                             rc.bottom = p2r->bottom;
-                            if (!IntersectRect((RECT*)&bd->m_dirtyL, &rc, &r1)) {
-                                *(RECT*)&bd->m_dirtyL = rc;
+                            if (!IntersectRect((RECT*)&bd->m_originX, &rc, &r1)) {
+                                *(RECT*)&bd->m_originX = rc;
                             }
-                            bd->m_dirtyW = bd->m_dirtyR - bd->m_dirtyL;
-                            bd->m_dirtyH = bd->m_dirtyB - bd->m_dirtyT;
+                            bd->m_gridW = bd->m_boundRight - bd->m_originX;
+                            bd->m_gridH = bd->m_boundBottom - bd->m_originY;
                             return 1;
                         }
                     }
@@ -2142,19 +2125,19 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     Coord g2;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g2);
     i32 left = (g2.m_x >> 5) - 8;
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     RECT bounds;
-    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&bounds)->Set(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = left;
     box.top = top;
     box.right = right + 1;
     box.bottom = bottom + 1;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &box, &bounds)) {
-        *(RECT*)&board->m_dirtyL = box;
+    if (!IntersectRect((RECT*)&board->m_originX, &box, &bounds)) {
+        *(RECT*)&board->m_originX = box;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     Method_02d800(unitArg, a1, a2, a3);
     if (g_stepRun == 0) {
         i32 savedX = unit->m_packedX;
@@ -2162,7 +2145,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         i32 col = unit->m_packedX >> 5;
         i32 row = unit->m_packedY >> 5;
         i32 tile0;
-        if ((u32)col < (u32)board->m_w && (u32)row < (u32)board->m_h) {
+        if ((u32)col < (u32)board->m_width && (u32)row < (u32)board->m_height) {
             tile0 = ((i32*)board->m_rows[row])[col * 7];
         } else {
             tile0 = 1;
@@ -2173,7 +2156,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
-            if ((u32)cx < (u32)board->m_w && (u32)cy < (u32)board->m_h) {
+            if ((u32)cx < (u32)board->m_width && (u32)cy < (u32)board->m_height) {
                 tile1 = ((i32*)board->m_rows[cy])[cx * 7];
             } else {
                 tile1 = 1;
@@ -2191,10 +2174,10 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         }
     }
     // Clear bit 0x2 across the board dirty region.
-    i32 dl = board->m_dirtyL;
-    i32 dt = board->m_dirtyT;
-    i32 dr = board->m_dirtyR;
-    i32 db = board->m_dirtyB;
+    i32 dl = board->m_originX;
+    i32 dt = board->m_originY;
+    i32 dr = board->m_boundRight;
+    i32 db = board->m_boundBottom;
     if (dl < dr) {
         i32 colOff = (dl * 7) << 2;
         for (i32 w = dr - dl; w != 0; w--) {
@@ -2208,18 +2191,18 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     RECT fa;
     fa.left = 0;
     fa.top = 0;
-    fa.right = board->m_w;
-    fa.bottom = board->m_h;
+    fa.right = board->m_width;
+    fa.bottom = board->m_height;
     RECT fb;
     fb.left = 0;
     fb.top = 0;
-    fb.right = board->m_w;
-    fb.bottom = board->m_h;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &fa, &fb)) {
-        *(RECT*)&board->m_dirtyL = fa;
+    fb.right = board->m_width;
+    fb.bottom = board->m_height;
+    if (!IntersectRect((RECT*)&board->m_originX, &fa, &fb)) {
+        *(RECT*)&board->m_originX = fa;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     return 1;
 }
 
@@ -2351,9 +2334,9 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     if ((u32)unit->m_idleTimer <= 0x64) {
         return 1;
     }
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     RECT bounds;
-    ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&bounds)->Set(0, 0, board->m_width, board->m_height);
     RECT* boxp = &box;
     RECT rc;
     if (boxp != 0) {
@@ -2363,17 +2346,17 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         rc.bottom = box.bottom + 1;
     } else {
         RECT r0;
-        RECT* p0 = ((RectInit*)&r0)->Set(0, 0, board->m_w, board->m_h);
+        RECT* p0 = ((RectInit*)&r0)->Set(0, 0, board->m_width, board->m_height);
         rc.left = p0->left;
         rc.top = p0->top;
         rc.right = p0->right;
         rc.bottom = p0->bottom;
     }
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &rc, &bounds)) {
-        *(RECT*)&board->m_dirtyL = rc;
+    if (!IntersectRect((RECT*)&board->m_originX, &rc, &bounds)) {
+        *(RECT*)&board->m_originX = rc;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     // FindPath flag word from the unit's 0x12 / 0x16 / 0xe anim modes.
     i32 flags = 0;
     i32 prim = unit->m_animPrim;
@@ -2405,19 +2388,19 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         fb.left = 0;
         fb.top = 0;
         RECT fr;
-        RECT* fp = ((RectInit*)&fr)->Set(0, 0, board->m_w, board->m_h);
-        fb.right = board->m_w;
-        fb.bottom = board->m_h;
+        RECT* fp = ((RectInit*)&fr)->Set(0, 0, board->m_width, board->m_height);
+        fb.right = board->m_width;
+        fb.bottom = board->m_height;
         RECT frc;
         frc.left = fp->left;
         frc.top = fp->top;
         frc.right = fp->right;
         frc.bottom = fp->bottom;
-        if (!IntersectRect((RECT*)&board->m_dirtyL, &frc, &fb)) {
-            *(RECT*)&board->m_dirtyL = frc;
+        if (!IntersectRect((RECT*)&board->m_originX, &frc, &fb)) {
+            *(RECT*)&board->m_originX = frc;
         }
-        board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-        board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+        board->m_gridW = board->m_boundRight - board->m_originX;
+        board->m_gridH = board->m_boundBottom - board->m_originY;
         unit->m_idleTimer = 0;
         return 0;
     }
@@ -2446,19 +2429,19 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     // Re-clamp the board dirty-rect to the board bounds, clear the cooldown, ret 1.
     RECT gb;
-    ((RectInit*)&gb)->Set(0, 0, board->m_w, board->m_h);
+    ((RectInit*)&gb)->Set(0, 0, board->m_width, board->m_height);
     RECT gr2;
-    RECT* gp = ((RectInit*)&gr2)->Set(0, 0, board->m_w, board->m_h);
+    RECT* gp = ((RectInit*)&gr2)->Set(0, 0, board->m_width, board->m_height);
     RECT grc;
     grc.left = gp->left;
     grc.top = gp->top;
     grc.right = gp->right;
     grc.bottom = gp->bottom;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &grc, &gb)) {
-        *(RECT*)&board->m_dirtyL = grc;
+    if (!IntersectRect((RECT*)&board->m_originX, &grc, &gb)) {
+        *(RECT*)&board->m_originX = grc;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     unit->m_idleTimer = 0;
     return 1;
 }
@@ -2847,7 +2830,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     if ((lvl->m_worldX >> 5) == gx && (lvl->m_worldY >> 5) == gy) {
         return 0;
     }
-    if ((m_board)->FindPath(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, a6, a4, a5)
+    if ((m_board)->SearchEdge(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, a6, a4, a5)
         == 0) {
         return 0;
     }
@@ -2935,7 +2918,7 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
         }
     }
     UnitLevel* lvl = unit->m_level;
-    if ((m_board)->FindPath(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, 0, a5, a5)
+    if ((m_board)->SearchEdge(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, 0, a5, a5)
         == 0) {
         return 0;
     }
@@ -2999,7 +2982,7 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
     if (node == 0) {
         return 0;
     }
-    Tile** rows = (m_board)->m_rows;
+    Tile** rows = (Tile**)(m_board)->m_rows;
     while (node != 0) {
         CoordNode* cur = node;
         node = node->m_next;
@@ -3042,7 +3025,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
             continue;
         }
         if (unit->m_coordCount != 0 && unit->m_coordHead != 0) {
-            Board* board = m_board;
+            CBrickzGrid* board = m_board;
             CoordNode* node = unit->m_coordHead;
             while (node != 0) {
                 CoordNode* cur = node;
@@ -3051,7 +3034,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
                 i32 x = c->m_x;
                 i32 y = c->m_y;
                 i32 tile;
-                if ((u32)x < (u32)board->m_w && (u32)y < (u32)board->m_h) {
+                if ((u32)x < (u32)board->m_width && (u32)y < (u32)board->m_height) {
                     tile = ((i32*)board->m_rows[y])[x * 7];
                 } else {
                     tile = 1;
@@ -3351,21 +3334,21 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             }
             // Clamp the board dirty-rect to (0,0,w,h): the CRect / IntersectRect
             // copy-back idiom (shared with GruntPathScan's SCAN_BOUNDS).
-            Board* board = m_board;
+            CBrickzGrid* board = m_board;
             RECT r1;
-            ((RectInit*)&r1)->Set(0, 0, board->m_w, board->m_h);
+            ((RectInit*)&r1)->Set(0, 0, board->m_width, board->m_height);
             RECT r2;
-            RECT* p2 = ((RectInit*)&r2)->Set(0, 0, board->m_w, board->m_h);
+            RECT* p2 = ((RectInit*)&r2)->Set(0, 0, board->m_width, board->m_height);
             RECT rc;
             rc.left = p2->left;
             rc.top = p2->top;
             rc.right = p2->right;
             rc.bottom = p2->bottom;
-            if (!IntersectRect((RECT*)&board->m_dirtyL, &rc, &r1)) {
-                *(RECT*)&board->m_dirtyL = rc;
+            if (!IntersectRect((RECT*)&board->m_originX, &rc, &r1)) {
+                *(RECT*)&board->m_originX = rc;
             }
-            board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-            board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+            board->m_gridW = board->m_boundRight - board->m_originX;
+            board->m_gridH = board->m_boundBottom - board->m_originY;
             if ((u32)unit->m_idleTimer > 0x1f4 && unit->m_coordCount == 0) {
                 i32 flags = unit->m_pathCfg;
                 unit->m_pathState = 0x4268;
@@ -3674,24 +3657,24 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     if (unit->m_state != 7) {
         return 1;
     }
-    Board* board = m_board;
+    CBrickzGrid* board = m_board;
     RECT box2;
     box2.left = 0;
     box2.top = 0;
     RECT bounds;
-    RECT* bp = ((RectInit*)&bounds)->Set(0, 0, board->m_w, board->m_h);
-    box2.right = board->m_w;
-    box2.bottom = board->m_h;
+    RECT* bp = ((RectInit*)&bounds)->Set(0, 0, board->m_width, board->m_height);
+    box2.right = board->m_width;
+    box2.bottom = board->m_height;
     RECT rc;
     rc.left = bp->left;
     rc.top = bp->top;
     rc.right = bp->right;
     rc.bottom = bp->bottom;
-    if (!IntersectRect((RECT*)&board->m_dirtyL, &rc, &box2)) {
-        *(RECT*)&board->m_dirtyL = rc;
+    if (!IntersectRect((RECT*)&board->m_originX, &rc, &box2)) {
+        *(RECT*)&board->m_originX = rc;
     }
-    board->m_dirtyW = board->m_dirtyR - board->m_dirtyL;
-    board->m_dirtyH = board->m_dirtyB - board->m_dirtyT;
+    board->m_gridW = board->m_boundRight - board->m_originX;
+    board->m_gridH = board->m_boundBottom - board->m_originY;
     i32 prim = unit->m_animPrim;
     i32 flags = unit->m_pathState;
     i32 t = prim;
@@ -3918,9 +3901,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         goto recycleBail;
     }
     {
-        Board* board = m_board;
+        CBrickzGrid* board = m_board;
         i32 tile0;
-        if ((u32)ux < (u32)board->m_w && (u32)uy < (u32)board->m_h) {
+        if ((u32)ux < (u32)board->m_width && (u32)uy < (u32)board->m_height) {
             i32* row = (i32*)board->m_rows[uy];
             tile0 = ((i32*)((char*)row + ((ux * 7) << 2)))[0];
         } else {
@@ -3952,7 +3935,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 cgx = g2.m_x >> 5;
         i32 cgy = g2.m_y >> 5;
         i32 tileG;
-        if ((u32)cgx < (u32)board->m_w && (u32)cgy < (u32)board->m_h) {
+        if ((u32)cgx < (u32)board->m_width && (u32)cgy < (u32)board->m_height) {
             i32* row = (i32*)board->m_rows[cgy];
             tileG = ((i32*)((char*)row + ((cgx * 7) << 2)))[0];
         } else {
@@ -4086,7 +4069,7 @@ endZero:
 // ===========================================================================
 // CBattlezMapConfig::Method_02d800  @0x02d800  (/GX EH frame, RECURSIVE)
 // The flood-fill board step. While g_stepRun is set, examine the tile at
-// (col,row): a 0x800000-bit tile tries a direct Board::FindPath (flags 0x4903) and,
+// (col,row): a 0x800000-bit tile tries a direct CBrickzGrid::FindPath (flags 0x4903) and,
 // on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
 // (m_anim->ResolveCell), and when the cell's anim id is in the special set
 // {0x12f..0x149} runs FindPath (flags 0x4003) twice (state 1/2), committing the
@@ -4108,14 +4091,14 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         return 0;
     }
     for (;;) {
-        Board* board = m_board;
+        CBrickzGrid* board = m_board;
         i32 tileOff = ((col * 7) << 2);
         i32* tile = (i32*)((char*)board->m_rows[row] + tileOff);
         i32 word = *tile;
         if (word & 0x800000) {
             CObList list(10);
             UnitLevel* lvl = m_ctx->m_level;
-            if ((m_board)->FindPath(
+            if ((m_board)->SearchEdge(
                     lvl->m_worldX >> 5,
                     lvl->m_worldY >> 5,
                     col,
@@ -4143,7 +4126,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 }
                 CObList list2(10);
                 UnitLevel* lvl = m_ctx->m_level;
-                if ((m_board)->FindPath(
+                if ((m_board)->SearchEdge(
                         lvl->m_worldX >> 5,
                         lvl->m_worldY >> 5,
                         col,
@@ -4190,7 +4173,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
             CObList list3(10);
             UnitLevel* lvl = m_ctx->m_level;
-            if ((m_board)->FindPath(
+            if ((m_board)->SearchEdge(
                     lvl->m_worldX >> 5,
                     lvl->m_worldY >> 5,
                     col,
@@ -4226,12 +4209,12 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         i32 cp = col + 1;
         i32 rm = row - 1;
         i32 rp = row + 1;
-        Board* b;
+        CBrickzGrid* b;
         i32* nt;
         i32 nw;
 
         b = m_board;
-        if ((u32)cm < (u32)b->m_w) {
+        if ((u32)cm < (u32)b->m_width) {
             nt = (i32*)((char*)b->m_rows[row] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4239,7 +4222,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_w) {
+        if ((u32)cp < (u32)b->m_width) {
             nt = (i32*)((char*)b->m_rows[row] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4247,7 +4230,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)rm < (u32)b->m_w) {
+        if ((u32)rm < (u32)b->m_width) {
             nt = (i32*)((char*)b->m_rows[rm] + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4255,7 +4238,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)rp < (u32)b->m_w) {
+        if ((u32)rp < (u32)b->m_width) {
             nt = (i32*)((char*)b->m_rows[rp] + ((col * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4263,7 +4246,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
+        if ((u32)cp < (u32)b->m_width && (u32)rm < (u32)b->m_height) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4271,7 +4254,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cp < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
+        if ((u32)cp < (u32)b->m_width && (u32)rp < (u32)b->m_height) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cp * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4279,7 +4262,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cm < (u32)b->m_w && (u32)rp < (u32)b->m_h) {
+        if ((u32)cm < (u32)b->m_width && (u32)rp < (u32)b->m_height) {
             nt = (i32*)((char*)b->m_rows[rp] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4287,7 +4270,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             }
         }
         b = m_board;
-        if ((u32)cm < (u32)b->m_w && (u32)rm < (u32)b->m_h) {
+        if ((u32)cm < (u32)b->m_width && (u32)rm < (u32)b->m_height) {
             nt = (i32*)((char*)b->m_rows[rm] + ((cm * 7) << 2));
             nw = *nt;
             if (!(nw & 0x20000) && ((nw & 0xc000) || nt[4] == 0x9a)) {
@@ -4310,7 +4293,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 // bit. Otherwise scan the current cell-row for the nearest eligible unit (passing
 // the cached-cell + clear-flag guards and NOT an I/G/L/P/J/C/R type code) within
 // distance 0x190, build the FindPath flags from its 0x16/0x12 anim modes, ask
-// Board::FindPath for a route, and swap that unit's path onto this one (recycle old
+// CBrickzGrid::FindPath for a route, and swap that unit's path onto this one (recycle old
 // coords onto g_coordPool, AddTail the new, set state 5). Returns 1 on a reroute.
 // ===========================================================================
 // @early-stop
@@ -4342,7 +4325,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
             n = n->m_next;
             Coord* c = cur->m_coord;
             if (c != 0) {
-                Tile* row = (m_board)->m_rows[c->m_y];
+                Tile* row = (Tile*)(m_board)->m_rows[c->m_y];
                 if (((i32*)&row[c->m_x])[0] & 4) {
                     tx = c->m_x;
                     ty = c->m_y;
@@ -4388,8 +4371,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
             CoordNode* p = unit->m_coordHead;
             Coord* c = ((CoordNode*)p)->m_coord;
             i32 word;
-            Board* b = m_board;
-            if ((u32)c->m_x < (u32)b->m_w && (u32)c->m_y < (u32)b->m_h) {
+            CBrickzGrid* b = m_board;
+            if ((u32)c->m_x < (u32)b->m_width && (u32)c->m_y < (u32)b->m_height) {
                 word = ((i32*)&((Tile*)b->m_rows[c->m_y])[c->m_x])[0];
             } else {
                 word = 1;
@@ -4503,7 +4486,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                         Coord oc;
                         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&oc);
                         UnitLevel* dl = cand->m_level;
-                        if ((m_board)->FindPath(
+                        if ((m_board)->SearchEdge(
                                 oc.m_x >> 5,
                                 oc.m_y >> 5,
                                 dl->m_worldX >> 5,
@@ -4570,7 +4553,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
 // pointer block for the candidate, not colliding with `unit` (Method_0305b0),
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
-// ask Board::FindPath for a route into a local CObList, then swap the unit's path
+// ask CBrickzGrid::FindPath for a route into a local CObList, then swap the unit's path
 // (recycle old coord nodes onto g_freeList, AddTail the new ones, stamp the packed
 // target coord + state 5). Returns 1 on a reroute, 0 otherwise.
 // ===========================================================================
@@ -4666,7 +4649,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         flags |= 0x100;
     }
     UnitLevel* lvl2 = unit->m_level;
-    if ((m_board)->FindPath(
+    if ((m_board)->SearchEdge(
             lvl2->m_worldX >> 5,
             lvl2->m_worldY >> 5,
             bestX,
@@ -5067,7 +5050,6 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     return 1;
 }
 SIZE_UNKNOWN(AnimNameResolver);
-SIZE_UNKNOWN(Board);
 SIZE_UNKNOWN(Candidate);
 SIZE_UNKNOWN(ClipHost);
 SIZE_UNKNOWN(GruntSpawnCtx);

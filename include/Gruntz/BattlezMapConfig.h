@@ -38,6 +38,8 @@
 // OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 #ifndef SRC_GRUNTZ_BATTLEZMAPCONFIG_H
 #define SRC_GRUNTZ_BATTLEZMAPCONFIG_H
+
+class CBrickzGrid; // folded Board
 #include <rva.h>
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
@@ -113,7 +115,7 @@ public:
             i32 m_active;               // +0x000  active gate (methods bail when 0)
             GruntSpawnCtx* m_ctx;       // +0x004  the level/game spawn context
             CTriggerMgr* m_triggerMgr;  // +0x008  the level's CTriggerMgr (4x15 grid)
-            Board* m_board;             // +0x00c  the CBrickz pathfinding-grid / tile-map
+            CBrickzGrid* m_board;       // +0x00c  the CBrickz pathfinding-grid / tile-map
             char m_pad010[0x18 - 0x10]; // +0x010  (untouched by run ctor)
             i32 m_curCell;              // +0x018  current cell index (=0)
             i32 m_01c;                  // +0x01c  = 1
