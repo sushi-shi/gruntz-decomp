@@ -8,6 +8,7 @@
 // vtable symbols reloc-mask the retail manual vtables. Only OFFSETS + code shape
 // are load-bearing.
 #include <rva.h>
+#include <Gruntz/BoundaryUpperViews.h>
 
 // The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
 // treats it as potentially-throwing and keeps the /GX base-subobject unwind frame.
@@ -148,12 +149,11 @@ struct FaderBase {
 SIZE_UNKNOWN(FaderBase);
 struct C17f9f0 : FaderBase {
     ~C17f9f0() OVERRIDE;
-    void SubFree(); // 0x17fc40
 };
 SIZE_UNKNOWN(C17f9f0);
 RVA(0x0017f9f0, 0x4f)
 C17f9f0::~C17f9f0() {
-    SubFree();
+    ((B_17fc40*)this)->Free();
 }
 struct C180450 : FaderBase {
     ~C180450() OVERRIDE;
