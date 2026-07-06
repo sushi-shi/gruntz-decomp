@@ -15,6 +15,7 @@
 // Only the offsets + emitted bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_CDDRAWWORKER_H
 #define GRUNTZ_CDDRAWWORKER_H
+#include <rva.h>
 
 #include <Ints.h>
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
@@ -66,5 +67,8 @@ public:
     i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
     i32 m_68;                  // +0x68
 };
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CWorkerElement, 0x001ed494);
 
 #endif // GRUNTZ_CDDRAWWORKER_H

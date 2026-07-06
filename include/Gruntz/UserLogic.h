@@ -642,4 +642,7 @@ public:
     virtual ~CTileTrigger() OVERRIDE {}
 };
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CAnimWorker, 0x001efb80);
+
 #endif // GRUNTZ_USERLOGIC_H

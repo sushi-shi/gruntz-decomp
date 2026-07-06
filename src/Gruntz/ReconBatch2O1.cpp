@@ -80,3 +80,6 @@ void AtexitReg_1d4bc1() {
 }
 SIZE_UNKNOWN(CWndHost_1bae9b);
 SIZE_UNKNOWN(Obj_11e4d0);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(Obj_11e4d0, 0x001ed0e4);

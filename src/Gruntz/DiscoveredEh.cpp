@@ -73,3 +73,8 @@ CButeStore::~CButeStore() {
 SIZE_UNKNOWN(CU55Base);
 SIZE_UNKNOWN(CU55);
 SIZE_UNKNOWN(CObj50);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CObj50, 0x001e94ac);
+VTBL(CU55, 0x001e8cd4);
+VTBL(CU55Base, 0x001e8cd4);

@@ -277,3 +277,6 @@ void __stdcall TileSwitch29af0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     }
     CGrunt_TileSwitch(a2, a3, 0, 0x9c7, 0, 0);
 }
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CUserBaseSubB940, 0x001e70b4);

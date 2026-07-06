@@ -71,4 +71,7 @@ public:
     i32 m_count;                             // +0x20  (== m_hi - m_lo + 1)
 };
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CZArrayRoot, 0x001f04cc);
+
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

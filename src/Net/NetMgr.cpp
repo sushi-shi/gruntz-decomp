@@ -3855,3 +3855,6 @@ CNetCmdSlot::CNetCmdSlot() {
     ResetTriple(m_rangeA);
     ResetTriple(m_rangeB);
 }
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CNetGroupNode, 0x001e8cb4);

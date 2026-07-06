@@ -230,3 +230,6 @@ VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj (was g_animWorkerVtbl)
 // auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
 // matching-neutral catalog tracking.
 VTBL(CDDrawWorkerCache, 0x001efd00);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CDDrawWorkerCacheBase, 0x001e8cb4);

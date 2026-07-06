@@ -69,4 +69,7 @@ public:
     i32 m_total;               // +0x24
 }; // size = 0x28
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CAniElement, 0x001f02c0);
+
 #endif // GRUNTZ_CANIELEMENT_H

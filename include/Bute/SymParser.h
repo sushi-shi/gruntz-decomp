@@ -21,6 +21,7 @@
 //                        each node owns a buffer at node+0x8.
 #ifndef SRC_BUTE_SYMPARSER_H
 #define SRC_BUTE_SYMPARSER_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -227,5 +228,8 @@ public:
     i32 m_parseSlotBlockCount;  // +0x90  number of parse-slot records per allocated block
 };
 SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CObjNode, 0x001ef750);
 
 #endif // SRC_BUTE_SYMPARSER_H

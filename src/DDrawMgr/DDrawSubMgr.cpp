@@ -2474,3 +2474,9 @@ SIZE_UNKNOWN(Obj15b270);
 SIZE_UNKNOWN(CResolveNode);
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdWorker);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CDDrawChildGroupDtorHost, 0x001efdc0);
+VTBL(CDDrawSubMgrBase, 0x001efc30);
+VTBL(CDDrawSubMgrFar, 0x001efd28);
+VTBL(FamilyMapBase, 0x001e8cb4);

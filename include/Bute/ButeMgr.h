@@ -469,4 +469,9 @@ public:
 };
 SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CButeStore, 0x001e949c);
+VTBL(CButeStorePrimary, 0x001e94ac);
+VTBL(CButeStoreSecond, 0x001e94ac);
+
 #endif // SRC_BUTE_BUTEMGR_H

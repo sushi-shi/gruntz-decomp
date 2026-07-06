@@ -548,3 +548,7 @@ SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawSurfaceSource);
 SIZE_UNKNOWN(CDDrawWorkerMapSmall);
 VTBL(CDDrawWorkerMapSmall, 0x001efcc8); // ??_7CDDrawWorkerMapSmall @0x5efcc8
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CDDrawMapWorker, 0x001efdc0);
+VTBL(CDDrawWorkerMapBase, 0x001e8cb4);

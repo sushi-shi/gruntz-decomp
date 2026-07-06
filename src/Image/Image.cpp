@@ -1799,3 +1799,7 @@ SIZE_UNKNOWN(CFileImageElement);
 SIZE_UNKNOWN(CImageExtLoader);
 SIZE_UNKNOWN(CByteArrayMember);
 SIZE_UNKNOWN(CImageFactory);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CRezImageSource, 0x001ef7f0);
+VTBL(CRezSurfaceItem, 0x001ef7f0);

@@ -24,6 +24,7 @@
 // view) into this single shared definition.
 #ifndef GRUNTZ_CANIRECORDVIEW_H
 #define GRUNTZ_CANIRECORDVIEW_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -50,5 +51,8 @@ struct CAniRecordView {
     i32 m_count;        // +0x2c = 0
     i32 m_indices;      // +0x30 = 0
 };
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CAniRecordView, 0x001f02c0);
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

@@ -201,4 +201,7 @@ public:
     i32 m_48c;                   // +0x48c
 };
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CFaderMeshSub, 0x001f07d8);
+
 #endif // GRUNTZ_GRUNTZ_CFADERSUBTYPES_H

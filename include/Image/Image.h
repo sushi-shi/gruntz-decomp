@@ -258,4 +258,9 @@ public:
 // <DDrawMgr/DDSurface.h> (included above); the method bodies below in this module
 // (Image.cpp / FileImage*.cpp / LutShadeRect.cpp) are defined on CDDSurface.
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CFileImageElement, 0x001efa58);
+VTBL(CFileImageHeldSurface, 0x001ef7f0);
+VTBL(CFileImageSurface, 0x001efa58);
+
 #endif // SRC_IMAGE_IMAGE_H

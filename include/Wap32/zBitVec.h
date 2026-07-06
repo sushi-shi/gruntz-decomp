@@ -101,4 +101,7 @@ public:
 // src/Wap32/EngStr.cpp and header-fattens/reschedules zBitVec::SetSize (measured
 // 98.7% -> 85.3%). EngStr.cpp needs only the container classes above.
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(zBitVec, 0x001f04c8);
+
 #endif // WAP32_ZBITVEC_H

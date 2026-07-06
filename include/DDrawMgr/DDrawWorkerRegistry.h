@@ -110,4 +110,7 @@ public:
 
 SIZE_UNKNOWN(CWorkerVtableView);
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CWorkerVtableView, 0x001efd28);
+
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERREGISTRY_H

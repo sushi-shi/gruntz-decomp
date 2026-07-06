@@ -376,3 +376,6 @@ SIZE_UNKNOWN(CDDrawWorkerItem);
 SIZE_UNKNOWN(WorkNode);
 // CDDrawWorkerBase/A/B SIZE + VTBL(CDDrawWorkerB) now live in
 // <DDrawMgr/DDrawWorkerNode.h>.
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(WorkerListSibBase, 0x001efd88);

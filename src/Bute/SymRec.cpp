@@ -152,3 +152,6 @@ SIZE_UNKNOWN(CSymList);
 SIZE_UNKNOWN(CSymParser);
 SIZE_UNKNOWN(CSymTab);
 SIZE_UNKNOWN(CSymListNode);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CHashInsertNode, 0x001ef748);

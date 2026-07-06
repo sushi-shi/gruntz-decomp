@@ -249,4 +249,7 @@ public:
 SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
                         // operator-new(0xc0); == the CImage held-surface pool item)
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CDDSurface, 0x001efa58);
+
 #endif // DDRAWMGR_CDDSURFACE_H

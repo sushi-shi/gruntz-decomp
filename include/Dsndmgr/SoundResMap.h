@@ -38,4 +38,7 @@ public:
     CMapStringToPtr m_map; // +0x10
 };
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CSoundRes, 0x001e8cb4);
+
 #endif // GRUNTZ_SOUNDRESMAP_H

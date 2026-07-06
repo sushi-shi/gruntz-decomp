@@ -248,3 +248,7 @@ SIZE_UNKNOWN(DnnRec);
 SIZE_UNKNOWN(EngRec);
 SIZE_UNKNOWN(Owner);
 SIZE_UNKNOWN(Worker);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CUserLogicOOL, 0x001e859c);
+VTBL(EngRec, 0x001e859c);

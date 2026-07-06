@@ -378,3 +378,6 @@ RVA(0x00118310, 0xc)
 i32 NotNull118310(void* p) {
     return p != 0;
 }
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CStatusBaseSub100780, 0x001eabcc);

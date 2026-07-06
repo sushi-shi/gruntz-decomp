@@ -1211,4 +1211,7 @@ public:
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
 
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CNetPlayerObj, 0x001f0760);
+
 #endif // NET_NETMGR_H

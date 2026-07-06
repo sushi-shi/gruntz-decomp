@@ -487,3 +487,6 @@ SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
 SIZE_UNKNOWN(MfcBytes);
 SIZE_UNKNOWN(MfcStr);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CSplashState, 0x001e9e84);

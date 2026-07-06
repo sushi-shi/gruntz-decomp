@@ -97,3 +97,6 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     delete (ButeFileStream*)m_stream;
     return result;
 }
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(ButeIos, 0x001f03e0);

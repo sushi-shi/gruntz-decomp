@@ -13,6 +13,7 @@
 // frame/format types stay placeholders - see CImageFrame below.
 #ifndef SRC_IMAGE_IMAGESET_H
 #define SRC_IMAGE_IMAGESET_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -131,5 +132,8 @@ public:
     i32 m_minIndex; // +0x64  lowest populated frame index
     i32 m_maxIndex; // +0x68  highest populated frame index
 };
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CImageFrame, 0x001eaa2c);
 
 #endif // SRC_IMAGE_IMAGESET_H

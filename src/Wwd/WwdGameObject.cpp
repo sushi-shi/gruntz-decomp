@@ -1198,3 +1198,7 @@ SIZE_UNKNOWN(WwdBResolve);
 SIZE_UNKNOWN(WwdBMid);
 SIZE_UNKNOWN(WwdBLevel2);
 SIZE_UNKNOWN(WwdObList);
+
+// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(WwdBResolve, 0x001efbc0);
+VTBL(WwdWorker, 0x001e8cb4);
