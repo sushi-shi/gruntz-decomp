@@ -266,12 +266,17 @@ def cmd_build(args) -> None:
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
             f"(python -m gruntz.match.class_vtables for the list)")
-    # rva->name uniqueness: a vtable datum has one ??_7 name, so an rva bound by
-    # multiple VTBL() is a mis-catalog (shared-base/fallback aliasing) that the
-    # delink name-injectivity guard cannot see. Surface the count here.
+    # rva->name uniqueness: a vtable datum has exactly ONE ??_7 name, so an rva bound
+    # by multiple VTBL() is a mis-catalog (shared-base/fallback aliasing) that the delink
+    # name-injectivity guard cannot see (it only checks name->rva). FATAL gate: collapse
+    # same-rva vtables to a single one (remove the fake views) - it must never regress.
     mc = re.search(r"vtable-rva collisions: (\d+) rva\(s\)", out_vt)
-    if mc:
-        log(f"VTBL: {mc.group(1)} rva(s) bound by >1 class - multiply-bound "
+    if mc and int(mc.group(1)) > 0:
+        for ln in out_vt.splitlines():
+            if ln.strip().startswith("0x") or "vtable-rva collisions:" in ln:
+                print(ln, file=sys.stderr)
+        die(f"VTBL: {mc.group(1)} rva(s) bound by >1 class (multiply-bound) - a vtable "
+            f"datum has one ??_7 name; collapse to a single vtable / remove the fake views "
             f"(python -m gruntz.match.class_vtables for the list)")
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
