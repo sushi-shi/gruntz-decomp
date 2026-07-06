@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Bute/SymTab.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -1136,9 +1137,6 @@ struct CMenuBrightHolder {
 };
 SIZE_UNKNOWN(CMenuPageA);
 struct CMenuPageA {
-    void Method_158dc0();      // 0x158dc0 no-arg (csv leaf: CDDrawWorkerMgr::Method_158dc0)
-    void TransTitle();         // 0x158e90 no-arg
-    void Method_158d50(i32 z); // 0x158d50 (1 arg) (csv leaf: CDDrawWorkerMgr::Method_158d50)
     char m_pad00[0x14];
     CMenuBrightHolder* m_14; // +0x14 title brightness holder
     CMenuBrightHolder* m_18; // +0x18 menu brightness holder
@@ -1167,9 +1165,9 @@ RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     CMenuRootA* root = (CMenuRootA*)m_c;
     if (m_videoPlaying != 0) {
-        root->m_04->Method_158dc0();
-        root->m_04->TransTitle();
-        root->m_04->Method_158d50(0);
+        ((CDDrawSubMgrPages*)root->m_04)->Method_158dc0();
+        ((CDDrawSubMgrPages*)root->m_04)->Method_158e90();
+        ((CDDrawSubMgrPages*)root->m_04)->Method_158d50(0);
         root->m_04->m_18->m_2c->Fill(0);
         return 1;
     }
@@ -1191,7 +1189,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     CDDSurface* tgt = root->m_04->m_14->m_2c;
     tgt->ShadeRect(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
-    root->m_04->TransTitle();
+    ((CDDrawSubMgrPages*)root->m_04)->Method_158e90();
     BuildMenuPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
