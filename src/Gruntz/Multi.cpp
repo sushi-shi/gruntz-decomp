@@ -455,26 +455,33 @@ extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 // into a typed vtable struct naming ONLY the two dispatched slots as 4-byte thiscall
 // PMFs + char pad[], NO fake virtuals; each dispatch is ecx=this, no push (same as
 // the pure-virtual form).
-struct McObjVtbl;
+// Real polymorphic view: the two dispatched slots are real virtuals at their retail
+// offsets (+0x24 = slot 9, +0x40 = slot 16); declared-only, so no vtable is emitted.
 struct McObj {
-    McObjVtbl* m_vtbl; // +0x00
-    void CallSlot24(); // vtbl +0x24
-    void CallSlot40(); // vtbl +0x40
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot24(); // +0x24 (slot 9)
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot40(); // +0x40 (slot 16)
+    void CallSlot24() {
+        Slot24();
+    }
+    void CallSlot40() {
+        Slot40();
+    }
 };
-typedef void (McObj::*McObjFn)();
-struct McObjVtbl {
-    char m_pad00[0x24];
-    McObjFn Slot24; // +0x24
-    char m_pad28[0x40 - 0x28];
-    McObjFn Slot40; // +0x40
-};
-SIZE_UNKNOWN(McObjVtbl);
-inline void McObj::CallSlot24() {
-    (this->*(m_vtbl->Slot24))();
-}
-inline void McObj::CallSlot40() {
-    (this->*(m_vtbl->Slot40))();
-}
 struct McHost { // CMulti::m_view
     char m_pad0[8];
     McObj* m_8; // +0x08
