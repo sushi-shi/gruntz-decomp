@@ -1981,19 +1981,19 @@ extern void* g_wwdGameObjectVtbl; // 0x5f0020
 DATA(0x001f00a8)
 extern void* g_wwdObjFinalVtbl; // 0x5f00a8
 
-// Sub-object ctors hung off the wide object (all __thiscall, reloc-masked).
-class CWwdSubCtorA { // 0x15b2b0
+// Sub-object ctors hung off the wide object (all __thiscall, reloc-masked externs;
+// ctor-only TU-local views of the real classes defined in DiscoveredSmall/ResolveNode).
+class Obj15b2b0 { // the +0x9c sub-object
 public:
-    void Ctor();
+    Obj15b2b0(); // 0x15b2b0
 };
-class CWwdSubCtorB { // 0x15b270
+class Obj15b270 { // the +0xb8 sub-object
 public:
-    void Ctor();
+    Obj15b270(); // 0x15b270
 };
-// CResolveNode 3-arg ctor at 0x15b2c0 (root, a2, a3).
-class CWwdResolveBase {
+class CResolveNode { // the +0x00 base sub-object (3-arg ctor: root, a2, a3)
 public:
-    void Ctor(i32 root, i32 a2, i32 a3); // 0x15b2c0
+    CResolveNode(i32 root, i32 a2, i32 a3); // 0x15b2c0
 };
 // The 0x17c-byte sprite-animation worker built at +0x7c (AnimWorker, 0x15b300).
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
@@ -2399,9 +2399,9 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         i32 root = (i32)m_0c;
-        ((CWwdResolveBase*)obj)->Ctor(root, a1, flags);
-        ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
-        ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();
+        new (obj) CResolveNode(root, a1, flags);
+        new (obj + 0x9c) Obj15b2b0();
+        new (obj + 0xb8) Obj15b270();
         ((CWwdLabel*)(obj + 0xdc))->Ctor();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
@@ -2474,8 +2474,8 @@ SIZE_UNKNOWN(CWwdNotifier);
 SIZE_UNKNOWN(CWwdObjMgr);
 SIZE_UNKNOWN(CWwdObject);
 SIZE_UNKNOWN(CWwdProbeObject);
-SIZE_UNKNOWN(CWwdResolveBase);
+SIZE_UNKNOWN(Obj15b2b0);
+SIZE_UNKNOWN(Obj15b270);
+SIZE_UNKNOWN(CResolveNode);
 SIZE_UNKNOWN(CWwdSlot9c);
-SIZE_UNKNOWN(CWwdSubCtorA);
-SIZE_UNKNOWN(CWwdSubCtorB);
 SIZE_UNKNOWN(CWwdWorker);
