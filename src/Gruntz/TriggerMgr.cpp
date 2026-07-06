@@ -261,11 +261,6 @@ struct CTmScoreBoard {
 // The fx/target sub-mgr at g_gameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
 // target"): its fx-sprite spawner (0x90b48) and its group-reset driver (0x79520). Both
 // reloc-masked __thiscall bodies.
-struct CTmFxMgr {
-    void* Spawn(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);    // 0x90b48 (7 args)
-    i32 ResetGroup(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x79520
-};
-
 // The command/report sub-mgr at g_gameReg->m_6c: the per-record reporter (0x90db8),
 // the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
 // 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
@@ -282,7 +277,7 @@ struct CTmGameReg {
     CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
     CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
     char p1[0x34];               // +0x34
-    CTmFxMgr* m_68;              // +0x68  reused per-mode slot (fx/target sub-mgr here)
+    CTriggerMgr* m_68;           // +0x68  reused per-mode slot (fx/target sub-mgr here)
     CTmCmdMgr* m_6c;             // +0x6c  command/report sub-mgr
     CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
     char p2[0x8];                // +0x74..0x78
@@ -2465,7 +2460,6 @@ SIZE_UNKNOWN(CTmRecNode);
 SIZE_UNKNOWN(CTmCell);
 SIZE_UNKNOWN(CTmPendingFx);
 SIZE_UNKNOWN(CTmOverlaySrc);
-SIZE_UNKNOWN(CTmFxMgr);
 SIZE_UNKNOWN(CTmCursorMgr);
 SIZE_UNKNOWN(CTmScroll);
 SIZE_UNKNOWN(CTmLevelView);

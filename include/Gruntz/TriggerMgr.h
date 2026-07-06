@@ -83,6 +83,7 @@ SIZE(CTmByteArray, 0x14);
 
 class CTriggerMgr {
 public:
+    void* Spawn(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);
     // 0x7abc0: Load(ar) - deserialize the whole trigger-mgr state from the reader
     // (the 4x15 placed-object grid, per-row state bands, byte table, record list,
     // ten selection lists, base object list, overlay sub-object + tail scalars).
