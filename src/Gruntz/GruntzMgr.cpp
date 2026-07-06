@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -133,14 +134,9 @@ extern "C" {
 // accumulator (Refresh at the 0x1884 thunk; a running total at +0x10). The live
 // state carries a tally id at +0x1c and a 64-bit level clock pointer at +0x3f4
 // (->m_38). m_cmdGrid carries a "scored" flag at +0x288.
-struct RegScoreHud {
-    char m_pad0[0x10];
-    i32 m_10;                // +0x10  running accumulator
-    void Refresh(i32 score); // FUN @ 0x1884 thunk (this, score) reloc-masked
-};
 struct GameRegHudView {
     char m_pad0[0x7c];
-    RegScoreHud* m_7c; // +0x7c
+    CBattlezData* m_7c; // +0x7c
 };
 struct LevelClock {
     char m_pad0[0x38];
@@ -3081,7 +3077,7 @@ void CGruntzMgr::AccrueScoreTime() {
         SwitchModeState(0xa, 1, 0, 0);
         return;
     }
-    ((GameRegHudView*)g_gameReg)->m_7c->Refresh(((StateScoreView*)st)->m_1c);
+    ((GameRegHudView*)g_gameReg)->m_7c->SetCount(((StateScoreView*)st)->m_1c);
     if (m_134 == 3) {
         LevelClock* clk = ((StateScoreView*)st)->m_3f4;
         i64 d = (i64)g_645588 - clk->m_38;
@@ -3089,7 +3085,7 @@ void CGruntzMgr::AccrueScoreTime() {
         SwitchModeState(0x12, 1, 0, 0);
         return;
     }
-    RegScoreHud* hud = ((GameRegHudView*)g_gameReg)->m_7c;
+    CBattlezData* hud = ((GameRegHudView*)g_gameReg)->m_7c;
     u32 now = g_pTimeGetTime();
     hud->m_10 += (now - g_648ce8);
     SwitchModeState(0x12, 1, 0, 0);
