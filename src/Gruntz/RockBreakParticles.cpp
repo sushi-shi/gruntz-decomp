@@ -15,6 +15,7 @@
 // accessed by raw this+offset; strings are $SG literals reloc-masked against the
 // matched symbols. Only offsets / code bytes are load-bearing.
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>   // MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde)
 #include <Win32.h> // PtInRect / RECT / POINT
 
@@ -117,9 +118,7 @@ struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     char m_pad34[0x70 - 0x34];
     CBrickzGrid* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];
-    RECT m_13c;                    // +0x13c  visible rect
-    void Log(const char* s);       // FUN @ 0x417e __thiscall
-    void Pump(i32 msg, i32 param); // FUN @ 0x346d __thiscall
+    RECT m_13c; // +0x13c  visible rect
 };
 DATA(0x0024556c)
 extern "C" RockMgr* g_mgrSettings; // _g_mgrSettings
@@ -198,8 +197,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
-                        g_mgrSettings->Log(msg);
-                        g_mgrSettings->Pump(0x80dd, 0x403);
+                        ((CGruntzMgr*)g_mgrSettings)->EnterModalUI((i32)(const char*)(msg));
+                        ((CGruntzMgr*)g_mgrSettings)->ReportError(0x80dd, 0x403);
                         return 0;
                     }
                     gr->Retire();
