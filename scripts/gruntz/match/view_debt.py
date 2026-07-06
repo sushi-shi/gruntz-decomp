@@ -48,10 +48,21 @@ LIBRARY_CLASSES = {
 
 
 def _class_of(sym):
-    """The owning class of an MSVC-mangled member: ?Method@CClass@@... -> CClass
-    (first component after the method name). None for non-member / C symbols."""
-    m = re.match(r"\?[^@]+@([A-Za-z_]\w*)@", sym)
-    return m.group(1) if m else None
+    """The owning class of an MSVC-mangled MEMBER FUNCTION: ?Method@CClass@@Q... -> CClass.
+    Requires the `@@` that ends the qualified name AND a member-function code after it
+    ([A-Z], e.g. Q/A/I/U/M/E) - NOT a digit. This excludes:
+      - global operators whose "class" is a type-signature fragment (`??2@YAPAXI@Z` = operator
+        new -> the YAPAXI is the PAX/I return+arg mangle, not a class);
+      - DATA symbols (`?g_x@NS@@3PAX...` = a variable, `@@3`) - a phantom is an untied METHOD,
+        not a data extern.
+    None for non-member / C / data / operator-fragment symbols."""
+    # Anchor on the qualified name: ?MethodName (@Component)+ @@ <storage-code>. The code
+    # RIGHT AFTER the owning class-chain's `@@` must be a member-function access letter
+    # ([A-Z]: Q/A/I/U/M/E...), NOT a digit (`@@3` = a DATA member/global, not a method) and
+    # not absent (a global operator like `??2@YAPAXI@Z` - the `@YAPAXI@` is a return-type
+    # mangle, no `@@`). Returns the INNERMOST (owning) class for nested names.
+    m = re.match(r"\?[^@]+((?:@[A-Za-z_]\w*)+)@@([A-Za-z])", sym)
+    return m.group(1).split("@")[1] if m else None
 
 
 def _current_objs():
