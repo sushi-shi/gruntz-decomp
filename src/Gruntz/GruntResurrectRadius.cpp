@@ -10,6 +10,7 @@
 // umbrella must be the MFC superset kept first (PtInRect / RECT / POINT come with
 // it; docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md).
 #include <Mfc.h>
+#include <Bute/ButeMgr.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/LightFx.h>
 
@@ -73,9 +74,7 @@ struct ResSettings {
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
 };
 SIZE_UNKNOWN(ResButeMgr);
-struct ResButeMgr {
-    i32 GetInt(char* sec, char* key); // CButeMgr::GetInt FUN_00171af0
-};
+struct ResButeMgr {};
 DATA(0x002453d8)
 extern ResButeMgr g_resButeMgr;
 DATA(0x0024556c)
@@ -145,8 +144,8 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (s->m_134 == 1) {
             i32 radius = 0;
             if (cfg->m_14 == 0) {
-                aiType = g_resButeMgr.GetInt("Grunt", "RessurectAIType");
-                radius = g_resButeMgr.GetInt("Grunt", "RessurectAIRadius");
+                aiType = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIType");
+                radius = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIRadius");
             }
             if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, aiType, radius, 0, 0, 0) != -1) {
                 ok = 1;

@@ -16,6 +16,7 @@
 // <Bute/ButeMgr.h> pulls <Mfc.h> (afx-first windows.h) - MUST precede any other
 // header that reaches windows.h, so it comes first.
 #include <Bute/ButeMgr.h>
+#include <Io/MoviePlayer.h>
 
 #include <rva.h>
 
@@ -66,8 +67,7 @@ struct BcAssetRoot { // this->m_c
     char m_pad14[0x28 - 0x14];
     BcSoundRegistry* m_28; // +0x28
 };
-struct BcPumpHost {            // this->m_4->m_4
-    void Pump(i32 msg, i32 n); // FUN_0053d4e0
+struct BcPumpHost { // this->m_4->m_4
 };
 struct BcStateRoot { // this->m_4
     void Reset(i32); // FUN_...34ef __thiscall on m_4
@@ -188,7 +188,7 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    m_4->m_4->Pump(0x100, 0x40);
+    ((CMoviePlayer*)m_4->m_4)->Pump(0x100, 0x40);
 
     m_1b8 = 0;
     if (!Init1()) {

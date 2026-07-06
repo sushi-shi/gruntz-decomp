@@ -1152,9 +1152,7 @@ struct CMenuRootA {
 // The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
 // attract-state count divisor. TU-local views; both reloc-mask.
 SIZE_UNKNOWN(CButeCfg);
-struct CButeCfg {
-    i32 GetIntDef(char* tag, char* key, i32 def); // canonical CButeMgr::GetIntDef
-};
+struct CButeCfg {};
 DATA(0x002453d8)
 extern CButeCfg g_buteCfg;
 extern "C" i32 g_645534;
@@ -1189,7 +1187,7 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     CDDSurface* tgt = root->m_04->m_14->m_2c;
-    tgt->ShadeRect(g_buteCfg.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
+    tgt->ShadeRect(((CButeMgr*)&g_buteCfg)->GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     ((CDDrawSubMgrPages*)root->m_04)->Method_158e90();
     BuildMenuPage(0x50, 0x3e8, 0, 1);
     return 1;
