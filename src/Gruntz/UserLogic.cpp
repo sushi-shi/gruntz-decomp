@@ -27,6 +27,7 @@
 #include <Gruntz/VoiceTrigger.h>       // canonical CVoiceTrigger (no-arg ctor + GetTypeTag below)
 #include <Gruntz/Viewport.h>           // shared world->screen transform
 #include <Gruntz/SerialObjRef.h>       // the shared serialized-object-reference (Chain @0x8c00)
+#include <Bute/SymTab.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -1415,16 +1416,12 @@ SIZE_UNKNOWN(CWarpAnimObj);
 struct CWarpAnimObj {
     void Anim2a72(i32 a, i32 b, i32 c); // 0x2a72
 };
-SIZE_UNKNOWN(CWarpTagObj);
-struct CWarpTagObj {
-    i32 Find13be40(const char* name, i32 tag); // 0x13be40 (level-exists probe)
-};
 SIZE_UNKNOWN(CWarpLevelReg);
 struct CWarpLevelReg {
     char m_pad00[0x1c];
     i32 m_baseLevel; // +0x1c base level number
     char m_pad20[0x28 - 0x20];
-    CWarpTagObj* m_28; // +0x28
+    CSymTab* m_28; // +0x28
 };
 SIZE_UNKNOWN(CWarpMgrWnd);
 struct CWarpMgrWnd {
@@ -1479,7 +1476,7 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
         i32 lvl = reg->m_baseLevel + 0x64;
         CString s;
         s.Format("WORLDZ\\LEVEL%i", lvl);
-        if (reg->m_28->Find13be40((LPCTSTR)s, 0x575744)) {
+        if (reg->m_28->ResolveQualified((LPCTSTR)s, (void*)0x575744)) {
             g_pPostMessageA(g_mgrSettings->m_4->m_4, 0x111, 0x807f, lvl);
         }
     }
