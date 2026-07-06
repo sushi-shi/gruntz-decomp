@@ -1,4 +1,5 @@
 #include <Gruntz/SoundCueMgr.h>
+#include <Gruntz/Sprite.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniElement.h>
 #include <rva.h>
@@ -1361,16 +1362,6 @@ void* CQueueDrainHost::Drain_031250() {
 // the resolved frame pointer cache at the context's +0x198.  GetFrame (0x15cc30)
 // is the bounds-checked fetch; ClampFirst/ClampLast (0x15cc50/0x15cc90) reset the
 // context cursor to the range ends.  All reloc-masked __thiscall externals.
-class CAniFrameSeq {
-public:
-    i32 GetFrame_15cc30(i32 n); // 0x15cc30  __thiscall on the +0x194 sequence
-    char m_pad00[0x14];         // +0x00..0x13
-    void** m_frames;            // +0x14  frame-pointer array
-    char m_pad18[0x64 - 0x18];  // +0x18..0x63
-    i32 m_lowFrame;             // +0x64  low frame index
-    i32 m_highFrame;            // +0x68  high frame index
-};
-
 // The sprite-render context the cursor drives (held at cursor+0x10).  ClampFirst/
 // ClampLast (0x15cc50/0x15cc90) clamp its +0x190 cursor to the sequence ends and
 // re-resolve +0x198; both reloc-masked __thiscall on the context.
@@ -1392,7 +1383,7 @@ public:
     i32 m_screenY;              // +0x60  screen Y
     char m_pad64[0x190 - 0x64]; // +0x64..0x18f
     i32 m_frameCursor;          // +0x190  sequence frame cursor
-    CAniFrameSeq* m_frameSeq;   // +0x194  active frame sequence
+    CSprite* m_frameSeq;        // +0x194  active frame sequence
     i32 m_curFrame;             // +0x198  resolved current frame pointer
 };
 
@@ -1585,78 +1576,78 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         switch (d->m_stepMode - 1) {
             case 0: { // advance + wrap-to-first on overrun
                 CAniRenderCtx* c = m_ctx;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
                 i32 idx = c->m_frameCursor + 1;
                 c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
-                    i32 first = c->m_frameSeq->m_lowFrame;
+                    i32 first = c->m_frameSeq->m_firstFrame;
                     c->m_frameCursor = first;
-                    c->m_curFrame = c->m_frameSeq->GetFrame_15cc30(first);
+                    c->m_curFrame = c->m_frameSeq->GetFrame(first);
                 }
                 break;
             }
             case 1: { // wrap-to-last when at first, else step back
                 CAniRenderCtx* c = m_ctx;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
                 i32 idx = c->m_frameCursor;
-                if (idx == seq->m_lowFrame) {
-                    c->m_frameCursor = seq->m_highFrame;
+                if (idx == seq->m_firstFrame) {
+                    c->m_frameCursor = seq->m_lastFrame;
                 } else {
                     c->m_frameCursor = idx - 1;
                 }
-                c->m_curFrame = seq->GetFrame_15cc30(c->m_frameCursor);
+                c->m_curFrame = seq->GetFrame(c->m_frameCursor);
                 break;
             }
             case 2: { // jump to an explicit frame (d->m_param)
                 CAniRenderCtx* c = m_ctx;
                 i32 frame = d->m_param;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                c->m_curFrame = seq->GetFrame_15cc30(frame);
+                c->m_curFrame = seq->GetFrame(frame);
                 c->m_frameCursor = frame;
                 break;
             }
             case 3: { // reset to first
                 CAniRenderCtx* c = m_ctx;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 first = seq->m_lowFrame;
+                i32 first = seq->m_firstFrame;
                 c->m_frameCursor = first;
-                c->m_curFrame = seq->GetFrame_15cc30(first);
+                c->m_curFrame = seq->GetFrame(first);
                 break;
             }
             case 4: { // reset to last
                 CAniRenderCtx* c = m_ctx;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
-                i32 last = seq->m_highFrame;
+                i32 last = seq->m_lastFrame;
                 c->m_frameCursor = last;
-                c->m_curFrame = seq->GetFrame_15cc30(last);
+                c->m_curFrame = seq->GetFrame(last);
                 break;
             }
             case 5: { // advance by d->m_param, clamp-last on overrun
                 CAniRenderCtx* c = m_ctx;
                 i32 step = d->m_param;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
                 i32 idx = c->m_frameCursor + step;
                 c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
                     c->ClampLast_15cc90();
                 }
@@ -1665,13 +1656,13 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             case 6: { // retreat by d->m_param, clamp-first on underrun
                 CAniRenderCtx* c = m_ctx;
                 i32 step = d->m_param;
-                CAniFrameSeq* seq = c->m_frameSeq;
+                CSprite* seq = c->m_frameSeq;
                 if (seq == 0) {
                     break;
                 }
                 i32 idx = c->m_frameCursor - step;
                 c->m_frameCursor = idx;
-                c->m_curFrame = seq->GetFrame_15cc30(idx);
+                c->m_curFrame = seq->GetFrame(idx);
                 if (c->m_curFrame == 0) {
                     c->ClampFirst_15cc50();
                 }
@@ -1824,24 +1815,24 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             }
             case 2: { // advance only when the cursor reached the seq low frame
                 CAniRenderCtx* c2 = m_ctx;
-                CAniFrameSeq* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_lowFrame) {
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_firstFrame) {
                     goto loop_restart;
                 }
                 break;
             }
             case 3: { // advance only when the cursor reached the seq high frame
                 CAniRenderCtx* c2 = m_ctx;
-                CAniFrameSeq* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_highFrame) {
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lastFrame) {
                     goto loop_restart;
                 }
                 break;
             }
             case 4: { // advance one past the seq low frame
                 CAniRenderCtx* c2 = m_ctx;
-                CAniFrameSeq* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_lowFrame + 1) {
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_firstFrame + 1) {
                     goto loop_restart;
                 }
                 break;
@@ -1870,8 +1861,8 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 break;
             case 5: { // advance only when the cursor reached one before the high frame
                 CAniRenderCtx* c2 = m_ctx;
-                CAniFrameSeq* seq = c2->m_frameSeq;
-                if (c2->m_frameCursor == seq->m_highFrame - 1) {
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lastFrame - 1) {
                     if (modeWord != 9) {
                         CAniElement* a = m_playlist;
                         i32 j = m_index + 1;
@@ -1934,14 +1925,14 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
 // prologue and tail-merges the exits. Body byte-exact; not source-steerable.
 RVA(0x0015cc50, 0x38)
 void CAniRenderCtx::ClampFirst_15cc50() {
-    CAniFrameSeq* seq = m_frameSeq;
+    CSprite* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_lowFrame;
+    i32 n = seq->m_firstFrame;
     m_frameCursor = n;
-    if (n >= seq->m_lowFrame && n <= seq->m_highFrame) {
-        m_curFrame = (i32)seq->m_frames[n];
+    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
+        m_curFrame = (i32)seq->m_frames.m_pData[n];
     } else {
         m_curFrame = 0;
     }
@@ -1951,14 +1942,14 @@ void CAniRenderCtx::ClampFirst_15cc50() {
 // shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
 RVA(0x0015cc90, 0x38)
 void CAniRenderCtx::ClampLast_15cc90() {
-    CAniFrameSeq* seq = m_frameSeq;
+    CSprite* seq = m_frameSeq;
     if (seq == 0) {
         return;
     }
-    i32 n = seq->m_highFrame;
+    i32 n = seq->m_lastFrame;
     m_frameCursor = n;
-    if (n >= seq->m_lowFrame && n <= seq->m_highFrame) {
-        m_curFrame = (i32)seq->m_frames[n];
+    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
+        m_curFrame = (i32)seq->m_frames.m_pData[n];
     } else {
         m_curFrame = 0;
     }
@@ -2456,7 +2447,6 @@ SIZE_UNKNOWN(CAniBlitTrigger);
 SIZE_UNKNOWN(CAniCue);
 SIZE_UNKNOWN(CAniDesc);
 SIZE_UNKNOWN(CAniDescArray);
-SIZE_UNKNOWN(CAniFrameSeq);
 SIZE_UNKNOWN(CAniRenderCtx);
 SIZE_UNKNOWN(CBlitLabelMap);
 SIZE_UNKNOWN(CDDrawBlitLabelSource);
