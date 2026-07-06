@@ -28,11 +28,6 @@ struct BzLevelRecord {
     i32 m_worldFlag;    // +0x0c  world/training flag
     char m_pad10[0x44 - 0x10];
     i32 m_progressFlag; // +0x44  progress flag
-
-    i32 GroupAllScored();        // 0xfce80 (thunk 0x2bda)
-    i32 AllRecordsInBounds();    // 0xfccf0 (thunk 0x2bc6)
-    float GroupRatio();          // 0xfce00 (thunk 0x30d0)
-    i32 GetRecordValue(i32 idx); // 0xfced0 (thunk 0x2bf3), __thiscall(int)
 };
 SIZE_UNKNOWN(BzLevelRecord);
 

@@ -14,6 +14,7 @@
 // the same WARP-letter jump-table CString build idiom.
 
 #include <Ints.h>
+#include <Gruntz/BattlezData.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -157,7 +158,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~1;
-                    if (g_mgrSettings->m_levelRecord->GetRecordValue(i) == 0) {
+                    if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
@@ -204,7 +205,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if (g_mgrSettings->m_levelRecord->GetRecordValue(m_stepIndex) == 0) {
+        if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(m_stepIndex) == 0) {
             m_soundStarted = 1;
             BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
@@ -250,7 +251,8 @@ i32 BzState::UpdateBootyWalkingGruntz() {
             }
             i32 sel = ((CSpriteRefTable*)g_mgrSettings->m_selSource)->GetSel(0, 0);
             if (sel != 0) {
-                if (g_mgrSettings->m_levelRecord->GetRecordValue(m_stepIndex) != 0) {
+                if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(m_stepIndex)
+                    != 0) {
                     BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
                     if (ss->m_playing == 0) {
                         BzSoundEntry* res = 0;

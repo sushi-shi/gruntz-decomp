@@ -15,6 +15,7 @@
 // frame.
 
 #include <Ints.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Dsndmgr/SoundStream.h>
@@ -123,7 +124,7 @@ void BzState::ShowLevelCompleteMessage() {
             SetRect(&r, 0x194, 0xaa, 0x263, 0x1e0);
         } else {
             if (rec->m_worldFlag != 0) {
-                if (rec->GroupAllScored()) {
+                if (((CBattlezData*)rec)->GroupAllScored()) {
                     s.Format("WARP letterz recovered! Prepare to warp!");
                 } else {
                     s = "WARP letterz not recovered! No checkpoint this time.";
@@ -158,7 +159,8 @@ void BzState::ShowLevelCompleteMessage() {
 // externs/strings named.
 RVA(0x00018f00, 0x4fb)
 i32 BzState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != 0 && g_mgrSettings->m_levelRecord->AllRecordsInBounds()) {
+    if (m_secretBannerOnce != 0
+        && ((CBattlezData*)g_mgrSettings->m_levelRecord)->AllRecordsInBounds()) {
         CString s;
         if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
             return 0;
@@ -180,7 +182,8 @@ i32 BzState::ShowSecretBonusMessage() {
         return 1;
     }
 
-    i32 count = (i32)(g_mgrSettings->m_levelRecord->GroupRatio() * g_secretRatioScale);
+    i32 count =
+        (i32)(((CBattlezData*)g_mgrSettings->m_levelRecord)->GroupRatio() * g_secretRatioScale);
     i32 rowBase = (g_mgrSettings->m_levelRecord->m_levelIndex - 1) / 4;
     i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
 
@@ -276,7 +279,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
                     m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                     m_animSprites[p]->m_screenY = 0xdc;
                     m_animSprites[p]->m_stateFlags &= ~1;
-                    if (g_mgrSettings->m_levelRecord->GetRecordValue(p) != 0) {
+                    if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(p) != 0) {
                         CString letter;
                         switch (p) {
                             case 0:
@@ -320,7 +323,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
             return 1;
         }
     } else if (rec->m_worldFlag != 0 && rec->m_levelIndex < 0x24 && state == 0xc7) {
-        if (rec->GroupAllScored()) {
+        if (((CBattlezData*)rec)->GroupAllScored()) {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
@@ -331,7 +334,8 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
         }
     }
 
-    if (m_stateId == 0xfffffffe && g_mgrSettings->m_levelRecord->AllRecordsInBounds()
+    if (m_stateId == 0xfffffffe
+        && ((CBattlezData*)g_mgrSettings->m_levelRecord)->AllRecordsInBounds()
         && m_secretBannerOnce == 0) {
         m_secretBannerOnce = 1;
         if (!ShowSecretBonusMessage()) {
