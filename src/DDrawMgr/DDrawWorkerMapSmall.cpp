@@ -69,7 +69,7 @@ public:
     virtual void AssertValid();                  // [3] 0x00106e
     virtual void Dump();                         // [4] 0x004034
     virtual void FUN_00565d90();                 // [5] 0x165d90
-    virtual void FUN_00401c08();                 // [6] 0x001c08
+    virtual void IsValidImage();                 // [6] 0x001c08
     virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
     virtual void FUN_00565da0();                 // [8] 0x165da0
     virtual void FUN_00568f20();                 // [9] 0x168f20

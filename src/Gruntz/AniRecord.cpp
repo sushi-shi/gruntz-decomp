@@ -156,7 +156,7 @@ inline CAniRecordObjBase::~CAniRecordObjBase() {}
 struct CAniRecordBase2 : CAniRecordObjBase {
     virtual ~CAniRecordBase2() OVERRIDE; // [1] overrides; UAE
     virtual void FUN_00565d90();         // [5] 0x165d90
-    virtual void FUN_00401c08();         // [6] 0x001c08
+    virtual void IsValidImage();         // [6] 0x001c08
     virtual void FUN_00568fb0(); // [7] 0x168fb0 (FreeBuf, bound as CAniRecord method - other slot)
     virtual void FUN_00565da0(); // [8] 0x165da0
     virtual void FUN_00568f20(); // [9] 0x168f20

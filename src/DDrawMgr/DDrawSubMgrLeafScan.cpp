@@ -141,7 +141,7 @@ inline LeafElementBase::~LeafElementBase() {
 // non-virtual __thiscall members reached only from the element).
 struct LeafElementObj : public LeafElementBase {
     virtual void LeafSlot5_158650();         // [5] 0x158650 (declared-only)
-    virtual void FUN_00401c08();             // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void IsValidImage();             // [6] 0x001c08 (shared thunk, declared-only)
     virtual void LeafSlot7_1587c0();         // [7] 0x1587c0 (declared-only; == Release addr)
     virtual void LeafSlot8_154a00();         // [8] 0x154a00 (declared-only)
     ~LeafElementObj() OVERRIDE;              // overrides slot [1]

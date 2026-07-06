@@ -52,9 +52,9 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->FUN_00152e90(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
+    if (nf->Create(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
-            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
+            nf->ImgScalarDtor(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -79,9 +79,9 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->FUN_00152fb0(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
+    if (nf->LoadDispatch(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
         if (nf != 0) {
-            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
+            nf->ImgScalarDtor(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
@@ -106,9 +106,9 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 
     CImageFrame* nf = new CImageFrame(m_owner, index);
 
-    if (nf->FUN_001530e0(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+    if (nf->Create24(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
-            nf->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
+            nf->ImgScalarDtor(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }

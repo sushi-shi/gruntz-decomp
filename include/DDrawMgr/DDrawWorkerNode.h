@@ -49,7 +49,7 @@ public:
     virtual void AssertValid();                  // [3]  0x00106e
     virtual void Dump();                         // [4]  0x004034
     virtual void FUN_00557200();                 // [5]  0x157200 (B)
-    virtual void FUN_00401c08();                 // [6]  0x001c08
+    virtual void IsValidImage();                 // [6]  0x001c08
     virtual void FUN_00557310();                 // [7]  0x157310 (B)
     virtual void FUN_00557210();                 // [8]  0x157210 (B)
     virtual void FUN_00557080();                 // [9]  0x157080

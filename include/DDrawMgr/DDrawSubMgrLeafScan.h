@@ -69,7 +69,7 @@ public:
     // 5/7 point to functions in the sibling CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0);
     // 6/8 are unreconstructed -> declared-only, reloc-masked vtable references.
     virtual i32 IsReady();       // [5] 0x157530 (CDDrawSubMgrLeafScan::IsReady, sibling TU)
-    virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void IsValidImage(); // [6] 0x001c08 (shared thunk, declared-only)
     virtual void ClearContext(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
     virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
 

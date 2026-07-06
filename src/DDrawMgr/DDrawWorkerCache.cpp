@@ -42,7 +42,7 @@ public:
     virtual void AssertValid();          // [3] 0x00106e
     virtual void Dump();                 // [4] 0x004034
     virtual void FUN_00551d60();         // [5] 0x151d60
-    virtual void FUN_00401c08();         // [6] 0x001c08
+    virtual void IsValidImage();         // [6] 0x001c08
     virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)
     virtual void FUN_00551d70();         // [8] 0x151d70
     virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)

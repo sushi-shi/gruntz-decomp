@@ -55,18 +55,18 @@ extern void* operator new(u32 size);
 // removed.
 // ---------------------------------------------------------------------------
 struct CFrameWorker {
-    virtual void GetRuntimeClass();               // [0]  +0x00
-    virtual void FUN_00002adb(i32 flag);          // [1]  +0x04  scalar-deleting dtor (ILT)
-    virtual void Serialize();                     // [2]  +0x08 (ILT)
-    virtual void AssertValid();                   // [3]  +0x0c (ILT)
-    virtual void Dump();                          // [4]  +0x10 (ILT)
-    virtual void FUN_000013b6();                  // [5]  +0x14 (ILT)
-    virtual void FUN_00001c08();                  // [6]  +0x18 (ILT)
-    virtual void FUN_00153260();                  // [7]  +0x1c  CImage::FreeAll
-    virtual void FUN_000042aa();                  // [8]  +0x20 (ILT)
-    virtual void FUN_001530e0();                  // [9]  +0x24  CImage::Create24
-    virtual void FUN_00152fb0();                  // [10] +0x28  CImage::LoadDispatch
-    virtual i32 FUN_00152f20(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
+    virtual void GetRuntimeClass();          // [0]  +0x00
+    virtual void ImgScalarDtor(i32 flag);    // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual void Serialize();                // [2]  +0x08 (ILT)
+    virtual void AssertValid();              // [3]  +0x0c (ILT)
+    virtual void Dump();                     // [4]  +0x10 (ILT)
+    virtual void HasFrames();                // [5]  +0x14 (ILT)
+    virtual void IsValidImage();             // [6]  +0x18 (ILT)
+    virtual void FreeAll();                  // [7]  +0x1c  CImage::FreeAll
+    virtual void GetImageCategory();         // [8]  +0x20 (ILT)
+    virtual void Create24();                 // [9]  +0x24  CImage::Create24
+    virtual void LoadDispatch();             // [10] +0x28  CImage::LoadDispatch
+    virtual i32 Resolve(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
 
     inline CFrameWorker(i32 frameNumber, void* parent) {
         m_04 = frameNumber;
@@ -427,9 +427,9 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
         return 0;
     }
     CFrameWorker* worker = new CFrameWorker(n, m_c);
-    if (!worker->FUN_00152f20(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
+    if (!worker->Resolve(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
-            worker->FUN_00002adb(1); // slot 1 @+0x04  scalar-deleting dtor
+            worker->ImgScalarDtor(1); // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }
