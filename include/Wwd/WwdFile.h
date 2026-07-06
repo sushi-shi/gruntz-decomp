@@ -332,9 +332,6 @@ public:
 // (`&m_planes`), not a typed pointer; the cast targets that embedded array's method
 // set (binary-proven CArray<CPlane*> shape). A typed member here shifted GameLevel's
 // ctor 89.5%->72% in a prior probe, so the by-address method view is retained.
-struct CPlanePtrArray {
-    void SetAtGrow(i32 index, CPlane* value);
-};
 
 // Global operator new (NAFXCW new-handler loop) / delete.
 extern void* operator new(u32 size);

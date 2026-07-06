@@ -223,7 +223,7 @@ CPlane* CGameLevelPlanes::ReadPlane(void* planeData, void* blockBase, void* /*un
         return 0;
     }
 
-    ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
+    ((CObArray*)&m_planes)->SetAtGrow(m_planeCount, (CObject*)plane);
 
     if (plane->m_flags & 1) // MAIN plane
     {
@@ -251,7 +251,7 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
         return 0;
     }
 
-    ((CPlanePtrArray*)&m_planes)->SetAtGrow(m_planeCount, plane);
+    ((CObArray*)&m_planes)->SetAtGrow(m_planeCount, (CObject*)plane);
 
     if (plane->m_flags & 1) // MAIN plane
     {
@@ -1245,8 +1245,7 @@ SIZE_UNKNOWN(CWwdStream);       // abstract serialize-stream slot view
 SIZE_UNKNOWN(CPlaneRenderPoly); // slot-dispatch view
 SIZE_UNKNOWN(CPlaneRender);
 SIZE_UNKNOWN(CGameLevelPlanes);
-SIZE_UNKNOWN(CPlanePtrArray); // CArray<CPlane*> method-only view
-SIZE_UNKNOWN(WwdFile);        // namespace-class (method-only)
+SIZE_UNKNOWN(WwdFile); // namespace-class (method-only)
 // --- WwdFile.cpp local views ---
 SIZE_UNKNOWN(WwdGameRegSlot);
 SIZE_UNKNOWN(WwdLevelLoader);
