@@ -68,11 +68,11 @@ public:
     virtual void Serialize();                    // [2] 0x0028ec
     virtual void AssertValid();                  // [3] 0x00106e
     virtual void Dump();                         // [4] 0x004034
-    virtual void FUN_00565d90();                 // [5] 0x165d90
+    virtual void Slot05_165d90();                // [5] 0x165d90
     virtual void IsValidImage();                 // [6] 0x001c08
     virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
-    virtual void FUN_00565da0();                 // [8] 0x165da0
-    virtual void FUN_00568f20();                 // [9] 0x168f20
+    virtual void Slot08_165da0();                // [8] 0x165da0
+    virtual void Slot09_168f20();                // [9] 0x168f20
     virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
     virtual i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
@@ -149,10 +149,10 @@ public:
     // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
-    virtual i32 IsReady();       // [5]  0x156cd0
-    virtual i32 FUN_00556db0();  // [6]  0x156db0 (state predicate, returns 1)
-    virtual void DestroyAll();   // [7]  0x165810
-    virtual void FUN_00556cf0(); // [8]  0x156cf0 (shared, declared-only)
+    virtual i32 IsReady();        // [5]  0x156cd0
+    virtual i32 Slot06_156db0();  // [6]  0x156db0 (state predicate, returns 1)
+    virtual void DestroyAll();    // [7]  0x165810
+    virtual void Slot08_156cf0(); // [8]  0x156cf0 (shared, declared-only)
     virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
@@ -345,7 +345,7 @@ void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
 
 // Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
 RVA(0x00156db0, 0x6)
-i32 CDDrawWorkerMapSmall::FUN_00556db0() {
+i32 CDDrawWorkerMapSmall::Slot06_156db0() {
     return 1;
 }
 

@@ -33,14 +33,14 @@
 // scalar-deleting dtor (0x13cb60). Slots 2/3/6 = CRezFile Read/Write/Flush.
 // ---------------------------------------------------------------------------
 struct CVtbl_1ef7d0 {
-    virtual void FUN_0053cef0(); // [0] 0x13cef0
-    virtual ~CVtbl_1ef7d0();     // [1] 0x13cb60 scalar-deleting dtor (anchor)
-    virtual void Read();         // [2] 0x13cc00 = CRezFile::Read
-    virtual void Write();        // [3] 0x13cca0 = CRezFile::Write
-    virtual void FUN_0053cd40(); // [4] 0x13cd40
-    virtual void FUN_0053cd50(); // [5] 0x13cd50
-    virtual void Flush();        // [6] 0x13cd60 = CRezFile::Flush
-    virtual void FUN_0053cdb0(); // [7] 0x13cdb0
+    virtual void Slot00_13cef0(); // [0] 0x13cef0
+    virtual ~CVtbl_1ef7d0();      // [1] 0x13cb60 scalar-deleting dtor (anchor)
+    virtual void Read();          // [2] 0x13cc00 = CRezFile::Read
+    virtual void Write();         // [3] 0x13cca0 = CRezFile::Write
+    virtual void Slot04_13cd40(); // [4] 0x13cd40
+    virtual void Slot05_13cd50(); // [5] 0x13cd50
+    virtual void Flush();         // [6] 0x13cd60 = CRezFile::Flush
+    virtual void Slot07_13cdb0(); // [7] 0x13cdb0
     i32 m_0;
     i32 Anchor();
 };
@@ -89,7 +89,7 @@ VTBL(CVtbl_1efc58, 0x001efc58);
 struct CVtbl_1efd28 : Wap::CObject {
     virtual ~CVtbl_1efd28()
         OVERRIDE;                   // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void FUN_00556dc0();    // [5] 0x156dc0
+    virtual void Slot05_156dc0();   // [5] 0x156dc0
     virtual void ResetScratch();    // [6] 0x154aa0 = CDDrawWorkerRegistry::ResetScratch
     virtual void Shutdown();        // [7] 0x154ac0 = CDDrawWorkerRegistry::Shutdown
     virtual void GetStateId();      // [8] 0x156de0 = CDDrawWorkerRegistry::GetStateId
@@ -101,9 +101,9 @@ struct CVtbl_1efd28 : Wap::CObject {
     virtual void DispatchKeyed38(); // [14] 0x154ae0
     virtual void Forward34();       // [15] 0x154f00
     virtual void DispatchKeyed34(); // [16] 0x154be0
-    virtual void FUN_00556e80();    // [17] 0x156e80 = ProbeWorkerKey (worklist)
-    virtual void FUN_00554f80();    // [18] 0x154f80 = InsertWorkerKey (worklist)
-    virtual void FUN_00555160();    // [19] 0x155160 = LookupWorkerKey (worklist)
+    virtual void ProbeWorkerKey();  // [17] 0x156e80 = ProbeWorkerKey (worklist)
+    virtual void InsertWorkerKey(); // [18] 0x154f80 = InsertWorkerKey (worklist)
+    virtual void LookupWorkerKey(); // [19] 0x155160 = LookupWorkerKey (worklist)
     virtual void RemoveWorker();    // [20] 0x155280 = CDDrawWorkerRegistry::RemoveWorker
     virtual void RemoveByKey();     // [21] 0x156ec0 = CDDrawWorkerRegistry::RemoveByKey
     virtual void MapTeardown_1552b0(); // [22] 0x1552b0
@@ -127,16 +127,16 @@ VTBL(CVtbl_1efd28, 0x001efd28);
 // ---------------------------------------------------------------------------
 struct CVtbl_1efd88 : Wap::CObject {
     virtual ~CVtbl_1efd88()
-        OVERRIDE;                   // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void IsReady();         // [5] 0x156f00 = CDDrawWorkerList::IsReady
-    virtual void FUN_00556fc0();    // [6] 0x156fc0 = IsReadyPredicate (worklist)
-    virtual void Dtor_163bc0();     // [7] 0x163bc0 = CDDrawWorkerList::~CDDrawWorkerList
-    virtual void GetStateId();      // [8] 0x156f20 = CDDrawWorkerList::GetStateId
-    virtual void CreateWorkerA();   // [9] 0x156fd0 = CDDrawWorkerList::CreateWorkerA
-    virtual void CreateWorkerB28(); // [10] 0x1573e0
-    virtual void CreateWorkerB2C(); // [11] 0x157330
-    virtual void CreateWorkerB30(); // [12] 0x157150
-    virtual void PruneWorkers();    // [13] 0x163bf0 = CDDrawWorkerList::PruneWorkers
+        OVERRIDE;                    // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
+    virtual void IsReady();          // [5] 0x156f00 = CDDrawWorkerList::IsReady
+    virtual void IsReadyPredicate(); // [6] 0x156fc0 = IsReadyPredicate (worklist)
+    virtual void Dtor_163bc0();      // [7] 0x163bc0 = CDDrawWorkerList::~CDDrawWorkerList
+    virtual void GetStateId();       // [8] 0x156f20 = CDDrawWorkerList::GetStateId
+    virtual void CreateWorkerA();    // [9] 0x156fd0 = CDDrawWorkerList::CreateWorkerA
+    virtual void CreateWorkerB28();  // [10] 0x1573e0
+    virtual void CreateWorkerB2C();  // [11] 0x157330
+    virtual void CreateWorkerB30();  // [12] 0x157150
+    virtual void PruneWorkers();     // [13] 0x163bf0 = CDDrawWorkerList::PruneWorkers
     i32 m_0;
     i32 Anchor();
 };
@@ -173,8 +173,8 @@ struct CVtbl_1efdc0 : Wap::CObject {
     virtual void WalkDispatch34();      // [12] 0x159cf0
     virtual void WalkDispatch38();      // [13] 0x159d40
     virtual void ResetChildD8();        // [14] 0x159d90 = CDDrawChildGroup::ResetChildD8
-    virtual void FUN_005591f0();        // [15] 0x1591f0 = DestroyChildren (worklist)
-    virtual void FUN_00559f00();        // [16] 0x159f00
+    virtual void DestroyChildren();     // [15] 0x1591f0 = DestroyChildren (worklist)
+    virtual void Slot16_159f00();       // [16] 0x159f00
     i32 m_0;
     i32 Anchor();
 };
@@ -200,11 +200,11 @@ struct CVtbl_1eff70 : CWapObj {
     virtual ~CVtbl_1eff70()
         OVERRIDE;                    // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x159150
-    virtual void FUN_005591d0();     // [7] 0x1591d0
-    virtual void FUN_00559180();     // [8] 0x159180
+    virtual void Slot07_1591d0();    // [7] 0x1591d0
+    virtual void Slot08_159180();    // [8] 0x159180
     virtual void
     directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(); // [9] 0x1644a0 = CDDrawSurfacePair
-    virtual void FUN_005646b0();                                           // [10] 0x1646b0
+    virtual void Slot10_1646b0();                                          // [10] 0x1646b0
     i32 m_0;
     i32 Anchor();
 };

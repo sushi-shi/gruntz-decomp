@@ -92,9 +92,9 @@ public:
     // slots 6/8 are declared-only -> reloc-masked references).
     void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
     virtual i32 IsReady();               // [5] 0x1577a0
-    virtual i32 FUN_00552640();          // [6] 0x152640 (state predicate, returns 1)
+    virtual i32 Slot06_152640();         // [6] 0x152640 (state predicate, returns 1)
     virtual void Cleanup();              // [7] 0x152650
-    virtual void FUN_00554a00();         // [8] 0x154a00 (shared, declared-only)
+    virtual void Slot08_154a00();        // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
     void ClearContext(); // 0x157ae0 (not a vtable slot)
@@ -319,7 +319,7 @@ void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
 
 // Leaf vtable slot [6] (0x152640): constant state predicate returning 1.
 RVA(0x00152640, 0x6)
-i32 CDDrawSubMgrLeaf::FUN_00552640() {
+i32 CDDrawSubMgrLeaf::Slot06_152640() {
     return 1;
 }
 

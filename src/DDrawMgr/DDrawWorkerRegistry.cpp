@@ -74,22 +74,22 @@ public:
     virtual void Serialize();         // [2] 0x0028ec
     virtual void AssertValid();       // [3] 0x00106e
     virtual void Dump();              // [4] 0x004034
-    virtual void FUN_00555750();      // [5] 0x155750
+    virtual void Slot05_155750();     // [5] 0x155750
     virtual void IsValidImage();      // [6] 0x001c08
     virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
-    virtual void FUN_00555770();      // [8] 0x155770
+    virtual void Slot08_155770();     // [8] 0x155770
     CLoadable() {}
 };
 
 struct CDDrawWorker : public CLoadable {
     virtual i32 Vfunc24(const char* key);                // [9]  0x155810
-    virtual void FUN_005521f0();                         // [10] 0x1521f0
+    virtual void Slot10_1521f0();                        // [10] 0x1521f0
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
     virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
     virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
-    virtual void FUN_005522b0();                         // [15] 0x1522b0
-    virtual void FUN_005523b0();                         // [16] 0x1523b0
+    virtual void Slot15_1522b0();                        // [15] 0x1522b0
+    virtual void Slot16_1523b0();                        // [16] 0x1523b0
     CDDrawWorker() {}
 
     i32 m_04;        // +0x04  parent+0x1c

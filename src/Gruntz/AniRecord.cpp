@@ -155,15 +155,15 @@ inline CAniRecordObjBase::~CAniRecordObjBase() {}
 // CAniRecord methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/Alloc168f60).
 struct CAniRecordBase2 : CAniRecordObjBase {
     virtual ~CAniRecordBase2() OVERRIDE; // [1] overrides; UAE
-    virtual void FUN_00565d90();         // [5] 0x165d90
+    virtual void Slot05_165d90();        // [5] 0x165d90
     virtual void IsValidImage();         // [6] 0x001c08
-    virtual void FUN_00568fb0(); // [7] 0x168fb0 (FreeBuf, bound as CAniRecord method - other slot)
-    virtual void FUN_00565da0(); // [8] 0x165da0
-    virtual void FUN_00568f20(); // [9] 0x168f20
-    virtual void Alloc168ee0();  // [10] 0x168ee0 (= CAniRecord::Alloc168ee0)
-    virtual void Alloc168ea0();  // [11] 0x168ea0 (= CAniRecord::Alloc168ea0)
-    virtual void Alloc168f60();  // [12] 0x168f60 (= CAniRecord::Alloc168f60)
-    virtual void FUN_00568fd0(); // [13] 0x168fd0
+    virtual void Slot07_168fb0(); // [7] 0x168fb0 (FreeBuf, bound as CAniRecord method - other slot)
+    virtual void Slot08_165da0(); // [8] 0x165da0
+    virtual void Slot09_168f20(); // [9] 0x168f20
+    virtual void Alloc168ee0();   // [10] 0x168ee0 (= CAniRecord::Alloc168ee0)
+    virtual void Alloc168ea0();   // [11] 0x168ea0 (= CAniRecord::Alloc168ea0)
+    virtual void Alloc168f60();   // [12] 0x168f60 (= CAniRecord::Alloc168f60)
+    virtual void Slot13_168fd0(); // [13] 0x168fd0
 
     void FreeBuf_168fb0() {
         ((CAniRecord*)this)->FreeBuf_168fb0();

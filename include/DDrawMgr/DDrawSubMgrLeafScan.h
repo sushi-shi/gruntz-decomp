@@ -68,10 +68,10 @@ public:
     // (slot 1 = the virtual dtor below), then 4 leaf virtuals at slots 5..8. Slots
     // 5/7 point to functions in the sibling CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0);
     // 6/8 are unreconstructed -> declared-only, reloc-masked vtable references.
-    virtual i32 IsReady();       // [5] 0x157530 (CDDrawSubMgrLeafScan::IsReady, sibling TU)
-    virtual void IsValidImage(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void ClearContext(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
-    virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
+    virtual i32 IsReady();        // [5] 0x157530 (CDDrawSubMgrLeafScan::IsReady, sibling TU)
+    virtual void IsValidImage();  // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void ClearContext();  // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
+    virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
