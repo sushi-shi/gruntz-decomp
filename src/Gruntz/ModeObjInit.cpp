@@ -123,9 +123,46 @@ namespace modeinit {
     // slots) so `this->CallVNN(...)` emits `mov eax,[this]; mov ecx,this;
     // call [eax+0xNN]`. Class COMPLETE before the T::* typedef so each PMF stays 4
     // bytes (docs/patterns/pmf-complete-class-4byte.md).
-    struct ModeObjVtbl;
+    // Real polymorphic view: V74/V78/V90 are slots 29/30/36 (+0x74/+0x78/+0x90),
+    // real virtuals; the compiler emits the vptr at +0x00.
     struct ModeObj {
-        ModeObjVtbl* m_vtbl; // +0x00
+        virtual void Slot00();
+        virtual void Slot01();
+        virtual void Slot02();
+        virtual void Slot03();
+        virtual void Slot04();
+        virtual void Slot05();
+        virtual void Slot06();
+        virtual void Slot07();
+        virtual void Slot08();
+        virtual void Slot09();
+        virtual void Slot10();
+        virtual void Slot11();
+        virtual void Slot12();
+        virtual void Slot13();
+        virtual void Slot14();
+        virtual void Slot15();
+        virtual void Slot16();
+        virtual void Slot17();
+        virtual void Slot18();
+        virtual void Slot19();
+        virtual void Slot20();
+        virtual void Slot21();
+        virtual void Slot22();
+        virtual void Slot23();
+        virtual void Slot24();
+        virtual void Slot25();
+        virtual void Slot26();
+        virtual void Slot27();
+        virtual void Slot28();
+        virtual i32 V74();             // slot 29 (+0x74)
+        virtual i32 V78(i32 a, i32 b); // slot 30 (+0x78)
+        virtual void Slot31();
+        virtual void Slot32();
+        virtual void Slot33();
+        virtual void Slot34();
+        virtual void Slot35();
+        virtual void V90(); // slot 36 (+0x90)
 
         Parent* m_4; // +0x04
         char m_pad8[0xc - 8];
@@ -159,29 +196,16 @@ namespace modeinit {
         i32 Init0c7ec0(Arg1* a1, i32 a2, i32 a3);
         i32 Setup43a9(Arg1* a1, i32 a2, i32 a3); // 0x000043a9
         i32 IsModeReady(i32 a, i32 b);           // 0x000035da
-        i32 CallV74();                           // +0x74 slot 29
-        i32 CallV78(i32 a, i32 b);               // +0x78 slot 30
-        void CallV90();                          // +0x90 slot 36
+        i32 CallV74() {
+            return V74();
+        }
+        i32 CallV78(i32 a, i32 b) {
+            return V78(a, b);
+        }
+        void CallV90() {
+            V90();
+        }
     };
-    typedef i32 (ModeObj::*ModeFn74)();
-    typedef i32 (ModeObj::*ModeFn78)(i32 a, i32 b);
-    typedef void (ModeObj::*ModeFn90)();
-    struct ModeObjVtbl {
-        char m_pad0[0x74];
-        ModeFn74 m_74; // +0x74
-        ModeFn78 m_78; // +0x78
-        char m_pad7c[0x90 - 0x7c];
-        ModeFn90 m_90; // +0x90
-    };
-    inline i32 ModeObj::CallV74() {
-        return (this->*(m_vtbl->m_74))();
-    }
-    inline i32 ModeObj::CallV78(i32 a, i32 b) {
-        return (this->*(m_vtbl->m_78))(a, b);
-    }
-    inline void ModeObj::CallV90() {
-        (this->*(m_vtbl->m_90))();
-    }
 
     // @early-stop
     // EH-frame-absence wall (~55%, RE-PROVEN 2026-07-05). Root cause pinned via --diff:
