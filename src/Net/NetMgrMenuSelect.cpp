@@ -8,7 +8,8 @@
 // a direct 2-arg CNetMgr method - a genuine RE ambiguity at the same RVA. So the
 // +0x524 sub-object keeps its own PlayerMgr type here; the shared CNetMgr is used for
 // everything else (m_peer @+0x524 is cast to PlayerMgr for the 4-arg calls).
-#include <Net/NetMgr.h>      // the single shared CNetMgr
+#include <Net/NetMgr.h> // the single shared CNetMgr
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 #include <rva.h>
 
@@ -86,9 +87,9 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
         }
         CSndHost* host = m_c->m_28;
         if (host->m_emitGate == 0) {
-            CSndEmitter* out = 0;
+            LeafCue* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", &out);
-            CSndEmitter* e = out;
+            LeafCue* e = out;
             if (e != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;

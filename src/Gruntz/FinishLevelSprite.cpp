@@ -6,8 +6,9 @@
 // run the grunt death animation. Field names are placeholders; only offsets + code
 // bytes are load-bearing.
 #include <rva.h>
+#include <Gruntz/LeafCue.h>
 
-#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / CSndEmitter, was CStatusBarHolder/CueObj)
+#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / LeafCue, was CStatusBarHolder/CueObj)
 #include <Gruntz/Grunt.h>       // the ONE CGrunt definition (dedup; ResolveDeathAnimation)
 #include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Ints.h>
@@ -25,7 +26,7 @@ extern "C" {
 
 // CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
 // modeled in <Gruntz/SoundCueMgr.h>). The +0x28 cue holder (name->cue map @+0x10,
-// emit gate @+0x30) is the canonical CSndHost, its looked-up cue the CSndEmitter -
+// emit gate @+0x30) is the canonical CSndHost, its looked-up cue the LeafCue -
 // both in <Gruntz/SoundCue.h> (the former CueObj / CStatusBarHolder folded onto them).
 
 SIZE_UNKNOWN(FinishLevelMgr);
@@ -72,7 +73,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
     switch (state) {
         case 1:
             if (m_288 != 2) {
-                CSndEmitter* p = 0;
+                LeafCue* p = 0;
                 m_22c->m_28->m_10.Lookup("GAME\\FINISHLEVEL", &p);
                 m_298 = p->m_10->m_28 + 500;
                 m_29c = 0;

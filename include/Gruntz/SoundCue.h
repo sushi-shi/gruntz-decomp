@@ -1,6 +1,6 @@
 // SoundCue.h - the positional-sound cue subsystem (C:\Proj\Dsndmgr). A named-cue
 // registry (CSndFinder::Lookup @0x1b8438) embedded in a host (CSndHost) hung off a
-// sub-manager (CSndSubMgr); each looked-up cue (CSndEmitter) carries a per-emitter
+// sub-manager (CSndSubMgr); each looked-up cue (LeafCue) carries a per-emitter
 // cooldown gate and drives a CSoundCueMgr (ConfigureItem @0x1360d0, SoundCueMgr.h)
 // to actually play the sound.
 //
@@ -12,6 +12,8 @@
 // sub-mgr classes are non-polymorphic, so RTTI gives no retail names).
 #ifndef GRUNTZ_SOUNDCUE_H
 #define GRUNTZ_SOUNDCUE_H
+
+struct LeafCue; // folded CSndEmitter
 
 #include <Ints.h>
 #include <rva.h>
@@ -25,16 +27,7 @@ struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); th
 // A looked-up cue: +0x10 the CSoundCueMgr that plays it, +0x14 last-play clock,
 // +0x18 cooldown interval (an unsigned `(now - m_14) >= m_18` gate). This IS the
 // former StatusBarCueHolder.h CueObj (identical value layout + role) - folded here.
-struct CSndEmitter {
-    char m_pad00[0x10];
-    CSoundCueMgr* m_10; // +0x10  the play-object
-    u32 m_14;           // +0x14  last-play clock
-    u32 m_18;           // +0x18  cooldown interval
-    // 0x1f940 (via ILT 0x25fe): play this cue directly (the CGruntzMgr cheat dispatcher
-    // calls it on a CueLookup result). Declared-only (reloc-masked __thiscall).
-    void Play(i32 a, i32 b, i32 c, i32 d);
-};
-SIZE_UNKNOWN(CSndEmitter);
+SIZE_UNKNOWN(LeafCue);
 
 // The DirectSound stream hung off CSndHost+0x2c; Stop() halts it. Its base
 // SoundDevice sub-object supplies PurgeVoiceList (0x136e20, the per-tick voice
@@ -51,8 +44,8 @@ SIZE_UNKNOWN(SoundStream);
 // cues) or a frame-data sprite (the status-bar HUD cues, formerly CStatusBarHolder's
 // CSpriteHashTable view). Same reloc-masked call either way (`add ecx,0x10`).
 struct CSndFinder {
-    void Lookup(const char* name, CSndEmitter** out); // 0x1b8438 (__thiscall)
-    void Lookup(const char* name, CSprite** out);     // 0x1b8438 (sprite-value overload)
+    void Lookup(const char* name, LeafCue** out); // 0x1b8438 (__thiscall)
+    void Lookup(const char* name, CSprite** out); // 0x1b8438 (sprite-value overload)
 };
 SIZE_UNKNOWN(CSndFinder);
 

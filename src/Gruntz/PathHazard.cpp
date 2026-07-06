@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_lightGameReg->m_logicPump @+0x78; m_tables[])
@@ -435,7 +436,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
         && y >= reg->m_viewOriginT) {
         CSndHost* host = (CSndHost*)reg->m_world->m_28;
         if (host->m_emitGate == 0) {
-            CSndEmitter* out = 0;
+            LeafCue* out = 0;
             host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &out);
             if (out != 0) {
                 i32 enabled = g_sndEnabled;

@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/BoundaryUpperViews.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
@@ -157,7 +158,7 @@ struct StateScoreView {
 // DelayedQuit's menu lookup goes through the world's CSndHost (+0x28): the former
 // CWorldMenuMap/CMenuNode/CMenuNodeSub/CWorldMenuHolder views were the SoundCue.h
 // canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
-// is the CSndEmitter whose m_10 CSoundCueMgr carries the +0x28 cue duration).
+// is the LeafCue whose m_10 CSoundCueMgr carries the +0x28 cue duration).
 
 // Close's teardown vocabulary. Most owned sub-objects share a parameterless
 // thiscall teardown then operator delete (modeled as one EngObj type - the per-call
@@ -3106,7 +3107,7 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_a4 = 1;
-    CSndEmitter* out = 0;
+    LeafCue* out = 0;
     m_world->m_28->m_10.Lookup("MENU_ACTIVATE", &out);
     i32 base;
     if (out != 0) {

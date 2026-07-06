@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/FontConfig.h>
@@ -1964,7 +1965,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (host->m_emitGate != 0) {
                 break;
             }
-            CSndEmitter* e = 0;
+            LeafCue* e = 0;
             host->m_10.Lookup("GAME_CHAT", &e);
             if (e == 0) {
                 break;

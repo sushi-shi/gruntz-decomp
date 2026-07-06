@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/Grunt.h>
 // Projectile.cpp - the CProjectile game-object (C:\Proj\Gruntz). Continues the
 // CUserBase/CUserLogic/CMovingLogic hierarchy (see include/Gruntz/Projectile.h).
@@ -75,7 +76,7 @@ struct CHitKey {
 
 // The launch-sound lookup path is the canonical positional-cue subsystem
 // (<Gruntz/SoundCue.h>, pulled by GameRegistry.h): reg->m_world->m_28 is the
-// CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a CSndEmitter,
+// CSndHost, its embedded CSndFinder (m_10) Lookups the effect name to a LeafCue,
 // whose CSoundCueMgr (m_10) GetItem (0x135d70) clones the DirectSound buffer the
 // projectile owns as its CProjSample (m_sound).
 
@@ -957,7 +958,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (reg->m_soundEnabled == 0) {
         return 0;
     }
-    CSndEmitter* entry = 0;
+    LeafCue* entry = 0;
     reg->m_world->m_28->m_10.Lookup(key, &entry);
     if (entry == 0) {
         return 0;

@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/LeafCue.h>
 // TileTriggerSwitchLogic.cpp - Gruntz CTileTriggerSwitchLogic (C:\Proj\Gruntz).
 // CTileTriggerSwitchLogic is a tile-trigger "switch" class (vtable 0x5eae8c,
 // stamped by the ctor) that owns a CObList of sibling CTileTriggerSwitchLogic
@@ -24,7 +25,7 @@
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez/InGameText sprites)
 #include <Gruntz/Viewport.h>      // CViewport (the level plane: cells + row-base table)
 #include <Gruntz/SoundCue.h>      // the ONE sound-cue registry (CSndHost/CSndFinder/
-                                  // CSndEmitter/CSoundCueMgr) - folds the former Rb* views
+                                  // LeafCue/CSoundCueMgr) - folds the former Rb* views
 #include <Gruntz/TriggerMgr.h>    // CTriggerMgr - the ONE +0x68 m_cmdGrid class (FireCommand
 extern CGameRegistry*
     g_gameReg; // 0x64556c (moved from TileTriggerSwitchLogic.h to avoid Grunt.h clash)
@@ -496,9 +497,9 @@ extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
 extern i32 g_sndEnabled;       // ?g_sndEnabled@@3HA @0x61ab20
 extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 
-// The sound-cue registry (g->m_world->m_28) + its Lookup result (the CSndEmitter cue
+// The sound-cue registry (g->m_world->m_28) + its Lookup result (the LeafCue cue
 // record whose m_14 last-play / m_18 cooldown rate-limit the CSoundCueMgr it plays) are
-// the canonical CSndHost/CSndFinder/CSndEmitter/CSoundCueMgr from <Gruntz/SoundCue.h>
+// the canonical CSndHost/CSndFinder/LeafCue/CSoundCueMgr from <Gruntz/SoundCue.h>
 // (included above); the former per-TU RbSoundReg/RbLookupTable/RbCueRec/RbCueSound views
 // are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
 // ConfigureItem 0x1360d0).
@@ -588,7 +589,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     if (sreg->m_emitGate != 0) {
         return;
     }
-    CSndEmitter* out = 0;
+    LeafCue* out = 0;
     sreg->m_10.Lookup("LEVEL_ROCKBREAK", &out);
     if (out == 0) {
         return;

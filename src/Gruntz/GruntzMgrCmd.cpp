@@ -29,6 +29,7 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
+#include <Gruntz/LeafCue.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Mfc.h>
 
@@ -117,19 +118,18 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 // every retail site because the m_emitGate gate test just loaded it).
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
-        CSndEmitter* _c =                                                                          \
-            (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)->Lookup_05b7e0(TAG);              \
+        LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)->Lookup_05b7e0(TAG);        \
         if (_c)                                                                                    \
-            _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
+            _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);                                        \
     }
 // Cue via the host's finder (m_10, CSndFinder) with a stack out-ptr; used by a
 // handful of cheats instead of CueLookup.
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
-        CSndEmitter* _c = 0;                                                                       \
+        LeafCue* _c = 0;                                                                           \
         m_world->m_28->m_10.Lookup(TAG, &_c);                                                      \
         if (_c)                                                                                    \
-            _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
+            _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);                                        \
     }
 #define ITEMCHEAT(N, MSG)                                                                          \
     {                                                                                              \
@@ -295,10 +295,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 switch (nID & 0xffff) {
                     case 0x803b: {
                         if (m_world->m_28->m_emitGate == 0) {
-                            CSndEmitter* _c = (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)
-                                                  ->Lookup_05b7e0("GAME_MINORCHEAT");
+                            LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)
+                                              ->Lookup_05b7e0("GAME_MINORCHEAT");
                             if (_c) {
-                                _c->Play(g_sndCueTag, 0, 0, 0);
+                                _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                             }
                         }
                         AppendChatMessage("Brian L. Goble is a programming God...");
@@ -561,10 +561,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     case 0x8175:
                         if (m_world->m_28->m_emitGate == 0) {
-                            CSndEmitter* _c = (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)
-                                                  ->Lookup_05b7e0("GAME_WAWA");
+                            LeafCue* _c = (LeafCue*)((CDDrawSubMgrLeafScan*)m_world->m_28)
+                                              ->Lookup_05b7e0("GAME_WAWA");
                             if (_c) {
-                                _c->Play(0x64, 0, 0, 0);
+                                _c->PlayIfElapsed_01f940(0x64, 0, 0, 0);
                             }
                         }
                         AppendChatMessage("WA WA WA WA WA WA!");
@@ -673,7 +673,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                     case 0x8247: {
                         g_explosionz ^= 1;
                         if (m_world->m_28->m_emitGate == 0) {
-                            CSndEmitter* _c = 0;
+                            LeafCue* _c = 0;
                             m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", &_c);
                             if (_c && g_sndEnabled) {
                                 i32 now = g_time6bf3c0;

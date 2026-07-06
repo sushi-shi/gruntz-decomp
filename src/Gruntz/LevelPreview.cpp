@@ -5,6 +5,7 @@
 // on a failed fade it cancels the command. Field names are placeholders; only
 // offsets + code bytes are load-bearing.
 #include <Mfc.h> // real MFC CString (operator=(LPCSTR) 0x1b9e74, reloc-masked)
+#include <Gruntz/LeafCue.h>
 #include <rva.h>
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface + IDirectDrawSurface (IsLost/Flip)
@@ -15,7 +16,7 @@
 
 #include <Bute/SymTab.h>
 #include <Gruntz/State.h>    // the CState base this screen state derives (real vtable)
-#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / CSndEmitter)
+#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / LeafCue)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
@@ -124,7 +125,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     } else {
         CSndHost* h = ((CRegHolder*)m_c)->m_statusBar;
         if (h->m_emitGate == 0) {
-            CSndEmitter* p = 0;
+            LeafCue* p = 0;
             h->m_10.Lookup("GAME_TELEPORTEROPEN", &p);
             if (p != 0) {
                 i32 tag = g_sndCueTag;
