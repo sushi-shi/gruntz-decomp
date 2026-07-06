@@ -8,6 +8,7 @@
 // built by Unmatched_c76d0) reuse the existing tags so their loads reloc-mask.
 // Only offsets + code bytes are load-bearing; class identities are best-guess.
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ObjectDropper.h>
 #include <Gruntz/ActReg.h>            // the shared activation-registrar archetype (CSiblingActReg)
 #include <Gruntz/CheckpointTrigger.h> // real CCheckpointTrigger : CUserLogic (was Stub/)
 
@@ -17,14 +18,11 @@
 // __thiscall on coll2.
 
 // Class A: registry @0x64be90 (reuse the g_netBe90 tag so the DATA-pinned loads
-// reloc-mask), handler @0xc62e0 (the "LoadAttributes" per-frame entry).
+// reloc-mask), handler @0xc62e0 (the "Update" per-frame entry).
 struct CNetSingletonBe90 : CSiblingActReg {};
 extern CNetSingletonBe90 g_netBe90; // 0x64be90 (DATA-pinned by NetMgrMisc.cpp)
-struct CSiblingActorA {
-    i32 LoadAttributes(); // 0xc62e0
-};
 struct CSiblingActorAEntry {
-    i32 (CSiblingActorA::*m_fn)();
+    i32 (CObjectDropper::*m_fn)();
 };
 
 // Class B: registry @0x64bf00 (reuse the g_64bf00 tag), handler @0xc7ab0.
@@ -39,8 +37,8 @@ struct CSiblingActorBEntry {
     i32 (CSiblingActorB::*m_fn)();
 };
 
-// CSiblingActorA::RegisterActs: register "A" in the shared name registry
-// (first caller only), then bind LoadAttributes into the class registry slot.
+// CObjectDropper::RegisterActs: register "A" in the shared name registry
+// (first caller only), then bind Update into the class registry slot.
 //
 // @early-stop
 // register-pinning wall (docs/patterns/zero-register-pinning.md +
@@ -69,7 +67,7 @@ void CSiblingActorA_RegisterActs() {
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
-    ((CSiblingActorAEntry*)g_netBe90.ResolveEntry(id))->m_fn = &CSiblingActorA::LoadAttributes;
+    ((CSiblingActorAEntry*)g_netBe90.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
 }
 
 // CSiblingActorB::RegisterActs: same archetype, registry @0x64bf00.
@@ -140,7 +138,6 @@ void CCheckpointTrigger::RegisterActs() {
 SIZE_UNKNOWN(CCheckpointActEntry);
 SIZE_UNKNOWN(CNetSingletonBe90);
 SIZE_UNKNOWN(CSiblingActReg);
-SIZE_UNKNOWN(CSiblingActorA);
 SIZE_UNKNOWN(CSiblingActorAEntry);
 SIZE_UNKNOWN(CSiblingActorB);
 SIZE_UNKNOWN(CSiblingActorBEntry);
