@@ -6,6 +6,7 @@
 // symbols, so the base obj is empty -> matching-neutral.
 
 #include <rva.h> // int aliases (i8..u64)
+#include <Bute/ButeTree.h>
 
 // Forward declarations for pointer-to-engine-object globals.
 struct AttractActorList;
@@ -17,7 +18,7 @@ struct CDropEntry;
 struct CHaznColl2;
 struct CHaznEntry;
 struct CKSlimeEntry;
-struct CPartColl2;
+struct CVariantSlot;
 struct CPartEntry;
 class CImagePool; // g_previewMgr (canonical <Image/ImagePool.h>; was CPreviewMgr view)
 struct CProjActEntry;
@@ -280,7 +281,7 @@ extern i32 g_actReg4Stride;
 DATA(0x002446f8)
 extern i32 g_actReg4Scratch;
 DATA(0x00244874)
-extern CPartColl2* g_partColl2;
+extern CVariantSlot* g_partColl2;
 DATA(0x00244878)
 extern i32 g_partLo;
 DATA(0x0024487c)

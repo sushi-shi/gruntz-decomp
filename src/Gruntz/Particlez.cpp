@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Particlez.h>
+#include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
@@ -31,9 +32,6 @@ struct CPartEntry; // an entry: first dword is the registered handler
 struct CPartColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (__thiscall ret 8: build the registry)
     i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-};
-struct CPartColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
 extern void* GetRetAddr(); // 0x16d990
 
@@ -75,7 +73,7 @@ extern char s_actKeyA[];
 DATA(0x002bf650)
 extern CPartColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CPartColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -107,7 +105,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 
@@ -130,7 +128,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_partColl2->Insert(&g_partColl, item, 0xc);
+    g_partColl2->Set(&g_partColl, (i32)item, 0xc);
     return g_partCur;
 }
 
@@ -215,7 +213,6 @@ i32 CParticlez::Update() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CPartColl);
-SIZE_UNKNOWN(CPartColl2);
 SIZE_UNKNOWN(CPartEntry);
 SIZE_UNKNOWN(CPartEntryI32);
 SIZE_UNKNOWN(CParticlez);
