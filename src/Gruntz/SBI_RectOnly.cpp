@@ -1,4 +1,6 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/StreamFeeder.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -2814,14 +2816,14 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                         CSbiDisplayObj* obj = (CSbiDisplayObj*)((CSoundCueMgr*)f)->GetItem();
                         m_destructButton = obj;
                         if (obj) {
-                            obj->Configure(g_gameReg->m_inputFlag, 0, 0, 1);
+                            ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                         }
                     }
                 }
             }
         } else {
             if (m_destructButton) {
-                m_destructButton->Release();
+                ((DirectSoundMgr*)m_destructButton)->StopAndRewind();
                 m_destructButton = 0;
             }
         }

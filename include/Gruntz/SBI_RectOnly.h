@@ -177,10 +177,7 @@ SIZE_UNKNOWN(CSbiNotifyPayload);
 // __thiscall builds the display object (returned, then Configure'd / Release'd).
 struct CSbiSpriteFactory {};
 SIZE_UNKNOWN(CSbiSpriteFactory);
-struct CSbiDisplayObj {
-    void Configure(i32 a, i32 b, i32 c, i32 d); // 0x136300 (__thiscall, 4 args)
-    void Release();                             // 0x135380 (__thiscall, no args)
-};
+struct CSbiDisplayObj {};
 SIZE_UNKNOWN(CSbiDisplayObj);
 struct CSbiSpriteCfg {
     char m_pad0[0x10];
