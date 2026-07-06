@@ -13,6 +13,8 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSurfacePair.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -583,18 +585,7 @@ i32 CMulti::PumpA() {
 // ---------------------------------------------------------------------------
 
 // The per-pane render target hung off m_view->m_4->{m_10,m_14}->m_2c (thiscall).
-class PBRenderTarget {
-public:
-    void Present850(i32 flag); // 0x0013e850
-    void Present760(i32 flag); // 0x0013e760
-};
 // A render pane (m_view->m_4->m_10 / ->m_14). m_14 also owns the palette blit.
-class PBPane {
-public:
-    char m_pad00_2c[0x2c];
-    PBRenderTarget* m_2c;              // +0x2c
-    void Blit163f40(void* pal, i32 n); // 0x00163f40 (thiscall on m_14)
-};
 // The +0xc vfn host: dispatched through vtable slot +0x34 (index 13).
 class PBVfnHost {
 public:
@@ -631,9 +622,9 @@ public:
 class PBSub4 { // m_view->m_4
 public:
     char m_pad00_10[0x10];
-    PBPane* m_10; // +0x10
-    PBPane* m_14; // +0x14
-    void* m_18;   // +0x18
+    CDDrawSurfacePair* m_10; // +0x10
+    CDDrawSurfacePair* m_14; // +0x14
+    void* m_18;              // +0x18
 };
 class PBMgr { // CMulti::m_view
 public:
@@ -681,19 +672,19 @@ void CMulti::PumpB() {
         mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
         m_fxOverlay->Present21b7();
-        PBPane* h = mgr->m_4->m_14;
+        CDDrawSurfacePair* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
         }
         StepGridWalk(g_645584);
         CopyRect(h);
-        mgr->m_4->m_10->m_2c->Present850(0);
+        mgr->m_4->m_10->m_surface->Flip(0);
         return;
     }
     StepInputA();
     StepC();
     if (m_overlayAActive != 0) {
-        mgr->m_4->m_14->m_2c->Present760(0);
+        mgr->m_4->m_14->m_surface->Fill(0);
         m_fxOverlay->Advance125d();
     }
     if (m_paletteActive == 0) {
@@ -730,7 +721,7 @@ void CMulti::PumpB() {
         }
     }
     ((PBListSink*)m_logic->m_5c)->Tick441c(g_645584);
-    PBPane* h = mgr->m_4->m_14;
+    CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
@@ -740,9 +731,9 @@ void CMulti::PumpB() {
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_paletteActive != 0) {
-        h->Blit163f40(m_palette, 0xff);
+        h->DrawBox((i32*)m_palette, 0xff);
     }
-    mgr->m_4->m_10->m_2c->Present850(0);
+    mgr->m_4->m_10->m_surface->Flip(0);
     PumpBRefresh2356(g_64556c, m_fxOverlay, m_overlayAActive);
     if (mgr->m_24->m_5c != 0) {
         mgr->m_24->m_5c->Flush163370();
@@ -1018,8 +1009,6 @@ SIZE_UNKNOWN(PBComp);
 SIZE_UNKNOWN(PBCompTarget);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
-SIZE_UNKNOWN(PBPane);
-SIZE_UNKNOWN(PBRenderTarget);
 SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBSub68);
