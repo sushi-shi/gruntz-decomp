@@ -42,6 +42,7 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Wwd/WwdFile.h>
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
@@ -341,9 +342,6 @@ struct UnitLevel {
 // WorldToScreen (RVA 0x0311e0, thunk 0x03585) is a __thiscall taking
 // (Coord* out, i32 wx, i32 wy) that maps a world coordinate to a screen pixel.
 // External, reloc-masked (no body).
-struct ViewMapper {
-    void WorldToScreen(Coord* out, i32 wx, i32 wy); // 0x0311e0
-};
 
 // The level/game spawn context held at this->m_ctx: the object the spawn state
 // machine drives. Its header sub-objects are named members below; the per-band
@@ -358,7 +356,7 @@ struct SceneColl; // the scene-object collection (scene->m_8; defined below)
 // collection, and +0x24->+0x5c is the ViewMapper (world->screen).
 struct SceneView24 {
     char m_pad00[0x5c];
-    ViewMapper* m_5c; // +0x5c
+    CPlaneRender* m_5c; // +0x5c
 };
 SIZE_UNKNOWN(SceneView24);
 struct Scene {
@@ -1188,7 +1186,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
     }
     Coord screen;
-    m_ctx->m_scene->m_24->m_5c->WorldToScreen(&screen, cand->m_x << 5, cand->m_y << 5);
+    m_ctx->m_scene->m_24->m_5c->SnapToTileCenter((i32*)&screen, cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
         cell = m_ctx->m_triggerMgr
@@ -5118,7 +5116,6 @@ SIZE_UNKNOWN(UnitRectGate);
 SIZE_UNKNOWN(UnitMutator);
 SIZE_UNKNOWN(UnitMutator2);
 SIZE_UNKNOWN(UnitPlace);
-SIZE_UNKNOWN(ViewMapper);
 SIZE_UNKNOWN(ZErrTarget);
 SIZE_UNKNOWN(CCoordPair);
 SIZE_UNKNOWN(CLevelList);
