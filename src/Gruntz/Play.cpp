@@ -724,9 +724,7 @@ struct CExitV44 { // teardown at vtable +0x44 (slot 17)
 // The view holder (this->m_c) as the exit walk reads it.
 struct CExitView {
     char p0[0x8];
-    struct M8 {
-        void Refresh(); // 0x159ef0
-    }* m_8;             // +0x8
+    CDDrawSubMgrPages* m_8; // +0x8  (Method_159ef0)
     struct Mc {
         void Teardown(); // 0x163c60
     }* m_c;              // +0xc
@@ -747,9 +745,7 @@ struct CExitView {
 // The world (this->m_4) as the exit walk reads it.
 struct CExitWorld {
     char p0[0x48];
-    struct M48 {
-        void Teardown(); // 0x138530
-    }* m_48;             // +0x48
+    CGruntzSoundZ* m_48; // +0x48  (StopAndFlush @0x138530)
     char p4c[0x54 - 0x4c];
     struct M54 {
         void Reset(); // 0x28ab thunk
@@ -772,7 +768,7 @@ void CPlay::ModeCleanup() {
         ((CExitView*)m_c)->m_28->Release();
     }
     if (m_4) {
-        ((CExitWorld*)m_4)->m_48->Teardown();
+        ((CExitWorld*)m_4)->m_48->StopAndFlush();
         ((CWorldSoundSet*)((CExitWorld*)m_4)->m_54)->Resume();
     }
     if (m_c) {
@@ -785,7 +781,7 @@ void CPlay::ModeCleanup() {
         ((CExitView*)m_c)->m_24->Teardown();
     }
     if (m_c) {
-        ((CExitView*)m_c)->m_8->Refresh();
+        ((CExitView*)m_c)->m_8->Method_159ef0();
     }
     if (m_c) {
         ((CExitView*)m_c)->m_c->Teardown();
