@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -41,12 +42,12 @@
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectVtbl/CSymParserView*)obj)
+//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectVtbl/CSymParser*)obj)
 //     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
 //     the view is the modeling mechanism (see the defs near the connection driver), same
 //     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
 //     helpers are now real methods on CNetGameMgr / CNetChatLog - those shadows folded
-//     away; CSymParserView stays local, blocked by a header symbol-decl collision.)
+//     away; CSymParser stays local, blocked by a header symbol-decl collision.)
 //   * TF(o)/MF(o) deliberate raw-offset macros: the ConnectDriver writes almost all
 //     unnamed padding, so the offset is the load-bearing fact (documented at the driver).
 //   * (char*)(const char*)aCString: MFC CString -> LPCTSTR (operator) -> char* to feed a
@@ -1161,16 +1162,11 @@ struct CNetConnectThis {
 // directly on their real classes (CNetGameMgr / CNetChatLog in NetMgr.h) - the
 // former per-TU CNetGameMgrView / CFreeNodesView method-only shadows are folded away.
 //
-// CSymParserView (the +8 CSymParser::ResolvePath thunk) stays a local method-only
+// CSymParser (the +8 CSymParser::ResolvePath thunk) stays a local method-only
 // view: the real class lives in <Bute/SymParser.h>, but that header re-declares the
 // shared g_emptyString literal (const char[]) which collides with this TU's own
 // `extern "C" char g_emptyString[]` decl (C2373) - so the real include cannot be
 // pulled in here. Reloc-masked either way (same 0x13c030 CSymParser::ResolvePath).
-SIZE_UNKNOWN(CSymParserView);
-struct CSymParserView {
-    void* ResolvePath(const char* p); // 0x13c030 (?ResolvePath@CSymParser@@ - reloc-masked)
-};
-
 // (1) the 0x8c-byte peer object (RezAlloc 0x8c): a real Wap::CObject-derived class
 // with 3 by-value CObList members at +0x1c/+0x38/+0x54. Retail sequence (dump_target
 // @0x0b560e..0x0b5643): stamp the base vptr 0x5e8cb4, run the 3 CObList ctors, then
@@ -1364,7 +1360,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     (this->*(((CNetConnectVtbl*)*(void**)this)->OnReady))();
-    TF(0x2c) = (i32)((CSymParserView*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
+    TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
     if (TF(0x2c) == 0) {
         return 0;
     }
