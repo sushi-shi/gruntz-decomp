@@ -1,3 +1,4 @@
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -1435,10 +1436,6 @@ DATA(0x001eff2c)
 extern float g_sndPanScale; // 0x5eff2c
 
 // The +0x10 sound player: a __thiscall play entry that consumes 4 args.
-class CAniSoundPlay {
-public:
-    i32 Play_1360d0(i32 vol, i32 pan, i32 a3, i32 a4); // 0x1360d0
-};
 
 // The per-frame draw trigger (the context's +0x5c screen-X is the blit cue arg).
 // Overlaid on the cursor: +0x0c context, +0x10 sound player.
@@ -1453,8 +1450,8 @@ public:
     char m_pad00[0x0c]; // +0x00..0x0b
     // authentic: geometry context, reached only by raw offset (+0x24 -> +0x5c -> +0x84,
     // +0x4); its class is not modeled in this TU - kept void*.
-    void* m_ctx;                  // +0x0c geometry context
-    CAniSoundPlay* m_soundPlayer; // +0x10 sound player
+    void* m_ctx;                 // +0x0c geometry context
+    CSoundCueMgr* m_soundPlayer; // +0x10 sound player
 };
 
 // The random-trigger cue table entry (a LeafCue: the gated sound-play entry).
@@ -1539,7 +1536,7 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
     } else {
         vscale = (i32)(amp * (cue * g_sndPanScale));
     }
-    return m_soundPlayer->Play_1360d0(vscale, vol, 0, 0);
+    return m_soundPlayer->ConfigureItem(vscale, vol, 0, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -2467,7 +2464,6 @@ SIZE_UNKNOWN(CAniDesc);
 SIZE_UNKNOWN(CAniDescArray);
 SIZE_UNKNOWN(CAniFrameSeq);
 SIZE_UNKNOWN(CAniRenderCtx);
-SIZE_UNKNOWN(CAniSoundPlay);
 SIZE_UNKNOWN(CBlitLabelMap);
 SIZE_UNKNOWN(CDDrawBlitLabelSource);
 SIZE_UNKNOWN(CDDrawBlitParam);
