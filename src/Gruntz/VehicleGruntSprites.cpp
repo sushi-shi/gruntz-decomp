@@ -12,6 +12,7 @@
 // reached by raw this+offset / reloc-masked external __thiscall thunks.
 
 #include <Mfc.h> // CString temp (/GX)
+#include <Gruntz/AssetNamespaceLoader.h>
 
 #include <rva.h>
 
@@ -23,9 +24,6 @@
 // Its +0x2c slot registers a named sprite set (cast to CSpriteSetReg); its +0x70
 // tile grid (m_cmdNotify, cast to CTileGrid) has m_8 = row-pointer array, each cell
 // 0x1c bytes with the tile code at +0x10, indexed by the >>5 tile coords.
-struct CSpriteSetReg {
-    void Register(CString* name, i32 a, i32 b, i32 c); // 0x2bc1 __thiscall
-};
 DATA(0x0024556c)
 extern CGruntzMgr* g_gameReg;
 
@@ -152,7 +150,7 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     }
 #undef REGION_INIT
 
-    ((CSpriteSetReg*)g_gameReg->m_curState)->Register(&name, 1, 1, 0);
+    ((CNamespaceLoader*)g_gameReg->m_curState)->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
     i32 code = ((i32*)((CTileGrid*)g_gameReg->m_cmdNotify)->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {

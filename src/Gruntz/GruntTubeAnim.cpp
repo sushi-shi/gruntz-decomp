@@ -14,6 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
+#include <Gruntz/AssetNamespaceLoader.h>
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/GameRegistry.h>
@@ -32,9 +33,6 @@ struct CTubeAnimPlayer {                    // CGrunt::m_154
 struct CTubeRecord { // entrance-record, 0x68-byte stride; element 0 = the CString
     CString name;    // +0x00
     char _04[0x68 - 4];
-};
-struct CTubeMgr2c {
-    void Register2bc1(CString* s, i32 a, i32 b, i32 c); // 0x2bc1
 };
 struct CTubeTypeNode {
     char* m_name; // +0x00  resolved type name
@@ -112,7 +110,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     m_2a0[2] = 0;
     m_2a0[3] = 0;
     m_1c0 = isWater ? "TOOBWATERGRUNT" : "TOOBGRUNT";
-    ((CTubeMgr2c*)g_mgrSettings->m_curState)->Register2bc1(&m_1c0, 1, 1, 0);
+    ((CNamespaceLoader*)g_mgrSettings->m_curState)->BuildAssetNamespacePrefixes(m_1c0, 1, 1, 0);
     Reset30ee();
     Reset1677(0, 0);
     Reset160e(0, 0);

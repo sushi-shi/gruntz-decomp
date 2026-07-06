@@ -24,6 +24,7 @@
 // leaf-scan / ani classes mirror GameAssetNamespaces.cpp; strings are $SG
 // literals reloc-masked against the matched symbols.
 #include <Bute/SymTab.h>
+#include <Gruntz/AssetNamespaceLoader.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
@@ -61,16 +62,6 @@ extern CGameRegistry* g_gameReg; // *0x64556c
 extern "C" void
 DrawPreview(GRAssetMgr* ctx, CString* text, RECT* rc, i32 y, i32 f, i32 b, i32 g, i32 r, i32 a9);
 void FinishAssetLoad(); // 0x35e4
-
-class CNamespaceLoader {
-public:
-    i32 BuildAssetNamespacePrefixes(const CString& name, i32 mode, i32 lightGate, i32 finishGate);
-
-    char m_pad00[0xc];
-    AssetRoot* m_c; // +0x0c
-    char m_pad10[0x30 - 0x10];
-    CSymTab* m_30; // +0x30
-};
 
 // @source: decomp-xref
 // @early-stop
@@ -155,7 +146,6 @@ done:
 SIZE_UNKNOWN(AssetRoot);
 SIZE_UNKNOWN(CDDrawSubMgrAni);
 // CDDrawSubMgrLeafScan SIZE_UNKNOWN now comes from its canonical DDrawSubMgrLeafScan.h.
-SIZE_UNKNOWN(CNamespaceLoader);
 SIZE_UNKNOWN(CSymTree);
 SIZE_UNKNOWN(GRAssetMgr);
 SIZE_UNKNOWN(CGameRegistry);
