@@ -23,6 +23,7 @@
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
 #include <Gruntz/CheatMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -106,13 +107,12 @@ SIZE_UNKNOWN(SurfWorkerZ);
 struct SurfWorkerZ {
     i32 Cfg(i32, i32); // 0x158cb0
 };
-struct LeafScanZ;         // defined below (m_28's concrete type)
 struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
     SurfWorkerZ* m_04; // +4
     char _p08[0x24 - 0x08];
-    GameLevelZ* m_24; // +0x24
-    LeafScanZ* m_28;  // +0x28
+    GameLevelZ* m_24;           // +0x24
+    CDDrawSubMgrLeafScan* m_28; // +0x28
     char _p2c[0x40 - 0x2c];
     CDDrawSurfaceMgr();
     ~CDDrawSurfaceMgr();
@@ -177,12 +177,6 @@ struct DecodeObj {
     void* M169700(void*, i32, i32);      // 0x169700
     void* M169700b(void*, i32);          // 0x169700 (2-arg overload site)
     void* M1698c0(void*, i32, i32, i32); // 0x1698c0
-};
-SIZE_UNKNOWN(LeafScanZ);
-struct LeafScanZ {
-    i32 HasKeyEqual(const char*);                   // 0x1583c0
-    void ScanTree(void*, const char*, const char*); // 0x157ee0
-    void MatchSub(void*, i32);                      // 0x1584f0
 };
 SIZE_UNKNOWN(MovieLookup);
 struct MovieLookup {
@@ -731,17 +725,17 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_interlaced = vInterlaced;
     m_highDetail = vHigh1;
     m_110 = vEasy;
-    if (!m_30->m_28->HasKeyEqual("GAME")) {
+    if (!m_30->m_28->HasKeyEqual_1583c0("GAME")) {
         void* sz = m_34->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_30->m_28->ScanTree(sz, "GAME", "_");
+        m_30->m_28->ScanTree_157ee0((DirNode*)sz, "GAME", "_");
     }
     {
         void* mv = 0;
         ((MovieLookup*)((char*)m_30->m_28 + 0x10))->M1b8438("GAME_MOVIE", &mv);
-        m_30->m_28->MatchSub(mv, 0);
+        m_30->m_28->MatchSub_1584f0((LeafScanSoundArg*)mv, 0);
     }
     Fn1ed8();
     if (!Fn2112()) {
