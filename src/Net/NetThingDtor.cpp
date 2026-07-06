@@ -12,13 +12,19 @@ struct CNetThingBase {
 };
 SIZE_UNKNOWN(CNetThingBase); // dtor-chain view; retail size TBD
 
+// The keyed-list the dtor clears (Clear @0x379a0); TU-local method view of the real
+// header-less CKeyedList (keyedlist unit).
+class CKeyedList {
+public:
+    void Clear();
+};
+
 struct CNetThing : CNetThingBase {
-    void Cleanup(); // 0x379a0 (external, reloc-masked; may throw)
     ~CNetThing();
 };
 SIZE_UNKNOWN(CNetThing); // dtor-only view; retail size TBD
 
 RVA(0x000c5280, 0x49)
 CNetThing::~CNetThing() {
-    Cleanup();
+    ((CKeyedList*)this)->Clear();
 }

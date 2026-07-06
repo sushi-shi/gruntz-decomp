@@ -5,13 +5,11 @@
 #include <Mfc.h> // CString teardown helpers (the nodes hold a CString)
 #include <rva.h>
 
-struct CNodeSub {
-    void Dtor(); // 0x26a8 (ILT thunk)
-};
+struct CNode; // the owned sub-object (full def below); ~CNode @0x379f0
 struct CListNode {
     CListNode* m_0; // +0x00  next
     char _04[8 - 4];
-    CNodeSub* m_8; // +0x08  owned sub-object
+    CNode* m_8; // +0x08  owned sub-object
 };
 extern "C" void RezFree(void* p); // 0x1b9b82 (operator delete / free)
 
@@ -53,9 +51,9 @@ void CKeyedList::Clear() {
         do {
             CListNode* cur = node;
             node = node->m_0;
-            CNodeSub* sub = cur->m_8;
+            CNode* sub = cur->m_8;
             if (sub != 0) {
-                sub->Dtor();
+                sub->~CNode();
                 RezFree(sub);
             }
         } while (node != 0);
@@ -90,4 +88,3 @@ CNode* CKeyedList::AddNode(const char* key, i32 a2, i32 a3) {
 SIZE_UNKNOWN(CKeyedList);
 SIZE_UNKNOWN(CListNode);
 SIZE_UNKNOWN(CNode);
-SIZE_UNKNOWN(CNodeSub);
