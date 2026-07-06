@@ -2,6 +2,7 @@
 #include <Gruntz/Sprite.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniElement.h>
+#include <Wap32/Object.h>
 #include <rva.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -2266,7 +2267,6 @@ CWwdSlot9c::CWwdSlot9c() {
 // Reloc-masked DATA extern (RVA = VA - 0x400000). The leaf-worker vtable (0x5effa0)
 // is now the cl-emitted ??_7CDrawSubWorker (real-polymorphic; VTBL below).
 DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // 0x158f30: 3-arg leaf-worker ctor — store the three args at +0x4/+0x8/+0xc,
 // stamp the leaf vtable (cl-implicit vptr-first), zero +0x10.  __thiscall, ret 0xc.
@@ -2292,16 +2292,12 @@ VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl
 
 // 0x158fb0: DDraw worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
-class CDrawSubWorkerBase {
+class CDrawSubWorkerBase : public Wap::CObject {
 public:
-    // authentic: manual vtable slot. Init_158fb0 is a re-init (NOT a ctor/dtor), so the
-    // `m_vtbl = &g_wapObjectDtorVtbl` stamp cannot realize to a compiler-emitted vtable
-    // (vtable-realization-ctor-boundary wall) - the manual void* stamp is required.
-    void* m_vtbl; // +0x00
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    i32 m_10;     // +0x10
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
+    i32 m_10; // +0x10
     void Init_158fb0();
 };
 RVA(0x00158fb0, 0x19)
@@ -2310,7 +2306,7 @@ void CDrawSubWorkerBase::Init_158fb0() {
     m_10 = 0;
     m_08 = 0;
     m_0c = 0;
-    m_vtbl = &g_wapObjectDtorVtbl;
+    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
 }
 
 // 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,

@@ -5,6 +5,7 @@
 // ctors / inits / free-list ops / a key-compare helper.
 #include <Mfc.h> // real MFC CString (embedded name member; ~CString @0x1b9cde)
 #include <Ints.h>
+#include <Wap32/Object.h> // Wap::CObject grand-base (real virtual dtor)
 #include <rva.h>
 #include <Gruntz/FreeNodePool.h> // canonical FreeNodePool (Push + fields)
 
@@ -12,7 +13,6 @@
 extern "C" void RezFree(void* p);
 
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
-extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // FreeNodePool @0x0311b0 - a typed free-list push: subtract the node's link
@@ -129,10 +129,9 @@ void DualBufferOwner::FreeBuffers() {
 // cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(WapObjBase);
-class WapObjBase {
+class WapObjBase : public Wap::CObject {
 public:
     void BaseInit();
-    void* m_vptr;
     i32 m_4;
     i32 m_8;
     i32 m_c;
@@ -144,7 +143,7 @@ void WapObjBase::BaseInit() {
     m_10 = 0;
     m_8 = 0;
     m_c = 0;
-    m_vptr = &g_wapObjectDtorVtbl;
+    // base vptr auto-stamped via Wap::CObject (retail's manual stamp dropped, % ok)
 }
 
 // ---------------------------------------------------------------------------

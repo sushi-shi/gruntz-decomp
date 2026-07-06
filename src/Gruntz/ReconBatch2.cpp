@@ -1,3 +1,4 @@
+#include <Wap32/Object.h> // Wap::CObject grand-base (real virtual dtor)
 #include <rva.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameModeBase.h>
@@ -327,16 +328,11 @@ void Forward_115630() {
 // `: public Wap::CObject`): this 7-byte fn IS the entire retail restamp - there is
 // no ctor for cl to fold an auto-stamp into, and Obj_11e8dc is a placeholder.
 // ===========================================================================
-DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl;
-struct Obj_11e8dc {
-    void* m_vptr; // +0x00
-    void StampVtbl();
+struct Obj_11e8dc : Wap::CObject {
+    virtual ~Obj_11e8dc(); // 0x11e8dc (was manual StampVtbl re-stamp)
 };
 RVA(0x0011e8dc, 0x7)
-void Obj_11e8dc::StampVtbl() {
-    m_vptr = &g_wapObjectDtorVtbl;
-}
+Obj_11e8dc::~Obj_11e8dc() {} // cl auto-stamps the Wap::CObject vptr (% ok)
 // ===========================================================================
 // 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit
 // of src is clear, read an 8-byte record from src, transform it (Fn16f7f0), and

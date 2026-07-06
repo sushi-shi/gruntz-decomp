@@ -6,6 +6,7 @@
 // rel32/DIR32 operands reloc-mask in objdiff. Defined in retail-RVA order.
 #include <Mfc.h> // real MFC CString (globals typed VCString, matching the target relocs)
 #include <Ints.h>
+#include <Wap32/Object.h>
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>       // shared activation-registrar archetype (CActReg + aliases)
@@ -281,12 +282,10 @@ void StrFreebd7f0() {
 // 0x0d5d70 - init/restamp: seed members (+0x04 = -1, +0x08/+0x0c = 0) then stamp
 // the worker-dtor vtable (0x5e8cb4, reuse the pinned name). __thiscall.
 // ===========================================================================
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4 (pinned in GameLevel.cpp et al.)
-struct CInitd5d70 {
-    void* vptr; // +0x00
-    i32 m_4;    // +0x04
-    i32 m_8;    // +0x08
-    i32 m_c;    // +0x0c
+struct CInitd5d70 : Wap::CObject {
+    i32 m_4; // +0x04
+    i32 m_8; // +0x08
+    i32 m_c; // +0x0c
     void Init();
 };
 SIZE_UNKNOWN(CInitd5d70);
@@ -295,7 +294,7 @@ void CInitd5d70::Init() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    vptr = &g_wapObjectDtorVtbl;
+    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
 }
 
 RVA(0x000e17b0, 0x15)

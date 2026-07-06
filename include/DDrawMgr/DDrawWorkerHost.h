@@ -40,7 +40,7 @@ struct CWwdSpatialMgr {
 
 inline CWwdSpatialMgr::~CWwdSpatialMgr() {
     FreeGrids();
-    m_baseVtbl = &g_wapObjectDtorVtbl;
+    // +0x70 secondary-base vptr restamp dropped (MI; manual stamp removed, % ok)
 }
 
 class CDDrawWorkerHost : public CLoadable {
