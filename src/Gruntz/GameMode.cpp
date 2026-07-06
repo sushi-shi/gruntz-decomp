@@ -510,17 +510,16 @@ struct CreditsScrollSelf {
     char m_pad00[0xc];
     CreditsScrollView* m_c; // +0x0c
     char m_pad10[0x1bc - 0x10];
-    u32 m_1bc;           // +0x1bc overlay timer B (unsigned countdown)
-    u32 m_1c0;           // +0x1c0 overlay timer C (unsigned countdown)
-    i32 m_1c4;           // +0x1c4 second-caption gate
-    RECT m_src;          // +0x1c8 source caption RECT
-    RECT m_dst;          // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
-    CRgn m_1e8;          // +0x1e8 clip region (real MFC CRgn: vptr + m_hObject)
-    char* m_1f0;         // +0x1f0 caption CString buffer
-    u32 m_1f4;           // +0x1f4 reseed timer A (unsigned countdown)
-    double m_1f8;        // +0x1f8 scroll accumulator
-    double m_200;        // +0x200 scroll speed
-    i32 GetFlashColor(); // 0x4223 own thiscall (reloc-masked)
+    u32 m_1bc;    // +0x1bc overlay timer B (unsigned countdown)
+    u32 m_1c0;    // +0x1c0 overlay timer C (unsigned countdown)
+    i32 m_1c4;    // +0x1c4 second-caption gate
+    RECT m_src;   // +0x1c8 source caption RECT
+    RECT m_dst;   // +0x1d8 scrolled caption RECT (top +0x1dc / bottom +0x1e4 scroll)
+    CRgn m_1e8;   // +0x1e8 clip region (real MFC CRgn: vptr + m_hObject)
+    char* m_1f0;  // +0x1f0 caption CString buffer
+    u32 m_1f4;    // +0x1f4 reseed timer A (unsigned countdown)
+    double m_1f8; // +0x1f8 scroll accumulator
+    double m_200; // +0x200 scroll speed
 };
 
 // @confidence: med
@@ -583,7 +582,7 @@ i32 CCreditsState::DrawScrollingCredits() {
                 self->m_1e8
             ); // CRgn -> HRGN via CGdiObject::operator HRGN (null-this)
         }
-        i32 oldColor = SetTextColor(hdc, self->GetFlashColor());
+        i32 oldColor = SetTextColor(hdc, ((CCreditsState*)self)->FlashColor());
         DrawTextA(hdc, self->m_1f0, -1, &self->m_dst, 0x50);
         SetTextColor(hdc, oldColor);
         if (self->m_1c4 != 0 && self->m_1c0 != 0) {
