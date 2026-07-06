@@ -23,6 +23,7 @@
 // CARCASS doctrine: every callee is a reloc-masked external; the worker-registry /
 // leaf-scan / ani classes mirror GameAssetNamespaces.cpp; strings are $SG
 // literals reloc-masked against the matched symbols.
+#include <Bute/SymTab.h>
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
@@ -34,9 +35,6 @@ DATA(0x002bf37c)
 extern i32 g_resourceInstallActive; // 0x6bf37c
 
 // The ButeMgr symbol tree (this->m_30): ResolvePath a dotted namespace to its node.
-struct CSymTree {
-    void* ResolvePath(const char* path); // 0x13bae0
-};
 
 // CDDrawWorkerRegistry / CDDrawSubMgrLeafScan / CDDrawSubMgrAni: shared views from
 // <DDrawMgr/DDrawAssetRegistryViews.h> (mirror the per-area loader GameAssetNamespaces.cpp).
@@ -75,7 +73,7 @@ public:
     char m_pad00[0xc];
     AssetRoot* m_c; // +0x0c
     char m_pad10[0x30 - 0x10];
-    CSymTree* m_30; // +0x30
+    CSymTab* m_30; // +0x30
 };
 
 // @source: decomp-xref
