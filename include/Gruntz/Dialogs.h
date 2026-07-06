@@ -37,6 +37,7 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
 SIZE_UNKNOWN(CWnd);
+VTBL(CWnd, 0x001eb5c4);
 class CWnd {
 public:
     void SetWindowTextA(const char* lpszString);
@@ -68,6 +69,7 @@ public:
 // out of the ctor). It is padded to 0x5c bytes so the subclass members land at
 // the offsets the disasm pins (+0x5c upward).
 SIZE_UNKNOWN(CDialog);
+VTBL(CDialog, 0x001eb174);
 class CDialog {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);

@@ -51,6 +51,7 @@ extern i32 g_videoResolutionMode;
 // ---------------------------------------------------------------------------
 // CWnd is the shared minimal MFC view (see <Gruntz/Wnd.h>): FromHandle wraps the
 // HWND, m_hWnd at +0x1c.
+VTBL(CSliderCtrl, 0x001ecb24);
 class CSliderCtrl : public CWnd {
 public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);

@@ -96,12 +96,14 @@ struct CChatBoxOwner {
     void ProcessCheatInput(i32 a, i32 b);
 };
 SIZE_UNKNOWN(CObArray);
+VTBL(CObArray, 0x001ed494);
 struct CObArray {
     void Fn1b5144(i32 a, void* b);
     void Fn1b516b(i32 a, void* b, i32 c);
     void* Fn1b5200(i32 a, i32 b);
 };
 SIZE_UNKNOWN(CMapStringToOb);
+VTBL(CMapStringToOb, 0x001eafd4);
 struct CMapStringToOb {
     void Lookup(const char* name, void** out);
 };
