@@ -56,4 +56,3 @@ SIZE_UNKNOWN(DDrawBltSurface);
 SIZE_UNKNOWN(DDrawBltHost);
 
 // --- vtable catalog ---
-VTBL(DDrawBltSurface, 0x001e8cb4);

@@ -154,4 +154,3 @@ void ShowHudMessageAlt(
 }
 
 // --- vtable catalog ---
-VTBL(Drawable, 0x001e8cb4);

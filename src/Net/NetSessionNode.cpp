@@ -40,8 +40,7 @@
 // so cl auto-stamps the own vtables (0x5f0760 / 0x5f0778) in the ctors - no manual
 // stamp anywhere. Class defs are canonical in <Net/NetMgr.h>; the own-vtable VTBLs
 // live here (this TU owns the two ??_7 RVAs, so no dup-DATA with the header).
-VTBL(CNetPlayerListNode, 0x001f0760); // own (most-derived) vtable
-VTBL(CNetSessionNode, 0x001f0778);    // own (final) vtable
+VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 
 // ===========================================================================
 // CNetPlayerListNode::~CNetPlayerListNode  @0x1793b0

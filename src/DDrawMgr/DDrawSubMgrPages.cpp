@@ -184,4 +184,3 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CDDrawSurfaceChildA, 0x001eff70);

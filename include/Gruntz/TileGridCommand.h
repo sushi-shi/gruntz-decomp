@@ -115,6 +115,5 @@ public:
 SIZE_UNKNOWN(CTileGridCommand);
 
 // --- vtable catalog ---
-VTBL(CTileGridCommand, 0x001e8cb4);
 
 #endif // SRC_GRUNTZ_TILEGRIDCOMMAND_H

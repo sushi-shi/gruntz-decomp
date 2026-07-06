@@ -61,6 +61,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(CDDrawWorkerRegistry, 0x001e8cb4);
 
 #endif // GRUNTZ_CDDRAWASSETREGISTRYVIEWS_H

@@ -107,6 +107,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(SbzInputDevice, 0x001e8cb4);
 
 #endif // GRUNTZ_STATEMGRBZ_H

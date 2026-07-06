@@ -679,5 +679,3 @@ SIZE_UNKNOWN(WwdGameGrid);
 SIZE_UNKNOWN(WwdStartPlayer);
 
 // --- vtable catalog ---
-VTBL(GameObjAux7c, 0x001e8cb4);
-VTBL(TileClass, 0x001e8cb4);

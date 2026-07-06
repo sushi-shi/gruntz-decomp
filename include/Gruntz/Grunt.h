@@ -1857,7 +1857,5 @@ i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CGruntArchive, 0x001e8754);
-VTBL(CVtSlot9, 0x001e8754);
 
 #endif // SRC_GRUNTZ_GRUNT_H

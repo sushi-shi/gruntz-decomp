@@ -257,4 +257,3 @@ SIZE_UNKNOWN(LogicDispatchRecord);
 SIZE_UNKNOWN(LogicSubRec);
 
 // --- vtable catalog ---
-VTBL(LogicSubRec, 0x001e8cb4);

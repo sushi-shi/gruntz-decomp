@@ -426,8 +426,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(CGameMode, 0x001ef6c4);
-VTBL(CRezParseNode, 0x001ef6c4);
-VTBL(RezStream, 0x001ef6c4);
 
 #endif // SRC_REZ_REZMGR_H

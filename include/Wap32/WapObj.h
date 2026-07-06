@@ -50,6 +50,5 @@ public:
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CWapObj, 0x001e8cb4);
 
 #endif // WAP32_CWAPOBJ_H

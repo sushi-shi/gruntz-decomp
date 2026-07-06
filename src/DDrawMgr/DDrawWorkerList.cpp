@@ -378,8 +378,5 @@ SIZE_UNKNOWN(WorkNode);
 // <DDrawMgr/DDrawWorkerNode.h>.
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(WorkerListSibBase, 0x001efd88);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CDDrawWorkerItem, 0x001efea0);
-VTBL(CDDrawWorkerList, 0x001efea0);

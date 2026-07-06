@@ -873,5 +873,3 @@ SIZE_UNKNOWN(CNetCfg);
 SIZE_UNKNOWN(CNetMgrLite);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CImgHolder, 0x001e8cb4);
-VTBL(CImgHolderBase, 0x001e8cb4);

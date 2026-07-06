@@ -129,8 +129,5 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CSoundChannel, 0x001e710c);
-VTBL(CSoundChannelList, 0x001e710c);
-VTBL(SoundChannelNew, 0x001e710c);
 
 #endif // GRUNTZ_CWORLDSOUNDSET_H

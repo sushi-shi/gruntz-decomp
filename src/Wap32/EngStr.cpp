@@ -76,7 +76,6 @@ void EngStr_DrawText(
 // store lands stamp-first, exactly as retail does here, so this is byte-exact. (The
 // CTOR at 0x16d9c0 - another TU - is where cl's vptr-first vs retail vptr-last store
 // order would diverge; not in this TU.)
-VTBL(CContainerErr, 0x001f04cc);
 
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
@@ -119,4 +118,3 @@ SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
 SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)
 
 // --- vtable catalog ---
-VTBL(EngStrRenderObj, 0x001e8cb4);

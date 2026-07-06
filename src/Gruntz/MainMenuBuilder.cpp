@@ -600,4 +600,3 @@ SIZE_UNKNOWN(MenuStr);
 SIZE_UNKNOWN(MovieProbe);
 
 // --- vtable catalog ---
-VTBL(MenuItem, 0x001e8cb4);

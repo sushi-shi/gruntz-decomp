@@ -380,5 +380,3 @@ SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CCatalogNode, 0x001efca0);
-VTBL(CDDrawSubMgrGrandBase, 0x001e8cb4);

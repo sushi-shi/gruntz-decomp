@@ -98,10 +98,5 @@ struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
 SIZE_UNKNOWN(CButeTree21b);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CButeBase1_21, 0x001ea21c);
-VTBL(CButeBase2_21, 0x001e94ac);
-VTBL(CStateBase8d000, 0x001ea21c);
-VTBL(WorkerBase39f20, 0x001e8cb4);
-VTBL(WorkerBase8c400, 0x001e8cb4);
 
 #endif // GRUNTZ_BOUNDARYLOWERDTORSVIEWS_H

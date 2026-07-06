@@ -148,7 +148,5 @@ SIZE_UNKNOWN(CImageProvider);
 SIZE_UNKNOWN(CImageSource);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CImagePayload, 0x001ef888);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CImageProvider, 0x001ef888);

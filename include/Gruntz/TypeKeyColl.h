@@ -72,9 +72,7 @@ public:
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CZArrayRoot, 0x001f04cc);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CZArray2D, 0x001f04cc);
 
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

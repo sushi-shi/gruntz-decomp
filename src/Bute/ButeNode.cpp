@@ -82,8 +82,7 @@ public:
     char m_pad1c[0x28 - 0x1c];
     i32 m_child28; // +0x28  child link (zeroed)
 };
-SIZE(zPTree, 0x2c);       // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
-VTBL(zPTree, 0x001e94ac); // most-derived (whole-object) vtable @+0
+SIZE(zPTree, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the
 // ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8, 0@+0xc. Clean leaf

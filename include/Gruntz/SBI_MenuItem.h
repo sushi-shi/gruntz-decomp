@@ -161,6 +161,5 @@ public:
 SIZE_UNKNOWN(CSBI_MenuItem);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CMiSelf, 0x001eab4c);
 
 #endif // SBI_MENUITEM_H

@@ -481,5 +481,3 @@ SIZE_UNKNOWN(CSprite2);
 SIZE_UNKNOWN(CSprite2SubTable);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CFrameWorker, 0x001eaa2c);
-VTBL(CSprite2, 0x001eaa2c);

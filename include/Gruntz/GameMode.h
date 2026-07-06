@@ -271,12 +271,10 @@ public:
 // Real-virtual model - cl emits the implicit ??_7 stamps (reloc-masked); the base
 // dtor folds into ~CCreditsState as the final base-vptr restore.
 SIZE_UNKNOWN(CCreditsImgBase);
-VTBL(CCreditsImgBase, 0x001e8cb4);
 struct CCreditsImgBase {
     virtual ~CCreditsImgBase() {}
 };
 SIZE_UNKNOWN(CCreditsImageList);
-VTBL(CCreditsImageList, 0x001e8cb4);
 struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
@@ -480,7 +478,5 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CGMEntity, 0x001e9bdc);
-VTBL(CGMInputObj, 0x001e9bdc);
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

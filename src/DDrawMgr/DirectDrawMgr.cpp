@@ -1377,4 +1377,3 @@ SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CDdPoolItem, 0x001ef7f0);

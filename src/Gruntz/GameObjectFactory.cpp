@@ -298,4 +298,3 @@ SIZE_UNKNOWN(GameObjFactoryCtx);
 SIZE_UNKNOWN(GameObjTypeRegistry);
 
 // --- vtable catalog ---
-VTBL(GameObjTypeRegistry, 0x001e8cb4);

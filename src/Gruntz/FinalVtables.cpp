@@ -119,7 +119,6 @@ CVtEmit_1efd28::~CVtEmit_1efd28() {
     }
 }
 SIZE_UNKNOWN(CVtEmit_1efd28);
-VTBL(CVtEmit_1efd28, 0x001efd28);
 
 // ---------------------------------------------------------------------------
 // 0x5efd88 (RVA 0x1efd88) - 14 slots. CObject-style, slot 1 dtor 0x156f30.
@@ -149,7 +148,6 @@ CVtEmit_1efd88::~CVtEmit_1efd88() {
     }
 }
 SIZE_UNKNOWN(CVtEmit_1efd88);
-VTBL(CVtEmit_1efd88, 0x001efd88);
 
 // ---------------------------------------------------------------------------
 // 0x5efdc0 (RVA 0x1efdc0) - 17 slots. A SECOND vtable whose slot-1 dtor
@@ -187,7 +185,6 @@ CVtEmit_1efdc0::~CVtEmit_1efdc0() {
     }
 }
 SIZE_UNKNOWN(CVtEmit_1efdc0);
-VTBL(CVtEmit_1efdc0, 0x001efdc0);
 
 // ---------------------------------------------------------------------------
 // 0x5eff70 (RVA 0x1eff70) - 11 slots. A CWapObj-derived worker: slots 0-4 are the
@@ -217,4 +214,3 @@ CVtEmit_1eff70::~CVtEmit_1eff70() {
     }
 }
 SIZE_UNKNOWN(CVtEmit_1eff70);
-VTBL(CVtEmit_1eff70, 0x001eff70);

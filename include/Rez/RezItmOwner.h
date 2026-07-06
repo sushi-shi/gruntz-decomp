@@ -17,6 +17,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(CRezItmOwner, 0x001e8cb4);
 
 #endif // REZ_REZITMOWNER_H

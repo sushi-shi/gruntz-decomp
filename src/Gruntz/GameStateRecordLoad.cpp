@@ -423,4 +423,3 @@ SIZE_UNKNOWN(CSubRecord);
 SIZE_UNKNOWN(CGameStateRecord);
 
 // --- vtable catalog ---
-VTBL(CDirObj, 0x001e8cb4);

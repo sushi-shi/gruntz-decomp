@@ -110,4 +110,3 @@ SIZE_UNKNOWN(CLogicMap);
 SIZE_UNKNOWN(CLogicRegistry);
 
 // --- vtable catalog ---
-VTBL(CLogicRegistry, 0x001e8cb4);

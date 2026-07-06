@@ -167,5 +167,3 @@ CFxModeT1::CFxModeT1() {
 }
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(RezDirBase, 0x001ef680);
-VTBL(RezListNode, 0x001ef680);

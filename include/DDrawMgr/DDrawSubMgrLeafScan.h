@@ -103,6 +103,5 @@ SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(LeafScanBase, 0x001e8cb4);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

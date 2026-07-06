@@ -58,7 +58,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(_zvec, 0x001e817c);
-VTBL(zErrHandling, 0x001e817c);
 
 #endif // GRUNTZ_WAP32_ZVEC_H

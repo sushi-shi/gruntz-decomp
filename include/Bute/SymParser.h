@@ -117,7 +117,6 @@ SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 // CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
 // manual vptr stamps (embedded-member "incorrect load into struct").
 // ---------------------------------------------------------------------------
-VTBL(CSymParser, 0x001ef750);
 class CSymParser {
 public:
     virtual void V0(); // slot 0 (sub_13b9f0)
@@ -230,6 +229,5 @@ public:
 SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CObjNode, 0x001ef750);
 
 #endif // SRC_BUTE_SYMPARSER_H

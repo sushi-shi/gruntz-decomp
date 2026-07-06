@@ -190,4 +190,3 @@ SIZE_UNKNOWN(FecIndex);
 SIZE_UNKNOWN(CFecFile);
 
 // --- vtable catalog ---
-VTBL(FecStream, 0x001e8cb4);

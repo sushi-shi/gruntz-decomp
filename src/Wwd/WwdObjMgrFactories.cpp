@@ -498,5 +498,3 @@ SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)
 SIZE(WwdAnimWorker, 0x17c);      // the +0x7c anim worker
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CWwdFactoryA, 0x001f0128);
-VTBL(CWwdFactoryB, 0x001f0128);

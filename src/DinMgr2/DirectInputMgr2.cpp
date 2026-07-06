@@ -142,8 +142,6 @@ extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 // hierarchy (header, where each class also carries its SIZE). Bind each emitted
 // ??_7 at its retail RVA.
 // ---------------------------------------------------------------------------
-VTBL(CInputDevRoot, 0x001ef670);  // grand-base vtable (4 slots)
-VTBL(CInputDevBase, 0x001ef680);  // middle-base vtable (6 slots)
 VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
 VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
 VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable

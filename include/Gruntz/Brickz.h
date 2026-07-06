@@ -191,6 +191,5 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(BrickzButeObj, 0x001e705c);
 
 #endif // GRUNTZ_BRICKZ_H

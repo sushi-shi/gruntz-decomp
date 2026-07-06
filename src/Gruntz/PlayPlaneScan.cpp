@@ -421,4 +421,3 @@ SIZE_UNKNOWN(Vec3);
 SIZE_UNKNOWN(Vec4);
 
 // --- vtable catalog ---
-VTBL(TileObj, 0x001e8cb4);

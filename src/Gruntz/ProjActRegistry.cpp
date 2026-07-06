@@ -188,4 +188,3 @@ SIZE_UNKNOWN(CProjReg);
 SIZE_UNKNOWN(R3Entry);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CProjActOwner, 0x001e705c);

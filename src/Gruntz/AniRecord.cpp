@@ -128,7 +128,6 @@ public:
 // directly). Left on this fabricated grand-base pending CWapObj modeling; do NOT flatten
 // to `: public CObject` (that would steal CWapObj's slots 5/6). Only CAniRecordPrimary
 // (pure 5-slot, no CWapObj) was re-based to the real CObject.
-VTBL(CAniRecordObjBase, 0x001e8cb4);
 struct CAniRecordObjBase {
     virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared GetRuntimeClass thunk)
     virtual ~CAniRecordObjBase();   // [1] scalar-deleting dtor
@@ -386,5 +385,4 @@ SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPrimary);
 SIZE_UNKNOWN(CAniRecordObjBase);
-VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7 (was g_aniRecordVtbl, 5 slots)
-VTBL(CAniRecordBase2, 0x001f02d8);   // ??_7 (14 slots)
+VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)

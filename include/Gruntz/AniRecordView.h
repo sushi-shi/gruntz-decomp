@@ -53,6 +53,5 @@ struct CAniRecordView {
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CAniRecordView, 0x001f02c0);
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

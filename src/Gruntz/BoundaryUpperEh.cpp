@@ -201,7 +201,6 @@ C17e990::~C17e990() {}
 // 0x5e8cb4). Member teardown 0x1682f0 == CWwdSpatialMgr::FreeGrids -> owns a CWwdSpatialMgr.
 // No most-derived vptr at offset 0.
 // ---------------------------------------------------------------------------
-VTBL(Base163a40, 0x001e8cb4);
 struct Base163a40 {
     virtual ~Base163a40();
 };
@@ -219,12 +218,5 @@ C163a40::~C163a40() {
 }
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(EmbedBase17e990, 0x001f07d8);
-VTBL(Sev14fe30, 0x001efb28);
-VTBL(Sev15b6d0, 0x001f0128);
-VTBL(Sev161500, 0x001e8cb4);
-VTBL(Sev168c10, 0x001f0328);
-VTBL(Sev17e240, 0x001e8cb4);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(FaderBase, 0x001e8cb4);

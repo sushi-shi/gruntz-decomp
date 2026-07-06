@@ -2861,4 +2861,3 @@ CTriggerMgr::~CTriggerMgr() {
 }
 
 // --- vtable catalog ---
-VTBL(CTmOverlaySrc, 0x001e8cb4);

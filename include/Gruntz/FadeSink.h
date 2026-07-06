@@ -45,6 +45,5 @@ struct IFadeSink { // real polymorphic; FadeNotify is slot 22 (+0x58), __stdcall
 };
 
 // --- vtable catalog ---
-VTBL(IFadeSink, 0x001e8cb4);
 
 #endif // GRUNTZ_GRUNTZ_FADESINK_H

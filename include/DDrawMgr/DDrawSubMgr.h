@@ -30,6 +30,5 @@ public:
 SIZE_UNKNOWN(CDDrawSubMgr);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CDDrawSubMgr, 0x001efc30);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGR_H

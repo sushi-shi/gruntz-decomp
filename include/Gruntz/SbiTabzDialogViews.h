@@ -167,6 +167,5 @@ public:
 SIZE_UNKNOWN(CTabzBuilder);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CSbDialogItem, 0x001eac0c);
 
 #endif // GRUNTZ_SBI_TABZDIALOG_VIEWS_H

@@ -55,8 +55,7 @@ struct PureSoundElem {
 inline void PureSoundElem::operator delete(void* p) {
     RezFree(p);
 }
-SIZE(PureSoundElem, 0x4);        // one vptr (abstract element base)
-VTBL(PureSoundElem, 0x001ef6c8); // cl-emitted ??_7PureSoundElem@@6B@ (2 __purecall slots)
+SIZE(PureSoundElem, 0x4); // one vptr (abstract element base)
 
 // A reaped element (RemoveMatching's view): a PureSoundElem-derived object whose
 // link occupies +0x04/+0x08 (the link pointer IS element+4), a tag @+0xc and a key

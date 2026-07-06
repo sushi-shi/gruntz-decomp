@@ -328,8 +328,5 @@ struct ImgOwnedY {
 SIZE_UNKNOWN(ImgOwnedY);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CWwdGameObject, 0x001ef670);
-VTBL(DDPageSub, 0x001ef670);
-VTBL(ImgOwnedX, 0x001ef670);
 
 #endif // GRUNTZ_BOUNDARYUPPER2VIEWS_H

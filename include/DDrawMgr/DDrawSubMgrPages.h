@@ -69,7 +69,6 @@ class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface element
 // (IsReady) inherited, and adds slots 7..22.
 // ---------------------------------------------------------------------------
 SIZE(CDDrawSubMgrPages, 0x1c);
-VTBL(CDDrawSubMgrPages, 0x001efe08);
 class CDDrawSubMgrPages : public CWapObj {
 public:
     ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0; ??_G auto-gen 0x1574b0)

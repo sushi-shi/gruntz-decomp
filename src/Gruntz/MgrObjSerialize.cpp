@@ -206,4 +206,3 @@ SIZE_UNKNOWN(CRezLocator);
 SIZE_UNKNOWN(SplashParams);
 
 // --- vtable catalog ---
-VTBL(CMgrImageSet, 0x001e8cb4);

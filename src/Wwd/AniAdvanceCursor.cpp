@@ -15,8 +15,6 @@
 
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject
 
-VTBL(CAniAdvanceCursor, 0x001f0128);
-
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
 // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.
 // 100%: deriving from the real CLoadable base reproduces retail's vptr-first store

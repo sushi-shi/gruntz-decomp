@@ -673,4 +673,3 @@ CSymParser::CSymParser() {
 // TU's .cpp-local structs below, and SymParser.h / SymTab.cpp for the shared ones).
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CRezNode, 0x001ef760);

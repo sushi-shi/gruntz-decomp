@@ -641,11 +641,7 @@ SIZE_UNKNOWN(RegWorkerValue);
 SIZE_UNKNOWN(CWorkerMapValue);
 SIZE_UNKNOWN(CWorkerValue);
 SIZE(CDDrawWorker, 0x6c);
-VTBL(CLoadable, 0x001efc30);    // ??_7CLoadable (was g_loadableVtbl, 9 slots)
-VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker (was g_ddrawWorkerVtbl, 17 slots)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(RegWorkerValue, 0x001efbe8);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CWorkerValue, 0x001efc30);

@@ -104,6 +104,5 @@ struct CMapVisitTarget {
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CMapVisitTarget, 0x001e705c);
 
 #endif // GRUNTZ_MAPLOGIC_H

@@ -683,14 +683,11 @@ SIZE_UNKNOWN(LeafRootHandle);
 SIZE_UNKNOWN(LeafScanSoundArg);
 SIZE_UNKNOWN(LeafScanValue);
 SIZE_UNKNOWN(LeafSumSource);
-VTBL(CDDrawSubMgrLeafScan, 0x001efca0); // ??_7CDDrawSubMgrLeafScan (was g_leafScanVtbl)
 // ??_7LeafElementObj (was g_leafElemVtbl @0x5eff08, LeafElemVtbl / the LeafElementObj vtable).
 // cl auto-emits it from the real-polymorphic element; retail's 9-slot datum is
 // reloc-masked -> matching-neutral catalog tracking.
 VTBL(LeafElementObj, 0x001eff08);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(LeafElementBase, 0x001e8cb4);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(LeafScanValue, 0x001efca0);

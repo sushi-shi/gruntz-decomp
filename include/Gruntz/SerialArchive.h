@@ -39,6 +39,5 @@ struct CSerialArchive {
 };
 
 // --- vtable catalog ---
-VTBL(CSerialArchive, 0x001e750c);
 
 #endif // GRUNTZ_SERIALARCHIVE_H

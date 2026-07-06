@@ -50,6 +50,5 @@ public:
 SIZE_UNKNOWN(CSBI);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CSBI, 0x001eac0c);
 
 #endif // GRUNTZ_CSTATUSBARMGR_H

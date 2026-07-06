@@ -1016,5 +1016,3 @@ SIZE_UNKNOWN(PBSub68);
 SIZE_UNKNOWN(PBVfnHost);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(McObj, 0x001e9fe4);
-VTBL(PBVfnHost, 0x001e9fe4);

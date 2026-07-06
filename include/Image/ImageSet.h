@@ -134,6 +134,5 @@ public:
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CImageFrame, 0x001eaa2c);
 
 #endif // SRC_IMAGE_IMAGESET_H

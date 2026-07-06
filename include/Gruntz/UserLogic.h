@@ -643,10 +643,7 @@ public:
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CAnimWorker, 0x001efb80);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CGameObjChain, 0x001e71ac);
-VTBL(CGameObject, 0x001e71ac);
 
 #endif // GRUNTZ_USERLOGIC_H

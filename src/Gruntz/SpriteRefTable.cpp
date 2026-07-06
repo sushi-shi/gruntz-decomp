@@ -461,4 +461,3 @@ SIZE_UNKNOWN(CPaletteSource);
 SIZE_UNKNOWN(CSpriteMgrHolder);
 
 // --- vtable catalog ---
-VTBL(CPaletteDestRegistry, 0x001e8cb4);

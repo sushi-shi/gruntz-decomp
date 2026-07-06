@@ -754,4 +754,3 @@ CSymList* CSymList::Construct(int count) {
 // Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.
 
 // --- vtable catalog ---
-VTBL(CSymRangeStream, 0x001e8cb4);

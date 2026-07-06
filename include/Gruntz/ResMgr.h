@@ -160,6 +160,5 @@ struct CResMgr {
 };
 
 // --- vtable catalog ---
-VTBL(CImageRegistry, 0x001e8cb4);
 
 #endif // GRUNTZ_RESMGR_H

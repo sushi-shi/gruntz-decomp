@@ -143,6 +143,5 @@ public:
 SIZE_UNKNOWN(CGameMenuMgr);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CSbMenuItem, 0x001eab4c);
 
 #endif // GRUNTZ_CGAMEMENUMGR_BUILDERS_H

@@ -19,6 +19,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(CWwdWorker, 0x001e8cb4);
 
 #endif // GRUNTZ_GRUNTZ_CWWDWORKER_H

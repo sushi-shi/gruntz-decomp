@@ -116,6 +116,5 @@ SIZE(CDDrawWorkerB, 0x7c);
 VTBL(CDDrawWorkerB, 0x001efed0);
 
 // --- vtable catalog ---
-VTBL(CDDrawWorkerBase, 0x001efea0);
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

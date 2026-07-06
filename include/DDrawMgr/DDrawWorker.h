@@ -69,6 +69,5 @@ public:
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CWorkerElement, 0x001ed494);
 
 #endif // GRUNTZ_CDDRAWWORKER_H

@@ -250,7 +250,5 @@ SIZE_UNKNOWN(InterfaceObject); // Font's COM iid-checker (completeness-only; all
                                // elsewhere - name shared with Net's polymorphic view)
 
 // --- vtable catalog ---
-VTBL(CWapNodeB, 0x001e9b0c);
-VTBL(CWapNodeBase, 0x001e9b0c);
 
 #endif // SRC_FONT_FONT_H

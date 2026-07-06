@@ -105,6 +105,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(CFileIODispatch, 0x001e9b64);
 
 #endif // SRC_IO_FILESTREAM_H

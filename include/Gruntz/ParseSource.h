@@ -58,6 +58,5 @@ public:
 };
 
 // --- vtable catalog ---
-VTBL(ParseVReader, 0x001efba8);
 
 #endif // GRUNTZ_CPARSESOURCE_H

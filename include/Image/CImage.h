@@ -216,6 +216,5 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CImageSource, 0x001eaa2c);
 
 #endif // SRC_IMAGE_CIMAGE_H

@@ -417,6 +417,5 @@ public:
 SIZE_UNKNOWN(CStatusBarMgr);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CSbConfigItem, 0x001eac0c);
 
 #endif // GRUNTZ_CSTATUSBARMGR_BUILDERS_H
