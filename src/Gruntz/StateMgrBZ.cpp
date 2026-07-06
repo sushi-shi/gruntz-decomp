@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <DinMgr2/DirectInputMgr2.h>
 // StateMgrBZ.cpp - the engine input/control state singleton (*g_645578). Built
 // from the DirectInputMgr2 (*g_645570) with control mode 6 by the game's Init
 // (0x83450); driven each frame by CGruntzMgr::TickStateMgrs (0x920b0 -> Flush).
@@ -20,7 +21,7 @@
 // run Build/Setup/Reset/Flush in order; bail out if the source is null or Build
 // fails.
 RVA(0x000382c0, 0x52)
-i32 StateMgrBZ::Init(SbzInputManager* src, i32 mode) {
+i32 StateMgrBZ::Init(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
         return 0;
     }
@@ -62,7 +63,7 @@ void StateMgrBZ::Setup() {
 // residual is the inline .rdata jump-table data block + the reloc-masked switch-
 // base / AddControllerArr symbol names. See docs/patterns/jumptable-data-overlap.md.
 RVA(0x000383b0, 0x19c)
-i32 StateMgrBZ::Build(SbzInputManager* src, i32 mode) {
+i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     if (src == 0) {
         return 0;
     }
@@ -73,56 +74,62 @@ i32 StateMgrBZ::Build(SbzInputManager* src, i32 mode) {
     m_mode = 0;
     switch ((u32)mode) {
         case 1: {
-            SbzInputDevice* d = src->m_keyboard;
+            SbzInputDevice* d = (SbzInputDevice*)src->m_deviceA;
             m_keyboard = d;
             m_device = d;
             break;
         }
         case 2: {
-            SbzInputDevice* d = (src->m_count > 0) ? src->m_data[0] : 0;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 3: {
-            SbzInputDevice* d = (src->m_count > 1) ? src->m_data[1] : 0;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 1) ? (SbzInputDevice*)src->m_devices.m_data[1] : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 4: {
-            SbzInputDevice* d = (src->m_count > 2) ? src->m_data[2] : 0;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 2) ? (SbzInputDevice*)src->m_devices.m_data[2] : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 5: {
-            SbzInputDevice* d = (src->m_count > 3) ? src->m_data[3] : 0;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 3) ? (SbzInputDevice*)src->m_devices.m_data[3] : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 6: {
-            m_keyboard = src->m_keyboard;
-            SbzInputDevice* d = (src->m_count > 0) ? src->m_data[0] : 0;
+            m_keyboard = (SbzInputDevice*)src->m_deviceA;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
             m_joystick = d;
             m_deviceList =
                 (SbzDeviceList*)src->AddControllerArr((i32)m_keyboard, (i32)d, 0, 0, 0, 0, 0);
             break;
         }
         case 8: {
-            m_keyboard = src->m_keyboard;
-            SbzInputDevice* d = (src->m_count > 0) ? src->m_data[0] : 0;
+            m_keyboard = (SbzInputDevice*)src->m_deviceA;
+            SbzInputDevice* d =
+                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
             m_joystick = d;
-            m_joystick2 = src->m_deviceB;
+            m_joystick2 = (SbzInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
                     src->AddControllerArr((i32)m_keyboard, (i32)d, (i32)m_joystick2, 0, 0, 0, 0);
             break;
         }
         case 7:
-            m_keyboard = src->m_keyboard;
-            m_joystick2 = src->m_deviceB;
+            m_keyboard = (SbzInputDevice*)src->m_deviceA;
+            m_joystick2 = (SbzInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
                     src->AddControllerArr((i32)m_keyboard, (i32)m_joystick2, 0, 0, 0, 0, 0);

@@ -440,7 +440,7 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
 // that copies its 7 stack dwords into a local buffer and forwards (&buf, 6, last)
 // to AddController.
 RVA(0x00133260, 0x4a)
-void DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+void* DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     i32 buf[6];
     buf[0] = a1;
     buf[1] = a2;
@@ -448,7 +448,7 @@ void DirectInputMgr2::AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
     buf[3] = a4;
     buf[4] = a5;
     buf[5] = a6;
-    AddController((i32)buf, 6, a7);
+    return AddController((i32)buf, 6, a7);
 }
 
 // ===========================================================================

@@ -17,6 +17,8 @@
 #ifndef GRUNTZ_STATEMGRBZ_H
 #define GRUNTZ_STATEMGRBZ_H
 
+class DirectInputMgr2; // folded SbzInputManager
+
 #include <Ints.h>
 #include <rva.h>
 
@@ -68,30 +70,17 @@ struct SbzDeviceList {
 // DirectInputMgr2). m_keyboard/m_deviceB are device pointers, m_data/m_count the
 // embedded controller array, and AddControllerArr (0x133260) the node-registering
 // trampoline whose return node is cached in StateMgrBZ::m_deviceList.
-SIZE_UNKNOWN(SbzInputManager);
-struct SbzInputManager {
-    char m_pad00[0x10];         // +0x00  (DInput obj / owner / hinst / flags)
-    SbzInputDevice* m_deviceB;  // +0x10  manager m_deviceB (joystick2 source)
-    SbzInputDevice* m_keyboard; // +0x14  manager m_deviceA (keyboard source)
-    char m_pad18[0x1c - 0x18];  // +0x18  (m_devices CPtrArray vptr)
-    SbzInputDevice** m_data;    // +0x1c  controller array storage
-    i32 m_count;                // +0x20  controller count
-
-    // 0x133260 - thiscall trampoline; returns the registered list node (or 0).
-    // Reloc-masked external (no body in this TU).
-    void* AddControllerArr(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-};
-
+SIZE_UNKNOWN(DirectInputMgr2);
 class StateMgrBZ {
 public:
     // 0x382c0 - Init(src, mode): clears the latched state, builds the source wiring
     // (Build), seeds the device key tables (Setup), resets (Reset) and flushes
     // (Flush). Returns whether the build succeeded.
-    i32 Init(SbzInputManager* src, i32 mode); // 0x382c0
+    i32 Init(DirectInputMgr2* src, i32 mode); // 0x382c0
 
     // 0x383b0 - Build(src, mode): wire up the device sources for the given control
     // mode (0..8). Reads the manager's device/controller-array fields.
-    i32 Build(SbzInputManager* src, i32 mode); // 0x383b0
+    i32 Build(DirectInputMgr2* src, i32 mode); // 0x383b0
 
     // 0x38340 - Setup(): seed the m_keyboard device's scan-code table (mode-6 keys).
     void Setup(); // 0x38340
