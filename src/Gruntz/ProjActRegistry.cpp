@@ -42,10 +42,6 @@ extern void* g_projActCache;      // 0x6bf464
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 extern void* GetRetAddr();        // 0x16d990
 
-struct CProjReg2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-
 // The dispatch object FireActivation runs on. The R3 entry's first dword is a
 // registered handler invoked __thiscall on this; modeled as a 4-byte PMF (the
 // class is COMPLETE before the typedef so the PMF stays 4 bytes).
@@ -71,7 +67,7 @@ static inline R3Entry* R3Lookup(i32 coord) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_projRegColl2->Insert(&g_projReg, item, 0xc);
+    g_projRegColl2->Set(&g_projReg, (i32)item, 0xc);
     return g_projRegCur;
 }
 
@@ -188,5 +184,4 @@ void CProjActObj::RegisterType() {
 SIZE_UNKNOWN(CProjActObj);
 SIZE_UNKNOWN(CProjActOwner);
 SIZE_UNKNOWN(CProjReg);
-SIZE_UNKNOWN(CProjReg2);
 SIZE_UNKNOWN(R3Entry);

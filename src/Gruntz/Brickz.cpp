@@ -18,10 +18,6 @@ extern "C" void* __cdecl RezAlloc(u32 n); // 0x1b9b46
 
 // The two intrusive node-pool sub-objects embedded at +0x30 and +0x3c: AllocGrid
 // seeds each with count*5 nodes through its __thiscall init (reloc-masked thunks).
-struct BrickzNodePoolA {
-    i32 Init(i32 count); // 0x408710 (via the 0x42d7 thunk)
-};
-
 // A recycled result record off the shared free-list: m_0 = next-free link,
 // m_4/m_8 = the path cell (col,row) handed to the result list.
 struct BrickzFreeRec {
@@ -403,7 +399,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
         m_rows[i] = (BrickzCell*)((char*)m_cellPool + off);
         off += stride;
     }
-    if (((BrickzNodePoolA*)&m_nodePool)->Init(count * 5) == 0) {
+    if (((CMapArrayA*)&m_nodePool)->Allocate(count * 5) == 0) {
         return 0;
     }
     if (((CMapArrayB*)((char*)this + 0x3c))->Allocate(count * 5) == 0) {
@@ -955,7 +951,6 @@ SIZE_UNKNOWN(BrickzCell);
 SIZE_UNKNOWN(BrickzFreeRec);
 SIZE_UNKNOWN(BrickzGridDesc);
 SIZE_UNKNOWN(BrickzNode);
-SIZE_UNKNOWN(BrickzNodePoolA);
 SIZE_UNKNOWN(BrickzNodePoolB);
 SIZE_UNKNOWN(BrickzSerObj);
 SIZE_UNKNOWN(CBrickzGrid);

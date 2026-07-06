@@ -214,7 +214,7 @@ extern u16 g_modeTab_ee; // 0x624fee
 DATA(0x002256f0)
 extern double g_scale6256f0;
 DATA(0x0022938c)
-extern struct CProjReg2* g_projRegColl2; // 0x62938c  (Insert dispatcher)
+extern struct CVariantSlot* g_projRegColl2; // 0x62938c  (Insert dispatcher)
 DATA(0x00229390)
 extern i32 g_projRegLo; // 0x629390
 DATA(0x00229394)

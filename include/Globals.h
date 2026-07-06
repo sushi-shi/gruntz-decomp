@@ -132,7 +132,7 @@ extern u16 g_modeTab_ea;
 extern u16 g_modeTab_ec;
 extern u16 g_modeTab_ee;
 extern double g_scale6256f0;
-extern struct CProjReg2* g_projRegColl2;
+extern struct CVariantSlot* g_projRegColl2;
 extern i32 g_projRegLo;
 extern i32 g_projRegHi;
 extern char* g_projRegBase;
