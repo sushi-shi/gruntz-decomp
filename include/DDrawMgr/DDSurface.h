@@ -98,6 +98,7 @@ public:
     // --- non-virtual __thiscall DirectDraw thunks (DIRSURF.CPP) ----------------
     // The held-surface COM ops; each dispatches m_8/m_c (IDirectDrawSurface) and retries
     // on SURFACELOST via RestoreLost (slot 7). Bodies in DirectDrawMgr.cpp.
+    i32 Init0(i32 a);                            // 0x53edb0 reloc-masked (fold)
     i32 Lock(void* rect);                        // 0x13e6d0
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)

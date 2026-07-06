@@ -40,7 +40,7 @@ struct LfxMgr;
 // The allocated draw surface (this+0x2c held by callers; +0x10 held by us).
 //   +0x20  : bytes-per-pixel / x-stride
 //   +0xb0  : surface pitch (bytes per scanline)
-struct LfxSurface;
+struct CDDSurface;
 
 // The global game-manager singleton (the object at *0x64556c, ?g_gameReg). Only
 // the +0x68 slot the blit path reads is modeled.
@@ -107,7 +107,7 @@ public:
     LfxTileBank* m_tileBank; // +0x04 mgr+0x68 (the resize repaint bank)
     LfxGrid* m_grid;         // +0x08 mgr+0x70 (w/h + row table)
     LfxSurfMgr* m_surfMgr;   // +0x0c mgr+0x30 (the surface manager)
-    LfxSurface* m_surface;   // +0x10 the alloc'd work surface
+    CDDSurface* m_surface;   // +0x10 the alloc'd work surface
     char m_pad14[0x10];
     i32 m_srcL;             // +0x24 source rect L
     i32 m_srcT;             // +0x28 source rect T

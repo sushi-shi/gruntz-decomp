@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <DDrawMgr/DDSurface.h>
 // LightFxRender.cpp - software light/glow effect renderer (tracer placeholder
 // tomalla-68), a non-polymorphic helper in the lighting module. Methods in
 // ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
@@ -20,7 +21,7 @@
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
 
-// The held surface (LfxBorderCtx::m_08 / LfxSurface::m_08) is the real
+// The held surface (LfxBorderCtx::m_08 / CDDSurface::m_08) is the real
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
 // (+0x80). The canonical IDirectDrawSurface lives in <DDrawMgr/DDSurface.h>.
 
@@ -33,28 +34,13 @@ struct LfxGrid;
 //   +0x08 unlock interface (Resize's own unlock path)
 //   +0x18 / +0x1c the tile/zoom pixel dims (idiv divisors in Resize/ComputeRect)
 //   +0x20 row stride (per y) / +0xb0 column stride (per x), in bytes
-struct LfxSurface {
-    char m_pad[0x8];
-    IDirectDrawSurface* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
-    char m_pad0c[0x18 - 0xc];
-    i32 m_18; // +0x18 surface height-in-tiles / divisor
-    i32 m_1c; // +0x1c surface width-in-tiles / divisor
-    i32 m_20; // +0x20 row stride (per scanline)
-    char m_pad24[0xb0 - 0x24];
-    i32 m_b0;         // +0xb0 column stride (per pixel)
-    i32 Init0(i32 a); // engine method on a freshly-alloc'd surface (FUN_0053edb0)
-    u16* Lock(i32 a); // CDirSurf::Lock (FUN_0053e6d0) -> locked pixel base
-    // CDirSurf::BltEx (FUN_0053eef0) - stretch-blit `src` into the dest rect.
-    i32 BltEx(void* destRect, LfxSurface* src, i32 a3, i32 a4, i32 a5);
-};
-
 // The border-draw context (DrawBorder's 2nd arg): +0x08 the unlock interface,
 // +0x2c the locked work surface (pitch / stride / Lock).
 struct LfxBorderCtx {
     char m_pad0[0x8];
     IDirectDrawSurface* m_08; // +0x08 held DirectDraw surface (Unlock via slot 32)
     char m_pad0c[0x2c - 0xc];
-    LfxSurface* m_2c; // +0x2c the work surface
+    CDDSurface* m_2c; // +0x2c the work surface
 };
 
 // The surface pool the manager points at (m_0c->m_1c). __thiscall Free/Alloc map
@@ -268,7 +254,7 @@ i32 CLightFxRender::AllocSurface() {
     FreeSurface();
     LfxGrid* info = m_grid;
     LfxSurfMgr* mgr = m_surfMgr;
-    m_surface = (LfxSurface*)mgr->m_1c->MakeAndAddB(info->m_0c, info->m_10, 0, 0, -1);
+    m_surface = (CDDSurface*)mgr->m_1c->MakeAndAddB(info->m_0c, info->m_10, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }
@@ -315,19 +301,19 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
         }
     }
     LfxGrid* grid = m_grid;
-    if (m_surface->m_1c != (i32)grid->m_0c || m_surface->m_18 != (i32)grid->m_10) {
+    if (m_surface->m_width != (i32)grid->m_0c || m_surface->m_height != (i32)grid->m_10) {
         if (!AllocSurface()) {
             return 0;
         }
     }
-    u16* base = m_surface->Lock(0);
+    u16* base = (u16*)m_surface->Lock(0);
     if (base == 0) {
         return 0;
     }
     LfxTileBank* bank = m_tileBank;
     for (u32 y = 0; y < grid->m_10; y++) {
         for (u32 x = 0; x < grid->m_0c; x++) {
-            u16* dst = (u16*)((char*)base + y * m_surface->m_20 + x * m_surface->m_b0);
+            u16* dst = (u16*)((char*)base + y * m_surface->m_pitch + x * m_surface->m_b0);
             i32 tile;
             if (x < grid->m_0c && y < grid->m_10) {
                 tile = grid->m_08[y][x].m_04;
@@ -395,7 +381,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
             }
         }
     }
-    m_surface->m_08->Unlock(0);
+    m_surface->m_8->Unlock(0);
     return 1;
 }
 
@@ -415,7 +401,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
 // first idiv, +1 frame slot). Logic 100% correct; deferred to the final sweep.
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
-    LfxSurface* surf = m_surface;
+    CDDSurface* surf = m_surface;
     if (surf == 0) {
         return 0;
     }
@@ -425,19 +411,19 @@ i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
     i32 h = src->bottom - src->top + 1;
     i32 cx = src->left + ((w - (w >> 31)) >> 1);
     i32 cy = src->top + ((h - (h >> 31)) >> 1);
-    i32 qx = w / surf->m_1c;
-    i32 qy = h / surf->m_18;
+    i32 qx = w / surf->m_width;
+    i32 qy = h / surf->m_height;
     i32 scale = (qx < qy) ? qx : qy;
     if (scale > 3) {
         scale = 3;
     }
     m_scale = scale;
-    i32 wpx = surf->m_1c * scale;
-    i32 hpx = surf->m_18 * scale;
+    i32 wpx = surf->m_width * scale;
+    i32 hpx = surf->m_height * scale;
     m_dstL = cx - ((wpx - (wpx >> 31)) >> 1);
     m_dstT = cy - ((hpx - (hpx >> 31)) >> 1);
-    m_dstR = surf->m_1c * scale + m_dstL;
-    m_dstB = surf->m_18 * scale + m_dstT;
+    m_dstR = surf->m_width * scale + m_dstL;
+    m_dstB = surf->m_height * scale + m_dstT;
     if (ctx->m_2c->BltEx(&m_dstL, m_surface, 0, 0x1000000, 0) != 0) {
         return 0;
     }
@@ -476,31 +462,31 @@ i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
 // the whole body. Logic 100% correct.
 RVA(0x000a3b50, 0xfa)
 void CLightFxRender::DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color) {
-    LfxSurface* surf = ctx->m_2c;
-    u16* base = surf->Lock(0);
+    CDDSurface* surf = ctx->m_2c;
+    u16* base = (u16*)surf->Lock(0);
     if (base == 0) {
         return;
     }
     i32 w = r->right - r->left + 1;
     // Top edge.
-    u16* tp = (u16*)((char*)base + r->top * surf->m_20 + r->left * surf->m_b0);
+    u16* tp = (u16*)((char*)base + r->top * surf->m_pitch + r->left * surf->m_b0);
     for (i32 t = 0; t < w; t++) {
         tp[t] = (u16)color;
     }
     // Bottom edge.
-    u16* bp = (u16*)((char*)base + r->bottom * surf->m_20 + r->left * surf->m_b0);
+    u16* bp = (u16*)((char*)base + r->bottom * surf->m_pitch + r->left * surf->m_b0);
     for (i32 b = 0; b < w; b++) {
         bp[b] = (u16)color;
     }
     // Left / right edges (column step = m_20 per row).
     i32 h = r->bottom - r->top + 1;
-    char* lp = (char*)base + r->left * surf->m_b0 + r->top * surf->m_20;
-    char* rp = (char*)base + r->right * surf->m_b0 + r->top * surf->m_20;
+    char* lp = (char*)base + r->left * surf->m_b0 + r->top * surf->m_pitch;
+    char* rp = (char*)base + r->right * surf->m_b0 + r->top * surf->m_pitch;
     for (i32 v = 0; v < h; v++) {
         *(u16*)lp = (u16)color;
         *(u16*)rp = (u16)color;
-        lp += surf->m_20;
-        rp += surf->m_20;
+        lp += surf->m_pitch;
+        rp += surf->m_pitch;
     }
     ctx->m_08->Unlock(0);
 }
@@ -1733,7 +1719,6 @@ SIZE_UNKNOWN(LfxGrid);
 SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
 SIZE_UNKNOWN(LfxSurfMgr);
-SIZE_UNKNOWN(LfxSurface);
 SIZE_UNKNOWN(LfxTileBank);
 SIZE_UNKNOWN(LfxTileDesc);
 SIZE_UNKNOWN(LfxUnlockIface);
