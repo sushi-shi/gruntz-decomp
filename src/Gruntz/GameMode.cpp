@@ -31,6 +31,7 @@
 // i.e. slot +0x10 is the "which state am I" query, NOT the simulation step. The
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
+#include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameMode.h>
@@ -1152,10 +1153,6 @@ struct CMenuRootA {
     char m_pad00[0x4];
     CMenuPageA* m_04; // +0x04
 };
-SIZE_UNKNOWN(CAttractStateMgrA);
-struct CAttractStateMgrA {
-    void* LookupState(char* name); // 0x13c030
-};
 // CCreditsState's own FadeInTitle/BuildMenuPage are declared on the class (GameMode.h);
 // they are reached through its own ILT thunks (0x1e60/0x1843).
 // The CButeMgr text-config singleton (same 0x6453d8 datum as g_buteMgr) + the
@@ -1187,7 +1184,7 @@ i32 CCreditsState::InitAttractTitle() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;
-    void* state = ((CAttractStateMgrA*)m_8)->LookupState(stateName);
+    void* state = ((CSymParser*)m_8)->ResolvePath(stateName);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;

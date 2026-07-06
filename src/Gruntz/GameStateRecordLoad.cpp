@@ -17,6 +17,7 @@
 // `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
+#include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
@@ -73,9 +74,6 @@ struct CObjDir {
 // <Gruntz/GruntzMgr.h>): the object directory at +0x30 (canonical m_world, viewed
 // here as the serial/name-map host), an engine helper at +0x74 the tail invokes
 // (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
-struct CMgr74 {
-    i32 Compute(i32 a, i32 flag); // 0x4165 __thiscall(a, flag)
-};
 DATA(0x0024556c)
 extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
 
@@ -401,7 +399,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     i32 m170 = *(i32*)(p + 0x170);
     i32 m1f4 = *(i32*)(p + 0x1f4);
     i32 flag = (m170 >= 0x17);
-    i32 r = ((CMgr74*)g_mgrSettings->m_spriteFactory)->Compute(m1f4, flag);
+    i32 r = ((CSpriteRefTable*)g_mgrSettings->m_spriteFactory)->GetSel(m1f4, flag);
     CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
     cb->m_58 = 1;
     cb->m_50 = 0xa;

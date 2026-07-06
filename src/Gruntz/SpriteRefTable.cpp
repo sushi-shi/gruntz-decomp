@@ -4,6 +4,7 @@
 // CSpriteRefHashTable helpers come from <Gruntz/SpriteRefTable.h>; every cross-
 // cluster callee (the node ctor/dtor, the hash Lookup, the engine alloc/free) is
 // modeled NO-body so its `call` reloc-masks.
+#include <Bute/SymParser.h>
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
@@ -189,9 +190,6 @@ struct CPaletteDestRoot { // m_spriteMgrHolder points here; +0x18 is the dest re
 };
 // src's source registry: FUN_0053bff0 __thiscall resolves a packed-tag resource by
 // namespaced name, returning the resource (0 if absent).
-struct CPaletteSource {
-    void* Resolve(char* szName, i32 tag); // 0x13bff0
-};
 
 // @early-stop
 // out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
@@ -213,7 +211,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", (char*)name);
-    void* pal = ((CPaletteSource*)src)->Resolve(buf, 0x50414c);
+    void* pal = (void*)((CSymParser*)src)->ResolveQualified(buf, (void*)0x50414c);
     if (!pal) {
         return 0;
     }

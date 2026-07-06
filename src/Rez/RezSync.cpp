@@ -11,6 +11,7 @@
 // LOW on such functions even for a faithful carcass (alignment desync at the
 // multi-way error ladder) - the deliverable is the control-flow + offset +
 // ordered-call carcass, not a byte-perfect frame.
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>          // CString + the MFC collection ctors/dtors (reloc-masked)
@@ -103,13 +104,9 @@ struct GameLevelZ {
     i32 m_64, m_68;
     void BuildAllPlanes(void*); // 0x15da80
 };
-SIZE_UNKNOWN(SurfWorkerZ);
-struct SurfWorkerZ {
-    i32 Cfg(i32, i32); // 0x158cb0
-};
 struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
-    SurfWorkerZ* m_04; // +4
+    CDDrawSubMgrPages* m_04; // +4
     char _p08[0x24 - 0x08];
     GameLevelZ* m_24;           // +0x24
     CDDrawSubMgrLeafScan* m_28; // +0x28
@@ -484,7 +481,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_30->VMethod155f50((void*)&cb_403193);
     m_30->m_24->m_64 = 0xe;
     m_30->m_24->m_68 = 0xe;
-    m_30->m_04->Cfg(0, 0x30000);
+    m_30->m_04->Method_158cb0(0, 0x30000);
     Fn1db6();
     Fn3526cdecl(m_30);
     if (!Fn1c12()) {
