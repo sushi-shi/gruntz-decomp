@@ -4,7 +4,7 @@ g_<hex> globals	1205
 Method/Stub/FUN	0
 placeholder classes	268
 placeholder vtable slots	902
-*Vtbl structs	25
+*Vtbl structs	17
 ->vtbl accesses	4
 g_*Vtbl globals	140
 m_vtbl/m_vptr members	75

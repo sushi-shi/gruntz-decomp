@@ -185,7 +185,7 @@ public:
 //     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
 //   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
 //   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtblSlot9*)this)->M() for reloc-masked
+//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
 //     external __thiscall engine methods.
 //   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
 //     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
@@ -3249,7 +3249,7 @@ void CGrunt::DestroyAnims() {
 // this as a 10-virtual interface and calling its 10th slot in tail position.
 RVA(0x0006b260, 0x5)
 void CGrunt::DispatchVtbl24() {
-    ((CVtblSlot9*)this)->Slot9();
+    ((CVtSlot9*)this)->Slot9();
 }
 
 // @early-stop

@@ -211,7 +211,7 @@ public:
 // heap-copies its name into +0x10, records the owner @+0x18 and links itself into
 // the owner's child list (a CRezList embedded at owner+0x1c) via AddHead. Real
 // polymorphic (its own derived vtable 0x1ef7d0, whose datum FinalVtables.cpp
-// binds as CVtbl_1ef7d0; the reloc-masked vptr store here matches whichever symbol
+// binds as CVtEmit_1ef7d0; the reloc-masked vptr store here matches whichever symbol
 // names that address, so this class carries no VTBL of its own).
 class CRezParseNode : public CRezItmBase {
 public:

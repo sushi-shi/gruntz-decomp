@@ -1,7 +1,7 @@
 // FinalVtables.cpp - realizes the last six anonymous retail vtables that had no
 // class/stamp/name anywhere in src/ (the residual vtbl-placeholders.h placeholders).
 //
-// Each is modeled as a REAL polymorphic tracking class (CVtbl_<rva>) whose virtual
+// Each is modeled as a REAL polymorphic tracking class (CVtEmit_<rva>) whose virtual
 // slots are declared in retail-.rdata slot order (VA = RVA + 0x400000). cl auto-
 // emits `??_7CVtbl_<rva>@@6B@`; the VTBL() macro binds that name at the retail RVA
 // so the delinked datum is named. An out-of-line virtual DESTRUCTOR (slot 1 in the
@@ -32,9 +32,9 @@
 // NOT CObject-style (no 0x1bef01 thunk): slot 0 is a real method, slot 1 the
 // scalar-deleting dtor (0x13cb60). Slots 2/3/6 = CRezFile Read/Write/Flush.
 // ---------------------------------------------------------------------------
-struct CVtbl_1ef7d0 {
+struct CVtEmit_1ef7d0 {
     virtual void Slot00_13cef0(); // [0] 0x13cef0
-    virtual ~CVtbl_1ef7d0();      // [1] 0x13cb60 scalar-deleting dtor (anchor)
+    virtual ~CVtEmit_1ef7d0();    // [1] 0x13cb60 scalar-deleting dtor (anchor)
     virtual void Read();          // [2] 0x13cc00 = CRezFile::Read
     virtual void Write();         // [3] 0x13cca0 = CRezFile::Write
     virtual void Slot04_13cd40(); // [4] 0x13cd40
@@ -44,24 +44,24 @@ struct CVtbl_1ef7d0 {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1ef7d0::Anchor() {
+i32 CVtEmit_1ef7d0::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1ef7d0::~CVtbl_1ef7d0() {
+CVtEmit_1ef7d0::~CVtEmit_1ef7d0() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1ef7d0);
-VTBL(CVtbl_1ef7d0, 0x001ef7d0);
+SIZE_UNKNOWN(CVtEmit_1ef7d0);
+VTBL(CVtEmit_1ef7d0, 0x001ef7d0);
 
 // ---------------------------------------------------------------------------
 // 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-derived (slots 0/2/3/4 are the shared
 // Wap::CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
 // IsReady/Init/Cleanup -> this is CDDrawSurfaceMgr's own vtable.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efc58 : Wap::CObject {
-    virtual ~CVtbl_1efc58()
+struct CVtEmit_1efc58 : Wap::CObject {
+    virtual ~CVtEmit_1efc58()
         OVERRIDE;                  // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();        // [5] 0x155f00 = CDDrawSurfaceMgr::IsReady
     virtual void Init();           // [6] 0x155900 = CDDrawSurfaceMgr::Init
@@ -69,16 +69,16 @@ struct CVtbl_1efc58 : Wap::CObject {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1efc58::Anchor() {
+i32 CVtEmit_1efc58::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1efc58::~CVtbl_1efc58() {
+CVtEmit_1efc58::~CVtEmit_1efc58() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1efc58);
-VTBL(CVtbl_1efc58, 0x001efc58);
+SIZE_UNKNOWN(CVtEmit_1efc58);
+VTBL(CVtEmit_1efc58, 0x001efc58);
 
 // ---------------------------------------------------------------------------
 // 0x5efd28 (RVA 0x1efd28) - 23 slots. CDDrawWorkerRegistry's OWN vtable
@@ -86,8 +86,8 @@ VTBL(CVtbl_1efc58, 0x001efc58);
 // redefined here). CObject-style base thunks at 0/2/3/4. Slots carry the matched
 // CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
 // ---------------------------------------------------------------------------
-struct CVtbl_1efd28 : Wap::CObject {
-    virtual ~CVtbl_1efd28()
+struct CVtEmit_1efd28 : Wap::CObject {
+    virtual ~CVtEmit_1efd28()
         OVERRIDE;                   // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void Slot05_156dc0();   // [5] 0x156dc0
     virtual void ResetScratch();    // [6] 0x154aa0 = CDDrawWorkerRegistry::ResetScratch
@@ -110,23 +110,23 @@ struct CVtbl_1efd28 : Wap::CObject {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1efd28::Anchor() {
+i32 CVtEmit_1efd28::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1efd28::~CVtbl_1efd28() {
+CVtEmit_1efd28::~CVtEmit_1efd28() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1efd28);
-VTBL(CVtbl_1efd28, 0x001efd28);
+SIZE_UNKNOWN(CVtEmit_1efd28);
+VTBL(CVtEmit_1efd28, 0x001efd28);
 
 // ---------------------------------------------------------------------------
 // 0x5efd88 (RVA 0x1efd88) - 14 slots. CObject-style, slot 1 dtor 0x156f30.
 // Slots carry the matched CDDrawWorkerList leaf names.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efd88 : Wap::CObject {
-    virtual ~CVtbl_1efd88()
+struct CVtEmit_1efd88 : Wap::CObject {
+    virtual ~CVtEmit_1efd88()
         OVERRIDE;                    // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();          // [5] 0x156f00 = CDDrawWorkerList::IsReady
     virtual void IsReadyPredicate(); // [6] 0x156fc0 = IsReadyPredicate (worklist)
@@ -140,16 +140,16 @@ struct CVtbl_1efd88 : Wap::CObject {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1efd88::Anchor() {
+i32 CVtEmit_1efd88::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1efd88::~CVtbl_1efd88() {
+CVtEmit_1efd88::~CVtEmit_1efd88() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1efd88);
-VTBL(CVtbl_1efd88, 0x001efd88);
+SIZE_UNKNOWN(CVtEmit_1efd88);
+VTBL(CVtEmit_1efd88, 0x001efd88);
 
 // ---------------------------------------------------------------------------
 // 0x5efdc0 (RVA 0x1efdc0) - 17 slots. A SECOND vtable whose slot-1 dtor
@@ -160,8 +160,8 @@ VTBL(CVtbl_1efd88, 0x001efd88);
 // would need the +offset construction-vtable machinery). CObject-style thunks.
 // Slots carry the matched CDDrawChildGroup/CDDrawSubMgr/CWwdObjMgr leaf names.
 // ---------------------------------------------------------------------------
-struct CVtbl_1efdc0 : Wap::CObject {
-    virtual ~CVtbl_1efdc0()
+struct CVtEmit_1efdc0 : Wap::CObject {
+    virtual ~CVtEmit_1efdc0()
         OVERRIDE;               // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();     // [5] 0x1575e0 = CDDrawChildGroup::IsReady
     virtual void OnDestroy();   // [6] 0x1576c0 = CDDrawSubMgr::OnDestroy
@@ -178,16 +178,16 @@ struct CVtbl_1efdc0 : Wap::CObject {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1efdc0::Anchor() {
+i32 CVtEmit_1efdc0::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1efdc0::~CVtbl_1efdc0() {
+CVtEmit_1efdc0::~CVtEmit_1efdc0() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1efdc0);
-VTBL(CVtbl_1efdc0, 0x001efdc0);
+SIZE_UNKNOWN(CVtEmit_1efdc0);
+VTBL(CVtEmit_1efdc0, 0x001efdc0);
 
 // ---------------------------------------------------------------------------
 // 0x5eff70 (RVA 0x1eff70) - 11 slots. A CWapObj-derived worker: slots 0-4 are the
@@ -196,8 +196,8 @@ VTBL(CVtbl_1efdc0, 0x001efdc0);
 // 7-10 are its own virtuals. Slot 9 (0x1644a0) points at a CDDrawSurfacePair method
 // (declared-only), so this is a surface-pair-adjacent worker vtable.
 // ---------------------------------------------------------------------------
-struct CVtbl_1eff70 : CWapObj {
-    virtual ~CVtbl_1eff70()
+struct CVtEmit_1eff70 : CWapObj {
+    virtual ~CVtEmit_1eff70()
         OVERRIDE;                    // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
     virtual i32 IsLoaded() OVERRIDE; // [5] 0x159150
     virtual void Slot07_1591d0();    // [7] 0x1591d0
@@ -208,13 +208,13 @@ struct CVtbl_1eff70 : CWapObj {
     i32 m_0;
     i32 Anchor();
 };
-i32 CVtbl_1eff70::Anchor() {
+i32 CVtEmit_1eff70::Anchor() {
     return m_0 != 0;
 }
-CVtbl_1eff70::~CVtbl_1eff70() {
+CVtEmit_1eff70::~CVtEmit_1eff70() {
     if (Anchor()) {
         m_0 = 0;
     }
 }
-SIZE_UNKNOWN(CVtbl_1eff70);
-VTBL(CVtbl_1eff70, 0x001eff70);
+SIZE_UNKNOWN(CVtEmit_1eff70);
+VTBL(CVtEmit_1eff70, 0x001eff70);

@@ -984,8 +984,8 @@ struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
 
 // A 10-virtual interface view for CGrunt::DispatchVtbl24's tail call (vtable
 // slot 0x24 = index 9). Calling Slot9() emits `mov eax,[ecx]; jmp [eax+0x24]`.
-SIZE_UNKNOWN(CVtblSlot9);
-class CVtblSlot9 {
+SIZE_UNKNOWN(CVtSlot9);
+class CVtSlot9 {
 public:
     virtual void s0();
     virtual void s1();
