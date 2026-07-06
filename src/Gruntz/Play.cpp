@@ -4121,8 +4121,7 @@ struct EmResMgr { // this->m_c
     char p10[0x24 - 0x10];
     CGameLevel* m_24; // +0x24
 };
-struct EmWorld {    // this->m_4
-    void Refresh(); // 0x3d23
+struct EmWorld { // this->m_4
     char p0[0x10];
     i32 m_10; // +0x10
     char p14[0x54 - 0x14];
@@ -4168,7 +4167,7 @@ i32 CPlay::EnterMode(i32 mode) {
     ((CGruntzMgr*)g_64556c)->CheckSavedMode();
     self->m_guts->Pause();
     self->m_guts->StepZ(0);
-    self->m_4->Refresh();
+    ((CGruntzMgr*)self->m_4)->PerFrameTick();
 
     if (self->m_1c4 != 0) {
         self->m_1c4 = 0;
@@ -4211,7 +4210,7 @@ finish:
     if (self->m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)self->m_c->m_24->m_mainPlane)->CenterScrollB();
     }
-    self->m_4->Refresh();
+    ((CGruntzMgr*)self->m_4)->PerFrameTick();
     self->m_inputWarmup1 = 0;
     self->m_inputWarmup2 = 0;
     self->m_inputHalfSel = 0;
