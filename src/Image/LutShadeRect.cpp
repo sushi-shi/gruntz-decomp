@@ -177,3 +177,6 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 
 SIZE_UNKNOWN(CDDSurface);
 SIZE_UNKNOWN(HeldDDSurface);
+
+// --- vtable catalog ---
+VTBL(HeldDDSurface, 0x001e8cb4);

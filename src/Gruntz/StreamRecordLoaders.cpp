@@ -1059,3 +1059,6 @@ SIZE_UNKNOWN(CRegNameTable);
 SIZE_UNKNOWN(CRegSub30);
 SIZE_UNKNOWN(CRegTypeTable);
 SIZE_UNKNOWN(CTriggerLoadRec);
+
+// --- vtable catalog ---
+VTBL(CProjTypeObj, 0x001e8cb4);

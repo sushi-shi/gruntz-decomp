@@ -198,4 +198,7 @@ public:
 };
 SIZE_UNKNOWN(BzState);
 
+// --- vtable catalog ---
+VTBL(BzSink8, 0x001e8cb4);
+
 #endif // GRUNTZ_GRUNTZ_BZSTATE_H

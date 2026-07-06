@@ -110,4 +110,8 @@ SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(CDDrawGroupChild);
 SIZE_UNKNOWN(CDDrawGroupNode);
 
+// --- vtable catalog ---
+VTBL(CDDrawChildGroup, 0x001e8cb4);
+VTBL(CDDrawGroupChild, 0x001e8cb4);
+
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

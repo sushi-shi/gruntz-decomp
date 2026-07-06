@@ -171,4 +171,9 @@ public:
     GzMgr* m_38;     // +0x38  state-providing manager
 };
 
+// --- vtable catalog ---
+VTBL(GzSerCmd, 0x001ea42c);
+VTBL(GzStateProvider, 0x001ea42c);
+VTBL(GzTargetObj, 0x001ea42c);
+
 #endif // GRUNTZ_GRUNTZCMDMGR_H

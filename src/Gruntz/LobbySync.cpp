@@ -571,3 +571,6 @@ SIZE_UNKNOWN(CSyncObj);
 SIZE_UNKNOWN(GruntRec);
 SIZE_UNKNOWN(LobbyMsg);
 SIZE_UNKNOWN(SlotInfo);
+
+// --- vtable catalog ---
+VTBL(CSyncObj, 0x001e8cb4);

@@ -378,4 +378,9 @@ public:
     i32 RebuildPlanes(i32 base, i32 count);
 };
 
+// --- vtable catalog ---
+VTBL(CPlane, 0x001e9fe4);
+VTBL(CPlaneRenderPoly, 0x001e9fe4);
+VTBL(CWwdStream, 0x001e9fe4);
+
 #endif // SRC_WWD_WWDFILE_H

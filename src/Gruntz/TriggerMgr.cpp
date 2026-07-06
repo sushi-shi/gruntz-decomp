@@ -2859,3 +2859,6 @@ RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
 }
+
+// --- vtable catalog ---
+VTBL(CTmOverlaySrc, 0x001e8cb4);

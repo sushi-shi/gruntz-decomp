@@ -117,3 +117,6 @@ i32 zBitVec::SetSize(i32 nbits) {
 SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)
 SIZE_UNKNOWN(EngStrRenderSub); // render-sub partial (pad + cfg)
 SIZE_UNKNOWN(EngStrRenderObj); // render-object partial (vptr + sub)
+
+// --- vtable catalog ---
+VTBL(EngStrRenderObj, 0x001e8cb4);

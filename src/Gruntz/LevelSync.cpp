@@ -327,3 +327,6 @@ SIZE_UNKNOWN(CLevelSync);
 SIZE_UNKNOWN(CLevelSyncChild);
 SIZE_UNKNOWN(MgrReset);
 SIZE_UNKNOWN(SyncSub);
+
+// --- vtable catalog ---
+VTBL(SyncSub, 0x001e8cb4);

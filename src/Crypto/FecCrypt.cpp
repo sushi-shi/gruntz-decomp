@@ -188,3 +188,6 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
 SIZE_UNKNOWN(FecStream);
 SIZE_UNKNOWN(FecIndex);
 SIZE_UNKNOWN(CFecFile);
+
+// --- vtable catalog ---
+VTBL(FecStream, 0x001e8cb4);

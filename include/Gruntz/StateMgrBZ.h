@@ -106,4 +106,7 @@ public:
     i32 m_suppress;              // +0x24  "suppress input" flag (clears the key words)
 };
 
+// --- vtable catalog ---
+VTBL(SbzInputDevice, 0x001e8cb4);
+
 #endif // GRUNTZ_STATEMGRBZ_H

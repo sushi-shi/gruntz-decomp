@@ -609,3 +609,6 @@ SIZE_UNKNOWN(CChatTimer);
 SIZE_UNKNOWN(CMenuRenderSet);
 SIZE_UNKNOWN(CMenuSurf);
 SIZE_UNKNOWN(CMenuSurfSrc);
+
+// --- vtable catalog ---
+VTBL(CChatSprite, 0x001e8cb4);

@@ -150,4 +150,7 @@ public:
 };
 SIZE(CHashB, 0x8);
 
+// --- vtable catalog ---
+VTBL(CHashElement, 0x001e8cb4);
+
 #endif // SRC_BUTE_HASH_H

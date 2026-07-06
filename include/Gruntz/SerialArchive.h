@@ -38,4 +38,7 @@ struct CSerialArchive {
     virtual void Write(void* buf, i32 n); // +0x30  (mode 4)
 };
 
+// --- vtable catalog ---
+VTBL(CSerialArchive, 0x001e750c);
+
 #endif // GRUNTZ_SERIALARCHIVE_H

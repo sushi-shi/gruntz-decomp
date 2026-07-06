@@ -84,4 +84,7 @@ public:
 };
 SIZE_UNKNOWN(CSpriteFactory);
 
+// --- vtable catalog ---
+VTBL(GruntObjEntry, 0x001e798c);
+
 #endif // GRUNTZ_SPRITEFACTORY_H

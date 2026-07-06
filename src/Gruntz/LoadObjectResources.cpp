@@ -352,3 +352,6 @@ SIZE_UNKNOWN(ObjAnimRegistry);
 SIZE_UNKNOWN(ObjImageRegistry);
 SIZE_UNKNOWN(ObjSoundRegistry);
 SIZE_UNKNOWN(ObjSpawnEntry);
+
+// --- vtable catalog ---
+VTBL(ObjImageRegistry, 0x001e8cb4);

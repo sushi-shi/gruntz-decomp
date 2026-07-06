@@ -80,3 +80,6 @@ i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
     } while (--n);
     return 1;
 }
+
+// --- vtable catalog ---
+VTBL(CTileTriggerData, 0x001e8cb4);

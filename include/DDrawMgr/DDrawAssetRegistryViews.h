@@ -15,6 +15,7 @@
 // RVA-tagged non-virtual entries are load-bearing.
 #ifndef GRUNTZ_CDDRAWASSETREGISTRYVIEWS_H
 #define GRUNTZ_CDDRAWASSETREGISTRYVIEWS_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -58,5 +59,8 @@ public:
     void ScanTree(void* tree, const char* prefix, const char* sep); // 0x152ad0
     void ScanTreeDirect(const char* prefix, const char* sep);       // 0x1527d0
 };
+
+// --- vtable catalog ---
+VTBL(CDDrawWorkerRegistry, 0x001e8cb4);
 
 #endif // GRUNTZ_CDDRAWASSETREGISTRYVIEWS_H

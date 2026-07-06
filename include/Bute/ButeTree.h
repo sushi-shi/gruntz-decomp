@@ -93,4 +93,8 @@ public:
     void* ScalarDtor(u32 flags);      // 0x16e9c0
 };
 
+// --- vtable catalog ---
+VTBL(CButeTreePrimary, 0x001e750c);
+VTBL(CButeTreeSecond, 0x001e750c);
+
 #endif // SRC_BUTE_BUTETREE_H

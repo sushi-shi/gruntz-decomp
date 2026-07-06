@@ -241,3 +241,7 @@ SIZE_UNKNOWN(CBcastMember);
 SIZE_UNKNOWN(CBcastListNode);
 SIZE_UNKNOWN(CBcastMap);
 SIZE_UNKNOWN(CGroupBroadcast);
+
+// --- vtable catalog ---
+VTBL(CBcastMember, 0x001e8cb4);
+VTBL(CFindNode, 0x001e8cb4);

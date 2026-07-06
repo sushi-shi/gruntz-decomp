@@ -139,9 +139,8 @@ public:
     // threshold otherwise.
     void DrawGlyphRun(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 blend);
 
-    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z); // 0x179c30
-    void
-    DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
+    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);                 // 0x179c30
+    void DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
 
     // Word-wrap entry points (the two big greedy-wrap methods).
     //   MeasureWrapped - bounding {w,h} of greedily wrapped text (0x17ad10)
@@ -249,5 +248,9 @@ struct InterfaceObject {
 };
 SIZE_UNKNOWN(InterfaceObject); // Font's COM iid-checker (completeness-only; allocated
                                // elsewhere - name shared with Net's polymorphic view)
+
+// --- vtable catalog ---
+VTBL(CWapNodeB, 0x001e9b0c);
+VTBL(CWapNodeBase, 0x001e9b0c);
 
 #endif // SRC_FONT_FONT_H

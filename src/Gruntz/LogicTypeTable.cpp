@@ -108,3 +108,6 @@ void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
 SIZE_UNKNOWN(CLogicCtx);
 SIZE_UNKNOWN(CLogicMap);
 SIZE_UNKNOWN(CLogicRegistry);
+
+// --- vtable catalog ---
+VTBL(CLogicRegistry, 0x001e8cb4);

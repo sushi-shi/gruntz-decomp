@@ -57,4 +57,7 @@ public:
     i32 m_buffer;           // +0x38 lazily-allocated inline byte buffer (as int address)
 };
 
+// --- vtable catalog ---
+VTBL(ParseVReader, 0x001efba8);
+
 #endif // GRUNTZ_CPARSESOURCE_H

@@ -152,3 +152,6 @@ void ShowHudMessageAlt(
     }
     HudMsgPush(sink, a2, a3, h->m_2c, a4, a5, a6, a7, a8, a9);
 }
+
+// --- vtable catalog ---
+VTBL(Drawable, 0x001e8cb4);

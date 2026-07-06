@@ -166,4 +166,7 @@ struct RegUnitTable {
 };
 SIZE_UNKNOWN(RegUnitTable);
 
+// --- vtable catalog ---
+VTBL(CTabWidget, 0x001e771c);
+
 #endif // GRUNTZ_STATUSBAR_UPDATERS_VIEWS_H

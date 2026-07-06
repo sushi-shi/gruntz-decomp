@@ -752,3 +752,6 @@ CSymList* CSymList::Construct(int count) {
 // All SIZE()s are annotated atop their class definitions (this TU's .cpp-local
 // structs above, SymTab.h for CHashTable/CHashTableEntry/CSymRec/CSymTab,
 // Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.
+
+// --- vtable catalog ---
+VTBL(CSymRangeStream, 0x001e8cb4);

@@ -5,6 +5,7 @@
 // CRezItmBase (RezMgr.h) and CRezFileMgr (RezFile.h).
 #ifndef REZ_REZITMOWNER_H
 #define REZ_REZITMOWNER_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -14,5 +15,8 @@ public:
     virtual void v1();   // +0x04
     virtual i32 Retry(); // +0x08  (slot 2)
 };
+
+// --- vtable catalog ---
+VTBL(CRezItmOwner, 0x001e8cb4);
 
 #endif // REZ_REZITMOWNER_H

@@ -333,3 +333,6 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
             return 0;
     }
 }
+
+// --- vtable catalog ---
+VTBL(CTileObj, 0x001e8cb4);

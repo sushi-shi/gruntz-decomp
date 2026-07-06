@@ -450,4 +450,8 @@ struct C118260 {
 };
 SIZE_UNKNOWN(C118260);
 
+// --- vtable catalog ---
+VTBL(Cd5e20, 0x001e8cb4);
+VTBL(Cea170, 0x001e8cb4);
+
 #endif // GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H

@@ -13,6 +13,7 @@
 // recovered, this dissolves onto the real class.
 #ifndef GRUNTZ_GRUNTZ_FADESINK_H
 #define GRUNTZ_GRUNTZ_FADESINK_H
+#include <rva.h>
 
 #include <Ints.h>
 
@@ -42,5 +43,8 @@ struct IFadeSink { // real polymorphic; FadeNotify is slot 22 (+0x58), __stdcall
     virtual void S21();
     virtual void __stdcall FadeNotify(i32, i32); // +0x58 (slot 22)
 };
+
+// --- vtable catalog ---
+VTBL(IFadeSink, 0x001e8cb4);
 
 #endif // GRUNTZ_GRUNTZ_FADESINK_H

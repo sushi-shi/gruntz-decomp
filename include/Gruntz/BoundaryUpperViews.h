@@ -357,4 +357,15 @@ public:
     void SpinWaitUntil(i32 ms); // 0x13dec0
 };
 
+// --- vtable catalog ---
+VTBL(IDDS_ee30, 0x001e9b64);
+VTBL(ImgOwned, 0x001e9b64);
+VTBL(Killable0, 0x001e9b64);
+VTBL(Killable1, 0x001e9b64);
+VTBL(Obj1413, 0x001e9b64);
+VTBL(RezDir, 0x001e9b64);
+VTBL(RezMgr, 0x001e9b64);
+VTBL(RezOwner, 0x001e9b64);
+VTBL(Snd138f20, 0x001e9b64);
+
 #endif // GRUNTZ_BOUNDARYUPPERVIEWS_H

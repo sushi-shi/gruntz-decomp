@@ -115,4 +115,7 @@ SIZE(CDDrawWorkerB, 0x7c);
 // CDDrawWorkerList.cpp; the slot-11/12/13 relocs now name the real overrides.
 VTBL(CDDrawWorkerB, 0x001efed0);
 
+// --- vtable catalog ---
+VTBL(CDDrawWorkerBase, 0x001efea0);
+
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

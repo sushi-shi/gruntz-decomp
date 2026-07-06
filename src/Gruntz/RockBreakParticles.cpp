@@ -304,3 +304,6 @@ SIZE_UNKNOWN(RockSndEntry);
 SIZE_UNKNOWN(RockSndPlayer);
 SIZE_UNKNOWN(RockSndSet);
 SIZE_UNKNOWN(RockSndTable);
+
+// --- vtable catalog ---
+VTBL(RockCellObj, 0x001e8cb4);
