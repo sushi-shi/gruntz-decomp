@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/ParseSource.h>
 // DDrawSubMgrAni.cpp - the 'ANI' (animation) keyed catalog sub-manager of the
 // CDirectDrawMgr surface/page-manager family (the "DDraw surface manager" group; see
 // docs/ddraw-family-names.md). Sibling of CDDrawSubMgrLeaf (string
@@ -82,10 +83,6 @@ struct CAniElementObj : public CObject {
 // The CSymTab entry's type-tag reader (CParseSource @0x139800, __thiscall on
 // the entry node; the 'ANI'==0x414e49 gate). Modeled as a layout-compatible view
 // so `mov ecx,entry; call 0x139800` falls out; external/no-body.
-class CSymTabTag {
-public:
-    i32 ParseTag_139800(); // 0x139800
-};
 
 // ---------------------------------------------------------------------------
 // The ANI catalog sub-manager. Map at +0x10; the owning manager at +0x0c.
@@ -194,7 +191,7 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
         do {
             CSymTab* fn = (CSymTab*)tree->NextSym2(grp);
             while (fn != 0) {
-                if (((CSymTabTag*)fn)->ParseTag_139800() == 0x414e49) {
+                if (((CParseSource*)fn)->GetEntryTag() == 0x414e49) {
                     if (prefix != 0 && *prefix != 0) {
                         sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
                     } else {
@@ -215,5 +212,4 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
 
 SIZE_UNKNOWN(CAniElemSub);
 SIZE(CAniElementObj, 0x28);
-SIZE_UNKNOWN(CSymTabTag);
 VTBL(CAniElementObj, 0x001efba8); // ??_7CAniElementObj (was g_aniElemVtbl, 5 slots)

@@ -42,6 +42,7 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
 #include <rva.h>
 
@@ -482,10 +483,6 @@ extern i32 g_stepTimer;
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
 // masked (no body); modeled as a method on a tiny object (the same idiom as
 // UnitMutator/UnitCommit) so `mov ecx,[reg+0x60]; call` falls out.
-SIZE_UNKNOWN(SceneHit);
-struct SceneHit {
-    void Fire(void* unit, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5); // 0x11b3b0
-};
 
 // ===========================================================================
 // CBattlezMapConfig::CBattlezMapConfig  @0x024dc0
@@ -2452,7 +2449,8 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
             RECT* hit = (RECT*)(chain + 0x40);
             if (lvl->m_worldX < hit->right && lvl->m_worldX >= hit->left
                 && lvl->m_worldY < hit->bottom && lvl->m_worldY >= hit->top) {
-                ((SceneHit*)(void*)g_gameReg->m_cueSink)->Fire(unit, 0x366, -1, 0, -1, -1);
+                ((CGruntSpawnConfig*)(void*)g_gameReg->m_cueSink)
+                    ->SpawnVoiceDriver((i32)unit, 0x366, -1, 0, -1, -1);
             }
             *(__int64*)&m_scratch78 = 0;
             m_scratch80 = 0x1388;
