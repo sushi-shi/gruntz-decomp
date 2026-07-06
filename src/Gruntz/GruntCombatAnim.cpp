@@ -28,6 +28,7 @@
 // constant-hoist choices structured C++ can't force; the switch tail-merge + FP octant
 // block layout compound it. Same family as LoadGruntDeathAnimations. Final-sweep candidate.
 #include <Gruntz/SoundCueMgr.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <Ints.h>
@@ -119,12 +120,9 @@ extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl,
 struct CombatTypeNode {
     void Reset(); // 0x1b9b93 (__thiscall, 0 args)
 };
-struct CombatTypeColl {
-    char** IndexToPtr(void* node); // 0x403864 -> thunk 0x3864 (__thiscall, ret 4)
-};
-extern CombatTypeColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A @0x6bf650
-extern "C" char* g_typeNodes;     // ?g_typeNodes@@3PAXA @0x6bf66c
-extern "C" i32 g_typeCount;       // ?g_typeCount@@3HA @0x6bf670
+extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A @0x6bf650
+extern "C" char* g_typeNodes;   // ?g_typeNodes@@3PAXA @0x6bf66c
+extern "C" i32 g_typeCount;     // ?g_typeCount@@3HA @0x6bf670
 
 // The keyed config tree (canonical CButeTree, include/Bute/ButeTree.h): Find
 // (0x16d190) is reloc-masked __thiscall.
@@ -473,7 +471,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = g_typeColl.IndexToPtr(*(void**)(P(this, 0x14) + 0x1c));
+    char** typeRec = g_typeColl.IndexToPtr((i32)(*(void**)(P(this, 0x14) + 0x1c)));
     if (g_typeCount != 0) {
         char* p = g_typeNodes;
         i32 n = g_typeCount;
@@ -703,5 +701,4 @@ SIZE_UNKNOWN(CombatReg);
 SIZE_UNKNOWN(CombatSprCat);
 SIZE_UNKNOWN(CombatSprInner);
 SIZE_UNKNOWN(CombatTileMgr);
-SIZE_UNKNOWN(CombatTypeColl);
 SIZE_UNKNOWN(CombatTypeNode);

@@ -14,6 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>    // CString + <windows.h>
@@ -40,9 +41,6 @@ struct CTubeMgr2c {
 struct CTubeTypeNode {
     char* m_name; // +0x00  resolved type name
 };
-struct CTubeTypeColl {
-    CTubeTypeNode* Resolve3864(i32 key); // 0x3864
-};
 struct CTubeAnimLookup { // CGrunt::m_14
     char _00[0x1c];
     i32 m_1c; // +0x1c
@@ -54,7 +52,7 @@ extern "C" CGameRegistry* g_mgrSettings;
 
 // The shared type-name registry (0x6bf650/0x6bf66c/0x6bf670).
 DATA(0x002bf650)
-extern CTubeTypeColl g_typeColl;
+extern CTypeKeyColl g_typeColl;
 DATA(0x002bf66c)
 extern void* g_typeNodes;
 DATA(0x002bf670)
@@ -128,7 +126,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
         ResetGate136b(0, 0, 1);
     }
 
-    CTubeTypeNode* node = g_typeColl.Resolve3864(m_14->m_1c);
+    CTubeTypeNode* node = (CTubeTypeNode*)g_typeColl.IndexToPtr((i32)m_14->m_1c);
     void* p = g_typeNodes;
     i32 count = g_typeCount;
     for (i32 i = count; i != 0; i--) {
@@ -157,5 +155,4 @@ SIZE_UNKNOWN(CTubeBlitParam);
 SIZE_UNKNOWN(CTubeMgr2c);
 SIZE_UNKNOWN(CTubeRecord);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CTubeTypeColl);
 SIZE_UNKNOWN(CTubeTypeNode);
