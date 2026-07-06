@@ -201,6 +201,7 @@ C17e990::~C17e990() {}
 // 0x5e8cb4). Member teardown 0x1682f0 == CWwdSpatialMgr::FreeGrids -> owns a CWwdSpatialMgr.
 // No most-derived vptr at offset 0.
 // ---------------------------------------------------------------------------
+VTBL(Base163a40, 0x001e8cb4);
 struct Base163a40 {
     virtual ~Base163a40();
 };
