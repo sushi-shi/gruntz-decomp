@@ -77,7 +77,7 @@ void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-mas
 // activation offsets without disturbing Play.cpp's Render-side member typing.
 struct PlayActivate {
     i32 BaseOnActivate();                // base vfunc8 (reloc-masked)
-    void Method1ae6();                   // FUN_00401ae6 __thiscall (m_474 != 0 arm)
+    void ArmActivation();                // FUN_00401ae6 __thiscall (m_474 != 0 arm)
     void StartTimer(i32, i32, i32, i32); // FUN_00401843 __thiscall
 
     char m_pad00[0xc];
@@ -136,7 +136,7 @@ i32 CPlay::OnActivate() {
     LevelInit2356(g_gameReg, p->m_2dc, p->m_470);
 
     if (p->m_474 != 0) {
-        p->Method1ae6();
+        p->ArmActivation();
     } else {
         p->m_c->m_24->Wire(p->m_c->m_4->m_14, p->m_c->m_8);
         p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);

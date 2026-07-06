@@ -204,15 +204,15 @@ public:
     // (sub-scope records -> m_subTabs; leaf records -> the leaf builder + m_symbols).
     i32 ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3); // 0x13a640
 
-    // Method4b0 (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
+    // AddNodeEntry (0x13a4b0): pop a fresh parse-slot, build a leaf record into it from
     // (name=a1, rec=a2, f4=a0, stream=a3), splice it into rec's +0x24 sub-table, and
     // bump the parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen).
     // Returns the slot.
-    i32 Method4b0(void* a0, void* a1, void* a2, void* a3); // 0x13a4b0
+    i32 AddNodeEntry(void* a0, void* a1, void* a2, void* a3); // 0x13a4b0
 
     // The leaf-merge helper ApplyRange calls when a leaf record's +0x24 sub-table walk
     // already has the key (0x13a530, __thiscall(rec, found)). Reloc-masked extern.
-    i32 Method530(void* rec, void* found); // 0x13a530
+    i32 AddNodeSubEntry(void* rec, void* found); // 0x13a530
 
     // Walk m_subTabs (+0x38) for `name`, forwarding m_owner->m_68 == 0 (0x13a230).
     void* FindSub(const char* name);

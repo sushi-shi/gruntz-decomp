@@ -365,7 +365,7 @@ public:
     // not modeled as a CBootyState virtual.
 
     // Non-virtual engine-label backlog stub (0x1d440; vtable-neutral).
-    void vfunc_1();
+    void StateOnEnter();
 
     // Booty-title tail helpers reached via ILT thunks (reloc-masked; the byte match is
     // name-independent). These are SHARED bodies owned by other classes but dispatched
@@ -398,7 +398,7 @@ public:
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
     // runs the slot-2 release (statically bound), re-stamps CState, chains BaseCleanup.
     // Slots whose bodies live in another TU (slot 8 == OnActivate2 in the booty-activate
-    // TU; slot 1 == 0x1d440, shared with CBootyState::vfunc_1) or are deferred are
+    // TU; slot 1 == 0x1d440, shared with CBootyState::StateOnEnter) or are deferred are
     // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
     virtual ~CMultiBootyState() OVERRIDE;     // slot 0  0x08d510 (??1) / 0x08d4e0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x01e520 booty teardown

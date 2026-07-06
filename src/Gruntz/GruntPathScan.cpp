@@ -51,7 +51,7 @@ struct CScanPlane { // grid (settings->m_70)
     i32 m_60, m_64, m_68, m_6c; // +0x60 dirty rect
     i32 m_70, m_74;             // +0x70 width, +0x74 height
     i32 Probe20f4(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
-    void Method43ea(i32 a);                                                          // 0x43ea
+    void SetStepFlag(i32 a);                                                         // 0x43ea
 };
 
 // The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
@@ -237,7 +237,7 @@ i32 CGrunt::PathScan57db0() {
             }
         }
     }
-    grid->Method43ea(0);
+    grid->SetStepFlag(0);
     return 0;
 }
 

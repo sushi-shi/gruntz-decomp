@@ -162,7 +162,7 @@ void CDDrawChildGroup::ResetChildD8() {
 // walk the +0x10 CObList destroying each node's child via its scalar-deleting
 // destructor, then RemoveAll the +0x10 list and the +0x2c / +0x48 collections.
 RVA(0x001591f0, 0x54)
-void CDDrawChildGroup::Stub_1591f0() {
+void CDDrawChildGroup::DestroyChildren() {
     void* p = *(void**)((char*)m_parent + 0x24);
     if (p != 0) {
         CImageSet3* q = *(CImageSet3**)((char*)p + 0x5c);

@@ -528,14 +528,14 @@ void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 
-// CGameApp::Stub_080dd0 @0x080dd0 - the CGameApp scalar-deleting destructor (the
+// CGameApp::GameAppScalarDtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
 // ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
 // qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
 // auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs
 // CloseResources() + the instance-counter decrement - so the manual vtable stamp
 // (and the retail-vtable / instance-counter aliases) are gone.
 RVA(0x00080dd0, 0x32)
-void* CGameApp::Stub_080dd0(unsigned int flags) {
+void* CGameApp::GameAppScalarDtor(unsigned int flags) {
     this->CGameApp::~CGameApp();
     if (flags & 1) {
         operator delete(this);

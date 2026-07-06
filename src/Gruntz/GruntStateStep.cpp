@@ -56,8 +56,8 @@ struct CStepGrunt {                                              // g (esi)
     i32 Check3c4c(i32 a, i32 b);                                 // 0x3c4c
     void Probe3143(CStepCoord* out);                             // 0x3143
     i32 Trigger1640(i32 x, i32 y, i32 a, i32 msg, i32 c, i32 d); // 0x1640
-    i32 Method421e();                                            // 0x421e
-    void Method223e();                                           // 0x223e
+    i32 IsSteppable();                                           // 0x421e
+    void DoStepAction();                                         // 0x223e
     char _00[0x10];
     CStepSub10* m_10; // +0x10
     CStepOwner* m_14; // +0x14
@@ -88,7 +88,7 @@ struct CStepGrid { // this->m_c
     char _14[0x60 - 0x14];
     i32 m_60, m_64, m_68, m_6c; // +0x60 dirty rect (l,t,r,b)
     i32 m_70, m_74;             // +0x70 width, +0x74 height
-    void Method43ea(i32 a);     // 0x43ea
+    void SetStepFlag(i32 a);    // 0x43ea
 };
 struct CStepGoal { // this->m_f4[] element
     i32 m_0, m_4;
@@ -101,7 +101,7 @@ struct CStepBoard {
 struct CStepMgr {                                          // this (ebp)
     CStepGrunt* QueryTile4098(i32 x, i32 y, i32 a, i32 b); // 0x4098
     void Finish3e4f(CStepGrunt* g, CStepGrunt* cur);       // 0x3e4f
-    i32 Method2626(CStepGrunt* g);                         // 0x2626
+    i32 ShouldStepGrunt(CStepGrunt* g);                    // 0x2626
     char _00[0x8];
     CStepBoard* m_8; // +0x08 board (CStepGrunt*[] grid at +0x1c)
     CStepGrid* m_c;  // +0x0c grid
@@ -239,7 +239,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             g->m_2f0 = -1;
             g->m_2f4 = -1;
             g->m_2d4 = 0;
-            g->Method223e();
+            g->DoStepAction();
             goto tail;
         }
         CStepSub10* s = cur->m_10;
@@ -250,7 +250,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             }
             g->m_2f0 = -1;
             g->m_2f4 = -1;
-            if (g != 0 && g->Method421e() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0
+            if (g != 0 && g->IsSteppable() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0
                 && g->m_220 == 0) {
                 const char* nm = g_typeColl.Lookup(g->m_14->m_1c)->m_0;
                 if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0
@@ -323,14 +323,14 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             g->m_2d4 = 0;
         }
         if (dist2 <= 0xa) {
-            m_c->Method43ea(0);
+            m_c->SetStepFlag(0);
         }
         g->m_2ec = 0;
         goto tail;
     }
 
 tail:
-    if (Method2626(g)) {
+    if (ShouldStepGrunt(g)) {
         if (g->m_328 == 0 && (u32)g->m_2ec > (u32)m_a0 && m_f8 != 0) {
             CStepGoal* e = m_f4[rand() % m_f8];
             g->Trigger1640(e->m_0, e->m_4, 0, 0x983, 0, 0);

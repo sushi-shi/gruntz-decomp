@@ -43,17 +43,17 @@ struct CDDrawFrameSource;
 // worker and is inherited by both subtypes.
 class CDDrawWorkerBase {
 public:
-    virtual void FUN_005bef01();                 // [0]  0x1bef01
+    virtual void GetRuntimeClass();              // [0]  0x1bef01
     virtual i32 ScalarDtor(i32 flag);            // [1]  scalar-deleting destructor
-    virtual void FUN_004028ec();                 // [2]  0x0028ec
-    virtual void FUN_0040106e();                 // [3]  0x00106e
-    virtual void FUN_00404034();                 // [4]  0x004034
-    virtual void FUN_00557200();                 // [5]  0x157200 (B)
-    virtual void FUN_00401c08();                 // [6]  0x001c08
-    virtual void FUN_00557310();                 // [7]  0x157310 (B)
-    virtual void FUN_00557210();                 // [8]  0x157210 (B)
-    virtual void FUN_00557080();                 // [9]  0x157080
-    virtual void FUN_005660b0();                 // [10] 0x1660b0 (B)
+    virtual void Serialize();                    // [2]  0x0028ec
+    virtual void AssertValid();                  // [3]  0x00106e
+    virtual void Dump();                         // [4]  0x004034
+    virtual void Slot05_157200();                // [5]  0x157200 (B)
+    virtual void IsValidImage();                 // [6]  0x001c08
+    virtual void Slot07_157310();                // [7]  0x157310 (B)
+    virtual void Slot08_157210();                // [8]  0x157210 (B)
+    virtual void Slot09_157080();                // [9]  0x157080
+    virtual void Slot10_1660b0();                // [10] 0x1660b0 (B)
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x1572f0 (B) / 0x157110 (A)
 
     // Non-virtual: reset/arm the worker from (a, b); seeds m_3c off the owner ctx.

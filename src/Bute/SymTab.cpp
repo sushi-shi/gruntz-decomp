@@ -389,17 +389,17 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     return child;
 }
 
-// Method4b0 (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
+// AddNodeEntry (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
 // from this leaf record (the 11-arg CSymLeafBuilder::Build with the MakeSymSeed leftover-
 // args trick: f2 = the seed, str2/f3/f1 = 0, f6/arr/stream the carried leftover slots),
 // splice the built slot's +0x1c hash node into rec's (+0x24) sub-table, then bump the
 // parser's longest-leaf-name counter (m_owner->m_longestLeafNameLen). Returns the popped slot. Non-EH
 // (no destructible local) so no /GX frame despite the eh-profile unit. __thiscall, ret 0x10.
-// 0x13ba70 is reached here as a __thiscall on the owning parser (Method4b0 reloads
+// 0x13ba70 is reached here as a __thiscall on the owning parser (AddNodeEntry reloads
 // ecx=m_owner before the call), unlike the free-call ctor sites; same physical seed
 // builder, just dispatched with a `this`. RVA-keyed pairing absorbs the mangling.
 RVA(0x0013a4b0, 0x75)
-i32 CSymTab::Method4b0(void* a0, void* a1, void* a2, void* a3) {
+i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
     if (slot == 0) {
         return (i32)slot;
@@ -460,7 +460,7 @@ SIZE(CSymRangeStream, 0x4); // interface view (vptr only)
 // CSymLeafBuilder (the 11-arg leaf-record builder, 0x139710) is defined at the top
 // of this TU in retail-RVA order; ApplyRange below uses it.
 
-// PopParseSlot is CSymParser::PopParseSlot (0x13c0c0); ApplyRange/Method4b0 call it
+// PopParseSlot is CSymParser::PopParseSlot (0x13c0c0); ApplyRange/AddNodeEntry call it
 // directly on m_owner (SymParser.h is in scope), so no receiver-view struct is needed.
 
 // @early-stop
@@ -535,7 +535,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
             void* found = rec->m_valTable.Walk(name1, 1);
             if (found) {
                 if (a3 != 0) {
-                    Method530(rec, found);
+                    AddNodeSubEntry(rec, found);
                 } else {
                     skip = 1;
                 }

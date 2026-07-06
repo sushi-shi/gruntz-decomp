@@ -63,16 +63,16 @@ public:
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
 class CDDrawMapWorker {
 public:
-    virtual void FUN_005bef01();                 // [0] 0x1bef01
+    virtual void GetRuntimeClass();              // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
-    virtual void FUN_004028ec();                 // [2] 0x0028ec
-    virtual void FUN_0040106e();                 // [3] 0x00106e
-    virtual void FUN_00404034();                 // [4] 0x004034
-    virtual void FUN_00565d90();                 // [5] 0x165d90
-    virtual void FUN_00401c08();                 // [6] 0x001c08
+    virtual void Serialize();                    // [2] 0x0028ec
+    virtual void AssertValid();                  // [3] 0x00106e
+    virtual void Dump();                         // [4] 0x004034
+    virtual void Slot05_165d90();                // [5] 0x165d90
+    virtual void IsValidImage();                 // [6] 0x001c08
     virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
-    virtual void FUN_00565da0();                 // [8] 0x165da0
-    virtual void FUN_00568f20();                 // [9] 0x168f20
+    virtual void Slot08_165da0();                // [8] 0x165da0
+    virtual void Slot09_168f20();                // [9] 0x168f20
     virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
     virtual i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
@@ -115,11 +115,11 @@ public:
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct CDDrawWorkerMapBase {
-    virtual void FUN_005bef01();    // [0] 0x1bef01 grand-base thunk
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 grand-base thunk
     virtual ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor
-    virtual void FUN_004028ec();    // [2] 0x0028ec
-    virtual void FUN_0040106e();    // [3] 0x00106e
-    virtual void FUN_00404034();    // [4] 0x004034
+    virtual void Serialize();       // [2] 0x0028ec
+    virtual void AssertValid();     // [3] 0x00106e
+    virtual void Dump();            // [4] 0x004034
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -149,10 +149,10 @@ public:
     // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
-    virtual i32 IsReady();       // [5]  0x156cd0
-    virtual i32 FUN_00556db0();  // [6]  0x156db0 (state predicate, returns 1)
-    virtual void DestroyAll();   // [7]  0x165810
-    virtual void FUN_00556cf0(); // [8]  0x156cf0 (shared, declared-only)
+    virtual i32 IsReady();        // [5]  0x156cd0
+    virtual i32 Slot06_156db0();  // [6]  0x156db0 (state predicate, returns 1)
+    virtual void DestroyAll();    // [7]  0x165810
+    virtual void Slot08_156cf0(); // [8]  0x156cf0 (shared, declared-only)
     virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
     virtual void* CreateWorker28(i32 a1, const char* key, i32 a3);                  // [10] 0x165990
     virtual void* CreateWorker2C(i32 a1, const char* key, i32 a3);                  // [11] 0x165a10
@@ -169,8 +169,8 @@ public:
     i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
-    void* Stub_157610(i32 flag);
-    void Stub_165b90();
+    void* MapSmallScalarDtor(i32 flag);
+    void ResetSlots();
 };
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
@@ -335,7 +335,7 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
 // ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
 SYMBOL(??_GCDDrawChildGroupDtorHost @@UAEPAXI@Z)
 RVA(0x00157610, 0x1e)
-void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
+void* CDDrawWorkerMapSmall::MapSmallScalarDtor(i32 flag) {
     ((CDDrawChildGroupDtorHost*)this)->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
     if (flag & 1) {
         operator delete(this);
@@ -345,7 +345,7 @@ void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
 
 // Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
 RVA(0x00156db0, 0x6)
-i32 CDDrawWorkerMapSmall::FUN_00556db0() {
+i32 CDDrawWorkerMapSmall::Slot06_156db0() {
     return 1;
 }
 
@@ -436,7 +436,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
 // state/val-slot schedule (the identical source matched 100% at 0x165810) + the
 // reloc-masked EH-state push. docs/patterns/zero-register-pinning.md.
 RVA(0x00165b90, 0xa9)
-void CDDrawWorkerMapSmall::Stub_165b90() {
+void CDDrawWorkerMapSmall::ResetSlots() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
     CString key;
@@ -456,7 +456,7 @@ void CDDrawWorkerMapSmall::Stub_165b90() {
 // WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::DestroyAll
 // reaches ~82% objdiff here; the EH-frame register/layout schedule is TU-context
 // dependent (it reached 100% only in its original TU layout). Kept for future reuse:
-// re-enable, remove Stub_165b90, and reconcile this TU's symbol/layout context.
+// re-enable, remove ResetSlots, and reconcile this TU's symbol/layout context.
 //
 // This block carries the full reconstruction PLUS every supporting type it needs
 // that the active file above does not already declare (POSITION, CString,
@@ -518,7 +518,7 @@ public:
 // ---------------------------------------------------------------------------
 // on re-enable, annotate this definition with the retail address 0x165b90
 // size 0xa9 (the macro literal is omitted here so verify_stub_labels' text
-// scan does not treat this preserved WIP copy as a duplicate of Stub_165b90)
+// scan does not treat this preserved WIP copy as a duplicate of ResetSlots)
 void CDDrawWorkerMapSmallTeardown::DestroyAll()
 {
     CObject *val = 0;

@@ -29,7 +29,7 @@ namespace modeinit {
         i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18; // +0x00..+0x18
         i32 Init3e77(i32 a, i32 b);               // 0x00003e77
         void Dtor285b();                          // 0x0000285b
-        void Method171c(i32 a);                   // 0x0000171c
+        void SetModeFlag(i32 a);                  // 0x0000171c
     };
 
     // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
@@ -42,7 +42,7 @@ namespace modeinit {
     struct Worker630 {
         i32 Init10b4(i32 a); // 0x000010b4
         void PreDtor248c();  // 0x0000248c
-        void Method1d98();   // 0x00001d98
+        void ModePostInit(); // 0x00001d98
         // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
         struct Sub530 {
             void Ctor1b4f0b(); // 0x001b4f0b
@@ -127,7 +127,7 @@ namespace modeinit {
 
         i32 Init0c7ec0(Arg1* a1, i32 a2, i32 a3);
         i32 Setup43a9(Arg1* a1, i32 a2, i32 a3); // 0x000043a9
-        i32 Method35da(i32 a, i32 b);            // 0x000035da
+        i32 IsModeReady(i32 a, i32 b);           // 0x000035da
         i32 CallV74();                           // +0x74 slot 29
         i32 CallV78(i32 a, i32 b);               // +0x78 slot 30
         void CallV90();                          // +0x90 slot 36
@@ -202,7 +202,7 @@ namespace modeinit {
     //    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
     //  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
     //    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
-    //    m_2dc->Method1d98(); and m_40 is a DWORD store (i32 field), not u8.
+    //    m_2dc->ModePostInit(); and m_40 is a DWORD store (i32 field), not u8.
     //  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
     //    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
     //  * ShowCursor/timeGetTime go through the CACHED import pointers
@@ -262,7 +262,7 @@ namespace modeinit {
             return 0;
         }
         m_2e0->m_10 = 0;
-        m_2e0->Method171c(1);
+        m_2e0->SetModeFlag(1);
 
         Worker630* wk = (Worker630*)RezAlloc(0x630);
         if (wk) {
@@ -408,7 +408,7 @@ namespace modeinit {
         m_40 = 0;
         m_1c0 = 0;
         memset(m_1d0, 0, 0x40 * 4);
-        m_2dc->Method1d98();
+        m_2dc->ModePostInit();
         m_1cc = 0;
         m_2d8 = timeGetTime();
         m_320 = 0;
@@ -422,7 +422,7 @@ namespace modeinit {
         if (!CallV78(a2, 1)) {
             return 0;
         }
-        if (!Method35da(0, 0)) {
+        if (!IsModeReady(0, 0)) {
             return 0;
         }
         Peer* peer = m_4e4;

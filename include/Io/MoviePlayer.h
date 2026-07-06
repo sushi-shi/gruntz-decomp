@@ -82,8 +82,8 @@ struct CMovieDecodeStore {
 // old manual `m_vptr = &g_*Vtbl` stores hand-rolled. Slot 2 is declared-only
 // (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
 struct CMovieScratch : public Wap::CObject {
-    virtual ~CMovieScratch();             // slot 1 override (retail thunk 0x4040f7)
-    virtual void FUN_004028ec() OVERRIDE; // slot 2 override (retail thunk 0x401e56; declared-only)
+    virtual ~CMovieScratch();          // slot 1 override (retail thunk 0x4040f7)
+    virtual void Serialize() OVERRIDE; // slot 2 override (retail thunk 0x401e56; declared-only)
 
     void* m_4; // +0x04 (worker+0x8690)  Rez-owned buffer
 };

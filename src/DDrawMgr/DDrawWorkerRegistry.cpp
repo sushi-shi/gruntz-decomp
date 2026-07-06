@@ -30,7 +30,7 @@
 // (CString / CMapStringToOb signatures also via the shim includes below).
 #include <Mfc.h>
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
-#include <stdio.h>  // sprintf ("%s%s%s" path builder in Stub_154f80 / Stub_155160)
+#include <stdio.h>  // sprintf ("%s%s%s" path builder in InsertWorkerKey / LookupWorkerKey)
 #include <Globals.h>
 // The canonical CDDrawWorkerRegistry + its unified own-vtable view CWorkerVtableView.
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -47,7 +47,7 @@ inline void* operator new(u32, void* p) {
 // bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class CWorkerValue {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
@@ -69,27 +69,27 @@ public:
 // (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
 class CLoadable {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01
+    virtual void GetRuntimeClass();   // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
-    virtual void FUN_004028ec();      // [2] 0x0028ec
-    virtual void FUN_0040106e();      // [3] 0x00106e
-    virtual void FUN_00404034();      // [4] 0x004034
-    virtual void FUN_00555750();      // [5] 0x155750
-    virtual void FUN_00401c08();      // [6] 0x001c08
+    virtual void Serialize();         // [2] 0x0028ec
+    virtual void AssertValid();       // [3] 0x00106e
+    virtual void Dump();              // [4] 0x004034
+    virtual void Slot05_155750();     // [5] 0x155750
+    virtual void IsValidImage();      // [6] 0x001c08
     virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
-    virtual void FUN_00555770();      // [8] 0x155770
+    virtual void Slot08_155770();     // [8] 0x155770
     CLoadable() {}
 };
 
 struct CDDrawWorker : public CLoadable {
     virtual i32 Vfunc24(const char* key);                // [9]  0x155810
-    virtual void FUN_005521f0();                         // [10] 0x1521f0
+    virtual void Slot10_1521f0();                        // [10] 0x1521f0
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
     virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
     virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
-    virtual void FUN_005522b0();                         // [15] 0x1522b0
-    virtual void FUN_005523b0();                         // [16] 0x1523b0
+    virtual void Slot15_1522b0();                        // [15] 0x1522b0
+    virtual void Slot16_1523b0();                        // [16] 0x1523b0
     CDDrawWorker() {}
 
     i32 m_04;        // +0x04  parent+0x1c
@@ -112,7 +112,7 @@ public:
     ~CDDrawRegistryDtorHost();
 };
 
-// Helpers for Stub_156e80 (0x156e80): a probe chain (0x13b900 -> object, whose
+// Helpers for ProbeWorkerKey (0x156e80): a probe chain (0x13b900 -> object, whose
 // 0x13a230 yields the result) and the parent's +0x48 vtable dispatch.
 class RegProbeChain {
 public:
@@ -132,7 +132,7 @@ public:
 // A CDDrawWorker (vtable 0x5efbe8) viewed for the +0x28/+0x3c dispatches + the +0x18
 // status field; slots named from their retail slot-function RVAs. Slot28 (0x1521f0)
 // and Slot3C (0x1522b0) are the dispatched ops, modeled with the arg arity the
-// Stub_154f80/155160 call sites use (the CDDrawWorker slot declarations elsewhere
+// InsertWorkerKey/155160 call sites use (the CDDrawWorker slot declarations elsewhere
 // model them 0-arg - an arity reconcile for the deferred family-unification pass).
 class RegWorkerValue {
 public:
@@ -533,7 +533,7 @@ CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
 // derived vtable last, and the buffer/entry register schedule differs. Reloc-masked
 // EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
-i32 CDDrawWorkerRegistry::Stub_154f80(CSymTab* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = (char*)operator new(0x100);
     i32 count = 0;
     if (buf == 0) {
@@ -567,7 +567,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(CSymTab* dir, const char* sub, const char*
 }
 
 // ---------------------------------------------------------------------------
-// 0x155160: the read-side twin of Stub_154f80 - walk the directory tree, build the
+// 0x155160: the read-side twin of InsertWorkerKey - walk the directory tree, build the
 // same path string, and accumulate this->+0x4c(entry, buf, prefix) (a negative result
 // aborts to -1). Then, when sub is set, Lookup it in the map; if present, dispatch its
 // +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's +0x18 is positive.
@@ -577,7 +577,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(CSymTab* dir, const char* sub, const char*
 // abort / Lookup / +0x3c dispatch + -1 abort / +0x18 count are reproduced; the
 // buffer/entry/count register schedule + reloc-masked thunk names are the residual.
 RVA(0x00155160, 0x11e)
-i32 CDDrawWorkerRegistry::Stub_155160(CSymTab* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = (char*)operator new(0x100);
     i32 count = 0;
     RegDirEntry* e = (RegDirEntry*)dir->FirstSub();
@@ -617,7 +617,7 @@ i32 CDDrawWorkerRegistry::Stub_155160(CSymTab* dir, const char* sub, const char*
 // (0x156e10, CDDrawSubMgr.cpp as CDDrawRegistryDtorHost::~) then operator delete.
 SYMBOL(??_GCDDrawRegistryDtorHost @@UAEPAXI@Z)
 RVA(0x00156df0, 0x1e)
-void* CDDrawWorkerRegistry::Stub_156df0(i32 flag) {
+void* CDDrawWorkerRegistry::RegScalarDtor(i32 flag) {
     ((CDDrawRegistryDtorHost*)this)->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
     if (flag & 1) {
         operator delete(this);
@@ -630,7 +630,7 @@ void* CDDrawWorkerRegistry::Stub_156df0(i32 flag) {
 // the result is non-null, dispatch this->+0x48 with (result, g_emptyString,
 // &g_dat60b588) and return it, else 0. __thiscall, 2 args (ret 8).
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::Stub_156e80(RegProbeChain* arg1, i32 arg2) {
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(RegProbeChain* arg1, i32 arg2) {
     RegProbeChain* obj = arg1->Get_13b900(arg2);
     void* result = obj->Deref_13a230();
     if (result == 0) {

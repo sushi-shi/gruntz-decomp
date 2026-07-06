@@ -184,7 +184,7 @@ public:
 
     // MakeSeed: the name-keyed seed builder (0x13ba70) dispatched __thiscall on the
     // parser (ecx = this) - the same physical seed builder MakeSymSeed calls as a
-    // free cdecl, reached here with a `this` (SymTab.cpp Method4b0). Bare decl (no
+    // free cdecl, reached here with a `this` (SymTab.cpp AddNodeEntry). Bare decl (no
     // RVA - the RVA is carried by MakeSymSeed); the rel32 call reloc-masks.
     i32 MakeSeed(); // 0x13ba70 (__thiscall view of the seed builder)
 
@@ -215,7 +215,7 @@ public:
     i32 m_50;                   // +0x50  (=1)
     i32 m_54;                   // +0x54
     i32 m_longestScopeNameLen;  // +0x58  longest scope-name length seen (SymTab.cpp)
-    i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp Method4b0)
+    i32 m_longestLeafNameLen;   // +0x5c  longest leaf-name length seen (SymTab.cpp AddNodeEntry)
     i32 m_60;                   // +0x60
     char* m_cachedSourceBuffer; // +0x64  strdup'd source buffer (RezFree'd)
     i32 m_68;                   // +0x68  flag forwarded to the +0x38 walk (m_68 == 0)

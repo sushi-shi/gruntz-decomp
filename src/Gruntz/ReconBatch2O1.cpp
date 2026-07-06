@@ -54,13 +54,13 @@ void Bump_1c0fa8() {
 // (push -2; mov ecx,&g_652ec0; call <CWnd>; ret) __thiscall callee.
 // ===========================================================================
 struct CWndHost_1bae9b {
-    i32 Method1baf15(i32 a); // 0x1baf15
+    i32 SetWindowMode(i32 a); // 0x1baf15
 };
 DATA(0x00252ec0)
 extern CWndHost_1bae9b g_wnd_652ec0;
 RVA(0x001bae9b, 0xd)
 void Call_1bae9b() {
-    g_wnd_652ec0.Method1baf15(-2);
+    g_wnd_652ec0.SetWindowMode(-2);
 }
 
 // ===========================================================================

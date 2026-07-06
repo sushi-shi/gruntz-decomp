@@ -466,7 +466,7 @@ tail:
 // @source: decomp-xref
 // @stub
 RVA(0x0001d440, 0xd7d)
-void CBootyState::vfunc_1() {}
+void CBootyState::StateOnEnter() {}
 
 // DrawScrollingCredits (0x396f0): the credits scroll-text renderer. Each frame it ticks the
 // three overlay timers down by the frame delta, advances the scrolling caption RECT by

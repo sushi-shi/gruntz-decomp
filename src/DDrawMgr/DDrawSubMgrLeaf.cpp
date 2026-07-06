@@ -36,7 +36,7 @@
 // is load-bearing. Declarations only - never defined here, so no ??_7 is emitted.
 class CCatalogNode {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
@@ -65,11 +65,11 @@ public:
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 class CDDrawSubMgrGrandBase {
 public:
-    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
     virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
+    virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
     ~CDDrawSubMgrGrandBase();
 
     i32 m_04; // +0x04  -1 when inactive
@@ -92,9 +92,9 @@ public:
     // slots 6/8 are declared-only -> reloc-masked references).
     void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
     virtual i32 IsReady();               // [5] 0x1577a0
-    virtual i32 FUN_00552640();          // [6] 0x152640 (state predicate, returns 1)
+    virtual i32 Slot06_152640();         // [6] 0x152640 (state predicate, returns 1)
     virtual void Cleanup();              // [7] 0x152650
-    virtual void FUN_00554a00();         // [8] 0x154a00 (shared, declared-only)
+    virtual void Slot08_154a00();        // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
     void ClearContext(); // 0x157ae0 (not a vtable slot)
@@ -319,7 +319,7 @@ void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
 
 // Leaf vtable slot [6] (0x152640): constant state predicate returning 1.
 RVA(0x00152640, 0x6)
-i32 CDDrawSubMgrLeaf::FUN_00552640() {
+i32 CDDrawSubMgrLeaf::Slot06_152640() {
     return 1;
 }
 

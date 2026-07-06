@@ -32,11 +32,11 @@
 namespace Wap {
 
     struct CObject {
-        virtual void FUN_005bef01(); // slot 0  (0x1bef01)
-        virtual ~CObject();          // slot 1  (base scalar-deleting dtor, 0x17f3 thunk)
-        virtual void FUN_004028ec(); // slot 2  (0x0028ec)
-        virtual void FUN_0040106e(); // slot 3  (0x00106e)
-        virtual void FUN_00404034(); // slot 4  (0x004034)
+        virtual void GetRuntimeClass(); // slot 0  (0x1bef01)
+        virtual ~CObject();             // slot 1  (base scalar-deleting dtor, 0x17f3 thunk)
+        virtual void Serialize();       // slot 2  (0x0028ec)
+        virtual void AssertValid();     // slot 3  (0x00106e)
+        virtual void Dump();            // slot 4  (0x004034)
         CObject() {}
     };
     // Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (masks 0x5e8cb4);

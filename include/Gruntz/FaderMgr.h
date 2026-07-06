@@ -34,8 +34,8 @@
 SIZE_UNKNOWN(CFaderArray);
 VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
 struct CFaderArray : public Wap::CObject {
-    virtual ~CFaderArray() OVERRIDE;      // slot 1 (retail dtor 0x17e430)
-    virtual void FUN_004028ec() OVERRIDE; // slot 2 (retail 0x17e2a0)
+    virtual ~CFaderArray() OVERRIDE;   // slot 1 (retail dtor 0x17e430)
+    virtual void Serialize() OVERRIDE; // slot 2 (retail 0x17e2a0)
 
     CFader** m_pData; // +0x04 (manager +0x14)
     i32 m_nSize;      // +0x08 (manager +0x18)

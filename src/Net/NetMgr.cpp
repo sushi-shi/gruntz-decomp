@@ -1095,7 +1095,7 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // =========================================================================
-// CNetMgr::Stub_0b5460  (0xb5460, __thiscall, /GX 18-EH-state) - the multiplayer
+// CNetMgr::SetupMultiplayerSession  (0xb5460, __thiscall, /GX 18-EH-state) - the multiplayer
 // connect/init DRIVER, reconstructed LEAF-FIRST. It operator-new's four objects
 // (the 0x8c peer CNetMgr + 3 CObLists, the 0x1c interface object, the 0x630
 // CSBI_RectOnly session, the 0x78 command manager); each `new`+ctor below is a
@@ -1123,7 +1123,7 @@ extern "C" void ChannelSlots_InitAll();           // 0x2da1 (thunk) - no `this` 
 // are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectVtbl slots the driver
 // dispatches (+0x08 Abort, +0x74 OnStart, +0x78 OnConnect, +0x90 OnReady) are NOT on
 // 0x5ea42c - they live on the DRIVER `this`'s own, much larger vtable. That `this` (used
-// by CNetMgr::Stub_0b5460: a CSymParser @+0x08, host flag @+0x528, g_mgrSettings, m_4
+// by CNetMgr::SetupMultiplayerSession: a CSymParser @+0x08, host flag @+0x528, g_mgrSettings, m_4
 // game-mgr, m_peer) is the CMulti-shaped multiplayer state, NOT the 0x8c DirectPlay
 // CNetMgr the peer stamps. CONVERTING these PMFs to real virtuals is DEFERRED WORK (not
 // done here): it requires modeling that driver class polymorphic over its full CPlay/
@@ -1260,7 +1260,7 @@ struct CNetSess {
 //     not reproduced inline. Final sweep: needs the real CSBI_RectOnly + a catalogued
 //     CNetMgr vtable (which would also close walls 2/3).
 RVA(0x000b5460, 0x914)
-i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
+i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 #define TF(o) (*(i32*)((char*)this + (o)))
 #define MF(o) (*(i32*)((char*)m_4 + (o)))
 

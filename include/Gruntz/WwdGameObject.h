@@ -46,7 +46,7 @@ public:
     virtual i32 Init(i32 a1, i32 a3);  // +0x24
 
     // Non-virtual play-step helper (0x164830, __thiscall, 4 args) Play tail-calls.
-    i32 Method164830(i32 a1, i32 type, i32 a3, i32 a4);
+    i32 QueryWorkerType(i32 a1, i32 type, i32 a3, i32 a4);
 
     i32 m_04;
     i32 m_08; // +0x08  flag bits (bit0/bit1 read by Setup)

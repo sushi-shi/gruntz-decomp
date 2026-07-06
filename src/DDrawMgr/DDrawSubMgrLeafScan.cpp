@@ -40,7 +40,7 @@
 // helpers forward to MatchSub; FindKeyOfValue compares the value pointer itself.
 class LeafScanValue {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
     char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
     void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
@@ -115,11 +115,11 @@ struct LeafRootHandle {
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct LeafElementBase {
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~LeafElementBase();  // [1] scalar-deleting dtor (0x158660 ??_G)
-    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafElementBase();     // [1] scalar-deleting dtor (0x158660 ??_G)
+    virtual void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();            // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04; // +0x04 = parent map count (-1 when dead)
     i32 m_08; // +0x08 = 0
@@ -141,7 +141,7 @@ inline LeafElementBase::~LeafElementBase() {
 // non-virtual __thiscall members reached only from the element).
 struct LeafElementObj : public LeafElementBase {
     virtual void LeafSlot5_158650();         // [5] 0x158650 (declared-only)
-    virtual void FUN_00401c08();             // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void IsValidImage();             // [6] 0x001c08 (shared thunk, declared-only)
     virtual void LeafSlot7_1587c0();         // [7] 0x1587c0 (declared-only; == Release addr)
     virtual void LeafSlot8_154a00();         // [8] 0x154a00 (declared-only)
     ~LeafElementObj() OVERRIDE;              // overrides slot [1]

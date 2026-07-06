@@ -2041,7 +2041,7 @@ i32 CPlay::BuildHelpReveal() {
 // @source: rtti-vptr
 // @stub
 RVA(0x0008c9d0, 0x2bd)
-void CPlay::Stub_08c9d0() {}
+void CPlay::PlayBacklog08c9d0() {}
 
 // =========================================================================
 // CState::SetBeginClearParams

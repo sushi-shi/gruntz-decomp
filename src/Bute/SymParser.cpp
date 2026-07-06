@@ -433,10 +433,10 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         SymBuildLeaf(this, &fd, extKey);
         void* rec = node->FindOrAddSym(key);
         if (node->Insert(fname, extKey) == 0) {
-            node->Method4b0((void*)(u32)fd.size, rec, full, 0);
+            node->AddNodeEntry((void*)(u32)fd.size, rec, full, 0);
         } else if (flag != 0) {
-            node->Method530(rec, extKey);
-            node->Method4b0((void*)(u32)fd.size, rec, full, 0);
+            node->AddNodeSubEntry(rec, extKey);
+            node->AddNodeEntry((void*)(u32)fd.size, rec, full, 0);
         }
         void* node2 = node->FindOrAddSym(key);
         if (node2) {

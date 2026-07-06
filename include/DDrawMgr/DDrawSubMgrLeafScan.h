@@ -40,11 +40,11 @@ class CParseSource;     // the element's draw-source (BeginParse/EndParse)
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~LeafScanBase();     // [1] scalar-deleting dtor
-    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafScanBase();        // [1] scalar-deleting dtor
+    virtual void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();            // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -68,10 +68,10 @@ public:
     // (slot 1 = the virtual dtor below), then 4 leaf virtuals at slots 5..8. Slots
     // 5/7 point to functions in the sibling CDDrawSubMgrLeaf TU (0x157530 / 0x157ae0);
     // 6/8 are unreconstructed -> declared-only, reloc-masked vtable references.
-    virtual i32 IsReady();       // [5] 0x157530 (CDDrawSubMgrLeafScan::IsReady, sibling TU)
-    virtual void FUN_00401c08(); // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void ClearContext(); // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
-    virtual void FUN_00554a00(); // [8] 0x154a00 (shared, declared-only)
+    virtual i32 IsReady();        // [5] 0x157530 (CDDrawSubMgrLeafScan::IsReady, sibling TU)
+    virtual void IsValidImage();  // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void ClearContext();  // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
+    virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);

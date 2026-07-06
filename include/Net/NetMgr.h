@@ -1205,7 +1205,7 @@ public:
     // session, the interface object and the command manager are all operator-new'd
     // and wired here, then the connect wait + first poll are kicked off. Returns 1
     // on a fully-established session, 0 on any failure. (a1 must be non-null.)
-    i32 Stub_0b5460(i32 a1, i32 a2, i32 a3);
+    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);
 };
 SIZE_UNKNOWN(CNetMgr);     // network manager; retail byte size not yet pinned
 VTBL(CNetMgr, 0x001ea42c); // ??_7CNetMgr@@6B@ (config/vtable_names.csv); cl-emitted
