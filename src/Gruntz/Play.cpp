@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/LightFxRender.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -3638,9 +3639,6 @@ struct CRpReg44 {
     char p0[0x124];
     i32 m_124; // +0x124
 };
-struct CRpRow {   // reg + 0x188 + i*0x238 (the per-slot config row)
-    void Reset(); // 0x1055 thunk __thiscall
-};
 struct CRpSlot {
     char p0[0x220];
     i32 m_220; // +0x220
@@ -3735,7 +3733,7 @@ i32 CPlay::ResetPlayState() {
         return 0;
     }
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CRpRow*)((char*)g_64556c + 0x188 + off))->Reset();
+        ((CBattlezMapConfig*)((char*)g_64556c + 0x188 + off))->Method_025c20();
     }
     self->m_winLoseBanner = 0;
     CRpFrame* fm = self->m_frameMarker;
@@ -5024,7 +5022,6 @@ SIZE_UNKNOWN(CRpM30);
 SIZE_UNKNOWN(CRpReg);
 SIZE_UNKNOWN(CRpReg44);
 SIZE_UNKNOWN(CRpReg58);
-SIZE_UNKNOWN(CRpRow);
 SIZE_UNKNOWN(CRpScroll);
 SIZE_UNKNOWN(CRpSlot);
 SIZE_UNKNOWN(CRpThis);
