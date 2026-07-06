@@ -94,14 +94,40 @@ struct DevCfg {
 SIZE_UNKNOWN(DevCfg);
 
 // 0x1413b0 - manual-vtable dispatch `(*m_8->vtbl[0x80])(m_8, 0)`.
-struct Obj1413;
-struct Vtbl1413 {
-    char _0[0x80];
-    void(__stdcall* Op)(Obj1413*, i32); // +0x80
-};
-SIZE_UNKNOWN(Vtbl1413);
-struct Obj1413 {
-    Vtbl1413* vtbl;
+struct Obj1413 { // real polymorphic; Op is slot 32 (+0x80)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void Slot31();
+    virtual void __stdcall Op(i32); // slot 32 (+0x80)
 };
 SIZE_UNKNOWN(Obj1413);
 struct Owner1413 {
@@ -142,14 +168,26 @@ struct B_13dee0 {
 SIZE_UNKNOWN(B_13dee0);
 
 // 0x13ee30 - COM wait-flip loop (IDirectDrawSurface-style manual vtable, slot 0x48).
-struct IDDS_ee30;
-struct IDDSVtbl_ee30 {
-    char _0[0x48];
-    u32(__stdcall* Flip)(IDDS_ee30*, i32); // +0x48
-};
-SIZE_UNKNOWN(IDDSVtbl_ee30);
-struct IDDS_ee30 {
-    IDDSVtbl_ee30* vtbl;
+struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
 };
 SIZE_UNKNOWN(IDDS_ee30);
 struct B_13ee30 {
