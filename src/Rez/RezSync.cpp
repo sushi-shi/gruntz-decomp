@@ -21,6 +21,15 @@
 #include <Gruntz/CoordNode.h>     // the shared coord-pool node
 #include <Gruntz/ParseSource.h>   // canonical CParseSource (one shape)
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
+#include <Gruntz/CheatMgr.h>
+#include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/WorldSoundSet.h>
+#include <Io/SaveGame.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/BattlezData.h>
 #include <Globals.h>
 
 // retail's global allocator is the nothrow pool alloc; MSVC5 `new T` emits the
@@ -31,15 +40,15 @@ extern "C" void* RezAlloc(unsigned int); // 0x1b9b46 (raw non-EH pool allocs)
 extern "C" void RezFree(void*);          // 0x1b9b82
 
 // ---------- reloc-masked engine globals ----------
-extern CoordNode* g_coordPool; // 0x645540
-extern CoordNode* g_freeList;  // 0x645544
-extern i32 g_coordCount;       // 0x645548
-extern i32 g_freeBias;         // 0x64554c
-extern void* g_mgrPtr;         // 0x64556c
-extern u32 g_startTick;        // 0x645580
-extern i32 g_645584;           // 0x645584
-extern i32 g_653c5c;           // 0x653c5c
-extern i32 g_sndEnabled;       // 0x61ab20
+extern CoordNode* g_coordPool;     // 0x645540
+extern CoordNode* g_coordFreeList; // 0x645544
+extern i32 g_coordCount;           // 0x645548
+extern i32 g_freeBias;             // 0x64554c
+extern void* g_mgrPtr;             // 0x64556c
+extern u32 g_startTick;            // 0x645580
+extern i32 g_645584;               // 0x645584
+extern i32 g_653c5c;               // 0x653c5c
+extern i32 g_sndEnabled;           // 0x61ab20
 extern i32 g_2455b4, g_2455bc, g_2455c0, g_2455c4, g_2455c8, g_2455cc;
 extern i32 g_2455d0, g_2455d4, g_2455d8, g_2455dc, g_2455e0, g_2455e4;
 extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
@@ -132,46 +141,9 @@ struct CFaderMgr { // m_40 (0x28)
     char raw[0x28];
     i32 SetConfig(i32, i32, i32); // 0x17d980
 };
-SIZE(CCheatMgr, 0x128);
-struct CCheatMgr {
-    char raw[0x128];
-    CCheatMgr();
-    ~CCheatMgr();
-    i32 Init(i32);         // 0x1825
-    void RegisterCheats(); // 0x15b9
-};
 // m_48 is the audio host = canonical CGruntzSoundZ (Init @0x138490 / SetXMidiVolume
 // @0x138950 / m_enabled @+0x28); `new CGruntzSoundZ` inlines its real CMapStringToOb
 // ctor (<Dsndmgr/GruntzSoundZ.h>).
-SIZE_UNKNOWN(CShadeTableCache);
-struct CShadeTableCache {
-    CShadeTableCache();
-    ~CShadeTableCache();
-    char raw[0x18];
-    i32 Init(); // 0x14dec0
-};
-SIZE(CWorldSoundSet, 0x30);
-struct CWorldSoundSet {
-    char raw0[8];            // +0x00
-    char m_8[0x24 - 0x08];   // +0x08  MFC list sub-object (D_1b48c6 dtor)
-    i32 m_24;                // +0x24  muted-state flag
-    char raw28[0x30 - 0x28]; // +0x28
-    CWorldSoundSet();
-    ~CWorldSoundSet();
-    i32 Init(i32, i32); // 0x10b9
-    void Fn1082();      // 0x1082
-    void Resume();      // 0x18e8
-    void Stop();        // 0x29b9
-};
-SIZE(CSaveGame, 0x1424);
-struct CSaveGame {
-    char raw[0x1424];
-    CSaveGame();
-    ~CSaveGame();
-    i32 SaveGameFile(const char*); // 0x402f
-    void Reset();                  // 0x3503
-    void Fn10d7host(void*);
-};
 SIZE(CFontConfig, 0x44);
 struct CFontConfig {
     char raw[0x44];
@@ -179,47 +151,11 @@ struct CFontConfig {
     ~CFontConfig();
     i32 LoadFontConfig(i32, i32); // 0x43db
 };
-SIZE(CGruntSpawnConfig, 0x30);
-struct CGruntSpawnConfig {
-    char raw[0x30];
-    CGruntSpawnConfig();
-    ~CGruntSpawnConfig();
-    i32 Init(void*); // 0x1bfe
-};
-SIZE(CTriggerMgr, 0x408);
-struct CTriggerMgr {
-    char raw[0x408];
-    CTriggerMgr();
-    ~CTriggerMgr();
-    i32 SetLevel(void*); // 0x4205
-    void Cleanup();      // 0x2239
-};
-SIZE(CGruntzCmdMgr, 0x3c);
-struct CGruntzCmdMgr {
-    char raw[0x3c];
-    CGruntzCmdMgr();
-    ~CGruntzCmdMgr();
-    i32 SetMgr(void*);    // 0x37a1
-    void ClearAndReset(); // 0x434f
-};
 SIZE(H70, 0x94);
 struct H70 {
     char raw[0x94];
     H70();
     ~H70();
-};
-SIZE(CLightFxMgr, 0x3c);
-struct CLightFxMgr {
-    char raw[0x3c];
-    void Reset();         // 0x3ba2 (dtor)
-    i32 Init(i32, void*); // 0x3085
-};
-SIZE(CBattlezData, 0x388);
-struct CBattlezData {
-    CBattlezData();
-    ~CBattlezData();
-    char raw[0x388];
-    i32 InitWithRecords(void*); // 0x10d7
 };
 
 // GAME_ATTRIBUTEZ ButeMgr config load: the parse stream is the canonical
@@ -230,7 +166,7 @@ struct CBattlezData {
 // (0x16e070) are all reloc-masked __thiscall.
 extern CButeMgr g_buteMgr; // 0x6453d8
 extern CButeStore g_store6453f0, g_store64544c;
-extern i32 g_gameReg; // 0x645460
+extern i32 g_645460; // 0x645460 (RezSync-local; NOT the 0x24556c singleton)
 extern u8 g_6454e6, g_6454e7, g_6453e5;
 extern i32 g_645478, g_645420, g_645408, g_645418, g_645404;
 extern i32 g_645438, g_645448, g_645434, g_645464, g_645474;
@@ -371,7 +307,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         ++i;
     } while (i < (u32)g_coordCount - 1);
     p->m_next = 0;
-    g_freeList = pool;
+    g_coordFreeList = pool;
     g_freeBias = 4;
 
     // --- Phase 2: base game init + timers + cursor -------------------
@@ -619,25 +555,25 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 10: sound-fx list (m_54) -----------------------------
     if (m_54) {
-        m_54->Fn1082();
-        ((Mfc*)&m_54->m_8)->D_1b48c6();
+        m_54->Teardown();
+        ((Mfc*)&m_54->m_list)->D_1b48c6();
         RezFree(m_54);
         m_54 = 0;
     }
     m_54 = new CWorldSoundSet;
-    if (!m_54->Init((i32)m_30->m_28, vSndVol)) {
+    if (!m_54->Init(m_30->m_28, (void*)vSndVol)) {
         Error2(0x800a, 0x40d);
         return 0;
     }
     {
-        i32 f = m_54->m_24;
+        i32 f = m_54->m_active;
         if (vMusVol != 0) {
             if (f == 0) {
-                m_54->m_24 = 1;
+                m_54->m_active = 1;
                 m_54->Resume();
             }
         } else if (f != 0) {
-            m_54->m_24 = 0;
+            m_54->m_active = 0;
             m_54->Stop();
         }
     }
@@ -654,7 +590,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             *(i32*)((char*)m_78 + 0x14 + k * 4) = 0;
         }
     }
-    if (!m_78->Init(0, this)) {
+    if (!m_78->Init(0, (void*)this)) {
         if (m_78) {
             m_78->Reset();
             RezFree(m_78);
@@ -678,7 +614,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         i32* z = (i32*)g_645578;
         z[0] = z[1] = z[2] = z[4] = z[5] = 0;
     }
-    if (!((CGruntSpawnConfig*)g_645578)->Init(g_645570)) {
+    if (!((CGruntSpawnConfig*)g_645578)->Init((CSpawnOwner*)g_645570)) {
         if (g_645578) {
             i32* z = (i32*)g_645578;
             z[0] = z[1] = z[2] = z[4] = z[5] = 0;
@@ -691,7 +627,7 @@ i32 RezSync::Init(void* a1, char* a2) {
 
     // --- Phase 13: fader list (m_6c) --------------------------------
     m_6c = new CGruntzCmdMgr;
-    if (!m_6c->SetMgr(this)) {
+    if (!m_6c->SetMgr((GzMgr*)this)) {
         Error2(0x800a, 0x414);
         return 0;
     }
@@ -710,7 +646,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             *(i32*)((char*)m_74 + 0x4c + k * 4) = 0;
         }
     }
-    if (!((CTriggerMgr*)m_74)->SetLevel(m_50)) {
+    if (!((CTriggerMgr*)m_74)->SetLevel((CTmLevel*)m_50)) {
         Error2(0x800a, 0x416);
         return 0;
     }
@@ -757,7 +693,7 @@ i32 RezSync::Init(void* a1, char* a2) {
             g_645434 = 0;
             g_645464 = 0;
             g_645474 = 0;
-            g_gameReg = 0;
+            g_645460 = 0;
             ok = 1;
             if (!g_buteMgr.ParseGroup()) {
                 g_6453e5 = 1;
@@ -776,13 +712,13 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_5c = new CFontConfig;
     m_5c->LoadFontConfig(0x1388, 0xbb8);
     m_68 = new CTriggerMgr;
-    if (!m_68->SetLevel(m_30)) {
+    if (!m_68->SetLevel((CTmLevel*)m_30)) {
         Error2(0x800a, 0x41b);
         return 0;
     }
     g_60fa70 = (void*)g_buteMgr.GetDwordDef("General", "RezSync", (u32)g_60fa70);
     m_60 = new CGruntSpawnConfig;
-    if (!m_60->Init(this)) {
+    if (!m_60->Init((CSpawnOwner*)this)) {
         Error2(0x800a, 0x45f);
         return 0;
     }
