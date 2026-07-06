@@ -5,6 +5,7 @@
 // across the net session.  The slot class CCluster0c is modeled in Cluster0c.cpp;
 // here we only declare the slot methods we call (declared-only -> reloc-masked).
 #include <Ints.h>
+#include <Net/NetMgr.h>
 #include <rva.h>
 #include <Rez/RezMgr.h>
 #include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
@@ -21,11 +22,6 @@
 // keep their engine i32 type with a width-neutral (LPDWORD)/(LPDPID) reinterpret. --
 
 // --- CNetMgr (only the slots we call) ------------------------------------------
-struct CNetMgr {
-    char pad00[0x18];
-    IDirectPlay4* m_endpoint;                             // +0x18 endpoint (DirectPlay session)
-    i32 SetData(i32 a, i32 b, i32 c, void* buf, i32 len); // 0x178fc0
-};
 
 // --- The synced game object stored in the id-map (CLobbySync::m_idMap[id&0x7f],
 // returned by GetSlotPtr 0xc0430 as CSyncObj*).  A real polymorphic engine object
@@ -116,12 +112,7 @@ struct CCluster0c {
 SIZE_UNKNOWN(CSessionMgr);
 struct CSessionMgr {
     char pad000[0x564];
-    i32 m_busy;                           // +0x564 net busy flag
-    void LoadMenuSelectSprite(void* m);   // 0xba620
-    void OnPlayerLeft(void* p);           // 0xba3b0
-    void ResetPlayerCommands(void* p);    // 0xbcf20
-    i32 HandleControlMsg(void* m, i32 a); // 0xba1a0
-    void WriteTag(const char* tag);       // 0xbd4a0 (no-op stub)
+    i32 m_busy; // +0x564 net busy flag
 };
 
 // --- A control/command message (CLobbySync messages).  A CLobbySync-local message
@@ -322,20 +313,20 @@ i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
     }
     switch (m->m_type) {
         case 3:
-            m_session->LoadMenuSelectSprite(m);
+            ((CNetMgr*)m_session)->LoadMenuSelectSprite((void*)m);
             return 1;
         case 5:
             if (m->m_04 == 1) {
                 void* p = (void*)m->m_08;
-                m_session->OnPlayerLeft(p);
-                m_session->ResetPlayerCommands(p);
+                ((CNetMgr*)m_session)->OnPlayerLeft((i32)p);
+                ((CNetMgr*)m_session)->ResetPlayerCommands((i32)p);
                 return 1;
             }
             return 1;
         case 49:
-            return m_session->HandleControlMsg(m, arg2);
+            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
         case 257:
-            return m_session->HandleControlMsg(m, arg2);
+            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
         default:
             return 1;
     }
@@ -409,7 +400,7 @@ i32 CLobbySync::SendOne(CCluster0c* slot, i32 val) {
                m_localDesc->m_playerId,
                slot->m_desc->m_netId,
                0,
-               &gB_flag,
+               (i32)&gB_flag,
                entry->m_payloadLen + 0xe
            )
            == 0;
@@ -434,7 +425,7 @@ i32 CCluster0c::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId)
     gA_e08 = rec->m_count;
     memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
     return ((CNetMgr*)m_08)
-               ->SetData(m_desc->m_playerId, gruntId, 0, &gA_flag, rec->m_payloadLen + 0xf)
+               ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
            == 0;
 }
 
@@ -515,7 +506,7 @@ i32 CLobbySync::Poll(i32 delta) {
         avail = 0;
     } else {
         i32 got;
-        IDirectPlay4* ep = m_netMgr->m_endpoint;
+        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
         i32 r = ep->GetMessageCount(m_localDesc->m_playerId, (LPDWORD)&got);
         avail = (r == 0) ? got : 0;
     }
@@ -525,7 +516,7 @@ i32 CLobbySync::Poll(i32 delta) {
     while (avail > 0 && m_session->m_busy == 0) {
         i32 len = 0x800;
         i32 chan = m_localDesc->m_playerId;
-        IDirectPlay4* ep = m_netMgr->m_endpoint;
+        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
         i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_649858, (LPDWORD)&len);
         if (st != 0) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
@@ -567,7 +558,7 @@ i32 CLobbySync::Tick() {
                 payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
             }
         }
-        m_session->WriteTag("[end]\n");
+        ((CNetMgr*)m_session)->WriteTag("[end]\n");
         rec->m_payloadLen = (i32)(payload - (char*)rec - 0x10);
         m_snapshotDone = 1;
     }
