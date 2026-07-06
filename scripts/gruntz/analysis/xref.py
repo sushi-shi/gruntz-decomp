@@ -146,6 +146,61 @@ def _resolve(arg, byname):
         sys.exit(f"[xref] '{arg}' not an RVA and not found in symbol_names/functions.csv")
 
 
+def _thunks_to(target, d, secs):
+    """ILT-band thunk entry RVAs whose `E9 rel32` jumps to `target`. C++ vtables and
+    the game's command tables hold these thunk addresses, not the body, so a data scan
+    must look for them too."""
+    tname, tva, tvsz, trp, trsz = _text(secs)
+    tb = d[trp:trp + trsz]
+    out = []
+    i = 0
+    while i < len(tb) - 4:
+        if tb[i] == 0xE9 and ILT_LO <= tva + i < ILT_HI:
+            rel = struct.unpack_from("<i", tb, i + 1)[0]
+            if tva + i + 5 + rel == target:
+                out.append(tva + i)
+        i += 1
+    return out
+
+
+def data_refs(target, d, secs, names):
+    """Data words (in non-.text sections) whose value is the VA of `target` OR of an
+    ILT thunk to it: the fn-ptr tables / vtable slots / command tables that hold it
+    indirectly - the references a rel32 .text scan can't see. Returns
+    [(data_rva, via_thunk_rva_or_None, section)]."""
+    wanted = {target + IMAGEBASE: None}
+    for th in _thunks_to(target, d, secs):
+        wanted[th + IMAGEBASE] = th
+    hits = []
+    for (name, va, vsz, rp, rsz) in secs:
+        if name == ".text":
+            continue
+        blob = d[rp:rp + rsz]
+        for i in range(0, len(blob) - 3, 4):
+            w = struct.unpack_from("<I", blob, i)[0]
+            if w in wanted:
+                hits.append((va + i, wanted[w], name))
+    return hits
+
+
+def _print_data_refs(target, d, secs, names, indent="  "):
+    """Print the data-side references of `target` (compact; capped)."""
+    drefs = data_refs(target, d, secs, names)
+    if not drefs:
+        return
+    print(f"{indent}-- referenced as data (fn-ptr table / vtable slot / command table):")
+    for draddr, via, sec in drefs[:16]:
+        vs = f"  (via thunk 0x{via:x})" if via is not None else ""
+        # a nearby named symbol (the table/vtable start) helps identify it
+        owner = ""
+        for o in sorted((a for a in names if a <= draddr), reverse=True)[:1]:
+            if draddr - o < 0x400:
+                owner = f"  ~{names[o][0]}+0x{draddr - o:x}"
+        print(f"{indent}   @0x{draddr:08x} [{sec}]{vs}{owner}")
+    if len(drefs) > 16:
+        print(f"{indent}   ... (+{len(drefs) - 16} more)")
+
+
 def callers_of(targets, d, secs, names, fstarts, fsize, raw=False):
     tname, tva, tvsz, trp, trsz = _text(secs)
     tb = d[trp:trp + trsz]
@@ -168,6 +223,7 @@ def callers_of(targets, d, secs, names, fstarts, fsize, raw=False):
         print(f"\n==== callers of 0x{t:08x}  {tn} ====")
         if not found[t]:
             print("  (no direct call/jmp rel32 caller in .text)")
+            _print_data_refs(t, d, secs, names)
             continue
         seen = set()
         for src, op in found[t]:
@@ -289,6 +345,7 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
                 else:
                     print(pad + f"<- {kind} {label(o)}{via_s}  [UNMATCHED - frontier]")
         walk(t, 0)
+        _print_data_refs(t, d, secs, names)
 
 
 def callees_of(targets, d, secs, names, fstarts, fsize):
