@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Utils/RegistryHelper.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Net/NetMgr.h>
 #include <rva.h>
@@ -121,15 +122,6 @@ extern "C" void ServicesDispatchCb(); // 0x401a19
 // The engine config store reached through m_4->+0x38: writes the selected service /
 // player-name / game-name into the registry section. Two __thiscall setters
 // (0x139460 / 0x1393b0), external/no-body so the `call rel32` reloc-masks.
-SIZE_UNKNOWN(CNetConfigStore);
-struct CNetConfigStore {
-    void WriteInt(const char* key, i32 val);              // 0x139460
-    void WriteString(const char* key, const char* value); // 0x1393b0
-    i32 GetInt(const char* key, i32 dflt);                // 0x1395d0
-    // GetString reads a config value into `buf` (capacity via the in/out `*pcap`
-    // dword), falling back to `dflt`. The 3rd arg is a pointer to the max-length.
-    void GetString(const char* key, char* buf, i32* pcap, const char* dflt); // 0x1394a0
-};
 
 // The DirectPlay service-provider node (group-list payload) is the shared
 // InterfaceObject class (its five GUID predicates select the connection class -
@@ -164,7 +156,7 @@ extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
 extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
 struct CGameSettings;
 extern "C" CGameSettings* g_mgrSettings; // 0x64556c
-// (The g_mgrSettings +0x38 config store is the SAME CNetConfigStore the CNetGameMgr
+// (The g_mgrSettings +0x38 config store is the SAME Utils::RegistryHelper the CNetGameMgr
 // exposes as m_configStore - GetString lives on that one class now; the former
 // CGameCfgStore method-only shadow is folded away.)
 
@@ -1527,28 +1519,28 @@ i32 CNetMgr::SetupServices() {
 
     if (g_hostServicesMode != 0) {
         if (DispatchServices("MULTI_HOSTSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            CNetConfigStore* store = m_4->m_configStore;
+            Utils::RegistryHelper* store = m_4->m_configStore;
             if (store != 0 && g_serviceId != 0x3e7) {
-                store->WriteInt("Service", g_serviceId);
+                store->SetValueDword("Service", g_serviceId);
                 {
                     CString name = GetString5a0();
-                    store->WriteString("Player_Name", name);
+                    store->SetValueString("Player_Name", (char*)(const char*)(name));
                 }
                 {
                     CString gameName = GetGameName();
-                    store->WriteString("Game_Name", gameName);
+                    store->SetValueString("Game_Name", (char*)(const char*)(gameName));
                 }
             }
         }
     } else {
         if (DispatchServices("MULTI_JOINSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            CNetConfigStore* store = m_4->m_configStore;
+            Utils::RegistryHelper* store = m_4->m_configStore;
             if (store != 0) {
                 if (g_serviceId != 0x3e7) {
-                    store->WriteInt("Service", g_serviceId);
+                    store->SetValueDword("Service", g_serviceId);
                 }
                 CString name = GetString5a0();
-                store->WriteString("Player_Name", name);
+                store->SetValueString("Player_Name", (char*)(const char*)(name));
             }
         }
     }
@@ -1594,11 +1586,21 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             char nameBuf[0xa];
             char gameBuf[0x40];
             i32 cap = 0xa;
-            ((CNetConfigStore*)*(void**)((char*)g_mgrSettings + 0x38))
-                ->GetString("Player_Name", nameBuf, &cap, "Player");
+            ((Utils::RegistryHelper*)*(void**)((char*)g_mgrSettings + 0x38))
+                ->GetValueString(
+                    (char*)(const char*)("Player_Name"),
+                    nameBuf,
+                    (u32*)&cap,
+                    "Player"
+                );
             cap = 0x40;
-            ((CNetConfigStore*)*(void**)((char*)g_mgrSettings + 0x38))
-                ->GetString("Game_Name", gameBuf, &cap, "Multiplayer_Gruntz");
+            ((Utils::RegistryHelper*)*(void**)((char*)g_mgrSettings + 0x38))
+                ->GetValueString(
+                    (char*)(const char*)("Game_Name"),
+                    gameBuf,
+                    (u32*)&cap,
+                    "Multiplayer_Gruntz"
+                );
             g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51b), 0xc5, 9, 0);
             g_pSetDlgItemTextA(hDlg, 0x51b, nameBuf);
             g_pSendMessageA(g_pGetDlgItem(hDlg, 0x51c), 0xc5, 0x3f, 0);
@@ -1692,12 +1694,12 @@ i32 CNetMgr::DetectConnectionConfig() {
         m_resend = 0xa;
     }
 
-    CNetConfigStore* cfg = m_4->m_configStore;
+    Utils::RegistryHelper* cfg = m_4->m_configStore;
     CString kDelay = m_configSection + "_CmdDelay";
     CString kResend = m_configSection + "_Resend";
     CString kDyn = m_configSection + "_DynCmdDelay";
-    i32 cd = cfg->GetInt(kDelay, -1);
-    i32 rs = cfg->GetInt(kResend, -1);
+    i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
+    i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
     if (cd != -1 && rs != -1) {
         m_cmdDelay = cd;
         m_resend = rs;
@@ -2315,12 +2317,12 @@ i32 CNetMgr::SetupTcpIpConfig() {
     m_cmdDelay = 5;
     m_resend = 0x3c;
 
-    CNetConfigStore* cfg = m_4->m_configStore;
+    Utils::RegistryHelper* cfg = m_4->m_configStore;
     CString kDelay = m_configSection + "_CmdDelay";
     CString kResend = m_configSection + "_Resend";
     CString kDyn = m_configSection + "_DynCmdDelay";
-    i32 cd = cfg->GetInt(kDelay, -1);
-    i32 rs = cfg->GetInt(kResend, -1);
+    i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
+    i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
     if (cd != -1 && rs != -1) {
         m_cmdDelay = cd;
         m_resend = rs;

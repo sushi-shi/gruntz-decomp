@@ -727,7 +727,7 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // The +0x38 registry/config store (WriteInt/WriteString/GetInt); the concrete
 // method-carrying view lives in NetMgr.cpp, forward-declared here so CNetGameMgr
 // can expose it as a named typed member instead of a raw m_4+0x38 cast.
-struct CNetConfigStore;
+struct Utils::RegistryHelper;
 
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
@@ -742,7 +742,7 @@ struct CNetGameMgr {
     char m_pad0[4];             // +0x00
     CNetGameWnd* m_wnd;         // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
-    CNetConfigStore* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
+    Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
     char m_pad3c[0x5c - 0x3c];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
     char m_pad60[0x6c - 0x60];
