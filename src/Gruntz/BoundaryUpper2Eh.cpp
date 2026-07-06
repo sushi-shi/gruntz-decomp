@@ -3,6 +3,7 @@
 // base/member subobjects force the MSVC unwind frame. Only OFFSETS + code shape are
 // load-bearing.
 #include <Mfc.h> // real MFC CString (embedded m_24 name member; ctor 0x1b9b93 / op= 0x1b9e74)
+#include <Rez/RezFile.h>
 #include <Rez/RezList.h>
 #include <Ints.h>
 #include <rva.h>
@@ -70,14 +71,13 @@ struct CRezDir13cb80 : RezDirBase {
     void* m_10;       // +0x10
     i32 m_14;         // +0x14
     RezOwner18* m_18; // +0x18
-    void Cleanup14(); // 0x13ce70
     ~CRezDir13cb80() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13cb80);
 RVA(0x0013cb80, 0x72)
 CRezDir13cb80::~CRezDir13cb80() {
     if (m_14) {
-        Cleanup14();
+        ((CRezFile*)this)->Close();
     }
     if (m_10) {
         RezFree(m_10);
