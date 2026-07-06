@@ -1,4 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
@@ -281,8 +282,6 @@ struct CTmCmdMgr {
 };
 
 struct CTmGameReg {
-    void* PickPausedThenPlayState();       // 0x929b0 (reloc-masked) - the play/pause state obj
-    void ReportError(i32 code, i32 flags); // 0x8dc60 (reloc-masked)
     char p0[0x2c];
     CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
     CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
@@ -941,7 +940,7 @@ void CTriggerMgr::DestroyAllAnims() {
         ch1->StopAndRewind();
         m_soundChanB = 0;
     }
-    void* state = g_gameReg->PickPausedThenPlayState();
+    void* state = ((CGruntzMgr*)g_gameReg)->PickPausedThenPlayState();
     if (state != 0) {
         char* sub = *(char**)((char*)state + 0x2dc);
         if (sub != 0) {
@@ -1006,7 +1005,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     CSpriteFactory* fac = m_level->m_8;
     CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
-        g_gameReg->ReportError(0x8009, 0x400);
+        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x400);
         return 0;
     }
     sprite->m_7c->Init(sprite);
@@ -1054,7 +1053,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
-        g_gameReg->ReportError(0x8009, 0x401);
+        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x401);
         return 0;
     }
     CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
@@ -2763,7 +2762,7 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        g_gameReg->ReportError(0x80dd, 0x3f7);
+        ((CGruntzMgr*)g_gameReg)->ReportError(0x80dd, 0x3f7);
         return 0;
     }
     obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
@@ -2791,7 +2790,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
                 operator delete(o2);
                 m_overlay = 0;
             }
-            g_gameReg->ReportError(0x800a, 0x3ff);
+            ((CGruntzMgr*)g_gameReg)->ReportError(0x800a, 0x3ff);
         }
         return 0;
     }
