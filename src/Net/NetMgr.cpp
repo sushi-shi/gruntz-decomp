@@ -475,6 +475,12 @@ CString CNetMgr::GetName() {
     return m_8;
 }
 
+// CNetPlayerEntry::GetName - identical +0x8 read; COMDAT-folds with CNetMgr::GetName @0xba170
+// in retail (one address). Defined (not RVA-annotated: cannot dup the RVA).
+CString CNetPlayerEntry::GetName() {
+    return m_8;
+}
+
 // ---------------------------------------------------------------------------
 // CNetMgr::HandleControlMsg  (__thiscall).
 // Dispatches a network control message on its +0x0 code: 3 -> the sprite/menu
