@@ -3839,12 +3839,9 @@ SIZE_UNKNOWN(CRtImageRegVtbl);
 inline void CRtImageReg::CallTeardown() {
     (this->*(m_vtbl->Teardown))();
 }
-struct CRtSoundReg2c {  // m_c->m_28->m_2c
-    void Reset137a80(); // 0x137a80 thunk
-};
 struct CRtSoundReg { // m_c->m_28
     char p0[0x2c];
-    CRtSoundReg2c* m_2c; // +0x2c
+    SoundStream* m_2c; // +0x2c
 };
 struct CRtRendererA {   // m_c->m_8
     void Reset15aa90(); // 0x15aa90 thunk
@@ -3913,7 +3910,7 @@ void CPlay::FreeListTeardown() {
     }
     Teardown1780();
     if (self->m_c->m_28->m_2c != 0) {
-        self->m_c->m_28->m_2c->Reset137a80();
+        self->m_c->m_28->m_2c->Stop();
     }
     self->m_4->m_48->Reset138530();
     self->m_4->m_54->Teardown();
@@ -5039,7 +5036,6 @@ SIZE_UNKNOWN(CRtResMgr);
 SIZE_UNKNOWN(CRtRow);
 SIZE_UNKNOWN(CRtSound);
 SIZE_UNKNOWN(CRtSoundReg);
-SIZE_UNKNOWN(CRtSoundReg2c);
 SIZE_UNKNOWN(CRtSub60);
 SIZE_UNKNOWN(CRtThis);
 SIZE_UNKNOWN(CRtTimeline);
