@@ -11,6 +11,7 @@
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
 #include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
@@ -21,12 +22,6 @@ SIZE_UNKNOWN(HbF14);
 struct HbF14 {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  type index fed to g_typeColl.IndexToPtr
-};
-SIZE_UNKNOWN(HbFoundObj);
-struct HbFoundObj { // HitTestCell result
-    char m_pad00[0x14];
-    HbF14* m_14;                                    // +0x14
-    i32 LoadPickupSprites(i32, i32, i32, i32, i32); // FUN_00403c6a (thunk) __thiscall
 };
 SIZE_UNKNOWN(HbCellMgr);
 struct HbCellMgr { // g_mgrSettings->m_68
@@ -121,9 +116,8 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    HbFoundObj* found =
-        (HbFoundObj*)((CTriggerMgr*)g_mgrSettings->m_68)
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
+    CGrunt* found = (CGrunt*)((CTriggerMgr*)g_mgrSettings->m_68)
+                        ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
         m_cachedSubId = -1;
         m_38->m_stateFlags &= ~1;
@@ -136,7 +130,7 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    char** node = g_typeColl.IndexToPtr(found->m_14->m_1c);
+    char** node = g_typeColl.IndexToPtr((i32)found->m_14->m_1c);
     EngStr4* p = g_typeNodes;
     i32 n = g_typeCount;
     while (n-- != 0) {
