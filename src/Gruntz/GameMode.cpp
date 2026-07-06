@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDSurface.h>
@@ -1447,10 +1448,10 @@ struct CBootyGameReg {
 
 // The Lookup output ("BOOTY_LOOP"/"BOOTY_PERFECT" cue entry): a player @+0x10
 // (the ConfigureItem `this`), and a draw-clock gate (last @+0x14, interval @+0x18).
-struct CBootyPlayer; // the found-cue player (ConfigureItem target; defined below)
+struct CSoundCueMgr; // the found-cue player (ConfigureItem target; defined below)
 struct CBootyFound {
     char m_pad00[0x10];
-    CBootyPlayer* m_10; // +0x10 player (ConfigureItem this)
+    CSoundCueMgr* m_10; // +0x10 player (ConfigureItem this)
     i32 m_14;           // +0x14 last draw-clock
     i32 m_18;           // +0x18 interval
 };
@@ -1470,9 +1471,6 @@ struct CBootyMusicHost {
 };
 
 // The cue/player config call (FUN_005360d0 ConfigureItem, __thiscall on found+0x10).
-struct CBootyPlayer {
-    void ConfigureItem(i32 item, i32 a, i32 b, i32 c); // FUN_005360d0, ret 0x10
-};
 // CMultiBootyState's own FadeInTitle/BuildPage are declared on the class (GameMode.h);
 // they are reached through its own ILT thunks.
 
@@ -1995,7 +1993,6 @@ SIZE_UNKNOWN(CBootyGameReg);
 SIZE_UNKNOWN(CBootyFound);
 SIZE_UNKNOWN(CBootyLookupMap);
 SIZE_UNKNOWN(CBootyMusicHost);
-SIZE_UNKNOWN(CBootyPlayer);
 SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
 SIZE_UNKNOWN(CMenuMusicPlayer);
