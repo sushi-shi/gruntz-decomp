@@ -19,6 +19,7 @@
 // bytes are load-bearing. The blit/notify/transform callees are external no-body
 // fns (reloc-masked rel32); CopyRect is the user32 import.
 #include <rva.h>
+#include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface: BltEx/shaded-blit src); pulls <Mfc.h> FIRST
 #include <Image/CImage.h>
 #include <Win32.h> // RECT, CopyRect (windows.h already via Mfc.h above; guarded no-op)
@@ -32,14 +33,9 @@
 // The origin-remap target reached through info->m_xform->m_planeRender (bit 0x40000): the
 // world-coordinate wrap/transform CSpritePlaneRender::WrapCoord (0xa000, reached via the
 // 0x295a ILT thunk; reloc-masked). Modeled with its real mangling.
-SIZE_UNKNOWN(CSpritePlaneRender);
-class CSpritePlaneRender {
-public:
-    void WrapCoord(i32* px, i32* py); // 0xa000
-};
 struct CBlitXform {
     char _00[0x5c];
-    CSpritePlaneRender* m_planeRender; // +0x5c  coordinate-wrap plane renderer
+    CPlaneRender* m_planeRender; // +0x5c  coordinate-wrap plane renderer
 };
 
 // The blit request the worker hands in (esi). Inputs: m_flags, m_adjustX/m_adjustY
