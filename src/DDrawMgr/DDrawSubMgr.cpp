@@ -2269,12 +2269,12 @@ DATA(0x001e8cb4)
 // Real-polymorphic now: the single virtual forces cl to emit ??_7CDrawSubWorker +
 // auto-stamp the vptr in the ctor prologue (was a manual g_drawSubWorkerVtbl store,
 // vptr-middle -> vptr-first regression accepted per the all-vtables mandate).
-struct CDrawSubWorker {
-    virtual void v0(); // implicit vptr @ +0x00 (own vtable reloc-masks 0x5effa0)
-    i32 m_04;          // +0x04
-    i32 m_08;          // +0x08
-    i32 m_0c;          // +0x0c
-    i32 m_10;          // +0x10
+struct CDrawSubWorker : public Wap::CObject { // CObject slots 0-4 inherited
+    virtual ~CDrawSubWorker() OVERRIDE;       // slot 1 (own dtor override; reloc-masked)
+    i32 m_04;                                 // +0x04
+    i32 m_08;                                 // +0x08
+    i32 m_0c;                                 // +0x0c
+    i32 m_10;                                 // +0x10
     CDrawSubWorker(i32 a1, i32 a2, i32 a3);
     virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
@@ -2282,10 +2282,6 @@ struct CDrawSubWorker {
     virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
 };
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
