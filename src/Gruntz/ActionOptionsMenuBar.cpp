@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
 // ActionOptionsMenuBar.cpp - CActionOptionsMenuBar, the in-game action/option
@@ -33,16 +34,6 @@
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
 // the bar polls a handful of its fields to pick which mode-chip to light.
-struct CGruntRec {
-    i32 IsBusy(); // NO-body -> reloc-masks (CUserLogic::CUserLogic_0514a0)
-    char m_pad000[0x170];
-    i32 m_kind; // +0x170  grunt kind
-    char m_pad174[0x194 - 0x174];
-    i32 m_altModeValue;     // +0x194  alt mode value
-    i32 m_secondaryIcon;    // +0x198  secondary icon
-    i32 m_primaryModeValue; // +0x19c  primary mode value
-};
-
 // The canonical CGameRegistry view of the singleton (*0x24556c): the resource mgr
 // (+0x30, typed CSpriteFactoryHolder) is reached without a cast; the grid object
 // table (+0x68) is a genuinely reused slot cast locally (see below).
@@ -222,22 +213,22 @@ i32 CActionOptionsMenuBar::Activate(i32 a) {
 // frame is 6 bytes short of 310 (size mismatch -> no per-fn %). Logic exact.
 RVA(0x00009330, 0x136)
 i32 CActionOptionsMenuBar::Refresh() {
-    CGruntRec* grunt = ((CGruntRec**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY];
+    CGrunt* grunt = ((CGrunt**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY];
     if (grunt != 0) {
-        m_button1Icon = grunt->m_secondaryIcon;
-        if (grunt->m_kind >= 0x17) {
+        m_button1Icon = grunt->m_198;
+        if (grunt->m_entranceReason >= 0x17) {
             m_button1State = 3;
         } else if (m_button1State == 3) {
             m_button1State = 1;
         }
-        i32 prim = (grunt->m_kind > 0x16) ? grunt->m_primaryModeValue : grunt->m_kind;
+        i32 prim = (grunt->m_entranceReason > 0x16) ? grunt->m_19c : grunt->m_entranceReason;
         m_button0Icon = prim;
         if (prim == 0) {
             m_button0Icon = 0x21;
         } else if (prim == 3) {
-            m_button0Icon = grunt->m_altModeValue;
+            m_button0Icon = grunt->m_194;
         }
-        if (!grunt->IsBusy()) {
+        if (!grunt->CanShowStamina()) {
             m_button0State = 3;
         } else if (m_button0State == 3) {
             m_button0State = 1;
@@ -346,7 +337,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
     }
-    if (((CGruntRec**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY] == 0) {
+    if (((CGrunt**)g_gameReg->m_cmdGrid)[m_gridX * 15 + m_gridY] == 0) {
         return 1;
     }
     // Demote any held (==2) button back to armed (==1).
@@ -501,7 +492,6 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
 
 SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDrawTarget);
-SIZE_UNKNOWN(CGruntRec);
 SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteHashTable);
 SIZE_UNKNOWN(CSpriteMgr);
