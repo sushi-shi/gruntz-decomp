@@ -6,7 +6,7 @@ placeholder classes	260
 placeholder vtable slots	1045
 *Vtbl structs	7
 ->vtbl accesses	0
-g_*Vtbl globals	10
+g_*Vtbl globals	0
 m_vtbl/m_vptr members	48
 )this casts	278
 )m_ casts	1050

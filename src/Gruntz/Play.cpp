@@ -4476,13 +4476,13 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 // thunk. Named so the `cmp eax,<thunk>` emits its DIR32 reloc (retail relocates the
 // immediate) instead of a bare number - the reloc is what the match needs.
 DATA(0x000024a5)
-extern char g_objVtblThunk_24a5[]; // "multi-sprite warlord" object (m_11c/m_120 + m_118 switch)
+extern char g_objIdThunk_24a5[]; // "multi-sprite warlord" object (m_11c/m_120 + m_118 switch)
 DATA(0x0000288d)
-extern char g_objVtblThunk_288d[]; // counted object keyed on m_124
+extern char g_objIdThunk_288d[]; // counted object keyed on m_124
 DATA(0x00003d0f)
-extern char g_objVtblThunk_3d0f[]; // counted object keyed on m_11c
+extern char g_objIdThunk_3d0f[]; // counted object keyed on m_11c
 DATA(0x0000137a)
-extern char g_objVtblThunk_137a[]; // counted object keyed on m_11c (sibling of 3d0f)
+extern char g_objIdThunk_137a[]; // counted object keyed on m_11c (sibling of 3d0f)
 
 // A placed object walked in the in-level branch: its +0x7c dynamic-type vtable
 // (whose +0x10 slot carries the type marker) + its sprite/type ids.
@@ -4577,7 +4577,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         CWarlordListNode* nxt = node->m_0;
         if (obj) {
             void* marker = obj->m_7c[4];
-            if (marker == (void*)g_objVtblThunk_24a5) {
+            if (marker == (void*)g_objIdThunk_24a5) {
                 i32 v = obj->m_11c;
                 if (v) {
                     if (!ProbeWarlord(v, 1, 0, ctx)) {
@@ -4672,7 +4672,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                 }
-            } else if (marker == (void*)g_objVtblThunk_288d) {
+            } else if (marker == (void*)g_objIdThunk_288d) {
                 i32 cv = obj->m_124 == 0x32 ? obj->m_118 : obj->m_124;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_4w()->m_7c->m_34++;
@@ -4717,8 +4717,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[obj->m_118] = 1;
                     }
                 }
-            } else if (marker == (void*)g_objVtblThunk_3d0f
-                       || marker == (void*)g_objVtblThunk_137a) {
+            } else if (marker == (void*)g_objIdThunk_3d0f || marker == (void*)g_objIdThunk_137a) {
                 i32 cv = obj->m_11c == 0x32 ? obj->m_118 : obj->m_11c;
                 if (cv >= 1 && cv <= 0x16 && cv != 0x14) {
                     m_4w()->m_7c->m_34++;

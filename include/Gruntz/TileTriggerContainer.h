@@ -30,11 +30,9 @@ extern "C" u32 g_645588;
 
 // A list element (command) object's vftable, stamped into the element by the
 // inlined element-destructor before RezFree.  Reloc-masked DIR32 datum.
-extern void* g_tileGridCmdVtbl; // 0x5eaea4
 
 // The base-list element vftable (the +0x00 list's elements, cleared at elem+0x20
 // before free).  Reloc-masked DIR32 datum.
-extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 
 // A keyed element found by SetCell's lookup: a 4-slot state-flag array at
 // +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
