@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
@@ -479,10 +480,7 @@ class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
     i32 m_0; // +0x00  state
     char m_pad04_10c[0x10c - 0x04];
-    i32 m_mode;            // +0x10c mode
-    void Step34bd(i32 dt); // 0x34bd  (PumpA)
-    void Present21b7();    // 0x21b7  (PumpB)
-    void Advance125d();    // 0x125d  (PumpB)
+    i32 m_mode; // +0x10c mode
 };
 
 // @early-stop
@@ -557,7 +555,7 @@ i32 CMulti::PumpA() {
     ((McHost*)m_view)->m_8->CallSlot24();
     ((McHost*)m_view)->m_8->CallSlot40();
     m_logic->m_68->Step3017(g_645584);
-    m_fxOverlay->Step34bd(g_645584);
+    ((CSBI_RectOnly*)m_fxOverlay)->LoadDestructButtonSprite(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
     if (win) {
         i32 now = timeGetTime();
@@ -653,7 +651,7 @@ void CMulti::PumpB() {
         StepInputA();
         mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
-        m_fxOverlay->Present21b7();
+        ((CSBI_RectOnly*)m_fxOverlay)->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
@@ -667,7 +665,7 @@ void CMulti::PumpB() {
     StepC();
     if (m_overlayAActive != 0) {
         mgr->m_4->m_14->m_surface->Fill(0);
-        m_fxOverlay->Advance125d();
+        ((CSBI_RectOnly*)m_fxOverlay)->Deactivate();
     }
     if (m_paletteActive == 0) {
         if (((PBSub68*)m_logic->m_68)->m_armed != 0) {
@@ -687,7 +685,7 @@ void CMulti::PumpB() {
         mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
-    m_fxOverlay->Present21b7();
+    ((CSBI_RectOnly*)m_fxOverlay)->LoadMainStatusBarSprite();
     if (m_attractOverlay != 0) {
         CMultiSubDC* fx = m_fxOverlay;
         if (fx->m_0 != 2 && fx->m_mode != 5) {
