@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Gruntz/SBI_RectOnly.h>
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
@@ -1239,10 +1240,8 @@ struct CNetSess {
         *(i32*)((char*)this + 0x544) = 1;
     }
     ~CNetSess() {
-        Teardown();
+        ((CSBI_RectOnly*)this)->Teardown();
     }
-    i32 Init(void* a); // 0x10b4
-    void Teardown();   // 0x248c
 };
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
@@ -1432,7 +1431,7 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     // (3) session (CSBI_RectOnly)
     CNetSess* sess = new CNetSess();
     TF(0x2dc) = (i32)sess;
-    if (sess->Init(m_c) == 0) {
+    if (((CSBI_RectOnly*)sess)->LoadBattlezItemConfig((i32)m_c) == 0) {
         CNetSess* so = (CNetSess*)TF(0x2dc);
         if (so == 0) {
             return 0;
