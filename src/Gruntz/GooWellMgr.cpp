@@ -15,6 +15,8 @@
 // per-method call/branch structure are load-bearing (campaign doctrine). Every
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
+#include <Gruntz/BattlezData.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 #include <Bute/ButeMgr.h>        // CButeMgr (g_buteMgr.GetDwordDef)
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
@@ -28,10 +30,8 @@ struct CResHolder2;
 struct CLookObj;
 struct CObj7c;
 struct CAnimObj;
-struct CSoundFactory;
 struct CSoundHandle;
 struct CActivatable;
-struct CBzData;
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
@@ -62,12 +62,9 @@ struct CSoundHandle {
     void ApplyAndPlay(i32, i32, i32, i32); // 0x136300
     void StopAndRewind();                  // 0x135380
 };
-struct CSoundFactory {
-    CSoundHandle* GetItem(); // 0x135d70
-};
 struct CLookObj {
     char _0[0x10];
-    CSoundFactory* m_soundFactory; // +0x10
+    CSoundCueMgr* m_soundFactory; // +0x10
     char _14[0x7c - 0x14];
     CObj7c* m_host; // +0x7c
 };
@@ -122,9 +119,6 @@ struct CActivatable {
 };
 
 // The battlez score tracker (g_gameReg->m_7c).
-struct CBzData {
-    void MarkFlag(i32, i32); // 0xfcb50
-};
 
 // One player slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
 // (<Gruntz/GameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
@@ -199,7 +193,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
                 if (out && out->m_soundFactory) {
-                    m_rollingballLoop = out->m_soundFactory->GetItem();
+                    m_rollingballLoop = (CSoundHandle*)out->m_soundFactory->GetItem();
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
@@ -216,7 +210,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                 ((CMgrHolderX*)g_gameReg->m_world)
                     ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out);
                 if (out && out->m_soundFactory) {
-                    m_teleportLoop = out->m_soundFactory->GetItem();
+                    m_teleportLoop = (CSoundHandle*)out->m_soundFactory->GetItem();
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
@@ -319,7 +313,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     }
                 }
-                ((CBzData*)g_gameReg->m_scoreHud)->MarkFlag(idx, i);
+                ((CBattlezData*)g_gameReg->m_scoreHud)->MarkFlag(idx, i);
                 return 0;
             }
         }

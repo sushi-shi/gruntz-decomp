@@ -12,6 +12,7 @@
 // vtable SLOT offsets and the diagnostic ids are load-bearing.  The deeper engine
 // leaves (map lookups, the centre helper, the diagnostics sink) are external /
 // reloc-masked.
+#include <Gruntz/Play.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h> // shared world tile-grid geometry (dims here)
@@ -20,9 +21,6 @@
 // CenterOnGroup (0x7cf40)
 // ===========================================================================
 // The view-centre helper reached as g_gameReg->m_curState->Center(x, y) (0x2e28 thunk).
-struct CCenterTarget {
-    i32 Center(i32 x, i32 y); // 0x2e28
-};
 // The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
 // CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
 struct CMapHolderB {
@@ -120,7 +118,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     } while (n != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = ((CCenterTarget*)g_gameRegSel->m_curState)->Center(cx, cy);
+    i32 r = ((CPlay*)g_gameRegSel->m_curState)->ResetGoals(cx, cy);
     if (r != 0 && count == 1 && m_24c == 1) {
         CSelKey* head = m_244->m_8;
         CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
