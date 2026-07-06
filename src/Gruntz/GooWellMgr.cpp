@@ -16,6 +16,7 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
@@ -92,10 +93,8 @@ struct CMgrHolderX {
 // The gauge/HUD sub-object (g_gameReg->m_curState->m_gauge) the respawn timers poke.
 struct CGaugeObj {
     char _0[0x550];
-    i32 m_550;                            // +0x550
-    i32 m_554;                            // +0x554
-    void AdvanceGauge(i32);               // 0x105750
-    void UpdateRezMachineWakeStatusBar(); // 0x107a10
+    i32 m_550; // +0x550
+    i32 m_554; // +0x554
 };
 
 // The active game-mode object (g_gameReg->m_curState).
@@ -338,13 +337,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         // Goo respawn timer.
         if ((i64)g_645588 - m_gooTimerBase >= m_gooInterval) {
-            obj->m_gauge->AdvanceGauge(1);
+            ((CSBI_RectOnly*)obj->m_gauge)->AdvanceGauge(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_645588;
         }
         // Resource respawn timer.
         if ((i64)g_645588 - m_resourceTimerBase >= m_resourceInterval) {
-            obj->m_gauge->UpdateRezMachineWakeStatusBar();
+            ((CSBI_RectOnly*)obj->m_gauge)->UpdateRezMachineWakeStatusBar();
             m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBase = g_645588;
         }
