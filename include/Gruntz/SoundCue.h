@@ -17,8 +17,14 @@
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (the play-object; ConfigureItem @0x1360d0)
 
+struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); the +0x28
+                // registry's CMapStringToOb stores both cue emitters and sprites by key.
+                // Fwd-declared (not #included) to keep this light header (pulled into the
+                // ~60-TU GameRegistry.h) free of the sprite graph.
+
 // A looked-up cue: +0x10 the CSoundCueMgr that plays it, +0x14 last-play clock,
-// +0x18 cooldown interval (an unsigned `(now - m_14) >= m_18` gate).
+// +0x18 cooldown interval (an unsigned `(now - m_14) >= m_18` gate). This IS the
+// former StatusBarCueHolder.h CueObj (identical value layout + role) - folded here.
 struct CSndEmitter {
     char m_pad00[0x10];
     CSoundCueMgr* m_10; // +0x10  the play-object
@@ -30,26 +36,37 @@ struct CSndEmitter {
 };
 SIZE_UNKNOWN(CSndEmitter);
 
-// The DirectSound stream hung off CSndHost+0x2c; Stop() halts it.
+// The DirectSound stream hung off CSndHost+0x2c; Stop() halts it. Its base
+// SoundDevice sub-object supplies PurgeVoiceList (0x136e20, the per-tick voice
+// reaper the level-preview audio-kill path calls). Both reloc-masked __thiscall.
 struct SoundStream {
-    void Stop(); // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
+    void Stop();                   // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
+    void PurgeVoiceList(i32 time); // 0x136e20 (SoundDevice base method; voice reap)
 };
 SIZE_UNKNOWN(SoundStream);
 
-// The named-cue registry embedded at CSndHost+0x10; Lookup fills an out-param.
+// The named-cue registry embedded at CSndHost+0x10 (the engine CMapStringToOb, Lookup
+// @0x1b8438); Lookup fills an out-param. The map stores CObject-derived values, so the
+// out-ptr overloads type the found value cast-free per key: a cue emitter (the sound
+// cues) or a frame-data sprite (the status-bar HUD cues, formerly CStatusBarHolder's
+// CSpriteHashTable view). Same reloc-masked call either way (`add ecx,0x10`).
 struct CSndFinder {
     void Lookup(const char* name, CSndEmitter** out); // 0x1b8438 (__thiscall)
+    void Lookup(const char* name, CSprite** out);     // 0x1b8438 (sprite-value overload)
 };
 SIZE_UNKNOWN(CSndFinder);
 
 // Holds the finder (+0x10 embedded), a DirectSound stream (+0x2c) and an emit gate
-// (+0x30, must be 0 to emit).
+// (+0x30, must be 0 to emit). This IS the +0x28 status-bar cue holder every HUD/
+// preview/finish-level driver reaches through the world holder (== the former
+// StatusBarCueHolder.h CStatusBarHolder, folded here): the name->object map (+0x10),
+// the audio-kill sound stream (+0x2c) and the live-surface/emit gate (+0x30).
 struct CSndHost {
     char m_pad00[0x10];
-    CSndFinder m_10;           // +0x10  embedded finder
+    CSndFinder m_10;           // +0x10  embedded finder (name->cue/sprite CMapStringToOb)
     char m_pad11[0x2c - 0x11]; // -> +0x2c
-    SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop)
-    i32 m_30;                  // +0x30  gate (must be 0 to emit)
+    SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop / audio-kill PurgeVoiceList)
+    i32 m_emitGate;            // +0x30  live-surface / emit gate (must be 0 to emit)
     // Resolve a cue name to its emitter via the +0x10 finder (@0x05b7e0, thunk
     // 0x2cca): a real CSndHost __thiscall - `push ecx` out-slot, `add ecx,0x10`,
     // tail into CSndFinder's map Lookup (0x1b8438), return the emitter (0 on

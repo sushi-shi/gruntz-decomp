@@ -583,7 +583,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
         return;
     }
     CSndHost* sreg = gameMgr->m_28; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
-    if (sreg->m_30 != 0) {
+    if (sreg->m_emitGate != 0) {
         return;
     }
     CSndEmitter* out = 0;

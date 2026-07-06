@@ -13,10 +13,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
-#include <Dsndmgr/SoundDevice.h>
-
 #include <Bute/SymTab.h>
-#include <Gruntz/StatusBarCueHolder.h>     // the ONE CStatusBarHolder / CueObj shape
+#include <Gruntz/SoundCue.h>               // the ONE +0x28 cue holder (CSndHost / CSndEmitter)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
@@ -89,7 +87,7 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    SoundDevice* snd = m_0c->m_statusBar->m_2c;
+    SoundStream* snd = m_0c->m_statusBar->m_2c;
     if (snd != 0) {
         snd->PurgeVoiceList(-1);
     }
@@ -119,10 +117,10 @@ void CPreviewState::LoadLevelPreviewScreen() {
     if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
-        CStatusBarHolder* h = m_0c->m_statusBar;
-        if (h->m_surfaceGate == 0) {
-            CueObj* p = 0;
-            h->m_10map.Lookup("GAME_TELEPORTEROPEN", &p);
+        CSndHost* h = m_0c->m_statusBar;
+        if (h->m_emitGate == 0) {
+            CSndEmitter* p = 0;
+            h->m_10.Lookup("GAME_TELEPORTEROPEN", &p);
             if (p != 0) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0 && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {

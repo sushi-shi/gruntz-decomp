@@ -87,7 +87,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
             }
         }
         CSndHost* host = m_c->m_28;
-        if (host->m_30 == 0) {
+        if (host->m_emitGate == 0) {
             CSndEmitter* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", &out);
             CSndEmitter* e = out;

@@ -1980,7 +1980,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             }
             m_4->m_5c->AddItem(msg->m_c, 0x30, player->m_008);
             CSndHost* host = m_c->m_28;
-            if (host->m_30 != 0) {
+            if (host->m_emitGate != 0) {
                 break;
             }
             CSndEmitter* e = 0;

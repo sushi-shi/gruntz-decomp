@@ -10,7 +10,7 @@
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (ConfigureItem @0x1360d0)
 #include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
-#include <Gruntz/StatusBarCueHolder.h> // the ONE CStatusBarHolder (+0x28 status holder; shared with the cue TUs)
+#include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
 
 // The status-bar item the named Lookup resolves: it holds the CSoundCueMgr to push
 // the configuration into at +0x10, a draw-clock latch (+0x14) and a window width
@@ -23,9 +23,9 @@ struct CStatusBarTab {
 };
 SIZE_UNKNOWN(CStatusBarTab);
 
-// The +0x28 status-bar holder is the ONE CStatusBarHolder (StatusBarCueHolder.h) -
-// the former sprite-keyed copy here was a second view of it (same CSpriteHashTable
-// map + m_surfaceGate; the cue TUs additionally read its +0x2c sound mgr).
+// The +0x28 status-bar holder is the canonical CSndHost (SoundCue.h) - the former
+// CStatusBarHolder/sprite-keyed copies were views of it (same +0x10 name->object map
+// + the +0x30 emit gate; the cue TUs additionally read its +0x2c sound stream).
 
 // The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24). Distinct object from the
@@ -51,8 +51,8 @@ struct CRegHolder {
     struct M24 {
         char m_pad00[0x5c];
         CMapTileGrid* m_grid;
-    }* m_tileHolder;               // +0x24 -> +0x5c grid
-    CStatusBarHolder* m_statusBar; // +0x28
+    }* m_tileHolder;       // +0x24 -> +0x5c grid
+    CSndHost* m_statusBar; // +0x28  the +0x28 cue/status holder (canonical CSndHost)
 };
 SIZE_UNKNOWN(CRegHolder);
 

@@ -112,9 +112,9 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 
 // Play a named cue when the world's cue host is not muted: resolve via the
 // host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
-// every retail site because the m_30 gate test just loaded it).
+// every retail site because the m_emitGate gate test just loaded it).
 #define PLAYCUE(TAG)                                                                               \
-    if (m_world->m_28->m_30 == 0) {                                                                \
+    if (m_world->m_28->m_emitGate == 0) {                                                          \
         CSndEmitter* _c = m_world->m_28->CueLookup(TAG);                                           \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
@@ -122,7 +122,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 // Cue via the host's finder (m_10, CSndFinder) with a stack out-ptr; used by a
 // handful of cheats instead of CueLookup.
 #define PLAYCUE_MAP(TAG)                                                                           \
-    if (m_world->m_28->m_30 == 0) {                                                                \
+    if (m_world->m_28->m_emitGate == 0) {                                                          \
         CSndEmitter* _c = 0;                                                                       \
         m_world->m_28->m_10.Lookup(TAG, &_c);                                                      \
         if (_c)                                                                                    \
@@ -291,7 +291,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             if (m_curState->Update() == GAMESTATE_PLAY) {
                 switch (nID & 0xffff) {
                     case 0x803b: {
-                        if (m_world->m_28->m_30 == 0) {
+                        if (m_world->m_28->m_emitGate == 0) {
                             CSndEmitter* _c = m_world->m_28->CueLookup("GAME_MINORCHEAT");
                             if (_c) {
                                 _c->Play(g_sndCueTag, 0, 0, 0);
@@ -556,7 +556,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case 0x8175:
-                        if (m_world->m_28->m_30 == 0) {
+                        if (m_world->m_28->m_emitGate == 0) {
                             CSndEmitter* _c = m_world->m_28->CueLookup("GAME_WAWA");
                             if (_c) {
                                 _c->Play(0x64, 0, 0, 0);
@@ -667,7 +667,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     case 0x8247: {
                         g_explosionz ^= 1;
-                        if (m_world->m_28->m_30 == 0) {
+                        if (m_world->m_28->m_emitGate == 0) {
                             CSndEmitter* _c = 0;
                             m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", &_c);
                             if (_c && g_sndEnabled) {

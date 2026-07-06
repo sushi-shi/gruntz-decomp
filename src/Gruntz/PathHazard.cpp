@@ -433,7 +433,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     if (x < reg->m_viewOriginR && x >= reg->m_viewOriginL && y < reg->m_viewOriginB
         && y >= reg->m_viewOriginT) {
         CSndHost* host = (CSndHost*)reg->m_world->m_28;
-        if (host->m_30 == 0) {
+        if (host->m_emitGate == 0) {
             CSndEmitter* out = 0;
             host->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &out);
             if (out != 0) {
