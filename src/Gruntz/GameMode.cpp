@@ -31,6 +31,7 @@
 // i.e. slot +0x10 is the "which state am I" query, NOT the simulation step. The
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Rez/RezMgr.h>        // RezFree - the engine allocator the video-handle teardown uses
@@ -627,10 +628,6 @@ struct CGlitterMgrSet {
     i32 m_4; // +0x04 element count
 };
 // The selection source (m_74): GetSel resolves an active selection handle.
-SIZE_UNKNOWN(CGlitterSel);
-struct CGlitterSel {
-    i32 GetSel(i32 a, i32 b); // 0x4165 thiscall
-};
 // The color->handle table (m_78): the SecretColor-indexed handle array at +0x14.
 SIZE_UNKNOWN(CGlitterColorTable);
 struct CGlitterColorTable {
@@ -642,7 +639,7 @@ struct CGlitterMgr {
     char m_pad00[0x30];
     CGlitterMgrM30* m_world; // +0x30
     char m_pad34[0x74 - 0x34];
-    CGlitterSel* m_74;        // +0x74  selection source
+    CSpriteRefTable* m_74;    // +0x74  selection source
     CGlitterColorTable* m_78; // +0x78  color->handle table
     CGlitterMgrSet* m_7c;     // +0x7c
     i32 m_80;                 // +0x80  attract frame counter (title rotation source)

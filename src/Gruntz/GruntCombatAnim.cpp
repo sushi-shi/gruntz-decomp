@@ -27,6 +27,7 @@
 // into the prologue (immediate `cmp ...,1` in retail). Both are cl slot-allocator /
 // constant-hoist choices structured C++ can't force; the switch tail-merge + FP octant
 // block layout compound it. Same family as LoadGruntDeathAnimations. Final-sweep candidate.
+#include <Gruntz/SoundCueMgr.h>
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <Ints.h>
@@ -49,14 +50,11 @@ struct CGruntCombat;
 
 // The struck enemy's launch-sound cue (Lookup out-param): m_10 owner runs ConfigureItem,
 // m_14 last-fire clock, m_18 the cooldown window.
-struct CombatItemOwner {
-    void ConfigureItem(i32 tag, i32 a, i32 b, i32 c); // 0x1360d0 (__thiscall, 4 args)
-};
 struct CombatCue {
     char m_pad0[0x10];
-    CombatItemOwner* m_10; // +0x10
-    i32 m_14;              // +0x14 last-fire clock
-    i32 m_18;              // +0x18 cooldown window
+    CSoundCueMgr* m_10; // +0x10
+    i32 m_14;           // +0x14 last-fire clock
+    i32 m_18;           // +0x18 cooldown window
 };
 struct CombatCueMap {
     i32 Lookup(const char* key, CombatCue** out); // 0x1b8438 (__thiscall, ret 8)
