@@ -1,4 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -189,12 +190,7 @@ extern i32 g_644c54;
 // body @0x10bb90; the reset path also reads its mode (m_0), sub-state (m_10c) and frees
 // its pending buffer (m_54c).
 struct CTmStatusItem {
-    void SetMode(i32 mode);         // 0x10bb90 (reloc-masked)
-    void Notify();                  // 0x104d60 (reloc-masked) - build-state notifier
-    void Reset();                   // ReinitGroup re-init (reloc-masked)
-    i32 Place(i32 a, i32 b, i32 c); // ReinitGroup place/re-arm (reloc-masked)
-    void Run();                     // ReinitGroup notifier (reloc-masked)
-    i32 m_0;                        // +0x00  mode
+    i32 m_0; // +0x00  mode
     char p4[0x10c - 0x4];
     i32 m_10c; // +0x10c  sub-state
     char p110[0x548 - 0x110];
@@ -993,7 +989,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     CTmWorld* world = g_gameReg->m_curState;
     world->Refresh();
     world->SetStat(0, 0xbb7);
-    world->m_2dc->SetMode(1);
+    ((CSBI_RectOnly*)world->m_2dc)->SetMode(1);
     return 1;
 }
 
@@ -1276,7 +1272,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_48 = 0;
     sub->m_4c = 0;
     world->SetStat(0, 0xbb7);
-    world->m_2dc->SetMode(1);
+    ((CSBI_RectOnly*)world->m_2dc)->SetMode(1);
     this->ClearMagic(g_644c54);
 }
 
@@ -2139,7 +2135,7 @@ void CTriggerMgr::ResetSpawnState() {
         CTmStatusItem* ctx = world->m_2dc;
         if (ctx->m_0 != 2 && ctx->m_10c == 5) {
             Eng_BuildNotifyA(0);
-            world->m_2dc->Notify();
+            ((CSBI_RectOnly*)world->m_2dc)->TryActivate();
         }
     }
     if (g_gameReg->m_134 == 1) {
@@ -2845,15 +2841,15 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     CTmStatusItem* sbi = (CTmStatusItem*)*(char**)((char*)lvl + 0x2dc);
     if (sbi->m_548 == 0) {
         if (sbi->m_0 == 2) {
-            sbi->Reset();
+            ((CSBI_RectOnly*)sbi)->Reset();
         }
         if (sbi->m_10c != 5) {
-            sbi->Place(5, 3, 0);
+            ((CSBI_RectOnly*)sbi)->Place(5, 3, 0);
         }
-        sbi->Place(5, 1, 0);
-        sbi->Run();
+        ((CSBI_RectOnly*)sbi)->Place(5, 1, 0);
+        ((CSBI_RectOnly*)sbi)->Run();
     }
-    if (sbi->Place(color, outR, outC) != 0) {
+    if (((CSBI_RectOnly*)sbi)->Place(color, outR, outC) != 0) {
         sbi->m_548 = 1;
     } else {
         m_byteArr.Place(m_byteArr.m_count, 0, 0);

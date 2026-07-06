@@ -299,6 +299,8 @@ public:
     void SetGauge(i32 value);
     void RefreshAll();
     void Reset();
+    i32 Place(i32 a, i32 b, i32 c); // reloc-masked
+    void Run();                     // reloc-masked
     void ToggleStat(i32 idx);
     void SetHudRectA(i32 y0, i32 x0, i32 z);
     void SetHudRectB(i32 y0, i32 x0, i32 z);
