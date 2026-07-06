@@ -60,11 +60,11 @@ struct CGruntzMgrOptions {
 // NAFXCW helpers (reloc-masked).
 SIZE_UNKNOWN(CStateStackZ);
 struct CStateStackZ {
-    void* m_vptr;                        // +0x00 CObject vptr
-    CState** m_pData;                    // +0x04 element store
-    i32 m_nSize;                         // +0x08 live count
-    i32 m_nMaxSize;                      // +0x0c
-    i32 m_nGrowBy;                       // +0x10
+    virtual void VSlot0(); // +0x00 CObject vptr  // real polymorphic vptr @+0x00 (was m_vptr)
+    CState** m_pData;      // +0x04 element store
+    i32 m_nSize;           // +0x08 live count
+    i32 m_nMaxSize;        // +0x0c
+    i32 m_nGrowBy;         // +0x10
     void SetSize(i32 n, i32 growBy);     // @0x5b4f75  (clear via SetSize(0, -1))
     void SetAtGrow(i32 i, CState* elem); // @0x5b5144
     void RemoveAt(i32 i, i32 n);         // @0x5b5200

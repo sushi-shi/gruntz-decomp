@@ -93,7 +93,7 @@ public:
 
 // The worker held at owner->m_7c; only the pump fields are modeled.
 struct Worker {
-    void* m_vptr;
+    virtual void VSlot0(); // real polymorphic vptr @+0x00 (was m_vptr)
     char m_pad04[0x18 - 0x04];
     DnnRec* m_18; // +0x18  the live record
     u32 m_1c;     // +0x1c  state tag (UNSIGNED switch key)

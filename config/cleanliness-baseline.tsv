@@ -7,9 +7,9 @@ placeholder vtable slots	1045
 *Vtbl structs	7
 ->vtbl accesses	0
 g_*Vtbl globals	0
-m_vtbl/m_vptr members	45
+m_vtbl/m_vptr members	6
 )this casts	278
 )m_ casts	1050
 (char*) casts	883
 (const char*) casts	121
-void* m_ members	357
+void* m_ members	320

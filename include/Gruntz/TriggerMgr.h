@@ -61,7 +61,7 @@ struct CTmObList {
     void RemoveAt(void*);    // 0x1b4ac7  CObList::RemoveAt(POSITION)
     void AddTail(void*);     // 0x1b4991  CObList::AddTail (returns POSITION; ignored)
     ~CTmObList();            // CObList::~CObList (reloc-masked; auto-emitted by ~CTriggerMgr)
-    void* m_vptr;            // +0x00
+    virtual void VSlot0();   // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
     CTmNode* m_head;         // +0x04  head node
     void* m_tail;            // +0x08
     i32 m_count;             // +0x0c
@@ -74,7 +74,7 @@ struct CTmByteArray {
     void SetAtGrow(i32 i, i32 v);    // 0x1b5485  CByteArray::SetAtGrow
     void Place(i32 a, i32 b, i32 c); // ReinitGroup drop-last (reloc-masked)
     ~CTmByteArray();                 // CByteArray::~CByteArray (reloc-masked)
-    void* m_vptr;                    // +0x00
+    virtual void VSlot0();           // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
     u8* m_data;                      // +0x04  data pointer
     i32 m_count;                     // +0x08  count
     char _rest[0x14 - 0xc];          // +0x0c  maxsize/growby

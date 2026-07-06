@@ -349,11 +349,12 @@ struct CArrayE40 {
 
 // The fade mesh buffer IS a CArrayE40 (Init @0x17f390 = CArrayE40::SetSize); cast at the call.
 struct FxMeshBuffer {
-    void* m_vtbl;     // +0x00 (+0x58)
-    FxPoint* m_pData; // +0x04 (+0x5c)
-    i32 m_nSize;      // +0x08 (+0x60)
-    i32 m_nMaxSize;   // +0x0c (+0x64)
-    i32 m_nGrowBy;    // +0x10 (+0x68)
+    virtual void VSlot0();   // +0x00 (+0x58)  // real polymorphic vptr @+0x00 (was m_vtbl)
+    FxPoint* m_pData;        // +0x04 (+0x5c)
+    i32 m_nSize;             // +0x08 (+0x60)
+    i32 m_nMaxSize;          // +0x0c (+0x64)
+    i32 m_nGrowBy;           // +0x10 (+0x68)
+    void Init(i32 a, i32 b); // 0x17f390 (external, reloc-masked)
 };
 
 // The OffsetRect import (reached via the global function pointer at 0x6c4490) and

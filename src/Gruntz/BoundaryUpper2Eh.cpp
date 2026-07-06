@@ -94,9 +94,9 @@ CRezDir13cb80::~CRezDir13cb80() {
 // matched standalone in BoundaryUpper2.cpp.
 // ---------------------------------------------------------------------------
 struct DevCfgChain {
-    void* m_vptr;
-    void ReleaseBase(); // 0x1342b0
-    void BaseDtorC();   // 0x134d50
+    virtual void VSlot0(); // real polymorphic vptr @+0x00 (was m_vptr)
+    void ReleaseBase();    // 0x1342b0
+    void BaseDtorC();      // 0x134d50
     void DtorD1();
 };
 SIZE_UNKNOWN(DevCfgChain);

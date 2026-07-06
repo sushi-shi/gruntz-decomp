@@ -156,7 +156,7 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
 // ===========================================================================
 SIZE_UNKNOWN(CKeyFinder);
 struct CKeyFinder {
-    void* m_vtbl;            // +0x00
+    virtual void VSlot0();   // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
     i32 m_index;             // +0x04  found index / insertion point
     u16 m_08;                // +0x08
     u16 m_0a;                // +0x0a  (padding)

@@ -13,9 +13,9 @@ class CNameRecord {
 public:
     i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
 
-    void* m_vptr;               // +0x00 (untouched here)
-    i32 m_04;                   // +0x04 (head of the zeroed body)
-    i32 m_08;                   // +0x08 set to 1 on success
+    virtual void VSlot0(); // +0x00 (untouched here)  // real polymorphic vptr @+0x00 (was m_vptr)
+    i32 m_04;              // +0x04 (head of the zeroed body)
+    i32 m_08;              // +0x08 set to 1 on success
     char m_body0c[0x14 - 0x0c]; // +0x0c..+0x13
     char m_name[0x36 - 0x14];   // +0x14..+0x35  primary name (<=16 chars)
     char m_name2[0xd8 - 0x36];  // +0x36..+0xd7  secondary string

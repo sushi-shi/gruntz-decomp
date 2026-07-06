@@ -58,7 +58,8 @@ struct CSoundBlock;
 // the raw node walks read m_head directly; RemoveAll + the destructor are engine
 // externs (reloc-masked __thiscall on the sub-object address).
 struct CSoundChannelList {
-    void* m_vptr;          // +0x00 (== object +0x08) list vftable slot
+    virtual void
+    VSlot0(); // +0x00 (== object +0x08) list vftable slot  // real polymorphic vptr @+0x00 (was m_vptr)
     CSoundNode* m_head;    // +0x04 (== object +0x0c)  MFC CPtrList::m_pNodeHead
     CSoundNode* m_tail;    // +0x08                    m_pNodeTail
     CSoundNode* m_free;    // +0x0c                    m_pNodeFree (free-node list)

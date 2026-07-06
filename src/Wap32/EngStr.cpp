@@ -36,7 +36,8 @@ struct EngStrRenderSub {
     EngStrRenderCfg* m_cfg; // +0x10
 };
 struct EngStrRenderObj {
-    void* m_vptr;           // +0x00  (foreign object's vptr; layout only)
+    virtual void
+    VSlot0(); // +0x00  (foreign object's vptr; layout only)  // real polymorphic vptr @+0x00 (was m_vptr)
     EngStrRenderSub* m_sub; // +0x04
 };
 

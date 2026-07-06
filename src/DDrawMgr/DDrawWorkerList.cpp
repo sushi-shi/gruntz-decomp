@@ -90,7 +90,8 @@ public:
     void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void PruneWorkers(i32 a1, i32 a2);
 
-    void* m_vptr;                   // +0x00 (vptr; not stamped by these methods)
+    virtual void
+    VSlot0(); // +0x00 (vptr; not stamped by these methods)  // real polymorphic vptr @+0x00 (was m_vptr)
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b
     CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  (CDDrawSubMgr+0xc; copied into worker m_ctx)

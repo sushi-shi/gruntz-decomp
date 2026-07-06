@@ -394,7 +394,7 @@ struct WwdAnimWorker {
         m_174 = 0;
         m_178 = 0;
     }
-    void* m_vptr; // +0x00
+    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
     int m_04, m_08, m_0c, m_10, m_14, m_18, m_1c;
     char _p20[0x170 - 0x20];
     int m_170, m_174, m_178;
@@ -419,7 +419,7 @@ struct WwdCtorBase {
         m_c0 = (int)0x80000000;
         m_d8 = -1;
     }
-    void* m_vptr; // +0x00
+    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
     int m_04, m_08, m_0c;
     char _p10[0x20 - 0x10];
     int m_20;

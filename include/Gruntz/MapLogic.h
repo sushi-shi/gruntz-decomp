@@ -46,11 +46,12 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 // on it with ecx = &m_arr. Modeled with a no-body SetSize so the call reloc-masks.
 SIZE_UNKNOWN(CMapPtrArray);
 struct CMapPtrArray {
-    void* m_vtbl;   // +0x00
-    void** m_pData; // +0x04  the pointer array body
-    i32 m_nSize;    // +0x08  element count
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
+    void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
+    virtual void VSlot0();           // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
+    void** m_pData;                  // +0x04  the pointer array body
+    i32 m_nSize;                     // +0x08  element count
+    i32 m_nMaxSize;                  // +0x0c
+    i32 m_nGrowBy;                   // +0x10
 };
 
 // ---------------------------------------------------------------------------

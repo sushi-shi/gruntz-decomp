@@ -138,15 +138,16 @@ public:
     i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0  field block
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    void* m_vptr;         // +0x00  manual-stamp vtable pointer (slot 0x28 = Refresh)
-    i32 m_4;              // +0x04  active/valid flag
-    i32 m_8;              // +0x08  subtype tag (=2)
-    i32 m_c;              // +0x0c  command/tab id
-    i32 m_10;             // +0x10  arg0
-    i32 m_14;             // +0x14  rect x0 / arg block start
-    i32 m_18;             // +0x18  rect y0
-    i32 m_1c;             // +0x1c  rect x1
-    i32 m_20;             // +0x20  rect y1
+    virtual void
+    VSlot0(); // +0x00  manual-stamp vtable pointer (slot 0x28 = Refresh)  // real polymorphic vptr @+0x00 (was m_vptr)
+    i32 m_4;  // +0x04  active/valid flag
+    i32 m_8;  // +0x08  subtype tag (=2)
+    i32 m_c;  // +0x0c  command/tab id
+    i32 m_10; // +0x10  arg0
+    i32 m_14; // +0x14  rect x0 / arg block start
+    i32 m_18; // +0x18  rect y0
+    i32 m_1c; // +0x1c  rect x1
+    i32 m_20; // +0x20  rect y1
     CSbiConfigHost* m_24; // +0x24  config host
     i32 m_28;             // +0x28  counter / subtype
     CMiTabHost* m_2c;     // +0x2c  owning rect-only host (CSBI_Image-like, tab-state view)

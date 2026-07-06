@@ -20,10 +20,10 @@
 // diverge. See docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md.
 // ---------------------------------------------------------------------------
 struct CFileMemBase {
-    void* m_vtbl;     // +0x0
-    char _4[0xc - 4]; // +0x4,+0x8 scalars
-    CString m_name;   // +0xc
-    void ResetBase(); // 0x157a40 (base vtable slot +0xc)
+    virtual void VSlot0(); // +0x0  // real polymorphic vptr @+0x00 (was m_vtbl)
+    char _4[0xc - 4];      // +0x4,+0x8 scalars
+    CString m_name;        // +0xc
+    void ResetBase();      // 0x157a40 (base vtable slot +0xc)
     ~CFileMemBase();
 };
 SIZE_UNKNOWN(CFileMemBase);

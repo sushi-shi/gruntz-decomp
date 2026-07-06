@@ -70,14 +70,14 @@ public:
     i32 Save(LogicArchive* ar);                      // 0x164d80 (external here)
 
     // --- layout (offsets confirmed from ctor 0x150eb0 + Load 0x164960) ---
-    void* m_vptr;   // 0x00
-    i32 m_04;       // 0x04
-    i32 m_08;       // 0x08  set by Init (frame), copied from owner+0x0c in ctor
-    i32 m_0c;       // 0x0c  owner context (LogicContext*, used in Dispatch)
-    void* m_10;     // 0x10  primary data pointer (Init arg / zeroed by dtor)
-    void* m_14;     // 0x14  owned heap block (freed in dtor)
-    LogicSub* m_18; // 0x18  owned polymorphic sub-record (destroyed in dtor)
-    i32 m_1c;       // 0x1c  state/type tag (switch key)
+    virtual void VSlot0(); // 0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    i32 m_04;              // 0x04
+    i32 m_08;              // 0x08  set by Init (frame), copied from owner+0x0c in ctor
+    i32 m_0c;              // 0x0c  owner context (LogicContext*, used in Dispatch)
+    void* m_10;            // 0x10  primary data pointer (Init arg / zeroed by dtor)
+    void* m_14;            // 0x14  owned heap block (freed in dtor)
+    LogicSub* m_18;        // 0x18  owned polymorphic sub-record (destroyed in dtor)
+    i32 m_1c;              // 0x1c  state/type tag (switch key)
     i32 m_serial[(0x164 - 0x20) / 4 + 1]; // 0x20..0x164 flat serialized block
     i32 m_168;                            // 0x168 (zeroed by Init)
     i32 m_16c;                            // 0x16c (zeroed by Init)

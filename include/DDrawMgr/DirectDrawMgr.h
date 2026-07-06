@@ -58,7 +58,7 @@ struct IDirectDrawPalette; // <ddraw.h>: the held palette
 // are reloc-masked engine calls (the MFC runtime TUs).
 // ---------------------------------------------------------------------------
 struct CDdObArray {
-    void* m_vtbl;                   // +0x00
+    virtual void VSlot0();          // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
     void** m_pData;                 // +0x04
     i32 m_nSize;                    // +0x08
     i32 m_nMaxSize;                 // +0x0c

@@ -20,22 +20,12 @@
 // minimal member-view of the same class - the two reloc-masked callees resolve to
 // WwdSpatialMgr.cpp's real definitions.)
 struct CWwdSpatialMgr {
-    void* m_vptr;                                             // +0x00
-    char m_pad04[0x10 - 0x04];                                // +0x04..+0x0f
-    i32 m_rectALeft, m_rectATop, m_rectARight, m_rectABottom; // +0x10 (was CPlaneScroll)
-    i32 m_rectCLeft, m_rectCTop, m_rectCRight, m_rectCBottom; // +0x20
-    i32 m_rectBLeft, m_rectBTop, m_rectBRight, m_rectBBottom; // +0x30
-    i32 m_centerAX, m_centerAY;                               // +0x40
-    i32 m_centerBX, m_centerBY;                               // +0x48
-    i32 m_centerCX, m_centerCY;                               // +0x50
-    char m_pad58[0x68 - 0x58];                                // +0x58
-    i32 m_targetX, m_targetY;                                 // +0x68
-    void* m_baseVtbl;           // +0x70  base/secondary vtable restamped on teardown
-    i32 ScrollTo(i32 a, i32 b); // 0x168340 (was CPlaneScroll::SetTargetA)
-    i32 Relocate(i32 a, i32 b); // 0x168500 (was CPlaneScroll::SetTargetB)
-    i32 PruneCount();           // 0x1688b0  (reloc-masked external)
-    void FreeGrids();           // 0x1682f0  (reloc-masked external scalar-dtor body)
-    ~CWwdSpatialMgr();          // inline: FreeGrids() then restamp m_baseVtbl
+    virtual void VSlot0();     // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
+    void* m_baseVtbl;          // +0x70  base/secondary vtable restamped on teardown
+    i32 PruneCount();          // 0x1688b0  (reloc-masked external)
+    void FreeGrids();          // 0x1682f0  (reloc-masked external scalar-dtor body)
+    ~CWwdSpatialMgr();         // inline: FreeGrids() then restamp m_baseVtbl
 };
 
 inline CWwdSpatialMgr::~CWwdSpatialMgr() {

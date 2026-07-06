@@ -42,13 +42,12 @@ public:
 // against the engine CObArray helper @0x1b5822.
 SIZE_UNKNOWN(CFrameArray);
 struct CFrameArray {
-    void* m_vptr;   // +0x00  CObject vftable
-    i32** m_pData;  // +0x04  frame-pointer table
-    i32 m_nSize;    // +0x08  element count
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
-    // (SetAtGrow @0x1b5822 IS MFC CObArray::SetAtGrow - the frame array IS a CObArray;
-    // reached via a CObArray cast at the one call site, SpriteResource.cpp.)
+    virtual void VSlot0(); // +0x00  CObject vftable  // real polymorphic vptr @+0x00 (was m_vptr)
+    i32** m_pData;         // +0x04  frame-pointer table
+    i32 m_nSize;           // +0x08  element count
+    i32 m_nMaxSize;        // +0x0c
+    i32 m_nGrowBy;         // +0x10
+    void SetAtGrow(i32 index, CObject* element); // 0x1b5822
 };
 
 // The engine sprite (animation frame-data) object: the value the sprite hash

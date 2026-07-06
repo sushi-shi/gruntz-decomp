@@ -55,8 +55,8 @@ class CProjActMap {
 public:
     void* Insert(const char* key, void* value); // 0x1933b0
 
-    void* m_vptr;      // +0x00
-    CVariantSlot* m_4; // +0x04  error sink
+    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    CVariantSlot* m_4;     // +0x04  error sink
     char m_pad8[0x14 - 0x8];
     i32 m_14;        // +0x14  node count
     CTrieNode* m_18; // +0x18  root
