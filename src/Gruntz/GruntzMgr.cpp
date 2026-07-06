@@ -1425,9 +1425,6 @@ struct CMonoView {
     CMonoSprite*
     CreateSprite(i32 w, i32 h, i32 geoA, i32 geoB, i32 ox, i32 oy, const char* name); // 0x15d9a0
 };
-struct CMonoCellArray {
-    void SetAtGrow(i32 i, void* elem); // 0x1b5822  CObArray::SetAtGrow
-};
 struct CMonoSprite {
     char m_pad0[0x8];
     i32 m_8; // +0x08  flag bits (bit1 = visible)
@@ -1439,7 +1436,7 @@ struct CMonoSprite {
     char m_pad30[0x80 - 0x30];
     i32 m_80; // +0x80
     char m_pad84[0x9c - 0x84];
-    CMonoCellArray m_9c; // +0x9c  SetAtGrow target
+    CObArray m_9c; // +0x9c  frame CObArray (SetAtGrow @0x1b5822)
 };
 struct CMonoWorld {
     char m_pad0[0x10];
@@ -1480,7 +1477,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         if (spr == 0) {
             return 0;
         }
-        spr->m_9c.SetAtGrow(0, rec);
+        spr->m_9c.SetAtGrow(0, (CObject*)rec);
         spr->m_8 |= 0xc;
         spr->m_80 = 0xf4241;
         i32 parity = 1;
@@ -3606,7 +3603,6 @@ SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
 SIZE_UNKNOWN(CModalDialog);
-SIZE_UNKNOWN(CMonoCellArray);
 SIZE_UNKNOWN(CMonoConfigHolder);
 SIZE_UNKNOWN(CMonoConfigMap);
 SIZE_UNKNOWN(CMonoConfigRec);
