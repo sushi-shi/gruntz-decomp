@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
+#include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <rva.h>
@@ -1120,7 +1121,6 @@ inline WwdBLevel2::~WwdBLevel2() {
 class CWwdGameObjectB : public WwdBLevel2 {
 public:
     ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
-    void InitDtor();             // 0x166810
     WwdObList m_1dc;             // +0x1dc  CObList
     char _p1e0[0x1f8 - 0x1e0];
     i32 m_1f8; // +0x1f8
@@ -1134,7 +1134,7 @@ public:
 // variants) - not source-steerable.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObjectB::~CWwdGameObjectB() {
-    InitDtor();
+    ((B_166810*)this)->Clear();
     WORKER_FREE(m_7c);
     m_1f8 = 0;
     m_18c = -1;
