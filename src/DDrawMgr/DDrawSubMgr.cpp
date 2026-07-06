@@ -1,4 +1,5 @@
 #include <Gruntz/SoundCueMgr.h>
+#include <Gruntz/AniElement.h>
 #include <rva.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -1421,13 +1422,6 @@ public:
 // The descriptor playlist (cursor+0x14): a CObArray (data at +0x0c, count at +0x10).
 // AtChecked_06b270 is the bounds-checked __thiscall fetch (shared with CAniElement);
 // some advance cases inline the same bounds-checked index.
-class CAniDescArray {
-public:
-    CAniDesc* AtChecked_06b270(i32 i); // 0x06b270  __thiscall bounds-checked fetch
-    char m_pad00[0x0c];                // +0x00..0x0b
-    CAniDesc** m_data;                 // +0x0c  data
-    i32 m_count;                       // +0x10  count
-};
 
 // The sound-cue enable flag + a float pan/volume scale constant.
 DATA(0x0021ab20)
@@ -1466,18 +1460,18 @@ class CAniAdvanceCursor {
 public:
     i32 Advance_15c360(u32 elapsed); // 0x15c360
 
-    char m_pad00[0x10];        // +0x00..0x0f
-    CAniRenderCtx* m_ctx;      // +0x10
-    CAniDescArray* m_playlist; // +0x14
-    CAniDesc* m_desc;          // +0x18
-    i32 m_index;               // +0x1c
-    u32 m_timer;               // +0x20
-    i32 m_decEachTick;         // +0x24
-    i32 m_paused;              // +0x28
-    i32 m_ownsBuffer;          // +0x2c
-    i32 m_pendingDraw;         // +0x30
-    i32 m_curDraw;             // +0x34
-    i32 m_speed;               // +0x38  float speed, raw bits
+    char m_pad00[0x10];      // +0x00..0x0f
+    CAniRenderCtx* m_ctx;    // +0x10
+    CAniElement* m_playlist; // +0x14
+    CAniDesc* m_desc;        // +0x18
+    i32 m_index;             // +0x1c
+    u32 m_timer;             // +0x20
+    i32 m_decEachTick;       // +0x24
+    i32 m_paused;            // +0x28
+    i32 m_ownsBuffer;        // +0x2c
+    i32 m_pendingDraw;       // +0x30
+    i32 m_curDraw;           // +0x34
+    i32 m_speed;             // +0x38  float speed, raw bits
 };
 
 // ---------------------------------------------------------------------------
@@ -1775,7 +1769,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         // body (a goto into the single emitted block); the block's locals are
         // declared before the label so no init is bypassed.
         i32 modeWord = rd->m_loopMode;
-        CAniDescArray* arr;
+        CAniElement* arr;
         i32 i;
         CAniDesc* nd;
         switch (modeWord & 0xffff) {
@@ -1785,7 +1779,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_playlist != 0) {
                     m_index = 0;
-                    m_desc = m_playlist->AtChecked_06b270(0);
+                    m_desc = (CAniDesc*)m_playlist->AtChecked_06b270(0);
                     m_paused = 0;
                     m_speed = 0x3f800000;
                     m_pendingDraw = m_desc->m_drawValue;
@@ -1795,10 +1789,10 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             }
             case 7: { // hold on the first two descriptors (m_index = 1 then 0)
                 m_index = 1;
-                m_desc = m_playlist->AtChecked_06b270(1);
+                m_desc = (CAniDesc*)m_playlist->AtChecked_06b270(1);
                 if (m_desc == 0) {
                     m_index = 0;
-                    m_desc = m_playlist->AtChecked_06b270(0);
+                    m_desc = (CAniDesc*)m_playlist->AtChecked_06b270(0);
                 }
                 if (m_desc != 0) {
                     m_paused = 0;
@@ -1812,13 +1806,13 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 CAniRenderCtx* c2 = m_ctx;
                 if (c2->m_frameCursor == m_desc->m_param) {
                     if (modeWord != 9) {
-                        CAniDescArray* a = m_playlist;
+                        CAniElement* a = m_playlist;
                         i32 j = m_index + 1;
                         m_index = j;
-                        m_desc = a->AtChecked_06b270(j);
+                        m_desc = (CAniDesc*)a->AtChecked_06b270(j);
                         if (m_desc == 0) {
                             m_index = 0;
-                            m_desc = a->AtChecked_06b270(0);
+                            m_desc = (CAniDesc*)a->AtChecked_06b270(0);
                         }
                         if (m_desc != 0) {
                             m_curDraw = m_pendingDraw;
@@ -1858,15 +1852,15 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                     arr = m_playlist;
                     i = m_index + 1;
                     m_index = i;
-                    if (i >= 0 && i < arr->m_count) {
-                        nd = arr->m_data[i];
+                    if (i >= 0 && i < arr->m_records.m_nSize) {
+                        nd = (CAniDesc*)arr->m_records.m_pData[i];
                     } else {
                         nd = 0;
                     }
                     m_desc = nd;
                     if (nd == 0) {
                         m_index = 0;
-                        m_desc = arr->AtChecked_06b270(0);
+                        m_desc = (CAniDesc*)arr->AtChecked_06b270(0);
                     }
                     if (m_desc != 0) {
                         m_curDraw = m_pendingDraw;
@@ -1879,22 +1873,22 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 CAniFrameSeq* seq = c2->m_frameSeq;
                 if (c2->m_frameCursor == seq->m_highFrame - 1) {
                     if (modeWord != 9) {
-                        CAniDescArray* a = m_playlist;
+                        CAniElement* a = m_playlist;
                         i32 j = m_index + 1;
                         m_index = j;
                         CAniDesc* p;
-                        if (j >= 0 && j < a->m_count) {
-                            p = a->m_data[j];
+                        if (j >= 0 && j < a->m_records.m_nSize) {
+                            p = (CAniDesc*)a->m_records.m_pData[j];
                         } else {
                             p = 0;
                         }
                         m_desc = p;
                         if (p == 0) {
                             m_index = 0;
-                            i32 cnt = a->m_count;
+                            i32 cnt = a->m_records.m_nSize;
                             CAniDesc* first;
                             if (cnt > 0) {
-                                first = a->m_data[0];
+                                first = (CAniDesc*)a->m_records.m_pData[0];
                             } else {
                                 first = 0;
                             }
