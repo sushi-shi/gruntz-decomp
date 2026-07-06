@@ -25,7 +25,7 @@ extern "C" void* RezAlloc(u32 n);
 extern "C" void RezFree(void* p);
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
-extern u32 g_645588;
+extern "C" u32 g_645588;
 
 // A list element (command) object's vftable, stamped into the element by the
 // inlined element-destructor before RezFree.  Reloc-masked DIR32 datum.

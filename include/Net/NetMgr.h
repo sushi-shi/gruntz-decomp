@@ -724,11 +724,9 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // (CountActiveChannels @0x492e30). The +0x4 sub-object is ALSO the base of the
 // inline per-channel slot array at +0x150 (CNetGameMgr::m_channels, see CNetChannel).
 // ---------------------------------------------------------------------------
-// The +0x38 registry/config store (WriteInt/WriteString/GetInt); the concrete
-// method-carrying view lives in NetMgr.cpp, forward-declared here so CNetGameMgr
-// can expose it as a named typed member instead of a raw m_4+0x38 cast.
-struct Utils::RegistryHelper;
-
+// The +0x38 registry/config store (SetValueDword/SetValueString/GetValueDword);
+// Utils::RegistryHelper (from <Utils/RegistryHelper.h>, included above) is the real
+// class, exposed as a named typed member instead of a raw m_4+0x38 cast.
 struct CNetGameMgr {
     GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
     i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel/

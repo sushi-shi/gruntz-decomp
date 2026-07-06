@@ -48,7 +48,7 @@ extern char g_teleporterGeoKey[]; // s_GAME_TELEPORTER_0060bd38
 
 // The running game clock (g_645588 .data int) stashed into the leaf's +0x58.
 DATA(0x00245588)
-extern u32 g_645588; // VA 0x645588 (?g_clock@@3IA, unsigned)
+extern "C" u32 g_645588; // VA 0x645588 (?g_clock@@3IA, unsigned)
 
 // The "B" bute key (0x60d1bc) - the SAME rdata as CInGameIcon.h's g_iconBute;
 // reuse the identical declaration so the reloc pairs.

@@ -95,11 +95,13 @@ struct EngineLabelBacklog {
 struct CChatBoxOwner {
     void ProcessCheatInput(i32 a, i32 b);
 };
+SIZE_UNKNOWN(CObArray);
 struct CObArray {
     void Fn1b5144(i32 a, void* b);
     void Fn1b516b(i32 a, void* b, i32 c);
     void* Fn1b5200(i32 a, i32 b);
 };
+SIZE_UNKNOWN(CMapStringToOb);
 struct CMapStringToOb {
     void Lookup(const char* name, void** out);
 };
