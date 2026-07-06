@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Gruntz/ChatBoxOwner.h>
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Net/NetMgr.h>
@@ -1210,9 +1211,6 @@ struct CNetIface {
         m_4 = 0;
         m_8 = 1;
     }
-    i32 Attach(i32 a, i32 b); // 0x3e77
-    void Deactivate();        // 0x285b
-    void Configure(i32 a);    // 0x171c
 };
 
 // (3) the 0x630 session = CSBI_RectOnly (a cross-module Gruntz class): 8 CPtrList
@@ -1407,18 +1405,11 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     // (2) interface object
     CNetIface* iface = new CNetIface();
     TF(0x2e0) = (i32)iface;
-    if (iface->Attach((i32)m_c, (i32)m_4->m_5c) == 0) {
-        CNetIface* io = (CNetIface*)TF(0x2e0);
-        if (io == 0) {
-            return 0;
-        }
-        io->Deactivate();
-        RezFree(io);
-        TF(0x2e0) = 0;
-        return 0;
-    }
+    // CChatBoxOwner::Attach is void (QAEX): no failure signal, so no failure branch (the
+    // reconstruction's `== 0` guard was an artifact - the real shape just attaches + proceeds).
+    ((CChatBoxOwner*)iface)->Attach((void*)m_c, (CChatBoxTextHost*)m_4->m_5c);
     ((CNetIface*)TF(0x2e0))->m_10 = 0;
-    ((CNetIface*)TF(0x2e0))->Configure(1);
+    ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
     // (3) session (CSBI_RectOnly)
     CNetSess* sess = new CNetSess();
