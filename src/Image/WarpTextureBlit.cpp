@@ -13,6 +13,7 @@
 // or skip-colorkey. Field names are placeholders; offsets + code bytes are the
 // load-bearing fact.
 #include <Ints.h>
+#include <DDrawMgr/DDSurface.h>
 #include <rva.h>
 #include <Globals.h>
 
@@ -30,14 +31,6 @@ struct WarpVtx {
 
 // The locked surface (src texture + dest): m_8 = the lock object (vtable slot 0x80
 // = Unlock), m_1c = width, m_20 = row pitch.
-struct WarpSurf {
-    i32 Lock(i32 mode); // 0x13e6d0 (__thiscall, returns the locked base)
-    char p0[0x8];
-    void* m_8; // +0x08  the lock owner (Unlock via vtable +0x80)
-    char p0c[0x1c - 0xc];
-    i32 m_1c; // +0x1c  width
-    i32 m_20; // +0x20  row pitch
-};
 
 // Per-scanline edge tables (left = 0x6a2cf0, right = 0x6856f8): an array of 0x1c-
 // byte records {x(16.16), u, v} at +0x10/+0x14/+0x18, indexed by scanline.
@@ -73,10 +66,10 @@ static i32 warpFtol(double v) {
 // source-steerable from clean C. The three inner pixel loops (copy/skip-zero/skip-
 // colorkey), the surface lock/unlock and the span u/v interpolation match by shape.
 RVA(0x00146a20, 0x5b7)
-i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, i32 colorkey) {
+i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
     i32 maxY = -1;
-    if (WarpIsPow2(src->m_1c) == 0) {
+    if (WarpIsPow2(src->m_width) == 0) {
         return 0;
     }
     g_warpColorkey = (i16)colorkey;
@@ -86,7 +79,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
     {
         i32 m = 1;
         for (i32 b = 0; b < 0x20; b++) {
-            if (src->m_1c & m) {
+            if (src->m_width & m) {
                 shift = b;
                 break;
             }
@@ -154,9 +147,9 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
 
     g_warpTexBase = src->Lock(0);
     i32 destBase = dst->Lock(0);
-    i32 dstPitch = dst->m_20;
+    i32 dstPitch = dst->m_pitch;
     g_warpDestRow = destBase + dstPitch * minY;
-    g_warpUMask = ((src->m_1c + 0x3ffff) << 0xe) << shift;
+    g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
 
     i32 rows = maxY - minY;
     if (mode == 0) {
@@ -190,7 +183,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_pitch;
         }
     } else if (g_warpColorkey == 0) {
         // ---- skip-zero ----
@@ -227,7 +220,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_pitch;
         }
     } else {
         // ---- skip-colorkey ----
@@ -264,7 +257,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_20;
+            g_warpDestRow += dst->m_pitch;
         }
     }
 
@@ -272,5 +265,4 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, WarpSurf* dst, WarpSurf* src, i32 mode, 
     (*(void (**)(void*, i32))(*(void***)dst->m_8 + 0x80 / 4))(dst->m_8, 0);
     return 1;
 }
-SIZE_UNKNOWN(WarpSurf);
 SIZE_UNKNOWN(WarpVtx);
