@@ -1000,7 +1000,8 @@ SIZE_UNKNOWN(GruntListSub);
 struct GruntListSub {          // +0x338 / +0x31c  (~CObList 0x1b48c6)
     void CtorImpl(i32 nBlock); // 0x1b4867 (CObList ctor, block size)
     void Dtor();
-    void RemoveAll(); // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
+    void RemoveAll();          // 0x1b48a6 (CObList::RemoveAll - empty in place, keep the object)
+    void* Find1de8(void** it); // 0x1de8 (CObList iterate; was CMoveObList)
     // The step machines pop/push the occupied-coord CObList head directly (the
     // stored value IS the GruntCoord*). External/reloc-masked (MFC CObList slots).
     struct GruntCoord* RemoveHead(); // 0x1b4a03 (CObList::RemoveHead - returns the coord)
@@ -1887,8 +1888,8 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 // CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
 // that scales the first two args to tile pixel coords (*0x20+0x10) and forwards
 // all six to an engine helper. External callee reloc-masks.
-void __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 // The engine tile-switch helper TileSwitch forwards to (__stdcall ret 0x18).
-void __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
 #endif // SRC_GRUNTZ_GRUNT_H

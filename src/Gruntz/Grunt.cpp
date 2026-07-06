@@ -3384,8 +3384,8 @@ i32 CGrunt::CommitArrival() {
 // scales the first two grid coords to tile-pixel centers (*0x20 + 0x10) and
 // forwards all six args to the engine tile-switch helper.
 RVA(0x0004b320, 0x34)
-void __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
-    GruntTileSwitchImpl(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
+i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    return GruntTileSwitchImpl(a * 0x20 + 0x10, b * 0x20 + 0x10, c, d, e, f);
 }
 
 // @early-stop
