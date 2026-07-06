@@ -29,7 +29,6 @@
 // The SAME engine sub-mgr CPathHazard/CSimpleAnimation drive; modeled NO-body so
 // the call reloc-masks.
 struct CTeleAnimSink {
-    void Advance(u32 ctx); // 0x15c360
     char m_pad00[0x20];
     i32 m_20; // +0x20 idle-state flag
     char m_pad24[0x28 - 0x24];

@@ -7,6 +7,7 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/Teleporter.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/ActReg.h> // shared activation-registrar archetype (CTeleporterActReg)
@@ -122,7 +123,7 @@ void CTeleporter::InitActReg() {
 // CGruntPuddle::Place / CPlay::ApplyGameOptions carry; no source lever flips it.
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
-    ((CTeleAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
 
     if (((CTeleAnimSink*)((char*)m_38 + 0x1a0))->m_28 == 0) {
         return 0;
@@ -162,7 +163,7 @@ i32 CTeleporter::Begin() {
 // carry; not source-steerable. Logic + every offset/branch/call-arg byte-faithful.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
-    ((CTeleAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CGameObject* a = m_38;
     if (a->m_1c8 != 0 && a->m_1c0 == 0) {
         if (m_object->m_124 == 1) {

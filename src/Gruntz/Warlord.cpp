@@ -14,6 +14,7 @@
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
 #include <Gruntz/Warlord.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>      // the shared CActReg (g_actionTable @0x644610)
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 
@@ -199,7 +200,7 @@ void RegisterWarlordActions() {
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    ((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ResolveMovingAnimation();
@@ -217,7 +218,7 @@ i32 CWarlord::RearmMoving() {
 // Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo) != 1) {
         return 0;
     }
 
@@ -260,7 +261,7 @@ i32 CWarlord::LoadAttributes() {
 // m_2c-chain split; all no-change at the same ~91% plateau).
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (((CWarlordAnimSub*)((char*)m_38 + 0x1a0))->SetGeoSourceR(g_defaultGeo) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo) != 1) {
         return 0;
     }
 
@@ -296,7 +297,7 @@ i32 CWarlord::LoadAttributes2() {
 // particle at the warlord's clamped screen position (registry effect dispatch),
 // arm the panic timer on the registry sub-object, then flag the anim player.
 // DECODED (for the final sweep):
-//   sub->SetGeoSourceR(g_defaultGeo);                      // m_38+0x1a0, 0x15c360
+//   ((CAniAdvanceCursor*)sub)->Advance_15c360(g_defaultGeo);                      // m_38+0x1a0, 0x15c360
 //   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
 //   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {

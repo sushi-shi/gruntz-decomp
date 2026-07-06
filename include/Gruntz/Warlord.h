@@ -29,8 +29,6 @@
 // ---------------------------------------------------------------------------
 class CWarlordAnimSub {
 public:
-    i32 SetGeoSourceR(i32 src); // 0x15c360
-
     char m_pad00[0x20];
     i32 m_20; // +0x20  state word (== 0 gates the moving-anim re-arm)
     char m_pad24[0x28 - 0x24];

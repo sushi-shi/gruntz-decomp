@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_lightGameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/LogicTypeId.h>
@@ -252,7 +253,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CTileLogic(obj) {
 // wall CKitchenSlime::Tick carries). Logic byte-for-byte correct.
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
-    ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_pathTick);
 
     CGameObject* obj = m_object;
     // The probe rect (a 4-int local) the on-screen query tests, computed
@@ -368,7 +369,7 @@ i32 CLightningHazard::SiblingTick() {
         o->m_drawFillArg = (i32)g_lightGameReg->m_logicPump->m_tables[sel]; // [m_78 + sel*4 + 0x14]
     }
 
-    ((CPathSubMgr*)((char*)m_38 + 0x1a0))->Advance(g_pathTick);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_pathTick);
 
     CGameObject* obj = m_object;
     i32 rect[4];

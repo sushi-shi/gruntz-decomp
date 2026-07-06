@@ -53,9 +53,7 @@ extern CGameRegistry* g_pathGameReg;
 
 // The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
 // __thiscall ret 4, takes the g_pathTick frame counter as its int arg).
-struct CPathSubMgr {
-    void Advance(i32 tick); // 0x15c360
-};
+struct CPathSubMgr {};
 
 // A frame/tick counter (BSS, @0x6bf3bc) the sub-mgr Advance consumes. Already
 // named g_6bf3bc in src/Gruntz/Projectile.cpp; re-declared here, address-pinned.
