@@ -40,7 +40,6 @@ struct CViewPooledRes {
 // here.) The nested surface pages are DDraw objects; their leaf +0x2c is the real CDDSurface.
 SIZE_UNKNOWN(CDrawTarget);
 struct CDrawTarget {
-    void Flush(); // 0x158ee0 (== CDDrawWorkerMgr::Method_158ee0) render/resource worker-apply
     char m_pad00[0x10];
     struct SurfaceA { // +0x10  frame-surface page
         char p0[0x2c];
@@ -122,10 +121,6 @@ struct CImageRegistry {
 // (the former View.h CViewSoundRegistry view folds here).
 SIZE_UNKNOWN(CSoundRegistry);
 struct CSoundRegistry {
-    i32 Has(const char* szName);                          // 0x1583c0 __thiscall, ret found
-    void Register(const char* szName, const char* szKey); // 0x157c70 __thiscall
-    void Release(const char* szName, const char* szKey);  // 0x157c70 (loader alias)
-    void Install(void* set, const char* szName, const char* szKey); // 0x157ee0 __thiscall
     char m_pad00[0x10];
     CSpriteHashTable m_10map; // +0x10
     char m_pad14[0x2c - 0x14];

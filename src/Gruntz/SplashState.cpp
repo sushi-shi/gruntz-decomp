@@ -19,6 +19,7 @@
 // to GetData()->nDataLength == m_pchData[-2], byte-identical to the load's `mov
 // eax,ds:g; mov ecx,[eax-8]; test ecx,ecx` guard.
 #include <Mfc.h> // CString + <windows.h> (SetCursor)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
@@ -85,7 +86,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
 
     void* soundz = m_2c->LoadGroup("SOUNDZ");
     if (soundz) {
-        ((CSoundRegistry*)m_c->m_28)->Install(soundz, g_emptyString, "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, g_emptyString, "_");
     }
     return 1;
 }

@@ -32,6 +32,7 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Bute/SymTab.h>
@@ -251,8 +252,8 @@ void CBootyState::ReleaseResources() {
     if (r) {
         r->Free();
     }
-    ((CSoundRegistry*)m_c->m_28)->Release("BOOTY", "_");
-    ((CSoundRegistry*)m_c->m_28)->Release("GRUNTZ_WANDGRUNT", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
     m_c->m_10->Release("BOOTY", "_");
     m_c->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
@@ -1248,7 +1249,7 @@ void CCreditsState::ReleaseResources() {
         if (r) {
             r->Free();
         }
-        ((CSoundRegistry*)m_c->m_28)->Release("CREDITZ", "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
         m_c->m_10->Release("CREDITZ", "_");
         m_c->m_animRegistry->Release("CREDITZ", "_");
     }
@@ -1360,7 +1361,7 @@ void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
     m_c->m_10->Release("MENU", "_");
-    ((CSoundRegistry*)m_c->m_28)->Release("MENU", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
@@ -1702,7 +1703,7 @@ void CMultiBootyState::ReleaseResources() {
     if (r) {
         r->Free();
     }
-    ((CSoundRegistry*)m_c->m_28)->Release("BOOTY", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
     ((CBootyOwnerView*)m_4)->m_60->Teardown();
     ((CGameModeBase*)this)->BaseCleanup();
 }
@@ -1722,7 +1723,7 @@ i32 CMultiBootyState::Vslot09(i32) {
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
-    m_c->m_drawTarget->Flush();
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
@@ -1966,7 +1967,7 @@ void CMenuState::StopMusicChain() {
 // view, stamp the start clock, run the music-stop chain, then busy-wait m_1b8 ms.
 RVA(0x000a06d0, 0x5f)
 i32 CMenuState::FrameSlot28(i32) {
-    m_c->m_drawTarget->Flush();
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     m_c->m_drawTarget->m_10->m_2c->Flip(0);
     u32 start = timeGetTime();
     StopMusicChain();

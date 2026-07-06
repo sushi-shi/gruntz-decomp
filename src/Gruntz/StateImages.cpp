@@ -11,6 +11,7 @@
 // WorkerReg / CSymTab shadows of the +0x0c/+0x2c facets are folded away. Field names are
 // placeholders; only offsets + code bytes are load-bearing.
 #include <Mfc.h> // GameMode.h needs the afx umbrella (WINAPI/windows.h come with it)
+#include <DDrawMgr/DDrawSubMgrPages.h>
 
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
@@ -96,7 +97,7 @@ i32 CBootyState::InputVirtual() {
     } else {
         ShowSecretBonusMessage();
     }
-    m_c->m_drawTarget->Flush();
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }

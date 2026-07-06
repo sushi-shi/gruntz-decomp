@@ -17,6 +17,7 @@
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
 #include <Gruntz/SoundCueMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 
 #include <rva.h>
@@ -84,7 +85,7 @@ i32 CBootyState::Vslot09(i32) {
     if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
         return 0;
     }
-    m_c->m_drawTarget->Flush();
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     BuildPage(0x50, 0x3e8, 0, 1);
 
     BzGameReg* reg = g_mgrSettings;
@@ -150,7 +151,7 @@ i32 CMultiBootyState::InputVirtual() {
     }
 
     OnActivated();
-    m_c->m_drawTarget->Flush();
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
     BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
