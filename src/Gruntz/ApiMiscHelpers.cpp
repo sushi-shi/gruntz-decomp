@@ -4,6 +4,7 @@
 // offsets + emitted bytes are load-bearing, field names are placeholders. These
 // functions touch only Win32 + timeGetTime, so the move is byte-neutral.
 #include <Win32.h>
+#include <Dsndmgr/DirectSoundMgr.h> // real DirectSoundMgr (the DS play-cursor timing source)
 #include <rva.h>
 
 namespace ApiMisc {
@@ -88,15 +89,12 @@ namespace ApiMisc {
 
     // __thiscall(timestamp): throttle to >0x64 ms since the last tick, query the
     // source (m_8), wrap localC against m_c into the window, then run the work pass.
-    struct TickSource_137e30 {
-        i32 Read(i32* outHi, i32* outLo); // thiscall, RVA 0x135a20
-    };
     struct Throttle_137e30 {
         char m_pad0[8];
-        TickSource_137e30* m_8; // +0x08
-        i32 m_c;                // +0x0c
-        i32 m_10;               // +0x10
-        i32 m_14;               // +0x14
+        DirectSoundMgr* m_8; // +0x08  DS play-cursor timing source
+        i32 m_c;             // +0x0c
+        i32 m_10;            // +0x10
+        i32 m_14;            // +0x14
         char m_pad18[0x1c - 0x18];
         i32 m_1c; // +0x1c
         char m_pad20[0x28 - 0x20];
@@ -114,8 +112,8 @@ namespace ApiMisc {
             return 1;
         }
         m_28 = t;
-        i32 hi, lo;
-        if (!m_8->Read(&hi, &lo)) {
+        u32 hi, lo;
+        if (!m_8->GetCurrentPosition(&hi, &lo)) {
             return 0;
         }
         i32 v;
@@ -134,17 +132,13 @@ namespace ApiMisc {
         return Work(m_c, v) != 0;
     }
 
-    // A device object whose Prepare(flag) lives at RVA 0x135a70.
-    struct Device_1380d0 {
-        i32 Prepare(i32 flag); // RVA 0x135a70
-    };
     // __thiscall(timestamp) host: timestamp -1 means "now"; prep the device, then
     // run the work pass (RVA 0x137f30) over m_c/m_10. Returns whether it ran.
     struct Timer_1380d0 {
         char m_pad0[0x8];
-        Device_1380d0* m_8; // +0x08
-        i32 m_c;            // +0x0c
-        i32 m_10;           // +0x10
+        DirectSoundMgr* m_8; // +0x08  DS buffer (SetCurrentPosition(0))
+        i32 m_c;             // +0x0c
+        i32 m_10;            // +0x10
         char m_pad14[0x20 - 0x14];
         i32 m_20; // +0x20
         char m_pad24[0x28 - 0x24];
@@ -157,7 +151,7 @@ namespace ApiMisc {
         i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
         m_28 = t;
         m_c = 0;
-        if (!m_8->Prepare(0)) {
+        if (!m_8->SetCurrentPosition(0)) {
             return 0;
         }
         m_20 = 0;

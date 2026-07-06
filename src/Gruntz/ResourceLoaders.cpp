@@ -5,6 +5,7 @@
 // (only FindResource/LoadResource/GDI + sprintf).
 #include <Win32.h>
 #include <ddraw.h> // IDirectDrawSurface (the counter window's GetDC/ReleaseDC source)
+#include <Dsndmgr/DirectSoundMgr.h> // real DirectSoundMgr (the WAVE-load looping gate)
 #include <rva.h>
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
@@ -53,23 +54,19 @@ namespace ResLoaders {
         return Use136910(data, a, b);
     }
 
-    // The probe object (arg1) whose Ready (RVA 0x135440) gates loading.
-    struct WaveProbe_136ce0 {
-        i32 Ready(); // thiscall, RVA 0x135440
-    };
     struct WaveHost2_136ce0 {
         char m_pad0[0x78];
         i32 m_78; // +0x78
-        i32 LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg);
-        i32 Use136bd0(WaveProbe_136ce0* probe, void* data, i32 arg); // thiscall, RVA 0x136bd0
+        i32 LoadWave(DirectSoundMgr* probe, const char* name, i32 arg);
+        i32 Use136bd0(DirectSoundMgr* probe, void* data, i32 arg); // thiscall, RVA 0x136bd0
     };
-    // __thiscall(probe, name, arg): if the probe is ready, find/load/lock the WAVE.
+    // __thiscall(probe, name, arg): if the probe (a DS buffer) is looping, find/load/lock the WAVE.
     RVA(0x00136ce0, 0x92)
-    i32 WaveHost2_136ce0::LoadWave(WaveProbe_136ce0* probe, const char* name, i32 arg) {
+    i32 WaveHost2_136ce0::LoadWave(DirectSoundMgr* probe, const char* name, i32 arg) {
         if (!m_78) {
             return 0;
         }
-        if (probe->Ready() == 0) {
+        if (probe->IsLooping() == 0) {
             return 1;
         }
         HINSTANCE mod1 = AppModule_1d3631()->m_8;
