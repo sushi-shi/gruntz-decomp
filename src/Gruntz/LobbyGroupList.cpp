@@ -11,14 +11,11 @@
 // GetName, ~CString, SendMessageA import) reloc-masks; only offsets + code bytes
 // are load-bearing (names are placeholders).
 #include <Mfc.h> // real MFC CString (GetName returns one by value) + windows.h
+#include <Net/InterfaceObject.h>
 #include <rva.h>
 
 // A list element: a DPlay-ish interface object with name + kind probes.
-struct LobbyIface {
-    i32 IsInterface1(); // 0x1794b0 __thiscall
-    i32 IsInterface2(); // 0x1794e0 __thiscall
-    CString GetName();  // 0x179300 __thiscall, returns CString by value
-};
+struct LobbyIface {};
 // A CObList node: {pNext@0, pPrev@4, data@8}.
 struct LobbyNode {
     LobbyNode* m_next;  // +0x00
@@ -65,12 +62,13 @@ void CLobbyGroupMgr::PopulateGroupList(HWND hList, i32 flags) {
     m_iterPos = m_listHead;
     LobbyIface* obj = GetNext();
     while (obj != 0) {
-        if (((flags & 1) && obj->IsInterface2()) || ((flags & 2) && obj->IsInterface1())) {
+        if (((flags & 1) && ((InterfaceObject*)obj)->IsInterface2())
+            || ((flags & 2) && ((InterfaceObject*)obj)->IsInterface1())) {
             obj = GetNext();
         } else {
             i32 idx;
             {
-                CString name = obj->GetName();
+                CString name = ((InterfaceObject*)obj)->GetName();
                 idx = SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
             }
             if (idx != -1) {
