@@ -9,6 +9,7 @@
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
 #include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <Gruntz/SpriteRefTable.h>
 #include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) - this TU
                    // uses only IDirectDrawSurface (no CDDSurface), so it stays off the
                    // <Mfc.h>-pulling <DDrawMgr/DDSurface.h> and keeps its lean Win32 chain
@@ -99,10 +100,6 @@ struct LfxColorNode {
 
 // The game-registry sprite/animation reference table (g_gameReg+0x74). GetA maps
 // a kind index to its color node (FUN_004e2360, reloc-masked, ret 0x4).
-struct LfxRefTable {
-    LfxColorNode* GetA(i32 kind);
-};
-
 // The render manager (this+0x00, set by Init). Init copies +0x68/+0x70/+0x30 into
 // this+0x4/0x8/0xc; the apply paths draw through +0x2c; the resize path resolves
 // tile colors through +0x74 (the ref table).
@@ -113,8 +110,8 @@ struct LfxMgr {
     char m_pad34[0x68 - 0x34];
     LfxTileBank* m_68; // +0x68 tile-descriptor bank -> this+0x4
     char m_pad6c[0x70 - 0x6c];
-    LfxGrid* m_tileGrid; // +0x70 tile grid           -> this+0x8
-    LfxRefTable* m_74;   // +0x74 sprite/animation ref table
+    LfxGrid* m_tileGrid;   // +0x70 tile grid           -> this+0x8
+    CSpriteRefTable* m_74; // +0x74 sprite/animation ref table
 };
 
 // A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
@@ -363,7 +360,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 alt = 1;
             }
             if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_644c54) {
-                LfxColorNode* node = m_mgr->m_74->GetA(desc->m_1f4);
+                LfxColorNode* node = (LfxColorNode*)m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -380,7 +377,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 continue;
             }
             if (g_645594 >= 0x32) {
-                LfxColorNode* node = m_mgr->m_74->GetA(desc->m_1f4);
+                LfxColorNode* node = (LfxColorNode*)m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
@@ -1738,7 +1735,6 @@ SIZE_UNKNOWN(LfxDrawCtx);
 SIZE_UNKNOWN(LfxGrid);
 SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
-SIZE_UNKNOWN(LfxRefTable);
 SIZE_UNKNOWN(LfxSurfMgr);
 SIZE_UNKNOWN(LfxSurfPool);
 SIZE_UNKNOWN(LfxSurface);
