@@ -6,8 +6,10 @@
 
 extern "C" void RezFree(void*); // 0x1b9b82
 
-struct Sub60 {
-    void Release(); // 0xc5280
+// The +0x60 owned child: dtor @0xc5280 (Release IS ~CNetThing); TU-local view of the
+// real header-less CNetThing (netthingdtor unit).
+struct CNetThing {
+    ~CNetThing();
 };
 
 struct CCluster0c {
@@ -25,7 +27,7 @@ struct CCluster0c {
     int m_48;               // +0x48
     char m_4c[0x58 - 0x4c]; // +0x4c sub-object
     char m_58[0x60 - 0x58]; // +0x58 sub-object
-    Sub60* m_60;            // +0x60 owned child
+    CNetThing* m_60;        // +0x60 owned child
 
     void Init12e0();        // 0xc12e0
     void Init10a0(void* p); // 0xc10a0
@@ -73,9 +75,9 @@ void CCluster0c::Run() {
 // 0xc5240
 RVA(0x000c5240, 0x2c)
 void CCluster0c::Cleanup() {
-    Sub60* p = m_60;
+    CNetThing* p = m_60;
     if (p) {
-        p->Release();
+        p->~CNetThing();
         RezFree(p);
         m_60 = 0;
     }
@@ -83,4 +85,4 @@ void CCluster0c::Cleanup() {
 }
 
 SIZE_UNKNOWN(CCluster0c);
-SIZE_UNKNOWN(Sub60);
+SIZE_UNKNOWN(CNetThing);
