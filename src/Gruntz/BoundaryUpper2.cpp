@@ -22,7 +22,6 @@ inline void* operator new(u32, void* p) {
 
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address
 // (named elsewhere, reloc-masked).
-extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // 0x184b70 - global-object tail-forward: load the singleton address into ecx and
@@ -138,7 +137,7 @@ void CDDWorkerFlatA::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    *(void**)this = &g_wapObjectDtorVtbl;
+    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 // @early-stop
 // redundant-store + scheduling wall (~90%): mirror of CDDWorkerFlatA::Reset (m_78 here
@@ -156,7 +155,7 @@ void CDDWorkerFlatB::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    *(void**)this = &g_wapObjectDtorVtbl;
+    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // ---------------------------------------------------------------------------

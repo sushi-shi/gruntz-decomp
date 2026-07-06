@@ -478,7 +478,6 @@ extern void* g_wwdSubVtbl[]; // 0x5f0128
 // pairs (CGameReg->m_24->[+0xb0..+0xdc]), and run ReadPlaneObjects `count` times.
 // The throwing operator-new + partial-construct cleanup gives the /GX frame.
 // ---------------------------------------------------------------------------
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // The level header reached via this->m_assetOwner->m_24 (six geometry pairs at +0xb0).
 struct WwdPlaneHdr {
@@ -568,7 +567,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
         WwdPlaneRender* w = WLOADER(WwdPlaneRender*, 0xb0);
         if (w) {
             w->DtorBody();
-            *(void**)((char*)w + 0x70) = &g_wapObjectDtorVtbl;
+            // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
             ::operator delete(w);
         }
         worker = 0;

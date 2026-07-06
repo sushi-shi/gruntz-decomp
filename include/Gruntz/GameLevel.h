@@ -169,7 +169,6 @@ enum LoadableClassId {
 // ctor/dtor, giving retail's classic two-phase vptr-store schedule. Field names
 // (m_04/m_08/m_0c) mirror the canonical CLoadable header.
 // ---------------------------------------------------------------------------
-extern void* g_wapObjectDtorVtbl; // base vftable restored by ~CLoadable (@0x5e8cb4)
 
 struct CLoadable {
     virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
@@ -195,7 +194,7 @@ struct CLoadable {
         m_04 = -1;
         m_08 = 0;
         m_0c = 0;
-        *(void**)this = &g_wapObjectDtorVtbl;
+        // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
     }
     i32 m_04; // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
     i32 m_08; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)

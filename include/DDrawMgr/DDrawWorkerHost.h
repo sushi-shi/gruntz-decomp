@@ -10,7 +10,7 @@
 #define GRUNTZ_CDDRAWWORKERHOST_H
 
 #include <Ints.h>
-#include <DDrawMgr/DDrawWorker.h> // CWorkerObArray, CLoadable, g_wapObjectDtorVtbl
+#include <DDrawMgr/DDrawWorker.h> // CWorkerObArray, CLoadable
 
 // The spatial-grid worker subobject at +0xb0 is a CWwdSpatialMgr (its real class,
 // defined in src/Gruntz/WwdSpatialMgr.cpp - the same object CImageSet3 owns at +0xb0).

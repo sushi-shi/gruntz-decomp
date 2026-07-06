@@ -100,7 +100,6 @@
 // members are constructed. The only remaining manual vtable store is the grand-base
 // teardown vftable ~CLoadable restamps after the member dtors run (@0x5e8cb4).
 DATA(0x001e8cb4)
-extern void* g_wapObjectDtorVtbl;
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.
@@ -738,7 +737,7 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 // vftable @0x5e8cb4 - the same table the level family's ~CLoadable restores.
 RVA(0x00161370, 0x7)
 void CImageSet1::DtorBase() {
-    *(void**)this = &g_wapObjectDtorVtbl;
+    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords

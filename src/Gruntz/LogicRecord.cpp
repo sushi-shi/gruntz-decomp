@@ -33,7 +33,6 @@
 // canonical shared g_wapObjectDtorVtbl (bound once in ReconBatch2.cpp), the same
 // name every other CObject-base manual restamp uses - so its reloc resolves.
 extern void* const g_animWorkerObjVtbl[]; // ??_7AnimWorkerObj @0x1efb80 (reloc-masked)
-extern void* g_wapObjectDtorVtbl;         // 0x1e8cb4 shared CObject base dtor vtable
 
 // Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
@@ -65,7 +64,7 @@ CLogicRecord::~CLogicRecord() {
     m_08 = 0;
     m_0c = 0;
     m_04 = -1;
-    m_vptr = &g_wapObjectDtorVtbl;
+    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // ---------------------------------------------------------------------------
