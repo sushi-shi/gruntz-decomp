@@ -35,7 +35,7 @@
 //   * grid-record stride - `(char*)m_ctx + cell * 0x238 (+field)`: m_ctx fronts the
 //     0x238-byte CGruntSpawnLevel record array; index*stride is raw byte arithmetic.
 //   * board-row stride - `(i32*)((char*)row + ((x * 7) << 2))`: a 7-tile row of i32.
-//   * tiny-helper-over-`this` - `((ElementRefresher/Kind4Validator/CoordCheck/SelfCommit*)
+//   * tiny-helper-over-`this` - `((ElementRefresher/Kind4Validator/CGrunt/SelfCommit*)
 //     this)->M()`: an external __thiscall engine method (own RVA) fired on this object;
 //     modeled as a helper method so `mov ecx,this; call` falls out (reloc-masked).
 //   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
@@ -318,10 +318,6 @@ struct RectInit {
 // A coord-occupancy query (RVA 0x051850, thunk 0x03c4c): a __thiscall on a unit
 // taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
 // state-machines below. External, reloc-masked (no body).
-struct CoordCheck {
-    i32 Occupied(i32 px, i32 py); // 0x051850
-};
-
 // The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
 // GridUnit taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
 // External, reloc-masked (no body).
@@ -444,10 +440,6 @@ extern i32 g_tickDelta;
 
 // The unit-side state mutator (RVA 0x065e80, thunk 0x03c6a): a __thiscall on a
 // GridUnit taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
-struct UnitMutator {
-    void SetState(i32 v, i32 a1, i32 a2, i32 a3, i32 a4); // 0x065e80
-};
-
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
 // 0x5e96ec). Reloc-masked DATA; read by the fild/fmul spawn-budget computation.
 
@@ -470,7 +462,7 @@ extern i32 g_stepTimer;
 // The scene-hit dispatcher reached via g_gameReg->m_cueSink (RVA 0x11b3b0, thunk
 // 0x039f4): a __thiscall taking (unit, 0x366, -1, 0, -1, -1). External, reloc-
 // masked (no body); modeled as a method on a tiny object (the same idiom as
-// UnitMutator/UnitCommit) so `mov ecx,[reg+0x60]; call` falls out.
+// CGrunt/CGrunt) so `mov ecx,[reg+0x60]; call` falls out.
 
 // ===========================================================================
 // CBattlezMapConfig::CBattlezMapConfig  @0x024dc0
@@ -1090,7 +1082,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                 } else {
                     unit->m_state = 0;
                 }
-                ((UnitMutator*)unit)->SetState(unit->m_claimAnim, 0, 0, 1, 1);
+                ((CGrunt*)unit)->LoadPickupSprites(unit->m_claimAnim, 0, 0, 1, 1);
                 if (mode == 0x12 || (mode == 0x16 && unit->m_coordCount != 0)) {
                     CoordNode* n = unit->m_coordHead;
                     while (n != 0) {
@@ -1484,15 +1476,8 @@ void CBattlezMapConfig::Clear_02ade0() {
 
 // The gated point-in-rect test on a unit (RVA 0x051a20, RectContainsGated): a
 // __thiscall taking the other unit's level coord. External, reloc-masked.
-struct UnitRectGate {
-    i32 Contains(i32 x, i32 y); // 0x051a20
-};
 // The neighbour-commit hook on a unit (RVA 0x05b050, CommitNeighbor): a __thiscall
 // taking (packedA, packedB, coordX, coordY). External, reloc-masked.
-struct UnitCommit {
-    void Commit(i32 a, i32 b, i32 x, i32 y); // 0x05b050
-};
-
 // ===========================================================================
 // CBattlezMapConfig::winapi_02ae00_IntersectRect  @0x02ae00
 // Coord hand-off from `unit` to the target `tgt`. Reject unless `unit` is eligible
@@ -1550,7 +1535,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     i32 roll = rand() % 4;
     if (tgt->m_trigMode != 0 && roll == 0) {
         UnitLevel* ul = unit->m_level;
-        if (((UnitRectGate*)tgt)->Contains(ul->m_worldX, ul->m_worldY) != 0) {
+        if (((CGrunt*)tgt)->RectContainsGated(ul->m_worldX, ul->m_worldY) != 0) {
             if (tgt->m_trigMode == 0x1e) {
                 UnitLevel* tl = tgt->m_level;
                 m_triggerMgr->ApplyTriggerB(tgt->m_trigA, tgt->m_trigB, tl->m_worldX, tl->m_worldY);
@@ -1563,7 +1548,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
         }
     }
     UnitLevel* ul3 = unit->m_level;
-    ((UnitCommit*)tgt)->Commit(unit->m_trigA, unit->m_trigB, ul3->m_worldX, ul3->m_worldY);
+    ((CGrunt*)tgt)->CommitNeighbor(unit->m_trigA, unit->m_trigB, ul3->m_worldX, ul3->m_worldY);
     i32 prim = tgt->m_animPrim;
     if (prim > 0x16) {
         prim = tgt->m_animSec;
@@ -2713,7 +2698,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                 if (u->m_220 != 0) {
                     continue;
                 }
-                ((UnitMutator*)u)->SetState(3, 1, 0, 0, 1);
+                ((CGrunt*)u)->LoadPickupSprites(3, 1, 0, 0, 1);
                 u->m_mode = 3;
                 if (u->m_coordCount != 0) {
                     CoordNode* n = u->m_coordHead;
@@ -2738,7 +2723,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
             cur2 = unit->m_animSec;
         }
         if (cur2 == 0) {
-            ((UnitMutator*)unit)->SetState(mode, 1, 0, 0, 1);
+            ((CGrunt*)unit)->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode == 0x12) {
@@ -2799,7 +2784,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         } else {
             mode = (roll > m_bandBThresh[8]) + 0x1f;
         }
-        ((UnitMutator*)unit)->SetState(mode, 1, 0, 0, 1);
+        ((CGrunt*)unit)->LoadPickupSprites(mode, 1, 0, 0, 1);
         return 1;
     } else {
         // Band C: the rarest anim band (0x23..0x26) chosen against m_bandCThresh[0..2].
@@ -3324,7 +3309,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
 // The queued-unit arrival resolver. For a unit with a live target cell
 // (m_targetX/m_targetY != -1) locate the unit at that cell (grid[m_targetX][m_targetY]); if it is
 // gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_freeList.
-// If the target cell is already occupied (CoordCheck::Occupied on the target's
+// If the target cell is already occupied (CGrunt::Occupied on the target's
 // level coord), recycle the unit's path onto g_coordPool, clear the target coord
 // and hand off to winapi_02ae00. Otherwise clamp the board dirty-rect to the board
 // bounds (the CRect / IntersectRect copy-back idiom) and, once the unit's idle
@@ -3332,7 +3317,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
 // flags m_pathCfg). A dangling target (m_targetX/m_targetY == -1) resets via g_coordPool.
 // ===========================================================================
 // @early-stop
-// 80.6% - head regalloc wall: logic + every call (CoordCheck::Occupied, the
+// 80.6% - head regalloc wall: logic + every call (CGrunt::Occupied, the
 // CoordListWalk/g_coordPool + raw-walk/g_freeList recycles, IntersectRect, the
 // Method_4b320 place, winapi_02ae00) is byte-exact in shape + order (the whole body
 // matches). Residual is the m_targetX/m_targetY head: retail keeps the -1 as an immediate
@@ -3348,7 +3333,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
         GridUnit* target = m_triggerMgr->m_grid[tx * 15 + ty];
         if (target != 0) {
             UnitLevel* lvl = target->m_level;
-            if (((CoordCheck*)unit)->Occupied(lvl->m_worldX, lvl->m_worldY) != 0) {
+            if (((CGrunt*)unit)->RectContains(lvl->m_worldX, lvl->m_worldY) != 0) {
                 if (unit->m_coordCount != 0) {
                     void* pos = unit->m_coordHead;
                     while (pos != 0) {
@@ -3998,7 +3983,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     return 1;
                 }
             }
-            if (((CoordCheck*)this)->Occupied(uy, ux) != 0) {
+            if (((CGrunt*)this)->RectContains(uy, ux) != 0) {
                 return 1;
             }
             if ((tileG & 0x200) != 0) {
@@ -5090,7 +5075,6 @@ SIZE_UNKNOWN(SceneColl);
 SIZE_UNKNOWN(SceneNode);
 SIZE_UNKNOWN(SceneObj);
 SIZE_UNKNOWN(Coord);
-SIZE_UNKNOWN(CoordCheck);
 SIZE_UNKNOWN(CoordListWalk);
 SIZE_UNKNOWN(ElementRefresher);
 SIZE_UNKNOWN(EmitArg);
@@ -5104,10 +5088,7 @@ SIZE_UNKNOWN(ProbePair);
 SIZE_UNKNOWN(RectInit);
 SIZE_UNKNOWN(ScratchString);
 SIZE_UNKNOWN(Tile);
-SIZE_UNKNOWN(UnitCommit);
 SIZE_UNKNOWN(UnitLevel);
-SIZE_UNKNOWN(UnitRectGate);
-SIZE_UNKNOWN(UnitMutator);
 SIZE_UNKNOWN(UnitMutator2);
 SIZE_UNKNOWN(UnitPlace);
 SIZE_UNKNOWN(ZErrTarget);
