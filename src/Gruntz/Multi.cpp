@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -606,12 +607,6 @@ public:
     virtual void Blit34(void* a, void* b); // +0x34
 };
 // The m_view->m_24 chain and its +0x5c compositor target.
-class PBComp { // m_view->m_24
-public:
-    char m_pad00_5c[0x5c];
-    CPlaneRender* m_5c;                  // +0x5c
-    void M15dc90(void* pane, void* ctx); // 0x0015dc90
-};
 // The m_view manager sub-object tree.
 class PBSub4 { // m_view->m_4
 public:
@@ -627,7 +622,7 @@ public:
     void* m_8;      // +0x08
     PBVfnHost* m_c; // +0x0c
     char m_pad10_24[0x24 - 0x10];
-    PBComp* m_24; // +0x24
+    CGameLevel* m_24; // +0x24
 };
 // The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
 // CMultiMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
@@ -663,7 +658,7 @@ void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_view;
     if (m_594 == 0 && m_logic->m_c != 0) {
         StepInputA();
-        mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
+        mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
         m_fxOverlay->Present21b7();
         CDDrawSurfacePair* h = mgr->m_4->m_14;
@@ -689,11 +684,14 @@ void CMulti::PumpB() {
         }
     }
     StepScroll();
-    m_logic->m_54->Retune(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
+    m_logic->m_54->Retune(
+        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
+        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
+    );
     if (m_overlayBActive != 0) {
         NotifyVisibleEntities();
     } else {
-        mgr->m_24->M15dc90(mgr->m_4->m_14, mgr->m_8);
+        mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
     m_fxOverlay->Present21b7();
@@ -729,8 +727,8 @@ void CMulti::PumpB() {
     }
     mgr->m_4->m_10->m_surface->Flip(0);
     PumpBRefresh2356(g_64556c, m_fxOverlay, m_overlayAActive);
-    if (mgr->m_24->m_5c != 0) {
-        mgr->m_24->m_5c->CenterScrollB();
+    if (mgr->m_24->m_mainPlane != 0) {
+        ((CPlaneRender*)mgr->m_24->m_mainPlane)->CenterScrollB();
     }
     if (m_overlayAActive != 0) {
         if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
@@ -999,7 +997,6 @@ SIZE_UNKNOWN(CMultiVtbl);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(McHost);
 SIZE_UNKNOWN(McObj);
-SIZE_UNKNOWN(PBComp);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBSub320);
