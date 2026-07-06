@@ -28,7 +28,6 @@
 #include <rva.h>
 
 struct CViewport {
-    void WrapCoord(i32* px, i32* py); // reloc-masked
     char m_pad00[0x8];
     i32 m_flags; // +0x08  visibility flag word (bit 0 = locked, bit 1 = visible)
     char m_pad0c[0x20 - 0xc];

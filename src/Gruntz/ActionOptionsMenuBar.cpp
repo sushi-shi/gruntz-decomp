@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wwd/WwdFile.h>
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
 // ActionOptionsMenuBar.cpp - CActionOptionsMenuBar, the in-game action/option
 // menu bar (C:\Proj\Gruntz). It caches four named sprites at LoadAssets and then
@@ -303,7 +304,7 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    ((CViewport*)g_gameReg->m_world->m_24->m_5c)->WrapCoord(&sx, &sy);
+    ((CPlaneRender*)g_gameReg->m_world->m_24->m_5c)->WrapCoord(&sx, &sy);
 
     i32 r[4];
     i32* src = g_gameReg->m_world->m_24->m_barRect;
