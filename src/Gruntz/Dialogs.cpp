@@ -13,6 +13,7 @@
 // are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameRegistry.h> // the real CGameRegistry (g_gameReg; m_curState @+0x2c)
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Net/LatencyList.h>     // CLatencyList (m_slotList; SelectItem body below)
@@ -777,10 +778,6 @@ struct CNetCfg { // m_c
     char m_pad0[0x28];
     CNetCfgSub* m_28; // +0x28
 };
-struct CNetDlgHost {                 // m_4 (runs the dialog, finds the local player record)
-    i32 RunDlg(void* dlg, i32 flag); // 0x196f
-    CNetCueRec* FindRec(i32 id);     // 0x2e00
-};
 // cdecl ILT-thunk helpers.
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 void ActiveWait(i32 ms);             // 0x13dfe0 busy-wait
@@ -788,7 +785,7 @@ void ActiveWait(i32 ms);             // 0x13dfe0 busy-wait
 class CNetMgrLite {
 public:
     char m_pad0[4];
-    CNetDlgHost* m_4; // +0x04
+    CGruntzMgr* m_4; // +0x04
     char m_pad8[0xc - 8];
     CNetCfg* m_c; // +0x0c
     char m_pad10[0x528 - 0x10];
@@ -807,11 +804,11 @@ public:
 RVA(0x000b86c0, 0x206)
 i32 CNetMgrLite::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
-    i32 r = m_4->RunDlg(&dlg, 0);
+    i32 r = m_4->ExitModalUI((CModalDialog*)&dlg, 0);
     g_dlgResultSink = 0;
     if (r != 1) {
         if (m_528 != 0) {
-            CNetCueRec* rec = m_4->FindRec(m_5c0);
+            CNetCueRec* rec = (CNetCueRec*)m_4->FindOptionsSlot(m_5c0);
             if (rec == 0) {
                 return 0;
             }
@@ -866,5 +863,4 @@ SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CRegBute);
 SIZE_UNKNOWN(CNetCfgSub);
 SIZE_UNKNOWN(CNetCfg);
-SIZE_UNKNOWN(CNetDlgHost);
 SIZE_UNKNOWN(CNetMgrLite);
