@@ -12,10 +12,11 @@
 // a superset of <Win32.h>, so switching the umbrella + using the real class kills the local
 // `struct CGrunt` view. The occupied-coord CObList is the canonical m_31c/m_320/m_324/
 // m_coordCount + GruntCoordNode/GruntCoord; the recycle pool is the canonical g_coordPool
-// (GruntCoordPool::Recycle, replacing the StepList2 view). The grid/scratch-list helpers
+// (FreeNodePool::Recycle, replacing the StepList2 view). The grid/scratch-list helpers
 // (CScanPlane/CScanCell/CScanList) stay local views: the tile-plane's dirty-rect view is
 // richer than the canonical GruntBoard, and CScanList is the /GX-forcing stack CObList.
-#include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h> FIRST: RECT+IntersectRect+GruntCoordPool)
+#include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h> FIRST: RECT+IntersectRect+FreeNodePool)
+#include <Gruntz/FreeNodePool.h>
 
 #include <rva.h>
 #include <Ints.h>
@@ -181,7 +182,7 @@ i32 CGrunt::PathScan57db0() {
             while (nd != 0) {
                 void* r = SCAN_LIST()->Find1de8((void**)&nd);
                 if (*(i32*)r != 0) {
-                    g_coordPool.Recycle((void*)*(i32*)r);
+                    g_coordPool.Push((void*)*(i32*)r);
                 }
             }
             SCAN_LIST()->RemoveAll1b48a6();

@@ -16,6 +16,8 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+class FreeNodePool; // folded GruntCoordPool
+
 class CDDrawSubMgrLeaf; // folded CGruntNameMap
 
 class CSoundCueMgr; // folded GruntSampleFactory
@@ -467,6 +469,8 @@ class CAnimNameResolver {
 public:
     char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
     CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
+    i32 Probe(i32 a, i32 b);                     // 0x016da80
+    i32 Reserve(CAnimNameRecord* rec, i32 n);    // 0x034960
     // The scratch-resolve variant (thunk 0x3864, zDArray::IndexToPtr-class): returns
     // the resolved record; the caller then tears down the g_animScratch CString[]
     // (the inlined teardown loop) before reading rec->m_name. Reloc-masked.
@@ -635,10 +639,7 @@ extern i32 g_gruntFreeListBias; // DAT_0064554c
 // 0x163b) pushes (elem - bias) onto the freelist headed at this->m_04. Reloc-masked
 // DATA; modeled as a tiny object so `mov ecx,0x645540; push elem; call` falls out.
 SIZE_UNKNOWN(GruntCoordPool);
-struct GruntCoordPool {
-    void Recycle(void* elem); // FUN_004311b0
-};
-extern GruntCoordPool g_coordPool; // DAT_00645540
+extern FreeNodePool g_coordPool; // DAT_00645540 (folded GruntCoordPool)
 
 // A grunt occupied-coord list node: ->next at +0, ->coord at +8 (an {x,y} pair).
 SIZE_UNKNOWN(GruntCoord);

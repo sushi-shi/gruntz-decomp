@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/BoundaryLowerMethodsViews.h>
@@ -1960,7 +1961,7 @@ i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
 WwdGameReg* g_gameReg;             // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-GruntCoordPool g_coordPool;        // DAT_00645540
+FreeNodePool g_coordPool;          // DAT_00645540
 CAnimScratchString* g_animScratch; // DAT_006bf66c
 i32 g_animScratchCount;            // DAT_006bf670
 void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
@@ -5188,7 +5189,7 @@ void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
             GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                g_coordPool.Recycle(cur->m_coord);
+                g_coordPool.Push(cur->m_coord);
             }
         }
         ((CObList*)(&m_31c))->RemoveAll();

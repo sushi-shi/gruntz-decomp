@@ -22,7 +22,7 @@
 // DONE (arg cluster): the arriving grunt arg IS the real CGrunt (<Gruntz/Grunt.h>) -
 // CArriveGrunt/CArriveCoord/CArriveNode/CArriveList/CArriveStr and the CStepList2 coord
 // pool are all dissolved onto CGrunt / GruntCoord / GruntCoordNode / GruntTilePos /
-// GruntListSub / GruntCoordPool (real names). Umbrella switched to <Mfc.h> (Grunt.h is
+// GruntListSub / FreeNodePool (real names). Umbrella switched to <Mfc.h> (Grunt.h is
 // MFC-transitive). ResolveArrival 54.83 -> 55.65%.
 //
 // REMAINING (this cluster): `this` (CArriveMgr) IS CBattlezMapConfig; the CArrive*
@@ -46,6 +46,7 @@
 // g_coordPool / RemoveAll on each exit. The stack CString (block, ctor 0x1b4867 / dtor
 // 0x1b48c6) forces the /GX EH frame. Big body (0xdb4, frame 0x94).
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h> // RECT + IntersectRect (afx-first; Grunt.h is MFC-transitive, so no <Win32.h>)
@@ -54,7 +55,7 @@
 #include <Ints.h>
 #include <stdlib.h>       // rand
 #include <string.h>       // memset (out-of-bounds cell fill)
-#include <Gruntz/Grunt.h> // real CGrunt (grunt arg) + CGruntHud (g->m_10) + GruntCoordPool g_coordPool
+#include <Gruntz/Grunt.h> // real CGrunt (grunt arg) + CGruntHud (g->m_10) + FreeNodePool g_coordPool
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
@@ -128,7 +129,7 @@ struct CArriveMgr {                                      // this (the CBattlezMa
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
             if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Recycle(cur->m_coord);                                                 \
+                g_coordPool.Push(cur->m_coord);                                                    \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll();                                                                    \
