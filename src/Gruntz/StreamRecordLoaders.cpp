@@ -11,6 +11,7 @@
 // handler, the grunt-tuning loader, ...) found by caller-tracing each through its
 // ILT thunk; the shared reader/registry models below are the load-bearing shape.
 #include <rva.h>
+#include <Gruntz/MgrSettings.h>
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
 #include <Gruntz/SerialObjRef.h> // CSerialArchive (reader), CDDrawSubMgrLeaf (registry
@@ -384,12 +385,9 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
 
 // The bound manager (this->m_c): the string-default helper at 0x155630 is a
 // __thiscall on its +0x10 sub-object, taking (obj, scratch, &outInt).
-struct CArchiveDefaultSub {
-    void FillDefault(void* obj, char* scratch, i32* outInt); // 0x155630
-};
 struct CArchiveMgr {
     char m_pad00[0x10];
-    CArchiveDefaultSub* m_10;   // +0x10
+    CDDrawWorkerRegistry* m_10; // +0x10
     char m_pad14[0x24 - 0x14];  //
     char m_name24[0x80 - 0x24]; // +0x24  inline name string (default-copied into scratch)
 };
@@ -539,7 +537,7 @@ i32 CArchiveLoadRec::Load(CSerialArchive* s) {
         memset(buf, 0, sizeof(buf));
         i32 v = 0;
         if (m_4d0 != 0) {
-            mc->m_10->FillDefault(m_4d0, buf, &v);
+            mc->m_10->AnyValueMatches_155630((i32)m_4d0, (i32)buf, (i32)&v);
         }
         s->Write(buf, 0x80);
         s->Write(&v, 4);
