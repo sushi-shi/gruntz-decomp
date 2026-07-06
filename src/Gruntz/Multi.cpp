@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
@@ -252,12 +253,12 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         if (e == 0) {
             return 0;
         }
-        e->m_inner.FreeSlot();
-        if (e->m_inner.Load(m_logic, i, e->m_10) == 0) {
+        ((CBattlezMapConfig*)&e->m_inner)->FreeArrays();
+        if (((CBattlezMapConfig*)&e->m_inner)->LoadConfig((CLevelInfo*)m_logic, i, e->m_10) == 0) {
             return 0;
         }
         if (e->m_14 && e->m_20) {
-            e->m_inner.Arm();
+            ((CBattlezMapConfig*)&e->m_inner)->Clear_02ade0();
         }
     }
     this->RefreshSlotTable();

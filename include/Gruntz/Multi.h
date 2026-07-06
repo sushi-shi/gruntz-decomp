@@ -91,9 +91,6 @@ public:
 // reloc-masked); only the +0x38 offset + 0x200 span are load-bearing.
 class CSlotConfig {
 public:
-    void FreeSlot();                              // 0x025ca0
-    i32 Load(CMultiMgr* logic, i32 idx, i32 m10); // 0x025020
-    void Arm();                                   // 0x02ade0
     char m_pad[0x238 - 0x38];
 };
 
