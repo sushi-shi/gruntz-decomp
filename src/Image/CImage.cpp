@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/ParseSource.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <rva.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
@@ -25,7 +26,7 @@
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
 
-// The image-source format tag (CImageSource::GetTag, a packed 3-char fourcc) that
+// The image-source format tag (CParseSource::GetTag, a packed 3-char fourcc) that
 // both Resolve and Reload dispatch on to pick the format loader index (1..4). Named
 // by the literal tag bytes (low byte first); PMB/XCP are the reversed extension
 // (-> BMP / PCX loaders). Same immediates as the bare literals -> matching-neutral;
@@ -81,7 +82,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
 // ---------------------------------------------------------------------------
 // (vtable slot 11): Resolve. Read the source's 3-char format tag, map it
 // to a format index (BMP=1, "CPX"=2, "RID"=3, "PID"=4), prime the source, then
-// dispatch the +0x28 load virtual (LoadDispatch) with (resolved, index, src->m_0c,
+// dispatch the +0x28 load virtual (LoadDispatch) with (resolved, index, src->m_length,
 // arg); finally release the source and return the load result. __thiscall, ret 8.
 //
 // The tag compare lowers to MSVC's unsigned binary-search switch tree
@@ -89,9 +90,9 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
 // returns the tag as a u32). docs/patterns/switch-key-unsigned-ja-vs-jg.md.
 // ---------------------------------------------------------------------------
 RVA(0x00152f20, 0x86)
-i32 CImage::Resolve(CImageSource* src, i32 arg) {
+i32 CImage::Resolve(CParseSource* src, i32 arg) {
     i32 index;
-    switch ((u32)src->GetTag()) {
+    switch ((u32)src->GetEntryTag()) {
         case IMGTAG_PMB: // BMP
             index = 1;
             break;
@@ -107,12 +108,13 @@ i32 CImage::Resolve(CImageSource* src, i32 arg) {
         default:
             return 0;
     }
-    i32 resolved = src->Resolve();
+    i32 resolved = src->BeginParse();
     if (resolved == 0) {
         return 0;
     }
-    i32 result = this->LoadDispatch((CImageFrameDesc*)resolved, (u32)index, (void*)src->m_0c, arg);
-    src->Release();
+    i32 result =
+        this->LoadDispatch((CImageFrameDesc*)resolved, (u32)index, (void*)src->m_length, arg);
+    src->EndParse();
     return result;
 }
 
@@ -330,7 +332,7 @@ i32 CImage::CopyFrom(CImage* other) {
 // clean/has-source probes are virtual calls on the CImageSurfaceSrc sub-object.
 // ---------------------------------------------------------------------------
 RVA(0x00153380, 0xeb)
-i32 CImage::Reload(CImageSource* src, i32 arg) {
+i32 CImage::Reload(CParseSource* src, i32 arg) {
     if (m_surface == 0) {
         return 1;
     }
@@ -347,7 +349,7 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
     }
 
     i32 index;
-    switch ((u32)src->GetTag()) {
+    switch ((u32)src->GetEntryTag()) {
         case IMGTAG_PMB: // BMP
             index = 1;
             break;
@@ -363,17 +365,22 @@ i32 CImage::Reload(CImageSource* src, i32 arg) {
         default:
             return 0;
     }
-    i32 resolved = src->Resolve();
+    i32 resolved = src->BeginParse();
     if (resolved == 0) {
         return 0;
     }
-    if (src->m_0c == 0) {
+    if (src->m_length == 0) {
         return 0;
     }
     // CDDSurface::Resolve(surf, buf, type, size, surf2): resolved is the decoded buffer,
-    // src->m_0c its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
-    return m_surface
-        ->Resolve(m_parent->m_1c, (void*)resolved, index, (u32)src->m_0c, (void*)g_surfaceColorKey);
+    // src->m_length its byte size, g_surfaceColorKey lands in the (PID-only) surf2 slot.
+    return m_surface->Resolve(
+        m_parent->m_1c,
+        (void*)resolved,
+        index,
+        (u32)src->m_length,
+        (void*)g_surfaceColorKey
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -452,7 +459,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
 // typedefs after the last function). VTBL skips (logged): the Wap::CObject base
-// vtable is the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CImageSource is
+// vtable is the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CParseSource is
 // flagged [virtual] only via its polymorphic Gruntz def, not this view. The held surface
 // (CDDSurface) and owned sprite (CDDrawShadeBlit) are annotated in their own headers.
 // CImage itself is RTTI-catalogued (??_7CImage@@ @0x5eaa2c, cl-emitted from the real
@@ -464,7 +471,6 @@ SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
 SIZE_UNKNOWN(CBlitClipOwner);
 SIZE_UNKNOWN(CImageParent);
 SIZE_UNKNOWN(CImageFrameDesc);
-SIZE_UNKNOWN(CImageSource);
 SIZE_UNKNOWN(CImage); // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
 // --- CImage.cpp local views ---
 SIZE_UNKNOWN(CResolveNode);

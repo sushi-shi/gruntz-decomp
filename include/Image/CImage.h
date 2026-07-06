@@ -1,6 +1,8 @@
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
 
+class CParseSource; // folded CImageSource
+
 class CDDrawPtrCollections; // folded CImageSurfacePool
 
 // CImage.h - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, the ONLY
@@ -124,16 +126,6 @@ public:
 // The ButeMgr parse source the Resolve virtual drives: GetTag (0x139800) reads its
 // 3-char format tag, Resolve (0x139960) primes it, Release (0x1399d0) tears it
 // down; its +0x0c field feeds the LoadDispatch call. Reloc-masked __thiscall.
-class CImageSource {
-public:
-    i32 GetTag();   // 0x139800
-    i32 Resolve();  // 0x139960
-    void Release(); // 0x1399d0
-
-    char _00[0x0c];
-    i32 m_0c; // +0x0c
-};
-
 // The resource-install gate (@0x6bf37c) and the surface color-key (@0x6bf380),
 // gating the CreateA cap (0x800) and the flags arg. Reloc-masked C++ globals.
 DATA(0x002bf37c)
@@ -183,9 +175,9 @@ public:
     virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
     virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
     virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
-    virtual i32 Resolve(CImageSource* src, i32 arg);                           // slot 11 0x152f20
+    virtual i32 Resolve(CParseSource* src, i32 arg);                           // slot 11 0x152f20
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
-    virtual i32 Reload(CImageSource* src, i32 arg);                            // slot 13 0x153380
+    virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
     virtual void RenderImage(CResolveNode* clip, void* a); // slot 14 0x153470 (external)
     virtual void Slot15();                                 // slot 15 0x153370 (external)
     virtual void* Slot16();                                // slot 16 0x002d6a (ILT)
