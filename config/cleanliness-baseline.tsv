@@ -3,11 +3,11 @@ Unknown ids	5
 g_<hex> globals	1205
 Method/Stub/FUN	0
 placeholder classes	268
-placeholder vtable slots	902
-*Vtbl structs	17
+placeholder vtable slots	903
+*Vtbl structs	16
 ->vtbl accesses	4
 g_*Vtbl globals	140
-m_vtbl/m_vptr members	75
+m_vtbl/m_vptr members	74
 )this casts	299
 )m_ casts	1050
 (char*) casts	887
