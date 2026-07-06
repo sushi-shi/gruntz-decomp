@@ -131,7 +131,7 @@ struct Arg1_bdd0 {
 };
 SIZE_UNKNOWN(Arg1_bdd0);
 struct CObj_bdd0 {
-    void* Method3026(void* a, i32 b, i32 c, i32 d, i32 e); // 0x3026
+    void* DispatchEntry(void* a, i32 b, i32 c, i32 d, i32 e); // 0x3026
     void* Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6);
 };
 SIZE_UNKNOWN(CObj_bdd0);

@@ -616,7 +616,7 @@ public:
         m_savedZonedSound; // +0x518  saved currently-playing zoned sound (region pause/resume)
 
     // Engine-label backlog stubs.
-    void Stub_08c9d0();
+    void PlayBacklog08c9d0();
     i32 winapi_0cdb10_PostMessageA(i32, i32, i32);
     // HandleTileClick (0xceae0): the menu/pause-state pointer-click handler - the
     // mouse-input twin of OnKeyCommand. Gated resume/report/unpause chain, then an

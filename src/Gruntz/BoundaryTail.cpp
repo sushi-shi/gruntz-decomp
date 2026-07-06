@@ -155,7 +155,7 @@ void CObj23d90::Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
 
 // ---------------------------------------------------------------------------
 // 0xbdd0 - look a key up in arg1's embedded map (at +0x10) into a zero-initialised
-// out slot; on miss return the (null) slot, on hit dispatch this->Method3026 with
+// out slot; on miss return the (null) slot, on hit dispatch this->DispatchEntry with
 // the found entry's m_10 plus the four trailing args and return its result.
 // __thiscall, 6 stack args (ret 0x18).
 // ---------------------------------------------------------------------------
@@ -166,7 +166,7 @@ void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5
     if (out == 0) {
         return (void*)out;
     }
-    return Method3026(out->m_10, a3, a4, a5, a6);
+    return DispatchEntry(out->m_10, a3, a4, a5, a6);
 }
 
 // ---------------------------------------------------------------------------

@@ -42,7 +42,7 @@ namespace modeinit {
     struct Worker630 {
         i32 Init10b4(i32 a); // 0x000010b4
         void PreDtor248c();  // 0x0000248c
-        void Method1d98();   // 0x00001d98
+        void ModePostInit(); // 0x00001d98
         // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
         struct Sub530 {
             void Ctor1b4f0b(); // 0x001b4f0b
@@ -202,7 +202,7 @@ namespace modeinit {
     //    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
     //  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
     //    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
-    //    m_2dc->Method1d98(); and m_40 is a DWORD store (i32 field), not u8.
+    //    m_2dc->ModePostInit(); and m_40 is a DWORD store (i32 field), not u8.
     //  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
     //    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
     //  * ShowCursor/timeGetTime go through the CACHED import pointers
@@ -408,7 +408,7 @@ namespace modeinit {
         m_40 = 0;
         m_1c0 = 0;
         memset(m_1d0, 0, 0x40 * 4);
-        m_2dc->Method1d98();
+        m_2dc->ModePostInit();
         m_1cc = 0;
         m_2d8 = timeGetTime();
         m_320 = 0;

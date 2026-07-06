@@ -169,8 +169,8 @@ public:
     i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
-    void* Stub_157610(i32 flag);
-    void Stub_165b90();
+    void* MapSmallScalarDtor(i32 flag);
+    void ResetSlots();
 };
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
@@ -335,7 +335,7 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
 // ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
 SYMBOL(??_GCDDrawChildGroupDtorHost @@UAEPAXI@Z)
 RVA(0x00157610, 0x1e)
-void* CDDrawWorkerMapSmall::Stub_157610(i32 flag) {
+void* CDDrawWorkerMapSmall::MapSmallScalarDtor(i32 flag) {
     ((CDDrawChildGroupDtorHost*)this)->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
     if (flag & 1) {
         operator delete(this);
@@ -436,7 +436,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
 // state/val-slot schedule (the identical source matched 100% at 0x165810) + the
 // reloc-masked EH-state push. docs/patterns/zero-register-pinning.md.
 RVA(0x00165b90, 0xa9)
-void CDDrawWorkerMapSmall::Stub_165b90() {
+void CDDrawWorkerMapSmall::ResetSlots() {
     CObject* val = 0;
     POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
     CString key;
@@ -456,7 +456,7 @@ void CDDrawWorkerMapSmall::Stub_165b90() {
 // WIP (DO NOT ENABLE AS-IS): reconstructed CDDrawWorkerMapSmall::DestroyAll
 // reaches ~82% objdiff here; the EH-frame register/layout schedule is TU-context
 // dependent (it reached 100% only in its original TU layout). Kept for future reuse:
-// re-enable, remove Stub_165b90, and reconcile this TU's symbol/layout context.
+// re-enable, remove ResetSlots, and reconcile this TU's symbol/layout context.
 //
 // This block carries the full reconstruction PLUS every supporting type it needs
 // that the active file above does not already declare (POSITION, CString,
@@ -518,7 +518,7 @@ public:
 // ---------------------------------------------------------------------------
 // on re-enable, annotate this definition with the retail address 0x165b90
 // size 0xa9 (the macro literal is omitted here so verify_stub_labels' text
-// scan does not treat this preserved WIP copy as a duplicate of Stub_165b90)
+// scan does not treat this preserved WIP copy as a duplicate of ResetSlots)
 void CDDrawWorkerMapSmallTeardown::DestroyAll()
 {
     CObject *val = 0;

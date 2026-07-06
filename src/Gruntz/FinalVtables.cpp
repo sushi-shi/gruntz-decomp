@@ -153,7 +153,7 @@ VTBL(CVtbl_1efd88, 0x001efd88);
 
 // ---------------------------------------------------------------------------
 // 0x5efdc0 (RVA 0x1efdc0) - 17 slots. A SECOND vtable whose slot-1 dtor
-// (0x157610 = CDDrawWorkerMapSmall::Stub_157610, already matched -> NOT redefined)
+// (0x157610 = CDDrawWorkerMapSmall::MapSmallScalarDtor, already matched -> NOT redefined)
 // is owned by CDDrawWorkerMapSmall (its primary is ??_7CDDrawWorkerMapSmall
 // @0x1efcc8). Modeled here as a standalone tracking class (a per-class ??_7CVtbl_
 // primary names the datum; realizing it AS the MI-secondary of CDDrawWorkerMapSmall
