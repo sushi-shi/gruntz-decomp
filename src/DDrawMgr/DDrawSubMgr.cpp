@@ -104,7 +104,6 @@ inline FamilyMapBase::~FamilyMapBase() {
 // 3-map sibling (vtable 0x5efdc0): member-teardown ~ at 0x157630; its ??_G scalar-dtor
 // (0x157610) lives in CDDrawWorkerMapSmall.cpp and calls this ~.
 struct CDDrawChildGroupDtorHost : public FamilyMapBase {
-    void Cleanup_1591e0();       // teardown helper (0x1591e0), declared-only
     ~CDDrawChildGroupDtorHost(); // 0x157630
     CMapStringToOb m_10;         // +0x10
     CMapStringToOb m_2c;         // +0x2c
@@ -112,10 +111,15 @@ struct CDDrawChildGroupDtorHost : public FamilyMapBase {
     i32 m_64;                    // +0x64
 };
 
+// The registry whose Shutdown (0x154ac0) the 1-map dtor runs; TU-local method view
+// of the real header-less CDDrawWorkerRegistry (ddrawworkerregistry unit).
+class CDDrawWorkerRegistry {
+public:
+    void Shutdown();
+};
 // 1-map sibling (vtable 0x5efd28): member-teardown ~ at 0x156e10; its ??_G scalar-dtor
 // (0x156df0) lives in CDDrawWorkerRegistry.cpp and calls this ~.
 struct CDDrawRegistryDtorHost : public FamilyMapBase {
-    void Cleanup_154ac0();     // teardown helper (0x154ac0), declared-only
     ~CDDrawRegistryDtorHost(); // 0x156e10
     CMapStringToOb m_10;       // +0x10
 };
@@ -269,7 +273,7 @@ void* CDDrawSubMgr::SubMgrScalarDtor(i32 flag) {
 // after the field resets) + the reloc-masked EH-state/teardown/map-dtor names.
 RVA(0x00157630, 0x82)
 CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost() {
-    Cleanup_1591e0();
+    ((CDDrawChildGroup*)this)->CDDrawChildGroup::ForwardTo3C();
     // implicit: ~m_48, ~m_2c, ~m_10, ~FamilyMapBase (resets + base restamp).
 }
 
@@ -282,7 +286,7 @@ CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost() {
 // reloc-masked EH-state/teardown/map-dtor names are the residual.
 RVA(0x00156e10, 0x68)
 CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
-    Cleanup_154ac0();
+    ((CDDrawWorkerRegistry*)this)->Shutdown();
     // implicit: ~m_10, ~FamilyMapBase (resets + base restamp).
 }
 
