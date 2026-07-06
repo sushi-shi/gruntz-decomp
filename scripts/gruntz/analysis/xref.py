@@ -25,8 +25,11 @@ Usage (inside nix develop, or plain - only reads files + $GRUNTZ_EXE):
     python3 -m gruntz.analysis.xref CGameApp::CloseResources # by name (symbol_names)
     python3 -m gruntz.analysis.xref --callees 0x136180       # forward: its call targets
     python3 -m gruntz.analysis.xref --raw 0x136180           # list every call site (no dedup)
-    python3 -m gruntz.analysis.xref --tree 0x0e35f0          # caller ancestry (depth 4),
-                                                             # thunks chased automatically
+    python3 -m gruntz.analysis.xref --tree 0x0e35f0          # caller ancestry (depth 4):
+                                                             # chases THROUGH ILT/thunk
+                                                             # forwarders, expands through
+                                                             # matched callers, stops on
+                                                             # unmatched (frontier) fns
     python3 -m gruntz.analysis.xref --tree --depth 0 0x0e35f0  # unlimited (can be huge)
 """
 import os, sys, struct, csv, bisect
@@ -38,6 +41,13 @@ EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
 SYMCSV = REPO / "build/gen/symbol_names.csv"
 FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
 IMAGEBASE = 0x400000
+
+# The incremental-link (ILT) jmp-thunk band: the leading jump table the retail linker
+# emits (a run of 5-byte `E9 rel32` forwarders, RVA ~0x1000..0x7c20). Real callers
+# `call <ILT entry>`; the entry `jmp`s to the body. They are pass-through, not code -
+# the caller tree chases THROUGH them so a target's real callers aren't hidden behind
+# "jmp in (unrecovered fn @ ~0x3fda)" (that 0x3fda IS an ILT entry, not a lost body).
+ILT_LO, ILT_HI = 0x1000, 0x7c20
 
 
 def _load():
@@ -178,12 +188,31 @@ def callers_of(targets, d, secs, names, fstarts, fsize, raw=False):
                 print(f"  {kind} in 0x{o:08x} {nm} [{unit}]")
 
 
+def _is_thunk(rva, names):
+    """A pass-through forwarder, not real code: an ILT jump-table entry (0x1000..0x7c20)
+    or a Ghidra thunk_* single-jmp forwarder. The tree chases THROUGH these."""
+    if ILT_LO <= rva < ILT_HI:
+        return True
+    return names.get(rva, ("", ""))[0].startswith("thunk_")
+
+
+def _is_matched(rva, names):
+    """Reconstructed in src/ (a real symbol_names unit), vs a ghidra-only / FUN_ body
+    we have not matched yet. Unmatched real fns are the attribution frontier: the tree
+    expands THROUGH matched callers and STOPS on unmatched ones."""
+    nm, unit = names.get(rva, (f"FUN_{rva:x}", "?"))
+    return unit not in ("", "?", "ghidra") and not nm.startswith("FUN_")
+
+
 def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
-    """Recursive caller ancestry: expand callers-of-callers until roots, chasing
-    ILT jmp-thunks transparently (a thunk is just a node whose own callers get
-    expanded). Dedup: a function already expanded prints as (*seen). depth_cap=0
-    means unlimited; the default is 4 (a full tree can be huge); cycles terminate
-    via the seen set."""
+    """Recursive caller ancestry that goes THROUGH thunks and STOPS on unmatched fns.
+
+    An ILT entry / thunk_* forwarder is transparently chased (its own callers are
+    spliced in at the same depth, tagged `via thunk 0x..`) so a real caller is never
+    hidden behind a jump-table entry. Expansion continues through MATCHED functions
+    (reconstructed in src/) and stops at each UNMATCHED function - the frontier worth
+    attributing - as well as at roots and unrecovered gaps. Dedup: an already-expanded
+    function prints as (*seen). depth_cap=0 means unlimited; the default is 4."""
     tname, tva, tvsz, trp, trsz = _text(secs)
     tb = d[trp:trp + trsz]
     idx = {}  # callee entry-rva -> [(site, op)] over the WHOLE .text, one scan
@@ -200,8 +229,26 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
 
     def label(rva):
         nm, unit = names.get(rva, (f"FUN_{rva:x}", "?"))
-        thunk = "  (thunk-band)" if rva < 0x7c20 else ""
-        return f"0x{rva:08x} {nm} [{unit}]{thunk}"
+        return f"0x{rva:08x} {nm} [{unit}]"
+
+    def effective_callers(rva, via, guard):
+        """Real callers of `rva`, transparently chasing through ILT/thunk forwarders.
+        Yields (owner, op, site, via) where `via` is the tuple of thunk entries hopped."""
+        if rva in guard:
+            return
+        guard.add(rva)
+        for site, op in idx.get(rva, []):
+            o = _owner(site, fstarts, fsize)
+            if o == rva:
+                continue  # intra-fn / self
+            if o is None and ILT_LO <= site < ILT_HI:
+                # the caller site IS an ILT entry (a lone `jmp` at the entry addr);
+                # its own callers are the real ones - chase through it.
+                yield from effective_callers(site, via + (site,), guard)
+            elif o is not None and _is_thunk(o, names):
+                yield from effective_callers(o, via + (o,), guard)
+            else:
+                yield (o, op, site, via)
 
     for t in targets:
         print(f"\n==== caller tree of {label(t)} ====")
@@ -209,36 +256,35 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
 
         def walk(rva, depth):
             if depth_cap and depth > depth_cap:
-                print("  " * depth + "  ... (--depth cap)")
+                print("  " * (depth + 1) + "... (--depth cap)")
                 return
-            sites = idx.get(rva, [])
-            owners = []  # (owner_or_None, op, site) - dedup per parent, keep site order
-            uniq = set()
-            for site, op in sites:
-                o = _owner(site, fstarts, fsize)
-                if o == rva:
-                    continue  # self-recursion / intra-fn
+            owners, uniq = [], set()
+            for o, op, site, via in effective_callers(rva, (), set()):
                 key = (o, op) if o is not None else ("gap", site)
                 if key in uniq:
                     continue
                 uniq.add(key)
-                owners.append((o, op, site))
+                owners.append((o, op, site, via))
             if not owners:
                 if depth == 0:
                     print("  (no direct call/jmp rel32 caller in .text)")
                 return
-            for o, op, site in owners:
+            for o, op, site, via in owners:
                 kind = "call" if op == 0xE8 else "jmp "
                 pad = "  " * (depth + 1)
-                if o is None:  # caller is in an unrecovered gap - a leaf, can't expand
-                    print(pad + f"<- {kind} (unrecovered fn @ ~0x{site:08x})")
+                via_s = f"  via thunk {'->'.join(f'0x{v:x}' for v in via)}" if via else ""
+                if o is None:  # a genuine unrecovered gap (not a thunk) - a real leaf
+                    print(pad + f"<- {kind} (unrecovered fn @ ~0x{site:08x}){via_s}")
                     continue
                 if o in seen:
-                    print(pad + f"<- {kind} {label(o)} (*seen)")
+                    print(pad + f"<- {kind} {label(o)}{via_s} (*seen)")
                     continue
                 seen.add(o)
-                print(pad + f"<- {kind} {label(o)}")
-                walk(o, depth + 1)
+                if _is_matched(o, names):
+                    print(pad + f"<- {kind} {label(o)}{via_s}")
+                    walk(o, depth + 1)  # go THROUGH matched callers
+                else:
+                    print(pad + f"<- {kind} {label(o)}{via_s}  [UNMATCHED - frontier]")
         walk(t, 0)
 
 
