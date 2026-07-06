@@ -1,3 +1,4 @@
+#include <Mfc.h>
 // LightFxRender.cpp - software light/glow effect renderer (tracer placeholder
 // tomalla-68), a non-polymorphic helper in the lighting module. Methods in
 // ascending retail-RVA order. The class owns an embedded 16-bit pixel buffer at
@@ -9,6 +10,7 @@
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
 #include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) - this TU
                    // uses only IDirectDrawSurface (no CDDSurface), so it stays off the
@@ -57,11 +59,6 @@ struct LfxBorderCtx {
 
 // The surface pool the manager points at (m_0c->m_1c). __thiscall Free/Alloc map
 // to the engine routines FUN_00542160 / FUN_00542e60 (reloc-masked, no body).
-struct LfxSurfPool {
-    void Free(LfxSurface* s);                                // FUN_00542160
-    LfxSurface* Alloc(i32 w, i32 h, i32 a3, i32 a4, i32 a5); // FUN_00542e60
-};
-
 // The world-rect holder (LfxView::m_5c): +0x40 is the live world RECT (4 ints,
 // in world pixels; >>5 converts to tile units).
 struct LfxWorldRect {
@@ -78,7 +75,7 @@ struct LfxView {
 // The surface manager (this+0xc): +0x1c holds the surface pool, +0x24 the view.
 struct LfxSurfMgr {
     char m_pad[0x1c];
-    LfxSurfPool* m_1c; // +0x1c the surface pool
+    CDDrawPtrCollections* m_1c; // +0x1c the surface pool
     char m_pad20[0x24 - 0x20];
     LfxView* m_24; // +0x24 the view/world-state object
 };
@@ -249,7 +246,7 @@ void CLightFxRender::Ctor() {
 RVA(0x000a33a0, 0x23)
 void CLightFxRender::FreeSurface() {
     if (m_surfMgr != 0 && m_surface != 0) {
-        m_surfMgr->m_1c->Free(m_surface);
+        m_surfMgr->m_1c->RemoveItemA((CDDSurface*)m_surface);
         m_surface = 0;
     }
 }
@@ -271,7 +268,7 @@ i32 CLightFxRender::AllocSurface() {
     FreeSurface();
     LfxGrid* info = m_grid;
     LfxSurfMgr* mgr = m_surfMgr;
-    m_surface = mgr->m_1c->Alloc(info->m_0c, info->m_10, 0, 0, -1);
+    m_surface = (LfxSurface*)mgr->m_1c->MakeAndAddB(info->m_0c, info->m_10, 0, 0, -1);
     if (m_surface == 0) {
         return 0;
     }
@@ -1736,7 +1733,6 @@ SIZE_UNKNOWN(LfxGrid);
 SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
 SIZE_UNKNOWN(LfxSurfMgr);
-SIZE_UNKNOWN(LfxSurfPool);
 SIZE_UNKNOWN(LfxSurface);
 SIZE_UNKNOWN(LfxTileBank);
 SIZE_UNKNOWN(LfxTileDesc);
