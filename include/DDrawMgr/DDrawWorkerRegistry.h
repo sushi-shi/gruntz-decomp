@@ -102,10 +102,10 @@ public:
     CMapStringToOb m_map;      // +0x10  worker-by-key map
 
     // Engine-label backlog stubs.
-    i32 Stub_154f80(CSymTab* dir, const char* sub, const char* prefix);
-    i32 Stub_155160(CSymTab* dir, const char* sub, const char* prefix);
-    void* Stub_156df0(i32 flag);
-    i32 Stub_156e80(RegProbeChain* a1, i32 a2);
+    i32 InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
+    i32 LookupWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
+    void* RegScalarDtor(i32 flag);
+    i32 ProbeWorkerKey(RegProbeChain* a1, i32 a2);
 };
 
 SIZE_UNKNOWN(CWorkerVtableView);

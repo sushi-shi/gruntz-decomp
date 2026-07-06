@@ -82,7 +82,7 @@ VTBL(CVtbl_1efc58, 0x001efc58);
 
 // ---------------------------------------------------------------------------
 // 0x5efd28 (RVA 0x1efd28) - 23 slots. CDDrawWorkerRegistry's OWN vtable
-// (slot 1 = 0x156df0 = CDDrawWorkerRegistry::Stub_156df0, already matched -> NOT
+// (slot 1 = 0x156df0 = CDDrawWorkerRegistry::RegScalarDtor, already matched -> NOT
 // redefined here). CObject-style base thunks at 0/2/3/4. Slots carry the matched
 // CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
 // ---------------------------------------------------------------------------
@@ -101,9 +101,9 @@ struct CVtbl_1efd28 : Wap::CObject {
     virtual void DispatchKeyed38(); // [14] 0x154ae0
     virtual void Forward34();       // [15] 0x154f00
     virtual void DispatchKeyed34(); // [16] 0x154be0
-    virtual void FUN_00556e80();    // [17] 0x156e80 = Stub_156e80 (worklist)
-    virtual void FUN_00554f80();    // [18] 0x154f80 = Stub_154f80 (worklist)
-    virtual void FUN_00555160();    // [19] 0x155160 = Stub_155160 (worklist)
+    virtual void FUN_00556e80();    // [17] 0x156e80 = ProbeWorkerKey (worklist)
+    virtual void FUN_00554f80();    // [18] 0x154f80 = InsertWorkerKey (worklist)
+    virtual void FUN_00555160();    // [19] 0x155160 = LookupWorkerKey (worklist)
     virtual void RemoveWorker();    // [20] 0x155280 = CDDrawWorkerRegistry::RemoveWorker
     virtual void RemoveByKey();     // [21] 0x156ec0 = CDDrawWorkerRegistry::RemoveByKey
     virtual void MapTeardown_1552b0(); // [22] 0x1552b0
@@ -129,7 +129,7 @@ struct CVtbl_1efd88 : Wap::CObject {
     virtual ~CVtbl_1efd88()
         OVERRIDE;                   // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();         // [5] 0x156f00 = CDDrawWorkerList::IsReady
-    virtual void FUN_00556fc0();    // [6] 0x156fc0 = Stub_156fc0 (worklist)
+    virtual void FUN_00556fc0();    // [6] 0x156fc0 = IsReadyPredicate (worklist)
     virtual void Dtor_163bc0();     // [7] 0x163bc0 = CDDrawWorkerList::~CDDrawWorkerList
     virtual void GetStateId();      // [8] 0x156f20 = CDDrawWorkerList::GetStateId
     virtual void CreateWorkerA();   // [9] 0x156fd0 = CDDrawWorkerList::CreateWorkerA
@@ -173,7 +173,7 @@ struct CVtbl_1efdc0 : Wap::CObject {
     virtual void WalkDispatch34();      // [12] 0x159cf0
     virtual void WalkDispatch38();      // [13] 0x159d40
     virtual void ResetChildD8();        // [14] 0x159d90 = CDDrawChildGroup::ResetChildD8
-    virtual void FUN_005591f0();        // [15] 0x1591f0 = Stub_1591f0 (worklist)
+    virtual void FUN_005591f0();        // [15] 0x1591f0 = DestroyChildren (worklist)
     virtual void FUN_00559f00();        // [16] 0x159f00
     i32 m_0;
     i32 Anchor();

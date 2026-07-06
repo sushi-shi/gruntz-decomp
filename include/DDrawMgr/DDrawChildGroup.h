@@ -103,7 +103,7 @@ public:
     CMapPtrToPtr m_map48;      // +0x48
 
     // Engine-label backlog stubs.
-    void Stub_1591f0();
+    void DestroyChildren();
 };
 
 SIZE_UNKNOWN(CDDrawChildGroup);

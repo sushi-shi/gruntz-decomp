@@ -232,7 +232,7 @@ void* CreateU10O() {
 // Boolified forward to the switch-down-sprite loader (thiscall on `this`, retail
 // 0x110570). `!= 0` lowers to the int->bool neg/sbb/neg normalize.
 RVA(0x00112820, 0xc)
-i32 CGruntzApp::Stub_112820() {
+i32 CGruntzApp::TryLoadSwitchDownSprite() {
     return LoadSwitchDownSprite() != 0;
 }
 

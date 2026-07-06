@@ -39,9 +39,9 @@ public:
 
     // Boolified forward: calls the switch-down-sprite loader on `this` (thiscall,
     // reloc-masked) and normalises the int result to a bool (neg/sbb/neg).
-    i32 Stub_112820();
-    // The forwarded thiscall callee (retail 0x110570); no body -> reloc-masked.
     i32 LoadSwitchDownSprite();
+    // The forwarded thiscall callee (retail 0x110570); no body -> reloc-masked.
+    i32 TryLoadSwitchDownSprite();
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

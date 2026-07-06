@@ -99,7 +99,7 @@ public:
     ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
 
     // Engine-label backlog stub (state predicate).
-    i32 Stub_156fc0();
+    i32 IsReadyPredicate();
 };
 
 // operator delete + the sibling manager (vtable 0x5efd88) whose real member-teardown
@@ -365,7 +365,7 @@ CDDrawWorkerListSib::~CDDrawWorkerListSib() {
 // ---------------------------------------------------------------------------
 // Constant state predicate returning 1.
 RVA(0x00156fc0, 0x6)
-i32 CDDrawWorkerList::Stub_156fc0() {
+i32 CDDrawWorkerList::IsReadyPredicate() {
     return 1;
 }
 

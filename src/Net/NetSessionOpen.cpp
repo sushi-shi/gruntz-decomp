@@ -1,5 +1,5 @@
 // NetSessionOpen.cpp - the multiplayer "BACKGND" session opener (0x0b77a0), re-homed
-// from src/Stub/ApiCallers.cpp. Its only caller is CNetMgr::Stub_0b5460 (netmgr). Its
+// from src/Stub/ApiCallers.cpp. Its only caller is CNetMgr::SetupMultiplayerSession (netmgr). Its
 // two sub-objects are folded onto their real engine classes:
 //   - m_524 (the connection) IS a CNetMgr - Connect@0x1780b0 == CNetMgr::InitFromProvider.
 //   - m_c->m_4 (the sub)     IS a CDDrawSubMgrPages - Init@0x158dc0 == Method_158dc0.
@@ -27,7 +27,7 @@ struct NetSessionHolder {
     char m_pad0[4];
     CDDrawSubMgrPages* m_4; // +0x04  the sub-object (Init == Method_158dc0)
 };
-// The session-setup coordinator (`this`). Reached via CNetMgr::Stub_0b5460.
+// The session-setup coordinator (`this`). Reached via CNetMgr::SetupMultiplayerSession.
 struct NetSessionOpener {
     char m_pad0[0xc];
     NetSessionHolder* m_c; // +0x0c
