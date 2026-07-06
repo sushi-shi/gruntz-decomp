@@ -10,6 +10,7 @@
 // umbrella must be the MFC superset kept first (PtInRect / RECT / POINT come with
 // it; docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md).
 #include <Mfc.h>
+#include <Gruntz/LightFx.h>
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
@@ -73,10 +74,6 @@ struct ResSettings {
     i32 m_134; // +0x134  resurrect mode
     char m_pad138[0x150 - 0x138];
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
-};
-SIZE_UNKNOWN(ResLightCfg);
-struct ResLightCfg {                                // spr->m_7c->m_18 (LightFx setup)
-    void Configure(char* a, char* b, i32 c, i32 d); // FUN @ 0x2117 __thiscall
 };
 SIZE_UNKNOWN(ResButeMgr);
 struct ResButeMgr {
@@ -173,8 +170,8 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             CGameObject* spr =
                 g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
-            ((ResLightCfg*)spr->m_7c->m_logic)
-                ->Configure("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
         }
     }
     return 1;
