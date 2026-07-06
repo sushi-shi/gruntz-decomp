@@ -13,15 +13,13 @@
 // masked externals/$SG literals on the same singleton (*0x64556c) as its siblings.
 
 #include <rva.h>
+#include <Gruntz/LeafCue.h>
 
 // The booty/bridge sound chain on the *0x64556c game registry (the same shape the
 // BootyState/CHelpBookSprite cue idioms use).
-struct BmSndEntry {
-    void Play(i32 token, i32 a, i32 b, i32 c); // 0x25fe __thiscall
-};
 struct BmSndSet {
-    BmSndEntry* FindEntry(char* name); // 0x2cca __thiscall -> entry (0 if absent)
-    void PlaySimple(char* name);       // 0x226b __thiscall, void
+    LeafCue* FindEntry(char* name); // 0x2cca __thiscall -> entry (0 if absent)
+    void PlaySimple(char* name);    // 0x226b __thiscall, void
     char m_pad00[0x30];
     i32 m_30; // +0x30  active guard
 };
@@ -88,9 +86,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 set = r->m_30->m_28;
                 if (set->m_30 == 0) {
-                    BmSndEntry* e = set->FindEntry("GAME_PYRAMIDMOVE");
+                    LeafCue* e = set->FindEntry("GAME_PYRAMIDMOVE");
                     if (e) {
-                        e->Play(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }
@@ -103,9 +101,9 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 set = r->m_30->m_28;
                 if (set->m_30 == 0) {
-                    BmSndEntry* e = set->FindEntry("LEVEL_WATERBRIDGEMOVE");
+                    LeafCue* e = set->FindEntry("LEVEL_WATERBRIDGEMOVE");
                     if (e) {
-                        e->Play(g_sndCueTag, 0, 0, 0);
+                        e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }

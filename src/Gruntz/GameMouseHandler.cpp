@@ -12,17 +12,14 @@
 // way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
 // error ("MFC apps must not #include <windows.h>").
 #include <Gruntz/Play.h>
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (Configure)
 
 #include <rva.h>
 
-SIZE_UNKNOWN(SbiSndEntry);
-struct SbiSndEntry { // a found sound entry; PlayCue is __thiscall on the entry
-    void PlayCue(i32 token, i32, i32, i32); // FUN @ 0x25fe (thunk) __thiscall
-};
 SIZE_UNKNOWN(SbiSndTable);
 struct SbiSndTable {
-    void Find(char* szName, SbiSndEntry** out); // FUN_001b8438 __thiscall, out-param
+    void Find(char* szName, LeafCue** out); // FUN_001b8438 __thiscall, out-param
 };
 SIZE_UNKNOWN(SbiSndSet);
 struct SbiSndSet { // m_4->m_30->m_28
@@ -160,10 +157,10 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     if (((SbiChild*)m_guts)->m_0 == 2 && SbiPointInChild(x, y)) {
         SbiSndSet* set = ((SbiHost*)m_4)->m_30->m_28;
         if (set->m_30 == 0) {
-            SbiSndEntry* e = 0;
+            LeafCue* e = 0;
             set->m_10.Find("GAME_TABHIGHLIGHT1", &e);
             if (e != 0) {
-                e->PlayCue(g_sndCueTag, 0, 0, 0);
+                e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
             }
         }
         ((SbiChild*)m_guts)->Refresh();
