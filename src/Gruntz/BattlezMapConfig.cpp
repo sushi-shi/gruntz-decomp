@@ -4961,9 +4961,6 @@ struct ProbePair {
 struct UnitPlace {
     i32 Place(i32 x, i32 y, i32 a, i32 b, i32 c, i32 d); // 0x1640
 };
-struct SelfCommit {
-    void Commit(void* unit); // 0x42e1
-};
 // @early-stop
 // 0x2d6 (726 B) no-EH grid policy step: the body reproduces all four arms (random-band
 // retarget, fixed-band re-place, despawn-recycle, near-band keep) incl. the signed
@@ -5005,7 +5002,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             if (((UnitPlace*)unit)->Place(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_targetX = band;
                 unit->m_targetY = 0;
-                ((SelfCommit*)this)->Commit(unit);
+                ((CBattlezMapConfig*)this)->Method_02c080((i32)unit);
             }
             unit->m_idleTimer = 0;
             return 1;
@@ -5107,7 +5104,6 @@ SIZE_UNKNOWN(NameRecord);
 SIZE_UNKNOWN(ProbePair);
 SIZE_UNKNOWN(RectInit);
 SIZE_UNKNOWN(ScratchString);
-SIZE_UNKNOWN(SelfCommit);
 SIZE_UNKNOWN(Tile);
 SIZE_UNKNOWN(UnitCommit);
 SIZE_UNKNOWN(UnitGeom);
