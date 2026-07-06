@@ -6,6 +6,7 @@
 // member teardowns are external no-body fns -> their `call rel32` reloc-mask.
 // ---------------------------------------------------------------------------
 #include <rva.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LobbyObjB.h>
 
 // ---------------------------------------------------------------------------
@@ -38,7 +39,7 @@ CLobbySlot::~CLobbySlot() {
 // reproduced. Delegation + return-the-arg are otherwise exact. ~67%.
 RVA(0x000bc3f0, 0x1e)
 CString* CLobbySlot::BuildHostName(CString* out) {
-    m_mgr->GetHostName(out);
+    *out = ((GruntzPlayer*)m_mgr)->GetName();
     return out;
 }
 

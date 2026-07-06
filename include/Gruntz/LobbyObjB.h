@@ -15,7 +15,6 @@
 // its 0x1f450 getter (out-of-line -> reloc-masked).
 class CLobbySlotMgr {
 public:
-    CString* GetHostName(CString* out); // 0x0001f450
 };
 
 // The slot's EH-destructible member at +0x20; its out-of-line dtor is the teardown
