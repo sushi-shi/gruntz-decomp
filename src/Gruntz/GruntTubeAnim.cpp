@@ -14,6 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
+#include <DDrawMgr/DDrawBlitParam.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/GameRegistry.h>
 
@@ -21,13 +22,10 @@
 #include <string.h> // intrinsic strcmp ("D")
 
 // --- modeled externs (reloc-masked, no body) -------------------------------
-struct CTubeBlitParam {
-    void Setup(void* src); // 0x15c2d0  CDDrawBlitParam::Setup
-};
 struct CTubeAnimPlayer {                    // CGrunt::m_154
     void CacheFirstFrame(const char* name); // 0x150540  CGruntSprite::CacheFirstFrame
     char _00[0x1a0];
-    CTubeBlitParam m_1a0; // +0x1a0
+    i32 m_1a0; // +0x1a0 CDDrawBlitParam sub-descriptor (Setup_15c2d0)
     char _1a4[0x1b4 - 0x1a4];
     i32 m_1b4; // +0x1b4
 };
@@ -141,7 +139,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
         char* buf = m_470[idx].name.GetBuffer(0);
         m_154->CacheFirstFrame(buf);
         m_15c = m_154->m_1b4;
-        m_154->m_1a0.Setup((void*)m_394);
+        ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_394);
         return 1;
     }
     ResetGate136b(0, 0, 1);
@@ -151,7 +149,6 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
 SIZE_UNKNOWN(CGruntTube);
 SIZE_UNKNOWN(CTubeAnimLookup);
 SIZE_UNKNOWN(CTubeAnimPlayer);
-SIZE_UNKNOWN(CTubeBlitParam);
 SIZE_UNKNOWN(CTubeMgr2c);
 SIZE_UNKNOWN(CTubeRecord);
 SIZE_UNKNOWN(CGameRegistry);
