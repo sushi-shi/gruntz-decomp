@@ -581,10 +581,11 @@ public:
     CByteArray m_488;    // +0x488  5th destructible member (0x14 bytes)
     char m_pad49c[0x4a0 - 0x49c];
     i32 m_snapBaseLo, m_snapBaseHi, m_snapDur,
-        m_snapDurHi;      // +0x4a0  snapshot 64-bit base + duration
-    i32 m_snapshotActive; // +0x4b0  snapshot ACTIVE latch
-    char m_pad4b4[0x4bc - 0x4b4];
-    i32 m_revealFrame; // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
+        m_snapDurHi;        // +0x4a0  snapshot 64-bit base + duration
+    i32 m_snapshotActive;   // +0x4b0  snapshot ACTIVE latch
+    i32 m_scrollEdgeActive; // +0x4b4  edge active bits
+    i32 m_scrollEdgeLock;   // +0x4b8  edge lock bits
+    i32 m_revealFrame;      // +0x4bc  reveal-strip frame counter (BuildHelpReveal)
     // +0x4c0  reveal-strip cap sprite objects (passed by-ptr to the HUD-strip draw).
     void *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;
     // +0x4cc: the level/tile frame grid GrabTile/AdvanceTile walk (CFrameGrid, above)
@@ -598,19 +599,20 @@ public:
         char p0[0x40];
         i32 m_flags; // +0x40  drag/select state flags (bit0 = active)
         char p44[0x5c - 0x44];
-        i32 m_scrollX;    // +0x5c  scroll offset X (StepScroll out)
-        i32 m_scrollY;    // +0x60  scroll offset Y (StepScroll out)
-    }* m_scrollSink;      // +0x4e4  StepScroll's scroll-offset sink + drag flags
-    i32 m_gridWalkActive; // +0x4e8  grid-walk active flag
-    i32 m_renderDisabled; // +0x4ec  Render hard early-out gate
-    i32 m_4f0;            // +0x4f0  highlight-busy gate (SBI_RectOnly reads it non-zero => bail)
-    i32 m_winLoseBanner;  // +0x4f4  win/lose banner gate
-    i32 m_inGame;         // +0x4f8  PRIMARY mode: nonzero = main in-game frame
-    i32 m_overlayDrag;    // +0x4fc  overlay-drag-active flag
-    i32 m_paused;         // +0x500  paused/no-step flag
-    i32 m_dragEndNotify;  // +0x504  drag-end notify gate
-    char m_pad508[0x510 - 0x508];
-    i32 m_stepCountdown; // +0x510  per-frame entity-step countdown
+        i32 m_scrollX;     // +0x5c  scroll offset X (StepScroll out)
+        i32 m_scrollY;     // +0x60  scroll offset Y (StepScroll out)
+    }* m_scrollSink;       // +0x4e4  StepScroll's scroll-offset sink + drag flags
+    i32 m_gridWalkActive;  // +0x4e8  grid-walk active flag
+    i32 m_renderDisabled;  // +0x4ec  Render hard early-out gate
+    i32 m_4f0;             // +0x4f0  highlight-busy gate (SBI_RectOnly reads it non-zero => bail)
+    i32 m_winLoseBanner;   // +0x4f4  win/lose banner gate
+    i32 m_inGame;          // +0x4f8  PRIMARY mode: nonzero = main in-game frame
+    i32 m_overlayDrag;     // +0x4fc  overlay-drag-active flag
+    i32 m_paused;          // +0x500  paused/no-step flag
+    i32 m_dragEndNotify;   // +0x504  drag-end notify gate
+    i32 m_lastScrollTimeX; // +0x508  last-scroll time (horizontal)
+    i32 m_lastScrollTimeY; // +0x50c  last-scroll time (vertical)
+    i32 m_stepCountdown;   // +0x510  per-frame entity-step countdown
     char m_pad514[0x518 - 0x514];
     CGruntzSoundInnerZ*
         m_savedZonedSound; // +0x518  saved currently-playing zoned sound (region pause/resume)

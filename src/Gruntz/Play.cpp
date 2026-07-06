@@ -2325,10 +2325,6 @@ struct CursorFxObj { // the held cursor-anim object at m_4e4 (its +0x40 flag wor
     i32 m_40; // +0x40 flag word (bit0)
 };
 // The on-screen cue sink (g_64556c->m_cueSink); the flailing-grunt path fires a 6-arg cue.
-SIZE_UNKNOWN(CursorCueSink);
-struct CursorCueSink {
-    void PlayCue(i32 g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x39f4 thiscall
-};
 SIZE_UNKNOWN(CursorSelf);
 struct CursorSelf {
     char m_pad00[0x2f8];
@@ -2406,7 +2402,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         self->m_300 = 0;
         self->m_368 = 1;
         self->m_504 = 0;
-        ((CursorCueSink*)g_64556c->m_cueSink)->PlayCue(0, 0x33e, -1, 1, -1, -1);
+        ((CGruntSpawnConfig*)g_64556c->m_cueSink)->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
         self->m_330 = 0x2710;
         self->m_334 = 0;
         self->m_328 = g_645588;
@@ -2633,20 +2629,6 @@ struct ScrollWorld {
     char p94[0x124 - 0x94];
     i32 m_124; // +0x124  speed base (fild)
 };
-struct ScrollView { // CPlay view for the auto-scroll path (offset access)
-    char p0[0x4];
-    ScrollWorld* m_4; // +0x04  world/level
-    char p8[0x150 - 0x8];
-    i32 m_cursorX; // +0x150  cursor x
-    i32 m_cursorY; // +0x154  cursor y
-    char p158[0x4b4 - 0x158];
-    i32 m_scrollEdgeActive; // +0x4b4  edge active bits
-    i32 m_scrollEdgeLock;   // +0x4b8  edge lock bits
-    char p4bc[0x508 - 0x4bc];
-    i32 m_lastScrollTimeX;          // +0x508  last-scroll time (horizontal)
-    i32 m_lastScrollTimeY;          // +0x50c  last-scroll time (vertical)
-    void ApplyScroll(i32 x, i32 y); // 0x2e28 thunk (thiscall, reloc-masked)
-};
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
     if (!(g_scrollLoadFlags & 1)) {
@@ -2659,8 +2641,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
                              - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     }
 
-    ScrollView* self = (ScrollView*)this;
-    ScrollWorld* w = self->m_4;
+    CPlay* self = (CPlay*)this;
+    ScrollWorld* w = (ScrollWorld*)self->m_4;
     i32 changed = 0;
     i32 speed =
         (i32)((double)w->m_124 * g_scrollSpeedScale * g_scrollSpeedRange + g_scrollMinSpeed);
@@ -2751,7 +2733,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     }
 
     if (changed) {
-        self->ApplyScroll(sx, sy);
+        self->ResetGoals(sx, sy);
     }
     return 1;
 }
