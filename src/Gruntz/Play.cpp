@@ -75,6 +75,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/WwdObjMgr.h>
@@ -3782,11 +3783,7 @@ struct CRtArr {                    // a CPtrArray subset (m_data @+4, m_count @+
 struct CRtArr2 {                   // the m_68+0x260 array variant
     void SetSize(i32 n, i32 grow); // 0x1b52e8 __thiscall(n, grow)
 };
-struct CRtTimeline {      // m_4->m_68 (also g_64556c->m_68)
-    void Flush(i32 mode); // 0x41b0 thunk(mode)
-    void Reset1514();     // 0x1514 thunk
-    void Reset15c3();     // 0x15c3 thunk (reg->m_68 reset)
-    void Reset1b48a6();   // 0x1b48a6 thunk
+struct CRtTimeline { // m_4->m_68 (also g_64556c->m_68)
     char p0[0x260];
     CRtArr2 m_260; // +0x260
     char p264[0x284 - 0x264];
@@ -3883,7 +3880,7 @@ void CPlay::FreeListTeardown() {
         return;
     }
     if (self->m_4->m_68 != 0) {
-        self->m_4->m_68->Flush(5);
+        ((CTriggerMgr*)self->m_4->m_68)->ClearGridRange(5);
     }
     Teardown1780();
     if (self->m_c->m_28->m_2c != 0) {
@@ -3892,7 +3889,7 @@ void CPlay::FreeListTeardown() {
     self->m_4->m_48->StopAndFlush();
     self->m_4->m_54->Teardown();
     self->m_4->m_60->ClearSprites();
-    ((CRtReg*)g_64556c)->m_68->Reset15c3();
+    ((CTriggerMgr*)((CRtReg*)g_64556c)->m_68)->DestroyAllAnims();
     self->m_c->m_24->CallTeardown();
     self->m_c->m_8->PruneList_15aa90();
     if (self->m_guts != 0) {
@@ -3905,11 +3902,11 @@ void CPlay::FreeListTeardown() {
         self->m_frameMarker->ResetFrame();
     }
     self->m_4e4 = 0;
-    self->m_4->m_68->Reset1514();
+    ((CTriggerMgr*)self->m_4->m_68)->OverlayTick();
     CRtTimeline* tl68 = self->m_4->m_68;
     tl68->m_260.SetSize(0, -1);
     tl68->m_284 = 0;
-    self->m_4->m_68->Reset1b48a6();
+    ((CTriggerMgr*)self->m_4->m_68)->Reset1b48a6();
     self->m_4->m_68->m_2a0 = 0;
     self->m_c->m_c->Reset163c60();
     for (i = 0; i < self->m_startMarkers.m_count; i++) {
