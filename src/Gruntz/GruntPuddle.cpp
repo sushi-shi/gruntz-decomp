@@ -10,6 +10,7 @@
 // <Gruntz/InGameIcon.h>. Engine callees are reloc-masked (no body). Confirmed
 // CGruntPuddle by its own string constants (see the header).
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 
 #include <rva.h>
@@ -143,7 +144,7 @@ i32 CGruntPuddle::Remove() {
             }
         }
     }
-    ((CGruntPuddleSink*)((char*)m_38 + 0x1a0))->Notify(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         if (m_placed != 0) {

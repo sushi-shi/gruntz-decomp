@@ -9,6 +9,7 @@
 // cel key; the engine map/render callees + g_gameReg + timeGetTime are
 // reloc-masked. Field names are placeholders (only offsets/code bytes matter).
 #include <Gruntz/AniPlayer.h>
+#include <Image/CImage.h>
 
 #include <rva.h>
 
@@ -115,7 +116,13 @@ i32 CAniPlayer::Tick() {
         m_cel = cel;
         if (cel != 0) {
             i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
-            cel->RenderFrame(surfaceCtx, cel->m_offsetX + m_rect[0], cel->m_offsetY + m_rect[1], 0);
+            ((CImage*)cel)
+                ->RenderFrame(
+                    (void*)surfaceCtx,
+                    (void*)(cel->m_offsetX + m_rect[0]),
+                    (void*)(cel->m_offsetY + m_rect[1]),
+                    (void*)0
+                );
         }
         u32 now = timeGetTime();
         if (now - (u32)m_lastTime > (u32)m_interval) {

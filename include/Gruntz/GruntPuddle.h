@@ -47,9 +47,7 @@ struct CObjList {
 // The sub-object embedded at CGameObject+0x1a0 the remove path notifies. Its one
 // method (0x15c360, __thiscall, 1 arg) is external/no-body so the call reloc-masks.
 SIZE_UNKNOWN(CGruntPuddleSink);
-struct CGruntPuddleSink {
-    i32 Notify(u32 ctx); // 0x15c360
-};
+struct CGruntPuddleSink {};
 
 // The global the remove path hands the sink (_g_6bf3bc; the draw-delta mirror).
 // Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C" here so the

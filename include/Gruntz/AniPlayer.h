@@ -47,7 +47,6 @@ struct AniCelTable {
 // the shared frame-worker blit - external, reloc-masked); +0x18/+0x1c are the x/y
 // draw offsets the render call adds to the player's +0x14/+0x18 base.
 struct AniCel {
-    void RenderFrame(i32 surfaceCtx, i32 x, i32 y, i32 z); // 0x153790
     char _pad00[0x18];
     i32 m_offsetX; // +0x18
     i32 m_offsetY; // +0x1c
