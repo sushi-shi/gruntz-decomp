@@ -37,7 +37,7 @@ extern char s_actKeyB[];
 // shared 0x34960 helper at most sites.
 
 // The shared name-slot free loop both key blocks run before assigning the key.
-static inline void FreeNameList() {
+static inline void UserLogicVfunc9() {
     i32 n = g_nameRegScratch;
     void** list = g_nameRegCurList;
     while (n-- != 0) {
@@ -95,7 +95,7 @@ void RegisterLogic_6445e8() {
         g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
         id = g_nextActId;
         char* slot = ActNameLookup(id);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
@@ -106,7 +106,7 @@ void RegisterLogic_6445e8() {
         g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }
@@ -126,7 +126,7 @@ void RegisterActs_646188() {
         g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
         id = g_nextActId;
         char* slot = ActNameLookup(id);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
@@ -137,7 +137,7 @@ void RegisterActs_646188() {
         g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }
@@ -157,7 +157,7 @@ void RegisterActs_646250() {
         g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
         id = g_nextActId;
         char* slot = ActNameLookup(id);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
@@ -168,7 +168,7 @@ void RegisterActs_646250() {
         g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }
@@ -188,7 +188,7 @@ void RegisterActs_6514d8() {
         g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
         id = g_nextActId;
         char* slot = ActNameLookup(id);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
@@ -199,7 +199,7 @@ void RegisterActs_6514d8() {
         g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }
@@ -220,7 +220,7 @@ void CTeleporter_RegisterActs() {
         g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
         id = g_nextActId;
         char* slot = ActNameLookup(id);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyA);
         g_nextActId++;
     }
@@ -231,7 +231,7 @@ void CTeleporter_RegisterActs() {
         g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
-        FreeNameList();
+        UserLogicVfunc9();
         ((CActName*)slot)->Assign(s_actKeyB);
         g_nextActId++;
     }

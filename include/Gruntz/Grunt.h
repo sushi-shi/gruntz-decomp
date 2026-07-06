@@ -21,6 +21,8 @@
 #include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 #include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
+#include <Gruntz/UserLogic.h>
+#include <Gruntz/MovingLogic.h>
 
 // ---------------------------------------------------------------------------
 // The receiver the Add* registration call runs on: edi = sprite->m_7c->m_18.
@@ -517,7 +519,7 @@ extern i32 g_cellRecordBase; // DAT_006bf464
 extern i32 g_cellRecordRet;  // DAT_006bf428
 
 // ---------------------------------------------------------------------------
-// The 9 runtime direction-index globals InitDirVectors (0x5caa0) reads to place
+// The 9 runtime direction-index globals Activate (0x5caa0) reads to place
 // each direction record (index = 3*[0] + [1]). Each is an adjacent {lo, hi} int
 // pair; runtime-filled (.data), so modeled as a 2-int view extern (reloc-masked).
 // The FP unit constants the diagonal vectors are built from (read-only .rodata).
@@ -614,7 +616,7 @@ SIZE_UNKNOWN(GruntSoundCat);
 struct GruntSoundCat { // m_30: the sound-category / world-resource holder object
     char m_pad0[0x8];
     // +0x08  the sprite/object factory (CreateSprite @0x1597b0, <Gruntz/
-    // SpriteFactory.h>) - the attack-fire step (UlSlot24, ProjectileUpdate.cpp)
+    // SpriteFactory.h>) - the attack-fire step (UserLogicVfunc7, ProjectileUpdate.cpp)
     // spawns the projectile eye-candy sprites through it. Same slot GameRegistry.h's
     // CSpriteFactoryHolder models (this holder object is that facet's grunt view).
     struct CSpriteFactory* m_8;
@@ -1008,7 +1010,7 @@ struct CGruntCellRec {
     i32 m_44; // +0x44  (serialized record dword)
     // The per-direction movement vector (abs +0x4b0.. as the "+0x4b0 dir-vector
     // table", cell index 3*col+row, stride 0x68): unit direction {m_dirX, m_dirY}
-    // + half-tile step offsets {m_stepX, m_stepY}. InitDirVectors (@0x5caa0)
+    // + half-tile step offsets {m_stepX, m_stepY}. Activate (@0x5caa0)
     // writes them as doubles ([ecx+13a*8+0x4b0..0x4c8]); the movement-integration
     // tail of StepCoordResolve (@0x5f310) reads all four. The serialize/load path
     // streams raw 4-byte halves of these (the (char*)+4 spellings in Load).
@@ -1072,7 +1074,7 @@ public:
     virtual void Slot9();
 };
 
-// The name/animation cache collections FreeNameList drains (sub-objects of CGrunt
+// The name/animation cache collections UserLogicVfunc9 drains (sub-objects of CGrunt
 // at +0x31c and +0x338). External engine collections; only the called methods
 // are modeled (reloc-masked).
 SIZE_UNKNOWN(CGruntColl);
@@ -1172,7 +1174,7 @@ public:
 // compiler auto-stamps the three vptrs (in ~CGrunt: CGrunt 0x5e8754 -> CUserLogic
 // 0x5e705c -> CUserBase 0x5e70b4) and folds the base teardowns. Slot names are
 // placeholders except the ones CGrunt defines in Grunt.cpp (slot 1 SerializeMove
-// 0x53b80, slot 6 InitDirVectors 0x5caa0, slot 11 FreeNameList 0x48360, slot 16
+// 0x53b80, slot 6 Activate 0x5caa0, slot 11 UserLogicVfunc9 0x48360, slot 16
 // StepCoordResolve 0x5f310); the rest are declared-only (impls external/reloc-
 // masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic modeled
 // at CUserLogic's TRUE 0x30 boundary: the base ctor 0x58cd0 inits only through
@@ -1185,40 +1187,9 @@ public:
 // CUserLogic class views still never coexist in one TU; the CGrunt-HUD sprites
 // that read CGrunt fields (CGruntStaminaSprite/CGruntWingzTimeSprite) include only
 // this header.
-class CUserBase {
-public:
-    virtual ~CUserBase();                                                   // slot 0  (0x5e70b4[0])
-    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
-    virtual void UbSlot08();                                                // slot 2
-    char m_pad4[0x10 - 4];
-    CGruntHud* m_10;       // +0x10
-    CAnimLookupNode* m_14; // +0x14  (anim-set lookup holder)
-}; // size 0x18
-inline CUserBase::~CUserBase() {} // final base vptr restamp (0x5e70b4)
+// size 0x18
 
-class CUserLogic : public CUserBase {
-public:
-    CUserLogic(void* owner);        // 0x58cd0 (base ctor; external/reloc-masked)
-    virtual ~CUserLogic() OVERRIDE; // slot 0
-    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1 (0x16e7f0)
-    void UbSlot08() OVERRIDE;                                                // slot 2
-    virtual void UlSlot0c();                                                 // slot 3
-    virtual void UlSlot10();                                                 // slot 4
-    virtual void UlSlot14();                                                 // slot 5
-    virtual void InitDirVectors();                                           // slot 6  (0x88d0)
-    virtual void UlSlot1c();     // slot 7  (inherited by CGrunt)
-    virtual void UlSlot20();     // slot 8
-    virtual i32 UlSlot24();      // slot 9 (returns 0; i32 per the proven slot family)
-    virtual void UlSlot28();     // slot 10 (inherited)
-    virtual void FreeNameList(); // slot 11 (0x8970)
-    virtual void UlSlot30();     // slot 12 (inherited)
-    virtual void UlSlot34();     // slot 13 (inherited)
-    virtual void UlSlot38();     // slot 14 (inherited)
-    virtual void UlSlot3c();     // slot 15 (inherited)
-    CUserBaseLink m_18;          // +0x18  EngStr link (destructible; ~EngStr 0x16d2a0)
-    char m_pad28[0x30 - 0x28];   // +0x28..+0x30
-}; // size 0x30
-inline CUserLogic::~CUserLogic() {} // auto-destructs m_18, restamps 0x5e705c
+// size 0x30
 
 // ---------------------------------------------------------------------------
 // CMovingLogic : CUserLogic - CGrunt's true moving-object base (RTTI vftable
@@ -1256,77 +1227,12 @@ extern const double g_gruntSpawnScale; // 0x5e9738 (spawn-seed velocity scale)
 extern u32 g_5f04e8;                   // 0x5f04e8 (default-Z int)
 extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-masked)
 
-class CMovingLogic : public CUserLogic {
-public:
-    CMovingLogic(void* owner);        // inlined into CGrunt::CGrunt (out-of-line 0x13940)
-    virtual ~CMovingLogic() OVERRIDE; // trivial; most-derived vptr restamp DCE'd
-    virtual void Update();            // slot 16 (canonical name; == MovingLogic.h Update @0x16ea90)
-    // slot 17 (+0x44) - canonically CProjectile's ONE added virtual (RVA 0xdf050;
-    // full model + definition in <Gruntz/Projectile.h>/Projectile.cpp, the sibling
-    // chain). Declared at the base here so the attack-fire step (UlSlot24) can
-    // dispatch it on the created sprite's setup object: `mov eax,[ecx];
-    // call [eax+0x44]`. Declared-only in this chain (reloc-masked).
-    virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1);
-    virtual void MovingSlot40c(); // slot 18
-};
-inline CMovingLogic::~CMovingLogic() {}
-inline CMovingLogic::CMovingLogic(void* owner) : CUserLogic(owner) {
-    CGruntMotionBand* mb = (CGruntMotionBand*)((char*)this + 0x38);
-    mb->Init();
-    {
-        i32 v = *(i32*)((char*)m_14 + 0x2c);
-        if (v == 0) {
-            *(double*)((char*)this + 0xa8) = g_movingLogicMin;
-        } else {
-            *(double*)((char*)this + 0xa8) = (double)v;
-        }
-    }
-    {
-        i32 v = *(i32*)((char*)m_14 + 0x34);
-        if (v == 0) {
-            *(double*)((char*)this + 0xb0) = g_movingLogicMin;
-        } else {
-            *(double*)((char*)this + 0xb0) = (double)v;
-        }
-    }
-    {
-        i32 v = *(i32*)((char*)m_14 + 0x30);
-        if (v == 0) {
-            *(double*)((char*)this + 0xc0) = g_movingLogicMax;
-        } else {
-            *(double*)((char*)this + 0xc0) = (double)v;
-        }
-    }
-    {
-        i32 v = *(i32*)((char*)m_14 + 0x38);
-        if (v == 0) {
-            *(double*)((char*)this + 0xc8) = g_movingLogicMax;
-        } else {
-            *(double*)((char*)this + 0xc8) = (double)v;
-        }
-    }
-    mb->SetParams(
-        (double)m_10->m_5c,
-        (double)m_10->m_60,
-        0.0,
-        (double)*(i32*)((char*)m_10 + 0x164),
-        (double)*(i32*)((char*)m_10 + 0x168),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        (double)g_gruntSpawnClock * g_gruntSpawnScale,
-        0.0
-    );
-    mb->SetZ((double)g_5f04e8);
-}
-
 // ---------------------------------------------------------------------------
 // CProjectile : CMovingLogic - the projectile game-object's expression in THIS
 // (grunt) header chain. The CANONICAL full model lives in <Gruntz/Projectile.h>
 // (which rides the sibling CUserLogic/CMovingLogic chain and cannot coexist in
 // one TU with this header's - the documented dual-chain). Modeled here only as
-// far as the attack-fire step (UlSlot24, ProjectileUpdate.cpp) needs it: the
+// far as the attack-fire step (UserLogicVfunc7, ProjectileUpdate.cpp) needs it: the
 // created "Projectile"/"Boomerang" sprite's aux (m_7c->m_18) setup object IS a
 // CProjectile; the step dispatches its slot-17 LoadProjectileSprites (declared
 // on CMovingLogic above) and, on failure, retires its +0x154 sprite. Never
@@ -1347,19 +1253,19 @@ public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE;                                              // slot 0  @0xf2f0
     i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1  @0x53b80
-    void UbSlot08() OVERRIDE;                                                // slot 2  (0xf2a0)
-    void UlSlot0c() OVERRIDE;                                                // slot 3  (0x5d210)
-    void UlSlot10() OVERRIDE;                                                // slot 4  (0x5bcd0)
-    void UlSlot14() OVERRIDE;                                                // slot 5  (0x5ecd0)
-    void InitDirVectors() OVERRIDE;                                          // slot 6  @0x5caa0
-    void UlSlot20() OVERRIDE;                                                // slot 8  (0x62b40)
+    i32 UserBaseVfunc2() OVERRIDE;                                           // slot 2  (0xf2a0)
+    i32 UserLogicVfunc1() OVERRIDE;                                          // slot 3  (0x5d210)
+    i32 UserLogicVfunc2() OVERRIDE;                                          // slot 4  (0x5bcd0)
+    i32 UserLogicVfunc3() OVERRIDE;                                          // slot 5  (0x5ecd0)
+    i32 Activate() OVERRIDE;                                                 // slot 6  @0x5caa0
+    i32 UserLogicVfunc6() OVERRIDE;                                          // slot 8  (0x62b40)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
     // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
     // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
     // delivers the melee hit to the neighbor-cell grunt, then applies the
     // "AttackDowntime" timer. Returns 0.
-    i32 UlSlot24() OVERRIDE;
-    void FreeNameList() OVERRIDE;    // slot 11 @0x48360
+    i32 UserLogicVfunc7() OVERRIDE;
+    i32 UserLogicVfunc9() OVERRIDE;  // slot 11 @0x48360
     virtual void StepCoordResolve(); // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
@@ -1501,7 +1407,7 @@ public:
     struct CGruntSndResMgr* m_158;             // +0x158 (ability/sound resource mgr)
     CEntranceAnimDescColl* m_prevEntranceDesc; // +0x15c (= m_154->m_1b4 cache)
     char m_pad160[0x170 - 0x160];
-    // +0x170 (entrance-reason / movement state). The attack-fire step (UlSlot24)
+    // +0x170 (entrance-reason / movement state). The attack-fire step (UserLogicVfunc7)
     // reads this slot as the grunt's current TOOL/attack kind (switched over the
     // GRUNTZ tool ids 2=Boomerang/9=Gunhat/10=Nerfgun/11=Rock/17=TimeBomb/
     // 21=Welder/22=Wingz; >0x16 = melee) and forwards it as the projectile kind -
@@ -1722,7 +1628,7 @@ public:
     i32 m_85c;                // +0x85c (entrance: = 0)
     // +0x860..+0x86f: the attack-downtime timer record (same {clock i64, duration
     // i64} shape as the combat/wingz timers below; SerializeMove round-trips it
-    // from m_860). The attack-fire step (UlSlot24) stamps it at each impact:
+    // from m_860). The attack-fire step (UserLogicVfunc7) stamps it at each impact:
     // clock = g_645588 (lo) / 0 (hi), duration = "AttackDowntime" bute (lo) / 0.
     i32 m_860;              // +0x860 (attack timer: anchor clock lo = g_645588)
     i32 m_864;              // +0x864 (attack timer: anchor clock hi = 0)
@@ -1768,7 +1674,7 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
-    // (~CGrunt / SerializeMove / InitDirVectors / FreeNameList / StepCoordResolve
+    // (~CGrunt / SerializeMove / Activate / UserLogicVfunc9 / StepCoordResolve
     // are the vtable slots declared at the top of the class.)
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
@@ -1832,7 +1738,7 @@ public:
     // member offset they touch is in this layout). All three drive the grunt's
     // arrival/entrance bookkeeping + the occupied-slot recycle.
     i32 ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e); // @0x59230 (ret 0x14)
-    // (InitDirVectors is the vtable slot-6 override, declared at the top of CGrunt.)
+    // (Activate is the vtable slot-6 override, declared at the top of CGrunt.)
     i32 UpdateArrival(i32 a1, i32 a2); // @0x62110 (ret 0x8)
 
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
@@ -1861,7 +1767,7 @@ public:
     void EmitMoveCueQ(i32 a);                              // thunk_0x4336 (1-arg cue/state)
     void EmitMoveCueShort(i32 a, i32 b, i32 c);            // thunk_0x1163 (3-arg cue on m_10)
     void ReseedIdleReset(i32 a, i32 b, i32 c);             // thunk_0x136b (3-arg idle reset)
-    // Attack-fire step (UlSlot24 @0x61cb0, ProjectileUpdate.cpp) helpers
+    // Attack-fire step (UserLogicVfunc7 @0x61cb0, ProjectileUpdate.cpp) helpers
     // (external/no-body thunks, reloc-masked; names = observed roles):
     void GetSpawnPos(i32* out); // thunk_0x1a73 (TimeBomb placement pos, {x,y} out-pair)
     void FinishAttackPowered(); // thunk_0x3dd7 (finish-tail hook when m_poweredUp is set)

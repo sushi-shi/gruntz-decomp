@@ -661,7 +661,7 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
     } while (0)
 
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(void* owner) : CMovingLogic(owner) {
+CGrunt::CGrunt(void* owner) : CMovingLogic((CGameObject*)owner) {
     // --- CGrunt field-init block (retail offset order; the inlined CMovingLogic
     // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
     m_148 = 0;
@@ -1988,7 +1988,7 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
 // CGrunt is now a real polymorphic CUserLogic leaf, so the compiler auto-emits
 // the /GX frame + the three vptr restamps (CGrunt 0x5e8754 -> CUserLogic 0x5e705c
 // -> CUserBase 0x5e70b4) and the per-member descending trylevel teardown: the body
-// runs FreeNameList, then MSVC destructs the six owned members in reverse-decl
+// runs UserLogicVfunc9, then MSVC destructs the six owned members in reverse-decl
 // order (m_468[9] via __ehvec_dtor, m_44c/m_448 ~CString, m_338/m_31c ~CObList,
 // m_animSetName@+0x1c0 ~CString), folds ~CUserLogic (the +0x18 EngStr link) then
 // ~CUserBase. Every teardown callee is external/reloc-masked.
@@ -2000,7 +2000,7 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
 // -> 0x5e70b4), the per-member __ehvec_dtor + ~CString/~CObList/~EngStr teardowns in
 // retail order, and the descending trylevel chain - all byte-faithful in
 // shape/order (55.5% -> 94.9%). The COUNT of EH states matches (8), but retail numbers
-// them 1..8 (FreeNameList region=7, six members 6..1, base m_18=8) while MSVC numbers
+// them 1..8 (UserLogicVfunc9 region=7, six members 6..1, base m_18=8) while MSVC numbers
 // mine 0..7 (off by one) because retail reserves state 0 for the CUserLogic base
 // subobject construction, and it reserves an extra local dword (`sub esp,8` vs my
 // `push ecx`; `add esp,0x14` vs `0x10`). Closing this needs the base construction
@@ -2008,7 +2008,7 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
 // this TU) - deferred to the final sweep.
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {
-    FreeNameList();
+    UserLogicVfunc9();
 }
 
 // ---------------------------------------------------------------------------
@@ -3217,13 +3217,13 @@ void CGrunt::DispatchVtbl24() {
 // three engine calls (Coll::Reset, List::RemoveHead, node deleter) are unnamed,
 // so their DIR32/REL32 operands pair to differently named retail symbols and
 // score fuzzy. Naming the whole referent set is a final-sweep task.
-// CGrunt::FreeNameList() @0x48360 - tears down the per-grunt name/animation
+// CGrunt::UserLogicVfunc9() @0x48360 - tears down the per-grunt name/animation
 // caches: walks a small list at +0x320 returning each node's +0x8 buffer to a
 // global free pool (head/base at 0x645544/0x64554c), empties the collection at
 // +0x31c, then drains the name CObList at +0x338 (count = m_33c->m_8; each node
 // freed via the engine deleter).
 RVA(0x00048360, 0x7e)
-void CGrunt::FreeNameList() {
+i32 CGrunt::UserLogicVfunc9() {
     if (m_coordCount != 0) {
         void** node = *(void***)&m_320;
         if (node) {
@@ -3245,7 +3245,7 @@ void CGrunt::FreeNameList() {
         void* list = m_344;
         i32 count = list ? *(i32*)((char*)(*(void**)&m_33c) + 8) : 0;
         if (count == 0) {
-            return;
+            return 0;
         }
         if (list == 0) {
             continue;
@@ -3253,6 +3253,7 @@ void CGrunt::FreeNameList() {
         void* p = ((CGruntList*)(&m_338))->RemoveHead();
         GruntNode_Delete(p);
     }
+    return 0;
 }
 
 // CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
@@ -6176,7 +6177,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::InitDirVectors()   @0x5caa0   (__thiscall, ret 0)
+// CGrunt::Activate()   @0x5caa0   (__thiscall, ret 0)
 // The grunt reset/spawn-init step. Fills the per-direction velocity-vector table at
 // this+0x4b0 (9 directions, each a 0x78-stride record, 4 doubles/record) from the 9
 // runtime direction-index globals (0x644aa0..0x644b48; index = 3*dir[0] + dir[1]) with
@@ -6190,7 +6191,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 // juggling for sqrt(2.0) and the 1/sqrt2 diagonals (the `fld st(1)` scheduling) rarely
 // matches from C source. Deferred to the final sweep.
 RVA(0x0005caa0, 0x5e4)
-void CGrunt::InitDirVectors() {
+i32 CGrunt::Activate() {
     double diag = sqrt(g_dirConst2);              // sqrt(2.0)
     double* tbl = (double*)((char*)this + 0x4b0); // 0x78-stride records (15 doubles each)
     const i32 W = 0x78 / 8;                       // 15 doubles per record
@@ -6289,6 +6290,7 @@ void CGrunt::InitDirVectors() {
     m_24c = 0;
     m_deathAnimStarted = 0;
     m_tileClaimed = 0;
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

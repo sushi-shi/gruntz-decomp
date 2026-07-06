@@ -18,7 +18,7 @@
 //   and runs the m_poweredUp/m_1c4 teardown hooks.
 //
 // IDENTITY (proven, fold DEFERRED on the CGrunt ODR merge): the owner is CGrunt and
-// 0x61cb0 is CGrunt's VTABLE SLOT 9 (== CGrunt::UlSlot24, now declared OVERRIDE in
+// 0x61cb0 is CGrunt's VTABLE SLOT 9 (== CGrunt::UserLogicVfunc7, now declared OVERRIDE in
 // Grunt.h; thunk 0x119f, origin CUserLogic slot 9 - anchored by slots 14/15 ==
 // 0x1730/0x3607).
 //
@@ -28,7 +28,7 @@
 // <Gruntz/Grunt.h> REDEFINES the whole CUserBase/CUserLogic/CMovingLogic/CProjectile
 // family with a different (CGruntHud*-m_10, inline-ctor, i32-vtable) layout, so the two
 // headers ODR-CONFLICT in one TU (empirically verified: `redefinition of CProjectile/
-// CMovingLogic/CUserLogic/CUserBase`). Defining this as CGrunt::UlSlot24 therefore needs
+// CMovingLogic/CUserLogic/CUserBase`). Defining this as CGrunt::UserLogicVfunc7 therefore needs
 // the documented CGrunt/CMovingLogic ODR merge (MovingLogic.h NOTE) to land first -
 // then this view dissolves mechanically (its member names already mirror Grunt.h). Until
 // then the grunt `this` is a CGrunt facet; the sub-objects it reaches ARE folded onto

@@ -25,7 +25,6 @@ struct CUserBase {
 };
 SIZE_UNKNOWN(CUserBase);
 RVA(0x000087b0, 0x7)
-CUserBase::~CUserBase() {}
 
 // ===========================================================================
 // 0x008b90 - a finalize/teardown that fires up to two registered __thiscall

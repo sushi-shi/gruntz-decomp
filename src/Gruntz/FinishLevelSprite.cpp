@@ -13,7 +13,7 @@
 #include <Ints.h>
 
 DATA(0x00645588)
-extern i32 g_645588; // free-running clock
+extern "C" u32 g_645588; // free-running clock (== Teleporter.h ?g_clock@@3IA)
 extern "C" {
     DATA(0x0061ab20)
     extern i32 g_sndEnabled;

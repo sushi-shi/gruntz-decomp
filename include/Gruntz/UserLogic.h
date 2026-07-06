@@ -376,12 +376,13 @@ struct CLogicTypeBuilder;
 // CUserBase - root of the game-object hierarchy: just a vptr (3 virtuals,
 // vftable 0x5e70b4). Inline ctor so it folds into derived ctors.
 // ---------------------------------------------------------------------------
+struct CGruntArchive; // slot-1 serialize archive (Grunt world)
 class CUserBase {
 public:
     CUserBase() {}
-    virtual ~CUserBase() {}       // inline: folds into leaf dtors (final base vptr store)
-    virtual i32 Serialize();      // slot 1
-    virtual i32 UserBaseVfunc2(); // slot 2
+    virtual ~CUserBase() {} // inline: folds into leaf dtors (final base vptr store)
+    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
+    virtual i32 UserBaseVfunc2();                                           // slot 2
 };
 
 // ---------------------------------------------------------------------------
@@ -402,6 +403,8 @@ public:
 // true 0x30 boundary, because CGrunt uses 0x30..0x3c for its OWN (different)
 // fields. Both are correct expressions of one class - see the NOTE.
 // ---------------------------------------------------------------------------
+struct CGruntHud;       // Grunt.h view of the +0x10 bound object
+struct CAnimLookupNode; // Grunt.h view of the +0x14 aux (anim-set lookup)
 class CUserLogic : public CUserBase {
 public:
     CUserLogic() {}
@@ -462,12 +465,17 @@ public:
     i32 m_04;          // +0x04
     i32 m_08;          // +0x08
     CGameObject* m_0c; // +0x0c
-    CGameObject*
-        m_object; // +0x10  bound game object (primary handle: position/logic/draw; == m_38)
-    CGameObjAux* m_objAux; // +0x14  the object's +0x7c aux sub-object (obj->m_7c)
-    CUserBaseLink m_link;  // +0x18..+0x27 (ctor 0x16d710, can throw)
-    i32 m_28;              // +0x28
-    i32 m_2c;              // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
+    union {            // +0x10  bound game object (== m_38); CGrunt views it as CGruntHud*
+        CGameObject* m_object;
+        CGruntHud* m_10;
+    };
+    union { // +0x14  aux sub-object (obj->m_7c); CGrunt views it as CAnimLookupNode*
+        CGameObjAux* m_objAux;
+        CAnimLookupNode* m_14;
+    };
+    CUserBaseLink m_link; // +0x18..+0x27 (ctor 0x16d710, can throw)
+    i32 m_28;             // +0x28
+    i32 m_2c;             // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
 };
 SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
                         // 0x30..0x3c tail lives on CTileLogic (below).
@@ -503,8 +511,8 @@ SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic l
 //     partial CGameObject view -> delete on merge).
 //   * +0x14: canonical m_objAux (CGameObjAux*, == obj->m_7c) == Grunt.h m_14
 //     (CAnimLookupNode*, a partial CGameObjAux view).
-//   * Vtable: 16 slots, same order. Grunt.h's SerializeMove(1)/UbSlot08(2)/
-//     InitDirVectors(6)/FreeNameList(11) are CGrunt-SPECIFIC OVERRIDE names; the base
+//   * Vtable: 16 slots, same order. Grunt.h's SerializeMove(1)/UserBaseVfunc2(2)/
+//     Activate(6)/UserLogicVfunc9(11) are CGrunt-SPECIFIC OVERRIDE names; the base
 //     slot names stay generic (UserBaseVfunc*/UserLogicVfunc*).
 //
 // PER-SLOT SIGNATURE TABLE (stage 4, disasm evidence). The dispatch call sites

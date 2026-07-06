@@ -65,7 +65,7 @@ extern CButeTree g_buteTree;
 // (~CUserBase / ~CUserLogic are now inline in the header so leaf dtors fold the
 // whole base teardown; the remaining out-of-line virtuals still anchor the
 // vftables.)
-i32 CUserBase::Serialize() {
+i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
 i32 CUserBase::UserBaseVfunc2() {
