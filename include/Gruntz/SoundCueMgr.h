@@ -40,16 +40,6 @@ SIZE_UNKNOWN(SBLink);
 // (no body) so its __thiscall `call rel32` reloc-masks.
 class CStatusBarItem2 {
 public:
-    i32 Sub3f0();       // 0x1353f0  IsPlaying
-    i32 Inner560(i32);  // 0x135560  SetVolume
-    i32 Inner740(i32);  // 0x135740  SetPan
-    i32 Inner880(i32);  // 0x135880  SetFrequency
-    i32 SetField0(i32); // 0x1355c0  (ret 4)
-    i32 SetField1(i32); // 0x1357a0  (ret 4)
-    i32 SetField2(i32); // 0x135920  (ret 4)
-    i32 SetField3(i32); // 0x135510  (ret 4, result ignored)
-    i32 Finalize();     // 0x136270  (ret 0)
-
     char m_pad0[0x44];         // +0x00..0x43
     SBLink m_link44;           // +0x44  intrusive list link (Unlink/Append)
     char m_pad4c[0x50 - 0x4c]; // +0x4c..0x4f

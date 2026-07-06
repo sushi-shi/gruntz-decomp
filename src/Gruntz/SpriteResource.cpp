@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ResMgr.h>        // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <Gruntz/Sprite.h>        // CSprite (frame-data), CSpriteHashTable, CFrameArray
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory shape (this TU owns CreateSprite@0x1597b0)
@@ -296,17 +297,17 @@ i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     i32 ok = 1;
-    if (!item->SetField0(a0)) {
+    if (!((DirectSoundMgr*)item)->SetVolumeByIndex(a0)) {
         ok = 0;
     }
-    if (!item->SetField1(a1)) {
+    if (!((DirectSoundMgr*)item)->SetPanByIndex(a1)) {
         ok = 0;
     }
-    if (!item->SetField2(a2)) {
+    if (!((DirectSoundMgr*)item)->SetField2(a2)) {
         ok = 0;
     }
-    item->SetField3(a3);
-    if (!item->Finalize()) {
+    ((DirectSoundMgr*)item)->SetField3(a3);
+    if (!((DirectSoundMgr*)item)->Play()) {
         ok = 0;
     }
     return ok;

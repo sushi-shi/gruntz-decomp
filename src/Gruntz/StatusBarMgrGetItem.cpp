@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundVoiceList.h>
 
 #include <Gruntz/SoundCueMgr.h>
@@ -30,7 +31,7 @@ CStatusBarItem2* CSoundCueMgr::GetItem() {
     SBNode* node = m_58.m_head;
     if (node) {
         while (1) {
-            if (node->m_8->m_50 && node->m_8->Sub3f0() == 0) {
+            if (node->m_8->m_50 && ((DirectSoundMgr*)node->m_8)->IsPlaying() == 0) {
                 break;
             }
             node = node->m_0;
@@ -46,9 +47,9 @@ CStatusBarItem2* CSoundCueMgr::GetItem() {
         found = node->m_8;
     }
     if (found) {
-        found->Inner560(m_20);
-        found->Inner740(m_1c);
-        found->Inner880(m_18);
+        ((DirectSoundMgr*)found)->SetVolume(m_20);
+        ((DirectSoundMgr*)found)->SetPan(m_1c);
+        ((DirectSoundMgr*)found)->SetFrequency(m_18);
     }
     if (!found) {
         found = Create(1);
