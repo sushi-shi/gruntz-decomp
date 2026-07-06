@@ -1,3 +1,4 @@
+#include <Mfc.h>
 // SecretLevelTrigger.cpp - the secret-level trigger game-object (C:\Proj\Gruntz).
 //
 // Two trace-discovered CSecretLevelTrigger methods, defined in ascending
@@ -14,6 +15,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Trigger.h>            // shared point-probe result object
 #include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger : CUserLogic
 
@@ -43,11 +45,6 @@ extern CSecretActReg g_secretActReg; // 0x644598
 // object under it (or 0); ScrollTo (0x6bcb0, via the 0x2e96 thunk) posts a scroll
 // to bring it on screen. Both __thiscall, modeled NO-body so the calls
 // reloc-mask (their bodies live in src/Gruntz/TriggerMgr.cpp).
-struct CTriggerSink {
-    CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
-    void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);              // 0x6bcb0
-};
-SIZE_UNKNOWN(CTriggerSink);
 
 // The probed trigger object is the shared <Gruntz/Trigger.h> class: its
 // +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must
@@ -121,8 +118,8 @@ RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;
     CGameObject* spr = m_object;
-    CTrigger* hit = ((CTriggerSink*)g_gameReg->m_cmdGrid)
-                        ->Probe(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+    CTrigger* hit = (CTrigger*)((CTriggerMgr*)g_gameReg->m_cmdGrid)
+                        ->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
     if (hit) {
         spr = m_object;
         i32 ok = 1;
@@ -136,7 +133,7 @@ i32 CSecretLevelTrigger::Tick() {
             ok = 0;
         }
         if (ok) {
-            ((CTriggerSink*)g_gameReg->m_cmdGrid)->ScrollTo(outB, outA, 0xc, -1);
+            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(outB, outA, 0xc, -1);
         }
         m_38->m_flags |= 0x10000;
     }
