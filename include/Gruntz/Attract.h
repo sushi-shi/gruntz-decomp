@@ -143,7 +143,7 @@ struct CAttractHost {
 // manager's error/HWND owner; m_2c as the fade screen-resolver). Forward-declared
 // here so the typed slot accessors below can name them (cast to an incomplete
 // pointer type is well-formed; the call sites in CAttract.cpp see the full type).
-class CAttractOwner;
+class CGruntzMgr;
 class CAttractScreenObj;
 
 // ---------------------------------------------------------------------------
@@ -206,8 +206,8 @@ public:
     CAttractVideo* video() {
         return (CAttractVideo*)m_4;
     }
-    CAttractOwner* owner() {
-        return (CAttractOwner*)m_4;
+    CGruntzMgr* owner() {
+        return (CGruntzMgr*)m_4;
     }
     CAttractState* attractState() {
         return (CAttractState*)m_2c;

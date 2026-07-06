@@ -12,7 +12,8 @@
 // Non-virtual title/menu logic: RefreshTitle / LoadTitleConfig / Activate /
 // RunTitle. Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
-#include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
+#include <Gruntz/GruntzMgr.h>
+#include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameRegistry.h>       // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
@@ -114,13 +115,6 @@ struct AttractWndHolder {
     char m_pad00[0x4];
     HWND m_4; // +0x04  top-level HWND
 };
-class CAttractOwner {
-public:
-    void ReportError(u32 cmd, i32 id); // 0x346d
-
-    char m_pad00[0x4];
-    AttractWndHolder* m_4; // +0x04
-};
 
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
 typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
@@ -218,7 +212,7 @@ i32 CAttract::Render() {
     i32 n = g_actorList->m_count;
     for (i = 0; i < n; i++) {
         if (g_actorList->m_data[i]->m_2ac & 0x100) {
-            g_pPostMessageA(owner()->m_4->m_4, 0x111, 0x8023, 0);
+            g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             return 1;
         }
     }
@@ -237,7 +231,7 @@ i32 CAttract::Render() {
 // (docs/patterns/zero-register-pinning.md). Not source-steerable; deferred.
 struct CAttractIdlePoll {
     char _00[4];
-    CAttractOwner* m_4; // +0x04
+    CGruntzMgr* m_4; // +0x04
     char _08[0x520 - 0x8];
     u32 m_520;   // +0x520  idle timer
     void Pump(); // 0x20db (ILT thunk; reloc-masked)
@@ -252,7 +246,7 @@ i32 CAttractIdlePoll::Poll() {
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_data[i]->m_2ac & 0x100) {
-            pm(m_4->m_4->m_4, 0x111, 0x8023, 0);
+            pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
             break;
         }
     }
@@ -262,7 +256,7 @@ i32 CAttractIdlePoll::Poll() {
         m_520 -= g_645584;
     }
     if (m_520 == 0) {
-        pm(m_4->m_4->m_4, 0x111, 0x8027, 0);
+        pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
     }
     return 1;
 }
@@ -337,10 +331,10 @@ GameStateId CAttract::Update() {
 }
 
 // CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
-// (0x8023) to the top-level HWND (m_4->m_4->m_4) unconditionally, then return 1.
+// (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.
 RVA(0x00014770, 0x24)
 i32 CAttract::Vslot0e(i32, i32, i32) {
-    g_pPostMessageA(owner()->m_4->m_4, 0x111, 0x8023, 0);
+    g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 
@@ -610,7 +604,7 @@ i32 CAttract::Activate() {
 // is a NON-VIRTUAL shared base-class method: CAttract::Vslot07 (0x0147b0),
 // CMultiBootyState::ReadyAndPaint (0x01ce30, gamemode) and CGuardedDispatch::Run
 // (0x01f870, boundarymisc) each `mov ecx,<this>; call 0x1136` on their OWN this,
-// so +0x04 (a wnd chain -> top-level HWND at m_4->m_4->m_4) is a base-layout
+// so +0x04 (a wnd chain -> top-level HWND at m_4->m_gameWnd->m_hwnd) is a base-layout
 // field they all share. If the window is present, it runs a null Begin/EndPaint
 // cycle and returns 1. Homed here (CAttract, the first/RTTI-named caller); the
 // common base class it truly belongs to is not yet recovered. Offsets + code
@@ -646,7 +640,6 @@ SIZE_UNKNOWN(AttractWndHolder);
 SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractIdlePoll);
-SIZE_UNKNOWN(CAttractOwner);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractSceneSlot);
