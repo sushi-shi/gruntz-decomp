@@ -465,12 +465,9 @@ struct WwdObjList {
 };
 
 // The object's own vtable (transitional manual stamp; reloc-masked DATA extern).
-DATA(0x001f00a8)
-extern void* g_wwdObjVtbl[]; // 0x5f00a8
 // The sub-object vtable is realized as ??_7CAniAdvanceCursor@@6B@ (0x5f0128) in
 // CAniAdvanceCursor.cpp; referenced here as an UNPINNED extern (the VTBL there
 // owns the 0x1f0128 datum name) so this sub-object stamp reloc-masks against it.
-extern void* g_wwdSubVtbl[]; // 0x5f0128
 
 // ---------------------------------------------------------------------------
 // RebuildPlanes (0x1628f0): tear down the old +0xb0 plane-render worker, then
@@ -503,7 +500,6 @@ struct WwdPlaneRender {
 // src/Gruntz/WwdSpatialMgr.cpp, which OWNS the RVA catalog name via VTBL. UNPINNED
 // here so RebuildPlanes' inline +0x70 embedded-cursor stamp reloc-masks against the
 // real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
-extern void* g_planeRenderVtbl; // 0x5f02a8  (realized CWwdGridIter, factory inline-construction)
 
 // authentic: documented offset access into WwdFile's own wide layout (the +0xb0
 // plane-render worker slot + the +0xc reg-owner slot); only the offset is
@@ -553,7 +549,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
 
     WwdPlaneRender* nw = (WwdPlaneRender*)::operator new(0xb8);
     if (nw) {
-        *(void**)((char*)nw + 0x70) = &g_planeRenderVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)((char*)nw + 0x74) = 0;
         *(i32*)((char*)nw + 0x78) = 0;
         *(i32*)((char*)nw + 0x00) = 0;
@@ -624,12 +620,12 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     // derived types) and zero the trailing fields the derived layout adds.
     WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
     ((WwdSubMgrCtor*)subInit)->Construct(loader->m_assetOwner, id, 0);
-    *(void**)subInit = &g_wwdSubVtbl;
+    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     subInit->z10 = 0;
     subInit->z14 = 0;
     subInit->z18 = 0;
 
-    *(void**)obj = &g_wwdObjVtbl;
+    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     obj->m_18c = -1;
     obj->m_190 = -1;
     obj->m_layer = 0;

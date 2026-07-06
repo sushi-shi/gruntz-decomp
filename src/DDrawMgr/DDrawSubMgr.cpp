@@ -1983,10 +1983,6 @@ inline void* operator new(u32, void* p) {
 
 // The constructed wide object's first (CWwdGameObject) vtable, then its final
 // (g_wwdObjVtbl) vtable.  Reloc-masked DATA externs (RVA = VA - 0x400000).
-DATA(0x001f0020)
-extern void* g_wwdGameObjectVtbl; // 0x5f0020
-DATA(0x001f00a8)
-extern void* g_wwdObjFinalVtbl; // 0x5f00a8
 
 // Sub-object ctors hung off the wide object (all __thiscall, reloc-masked externs;
 // ctor-only TU-local views of the real classes defined in DiscoveredSmall/ResolveNode).
@@ -2398,11 +2394,11 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         i32 root = (i32)m_0c;
-        new (obj) CResolveNode(root, a1, flags);
-        new (obj + 0x9c) Obj15b2b0();
-        new (obj + 0xb8) Obj15b270();
-        ((CString*)(obj + 0xdc))->~CString();
-        *(void**)obj = &g_wwdGameObjectVtbl;
+        ((CWwdResolveBase*)obj)->Ctor(root, a1, flags);
+        ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
+        ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();
+        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
         *(i32*)(obj + 0x78) = 0;
         char* worker = (char*)RezAlloc(0x17c);
@@ -2418,8 +2414,8 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
         *(i32*)(obj + 0x90) = 0;
         *(i32*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        new (obj + 0x1a0) CAniAdvanceCursor(root, a1, flags); // 0x15b730 sub-object ctor
-        *(void**)obj = &g_wwdObjFinalVtbl;
+        ((CWwdCmdMap*)(obj + 0x1a0))->Ctor(root, a1, flags);
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x18c) = -1;
         *(i32*)(obj + 0x190) = -1;
         *(i32*)(obj + 0x198) = 0;

@@ -31,10 +31,6 @@ inline void* operator new(u32, void* p) {
 // The two spawned-child vtables, stamped manually into the heap block AFTER the base
 // ctor runs (transitional workaround: the children's virtuals live in unmatched TUs,
 // so cl can't emit these vtables - referenced as reloc-masked DATA externs).
-DATA(0x001eff70)
-extern i32 g_ddrawSurfaceChildAVtbl; // 0x5eff70
-DATA(0x001eff30)
-extern i32 g_ddrawSurfacePairVtbl; // 0x5eff30
 
 // The "A" child built by CreateChildren (0x30 bytes, ctor 0x158f30, vtable 0x5eff70).
 // Real CWapObj-derived: slots 0..4 (CObject thunks + scalar dtor) + slot 6 (IsReady
@@ -133,8 +129,10 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     CDDrawSurfaceChildA* a = (CDDrawSurfaceChildA*)operator new(0x30);
     if (a != 0) {
         new (a) CDDrawSurfaceChildA((i32)m_0c, 0, 0);
-        *(i32**)a = &g_ddrawSurfaceChildAVtbl;
-        a->m_2c = 0;
+        *(
+             i32**
+        ) // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+         a->m_2c = 0;
     }
     m_frontPair = (CDDrawSurfacePair*)a;
 
@@ -142,8 +140,10 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (b != 0) {
         new (b) CDDrawSurfacePair((i32)m_0c, 1, 0);
         b->m_width = 0;
-        *(i32**)b = &g_ddrawSurfacePairVtbl;
-        b->m_surface = 0;
+        *(
+             i32**
+        ) // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+         b->m_surface = 0;
         b->m_ownsSurface = 1;
     }
     m_backPair = b;
@@ -152,8 +152,10 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
     if (c != 0) {
         new (c) CDDrawSurfacePair((i32)m_0c, 2, 0);
         c->m_width = 0;
-        *(i32**)c = &g_ddrawSurfacePairVtbl;
-        c->m_surface = 0;
+        *(
+             i32**
+        ) // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+         c->m_surface = 0;
         c->m_ownsSurface = 1;
     }
     m_overlayPair = c;

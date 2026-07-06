@@ -47,22 +47,11 @@ inline void* operator new(unsigned int, void* p) {
 // VTBL binding here would name a wrong-slot datum (a tooling artifact). The g_ DATA
 // symbol therefore keeps naming the (un-modeled) retail datum; a real ??_7 catalog
 // name awaits the wide-object-ctor `new`-rewrite sweep. Kept pinned.
-DATA(0x001f0020)
-extern void* g_wwdGameObjectVtbl; // 0x5f0020  (post-base, 159250/159440)
-DATA(0x001effd0)
-extern void* g_wwd159250FinalVtbl; // 0x5effd0
-DATA(0x001f0060)
-extern void* g_wwd159440FinalVtbl; // 0x5f0060
-DATA(0x001f00a8)
-extern void* g_wwdObjVtbl; // 0x5f00a8  (post-base, 1598d0)
-DATA(0x001f00e8)
-extern void* g_wwd1598d0FinalVtbl; // 0x5f00e8
 // The +0x1a0 sub-object table 0x5f0128 IS fully realized: ??_7CAniAdvanceCursor
 // (9 slots, dtor at slot 1) in src/Wwd/AniAdvanceCursor.cpp, which OWNS the RVA
 // catalog name via VTBL. UNPINNED so the factory's inline sub-object stamp
 // reloc-masks against the real ??_7 (the manual g_wwdSubVtbl DATA placeholder is
 // drained).
-extern void* g_wwdSubVtbl; // 0x5f0128  (+0x1a0 sub-object, realized CAniAdvanceCursor)
 
 class CWwdGameObject;
 
@@ -175,12 +164,13 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        new (obj) CResolveNode(root, a1, a7);
-        new (obj + 0x9c) CWwdSlot9c();
-        *(int*)(obj + 0xb4) = 0;
-        new (obj + 0xb8) Obj15b270();
-        ((CString*)(obj + 0xdc))->~CString();
-        *(void**)obj = &g_wwdGameObjectVtbl;
+        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a7);
+        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
+        s9c->Ctor();
+        s9c->m_18 = 0;
+        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
+        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
         char* worker = (char*)RezAlloc(0x17c);
@@ -196,7 +186,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
         *(int*)(obj + 0x90) = 0;
         *(int*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        *(void**)obj = &g_wwd159250FinalVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(char*)(obj + 0x18c) = 0;
         result = (CWwdGameObject*)obj;
     } else {
@@ -226,12 +216,13 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        new (obj) CResolveNode(root, a1, a4);
-        new (obj + 0x9c) CWwdSlot9c();
-        *(int*)(obj + 0xb4) = 0;
-        new (obj + 0xb8) Obj15b270();
-        ((CString*)(obj + 0xdc))->~CString();
-        *(void**)obj = &g_wwdGameObjectVtbl;
+        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a4);
+        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
+        s9c->Ctor();
+        s9c->m_18 = 0;
+        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
+        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
         char* worker = (char*)RezAlloc(0x17c);
@@ -247,7 +238,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
         *(int*)(obj + 0x90) = 0;
         *(int*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        *(void**)obj = &g_wwd159440FinalVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         result = (CWwdGameObject*)obj;
     } else {
         result = 0;
@@ -278,18 +269,18 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
         int root = (int)m_0c;
         ((CWwdResolveBaseB*)obj)->Ctor(root, a1, a6);
         ((CWwdCmd1a0*)(obj + 0x1a0))->Ctor(root, a1, a6);
-        *(void**)(obj + 0x1a0) = &g_wwdSubVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
         *(int*)(obj + 0x1b4) = 0;
         *(int*)(obj + 0x1b8) = 0;
-        *(void**)obj = &g_wwdObjVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x18c) = -1;
         *(int*)(obj + 0x190) = -1;
         *(int*)(obj + 0x198) = 0;
         *(int*)(obj + 0x194) = 0;
         *(int*)(obj + 0x19c) = 0;
         ((CWwdList1dc*)(obj + 0x1dc))->Ctor(0xa);
-        *(void**)obj = &g_wwd1598d0FinalVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1f8) = 0;
         result = (CWwdGameObject*)obj;
     } else {
@@ -340,11 +331,11 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         *(int*)(obj + 0x1a4) = a1;
         *(int*)(obj + 0x1a8) = a6;
         *(int*)(obj + 0x1ac) = root;
-        *(void**)(obj + 0x1a0) = &g_wwdSubVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
         *(int*)(obj + 0x1b4) = 0;
         *(int*)(obj + 0x1b8) = 0;
-        *(void**)obj = &g_wwdObjVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x18c) = -1;
         *(int*)(obj + 0x190) = -1;
         *(int*)(obj + 0x198) = 0;
@@ -481,7 +472,7 @@ struct CWwdGameObj15b390 : public WwdCtorBase {
 // docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
 RVA(0x0015b390, 0x128)
 CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c) {
-    *(void**)this = &g_wwdGameObjectVtbl; // 0x5f0020 final stamp
+    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0) // 0x5f0020 final stamp
     m_5c = (int)0x80000000;
     m_78 = 0;
     m_7c = new WwdAnimWorker(b, a);

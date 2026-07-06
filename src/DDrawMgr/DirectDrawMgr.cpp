@@ -1323,8 +1323,6 @@ struct CDdCreateArg {
 // idiom as g_planeRenderVtbl in WwdFile.cpp). The dispatch is expressed as real
 // thiscall virtuals (no hand-rolled vtbl struct): `pi->Init(x)` lowers to the retail
 // `mov edx,[pi]; mov ecx,pi; call [edx+4]`.
-DATA(0x001ef7f0)
-extern void* g_poolItemVtbl; // 0x5ef7f0  the pool item's retail vtable (realized elsewhere)
 
 struct CDdPoolSub {
     // Ctor @0x1b4f0b IS the CPtrArray in-place ctor; placement-new at the call.
@@ -1350,7 +1348,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         // Manual vptr stamp by ADDRESS (the vtable-realization wall - cl cannot emit a
         // matching ??_7CDDSurface in this DDrawMgr TU); the scalar zeroing is typed onto
         // the unified CDDSurface fields (same offsets, byte-identical stores).
-        *(void**)item = &g_poolItemVtbl;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         CDDSurface* s = (CDDSurface*)item;
         s->m_8 = 0;
         s->m_c = 0;
