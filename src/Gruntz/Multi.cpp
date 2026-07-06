@@ -467,8 +467,6 @@ struct McHost { // CMulti::m_view
 // returns a CGruntzSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
 class CMultiSoundZ { // CMultiMgr::m_48
 public:
-    void Play_138840(char* name, i32 flag);        // 0x138840
-    CGruntzSoundInnerZ* Lookup_138730(char* name); // 0x138730
     char m_pad0[0x1c];
     CGruntzSoundInnerZ* m_1c; // +0x1c
 };
@@ -506,9 +504,9 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_64556c->m_14 != 0) {
-                m_logic->m_48->Play_138840(name, 1);
+                ((CGruntzSoundZ*)m_logic->m_48)->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = m_logic->m_48->Lookup_138730(name);
+                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)m_logic->m_48)->FindBank(name);
                 if (p) {
                     m_logic->m_48->m_1c = p;
                 }
