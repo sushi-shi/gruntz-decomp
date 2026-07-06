@@ -25,6 +25,7 @@
 // DIERR_* name + "DirectInputMgr2"); names of locals are placeholders, the
 // switch case VALUES and string contents are load-bearing.
 #include <DinMgr2/DirectInputMgr2.h>
+#include <Gruntz/FixedPtrArray32.h>
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
 #include <string.h> // inline strcpy (rep movs / repne scasb)
@@ -407,7 +408,7 @@ void DirectInputMgr2::FreeDeviceList() {
         node = node->m_next;
         CDeviceListNode* payload = cur->m_payload;
         if (payload != 0) {
-            payload->ConfigDtor();
+            ((CFixedPtrArray32*)payload)->Clear();
             operator delete(payload);
         }
     }
@@ -424,9 +425,9 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
         return 0;
     }
     CDeviceListNode* node = new CDeviceListNode; // operator new(0x88) + ctor zeroes the links
-    if (node->ConfigCreate(count, a2, a3) == 0) {
+    if (((CFixedPtrArray32*)node)->FillFrom((void**)count, a2, a3) == 0) {
         if (node != 0) {
-            node->ConfigDtor();
+            ((CFixedPtrArray32*)node)->Clear();
             operator delete(node);
         }
         return 0;

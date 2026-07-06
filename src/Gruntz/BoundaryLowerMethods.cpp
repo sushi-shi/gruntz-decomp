@@ -6,6 +6,7 @@
 // The per-use owner/referent views now live in <Gruntz/BoundaryLowerMethodsViews.h>
 // (pure code motion); the archive object folds to the canonical CSerialArchive.
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (MFC side; umbrella-first) - the
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BattlezMapConfig.h>
 // 0x8e880/0x915d0/0x91620 owners + CGruntzSoundZ
@@ -190,8 +191,8 @@ RVA(0x000cef50, 0x46)
 i32 Ccef50::M() {
     ((CSubC8*)(m_4 + 0xc8))->M1b9c69();
     if (m_1c0 != 0) {
-        if (m_c->m_4->M158d20() != 0) {
-            m_c->m_4->M158e40();
+        if (((CDDrawSubMgrPages*)m_c->m_4)->Method_158d20() != 0) {
+            ((CDDrawSubMgrPages*)m_c->m_4)->Method_158e40();
         }
         ((CGruntzMgr*)m_4)->ChangeState_8fab0(3);
     }

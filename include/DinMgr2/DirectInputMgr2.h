@@ -83,8 +83,6 @@ struct CDeviceListNode {
         m_next = 0;
         m_prev = 0;
     }
-    i32 ConfigCreate(i32 a1, i32 a2, i32 a3); // 0x134be0
-    void ConfigDtor();                        // 0x134c60
 
     CDeviceListNode* m_next;    // +0x00  intrusive-list forward link
     CDeviceListNode* m_prev;    // +0x04  intrusive-list back link (CObList::CNode)

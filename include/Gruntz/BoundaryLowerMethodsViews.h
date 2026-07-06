@@ -162,10 +162,7 @@ struct CSubC8 {
 SIZE_UNKNOWN(CSubC8);
 struct CObjC {};
 SIZE_UNKNOWN(CObjC);
-struct CDDrawWorkerMgr {
-    i32 M158d20();  // 0x158d20
-    void M158e40(); // 0x158e40
-};
+struct CDDrawWorkerMgr {};
 SIZE_UNKNOWN(CDDrawWorkerMgr);
 struct CMidC {
     char pad0[4];
