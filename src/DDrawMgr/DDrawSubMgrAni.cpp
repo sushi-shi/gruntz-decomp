@@ -53,9 +53,9 @@ void* operator new(u32 n);
 // reproducing retail's base-stamp / CObject-construct / primary-stamp / field-zero
 // order and replacing the former (CAniElementBase*)(this+8) cross-cast hack.
 struct CAniElemSub {
-    CAniElemSub();         // 0x1b55e9 (reloc-masked rel32 callee)
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
-    char _pad[0x14 - 4];   // +0x04..+0x13
+    CAniElemSub();       // 0x1b55e9 (reloc-masked rel32 callee)
+    char _vft0[4];       // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    char _pad[0x14 - 4]; // +0x04..+0x13
 };
 
 // The 0x28-byte animation element (tomalla-38; primary vftable @0x5efba8), a real MFC

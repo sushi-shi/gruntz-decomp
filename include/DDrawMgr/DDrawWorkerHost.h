@@ -20,7 +20,7 @@
 // minimal member-view of the same class - the two reloc-masked callees resolve to
 // WwdSpatialMgr.cpp's real definitions.)
 struct CWwdSpatialMgr {
-    virtual void VSlot0();     // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
     void* m_baseVtbl;          // +0x70  base/secondary vtable restamped on teardown
     i32 PruneCount();          // 0x1688b0  (reloc-masked external)

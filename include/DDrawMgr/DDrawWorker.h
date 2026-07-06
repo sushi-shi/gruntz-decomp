@@ -34,7 +34,7 @@ struct CWorkerElement {
 // calls the reloc-masked engine ~CObArray (0x1b561c) so the /GX member-teardown
 // trylevel falls out (eh-dtor-model-members-as-destructible).
 struct CWorkerObArray {
-    virtual void VSlot0();    // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];            // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     CWorkerElement** m_pData; // +0x04
     i32 m_nSize;              // +0x08
     i32 m_nMaxSize;           // +0x0c

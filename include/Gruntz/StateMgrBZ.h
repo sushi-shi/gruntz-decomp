@@ -51,7 +51,7 @@ public:
 // manager fields below.)
 SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
-    virtual void VSlot0(); // +0x00  CPtrArray vftable  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];           // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     SbzInputDevice** m_data; // +0x04  controller storage
     i32 m_count;             // +0x08  controller count
 };

@@ -386,7 +386,7 @@ public:
     CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
 };
 struct Worker181x_181x {
-    virtual void VSlot0();       // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];               // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     char m_pad04[0x2c - 0x04];   // +0x04..0x2b
     CDDrawPtrCollections* m_2c;  // +0x2c  owned item collection
     char m_pad30[0x38 - 0x30];   // +0x30..0x37

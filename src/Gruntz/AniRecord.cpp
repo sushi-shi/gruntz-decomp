@@ -100,7 +100,7 @@ public:
     void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
     void FreeBuf_168fb0();                                            // 0x168fb0
 
-    virtual void VSlot0();    // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];            // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     u16 m_flags;              // +0x04  status word (bit 1 scaled, bit 2 has-name)
     u16 m_06;                 // +0x06  (high half of the +0x04 dword)
     i32 m_08;                 // +0x08

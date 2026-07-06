@@ -95,7 +95,7 @@ public:
     i32 AnyValueMatches_155630(i32 a1, i32 a2, i32 a3);
     CString FindKeyOfValue_165360(CImageSet* target);
 
-    virtual void VSlot0();     // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                  // +0x0c  parent/root handle

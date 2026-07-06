@@ -498,7 +498,7 @@ class CDDrawWorkerMapSmallTeardown {
 public:
     void  DestroyAll();
 
-    virtual void VSlot0();                  // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32                    m_04;                     // +0x04
     char                   m_pad08[0x0c - 0x08];     // +0x08..0x0b
     i32                    m_0c;                      // +0x0c

@@ -233,9 +233,9 @@ public:
         m_8 = 3;
         m_30 = 0;
     }
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
-    i32 m_4;               // +0x04
-    i32 m_8;               // +0x08 tag 3
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    i32 m_4;       // +0x04
+    i32 m_8;       // +0x08 tag 3
     char _pad0c[0x24 - 0x0c];
     i32 m_24, m_28; // +0x24,+0x28
     char _pad2c[0x30 - 0x2c];
@@ -258,9 +258,9 @@ public:
         m_44 = 0;
         m_30 = 0;
     }
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
-    i32 m_4;               // +0x04
-    i32 m_8;               // +0x08 tag 9
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    i32 m_4;       // +0x04
+    i32 m_8;       // +0x08 tag 9
     char _pad0c[0x24 - 0x0c];
     i32 m_24; // +0x24
     i32 m_28; // +0x28
@@ -306,9 +306,9 @@ public:
         m_70 = -1;
         m_6c = 0;
     }
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
-    i32 m_4;               // +0x04
-    i32 m_8;               // +0x08 tag 6
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    i32 m_4;       // +0x04
+    i32 m_8;       // +0x08 tag 6
     char _pad0c[0x24 - 0x0c];
     i32 m_24, m_28; // +0x24,+0x28
     char _pad2c[0x30 - 0x2c];

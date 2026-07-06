@@ -19,10 +19,10 @@
 // real size is load-bearing - an empty (1-byte) view shrinks the frame from
 // `sub esp,0x10` to `push ecx` and desyncs every [esp+N].
 struct SaveFile {
-    virtual void VSlot0(); // +0x00  vtable (0x5ed15c)  // real polymorphic vptr @+0x00 (was m_vptr)
-    i32 m_handle;          // +0x04  file handle (init -1)
-    i32 m_flags;           // +0x08  (init 0)
-    char* m_name;          // +0x0c  CString filename buffer (m_pchData)
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    i32 m_handle;  // +0x04  file handle (init -1)
+    i32 m_flags;   // +0x08  (init 0)
+    char* m_name;  // +0x0c  CString filename buffer (m_pchData)
 
     SaveFile();                                    // 0x1befd7
     ~SaveFile();                                   // 0x1bf121

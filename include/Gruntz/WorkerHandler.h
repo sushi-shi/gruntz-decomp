@@ -21,7 +21,7 @@
 
 // The worker held at owner->m_7c. Only the message-pump fields are modeled here.
 struct Worker {
-    virtual void VSlot0();     // +0x00  // real polymorphic vptr @+0x00 (was m_vptr)
+    char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     char m_pad04[0x18 - 0x04]; // +0x04..0x17
     CUserLogic* m_18;          // +0x18  the live sub-record (a CUserLogic game object)
     u32 m_1c;                  // +0x1c  state tag (UNSIGNED switch key)
