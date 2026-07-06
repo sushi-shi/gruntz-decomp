@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/GameRegistry.h>
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
@@ -88,10 +89,6 @@ struct HazSndCat {
 struct HazSndRoot {
     char m_pad00[0x2c];
     HazSndCat* m_cat; // +0x2c
-};
-struct HazGridMgr {
-    i32 ScreenToCell(i32 x, i32 y, i32* outA, i32* outB, i32 z); // 0x35f3 thunk
-    void MarkCell(i32 a, i32 b, i32 id, i32 flag);               // 0x2e96 thunk
 };
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -467,10 +464,10 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (((HazGridMgr*)g_gameReg->m_cmdGrid)
-                ->ScreenToCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
+        if (((CTriggerMgr*)g_gameReg->m_cmdGrid)
+                ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
-            ((HazGridMgr*)g_gameReg->m_cmdGrid)->MarkCell(a, b, m_object->m_124, -1);
+            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(a, b, m_object->m_124, -1);
         }
         if (m_object->m_latchedAnimId != m_object->m_placeMode) {
             m_object->m_latchedAnimId = m_object->m_placeMode;
