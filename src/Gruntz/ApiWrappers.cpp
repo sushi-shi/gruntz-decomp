@@ -28,6 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// WwdFile_IsValidWwd(path, out) @0x160530: a free __stdcall (verified by disasm - reads
+// arg1 at esp+0x28, never touches ecx), NOT a method on the m_levelInfoSrc receiver.
+i32 __stdcall WwdFile_IsValidWwd(const char* path, void* out);
+
 namespace m4 {
 
     // -------------------------------------------------------------------------
@@ -308,9 +312,6 @@ namespace m4 {
         char m_50[0x40];         // +0x50  (dialog item 0x428)
         char m_90[0x5f4 - 0x90]; // +0x90  (dialog item 0x429)
     };
-    struct LevelInfoSrc {                       // g_mgrSettings->m_world->m_levelInfoSrc
-        i32 GetInfo(void* key, LevelInfo* out); // RVA 0x160530
-    };
     struct SoundCue { // config-section result handed back by GetSection
         char m_pad0[0x10];
         CSoundCueMgr* m_player; // +0x10
@@ -328,8 +329,8 @@ namespace m4 {
     };
     struct MgrM30 {
         char m_pad0[0x24];
-        LevelInfoSrc* m_levelInfoSrc; // +0x24
-        MgrM28* m_configHost;         // +0x28
+        void* m_levelInfoSrc; // +0x24  (unused; the +0x160530 check is a free fn)
+        MgrM28* m_configHost; // +0x28
     };
     struct MgrWnd { // g_mgrSettings->m_wnd (window holder)
         char m_pad0[4];
@@ -444,7 +445,7 @@ namespace m4 {
         }
         char num[0x20];
         LevelInfo info;
-        if (g_mgrSettings->m_world->m_levelInfoSrc->GetInfo(g_62c25c, &info)) {
+        if (WwdFile_IsValidWwd((const char*)g_62c25c, &info)) {
             char* p = info.m_versionStr;
             while (*p && (*p < '0' || *p > '9')) {
                 p++;

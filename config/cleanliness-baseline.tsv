@@ -11,5 +11,5 @@ m_vtbl/m_vptr members	108
 )this casts	302
 )m_ casts	1053
 (char*) casts	886
-(const char*) casts	124
-void* m_ members	365
+(const char*) casts	125
+void* m_ members	366
