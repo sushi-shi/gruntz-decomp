@@ -405,7 +405,7 @@ i32 CGrunt::CreateHealthSprite() {
     }
 
     m_healthSprite =
-        g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
     m_healthSprite->m_7c->m_init(m_healthSprite);
 
@@ -430,7 +430,7 @@ i32 CGrunt::CreateToySprite() {
     }
 
     m_toySprite =
-        g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
     m_toySprite->m_7c->m_init(m_toySprite);
 
@@ -453,7 +453,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_staminaSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -494,7 +494,7 @@ i32 CGrunt::CreateToyTimeSprite() {
         m_wingzTimeSprite = 0;
     }
 
-    m_toyTimeSprite = g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_toyTimeSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -530,7 +530,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         m_toyTimeSprite = 0;
     }
 
-    m_wingzTimeSprite = g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_wingzTimeSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x26,
@@ -561,7 +561,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     }
 
     m_powerupSprite =
-        g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
     m_powerupSprite->m_7c->m_init(m_powerupSprite);
 
@@ -586,7 +586,7 @@ i32 CGrunt::CreateSelectedSprite() {
     }
 
     m_selectedSprite =
-        g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
     m_selectedSprite->m_7c->m_init(m_selectedSprite);
 
@@ -2507,7 +2507,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     }
 
     CHudSprite* spr =
-        g_pGameRegistry->m_world->m_8
+        (CHudSprite*)(CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
     spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);

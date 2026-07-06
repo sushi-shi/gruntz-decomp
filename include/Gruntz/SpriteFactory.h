@@ -40,6 +40,28 @@ struct CSpriteListNode {
 };
 SIZE_UNKNOWN(CSpriteListNode);
 
+struct CSpriteInner; // GruntObjEntry's +0x7c inner object (grunt world)
+// The serialize key->object map entry (grunt world): its +0x20 Kind() virtual + the
+// +0x7c inner object. Reached through the factory's embedded +0x48 map.
+SIZE_UNKNOWN(GruntObjEntry);
+class GruntObjEntry {
+public:
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual i32 Kind(); // vtable slot +0x20
+    char m_pad04[0x7c - 0x04];
+    CSpriteInner* m_7c; // +0x7c  inner object
+};
+SIZE_UNKNOWN(GruntObjMap);
+struct GruntObjMap {
+    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
+};
 class CSpriteFactory {
 public:
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,
@@ -55,6 +77,8 @@ public:
     CResMgr* m_c; // +0x0c
     char m_pad10[0x14 - 0x10];
     CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
+    char m_pad18[0x48 - 0x18];
+    GruntObjMap m_objMap; // +0x48  embedded key->object map (Lookup @0x1b8760)
     // +0x48: an embedded MFC CMapPtrToPtr (the serialize-time key->object map that
     // CTriggerMgr::Load resolves record keys through, Lookup @0x1b8760). Not typed here
     // because this Win32-included header must stay MFC-free (afx C1189); the MFC consumer

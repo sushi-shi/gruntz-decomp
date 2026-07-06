@@ -315,7 +315,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     switch (idx) {
         case SPELLZ_FREEZE: { // freeze
             CHudSprite* spr =
-                g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_pGameRegistry->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
@@ -329,7 +329,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_HEALTH: { // health
             CHudSprite* spr =
-                g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_pGameRegistry->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
@@ -343,7 +343,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_RESURRECTION: { // resurrection
             CHudSprite* spr =
-                g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_pGameRegistry->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
@@ -355,7 +355,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TOYZ: { // toyz
             CHudSprite* spr =
-                g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_pGameRegistry->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
@@ -369,7 +369,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TELEPORT: { // teleport
             CHudSprite* spr =
-                g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_pGameRegistry->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
@@ -382,7 +382,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CHudSprite* n = g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* n = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
@@ -396,7 +396,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_124 = 0;
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* e = g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* e = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
@@ -410,7 +410,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_124 = 0;
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* s = g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* s = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
@@ -424,7 +424,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_124 = 0;
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* w = g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* w = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,

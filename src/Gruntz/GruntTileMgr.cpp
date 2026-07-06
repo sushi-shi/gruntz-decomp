@@ -90,7 +90,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
                             if (g->TeleportMove(dx, dy, 0, 1)) {
                                 CHudSprite* spr =
-                                    g_pGameRegistry->m_world->m_8
+                                    (CHudSprite*)g_pGameRegistry->m_world->m_8
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                                 done = 1;
                                 spr->m_7c->m_init(spr);
@@ -112,7 +112,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->m_combatClockLo = g_645588;
                         g->m_combatClockHi = 0;
                         CHudSprite* spr =
-                            g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
@@ -128,7 +128,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->SetMoveStateA(toy, 1, 0, 0);
                         CHudSprite* spr =
-                            g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
@@ -141,7 +141,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->FreezeApply();
                         CGruntHud* h = g->m_10;
                         CHudSprite* spr =
-                            g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
                                 ->CreateSprite(0, h->m_5c, h->m_60, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);

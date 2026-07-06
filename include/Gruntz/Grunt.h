@@ -17,7 +17,8 @@
 #define SRC_GRUNTZ_GRUNT_H
 
 #include <Ints.h>
-#include <rva.h>                   // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
+#include <Gruntz/SpriteFactory.h>
 #include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_74; GetSel)
 #include <Gruntz/WwdGameReg.h>     // the canonical WwdGameReg singleton layout (g_gameReg)
@@ -162,31 +163,6 @@ struct CGruntHud {
 // 0x1b8760). Validated by a virtual kind() at vtable slot +0x20 (== 5 -> keep).
 // +0x7c is the same inner-object slot CHudSprite carries (CSpriteInner: its
 // +0x18 receiver takes the death resolve in HandleCommand's 0x8106 cheat).
-SIZE_UNKNOWN(GruntObjEntry);
-class GruntObjEntry {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual i32 Kind(); // vtable slot +0x20
-    char m_pad04[0x7c - 0x04];
-    CSpriteInner* m_7c; // +0x7c  inner object (m_18 = the registrar/logic receiver)
-};
-SIZE_UNKNOWN(GruntObjMap);
-struct GruntObjMap {                            // CSpriteFactory + 0x48
-    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
-};
-SIZE_UNKNOWN(CSpriteFactory);
-struct CSpriteFactory {
-    CHudSprite* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-    char m_pad0[0x48];
-    GruntObjMap m_objMap; // +0x48  embedded object-key -> GruntObjEntry map (Lookup @0x1b8760)
-};
 // CSpriteFactoryHolder (the registry +0x30 holder) lives in <Gruntz/GameRegistry.h>.
 
 class CGruntCueSink; // defined below (the 5-arg on-screen cue receiver)
