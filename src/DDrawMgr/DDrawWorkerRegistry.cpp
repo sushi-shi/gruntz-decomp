@@ -47,7 +47,7 @@ inline void* operator new(u32, void* p) {
 // bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class CWorkerValue {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
     virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
@@ -69,11 +69,11 @@ public:
 // (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
 class CLoadable {
 public:
-    virtual void FUN_005bef01();      // [0] 0x1bef01
+    virtual void GetRuntimeClass();   // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
-    virtual void FUN_004028ec();      // [2] 0x0028ec
-    virtual void FUN_0040106e();      // [3] 0x00106e
-    virtual void FUN_00404034();      // [4] 0x004034
+    virtual void Serialize();         // [2] 0x0028ec
+    virtual void AssertValid();       // [3] 0x00106e
+    virtual void Dump();              // [4] 0x004034
     virtual void FUN_00555750();      // [5] 0x155750
     virtual void FUN_00401c08();      // [6] 0x001c08
     virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)

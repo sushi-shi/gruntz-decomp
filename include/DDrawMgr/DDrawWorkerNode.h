@@ -43,11 +43,11 @@ struct CDDrawFrameSource;
 // worker and is inherited by both subtypes.
 class CDDrawWorkerBase {
 public:
-    virtual void FUN_005bef01();                 // [0]  0x1bef01
+    virtual void GetRuntimeClass();              // [0]  0x1bef01
     virtual i32 ScalarDtor(i32 flag);            // [1]  scalar-deleting destructor
-    virtual void FUN_004028ec();                 // [2]  0x0028ec
-    virtual void FUN_0040106e();                 // [3]  0x00106e
-    virtual void FUN_00404034();                 // [4]  0x004034
+    virtual void Serialize();                    // [2]  0x0028ec
+    virtual void AssertValid();                  // [3]  0x00106e
+    virtual void Dump();                         // [4]  0x004034
     virtual void FUN_00557200();                 // [5]  0x157200 (B)
     virtual void FUN_00401c08();                 // [6]  0x001c08
     virtual void FUN_00557310();                 // [7]  0x157310 (B)

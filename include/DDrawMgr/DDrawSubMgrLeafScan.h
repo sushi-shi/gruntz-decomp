@@ -40,11 +40,11 @@ class CParseSource;     // the element's draw-source (BeginParse/EndParse)
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:
-    virtual void FUN_005bef01(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~LeafScanBase();     // [1] scalar-deleting dtor
-    virtual void FUN_004028ec(); // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e(); // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034(); // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafScanBase();        // [1] scalar-deleting dtor
+    virtual void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();            // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b

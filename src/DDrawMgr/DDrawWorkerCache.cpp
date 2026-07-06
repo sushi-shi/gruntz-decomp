@@ -36,11 +36,11 @@ class CObject;
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
 class AnimWorker {
 public:
-    virtual void FUN_005bef01();         // [0] 0x1bef01
+    virtual void GetRuntimeClass();      // [0] 0x1bef01
     virtual i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
-    virtual void FUN_004028ec();         // [2] 0x0028ec
-    virtual void FUN_0040106e();         // [3] 0x00106e
-    virtual void FUN_00404034();         // [4] 0x004034
+    virtual void Serialize();            // [2] 0x0028ec
+    virtual void AssertValid();          // [3] 0x00106e
+    virtual void Dump();                 // [4] 0x004034
     virtual void FUN_00551d60();         // [5] 0x151d60
     virtual void FUN_00401c08();         // [6] 0x001c08
     virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)
@@ -84,11 +84,11 @@ void operator delete(void*);
 SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 class CDDrawWorkerCacheBase {
 public:
-    virtual void FUN_005bef01();        // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
     virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    virtual void FUN_004028ec();        // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void FUN_0040106e();        // [3] 0x00106e (shared thunk, declared-only)
-    virtual void FUN_00404034();        // [4] 0x004034 (shared thunk, declared-only)
+    virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
     ~CDDrawWorkerCacheBase();
 
     i32 m_04; // +0x04  -1 when inactive

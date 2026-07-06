@@ -55,11 +55,11 @@ public:
     // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
     // would collide/misname the datum. The manual image-frame vptr stamp is removed
     // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
-    virtual void* FUN_001bef01();                         // [0]  +0x00
+    virtual void* GetRuntimeClass();                      // [0]  +0x00
     virtual void* FUN_00002adb(i32 flags);                // [1]  +0x04  scalar-deleting dtor (ILT)
-    virtual void* FUN_000028ec();                         // [2]  +0x08 (ILT)
-    virtual void* FUN_0000106e();                         // [3]  +0x0c (ILT)
-    virtual void* FUN_00004034();                         // [4]  +0x10 (ILT)
+    virtual void* Serialize();                            // [2]  +0x08 (ILT)
+    virtual void* AssertValid();                          // [3]  +0x0c (ILT)
+    virtual void* Dump();                                 // [4]  +0x10 (ILT)
     virtual void* FUN_000013b6();                         // [5]  +0x14 (ILT)
     virtual void* FUN_00001c08();                         // [6]  +0x18 (ILT)
     virtual void* FUN_00153260();                         // [7]  +0x1c  CImage::FreeAll

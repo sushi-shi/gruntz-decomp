@@ -135,11 +135,11 @@ public:
 // to `: public CObject` (that would steal CWapObj's slots 5/6). Only CAniRecordPrimary
 // (pure 5-slot, no CWapObj) was re-based to the real CObject.
 struct CAniRecordObjBase {
-    virtual void FUN_005bef01();  // [0] 0x1bef01 (shared GetRuntimeClass thunk)
-    virtual ~CAniRecordObjBase(); // [1] scalar-deleting dtor
-    virtual void FUN_004028ec();  // [2] 0x0028ec
-    virtual void FUN_0040106e();  // [3] 0x00106e
-    virtual void FUN_00404034();  // [4] 0x004034
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared GetRuntimeClass thunk)
+    virtual ~CAniRecordObjBase();   // [1] scalar-deleting dtor
+    virtual void Serialize();       // [2] 0x0028ec
+    virtual void AssertValid();     // [3] 0x00106e
+    virtual void Dump();            // [4] 0x004034
 
     i32 m_04, m_08, m_0c; // +0x04..+0x0f (CObject header)
 };

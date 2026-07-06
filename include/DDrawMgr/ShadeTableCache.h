@@ -46,7 +46,7 @@ struct CShadeTable {
 // grand-base Wap::CObject (RTTI "CObject", grand-base vtable @0x5e8cb4). Its 5-slot
 // vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid / Dump):
 // slots 0/3/4 are inherited, and it overrides slot 1 (dtor 0x150020) + slot 2
-// (Serialize 0x14fe90 = FUN_004028ec). dump_target proves the classic 2-level CObject
+// (Serialize 0x14fe90 = Serialize). dump_target proves the classic 2-level CObject
 // codegen - the cache ctor (0x14de30) stamps ONLY 0x5efb28 (the dead CObject base stamp
 // elided), the dtor (0x14de50) stamps 0x5efb28 then the CObject-destruction base
 // (0x5e8cb4).
@@ -65,7 +65,7 @@ struct CShadeTableArray : Wap::CObject {
 
     CShadeTableArray();
     virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides Wap::CObject dtor slot 1
-    virtual void FUN_004028ec()
+    virtual void Serialize()
         OVERRIDE; // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };

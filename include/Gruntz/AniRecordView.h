@@ -28,11 +28,11 @@
 #include <Ints.h>
 
 struct CAniRecordView {
-    virtual void FUN_005bef01();        // [0] 0x1bef01
+    virtual void GetRuntimeClass();     // [0] 0x1bef01
     virtual void* ScalarDtor(u32 flag); // [1] 0x165780 scalar-deleting dtor slot
-    virtual void FUN_004028ec();        // [2] 0x0028ec
-    virtual void FUN_0040106e();        // [3] 0x00106e
-    virtual void FUN_00404034();        // [4] 0x004034
+    virtual void Serialize();           // [2] 0x0028ec
+    virtual void AssertValid();         // [3] 0x00106e
+    virtual void Dump();                // [4] 0x004034
 
     i32 Parse_168c60(void* ctx, const char* cursor); // 0x168c60 __thiscall
     i32 GetSize_168e50();                            // 0x168e50 __thiscall
