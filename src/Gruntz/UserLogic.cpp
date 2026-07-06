@@ -10,6 +10,7 @@
 // The one out-of-line ctor the family chains is CUserBaseLink::CUserBaseLink
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
+#include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
 #include <Gruntz/AniCycle.h>    // the canonical CAniCycle class (ctor defined below)
@@ -1412,10 +1413,6 @@ struct CWarpM154 {
     char m_pad0c[0x1a0 - 0xc];
     CWarpArrivalSub m_1a0; // +0x1a0
 };
-SIZE_UNKNOWN(CWarpAnimObj);
-struct CWarpAnimObj {
-    void Anim2a72(i32 a, i32 b, i32 c); // 0x2a72
-};
 SIZE_UNKNOWN(CWarpLevelReg);
 struct CWarpLevelReg {
     char m_pad00[0x1c];
@@ -1443,7 +1440,7 @@ struct CWarpLeaf { // offset view of the grunt-logic leaf `this`
     i32 m_animArg0; // +0x1ec anim arg 0
     i32 m_animArg1; // +0x1f0 anim arg 1
     char m_pad1f4[0x260 - 0x1f4];
-    CWarpAnimObj* m_animObj; // +0x260
+    CTriggerMgr* m_animObj; // +0x260
     char m_pad264[0x360 - 0x264];
     i32 m_warpMode; // +0x360 warp mode
     char m_pad364[0x36c - 0x364];
@@ -1481,7 +1478,7 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
         }
     }
     if (self->m_animSuppress == 0) {
-        self->m_animObj->Anim2a72(self->m_animArg0, self->m_animArg1, 1);
+        self->m_animObj->NotifyCell(self->m_animArg0, self->m_animArg1, 1);
     }
     self->m_drawState->m_8 |= 0x10000;
     return 0;
