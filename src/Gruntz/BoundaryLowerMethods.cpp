@@ -6,7 +6,9 @@
 // The per-use owner/referent views now live in <Gruntz/BoundaryLowerMethodsViews.h>
 // (pure code motion); the archive object folds to the canonical CSerialArchive.
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (MFC side; umbrella-first) - the
-                              // 0x8e880/0x915d0/0x91620 owners + CGruntzSoundZ
+#include <Gruntz/Brickz.h>
+#include <Gruntz/BattlezMapConfig.h>
+// 0x8e880/0x915d0/0x91620 owners + CGruntzSoundZ
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>              // canonical game-manager singleton (0x24556c) view
@@ -191,7 +193,7 @@ i32 Ccef50::M() {
         if (m_c->m_4->M158d20() != 0) {
             m_c->m_4->M158e40();
         }
-        ((CObjC*)m_4)->M201d(3);
+        ((CGruntzMgr*)m_4)->ChangeState_8fab0(3);
     }
     return 1;
 }
@@ -236,7 +238,7 @@ i32 Cdb2f0::M() {
         return 0;
     }
     if (m_14 == 0) {
-        m_38.Teardown40c5();
+        ((CBattlezMapConfig*)&m_38)->Clear_02ade0();
     }
     m_20 = 0;
     return 1;
@@ -410,7 +412,7 @@ i32 C112bf0::M() {
     i32 v = g->cells[g->rows[m_row] + m_col] - 1;
     CGridData* g2 = ((CGridOuter*)mg->m_world)->m_24->m_5c;
     g2->cells[g2->rows[m_row] + m_col] = v;
-    ((CHandler112*)mg->m_tileGrid)->Notify(m_col, m_row, v);
+    ((CBrickzGrid*)mg->m_tileGrid)->ComputeCellFlags(m_col, m_row, v);
     m_14 = 0;
     return 1;
 }

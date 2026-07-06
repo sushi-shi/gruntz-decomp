@@ -91,9 +91,7 @@ extern "C" CGameRegistry* g_mgrSettings; // canonical _g_mgrSettings @ VA 0x6455
 // single view (extern "C" u32) shared with Projectile/CTeleporter/CGruntPuddle.
 // Both are external/no-body so the call + the load reloc-mask.
 // ---------------------------------------------------------------------------
-struct CIndicatorSyncHelper {
-    void Sync(u32 delta); // 0x15c360 (__thiscall ret 4)
-};
+struct CIndicatorSyncHelper {};
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 

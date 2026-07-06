@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/GruntCreationPoint.h>
@@ -166,7 +167,7 @@ void CGruntCreationPoint::RegisterActs() {
 // return 0. Same archetype as CSimpleAnimation::AdvanceAnim (0x0abf70).
 RVA(0x0003ecc0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
-    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     return 0;
 }
 

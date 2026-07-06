@@ -160,9 +160,7 @@ struct CSubC8 {
     void M1b9c69(); // 0x1b9c69
 };
 SIZE_UNKNOWN(CSubC8);
-struct CObjC {
-    void M201d(i32 a); // 0x201d
-};
+struct CObjC {};
 SIZE_UNKNOWN(CObjC);
 struct CDDrawWorkerMgr {
     i32 M158d20();  // 0x158d20
@@ -217,9 +215,7 @@ struct Cdb200 {
 SIZE_UNKNOWN(Cdb200);
 
 // 0x0db2f0 - finalize: run the +0x38 teardown iff +0x14 clear, then reset +0x20.
-struct CSubdb2f0 {
-    void Teardown40c5(); // 0x40c5
-};
+struct CSubdb2f0 {};
 SIZE_UNKNOWN(CSubdb2f0);
 struct Cdb2f0 {
     char pad0[0x14];
@@ -380,9 +376,7 @@ struct CGridOuter {
     CGridHolder* m_24; // +0x24
 };
 SIZE_UNKNOWN(CGridOuter);
-struct CHandler112 {
-    void Notify(i32 a, i32 b, i32 c); // 0x33f0
-};
+struct CHandler112 {};
 SIZE_UNKNOWN(CHandler112);
 struct C112bf0 {
     char pad0[8];

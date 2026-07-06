@@ -10,6 +10,7 @@
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/SerialObjRef.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
 
@@ -96,7 +97,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
-    ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CGruntEntry* e =
         ((CGruntEntry**)((char*)g_mgrSettings->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {

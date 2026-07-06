@@ -10,7 +10,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
@@ -113,7 +114,7 @@ void CBehindCandyAni::RegisterActs() {
 // displacement.
 RVA(0x000adbb0, 0x17)
 i32 CBehindCandyAni::AdvanceAnim() {
-    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     return 0;
 }
 

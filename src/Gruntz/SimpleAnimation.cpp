@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
+#include <Gruntz/AniAdvanceCursor.h>
 
 #include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
 #include <Mfc.h>                 // CString (the scratch name-vec element)
@@ -163,7 +164,7 @@ void RegisterSimpleAnimLogic() {
 // CProjectile::DetachRenderObj's SetAnim(g_6bf3bc).
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
-    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     return 0;
 }
 

@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Particlez.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
 
@@ -202,7 +203,7 @@ void CParticlez::RegisterActs() {
 // Always returns 0. The extended AdvanceAnim archetype.
 RVA(0x00047090, 0x4c)
 i32 CParticlez::Update() {
-    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CGameObject* o = m_38;
     if (o->m_1c8 != 0 && o->m_1c0 == 0) {
         o->m_flags |= 0x10000;

@@ -9,6 +9,7 @@
 // 0x5e70b4 vptr and tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/AniAdvanceCursor.h>
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -82,7 +83,7 @@ i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_mgrSettings;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_drawn != 0) {
-        ((CIndicatorSyncHelper*)((char*)m_38 + 0x1a0))->Sync(g_6bf3bc);
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
         m_object->m_screenX = e->m_renderable->m_screenX;
         m_object->m_screenY = e->m_renderable->m_screenY;
     }

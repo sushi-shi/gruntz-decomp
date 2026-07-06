@@ -5,6 +5,7 @@
 // registry). The 0xacb30 InitActReg that constructs that registry lives in
 // src/Gruntz/LogicDispatchInit.cpp (InitLogicDispatch_646060).
 #include <Gruntz/EyeCandyAni.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry (g_buteTree/g_nameReg/CActName)
 #include <Gruntz/ActReg.h>          // shared CActReg coordinate-registry archetype (ResolveEntry)
@@ -127,7 +128,7 @@ void CEyeCandyAni::RegisterActs() {
 // Byte-identical to CFrontCandyAni::AdvanceAnim (0x0ad510) save the call displacement.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
-    ((CAnimSink*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     return 0;
 }
 

@@ -35,7 +35,6 @@ struct Emitter788d0 {
     u8 m_8; // flags (bit 0)
     char _9[0x10 - 9];
     float m_10, m_14, m_18, m_1c; // 0x10,0x14,0x18,0x1c
-    void Update();                // 0x161c90
 };
 SIZE_UNKNOWN(Emitter788d0);
 struct ElemSrc788d0 {

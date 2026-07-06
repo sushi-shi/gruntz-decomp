@@ -12,8 +12,6 @@
 
 #include <rva.h>
 
-struct CAnimSink {
-    i32 SetAnim(u32 ctx); // 0x15c360
-};
+struct CAnimSink {};
 
 #endif // GRUNTZ_GRUNTZ_CANIMSINK_H

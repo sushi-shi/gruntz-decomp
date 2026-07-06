@@ -6,6 +6,7 @@
 // siblings live in BoundaryTailEh.cpp. The per-use owner/referent views now live in
 // <Gruntz/BoundaryTailViews.h> (pure code motion).
 #include <rva.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/BoundaryTailViews.h> // owner/referent views for this TU (pulls Mfc.h)
 
 #include <string.h> // inline memset intrinsic
@@ -98,7 +99,7 @@ i32 CSnd788d0::PositionUpdate() {
     }
     t->m_10 = f5c;
     t->m_14 = f60;
-    t->Update();
+    ((CLevelPlane*)t)->RecomputePlaneCoords();
     return 1;
 }
 
