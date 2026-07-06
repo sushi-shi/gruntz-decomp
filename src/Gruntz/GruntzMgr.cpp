@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -499,9 +500,6 @@ public:
 // thiscall on the world with a code-address callback (LAB_00403193) handed in. The
 // callback is an external function whose pushed address reloc-masks.
 extern "C" void ModeResetCallback(); // LAB_00403193
-struct CWorldRegistrar {
-    void RegisterCallback(void* cb); // SetHwnd (0x155f50) (this, cb)
-};
 // The per-load world-object factory (CreateGameObjectByName, __cdecl, reloc-masked).
 void CreateWorldObjects(void* world);
 
@@ -1696,7 +1694,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    ((CWorldRegistrar*)m_world)->RegisterCallback((void*)ModeResetCallback);
+    ((CDDrawSurfaceMgr*)m_world)->SetHwnd((void*)ModeResetCallback);
     CWorldView* view = m_world->m_24;
     view->m_64 = 0xe;
     view->m_68 = 0xe;
@@ -2929,7 +2927,7 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
-        ((CWorldRegistrar*)m_world)->RegisterCallback(0);
+        ((CDDrawSurfaceMgr*)m_world)->SetHwnd(0);
     }
     OpenSettingsStore();
     CSettingsWriter* cfg = m_settings;
@@ -3687,7 +3685,6 @@ SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
 SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldModeIface);
-SIZE_UNKNOWN(CWorldRegistrar);
 SIZE_UNKNOWN(CWorldView);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
