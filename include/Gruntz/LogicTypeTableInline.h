@@ -34,22 +34,21 @@ extern "C" {
 // (the 0x1703 thunk) is a non-virtual __thiscall returning the found type (0 ==
 // absent). Class COMPLETE before the T::* typedef so the PMF stays 4 bytes
 // (docs/patterns/pmf-complete-class-4byte.md).
-struct CLogicTypeRegVtbl;
+// Real polymorphic view: RegisterType is slot 9 (+0x24), a real virtual (9 fillers).
 class CLogicTypeReg {
 public:
-    CLogicTypeRegVtbl* m_vtbl;                                      // +0x00
-    void RegisterType(void* factoryFn, const char* key, i32 flags); // +0x24 via vtbl
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void RegisterType(void* factoryFn, const char* key, i32 flags); // slot 9 (+0x24)
     i32 Find(const char* key); // 0x1703 thunk (__thiscall, returns found type or 0)
 };
-typedef void (CLogicTypeReg::*CLogicTypeRegRegisterFn)(void* factoryFn, const char* key, i32 flags);
-SIZE_UNKNOWN(CLogicTypeRegVtbl);
-struct CLogicTypeRegVtbl {
-    char m_pad00[0x24];
-    CLogicTypeRegRegisterFn RegisterType; // +0x24
-};
-inline void CLogicTypeReg::RegisterType(void* factoryFn, const char* key, i32 flags) {
-    (this->*(m_vtbl->RegisterType))(factoryFn, key, flags);
-}
 
 // The intermediate object reached through ctx->m_0c: its +0x14 slot points at the
 // logic-type registry.
