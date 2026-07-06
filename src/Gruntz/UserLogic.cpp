@@ -11,6 +11,7 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Image/ImageSet.h>
 #include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/ActReg.h>      // shared CActColl/CActColl2/CActReg activation-registry archetype
@@ -338,10 +339,6 @@ struct WwdGameRegAux {
 // The on-screen-cue receiver (g_gameReg->m_cueSink). The teleporter spawn fires a
 // 6-arg cue (CueA, ret 0x18, via the 0x39f4 thunk). External/no-body
 // (reloc-masked).
-SIZE_UNKNOWN(CTeleCueSink);
-struct CTeleCueSink {
-    void CueA(void* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
-};
 
 // The point-probe sink (g_gameReg->m_68): given screen x/y, fills two out-ints
 // and returns the trigger object hit (or 0). 5-arg __thiscall ret 0x14, via the
@@ -794,7 +791,8 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             i32 ex = eo->m_screenX;
             CViewRect* rc = (CViewRect*)(((CTeleResHolder*)g->m_world)->m_24->m_5c + 0x40);
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
-                ((CTeleCueSink*)g->m_cueSink)->CueA(hit, 0x3fc, -1, 0, -1, -1);
+                ((CGruntSpawnConfig*)g->m_cueSink)
+                    ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);
             }
         }
         m_38->m_flags |= 0x10000;
