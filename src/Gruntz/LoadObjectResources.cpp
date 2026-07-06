@@ -64,29 +64,33 @@ extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image inst
 // vtable (`char m_pad` runs document the un-recovered slots) so the calls emit
 // `mov eax,[ecx]; call [eax+0xNN]`. Class COMPLETE before the T::* typedefs so each
 // PMF stays 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
-struct ObjImageRegistryVtbl;
+// Real polymorphic view: Install is slot 18 (+0x48), ProcessNew slot 20 (+0x50),
+// real virtuals (18 fillers precede Install).
 struct ObjImageRegistry {
-    ObjImageRegistryVtbl* m_vtbl;                     // +0x00
-    void Install(void* h, char* name, const char* g); // slot 18 (+0x48) via vtbl
-    void ProcessNew(CObject* val);                    // slot 20 (+0x50) via vtbl
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
+    virtual void Slot19();
+    virtual void ProcessNew(CObject* val); // slot 20 (+0x50)
     char m_pad04[0x10 - 0x4];
     CMapStringToOb m_map; // +0x10  source map (CString -> CImage*)
 };
-typedef void (ObjImageRegistry::*ObjImgInstallFn)(void* h, char* name, const char* g);
-typedef void (ObjImageRegistry::*ObjImgProcessFn)(CObject* val);
-SIZE_UNKNOWN(ObjImageRegistryVtbl);
-struct ObjImageRegistryVtbl {
-    char m_pad00[0x48];
-    ObjImgInstallFn Install; // +0x48
-    char m_pad4c[0x50 - 0x4c];
-    ObjImgProcessFn ProcessNew; // +0x50
-};
-inline void ObjImageRegistry::Install(void* h, char* name, const char* g) {
-    (this->*(m_vtbl->Install))(h, name, g);
-}
-inline void ObjImageRegistry::ProcessNew(CObject* val) {
-    (this->*(m_vtbl->ProcessNew))(val);
-}
 
 // The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
 // ProcessNew/Install are direct __thiscall methods.

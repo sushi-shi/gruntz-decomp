@@ -808,23 +808,24 @@ struct CProjRegSub30 {
 // the used slot as a 4-byte thiscall PMF + char pad[], NO fake virtuals. The vptr
 // (m_vtbl) sits at +0x00 exactly where the fake virtuals' vptr did, so the object
 // layout (_24 pad, m_188) is byte-identical.
-struct CProjTypeObjVtbl;
+// Real polymorphic view: GetTypeCode is slot 8 (+0x20), a real virtual (8 fillers).
 class CProjTypeObj {
 public:
-    CProjTypeObjVtbl* m_vtbl; // +0x00
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual i32 GetTypeCode(); // slot 8 (+0x20)
     char _24[0x188 - 0x24];
-    i32 m_188;             // +0x188
-    i32 CallGetTypeCode(); // vtbl +0x20
+    i32 m_188; // +0x188
+    i32 CallGetTypeCode() {
+        return GetTypeCode();
+    }
 };
-typedef i32 (CProjTypeObj::*ProjTypeFn)();
-struct CProjTypeObjVtbl {
-    char m_pad00[0x20];
-    ProjTypeFn GetTypeCode; // +0x20
-};
-SIZE_UNKNOWN(CProjTypeObjVtbl);
-inline i32 CProjTypeObj::CallGetTypeCode() {
-    return (this->*(m_vtbl->GetTypeCode))();
-}
 
 // One spliced freelist node: next at +0, payload pointer at +8.
 struct CProjNode {
