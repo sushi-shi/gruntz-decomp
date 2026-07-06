@@ -46,6 +46,7 @@
 // g_coordPool / RemoveAll on each exit. The stack CString (block, ctor 0x1b4867 / dtor
 // 0x1b48c6) forces the /GX EH frame. Big body (0xdb4, frame 0x94).
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Mfc.h> // RECT + IntersectRect (afx-first; Grunt.h is MFC-transitive, so no <Win32.h>)
 #include <rva.h>
 
@@ -94,9 +95,6 @@ struct CArriveSub10b { // this->m_10
     CTileTriggerContainer* m_2e4; // +0x2e4
 };
 // (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
-struct CArriveMover {                          // this->m_8
-    void Move14bf(i32 a, i32 b, i32 x, i32 y); // 0x14bf
-};
 struct CArriveFinder {                       // this->m_14
     CArriveFind2* Find1c21(i32 key, i32 n);  // 0x1c21
     CArriveFind* FindByField0C2838(i32 key); // 0x2838
@@ -110,7 +108,7 @@ struct CArriveMgr {                                      // this (the CBattlezMa
     i32 Ready27ed(CGrunt* g);                            // 0x27ed
 
     char _00[8];
-    CArriveMover* m_8;   // +0x08
+    CTriggerMgr* m_8;    // +0x08
     CArriveGrid* m_c;    // +0x0c grid
     CArriveSub10b* m_10; // +0x10
     CArriveFinder* m_14; // +0x14
@@ -278,7 +276,12 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
 
     // ---- 0x8000 gate, type 3 ----
     if ((maskFlags & 0x8000) && type == 3 && g->m_2d8 == 0xa) {
-        m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+        m_8->ApplyTriggerA(
+            g->m_tileOwnerHi,
+            g->m_tileOwnerLo,
+            (fcx << 5) + 0x10,
+            (fcy << 5) + 0x10
+        );
         ARR_RECYCLE(g);
         return 0;
     }
@@ -286,7 +289,12 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     // ---- 0x4000 gate, type 3 ----
     if ((maskFlags & 0x4000) && type == 3 && g->m_2d8 == 0xa) {
         if (m_c->m_8[fcy][fcx].m_10 != 0x99) {
-            m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+            m_8->ApplyTriggerA(
+                g->m_tileOwnerHi,
+                g->m_tileOwnerLo,
+                (fcx << 5) + 0x10,
+                (fcy << 5) + 0x10
+            );
         }
         ARR_RECYCLE(g);
         return 0;
@@ -310,7 +318,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 1 || t == 0x11) {
             if (t == 1) {
-                m_8->Move14bf(
+                m_8->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
@@ -327,7 +335,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
                             return 1;
                         }
                         if (g->IsInCombatRange((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
-                            m_8->Move14bf(
+                            m_8->ApplyTriggerA(
                                 g->m_tileOwnerHi,
                                 g->m_tileOwnerLo,
                                 (col << 5) + 0x10,
@@ -352,7 +360,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
                     Impact25e5(g, fcx, fcy, 1);
                     return 1;
                 }
-                m_8->Move14bf(
+                m_8->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
@@ -392,7 +400,12 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
                     }
                 }
             }
-            m_8->Move14bf(g->m_tileOwnerHi, g->m_tileOwnerLo, (fcx << 5) + 0x10, (fcy << 5) + 0x10);
+            m_8->ApplyTriggerA(
+                g->m_tileOwnerHi,
+                g->m_tileOwnerLo,
+                (fcx << 5) + 0x10,
+                (fcy << 5) + 0x10
+            );
             return 0;
         }
         if (t == 0x11 || t == 1) {
@@ -418,7 +431,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         if (t != 0x16) {
             i32 t2 = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
             if (t2 == 0xd) {
-                m_8->Move14bf(
+                m_8->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
