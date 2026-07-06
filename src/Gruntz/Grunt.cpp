@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -3509,7 +3510,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     if (!ar) {
         return 0;
     }
-    CGruntNameMap* catalog = ((CGruntTypeCatalog*)*(void**)&m_158)->m_c;
+    CDDrawSubMgrLeaf* catalog = ((CGruntTypeCatalog*)*(void**)&m_158)->m_c;
     if (!catalog) {
         return 0;
     }
@@ -3595,7 +3596,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseWalk;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3605,7 +3606,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseAttack1;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3615,7 +3616,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseAttack2;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3625,7 +3626,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseAttackIdle;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3635,7 +3636,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseStruck1;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3645,7 +3646,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseStruck2;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3655,7 +3656,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseIdle[0];
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3665,7 +3666,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseIdle[1];
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3675,7 +3676,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseIdle[2];
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3685,7 +3686,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseIdle4;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3695,7 +3696,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseIdle5;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3705,7 +3706,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseDeath;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3715,7 +3716,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseToy1;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3725,7 +3726,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseToy2;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3735,7 +3736,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseToyBreak;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3745,7 +3746,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseItem;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3755,7 +3756,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_poseItem2;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }
@@ -3765,7 +3766,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     {
         i32 id = m_pickupGeoSrc;
         if (id) {
-            CString nm = catalog->LookupName(id);
+            CString nm = catalog->KeyOfValue_152d30((void*)id);
             strcpy(buf, nm);
         }
     }

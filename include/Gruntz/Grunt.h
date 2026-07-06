@@ -16,6 +16,8 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+class CDDrawSubMgrLeaf; // folded CGruntNameMap
+
 class CSoundCueMgr; // folded GruntSampleFactory
 
 class DirectSoundMgr; // folded GruntSoundSample
@@ -839,18 +841,12 @@ public:
 
 // The grunt's name-id resolver the Save reaches via m_158->m_c->m_2c: maps an
 // integer id to its name CString (returned by value). __thiscall, ret 4.
-SIZE_UNKNOWN(CGruntNameMap);
-class CGruntNameMap {
-public:
-    CString LookupName(i32 id);
-};
-
 // The +0x158 "type catalog" object: Save reads its m_c (a non-null owner that
 // also holds the name-id map at m_2c). External; modeled minimally.
 SIZE_UNKNOWN(CGruntTypeCatalog);
 struct CGruntTypeCatalog {
     char m_pad0[0xc];
-    CGruntNameMap* m_c; // +0x0c  owner -> name-id map
+    CDDrawSubMgrLeaf* m_c; // +0x0c  owner -> name-id map
 };
 
 // The global serialize counter Save bumps before each variable-length record

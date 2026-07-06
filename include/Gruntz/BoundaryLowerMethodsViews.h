@@ -227,6 +227,7 @@ struct CDDrawSubMgrLeaf {
     void* HasKeyPrefix_152c50(const char* key);                // 0x152c50
     void RemoveKeysEqual_1527d0(const char* key, void* v);     // 0x1527d0
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
+    class CString KeyOfValue_152d30(void* v);                  // 0x152d30 (id->name; ret CString)
 };
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 struct CHolderdb {
