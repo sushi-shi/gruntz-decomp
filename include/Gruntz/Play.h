@@ -64,13 +64,10 @@ struct CWarlordCounters {
 // The world/level draw object at m_4->m_54 (the camera blit thiscall).
 struct CWorldDraw {
     void Blit(i32 a, i32 b);
-    void Reset(); // 0x18e8 thunk (reloc-masked) ResetForMode teardown
 };
 
 // The sub-object at m_4->m_60 (a no-arg reset; ResetForMode third teardown).
-struct CWorldSub60 {
-    void Reset(); // 0x20a4 thunk (reloc-masked)
-};
+struct CWorldSub60 {};
 
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
 // float target). +0x8 flags bit0 gates the scale-multiply; +0x10/+0x14 receive

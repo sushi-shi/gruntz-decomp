@@ -50,9 +50,7 @@ SIZE_UNKNOWN(CMenuItemPlacer);
 // The chatbox host (m_8) Trigger drives; its +0x04 is the command-target window.
 struct CMenuItemHost {
     char pad0[0x4];
-    HWND m_wnd;                  // +0x04 command-target window (NotifyCmd)
-    i32 Scroll();                // 0x1830b0 __thiscall
-    i32 ReplaceNode(void* node); // 0x182dd0 __thiscall
+    HWND m_wnd; // +0x04 command-target window (NotifyCmd)
 };
 SIZE_UNKNOWN(CMenuItemHost);
 

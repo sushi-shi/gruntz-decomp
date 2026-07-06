@@ -774,7 +774,7 @@ void CPlay::ModeCleanup() {
     }
     if (m_4) {
         ((CExitWorld*)m_4)->m_48->Teardown();
-        ((CExitWorld*)m_4)->m_54->Reset();
+        ((CWorldSoundSet*)((CExitWorld*)m_4)->m_54)->Resume();
     }
     if (m_c) {
         ((CExitView*)m_c)->m_10->Teardown();
@@ -3470,10 +3470,10 @@ i32 CPlay::ResetForMode(i32 mode) {
     m_worldReady = 0;
     if (m_renderDisabled == 0) {
         if (mode != 9) {
-            m_4w()->m_54->Reset();
+            ((CWorldSoundSet*)m_4w()->m_54)->Resume();
         }
         m_4w()->m_68->Reset();
-        m_4w()->m_60->Reset();
+        ((CGruntSpawnConfig*)m_4w()->m_60)->DtorBody();
     }
     return 1;
 }

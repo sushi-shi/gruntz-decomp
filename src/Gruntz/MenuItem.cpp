@@ -13,6 +13,8 @@
 // stay frameless (no destructible local), so they coexist in this eh TU like
 // MenuPage.
 #include <rva.h>
+#include <Gruntz/ChatBox.h>
+#include <Gruntz/ChatBoxOwner.h>
 #include <Image/CImage.h>
 
 #include <Gruntz/MenuItem.h>
@@ -215,9 +217,9 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
 // trigger: scroll the host row, notify, then re-activate the host node.
 RVA(0x001856d0, 0x25)
 i32 CMenuItem::Trigger() {
-    m_host->Scroll();
+    ((CChatBox*)m_host)->ScrollRow1();
     NotifyCmd();
-    m_host->ReplaceNode(*(void**)&m_key);
+    ((CChatBox*)m_host)->ReplaceNode(*(void**)&m_key);
     return 1;
 }
 
