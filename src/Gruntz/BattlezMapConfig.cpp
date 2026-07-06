@@ -42,6 +42,7 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
 #include <rva.h>
@@ -290,10 +291,6 @@ struct ClipHost {
 // unit's level geometry (m_level->m_5c, m_level->m_60) into an out coord pair.
 // Modeled as a method on GridUnit so the `mov ecx,unit; push &out; call` lowers
 // cleanly. External, reloc-masked (no body).
-struct UnitGeom {
-    void GetCoord(Coord* out); // 0x029a50
-};
-
 // The coord-node free pool (?DAT_00645540): an intrusive-list allocator whose
 // Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
 // freelist headed at this->m_04. Canonical <Gruntz/FreeNodePool.h>.
@@ -1269,7 +1266,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     }
     void* pos = unit->m_coordHead;
     Coord center;
-    ((UnitGeom*)unit)->GetCoord(&center);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&center);
     Board* board = m_board;
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
@@ -1998,16 +1995,16 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     // Build an 8x8 box around the unit (four GetCoord corner reads).
     RECT box;
     Coord c1;
-    ((UnitGeom*)unit)->GetCoord(&c1);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c1);
     box.bottom = (c1.m_y >> 5) + 4;
     Coord c2;
-    ((UnitGeom*)unit)->GetCoord(&c2);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c2);
     box.right = (c2.m_x >> 5) + 4;
     Coord c3;
-    ((UnitGeom*)unit)->GetCoord(&c3);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c3);
     box.top = (c3.m_y >> 5) - 3;
     Coord c4;
-    ((UnitGeom*)unit)->GetCoord(&c4);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c4);
     box.left = (c4.m_x >> 5) - 3;
     Board* board = m_board;
     RECT bounds;
@@ -2149,13 +2146,13 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     UnitLevel* lvl = unit->m_level;
     i32 bottom = (lvl->m_worldY >> 5) + 8;
     Coord g0;
-    ((UnitGeom*)unit)->GetCoord(&g0);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g0);
     i32 right = (g0.m_x >> 5) + 8;
     Coord g1;
-    ((UnitGeom*)unit)->GetCoord(&g1);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g1);
     i32 top = (g1.m_y >> 5) - 8;
     Coord g2;
-    ((UnitGeom*)unit)->GetCoord(&g2);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g2);
     i32 left = (g2.m_x >> 5) - 8;
     Board* board = m_board;
     RECT bounds;
@@ -2268,22 +2265,22 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     // Four GetCoord corners -> a 15x15 box (half-extent 7) around the unit.
     RECT box;
     Coord cA;
-    ((UnitGeom*)unit)->GetCoord(&cA);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cA);
     cA.m_x >>= 5;
     cA.m_y >>= 5;
     box.bottom = cA.m_y + 7;
     Coord cB;
-    ((UnitGeom*)unit)->GetCoord(&cB);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cB);
     cB.m_x >>= 5;
     cB.m_y >>= 5;
     box.right = cB.m_x + 7;
     Coord cC;
-    ((UnitGeom*)unit)->GetCoord(&cC);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cC);
     cC.m_x >>= 5;
     cC.m_y >>= 5;
     box.top = cC.m_y - 7;
     Coord cD;
-    ((UnitGeom*)unit)->GetCoord(&cD);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cD);
     box.left = (cD.m_x >> 5) - 7;
 
     GridUnit* best = 0;
@@ -2334,7 +2331,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             Coord c;
-            ((UnitGeom*)u)->GetCoord(&c);
+            ((CUserLogic*)u)->GetScreenPos((CUserLogic::ScreenPoint*)&c);
             POINT pt;
             pt.x = c.m_x >> 5;
             pt.y = c.m_y >> 5;
@@ -2342,14 +2339,14 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             Coord a1;
-            ((UnitGeom*)unit)->GetCoord(&a1);
+            ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&a1);
             Coord b1;
-            ((UnitGeom*)u)->GetCoord(&b1);
+            ((CUserLogic*)u)->GetScreenPos((CUserLogic::ScreenPoint*)&b1);
             i32 dx = abs((a1.m_x >> 5) - (b1.m_x >> 5));
             Coord a2;
-            ((UnitGeom*)unit)->GetCoord(&a2);
+            ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&a2);
             Coord b2;
-            ((UnitGeom*)u)->GetCoord(&b2);
+            ((CUserLogic*)u)->GetScreenPos((CUserLogic::ScreenPoint*)&b2);
             i32 dy = abs((a2.m_y >> 5) - (b2.m_y >> 5));
             i32 dist = dx * dx + dy * dy;
             if (dist >= bestDist) {
@@ -2413,7 +2410,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         flags = 0x1000;
     }
     Coord bc;
-    ((UnitGeom*)best)->GetCoord(&bc);
+    ((CUserLogic*)best)->GetScreenPos((CUserLogic::ScreenPoint*)&bc);
     if (Method_0300c0((i32)unit, bc.m_x >> 5, bc.m_y >> 5, 0x1000d8f, flags, 1) == 0) {
         // Re-path failed: re-clamp the board dirty-rect, clear the cooldown, ret 0.
         RECT fb;
@@ -2929,10 +2926,10 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     CObList list(10);
     GridUnit* unit = (GridUnit*)unitArg;
     Coord cur;
-    ((UnitGeom*)unit)->GetCoord(&cur);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cur);
     if ((cur.m_x >> 5) == gx) {
         Coord cur2;
-        ((UnitGeom*)unit)->GetCoord(&cur2);
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cur2);
         if ((cur2.m_y >> 5) == gy) {
             return 0;
         }
@@ -3591,10 +3588,10 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         }
         i32 gy = unit->m_goalY;
         Coord c1;
-        ((UnitGeom*)unit)->GetCoord(&c1);
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c1);
         i32 dxA = abs(rx - (c1.m_x >> 5));
         Coord c2;
-        ((UnitGeom*)unit)->GetCoord(&c2);
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c2);
         i32 dyA = abs(ry - (c2.m_y >> 5));
         i32 distA = dxA * dxA + dyA * dyA;
         i32 dxB = abs(rx - gx);
@@ -3922,9 +3919,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
     Coord g;
-    ((UnitGeom*)unit)->GetCoord(&g);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g);
     i32 gx = g.m_x >> 5;
-    ((UnitGeom*)unit)->GetCoord(&g);
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g);
     i32 gy = g.m_y >> 5;
     if (abs(ux - gx) >= 2) {
         goto recycleBail;
@@ -3963,7 +3960,7 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         // dispatch on its bits. (Modeled directly from the unit's coord; the retail
         // copies the 7-dword tile records to stack scratch first.)
         Coord g2;
-        ((UnitGeom*)unit)->GetCoord(&g2);
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g2);
         i32 cgx = g2.m_x >> 5;
         i32 cgy = g2.m_y >> 5;
         i32 tileG;
@@ -4515,7 +4512,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                         }
                         CObList list(10);
                         Coord oc;
-                        ((UnitGeom*)unit)->GetCoord(&oc);
+                        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&oc);
                         UnitLevel* dl = cand->m_level;
                         if ((m_board)->FindPath(
                                 oc.m_x >> 5,
@@ -5104,7 +5101,6 @@ SIZE_UNKNOWN(RectInit);
 SIZE_UNKNOWN(ScratchString);
 SIZE_UNKNOWN(Tile);
 SIZE_UNKNOWN(UnitCommit);
-SIZE_UNKNOWN(UnitGeom);
 SIZE_UNKNOWN(UnitLevel);
 SIZE_UNKNOWN(UnitRectGate);
 SIZE_UNKNOWN(UnitMutator);
