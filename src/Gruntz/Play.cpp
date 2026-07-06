@@ -4147,12 +4147,21 @@ struct EmCWorld { // m_c->m_4 (real: CDDrawWorkerMgr)
     EmHdr14* m_14; // +0x14
     i32 m_18;      // +0x18
 };
-struct EmRendVtbl {
-    void* s[0x34 / 4];
-    void (*Present)(void*, EmHdr14*, i32);
-};
-struct EmRendC { // m_c->m_c
-    EmRendVtbl* vtbl;
+struct EmRendC { // m_c->m_c; real polymorphic, Present is slot 13 (+0x34)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void __stdcall Present(EmHdr14*, i32); // slot 13 (+0x34)
 };
 struct EmResMgr { // this->m_c
     char p0[0x4];
@@ -4218,8 +4227,7 @@ i32 CPlay::EnterMode(i32 mode) {
             ((CPlay*)self)->NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
-            self->m_c->m_c->vtbl
-                ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
+            self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
         ((CSBI_RectOnly*)self->m_guts)->Deactivate();
         ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
@@ -4228,8 +4236,7 @@ i32 CPlay::EnterMode(i32 mode) {
             ((CPlay*)self)->NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
-            self->m_c->m_c->vtbl
-                ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
+            self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
         ((CSBI_RectOnly*)self->m_guts)->Deactivate();
         ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
@@ -5035,7 +5042,6 @@ SIZE_UNKNOWN(EmHdr14);
 SIZE_UNKNOWN(EmHdr2c);
 SIZE_UNKNOWN(EmReg24Sub);
 SIZE_UNKNOWN(EmRendC);
-SIZE_UNKNOWN(EmRendVtbl);
 SIZE_UNKNOWN(EmResMgr);
 SIZE_UNKNOWN(EmSink5c);
 SIZE_UNKNOWN(EmSub54);
