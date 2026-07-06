@@ -12,6 +12,7 @@
 // way, giving SetRect / RECT / POINT; a bare <Win32.h> here would make MFC hard-
 // error ("MFC apps must not #include <windows.h>").
 #include <Gruntz/Play.h>
+#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (Configure)
 
 #include <rva.h>
 
@@ -92,10 +93,6 @@ struct SbiChild {                        // this->m_2dc
     i32 Check();                         // FUN @ 0x3549 __thiscall, ret bool
     i32 Dispatch(i32 msg, i32 x, i32 y); // FUN @ 0x1b81 __thiscall, ret result
 };
-SIZE_UNKNOWN(SbiToggle);
-struct SbiToggle {   // this->m_2e0
-    void Set(i32 n); // FUN @ 0x171c __thiscall
-};
 SIZE_UNKNOWN(SbiEntry);
 struct SbiEntry { // this->m_374[i]
     i32 m_0;      // +0x00  center x
@@ -171,9 +168,9 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         }
         ((SbiChild*)m_guts)->Refresh();
         if (((SbiChild*)m_guts)->m_0 == 1) {
-            ((SbiToggle*)m_hitTest)->Set(2);
+            ((CChatBoxOwner*)m_hitTest)->Configure(2);
         } else {
-            ((SbiToggle*)m_hitTest)->Set(1);
+            ((CChatBoxOwner*)m_hitTest)->Configure(1);
         }
         return 1;
     }

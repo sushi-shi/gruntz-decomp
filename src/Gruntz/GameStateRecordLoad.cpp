@@ -17,6 +17,7 @@
 // `[eax+0x20]` virtual dispatches fall out with no cast. Non-EH (base) profile -
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
+#include <Gruntz/GruntDataRecord.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
@@ -94,9 +95,6 @@ struct CRecPtrList {
 };
 
 // A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
-struct CSubRecord {
-    i32 Load(CSerialArchive* ar); // 0x3ee0 __thiscall(ar) -> bool
-};
 
 // Global operator new / free (engine NAFXCW; reloc-masked).
 void* operator new(u32 n);        // 0x1b9b46
@@ -333,7 +331,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     for (i32 gi = 0; gi < 3; ++gi) {
         char* cell = row;
         for (i32 gj = 0; gj < 3; ++gj) {
-            if (((CSubRecord*)cell)->Load(ar) == 0) {
+            if (((GruntDataRecord*)cell)->DeserializeStrings(ar) == 0) {
                 return 0;
             }
             cell += 0x68;
