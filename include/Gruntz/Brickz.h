@@ -19,6 +19,8 @@
 #ifndef GRUNTZ_BRICKZ_H
 #define GRUNTZ_BRICKZ_H
 
+class CBattlezData; // folded BrickzSerObj
+
 #include <Ints.h>
 
 // A graph/list node. The container threads nodes through several intrusive links;
@@ -94,10 +96,6 @@ struct BrickzAttrMgr {
 
 // The +0x7c serialize sub-object the Serialize wrapper dispatches to. Modeled with
 // a no-body Serialize so the `mov ecx,[arg3+0x7c]; call` reloc-masks.
-struct BrickzSerObj {
-    i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3); // 0x0fd3f0 (__thiscall, ret 0x10)
-};
-
 class CBrickzGrid {
 public:
     // ---- reconstructed in src/Gruntz/Brickz.cpp ----
@@ -187,7 +185,7 @@ public:
     i32 m_gridW;              // +0x70  grid width extent (cells)
     i32 m_gridH;              // +0x74  grid height extent (cells)
     BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
-    BrickzSerObj* m_7c;       // +0x7c  serialize sub-object (unused in this TU)
+    CBattlezData* m_7c;       // +0x7c  serialize sub-object (unused in this TU)
 };
 
 #endif // GRUNTZ_BRICKZ_H

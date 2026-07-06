@@ -4,6 +4,7 @@
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
 #include <rva.h>
+#include <Gruntz/BattlezData.h>
 #include <Rez/RezList.h>
 #include <Gruntz/MapMgr.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
@@ -363,7 +364,7 @@ i32 CBrickzGrid::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
     if (MapSerializeCurve(a0, a1, a2, a3) == 0) {
         return 0;
     }
-    return ((BrickzSerObj*)a3)->Serialize(a0, a1, a2, a3) != 0;
+    return ((CBattlezData*)a3)->Serialize((CSerialArchive*)a0, a1, a2, a3) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -952,5 +953,4 @@ SIZE_UNKNOWN(BrickzFreeRec);
 SIZE_UNKNOWN(BrickzGridDesc);
 SIZE_UNKNOWN(BrickzNode);
 SIZE_UNKNOWN(BrickzNodePoolB);
-SIZE_UNKNOWN(BrickzSerObj);
 SIZE_UNKNOWN(CBrickzGrid);
