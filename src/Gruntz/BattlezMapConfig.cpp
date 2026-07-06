@@ -304,9 +304,9 @@ struct RectInit {
 // The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
 // GridUnit taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
 // External, reloc-masked (no body).
-struct GridUnitSpawn {
-    i32 Place(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
-};
+// Place @0x04b320 (thunk 0x1640) is the free __stdcall CGrunt_TileSwitch(6 args: x/y = tile
+// coords); the unit receiver is loaded into ecx but ignored, so it is dropped at each site.
+i32 __stdcall CGrunt_TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5);
 
 // A level/board geometry object held on a unit at +0x10: its +0x5c / +0x60 carry
 // a packed (x<<5)/(y<<5) coordinate.
@@ -2167,7 +2167,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
                 flag = 1;
             }
         }
-        ((GridUnitSpawn*)unit)->Place(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
+        CGrunt_TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != 0) {
             unit->m_packedX = savedX;
             unit->m_packedY = savedY;
@@ -3353,8 +3353,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                 i32 flags = unit->m_pathCfg;
                 unit->m_pathState = 0x4268;
                 UnitLevel* tl = target->m_level;
-                ((GridUnitSpawn*)unit)
-                    ->Place(tl->m_worldX >> 5, tl->m_worldY >> 5, 0, flags, 0, 0x4268);
+                CGrunt_TileSwitch(tl->m_worldX >> 5, tl->m_worldY >> 5, 0, flags, 0, 0x4268);
                 unit->m_idleTimer = 0;
             }
             return 1;
@@ -3631,7 +3630,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 }
             }
         }
-        if (((GridUnitSpawn*)unit)->Place(gx, gy, 0, cfg, 0, flags) != 0) {
+        if (CGrunt_TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
             unit->m_pathCfg = g_spawnCfg;
             unit->m_pathState = g_spawnState;
             unit->m_idleTimer = 0;
@@ -3699,7 +3698,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             }
         }
     }
-    if (((GridUnitSpawn*)unit)->Place(rx, ry, 0, 0x987, 1, flags) != 0) {
+    if (CGrunt_TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
         unit->m_pathCfg = g_spawnCfg;
         unit->m_pathState = g_spawnState;
         unit->m_idleTimer = 0;
@@ -4844,7 +4843,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
         if (unit->m_idleTimer <= m_reserveBudget) {
             return 1;
         }
-        if (((GridUnitSpawn*)unit)->Place(unit->m_targetX, unit->m_targetY, 0, 0xd87, 0, 0) != 0) {
+        if (CGrunt_TileSwitch(unit->m_targetX, unit->m_targetY, 0, 0xd87, 0, 0) != 0) {
             unit->m_idleTimer = 0;
             return 1;
         }
@@ -4925,9 +4924,6 @@ struct ProbePair {
 };
 // The unit-side place/probe (thunk 0x1640, __thiscall, 6 args) and the bundle's
 // per-unit commit (thunk 0x42e1, __thiscall on `this`, 1 arg). Reloc-masked externs.
-struct UnitPlace {
-    i32 Place(i32 x, i32 y, i32 a, i32 b, i32 c, i32 d); // 0x1640
-};
 // @early-stop
 // 0x2d6 (726 B) no-EH grid policy step: the body reproduces all four arms (random-band
 // retarget, fixed-band re-place, despawn-recycle, near-band keep) incl. the signed
@@ -4966,7 +4962,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
                 x = pair->m_x;
                 y = pair->m_y;
             }
-            if (((UnitPlace*)unit)->Place(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
+            if (CGrunt_TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                 unit->m_targetX = band;
                 unit->m_targetY = 0;
                 ((CBattlezMapConfig*)this)->Method_02c080((i32)unit);
@@ -4983,7 +4979,7 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
         }
         i32 y = *(i32*)(recB + 0xd4);
         i32 x = *(i32*)(recB + 0xd0);
-        ((UnitPlace*)unit)->Place(x, y, 0, 0x987, 0, 0x4068);
+        CGrunt_TileSwitch(x, y, 0, 0x987, 0, 0x4068);
         unit->m_idleTimer = 0;
         return 1;
     }
@@ -5063,7 +5059,6 @@ SIZE_UNKNOWN(EmitArg);
 SIZE_UNKNOWN(GridCand);
 SIZE_UNKNOWN(GridCandNode);
 SIZE_UNKNOWN(GridUnit);
-SIZE_UNKNOWN(GridUnitSpawn);
 SIZE_UNKNOWN(Kind4Validator);
 SIZE_UNKNOWN(CAnimNameRecord);
 SIZE_UNKNOWN(ProbePair);
@@ -5072,7 +5067,6 @@ SIZE_UNKNOWN(ScratchString);
 SIZE_UNKNOWN(Tile);
 SIZE_UNKNOWN(UnitLevel);
 SIZE_UNKNOWN(UnitMutator2);
-SIZE_UNKNOWN(UnitPlace);
 SIZE_UNKNOWN(ZErrTarget);
 SIZE_UNKNOWN(CCoordPair);
 SIZE_UNKNOWN(CLevelList);
