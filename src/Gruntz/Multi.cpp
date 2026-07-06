@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Wwd/WwdFile.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -605,17 +606,10 @@ public:
     virtual void Blit34(void* a, void* b); // +0x34
 };
 // The m_view->m_24 chain and its +0x5c compositor target.
-class PBCompTarget { // m_view->m_24->m_5c
-public:
-    char m_pad00_84[0x84];
-    i32 m_width;        // +0x84
-    i32 m_height;       // +0x88
-    void Flush163370(); // 0x00163370 (thiscall on m_5c)
-};
 class PBComp { // m_view->m_24
 public:
     char m_pad00_5c[0x5c];
-    PBCompTarget* m_5c;                  // +0x5c
+    CPlaneRender* m_5c;                  // +0x5c
     void M15dc90(void* pane, void* ctx); // 0x0015dc90
 };
 // The m_view manager sub-object tree.
@@ -695,7 +689,7 @@ void CMulti::PumpB() {
         }
     }
     StepScroll();
-    m_logic->m_54->Retune(mgr->m_24->m_5c->m_width, mgr->m_24->m_5c->m_height);
+    m_logic->m_54->Retune(mgr->m_24->m_5c->m_84, mgr->m_24->m_5c->m_88);
     if (m_overlayBActive != 0) {
         NotifyVisibleEntities();
     } else {
@@ -736,7 +730,7 @@ void CMulti::PumpB() {
     mgr->m_4->m_10->m_surface->Flip(0);
     PumpBRefresh2356(g_64556c, m_fxOverlay, m_overlayAActive);
     if (mgr->m_24->m_5c != 0) {
-        mgr->m_24->m_5c->Flush163370();
+        mgr->m_24->m_5c->CenterScrollB();
     }
     if (m_overlayAActive != 0) {
         if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
@@ -1006,7 +1000,6 @@ SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(McHost);
 SIZE_UNKNOWN(McObj);
 SIZE_UNKNOWN(PBComp);
-SIZE_UNKNOWN(PBCompTarget);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBSub320);
