@@ -26,6 +26,7 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
@@ -748,28 +749,28 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     // megaphone order. Same physical fields, different views (this is why UserLogic.h
     // labels them by their spotlight/teleporter meaning). Authoritative field
     // semantics + the id spaces: docs/domain/README.md.
-    obj->m_114 = *p++;         // score              (+0x114)
-    obj->m_118 = *p++;         // points  (enemy AI type / megaphone tool id)   (+0x118)
-    obj->m_11c = *p++;         // powerup (CoveredPowerup id 0-99 / carried tool) (+0x11c)
-    obj->m_120 = *p++;         // damage             (+0x120)
-    obj->m_124 = *p++;         // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
-    obj->m_placeMode = *p++;   // health             (+0x128)
-    obj->m_extentL = *p++;     // moveRect.l         (+0x134)
-    obj->m_extentT = *p++;     // moveRect.t         (+0x138)
-    obj->m_extentR = *p++;     // moveRect.r         (+0x13c)
-    obj->m_extentB = *p++;     // moveRect.b         (+0x140)
-    obj->m_areaL = *p++;       // hitRect.l          (+0x144)
-    obj->m_areaT = *p++;       // hitRect.t          (+0x148)
-    obj->m_areaR = *p++;       // hitRect.r          (+0x14c)
-    obj->m_areaB = *p++;       // hitRect.b          (+0x150)
-    obj->m_154 = *p++;         // attackRect.l       (+0x154)
-    obj->m_158 = *p++;         // attackRect.t       (+0x158)
-    obj->m_15c = *p++;         // attackRect.r       (+0x15c)
-    obj->m_160 = *p++;         // attackRect.b       (+0x160)
-    obj->m_64 = *p++;          // clipRect.l         (+0x64)
-    obj->m_68 = *p++;          // clipRect.t         (+0x68)
-    obj->m_6c = *p++;          // clipRect.r         (+0x6c)
-    obj->m_70 = *p++;          // clipRect.b         (+0x70)
+    obj->m_114 = *p++;       // score              (+0x114)
+    obj->m_118 = *p++;       // points  (enemy AI type / megaphone tool id)   (+0x118)
+    obj->m_11c = *p++;       // powerup (CoveredPowerup id 0-99 / carried tool) (+0x11c)
+    obj->m_120 = *p++;       // damage             (+0x120)
+    obj->m_124 = *p++;       // smarts  (enemy team 0-3 / revealed tile)       (+0x124)
+    obj->m_placeMode = *p++; // health             (+0x128)
+    obj->m_extentL = *p++;   // moveRect.l         (+0x134)
+    obj->m_extentT = *p++;   // moveRect.t         (+0x138)
+    obj->m_extentR = *p++;   // moveRect.r         (+0x13c)
+    obj->m_extentB = *p++;   // moveRect.b         (+0x140)
+    obj->m_areaL = *p++;     // hitRect.l          (+0x144)
+    obj->m_areaT = *p++;     // hitRect.t          (+0x148)
+    obj->m_areaR = *p++;     // hitRect.r          (+0x14c)
+    obj->m_areaB = *p++;     // hitRect.b          (+0x150)
+    obj->m_154 = *p++;       // attackRect.l       (+0x154)
+    obj->m_158 = *p++;       // attackRect.t       (+0x158)
+    obj->m_15c = *p++;       // attackRect.r       (+0x15c)
+    obj->m_160 = *p++;       // attackRect.b       (+0x160)
+    obj->m_64 = *p++;        // clipRect.l         (+0x64)
+    obj->m_68 = *p++;        // clipRect.t         (+0x68)
+    obj->m_6c = *p++;        // clipRect.r         (+0x6c)
+    obj->m_70 = *p++;        // clipRect.b         (+0x70)
 
     if (obj->m_areaL == 0 && obj->m_areaR == 0) {
         obj->m_areaL = (i32)0x80000000;
@@ -852,7 +853,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 // docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
 i32 CPlaneRender::CenterScrollA() {
-    CPlaneScroll* scroll = m_scroll;
+    CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -869,10 +870,10 @@ i32 CPlaneRender::CenterScrollA() {
     i32 y;
     if (flags & 0x8) {
         y = (i32)m_scaledY;
-        return scroll->SetTargetA(x, y);
+        return scroll->ScrollTo(x, y);
     }
     y = (m_originY + m_extentY) / 2 + 1;
-    return scroll->SetTargetA(x, y);
+    return scroll->ScrollTo(x, y);
 }
 
 // ---------------------------------------------------------------------------
@@ -897,7 +898,7 @@ void CPlaneRender::InitScrollRects() {
     i32 d8 = g->m_rectCWidth;
     i32 dc = g->m_rectCHeight;
 
-    CPlaneScroll* s = m_scroll;
+    CWwdSpatialMgr* s = m_scroll;
     s->m_rectALeft = 0;
     s->m_rectATop = 0;
     s->m_rectARight = c8 - 1;
@@ -1124,7 +1125,7 @@ i32 CPlaneRender::Load(CWwdStream* s) {
 // 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
 i32 CPlaneRender::CenterScrollB() {
-    CPlaneScroll* scroll = m_scroll;
+    CWwdSpatialMgr* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -1141,10 +1142,10 @@ i32 CPlaneRender::CenterScrollB() {
     i32 y;
     if (flags & 0x8) {
         y = (i32)m_scaledY;
-        return scroll->SetTargetB(x, y);
+        return scroll->Relocate(x, y);
     }
     y = (m_extentY + m_originY) / 2 + 1;
-    return scroll->SetTargetB(x, y);
+    return scroll->Relocate(x, y);
 }
 
 // ---------------------------------------------------------------------------
@@ -1233,7 +1234,7 @@ CString WwdFile::GetMapBaseName(CString path) {
 SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
 SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
 SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
-SIZE_UNKNOWN(CPlaneScroll);
+SIZE_UNKNOWN(CWwdSpatialMgr);
 SIZE_UNKNOWN(CPlaneSurfDesc);
 SIZE_UNKNOWN(CPlaneSurf);
 SIZE_UNKNOWN(CPlanePalArr);
