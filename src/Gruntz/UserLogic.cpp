@@ -344,10 +344,6 @@ struct WwdGameRegAux {
 // and returns the trigger object hit (or 0). 5-arg __thiscall ret 0x14, via the
 // 0x35f3 thunk (-> 0x75af0). External/no-body (reloc-masked).
 struct CTrigger; // the trigger object the probe returns / the cue receives
-SIZE_UNKNOWN(CTriggerProbe);
-struct CTriggerProbe {
-    CTrigger* Probe(i32 x, i32 y, i32* outA, i32* outB, i32 flag); // 0x75af0
-};
 
 // The viewport rect base reached as g_gameReg->m_world->m_24->m_5c + 0x40; the
 // on-screen test reads its left/top/right/bottom (m_0/m_4/m_8/m_c).
@@ -762,8 +758,8 @@ RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CGameObject* o = m_object;
-    CTrigger* hit =
-        ((CTriggerProbe*)g_gameReg->m_68)->Probe(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
+    CTrigger* hit = (CTrigger*)((CTriggerMgr*)g_gameReg->m_68)
+                        ->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
         o = m_object;
         CTeleSpriteFactory* fac = ((CTeleResHolder*)g_gameReg->m_world)->m_8;
