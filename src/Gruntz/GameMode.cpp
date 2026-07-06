@@ -1215,7 +1215,6 @@ extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 // clipped to. BltFast (FUN_0053ef90) is a __thiscall on the source surface taking
 // (0, 0, destSurf, &destRect, 0x10). Reloc-masked.
 struct CCreditsSurface {
-    void BltFast(i32 x, i32 y, CCreditsSurface* dst, void* rect, i32 flags);
     char m_pad00[0x8];
     void* m_8; // +0x08  Smacker frame buffer (SmackStep arg)
 };
@@ -1223,7 +1222,7 @@ struct CCreditsDrawHolder {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  clip RECT (address taken)
     char m_pad20[0x2c - 0x20];
-    CCreditsSurface* m_2c; // +0x2c  the DD surface
+    CDDSurface* m_2c; // +0x2c  the DD surface
 };
 struct CCreditsDrawView {
     char m_pad00[0x14];
