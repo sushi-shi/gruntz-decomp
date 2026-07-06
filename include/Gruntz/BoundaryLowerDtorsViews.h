@@ -14,6 +14,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Wap32/Object.h> // Wap::CObject - the real grand-base these placeholders modelled
+#include <Gruntz/State.h> // real CState (the state base @0x5ea21c)
 
 // 0x039f20 - ~CWorker39f20 (/GX): derived vtable stamp, RezFree the +0x04 heap
 // buffer, then fold the CObject base subobject. Byte-shape == ~CRezBufferObject.
@@ -57,11 +58,8 @@ SIZE_UNKNOWN(CCredits390a0);
 
 // 0x08d000 - ~CMenuState8d000 (/GX): derived vtable stamp, teardown body (0x2919),
 // then fold the CState base subobject (base dtor 0x3f53).
-struct CStateBase8d000 {
-    virtual ~CStateBase8d000(); // base vptr (folds 0x5ea21c), dtor 0x3f53
-};
-SIZE_UNKNOWN(CStateBase8d000);
-struct CMenuState8d000 : CStateBase8d000 {
+struct CMenuState8d000
+    : CState { // was : CStateBase8d000 (fake base view; folded to real CState @0x5ea21c)
     ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
