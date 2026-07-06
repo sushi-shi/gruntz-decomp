@@ -32,7 +32,13 @@ import re
 import sys
 from collections import defaultdict
 
-from gruntz.match.class_meta import REPO, iter_class_defs, rel, vtbl_annotated_names
+from gruntz.match.class_meta import (
+    REPO,
+    iter_class_defs,
+    rel,
+    vtbl_annotated_names,
+    vtbl_annotations,
+)
 
 _RTTI_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
 _MANUAL_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
@@ -73,7 +79,37 @@ def present_rvas():
     return out
 
 
+def vtbl_rva_collisions():
+    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE
+    distinct class via VTBL(). A vtable datum has exactly one ??_7 name in retail, so
+    any such rva is a mis-catalog (aliasing one vtable under many names) - it slips
+    past the delink name-injectivity guard, which only enforces name->rva, not
+    rva->name."""
+    by_rva = defaultdict(list)
+    for name, rva, path, lineno in vtbl_annotations():
+        by_rva[rva].append((name, path, lineno))
+    return {
+        rva: sites
+        for rva, sites in by_rva.items()
+        if len({n for n, _p, _l in sites}) > 1
+    }
+
+
 def main() -> int:
+    # rva->name uniqueness: warn on any vtable rva bound by >1 VTBL() (the shared-base
+    # / fallback mis-catalog). Reported always, so the build gate surfaces it.
+    collisions = vtbl_rva_collisions()
+    if collisions:
+        dup_lines = sum(len(s) for s in collisions.values())
+        print(
+            f"vtable-rva collisions: {len(collisions)} rva(s) bound by >1 VTBL() "
+            f"({dup_lines} annotations); a vtable datum has ONE ??_7 name:",
+            file=sys.stderr,
+        )
+        for rva, sites in sorted(collisions.items(), key=lambda kv: -len(kv[1])):
+            names = ", ".join(sorted(n for n, _p, _l in sites))
+            print(f"  0x{rva:08x}  <- {len(sites)} classes: {names}", file=sys.stderr)
+
     rtti = rtti_vtables()
     have_csv = (REPO / "build" / "gen" / "symbol_names.csv").exists()
     present = present_rvas()
@@ -114,6 +150,10 @@ def main() -> int:
               f"name(s); {len(violators)} NOT catalogued (need VTBL):", file=sys.stderr)
         for name, path, lineno, reason in violators:
             print(f"  {rel(path)}:{lineno}: {name}  [{reason}]", file=sys.stderr)
+        return 1
+    if collisions:
+        print(f"class-vtable completeness: all {have_vtable} names catalogued, but "
+              f"{len(collisions)} vtable rva(s) are multiply-bound (see above)")
         return 1
     print(f"class-vtable completeness: all {have_vtable} vtable-bearing class "
           f"names are catalogued")

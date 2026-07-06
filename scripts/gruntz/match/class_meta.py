@@ -155,6 +155,24 @@ def vtbl_annotated_names() -> set:
     return _annotated(_VTBL_RE)
 
 
+# VTBL(name, 0xrva) with BOTH arguments captured, for rva-uniqueness auditing.
+_VTBL_FULL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)")
+
+
+def vtbl_annotations():
+    """Yield (name, rva:int, path, lineno) for each VTBL(name, 0xrva) in the tree
+    (comments blanked). A vtable datum has exactly one true ??_7 name in retail, so
+    an rva bound by two different names is a mis-catalog - see class_vtables."""
+    for path in source_files():
+        text = _blank_comments(path.read_text(errors="ignore"))
+        for m in _VTBL_FULL_RE.finditer(text):
+            try:
+                rva = int(m.group(2), 16)
+            except ValueError:
+                continue
+            yield m.group(1), rva, path, text.count("\n", 0, m.start()) + 1
+
+
 def rel(path: Path) -> str:
     try:
         return str(path.relative_to(REPO))

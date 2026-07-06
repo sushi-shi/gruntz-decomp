@@ -257,10 +257,18 @@ def cmd_build(args) -> None:
     # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
     r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
-    n = sum(1 for ln in (r.stdout + r.stderr).splitlines()
+    out_vt = r.stdout + r.stderr
+    n = sum(1 for ln in out_vt.splitlines()
             if re.match(r"\s*\S+:\d+:", ln))
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
+            f"(python -m gruntz.match.class_vtables for the list)")
+    # rva->name uniqueness: a vtable datum has one ??_7 name, so an rva bound by
+    # multiple VTBL() is a mis-catalog (shared-base/fallback aliasing) that the
+    # delink name-injectivity guard cannot see. Surface the count here.
+    mc = re.search(r"vtable-rva collisions: (\d+) rva\(s\)", out_vt)
+    if mc:
+        log(f"VTBL: {mc.group(1)} rva(s) bound by >1 class - multiply-bound "
             f"(python -m gruntz.match.class_vtables for the list)")
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
