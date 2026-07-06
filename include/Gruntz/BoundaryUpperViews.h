@@ -17,17 +17,11 @@
 
 // Embedded base-subobject vptr restamp (member dtor of the grand-base): the 7-byte
 // `mov [this],&g_wapObjectDtorVtbl; ret` leaf. Three distinct leaf classes share it.
-struct SW_161460 : Wap::CObject {
-    virtual ~SW_161460() OVERRIDE; // 0x161460 (was manual Restamp stamp)
-};
+struct SW_161460 : Wap::CObject {};
 SIZE_UNKNOWN(SW_161460);
-struct SW_161560 : Wap::CObject {
-    virtual ~SW_161560() OVERRIDE; // 0x161560 (was manual Restamp stamp)
-};
+struct SW_161560 : Wap::CObject {};
 SIZE_UNKNOWN(SW_161560);
-struct SW_163a10 : Wap::CObject {
-    virtual ~SW_163a10() OVERRIDE; // 0x163a10 (was manual Restamp stamp)
-};
+struct SW_163a10 : Wap::CObject {};
 SIZE_UNKNOWN(SW_163a10);
 
 // 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper).

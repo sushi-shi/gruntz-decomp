@@ -847,11 +847,11 @@ SIZE_UNKNOWN(GruntLoadColl);
 struct GruntLoadColl {
     void SetSize(i32 n, i32 grow);    // 0x1b4f75
     void SetAtGrow(i32 idx, void* p); // 0x1b5144
-    virtual void VSlot0();            // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
-    void** m_data;                    // +0x04
-    i32 m_count;                      // +0x08
-    i32 m_max;                        // +0x0c
-    i32 m_grow;                       // +0x10
+    char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
+    void** m_data; // +0x04
+    i32 m_count;   // +0x08
+    i32 m_max;     // +0x0c
+    i32 m_grow;    // +0x10
 };
 
 // The CString member the load streams a 0x200-byte buffer into (this+0x410);

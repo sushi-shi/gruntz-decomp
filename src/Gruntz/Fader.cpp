@@ -349,7 +349,7 @@ struct CArrayE40 {
 
 // The fade mesh buffer IS a CArrayE40 (Init @0x17f390 = CArrayE40::SetSize); cast at the call.
 struct FxMeshBuffer {
-    virtual void VSlot0();   // +0x00 (+0x58)  // real polymorphic vptr @+0x00 (was m_vtbl)
+    char _vft0[4];           // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
     FxPoint* m_pData;        // +0x04 (+0x5c)
     i32 m_nSize;             // +0x08 (+0x60)
     i32 m_nMaxSize;          // +0x0c (+0x64)

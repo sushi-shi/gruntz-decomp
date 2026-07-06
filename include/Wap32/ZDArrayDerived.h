@@ -8,7 +8,7 @@
 
 SIZE_UNKNOWN(CZDArrayDerived);
 struct CZDArrayDerived {
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
+    char _vft0[4];         // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
     char _04[0x1c - 0x04]; //
     void* m_1c;            // +0x1c  cursor (== m_buf, set by the base ctor)
     CZDArrayDerived* BaseConstruct(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0

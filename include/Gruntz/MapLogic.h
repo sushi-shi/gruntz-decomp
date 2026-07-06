@@ -47,11 +47,11 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
 SIZE_UNKNOWN(CMapPtrArray);
 struct CMapPtrArray {
     void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
-    virtual void VSlot0();           // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
-    void** m_pData;                  // +0x04  the pointer array body
-    i32 m_nSize;                     // +0x08  element count
-    i32 m_nMaxSize;                  // +0x0c
-    i32 m_nGrowBy;                   // +0x10
+    char _vft0[4];  // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
+    void** m_pData; // +0x04  the pointer array body
+    i32 m_nSize;    // +0x08  element count
+    i32 m_nMaxSize; // +0x0c
+    i32 m_nGrowBy;  // +0x10
 };
 
 // ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@ struct ParseMappedSource {
 // call [edx+8]` thiscall dispatch falls out with no cast.
 class ParseVReader {
 public:
-    virtual void VSlot0();
+    char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
     virtual void VSlot1();
     virtual i32 Read(i32 base, i32 pos, u32 len, void* dst);
 };

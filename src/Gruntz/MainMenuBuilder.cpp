@@ -96,13 +96,13 @@ struct MenuPage {
         i32 z2
     ); // 0x1835a0
 
-    virtual void VSlot0(); // +0x00  // real polymorphic vptr @+0x00 (was m_vtbl)
-    i32 m_04;              // +0x04
-    MenuStr m_str08;       // +0x08
-    MenuStr m_str0c;       // +0x0c
-    MenuStr m_str10;       // +0x10
-    MenuList m_items;      // +0x14  (0x1c -> ends 0x30)
-    i32 m_30;              // +0x30
+    char _vft0[4];    // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
+    i32 m_04;         // +0x04
+    MenuStr m_str08;  // +0x08
+    MenuStr m_str0c;  // +0x0c
+    MenuStr m_str10;  // +0x10
+    MenuList m_items; // +0x14  (0x1c -> ends 0x30)
+    i32 m_30;         // +0x30
     char m_pad34[0x60 - 0x34];
     i32 m_60; // +0x60
     i32 m_64; // +0x64

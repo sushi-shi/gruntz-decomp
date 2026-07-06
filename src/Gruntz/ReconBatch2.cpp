@@ -328,11 +328,8 @@ void Forward_115630() {
 // `: public Wap::CObject`): this 7-byte fn IS the entire retail restamp - there is
 // no ctor for cl to fold an auto-stamp into, and Obj_11e8dc is a placeholder.
 // ===========================================================================
-struct Obj_11e8dc : Wap::CObject {
-    virtual ~Obj_11e8dc(); // 0x11e8dc (was manual StampVtbl re-stamp)
-};
+struct Obj_11e8dc : Wap::CObject {};
 RVA(0x0011e8dc, 0x7)
-Obj_11e8dc::~Obj_11e8dc() {} // cl auto-stamps the Wap::CObject vptr (% ok)
 // ===========================================================================
 // 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit
 // of src is clear, read an 8-byte record from src, transform it (Fn16f7f0), and

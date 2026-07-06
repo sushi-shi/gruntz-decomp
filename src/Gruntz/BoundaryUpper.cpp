@@ -24,15 +24,6 @@ extern "C" void RezFree(void* p);
 // 0x163a10; letting cl emit ~Wap::CObject would fold them to ONE COMDAT and
 // drop two of the three RVA pins. The reloc-masked stamp is already byte-exact.
 // ---------------------------------------------------------------------------
-RVA(0x00161460, 0x7)
-SW_161460::~SW_161460() {
-} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
-RVA(0x00161560, 0x7)
-SW_161560::~SW_161560() {
-} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
-RVA(0x00163a10, 0x7)
-SW_163a10::~SW_163a10() {
-} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
 
 // ---------------------------------------------------------------------------
 // 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper). __thiscall,
