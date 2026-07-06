@@ -13,7 +13,6 @@
 extern "C" void RezFree(void* p);
 
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
-extern void* g_wapObjectDtorVtbl;
 
 // ---------------------------------------------------------------------------
 // Embedded base-subobject vptr restamp (member dtor of the grand-base): the
@@ -26,17 +25,14 @@ extern void* g_wapObjectDtorVtbl;
 // drop two of the three RVA pins. The reloc-masked stamp is already byte-exact.
 // ---------------------------------------------------------------------------
 RVA(0x00161460, 0x7)
-void SW_161460::Restamp() {
-    *(void**)this = &g_wapObjectDtorVtbl;
-}
+SW_161460::~SW_161460() {
+} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
 RVA(0x00161560, 0x7)
-void SW_161560::Restamp() {
-    *(void**)this = &g_wapObjectDtorVtbl;
-}
+SW_161560::~SW_161560() {
+} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
 RVA(0x00163a10, 0x7)
-void SW_163a10::Restamp() {
-    *(void**)this = &g_wapObjectDtorVtbl;
-}
+SW_163a10::~SW_163a10() {
+} // cl auto-stamps the Wap::CObject vptr; retail's 7-byte manual stamp dropped (% ok)
 
 // ---------------------------------------------------------------------------
 // 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper). __thiscall,

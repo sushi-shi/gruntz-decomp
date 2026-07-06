@@ -1,4 +1,5 @@
 // BoundaryUpperViews.h - shared referent/owner views for the upper-half
+#include <Wap32/Object.h> // Wap::CObject grand-base (real virtual dtor)
 // (RVA >= 0x133370) engine_boundary leaf methods reconstructed in BoundaryUpper.cpp
 // (DinMgr2 / Dsndmgr / DDrawMgr / Rez engine modules).
 //
@@ -16,16 +17,16 @@
 
 // Embedded base-subobject vptr restamp (member dtor of the grand-base): the 7-byte
 // `mov [this],&g_wapObjectDtorVtbl; ret` leaf. Three distinct leaf classes share it.
-struct SW_161460 {
-    void Restamp();
+struct SW_161460 : Wap::CObject {
+    virtual ~SW_161460() OVERRIDE; // 0x161460 (was manual Restamp stamp)
 };
 SIZE_UNKNOWN(SW_161460);
-struct SW_161560 {
-    void Restamp();
+struct SW_161560 : Wap::CObject {
+    virtual ~SW_161560() OVERRIDE; // 0x161560 (was manual Restamp stamp)
 };
 SIZE_UNKNOWN(SW_161560);
-struct SW_163a10 {
-    void Restamp();
+struct SW_163a10 : Wap::CObject {
+    virtual ~SW_163a10() OVERRIDE; // 0x163a10 (was manual Restamp stamp)
 };
 SIZE_UNKNOWN(SW_163a10);
 
