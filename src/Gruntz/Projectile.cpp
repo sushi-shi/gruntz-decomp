@@ -1,3 +1,5 @@
+#include <Mfc.h>
+#include <Gruntz/Grunt.h>
 // Projectile.cpp - the CProjectile game-object (C:\Proj\Gruntz). Continues the
 // CUserBase/CUserLogic/CMovingLogic hierarchy (see include/Gruntz/Projectile.h).
 //
@@ -63,20 +65,6 @@ struct CGruntOwner {
     i32 m_5c; // +0x5c  screen X
     i32 m_60; // +0x60  screen Y
 };
-SIZE_UNKNOWN(CGruntTarget);
-struct CGruntTarget {
-    void DeliverHit(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h); // 0x4646b0 (ret 0x20)
-    void SelfImpact(i32 a, i32 b, i32 c, i32 d);                             // 0x4dd50  (ret 0x10)
-    char m_pad00[0x10];
-    CGruntOwner* m_10; // +0x10
-    char m_pad14[0x170 - 0x14];
-    i32 m_170; // +0x170
-    char m_pad174[0x1ec - 0x174];
-    i32 m_1ec, m_1f0; // +0x1ec/+0x1f0  spawn-cell key
-    char m_pad1f4[0x1fc - 0x1f4];
-    i32 m_1fc; // +0x1fc  live-projectile slot
-};
-
 // A {x, y} cell-key node recycled through the global free-list (the same 2-int
 // pair node BattlezMapConfig pulls). m_0 doubles as the free-list link.
 SIZE_UNKNOWN(CHitKey);
@@ -887,11 +875,11 @@ void CProjectile::ScanTargets(i32 impact) {
         for (; col < 0xf; col++, colOff += 4) {
             // authentic: sliding-window grid access - 0x1c row-stride overlaps the
             // 4-byte column pitch, so it is raw byte arithmetic, not a 2D pointer array.
-            CGruntTarget* g = *(CGruntTarget**)((char*)g_gameReg->m_cmdGrid + colOff);
+            CGrunt* g = *(CGrunt**)((char*)g_gameReg->m_cmdGrid + colOff);
             if (g == 0) {
                 continue;
             }
-            if (g->m_1fc == 0) {
+            if (g->m_entranceCommitted == 0) {
                 continue;
             }
             i32 gx = g->m_10->m_5c - 7;
@@ -912,14 +900,14 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             if (m_srcRow == tileY && m_srcCol == col) {
                 // self cell
-                if (impact != 0 && g->m_1fc != 0 && g->m_170 == 0) {
-                    g->SelfImpact(2, 1, 0, 0);
+                if (impact != 0 && g->m_entranceCommitted != 0 && g->m_entranceReason == 0) {
+                    g->LoadGruntTypeTable(2, 1, 0, 0);
                 }
                 return;
             }
             // already-tracked? walk the hit list for this grunt's cell key.
-            i32 keyX = g->m_1ec;
-            i32 keyY = g->m_1f0;
+            i32 keyX = g->m_tileOwnerHi;
+            i32 keyY = g->m_tileOwnerLo;
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
                 // authentic: MFC CObList stores raw hit-key nodes; GetNext returns CObject*
                 CHitKey* k = (CHitKey*)m_hitList.GetNext(pos);
@@ -938,7 +926,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 g_freeList = (void*)p->m_0;
             }
             m_hitList.AddTail((CObject*)slot); // authentic: MFC AddTail takes CObject*
-            g->DeliverHit(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
+            g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);
         }
         rowBase += 0x3c;
         tileY++;
