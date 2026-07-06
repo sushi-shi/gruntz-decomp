@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Dsndmgr/SoundDevice.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 // ReconBatch2.cpp - reconstructed engine/game leaf methods recovered from the
@@ -134,18 +135,11 @@ public:
 // The map holder: ClearMap lives in the CDDrawMapHolder base; the keyed
 // prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
 // freeable inner at +0x2c.
-SIZE_UNKNOWN(CDDrawMapHolder);
-class CDDrawMapHolder {
-public:
-    char m_pad0[0x2c];
-    SoundStream* m_2c; // +0x2c
-    void ClearMap();   // 0x157bc0
-};
 // CDDrawSubMgrLeafScan (the RemoveKeysEqual_157c70 reader) now comes from the shared
 // <DDrawMgr/DDrawSubMgrLeafScan.h> (included below the file's other headers).
 struct Holder_f9840 {
     char m_pad0[0x28];
-    CDDrawMapHolder* m_28; // +0x28
+    CDDrawSubMgrLeafScan* m_28; // +0x28
 };
 class CGameModeBase {
 public:
@@ -162,9 +156,9 @@ public:
 RVA(0x000de140, 0x33)
 void CGameModeBase::ResetPreview() {
     if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->Stop();
+        ((SoundStream*)m_c->m_28->m_2c)->Stop();
     }
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
+    m_c->m_28->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
     BaseCleanup();
 }
 
@@ -202,7 +196,7 @@ i32 SfDeviceInitKeys() {
 RVA(0x000f9840, 0x29)
 void CGameModeBase::Reset() {
     if (m_c->m_28->m_2c != 0) {
-        m_c->m_28->m_2c->Stop();
+        ((SoundStream*)m_c->m_28->m_2c)->Stop();
     }
     m_c->m_28->ClearMap();
     BaseCleanup();
