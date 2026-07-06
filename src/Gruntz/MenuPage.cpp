@@ -12,6 +12,7 @@
 // names are placeholders. The /GX EH frame on the dtor + the FindByName helpers
 // comes from the destructible CString temps.
 #include <rva.h>
+#include <Gruntz/ChatBox.h>
 #include <Image/CImage.h>
 
 #include <Gruntz/MenuPage.h>
@@ -64,9 +65,6 @@ extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
 struct CMenuRenderHost {
     char pad0[0x20];
     char m_wrapFlag; // +0x20  wrap-enable flag (read as signed char by CanWrap)
-    i32 Draw(i32 ctx, CMenuItem* item, i32 x, i32 y); // 0x182f90
-    i32 SwitchToPage(const char* key);                // 0x182dd0
-    void NotifySwitch();                              // 0x1830b0
 };
 SIZE_UNKNOWN(CMenuRenderHost);
 // The sub-page's current item placer (0x153790, __thiscall on the head item).
@@ -428,7 +426,7 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, item, x, y);
+                ((CChatBox*)m_host)->Draw(ctx, (i32)item, x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -453,11 +451,11 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!m_host->SwitchToPage(m_switchKey)) {
+    if (!((CChatBox*)m_host)->ReplaceNode((void*)(const char*)m_switchKey)) {
         return 0;
     }
     if (refocus) {
-        m_host->NotifySwitch();
+        ((CChatBox*)m_host)->ScrollRow1();
     }
     return 1;
 }
@@ -520,7 +518,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                m_host->Draw(ctx, item, col, y);
+                ((CChatBox*)m_host)->Draw(ctx, (i32)item, col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
