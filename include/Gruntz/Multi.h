@@ -44,16 +44,16 @@
 //
 // Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
 // CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
-class CGameApp;     // WAP32 app (<Wap32/Wap32.h>); CMultiMgr::m_owner (+0x08)
-class CMultiSubDC;  // CMulti::m_fxOverlay
-class CMultiSubE4;  // CMulti::m_2e4
-class CMultiSoundZ; // CMultiMgr::m_48
-class CMultiSub68;  // CMultiMgr::m_68
-class PBSub2e0;     // CMulti::m_2e0 (per-frame Step2bfd sub, defined in CMulti.cpp)
-class CMultiSub70;  // CMultiMgr::m_70
-class CMultiMgr;    // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
-class CLobbySlot;   // CNetSession2 slot element (fwd for FindSlot's return)
-class PBOutput;     // CMultiMgr::m_54 output sink (defined TU-local in CMulti.cpp)
+class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CMultiMgr::m_owner (+0x08)
+class CMultiSubDC;           // CMulti::m_fxOverlay
+class CTileTriggerContainer; // CMulti::m_2e4
+class CMultiSoundZ;          // CMultiMgr::m_48
+class CMultiSub68;           // CMultiMgr::m_68
+class PBSub2e0;              // CMulti::m_2e0 (per-frame Step2bfd sub, defined in CMulti.cpp)
+class CBrickzGrid;           // CMultiMgr::m_70
+class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
+class CLobbySlot;            // CNetSession2 slot element (fwd for FindSlot's return)
+class PBOutput;              // CMultiMgr::m_54 output sink (defined TU-local in CMulti.cpp)
 
 // CMultiMgr IS the CGruntzMgr game-manager singleton (*0x64556c, the object
 // <Gruntz/GruntzMgr.h> / <Gruntz/GameRegistry.h> canonically model) viewed by the
@@ -158,7 +158,7 @@ public:
     char m_pad64_68[0x68 - 0x64];
     CMultiSub68* m_68;     // +0x68  per-frame sub (PumpA, Step3017)
     CMultiLogicList* m_6c; // +0x6c  the RemoveHead list manager
-    CMultiSub70* m_70;     // +0x70  per-frame sub (PumpA, Step3562)
+    CBrickzGrid* m_70;     // +0x70  per-frame sub (PumpA, Step3562)
     char m_pad74_9c[0x9c - 0x74];
     i32 m_9c;        // +0x9c  zeroed at StartTitle entry
     void Step2d33(); // 0x??  per-frame finish (PumpA tail)
@@ -402,12 +402,12 @@ public:
     char m_pad1b8_1cc[0x1cc - 0x1b8];
     i32 m_1cc; // +0x1cc  reseeded to 0
     char m_pad1d0_2d0[0x2d0 - 0x1d0];
-    i32 m_stepResult;         // +0x2d0  Step() result
-    i32 m_drainResult;        // +0x2d4  Drain() result
-    i32 m_rngSeed;            // +0x2d8  rng seed
-    CMultiSubDC* m_fxOverlay; // +0x2dc  per-frame sub (Step34bd)
-    PBSub2e0* m_2e0;          // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
-    CMultiSubE4* m_2e4;       // +0x2e4  per-frame sub (Step2cc0)
+    i32 m_stepResult;             // +0x2d0  Step() result
+    i32 m_drainResult;            // +0x2d4  Drain() result
+    i32 m_rngSeed;                // +0x2d8  rng seed
+    CMultiSubDC* m_fxOverlay;     // +0x2dc  per-frame sub (Step34bd)
+    PBSub2e0* m_2e0;              // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
+    CTileTriggerContainer* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
     char m_pad2e8_30c[0x30c - 0x2e8];
     i32 m_paletteActive;           // +0x30c  overlay-active flag (PumpB)
     char m_palette[0x320 - 0x310]; // +0x310  blit palette/param block (passed by address)

@@ -14,6 +14,8 @@
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h> // g_64556c singleton (0x24556c) canonical view
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
@@ -473,10 +475,6 @@ class CMultiSub68 { // CMultiMgr::m_68
 public:
     void Step3017(i32 dt); // 0x3017
 };
-class CMultiSub70 { // CMultiMgr::m_70
-public:
-    void Step3562(CMultiMgr* logic); // 0x3562
-};
 class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
     i32 m_0; // +0x00  state
@@ -485,10 +483,6 @@ public:
     void Step34bd(i32 dt); // 0x34bd  (PumpA)
     void Present21b7();    // 0x21b7  (PumpB)
     void Advance125d();    // 0x125d  (PumpB)
-};
-class CMultiSubE4 { // CMulti::m_2e4
-public:
-    void Step2cc0(i32 dt); // 0x2cc0
 };
 
 // @early-stop
@@ -570,8 +564,8 @@ i32 CMulti::PumpA() {
         win->TickWinA(now);
         win->TickWinB(now);
     }
-    m_2e4->Step2cc0(g_645584);
-    m_logic->m_70->Step3562(m_logic);
+    m_2e4->FilterList2((void*)g_645584);
+    m_logic->m_70->UpdateDiagonals((i32)m_logic);
     if (ready == 0) {
         PumpAReset();
     }
@@ -1022,9 +1016,7 @@ SIZE_UNKNOWN(CMultiSoundZ);
 SIZE_UNKNOWN(CMultiSoundInnerZ);
 SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
-SIZE_UNKNOWN(CMultiSub70);
 SIZE_UNKNOWN(CMultiSubDC);
-SIZE_UNKNOWN(CMultiSubE4);
 SIZE_UNKNOWN(CMultiSubTick);
 SIZE_UNKNOWN(CMultiTickWin);
 SIZE_UNKNOWN(CMultiViewReset);
