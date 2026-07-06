@@ -52,6 +52,7 @@
 // projectile kind -> the slot is the grunt's current tool/attack kind here.
 
 #include <Mfc.h> // Win32/engine types
+#include <Gruntz/TriggerMgr.h>
 
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/GameRegistry.h>  // canonical game-registry singleton (*0x64556c)
@@ -93,12 +94,6 @@ struct CTargetGruntView {
 // this +0x1c cell array is an additive member for the fold). The per-cell grunt
 // pointers live in a pointer array at +0x1c, indexed [row + col*15] (15-row
 // column-major grid); Cleanup (0x2e96 thunk) releases a slot (4 args).
-SIZE_UNKNOWN(CGruntTileMgrView);
-struct CGruntTileMgrView {
-    char m_pad00[0x1c];
-    CTargetGruntView* m_1c[1]; // +0x1c  cells, [m_neighborRow + m_neighborCol*15]
-    void Cleanup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x2e96 thunk
-};
 // The [Grunt]/attribute-tuning registry singleton (canonical CButeMgr):
 // GetDword (0x172240) is reloc-masked __thiscall.
 DATA(0x002453d8)
@@ -147,7 +142,7 @@ public:
     char m_pad224[0x258 - 0x224];
     i32 m_gruntKind; // +0x258  == CGrunt::m_gruntKind (0x38/0x3b special-cases)
     char m_pad25c[0x260 - 0x25c];
-    CGruntTileMgrView* m_tileMgr; // +0x260  == CGrunt::m_tileMgr (CGruntTileMgr*)
+    CTriggerMgr* m_tileMgr; // +0x260  == CGrunt::m_tileMgr (CGruntTileMgr*)
     char m_pad264[0x3f0 - 0x264];
     i32 m_3f0; // +0x3f0
     char m_pad3f4[0x460 - 0x3f4];
@@ -274,7 +269,8 @@ i32 CGruntFireView::Update() {
             }
             default: {
                 // melee: hit the grunt at the neighbor grid cell (15-row grid).
-                CTargetGruntView* tgt = m_tileMgr->m_1c[m_neighborRow + m_neighborCol * 15];
+                CTargetGruntView* tgt =
+                    (CTargetGruntView*)m_tileMgr->m_grid[m_neighborRow + m_neighborCol * 15];
                 if (tgt == 0) {
                     flag = 1;
                     break;
@@ -294,7 +290,7 @@ i32 CGruntFireView::Update() {
                     t = tgt->m_19c;
                 }
                 if (t == 1 && m_gruntKind != 0x38) {
-                    m_tileMgr->Cleanup(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 0xb, m_neighborCol);
                     return 0;
                 }
                 break;
