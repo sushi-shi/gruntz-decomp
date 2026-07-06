@@ -6,6 +6,7 @@
 #include <Gruntz/GruntzMgr.h>   // real CGruntzMgr (the 0x24556c game-manager singleton)
 #include <Gruntz/Multi.h>       // real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/Play.h> // real CPlay (PickPlayOrPausedState's concrete return; m_stepCountdown@+0x510)
+#include <Dsndmgr/GruntzSoundZ.h> // real CGruntzSoundZ (Dispatch-quiesce sound-bank flush: StopAndFlush)
 #include <rva.h>
 #include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
 // smack.h pulls rad.h, which defines u8/u16/u32/u64/s8/s16/s32/s64 as object-like
@@ -545,7 +546,6 @@ namespace ApiCallerStubs {
     // as `m_4->Post(m_1c+1)` -- so the old DispOwner_0cfbd0 was a SECOND placeholder
     // view of this same class; merged here. The +0x48/0x54/0x60 sub-managers are the
     // extra fields Dispatch touches (leaf types fwd-declared just below).
-    struct SoundBankRef_0cfbd0; // = CGruntzSoundZ (StopAndFlush @0x138530, gruntzsoundz)
     struct CmdHostSub54_0cfbd0; // unidentified sub-mgr (reset @0x40b660)
     struct CmdHostSub60_0cfbd0; // unidentified sub-mgr (reset @0x51af90)
     struct WndOwner_090220 {
@@ -556,7 +556,7 @@ namespace ApiCallerStubs {
         i32 m_0;
         WndOwner_090220* m_4;      // +0x04
         char m_pad8[0x48 - 8];     // +0x08..0x47
-        SoundBankRef_0cfbd0* m_48; // +0x48  audio bank (flushed on Dispatch quiesce)
+        CGruntzSoundZ* m_48;       // +0x48  audio bank (flushed on Dispatch quiesce)
         char m_pad4c[0x54 - 0x4c]; // +0x4c..0x53
         CmdHostSub54_0cfbd0* m_54; // +0x54
         char m_pad58[0x60 - 0x58]; // +0x58..0x5f
@@ -661,12 +661,6 @@ namespace ApiCallerStubs {
     // unidentified: the owner (`this`) + the +0xc context chain (DispCtx/DispInner)
     // + the 0x40b660/0x51af90 reset targets -- only inbound edge is ILT thunk 0x1c17
     // (no clean ctor/new trace).
-    struct SoundStreamRef_0cfbd0 { // = SoundStream::Stop @0x137a80 (minervainner)
-        void Stop137a80();
-    };
-    struct SoundBankRef_0cfbd0 { // = CGruntzSoundZ::StopAndFlush @0x138530
-        void StopAndFlush138530();
-    };
     struct CmdHostSub54_0cfbd0 { // unidentified sub-mgr, reset @0x40b660
         void Reset40b660();
     };
@@ -675,7 +669,7 @@ namespace ApiCallerStubs {
     };
     struct DispInner_0cfbd0 { // unidentified +0xc->+0x28 context node
         char m_pad0[0x2c];
-        SoundStreamRef_0cfbd0* m_2c; // +0x2c
+        SoundStream* m_2c; // +0x2c
     };
     struct DispCtx_0cfbd0 { // unidentified +0xc context holder
         char m_pad0[0x28];
@@ -702,9 +696,9 @@ namespace ApiCallerStubs {
             m_40 = 1;
             DispInner_0cfbd0* inner = m_c->m_28;
             if (inner->m_2c) {
-                inner->m_2c->Stop137a80();
+                inner->m_2c->Stop();
             }
-            m_4->m_48->StopAndFlush138530();
+            m_4->m_48->StopAndFlush();
             m_4->m_54->Reset40b660();
             m_4->m_60->Reset51af90();
             PostMessageA((HWND)m_4->m_4->m_4, 0x111, 0x8023, 0);
