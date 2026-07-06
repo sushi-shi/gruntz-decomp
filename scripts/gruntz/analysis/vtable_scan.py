@@ -218,8 +218,74 @@ def confidence(v):
     if v['code_refs']: return "code-ref-weak"   # size1 or in .data: maybe a fn-ptr global
     return "unref"                              # run head, no COL, no code ref: likely EH/jump table
 
+
+def iter_slots(v):
+    """Yield (slot_index, slot_rva, raw_target_rva, body_rva) for vtable dict `v`.
+    C++ slots point at ILT jmp-thunks (rva < 0x7c20), so body_rva chases the thunk to
+    the real method; raw_target_rva is the unchased slot value."""
+    for k in range(v['size']):
+        sr = v['start'] + k * 4
+        w = u32(sr)
+        if w is None:
+            continue
+        raw = w - IMAGEBASE
+        body = chase_thunk(raw)
+        yield k, sr, raw, (raw if body is None else body)
+
+
+def find_holding(fn_rva):
+    """Every (vtable_dict, slot_index, via_thunk) whose slot resolves to `fn_rva`
+    (directly or through an ILT thunk). Answers 'which vtable/slot holds this fn?' for
+    ANY vtable in the binary - RTTI or not - which the reconstructed VTBL graph can't."""
+    hits = []
+    for v in VTABLES:
+        if v['sec'] not in ('.rdata', '.data'):
+            continue
+        for k, sr, raw, body in iter_slots(v):
+            if body == fn_rva:
+                hits.append((v, k, raw != fn_rva))
+    return hits
+
+
+def vtable_at(start):
+    """The discovered vtable dict starting at `start` (RVA or VA-normalized), or None."""
+    if start >= IMAGEBASE:
+        start -= IMAGEBASE
+    return next((v for v in VTABLES if v['start'] == start), None)
+
 def main():
     a = sys.argv[1:]
+
+    # --holds 0xFN : which vtable(s)/slot(s) resolve (through thunks) to this fn.
+    if "--holds" in a:
+        k = a.index("--holds"); fn = int(a[k+1], 16); del a[k:k+2]
+        for v in VTABLES: v['conf'] = confidence(v)
+        hits = find_holding(fn)
+        print(f"# vtable slots holding 0x{fn:06x} {fn_label(fn)}")
+        if not hits:
+            print("  (none - not a virtual, or its slot points elsewhere / indirect)")
+            return
+        for v, k2, via in hits:
+            cls = v['rtti'] or f"non-rtti {fn_label(v['first'])}"
+            print(f"  vtable 0x{v['start']:06x} ({v['start']+IMAGEBASE:#010x})  {v['conf']:<9} "
+                  f"slot[{k2}] (+0x{k2*4:x}){'  via thunk' if via else ''}   {cls}")
+        return
+
+    # --dump 0xVT : the slots of the vtable at this start (thunks chased to bodies).
+    if "--dump" in a:
+        k = a.index("--dump"); vt = vtable_at(int(a[k+1], 16)); del a[k:k+2]
+        if vt is None:
+            print("# no discovered vtable starts there (run `vtable_scan` for the list)")
+            return
+        vt['conf'] = confidence(vt)
+        cls = vt['rtti'] or f"non-rtti (first: {fn_label(vt['first'])})"
+        print(f"# vtable 0x{vt['start']:06x} ({vt['start']+IMAGEBASE:#010x})  {vt['conf']}  "
+              f"size={vt['size']}  code-refs={vt['code_refs']}  {cls}")
+        for k2, sr, raw, body in iter_slots(vt):
+            via = f"  (via thunk 0x{raw:x})" if body != raw else ""
+            print(f"  slot[{k2:2}] (+0x{k2*4:02x}): 0x{body:06x} {fn_label(body)}{via}")
+        return
+
     csv_path = None
     if "--csv" in a: k = a.index("--csv"); csv_path = a[k+1]; del a[k:k+2]
     names_path = None

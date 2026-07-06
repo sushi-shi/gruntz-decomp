@@ -272,7 +272,10 @@ def caller_tree(targets, d, secs, names, fstarts, fsize, depth_cap=0):
             for o, op, site, via in owners:
                 kind = "call" if op == 0xE8 else "jmp "
                 pad = "  " * (depth + 1)
-                via_s = f"  via thunk {'->'.join(f'0x{v:x}' for v in via)}" if via else ""
+                # compact: how many thunks were transparently skipped (not the full
+                # address chain) - visible that the edge went through the jump table,
+                # without eating the line.
+                via_s = f"  (via {len(via)}t)" if via else ""
                 if o is None:  # a genuine unrecovered gap (not a thunk) - a real leaf
                     print(pad + f"<- {kind} (unrecovered fn @ ~0x{site:08x}){via_s}")
                     continue

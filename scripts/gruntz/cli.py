@@ -1031,7 +1031,24 @@ def _sema_class_of_fn(query: str) -> int:
            (rva is None and query in (r.get("fn_name") or "")):
             hits.append(r)
     if not hits:
-        print(f"no vtable slot holds '{query}' (not a virtual, or not in the RTTI/VTBL graph)")
+        # Fall back to the BINARY scan: covers non-RTTI vtables and thunk-indirect
+        # slots the reconstructed VTBL/hierarchy graph can't see (`sema vtable --holds`).
+        if rva is not None:
+            try:
+                from gruntz.analysis import vtable_scan as vs
+                bhits = vs.find_holding(rva)
+            except Exception:
+                bhits = []
+            if bhits:
+                print(f"vtable slots holding {query} (binary scan):")
+                for v, k, via in bhits:
+                    cls = v["rtti"] or f"non-rtti {vs.fn_label(v['first'])}"
+                    print(f"  vtable 0x{v['start']:06x} ({v['start']+vs.IMAGEBASE:#010x})  "
+                          f"{vs.confidence(v):<9} slot[{k}] (+0x{k*4:x})"
+                          f"{'  via thunk' if via else ''}   {cls}")
+                return 0
+        print(f"no vtable slot holds '{query}' (not a virtual / command-table dispatched, "
+              f"or its slot points elsewhere)")
         return 1
     print(f"vtable slots holding {query}:")
     owners = []
@@ -1046,6 +1063,26 @@ def _sema_class_of_fn(query: str) -> int:
         subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy",
                         "--class", owner], cwd=str(REPO), env=_pkg_env())
     return 0
+
+
+def cmd_sema_vtable(args) -> None:
+    """Binary vtable finder (any vtable, RTTI or not; ILT thunks chased): dump a
+    vtable's slots, or find which vtable/slot holds a fn - the coverage the src-side
+    VTBL/hierarchy graph lacks (non-RTTI tables, thunk-indirect slots)."""
+    tgt = args.target
+    if args.dump:
+        mode = "--dump"
+    elif args.holds:
+        mode = "--holds"
+    else:  # auto: a discovered vtable start -> dump; otherwise treat as a fn -> holds
+        mode = "--holds"
+        try:
+            from gruntz.analysis import vtable_scan as vs
+            if vs.vtable_at(int(tgt, 16)) is not None:
+                mode = "--dump"
+        except Exception:
+            pass
+    sys.exit(_sema_tool("gruntz.analysis.vtable_scan", [mode, tgt]))
 
 
 def cmd_sema_class(args) -> None:
@@ -1249,6 +1286,16 @@ def _add_sema(sub) -> None:
     sc.add_argument("--tree", action="store_true",
                     help="also print the binary-proven inheritance forest (topological)")
     sc.set_defaults(func=cmd_sema_class)
+
+    svt = ss.add_parser("vtable",
+                        help="binary vtable finder: dump a vtable's slots (ILT thunks "
+                             "chased to bodies), or find which vtable/slot holds a fn")
+    svt.add_argument("target", help="a vtable start RVA (-> dump), or a fn RVA (-> find holder)")
+    svtg = svt.add_mutually_exclusive_group()
+    svtg.add_argument("--dump", action="store_true", help="force: dump the vtable at TARGET")
+    svtg.add_argument("--holds", action="store_true",
+                      help="force: which vtable/slot resolves to fn TARGET")
+    svt.set_defaults(func=cmd_sema_vtable)
 
     sm = ss.add_parser("match", help="per-function/unit match summary (report.json)")
     sm.add_argument("target", help="a unit name, or an 0x RVA a src fn claims")
