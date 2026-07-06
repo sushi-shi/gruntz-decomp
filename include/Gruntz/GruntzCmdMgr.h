@@ -146,6 +146,7 @@ public:
     void Clear();
     // 0x023c30 - build a single-target command + enqueue it. p1 is the enqueue
     // flag; p2..p8 are the command's scalar params (forwarded permuted).
+    void Report1(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x90db8 reloc-masked (fold)
     void EnqueueSingle(i32 p1, char p2, char p3, char p4, i16 p5, i16 p6, char p7, char p8);
     // 0x023ca0 - build a multi-target (mask) command + enqueue it.
     void EnqueueMulti(i32 p1, char p2, i32 p3, u8* p4, char p5, i16 p6, i16 p7, char p8);

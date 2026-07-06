@@ -1,4 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -265,20 +266,13 @@ struct CTmScoreBoard {
 // the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
 // 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
 // retail's two arg shapes for their two call sites.
-struct CTmCmdMgr {
-    void Report1(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);                   // 0x90db8
-    i32 Action(i32 one, i32 a, i32 b, i32 kind, i32 c, i32 d, i32 e, i32 f);         // 0x23c30
-    void EnqueueSingle(i32 a, char b, char c, char d, i16 e, i16 f, char g, char h); // 0x23c30
-    void EnqueueMulti(i32 a, char b, i32 c, char* d, char e, i16 f, i16 g, char h);  // 0x23ca0
-};
-
 struct CTmGameReg {
     char p0[0x2c];
     CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
     CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
     char p1[0x34];               // +0x34
     CTriggerMgr* m_68;           // +0x68  reused per-mode slot (fx/target sub-mgr here)
-    CTmCmdMgr* m_6c;             // +0x6c  command/report sub-mgr
+    CGruntzCmdMgr* m_6c;         // +0x6c  command/report sub-mgr
     CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
     char p2[0x8];                // +0x74..0x78
     CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
@@ -1513,7 +1507,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
         }
         n = next;
     }
-    CTmCmdMgr* rep = g_gameReg->m_6c;
+    CGruntzCmdMgr* rep = g_gameReg->m_6c;
     if (count == 1) {
         if (a28 != 0) {
             rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
@@ -1710,7 +1704,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         return 1;
     } else if (sel == 1) {
         // spawn the cursor target sprite
-        CTmCmdMgr* rep = g_gameReg->m_6c;
+        CGruntzCmdMgr* rep = g_gameReg->m_6c;
         if (cell != 0) {
             rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
         } else {
@@ -2055,13 +2049,15 @@ extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5
 // __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
 RVA(0x0006da60, 0x27)
 i32 __stdcall GridAction6(i32 a, i32 b) {
-    return g_gameReg->m_6c->Action(1, a, b, 6, 0, 0, 0, 0);
+    g_gameReg->m_6c->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
+    return 0;
 }
 
 // 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
 RVA(0x0006daa0, 0x27)
 i32 __stdcall GridAction7(i32 a, i32 b) {
-    return g_gameReg->m_6c->Action(1, a, b, 7, 0, 0, 0, 0);
+    g_gameReg->m_6c->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
+    return 0;
 }
 
 // 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
@@ -2430,7 +2426,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     if (count == 1) {
         g_gameReg->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
     } else {
-        g_gameReg->m_6c->EnqueueMulti(1, x, count, (char*)buf, 5, 0, 0, 0);
+        g_gameReg->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
     }
     return 1;
 }
@@ -2451,7 +2447,6 @@ SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
 SIZE_UNKNOWN(CTmGameReg);
 SIZE_UNKNOWN(CTmScoreBoard);
-SIZE_UNKNOWN(CTmCmdMgr);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmSpriteDesc);
 SIZE_UNKNOWN(CTmLevel);
