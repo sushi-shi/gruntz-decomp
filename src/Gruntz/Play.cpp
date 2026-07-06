@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/FontConfig.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
@@ -3956,12 +3957,9 @@ struct DtorWorkerD {
 struct DtorObList {
     void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
 };
-struct DtorSub5c {
-    void Dtor(); // 0x128a thunk  (m_4->m_5c)
-};
 struct DtorWorld { // this->m_4
     char p0[0x5c];
-    DtorSub5c* m_5c; // +0x5c
+    CFontConfig* m_5c; // +0x5c
     char p60[0x128 - 0x60];
     i32 m_128; // +0x128
 };
@@ -4031,7 +4029,7 @@ void CPlay::CPlayDtorBody() {
         *(i32*)((char*)g_64556c + off - 0xc8) = 0;
     } while (off < 0x8e0);
     if (self->m_4 && self->m_4->m_5c) {
-        self->m_4->m_5c->Dtor();
+        self->m_4->m_5c->FreeNodes();
     }
     if (self->m_guts) {
         self->m_guts->DtorMembers();
