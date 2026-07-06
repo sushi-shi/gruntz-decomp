@@ -25,6 +25,7 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+#include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Utils/RegistryHelper.h>
@@ -1237,21 +1238,6 @@ struct CNetSess {
 
 // (4) the 0x78 command manager: 4 CPtrLists + a flag at +0x74. The dtor runs a base
 // cleanup (0x2207) then the 4 members reverse-destruct (states 0xf..0x12).
-SIZE_UNKNOWN(CNetCmdMgr);
-struct CNetCmdMgr {
-    CPtrList m_l0, m_l1, m_l2, m_l3; // +0x00 / +0x1c / +0x38 / +0x54
-    char m_pad70[0x74 - (4 * sizeof(CPtrList))];
-    i32 m_74; // +0x74
-    CNetCmdMgr() {
-        m_74 = 0;
-    }
-    ~CNetCmdMgr() {
-        DtorBody();
-    }
-    void DtorBody(); // 0x2207
-    i32 GetFlag74(); // 0x403e
-};
-
 // @early-stop
 // ~71% (0%->71.2%): a COMPLETE, correct reconstruction - the full 18-EH-state connect
 // sequence, all 4 object constructions, and every call/control-flow arm are byte-
@@ -1426,10 +1412,10 @@ i32 CNetMgr::Stub_0b5460(i32 a1, i32 a2, i32 a3) {
     }
 
     // (4) command manager
-    CNetCmdMgr* cmd = new CNetCmdMgr();
+    CTileTriggerSwitchLogic* cmd = new CTileTriggerSwitchLogic();
     TF(0x2e4) = (i32)cmd;
     if (cmd->GetFlag74() == 0) {
-        CNetCmdMgr* co = (CNetCmdMgr*)TF(0x2e4);
+        CTileTriggerSwitchLogic* co = (CTileTriggerSwitchLogic*)TF(0x2e4);
         if (co == 0) {
             return 0;
         }
