@@ -16,6 +16,8 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+class DirectSoundMgr; // folded GruntSoundSample
+
 #include <Ints.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Gruntz/SpriteFactory.h>
@@ -609,13 +611,9 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
 // GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
 // __thiscall ret 0 -> new sample); the sample is Play'd (0x136300) and lives in the
 // grunt's +0x428 slot (freed by ClearSubB). All engine callees external/reloc-masked.
-SIZE_UNKNOWN(GruntSoundSample);
-struct GruntSoundSample {
-    i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
-};
 SIZE_UNKNOWN(GruntSampleFactory);
 struct GruntSampleFactory {
-    GruntSoundSample* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
+    DirectSoundMgr* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
 };
 SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {

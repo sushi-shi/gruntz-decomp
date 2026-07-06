@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>
 #include <math.h>
@@ -3117,7 +3118,7 @@ void CGrunt::OnStruck(i32 wasHit) {
 // Logic complete; flips to exact once that shared referent set is named.
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
-    GruntSoundSample*& sample = *(GruntSoundSample**)&m_424;
+    DirectSoundMgr*& sample = *(DirectSoundMgr**)&m_424;
     if (sample != 0) {
         return;
     }
@@ -3136,7 +3137,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (sample == 0) {
         return;
     }
-    sample->Play(g_gameReg->m_11c, 0, 0, 1);
+    sample->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
 }
 
 // CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
@@ -3166,7 +3167,7 @@ void CGrunt::ClearSubA() {
 // functions get stubs (the SAME referent set LaunchSound waits on). Logic complete.
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
-    GruntSoundSample*& sample = *(GruntSoundSample**)&m_428;
+    DirectSoundMgr*& sample = *(DirectSoundMgr**)&m_428;
     if (sample != 0) {
         return;
     }
@@ -3182,7 +3183,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample == 0) {
         return;
     }
-    sample->Play(g_gameReg->m_11c, 0, 0, 1);
+    sample->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
 }
 
 // CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.
