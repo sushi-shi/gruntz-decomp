@@ -79,7 +79,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                 m_290 = g_645588;
                 m_294 = 0;
                 CStatusBarHolder* h28 = m_22c->m_28;
-                if (h28->m_30 == 0) {
+                if (h28->m_surfaceGate == 0) {
                     p = 0;
                     h28->m_10map.Lookup("GAME\\FINISHLEVEL", &p);
                     if (p != 0 && g_sndEnabled != 0

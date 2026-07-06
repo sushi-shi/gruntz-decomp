@@ -47,7 +47,7 @@ struct CStatusBarHolder {
     CSpriteHashTable m_10map; // +0x10  the ONE name->CObject map (Sprite.h)
     char m_pad14[0x2c - 0x14];
     SoundDevice* m_2c; // +0x2c  audio-kill sound mgr
-    i32 m_30;          // +0x30  live-surface gate
+    i32 m_surfaceGate; // +0x30  live-surface gate
 };
 SIZE_UNKNOWN(CStatusBarHolder);
 

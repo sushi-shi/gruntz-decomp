@@ -13,9 +13,12 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40 @0x158b40)
 #include <stdio.h>
 
+#include <Dsndmgr/SoundDevice.h>
+
 #include <Bute/SymTab.h>
-#include <Gruntz/StatusBarCueHolder.h> // the ONE cue-holder shape (CueObj/CCueHashTable/CStatusBarHolder)
-#include <Gruntz/SoundCueMgr.h>        // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/StatusBarCueHolder.h>     // the ONE CStatusBarHolder / CueObj shape
+#include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
+#include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 
@@ -28,46 +31,9 @@ extern "C" {
     extern u32 g_killCueClock;
 }
 
-// CSoundCueMgr::ConfigureItem (@0x1360d0) is modeled in <Gruntz/SoundCueMgr.h>;
-// CueObj/CCueHashTable/CStatusBarHolder in <Gruntz/StatusBarCueHolder.h>.
-// The screen's manager (CPreviewState::m_04) is the canonical CGruntzMgr game-manager
-// singleton (<Gruntz/GruntzMgr.h>): the per-frame error sink (ReportError @0x8dc60),
-// the delayed-quit (DelayedQuit @0x8f530), and the window-owner chain to the top HWND
-// via the CGameMgr base (m_gameWnd -> CGameWnd::m_hwnd). The former local
-// CGruntzMgrErrSink / MgrWndLink placeholder views folded onto it.
-
-// The countdown's audio kill hook (the sound mgr at the status-bar holder's +0x2c;
-// __thiscall, arg -1 == "all"). 0x136e20, reloc-masked.
-SIZE_UNKNOWN(CSoundMgr);
-class CSoundMgr {
-public:
-    i32 KillCue(i32 which); // 0x136e20
-};
-
-// The live DirectDraw COM surface is IDirectDrawSurface (slot 24 IsLost, +0x60);
-// the engine wrapper is the canonical CDDSurface (held COM surface @+0x08 == m_8,
-// Flip @0x13e850). Both from <DDrawMgr/DDSurface.h>.
-
-// The DDraw surface pair CDDrawSubMgrPages holds at +0x10 (m_frontPair); only its
-// +0x2c channel surface (m_surface) is read here. The ONE CDDrawSurfacePair shape
-// now comes from <DDrawMgr/DDrawSurfacePair.h> (completes DDrawSubMgrPages.h's fwd decl).
-
-// CStatusBarHolder (cue-holder shape, m_2c sound mgr + m_30 gate) is in
-// <Gruntz/StatusBarCueHolder.h>; CSoundMgr (full def) is above.
-SIZE_UNKNOWN(PreviewMgr);
-struct PreviewMgr {
-    char m_pad00[4];
-    CDDrawSubMgrPages* m_04; // +0x04
-    char m_pad08[0x28 - 0x08];
-    CStatusBarHolder* m_28; // +0x28
-};
-
-// The bute datum the screen namespace is interned under (?g_screenTag@@3HA
-// @0x504358); referenced by address so the DIR32 operand reloc-masks.
-
-// The engine's per-frame clock delta (?g_wap32FrameDelta@@3HA @0x653c74). Signed
-// in the engine, but the timer compare/subtract below promote against the unsigned
-// +0x1b8 timer (the unsigned ja/jb the countdown uses).
+// CPreviewState::m_0c is the ONE world/resource holder (== g_gameReg->m_world ==
+// CState::m_c); modeled as CRegHolder (<Gruntz/StatusBarUpdatersViews.h>), shared with
+// the status-bar updater TU. The former local PreviewMgr view folded onto it.
 
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState {
@@ -95,7 +61,7 @@ public:
 
     CGruntzMgr* m_04; // +0x04  game-manager singleton
     i32 m_08;         // +0x08
-    PreviewMgr* m_0c; // +0x0c
+    CRegHolder* m_0c; // +0x0c  world/resource holder (== g_gameReg->m_world)
     char m_pad10[0x2c - 0x10];
     CSymTab* m_2c; // +0x2c
     char m_pad30[0x1b8 - 0x30];
@@ -123,9 +89,9 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    CSoundMgr* snd = m_0c->m_28->m_2c;
+    SoundDevice* snd = m_0c->m_statusBar->m_2c;
     if (snd != 0) {
-        snd->KillCue(-1);
+        snd->PurgeVoiceList(-1);
     }
     if ((u32)g_wap32FrameDelta >= m_1b8) {
         m_1b8 = 0;
@@ -153,8 +119,8 @@ void CPreviewState::LoadLevelPreviewScreen() {
     if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
     } else {
-        CStatusBarHolder* h = m_0c->m_28;
-        if (h->m_30 == 0) {
+        CStatusBarHolder* h = m_0c->m_statusBar;
+        if (h->m_surfaceGate == 0) {
             CueObj* p = 0;
             h->m_10map.Lookup("GAME_TELEPORTEROPEN", &p);
             if (p != 0) {

@@ -10,6 +10,7 @@
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (ConfigureItem @0x1360d0)
 #include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/StatusBarCueHolder.h> // the ONE CStatusBarHolder (+0x28 status holder; shared with the cue TUs)
 
 // The status-bar item the named Lookup resolves: it holds the CSoundCueMgr to push
 // the configuration into at +0x10, a draw-clock latch (+0x14) and a window width
@@ -22,16 +23,9 @@ struct CStatusBarTab {
 };
 SIZE_UNKNOWN(CStatusBarTab);
 
-// The status-bar holder reached through the registry: its embedded hash table is
-// at +0x10 (the `add ecx,0x10` before Lookup addresses it) and +0x30 gates the
-// live surface.
-struct CStatusBarHolder {
-    char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10  embedded name->sprite hash table
-    char m_pad14[0x30 - 0x14];
-    i32 m_surfaceGate; // +0x30  live-surface gate
-};
-SIZE_UNKNOWN(CStatusBarHolder);
+// The +0x28 status-bar holder is the ONE CStatusBarHolder (StatusBarCueHolder.h) -
+// the former sprite-keyed copy here was a second view of it (same CSpriteHashTable
+// map + m_surfaceGate; the cue TUs additionally read its +0x2c sound mgr).
 
 // The map render grid reached via m_30->m_tileHolder->m_grid (two parallel tables: a cell
 // state table at +0x20 and a row-offset table at +0x24). Distinct object from the
@@ -44,10 +38,16 @@ struct CMapTileGrid {
 };
 // The tile-system notifier at registry +0x70 is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>), viewed through its Notify facet.
-// The registry's +0x30 holder: it carries the tile-grid holder (+0x24 -> +0x5c
-// grid) and the status-bar holder (+0x28).
+// The registry's world/resource holder (g_gameReg->m_world == CState::m_c, the ONE
+// CSpriteFactoryHolder): the DDraw front/back pages (+0x04, read only by the level-
+// preview driver), the tile-grid holder (+0x24 -> +0x5c grid) and the status-bar
+// holder (+0x28). LevelPreview's former PreviewMgr was a second view of it - folded
+// here. (Deeper fold onto the canonical CSpriteFactoryHolder / CSndHost pending.)
+struct CDDrawSubMgrPages; // +0x04 DDraw front/back page pair (LevelPreview render facet)
 struct CRegHolder {
-    char m_pad00[0x24];
+    char m_pad00[0x04];
+    CDDrawSubMgrPages* m_04; // +0x04  DDraw front/back pages (preview surface)
+    char m_pad08[0x24 - 0x08];
     struct M24 {
         char m_pad00[0x5c];
         CMapTileGrid* m_grid;
