@@ -8,6 +8,7 @@
 // 0x150180 / 0x150190 / 0x1501a0 / 0x1503c0) and operator new/delete are
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/DataBuffer.h>
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
 #include <rva.h>
@@ -136,10 +137,10 @@ i32 CShadeTableCache::Init() {
 RVA(0x0014ded0, 0x64)
 void CShadeTableCache::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        m_arr.m_pData[i]->Destroy();
+        ((CDataBuffer*)m_arr.m_pData[i])->Free();
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
-            t->Free();
+            ((CDataBuffer*)t)->Reset();
             operator delete(t);
         }
     }
@@ -180,7 +181,7 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
         return 0;
     }
     i32 total = nA + nB;
-    if (!t->Alloc(total << 8, 0)) {
+    if (!((CDataBuffer*)t)->Set(total << 8, 0)) {
         return 0;
     }
 
@@ -294,7 +295,7 @@ CShadeTableCache::HsvShiftTable(PalEntry* pal, i32 steps, i32 pct, i32 gamma, i3
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(steps << 8, 0)) {
+    if (!((CDataBuffer*)t)->Set(steps << 8, 0)) {
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -345,7 +346,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PalEntry* pal, i32 steps, i32 packed
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(steps << 8, 0)) {
+    if (!((CDataBuffer*)t)->Set(steps << 8, 0)) {
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -387,7 +388,7 @@ CShadeTable* CShadeTableCache::GammaTable(PalEntry* pal, i32 wRow, i32 wCol) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x10000, 0)) {
+    if (!((CDataBuffer*)t)->Set(0x10000, 0)) {
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -424,7 +425,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PalEntry* pal) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x200, 0)) {
+    if (!((CDataBuffer*)t)->Set(0x200, 0)) {
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -459,7 +460,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PalEntry* pal) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x200, 0)) {
+    if (!((CDataBuffer*)t)->Set(0x200, 0)) {
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -497,8 +498,8 @@ CShadeTable* CShadeTableCache::GreyTable() {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x20000, 0)) {
-        t->Free();
+    if (!((CDataBuffer*)t)->Set(0x20000, 0)) {
+        ((CDataBuffer*)t)->Reset();
         operator delete(t);
         return 0;
     }
@@ -536,8 +537,8 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x20000, 0)) {
-        t->Free();
+    if (!((CDataBuffer*)t)->Set(0x20000, 0)) {
+        ((CDataBuffer*)t)->Reset();
         operator delete(t);
         return 0;
     }
@@ -588,8 +589,8 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x20000, 0)) {
-        t->Free();
+    if (!((CDataBuffer*)t)->Set(0x20000, 0)) {
+        ((CDataBuffer*)t)->Reset();
         operator delete(t);
         return 0;
     }
@@ -633,8 +634,8 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
     if (!t) {
         return 0;
     }
-    if (!t->Alloc(0x200, 0)) {
-        t->Free();
+    if (!((CDataBuffer*)t)->Set(0x200, 0)) {
+        ((CDataBuffer*)t)->Reset();
         operator delete(t);
         return 0;
     }
@@ -710,7 +711,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     }
     m_arr.m_pData[oldSize] = t;
     CStr cstr(name);
-    if (!t->Load(cstr, 0)) {
+    if (!((CDataBuffer*)t)->LoadFromFile(cstr.m_p, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -773,7 +774,7 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    if (!t->LoadFile((void*)name, size, 0)) {
+    if (!((CDataBuffer*)t)->LoadFromMem((void*)name, size, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -828,10 +829,10 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
                 return;
             }
         }
-        m_arr.m_pData[i]->Destroy();
+        ((CDataBuffer*)m_arr.m_pData[i])->Free();
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
-            t->Free();
+            ((CDataBuffer*)t)->Reset();
             operator delete(t);
         }
         i32 cnt = m_arr.m_nSize - i - 1;
