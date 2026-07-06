@@ -12,6 +12,7 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
+#include <Bute/ButeTree.h>
 #include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
@@ -39,10 +40,6 @@ struct CVTrigColl {
     void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
 };
 SIZE_UNKNOWN(CVTrigColl);
-struct CVTrigColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
-SIZE_UNKNOWN(CVTrigColl2);
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00251500)
@@ -67,7 +64,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_vtrigColl2->Insert(&g_vtrigColl, item, 0xc);
+    g_vtrigColl2->Set(&g_vtrigColl, (i32)item, 0xc);
     return g_vtrigCur;
 }
 
@@ -82,7 +79,7 @@ extern char s_actKeyA[];
 DATA(0x002bf650)
 extern CVTrigColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CVTrigColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -112,7 +109,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 

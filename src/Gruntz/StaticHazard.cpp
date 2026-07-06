@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
@@ -93,10 +94,7 @@ extern CGameRegistry* g_gameReg;
 // a slow Find/rebuild. All globals are unnamed BSS (DATA-pinned so the loads
 // reloc-mask); the collection methods are external/no-body.
 // ===========================================================================
-struct CHaznEntry; // an entry: first dword is the registered handler
-struct CHaznColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
-};
+struct CHaznEntry;         // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
@@ -134,7 +132,7 @@ extern char s_actKeyB[]; // "B"
 DATA(0x002bf650)
 extern CHaznColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CHaznColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -165,7 +163,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 
@@ -180,7 +178,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_haznColl2->Insert(&g_haznColl, item, 0xc);
+    g_haznColl2->Set(&g_haznColl, (i32)item, 0xc);
     return g_haznCur;
 }
 
@@ -502,7 +500,6 @@ dispatch:
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-SIZE_UNKNOWN(CHaznColl2);
 SIZE_UNKNOWN(CHaznEntry);
 SIZE_UNKNOWN(CHaznEntry2);
 SIZE_UNKNOWN(CStaticHazard);

@@ -15,7 +15,7 @@ struct CActEntry;
 class CDirectDrawMgr;
 struct CVariantSlot;
 struct CDropEntry;
-struct CHaznColl2;
+struct CVariantSlot;
 struct CHaznEntry;
 struct CKSlimeEntry;
 struct CVariantSlot;
@@ -25,9 +25,9 @@ struct CProjActEntry;
 struct CActColl2;
 struct CVariantSlot;
 struct CTBombEntry;
-struct CToobColl2;
+struct CVariantSlot;
 struct CToobEntry;
-struct CVTrigColl2;
+struct CVariantSlot;
 struct CVTrigEntry;
 struct GLSResetMgr;
 struct SFMANL101TAG;
@@ -471,7 +471,7 @@ extern u8 g_ratings_64e0c0[]; // per-device rating bytes
 DATA(0x0024e360)
 extern i32 g_suppress_64e360;
 DATA(0x0024e3d4)
-extern CHaznColl2* g_haznColl2;
+extern CVariantSlot* g_haznColl2;
 DATA(0x0024e3d8)
 extern i32 g_haznLo;
 DATA(0x0024e3dc)
@@ -485,7 +485,7 @@ extern i32 g_haznStride;
 DATA(0x0024e3f0)
 extern i32 g_haznScratch;
 DATA(0x0024e97c)
-extern CToobColl2* g_toobColl2;
+extern CVariantSlot* g_toobColl2;
 DATA(0x0024e980)
 extern i32 g_toobLo;
 DATA(0x0024e984)
@@ -501,7 +501,7 @@ extern i32 g_toobScratch;
 DATA(0x0024eb14)
 extern i32 g_loadedFlag;
 DATA(0x00251504)
-extern CVTrigColl2* g_vtrigColl2;
+extern CVariantSlot* g_vtrigColl2;
 DATA(0x00251508)
 extern i32 g_vtrigLo;
 DATA(0x0025150c)
