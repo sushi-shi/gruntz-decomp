@@ -1,3 +1,4 @@
+#include <Mfc.h> // real MFC CObArray (the frame array's SetAtGrow @0x1b5822)
 #include <rva.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ResMgr.h>        // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
@@ -433,7 +434,7 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
         }
         return 0;
     }
-    m_frames.SetAtGrow(n, (CObject*)worker);
+    ((CObArray*)&m_frames)->SetAtGrow(n, (CObject*)worker);
     if (n < m_firstFrame) {
         m_firstFrame = n;
     }
