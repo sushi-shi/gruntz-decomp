@@ -6,6 +6,7 @@
 //  0x1bae5d - forward (-1) to a CWnd method on a global framework object.
 //  0xc76d0  - construct g_64bf00 (CZDArrayDerived::Construct(0x7d0,0x7da)).
 #include <rva.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Ints.h>
 
 #include <Font/Font.h> // real Font (the g_largeFont global)
@@ -49,12 +50,6 @@ void Unmatched_1bae5d() {
     g_652e80.Method_1baf15(-1);
 }
 
-// --- 0xc76d0 : construct the g_64bf00 global (CZDArrayDerived) ----------------
-// 0x8710 == CZDArrayDerived::Construct (the 2D typed-array build in ZDArrayDerived.cpp);
-// this leaf builds the global with (0x7d0, 0x7da). Local decl matches that class.
-struct CZDArrayDerived {
-    CZDArrayDerived* Construct(i32 lo, i32 hi); // 0x8710
-};
 extern CZDArrayDerived g_64bf00;
 RVA(0x000c76d0, 0x15)
 void Unmatched_c76d0() {

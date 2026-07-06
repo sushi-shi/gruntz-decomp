@@ -5,6 +5,7 @@
 // + emitted code bytes are load-bearing (campaign doctrine). All engine callees
 // are external/no-body so their call rel32 / DIR32 reloc-mask.
 #include <Ints.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <rva.h>
 #include <Globals.h>
 
@@ -66,15 +67,12 @@ void COwnerWithSubs::DtorSub8() {
 // ---------------------------------------------------------------------------
 // 0x3e120: register the default activation-id range [0x7d0, 0x7da] on a per-class
 // registry (g_6446d8) via the shared SetActiveRange ILT thunk (0x3742).
-struct CActReg6446d8 {
-    void SetActiveRange(i32 lo, i32 hi); // 0x3742 (ILT thunk)
-};
 DATA(0x002446d8)
-extern CActReg6446d8 g_6446d8;
+extern CZDArrayDerived g_6446d8;
 
 RVA(0x0003e120, 0x15)
 void Register6446d8Range() {
-    g_6446d8.SetActiveRange(0x7d0, 0x7da);
+    g_6446d8.Construct(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------
@@ -101,7 +99,7 @@ i32 RunHelper2914() {
     Helper2914();
     return 0;
 }
-SIZE_UNKNOWN(CActReg6446d8);
+SIZE_UNKNOWN(CZDArrayDerived);
 SIZE_UNKNOWN(CGlobalStr);
 SIZE_UNKNOWN(COwnerWithSubs);
 SIZE_UNKNOWN(CPairXY);

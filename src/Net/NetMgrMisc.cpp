@@ -3,6 +3,7 @@
 // file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
 // engine singletons. All callees/globals are external (reloc-masked).
 #include <Ints.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Dialogs.h>    // CMultiStartDlg (the connect-coordinator IS this dialog)
 #include <Gruntz/Multi.h>      // the g_64bd5c singleton is a CMulti (xref-proven)
@@ -41,11 +42,8 @@ struct CNetSlotAux {
 SIZE_UNKNOWN(CNetSlotAux); // slot-clear view (only +0x3c range pinned); size TBD
 
 // Singletons the forwarders dispatch onto.
-struct CNetSingletonBe90 {
-    void Configure(i32 a, i32 b); // 0x8710 (via thunk 0x3742)
-};
 DATA(0x0024be90)
-extern CNetSingletonBe90 g_netBe90; // VA 0x64be90
+extern CZDArrayDerived g_netBe90; // VA 0x64be90
 
 struct CNetSingletonE25c {
     i32 Poll(); // 0x1b9b93
@@ -107,5 +105,5 @@ void CMultiStartDlg::Drive() {
 // ---------------------------------------------------------------------------
 RVA(0x000c5f00, 0x15)
 void NetConfigureBe90() {
-    g_netBe90.Configure(0x7d0, 0x7da);
+    g_netBe90.Construct(0x7d0, 0x7da);
 }
