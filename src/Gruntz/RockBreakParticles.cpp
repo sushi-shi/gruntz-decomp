@@ -93,19 +93,19 @@ struct RockGrid {
 // vtable (`char m_pad00[0x20]` documents the un-recovered slots) so `o->GetType(0,0)`
 // emits `mov edx,[ecx]; call [edx+0x20]`. The class is COMPLETE before the T::*
 // typedef to keep the PMF 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
-struct RockCellVtbl;
+// Real polymorphic view: GetType is the one dispatched slot (slot 8, +0x20), a real
+// virtual (8 filler slots precede it); declared-only. o->GetType() -> call [eax+0x20].
 struct RockCellObj {
-    RockCellVtbl* m_vptr; // +0x00
-    i32 GetType(i32 a, i32 b);
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
 };
-typedef i32 (RockCellObj::*RockGetTypeFn)(i32, i32);
-struct RockCellVtbl {
-    char m_pad00[0x20];
-    RockGetTypeFn GetType; // +0x20
-};
-inline i32 RockCellObj::GetType(i32 a, i32 b) {
-    return (this->*(m_vptr->GetType))(a, b);
-}
 struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
     char m_pad00[0x4c];
     RockCellObj** m_4c; // +0x4c  cell type-object table
@@ -293,7 +293,6 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 SIZE_UNKNOWN(CRockBreakMgr);
 SIZE_UNKNOWN(RockBoard);
 SIZE_UNKNOWN(RockCellObj);
-SIZE_UNKNOWN(RockCellVtbl);
 SIZE_UNKNOWN(RockGrid);
 SIZE_UNKNOWN(RockLogicMgr);
 SIZE_UNKNOWN(RockLogicObj);

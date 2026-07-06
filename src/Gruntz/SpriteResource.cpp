@@ -191,26 +191,29 @@ void CGruntSprite::CacheFrame(const char* name, i32 frame) {
 // __single_inheritance keeps the init PMF a 4-byte code pointer (the class is only
 // forward-declared here, else MSVC's general PMF emits a this-adjust thunk).
 // CSprite2 is forward-declared (with __single_inheritance) in <Gruntz/SpriteFactory.h>.
-typedef i32 (CSprite2::*CSprite2InitFn)(i32, i32, i32, CSprite*);
-struct CSprite2Vtbl {
-    char _00[0x28];
-    CSprite2InitFn Init; // [0x28]
-};
 // The +0x7c fn-ptr sub-table: the post-attach driver entry lives at byte +0x10.
 struct CSprite2SubTable {
     void* _00[4];             // +0x00..0x0c
     void (*Entry)(CSprite2*); // +0x10  post-attach driver
 };
+// Real polymorphic view: Init is slot 10 (+0x28), a real virtual (10 filler slots
+// precede it); the compiler emits the vptr at +0x00. obj->Init() -> call [eax+0x28].
 struct CSprite2 {
-    CSprite2Vtbl* vptr; // +0x00
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void Slot9();
+    virtual i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl); // +0x28 (slot 10)
     char _04[0x08 - 0x04];
     i32 m_08; // +0x08  flags slot
     char _0c[0x7c - 0x0c];
     CSprite2SubTable* m_7c; // +0x7c  fn-ptr sub-table (entry @+0x10)
-
-    i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl) {
-        return (this->*(vptr->Init))(a, b, c, tmpl);
-    }
 };
 
 // CSpriteFactory now lives in the shared <Gruntz/SpriteFactory.h> (included above);
@@ -476,4 +479,3 @@ SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSprite2);
 SIZE_UNKNOWN(CSprite2SubTable);
-SIZE_UNKNOWN(CSprite2Vtbl);
