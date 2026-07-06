@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/ParseSource.h>
 #include <Gruntz/AniElement.h>
 #include <Globals.h>
 // AniElement.cpp - the 0x28-byte 'ANI' animation element (primary vftable
@@ -30,13 +31,6 @@ extern "C" void RezFree(void* p);
 // The 'ANI' source entry's tag reader / parse session (CParseSource family,
 // __thiscall on the entry node). Modeled as a layout-compatible view so the
 // `mov ecx,entry; call` forms fall out; external/no-body.
-class CAniEntry {
-public:
-    i32 ParseTag_139800();     // 0x139800  -> 0x414e49 for 'ANI'
-    void* BeginParse_139960(); // 0x139960  returns the source descriptor or 0
-    void EndParse_1399d0();    // 0x1399d0
-};
-
 // The 0x34-byte frame record Build `new`s + catalogs is the shared CAniRecordView
 // (include/Gruntz/AniRecordView.h): its ctor stamps the primary vptr (@0x5f02c0)
 // and seeds m_owner/m_count/m_indices. (Formerly a CAniElement.cpp-local
@@ -119,21 +113,20 @@ fail:
 // __thiscall, 3 stack args (ret 0xc). Returns Build's result (0 if not 'ANI').
 RVA(0x001655c0, 0x53)
 i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
-    if (((CAniEntry*)entry)->ParseTag_139800() != 0x414e49) {
+    if (((CParseSource*)entry)->GetEntryTag() != 0x414e49) {
         return 0;
     }
     m_flags = flags;
-    void* src = ((CAniEntry*)entry)->BeginParse_139960();
+    void* src = (void*)((CParseSource*)entry)->BeginParse();
     if (src == 0) {
         return 0;
     }
     i32 r = Build_165460(ctx, (CAniSource*)src, 0);
-    ((CAniEntry*)entry)->EndParse_1399d0();
+    ((CParseSource*)entry)->EndParse();
     return r;
 }
 
 SIZE_UNKNOWN(CAniElement);
-SIZE_UNKNOWN(CAniEntry);
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);
