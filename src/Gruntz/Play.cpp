@@ -1179,21 +1179,23 @@ struct CVisEntityType {
     void* s0[4];
     void* m_10; // [0x10] slot-4 method pointer = the type discriminator
 };
-struct CVisEntityVtbl;
+// Real polymorphic view: Notify is slot 11 (+0x2c), a real virtual (11 fillers).
 struct CVisEntity {
-    CVisEntityVtbl* vptr;
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void Slot9();
+    virtual void Slot10();
+    virtual void Notify(void* held); // slot 11 (+0x2c)
     char p4[0x7c - 0x04];
-    CVisEntityType* m_7c;    // +0x7c
-    void Notify(void* held); // vtbl[0x2c]
+    CVisEntityType* m_7c; // +0x7c
 };
-typedef void (CVisEntity::*VisNotifyFn)(void*);
-struct CVisEntityVtbl {
-    char s0[0x2c];
-    VisNotifyFn Notify; // [0x2c]
-};
-inline void CVisEntity::Notify(void* held) {
-    (this->*(vptr->Notify))(held);
-}
 struct CVisNode {
     CVisNode* m_next; // +0x00
     char p4[0x8 - 0x4];
@@ -3841,20 +3843,30 @@ struct CRtWorld { // this->m_4
 // dispatched here; the rest are unreconstructed engine code. Honest model = a manual
 // vptr into a typed vtable struct naming ONLY the used slot as a 4-byte thiscall PMF
 // + char pad[], NO fake virtuals.
-struct CRtImageRegVtbl;
-struct CRtImageReg {         // m_c->m_24
-    CRtImageRegVtbl* m_vtbl; // +0x00
-    void CallTeardown();     // slot 17 (+0x44)
+// Real polymorphic view: Teardown is slot 17 (+0x44), a real virtual (17 fillers).
+struct CRtImageReg { // m_c->m_24
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Teardown(); // slot 17 (+0x44)
+    void CallTeardown() {
+        Teardown();
+    }
 };
-typedef void (CRtImageReg::*RtImageRegFn)();
-struct CRtImageRegVtbl {
-    char m_pad00[0x44];
-    RtImageRegFn Teardown; // +0x44 slot 17
-};
-SIZE_UNKNOWN(CRtImageRegVtbl);
-inline void CRtImageReg::CallTeardown() {
-    (this->*(m_vtbl->Teardown))();
-}
 struct CRtSoundReg { // m_c->m_28
     char p0[0x2c];
     SoundStream* m_2c; // +0x2c
@@ -4425,7 +4437,7 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
     return 1;
 }
 
-// The four placed-object dynamic-type markers LoadWarlordSprites tests obj->m_7c->m_10
+// The four placed-object dynamic-type markers LoadWarlordSprites tests obj->m_7c[4]
 // against: each is the address of that object class's vtable slot-4 (+0x10) method
 // thunk. Named so the `cmp eax,<thunk>` emits its DIR32 reloc (retail relocates the
 // immediate) instead of a bare number - the reloc is what the match needs.
@@ -4440,15 +4452,10 @@ extern char g_objVtblThunk_137a[]; // counted object keyed on m_11c (sibling of 
 
 // A placed object walked in the in-level branch: its +0x7c dynamic-type vtable
 // (whose +0x10 slot carries the type marker) + its sprite/type ids.
-SIZE_UNKNOWN(CWarlordVtbl);
-struct CWarlordVtbl {
-    char p0[0x10];
-    void* m_10; // +0x10  dynamic-type marker (a vtable slot method thunk)
-};
 SIZE_UNKNOWN(CWarlordObj);
 struct CWarlordObj {
     char p0[0x7c];
-    CWarlordVtbl* m_7c; // +0x7c
+    void** m_7c; // +0x7c  (raw vtable of the identity sub-object)
     char p80[0x118 - 0x80];
     i32 m_118; // +0x118  primary sprite/type id
     i32 m_11c; // +0x11c
@@ -4535,7 +4542,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
         CWarlordObj* obj = node->m_8;
         CWarlordListNode* nxt = node->m_0;
         if (obj) {
-            void* marker = obj->m_7c->m_10;
+            void* marker = obj->m_7c[4];
             if (marker == (void*)g_objVtblThunk_24a5) {
                 i32 v = obj->m_11c;
                 if (v) {
@@ -5009,7 +5016,6 @@ SIZE_UNKNOWN(CSoundRegistry);
 SIZE_UNKNOWN(CState);
 SIZE_UNKNOWN(CVisEntity);
 SIZE_UNKNOWN(CVisEntityType);
-SIZE_UNKNOWN(CVisEntityVtbl);
 SIZE_UNKNOWN(CVisNode);
 SIZE_UNKNOWN(CWorld);
 SIZE_UNKNOWN(CWorldDraw);
