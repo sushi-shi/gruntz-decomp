@@ -8,6 +8,7 @@
 #include <Win32.h>
 
 #include <Gruntz/SpriteRefTable.h>
+#include <DDrawMgr/ShadeTableCache.h> // canonical CShadeTableCache (FindRemove @0x14fb80)
 
 #include <rva.h>
 
@@ -26,10 +27,6 @@ extern i32 g_bDown; // 0x683eb4
 
 // The shade cache that owns m_alphaKey; Free() hands the table back via FindRemove
 // (0x14fb80). Modeled NO-body so the `call` reloc-masks.
-class CShadeTableFreer {
-public:
-    void FindRemove(void* key); // 0x14fb80 __thiscall
-};
 
 // ---------------------------------------------------------------------------
 
@@ -251,11 +248,10 @@ i32 CSpriteRef::Build(i32 cache, void* shade, i32 kind) {
 // Hand the alpha table back to its cache and clear the cached pointers.
 RVA(0x000e32e0, 0x25)
 void CSpriteRef::Free() {
-    CShadeTableFreer* cache = (CShadeTableFreer*)m_cache;
+    CShadeTableCache* cache = (CShadeTableCache*)m_cache;
     if (cache && m_alphaKey) {
-        cache->FindRemove((void*)m_alphaKey);
+        cache->FindRemove((CShadeTable*)m_alphaKey);
         m_cache = 0;
         m_alphaKey = 0;
     }
 }
-SIZE_UNKNOWN(CShadeTableFreer);
