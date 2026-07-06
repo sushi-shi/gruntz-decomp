@@ -19,7 +19,7 @@
 
 #include <rva.h>
 #include <string.h> // inline strcmp of the grunt type name
-#include <Gruntz/StepList2.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/ScanRectInit.h>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/TypeColl.h>
@@ -34,7 +34,7 @@
 extern CTypeColl g_typeColl; // (DATA-bound in GruntUpdateStep.cpp)
 
 // The owned pending-coord recycle pool (g_dropList @0x645540; DATA-bound elsewhere).
-extern CStepList2 g_dropList;
+extern FreeNodePool g_dropList;
 
 // The board/cell targetable gate (0xf0db0, __cdecl reloc-masked): the active-move
 // cell predicate used by ArrivalScanB.
@@ -92,7 +92,7 @@ extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556
             CScanListNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_dropList.Drop(cur->m_8);                                                         \
+                g_dropList.Push((void*)(cur->m_8));                                                \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \

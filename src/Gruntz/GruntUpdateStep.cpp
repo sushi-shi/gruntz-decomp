@@ -17,7 +17,7 @@
 
 #include <rva.h>
 #include <string.h> // inline strcmp of the grunt type name
-#include <Gruntz/StepList2.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/TypeColl.h>
 
 #pragma intrinsic(strcmp)
@@ -41,7 +41,7 @@ DATA(0x0064554c)
 extern i32 g_freeListBias;
 
 DATA(0x00645540)
-extern CStepList2 g_dropList;
+extern FreeNodePool g_dropList;
 
 // ===========================================================================
 // @early-stop
@@ -116,112 +116,132 @@ i32 CGrunt::UpdateArrival() {
     }
 
     switch (this->m_defenderState) {
-    case 0:
-        if (g != 0) {
-            if (this->m_stamina > 99) {
-                i32 x = g->m_10->m_5c;
-                if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
-                    && g->RectContains(x, g->m_10->m_60) != 0) {
-                    CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
+        case 0:
+            if (g != 0) {
+                if (this->m_stamina > 99) {
+                    i32 x = g->m_10->m_5c;
+                    if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
+                        && g->RectContains(x, g->m_10->m_60) != 0) {
+                        CommitNeighbor(
+                            g->m_tileOwnerHi,
+                            g->m_tileOwnerLo,
+                            g->m_lastTilePxX,
+                            g->m_lastTilePxY
+                        );
+                        break;
+                    }
+                }
+                if (g != 0 && (u32)this->m_dwell > 1000) {
+                    if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
+                        i32 c[4];
+                        GetScreenPos((GruntTilePos*)c);
+                        if (TileSwitch6(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20)
+                            != 0) {
+                            SetEntrancePos(1, 1);
+                            this->m_arrivalCol = g->m_tileOwnerHi;
+                            this->m_arrivalRow = g->m_tileOwnerLo;
+                            this->m_defenderState = 1;
+                            i32 r = GruntPointVisible(
+                                F(P(g_pGameRegistry->m_world->m_24, 0x5c), 0) + 0x40,
+                                this->m_10->m_5c,
+                                this->m_10->m_60
+                            );
+                            if (r != 0) {
+                                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                            }
+                        }
+                    }
+                    this->m_dwell = 0;
                     break;
                 }
             }
-            if (g != 0 && (u32)this->m_dwell > 1000) {
-                if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
-                    i32 c[4];
-                    GetScreenPos((GruntTilePos*)c);
-                    if (TileSwitch6(c[1] >> 5, c[0] >> 5, 0, this->m_arrivalFlags, 0, 0x20) != 0) {
-                        SetEntrancePos(1, 1);
-                        this->m_arrivalCol = g->m_tileOwnerHi;
-                        this->m_arrivalRow = g->m_tileOwnerLo;
-                        this->m_defenderState = 1;
-                        i32 r = GruntPointVisible(
-                            F(P(g_pGameRegistry->m_world->m_24, 0x5c), 0) + 0x40,
-                            this->m_10->m_5c,
-                            this->m_10->m_60
-                        );
-                        if (r != 0) {
-                            g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+            if (this->m_resetApplied == 0 && this->m_318 != 0 && (u32)this->m_dwell > 3000) {
+                i32 cmp =
+                    -(i32)((u32)g_clock < (u32)this->m_arrivalRerollLo) - this->m_arrivalRerollHi;
+                if (this->m_arrivalRerollWindowHi < cmp
+                    || (this->m_arrivalRerollWindowHi <= cmp
+                        && (u32)this->m_arrivalRerollWindowLo
+                               <= g_clock - (u32)this->m_arrivalRerollLo)) {
+                    ResetEntranceAnimation(1, 1, 0);
+                    this->m_arrivalRerollLo = 0;
+                    this->m_arrivalRerollWindowLo = 0;
+                    this->m_arrivalRerollHi = 0;
+                    this->m_arrivalRerollWindowHi = 0;
+                    this->m_arrivalRerollWindowLo = GruntRand() % 30000 + 30000;
+                    this->m_arrivalRerollWindowHi = 0;
+                    this->m_arrivalRerollLo = (i32)g_clock;
+                    this->m_arrivalRerollHi = 0;
+                } else {
+                    CGruntHud* base = this->m_10;
+                    u32 lo = base->m_134;
+                    i32 dx = base->m_13c - (i32)lo;
+                    i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
+                    u32 lo2 = base->m_138;
+                    i32 dy = base->m_140 - (i32)lo2;
+                    i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
+                    if (ax != 0) {
+                        lo = lo + GruntRand() % ax;
+                    }
+                    if (ay != 0) {
+                        lo2 = lo2 + GruntRand() % ay;
+                    }
+                    if (lo < (u32)F(g_pGameRegistry->m_tileGrid, 0xc)
+                        && lo2 < (u32)F(g_pGameRegistry->m_tileGrid, 0x10)) {
+                        TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
+                    }
+                    if (this->m_coordCount != 0) {
+                        if (ax <= ay) {
+                            ax = ay;
+                        }
+                        if (ax < this->m_coordCount) {
+                            SetEntrancePos(1, 1);
                         }
                     }
                 }
                 this->m_dwell = 0;
-                break;
             }
-        }
-        if (this->m_resetApplied == 0 && this->m_318 != 0 && (u32)this->m_dwell > 3000) {
-            i32 cmp = -(i32)((u32)g_clock < (u32)this->m_arrivalRerollLo) - this->m_arrivalRerollHi;
-            if (this->m_arrivalRerollWindowHi < cmp
-                || (this->m_arrivalRerollWindowHi <= cmp
-                    && (u32)this->m_arrivalRerollWindowLo <= g_clock - (u32)this->m_arrivalRerollLo)) {
-                ResetEntranceAnimation(1, 1, 0);
-                this->m_arrivalRerollLo = 0;
-                this->m_arrivalRerollWindowLo = 0;
-                this->m_arrivalRerollHi = 0;
-                this->m_arrivalRerollWindowHi = 0;
-                this->m_arrivalRerollWindowLo = GruntRand() % 30000 + 30000;
-                this->m_arrivalRerollWindowHi = 0;
-                this->m_arrivalRerollLo = (i32)g_clock;
-                this->m_arrivalRerollHi = 0;
+            break;
+        case 1: {
+            CGrunt* slot = m_tileMgr->m_grid[this->m_arrivalCol][this->m_arrivalRow];
+            i32 cur = m_tileMgr->GetOccupant(this) ? 1 : 0;
+            CGrunt* found = m_tileMgr->GetOccupant(this);
+            (void)cur;
+            if (found == 0 || found == slot) {
+                if (slot == 0 || slot->m_entranceCommitted == 0
+                    || slot->GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                    this->m_defenderState = 0;
+                } else {
+                    StepArrivalDrop(
+                        slot->m_lastTilePxX,
+                        slot->m_lastTilePxY,
+                        0,
+                        this->m_arrivalFlags,
+                        0,
+                        0x20
+                    );
+                    if (this->m_poweredUp == 0 && this->m_stamina > 99
+                        && slot->RectContains(slot->m_10->m_5c, slot->m_10->m_60) != 0
+                        && slot->m_10->m_5c == slot->m_lastTilePxX
+                        && slot->m_10->m_60 == slot->m_lastTilePxY) {
+                        CommitNeighbor(
+                            slot->m_tileOwnerHi,
+                            slot->m_tileOwnerLo,
+                            slot->m_lastTilePxX,
+                            slot->m_lastTilePxY
+                        );
+                        this->m_defenderState = 2;
+                    }
+                }
             } else {
-                CGruntHud* base = this->m_10;
-                u32 lo = base->m_134;
-                i32 dx = base->m_13c - (i32)lo;
-                i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
-                u32 lo2 = base->m_138;
-                i32 dy = base->m_140 - (i32)lo2;
-                i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
-                if (ax != 0) {
-                    lo = lo + GruntRand() % ax;
-                }
-                if (ay != 0) {
-                    lo2 = lo2 + GruntRand() % ay;
-                }
-                if (lo < (u32)F(g_pGameRegistry->m_tileGrid, 0xc)
-                    && lo2 < (u32)F(g_pGameRegistry->m_tileGrid, 0x10)) {
-                    TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
-                }
-                if (this->m_coordCount != 0) {
-                    if (ax <= ay) {
-                        ax = ay;
-                    }
-                    if (ax < this->m_coordCount) {
-                        SetEntrancePos(1, 1);
-                    }
-                }
-            }
-            this->m_dwell = 0;
-        }
-        break;
-    case 1: {
-        CGrunt* slot = m_tileMgr->m_grid[this->m_arrivalCol][this->m_arrivalRow];
-        i32 cur = m_tileMgr->GetOccupant(this) ? 1 : 0;
-        CGrunt* found = m_tileMgr->GetOccupant(this);
-        (void)cur;
-        if (found == 0 || found == slot) {
-            if (slot == 0 || slot->m_entranceCommitted == 0
-                || slot->GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                this->m_arrivalCol = -1;
                 this->m_defenderState = 0;
-            } else {
-                StepArrivalDrop(slot->m_lastTilePxX, slot->m_lastTilePxY, 0, this->m_arrivalFlags, 0, 0x20);
-                if (this->m_poweredUp == 0 && this->m_stamina > 99
-                    && slot->RectContains(slot->m_10->m_5c, slot->m_10->m_60) != 0
-                    && slot->m_10->m_5c == slot->m_lastTilePxX
-                    && slot->m_10->m_60 == slot->m_lastTilePxY) {
-                    CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, slot->m_lastTilePxX, slot->m_lastTilePxY);
-                    this->m_defenderState = 2;
-                }
+                this->m_arrivalRow = -1;
             }
-        } else {
-            this->m_arrivalCol = -1;
-            this->m_defenderState = 0;
-            this->m_arrivalRow = -1;
+            break;
         }
-        break;
-    }
-    case 2:
-        this->m_defenderState = 1;
-        break;
+        case 2:
+            this->m_defenderState = 1;
+            break;
     }
 
     if (this->m_coordCount != 0) {
@@ -270,7 +290,7 @@ i32 CGrunt::SeekTarget() {
             i32* link = (i32*)((char*)p + 8);
             p = next;
             if (*link != 0) {
-                g_dropList.Drop(*link);
+                g_dropList.Push((void*)(*link));
             }
         }
         m_31c.RemoveAll();
@@ -291,7 +311,7 @@ i32 CGrunt::SeekTarget() {
                     i32* link = (i32*)((char*)p + 8);
                     p = next;
                     if (*link != 0) {
-                        g_dropList.Drop(*link);
+                        g_dropList.Push((void*)(*link));
                     }
                 }
                 m_31c.RemoveAll();
@@ -330,7 +350,7 @@ i32 CGrunt::SeekTarget() {
                     i32* link = (i32*)((char*)p + 8);
                     p = next;
                     if (*link != 0) {
-                        g_dropList.Drop(*link);
+                        g_dropList.Push((void*)(*link));
                     }
                 }
                 m_31c.RemoveAll();
@@ -366,7 +386,8 @@ i32 CGrunt::SeekTarget() {
                         i32 ddx = ex - (this->m_10->m_5c >> 5);
                         i32 ey = (sv->m_10->m_60 >> 5) - (this->m_10->m_60 >> 5);
                         i32 dist = ddx * ddx + ey * ey;
-                        if (dist < best && dist <= this->m_defenderRadius * this->m_defenderRadius) {
+                        if (dist < best
+                            && dist <= this->m_defenderRadius * this->m_defenderRadius) {
                             best = dist;
                             bestIdx = i;
                         }
@@ -397,7 +418,8 @@ i32 CGrunt::SeekTarget() {
         if ((u32)this->m_dwell < 0x3e9) {
             return 1;
         }
-        CGruntHud* base = ((CGrunt*)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0))->m_10;
+        CGruntHud* base =
+            ((CGrunt*)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0))->m_10;
         TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->GetOccupant(this);
@@ -460,7 +482,12 @@ i32 CGrunt::SeekTarget() {
             i32 x = g->m_10->m_5c;
             if (x == g->m_lastTilePxX && g->m_10->m_60 == g->m_lastTilePxY
                 && g->RectContains(x, (i32)g->m_10) != 0) {
-                CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, g->m_lastTilePxX, g->m_lastTilePxY);
+                CommitNeighbor(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    g->m_lastTilePxX,
+                    g->m_lastTilePxY
+                );
             }
         }
         if ((u32)this->m_dwell < 0x1f5) {

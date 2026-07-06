@@ -18,8 +18,8 @@
 #include <Win32.h> // RECT + IntersectRect
 #include <Gruntz/ScanRectInit.h>
 #include <Gruntz/ScanGrid.h>
-#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
-#include <stdlib.h>           // engine rand (0x11fee0)
+#include <Gruntz/FreeNodePool.h>
+#include <stdlib.h> // engine rand (0x11fee0)
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 // CScanCoord/CScanNode324 (grunt->m_324), CScanListNode (grunt->m_320 pending-coord
@@ -60,7 +60,7 @@ struct CScanMgr {                                                          // th
     i32 ScanRegion32ce0(CScanGrunt* g);
 };
 
-extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
+extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
 // Recompute the grid dirty rect (m_60) as the {0,0,w,h} box intersected with a
 // copy of itself; m_70/m_74 = the resulting size. Inlined at each exit.
@@ -119,7 +119,7 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
                     CScanListNode* cur = n;
                     n = n->m_next;
                     if (cur->m_8 != 0) {
-                        g_coordPool.Drop(cur->m_8);
+                        g_coordPool.Push((void*)(cur->m_8));
                     }
                 }
                 g->m_31c.RemoveAll1b48a6();

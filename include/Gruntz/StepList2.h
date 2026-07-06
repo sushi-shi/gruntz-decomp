@@ -7,9 +7,7 @@
 
 #include <rva.h>
 
-struct CStepList2 {
-    void Drop(i32 node); // 0x40163b (__thiscall on g_645540)
-};
+// CStepList2 folded -> FreeNodePool (Drop@0x163b==Push@0x311b0)
 SIZE_UNKNOWN(CStepList2);
 
 #endif // GRUNTZ_GRUNTZ_CSTEPLIST2_H

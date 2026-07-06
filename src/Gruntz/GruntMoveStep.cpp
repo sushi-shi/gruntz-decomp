@@ -15,8 +15,8 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <math.h>             // sqrt (intrinsic fsqrt for the board-distance)
-#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
+#include <math.h> // sqrt (intrinsic fsqrt for the board-distance)
+#include <Gruntz/FreeNodePool.h>
 
 #pragma intrinsic(sqrt)
 
@@ -90,7 +90,7 @@ struct CGruntMover {                                              // this (edi)
 
 // The shared coord-node pool (0x645540): Drop returns a node to the pool.
 DATA(0x00245540)
-extern CStepList2 g_coordPool;
+extern FreeNodePool g_coordPool;
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
@@ -99,7 +99,7 @@ extern CStepList2 g_coordPool;
             CMoveListNode* cur = nd;                                                               \
             nd = nd->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_coordPool.Drop(cur->m_8);                                                        \
+                g_coordPool.Push((void*)(cur->m_8));                                               \
             }                                                                                      \
         }                                                                                          \
         (g)->m_31c.RemoveAll1b48a6();                                                              \
@@ -164,7 +164,7 @@ i32 CGruntMover::Step(CGruntM* g) {
                     do {
                         void* r = g->m_31c.Find1de8((void**)&nd);
                         if (*(i32*)r != 0) {
-                            g_coordPool.Drop(*(i32*)r);
+                            g_coordPool.Push((void*)(*(i32*)r));
                         }
                     } while (nd != 0);
                 }

@@ -14,7 +14,7 @@
 #include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h>: RECT/POINT/PtInRect + CTileGrid)
 
 #include <rva.h>
-#include <Gruntz/StepList2.h>
+#include <Gruntz/FreeNodePool.h>
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -22,10 +22,10 @@
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
 extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
-extern CStepList2 g_dropList; // 0x645540 (coord recycle pool; DATA-bound elsewhere)
-extern u32 g_clock;           // game clock (0x645588)
-extern void* g_freeList;      // 0x645544
-extern i32 g_freeListBias;    // 0x64554c
+extern FreeNodePool g_dropList; // 0x645540 (coord recycle pool; DATA-bound elsewhere)
+extern u32 g_clock;             // game clock (0x645588)
+extern void* g_freeList;        // 0x645544
+extern i32 g_freeListBias;      // 0x64554c
 
 extern "C" {
     i32 GameRand(); // 0x51fee0 (__cdecl)
@@ -104,7 +104,7 @@ i32 CGrunt::WanderStep() {
                                 node = *(void**)node;
                                 i32 data = *(i32*)((char*)cur + 8);
                                 if (data != 0) {
-                                    g_dropList.Drop(data);
+                                    g_dropList.Push((void*)(data));
                                 }
                             } while (node != 0);
                         }
@@ -181,7 +181,7 @@ i32 CGrunt::WanderStep() {
                         node = *(void**)node;
                         i32 data = *(i32*)((char*)cur + 8);
                         if (data != 0) {
-                            g_dropList.Drop(data);
+                            g_dropList.Push((void*)(data));
                         }
                     } while (node != 0);
                 }

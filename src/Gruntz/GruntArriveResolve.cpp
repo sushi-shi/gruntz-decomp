@@ -20,7 +20,7 @@
 // "this IS g->m_10" note conflated them on the coincident +0x5c/+0x60 origin.
 //
 // DONE (arg cluster): the arriving grunt arg IS the real CGrunt (<Gruntz/Grunt.h>) -
-// CArriveGrunt/CArriveCoord/CArriveNode/CArriveList/CArriveStr and the CStepList2 coord
+// CArriveGrunt/CArriveCoord/CArriveNode/CArriveList/CArriveStr and the FreeNodePool coord
 // pool are all dissolved onto CGrunt / GruntCoord / GruntCoordNode / GruntTilePos /
 // GruntListSub / FreeNodePool (real names). Umbrella switched to <Mfc.h> (Grunt.h is
 // MFC-transitive). ResolveArrival 54.83 -> 55.65%.

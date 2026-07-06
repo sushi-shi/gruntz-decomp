@@ -21,8 +21,8 @@
 #include <string.h> // inline strcmp type-name gate
 #include <stdlib.h> // engine rand (0x11fee0)
 #include <Globals.h>
-#include <Gruntz/StepList2.h> // the shared g_coordPool recycle pool
-#include <Gruntz/TypeColl.h>  // the shared type-name collection
+#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/TypeColl.h> // the shared type-name collection
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
 struct CStepCoord {
@@ -119,7 +119,7 @@ struct CStepRectInit { // 0x34a4 - init a rect + return it
     RECT* Set34a4(i32 l, i32 t, i32 r, i32 b);
 };
 
-extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
+extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
 // Drain the pending-coord list onto g_coordPool via the CObList Find walk, then
 // empty the list.
@@ -130,7 +130,7 @@ extern CStepList2 g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a 
             do {                                                                                   \
                 void* r = (g)->m_31c.Find1de8((void**)&nd);                                        \
                 if (*(i32*)r != 0) {                                                               \
-                    g_coordPool.Drop(*(i32*)r);                                                    \
+                    g_coordPool.Push((void*)(*(i32*)r));                                           \
                 }                                                                                  \
             } while (nd != 0);                                                                     \
         }                                                                                          \
