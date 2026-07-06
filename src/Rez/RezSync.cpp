@@ -12,6 +12,7 @@
 // multi-way error ladder) - the deliverable is the control-flow + offset +
 // ordered-call carcass, not a byte-perfect frame.
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Gruntz/GameLevel.h>
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>          // CString + the MFC collection ctors/dtors (reloc-masked)
@@ -98,17 +99,11 @@ struct RegHelper { // m_38 (0x21c)
     i32 Open(const char*, const char*, const char*, void*, u32, void*); // 0x139210
     u32 GetValueDword(const char*, u32);                                // 0x1395d0
 };
-SIZE_UNKNOWN(GameLevelZ);
-struct GameLevelZ {
-    char pad[0x64];
-    i32 m_64, m_68;
-    void BuildAllPlanes(void*); // 0x15da80
-};
 struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
     CDDrawSubMgrPages* m_04; // +4
     char _p08[0x24 - 0x08];
-    GameLevelZ* m_24;           // +0x24
+    CGameLevel* m_24;           // +0x24
     CDDrawSubMgrLeafScan* m_28; // +0x28
     char _p2c[0x40 - 0x2c];
     CDDrawSurfaceMgr();
@@ -476,11 +471,11 @@ i32 RezSync::Init(void* a1, char* a2) {
         rect[3] = 0x1df;
         m_8c = 0x280;
         m_90 = 0x1e0;
-        m_30->m_24->BuildAllPlanes(rect);
+        m_30->m_24->BuildAllPlanes((LevelCoordRect*)rect);
     }
     m_30->VMethod155f50((void*)&cb_403193);
-    m_30->m_24->m_64 = 0xe;
-    m_30->m_24->m_68 = 0xe;
+    m_30->m_24->m_maxStepX = 0xe;
+    m_30->m_24->m_maxStepY = 0xe;
     m_30->m_04->Method_158cb0(0, 0x30000);
     Fn1db6();
     Fn3526cdecl(m_30);

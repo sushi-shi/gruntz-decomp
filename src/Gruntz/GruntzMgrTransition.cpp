@@ -28,6 +28,7 @@
 // never claim the RVA. (Same manual-inline-construction pattern as CButeSection /
 // CNetPeer.) Field names are placeholders; offsets + code bytes are load-bearing.
 #include <Gruntz/GruntzMgr.h>
+#include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/Play.h> // canonical CPlay (the case-3 `new CPlay` uses the one shape)
 #include <rva.h>
 
@@ -35,11 +36,8 @@
 void* operator new(u32);
 
 // The DirectInputMgr2 singleton (*g_645570) re-armed after the install (ReadAll).
-struct CDInputMgrZ {
-    void ReadAll(); // 0x133110
-};
 DATA(0x00245570)
-extern CDInputMgrZ* g_645570;
+extern DirectInputMgr2* g_645570;
 
 // The vtable-dispatch view of a FOREIGN state object: the factory drives the current
 // state through slots 0 (scalar-deleting dtor), 1 (activate), 4 (id), 9 and 10; the
