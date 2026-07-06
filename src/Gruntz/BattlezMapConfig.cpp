@@ -88,25 +88,31 @@ struct ElementRefresher {
 // struct naming ONLY the two used slots as 4-byte thiscall PMFs + char pad[], NO fake
 // virtuals (the PMF is __thiscall by default, sidestepping the unspellable-keyword
 // issue in docs/patterns/dummy-virtual-slots.md).
-struct EmitArgVtbl;
+// Real polymorphic view: the compiler emits the vptr at +0x00; the two used slots
+// are real virtuals at their retail offsets (11 filler slots precede them). Declared-
+// only (no bodies, no ctor here) so no vtable is emitted - EmitArg is only ever cast
+// onto an engine object. `this->Emit2c(...)` lowers to the same `call [eax+0x2c]`.
 struct EmitArg {
-    EmitArgVtbl* m_vtbl;                     // +0x00
-    void CallEmit2c(void* coord, i32 count); // +0x2c (index 11)
-    void CallEmit30(void* coord, i32 count); // +0x30 (index 12)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Emit2c(void* coord, i32 count); // +0x2c (slot 11)
+    virtual void Emit30(void* coord, i32 count); // +0x30 (slot 12)
+    void CallEmit2c(void* coord, i32 count) {
+        Emit2c(coord, count);
+    }
+    void CallEmit30(void* coord, i32 count) {
+        Emit30(coord, count);
+    }
 };
-typedef void (EmitArg::*EmitFn)(void* coord, i32 count);
-struct EmitArgVtbl {
-    char m_pad00[0x2c];
-    EmitFn Emit2c; // +0x2c
-    EmitFn Emit30; // +0x30
-};
-SIZE_UNKNOWN(EmitArgVtbl);
-inline void EmitArg::CallEmit2c(void* coord, i32 count) {
-    (this->*(m_vtbl->Emit2c))(coord, count);
-}
-inline void EmitArg::CallEmit30(void* coord, i32 count) {
-    (this->*(m_vtbl->Emit30))(coord, count);
-}
 
 // The serializer/archive the Serialize/Deserialize methods drive: the shared WAP32
 // CSerialArchive stream interface (Read @ vtable +0x2c / Write @ +0x30), now the one
