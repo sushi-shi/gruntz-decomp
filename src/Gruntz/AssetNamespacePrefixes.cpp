@@ -24,6 +24,8 @@
 // leaf-scan / ani classes mirror GameAssetNamespaces.cpp; strings are $SG
 // literals reloc-masked against the matched symbols.
 #include <Bute/SymTab.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Mfc.h> // MFC CString (+, LoadString, ctor/dtor)
 #include <Gruntz/GameRegistry.h>
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
@@ -51,12 +53,6 @@ struct AssetRoot { // this->m_c
 struct GRAssetMgr {
     char m_pad00[0x24];
     void* m_24; // +0x24  (rect source at +0x10)
-};
-struct GRLightObj {
-    void Tick(); // m_60 -> 0x20a4 (thunk)
-};
-struct GRFxObj {
-    void Update(); // m_68 -> 0x15c3 (thunk)
 };
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg; // *0x64556c
@@ -99,8 +95,8 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
     i32 result;
     if (mode != 0) {
         if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) == 0) {
-            ((GRLightObj*)g_gameReg->m_cueSink)->Tick();
-            ((GRFxObj*)g_gameReg->m_cmdGrid)->Update();
+            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->DtorBody();
+            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(0x819b);
@@ -162,6 +158,4 @@ SIZE_UNKNOWN(CDDrawSubMgrAni);
 SIZE_UNKNOWN(CNamespaceLoader);
 SIZE_UNKNOWN(CSymTree);
 SIZE_UNKNOWN(GRAssetMgr);
-SIZE_UNKNOWN(GRFxObj);
-SIZE_UNKNOWN(GRLightObj);
 SIZE_UNKNOWN(CGameRegistry);
