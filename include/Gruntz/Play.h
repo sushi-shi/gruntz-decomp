@@ -520,7 +520,9 @@ public:
         i32 m_busyA, m_busyB; // +0x550  win/lose-suppress busy words
         char q[0x574 - 0x558];
         i32 m_snapPostSel; // +0x574  snapshot post-message selector
-    }* m_guts;             // +0x2dc guts/UI subsystem
+        char r578[0x614 - 0x578];
+        i32 m_614; // +0x614  mode height (SetVideoMode)
+    }* m_guts;     // +0x2dc guts/UI subsystem
     // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
     struct HitTestSink {
         i32 HitTest(i32 x, i32 y); // 0x421140 (thiscall) -> nonzero = consumed
@@ -647,9 +649,12 @@ public:
 // ===========================================================================
 // The dev/render-state singleton DispatchHudClick reads (*g_645578); its +0x18 is
 // a flags word masked with 0x20 to gate the HUD-rect post.
-struct CRenderState {
-    char p0[0x18];
-    i32 m_18; // +0x18  flags
+struct StateMgrBZ {
+    i32 m_0, m_4, m_8; // +0x00..+0x08
+    char m_padc[0x10 - 0xc];
+    i32 m_10, m_14; // +0x10, +0x14
+    i32 m_18;       // +0x18  flags
+    i32 Flush();    // 0x385e0 (?Flush@) (the +0x578 state-mgr flush)
 };
 
 extern "C" {
@@ -657,7 +662,7 @@ extern "C" {
     extern u32 g_645584;            // g_lastDelta
     extern u32 g_645588;            // g_accumMs (the running game clock)
     extern CGameRegistry* g_64556c; // the singleton ptr
-    extern CRenderState* g_645578;  // the dev/render-state singleton (DispatchHudClick)
+    extern StateMgrBZ* g_645578;    // the dev/render-state singleton (DispatchHudClick)
     extern i32 g_644c54;            // a default cue/message wParam
     extern u32 g_6bf3c0;            // draw-clock mirror
     extern u32 g_6bf3bc;            // draw-delta mirror

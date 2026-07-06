@@ -36,7 +36,7 @@ struct CViewPooledRes {
 // pump: Flush (0x158ee0 == CDDrawWorkerMgr::Method_158ee0 - the state activators call the
 // SAME fn as the resource worker-apply on activate), the frame-surface page (+0x10), the
 // draw-surface view (+0x14, the same handle the loaders read as m_14) and the present
-// target (+0x18). (This is the real +0x04 class; the former View.h CRenderState view folds
+// target (+0x18). (This is the real +0x04 class; the former View.h StateMgrBZ view folds
 // here.) The nested surface pages are DDraw objects; their leaf +0x2c is the real CDDSurface.
 SIZE_UNKNOWN(CDrawTarget);
 struct CDrawTarget {

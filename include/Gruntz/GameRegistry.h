@@ -95,7 +95,7 @@ class CLightFxMgr;
 // CState::m_c (verified same object; the former `CView`/`CSpriteFactoryHolder` render view is now
 // folded here). Its 3 render-only slots below point to these; the MFC state TUs reach the
 // 5 SHARED slots (+0x04/+0x08/+0x10/+0x24/+0x28) by casting the canonical members to the
-// other View.h facet types (CRenderState/CGameImageRegistry/CDrawSurface/CViewSoundRegistry)
+// other View.h facet types (StateMgrBZ/CGameImageRegistry/CDrawSurface/CViewSoundRegistry)
 // - the deferred int-vs-pointer sub-object reconciliation (see View.h). Forward-declared so
 // this ~60-TU MFC-free header never pulls View.h; the ~60 pure-Win32 m_world consumers
 // never touch these render-only slots.

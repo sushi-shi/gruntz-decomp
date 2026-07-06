@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/Play.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
@@ -600,15 +601,8 @@ struct DirectInputMgr2 {
 };
 // The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
 // Close zeroes its field block (+0x00..+0x14) before delete.
-struct StateMgrBZ {
-    i32 m_0, m_4, m_8; // +0x00..+0x08
-    char m_padc[0x10 - 0xc];
-    i32 m_10, m_14; // +0x10, +0x14
-    void Flush();   // FUN_004385e0
-};
 extern "C" {
     extern DirectInputMgr2* g_645570; // DAT_00645570
-    extern StateMgrBZ* g_645578;      // DAT_00645578
 }
 
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
@@ -3424,18 +3418,6 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
 // The loaded map's playable extent ((CViewport*)m_world->m_24->m_mainPlane) is the shared CViewport;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
-struct SvmGuts { // m_curState->m_2dc: the HUD/guts subsystem
-    i32 m_0;     // +0x00  state (0/1 -> which poke order)
-    char p4[0x614 - 4];
-    i32 m_614;    // +0x614  receives the mode height
-    void CallA(); // 0x2b8a (thiscall) reloc-masked
-    void CallB(); // 0x2d5b (thiscall) reloc-masked
-};
-struct SvmStateView { // a view of m_curState (the live play state)
-    char p0[0x2dc];
-    SvmGuts* m_2dc; // +0x2dc
-    void Prep();    // 0x3d55 (thiscall) reloc-masked
-};
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
 
@@ -3462,13 +3444,13 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             CViewport* f = (CViewport*)m_world->m_24->m_mainPlane;
             if (f != 0) {
                 if (w > f->m_worldWidth || h > f->m_worldHeight) {
-                    SvmStateView* st = (SvmStateView*)m_curState;
-                    st->Prep();
-                    if (st->m_2dc != 0) {
-                        st->m_2dc->m_614 = m_modeH;
-                        if (st->m_2dc->m_0 == 0) {
-                            st->m_2dc->CallA();
-                            st->m_2dc->CallB();
+                    CPlay* st = (CPlay*)m_curState;
+                    st->ResetViewport();
+                    if (st->m_guts != 0) {
+                        st->m_guts->m_614 = m_modeH;
+                        if (st->m_guts->m_state == 0) {
+                            st->m_guts->StepBracketL();
+                            st->m_guts->StepBracketR();
                             ReportMapTooSmall(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
@@ -3476,9 +3458,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             );
                             return 0;
                         }
-                        if (st->m_2dc->m_0 == 1) {
-                            st->m_2dc->CallB();
-                            st->m_2dc->CallA();
+                        if (st->m_guts->m_state == 1) {
+                            st->m_guts->StepBracketR();
+                            st->m_guts->StepBracketL();
                         }
                     }
                     ReportMapTooSmall(
@@ -3502,16 +3484,16 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
             m_savedModeW = w;
             m_savedModeH = h;
         }
-        SvmStateView* st = (SvmStateView*)m_curState;
-        st->Prep();
-        if (st->m_2dc != 0) {
-            st->m_2dc->m_614 = h;
-            if (st->m_2dc->m_0 == 0) {
-                st->m_2dc->CallA();
-                st->m_2dc->CallB();
-            } else if (st->m_2dc->m_0 == 1) {
-                st->m_2dc->CallB();
-                st->m_2dc->CallA();
+        CPlay* st = (CPlay*)m_curState;
+        st->ResetViewport();
+        if (st->m_guts != 0) {
+            st->m_guts->m_614 = h;
+            if (st->m_guts->m_state == 0) {
+                st->m_guts->StepBracketL();
+                st->m_guts->StepBracketR();
+            } else if (st->m_guts->m_state == 1) {
+                st->m_guts->StepBracketR();
+                st->m_guts->StepBracketL();
             }
         }
     }
