@@ -52,6 +52,7 @@
 // projectile kind -> the slot is the grunt's current tool/attack kind here.
 
 #include <Mfc.h> // Win32/engine types
+#include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
 
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
@@ -81,14 +82,6 @@ extern CGameRegistry* g_gameReg; // the one game-registry singleton (*0x64556c)
 // view below). The 0x1bf9 thunk delivers this attack to it (8 args); m_toolKind
 // (+0x170, the same slot as the attacker's) is its kind, m_19c a fallback gate
 // (both slots exist on Grunt.h's CGrunt).
-SIZE_UNKNOWN(CTargetGruntView);
-struct CTargetGruntView {
-    void TakeHit(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x1bf9 thunk
-    char m_pad00[0x170];
-    i32 m_toolKind; // +0x170
-    char m_pad174[0x19c - 0x174];
-    i32 m_19c; // +0x19c
-};
 // The grunt's path/occupancy tile manager (== CGruntTileMgr, <Gruntz/Grunt.h>
 // CGrunt::m_tileMgr +0x260; fold deferred - the canonical models methods only,
 // this +0x1c cell array is an additive member for the fold). The per-cell grunt
@@ -269,8 +262,7 @@ i32 CGruntFireView::Update() {
             }
             default: {
                 // melee: hit the grunt at the neighbor grid cell (15-row grid).
-                CTargetGruntView* tgt =
-                    (CTargetGruntView*)m_tileMgr->m_grid[m_neighborRow + m_neighborCol * 15];
+                CGrunt* tgt = (CGrunt*)m_tileMgr->m_grid[m_neighborRow + m_neighborCol * 15];
                 if (tgt == 0) {
                     flag = 1;
                     break;
@@ -285,7 +277,7 @@ i32 CGruntFireView::Update() {
                     0,
                     m_gruntKind
                 );
-                i32 t = tgt->m_toolKind;
+                i32 t = tgt->m_entranceReason;
                 if (t > 0x16) {
                     t = tgt->m_19c;
                 }
