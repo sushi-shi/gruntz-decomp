@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/BoundaryUpperViews.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -3341,10 +3342,6 @@ struct CPointXY {
     i32 x;
     i32 y;
 };
-struct CWorldCoordResolver {
-    CPointXY* ResolveHi(CPointXY* out, i32 a, i32 b, i32 c); // 0x143510
-    CPointXY* ResolveLo(CPointXY* out, i32 a, i32 b, i32 c); // 0x143590
-};
 
 // @early-stop
 // reloc-masked plateau (~97%): code bytes exact; the only residual is the
@@ -3356,8 +3353,8 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p =
-        ((CWorldCoordResolver*)m_world->m_1c)->ResolveHi(&pt, m_modeW, m_modeH, m_colorDepth);
+    ((ModeArr*)m_world->m_1c)->FindFwd((Pair2*)&pt, m_modeW, m_modeH, m_colorDepth);
+    CPointXY* p = &pt;
     i32 x = p->x;
     i32 y = p->y;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3383,8 +3380,8 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CPointXY pt;
-    CPointXY* p =
-        ((CWorldCoordResolver*)m_world->m_1c)->ResolveLo(&pt, m_modeW, m_modeH, m_colorDepth);
+    ((ModeArr*)m_world->m_1c)->FindBack((Pair2*)&pt, m_modeW, m_modeH, m_colorDepth);
+    CPointXY* p = &pt;
     i32 x = p->x;
     i32 y = p->y;
     if (x == -1 || y == -1 || x < 0x140 || y < 0xc8) {

@@ -3775,10 +3775,6 @@ struct CRtArr {                    // a CPtrArray subset (m_data @+4, m_count @+
 struct CRtArr2 {                   // the m_68+0x260 array variant
     void SetSize(i32 n, i32 grow); // 0x1b52e8 __thiscall(n, grow)
 };
-struct CRtRow {    // m_4 + 0x188 + i*0x238  (per-grunt-type config row)
-    void ResetA(); // 0x29a5 thunk
-    void ResetB(); // 0x40c5 thunk
-};
 struct CRtTimeline {      // m_4->m_68 (also g_64556c->m_68)
     void Flush(i32 mode); // 0x41b0 thunk(mode)
     void Reset1514();     // 0x1514 thunk
@@ -3939,8 +3935,8 @@ void CPlay::FreeListTeardown() {
     }
     self->m_488.SetSize(0, -1);
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
-        ((CRtRow*)((char*)self->m_4 + 0x188 + off))->ResetA();
-        ((CRtRow*)((char*)self->m_4 + 0x188 + off))->ResetB();
+        ((CBattlezMapConfig*)((char*)self->m_4 + 0x188 + off))->FreeArrays();
+        ((CBattlezMapConfig*)((char*)self->m_4 + 0x188 + off))->Clear_02ade0();
     }
     self->m_49c = -1;
 }
