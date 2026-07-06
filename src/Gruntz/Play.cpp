@@ -211,14 +211,10 @@ enum {
 // external/no-body so the call rel32 displacements reloc-mask; local view retained.
 SIZE_UNKNOWN(CGameMgrSettings);
 struct CGameMgrSettings {
-    void ApplyOpt(i32 v);        // 0x492340  (thiscall)
-    void StoreInputFlag(i32 v);  // 0x4919d0  CGruntzMgr::StoreInputFlag
-    void StoreInputState(i32 v); // 0x491a10  CGruntzMgr::StoreInputState
 
     struct CSound {
         char p0[0x28];
-        i32 m_28;                   // +0x28  gate (skip the XMIDI push when 0)
-        void SetXMidiVolume(i32 v); // 0x138950 (thiscall on m_48)
+        i32 m_28; // +0x28  gate (skip the XMIDI push when 0)
     };
 
     char p0[0x48];
@@ -268,14 +264,14 @@ void CPlay::ApplyGameOptions() {
     g_videoResolutionMode = g_opt_22bdc8;
     if (g_gate_2455b4 == 0) {
         if (g_gate_2455bc == 0) {
-            g_mgrSettings->ApplyOpt(g_opt_22bd84);
-            g_mgrSettings->StoreInputFlag(g_opt_22bd6c);
+            ((CGruntzMgr*)g_mgrSettings)->SetRunState(g_opt_22bd84);
+            ((CGruntzMgr*)g_mgrSettings)->StoreInputFlag(g_opt_22bd6c);
             g_mgrSettings->m_isVoiceEnabled = g_opt_22bdd4;
-            g_mgrSettings->StoreInputState(g_opt_22bdc4);
+            ((CGruntzMgr*)g_mgrSettings)->StoreInputState(g_opt_22bdc4);
         }
         if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_48->m_28 != 0) {
             Eng_OptCommit(g_opt_22bdd0);
-            g_mgrSettings->m_48->SetXMidiVolume(g_opt_22bdcc);
+            ((CGruntzSoundZ*)g_mgrSettings->m_48)->SetXMidiVolume(g_opt_22bdcc);
         }
     }
     g_mgrSettings->m_scrollSpeed = g_opt_22bd68;
