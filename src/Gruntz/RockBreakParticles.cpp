@@ -14,6 +14,7 @@
 // logic-registry / sprite-factory / sound classes are unmatched engine classes
 // accessed by raw this+offset; strings are $SG literals reloc-masked against the
 // matched symbols. Only offsets / code bytes are load-bearing.
+#include <Gruntz/Brickz.h>
 #include <Mfc.h>   // MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde)
 #include <Win32.h> // PtInRect / RECT / POINT
 
@@ -109,15 +110,12 @@ struct RockSettingsRoot { // g_mgrSettings->m_curState
     char m_pad00[0x2e4];
     RockLogicMgr* m_2e4; // +0x2e4
 };
-struct RockNotify {                        // g_mgrSettings->m_tileGrid
-    void OnCellSet(i32 x, i32 y, i32 val); // FUN @ 0x33f0 __thiscall
-};
 struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     char m_pad00[0x2c];
     RockSettingsRoot* m_curState; // +0x2c
     RockMapHost* m_world;         // +0x30  write-grid host
     char m_pad34[0x70 - 0x34];
-    RockNotify* m_tileGrid; // +0x70
+    CBrickzGrid* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];
     RECT m_13c;                    // +0x13c  visible rect
     void Log(const char* s);       // FUN @ 0x417e __thiscall
@@ -228,10 +226,10 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 i32 off = wg->m_24[ty];
                 if (type == 0x1e) {
                     wg->m_20[off + tx] = 0x5a;
-                    g_mgrSettings->m_tileGrid->OnCellSet(tx, ty, 0x5a);
+                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
                     wg->m_20[off + tx] = 0x5b;
-                    g_mgrSettings->m_tileGrid->OnCellSet(tx, ty, 0x5b);
+                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
 

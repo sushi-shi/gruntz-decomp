@@ -8,6 +8,7 @@
 // The per-direction entrance-cell records live at CGrunt+0x470, stride 0x68, two
 // CString fields each (+0 and +4). They predate the named m_474 member, so they are
 // reached by raw offset (the documented naming-independent-codegen exception).
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
 #include <rva.h>
 #include <string.h>
@@ -452,9 +453,6 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 //
 // The per-direction tile-attribute (n/t = 0x6e/0x74) splits FALL vs QUICKFALL.
 // The g->m_7c sub-object the early arrival-notify drives.
-struct CDeathReg7c {
-    void Notify(i32 a, i32 b); // 0xfcc50 (__thiscall, 2 args)
-};
 
 // The death anim-set key (DAT_0060cc90) + the per-type GRUNTZ_DEATHZ_* keys.
 static const char s_dAnimKeyC[] = "C";
@@ -590,7 +588,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
     if (a2 != -1) {
         m_370 = a2;
-        (*(CDeathReg7c**)((char*)g_pGameRegistry + 0x7c))->Notify(a2, m_tileOwnerHi); // 0xfcc50
+        (*(CBattlezData**)((char*)g_pGameRegistry + 0x7c))->BumpWin(a2, m_tileOwnerHi); // 0xfcc50
     }
 
     switch (deathType) {

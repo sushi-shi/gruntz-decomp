@@ -5,6 +5,7 @@
 // the registry's m_70 sub-manager, and adopts the previously-parked token. An empty
 // token reports the 0x8009/0x451 diagnostic and returns 0. Every callee + the global
 // are reloc-masked.
+#include <Gruntz/Brickz.h>
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Viewport.h> // shared world-plane grid (the registry plane)
@@ -21,10 +22,6 @@ struct RegLevel { // g_mgrSettings->m_world->m_24
 struct RegM30 {
     char m_pad0[0x24];
     RegLevel* m_24; // +0x24
-};
-
-struct RegSubMgr {                                // g_mgrSettings->m_tileGrid
-    void Notify(i32 group, i32 index, i32 token); // 0x33f0 (thiscall)
 };
 
 extern CGameRegistry* g_mgrSettings;
@@ -66,10 +63,12 @@ i32 CSlotHolder::DoSwap() {
     i32 grp = this->m_08;
     i32 idx = this->m_0c;
     i32 newTok =
-        ((RegM30*)mgr->m_world)->m_24->m_5c->m_cells[((RegM30*)mgr->m_world)->m_24->m_5c->m_rowBase[idx] + grp];
+        ((RegM30*)mgr->m_world)
+            ->m_24->m_5c->m_cells[((RegM30*)mgr->m_world)->m_24->m_5c->m_rowBase[idx] + grp];
     ((RegM30*)g_mgrSettings->m_world)
-        ->m_24->m_5c->m_cells[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_rowBase[idx] + grp] = oldTok;
-    ((RegSubMgr*)mgr->m_tileGrid)->Notify(grp, idx, oldTok);
+        ->m_24->m_5c->m_cells[((RegM30*)g_mgrSettings->m_world)->m_24->m_5c->m_rowBase[idx] + grp] =
+        oldTok;
+    ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;
     return 1;
 }
