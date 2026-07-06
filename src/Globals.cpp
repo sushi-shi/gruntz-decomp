@@ -13,7 +13,7 @@ struct AttractActorList;
 struct CActColl2;
 struct CActEntry;
 class CDirectDrawMgr;
-struct CDropColl2;
+struct CVariantSlot;
 struct CDropEntry;
 struct CHaznColl2;
 struct CHaznEntry;
@@ -367,7 +367,7 @@ extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
 DATA(0x0024bdc0)
 extern i32 g_64bdc0; // DAT_0064bdc0
 DATA(0x0024bedc)
-extern CDropColl2* g_dropColl2;
+extern CVariantSlot* g_dropColl2;
 DATA(0x0024bee0)
 extern i32 g_dropLo;
 DATA(0x0024bee4)

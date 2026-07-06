@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
+#include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -33,9 +34,6 @@ struct CDropEntry; // an entry: first dword is the registered handler
 struct CDropColl {
     i32 Find(i32 coord, i32 z);         // 0x16da80 (__thiscall ret 8)
     void RegisterRange(i32 lo, i32 hi); // 0x408710 (zDArray fast-range ctor, __thiscall ret 8)
-};
-struct CDropColl2 {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (__thiscall ret 0xc)
 };
 extern void* GetRetAddr(); // 0x16d990
 
@@ -62,7 +60,7 @@ extern char s_actKeyB[]; // "B"
 DATA(0x002bf650)
 extern CDropColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
-extern CDropColl2* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
 extern i32 g_nameRegLo;
 DATA(0x002bf65c)
@@ -97,7 +95,7 @@ static inline char* ActNameLookup(i32 id) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Insert(&g_nameReg, item, 0xc);
+    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
 }
 
@@ -127,7 +125,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
     }
     void* item = g_actCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_dropColl2->Insert(&g_dropColl, item, 0xc);
+    g_dropColl2->Set(&g_dropColl, (i32)item, 0xc);
     return g_dropCur;
 }
 
@@ -384,7 +382,6 @@ i32 CDroppedObject::ActA() {
 
 #include <rva.h>
 SIZE_UNKNOWN(CDropColl);
-SIZE_UNKNOWN(CDropColl2);
 SIZE_UNKNOWN(CDropEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
