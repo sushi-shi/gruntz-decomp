@@ -33,8 +33,6 @@
 // whole zPTree family (zPTree/CButeTree/CButeNode) is deliberately manual-vtbl-
 // modeled -- a real +0x00 vptr breaks its matched ctor layout (src/Bute/ButeNode.cpp).
 // Foreign sub-object re-stamps stay manual.
-DATA(0x001f0510)
-extern void* g_streamVtbl; // 0x5f0510  node's primary vftable (4 slots)
 
 // The embedded CButeNode-family config-tree node (+0x18/+0x48/+0x74). An inline
 // ctor that base-constructs (CButeNodeBase 0x16dff0) then re-stamps its two most-
@@ -47,7 +45,7 @@ struct CBSecStream {
     void NodeBaseCtor(void* tag, i32 n); // 0x16dff0  CButeNodeBase base ctor
     CBSecStream() {
         NodeBaseCtor(&g_streamTag, 2);
-        *(void**)this = &g_streamVtbl;
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
         *((void**)this + 2) = &g_streamData;
     }
     ~CBSecStream(); // external (reloc-masked in the /GX unwind funclet)

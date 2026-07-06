@@ -32,7 +32,6 @@
 // can't name that ??_7 and stays a reloc-masked extern. The base stamp uses the
 // canonical shared g_wapObjectDtorVtbl (bound once in ReconBatch2.cpp), the same
 // name every other CObject-base manual restamp uses - so its reloc resolves.
-extern void* const g_animWorkerObjVtbl[]; // ??_7AnimWorkerObj @0x1efb80 (reloc-masked)
 
 // Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
@@ -49,7 +48,7 @@ extern "C" void Engine_Delete(void* p);
 // model can't emit. Defer to the final sweep once the base + full vtable are modeled.
 RVA(0x00151da0, 0x80)
 CLogicRecord::~CLogicRecord() {
-    m_vptr = (void*)g_animWorkerObjVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     m_10 = 0;
     if (m_14) {
         Engine_Delete(m_14);

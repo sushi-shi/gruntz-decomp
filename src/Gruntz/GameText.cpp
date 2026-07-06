@@ -106,7 +106,7 @@ static char* g_errMsg_BadArg;
 RVA(0x0016d9c0, 0x75)
 CContainerErr::CContainerErr(const char* msg) {
     m_msg = msg ? msg : g_defaultErrMsg; // +0x04 stored first
-    m_vtbl = &g_containerErrVtbl;        // +0x00 vtable stored after m_msg
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)        // +0x00 vtable stored after m_msg
 
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";

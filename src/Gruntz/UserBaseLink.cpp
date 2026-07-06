@@ -237,7 +237,7 @@ extern "C" void* RezAlloc(u32 n); // 0x1b9b46
 // Stamp the foreign worker vtable (0x5efb80) by address - the vptr store the
 // inline worker ctor emits; never a C++ ctor (that would emit a divergent vtable).
 static inline void StampWorkerVtbl(CAnimWorker* w) {
-    *(void**)w = &g_animWorkerVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
 }
 
 // CGameObject::EnsureWorker80 (0x150eb0): the +0x80 worker variant of

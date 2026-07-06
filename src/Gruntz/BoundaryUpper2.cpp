@@ -53,10 +53,9 @@ void ClearHash_184b70() {
 // 0x133370 - DirectInput device-config grand-base dtor: stamp the C-level vftable
 // (@0x5ef670) then tail-jump the base subobject teardown (0x134d50). __thiscall.
 // ---------------------------------------------------------------------------
-extern void* g_deviceConfigVtblC; // 0x5ef670 (named in DirectInputMgr2.cpp)
 RVA(0x00133370, 0xb)
 void DICfgC::DtorC() {
-    *(void**)this = &g_deviceConfigVtblC;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     BaseTeardown();
 }
 

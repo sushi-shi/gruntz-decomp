@@ -53,7 +53,6 @@
 //          to prove whether +0x04 is the message or a sink (or the sink reads the
 //          message through it). Not renamed either way pending disasm of Set/Remove.
 // ---------------------------------------------------------------------------
-extern void* g_containerErrVtbl;
 
 SIZE_UNKNOWN(CContainerErr);
 class CContainerErr {

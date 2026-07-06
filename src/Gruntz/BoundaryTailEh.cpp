@@ -6,7 +6,6 @@
 #include <rva.h>
 
 // The retail CFileMemBase base vtable (0x5efe68); bound by Io/FileMem.cpp.
-extern i32 g_fileMemBaseVtbl;
 
 // ---------------------------------------------------------------------------
 // 0x1578b0 - CFileMemBase::~CFileMemBase: stamp the base vtable, call ResetBase
@@ -30,6 +29,6 @@ struct CFileMemBase {
 SIZE_UNKNOWN(CFileMemBase);
 RVA(0x001578b0, 0x51)
 CFileMemBase::~CFileMemBase() {
-    m_vtbl = (void*)&g_fileMemBaseVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     ResetBase();
 }

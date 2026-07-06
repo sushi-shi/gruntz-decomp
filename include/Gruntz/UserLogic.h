@@ -91,7 +91,6 @@ public:
 
 // The foreign worker vftable (0x5efb80); the worker ctor stamps it by address so
 // the DIR32 vptr store reloc-masks. Owned by another TU.
-extern void* g_animWorkerVtbl;
 
 // The +0x198 layer descriptor several eyecandy ctors poll for z-clamping (its
 // +0x10/+0x14 bounds + +0x1c base offset). Only the touched offsets are modeled.

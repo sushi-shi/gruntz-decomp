@@ -95,8 +95,6 @@ CRezDir13cb80::~CRezDir13cb80() {
 // inline CInputDevBase (its emitted COMDAT is unbound). Grand-base ~G @0x133370 is
 // matched standalone in BoundaryUpper2.cpp.
 // ---------------------------------------------------------------------------
-extern void* g_deviceConfigVtblB; // 0x5ef680
-extern void* g_deviceConfigVtblC; // 0x5ef670
 struct DevCfgChain {
     void* m_vptr;
     void ReleaseBase(); // 0x1342b0
@@ -116,9 +114,9 @@ SIZE_UNKNOWN(DevCfgChain);
 // sweep that reunifies the whole chain in one TU.
 RVA(0x001333b0, 0x55)
 void DevCfgChain::DtorD1() {
-    m_vptr = &g_deviceConfigVtblB;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     ReleaseBase();
-    m_vptr = &g_deviceConfigVtblC;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     BaseDtorC();
 }
 

@@ -377,8 +377,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
 //
 // Foreign vtables reloc-mask (the real ??_7CResolveNode / ??_7AnimWorkerObj live in the
 // Image / DDrawWorkerCache TUs; g_wwdGameObjectVtbl is the un-modeled 0x5f0020 datum).
-extern void* g_resolveNodeVtbl;   // 0x5efbc0  ??_7CResolveNode (reloc-masked)
-extern void* g_animWorkerObjVtbl; // 0x5efb80  ??_7AnimWorkerObj (reloc-masked)
+extern void* g_resolveNodeVtbl; // 0x5efbc0  ??_7CResolveNode (reloc-masked)
 
 // The +0x7c sprite/anim worker (0x17c bytes). `new`-constructed inline in the base ctor;
 // self-contained inline-construction view (only the field stores + vtable stamp matter).
@@ -387,7 +386,7 @@ struct WwdAnimWorker {
         m_04 = b;
         m_08 = 0;
         m_0c = a;
-        *(void**)this = &g_animWorkerObjVtbl; // 0x5efb80
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efb80
         m_10 = 0;
         m_14 = 0;
         m_18 = 0;

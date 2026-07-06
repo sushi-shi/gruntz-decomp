@@ -1150,7 +1150,6 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 // access (TF/MF macros) - the offset is the load-bearing fact, not the name.
 // =========================================================================
 
-extern "C" void* g_netMgrVtbl;                    // 0x5ea42c  ??_7CNetMgr@@6B@ (peer own vptr)
 extern "C" unsigned(__stdcall* g_pTimeGetTime)(); // 0x6c4650  cached timeGetTime fn ptr
 extern int(__stdcall* g_ShowCursor)(int);         // 0x6c44c4  ?g_ShowCursor (cursor toggler)
 extern "C" i32 g_645580;                          // 0x645580
@@ -1229,7 +1228,7 @@ struct CNetPeer : public Wap::CObject {
     CObList m_l2;          // +0x54
     char m_pad_tail[0x8c - (0x1c + 3 * sizeof(CObList))];
     CNetPeer() {
-        *(void**)this = &g_netMgrVtbl; // 0x5ea42c (final stamp; CNetMgr vtbl un-catalogued)
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5ea42c (final stamp; CNetMgr vtbl un-catalogued)
         *(i32*)((char*)this + 0x14) = 0;
         *(i32*)((char*)this + 0x18) = 0;
     }

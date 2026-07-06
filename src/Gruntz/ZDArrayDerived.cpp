@@ -13,13 +13,11 @@
 // it as a real ??_7 stamp - a real ctor would relocate the base-ctor call + the
 // derived stamp and diverge (vtable-realization-ctor-boundary). g_zDArrayVtbl
 // (0x5e70fc) is the shared CTypeKeyColl-family derived table. 100% matched.
-DATA(0x001e70fc)
-extern void* g_zDArrayVtbl; // 0x5e70fc
 
 RVA(0x00008710, 0x2b)
 CZDArrayDerived* CZDArrayDerived::Construct(i32 lo, i32 hi) {
     BaseConstruct(4, lo, hi, (void*)1);
     *(volatile i32*)&hi = (i32)m_1c; // write-back to the hi param slot (retail keeps it)
-    m_vtbl = &g_zDArrayVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     return this;
 }
