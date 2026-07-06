@@ -4085,10 +4085,7 @@ void CPlay::CPlayDtorBody() {
 // run the deferred draw, (re)install the renderer view, then re-arm the guts and
 // (mode 9) latch the saved game clock. A dense chain of CPlay/registry thunks.
 // ---------------------------------------------------------------------------
-struct EmGuts {      // this->m_guts
-    void Pause();    // 0x125d
-    void StepZ(i32); // 0x34bd
-    void Resume();   // 0x21b7
+struct EmGuts { // this->m_guts
 };
 struct EmHdr14 {
     char p0[0x2c];
@@ -4161,8 +4158,8 @@ RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
     EmThis* self = (EmThis*)this;
     ((CGruntzMgr*)g_64556c)->CheckSavedMode();
-    self->m_guts->Pause();
-    self->m_guts->StepZ(0);
+    ((CSBI_RectOnly*)self->m_guts)->Deactivate();
+    ((CSBI_RectOnly*)self->m_guts)->LoadDestructButtonSprite(0);
     ((CGruntzMgr*)self->m_4)->PerFrameTick();
 
     if (self->m_1c4 != 0) {
@@ -4176,8 +4173,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        self->m_guts->Pause();
-        self->m_guts->Resume();
+        ((CSBI_RectOnly*)self->m_guts)->Deactivate();
+        ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
     } else {
         if (self->m_474 != 0) {
             self->DeferredDraw();
@@ -4186,8 +4183,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_c->vtbl
                 ->Present(self->m_c->m_c, self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        self->m_guts->Pause();
-        self->m_guts->Resume();
+        ((CSBI_RectOnly*)self->m_guts)->Deactivate();
+        ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
         if (mode == 9) {
             if (self->m_c->m_4->Method_158d20() != 0) {
                 goto finish;
@@ -4216,7 +4213,7 @@ finish:
     if (mode == 9) {
         g_645588_clk = self->m_savedClock;
     }
-    self->m_guts->Pause();
+    ((CSBI_RectOnly*)self->m_guts)->Deactivate();
     self->FinishMode();
     self->m_484 = 0;
     return 1;
