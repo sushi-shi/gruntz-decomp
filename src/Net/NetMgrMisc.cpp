@@ -3,6 +3,7 @@
 // file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
 // engine singletons. All callees/globals are external (reloc-masked).
 #include <Ints.h>
+#include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Dialogs.h>    // CMultiStartDlg (the connect-coordinator IS this dialog)
 #include <Gruntz/Multi.h>      // the g_64bd5c singleton is a CMulti (xref-proven)
 #include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (the +0x5c transform host)
@@ -96,7 +97,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = ((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
+        i32 transformedPlayerId = (i32)((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }
