@@ -20,6 +20,7 @@
 #include <DDrawMgr/DDSurface.h> // real CDDSurface (the credits DC chain's surface holder: m_8)
 #include <Bute/SymTab.h>        // real CSymTab (the credits section source: Insert)
 #include <Gruntz/ParseSource.h> // real CParseSource (the resolved CREDITZ section: BeginParse/EndParse)
+#include <Gruntz/SoundCueMgr.h> // real CSoundCueMgr (the config-cue sound player: ConfigureItem @0x1360d0)
 
 #include <Ints.h>
 #include <rva.h>
@@ -310,14 +311,11 @@ namespace m4 {
     struct LevelInfoSrc {                       // g_mgrSettings->m_world->m_levelInfoSrc
         i32 GetInfo(void* key, LevelInfo* out); // RVA 0x160530
     };
-    struct SoundPlayer {
-        void Play1360d0(i32 a, i32 b, i32 c, i32 d); // thiscall thunk 0x1360d0
-    };
     struct SoundCue { // config-section result handed back by GetSection
         char m_pad0[0x10];
-        SoundPlayer* m_player; // +0x10
-        i32 m_lastTime;        // +0x14
-        i32 m_interval;        // +0x18
+        CSoundCueMgr* m_player; // +0x10
+        i32 m_lastTime;         // +0x14
+        i32 m_interval;         // +0x18
     };
     struct CfgAccessor {                                  // embedded at MgrM28+0x10
         i32 GetSection(const char* name, SoundCue** out); // thiscall thunk 0x1b8438
@@ -720,7 +718,7 @@ namespace m4 {
                 return;
             }
             cue->m_lastTime = g_killCueClock;
-            cue->m_player->Play1360d0(newpos, 0, 0, 0);
+            cue->m_player->ConfigureItem(newpos, 0, 0, 0);
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x470)) {
@@ -744,7 +742,7 @@ namespace m4 {
                 return;
             }
             cue->m_lastTime = g_killCueClock;
-            cue->m_player->Play1360d0(g_sndCueTag, 0, 0, 0);
+            cue->m_player->ConfigureItem(g_sndCueTag, 0, 0, 0);
             return;
         }
     }
