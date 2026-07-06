@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/StatusBarUpdatersViews.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
 #include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
 #include <Gruntz/TimeBomb.h>
@@ -263,9 +264,6 @@ void CTimeBomb::RegisterActs() {
 // The +0x1a0 animation sub-mgr the per-frame step advances each draw-delta
 // (Advance 0x15c360, __thiscall ret 4) - the SAME engine sink CTeleporter::Begin
 // drives. The draw-delta mirror (g_6bf3bc) is consumed by the advance.
-struct TBombAnimSink {
-    void Advance(u32 ctx); // 0x15c360
-};
 SIZE_UNKNOWN(TBombAnimSink);
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
@@ -319,7 +317,7 @@ i32 CTimeBomb::LoadAttributes() {
         TBombGridClear(m_object);
         return 0;
     }
-    ((TBombAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     if ((i64)g_645588 - *(i64*)&m_startTimeLo < *(i64*)&m_durationLo) {
         return 0;
     }

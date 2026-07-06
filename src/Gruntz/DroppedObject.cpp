@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
@@ -284,9 +285,6 @@ extern "C" u32 g_6bf3bc;
 
 // The +0x1a0 animation sub-mgr advanced each draw-delta (Advance 0x15c360, the SAME
 // engine sink CTimeBomb's per-frame step drives).
-struct DropAnimSink {
-    void Advance(u32 ctx); // 0x15c360
-};
 
 // CDroppedObject::ActA @0x0c7090 - the per-frame "A" activation handler (bound into
 // the registry by RegisterActs via the DropActA_c7090 address alias). Advance the
@@ -311,7 +309,7 @@ struct DropAnimSink {
 // sweep.
 RVA(0x000c7090, 0x21b)
 i32 CDroppedObject::ActA() {
-    ((DropAnimSink*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     m_fallY = (double)g_645584 * m_timePerTile + m_fallY;
     i32 landed = (i32)(m_fallY - g_dropFallBias);
     if (landed > m_landY) {

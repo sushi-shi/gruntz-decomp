@@ -1,4 +1,5 @@
 #include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
@@ -115,9 +116,6 @@ struct CSpawnObj {
 };
 
 // The geometry sub-player at m_38->m_1a0 SpawnPartners seeds with g_defaultGeo.
-struct CWormGeoSub {
-    void SetGeoSource(i32 src); // 0x15c360 (__thiscall ret 4)
-};
 
 // SpawnPartners reads the bound CGameObject (m_10/m_38) directly: the open/pair
 // gates (+0x1c8/+0x1c0), the dirty-flag word (+0x08) and the tile coords
@@ -283,7 +281,7 @@ void CWormhole::SpawnPartners() {
     // The geo-call dereferences m_38 once (its own ecx); the gate block then
     // re-reads m_38 ONCE into a scratch and reuses it for all three field reads
     // (the target keeps this=esi live across both, loading [esi+0x38] twice).
-    ((CWormGeoSub*)((char*)m_38 + 0x1a0))->SetGeoSource(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
 
     // Gate: only spawn partners when the object is "open" (m_1c8 set) and not
     // already paired (m_1c0 clear); then mark it paired-in-progress (m_08 |= 0x10000).
