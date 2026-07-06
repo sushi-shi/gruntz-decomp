@@ -721,23 +721,25 @@ struct CExitV44 { // teardown at vtable +0x44 (slot 17)
     virtual void s10();
     virtual void Teardown(); // slot 17 (+0x44)
 };
+// The worker-list leaf (ClearWorkers @0x163c60); TU-local method view of the real
+// ddrawworkerlist-unit class (no header yet).
+class CDDrawWorkerList {
+public:
+    void ClearWorkers();
+};
 // The view holder (this->m_c) as the exit walk reads it.
 struct CExitView {
     char p0[0x8];
     CDDrawSubMgrPages* m_8; // +0x8  (Method_159ef0)
-    struct Mc {
-        void Teardown(); // 0x163c60
-    }* m_c;              // +0xc
-    CExitV58* m_10;      // +0x10  virtual slot 0x58
+    CDDrawWorkerList* m_c;  // +0xc  (ClearWorkers @0x163c60)
+    CExitV58* m_10;         // +0x10  virtual slot 0x58
     char p14[0x24 - 0x14];
     CExitV44* m_24; // +0x24  virtual slot 0x44
     struct M28 {
         char p0[0x2c];
-        struct Inner {
-            void Teardown(); // 0x137a80
-        }* m_2c;             // +0x2c
-        void Release();      // 0x157bc0
-    }* m_28;                 // +0x28
+        SoundStream* m_2c; // +0x2c  (Stop @0x137a80)
+        void Release();    // 0x157bc0
+    }* m_28;               // +0x28
     struct M2c {
         void Teardown(); // 0x152720
     }* m_2c;             // +0x2c
@@ -763,7 +765,7 @@ RVA(0x000cb740, 0x8f)
 void CPlay::ModeCleanup() {
     if (m_c) {
         if (((CExitView*)m_c)->m_28->m_2c) {
-            ((CExitView*)m_c)->m_28->m_2c->Teardown();
+            ((CExitView*)m_c)->m_28->m_2c->Stop();
         }
         ((CExitView*)m_c)->m_28->Release();
     }
@@ -784,7 +786,7 @@ void CPlay::ModeCleanup() {
         ((CExitView*)m_c)->m_8->Method_159ef0();
     }
     if (m_c) {
-        ((CExitView*)m_c)->m_c->Teardown();
+        ((CExitView*)m_c)->m_c->ClearWorkers();
     }
 }
 
@@ -3819,13 +3821,10 @@ struct CRtSoundReg { // m_c->m_28
     char p0[0x2c];
     SoundStream* m_2c; // +0x2c
 };
-struct CRtRendererB {   // m_c->m_c
-    void Reset163c60(); // 0x163c60 thunk
-};
 struct CRtResMgr { // this->m_c
     char p0[0x8];
-    CWwdObjMgr* m_8;   // +0x08
-    CRtRendererB* m_c; // +0x0c
+    CWwdObjMgr* m_8;       // +0x08
+    CDDrawWorkerList* m_c; // +0x0c  (ClearWorkers @0x163c60)
     char p10[0x24 - 0x10];
     CRtImageReg* m_24; // +0x24
     CRtSoundReg* m_28; // +0x28
@@ -3904,7 +3903,7 @@ void CPlay::FreeListTeardown() {
     tl68->m_284 = 0;
     ((CTriggerMgr*)self->m_4->m_68)->Reset1b48a6();
     self->m_4->m_68->m_2a0 = 0;
-    self->m_c->m_c->Reset163c60();
+    self->m_c->m_c->ClearWorkers();
     for (i = 0; i < self->m_startMarkers.m_count; i++) {
         void* node = self->m_startMarkers.m_data[i];
         if (node != 0) {
@@ -4952,7 +4951,7 @@ SIZE_UNKNOWN(CRtImageReg);
 SIZE_UNKNOWN(CRtMarker);
 SIZE_UNKNOWN(CRtReg);
 SIZE_UNKNOWN(CRtRendererA);
-SIZE_UNKNOWN(CRtRendererB);
+SIZE_UNKNOWN(CDDrawWorkerList);
 SIZE_UNKNOWN(CRtResMgr);
 SIZE_UNKNOWN(CRtRow);
 SIZE_UNKNOWN(CRtSound);
