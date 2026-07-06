@@ -54,10 +54,23 @@ def _class_of(sym):
     return m.group(1) if m else None
 
 
+def _current_objs():
+    """Base objs the CURRENT build actually produces. Orphan objs left on disk by a
+    renamed/merged unit carry STALE symbols that would inflate the count (and break the
+    hard-assert), so read the produced set from build.ninja and intersect with disk."""
+    ninja = REPO / "build.ninja"
+    on_disk = sorted(glob.glob(str(OBJS / "*.obj")))
+    if not ninja.exists():
+        return on_disk
+    produced = set(re.findall(r"build (build/objdiff/base/\S+\.obj):", ninja.read_text()))
+    cur = [o for o in on_disk if str(Path(o).relative_to(REPO)) in produced]
+    return cur or on_disk
+
+
 def _nm_symbols():
-    """(defined, undefined) sets of function symbols across all base objs."""
+    """(defined, undefined) sets of function symbols across all current base objs."""
     defined, undefined = set(), set()
-    for o in sorted(glob.glob(str(OBJS / "*.obj"))):
+    for o in _current_objs():
         out = subprocess.run(["llvm-nm", o], capture_output=True, text=True).stdout
         for ln in out.splitlines():
             p = ln.split()

@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
+#include <DDrawMgr/DDrawBlitParam.h>
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -858,9 +859,8 @@ struct WwdName {
 // (Wap::CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
 // teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
 struct WwdSub : public Wap::CObject {
-    void DtorImpl(); // 0x15c2c0  __thiscall
     ~WwdSub() OVERRIDE {
-        DtorImpl();
+        ((CDDrawBlitParam*)this)->Reset_15c2c0();
     }
     i32 m_04; // 0x1a4
     i32 m_08; // 0x1a8
@@ -911,11 +911,10 @@ inline WwdEdgeA::~WwdEdgeA() {
 // base re-stamp folded in.
 struct WwdSubA : public Wap::CObject {
     ~WwdSubA() OVERRIDE;
-    void DtorImpl(); // 0x15c2c0
-    WwdEdgeB m_04;   // +0x04 (0x1a4/0x1a8/0x1ac)
+    WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
 };
 inline WwdSubA::~WwdSubA() {
-    DtorImpl();
+    ((CDDrawBlitParam*)this)->Reset_15c2c0();
 }
 
 // ---------------------------------------------------------------------------
