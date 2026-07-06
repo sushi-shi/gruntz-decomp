@@ -12,6 +12,7 @@
 // names are placeholders. The /GX EH frame on the dtor + the FindByName helpers
 // comes from the destructible CString temps.
 #include <rva.h>
+#include <Image/CImage.h>
 
 #include <Gruntz/MenuPage.h>
 
@@ -69,9 +70,6 @@ struct CMenuRenderHost {
 };
 SIZE_UNKNOWN(CMenuRenderHost);
 // The sub-page's current item placer (0x153790, __thiscall on the head item).
-struct CMenuPlacer {
-    i32 Place(i32 ctx, i32 x, i32 y, i32 z); // 0x153790
-};
 SIZE_UNKNOWN(CMenuPlacer);
 
 // The leaf ctor CMenuItem() (default-construct the six CStrings, implicit vptr
@@ -417,7 +415,7 @@ i32 CMenuPage::Layout(i32 ctx) {
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;
-            ((CMenuPlacer*)head)->Place(ctx, x, y, 0);
+            ((CImage*)head)->RenderFrame((void*)ctx, (void*)x, (void*)y, (void*)0);
             y += m_headGap + head->m_1c;
         }
     }
@@ -506,7 +504,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
         CMenuItem* head = tab[idx];
         if (head) {
             y += head->m_1c;
-            ((CMenuPlacer*)head)->Place(ctx, x, y, 0);
+            ((CImage*)head)->RenderFrame((void*)ctx, (void*)x, (void*)y, (void*)0);
             y += m_headGap + head->m_1c;
         }
     }
