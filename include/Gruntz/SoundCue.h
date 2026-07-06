@@ -73,7 +73,6 @@ struct CSndHost {
     // miss). Reloc-masked (no body). Was mis-modeled as an extern "C" __stdcall
     // free fn (the bytes matched only because ecx was coincidentally the host at
     // every call site).
-    CSndEmitter* CueLookup(const char* name); // 0x05b7e0
 };
 SIZE_UNKNOWN(CSndHost);
 

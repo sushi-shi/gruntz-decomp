@@ -29,6 +29,7 @@
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Mfc.h>
 
 #include <rva.h>
@@ -115,7 +116,8 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 // every retail site because the m_emitGate gate test just loaded it).
 #define PLAYCUE(TAG)                                                                               \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
-        CSndEmitter* _c = m_world->m_28->CueLookup(TAG);                                           \
+        CSndEmitter* _c =                                                                          \
+            (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)->Lookup_05b7e0(TAG);              \
         if (_c)                                                                                    \
             _c->Play(g_sndCueTag, 0, 0, 0);                                                        \
     }
@@ -292,7 +294,8 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                 switch (nID & 0xffff) {
                     case 0x803b: {
                         if (m_world->m_28->m_emitGate == 0) {
-                            CSndEmitter* _c = m_world->m_28->CueLookup("GAME_MINORCHEAT");
+                            CSndEmitter* _c = (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)
+                                                  ->Lookup_05b7e0("GAME_MINORCHEAT");
                             if (_c) {
                                 _c->Play(g_sndCueTag, 0, 0, 0);
                             }
@@ -557,7 +560,8 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     case 0x8175:
                         if (m_world->m_28->m_emitGate == 0) {
-                            CSndEmitter* _c = m_world->m_28->CueLookup("GAME_WAWA");
+                            CSndEmitter* _c = (CSndEmitter*)((CDDrawSubMgrLeafScan*)m_world->m_28)
+                                                  ->Lookup_05b7e0("GAME_WAWA");
                             if (_c) {
                                 _c->Play(0x64, 0, 0, 0);
                             }
