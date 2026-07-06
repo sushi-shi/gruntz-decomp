@@ -12,6 +12,7 @@
 // multi-way error ladder) - the deliverable is the control-flow + offset +
 // ordered-call carcass, not a byte-perfect frame.
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <Utils/RegistryHelper.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <rva.h>
@@ -97,8 +98,6 @@ struct Mfc {
 SIZE(RegHelper, 0x21c);
 struct RegHelper { // m_38 (0x21c)
     i32 m_0;
-    i32 Open(const char*, const char*, const char*, void*, u32, void*); // 0x139210
-    u32 GetValueDword(const char*, u32);                                // 0x1395d0
 };
 struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
     // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
@@ -310,27 +309,30 @@ i32 RezSync::Init(void* a1, char* a2) {
         reg->m_0 = 0;
     }
     m_38 = reg;
-    if (!m_38->Open("Monolith Productions", "Gruntz", "1.0", 0, 0x80000002, 0)) {
+    if (!((Utils::RegistryHelper*)m_38)
+             ->Open("Monolith Productions", "Gruntz", "1.0", 0, (HKEY)0x80000002, 0)) {
         Error2(0x800a, 0x406);
         return 0;
     }
     m_width = 0x280;
     m_height = 0x1e0;
-    m_numRuns = (i32)m_38->GetValueDword("Num Runs", 0);
-    m_numMovies = (i32)m_38->GetValueDword("Num Movies", 0);
-    g_2455d4 = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
-    g_2455b4 = (i32)m_38->GetValueDword("Disable Audio", 0);
-    g_2455bc = (i32)m_38->GetValueDword("Disable Sound", 0);
-    g_2455c0 = (i32)m_38->GetValueDword("Disable Music", 0);
-    g_2455c4 = (i32)m_38->GetValueDword("Disable Fades", 0);
-    g_2455d0 = (i32)m_38->GetValueDword("Disable Direct Video Access", 0);
-    g_2455c8 = (i32)m_38->GetValueDword("Disable Joystick", 0);
-    g_2455cc = (i32)m_38->GetValueDword("Disable SoundFonts", 0);
-    g_2455d8 = (i32)m_38->GetValueDword("Enable Triple", 0);
-    g_2455dc = (i32)m_38->GetValueDword("Enable HiColor", 0);
-    g_2455e0 = (i32)m_38->GetValueDword("Enable TrueColor", 0);
-    g_2455e4 = (i32)m_38->GetValueDword("Enable Emulation", 0);
-    m_checkpointPrompts = (i32)m_38->GetValueDword("Checkpoint Prompts", 1);
+    m_numRuns = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Num Runs", 0);
+    m_numMovies = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Num Movies", 0);
+    g_2455d4 =
+        ((Utils::RegistryHelper*)m_38)->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
+    g_2455b4 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Audio", 0);
+    g_2455bc = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Sound", 0);
+    g_2455c0 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Music", 0);
+    g_2455c4 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Fades", 0);
+    g_2455d0 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Direct Video Access", 0);
+    g_2455c8 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable Joystick", 0);
+    g_2455cc = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Disable SoundFonts", 0);
+    g_2455d8 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Enable Triple", 0);
+    g_2455dc = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Enable HiColor", 0);
+    g_2455e0 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Enable TrueColor", 0);
+    g_2455e4 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Enable Emulation", 0);
+    m_checkpointPrompts =
+        (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Checkpoint Prompts", 1);
     g_2455dc = 1;
     g_64526c = 0;
     g_6452d0 = 0;
@@ -346,15 +348,16 @@ i32 RezSync::Init(void* a1, char* a2) {
     g_645564 = 0;
 
     // --- Phase 4: audio/video settings -------------------------------
-    i32 vMusic = (i32)m_38->GetValueDword("Music", m_music);
-    i32 vSound = (i32)m_38->GetValueDword("Sound", m_sound);
-    i32 vVoice = (i32)m_38->GetValueDword("Voice", m_voice);
-    i32 vAmbient = (i32)m_38->GetValueDword("Ambient", m_ambient);
-    i32 vInterlaced = (i32)m_38->GetValueDword("Interlaced", m_interlaced);
-    i32 vHigh1 = (i32)m_38->GetValueDword("High Detail", m_highDetail);
-    m_highDetail = (i32)m_38->GetValueDword("High Detail", m_110);
-    i32 vEasy = (i32)m_38->GetValueDword("Easy Mode", m_118);
-    i32 res = (i32)m_38->GetValueDword("Resolution", 1);
+    i32 vMusic = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Music", m_music);
+    i32 vSound = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Sound", m_sound);
+    i32 vVoice = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Voice", m_voice);
+    i32 vAmbient = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Ambient", m_ambient);
+    i32 vInterlaced =
+        (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Interlaced", m_interlaced);
+    i32 vHigh1 = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("High Detail", m_highDetail);
+    m_highDetail = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("High Detail", m_110);
+    i32 vEasy = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Easy Mode", m_118);
+    i32 res = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Resolution", 1);
     m_118 = res;
     if (res == 3) {
         m_width = 0x400;
@@ -366,10 +369,10 @@ i32 RezSync::Init(void* a1, char* a2) {
         m_width = 0x280;
         m_height = 0x1e0;
     }
-    i32 vMusVol = (i32)m_38->GetValueDword("Music Volume", 0x64);
-    i32 vSndVol = (i32)m_38->GetValueDword("Sound Volume", 0x3c);
-    i32 vVoiVol = (i32)m_38->GetValueDword("Voice Volume", 0x50);
-    i32 vScroll = (i32)m_38->GetValueDword("Scroll Speed", 0x14);
+    i32 vMusVol = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Music Volume", 0x64);
+    i32 vSndVol = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Sound Volume", 0x3c);
+    i32 vVoiVol = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Voice Volume", 0x50);
+    i32 vScroll = (i32)((Utils::RegistryHelper*)m_38)->GetValueDword("Scroll Speed", 0x14);
     m_soundVolume = vSndVol;
     m_voiceVolume = vVoiVol;
     m_musicVolume = vMusVol + 1;
@@ -726,7 +729,8 @@ i32 RezSync::Init(void* a1, char* a2) {
     Fn1ed8();
     if (!Fn2112()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
-            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
+            if (((Utils::RegistryHelper*)m_38)->GetValueDword("Skip Logo Movies", 0) == 0
+                && noLogo == 0) {
                 Fn2cc5();
             }
         } else {
