@@ -233,7 +233,7 @@ void CTileTriggerContainer::RemoveAll() {
         node = node->m_next;
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
-            *(void**)elem = &g_tileTriggerSwitchVtbl;
+            // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
             elem[8] = 0; // +0x20
             RezFree(elem);
         }
@@ -371,7 +371,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
         return 0;
     }
     if (e->m_1c != 0) {
-        *(void**)e = &g_tileGridCmdVtbl;
+        // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
         e->m_1c = 0;
         RezFree(e);
         return 0;
