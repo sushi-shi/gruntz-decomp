@@ -17,6 +17,7 @@
 // docs/patterns/within-tu-order-vs-field-order.md); each section keeps its
 // original file's provenance comment.
 #include <Gruntz/Fader.h>
+#include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/FaderSubtypes.h> // the six concrete subtypes (declarations)
 #include <Gruntz/FadeSink.h>      // IFadeSink (the CFader::RunFade fade-notify sink; P2)
 #include <Ints.h>
@@ -879,12 +880,6 @@ extern "C" int _access(const char* path, int mode); // 0x193900 CRT
 struct CShadeTable;
 
 // The embedded shade-table cache subobject (CFader base, at this+0x04).
-struct ShadeCache {
-    i32 Init();                                                       // 0x14dec0
-    CShadeTable* AddFromArray(char* name);                            // 0x14f6c0
-    CShadeTable* FlashTable(void* pal, i32 nA, i32 nB, i32 s, i32 e); // 0x14df40
-    char pad[0x18];
-};
 
 // A source surface: dims at +0x18/+0x1c, row pitch +0x20, format gate +0xa8,
 // column stride +0xb0.
@@ -925,7 +920,7 @@ struct FInit {
 // (: public CFader) is a follow-up matcher; kept as a subordinate view for now.
 struct CFaderShapeApply {
     char p00[0x4];
-    ShadeCache m_cache;         // +0x04 cache subobject (0x18)
+    CShadeTableCache m_cache;   // +0x04 cache subobject (0x18)
     CShadeTable* m_shadeTable;  // +0x1c resolved shade table
     i32 m_20;                   // +0x20
     FShadeSurf* m_defaultSurfA; // +0x24 default surface A
@@ -1051,7 +1046,8 @@ i32 CFaderShapeApply::Setup(FInit* pInit) {
             }
         } else {
             this->m_shadeTable =
-                this->m_cache.FlashTable(pInit->m_flashPal->m_palBase, 0x20, 0x20, 0x32, 0xc8);
+                this->m_cache
+                    .FlashTable((PalEntry*)pInit->m_flashPal->m_palBase, 0x20, 0x20, 0x32, 0xc8);
         }
 
         i32 m = this->m_rampSize << 1;
@@ -1076,7 +1072,7 @@ i32 CFaderShapeApply::Setup(FInit* pInit) {
     return 1;
 }
 
-SIZE_UNKNOWN(ShadeCache);
+SIZE_UNKNOWN(CShadeTableCache);
 SIZE_UNKNOWN(FShadeSurf);
 SIZE_UNKNOWN(FInitPal);
 SIZE_UNKNOWN(FInit);
