@@ -50,6 +50,9 @@ public:
     CWwdSpatialMgr* m_spatialWorker; // +0xb0  spatial-grid worker subobject
     char m_padB4[0xf4 - 0xb4];       // +0xb4..+0xf3
     i32 m_pool[0x19];                // +0xf4..+0x157  (25 dwords; memset 0 then m_pool[0]=100)
+    virtual void VtSlotFill0();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2();      // vtable-slot filler (real slot; declared-only)
 };
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

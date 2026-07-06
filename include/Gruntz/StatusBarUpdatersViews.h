@@ -86,6 +86,9 @@ struct CTabWidget {
     virtual void s0a();
     virtual void s0b();
     virtual void SetFrame(i32 frame); // slot 12 (+0x30)
+    virtual void VtSlotFill0();       // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1();       // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2();       // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(CTabWidget);
 

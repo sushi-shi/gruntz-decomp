@@ -11,19 +11,19 @@
 // dispatch `mov edx,[esi]; call [edx+0x30]` falls out of the polymorphic call.
 class CSerialArchive {
 public:
-    void s00();
-    void s01();
-    void s02();
-    void s03();
-    void s04();
-    void s05();
-    void s06();
-    void s07();
-    void s08();
-    void s09();
-    void s10();
-    void s11();
-    i32 Read(void* buf, i32 len); // slot 12 (+0x30)
+    virtual void s00();
+    virtual void s01();
+    virtual void s02();
+    virtual void s03();
+    virtual void s04();
+    virtual void s05();
+    virtual void s06();
+    virtual void s07();
+    virtual void s08();
+    virtual void s09();
+    virtual void s10();
+    virtual void s11();
+    virtual i32 Read(void* buf, i32 len); // slot 12 (+0x30)
 };
 
 // The game registry singleton; only its m_30 sub-manager gates this load.
@@ -34,7 +34,7 @@ extern CGameRegistry* g_gameReg; // ?g_gameReg (0x64556c)
 // (NB: +0x24 is skipped), then a 24-dword run from +0x2c.
 class CTileTriggerData {
 public:
-    void Slot0();                   // vptr @+0x00 (real polymorphic; declared-only)
+    virtual void Slot0();           // vptr @+0x00 (real polymorphic; declared-only)
     i32 LoadV4(CSerialArchive* ar); // 0x1138b0
 
     i32 m_04;     // +0x04

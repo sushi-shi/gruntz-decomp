@@ -44,6 +44,4 @@ public:
     i32 TryLoadSwitchDownSprite();
 };
 
-VTBL(CGruntzApp, 0x001e9ab4);
-
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

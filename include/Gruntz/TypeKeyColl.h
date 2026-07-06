@@ -33,7 +33,7 @@ SIZE_UNKNOWN(CZArrayRoot);
 class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
-    ~CZArrayRoot();         // [0] ??_G 0x16da40 (external no-body)
+    virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
     CZErrSink* m_owner;     // +0x04  error-sink / owner
 };
 
@@ -44,7 +44,7 @@ SIZE_UNKNOWN(CZArray2D);
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
-    ~CZArray2D();                                         // [0] ??_G 0x16df20 (external)
+    virtual ~CZArray2D() OVERRIDE;                        // [0] ??_G 0x16df20 (external)
     i32 m_lo;                                             // +0x08  index low bound
     i32 m_hi;                                             // +0x0c  index high bound
     void* m_buf;                                          // +0x10  primary element buffer
@@ -62,7 +62,7 @@ VTBL(CTypeKeyColl, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor 
 class CTypeKeyColl : public CZArray2D {
 public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
-    virtual ~CTypeKeyColl();                                 // [0] ??_G 0x16dde0 (external)
+    virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
     i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
     void Construct(i32 lo, i32 hi);          // 0x408710 (reloc-masked; build registry)
     void RegisterRange(i32 lo, i32 hi);      // 0x408710 (same slot, alt view name)

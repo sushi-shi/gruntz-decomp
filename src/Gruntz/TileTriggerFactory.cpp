@@ -25,15 +25,15 @@ i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem
 // A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
 struct CTileObj {
-    void s0();
-    void s1();
-    void s2();
-    void s3();
-    void s4();
-    void s5();
-    void s6();
-    void s7();
-    i32 TypeId(); // slot 8 (+0x20)
+    virtual void s0();
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    virtual void s6();
+    virtual void s7();
+    virtual i32 TypeId(); // slot 8 (+0x20)
 };
 SIZE_UNKNOWN(CTileObj);
 

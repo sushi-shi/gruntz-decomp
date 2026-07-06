@@ -60,7 +60,7 @@ typedef CInputDevice CDeviceConfigA;
 // ---------------------------------------------------------------------------
 SIZE(CDevicePtrArray, 0x14); // MFC CPtrArray layout (vptr + 4 dwords)
 struct CDevicePtrArray {
-    ~CDevicePtrArray();                    // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
+    virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
 
     // vptr @+0x00 (implicit, polymorphic CPtrArray vftable)
@@ -97,7 +97,7 @@ struct CDeviceListNode {
 // ---------------------------------------------------------------------------
 SIZE(CDeviceList, 0x18); // MFC CObList layout (vptr + head/tail + count/free/block)
 struct CDeviceList {
-    ~CDeviceList();                  // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
+    virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
     void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)
     void RemoveAll();                // 0x1b48a6
 
@@ -225,7 +225,7 @@ SIZE(CInputDevRoot, 0x2b4); // grand-base subobject (derived fields start at 0x2
 class CInputDevRoot {
 public:
     CInputDevRoot();
-    ~CInputDevRoot() {
+    virtual ~CInputDevRoot() {
         CInputDevRoot::ReleaseDevices();
     } // slot 0 (inline: base cleanup)
 
@@ -234,11 +234,11 @@ public:
     // an unmatched teardown at 0x1342b0) - reloc-masked in objdiff, so cl's inherited
     // targets here diff clean. Direct callers qualify the call (CInputDevRoot::Create)
     // to keep the byte-exact direct `call rel32`.
-    i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
-    void ReleaseDevices();                                             // slot 2  0x134d50
-    i32 IsValid();                                                     // slot 3  0x1332b0
+    virtual i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
+    virtual void ReleaseDevices();                                             // slot 2  0x134d50
+    virtual i32 IsValid();                                                     // slot 3  0x1332b0
 
-    // Shared non-COM helpers.
+    // Shared non-virtual COM helpers.
     i32 Unacquire(); // 0x134fe0
 
     // Shared COM device-config thunks: they touch only the root-owned m_device2 /
@@ -268,15 +268,15 @@ SIZE(CInputDevBase, 0x2b4); // middle-base subobject (adds no fields)
 class CInputDevBase : public CInputDevRoot {
 public:
     CInputDevBase();
-    ~CInputDevBase() {
+    virtual ~CInputDevBase() OVERRIDE {
         CInputDevRoot::ReleaseDevices();
     } // slot 0 (inline: base cleanup)
     // The two poll slots. Poll (slot 4) is the per-frame device poll: the base body
     // (0x133410) is a stub; the keyboard leaf overrides it (CInputDevice::Poll,
     // 0x133d00), the mouse/joystick leaf slots reloc-mask to their own poll. ResetState
     // (slot 5, 0x1332c0) clears the edge-latch; CreateDeviceWrap dispatches it.
-    i32 Poll();       // +0x10  slot 4  per-frame device poll
-    i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
+    virtual i32 Poll();       // +0x10  slot 4  per-frame device poll
+    virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
 
     // CreateDeviceWrap (0x134260): validates (di, hwnd), runs Create, then dispatches
     // the +0x14 ResetState virtual. Non-virtual; direct-called by every leaf.
@@ -289,7 +289,7 @@ SIZE(CInputDevice, 0x338);
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
-    virtual ~CInputDevice(); // 0x133300 (the /GX multilevel deleting-dtor)
+    virtual ~CInputDevice() OVERRIDE; // 0x133300 (the /GX multilevel deleting-dtor)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x133b50
     void Teardown();                                                           // 0x133bf0

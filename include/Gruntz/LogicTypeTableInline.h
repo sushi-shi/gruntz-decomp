@@ -47,7 +47,13 @@ public:
     virtual void Slot7();
     virtual void Slot8();
     virtual void RegisterType(void* factoryFn, const char* key, i32 flags); // slot 9 (+0x24)
-    i32 Find(const char* key); // 0x1703 thunk (__thiscall, returns found type or 0)
+    i32 Find(const char* key);  // 0x1703 thunk (__thiscall, returns found type or 0)
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
 };
 
 // The intermediate object reached through ctx->m_0c: its +0x14 slot points at the

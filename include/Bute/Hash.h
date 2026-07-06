@@ -91,7 +91,7 @@ SIZE(CHashSlot, 0x10);
 // vtable is emitted.
 class CHashElement {
 public:
-    u32 Hash();         // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)
+    virtual u32 Hash(); // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)
     CHashLink m_link;   // +0x04  intrusive chain node { next, prev }
     CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
     u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)

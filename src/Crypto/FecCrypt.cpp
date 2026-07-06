@@ -26,21 +26,21 @@
 // Open @+0x28, Seek @+0x30, Read @+0x3c (all __thiscall by MSVC default).
 class FecStream {
 public:
-    void Slot00();
-    void Slot04();
-    void Slot08();
-    void Slot0C();
-    void Slot10();
-    void Slot14();
-    void Slot18();
-    void Slot1C();
-    void Slot20();
-    void Slot24();
-    i32 Open(const char* name, i32 a2, i32 a3); // +0x28
-    i32 Seek(i32 off, i32 origin);              // +0x30
-    void Slot34();
-    void Slot38();
-    i32 Read(void* buf, i32 size); // +0x3c
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual i32 Open(const char* name, i32 a2, i32 a3); // +0x28
+    virtual i32 Seek(i32 off, i32 origin);              // +0x30
+    virtual void Slot34();
+    virtual void Slot38();
+    virtual i32 Read(void* buf, i32 size); // +0x3c
 };
 
 // The helper at CFecFile+0x138 (its Op at 0x1b4d7c is a reloc-masked rel32 call).

@@ -110,9 +110,16 @@ public:
     // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
     // list (see CRezParseNode below). The ctors here never touch them; typed as
     // the node base rather than left as raw void*.
-    CRezItmBase* m_next;    // +0x04
-    CRezItmBase* m_prev;    // +0x08
-    CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
+    CRezItmBase* m_next;        // +0x04
+    CRezItmBase* m_prev;        // +0x08
+    CRezItmOwner* m_parent;     // +0x0c  owning object CRezItm polls via Retry()
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
 };
 
 // ---------------------------------------------------------------------------
@@ -143,11 +150,17 @@ public:
 
     // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
     // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
-    void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
-    void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
-    i32 m_18;        // +0x18  (set by the virtual load, not this TU; role unproven)
-    i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
-    i32 m_pos;       // +0x20  position cursor (= -1)
+    void* m_fp;                 // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
+    void* m_readBuf;            // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
+    i32 m_18;                   // +0x18  (set by the virtual load, not this TU; role unproven)
+    i32 m_1c;                   // +0x1c  (set by the virtual load, not this TU; role unproven)
+    i32 m_pos;                  // +0x20  position cursor (= -1)
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
 };
 
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
@@ -196,12 +209,18 @@ public:
     // here actually belong to CRezDirNode (a distinct class walked by Load/OpenSub -
     // see the RezMgr.cpp note); this TU only touches the ctor-set members below.
     // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
-    CRezDirList m_listA; // +0x10  {vptr,head,tail}
-    CRezDirList m_listB; // +0x1c  {vptr,head,tail}
-    i32 m_28;            // +0x28  (= 0; role unproven)
-    void* m_rezMgr;      // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
-    i32 m_30;            // +0x30  (= 1; "valid"/initialized flag)
-    i32 m_34;            // +0x34  (= 0; role unproven)
+    CRezDirList m_listA;        // +0x10  {vptr,head,tail}
+    CRezDirList m_listB;        // +0x1c  {vptr,head,tail}
+    i32 m_28;                   // +0x28  (= 0; role unproven)
+    void* m_rezMgr;             // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
+    i32 m_30;                   // +0x30  (= 1; "valid"/initialized flag)
+    i32 m_34;                   // +0x34  (= 0; role unproven)
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
 };
 
 // ---------------------------------------------------------------------------
@@ -216,7 +235,7 @@ public:
 class CRezParseNode : public CRezItmBase {
 public:
     CRezParseNode(void* parent, char* nameSrc, void* owner);
-    void v0(); // new  - forces the distinct derived vtable (+0x1ef7d0)
+    virtual void v0(); // new virtual - forces the distinct derived vtable (+0x1ef7d0)
 
     char* m_10; // +0x10  heap-copied name
     i32 m_14;   // +0x14  (= 0; role unproven)
@@ -247,9 +266,9 @@ class CRezDirNode; // fwd (RezNode holds a CRezDirNode* sub-dir at +0x14)
 // So model it as a class with the read method at vtable slot index 2.
 class RezStream {
 public:
-    void v0();
-    void v1();
-    i32 ReadAt(i32 off, i32 zero, u32 size, void* buf); // slot +0x08
+    virtual void v0() = 0;
+    virtual void v1() = 0;
+    virtual i32 ReadAt(i32 off, i32 zero, u32 size, void* buf) = 0; // slot +0x08
 };
 
 // The archive source object that the dir node points to at +0x18. Load checks
@@ -322,12 +341,12 @@ extern i32 g_rezLowDetail;
 // ---------------------------------------------------------------------------
 class CGameMode {
 public:
-    void v0();     // +0x00
-    void v1();     // +0x04
-    void v2();     // +0x08
-    void v3();     // +0x0c
-    i32 Update();  // +0x10  (slot 4) - per-frame state step
-    void Render(); // +0x14  (slot 5) - per-frame post-step
+    virtual void v0();     // +0x00
+    virtual void v1();     // +0x04
+    virtual void v2();     // +0x08
+    virtual void v3();     // +0x0c
+    virtual i32 Update();  // +0x10  (slot 4) - per-frame state step
+    virtual void Render(); // +0x14  (slot 5) - per-frame post-step
 };
 
 // ---------------------------------------------------------------------------
@@ -376,12 +395,12 @@ struct RezMgrOwner {
 class RezMgr {
 public:
     // The per-frame game tick (vtable slot +0x10 / index 4).
-    i32 PerFrameTick();
+    virtual i32 PerFrameTick();
 
     i32 MakeImageKey(void* arg1, char* name, void* arg3);
     i32 MakeRezPath();
 
-    // The frame-clock advance helper (a non-member; also
+    // The frame-clock advance helper (a non-virtual member; also
     // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
     // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
     i32 UpdateClock();

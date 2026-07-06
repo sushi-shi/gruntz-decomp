@@ -25,28 +25,28 @@
 // dummy-virtual view (cl can't reason about its dynamic type) keeps the retail
 // virtual dispatch. Kept for CFileMem. (docs/patterns/dummy-virtual-slots.md.)
 struct CFileIODispatch {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    void v8();
-    void v9();
-    i32 Open(const char* name, u32 flags, void* err); // +0x28 slot 10
-    void Duplicate();                                 // slot 11 (CFile::Duplicate)
-    LONG Seek(LONG off, i32 from);                    // +0x30 slot 12
-    void SetLength();                                 // slot 13 (CFile::SetLength)
-    i32 GetLength();                                  // +0x38 slot 14
-    i32 Read(void* buf, u32 n);                       // +0x3c slot 15
-    void Write(const void* buf, u32 n);               // +0x40 slot 16
-    void LockRange();                                 // slot 17 (CFile::LockRange)
-    void UnlockRange();                               // slot 18 (CFile::UnlockRange)
-    void Abort();                                     // slot 19 (CFile::Abort)
-    void Flush();                                     // slot 20 (CFile::Flush)
-    i32 Close(); // +0x54 slot 21 (CFile::Close; FileMem::Reset drives it)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual i32 Open(const char* name, u32 flags, void* err); // +0x28 slot 10
+    virtual void Duplicate();                                 // slot 11 (CFile::Duplicate)
+    virtual LONG Seek(LONG off, i32 from);                    // +0x30 slot 12
+    virtual void SetLength();                                 // slot 13 (CFile::SetLength)
+    virtual i32 GetLength();                                  // +0x38 slot 14
+    virtual i32 Read(void* buf, u32 n);                       // +0x3c slot 15
+    virtual void Write(const void* buf, u32 n);               // +0x40 slot 16
+    virtual void LockRange();                                 // slot 17 (CFile::LockRange)
+    virtual void UnlockRange();                               // slot 18 (CFile::UnlockRange)
+    virtual void Abort();                                     // slot 19 (CFile::Abort)
+    virtual void Flush();                                     // slot 20 (CFile::Flush)
+    virtual i32 Close(); // +0x54 slot 21 (CFile::Close; FileMem::Reset drives it)
 };
 SIZE_UNKNOWN(CFileIODispatch); // reinterpret dispatch view (never constructed)
 

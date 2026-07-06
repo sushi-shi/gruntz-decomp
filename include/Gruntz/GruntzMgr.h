@@ -423,6 +423,4 @@ public:
     CGruntzMgrOptions m_options[4]; // +0x150 (4x0x238 options array; EH state 4) -> 0xa30
 };
 
-VTBL(CGruntzMgr, 0x001e9b64);
-
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

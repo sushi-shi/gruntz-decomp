@@ -60,16 +60,16 @@ class CUserLogic;   // fwd (CGameObjAux::m_logic is the object's bound logic lea
 SIZE_UNKNOWN(CAnimWorker);
 class CAnimWorker {
 public:
-    void Slot00();              // +0x00
-    void Slot01();              // +0x04
-    void Slot02();              // +0x08
-    void Slot03();              // +0x0c
-    void Slot04();              // +0x10
-    void Slot05();              // +0x14
-    void Slot06();              // +0x18
-    i32 Slot07();               // +0x1c  reuse path
-    void Slot08();              // +0x20
-    i32 Slot09(i32 ctx, i32 z); // +0x24  fed CGameObject->m_10
+    virtual void Slot00();              // +0x00
+    virtual void Slot01();              // +0x04
+    virtual void Slot02();              // +0x08
+    virtual void Slot03();              // +0x0c
+    virtual void Slot04();              // +0x10
+    virtual void Slot05();              // +0x14
+    virtual void Slot06();              // +0x18
+    virtual i32 Slot07();               // +0x1c  reuse path
+    virtual void Slot08();              // +0x20
+    virtual i32 Slot09(i32 ctx, i32 z); // +0x24  fed CGameObject->m_10
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -139,23 +139,23 @@ struct CGameObject {
     // vptr @ +0x00 (declared-only slots; nothing constructs a bare CGameObject, so
     // no vtable is ever emitted from source - every dispatch reloc-masks). Slot
     // roles: [1] Delete = scalar-deleting dtor (WwdFile::ReadPlaneObjects `push 1;
-    // call [+4]`); [10] Load = the record-load (ReadPlaneObjects pushes 4
+    // call [+4]`); [10] Load = the record-load virtual (ReadPlaneObjects pushes 4
     // args + checks the int return: `push;push;push;push; call [+0x28]`); [11] Draw:
     // CGameLevel::VisitVisible dispatches it (+0x2c) per object during the
     // between-planes render walk, passing the render visitor.
-    void v00();                           // [0]  +0x00
-    void* Delete(i32 flag);               // [1]  +0x04  scalar-deleting dtor
-    void v08();                           // [2]  +0x08
-    void v0c();                           // [3]  +0x0c
-    void v10();                           // [4]  +0x10
-    void v14();                           // [5]  +0x14
-    void v18();                           // [6]  +0x18
-    void v1c();                           // [7]  +0x1c
-    i32 GetTypeId();                      // [8]  +0x20  (serialize type-id getter;
-                                          //       CTriggerMgr::Load checks ==5)
-    void v24();                           // [9]  +0x24
-    i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load
-    void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
+    virtual void v00();                           // [0]  +0x00
+    virtual void* Delete(i32 flag);               // [1]  +0x04  scalar-deleting dtor
+    virtual void v08();                           // [2]  +0x08
+    virtual void v0c();                           // [3]  +0x0c
+    virtual void v10();                           // [4]  +0x10
+    virtual void v14();                           // [5]  +0x14
+    virtual void v18();                           // [6]  +0x18
+    virtual void v1c();                           // [7]  +0x1c
+    virtual i32 GetTypeId();                      // [8]  +0x20  (serialize type-id getter;
+                                                  //       CTriggerMgr::Load checks ==5)
+    virtual void v24();                           // [9]  +0x24
+    virtual i32 Load(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  record-load virtual
+    virtual void Draw(void* arg);                 // [11] +0x2c  per-object draw hook (VisitVisible)
 
     i32 m_04;    // +0x04
     i32 m_flags; // +0x08  bit4 = riding m_carrier; bit8 (0x100) = collision-active;
@@ -290,17 +290,17 @@ struct CGameObjNode {
 // before loading the head - the sub-struct keeps that byte shape).
 SIZE_UNKNOWN(CGameObjChain);
 struct CGameObjChain {
-    void v00();           // [0]  +0x00
-    void v04();           // [1]  +0x04
-    void v08();           // [2]  +0x08
-    void v0c();           // [3]  +0x0c
-    void v10();           // [4]  +0x10
-    void v14();           // [5]  +0x14
-    void v18();           // [6]  +0x18
-    void v1c();           // [7]  +0x1c
-    void v20();           // [8]  +0x20
-    void v24();           // [9]  +0x24
-    void Hook(void* arg); // [10] +0x28  render-walk hook (VisitVisible)
+    virtual void v00();           // [0]  +0x00
+    virtual void v04();           // [1]  +0x04
+    virtual void v08();           // [2]  +0x08
+    virtual void v0c();           // [3]  +0x0c
+    virtual void v10();           // [4]  +0x10
+    virtual void v14();           // [5]  +0x14
+    virtual void v18();           // [6]  +0x18
+    virtual void v1c();           // [7]  +0x1c
+    virtual void v20();           // [8]  +0x20
+    virtual void v24();           // [9]  +0x24
+    virtual void Hook(void* arg); // [10] +0x28  render-walk hook (VisitVisible)
 
     char m_pad04[0x10 - 0x04];
     struct List {

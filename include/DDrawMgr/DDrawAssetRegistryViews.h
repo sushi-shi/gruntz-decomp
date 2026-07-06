@@ -29,27 +29,27 @@
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load.
 class CDDrawWorkerRegistry {
 public:
-    void s00();
-    void s04();
-    void s08();
-    void s0c();
-    void s10();
-    void s14();
-    void s18();
-    void s1c();
-    void s20();
-    void s24();
-    void s28();
-    void s2c();
-    void s30();
-    void s34();
-    void s38();
-    void s3c();
-    void s40();
-    void s44();
-    void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
-    i32 HasKeyEqual(const char* key);                               // 0x155550
-    void LoadTreeDirect(const char* prefix, const char* sep);       // 0x155360
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
+    virtual void s28();
+    virtual void s2c();
+    virtual void s30();
+    virtual void s34();
+    virtual void s38();
+    virtual void s3c();
+    virtual void s40();
+    virtual void s44();
+    virtual void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
+    i32 HasKeyEqual(const char* key);                                       // 0x155550
+    void LoadTreeDirect(const char* prefix, const char* sep);               // 0x155360
 };
 
 // GRUNTZ_/GAME aniz sub-manager (owner+0x2c): prefix probe + tree scan.

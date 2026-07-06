@@ -30,39 +30,39 @@ void operator delete(void* p);
 // CFileImageHeldSurface in <Image/Image.h>; only the notify slot is used here. A
 // local view (no new include) to protect this TU's fragile regalloc state.
 struct HeldDDSurface {
-    void __stdcall s00(); // slot 0 (+0x00)
-    void __stdcall s01();
-    void __stdcall s02();
-    void __stdcall s03();
-    void __stdcall s04();
-    void __stdcall s05();
-    void __stdcall s06();
-    void __stdcall s07();
-    void __stdcall s08();
-    void __stdcall s09();
-    void __stdcall s0a();
-    void __stdcall s0b();
-    void __stdcall s0c();
-    void __stdcall s0d();
-    void __stdcall s0e();
-    void __stdcall s0f();
-    void __stdcall s10();
-    void __stdcall s11();
-    void __stdcall s12();
-    void __stdcall s13();
-    void __stdcall s14();
-    void __stdcall s15();
-    void __stdcall s16();
-    void __stdcall s17();
-    void __stdcall s18();
-    void __stdcall s19();
-    void __stdcall s1a();
-    void __stdcall s1b();
-    void __stdcall s1c();
-    void __stdcall s1d();
-    void __stdcall s1e();
-    void __stdcall s1f();            // slot 31 (+0x7c)
-    void __stdcall Unlock(i32 rect); // slot 32 (+0x80)
+    virtual void __stdcall s00(); // slot 0 (+0x00)
+    virtual void __stdcall s01();
+    virtual void __stdcall s02();
+    virtual void __stdcall s03();
+    virtual void __stdcall s04();
+    virtual void __stdcall s05();
+    virtual void __stdcall s06();
+    virtual void __stdcall s07();
+    virtual void __stdcall s08();
+    virtual void __stdcall s09();
+    virtual void __stdcall s0a();
+    virtual void __stdcall s0b();
+    virtual void __stdcall s0c();
+    virtual void __stdcall s0d();
+    virtual void __stdcall s0e();
+    virtual void __stdcall s0f();
+    virtual void __stdcall s10();
+    virtual void __stdcall s11();
+    virtual void __stdcall s12();
+    virtual void __stdcall s13();
+    virtual void __stdcall s14();
+    virtual void __stdcall s15();
+    virtual void __stdcall s16();
+    virtual void __stdcall s17();
+    virtual void __stdcall s18();
+    virtual void __stdcall s19();
+    virtual void __stdcall s1a();
+    virtual void __stdcall s1b();
+    virtual void __stdcall s1c();
+    virtual void __stdcall s1d();
+    virtual void __stdcall s1e();
+    virtual void __stdcall s1f();            // slot 31 (+0x7c)
+    virtual void __stdcall Unlock(i32 rect); // slot 32 (+0x80)
 };
 
 // CDDSurface - the DIRSURF.CPP surface (full class in <Image/Image.h>). Modeled as a

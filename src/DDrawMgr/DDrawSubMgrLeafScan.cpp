@@ -49,10 +49,10 @@ public:
 // helpers forward to MatchSub; FindKeyOfValue compares the value pointer itself.
 class LeafScanValue {
 public:
-    void GetRuntimeClass();    // [0] 0x1bef01 (shared thunk, declared-only)
-    i32 ScalarDtor(i32 flag);  // +0x04 scalar-deleting destructor
-    char m_pad04[0x10 - 0x04]; // +0x04..0x0f (after the vptr)
-    void* m_10;                // +0x10  held sound-arg (LeafScanSoundArg*)
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
+    void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
 };
 
 // The SumField source: the value's m_10 points at a record whose +0x2c word is
@@ -124,11 +124,11 @@ struct LeafRootHandle {
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct LeafElementBase {
-    void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
-    ~LeafElementBase();     // [1] scalar-deleting dtor (0x158660 ??_G)
-    void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
-    void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
-    void Dump();            // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~LeafElementBase();     // [1] scalar-deleting dtor (0x158660 ??_G)
+    virtual void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();            // [4] 0x004034 (shared thunk, declared-only)
 
     i32 m_04; // +0x04 = parent map count (-1 when dead)
     i32 m_08; // +0x08 = 0

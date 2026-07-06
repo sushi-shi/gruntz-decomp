@@ -46,8 +46,8 @@ struct CWwdObjWorker {
 // region cache @ +0x9c, primary-map key @ +0x188; scalar deleting dtor @ vtbl+4.
 class CWwdObject {
 public:
-    void Slot00();
-    i32 ScalarDtor(i32 flag); // +0x04
+    virtual void Slot00();
+    virtual i32 ScalarDtor(i32 flag); // +0x04
     char m_pad04[0x08 - 0x04];
     i32 m_flags; // +0x08  plane/active flag word
     char m_pad0c[0x7c - 0x0c];
@@ -88,8 +88,8 @@ struct WwdBucketHead {
 // the log2 cell shifts, the column count, and the 8-byte bucket-head array.
 class CWwdGrid {
 public:
-    void Slot00();
-    i32 ScalarDtor(i32 flag); // slot 1 (+0x04) scalar-deleting-dtor thunk
+    virtual void Slot00();
+    virtual i32 ScalarDtor(i32 flag); // slot 1 (+0x04) scalar-deleting-dtor thunk
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add_191840(void* region);
     i32 Remove_191890(WwdGridNode* region);

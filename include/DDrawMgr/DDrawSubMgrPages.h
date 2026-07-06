@@ -71,27 +71,27 @@ class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface element
 SIZE(CDDrawSubMgrPages, 0x1c);
 class CDDrawSubMgrPages : public CWapObj {
 public:
-    ~CDDrawSubMgrPages(); // slot 1 (real dtor 0x1574d0; ??_G auto-gen 0x1574b0)
-    i32 IsLoaded();       // slot 5 (@0x14) 0x157480 ("all children present?")
+    ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0; ??_G auto-gen 0x1574b0)
+    i32 IsLoaded() OVERRIDE;       // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 (@0x18) IsReady 0x001c08 inherited from CWapObj (not re-declared).
-    void DestroyChildren();                             // slot 7 (@0x1c) 0x158ac0
-    StateId GetStateId();                               // slot 8 (@0x20) 0x1574a0 (state id)
-    i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
+    virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
+    virtual StateId GetStateId();   // slot 8 (@0x20) 0x1574a0 (state id)
+    virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- slots 10..22: declared-only (no RVA); shape the emitted vtable only ---
-    void Slot0A_157a20(); // [10] 0x157a20 (scalar_deleting_destructor variant)
-    void Slot0B_165e30(); // [11] 0x165e30 (COMDAT CFileMemBase::SetName)
-    void Slot0C_157a70(); // [12] 0x157a70
-    void Slot0D_157a50(); // [13] 0x157a50 (COMDAT CFileMem::Reset)
-    void Slot0E_157920(); // [14] 0x157920
-    void Slot0F_157a00(); // [15] 0x157a00 (Method_159ef0 forwards here)
-    void Slot10_157a10(); // [16] 0x157a10
-    void Slot11_157940(); // [17] 0x157940
-    void Slot12_157950(); // [18] 0x157950
-    void Slot13_165e60(); // [19] 0x165e60 (COMDAT CFileMem::Open)
-    void Slot14_165ef0(); // [20] 0x165ef0 (COMDAT CFileMem::Ready)
-    void Slot15_165f00(); // [21] 0x165f00 (COMDAT CFileMem::Read)
-    void Slot16_165f50(); // [22] 0x165f50 (COMDAT CFileMem::Write)
+    virtual void Slot0A_157a20(); // [10] 0x157a20 (scalar_deleting_destructor variant)
+    virtual void Slot0B_165e30(); // [11] 0x165e30 (COMDAT CFileMemBase::SetName)
+    virtual void Slot0C_157a70(); // [12] 0x157a70
+    virtual void Slot0D_157a50(); // [13] 0x157a50 (COMDAT CFileMem::Reset)
+    virtual void Slot0E_157920(); // [14] 0x157920
+    virtual void Slot0F_157a00(); // [15] 0x157a00 (Method_159ef0 forwards here)
+    virtual void Slot10_157a10(); // [16] 0x157a10
+    virtual void Slot11_157940(); // [17] 0x157940
+    virtual void Slot12_157950(); // [18] 0x157950
+    virtual void Slot13_165e60(); // [19] 0x165e60 (COMDAT CFileMem::Open)
+    virtual void Slot14_165ef0(); // [20] 0x165ef0 (COMDAT CFileMem::Ready)
+    virtual void Slot15_165f00(); // [21] 0x165f00 (COMDAT CFileMem::Read)
+    virtual void Slot16_165f50(); // [22] 0x165f50 (COMDAT CFileMem::Write)
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
     i32 Method_158b40(i32 arg1, i32 arg2);     // 0x158b40

@@ -18,7 +18,7 @@ void RezFree(void* p);
 // frame + the most-derived vptr stamp; the emitted vtables reloc-mask retail's.
 // ---------------------------------------------------------------------------
 struct RezDirBase {
-    ~RezDirBase(); // 0x13c520
+    virtual ~RezDirBase(); // 0x13c520
 };
 SIZE_UNKNOWN(RezDirBase);
 
@@ -28,8 +28,8 @@ SIZE_UNKNOWN(RezDirBase);
 // vftable, then fold the base subobject. __thiscall.
 // ---------------------------------------------------------------------------
 struct RezListNode {
-    void v0();
-    void Delete(i32); // slot 1 (+0x4)
+    virtual void v0();
+    virtual void Delete(i32); // slot 1 (+0x4)
 };
 SIZE_UNKNOWN(RezListNode);
 struct CRezDir13c9b0 : RezDirBase {

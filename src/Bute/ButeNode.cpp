@@ -44,7 +44,7 @@ extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
 class zErrHandling {
 public:
     zErrHandling(void* msg);
-    ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
+    virtual ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
 
     void* m_msg; // +0x04
 };
@@ -129,6 +129,7 @@ VTBL(CButeCfgNode174d, 0x001f051c); // node primary (most-derived) vtable @+0x00
 class CButeCfgNode174d : public zPTree {
 public:
     CButeCfgNode174d(i32 kind); // 0x174d00
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE(CButeCfgNode174d, 0x2c); // derives zPTree (no new fields)
 

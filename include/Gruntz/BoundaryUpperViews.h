@@ -90,39 +90,39 @@ SIZE_UNKNOWN(DevCfg);
 
 // 0x1413b0 - manual-vtable dispatch `(*m_8->vtbl[0x80])(m_8, 0)`.
 struct Obj1413 { // real polymorphic; Op is slot 32 (+0x80)
-    void Slot00();
-    void Slot01();
-    void Slot02();
-    void Slot03();
-    void Slot04();
-    void Slot05();
-    void Slot06();
-    void Slot07();
-    void Slot08();
-    void Slot09();
-    void Slot10();
-    void Slot11();
-    void Slot12();
-    void Slot13();
-    void Slot14();
-    void Slot15();
-    void Slot16();
-    void Slot17();
-    void Slot18();
-    void Slot19();
-    void Slot20();
-    void Slot21();
-    void Slot22();
-    void Slot23();
-    void Slot24();
-    void Slot25();
-    void Slot26();
-    void Slot27();
-    void Slot28();
-    void Slot29();
-    void Slot30();
-    void Slot31();
-    void __stdcall Op(i32); // slot 32 (+0x80)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void Slot31();
+    virtual void __stdcall Op(i32); // slot 32 (+0x80)
 };
 SIZE_UNKNOWN(Obj1413);
 struct Owner1413 {
@@ -164,25 +164,25 @@ SIZE_UNKNOWN(B_13dee0);
 
 // 0x13ee30 - COM wait-flip loop (IDirectDrawSurface-style manual vtable, slot 0x48).
 struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
-    void Slot00();
-    void Slot01();
-    void Slot02();
-    void Slot03();
-    void Slot04();
-    void Slot05();
-    void Slot06();
-    void Slot07();
-    void Slot08();
-    void Slot09();
-    void Slot10();
-    void Slot11();
-    void Slot12();
-    void Slot13();
-    void Slot14();
-    void Slot15();
-    void Slot16();
-    void Slot17();
-    u32 __stdcall Flip(i32); // slot 18 (+0x48)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
 };
 SIZE_UNKNOWN(IDDS_ee30);
 struct B_13ee30 {
@@ -194,7 +194,7 @@ SIZE_UNKNOWN(B_13ee30);
 
 // 0x151e70 - clear: zero m_10, release +0x14, scalar-delete the +0x18 object.
 struct Killable0 {
-    void Destroy(i32); // slot 0
+    virtual void Destroy(i32); // slot 0
 };
 SIZE_UNKNOWN(Killable0);
 struct B_151e70 {
@@ -212,8 +212,8 @@ SIZE_UNKNOWN(B_151e70);
 
 // 0x166810 - destroy a singly-linked node list, then RemoveAll the +0x1dc array.
 struct Killable1 {
-    void V0();
-    void Destroy(i32); // slot 1
+    virtual void V0();
+    virtual void Destroy(i32); // slot 1
 };
 SIZE_UNKNOWN(Killable1);
 struct Node166810 {
@@ -235,9 +235,9 @@ SIZE_UNKNOWN(B_166810);
 
 // 0x13c8a0 - CRezItm scan retry loop.
 struct RezOwner {
-    void v0();
-    void v1();
-    i32 v2(); // slot 2 (+8)
+    virtual void v0();
+    virtual void v1();
+    virtual i32 v2(); // slot 2 (+8)
 };
 SIZE_UNKNOWN(RezOwner);
 struct RezItm {
@@ -252,11 +252,11 @@ SIZE_UNKNOWN(RezItm);
 
 // 0x13c8f0 - CRezDir check (lookup m_10, else dispatch virtual slot 4).
 struct RezDir {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    i32 v4(i32, i32, i32); // slot 4 (+0x10)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual i32 v4(i32, i32, i32); // slot 4 (+0x10)
     char _4[0x10 - 0x4];
     void* m_10; // 0x10
     i32 m_14;   // 0x14
@@ -275,16 +275,16 @@ SIZE_UNKNOWN(Pair2);
 
 // 0x138f20 - DSound voice gate.
 struct Snd138f20 {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    i32 v8();          // slot 8 (+0x20)
-    void v9(i32, i32); // slot 9 (+0x24)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 v8();          // slot 8 (+0x20)
+    virtual void v9(i32, i32); // slot 9 (+0x24)
     char _4[0x44 - 0x4];
     i32 m_44;     // 0x44
     i32 m_48;     // 0x48
@@ -331,17 +331,17 @@ SIZE_UNKNOWN(CDdObArray);
 
 // CImageOwned apply/setup cluster (vptr slot 8 = +0x20 transform, slot 10 = +0x28).
 struct ImgOwned {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    i32 v8(i32); // slot 8 (+0x20)
-    void v9();
-    void v10(); // slot 10 (+0x28)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 v8(i32); // slot 8 (+0x20)
+    virtual void v9();
+    virtual void v10(); // slot 10 (+0x28)
     char _4[0x10 - 0x4];
     Blk6c m_transform; // 0x10 (0x6c-byte transform descriptor)
     i32 Apply(i32 mode, const void* src);

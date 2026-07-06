@@ -96,10 +96,10 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode); // 0x0ec230
 // (decls only) so `mov edx,[ecx]; push buf; call [edx+8]` falls out.
 SIZE_UNKNOWN(CMapVisitTarget);
 struct CMapVisitTarget {
-    i32 Slot00();
-    i32 Slot04();
-    i32 Slot08(void* buf);                          // +0x08 (mode 4)
-    i32 Slot0C(void* buf);                          // +0x0c (mode 7)
+    virtual i32 Slot00();
+    virtual i32 Slot04();
+    virtual i32 Slot08(void* buf);                  // +0x08 (mode 4)
+    virtual i32 Slot0C(void* buf);                  // +0x0c (mode 7)
     i32 Visit(void* buf, i32 mode, i32 a2, i32 a3); // 0x09f7f0 (__thiscall)
 };
 

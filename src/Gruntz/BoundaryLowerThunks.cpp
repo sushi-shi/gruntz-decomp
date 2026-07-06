@@ -175,7 +175,7 @@ struct CScalarDtor855a0 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     // inline base-vptr-restore dtor: `mov [ecx],offset ??_7 + call 0x13ddb0`. Inline
     // so ScalarDtor's explicit dtor call folds the stamp (like the ??_G thunk).
-    ~CScalarDtor855a0() {
+    virtual ~CScalarDtor855a0() {
         Base13ddb0();
     }
     void* ScalarDtor(u32 flags);
@@ -330,6 +330,16 @@ void RegRangefbb70() {
 struct CStatusBaseSub100780 {
     void Base1d6b(); // 0x1d6b (reloc-masked)
     virtual ~CStatusBaseSub100780();
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(CStatusBaseSub100780);
 RVA(0x00100780, 0xb)

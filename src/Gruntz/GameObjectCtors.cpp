@@ -116,7 +116,11 @@ struct CGruntHealthSpriteBase {
     char m_pad18[0x30 - 0x18];
     void* m_30; // +0x30
     char m_pad34[0x38 - 0x34];
-    CSpriteObj* m_38; // +0x38
+    CSpriteObj* m_38;           // +0x38
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
 };
 
 class CGruntStaminaSprite : public CGruntHealthSpriteBase {

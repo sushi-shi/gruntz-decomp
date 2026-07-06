@@ -43,18 +43,18 @@ public:
     // Reloc-masked call target, so one shared base ctor pairs with retail's per-class
     // ctors. See docs/patterns/gx-frame-outofline-ctor.md.
     CSbMenuItem();
-    ~CSbMenuItem();     // +0x00
-    void Serialize();   // slot 1
-    void Setup();       // slot 2
-    void ClearFrame();  // slot 3
-    void Poll();        // slot 4
-    void Tick();        // slot 5
-    void HitHandlerA(); // slot 6
-    void HitHandlerB(); // slot 7
-    void HitHandlerC(); // slot 8
-    void HitHandlerD(); // slot 9
-    void Refresh();     // slot 10
-    i32 Configure(
+    virtual ~CSbMenuItem();     // +0x00
+    virtual void Serialize();   // slot 1
+    virtual void Setup();       // slot 2
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // slot 10
+    virtual i32 Configure(
         CGameMenuMgr* mgr,
         i32 code,
         i32 type,
@@ -63,8 +63,8 @@ public:
         const char* key,
         i32 flag,
         i32 e
-    );                    // +0x2c
-    void Activate(i32 a); // +0x30
+    );                            // +0x2c
+    virtual void Activate(i32 a); // +0x30
 
     i32 m_enabled; // +0x04  enabled flag (zeroed to disable the widget)
     i32 m_tag;     // +0x08  type tag (2 / 4)

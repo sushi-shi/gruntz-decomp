@@ -70,17 +70,17 @@ SIZE_UNKNOWN(CMenuState8d000);
 // (dtor 0x16da60 == ~CContainerErr; its vtable 0x5e94ac == ??_7zPTree, RTTI-confirmed). Two
 // distinct derived classes share the base vtables (kept standalone to avoid dup base vtables).
 struct CButeBase1_21 {
-    ~CButeBase1_21();           // +0x00 vptr (0x5e94ac), dtor 0x16da60
+    virtual ~CButeBase1_21();   // +0x00 vptr (0x5e94ac), dtor 0x16da60
     void Teardown16e070(i32 z); // 0x16e070
     i32 m_4;                    // +0x04 (pads first base to 8 so the second base lands at +0x08)
 };
 SIZE_UNKNOWN(CButeBase1_21);
 struct CButeBase2_21 {
-    ~CButeBase2_21(); // +0x08 vptr (0x5e949c), dtor 0x16dfc0
+    virtual ~CButeBase2_21(); // +0x08 vptr (0x5e949c), dtor 0x16dfc0
 };
 SIZE_UNKNOWN(CButeBase2_21);
 struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
-    ~CButeTree21a();
+    ~CButeTree21a() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21a);
 struct CButeTree21b : CButeBase1_21, CButeBase2_21 {

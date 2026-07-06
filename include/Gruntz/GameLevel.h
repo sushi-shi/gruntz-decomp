@@ -43,20 +43,20 @@
 // ---------------------------------------------------------------------------
 class CImageSet {
 public:
-    i32 dummy0();
-    void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
-    i32 dummy2();            // +0x08
-    i32 dummy3();            // +0x0c
-    i32 dummy4();            // +0x10
-    i32 Parse(void* record); // +0x14  init from the WWD record
-    i32 dummy6();            // +0x18
-    i32 dummy7();            // +0x1c
+    virtual i32 dummy0();
+    virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
+    virtual i32 dummy2();            // +0x08
+    virtual i32 dummy3();            // +0x0c
+    virtual i32 dummy4();            // +0x10
+    virtual i32 Parse(void* record); // +0x14  init from the WWD record
+    virtual i32 dummy6();            // +0x18
+    virtual i32 dummy7();            // +0x1c
     // +0x20  per-pixel collision-kind query: given sub-tile pixel (x, y) returns the
     // tile's collision category there (0 = empty/passable; 1/2 = soft-blocking, a 2 is
     // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
     // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
-    i32 GetCollisionAt(i32 x, i32 y); // +0x20
-    i32 GetStride();                  // +0x24  record byte length (cursor advance)
+    virtual i32 GetCollisionAt(i32 x, i32 y); // +0x20
+    virtual i32 GetStride();                  // +0x24  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
 };
@@ -83,8 +83,8 @@ struct LevelCoordRect {
 SIZE(CLevelPlane, 0x158);
 class CLevelPlane {
 public:
-    i32 dummy0();
-    void dtor(i32 flags); // +0x04  scalar-deleting dtor (array release)
+    virtual i32 dummy0();
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor (array release)
 
     void Build(LevelCoordRect* coords); // 0x161e80  re-place + recompute one plane
     void Sync(void* visitor);           // 0x162010  per-plane render-visit helper
@@ -168,15 +168,15 @@ enum LoadableClassId {
 // ---------------------------------------------------------------------------
 
 struct CLoadable {
-    void v00();                  // [0] +0x00  engine thunk (0x1bef01)
-    void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
-    void v08();                  // [2] +0x08  engine thunk (0x0028ec)
-    void v0c();                  // [3] +0x0c  engine thunk (0x00106e)
-    void v10();                  // [4] +0x10  engine thunk (0x004034)
-    i32 IsLoaded();              // [5] +0x14  CGameLevel overrides (0x161190)
-    void v18();                  // [6] +0x18  engine thunk (0x001c08)
-    i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
-    i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
+    virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
+    virtual void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
+    virtual void v08();                  // [2] +0x08  engine thunk (0x0028ec)
+    virtual void v0c();                  // [3] +0x0c  engine thunk (0x00106e)
+    virtual void v10();                  // [4] +0x10  engine thunk (0x004034)
+    virtual i32 IsLoaded();              // [5] +0x14  CGameLevel overrides (0x161190)
+    virtual void v18();                  // [6] +0x18  engine thunk (0x001c08)
+    virtual i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
+    virtual i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
 
     CLoadable(i32 a1, i32 a2, i32 a3) {
         m_04 = a2;
@@ -239,10 +239,10 @@ public:
     // default-extents block, then dispatch the corresponding load virtual (slot
     // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
     // run Unload (slot +0x1c, the fail/reset hook).
-    void* ScalarDtor(u32 flags); // [1]  +0x04  0x1611c0
-    i32 IsLoaded();              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
-    i32 Unload() OVERRIDE;       // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
-    i32 GetClassId() OVERRIDE;   // [8]  +0x20  0x1611b0  class type tag (0x19)
+    void* ScalarDtor(u32 flags) OVERRIDE; // [1]  +0x04  0x1611c0
+    i32 IsLoaded() OVERRIDE;              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
+    i32 Unload() OVERRIDE;                // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    i32 GetClassId() OVERRIDE;            // [8]  +0x20  0x1611b0  class type tag (0x19)
     virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
     virtual i32
     SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords); // [10] +0x28  0x15ceb0

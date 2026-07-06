@@ -96,15 +96,15 @@ struct RockGrid {
 // Real polymorphic view: GetType is the one dispatched slot (slot 8, +0x20), a real
 // virtual (8 filler slots precede it); declared-only. o->GetType() -> call [eax+0x20].
 struct RockCellObj {
-    void Slot0();
-    void Slot1();
-    void Slot2();
-    void Slot3();
-    void Slot4();
-    void Slot5();
-    void Slot6();
-    void Slot7();
-    i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
 };
 struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
     char m_pad00[0x4c];

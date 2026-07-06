@@ -66,16 +66,16 @@ class CLogicTypeMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each 
 SIZE_UNKNOWN(CLogicTypeRegistry);
 class CLogicTypeRegistry {
 public:
-    void m_00();
-    void m_04();
-    void m_08();
-    void m_0c();
-    void m_10();
-    void m_14();
-    void m_18();
-    void m_1c();
-    void m_20();
-    void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
+    virtual void m_00();
+    virtual void m_04();
+    virtual void m_08();
+    virtual void m_0c();
+    virtual void m_10();
+    virtual void m_14();
+    virtual void m_18();
+    virtual void m_1c();
+    virtual void m_20();
+    virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
     char m_pad04[0x10 - 4];
     CLogicTypeMap m_10map; // +0x10  string-keyed lookup sub-object
 };

@@ -20,7 +20,7 @@
 // bare CUserLogic teardown (the established /GX leaf-dtor archetype).
 class CProjActOwner : public CTileLogic {
 public:
-    ~CProjActOwner();
+    virtual ~CProjActOwner() OVERRIDE;
 };
 
 // The global registry object at VA 0x629388. SetActiveRange reaches it through an

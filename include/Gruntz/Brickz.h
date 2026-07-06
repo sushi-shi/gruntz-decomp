@@ -63,15 +63,15 @@ struct BrickzCell {
 // vtable (slot +0x20, __thiscall(i32,i32)). Modeled polymorphic (the touched slot
 // only) so `mov edx,[obj]; call [edx+0x20]` falls out, no manual vtable cast.
 struct BrickzButeObj {
-    void Slot00();
-    void Slot04();
-    void Slot08();
-    void Slot0C();
-    void Slot10();
-    void Slot14();
-    void Slot18();
-    void Slot1C();
-    i32 GetTypeCode(i32 a, i32 b); // +0x20  returns the 1-based type id
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual i32 GetTypeCode(i32 a, i32 b); // +0x20  returns the 1-based type id
 };
 
 // The terrain grid descriptor reached as attr->m_5c: a flat cell-id table (m_20)

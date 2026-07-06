@@ -31,55 +31,55 @@ extern void* g_imageProbeTag; // 0x5ef888
 
 // The resolved image source: Probe at slot 0 (+0x00), Probe(magic, &out).
 struct CImageSource {
-    i32 __stdcall Probe(void* magic, void** out); // slot 0 == +0x00
+    virtual i32 __stdcall Probe(void* magic, void** out); // slot 0 == +0x00
 };
 
 // The probed payload object: Apply at slot 31 (+0x7c) hands it the bound surface.
 struct CImagePayload {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    void v8();
-    void v9();
-    void v10();
-    void v11();
-    void v12();
-    void v13();
-    void v14();
-    void v15();
-    void v16();
-    void v17();
-    void v18();
-    void v19();
-    void v20();
-    void v21();
-    void v22();
-    void v23();
-    void v24();
-    void v25();
-    void v26();
-    void v27();
-    void v28();
-    void v29();
-    void v30();
-    void __stdcall Apply(void* surface); // slot 31 == +0x7c
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void v19();
+    virtual void v20();
+    virtual void v21();
+    virtual void v22();
+    virtual void v23();
+    virtual void v24();
+    virtual void v25();
+    virtual void v26();
+    virtual void v27();
+    virtual void v28();
+    virtual void v29();
+    virtual void v30();
+    virtual void __stdcall Apply(void* surface); // slot 31 == +0x7c
 };
 
 // The source provider that builds the descriptor into a CImageSource: BuildSource
 // at slot 6 (+0x18).
 struct CImageProvider {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    i32 __stdcall BuildSource(void* desc, CImageSource** out, i32 flag); // slot 6 == +0x18
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual i32 __stdcall BuildSource(void* desc, CImageSource** out, i32 flag); // slot 6 == +0x18
 };
 
 // The source-info object the descriptor is seeded from (+0x10).

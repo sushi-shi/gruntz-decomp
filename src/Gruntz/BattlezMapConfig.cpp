@@ -93,19 +93,19 @@ struct ElementRefresher {
 // only (no bodies, no ctor here) so no vtable is emitted - EmitArg is only ever cast
 // onto an engine object. `this->Emit2c(...)` lowers to the same `call [eax+0x2c]`.
 struct EmitArg {
-    void Slot00();
-    void Slot01();
-    void Slot02();
-    void Slot03();
-    void Slot04();
-    void Slot05();
-    void Slot06();
-    void Slot07();
-    void Slot08();
-    void Slot09();
-    void Slot10();
-    void Emit2c(void* coord, i32 count); // +0x2c (slot 11)
-    void Emit30(void* coord, i32 count); // +0x30 (slot 12)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Emit2c(void* coord, i32 count); // +0x2c (slot 11)
+    virtual void Emit30(void* coord, i32 count); // +0x30 (slot 12)
     void CallEmit2c(void* coord, i32 count) {
         Emit2c(coord, count);
     }
@@ -1934,15 +1934,15 @@ struct SceneColl {
 // +0x10 handler fn ptr identifies the class), m_124 the anim id. Real virtuals so
 // the __thiscall GetType dispatch falls out (see docs/patterns/dummy-virtual-slots.md).
 struct SceneObj {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    i32 GetType(); // slot 8 (+0x20)
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 GetType(); // slot 8 (+0x20)
     char m_pad04[0x40 - 0x04];
     u8 m_flags; // +0x40  flags (bit 0)
     char m_pad41[0x5c - 0x41];
@@ -4921,7 +4921,7 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // ZVec.cpp models). Declared here so the calls/stores reloc-mask.
 extern void* GetRetAddr(); // 0x16d990
 struct ZErrTarget {
-    void Slot00(); // vptr at +0x00 (real polymorphic; declared-only)
+    virtual void Slot00(); // vptr at +0x00 (real polymorphic; declared-only)
     struct ZErrReporter {
         void Error(void* who, i32 sentinel, i32 code); // 0x16d850
     }* m_err;                                          // +0x04

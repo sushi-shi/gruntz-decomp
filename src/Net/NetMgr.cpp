@@ -2842,7 +2842,7 @@ struct CNetGroupNode : public Wap::CObject {
         m_4 = 0;
         m_c = 0;
     }
-    ~CNetGroupNode();
+    virtual ~CNetGroupNode() OVERRIDE;
 };
 inline CNetGroupNode::~CNetGroupNode() {}
 

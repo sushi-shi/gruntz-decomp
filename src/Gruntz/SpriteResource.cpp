@@ -56,18 +56,18 @@ extern void* operator new(u32 size);
 // removed.
 // ---------------------------------------------------------------------------
 struct CFrameWorker {
-    void GetRuntimeClass();          // [0]  +0x00
-    void ImgScalarDtor(i32 flag);    // [1]  +0x04  scalar-deleting dtor (ILT)
-    void Serialize();                // [2]  +0x08 (ILT)
-    void AssertValid();              // [3]  +0x0c (ILT)
-    void Dump();                     // [4]  +0x10 (ILT)
-    void HasFrames();                // [5]  +0x14 (ILT)
-    void IsValidImage();             // [6]  +0x18 (ILT)
-    void FreeAll();                  // [7]  +0x1c  CImage::FreeAll
-    void GetImageCategory();         // [8]  +0x20 (ILT)
-    void Create24();                 // [9]  +0x24  CImage::Create24
-    void LoadDispatch();             // [10] +0x28  CImage::LoadDispatch
-    i32 Resolve(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
+    virtual void GetRuntimeClass();          // [0]  +0x00
+    virtual void ImgScalarDtor(i32 flag);    // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual void Serialize();                // [2]  +0x08 (ILT)
+    virtual void AssertValid();              // [3]  +0x0c (ILT)
+    virtual void Dump();                     // [4]  +0x10 (ILT)
+    virtual void HasFrames();                // [5]  +0x14 (ILT)
+    virtual void IsValidImage();             // [6]  +0x18 (ILT)
+    virtual void FreeAll();                  // [7]  +0x1c  CImage::FreeAll
+    virtual void GetImageCategory();         // [8]  +0x20 (ILT)
+    virtual void Create24();                 // [9]  +0x24  CImage::Create24
+    virtual void LoadDispatch();             // [10] +0x28  CImage::LoadDispatch
+    virtual i32 Resolve(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
 
     inline CFrameWorker(i32 frameNumber, void* parent) {
         m_04 = frameNumber;
@@ -199,17 +199,17 @@ struct CSprite2SubTable {
 // Real polymorphic view: Init is slot 10 (+0x28), a real virtual (10 filler slots
 // precede it); the compiler emits the vptr at +0x00. obj->Init() -> call [eax+0x28].
 struct CSprite2 {
-    void Slot0();
-    void Slot1();
-    void Slot2();
-    void Slot3();
-    void Slot4();
-    void Slot5();
-    void Slot6();
-    void Slot7();
-    void Slot8();
-    void Slot9();
-    i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl); // +0x28 (slot 10)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual void Slot8();
+    virtual void Slot9();
+    virtual i32 Init(i32 a, i32 b, i32 c, CSprite* tmpl); // +0x28 (slot 10)
     char _04[0x08 - 0x04];
     i32 m_08; // +0x08  flags slot
     char _0c[0x7c - 0x0c];

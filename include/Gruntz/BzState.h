@@ -119,17 +119,17 @@ SIZE_UNKNOWN(BzLoader);
 // `mov ecx,notify; push arg; mov eax,[notify]; call [eax+0x28]` the old PMF table
 // produced. This is the real devs' shape (a CObject-like sink), not a hand-roll.
 struct BzSink8 {
-    void s00();               // +0x00
-    void s04();               // +0x04
-    void s08();               // +0x08
-    void s0c();               // +0x0c
-    void s10();               // +0x10
-    void s14();               // +0x14
-    void s18();               // +0x18
-    void s1c();               // +0x1c
-    void s20();               // +0x20
-    void s24();               // +0x24
-    void OnLoaded(void* arg); // +0x28  the notify slot
+    virtual void s00();               // +0x00
+    virtual void s04();               // +0x04
+    virtual void s08();               // +0x08
+    virtual void s0c();               // +0x0c
+    virtual void s10();               // +0x10
+    virtual void s14();               // +0x14
+    virtual void s18();               // +0x18
+    virtual void s1c();               // +0x1c
+    virtual void s20();               // +0x20
+    virtual void s24();               // +0x24
+    virtual void OnLoaded(void* arg); // +0x28  the notify slot
 };
 
 struct BzSinkSub {};

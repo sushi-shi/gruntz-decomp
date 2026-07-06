@@ -36,8 +36,8 @@
 // is load-bearing. Declarations only - never defined here, so no ??_7 is emitted.
 class CCatalogNode {
 public:
-    void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
 // CDDrawSubMgrLeafScan: the real sibling class (its full body + own vtable 0x5efca0
@@ -65,11 +65,11 @@ public:
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 class CDDrawSubMgrGrandBase {
 public:
-    void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
-    void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
-    void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
-    void Dump();                // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
     ~CDDrawSubMgrGrandBase();
 
     i32 m_04; // +0x04  -1 when inactive

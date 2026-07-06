@@ -65,10 +65,10 @@ class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's
     // 0xd5dc0). Declared-only (reloc-masked). Every concrete leaf overrides it.
-    i32 IsLoaded(); // [5] @+0x14  0x155700
+    virtual i32 IsLoaded() OVERRIDE; // [5] @+0x14  0x155700
     // slots 6 IsReady is inherited from CWapObj (default @0x001c08 `return 1`).
-    i32 Unload();     // [7] @+0x1c  0x155740 (reset/unload hook)
-    i32 GetClassId(); // [8] @+0x20  0x154a00 -> CLASSID_NONE
+    virtual i32 Unload();     // [7] @+0x1c  0x155740 (reset/unload hook)
+    virtual i32 GetClassId(); // [8] @+0x20  0x154a00 -> CLASSID_NONE
 
     i32 m_04; // +0x04  (reset to -1 on teardown)
     i32 m_08; // +0x08  (reset to 0)
@@ -88,7 +88,7 @@ public:
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
     // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~Wap::CObject
     // (no manual `*(void**)this = &g_*Vtbl`).
-    ~CLoadable() {
+    ~CLoadable() OVERRIDE {
         m_04 = -1;
         m_08 = 0;
         m_0c = 0;

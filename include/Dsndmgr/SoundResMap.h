@@ -25,7 +25,7 @@
 SIZE_UNKNOWN(CSoundRes);
 class CSoundRes : public Wap::CObject {
 public:
-    ~CSoundRes(); // slot 1 (scalar-deleting dtor)
+    virtual ~CSoundRes() OVERRIDE; // slot 1 (scalar-deleting dtor)
 };
 
 // The registry. m_map @+0x10 (CMapStringToPtr, 0x1c bytes -> +0x10..+0x2b).

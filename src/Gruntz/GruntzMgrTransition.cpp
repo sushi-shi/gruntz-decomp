@@ -77,6 +77,38 @@ struct CTsState {
     i32 CallSlot10(i32 a) {
         return Slot10(a);
     }
+    virtual void VtSlotFill0();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill7();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill8();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill9();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill10(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill11(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill12(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill13(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill14(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill15(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill16(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill17(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill18(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill19(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill20(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill21(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill22(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill23(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill24(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill25(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill26(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill27(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill28(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill29(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill30(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill31(); // vtable-slot filler (real slot; declared-only)
 };
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
@@ -493,5 +525,3 @@ VTBL(CSplashState, 0x001e9e84);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CTsState, 0x001ea0bc);
-
-VTBL(CHelpState, 0x001e9dfc);

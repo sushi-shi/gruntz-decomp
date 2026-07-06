@@ -291,6 +291,18 @@ def cmd_build(args) -> None:
             "(python -m gruntz.match.vtable_coverage --list)")
     else:
         log((rc.stdout + rc.stderr).strip().splitlines()[-1])
+    # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
+    # the vtable's slots (not a fabricated name, not a de-virtualized shell). FATAL gate.
+    rv = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_virtuality"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if rv.returncode != 0:
+        for ln in (rv.stdout + rv.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
+            "must be defined and declare a virtual for each slot "
+            "(python -m gruntz.match.vtable_virtuality --list)")
+    else:
+        log((rv.stdout + rv.stderr).strip().splitlines()[-1])
     # View debt: the UNGAMEABLE fake-view metric (reloc-masking hides fake calls from
     # objdiff %, but the phantom method's undefined symbol can't hide). REPORT until it
     # reaches 0 (all views folded onto real classes), then flip to a fatal run(...).

@@ -29,10 +29,10 @@
 // 3-arg retune at slot 3). The class + its vtable live in another TU, so it is
 // modeled as a small typed shell whose virtual calls reloc-mask by slot.
 struct CSoundChannel {
-    void ScalarDtor(i32 flag); // slot 0  -> call [vptr]
-    void Slot1();
-    void Slot2();
-    void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
+    virtual void ScalarDtor(i32 flag); // slot 0  -> call [vptr]
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Retune(i32 a1, i32 a2, i32 a3); // slot 3 -> call [vptr+0xc]
 
     void Recompute(i32 frame); // 0x00bf10  level-scale -> SetVolByIdx on m_voice
 
@@ -58,7 +58,7 @@ struct CSoundBlock;
 // the raw node walks read m_head directly; RemoveAll + the destructor are engine
 // externs (reloc-masked __thiscall on the sub-object address).
 struct CSoundChannelList {
-    void
+    virtual void
     VSlot0(); // +0x00 (== object +0x08) list vftable slot  // real polymorphic vptr @+0x00 (was m_vptr)
     CSoundNode* m_head;    // +0x04 (== object +0x0c)  MFC CPtrList::m_pNodeHead
     CSoundNode* m_tail;    // +0x08                    m_pNodeTail
@@ -78,9 +78,9 @@ struct CSoundChannelList {
 // Init overloads (reached by direct rel32 -> ILT thunk, reloc-masked). The retail
 // vtable is referenced only by address when an instance is created.
 struct SoundChannelNew {
-    void ScalarDtor(i32 flag); // slot 0
-    i32 m_voice;               // +0x04  DirectSound handle
-    i32 m_level;               // +0x08  level (default 100)
+    virtual void ScalarDtor(i32 flag); // slot 0
+    i32 m_voice;                       // +0x04  DirectSound handle
+    i32 m_level;                       // +0x08  level (default 100)
     char m_pad0c[0x14 - 0x0c];
     i32 m_14; // +0x14
     char m_pad18[0x3c - 0x18];

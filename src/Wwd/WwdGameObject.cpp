@@ -120,9 +120,9 @@ struct WwdSurface;
 // virtual is read in WriteSnapshot).
 class WorkerSub {
 public:
-    void Slot00();
-    void Slot04();
-    i32 Vfunc8(); // +0x08
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual i32 Vfunc8(); // +0x08
 };
 
 // (WwdSelf folded onto CWwdGameObject's real 17-slot virtual interface above -
@@ -824,8 +824,8 @@ SIZE_UNKNOWN(WwdSurface);
 // (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
 class WwdWorker {
 public:
-    void Slot00();
-    void DeleteThis(i32 flag); // +0x04
+    virtual void Slot00();
+    virtual void DeleteThis(i32 flag); // +0x04
 };
 
 // The CString name at +0xdc (NAFXCW dtor 0x1b9cde, reloc-masked).
@@ -1046,8 +1046,17 @@ struct WwdBResolve {
     char _p24[0x38 - 0x24];
     i32 m_38; // +0x38
     char _p3c[0x5c - 0x3c];
-    i32 m_5c;               // +0x5c
-    char _p60[0x7c - 0x60]; // pad so WwdBMid's m_7c lands at +0x7c
+    i32 m_5c;                   // +0x5c
+    char _p60[0x7c - 0x60];     // pad so WwdBMid's m_7c lands at +0x7c
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
 };
 inline WwdBResolve::~WwdBResolve() {
     m_5c = (i32)0x80000000;

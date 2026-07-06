@@ -55,7 +55,7 @@ void operator delete(void*);
 // so the scalar-dtor's call reloc names ??1CDDrawChildGroupDtorHost@@UAE@XZ.
 class CDDrawChildGroupDtorHost {
 public:
-    ~CDDrawChildGroupDtorHost();
+    virtual ~CDDrawChildGroupDtorHost();
 };
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
@@ -63,19 +63,19 @@ public:
 // two factory siblings. Declarations only - never defined, so no ??_7 emitted.
 class CDDrawMapWorker {
 public:
-    void GetRuntimeClass();              // [0] 0x1bef01
-    i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
-    void Serialize();                    // [2] 0x0028ec
-    void AssertValid();                  // [3] 0x00106e
-    void Dump();                         // [4] 0x004034
-    void Slot05_165d90();                // [5] 0x165d90
-    void IsValidImage();                 // [6] 0x001c08
-    void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
-    void Slot08_165da0();                // [8] 0x165da0
-    void Slot09_168f20();                // [9] 0x168f20
-    i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
-    i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
-    i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
+    virtual void GetRuntimeClass();              // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
+    virtual void Serialize();                    // [2] 0x0028ec
+    virtual void AssertValid();                  // [3] 0x00106e
+    virtual void Dump();                         // [4] 0x004034
+    virtual void Slot05_165d90();                // [5] 0x165d90
+    virtual void IsValidImage();                 // [6] 0x001c08
+    virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
+    virtual void Slot08_165da0();                // [8] 0x165da0
+    virtual void Slot09_168f20();                // [9] 0x168f20
+    virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
+    virtual i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
 };
 
 // The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
@@ -115,11 +115,11 @@ public:
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct CDDrawWorkerMapBase {
-    void GetRuntimeClass(); // [0] 0x1bef01 grand-base thunk
-    ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor
-    void Serialize();       // [2] 0x0028ec
-    void AssertValid();     // [3] 0x00106e
-    void Dump();            // [4] 0x004034
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 grand-base thunk
+    virtual ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor
+    virtual void Serialize();       // [2] 0x0028ec
+    virtual void AssertValid();     // [3] 0x00106e
+    virtual void Dump();            // [4] 0x004034
 
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -488,8 +488,8 @@ typedef i32 POSITION;
 // Only the scalar-deleting destructor (+0x04) is load-bearing.
 class CDDrawMapValue {
 public:
-    void Dummy();               // +0x00
-    i32  ScalarDtor(i32 flag);  // +0x04
+    virtual void Dummy();               // +0x00
+    virtual i32  ScalarDtor(i32 flag);  // +0x04
 };
 
 // CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the

@@ -451,9 +451,9 @@ i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
 // Reloc-masked virtual; modeled polymorphically so `mov eax,[a0]; call [eax+8]` falls
 // out with no cast.
 struct CSymRangeStream {
-    void s0();
-    void s1();
-    i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
+    virtual void s0();
+    virtual void s1();
+    virtual i32 Read(i32 pos, i32 zero, i32 len, void* buf); // slot 2 (+0x8)
 };
 SIZE(CSymRangeStream, 0x4); // interface view (vptr only)
 

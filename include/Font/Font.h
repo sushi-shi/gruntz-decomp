@@ -218,12 +218,12 @@ SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 // Only FreeStrings is matched here.
 // ---------------------------------------------------------------------------
 struct CWapNodeBase {
-    ~CWapNodeBase(); // only the vtable matters
+    virtual ~CWapNodeBase(); // only the vtable matters
 };
 SIZE_UNKNOWN(CWapNodeBase);
 
 struct CWapNodeB : CWapNodeBase {
-    ~CWapNodeB();
+    virtual ~CWapNodeB() OVERRIDE;
     void FreeStrings();
 
     i32 m_type;         // +0x04

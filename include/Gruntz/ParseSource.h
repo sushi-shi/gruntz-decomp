@@ -29,8 +29,8 @@ struct ParseMappedSource {
 class ParseVReader {
 public:
     char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    void VSlot1();
-    i32 Read(i32 base, i32 pos, u32 len, void* dst);
+    virtual void VSlot1();
+    virtual i32 Read(i32 base, i32 pos, u32 len, void* dst);
 };
 
 class CParseSource {

@@ -149,10 +149,10 @@ extern CGameRegistry* g_gameRegDiag; // 0x64556c
 // so Prepare lands at slot 3. Real polymorphic model - `node->Prepare()` lowers to
 // the same `mov ecx,node; mov eax,[node]; call [eax+0xc]` virtual dispatch.
 struct CFindNode {
-    void Vslot00(); // slot 0  +0x00
-    void Vslot01(); // slot 1  +0x04
-    void Vslot02(); // slot 2  +0x08
-    void Prepare(); // slot 3  +0x0c
+    virtual void Vslot00(); // slot 0  +0x00
+    virtual void Vslot01(); // slot 1  +0x04
+    virtual void Vslot02(); // slot 2  +0x08
+    virtual void Prepare(); // slot 3  +0x0c
     char m_pad04[0x10 - 0x04];
     i32 m_10; // +0x10 key
     i32 m_14; // +0x14 flag
@@ -160,8 +160,8 @@ struct CFindNode {
 // An inner-list member (FOREIGN): virtual Destroy at slot 0, plus a non-virtual
 // Match (0x1fa5). Real polymorphic model (implicit vptr at +0x00).
 struct CBcastMember {
-    void Destroy();     // slot 0  +0x00
-    i32 Match(i32 key); // 0x1fa5 (non-virtual)
+    virtual void Destroy(); // slot 0  +0x00
+    i32 Match(i32 key);     // 0x1fa5 (non-virtual)
 };
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00

@@ -23,19 +23,19 @@
 
 SIZE_UNKNOWN(CSerialArchive);
 struct CSerialArchive {
-    void Slot00();
-    void Slot04();
-    void Slot08();
-    void Slot0C();
-    void Slot10();
-    void Slot14();
-    void Slot18();
-    void Slot1C();
-    void Slot20();
-    void Slot24();
-    void Slot28();
-    void Read(void* buf, i32 n);  // +0x2c  (mode 7)
-    void Write(void* buf, i32 n); // +0x30  (mode 4)
+    virtual void Slot00();
+    virtual void Slot04();
+    virtual void Slot08();
+    virtual void Slot0C();
+    virtual void Slot10();
+    virtual void Slot14();
+    virtual void Slot18();
+    virtual void Slot1C();
+    virtual void Slot20();
+    virtual void Slot24();
+    virtual void Slot28();
+    virtual void Read(void* buf, i32 n);  // +0x2c  (mode 7)
+    virtual void Write(void* buf, i32 n); // +0x30  (mode 4)
 };
 
 // --- vtable catalog ---

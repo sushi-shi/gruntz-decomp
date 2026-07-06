@@ -75,9 +75,9 @@ extern CGameRegistry* g_gameReg;
 
 class CTileGridCommand {
 public:
-    // slot 0 (+0x00): the duty-edge tick  (real polymorphic; was fired via a
+    // slot 0 (+0x00): the duty-edge tick virtual (real polymorphic; was fired via a
     // TgcTickView cast of a manual-vptr command -> mov eax,[this]; call [eax]).
-    void Tick();
+    virtual void Tick();
 
     void RecordMove();                  // 0x112880
     i32 Serialize(CSerialArchive* s);   // 0x113ae0
@@ -95,7 +95,7 @@ public:
     // the move into the in-game text log.  __thiscall.
     i32 ApplyMove(i32 verb); // 0x112590
 
-    // +0x00  implicit vptr (real  Tick above; was an explicit void* m_vptr)
+    // +0x00  implicit vptr (real virtual Tick above; was an explicit void* m_vptr)
     i32 m_typeTag;               // +0x04  type tag (0x17/0x18 duty-cycle discriminant)
     i32 m_08;                    // +0x08  coord x
     i32 m_0c;                    // +0x0c  coord y

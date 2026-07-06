@@ -32,15 +32,15 @@
 // is not yet recovered, so it stays a minimal slot-8-only placeholder (no fabricated
 // class name / no guessed fold).  v0..v7 are unused-here padding slots. -----------
 struct CSyncObj {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    i32 Serialize(char* buf, i32 max); // slot 8 -> vtbl+0x20
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 Serialize(char* buf, i32 max); // slot 8 -> vtbl+0x20
 };
 void NoopSync(CSyncObj* p); // 0xbfb20 (empty)
 

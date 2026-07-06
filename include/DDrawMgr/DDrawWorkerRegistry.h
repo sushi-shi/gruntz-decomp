@@ -39,29 +39,29 @@ class CSymTab;         // probe chain (foreign, other TU)
 // ---------------------------------------------------------------------------
 class CWorkerVtableView {
 public:
-    void Slot00_1bef01();                         // [ 0] +0x00 0x1bef01 (CObject thunk)
-    void ScalarDtor_156df0();                     // [ 1] +0x04 0x156df0
-    void Slot08_28ec();                           // [ 2] +0x08 0x0028ec (CObject thunk)
-    void Slot0C_106e();                           // [ 3] +0x0c 0x00106e (CObject thunk)
-    void Slot10_4034();                           // [ 4] +0x10 0x004034 (CObject thunk)
-    void Slot14_156dc0();                         // [ 5] +0x14 0x156dc0
-    void ResetScratch_154aa0();                   // [ 6] +0x18 0x154aa0
-    void Shutdown_154ac0();                       // [ 7] +0x1c 0x154ac0
-    void GetStateId_156de0();                     // [ 8] +0x20 0x156de0
-    void DispatchKeyed2C_154df0();                // [ 9] +0x24 0x154df0
-    void Forward2C_154f60();                      // [10] +0x28 0x154f60
-    void Forward30_154f40();                      // [11] +0x2c 0x154f40
-    void DispatchKeyed30_154ce0();                // [12] +0x30 0x154ce0
-    void Forward38_154f20();                      // [13] +0x34 0x154f20
-    void DispatchKeyed38_154ae0();                // [14] +0x38 0x154ae0
-    void Forward34_154f00();                      // [15] +0x3c 0x154f00
-    void DispatchKeyed34_154be0();                // [16] +0x40 0x154be0
-    void Probe_156e80();                          // [17] +0x44 0x156e80
-    i32 Vfunc48(void* a, const char* b, void* c); // [18] +0x48 0x154f80 (tree LoadTree)
-    i32 Vfunc4C(void* a, const char* b, void* c); // [19] +0x4c 0x155160
-    void RemoveWorker_155280();                   // [20] +0x50 0x155280
-    void Vfunc54(const char* key);                // [21] +0x54 0x156ec0 (RemoveByKey)
-    void MapTeardown_1552b0();                    // [22] +0x58 0x1552b0
+    virtual void Slot00_1bef01();                         // [ 0] +0x00 0x1bef01 (CObject thunk)
+    virtual void ScalarDtor_156df0();                     // [ 1] +0x04 0x156df0
+    virtual void Slot08_28ec();                           // [ 2] +0x08 0x0028ec (CObject thunk)
+    virtual void Slot0C_106e();                           // [ 3] +0x0c 0x00106e (CObject thunk)
+    virtual void Slot10_4034();                           // [ 4] +0x10 0x004034 (CObject thunk)
+    virtual void Slot14_156dc0();                         // [ 5] +0x14 0x156dc0
+    virtual void ResetScratch_154aa0();                   // [ 6] +0x18 0x154aa0
+    virtual void Shutdown_154ac0();                       // [ 7] +0x1c 0x154ac0
+    virtual void GetStateId_156de0();                     // [ 8] +0x20 0x156de0
+    virtual void DispatchKeyed2C_154df0();                // [ 9] +0x24 0x154df0
+    virtual void Forward2C_154f60();                      // [10] +0x28 0x154f60
+    virtual void Forward30_154f40();                      // [11] +0x2c 0x154f40
+    virtual void DispatchKeyed30_154ce0();                // [12] +0x30 0x154ce0
+    virtual void Forward38_154f20();                      // [13] +0x34 0x154f20
+    virtual void DispatchKeyed38_154ae0();                // [14] +0x38 0x154ae0
+    virtual void Forward34_154f00();                      // [15] +0x3c 0x154f00
+    virtual void DispatchKeyed34_154be0();                // [16] +0x40 0x154be0
+    virtual void Probe_156e80();                          // [17] +0x44 0x156e80
+    virtual i32 Vfunc48(void* a, const char* b, void* c); // [18] +0x48 0x154f80 (tree LoadTree)
+    virtual i32 Vfunc4C(void* a, const char* b, void* c); // [19] +0x4c 0x155160
+    virtual void RemoveWorker_155280();                   // [20] +0x50 0x155280
+    virtual void Vfunc54(const char* key);                // [21] +0x54 0x156ec0 (RemoveByKey)
+    virtual void MapTeardown_1552b0();                    // [22] +0x58 0x1552b0
 };
 
 // ---------------------------------------------------------------------------

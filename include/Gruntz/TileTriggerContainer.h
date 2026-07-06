@@ -38,7 +38,7 @@ extern "C" u32 g_645588;
 // +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
 // __thiscall callee.
 struct TtcKeyedElem {
-    void Slot0(); // vptr @+0x00 (real polymorphic; declared-only)
+    virtual void Slot0(); // vptr @+0x00 (real polymorphic; declared-only)
     char _pad04[0x18 - 0x04];
     i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
@@ -64,9 +64,9 @@ public:
     void* AddTail(void* obj); // 0x1b4991
     void RemoveAll();         // 0x1b48a6
     void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
-    ~TtcObList() {
+    virtual ~TtcObList() {
         Dtor();
-    } // real subobject dtor @ vptr +0x00: drives the container's /GX frame
+    } // real virtual subobject dtor @ vptr +0x00: drives the container's /GX frame
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                 // +0x0c  element count (serialized by 117280)

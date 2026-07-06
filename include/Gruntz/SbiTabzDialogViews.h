@@ -36,19 +36,19 @@
 // the fail-path `delete` dispatches; Setup is slot 0x2c (`call [edx+0x2c]`).
 class CSbDialogItem {
 public:
-    CSbDialogItem();    // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
-    ~CSbDialogItem();   // slot 0 (scalar-deleting dtor; the fail-path delete)
-    void Serialize();   // slot 1
-    void SetupRect();   // slot 2 (the rect Setup; Setup below is the slot-0x2c image Setup)
-    void ClearFrame();  // slot 3
-    void Poll();        // slot 4
-    void Tick();        // slot 5
-    void HitHandlerA(); // slot 6
-    void HitHandlerB(); // slot 7
-    void HitHandlerC(); // slot 8
-    void HitHandlerD(); // slot 9
-    void Refresh();     // slot 10
-    i32 Setup(
+    CSbDialogItem();            // out-of-line -> the 0x22c0/0x1e88 base-ctor call (throwing -> /GX)
+    virtual ~CSbDialogItem();   // slot 0 (scalar-deleting dtor; the fail-path delete)
+    virtual void Serialize();   // slot 1
+    virtual void SetupRect();   // slot 2 (the rect Setup; Setup below is the slot-0x2c image Setup)
+    virtual void ClearFrame();  // slot 3
+    virtual void Poll();        // slot 4
+    virtual void Tick();        // slot 5
+    virtual void HitHandlerA(); // slot 6
+    virtual void HitHandlerB(); // slot 7
+    virtual void HitHandlerC(); // slot 8
+    virtual void HitHandlerD(); // slot 9
+    virtual void Refresh();     // slot 10
+    virtual i32 Setup(
         void* mgr,
         void* sub,
         i32 type,

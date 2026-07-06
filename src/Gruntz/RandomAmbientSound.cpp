@@ -42,7 +42,10 @@ public:
     char m_pad8[0x14 - 0x8];
     i32 m_isPlaying; // +0x14  playing flag
     char m_pad18[0x3c - 0x18];
-    void* m_spatialNode; // +0x3c  spatial-mgr list node
+    void* m_spatialNode;        // +0x3c  spatial-mgr list node
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
 };
 // The aux sub-object (CGameObject+0x7c): the init/action handler, the request state,
 // the emit src-clip and the live voice slot.

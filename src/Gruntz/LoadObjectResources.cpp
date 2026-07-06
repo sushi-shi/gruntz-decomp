@@ -67,27 +67,27 @@ extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA (Image inst
 // Real polymorphic view: Install is slot 18 (+0x48), ProcessNew slot 20 (+0x50),
 // real virtuals (18 fillers precede Install).
 struct ObjImageRegistry {
-    void Slot00();
-    void Slot01();
-    void Slot02();
-    void Slot03();
-    void Slot04();
-    void Slot05();
-    void Slot06();
-    void Slot07();
-    void Slot08();
-    void Slot09();
-    void Slot10();
-    void Slot11();
-    void Slot12();
-    void Slot13();
-    void Slot14();
-    void Slot15();
-    void Slot16();
-    void Slot17();
-    void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
-    void Slot19();
-    void ProcessNew(CObject* val); // slot 20 (+0x50)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Install(void* h, char* name, const char* g); // slot 18 (+0x48)
+    virtual void Slot19();
+    virtual void ProcessNew(CObject* val); // slot 20 (+0x50)
     char m_pad04[0x10 - 0x4];
     CMapStringToOb m_map; // +0x10  source map (CString -> CImage*)
 };

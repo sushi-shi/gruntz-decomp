@@ -76,24 +76,26 @@ public:
     // declared-only (their bodies live in sibling TUs: Refresh 0x13e140 in DirectDrawMgr,
     // the slot-2 init 0x13e0a0 in BoundaryUpper, etc.) so the emitted vtable's DIR32 slot
     // relocs mask. Declaring these real virtuals makes the slot-5 IsValid / slot-3
-    // BlitSurf / slot-8 v20 dispatch sites genuine calls on `this`.
-    ~CDDSurface(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
-    i32 Refresh(IDirectDrawSurface* surf);     // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
-    i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
-    i32 BlitSurf(
+    // BlitSurf / slot-8 v20 dispatch sites genuine virtual calls on `this`.
+    virtual ~CDDSurface(); // slot 0  0x141350 (??_G 0x141330; implicit vptr stamp lands stamp-first)
+    virtual i32
+    Refresh(IDirectDrawSurface* surf); // slot 1  0x13e140  (GetSurfaceDesc-driven re-cache)
+    virtual i32 Init1(CDDrawPtrCollections* h, i32 a); // slot 2  0x13e0a0
+    virtual i32 BlitSurf(
         void* surf,
         i32 width,
         i32 height,
         i32 a4,
         i32 a5
-    );                   // slot 3  0x13e0d0 (DecodePcxData dest setup / "BeginDecode")
-    void FreeSurfaces(); // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
-    i32 IsValid();       // slot 5  0x1412d0  (surface present + positive w/h)
-    i32 v18();           // slot 6  0x141300
-    i32 RestoreLost();   // slot 7  0x13f960  (restore-this-lost-surface retry)
-    i32 v20(void* a);    // slot 8  0x13e2e0  (the surface's own blit-into-desc)
+    ); // slot 3  0x13e0d0 (DecodePcxData dest setup / "BeginDecode")
+    virtual void
+    FreeSurfaces();        // slot 4  0x13e4d0  (releases m_8/m_c, empties + destroys m_elements)
+    virtual i32 IsValid(); // slot 5  0x1412d0  (surface present + positive w/h)
+    virtual i32 v18();     // slot 6  0x141300
+    virtual i32 RestoreLost(); // slot 7  0x13f960  (restore-this-lost-surface retry)
+    virtual i32 v20(void* a);  // slot 8  0x13e2e0  (the surface's own blit-into-desc)
 
-    // --- non-__thiscall DirectDraw thunks (DIRSURF.CPP) ----------------
+    // --- non-virtual __thiscall DirectDraw thunks (DIRSURF.CPP) ----------------
     // The held-surface COM ops; each dispatches m_8/m_c (IDirectDrawSurface) and retries
     // on SURFACELOST via RestoreLost (slot 7). Bodies in DirectDrawMgr.cpp.
     i32 Init0(i32 a);                            // 0x53edb0 reloc-masked (fold)

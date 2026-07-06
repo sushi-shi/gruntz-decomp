@@ -34,18 +34,18 @@ class WorkerSub;
 SIZE_UNKNOWN(AnimWorker);
 class AnimWorker {
 public:
-    void Slot00();             // +0x00
-    void Slot04();             // +0x04
-    void Slot08();             // +0x08
-    void Slot0C();             // +0x0c
-    void Advance(void* owner); // +0x10
-    void Slot14();             // +0x14
-    void Slot18();             // +0x18
-    void Slot1C();             // +0x1c
-    void Slot20();             // +0x20
-    i32 Init(i32 a1, i32 a3);  // +0x24
+    virtual void Slot00();             // +0x00
+    virtual void Slot04();             // +0x04
+    virtual void Slot08();             // +0x08
+    virtual void Slot0C();             // +0x0c
+    virtual void Advance(void* owner); // +0x10
+    virtual void Slot14();             // +0x14
+    virtual void Slot18();             // +0x18
+    virtual void Slot1C();             // +0x1c
+    virtual void Slot20();             // +0x20
+    virtual i32 Init(i32 a1, i32 a3);  // +0x24
 
-    // Non-play-step helper (0x164830, __thiscall, 4 args) Play tail-calls.
+    // Non-virtual play-step helper (0x164830, __thiscall, 4 args) Play tail-calls.
     i32 QueryWorkerType(i32 a1, i32 type, i32 a3, i32 a4);
 
     i32 m_04;
@@ -92,18 +92,19 @@ struct WwdRenderCtx;
 class CWwdGameObject : public CObject {
 public:
     // slots 0-4 inherited from CObject; slots 5-16 are CWwdGameObject's own:
-    void Slot14();      // slot 5  @0x15b370  (worker-gate; reads [this+0x7c])
-    void Slot18();      // slot 6  @0x001c08 -> 0xd5da0  (unrecovered engine method)
-    void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
-    i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
-    i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
-    i32 Slot28();       // slot 10 @0x150d60  == Setup (below)
-    void Slot2C();      // slot 11 @0x11fec0  __purecall
-    void Slot30();      // slot 12 @0x11fec0  __purecall
-    void Slot34();      // slot 13 @0x11fec0  __purecall
-    void Slot38();      // slot 14 @0x11fec0  __purecall
-    i32 Slot3C();       // slot 15 @0x151150  == Play (below)
-    i32 Vfunc40(); // slot 16 @0x1bef01  const-getter (== inherited slot 0) read by WriteSnapshot
+    virtual void Slot14();      // slot 5  @0x15b370  (worker-gate; reads [this+0x7c])
+    virtual void Slot18();      // slot 6  @0x001c08 -> 0xd5da0  (unrecovered engine method)
+    virtual void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
+    virtual i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
+    virtual i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
+    virtual i32 Slot28();       // slot 10 @0x150d60  == Setup (below)
+    virtual void Slot2C();      // slot 11 @0x11fec0  __purecall
+    virtual void Slot30();      // slot 12 @0x11fec0  __purecall
+    virtual void Slot34();      // slot 13 @0x11fec0  __purecall
+    virtual void Slot38();      // slot 14 @0x11fec0  __purecall
+    virtual i32 Slot3C();       // slot 15 @0x151150  == Play (below)
+    virtual i32
+    Vfunc40(); // slot 16 @0x1bef01  const-getter (== inherited slot 0) read by WriteSnapshot
 
     // Dispatch entry (0x150a70) and the methods it routes to.
     i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70

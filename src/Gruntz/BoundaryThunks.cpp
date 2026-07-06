@@ -111,7 +111,7 @@ void TokenMgrReset99b80() {
 // ===========================================================================
 struct CStateSub8c470 {
     void BaseInit3f53(); // 0x3f53 (reloc-masked)
-    ~CStateSub8c470();
+    virtual ~CStateSub8c470();
 };
 SIZE_UNKNOWN(CStateSub8c470);
 RVA(0x0008c470, 0xb)
@@ -137,21 +137,21 @@ CStateSub8c470::~CStateSub8c470() {
 // it). So the two models must coexist - kept a distinct emitter here.
 // ===========================================================================
 struct CAbstract137330 {
-    ~CAbstract137330();
+    virtual ~CAbstract137330();
 };
 SIZE_UNKNOWN(CAbstract137330);
 RVA(0x00137330, 0x7)
 CAbstract137330::~CAbstract137330() {}
 
 struct CAbstract13aaf0 {
-    ~CAbstract13aaf0();
+    virtual ~CAbstract13aaf0();
 };
 SIZE_UNKNOWN(CAbstract13aaf0);
 RVA(0x0013aaf0, 0x7)
 CAbstract13aaf0::~CAbstract13aaf0() {}
 
 struct CAbstract13ca30 {
-    ~CAbstract13ca30();
+    virtual ~CAbstract13ca30();
 };
 SIZE_UNKNOWN(CAbstract13ca30);
 RVA(0x0013ca30, 0x7)

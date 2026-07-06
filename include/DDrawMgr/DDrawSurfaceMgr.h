@@ -73,17 +73,17 @@ SIZE(CDDrawSurfaceMgr, 0x40);
 class CDDrawSurfaceMgr : public Wap::CObject {
 public:
     CDDrawSurfaceMgr();
-    ~CDDrawSurfaceMgr();
-    i32 IsReady();
-    i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
-    void Slot1C();
-    void FreeContext();
-    i32 SetDimensions(i32 x, i32 y, i32 flags);
-    void SetHwnd(void* hWnd);
-    i32 Slot2C(i32 arg);
-    i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
+    virtual ~CDDrawSurfaceMgr() OVERRIDE;
+    virtual i32 IsReady();
+    virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
+    virtual void Slot1C();
+    virtual void FreeContext();
+    virtual i32 SetDimensions(i32 x, i32 y, i32 flags);
+    virtual void SetHwnd(void* hWnd);
+    virtual i32 Slot2C(i32 arg);
+    virtual i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
+    virtual i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
 
     // Engine-label backlog stub (0x155900, the 5-arg Init that news all 11 children).
     void Init();
@@ -92,7 +92,7 @@ public:
     void Cleanup_155e20();
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
-    // holds the bodies; GameSave drives SnapshotChildren). Non-__thiscall /GX.
+    // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
     i32 SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3); // 0x156020
     i32 RestoreChildren(HP_Callback cb, char* name, i32 arg3);            // 0x156530
 

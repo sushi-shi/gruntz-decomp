@@ -322,10 +322,4 @@ public:
     const void* GetMessageMap();
 };
 
-VTBL(CBattlezDlg, 0x001e8bac);
-VTBL(CBattlezDlgColors, 0x001e8d94);
-VTBL(CBattlezDlgCustom, 0x001e8ee4);
-VTBL(CCheckpointDlg, 0x001e9504);
-VTBL(CMultiStartDlg, 0x001ea8ec);
-
 #endif // SRC_GRUNTZ_DIALOGS_H

@@ -33,9 +33,9 @@ class CStatusBarMgr;
 
 class CSBI : public CStatusBarItem {
 public:
-    i32
+    virtual i32
     Configure(CStatusBarMgr* mgr, i32 a, i32 b, i32 c, SbRect rect, const char* key, i32 d, i32 e);
-    i32 ConfigureEx(
+    virtual i32 ConfigureEx(
         CStatusBarMgr* mgr,
         i32 a0,
         SbRect rect,

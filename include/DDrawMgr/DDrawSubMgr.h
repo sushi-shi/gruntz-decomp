@@ -25,7 +25,7 @@
 
 class CDDrawSubMgr : public Wap::CObject {
 public:
-    i32 IsReady(); // [5] readiness predicate (declared-only, reloc-masked)
+    virtual i32 IsReady(); // [5] readiness predicate (declared-only, reloc-masked)
 };
 SIZE_UNKNOWN(CDDrawSubMgr);
 

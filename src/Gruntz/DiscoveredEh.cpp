@@ -35,11 +35,11 @@ public:
 // (docs/patterns/eh-dtor-implicit-vptr-stamp-first.md sub-case 2); cl emits the
 // ??_7 stamps, which reloc-mask.
 struct CU55Base {
-    ~CU55Base() {}
+    virtual ~CU55Base() {}
 };
 struct CU55 : CU55Base {
-    void DeleteImageList(); // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
-    ~CU55();                // 0x016460
+    void DeleteImageList();   // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
+    virtual ~CU55() OVERRIDE; // 0x016460
 };
 RVA(0x00016460, 0x46)
 CU55::~CU55() {
@@ -55,11 +55,11 @@ CU55::~CU55() {
 // Real-polymorphic multiple-inheritance model so cl emits both implicit vptr stamps
 // + both base-dtor CALLs (all reloc-mask). The non-trivial bases earn the /GX frame.
 struct CContainerErr {
-    ~CContainerErr();  // 0x16da60 (external)
-    char m_pad[8 - 4]; // vptr@+0; CObj50 begins at +8
+    virtual ~CContainerErr(); // 0x16da60 (external)
+    char m_pad[8 - 4];        // vptr@+0; CObj50 begins at +8
 };
 struct CObj50 {
-    ~CObj50(); // 0x16dfc0 (external; stamps 0x5f04d8 internally)
+    virtual ~CObj50(); // 0x16dfc0 (external; stamps 0x5f04d8 internally)
 };
 struct CButeStore : CContainerErr, CObj50 {
     virtual ~CButeStore() OVERRIDE; // 0x174d70

@@ -47,8 +47,8 @@ inline void* operator new(u32, void* p) {
 // bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class CWorkerValue {
 public:
-    void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
 };
 
 // A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
@@ -69,27 +69,27 @@ public:
 // (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
 class CLoadable {
 public:
-    void GetRuntimeClass();   // [0] 0x1bef01
-    i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
-    void Serialize();         // [2] 0x0028ec
-    void AssertValid();       // [3] 0x00106e
-    void Dump();              // [4] 0x004034
-    void Slot05_155750();     // [5] 0x155750
-    void IsValidImage();      // [6] 0x001c08
-    void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
-    void Slot08_155770();     // [8] 0x155770
+    virtual void GetRuntimeClass();   // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
+    virtual void Serialize();         // [2] 0x0028ec
+    virtual void AssertValid();       // [3] 0x00106e
+    virtual void Dump();              // [4] 0x004034
+    virtual void Slot05_155750();     // [5] 0x155750
+    virtual void IsValidImage();      // [6] 0x001c08
+    virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
+    virtual void Slot08_155770();     // [8] 0x155770
     CLoadable() {}
 };
 
 struct CDDrawWorker : public CLoadable {
-    i32 Vfunc24(const char* key);                // [9]  0x155810
-    void Slot10_1521f0();                        // [10] 0x1521f0
-    i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
-    i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
-    i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
-    i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
-    void Slot15_1522b0();                        // [15] 0x1522b0
-    void Slot16_1523b0();                        // [16] 0x1523b0
+    virtual i32 Vfunc24(const char* key);                // [9]  0x155810
+    virtual void Slot10_1521f0();                        // [10] 0x1521f0
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
+    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
+    virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
+    virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
+    virtual void Slot15_1522b0();                        // [15] 0x1522b0
+    virtual void Slot16_1523b0();                        // [16] 0x1523b0
     CDDrawWorker() {}
 
     i32 m_04;        // +0x04  parent+0x1c
@@ -131,22 +131,22 @@ public:
 // model them 0-arg - an arity reconcile for the deferred family-unification pass).
 class RegWorkerValue {
 public:
-    void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
-    void Slot04_155780();        // slot 1  0x155780 (ScalarDtor)
-    void Slot08_28ec();          // slot 2  0x0028ec (CObject thunk)
-    void Slot0C_106e();          // slot 3  0x00106e (CObject thunk)
-    void Slot10_4034();          // slot 4  0x004034 (CObject thunk)
-    void Slot14_155750();        // slot 5  0x155750
-    void Slot18_1c08();          // slot 6  0x001c08 (IsReady)
-    void Slot1C_151eb0();        // slot 7  0x151eb0 (DeleteAll)
-    void Slot20_155770();        // slot 8  0x155770
-    void Slot24_155810();        // slot 9  0x155810 (Vfunc24)
-    void Slot28_1521f0(i32 dir); // slot 10 (+0x28) 0x1521f0 (dispatched)
-    void Slot2C_152110();        // slot 11 0x152110 (Vfunc2C)
-    void Slot30_152060();        // slot 12 0x152060 (Vfunc30)
-    void Slot34_151fb0();        // slot 13 0x151fb0 (Vfunc34)
-    void Slot38_151f00();        // slot 14 0x151f00 (Vfunc38)
-    i32 Slot3C_1522b0(i32 dir);  // slot 15 (+0x3c) 0x1522b0 (dispatched)
+    virtual void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
+    virtual void Slot04_155780();        // slot 1  0x155780 (ScalarDtor)
+    virtual void Slot08_28ec();          // slot 2  0x0028ec (CObject thunk)
+    virtual void Slot0C_106e();          // slot 3  0x00106e (CObject thunk)
+    virtual void Slot10_4034();          // slot 4  0x004034 (CObject thunk)
+    virtual void Slot14_155750();        // slot 5  0x155750
+    virtual void Slot18_1c08();          // slot 6  0x001c08 (IsReady)
+    virtual void Slot1C_151eb0();        // slot 7  0x151eb0 (DeleteAll)
+    virtual void Slot20_155770();        // slot 8  0x155770
+    virtual void Slot24_155810();        // slot 9  0x155810 (Vfunc24)
+    virtual void Slot28_1521f0(i32 dir); // slot 10 (+0x28) 0x1521f0 (dispatched)
+    virtual void Slot2C_152110();        // slot 11 0x152110 (Vfunc2C)
+    virtual void Slot30_152060();        // slot 12 0x152060 (Vfunc30)
+    virtual void Slot34_151fb0();        // slot 13 0x151fb0 (Vfunc34)
+    virtual void Slot38_151f00();        // slot 14 0x151f00 (Vfunc38)
+    virtual i32 Slot3C_1522b0(i32 dir);  // slot 15 (+0x3c) 0x1522b0 (dispatched)
     char m_pad04[0x18 - 0x04];
     i32 m_18; // +0x18  status field
 };

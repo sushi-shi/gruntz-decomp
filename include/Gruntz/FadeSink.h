@@ -19,29 +19,29 @@
 
 SIZE_UNKNOWN(IFadeSink);
 struct IFadeSink { // real polymorphic; FadeNotify is slot 22 (+0x58), __stdcall
-    void S00();
-    void S01();
-    void S02();
-    void S03();
-    void S04();
-    void S05();
-    void S06();
-    void S07();
-    void S08();
-    void S09();
-    void S10();
-    void S11();
-    void S12();
-    void S13();
-    void S14();
-    void S15();
-    void S16();
-    void S17();
-    void S18();
-    void S19();
-    void S20();
-    void S21();
-    void __stdcall FadeNotify(i32, i32); // +0x58 (slot 22)
+    virtual void S00();
+    virtual void S01();
+    virtual void S02();
+    virtual void S03();
+    virtual void S04();
+    virtual void S05();
+    virtual void S06();
+    virtual void S07();
+    virtual void S08();
+    virtual void S09();
+    virtual void S10();
+    virtual void S11();
+    virtual void S12();
+    virtual void S13();
+    virtual void S14();
+    virtual void S15();
+    virtual void S16();
+    virtual void S17();
+    virtual void S18();
+    virtual void S19();
+    virtual void S20();
+    virtual void S21();
+    virtual void __stdcall FadeNotify(i32, i32); // +0x58 (slot 22)
 };
 
 // --- vtable catalog ---

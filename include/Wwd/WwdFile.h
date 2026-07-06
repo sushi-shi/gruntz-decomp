@@ -87,19 +87,19 @@ public:
     // Construct from (a, planeIndex, c); reloc-masked engine ctor.
     CPlane(void* a, i32 planeIndex, void* c);
     // vtable: +0x28 reader(planeData, blockBase, outCtx) -> nonzero on success.
-    i32 dummy0();
-    void dtor(i32 flags); // +0x04  scalar-deleting dtor
-    i32 dummy2();         // +0x08
-    i32 dummy3();         // +0x0c
-    i32 dummy4();         // +0x10
-    i32 dummy5();         // +0x14
-    i32 dummy6();         // +0x18
-    i32 dummy7();         // +0x1c
-    i32 dummy8();         // +0x20
+    virtual i32 dummy0();
+    virtual void dtor(i32 flags); // +0x04  scalar-deleting dtor
+    virtual i32 dummy2();         // +0x08
+    virtual i32 dummy3();         // +0x0c
+    virtual i32 dummy4();         // +0x10
+    virtual i32 dummy5();         // +0x14
+    virtual i32 dummy6();         // +0x18
+    virtual i32 dummy7();         // +0x1c
+    virtual i32 dummy8();         // +0x20
     // +0x24  the object-plane block reader: 6 forwarded args, the plane context
     // (&CGameLevelPlanes::m_planeCtx) as the 7th, and a trailing 8th arg.
-    i32 ReadObjects(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, void* outCtx, i32 a7);
-    i32 Read(void* planeData, void* blockBase, void* outCtx); // +0x28
+    virtual i32 ReadObjects(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, void* outCtx, i32 a7);
+    virtual i32 Read(void* planeData, void* blockBase, void* outCtx); // +0x28
 
     u8 pad_4[0x4]; // +0x04
     u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed plane
@@ -208,19 +208,19 @@ struct CPlaneMapData {
 // object). Virtual Read at slot +0x2c, Write at +0x30; both __thiscall, return an
 // int byte-count. UNMATCHED engine code -> reloc-masked virtual calls.
 struct CWwdStream {
-    void v00();
-    void v04();
-    void v08();
-    void v0c();
-    void v10();
-    void v14();
-    void v18();
-    void v1c();
-    void v20();
-    void v24();
-    void v28();
-    i32 Read(void* buf, i32 len);  // +0x2c
-    i32 Write(void* buf, i32 len); // +0x30
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual i32 Read(void* buf, i32 len);  // +0x2c
+    virtual i32 Write(void* buf, i32 len); // +0x30
 };
 
 // CPlaneRender's own vtable dispatch view (the +0x14 "is-loaded" virtual the tile
@@ -230,12 +230,12 @@ struct CWwdStream {
 // is unmatched engine code; real virtuals would make cl emit a wrong ??_7). This
 // declared-only interface is the recommended manual-dispatch form.
 struct CPlaneRenderPoly {
-    void v00();
-    void v04();
-    void v08();
-    void v0c();
-    void v10();
-    i32 IsLoaded(); // +0x14
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual i32 IsLoaded(); // +0x14
 };
 
 class CPlaneRender {

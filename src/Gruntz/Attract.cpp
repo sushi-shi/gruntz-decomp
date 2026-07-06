@@ -111,7 +111,28 @@ public:
     virtual void Vslot03();
     virtual void Update(); // slot 4 (+0x10)
     char m_pad04[0x2ac - 0x4];
-    i32 m_2ac; // +0x2ac flags
+    i32 m_2ac;                   // +0x2ac flags
+    virtual void VtSlotFill0();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill7();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill8();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill9();  // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill10(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill11(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill12(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill13(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill14(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill15(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill16(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill17(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill18(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill19(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill20(); // vtable-slot filler (real slot; declared-only)
 };
 struct AttractActorList {
     char m_pad00[0x4];

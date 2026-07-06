@@ -36,16 +36,16 @@ class CObject;
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
 class AnimWorker {
 public:
-    void GetRuntimeClass();      // [0] 0x1bef01
-    i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
-    void Serialize();            // [2] 0x0028ec
-    void AssertValid();          // [3] 0x00106e
-    void Dump();                 // [4] 0x004034
-    void Slot05_151d60();        // [5] 0x151d60
-    void IsValidImage();         // [6] 0x001c08
-    void Clear();                // [7] 0x151e70 = Clear (B_151e70)
-    void Slot08_151d70();        // [8] 0x151d70
-    i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
+    virtual void GetRuntimeClass();      // [0] 0x1bef01
+    virtual i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
+    virtual void Serialize();            // [2] 0x0028ec
+    virtual void AssertValid();          // [3] 0x00106e
+    virtual void Dump();                 // [4] 0x004034
+    virtual void Slot05_151d60();        // [5] 0x151d60
+    virtual void IsValidImage();         // [6] 0x001c08
+    virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)
+    virtual void Slot08_151d70();        // [8] 0x151d70
+    virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
 };
 
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
@@ -84,11 +84,11 @@ void operator delete(void*);
 SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 class CDDrawWorkerCacheBase {
 public:
-    void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
-    void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
-    void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
-    void Dump();                // [4] 0x004034 (shared thunk, declared-only)
+    virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
+    virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
+    virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
     ~CDDrawWorkerCacheBase();
 
     i32 m_04; // +0x04  -1 when inactive

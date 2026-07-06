@@ -42,15 +42,15 @@ static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn"; // 
 // A directory object whose runtime type tag (virtual slot 0x20 = index 8) gates
 // the serial-ref store (only tag==5 objects are accepted).
 struct CDirObj {
-    void dv0();
-    void dv1();
-    void dv2();
-    void dv3();
-    void dv4();
-    void dv5();
-    void dv6();
-    void dv7();
-    i32 GetTag(); // slot 8 -> +0x20
+    virtual void dv0();
+    virtual void dv1();
+    virtual void dv2();
+    virtual void dv3();
+    virtual void dv4();
+    virtual void dv5();
+    virtual void dv6();
+    virtual void dv7();
+    virtual i32 GetTag(); // slot 8 -> +0x20
 };
 
 // The two engine lookup maps (external __thiscall, reloc-masked). The serial map

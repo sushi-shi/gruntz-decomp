@@ -138,11 +138,11 @@ inline CDDSurface::~CDDSurface() {
 // family doc: docs/patterns/surface-pool-comdat-dtors.md.
 class CPoolItemA : public CDDSurface {
 public:
-    ~CPoolItemA();                                           // slot 0  ~ 0x142360 (image copy)
-    i32 v18();                                               // slot 6  0x143cc0
-    i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
-    i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
-    i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
+    virtual ~CPoolItemA() OVERRIDE; // slot 0  ~ 0x142360 (image copy)
+    virtual i32 v18() OVERRIDE;     // slot 6  0x143cc0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
+    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
 };
 SIZE(CPoolItemA, 0xc0);
 
@@ -246,29 +246,29 @@ inline void* CDDPalette::operator new(u32) {
 // Placeholder slots land Release(2)/GetSurfaceDesc(12)/Restore(19)/Configure(21) at
 // their retail vtable indices.
 struct CCachedSurface {
-    void __stdcall Method00();                // slot 0  (+0x00)
-    void __stdcall s04();                     // slot 1  (+0x04)
-    void __stdcall Release();                 // slot 2  (+0x08)
-    void __stdcall s0c();                     // slot 3
-    void __stdcall s10();                     // slot 4
-    void __stdcall s14();                     // slot 5
-    void __stdcall s18();                     // slot 6
-    void __stdcall s1c();                     // slot 7
-    void __stdcall s20();                     // slot 8
-    void __stdcall s24();                     // slot 9
-    void __stdcall s28();                     // slot 10
-    void __stdcall s2c();                     // slot 11
-    i32 __stdcall GetSurfaceDesc(void* desc); // slot 12 (+0x30)
-    void __stdcall s34();                     // slot 13
-    void __stdcall s38();                     // slot 14
-    void __stdcall s3c();                     // slot 15
-    void __stdcall s40();                     // slot 16
-    void __stdcall s44();                     // slot 17
-    void __stdcall s48();                     // slot 18
-    void __stdcall Restore();                 // slot 19 (+0x4c)
-    void __stdcall s50();                     // slot 20 (+0x50)
+    virtual void __stdcall Method00();                // slot 0  (+0x00)
+    virtual void __stdcall s04();                     // slot 1  (+0x04)
+    virtual void __stdcall Release();                 // slot 2  (+0x08)
+    virtual void __stdcall s0c();                     // slot 3
+    virtual void __stdcall s10();                     // slot 4
+    virtual void __stdcall s14();                     // slot 5
+    virtual void __stdcall s18();                     // slot 6
+    virtual void __stdcall s1c();                     // slot 7
+    virtual void __stdcall s20();                     // slot 8
+    virtual void __stdcall s24();                     // slot 9
+    virtual void __stdcall s28();                     // slot 10
+    virtual void __stdcall s2c();                     // slot 11
+    virtual i32 __stdcall GetSurfaceDesc(void* desc); // slot 12 (+0x30)
+    virtual void __stdcall s34();                     // slot 13
+    virtual void __stdcall s38();                     // slot 14
+    virtual void __stdcall s3c();                     // slot 15
+    virtual void __stdcall s40();                     // slot 16
+    virtual void __stdcall s44();                     // slot 17
+    virtual void __stdcall s48();                     // slot 18
+    virtual void __stdcall Restore();                 // slot 19 (+0x4c)
+    virtual void __stdcall s50();                     // slot 20 (+0x50)
     // slot 21 (+0x54): reconfigure the surface (5 forwarded args); returns an HRESULT.
-    i32 __stdcall Configure(i32, i32, i32, i32, i32);
+    virtual i32 __stdcall Configure(i32, i32, i32, i32, i32);
 };
 
 // The CDDrawPtrCollections host class (0x948 B) is the single-source shape from

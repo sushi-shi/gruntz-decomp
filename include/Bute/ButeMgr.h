@@ -169,15 +169,15 @@ SIZE(CButeStoreNode, 0x14);
 
 // The primary store base at +0x00 (most-derived scalar-deleting vptr 0x5e94ac).
 struct CButeStorePrimary {
-    void P0();       // +0x00  most-derived (scalar-deleting) vptr
-    char m_pad04[4]; // +0x04
+    virtual void P0(); // +0x00  most-derived (scalar-deleting) vptr
+    char m_pad04[4];   // +0x04
 };
 SIZE(CButeStorePrimary, 0x8); // { vptr, pad }
 
 // The second base at +0x08 (second-base vptr 0x5e949c); carries the keyed-store
 // interior fields (offsets shown relative to the enclosing CButeStore).
 struct CButeStoreSecond {
-    void S0();                  // +0x00 (this+0x08)  second-base vptr
+    virtual void S0();          // +0x00 (this+0x08)  second-base vptr
     void(__cdecl* m_cb)(void*); // +0x04 (+0x0c)  per-value callback (ClearRecursive fires)
     char m_flags;               // +0x08 (+0x10)  flag byte (bit 2 gates the callback)
     char m_pad09[0x0c - 0x09];  // +0x09 (+0x11)  opaque keyed-store interior
@@ -258,7 +258,7 @@ public:
 // as an embedded polymorphic member so the second vptr lands at +0x08, reloc-masked.
 class CButeNodeSub {
 public:
-    void Slot0(); // +0x00 (this+0x08): second sub-object vptr
+    virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
 };
 SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
 
@@ -267,7 +267,7 @@ SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
 // implicit vptr @+0x08 (== the old two hand-rolled node vtable stores).
 class CButeNode : public zPTree {
 public:
-    ~CButeNode(); // +0x00 vptr; external no-body dtor
+    virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
 
     CButeNode(void* desc, i32 n) : zPTree(desc, n) {}
     // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
@@ -473,7 +473,5 @@ SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 VTBL(CButeStore, 0x001e949c);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-
-VTBL(zPTree, 0x001e94ac);
 
 #endif // SRC_BUTE_BUTEMGR_H

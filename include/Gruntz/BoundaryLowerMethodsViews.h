@@ -179,23 +179,23 @@ SIZE_UNKNOWN(Ccef50);
 
 // 0x0d5e20 - forward an arg through two virtuals (vtbl +0x3c then +0x40).
 struct Cd5e20 {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    void v8();
-    void v9();
-    void v10();
-    void v11();
-    void v12();
-    void v13();
-    void v14();
-    void v15(void* a); // slot +0x3c
-    void v16(void* a); // slot +0x40
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15(void* a); // slot +0x3c
+    virtual void v16(void* a); // slot +0x40
     void M(void* arg);
 };
 SIZE_UNKNOWN(Cd5e20);
@@ -252,21 +252,21 @@ SIZE_UNKNOWN(Cdb750);
 
 // 0x0ea170 - 2-bit selector over a +0x38 virtual.
 struct Cea170 {
-    void v0();
-    void v1();
-    void v2();
-    void v3();
-    void v4();
-    void v5();
-    void v6();
-    void v7();
-    void v8();
-    void v9();
-    void v10();
-    void v11();
-    void v12();
-    void v13();
-    void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e); // slot +0x38
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void Dispatch(i32 a, i32 b, i32 c, i32 d, i32 e); // slot +0x38
     void M(i32 a1, i32 a2);
 };
 SIZE_UNKNOWN(Cea170);

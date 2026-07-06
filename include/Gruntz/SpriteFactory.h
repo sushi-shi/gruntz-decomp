@@ -56,7 +56,16 @@ public:
     virtual void s1c();
     virtual i32 Kind(); // vtable slot +0x20
     char m_pad04[0x7c - 0x04];
-    CSpriteInner* m_7c; // +0x7c  inner object
+    CSpriteInner* m_7c;         // +0x7c  inner object
+    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(GruntObjMap);
 struct GruntObjMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call

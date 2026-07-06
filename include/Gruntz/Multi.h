@@ -208,8 +208,8 @@ SIZE_UNKNOWN(CMultiPlayerInfo);
 // player-info sub-object's per-slot occupancy probes.
 class CMultiReportGate {
 public:
-    void Slot00();                        // +0x00
-    i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
+    virtual void Slot00();                // +0x00
+    virtual i32 ScalarDtor(i32 flag);     // +0x04  scalar-deleting destructor
     i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
     void Activate();                      // 0x578750
     CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
@@ -495,7 +495,5 @@ public:
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-
-VTBL(CMulti, 0x001e9fe4);
 
 #endif // GRUNTZ_GRUNTZ_CMULTI_H

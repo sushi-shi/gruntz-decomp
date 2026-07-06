@@ -27,8 +27,8 @@ public:
 
 // An owned serializable sub-object: vtable slot 1 (+0x4) is its Serialize.
 struct SyncSub {
-    void v0();
-    i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5); // slot 1 / +0x4
+    virtual void v0() = 0;
+    virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
 };
 
 // The lazily-allocated +0x54c child (operator new(0x40) + ctor 0x401271).
