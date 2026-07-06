@@ -20,6 +20,8 @@
 #ifndef GRUNTZ_PROJECTILE_H
 #define GRUNTZ_PROJECTILE_H
 
+class CLightFx; // folded CProjShadowActivate
+
 #include <Mfc.h>                // CObList (+0x204 member)
 #include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
@@ -87,16 +89,12 @@ struct CProjRenderObj {
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
 // +0x10 (fired with the shadow) and an "activation host" at +0x18 whose Activate
 // (0x9d520) installs the shadow's two frame names.
-SIZE_UNKNOWN(CProjShadowActivate);
-struct CProjShadowActivate {
-    void Activate(const char* shadowName, const char* baseName, i32 a, i32 b); // 0x9d520
-};
 SIZE_UNKNOWN(CProjShadowVtbl);
 struct CProjShadowVtbl {
     char m_pad00[0x10];
     void (*Init)(CProjRenderObj* self); // +0x10
     char m_pad14[0x18 - 0x14];
-    CProjShadowActivate* m_18; // +0x18
+    CLightFx* m_18; // +0x18
 };
 
 // The CSample-like sound sample object the projectile launches (+0x200). Its

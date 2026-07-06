@@ -7,6 +7,7 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
+#include <Gruntz/LightFx.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h>  // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
 #include <Gruntz/State.h>         // CState (reg->m_curState: the level-type descriptor)
@@ -422,7 +423,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
             ->CreateSprite(0, owner->m_screenX, owner->m_screenY, 0xcf84f, "LightFx", 0x2040003);
     if (m_shadow != 0) {
         m_shadow->m_7c->Init(m_shadow);
-        m_shadow->m_7c->m_18->Activate(key + "_SHADOW", key + "1", 5, 1);
+        m_shadow->m_7c->m_18
+            ->Activate((i32)(const char*)(key + "_SHADOW"), (i32)(const char*)(key + "1"), 5, 1);
     }
 
     // Latch the class act key ("A"): save the old registry node, then re-point it.
