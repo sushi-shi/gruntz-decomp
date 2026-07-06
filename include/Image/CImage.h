@@ -1,6 +1,8 @@
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
 
+class CDDrawPtrCollections; // folded CImageSurfacePool
+
 // CImage.h - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, the ONLY
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
@@ -58,14 +60,6 @@ class CDDSurface;
 // CreateB (0x1423c0) is the Create24 variant. Reloc-masked __thiscall engine callees
 // modeled on a tiny view so each lowers to `mov ecx,pool; call` with callee-side
 // stack cleanup.
-class CImageSurfacePool {
-public:
-    void RemoveItemA(void* item);                                   // 0x142160
-    CDDSurface* CreateA(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x142260
-    CDDSurface* CreateB(i32 desc, i32 mode, void* a, i32 b, i32 c); // 0x1423c0
-    CDDSurface* CreateC(i32 desc, i32 cap, i32 flags);              // 0x142560
-};
-
 // The owned +0x30 object is a CDDrawShadeBlit (<DDrawMgr/DDrawShadeBlit.h>) - the
 // 0x3c-byte shaded sprite: a decoded-pixel/RLE buffer (+0x0c) and a 256-entry palette
 // (+0x20), plus the blit-descriptor metadata. BuildSlot13 news it and decodes a frame
@@ -110,7 +104,7 @@ public:
     char _00[0x04];
     CDDrawSurfaceDesc* m_04; // +0x04  display-mode descriptor
     char _08[0x1c - 0x08];
-    CImageSurfacePool* m_1c; // +0x1c  the surface pool
+    CDDrawPtrCollections* m_1c; // +0x1c  the surface pool
     char _20[0x24 - 0x20];
     CBlitClipOwner* m_24; // +0x24  clip-region owner (its +0x10 is the clip RECT)
 };

@@ -1,4 +1,7 @@
+#include <Mfc.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <rva.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 // CImage.cpp - the RTTI-confirmed polymorphic CImage (`.?AVCImage@@`, primary
 // vftable @0x5eaa2c), a surface-backed image element in the DDrawMgr
 // image family and a sibling of CDDrawSurfacePair. Three methods (retail-RVA
@@ -54,7 +57,7 @@ i32 CImage::Create(CImageFrameDesc* desc, i32 keyed) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateC((i32)desc, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->Createa58_3((i32)desc, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -156,7 +159,7 @@ i32 CImage::LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b) {
     if (g_resourceInstallActive != 0) {
         capArg = 0x800;
     }
-    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, a, capArg, flagsArg);
+    CDDSurface* item = m_parent->m_1c->CreateA((i32)desc, (i32)mode, (i32)a, capArg, flagsArg);
     m_surface = item;
     if (item == 0) {
         return 0;
@@ -456,7 +459,6 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // virtuals declared in CImage.h).
 // ===========================================================================
 // --- CImage.h header classes ---
-SIZE_UNKNOWN(CImageSurfacePool);
 SIZE_UNKNOWN(CDDrawSurfaceDesc);
 SIZE(BlitRect, 0x10); // {left,top,right,bottom} RECT
 SIZE_UNKNOWN(CBlitClipOwner);
