@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/GameLevel.h>
 #include <Ints.h>
 #include <Bute/ButeMgr.h>        // CButeMgr::GetInt (g_buteMgr)
 #include <Gruntz/Viewport.h>     // shared world-plane grid (the terrain descriptor)
@@ -49,13 +50,6 @@ struct BzCell {
 
 // The attribute/bute-type manager (this->m_78->m_24): the grid descriptor at
 // +0x5c and the per-cell tile-type lookup at 0x082600 (ILT thunk 0x4228).
-struct BzAttr {
-    // 0x082600 (via ILT 0x4228), __thiscall(row, col): returns the 1-based tile
-    // type code for cell (row,col).
-    i32 LookupTile(i32 row, i32 col); // 0x082600
-    char m_pad0[0x5c];
-    CViewport* m_5c; // +0x5c  the terrain grid descriptor (world-plane)
-};
 
 // The level manager reached as (BzLevelMgr*)g_gameReg->m_world: the attribute manager at
 // +0x24 and the moving-object manager at +0x8.
@@ -70,7 +64,7 @@ struct BzLevelMgr {
     char m_pad0[0x8];
     BzObjMgr* m_8; // +0x08  moving-object manager
     char m_pad0c[0x24 - 0xc];
-    BzAttr* m_24; // +0x24  attribute/bute-type manager
+    CGameLevel* m_24; // +0x24  attribute/bute-type manager
 };
 
 // The level manager is the Brickz-loader facet of the canonical registry's reused
@@ -228,7 +222,7 @@ static i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 RVA(0x000810f0, 0x8b4)
 i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     m_78 = (BzLevelMgr*)g_gameReg->m_world;
-    CViewport* grid = m_78->m_24->m_5c;
+    CViewport* grid = (CViewport*)m_78->m_24->m_mainPlane;
     if (grid == 0) {
         return 0;
     }
@@ -508,7 +502,6 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
     return 1;
 }
 
-SIZE_UNKNOWN(BzAttr);
 SIZE_UNKNOWN(BzCell);
 SIZE_UNKNOWN(BzFreeNode);
 SIZE_UNKNOWN(BzLevelMgr);
