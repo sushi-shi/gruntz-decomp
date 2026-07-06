@@ -14,7 +14,7 @@ struct CEngObj_1e94ac { // 1 slots (first=`scalar_deleting_destructor')
 SIZE_UNKNOWN(CEngObj_1e94ac);
 VTBL(CEngObj_1e94ac, 0x001e94ac);
 
-struct CEngObj_1ea474 { // 54 slots (first=sub_1d2fab)
+struct CMultiHelpDlg { // 54 slots (first=sub_1d2fab)
     virtual void Slot00();
     virtual void Slot01();
     virtual void Slot02();
@@ -70,10 +70,10 @@ struct CEngObj_1ea474 { // 54 slots (first=sub_1d2fab)
     virtual void Slot52();
     virtual void Slot53();
 };
-SIZE_UNKNOWN(CEngObj_1ea474);
-VTBL(CEngObj_1ea474, 0x001ea474);
+SIZE_UNKNOWN(CMultiHelpDlg);
+VTBL(CMultiHelpDlg, 0x001ea474);
 
-struct CEngObj_1ed98c { // 14 slots (first=QueryInterface)
+struct CArchiveStream { // 14 slots (first=QueryInterface)
     virtual void Slot00();
     virtual void Slot01();
     virtual void Slot02();
@@ -89,8 +89,8 @@ struct CEngObj_1ed98c { // 14 slots (first=QueryInterface)
     virtual void Slot12();
     virtual void Slot13();
 };
-SIZE_UNKNOWN(CEngObj_1ed98c);
-VTBL(CEngObj_1ed98c, 0x001ed98c);
+SIZE_UNKNOWN(CArchiveStream);
+VTBL(CArchiveStream, 0x001ed98c);
 
 struct CEngObj_1ef670 { // 4 slots (first=vector_deleting_destructor)
     virtual void Slot00();
