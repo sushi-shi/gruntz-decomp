@@ -45,6 +45,7 @@
 // neighbour-pick (rand%3) handlers - recycling the pending-coord list onto
 // g_coordPool / RemoveAll on each exit. The stack CString (block, ctor 0x1b4867 / dtor
 // 0x1b48c6) forces the /GX EH frame. Big body (0xdb4, frame 0x94).
+#include <Gruntz/TileTriggerContainer.h>
 #include <Mfc.h> // RECT + IntersectRect (afx-first; Grunt.h is MFC-transitive, so no <Win32.h>)
 #include <rva.h>
 
@@ -88,12 +89,9 @@ struct CArriveFind2 { // Find1c21 result
     i32 _00;
     i32 m_4; // +0x04
 };
-struct CArriveCellSetter {                     // this->m_10->m_2e4
-    void SetCell2f45(i32 col, i32 row, i32 v); // 0x2f45
-};
 struct CArriveSub10b { // this->m_10
     char _00[0x2e4];
-    CArriveCellSetter* m_2e4; // +0x2e4
+    CTileTriggerContainer* m_2e4; // +0x2e4
 };
 // (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
 struct CArriveMover {                          // this->m_8
@@ -389,7 +387,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            m_10->m_2e4->SetCell2f45(fcx, fcy, m_18);
+                            m_10->m_2e4->SetCell(fcx, fcy, m_18);
                         }
                     }
                 }
@@ -469,7 +467,6 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
 }
 
 SIZE_UNKNOWN(CArriveCell);
-SIZE_UNKNOWN(CArriveCellSetter);
 SIZE_UNKNOWN(CArriveFind);
 SIZE_UNKNOWN(CArriveFind2);
 SIZE_UNKNOWN(CArriveFinder);
