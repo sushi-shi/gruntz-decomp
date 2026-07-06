@@ -68,10 +68,7 @@ struct C213a0 {
 SIZE_UNKNOWN(C213a0);
 
 // 0x0464e0 - type-id -> entry resolver (projectile/act fast-range + Find + grow).
-struct CVariantSlot {
-    void Insert(void* coll, void* item, i32 n); // 0x16d850 (ret 0xc)
-};
-SIZE_UNKNOWN(CVariantSlot);
+struct CVariantSlot; // canonical <Bute/ButeTree.h> (Set @0x16d850); pointer-only use here
 // Field layout is the attributed sibling CTypeKeyColl : CZArray2D (TypeKeyColl.cpp)
 // - it shares Find (0x16da80); this is the projectile/act instance.
 struct CTypeColl464 {

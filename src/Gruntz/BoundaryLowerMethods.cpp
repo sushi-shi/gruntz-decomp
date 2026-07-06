@@ -6,6 +6,7 @@
 // The per-use owner/referent views now live in <Gruntz/BoundaryLowerMethodsViews.h>
 // (pure code motion); the archive object folds to the canonical CSerialArchive.
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (MFC side; umbrella-first) - the
+#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -49,7 +50,7 @@ void* CTypeColl464::Resolve(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_4->Insert(this, item, 0xc);
+    m_4->Set(this, (i32)item, 0xc);
     return (void*)m_buf2;
 }
 
