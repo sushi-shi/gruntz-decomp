@@ -8,6 +8,10 @@
 #include <rva.h>
 #include <Gruntz/ScanGrid.h>
 
+// The tile-switch notify (0x1640 thunk -> 0x4b320) is the free __stdcall CGrunt_TileSwitch
+// (6 args: a=tileX, b=tileY, ...); the CScanArg receiver is loaded into ecx but ignored.
+i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+
 // CScanCell (the grid's 0x1c-B cell; only m_flags is read here) is the shared def
 // in <Gruntz/ScanGrid.h>.
 struct CScanPos {
@@ -19,9 +23,8 @@ struct CScanArg {
     char _00[0x10];
     CScanPos* m_10; // +0x10
     char _14[0x2e8 - 0x14];
-    i32 m_2e8;                                             // +0x2e8
-    i32 m_2ec;                                             // +0x2ec  latch
-    void Notify(i32 x, i32 y, i32 a, i32 b, i32 c, i32 d); // 0x1640
+    i32 m_2e8; // +0x2e8
+    i32 m_2ec; // +0x2ec  latch
 };
 struct CTileScan {
     char _00[4];
@@ -89,7 +92,7 @@ i32 CTileScan::Scan(CScanArg* arg) {
                 continue;
             }
             if ((flags & 2) == 0) {
-                arg->Notify(b, a, 0, 0xd87, 0, 0);
+                CGrunt_TileSwitch(b, a, 0, 0xd87, 0, 0);
                 arg->m_2ec = 0;
                 return 1;
             }
