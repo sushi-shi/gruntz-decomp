@@ -4,7 +4,8 @@
 // decodes the control/button id (GAME_INFO / GAME_DELETE / save-overwrite arms).
 // Frameless; every callee is a reloc-masked external, the ids/strings are the
 // load-bearing bytes.
-#include <Win32.h> // EnableWindow / GetDlgItemTextA / EndDialog
+#include <Mfc.h> // afx-first superset (EnableWindow/GetDlgItemTextA/EndDialog + CGruntzMgr)
+#include <Gruntz/GruntzMgr.h>
 
 #include <rva.h>
 #include <stdio.h>  // sprintf (reloc-masked)
@@ -16,14 +17,8 @@ struct CSaveGameMenu {                             // arg3: the save-game record
     void WriteName(i32 slot, char* nm, void* mgr); // FUN @ 0x219e __thiscall
     i32 CommitSlot(i32 a, i32 b);                  // FUN @ 0x2d97 __thiscall
 };
-SIZE_UNKNOWN(SaveMenuMgr);
-struct SaveMenuMgr { // the *0x64556c singleton, this method's alias
-    i32 Prompt(const char* name, void* proc, i32 flag); // FUN @ 0x2bb7 __thiscall
-    void Notify(i32 state, char* nm);                   // FUN @ 0x24c3 __thiscall
-    void Log(const char* s);                            // FUN @ 0x417e __thiscall
-};
 DATA(0x0024556c)
-extern SaveMenuMgr* g_saveMenuMgr; // *0x64556c
+extern CGruntzMgr* g_saveMenuMgr; // *0x64556c
 DATA(0x00213a9c)
 extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred command
 DATA(0x0024c864)
@@ -135,7 +130,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        g_saveMenuMgr->Prompt("GAME_INFO", (void*)SaveInfoProc, 0);
+        g_saveMenuMgr->RunModalDialog("GAME_INFO", (void*)SaveInfoProc, 0);
         EnableWindow(hDlg, TRUE);
         return 0;
     }
@@ -183,7 +178,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        i32 ok = g_saveMenuMgr->Prompt("GAME_DELETE", (void*)SaveDeleteProc, 0);
+        i32 ok = g_saveMenuMgr->RunModalDialog("GAME_DELETE", (void*)SaveDeleteProc, 0);
         EnableWindow(hDlg, TRUE);
         if (ok == 0) {
             return 0;
@@ -239,7 +234,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
         g_slotState = obj->GetSlotState(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
-            i32 ok = g_saveMenuMgr->Prompt("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
+            i32 ok = g_saveMenuMgr->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
             EnableWindow(hDlg, TRUE);
             if (ok == 0) {
                 return 1;
@@ -247,10 +242,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
         }
     }
     obj->WriteName(slot, name, g_saveMenuMgr);
-    g_saveMenuMgr->Notify(obj->GetSlotState(slot), name);
+    g_saveMenuMgr->FillSaveInfo((SaveInfo*)obj->GetSlotState(slot), (void*)name);
     EndDialog(hDlg, 1);
     if (!obj->CommitSlot(obj->GetSlotState(slot) + 0x35, 0x81a6)) {
-        g_saveMenuMgr->Log("ERROR - Cannot Save Game.");
+        g_saveMenuMgr->EnterModalUI((i32) "ERROR - Cannot Save Game.");
     }
     return 1;
 }
