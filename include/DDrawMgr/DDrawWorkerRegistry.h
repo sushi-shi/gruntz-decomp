@@ -28,7 +28,7 @@ struct CDDrawWorker; // 0x6c-byte keyed worker (defined in the owning .cpp); str
 class CImageSet;
 class CWorkerMapValue; // a map value viewed for +0x10 + probe (foreign, other TU)
 class CSymTab;         // Bute/SymTab.h (the dir-tree cursor)
-class RegProbeChain;   // probe chain (foreign, other TU)
+class CSymTab;         // probe chain (foreign, other TU)
 
 // ---------------------------------------------------------------------------
 // The registry's own 23-slot vtable (??_7CDDrawWorkerRegistry @0x5efd28), each slot named
@@ -105,7 +105,7 @@ public:
     i32 InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
     i32 LookupWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
     void* RegScalarDtor(i32 flag);
-    i32 ProbeWorkerKey(RegProbeChain* a1, i32 a2);
+    i32 ProbeWorkerKey(CSymTab* a1, i32 a2);
 };
 
 SIZE_UNKNOWN(CWorkerVtableView);

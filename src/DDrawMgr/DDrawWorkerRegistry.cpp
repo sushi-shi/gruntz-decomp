@@ -114,11 +114,6 @@ public:
 
 // Helpers for ProbeWorkerKey (0x156e80): a probe chain (0x13b900 -> object, whose
 // 0x13a230 yields the result) and the parent's +0x48 vtable dispatch.
-class RegProbeChain {
-public:
-    class RegProbeChain* Get_13b900(i32 a); // 0x13b900
-    void* Deref_13a230();                   // 0x13a230
-};
 DATA(0x006293f4)
 extern char g_emptyString[]; // 0x6293f4
 
@@ -630,9 +625,9 @@ void* CDDrawWorkerRegistry::RegScalarDtor(i32 flag) {
 // the result is non-null, dispatch this->+0x48 with (result, g_emptyString,
 // &g_dat60b588) and return it, else 0. __thiscall, 2 args (ret 8).
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(RegProbeChain* arg1, i32 arg2) {
-    RegProbeChain* obj = arg1->Get_13b900(arg2);
-    void* result = obj->Deref_13a230();
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
+    CSymTab* obj = arg1->Get_13b900();
+    void* result = obj->FindSub((const char*)arg2);
     if (result == 0) {
         return 0;
     }
@@ -640,7 +635,6 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(RegProbeChain* arg1, i32 arg2) {
 }
 
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
-SIZE_UNKNOWN(RegProbeChain);
 SIZE_UNKNOWN(RegDirEntry);
 SIZE_UNKNOWN(RegDirHandle);
 SIZE_UNKNOWN(RegWorkerValue);

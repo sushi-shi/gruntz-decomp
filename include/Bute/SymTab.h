@@ -215,6 +215,8 @@ public:
     i32 AddNodeSubEntry(void* rec, void* found); // 0x13a530
 
     // Walk m_subTabs (+0x38) for `name`, forwarding m_owner->m_68 == 0 (0x13a230).
+    class CSymTab*
+    Get_13b900(); // 0x13b900 (unnamed CSymTab sub-tab getter, in the 0x13axxx CSymTab region)
     void* FindSub(const char* name);
 
     // Resolve/insert a dotted path under this scope (0x13bae0): tokenize the first
