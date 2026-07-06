@@ -51,7 +51,6 @@ struct CWorkerObArray {
 
 // The grand-base (CObject-like) dtor vtable, restamped manually by CWwdSpatialMgr's
 // teardown (CDDrawWorkerHost.h). Same datum as ??_7CObject @0x5e8cb4.
-extern void* g_wapObjectDtorVtbl; // 0x5e8cb4
 
 // The "DDraw worker" base subobject is the canonical CLoadable (m_04/m_08/m_0c +
 // the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
