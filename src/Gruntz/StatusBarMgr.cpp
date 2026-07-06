@@ -23,6 +23,7 @@
 //   m_10c==1 -> Statz   m_10c==2 -> Gruntz   m_10c==3 -> Resource
 //   m_10c==4 -> Multiplayer   m_10c==5 -> Game
 #include <rva.h>
+#include <Image/ImageSet.h>
 #include <Gruntz/GameRegistry.h>
 
 #include <Mfc.h>
@@ -180,8 +181,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Init(10);
-                    ((CSbItemHelp*)((CSBI_ImageSet*)it)->m_34)->Push(sel);
+                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllTypes(10);
+                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;

@@ -1644,7 +1644,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
         pg->m_10 = (float)x;
         pg->m_14 = (float)y;
     }
-    pg->Recompute();
+    ((CLevelPlane*)pg)->RecomputePlaneCoords();
     return 1;
 }
 

@@ -76,7 +76,6 @@ struct CWorldSub60 {
 // float target). +0x8 flags bit0 gates the scale-multiply; +0x10/+0x14 receive
 // the recomputed coords; +0x18/+0x1c hold the scale factors.
 struct CPlayPlaneGeom {
-    void Recompute(); // 0x161c90  RecomputePlaneCoords (thiscall, no arg)
     char p0[0x8];
     i32 m_8; // +0x8  flags
     char p0c[0x10 - 0xc];

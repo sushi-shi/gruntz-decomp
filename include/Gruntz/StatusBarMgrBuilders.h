@@ -324,8 +324,6 @@ SIZE(CSBI_StatzTabGruntBar, 0x88);
 // The shared item helpers driven on a freshly created icon-set item.
 class CSbItemHelp {
 public:
-    void Init(i32 n); // FUN_00552480  @0x152480
-    void Push(i32 v); // FUN_00552520  @0x152520
 };
 SIZE_UNKNOWN(CSbItemHelp);
 
