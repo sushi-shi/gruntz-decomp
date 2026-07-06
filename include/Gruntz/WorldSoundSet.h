@@ -99,14 +99,14 @@ struct CRandomAmbientWorld {
 
 class CWorldSoundSet {
 public:
-    i32 Init(void* world, void* a2); // 0x00b5e0
-    void Teardown();                 // 0x00b660
-    void Restart(void* a1);          // 0x00bc30
-    void Stop();                     // 0x00bc80
-    void Resume();                   // 0x00bcf0
-    void Retune(i32 pan, i32 vol);   // 0x00bd60
-    void Deactivate();               // 0x00b620  (sibling, defined elsewhere)
-    ~CWorldSoundSet();               // 0x085ed0
+    i32 Init(void* world, i32 a2); // 0x00b5e0
+    void Teardown();               // 0x00b660
+    void Restart(void* a1);        // 0x00bc30
+    void Stop();                   // 0x00bc80
+    void Resume();                 // 0x00bcf0
+    void Retune(i32 pan, i32 vol); // 0x00bd60
+    void Deactivate();             // 0x00b620  (sibling, defined elsewhere)
+    ~CWorldSoundSet();             // 0x085ed0
 
     // Factories: allocate + seed a sound channel, run its one-time Init, and (on
     // success) append it to m_list. The rtti-vptr heuristic mislabeled these as

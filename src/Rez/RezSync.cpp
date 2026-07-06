@@ -561,7 +561,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         m_54 = 0;
     }
     m_54 = new CWorldSoundSet;
-    if (!m_54->Init(m_30->m_28, (void*)vSndVol)) {
+    if (!m_54->Init(m_30->m_28, vSndVol)) {
         Error2(0x800a, 0x40d);
         return 0;
     }

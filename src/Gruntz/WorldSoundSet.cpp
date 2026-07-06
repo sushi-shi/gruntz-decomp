@@ -79,12 +79,12 @@ struct CRandomAmbientSound : CAmbientSound {
 // clear the pending pan/volume. Returns 1 on success, 0 on the null guard.
 // ---------------------------------------------------------------------------
 RVA(0x0000b5e0, 0x29)
-i32 CWorldSoundSet::Init(void* world, void* a2) {
+i32 CWorldSoundSet::Init(void* world, i32 a2) {
     if (world == 0) {
         return 0;
     }
     m_world = (CRandomAmbientWorld*)world;
-    m_04 = a2;
+    m_04 = (void*)a2;
     m_active = 1;
     m_pan = 0;
     m_vol = 0;
