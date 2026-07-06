@@ -253,6 +253,9 @@ def cmd_build(args) -> None:
     # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
     # without SIZE/SIZE_UNKNOWN fails the build (class_sizes exits nonzero).
     run([sys.executable, "-m", "gruntz.match.class_sizes"])
+    # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
+    # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
+    run([sys.executable, "-m", "gruntz.match.vtable_bans"])
     # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
     # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
     r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
