@@ -7,6 +7,7 @@
 // timeGetTime clock; the engine callees (SendNetStat/SendStatFlag/PollSession/
 // AckJoinFailure) are reached __thiscall through incremental-link thunks and are
 // declared no-body in <Net/NetMgr.h> so their `call rel32` reloc-mask.
+#include <Dsndmgr/GruntzSoundZ.h>
 #include <Net/NetMgr.h>
 #include <rva.h>
 
@@ -52,14 +53,10 @@ struct WaitReportGate {     // m_peer (+0x524)
     char m_pad0[0x60];
     i32 m_peerReady; // +0x60  peer-ready gate
 };
-SIZE_UNKNOWN(WaitReportGate);             // peer view (only +0x60 pinned); size TBD
-struct WaitSoundZ {                       // m_4->m_48
-    i32 Play(const char* name, i32 flag); // 0x138840
-};
-SIZE_UNKNOWN(WaitSoundZ); // method-only ambient-sound view; retail size TBD
-struct WaitLogic {        // this->m_4
+SIZE_UNKNOWN(WaitReportGate); // peer view (only +0x60 pinned); size TBD
+struct WaitLogic {            // this->m_4
     char m_pad0[0x48];
-    WaitSoundZ* m_48; // +0x48  ambient sound sub-mgr
+    CGruntzSoundZ* m_48; // +0x48  ambient sound sub-mgr
 };
 SIZE_UNKNOWN(WaitLogic); // logic view (only +0x48 pinned); size TBD
 struct WaitSettings {    // g_mgrSettings (0x64556c)
@@ -173,7 +170,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
     if (g->m_ambientEnabled != 0) {
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        ((WaitLogic*)m_4)->m_48->Play(buf, 1);
+        ((WaitLogic*)m_4)->m_48->PlayByName(buf, 1);
     }
     return 1;
 }

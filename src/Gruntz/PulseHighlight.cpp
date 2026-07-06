@@ -9,6 +9,7 @@
 // load-bearing (campaign doctrine). All callees (the brightness setter 0x1524d0,
 // SerializeChain 0x16e7f0, CSerialObjRef::Chain, the archive Read/Write slots) are
 // external/no-body so their call rel32 / DIR32 reloc-mask.
+#include <Image/ImageSet.h>      // canonical CImageSet (SetAllField18 @0x1524d0)
 #include <Gruntz/UserLogic.h>    // CUserLogic + SerializeChain (0x16e7f0)
 #include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30) + CSerialObjRef
 
@@ -17,12 +18,9 @@ DATA(0x00245588)
 extern "C" u32 g_645588;
 
 // The bound anim sink: m_38 -> anim, anim->m_194 -> sink, sink->Set(brightness).
-struct CPulseSink {
-    void Set(i32 v); // 0x1524d0 (__thiscall, 1 arg)
-};
 struct CPulseAnim {
     char _00[0x194];
-    CPulseSink* m_194; // +0x194
+    CImageSet* m_194; // +0x194
 };
 
 class CPulseHighlight : public CTileLogic {
@@ -54,11 +52,11 @@ i32 CPulseHighlight::Tick() {
     if (*phase != 0) {
         i64 d2 = (i64)(u32)g_645588 - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CPulseAnim*)m_38)->m_194->Set((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
+        ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)((1.0 - t * 0.002) * 50.0 - (-155.0)));
     } else {
         i64 d2 = (i64)(u32)g_645588 - *ts;
         double t = (double)(u32)(d2 < 0 ? 0 : (u32)d2);
-        ((CPulseAnim*)m_38)->m_194->Set((i32)(t * 0.1 - (-155.0)));
+        ((CPulseAnim*)m_38)->m_194->SetAllField18((i32)(t * 0.1 - (-155.0)));
     }
     return 0;
 }
