@@ -12,13 +12,8 @@
 
 // The debug-output sink object; its first dword is reset, then it is configured
 // from the parsed keyword string.
-SIZE_UNKNOWN(CDebugSink);
-struct CDebugSink {
-    i32 m_0;                 // +0x00
-    void Configure(char* s); // 0x184c10
-};
 DATA(0x006bf850)
-extern CDebugSink g_6bf850;
+extern CRangeSet g_6bf850;
 
 // ---------------------------------------------------------------------------
 // 0x184e00 - debug-gated assert/printf (re-homed from src/Stub/EngineExternFns.cpp):
@@ -52,7 +47,7 @@ public:
 RVA(0x00185000, 0x1a6)
 CDebugConfig* CDebugConfig::InitFromEnv() {
     char buf[256];
-    g_6bf850.m_0 = 0;
+    g_6bf850.m_count = 0;
     g_6bf8dc = 1;
     char* env = getenv("DPRINTF");
     if (env != 0) {
@@ -85,7 +80,7 @@ CDebugConfig* CDebugConfig::InitFromEnv() {
         if (strstr(buf, "PRN")) {
             g_6bf8dc = 10;
         }
-        g_6bf850.Configure(buf);
+        g_6bf850.AddFromString(buf);
     }
     g_6bf8dc = 2;
     return this;
