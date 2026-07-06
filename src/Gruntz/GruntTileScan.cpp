@@ -1,3 +1,5 @@
+#include <Mfc.h>
+#include <Gruntz/Grunt.h>
 // GruntTileScan.cpp - the per-tick grunt region-scan (0x032ce0, __thiscall ret 4).
 // `this` (edi) is a grunt manager owning the move grid (m_c, a CBrickz-shape grid)
 // plus a goal-point table (m_f4/m_f8); the argument (ebp) is the CGrunt being
@@ -22,34 +24,14 @@
 #include <stdlib.h> // engine rand (0x11fee0)
 
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// CScanCoord/CScanNode324 (grunt->m_324), CScanListNode (grunt->m_320 pending-coord
-// node) and CScanSub10 (grunt->m_10) are the shared def in <Gruntz/ScanGrid.h>.
-struct CScanObList {        // grunt->m_31c
-    void RemoveAll1b48a6(); // 0x1b48a6
-    char _00[4];
-};
-struct CScanGrunt {                                              // the grunt (arg, ebp)
-    void GetTilePos36c0(CScanCoord* out);                        // 0x36c0
-    i32 Trigger1640(i32 x, i32 y, i32 a, i32 msg, i32 c, i32 d); // 0x1640
-    char _00[0x10];
-    CScanSub10* m_10; // +0x10
-    char _14[0x2ec - 0x14];
-    u32 m_2ec; // +0x2ec idle counter
-    char _2f0[0x31c - 0x2f0];
-    CScanObList m_31c;    // +0x31c
-    CScanListNode* m_320; // +0x320
-    CScanNode324* m_324;  // +0x324
-    i32 m_328;            // +0x328 pending-coord latch
-    char _32c[0x3f0 - 0x32c];
-    i32 m_3f0; // +0x3f0 stuck counter
-};
-
+// GruntTilePos/GruntCoordNode (grunt->m_324), GruntCoordNode (grunt->m_320 pending-coord
+// node) and CGruntSub10 (grunt->m_10) are the shared def in <Gruntz/ScanGrid.h>.
 // CScanCell (the grid's 0x1c-B cell) is the shared def in <Gruntz/ScanGrid.h>.
 struct CScanGoal { // this->m_f4[] element
     i32 m_0, m_4;
 };
-struct CScanMgr {                                                          // this (edi)
-    i32 DoTrigger1fb9(CScanGrunt* g, i32 x, i32 y, i32 msg, i32 c, i32 d); // 0x1fb9
+struct CScanMgr {                                                      // this (edi)
+    i32 DoTrigger1fb9(CGrunt* g, i32 x, i32 y, i32 msg, i32 c, i32 d); // 0x1fb9
     char _00[0xc];
     CScanGrid* m_c; // +0x0c
     char _10[0xcc - 0x10];
@@ -57,7 +39,7 @@ struct CScanMgr {                                                          // th
     char _d0[0xf4 - 0xd0];
     CScanGoal** m_f4; // +0xf4 goal table
     i32 m_f8;         // +0xf8 goal count
-    i32 ScanRegion32ce0(CScanGrunt* g);
+    i32 ScanRegion32ce0(CGrunt* g);
 };
 
 extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
@@ -100,12 +82,12 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
 //      two, and the incoming-arg slot is recycled as the hit counter - slot
 //      schedule diverges. Logic/offsets correct; re-attack leaf-first in sweep.
 RVA(0x00032ce0, 0x448)
-i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
-    if (g->m_3f0 >= 0x64) {
-        if (g->m_328 != 0) {
-            CScanCoord* c = g->m_324->m_8;
-            i32 col = c->x;
-            i32 row = c->y;
+i32 CScanMgr::ScanRegion32ce0(CGrunt* g) {
+    if (g->m_stamina >= 0x64) {
+        if (g->m_coordCount != 0) {
+            GruntTilePos* c = (GruntTilePos*)g->m_324->m_coord;
+            i32 col = c->m_x;
+            i32 row = c->m_y;
             CScanGrid* grid = m_c;
             i32 flags;
             if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
@@ -114,24 +96,24 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
                 flags = 1;
             }
             if ((flags & 0x4000) && grid->m_8[row][col].m_type == 0x99) {
-                CScanListNode* n = g->m_320;
+                GruntCoordNode* n = g->m_320;
                 while (n != 0) {
-                    CScanListNode* cur = n;
+                    GruntCoordNode* cur = n;
                     n = n->m_next;
-                    if (cur->m_8 != 0) {
-                        g_coordPool.Push((void*)(cur->m_8));
+                    if (cur->m_coord != 0) {
+                        g_coordPool.Push((void*)(cur->m_coord));
                     }
                 }
-                g->m_31c.RemoveAll1b48a6();
+                g->m_31c.RemoveAll();
                 return 1;
             }
         }
-        if (g->m_2ec > m_cc && g->m_328 == 0) {
+        if (g->m_dwell > m_cc && g->m_coordCount == 0) {
             CScanGrid* grid = m_c;
-            CScanCoord tp;
-            g->GetTilePos36c0(&tp);
-            i32 cx = tp.x >> 5;
-            i32 cy = tp.y >> 5;
+            GruntTilePos tp;
+            g->GetScreenPos((GruntTilePos*)&tp);
+            i32 cx = tp.m_x >> 5;
+            i32 cy = tp.m_y >> 5;
             RECT box;
             box.left = cx - 5;
             box.top = cy - 5;
@@ -174,15 +156,13 @@ i32 CScanMgr::ScanRegion32ce0(CScanGrunt* g) {
             SCAN_RECT_BOUNDS(grid);
             if (m_f8 != 0) {
                 CScanGoal* e = m_f4[rand() % m_f8];
-                g->Trigger1640(e->m_0, e->m_4, 0, 0x983, 0, 0);
+                CGrunt_TileSwitch(e->m_0, e->m_4, 0, 0x983, 0, 0);
             }
-            g->m_2ec = 0;
+            g->m_dwell = 0;
         }
     }
     return 1;
 }
 
 SIZE_UNKNOWN(CScanGoal);
-SIZE_UNKNOWN(CScanGrunt);
 SIZE_UNKNOWN(CScanMgr);
-SIZE_UNKNOWN(CScanObList);
