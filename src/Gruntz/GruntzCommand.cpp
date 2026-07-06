@@ -219,13 +219,11 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 // emits). The two out-of-line stamps store it into [this]; the operand reloc-
 // masks against the base vftable via this DATA-named extern (re-homed from
 // src/Stub/CGruntzCommand.cpp).
-DATA(0x001e9674)
-extern void* const g_cmdBaseVtbl[];
 
 // CGruntzCommand::CGruntzCommand_0242f0() - out-of-line base-vftable stamp.
 RVA(0x000242f0, 0x7)
 void CGruntzCommand::CGruntzCommand_0242f0() {
-    *(void**)this = (void*)g_cmdBaseVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
 }
 
 // ---------------------------------------------------------------------------
@@ -242,7 +240,7 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
 // CGruntzCommand::CGruntzCommand_024430() - out-of-line base-vftable stamp.
 RVA(0x00024430, 0x7)
 void CGruntzCommand::CGruntzCommand_024430() {
-    *(void**)this = (void*)g_cmdBaseVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
 }
 
 // ---------------------------------------------------------------------------

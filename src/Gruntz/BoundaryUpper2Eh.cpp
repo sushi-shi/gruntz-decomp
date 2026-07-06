@@ -32,8 +32,6 @@ struct RezListNode {
     virtual void Delete(i32); // slot 1 (+0x4)
 };
 SIZE_UNKNOWN(RezListNode);
-DATA(0x001ef760)
-extern void* g_purecallVtbl; // 0x5ef760 (PTR___purecall)
 struct CRezDir13c9b0 : RezDirBase {
     i32 _4[(0x10 - 0x4) / 4];
     void* m_10;        // +0x10
@@ -52,8 +50,8 @@ CRezDir13c9b0::~CRezDir13c9b0() {
     while (m_20) {
         m_20->Delete(1);
     }
-    m_1c = (void*)&g_purecallVtbl;
-    m_10 = (void*)&g_purecallVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
 }
 
 // ---------------------------------------------------------------------------

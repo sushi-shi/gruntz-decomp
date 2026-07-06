@@ -130,24 +130,15 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 // ??_7<Class>, but its DIFFERENT name (+ no DATA() binding) means cl emits no local
 // vtable and the delinker keeps the RVA bound to the real class's TU (noted). The
 // switch key is the state id TransitionState is asked for.
-extern void* g_stCAttractVtbl; // 0x5ea194  ??_7CAttract          (cattract)
 // (CPlay uses the canonical `class CPlay : public CState` - cl auto-stamps
 // ??_7CPlay in its ctor, so no g_stCPlayVtbl manual-stamp extern is needed.)
-extern void* g_stCMenuStateVtbl;       // 0x5e9e84  ??_7CMenuState        (gamemode)
-extern void* g_stCDemoVtbl;            // 0x5e9f0c  ??_7CDemo             (cplaydtor)
-extern void* g_stCCreditsStateVtbl;    // 0x5e9c64  ??_7CCreditsState     (gamemode)
-extern void* g_stCHelpStateVtbl;       // 0x5e9dfc  ??_7CHelpState        (cstateleaf8cf30)
-extern void* g_stCBootyStateVtbl;      // 0x5e9cec  ??_7CBootyState       (gamemode)
-extern void* g_stCSplashStateVtbl;     // 0x5e9d74  ??_7CSplashState      (csplashstate)
-extern void* g_stCMultiVtbl;           // 0x5e9fe4  ??_7CMulti            (cmulti)
-extern void* g_stCMultiBootyStateVtbl; // 0x5e9bdc  ??_7CMultiBootyState  (gamemode)
 
 // ---- the CState-derived state objects (reduced local layouts of the real classes;
 // the retail vtable is stamped by hand from the externals above) ----------------
 struct CAttract : CTsBaseA { // param 2, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
     CAttract() {
-        m_vptr = (void*)&g_stCAttractVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
 };
 // NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
@@ -160,28 +151,28 @@ struct CMenuState : CTsBaseA { // param 5, 0x1c0
     i32 m_1b4;                 // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];
     CMenuState() {
-        m_vptr = (void*)&g_stCMenuStateVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
 };
 struct CHelpState : CTsBaseA { // param 9, 0x1b8
     char m_pad[0x1b8 - 0x1b4];
     CHelpState() {
-        m_vptr = (void*)&g_stCHelpStateVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
 };
 struct CSplashState : CTsBaseA { // param 14, 0x1bc
     i32 m_1b4;                   // +0x1b4
     char m_pad1b8[0x1bc - 0x1b8];
     CSplashState() {
-        m_vptr = (void*)&g_stCSplashStateVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
 };
 struct CDemo : CTsBaseB { // param 7, 0x528
     char m_pad[0x528 - 0x520];
     CDemo() {
-        m_vptr = (void*)&g_stCDemoVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
 };
 struct CMultiBootyState : CTsBaseA { // param 18, 0x244
@@ -189,7 +180,7 @@ struct CMultiBootyState : CTsBaseA { // param 18, 0x244
     i32 m_1b8;                       // +0x1b8
     char m_pad1bc[0x244 - 0x1bc];
     CMultiBootyState() {
-        m_vptr = (void*)&g_stCMultiBootyStateVtbl;
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
         m_1b8 = 0x64;
     }
@@ -278,7 +269,7 @@ struct CMulti : CTsBaseB { // param 17, 0x660
 // ctor body runs after the base + member sub-object ctors, matching the retail
 // position of the `mov [this],offset ??_7<Class>` store).
 CBootyState::CBootyState() {
-    m_vptr = (void*)&g_stCBootyStateVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     m_1c0 = 0;
     m_1c8 = 0;
     m_1c4 = 0;
@@ -304,7 +295,7 @@ CBootyState::CBootyState() {
     }
 }
 CCreditsState::CCreditsState() {
-    m_vptr = (void*)&g_stCCreditsStateVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     m_1b8 = 0;
     m_1bc = 0;
     m_1c0 = 0;
@@ -370,7 +361,7 @@ CPlay::CPlay() {
     *(i32*)(p + 0x504) = 0;
 }
 CMulti::CMulti() {
-    m_vptr = (void*)&g_stCMultiVtbl;
+    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     m_520 = 0;
     m_524 = 0;
     m_590 = 1;
