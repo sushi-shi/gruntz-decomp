@@ -31,6 +31,7 @@
 // i.e. slot +0x10 is the "which state am I" query, NOT the simulation step. The
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
+#include <Bute/SymTab.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -698,10 +699,6 @@ extern unsigned char g_dat60b588; // ?g_dat60b588@@3EA  (go-kart install byte fl
 // The go-kart install target reached via m_c->m_10 is the shared CSpriteFactoryHolder image
 // registry (Install at vtable slot 18 / +0x48; <Gruntz/View.h>).
 // The namespace/image registry at this+0x30 (resolves a named image handle).
-SIZE_UNKNOWN(CEffNamespace);
-struct CEffNamespace {
-    void* Lookup(const char* name); // 0x13bae0 thiscall
-};
 // The geometry table (0x60b8fc, 0x10-byte rows): the effect sprites' x-position is
 // (row.a + row.c) / 2. The loop init/bound relocs land on &row[0].c / &row[8].c.
 SIZE_UNKNOWN(CEffGeomRow);
@@ -724,7 +721,7 @@ struct CEffLoaderSelf {
     char m_pad00[0xc];
     CSpriteFactoryHolder* m_c; // +0x0c  the shared view/render/resource context
     char m_pad10[0x30 - 0x10];
-    CEffNamespace* m_30; // +0x30  image namespace
+    CSymTab* m_30; // +0x30  image namespace
     char m_pad34[0x224 - 0x34];
     CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites
     CGameObject* m_gokart[8]; // +0x244  go-kart sprites
@@ -760,7 +757,7 @@ i32 CState::LoadGruntEffectSprites() {
     }
     i32 handleB = g_mgrSettings->m_74->GetSel(0, 1);
 
-    void* img = self->m_30->Lookup("IMAGEZ_GOKARTGRUNT");
+    void* img = self->m_30->ResolvePath("IMAGEZ_GOKARTGRUNT");
     if (img == 0) {
         return 0;
     }

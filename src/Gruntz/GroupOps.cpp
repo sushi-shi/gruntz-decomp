@@ -12,6 +12,7 @@
 // vtable SLOT offsets and the diagnostic ids are load-bearing.  The deeper engine
 // leaves (map lookups, the centre helper, the diagnostics sink) are external /
 // reloc-masked.
+#include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/Play.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -167,17 +168,12 @@ struct CBcastListNode {
     void* m_pad04;
     CBcastMember* m_8; // +0x08
 };
-struct CBcastMap {
-    char m_pad00[0x20];
-    CBcastListNode* m_20;            // +0x20 inner list head
-    CFindNode* Find(i32 key, i32 n); // 0x1c21
-};
 
 struct CGroupBroadcast {
     char m_pad00[0x10];
     i32 m_10; // +0x10  compared with each node's key
     char m_pad14[0x24 - 0x14];
-    CBcastMap* m_24; // +0x24
+    CTileTriggerSwitchLogic* m_24; // +0x24
     char m_pad28[0x2c - 0x28];
     i32 m_2c[0x18];  // +0x2c  0-terminated key array
     i32 Broadcast(); // 0x112080
@@ -199,7 +195,7 @@ i32 CGroupBroadcast::Broadcast() {
         if (i >= 0x18) {
             return 1;
         }
-        CFindNode* node = m_24->Find(*p, 4);
+        CFindNode* node = (CFindNode*)m_24->FindChild(*p, 4);
         if (node == 0) {
             g_gameRegDiag->Report(0x80dd, 0x44f);
             return 0;
@@ -207,7 +203,7 @@ i32 CGroupBroadcast::Broadcast() {
         if (node->m_10 != m_10 && node->m_14 != 0) {
             node->Prepare();
             i32 any = 0;
-            for (CBcastListNode* it = m_24->m_20; it != 0; it = it->m_next) {
+            for (CBcastListNode* it = (CBcastListNode*)m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
                 if (o != 0 && o->Match(node->m_10)) {
                     o->Destroy();
