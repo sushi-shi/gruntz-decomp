@@ -39,9 +39,8 @@ extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 // A keyed element found by SetCell's lookup: a 4-slot state-flag array at
 // +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
 // __thiscall callee.
-struct TtcKeyedElemVtbl; // the keyed element's vtable (contents owned elsewhere)
 struct TtcKeyedElem {
-    TtcKeyedElemVtbl* m_vptr; // +0x00
+    virtual void Slot0(); // vptr @+0x00 (real polymorphic; declared-only)
     char _pad04[0x18 - 0x04];
     i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
 };
@@ -61,14 +60,15 @@ SIZE_UNKNOWN(TtcNode);
 
 // One MFC CObList sub-object (0x1c bytes): only m_pNodeHead (+0x04) is read by
 // the walkers; RemoveAt / AddTail are the reloc-masked rel32 callees.
-struct TtcObListVtbl; // ~CObList vtable (contents owned by MFC)
 class TtcObList {
 public:
-    // RemoveAt/AddTail/RemoveAll @0x1b4ac7/0x1b4991/0x1b48a6 + Dtor @0x1b48c6 ARE CObList's; cast at each call.
-    ~TtcObList() {
-        ((CObList*)this)->~CObList();
-    } // real subobject dtor: drives the container's /GX frame
-    TtcObListVtbl* m_vptr;    // +0x00
+    void RemoveAt(void* pos); // 0x1b4ac7
+    void* AddTail(void* obj); // 0x1b4991
+    void RemoveAll();         // 0x1b48a6
+    void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
+    virtual ~TtcObList() {
+        Dtor();
+    } // real virtual subobject dtor @ vptr +0x00: drives the container's /GX frame
     TtcNode* m_pNodeHead;     // +0x04
     char _pad08[0x0c - 0x08]; // +0x08..0x0b
     i32 m_0c;                 // +0x0c  element count (serialized by 117280)

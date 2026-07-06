@@ -24,7 +24,6 @@ i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
-struct TtcElemVtbl; // the command element's vtable (contents owned elsewhere)
 SIZE_UNKNOWN(TtcElem);
 
 // ---------------------------------------------------------------------------
@@ -290,7 +289,7 @@ i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
         } else {
             elem->m_flags[verb] = 1;
         }
-        ((CTileActionEvent*)elem)->SetActionCode((i32)elem->m_vptr);
+        ((CTileActionEvent*)elem)->SetActionCode((i32) * (void**)elem);
         return 1;
     }
     if (AddMark(key, 0x1a) != 0) {
