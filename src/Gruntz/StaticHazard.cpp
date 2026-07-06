@@ -12,6 +12,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/HaznColl.h> // shared coordinate/activation-registry collection
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/GameRegistry.h>
@@ -41,14 +42,6 @@ extern "C" u32 g_6bf3bc;
 // idiom (same as CTeleporter's CTeleAnimSink). Its +0x20/+0x28/+0x2c state flags
 // gate the "animation finished -> revert to IDLE" branch; their exact roles are
 // unproven, so they stay placeholders.
-struct WwdAnimSub {
-    i32 SetAnim(u32 mode); // 0x15c360 (re-target the active animation)
-    char m_pad00[0x20];
-    i32 m_20; // +0x20
-    char m_pad24[0x28 - 0x24];
-    i32 m_28; // +0x28
-    i32 m_2c; // +0x2c
-};
 
 // The active-anim descriptor (m_38->m_1b4): the SetAnimEx idiom reads its first
 // element's frame seed.
@@ -259,7 +252,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CTileLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
-    ((WwdAnimSub*)((char*)m_object + 0x1a0))->m_2c = 0;
+    ((CAniAdvanceCursor*)((char*)m_object + 0x1a0))->m_2c = 0;
     m_object->m_124 = g_64553c;
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
@@ -462,7 +455,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (((WwdAnimSub*)((char*)m_38 + 0x1a0))->SetAnim(g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
         if (((CTriggerMgr*)g_gameReg->m_cmdGrid)
                 ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
@@ -488,7 +481,7 @@ dispatch:
         }
     }
     {
-        WwdAnimSub* sub = (WwdAnimSub*)((char*)m_38 + 0x1a0);
+        CAniAdvanceCursor* sub = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
         if (sub->m_28 != 0 && sub->m_20 == 0) {
             m_prevAnimNode = m_38->m_geoId;
             m_38->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);

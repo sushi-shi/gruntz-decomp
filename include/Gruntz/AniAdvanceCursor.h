@@ -19,6 +19,11 @@ public:
     i32 m_10; // +0x10
     i32 m_14; // +0x14
     i32 m_18; // +0x18
+    char m_pad1c[0x20 - 0x1c];
+    i32 m_20; // +0x20
+    char m_pad24[0x28 - 0x24];
+    i32 m_28; // +0x28
+    i32 m_2c; // +0x2c
 };
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H
