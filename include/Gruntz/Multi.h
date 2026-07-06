@@ -53,7 +53,7 @@ class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
 class CBrickzGrid;           // CMultiMgr::m_70
 class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
 class CLobbySlot;            // CNetSession2 slot element (fwd for FindSlot's return)
-class PBOutput;              // CMultiMgr::m_54 output sink (defined TU-local in CMulti.cpp)
+class CWorldSoundSet;        // CMultiMgr::m_54 (Retune @0xbd60)
 
 // CMultiMgr IS the CGruntzMgr game-manager singleton (*0x64556c, the object
 // <Gruntz/GruntzMgr.h> / <Gruntz/GameRegistry.h> canonically model) viewed by the
@@ -151,7 +151,7 @@ public:
     char m_pad10_48[0x48 - 0x10];
     CMultiSoundZ* m_48; // +0x48  ambient slot manager (PumpA)
     char m_pad4c_54[0x54 - 0x4c];
-    PBOutput* m_54; // +0x54  output sink (PumpB 2-arg blit)
+    CWorldSoundSet* m_54; // +0x54  (Retune)
     char m_pad58_5c[0x5c - 0x58];
     CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
     CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver

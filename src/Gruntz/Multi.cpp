@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -647,10 +648,6 @@ public:
     PBComp* m_24; // +0x24
 };
 // The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
-class PBOutput {
-public:
-    void Blit1a7d(i32 w, i32 h); // 0x00001a7d
-};
 // CMultiMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
 class PBListSink {
 public:
@@ -710,7 +707,7 @@ void CMulti::PumpB() {
         }
     }
     StepScroll();
-    m_logic->m_54->Blit1a7d(mgr->m_24->m_5c->m_width, mgr->m_24->m_5c->m_height);
+    m_logic->m_54->Retune(mgr->m_24->m_5c->m_width, mgr->m_24->m_5c->m_height);
     if (m_overlayBActive != 0) {
         NotifyVisibleEntities();
     } else {
@@ -1025,7 +1022,6 @@ SIZE_UNKNOWN(PBComp);
 SIZE_UNKNOWN(PBCompTarget);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
-SIZE_UNKNOWN(PBOutput);
 SIZE_UNKNOWN(PBPane);
 SIZE_UNKNOWN(PBRenderTarget);
 SIZE_UNKNOWN(PBSub320);
