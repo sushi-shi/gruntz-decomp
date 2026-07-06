@@ -1,5 +1,6 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <DDrawMgr/DDrawBlitParam.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -70,9 +71,6 @@ struct LfxEffectNode {
 
 // The bound object's layer sub-descriptor (m_38+0x1a0): SetNode caches the
 // resolved effect node. __thiscall ret 4 (1 arg), 0x15c2d0; modeled NO-body.
-struct LfxLayerSink {
-    void SetNode(i32 node); // 0x15c2d0
-};
 
 // The bound object proper (m_38): +0x08 flags, +0x0c the map holder, +0x190..0x198
 // the resolved-node triple, +0x1a0 the layer sub-descriptor, +0x1b4 the layer base.
@@ -88,7 +86,7 @@ struct LfxObj {
     i32 m_194; // +0x194 resolved node
     i32 m_198; // +0x198 resolved value
     char m_pad19c[0x1a0 - 0x19c];
-    LfxLayerSink m_1a0; // +0x1a0 layer sub-descriptor
+    i32 m_1a0; // +0x1a0 CDDrawBlitParam sub-descriptor (Setup_15c2d0)
     char m_pad1a4[0x1b4 - 0x1a4];
     i32 m_1b4; // +0x1b4 layer base
 };
@@ -194,7 +192,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         node = 0;
         ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
         m_layerBase = ((LfxObj*)m_38)->m_1b4;
-        ((LfxObj*)m_38)->m_1a0.SetNode(node);
+        ((CDDrawBlitParam*)&((LfxObj*)m_38)->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)node);
         RebindNode();
     }
     return 0;
