@@ -30,6 +30,8 @@
 #ifndef GRUNTZ_GRUNTZ_CMULTI_H
 #define GRUNTZ_GRUNTZ_CMULTI_H
 
+class CGruntSpawnConfig; // folded CMultiDialogHook
+
 #include <rva.h>
 // <Mfc.h> brings the real MFC CString / CByteArray (member sub-objects) plus the
 // Win32 sprintf / DialogBoxParamA / SetActiveWindow surface CMulti dispatches to.
@@ -80,12 +82,6 @@ class CWorldSoundSet;        // CMultiMgr::m_54 (Retune @0xbd60)
 // modal-dialog runner, and a chain to a Win32 focus restore.
 // The pre-dialog hook receiver (CMultiMgr::m_60); PreDialog() runs as a
 // thiscall (ecx = the receiver) with no stack args (reloc-masked).
-class CMultiDialogHook {
-public:
-    void PreDialog();      // 0x0051c7b0
-    void StartTitleHook(); // 0x0011c7b0  (m_logic->m_60 chain in StartTitle)
-};
-
 // CMultiMgrOptions's inner slot-config sub-object (+0x38). StartSession drives it
 // per-slot through three thiscall entry points (ecx = &m_inner; out-of-line ->
 // reloc-masked); only the +0x38 offset + 0x200 span are load-bearing.
@@ -150,8 +146,8 @@ public:
     char m_pad4c_54[0x54 - 0x4c];
     CWorldSoundSet* m_54; // +0x54  (Retune)
     char m_pad58_5c[0x5c - 0x58];
-    CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
-    CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
+    CMultiLogicList* m_5c;   // +0x5c  list manager (StartSession poke target)
+    CGruntSpawnConfig* m_60; // +0x60  the pre-dialog thiscall receiver
     char m_pad64_68[0x68 - 0x64];
     CMultiSub68* m_68;     // +0x68  per-frame sub (PumpA, Step3017)
     CMultiLogicList* m_6c; // +0x6c  the RemoveHead list manager

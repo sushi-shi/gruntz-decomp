@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/LightFxRender.h>
 // Multi.cpp - the multiplayer / lobby game-state (C:\Proj\Gruntz). Recovered
 // from RTTI (.?AVCMulti@@, vtable 0x5e9fe4) after the dynamic-this tracer
@@ -281,7 +282,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_574 = 0;
     ((CFontConfig*)m_logic->m_5c)->FreeNodes();
     m_session->StartTick();
-    m_logic->m_60->StartTitleHook();
+    m_logic->m_60->DtorBody();
     return 1;
 }
 
@@ -907,7 +908,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
     if (!m_logic) {
         return 2;
     }
-    m_logic->m_60->PreDialog();
+    m_logic->m_60->DtorBody();
     i32 r = m_logic->RunDialog(tmpl, handler, lparam);
     MultiRestoreFocus(m_logic->m_4->m_4);
     AckJoinFailure();
@@ -963,7 +964,6 @@ void CMulti::AckJoinFailure() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
-SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
