@@ -11,6 +11,7 @@
 // handler, the grunt-tuning loader, ...) found by caller-tracing each through its
 // ILT thunk; the shared reader/registry models below are the load-bearing shape.
 #include <rva.h>
+#include <Rez/RezList.h>
 #include <Gruntz/MgrSettings.h>
 #include <string.h> // inline strlen (repne scasb) over the scratch buffer
 
@@ -834,11 +835,6 @@ struct CProjNode {
 
 // The +0x204 list the read path appends payloads to (CObList::AddTail @0x1b4991);
 // sized to one pointer so the following fields keep their offsets.
-struct CProjList {
-    void* AddTail(void* obj); // 0x1b4991
-    void* m_head;
-};
-
 // a3->m_7c->m_c->m_2c is the registry leaf; CSerialObj/CSerialNameHolder give m_7c
 // and m_0c, but the inlined +0x150 record reaches m_c (not m_0c) - the same shape at
 // +0x0c. Reuse CSerialObj for a3; view its name-holder's +0x0c through CSerialNameHolder.
@@ -868,7 +864,7 @@ struct CProjLoadRec {
     CObject* m_1e0[7];              // +0x1e0..+0x1f8  name refs (CMapStringToOb entries)
     CProjTypeObj* m_1fc;            // +0x1fc  type-5 latch
     i32 m_200;                      // +0x200
-    CProjList m_204;                // +0x204  AddTail target
+    CRezList m_204;                 // +0x204  AddTail target
     CProjNode* m_208;               // +0x208  write-path node list
     i32 _20c;
     i32 m_210; // +0x210
@@ -956,7 +952,7 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
                     payload = &node->m_04;
                 }
                 s->Read(payload, 8);
-                m_204.AddTail(payload);
+                m_204.AddTail((CRezListNode*)payload);
             }
             break;
         }
@@ -1053,7 +1049,6 @@ SIZE_UNKNOWN(CArchiveMgr);
 SIZE_UNKNOWN(CArchiveSubArray);
 SIZE_UNKNOWN(CEventLoadRec);
 SIZE_UNKNOWN(CGruntStateRec);
-SIZE_UNKNOWN(CProjList);
 SIZE_UNKNOWN(CProjLoadRec);
 SIZE_UNKNOWN(CProjNode);
 SIZE_UNKNOWN(CProjObjReg);
