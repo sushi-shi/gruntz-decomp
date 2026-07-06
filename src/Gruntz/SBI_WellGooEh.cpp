@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <Ints.h>
 
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
@@ -22,7 +23,7 @@ struct CSBI_WellGoo : CSBI_Image {
 RVA(0x00104bb0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_ownedSurface) {
-        m_configHost->m_1c->RemoveItemA(m_ownedSurface);
+        ((CDDrawPtrCollections*)m_configHost->m_1c)->RemoveItemA((CDDSurface*)m_ownedSurface);
         m_ownedSurface = 0;
     }
 }

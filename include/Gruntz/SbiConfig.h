@@ -51,9 +51,7 @@ struct CSbiConfigRecord {
 // The draw-surface pool held at config-host+0x1c: RemoveItemA (0x142160,
 // __thiscall) frees one held surface. Reloc-masked (no body).
 SIZE_UNKNOWN(CSbiSurfacePool);
-struct CSbiSurfacePool {
-    void RemoveItemA(void* item); // 0x142160
-};
+struct CSbiSurfacePool {};
 
 // The config host handed to the vslot-11 item setup (arg2). +0x10 -> the registry
 // object whose embedded CMapWordToOb map lives at ITS +0x10 (reach the map as
