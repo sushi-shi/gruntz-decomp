@@ -272,7 +272,7 @@ public:
 // the function-pointer types - the exact convention is part of Tick's documented
 // codegen wall, so this expresses intent without perturbing a matched function.
 class CMulti;
-struct CMultiVtbl {
+struct CMultiSlotView {
     char m_pad00_7c[0x7c];
     void(__stdcall* Redraw)(CMulti*, i32 a, i32 b, i32 c); // +0x7c
     char m_pad80_98[0x98 - 0x80];
@@ -282,17 +282,17 @@ struct CMultiVtbl {
 class CMulti {
 public:
     // Realized real-polymorphic: a virtual dtor makes cl emit ??_7CMulti@@6B@. The
-    // vptr occupies +0x00 (where the old CMultiVtbl* m_vtbl lived - same offset, so
+    // vptr occupies +0x00 (where the old CMultiSlotView* m_vtbl lived - same offset, so
     // every matched CMulti method is codegen-neutral). ~CMulti's leading manual vptr
     // stamp is dropped so cl's implicit entry vptr-store survives (a leading manual
     // stamp would dead-store-eliminate the implicit one -> no ??_7). The mid-dtor
     // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
-    // Tick dispatches through vtbl() (reads the vptr as a CMultiVtbl*), preserving
+    // Tick dispatches through vtbl() (reads the vptr as a CMultiSlotView*), preserving
     // its +0x7c/+0x98 indirect-call bytes.
     virtual ~CMulti(); // 0x08d270 (most-derived /GX dtor; stamps CPlay/CState, tears
                        // the CString/CByteArray run)
-    CMultiVtbl* vtbl() {
-        return *(CMultiVtbl**)this;
+    CMultiSlotView* vtbl() {
+        return *(CMultiSlotView**)this;
     }
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the

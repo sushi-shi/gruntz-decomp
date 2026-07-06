@@ -76,7 +76,7 @@ public:
 };
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectVtbl/CSymParser*)obj)
+//   * tiny-method-view over this - ((CNetConnectThis/CNetConnectSlotView/CSymParserView*)obj)
 //     ->M(): external reloc-masked __thiscall engine methods (own RVA) / vtable-slot PMFs;
 //     the view is the modeling mechanism (see the defs near the connection driver), same
 //     idiom as the pmf-through-vtable dispatch below. (The m_4 game-mgr / m_5c chat-log
@@ -1160,7 +1160,7 @@ extern "C" void ChannelSlots_InitAll();           // 0x2da1 (thunk) - no `this` 
 // VTABLE CATALOGUE (2026-07-05, read from GRUNTZ.EXE .rdata @0x1ea42c): CNetMgr's own
 // vtable ??_7CNetMgr@@ (0x5ea42c) is the small 5-slot CObject vtable and NOTHING more -
 // [0]0x1bef01 [1]0x00260d(override) [2]0x0028ec [3]0x00106e [4]0x004034, then slots 5-6
-// are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectVtbl slots the driver
+// are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectSlotView slots the driver
 // dispatches (+0x08 Abort, +0x74 OnStart, +0x78 OnConnect, +0x90 OnReady) are NOT on
 // 0x5ea42c - they live on the DRIVER `this`'s own, much larger vtable. That `this` (used
 // by CNetMgr::SetupMultiplayerSession: a CSymParser @+0x08, host flag @+0x528, g_mgrSettings, m_4
@@ -1176,8 +1176,8 @@ extern "C" void ChannelSlots_InitAll();           // 0x2da1 (thunk) - no `this` 
 typedef i32 (CNetMgr::*NmSlotRet)();
 typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
 typedef void (CNetMgr::*NmSlotVoid)();
-SIZE_UNKNOWN(CNetConnectVtbl);
-struct CNetConnectVtbl {
+SIZE_UNKNOWN(CNetConnectSlotView);
+struct CNetConnectSlotView {
     char m_pad0[8];
     NmSlotRet Abort; // +0x08  abort/close on start failure
     char m_padc[0x74 - 0xc];
@@ -1370,7 +1370,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (((CGruntzMgr*)m_4)->InitializeLobbyConnectionSettings() != 0) {
         if (((CMulti*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
-            (this->*(((CNetConnectVtbl*)*(void**)this)->Abort))();
+            (this->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
@@ -1395,11 +1395,11 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     TF(0x590) = MF(0x110);
     MF(0x110) = 1;
-    if ((this->*(((CNetConnectVtbl*)*(void**)this)->OnStart))() == 0) {
+    if ((this->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
         return 0;
     }
-    (this->*(((CNetConnectVtbl*)*(void**)this)->OnReady))();
-    TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
+    (this->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
+    TF(0x2c) = (i32)((CSymParserView*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
     if (TF(0x2c) == 0) {
         return 0;
     }
@@ -1460,7 +1460,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     // --- kick off the connect wait + first poll ---
-    if ((this->*(((CNetConnectVtbl*)*(void**)this)->OnConnect))(1, 1) == 0) {
+    if ((this->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
         return 0;
     }
     TF(0x57c) = 1;
