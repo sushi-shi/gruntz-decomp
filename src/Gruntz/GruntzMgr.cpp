@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameRegistry.h>
@@ -563,22 +564,6 @@ public:
 // (+0xc8..+0xdc) RecomputeViewScale fills, the layer array (+0x38 base / +0x3c count),
 // the distinguished layer/plane (+0x5c), and the mode-reload extent pair (+0x64/+0x68
 // LoadWorldMode stamps to 0xe). The rescale notify is a reloc-masked thiscall.
-struct CWorldView {
-    char m_pad0[0x10];
-    i32 m_10, m_14, m_18, m_1c; // +0x10..+0x1c  tile rect (scroll extents)
-    char m_pad20[0x38 - 0x20];
-    CViewport** m_38; // +0x38  layer array
-    i32 m_3c;         // +0x3c  layer count
-    char m_pad40[0x5c - 0x40];
-    CViewport* m_5c; // +0x5c  distinguished layer / plane
-    char m_pad60[0x64 - 0x60];
-    i32 m_64, m_68; // +0x64/+0x68  mode-reload extent pair
-    char m_pad6c[0xc8 - 0x6c];
-    i32 m_c8, m_cc; // +0xc8/+0xcc  scale-1 extents
-    i32 m_d0, m_d4; // +0xd0/+0xd4  scale-2 extents
-    i32 m_d8, m_dc; // +0xd8/+0xdc  scale-3 extents
-    void Notify();  // FUN @ 0x160ee0 (this) reloc-masked
-};
 
 // (m_cmdNotify's cell-height Set() is a method of the unified CmdSinkV, above.)
 
@@ -925,9 +910,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CWorldView* view = m_world->m_24;
+        CGameLevel* view = m_world->m_24;
         if (view) {
-            i32 count = view->m_3c;
+            i32 count = view->m_planes.GetSize();
             // (count==4 ? count-1 : count) - 1: best-scoring spelling (96.7%); it
             // recovers retail's ecx/edx view/count regs + the `cmp;jne;dec` shape.
             // The lone residual is MSVC folding the true-arm `count-1` to `mov 3`
@@ -935,7 +920,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            CViewport* layer = (idx < 0 || idx >= count) ? 0 : view->m_38[idx];
+            CViewport* layer = (idx < 0 || idx >= count) ? 0 : (CViewport*)view->m_planes[idx];
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -947,14 +932,14 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ToggleHeightLayer (0x08f060; ret). Visibility toggle for the world
-// view's distinguished sub-layer (m_world->m_24->m_5c) - flipped unconditionally
+// view's distinguished sub-layer ((CViewport*)m_world->m_24->m_mainPlane) - flipped unconditionally
 // (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CWorldView* view = m_world->m_24;
+        CGameLevel* view = m_world->m_24;
         if (view) {
-            CViewport* layer = view->m_5c;
+            CViewport* layer = (CViewport*)view->m_mainPlane;
             if (layer) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -971,9 +956,9 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 RVA(0x0008f0b0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
-        CWorldView* view = m_world->m_24;
+        CGameLevel* view = m_world->m_24;
         if (view) {
-            CViewport* layer = (view->m_3c > 0) ? view->m_38[0] : 0;
+            CViewport* layer = (view->m_planes.GetSize() > 0) ? (CViewport*)view->m_planes[0] : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1688,9 +1673,9 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
 
     ((CDDrawSurfaceMgr*)m_world)->SetHwnd((void*)ModeResetCallback);
-    CWorldView* view = m_world->m_24;
-    view->m_64 = 0xe;
-    view->m_68 = 0xe;
+    CGameLevel* view = m_world->m_24;
+    view->m_maxStepX = 0xe;
+    view->m_maxStepY = 0xe;
     CreateWorldObjects(m_world);
     if (MakeRezPath() == 0) {
         return 0;
@@ -2211,32 +2196,32 @@ void CGruntzMgr::RecomputeViewScale() {
     if (m_world == 0) {
         return;
     }
-    CWorldView* view = m_world->m_24;
-    float fw = (float)(view->m_18 - view->m_10 + 1);
-    float fh = (float)(view->m_1c - view->m_14 + 1);
+    CGameLevel* view = m_world->m_24;
+    float fw = (float)(view->m_planeCtx.maxX - view->m_planeCtx.minX + 1);
+    float fh = (float)(view->m_planeCtx.maxY - view->m_planeCtx.minY + 1);
 
     view->m_c8 = (i32)(fw * 1.4f);
     view->m_cc = (i32)(fh * 1.4f);
-    view->Notify();
+    view->MainPlaneNotify();
 
     view = m_world->m_24;
     view->m_d0 = (i32)(fw * 5.3f);
     view->m_d4 = (i32)(fh * 5.3f);
-    view->Notify();
+    view->MainPlaneNotify();
 
     view = m_world->m_24;
     view->m_d8 = (i32)(fw * 1.12f);
     view->m_dc = (i32)(fh * 1.12f);
-    view->Notify();
+    view->MainPlaneNotify();
 
-    CWorldView* v = m_world->m_24;
-    if (v->m_5c == 0) {
+    CGameLevel* v = m_world->m_24;
+    if (v->m_mainPlane == 0) {
         return;
     }
-    m_viewOriginL = v->m_5c->m_edgeL - 0x60;
-    m_viewOriginT = m_world->m_24->m_5c->m_edgeT - 0x60;
-    m_viewOriginR = m_world->m_24->m_5c->m_edgeR + 0x60;
-    m_viewOriginB = m_world->m_24->m_5c->m_edgeB + 0x60;
+    m_viewOriginL = ((CViewport*)v->m_mainPlane)->m_edgeL - 0x60;
+    m_viewOriginT = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeT - 0x60;
+    m_viewOriginR = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeR + 0x60;
+    m_viewOriginB = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeB + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -2897,7 +2882,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CViewport* grid = m_world->m_24->m_5c;
+    CViewport* grid = (CViewport*)m_world->m_24->m_mainPlane;
     i32 idx = grid->m_rowBase[col] + row;
     grid->m_cells[idx] = value;
     m_cmdNotify->Set(row, col, value);
@@ -3440,7 +3425,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
 // the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
-// playable field (m_world->m_24->m_5c->{m_30,m_34}), it refuses: pokes the HUD
+// playable field (((CViewport*)m_world->m_24->m_mainPlane)->{m_30,m_34}), it refuses: pokes the HUD
 // guts subsystem (m_2dc) and surfaces the "map too small" modal, returning 0.
 // Otherwise it applies the mode through the engine, re-hides the cursor, stamps
 // m_modeW/m_modeH (+ the saved pair when arg3 is set), re-pokes the guts, runs the
@@ -3448,7 +3433,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-// The loaded map's playable extent (m_world->m_24->m_5c) is the shared CViewport;
+// The loaded map's playable extent ((CViewport*)m_world->m_24->m_mainPlane) is the shared CViewport;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 struct SvmGuts { // m_curState->m_2dc: the HUD/guts subsystem
     i32 m_0;     // +0x00  state (0/1 -> which poke order)
@@ -3485,7 +3470,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
         if (m_world->m_24 != 0) {
-            CViewport* f = m_world->m_24->m_5c;
+            CViewport* f = (CViewport*)m_world->m_24->m_mainPlane;
             if (f != 0) {
                 if (w > f->m_worldWidth || h > f->m_worldHeight) {
                     SvmStateView* st = (SvmStateView*)m_curState;
@@ -3678,7 +3663,6 @@ SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
 SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldModeIface);
-SIZE_UNKNOWN(CWorldView);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(CmdSinkV);
 SIZE_UNKNOWN(DirectInputMgr2);

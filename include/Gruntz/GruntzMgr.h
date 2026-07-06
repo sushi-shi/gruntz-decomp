@@ -111,7 +111,7 @@ struct CWorldZ {
     char m_pad14[0x1c - 0x14];
     CWorldDispatch** m_1c; // +0x1c
     char m_pad20[0x24 - 0x20];
-    CWorldView* m_24; // +0x24  active world view
+    CGameLevel* m_24; // +0x24  active world view
     CSndHost* m_28;   // +0x28  sound/anim cue host (finder m_10 / stream m_2c / gate m_30)
     char m_pad2c[0x38 - 0x2c];
     u32 m_38; // +0x38  load-status code (ReportWorldStatus maps it to a message id)
@@ -140,6 +140,7 @@ struct IDirectPlayLobby;
 struct EngObj; // teardown-only sub-object (Teardown())
 // CSpriteRefTable (+0x74 sprite/animation ref table; Reset teardown @0xe2290) is
 // defined by the <Gruntz/SpriteRefTable.h> include above.
+class CGameLevel;
 class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
 struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
