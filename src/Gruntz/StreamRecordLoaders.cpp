@@ -37,14 +37,9 @@
 struct CRegNameMap {
     i32 Lookup(char* key, void** out); // 0x1b8008
 };
-struct CRegNameTable {
-    void FillDefault(void* obj, char* buf, i32* outInt); // 0x155630 (CString-default)
-    char m_pad00[0x10];
-    CRegNameMap m_10map; // +0x10  the embedded name map
-};
 struct CRegSub30 {
     char m_pad00[0x10];
-    CRegNameTable* m_10; // +0x10  the name table
+    CDDrawWorkerRegistry* m_10; // +0x10  the name table
 };
 
 // The looked-up "type table" value an indexed field resolves through: a bounded
@@ -128,7 +123,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         m_30 = out;
     } else {
         m_30 = 0;
@@ -138,7 +133,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         m_34 = out;
     } else {
         m_34 = 0;
@@ -148,7 +143,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         m_38 = out;
     } else {
         m_38 = 0;
@@ -160,7 +155,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -179,7 +174,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -198,7 +193,7 @@ i32 CTriggerLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -263,7 +258,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         m_8 = out;
     } else {
         m_8 = 0;
@@ -277,7 +272,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -296,7 +291,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -315,7 +310,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -334,7 +329,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -353,7 +348,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10map.Lookup(buf, &out);
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -673,7 +668,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     memset(buf, 0, sizeof(buf));                                                                   \
     v = 0;                                                                                         \
     if (field != 0) {                                                                              \
-        reg->m_10->FillDefault(field, buf, &v);                                                    \
+        reg->m_10->AnyValueMatches_155630((i32)field, (i32)buf, (i32) & v);                        \
     }                                                                                              \
     s->Write(buf, 0x80);                                                                           \
     s->Write(&v, 4)
@@ -720,7 +715,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_10->m_10map.Lookup(buf, &out);                                                      \
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);                                               \
         CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
         void* r;                                                                                   \
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {                           \
@@ -737,7 +732,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     s->Read(buf, 0x80);                                                                            \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_10->m_10map.Lookup(buf, &out);                                                      \
+        reg->m_10->m_10.Lookup(buf, (CObject*&)out);                                               \
         field = out;                                                                               \
     } else {                                                                                       \
         field = 0;                                                                                 \
