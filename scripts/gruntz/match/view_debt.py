@@ -38,7 +38,7 @@ OBJS = REPO / "build/objdiff/base"
 LIBRARY_CLASSES = {
     "CString", "CObject", "CWnd", "CDialog", "CDC", "CGdiObject", "CFile", "CArchive",
     "CException", "CMemoryException", "CFileException", "CNotSupportedException",
-    "CPtrList", "CObList", "CStringList", "CPtrArray", "CByteArray", "CDWordArray",
+    "CPtrList", "CObList", "CObArray", "CStringList", "CPtrArray", "CByteArray", "CDWordArray",
     "CMapStringToOb", "CMapStringToPtr", "CMapPtrToPtr", "CList", "CMap", "CArray",
     "CRgn", "CBitmap", "CFont", "CPen", "CBrush", "CPalette", "CMenu", "CImageList",
     "CTime", "CTimeSpan", "CPoint", "CRect", "CSize", "CRuntimeClass", "CCmdTarget",
