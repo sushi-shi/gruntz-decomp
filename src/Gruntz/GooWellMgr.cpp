@@ -16,6 +16,7 @@
 // callee/global is an external no-body decl so its `call rel32` / DIR32 operand
 // reloc-masks.
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/Grunt.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundCueMgr.h>
@@ -31,7 +32,7 @@ struct CResHolder;
 struct CResHolder2;
 struct CLookObj;
 struct CObj7c;
-struct CAnimObj;
+struct CGrunt;
 struct CSoundHandle;
 struct CActivatable;
 
@@ -52,13 +53,9 @@ extern CButeMgr g_buteMgr;
 // The looked-up resource record (returned through CMapStringToOb / CMap...To...
 // Lookup out-params): its +0x10 is a sound factory, its +0x7c a host whose +0x18
 // drives the per-grunt animation resolve.
-struct CAnimObj {
-    void ResolveDeathAnimation(); // 0x455f0
-    void ResolveAnimation();      // 0x457b0
-};
 struct CObj7c {
     char _0[0x18];
-    CAnimObj* m_anim; // +0x18
+    CGrunt* m_anim; // +0x18
 };
 struct CLookObj {
     char _0[0x10];
@@ -363,7 +360,6 @@ done:
     return 0;
 }
 
-SIZE_UNKNOWN(CAnimObj);
 SIZE_UNKNOWN(CObj7c);
 SIZE_UNKNOWN(CSoundHandle);
 SIZE_UNKNOWN(CSoundFactory);
