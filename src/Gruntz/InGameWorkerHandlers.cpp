@@ -27,6 +27,7 @@
 // Field names are placeholders (m_<hexoffset>); only OFFSETS + emitted code bytes
 // are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/InGameText.h>
 
 #include <Gruntz/WorkerHandler.h> // shared Worker / Owner archetype + CUserLogic base
 
@@ -42,11 +43,6 @@ struct CInGameIcon : public CTileLogic {
     CInGameIcon(Owner* owner); // 0x095b10
     char m_body[0x80 - 0x40];
 }; // sizeof = 0x80
-
-struct CInGameText : public CTileLogic {
-    CInGameText(Owner* owner); // 0x099110
-    char m_body[0x5c - 0x40];
-}; // sizeof = 0x5c
 
 struct CEyeCandy : public CTileLogic {
     CEyeCandy(Owner* owner); // 0x0ac620
@@ -98,7 +94,7 @@ i32 Handler095890(Owner* owner) {
     switch (rec->m_1c) {
         case 0: {
             rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CInGameText(owner);
+            CUserLogic* sub = new CInGameText((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;
