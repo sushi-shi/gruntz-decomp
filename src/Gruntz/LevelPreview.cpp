@@ -35,11 +35,17 @@ extern "C" {
 // with CState's, verified vs the other screen states) and the per-frame slot-8 virtual
 // Tick dispatches. It has NO distinct vtable of its own - the CState family is RTTI-
 // complete - so the four methods below are non-virtual command handlers the game's
-// command table dispatches, and the ONLY real virtual is the slot-8 per-frame poll
-// (== CState::InputVirtual). The former standalone class carried a hand-rolled
+// command table dispatches. The former standalone class carried a hand-rolled
 // `virtual Vf0..Vf7 + Advance` vtable: that was a FICTION invented only so the
 // [vptr+0x20] dispatch would compile (which is why it had no VTBL() to anchor). It is
 // dissolved into real CState inheritance here - no phantom vtable.
+//
+// The per-frame poll Tick dispatches through [vptr+0x20] is CState slot 8, i.e. the
+// inherited CState::InputVirtual - Tick just calls it (dispatch resolves whatever
+// override the object's runtime vtable holds). We do NOT redeclare it as a CPreviewState
+// override: whether the preview provides its own slot-8 body is UNPROVEN (its vtable is
+// unlocated). Every reconstructed sibling overrides slot 8, so it likely does too, but
+// that is an inference - not asserted here as a declared-only phantom method.
 //
 // The +0x0c and +0x2c slots are unresolved dual-views (CRegHolder vs CState's
 // CSpriteFactoryHolder at m_c; CSymTab vs CResSource at m_2c) - reached with a view-cast
@@ -53,11 +59,6 @@ extern "C" {
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
-    // slot 8 (+0x20): the per-frame "advance" poll Tick dispatches, overriding the base
-    // CState::InputVirtual. Declared-only - its body is slot 8 of the real (existing
-    // CState-family) vtable, in another TU; so no ctor/vtable is emitted here.
-    i32 InputVirtual() OVERRIDE;
-
     i32 Tick();                                                     // 0x0de200
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0 (CState base method)
     void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0 (CState base method)

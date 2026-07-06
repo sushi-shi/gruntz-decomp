@@ -22,6 +22,7 @@
 #define GRUNTZ_GRUNTZ_CSTATE_H
 
 #include <Ints.h>
+#include <rva.h> // SIZE/VTBL vtable-catalog annotations
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/GameStateId.h> // Update()'s per-state id return type
 
@@ -34,6 +35,11 @@ class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton
                              // Forward-declared (MFC-free) so this widely-included header stays
                              // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
 
+// The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
+// CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
+// catalog entry (was named only via the RTTI-derived vtable_names.csv).
+SIZE_UNKNOWN(CState);
+VTBL(CState, 0x001ea21c);
 class CState {
 public:
     CState();
