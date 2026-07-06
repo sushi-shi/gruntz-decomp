@@ -32,9 +32,11 @@ public:
 // REAL-POLYMORPHIC (implicit vptr@0): the virtual dtor drains the manual vptr field.
 class _zvec {
 public:
-    void* GrowTo(i32 idx, i32 at); // 0x16da80
-    i32 IndexToPtr(i32 idx);       // 0x312a0  (the plain base accessor)
-    virtual ~_zvec();              // 0x16da60 (base scalar dtor, external TU; implicit vptr@0)
+    i32 Find(i32 coord, i32 z);         // reloc-masked (fold)
+    void RegisterRange(i32 lo, i32 hi); // reloc-masked (fold)
+    void* GrowTo(i32 idx, i32 at);      // 0x16da80
+    i32 IndexToPtr(i32 idx);            // 0x312a0  (the plain base accessor)
+    virtual ~_zvec();                   // 0x16da60 (base scalar dtor, external TU; implicit vptr@0)
 
     // vptr @+0x00 (implicit, polymorphic)
     zErrHandling* m_err; // +0x04

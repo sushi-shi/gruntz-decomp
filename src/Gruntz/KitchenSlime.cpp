@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
+#include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <rva.h>
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
@@ -171,15 +172,11 @@ public:
 // external/no-body (shared with the trigger registry's engine functions). The
 // alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
 // SAME shared global both registries write.
-struct CKSlimeEntry; // an entry: first dword is the registered handler
-struct CKSlimeColl {
-    i32 Find(i32 coord, i32 z);         // 0x16da80 (__thiscall ret 8)
-    void RegisterRange(i32 lo, i32 hi); // 0x408710 (zDArray fast-range ctor, __thiscall ret 8)
-};
+struct CKSlimeEntry;       // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x00246228)
-extern CKSlimeColl g_kslimeColl;
+extern _zvec g_kslimeColl;
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;
@@ -352,7 +349,7 @@ extern CTypeNameEntry* g_typeCur;
 DATA(0x002bf670)
 extern i32 g_typeCount;
 DATA(0x002bf650)
-extern CKSlimeColl g_typeColl;
+extern _zvec g_typeColl;
 DATA(0x002bf654)
 extern CVariantSlot* g_typeColl2;
 DATA(0x002bf66c)
@@ -736,8 +733,6 @@ i32 CKitchenSlime::LoadSprites() {
 // size 0x90 from operator-new vtable attribution (gruntz.analysis.news)
 SIZE(CKitchenSlime, 0x90);
 
-SIZE_UNKNOWN(CKSlimeColl);
-SIZE_UNKNOWN(CKSlimeColl2);
 SIZE_UNKNOWN(CKSlimeEntry);
 SIZE_UNKNOWN(CSlimeAnimPlayer);
 SIZE_UNKNOWN(CSlimeCtorObj);
