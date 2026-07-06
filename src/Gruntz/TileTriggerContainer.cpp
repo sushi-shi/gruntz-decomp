@@ -16,6 +16,7 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -288,7 +289,7 @@ i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
         } else {
             elem->m_flags[verb] = 1;
         }
-        elem->Notify(elem->m_vptr);
+        ((CTileActionEvent*)elem)->SetActionCode((i32)elem->m_vptr);
         return 1;
     }
     if (AddMark(key, 0x1a) != 0) {
@@ -345,7 +346,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     m->m_14 = this;
     m->m_10 = 1;
     m->m_20 = a7;
-    m->Notify((void*)a1);
+    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
     m_list3.AddTail(m);
     return m;
 }
@@ -454,7 +455,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     m->m_18 = d;
     m->m_1c = c;
     m->m_24 = a;
-    m->Notify((void*)a1);
+    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
     m_list3.AddTail(m);
     return m;
 }
@@ -510,7 +511,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         cnt = m_list3.m_0c;
         s->Write(&cnt, 4);
         for (node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
-            if (((TtcMark*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
+            if (((CTileActionEvent*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
                 return 0;
             }
         }
@@ -555,7 +556,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
     for (i = 0; i < n; i++) {
         TtcMark* raw = (TtcMark*)RezAlloc(0x28);
         TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
-        if (m->Serialize(s, 7, a3, a4) == 0) {
+        if (((CTileActionEvent*)m)->Serialize(s, 7, a3, a4) == 0) {
             return 0;
         }
         m->m_14 = this;

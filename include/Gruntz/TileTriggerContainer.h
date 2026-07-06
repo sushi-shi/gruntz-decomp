@@ -40,7 +40,6 @@ extern void* g_tileTriggerSwitchVtbl; // 0x5eae8c
 // __thiscall callee.
 struct TtcKeyedElemVtbl; // the keyed element's vtable (contents owned elsewhere)
 struct TtcKeyedElem {
-    void Notify(void* a);     // 0x149c
     TtcKeyedElemVtbl* m_vptr; // +0x00
     char _pad04[0x18 - 0x04];
     i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
@@ -82,11 +81,9 @@ SIZE_UNKNOWN(TtcObList);
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
 struct TtcMark {
-    void Notify(void* a); // 0x149c (reloc-masked __thiscall)
     // Per-mark (de)serialize-and-fill helper used by the big serialize walk
     // (0x117280): reads the mark's fields from the stream and validates them.
     // __thiscall, returns nonzero on success.  Reloc-masked rel32 callee (0x113f10).
-    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x113f10
     i32 m_00;
     i32 m_04;
     i32 m_08;
