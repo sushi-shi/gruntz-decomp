@@ -46,46 +46,38 @@ extern DirectInputMgr2* g_645570;
 // typed vtable struct naming ONLY the dispatched slots as 4-byte thiscall PMFs + char
 // pad[], NO fake virtuals; m_vtbl sits at +0x00 exactly where the fake vptr did, so
 // the object layout (m_pad2c, m_1c) is byte-identical.
-struct CTsStateVtbl;
+// Real polymorphic view: the dispatched slots are real virtuals (Dtor@0, Activate@1,
+// Id@4, Slot9@9, Slot10@10) with fillers; the compiler emits the vptr at +0x00.
 struct CTsState {
-    CTsStateVtbl* m_vtbl;                              // +0x00
-    char m_pad2c[0x1c - 0x0c];                         // (kept exactly)
-    i32 m_1c;                                          // sub-object saved on teardown
-    void CallDtor(u32 flags);                          // slot 0  scalar-deleting dtor
-    i32 CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3); // slot 1  activate
-    i32 CallId();                                      // slot 4  id/update
-    i32 CallSlot9(i32 a);                              // slot 9
-    i32 CallSlot10(i32 a);                             // slot 10 (+0x28)
+    virtual void VDtor(u32 flags);                         // slot 0  scalar-deleting dtor
+    virtual i32 Activate(CGruntzMgr* mgr, i32 a2, i32 a3); // slot 1  activate
+    virtual void VSlot2();
+    virtual void VSlot3();
+    virtual i32 Id(); // slot 4  id/update
+    virtual void VSlot5();
+    virtual void VSlot6();
+    virtual void VSlot7();
+    virtual void VSlot8();
+    virtual i32 Slot9(i32 a);  // slot 9
+    virtual i32 Slot10(i32 a); // slot 10 (+0x28)
+    char m_pad2c[0x1c - 0x0c]; // (kept exactly)
+    i32 m_1c;                  // sub-object saved on teardown
+    void CallDtor(u32 flags) {
+        VDtor(flags);
+    }
+    i32 CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3) {
+        return Activate(mgr, a2, a3);
+    }
+    i32 CallId() {
+        return Id();
+    }
+    i32 CallSlot9(i32 a) {
+        return Slot9(a);
+    }
+    i32 CallSlot10(i32 a) {
+        return Slot10(a);
+    }
 };
-typedef void (CTsState::*TsDtorFn)(u32);
-typedef i32 (CTsState::*TsActFn)(CGruntzMgr*, i32, i32);
-typedef i32 (CTsState::*TsIdFn)();
-typedef i32 (CTsState::*TsSlotFn)(i32);
-struct CTsStateVtbl {
-    TsDtorFn Dtor;    // +0x00 slot 0
-    TsActFn Activate; // +0x04 slot 1
-    char m_pad08[0x10 - 0x08];
-    TsIdFn Id; // +0x10 slot 4
-    char m_pad14[0x24 - 0x14];
-    TsSlotFn Slot9;  // +0x24 slot 9
-    TsSlotFn Slot10; // +0x28 slot 10
-};
-SIZE_UNKNOWN(CTsStateVtbl);
-inline void CTsState::CallDtor(u32 flags) {
-    (this->*(m_vtbl->Dtor))(flags);
-}
-inline i32 CTsState::CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3) {
-    return (this->*(m_vtbl->Activate))(mgr, a2, a3);
-}
-inline i32 CTsState::CallId() {
-    return (this->*(m_vtbl->Id))();
-}
-inline i32 CTsState::CallSlot9(i32 a) {
-    return (this->*(m_vtbl->Slot9))(a);
-}
-inline i32 CTsState::CallSlot10(i32 a) {
-    return (this->*(m_vtbl->Slot10))(a);
-}
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
 // their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
