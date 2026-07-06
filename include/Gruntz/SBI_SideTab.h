@@ -35,9 +35,7 @@ struct CSideTabGruntRec {
 SIZE_UNKNOWN(CSideTabGruntRec);
 
 // The fallback notified (m_2c) when the sampled unit slot is empty (__thiscall, 1 arg).
-struct CSideTabFallback {
-    void Notify(i32 slot); // 0x3ebd (ILT-reloc-masked)
-};
+struct CSideTabFallback {};
 SIZE_UNKNOWN(CSideTabFallback);
 
 // The per-frame unit-record table (g_gameReg->m_68): a flat array of grunt-record

@@ -5,6 +5,7 @@
 // GetErrorString maps a DSound HRESULT to a string + beeps/logs/MessageBox per three
 // reporting globals (switch VALUES + DSERR_*/"DirectSoundMgr" strings are load-bearing).
 #include <Dsndmgr/DirectSoundMgr.h>
+#include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/DSoundVoice.h> // the 0x28-byte voice node CloneAndPlay news
 #include <Dsndmgr/SoundDevice.h> // SoundDevice: the owning device (m_owner) + its methods
 #include <Win32.h>               // windows.h base types (dsound.h needs them)
@@ -485,7 +486,7 @@ DirectSoundMgr* DSoundCloneInst::Clone(i32 a) {
         GetErrorString(DSNDMGR_FILE, 0x217, hr);
         return 0;
     }
-    m_cloneList.InsertHead(&clone->m_cloneNode);
+    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&clone->m_cloneNode);
     clone->m_playKey = a;
     return clone;
 }
@@ -503,7 +504,7 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
         buf->Release();
         clone->m_buffer = 0;
     }
-    m_cloneList.Unlink(&clone->m_cloneNode);
+    ((DSoundList*)&m_cloneList)->Unlink((DSoundLink*)&clone->m_cloneNode);
     if (clone != this) {
         delete clone;
     }
@@ -595,7 +596,7 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
     m_cloneList.m_head = 0;
     m_cloneList.m_tail = 0;
     // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
-    m_cloneList.InsertHead(&m_cloneNode);
+    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&m_cloneNode);
     m_playKey = 1;
 }
 

@@ -161,10 +161,8 @@ VTBL(DirectSoundMgr, 0x001ef6b8); // cl-emitted ??_7DirectSoundMgr@@6B@ (base su
 
 // Clone list {head,tail}; InsertHead/Unlink are shared engine helpers (0x1390e0/0x1391e0).
 struct CloneList {
-    CloneNode* m_head;                // +0x00
-    CloneNode* m_tail;                // +0x04
-    void InsertHead(CloneNode* node); // 0x1390e0
-    void Unlink(CloneNode* node);     // 0x1391e0
+    CloneNode* m_head; // +0x00
+    CloneNode* m_tail; // +0x04
 };
 SIZE(CloneList, 0x8); // {head, tail}
 

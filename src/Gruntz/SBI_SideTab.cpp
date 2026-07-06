@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget + CImageRegistry)
@@ -91,7 +92,7 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     CSideTabGruntRec* unit = g_gameReg->m_68->m_units[m_40 + 15 * m_3c];
     if (unit == 0) {
-        m_2c->Notify(m_40);
+        ((CSBI_RectOnly*)m_2c)->ClearStat(m_40);
         return 0;
     }
     i32 val;
