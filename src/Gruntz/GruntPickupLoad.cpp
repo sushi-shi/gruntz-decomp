@@ -6,6 +6,7 @@
 // runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/Grunt.h>
+extern WwdGameReg* g_gameReg;   // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h>

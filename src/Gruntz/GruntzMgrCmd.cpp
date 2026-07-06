@@ -42,6 +42,7 @@
 #include <Gruntz/Multi.h>         // CMulti (Connect; state 0x11)
 #include <Gruntz/TriggerMgr.h>    // CTriggerMgr (m_cmdGrid)
 #include <Gruntz/Grunt.h>         // CGrunt (grid cells) + GruntObjEntry (death chain)
+extern WwdGameReg* g_gameReg;     // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
 

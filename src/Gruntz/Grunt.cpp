@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>

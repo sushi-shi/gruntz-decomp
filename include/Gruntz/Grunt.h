@@ -625,7 +625,7 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
 // WwdGameReg (the g_gameReg singleton) is the canonical <Gruntz/WwdGameReg.h>;
 // its grunt-facet slot types (m_world=GruntSoundCat, m_cueSink=CGruntCueSink,
 // m_tileGrid=GruntBoard, m_74=CSpriteRefTable) are completed by the defs above.
-extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+// g_gameReg decl moved to consumers (was WwdGameReg*; clashes with CGameRegistry* view) - include WwdGameReg.h + declare locally where needed
 
 // The struck-voice sound model (creator @0x57c40). The lookup returns a
 // GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
