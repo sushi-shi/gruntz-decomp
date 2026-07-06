@@ -1,16 +1,17 @@
 // BuildGruntzCrcInfo.cpp - BuildGruntzCrcInfo (0xbf1d0). A diagnostic dump:
-// __thiscall(this) walks the level's flat grunt array (this->m_4->m_4->m_68,
+// __thiscall(this) walks the level's flat grunt array (this->((CrcLevelHolder*)m_4->m_logic)->m_68,
 // indexed 0x1c..0x108 by 4) and, for each present grunt, formats a
 // "[p=%d][g=%d][health=%d]...[rnd=%d]" line (18 fields incl. a per-grunt
 // type->weapon-id switch and a random nonce) and appends it to a CString seeded
 // with "crc info for all gruntz:\n----...". The assembled report is handed to the
-// sink (this->m_4->WriteLog).
+// sink (this->m_4->ReportVersionMsg).
 //
 // /GX EH-framed: the local CString (its ~CString must run on the normal + unwind
 // exits) gives the body the exception frame, so it lives in an `eh` unit. Only
 // offsets / strings / code bytes are load-bearing; the CString ops, wsprintfA,
-// the rand nonce and WriteLog are reloc-masked engine calls.
+// the rand nonce and ReportVersionMsg are reloc-masked engine calls.
 #include <Mfc.h> // real MFC CString + <windows.h> wsprintfA (afx-first)
+#include <Gruntz/Multi.h>
 #include <rva.h>
 #include <stdlib.h> // rand (0x11fee0), the per-grunt random nonce
 
@@ -48,14 +49,9 @@ struct CrcLevelHolder {
     char m_pad00[0x68];
     void* m_68; // +0x68  flat grunt-pointer array base
 };
-struct CrcSink {
-    char m_pad00[0x4];
-    CrcLevelHolder* m_4;           // +0x04
-    void WriteLog(char* s, i32 z); // FUN_00101af0 __thiscall
-};
 struct CrcOwner {
     char m_pad00[0x4];
-    CrcSink* m_4; // +0x04
+    CMulti* m_4; // +0x04
     void BuildGruntzCrcInfo();
 };
 
@@ -65,7 +61,7 @@ extern "C" char g_emptyString[]; // 0x6293f4 (== "")
 // @early-stop
 // /GX EH-state megafunction wall: the body is reconstructed in full (the seeded
 // CString, the flat grunt-array double walk, the 0x16-case type->weapon switch,
-// the 18-field wsprintf line + two appends, the WriteLog handoff and the
+// the 18-field wsprintf line + two appends, the ReportVersionMsg handoff and the
 // destructor). The byte residual is the documented /GX exception-state numbering +
 // jump-table base reloc typing around the CString temp (cf. the sibling
 // megafunctions RollingBall/TerrainTileLoader): not source-steerable. See
@@ -81,7 +77,7 @@ void CrcOwner::BuildGruntzCrcInfo() {
     i32 arrOff = 0x1c;
     for (i32 player = 0; arrOff < 0x10c; player++) {
         for (i32 g = 0; g < 0xf; g++, arrOff += 4) {
-            CrcGrunt* grunt = *(CrcGrunt**)((char*)m_4->m_4->m_68 + arrOff);
+            CrcGrunt* grunt = *(CrcGrunt**)((char*)((CrcLevelHolder*)m_4->m_logic)->m_68 + arrOff);
             if (grunt == 0) {
                 continue;
             }
@@ -187,11 +183,10 @@ void CrcOwner::BuildGruntzCrcInfo() {
             info += szLine;
         }
     }
-    m_4->WriteLog((char*)(const char*)info, 0);
+    m_4->ReportVersionMsg((char*)(const char*)info, 0);
 }
 
 SIZE_UNKNOWN(CrcGrunt);
 SIZE_UNKNOWN(CrcGruntPos);
 SIZE_UNKNOWN(CrcLevelHolder);
 SIZE_UNKNOWN(CrcOwner);
-SIZE_UNKNOWN(CrcSink);
