@@ -1035,12 +1035,12 @@ struct WwdObList {
 // Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
 // CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
-struct WwdBResolve {
-    virtual ~WwdBResolve();
-    void DtorBase(); // 0x429b
-    i32 m_04;        // +0x04
-    i32 m_08;        // +0x08
-    i32 m_0c;        // +0x0c
+struct WwdBResolve : public Wap::CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
+    virtual ~WwdBResolve() OVERRIDE;       // slot 1
+    void DtorBase();                       // 0x429b
+    i32 m_04;                              // +0x04
+    i32 m_08;                              // +0x08
+    i32 m_0c;                              // +0x0c
     char _p10[0x20 - 0x10];
     i32 m_20; // +0x20
     char _p24[0x38 - 0x24];
@@ -1053,10 +1053,6 @@ struct WwdBResolve {
     virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
 };
 inline WwdBResolve::~WwdBResolve() {
     m_5c = (i32)0x80000000;
