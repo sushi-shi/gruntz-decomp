@@ -1,4 +1,5 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <Rez/RezList.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -2017,7 +2018,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
 
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
@@ -2031,7 +2032,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
 
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
@@ -2045,7 +2046,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
 
     // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
@@ -2059,7 +2060,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite0 = (CSbiSprite*)it;
 
     // ---- GRUNTZTAB (menu item, type 2) ----
@@ -2074,7 +2075,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite2 = (CSbiSprite*)it;
 
     // ---- RESOURCETAB (menu item, type 3) ----
@@ -2089,7 +2090,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite1 = (CSbiSprite*)it;
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
@@ -2104,7 +2105,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite3 = (CSbiSprite*)it;
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
@@ -2133,7 +2134,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CTabList*)((char*)this + 0x2c))->AddTail(it);
+    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite4 = (CSbiSprite*)it;
 
     if (Probe2e69() == 0) {

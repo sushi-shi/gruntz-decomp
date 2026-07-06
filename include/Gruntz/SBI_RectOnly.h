@@ -846,9 +846,7 @@ struct SbiTabFrame {
 SIZE_UNKNOWN(SbiTabFrame);
 
 // The per-tab widget list at this+0x2c (AddTail on each created widget).
-struct CTabList {
-    void AddTail(void* p); // 0x1b4991
-};
+struct CTabList {};
 SIZE_UNKNOWN(CTabList);
 
 // The main-bar setup chain hung off the game-manager: m_30->m_4->m_14->m_2c drives a
