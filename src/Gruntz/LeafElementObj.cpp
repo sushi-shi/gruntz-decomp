@@ -11,23 +11,20 @@
 // OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <rva.h>
+#include <Dsndmgr/SoundDevice.h>
 
 #include <Ints.h>
 
 // The owning level/world object reached through this+0xc; its SoundDevice hangs
 // off +0x20. Modeled as an opaque view (offsets load-bearing).
-struct LeafSoundDevice; // defined below
+struct SoundDevice; // defined below
 struct LeafSoundOwner {
     char m_pad0[0x20];
-    LeafSoundDevice* m_sound; // +0x20  the global SoundDevice (null until brought up)
+    SoundDevice* m_sound; // +0x20  the global SoundDevice (null until brought up)
 };
 
 // The SoundDevice (Dsndmgr) the loaders dispatch into. Only the two acquire/decode
 // entry points are modeled (no body -> their `call rel32` reloc-masks). __thiscall.
-struct LeafSoundDevice {
-    void* Acquire(void* src, u32 a, u32 b); // 0x136910
-    void* Decode(void* src, u32 a, u32 b);  // 0x136860
-};
 
 class LeafElementObj {
 public:
@@ -44,7 +41,7 @@ public:
 // acquire the element's sound through SoundDevice::Acquire; cache it.
 RVA(0x001586e0, 0x34)
 i32 LeafElementObj::LoadSoundA(void* src) {
-    LeafSoundDevice* dev = m_c->m_sound;
+    SoundDevice* dev = m_c->m_sound;
     if (!dev) {
         return 0;
     }
@@ -55,13 +52,13 @@ i32 LeafElementObj::LoadSoundA(void* src) {
 // acquire the element's sound through SoundDevice::Decode; cache it.
 RVA(0x00158720, 0x34)
 i32 LeafElementObj::LoadSoundB(void* src) {
-    LeafSoundDevice* dev = m_c->m_sound;
+    SoundDevice* dev = m_c->m_sound;
     if (!dev) {
         return 0;
     }
-    m_10 = dev->Decode(src, 0x100ea, 0);
+    m_10 = dev->AcquireFile((char*)src, 0x100ea, 0);
     return m_10 != 0;
 }
 
-SIZE_UNKNOWN(LeafSoundDevice);
+SIZE_UNKNOWN(SoundDevice);
 SIZE_UNKNOWN(LeafSoundOwner);
