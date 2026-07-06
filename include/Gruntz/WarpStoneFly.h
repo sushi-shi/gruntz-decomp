@@ -37,9 +37,7 @@ struct CWsfOwner {
 // The sprite (m_sprite) drawn by the overlay: a __thiscall Draw(ctx, x, y, flag) with
 // callee cleanup (ret 0x10). External/no-body (reloc-masked).
 SIZE_UNKNOWN(CWsfSprite);
-struct CWsfSprite {
-    void Draw(i32 ctx, i32 x, i32 y, i32 flag); // 0x153790
-};
+struct CWsfSprite {};
 
 SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {

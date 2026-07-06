@@ -41,9 +41,7 @@ extern char g_voiceKeyA[]; // s_A_0060a454
 // stamped into m_60. External/no-body so the call reloc-masks.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CVoiceSample);
-struct CVoiceSample {
-    i32 ComputeDuration(); // 0x137590 (__thiscall: (m_a8*1000)/m_3c)
-};
+struct CVoiceSample {};
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CGruntVoice::Dispatch (0x119e40)

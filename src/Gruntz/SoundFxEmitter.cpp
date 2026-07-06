@@ -5,6 +5,7 @@
 // then - per g_fxDirectGate - apply the channel op now or defer it through the new
 // fader, and finally Remove the fader. All callees are reloc-masked externs.
 #include <Gruntz/SoundFxEmitter.h>
+#include <Gruntz/Fader.h>
 
 // ---------------------------------------------------------------------------
 // 0xfa410: single-channel type-2 emitter (4 args).
@@ -38,7 +39,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        f->RunFade(a3, a4, 0);
+        ((CFader*)f)->RunFade(a3, a4, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -86,7 +87,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        f->RunFade(a3, a4, 0);
+        ((CFader*)f)->RunFade(a3, a4, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -135,7 +136,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        f->RunFade(a2, a3, 0);
+        ((CFader*)f)->RunFade(a2, a3, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -187,7 +188,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        f->RunFade(a2, a3, 0);
+        ((CFader*)f)->RunFade(a2, a3, 0);
     }
     mgr->Remove(f);
     return 1;
@@ -224,7 +225,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        f->RunFade(a2, a3, 0);
+        ((CFader*)f)->RunFade(a2, a3, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);

@@ -11,6 +11,7 @@
 // reloc-masked (no body). Confirmed CGruntVoice by its CUserLogic teardown
 // shape and the FireActivation-twin dispatch (see the header).
 #include <Gruntz/GruntVoice.h>
+#include <Dsndmgr/StreamVoice.h>
 
 #include <rva.h>
 
@@ -123,7 +124,7 @@ i32 CGruntVoice::Setup(i32 a0, void* sample, i32 a2, i32 a3) {
     m_source = a0;
     m_owner = a3;
     m_sample = (i32)sample;
-    m_durationMs = ((CVoiceSample*)sample)->ComputeDuration();
+    m_durationMs = ((StreamVoice*)sample)->ComputeRatio();
     m_64 = 0;
     m_icon = g_iconDefault;
     m_5c = 0;

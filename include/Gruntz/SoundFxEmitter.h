@@ -56,9 +56,7 @@ namespace Utils {
 // non-virtual RunFade directly. FaderRun is never constructed here, so no ??_7FaderRun
 // is emitted. (The descriptor-side (CFader*)&t upcast is likewise Add's API: the
 // CFxModeDesc family is a distinct non-polymorphic root, so it cannot derive CFader.)
-struct FaderRun : public CFader {
-    void RunFade(u32 dur, i32 lead, i32 notify); // 0x17e620
-};
+struct FaderRun : public CFader {};
 SIZE_UNKNOWN(FaderRun); // CFader subclass, no new members (size == CFader)
 
 // The DDraw surface pair CDDrawSubMgrPages holds at +0x10/+0x14/+0x18 (front/back/

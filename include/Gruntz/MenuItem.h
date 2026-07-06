@@ -44,9 +44,7 @@
 class CMenuItem;
 
 // The sub-page row placer reached through m_28 (CMenuItem::Place at 0x153790).
-struct CMenuItemPlacer {
-    i32 Place(i32 ctx, i32 a, i32 b, i32 z); // 0x153790 __thiscall
-};
+struct CMenuItemPlacer {};
 SIZE_UNKNOWN(CMenuItemPlacer);
 
 // The chatbox host (m_8) Trigger drives; its +0x04 is the command-target window.

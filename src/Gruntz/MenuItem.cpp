@@ -13,6 +13,7 @@
 // stay frameless (no destructible local), so they coexist in this eh TU like
 // MenuPage.
 #include <rva.h>
+#include <Image/CImage.h>
 
 #include <Gruntz/MenuItem.h>
 #include <Gruntz/MenuItem2.h>
@@ -203,7 +204,7 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     if (!row) {
         return 0;
     }
-    row->Place(ctx, py, px, 0);
+    ((CImage*)row)->RenderFrame((void*)ctx, (void*)py, (void*)px, (void*)0);
     m_hitLeft = py - *(i32*)((char*)row + 0x18);
     m_hitRight = py + *(i32*)((char*)row + 0x18);
     m_hitTop = px - *(i32*)((char*)row + 0x1c);
