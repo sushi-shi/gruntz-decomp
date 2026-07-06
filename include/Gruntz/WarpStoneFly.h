@@ -24,9 +24,7 @@
 SIZE_UNKNOWN(CWsfOwner);
 struct CWsfOwner {
     // mode-3 tab-switch helpers, both __thiscall (ILT-reloc-masked):
-    void TabReset(i32 on); // 0x100930  owner->Method(0)
-    void TabApply();       // 0x104d60
-    i32 m_mode;            // +0x000  mode discriminator (!=2 gates the tab switch)
+    i32 m_mode; // +0x000  mode discriminator (!=2 gates the tab switch)
     char m_pad4[0x10c - 0x4];
     i32 m_activeTabId; // +0x10c  active-tab id (==5 arms the tab switch)
     char m_pad110[0x548 - 0x110];

@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/SBI_RectOnly.h>
 #include <Image/CImage.h>
 #include <Gruntz/GameRegistry.h>
 #include <Ints.h>
@@ -63,8 +64,8 @@ i32 CWarpStoneFly::Tick(i32 dt) {
         arr->SetAtGrow(arr->m_index, m_arrivalMode);
         m_owner->m_busy = 0;
         if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
-            m_owner->TabReset(0);
-            m_owner->TabApply();
+            ((CSBI_RectOnly*)m_owner)->ResetWidgets(0);
+            ((CSBI_RectOnly*)m_owner)->TryActivate();
         }
         if (m_owner->m_warpStoneFly != 0) {
             RezFree(m_owner->m_warpStoneFly);

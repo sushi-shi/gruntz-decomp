@@ -7,6 +7,7 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
+#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h>  // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
 #include <Gruntz/State.h>         // CState (reg->m_curState: the level-type descriptor)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -220,7 +221,7 @@ void CProjectile::ReleaseDeferred(i32) {
 RVA(0x000def60, 0xbc)
 CProjectile::~CProjectile() {
     if (m_sound != 0) {
-        m_sound->StopAndRewind();
+        ((DirectSoundMgr*)m_sound)->StopAndRewind();
         m_sound = 0;
     }
     for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
@@ -589,7 +590,7 @@ void CProjectile::LoadProjectileEffects() {
             && owner->m_screenY < reg->m_viewOriginB && owner->m_screenY >= reg->m_viewOriginT) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != 0) {
-            m_sound->StopAndRewind();
+            ((DirectSoundMgr*)m_sound)->StopAndRewind();
             m_sound = 0;
         }
     }
@@ -696,7 +697,7 @@ void CProjectile::LoadProjectileEffects() {
 
     // -- arrived at the target tile ------------------------------------------
     if (m_sound != 0) {
-        m_sound->StopAndRewind();
+        ((DirectSoundMgr*)m_sound)->StopAndRewind();
         m_sound = 0;
     }
     ScanTargets(0);
@@ -980,7 +981,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (m_sound == 0) {
         return 0;
     }
-    m_sound->Play(g_gameReg->m_inputFlag, 0, 0, 1);
+    ((DirectSoundMgr*)m_sound)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
     return 1;
 }
 

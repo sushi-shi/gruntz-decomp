@@ -102,10 +102,7 @@ struct CProjShadowVtbl {
 // The CSample-like sound sample object the projectile launches (+0x200). Its
 // StopAndRewind (0x135380) is reached as an out-of-line engine method.
 SIZE_UNKNOWN(CProjSample);
-struct CProjSample {
-    i32 StopAndRewind();                        // 0x135380 (__thiscall, 0 args)
-    i32 Play(i32 channel, i32 a, i32 b, i32 c); // 0x136300 (__thiscall, 4 args)
-};
+struct CProjSample {};
 
 // ---------------------------------------------------------------------------
 // CProjectile : CMovingLogic - 18 virtuals (vftable 0x5e798c). Adds the
