@@ -61,7 +61,6 @@ SIZE_UNKNOWN(BzSoundPlayer);
 // A named ambient sound entry. m_player is the playback sub-object; m_lastPlayed /
 // m_interval rate-limit the cue.
 struct BzSoundEntry {
-    i32 Play(i32 tag, i32, i32, i32); // 0x1f940 (thunk 0x25fe)
     char m_pad00[0x10];
     BzSoundPlayer* m_player; // +0x10  player sub-object
     u32 m_lastPlayed;        // +0x14  last-played stamp
@@ -154,9 +153,7 @@ struct BzSink8 {
     virtual void OnLoaded(void* arg); // +0x28  the notify slot
 };
 
-struct BzSinkSub {
-    void Free(); // 0x137a80
-};
+struct BzSinkSub {};
 SIZE_UNKNOWN(BzSinkSub);
 struct BzSinkSub28 {
     char m_pad00[0x2c];

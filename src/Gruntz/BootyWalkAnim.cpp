@@ -14,6 +14,7 @@
 // the same WARP-letter jump-table CString build idiom.
 
 #include <Ints.h>
+#include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString letter temp (/GX) + operator+
 
 #include <Gruntz/BzState.h>
@@ -207,7 +208,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                 BzSoundEntry* res = 0;
                 ss->m_findTable.Find("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", &res);
                 if (res != 0) {
-                    res->Play(g_sndCueTag, 0, 0, 0);
+                    ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                 }
             }
         }

@@ -15,6 +15,8 @@
 // frame.
 
 #include <Ints.h>
+#include <Dsndmgr/SoundStream.h>
+#include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString temps (/GX) + RECT/CopyRect/SetRect
 
 #include <Gruntz/BzState.h>
@@ -263,7 +265,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
                 BzSoundEntry* res = 0;
                 ss->m_findTable.Find("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", &res);
                 if (res != 0) {
-                    res->Play(g_sndCueTag, 0, 0, 0);
+                    ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                 }
             }
             if (g_mgrSettings->m_levelRecord->m_levelIndex < 0x24) {
@@ -342,7 +344,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
     if (rec2->m_levelIndex == 0x20) {
         BzSinkSub* sub = m_sink->m_dropped->m_sprite;
         if (sub != 0) {
-            sub->Free();
+            ((SoundStream*)sub)->Stop();
         }
         g_mgrSettings->ChangeState(3);
         PostMessageA((HWND)g_mgrSettings->m_wnd->m_hwnd, 0x111, 0x8021, 0);
