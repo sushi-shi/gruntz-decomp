@@ -66,6 +66,10 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/Timer.h>
+#include <Gruntz/LightFxRender.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <rva.h>
@@ -3809,19 +3813,13 @@ struct CRtTimeline {      // m_4->m_68 (also g_64556c->m_68)
 struct CRtSound {       // m_4->m_48
     void Reset138530(); // 0x138530 thunk
 };
-struct CRtWorldDraw { // m_4->m_54
-    void Reset28ab(); // 0x28ab thunk
-};
-struct CRtSub60 {     // m_4->m_60
-    void Reset244b(); // 0x244b thunk
-};
 struct CRtWorld { // this->m_4
     char p0[0x48];
     CRtSound* m_48; // +0x48
     char p4c[0x54 - 0x4c];
-    CRtWorldDraw* m_54; // +0x54
+    CWorldSoundSet* m_54; // +0x54
     char p58[0x60 - 0x58];
-    CRtSub60* m_60; // +0x60
+    CGruntSpawnConfig* m_60; // +0x60
     char p64[0x68 - 0x64];
     CRtTimeline* m_68; // +0x68
 };
@@ -3920,8 +3918,8 @@ void CPlay::FreeListTeardown() {
         self->m_c->m_28->m_2c->Reset137a80();
     }
     self->m_4->m_48->Reset138530();
-    self->m_4->m_54->Reset28ab();
-    self->m_4->m_60->Reset244b();
+    self->m_4->m_54->Teardown();
+    self->m_4->m_60->ClearSprites();
     ((CRtReg*)g_64556c)->m_68->Reset15c3();
     self->m_c->m_24->CallTeardown();
     self->m_c->m_8->Reset15aa90();
@@ -3984,9 +3982,6 @@ void CPlay::FreeListTeardown() {
 // arrays, then chains the base (CState) dtor. Same free-list idiom as
 // FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
 // ---------------------------------------------------------------------------
-struct DtorWorkerA {
-    void Dtor(); // 0x10be thunk  (m_320)
-};
 struct DtorWorkerB {
     void Dtor(); // 0x1438 thunk  (m_guts)
 };
@@ -3995,9 +3990,6 @@ struct DtorWorkerC {
 };
 struct DtorWorkerD {
     void Dtor(); // 0x1cad thunk  (m_beginMarker)
-};
-struct DtorWorkerE {
-    void Dtor(); // 0x14ce thunk  (m_frameMarker)
 };
 struct DtorObList {
     void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
@@ -4032,12 +4024,12 @@ struct CDtorThis {
     DtorWorkerC* m_hitTest;     // +0x2e0
     DtorWorkerD* m_beginMarker; // +0x2e4
     char p2e8[0x320 - 0x2e8];
-    DtorWorkerA* m_320; // +0x320
+    CLightFxRender* m_320; // +0x320
     char p324[0x370 - 0x324];
     CRtArr m_startMarkers; // +0x370
     char p384[0x3a4 - 0x384];
-    CRtArr m_3a4[4];            // +0x3a4
-    DtorWorkerE* m_frameMarker; // +0x3f4
+    CRtArr m_3a4[4];       // +0x3a4
+    CTimer* m_frameMarker; // +0x3f4
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488
     i32 m_49c;    // +0x49c
@@ -4061,7 +4053,7 @@ void CPlay::CPlayDtorBody() {
     CDtorThis* self = (CDtorThis*)this;
     i32 i;
     if (self->m_320) {
-        self->m_320->Dtor();
+        self->m_320->Ctor();
         ::operator delete(self->m_320);
         self->m_320 = 0;
     }
@@ -4095,7 +4087,7 @@ void CPlay::CPlayDtorBody() {
         self->m_beginMarker = 0;
     }
     if (self->m_frameMarker) {
-        self->m_frameMarker->Dtor();
+        self->m_frameMarker->Reset();
         ::operator delete(self->m_frameMarker);
         self->m_frameMarker = 0;
     }
@@ -4145,12 +4137,9 @@ struct EmGuts {      // this->m_guts
 struct EmRegN {    // g_64556c
     void Notify(); // 0x12ee
 };
-struct EmHdr2c {      // m_c->m_4->m_14->m_2c
-    void Recede(i32); // 0x13e760
-};
 struct EmHdr14 {
     char p0[0x2c];
-    EmHdr2c* m_2c; // +0x2c
+    CDDSurface* m_2c; // +0x2c
 };
 struct EmCWorld {                // m_c->m_4 (real: CDDrawWorkerMgr)
     i32 Method_158d20();         // 0x158d20 = CDDrawWorkerMgr::Method_158d20
@@ -4237,7 +4226,7 @@ i32 CPlay::EnterMode(i32 mode) {
 
     if (self->m_1c4 != 0) {
         self->m_1c4 = 0;
-        self->m_c->m_4->m_14->m_2c->Recede(0);
+        self->m_c->m_4->m_14->m_2c->Fill(0);
         EmRegWorldStep((EmRegN*)g_64556c, self->m_guts, self->m_470);
         if (self->m_474 != 0) {
             self->DeferredDraw();
@@ -4267,7 +4256,7 @@ i32 CPlay::EnterMode(i32 mode) {
             }
             return 0;
         }
-        self->m_c->m_4->m_14->m_2c->Recede(0);
+        self->m_c->m_4->m_14->m_2c->Fill(0);
     }
 
 finish:
