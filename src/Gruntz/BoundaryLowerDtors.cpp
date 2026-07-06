@@ -6,6 +6,8 @@
 // only OFFSETS + code bytes are load-bearing. Vtable stamps + member-dtor callees
 // reloc-mask. (See RezBufferObjectDtor.cpp.)
 #include <Ints.h>
+#include <Gruntz/GameModeBase.h>
+#include <Gruntz/BoundaryUpper2Views.h>
 #include <rva.h>
 #include <Gruntz/BoundaryLowerDtorsViews.h> // placeholder /GX dtor classes
 
@@ -42,7 +44,7 @@ CHolder8c400::~CHolder8c400() {
 // ===========================================================================
 RVA(0x000390a0, 0x5d)
 CCredits390a0::~CCredits390a0() {
-    Cleanup17b570();
+    ((CPageStore17b510*)this)->Close();
 }
 
 // ===========================================================================
@@ -58,7 +60,7 @@ CCredits390a0::~CCredits390a0() {
 // store. Derived-vtable stamp, Teardown body, /GX frame + states all byte-faithful.
 RVA(0x0008d000, 0x55)
 CMenuState8d000::~CMenuState8d000() {
-    Teardown2919();
+    ((CGameModeBase*)this)->Reset();
 }
 
 // ===========================================================================

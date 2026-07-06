@@ -55,7 +55,6 @@ struct Member138_390a0 {
 };
 SIZE_UNKNOWN(Member138_390a0);
 struct CCredits390a0 {
-    void Cleanup17b570();  // 0x17b570
     char pad4[0x124];      // +0x00 .. +0x123
     Member124_390a0 m_124; // +0x124
     Member138_390a0 m_138; // +0x138
@@ -70,7 +69,6 @@ struct CStateBase8d000 {
 };
 SIZE_UNKNOWN(CStateBase8d000);
 struct CMenuState8d000 : CStateBase8d000 {
-    void Teardown2919(); // 0x2919
     ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
