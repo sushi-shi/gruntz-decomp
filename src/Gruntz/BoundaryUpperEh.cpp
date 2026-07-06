@@ -8,6 +8,9 @@
 // vtable symbols reloc-mask the retail manual vtables. Only OFFSETS + code shape
 // are load-bearing.
 #include <rva.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDrawBlitParam.h>
+#include <Gruntz/WwdGrid.h>
 #include <Gruntz/BoundaryUpperViews.h>
 
 // The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
@@ -104,12 +107,11 @@ SIZE_UNKNOWN(Sev168c10);
 inline Sev168c10::~Sev168c10() {}
 struct C168c10 : Sev168c10 {
     ~C168c10() OVERRIDE;
-    void SubTeardown(); // 0x191800
 };
 SIZE_UNKNOWN(C168c10);
 RVA(0x00168c10, 0x46)
 C168c10::~C168c10() {
-    SubTeardown();
+    ((CWwdGrid*)this)->FreeBuckets();
 }
 
 // ---------------------------------------------------------------------------
@@ -127,12 +129,11 @@ struct C15b6d0 : Sev15b6d0 {
     i32 m_8; // +0x8
     i32 m_c; // +0xc
     ~C15b6d0() OVERRIDE;
-    void SubTeardown(); // 0x15c2c0
 };
 SIZE_UNKNOWN(C15b6d0);
 RVA(0x0015b6d0, 0x5b)
 C15b6d0::~C15b6d0() {
-    SubTeardown();
+    ((CDDrawBlitParam*)this)->Reset_15c2c0();
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
@@ -207,12 +208,11 @@ SIZE_UNKNOWN(Base163a40);
 inline Base163a40::~Base163a40() {}
 struct C163a40 {
     char _0[0x70];
-    Base163a40 m_70;    // +0x70
-    void SubTeardown(); // 0x1682f0
+    Base163a40 m_70; // +0x70
     ~C163a40();
 };
 SIZE_UNKNOWN(C163a40);
 RVA(0x00163a40, 0x41)
 C163a40::~C163a40() {
-    SubTeardown();
+    ((CWwdSpatialMgr*)this)->FreeGrids();
 }
