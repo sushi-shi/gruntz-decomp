@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/ParseSource.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerMapSmall.cpp - leaf factory methods of the tomalla-named ddrawmgr surface-
@@ -95,10 +96,7 @@ struct CDDrawMapWorkerObj : public CDDrawMapWorker {
 // callees; only the method offsets + the +0x0c/+0x00 reads are load-bearing.
 class CDDrawSurfaceSource {
 public:
-    i32 Probe_139800();   // 0x139800  format id
-    i32 Lock_139960();    // 0x139960  -> data ptr
-    void Unlock_1399d0(); // 0x1399d0
-    const char* m_name;   // +0x00
+    const char* m_name; // +0x00
     char m_pad04[0x0c - 0x04];
     const char* m_0c; // +0x0c  key handle
 };
@@ -362,7 +360,7 @@ i32 CDDrawWorkerMapSmall::FUN_00556db0() {
 // Logic/CFG/offsets/the Lock-Unlock/dispatch/inline-strcpy/map-store reproduced.
 RVA(0x001658c0, 0xcc)
 void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3) {
-    i32 data = a1->Lock_139960();
+    i32 data = ((CParseSource*)a1)->BeginParse();
     if (data == 0) {
         return 0;
     }
@@ -374,13 +372,13 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
         w->m_0c = m_0c;
     }
     if (((CDDrawMapWorker*)w)->Vfunc28(data, a3) == 0) {
-        a1->Unlock_1399d0();
+        ((CParseSource*)a1)->EndParse();
         if (w != 0) {
             ((CDDrawMapWorker*)w)->ScalarDtor(1);
         }
         return 0;
     }
-    a1->Unlock_1399d0();
+    ((CParseSource*)a1)->EndParse();
     const char* k = key != 0 ? key : a1->m_name;
     char buf[0x40];
     strcpy(buf, k);
@@ -399,10 +397,10 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
 // worker vtable vptr-last, the polymorphic `new` stamps vptr-first.
 RVA(0x00165a90, 0xf4)
 void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 a3) {
-    if (a1->Probe_139800() != 0x504358) {
+    if (((CParseSource*)a1)->GetEntryTag() != 0x504358) {
         return 0;
     }
-    i32 data = a1->Lock_139960();
+    i32 data = ((CParseSource*)a1)->BeginParse();
     if (data == 0) {
         return 0;
     }
