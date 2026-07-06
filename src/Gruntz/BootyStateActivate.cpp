@@ -16,6 +16,7 @@
 // Only the g_mgrSettings world sound set below stays a local facet view - a separate
 // object web from the +0x0c context (deferred canonical world-sound model). Only offsets
 // / code bytes are load-bearing; every helper is a reloc-masked external.
+#include <Gruntz/SoundCueMgr.h>
 #include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 
 #include <rva.h>
@@ -29,16 +30,12 @@
 // as reg->m_world(+0x30)->m_28); the vfunc_9 global-load path reads it off the singleton,
 // not off `this`, so it stays a local facet view here pending a canonical world-sound
 // model. Reloc-masked __thiscall entries.
-SIZE_UNKNOWN(BootySndPlayer);
-struct BootySndPlayer {
-    void Play(i32 token, i32, i32, i32); // 0x1360d0
-};
 SIZE_UNKNOWN(BootySndEntry);
 struct BootySndEntry {
     char m_pad00[0x10];
-    BootySndPlayer* m_player; // +0x10  the player
-    u32 m_lastPlayed;         // +0x14  last-played frame stamp
-    u32 m_interval;           // +0x18  min replay interval
+    CSoundCueMgr* m_player; // +0x10  the player
+    u32 m_lastPlayed;       // +0x14  last-played frame stamp
+    u32 m_interval;         // +0x18  min replay interval
 };
 SIZE_UNKNOWN(BootySndTable);
 struct BootySndTable {
@@ -100,7 +97,7 @@ i32 CBootyState::Vslot09(i32) {
             u32 now = g_killCueClock;
             if (now - res->m_lastPlayed >= res->m_interval) {
                 res->m_lastPlayed = now;
-                res->m_player->Play(token, 0, 0, 1);
+                res->m_player->ConfigureItem(token, 0, 0, 1);
             }
         }
     }

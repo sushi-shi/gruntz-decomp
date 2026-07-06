@@ -12,6 +12,7 @@
 // load-bearing (rename is /O2 name-independent). The message-node accessor methods
 // (Configure/scroll-step/etc.) live in another TU and are modeled here as no-body
 // externs so their calls are reloc-masked.
+#include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 
 #include <Gruntz/ChatBox.h>
@@ -113,17 +114,14 @@ DATA(0x006bf3c0)
 extern i32 g_scrollClock; // 0x6bf3c0
 
 // The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
-struct CChatPoker {
-    i32 Poke(i32 a, i32 b, i32 c, i32 d); // 0x1360d0
-};
 
 // The per-row scroll timer record the scroll-step lookups return: a sprite poke
 // target m_10, a last-tick m_14, and an interval m_18.
 struct CChatTimer {
     char pad0[0x10];
-    CChatPoker* m_10; // +0x10 sprite poke target
-    i32 m_14;         // +0x14 last tick the row scrolled at
-    i32 m_18;         // +0x18 scroll interval
+    CSoundCueMgr* m_10; // +0x10 sprite poke target
+    i32 m_14;           // +0x14 last tick the row scrolled at
+    i32 m_18;           // +0x18 scroll interval
 };
 
 // The on-screen sprite roster reached via CChatPage::m_28: a key->timer map at
@@ -517,7 +515,7 @@ i32 CChatBox::ScrollRow0() {
         return 0;
     }
     t->m_14 = clock;
-    t->m_10->Poke(delta, 0, 0, 0);
+    t->m_10->ConfigureItem(delta, 0, 0, 0);
     return 0;
 }
 
@@ -549,7 +547,7 @@ i32 CChatBox::ScrollRow1() {
         return 0;
     }
     t->m_14 = clock;
-    t->m_10->Poke(delta, 0, 0, 0);
+    t->m_10->ConfigureItem(delta, 0, 0, 0);
     return 0;
 }
 
