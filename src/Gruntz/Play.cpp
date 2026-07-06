@@ -3949,8 +3949,10 @@ void CPlay::FreeListTeardown() {
 // arrays, then chains the base (CState) dtor. Same free-list idiom as
 // FreeListTeardown (the m_markerData/m_3a4[4]/m_48c flush).
 // ---------------------------------------------------------------------------
-struct DtorWorkerD {
-    void Dtor(); // 0x1cad thunk  (m_beginMarker)
+// The +0x2e4 begin-marker: Dtor@0xc8640 IS CTileTriggerContainer::~ (IS-a dtor view);
+// TU-local minimal decl for the explicit dtor call (real class in tiletriggercontainer unit).
+struct CTileTriggerContainer {
+    ~CTileTriggerContainer();
 };
 struct DtorObList {
     void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
@@ -3978,9 +3980,9 @@ struct CDtorThis {
     char p8[0x1d0 - 0x8];
     i32 m_1d0; // +0x1d0
     char p1d4[0x2dc - 0x1d4];
-    CSBI_RectOnly* m_guts;      // +0x2dc
-    CChatBoxOwner* m_hitTest;   // +0x2e0
-    DtorWorkerD* m_beginMarker; // +0x2e4
+    CSBI_RectOnly* m_guts;                // +0x2dc
+    CChatBoxOwner* m_hitTest;             // +0x2e0
+    CTileTriggerContainer* m_beginMarker; // +0x2e4
     char p2e8[0x320 - 0x2e8];
     CLightFxRender* m_320; // +0x320
     char p324[0x370 - 0x324];
@@ -4040,7 +4042,7 @@ void CPlay::CPlayDtorBody() {
         self->m_hitTest = 0;
     }
     if (self->m_beginMarker) {
-        self->m_beginMarker->Dtor();
+        self->m_beginMarker->~CTileTriggerContainer();
         ::operator delete(self->m_beginMarker);
         self->m_beginMarker = 0;
     }
@@ -4979,7 +4981,6 @@ SIZE_UNKNOWN(DtorSub5c);
 SIZE_UNKNOWN(DtorWorkerA);
 SIZE_UNKNOWN(DtorWorkerB);
 SIZE_UNKNOWN(DtorWorkerC);
-SIZE_UNKNOWN(DtorWorkerD);
 SIZE_UNKNOWN(DtorWorkerE);
 SIZE_UNKNOWN(DtorWorld);
 SIZE_UNKNOWN(Edge);
