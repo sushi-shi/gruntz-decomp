@@ -576,7 +576,6 @@ SIZE_UNKNOWN(CSbiLookupMap);
 // +0x18 interval). Same shape as GameMode's CBootyFound.
 struct CSbiCuePlayer; // defined below
 struct CSbiCueRecord {
-    void PlayNow(i32 tag, i32 a, i32 b, i32 c); // 0x25fe (immediate play, no gate)
     char m_pad0[0x10];
     CSbiCuePlayer* m_10; // +0x10  player (ConfigureItem this)
     i32 m_14;            // +0x14  last draw-clock
@@ -860,9 +859,7 @@ SIZE_UNKNOWN(CTabList);
 
 // The main-bar setup chain hung off the game-manager: m_30->m_4->m_14->m_2c drives a
 // 2-arg rect setter; m_30->m_4->m_14 is also handed to the frame-draw helper.
-struct CSbiMainSetup {
-    void SetRectXY(void* rect, i32 flag); // 0x13e7d0 (__thiscall, 2 args)
-};
+struct CSbiMainSetup {};
 SIZE_UNKNOWN(CSbiMainSetup);
 struct CSbiMainL2 {
     char m_pad0[0x2c];

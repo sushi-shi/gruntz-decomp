@@ -1,4 +1,6 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <DDrawMgr/DDSurface.h>
+#include <Gruntz/LeafCue.h>
 // The g_gameReg spine slots are the REAL classes (the former per-TU CSbiSubMgr/
 // CSbiActiveObj/CSbiLogger facet views are gone): the current play-state (CPlay), the
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
@@ -2425,7 +2427,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
                 rc.d = v;
                 rc.b = m_rect14.m_8;
                 rc.c = m_rect14.m_4;
-                tgt->SetRectXY(&rc, 0);
+                ((CDDSurface*)tgt)->Restore(&rc, 0);
             }
             char* mc = *(char**)((char*)this + 0xc);
             void* found = 0;
@@ -2492,7 +2494,7 @@ static __inline void HiCueFind() {
     if (host->m_30 == 0) {
         void* obj = host->FindCue("GAME_TABHIGHLIGHT1");
         if (obj) {
-            ((CSbiCueRecord*)obj)->PlayNow(g_61ab24, 0, 0, 0);
+            ((LeafCue*)obj)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
         }
     }
 }
@@ -2504,7 +2506,7 @@ static __inline void HiCueLookup() {
         void* out = 0;
         (&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", &out);
         if (out) {
-            ((CSbiCueRecord*)out)->PlayNow(g_61ab24, 0, 0, 0);
+            ((LeafCue*)out)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
         }
     }
 }
