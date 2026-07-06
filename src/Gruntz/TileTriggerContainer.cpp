@@ -61,7 +61,7 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
         CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
         if (elem == (CTileGridCommand*)data) {
             if (elem != 0) {
-                *(void**)elem = &g_tileGridCmdVtbl;
+                // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
                 elem->m_1c = 0;
                 RezFree(elem);
             }
@@ -137,7 +137,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
             if (r == 0) {
                 ((CObList*)&m_list2)->RemoveAt((POSITION)cur);
                 if (elem != 0) {
-                    *(void**)elem = &g_tileGridCmdVtbl;
+                    // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
                     elem->m_1c = 0;
                     RezFree(elem);
                 }
@@ -221,7 +221,7 @@ void CTileTriggerContainer::RemoveAll() {
         node = node->m_next;
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
-            *(void**)elem = &g_tileGridCmdVtbl;
+            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
             RezFree(elem);
         }
@@ -245,7 +245,7 @@ void CTileTriggerContainer::RemoveAll() {
         node = node->m_next;
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
-            *(void**)elem = &g_tileGridCmdVtbl;
+            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
             RezFree(elem);
         }
