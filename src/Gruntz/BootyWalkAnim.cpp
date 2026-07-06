@@ -14,6 +14,9 @@
 // the same WARP-letter jump-table CString build idiom.
 
 #include <Ints.h>
+#include <Dsndmgr/DirectSoundMgr.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString letter temp (/GX) + operator+
 
@@ -71,7 +74,7 @@ i32 BzState::BuildBootyWalkingGruntz() {
     if (g_mgrSettings->m_levelRecord->m_levelIndex > 0x24) {
         return 1;
     }
-    i32 sel = g_mgrSettings->m_selSource->GetSel(0, 0);
+    i32 sel = ((CSpriteRefTable*)g_mgrSettings->m_selSource)->GetSel(0, 0);
     if (sel == 0) {
         return 0;
     }
@@ -221,7 +224,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
         if (res == 0) {
             return 1;
         }
-        if (res->m_player->IsPlaying() != 0) {
+        if (((DirectSoundMgr*)res->m_player)->IsPlaying() != 0) {
             m_visSprites[m_stepIndex]->m_stateFlags ^= 1;
         } else {
             m_visSprites[m_stepIndex]->m_stateFlags |= 1;
@@ -245,7 +248,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            i32 sel = g_mgrSettings->m_selSource->GetSel(0, 0);
+            i32 sel = ((CSpriteRefTable*)g_mgrSettings->m_selSource)->GetSel(0, 0);
             if (sel != 0) {
                 if (g_mgrSettings->m_levelRecord->GetRecordValue(m_stepIndex) != 0) {
                     BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
@@ -256,7 +259,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                             u32 clock = g_killCueClock;
                             if (clock - res->m_lastPlayed >= res->m_interval) {
                                 res->m_lastPlayed = clock;
-                                res->m_player->ConfigurePlay(g_sndCueTag, 0, 0, 0);
+                                ((CSoundCueMgr*)res->m_player)->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }
@@ -275,8 +278,15 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                         x = g_randSeed;
                     }
                     g_randSeed = x * 214013 + 2531011;
-                    g_mgrSettings->m_cuePlayer
-                        ->Play(0, 0x3bf, (((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 1, -1, -1);
+                    ((CGruntSpawnConfig*)g_mgrSettings->m_cuePlayer)
+                        ->SpawnVoiceDriver(
+                            0,
+                            0x3bf,
+                            (((i32)g_randSeed >> 16) & 0x7fff) % 0x11,
+                            1,
+                            -1,
+                            -1
+                        );
                     m_walkStarted = 1;
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -287,7 +297,8 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
-                    g_mgrSettings->m_cuePlayer->Play(0, 0x441, 0, 1, -1, -1);
+                    ((CGruntSpawnConfig*)g_mgrSettings->m_cuePlayer)
+                        ->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_mgrSettings->m_levelRecord->m_levelIndex % 4) {
                         m_stepIndex = 4;
                         return 1;

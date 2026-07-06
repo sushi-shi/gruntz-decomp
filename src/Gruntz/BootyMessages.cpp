@@ -15,6 +15,8 @@
 // frame.
 
 #include <Ints.h>
+#include <Gruntz/GruntzMgr.h>
+#include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString temps (/GX) + RECT/CopyRect/SetRect
@@ -307,9 +309,9 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            m_sink->m_loader->Load();
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
             m_sink->m_notify->OnLoaded(m_sink->m_loader->m_data);
-            m_sink->m_loader->Finish();
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158e90();
             StartTimer(0x50, 0x3e8, 0, 1);
             if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -322,7 +324,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            m_sink->m_loader->Load();
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
             StartTimer(0x50, 0x3e8, 0, 1);
             m_stateId = 0xfffffffe;
             return 1;
@@ -335,7 +337,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        m_sink->m_loader->Load();
+        ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
         StartTimer(0x50, 0x3e8, 0, 1);
         return 1;
     }
@@ -346,7 +348,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
         if (sub != 0) {
             ((SoundStream*)sub)->Stop();
         }
-        g_mgrSettings->ChangeState(3);
+        ((CGruntzMgr*)g_mgrSettings)->ChangeState_8fab0(3);
         PostMessageA((HWND)g_mgrSettings->m_wnd->m_hwnd, 0x111, 0x8021, 0);
     } else {
         PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);

@@ -52,10 +52,7 @@ SIZE_UNKNOWN(BzWndHolder);
 // completion sub is the canonical m_1c0/m_1c8 anim-sink pair).
 
 // The playback sub-object of a sound entry (BzSoundEntry::m_player).
-struct BzSoundPlayer {
-    i32 IsPlaying();                            // 0x1353f0
-    void ConfigurePlay(i32 tag, i32, i32, i32); // 0x1360d0
-};
+struct BzSoundPlayer {};
 SIZE_UNKNOWN(BzSoundPlayer);
 
 // A named ambient sound entry. m_player is the playback sub-object; m_lastPlayed /
@@ -93,15 +90,11 @@ struct BzSoundHolder {
 SIZE_UNKNOWN(BzSoundHolder);
 
 // g_mgrSettings->m_cuePlayer - fires a positional sound cue.
-struct BzCuePlayer {
-    void Play(i32, i32, i32, i32, i32, i32); // thunk 0x39f4, __thiscall 6-arg
-};
+struct BzCuePlayer {};
 SIZE_UNKNOWN(BzCuePlayer);
 
 // g_mgrSettings->m_selSource - resolves the active selection handle.
-struct BzSelSource {
-    i32 GetSel(i32, i32); // thunk 0x4165
-};
+struct BzSelSource {};
 SIZE_UNKNOWN(BzSelSource);
 
 // The game registry singleton (*0x64556c). m_levelRecord is the per-level record;
@@ -118,16 +111,12 @@ struct BzGameReg {
     BzSelSource* m_selSource; // +0x74
     char m_pad78[0x7c - 0x78];
     BzLevelRecord* m_levelRecord; // +0x7c
-
-    void ChangeState(i32); // 0x8fab0 (thunk 0x201d)
 };
 SIZE_UNKNOWN(BzGameReg);
 extern "C" BzGameReg* g_mgrSettings; // *0x64556c
 
 // The grunt-data loader (BzSink::m_loader): Load/Finish; m_data feeds the notify.
 struct BzLoader {
-    void Load();   // 0x158ee0
-    void Finish(); // 0x158e90
     char m_pad00[0x14];
     void* m_data; // +0x14
 };
