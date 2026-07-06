@@ -4,6 +4,7 @@
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
 #include <rva.h>
+#include <Gruntz/MapMgr.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 #include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
 
@@ -18,9 +19,6 @@ extern "C" void* __cdecl RezAlloc(u32 n); // 0x1b9b46
 // seeds each with count*5 nodes through its __thiscall init (reloc-masked thunks).
 struct BrickzNodePoolA {
     i32 Init(i32 count); // 0x408710 (via the 0x42d7 thunk)
-};
-struct BrickzNodePoolB {
-    i32 Init(i32 count); // via the 0x28c4 thunk
 };
 
 // A recycled result record off the shared free-list: m_0 = next-free link,
@@ -411,7 +409,7 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
     if (((BrickzNodePoolA*)&m_nodePool)->Init(count * 5) == 0) {
         return 0;
     }
-    if (((BrickzNodePoolB*)((char*)this + 0x3c))->Init(count * 5) == 0) {
+    if (((CMapArrayB*)((char*)this + 0x3c))->Allocate(count * 5) == 0) {
         return 0;
     }
     m_stepCb = (void (*)())callback;

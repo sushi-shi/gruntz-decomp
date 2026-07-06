@@ -49,7 +49,7 @@ class CMultiSubDC;           // CMulti::m_fxOverlay
 class CTileTriggerContainer; // CMulti::m_2e4
 class CMultiSoundZ;          // CMultiMgr::m_48
 class CMultiSub68;           // CMultiMgr::m_68
-class PBSub2e0;              // CMulti::m_2e0 (per-frame Step2bfd sub, defined in CMulti.cpp)
+class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
 class CBrickzGrid;           // CMultiMgr::m_70
 class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
 class CLobbySlot;            // CNetSession2 slot element (fwd for FindSlot's return)
@@ -406,7 +406,7 @@ public:
     i32 m_drainResult;            // +0x2d4  Drain() result
     i32 m_rngSeed;                // +0x2d8  rng seed
     CMultiSubDC* m_fxOverlay;     // +0x2dc  per-frame sub (Step34bd)
-    PBSub2e0* m_2e0;              // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
+    CChatBoxOwner* m_2e0;         // +0x2e0  per-frame sub (PBSub2e0::Step2bfd)
     CTileTriggerContainer* m_2e4; // +0x2e4  per-frame sub (Step2cc0)
     char m_pad2e8_30c[0x30c - 0x2e8];
     i32 m_paletteActive;           // +0x30c  overlay-active flag (PumpB)

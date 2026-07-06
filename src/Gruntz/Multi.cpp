@@ -13,6 +13,7 @@
 // m_logic logic object / the heap deleters / the MFC CString/CByteArray dtors) are
 // external no-body fns -> their `call rel32` are reloc-masked.
 #include <rva.h>
+#include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
@@ -662,10 +663,6 @@ public:
     void Fire1398();  // 0x00001398
     void Reset2b85(); // 0x00002b85
 };
-class PBSub2e0 { // CMulti::m_2e0
-public:
-    void Step2bfd(void* pane); // 0x00002bfd
-};
 class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
 public:
     void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
@@ -743,7 +740,7 @@ void CMulti::PumpB() {
     if (h == 0) {
         return;
     }
-    m_2e0->Step2bfd(h);
+    m_2e0->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
     ((PBSub68*)m_logic->m_68)->Reset2b85();
     StepGridWalk(g_645584);
@@ -1031,7 +1028,6 @@ SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBOutput);
 SIZE_UNKNOWN(PBPane);
 SIZE_UNKNOWN(PBRenderTarget);
-SIZE_UNKNOWN(PBSub2e0);
 SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBSub68);
