@@ -6,6 +6,7 @@
 // activation handler (0x4040a2) into the R4 table at that id. Placeholder names;
 // only OFFSETS + code bytes are load-bearing.
 #include <Bute/ButeMgr.h> // CButeTree
+#include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
 #include <rva.h>
 
@@ -46,11 +47,8 @@ extern CButeTree g_buteTree;
 
 // The R4 per-class activation table (g_actReg4 @0x6446d8 is the collection; the
 // lo/hi/base/cur/stride/scratch fields are separate DATA-pinned BSS globals).
-struct CActReg4 {
-    i32 Find(i32 coord, i32 z); // 0x16da80
-};
 DATA(0x002446d8)
-extern CActReg4 g_actReg4;
+extern _zvec g_actReg4;
 struct R4Entry {
     void* m_fn;
 };
@@ -77,7 +75,7 @@ static inline R4Entry* R4Lookup(i32 coord) {
     if (coord >= g_actReg4Lo && coord <= g_actReg4Hi) {
         return (R4Entry*)(g_actReg4Base + (coord - g_actReg4Lo) * g_actReg4Stride);
     }
-    if (g_actReg4.Find(coord, 0)) {
+    if (g_actReg4.GrowTo(coord, 0)) {
         return (R4Entry*)(g_actReg4Base + (coord - g_actReg4Lo) * g_actReg4Stride);
     }
     void* item = g_projActCache;
