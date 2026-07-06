@@ -493,3 +493,5 @@ VTBL(CSplashState, 0x001e9e84);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CTsState, 0x001ea0bc);
+
+VTBL(CHelpState, 0x001e9dfc);

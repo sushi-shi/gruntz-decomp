@@ -143,3 +143,5 @@ i32 CGruntzWnd::Wap32GameWndVfunc0() {
 
 // size 0x10 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntzWnd, 0x10);
+
+VTBL(CGruntzWnd, 0x001ea2d4);

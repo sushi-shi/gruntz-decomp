@@ -496,4 +496,6 @@ public:
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+VTBL(CMulti, 0x001e9fe4);
+
 #endif // GRUNTZ_GRUNTZ_CMULTI_H
