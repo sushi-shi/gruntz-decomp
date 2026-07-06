@@ -1,13 +1,13 @@
-m_<hex> fields	14519
+m_<hex> fields	14517
 Unknown ids	5
 g_<hex> globals	1205
 Method/Stub/FUN	0
 placeholder classes	268
-placeholder vtable slots	754
-*Vtbl structs	48
+placeholder vtable slots	779
+*Vtbl structs	44
 ->vtbl accesses	6
 g_*Vtbl globals	140
-m_vtbl/m_vptr members	95
+m_vtbl/m_vptr members	91
 )this casts	299
 )m_ casts	1050
 (char*) casts	887

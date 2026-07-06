@@ -28,20 +28,30 @@ extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 // slots) so `m_imageSet->Load(...)` emits `mov eax,[ecx]; call [eax+0x4c]`. Class
 // COMPLETE before the T::* typedef so the PMF stays 4 bytes
 // (docs/patterns/pmf-complete-class-4byte.md).
-struct CMgrImageSetVtbl;
+// Real polymorphic view: Load is slot 19 (+0x4c), a real virtual (19 filler slots
+// precede it); declared-only. obj->Load() -> call [eax+0x4c].
 struct CMgrImageSet {
-    CMgrImageSetVtbl* m_vtbl;                           // +0x00
-    i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c) via vtbl
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c)
 };
-typedef i32 (CMgrImageSet::*CMgrImageSetLoadFn)(char* path, const char* a, const char* b);
-SIZE_UNKNOWN(CMgrImageSetVtbl);
-struct CMgrImageSetVtbl {
-    char m_pad00[0x4c];
-    CMgrImageSetLoadFn Load; // +0x4c
-};
-inline i32 CMgrImageSet::Load(char* path, const char* a, const char* b) {
-    return (this->*(m_vtbl->Load))(path, a, b);
-}
 
 // The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {

@@ -54,10 +54,14 @@ struct MenuList {
 // The per-item object AddItem/AddSubItem return: its vtable slot +0x18 disables
 // the item. Modeled with a typed vtable so `mov edx,[item]; call [edx+0x18]`
 // (a __thiscall PMF loaded from the vtable) falls out, no manual cast.
-struct MenuItemVtbl;
 struct MenuItem {
-    MenuItemVtbl* m_vtbl;
-    void Disable(i32 z); // slot +0x18
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Disable(i32 z); // slot 6 (+0x18)
     char m_pad04[0x58 - 0x4];
     void* m_58; // +0x58  the movie/availability sub-object the FINAL gate probes
 };
@@ -69,15 +73,6 @@ struct MovieProbe {
 };
 static i32 FinalMovieAvailable(void* sub) {
     return ((MovieProbe*)sub)->IsAvailable();
-}
-typedef void (MenuItem::*MenuItemFn)(i32);
-SIZE_UNKNOWN(MenuItemVtbl);
-struct MenuItemVtbl {
-    char m_pad00[0x18];
-    MenuItemFn m_18; // +0x18
-};
-inline void MenuItem::Disable(i32 z) {
-    (this->*(m_vtbl->m_18))(z);
 }
 
 // The menu-page object (0x68 bytes): three CString fields (+8/+c/+10), a CObList
