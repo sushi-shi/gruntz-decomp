@@ -1,4 +1,5 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <Gruntz/WarpStoneFly.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Rez/RezList.h>
 #include <Dsndmgr/DirectSoundMgr.h>
@@ -2468,7 +2469,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             }
         }
         if (m_retabNotify) {
-            m_retabNotify->Refresh();
+            m_retabNotify->Draw();
         }
     }
 
@@ -2858,7 +2859,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
         }
     }
     if (m_retabNotify) {
-        m_retabNotify->Notify0(arg);
+        m_retabNotify->Tick(arg);
         TabCommit();
     }
     return 1;

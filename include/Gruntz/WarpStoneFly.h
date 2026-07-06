@@ -40,7 +40,8 @@ struct CWsfSprite {};
 SIZE_UNKNOWN(CWarpStoneFly);
 class CWarpStoneFly {
 public:
-    CWarpStoneFly();  // 0x109bb0  clears m_sprite/m_owner, returns this
+    CWarpStoneFly();                            // 0x109bb0  clears m_sprite/m_owner, returns this
+    i32 Init(void* owner, i32 a, i32 b, i32 c); // (was CSbiMode54c::Init; init owner+target)
     i32 Tick(i32 dt); // 0x10a0f0  integrate toward target, snap, notify on arrival
     i32 Draw();       // 0x10a2f0  blit the sprite at the rounded position
 

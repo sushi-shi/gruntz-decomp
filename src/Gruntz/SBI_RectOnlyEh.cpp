@@ -1,7 +1,8 @@
 #include <rva.h>
+#include <Gruntz/WarpStoneFly.h>
 #include <Ints.h>
 
-#include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly big host + CSbiMode54c (+0x54c sub-object)
+#include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly big host + CWarpStoneFly (+0x54c sub-object)
 // SBI_RectOnlyEh.cpp - the /GX EH-framed CSBI_RectOnly methods, split off the
 // frameless sbi_rectonly TU (C:\Proj\Gruntz). MSVC5's /GX always frames a method
 // that owns a lifetime-spanning `new`+ctor or a destructible member, so these
@@ -9,7 +10,7 @@
 // The split is matching-neutral (each function is RVA-keyed); see
 // docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md. The former per-TU minimal
 // `class CSBI_RectOnly {}` + `CSbiLazySub` views are folded onto the canonical host /
-// its +0x54c CSbiMode54c sub-object (P1 view fold).
+// its +0x54c CWarpStoneFly sub-object (P1 view fold).
 
 // The two scalar destructors (~CSBI_RectOnly @0x100700, ~CSBI_ImageSet @0x102000)
 // that used to live here moved to SBI_RectOnlyDtorEh.cpp / SBI_ImageSetEh.cpp,
@@ -60,14 +61,14 @@ void CSBI_RectOnly::DtorMembers() {
 }
 
 // Lazily create the +0x54c sub-object on first use: bail (return 0) if it already
-// exists; otherwise `new` a 0x40-byte CSbiMode54c, default-construct it, store it,
+// exists; otherwise `new` a 0x40-byte CWarpStoneFly, default-construct it, store it,
 // and forward the three args to its Init. /GX frames the new+ctor span.
 RVA(0x00109ad0, 0xa9)
 i32 CSBI_RectOnly::EnsureSub(i32 a, i32 b, i32 c) {
     if (m_retabNotify) {
         return 0;
     }
-    CSbiMode54c* o = new CSbiMode54c();
+    CWarpStoneFly* o = new CWarpStoneFly();
     m_retabNotify = o;
     if (o == 0) {
         return (i32)o; // retail returns the null pointer already in eax (no re-xor)

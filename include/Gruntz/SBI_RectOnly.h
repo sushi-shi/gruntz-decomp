@@ -15,6 +15,8 @@
 #ifndef GRUNTZ_SBI_RECTONLY_H
 #define GRUNTZ_SBI_RECTONLY_H
 
+class CWarpStoneFly; // folded CSbiMode54c
+
 #include <Ints.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
@@ -190,14 +192,7 @@ SIZE_UNKNOWN(CSbiSpriteCfg);
 // Init()s it on first use; the retab teardown drives Refresh()/Notify0() and frees it.
 // One object, one type (former SBI_RectOnlyEh.cpp `CSbiLazySub` folded in - same
 // offset, same lazy-create/free-on-retab lifecycle).
-struct CSbiMode54c {
-    CSbiMode54c();                              // FUN_005091..  no-arg ctor
-    i32 Init(void* owner, i32 a, i32 b, i32 c); // __thiscall, ret 0x10
-    void Notify0(i32 arg);                      // 0x1258 (__thiscall, 1 arg)
-    void Refresh();                             // 0x280b (__thiscall, no args)
-    char m_pad[0x40];
-};
-SIZE(CSbiMode54c, 0x40);
+SIZE(CWarpStoneFly, 0x40);
 
 // A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
 struct CSbiPtrList {
@@ -542,21 +537,21 @@ public:
     void** m_ptrTable;           // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
     i32 m_ptrCount;              // +0x538  count for m_ptrTable
     char m_pad53c[0x548 - 0x53c];
-    i32 m_hlBusy;               // +0x548
-    CSbiMode54c* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
-    i32 m_toggleActive;         // +0x550  toggle-mode active flag
-    i32 m_toggleHandle;         // +0x554  toggle-mode tab handle
-    i32 m_destructWarnActive;   // +0x558
-    i32 m_modeState;            // +0x55c
-    i32 m_destructWarnLast;     // +0x560  destruct-warning last draw-clock
-    i32 m_destructWarnLastHi;   // +0x564
-    i32 m_destructWarnDelay;    // +0x568  destruct-warning delay (config)
-    i32 m_destructWarnDelayHi;  // +0x56c
-    CSbiSlotPtr* m_modeNotify;  // +0x570  notify target
-    i32 m_modeArmed;            // +0x574
-    i32 m_578;                  // +0x578  (cleared on multiplayer/battlez reset)
-    i32 m_battlezPct[38];       // +0x57c  running-sum item-percent table (battlez cfg)
-    i32 m_barFrameGate;         // +0x614  main-status-bar frame gate
+    i32 m_hlBusy;                 // +0x548
+    CWarpStoneFly* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
+    i32 m_toggleActive;           // +0x550  toggle-mode active flag
+    i32 m_toggleHandle;           // +0x554  toggle-mode tab handle
+    i32 m_destructWarnActive;     // +0x558
+    i32 m_modeState;              // +0x55c
+    i32 m_destructWarnLast;       // +0x560  destruct-warning last draw-clock
+    i32 m_destructWarnLastHi;     // +0x564
+    i32 m_destructWarnDelay;      // +0x568  destruct-warning delay (config)
+    i32 m_destructWarnDelayHi;    // +0x56c
+    CSbiSlotPtr* m_modeNotify;    // +0x570  notify target
+    i32 m_modeArmed;              // +0x574
+    i32 m_578;                    // +0x578  (cleared on multiplayer/battlez reset)
+    i32 m_battlezPct[38];         // +0x57c  running-sum item-percent table (battlez cfg)
+    i32 m_barFrameGate;           // +0x614  main-status-bar frame gate
     CSbiDisplayObj* m_destructButton; // +0x618  destruct-button display object
     i32 m_61c[4];                     // +0x61c  trailing dword block (cleared on reset)
     i32 m_tabCycle;                   // +0x62c  4-state highlight cursor (AdvanceTab cycles 0..3)
