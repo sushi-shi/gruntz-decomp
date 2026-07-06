@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
+#include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
@@ -140,24 +141,12 @@ struct WwdRenderCtx {
     i32 m_10; // +0x10  clip width
     i32 m_14; // +0x14  clip height
     char m_pad18[0x2c - 0x18];
-    WwdSurface* m_2c; // +0x2c  destination surface
+    CDDSurface* m_2c; // +0x2c  destination surface
 };
 
 // The 8-bit destination surface: GetRowBase (0x13e6d0) yields the buffer base
 // offset for a row, +0x20 is the row pitch, +0xb0 the per-column stride, +0x08 a
 // post-plot notifier whose vtable slot +0x80 is a free function fn(self, 0).
-struct WwdSurface {
-    i32 GetRowBase(i32 a); // 0x13e6d0  __thiscall -> base offset
-    char m_pad00[0x08];
-    // authentic: +0x08 is a foreign engine notifier whose vtable slot +0x80 holds
-    // a FREE function fn(self, 0) (not a __thiscall method) - a manual vtable read
-    // through an untyped slot is the only faithful form; kept void*.
-    void* m_08; // +0x08
-    char m_pad0c[0x20 - 0x0c];
-    i32 m_20; // +0x20  row pitch
-    char m_pad24[0xb0 - 0x24];
-    i32 m_b0; // +0xb0  per-column stride
-};
 
 // Raw this-offset read of a foreign engine object reached as an opaque void*/int
 // handle (found-object refs, the a4 setup source). authentic: these referents are
@@ -778,13 +767,13 @@ void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
     }
 
     {
-        WwdSurface* surf = a->m_2c;
-        i32 base = surf->GetRowBase(0);
+        CDDSurface* surf = a->m_2c;
+        i32 base = surf->Lock((void*)0);
         if (base != 0) {
-            i32 row = surf->m_20 * y;
+            i32 row = surf->m_pitch * y;
             i32 col = surf->m_b0 * x;
             *(char*)(base + row + col) = *(char*)&m_dotColor;
-            void* n = surf->m_08;
+            void* n = surf->m_8;
             (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
         }
     }
