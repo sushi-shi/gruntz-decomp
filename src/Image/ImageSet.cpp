@@ -12,6 +12,7 @@
 // name copy lowers to inline repne-scasb/rep-movs (strcpy at /O2 /Oi). The CImage frame
 // format helper (CImageFormat::SetType @0x14dd90) is external/no-body so its call
 // reloc-masks. No destructible stack locals -> plain /O2 (base flags, no /GX).
+#include <Mfc.h> // real MFC CObArray (the frame array's SetAtGrow @0x1b5822)
 #include <Image/ImageSet.h>
 #include <rva.h>
 
@@ -24,11 +25,6 @@ extern void* operator new(u32 size);
 // ImageSet.h; the foreign CImage @0x5eaa2c virtuals stay unmatched -> declared-
 // only, reloc-masked). cl auto-stamps the vptr (??_7CImageFrame@@6B@) in the
 // ctor; the manual image-frame vtable extern + stamp are gone (all-vtables mandate).
-
-// MFC CObArray::SetAtGrow on the embedded frame array (CImageSet::m_array @+0x10).
-struct CImageFrameArray {
-    void SetAtGrow(i32 index, CImageFrame* f); // 0x1b5822  __thiscall, ret 8
-};
 
 inline CImageFrame::CImageFrame(void* owner, i32 index) {
     m_index = index;
@@ -59,7 +55,7 @@ CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
         return 0;
     }
 
-    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -86,7 +82,7 @@ CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -113,7 +109,7 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
         return 0;
     }
 
-    ((CImageFrameArray*)&m_array)->SetAtGrow(index, nf);
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
     if (index < m_minIndex) {
         m_minIndex = index;
     }
@@ -234,4 +230,3 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
 SIZE_UNKNOWN(CImageFormat);
 SIZE_UNKNOWN(CImageFrameSurface);
 SIZE(CImageFrame, 0x34);
-SIZE_UNKNOWN(CImageFrameArray);
