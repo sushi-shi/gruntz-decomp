@@ -11,6 +11,7 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Image/ImageSet.h>
 #include <Mfc.h>                // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
@@ -1393,20 +1394,12 @@ i32 CUserLogic::winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i
 // (0x807f) to the mgr's top-level window; then, unless suppressed (m_36c), fire the
 // arrival anim (m_260->Anim2a72), and latch the object dirty (m_154->m_8 |= 0x10000).
 // The CString + Format + the sub-object/anim/level-lookup callees all reloc-mask.
-SIZE_UNKNOWN(CWarpArrivalSub);
-struct CWarpArrivalSub {    // the +0x1a0 arrival sub-object of *m_154
-    void Poke15c360(i32 z); // 0x15c360
-    char m_pad04[0x20];
-    i32 m_20; // +0x20 busy gate
-    i32 m_24;
-    i32 m_28; // +0x28 arrived gate
-};
 SIZE_UNKNOWN(CWarpM154);
 struct CWarpM154 {
     char m_pad00[0x8];
     i32 m_8; // +0x08 dirty flags
     char m_pad0c[0x1a0 - 0xc];
-    CWarpArrivalSub m_1a0; // +0x1a0
+    CAniAdvanceCursor m_1a0; // +0x1a0
 };
 SIZE_UNKNOWN(CWarpLevelReg);
 struct CWarpLevelReg {
@@ -1455,8 +1448,8 @@ extern WarpPostFn g_pPostMessageA;
 RVA(0x00064540, 0x11c)
 i32 CUserLogic::winapi_064540_PostMessageA() {
     CWarpLeaf* self = (CWarpLeaf*)this;
-    self->m_drawState->m_1a0.Poke15c360(g_6bf3bc);
-    CWarpArrivalSub* sub = &self->m_drawState->m_1a0;
+    self->m_drawState->m_1a0.Advance_15c360(g_6bf3bc);
+    CAniAdvanceCursor* sub = &self->m_drawState->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
     }
@@ -1512,14 +1505,6 @@ extern "C" u32 g_645588;   // running game clock (ms)
 extern CButeMgr g_buteMgr; // 0x6453d8 - getters reloc-mask
 extern char k_60bebc[];    // interned bute-node name "R"
 
-SIZE_UNKNOWN(CDecayArrival);
-struct CDecayArrival {         // m_154 + 0x1a0 - arrival probe sub-object
-    i32 Poke15c360(i32 clock); // 0x15c360 (this, clock) -> phase 0..0x63
-    char m_pad00[0x20];
-    i32 m_20; // +0x20 busy gate
-    i32 m_24;
-    i32 m_28; // +0x28 arrived gate
-};
 SIZE_UNKNOWN(CDecayMgr);
 struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad00[0x8];
@@ -1529,7 +1514,7 @@ struct CDecayMgr { // m_154 - the bound draw-state manager
     char m_pad44[0x194 - 0x44];
     CImageSet* m_194; // +0x194
     char m_pad198[0x1a0 - 0x198];
-    CDecayArrival m_1a0; // +0x1a0
+    CAniAdvanceCursor m_1a0; // +0x1a0
 };
 SIZE_UNKNOWN(CDecayAnim);
 struct CDecayAnim {                                            // m_260 - anim/sprite controller
@@ -1606,7 +1591,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     if (m_gruntMode == 0) {
         return 0;
     }
-    if (m_drawState->m_1a0.Poke15c360(g_6bf3bc) == 1) {
+    if (m_drawState->m_1a0.Advance_15c360(g_6bf3bc) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
             m_animCtrl->Method1073(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
@@ -1620,7 +1605,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
             );
         }
     }
-    CDecayArrival* sub = &m_drawState->m_1a0;
+    CAniAdvanceCursor* sub = &m_drawState->m_1a0;
     if (sub->m_28 == 0) {
         return 0;
     }
@@ -1700,7 +1685,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
 // (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
 RVA(0x00065a60, 0x159)
 i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_drawState->m_1a0.Poke15c360(g_6bf3bc);
+    i32 phase = m_drawState->m_1a0.Advance_15c360(g_6bf3bc);
     if (phase > 0) {
         if (phase == 0x63) {
             m_downtimeLatch = 1;
@@ -1728,7 +1713,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
         }
         m_animCtrl->Method3945(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
     }
-    CDecayArrival* sub = &m_drawState->m_1a0;
+    CAniAdvanceCursor* sub = &m_drawState->m_1a0;
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         m_downtimeLatch = 0;
         Method136b(1, 0, 0);

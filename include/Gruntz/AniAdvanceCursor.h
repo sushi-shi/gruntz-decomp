@@ -10,6 +10,7 @@
 SIZE_UNKNOWN(CAniAdvanceCursor);
 class CAniAdvanceCursor : public CLoadable {
 public:
+    CAniAdvanceCursor() {} // default (view-embed)
     CAniAdvanceCursor(i32 owner, i32 field04, i32 field08);
     virtual ~CAniAdvanceCursor() OVERRIDE; // slot 1 (scalar-deleting dtor 0x15b6b0)
     i32 IsLoaded() OVERRIDE;               // slot 5  0x15b6a0
@@ -21,7 +22,7 @@ public:
     i32 m_18; // +0x18
     char m_pad1c[0x20 - 0x1c];
     i32 m_20; // +0x20
-    char m_pad24[0x28 - 0x24];
+    i32 m_24; // +0x24
     i32 m_28; // +0x28
     i32 m_2c; // +0x2c
 };
