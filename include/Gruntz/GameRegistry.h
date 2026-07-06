@@ -195,6 +195,8 @@ struct CGameRegistry {
     // The mode-3 per-frame cue step (thunk_FUN_004933e0, __thiscall): run each
     // world-draw frame when m_134==3. External/no-body (reloc-masked).
     void PerFrameCue();
+    class CString
+    QueryLevelName(); // 0x928c0 via ILT 0x2531 (level rez path; == CGruntzMgr::GetWorldFileName, same object)
     // Registry service methods some TUs call directly on the singleton
     // (external/no-body, reloc-masked rel32 callees).
     void Ack(i32 line, i32 code);                               // 0x8dc60 switch-logic ack

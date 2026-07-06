@@ -9,6 +9,7 @@
 // Field/host names are placeholders (m_<hexoffset>); only OFFSETS + code bytes
 // are load-bearing. Engine callees / globals are reloc-masked (no body).
 #include <Mfc.h> // CString + <windows.h> (RECT / SetRect / wsprintfA)
+#include <Gruntz/GameRegistry.h>
 
 #include <Ints.h>
 #include <rva.h>
@@ -19,15 +20,7 @@
 // The game-manager singleton at *0x64556c (dedup winner name `_g_64556c`); only
 // the mode discriminator (m_134), the single-page flag (m_130) and the level-name
 // query used here are modeled.
-struct WwdGameRegInfo {
-    char m_pad0[0x130];
-    i32 m_130; // +0x130 single-/multi-page flag
-    i32 m_134; // +0x134 mode discriminator (1 story, 2/3 alt, else empty)
-    // QueryLevelName - __thiscall accessor returning the level's rez path by value
-    // (retail FUN_004928c0 via ILT 0x2531). External / reloc-masked.
-    CString QueryLevelName();
-};
-extern "C" WwdGameRegInfo* g_64556c;
+extern "C" CGameRegistry* g_64556c;
 
 // The engine empty-string sentinel (0x6293f4) and the multi-page flag
 // (DAT_006455f0); both reloc-masked DIR32 data referents.
@@ -311,4 +304,3 @@ i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
 }
 
 SIZE_UNKNOWN(GruntInfoTextHost);
-SIZE_UNKNOWN(WwdGameRegInfo);
