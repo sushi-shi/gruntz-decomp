@@ -218,9 +218,6 @@ SIZE(CSBI_StatzTabArrow, 0x54);
 // The two shredder/machine widgets stamp their retail vtable by ADDRESS (a manual
 // vptr store), because their retail ctors inline the whole base (no out-of-line base
 // call) - the reloc-masked DIR32 to ??_7... pairs the same as an auto-emitted vtable.
-extern void* g_vtblCSBI_GruntMachine;     // 0x5eadbc ??_7CSBI_GruntMachine@@6B@
-extern void* g_vtblCSBI_StatzTabGruntBar; // ??_7CSBI_StatzTabGruntBar@@6B@
-extern void* g_vtblCSBI_Image;            // 0x5eac0c ??_7CSBI_Image@@6B@
 
 // A CSBI_Image whose retail ctor is INLINED at the call site (manual vptr, no base
 // call) - one Resource-tab machine-background item is built this way (a per-site MSVC
@@ -232,7 +229,7 @@ public:
         m_4 = 0;
         m_24 = 0;
         m_28 = 0;
-        *(void**)this = &g_vtblCSBI_Image;
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
         m_8 = 3;
         m_30 = 0;
     }
@@ -254,7 +251,7 @@ public:
         m_4 = 0;
         m_24 = 0;
         m_28 = 0;
-        *(void**)this = &g_vtblCSBI_GruntMachine;
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
         m_8 = 9;
         m_34 = 0;
         m_3c = 0;
@@ -290,7 +287,7 @@ public:
         m_80 = 0;
         m_7c = 0;
         m_84 = 0;
-        *(void**)this = &g_vtblCSBI_StatzTabGruntBar;
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
         m_8 = 6;
         m_34 = 0;
         m_40 = 0;

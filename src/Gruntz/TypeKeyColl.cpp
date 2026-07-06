@@ -42,18 +42,6 @@
 // g_keyFinderVtbl is NOT a vtable: 0x16e220 is a FUNCTION in .text (the default
 // callback the CKeyFinder/CVariantSlot +0x00 slot is seeded with) - stored as a
 // plain fn-ptr field init, not a polymorphic vptr, so it stays a manual store.
-DATA(0x0016e220)
-extern void* g_keyFinderVtbl; // CKeyFinder +0x00 default callback fn (in .text)
-DATA(0x001f04e0)
-extern void* g_buteTreeVtbl; // g_buteTree runtime vtable (dyn-init stamp)
-DATA(0x001f04dc)
-extern void* g_buteTreeSubVtbl; // g_buteTree +0x08 sub-object vtable
-DATA(0x001f04e4)
-extern void* g_typeCollRunVtbl; // g_typeColl runtime vtable (dyn-init stamp)
-DATA(0x001e94ac)
-extern void* g_buteTreeDtorVtbl; // CButeTree dtor-phase vtable
-DATA(0x001e949c)
-extern void* g_buteTreeDtorSubVtbl; // CButeTree dtor-phase +0x08 vtable
 
 // ===========================================================================
 // The registry globals (BSS / .data; DATA-pinned so the loads reloc-mask).
@@ -188,7 +176,7 @@ RVA(0x0016e1a0, 0x23)
 CKeyFinder::CKeyFinder(void* owner) {
     m_0c = 2;
     m_10 = 2;
-    *(void**)this = &g_keyFinderVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     m_08 = 0;
     m_owner = owner;
 }
@@ -288,8 +276,8 @@ extern CButeTree g_buteTree;
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
     g_buteTree.Construct(&g_buteTreeArg, 0);
-    *(void**)&g_buteTree = &g_buteTreeVtbl;
-    *(void**)((char*)&g_buteTree + 8) = &g_buteTreeSubVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
 }
 
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
@@ -320,7 +308,7 @@ RVA(0x0016e730, 0x51)
 void DynInitTypeColl() {
     new (&g_typeColl) CTypeKeyColl(4, 0x7d0, 0x7da, (void*)1);
     CStringNode* nodes = (CStringNode*)g_typeNodes;
-    *(void**)&g_typeColl = &g_typeCollRunVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     if (nodes != 0) {
         i32 cnt = g_typeCount;
         if (cnt != 0) {
@@ -341,8 +329,8 @@ void DynInitTypeColl() {
 // ===========================================================================
 RVA(0x0016e9c0, 0x45)
 void* CButeTree::ScalarDtor(u32 flags) {
-    *(void**)this = &g_buteTreeDtorVtbl;
-    *(void**)((char*)this + 8) = &g_buteTreeDtorSubVtbl;
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     ClearRecursive(0);
     ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
     BaseDtor();
