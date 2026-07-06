@@ -46,9 +46,7 @@ SIZE_UNKNOWN(CStatzGruntRec);
 // The CTriggerMgr-style selection host: the unit-table base (WwdGameReg+0x68)
 // doubles as the selection-list owner. SelectionListFind(key, y) resolves the
 // selection glyph (__thiscall, ret 8).
-struct CStatzSelHost {
-    i32 SelectionListFind(i32 key, i32 y); // 0x7d2a0
-};
+struct CStatzSelHost {};
 SIZE_UNKNOWN(CStatzSelHost);
 
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only

@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_StatzTabGruntBar.h>
@@ -119,7 +120,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
         // selection-list glyph
         if (m_selectKey != 0) {
-            selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
+            selectVal = ((CTriggerMgr*)table)->SelectionListFind(m_unitCol, m_unitRow);
         }
 
         // self-bumping anim timer

@@ -13,6 +13,7 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
 #include <rva.h>
+#include <Gruntz/Brickz.h>
 #include <Mfc.h>
 #include <Gruntz/TileGridCommand.h>
 
@@ -169,7 +170,7 @@ i32 CTileGridCommand::BumpCell() {
     i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] + 1;
     CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
     layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
-    ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
+    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
     m_14 = 1;
     return 1;
 }
@@ -193,7 +194,7 @@ i32 CTileGridCommand::ApplyMove(i32 verb) {
         CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
         L->m_cells[L->m_rowBase[m_0c] + m_08] = m_34;
         v = m_34;
-        ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
+        ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
@@ -202,21 +203,21 @@ i32 CTileGridCommand::ApplyMove(i32 verb) {
                 v = L->m_cells[L->m_rowBase[m_0c] + m_08] + 1;
                 CViewport* L2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
                 L2->m_cells[L2->m_rowBase[m_0c] + m_08] = v;
-                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, v);
+                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
                 CGameRegistry* reg = g_gameReg;
                 CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
                 L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5b;
-                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5b);
+                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
                 CGameRegistry* reg = g_gameReg;
                 CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
                 L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5a;
-                ((TgcRedraw*)reg->m_tileGrid)->MarkCell(m_08, m_0c, 0x5a);
+                ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
                 break;
             }
             default:
