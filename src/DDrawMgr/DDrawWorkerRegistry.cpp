@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Bute/SymTab.h>
 #include <Image/ImageSet.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -126,11 +127,6 @@ extern char g_emptyString[]; // 0x6293f4
 class RegDirEntry {
 public:
     char* m_name; // +0x00
-};
-class RegDirHandle {
-public:
-    RegDirEntry* First_13a260();              // 0x13a260 (__thiscall)
-    RegDirEntry* Next_13a280(RegDirEntry* e); // 0x13a280 (__thiscall, 1 arg)
 };
 
 // A CDDrawWorker (vtable 0x5efbe8) viewed for the +0x28/+0x3c dispatches + the +0x18
@@ -537,14 +533,14 @@ CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
 // derived vtable last, and the buffer/entry register schedule differs. Reloc-masked
 // EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
-i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::Stub_154f80(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = (char*)operator new(0x100);
     i32 count = 0;
     if (buf == 0) {
         return count;
     }
     buf[0] = 0;
-    RegDirEntry* e = dir->First_13a260();
+    RegDirEntry* e = (RegDirEntry*)dir->FirstSub();
     while (e != 0) {
         if (sub != 0 && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -552,7 +548,7 @@ i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const 
             strcpy(buf, e->m_name);
         }
         count += ((CWorkerVtableView*)this)->Vfunc48(e, buf, (void*)prefix);
-        e = dir->Next_13a280(e);
+        e = (RegDirEntry*)dir->NextSub(e);
     }
     if (sub != 0 && *sub != 0) {
         CDDrawWorker* w = FindOrCreateWorker(this, sub);
@@ -581,10 +577,10 @@ i32 CDDrawWorkerRegistry::Stub_154f80(RegDirHandle* dir, const char* sub, const 
 // abort / Lookup / +0x3c dispatch + -1 abort / +0x18 count are reproduced; the
 // buffer/entry/count register schedule + reloc-masked thunk names are the residual.
 RVA(0x00155160, 0x11e)
-i32 CDDrawWorkerRegistry::Stub_155160(RegDirHandle* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::Stub_155160(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = (char*)operator new(0x100);
     i32 count = 0;
-    RegDirEntry* e = dir->First_13a260();
+    RegDirEntry* e = (RegDirEntry*)dir->FirstSub();
     while (e != 0) {
         if (sub != 0 && *sub != 0) {
             sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
@@ -597,7 +593,7 @@ i32 CDDrawWorkerRegistry::Stub_155160(RegDirHandle* dir, const char* sub, const 
             return -1;
         }
         count += r;
-        e = dir->Next_13a280(e);
+        e = (RegDirEntry*)dir->NextSub(e);
     }
     if (sub != 0 && *sub != 0) {
         CObject* out = 0;

@@ -27,7 +27,7 @@ struct CDDrawWorker; // 0x6c-byte keyed worker (defined in the owning .cpp); str
                      // RemoveWorker method manglings that take CDDrawWorker*.
 class CImageSet;
 class CWorkerMapValue; // a map value viewed for +0x10 + probe (foreign, other TU)
-class RegDirHandle;    // directory-tree cursor (foreign, other TU)
+class CSymTab;         // Bute/SymTab.h (the dir-tree cursor)
 class RegProbeChain;   // probe chain (foreign, other TU)
 
 // ---------------------------------------------------------------------------
@@ -102,8 +102,8 @@ public:
     CMapStringToOb m_map;      // +0x10  worker-by-key map
 
     // Engine-label backlog stubs.
-    i32 Stub_154f80(RegDirHandle* dir, const char* sub, const char* prefix);
-    i32 Stub_155160(RegDirHandle* dir, const char* sub, const char* prefix);
+    i32 Stub_154f80(CSymTab* dir, const char* sub, const char* prefix);
+    i32 Stub_155160(CSymTab* dir, const char* sub, const char* prefix);
     void* Stub_156df0(i32 flag);
     i32 Stub_156e80(RegProbeChain* a1, i32 a2);
 };
