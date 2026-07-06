@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>
@@ -3133,7 +3134,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (entry->m_10 == 0) {
         return;
     }
-    sample = entry->m_10->GetItem();
+    sample = (DirectSoundMgr*)entry->m_10->GetItem();
     if (sample == 0) {
         return;
     }
@@ -3179,7 +3180,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (entry->m_10 == 0) {
         return;
     }
-    sample = entry->m_10->GetItem();
+    sample = (DirectSoundMgr*)entry->m_10->GetItem();
     if (sample == 0) {
         return;
     }

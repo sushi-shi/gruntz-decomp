@@ -16,6 +16,8 @@
 #ifndef SRC_GRUNTZ_GRUNT_H
 #define SRC_GRUNTZ_GRUNT_H
 
+class CSoundCueMgr; // folded GruntSampleFactory
+
 class DirectSoundMgr; // folded GruntSoundSample
 
 #include <Ints.h>
@@ -611,14 +613,10 @@ struct GruntSoundCat { // m_30: the sound-category / world-resource holder objec
 // GruntSoundEntry whose +0x10 sub-object owns a sample factory (GetItem @0x135d70,
 // __thiscall ret 0 -> new sample); the sample is Play'd (0x136300) and lives in the
 // grunt's +0x428 slot (freed by ClearSubB). All engine callees external/reloc-masked.
-SIZE_UNKNOWN(GruntSampleFactory);
-struct GruntSampleFactory {
-    DirectSoundMgr* GetItem(); // 0x135d70 (__thiscall, 0 args; returns a new sample)
-};
 SIZE_UNKNOWN(GruntSoundEntry);
 struct GruntSoundEntry {
     char m_pad0[0x10];
-    GruntSampleFactory* m_10; // +0x10  the sample factory
+    CSoundCueMgr* m_10; // +0x10  the sample factory
 };
 SIZE_UNKNOWN(GruntSoundMap);
 struct GruntSoundMap {
