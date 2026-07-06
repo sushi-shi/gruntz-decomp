@@ -454,12 +454,18 @@ namespace ApiCallerStubs {
     // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
     DATA(0x0020aac8)
     extern char g_msgCaption[];
-    struct Poly08 {
-        struct PolyVtbl08* m_vptr;
-    };
-    struct PolyVtbl08 {
-        void* s0[0xa];
-        void(__stdcall* Slot28)(Poly08*); // +0x28
+    struct Poly08 { // real polymorphic; Slot28 is slot 10 (+0x28)
+        virtual void Slot00();
+        virtual void Slot01();
+        virtual void Slot02();
+        virtual void Slot03();
+        virtual void Slot04();
+        virtual void Slot05();
+        virtual void Slot06();
+        virtual void Slot07();
+        virtual void Slot08();
+        virtual void Slot09();
+        virtual void __stdcall Slot28(); // slot 10 (+0x28)
     };
     struct AudioSub_08ee70 {
         char m_pad0[0x14];
@@ -498,7 +504,7 @@ namespace ApiCallerStubs {
         if (m_30) {
             Stop_158c70(m_30->m_4->m_14);
             Poly08* p = *m_30->m_1c;
-            p->m_vptr->Slot28(p);
+            p->Slot28();
         }
         i32 wasShown = ShowCursor(1);
         while (ShowCursor(1) < 0) {

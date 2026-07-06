@@ -248,21 +248,47 @@ i32 Builder_168080::Init(
 // / `dst` carry hand-rolled __stdcall function tables (object passed explicitly);
 // the callee cleans, so they are modeled as __stdcall fn-ptr vtables.
 // ===========================================================================
-struct ObjA2_17c3f0;
-struct VtblA2_17c3f0 {
-    void* s0[5];
-    i32(__stdcall* fn5)(ObjA2_17c3f0*, i32, i32*, i32*, i32); // slot +0x14
+struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
 };
-struct ObjA2_17c3f0 {
-    VtblA2_17c3f0* vptr;
-};
-struct ObjA3_17c3f0;
-struct VtblA3_17c3f0 {
-    void* s0[31];
-    void(__stdcall* fn31)(ObjA3_17c3f0*, i32); // slot +0x7c
-};
-struct ObjA3_17c3f0 {
-    VtblA3_17c3f0* vptr;
+struct ObjA3_17c3f0 { // real polymorphic; fn31 is slot 31 (+0x7c)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void __stdcall fn31(i32); // slot 31 (+0x7c)
 };
 extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
 
@@ -370,11 +396,11 @@ i32 Handler_17c3f0::Init(
     m_1c = a3;
     M_17cd90(a1);
     if (kind == 8) {
-        if (m_14->vptr->fn5(m_14, 4, &m_108, &m_2c, 0)) {
+        if (m_14->fn5(4, &m_108, &m_2c, 0)) {
             M_17cc80();
             return 0;
         }
-        m_1c->vptr->fn31(m_1c, m_2c);
+        m_1c->fn31(m_2c);
         m_510 = 0;
     }
     if (kind == 0x18) {
