@@ -10,11 +10,20 @@
 // vtable 0x5e713c); no manual vptr store (see the header note).
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
-#include <Win32.h>                // RECT / CopyRect / SetRect (PosSoundObj rects + CommitSpriteAction)
+#include <Win32.h> // RECT / CopyRect / SetRect (PosSoundObj rects + CommitSpriteAction)
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/InputState.h> // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <rva.h>
 #include <Globals.h>
+
+// The ambient-sound map is an MFC CMapStringToOb; Lookup @0x1b8438 is CMapStringToOb::Lookup.
+// Minimal local decl (this Win32 TU can't take <Mfc.h> windows.h-first); links from MFC.
+class CObject;
+SIZE_UNKNOWN(CMapStringToOb);
+class CMapStringToOb {
+public:
+    i32 Lookup(const char* key, CObject*& out) const; // 0x1b8438
+};
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
@@ -302,7 +311,7 @@ void CRandomAmbientSound::SetupFromMap(
     i32 a5
 ) {
     void* found = 0;
-    holder->m_map.Lookup(key, &found);
+    ((CMapStringToOb*)&holder->m_map)->Lookup((const char*)key, (CObject*&)found);
     if (found != 0) {
         SetupPos(((AmbSoundRecord*)found)->m_mgr, a3, a4, pos, a5);
     }
@@ -467,7 +476,8 @@ PosSoundPlaced* __stdcall WorldSoundCreateFull(
     i32 e,
     i32 f
 ); // 0xbb60
-PosSoundPlaced* __stdcall WorldSoundCreateSimple(void* factory, i32 z, RECT* rc, i32 a, i32 b); // 0xb7b0
+PosSoundPlaced* __stdcall
+WorldSoundCreateSimple(void* factory, i32 z, RECT* rc, i32 a, i32 b); // 0xb7b0
 RVA(0x0000c840, 0x13d)
 i32 CommitSpriteAction(PosSoundObj* obj) {
     PosSoundAux* aux = obj->m_aux;
@@ -501,8 +511,13 @@ i32 CommitSpriteAction(PosSoundObj* obj) {
                         0
                     );
                 } else {
-                    placed =
-                        WorldSoundCreateSimple(*(void**)((char*)layer + 0x10), 0x64, &rc, obj->m_120, 0);
+                    placed = WorldSoundCreateSimple(
+                        *(void**)((char*)layer + 0x10),
+                        0x64,
+                        &rc,
+                        obj->m_120,
+                        0
+                    );
                 }
                 if (placed && obj->m_placed.top > 0) {
                     placed->m_28 = obj->m_placed;
