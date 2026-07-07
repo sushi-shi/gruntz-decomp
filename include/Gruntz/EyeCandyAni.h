@@ -16,7 +16,8 @@ class CEyeCandyAni : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CEyeCandyAni(CGameObject* obj); // 0xac870
+    virtual ~CEyeCandyAni() OVERRIDE; // slot 0
+    CEyeCandyAni(CGameObject* obj);   // 0xac870
     virtual LogicTypeId GetTypeTag()
         OVERRIDE; // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
