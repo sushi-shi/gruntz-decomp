@@ -396,4 +396,15 @@ public:
     virtual void WndVsl35() OVERRIDE;             // slot 35
 };
 
+// CMultiHelpDlg - the multiplayer help/info CDialog (vtable 0x5ea474, 54 slots =
+// CDialog); ctor reached via EnableButtons_be820 (reconbatch2). Same 3-override shape.
+SIZE_UNKNOWN(CMultiHelpDlg);
+class CMultiHelpDlg : public CDialog {
+public:
+    virtual ~CMultiHelpDlg() OVERRIDE;            // slot 1
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
+};
+VTBL(CMultiHelpDlg, 0x001ea474);
+
 #endif // SRC_GRUNTZ_DIALOGS_H

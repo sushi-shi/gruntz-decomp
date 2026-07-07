@@ -6,52 +6,6 @@
 // class is still being reconstructed.
 #include <rva.h>
 #include <Wap32/Object.h>
-#include <Gruntz/Dialogs.h> // CDialog (MFC hierarchy)
-
-struct CMultiHelpDlg : public CDialog {
-    virtual ~CMultiHelpDlg() OVERRIDE;            // slot 1
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
-};
-SIZE_UNKNOWN(CMultiHelpDlg);
-VTBL(CMultiHelpDlg, 0x001ea474);
-
-struct IStream {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-};
-SIZE_UNKNOWN(IStream);
-
-struct CArchiveStream : public IStream { // 14 slots (first=QueryInterface)
-    virtual void Slot00() OVERRIDE;
-    virtual void Slot01() OVERRIDE;
-    virtual void Slot02() OVERRIDE;
-    virtual void Slot03() OVERRIDE;
-    virtual void Slot04() OVERRIDE;
-    virtual void Slot05() OVERRIDE;
-    virtual void Slot06() OVERRIDE;
-    virtual void Slot07() OVERRIDE;
-    virtual void Slot08() OVERRIDE;
-    virtual void Slot09() OVERRIDE;
-    virtual void Slot10() OVERRIDE;
-    virtual void Slot11() OVERRIDE;
-    virtual void Slot12() OVERRIDE;
-    virtual void Slot13() OVERRIDE;
-};
-SIZE_UNKNOWN(CArchiveStream);
-VTBL(CArchiveStream, 0x001ed98c);
 
 struct CEngObj_1ef6c8 { // 2 slots (first=__purecall)
     virtual void Slot00();
