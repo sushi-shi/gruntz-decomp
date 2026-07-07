@@ -35,9 +35,7 @@ class CLightFx; // folded CProjShadowActivate
 // sub-object == CProjRenderObj::m_1c0/m_1c8.
 SIZE_UNKNOWN(CProjAnim);
 struct CProjAnim {
-    i32 Tick(u32 clock);     // 0x15c360 (was SetAnim - same fn, clock-fed)
-    i32 Setup(void* frame0); // 0x15c2d0
-};
+}; // Setup=CDDrawBlitParam::Setup_15c2d0, Tick=CAniAdvanceCursor::Advance_15c360; cast at calls
 
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
 // loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.

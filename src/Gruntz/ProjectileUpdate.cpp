@@ -2,7 +2,7 @@
 // (graduated from src/Stub/Backlog.cpp as "Projectile::vfunc_9", then briefly
 // misclaimed as CProjectile::Update - both disproven, see IDENTITY below).
 //
-//   Ticks the grunt's attack animation (m_154->m_1a0.Tick(g_6bf3bc)); when it
+//   Ticks the grunt's attack animation (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_6bf3bc)); when it
 //   reaches the fire cue (==2) it dispatches on the grunt's tool kind m_170:
 //     ranged (2 Boomerang / 9,10,11,21,22 -> "Projectile" / 17 TimeBomb):
 //       spawn the projectile eye-candy sprite through the HUD sprite factory
@@ -62,6 +62,12 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
 #include <rva.h>
+
+// The +0x1a0 anim sub-object's Tick @0x15c360 is CAniAdvanceCursor::Advance_15c360; TU-local decl.
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
 
 DATA(0x002bf3bc)
 extern "C" i32 g_6bf3bc; // the sub-logic clock fed to the tick
@@ -170,7 +176,7 @@ SIZE_UNKNOWN(CGruntFireView);
 RVA(0x00061cb0, 0x34a)
 i32 CGruntFireView::Update() {
     i32 flag = 0;
-    if (m_154->m_1a0.Tick(g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_6bf3bc) == 2) {
         switch (m_toolKind) {
             case 9:
             case 10:
