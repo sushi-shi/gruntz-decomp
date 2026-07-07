@@ -7,6 +7,10 @@
 #include <Gruntz/TokenMgr.h> // canonical CTokenMgr (g_tokenMgr; Reset)
 #include <Ints.h>
 #include <rva.h>
+class Cfa150 {
+public:
+    void Cleanup();
+};
 class CAreaMgr {
 public:
     void Reset();
@@ -106,13 +110,13 @@ void TokenMgrReset99b80() {
 // distinct restore, so its ??_7 reloc-masks by shape). __thiscall.
 // ===========================================================================
 struct CStateSub8c470 {
-    void BaseInit3f53(); // 0x3f53 (reloc-masked)
+    // BaseInit3f53 @0x3f53 IS Cfa150::Cleanup; cast at the call.
     virtual ~CStateSub8c470();
 };
 SIZE_UNKNOWN(CStateSub8c470);
 RVA(0x0008c470, 0xb)
 CStateSub8c470::~CStateSub8c470() {
-    BaseInit3f53();
+    ((Cfa150*)this)->Cleanup();
 }
 
 // ===========================================================================

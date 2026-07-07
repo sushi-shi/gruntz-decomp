@@ -167,7 +167,7 @@ struct StateScoreView {
 // named key), and g_645578 is zeroed field-by-field before delete. Each engine
 // entrypoint is out-of-line / reloc-masked.
 struct EngObj {
-    void Teardown(); // (this) reloc-masked
+    // Teardown @0x3b1b IS ~CTriggerMgr; cast at each call.
 };
 class CWorldDelete {
 public:
@@ -2974,7 +2974,7 @@ void CGruntzMgr::Close() {
         m_inputState = 0;
     }
     if (m_40) {
-        m_40->Teardown();
+        ((CTriggerMgr*)m_40)->~CTriggerMgr();
         operator delete(m_40);
         m_40 = 0;
     }
@@ -3007,7 +3007,7 @@ void CGruntzMgr::Close() {
         m_3c = 0;
     }
     if (m_50) {
-        m_50->Teardown();
+        ((CTriggerMgr*)m_50)->~CTriggerMgr();
         operator delete(m_50);
         m_50 = 0;
     }

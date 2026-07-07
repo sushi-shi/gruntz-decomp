@@ -593,7 +593,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     slot->m_020 = 0;
     SetNetSlot(slot->m_008, 1);
 
-    CString line = slot->GetName() + " has left the game.";
+    CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";
     ((CFontConfig*)m_4->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
 
     if (blob != 0) {
