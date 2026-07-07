@@ -520,4 +520,4 @@ SIZE_UNKNOWN(MfcStr);
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CTsState, 0x001ea0bc);
+VTBL(CPlay, 0x001ea0bc);
