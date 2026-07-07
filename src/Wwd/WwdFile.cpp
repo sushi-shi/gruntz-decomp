@@ -456,12 +456,8 @@ struct WwdObjAnimInit {
 // is cast through - there is no member to fold it into.
 // WwdStringToObMap is an MFC CMapStringToPtr (Lookup @0x1b8008); the map var is retyped directly.
 
-// Level register: append the finished object to the level. __thiscall, ret 0x4.
-// authentic: reached at a COMPUTED address (loader+0xb0); helper method view over a
-// raw pointer, same rationale as WwdStringToObMap.
-struct WwdObjList {
-    void Add(CGameObject* obj);
-};
+// Level register: append the finished object to the level (loader+0xb0 is the
+// level CObList; AddTail returns POSITION). __thiscall, ret 0x4.
 
 // The object's own vtable (transitional manual stamp; reloc-masked DATA extern).
 // The sub-object vtable is realized as ??_7CAniAdvanceCursor@@6B@ (0x5f0128) in
@@ -821,7 +817,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         obj->m_strideY = (i32)h; // +0xfc
     }
 
-    ((WwdObjList*)((char*)loader + 0xb0))->Add(obj);
+    ((CObList*)((char*)loader + 0xb0))->AddTail((CObject*)obj);
 
     return (i32)(strCursor - (const char*)src);
 }

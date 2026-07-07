@@ -79,11 +79,10 @@ public:
     CAniRecordPool* m_pool; // +0x1c  the pool allocator
 };
 
-// The freshly-allocated +0x10 buffer's second-stage init (0x1485b0, __thiscall on
-// the buffer); reached only on the "took a new buffer" path of the buffer virtuals.
-class CAniRecordBuf {
-public:
-    void Init_1485b0(); // 0x1485b0
+// The freshly-allocated +0x10 palette buffer; second-stage init captures the
+// current system palette. The real class is DirPal (0x1485b0, DirPal.cpp).
+struct DirPal {
+    i32 CaptureSystemPalette(); // 0x1485b0
 };
 
 // The CMapStringToPtr the index resolver looks each token up in lives at owner2
@@ -312,14 +311,14 @@ i32 CAniRecord::GetSize_168e50() {
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
+    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
-        buf->Init_1485b0();
+        buf->CaptureSystemPalette();
     }
     return (void*)1;
 }
@@ -329,14 +328,14 @@ void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
-        buf->Init_1485b0();
+        buf->CaptureSystemPalette();
     }
     return (void*)1;
 }
@@ -345,14 +344,14 @@ void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
 // 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
-    CAniRecordBuf* buf = (CAniRecordBuf*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
+    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
     }
     if (flag & 0x1) {
         m_08 |= 0x1;
-        buf->Init_1485b0();
+        buf->CaptureSystemPalette();
     }
     return (void*)1;
 }
@@ -389,7 +388,7 @@ CString CAniStrArray::GetAt(int index) {
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecord);
 SIZE_UNKNOWN(CAniRecordBase2);
-SIZE_UNKNOWN(CAniRecordBuf);
+SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPool);
 SIZE_UNKNOWN(CAniRecordPrimary);
