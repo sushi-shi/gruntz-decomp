@@ -164,6 +164,7 @@ public:
 };
 
 class CGruntHealthSprite : public CUserLogic {
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
@@ -182,6 +183,9 @@ VTBL(CGruntHealthSprite, 0x1e7ba4);
 // GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).
 
 class CTeleporter : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
 public:
     TILE_LOGIC_TAIL
 public:
@@ -220,6 +224,9 @@ VTBL(CSecretTeleporterTrigger, 0x1e7564);
 
 SIZE_UNKNOWN(CWarpStonePad);
 class CWarpStonePad : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
 public:
     TILE_LOGIC_TAIL
 public:
@@ -233,6 +240,7 @@ public:
 
 SIZE_UNKNOWN(CTileTriggerSwitch);
 class CTileTriggerSwitch : public CUserLogic {
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
@@ -265,6 +273,7 @@ VTBL(CTileTriggerSwitch, 0x1e7f6c);
 // m_40 (the geometry token cache, the rest) are leaf fields.
 // ---------------------------------------------------------------------------
 class CGruntSelectedSprite : public CUserLogic {
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
@@ -277,6 +286,9 @@ public:
 VTBL(CGruntSelectedSprite, 0x1e7bfc);
 
 class CGruntToySprite : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
 public:
     TILE_LOGIC_TAIL
 public:
@@ -287,6 +299,8 @@ public:
 };
 
 class CGruntPowerupSprite : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
 public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
