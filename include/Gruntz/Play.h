@@ -521,8 +521,8 @@ public:
     }* m_guts;     // +0x2dc guts/UI subsystem
     // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
     struct HitTestSink {
-        i32 HitTest(i32 x, i32 y); // 0x421140 (thiscall) -> nonzero = consumed
-        void StepZoom(i32 n);      // 0x420530 (thiscall) OnKeyCommand +/- zoom step
+        // HitTest @? IS CChatBoxOwner::HitTest; cast at the call.
+        // StepZoom @? IS CChatBoxOwner::Configure; cast at the call.
         char p0[0x10];
         i32 m_10; // +0x10  active-overlay gate (OnKeyCommand forward)
     }* m_hitTest;
