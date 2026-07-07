@@ -24,6 +24,8 @@
 #include <string.h>               // memset (1-arg spawn ctor's +0x1e0 zero-fill)
 #include <rva.h>
 #include <Globals.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The +0x1a0 anim sub-object is viewed two ways: Setup @0x15c2d0 is CDDrawBlitParam::Setup_15c2d0,
 // Tick @0x15c360 is CAniAdvanceCursor::Advance_15c360. TU-local decls, cast at each call.
@@ -500,7 +502,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     if (coord >= g_projActLo && coord <= g_projActHi) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
-    if (g_projActColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_projActColl)->GrowTo(coord, 0)) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
     void* item = g_actCache;
@@ -515,7 +517,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     if (key >= g_projTypeLo && key <= g_projTypeHi) {
         return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
-    if (g_projTypeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_projTypeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
     void* item = g_actCache;
@@ -528,7 +530,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
 // fast-range bounds (RegisterRange(0x7d0, 0x7da)). A static initializer.
 RVA(0x000df920, 0x15)
 void CProjectile::RegisterRange() {
-    g_projActColl.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_projActColl)->Construct(0x7d0, 0x7da);
 }
 
 // CProjectile::RegisterType @0x0dfb00 - the level-load class registrar (same

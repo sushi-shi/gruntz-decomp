@@ -7,6 +7,8 @@
 // CTeleporter : CUserLogic (RTTI .?AVCTeleporter@@). Only offsets / code bytes
 // are load-bearing; names are placeholders for the recovered engine identities.
 #include <Gruntz/Teleporter.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
@@ -98,7 +100,7 @@ extern CTeleporterActReg g_teleporterActReg; // 0x6446b0
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000414a0, 0x15)
 void CTeleporter::InitActReg() {
-    g_teleporterActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_teleporterActReg)->Construct(2000, 2010);
 }
 
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
@@ -266,6 +268,8 @@ i32 CTeleporter::Update() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CTeleAnimSink);
 SIZE_UNKNOWN(CTeleIconTable);
 SIZE_UNKNOWN(CTeleMgrSub);

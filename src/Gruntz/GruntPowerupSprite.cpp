@@ -13,6 +13,8 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
 // @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
@@ -30,7 +32,7 @@ CGruntPowerupSprite::~CGruntPowerupSprite() {}
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007ffa0, 0x15)
 void CGruntPowerupSprite::InitActReg() {
-    g_powerupActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_powerupActReg)->Construct(2000, 2010);
 }
 
 // CGruntPowerupSprite::RegisterActs @0x080180 - bind the class's per-frame handler

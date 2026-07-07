@@ -1,6 +1,8 @@
 // CheckpointTrigger.cpp - the checkpoint-trigger tile-logic object
 // (C:\Proj\Gruntz), a CUserLogic leaf. Only the /GX leaf dtor is reconstructed.
 #include <Gruntz/CheckpointTrigger.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 #include <Gruntz/ActReg.h> // shared activation-registrar archetype (CCheckpointActReg)
 
@@ -24,11 +26,13 @@ extern CCheckpointActReg g_checkpointActReg; // 0x64e7c0
 // coordinate registry singleton over [2000, 2010]. Free init thunk; reloc-masked.
 RVA(0x0010ea00, 0x15)
 void CCheckpointTrigger::InitActReg() {
-    g_checkpointActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_checkpointActReg)->Construct(2000, 2010);
 }
 
 #include <Bute/ButeMgr.h> // CButeTree (g_buteTree Find)
 #include <string.h>       // memset (inlined rep stosd)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 DATA(0x0020a454)

@@ -1,4 +1,5 @@
 #include <Gruntz/Wormhole.h> // the shared CWormhole class (object logic + acts)
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
 #include <Wap32/ZVec.h> // zDArray<member-fn-ptr> dispatch table + the shared registration infra
@@ -231,7 +232,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // ===========================================================================
 RVA(0x0003ffd0, 0x15)
 void InitWormholeDispatch() {
-    g_wormholeDispatch.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_wormholeDispatch)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -408,6 +409,7 @@ CWormhole::CWormhole(CGameObject* obj) : CTileLogic(obj) {
 // table (+0x78) at [id*4 + 0x14] and re-seed the bound object's draw trio.
 // ---------------------------------------------------------------------------
 #include <Gruntz/SerialObjRef.h>
+#include <Wap32/ZDArrayDerived.h>
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {

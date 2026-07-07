@@ -10,6 +10,8 @@
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -24,7 +26,7 @@ CGruntSelectedSprite::~CGruntSelectedSprite() {}
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007e5e0, 0x15)
 void CGruntSelectedSprite::InitActReg() {
-    g_selectedActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_selectedActReg)->Construct(2000, 2010);
 }
 
 // CGruntSelectedSprite::RegisterActs @0x07e7c0 - bind the class's per-frame handler

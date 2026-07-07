@@ -14,6 +14,7 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the shared +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Wap32/ZDArrayDerived.h>
 // KitchenSlime.cpp - CKitchenSlime::LoadSprites @0x0b3160 (C:\Proj\Gruntz). The
 // kitchen-slime hazard's per-step "advance to the next walkable tile" driver: it
 // probes up to four tiles in the slime's current travel direction (m_10->m_124),
@@ -197,7 +198,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     if (coord >= g_kslimeLo && coord <= g_kslimeHi) {
         return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
     }
-    if (g_kslimeColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_kslimeColl)->GrowTo(coord, 0)) {
         return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
     }
     void* item = g_actCache;
@@ -370,7 +371,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_actCache;
@@ -424,7 +425,7 @@ void CKitchenSlime::RegisterType() {
 // archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000b28c0, 0x15)
 void CKitchenSlime::RegisterRange() {
-    g_kslimeColl.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_kslimeColl)->Construct(0x7d0, 0x7da);
 }
 
 // CKitchenSlime::FireActivation @0x0b2940 - look the activation coordinate up in

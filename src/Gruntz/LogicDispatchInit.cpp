@@ -16,6 +16,7 @@
 // zDArray ctor call reloc-masks), so the byte match is exact regardless.
 #include <Wap32/ZVec.h>          // zDArray base
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
+#include <Wap32/ZDArrayDerived.h>
 // LogicFnTable (zDArray<T>, ctor 0x408710 reached via the 0x3742 ILT thunk - the
 // SAME callee as InitSimpleAnimDispatch) is the shared <Gruntz/LogicFnTable.h> shape.
 
@@ -30,17 +31,17 @@ extern LogicFnTable g_logicDispatch_646060; // 0x646060  (proximity: CEyeCandy |
 // construct the dispatch table at 0x6445e8 over [0x7d0, 0x7da].
 RVA(0x000406d0, 0x15)
 void InitLogicDispatch_6445e8() {
-    g_logicDispatch_6445e8.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_logicDispatch_6445e8)->Construct(0x7d0, 0x7da);
 }
 
 // construct the dispatch table at 0x6447f8 over [0x7d0, 0x7da].
 RVA(0x000472d0, 0x15)
 void InitLogicDispatch_6447f8() {
-    g_logicDispatch_6447f8.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_logicDispatch_6447f8)->Construct(0x7d0, 0x7da);
 }
 
 // construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)
 void InitLogicDispatch_646060() {
-    g_logicDispatch_646060.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_logicDispatch_646060)->Construct(0x7d0, 0x7da);
 }

@@ -14,6 +14,8 @@
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 class CStatusBarSprite : public CTileLogic {
 public:
@@ -70,7 +72,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CTileLogic(obj) {
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0010c430, 0x15)
 void CStatusBarSprite::InitActReg() {
-    g_statusBarSpriteActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_statusBarSpriteActReg)->Construct(2000, 2010);
 }
 
 // CStatusBarSprite::RegisterActs @0x10c610 - bind the per-frame handler (AdvanceAnim

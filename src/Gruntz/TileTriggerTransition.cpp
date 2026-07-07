@@ -24,6 +24,8 @@
 #include <Gruntz/TileTriggerTransition.h>
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed
 // [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor
@@ -118,7 +120,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CTileLogic(ob
 // ---------------------------------------------------------------------------
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
-    g_tileActReg.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_tileActReg)->Construct(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------

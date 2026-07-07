@@ -21,6 +21,8 @@
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -44,7 +46,7 @@ extern CWormholeActReg g_wormholeActReg; // 0x6445c0
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0003f210, 0x15)
 void CWormhole::InitActReg() {
-    g_wormholeActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_wormholeActReg)->Construct(2000, 2010);
 }
 
 // CWormhole::RegisterActs @0x03f3f0 - bind the per-frame handler (AdvanceAnim

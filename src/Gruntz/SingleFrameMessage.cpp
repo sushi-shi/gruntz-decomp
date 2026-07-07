@@ -4,7 +4,9 @@
 //
 // CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
@@ -29,7 +31,7 @@ extern CSingleFrameActReg g_singleFrameActReg; // 0x645ef0
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ab530, 0x15)
 void CSingleFrameMessage::InitActReg() {
-    g_singleFrameActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_singleFrameActReg)->Construct(2000, 2010);
 }
 
 // CSingleFrameMessage::RegisterActs @0x0ab710 - bind the class's per-frame handler
@@ -67,6 +69,8 @@ void CSingleFrameMessage::RegisterActs() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CSingleFrameActEntry);
 SIZE_UNKNOWN(CSingleFrameActReg);
 SIZE_UNKNOWN(CSingleFrameMessage);

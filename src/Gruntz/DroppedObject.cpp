@@ -9,6 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/DroppedObject.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
@@ -88,7 +90,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -118,7 +120,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
     if (coord >= g_dropLo && coord <= g_dropHi) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
-    if (g_dropColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_dropColl)->GrowTo(coord, 0)) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
     void* item = g_actCache;
@@ -184,7 +186,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CTileLogic(obj) {
 // initializer; same archetype as CProjectile::RegisterRange (0x0df920).
 RVA(0x000c6b50, 0x15)
 void CDroppedObject::RegisterRange() {
-    g_dropColl.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_dropColl)->Construct(0x7d0, 0x7da);
 }
 
 // CDroppedObject::FireActivation @0x0c6bd0 - look the activation coordinate up
@@ -376,6 +378,8 @@ i32 CDroppedObject::ActA() {
 }
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CDropEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);

@@ -10,6 +10,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/BehindCandyAni.h>
@@ -73,7 +75,7 @@ CBehindCandyAni::~CBehindCandyAni() {}
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad7d0, 0x15)
 void CBehindCandyAni::InitActReg() {
-    g_behindCandyActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_behindCandyActReg)->Construct(2000, 2010);
 }
 
 // CBehindCandyAni::RegisterActs @0x0ad9b0 - bind the class's per-frame handler
@@ -119,6 +121,8 @@ i32 CBehindCandyAni::AdvanceAnim() {
 }
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CBehindCandyActEntry);
 SIZE_UNKNOWN(CBehindCandyActReg);
 SIZE_UNKNOWN(CBehindCandyAni);

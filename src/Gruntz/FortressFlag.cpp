@@ -9,6 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FortressFlag.h>
@@ -157,7 +159,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CTileLogic(obj) {
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x00046000, 0x15)
 void CFortressFlag::InitActReg() {
-    g_fortressFlagActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_fortressFlagActReg)->Construct(2000, 2010);
 }
 
 // CFortressFlag::RegisterActs @0x0461e0 - bind the per-frame handler (AdvanceAnim
@@ -229,6 +231,8 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 }
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CFortressFlag);
 SIZE_UNKNOWN(CFortressFlagActEntry);
 SIZE_UNKNOWN(CFortressFlagActReg);

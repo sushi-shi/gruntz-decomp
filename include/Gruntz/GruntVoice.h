@@ -20,6 +20,8 @@
 class CVariantSlot; // folded CVActColl2
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 #include <Mfc.h> // CObject base + <windows.h>
 
@@ -137,7 +139,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
     if (coord >= g_vactLo && coord <= g_vactHi) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
-    if (g_vactColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_vactColl)->GrowTo(coord, 0)) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
     void* item = g_actCache;

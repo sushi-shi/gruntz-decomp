@@ -43,6 +43,8 @@
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Globals.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (Update, a 4-byte code ptr on this single-inheritance
@@ -268,7 +270,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CTileLogic(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000afd60, 0x15)
 void CRollingBall::InitActReg() {
-    g_rollingBallActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_rollingBallActReg)->Construct(2000, 2010);
 }
 
 // CRollingBall::RegisterActs @0x0aff40 - bind the per-frame handler (Update

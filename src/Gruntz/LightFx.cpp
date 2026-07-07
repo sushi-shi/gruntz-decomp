@@ -6,6 +6,8 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h>           // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 // LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
 // reconstructed here, in ascending retail-RVA order:
@@ -111,7 +113,7 @@ extern CLightFxActReg g_lightFxActReg; // 0x645ad0
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0009d140, 0x15)
 void CLightFx::InitActReg() {
-    g_lightFxActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_lightFxActReg)->Construct(2000, 2010);
 }
 
 // CLightFx::RegisterActs @0x9d320 - bind the per-frame handler (AdvanceAnim

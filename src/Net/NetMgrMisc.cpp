@@ -10,6 +10,7 @@
 #include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (the +0x5c transform host)
 #include <rva.h>
 #include <string.h>
+#include <Wap32/ZVec.h>
 
 // The file-scope multiplayer game-state singleton (g_64bd5c) the coordinator
 // dispatches onto. XREF proves it is a CMulti: its +0x528 is-host latch / +0x5c0
@@ -105,5 +106,5 @@ void CMultiStartDlg::Drive() {
 // ---------------------------------------------------------------------------
 RVA(0x000c5f00, 0x15)
 void NetConfigureBe90() {
-    g_netBe90.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_netBe90)->Construct(0x7d0, 0x7da);
 }

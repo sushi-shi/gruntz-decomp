@@ -8,6 +8,8 @@
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/GruntToySprite.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
 RVA(0x000122b0, 0x44)
@@ -18,7 +20,7 @@ CGruntToySprite::~CGruntToySprite() {}
 // the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.
 RVA(0x0007f540, 0x15)
 void CGruntToySprite::InitActReg() {
-    g_toyActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_toyActReg)->Construct(2000, 2010);
 }
 
 // CGruntToySprite::RegisterActs @0x07f720 - bind the class's per-frame handler

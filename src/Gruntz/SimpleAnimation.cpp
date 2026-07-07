@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SimpleAnimation.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 
 #include <Bute/ButeMgr.h>        // CButeTree (the shared registration key store)
@@ -127,7 +128,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // ===========================================================================
 RVA(0x000abb90, 0x15)
 void InitSimpleAnimDispatch() {
-    g_simpleAnimDispatch.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_simpleAnimDispatch)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -171,4 +172,5 @@ i32 CSimpleAnimation::AdvanceAnim() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CSimpleAnimation);

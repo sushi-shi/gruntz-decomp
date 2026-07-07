@@ -14,6 +14,8 @@
 #include <Dsndmgr/StreamVoice.h>
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // CGruntVoice::CGruntVoice(CGameObject*)  (0x1198a0)
@@ -76,7 +78,7 @@ CGruntVoice::~CGruntVoice() {}
 // (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
 RVA(0x00119dc0, 0x15)
 void CGruntVoice::InitActReg() {
-    g_vactColl.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_vactColl)->Construct(2000, 2010);
 }
 
 // ===========================================================================

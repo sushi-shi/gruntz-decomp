@@ -8,6 +8,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/StatusBarUpdatersViews.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
@@ -54,7 +56,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     if (coord >= g_tbombLo && coord <= g_tbombHi) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
-    if (g_tbombColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_tbombColl)->GrowTo(coord, 0)) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
     void* item = g_actCache;
@@ -113,7 +115,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -137,6 +139,8 @@ RVA(0x00012a70, 0x44)
 CTimeBomb::~CTimeBomb() {}
 
 #include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 extern CButeMgr g_buteMgr;
 
 // The running game clock (DAT_00645588) the ctor seeds m_startTimeLo from.

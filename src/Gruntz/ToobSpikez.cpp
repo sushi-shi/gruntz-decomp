@@ -9,6 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
 #include <Globals.h>
@@ -127,7 +129,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
     if (coord >= g_toobLo && coord <= g_toobHi) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
-    if (g_toobColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_toobColl)->GrowTo(coord, 0)) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
     void* item = g_actCache;
@@ -185,7 +187,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -282,5 +284,7 @@ void CToobSpikez::RegisterActs() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CToobColl);
 SIZE_UNKNOWN(CToobEntry);

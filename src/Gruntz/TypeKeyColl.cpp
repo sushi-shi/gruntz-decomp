@@ -28,6 +28,8 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/XferArchive.h>   // canonical CXferArchive/CXferField (ProjTypeXfer arg)
 #include <Globals.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // Vtables (UNMATCHED engine tables - stamped by address, reloc-masked DIR32).
@@ -232,7 +234,7 @@ static inline char* TypeResolve(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return g_typeBase + (key - g_typeLo) * g_typeStride;
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return g_typeBase + (key - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;

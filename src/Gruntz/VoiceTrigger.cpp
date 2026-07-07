@@ -12,6 +12,8 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameRegistry.h>
@@ -55,7 +57,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
     if (coord >= g_vtrigLo && coord <= g_vtrigHi) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
-    if (g_vtrigColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_vtrigColl)->GrowTo(coord, 0)) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
     void* item = g_actCache;
@@ -94,13 +96,15 @@ extern i32 g_nameRegScratch;
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
 #include <Gruntz/ActName.h> // CActName (shared)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 static inline char* ActNameLookup(i32 id) {
     g_nameRegScratch = 0;
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -203,7 +207,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CTileLogic(obj) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
-    g_vtrigColl.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_vtrigColl)->Construct(2000, 2010);
 }
 
 // CVoiceTrigger::RegisterActs @0x11a500 - bind the per-frame Tick handler to the

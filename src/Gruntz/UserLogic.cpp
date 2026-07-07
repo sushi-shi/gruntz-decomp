@@ -11,6 +11,8 @@
 // (0x16d710, the +0x18 member); it + the EngStr/registrar externs are in
 // src/Gruntz/UserBaseLink.cpp. Functions are defined in ascending-RVA order.
 #include <Gruntz/TriggerMgr.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -470,7 +472,7 @@ static inline CActEntry* ActLookup(i32 coord) {
     if (coord >= g_actLo && coord <= g_actHi) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
-    if (g_actColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_actColl)->GrowTo(coord, 0)) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
     void* item = g_actCache;
@@ -515,6 +517,8 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
 #include <Gruntz/ActName.h> // CActName (shared)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The id->name-slot resolve (the fast range path + the slow Find/GetRetAddr/Insert
 // rebuild). Folded inline by RegisterActs once, in the new-id branch.
@@ -523,7 +527,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -683,7 +687,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CTileLogi
 // (0x408710). Free init thunk; reloc-masked.
 RVA(0x000420d0, 0x15)
 void CSecretTeleporterTrigger::InitActReg() {
-    g_actColl.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_actColl)->Construct(2000, 2010);
 }
 
 // --- CSecretTeleporterTrigger::FireActivation (0x042150), vtable slot 4 ---
@@ -1070,7 +1074,7 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj) : CTileLogic(obj) {
 // registry ctor (0x408710). Free init thunk; reloc-masked.
 RVA(0x000ae9a0, 0x15)
 void CSingleAnimation::InitActReg() {
-    g_singleAnimActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_singleAnimActReg)->Construct(2000, 2010);
 }
 
 // --- CSingleAnimation::RegisterActs (0x0aeb80) ---
@@ -1126,7 +1130,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CTileLogic(obj) {
 // shared registry ctor (0x408710). Free init thunk; reloc-masked.
 RVA(0x0010d840, 0x15)
 void CWarpStonePad::InitActReg() {
-    g_warpStonePadActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_warpStonePadActReg)->Construct(2000, 2010);
 }
 
 // --- CWarpStonePad::FireWarp (0x10d8c0), vtable slot 4 ---
@@ -1198,7 +1202,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CTileLogic(obj) {
 // the shared registry ctor (0x408710). Free init thunk; reloc-masked.
 RVA(0x0010de20, 0x15)
 void CTileTriggerSwitch::InitActReg() {
-    g_tileTriggerSwitchActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_tileTriggerSwitchActReg)->Construct(2000, 2010);
 }
 
 // --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
@@ -1253,7 +1257,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CTileLogic(obj) {
 // shared registry ctor (0x408710). Free init thunk; reloc-masked.
 RVA(0x0010e420, 0x15)
 void CTileTrigger::InitActReg() {
-    g_tileTriggerActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_tileTriggerActReg)->Construct(2000, 2010);
 }
 
 // --- CTileTrigger::RegisterActs (0x10e600) ---
@@ -1295,7 +1299,7 @@ void CTileTrigger::RegisterActs() {
 // shared registry ctor (0x408710). Free init thunk; reloc-masked.
 RVA(0x0010f160, 0x15)
 void CTileSecretTrigger::InitActReg() {
-    g_tileSecretTriggerActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_tileSecretTriggerActReg)->Construct(2000, 2010);
 }
 
 // --- CTileSecretTrigger::RegisterActs (0x10f340) ---

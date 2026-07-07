@@ -10,6 +10,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/GruntHealthSprite.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
@@ -26,7 +28,7 @@ CGruntHealthSprite::~CGruntHealthSprite() {}
 // (no `this`); the ctor is reloc-masked.
 RVA(0x0007ecf0, 0x15)
 void CGruntHealthSprite::InitActReg() {
-    g_healthActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_healthActReg)->Construct(2000, 2010);
 }
 
 // CGruntHealthSprite::RegisterActs @0x07eed0 - bind the class's per-frame handler

@@ -9,6 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FrontCandyAni.h>
@@ -36,7 +38,7 @@ extern CFrontCandyActReg g_frontCandyActReg; // 0x6460b0
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000ad130, 0x15)
 void CFrontCandyAni::InitActReg() {
-    g_frontCandyActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_frontCandyActReg)->Construct(2000, 2010);
 }
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
@@ -99,6 +101,8 @@ i32 CFrontCandyAni::AdvanceAnim() {
 }
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CFrontCandyActEntry);
 SIZE_UNKNOWN(CFrontCandyActReg);
 SIZE_UNKNOWN(CFrontCandyAni);

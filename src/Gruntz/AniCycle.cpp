@@ -4,7 +4,9 @@
 //
 // CAniCycle : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
@@ -50,7 +52,7 @@ i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x000aaf00, 0x15)
 void CAniCycle::InitActReg() {
-    g_aniCycleActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_aniCycleActReg)->Construct(2000, 2010);
 }
 
 // CAniCycle::RegisterActs @0x0ab0e0 - bind the class's per-frame handler
@@ -85,6 +87,8 @@ void CAniCycle::RegisterActs() {
 }
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CAniCycle);
 SIZE_UNKNOWN(CAniCycleActEntry);
 SIZE_UNKNOWN(CAniCycleActReg);

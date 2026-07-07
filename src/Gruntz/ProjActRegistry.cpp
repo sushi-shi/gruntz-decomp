@@ -12,6 +12,8 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The leaf game-object whose dtor opens this TU. A CUserLogic leaf: its only
 // destructible member is the inherited +0x18 EngStr link, so the dtor folds the
@@ -24,15 +26,8 @@ public:
 // The global registry object at VA 0x629388. SetActiveRange reaches it through an
 // ILT thunk (0x3742) -> modeled NO-body so the call reloc-masks. Find (0x16da80)
 // is the slow binary-search probe the coordinate->entry lookup falls back to.
-// SetActiveRange @0x3742 = CZDArrayDerived::Construct, Find @0x16da80 = _zvec::GrowTo; local decls.
-class CZDArrayDerived {
-public:
-    CZDArrayDerived* Construct(i32 a, i32 b);
-};
-class _zvec {
-public:
-    void* GrowTo(i32 a, i32 b);
-};
+// SetActiveRange @0x3742 = CZDArrayDerived::Construct, Find @0x16da80 = _zvec::GrowTo (both from
+// the shared <Wap32/ZVec.h> + <Wap32/ZDArrayDerived.h> headers, added above); cast at each call.
 struct CProjReg {};
 DATA(0x00229388)
 extern CProjReg g_projReg;
@@ -141,7 +136,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;

@@ -15,6 +15,7 @@
 #include <Gruntz/TypeNameEntry.h> // the shared type-name-registry record (CString m_name)
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 // CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
@@ -61,7 +62,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;

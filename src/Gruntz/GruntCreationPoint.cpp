@@ -14,6 +14,8 @@
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/AnimSink.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -127,7 +129,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CTileLogic(obj) {
 // import thunk). Free init thunk.
 RVA(0x0003e8e0, 0x15)
 void CGruntCreationPoint::InitActReg() {
-    g_creationPointActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_creationPointActReg)->Construct(2000, 2010);
 }
 
 // CGruntCreationPoint::RegisterActs @0x03eac0 - bind the per-frame handler

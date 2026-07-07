@@ -10,6 +10,7 @@
 #include <Ints.h>
 
 #include <Font/Font.h> // real Font (the g_largeFont global)
+#include <Wap32/ZVec.h>
 
 // --- 0x11d100 : CNoTrackObject vptr stamp ------------------------------------
 // Stamps the ??_7CNoTrackObject vtable (VA 0x5ec26c = the vtable ComHelperThunks.cpp
@@ -53,7 +54,7 @@ void Unmatched_1bae5d() {
 extern CZDArrayDerived g_64bf00;
 RVA(0x000c76d0, 0x15)
 void Unmatched_c76d0() {
-    g_64bf00.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_64bf00)->Construct(0x7d0, 0x7da);
 }
 
 SIZE_UNKNOWN(CNoTrackObjectStamp); // CNoTrackObject vptr-stamp leaf

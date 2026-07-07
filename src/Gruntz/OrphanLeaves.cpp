@@ -8,6 +8,7 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <rva.h>
 #include <Globals.h>
+#include <Wap32/ZVec.h>
 
 // ---------------------------------------------------------------------------
 // 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
@@ -72,7 +73,7 @@ extern CZDArrayDerived g_6446d8;
 
 RVA(0x0003e120, 0x15)
 void Register6446d8Range() {
-    g_6446d8.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_6446d8)->Construct(0x7d0, 0x7da);
 }
 
 // ---------------------------------------------------------------------------

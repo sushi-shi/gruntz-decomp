@@ -16,6 +16,8 @@
 #include <Io/FileStream.h>       // real CFileIO (the static MFC CFile global at 0x646778)
 #include <Font/Font.h>           // real Font / FontRenderer (the global font objects)
 #include <Globals.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // Tiny string/object globals (already pinned in their owning TUs - reuse the
@@ -54,7 +56,7 @@ extern CHaznColl g_haznColl;                // 0x64e3d0 (CStaticHazard.cpp)
 
 RVA(0x0003a530, 0x15)
 void RegRange3a530() {
-    g_logicActReg_62bfa0.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_logicActReg_62bfa0)->Construct(0x7d0, 0x7da);
 }
 
 RVA(0x0003acb0, 0xa)
@@ -69,7 +71,7 @@ void StrFree3ad30() {
 
 RVA(0x0005bc50, 0x15)
 void RegRange5bc50() {
-    g_reg_644af0.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_reg_644af0)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -227,17 +229,17 @@ CGameWnd::~CGameWnd() {
 
 RVA(0x000adde0, 0x15)
 void RegRangeadde0() {
-    g_logicActReg_646010.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
 }
 
 RVA(0x000b15b0, 0x15)
 void RegRangeb15b0() {
-    g_actReg_646188.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_actReg_646188)->Construct(0x7d0, 0x7da);
 }
 
 RVA(0x000b3ae0, 0x15)
 void RegRangeb3ae0() {
-    g_actReg_646250.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_actReg_646250)->Construct(0x7d0, 0x7da);
 }
 
 RVA(0x000b5380, 0xa)
@@ -298,7 +300,7 @@ void CInitd5d70::Init() {
 
 RVA(0x000e17b0, 0x15)
 void RegRangee17b0() {
-    g_tbombColl.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -317,7 +319,7 @@ void CSettere56b0::Set() {
 
 RVA(0x000fbb70, 0x15)
 void RegRangefbb70() {
-    g_haznColl.RegisterRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================

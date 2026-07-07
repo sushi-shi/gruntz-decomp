@@ -9,6 +9,8 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Particlez.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -97,7 +99,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -120,7 +122,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
     if (coord >= g_partLo && coord <= g_partHi) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
-    if (g_partColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_partColl)->GrowTo(coord, 0)) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
     void* item = g_actCache;
@@ -144,7 +146,7 @@ CParticlez::~CParticlez() {}
 // thunk (no `this`); reloc-masked.
 RVA(0x00046cb0, 0x15)
 void CParticlez::InitActReg() {
-    g_partColl.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_partColl)->Construct(2000, 2010);
 }
 
 // CParticlez::FireActivation @0x046d30 - look the activation coordinate up in
@@ -209,6 +211,8 @@ i32 CParticlez::Update() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CPartEntry);
 SIZE_UNKNOWN(CPartEntryI32);
 SIZE_UNKNOWN(CParticlez);

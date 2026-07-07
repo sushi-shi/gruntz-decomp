@@ -23,6 +23,7 @@
 #define GRUNTZ_ACTNAMEREGISTRY_H
 
 #include <Bute/ButeTree.h>
+#include <Wap32/ZVec.h>
 
 class CVariantSlot; // folded CActColl2
 
@@ -92,7 +93,7 @@ static inline char* ActNameLookup(i32 id) {
     char* slot;
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
-    } else if (g_nameReg.Find(id, 0)) {
+    } else if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     } else {
         void* item = g_actCache;

@@ -24,6 +24,8 @@
 
 #include <new>      // placement new (the inlined ConstructElements grow loop)
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)
@@ -82,7 +84,7 @@ extern CActReg g_actionTable; // 0x644610
 // Free init thunk; the SAME archetype as the eyecandy classes' InitActReg.
 RVA(0x000445c0, 0x15)
 void CWarlord::InitActReg() {
-    g_actionTable.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_actionTable)->Construct(2000, 2010);
 }
 
 // ===========================================================================

@@ -15,18 +15,16 @@
 #define GRUNTZ_GRUNTZ_ACTCOLL_H
 
 #include <rva.h>
+#include <Wap32/ZVec.h>           // real _zvec (Find @0x16da80 = _zvec::GrowTo)
+#include <Wap32/ZDArrayDerived.h> // real CZDArrayDerived (Construct/RegisterRange @0x8710)
 
 // The coordinate collection itself: its first dword is the collection object (a
 // zDArray-family vtable/base). Every registry IS-A CActColl at +0x00 (CActReg
 // derives from it), so the slow Find lookup is a direct base call - no view cast.
+// CActColl's 3 methods are all views of real fns (cast at each call, no local methods):
+//   Find @0x16da80 = _zvec::GrowTo,  Construct/RegisterRange @0x8710 = CZDArrayDerived::Construct.
 struct CActColl {
-    void* m_coll;                   // +0x00  the collection object (its first dword)
-    i32 Find(i32 coord, i32 z);     // 0x16da80 (__thiscall ret 8)
-    void Construct(i32 lo, i32 hi); // 0x408710 (shared registry ctor, __thiscall ret 8)
-    // The far-caller entry to Construct (the ILT jmp-thunk at 0x3742 -> 0x408710):
-    // registrars whose RVA band is far from 0x408710 call the thunk (CProjectile::
-    // RegisterRange), so the same seed reaches it as `call 0x3742`. Reloc-masked.
-    void RegisterRange(i32 lo, i32 hi); // 0x3742 (thunk -> 0x408710)
+    void* m_coll; // +0x00  the collection object (its first dword)
 };
 extern void* GetRetAddr(); // 0x16d990
 

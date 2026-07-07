@@ -18,6 +18,8 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Trigger.h>            // shared point-probe result object
 #include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger : CUserLogic
+#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // CSecretLevelTrigger : CUserLogic - the canonical class shape now lives in
 // <Gruntz/SecretLevelTrigger.h> (shared with the ctors in UserLogic.cpp).
@@ -76,7 +78,7 @@ CSecretLevelTrigger::~CSecretLevelTrigger() {}
 // reloc-masked.
 RVA(0x000426e0, 0x15)
 void CSecretLevelTrigger::InitActReg() {
-    g_secretActReg.Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_secretActReg)->Construct(2000, 2010);
 }
 
 // CSecretLevelTrigger::RegisterActs @0x0428c0 - bind the class's per-frame handler

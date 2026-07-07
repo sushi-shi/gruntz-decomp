@@ -30,6 +30,7 @@ public:
 
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
 // REAL-POLYMORPHIC (implicit vptr@0): the virtual dtor drains the manual vptr field.
+class zErrHandling; // fwd (pointer member m_err; wider inclusion via ActColl.h)
 class _zvec {
 public:
     void* GrowTo(i32 idx, i32 at); // 0x16da80

@@ -22,6 +22,7 @@
 #include <Gruntz/NameVec.h>       // g_buteNameVec's scratch zDArray<CString> view
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
+#include <Wap32/ZDArrayDerived.h>
 
 // The cmd-grid cells are CGrunts; LoadPickupSprites @0x3c6a / LoadGruntTypeTable @0x3bd9 are
 // CGrunt methods. TU-local method-decl (Grunt.h is heavy; not pulled here), cast at each call.
@@ -584,7 +585,7 @@ i32 CInGameIcon::HandleInput() {
 // index band [0x7d0, 0x7da].
 RVA(0x00097800, 0x15)
 void InitIconActionTable() {
-    g_iconActionTable.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_iconActionTable)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -631,7 +632,7 @@ void RegisterIconActions() {
 // index band [0x7d0, 0x7da].
 RVA(0x00097d60, 0x15)
 void InitIconStateTable() {
-    g_iconStateTable.Construct(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_iconStateTable)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
