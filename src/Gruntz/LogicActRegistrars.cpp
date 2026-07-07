@@ -22,7 +22,8 @@
 // all carry (slot-vs-id callee-saved coloring -> free-loop count materialization).
 // Logic + offsets + every call/immediate/branch/store are byte-faithful.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared activation-registrar archetype (CActReg)
+#include <Wap32/ZVec.h>
+#include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
 
 // The second activation key string "B" (0x60d1bc); g_nextActId/s_actKeyA + the
@@ -295,7 +296,7 @@ extern "C" void H_4036f2();
         if (id == 0) {                                                                             \
             g_buteTree.Insert(key, (void*)g_nextActId);                                            \
             id = g_nextActId;                                                                      \
-            char* slot = g_nameRegColl.Lookup(id);                                                 \
+            char* slot = (char*)((_zvec*)&g_nameRegColl)->IndexToPtr(id);                          \
             i32 n = g_nameRegScratch;                                                              \
             void** list = g_nameRegCurList;                                                        \
             while (n-- != 0) {                                                                     \
@@ -307,7 +308,7 @@ extern "C" void H_4036f2();
             ((CActName*)slot)->Assign(key);                                                        \
             g_nextActId++;                                                                         \
         }                                                                                          \
-        *(void**)g_reg_644af0.Lookup(id) = (void*)(handler);                                       \
+        *(void**)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id) = (void*)(handler);                \
     }
 
 // @early-stop

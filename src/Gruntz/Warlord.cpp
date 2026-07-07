@@ -178,7 +178,7 @@ extern "C" void Act_F(); // 0x402725
             *slot_ = key;                                                                          \
             ++g_typeCounter;                                                                       \
         }                                                                                          \
-        void** aslot_ = (void**)g_actionTable.Lookup(id_);                                         \
+        void** aslot_ = (void**)((_zvec*)&g_actionTable)->IndexToPtr(id_);                         \
         *aslot_ = (void*)(handler);                                                                \
     } while (0)
 

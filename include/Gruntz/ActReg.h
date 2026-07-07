@@ -39,9 +39,7 @@ struct CActReg : public CActColl {
     char m_pad1c[0x20 - 0x1c];
     i32 m_scratch; // +0x20
 
-    void RegisterRange(i32 lo, i32 hi); // 0x3742   (reloc-masked)
-    char* Lookup(i32 id);               // 0x3864   (outlined ResolveEntry)
-    void Construct(i32 lo, i32 hi);     // 0x408710 (__thiscall ret 8)
+    // Lookup @0x3864 IS _zvec::IndexToPtr; RegisterRange/Construct = CZDArrayDerived::Construct. Cast at calls.
 
     char* ResolveEntry(i32 id) {
         m_scratch = 0;
