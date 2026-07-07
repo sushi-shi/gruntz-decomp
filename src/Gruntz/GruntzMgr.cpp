@@ -1411,9 +1411,8 @@ struct CMonoConfigRec {
     char m_pad18[0x64 - 0x18];
     i32 m_64; // +0x64  selected index
 };
-struct CMonoConfigMap {
-    i32 Lookup(const char* key, void** out); // 0x1b8008  CMapStringToOb::Lookup
-};
+// MFC CMapStringToPtr (Lookup @0x1b8008); the calls were folded with the CColorLookup vein.
+struct CMonoConfigMap {};
 struct CMonoConfigHolder {
     char m_pad0[0x10];
     CMonoConfigMap m_10; // +0x10  embedded string map
