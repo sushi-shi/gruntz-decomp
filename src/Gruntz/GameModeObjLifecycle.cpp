@@ -16,6 +16,7 @@
 //
 // Members are accessed by raw this+offset (the naming-independent choice the
 // siblings use); only offsets / code bytes are load-bearing.
+#include <Mfc.h> // real MFC CPtrArray (the placed-object table's RemoveAt @0x1b5200)
 #include <rva.h>
 #include <Gruntz/SBI_RectOnly.h>
 
@@ -42,11 +43,12 @@ extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA @0x64554c
 // CPtrArray::RemoveAt @0x1b5200 and CMapPtrToPtr::Lookup @0x1b8760 - MFC; modeled
 // as methods so the __thiscall `mov ecx,this; call` falls out reloc-masked.
 struct CPlacedObj; // defined below
+// The +0x3a8 placed-object table (0x14 stride) is an MFC CPtrArray; RemoveAt @0x1b5200 is
+// CPtrArray::RemoveAt. Field-view kept (MFC hides m_pData); the call casts to CPtrArray.
 class CPlacedArray {
 public:
-    void RemoveAt(i32 index, i32 count); // 0x1b5200
-    CPlacedObj** m_pData;                // +0x00  the element pointer table
-    i32 m_nSize;                         // +0x04  live element count
+    CPlacedObj** m_pData; // +0x00  the element pointer table
+    i32 m_nSize;          // +0x04  live element count
 };
 class CCellMap {
 public:
@@ -194,7 +196,7 @@ i32 CGameModeObj::ClearPlacedObjects() {
                     i32* row2 = g->m_8[obj->m_4];
                     row2[stride] &= 0xfffbffff;
                 }
-                rec->RemoveAt(i, 1);
+                ((CPtrArray*)rec)->RemoveAt(i, 1);
                 // return the placed-object node to the MFC free list (the node
                 // header sits g_freeListNodeBias bytes before the payload).
                 void* node = (char*)obj - g_freeListNodeBias;
