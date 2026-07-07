@@ -290,8 +290,23 @@ public:
     // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
     // Tick dispatches through vtbl() (reads the vptr as a CMultiSlotView*), preserving
     // its +0x7c/+0x98 indirect-call bytes.
-    virtual ~CMulti(); // 0x08d270 (most-derived /GX dtor; stamps CPlay/CState, tears
-                       // the CString/CByteArray run)
+    virtual ~CMulti() OVERRIDE; // slot 0  0x08d270 (most-derived /GX dtor; the ~CPlay->~CState
+                                // base chain tears the CPlay/CState sub-objects)
+    // The 13 vtable slots CMulti overrides on CState/CPlay (RTTI vtbl 0x1e9fe4, 43 slots).
+    // Declared-only anchors (the real impls are the RVA-bound methods below / reloc-masked).
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1  (CState)
+    virtual void ReleaseResources() OVERRIDE;   // slot 2  (CState)
+    virtual GameStateId Update() OVERRIDE;      // slot 4  (CState)
+    virtual i32 Render() OVERRIDE;              // slot 5  (CState)
+    virtual i32 Vslot09(i32) OVERRIDE;          // slot 9  (CState)
+    virtual i32 FrameSlot28(i32) OVERRIDE;      // slot 10 (CState)
+    virtual i32 Vslot0b(i32, i32) OVERRIDE;     // slot 11 (CState)
+    virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
+    virtual void Vslot1a() OVERRIDE;            // slot 26 (CPlay)
+    virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
+    virtual i32 Vslot1e(i32, i32) OVERRIDE;     // slot 30 (CPlay)
+    virtual void Vslot20() OVERRIDE;            // slot 32 (CPlay)
+    virtual void Vslot26() OVERRIDE;            // slot 38 (CPlay)
     CMultiSlotView* vtbl() {
         return *(CMultiSlotView**)this;
     }
