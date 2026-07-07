@@ -23,10 +23,18 @@
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
-struct CAnimSink2 {
-    void Advance(i32 a);   // 0x15c2d0
-    void SetAnim(u32 ctx); // 0x15c360
+// Advance @0x15c2d0 is CDDrawBlitParam::Setup_15c2d0, SetAnim @0x15c360 is
+// CAniAdvanceCursor::Advance_15c360; TU-local decls, cast at each call.
+class CDDrawBlitParamSrc;
+class CDDrawBlitParam {
+public:
+    void Setup_15c2d0(CDDrawBlitParamSrc* src);
 };
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
+struct CAnimSink2 {};
 struct CAnimOwner6b {
     char _00[0x1b4];
     i32 m_1b4; // +0x1b4
@@ -36,9 +44,9 @@ RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAnimSink2* anim = (CAnimSink2*)((char*)m_4 + 0x1a0);
     m_c = m_4->m_1b4;
-    anim->Advance(a);
+    ((CDDrawBlitParam*)anim)->Setup_15c2d0((CDDrawBlitParamSrc*)a);
     if (b != 0) {
-        anim->SetAnim(g_6bf3bc);
+        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_6bf3bc);
     }
 }
 
