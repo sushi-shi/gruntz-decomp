@@ -49,7 +49,19 @@ extern char g_statzTabCfgTag[]; // Configure tag global
 
 SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
 struct CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
+    virtual void Vf1() OVERRIDE; // slot 1 (BuildSmall)
+    virtual void Vf2() OVERRIDE; // slot 2 (BumpCell)
+    virtual void Vf3() OVERRIDE; // slot 3 (M)
+    i32 BaseBuild(
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32
+    ); // slot 0 (inherited Vf0; non-virtual view)
     i32
     BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9);
     char m_pad04[0x20 - 0x4];
