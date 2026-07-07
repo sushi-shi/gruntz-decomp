@@ -17,9 +17,9 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h>                 // Wap::CObject - the shared engine grand-base
-#include <DDrawMgr/DDrawSurfaceMgr.h>     // THE canonical CDDrawSurfaceMgr class shape
-#include <DDrawMgr/DDrawSubMgr.h>         // generic child base (slot-1 scalar-delete, slot-5 IsReady)
+#include <Wap32/Object.h>             // Wap::CObject - the shared engine grand-base
+#include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
+#include <DDrawMgr/DDrawSubMgr.h>     // generic child base (slot-1 scalar-delete, slot-5 IsReady)
 #include <DDrawMgr/DDrawResolveSubMgr.h>  // real +0x24 child type (SetCoords)
 #include <DDrawMgr/DDrawSubMgrPages.h>    // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
 #include <DDrawMgr/DDrawChildGroup.h>     // real +0x08 child type (m_childGroup)
@@ -208,7 +208,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
         // in the canonical owner header; Init always stores a CDDrawResolveSubMgr
         // (new(0x6d4), ctor 0x15ccd0) there, so the member's true type is
         // CDDrawResolveSubMgr* (DDrawSurfaceMgr.h is additive-only this session).
-        if (((CDDrawResolveSubMgr*)m_resolveSubMgr)->SetCoords(x, y) == 0) {
+        if (((CDDrawSurfaceMgr*)m_resolveSubMgr)->SetDimensions(x, y, 0) == 0) {
             return 0;
         }
     }

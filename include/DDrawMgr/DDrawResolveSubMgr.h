@@ -15,7 +15,7 @@
 
 class CDDrawResolveSubMgr : public CDDrawSubMgr {
 public:
-    i32 SetCoords(i32 x, i32 y); // declared-only (body unreconstructed)
+    // SetCoords @0x155f60 IS CDDrawSurfaceMgr::SetDimensions (padded); cast at the call.
 };
 SIZE(CDDrawResolveSubMgr, 0x6d4); // new(0x6d4) at the owner Init store
 
