@@ -20,6 +20,10 @@
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
+class CPlay {
+public:
+    i32 ResetGoals(i32 a, i32 b);
+}; // 0xd5f00
 
 // The held surface (LfxBorderCtx::m_08 / CDDSurface::m_08) is the real
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
@@ -68,7 +72,7 @@ struct LfxSurfMgr {
 
 // The draw context the apply-paths hand the pixel coords to (FUN_004d5f00).
 struct LfxDrawCtx {
-    void DrawAt(i32 px, i32 py); // FUN_004d5f00 (__thiscall on m_00->m_2c)
+    // DrawAt @0xd5f00 IS CPlay::ResetGoals; cast at each call.
 };
 
 // The per-tile color/animation node returned by the ref table (GetA). The
@@ -1620,7 +1624,7 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     }
     LfxDrawCtx* ctx = m_mgr->m_2c;
     if (ctx != 0) {
-        ctx->DrawAt(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        ((CPlay*)ctx)->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     m_handle = 1;
     return 1;
@@ -1666,7 +1670,7 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     }
     LfxDrawCtx* ctx = m_mgr->m_2c;
     if (ctx != 0) {
-        ctx->DrawAt(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        ((CPlay*)ctx)->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     return 1;
 }
