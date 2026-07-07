@@ -66,6 +66,15 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+}; // 0x155550/0x155360
+class CDDrawSubMgrAni {
+public:
+    void ScanTree_152ad0(void* n, const char* a, const char* b);
+}; // 0x152ad0
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -3048,7 +3057,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (self->m_c->m_animRegistry->Has("GAME")) {
+    if (((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GAME")) {
         return 1;
     }
 
@@ -3056,7 +3065,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    self->m_c->m_animRegistry->Install(anims, "GAME", "_");
+    ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(anims, "GAME", "_");
     return 1;
 }
 
@@ -3360,72 +3369,78 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
     if (!self->m_c) {
         return 0;
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_NORMALGRUNT")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
+             ->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
+             ->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_EXITZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
+             ->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
+             ->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
-        self->m_c->m_animRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }

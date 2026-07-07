@@ -32,6 +32,11 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+}; // 0x155550/0x155360
 class DirectSoundMgr {
 public:
     i32 IsPlaying();
@@ -1272,7 +1277,7 @@ void CCreditsState::ReleaseResources() {
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
         m_c->m_10->Release("CREDITZ", "_");
-        m_c->m_animRegistry->Release("CREDITZ", "_");
+        ((CDDrawWorkerRegistry*)m_c->m_animRegistry)->RemoveKeysEqual_155360("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
