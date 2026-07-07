@@ -65,7 +65,16 @@ public:
     }
 #endif
     virtual ~CStatusBarItem();
-    virtual i32 SbiVfunc0();
+    virtual i32 SbiVfunc0();   // slot 1
+    virtual void SbiSlot2();   // slot 2
+    virtual void SbiSlot3();   // slot 3
+    virtual void SbiSlot4();   // slot 4
+    virtual void SbiSlot5();   // slot 5
+    virtual void SbiSlot6();   // slot 6
+    virtual void SbiSlot7();   // slot 7
+    virtual void SbiSlot8();   // slot 8
+    virtual void SbiSlot9();   // slot 9
+    virtual void SetSubtype(); // slot 10
 
     i32 m_4;  // +0x04
     i32 m_8;  // +0x08

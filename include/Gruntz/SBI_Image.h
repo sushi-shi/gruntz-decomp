@@ -34,7 +34,12 @@ struct CSbiConfigHost;
 // deriving CStatusBarItem directly (matching-neutral) while recovering the real level.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-    void InsertPtr(i32 a, i32 b); // 0x... (plane-scan object sink)
+    virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;  // slot 1
+    virtual void SbiSlot2() OVERRIDE;  // slot 2
+    virtual void SbiSlot3() OVERRIDE;  // slot 3
+    virtual void SbiSlot4() OVERRIDE;  // slot 4
+    void InsertPtr(i32 a, i32 b);      // 0x... (plane-scan object sink)
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
 
