@@ -286,8 +286,8 @@ void CBootyState::ReleaseResources() {
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
-    m_c->m_10->Release("BOOTY", "_");
-    m_c->m_10->Release("GRUNTZ_GOKARTGRUNT", "_");
+    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("BOOTY", "_");
+    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
@@ -1280,7 +1280,7 @@ void CCreditsState::ReleaseResources() {
             ((SoundStream*)r)->Stop();
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
-        m_c->m_10->Release("CREDITZ", "_");
+        ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("CREDITZ", "_");
         ((CDDrawWorkerRegistry*)m_c->m_animRegistry)->RemoveKeysEqual_155360("CREDITZ", "_");
     }
     // Cache the video handle in a local so it stays pinned in edi across the
@@ -1390,7 +1390,7 @@ RVA(0x000a02c0, 0x7d)
 void CMenuState::ReleaseResources() {
     // m_c re-read for each access (retail does not cache it); the null-guarded
     // block tests m_c once and reuses it for both the Free and DisposeWorkers.
-    m_c->m_10->Release("MENU", "_");
+    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("MENU", "_");
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("MENU", "_");
     if (m_c) {
         // The test value of m_c is reused for the leaf-registry access; the

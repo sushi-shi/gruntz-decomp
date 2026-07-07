@@ -22,6 +22,12 @@
 #include <Gruntz/Viewport.h>      // shared world->screen transform
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+    void Method_155630(i32 h, char* t, i32* o);
+}; // 0x155550/0x155360/0x155630
 
 // CViewport (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
 // <Gruntz/Viewport.h> class: m_worldWidth (+0x30) clamps the bar position;
@@ -463,7 +469,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frame) {
-            mgr->m_10->ReadField((i32)m_frame, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -474,7 +480,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_button0Frame) {
-            mgr->m_10->ReadField((i32)m_button0Frame, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_button0Frame, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -486,7 +492,7 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
         i32 v20 = m_button1Frame;
         memset(tmp, 0, sizeof(tmp));
         if (v20) {
-            mgr->m_10->ReadField(v20, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630(v20, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

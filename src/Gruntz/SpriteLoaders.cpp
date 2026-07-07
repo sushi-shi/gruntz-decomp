@@ -9,6 +9,12 @@
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
 #include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/Timer.h>         // CTimer + CImage (canonical; def was local here)
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+    void Method_155630(i32 h, char* t, i32* o);
+}; // 0x155550/0x155360/0x155630
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
@@ -506,7 +512,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinTens) {
-            mgr->m_10->ReadField((i32)m_frameMinTens, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frameMinTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -517,7 +523,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameMinOnes) {
-            mgr->m_10->ReadField((i32)m_frameMinOnes, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frameMinOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -528,7 +534,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecTens) {
-            mgr->m_10->ReadField((i32)m_frameSecTens, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frameSecTens, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -539,7 +545,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameSecOnes) {
-            mgr->m_10->ReadField((i32)m_frameSecOnes, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frameSecOnes, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);
@@ -550,7 +556,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     {
         i32 zero = 0;
         if (m_frameColon) {
-            mgr->m_10->ReadField((i32)m_frameColon, tmp, &zero);
+            ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630((i32)m_frameColon, tmp, &zero);
         }
         ar->Write(tmp, 0x80);
         ar->Write(&zero, 4);

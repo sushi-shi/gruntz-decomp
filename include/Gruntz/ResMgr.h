@@ -82,12 +82,12 @@ struct CKeyTable {
 // 100%; re-attack in the final sweep once DecCounter is stably matched.
 SIZE_UNKNOWN(CImageRegistry);
 struct CImageRegistry {
-    i32 Has(const char* szName);                          // 0x155550 __thiscall, ret found
-    void Register(const char* szName, const char* szKey); // 0x155360 __thiscall
-    void Release(const char* szName, const char* szKey); // 0x155360 (RemoveKeysEqual, loader alias)
+    // Has @0x155550 IS CDDrawWorkerRegistry::HasKeyEqual_155550; cast at each call.
+    // Register @0x155360 IS CDDrawWorkerRegistry::RemoveKeysEqual_155360; cast at each call.
+    // Release @0x155360 IS CDDrawWorkerRegistry::RemoveKeysEqual_155360; cast at each call.
     // Frame-name reverse-lookup (given a frame handle, write its name into tmp;
     // *outZero gets a found-index). Was the CStrReader / CMiNameReg placeholder views.
-    void ReadField(i32 handle, char* tmp, i32* outZero); // 0x155630 __thiscall
+    // ReadField @0x155630 IS CDDrawWorkerRegistry::Method_155630; cast at each call.
     virtual void v00();
     virtual void v01();
     virtual void v02();

@@ -2942,12 +2942,12 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (!force && self->m_c->m_10->Has("ACTION")) {
+    if (!force && ((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("ACTION")) {
         return 1;
     }
 
-    self->m_c->m_10->Register("ACTION", g_emptyString);
-    self->m_c->m_10->Register("BACK", g_emptyString);
+    ((CDDrawWorkerRegistry*)self->m_c->m_10)->RemoveKeysEqual_155360("ACTION", g_emptyString);
+    ((CDDrawWorkerRegistry*)self->m_c->m_10)->RemoveKeysEqual_155360("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
     void* tiles = ((CSymTab*)self->m_levelBank)->ResolvePath("TILEZ");
@@ -2990,11 +2990,11 @@ i32 CPlay::LoadLevelImages(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (!force && self->m_c->m_10->Has("LEVEL")) {
+    if (!force && ((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("LEVEL")) {
         return 1;
     }
 
-    self->m_c->m_10->Register("LEVEL", "_");
+    ((CDDrawWorkerRegistry*)self->m_c->m_10)->RemoveKeysEqual_155360("LEVEL", "_");
     g_resourceInstallActive = 0;
 
     void* images = ((CSymTab*)self->m_levelBank)->ResolvePath("IMAGEZ");
@@ -3015,7 +3015,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (self->m_c->m_10->Has("GAME")) {
+    if (((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GAME")) {
         return 1;
     }
 
@@ -3283,7 +3283,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         return 0;
     }
     g_resourceInstallActive = 1;
-    if (!self->m_c->m_10->Has("GRUNTZ_NORMALGRUNT")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
@@ -3293,7 +3293,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_DEATHZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
@@ -3303,7 +3303,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_ENTRANCEZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
@@ -3313,7 +3313,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_EXITZ")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
@@ -3323,7 +3323,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_GRUNTPUDDLE")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
@@ -3333,7 +3333,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_PICKUPS")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
@@ -3343,7 +3343,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
     }
-    if (!self->m_c->m_10->Has("GRUNTZ_BOMBGRUNT")) {
+    if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
         void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;

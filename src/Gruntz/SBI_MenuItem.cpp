@@ -6,6 +6,12 @@
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+    void Method_155630(i32 h, char* t, i32* o);
+}; // 0x155550/0x155360/0x155630
 // SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
 //   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -132,7 +138,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
                 // the canonical wave 3). Adding ReadField to CImageRegistry ripples this
                 // TU's DecCounter regalloc (100->74%, an accepted clean-room cost - the
                 // "protective" view is not a valid keep; logic byte-unchanged).
-                mgr->m_10->ReadField(m_30, name, &idx);
+                ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630(m_30, name, &idx);
             }
             ar->Write(name, 0x80);
             ar->Write(&idx, 4);

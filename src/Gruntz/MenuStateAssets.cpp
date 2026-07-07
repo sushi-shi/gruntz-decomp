@@ -14,6 +14,12 @@ public:
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
 #include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
+class CDDrawWorkerRegistry {
+public:
+    i32 HasKeyEqual_155550(const char* k);
+    void RemoveKeysEqual_155360(const char* a, const char* b);
+    void Method_155630(i32 h, char* t, i32* o);
+}; // 0x155550/0x155360/0x155630
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-
 // state asset loader.  Sibling of CHelpState::LoadAssets / GameLevelState loaders:
 // chains the base namespace loader, registers the "MENU" IMAGEZ+SOUNDZ namespaces
@@ -136,7 +142,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (!((MenuAssetMgr*)m_c)->m_10->Has("MENU")) {
+    if (!((CDDrawWorkerRegistry*)((MenuAssetMgr*)m_c)->m_10)->HasKeyEqual_155550("MENU")) {
         void* set = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
