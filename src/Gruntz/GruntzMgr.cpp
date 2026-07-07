@@ -427,9 +427,8 @@ extern "C" {
 // carries a column index (+0x64) into its value table (+0x14). The recolor sink
 // passed in by the caller shares the same row layout (value table at +0x14,
 // column range [+0x64..+0x68]). Each engine call is reloc-masked.
-struct CColorLookup {
-    void Lookup(i32 key, i32** out); // FUN_005b8008 (this, key, &out)
-};
+// MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call.
+struct CColorLookup {};
 struct CColorRow {
     char m_pad0[0x14];
     i32* m_14; // +0x14  value table
@@ -1457,7 +1456,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         return 0;
     }
     void* out = 0;
-    ((CMonoWorld*)m_world)->m_10->m_10.Lookup("GAME_MONOLITH", &out);
+    ((CMapStringToPtr*)&((CMonoWorld*)m_world)->m_10->m_10)->Lookup("GAME_MONOLITH", (void*&)out);
     CMonoConfigRec* rec = (CMonoConfigRec*)out;
     if (rec == 0) {
         return 0;
@@ -1524,7 +1523,7 @@ i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
     CColorRow* sink = (CColorRow*)sinkArg;
     if (sink && key) {
         i32* out = 0;
-        m_world->m_10->m_10.Lookup(key, &out);
+        ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup((const char*)key, (void*&)out);
         CColorRow* row = (CColorRow*)out;
         if (row && row->m_14[row->m_64]) {
             i32 cell = (idx < sink->m_64 || idx > sink->m_68) ? 0 : sink->m_14[idx];
@@ -3105,10 +3104,10 @@ void CGruntzMgr::DelayedQuit() {
     }
     m_a4 = 1;
     LeafCue* out = 0;
-    m_world->m_28->m_10.Lookup("MENU_ACTIVATE", &out);
+    ((CMapStringToPtr*)&m_world->m_28->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
     i32 base;
     if (out != 0) {
-        m_world->m_28->m_10.Lookup("MENU_ACTIVATE", &out);
+        ((CMapStringToPtr*)&m_world->m_28->m_10)->Lookup("MENU_ACTIVATE", (void*&)out);
         base = out->m_10->m_28 + 0x1f4; // cue duration + 500ms: wait out the cue
     } else {
         base = 0;
