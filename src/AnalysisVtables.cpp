@@ -22,11 +22,8 @@
 // vtable) - dropped by the scanner FF15/FF25 refinement; the slot belongs to
 // CFileMemBase @0x1efe68 (Io/FileMem.h, 13 slots).
 
-struct CEngObj_1f04dc { // 1 slots (first=sub_16ea80)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1f04dc);
-VTBL(CEngObj_1f04dc, 0x001f04dc);
+// 0x1f04dc REHOMED -> g_buteTree runtime +0x08 secondary (??_7CButeStore@@6BCButeStoreSecond@@),
+// bound via @data-symbol in include/Bute/ButeMgr.h (CButeStore==CButeTree emits it).
 
 struct CEngObj_1f04e4 { // 1 slots (first=ConstructTail_ea20)
     virtual void Slot00();
