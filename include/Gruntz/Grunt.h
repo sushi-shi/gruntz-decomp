@@ -1180,7 +1180,6 @@ public:
     // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
     // delivers the melee hit to the neighbor-cell grunt, then applies the
     // "AttackDowntime" timer. Returns 0.
-    virtual i32 UserLogicVfunc7() OVERRIDE;
     virtual i32 UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360
     virtual void StepCoordResolve();        // slot 16 @0x5f310
 
