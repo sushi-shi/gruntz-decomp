@@ -80,7 +80,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     i32* p;
     p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_guts->Sync(ar, mode, a2, a3)) {
+    if (!((CPlay*)m_guts)->SyncState(ar, mode, a2, a3)) {
         return 0;
     }
     if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry

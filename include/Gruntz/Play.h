@@ -504,7 +504,7 @@ public:
         void Apply3ebd(i32 idx);       // apply the hit slot
         // SyncState (0x0d7520) round-trips the guts state through the archive via
         // this reloc-masked 4-arg serialize entry (CLevelSync::Sync 0x1084d0).
-        i32 Sync(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3);
+        // Sync @0xd7520 IS CPlay::SyncState (same sig); cast at the call.
         i32 m_state; // +0x0  subsystem state (==2 -> ready)
         char p4[0x10 - 0x4];
         RECT m_rect10; // +0x10  HUD/click bounds (HandleTileClick)
