@@ -6,6 +6,15 @@
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
 #include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
 #include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
+class CSBI_RectOnly {
+public:
+    void ClearTabGroup();
+    i32 Deactivate();
+};
+class CStatusBarMgr {
+public:
+    i32 LoadTabSprites();
+};
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
@@ -279,10 +288,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
     CMiTabHost* host = m_2c;
     if (state == 3) {
-        host->TabBegin();
+        ((CSBI_RectOnly*)host)->ClearTabGroup();
         host->m_10c = m_c;
-        host->TabRefresh();
-        host->TabCommit();
+        ((CStatusBarMgr*)host)->LoadTabSprites();
+        ((CSBI_RectOnly*)host)->Deactivate();
     } else if (state == 2 && a) {
         // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
         // cue facet's map @+0x10 differs from CSoundRegistry's install map).

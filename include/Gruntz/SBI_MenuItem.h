@@ -63,9 +63,9 @@ SIZE_UNKNOWN(CMiMusicHost);
 // The owning rect-only host at m_2c: SetState drives its tab state through three
 // sibling thunks (all ILT-reloc-masked). m_10c is the active-tab latch.
 struct CMiTabHost {
-    void TabBegin();   // 0x100b00 (call 0x2329)
-    void TabRefresh(); // 0x102250 (call 0x1690)
-    void TabCommit();  // 0x100cb0 (call 0x125d)
+    // TabBegin @0x100b00 IS CSBI_RectOnly::ClearTabGroup; cast at the call.
+    // TabRefresh @0x102250 IS CStatusBarMgr::LoadTabSprites; cast at the call.
+    // TabCommit @0x100cb0 IS CSBI_RectOnly::Deactivate; cast at the call.
     char m_pad0[0x10c];
     i32 m_10c; // +0x10c  active-tab latch
 };
