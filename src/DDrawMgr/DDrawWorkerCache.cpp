@@ -114,7 +114,7 @@ inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
 // (0x1576f0) and slot 9 = CreateWorker (0x1652c0). cl auto-emits the vtable.
 class CDDrawWorkerCache : public CDDrawWorkerCacheBase {
 public:
-    void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x157700)
+    virtual void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x157700)
     virtual void IsReady(); // [5] 0x1576d0 (= CDDrawWorkerRegistry::IsReady, declared-only)
     virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
     virtual void
