@@ -1,9 +1,9 @@
-// AnalysisVtables.cpp - RESIDUAL analysed vtables not yet re-homed onto their real
-// class. Each entry below is being migrated to the owning class's real header/TU
-// (VTBL bound next to the real polymorphic class); this file shrinks toward empty.
-// Owners identified by the vtable's slot-function RVAs + the ctor/dtor that stamps
-// the vptr (see the fold campaign notes). Placeholder NAMES only where the real
-// class is still being reconstructed.
+// AnalysisVtables.cpp - EMPTY. Every analysed vtable has been re-homed onto its real
+// owning class (VTBL/@data-symbol bound next to the real polymorphic class in that
+// class's header/TU). This file now holds ONLY the migration record below - a map of
+// where each former residual landed - and carries no VTBL of its own. Owners were
+// identified by each vtable's slot-function RVAs + the ctor/dtor that stamps the vptr.
+// Keep this record; do not add new residuals here (re-home at the owning class).
 #include <rva.h>
 #include <Wap32/Object.h>
 
@@ -25,11 +25,9 @@
 // 0x1f04dc REHOMED -> g_buteTree runtime +0x08 secondary (??_7CButeStore@@6BCButeStoreSecond@@),
 // bound via @data-symbol in include/Bute/ButeMgr.h (CButeStore==CButeTree emits it).
 
-struct CEngObj_1f04e4 { // 1 slots (first=ConstructTail_ea20)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1f04e4);
-VTBL(CEngObj_1f04e4, 0x001f04e4);
+// 0x1f04e4 REHOMED -> CTypeCollRuntime (src/Gruntz/TypeKeyColl.cpp): g_typeColl's
+// runtime-phase 1-slot vtable. No emitted ??_7 (CTypeKeyColl is SI), so it is a real
+// minimal runtime type VTBL-named at its home. This was the last residual.
 
 // 0x1f0510 REHOMED -> CBSecStream primary vtable (zPTree-derived, src/Bute/ButeSectionCtor.cpp).
 
