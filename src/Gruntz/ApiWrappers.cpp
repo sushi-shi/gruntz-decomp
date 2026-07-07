@@ -333,8 +333,8 @@ namespace m4 {
         i32 m_lastTime;         // +0x14
         i32 m_interval;         // +0x18
     };
-    struct CfgAccessor {                                  // embedded at MgrM28+0x10
-        i32 GetSection(const char* name, SoundCue** out); // thiscall thunk 0x1b8438
+    struct CfgAccessor { // embedded at MgrM28+0x10
+        // GetSection @0x13a000 IS CSymTab::Insert; cast at the call.
     };
     struct MgrM28 { // g_mgrSettings->m_world->m_configHost (config accessor host)
         char m_pad0[0x10];
@@ -721,7 +721,7 @@ namespace m4 {
                 return;
             }
             SoundCue* cue = 0;
-            m28->m_cfg.GetSection("GAME_VOICE", &cue);
+            ((CSymTab*)&m28->m_cfg)->Insert("GAME_VOICE", (void*)&cue);
             if (!cue) {
                 return;
             }
@@ -745,7 +745,7 @@ namespace m4 {
                 return;
             }
             SoundCue* cue = 0;
-            m28->m_cfg.GetSection("GAME_CHIPFALLOUT", &cue);
+            ((CSymTab*)&m28->m_cfg)->Insert("GAME_CHIPFALLOUT", (void*)&cue);
             if (!cue) {
                 return;
             }

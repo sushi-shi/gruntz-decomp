@@ -35,6 +35,7 @@
 class CMoviePlayer {
 public:
     ~CMoviePlayer();
+    i32 CloseSmacker(); // 0x17c9b0
 }; // 0x38fc0
 SIZE_UNKNOWN(CMoviePlayer);
 #include <Gruntz/SoundCueMgr.h>
@@ -1215,7 +1216,7 @@ i32 CCreditsState::InitAttractTitle() {
 // __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
 struct CCreditsVideo {
     // Teardown @0x38fc0 IS CMoviePlayer::~CMoviePlayer; cast at each call.
-    void Close(); // FUN_0057c9b0 __thiscall, no-arg (SmackClose wrapper)
+    // Close @0x17c9b0 IS CMoviePlayer::CloseSmacker; cast at the call.
 };
 
 // The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret
@@ -1317,7 +1318,7 @@ i32 CCreditsState::StepVideo() {
         CCreditsDrawHolder* dst = v->m_18;
         CCreditsDrawHolder* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
-            m_videoHandle->Close();
+            ((CMoviePlayer*)m_videoHandle)->CloseSmacker();
             ret = FinishState();
         }
         if (dst && src) {

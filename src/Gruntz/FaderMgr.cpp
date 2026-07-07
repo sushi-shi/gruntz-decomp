@@ -314,11 +314,11 @@ append:
 // ===========================================================================
 SIZE_UNKNOWN(CFaderTail);
 struct CFaderTail {
-    i32 Flush(); // 0x1b9cde (__thiscall, 0 args)
+    // Flush @0x17e160 IS CFaderMgr::Flush; cast at the call.
 };
 RVA(0x0017e160, 0x8)
 i32 CFaderMgr::Flush() {
-    return ((CFaderTail*)&m_sharedSet2cArg)->Flush();
+    return ((CFaderMgr*)&m_sharedSet2cArg)->Flush();
 }
 
 // ===========================================================================
