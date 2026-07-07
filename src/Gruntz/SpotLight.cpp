@@ -9,7 +9,8 @@
 #include <rva.h>
 #include <Mfc.h>
 #include <math.h>
-#include <Bute/ButeMgr.h>        // CButeTree::Find
+#include <Bute/ButeMgr.h> // CButeTree::Find
+#include <Gruntz/UserLogic.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (light-grid via m_68)
 
 extern "C" unsigned g_645584; // 0x645584 frame delta
@@ -39,7 +40,7 @@ struct MgrObj68 {
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
-class CSpotLight {
+class CSpotLight : public CUserLogic {
 public:
     char pad00[0x10];
     SpotM10* m_owner;    // 0x10
