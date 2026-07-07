@@ -1009,10 +1009,6 @@ public:
 SIZE_UNKNOWN(CGruntColl);
 // CGruntColl was a view of the m_31c CObList; Reset = CObList::RemoveAll (cast at each call).
 SIZE_UNKNOWN(CGruntList);
-class CGruntList {
-public:
-    void* RemoveHead(); // pop the head node, return it
-};
 // __cdecl node deleter (operator delete-style; push p; call; add esp,4).
 void GruntNode_Delete(void* p);
 

@@ -3291,7 +3291,7 @@ i32 CGrunt::UserLogicVfunc9() {
         if (list == 0) {
             continue;
         }
-        void* p = ((CGruntList*)(&m_338))->RemoveHead();
+        void* p = ((CObList*)(&m_338))->RemoveHead();
         GruntNode_Delete(p);
     }
     return 0;
