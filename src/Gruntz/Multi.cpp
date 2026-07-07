@@ -34,6 +34,13 @@
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
 
+// CLobbyObjA::Teardown @0xb6220 IS ~CLobbyObjB; minimal local decl.
+SIZE_UNKNOWN(CLobbyObjB);
+class CLobbyObjB {
+public:
+    ~CLobbyObjB();
+};
+
 // ---------------------------------------------------------------------------
 // Engine globals the session loop touches (re-declared TU-local with their
 // retail .data addresses so the DIR32 operands reloc-mask).
@@ -208,7 +215,7 @@ void CMulti::Teardown() {
     }
     CLobbyObjA* p320 = m_attractOverlay;
     if (p320) {
-        p320->Teardown();
+        ((CLobbyObjB*)p320)->~CLobbyObjB();
         RezFree(p320);
         m_attractOverlay = 0;
     }

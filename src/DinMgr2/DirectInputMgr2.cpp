@@ -35,6 +35,13 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
+// CDeviceConfigC::Free6d0 @0x1346d0 IS DevCfg::Free6d0; minimal local decl (links from static impl).
+SIZE_UNKNOWN(DevCfg);
+class DevCfg {
+public:
+    void Free6d0();
+};
+
 // CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; minimal local decl.
 SIZE_UNKNOWN(CObArray);
 class CObArray {
@@ -489,7 +496,7 @@ CInputDevice::~CInputDevice() {
 // stamps that were @early-stop in BoundaryUpper2Eh.cpp.
 RVA(0x00133460, 0x6a)
 CDeviceConfigC::~CDeviceConfigC() {
-    Free6d0();
+    ((DevCfg*)this)->Free6d0();
 }
 RVA(0x001334f0, 0x6a)
 CDeviceConfigB::~CDeviceConfigB() {
