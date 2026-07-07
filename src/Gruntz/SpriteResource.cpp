@@ -327,10 +327,19 @@ i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
 // miss. __thiscall, ret 8 = 2 stack args.
 
 // The geometry sub-player @player+0x1a0 (engine; both setters are __thiscall ret 4).
+// The +0x1a0 geometry sub-object is set up as CDDrawBlitParam (Setup @0x15c2d0) and advanced as
+// CAniAdvanceCursor (Advance @0x15c360); TU-local decls, cast at each call.
+class CDDrawBlitParamSrc;
+class CDDrawBlitParam {
+public:
+    void Setup_15c2d0(CDDrawBlitParamSrc* src);
+};
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
 class CGruntAnimSub2 {
 public:
-    void SetGeometry(i32 srcSprite); // 0x15c2d0
-    void SetGeoSource(i32 src);      // 0x15c360
 };
 
 // The global default geometry source the second setter consumes.
@@ -357,9 +366,9 @@ i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     if (!spr) {
         return 0;
     }
-    m_1a0.SetGeometry((i32)spr);
+    ((CDDrawBlitParam*)&m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
     if (applyDefault) {
-        m_1a0.SetGeoSource(g_defaultGeo);
+        ((CAniAdvanceCursor*)&m_1a0)->Advance_15c360(g_defaultGeo);
     }
     return 1;
 }
@@ -396,9 +405,9 @@ i32 CGruntAnimPlayer::LookupAnimSprite(const char* name) {
 // default geometry source g_defaultGeo via the sibling setter. __thiscall, ret 8.
 RVA(0x00058b60, 0x2d)
 void CGruntAnimPlayer::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
-    m_1a0.SetGeometry(srcSprite);
+    ((CDDrawBlitParam*)&m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
     if (applyDefault) {
-        m_1a0.SetGeoSource(g_defaultGeo);
+        ((CAniAdvanceCursor*)&m_1a0)->Advance_15c360(g_defaultGeo);
     }
 }
 
