@@ -97,8 +97,13 @@ SIZE_UNKNOWN(CBrickTile);
 // offsets 0/4 - the canonical layout fixes that.)
 
 // The impact one-shot emitter vtable slot used on g->m_30->m_28->m_30==0.
+// CImpactSound::Play @0x25fe IS LeafCue::PlayIfElapsed_01f940 (header-less); local decl.
+class LeafCue {
+public:
+    i32 PlayIfElapsed_01f940(i32 a, i32 b, i32 c, i32 d);
+};
 struct CImpactSound {
-    void Play(void* sink, i32 a1, i32 a2, i32 a3); // 0x4025fe
+    // Play @0x25fe IS LeafCue::PlayIfElapsed_01f940; cast at the call.
 };
 SIZE_UNKNOWN(CImpactSound);
 
@@ -314,7 +319,7 @@ i32 CTileActionEvent::Process(i32 arg) {
                 && ((WwdGrSprHolder*)g_gameReg->m_world)->m_28->m_30 == 0) {
                 CImpactSound* snd = (CImpactSound*)Eng_FindSound("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
-                    snd->Play((void*)g_scrollDelta, 0, 0, 0);
+                    ((LeafCue*)snd)->PlayIfElapsed_01f940((i32)g_scrollDelta, 0, 0, 0);
                 }
             }
             if (brick->m_1ec == 5) {
