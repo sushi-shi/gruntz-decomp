@@ -82,13 +82,19 @@ struct CStepGrunt {                                              // g (esi)
     i32 m_368; // +0x368
 };
 
+// SetStepFlag @0x43ea is ApiMisc::ClipHost_02b340::Clip(const RECT*); TU-local decl, cast at the call.
+namespace ApiMisc {
+    class ClipHost_02b340 {
+    public:
+        void Clip(const RECT* r);
+    };
+} // namespace ApiMisc
 struct CStepGrid { // this->m_c
     char _00[0xc];
     i32 m_c, m_10; // +0x0c width, +0x10 height
     char _14[0x60 - 0x14];
     i32 m_60, m_64, m_68, m_6c; // +0x60 dirty rect (l,t,r,b)
     i32 m_70, m_74;             // +0x70 width, +0x74 height
-    void SetStepFlag(i32 a);    // 0x43ea
 };
 struct CStepGoal { // this->m_f4[] element
     i32 m_0, m_4;
@@ -323,7 +329,7 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             g->m_2d4 = 0;
         }
         if (dist2 <= 0xa) {
-            m_c->SetStepFlag(0);
+            ((ApiMisc::ClipHost_02b340*)m_c)->Clip(0);
         }
         g->m_2ec = 0;
         goto tail;
