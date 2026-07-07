@@ -19,6 +19,7 @@
 // stubbed in src/Stub/Discovered.cpp; see the report.
 #include <Gruntz/LogicRecord.h>
 #include <rva.h>
+#include <Mfc.h> // CMapPtrToPtr::Lookup (0x1b8760)
 
 // The most-derived record vftable (0x1efb80 == ??_7AnimWorkerObj) stamped at dtor
 // entry, and the shared CObject base-subobject vftable (0x1e8cb4) re-stamped at
@@ -149,8 +150,8 @@ i32 CLogicRecord::Dispatch(i32 a, i32 mode, void* c, void* d) {
         case 8:
             if (m_174) {
                 void* out = 0;
-                LogicResolver* res = (LogicResolver*)(((LogicContext*)m_0c)->m_08 + 0x48);
-                m_170 = res->Resolve((void*)m_174, &out) ? out : (void*)0;
+                CMapPtrToPtr* res = (CMapPtrToPtr*)(((LogicContext*)m_0c)->m_08 + 0x48);
+                m_170 = res->Lookup((void*)m_174, out) ? out : (void*)0;
             }
             break;
         default: // 5, 6
