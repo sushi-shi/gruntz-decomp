@@ -86,18 +86,6 @@ struct CEngObj_1efe74 { // 10 slots (first=Reset)
 SIZE_UNKNOWN(CEngObj_1efe74);
 VTBL(CEngObj_1efe74, 0x001efe74);
 
-struct CEngObj_1eff70 : Wap::CObject {  // 11 slots (0..4 from Wap::CObject; first=sub_1bef01)
-    virtual ~CEngObj_1eff70() OVERRIDE; // slot 1 (CObject dtor)
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-};
-SIZE_UNKNOWN(CEngObj_1eff70);
-VTBL(CEngObj_1eff70, 0x001eff70);
-
 struct CEngObj_1f04dc { // 1 slots (first=sub_16ea80)
     virtual void Slot00();
 };
