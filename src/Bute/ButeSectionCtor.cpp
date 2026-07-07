@@ -32,7 +32,7 @@
 // CButeSection ctor's /GX frame tracks it as a destructible member.
 struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&g_streamTag, 2) {}
-    ~CBSecStream(); // external (reloc-masked in the /GX unwind funclet)
+    virtual ~CBSecStream() OVERRIDE; // slot 0 zPTree dtor; external (reloc-masked /GX unwind)
 };
 VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
 // The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
