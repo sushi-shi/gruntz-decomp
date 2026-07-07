@@ -73,6 +73,7 @@ class CFileIO : public CObject {
 public:
     CFileIO();
     CFileIO(HANDLE hFile);
+    virtual CRuntimeClass* GetRuntimeClass() const OVERRIDE; // [0] afx CObject slot 0
     virtual ~CFileIO() OVERRIDE; // [1] 0x1bf121 (overrides CObject dtor slot)
 
     // --- CFile virtual interface, vtable slots [5..22] in CFile declaration order --
