@@ -344,28 +344,28 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     CProjSpriteMap& map = m_sprite->m_c->m_2c->m_10;
     void* out;
     out = 0;
-    map.Lookup(key + "1", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "1", (CObject*&)out);
     m_frame1 = out;
     if (m_frame1 == 0) {
         return 0;
     }
     out = 0;
-    map.Lookup(key + "2", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "2", (CObject*&)out);
     m_frame2 = out;
     out = 0;
-    map.Lookup(key + "3", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "3", (CObject*&)out);
     m_frame3 = out;
     out = 0;
-    map.Lookup(key + "4", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "4", (CObject*&)out);
     m_frame4 = out;
     out = 0;
-    map.Lookup(key + "5", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "5", (CObject*&)out);
     m_frame5 = out;
     out = 0;
-    map.Lookup(key + "IMPACT", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "IMPACT", (CObject*&)out);
     m_impactSprite = out;
     out = 0;
-    map.Lookup(key + "FALL", &out);
+    ((CMapStringToOb*)&map)->Lookup(key + "FALL", (CObject*&)out);
     m_fallSprite = out;
 
     m_savedFrameGeo = m_sprite->m_1b4;
@@ -959,7 +959,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         return 0;
     }
     LeafCue* entry = 0;
-    reg->m_world->m_28->m_10.Lookup(key, &entry);
+    ((CMapStringToOb*)&reg->m_world->m_28->m_10)->Lookup(key, (CObject*&)entry);
     if (entry == 0) {
         return 0;
     }

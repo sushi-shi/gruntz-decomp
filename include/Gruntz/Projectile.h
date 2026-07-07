@@ -42,9 +42,7 @@ struct CProjAnim {
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
 // loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
 SIZE_UNKNOWN(CProjSpriteMap);
-struct CProjSpriteMap {
-    i32 Lookup(const char* key, void** out); // 0x1b8438 (__thiscall, ret 8)
-};
+struct CProjSpriteMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
 SIZE_UNKNOWN(CProjSpriteMgr);
 struct CProjSpriteMgr {
     char m_pad00[0x10];
