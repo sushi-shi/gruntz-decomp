@@ -3833,9 +3833,12 @@ struct CRtResMgr { // this->m_c
     CRtImageReg* m_24; // +0x24
     CRtSoundReg* m_28; // +0x28
 };
-struct CRtMarker {     // a no-arg-reset leaf (begin/frame markers)
-    void ResetBegin(); // 0x1d7f thunk (this->m_beginMarker)
-    void ResetFrame(); // 0x14ce thunk (this->m_frameMarker)
+// CRtThis's begin-marker is a CTileTriggerContainer (RemoveAll @0x116fa0); its frame-marker is a
+// CTimer (Reset @0x9bc70, <Gruntz/Timer.h>) - same shapes CDtorThis already uses. Declared here so
+// CRtThis (below) can name them.
+struct CTileTriggerContainer {
+    void RemoveAll(); // 0x116fa0
+    ~CTileTriggerContainer();
 };
 struct CRtReg { // g_64556c (only its +0x68 timeline is touched here)
     char p0[0x68];
@@ -3849,12 +3852,12 @@ struct CRtThis { // view-of-this
     char p10[0x2dc - 0x10];
     CSBI_RectOnly* m_guts; // +0x2dc  guts subsystem
     char p2e0[0x2e4 - 0x2e0];
-    CRtMarker* m_beginMarker; // +0x2e4  begin marker
+    CTileTriggerContainer* m_beginMarker; // +0x2e4  begin marker
     char p2e8[0x370 - 0x2e8];
     CRtArr m_startMarkers; // +0x370  (m_markerData data / m_markerCount count)
     char p384[0x3a4 - 0x384];
-    CRtArr m_3a4[4];          // +0x3a4  stride 0x14
-    CRtMarker* m_frameMarker; // +0x3f4  frame marker
+    CRtArr m_3a4[4];       // +0x3a4  stride 0x14
+    CTimer* m_frameMarker; // +0x3f4  frame marker
     char p3f8[0x488 - 0x3f8];
     CRtArr m_488; // +0x488  (m_48c data / m_490 count)
     i32 m_49c;    // +0x49c
@@ -3895,10 +3898,10 @@ void CPlay::FreeListTeardown() {
         self->m_guts->ResetWidgets(0);
     }
     if (self->m_beginMarker != 0) {
-        self->m_beginMarker->ResetBegin();
+        self->m_beginMarker->RemoveAll();
     }
     if (self->m_frameMarker != 0) {
-        self->m_frameMarker->ResetFrame();
+        self->m_frameMarker->Reset();
     }
     self->m_4e4 = 0;
     ((CTriggerMgr*)self->m_4->m_68)->OverlayTick();
@@ -3952,9 +3955,6 @@ void CPlay::FreeListTeardown() {
 // ---------------------------------------------------------------------------
 // The +0x2e4 begin-marker: Dtor@0xc8640 IS CTileTriggerContainer::~ (IS-a dtor view);
 // TU-local minimal decl for the explicit dtor call (real class in tiletriggercontainer unit).
-struct CTileTriggerContainer {
-    ~CTileTriggerContainer();
-};
 struct DtorObList {
     void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
 };
@@ -4959,7 +4959,6 @@ SIZE_UNKNOWN(CRtArr);
 SIZE_UNKNOWN(CRtArr2);
 SIZE_UNKNOWN(CRtGuts);
 SIZE_UNKNOWN(CRtImageReg);
-SIZE_UNKNOWN(CRtMarker);
 SIZE_UNKNOWN(CRtReg);
 SIZE_UNKNOWN(CRtRendererA);
 SIZE_UNKNOWN(CDDrawWorkerList);
