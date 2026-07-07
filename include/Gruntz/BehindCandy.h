@@ -29,7 +29,6 @@ public:
     CBehindCandy(CGameObject* obj);            // 0x0ac3f0 (ctor body in UserLogic.cpp)
     virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x00fb70 (returns the class logic-type id 0x3f0)
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fb90 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandy() OVERRIDE;             // 0x00fc30 (folds the CUserLogic teardown)
 };
