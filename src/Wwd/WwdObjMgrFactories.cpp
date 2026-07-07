@@ -31,6 +31,61 @@ inline void* operator new(u32, void* p) {
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
+// The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
+struct WwdCtorBase {
+    WwdCtorBase(int a, int b, int c) {
+        m_08 = c;
+        m_04 = b;
+        m_0c = a;
+        m_20 = (int)0x80000000;
+        m_38 = -1;
+        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efbc0
+        m_5c = (int)0x80000000;
+        m_64 = (int)0x80000000;
+        m_3c = 0;
+        m_40 = 0;
+        m_a8 = 0;
+        m_a4 = 0;
+        m_b4 = 0;
+        m_c0 = (int)0x80000000;
+        m_d8 = -1;
+    }
+    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    int m_04, m_08, m_0c;
+    char _p10[0x20 - 0x10];
+    int m_20;
+    char _p24[0x38 - 0x24];
+    int m_38, m_3c, m_40;
+    char _p44[0x5c - 0x44];
+    int m_5c;
+    char _p60[0x64 - 0x60];
+    int m_64;
+    char _p68[0x78 - 0x68];
+    int m_78;
+    void* m_7c; // +0x7c worker
+    int m_80;
+    char _p84[0x88 - 0x84];
+    int m_88;
+    char _p8c[0x90 - 0x8c];
+    int m_90;
+    char _p94[0x98 - 0x94];
+    int m_98;
+    char _p9c[0xa4 - 0x9c];
+    int m_a4, m_a8;
+    char _pac[0xb4 - 0xac];
+    int m_b4;
+    char _pb8[0xc0 - 0xb8];
+    int m_c0;
+    char _pc4[0xd8 - 0xc4];
+    int m_d8;
+};
+
+struct CWwdGameObj15b390 : public WwdCtorBase {
+    CString m_label; // +0xdc  ??0CString (0x1b9b93)
+    char _pe0[0x188 - 0xe0];
+    int m_188; // +0x188  object id
+    CWwdGameObj15b390(int a, int b, int c);
+};
 // The running WWD object-id counter (?g_wwdObjIdCounter@@3HA @ 0x61ab14).
 
 // Wide-object vtables the factories INLINE-stamp mid-construction. The disasm
@@ -67,10 +122,6 @@ class CWwdGameObject;
 SIZE_UNKNOWN(CResolveNode);
 struct CResolveNode {
     CResolveNode(int root, int a, int flags); // 0x15b2c0
-};
-class CWwdResolveBaseB {
-public:
-    void Ctor(int root, int a, int flags); // 0x15b390
 };
 // The +0x9c sub-object (159250/159440): ctor 0x15b2a0, then its +0x18 is zeroed.
 struct CWwdSlot9c {
@@ -257,7 +308,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdResolveBaseB*)obj)->Ctor(root, a1, a6);
+        new (obj) CWwdGameObj15b390(root, a1, a6);
         ((CWwdCmd1a0*)(obj + 0x1a0))->Ctor(root, a1, a6);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
@@ -317,7 +368,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     CWwdGameObject* result;
     if (obj != 0) {
         int root = m_0c;
-        ((CWwdResolveBaseB*)obj)->Ctor(root, a1, a6);
+        new (obj) CWwdGameObj15b390(root, a1, a6);
         *(int*)(obj + 0x1a4) = a1;
         *(int*)(obj + 0x1a8) = a6;
         *(int*)(obj + 0x1ac) = root;
@@ -390,62 +441,6 @@ struct WwdAnimWorker {
     int m_170, m_174, m_178;
 };
 
-// The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
-struct WwdCtorBase {
-    WwdCtorBase(int a, int b, int c) {
-        m_08 = c;
-        m_04 = b;
-        m_0c = a;
-        m_20 = (int)0x80000000;
-        m_38 = -1;
-        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0) // 0x5efbc0
-        m_5c = (int)0x80000000;
-        m_64 = (int)0x80000000;
-        m_3c = 0;
-        m_40 = 0;
-        m_a8 = 0;
-        m_a4 = 0;
-        m_b4 = 0;
-        m_c0 = (int)0x80000000;
-        m_d8 = -1;
-    }
-    char _vft0[4]; // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    int m_04, m_08, m_0c;
-    char _p10[0x20 - 0x10];
-    int m_20;
-    char _p24[0x38 - 0x24];
-    int m_38, m_3c, m_40;
-    char _p44[0x5c - 0x44];
-    int m_5c;
-    char _p60[0x64 - 0x60];
-    int m_64;
-    char _p68[0x78 - 0x68];
-    int m_78;
-    void* m_7c; // +0x7c worker
-    int m_80;
-    char _p84[0x88 - 0x84];
-    int m_88;
-    char _p8c[0x90 - 0x8c];
-    int m_90;
-    char _p94[0x98 - 0x94];
-    int m_98;
-    char _p9c[0xa4 - 0x9c];
-    int m_a4, m_a8;
-    char _pac[0xb4 - 0xac];
-    int m_b4;
-    char _pb8[0xc0 - 0xb8];
-    int m_c0;
-    char _pc4[0xd8 - 0xc4];
-    int m_d8;
-};
-
-struct CWwdGameObj15b390 : public WwdCtorBase {
-    CString m_label; // +0xdc  ??0CString (0x1b9b93)
-    char _pe0[0x188 - 0xe0];
-    int m_188; // +0x188  object id
-    CWwdGameObj15b390(int a, int b, int c);
-};
-
 // @early-stop
 // eh-member-state wall (59.7%, up from a 1.77% bare @stub): the real /GX ctor
 // (CResolveNode base stamp 0x5efbc0 + CString member ctor 0x1b9b93 + final stamp 0x5f0020
@@ -478,7 +473,6 @@ SIZE_UNKNOWN(CWwdCmd1a0);
 SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdObjMgrL);
-SIZE_UNKNOWN(CWwdResolveBaseB);
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)
