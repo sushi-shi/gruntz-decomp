@@ -14,35 +14,13 @@
 //   0x1ef75c -> CObjList            <Bute/SymParser.h>          (CSymParser +0x10 list, ctor vtable)
 //   0x1ef760 -> CObjListBase        <Bute/SymParser.h>          (that list's abstract-base dtor vtable)
 
-struct CEngObj_1efe3c { // 10 slots (first=Reset)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-};
-SIZE_UNKNOWN(CEngObj_1efe3c);
-VTBL(CEngObj_1efe3c, 0x001efe3c);
+// 0x1efe3c was a vtable_scan artifact (FF15 call-through-slot addr, not a real
+// vtable) - dropped by the scanner FF15/FF25 refinement; the slot belongs to
+// CFileMem @0x1efe30 (Io/FileMem.h, 13 slots).
 
-struct CEngObj_1efe74 { // 10 slots (first=Reset)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-};
-SIZE_UNKNOWN(CEngObj_1efe74);
-VTBL(CEngObj_1efe74, 0x001efe74);
+// 0x1efe74 was a vtable_scan artifact (FF15 call-through-slot addr, not a real
+// vtable) - dropped by the scanner FF15/FF25 refinement; the slot belongs to
+// CFileMemBase @0x1efe68 (Io/FileMem.h, 13 slots).
 
 struct CEngObj_1f04dc { // 1 slots (first=sub_16ea80)
     virtual void Slot00();
