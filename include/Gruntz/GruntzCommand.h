@@ -96,6 +96,9 @@ public:
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
     // count returned. (Recovered from NetCmdSlot.cpp's ProcessCmd dispatch.)
     virtual i32 Parse(void* data, i32 len);
+    virtual i32 Vfunc8();  // slot 8
+    virtual i32 Vfunc9();  // slot 9
+    virtual i32 Vfunc10(); // slot 10
 
     // Non-virtual members of the base (called directly, not via the vtable):
     i32 SetParamsEx(char a0, char a1, char a2, i16 a3, i16 a4, char a5, char a6); // 0x023e60
@@ -127,6 +130,16 @@ extern const u16 g_cmdBitTable[16]; // 0x1e9608
 SIZE(CGruntzSingleCommand, 0x14);
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
+    virtual ~CGruntzSingleCommand() OVERRIDE;
+    virtual void Vfunc1() OVERRIDE;
+    virtual void Vfunc2() OVERRIDE;
+    virtual void Vfunc3() OVERRIDE;
+    virtual i32 Vslot05() OVERRIDE;
+    virtual char GetTag() OVERRIDE;
+    virtual i32 Parse(void*, i32) OVERRIDE;
+    virtual i32 Vfunc8() OVERRIDE;
+    virtual i32 Vfunc9() OVERRIDE;
+    virtual i32 Vfunc10() OVERRIDE;
     CGruntzSingleCommand() {} // inline empty ctor (vftable store only)
     static CGruntzSingleCommand* Allocate();
     static void FreeAll(); // 0x024450 - drain g_singleCmdList, delete each node
@@ -143,6 +156,16 @@ public:
 SIZE(CGruntzMultiCommand, 0x14);
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
+    virtual ~CGruntzMultiCommand() OVERRIDE;
+    virtual void Vfunc1() OVERRIDE;
+    virtual void Vfunc2() OVERRIDE;
+    virtual void Vfunc3() OVERRIDE;
+    virtual i32 Vslot05() OVERRIDE;
+    virtual char GetTag() OVERRIDE;
+    virtual i32 Parse(void*, i32) OVERRIDE;
+    virtual i32 Vfunc8() OVERRIDE;
+    virtual i32 Vfunc9() OVERRIDE;
+    virtual i32 Vfunc10() OVERRIDE;
     CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void FreeAll(); // 0x024490 - drain g_multiCmdList, delete each node
@@ -165,3 +188,5 @@ extern i32 g_multiCmdCount;            // 0x62b64c
 extern CGruntzCmdList g_multiCmdList;  // 0x62b640
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H
+
+VTBL(CGruntzCommand, 0x001e9674);
