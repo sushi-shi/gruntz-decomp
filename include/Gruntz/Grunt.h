@@ -420,7 +420,7 @@ public:
     i32 LookupAnimSet(const char* key); // FUN_0056d190 (ret 4)
 };
 extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
-#define EntranceLookupAnimSet(k) (g_entranceAnimSrc.LookupAnimSet(k))
+#define EntranceLookupAnimSet(k) (((CButeTree*)&g_entranceAnimSrc)->Find(k))
 
 // The grunt's current-anim-name resolver (the global at DAT_006bf650). Its
 // GetNameRecord (thunk_FUN_004310f0, __thiscall ret 4) maps an anim-set node to

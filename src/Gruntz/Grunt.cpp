@@ -1972,7 +1972,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SW
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)g_entranceAnimSrc.LookupAnimSet(s_animKeyS);
+    m_14->m_1c = (void*)((CButeTree*)&g_entranceAnimSrc)->Find(s_animKeyS);
     return 1;
 }
 
