@@ -56,6 +56,7 @@ SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
 class CFaderMesh : public CFader {
 public:
+    virtual ~CFaderMesh() OVERRIDE;
     CFaderMesh();                    // 0x17e940
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17ef00 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f120 (overrides CFader pure)
@@ -112,6 +113,7 @@ SIZE(CFaderFlat, 0x50);
 VTBL(CFaderFlat, 0x001f07f8);
 class CFaderFlat : public CFader {
 public:
+    virtual ~CFaderFlat() OVERRIDE;
     CFaderFlat();                    // 0x17f530
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17f660 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17f950 (overrides CFader pure)
@@ -133,6 +135,7 @@ SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
+    virtual ~CFaderLight() OVERRIDE;
     CFaderLight();                   // 0x180410
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x1814f0 (overrides CFader pure)
@@ -154,6 +157,7 @@ SIZE(CFaderRadial, 0x5c);
 VTBL(CFaderRadial, 0x001f0810);
 class CFaderRadial : public CFader {
 public:
+    virtual ~CFaderRadial() OVERRIDE;
     CFaderRadial();                  // 0x17f9a0
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17fda0 (overrides CFader pure)
