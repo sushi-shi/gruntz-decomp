@@ -63,6 +63,7 @@ VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
     virtual ~CAmbientSound() OVERRIDE;
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 
     // The non-virtual level setter (0xc200): scale `value` through m_0c/m_10,
     // clamp to 0..100, then drive the voice (mode 0 -> SetVolumeByIndex, else

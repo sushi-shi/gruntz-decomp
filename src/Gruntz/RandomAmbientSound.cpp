@@ -137,7 +137,7 @@ void SpawnPosSound(PosSoundObj* obj) {
         }
         if (sound->m_spatialNode != 0) {
             arr->RemoveAt(sound->m_spatialNode);
-            sound->ScalarDtor(1);
+            delete sound;
         }
         aux->m_voice = 0;
         aux->m_requestState = 0;

@@ -16,6 +16,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
+#include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
 
 // ALL-VTABLES mandate: the three channel classes are REAL polymorphic classes.
 // RTTI derivation CAmbientPosSound / CRandomAmbientSound : CAmbientSound (: CUserBase)
@@ -29,17 +30,16 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-struct CAmbientSound {
+struct CAmbientSound : public CUserBase {
     // slot 0 is retail's COMPILER-GENERATED scalar deleting destructor; hand-named
     // here (not a real `~CAmbientSound()`) on purpose: a user-declared virtual dtor
     // makes MSVC5 emit the placement-`new` ctor OUT-OF-LINE (a `call ??0CAmbient*`)
     // instead of the inlined vptr-stamp retail schedules at each CreateXxx site,
     // regressing CreatePos6/CreatePos5/CreateRandom ~96%->~87%. So the direct slot-0
     // call (delete-obj shape) stays `obj->ScalarDtor(1)`, an exact match.
-    virtual void ScalarDtor(i32 flag);            // slot 0 (scalar deleting dtor)
-    virtual void Slot1();                         // slot 1 (origin CUserBase)
-    virtual void Slot2();                         // slot 2 (origin CUserBase)
-    virtual void Update(i32 x, i32 y, i32 force); // slot 3 (retail 0xc090)
+    virtual ~CAmbientSound() OVERRIDE;                                 // slot 0 (compiler-gen ??_G)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual void Update(i32 x, i32 y, i32 force);                      // slot 3 (retail 0xc090)
     CAmbientSound() {}
     // +0x00 vptr (??_7CAmbientSound)
     i32 m_voice; // +0x04
@@ -55,7 +55,7 @@ struct CAmbientSound {
 // RTTI: CAmbientPosSound : CAmbientSound (vftable 0x1e7124). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CAmbientPosSound : CAmbientSound {
-    void ScalarDtor(i32 flag) OVERRIDE;            // slot 0 override
+    virtual ~CAmbientPosSound() OVERRIDE;          // slot 0
     void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CAmbientPosSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
@@ -66,7 +66,7 @@ struct CAmbientPosSound : CAmbientSound {
 // RTTI: CRandomAmbientSound : CAmbientSound (vftable 0x1e713c). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CRandomAmbientSound : CAmbientSound {
-    void ScalarDtor(i32 flag) OVERRIDE;            // slot 0 override
+    virtual ~CRandomAmbientSound() OVERRIDE;       // slot 0
     void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CRandomAmbientSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
@@ -103,7 +103,7 @@ void CWorldSoundSet::Teardown() {
         node = node->m_next;
         CSoundChannel* ch = cur->m_data;
         if (ch != 0) {
-            ch->ScalarDtor(1);
+            delete ch;
         }
     }
     m_list.RemoveAll();
@@ -280,7 +280,7 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32
         return 0;
     }
     if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
-        obj->ScalarDtor(1);
+        delete obj;
         return 0;
     }
     obj->m_listNode = (i32)m_list.AddTail(obj);
@@ -305,7 +305,7 @@ SoundChannelNew* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32
         return 0;
     }
     if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
-        obj->ScalarDtor(1);
+        delete obj;
         return 0;
     }
     obj->m_listNode = (i32)m_list.AddTail(obj);
@@ -330,7 +330,7 @@ SoundChannelNew* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3,
         return 0;
     }
     if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
-        obj->ScalarDtor(1);
+        delete obj;
         return 0;
     }
     obj->m_listNode = (i32)m_list.AddTail(obj);
@@ -355,7 +355,7 @@ SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3,
         return 0;
     }
     if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
-        obj->ScalarDtor(1);
+        delete obj;
         return 0;
     }
     obj->m_listNode = (i32)m_list.AddTail(obj);
@@ -381,7 +381,7 @@ SoundChannelNew* CWorldSoundSet::
         return 0;
     }
     if (obj->Init5(a0, a1, m_04, a2, a3) == 0) {
-        obj->ScalarDtor(1);
+        delete obj;
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
