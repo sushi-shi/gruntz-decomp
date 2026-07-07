@@ -58,6 +58,7 @@
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>
+#include <Gruntz/ParseSource.h> // CParseSource::BeginParse (the Creditz IsLoaded probe)
 
 // The renderer's DisposeWorkers @0x163c60 IS CDDrawWorkerList::ClearWorkers; local decl.
 class CDDrawWorkerList {
@@ -977,7 +978,7 @@ void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
 // CHelpState (FUN_0053c030). FindSet/FindSubset/Resolve/IsLoaded below are the
 // reloc-masked __thiscall helpers off it / its sub-entries.
 struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
-    i32 IsLoaded();       // FUN_00539960 __thiscall, ret BOOL/value
+    // IsLoaded @0x139960 IS CParseSource::BeginParse; cast at each call.
     char m_pad00[0xc];
     void* m_c; // +0x0c
 };
@@ -1011,8 +1012,8 @@ struct CCreditzSoundMgr { // this->m_c points here
     char m_pad08[0x28 - 0x8];
     CCreditzSoundRegistry* m_28; // +0x28
 };
-struct CCreditzRegSet {                   // this->m_8 points here
-    CCreditzRegObj* Register(char* name); // FUN_0053c030 __thiscall (CHelpState idiom)
+struct CCreditzRegSet { // this->m_8 points here
+    // Register @0x13c030 IS CSymParser::ResolvePath; cast at the call.
 };
 // Two owner methods reached at the tail, both __thiscall(this) no args:
 // the title/cursor setup (RVA 0x39a60) and the state-finish (0x439c40).
@@ -1065,7 +1066,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     self->m_1bc = 0;
     self->m_1c0 = 0;
     self->m_1c4 = 0;
-    self->m_2c = self->m_8->Register("STATEZ_CREDITZ");
+    self->m_2c = (CCreditzRegObj*)((CSymParser*)self->m_8)->ResolvePath("STATEZ_CREDITZ");
     if (!self->m_2c) {
         return 0;
     }
@@ -1080,7 +1081,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     if (midiz) {
         CCreditzSubEntry* e = (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("PLAY", (void*)0x584d49);
         if (e) {
-            i32 val = e->IsLoaded();
+            i32 val = ((CParseSource*)e)->BeginParse();
             if (val) {
                 self->m_4->m_48->Install3((void*)val, e->m_c, "CREDITZ");
             }
@@ -1093,7 +1094,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         CCreditzSubEntry* e2 =
             (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("MONOLITH", (void*)0x584d49);
         if (e2) {
-            i32 val = e2->IsLoaded();
+            i32 val = ((CParseSource*)e2)->BeginParse();
             if (val) {
                 self->m_4->m_48->Install3((void*)val, e2->m_c, "MONOLITH");
             }
@@ -1120,7 +1121,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
     CCreditzOwner* self = (CCreditzOwner*)this;
-    if (self->m_c->m_4->IsLoaded() == 0) {
+    if (((CParseSource*)self->m_c->m_4)->BeginParse() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {
