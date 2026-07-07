@@ -46,6 +46,7 @@ VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
 // (spans +0x08..+0x18), +0x18/+0x28 child links. Ctor 0x16dff0.
 class zPTree : public zErrHandling, public CButeNodeEntry {
 public:
+    virtual ~zPTree() OVERRIDE; // slot 0 (scalar-dtor 0x004372; overrides zErrHandling)
     zPTree(void* desc, i32 n);
 
     i32 m_child18; // +0x18  child link (zeroed)
