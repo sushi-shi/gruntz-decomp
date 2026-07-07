@@ -489,8 +489,12 @@ struct CEngObj_1f0760 : Wap::CObject {  // 5 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1f0760);
 VTBL(CEngObj_1f0760, 0x001f0760);
 
-struct CEngObj_1f07d8 : Wap::CObject {  // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
-    virtual ~CEngObj_1f07d8() OVERRIDE; // slot 1 (CObject dtor)
+struct CEngObj_1f07d8 { // 5-slot vtable (== CObject shape; modeled standalone)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
 };
 SIZE_UNKNOWN(CEngObj_1f07d8);
 VTBL(CEngObj_1f07d8, 0x001f07d8);

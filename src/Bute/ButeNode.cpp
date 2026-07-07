@@ -128,8 +128,8 @@ extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
 VTBL(CButeCfgNode174d, 0x001f051c); // node primary (most-derived) vtable @+0x00
 class CButeCfgNode174d : public zPTree {
 public:
-    CButeCfgNode174d(i32 kind); // 0x174d00
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
+    CButeCfgNode174d(i32 kind);           // 0x174d00
+    virtual ~CButeCfgNode174d() OVERRIDE; // slot 0 (zPTree dtor)
 };
 SIZE(CButeCfgNode174d, 0x2c); // derives zPTree (no new fields)
 
