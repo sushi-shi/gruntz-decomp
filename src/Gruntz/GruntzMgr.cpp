@@ -76,6 +76,11 @@ struct CWorldDispatch {
 // EnumLocalApplications, slot 8=GetConnectionSettings), so dispatch is byte-identical.
 
 namespace Utils {
+    SIZE_UNKNOWN(RegistryHelper);
+    class RegistryHelper {
+    public:
+        i32 SetValueDword(char* k, unsigned long v);
+    };
     namespace WinAPI {
         char GetGruntzDriveLetter();
         i32 FileExists(char* szPath);
@@ -175,8 +180,8 @@ public:
     virtual void Slot1(i32 flag); // slot 1 (+0x04) flagged scalar-delete
 };
 struct CSettingsWriter {
-    void WriteInt(const char* key, i32 value); // FUN_00539460 (this, key, value) reloc-masked
-    void Teardown();                           // (this) reloc-masked (Close)
+    // WriteInt IS Utils::RegistryHelper::SetValueDword; cast at each call.
+    // Teardown @0x3b1b IS ~CTriggerMgr; cast at the call.
 };
 // The settings store open/close brackets around the WriteInt block (reloc-masked
 // __cdecl free fns; no this).
@@ -2881,37 +2886,38 @@ void CGruntzMgr::Close() {
     OpenSettingsStore();
     CSettingsWriter* cfg = m_settings;
     if (cfg) {
-        cfg->WriteInt("Num_Runs", m_numRuns);
-        cfg->WriteInt("Num_Movies", m_numMovies);
-        cfg->WriteInt("Sound", m_soundEnabled);
-        cfg->WriteInt("Voice", m_isVoiceEnabled);
-        cfg->WriteInt("Ambient", m_isAmbientEnabled);
-        cfg->WriteInt("Music", m_musicEnabled);
-        cfg->WriteInt("Interlaced", m_isInterlaced);
-        cfg->WriteInt("High_Detail", m_isHighDetail);
-        cfg->WriteInt("Effects", m_isEffectsEnabled);
-        cfg->WriteInt("Disable_Joystick", g_6455c8);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Num_Runs", m_numRuns);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Num_Movies", m_numMovies);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Sound", m_soundEnabled);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Voice", m_isVoiceEnabled);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Ambient", m_isAmbientEnabled);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Music", m_musicEnabled);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Interlaced", m_isInterlaced);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("High_Detail", m_isHighDetail);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Effects", m_isEffectsEnabled);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Disable_Joystick", g_6455c8);
         if (m_sound) {
-            cfg->WriteInt("Music_Volume", m_sound->GetXMidiVolume());
+            ((Utils::RegistryHelper*)cfg)->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }
         if (m_timer) {
-            cfg->WriteInt("Voice_Volume", m_timer->m_2c);
+            ((Utils::RegistryHelper*)cfg)->SetValueDword("Voice_Volume", m_timer->m_2c);
         }
         if (m_world && m_world->m_28) {
-            cfg->WriteInt("Sound_Volume", g_61ab24);
+            ((Utils::RegistryHelper*)cfg)->SetValueDword("Sound_Volume", g_61ab24);
         }
-        cfg->WriteInt("Scroll_Speed", m_scrollSpeed);
-        cfg->WriteInt("Easy_Mode", m_isEasyMode);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Scroll_Speed", m_scrollSpeed);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Easy_Mode", m_isEasyMode);
         i32 res = RES_640x480;
         if (m_savedModeW == 0x400 && m_savedModeH == 0x300) {
             res = RES_1024x768;
         } else if (m_savedModeW == 0x320 && m_savedModeH == 0x258) {
             res = RES_800x600;
         }
-        cfg->WriteInt("Resolution", res);
-        cfg->WriteInt("Checkpoint_Prompts", m_isCheckpointPrompts);
-        cfg->WriteInt("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
-        cfg->WriteInt("Enable_TrueColor", 0);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Resolution", res);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
+        ((Utils::RegistryHelper*)cfg)
+            ->SetValueDword("Enable_HiColor", m_colorDepth == 0x10 ? 1 : 0);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Enable_TrueColor", 0);
     }
     ClearStateStack();
     if (m_curState) {
@@ -2998,7 +3004,7 @@ void CGruntzMgr::Close() {
         m_recolorSurface = 0;
     }
     if (m_settings) {
-        m_settings->Teardown();
+        ((CTriggerMgr*)m_settings)->~CTriggerMgr();
         operator delete(m_settings);
         m_settings = 0;
     }
