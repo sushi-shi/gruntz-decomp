@@ -19,6 +19,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/StatusBarItem.h> // CStatusBarItem base
 
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
@@ -54,7 +55,7 @@ SIZE_UNKNOWN(CGmConfig);
 // CStatusBarItem (vtable @0x5eadbc); kept FLAT (frameless method-view) because the
 // render methods read base-region storage (m_14/m_18/m_28) under machine-specific
 // names that CStatusBarItem models as the m_rect14 aggregate.
-class CSBI_GruntMachine {
+class CSBI_GruntMachine : public CStatusBarItem {
 public:
     // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved
     // frame records (also reached by the destructor as the member teardown).
@@ -65,12 +66,8 @@ public:
     // vtable slot 5 (0xe8cb0): the per-frame render of the machine's frames.
     i32 Render(i32 z);
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  base draw origin x
-    i32 m_18; // +0x18  base draw origin y
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_28; // +0x28  frame countdown (Render decrements; <=0 => idle)
+    // ----- own fields (after CStatusBarItem @0x2c); base draw origins reuse
+    // m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses the inherited m_28.
     char m_pad2c[0x30 - 0x2c];
     CGmConfig* m_30; // +0x30  resolved config record (frame table host)
     CImage* m_34;    // +0x34  resolved frame for index m_38

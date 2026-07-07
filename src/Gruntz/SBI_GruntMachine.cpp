@@ -36,7 +36,7 @@ void CSBI_GruntMachine::Reset() {
 // table, pull the surface context from the active drawable, then blit up to three
 // frames: the standalone handle (m_44), the second resolved record (m_3c, drawn
 // shifted +0x2c in x), and the first resolved record (m_34). Each draws at the base
-// origin plus the frame record's own m_18/m_1c offset.
+// origin plus the frame record's own m_rect14.m_4/m_1c offset.
 // @early-stop
 // reloc-residual plateau: code bytes byte-identical to retail; the three
 // `call RenderFrame` (0x153790) rel32 + the g_gameReg DIR32 are reloc-masked against
@@ -59,20 +59,30 @@ i32 CSBI_GruntMachine::Render(i32 z) {
 
     CImage* f = m_44;
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
+        f->RenderFrame(
+            (void*)ctx,
+            (void*)(m_rect14.m_0 + f->m_anchorX),
+            (void*)(m_rect14.m_4 + f->m_anchorY),
+            0
+        );
     }
     f = m_3c;
     if (f) {
         f->RenderFrame(
             (void*)ctx,
-            (void*)(m_14 + f->m_anchorX + 0x2c),
-            (void*)(m_18 + f->m_anchorY),
+            (void*)(m_rect14.m_0 + f->m_anchorX + 0x2c),
+            (void*)(m_rect14.m_4 + f->m_anchorY),
             0
         );
     }
     f = m_34;
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
+        f->RenderFrame(
+            (void*)ctx,
+            (void*)(m_rect14.m_0 + f->m_anchorX),
+            (void*)(m_rect14.m_4 + f->m_anchorY),
+            0
+        );
     }
     return 1;
 }
