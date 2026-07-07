@@ -23,8 +23,13 @@
 #include <string.h> // intrinsic strcmp ("D")
 
 // --- modeled externs (reloc-masked, no body) -------------------------------
-struct CTubeAnimPlayer {                    // CGrunt::m_154
-    void CacheFirstFrame(const char* name); // 0x150540  CGruntSprite::CacheFirstFrame
+// The +0x154 tube-anim sub-object; CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame
+// (TU-local decl of the header-less spriteresource class), reached via a CGruntSprite cast.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);
+};
+struct CTubeAnimPlayer { // CGrunt::m_154
     char _00[0x1a0];
     i32 m_1a0; // +0x1a0 CDDrawBlitParam sub-descriptor (Setup_15c2d0)
     char _1a4[0x1b4 - 0x1a4];
@@ -135,7 +140,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
     if (strcmp(node->m_name, "D") == 0) {
         i32 idx = m_43c[0] * 3 + m_43c[1];
         char* buf = m_470[idx].name.GetBuffer(0);
-        m_154->CacheFirstFrame(buf);
+        ((CGruntSprite*)m_154)->CacheFirstFrame(buf);
         m_15c = m_154->m_1b4;
         ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_394);
         return 1;
@@ -146,6 +151,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
 
 SIZE_UNKNOWN(CGruntTube);
 SIZE_UNKNOWN(CTubeAnimLookup);
+SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CTubeAnimPlayer);
 SIZE_UNKNOWN(CTubeMgr2c);
 SIZE_UNKNOWN(CTubeRecord);
