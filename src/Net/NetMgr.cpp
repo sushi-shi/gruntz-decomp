@@ -994,7 +994,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
     char line[0x12c];
     if (toChat != 0) {
         GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
-        CString name = player->GetName();
+        CString name = ((CNetMgr*)player)->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
         strcpy(line, text);
@@ -1774,7 +1774,7 @@ i32 CNetMgr::JoinAndRegisterChannel() {
     m_localPlayerId = *(i32*)((char*)lp + 4);
     CNetChannel* ch0 = m_4->m_channels;
     i32 chField = ch0->m_slotId;
-    CString name = ch0->GetName();
+    CString name = ((CNetMgr*)ch0)->GetName();
     i32 ok = RegisterChannelFrom(name, chField, -1, m_localPlayerId);
     return ok != 0 ? enumResult : 0;
 }
@@ -2215,7 +2215,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case 0x418: {
             CString result;
             if (pd != 0) {
-                CString name = pd->GetName();
+                CString name = ((CNetMgr*)pd)->GetName();
                 result.Format("*** %s has a different version of the game.", (const char*)name);
             } else {
                 result.Format("*** A player had a different version of the game.");
@@ -2351,7 +2351,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
 
     void* lp;
     {
-        CString cn = ch0->GetName();
+        CString cn = ((CNetMgr*)ch0)->GetName();
         lp = (void*)m_peer->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
     }
     m_localPlayer = (CNetPlayerEntry*)lp;
@@ -2362,7 +2362,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
     i32 chField = ch0->m_slotId;
-    CString cn2 = ch0->GetName();
+    CString cn2 = ((CNetMgr*)ch0)->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_localPlayerId);
     return ok != 0;
 }
@@ -3343,7 +3343,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
     }
 
     while (payload != 0) {
-        CString name = payload->GetName();
+        CString name = ((CNetMgr*)payload)->GetName();
         i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name);
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);

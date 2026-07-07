@@ -11,6 +11,10 @@
 
 #include <Ints.h>
 #include <rva.h>
+class CGruntzMgr {
+public:
+    i32 IsBattlezMapFile(CString p);
+};
 
 namespace m4dlg {
 
@@ -94,7 +98,7 @@ namespace m4dlg {
                 static CString s_custom("custom\\");
                 if (h != -1) {
                     do {
-                        if (g_mgrSettings->IsHidden13a2(s_custom + fd.name)) {
+                        if (((CGruntzMgr*)g_mgrSettings)->IsBattlezMapFile(s_custom + fd.name)) {
                             g_pSendMessageA(
                                 item->m_hwnd,
                                 0x180,
