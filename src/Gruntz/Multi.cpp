@@ -1,6 +1,3 @@
-#include <Mfc.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/LightFxRender.h>
 // Multi.cpp - the multiplayer / lobby game-state (C:\Proj\Gruntz). Recovered
 // from RTTI (.?AVCMulti@@, vtable 0x5e9fe4) after the dynamic-this tracer
 // mis-attributed the 0x08d270 / 0x0b6110-0x0bc420 cluster to CPlay: every method
@@ -33,21 +30,6 @@
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
-class CSnd788d0 {
-public:
-    i32 PositionUpdate();
-};
-class CTriggerMgr {
-public:
-    i32 OverlayRelease();
-}; // 0x2b85
-
-// CLobbyObjA::Teardown @0xb6220 IS ~CLobbyObjB; minimal local decl.
-SIZE_UNKNOWN(CLobbyObjB);
-class CLobbyObjB {
-public:
-    ~CLobbyObjB();
-};
 
 // ---------------------------------------------------------------------------
 // Engine globals the session loop touches (re-declared TU-local with their
@@ -103,7 +85,7 @@ extern void ActiveWait(i32 phase);
 // The render-sub object reached via m_view->m_24->m_5c (thiscall). FUN_00563300.
 class CMultiSubTick {
 public:
-    // SubTick @0x163300 IS CPlaneRender::CenterScrollA; cast at the call.
+    void SubTick(); // 0x00563300
 };
 
 // ---------------------------------------------------------------------------
@@ -208,7 +190,7 @@ void CMulti::Teardown() {
     }
     CLobbyObjA* p320 = (CLobbyObjA*)m_overlayActive;
     if (p320) {
-        ((CLobbyObjB*)p320)->~CLobbyObjB();
+        p320->Teardown();
         RezFree(p320);
         m_overlayActive = 0;
     }
@@ -483,12 +465,9 @@ public:
     char m_pad0[0x1c];
     CGruntzSoundInnerZ* m_1c; // +0x1c
 };
-class CMultiSub68 {}; // CMultiMgr::m_68 (polymorphic; also viewed as PBSub68)
-// Its Step3017 (0x3017 thunk -> 0x6eb80) IS CGooWellMgr::LoadTeleporterGooConfig; TU-local
-// decl (header-less goowellmgr unit), reached via a CGooWellMgr cast at the call.
-class CGooWellMgr {
+class CMultiSub68 { // CMultiMgr::m_68
 public:
-    i32 LoadTeleporterGooConfig(i32 dt);
+    void Step3017(i32 dt); // 0x3017
 };
 class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
@@ -638,9 +617,14 @@ public:
 class PBSub68 {
 public:
     char m_pad00_230[0x230];
-    i32 m_armed; // +0x230  armed gate
-    // Fire1398 @0x1398 IS CSnd788d0::PositionUpdate; cast at the call.
-    // Reset2b85 @0x2b85 IS CTriggerMgr::OverlayRelease; cast at the call.
+    i32 m_armed;      // +0x230  armed gate
+    void Fire1398();  // 0x00001398
+    void Reset2b85(); // 0x00002b85
+};
+class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
+public:
+    void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
+    void Render14dd(void* pane, RECT* rc); // 0x000014dd
 };
 // The compositor refresh helper (__cdecl free fn). 0x00002356
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
@@ -746,7 +730,7 @@ void CMulti::PumpB() {
 // The m_view->m_4 view-reset target (thiscall). FUN_00558dc0.
 class CMultiViewReset {
 public:
-    // Reset @0x2b85 IS CTriggerMgr::OverlayRelease; cast at the call.
+    void Reset(); // 0x00558dc0
 };
 
 // ===========================================================================
@@ -977,6 +961,7 @@ void CMulti::AckJoinFailure() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
+SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
@@ -999,6 +984,7 @@ SIZE_UNKNOWN(McHost);
 SIZE_UNKNOWN(McObj);
 SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
+SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBSub68);
 SIZE_UNKNOWN(PBVfnHost);

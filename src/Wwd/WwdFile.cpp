@@ -26,7 +26,6 @@
 // pointer args and uses callee-cleanup, so they reconstruct as __stdcall free
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
-#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/GameRegistry.h>
 #include <rva.h>
 
@@ -846,7 +845,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 // docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
 i32 CPlaneRender::CenterScrollA() {
-    CWwdSpatialMgr* scroll = m_scroll;
+    CPlaneScroll* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -863,10 +862,10 @@ i32 CPlaneRender::CenterScrollA() {
     i32 y;
     if (flags & 0x8) {
         y = (i32)m_scaledY;
-        return scroll->ScrollTo(x, y);
+        return scroll->SetTargetA(x, y);
     }
     y = (m_originY + m_extentY) / 2 + 1;
-    return scroll->ScrollTo(x, y);
+    return scroll->SetTargetA(x, y);
 }
 
 // ---------------------------------------------------------------------------
@@ -891,7 +890,7 @@ void CPlaneRender::InitScrollRects() {
     i32 d8 = g->m_rectCWidth;
     i32 dc = g->m_rectCHeight;
 
-    CWwdSpatialMgr* s = m_scroll;
+    CPlaneScroll* s = m_scroll;
     s->m_rectALeft = 0;
     s->m_rectATop = 0;
     s->m_rectARight = c8 - 1;
@@ -1118,7 +1117,7 @@ i32 CPlaneRender::Load(CWwdStream* s) {
 // 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
 i32 CPlaneRender::CenterScrollB() {
-    CWwdSpatialMgr* scroll = m_scroll;
+    CPlaneScroll* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
     }
@@ -1135,10 +1134,10 @@ i32 CPlaneRender::CenterScrollB() {
     i32 y;
     if (flags & 0x8) {
         y = (i32)m_scaledY;
-        return scroll->Relocate(x, y);
+        return scroll->SetTargetB(x, y);
     }
     y = (m_extentY + m_originY) / 2 + 1;
-    return scroll->Relocate(x, y);
+    return scroll->SetTargetB(x, y);
 }
 
 // ---------------------------------------------------------------------------
@@ -1227,7 +1226,7 @@ CString WwdFile::GetMapBaseName(CString path) {
 SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
 SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
 SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
-SIZE_UNKNOWN(CWwdSpatialMgr);
+SIZE_UNKNOWN(CPlaneScroll);
 SIZE_UNKNOWN(CPlaneSurfDesc);
 SIZE_UNKNOWN(CPlaneSurf);
 SIZE_UNKNOWN(CPlanePalArr);

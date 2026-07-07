@@ -62,7 +62,9 @@ struct AmbientPoint {
 // A CMapPtrToPtr-style table (the lookup at 0x1b8438, __thiscall ret 8). The
 // SetupFromMap path resolves the mgr record by key out of the holder's table
 // embedded at +0x10, so `add ecx,0x10; call Lookup` falls out.
-struct AmbSoundMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+struct AmbSoundMap {
+    i32 Lookup(void* key, void** out); // 0x1b8438 (real map method; devs shape)
+};
 struct AmbSoundMapHolder {
     char m_pad00[0x10];
     AmbSoundMap m_map; // +0x10  the lookup table

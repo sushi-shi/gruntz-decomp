@@ -148,11 +148,6 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 // local decl (the full ButeMgr.h redefines CString, already pulled in by this
 // TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
-SIZE_UNKNOWN(zDArray);
-class zDArray {
-public:
-    i32 IndexToPtr(i32 i);
-};
 class CDDrawBlitParamSrc;
 class CDDrawBlitParam {
 public:

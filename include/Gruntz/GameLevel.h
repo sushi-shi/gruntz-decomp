@@ -45,6 +45,8 @@
 // ---------------------------------------------------------------------------
 class CImageSet {
 public:
+    i32 SetAllTypes(i32 type);  // real CImageSet::SetAllTypes (Image/ImageSet.cpp)
+    i32 SetAllFormats(i32 fmt); // real CImageSet::SetAllFormats
     virtual i32 dummy0();
     virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
     virtual i32 dummy2();            // +0x08

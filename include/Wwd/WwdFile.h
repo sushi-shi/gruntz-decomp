@@ -12,6 +12,20 @@ struct CWwdSpatialMgr; // folded CPlaneScroll
 #include <Ints.h>
 #include <rva.h>
 
+struct CPlaneScroll {
+    char pad_0[0x10];
+    i32 m_rectALeft, m_rectATop, m_rectARight, m_rectABottom; // +0x10
+    i32 m_rectCLeft, m_rectCTop, m_rectCRight, m_rectCBottom; // +0x20
+    i32 m_rectBLeft, m_rectBTop, m_rectBRight, m_rectBBottom; // +0x30
+    i32 m_centerAX, m_centerAY;                               // +0x40
+    i32 m_centerBX, m_centerBY;                               // +0x48
+    i32 m_centerCX, m_centerCY;                               // +0x50
+    char pad_58[0x68 - 0x58];
+    i32 m_targetX, m_targetY;     // +0x68
+    i32 SetTargetA(i32 a, i32 b); // 0x168340
+    i32 SetTargetB(i32 a, i32 b); // 0x168500
+};
+
 typedef u8 Bytef;
 typedef u32 uLong;
 typedef u32 uLongf;
@@ -289,7 +303,7 @@ public:
     i32 m_94, m_98, m_9c;       // +0x94..+0x9c
     CPlaneFrame** m_planeArray; // +0xa0
     u8 pad_a4[0xb0 - 0xa4];
-    CWwdSpatialMgr* m_scroll;   // +0xb0
+    CPlaneScroll* m_scroll;     // +0xb0
     char m_name[0xf4 - 0xb4];   // +0xb4  plane name (serialized as a fixed 0x80 field)
     PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (empty marker, sizeof 1)
     u8 pad_f5[0x144 - 0xf5];

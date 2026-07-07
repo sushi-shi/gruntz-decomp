@@ -1177,6 +1177,10 @@ typedef i32 (CNetMgr::*NmSlotRet)();
 typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
 typedef void (CNetMgr::*NmSlotVoid)();
 SIZE_UNKNOWN(CNetConnectSlotView);
+SIZE_UNKNOWN(CSymParserView);
+struct CSymParserView {
+    void* ResolvePath(const char* p); // 0x13c030 (CSymParser::ResolvePath - reloc-masked)
+};
 struct CNetConnectSlotView {
     char m_pad0[8];
     NmSlotRet Abort; // +0x08  abort/close on start failure

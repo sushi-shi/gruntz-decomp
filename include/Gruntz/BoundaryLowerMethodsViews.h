@@ -229,6 +229,7 @@ struct CDDrawSubMgrLeaf : public Wap::CObject {
     void RemoveKeysEqual_1527d0(const char* key, void* v);     // 0x1527d0
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
     class CString KeyOfValue_152d30(void* v);                  // 0x152d30 (id->name; ret CString)
+    void* LookupValue_06b2a0(const char* key);                 // 0x6b2a0  (id lookup; main's fold)
 };
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 struct CHolderdb {

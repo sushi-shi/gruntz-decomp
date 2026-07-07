@@ -16,15 +16,6 @@
 #include <rva.h>
 #include <Globals.h>
 
-// The ambient-sound map is an MFC CMapStringToOb; Lookup @0x1b8438 is CMapStringToOb::Lookup.
-// Minimal local decl (this Win32 TU can't take <Mfc.h> windows.h-first); links from MFC.
-class CObject;
-SIZE_UNKNOWN(CMapStringToOb);
-class CMapStringToOb {
-public:
-    i32 Lookup(const char* key, CObject*& out) const; // 0x1b8438
-};
-
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
 
 // ---------------------------------------------------------------------------
@@ -314,7 +305,7 @@ void CRandomAmbientSound::SetupFromMap(
     i32 a5
 ) {
     void* found = 0;
-    ((CMapStringToOb*)&holder->m_map)->Lookup((const char*)key, (CObject*&)found);
+    holder->m_map.Lookup(key, &found);
     if (found != 0) {
         SetupPos(((AmbSoundRecord*)found)->m_mgr, a3, a4, pos, a5);
     }

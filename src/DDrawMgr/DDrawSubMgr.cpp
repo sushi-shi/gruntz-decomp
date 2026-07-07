@@ -80,6 +80,32 @@ void operator delete(void*);
 // ---- Mis-homed family member-teardown destructors (from the vtable scan) --------
 #include <Gruntz/MapStringToOb.h>
 
+// ctor-view cluster (main-mapping-3 model; the factory placement-constructs these sub-objects)
+SIZE_UNKNOWN(CWwdSubCtorA);
+class CWwdSubCtorA {
+public:
+    void Ctor();
+}; // 0x15b2b0
+SIZE_UNKNOWN(CWwdSubCtorB);
+class CWwdSubCtorB {
+public:
+    void Ctor();
+}; // 0x15b270
+SIZE_UNKNOWN(CWwdResolveBase);
+class CWwdResolveBase {
+public:
+    void Ctor(i32 root, i32 a2, i32 a3);
+}; // 0x15b2c0
+class CWwdLabel {
+public:
+    void Ctor();
+}; // 0x1b9b93
+SIZE_UNKNOWN(CWwdCmdMap);
+class CWwdCmdMap {
+public:
+    void Ctor(i32 a, i32 b, i32 c);
+}; // 0x15b730
+
 // The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2.
 namespace Rng {
     i32 Next2();
