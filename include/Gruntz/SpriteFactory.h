@@ -59,9 +59,7 @@ public:
     CSpriteInner* m_7c; // +0x7c  inner object
 };
 SIZE_UNKNOWN(GruntObjMap);
-struct GruntObjMap {
-    i32 Lookup(void* key, GruntObjEntry** out); // 0x1b8760
-};
+struct GruntObjMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 class CSpriteFactory {
 public:
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,

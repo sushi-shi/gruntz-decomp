@@ -74,7 +74,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
         case 1:
             if (m_288 != 2) {
                 LeafCue* p = 0;
-                m_22c->m_28->m_10.Lookup("GAME\\FINISHLEVEL", &p);
+                ((CMapStringToOb*)&m_22c->m_28->m_10)->Lookup("GAME\\FINISHLEVEL", (CObject*&)p);
                 m_298 = p->m_10->m_28 + 500;
                 m_29c = 0;
                 m_290 = g_645588;

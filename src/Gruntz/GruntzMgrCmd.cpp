@@ -127,7 +127,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_28->m_10.Lookup(TAG, &_c);                                                      \
+        ((CMapStringToOb*)&m_world->m_28->m_10)->Lookup(TAG, (CObject*&)_c);                       \
         if (_c)                                                                                    \
             _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);                                        \
     }
@@ -446,7 +446,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         void* _key = (void*)_s->m_focusSlots[0].m_0c; // death/monologo sprite key
                         if (_key) {
                             GruntObjEntry* _dr = 0;
-                            if (_s->m_world->m_8->m_objMap.Lookup(_key, &_dr) && _dr) {
+                            if (((CMapPtrToPtr*)&_s->m_world->m_8->m_objMap)
+                                    ->Lookup((void*)_key, (void*&)_dr)
+                                && _dr) {
                                 // the entry's inner receiver is the grunt logic (thunk
                                 // 0x3a1c -> CGrunt::ResolveDeathAnimation @0x455f0);
                                 // CSpriteInner::m_18's identity fold is a TODO
@@ -674,7 +676,8 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         g_explosionz ^= 1;
                         if (m_world->m_28->m_emitGate == 0) {
                             LeafCue* _c = 0;
-                            m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", &_c);
+                            ((CMapStringToOb*)&m_world->m_28->m_10)
+                                ->Lookup("GAME_MAJORCHEAT", (CObject*&)_c);
                             if (_c && g_sndEnabled) {
                                 i32 now = g_time6bf3c0;
                                 if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {

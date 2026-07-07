@@ -307,7 +307,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CGruntSndSlot* slot = m_158->m_c->m_28;
     if (slot->m_30 == 0) {
         GruntSoundEntry* sout = 0;
-        ((GruntSoundMap*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, &sout);
+        ((CMapStringToOb*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, (CObject*&)sout);
         if (sout != 0) {
             PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }

@@ -3133,7 +3133,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
         return;
     }
     GruntSoundEntry* entry = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, &entry);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_28->m_10)->Lookup(key, (CObject*&)entry);
     if (entry == 0) {
         return;
     }
@@ -3179,7 +3179,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
         return;
     }
     GruntSoundEntry* entry = 0;
-    g_gameReg->m_world->m_28->m_10.Lookup(key, &entry);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_28->m_10)->Lookup(key, (CObject*&)entry);
     if (entry == 0) {
         return;
     }
@@ -4034,7 +4034,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     i32 v;
     ar->Read(&v, 4);
     GruntObjEntry* oe = 0;
-    ((GruntObjMap*)(res->m_8 + 0x48))->Lookup(entry2, &oe);
+    ((CMapPtrToPtr*)(res->m_8 + 0x48))->Lookup((void*)entry2, (void*&)oe);
     i32 ve;
     if (oe == 0) {
         ve = 0;

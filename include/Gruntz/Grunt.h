@@ -604,9 +604,7 @@ struct GruntSoundEntry {
     CSoundCueMgr* m_10; // +0x10  the sample factory
 };
 SIZE_UNKNOWN(GruntSoundMap);
-struct GruntSoundMap {
-    i32 Lookup(const char* key, GruntSoundEntry** out); // 0x1b8438 (ret 8)
-};
+struct GruntSoundMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 SIZE_UNKNOWN(GruntSoundInner);
 struct GruntSoundInner {
     char m_pad0[0x10];
