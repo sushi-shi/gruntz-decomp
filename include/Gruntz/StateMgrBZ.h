@@ -32,7 +32,7 @@ class DirectInputMgr2; // folded SbzInputManager
 SIZE_UNKNOWN(SbzInputDevice);
 class SbzInputDevice {
 public:
-    virtual i32 ScalarDtor(u32 flag); // slot 0  +0x00  0x1332e0 scalar-deleting dtor
+    virtual ~SbzInputDevice(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual i32 CreateDeviceWrap();   // slot 1  +0x04  0x134260
     virtual void Teardown();          // slot 2  +0x08  0x133bf0
     virtual i32 IsValid();            // slot 3  +0x0c  0x1332b0

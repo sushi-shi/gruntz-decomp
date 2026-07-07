@@ -17,7 +17,7 @@
 //
 // Field names are placeholders; only the OFFSETS + emitted code bytes are load-
 // bearing (campaign doctrine). The looked-up value is modeled as a polymorphic
-// stub (virtuals at the right slots) ONLY so `val->ScalarDtor(1)` lowers to the
+// stub (virtuals at the right slots) ONLY so `delete val` lowers to the
 // exact `mov eax,[val]; push 1; call [eax+4]` __thiscall dispatch; its virtuals are
 // never defined, so no vtable is emitted in this TU.
 //
@@ -48,7 +48,7 @@ inline void* operator new(u32, void* p) {
 class CWorkerValue {
 public:
     virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual ~CWorkerValue(); // slot 1 (deleting dtor -> cl-emitted ??_G)
 };
 
 // A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
@@ -70,7 +70,7 @@ public:
 class CLoadable {
 public:
     virtual void GetRuntimeClass();   // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
+    virtual ~CLoadable(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();         // [2] 0x0028ec
     virtual void AssertValid();       // [3] 0x00106e
     virtual void Dump();              // [4] 0x004034
@@ -178,7 +178,7 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
         CDDrawWorker* worker = MakeWorker(parent);
         if (worker->Vfunc24(key) == 0) {
             if (worker != 0) {
-                worker->ScalarDtor(1);
+                delete worker;
             }
             return 0;
         }
@@ -286,7 +286,7 @@ RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != 0) {
         m_map.RemoveKey((const char*)((char*)worker + 0x24));
-        worker->ScalarDtor(1);
+        delete worker;
     }
 }
 
@@ -333,7 +333,7 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     if (m_map.Lookup(key, val)) {
         m_map.RemoveKey(key);
-        ((CWorkerValue*)val)->ScalarDtor(1);
+        delete ((CWorkerValue*)val);
     }
 }
 
@@ -354,7 +354,7 @@ void CDDrawWorkerRegistry::DestroyAll() {
         do {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
         } while (pos != 0);
     }
@@ -374,7 +374,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0() {
         do {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
         } while (pos != 0);
     }
@@ -410,7 +410,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
         if (strncmp(key, match, len) == 0) {
             m_map.RemoveKey(key);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
             ++n;
         }

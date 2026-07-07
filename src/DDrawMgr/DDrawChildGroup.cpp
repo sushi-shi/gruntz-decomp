@@ -177,7 +177,7 @@ void CDDrawChildGroup::DestroyChildren() {
         n = n->m_next;
         CDDrawGroupChild* obj = cur->m_obj;
         if (obj != 0) {
-            obj->ScalarDtor(1);
+            delete obj;
         }
     }
     ((CObList*)((char*)this + 0x10))->RemoveAll();

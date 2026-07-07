@@ -35,7 +35,7 @@
 class CDDrawGroupChild {
 public:
     virtual void Slot00();                        // +0x00
-    virtual i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
+    virtual ~CDDrawGroupChild(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08();                        // +0x08
     virtual void Slot0C();                        // +0x0c
     virtual void Slot10();                        // +0x10

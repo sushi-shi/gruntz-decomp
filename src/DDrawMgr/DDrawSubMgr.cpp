@@ -91,11 +91,10 @@ namespace Rng {
 // CDDrawSubMgrGrandBase / CDDrawWorkerCacheBase.
 struct FamilyMapBase {
     virtual void s0();                  // [0]
-    virtual void* ScalarDtor(i32 flag); // [1]
+    virtual ~FamilyMapBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void s2();                  // [2]
     virtual void s3();                  // [3]
     virtual void s4();                  // [4]
-    ~FamilyMapBase();
     i32 m_04; // +0x04
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c
@@ -807,7 +806,7 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
 class CWwdObject {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual ~CWwdObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08();
     virtual void Slot0C();
     virtual i32 Slot10(void* a); // +0x10 (1-arg op, called from 159600)
@@ -902,7 +901,7 @@ void CWwdObjMgr::PruneList_15aa90() {
             m_10.RemoveAt((POSITION)cur);
             m_2c.RemoveKey(obj->m_key);
             m_48.RemoveKey(obj->m_key);
-            obj->ScalarDtor(1);
+            delete obj;
         }
     }
 }
@@ -1067,7 +1066,7 @@ i32 CWwdObjMgr::PruneOrphans_15b1d0() {
                 if (found == 0) {
                     m_48.RemoveKey(val->m_key);
                     if (val != 0) {
-                        val->ScalarDtor(1);
+                        delete val;
                     }
                     ++n;
                 }
@@ -1158,14 +1157,14 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         }
         if (obj->m_flags & 0x800) {
             if (obj != 0) {
-                obj->ScalarDtor(1);
+                delete obj;
             }
         } else {
             m_10.RemoveAt((POSITION)obj->m_posCache);
             m_48.RemoveKey(obj->m_key);
             m_2c.RemoveKey(obj->m_key);
             if (obj != 0) {
-                obj->ScalarDtor(1);
+                delete obj;
             }
         }
     }
@@ -2010,7 +2009,7 @@ public:
 class CWwdFactoryObject {
 public:
     virtual void Vs00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual ~CWwdFactoryObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Vs08();
     virtual void Vs0C();
     virtual void Vs10();
@@ -2060,19 +2059,19 @@ void CWwdFactoryObject::Reset_15b980() {
     *(i32*)(o + 0x194) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xd8) = -1;
@@ -2097,19 +2096,19 @@ void CWwdFactoryObject::Reset_15bf00() {
     *(i32*)(o + 0x194) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xd8) = -1;
@@ -2128,19 +2127,19 @@ void CWwdFactoryObject::ReleaseSubs_15b5d0() {
     char* o = (char*)this;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2157,19 +2156,19 @@ void CWwdFactoryObject::ReleaseSubs_15bc50() {
     char* o = (char*)this;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2188,19 +2187,19 @@ void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
     *(char*)(o + 0x18c) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2433,7 +2432,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     }
     if (((CWwdFactoryObject*)result)->Build(a2, a3, a4, a5) == 0) {
         if (result != 0) {
-            ((CWwdFactoryObject*)result)->ScalarDtor(1);
+            delete ((CWwdFactoryObject*)result);
         }
         return 0;
     }

@@ -52,7 +52,7 @@ class CObject;
 class CDDrawWorkerItem {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04
+    virtual ~CDDrawWorkerItem(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08();
     virtual void Slot0C();
     virtual void Slot10();
@@ -121,11 +121,10 @@ void operator delete(void*);
 class WorkerListSibBase {
 public:
     virtual void s0();
-    virtual void* ScalarDtor(i32 flag);
+    virtual ~WorkerListSibBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void s2();
     virtual void s3();
     virtual void s4();
-    ~WorkerListSibBase();
     i32 m_04; // +0x04
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c

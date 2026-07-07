@@ -37,7 +37,7 @@
 class CCatalogNode {
 public:
     virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual ~CCatalogNode(); // slot 1 (deleting dtor -> cl-emitted ??_G)
 };
 
 // CDDrawSubMgrLeafScan: the real sibling class (its full body + own vtable 0x5efca0
@@ -66,11 +66,10 @@ public:
 class CDDrawSubMgrGrandBase {
 public:
     virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
+    virtual ~CDDrawSubMgrGrandBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
     virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
     virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
-    ~CDDrawSubMgrGrandBase();
 
     i32 m_04; // +0x04  -1 when inactive
     i32 m_08; // +0x08
@@ -90,7 +89,7 @@ public:
     // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by ScalarDtor_1577c0),
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
-    virtual void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
+    // slot 1 is the virtual dtor below (cl auto-generates the ??_G from it).
     virtual i32 IsReady();                       // [5] 0x1577a0
     virtual i32 Slot06_152640();                 // [6] 0x152640 (state predicate, returns 1)
     virtual void Cleanup();                      // [7] 0x152650
@@ -104,7 +103,7 @@ public:
     i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
     i32 HasKeyPrefix_152c50(const char* str);
     CString KeyOfValue_152d30(CObject* target);
-    ~CDDrawSubMgrLeaf();
+    virtual ~CDDrawSubMgrLeaf() OVERRIDE; // slot 1 (real ~; cl auto-gens the ??_G @0x1577c0)
 
     CMapStringToOb m_10; // +0x10  m_map
 };
@@ -174,7 +173,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
         m_10.GetNextAssoc(pos, key, val);
         if ((CObject*)target == val) {
             m_10.RemoveKey(key);
-            target->ScalarDtor(1);
+            delete target;
             break;
         }
     }
@@ -199,7 +198,7 @@ void CDDrawSubMgrLeaf::FreeAll_152720() {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CCatalogNode*)val)->ScalarDtor(1);
+                delete ((CCatalogNode*)val);
             }
         } while (pos != 0);
     }
@@ -230,7 +229,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
         if (strncmp(key, match, len) == 0) {
             m_10.RemoveKey(key);
             if (val != 0) {
-                ((CCatalogNode*)val)->ScalarDtor(1);
+                delete ((CCatalogNode*)val);
             }
             ++n;
         }
@@ -301,19 +300,10 @@ void operator delete(void*);
 
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (the vtable slot+4 override): run the real ~, then
-// operator delete this if the low flag bit is set. Out-of-line dtor -> the
-// thunk emits `call ??1`. SYMBOL() pins the ??_G mangling (reloc-masked); it
-// overrides CDDrawSubMgrGrandBase's slot-1 regular virtual so the leaf vtable carries
-// it at slot 1 WITHOUT cl auto-generating a clashing ??_G.
-SYMBOL(??_GCDDrawSubMgrLeaf @@UAEPAXI@Z)
-RVA(0x001577c0, 0x1e)
-void* CDDrawSubMgrLeaf::ScalarDtor(i32 flag) {
-    this->~CDDrawSubMgrLeaf();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// operator delete this if the low flag bit is set. The scalar-deleting dtor ??_G
+// @0x1577c0 is now COMPILER-GENERATED from the class's virtual ~ (delete-site lowering);
+// @rva-symbol names the auto-emitted thunk instead of a hand-written ScalarDtor method.
+// @rva-symbol: ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z 0x001577c0 0x1e
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
 
@@ -366,7 +356,7 @@ void CDDrawSubMgrLeafScan::ClearMap() {
         do {
             m_10.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CCatalogNode*)val)->ScalarDtor(1);
+                delete ((CCatalogNode*)val);
             }
         } while (pos != 0);
     }

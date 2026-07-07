@@ -65,7 +65,7 @@ public:
 class CDDrawMapWorker {
 public:
     virtual void GetRuntimeClass();              // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
+    virtual ~CDDrawMapWorker(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();                    // [2] 0x0028ec
     virtual void AssertValid();                  // [3] 0x00106e
     virtual void Dump();                         // [4] 0x004034
@@ -260,7 +260,7 @@ void CDDrawWorkerMapSmall::DestroyAll() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CDDrawMapWorker*)val)->ScalarDtor(1);
+                delete ((CDDrawMapWorker*)val);
             }
         } while (pos != 0);
     }
@@ -277,7 +277,7 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -292,7 +292,7 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -356,7 +356,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
     if (((CDDrawMapWorker*)w)->Vfunc28(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
-            ((CDDrawMapWorker*)w)->ScalarDtor(1);
+            delete ((CDDrawMapWorker*)w);
         }
         return 0;
     }
@@ -396,7 +396,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
     }
     if (((CDDrawMapWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
         if (w != 0) {
-            ((CDDrawMapWorker*)w)->ScalarDtor(1);
+            delete ((CDDrawMapWorker*)w);
         }
         return 0;
     }
@@ -426,7 +426,7 @@ void CDDrawWorkerMapSmall::ResetSlots() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CDDrawMapWorker*)val)->ScalarDtor(1);
+                delete ((CDDrawMapWorker*)val);
             }
         } while (pos != 0);
     }
@@ -471,7 +471,7 @@ typedef i32 POSITION;
 class CDDrawMapValue {
 public:
     virtual void Dummy();               // +0x00
-    virtual i32  ScalarDtor(i32 flag);  // +0x04
+    virtual ~CDDrawMapValue(); // slot 1 (deleting dtor -> cl-emitted ??_G)
 };
 
 // CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the
@@ -510,7 +510,7 @@ void CDDrawWorkerMapSmallTeardown::DestroyAll()
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0)
-                ((CDDrawMapValue *)val)->ScalarDtor(1);
+                delete ((CDDrawMapValue *)val);
         } while (*(volatile i32 *)&pos != 0);
     }
     m_map1.RemoveAll();

@@ -45,7 +45,7 @@ struct CDDrawFrameSource;
 class CDDrawWorkerBase {
 public:
     virtual void GetRuntimeClass();              // [0]  0x1bef01
-    virtual i32 ScalarDtor(i32 flag);            // [1]  scalar-deleting destructor
+    virtual ~CDDrawWorkerBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();                    // [2]  0x0028ec
     virtual void AssertValid();                  // [3]  0x00106e
     virtual void Dump();                         // [4]  0x004034

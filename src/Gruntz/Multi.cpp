@@ -185,7 +185,7 @@ void CMulti::Teardown() {
         m_session = 0;
     }
     if (m_netGate) {
-        m_netGate->ScalarDtor(1);
+        delete m_netGate;
         m_netGate = 0;
     }
     CLobbyObjA* p320 = (CLobbyObjA*)m_overlayActive;

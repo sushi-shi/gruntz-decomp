@@ -15,7 +15,7 @@
 //     m_indices; cl auto-emits ??_7CAniRecordView (reloc-masks 0x5f02c0), no manual
 //     `m_vptr = &g_aniRecordVtbl` store (the ALL-VTABLES-real model).
 //   * `rec->Parse_168c60(...)` / `rec->GetSize_168e50()` - non-virtual leaf entries.
-//   * `rec->ScalarDtor(1)` - the slot-1 scalar-deleting dtor dispatched as
+//   * `delete rec` - the slot-1 scalar-deleting dtor dispatched as
 //     `mov edx,[ecx]; call [edx+4]`. Modeled as an explicit named virtual (NOT a
 //     C++ `~dtor` + `delete`) precisely to emit that call WITHOUT the compiler's
 //     delete-null-check (the caller already guards `if (el != 0)`).
@@ -30,7 +30,7 @@
 
 struct CAniRecordView {
     virtual void GetRuntimeClass();     // [0] 0x1bef01
-    virtual void* ScalarDtor(u32 flag); // [1] 0x165780 scalar-deleting dtor slot
+    virtual ~CAniRecordView(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();           // [2] 0x0028ec
     virtual void AssertValid();         // [3] 0x00106e
     virtual void Dump();                // [4] 0x004034

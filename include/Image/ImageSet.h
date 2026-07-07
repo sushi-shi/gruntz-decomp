@@ -58,7 +58,7 @@ public:
     // would collide/misname the datum. The manual image-frame vptr stamp is removed
     // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
     virtual void* GetRuntimeClass();                      // [0]  +0x00
-    virtual void* ImgScalarDtor(i32 flags);               // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual ~CImageFrame(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void* Serialize();                            // [2]  +0x08 (ILT)
     virtual void* AssertValid();                          // [3]  +0x0c (ILT)
     virtual void* Dump();                                 // [4]  +0x10 (ILT)

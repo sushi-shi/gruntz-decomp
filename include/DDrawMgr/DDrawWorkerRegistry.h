@@ -40,7 +40,7 @@ class CSymTab;         // probe chain (foreign, other TU)
 class CWorkerVtableView {
 public:
     virtual void Slot00_1bef01();                         // [ 0] +0x00 0x1bef01 (CObject thunk)
-    virtual void ScalarDtor_156df0();                     // [ 1] +0x04 0x156df0
+    virtual ~CWorkerVtableView(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08_28ec();                           // [ 2] +0x08 0x0028ec (CObject thunk)
     virtual void Slot0C_106e();                           // [ 3] +0x0c 0x00106e (CObject thunk)
     virtual void Slot10_4034();                           // [ 4] +0x10 0x004034 (CObject thunk)

@@ -51,7 +51,7 @@ public:
 class LeafScanValue {
 public:
     virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual ~LeafScanValue(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     char m_pad04[0x10 - 0x04];        // +0x04..0x0f (after the vptr)
     void* m_10;                       // +0x10  held sound-arg (LeafScanSoundArg*)
 };
@@ -334,7 +334,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
         if (strncmp(key, match, len) == 0) {
             m_10.RemoveKey(key);
             if (val != 0) {
-                ((LeafScanValue*)val)->ScalarDtor(1);
+                delete ((LeafScanValue*)val);
             }
             ++n;
         }

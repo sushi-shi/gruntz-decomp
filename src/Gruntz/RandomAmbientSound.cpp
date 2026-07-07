@@ -28,7 +28,7 @@
 // (+0x14) and the spatial-mgr list node (+0x3c) RemoveAt unlinks.
 class PosSoundVoice {
 public:
-    virtual void* ScalarDtor(i32 flag); // +0x00  slot 0 (scalar-deleting dtor)
+    virtual ~PosSoundVoice(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     DirectSoundMgr* m_mgr;              // +0x04
     char m_pad8[0x14 - 0x8];
     i32 m_isPlaying; // +0x14  playing flag

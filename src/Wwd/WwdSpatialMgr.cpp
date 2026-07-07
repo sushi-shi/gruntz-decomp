@@ -47,7 +47,7 @@ struct CWwdObjWorker {
 class CWwdObject {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04
+    virtual ~CWwdObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     char m_pad04[0x08 - 0x04];
     i32 m_flags; // +0x08  plane/active flag word
     char m_pad0c[0x7c - 0x0c];
@@ -89,7 +89,7 @@ struct WwdBucketHead {
 class CWwdGrid {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // slot 1 (+0x04) scalar-deleting-dtor thunk
+    virtual ~CWwdGrid(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add_191840(void* region);
     i32 Remove_191890(WwdGridNode* region);
@@ -200,15 +200,15 @@ struct CWwdSpatialMgr {
 RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
     if (m_grid0) {
-        m_grid0->ScalarDtor(1);
+        delete m_grid0;
         m_grid0 = 0;
     }
     if (m_grid1) {
-        m_grid1->ScalarDtor(1);
+        delete m_grid1;
         m_grid1 = 0;
     }
     if (m_grid2) {
-        m_grid2->ScalarDtor(1);
+        delete m_grid2;
         m_grid2 = 0;
     }
     m_mgr = 0;
