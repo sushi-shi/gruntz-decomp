@@ -23,7 +23,7 @@
 
 SIZE_UNKNOWN(SbiSndTable);
 struct SbiSndTable {
-    void Find(char* szName, LeafCue** out); // FUN_001b8438 __thiscall, out-param
+    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
 };
 SIZE_UNKNOWN(SbiSndSet);
 struct SbiSndSet { // m_4->m_30->m_28
@@ -146,7 +146,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         SbiSndSet* set = ((SbiHost*)m_4)->m_30->m_28;
         if (set->m_30 == 0) {
             LeafCue* e = 0;
-            set->m_10.Find("GAME_TABHIGHLIGHT1", &e);
+            ((CMapStringToOb*)&set->m_10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)e);
             if (e != 0) {
                 e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
             }

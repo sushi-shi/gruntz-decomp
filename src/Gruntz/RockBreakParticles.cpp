@@ -41,7 +41,7 @@ struct RockSndEntry {
     u32 m_18;            // +0x18  interval
 };
 struct RockSndTable {
-    void Find(const char* name, RockSndEntry** out); // FUN_001b8438 __thiscall
+    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
 };
 struct RockSndSet { // this->m_22c->m_28
     char m_pad00[0x10];
@@ -248,7 +248,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             RockSndSet* set = m_22c->m_28;
             if (set->m_30 == 0) {
                 RockSndEntry* e = 0;
-                set->m_10.Find("LEVEL_ROCKBREAK", &e);
+                ((CMapStringToOb*)&set->m_10)->Lookup("LEVEL_ROCKBREAK", (CObject*&)e);
                 if (e != 0 && g_sndEnabled != 0) {
                     u32 now = g_killCueClock;
                     if (now - e->m_14 >= e->m_18) {
