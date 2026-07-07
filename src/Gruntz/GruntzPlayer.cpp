@@ -41,13 +41,13 @@ extern i32 g_serialCounter;
 // declared-only virtuals in <Gruntz/SerialArchive.h>). `ar->Write(buf,n)` lowers to
 // `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
 
-// The embedded CBattlezMapConfig bundle at this+0x38: Serialize forwards its 4-arg
-// command to the bundle's Method_02bfc0 (thunk 0x2df1 -> 0x2bfc0), a __thiscall
-// returning nonzero on success. Modeled as a tiny helper laid over (this+0x38) - the
-// facet of CBattlezMapConfig this TU touches - so the `mov ecx,this+0x38; call`
-// lowers + reloc-masks (no body; the full class lives in <Gruntz/BattlezMapConfig.h>).
-struct PlayerConfigBundle {
-    i32 Command(void* ar, i32 kind, i32 a3, i32 a4); // 0x2bfc0 = CBattlezMapConfig::Method_02bfc0
+// The embedded CBattlezMapConfig bundle at this+0x38: Serialize forwards its 4-arg command
+// to CBattlezMapConfig::Method_02bfc0 (0x2bfc0). TU-local method-only decl of the real class
+// (full def in <Gruntz/BattlezMapConfig.h>, deliberately not pulled here) so the `mov ecx,
+// this+0x38; call` lowers + reloc-masks against the real symbol.
+class CBattlezMapConfig {
+public:
+    i32 Method_02bfc0(i32 a1, void* a2, i32 a3, i32 a4);
 };
 
 // ===========================================================================
@@ -211,7 +211,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(&m_224, 4);
         ar->Write(&m_228, 4);
     }
-    return ((PlayerConfigBundle*)&m_038)->Command(ar, kind, a3, a4) != 0;
+    return ((CBattlezMapConfig*)&m_038)->Method_02bfc0((i32)ar, (void*)kind, a3, a4) != 0;
 }
 
 // ===========================================================================
@@ -259,5 +259,3 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
     }
     return s;
 }
-
-SIZE_UNKNOWN(PlayerConfigBundle);
