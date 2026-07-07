@@ -843,13 +843,6 @@ def cmd_audit(aud):
         source_base = aud.src_base.get(name)
         bslots = inter.get(truth) or (aud.reg[truth].primary()[2]
                                       if aud.reg.get(truth) and aud.reg[truth].primary() else [])
-        # When the registry's direct-base detection found nothing (truth=None, e.g. a
-        # struct whose base is on the header decl but whose VTBL/SIZE live in a .cpp),
-        # fall back to the SOURCE-declared base's slots so the own-count subtracts the
-        # inherited prefix instead of marking every slot "new" (phantom MISSING).
-        if not bslots and source_base:
-            bslots = inter.get(source_base) or (aud.reg[source_base].primary()[2]
-                                                if aud.reg.get(source_base) and aud.reg[source_base].primary() else [])
         nB = len(bslots)
         if nB:
             n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
