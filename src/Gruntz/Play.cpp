@@ -4703,9 +4703,8 @@ struct CEffDesc {
     char p0[0x18];
     i32 m_18; // +0x18  display duration (ms)
 };
-struct CEffMap {                           // m_c->m_28 + 0x10 (CMapStringToOb)
-    i32 Lookup(char* key, CEffDesc** out); // 0x1b8438 __thiscall (ret 8)
-};
+// m_c->m_28 + 0x10 is an MFC CMapStringToOb (Lookup @0x1b8438); cast at each call.
+struct CEffMap {};
 struct CEffResMgr { // m_c->m_28
     char p0[0x10];
     CEffMap m_10; // +0x10  embedded name map
@@ -4731,162 +4730,168 @@ i32 CPlay::SetEffectSpriteDurations() {
     CPlayEff* self = (CPlayEff*)this;
     CEffDesc* d;
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_PYRAMIDMOVE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_PYRAMIDMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTEROPEN", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTEROPEN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERCLOSE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTERCLOSE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERALL", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTERALL", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 4000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_BRICKBREAK", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_BRICKBREAK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_DEATHBRIDGEMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_WATERBRIDGEMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_ROCKBREAK", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_ROCKBREAK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_LAVAGEYSER", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_LAVAGEYSER", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOORCLOSE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_TRAPDOORCLOSE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOOROPEN", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_TRAPDOOROPEN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEIGNITE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEIGNITE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEUP", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEUP", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEDOWN", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEDOWN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLAIR2", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLAIR2", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLHOLE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLHOLE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLSINK", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLSINK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GAME_EXPLOSION1", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_EXPLOSION1", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_OUTLETHAZARD", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_OUTLETHAZARD", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_DEATHZ_DEATHZUNFREEZE1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_RESSURECT", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CLOUDHAZARDMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 10000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CLOUDHAZARDKILL", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 3000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_DEATHZ_DEATHZELECTROCUTE1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_NERFGUNGRUNT_NERFGUNZGRUNTP1AS1", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_GUNHATGRUNT_GUNHATGRUNTP1AS1", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)
+        ->Lookup("GRUNTZ_WELDERGRUNT_WELDERZGRUNTP1AS1", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    self->m_c->m_28->m_10.Lookup("LEVEL_PLANEHAZARDFLY", &d);
+    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_PLANEHAZARDFLY", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 5000;
     }
