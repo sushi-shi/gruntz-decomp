@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wap32/Object.h>
 // ReconBatch2O1.cpp - MFC-region leaf ctors from the engine_unmatched worklist
 // that were compiled /O1 (favor SIZE). The size-favoring optimizer materializes
 // `member = 0` as `and [mem],0` (4B) rather than `mov [mem],0` (7B) - the tell
@@ -9,20 +10,17 @@
 // 0x0011e4d0 (13B) - small object ctor: zero m_4, stamp the manual vtable
 // (PTR_LAB_005ed0e4); returns this.
 // ===========================================================================
-// Real-polymorphic: cl auto-stamps the vptr (??_7Obj_11e4d0@@6B@) and emits the
+// Real-polymorphic: cl auto-stamps the vptr (??_7CImageList@@6B@) and emits the
 // 5-slot vtable (retail 0x5ed0e4; declared-only slots reloc-mask). The manual
 // vptr-stamp of the retail vtable was removed per the all-vtables mandate.
-struct Obj_11e4d0 {
-    virtual void Slot00(); // +0x00 vptr
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    i32 m_4; // +0x04
-    Obj_11e4d0();
+struct CImageList : public Wap::CObject {
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CImageList() OVERRIDE;          // slot 1 (slots 2-4 inherit Wap::CObject defaults)
+    i32 m_4;                                 // +0x04
+    CImageList();
 };
 RVA(0x0011e4d0, 0xd)
-Obj_11e4d0::Obj_11e4d0() {
+CImageList::CImageList() {
     m_4 = 0;
 }
 
@@ -79,7 +77,7 @@ void AtexitReg_1d4bc1() {
     atexit(Cleanup_1d4bcd);
 }
 SIZE_UNKNOWN(CWndHost_1bae9b);
-SIZE_UNKNOWN(Obj_11e4d0);
+SIZE_UNKNOWN(CImageList);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(Obj_11e4d0, 0x001ed0e4);
+VTBL(CImageList, 0x001ed0e4);
