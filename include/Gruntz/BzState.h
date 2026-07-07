@@ -60,14 +60,9 @@ struct BzSoundEntry {
 };
 SIZE_UNKNOWN(BzSoundEntry);
 
-struct BzFindTable {
-    void Find(const char* name, BzSoundEntry** out); // 0x1b8438 (Lookup)
-};
-SIZE_UNKNOWN(BzFindTable);
-
 struct BzSoundSet {
     char m_pad00[0x10];
-    BzFindTable m_findTable; // +0x10
+    i32 m_findTable; // +0x10 (CMapStringToPtr body starts here; cast at Find)
     char m_pad14[0x30 - 0x14];
     i32 m_playing; // +0x30  is-playing gate
 };

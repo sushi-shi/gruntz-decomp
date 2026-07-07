@@ -268,7 +268,8 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
             BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
                 BzSoundEntry* res = 0;
-                ss->m_findTable.Find("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", &res);
+                ((CMapStringToPtr*)&ss->m_findTable)
+                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", (void*&)res);
                 if (res != 0) {
                     ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                 }

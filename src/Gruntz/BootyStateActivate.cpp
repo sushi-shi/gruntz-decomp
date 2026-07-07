@@ -41,13 +41,10 @@ struct BootySndEntry {
     u32 m_interval;         // +0x18  min replay interval
 };
 SIZE_UNKNOWN(BootySndTable);
-struct BootySndTable {
-    void Find(char* szName, BootySndEntry** out); // 0x1b8438 (out-param)
-};
 SIZE_UNKNOWN(BootySndSet);
 struct BootySndSet {
     char m_pad00[0x10];
-    BootySndTable m_table; // +0x10  (&m_table == set+0x10)
+    char m_table; // +0x10 (CMapStringToPtr body starts here; cast at Find)
     char m_pad11[0x30 - 0x11];
     i32 m_activeGuard; // +0x30  active guard (nonzero -> skip the ambient poll)
 };
@@ -95,7 +92,7 @@ i32 CBootyState::Vslot09(i32) {
     i32 token = reg->m_soundToken;
     if (set->m_activeGuard == 0) {
         BootySndEntry* res = 0;
-        set->m_table.Find("BOOTY_LOOP", &res);
+        ((CMapStringToPtr*)&set->m_table)->Lookup("BOOTY_LOOP", (void*&)res);
         if (res != 0 && g_sndEnabled != 0) {
             u32 now = g_killCueClock;
             if (now - res->m_lastPlayed >= res->m_interval) {
