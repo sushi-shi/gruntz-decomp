@@ -7,6 +7,8 @@
 #include <Ints.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <rva.h>
+#include <Mfc.h> // CString (0x1b9b93 default ctor)
+#include <new>
 #include <Globals.h>
 #include <Wap32/ZVec.h>
 
@@ -20,15 +22,12 @@ void* GetGlobal5e8e98() {
 
 // ---------------------------------------------------------------------------
 // 0x3ac30: tear down a global CString-like object (tail-call its Free at 0x1b9b93).
-struct CGlobalStr {
-    void Free(); // 0x1b9b93 (__thiscall)
-};
 DATA(0x0022c25c)
-extern CGlobalStr g_62c25c;
+extern CString g_62c25c;
 
 RVA(0x0003ac30, 0xa)
 void FreeGlobal62c25c() {
-    g_62c25c.Free();
+    new (&g_62c25c) CString();
 }
 
 // ---------------------------------------------------------------------------
@@ -101,7 +100,6 @@ i32 RunHelper2914() {
     return 0;
 }
 SIZE_UNKNOWN(CZDArrayDerived);
-SIZE_UNKNOWN(CGlobalStr);
 SIZE_UNKNOWN(COwnerWithSubs);
 SIZE_UNKNOWN(CPairXY);
 SIZE_UNKNOWN(CSubObj8);
