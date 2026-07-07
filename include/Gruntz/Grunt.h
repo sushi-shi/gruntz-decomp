@@ -27,6 +27,7 @@ class CSoundCueMgr; // folded GruntSampleFactory
 class DirectSoundMgr; // folded GruntSoundSample
 
 #include <Ints.h>
+#include <Gruntz/LogicTypeId.h>
 #include <rva.h> // SIZE_UNKNOWN/VTBL class-metadata macros used below
 #include <Gruntz/SpriteFactory.h>
 #include <Gruntz/UserBaseLink.h>   // shared CUserBaseLink (+0x18 link; ~EngStr 0x16d2a0)
@@ -1167,7 +1168,7 @@ public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE;                                              // slot 0  @0xf2f0
     i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1  @0x53b80
-    i32 UserBaseVfunc2() OVERRIDE;                                           // slot 2  (0xf2a0)
+    LogicTypeId GetTypeTag() OVERRIDE;                                       // slot 2  (0xf2a0)
     i32 UserLogicVfunc1() OVERRIDE;                                          // slot 3  (0x5d210)
     i32 UserLogicVfunc2() OVERRIDE;                                          // slot 4  (0x5bcd0)
     i32 UserLogicVfunc3() OVERRIDE;                                          // slot 5  (0x5ecd0)

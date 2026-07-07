@@ -71,8 +71,8 @@ extern CButeTree g_buteTree;
 i32 CUserBase::SerializeMove(CGruntArchive*, i32, i32, i32) {
     return 0;
 }
-i32 CUserBase::UserBaseVfunc2() {
-    return 0;
+LogicTypeId CUserBase::GetTypeTag() {
+    return (LogicTypeId)0;
 }
 
 i32 CUserLogic::UserLogicVfunc1() {

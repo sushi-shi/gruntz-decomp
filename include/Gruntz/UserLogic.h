@@ -30,6 +30,7 @@
 #define GRUNTZ_USERLOGIC_H
 
 #include <rva.h>
+#include <Gruntz/LogicTypeId.h>
 
 // The destructible +0x18 link sub-object (CUserBaseLink, embedding a zBitVec name),
 // shared with the CGrunt world so both embed the identical link.
@@ -379,7 +380,8 @@ public:
     CUserBase() {}
     virtual ~CUserBase() {} // inline: folds into leaf dtors (final base vptr store)
     virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4); // slot 1
-    virtual i32 UserBaseVfunc2();                                           // slot 2
+    virtual LogicTypeId
+    GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
 
 // ---------------------------------------------------------------------------

@@ -46,3 +46,5 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     // vptr stamp is IMPLICIT (real polymorphic class).
     m_sprite->m_08 |= 0x2000002;
 }
+
+VTBL(CBoomerang, 0x001e792c);
