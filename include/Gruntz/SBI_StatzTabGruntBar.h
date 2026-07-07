@@ -95,6 +95,11 @@ SIZE_UNKNOWN(CStatzGlyphMap);
 // CStatusBarItem (vtable @0x5eace4).
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
+    virtual ~CSBI_StatzTabGruntBar() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;          // slot 1
+    virtual void SbiSlot3() OVERRIDE;          // slot 3
+    virtual void SbiSlot4() OVERRIDE;          // slot 4
+    virtual void SbiSlot5() OVERRIDE;          // slot 5
     void Reset();      // 0xea470  drop the five tracked values (also the dtor teardown)
     i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value

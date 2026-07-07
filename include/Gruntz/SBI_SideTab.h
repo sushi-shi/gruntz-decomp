@@ -64,10 +64,15 @@ SIZE_UNKNOWN(CSideTabGameReg);
 // layout-independent.
 class CSBI_SideTab : public CStatusBarItem {
 public:
-    void Reset();            // vslot 3 (0xe9800)  drop the two frame handles
-    i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
-    i32 Render(i32 z);       // vslot 5 (0xe99c0)  draw the two side frames
-    i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
+    virtual ~CSBI_SideTab() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
+    virtual void SbiSlot3() OVERRIDE; // slot 3
+    virtual void SbiSlot4() OVERRIDE; // slot 4
+    virtual void SbiSlot5() OVERRIDE; // slot 5
+    void Reset();                     // vslot 3 (0xe9800)  drop the two frame handles
+    i32 Refresh(i32 unused);          // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
+    i32 Render(i32 z);                // vslot 5 (0xe99c0)  draw the two side frames
+    i32 BuildHandle();                // 0xe9850  sibling: build the +0x58 draw gate
 
     // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x2c.
     CSideTabFallback* m_2c; // +0x2c  empty-slot fallback notify target
