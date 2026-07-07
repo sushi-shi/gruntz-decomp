@@ -176,7 +176,8 @@ struct CEngObj_1efa58 { // 12 slots (first=ScalarDelete)
 SIZE_UNKNOWN(CEngObj_1efa58);
 VTBL(CEngObj_1efa58, 0x001efa58);
 
-struct CEngObj_1efb80 : Wap::CObject { // 10 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efb80 : Wap::CObject {  // 10 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efb80() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -186,7 +187,8 @@ struct CEngObj_1efb80 : Wap::CObject { // 10 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1efb80);
 VTBL(CEngObj_1efb80, 0x001efb80);
 
-struct CEngObj_1efbe8 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efbe8 : Wap::CObject {  // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efbe8() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -203,7 +205,8 @@ struct CEngObj_1efbe8 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1efbe8);
 VTBL(CEngObj_1efbe8, 0x001efbe8);
 
-struct CEngObj_1efc30 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efc30 : Wap::CObject {  // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efc30() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -212,7 +215,8 @@ struct CEngObj_1efc30 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first
 SIZE_UNKNOWN(CEngObj_1efc30);
 VTBL(CEngObj_1efc30, 0x001efc30);
 
-struct CEngObj_1efca0 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efca0 : Wap::CObject {  // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efca0() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -221,7 +225,8 @@ struct CEngObj_1efca0 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first
 SIZE_UNKNOWN(CEngObj_1efca0);
 VTBL(CEngObj_1efca0, 0x001efca0);
 
-struct CEngObj_1efd28 : Wap::CObject { // 23 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efd28 : Wap::CObject {  // 23 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efd28() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -244,7 +249,8 @@ struct CEngObj_1efd28 : Wap::CObject { // 23 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1efd28);
 VTBL(CEngObj_1efd28, 0x001efd28);
 
-struct CEngObj_1efd88 : Wap::CObject { // 14 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efd88 : Wap::CObject {  // 14 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efd88() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -258,7 +264,8 @@ struct CEngObj_1efd88 : Wap::CObject { // 14 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1efd88);
 VTBL(CEngObj_1efd88, 0x001efd88);
 
-struct CEngObj_1efdc0 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efdc0 : Wap::CObject {  // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efdc0() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -275,7 +282,8 @@ struct CEngObj_1efdc0 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1efdc0);
 VTBL(CEngObj_1efdc0, 0x001efdc0);
 
-struct CEngObj_1efe08 : Wap::CObject { // 10 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1efe08 : Wap::CObject {  // 10 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1efe08() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -315,7 +323,8 @@ struct CEngObj_1efe74 { // 10 slots (first=Reset)
 SIZE_UNKNOWN(CEngObj_1efe74);
 VTBL(CEngObj_1efe74, 0x001efe74);
 
-struct CEngObj_1eff70 : Wap::CObject { // 11 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1eff70 : Wap::CObject {  // 11 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1eff70() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -326,7 +335,8 @@ struct CEngObj_1eff70 : Wap::CObject { // 11 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1eff70);
 VTBL(CEngObj_1eff70, 0x001eff70);
 
-struct CEngObj_1effd0 : Wap::CObject { // 19 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1effd0 : Wap::CObject {  // 19 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1effd0() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -345,7 +355,8 @@ struct CEngObj_1effd0 : Wap::CObject { // 19 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1effd0);
 VTBL(CEngObj_1effd0, 0x001effd0);
 
-struct CEngObj_1f0020 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f0020 : Wap::CObject {  // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f0020() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -361,7 +372,8 @@ struct CEngObj_1f0020 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1f0020);
 VTBL(CEngObj_1f0020, 0x001f0020);
 
-struct CEngObj_1f0060 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f0060 : Wap::CObject {  // 17 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f0060() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -378,7 +390,8 @@ struct CEngObj_1f0060 : Wap::CObject { // 17 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1f0060);
 VTBL(CEngObj_1f0060, 0x001f0060);
 
-struct CEngObj_1f00a8 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f00a8 : Wap::CObject {  // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f00a8() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -394,7 +407,8 @@ struct CEngObj_1f00a8 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1f00a8);
 VTBL(CEngObj_1f00a8, 0x001f00a8);
 
-struct CEngObj_1f00e8 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f00e8 : Wap::CObject {  // 16 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f00e8() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -410,7 +424,8 @@ struct CEngObj_1f00e8 : Wap::CObject { // 16 slots (0..4 from Wap::CObject; firs
 SIZE_UNKNOWN(CEngObj_1f00e8);
 VTBL(CEngObj_1f00e8, 0x001f00e8);
 
-struct CEngObj_1f0128 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f0128 : Wap::CObject {  // 9 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f0128() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
     virtual void Slot06();
     virtual void Slot07();
@@ -419,12 +434,14 @@ struct CEngObj_1f0128 : Wap::CObject { // 9 slots (0..4 from Wap::CObject; first
 SIZE_UNKNOWN(CEngObj_1f0128);
 VTBL(CEngObj_1f0128, 0x001f0128);
 
-struct CEngObj_1f02c0 : Wap::CObject { // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f02c0 : Wap::CObject {  // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f02c0() OVERRIDE; // slot 1 (CObject dtor)
 };
 SIZE_UNKNOWN(CEngObj_1f02c0);
 VTBL(CEngObj_1f02c0, 0x001f02c0);
 
-struct CEngObj_1f0328 : Wap::CObject { // 6 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f0328 : Wap::CObject {  // 6 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f0328() OVERRIDE; // slot 1 (CObject dtor)
     virtual void Slot05();
 };
 SIZE_UNKNOWN(CEngObj_1f0328);
@@ -466,12 +483,14 @@ struct CEngObj_1f0518 { // 1 slots (first=sub_174e70)
 SIZE_UNKNOWN(CEngObj_1f0518);
 VTBL(CEngObj_1f0518, 0x001f0518);
 
-struct CEngObj_1f0760 : Wap::CObject { // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f0760 : Wap::CObject {  // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f0760() OVERRIDE; // slot 1 (CObject dtor)
 };
 SIZE_UNKNOWN(CEngObj_1f0760);
 VTBL(CEngObj_1f0760, 0x001f0760);
 
-struct CEngObj_1f07d8 : Wap::CObject { // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+struct CEngObj_1f07d8 : Wap::CObject {  // 5 slots (0..4 from Wap::CObject; first=sub_1bef01)
+    virtual ~CEngObj_1f07d8() OVERRIDE; // slot 1 (CObject dtor)
 };
 SIZE_UNKNOWN(CEngObj_1f07d8);
 VTBL(CEngObj_1f07d8, 0x001f07d8);
