@@ -855,8 +855,20 @@ def cmd_audit(aud):
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
         loc = "%s:%d" % aud.where[name]
-        # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base
-        if truth and source_base != truth:
+        # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base.
+        # A deeper `truth` (e.g. CObject) does NOT make source wrong when source derives a
+        # VALID INTERMEDIATE that transitively reaches truth (CDDrawWorker -> CLoadable ->
+        # CWapObj -> CObject): intermediates are correct, only a base OFF the true spine is
+        # a real error. Walk the source hierarchy; flag only if source_base never reaches truth.
+        def _reaches(b, target, sb=aud.src_base, seen=None):
+            seen = seen or set()
+            while b and b not in seen:
+                if b == target:
+                    return True
+                seen.add(b)
+                b = sb.get(b)
+            return False
+        if truth and source_base != truth and not _reaches(source_base, truth):
             note = " [uncataloged intermediate - model it]" if (
                 via == "intermediate" or (ci.is_rtti and meta["base_inferred"])) else ""
             F["INHERIT"].append((name, "source=%s -> derive %s (%s)%s"
