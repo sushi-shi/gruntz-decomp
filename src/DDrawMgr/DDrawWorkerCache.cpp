@@ -50,6 +50,12 @@ public:
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
 // `*(void**)w = &g_animWorkerVtbl` store (ALL-VTABLES mandate).
 struct AnimWorkerObj : public AnimWorker {
+    virtual ~AnimWorkerObj() OVERRIDE;            // slot 1  0x151d80
+    virtual void Slot05_151d60() OVERRIDE;        // slot 5  0x151d60
+    virtual void IsValidImage() OVERRIDE;         // slot 6  0x001c08
+    virtual void Clear() OVERRIDE;                // slot 7  0x151e70
+    virtual void Slot08_151d70() OVERRIDE;        // slot 8  0x151d70
+    virtual i32 Vfunc24(i32 a1, i32 a3) OVERRIDE; // slot 9  0x151e20
     AnimWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c
     i32 m_08; // +0x08  = 0
