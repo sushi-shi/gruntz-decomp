@@ -62,10 +62,7 @@ extern "C" {
 }
 struct CLogicTypeRec;
 SIZE_UNKNOWN(CLogicTypeMap);
-class CLogicTypeMap {
-public:
-    i32 Lookup(char* szKey, CLogicTypeRec** ppOut); // 0x1b8008
-};
+class CLogicTypeMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
 SIZE_UNKNOWN(CLogicTypeRegistry);
 class CLogicTypeRegistry {
 public:
@@ -93,21 +90,21 @@ struct CLogicTypeBuilder {
 inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* obj) {
     {
         CLogicTypeRec* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicHit", &found);
+        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicHit", (void*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CLogicTypeRec* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicAttack", &found);
+        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicAttack", (void*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CLogicTypeRec* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicBump", &found);
+        ((CMapStringToPtr*)&obj->m_c->m_14->m_10map)->Lookup("LogicBump", (void*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
         }
