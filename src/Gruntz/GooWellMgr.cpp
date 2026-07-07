@@ -96,9 +96,17 @@ struct CGameObj2c {
     char _2e0[0x4f4 - 0x2e0];
     i32 m_4f4; // +0x4f4
     char _4f8[0x594 - 0x4f8];
-    i32 m_594;                  // +0x594
-    void EnterOverlayDrag(i32); // 0xd6440
-    i32 ClearPlacedObjects();   // 0xda030 -> winner row, or -1
+    i32 m_594; // +0x594
+    // EnterOverlayDrag @0xd6440 = CPlay::EnterOverlayDrag, ClearPlacedObjects @0xda030 =
+    // CGameModeObj::ClearPlacedObjects; cast at each call.
+};
+class CPlay {
+public:
+    i32 EnterOverlayDrag(i32);
+};
+class CGameModeObj {
+public:
+    i32 ClearPlacedObjects();
 };
 
 // A per-player overlay the tail re-activates (g_gameReg->m_68->m_overlay).
@@ -226,7 +234,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     if (count <= 1 && m_phase == 2 && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_550 == 0
         && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_554 == 0 && m_2a0 == 0) {
         if ((i64)g_645588 - m_countdownBase >= m_countdownLength) {
-            ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+            ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         }
     }
 
@@ -242,7 +250,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             if (g_gameReg->m_134 == 2) {
                 ((CGameObj2c*)g_gameReg->m_curState)->m_594 = 1;
             }
-            ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+            ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
             m_countdownActive = 0;
             return 0;
         }
@@ -256,7 +264,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (g_gameReg->m_134 == 1 && m_2a0 != 0) {
             goto done;
         }
-        ((CGameObj2c*)g_gameReg->m_curState)->EnterOverlayDrag(0);
+        ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         m_countdownActive = 0;
         return 0;
     }
@@ -264,7 +272,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     {
         CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_curState;
         if (g_gameReg->m_134 != 1) {
-            i32 idx = obj->ClearPlacedObjects();
+            i32 idx = ((CGameModeObj*)obj)->ClearPlacedObjects();
             if (idx != -1) {
                 CFocusSlot* lastSlot = pslot;
                 i32 i;
