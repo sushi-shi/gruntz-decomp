@@ -7,30 +7,12 @@
 #include <rva.h>
 #include <Wap32/Object.h>
 
-struct CEngObj_1ef6c8 { // 2 slots (first=__purecall)
-    virtual void Slot00();
-    virtual void Slot01();
-};
-SIZE_UNKNOWN(CEngObj_1ef6c8);
-VTBL(CEngObj_1ef6c8, 0x001ef6c8);
-
-struct CEngObj_1ef744 { // 1 slots (first=sub_13c340)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1ef744);
-VTBL(CEngObj_1ef744, 0x001ef744);
-
-struct CEngObj_1ef75c { // 1 slots (first=sub_13c4c0)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1ef75c);
-VTBL(CEngObj_1ef75c, 0x001ef75c);
-
-struct CEngObj_1ef760 { // 1 slots (first=__purecall)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1ef760);
-VTBL(CEngObj_1ef760, 0x001ef760);
+// Rehomed to their real owning classes in the Bute/Dsndmgr subsystem headers:
+//   0x1ef6c8 -> PureSoundElem       <Dsndmgr/SoundVoiceList.h>  (2-slot abstract elem base)
+//   0x1ef744 -> CHashInsertNode     src/Bute/SymRec.cpp         (CSymRec +0x4 hash-node prefix)
+//   0x1ef750 -> CSymParser          <Bute/SymParser.h>          (parser primary vtable, 3 slots)
+//   0x1ef75c -> CObjList            <Bute/SymParser.h>          (CSymParser +0x10 list, ctor vtable)
+//   0x1ef760 -> CObjListBase        <Bute/SymParser.h>          (that list's abstract-base dtor vtable)
 
 struct CEngObj_1efe3c { // 10 slots (first=Reset)
     virtual void Slot00();

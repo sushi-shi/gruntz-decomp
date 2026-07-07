@@ -48,9 +48,21 @@ extern "C" void RezFree(void* p);
 // of this shared header so the other includers don't pull the CRT.
 
 // The child-scope hash-node vtable stamped at CSymTab+0x20 (the key-hash interface
-// that lets a scope be inserted into its parent's m_subTabs). Modeled as a manual
-// stamp (its virtuals live in other, unmatched TUs) -> reloc-masked DATA() extern.
+// that lets a scope be inserted into its parent's m_subTabs). The CSymTab ctor
+// (0x139de0) stamps `mov [ebx+0x20],0x5ef748` via &CSymTab_node_vftable (a manual
+// stamp: its virtuals live in other, unmatched TUs) -> reloc-masked extern.
 extern void* CSymTab_node_vftable; // 0x5ef748
+
+// The real polymorphic class the 0x1ef748 vtable belongs to: the CSymTab +0x20
+// hash-node prefix (slot0 sub_13c3b0). Named home for the vtable catalog (distinct
+// from CSymRec's own +0x4 CHashInsertNode at 0x1ef744). Its one virtual is
+// declared-only (defined in an unmatched TU); no vtable is emitted here, so the
+// VTBL below is a pure target-side catalog binding.
+SIZE_UNKNOWN(CSymTabNode);
+struct CSymTabNode {
+    virtual void Vf0(); // slot 0 (sub_13c3b0)
+};
+VTBL(CSymTabNode, 0x001ef748);
 
 // A name-keyed seed builder (0x13ba70): returns time(0)-style seed, reloc-masked.
 // Called as ctor arg5 so its leftover stack args double as the next ctor args.

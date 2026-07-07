@@ -154,4 +154,9 @@ SIZE_UNKNOWN(CSymTab);
 SIZE_UNKNOWN(CSymListNode);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CHashInsertNode, 0x001ef748);
+// CHashInsertNode's OWN vtable is 0x1ef744 (slot0 sub_13c340): the two CSymRec ctors
+// (0x139bf0/0x139c80) stamp `mov [esi+4],0x5ef744` at the +0x4 prefix. (The Ghidra
+// "CSymTab_node" label at 0x1ef748 is the DISTINCT CSymTab m_node20 vtable - see
+// CSymTabNode in <Bute/SymTab.h> - not this prefix; the old 0x1ef748 binding here
+// misattributed it.)
+VTBL(CHashInsertNode, 0x001ef744);

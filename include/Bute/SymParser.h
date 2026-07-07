@@ -61,16 +61,28 @@ public:
 };
 SIZE(CObjNode, 0xc); // base subobject { vptr, next, prev }
 
+// CObjListBase - the abstract list-interface base whose vtable (0x1ef760, one
+// __purecall slot) is the DESTRUCTION vtable of the +0x10 CObjList sub-object: the
+// CSymParser /GX dtor's last member-destruct stamps `mov [esi+0x10],0x5ef760`. Kept
+// as a standalone abstract class (NOT wired as CObjList's C++ base) so the delicate
+// CSymParser ctor/dtor codegen is untouched; the pair-of-vtables collapse to
+// CObjList's own single ??_7 in our model (the dtor stamp reloc-masks).
+SIZE(CObjListBase, 0x4);
+VTBL(CObjListBase, 0x001ef760);
+struct CObjListBase {
+    virtual void V0() = 0; // slot 0 (__purecall)
+};
+
 // The CObjList sub-object embedded at +0x10: an intrusive doubly-linked list of
 // polymorphic nodes. Its Remove (0x1852e0, __thiscall on the list head) unlinks a
 // node from the {head@+4, tail@+8} pair. REAL POLYMORPHIC (ALL-VTABLES): the +0x00
-// abstract list-interface vtable is the implicit vptr (virtual dtor). The enclosing
-// CSymParser ctor auto-stamps the vptr and its /GX dtor auto-restores it as the
-// last member-destruct - both reloc-mask against ??_7CObjList (0x5ef760); retail's
-// distinct ctor(0x5ef75c)/dtor(0x5ef760) sub-vtable addresses collapse to one.
-VTBL(CObjList, 0x005ef760);
+// list-interface vtable is the implicit vptr (virtual dtor). The enclosing CSymParser
+// ctor auto-stamps the vptr `mov [esi+0x10],0x5ef75c` (CObjList's OWN vtable, slot0
+// sub_13c4c0); its /GX dtor's last member-destruct stamps the abstract base vtable
+// 0x5ef760 (see CObjListBase) - both reloc-mask against ??_7CObjList.
+VTBL(CObjList, 0x001ef75c);
 struct CObjList {
-    virtual ~CObjList() {} // +0x00 (this+0x10): abstract list-interface vptr
+    virtual ~CObjList() {} // +0x00 (this+0x10): list-interface vptr (slot0 sub_13c4c0)
     CObjNode* m_head;      // +0x04 (this+0x14)
     CObjNode* m_tail;      // +0x08 (this+0x18)
     i32 m_count;           // +0x0c (this+0x1c)
@@ -117,6 +129,8 @@ SIZE(CParserHash, 0x8); // derives CHashBase (no new fields)
 // CSymParser_vftable stamps are gone. The +0x10 CObjList member keeps its own
 // manual vptr stamps (embedded-member "incorrect load into struct").
 // ---------------------------------------------------------------------------
+VTBL(CSymParser, 0x001ef750); // primary vtable (3 slots V0/V1/V2); ctor/dtor stamp
+                              // `mov [esi],0x5ef750` at +0. Rehomed from AnalysisVtables.
 class CSymParser {
 public:
     virtual void V0(); // slot 0 (sub_13b9f0)
