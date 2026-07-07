@@ -190,7 +190,7 @@ void Cbd450::Init() {
 // ===========================================================================
 RVA(0x000cef50, 0x46)
 i32 Ccef50::M() {
-    ((CSubC8*)(m_4 + 0xc8))->M1b9c69();
+    ((CObList*)(m_4 + 0xc8))->~CObList();
     if (m_1c0 != 0) {
         if (((CDDrawSubMgrPages*)m_c->m_4)->Method_158d20() != 0) {
             ((CDDrawSubMgrPages*)m_c->m_4)->Method_158e40();

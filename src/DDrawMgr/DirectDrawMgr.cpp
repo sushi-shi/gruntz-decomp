@@ -1327,7 +1327,7 @@ DATA(0x001ef7f0)
 extern void* g_poolItemVtbl; // 0x5ef7f0  the pool item's retail vtable (realized elsewhere)
 
 struct CDdPoolSub {
-    void Ctor(); // 0x1b4f0b  (+0x94 sub-object ctor)
+    // Ctor @0x1b4f0b IS the CPtrArray in-place ctor; placement-new at the call.
 };
 struct CDdPoolItem {
     virtual i32 Dtor(i32);   // slot 0 (+0x00) scalar-deleting dtor (delete-flag arg)
@@ -1346,7 +1346,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
     }
     char* item = (char*)RezAlloc(0xc0);
     if (item != 0) {
-        ((CDdPoolSub*)(item + 0x94))->Ctor(); // CPtrArray m_elements in-place ctor (0x1b4f0b)
+        new ((CPtrArray*)(item + 0x94)) CPtrArray(); // in-place CPtrArray ctor (0x1b4f0b)
         // Manual vptr stamp by ADDRESS (the vtable-realization wall - cl cannot emit a
         // matching ??_7CDDSurface in this DDrawMgr TU); the scalar zeroing is typed onto
         // the unified CDDSurface fields (same offsets, byte-identical stores).

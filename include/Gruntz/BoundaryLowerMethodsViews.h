@@ -154,7 +154,7 @@ SIZE_UNKNOWN(Cbd450);
 
 // 0x0cef50 - teardown of the +0x04 owner + inner close chain.
 struct CSubC8 {
-    void M1b9c69(); // 0x1b9c69
+    // M1b9c69 @0x1b9c69 IS CObList::~CObList; cast at the call.
 };
 SIZE_UNKNOWN(CSubC8);
 struct CObjC {};
