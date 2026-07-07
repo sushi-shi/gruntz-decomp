@@ -850,14 +850,13 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 // masked). The recycled nodes ride the same g_gruntFreeList pool as the movement
 // machines (node usable area = head+4; head[0] = next).
 SIZE_UNKNOWN(GruntLoadColl);
+// SetSize @0x1b4f75 / SetAtGrow @0x1b5144 ARE MFC CPtrArray's; cast at each call.
 struct GruntLoadColl {
-    void SetSize(i32 n, i32 grow);    // 0x1b4f75
-    void SetAtGrow(i32 idx, void* p); // 0x1b5144
-    void* m_vtbl;                     // +0x00
-    void** m_data;                    // +0x04
-    i32 m_count;                      // +0x08
-    i32 m_max;                        // +0x0c
-    i32 m_grow;                       // +0x10
+    void* m_vtbl;  // +0x00
+    void** m_data; // +0x04
+    i32 m_count;   // +0x08
+    i32 m_max;     // +0x0c
+    i32 m_grow;    // +0x10
 };
 
 // The CString member the load streams a 0x200-byte buffer into (this+0x410);

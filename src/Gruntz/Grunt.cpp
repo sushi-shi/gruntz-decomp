@@ -3952,7 +3952,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                 g_gruntFreeList = p;
             }
         }
-        coll->SetSize(0, -1);
+        ((CPtrArray*)coll)->SetSize(0, -1);
         i32 n;
         ar->Read(&n, 4);
         for (u32 j = 0; j < (u32)n; j++) {
@@ -3964,7 +3964,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                 g_gruntFreeList = next;
             }
             ar->Read(node, 8);
-            coll->SetAtGrow(coll->m_count, node);
+            ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
         }
     }
 
@@ -3985,7 +3985,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                     g_gruntFreeList = p;
                 }
             }
-            coll->SetSize(0, -1);
+            ((CPtrArray*)coll)->SetSize(0, -1);
             i32 n;
             ar->Read(&n, 4);
             for (u32 j = 0; j < (u32)n; j++) {
@@ -3997,7 +3997,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                     g_gruntFreeList = next;
                 }
                 ar->Read(node, 8);
-                coll->SetAtGrow(coll->m_count, node);
+                ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
             }
             coll = (GruntLoadColl*)((char*)coll + 0x14);
         } while (--k);
@@ -4099,8 +4099,8 @@ i32 CGrunt::Load(CGruntArchive* ar) {
                 g_gruntFreeList = p;
             }
         }
-        coll->SetSize(0, -1);
-        coll->SetSize(n488, -1);
+        ((CPtrArray*)coll)->SetSize(0, -1);
+        ((CPtrArray*)coll)->SetSize(n488, -1);
         for (u32 j = 0; j < (u32)n488; j++) {
             void* node = 0;
             void** head = (void**)g_gruntFreeList;
