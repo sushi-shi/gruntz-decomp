@@ -76,8 +76,65 @@ struct CRenderer {
     virtual void v11();
     virtual void v12();
     virtual void Present(void* a, void* b); // slot 13 (+0x34)
-    // Refresh @0x159ef0 = CDDrawSubMgrPages::Method_159ef0, DisposeWorkers @0x163c60 =
-    // CDDrawWorkerList::ClearWorkers; cast at each call.
+    virtual void v14();                     // slot 14
+    virtual void v15();                     // slot 15
+    virtual void v16();                     // slot 16
+    virtual void v17();                     // slot 17
+    virtual void v18();                     // slot 18
+    virtual void v19();                     // slot 19
+    virtual void v20();                     // slot 20
+    virtual void v21();                     // slot 21
+    virtual void v22();                     // slot 22
+    virtual void v23();                     // slot 23
+    virtual void v24();                     // slot 24
+    virtual void v25();                     // slot 25
+    virtual void v26();                     // slot 26
+    virtual void v27();                     // slot 27
+    virtual void v28();                     // slot 28
+    virtual void v29();                     // slot 29
+    virtual void v30();                     // slot 30
+    virtual void v31();                     // slot 31
+    virtual void v32();                     // slot 32
+    virtual void v33();                     // slot 33
+    virtual void v34();                     // slot 34
+    virtual void v35();                     // slot 35
+    virtual void v36();                     // slot 36
+    virtual void v37();                     // slot 37
+    virtual void v38();                     // slot 38
+    virtual void v39();                     // slot 39
+    virtual void v40();                     // slot 40
+    virtual void v41();                     // slot 41
+    virtual void v42();                     // slot 42
+    virtual void v43();                     // slot 43
+    virtual void v44();                     // slot 44
+    virtual void v45();                     // slot 45
+    virtual void v46();                     // slot 46
+    virtual void v47();                     // slot 47
+    virtual void v48();                     // slot 48
+    virtual void v49();                     // slot 49
+    virtual void v50();                     // slot 50
+    virtual void v51();                     // slot 51
+    virtual void v52();                     // slot 52
+    virtual void v53();                     // slot 53
+    virtual void v54();                     // slot 54
+    virtual void v55();                     // slot 55
+    virtual void v56();                     // slot 56
+    virtual void v57();                     // slot 57
+    virtual void v58();                     // slot 58
+    virtual void v59();                     // slot 59
+    virtual void v60();                     // slot 60
+    virtual void v61();                     // slot 61
+    virtual void v62();                     // slot 62
+    virtual void v63();                     // slot 63
+    virtual void v64();                     // slot 64
+    virtual void v65();                     // slot 65
+    virtual void v66();                     // slot 66
+    virtual void v67();                     // slot 67
+    // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
+    void Refresh(); // 0x159ef0 (thiscall, no arg)
+    // Renderer B (+0x0c) is also the resource-facet worker holder the leaf-state
+    // dispose path tears down (CMenuState::ReleaseResources); reloc-masked leaf.
+    void DisposeWorkers(); // 0x163c60 (thiscall, no arg)
     // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
     // walks it in-level; the implicit vptr is at +0x00, so data starts at +0x04).
     char p04[0x10 - 0x4];
