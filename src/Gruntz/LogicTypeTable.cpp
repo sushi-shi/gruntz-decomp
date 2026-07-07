@@ -1,3 +1,4 @@
+#include <Mfc.h> // real MFC CMapStringToOb (the logic-name map's Lookup @0x1b8438)
 #include <rva.h>
 // LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable. A one-shot
 // registrar that ensures three built-in tile-logic
@@ -39,10 +40,7 @@ extern "C" {
 // `call [vtbl+0x24]` shapes reloc-mask.
 // ---------------------------------------------------------------------------
 struct CLogicType;
-class CLogicMap {
-public:
-    i32 Lookup(char* szKey, CLogicType** ppOut);
-};
+class CLogicMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
 class CLogicRegistry {
 public:
     // slot +0x24: install (factoryFn, key, flags) for a not-yet-present type.
@@ -86,21 +84,21 @@ RVA(0x00008a40, 0xc8)
 void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
     {
         CLogicType* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicHit", &found);
+        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicHit", (CObject*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
         CLogicType* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicAttack", &found);
+        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicAttack", (CObject*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
         CLogicType* found = 0;
-        obj->m_c->m_14->m_10map.Lookup("LogicBump", &found);
+        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicBump", (CObject*&)found);
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
         }
