@@ -1,10 +1,10 @@
 // GameMenuMgrBuilders.h - the GAMETAB game-menu builder (BuildGameMenu TU,
-// StatusBarGameMenu.cpp) shapes: the builder-facet base CSbMenuItem + its concrete
+// StatusBarGameMenu.cpp) shapes: the builder-facet base CSBI_Image + its concrete
 // SBI leaves + the registry factory view + the CGameMenuMgr class. Moved here from
 // the per-TU inline defs so each carries a single shared definition (matching-neutral;
 // only offsets + code bytes are load-bearing, engine callees are reloc-masked).
 //
-// BUILDER-FACET VIEW: CSbMenuItem is this TU's builder VIEW of the ONE retail
+// BUILDER-FACET VIEW: CSBI_Image is this TU's builder VIEW of the ONE retail
 // CSBI_Image level (Configure lands at vtable slot +0x2c). Its sibling builder views
 // (CSbConfigItem in CStatusBarMgr.cpp, CSbDialogItem in SBI_TabzDialogEh.cpp) model
 // the SAME level; one MSVC5 spelling emits only one shape (out-of-line vs inline base
@@ -13,7 +13,7 @@
 //
 // FOLD VERDICT (P1): CSBI_MenuItem/CSBI_ImageSet are ONE retail class each (single
 // RTTI ??_7 + single vtable, config/vtable_names.csv 0x5eab4c / 0x5eac4c) - view, not
-// sibling. Even the two OUT-OF-LINE-ctor facets (this CSbMenuItem + Tabz's
+// sibling. Even the two OUT-OF-LINE-ctor facets (this CSBI_Image + Tabz's
 // CSbDialogItem, both need the throwing base-ctor `call` for the /GX frame) can NOT
 // merge to one base: their slot-0x2c virtual's arg2 differs at the call sites -
 // BuildGameMenu passes an `i32 code`, BuildTabzDialog a `TabzSub*` pointer, so no
@@ -34,7 +34,7 @@ class CGameMenuMgr;
 // leaves below auto-stamp the retail vtables. Eleven leading placeholder virtuals line
 // Configure up to slot 0x2c. Slot 0 is the scalar-deleting dtor (the fail `delete it`).
 // The inline base ctor zeroes the base fields the retail base ctor cleared.
-class CSbMenuItem {
+class CSBI_Image {
 public:
     // OUT-OF-LINE ctor (declaration only): retail `new CSBI_X` CALLS the base ctor out
     // of line (call 0x101fa0), so the opaque may-throw call makes cl register the
@@ -42,8 +42,8 @@ public:
     // Folding it inline let cl prove no-throw -> no frame -> 0% (every byte shifted).
     // Reloc-masked call target, so one shared base ctor pairs with retail's per-class
     // ctors. See docs/patterns/gx-frame-outofline-ctor.md.
-    CSbMenuItem();
-    virtual ~CSbMenuItem();     // +0x00
+    CSBI_Image();
+    virtual ~CSBI_Image();     // +0x00
     virtual void Serialize();   // slot 1
     virtual void Setup();       // slot 2
     virtual void ClearFrame();  // slot 3
@@ -76,14 +76,14 @@ public:
     i32 m_34; // +0x34
     i32 m_38; // +0x38
 };
-SIZE_UNKNOWN(CSbMenuItem);
+SIZE_UNKNOWN(CSBI_Image);
 
 // The concrete widget leaves. `new CSBI_ImageSet` / `new CSBI_MenuItem` makes MSVC
 // auto-stamp the retail ??_7CSBI_ImageSet@@6B@ (0x5eac4c) / ??_7CSBI_MenuItem@@6B@
 // (0x5eab4c) vtables (catalogued in config/vtable_names.csv) - no manual stamp. The
 // inline ctor sets the per-tag fields the retail mk* helper wrote after the ctor
-// (m_tag = tag, m_34 = m_30 = m_38 = 0). Both are 0x3c bytes (the base CSbMenuItem size).
-class CSBI_ImageSet : public CSbMenuItem { // vtable 0x5eac4c, tag 4
+// (m_tag = tag, m_34 = m_30 = m_38 = 0). Both are 0x3c bytes (the base CSBI_Image size).
+class CSBI_ImageSet : public CSBI_Image { // vtable 0x5eac4c, tag 4
 public:
     CSBI_ImageSet() {
         m_tag = 4;
@@ -93,7 +93,7 @@ public:
     }
 };
 SIZE(CSBI_ImageSet, 0x3c);
-class CSBI_MenuItem : public CSbMenuItem { // vtable 0x5eab4c, tag 2
+class CSBI_MenuItem : public CSBI_Image { // vtable 0x5eab4c, tag 2
 public:
     CSBI_MenuItem() {
         m_tag = 2;
@@ -126,19 +126,19 @@ public:
     char m_padd4[0x110 - (0xb8 + sizeof(CPtrList))];
     i32 m_briefingGate; // +0x110  briefing/MISSIONSTATUS gate (==0x1fb)
     char m_pad114[0x1dc - 0x114];
-    CSbMenuItem* m_slotResume;   // +0x1dc  RESUME/PAUSE slot
-    CSbMenuItem* m_slotLoad;     // +0x1e0  LOAD slot
-    CSbMenuItem* m_slotSave;     // +0x1e4  SAVE slot
-    CSbMenuItem* m_slotSettings; // +0x1e8  SETTINGS slot
-    CSbMenuItem* m_slotHelp;     // +0x1ec  HELP slot
-    CSbMenuItem* m_slotQuit;     // +0x1f0  QUIT slot
+    CSBI_Image* m_slotResume;   // +0x1dc  RESUME/PAUSE slot
+    CSBI_Image* m_slotLoad;     // +0x1e0  LOAD slot
+    CSBI_Image* m_slotSave;     // +0x1e4  SAVE slot
+    CSBI_Image* m_slotSettings; // +0x1e8  SETTINGS slot
+    CSBI_Image* m_slotHelp;     // +0x1ec  HELP slot
+    CSBI_Image* m_slotQuit;     // +0x1f0  QUIT slot
     char m_pad1f4[0x354 - 0x1f4];
     i32 m_showResume; // +0x354  show-RESUME gate
     char m_pad358[0x558 - 0x358];
     i32 m_558;           // +0x558
     i32 m_destructState; // +0x55c  DESTRUCT-button state
     char m_pad560[0x570 - 0x560];
-    CSbMenuItem* m_slotDestruct; // +0x570  DESTRUCT/MISSIONSTATUS slot
+    CSBI_Image* m_slotDestruct; // +0x570  DESTRUCT/MISSIONSTATUS slot
 };
 SIZE_UNKNOWN(CGameMenuMgr);
 
