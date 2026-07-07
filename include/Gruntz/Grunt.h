@@ -939,7 +939,7 @@ struct CGruntCellRec {
     // table", cell index 3*col+row, stride 0x68): unit direction {m_dirX, m_dirY}
     // + half-tile step offsets {m_stepX, m_stepY}. Activate (@0x5caa0)
     // writes them as doubles ([ecx+13a*8+0x4b0..0x4c8]); the movement-integration
-    // tail of StepCoordResolve (@0x5f310) reads all four. The serialize/load path
+    // tail of MovingSlot16 (@0x5f310) reads all four. The serialize/load path
     // streams raw 4-byte halves of these (the (char*)+4 spellings in Load).
     double m_dirX;    // +0x48  unit direction X
     double m_dirY;    // +0x50  unit direction Y
@@ -1096,7 +1096,7 @@ public:
 // 0x5e705c -> CUserBase 0x5e70b4) and folds the base teardowns. Slot names are
 // placeholders except the ones CGrunt defines in Grunt.cpp (slot 1 SerializeMove
 // 0x53b80, slot 6 Activate 0x5caa0, slot 11 UserLogicVfunc9 0x48360, slot 16
-// StepCoordResolve 0x5f310); the rest are declared-only (impls external/reloc-
+// MovingSlot16 0x5f310); the rest are declared-only (impls external/reloc-
 // masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic modeled
 // at CUserLogic's TRUE 0x30 boundary: the base ctor 0x58cd0 inits only through
 // +0x2c, and CGrunt's own byte-exact members start at +0x30, so the base is 0x30
@@ -1181,7 +1181,7 @@ public:
     // delivers the melee hit to the neighbor-cell grunt, then applies the
     // "AttackDowntime" timer. Returns 0.
     virtual i32 UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360
-    virtual void StepCoordResolve();        // slot 16 @0x5f310
+    virtual void MovingSlot16() OVERRIDE;   // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
@@ -1464,7 +1464,7 @@ public:
     i32 m_378;             // +0x378 (serialized)
     i32 m_moveKind;        // +0x37c (move-kind fallback; randomized if 0, arg to ApplyMoveKind)
     i32 m_moveVariant;     // +0x380 (selected entrance/move variant index 1..N; from m_374 or rand)
-    i32 m_coordRetryCount; // +0x384 (StepCoordResolve: head-coord tile-claim retry budget, <=5)
+    i32 m_coordRetryCount; // +0x384 (MovingSlot16: head-coord tile-claim retry budget, <=5)
     i32 m_toyTileIndex;    // +0x388 (toy-tile index; gated < Grunt ToyTiles config count)
     i32 m_38c;             // +0x38c
     i32 m_390;             // +0x390
@@ -1590,7 +1590,7 @@ public:
     void EntranceArrivalHook(i32 a, i32 b); // thunk_FUN_0044d060 (2-arg; arrival commit)
 
     // ---- migrated CGrunt cluster (ex-CUserLogic_*) ----
-    // (~CGrunt / SerializeMove / Activate / UserLogicVfunc9 / StepCoordResolve
+    // (~CGrunt / SerializeMove / Activate / UserLogicVfunc9 / MovingSlot16
     // are the vtable slots declared at the top of the class.)
     void EnsureStruckSlot(const char* key); // @0x57b70 lazily build/play the +0x424 sample
     i32 UpdateEntranceAnim();               // @0x690a0 entrance-anim/arrival update step
@@ -1660,7 +1660,7 @@ public:
     void StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // @0x4b370 (ret 0x18, /GX)
     i32 StepGruntMovement(); // @0x4c170 (ret 0)         - the per-tick move step
     i32 StepAnimDispatchA(i32 a, i32 b, i32 c, i32 d); // @0x52fb0 (ret 0x10)
-    // (StepCoordResolve is the vtable slot-16 override, declared at the top of CGrunt.)
+    // (MovingSlot16 is the vtable slot-16 override, declared at the top of CGrunt.)
     i32 StepAnimDispatchB(); // @0x6a6d0 (ret 0)
     // @0x637a0 (ret 0) - the I-code entrance re-stamp dispatch step: D/L reject,
     // reset the +0x8c0 struck timer, on the "I" anim re-notify the tile mgr, then

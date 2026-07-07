@@ -75,7 +75,8 @@ public:
     // Update lands at its true slot 16 (offset 0x40) directly: CUserLogic now models
     // all 16 of its real slots (0..15), so Update is CMovingLogic's first added
     // virtual with no filler needed.
-    virtual void Update(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
+    virtual void MovingSlot16(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
+                                 // (CGrunt step-coord stub / CProjectile trajectory advance)
 
     // Slot 1 override (bute-text serialize). Kept a plain method (its (arc,mode,..)
     // signature does not match CUserBase's slot-1 prototype, so it is not spelled as

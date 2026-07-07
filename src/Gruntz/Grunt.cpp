@@ -701,7 +701,7 @@ CGrunt::CGrunt(void* owner) : CMovingLogic((CGameObject*)owner) {
     m_148 = 0;
     m_14c = 0;
     m_10->m_e4 = 7;
-    ((CMovingLogic*)this)->Update();
+    ((CMovingLogic*)this)->MovingSlot16();
     m_150 = owner;
     m_154 = (CEntranceAnimPlayer*)owner;
     m_158 = (CGruntSndResMgr*)*(void**)((char*)owner + 0x7c);
@@ -5906,7 +5906,7 @@ modeDispatch: {
 }
 
 // ---------------------------------------------------------------------------
-// CGrunt::StepCoordResolve()   @0x5f310   (ret 0)
+// CGrunt::MovingSlot16()   @0x5f310   (ret 0)
 // @early-stop
 // large-state-machine plateau: the coord-probe head (claim the head coord's tile if
 // free, else retry within the m_coordRetryCount budget) and the scratch-resolver D-code reject
@@ -5915,7 +5915,7 @@ modeDispatch: {
 // source spelling), the deep grid/board chains by raw offset, and cross-arm
 // regalloc. Deferred to the final sweep.
 RVA(0x0005f310, 0xb5e)
-void CGrunt::StepCoordResolve() {
+void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
         bool eq;
         eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);

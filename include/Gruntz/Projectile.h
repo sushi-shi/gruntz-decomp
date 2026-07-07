@@ -133,8 +133,8 @@ public:
     i32 DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
     void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
     void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
-    i32 LaunchSound(const char* key); // 0xe2190 (create + play the launch CSample)
-    void LoadProjectileEffects();     // 0xdfd00 (impact/particle effects)
+    i32 LaunchSound(const char* key);     // 0xe2190 (create + play the launch CSample)
+    virtual void MovingSlot16() OVERRIDE; // slot 16 @0xdfd00 (impact/particle effects)
 
     // +0x140..+0x14f (m_140/m_144/m_148/m_14c) belong to the CMovingLogic base
     // now (its Update/Serialize round-trip touches them); CProjectile's own data

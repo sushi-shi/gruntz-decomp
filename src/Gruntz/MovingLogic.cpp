@@ -6,7 +6,7 @@
 //   CMovingLogic::~CMovingLogic      @0x013bd0 - /GX leaf dtor (also the vftable anchor)
 //   WriteCurve                       @0x16cdd0 - the bute-text curve writer
 //   CMovingLogicBase::Serialize      @0x16e7f0 - the base-class bute round-trip
-//   CMovingLogic::Update             @0x16ea90 - the per-frame scroll/position pump
+//   CMovingLogic::MovingSlot16             @0x16ea90 - the per-frame scroll/position pump
 //   CMovingLogic::Serialize          @0x16f4a0 - the derived bute round-trip
 //
 // All /GX (eh profile): the ctor's throwing CUserBaseLink base + the dtor's
@@ -227,7 +227,7 @@ i32 CMovingLogicBase::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 //      operand first) vs retail `fld m_28; fmul g_motionNegHalf`; operand-swap in
 //      source does not change it (docs/patterns/x87-fp-stack-schedule.md).
 RVA(0x0016ea90, 0x234)
-void CMovingLogic::Update() {
+void CMovingLogic::MovingSlot16() {
     // Snapshot the integer positions, then step the kinematic state by the
     // elapsed clock delta.
     m_140 = (i32)Motion()->m_40;

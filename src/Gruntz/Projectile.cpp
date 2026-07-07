@@ -72,7 +72,7 @@ extern "C" u32 g_6bf3bc;
 // through it: reg->m_world (CSpriteFactoryHolder) -> m_8 the HUD sprite factory
 // (CSpriteFactory) + m_28 the sound-cue host (CSndHost, <Gruntz/SoundCue.h>);
 // reg->m_tileGrid the terrain grid (CTileGrid, cell dword 0 = the terrain flags
-// LoadProjectileEffects tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
+// MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -209,7 +209,7 @@ void CProjectile::ReleaseDeferred(i32) {
         m_04 = 0;
         m_28 = 0x3e9;
     }
-    Update(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
+    MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
 
 // ---------------------------------------------------------------------------
@@ -567,7 +567,7 @@ void CProjectile::RegisterType() {
 }
 
 // ===========================================================================
-// CProjectile::LoadProjectileEffects (0xdfd00) - per-frame trajectory advance +
+// CProjectile::MovingSlot16 (0xdfd00) - per-frame trajectory advance +
 // impact-effect select. Runs each frame until the projectile reaches its target
 // tile (m_curX/m_curY catch up to m_targetX/m_targetY): integrate the parabola into the
 // render position (m_posX/m_posY), clamp the muzzle-tracked position against the
@@ -591,7 +591,7 @@ void CProjectile::RegisterType() {
 // reg->m_world) and the unnamed engine-call relocs. Logic complete; parked.
 // ===========================================================================
 RVA(0x000dfd00, 0x6f5)
-void CProjectile::LoadProjectileEffects() {
+void CProjectile::MovingSlot16() {
     if (m_arrived != 0) {
         return;
     }
