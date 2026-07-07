@@ -30,13 +30,9 @@ struct CNetSingletonBf00;
 DATA(0x0024bf00)
 extern CNetSingletonBf00 g_64bf00; // 0x64bf00
 struct CNetSingletonBf00 : CSiblingActReg {};
-i32 Gap_0c7ab0(); // 0xc7ab0 free fn (YAHXZ)
 struct CSiblingActorB {
     i32 Advance(); // 0xc7ab0
 };
-inline i32 CSiblingActorB::Advance() {
-    return Gap_0c7ab0();
-}
 struct CSiblingActorBEntry {
     i32 (CSiblingActorB::*m_fn)();
 };
