@@ -8,10 +8,6 @@
 // CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem (five bases from
 // the shared SbiDtorChain.h).
 
-struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
-    virtual ~CSBI_StatzTabArrow() OVERRIDE;
-    void DtorStatzTabArrow(); // most-derived member teardown (reloc-masked)
-};
 SIZE_UNKNOWN(CSBI_StatzTabArrow);
 
 RVA(0x001048f0, 0xa9)

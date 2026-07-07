@@ -138,3 +138,31 @@ inline CSBI_MenuItem::~CSBI_MenuItem() {
 #endif
 
 #endif // GRUNTZ_SBIDTORCHAIN_H
+// --- SBI leaves modeled over the real chain (Sf*/Imf* base slot names) ---
+struct CSBI_WellGoo : CSBI_Image {
+    virtual ~CSBI_WellGoo() OVERRIDE;
+    virtual void Sf1() OVERRIDE;
+    virtual void Sf2() OVERRIDE;
+    virtual void Sf3() OVERRIDE;
+    virtual void Sf4() OVERRIDE;
+    virtual void Sf5() OVERRIDE;
+};
+struct CSBI_WarlordHead : CSBI_ImageSet {
+    virtual ~CSBI_WarlordHead() OVERRIDE;
+    virtual void Sf1() OVERRIDE;
+    virtual void Sf5() OVERRIDE;
+    virtual void Imf1() OVERRIDE;
+    void DtorReset(); // 0xe7400
+};
+struct CSBI_GruntMachine : CStatusBarItem {
+    virtual ~CSBI_GruntMachine() OVERRIDE;
+    virtual void Sf1() OVERRIDE;
+    virtual void Sf3() OVERRIDE;
+    virtual void Sf4() OVERRIDE;
+    virtual void Sf5() OVERRIDE;
+    void Reset(); // 0xe8c70
+};
+struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
+    virtual ~CSBI_StatzTabArrow() OVERRIDE;
+    void DtorStatzTabArrow();
+};
