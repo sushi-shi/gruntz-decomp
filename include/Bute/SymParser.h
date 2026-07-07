@@ -100,10 +100,8 @@ SIZE(CSlotNode, 0xc);
 // a thin local subclass whose teardown is RemoveAll. Same 8-byte layout (no new
 // fields); only this TU sees the destructor, so Hash.h's siblings are unaffected.
 struct CParserHash : public CHashBase {
-    // 0x184960: the +0x80 hash-table member's 1-arg constructor. Modeled as a method
-    // (the call shape is `lea ecx,[this+0x80]; push n; call`) so the 3-arg CSymParser
-    // ctor's member-init lowers without re-touching Hash.h's shared CHashBase.
-    void Init(i32 n); // 0x184960
+    // The +0x80 hash-table member's 1-arg construction (0x184960) IS CSymList::Construct;
+    // reached via a CSymList cast at the member-init call in SymParser.cpp.
     ~CParserHash() {
         RemoveAll();
     }

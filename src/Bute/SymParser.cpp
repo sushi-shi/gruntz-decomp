@@ -12,6 +12,13 @@
 
 #include <Bute/SymParser.h>
 
+// The +0x80 hash member's construction (0x184960) is CSymList::Construct; TU-local decl
+// (the real array-backed list container lives in the symtab unit).
+class CSymList {
+public:
+    CSymList* Construct(i32 count);
+};
+
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,
 // build-then-discard a default CSymParser temp, then drive the buffer through
@@ -31,7 +38,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
     // auto-stamps ??_7CObjList @+0x10 (== the old CObjList_ctor_vftbl stamp).
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    m_hash.Init(1);
+    ((CSymList*)&m_hash)->Construct(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
     {
@@ -607,7 +614,7 @@ void CObjList::Remove(CObjNode* node) {
 // CSymParseConfig::Construct; xref proves it: the 3-arg buf-ctor 0x13ab00 builds
 // its discarded `CSymParser tmp;` through it, and RezSync::Init (0x83450) +
 // CGruntzMgr::LoadWorldMode (0x91a40) new one). cl auto-stamps ??_7CSymParser @+0;
-// the m_list member ctor auto-stamps ??_7CObjList @+0x10; m_hash.Init(1) builds the
+// the m_list member ctor auto-stamps ??_7CObjList @+0x10; ((CSymList*)&m_hash)->Construct(1) builds the
 // +0x80 list. Seeds the parse-config defaults; leaves m_34/m_38 untouched. The
 // destructible m_hash/m_list members force the /GX EH frame.
 // @early-stop
@@ -623,7 +630,7 @@ RVA(0x0013aa10, 0xdc)
 CSymParser::CSymParser() {
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    m_hash.Init(1);
+    ((CSymList*)&m_hash)->Construct(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
     m_parseArmed = 0;
