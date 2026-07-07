@@ -22,6 +22,7 @@
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c)
+#include <Mfc.h>                  // CObList (CRecPtrList fold)
 #include <rva.h>
 #include <string.h> // inline strlen / memset (rep scas / rep stos)
 
@@ -86,11 +87,6 @@ struct CCmdBuf {
 };
 
 // CRecPtrList (engine; AddTail/RemoveHead/RemoveAll reloc-masked __thiscall).
-struct CRecPtrList {
-    void AddTail(void* p); // 0x1b4991
-    void* RemoveHead();    // 0x1b4a03
-    void RemoveAll();      // 0x1b48a6
-};
 
 // A 0x68-byte sub-record (3x3 grid) with its own loader (0x3ee0).
 
@@ -355,7 +351,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
                 node = next;
             } while (node != 0);
         }
-        ((CRecPtrList*)(p + 0x31c))->RemoveAll();
+        ((CObList*)(p + 0x31c))->RemoveAll();
     }
 
     // Rebuild m_31c from a count of 8-byte free-list nodes.
@@ -370,12 +366,12 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
             g_freeList = nf;
         }
         ar->Read(item, 8);
-        ((CRecPtrList*)(p + 0x31c))->AddTail(item);
+        ((CObList*)(p + 0x31c))->AddTail((CObject*)item);
     }
 
     // Drain + free the m_338 list.
     while (*(void**)(p + 0x344) != 0 && *(i32*)((char*)*(void**)(p + 0x33c) + 8) != 0) {
-        void* rem = ((CRecPtrList*)(p + 0x338))->RemoveHead();
+        void* rem = ((CObList*)(p + 0x338))->RemoveHead();
         RezFree(rem);
     }
 
@@ -389,7 +385,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
             item = mem;
         }
         ar->Read(item, 0x2c);
-        ((CRecPtrList*)(p + 0x338))->AddTail(item);
+        ((CObList*)(p + 0x338))->AddTail((CObject*)item);
     }
 
     // Push the level-config event(s) into the command buffer at +0x10.
@@ -418,7 +414,6 @@ SIZE_UNKNOWN(CNameMap);
 SIZE_UNKNOWN(CObjDir);
 SIZE_UNKNOWN(CMgr74);
 SIZE_UNKNOWN(CCmdBuf);
-SIZE_UNKNOWN(CRecPtrList);
 SIZE_UNKNOWN(CSubRecord);
 SIZE_UNKNOWN(CGameStateRecord);
 
