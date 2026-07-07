@@ -23,9 +23,7 @@ namespace StatusBarTabBuilders {
 
     // The level namespace map (CMapStringToOb) the tab keys are resolved through. Its
     // Lookup (0x1b8008, __thiscall, ret 8) fills `out` and returns a BOOL we discard.
-    struct CSbNamespaceMap {
-        void Lookup(char* key, void** out); // 0x1b8008
-    };
+    struct CSbNamespaceMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
 
     // The object that embeds the namespace map at +0x10 (reached via owner->m_mapHost).
     struct CSbMapHost {

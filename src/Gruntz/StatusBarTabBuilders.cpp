@@ -13,6 +13,13 @@
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Ints.h>
 #include <rva.h>
+
+// MFC CMapStringToPtr (Lookup @0x1b8008); minimal local decl (Win32 TU, no <Mfc.h>); links from MFC.
+SIZE_UNKNOWN(CMapStringToPtr);
+class CMapStringToPtr {
+public:
+    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
+};
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
 
 namespace StatusBarTabBuilders {
@@ -65,10 +72,8 @@ namespace StatusBarTabBuilders {
         m_geom = g;
         statusbar = 0;
         m_0c = p3;
-        owner->m_mapHost->m_map.Lookup(
-            "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-            (void**)&statusbar
-        );
+        ((CMapStringToPtr*)&owner->m_mapHost->m_map)
+            ->Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", (void*&)statusbar);
         CSbImageSet* n = (CSbImageSet*)statusbar;
         i32 spr;
         if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
@@ -81,7 +86,7 @@ namespace StatusBarTabBuilders {
             return 0;
         }
         statusbar = 0;
-        m_owner->m_mapHost->m_map.Lookup(key, (void**)&statusbar);
+        ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)->Lookup(key, (void*&)statusbar);
         m_imageSet = (CSbImageSet*)statusbar;
         if (statusbar == 0) {
             return 0;
@@ -161,8 +166,8 @@ namespace StatusBarTabBuilders {
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
-            ((CSbOwner*)g_gameReg->m_world)
-                ->m_mapHost->m_map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", &out);
+            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
+                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
             if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
@@ -175,8 +180,8 @@ namespace StatusBarTabBuilders {
             m_48 = (p7 - p5) / 2 + parent->m_18;
         } else {
             void* out = 0;
-            ((CSbOwner*)g_gameReg->m_world)
-                ->m_mapHost->m_map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", &out);
+            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
+                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
             if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
@@ -232,7 +237,7 @@ namespace StatusBarTabBuilders {
         m_geom = g;
         statusbar = 0;
         m_0c = p3;
-        owner->m_mapHost->m_map.Lookup(key, (void**)&statusbar);
+        ((CMapStringToPtr*)&owner->m_mapHost->m_map)->Lookup(key, (void*&)statusbar);
         CSbImageSet* head = (CSbImageSet*)statusbar;
         m_headImage = head;
         if (statusbar == 0) {
@@ -261,10 +266,8 @@ namespace StatusBarTabBuilders {
         i32 val;
         if (selMode == 0) {
             statusbar = 0;
-            m_owner->m_mapHost->m_map.Lookup(
-                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
-                (void**)&statusbar
-            );
+            ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)
+                ->Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (void*&)statusbar);
             m_68 = (i32)statusbar;
             if (statusbar == 0) {
                 return 0;
@@ -276,10 +279,8 @@ namespace StatusBarTabBuilders {
             }
         } else {
             statusbar = 0;
-            m_owner->m_mapHost->m_map.Lookup(
-                "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR",
-                (void**)&statusbar
-            );
+            ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)
+                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (void*&)statusbar);
             m_68 = (i32)statusbar;
             if (statusbar == 0) {
                 return 0;
