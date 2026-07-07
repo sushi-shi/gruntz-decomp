@@ -52,7 +52,7 @@ struct HbSndEntry {
 };
 SIZE_UNKNOWN(HbSndTable);
 struct HbSndTable {
-    void Find(char* szName, HbSndEntry** out); // FUN_001b8438 __thiscall, out-param
+    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
 };
 SIZE_UNKNOWN(HbSndSet);
 struct HbSndSet {
@@ -162,7 +162,7 @@ i32 CInGameText::Update() {
         HbSndSet* set = g_mgrSettings->m_world->m_28;
         if (set->m_30 == 0) {
             HbSndEntry* res = 0;
-            set->m_10.Find("GAME_HELPBOOK", &res);
+            ((CMapStringToOb*)&set->m_10)->Lookup("GAME_HELPBOOK", (CObject*&)res);
             if (res != 0) {
                 i32 enable = g_61ab20;
                 i32 token = g_sndCueTag;

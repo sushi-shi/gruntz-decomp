@@ -60,8 +60,8 @@ typedef CInputDevice CDeviceConfigA;
 // ---------------------------------------------------------------------------
 SIZE(CDevicePtrArray, 0x14); // MFC CPtrArray layout (vptr + 4 dwords)
 struct CDevicePtrArray {
-    virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
-    void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
+    virtual ~CDevicePtrArray(); // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
+    // SetSize @0x1b4f75 IS CObArray::SetSize; cast at the call.
 
     // vptr @+0x00 (implicit, polymorphic CPtrArray vftable)
     CInputDevBase** m_data; // +0x04  element storage

@@ -35,6 +35,13 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
+// CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; minimal local decl.
+SIZE_UNKNOWN(CObArray);
+class CObArray {
+public:
+    void SetSize(i32 n, i32 grow);
+};
+
 // The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
 // DISCL_* / DIPROP_RANGE / DIPROP_DEADZONE / DIERR_*) now come from the real
 // <dinput.h> (via DirectInputMgr2.h). DIPROP_RANGE/DEADZONE are the SDK's MAKEDIPROP(4)
@@ -254,7 +261,7 @@ void DirectInputMgr2::Shutdown() {
             delete d;
         }
     }
-    m_devices.SetSize(0, -1);
+    ((CObArray*)&m_devices)->SetSize(0, -1);
     FreeDeviceList();
     m_directInput->Release();
     m_directInput = 0;
