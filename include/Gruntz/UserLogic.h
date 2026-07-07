@@ -409,6 +409,8 @@ public:
     CUserLogic() {}
     CUserLogic(CGameObject* obj);
     virtual ~CUserLogic() OVERRIDE {} // inline: folds into leaf dtors (link teardown + vptr stores)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     virtual i32 UserLogicVfunc1();
     virtual i32 UserLogicVfunc2();
     virtual i32 UserLogicVfunc3();
