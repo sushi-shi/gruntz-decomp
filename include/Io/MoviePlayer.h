@@ -84,6 +84,7 @@ struct CMovieDecodeStore {
 // (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
 struct CMovieScratch : public CObject {
     virtual ~CMovieScratch();          // slot 1 override (retail thunk 0x4040f7)
+    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x001e56, declared-only)
 
     void* m_4; // +0x04 (worker+0x8690)  Rez-owned buffer
 };

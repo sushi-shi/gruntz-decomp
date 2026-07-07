@@ -23,6 +23,7 @@ void RezFree(void* p);
 struct CRezBufferObject : public CObject {
     char* m_4; // +0x04  heap buffer
     virtual ~CRezBufferObject() OVERRIDE;
+    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x17f130, declared-only)
 };
 
 // ---------------------------------------------------------------------------
