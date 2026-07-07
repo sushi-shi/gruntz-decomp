@@ -171,8 +171,10 @@ public:
     virtual ~CImage()
         OVERRIDE; // 0x0d5e80 (overrides CObject slot 1; cl stamps ??_7CImage at entry)
 
-    virtual void FreeAll();   // slot 7  0x153260
-    virtual i32 GetClassId(); // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
+    virtual i32 IsLoaded() OVERRIDE; // slot 5 (CWapObj default 0x0013b6)
+    virtual i32 IsReady() OVERRIDE;  // slot 6 (CWapObj default 0x001c08)
+    virtual void FreeAll();          // slot 7  0x153260
+    virtual i32 GetClassId();        // slot 8  0x0042aa -> 0x0d5de0: return 10 (class type tag)
     virtual i32 Create24(CImageFrameDesc* desc, i32 mode, i32 keyed);          // slot 9  0x1530e0
     virtual i32 LoadDispatch(CImageFrameDesc* desc, u32 mode, void* a, i32 b); // slot 10 0x152fb0
     virtual i32 Resolve(CParseSource* src, i32 arg);                           // slot 11 0x152f20
