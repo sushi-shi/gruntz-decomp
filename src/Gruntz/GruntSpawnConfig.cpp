@@ -10,6 +10,15 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
+class StreamVoice {
+public:
+    i32 Configure(i32 a, i32 b, i32 c, i32 d);
+    i32 SetSource(i32 s);
+};
+class DirectSoundMgr {
+public:
+    void SetVolumeByIndex(i32 v);
+};
 #include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>
@@ -177,9 +186,9 @@ struct CSpawnGate {
 // One owned voice stream (m_10/m_14): a DirectSoundMgr with a +0x6c releasable
 // sub-sprite, plus the source/configure/volume setters.
 struct CSpawnStream {
-    i32 SetSource(i32 src);                    // 0x1374c0
-    i32 Configure(i32 a, i32 b, i32 c, i32 d); // 0x137520
-    void SetVolumeByIndex(i32 vol);            // 0x1355c0
+    // SetSource @? IS StreamVoice::SetSource; cast at the call.
+    // Configure @? IS StreamVoice::Configure; cast at the call.
+    // SetVolumeByIndex @? IS DirectSoundMgr::SetVolumeByIndex; cast at each call.
     char m_pad00[0x6c];
     CSpriteReleasable m_6c; // +0x6c  (Release, 0x137f00)
 };
@@ -251,20 +260,20 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         if (c == gate->m_10->m_188) {
             chosen = 0;
             if (b != 0 && streams[1] != 0) {
-                streams[1]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
+                ((DirectSoundMgr*)streams[1])->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
             }
         } else if (a != 0 && streams[0] != 0) {
-            streams[0]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
+            ((DirectSoundMgr*)streams[0])->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
         }
     } else {
         chosen = 0;
         if (d == gate->m_10->m_188) {
             chosen = 1;
             if (a != 0 && streams[0] != 0) {
-                streams[0]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
+                ((DirectSoundMgr*)streams[0])->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
             }
         } else if (b != 0 && streams[1] != 0) {
-            streams[1]->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
+            ((DirectSoundMgr*)streams[1])->SetVolumeByIndex(g_gameReg->m_inputStateVal / 2);
         }
     }
     if (streams[chosen] == 0) {
@@ -277,8 +286,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     CSpawnStream* stream = streams[chosen];
     i32 vol = m_2c;
     ((StreamFeeder*)&stream->m_6c)->Pause();
-    if (stream->SetSource(src) != 0) {
-        stream->Configure(vol, 0, 0, 0);
+    if (((StreamVoice*)stream)->SetSource(src) != 0) {
+        ((StreamVoice*)stream)->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];
     return voice->Setup(gate->m_10->m_188, (void*)stream, param_4, 0) != 0;
