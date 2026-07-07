@@ -124,8 +124,13 @@ extern CGameRegistry* g_gameReg;
 
 // The bound object's +0x1a0 per-frame animator (Advance_15c360 @0x55c360).
 SIZE_UNKNOWN(DropperAnim);
+// DropperAnim::Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
 struct DropperAnim {
-    void Advance(u32 dt); // 0x55c360, __thiscall
+    // Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
 };
 
 // The per-frame game clock (g_645588) + scroll delta (g_645584); read unsigned so
@@ -289,7 +294,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    ((DropperAnim*)((char*)m_38 + 0x1a0))->Advance(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_6bf3bc);
 
     double drift = (double)g_645584 * m_speed;
     if (m_travelDx > 0) {
