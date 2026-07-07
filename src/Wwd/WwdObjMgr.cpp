@@ -45,9 +45,7 @@ struct WwdObjDesc {
 
 // The string-resolve map reached at (m_0c->m_14 + 0x10): Resolve(nameBuf, &out)
 // looks the descriptor name up to a value. __thiscall, no body -> reloc-mask.
-struct WwdStrResolve {
-    void Resolve(const void* nameBuf, void** out); // 0x1b8008
-};
+struct WwdStrResolve {}; // Resolve @0x1b8008 IS CMapStringToPtr::Lookup; cast at each call
 
 // The level-file object (this->m_0c): m_14 fronts the string-resolve map (+0x10);
 // BuildChild spawns a sub-record for the object. External, reloc-masked.
@@ -105,7 +103,8 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
         switch (desc.m_08) {
             case 5: {
                 void* val;
-                ((WwdStrResolve*)(m_0c->m_14 + 0x10))->Resolve(desc.m_14, &val);
+                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                    ->Lookup((const char*)desc.m_14, (void*&)val);
                 if (val != 0) {
                     createdObj = CreateObject_159600(
                         desc.m_00,
@@ -120,13 +119,15 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
             }
             case 0x16: {
                 void* val;
-                ((WwdStrResolve*)(m_0c->m_14 + 0x10))->Resolve(desc.m_14, &val);
+                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                    ->Lookup((const char*)desc.m_14, (void*&)val);
                 createdObj = CreateObject_159440(desc.m_00, desc.m_9c, (i32)val, 0);
                 break;
             }
             case 0x1b: {
                 void* val;
-                ((WwdStrResolve*)(m_0c->m_14 + 0x10))->Resolve(desc.m_14, &val);
+                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                    ->Lookup((const char*)desc.m_14, (void*&)val);
                 if (val != 0) {
                     createdObj = CreateObject_1598d0(
                         desc.m_00,
