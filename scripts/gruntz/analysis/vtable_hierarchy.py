@@ -805,11 +805,26 @@ def cmd_audit(aud):
     clang -Wsuggest-override for the precise per-method missing-override list)."""
     known = known_base_vtables(aud)
     inter = reconstruct_intermediates(aud)
+    # MFC/CRT library classes (config/library_vtables.csv) are statically linked, NOT
+    # reconstructed - we model them as minimal views to reach their methods, so their
+    # "missing" slots / unmarked overrides vs the FULL library vtable are not our bug.
+    # The audit judges only GAME/engine classes, so exclude the library catalog.
+    lib_rvas = set()
+    _libcsv = REPO / "config/library_vtables.csv"
+    if _libcsv.exists():
+        for _r in csv.reader(_libcsv.open()):
+            if len(_r) >= 2:
+                try:
+                    lib_rvas.add(int(_r[1], 16))
+                except ValueError:
+                    pass
     F = {k: [] for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING")}
     for name in aud.vtable_bearing():
         rva, src, col = aud.resolve(name)
         if rva is None:
             continue
+        if rva in lib_rvas:
+            continue  # MFC/CRT library class - modeled minimally, not reconstructed
         ci = aud.reg.get(name)
         if not (ci and ci.primary()):
             continue
