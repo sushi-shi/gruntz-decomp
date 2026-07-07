@@ -5,6 +5,29 @@
 #include <stdio.h>          // sprintf (reloc-masked engine CRT)
 #include <string.h>         // strncmp (reloc-masked engine CRT _strncmp)
 
+// The sound/anim object registries dispatch each op to a distinct real class (verified by RVA);
+// TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
+class CSoundRes;
+class CSoundResMap {
+public:
+    void RemoveByValue(CSoundRes* v); // 0x157b00
+};
+class DirNode;
+class CDDrawSubMgrLeafScan {
+public:
+    i32 ScanTree_157ee0(DirNode* n, const char* key, const char* g); // 0x157ee0
+};
+class CCatalogNode;
+class CDDrawSubMgrLeaf {
+public:
+    void RemoveValue_152660(CCatalogNode* n); // 0x152660
+};
+class CSymTab;
+class CDDrawSubMgrAni {
+public:
+    i32 ScanTree_152ad0(CSymTab* t, const char* key, const char* g); // 0x152ad0
+};
+
 // LoadObject{Image,Sound,Anim}Resources (0x9a510/0x9a910/0x9ac20) - the three
 // near-identical per-spawn-entry asset reconcilers for the OBJECTZ_ namespace
 // tree.  __thiscall(this=tree, SpawnEntry* entry, ResRegistry* src):
@@ -68,16 +91,16 @@ inline void ObjImageRegistry::ProcessNew(CObject* val) {
 // The Sound registry (entry->m_28): concrete; CMapStringToPtr source map at +0x10,
 // ProcessNew/Install are direct __thiscall methods.
 struct ObjSoundRegistry {
-    void ProcessNew(void* val);                       // 0x157b00 __thiscall
-    void Install(void* h, char* name, const char* g); // 0x157ee0 __thiscall
+    // ProcessNew @0x157b00 = CSoundResMap::RemoveByValue, Install @0x157ee0 =
+    // CDDrawSubMgrLeafScan::ScanTree_157ee0; cast at each call.
     char m_pad04[0x10];
     CMapStringToPtr m_map; // +0x10
 };
 
 // The Anim registry (entry->m_2c): concrete; same shape as Sound, different methods.
 struct ObjAnimRegistry {
-    void ProcessNew(void* val);                       // 0x152660 __thiscall
-    void Install(void* h, char* name, const char* g); // 0x152ad0 __thiscall
+    // ProcessNew @0x152660 = CDDrawSubMgrLeaf::RemoveValue_152660, Install @0x152ad0 =
+    // CDDrawSubMgrAni::ScanTree_152ad0; cast at each call.
     char m_pad04[0x10];
     CMapStringToPtr m_map; // +0x10
 };
@@ -212,7 +235,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         CObject* obj = toAdd.GetNext(dp);
-        entry->m_28->ProcessNew(obj);
+        ((CSoundResMap*)entry->m_28)->RemoveByValue((CSoundRes*)obj);
     }
     toAdd.RemoveAll();
 
@@ -234,7 +257,8 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_28->Install(handle, (char*)(LPCTSTR)e->GetName(), "");
+            ((CDDrawSubMgrLeafScan*)entry->m_28)
+                ->ScanTree_157ee0((DirNode*)handle, (char*)(LPCTSTR)e->GetName(), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
@@ -283,7 +307,7 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
     POSITION dp = toAdd.GetHeadPosition();
     while (dp != NULL) {
         CObject* obj = toAdd.GetNext(dp);
-        entry->m_2c->ProcessNew(obj);
+        ((CDDrawSubMgrLeaf*)entry->m_2c)->RemoveValue_152660((CCatalogNode*)obj);
     }
     toAdd.RemoveAll();
 
@@ -305,7 +329,8 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
             if (handle == 0) {
                 return 0;
             }
-            entry->m_2c->Install(handle, (char*)(LPCTSTR)e->GetName(), "");
+            ((CDDrawSubMgrAni*)entry->m_2c)
+                ->ScanTree_152ad0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {
