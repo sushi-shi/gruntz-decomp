@@ -141,7 +141,9 @@ i32 CUserLogic::UserLogicVfuncD() {
 SIZE_UNKNOWN(CTileSecretTrigger);
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    CTileSecretTrigger(CGameObject* obj); // 0x10fa60
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    CTileSecretTrigger(CGameObject* obj);                              // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
     static void InitActReg();   // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
     static void RegisterActs(); // 0x10f340 (binds "A"/"B" handlers)
