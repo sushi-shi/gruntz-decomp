@@ -135,7 +135,7 @@ public:
     // plus the Rez operator new/delete + ctor-throw cleanup the /GX frame needs.
     CSymRec(i32 key, void* owner, i32 a, i32 b); // 0x139bf0 (m_6c != 0)
     CSymRec(i32 key, void* owner, i32 a);        // 0x139c80 (m_6c == 0)
-    void Clear();                                // 0x139cf0
+    // Clear @0x139cf0 IS ~CSymRec; call the dtor directly.
     void* operator new(u32 n) {
         return RezAlloc(n);
     }

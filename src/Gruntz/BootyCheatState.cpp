@@ -24,6 +24,10 @@
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <Globals.h>
 #include <Gruntz/ResMgr.h> // canonical CImageRegistry (the +0x10 image registrar)
+class CDDrawSubMgrPages {
+public:
+    void Method_159ef0();
+}; // 0x159ef0
 
 // BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath; minimal decl (completes the fwd decl).
 class CSymParser {
@@ -60,7 +64,7 @@ struct BcSoundRegistry {                            // this->m_c->m_28
 // (ResMgr.h): Install is its slot-18 (+0x48) virtual. Uses the real class - no local
 // registrar view.
 struct BcAssetCore { // this->m_c->m_8
-    void Prepare();  // FUN_00559ef0
+    // Prepare @0x159ef0 IS CDDrawSubMgrPages::Method_159ef0; cast at the call.
 };
 struct BcAssetRoot { // this->m_c
     char m_pad00[0x8];
@@ -163,7 +167,7 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         goto fail;
     }
 
-    m_c->m_8->Prepare();
+    ((CDDrawSubMgrPages*)m_c->m_8)->Method_159ef0();
 
     {
         void* soundz = m_2c->FindSub("SOUNDZ");

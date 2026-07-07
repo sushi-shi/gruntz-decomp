@@ -24,6 +24,11 @@ public:
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
+class CDDrawSubMgrPages {
+public:
+    i32 Method_158e90();
+    void Method_159ef0();
+}; // pages
 class CDDSurface {
 public:
     i32 Fill(unsigned int c);
@@ -45,8 +50,8 @@ struct GLSSub14 {
     char m_pad00[0x2c];
     GLSSub2c* m_2c; // +0x2c
 };
-struct GLSSubA {  // m_c->m_4
-    void Begin(); // FUN_00558e90 __thiscall
+struct GLSSubA { // m_c->m_4
+    // Begin @0x158e90 IS CDDrawSubMgrPages::Method_158e90; cast at the call.
     char m_pad00[0x14];
     GLSSub14* m_14; // +0x14
     void* m_18;     // +0x18
@@ -153,7 +158,7 @@ i32 CPlay::OnActivate() {
     p->m_2dc->Finalize();
     p->m_2dc->Activate2();
     p->m_510 = 2;
-    p->m_c->m_4->Begin();
+    ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
     p->StartTimer(0x50, 0x3e8, 0, 1);
     return 1;
 }

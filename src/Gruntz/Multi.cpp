@@ -88,7 +88,7 @@ extern void ActiveWait(i32 phase);
 // The render-sub object reached via m_view->m_24->m_5c (thiscall). FUN_00563300.
 class CMultiSubTick {
 public:
-    void SubTick(); // 0x00563300
+    // SubTick @0x163300 IS CPlaneRender::CenterScrollA; cast at the call.
 };
 
 // ---------------------------------------------------------------------------
@@ -380,7 +380,7 @@ i32 CMulti::Tick() {
     vtbl()->PostRedraw(this);
     void* sub = *(void**)((char*)*(void**)((char*)m_view + 0x24) + 0x5c);
     if (sub) {
-        ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_view->m_24->m_5c)
+        ((CPlaneRender*)sub)->CenterScrollA();
     }
     if (fin == 0) {
         if (m_session->IsStalled() == 0 && m_574 == 0) {

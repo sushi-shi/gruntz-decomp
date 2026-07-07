@@ -177,7 +177,7 @@ CSymTab::~CSymTab() {
         m_symbols.Remove(cur);
         CSymRec* rec = (CSymRec*)cur->m_payload;
         if (rec) {
-            rec->Clear();
+            rec->~CSymRec();
             RezFree(rec);
         }
         cur = next;
