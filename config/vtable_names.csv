@@ -5,7 +5,6 @@ name,rva,size
 ??_7CBrush@@6B@,0x1e8cf4,0x14
 ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@,0x1e971c,0x14
 ??_7CRgn@@6B@,0x1ea2a4,0x14
-??_7CMapMgr@@6B@,0x1ea3b4,0x18
 ??_7CMapStringToPtr@@6B@,0x1eb014,0x14
 ??_7CPtrList@@6B@,0x1eb054,0x14
 ??_7CTestCmdUI@@6B@,0x1eb6ac,0x10
@@ -76,4 +75,3 @@ name,rva,size
 ??_7streambuf@@6B@,0x1f042c,0x2c
 ??_7CMemFile@@6B@,0x1f0964,0x70
 ??_7CStringArray@@6B@,0x1f09ec,0x14
-??_7CResolveNode@@6B@,0x1efbc0,0x28
