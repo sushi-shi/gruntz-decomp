@@ -30,8 +30,10 @@ extern "C" void RezFree(void* p);
 // m_0c=a1) + body store order reproduce the schedule exactly.
 // ===========================================================================
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08) {
+CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
+    m_04 = field04;
+    m_08 = field08;
+    m_0c = owner; // (merged CLoadable ctor)
     // m_obArray (CWorkerObArray) default-constructed here (0x1b55e9).
     m_buffer0 = 0;
     m_buffer1 = 0;
