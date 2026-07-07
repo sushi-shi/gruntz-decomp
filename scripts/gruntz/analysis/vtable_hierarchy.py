@@ -782,14 +782,14 @@ def _source_base(bodies):
 
 
 def _body_counts(bodies):
-    """(virtual-decl count, OVERRIDE-macro count) from the class's MOST-complete
-    shim body (max virtuals), so multiple per-TU views don't double-count."""
-    best = (0, 0)
-    for b in bodies:
-        nv = len(re.findall(r"\bvirtual\b", b))
-        if nv >= best[0]:
-            best = (nv, len(re.findall(r"\bOVERRIDE\b", b)))
-    return best
+    """(max virtual-decl count, max OVERRIDE-macro count) across the class's per-TU
+    bodies. Take each maximum INDEPENDENTLY: a class can be declared fully in one TU
+    (most virtuals) but carry the OVERRIDE marks in another (e.g. the canonical header
+    vs a lean cast-view), so pinning the macro count to the single max-virtual body
+    under-counts and yields phantom 'unmarked override' flags."""
+    nv = max((len(re.findall(r"\bvirtual\b", b)) for b in bodies), default=0)
+    mac = max((len(re.findall(r"\bOVERRIDE\b", b)) for b in bodies), default=0)
+    return (nv, mac)
 
 
 def cmd_audit(aud):
@@ -877,8 +877,14 @@ def cmd_audit(aud):
             F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
         if n_inh and n_virt > own:
             F["REDECLARE"].append((name, "%d virtual decls, only %d own (ovr+new): drop ~%d inherited parent virtuals" % (n_virt, own, n_virt - own), loc))
-        if n_ovr and n_macro < n_ovr:
-            F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr, n_macro, n_ovr - n_macro), loc))
+        # OVERRIDE is meaningful only for a FULLY-declared class: if the class under-
+        # declares its own slots (MISSING, below), some "override slots" aren't declared
+        # yet, so they can't carry the macro - that's a MISSING problem, not an OVERRIDE
+        # one. Count only the DECLARED overrides (min of override-slots and decls-minus-new)
+        # against the macros so the two flags don't double-count the same undeclared slots.
+        n_ovr_declared = min(n_ovr, max(0, n_virt - n_new))
+        if n_ovr_declared and n_macro < n_ovr_declared:
+            F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr_declared, n_macro, n_ovr_declared - n_macro), loc))
         if own and n_virt < own:
             F["MISSING"].append((name, "%d own virtuals (ovr+new), source declares %d" % (own, n_virt), loc))
     print("# INHERITANCE / OVERRIDE AUDIT - our source vs the binary-proven vtable (one report)")
