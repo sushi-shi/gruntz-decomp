@@ -1166,7 +1166,7 @@ SIZE_UNKNOWN(CGrunt);
 class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
-    virtual virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
+    virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
     virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
         OVERRIDE;                              // slot 1  @0x53b80
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (0xf2a0)
@@ -1175,6 +1175,7 @@ public:
     virtual i32 UserLogicVfunc3() OVERRIDE;    // slot 5  (0x5ecd0)
     virtual i32 Activate() OVERRIDE;           // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE;    // slot 8  (0x62b40)
+    virtual i32 UserLogicVfunc7() OVERRIDE;    // slot 9  @0x61cb0 (attack-fire step)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
     // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
     // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
