@@ -66,12 +66,8 @@ struct CLookObj {
 
 // The two keyed stores reached through g_gameReg->m_world: a name->record map at
 // (->m_nameMap + 0x10) and an id->record map at (->m_idMap + 0x48).
-struct CResMapStr {
-    i32 Lookup(const char* key, CLookObj*& out); // 0x1b8438
-};
-struct CResMapInt {
-    i32 Lookup(i32 key, CLookObj*& out); // 0x1b8760
-};
+struct CResMapStr {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
+struct CResMapInt {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at each call
 struct CResHolder {
     char _0[0x10];
     CResMapStr m_map10; // +0x10
@@ -183,8 +179,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
                 CLookObj* out = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)
-                    ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out);
+                ((CMapStringToOb*)&((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10)
+                    ->Lookup("LEVEL_ROLLINGBALL", (CObject*&)out);
                 if (out && out->m_soundFactory) {
                     m_rollingballLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_rollingballLoop) {
@@ -200,8 +196,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
                 CLookObj* out = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)
-                    ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out);
+                ((CMapStringToOb*)&((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10)
+                    ->Lookup("GAME_TELEPORTLOOP", (CObject*&)out);
                 if (out && out->m_soundFactory) {
                     m_teleportLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_teleportLoop) {
@@ -280,8 +276,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
                             CLookObj* out = 0;
-                            if (((CMgrHolderX*)g_gameReg->m_world)
-                                    ->m_idMap->m_map48.Lookup(slot->m_0c, out)
+                            if (((CMapPtrToPtr*)&((CMgrHolderX*)g_gameReg->m_world)
+                                     ->m_idMap->m_map48)
+                                    ->Lookup((void*)slot->m_0c, (void*&)out)
                                 && out) {
                                 if (out->m_host->m_anim) {
                                     out->m_host->m_anim->ResolveDeathAnimation();
@@ -295,8 +292,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
                             CLookObj* out = 0;
-                            if (((CMgrHolderX*)g_gameReg->m_world)
-                                    ->m_idMap->m_map48.Lookup(lastSlot->m_0c, out)
+                            if (((CMapPtrToPtr*)&((CMgrHolderX*)g_gameReg->m_world)
+                                     ->m_idMap->m_map48)
+                                    ->Lookup((void*)lastSlot->m_0c, (void*&)out)
                                 && out) {
                                 if (out->m_host->m_anim) {
                                     out->m_host->m_anim->ResolveAnimation();
