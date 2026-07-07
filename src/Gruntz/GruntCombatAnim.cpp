@@ -57,9 +57,7 @@ struct CombatCue {
     i32 m_14;           // +0x14 last-fire clock
     i32 m_18;           // +0x18 cooldown window
 };
-struct CombatCueMap {
-    i32 Lookup(const char* key, CombatCue** out); // 0x1b8438 (__thiscall, ret 8)
-};
+struct CombatCueMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 struct CombatSprInner {
     char m_pad0[0x10];
     CombatCueMap m_10; // +0x10 the launch-sound lookup map
@@ -180,7 +178,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), &out);                                              \
+        ((CMapStringToOb*)&reg->m_world->m_28->m_10)->Lookup((key), (CObject*&)out);               \
         cue = out;                                                                                 \
     } while (0)
 
