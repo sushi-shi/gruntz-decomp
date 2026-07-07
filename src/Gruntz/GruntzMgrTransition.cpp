@@ -183,7 +183,14 @@ struct CSplashState : CState { // param 14, 0x1bc
         m_1b4 = 0;
     }
 };
-struct CDemo : CPlay { // param 7, 0x528
+struct CDemo : CPlay {
+    virtual ~CDemo() OVERRIDE;                   // slot 0
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot15() OVERRIDE;              // slot 21
+    virtual void BuildWorldLevelPath() OVERRIDE; // slot 42 // param 7, 0x528
     char m_pad[0x528 - 0x520];
     CDemo() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
