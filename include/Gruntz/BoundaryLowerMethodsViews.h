@@ -56,6 +56,7 @@
 #define GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 
 #include <Ints.h>
+#include <Wap32/Object.h>
 #include <rva.h>
 #include <Gruntz/SerialArchive.h> // canonical Read@+0x2c / Write@+0x30 archive stream
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -223,9 +224,7 @@ struct Cdb2f0 {
 SIZE_UNKNOWN(Cdb2f0);
 
 // 0x0db750 - "LEVEL" config sync through the +0x0c owner's +0x2c config.
-class CObject;
-struct CDDrawSubMgrLeaf {
-    CObject* LookupValue_06b2a0(const char* key);              // 0x6b2a0 (id->CObject)
+struct CDDrawSubMgrLeaf : public Wap::CObject {
     void* HasKeyPrefix_152c50(const char* key);                // 0x152c50
     void RemoveKeysEqual_1527d0(const char* key, void* v);     // 0x1527d0
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
