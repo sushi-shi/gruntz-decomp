@@ -14,6 +14,15 @@ extern WwdGameReg* g_gameReg;   // 0x64556c (moved from Grunt.h; this TU uses th
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
 #include <Globals.h>
+class CDDrawBlitParamSrc;
+class CDDrawBlitParam {
+public:
+    void Setup_15c2d0(CDDrawBlitParamSrc* s);
+}; // 0x15c2d0
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(unsigned int i);
+}; // 0x15c360
 
 // CEntranceAnimPlayer's SetAnim* ARE CGruntSprite's; local decl.
 class CGruntSprite {
@@ -507,7 +516,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_wingzTimeSprite = 0;
     }
     m_prevEntranceDesc = m_154->m_1b4;
-    m_154->m_1a0.SetGeometry(m_pickupGeoSrc);
+    ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_pickupGeoSrc);
     ((CGruntSprite*)m_154)->CacheFirstFrame("GRUNTZ_PICKUPS");
     return 1;
 }

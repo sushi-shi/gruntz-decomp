@@ -227,7 +227,7 @@ struct CAnimElem {
 SIZE_UNKNOWN(CGruntAnimSub);
 class CGruntAnimSub {
 public:
-    void SetGeometry(i32 srcSprite); // (this = animState+0x1a0)
+    // SetGeometry @0x15c2d0 IS CDDrawBlitParam::Setup_15c2d0; cast at each call.
 };
 
 SIZE_UNKNOWN(CGruntAnimState);
@@ -336,7 +336,7 @@ public:
     // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
     // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
     // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
-    i32 SetGeoSourceR(i32 src); // FUN_0055c360
+    // SetGeoSourceR @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at each call.
     // Data-less view: the geometry sub-player's m_20/m_28 (abs CGrunt+0x154+0x1a0
     // +0x20/+0x28) live PAST the player's own m_1b4, so they are not modeled as
     // embedded data here (that would corrupt m_1b4's offset). LoadEntranceConfig's

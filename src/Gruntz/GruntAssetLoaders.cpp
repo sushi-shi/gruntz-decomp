@@ -15,6 +15,15 @@
 #include <string.h>
 #include <Bute/ButeMgr.h> // CButeMgr g_buteMgr (GetIntDef / GetDwordDef)
 #include <Globals.h>
+class CDDrawBlitParamSrc;
+class CDDrawBlitParam {
+public:
+    void Setup_15c2d0(CDDrawBlitParamSrc* s);
+}; // 0x15c2d0
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(unsigned int i);
+}; // 0x15c360
 
 // The death-pose lookup (m_c->m_2c->LookupValue @0x6b2a0) IS CDDrawSubMgrLeaf::LookupValue_06b2a0
 // (completes Grunt.h's forward decl); local decl, cast at each call.
@@ -216,7 +225,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     GruntScratchTeardown();
     if (strcmp(rec->m_name, g_codeD) == 0) {
         m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
+        ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseWalk);
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
@@ -230,7 +239,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     GruntScratchTeardown();
     if (strcmp(rec2->m_name, g_codeA) == 0) {
         m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[0]);
+        ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseIdle[0]);
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
@@ -779,14 +788,14 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         case DEATH_EXPLODE: { // GRUNTZ_DEATHZ_EXPLODE
             if (m_entranceReason == 1) {
                 m_prevEntranceDesc = m_154->m_1b4;
-                m_154->m_1a0.SetGeometry(m_poseDeath);
+                ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseDeath);
                 goto pathA;
             }
             CSprite* out = 0;
             ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_EXPLODE, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseDeath);
             ((CGruntSprite*)m_154)->CacheFrame(s_DEATHZ_EXPLODE, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
@@ -797,7 +806,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_EXITZ_DRAIN, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseDeath);
             ((CGruntSprite*)m_154)->CacheFrame(s_dEXITZ, DEATH_FRAME());
             m_prevAnimSetNode = m_14->m_1c;
             m_14->m_1c = (void*)EntranceLookupAnimSet(s_dExitKeyB);
@@ -806,7 +815,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         default:
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->m_1a0.SetGeometry(m_poseDeath);
+            ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_poseDeath);
             ((CGruntSprite*)m_154)->CacheFirstFrame(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_pGameRegistry;
