@@ -22,6 +22,11 @@
 #include <Globals.h>
 
 #include <stdio.h> // sprintf (the "\SCREENZ\%s" path formatter)
+class DirectSoundMgr {
+public:
+    i32 IsPlaying();
+    i32 CloneAndPlay(i32 a, i32 b, i32 c);
+};
 class SoundDevice {
 public:
     i32 PurgeVoiceList(i32 a);
@@ -165,11 +170,11 @@ i32 CAttract::FrameSlot28(i32 arg) {
     if (m_host == 0) {
         return 1;
     }
-    if (!m_host->m_10->IsPlaying()) {
+    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
         return 1;
     }
-    m_host->m_10->Restart(0, 0x1f4, 1);
-    if (!m_host->m_10->IsPlaying()) {
+    ((DirectSoundMgr*)m_host->m_10)->CloneAndPlay(0, 0x1f4, 1);
+    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
         return 1;
     }
     do {
@@ -177,7 +182,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
         if (r) {
             ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
-    } while (m_host->m_10->IsPlaying());
+    } while (((DirectSoundMgr*)m_host->m_10)->IsPlaying());
     return 1;
 }
 
@@ -505,8 +510,8 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
 // tag, and returns 1.
 RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
-    video()->m_48->PrimeScene();
-    video()->m_48->RestoreScene();
+    ((CGruntzSoundZ*)video()->m_48)->IsPlaying();
+    ((CGruntzSoundZ*)video()->m_48)->StopAndFlush();
     m_2c = (CResSource*)stateMgr()->LookupState(s_STATEZ_ATTRACT);
     RunTitleSeq(s_TITLE, 0, 0, 1, 0);
     return 1;

@@ -26,8 +26,8 @@
 // ---------------------------------------------------------------------------
 class CAttractSceneSlot {
 public:
-    void PrimeScene();   // FUN_00538920
-    void RestoreScene(); // FUN_00538530
+    // PrimeScene @? IS CGruntzSoundZ::IsPlaying; cast at the call.
+    // RestoreScene @? IS CGruntzSoundZ::StopAndFlush; cast at the call.
 };
 
 class CAttractVideo {
@@ -129,8 +129,8 @@ public:
 // stopped on the way out.
 class CAttractVoice {
 public:
-    i32 IsPlaying();                   // FUN_005353f0 (no-arg, ret eax)
-    void Restart(i32 a, i32 b, i32 c); // FUN_00535660 (ret 0xc)
+    // IsPlaying @? IS DirectSoundMgr::IsPlaying; cast at each call.
+    // Restart @? IS DirectSoundMgr::CloneAndPlay; cast at the call.
 };
 struct CAttractHost {
     char m_pad00[0x10];

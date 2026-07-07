@@ -996,9 +996,9 @@ struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
     // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
     // Resolve @0x13a000 IS CSymTab::Insert; cast at each call.
 };
-struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
-    void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
-    void* FindMusicSet(char* szName); // FUN_0053bae0 __thiscall, ret set ptr
+struct CCreditzRegObj { // the registered STATEZ_CREDITZ object (m_2c)
+    // FindSoundSet @0x13a230 IS CSymTab::FindSub; cast at the call.
+    // FindMusicSet @0x13bae0 IS CSymTab::ResolvePath; cast at the call.
 };
 struct CCreditzSoundRegistry { // this->m_c->+0x28 (the LoadLevelSounds registry)
     void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
@@ -1081,13 +1081,13 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    void* sounds = self->m_2c->FindSoundSet("SOUNDZ");
+    void* sounds = ((CSymTab*)self->m_2c)->FindSub("SOUNDZ");
     if (!sounds) {
         return 0;
     }
     ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "CREDITZ", "_");
 
-    CCreditzMusicSet* midiz = (CCreditzMusicSet*)self->m_2c->FindMusicSet("MIDIZ");
+    CCreditzMusicSet* midiz = (CCreditzMusicSet*)((CSymTab*)self->m_2c)->ResolvePath("MIDIZ");
     if (midiz) {
         CCreditzSubEntry* e = (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("PLAY", (void*)0x584d49);
         if (e) {
