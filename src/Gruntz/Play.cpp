@@ -832,7 +832,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
         if (ResetPlayState()) {
             return 1;
         }
-        m_4w()->ReportError(0x800a, 0x456);
+        ((CGruntzMgr*)m_4w())->ReportError(0x800a, 0x456);
         return 1;
     }
     if (m_paused != 0) {
@@ -904,7 +904,7 @@ i32 CPlay::ResetViewport() {
     }
     m_viewMode = VIEW_MODE_IDLE;
     ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
-    m_4w()->ClampApply();
+    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
     return 1;
 }
 
@@ -969,7 +969,7 @@ i32 CPlay::ClampViewport(i32 inset) {
     ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
     m_c->m_drawTarget->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
-    m_4w()->ClampApply();
+    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
     return 1;
 }
 
@@ -1038,7 +1038,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
     m_c->m_drawTarget->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
-    m_4w()->ClampApply();
+    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
     return 1;
 }
 
@@ -2113,7 +2113,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         if (ResetPlayState()) {
             return 1;
         }
-        m_4w()->ReportError(0x800a, 0x458);
+        ((CGruntzMgr*)m_4w())->ReportError(0x800a, 0x458);
         return 1;
     }
     if (m_paused != 0) {
@@ -2211,7 +2211,7 @@ i32 CPlay::DrawWorldPresent() {
     ((CRenderer*)m_c->m_8)->BeginScene(1);
     ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
     m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
-    m_4w()->ManagerTick();
+    ((CGruntzMgr*)m_4w())->PerFrameTick();
     return 1;
 }
 
@@ -2235,7 +2235,7 @@ i32 CPlay::PresentAndFlush() {
     i32 savedH = w->m_98;
     i32 liveH = w->m_90;
     if (savedW != liveW || savedH != liveH) {
-        if (w->RestoreVideoMode(savedW, savedH, 1) == 0) {
+        if (((CGruntzMgr*)w)->SetVideoMode(savedW, savedH, 1) == 0) {
             return 0;
         }
     }

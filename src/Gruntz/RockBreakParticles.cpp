@@ -26,6 +26,18 @@ public:
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
 #include <rva.h>
+class CTileActionEvent {
+public:
+    i32 Process(i32 a);
+};
+class CTileTriggerSwitchLogic {
+public:
+    void BuildRockBreakInGameText();
+};
+class CTileGridCommand {
+public:
+    i32 ApplyMove(i32 a);
+};
 
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);
@@ -100,9 +112,9 @@ struct RockMapHost { // this->m_22c (== g_mgrSettings->m_world)
 
 // The per-cell "logic object" the registry hands out.
 struct RockLogicObj {
-    void Retire();      // FUN_00003af8 __thiscall
-    void SetType(i32);  // FUN_00001a00 __thiscall
-    i32 Reconcile(i32); // FUN_00003adf __thiscall
+    // Retire @0x3af8 IS CTileTriggerSwitchLogic::BuildRockBreakInGameText; cast at the call.
+    // SetType @0x1a00 IS CTileGridCommand::ApplyMove; cast at the call.
+    // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
 };
 struct RockLogicMgr {                         // g_mgrSettings->m_curState->m_2e4
     RockLogicObj* FindAt(i32 x, i32 y);       // FUN @ 0x377e __thiscall
@@ -205,7 +217,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                         ((CGruntzMgr*)g_mgrSettings)->ReportError(0x80dd, 0x403);
                         return 0;
                     }
-                    gr->Retire();
+                    ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
                     root->m_2e4->Release(gr);
                     continue;
                 }
@@ -213,7 +225,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     continue;
                 }
                 RockLogicObj* o = root->m_2e4->FindCell(ty + (tx << 8));
-                if (o->Reconcile(0)) {
+                if (((CTileActionEvent*)o)->Process(0)) {
                     root->m_2e4->Reap(o);
                 }
                 continue;
@@ -222,7 +234,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             // type == 0x1e || type == 0x1f: rock-break marker + particle
             RockLogicObj* lo = root->m_2e4->Acquire(ty + (tx << 8), 0x1a);
             if (lo != 0) {
-                lo->SetType(type);
+                ((CTileGridCommand*)lo)->ApplyMove(type);
                 root->m_2e4->Release(lo);
             } else {
                 RockGrid* wg = g_mgrSettings->m_world->m_24->m_5c;

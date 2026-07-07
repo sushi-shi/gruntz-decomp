@@ -27,6 +27,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+class CGruntzMgr {
+public:
+    void StoreInputFlag(i32 a);
+    i32 RunModalDialog(const char* a, void* b, i32 c);
+    i32 StoreInputState(i32 a);
+};
 
 // WwdFile_IsValidWwd(path, out) @0x160530: a free __stdcall (verified by disasm - reads
 // arg1 at esp+0x28, never touches ecx), NOT a method on the m_levelInfoSrc receiver.
@@ -363,10 +369,10 @@ namespace m4 {
         char m_pad74[0xbc - 0x74];
         i32 m_bc; // +0xbc
         char m_padc0[0x124 - 0xc0];
-        i32 m_scrollSpeed;                                       // +0x124
-        i32 Send2bb7(const char* section, void* proc, i32 flag); // thiscall thunk 0x2bb7
-        void Voice4174(i32 pos);                                 // thiscall thunk 0x4174
-        void Chip40c0(i32 pos);                                  // thiscall thunk 0x40c0
+        i32 m_scrollSpeed; // +0x124
+        // Send2bb7 @0x2bb7 IS CGruntzMgr::RunModalDialog; cast at the call.
+        // Voice4174 @0x4174 IS CGruntzMgr::StoreInputState; cast at the call.
+        // Chip40c0 @0x40c0 IS CGruntzMgr::StoreInputFlag; cast at the call.
     };
     extern "C" MgrSettings* g_mgrSettings; // 0x64556c
 
@@ -542,7 +548,7 @@ namespace m4 {
             g_64c864 = h;
             if (h) {
                 EnableWindow(hwnd, FALSE);
-                g_mgrSettings->Send2bb7("GAME_INFO", (void*)proc_401e3d, 0);
+                ((CGruntzMgr*)g_mgrSettings)->RunModalDialog("GAME_INFO", (void*)proc_401e3d, 0);
                 EnableWindow(hwnd, TRUE);
             }
             return 0;
@@ -585,7 +591,8 @@ namespace m4 {
             g_64c864 = h;
             if (h) {
                 EnableWindow(hwnd, FALSE);
-                i32 r = g_mgrSettings->Send2bb7("GAME_DELETE", (void*)proc_40121c, 0);
+                i32 r = ((CGruntzMgr*)g_mgrSettings)
+                            ->RunModalDialog("GAME_DELETE", (void*)proc_40121c, 0);
                 EnableWindow(hwnd, TRUE);
                 if (r) {
                     func_2ee6(hwnd, dlg);
@@ -712,7 +719,7 @@ namespace m4 {
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x476)) {
-            g_mgrSettings->Voice4174(newpos);
+            ((CGruntzMgr*)g_mgrSettings)->StoreInputState(newpos);
             if (code == 5) {
                 return;
             }
@@ -736,7 +743,7 @@ namespace m4 {
             return;
         }
         if (hwnd == GetDlgItem(hwnd, 0x470)) {
-            g_mgrSettings->Chip40c0(newpos);
+            ((CGruntzMgr*)g_mgrSettings)->StoreInputFlag(newpos);
             if (code == 5) {
                 return;
             }

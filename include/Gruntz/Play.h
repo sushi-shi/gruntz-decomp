@@ -99,12 +99,12 @@ struct CWorldLayer {
 
 // m_4 (the CState owner back-ptr -> the world/level object).
 struct CWorld {
-    void ClampApply(); // 0x48f7f0 (thiscall, no arg) ClampViewport apply-tail
+    // ClampApply @0x8f7f0 IS CGruntzMgr::RecomputeViewScale; cast at the call.
     // The per-frame manager tick + the restore-display-mode helper the play
     // draw/present sub-steps (DrawWorldPresent / PresentAndFlush) call on m_4.
-    void ManagerTick();                           // 0x48f620 (thiscall, no arg)
-    i32 RestoreVideoMode(i32 w, i32 h, i32 flag); // 0x48df00 (thiscall)
-    void ReportError(i32 code, i32 a);            // 0x40346d (thiscall) CGruntzMgr::ReportError
+    // ManagerTick @0x8f620 IS CGruntzMgr::PerFrameTick; cast at the call.
+    // RestoreVideoMode @0x8df00 IS CGruntzMgr::SetVideoMode; cast at the call.
+    // ReportError @0x346d IS CGruntzMgr::ReportError; cast at the call.
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
     char p8[0xc - 0x8];
