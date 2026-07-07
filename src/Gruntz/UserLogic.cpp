@@ -142,7 +142,6 @@ SIZE_UNKNOWN(CTileSecretTrigger);
 VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CTileSecretTrigger(CGameObject* obj);                              // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
@@ -156,7 +155,6 @@ SIZE_UNKNOWN(CGiantRock);
 VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 class CGiantRock : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CGiantRock(CGameObject* obj);                                      // 0x10fa90
     virtual ~CGiantRock() OVERRIDE;
@@ -166,7 +164,6 @@ SIZE_UNKNOWN(CCoveredPowerup);
 VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 class CCoveredPowerup : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CCoveredPowerup(CGameObject* obj);                                 // 0x10fac0
     virtual ~CCoveredPowerup() OVERRIDE;

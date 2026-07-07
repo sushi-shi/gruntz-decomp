@@ -20,7 +20,6 @@
 #include <Gruntz/GruntHealthSprite.h>
 
 class CGruntToyTimeSprite : public CGruntHealthSprite {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     TILE_LOGIC_TAIL

@@ -103,7 +103,6 @@ extern void* g_retAddrBreadcrumb;
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntVoice);
 class CGruntVoice : public CUserLogic {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL

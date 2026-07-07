@@ -77,7 +77,6 @@ struct AmbSoundRecord {
 
 class CRandomAmbientSound : public CAmbientSound {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     CRandomAmbientSound(); // 0x00bb40  base init (cl auto-stamps the vptr)
     // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
     // the primary box, clear the secondary box. Returns 1 (0 on a null world).

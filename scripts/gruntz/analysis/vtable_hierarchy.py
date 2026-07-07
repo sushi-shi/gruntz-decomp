@@ -841,17 +841,34 @@ def cmd_audit(aud):
             if db:
                 truth, via = db[0], ("intermediate" if db[0] in inter else "slot-prefix")
         source_base = aud.src_base.get(name)
-        bslots = inter.get(truth) or (aud.reg[truth].primary()[2]
-                                      if aud.reg.get(truth) and aud.reg[truth].primary() else [])
-        nB = len(bslots)
-        if nB:
-            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
-            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == 1 or slots[i] != bslots[i])
-            n_new = max(0, len(slots) - nB)
+        # COHERENT SLOT CLASSIFICATION. diff_primary's rows (idx, fn, name, origin, disp)
+        # align each slot against the nearest ANCESTOR-WITH-A-VTABLE via the RTTI/src
+        # spine, so they locate the dtor slot correctly (slot 0 for CDDSurface-derived,
+        # slot 1 for CObject-derived) - unlike a fixed `i==1`. Two corrections on top:
+        #  (a) DTOR OWNERSHIP: if the class DECLARES its own ~ but its ??_G COMDAT-folds to
+        #      byte-match the base dtor (diff_primary then reads "inherited"), re-tag that
+        #      slot "override" so a legit declared ~ is not mis-counted (would false-REDECLARE).
+        #  (b) BASE MISS: if the spine found no base at all (all slots new/unknown - a
+        #      registry direct-base miss: base on the header decl, VTBL/SIZE in a .cpp),
+        #      fall back to a raw compare against the SOURCE-declared base's slots.
+        disp = {r[0]: r[4] for r in rows}
+        dtor_i = next((r[0] for r in rows
+                       if re.search(r"destructor|[Dd]tor|~|\?\?_[GE]", r[2] or "")), None)
+        declares_dtor = any(("~" + name) in b for b in aud.bodies.get(name, []))
+        if dtor_i is not None and declares_dtor and disp.get(dtor_i) == "inherited":
+            disp[dtor_i] = "override"
+        if any(d in ("inherited", "override") for d in disp.values()):
+            n_inh = sum(1 for d in disp.values() if d == "inherited")
+            n_ovr = sum(1 for d in disp.values() if d == "override")
+            n_new = sum(1 for d in disp.values() if d in ("new", "unknown"))
         else:
-            n_inh = sum(1 for r in rows if r[4] == "inherited")
-            n_ovr = sum(1 for r in rows if r[4] == "override")
-            n_new = sum(1 for r in rows if r[4] == "new")
+            bslots = inter.get(source_base) or (aud.reg[source_base].primary()[2]
+                                                if aud.reg.get(source_base) and aud.reg[source_base].primary() else [])
+            nB = len(bslots)
+            di = dtor_i if dtor_i is not None else 1
+            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != di and slots[i] == bslots[i])
+            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == di or slots[i] != bslots[i])
+            n_new = max(0, len(slots) - nB)
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
         loc = "%s:%d" % aud.where[name]

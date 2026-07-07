@@ -38,7 +38,6 @@ struct CAmbientSound : public CUserBase {
     // regressing CreatePos6/CreatePos5/CreateRandom ~96%->~87%. So the direct slot-0
     // call (delete-obj shape) stays `delete obj`, an exact match.
     virtual ~CAmbientSound() OVERRIDE;                                 // slot 0 (compiler-gen ??_G)
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual void Update(i32 x, i32 y, i32 force);                      // slot 3 (retail 0xc090)
     CAmbientSound() {}
     // +0x00 vptr (??_7CAmbientSound)
