@@ -79,6 +79,23 @@ def present_rvas():
     return out
 
 
+def library_vtable_rvas():
+    """RVAs of MFC/CRT library vtables (config/library_vtables.csv). Statically linked, so
+    present_rvas() (our emitted base objs) misses them; a class whose RTTI vtable is here IS
+    catalogued - we model it as a minimal view, never reconstruct the library class."""
+    out = set()
+    path = REPO / "config" / "library_vtables.csv"
+    if not path.exists():
+        return out
+    for r in csv.reader(path.open()):
+        if len(r) >= 2:
+            try:
+                out.add(int(r[1], 16))
+            except ValueError:
+                pass
+    return out
+
+
 def vtbl_rva_collisions():
     """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE
     distinct class via VTBL(). A vtable datum has exactly one ??_7 name in retail, so
@@ -113,6 +130,7 @@ def main() -> int:
     rtti = rtti_vtables()
     have_csv = (REPO / "build" / "gen" / "symbol_names.csv").exists()
     present = present_rvas()
+    lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
@@ -136,7 +154,7 @@ def main() -> int:
         catalogued = (
             name in vtbl_ann
             or manual[name]
-            or (name in rtti and rtti[name] in present))
+            or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"
             violators.append((name, path, lineno, reason))
