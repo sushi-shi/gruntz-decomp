@@ -504,4 +504,4 @@ SIZE_UNKNOWN(CToyTimeHost);
 SIZE_UNKNOWN(CUFO);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CGruntHealthSpriteBase, 0x001e72b4);
+VTBL(CUFO, 0x001e72b4);
