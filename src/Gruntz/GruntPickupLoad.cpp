@@ -40,8 +40,13 @@ struct GruntPickupStats {
 
 // The MEGAPHONE announce path resolves a unit-type count through g_gameReg->m_curState
 // (+0x2dc), a __thiscall counter (thunk 0x15fa). Reloc-masked.
+// MegaCounter::Count @0x15fa IS C10bbe0::M (header-less); local decl.
+class C10bbe0 {
+public:
+    i32 M();
+};
 struct MegaCounter {
-    i32 Count(); // thunk 0x15fa (__thiscall ret 0)
+    // Count @0x15fa IS C10bbe0::M; cast at the call.
 };
 struct MegaHolder {
     char m_pad0[0x2dc];
@@ -263,7 +268,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
             ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
                 ->Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CObject*&)a4);
             m_pickupGeoSrc = a4;
-            i32 n = mh->m_2dc->Count();
+            i32 n = ((C10bbe0*)mh->m_2dc)->M();
             if (a5 != 0) {
                 if (n >= PICKUP_BOMB && n <= PICKUP_WINGZ && n != PICKUP_WARPSTONE) {
                     STATS->m_18++;

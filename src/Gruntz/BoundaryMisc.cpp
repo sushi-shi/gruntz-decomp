@@ -234,10 +234,17 @@ void CButeStore::Reset() {
 
 // ===========================================================================
 // 0x018430 - tail-call wrapper: end the wait cursor on the current MFC thread
-// (AfxGetModuleState()->m_thread->EndWaitCursor()). __cdecl, no args.
+// (((CWinThread*)AfxGetModuleState()->m_thread)->EndWaitCursor()). __cdecl, no args.
 // ===========================================================================
+// The module thread's EndWaitCursor @0x1beb10 IS CWinThread::EndWaitCursor; minimal local decl
+// (links from MFC).
+SIZE_UNKNOWN(CWinThread);
+class CWinThread {
+public:
+    void EndWaitCursor();
+};
 struct AfxThread18430 {
-    void EndWaitCursor(); // 0x1beb10 (reloc-masked)
+    // EndWaitCursor @0x1beb10 IS CWinThread::EndWaitCursor; cast at the call.
 };
 SIZE_UNKNOWN(AfxThread18430);
 struct AfxModuleState18430 {
@@ -248,7 +255,7 @@ SIZE_UNKNOWN(AfxModuleState18430);
 extern AfxModuleState18430* AfxGetModuleState(); // 0x1d3631 (reloc-masked)
 RVA(0x00018430, 0xd)
 void EndWaitCursor18430() {
-    AfxGetModuleState()->m_thread->EndWaitCursor();
+    ((CWinThread*)AfxGetModuleState()->m_thread)->EndWaitCursor();
 }
 
 // ===========================================================================
