@@ -42,12 +42,8 @@
 // The name->object lookup maps each reader sub-object embeds at +0x10 (each a
 // distinct NAFXCW CMapStringTo* instantiation -> distinct Lookup body) and the
 // kill-cue map at +0x48. Reloc-masked no-body callees.
-struct MapLookupA {
-    i32 Lookup(const char* key, void** out); // 0x1b8008
-};
-struct CMapStringToObLite {
-    i32 Lookup(const char* key, void* out); // 0x1b8760  NAFXCW Lookup
-};
+struct MapLookupA {};         // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
+struct CMapStringToObLite {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 
 // mgr+0x28 is the canonical CDDrawSubMgrLeafScan (<DDrawMgr/DDrawSubMgrLeafScan.h>,
 // included above). FindKeyOfValue_158570(LeafScanValue* target) reverse-looks-up a key
@@ -247,7 +243,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     if (strlen(name) != 0) {
         void* found = 0;
         WwdMgr* mgr = m_mgr;
-        mgr->m_10->m_map.Lookup(name, &found);
+        ((CMapStringToPtr*)&mgr->m_10->m_map)->Lookup(name, (void*&)found);
         m_194 = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -410,8 +406,8 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                CMapStringToObLite* map = &m_mgr->m_08->m_map;
-                if (map->Lookup((const char*)node, &found) == 0) {
+                CMapPtrToPtr* map = (CMapPtrToPtr*)&m_mgr->m_08->m_map;
+                if (map->Lookup((void*)node, found) == 0) {
                     m_98 = 0;
                 } else {
                     m_98 = found;
@@ -589,7 +585,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, &found);
+        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
         if (Resolve150eb0(found) == 0) {
             return 0;
         }
@@ -598,7 +594,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, &found);
+        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
         if (Resolve150f90(found) == 0) {
             return 0;
         }
@@ -607,7 +603,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        m_mgr->m_14->m_map.Lookup(name, &found);
+        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
         if (Resolve151070(found) == 0) {
             return 0;
         }
