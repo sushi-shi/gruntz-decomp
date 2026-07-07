@@ -24,8 +24,10 @@ class CParticlez : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CParticlez(CGameObject* obj);   // 0x046ad0 (ctor body in UserLogic.cpp)
-    LogicTypeId GetTypeTag();       // 0x012cd0 (per-class logic-type id, 0x41c)
+    CParticlez(CGameObject* obj);              // 0x046ad0 (ctor body in UserLogic.cpp)
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x012cd0 (per-class logic-type id, 0x41c)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])
     void FireActivation(i32 coord); // 0x046d30
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
@@ -34,5 +36,6 @@ public:
     i32 Update();                   // 0x047090 (advance anim + on-screen latch; ret 0)
     virtual ~CParticlez() OVERRIDE; // 0x012d90 (folds the CUserLogic teardown)
 };
+VTBL(CParticlez, 0x001e7614);
 
 #endif // GRUNTZ_CPARTICLEZ_H

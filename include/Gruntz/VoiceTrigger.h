@@ -20,13 +20,16 @@ class CVoiceTrigger : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CVoiceTrigger();                   // 0x013470 (no-arg ctor; body in UserLogic.cpp)
-    CVoiceTrigger(CGameObject* obj);   // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
-    LogicTypeId GetTypeTag();          // 0x0133b0 (per-class logic-type id, 0x426)
+    CVoiceTrigger();                 // 0x013470 (no-arg ctor; body in UserLogic.cpp)
+    CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x0133b0 (per-class logic-type id, 0x426)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
     void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")
     i32 Tick();                        // 0x11a700
     virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
 };
+VTBL(CVoiceTrigger, 0x001e885c);
 
 #endif // GRUNTZ_CVOICETRIGGER_H

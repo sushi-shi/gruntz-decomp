@@ -16,7 +16,9 @@ public:
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    LogicTypeId GetTypeTag();           // 0x124a0
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x124a0
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
     i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
@@ -35,6 +37,7 @@ public:
     i64 m_lastDropTime; // +0x88  last-drop timestamp (64-bit)
     i64 m_dropInterval; // +0x90  drop interval (64-bit)
 };
+VTBL(CObjectDropper, 0x001e7a9c);
 SIZE(CObjectDropper, 0x98);
 
 #endif // GRUNTZ_COBJECTDROPPER_H

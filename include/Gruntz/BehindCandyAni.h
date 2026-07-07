@@ -36,11 +36,15 @@ public:
     // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0ad9b0
     i32 AdvanceAnim();          // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
-    LogicTypeId GetTypeTag();   // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
+    virtual LogicTypeId GetTypeTag()
+        OVERRIDE; // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 
     i32 m_40; // +0x40 (geoId latch; written by the ctor)
 };
+VTBL(CBehindCandyAni, 0x001e838c);
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

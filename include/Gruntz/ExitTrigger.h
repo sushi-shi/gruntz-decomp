@@ -25,8 +25,10 @@ class CExitTrigger : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CExitTrigger(CGameObject* obj);   // 0x03ecf0 (1-arg leaf ctor)
-    LogicTypeId GetTypeTag();         // 0x010870 (returns the class logic-type id 0x3f7)
+    CExitTrigger(CGameObject* obj);            // 0x03ecf0 (1-arg leaf ctor)
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x010870 (returns the class logic-type id 0x3f7)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id
@@ -34,6 +36,7 @@ public:
     i32 m_warlordId; // +0x54  resolved warlord id
     i32 m_resolved;  // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
 };
+VTBL(CExitTrigger, 0x001e822c);
 SIZE(CExitTrigger, 0x5c);
 
 #endif // GRUNTZ_CEXITTRIGGER_H

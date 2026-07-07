@@ -39,11 +39,14 @@ public:
     void HandleFortConquered(); // 0x03f5f0 (per-frame fort-conquest check)
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    LogicTypeId GetTypeTag();                     // 0x010e40
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x046410 (vtable slot 1)
-    virtual ~CFortressFlag() OVERRIDE;            // 0x010e90 (folds the CUserLogic teardown)
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x010e40
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);                      // 0x046410 (vtable slot 1)
+    virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
 
     i32 m_prevAnimNode; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
+VTBL(CFortressFlag, 0x001e725c);
 
 #endif // GRUNTZ_CFORTRESSFLAG_H

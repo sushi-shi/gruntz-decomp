@@ -20,7 +20,9 @@ public:
 public:
     CAniCycle(CGameObject* obj); // 0x0aad20 (ctor body in UserLogic.cpp)
     // The vtable slot-2 logic-type id accessor (returns 0x3ea).
-    LogicTypeId GetTypeTag(); // 0x00f450
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x00f450
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     // The vtable slot-1 override (two-chain Serialize): the shared CUserLogic
     // serialize helper on `this`, then the +0x34 sub-object's chain.
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f470
@@ -38,5 +40,6 @@ public:
 
     i32 m_40; // +0x40 (geometry-id cache; written by the ctor)
 };
+VTBL(CAniCycle, 0x001e86a4);
 
 #endif // GRUNTZ_CANICYCLE_H

@@ -31,8 +31,10 @@ public:
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    LogicTypeId GetTypeTag();          // 0x012ae0
-    CStaticHazard(CGameObject* obj);   // 0x0fb7a0 (1-arg ctor)
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x012ae0
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    CStaticHazard(CGameObject* obj);                                   // 0x0fb7a0 (1-arg ctor)
     static void RegisterActs();        // 0x0fbd50 (binds "A"/"B" handlers)
     i32 LoadAttributes2();             // 0x0fc0b0 (time-gated pulse)
     i32 LoadAttributes();              // 0x0fc1a0 (periodic tick/update)
@@ -49,5 +51,6 @@ public:
     i32 m_tileCol;      // +0x64  tile column (bound object screen-X >> 5)
     i32 m_tileRow;      // +0x68  tile row    (bound object screen-Y >> 5)
 };
+VTBL(CStaticHazard, 0x001e7824);
 
 #endif // GRUNTZ_CSTATICHAZARD_H

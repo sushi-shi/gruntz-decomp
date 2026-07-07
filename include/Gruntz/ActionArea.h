@@ -18,7 +18,9 @@ public:
     CActionArea(CGameObject* obj); // 0x7da0
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    LogicTypeId GetTypeTag();        // 0x7f80
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x7f80
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CActionArea() OVERRIDE; // 0x7fd0 (folds the CUserLogic teardown)
 
     char m_pad40[0x54 - 0x40];
@@ -28,5 +30,6 @@ public:
     i32 m_60; // +0x60
     i32 m_64; // +0x64
 };
+VTBL(CActionArea, 0x001e7004);
 
 #endif // GRUNTZ_CACTIONAREA_H

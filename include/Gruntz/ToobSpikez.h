@@ -30,7 +30,9 @@ public:
     CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    LogicTypeId GetTypeTag();                  // 0x012ba0 (vtable slot 2: per-class logic-type id)
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x012ba0 (vtable slot 2: per-class logic-type id)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x012bc0 (vtable slot 1: serialize chain)
     void Register_1147e0();                    // 0x1147e0 (reserve the activation range)
     void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
@@ -41,6 +43,7 @@ public:
     char m_pad44[0x54 - 0x44]; // +0x44  leaf tail (true object size 0x54, per the
                                //         `operator new(0x54)` at the phase-0 factory)
 };
+VTBL(CToobSpikez, 0x001e7774);
 SIZE(CToobSpikez, 0x54);
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

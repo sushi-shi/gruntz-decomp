@@ -25,13 +25,16 @@ public:
     ~CBrickz() OVERRIDE;       // (folds the CUserLogic teardown; vtable anchor)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    LogicTypeId GetTypeTag();                  // 0x11300 (vtable slot 2: per-class logic-type id)
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x11300 (vtable slot 2: per-class logic-type id)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x11320 (vtable slot 1: serialize chain)
 
     // CBrickz's own data begins at +0x40 (CUserLogic ends at +0x40); the 1-arg
     // ctor touches none of it. The leaf is 0x54 (0x40 base + 0x14 own).
     char m_own[0x54 - 0x40];
 };
+VTBL(CBrickz, 0x001e7c54);
 SIZE(CBrickz, 0x54); // 0x40 CUserLogic base + 0x14 own
 
 #endif // GRUNTZ_CBRICKZ_H

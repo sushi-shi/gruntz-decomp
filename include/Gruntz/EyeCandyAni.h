@@ -17,7 +17,10 @@ public:
     TILE_LOGIC_TAIL
 public:
     CEyeCandyAni(CGameObject* obj); // 0xac870
-    LogicTypeId GetTypeTag();       // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
+    virtual LogicTypeId GetTypeTag()
+        OVERRIDE; // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry + the class's coordinate registry (g_eyeCandyActReg
@@ -29,5 +32,6 @@ public:
 
     i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
 };
+VTBL(CEyeCandyAni, 0x001e8334);
 
 #endif // GRUNTZ_CEYECANDYANI_H
