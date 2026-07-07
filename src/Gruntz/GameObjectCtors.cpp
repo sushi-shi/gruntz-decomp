@@ -59,8 +59,13 @@ extern CButeTree g_buteTree;
 // ===========================================================================
 
 // --- engine helper types (offsets load-bearing) ---------------------------
+// ApplyLookupSprite @0x1504d0 IS CGruntSprite::CacheFrame (header-less spriteresource class);
+// TU-local decl, cast at each call.
+class CGruntSprite {
+public:
+    void CacheFrame(const char* key, i32 flag);
+};
 struct CSpriteObj {
-    void ApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (__thiscall)
     char m_pad00[0x08];
     i32 m_08; // +0x08
     char m_pad0c[0x74 - 0x0c];
@@ -173,7 +178,7 @@ LogicTypeId CGruntToyTimeSprite::GetTypeTag() {
 // docs/patterns/eh-ctor-vptr-restamp-position.md. Deferred to the final sweep.
 RVA(0x0007fae0, 0xa0)
 CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTSTAMINASPRITE", 1);
+    ((CGruntSprite*)m_38)->CacheFrame("GAME_GRUNTSTAMINASPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
     CSpriteObj* o = m_10;
@@ -194,7 +199,7 @@ CGruntStaminaSprite::CGruntStaminaSprite(CSpriteObj* obj) : CGruntHealthSpriteBa
 // (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fbd0, 0xa0)
 CGruntToyTimeSprite::CGruntToyTimeSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTTOYTIMESPRITE", 1);
+    ((CGruntSprite*)m_38)->CacheFrame("GAME_GRUNTTOYTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
     CSpriteObj* o = m_10;
@@ -222,7 +227,7 @@ i32 __stdcall GetToyTime(CToyTimeHost* o) {
 // (docs/patterns/eh-ctor-vptr-restamp-position.md). Deferred to the final sweep.
 RVA(0x0007fcc0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CSpriteObj* obj) : CGruntHealthSpriteBase(obj) {
-    m_38->ApplyLookupSprite("GAME_GRUNTWINGZTIMESPRITE", 1);
+    ((CGruntSprite*)m_38)->CacheFrame("GAME_GRUNTWINGZTIMESPRITE", 1);
     m_30 = m_14->m_1c;
     m_14->m_1c = g_buteTree.Find("A");
     CSpriteObj* o = m_10;
@@ -484,6 +489,7 @@ SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
 SIZE_UNKNOWN(CRainCloud);
 SIZE_UNKNOWN(CSpotLightSetup);
+SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSpriteObj);
 SIZE_UNKNOWN(CSpriteObjAux);
 SIZE_UNKNOWN(CToyTimeHost);
