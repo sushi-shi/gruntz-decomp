@@ -104,6 +104,7 @@ extern void* g_retAddrBreadcrumb;
 SIZE_UNKNOWN(CGruntVoice);
 class CGruntVoice : public CUserLogic {
 public:
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntVoice(CGameObject* obj);   // 0x1198a0 (folds CUserLogic(obj) + the voice tail)
@@ -125,6 +126,7 @@ public:
     i32 m_playFlags;  // +0x6c  the play request's flag word (Setup arg2, cleared by Reset)
     i32 m_owner;      // +0x70  the play request's owner (Setup arg3)
 };
+VTBL(CGruntVoice, 0x1eaf6c);
 
 // The registry Entry: its first dword is a pointer-to-member-function of
 // CGruntVoice (single inheritance -> a 4-byte code pointer); Dispatch invokes it

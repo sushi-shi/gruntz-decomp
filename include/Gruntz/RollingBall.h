@@ -36,6 +36,9 @@
 // ---------------------------------------------------------------------------
 class CRollingBall : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CRollingBall(CGameObject* obj);   // 0x0af820 (folds CUserLogic(obj) + the ball setup)
@@ -70,6 +73,7 @@ public:
     i32 m_moveDeltaLo;         // +0x98  move delta (i64 lo)
     i32 m_moveDeltaHi;         // +0x9c  move delta (i64 hi)
 };
+VTBL(CRollingBall, 0x1e86fc);
 
 SIZE(CRollingBall, 0xa0);
 

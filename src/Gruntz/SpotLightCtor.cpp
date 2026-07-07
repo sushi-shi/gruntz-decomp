@@ -44,6 +44,9 @@ extern CGameRegistry* g_gameReg;
 // CUserLogic base (+0x40): the rotation/offset doubles + the per-tick state ints.
 class CSpotLight : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CSpotLight(CGameObject* obj); // 0xb1200
@@ -63,6 +66,7 @@ public:
     i32 m_a0;    // +0xa0
     i32 m_a4;    // +0xa4
 };
+VTBL(CSpotLight, 0x1e75bc);
 
 // Out-of-line vtable anchor (gives CSpotLight a real vftable so the ctor's vptr
 // store falls out). Body not matched.

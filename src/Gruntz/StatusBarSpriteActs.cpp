@@ -19,6 +19,9 @@
 
 class CStatusBarSprite : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
@@ -28,6 +31,7 @@ public:
 
     i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
 };
+VTBL(CStatusBarSprite, 0x1e7fc4);
 SIZE_UNKNOWN(CStatusBarSprite);
 
 // The handler entry the per-class registry yields: its first dword receives the

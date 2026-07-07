@@ -82,6 +82,9 @@ extern CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 class CWarlord : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CWarlord(i32);                // 0x42d40 (the warlord ctor: base init + name/state setup)
@@ -129,5 +132,6 @@ public:
     i32 m_cooldownWindowLo; // +0x90
     i32 m_cooldownWindowHi; // +0x94
 };
+VTBL(CWarlord, 0x1e7404);
 
 #endif // GRUNTZ_CWARLORD_H

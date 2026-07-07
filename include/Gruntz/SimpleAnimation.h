@@ -24,11 +24,15 @@
 
 class CSimpleAnimation : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CSimpleAnimation(CGameObject* obj); // 0x0ab940 (ctor body in UserLogic.cpp)
     i32 AdvanceAnim();                  // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CSimpleAnimation() OVERRIDE; // 0x00f9d0 (folds the CUserLogic teardown)
 };
+VTBL(CSimpleAnimation, 0x1e8544);
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

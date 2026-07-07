@@ -45,6 +45,8 @@ extern TileActReg g_tileActReg;
 // ---------------------------------------------------------------------------
 class CTileTriggerTransition : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
@@ -62,6 +64,7 @@ public:
     i32 m_activeAnimDesc;      // +0x40
     char m_pad44[0x54 - 0x44]; // +0x44..+0x53
 };
+VTBL(CTileTriggerTransition, 0x1e7db4);
 SIZE_UNKNOWN(CTileTriggerTransition);
 
 // The per-class registry entry: its first dword receives the per-frame handler PMF

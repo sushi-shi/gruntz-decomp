@@ -9,6 +9,9 @@
 
 class CCheckpointTrigger : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CCheckpointTrigger(CGameObject* obj);   // 0x10ee20 (1-arg leaf ctor)
@@ -22,6 +25,7 @@ public:
     i32 m_state[15];           // +0x54  the captured checkpoint state (15 dwords)
     i32 m_firstEmpty;          // +0x90  first-empty index
 };
+VTBL(CCheckpointTrigger, 0x1e7ebc);
 SIZE(CCheckpointTrigger, 0x94);
 
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H

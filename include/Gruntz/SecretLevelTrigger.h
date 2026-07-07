@@ -17,6 +17,9 @@
 SIZE_UNKNOWN(CSecretLevelTrigger);
 class CSecretLevelTrigger : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CSecretLevelTrigger();                   // 0x010b20 (no-arg ctor; body in UserLogic.cpp)
@@ -26,5 +29,6 @@ public:
     i32 Tick();                              // 0x042ac0
     virtual ~CSecretLevelTrigger() OVERRIDE; // 0x010c50 (folds the CUserLogic teardown)
 };
+VTBL(CSecretLevelTrigger, 0x1e8804);
 
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

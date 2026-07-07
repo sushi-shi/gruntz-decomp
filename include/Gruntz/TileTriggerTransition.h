@@ -78,6 +78,5 @@ SIZE_UNKNOWN(CTileTransitionController);
 extern "C" void TileTransitionDefaultStep(CTileTransitionState* obj);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CTileTransitionState, 0x001e7db4);
 
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

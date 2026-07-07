@@ -30,6 +30,9 @@
 SIZE_UNKNOWN(CCursorSnapSprite);
 class CCursorSnapSprite : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
@@ -41,5 +44,6 @@ public:
 
     i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
 };
+VTBL(CCursorSnapSprite, 0x1e8074);
 
 #endif // GRUNTZ_CCURSORSNAPSPRITE_H

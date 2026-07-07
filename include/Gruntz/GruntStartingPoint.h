@@ -10,12 +10,16 @@
 
 class CGruntStartingPoint : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30
     virtual ~CGruntStartingPoint() OVERRIDE; // 0x10670 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
+VTBL(CGruntStartingPoint, 0x1e8284);
 SIZE(CGruntStartingPoint, 0x54);
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

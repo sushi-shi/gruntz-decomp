@@ -19,6 +19,9 @@
 
 class CLightFx : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CLightFx(CGameObject* obj); // 0x9cf00
@@ -49,6 +52,7 @@ public:
     i32 m_anchorA; // +0x54  latched anchor A
     i32 m_anchorB; // +0x58  latched anchor B
 };
+VTBL(CLightFx, 0x1e7af4);
 SIZE(CLightFx, 0x5c);
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

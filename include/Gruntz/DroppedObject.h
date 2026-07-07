@@ -23,6 +23,10 @@
 
 class CDroppedObject : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    virtual i32 UserLogicVfunc5() OVERRIDE;                            // slot 7
     TILE_LOGIC_TAIL
 public:
     CDroppedObject(CGameObject* obj);   // 0x0c68b0 (1-arg leaf ctor)
@@ -38,5 +42,6 @@ public:
     double m_fallY;       // +0x60  fall accumulator (adjusted screen Y)
     i32 m_landY;          // +0x68  landing row (pre-offset screen Y)
 };
+VTBL(CDroppedObject, 0x1e78d4);
 
 #endif // GRUNTZ_CDROPPEDOBJECT_H

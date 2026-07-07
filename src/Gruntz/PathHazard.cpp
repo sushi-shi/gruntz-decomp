@@ -549,4 +549,3 @@ SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CLightningHazard, 0x001e7394);

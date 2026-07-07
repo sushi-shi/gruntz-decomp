@@ -34,6 +34,9 @@
 // ---------------------------------------------------------------------------
 class CInGameText : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CInGameText(CGameObject* obj);   // 0x099110 (folds CUserLogic(obj) + on-screen tail)
@@ -50,6 +53,7 @@ public:
     i32 m_cachedAreaId;        // +0x54  Update: cached hit-test area id; serialized scalar
     i32 m_cachedSubId;         // +0x58  Update: cached hit-test sub id; serialized scalar
 };
+VTBL(CInGameText, 0x1e7cac);
 
 // ---------------------------------------------------------------------------
 // The global member-fn-ptr dispatch table (a zDArray<int (CUserLogic::*)(void)>

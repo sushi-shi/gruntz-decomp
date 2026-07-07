@@ -71,6 +71,9 @@ extern char g_puddleSpriteKey[]; // s_..._0060c1c0
 SIZE_UNKNOWN(CGruntPuddle);
 class CGruntPuddle : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntPuddle(CGameObject* obj);   // 0x040490
@@ -91,5 +94,6 @@ public:
     i32 m_placeArg0;  // +0x68  Place() arg0 snapshot
     i32 m_placeIndex; // +0x6c  Place() arg1 snapshot (icon-factory index)
 };
+VTBL(CGruntPuddle, 0x1e8124);
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

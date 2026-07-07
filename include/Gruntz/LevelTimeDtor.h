@@ -19,6 +19,8 @@
 
 class CLevelTime : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     TILE_LOGIC_TAIL
 public:
     CLevelTime(CGameObject* obj);   // 0x9b8b0
@@ -30,6 +32,7 @@ public:
     // before operator new, then the bare `call ??0CLevelTime` thunk 0x404d).
     char m_pad40[0x54 - 0x40];
 };
+VTBL(CLevelTime, 0x1e801c);
 SIZE(CLevelTime, 0x54); // `new CLevelTime` @0x9b77f pushes 0x54
 
 #endif // GRUNTZ_CLEVELTIMEDTOR_H

@@ -83,6 +83,5 @@ inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* ctx) {
 }
 
 // --- vtable catalog ---
-VTBL(CLogicTypeReg, 0x001e801c);
 
 #endif // GRUNTZ_LOGICTYPETABLEINLINE_H

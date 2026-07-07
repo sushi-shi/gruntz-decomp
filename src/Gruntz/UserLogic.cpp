@@ -165,6 +165,8 @@ public:
 
 class CGruntHealthSprite : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntHealthSprite();
@@ -174,6 +176,7 @@ public:
     i32 m_5c;                  // +0x5c
     i32 m_60;                  // +0x60
 };
+VTBL(CGruntHealthSprite, 0x1e7ba4);
 
 // CVoiceTrigger is the canonical <Gruntz/VoiceTrigger.h> class (its no-arg ctor +
 // GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).
@@ -193,6 +196,9 @@ public:
 SIZE_UNKNOWN(CSecretTeleporterTrigger);
 class CSecretTeleporterTrigger : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
@@ -210,6 +216,7 @@ public:
     // coordinate registry by FireActivation. __thiscall, no args, returns int.
     i32 SpawnTeleporter(); // 0x042b80
 };
+VTBL(CSecretTeleporterTrigger, 0x1e7564);
 
 SIZE_UNKNOWN(CWarpStonePad);
 class CWarpStonePad : public CUserLogic {
@@ -227,6 +234,8 @@ public:
 SIZE_UNKNOWN(CTileTriggerSwitch);
 class CTileTriggerSwitch : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
@@ -235,6 +244,7 @@ public:
     static void RegisterActs(); // 0x10e000
     i32 AdvanceAnim();          // 0x10e200
 };
+VTBL(CTileTriggerSwitch, 0x1e7f6c);
 
 // CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
 // live in src/Gruntz/TileTriggerTransition.cpp.
@@ -256,12 +266,14 @@ public:
 // ---------------------------------------------------------------------------
 class CGruntSelectedSprite : public CUserLogic {
 public:
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     TILE_LOGIC_TAIL
 public:
     CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0
     virtual ~CGruntSelectedSprite() OVERRIDE;
     i32 m_40; // +0x40
 };
+VTBL(CGruntSelectedSprite, 0x1e7bfc);
 
 class CGruntToySprite : public CUserLogic {
 public:
@@ -275,12 +287,14 @@ public:
 
 class CGruntPowerupSprite : public CUserLogic {
 public:
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0
     virtual ~CGruntPowerupSprite() OVERRIDE;
     i32 m_40; // +0x40
 };
+VTBL(CGruntPowerupSprite, 0x1e76c4);
 
 // ---------------------------------------------------------------------------
 // The eyecandy / simple-animation leaves (1-arg ctors). They share a common
@@ -295,11 +309,14 @@ public:
 SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     TILE_LOGIC_TAIL
 public:
     CFrontCandy(CGameObject* obj); // 0x0abfa0
     virtual ~CFrontCandy() OVERRIDE;
 };
+VTBL(CFrontCandy, 0x1e84ec);
 
 // CBehindCandy comes from <Gruntz/BehindCandy.h> (folded; ctor 0x0ac3f0 defined below).
 
@@ -317,28 +334,39 @@ public:
 // so ?RegisterActs@CFrontCandyAni@@SAXXZ is now emitted at ONE RVA (0x0ad310), not two.
 class CFrontCandyAni : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CFrontCandyAni(CGameObject* obj); // 0x0acf40
     virtual ~CFrontCandyAni() OVERRIDE;
     i32 m_40; // +0x40
 };
+VTBL(CFrontCandyAni, 0x1e83e4);
 
 // CBehindCandyAni comes from <Gruntz/BehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
 class CMenuSparkle : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CMenuSparkle(CGameObject* obj); // 0x0adbe0
     virtual ~CMenuSparkle() OVERRIDE;
     i32 m_40; // +0x40
 };
+VTBL(CMenuSparkle, 0x1e82dc);
 
 // CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
 // eight pointer fields at +0x108..+0x12c.
 class CPathHazard : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CPathHazard();
@@ -354,6 +382,7 @@ public:
     void* m_128;
     void* m_12c;
 };
+VTBL(CPathHazard, 0x1e7394);
 
 // The global game registry several tails poll for level flags (WwdGameReg, the
 // same symbol wwdfile labels at RVA 0x24556c; only the fields these tails read

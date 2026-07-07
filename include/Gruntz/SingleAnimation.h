@@ -19,6 +19,9 @@
 
 class CSingleAnimation : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
@@ -29,5 +32,6 @@ public:
     i32 AdvanceAnim();
     virtual ~CSingleAnimation() OVERRIDE; // 0x010540 (folds the CUserLogic teardown)
 };
+VTBL(CSingleAnimation, 0x1e745c);
 
 #endif // GRUNTZ_CSINGLEANIMATION_H

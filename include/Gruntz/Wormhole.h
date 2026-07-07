@@ -17,6 +17,9 @@
 SIZE_UNKNOWN(CWormhole);
 class CWormhole : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     static void InitActReg();                     // 0x03f210
@@ -38,5 +41,6 @@ public:
     char m_pad58[0x68 - 0x58];
     i32 m_68; // +0x68  config flag (cleared by ReapplyConfig)
 };
+VTBL(CWormhole, 0x1e817c);
 
 #endif // GRUNTZ_CWORMHOLE_H

@@ -147,6 +147,9 @@ extern i32 g_slimeTick; // VA 0x6bf3bc
 // leaf-dtor archetype, see UserLogic.cpp 0x10ab0).
 class CKitchenSlime : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)
@@ -182,6 +185,7 @@ public:
     i32 m_stepMag;   // +0x88  per-step magnitude double {lo,hi}, overlaid as int pair
     i32 m_stepMagHi; // +0x8c  per-step magnitude, hi dword
 };
+VTBL(CKitchenSlime, 0x1e750c);
 
 // ---------------------------------------------------------------------------
 // The per-coordinate activation registry CKitchenSlime::FireActivation

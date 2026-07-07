@@ -23,6 +23,9 @@
 
 class CTimeBomb : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CTimeBomb(CGameObject* obj);    // 0x0e1b90 (1-arg leaf ctor)
@@ -39,6 +42,7 @@ public:
     i32 m_durationLo;  // +0x60  phase duration (lo dword of the i64)
     i32 m_durationHi;  // +0x64  (hi dword)
 };
+VTBL(CTimeBomb, 0x1e771c);
 SIZE(CTimeBomb, 0x68);
 
 #endif // GRUNTZ_CTIMEBOMB_H
