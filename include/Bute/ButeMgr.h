@@ -31,6 +31,7 @@
 #define SRC_BUTE_BUTEMGR_H
 
 #include <rva.h>
+#include <Wap32/ZVec.h>
 
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
@@ -248,7 +249,7 @@ SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 // (measured: gruntcombatanim / grunt / cplay fuzzy-% regressed). The vtable_hierarchy
 // INHERIT audit therefore still flags this stand-in decl; the substantive fix lives
 // in ButeNode.cpp's real model.
-class zPTree {
+class zPTree : public zErrHandling {
 public:
     zPTree(void* desc, i32 n);
 };
