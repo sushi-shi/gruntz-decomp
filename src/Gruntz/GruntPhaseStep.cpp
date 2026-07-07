@@ -16,6 +16,7 @@
 // nodes are the canonical m_320 GruntCoordNode chain. Placeholder field names; only
 // offsets + code bytes are load-bearing.
 #include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h> FIRST: RECT + IntersectRect)
+#include <Wap32/ZVec.h>
 
 #include <rva.h>
 #include <Ints.h>
@@ -109,7 +110,8 @@ i32 CGrunt::PhaseStep() {
     GruntTilePos pb;
 
     m_358 = 0;
-    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, g_codeF) == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeF)
+        == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -158,7 +160,8 @@ i32 CGrunt::PhaseStep() {
     return 1;
 
 state2: {
-    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, g_codeF) == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeF)
+        == 0) {
         goto common;
     }
     i32 x = m_arrivalCol;

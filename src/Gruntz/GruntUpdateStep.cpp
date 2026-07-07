@@ -14,6 +14,7 @@
 // m_poweredUp, m_10->m_5c, ...); only the registry-chain reads (g_pGameRegistry->
 // m_cmdGrid/m_tileGrid + the board rect) stay F()/P() pending typed manager sub-objects.
 #include <Gruntz/Grunt.h> // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Wap32/ZVec.h>
 
 #include <rva.h>
 #include <string.h> // inline strcmp of the grunt type name
@@ -57,7 +58,7 @@ extern FreeNodePool g_dropList;
 //     the grunt-under-HUD pointer / clock / grid bases.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
-    char* name = g_typeColl.Lookup((i32)m_14->m_1c)->m_0;
+    char* name = ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0;
     if (strcmp(name, "I") != 0) {
         return 1;
     }

@@ -13,8 +13,7 @@ struct CTypeNode {
 SIZE_UNKNOWN(CTypeNode);
 
 struct CTypeColl {
-    CTypeNode* Lookup(i32 key); // 0x40437c (__thiscall)
-    i32 Find(i32 key, i32 z);   // 0x16da80 (__thiscall ret 8)
+    // Lookup @0x437c = zDArray::IndexToPtr, Find @0x16da80 = _zvec::GrowTo; cast at each call.
 };
 SIZE_UNKNOWN(CTypeColl);
 

@@ -2,7 +2,7 @@
 // after CGrunt_0ef6b0 in retail (0xecc90 + 0xf0e20 + 0xf36a0). All __thiscall, no
 // explicit args, return 1. Direct siblings of GruntUpdateStep.cpp's UpdateArrival
 // (0xf0130) / SeekTarget (0xf71c0) and GruntArrivalStep.cpp's StepArrivalDefenseAlt
-// (0xf1c70): the head gates on the grunt's type name (g_typeColl.Lookup(...)->m_0) -
+// (0xf1c70): the head gates on the grunt's type name (((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(...))->m_0) -
 // each returns 1 immediately when the grunt IS an "I" - and the body drives the
 // tile-to-tile move: resolve the grunt under the HUD center (m_tileMgr->GetOccupant),
 // gate on the powered-up / arrival state words, recompute the board dirty rect, scan a
@@ -16,6 +16,7 @@
 // m_cueSink->CueA. The grid/coord node views are the shared CScanGrid family. The CGrunt
 // field bag stays raw F()/P() offset (codegen-neutral naming, load-bearing offsets).
 #include <Gruntz/Grunt.h> // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
+#include <Wap32/ZVec.h>
 
 #include <rva.h>
 #include <string.h> // inline strcmp of the grunt type name
@@ -106,7 +107,7 @@ extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556
 // Final-sweep candidate.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::ArrivalScanA() {
-    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
@@ -327,7 +328,7 @@ L_ed153:
 // deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::ArrivalScanB() {
-    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
@@ -565,7 +566,7 @@ L_scanb:
 // same deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::ArrivalScanC() {
-    if (strcmp(g_typeColl.Lookup((i32)m_14->m_1c)->m_0, "I") == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
         return 1;
     }
     CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;

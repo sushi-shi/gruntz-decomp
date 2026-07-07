@@ -14,6 +14,7 @@
 // Big /base body (0xbc3, ~30 internal calls). Shares the CGrunt coord-pool / grid
 // family with GruntMoveStep.cpp + GruntTileScan.cpp.
 #include <rva.h>
+#include <Wap32/ZVec.h>
 
 #include <Ints.h>
 #include <Win32.h>  // RECT + IntersectRect
@@ -258,7 +259,8 @@ i32 CStepMgr::Step33520(CStepGrunt* g) {
             g->m_2f4 = -1;
             if (g != 0 && g->IsSteppable() && g->m_1fc != 0 && g->m_368 == 0 && g->m_1e4 == 0
                 && g->m_220 == 0) {
-                const char* nm = g_typeColl.Lookup(g->m_14->m_1c)->m_0;
+                const char* nm =
+                    ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(g->m_14->m_1c))->m_0;
                 if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0
                     && strcmp(nm, k_60cc98) != 0 && strcmp(nm, k_60beb8) != 0
                     && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
