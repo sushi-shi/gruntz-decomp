@@ -1393,7 +1393,7 @@ i32 CSBI_RectOnly::ConfigureRect(
         return 0;
     }
     CSbiConfigRecord* rec = 0;
-    host->m_10->m_10map.Lookup(key, &rec);
+    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
     m_34 = (i32)rec;
     if (rec == 0) {
         return 0;

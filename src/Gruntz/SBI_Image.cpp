@@ -69,7 +69,7 @@ i32 CSBI_Image::SetupImage(
         return 0 != 0;
     }
     CSbiConfigRecord* rec = 0;
-    host->m_10->m_10map.Lookup(key, &rec);
+    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
     if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
         m_30 = 0;
         return 0 != 0;

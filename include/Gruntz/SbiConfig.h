@@ -24,9 +24,7 @@ struct CSbiConfigRecord; // the value the lookup yields (defined below)
 // CMapWordToOb::Lookup (engine 0x1b8008, __thiscall, ret 8): key -> *out record.
 // Modeled with NO body so the `ecx=<map>; call 0x1b8008` shape reloc-masks.
 SIZE_UNKNOWN(CSbiConfigMap);
-struct CSbiConfigMap {
-    i32 Lookup(i32 key, CSbiConfigRecord** out); // 0x1b8008
-};
+struct CSbiConfigMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
 
 // The registry object held at config-host+0x10: the CMapWordToOb map is embedded
 // at ITS +0x10. Accessing `host->m_10->m_10map` yields the `[host+0x10]+0x10`
