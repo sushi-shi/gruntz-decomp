@@ -27,6 +27,7 @@
 // reloc-mask too. Only the offsets / code bytes are load-bearing.
 
 #include <Win32.h> // PostMessageA (reloc-masked); the in-game host window post
+#include <Wap32/Object.h>
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -95,17 +96,8 @@ struct EngineLabelBacklog {
 struct CChatBoxOwner {
     void ProcessCheatInput(i32 a, i32 b);
 };
-SIZE_UNKNOWN(CObject);
-class CObject {
-public:
-    virtual void GetRuntimeClass(); // slot 0
-    virtual ~CObject();             // slot 1
-    virtual void Serialize();       // slot 2
-    virtual void AssertValid();     // slot 3
-    virtual void Dump();            // slot 4
-};
 SIZE_UNKNOWN(CObArray);
-struct CObArray : public CObject {
+struct CObArray : public Wap::CObject {
     virtual void GetRuntimeClass() OVERRIDE; // slot 0
     virtual ~CObArray() OVERRIDE;            // slot 1
     virtual void Serialize() OVERRIDE;       // slot 2
@@ -115,7 +107,7 @@ struct CObArray : public CObject {
 };
 SIZE_UNKNOWN(CMapStringToOb);
 VTBL(CMapStringToOb, 0x001eafd4);
-struct CMapStringToOb : public CObject {
+struct CMapStringToOb : public Wap::CObject {
     virtual void GetRuntimeClass() OVERRIDE; // slot 0
     virtual ~CMapStringToOb() OVERRIDE;      // slot 1
     virtual void Serialize() OVERRIDE;       // slot 2
