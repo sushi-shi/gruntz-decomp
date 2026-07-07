@@ -18,6 +18,7 @@
 // See docs/patterns/rezalloc-placement-new-no-eh-frame.md. The final-sweep upgrade
 // is to model each wide object as a real `new T`-with-throwing-ctor class.
 #include <rva.h>
+#include <Mfc.h> // CObList::AddTail (0x1b5af6)
 
 #include <Gruntz/WwdObjMgr.h> // the shared object-collection manager class
 #include <Gruntz/WwdWorker.h> // the shared per-object worker class
@@ -320,17 +321,13 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
 // ===========================================================================
 // The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
 // the new node pointer (stored into the object's +0x78).  Reloc-masked thiscall.
-class CWwdObjList {
-public:
-    void* AddTail(void* obj); // 0x1b5af6
-};
 class CWwdObjMgrL {
 public:
     CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
     char m_pad00[0x0c];
     int m_0c; // +0x0c parent handle
     char m_pad10[0x1dc - 0x10];
-    CWwdObjList m_1dc; // +0x1dc published-objects list
+    CObList m_1dc; // +0x1dc published-objects list (real MFC)
 };
 
 RVA(0x00166640, 0x13b)
@@ -364,7 +361,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         ((CWwdFactoryA*)result)->ScalarDtor(1);
         return 0;
     }
-    void* node = m_1dc.AddTail(result);
+    void* node = m_1dc.AddTail((CObject*)result);
     if (node == 0) {
         ((CWwdFactoryA*)result)->ScalarDtor(1);
         return 0;
@@ -502,7 +499,6 @@ SIZE_UNKNOWN(CWwdCmd1a0);
 SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdList1dc);
-SIZE_UNKNOWN(CWwdObjList);
 SIZE_UNKNOWN(CWwdObjMgrL);
 SIZE_UNKNOWN(CResolveNode);
 SIZE_UNKNOWN(CWwdResolveBaseB);
