@@ -38,6 +38,8 @@
 #include <string.h> // inline strcmp of the type name
 
 #include <rva.h>
+#include <Mfc.h> // CString (0x1b9b93 default ctor)
+#include <new>   // placement CString ctor
 
 #pragma intrinsic(strcmp, sqrt)
 
@@ -116,9 +118,6 @@ extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl,
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeNodes[0..g_typeCount) each get Reset.
-struct CombatTypeNode {
-    void Reset(); // 0x1b9b93 (__thiscall, 0 args)
-};
 extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A @0x6bf650
 extern "C" char* g_typeNodes;   // ?g_typeNodes@@3PAXA @0x6bf66c
 extern "C" i32 g_typeCount;     // ?g_typeCount@@3HA @0x6bf670
@@ -477,7 +476,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         i32 n = g_typeCount;
         do {
             if (p != 0) {
-                ((CombatTypeNode*)p)->Reset();
+                new ((void*)p) CString();
             }
             p += 4;
         } while (--n != 0);
