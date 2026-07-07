@@ -455,9 +455,7 @@ struct WwdObjAnimInit {
 // authentic: reached at a COMPUTED address (m_assetOwner+0x14+0x10), not a typed
 // member, so the reloc-masked Lookup extern is modeled as a method a raw pointer
 // is cast through - there is no member to fold it into.
-struct WwdStringToObMap {
-    i32 Lookup(const char* key, void*& out) const;
-};
+// WwdStringToObMap is an MFC CMapStringToPtr (Lookup @0x1b8008); the map var is retyped directly.
 
 // Level register: append the finished object to the level. __thiscall, ret 0x4.
 // authentic: reached at a COMPUTED address (loader+0xb0); helper method view over a
@@ -688,7 +686,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     i32 loaded = 1;
     if (imageSet.GetLength() != 0) {
         void* found = 0;
-        WwdStringToObMap* map = (WwdStringToObMap*)((char*)loader->m_assetOwner + 0x14 + 0x10);
+        CMapStringToPtr* map = (CMapStringToPtr*)((char*)loader->m_assetOwner + 0x14 + 0x10);
         loaded = map->Lookup((const char*)imageSet, found);
     }
 
@@ -1252,7 +1250,6 @@ SIZE_UNKNOWN(WwdLevelLoader);
 SIZE_UNKNOWN(CStringAssign); // +0xdc CString::operator= helper (WwdGameObj folded to CGameObject)
 SIZE_UNKNOWN(WwdSubMgrCtor);
 SIZE_UNKNOWN(WwdObjAnimInit);
-SIZE_UNKNOWN(WwdStringToObMap);
 SIZE_UNKNOWN(WwdObjList);
 SIZE_UNKNOWN(WwdPlaneHdr);
 SIZE_UNKNOWN(WwdRegOwner);
