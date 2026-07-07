@@ -73,6 +73,7 @@ public:
 struct CDDrawWorker : public CLoadable {
     virtual ~CDDrawWorker() OVERRIDE;                    // [1] cl-auto-gen ??_G @0x155780
     virtual i32 IsLoaded() OVERRIDE;                     // [5] 0x155750
+    virtual i32 IsReady() OVERRIDE;                      // [6] 0x001c08 (CWapObj default, inherited-shape)
     virtual i32 Unload() OVERRIDE;                       // [7] 0x151eb0 (CDDrawWorker::DeleteAll)
     virtual i32 GetClassId() OVERRIDE;                   // [8] 0x155770 -> CLASSID_WORKER
     virtual i32 Vfunc24(const char* key);                // [9]  0x155810
