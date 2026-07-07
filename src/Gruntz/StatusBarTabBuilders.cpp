@@ -22,6 +22,13 @@ public:
 };
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
 
+// The image-set nodes' SetAllTypes/SetAllFormats ARE CImageSet's (@0x152480/0x152520); local decl.
+class CImageSet {
+public:
+    void SetAllTypes(i32 type);
+    void SetAllFormats(i32 format);
+};
+
 namespace StatusBarTabBuilders {
 
     // The CSbGeom/CSbNamespaceMap/CSbMapHost/CSbOwner/CSbImageSet/CSbParent/
@@ -108,8 +115,8 @@ namespace StatusBarTabBuilders {
         if (sel == 0) {
             sel = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(1, 0);
         }
-        m_imageSet->SetAllTypes(10);
-        m_imageSet->SetAllFormats(sel);
+        ((CImageSet*)m_imageSet)->SetAllTypes(10);
+        ((CImageSet*)m_imageSet)->SetAllFormats(sel);
         i32 val;
         if (m_frameIdx < m_imageSet->m_idxLo || m_frameIdx > m_imageSet->m_idxHi) {
             val = 0;

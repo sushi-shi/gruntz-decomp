@@ -40,8 +40,7 @@ namespace StatusBarTabBuilders {
     // The namespace-resolved image set (the CMapStringToOb value). m_formats is the
     // per-index format/sprite table; [m_idxLo..m_idxHi] is its valid index range.
     struct CSbImageSet {
-        void SetAllTypes(i32 type);     // 0x152480
-        void SetAllFormats(i32 format); // 0x152520
+        // SetAllTypes @0x152480 / SetAllFormats @0x152520 ARE CImageSet's; cast at each call.
         char m_00[0x14];
         i32* m_formats; // +0x14  index -> format table
         char m_18[0x64 - 0x18];
