@@ -1177,10 +1177,6 @@ typedef i32 (CNetMgr::*NmSlotRet)();
 typedef i32 (CNetMgr::*NmConnFn)(i32, i32);
 typedef void (CNetMgr::*NmSlotVoid)();
 SIZE_UNKNOWN(CNetConnectSlotView);
-SIZE_UNKNOWN(CSymParserView);
-struct CSymParserView {
-    void* ResolvePath(const char* p); // 0x13c030 (CSymParser::ResolvePath - reloc-masked)
-};
 struct CNetConnectSlotView {
     char m_pad0[8];
     NmSlotRet Abort; // +0x08  abort/close on start failure
@@ -1403,7 +1399,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     (this->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
-    TF(0x2c) = (i32)((CSymParserView*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
+    TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
     if (TF(0x2c) == 0) {
         return 0;
     }
