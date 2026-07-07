@@ -66,32 +66,36 @@ SIZE_UNKNOWN(CWnd);
 VTBL(CWnd, 0x001eb5c4);
 class CWnd : public CCmdTarget {
 public:
-    virtual void WndVsl22(); // slot 22
-    virtual void WndVsl23(); // slot 23
-    virtual void WndVsl24(); // slot 24
-    virtual void WndVsl25(); // slot 25
-    virtual void WndVsl26(); // slot 26
-    virtual void WndVsl27(); // slot 27
-    virtual void WndVsl28(); // slot 28
-    virtual void WndVsl29(); // slot 29
-    virtual void WndVsl30(); // slot 30
-    virtual void WndVsl31(); // slot 31
-    virtual void WndVsl32(); // slot 32
-    virtual void WndVsl33(); // slot 33
-    virtual void WndVsl34(); // slot 34
-    virtual void WndVsl35(); // slot 35
-    virtual void WndVsl36(); // slot 36
-    virtual void WndVsl37(); // slot 37
-    virtual void WndVsl38(); // slot 38
-    virtual void WndVsl39(); // slot 39
-    virtual void WndVsl40(); // slot 40
-    virtual void WndVsl41(); // slot 41
-    virtual void WndVsl42(); // slot 42
-    virtual void WndVsl43(); // slot 43
-    virtual void WndVsl44(); // slot 44
-    virtual void WndVsl45(); // slot 45
-    virtual void WndVsl46(); // slot 46
-    virtual void WndVsl47(); // slot 47
+    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
+    virtual ~CWnd() OVERRIDE;                     // slot 1
+    virtual void CtVsl6() OVERRIDE;               // slot 6
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl22();                      // slot 22
+    virtual void WndVsl23();                      // slot 23
+    virtual void WndVsl24();                      // slot 24
+    virtual void WndVsl25();                      // slot 25
+    virtual void WndVsl26();                      // slot 26
+    virtual void WndVsl27();                      // slot 27
+    virtual void WndVsl28();                      // slot 28
+    virtual void WndVsl29();                      // slot 29
+    virtual void WndVsl30();                      // slot 30
+    virtual void WndVsl31();                      // slot 31
+    virtual void WndVsl32();                      // slot 32
+    virtual void WndVsl33();                      // slot 33
+    virtual void WndVsl34();                      // slot 34
+    virtual void WndVsl35();                      // slot 35
+    virtual void WndVsl36();                      // slot 36
+    virtual void WndVsl37();                      // slot 37
+    virtual void WndVsl38();                      // slot 38
+    virtual void WndVsl39();                      // slot 39
+    virtual void WndVsl40();                      // slot 40
+    virtual void WndVsl41();                      // slot 41
+    virtual void WndVsl42();                      // slot 42
+    virtual void WndVsl43();                      // slot 43
+    virtual void WndVsl44();                      // slot 44
+    virtual void WndVsl45();                      // slot 45
+    virtual void WndVsl46();                      // slot 46
+    virtual void WndVsl47();                      // slot 47
     void SetWindowTextA(const char* lpszString);
     void EnableWindow(i32 bEnable);
     void GetWindowTextA(CString& rString);
@@ -121,7 +125,13 @@ VTBL(CDialog, 0x001eb174);
 class CDialog : public CWnd {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
-    virtual ~CDialog() OVERRIDE; // slot 1
+    virtual ~CDialog() OVERRIDE;                  // slot 1
+    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
+    virtual void CtVsl5() OVERRIDE;               // slot 5
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl38() OVERRIDE;             // slot 38
+    virtual void WndVsl45() OVERRIDE;             // slot 45
+    virtual void WndVsl47() OVERRIDE;             // slot 47
     virtual void DlgVsl48();
     virtual void DlgVsl49();
     virtual void DlgVsl50();
