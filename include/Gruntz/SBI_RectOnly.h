@@ -194,11 +194,11 @@ SIZE_UNKNOWN(CSbiSpriteCfg);
 // offset, same lazy-create/free-on-retab lifecycle).
 SIZE(CWarpStoneFly, 0x40);
 
-// A minimal MFC-style CPtrList view (head node at +4); only RemoveAll is called.
+// An MFC CPtrList (head node at +4); RemoveAll @0x1b48a6 is CPtrList::RemoveAll, reached via a
+// CPtrList cast at the call. Field-view kept (m_head read directly; MFC hides m_pNodeHead).
 struct CSbiPtrList {
     char m_pad0[0x4];
     CSbiNotifyNode* m_head; // +0x04 head node pointer
-    void RemoveAll();       // __thiscall (sibling thunk)
 };
 SIZE_UNKNOWN(CSbiPtrList);
 

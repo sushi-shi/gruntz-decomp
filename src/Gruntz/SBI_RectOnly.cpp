@@ -949,7 +949,7 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
             cur->m_payload->Notify(1);
         }
     }
-    m_listB8.RemoveAll();
+    ((CPtrList*)&m_listB8)->RemoveAll();
     m_tabSprite5 = 0;
     m_tabSprite6 = 0;
     m_tabSprite7 = 0;
@@ -1163,7 +1163,7 @@ void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
                 cur->m_payload->Notify(1);
             }
         }
-        ((CSbiPtrList*)list)->RemoveAll();
+        ((CPtrList*)list)->RemoveAll();
         list += 0x1c;
     }
     if (keepHost) {
@@ -1245,7 +1245,7 @@ void CSBI_RectOnly::ExitMode() {
             cur->m_payload->Notify(1);
         }
     }
-    m_listD4.RemoveAll();
+    ((CPtrList*)&m_listD4)->RemoveAll();
     i32 handle = m_toggleHandle;
     m_tabSprite11 = 0;
     m_tabSprite12 = 0;
@@ -1292,7 +1292,7 @@ void CSBI_RectOnly::ClearTabGroup() {
             cur->m_payload->Notify(1);
         }
     }
-    ((CSbiPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
+    ((CPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
     switch (m_activeTab) {
         case 1:
             m_tabSprite5 = 0;
