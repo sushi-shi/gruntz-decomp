@@ -23,6 +23,7 @@
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 
+#include <Mfc.h> // MFC CFile/CByteArray (the movie file + decode-buffer dtors)
 #include <Ints.h>
 #include <rva.h>          // OVERRIDE / VTBL / SIZE macros
 #include <Wap32/Object.h> // Wap::CObject - the scratch embed's polymorphic grand-base
@@ -39,18 +40,18 @@ extern "C" void RezFree(void* p);
 // ~CFile (0x1bf121) so the /GX member-teardown trylevel falls out
 // (eh-dtor-model-members-as-destructible).
 struct CMovieFile {
-    void Dtor_1bf121(); // ~CFile (reloc-masked rel32 callee)
+    // Dtor_1bf121 @0x1bf121 IS CFile::~CFile; cast below.
     ~CMovieFile() {
-        Dtor_1bf121();
+        ((CFile*)this)->~CFile();
     }
 };
 
 // An MFC CByteArray-shaped member: dtor -> the reloc-masked engine ~CByteArray
 // (0x1b4b76).
 struct CMovieByteArray {
-    void Dtor_1b4b76(); // ~CByteArray (reloc-masked rel32 callee)
+    // Dtor_1b4b76 @0x1b4b76 IS CByteArray::~CByteArray; cast below.
     ~CMovieByteArray() {
-        Dtor_1b4b76();
+        ((CByteArray*)this)->~CByteArray();
     }
 };
 
