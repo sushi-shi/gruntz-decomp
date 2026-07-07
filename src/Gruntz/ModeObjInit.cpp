@@ -7,7 +7,8 @@
 // its own geometry/timer state, running two vtable init slots + a bind slot, and
 // flagging the linked peer. /GX for the owned-object unwind. Placeholder names;
 // only offsets + code bytes are load-bearing.
-#include <Win32.h> // timeGetTime / ShowCursor via the real headers
+#include <Mfc.h> // MFC superset (CObList; timeGetTime/ShowCursor); was Win32.h
+#include <new>
 
 #include <Ints.h>
 #include <rva.h>
@@ -64,10 +65,6 @@ namespace modeinit {
     };
 
     // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
-    struct StrRec {
-        char m_pad0[4];
-        void Ctor1b4867(i32 a); // 0x001b4867
-    };
 
     // The 0x630 worker owned at this->m_2dc.
     struct Worker630 {
@@ -426,10 +423,10 @@ namespace modeinit {
         Rec78* r78 = (Rec78*)RezAlloc(0x78);
         if (r78) {
             char* p = (char*)r78;
-            ((StrRec*)(p + 0x00))->Ctor1b4867(0xa);
-            ((StrRec*)(p + 0x1c))->Ctor1b4867(0xa);
-            ((StrRec*)(p + 0x38))->Ctor1b4867(0xa);
-            ((StrRec*)(p + 0x54))->Ctor1b4867(0xa);
+            new (p + 0x00) CObList(0xa);
+            new (p + 0x1c) CObList(0xa);
+            new (p + 0x38) CObList(0xa);
+            new (p + 0x54) CObList(0xa);
             *(i32*)(p + 0x74) = 0;
         } else {
             r78 = 0;
