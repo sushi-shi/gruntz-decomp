@@ -1896,12 +1896,17 @@ struct SceneNode {
     char m_pad04[0x04];
     SceneObj* m_obj; // +0x08
 };
+// GetNext @0x031250 IS CQueueDrainHost::Drain_031250 (header-less ddrawsubmgr class); local decl.
+class CQueueDrainHost {
+public:
+    void* Drain_031250();
+};
 struct SceneColl {
     char m_pad00[0x14];
     SceneNode* m_head; // +0x14  list head
     char m_pad18[0x68 - 0x18];
     SceneNode* m_cursor; // +0x68  iterator cursor
-    SceneObj* GetNext(); // 0x031250
+    // GetNext @0x031250 IS CQueueDrainHost::Drain_031250; cast at the call.
 };
 // The scene object the grid iterates: GetType() is vtable slot 8 (+0x20), m_40 a
 // flag byte, m_5c/m_60 the level coordinate, m_7c a runtime-class sub-object (its
@@ -1993,7 +1998,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     // Iterate the scene collection for kind-matching units inside the box.
     SceneColl* coll = m_ctx->m_scene->m_8;
     coll->m_cursor = coll->m_head;
-    SceneObj* g = coll->GetNext();
+    SceneObj* g = (SceneObj*)((CQueueDrainHost*)coll)->Drain_031250();
     while (g != 0) {
         if (g->m_rtClass[4] == (void*)Handler_0040288d && (g->m_flags & 1) == 0) {
             i32 special = 0;
@@ -2081,7 +2086,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             if (pp->GetType() == 5) {
                 g = pp;
             } else {
-                g = c->GetNext();
+                g = (SceneObj*)((CQueueDrainHost*)c)->Drain_031250();
             }
         }
     }
