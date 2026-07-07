@@ -11,6 +11,15 @@
 #include <Gruntz/SpriteRefTable.h>
 
 #include <rva.h>
+
+// The sprite-ref / palette hash tables are MFC CMapStringToPtr; Lookup @0x1b8008 is
+// CMapStringToPtr::Lookup. Minimal local decl (library class, links from MFC) so this Win32
+// TU ties the call without the <Mfc.h> windows.h-order conflict.
+SIZE_UNKNOWN(CMapStringToPtr);
+class CMapStringToPtr {
+public:
+    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
+};
 #include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
 // Engine CRT/resource helpers reached by Add()/Clear(); reloc-masked DIR32/REL32.
@@ -119,7 +128,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     void* out = 0;
     CSpriteRefHashTable* tbl =
         (CSpriteRefHashTable*)(((CSpriteMgrHolder*)m_spriteMgrHolder)->m_spriteMgr + 0x10);
-    tbl->Lookup(szName, &out);
+    ((CMapStringToPtr*)tbl)->Lookup(szName, (void*&)out);
     if (!out) {
         return 0;
     }
@@ -168,9 +177,8 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
 // The destination registry at m_spriteMgrHolder->m_spriteMgr is polymorphic: a hash sub-table at +0x10
 // backs Lookup() (out-param non-null => already present), and Install (vtable slot
 // 9) takes the resolved palette + two null args.
-struct CPaletteHashTable {                 // embedded at CPaletteDestRegistry+0x10
-    void Lookup(char* szName, void** out); // 0x1b8008 __thiscall
-};
+// MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call.
+struct CPaletteHashTable {};
 struct CPaletteDestRegistry {
     virtual void v0();
     virtual void v1();
@@ -205,7 +213,8 @@ i32 CSpriteRefTable::LoadGruntzPalette(i32 src, i32 name) {
     }
 
     void* found = 0;
-    ((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->m_hash.Lookup((char*)name, &found);
+    ((CMapStringToPtr*)&((CPaletteDestRoot*)m_spriteMgrHolder)->m_spriteMgr->m_hash)
+        ->Lookup((char*)name, (void*&)found);
     if (found) {
         return 1;
     }

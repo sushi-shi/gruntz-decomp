@@ -44,10 +44,7 @@ public:
 // The sprite name->object hash table (CSpriteHashTable at +0x10 of the sprite mgr).
 // Lookup is the engine's 0x1b8008; modeled NO-body so its `call` reloc-masks.
 SIZE_UNKNOWN(CSpriteRefHashTable);
-class CSpriteRefHashTable {
-public:
-    i32 Lookup(char* szName, void** ppOut); // 0x1b8008
-};
+class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 
 // The animation/alpha factory cached as Init's arg0 (m_factory). Its AlphaTable method
 // (0x14f5b0) turns a looked-up sprite's frame data into an alpha object; modeled
