@@ -190,8 +190,7 @@ struct Node166810 {
 };
 SIZE_UNKNOWN(Node166810);
 struct Arr1dc {
-    void RemoveAll(); // 0x1b5a0b
-};
+}; // RemoveAll @0x1b5a0b IS an MFC array RemoveAll (CObArray-family); cast at the call
 SIZE_UNKNOWN(Arr1dc);
 struct B_166810 {
     char _0[0x1dc];

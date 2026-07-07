@@ -6,7 +6,7 @@
 // the /GX EH-frame siblings live in BoundaryUpperEh.cpp. The per-use owner/referent
 // views now live in <Gruntz/BoundaryUpperViews.h> (pure code motion).
 #include <rva.h>
-#include <Win32.h> // WINAPI (windows.h) for the g_pTimeGetTime import-pointer type
+#include <Mfc.h> // superset of Win32.h: WINAPI + MFC CObArray (the +0x1dc array RemoveAll)
 #include <Gruntz/BoundaryUpperViews.h> // owner/referent views for this TU (pulls Blk6c.h)
 
 // The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
@@ -251,7 +251,7 @@ void B_166810::Clear() {
             cur->m_payload->Destroy(1);
         }
     }
-    m_1dc.RemoveAll();
+    ((CObArray*)&m_1dc)->RemoveAll();
 }
 
 // ---------------------------------------------------------------------------
