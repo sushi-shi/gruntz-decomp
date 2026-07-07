@@ -17,7 +17,7 @@ struct CMultiHelpDlg : public CDialog {
 SIZE_UNKNOWN(CMultiHelpDlg);
 VTBL(CMultiHelpDlg, 0x001ea474);
 
-struct CArchiveStream { // 14 slots (first=QueryInterface)
+struct IStream {
     virtual void Slot00();
     virtual void Slot01();
     virtual void Slot02();
@@ -32,6 +32,24 @@ struct CArchiveStream { // 14 slots (first=QueryInterface)
     virtual void Slot11();
     virtual void Slot12();
     virtual void Slot13();
+};
+SIZE_UNKNOWN(IStream);
+
+struct CArchiveStream : public IStream { // 14 slots (first=QueryInterface)
+    virtual void Slot00() OVERRIDE;
+    virtual void Slot01() OVERRIDE;
+    virtual void Slot02() OVERRIDE;
+    virtual void Slot03() OVERRIDE;
+    virtual void Slot04() OVERRIDE;
+    virtual void Slot05() OVERRIDE;
+    virtual void Slot06() OVERRIDE;
+    virtual void Slot07() OVERRIDE;
+    virtual void Slot08() OVERRIDE;
+    virtual void Slot09() OVERRIDE;
+    virtual void Slot10() OVERRIDE;
+    virtual void Slot11() OVERRIDE;
+    virtual void Slot12() OVERRIDE;
+    virtual void Slot13() OVERRIDE;
 };
 SIZE_UNKNOWN(CArchiveStream);
 VTBL(CArchiveStream, 0x001ed98c);
