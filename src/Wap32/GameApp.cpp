@@ -530,7 +530,7 @@ void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 
-// CGameApp::GameAppScalarDtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
+// CGameApp::scalar-dtor @0x080dd0 - the CGameApp scalar-deleting destructor (the
 // ??_GCGameApp thunk with ~CGameApp inlined). Real polymorphic: the explicit
 // qualified this->CGameApp::~CGameApp() inlines the (inline, virtual) dtor, whose
 // auto vptr-restore stamps ??_7CGameApp@@6B@ (0x5e9b0c) and whose body runs

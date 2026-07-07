@@ -31,7 +31,7 @@
 // subobject. The matching-mis-model that put a DERIVED dtor here (0x1574d0, which
 // stamps 0x5efe08 = ??_7CDDrawSubMgrDraco and calls DestroyChildren) has been SPLIT
 // out to CDDrawSubMgrPages.cpp as ~CDDrawSubMgrPages (that IS the CDDrawSubMgrDraco
-// class - vtable dump: 0x5efe08 slot 1 = 0x1574b0 = CDDrawSubMgrPages::ScalarDtor).
+// class - vtable dump: 0x5efe08 slot 1 = 0x1574b0 = CDDrawSubMgrPages::scalar-dtor).
 //
 // Field names are tomalla placeholders; only the OFFSETS + the emitted code
 // bytes are load-bearing (campaign doctrine).

@@ -89,7 +89,6 @@ public:
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
     void ClearMap();            // 0x157bc0 (non-virtual map teardown)
-    void* ScalarDtor(i32 flag); // 0x157550 (??_G scalar-deleting dtor, SYMBOL-pinned there)
 
     virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
 

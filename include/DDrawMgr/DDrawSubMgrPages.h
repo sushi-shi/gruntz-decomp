@@ -35,7 +35,7 @@
 //   slot 7  (@0x1c)  DestroyChildren  0x158ac0
 //   slot 8  (@0x20)  GetStateId       0x1574a0
 //   slot 9  (@0x24)  CreateChildren   0x1588f0
-//   slot 10 (@0x28)  0x157a20  (a 30-B `scalar_deleting_destructor' variant)
+//   slot 10 (@0x28)  0x157a20  (a 30-B deleting dtor (??_G) variant)
 //   slot 11 (@0x2c)  0x165e30  (COMDAT-folded with CFileMemBase::SetName, filemem)
 //   slot 12 (@0x30)  0x157a70
 //   slot 13 (@0x34)  0x157a50  (COMDAT-folded with CFileMem::Reset, filemem)
@@ -79,7 +79,7 @@ public:
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- slots 10..22: declared-only (no RVA); shape the emitted vtable only ---
-    virtual void Slot0A_157a20(); // [10] 0x157a20 (scalar_deleting_destructor variant)
+    virtual void Slot0A_157a20(); // [10] 0x157a20 (deleting-dtor variant)
     virtual void Slot0B_165e30(); // [11] 0x165e30 (COMDAT CFileMemBase::SetName)
     virtual void Slot0C_157a70(); // [12] 0x157a70
     virtual void Slot0D_157a50(); // [13] 0x157a50 (COMDAT CFileMem::Reset)

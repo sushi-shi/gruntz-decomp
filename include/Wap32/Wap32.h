@@ -261,7 +261,6 @@ public:
 
     // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
     // CloseResources, decrement the live-instance counter, then the delete-flag tail.
-    void* GameAppScalarDtor(unsigned int flags);
 };
 
 #endif // WAP32_H

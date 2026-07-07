@@ -55,7 +55,7 @@ public:
 // sub_00106e / sub_004034) so cl emits the implicit grand-base vptr re-stamp (masks
 // 0x5e8cb4) at the leaf dtor's tail - no manual `*(void**)this = &g_wapObjectDtorVtbl`.
 // Slot 1 is a REGULAR virtual (not a C++ dtor) so the leaf can override it with its
-// explicit ??_G scalar-deleting destructor ScalarDtor_1577c0 WITHOUT cl auto-generating
+// explicit ??_G scalar-deleting destructor scalar-dtor@0x1577c0 WITHOUT cl auto-generating
 // a clashing ??_G. The field resets live in the non-virtual ~ (its body); the base
 // transition stamp is implicit (the leaf dtor teardown ORDER: ~CMapStringToOb member
 // BEFORE the field stores reproduces retail).
@@ -86,7 +86,7 @@ inline CDDrawSubMgrGrandBase::~CDDrawSubMgrGrandBase() {
 class CDDrawSubMgrLeaf : public CDDrawSubMgrGrandBase {
 public:
     // The leaf vtable (??_7CDDrawSubMgrLeaf @0x5efc78) is 9 slots: 5 shared CObject
-    // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by ScalarDtor_1577c0),
+    // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by scalar-dtor@0x1577c0),
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
     // slot 1 is the virtual dtor below (cl auto-generates the ??_G from it).
@@ -277,7 +277,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
 }
 
 // ---------------------------------------------------------------------------
-// Destructor (real ??1 body; the scalar-deleting ScalarDtor at 0x1577c0 calls it):
+// Destructor (real ??1 body; the scalar-deleting scalar-dtor at 0x1577c0 calls it):
 // now a real polymorphic teardown. cl stamps ??_7CDDrawSubMgrLeaf (masks g_catalogVtbl
 // @0x5efc78) at entry, runs the cleanup virtual (FreeAll/VM1C), then the embedded map
 // dtor and the CDDrawSubMgrGrandBase grand-base dtor (field resets + implicit ??_7-base
@@ -302,7 +302,7 @@ void operator delete(void*);
 // Scalar-deleting destructor (the vtable slot+4 override): run the real ~, then
 // operator delete this if the low flag bit is set. The scalar-deleting dtor ??_G
 // @0x1577c0 is now COMPILER-GENERATED from the class's virtual ~ (delete-site lowering);
-// @rva-symbol names the auto-emitted thunk instead of a hand-written ScalarDtor method.
+// @rva-symbol names the auto-emitted thunk instead of a hand-written scalar-dtor method.
 // @rva-symbol: ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z 0x001577c0 0x1e
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).

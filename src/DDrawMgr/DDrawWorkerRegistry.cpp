@@ -132,7 +132,7 @@ public:
 class RegWorkerValue {
 public:
     virtual void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
-    virtual void Slot04_155780();        // slot 1  0x155780 (ScalarDtor)
+    virtual void Slot04_155780();        // slot 1  0x155780 (scalar-dtor)
     virtual void Slot08_28ec();          // slot 2  0x0028ec (CObject thunk)
     virtual void Slot0C_106e();          // slot 3  0x00106e (CObject thunk)
     virtual void Slot10_4034();          // slot 4  0x004034 (CObject thunk)

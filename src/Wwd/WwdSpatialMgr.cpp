@@ -77,7 +77,7 @@ struct WwdBucketHead {
 // polymorphic model (CObject base, real ~CWwdGrid OVERRIDE at vtbl slot 1,
 // pure-virtual OnFound at slot 5) lives in <Gruntz/WwdGrid.h>; this is the
 // spatial-mgr's reduced local view. It intentionally models slot 1 as an
-// explicit ScalarDtor(i32) method rather than the real destructor because
+// explicit scalar-dtor(i32) method rather than the real destructor because
 // FreeGrids/CountInRect invoke the engine's scalar-DELETING-dtor thunk directly
 // (`mov eax,[ecx]; push 1; call [eax+4]`); a C++ `delete grid` cannot reproduce
 // that (it adds its own null-check + nulls the pointer unconditionally, where

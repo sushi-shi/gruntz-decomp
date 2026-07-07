@@ -82,7 +82,7 @@ VTBL(CVtEmit_1efc58, 0x001efc58);
 
 // ---------------------------------------------------------------------------
 // 0x5efd28 (RVA 0x1efd28) - 23 slots. CDDrawWorkerRegistry's OWN vtable
-// (slot 1 = 0x156df0 = CDDrawWorkerRegistry::RegScalarDtor, already matched -> NOT
+// (slot 1 = 0x156df0 = CDDrawWorkerRegistry::scalar-dtor, already matched -> NOT
 // redefined here). CObject-style base thunks at 0/2/3/4. Slots carry the matched
 // CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
 // ---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ SIZE_UNKNOWN(CVtEmit_1efd88);
 
 // ---------------------------------------------------------------------------
 // 0x5efdc0 (RVA 0x1efdc0) - 17 slots. A SECOND vtable whose slot-1 dtor
-// (0x157610 = CDDrawWorkerMapSmall::MapSmallScalarDtor, already matched -> NOT redefined)
+// (0x157610 = CDDrawWorkerMapSmall::scalar-dtor, already matched -> NOT redefined)
 // is owned by CDDrawWorkerMapSmall (its primary is ??_7CDDrawWorkerMapSmall
 // @0x1efcc8). Modeled here as a standalone tracking class (a per-class ??_7CVtbl_
 // primary names the datum; realizing it AS the MI-secondary of CDDrawWorkerMapSmall

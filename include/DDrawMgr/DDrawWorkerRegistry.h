@@ -104,7 +104,6 @@ public:
     // Engine-label backlog stubs.
     i32 InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
     i32 LookupWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
-    void* RegScalarDtor(i32 flag);
     i32 ProbeWorkerKey(CSymTab* a1, i32 a2);
 };
 

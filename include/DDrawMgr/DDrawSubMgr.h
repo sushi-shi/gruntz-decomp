@@ -25,7 +25,7 @@
 
 class CDDrawSubMgr : public CObject {
 public:
-    virtual ~CDDrawSubMgr() OVERRIDE; // slot 1 (SubMgrScalarDtor 0x155720)
+    virtual ~CDDrawSubMgr() OVERRIDE; // slot 1 (scalar-dtor 0x155720)
     virtual i32 IsReady();            // slot 5 readiness predicate (declared-only, reloc-masked)
     virtual void IsValidImage();      // slot 6 @0x001c08 (shared base thunk)
     virtual void Slot07_155740();     // slot 7 @0x155740

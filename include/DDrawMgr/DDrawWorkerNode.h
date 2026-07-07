@@ -88,7 +88,7 @@ SIZE(CDDrawWorkerBase, 0x78);
 // BYTE-frame worker (12-slot vtable 0x1efea0). Overrides only Vfunc2C in source;
 // its other retail overrides (slots 1/5/7/8/10) stay inherited (reloc-masked).
 struct CDDrawWorkerA : public CObject {
-    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (was scalar-dtor -> compiler ??_G)
     virtual void Slot05_157200();      // [5]  0x157200 (B)
     virtual void IsValidImage();       // [6]  0x001c08
     virtual void Slot07_157310();      // [7]  0x157310 (B)
@@ -131,7 +131,7 @@ VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 // int-frame worker (14-slot vtable 0x1efed0): adds Vfunc30 (slot 12) / Vfunc34
 // (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).
 struct CDDrawWorkerB : public CObject {
-    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (was scalar-dtor -> compiler ??_G)
     virtual void Slot05_157200();      // [5]  0x157200 (B)
     virtual void IsValidImage();       // [6]  0x001c08
     virtual void Slot07_157310();      // [7]  0x157310 (B)

@@ -25,7 +25,7 @@
 // ??_7CAmbientSound / ??_7CAmbientPosSound / ??_7CRandomAmbientSound (mapped in
 // config/vtable_names.csv at 0x1e710c / 0x1e7124 / 0x1e713c) and inlines the vptr
 // stamp in the ctor. Slot 0 is retail's compiler-gen scalar deleting destructor,
-// slot 3 is Update; see the ScalarDtor note below for why slot 0 is hand-named.
+// slot 3 is Update; see the scalar-dtor note below for why slot 0 is hand-named.
 inline void* operator new(u32, void* p) {
     return p;
 }

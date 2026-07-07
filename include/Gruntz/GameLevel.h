@@ -152,16 +152,16 @@ enum LoadableClassId {
 // [7] 0x155740 Unload, [8] 0x154a00 GetClassId).
 //
 // (B)-FORM DEFERRAL (why this local struct, not the canonical CLoadable): this
-// models slot 1 as a REGULAR-virtual `ScalarDtor(u32)` so CGameLevel can OVERRIDE
-// it with an explicit `void* ScalarDtor(u32) OVERRIDE` whose ??_G body is RVA-
+// models slot 1 as a REGULAR-virtual `scalar-dtor(u32)` so CGameLevel can OVERRIDE
+// it with an explicit `void* scalar-dtor(u32) OVERRIDE` whose ??_G body is RVA-
 // pinned at 0x1611c0 (100% exact). The canonical CLoadable derives from
 // CWapObj : CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
-// cannot be overridden by a non-dtor `ScalarDtor` in C++; switching CGameLevel to
+// cannot be overridden by a non-dtor `scalar-dtor` in C++; switching CGameLevel to
 // the canonical (A) form would force cl to AUTO-generate the ??_G, which rva.h
 // cannot RVA-pin (it needs a source definition for the @llvm.global.annotations
 // carrier) -> the currently-100% ??_G would drop out of the matched set. So the
 // (B) leaf keeps its local base (documented deferral; a final-sweep item that
-// needs the whole CLoadable family flipped to the (B) explicit-ScalarDtor form).
+// needs the whole CLoadable family flipped to the (B) explicit-scalar-dtor form).
 //
 // The INLINE ctor stores the three args (cl AUTO-stamps the base vptr
 // &??_7CLoadable - an orphan reloc-masked against retail 0x5efc30); the INLINE

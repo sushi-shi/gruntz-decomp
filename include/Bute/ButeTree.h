@@ -86,11 +86,10 @@ public:
 
     // g_buteTree ctor/dtor (TypeKeyColl.cpp). Construct runs the deeper base ctor;
     // ClearRecursive frees the keyed nodes; BaseDtor is the primary-base teardown;
-    // ScalarDtor is the `scalar deleting destructor'. All reloc-masked __thiscall.
+    // scalar-dtor is the `scalar deleting destructor'. All reloc-masked __thiscall.
     void Construct(void* arg, i32 b); // 0x16dff0
     void ClearRecursive(i32 recurse); // 0x16e070
     void BaseDtor();                  // 0x16da60
-    void* ScalarDtor(u32 flags);      // 0x16e9c0
 };
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 

@@ -168,20 +168,20 @@ CGameMgr::~CGameMgr() {
 // the base-vptr-restore dtor (stamp + 0x13ddb0 teardown) folded into the delete-flag
 // tail, then (flags&1) RezFree(this) and return this. Retail labelled it
 // CGameMgrDerived::`scalar deleting destructor'. Real polymorphic: the inline
-// vptr-restore dtor supplies the stamp + teardown call; ScalarDtor folds it. RezFree
+// vptr-restore dtor supplies the stamp + teardown call; scalar-dtor folds it. RezFree
 // (0x1b9b82, _RezFree) is the engine's allocator free for this Rez-managed object.
 // ===========================================================================
 extern "C" void RezFree(void* p); // 0x1b9b82 (_RezFree)
-struct CScalarDtor855a0 {
+struct CObj855a0 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     // inline base-vptr-restore dtor: `mov [ecx],offset ??_7 + call 0x13ddb0`. Inline
-    // so ScalarDtor's explicit dtor call folds the stamp (like the ??_G thunk).
-    virtual ~CScalarDtor855a0() {
+    // so scalar-dtor's explicit dtor call folds the stamp (like the ??_G thunk).
+    virtual ~CObj855a0() {
         Base13ddb0();
     }
 };
-SIZE_UNKNOWN(CScalarDtor855a0);
-// @rva-symbol: ??_GCScalarDtor855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
+SIZE_UNKNOWN(CObj855a0);
+// @rva-symbol: ??_GCObj855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================
 // 0x094c10 - CGameWnd base destructor: cl's implicit vptr-restore stamps

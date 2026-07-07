@@ -32,7 +32,7 @@ inline void* operator new(u32, void* p) {
 // ??_7SoundStream@@6B@ from the real polymorphic SoundStream : SoundDevice (virtual
 // dtor override); the ctor auto-stamps it and the dtor auto-resets it + chains
 // ~SoundDevice. cl also auto-emits the ??_G scalar-deleting dtor at 0x1376f0 (was
-// the hand-declared ScalarDtor) - now a compiler artifact with no source symbol.
+// the hand-declared scalar-dtor) - now a compiler artifact with no source symbol.
 
 // ---------------------------------------------------------------------------
 // SoundStream::SoundStream (__thiscall). Run the base ctor, then zero the

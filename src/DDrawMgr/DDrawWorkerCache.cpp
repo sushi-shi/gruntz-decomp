@@ -171,7 +171,7 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
 // the real member-teardown ~, then operator delete this if the low flag bit is set.
 // SYMBOL() pins the ??_G mangling; it overrides CDDrawWorkerCacheBase's slot-1 regular
 // virtual so the leaf vtable carries it at slot 1 WITHOUT cl auto-generating a
-// clashing ??_G. Same idiom as CDDrawSubMgrLeaf::ScalarDtor.
+// clashing ??_G. Same idiom as CDDrawSubMgrLeaf::scalar-dtor.
 // @rva-symbol: ??_GCDDrawWorkerCache@@UAEPAXI@Z 0x00157700 0x1e
 
 // ---------------------------------------------------------------------------
