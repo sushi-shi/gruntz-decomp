@@ -111,7 +111,7 @@ i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(&idx, 4);
             if (strlen(name) != 0) {
                 CSprite* r = 0;
-                mgr->m_10->m_10map.Lookup(name, &r);
+                ((CMapStringToOb*)&mgr->m_10->m_10map)->Lookup(name, (CObject*&)r);
                 if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
                     m_30 = (i32)r->m_frames.m_pData[idx];
                 } else {
@@ -204,7 +204,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     }
     CSbiConfigRecord* rec = 0;
     CSbiConfigHost* host = m_24;
-    host->m_10->m_10map.Lookup(key, &rec);
+    ((CMapStringToOb*)&host->m_10->m_10map)->Lookup((const char*)key, (CObject*&)rec);
     m_38 = rec;
     if (rec == 0) {
         return (i32)rec;
@@ -283,7 +283,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
         CMiMusicHost* mh = (CMiMusicHost*)((CResMgr*)g_gameReg->m_world)->m_28;
         if (mh->m_30 == 0) {
             CMiCue* found = 0;
-            ((CMiCueMap*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", &found);
+            ((CMapStringToOb*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
             if (found) {
                 i32 gate = g_61ab20;
                 i32 item = g_61ab24;
@@ -363,7 +363,7 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
                 CSprite* found = 0;
-                mgr->m_10->m_10map.Lookup(tmp, &found);
+                ((CMapStringToOb*)&mgr->m_10->m_10map)->Lookup(tmp, (CObject*&)found);
                 m_38 = found;
             } else {
                 m_38 = 0;
