@@ -216,6 +216,14 @@ struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 lett
 SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual i32 Vslot07() OVERRIDE;              // slot 7
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
+    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
+    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20
     // The ~CMenuState() destructor (EH-framed `??1` under /GX): it re-stamps the
     // CMenuState vtable, runs the slot-2 resource release (ReleaseResources,
     // statically bound in the dtor), then re-stamps the CState vtable and chains
@@ -263,6 +271,7 @@ public:
 
     void BuildVersionString(i32, i32, i32, i32);
 };
+VTBL(CMenuState, 0x1e9e84);
 
 // CImageList-owning sub-object embedded at CCreditsState+0x1e8 (an MFC CImageList
 // the credits screen builds). Modeled as the twin of Dialogs' CImgHolder: a
