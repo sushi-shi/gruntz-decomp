@@ -28,6 +28,12 @@ inline void* operator new(u32, void* p) {
     return p;
 } // placement (factory sub-object ctors)
 
+class CDDrawSurfaceMgr;
+SIZE_UNKNOWN(CDDrawSubMgr);
+struct CDDrawSubMgr { // the +0x1a0 draw sub-manager (real ctor in DDrawSubMgr.cpp)
+    CDDrawSubMgr(CDDrawSurfaceMgr* mgr, i32 a2, i32 a3); // 0x156cb0
+};
+
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
@@ -136,10 +142,6 @@ struct Obj15b270 {
 };
 // The +0x7c sprite-animation worker (0x17c bytes): ctor 0x15b300, kick at +0x10.
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
-class CWwdCmd1a0 {
-public:
-    void Ctor(int root, int a, int flags); // 0x156cb0
-};
 // The +0x1dc list sub-object ctor (1598d0), 1 arg (block size 0xa). 0x1b59cc.
 
 // The wide objects' polymorphic interfaces (cast-only; declared-only virtuals so
@@ -309,7 +311,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     if (obj != 0) {
         int root = (int)m_0c;
         new (obj) CWwdGameObj15b390(root, a1, a6);
-        ((CWwdCmd1a0*)(obj + 0x1a0))->Ctor(root, a1, a6);
+        new (obj + 0x1a0) CDDrawSubMgr((CDDrawSurfaceMgr*)root, a1, a6);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1b0) = 0;
         *(int*)(obj + 0x1b4) = 0;
@@ -469,7 +471,6 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CWwdCmd1a0);
 SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdObjMgrL);
