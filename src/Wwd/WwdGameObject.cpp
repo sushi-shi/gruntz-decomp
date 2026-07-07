@@ -1155,9 +1155,16 @@ inline WwdBLevel2::~WwdBLevel2() {
 class CWwdGameObjectB : public WwdBLevel2 {
 public:
     virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
-    // Slots 14-15 completing the 16-slot 0x5f00e8 table (chain models 0-13).
-    virtual i32 Play3C();  // slot 15 @0x151150
-    virtual void Slot38(); // slot 14 @0x11fec0 (__purecall)
+    // Own vtable @0x5f00e8: overrides WwdBResolve's slots 5/7/8 + adds 10..15 (binary RVAs).
+    virtual void VtSlotFill0() OVERRIDE; // slot 5  0x15bcd0
+    virtual void VtSlotFill2() OVERRIDE; // slot 7  0x15bf00
+    virtual void VtSlotFill3() OVERRIDE; // slot 8  0x15bce0
+    virtual void Slot10_1665e0();        // slot 10 0x1665e0
+    virtual void Slot11_1668b0();        // slot 11 0x1668b0
+    virtual void Slot12_1668e0();        // slot 12 0x1668e0
+    virtual void Slot13_166910();        // slot 13 0x166910
+    virtual void Slot14_166950();        // slot 14 0x166950
+    virtual void Slot15_150a70();        // slot 15 0x150a70
     WwdObList m_1dc;                     // +0x1dc  CObList
     char _p1e0[0x1f8 - 0x1e0];
     i32 m_1f8; // +0x1f8
