@@ -1418,11 +1418,9 @@ struct CMonoConfigHolder {
     CMonoConfigMap m_10; // +0x10  embedded string map
 };
 struct CMonoSprite;
-struct CMonoView {
-    CMonoSprite* FindSprite(const char* name); // 0x15dde0
-    CMonoSprite*
-    CreateSprite(i32 w, i32 h, i32 geoA, i32 geoB, i32 ox, i32 oy, const char* name); // 0x15d9a0
-};
+// FindSprite @0x15dde0 = CGameLevel::FindPlaneByName, CreateSprite @0x15d9a0 =
+// CGameLevelPlanes::ReadObjectPlane (transitively-visible real classes); cast at each call.
+struct CMonoView {};
 struct CMonoSprite {
     char m_pad0[0x8];
     i32 m_8; // +0x08  flag bits (bit1 = visible)
@@ -1467,11 +1465,12 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     }
     i32 geoA = e->m_10;
     i32 geoB = e->m_14;
-    CMonoSprite* found = ((CMonoWorld*)m_world)->m_24->FindSprite("MONOLITH");
+    CMonoSprite* found =
+        (CMonoSprite*)((CGameLevel*)((CMonoWorld*)m_world)->m_24)->FindPlaneByName("MONOLITH");
     if (found == 0) {
         CMonoSprite* spr =
-            ((CMonoWorld*)m_world)
-                ->m_24->CreateSprite(0x20, 0x20, geoA, geoB, -0x19, -0x19, "MONOLITH");
+            (CMonoSprite*)((CGameLevelPlanes*)((CMonoWorld*)m_world)->m_24)
+                ->ReadObjectPlane(0x20, 0x20, geoA, geoB, -0x19, -0x19, (i32) "MONOLITH");
         if (spr == 0) {
             return 0;
         }
