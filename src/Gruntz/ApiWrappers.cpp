@@ -40,6 +40,14 @@ public:
     i32 CreateHealthSprite();
 };
 
+// SetupDlg's GetHandle @0x3bcf = CSaveGame::GetSlot, Apply @0x12f3 = CSaveGame::VerifySlot.
+struct SaveSlot;
+class CSaveGame {
+public:
+    SaveSlot* GetSlot(i32 idx);
+    i32 VerifySlot(SaveSlot* s);
+};
+
 namespace m4 {
 
     // -------------------------------------------------------------------------
@@ -480,10 +488,8 @@ namespace m4 {
 
     extern "C" i32 g_64c864; // 0x64c864 (last selected slot handle)
 
-    struct SetupDlg {           // arg3 - the settings dialog object
-        i32 GetHandle(i32 idx); // thiscall thunk 0x3bcf
-        i32 Apply(i32 h);       // thiscall thunk 0x12f3
-    };
+    struct SetupDlg {
+    }; // GetHandle @0x3bcf = CSaveGame::GetSlot, Apply @0x12f3 = CSaveGame::VerifySlot
 
     extern "C" void proc_401e3d();            // dialog proc thunk (RVA 0x1e3d)
     extern "C" void proc_40121c();            // dialog proc thunk (RVA 0x121c)
@@ -532,7 +538,7 @@ namespace m4 {
                 break;
         }
         if (idx != -1) {
-            i32 h = dlg->GetHandle(idx);
+            i32 h = (i32)((::CSaveGame*)dlg)->GetSlot(idx);
             g_64c864 = h;
             if (h) {
                 EnableWindow(hwnd, FALSE);
@@ -575,7 +581,7 @@ namespace m4 {
                 break;
         }
         if (idx != -1) {
-            i32 h = dlg->GetHandle(idx);
+            i32 h = (i32)((::CSaveGame*)dlg)->GetSlot(idx);
             g_64c864 = h;
             if (h) {
                 EnableWindow(hwnd, FALSE);
@@ -621,10 +627,10 @@ namespace m4 {
                 break;
         }
         if (idx != -1) {
-            i32 h = dlg->GetHandle(idx);
+            i32 h = (i32)((::CSaveGame*)dlg)->GetSlot(idx);
             if (h) {
                 EnableWindow(hwnd, FALSE);
-                i32 r = dlg->Apply(h);
+                i32 r = ((::CSaveGame*)dlg)->VerifySlot((::SaveSlot*)h);
                 EnableWindow(hwnd, TRUE);
                 if (r) {
                     g_mgrSettings->m_bc = h;
