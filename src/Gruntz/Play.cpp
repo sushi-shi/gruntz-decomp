@@ -3774,8 +3774,9 @@ extern void* g_freeList;
 DATA(0x0024554c)
 extern i32 g_freeListNodeBias;
 
-struct CRtArr {                    // a CPtrArray subset (m_data @+4, m_count @+8); 0x14 stride
-    void SetSize(i32 n, i32 grow); // 0x1b4f75 __thiscall(n, grow)
+// The CRtArr timeline arrays are MFC CObArrays (SetSize @0x1b4f75 = CObArray::SetSize,
+// reached via a CObArray cast at each call; CObArray is already visible transitively here).
+struct CRtArr { // an MFC CObArray (m_data @+4, m_count @+8); 0x14 stride
     char p0[0x4];
     void** m_data; // +0x4
     i32 m_count;   // +0x8
@@ -3915,7 +3916,7 @@ void CPlay::FreeListTeardown() {
             g_freeList = p;
         }
     }
-    self->m_startMarkers.SetSize(0, -1);
+    ((CObArray*)&self->m_startMarkers)->SetSize(0, -1);
     for (k = 0; k < 4; k++) {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];
@@ -3925,7 +3926,7 @@ void CPlay::FreeListTeardown() {
                 g_freeList = p;
             }
         }
-        self->m_3a4[k].SetSize(0, -1);
+        ((CObArray*)&self->m_3a4[k])->SetSize(0, -1);
     }
     for (i = 0; i < self->m_488.m_count; i++) {
         void* node = self->m_488.m_data[i];
@@ -3935,7 +3936,7 @@ void CPlay::FreeListTeardown() {
             g_freeList = p;
         }
     }
-    self->m_488.SetSize(0, -1);
+    ((CObArray*)&self->m_488)->SetSize(0, -1);
     for (i32 off = 0; off < 0x8e0; off += 0x238) {
         ((CBattlezMapConfig*)((char*)self->m_4 + 0x188 + off))->FreeArrays();
         ((CBattlezMapConfig*)((char*)self->m_4 + 0x188 + off))->Clear_02ade0();
@@ -4059,7 +4060,7 @@ void CPlay::CPlayDtorBody() {
             g_freeList = p;
         }
     }
-    self->m_startMarkers.SetSize(0, -1);
+    ((CObArray*)&self->m_startMarkers)->SetSize(0, -1);
     for (i32 k = 0; k < 4; k++) {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];
@@ -4069,7 +4070,7 @@ void CPlay::CPlayDtorBody() {
                 g_freeList = p;
             }
         }
-        self->m_3a4[k].SetSize(0, -1);
+        ((CObArray*)&self->m_3a4[k])->SetSize(0, -1);
     }
     for (i = 0; i < self->m_488.m_count; i++) {
         void* node = self->m_488.m_data[i];
@@ -4080,7 +4081,7 @@ void CPlay::CPlayDtorBody() {
         }
     }
     self->m_49c = -1;
-    self->m_488.SetSize(0, -1);
+    ((CObArray*)&self->m_488)->SetSize(0, -1);
     self->BaseDtor();
 }
 
