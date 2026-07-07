@@ -112,9 +112,7 @@ struct CGameObjLayer {
 // pulling the whole MFC map machinery into this engine TU.
 SIZE_UNKNOWN(CLogicHandlerMap);
 class CLogicHandlerMap {
-public:
-    i32 Lookup(const char* key, CGameObject** out) const; // 0x1b8008
-};
+}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call in UserBaseLink.cpp
 
 // Exact size 0x1dc, byte-proven from TWO new-sites: CSpriteFactory::CreateSpriteImpl
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects

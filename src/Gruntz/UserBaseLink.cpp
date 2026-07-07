@@ -372,7 +372,7 @@ RVA(0x00150f50, 0x33)
 void CGameObject::AddLogicHit(char* key) {
     CGameObject* handler = 0;
     CLogicHandlerMap* map = LogicMap();
-    map->Lookup(key, &handler);
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
     EnsureWorker80(handler);
 }
 
@@ -382,7 +382,7 @@ RVA(0x00151030, 0x33)
 void CGameObject::AddLogicAttack(char* key) {
     CGameObject* handler = 0;
     CLogicHandlerMap* map = LogicMap();
-    map->Lookup(key, &handler);
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
     EnsureWorker88(handler);
 }
 
@@ -392,7 +392,7 @@ RVA(0x00151110, 0x33)
 void CGameObject::AddLogicBump(char* key) {
     CGameObject* handler = 0;
     CLogicHandlerMap* map = LogicMap();
-    map->Lookup(key, &handler);
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
     EnsureWorker90(handler);
 }
 
