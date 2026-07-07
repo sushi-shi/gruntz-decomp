@@ -79,10 +79,11 @@ namespace ApiCallerStubs {
 } // namespace ApiCallerStubs
 
 // The file-backed palette loader (Image.cpp). LoadByExtension is foreign here.
-SIZE_UNKNOWN(CImgPoolExtLoader);
-class CImgPoolExtLoader {
+SIZE_UNKNOWN(CImageExtLoader);
+// The real (header-less image-unit) CImageExtLoader; LoadByExtension @0x176f90.
+class CImageExtLoader {
 public:
-    i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (foreign, reloc-masked)
+    i32 LoadByExtension(char* path, i32 arg);
 };
 
 // CImagePool is the canonical class in <Image/ImagePool.h> (included above); this
@@ -499,7 +500,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     } else {
         node = 0;
     }
-    if (((CImgPoolExtLoader*)node)->LoadByExtension(path, arg) == 0) {
+    if (((CImageExtLoader*)node)->LoadByExtension(path, arg) == 0) {
         if (node) {
             ((CImagePaletteNode*)node)->Run();
             RezFree(node);
