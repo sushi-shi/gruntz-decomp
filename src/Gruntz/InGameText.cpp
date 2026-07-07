@@ -10,6 +10,7 @@
 // SerializeChain (0x16e7f0), the zvec accessor helpers and the +0x34 sub-object
 // serializer are reloc-masked engine callees (no body).
 #include <Gruntz/InGameText.h>
+#include <Wap32/ZDArrayDerived.h>
 
 #include <rva.h>
 
@@ -163,15 +164,13 @@ CInGameText::CInGameText(CGameObject* obj) : CTileLogic(obj) {
 // The activation-coordinate registry view of the dispatch table (g_textDispatch
 // @0x645950): InitActReg builds it over the fixed [2000, 2010] range via the
 // shared registry ctor (0x408710, __thiscall ret 8).
-struct CTextActReg {
-    void Construct(i32 lo, i32 hi); // 0x408710
-};
+struct CTextActReg {}; // Construct = CZDArrayDerived::Construct; cast at the call
 
 // CInGameText::InitActReg @0x0993e0 - construct the class's activation-coordinate
 // registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
 RVA(0x000993e0, 0x15)
 void CInGameText::InitActReg() {
-    ((CTextActReg*)&g_textDispatch)->Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_textDispatch)->Construct(2000, 2010);
 }
 
 // ===========================================================================
