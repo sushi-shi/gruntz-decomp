@@ -64,8 +64,9 @@ struct CShadeTableArray : CObject {
     i32 m_nGrowBy;         // +0x10 (cache +0x14)
 
     CShadeTableArray();
-    virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides CObject dtor slot 1
-    // slots 0/2/3/4 (GetRuntimeClass/Serialize/AssertValid/Dump) inherited from MFC CObject
+    virtual ~CShadeTableArray() OVERRIDE;           // 0x150020  overrides CObject dtor slot 1
+    virtual void Serialize(CArchive& ar) OVERRIDE;  // slot 2  0x14fe90 (declared-only; folds C14fe30's dtor)
+    // slots 0/3/4 (GetRuntimeClass/AssertValid/Dump) inherited from MFC CObject
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
 // SIZE/VTBL for CShadeTableArray are kept in ShadeTableCache.cpp (out of this
