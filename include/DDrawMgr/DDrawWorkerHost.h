@@ -53,6 +53,10 @@ public:
     virtual void VtSlotFill0();      // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill1();      // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill2();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5();      // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill6();      // vtable-slot filler (real slot; declared-only)
 };
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H
