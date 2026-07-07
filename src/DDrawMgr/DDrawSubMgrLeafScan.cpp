@@ -1,4 +1,5 @@
 #include <Gruntz/SoundCueMgr.h>
+#include <Wap32/Object.h>
 #include <Gruntz/LeafCue.h>
 #include <rva.h>
 // DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
@@ -148,16 +149,17 @@ inline LeafElementBase::~LeafElementBase() {
 // auto-fires (reset +0x04/+0x08/+0x0c + implicit grand-base re-stamp). Configure
 // (0x158760) loads + acquires the element's buffer; Release (0x1587c0) frees it (both
 // non-virtual __thiscall members reached only from the element).
-struct LeafElementObj : public LeafElementBase {
-    virtual void LeafSlot5_158650();         // [5] 0x158650 (declared-only)
-    virtual void IsValidImage();             // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void LeafSlot7_1587c0();         // [7] 0x1587c0 (declared-only; == Release addr)
-    virtual void LeafSlot8_154a00();         // [8] 0x154a00 (declared-only)
-    virtual ~LeafElementObj() OVERRIDE;      // overrides slot [1]
-    LeafElementObj(i32 count, i32 handle);   // inline; folded into the factory
-    i32 Configure_158760(CParseSource* src); // 0x158760 __thiscall element configure
-    i32 Configure2_158720(void* riff);       // 0x158720 raw-RIFF configure variant
-    void Release_1587c0();                   // 0x1587c0 release the acquired buffer
+struct LeafElementObj : public Wap::CObject { // was : LeafElementBase (merged intermediate)
+    i32 m_04, m_08, m_0c;                     // +0x04..0x0f (from merged LeafElementBase)
+    virtual void LeafSlot5_158650();          // [5] 0x158650 (declared-only)
+    virtual void IsValidImage();              // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void LeafSlot7_1587c0();          // [7] 0x1587c0 (declared-only; == Release addr)
+    virtual void LeafSlot8_154a00();          // [8] 0x154a00 (declared-only)
+    virtual ~LeafElementObj() OVERRIDE;       // overrides slot [1]
+    LeafElementObj(i32 count, i32 handle);    // inline; folded into the factory
+    i32 Configure_158760(CParseSource* src);  // 0x158760 __thiscall element configure
+    i32 Configure2_158720(void* riff);        // 0x158720 raw-RIFF configure variant
+    void Release_1587c0();                    // 0x1587c0 release the acquired buffer
 
     i32 m_10; // +0x10 = 0  the acquired DirectSound buffer
     i32 m_14; // +0x14 = 0
