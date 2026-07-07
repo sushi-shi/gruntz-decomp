@@ -395,6 +395,7 @@ SoundChannelNew* CWorldSoundSet::
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CAmbientSound);
 SIZE_UNKNOWN(CAmbientPosSound);
+VTBL(CAmbientPosSound, 0x001e7124); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CRandomAmbientSound);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 SIZE_UNKNOWN(CSoundChannel);

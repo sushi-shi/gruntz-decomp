@@ -22,6 +22,7 @@
 // function ends `ret 0x84`, a 33-arg engine fn, not a scalar-deleting dtor).
 // ---------------------------------------------------------------------------
 SIZE(CTileTriggerLogic, 0x9c);
+VTBL(CTileTriggerLogic, 0x001eaea4); // vtable_names -> code (RTTI game class)
 class CTileTriggerLogic {
 public:
     CTileTriggerLogic();

@@ -24,6 +24,7 @@ struct CUserBase {
     virtual void s2();
 };
 SIZE_UNKNOWN(CUserBase);
+VTBL(CUserBase, 0x001e70b4); // vtable_names -> code (RTTI game class)
 RVA(0x000087b0, 0x7)
 
 // ===========================================================================

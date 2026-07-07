@@ -479,6 +479,7 @@ public:
     i32 m_2c;             // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
 };
 SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
+VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
                         // 0x30..0x3c tail lives on CTileLogic (below).
 // NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
 //   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only

@@ -97,5 +97,6 @@ public:
     };
 };
 SIZE_UNKNOWN(CTileTriggerSwitchLogic);
+VTBL(CTileTriggerSwitchLogic, 0x001eae8c); // vtable_names -> code (RTTI game class)
 
 #endif // SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H

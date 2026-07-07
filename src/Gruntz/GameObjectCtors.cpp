@@ -482,12 +482,14 @@ i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntStaminaSprite, 0x64);
+VTBL(CGruntStaminaSprite, 0x001e7a44); // vtable_names -> code (RTTI game class)
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntToyTimeSprite, 0x64);
 
 // size 0x64 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGruntWingzTimeSprite, 0x64);
+VTBL(CGruntWingzTimeSprite, 0x001e77cc); // vtable_names -> code (RTTI game class)
 
 SIZE_UNKNOWN(CButeTree);
 SIZE_UNKNOWN(CGruntHealthSpriteBase);
@@ -496,6 +498,7 @@ SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
 SIZE_UNKNOWN(CRainCloud);
+VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CSpotLightSetup);
 SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSpriteObj);

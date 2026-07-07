@@ -139,6 +139,7 @@ i32 CUserLogic::UserLogicVfuncD() {
 // CCoveredPowerup}.cpp; modeled polymorphically here so the /GX EH-frame dtor folds
 // (a manual-vptr model is frameless - see docs/patterns/eh-dtor-needs-base-subobject.md).
 SIZE_UNKNOWN(CTileSecretTrigger);
+VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 class CTileSecretTrigger : public CTileTrigger {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -152,6 +153,7 @@ public:
 };
 
 SIZE_UNKNOWN(CGiantRock);
+VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 class CGiantRock : public CTileTrigger {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -161,6 +163,7 @@ public:
 };
 
 SIZE_UNKNOWN(CCoveredPowerup);
+VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 class CCoveredPowerup : public CTileTrigger {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -230,6 +233,7 @@ public:
 VTBL(CSecretTeleporterTrigger, 0x1e7564);
 
 SIZE_UNKNOWN(CWarpStonePad);
+VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 class CWarpStonePad : public CUserLogic {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2

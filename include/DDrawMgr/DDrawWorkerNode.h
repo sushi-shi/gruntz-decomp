@@ -126,6 +126,7 @@ struct CDDrawWorkerA : public Wap::CObject {
     char _pad79[0x7c - 0x79];
 };
 SIZE(CDDrawWorkerA, 0x7c);
+VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
 // int-frame worker (14-slot vtable 0x1efed0): adds Vfunc30 (slot 12) / Vfunc34
 // (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).

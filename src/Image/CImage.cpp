@@ -472,5 +472,6 @@ SIZE_UNKNOWN(CBlitClipOwner);
 SIZE_UNKNOWN(CImageParent);
 SIZE_UNKNOWN(CImageFrameDesc);
 SIZE_UNKNOWN(CImage); // RTTI CImage (real-polymorphic; RTTI-vtable catalogued)
+VTBL(CImage, 0x001eaa2c); // vtable_names -> code (RTTI game class)
 // --- CImage.cpp local views ---
 SIZE_UNKNOWN(CResolveNode);

@@ -164,6 +164,7 @@ struct CBattlezSlot {
 class CLatencyList;
 
 SIZE_UNKNOWN(CBattlezDlg);
+VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
@@ -235,6 +236,7 @@ public:
 //   base CDialog(0xc3, pParent); CString @+0x5c.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgCustom);
+VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
@@ -250,6 +252,7 @@ public:
 //   base CDialog(0xc2, pParent); m_slots = a0; m_slotIndex = a1; m_pickedColor = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgColors);
+VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
@@ -273,6 +276,7 @@ public:
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
+VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
@@ -387,6 +391,7 @@ public:
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 SIZE_UNKNOWN(CCheckpointDlg);
+VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);

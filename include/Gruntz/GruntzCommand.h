@@ -128,6 +128,7 @@ extern const u16 g_cmdBitTable[16]; // 0x1e9608
 // (the ctor just stamps the leaf vftable - empty body, so it folds inline).
 // ---------------------------------------------------------------------------
 SIZE(CGruntzSingleCommand, 0x14);
+VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class)
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzSingleCommand() OVERRIDE;
@@ -154,6 +155,7 @@ public:
 // Same new-or-recycle allocator shape as the single-target command.
 // ---------------------------------------------------------------------------
 SIZE(CGruntzMultiCommand, 0x14);
+VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzMultiCommand() OVERRIDE;
