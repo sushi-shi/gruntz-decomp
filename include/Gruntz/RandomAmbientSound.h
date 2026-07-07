@@ -20,6 +20,8 @@
 #ifndef GRUNTZ_CRANDOMAMBIENTSOUND_H
 #define GRUNTZ_CRANDOMAMBIENTSOUND_H
 
+#include <Gruntz/AmbientSound.h>
+class CGruntArchive;
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <rva.h>
@@ -50,15 +52,6 @@ extern "C" i32 winapi_00cd00_timeGetTime();
 // The CRT float->int truncation helper (__ftol @ 0x11f570).
 extern "C" i32 __ftol(double v);
 
-// An axis-aligned region the listener must be inside for the sound to play. The
-// sentinel left==0x80000000 means "no box / always pass".
-struct AmbientBox {
-    i32 left;   // +0x00
-    i32 top;    // +0x04
-    i32 right;  // +0x08
-    i32 bottom; // +0x0c
-};
-
 // A 2-int (x,y) point copied wholesale into the +0x40/+0x44 field pair by the
 // positional Setup path (m_40/m_44 serve as the sound's anchor position).
 struct AmbientPoint {
@@ -80,17 +73,15 @@ struct AmbSoundRecord {
     DirectSoundMgr* m_mgr; // +0x10
 };
 
-class CRandomAmbientSound {
+class CRandomAmbientSound : public CAmbientSound {
 public:
-    // Declared-only virtual anchor: makes the class polymorphic so cl emits
-    // ??_7CRandomAmbientSound and auto-stamps the vptr in the ctor (slot reloc-masks).
-    virtual void Vf0();
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     CRandomAmbientSound(); // 0x00bb40  base init (cl auto-stamps the vptr)
     // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
     // the primary box, clear the secondary box. Returns 1 (0 on a null world).
     i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
-    void Update(i32 playFlag, i32 pos, i32 kind); // 0x00c2a0
+    virtual void Update(i32 playFlag, i32 pos, i32 kind) OVERRIDE; // slot 3 (0x00c2a0)
     // The positional variant's entry points (same CAmbientSound base layout, but
     // m_40/m_44 hold an anchor position instead of the interval roller):
     void
@@ -101,8 +92,8 @@ public:
     i32 TickObj(i32 obj);                   // 0x00ca00  per-object placement tick
 
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
-    void Step(i32 x, i32 y, i32 force); // 0x00cb30
-    ~CRandomAmbientSound();             // 0x00bb60  scalar-deleting / full dtor (defined elsewhere)
+    void Step(i32 x, i32 y, i32 force);      // 0x00cb30
+    virtual ~CRandomAmbientSound() OVERRIDE; // slot 0  0x00bb60
 
     // --- layout (sizeof 0x58) -------------------------------------------------
     // +0x00  vptr (compiler ??_7CRandomAmbientSound; was the manual m_vptr slot)

@@ -10,7 +10,7 @@
 // vtable 0x5e713c); no manual vptr store (see the header note).
 //
 // Field names are placeholders; OFFSETS + emitted code bytes are load-bearing.
-#include <Win32.h> // RECT / CopyRect / SetRect (PosSoundObj rects + CommitSpriteAction)
+#include <Mfc.h> // MFC superset (afx-first, unblocks CAmbientSound base incl); was Win32.h
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/InputState.h> // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub (its +0x08 CObList)
 #include <rva.h>
@@ -631,4 +631,4 @@ SIZE_UNKNOWN(PosSoundObj);
 SIZE_UNKNOWN(PosSoundVoice);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(PosSoundVoice, 0x001e713c);
+VTBL(CRandomAmbientSound, 0x001e713c);
