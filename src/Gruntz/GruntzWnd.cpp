@@ -21,16 +21,25 @@ class CGruntzWnd : public CGameWnd {
 public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
-    virtual i32 Wap32GameWndVfunc0();
+    virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE; // slot 1
+    virtual i32 Wap32GameWndVfunc2() OVERRIDE;                     // slot 2
+    virtual i32 OnPaint() OVERRIDE;                                // slot 7
+    virtual i32 OnChar(WPARAM, LPARAM) OVERRIDE;                   // slot 8
+    virtual i32 OnKeyDown(WPARAM, LPARAM) OVERRIDE;                // slot 9
+    virtual i32 OnLButtonDown(WPARAM, i32, i32) OVERRIDE;          // slot 14
+    virtual i32 OnLButtonUp(WPARAM, i32, i32) OVERRIDE;            // slot 16
+    virtual i32 OnMouseMove(WPARAM, i32, i32) OVERRIDE;            // slot 18
+    virtual i32 OnLButtonDblClk(WPARAM, i32, i32) OVERRIDE;        // slot 19
+    i32 Wap32GameWndVfunc0(); // non-virtual: vftable now emitted by the 16 real overrides
 
     // Message-handler overrides (vtable 0x5ea2d4), reconstructed below. Declared
     // non-virtual on purpose (see file header); each forwards to the CGruntzMgr.
-    i32 OnCloseImpl();                                   // slot 4  @0x094b90
-    i32 OnKeyUpImpl(WPARAM wParam, LPARAM lParam);       // slot 10 @0x094920
-    i32 OnActivateAppImpl(WPARAM wParam, LPARAM lParam); // slot 12 @0x094b20
-    i32 OnRButtonDownImpl(WPARAM keys, i32 x, i32 y);    // slot 15 @0x094a20
-    i32 OnRButtonUpImpl(WPARAM keys, i32 x, i32 y);      // slot 17 @0x094a60
-    i32 OnRButtonDblClkImpl(WPARAM keys, i32 x, i32 y);  // slot 20 @0x094ae0
+    virtual i32 OnClose() OVERRIDE;                                   // slot 4  @0x094b90
+    virtual i32 OnKeyUp(WPARAM wParam, LPARAM lParam) OVERRIDE;       // slot 10 @0x094920
+    virtual i32 OnActivateApp(WPARAM wParam, LPARAM lParam) OVERRIDE; // slot 12 @0x094b20
+    virtual i32 OnRButtonDown(WPARAM keys, i32 x, i32 y) OVERRIDE;    // slot 15 @0x094a20
+    virtual i32 OnRButtonUp(WPARAM keys, i32 x, i32 y) OVERRIDE;      // slot 17 @0x094a60
+    virtual i32 OnRButtonDblClk(WPARAM keys, i32 x, i32 y) OVERRIDE;  // slot 20 @0x094ae0
 
     // Reaches the running game manager through the owning CGameApp.
     CGruntzMgr* GameMgr() {
@@ -57,7 +66,7 @@ CGruntzWnd::~CGruntzWnd() {
 // CGruntzWnd::OnKeyUp (WM_KEYUP, vtable slot 10). Forwards (wParam, lParam) to the
 // game manager's per-state notifier; no manager => not handled (0).
 RVA(0x00094920, 0x21)
-i32 CGruntzWnd::OnKeyUpImpl(WPARAM wParam, LPARAM lParam) {
+i32 CGruntzWnd::OnKeyUp(WPARAM wParam, LPARAM lParam) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
@@ -69,7 +78,7 @@ i32 CGruntzWnd::OnKeyUpImpl(WPARAM wParam, LPARAM lParam) {
 // CGruntzWnd::OnRButtonDown (WM_RBUTTONDOWN, vtable slot 15). Forwards (keys, x, y)
 // to the manager's per-state notifier.
 RVA(0x00094a20, 0x26)
-i32 CGruntzWnd::OnRButtonDownImpl(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonDown(WPARAM keys, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
@@ -80,7 +89,7 @@ i32 CGruntzWnd::OnRButtonDownImpl(WPARAM keys, i32 x, i32 y) {
 // -------------------------------------------------------------------------
 // CGruntzWnd::OnRButtonUp (WM_RBUTTONUP, vtable slot 17).
 RVA(0x00094a60, 0x26)
-i32 CGruntzWnd::OnRButtonUpImpl(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonUp(WPARAM keys, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
@@ -91,7 +100,7 @@ i32 CGruntzWnd::OnRButtonUpImpl(WPARAM keys, i32 x, i32 y) {
 // -------------------------------------------------------------------------
 // CGruntzWnd::OnRButtonDblClk (WM_RBUTTONDBLCLK, vtable slot 20).
 RVA(0x00094ae0, 0x26)
-i32 CGruntzWnd::OnRButtonDblClkImpl(WPARAM keys, i32 x, i32 y) {
+i32 CGruntzWnd::OnRButtonDblClk(WPARAM keys, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
         return 0;
@@ -104,7 +113,7 @@ i32 CGruntzWnd::OnRButtonDblClkImpl(WPARAM keys, i32 x, i32 y) {
 // advance through the manager, restores the OS cursor when deactivating
 // (wParam == 0: ShowCursor up to >= 0), then chains the CGameWnd base handler.
 RVA(0x00094b20, 0x49)
-i32 CGruntzWnd::OnActivateAppImpl(WPARAM wParam, LPARAM lParam) {
+i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
         mgr->AdvanceFrame(wParam, lParam);
@@ -120,7 +129,7 @@ i32 CGruntzWnd::OnActivateAppImpl(WPARAM wParam, LPARAM lParam) {
 // CGruntzWnd::OnClose (WM_CLOSE, vtable slot 4). Tears down the manager's sound
 // chain, then chains the CGameWnd base WM_CLOSE handler (destroys the window).
 RVA(0x00094b90, 0x1b)
-i32 CGruntzWnd::OnCloseImpl() {
+i32 CGruntzWnd::OnClose() {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
         mgr->UnloadSoundChain();
