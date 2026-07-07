@@ -41,10 +41,9 @@ struct CMenuListNode {
 
 // The catalog map reached through m_owner->m_catalog->m_map (CMapStringToPtr::Lookup, 0x1b8008).
 // The catalog map reached through m_0->m_10->m_10 (CMapStringToPtr::Lookup, 0x1b8008).
+// The string->item map base is an MFC CMapStringToOb (Lookup @0x1b8438); cast at the call.
 SIZE_UNKNOWN(CMenuMap);
-struct CMenuMap {
-    i32 Lookup(const char* key, void*& out);
-};
+struct CMenuMap {};
 struct CMenuCatalog {
     char pad0[0x10];
     CMenuMap m_map; // +0x10 the string->item map base
@@ -122,7 +121,7 @@ i32 CMenuPage::Configure(
     m_offsetX = 0;
     m_offsetY = 0;
     void* slot = 0;
-    m_owner->m_catalog->m_map.Lookup(key, slot);
+    ((CMapStringToOb*)&m_owner->m_catalog->m_map)->Lookup(key, (CObject*&)slot);
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
 }
