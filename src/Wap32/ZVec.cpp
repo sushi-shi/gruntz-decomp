@@ -10,6 +10,8 @@
 // reloc-masked live-vtable datum.
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <Mfc.h> // CString (0x1b9b93 default ctor)
+#include <new>   // placement CString ctor
 #include <Globals.h>
 #include <Bute/ButeTree.h>
 
@@ -32,9 +34,6 @@ extern void* GetRetAddr();       // 0x16d990 (pop eax;push eax;ret: the call-sit
 
 // Per-element relocation applied to each freshly-grown member-pointer slot
 // (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.
-struct zMemberPtrSlot {
-    void Init(); // 0x1b9b93
-};
 
 // The error-report globals + the "out of memory" message.
 DATA(0x0021adf4)
@@ -75,7 +74,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     i32 n = m_grown;
     while (n-- != 0) {
         if (slot) {
-            ((zMemberPtrSlot*)slot)->Init();
+            new ((void*)slot) CString();
         }
         slot += 4;
     }
