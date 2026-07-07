@@ -104,12 +104,14 @@ extern "C" i32 __ftol(); // 0x11f570 (declared so the call reloc-masks if needed
 // ---------------------------------------------------------------------------
 class CPathHazard : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
-    LogicTypeId GetTypeTag();
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
     // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
