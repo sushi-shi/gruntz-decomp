@@ -40,8 +40,13 @@ struct CSlimeSubMgr {
 
 // The animation player @this+0x38 that holds the current direction sprite at
 // +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198.
+// CSlimeAnimPlayer::CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame (header-less); local decl.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);
+};
 struct CSlimeAnimPlayer {
-    void CacheFirstFrame(const char* name); // CGruntSprite::CacheFirstFrame (reloc-masked)
+    // CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame; cast at each call.
 
     char m_pad0[0x8];
     i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
@@ -666,7 +671,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -677,7 +682,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0x3ff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -688,7 +693,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirY + 1) = 0x3ff00000;
             *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -698,7 +703,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0xbff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
