@@ -57,7 +57,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             s->ReadBytes(buf, 0x80);
             if (strlen(buf)) {
                 CSprite* out;
-                reg->m_10->m_10map.Lookup(buf, &out);
+                ((CMapStringToOb*)&reg->m_10->m_10map)->Lookup(buf, (CObject*&)out);
                 m_34 = out;
             } else {
                 m_34 = 0;

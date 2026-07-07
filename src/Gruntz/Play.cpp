@@ -1811,7 +1811,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     }
     CFrameGrid* grid = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
-    m_c->m_10->m_10map.Lookup(key, &grid);
+    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(key, (CObject*&)grid);
     m_grid = grid;
     if (grid == 0) {
         return 1;

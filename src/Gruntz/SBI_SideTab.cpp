@@ -129,7 +129,8 @@ i32 CSBI_SideTab::BuildHandle() {
         return 1;
     }
     CSprite* gm = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", &gm);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
+        ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", (CObject*&)gm);
     i32 glyph;
     if (gm == 0 || val < gm->m_firstFrame || val > gm->m_lastFrame) {
         glyph = 0;

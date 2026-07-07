@@ -127,7 +127,7 @@ public:
 RVA(0x00150540, 0x65)
 void CGruntSprite::CacheFirstFrame(const char* name) {
     CSprite* spr = 0;
-    m_c->m_10->m_10map.Lookup(name, &spr);
+    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(name, (CObject*&)spr);
     m_sprite = spr;
     if (spr) {
         i32 n = spr->m_firstFrame;
@@ -157,7 +157,7 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
 RVA(0x001504d0, 0x6c)
 void CGruntSprite::CacheFrame(const char* name, i32 frame) {
     CSprite* spr = 0;
-    m_c->m_10->m_10map.Lookup(name, &spr);
+    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(name, (CObject*&)spr);
     m_sprite = spr;
     if (spr) {
         if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
@@ -220,7 +220,7 @@ RVA(0x001597b0, 0x57)
 CGameObject*
 CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags) {
     CSprite* tmpl = 0;
-    m_c->m_14->m_10map.Lookup(name, &tmpl);
+    ((CMapStringToOb*)&m_c->m_14->m_10map)->Lookup(name, (CObject*&)tmpl);
     if (!tmpl) {
         return 0;
     }
@@ -255,7 +255,7 @@ i32 CSpriteFactory::AttachSprite(
         return 0;
     }
     CSprite* tmpl = 0;
-    m_c->m_14->m_10map.Lookup(name, &tmpl);
+    ((CMapStringToOb*)&m_c->m_14->m_10map)->Lookup(name, (CObject*&)tmpl);
     if (!tmpl) {
         return 0;
     }
@@ -362,7 +362,7 @@ public:
 RVA(0x001505b0, 0x5c)
 i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    m_c->m_2c->m_10map.Lookup(name, &spr);
+    ((CMapStringToOb*)&m_c->m_2c->m_10map)->Lookup(name, (CObject*&)spr);
     if (!spr) {
         return 0;
     }
@@ -387,7 +387,7 @@ i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 RVA(0x00150610, 0x41)
 i32 CGruntAnimPlayer::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    m_c->m_28->m_10map.Lookup(name, &spr);
+    ((CMapStringToOb*)&m_c->m_28->m_10map)->Lookup(name, (CObject*&)spr);
     if (spr != 0) {
         m_19c = spr;
         return 1;

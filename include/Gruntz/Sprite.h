@@ -32,8 +32,7 @@ struct CFrameGrid; // the frame-grid value the image registry's map yields (CPla
 // the found value is typed cast-free (same reloc-masked call either way).
 class CSpriteHashTable {
 public:
-    i32 Lookup(const char* szName, CSprite** ppOut);
-    i32 Lookup(const char* szName, CFrameGrid** ppOut); // frame-grid value (CPlay::BeginGridWalk)
+    // Lookup @0x1b8438 IS CMapStringToOb::Lookup; cast at each call.
 };
 
 // The CSprite frame table is a CObArray of CImage frame-workers living AT

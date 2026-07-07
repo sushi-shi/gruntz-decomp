@@ -87,7 +87,7 @@ public:
 RVA(0x000d7440, 0xad)
 i32 CLoadingBar::LoadLoadingBarSprite() {
     CSprite* spr = 0;
-    m_resMgr->m_10->m_10map.Lookup("GAME_LOADINGBAR", &spr);
+    ((CMapStringToOb*)&m_resMgr->m_10->m_10map)->Lookup("GAME_LOADINGBAR", (CObject*&)spr);
     if (!spr) {
         return 0;
     }
@@ -142,7 +142,7 @@ CTimer* CTimer::Init() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
     CSprite* spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_TIMER", &spr);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)->Lookup("GAME_TIMER", (CObject*&)spr);
     m_sprite = spr;
     if (!spr) {
         return 0;
