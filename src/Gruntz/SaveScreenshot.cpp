@@ -15,11 +15,18 @@
 
 #include <Win32.h> // wsprintfA
 #include <Gruntz/GameRegistry.h>
+namespace Utils {
+    class RegistryHelper {
+    public:
+        unsigned long GetValueDword(char* k, unsigned long d);
+        i32 SetValueDword(char* k, unsigned long v);
+    };
+} // namespace Utils
 
 // The registry/config object (arg2). GetInt/WriteInt are 2-arg __thiscall helpers.
 struct ScrConfig {
-    i32 GetInt(char* key, i32 deflt);  // FUN_001395d0 __thiscall
-    void WriteInt(char* key, i32 val); // FUN_00139460 __thiscall
+    // GetInt @0x1395d0 IS Utils::RegistryHelper::GetValueDword; cast at the call.
+    // WriteInt @0x139460 IS Utils::RegistryHelper::SetValueDword; cast at the call.
 };
 
 // The capture image built by the surface (returned by CreateImage). Capture()
@@ -91,8 +98,8 @@ i32 SaveScreenshot(
         return 0;
     }
     if (name == 0) {
-        i32 cnt = bute->GetInt("Screen Dump Count", 0) + 1;
-        bute->WriteInt("Screen Dump Count", cnt);
+        i32 cnt = ((Utils::RegistryHelper*)bute)->GetValueDword("Screen Dump Count", 0) + 1;
+        ((Utils::RegistryHelper*)bute)->SetValueDword("Screen Dump Count", cnt);
         wsprintfA(nameBuf, "Gruntz%04i.BMP", cnt);
         name = nameBuf;
     }

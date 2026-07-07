@@ -102,8 +102,8 @@ struct CDrawSurface {
     // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_originX,m_originY};
     // the world blit reads (m_5c).{m_84,m_88}.
     struct CameraGeom {
-        void DrawA(); // 0x563300  per-frame world-draw sub-step A
-        void DrawB(); // 0x563370  per-frame world-draw sub-step B
+        // DrawA @0x163300 IS CPlaneRender::CenterScrollA; cast at each call.
+        // DrawB @0x163370 IS CPlaneRender::CenterScrollB; cast at each call.
         char p0[0x40];
         i32 m_originX; // +0x40
         i32 m_originY; // +0x44

@@ -217,8 +217,8 @@ struct CPlaySerialChild {
 // frame-grid overload), cast-free.
 SIZE_UNKNOWN(CFrameGrid);
 struct CFrameGrid {
-    void SetDelay(i32 d);    // 0x552480 (thiscall)
-    void SetSprite(void* s); // 0x552520 (thiscall)
+    // SetDelay @0x152480 IS CImageSet::SetAllTypes; cast at each call.
+    // SetSprite @0x152520 IS CImageSet::SetAllFormats; cast at each call.
     char p0[0x14];
     i32* m_rowTable; // +0x14  row/frame table
     char p18[0x64 - 0x18];

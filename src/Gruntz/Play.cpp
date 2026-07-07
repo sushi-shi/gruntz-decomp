@@ -1401,7 +1401,7 @@ RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
     Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawA();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
     }
     g_6bf3c0 = g_645580;
     g_6bf3bc = g_645584;
@@ -1448,12 +1448,12 @@ i32 CPlay::DrawWorldFrames() {
             m_4w()->m_68->StepFull(now, dt, accum);
             if (i > 0 && i < last) {
                 if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-                    ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
+                    ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
                 }
             }
             Vslot26(); // this->vtbl[+0x98]()
             if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-                ((CDrawSurface*)m_c->m_24)->m_5c->DrawA();
+                ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
             }
             ((CRenderer*)m_c->m_8)->BeginScene(0);
             m_4w()->m_68->Step((i32)g_645584);
@@ -1525,7 +1525,7 @@ i32 CPlay::ProfileDeltaFrame() {
     DrawDebugStats();
     ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip(0);
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
     }
     return 1;
 }
@@ -1567,7 +1567,7 @@ i32 CPlay::ProfileInputFrame() {
 
     u32 t3 = tg();
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawA();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
     }
     i32 deactMs = (i32)(tg() - t3);
 
@@ -1613,7 +1613,7 @@ i32 CPlay::ProfileInputFrame() {
     g_profAccB = (i32)(tg() - (u32)g_profAccB);
     g_profAccA = (i32)tg();
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
     }
     g_profAccA = (i32)(tg() - (u32)g_profAccA);
     ProfReport(g_64556c, m_guts, m_region0Gate);
@@ -1824,8 +1824,8 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
         if (spr == 0) {
             spr = g_64556c->m_spriteFactory->LoadSprite(spr, 1);
         }
-        m_grid->SetDelay(0xa);
-        m_grid->SetSprite(spr);
+        ((CImageSet*)m_grid)->SetAllTypes(0xa);
+        ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
     }
     CFrameGrid* g = m_grid;
     i32 frame;
@@ -2187,17 +2187,17 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
 RVA(0x000cefc0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
     }
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawA();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
     }
     ((CRenderer*)m_c->m_8)->BeginScene(1);
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawB();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
     }
     if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CDrawSurface*)m_c->m_24)->m_5c->DrawA();
+        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
     }
     ((CRenderer*)m_c->m_8)->BeginScene(1);
     ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));

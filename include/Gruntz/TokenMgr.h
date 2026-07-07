@@ -10,8 +10,8 @@
 
 SIZE_UNKNOWN(CTokenMgr);
 struct CTokenMgr {
-    void Reset();      // 0x49a0b0  mov [this],0; ret
-    i32 Dispatch(i32); // 0x499d40  __thiscall(this,int), 40-case jump table
+    // Reset @0x9a0b0 IS CAreaMgr::Reset; cast at the call.
+    // Dispatch @0x99d40 IS CAreaMgr::Dispatch; cast at the call.
 };
 
 #endif // SRC_GRUNTZ_TOKENMGR_H

@@ -7,6 +7,11 @@
 #include <Gruntz/TokenMgr.h> // canonical CTokenMgr (g_tokenMgr; Reset)
 #include <Ints.h>
 #include <rva.h>
+class CAreaMgr {
+public:
+    void Reset();
+    i32 Dispatch(i32 a);
+}; // 0x9a0b0/0x99d40
 
 // ===========================================================================
 // 0x082b20 - tail-forward a no-arg call to the bute-manager singleton
@@ -90,7 +95,8 @@ void ProfSinkTick82f20() {
 extern CTokenMgr g_tokenMgr;
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
-    g_tokenMgr.Reset(); // reaches Reset (0x49a0b0) via the ILT thunk 0x3bac (reloc-masked)
+    ((CAreaMgr*)&g_tokenMgr)
+        ->Reset(); // reaches Reset (0x49a0b0) via the ILT thunk 0x3bac (reloc-masked)
 }
 
 // ===========================================================================

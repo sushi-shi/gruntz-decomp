@@ -10,6 +10,11 @@
 #include <Ints.h>
 #include <Gruntz/TokenMgr.h> // canonical CTokenMgr (Reset/Dispatch on g_tokenMgr)
 #include <rva.h>
+class CAreaMgr {
+public:
+    void Reset();
+    i32 Dispatch(i32 a);
+}; // 0x9a0b0/0x99d40
 
 // g_0x6459b0 - the manager singleton (ecx for both calls). Reloc-masked.
 DATA(0x002459b0)
@@ -18,6 +23,6 @@ extern CTokenMgr g_tokenMgr;
 // __cdecl free helper: reset, dispatch(arg), return result != 0.
 RVA(0x00099d10, 0x20)
 i32 QueryToken(i32 arg) {
-    g_tokenMgr.Reset();
-    return g_tokenMgr.Dispatch(arg) != 0;
+    ((CAreaMgr*)&g_tokenMgr)->Reset();
+    return ((CAreaMgr*)&g_tokenMgr)->Dispatch(arg) != 0;
 }
