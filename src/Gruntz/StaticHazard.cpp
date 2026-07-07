@@ -73,9 +73,7 @@ struct HazLookupEntry {
     char m_pad00[0x24];
     i32 m_aniPadBias; // +0x24  the per-effect AniPad bias
 };
-struct HazStrMap {
-    i32 Lookup(const char* key, HazLookupEntry** out); // 0x1b8438 (ret 8)
-};
+struct HazStrMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 struct HazSndCat {
     char m_pad00[0x10];
     HazStrMap m_map; // +0x10  the lookup map
@@ -256,7 +254,8 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CTileLogic(obj) {
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_645588;
     HazLookupEntry* entry = 0;
-    ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", &entry);
+    ((CMapStringToOb*)&((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map)
+        ->Lookup("LEVEL_STATICHAZARDGO", (CObject*&)entry);
     if (entry != 0) {
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
     } else {
