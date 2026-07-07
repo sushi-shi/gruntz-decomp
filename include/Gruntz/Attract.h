@@ -97,8 +97,8 @@ public:
 // resource freed first (FUN_00537a80, __thiscall no-arg).
 class CAttractPooledRes {
 public:
-    void Free();      // FUN_00537a80 (no-arg)
-    void Stop(i32 z); // FUN_00536e20 (ret 4)
+    // Free @? IS SoundStream::Stop; cast at the call.
+    // Stop @? IS SoundDevice::PurgeVoiceList; cast at the call.
 };
 
 class CAttractRegistrar {

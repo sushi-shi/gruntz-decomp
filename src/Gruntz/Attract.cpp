@@ -22,6 +22,10 @@
 #include <Globals.h>
 
 #include <stdio.h> // sprintf (the "\SCREENZ\%s" path formatter)
+class SoundDevice {
+public:
+    i32 PurgeVoiceList(i32 a);
+};
 
 // The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
 class DirNode;
@@ -141,7 +145,7 @@ RVA(0x000140d0, 0x33)
 void CAttract::ReleaseResources() {
     CAttractRegistrar* reg = menuRoot()->m_28;
     if (reg->m_2c) {
-        reg->m_2c->Free();
+        ((SoundStream*)reg->m_2c)->Stop();
     }
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70(s_ATTRACT, s_UNDERSCORE);
     CState::ReleaseResources();
@@ -171,7 +175,7 @@ i32 CAttract::FrameSlot28(i32 arg) {
     do {
         CAttractPooledRes* r = menuRoot()->m_28->m_2c;
         if (r) {
-            r->Stop(-1);
+            ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
     } while (m_host->m_10->IsPlaying());
     return 1;
@@ -202,7 +206,7 @@ i32 CAttract::Render() {
 
     CAttractPooledRes* res = menuRoot()->m_28->m_2c;
     if (res) {
-        res->Stop(-1);
+        ((SoundDevice*)res)->PurgeVoiceList(-1);
     }
 
     if (g_645584 < m_idleTimer) {

@@ -1007,10 +1007,10 @@ struct CCreditzImageRegistry { // this->m_4->+0x48
     // FUN_00538670 __thiscall: install a resolved sub-entry under a name.
     void Install3(void* res, void* host, char* szName);
 };
-struct CCreditzStateCore {      // this->m_c->m_4 (the ready/init pump)
-    i32 IsReady();              // FUN_00558d20 __thiscall, ret BOOL
-    i32 Init(i32 a, i32 flags); // FUN_00558cb0 __thiscall, ret BOOL
-    i32 IsLoaded();             // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
+struct CCreditzStateCore { // this->m_c->m_4 (the ready/init pump)
+    // IsReady @0x158d20 IS CDDrawSubMgrPages::Method_158d20; cast at the call.
+    // Init @0x158cb0 IS CDDrawSubMgrPages::Method_158cb0; cast at the call.
+    i32 IsLoaded(); // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
@@ -1111,8 +1111,8 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    if (!self->m_c->m_4->IsReady()) {
-        if (!self->m_c->m_4->Init(0, 0x30000)) {
+    if (!((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158d20()) {
+        if (!((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158cb0(0, 0x30000)) {
             return 0;
         }
     }
