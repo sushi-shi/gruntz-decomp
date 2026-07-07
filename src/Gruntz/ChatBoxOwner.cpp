@@ -9,6 +9,15 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
 
+// The text-stamp host's StampText @0x1cd0 IS m4::PwdHost::Render22160 (header-less DrawText unit);
+// TU-local decl, cast at each call.
+namespace m4 {
+    class PwdHost {
+    public:
+        i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect);
+    };
+} // namespace m4
+
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
@@ -257,13 +266,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[2] = (void*)(self->m_0 + 0x267);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        self->m_14->StampText(hdc, 0x21b, rect);
+        ((m4::PwdHost*)self->m_14)->Render22160(hdc, 0x21b, (RECT*)rect);
     } else {
         rect[0] = (void*)(self->m_0 + 0x4c);
         rect[2] = (void*)(self->m_0 + 0x1c7);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        self->m_14->StampText(hdc, 0x17b, rect);
+        ((m4::PwdHost*)self->m_14)->Render22160(hdc, 0x17b, (RECT*)rect);
     }
     host->m_8->ReleaseDC(hdc);
     return 1;

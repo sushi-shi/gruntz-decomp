@@ -17,8 +17,8 @@ struct CChatBoxRegRoot; // registry root reached via m_18 (defined in ChatBoxOwn
 // is the sprite renderer's text overlay.
 struct CChatBoxTextHost {
     char m_pad0[0x34];
-    i32 m_34;                                   // +0x34  dirty/redraw flag
-    void StampText(HDC dc, i32 id, void* rect); // 0x1cd0
+    i32 m_34; // +0x34  dirty/redraw flag
+    // StampText @0x1cd0 IS m4::PwdHost::Render22160; cast at the call.
 };
 SIZE_UNKNOWN(CChatBoxTextHost);
 
