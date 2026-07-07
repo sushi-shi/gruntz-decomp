@@ -474,9 +474,12 @@ public:
     char m_pad0[0x1c];
     CGruntzSoundInnerZ* m_1c; // +0x1c
 };
-class CMultiSub68 { // CMultiMgr::m_68
+class CMultiSub68 {}; // CMultiMgr::m_68 (polymorphic; also viewed as PBSub68)
+// Its Step3017 (0x3017 thunk -> 0x6eb80) IS CGooWellMgr::LoadTeleporterGooConfig; TU-local
+// decl (header-less goowellmgr unit), reached via a CGooWellMgr cast at the call.
+class CGooWellMgr {
 public:
-    void Step3017(i32 dt); // 0x3017
+    i32 LoadTeleporterGooConfig(i32 dt);
 };
 class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
@@ -556,7 +559,7 @@ i32 CMulti::PumpA() {
     }
     ((McHost*)m_view)->m_8->CallSlot24();
     ((McHost*)m_view)->m_8->CallSlot40();
-    m_logic->m_68->Step3017(g_645584);
+    ((CGooWellMgr*)m_logic->m_68)->LoadTeleporterGooConfig(g_645584);
     ((CSBI_RectOnly*)m_fxOverlay)->LoadDestructButtonSprite(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
     if (win) {
