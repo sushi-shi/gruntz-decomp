@@ -164,5 +164,6 @@ struct CSBI_GruntMachine : CStatusBarItem {
 };
 struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
+    virtual void Sf1() OVERRIDE; // slot 1 (SerializeMove convention)
     void DtorStatzTabArrow();
 };
