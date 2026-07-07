@@ -152,14 +152,18 @@ public:
 SIZE_UNKNOWN(CGiantRock);
 class CGiantRock : public CTileTrigger {
 public:
-    CGiantRock(CGameObject* obj); // 0x10fa90
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    CGiantRock(CGameObject* obj);                                      // 0x10fa90
     virtual ~CGiantRock() OVERRIDE;
 };
 
 SIZE_UNKNOWN(CCoveredPowerup);
 class CCoveredPowerup : public CTileTrigger {
 public:
-    CCoveredPowerup(CGameObject* obj); // 0x10fac0
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    CCoveredPowerup(CGameObject* obj);                                 // 0x10fac0
     virtual ~CCoveredPowerup() OVERRIDE;
 };
 
