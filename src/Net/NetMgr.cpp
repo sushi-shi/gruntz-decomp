@@ -45,6 +45,14 @@ public:
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
+class CGruntzMgr {
+public:
+    void ClearOptionsSlots();
+    i32 CountReadyOptionsSlots(i32 a);
+    CString GetWorldFileName();
+    i32 InitializeLobbyConnectionSettings();
+    void ResetClockGlobals();
+};
 struct AssetMgr;
 class CAssetLoader {
 public:
@@ -567,7 +575,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     }
 
     CNetGameMgr* gm = m_4;
-    GruntzPlayer* slot = gm->FindPlayer(playerId);
+    GruntzPlayer* slot = (GruntzPlayer*)((CNetMgr*)gm)->ResolveLocalPlayer();
     if (slot == 0) {
         return 0;
     }
@@ -754,7 +762,7 @@ i32 CNetMgr::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // eh-state-numbering-base.md. Deferred to the final sweep.
 RVA(0x000baac0, 0x12e)
 i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
-    if (m_4->CountActiveChannels(1) >= 4) {
+    if (((CGruntzMgr*)m_4)->CountReadyOptionsSlots(1) >= 4) {
         return 0;
     }
 
@@ -985,7 +993,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player = m_4->FindPlayer(m_localPlayer->m_4);
+        GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
         CString name = player->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
@@ -996,7 +1004,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
         if (hWnd != 0) {
             ShowChatLine(hWnd, line);
         } else {
-            GruntzPlayer* player = m_4->FindPlayer(m_localPlayerId);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
             if (player != 0) {
                 ((CFontConfig*)m_4->m_5c)->AddItem(line, 0x30, player->m_008);
             }
@@ -1350,8 +1358,8 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     MF(0x114) = 0;
-    m_4->ResetClockGlobals();
-    m_4->ClearOptionsSlots();
+    ((CGruntzMgr*)m_4)->ResetClockGlobals();
+    ((CGruntzMgr*)m_4)->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
     // (1) peer CNetMgr
@@ -1360,7 +1368,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_groupEnumMgr = (CNetMgr*)peer;
 
     MF(0xac) = 1;
-    if (m_4->InitLobbySettings() != 0) {
+    if (((CGruntzMgr*)m_4)->InitializeLobbyConnectionSettings() != 0) {
         if (((CMulti*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
             (this->*(((CNetConnectVtbl*)*(void**)this)->Abort))();
@@ -1413,7 +1421,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         MF(0x12c) = 1;
         *(CString*)((char*)m_4 + 0xc8) = GetConfigNameA();
     }
-    if (m_4->GetWorldFileName().GetLength() == 0) {
+    if (((CGruntzMgr*)m_4)->GetWorldFileName().GetLength() == 0) {
         return 0;
     }
 
@@ -1945,7 +1953,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -1961,7 +1969,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -1981,7 +1989,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2040,7 +2048,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            if (m_4->CountActiveChannels(1) >= 4) {
+            if (((CGruntzMgr*)m_4)->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
             if (ChannelSlots_Get(((u8*)&msg->m_8)[1]) == 0) {
@@ -2060,7 +2068,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer(msg->m_14);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
             if (player == 0) {
                 return 0;
             }
@@ -2110,7 +2118,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             i32 stamp = msg->m_8;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
-            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2125,7 +2133,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_useChannelLatency == 0) {
                 break;
             }
-            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2144,7 +2152,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x41c: {
-            GruntzPlayer* player = ((CNetGameMgr*)g_mgrSettings)->FindPlayer(sender);
+            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
             if (player == 0) {
                 return 1;
             }

@@ -726,17 +726,17 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // Utils::RegistryHelper (from <Utils/RegistryHelper.h>, included above) is the real
 // class, exposed as a named typed member instead of a raw m_4+0x38 cast.
 struct CNetGameMgr {
-    GruntzPlayer* FindPlayer(i32 id);  // 0x00492e80 -> the leaving player's slot (no storage)
-    i32 CountActiveChannels(i32 flag); // 0x00492e30 -> # active channels (RegisterChannel/
-                                       //              menu-select "ready options" gate)
+    // FindPlayer IS CNetMgr::ResolveLocalPlayer; cast at the call.
+    // CountActiveChannels IS CGruntzMgr::CountReadyOptionsSlots; cast at the call.
+    //              menu-select "ready options" gate)
     // The connect-driver lobby helpers (external, incremental-link thunked -> the
     // call rel32 reloc-masks). Formerly the per-TU CNetGameMgrView shadow.
-    void ResetClockGlobals();   // 0x1d98 (thunk)
-    void ClearOptionsSlots();   // 0x30df (thunk)
-    i32 InitLobbySettings();    // 0x2112 (thunk)
-    CString GetWorldFileName(); // 0x2531 (thunk)
-    char m_pad0[4];             // +0x00
-    CNetGameWnd* m_wnd;         // +0x04  the window (its +0x4 is the engine HWND)
+    // ResetClockGlobals IS CGruntzMgr::ResetClockGlobals; cast at the call.
+    // ClearOptionsSlots IS CGruntzMgr::ClearOptionsSlots; cast at the call.
+    // InitLobbySettings IS CGruntzMgr::InitializeLobbyConnectionSettings; cast at the call.
+    // GetWorldFileName IS CGruntzMgr::GetWorldFileName; cast at the call.
+    char m_pad0[4];     // +0x00
+    CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
     Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
     char m_pad3c[0x5c - 0x3c];
