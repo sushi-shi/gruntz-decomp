@@ -102,6 +102,7 @@ struct CGameApp {
     virtual void s16();            // +0x40
 };
 SIZE_UNKNOWN(CGameApp);
+VTBL(CGameApp, 0x001e9b0c); // vtable_names -> code (RTTI game class)
 RVA(0x00080cf0, 0x12)
 CGameApp::~CGameApp() {
     CloseResources();
@@ -222,6 +223,7 @@ struct CGameWnd {
     void Destroy(); // 0x13cfb0 (non-virtual reloc-masked call)
 };
 SIZE_UNKNOWN(CGameWnd);
+VTBL(CGameWnd, 0x001ea344); // vtable_names -> code (RTTI game class)
 RVA(0x00094c10, 0x16)
 CGameWnd::~CGameWnd() {
     Destroy();

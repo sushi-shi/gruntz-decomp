@@ -104,6 +104,7 @@ struct CGameMgr {
     Utils::RegistryHelper* m_38; // +0x38  the per-game registry config writer
 };
 SIZE_UNKNOWN(CGameMgr); // partial view (only +0x38 pinned) - full retail size TBD
+VTBL(CGameMgr, 0x001e9b8c); // vtable_names -> code (RTTI game class)
 
 extern CGameMgr* g_pGameMgr;
 

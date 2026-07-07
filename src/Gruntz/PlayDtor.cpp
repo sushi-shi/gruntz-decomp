@@ -51,3 +51,4 @@ CDemo::~CDemo() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF. CPlay's size is tracked in CPlay.cpp; CState's in its own header.
 SIZE_UNKNOWN(CDemo);
+VTBL(CDemo, 0x001e9f0c); // vtable_names -> code (RTTI game class)

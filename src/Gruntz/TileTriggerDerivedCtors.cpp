@@ -111,5 +111,6 @@ public:
     CCheckpointTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
+VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54); // vtable_names -> code (RTTI game class)
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}

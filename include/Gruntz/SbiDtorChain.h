@@ -107,6 +107,7 @@ inline CSBI_ImageSet::~CSBI_ImageSet() {
 
 // CSBI_ImageSetAni (14 slots = vdtor + 10 + 1 + 1 + 1).
 SIZE_UNKNOWN(CSBI_ImageSetAni);
+VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class)
 struct CSBI_ImageSetAni : CSBI_ImageSet {
     virtual ~CSBI_ImageSetAni() OVERRIDE;
     virtual void Sf1() OVERRIDE; // slot 1

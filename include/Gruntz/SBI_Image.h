@@ -42,6 +42,7 @@ public:
     void InsertPtr(i32 a, i32 b);      // 0x... (plane-scan object sink)
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
+VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
 
 // CSBI_Image - the image status-bar item. Inherits the CStatusBarItem base-region
 // fields (via CSBI_RectOnly); adds the vslot-11 image setup (ConfigureRect @ +0x2c)
@@ -74,5 +75,6 @@ public:
     i32 m_30; // +0x30  latched config value
 };
 SIZE(CSBI_Image, 0x34);
+VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_SBI_IMAGE_H

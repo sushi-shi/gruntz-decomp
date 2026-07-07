@@ -506,8 +506,10 @@ SIZE_UNKNOWN(CCreditsState);
 SIZE_UNKNOWN(CDInputMgrZ);
 SIZE_UNKNOWN(CDemo);
 SIZE_UNKNOWN(CHelpState);
+VTBL(CHelpState, 0x001e9dfc); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CMenuState);
 SIZE_UNKNOWN(CMulti);
+VTBL(CMulti, 0x001e9fe4); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CMultiBootyState);
 SIZE_UNKNOWN(CSplashState);
 SIZE_UNKNOWN(CState);

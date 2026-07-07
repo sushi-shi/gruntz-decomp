@@ -214,6 +214,7 @@ public:
     char _pad48[0x54 - 0x48];
 };
 SIZE(CSBI_StatzTabArrow, 0x54);
+VTBL(CSBI_StatzTabArrow, 0x001eac94); // vtable_names -> code (RTTI game class)
 
 // The two shredder/machine widgets stamp their retail vtable by ADDRESS (a manual
 // vptr store), because their retail ctors inline the whole base (no out-of-line base
