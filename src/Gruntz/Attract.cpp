@@ -537,12 +537,14 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         }
 
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
-        tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
+        ((CDDSurface*)tgt)
+            ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransTitle();
     } else {
         menuRoot()->m_04->TransEnter();
         CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_18->m_2c;
-        tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
+        ((CDDSurface*)tgt)
+            ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
         menuRoot()->m_04->TransExit();
     }
 
@@ -596,7 +598,8 @@ i32 CAttract::Activate() {
     }
 
     CMenuBrightnessTarget* tgt = menuRoot()->m_04->m_14->m_2c;
-    tgt->SetBrightness(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), 0);
+    ((CDDSurface*)tgt)
+        ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
     BuildMenuPage(0x50, 0x3e8, 0, 1);

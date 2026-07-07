@@ -59,7 +59,7 @@ public:
 // ---------------------------------------------------------------------------
 class CMenuBrightnessTarget {
 public:
-    void SetBrightness(i32 value, i32 flags); // FUN_0053f460 (ret 8)
+    // SetBrightness @0x13f460 IS CDDSurface::ShadeRect; cast at each call.
 };
 
 struct CMenuBrightnessHolder {

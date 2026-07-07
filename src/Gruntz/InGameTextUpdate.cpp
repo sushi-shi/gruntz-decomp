@@ -30,8 +30,13 @@ struct HbCellMgr { // g_mgrSettings->m_68
     // its (areaId, subId) out-params.
 };
 SIZE_UNKNOWN(HbSub1a0);
-struct HbSub1a0 {         // the per-leaf anim sub-object embedded at CGameObject+0x1a0
-    void Tick(i32 clock); // FUN_0095c360 __thiscall
+// HbSub1a0::Tick @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
+struct HbSub1a0 { // the per-leaf anim sub-object embedded at CGameObject+0x1a0
+    // Tick @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
 };
 // The shared sound chain (the CBootyState ambient-cue idiom, reused here).
 SIZE_UNKNOWN(HbSndPlayer);
@@ -113,7 +118,7 @@ extern "C" char g_str_K[]; // DAT_0060d7f8 == "K" (placeholder/null type marker)
 // See docs/patterns/pin-local-for-callee-saved-reg.md.
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
-    ((HbSub1a0*)((char*)m_38 + 0x1a0))->Tick(g_6bf3bc);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360((i32)g_6bf3bc);
 
     i32 areaId;
     i32 subId;
