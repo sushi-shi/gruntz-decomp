@@ -185,7 +185,7 @@ struct CFocusSlot {
     // COUNT is /O2 type-table state - see header-fwd-decl-count-regalloc-butterfly);
     // CString is complete only in the MFC caller TUs, which is legal for a
     // declaration-only use.
-    class CString FormatName_3e54();
+    // FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
 };
 
 struct CGameRegistry {

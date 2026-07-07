@@ -20,6 +20,13 @@
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
+// A roster slot's FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName (header-less gruntzplayer class);
+// TU-local decl, cast at the call.
+class GruntzPlayer {
+public:
+    class CString GetName();
+};
+
 // --- shared globals (canonical homes elsewhere; reloc-masked references here) ---
 // The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each
 // player-slot's combo value into its m_focusSlots[] record. Reference-only (undefined
@@ -178,7 +185,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             if (slot->m_20) {
                 {
-                    CString name = slot->FormatName_3e54();
+                    CString name = ((GruntzPlayer*)slot)->GetName();
                     LPCTSTR pch = (LPCTSTR)name;
                     force = 0;
                     this->NameEdit298c(idx)->SetWindowTextA(pch);
