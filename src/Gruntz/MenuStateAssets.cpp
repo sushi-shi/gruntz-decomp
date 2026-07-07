@@ -14,6 +14,12 @@ public:
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
 #include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
+class CChatBox {
+public:
+    i32 AdvanceRow1(void* a, i32 b, i32 c);
+    i32 AdvanceRow0(void* a, i32 b, i32 c);
+    void Init();
+};
 class CGruntzMgr {
 public:
     i32 RestoreVideoMode(i32 a);
@@ -101,12 +107,12 @@ struct MenuHudObj {
     CString m_44; // +0x44
     CString m_48; // +0x48
     char m_pad4c[0x7c - 0x4c];
-    void Init();                            // FUN_004010c8 __thiscall (sub-init)
-    i32 AddKey(char* name, i32 a, i32 b);   // FUN_00182df0 __thiscall
-    void AddKey2(char* name, i32 a, i32 b); // FUN_00182e60 __thiscall
+    // Init @0x10c8 IS CChatBox::Init; cast at the call.
+    // AddKey @0x182df0 IS CChatBox::AdvanceRow0; cast at the call.
+    // AddKey2 @0x182e60 IS CChatBox::AdvanceRow1; cast at the call.
 };
 inline MenuHudObj::MenuHudObj() {
-    Init();
+    ((CChatBox*)this)->Init();
 }
 
 // FUN_00182ab0 __cdecl: lay the menu out into the asset mgr from the cursor sub-
@@ -181,8 +187,8 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    if (((MenuHudObj*)m_1b4)->AddKey("MENU_CURSOR", 0x64, 0x20)) {
-        ((MenuHudObj*)m_1b4)->AddKey2("MENU_CURSOR", 0x64, 0x20);
+    if (((CChatBox*)m_1b4)->AdvanceRow0((void*)"MENU_CURSOR", 0x64, 0x20)) {
+        ((CChatBox*)m_1b4)->AdvanceRow1((void*)"MENU_CURSOR", 0x64, 0x20);
     }
     ((MenuHudObj*)m_1b4)->m_44 = "MENU_SELECT";
     ((MenuHudObj*)m_1b4)->m_48 = "MENU_ACTIVATE";

@@ -12,6 +12,13 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
+struct CChatBoxTextHost;
+class CChatBoxOwner {
+public:
+    void Deactivate();
+    void Attach(void* a, CChatBoxTextHost* b);
+    void Configure(i32 a);
+};
 class CTileTriggerContainer {
 public:
     ~CTileTriggerContainer();
@@ -42,9 +49,9 @@ namespace modeinit {
     // The 0x1c control block owned at this->m_2e0.
     struct Ctl1c {
         i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18; // +0x00..+0x18
-        i32 Init3e77(i32 a, i32 b);               // 0x00003e77
-        void Dtor285b();                          // 0x0000285b
-        void SetModeFlag(i32 a);                  // 0x0000171c
+        // Init3e77 @0x3e77 IS CChatBoxOwner::Attach; cast at the call.
+        // Dtor285b @0x285b IS CChatBoxOwner::Deactivate; cast at the call.
+        // SetModeFlag @0x171c IS CChatBoxOwner::Configure; cast at the call.
     };
 
     // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
@@ -268,16 +275,16 @@ namespace modeinit {
             ctl = 0;
         }
         m_2e0 = ctl;
-        if (m_2e0->Init3e77(m_c, m_4->m_5c) == 0) {
+        if ((((CChatBoxOwner*)m_2e0)->Attach((void*)m_c, (CChatBoxTextHost*)m_4->m_5c), 0)) {
             if (m_2e0) {
-                m_2e0->Dtor285b();
+                ((CChatBoxOwner*)m_2e0)->Deactivate();
                 RezFree(m_2e0);
             }
             m_2e0 = 0;
             return 0;
         }
         m_2e0->m_10 = 0;
-        m_2e0->SetModeFlag(1);
+        ((CChatBoxOwner*)m_2e0)->Configure(1);
 
         Worker630* wk = (Worker630*)RezAlloc(0x630);
         if (wk) {
