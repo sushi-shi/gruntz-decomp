@@ -1166,22 +1166,23 @@ SIZE_UNKNOWN(CGrunt);
 class CGrunt : public CMovingLogic {
 public:
     // vtable overrides in slot order (see the base chain above):
-    virtual ~CGrunt() OVERRIDE;                                              // slot 0  @0xf2f0
-    i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) OVERRIDE; // slot 1  @0x53b80
-    LogicTypeId GetTypeTag() OVERRIDE;                                       // slot 2  (0xf2a0)
-    i32 UserLogicVfunc1() OVERRIDE;                                          // slot 3  (0x5d210)
-    i32 UserLogicVfunc2() OVERRIDE;                                          // slot 4  (0x5bcd0)
-    i32 UserLogicVfunc3() OVERRIDE;                                          // slot 5  (0x5ecd0)
-    i32 Activate() OVERRIDE;                                                 // slot 6  @0x5caa0
-    i32 UserLogicVfunc6() OVERRIDE;                                          // slot 8  (0x62b40)
+    virtual virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
+    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
+        OVERRIDE;                              // slot 1  @0x53b80
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (0xf2a0)
+    virtual i32 UserLogicVfunc1() OVERRIDE;    // slot 3  (0x5d210)
+    virtual i32 UserLogicVfunc2() OVERRIDE;    // slot 4  (0x5bcd0)
+    virtual i32 UserLogicVfunc3() OVERRIDE;    // slot 5  (0x5ecd0)
+    virtual i32 Activate() OVERRIDE;           // slot 6  @0x5caa0
+    virtual i32 UserLogicVfunc6() OVERRIDE;    // slot 8  (0x62b40)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
     // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
     // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
     // delivers the melee hit to the neighbor-cell grunt, then applies the
     // "AttackDowntime" timer. Returns 0.
-    i32 UserLogicVfunc7() OVERRIDE;
-    i32 UserLogicVfunc9() OVERRIDE;  // slot 11 @0x48360
-    virtual void StepCoordResolve(); // slot 16 @0x5f310
+    virtual i32 UserLogicVfunc7() OVERRIDE;
+    virtual i32 UserLogicVfunc9() OVERRIDE; // slot 11 @0x48360
+    virtual void StepCoordResolve();        // slot 16 @0x5f310
 
     i32 CreateHealthSprite();
     i32 CreateToySprite();
