@@ -21,6 +21,14 @@
 #include <rva.h>
 #include <Globals.h>
 
+// CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local
+// decl (links from MFC).
+SIZE_UNKNOWN(CImageList);
+class CImageList {
+public:
+    void DeleteImageList();
+};
+
 // The global CGameRegistry CMultiStartDlg's ctor snapshots: it copies
 // g_gameReg->m_curState into the file-scope sink g_64bd5c (both reloc-masked DIR32).
 // Named externs so the DIR32 loads reloc-match the engine; @data names the
@@ -119,7 +127,7 @@ struct CImgHolder : CImgHolderBase {
 
 RVA(0x00016500, 0x46)
 CImgHolder::~CImgHolder() {
-    DeleteImageList(); // 0x1c6a5c
+    ((CImageList*)this)->DeleteImageList(); // 0x1c6a5c
 }
 
 // ---------------------------------------------------------------------------
