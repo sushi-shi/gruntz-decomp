@@ -96,7 +96,7 @@ public:
 // The CString label ctor at +0xdc. 0x1b9b93.
 class CWwdLabel {
 public:
-    void Ctor(); // 0x1b9b93
+    // Ctor @0x1b9b93 IS CString::~CString; cast at each call.
 };
 // The +0x7c sprite-animation worker (0x17c bytes): ctor 0x15b300, kick at +0x10.
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
@@ -178,7 +178,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
         new (obj + 0x9c) CWwdSlot9c();
         *(int*)(obj + 0xb4) = 0;
         new (obj + 0xb8) Obj15b270();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        ((CString*)(obj + 0xdc))->~CString();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
@@ -229,7 +229,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
         new (obj + 0x9c) CWwdSlot9c();
         *(int*)(obj + 0xb4) = 0;
         new (obj + 0xb8) Obj15b270();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        ((CString*)(obj + 0xdc))->~CString();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;

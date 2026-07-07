@@ -1999,10 +1999,7 @@ public:
 // The 0x17c-byte sprite-animation worker built at +0x7c (AnimWorker, 0x15b300).
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
 // The CString ctor (0x1b9b93) for the +0xdc label.
-class CWwdLabel {
-public:
-    void Ctor(); // 0x1b9b93
-};
+// CWwdLabel::Ctor @0x1b9b93 IS CString::~CString; cast at the call.
 
 // The wide CWwdGameObject the factory builds.  Documented raw-offset access for
 // the 0x1dc-byte object (campaign doctrine: the offsets are load-bearing, the
@@ -2403,7 +2400,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
         new (obj) CResolveNode(root, a1, flags);
         new (obj + 0x9c) Obj15b2b0();
         new (obj + 0xb8) Obj15b270();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        ((CString*)(obj + 0xdc))->~CString();
         *(void**)obj = &g_wwdGameObjectVtbl;
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
         *(i32*)(obj + 0x78) = 0;
