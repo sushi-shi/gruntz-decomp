@@ -3963,7 +3963,7 @@ void CPlay::FreeListTeardown() {
 // The +0x2e4 begin-marker: Dtor@0xc8640 IS CTileTriggerContainer::~ (IS-a dtor view);
 // TU-local minimal decl for the explicit dtor call (real class in tiletriggercontainer unit).
 struct DtorObList {
-    void Dtor(); // 0x1b9c69 thunk  (m_4 + 0xc8 CObList)
+    // Dtor @0x1b9c69 IS CObList::~CObList; cast at the call.
 };
 struct DtorWorld { // this->m_4
     char p0[0x5c];
@@ -4028,7 +4028,7 @@ void CPlay::CPlayDtorBody() {
     self->CallVfunc80();
     if (self->m_4) {
         self->m_4->m_128 = 0;
-        ((DtorObList*)((char*)self->m_4 + 0xc8))->Dtor();
+        ((CObList*)((char*)self->m_4 + 0xc8))->~CObList();
     }
     self->m_1d0 = 0;
     i32 off = 0;
