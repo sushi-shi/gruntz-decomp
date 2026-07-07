@@ -51,9 +51,18 @@ struct CScanPlane { // grid (settings->m_70)
     char _14[0x60 - 0x14];
     i32 m_60, m_64, m_68, m_6c; // +0x60 dirty rect
     i32 m_70, m_74;             // +0x70 width, +0x74 height
-    i32 Probe20f4(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
-    void SetStepFlag(i32 a);                                                         // 0x43ea
+    // Probe20f4 @0x20f4 = CBrickzGrid::SearchEdge, SetStepFlag @0x43ea = ApiMisc::ClipHost_02b340::Clip.
 };
+class CBrickzGrid {
+public:
+    i32 SearchEdge(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
+};
+namespace ApiMisc {
+    class ClipHost_02b340 {
+    public:
+        void Clip(const RECT* r); // 0x43ea
+    };
+} // namespace ApiMisc
 
 // The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
 // canonical GruntListSub m_31c; one reinterpret at the address, no cast at the uses).
@@ -138,16 +147,17 @@ i32 CGrunt::PathScan57db0() {
             }
             if (fire) {
                 CScanList s(0xa);
-                i32 res = grid->Probe20f4(
-                    c,
-                    r,
-                    co->m_x,
-                    co->m_y,
-                    &s.m_18,
-                    1,
-                    m_arrivalFlags | 0x20000000,
-                    m_24c
-                );
+                i32 res = ((CBrickzGrid*)grid)
+                              ->SearchEdge(
+                                  c,
+                                  r,
+                                  co->m_x,
+                                  co->m_y,
+                                  &s.m_18,
+                                  1,
+                                  m_arrivalFlags | 0x20000000,
+                                  m_24c
+                              );
                 if (res != 0) {
                     if (s.m_18 != 0) {
                         hitFound = 1;
@@ -219,16 +229,17 @@ i32 CGrunt::PathScan57db0() {
                     continue;
                 }
                 CScanList s(0xa);
-                i32 res = grid->Probe20f4(
-                    col5,
-                    row5,
-                    col5,
-                    row5,
-                    &s.m_18,
-                    1,
-                    m_arrivalFlags | 0x20040002,
-                    m_24c
-                );
+                i32 res = ((CBrickzGrid*)grid)
+                              ->SearchEdge(
+                                  col5,
+                                  row5,
+                                  col5,
+                                  row5,
+                                  &s.m_18,
+                                  1,
+                                  m_arrivalFlags | 0x20040002,
+                                  m_24c
+                              );
                 if (res != 0 && s.m_18 != 0) {
                     void* elem = s.Head1b4a03();
                     if (elem != 0) {
@@ -238,7 +249,7 @@ i32 CGrunt::PathScan57db0() {
             }
         }
     }
-    grid->SetStepFlag(0);
+    ((ApiMisc::ClipHost_02b340*)grid)->Clip(0);
     return 0;
 }
 
