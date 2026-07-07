@@ -22,6 +22,12 @@
 #undef s64
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
+struct SaveTempRec;
+i32 __stdcall CloseTempFile_e5550(SaveTempRec* r);
+class CSaveGame {
+public:
+    i32 Save(i32 a, i32 b);
+};
 
 // Auto-generated API-caller stubs from docs/api-caller-name-plan.tsv.
 // Greenfield only: tracked/already-tried and named-untracked library rows are intentionally excluded.
@@ -765,8 +771,8 @@ namespace ApiCallerStubs {
     // The gameReg->m_58 dialog helper sub-object; its M1834/M2d97 thunks live in
     // this TU. (m_58 is reused elsewhere as an int/void* gate, so cast locally.)
     struct DlgSub58_0e3a40 {
-        void M1834(char* text);         // thiscall, thunk 0x1834
-        void M2d97(i32 a, i32 caption); // thiscall, thunk 0x2d97
+        // M1834 IS CloseTempFile_e5550 free fn; call it.
+        // M2d97 IS CSaveGame::Save; cast at the call.
     };
     // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
     // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
@@ -786,8 +792,8 @@ namespace ApiCallerStubs {
                     return 1;
                 }
                 if (wParam == 1) {
-                    ((DlgSub58_0e3a40*)g_gameReg->m_saveSink)->M1834(g_dlgInfoText);
-                    ((DlgSub58_0e3a40*)g_gameReg->m_saveSink)->M2d97(0, 0x81a6);
+                    CloseTempFile_e5550((SaveTempRec*)g_dlgInfoText);
+                    ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
                     EndDialog(hDlg, 1);
                     return 1;
                 }
