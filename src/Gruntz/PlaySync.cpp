@@ -88,7 +88,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     }
     p = &m_cueTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!m_beginMarker->Sync(ar, mode, a2, a3)) {
+    if (!((CPlay*)m_beginMarker)->SyncState(ar, mode, a2, a3)) {
         return 0;
     }
     p = &m_region0TimerLo;

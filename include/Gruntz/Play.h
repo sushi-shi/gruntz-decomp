@@ -203,7 +203,7 @@ struct Edge {
 // reloc-masked and the archive arg is passed through unchanged.
 SIZE_UNKNOWN(CPlaySerialChild);
 struct CPlaySerialChild {
-    i32 Sync(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3);
+    // Sync @0xd7520 IS CPlay::SyncState (same sig); cast at the call, view is a duplicate.
 };
 
 // The per-frame level timer (m_frameMarker's real class): the full canonical
