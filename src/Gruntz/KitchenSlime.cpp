@@ -408,7 +408,7 @@ void CKitchenSlime::RegisterType() {
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    nodes->Free();
+                    ((CString*)nodes)->~CString();
                 }
                 nodes++;
             } while (--cnt);
