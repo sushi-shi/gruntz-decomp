@@ -435,7 +435,7 @@ struct WwdLevelLoader {
 // engine's bare CString handle is one char*; its operator= is out-of-line, modeled
 // as a method the &slot handle is reinterpreted through (no member to fold into).
 struct CStringAssign {
-    void Assign(const char* s); // 0x1b9e74
+    // Assign @0x1b9e74 IS CString::operator=; cast at the call.
 };
 
 // CDDrawSubMgr ctor embedded at +0x1A0: (this, surfMgr, a, b). __thiscall, ret 0xc.
@@ -728,7 +728,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     // Apply imageSet -> the +0xdc CString slot (CGameObject pads it; raw-offset assign).
     if (imageSet.GetLength() != 0) {
-        ((CStringAssign*)((char*)obj + 0xdc))->Assign((const char*)imageSet);
+        ((CString*)((char*)obj + 0xdc))->operator=((const char*)imageSet);
     }
 
     // Scatter the trailing record fields. `p` advances through the record from

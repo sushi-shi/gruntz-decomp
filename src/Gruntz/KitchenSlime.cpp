@@ -29,8 +29,13 @@
 
 // The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
 // Tick advances it once per frame via its 0x55c360 method (one int arg).
+// CSlimeSubMgr::Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
+class CAniAdvanceCursor {
+public:
+    i32 Advance_15c360(i32 clock);
+};
 struct CSlimeSubMgr {
-    void Advance(i32 tick); // CDDrawSubMgr method @0x55c360 (reloc-masked)
+    // Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
 };
 
 // The animation player @this+0x38 that holds the current direction sprite at
@@ -455,7 +460,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    Anim()->m_1a0.Advance(g_slimeTick);
+    ((CAniAdvanceCursor*)&Anim()->m_1a0)->Advance_15c360((i32)g_slimeTick);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {

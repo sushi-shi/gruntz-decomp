@@ -23,7 +23,7 @@
 // the `lea ecx,[file+N]` adjustments fall out. All reloc-masked.
 struct BmpFile {
     struct Stream {
-        void Write(const void* buf, i32 len); // 0x1bf362
+        // Write @0x1bf362 IS CFile::Write; cast at each call.
     };
     struct Opener {
         // Open @0x1bf200 IS CFile::Open; cast at the call.
@@ -97,10 +97,10 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     if (((CFile*)&file.m_c)->Open(filename, 0x1001, 0) == 0) {
         return 0;
     }
-    file.m_8.Write(fileHdr, 0xe);
-    file.m_8.Write(info, 0x428);
+    ((CFile*)&file.m_8)->Write(fileHdr, 0xe);
+    ((CFile*)&file.m_8)->Write(info, 0x428);
     for (i32 row = m_height - 1; row >= 0; row--) {
-        file.m_8.Write((u8*)m_pixels + m_rowOffsets[row], m_width);
+        ((CFile*)&file.m_8)->Write((u8*)m_pixels + m_rowOffsets[row], m_width);
     }
     return 1;
 }
