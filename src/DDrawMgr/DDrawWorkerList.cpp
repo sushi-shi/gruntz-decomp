@@ -200,7 +200,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
     CDDrawWorkerA* w = MakeWorkerA(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -216,7 +216,7 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -242,7 +242,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -261,7 +261,7 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
     CDDrawWorkerB* w = MakeWorkerB(this);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -288,7 +288,7 @@ void CDDrawWorkerList::ClearWorkers() {
         WorkNode* pCurrent = pNode;
         pNode = pNode->m_next;
         if (pCurrent->m_child) {
-            pCurrent->m_child->ScalarDtor(1);
+            delete pCurrent->m_child;
         }
     }
     m_workers.RemoveAll();
@@ -313,7 +313,7 @@ CDDrawWorkerList::~CDDrawWorkerList() {
         WorkNode* pCurrent = pNode;
         pNode = pNode->m_next;
         if (pCurrent->m_child) {
-            pCurrent->m_child->ScalarDtor(1);
+            delete pCurrent->m_child;
         }
     }
 }
@@ -340,7 +340,7 @@ void CDDrawWorkerList::PruneWorkers(i32 a1, i32 a2) {
             || child->m_refCount <= 0) {
             m_workers.RemoveAt((__POSITION*)pCurrent);
             if (child) {
-                child->ScalarDtor(1);
+                delete child;
             }
         }
     }

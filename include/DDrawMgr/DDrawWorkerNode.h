@@ -25,6 +25,7 @@
 #define GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H
 
 #include <Ints.h>
+#include <Wap32/Object.h>
 #include <rva.h>
 
 // +0x0c owner sub-manager (a CDDrawSubMgr-family node); its +0x24 int primes m_3c
@@ -86,9 +87,40 @@ SIZE(CDDrawWorkerBase, 0x78);
 
 // BYTE-frame worker (12-slot vtable 0x1efea0). Overrides only Vfunc2C in source;
 // its other retail overrides (slots 1/5/7/8/10) stay inherited (reloc-masked).
-struct CDDrawWorkerA : public CDDrawWorkerBase {
+struct CDDrawWorkerA : public Wap::CObject {
+    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+    virtual void Slot05_157200();      // [5]  0x157200 (B)
+    virtual void IsValidImage();       // [6]  0x001c08
+    virtual void Slot07_157310();      // [7]  0x157310 (B)
+    virtual void Slot08_157210();      // [8]  0x157210 (B)
+    virtual void Slot09_157080();      // [9]  0x157080
+    virtual void Slot10_1660b0();      // [10] 0x1660b0 (B)
+    // Non-virtual: reset/arm the worker from (a, b); seeds m_3c off the owner ctx.
+    i32 Helper_164790(i32 a, i32 b); // 0x164790
+    i32 m_04;                        // +0x04
+    i32 m_08;                        // +0x08
+    CDDrawWorkerCtx* m_ctx;          // +0x0c  owner sub-manager
+    i32 m_10;                        // +0x10
+    i32 m_14;                        // +0x14
+    char _pad18[0x20 - 0x18];
+    i32 m_20; // +0x20
+    char _pad24[0x38 - 0x24];
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
+    char _pad54[0x58 - 0x54];
+    i32 m_58; // +0x58
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+    i32 m_64; // +0x64
+    char _pad68[0x74 - 0x68];
+    i32 m_74; // +0x74  state
     CDDrawWorkerA() {}
-    i32 Vfunc2C(i32 a1, i32 a2, i32 a3) OVERRIDE; // 0x157110
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // 0x157110
 
     char m_78; // +0x78 (BYTE frame)
     char _pad79[0x7c - 0x79];
@@ -97,9 +129,40 @@ SIZE(CDDrawWorkerA, 0x7c);
 
 // int-frame worker (14-slot vtable 0x1efed0): adds Vfunc30 (slot 12) / Vfunc34
 // (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).
-struct CDDrawWorkerB : public CDDrawWorkerBase {
+struct CDDrawWorkerB : public Wap::CObject {
+    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+    virtual void Slot05_157200();      // [5]  0x157200 (B)
+    virtual void IsValidImage();       // [6]  0x001c08
+    virtual void Slot07_157310();      // [7]  0x157310 (B)
+    virtual void Slot08_157210();      // [8]  0x157210 (B)
+    virtual void Slot09_157080();      // [9]  0x157080
+    virtual void Slot10_1660b0();      // [10] 0x1660b0 (B)
+    // Non-virtual: reset/arm the worker from (a, b); seeds m_3c off the owner ctx.
+    i32 Helper_164790(i32 a, i32 b); // 0x164790
+    i32 m_04;                        // +0x04
+    i32 m_08;                        // +0x08
+    CDDrawWorkerCtx* m_ctx;          // +0x0c  owner sub-manager
+    i32 m_10;                        // +0x10
+    i32 m_14;                        // +0x14
+    char _pad18[0x20 - 0x18];
+    i32 m_20; // +0x20
+    char _pad24[0x38 - 0x24];
+    i32 m_38; // +0x38
+    i32 m_3c; // +0x3c
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
+    char _pad54[0x58 - 0x54];
+    i32 m_58; // +0x58
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+    i32 m_64; // +0x64
+    char _pad68[0x74 - 0x68];
+    i32 m_74; // +0x74  state
     CDDrawWorkerB() {}
-    i32 Vfunc2C(i32 a1, i32 a2, i32 a3) OVERRIDE;                        // [11] 0x1572f0
+    virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                         // [11] 0x1572f0
     virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4); // [12] 0x1572b0
     virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);                 // [13] 0x157280
 
