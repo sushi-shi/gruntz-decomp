@@ -48,9 +48,15 @@ SIZE_UNKNOWN(CSBI_RectOnly);
 // plus the id/latched-value pair.
 class CSBI_Image : public CSBI_RectOnly {
 public:
+    virtual ~CSBI_Image() OVERRIDE;   // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
+    virtual void SbiSlot3() OVERRIDE; // slot 3
+    virtual void SbiSlot4() OVERRIDE; // slot 4
+    virtual void SbiSlot5() OVERRIDE; // slot 5
     // vtable slot 11 (0xe6c80): the 11-arg image setup; arg1 = id, arg2 = config
     // host, args 3..8 = the rect block, arg9 = the lookup key (args 10/11 unused).
-    i32 SetupImage(
+    virtual i32 SetupImage( // slot 11 (new)
+
         i32 a1,
         CSbiConfigHost* host,
         i32 a3,
