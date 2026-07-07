@@ -1456,9 +1456,6 @@ struct CBootyFound {
 };
 
 // The embedded CMapStringToOb the cue lookup runs on (M28+0x10, reached by offset).
-struct CBootyLookupMap {
-    i32 Lookup(char* key, void** out); // FUN_005b8438 CMapStringToOb::Lookup, ret 8
-};
 
 // The music host chain g_gameReg->m_world->m_28->{m_30 gate, Lookup map @+0x10}.
 struct CBootyMusicHost {
@@ -1649,8 +1646,8 @@ i32 CMultiBootyState::CheckPerfectBonus() {
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
             void* found = 0;
-            CBootyLookupMap* map = (CBootyLookupMap*)((char*)m28 + 0x10);
-            map->Lookup("BOOTY_PERFECT", &found);
+            CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+            map->Lookup("BOOTY_PERFECT", (CObject*&)found);
             if (found && g_61ab20 != 0) {
                 CBootyFound* p = (CBootyFound*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -1726,8 +1723,8 @@ i32 CMultiBootyState::Vslot09(i32) {
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
         void* found = 0;
-        CBootyLookupMap* map = (CBootyLookupMap*)((char*)m28 + 0x10);
-        map->Lookup("BOOTY_LOOP", &found);
+        CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+        map->Lookup("BOOTY_LOOP", (CObject*&)found);
         if (found && g_61ab20 != 0) {
             CBootyFound* p = (CBootyFound*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -1990,7 +1987,6 @@ SIZE_UNKNOWN(CBootyBonusState);
 SIZE_UNKNOWN(CBootyDrawObj);
 SIZE_UNKNOWN(CBootyGameReg);
 SIZE_UNKNOWN(CBootyFound);
-SIZE_UNKNOWN(CBootyLookupMap);
 SIZE_UNKNOWN(CBootyMusicHost);
 SIZE_UNKNOWN(CBootyM4Sub);
 SIZE_UNKNOWN(CBootyOwnerView);
