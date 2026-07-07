@@ -80,8 +80,7 @@ struct CProjRenderObj {
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
 
-    void CacheFirstFrame(const char* name);             // 0x150540 (__thiscall, ret 4)
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (__thiscall, ret 8)
+    // CacheFirstFrame @0x150540 / ApplyLookupGeometry @0x1505b0 ARE CGruntSprite's; cast at the calls.
 };
 
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at

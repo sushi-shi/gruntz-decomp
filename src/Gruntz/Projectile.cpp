@@ -25,6 +25,14 @@
 #include <rva.h>
 #include <Globals.h>
 
+// CProjRenderObj's CacheFirstFrame/ApplyLookupGeometry ARE the header-less spriteresource
+// CGruntSprite's; TU-local decl, cast at each call.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);
+    i32 ApplyLookupGeometry(const char* key, i32 flag);
+};
+
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
 // the fcomp/mov loads reloc-mask against the named symbols.
@@ -370,7 +378,7 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
 
     m_savedFrameGeo = m_sprite->m_1b4;
     m_sprite->m_1a0.Setup(m_frame1);
-    m_sprite->CacheFirstFrame(key + "_OBJECT");
+    ((CGruntSprite*)m_sprite)->CacheFirstFrame(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
     u32 totalTime = (u32)(count * m_timePerTile);
@@ -717,8 +725,8 @@ void CProjectile::LoadProjectileEffects() {
                     (CProjRenderObj*)reg->m_world->m_8
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
-                    fx->CacheFirstFrame("GAME_WATER");
-                    fx->ApplyLookupGeometry("GAME_WATER", 0);
+                    ((CGruntSprite*)fx)->CacheFirstFrame("GAME_WATER");
+                    ((CGruntSprite*)fx)->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
             m_sprite->m_08 |= 0x10000;
@@ -749,8 +757,8 @@ void CProjectile::LoadProjectileEffects() {
                                 0x40003
                             );
                             if (fx != 0) {
-                                fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
-                                fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                ((CGruntSprite*)fx)->CacheFirstFrame("LEVEL_DEATHSPLASH");
+                                ((CGruntSprite*)fx)->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
                         m_sprite->m_08 |= 0x10000;
