@@ -19,6 +19,13 @@
 #include <Ints.h>
 #include <rva.h>
 
+// DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local decl.
+SIZE_UNKNOWN(CImageList);
+class CImageList {
+public:
+    void DeleteImageList();
+};
+
 // ---------------------------------------------------------------------------
 // tomalla-55 @0x016460 - a byte-identical twin of ~CImgHolder (0x16500,
 // Dialogs.cpp): a derived holder whose /GX dtor frees an embedded CImageList
@@ -36,7 +43,7 @@ struct CU55 : CU55Base {
 };
 RVA(0x00016460, 0x46)
 CU55::~CU55() {
-    DeleteImageList();
+    ((CImageList*)this)->DeleteImageList();
 }
 
 // ---------------------------------------------------------------------------

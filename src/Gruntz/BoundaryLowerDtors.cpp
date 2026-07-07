@@ -11,6 +11,13 @@
 #include <rva.h>
 #include <Gruntz/BoundaryLowerDtorsViews.h> // placeholder /GX dtor classes
 
+// DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local decl.
+SIZE_UNKNOWN(CImageList);
+class CImageList {
+public:
+    void DeleteImageList();
+};
+
 // The 0x16e070 leaf is CButeStore::ClearRecursive (header-less butestoreclear class); local decl
 // (the CButeStoreNode* arg is load-bearing for the mangled name).
 struct CButeStoreNode;
@@ -42,7 +49,7 @@ CWorker39f20::~CWorker39f20() {
 // ===========================================================================
 RVA(0x0008c400, 0x46)
 CHolder8c400::~CHolder8c400() {
-    Teardown1c6a5c();
+    ((CImageList*)this)->DeleteImageList();
 }
 
 // ===========================================================================

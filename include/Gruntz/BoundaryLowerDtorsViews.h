@@ -35,7 +35,7 @@ struct WorkerBase8c400 {
 SIZE_UNKNOWN(WorkerBase8c400);
 inline WorkerBase8c400::~WorkerBase8c400() {}
 struct CHolder8c400 : WorkerBase8c400 {
-    void Teardown1c6a5c(); // 0x1c6a5c
+    // Teardown1c6a5c @0x1c6a5c IS CImageList::DeleteImageList; cast at the call.
     ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
