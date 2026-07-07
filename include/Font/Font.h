@@ -235,9 +235,9 @@ struct CWapNodeB : CWapNodeBase {
 };
 SIZE_UNKNOWN(CWapNodeB);
 
-// InterfaceObject - a minimal COM-style object that carries a GUID pointer at
+// FontInterfaceObject - a minimal COM-style object that carries a GUID pointer at
 // +0x04. The IsInterfaceX methods check whether that GUID matches a known iid.
-struct InterfaceObject {
+struct FontInterfaceObject {
     char _pad00[4];  // +0x00  (unread by the iid checks below; iid lives at +0x04)
     const void* iid; // +0x04
     i32 IsInterface1();
@@ -246,8 +246,8 @@ struct InterfaceObject {
     i32 IsInterface4();
     i32 IsInterface5();
 };
-SIZE_UNKNOWN(InterfaceObject); // Font's COM iid-checker (completeness-only; allocated
-                               // elsewhere - name shared with Net's polymorphic view)
+SIZE_UNKNOWN(FontInterfaceObject); // Font's COM iid-checker (completeness-only; allocated
+                                   // elsewhere - name shared with Net's polymorphic view)
 
 // --- vtable catalog ---
 

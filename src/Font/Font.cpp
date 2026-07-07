@@ -22,9 +22,9 @@
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
 #include <Font/Font.h>
 #include <rva.h>
-#include <string.h> // memcmp (InterfaceObject::IsInterfaceX)
+#include <string.h> // memcmp (FontInterfaceObject::IsInterfaceX)
 
-// GUIDs for DirectDraw-style interface checks (InterfaceObject::IsInterfaceX).
+// GUIDs for DirectDraw-style interface checks (FontInterfaceObject::IsInterfaceX).
 // clang-format off
 const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
                                    0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
@@ -180,7 +180,7 @@ i32 Font::SaveFont(CString szFileName) {
 // IsInterface1
 //
 RVA(0x001794b0, 0x21)
-i32 InterfaceObject::IsInterface1() {
+i32 FontInterfaceObject::IsInterface1() {
     if (!iid) {
         return 0;
     }
@@ -191,7 +191,7 @@ i32 InterfaceObject::IsInterface1() {
 // IsInterface2
 //
 RVA(0x001794e0, 0x21)
-i32 InterfaceObject::IsInterface2() {
+i32 FontInterfaceObject::IsInterface2() {
     if (!iid) {
         return 0;
     }
@@ -202,7 +202,7 @@ i32 InterfaceObject::IsInterface2() {
 // IsInterface3
 //
 RVA(0x00179510, 0x21)
-i32 InterfaceObject::IsInterface3() {
+i32 FontInterfaceObject::IsInterface3() {
     if (!iid) {
         return 0;
     }
@@ -213,7 +213,7 @@ i32 InterfaceObject::IsInterface3() {
 // IsInterface4
 //
 RVA(0x00179540, 0x21)
-i32 InterfaceObject::IsInterface4() {
+i32 FontInterfaceObject::IsInterface4() {
     if (!iid) {
         return 0;
     }
@@ -224,7 +224,7 @@ i32 InterfaceObject::IsInterface4() {
 // IsInterface5
 //
 RVA(0x00179570, 0x21)
-i32 InterfaceObject::IsInterface5() {
+i32 FontInterfaceObject::IsInterface5() {
     if (!iid) {
         return 0;
     }
