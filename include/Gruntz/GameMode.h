@@ -292,6 +292,7 @@ struct CCreditsImageList : CCreditsImgBase {
 SIZE_UNKNOWN(CCreditsState);
 class CCreditsState : public CState {
 public:
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
     // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
     // cl auto-destroys the m_caption CString + the m_1e8 image list before chaining
@@ -354,10 +355,12 @@ public:
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1fa1f0
     i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);               // 0x1fa8f0
 };
+VTBL(CCreditsState, 0x001e9c64);
 
 SIZE_UNKNOWN(CBootyState);
 class CBootyState : public CState {
 public:
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9cec, 26 slots; slot order anchored by CState).
     // CBootyState shares many slot bodies with its siblings CMultiBootyState /
     // CBootyCheatState (0x1ce30/0x1d420 own CMultiBootyState methods, 0x18830 is
@@ -403,6 +406,7 @@ public:
     char m_pad1a8[0x1bc - 0x1a8];
     i32 m_activation; // +0x1bc  activation discriminator (==200 -> secret-bonus toast)
 };
+VTBL(CBootyState, 0x001e9cec);
 
 // CMultiBootyState - the MULTIPLAYER booty/bonus state (RTTI .?AVCMultiBootyState@@,
 // vtable @0x5e9bdc; a SIBLING of CBootyState (.?AVCBootyState@@, vtable @0x5e9cec),
@@ -414,6 +418,7 @@ public:
 SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,
     // runs the slot-2 release (statically bound), re-stamps CState, chains BaseCleanup.
@@ -476,6 +481,7 @@ public:
     char m_pad200[0x2f8 - 0x200];
     CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
 };
+VTBL(CMultiBootyState, 0x001e9bdc);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

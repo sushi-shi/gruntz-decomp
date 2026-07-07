@@ -45,7 +45,7 @@ public:
     // this loader TU) so cl emits no ??_7CSplashState (CState.h declared-only pattern),
     // leaving LoadSounds' member-offset codegen unchanged.
     virtual ~CSplashState() OVERRIDE;            // slot 0
-    virtual void Vfunc1() OVERRIDE;              // slot 1
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
     virtual void ReleaseResources() OVERRIDE;    // slot 2
     virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5

@@ -48,16 +48,16 @@ public:
     virtual ~CState() {
         ((CGameModeBase*)this)->BaseCleanup();
     } // slot 0
-    virtual void Vfunc1();           // slot 1
-    virtual void ReleaseResources(); // slot 2  (+0x8)  resource teardown (leaf override)
-    virtual i32 Vfunc3();            // slot 3  (+0xc)  active/ready gate (return m_ready)
-    virtual GameStateId Update();    // slot 4  (+0x10)  base default = GAMESTATE_BASE (1)
-    virtual i32 Render();            // slot 5  (+0x14)  base default = return 1;
-    virtual i32 Vslot06();           // slot 6  (+0x18)  activation-ready poll
-    virtual i32 Vslot07();           // slot 7  (+0x1c)  lobby-host-ready poll
-    virtual i32 InputVirtual();      // slot 8  (+0x20)  per-frame input poll
-    virtual i32 Vslot09(i32);        // slot 9  (+0x24)  notify w/ state id
-    virtual i32 FrameSlot28(i32);    // slot 10 (+0x28)  per-frame poll (leaf override)
+    virtual i32 Vfunc1(i32, i32, i32); // slot 1 (asset/state load; leaf-overridden)
+    virtual void ReleaseResources();   // slot 2  (+0x8)  resource teardown (leaf override)
+    virtual i32 Vfunc3();              // slot 3  (+0xc)  active/ready gate (return m_ready)
+    virtual GameStateId Update();      // slot 4  (+0x10)  base default = GAMESTATE_BASE (1)
+    virtual i32 Render();              // slot 5  (+0x14)  base default = return 1;
+    virtual i32 Vslot06();             // slot 6  (+0x18)  activation-ready poll
+    virtual i32 Vslot07();             // slot 7  (+0x1c)  lobby-host-ready poll
+    virtual i32 InputVirtual();        // slot 8  (+0x20)  per-frame input poll
+    virtual i32 Vslot09(i32);          // slot 9  (+0x24)  notify w/ state id
+    virtual i32 FrameSlot28(i32);      // slot 10 (+0x28)  per-frame poll (leaf override)
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
     // those forwarders' push/ret-N codegen needs (vtables not diffed).

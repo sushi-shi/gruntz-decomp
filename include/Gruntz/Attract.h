@@ -152,6 +152,7 @@ class CAttractScreenObj;
 // ---------------------------------------------------------------------------
 class CAttract : public CState {
 public:
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5ea194, 26 slots; slot order anchored by
     // CState). Every slot CAttract overrides is declared here in slot order; the
     // two slots whose bodies live elsewhere / are deferred are declared-only (the
@@ -220,5 +221,6 @@ public:
     CAttractHost* m_host; // +0x1b8  host/sound sub-object
     i32 m_activeFlag;     // +0x1bc  attract-active flag
 };
+VTBL(CAttract, 0x001ea194);
 
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

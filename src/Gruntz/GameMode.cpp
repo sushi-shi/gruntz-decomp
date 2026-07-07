@@ -155,7 +155,9 @@ i32 CState::Render() {
 
 // The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable
 // order so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
-void CState::Vfunc1() {}
+i32 CState::Vfunc1(i32, i32, i32) {
+    return 0;
+}
 void CState::ReleaseResources() {}
 
 // CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_ready.

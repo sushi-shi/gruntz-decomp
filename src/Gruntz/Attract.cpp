@@ -697,4 +697,3 @@ SIZE_UNKNOWN(CMenuRenderM10);
 SIZE_UNKNOWN(CMenuRoot);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(AttractActor, 0x001ea194);

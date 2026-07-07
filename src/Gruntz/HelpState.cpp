@@ -27,7 +27,7 @@
 class CHelpState : public CState {
 public:
     virtual ~CHelpState() OVERRIDE;              // slot 0  (0x8cf30)
-    virtual void Vfunc1() OVERRIDE;              // slot 1
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
     virtual void ReleaseResources() OVERRIDE;    // slot 2
     virtual GameStateId Update() OVERRIDE;       // slot 4
     virtual i32 Render() OVERRIDE;               // slot 5
