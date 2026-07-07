@@ -536,8 +536,8 @@ class CmdSinkV {
 public:
     virtual void s0();
     virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
-    void Set(i32 row, i32 col, i32 value);           // (this, row, col, value) reloc-masked
-    void Teardown();                                 // (this) reloc-masked (Close)
+    // Set @0x1b9b82 IS _RezFree (recv freed); call it.
+    // Teardown @0x3b1b IS ~CTriggerMgr; cast at the call.
 };
 
 // The world's layer/plane object is the shared CViewport (<Gruntz/Viewport.h>): an
@@ -2861,7 +2861,7 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CViewport* grid = (CViewport*)m_world->m_24->m_mainPlane;
     i32 idx = grid->m_rowBase[col] + row;
     grid->m_cells[idx] = value;
-    m_cmdNotify->Set(row, col, value);
+    RezFree((void*)m_cmdNotify);
 }
 
 // -------------------------------------------------------------------------
@@ -2935,7 +2935,7 @@ void CGruntzMgr::Close() {
         m_cmdGrid = 0;
     }
     if (m_cmdNotify) {
-        m_cmdNotify->Teardown();
+        ((CTriggerMgr*)m_cmdNotify)->~CTriggerMgr();
         operator delete(m_cmdNotify);
         m_cmdNotify = 0;
     }
