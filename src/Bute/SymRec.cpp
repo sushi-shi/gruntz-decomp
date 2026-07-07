@@ -27,8 +27,13 @@
 
 // The re-filed leaf payload (CSymListNode::m_14): reset then handed back to the
 // parser's free pool on teardown (0x1397a0 is a CSymRec method per SymTab.h).
+// The payload's teardown @0x1397a0 IS Obj1397a0::Teardown (header-less); local decl.
+class Obj1397a0 {
+public:
+    void Teardown();
+};
 struct CSymPayload {
-    void Reset1397a0(); // 0x1397a0
+    // Reset1397a0 @0x1397a0 IS Obj1397a0::Teardown; cast at the call.
 };
 struct CSymListNode {
     char pad0[0x14];
@@ -135,7 +140,7 @@ CSymRec::~CSymRec() {
         CSymListNode* cur = n;
         n = cur->Next();
         m_24.Remove(cur);
-        cur->m_14->Reset1397a0();
+        ((Obj1397a0*)cur->m_14)->Teardown();
         m_2c->m_owner->AddNode(cur->m_14);
     }
     m_0 = 0;
