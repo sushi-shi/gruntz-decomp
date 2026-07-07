@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wap32/Object.h>
 #include <Gruntz/ParseSource.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
@@ -114,27 +115,6 @@ public:
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
-struct CDDrawWorkerMapBase {
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 grand-base thunk
-    virtual ~CDDrawWorkerMapBase(); // [1] scalar-deleting dtor
-    virtual void Serialize();       // [2] 0x0028ec
-    virtual void AssertValid();     // [3] 0x00106e
-    virtual void Dump();            // [4] 0x004034
-
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c  parent CDDrawSurfaceMgr handle
-    CDDrawWorkerMapBase() {}
-};
-
-// Field resets only -> cl emits the implicit ??_7-base re-stamp (masks 0x5e8cb4) as
-// the dtor's tail. (vptr-position wall: cl sinks the stamp before/after the resets
-// per its EH-state schedule; see ~CDDrawWorkerMapSmall.)
-inline CDDrawWorkerMapBase::~CDDrawWorkerMapBase() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
 
 // ---------------------------------------------------------------------------
 // CDDrawWorkerMapSmall - only the load-bearing offsets are modeled: m_0c (parent handle,
@@ -143,7 +123,9 @@ inline CDDrawWorkerMapBase::~CDDrawWorkerMapBase() {
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerMapSmall : public CDDrawWorkerMapBase {
+class CDDrawWorkerMapSmall : public Wap::CObject {
+public:
+    i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
 public:
     // The leaf vtable (??_7CDDrawWorkerMapSmall @0x5efcc8) is 13 slots: the 5 shared
     // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
