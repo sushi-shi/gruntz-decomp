@@ -116,12 +116,6 @@ public:
 // members ~CMulti already unwinds; giving ~CMulti the ??_7CPlay restamp would require
 // modeling CMulti : public CPlay for real, out of this CPlay-consolidation's scope.)
 // (~CMulti itself already auto-stamps ??_7CMulti at dtor entry via CMulti's virtual dtor.)
-struct CState {
-    void BaseCleanup(); // 0x00403f53 (CState's base teardown, thiscall)
-    virtual ~CState() {
-        BaseCleanup();
-    }
-};
 
 // ---------------------------------------------------------------------------
 // The DirectPlay error globals (shared with CNetMgr::ReportError; same .data
@@ -184,18 +178,9 @@ CMulti::~CMulti() {
     m_hostName.~CString();
     m_groupName.~CString();
     m_598.~CString();
-    // CPlay sub-object teardown (the ??_7CPlay restamp is elided - see the note above).
-    CPlayDtorBody();
-    m_488.~CByteArray();
-    m_410.~CString();
-    // the CByteArray[4] vector at +0x3a4.
-    for (i32 i = 3; i >= 0; --i) {
-        m_3a4[i].~CByteArray();
-    }
-    m_370.~CByteArray();
-    m_1b4.~CString();
-    // CState sub-object: ~CState stamps ??_7CState then runs BaseCleanup.
-    ((CState*)this)->CState::~CState();
+    // CPlay/CState sub-objects (m_488, m_cueText, m_3a4[], m_startMarkers, m_1b4, ...)
+    // are torn down by the compiler-chained ~CPlay -> ~CState base destructors now that
+    // CMulti : CPlay. No manual base teardown here (that was the old flat-model dtor).
 }
 
 // ===========================================================================
@@ -221,13 +206,13 @@ void CMulti::Teardown() {
         m_netGate->ScalarDtor(1);
         m_netGate = 0;
     }
-    CLobbyObjA* p320 = m_attractOverlay;
+    CLobbyObjA* p320 = (CLobbyObjA*)m_overlayActive;
     if (p320) {
         ((CLobbyObjB*)p320)->~CLobbyObjB();
         RezFree(p320);
-        m_attractOverlay = 0;
+        m_overlayActive = 0;
     }
-    m_logic->m_110 = m_590;
+    ((CMultiMgr*)m_4)->m_110 = m_590;
     CPlayDtorBody();
 }
 
@@ -242,7 +227,7 @@ void CMulti::Teardown() {
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_6455fc = 0;
-    i32* host = m_logic->ResolveHost(m_hostIndex);
+    i32* host = ((CMultiMgr*)m_4)->ResolveHost(m_hostIndex);
     if (!host) {
         return 0;
     }
@@ -252,7 +237,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_645584 = 0;
     g_645580 = 0;
     g_645588 = 0;
-    m_1cc = 0;
+    m_savedClock = 0;
     m_5d0 = 0;
     m_drainTimer = 0;
     m_lastTime = timeGetTime();
@@ -267,12 +252,14 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CMultiMgrOptions* e = &m_logic->m_150[i];
+        CMultiMgrOptions* e = &((CMultiMgr*)m_4)->m_150[i];
         if (e == 0) {
             return 0;
         }
         ((CBattlezMapConfig*)&e->m_inner)->FreeArrays();
-        if (((CBattlezMapConfig*)&e->m_inner)->LoadConfig((CLevelInfo*)m_logic, i, e->m_10) == 0) {
+        if (((CBattlezMapConfig*)&e->m_inner)
+                ->LoadConfig((CLevelInfo*)((CMultiMgr*)m_4), i, e->m_10)
+            == 0) {
             return 0;
         }
         if (e->m_14 && e->m_20) {
@@ -284,7 +271,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_645584 = 0;
     g_645580 = 0;
     g_645588 = 0;
-    m_1cc = 0;
+    m_savedClock = 0;
     m_5d0 = 0;
     m_drainTimer = 0;
     m_lastTime = timeGetTime();
@@ -295,9 +282,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    ((CFontConfig*)m_logic->m_5c)->FreeNodes();
+    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->FreeNodes();
     m_session->StartTick();
-    m_logic->m_60->DtorBody();
+    ((CMultiMgr*)m_4)->m_60->StartTitleHook();
     return 1;
 }
 
@@ -317,8 +304,8 @@ RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
     m_534 = 0;
-    if (m_logic->ProbeSession(mode, 0, 0) == 0) {
-        m_logic->ReportError(0x8005, 0x446);
+    if (((CMultiMgr*)m_4)->ProbeSession(mode, 0, 0) == 0) {
+        ((CMultiMgr*)m_4)->ReportError(0x8005, 0x446);
         return 0;
     }
     m_pumpGuard = 1;
@@ -347,8 +334,8 @@ i32 CMulti::Connect(i32 mode) {
 // final sweep (no NEW idea closes it here).
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Tick() {
-    m_414 = 0;
-    vtbl()->Redraw(this, 0, m_150, m_154);
+    m_drewThisFrame = 0;
+    vtbl()->Redraw(this, 0, m_cursorX, m_cursorY);
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -357,7 +344,7 @@ i32 CMulti::Tick() {
     i32 newId = m_session->m_10;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
-        CMultiLogicList* lst = m_logic->m_6c;
+        CMultiLogicList* lst = ((CMultiMgr*)m_4)->m_6c;
         CMultiLogicNode* node;
         if (lst->m_28 == 0) {
             node = 0;
@@ -377,15 +364,15 @@ i32 CMulti::Tick() {
     if ((u32)dt >= g_645584) {
         dt = (i32)g_645584;
     }
-    m_stepResult = m_session->Step(dt);
-    m_drainResult = 0;
+    m_packetsRcvd = m_session->Step(dt);
+    m_packetsSent = 0;
     if ((u32)m_frameDelta < (u32)m_drainTimer) {
         m_drainTimer = m_drainTimer - m_frameDelta;
     } else {
         m_drainTimer = 0;
     }
     if (m_drainTimer == 0) {
-        m_drainResult = m_session->Drain();
+        m_packetsSent = m_session->Drain();
         m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
@@ -393,9 +380,9 @@ i32 CMulti::Tick() {
         fin = 1;
     }
     vtbl()->PostRedraw(this);
-    void* sub = *(void**)((char*)*(void**)((char*)m_view + 0x24) + 0x5c);
+    void* sub = *(void**)((char*)*(void**)((char*)m_c + 0x24) + 0x5c);
     if (sub) {
-        ((CPlaneRender*)sub)->CenterScrollA();
+        ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_c->m_24->m_5c)
     }
     if (fin == 0) {
         if (m_session->IsStalled() == 0 && m_574 == 0) {
@@ -414,10 +401,10 @@ i32 CMulti::Tick() {
     }
     PumpB();
     DropTimeout();
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
+    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
     if (win) {
         i32 now = timeGetTime();
-        win->TickWinA(now); // winapi_136e20 (thiscall on m_view->m_20, arg now)
+        win->TickWinA(now); // winapi_136e20 (thiscall on m_c->m_20, arg now)
         win->TickWinB(now); // winapi_137ac0 (thiscall, arg now)
     }
     ActiveWait(2); // FUN_0013dfe0 ActiveWait(2)
@@ -519,7 +506,7 @@ public:
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = PumpAReady();
-    if (m_594 == 0 && m_logic->m_c != 0 && ready == 0) {
+    if (m_594 == 0 && ((CMultiMgr*)m_4)->m_c != 0 && ready == 0) {
         PumpAReset();
         return 1;
     }
@@ -528,25 +515,25 @@ i32 CMulti::PumpA() {
     g_645584 = 0x21;
     g_killCueClock = g_645580;
     g_6bf3bc = 0x21;
-    if (m_ambientArmed == 0) {
-        if ((i64)(u32)g_645588 - *(i64*)&m_338 >= *(i64*)&m_340) {
+    if (m_ambientInitDone == 0) {
+        if ((i64)(u32)g_645588 - *(i64*)&m_ambientTimerLo >= *(i64*)&m_ambientInterval) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_64556c->m_14 != 0) {
-                ((CGruntzSoundZ*)m_logic->m_48)->PlayByName(name, 1);
+                ((CGruntzSoundZ*)((CMultiMgr*)m_4)->m_48)->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)m_logic->m_48)->FindBank(name);
+                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)((CMultiMgr*)m_4)->m_48)->FindBank(name);
                 if (p) {
-                    m_logic->m_48->m_1c = p;
+                    ((CMultiMgr*)m_4)->m_48->m_1c = p;
                 }
-                if (m_logic->m_48->m_1c) {
-                    m_logic->m_48->m_1c->SetLoop(1);
+                if (((CMultiMgr*)m_4)->m_48->m_1c) {
+                    ((CMultiMgr*)m_4)->m_48->m_1c->SetLoop(1);
                 }
             }
-            m_ambientArmed = 1;
+            m_ambientInitDone = 1;
         }
     }
-    m_logic->m_6c->Step20b3(m_curSlotId % 128);
+    ((CMultiMgr*)m_4)->m_6c->Step20b3(m_curSlotId % 128);
     m_session->Step2437();
     g_64558c++;
     u32 t1 = g_645590 ? g_645590 : 0x32;
@@ -579,22 +566,22 @@ i32 CMulti::PumpA() {
     } else {
         g_6455a0 = 0;
     }
-    ((McHost*)m_view)->m_8->CallSlot24();
-    ((McHost*)m_view)->m_8->CallSlot40();
-    ((CGooWellMgr*)m_logic->m_68)->LoadTeleporterGooConfig(g_645584);
-    ((CSBI_RectOnly*)m_fxOverlay)->LoadDestructButtonSprite(g_645584);
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_view + 0x20);
+    ((McHost*)m_c)->m_8->CallSlot24();
+    ((McHost*)m_c)->m_8->CallSlot40();
+    ((CMultiMgr*)m_4)->m_68->Step3017(g_645584);
+    ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
+    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
     if (win) {
         i32 now = timeGetTime();
         win->TickWinA(now);
         win->TickWinB(now);
     }
-    m_2e4->FilterList2((void*)g_645584);
-    m_logic->m_70->UpdateDiagonals((i32)m_logic);
+    ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
+    ((CMultiMgr*)m_4)->m_70->UpdateDiagonals((i32)((CMultiMgr*)m_4));
     if (ready == 0) {
         PumpAReset();
     }
-    m_logic->Step2d33();
+    ((CMultiMgr*)m_4)->Step2d33();
     return 1;
 }
 
@@ -668,12 +655,12 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 // - not steerable from source. Sibling of the PumpA (~88%) wall.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    PBMgr* mgr = (PBMgr*)m_view;
-    if (m_594 == 0 && m_logic->m_c != 0) {
+    PBMgr* mgr = (PBMgr*)m_c;
+    if (m_594 == 0 && ((CMultiMgr*)m_4)->m_c != 0) {
         StepInputA();
         mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
-        ((CSBI_RectOnly*)m_fxOverlay)->LoadMainStatusBarSprite();
+        ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
@@ -685,31 +672,32 @@ void CMulti::PumpB() {
     }
     StepInputA();
     StepC();
-    if (m_overlayAActive != 0) {
+    if (m_region0Gate != 0) {
         mgr->m_4->m_14->m_surface->Fill(0);
-        ((CSBI_RectOnly*)m_fxOverlay)->Deactivate();
+        ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->Deactivate();
     }
-    if (m_paletteActive == 0) {
-        if (((PBSub68*)m_logic->m_68)->m_armed != 0) {
-            ((CSnd788d0*)m_logic->m_68)->PositionUpdate();
+    if (m_worldReady == 0) {
+        if (((PBSub68*)((CMultiMgr*)m_4)->m_68)->m_armed != 0) {
+            ((PBSub68*)((CMultiMgr*)m_4)->m_68)->Fire1398();
         } else {
             LoadScrollSpeedOptions();
         }
     }
     StepScroll();
-    m_logic->m_54->Retune(
-        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
-        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
-    );
-    if (m_overlayBActive != 0) {
+    ((CMultiMgr*)m_4)
+        ->m_54->Retune(
+            ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
+            ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
+        );
+    if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
         mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
-    ((CSBI_RectOnly*)m_fxOverlay)->LoadMainStatusBarSprite();
-    if (m_attractOverlay != 0) {
-        CMultiSubDC* fx = m_fxOverlay;
+    ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
+    if (m_overlayActive != 0) {
+        CMultiSubDC* fx = ((CMultiSubDC*)m_guts);
         if (fx->m_0 != 2 && fx->m_mode != 5) {
             RECT rc;
             if (fx->m_0 == 1) {
@@ -720,36 +708,36 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            CLightFxRender* ov = (CLightFxRender*)m_attractOverlay;
-            ov->Resize(g_645584, 0);
-            ov->ComputeRect((LfxBorderCtx*)mgr->m_4->m_14, (LfxRect*)&rc);
+            PBSub320* ov = (PBSub320*)m_overlayActive;
+            ov->Tick1fa0(g_645584, 0);
+            ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    ((CFontConfig*)m_logic->m_5c)->Scroll(g_645584);
+    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->Scroll(g_645584);
     CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
-    m_2e0->LoadChatBoxSprite((i32)h);
+    ((CChatBoxOwner*)m_hitTest)->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    ((CTriggerMgr*)m_logic->m_68)->OverlayRelease();
+    ((PBSub68*)((CMultiMgr*)m_4)->m_68)->Reset2b85();
     StepGridWalk(g_645584);
     CopyRect(h);
-    if (m_paletteActive != 0) {
-        h->DrawBox((i32*)m_palette, 0xff);
+    if (m_worldReady != 0) {
+        h->DrawBox((i32*)&m_hudRect, 0xff);
     }
     mgr->m_4->m_10->m_surface->Flip(0);
-    PumpBRefresh2356(g_64556c, m_fxOverlay, m_overlayAActive);
+    PumpBRefresh2356(g_64556c, ((CMultiSubDC*)m_guts), m_region0Gate);
     if (mgr->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)mgr->m_24->m_mainPlane)->CenterScrollB();
     }
-    if (m_overlayAActive != 0) {
-        if ((i64)g_645588 - *(i64*)&m_430 >= *(i64*)&m_438) {
+    if (m_region0Gate != 0) {
+        if ((i64)g_645588 - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {
             OnRegion2(0);
         }
     }
-    if (m_overlayBActive != 0) {
-        if ((i64)g_645588 - *(i64*)&m_440 >= *(i64*)&m_448) {
+    if (m_region1Gate != 0) {
+        if ((i64)g_645588 - *(i64*)&m_region1TimerLo >= *(i64*)&m_region1Interval) {
             OnRegion1(0);
         }
     }
@@ -778,14 +766,14 @@ public:
 // correct, byte-match deferred to the final sweep.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
-    m_logic->m_9c = 0;
+    ((CMultiMgr*)m_4)->m_9c = 0;
     m_588 = 1;
     if (!m_netGate) {
         return 0;
     }
-    i32 saved = m_curState;
-    void* st = RegistryFind(m_stateReg, "STATEZ_ATTRACT");
-    m_curState = (i32)st;
+    i32 saved = (i32)m_2c;
+    void* st = RegistryFind(m_8, "STATEZ_ATTRACT");
+    m_2c = (CResSource*)((i32)st);
     if (!st) {
         return 0;
     }
@@ -793,19 +781,19 @@ i32 CMulti::StartTitle() {
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
-        m_curState = saved;
+        m_2c = (CResSource*)(saved);
         return 0;
     }
-    ((CTriggerMgr*)((char*)m_view + 4))->OverlayRelease(); // (m_view->m_4)->Reset()
-    void* vobj = *(void**)(*(void**)((char*)m_view + 0x1c));
+    ((CMultiViewReset*)((char*)m_c + 4))->Reset(); // (m_c->m_4)->Reset()
+    void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
-    m_curState = saved;
+    m_2c = (CResSource*)(saved);
     while (g_ShowCursor(1) < 0) {
     }
-    if (!m_logic->m_c0) {
+    if (!((CMultiMgr*)m_4)->m_c0) {
         return 0;
     }
-    CMultiLogicDesc* desc = m_logic->m_c4;
+    CMultiLogicDesc* desc = ((CMultiMgr*)m_4)->m_c4;
     if (!desc) {
         return 0;
     }
@@ -886,12 +874,12 @@ CString CMulti::GetString5a0() {
 RVA(0x000b7e30, 0x63)
 void CMulti::ReportVersionMsg(char* msg, i32 code) {
     char buf[512];
-    if (msg && *msg && m_logic) {
+    if (msg && *msg && ((CMultiMgr*)m_4)) {
         if (code > 0) {
             sprintf(buf, "%s (%i)", msg, code);
-            m_logic->LogLine(buf);
+            ((CMultiMgr*)m_4)->LogLine(buf);
         } else {
-            m_logic->LogLine(msg);
+            ((CMultiMgr*)m_4)->LogLine(msg);
         }
     }
 }
@@ -904,7 +892,7 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError() {
     char buf[512];
-    if (m_logic && g_code != 0x118) {
+    if (((CMultiMgr*)m_4) && g_code != 0x118) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, g_code);
     }
@@ -930,12 +918,12 @@ i32 CMulti::JoinSession() {
 // ===========================================================================
 RVA(0x000bc250, 0x55)
 i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
-    if (!m_logic) {
+    if (!((CMultiMgr*)m_4)) {
         return 2;
     }
-    m_logic->m_60->DtorBody();
-    i32 r = m_logic->RunDialog(tmpl, handler, lparam);
-    MultiRestoreFocus(m_logic->m_4->m_4);
+    ((CMultiMgr*)m_4)->m_60->PreDialog();
+    i32 r = ((CMultiMgr*)m_4)->RunDialog(tmpl, handler, lparam);
+    MultiRestoreFocus(((CMultiMgr*)m_4)->m_4->m_4);
     AckJoinFailure();
     return r;
 }

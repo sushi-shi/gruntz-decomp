@@ -509,7 +509,7 @@ public:
     char m_pad1d0[0x2d0 - 0x1d0];
     i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
     i32 m_packetsSent; // +0x2d4  net packets sent (debug HUD "Sent = %i")
-    char m_pad2d8[0x2dc - 0x2d8];
+    i32 m_rngSeed;     // +0x2d8  (CMulti RNG seed)
     // +0x2dc: the "guts"/UI subsystem the per-frame Step + the HUD/drag-select
     // dispatches run on (the click/drag/clear entry points + the busy-state words).
     struct GutsSubsystem {

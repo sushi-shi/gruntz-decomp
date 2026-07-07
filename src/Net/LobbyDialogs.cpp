@@ -81,8 +81,8 @@ namespace NetLobby {
 RVA(0x000b7ec0, 0x7d)
 void CMulti::ReportStatusId(u32 strId, i32 level) {
     char buf[0x12a];
-    if (m_logic && m_logic->m_owner->m_hInstance) {
-        if (!LoadStringA(m_logic->m_owner->m_hInstance, strId, buf, 0xfa)) {
+    if (((CMultiMgr*)m_4) && ((CMultiMgr*)m_4)->m_owner->m_hInstance) {
+        if (!LoadStringA(((CMultiMgr*)m_4)->m_owner->m_hInstance, strId, buf, 0xfa)) {
             strcpy(buf, "Error");
         }
         ReportVersionMsg(buf, level);

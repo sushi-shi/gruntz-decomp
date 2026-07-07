@@ -128,10 +128,6 @@ i32 OptOwner_c4b30::Resolve() {
 // Local placeholder view of the real SoundStream (include/Dsndmgr/SoundStream.h);
 // 0x137a80 is canonically SoundStream::Stop (minervainner / SoundStreamTeardown.cpp),
 // so name the method Stop here too (was the mislabel "Free").
-class SoundStream {
-public:
-    void Stop(); // 0x137a80 (= SoundStream::Stop)
-};
 // The map holder: ClearMap lives in the CDDrawMapHolder base; the keyed
 // prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
 // freeable inner at +0x2c.
