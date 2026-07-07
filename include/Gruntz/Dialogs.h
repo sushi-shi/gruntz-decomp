@@ -165,7 +165,11 @@ SIZE_UNKNOWN(CBattlezDlg);
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
-    virtual ~CBattlezDlg() OVERRIDE; // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    virtual ~CBattlezDlg() OVERRIDE;              // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual void DlgVsl49() OVERRIDE;             // slot 49
+    virtual void DlgVsl51() OVERRIDE;             // slot 51
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8];      // +0x60
@@ -233,6 +237,8 @@ class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
     virtual ~CBattlezDlgCustom() OVERRIDE; // 0x17140 (destroy CString m_customName, chain ~CDialog)
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
 
     CString m_customName; // +0x5c  (default CString)
 };
@@ -248,7 +254,8 @@ public:
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
-    const void* GetMessageMap();
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
 
     i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
     i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
@@ -268,6 +275,11 @@ public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
     virtual ~CMultiStartDlg()
         OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl24() OVERRIDE;             // slot 24
+    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual void DlgVsl49() OVERRIDE;             // slot 49
+    virtual void DlgVsl51() OVERRIDE;             // slot 51
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
@@ -376,7 +388,8 @@ class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
-    const void* GetMessageMap();
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
 };
 
 #endif // SRC_GRUNTZ_DIALOGS_H
