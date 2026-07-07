@@ -56,13 +56,9 @@ SIZE_UNKNOWN(CMenuItemHost);
 
 // The string->item catalog reached through m_4->m_10->m_10 (CMapStringToPtr::Lookup,
 // 0x1b8008) - the same two-hop the page uses (m_0 -> +0x10 ptr -> +0x10 map base).
-struct CMenuItemMap {
-    i32 Lookup(const char* key, void*& out); // 0x1b8008
-};
-SIZE_UNKNOWN(CMenuItemMap);
 struct CMenuItemCatalog {
     char pad0[0x10];
-    CMenuItemMap m_10; // +0x10 the string->item map base
+    CMapStringToPtr m_10; // +0x10 the string->item map base (real MFC)
 };
 SIZE_UNKNOWN(CMenuItemCatalog);
 struct CMenuItemHostOwner {
