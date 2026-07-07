@@ -650,7 +650,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     }
     if (next <= 0x20 || next >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (st->Vslot1e(next, 1)) {
+        if (((CPlay*)st)->Vslot1e(next, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -676,7 +676,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     }
     if (prev <= 0x20 || prev >= 0x25) {
         st->FrameSlot28(st->Update());
-        if (st->Vslot1e(prev, 1)) {
+        if (((CPlay*)st)->Vslot1e(prev, 1)) {
             st->Vslot09(st->Update());
             return 1;
         }
@@ -2683,7 +2683,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 a0, i32 a1, i32 a2) {
     }
     if (inPlay && a1 == 0) {
         m_curState->FrameSlot28(m_curState->Update());
-        if (m_curState->Vslot1e(a0, a2) == 0) {
+        if (((CPlay*)m_curState)->Vslot1e(a0, a2) == 0) {
             return 0;
         }
         m_curState->Vslot09(m_curState->Update());

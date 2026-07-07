@@ -239,8 +239,47 @@ public:
     CPlay();
     virtual ~CPlay() OVERRIDE; // slot 0 (0x8c830)
 
-    virtual GameStateId Update() OVERRIDE; // GAMESTATE_PLAY (3);  (slot 4)
-    virtual i32 Render() OVERRIDE;         // THE per-frame heart (this TU)
+    virtual GameStateId Update() OVERRIDE;       // GAMESTATE_PLAY (3);  (slot 4)
+    virtual i32 Render() OVERRIDE;               // THE per-frame heart (this TU)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1 (CState override)
+    virtual void ReleaseResources() OVERRIDE;    // slot 2 (CState override)
+    virtual i32 Vslot06() OVERRIDE;              // slot 6 (CState override)
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8 (CState override)
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9 (CState override)
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10 (CState override)
+    virtual i32 Vslot0b(i32, i32) OVERRIDE;      // slot 11 (CState override)
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12 (CState override)
+    virtual i32 Vslot0d(i32, i32) OVERRIDE;      // slot 13 (CState override)
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14 (CState override)
+    virtual i32 Vslot0f(i32, i32, i32) OVERRIDE; // slot 15 (CState override)
+    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16 (CState override)
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (CState override)
+    virtual i32 Vslot12(i32, i32, i32) OVERRIDE; // slot 18 (CState override)
+    virtual i32 Vslot13(i32, i32, i32) OVERRIDE; // slot 19 (CState override)
+    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20 (CState override)
+    virtual i32 Vslot15() OVERRIDE;              // slot 21 (CState override)
+    virtual void Vslot18() OVERRIDE;             // slot 24 (CState override)
+    virtual void Vslot19() OVERRIDE;             // slot 25 (CState override)
+    // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
+    virtual void Vslot1a();
+    virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
+    virtual void Vslot1c();
+    virtual void Vslot1d();
+    virtual i32 Vslot1e(i32, i32);               // slot 30 (+0x78)  (a0, a2) -> handled flag
+    virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
+    virtual void Vslot20();
+    virtual void Vslot21();
+    virtual void Vslot22();
+    virtual void Vslot23();
+    virtual void Vslot24();
+    // slot 37 (+0x94): per-draw text-attr setup (debug HUD hands it the live HDC;
+    // void* keeps this widely-included header windows.h-neutral).
+    virtual void PostSetup(void* dc);
+    virtual void Vslot26();
+    virtual void RenderSlow(); // slot 39 (+0x9c)
+    virtual i32 RenderFast();  // slot 40 (+0xa0)  (the profiled frames read its update count)
+    virtual void BuildMusicCategoryTable(); // slot 41
+    virtual void BuildWorldLevelPath();     // slot 42
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld* m_4w() {

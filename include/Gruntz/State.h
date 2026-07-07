@@ -78,23 +78,6 @@ public:
     virtual void Vslot17();
     virtual void Vslot18();
     virtual void Vslot19();
-    virtual void Vslot1a();
-    virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
-    virtual void Vslot1c();
-    virtual void Vslot1d();
-    virtual i32 Vslot1e(i32, i32);               // slot 30 (+0x78)  (a0, a2) -> handled flag
-    virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
-    virtual void Vslot20();
-    virtual void Vslot21();
-    virtual void Vslot22();
-    virtual void Vslot23();
-    virtual void Vslot24();
-    // slot 37 (+0x94): per-draw text-attr setup (debug HUD hands it the live HDC;
-    // void* keeps this widely-included header windows.h-neutral).
-    virtual void PostSetup(void* dc);
-    virtual void Vslot26();
-    virtual void RenderSlow(); // slot 39 (+0x9c)
-    virtual i32 RenderFast();  // slot 40 (+0xa0)  (the profiled frames read its update count)
 
     // Non-virtual leaf (matched): seeds the begin-clear params.
     i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3);
