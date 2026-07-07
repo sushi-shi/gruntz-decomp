@@ -674,9 +674,7 @@ SIZE_UNKNOWN(CSbiWndHost);
 
 // The seq-keyed object map at (g_gameReg->m_world->m_8 + 0x48): Lookup(key, &out)
 // returns found (CMapWordToOb::Lookup-style; reloc-masked sibling).
-struct CSbiSeqMap {
-    i32 Lookup(i32 key, void** out); // 0x1b8760
-};
+struct CSbiSeqMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
 SIZE_UNKNOWN(CSbiSeqMap);
 
 // The looked-up object whose vtable slot 8 (+0x20) returns a type tag (== 5

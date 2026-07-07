@@ -523,9 +523,9 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
     s->Read(&seq, 4);
 
     void* obj = 0;
-    CSbiSeqMap* map = (CSbiSeqMap*)(*(char**)((char*)gm + 8) + 0x48);
+    CMapPtrToPtr* map = (CMapPtrToPtr*)(*(char**)((char*)gm + 8) + 0x48);
     i32 m8 = 0;
-    if (map->Lookup(seq, &obj)) {
+    if (map->Lookup((void*)seq, obj)) {
         if (obj != 0) {
             m8 = (((CSbiSeqObj*)obj)->TypeTag() == 5) ? (i32)obj : 0;
         }
