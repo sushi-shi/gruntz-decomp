@@ -525,8 +525,8 @@ struct OptionsSlot {
 // +0x6c sub-mgr also shares the Teardown + operator delete (Close). All
 // reloc-masked.
 struct CmdSink {
-    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
-    void Teardown();                         // (this) reloc-masked (Close)
+    // Command @0x4250 IS CTriggerMgr::RebuildOverlay; cast at each call.
+    // Teardown @0x3b1b IS ~CTriggerMgr; cast at each call.
 };
 // The +0x70 object (CGruntzMgr::m_cmdNotify): dispatches the 4-arg command through
 // vtbl slot 1 (+0x04) as a thiscall (BroadcastCmd), takes a cell-height notify
@@ -2249,10 +2249,10 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CmdSink*)GetSaveSource())->Command(a0, cmd, a2, a3) == 0) {
+    if (((CTriggerMgr*)GetSaveSource())->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (m_cmdSubMgr->Command(a0, cmd, a2, a3) == 0) {
+    if (((CTriggerMgr*)m_cmdSubMgr)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (m_cmdNotify->Command(a0, cmd, a2, a3) == 0) {
@@ -2945,7 +2945,7 @@ void CGruntzMgr::Close() {
         m_scoreHud = 0;
     }
     if (m_cmdSubMgr) {
-        m_cmdSubMgr->Teardown();
+        ((CTriggerMgr*)m_cmdSubMgr)->~CTriggerMgr();
         operator delete(m_cmdSubMgr);
         m_cmdSubMgr = 0;
     }
@@ -3018,7 +3018,7 @@ void CGruntzMgr::Close() {
         m_50 = 0;
     }
     if (m_saveSink) {
-        m_saveSink->Teardown();
+        ((CTriggerMgr*)m_saveSink)->~CTriggerMgr();
         operator delete(m_saveSink);
         m_saveSink = 0;
     }
