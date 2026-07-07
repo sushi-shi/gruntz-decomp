@@ -150,9 +150,14 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 #include <Bute/ButeMgr.h>
 
 // The lose-item HUD sprite (spr) ApplyName/ApplyLookupGeometry ARE CGruntSprite's; local decl.
+class CGruntAnimPlayer {
+public:
+    void ApplyGeometryDirect(i32 a, i32 b); // 0x58b60
+};
 class CGruntSprite {
 public:
     void CacheFirstFrame(const char* name);
+    void CacheFrame(const char* key, i32 flag);
     void ApplyLookupGeometry(const char* key, i32 frame);
 };
 
@@ -1363,7 +1368,7 @@ i32 CGrunt::StepEntranceReinit() {
     // &m_cells[base].m_walk address. Kept raw so cl re-emits the same lea chain
     // (m_cells[base].m_walk would regenerate base*0x68 as an imul and diverge).
     char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
-    m_154->SetAnimName(nm);
+    ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
     return 0;
 }
 
@@ -1410,7 +1415,7 @@ i32 CGrunt::RunEntranceMove() {
         i32 row = base * 3;
         i32 idx = base + row * 4;
         char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
-        m_154->SetAnimName(nm);
+        ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
     } else {
         ReseedIdleReset(1, 0, 0);
     }
@@ -2138,7 +2143,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 row = m_entranceCell[1];
             i32 index = 3 * col + row;
             const char* nm = ((CGruntCell*)&m_cells[index])->GetName(0);
-            m_154->SetAnimFrame(nm, frame);
+            ((CGruntSprite*)m_154)->CacheFrame(nm, frame);
         }
         goto store;
     }
@@ -2166,7 +2171,7 @@ idle:
     // codes "A"/"K": drive the IDLE1 geometry (the forwarding setter), stamp the
     // cell frame from the incoming record (cell table base 0x474).
     m_prevEntranceDesc = m_154->m_1b4;
-    m_154->SetGeometryEx(m_poseIdle[0], 0);
+    ((CGruntAnimPlayer*)m_154)->ApplyGeometryDirect(m_poseIdle[0], 0);
     {
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
@@ -2175,7 +2180,7 @@ idle:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = ((CGruntCell*)&m_cells[index].m_idle)->GetName(0);
-        m_154->SetAnimFrame(nm, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(nm, frame);
     }
     goto store;
 
@@ -2189,7 +2194,7 @@ walk:
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
         const char* nm = ((CGruntCell*)&m_cells[index].m_walk)->GetName(0);
-        m_154->SetAnimName(nm);
+        ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
     }
 
 store:
@@ -4142,7 +4147,7 @@ i32 CGrunt::ResetGeometry() {
     i32 row = m_entranceCell[1];
     i32 index = 3 * col + row;
     const char* name = ((CGruntCell*)&m_cells[index])->GetName(0);
-    m_154->SetAnimFrame(name, frame);
+    ((CGruntSprite*)m_154)->CacheFrame(name, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
     m_14->m_1c = (void*)EntranceLookupAnimSet(s_animKeyA);
@@ -4346,7 +4351,7 @@ void CGrunt::RearmEntranceDrop() {
         // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
         // into idx*0x68 + 0x478 and diverge.
         const char* name = ((CGruntCell*)((char*)this + (3 * col + row + 0xb) * 0x68))->GetName(0);
-        m_154->SetAnimFrame(name, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(name, frame);
     }
 
     if (m_22c == 0) {
@@ -4459,7 +4464,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     ((CEffect6b*)(&m_150))->Apply((i32)found, 0);
     i32* elem = (i32*)m_154->m_1b4->AtChecked_06b270(0);
     i32 frame = elem[0x14 / 4];
-    m_154->GameApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
+    ((CGruntSprite*)m_154)->CacheFrame(s_GRUNTZ_EXITZ, frame);
     return 0;
 }
 
@@ -4523,12 +4528,12 @@ void CGrunt::LoadVehicleGruntAnimations() {
             SetEntrancePos(1, 1);
             m_entranceStamped = 1;
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->SetGeometryEx(m_poseToyBreak, 0);
+            ((CGruntAnimPlayer*)m_154)->ApplyGeometryDirect(m_poseToyBreak, 0);
 
             CAniElement* desc = m_154->m_1b4;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             char* buf = ((CString*)&m_448)->GetBuffer(0);
-            m_154->GameApplyLookupSprite(buf, elem[0x14 / 4]);
+            ((CGruntSprite*)m_154)->CacheFrame(buf, elem[0x14 / 4]);
 
             CGruntHud* h = m_10;
             CGameRegistry* g = g_pGameRegistry;
@@ -4683,7 +4688,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
     char* name = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
-    m_154->GameApplyName(name);
+    ((CGruntSprite*)m_154)->CacheFirstFrame(name);
 }
 
 // ---------------------------------------------------------------------------
@@ -4726,7 +4731,7 @@ i32 CGrunt::UpdateEntranceAnim() {
         i32 frame = elem[0x14 / 4];
 
         char* buf = ((CString*)&m_448)->GetBuffer(0);
-        m_154->SetAnimFrame(buf, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(buf, frame);
 
         m_entranceStamped = 1;
         i32 v = m_moveVariant;
@@ -4874,7 +4879,7 @@ i32 CGrunt::StepArrivalCommit() {
             i32 base = cell.col + colv;
             i32 idx = base + base * 3 * 4;
             char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
-            m_154->SetAnimName(nm);
+            ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
         }
@@ -4995,12 +5000,12 @@ finalize:
         }
     }
     m_prevEntranceDesc = m_154->m_1b4;
-    m_154->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
+    ((CGruntSprite*)m_154)->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
     {
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
-        m_154->SetAnimFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
     m_freezeDelayDone = 1;
     m_freezeUnfrozen = 0;
@@ -5822,7 +5827,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         i32 row = (cell[0] + col) * 3;
         i32 idx = (cell[0] + col) + row * 4;
         const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
-        m_154->SetAnimFrame(nm, 0);
+        ((CGruntSprite*)m_154)->CacheFrame(nm, 0);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -6008,7 +6013,7 @@ i32 CGrunt::StepAnimDispatchB() {
         i32 row = (cell[0] + col) * 3;
         i32 idx = (cell[0] + col) + row * 4;
         const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
-        m_154->SetAnimFrame(nm, 0);
+        ((CGruntSprite*)m_154)->CacheFrame(nm, 0);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -6394,13 +6399,13 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeP);
             i32 toyIdx = rand() % 2;
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->SetGeometryEx((&m_poseToy1)[toyIdx], 0);
+            ((CGruntAnimPlayer*)m_154)->ApplyGeometryDirect((&m_poseToy1)[toyIdx], 0);
 
             CAniElement* desc = m_154->m_1b4;
             i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = el[0x14 / 4];
             char* buf = ((CString*)&m_448)->GetBuffer(0);
-            m_154->SetAnimFrame(buf, frame);
+            ((CGruntSprite*)m_154)->CacheFrame(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
             WwdGameReg* g = g_gameReg;
@@ -6453,7 +6458,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         i32 basev = cell.col + colv;
         i32 idxv = basev + basev * 12;
         char* nm = ((CString*)((char*)this + idxv * 8 + 0x470))->GetBuffer(0);
-        m_154->SetAnimName(nm);
+        ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
 
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
         m_idleDelayLo = (i32)(tt >> 1);
@@ -6504,7 +6509,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = el[0x14 / 4];
         char* buf = ((CString*)&m_448)->GetBuffer(0);
-        m_154->SetAnimFrame(buf, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(buf, frame);
     }
 
     // The visible-bounds cue: probe the grunt's HUD point against the live view rect,
@@ -6675,7 +6680,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32 base = cc + (cr + 2 * cc);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
-    m_154->SetAnimFrame(buf, frame);
+    ((CGruntSprite*)m_154)->CacheFrame(buf, frame);
     m_214 = 1;
     return 0;
 }
@@ -6711,7 +6716,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32 base = col + (row + 2 * col);
     i32 idx2 = base + base * 12;
     char* buf = ((CString*)((char*)this + idx2 * 8 + 0x468))->GetBuffer(0);
-    m_154->SetAnimFrame(buf, frame);
+    ((CGruntSprite*)m_154)->CacheFrame(buf, frame);
     m_214 = 1;
     return 0;
 }
@@ -6850,7 +6855,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             return 0;
         }
         m_prevEntranceDesc = m_154->m_1b4;
-        m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
+        ((CGruntSprite*)m_154)->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelayLo = g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleDelayHi = 0;
         m_idleAnchorLo = (i32)g_645588;
@@ -6860,7 +6865,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     if (m_freezeDelayDone == 0) {
         if ((i64)(u32)g_645588 - *(i64*)&m_idleAnchorLo >= *(i64*)&m_idleDelayLo) {
             m_prevEntranceDesc = m_154->m_1b4;
-            m_154->GameApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
+            ((CGruntSprite*)m_154)->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CGruntHud* h = m_10;
             i32 vx = h->m_5c;
             i32 vy = h->m_60;
@@ -6989,7 +6994,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             i32 row = base * 3;
             i32 idx = base + row * 4;
             char* cn = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
-            m_154->GameApplyName(cn);
+            ((CGruntSprite*)m_154)->CacheFirstFrame(cn);
         } else {
             ReseedIdleReset(1, 0, 0);
         }
@@ -7115,7 +7120,7 @@ tail:
         i32 row = base * 3;
         i32 idx = base + row * 4;
         char* cn = ((CString*)((char*)this + idx * 8 + 0x46c))->GetBuffer(0);
-        m_154->GameApplyLookupSprite(cn, frame);
+        ((CGruntSprite*)m_154)->CacheFrame(cn, frame);
     }
     {
         CGruntHud* h = m_10;
@@ -7808,7 +7813,7 @@ i32 CGrunt::StartBombGruntRun() {
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
     char* cn = ((CString*)((char*)this + idx * 8))->GetBuffer(0);
-    m_154->GameApplyName(cn);
+    ((CGruntSprite*)m_154)->CacheFirstFrame(cn);
     return 0;
 }
 

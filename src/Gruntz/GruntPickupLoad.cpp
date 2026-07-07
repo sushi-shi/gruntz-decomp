@@ -15,6 +15,13 @@ extern WwdGameReg* g_gameReg;   // 0x64556c (moved from Grunt.h; this TU uses th
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
 #include <Globals.h>
 
+// CEntranceAnimPlayer's SetAnim* ARE CGruntSprite's; local decl.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);
+    void CacheFrame(const char* key, i32 flag);
+};
+
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
 // The id->name-slot type registry @0x6bf650: Resolve(id) returns a slot whose +0 is
@@ -501,7 +508,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_pickupGeoSrc);
-    m_154->SetAnimName("GRUNTZ_PICKUPS");
+    ((CGruntSprite*)m_154)->CacheFirstFrame("GRUNTZ_PICKUPS");
     return 1;
 }
 

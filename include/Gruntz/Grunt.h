@@ -355,24 +355,17 @@ public:
 SIZE_UNKNOWN(CEntranceAnimPlayer);
 class CEntranceAnimPlayer {
 public:
-    void SetAnimFrame(const char* name, i32 frame); // FUN_005504d0-class (ret 8)
     // Geometry setter that forwards to m_1a0.SetGeometry(src) then, if flag!=0,
     // a 2nd setter (FUN_00458b60, ret 8). PlaySound's IDLE arm drives it directly.
-    void SetGeometryEx(i32 src, i32 flag); // FUN_00458b60
     // A 1-arg setter the WALK/E arms call on the player itself (FUN_00550540,
     // FUN_005504d0 is the 2-arg form). Takes the resolved cell name.
-    void SetAnimName(const char* name); // FUN_00550540 (ret 4)
     // The death/freeze finalize 2-arg geometry setter (FUN_005505b0); takes the
     // resolved key string + a flag. External/reloc-masked.
-    void ApplyLookupGeometry(const char* key, i32 flag); // FUN_005505b0 (ret 8)
     // The combat-reaction dispatch (@0x646b0) drives the player through its
     // CGameObject base name/sprite setters (0x150540 / 0x1504d0, not the 0x55xxxx
     // entrance forms). External/no-body so the call rel32 reloc-masks.
-    void GameApplyName(const char* name);                  // 0x150540 (ret 4)
-    void GameApplyLookupSprite(const char* key, i32 flag); // 0x1504d0 (ret 8)
     // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
     // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
-    void GameApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0 (ret 8)
 
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
