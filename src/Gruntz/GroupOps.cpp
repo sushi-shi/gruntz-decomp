@@ -161,7 +161,7 @@ struct CFindNode {
 // Match (0x1fa5). Real polymorphic model (implicit vptr at +0x00).
 struct CBcastMember {
     virtual void Destroy(); // slot 0  +0x00
-    i32 Match(i32 key);     // 0x1fa5 (non-virtual)
+    // Match @0x1fa5 IS CTileTriggerSwitchLogic::FindIndexByKey; cast at the call.
 };
 struct CBcastListNode {
     CBcastListNode* m_next; // +0x00
@@ -205,7 +205,7 @@ i32 CGroupBroadcast::Broadcast() {
             i32 any = 0;
             for (CBcastListNode* it = (CBcastListNode*)m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
-                if (o != 0 && o->Match(node->m_10)) {
+                if (o != 0 && ((CTileTriggerSwitchLogic*)o)->FindIndexByKey(node->m_10)) {
                     o->Destroy();
                     counter++;
                     any = 1;
