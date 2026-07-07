@@ -32,6 +32,7 @@
 // Grunt.h-world class (includes Grunt.h for CGrunt); NOT part of the canonical-world
 // CTileLogic reparent - stays `: CUserLogic` (Grunt.h's true-0x30) until stage 5.
 class CGruntStaminaSprite : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
     LogicTypeId GetTypeTag();

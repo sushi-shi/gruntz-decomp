@@ -19,6 +19,7 @@
 #include <Gruntz/UserLogic.h>
 
 class CGruntToyTimeSprite : public CUserLogic {
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     TILE_LOGIC_TAIL
