@@ -45,6 +45,27 @@ public:
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
+struct AssetMgr;
+class CAssetLoader {
+public:
+    void LoadGameAssetNamespaces(AssetMgr* a, i32 b, i32 c);
+};
+class CPlay {
+public:
+    i32 LoadCursorSprites(i32 a, i32 b);
+};
+class NetSessionOpener {
+public:
+    i32 Open();
+};
+class CNetMgrLite {
+public:
+    i32 ShowMultiStartDlg();
+};
+class CMulti {
+public:
+    i32 StartTitle();
+};
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * tiny-method-view over this - ((CNetConnectThis/CNetConnectVtbl/CSymParser*)obj)
@@ -1162,11 +1183,11 @@ struct CNetConnectVtbl {
 // The external `this`-methods the driver calls (thunked -> reloc-masked no-body):
 SIZE_UNKNOWN(CNetConnectThis);
 struct CNetConnectThis {
-    i32 InitConnect(i32 a, i32 b, i32 c); // 0x43a9
-    i32 StartTitle();                     // 0x12df
-    i32 Open();                           // 0x2761
-    i32 ShowMultiStartDlg();              // 0x365c
-    i32 LoadCursorSprites(i32 a, i32 b);  // 0x35da
+    // InitConnect IS CAssetLoader::LoadGameAssetNamespaces; cast at the call.
+    // StartTitle IS CMulti::StartTitle; cast at the call.
+    // Open IS NetSessionOpener::Open; cast at the call.
+    // ShowMultiStartDlg IS CNetMgrLite::ShowMultiStartDlg; cast at the call.
+    // LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
 };
 // The m_4 game-mgr lobby helpers (ResetClockGlobals/ClearOptionsSlots/
 // InitLobbySettings/GetWorldFileName) and the chat-log FreeNodes are now declared
@@ -1275,7 +1296,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    if (((CNetConnectThis*)this)->InitConnect(a1, a2, a3) == 0) {
+    if ((((CAssetLoader*)this)->LoadGameAssetNamespaces((AssetMgr*)a1, a2, a3), 0)) {
         return 0;
     }
     g_connectRptMgr = this;
@@ -1340,13 +1361,13 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 
     MF(0xac) = 1;
     if (m_4->InitLobbySettings() != 0) {
-        if (((CNetConnectThis*)this)->StartTitle() != 0) {
+        if (((CMulti*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
             (this->*(((CNetConnectVtbl*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
-        if (((CNetConnectThis*)this)->Open() != 0) {
+        if (((NetSessionOpener*)this)->Open() != 0) {
             MF(0xac) = 0;
             while (g_ShowCursor(0) >= 0) {
             }
@@ -1375,7 +1396,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (TF(0x2c) == 0) {
         return 0;
     }
-    if (((CNetConnectThis*)this)->ShowMultiStartDlg() == 0) {
+    if (((CNetMgrLite*)this)->ShowMultiStartDlg() == 0) {
         return 0;
     }
     while (g_ShowCursor(0) >= 0) {
@@ -1442,7 +1463,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (wr == 0) {
         return 0;
     }
-    if (((CNetConnectThis*)this)->LoadCursorSprites(0, 0) == 0) {
+    if (((CPlay*)this)->LoadCursorSprites(0, 0) == 0) {
         return 0;
     }
     PollSession();
