@@ -34,7 +34,15 @@ class CGameMenuMgr;
 // leaves below auto-stamp the retail vtables. Eleven leading placeholder virtuals line
 // Configure up to slot 0x2c. Slot 0 is the scalar-deleting dtor (the fail `delete it`).
 // The inline base ctor zeroes the base fields the retail base ctor cleared.
-class CSBI_Image {
+// CSBI_Image's RTTI direct base (CSBI_RectOnly : CStatusBarItem). The builder deliberately
+// COLLAPSES the SBI vtable hierarchy into the single facet below (the out-of-line shared base
+// ctor / /GX-frame reason in the ctor note); name the real base here as an empty EBO base so
+// the class derives its RTTI-true parent without pulling the full chain (layout/matching-neutral,
+// and non-polymorphic so it carries no vtable of its own).
+struct CStatusBarItem {};
+struct CSBI_RectOnly : CStatusBarItem {};
+
+class CSBI_Image : public CSBI_RectOnly {
 public:
     // OUT-OF-LINE ctor (declaration only): retail `new CSBI_X` CALLS the base ctor out
     // of line (call 0x101fa0), so the opaque may-throw call makes cl register the
