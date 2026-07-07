@@ -72,7 +72,14 @@ inline CSurfacePairBase::~CSurfacePairBase() {}
 
 SIZE(CDDrawSurfacePair, 0x34); // new-size from CDDrawSubMgrPages::CreateChildren
 VTBL(CDDrawSurfacePair, 0x001eff30);
-class CDDrawSurfacePair : public CSurfacePairBase {
+class CDDrawSurfacePair
+    : public Wap::CObject { // was : CSurfacePairBase:CWapObj (merged, CWapObj slots as own)
+public:
+    virtual i32 IsLoaded();  // slot 5 (was CWapObj)
+    virtual i32 IsReady();   // slot 6 (was CWapObj)
+    i32 m_status;            // +0x04 (from merged CSurfacePairBase)
+    i32 m_flags;             // +0x08
+    CDDrawSurfaceMgr* m_mgr; // +0x0c (from merged CSurfacePairBase)
 public:
     // The spawned-child ctor: the CreateChildren path reuses the shared base-family
     // arg-ctor (??0CDDrawSubMgr @0x156cb0, which stamps the CLoadable base vtable
