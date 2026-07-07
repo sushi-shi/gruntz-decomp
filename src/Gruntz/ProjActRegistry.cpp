@@ -24,10 +24,16 @@ public:
 // The global registry object at VA 0x629388. SetActiveRange reaches it through an
 // ILT thunk (0x3742) -> modeled NO-body so the call reloc-masks. Find (0x16da80)
 // is the slow binary-search probe the coordinate->entry lookup falls back to.
-struct CProjReg {
-    void SetActiveRange(i32 lo, i32 hi); // 0x3742 (ILT thunk; reloc-masked)
-    i32 Find(i32 coord, i32 z);          // 0x16da80 (__thiscall ret 8)
+// SetActiveRange @0x3742 = CZDArrayDerived::Construct, Find @0x16da80 = _zvec::GrowTo; local decls.
+class CZDArrayDerived {
+public:
+    CZDArrayDerived* Construct(i32 a, i32 b);
 };
+class _zvec {
+public:
+    void* GrowTo(i32 a, i32 b);
+};
+struct CProjReg {};
 DATA(0x00229388)
 extern CProjReg g_projReg;
 
@@ -62,7 +68,7 @@ static inline R3Entry* R3Lookup(i32 coord) {
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
-    if (g_projReg.Find(coord, 0)) {
+    if (((_zvec*)&g_projReg)->GrowTo(coord, 0)) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
@@ -81,7 +87,7 @@ CProjActOwner::~CProjActOwner() {}
 // global registry.
 RVA(0x00008060, 0x15)
 void ProjActRegisterDefaults() {
-    g_projReg.SetActiveRange(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_projReg)->Construct(0x7d0, 0x7da);
 }
 
 // 0x80e0: CProjActObj::FireActivation - look the activation coordinate up in the
