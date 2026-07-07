@@ -2912,6 +2912,10 @@ extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 // in-place (declaration order preserved) rather than at the top so the fold stays
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
+class CSoundFxEmitter {
+public:
+    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d);
+};
 class Cfa150 {
 public:
     void Cleanup();
@@ -4154,9 +4158,9 @@ struct EmWorld { // this->m_4
 };
 
 struct EmThis {
-    void DeferredDraw();               // 0x1ae6  (this)
-    void ArmTimer(i32, i32, i32, i32); // 0x1843  (this)
-    void FinishMode();                 // 0x3a71  (this)
+    // DeferredDraw IS CPlay::NotifyVisibleEntities; cast at the call.
+    // ArmTimer @0xfa8f0 IS CSoundFxEmitter::Method_fa8f0; cast at the call.
+    // FinishMode IS CPlay::RegisterInputBindings; cast at the call.
 
     char p0[0x4];
     EmWorld* m_4; // +0x04
@@ -4199,7 +4203,7 @@ i32 CPlay::EnterMode(i32 mode) {
         self->m_c->m_4->m_14->m_2c->Fill(0);
         EmRegWorldStep((CGruntzMgr*)g_64556c, self->m_guts, self->m_470);
         if (self->m_474 != 0) {
-            self->DeferredDraw();
+            ((CPlay*)self)->NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->vtbl
@@ -4209,7 +4213,7 @@ i32 CPlay::EnterMode(i32 mode) {
         ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
     } else {
         if (self->m_474 != 0) {
-            self->DeferredDraw();
+            ((CPlay*)self)->NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->vtbl
@@ -4231,7 +4235,7 @@ i32 CPlay::EnterMode(i32 mode) {
 
 finish:
     ((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158e90();
-    self->ArmTimer(0x50, 0x3e8, 0, 1);
+    ((CSoundFxEmitter*)self)->Method_fa8f0(0x50, 0x3e8, 0, 1);
     if (self->m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)self->m_c->m_24->m_mainPlane)->CenterScrollB();
     }
@@ -4246,7 +4250,7 @@ finish:
         g_645588_clk = self->m_savedClock;
     }
     ((CSBI_RectOnly*)self->m_guts)->Deactivate();
-    self->FinishMode();
+    ((CPlay*)self)->RegisterInputBindings();
     self->m_484 = 0;
     return 1;
 }

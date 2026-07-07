@@ -12,6 +12,15 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
+class CGruntzMgr {
+public:
+    void ResetClockGlobals();
+};
+class CSBI_RectOnly {
+public:
+    i32 LoadBattlezItemConfig(i32 a);
+    void Teardown();
+};
 struct CChatBoxTextHost;
 class CChatBoxOwner {
 public:
@@ -62,9 +71,9 @@ namespace modeinit {
 
     // The 0x630 worker owned at this->m_2dc.
     struct Worker630 {
-        i32 Init10b4(i32 a); // 0x000010b4
-        void PreDtor248c();  // 0x0000248c
-        void ModePostInit(); // 0x00001d98
+        // Init10b4 IS CSBI_RectOnly::LoadBattlezItemConfig; cast at the call.
+        // PreDtor248c IS CSBI_RectOnly::Teardown; cast at the call.
+        // ModePostInit IS CGruntzMgr::ResetClockGlobals; cast at the call.
         // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
         struct Sub530 {
             void Ctor1b4f0b(); // 0x001b4f0b
@@ -224,7 +233,7 @@ namespace modeinit {
     //    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
     //  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
     //    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
-    //    m_2dc->ModePostInit(); and m_40 is a DWORD store (i32 field), not u8.
+    //    ((CGruntzMgr*)m_2dc)->ResetClockGlobals(); and m_40 is a DWORD store (i32 field), not u8.
     //  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
     //    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
     //  * ShowCursor/timeGetTime go through the CACHED import pointers
@@ -379,9 +388,9 @@ namespace modeinit {
             wk = 0;
         }
         m_2dc = wk;
-        if (m_2dc->Init10b4(m_c) == 0) {
+        if (((CSBI_RectOnly*)m_2dc)->LoadBattlezItemConfig((i32)m_c) == 0) {
             if (m_2dc) {
-                m_2dc->PreDtor248c();
+                ((CSBI_RectOnly*)m_2dc)->Teardown();
                 ((Worker630::Sub530*)((char*)m_2dc + 0x530))->Dtor1b4f3e();
                 EhVecCtor((char*)m_2dc + 0x2c, 0, 0, 0, 0); // __ehvec_dtor 0x11f640 (reloc-masked)
                 RezFree(m_2dc);
@@ -430,7 +439,7 @@ namespace modeinit {
         m_40 = 0;
         m_1c0 = 0;
         memset(m_1d0, 0, 0x40 * 4);
-        m_2dc->ModePostInit();
+        ((CGruntzMgr*)m_2dc)->ResetClockGlobals();
         m_1cc = 0;
         m_2d8 = timeGetTime();
         m_320 = 0;

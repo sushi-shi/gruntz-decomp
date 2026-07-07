@@ -26,11 +26,21 @@ public:
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
 #include <rva.h>
+class CTileTriggerContainer {
+public:
+    void* FindInLists12(i32 a, i32 b);
+    i32 DelFromList3(void* a);
+    i32 DelFromList1(void* a);
+};
 class CTileActionEvent {
 public:
     i32 Process(i32 a);
 };
 class CTileTriggerSwitchLogic {
+public:
+    i32 ScanNeighborhood(i32 a, i32 b);
+    void* FindByField0C(i32 a);
+
 public:
     void BuildRockBreakInGameText();
 };
@@ -116,12 +126,12 @@ struct RockLogicObj {
     // SetType @0x1a00 IS CTileGridCommand::ApplyMove; cast at the call.
     // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
 };
-struct RockLogicMgr {                         // g_mgrSettings->m_curState->m_2e4
-    RockLogicObj* FindAt(i32 x, i32 y);       // FUN @ 0x377e __thiscall
-    RockLogicObj* FindCell(i32 cellId);       // FUN @ 0x2838 __thiscall
-    RockLogicObj* Acquire(i32 cellId, i32 f); // FUN @ 0x21df __thiscall
-    void Release(RockLogicObj* o);            // FUN @ 0x2581 __thiscall
-    void Reap(RockLogicObj* o);               // FUN @ 0x3aa8 __thiscall
+struct RockLogicMgr { // g_mgrSettings->m_curState->m_2e4
+    // FindAt IS CTileTriggerSwitchLogic::ScanNeighborhood; cast at the call.
+    // FindCell IS CTileTriggerSwitchLogic::FindByField0C; cast at the call.
+    // Acquire IS CTileTriggerContainer::FindInLists12; cast at the call.
+    // Release IS CTileTriggerContainer::DelFromList1; cast at the call.
+    // Reap IS CTileTriggerContainer::DelFromList3; cast at the call.
 };
 struct RockSettingsRoot { // g_mgrSettings->m_curState
     char m_pad00[0x2e4];
@@ -209,7 +219,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 
             if (type != 0x1e && type != 0x1f) {
                 if (type == 0x21) {
-                    RockLogicObj* gr = root->m_2e4->FindAt(tx, ty);
+                    RockLogicObj* gr = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                                           ->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
@@ -218,24 +229,26 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                         return 0;
                     }
                     ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
-                    root->m_2e4->Release(gr);
+                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)gr);
                     continue;
                 }
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                RockLogicObj* o = root->m_2e4->FindCell(ty + (tx << 8));
+                RockLogicObj* o = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                                      ->FindByField0C(ty + (tx << 8));
                 if (((CTileActionEvent*)o)->Process(0)) {
-                    root->m_2e4->Reap(o);
+                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList3((void*)o);
                 }
                 continue;
             }
 
             // type == 0x1e || type == 0x1f: rock-break marker + particle
-            RockLogicObj* lo = root->m_2e4->Acquire(ty + (tx << 8), 0x1a);
+            RockLogicObj* lo = (RockLogicObj*)((CTileTriggerContainer*)root->m_2e4)
+                                   ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
                 ((CTileGridCommand*)lo)->ApplyMove(type);
-                root->m_2e4->Release(lo);
+                ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
                 RockGrid* wg = g_mgrSettings->m_world->m_24->m_5c;
                 i32 off = wg->m_24[ty];
