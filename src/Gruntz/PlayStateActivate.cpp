@@ -24,6 +24,15 @@ public:
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
+class CGameObjChain;
+class CGameLevel {
+public:
+    void VisitVisible(void* a, CGameObjChain* b);
+}; // 0x15dc90
+class DirectInputMgr2 {
+public:
+    i32 ReadAll();
+}; // 0x133110
 class CDDrawSubMgrPages {
 public:
     i32 Method_158e90();
@@ -56,8 +65,8 @@ struct GLSSubA { // m_c->m_4
     GLSSub14* m_14; // +0x14
     void* m_18;     // +0x18
 };
-struct GLSObj24 {                    // m_c->m_24
-    void Wire(GLSSub14* a, void* b); // FUN_0015dc90 __thiscall
+struct GLSObj24 { // m_c->m_24
+    // Wire @0x15dc90 IS CGameLevel::VisitVisible; cast at the call.
 };
 // The asset root (CPlay+0xc) is the canonical CSpriteFactoryHolder (Play.h): m_c is CSpriteFactoryHolder's
 // renderer-B (CSpriteFactoryHolder+0xc, the real class CRenderer, View.h), and the dispatched
@@ -76,9 +85,9 @@ struct GLSMapMgr {    // this->m_2dc
     void Activate2(); // FUN_004021b7 __thiscall
 };
 // GLSResetMgr is forward-declared in <Globals.h> (g_glsResetMgr @0x645570); complete
-// it here so g_glsResetMgr->Reset() falls out.
+// it here so ((DirectInputMgr2*)g_glsResetMgr)->ReadAll() falls out.
 struct GLSResetMgr {
-    void Reset(); // FUN_00533110 __thiscall
+    // Reset @0x133110 IS DirectInputMgr2::ReadAll; cast at the call.
 };
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 DATA(0x0024556c)
@@ -141,7 +150,7 @@ i32 CPlay::OnActivate() {
         return 0;
     }
 
-    g_glsResetMgr->Reset();
+    ((DirectInputMgr2*)g_glsResetMgr)->ReadAll();
     while (ShowCursor(FALSE) >= 0)
         ;
 
@@ -151,7 +160,8 @@ i32 CPlay::OnActivate() {
     if (p->m_474 != 0) {
         p->ArmActivation();
     } else {
-        p->m_c->m_24->Wire(p->m_c->m_4->m_14, p->m_c->m_8);
+        ((CGameLevel*)p->m_c->m_24)
+            ->VisitVisible((void*)p->m_c->m_4->m_14, (CGameObjChain*)p->m_c->m_8);
         p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
     }
 

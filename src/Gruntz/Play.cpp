@@ -742,8 +742,8 @@ struct CExitView {
     CExitV44* m_24; // +0x24  virtual slot 0x44
     struct M28 {
         char p0[0x2c];
-        SoundStream* m_2c;  // +0x2c  (Stop @0x137a80)
-        void Release();     // 0x157bc0
+        SoundStream* m_2c; // +0x2c  (Stop @0x137a80)
+        // Release @0x157bc0 IS CDDrawSubMgrLeafScan::ClearMap; cast at the call.
     }* m_28;                // +0x28
     CDDrawSubMgrLeaf* m_2c; // +0x2c  (FreeAll_152720 @0x152720)
 };
@@ -770,7 +770,7 @@ void CPlay::ModeCleanup() {
         if (((CExitView*)m_c)->m_28->m_2c) {
             ((CExitView*)m_c)->m_28->m_2c->Stop();
         }
-        ((CExitView*)m_c)->m_28->Release();
+        ((CDDrawSubMgrLeafScan*)((CExitView*)m_c)->m_28)->ClearMap();
     }
     if (m_4) {
         ((CExitWorld*)m_4)->m_48->StopAndFlush();

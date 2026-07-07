@@ -646,7 +646,7 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
             rec[5] = (char)ch->m_flag;
             rec[4] = (char)ch->m_228;
             *(i32*)(rec + 7) = ch->m_playerId;
-            CString name = ch->GetName();
+            CString name = ((CNetMgr*)ch)->GetName();
             strcpy(rec + 0xb, (const char*)name);
         }
         rec += 0x20;
@@ -848,7 +848,7 @@ i32 CNetMgr::BroadcastOneChannel(CNetChannel* ch) {
     packet[0x11] = ch->m_228;
     {
         i32 id = ch->m_playerId;
-        CString name = ch->GetName();
+        CString name = ((CNetMgr*)ch)->GetName();
         *(i32*)(packet + 0x18) = id;
         strcpy(packet + 0x18, (const char*)name);
     }
