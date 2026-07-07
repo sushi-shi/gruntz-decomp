@@ -14,6 +14,10 @@
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
 #include <io.h>    // _finddata_t / _findfirst (0x11f900) / _findnext (0x11fa30)
+class CGruntzMgr {
+public:
+    i32 IsBattlezMapFile(CString p);
+};
 
 namespace m4 {
 
@@ -39,7 +43,7 @@ namespace m4 {
 
     // The settings-manager query: takes the display name by value (callee destroys).
     struct LevelSettings {
-        i32 IsHidden13a2(CString name); // 0x000013a2 (thiscall, by-value CString)
+        // IsHidden13a2 @0x13a2 IS CGruntzMgr::IsBattlezMapFile; cast at the call.
     };
     extern "C" LevelSettings* g_mgrSettings; // 0x0064556c
 
@@ -77,7 +81,7 @@ namespace m4 {
             do {
                 char disp[260];
                 sprintf(disp, g_nameFmt, fd.name);
-                if (!g_mgrSettings->IsHidden13a2(CString(disp))) {
+                if (!((CGruntzMgr*)g_mgrSettings)->IsBattlezMapFile(CString(disp))) {
                     i32 len = strlen(disp);
                     if (len > 4) {
                         disp[len - 4] = 0;

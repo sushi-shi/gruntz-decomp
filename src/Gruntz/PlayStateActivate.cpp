@@ -24,6 +24,11 @@ public:
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
+class CSBI_RectOnly {
+public:
+    i32 LoadMainStatusBarSprite();
+    i32 Deactivate();
+};
 class CGameObjChain;
 class CGameLevel {
 public:
@@ -80,9 +85,9 @@ struct GLSAssetRoot { // this->m_c (== CSpriteFactoryHolder, View.h)
     char m_pad14[0x24 - 0x14];
     GLSObj24* m_24; // +0x24
 };
-struct GLSMapMgr {    // this->m_2dc
-    void Finalize();  // FUN_0040125d __thiscall
-    void Activate2(); // FUN_004021b7 __thiscall
+struct GLSMapMgr { // this->m_2dc
+    // Finalize @0x125d IS CSBI_RectOnly::Deactivate; cast at the call.
+    // Activate2 @0x21b7 IS CSBI_RectOnly::LoadMainStatusBarSprite; cast at the call.
 };
 // GLSResetMgr is forward-declared in <Globals.h> (g_glsResetMgr @0x645570); complete
 // it here so ((DirectInputMgr2*)g_glsResetMgr)->ReadAll() falls out.
@@ -165,8 +170,8 @@ i32 CPlay::OnActivate() {
         p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
     }
 
-    p->m_2dc->Finalize();
-    p->m_2dc->Activate2();
+    ((CSBI_RectOnly*)p->m_2dc)->Deactivate();
+    ((CSBI_RectOnly*)p->m_2dc)->LoadMainStatusBarSprite();
     p->m_510 = 2;
     ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
     p->StartTimer(0x50, 0x3e8, 0, 1);

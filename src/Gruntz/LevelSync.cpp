@@ -16,6 +16,10 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
 #include <rva.h>
+class CPlay {
+public:
+    i32 ResetViewport();
+};
 
 // The stream/archive object is the shared WAP32 CSerialArchive (Read @ vtable +0x2c /
 // Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h> - the former
@@ -37,7 +41,7 @@ struct CLevelSyncChild {
 
 // The game-registry singleton (g_gameReg, 0x64556c): op-8 resets its +0x2c manager.
 struct MgrReset {
-    void Reset(); // 0x403d55 (__thiscall)
+    // Reset @0x3d55 IS CPlay::ResetViewport; cast at the call.
 };
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
@@ -79,7 +83,7 @@ i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
             return 0;
         }
     } else if (op == 8) {
-        ((MgrReset*)g_gameReg->m_curState)->Reset();
+        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
         if (m[0] == 0) {
             SubResetA();
             SubResetB();

@@ -19,6 +19,14 @@
 #include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
 #include <Gruntz/GruntzMgr.h>  // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
+class CTriggerMgr {
+public:
+    i32 ApplySwitch(i32 a, i32 b);
+};
+class CTileWireLogic {
+public:
+    i32 WireTileSwitchLogic(void* a, i32 b, i32 c);
+};
 
 // The game registry singleton (*0x24556c) - the canonical MFC-side CGruntzMgr view.
 // Its +0x2c slot registers a named sprite set (cast to CSpriteSetReg); its +0x70
@@ -30,8 +38,8 @@ extern CGruntzMgr* g_gameReg;
 // The grunt-command object's follow-up registrar (this->m_260).
 struct CGruntCmdObj;
 struct CGruntRegistrar {
-    void RegisterA(CGruntCmdObj* obj, i32 x, i32 y); // 0x26df __thiscall
-    void RegisterB(CGruntCmdObj* obj, i32 x, i32 y); // 0x3dfa __thiscall
+    // RegisterA @0x26df IS CTriggerMgr::ApplySwitch (recv-this dropped); cast at the call.
+    // RegisterB @0x3dfa IS CTileWireLogic::WireTileSwitchLogic; cast at the call.
 };
 // The grunt's current-tile anchor (this->m_10): m_5c/m_60 are its committed coords.
 struct CGruntAnchor {
@@ -155,8 +163,8 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     i32 code = ((i32*)((CTileGrid*)g_gameReg->m_cmdNotify)->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
-            m_260->RegisterA(this, m_17c, m_180);
-            m_260->RegisterB(this, m_17c, m_180);
+            ((CTriggerMgr*)m_260)->ApplySwitch(m_17c, m_180);
+            ((CTileWireLogic*)m_260)->WireTileSwitchLogic((void*)this, m_17c, m_180);
         }
     }
     return 1;

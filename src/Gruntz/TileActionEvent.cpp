@@ -19,6 +19,14 @@
 #include <Gruntz/UserLogic.h> // CGameObject (the created break sprite)
 
 #include <rva.h>
+class CGruntTileMgr {
+public:
+    i32 CombatCue(i32 a, i32 b, i32 c, i32 d, i32 e);
+};
+class EngineLabelBacklog {
+public:
+    i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d);
+};
 
 // ---------------------------------------------------------------------------
 // The game registry singleton (?g_gameReg@@3PAUWwdGameRegZ@@A at VA 0x64556c).
@@ -53,8 +61,8 @@ SIZE_UNKNOWN(WwdGrSprHolder);
 // The message/effect sink (g->m_68): PostTileEvent posts coordinate-tagged events
 // to the game; external/no-body so the dispatch reloc-masks.
 struct CTileEventSink {
-    void PostA(i32 x, i32 y, i32 a2, i32 a3, i32 a4); // 0x40400c  (edi==0x138 path)
-    void PostB(i32 x, i32 y, i32 a2, i32 a3);         // 0x402fb3  (edi==0x144 path)
+    // PostA @0x400c IS CGruntTileMgr::CombatCue; cast at the call.
+    // PostB @0x2fb3 IS EngineLabelBacklog::LoadExplosionSprites; cast at the call.
 };
 SIZE_UNKNOWN(CTileEventSink);
 
@@ -309,8 +317,8 @@ i32 CTileActionEvent::Process(i32 arg) {
             ((CUserLogic*)brick)->LoadGruntTypeTable(0, 1, 0, 0);
             brick->m_1e4 = 0;
         } else if (effect == 0x138) {
-            ((CTileEventSink*)g_gameReg->m_cmdGrid)
-                ->PostA((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
+            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
+                ->CombatCue((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, 1, 2, -1);
         } else if (effect == 0x13e) {
             i32 px = (m_tileX << 5) + 0x10;
             i32 py = (m_tileY << 5) + 0x10;
@@ -334,8 +342,8 @@ i32 CTileActionEvent::Process(i32 arg) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (effect == 0x144) {
-            ((CTileEventSink*)g_gameReg->m_cmdGrid)
-                ->PostB((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
+            ((EngineLabelBacklog*)g_gameReg->m_cmdGrid)
+                ->LoadExplosionSprites((m_tileX << 5) + 0x10, (m_tileY << 5) + 0x10, -1, 2);
         }
     }
 
