@@ -82,7 +82,7 @@ SIZE_UNKNOWN(CActionGridMgr);
 // The brick / tile-object passed as Process's arg (ebx). External methods modeled
 // no-body so their __thiscall dispatch reloc-masks.
 struct CBrickTile {
-    void Detonate(i32 a0, i32 a1, i32 a2, i32 a3); // 0x403bd9 (edi==0x132 path)
+    // Detonate @0x3bd9 IS CUserLogic::LoadGruntTypeTable; cast at the call.
     i32 m_8;   // +0x08  flag word (|= 0x10000 on uncached default break)
     i32 m_198; // +0x198 cache-state gate
     i32 m_1e4; // +0x1e4 cleared on edi==0x132
@@ -306,7 +306,7 @@ i32 CTileActionEvent::Process(i32 arg) {
     CBrickTile* brick = (CBrickTile*)arg;
     if (effect != 0 && brick != 0) {
         if (effect == 0x132) {
-            brick->Detonate(0, 1, 0, 0);
+            ((CUserLogic*)brick)->LoadGruntTypeTable(0, 1, 0, 0);
             brick->m_1e4 = 0;
         } else if (effect == 0x138) {
             ((CTileEventSink*)g_gameReg->m_cmdGrid)

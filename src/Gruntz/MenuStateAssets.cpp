@@ -14,6 +14,10 @@ public:
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
 #include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
+class CGruntzMgr {
+public:
+    i32 RestoreVideoMode(i32 a);
+};
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
@@ -73,7 +77,7 @@ struct MenuCursorSub { // this->m_4->m_4
 struct MenuRoot { // this->m_4
     char m_pad00[0x4];
     MenuCursorSub* m_4; // +0x04
-    void Hide(i32 z);   // FUN @ 0x4034ef __thiscall
+    // Hide @0x34ef IS CGruntzMgr::RestoreVideoMode; cast at the call.
 };
 
 // The global mgr singleton (*0x24556c): its resource holder's +0x28 sound registry
@@ -136,7 +140,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     if (!LoadGameAssetNamespaces(a2, a3, a3)) {
         return 0;
     }
-    ((MenuRoot*)m_4)->Hide(0);
+    ((CGruntzMgr*)m_4)->RestoreVideoMode(0);
     m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_MENU");
     if (m_2c == 0) {
         return 0;

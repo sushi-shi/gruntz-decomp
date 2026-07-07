@@ -12,6 +12,10 @@
 
 #include <rva.h>
 #include <Globals.h>
+class CGrunt {
+public:
+    void SetEntrancePos(i32 a, i32 b);
+};
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -27,7 +31,7 @@ struct CGruntObj;
 
 // The addressed-grid grunt: only its raw state offsets are touched here.
 struct CGruntObj {
-    void StampMove(i32 a, i32 b); // 0x401401 (__thiscall)
+    // StampMove @0x1401 IS CGrunt::SetEntrancePos; cast at each call.
 };
 
 // The world grid (m_4->m_68): slot[] of grunt pointers at +0x1c plus the per-command
@@ -182,7 +186,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 F(g, 0x420) = 0;
                 F(g, 0x2d0) = 0;
                 F(g, 0x248) &= 0xe7fbfbfd;
-                g->StampMove(1, 1);
+                ((CGrunt*)g)->SetEntrancePos(1, 1);
             }
             a6 &= 0xffff;
             a5 &= 0xffff;
@@ -237,7 +241,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (g == 0 || F(g, 0x1fc) == 0 || F(g, 0x1e4) != 0) {
                 return 0;
             }
-            g->StampMove(1, 1);
+            ((CGrunt*)g)->SetEntrancePos(1, 1);
             if (F(g, 0x420) != 0) {
                 F(g, 0x308) = 0;
                 F(g, 0x310) = 0;
@@ -246,7 +250,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 F(g, 0x420) = 0;
                 F(g, 0x2d0) = 0;
                 F(g, 0x248) &= 0xe7fbfbfd;
-                g->StampMove(1, 1);
+                ((CGrunt*)g)->SetEntrancePos(1, 1);
             }
             return 1;
         }
@@ -285,7 +289,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     F(P(g, 0x10), 0x13c) = 0;
                     F(P(g, 0x10), 0x138) = 0;
                     F(P(g, 0x10), 0x140) = 0;
-                    g->StampMove(1, 1);
+                    ((CGrunt*)g)->SetEntrancePos(1, 1);
                 }
                 F(g, 0x464) = 0;
             }
@@ -304,7 +308,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             F(g, 0x420) = 0;
             F(g, 0x2d0) = 0;
             F(g, 0x248) &= 0xe7fbfbfd;
-            g->StampMove(1, 1);
+            ((CGrunt*)g)->SetEntrancePos(1, 1);
             return 1;
         }
 
@@ -323,7 +327,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 F(g, 0x420) = 0;
                 F(g, 0x2d0) = 0;
                 F(g, 0x248) &= 0xe7fbfbfd;
-                g->StampMove(1, 1);
+                ((CGrunt*)g)->SetEntrancePos(1, 1);
             }
             CGruntObj* g2 = ((CGrid*)P(P(this, 4), 0x68))->slot[idx];
             i32 r;
@@ -363,7 +367,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 F(g, 0x420) = 0;
                 F(g, 0x2d0) = 0;
                 F(g, 0x248) &= 0xe7fbfbfd;
-                g->StampMove(1, 1);
+                ((CGrunt*)g)->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
             CGruntObj* g2 = ((CGrid*)P(P(this, 4), 0x68))->slot[col + row * 0xf];
@@ -425,7 +429,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 F(g, 0x420) = 0;
                 F(g, 0x2d0) = 0;
                 F(g, 0x248) &= 0xe7fbfbfd;
-                g->StampMove(1, 1);
+                ((CGrunt*)g)->SetEntrancePos(1, 1);
             }
             u32 row = a5 & 0xffff, col = a6 & 0xffff;
             CGruntObj* g2 = ((CGrid*)P(P(this, 4), 0x68))->slot[col + row * 0xf];
