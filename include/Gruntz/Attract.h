@@ -103,8 +103,8 @@ public:
 
 class CAttractRegistrar {
 public:
-    i32 Register(void* sound, char* type, char* sep); // FUN_00557ee0 (ret 0xc)
-    void Release(char* type, char* sep);              // FUN_00557c70 (ret 8)
+    // Register @0x157ee0 = CDDrawSubMgrLeafScan::ScanTree_157ee0, Release @0x157c70 =
+    // CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70; cast at each call.
 
     char m_pad00[0x2c];
     CAttractPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)

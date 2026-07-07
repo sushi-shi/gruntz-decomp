@@ -23,6 +23,14 @@
 
 #include <stdio.h> // sprintf (the "\SCREENZ\%s" path formatter)
 
+// The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
+class DirNode;
+class CDDrawSubMgrLeafScan {
+public:
+    i32 ScanTree_157ee0(DirNode* n, const char* key, const char* g); // 0x157ee0
+    i32 RemoveKeysEqual_157c70(const char* key, const char* g);      // 0x157c70
+};
+
 // ---------------------------------------------------------------------------
 // External engine globals (reloc-masked DATA symbols).
 // ---------------------------------------------------------------------------
@@ -135,7 +143,7 @@ void CAttract::ReleaseResources() {
     if (reg->m_2c) {
         reg->m_2c->Free();
     }
-    menuRoot()->m_28->Release(s_ATTRACT, s_UNDERSCORE);
+    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70(s_ATTRACT, s_UNDERSCORE);
     CState::ReleaseResources();
 }
 
@@ -469,7 +477,8 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    menuRoot()->m_28->Register(sound, s_ATTRACT, s_UNDERSCORE);
+    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
+        ->ScanTree_157ee0((DirNode*)sound, s_ATTRACT, s_UNDERSCORE);
 
     if (showCursor(0) >= 0) {
         do {
