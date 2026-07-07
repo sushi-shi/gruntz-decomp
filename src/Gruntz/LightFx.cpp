@@ -22,9 +22,7 @@
 // The CMap core embedded at +0x10 inside each spec/effect store. Lookup(key,
 // &out) fills *out with the mapped node and returns nonzero on hit. __thiscall,
 // ret 8 (2 args), matched in the engine map TU - NO-body so the call reloc-masks.
-struct LfxMapCore {
-    i32 Lookup(i32 key, i32* out); // 0x1b8008 / 0x1b8438
-};
+struct LfxMapCore {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
 
 // A spec/effect store: the CMap core sits at +0x10 (the engine call is
 // `mov ecx,store; add ecx,0x10; Lookup`).
@@ -166,7 +164,8 @@ void CLightFx::RegisterActs() {
 RVA(0x0009d520, 0xfd)
 i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     i32 node = 0;
-    ((LfxMapSource*)m_3c)->m_0c->m_10->m_10.Lookup(spec, &node);
+    ((CMapStringToPtr*)&((LfxMapSource*)m_3c)->m_0c->m_10->m_10)
+        ->Lookup((const char*)spec, (void*&)node);
     i32 found = node;
     g_gameReg->m_logicPump->Push((CImageSet*)found, anchorA, 7);
     LfxObj* obj = (LfxObj*)m_38;
@@ -187,10 +186,12 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
     ((LfxObj*)m_38)->m_08 |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
-    ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
+    ((CMapStringToPtr*)&((LfxObj*)m_38)->m_0c->m_2c->m_10)
+        ->Lookup((const char*)effect, (void*&)node);
     if (node != 0) {
         node = 0;
-        ((LfxObj*)m_38)->m_0c->m_2c->m_10.Lookup(effect, &node);
+        ((CMapStringToPtr*)&((LfxObj*)m_38)->m_0c->m_2c->m_10)
+            ->Lookup((const char*)effect, (void*&)node);
         m_layerBase = ((LfxObj*)m_38)->m_1b4;
         ((CDDrawBlitParam*)&((LfxObj*)m_38)->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)node);
         RebindNode();
