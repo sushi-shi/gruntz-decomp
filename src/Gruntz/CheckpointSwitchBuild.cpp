@@ -22,6 +22,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <rva.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
 
 SIZE_UNKNOWN(CStatzRect60);
 struct CStatzRect60 {
@@ -47,7 +48,7 @@ DATA(0x0020f928)
 extern char g_statzTabCfgTag[]; // Configure tag global
 
 SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
-struct CCheckpointTriggerSwitchLogic {
+struct CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 BaseBuild(i32, i32, i32, i32, i32, i32, i32, i32); // slot 0 (reloc-masked)
     i32
     BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9);
