@@ -12,6 +12,7 @@
 #ifndef SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 #define SRC_GRUNTZ_TILETRIGGERCONTAINER_H
 
+#include <Mfc.h> // MFC CObList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
@@ -63,12 +64,9 @@ SIZE_UNKNOWN(TtcNode);
 struct TtcObListVtbl; // ~CObList vtable (contents owned by MFC)
 class TtcObList {
 public:
-    void RemoveAt(void* pos); // 0x1b4ac7
-    void* AddTail(void* obj); // 0x1b4991
-    void RemoveAll();         // 0x1b48a6
-    void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
+    // RemoveAt/AddTail/RemoveAll @0x1b4ac7/0x1b4991/0x1b48a6 + Dtor @0x1b48c6 ARE CObList's; cast at each call.
     ~TtcObList() {
-        Dtor();
+        ((CObList*)this)->~CObList();
     } // real subobject dtor: drives the container's /GX frame
     TtcObListVtbl* m_vptr;    // +0x00
     TtcNode* m_pNodeHead;     // +0x04
