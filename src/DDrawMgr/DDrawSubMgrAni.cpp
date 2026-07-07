@@ -65,15 +65,19 @@ struct CAniElemSub {
 // vptr. Configure (0x1655c0) reads its arg2's tag via CParseSource and, on a match,
 // links a record; the failure path deletes it via the virtual scalar-deleting dtor.
 // (vtable_hierarchy: derive CObject; the former fabricated CAniElementBase is deleted.)
+// Configure_1655c0/Configure2_165620 @0x1655c0/0x165620 are CAniElement's (header-less anielement
+// unit); TU-local decl, cast at each call.
+class CAniElement {
+public:
+    i32 Configure_1655c0(void* sub, void* entry, i32 flag);
+    i32 Configure2_165620(void* sub, void* entry, i32 flag);
+};
 struct CAniElementObj : public CObject {
     CAniElementObj() {
         m_04 = 0;
         m_1c = 0;
     }
     virtual ~CAniElementObj() OVERRIDE; // [1] 0x152e10, declared-only (cl-auto ??_G)
-
-    i32 Configure_1655c0(void* sub, void* entry, i32 flag);  // 0x1655c0 __thiscall
-    i32 Configure2_165620(void* sub, void* entry, i32 flag); // 0x165620 variant
 
     i32 m_04;         // +0x04 = 0
     CAniElemSub m_08; // +0x08..+0x1b  embedded CObject subobject
@@ -125,7 +129,7 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* en
     if (el == 0) {
         return 0;
     }
-    if (el->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (((CAniElement*)el)->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -153,7 +157,7 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* e
     if (el == 0) {
         return 0;
     }
-    if (el->Configure2_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (((CAniElement*)el)->Configure2_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
