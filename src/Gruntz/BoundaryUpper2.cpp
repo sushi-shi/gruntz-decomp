@@ -30,10 +30,15 @@ extern void* g_wapObjectDtorVtbl;
 // is reloc-masked.
 // ---------------------------------------------------------------------------
 DATA(0x002bf848)
+// The 0x185000 leaf is CDebugConfig::InitFromEnv (header-less DebugPrintf class); local decl.
+class CDebugConfig {
+public:
+    CDebugConfig* InitFromEnv();
+};
 extern CHashTail g_hash184b70; // 0x6bf848
 RVA(0x00184b70, 0xa)
 void ClearHash_184b70() {
-    g_hash184b70.Clear();
+    ((CDebugConfig*)&g_hash184b70)->InitFromEnv();
 }
 
 // ---------------------------------------------------------------------------

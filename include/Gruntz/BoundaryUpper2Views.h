@@ -19,9 +19,7 @@
 #include <Gruntz/Blk6c.h> // the 0x6c-byte CImageOwned transform descriptor
 
 // 0x184b70 - global-object tail-forward (tail-jump the shared teardown 0x185000).
-struct CHashTail {
-    void Clear(); // 0x185000
-};
+struct CHashTail {}; // Clear @0x185000 IS CDebugConfig::InitFromEnv; cast at the call
 SIZE_UNKNOWN(CHashTail);
 
 // 0x133370 - CInputDevRoot grand-base dtor (stamps its C-level vftable 0x5ef670 ==
