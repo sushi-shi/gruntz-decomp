@@ -109,9 +109,6 @@ struct WwdSnapshot {
 // authentic: m_name is the engine's bare CString handle (one `char*`); its
 // operator= is an out-of-line extern, so it is modeled as a method on a tiny
 // helper the &m_name handle is reinterpreted through (no member to fold into).
-struct CStringAssign {
-    void Assign(const char* s); // 0x1b9e74
-};
 
 // CWwdGameObject is defined in <Gruntz/WwdGameObject.h> (canonical). These two
 // render sub-objects are defined further below; forward-declare them for the
@@ -535,7 +532,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 
     char name[0x80];
     ar->Read(name, 0x80);
-    ((CStringAssign*)&m_name)->Assign(name);
+    *(CString*)&m_name = name;
 
     ar->Read(&m_e4, 4);
     ar->Read(&m_e8, 4);
@@ -786,7 +783,6 @@ reject:
 
 // class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CMapStringToObLite);
-SIZE_UNKNOWN(CStringAssign);
 // CmdMap is SIZE-annotated in the canonical header; m_subList is a real MFC CObList
 // of MFC CObject payloads (both real classes, no walk-view).
 SIZE_UNKNOWN(MapLookupA);
