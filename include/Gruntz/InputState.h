@@ -25,12 +25,6 @@
 // destructor; the random-ambient-sound placement path unlinks a live voice node with
 // RemoveAt. Accessed via `(CObListSub*)((char*)m_inputState + 8)` (the deliberate
 // embedded-sub-object offset the manager's /GX bodies already bake in).
-SIZE_UNKNOWN(CObListSub);
-struct CObListSub {
-    void Init(i32 cap);       // CObList ctor (this = obj+8, 0xa) reloc-masked
-    void Dtor();              // ~CObList-family (this = obj+8) reloc-masked
-    i32 RemoveAt(void* node); // 0x1b4ac7 unlink a spatial voice node (ambient TU)
-};
 
 // The +0x54 object. m_armed (+0x24) is the manager's ambient-arm flag AND the
 // ambient TU's "playable"/object-count gate (the manager writes 1 here via Arm when

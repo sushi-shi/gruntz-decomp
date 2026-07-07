@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <new>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/BoundaryUpperViews.h>
 #include <Io/SaveGame.h>
@@ -1620,7 +1621,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CInput54* in = m_inputState;
     if (in) {
         in->Flush();
-        ((CObListSub*)((char*)in + 8))->Dtor();
+        ((CObList*)((char*)in + 8))->CObList::~CObList();
         RezFree(in);
     }
     m_inputState = 0;
@@ -1683,7 +1684,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     CInput54* in2 = m_inputState;
     if (in2) {
         in2->Flush();
-        ((CObListSub*)((char*)in2 + 8))->Dtor();
+        ((CObList*)((char*)in2 + 8))->CObList::~CObList();
         RezFree(in2);
     }
     m_inputState = 0;
@@ -1691,7 +1692,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     void* no = RezAlloc(0x30);
     CInput54* ni;
     if (no) {
-        ((CObListSub*)((char*)no + 8))->Init(0xa);
+        new ((char*)no + 8) CObList(0xa);
         *(i32*)no = 0;
         *(i32*)((char*)no + 4) = 0x64;
         ni = (CInput54*)no;

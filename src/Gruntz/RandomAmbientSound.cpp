@@ -121,13 +121,13 @@ void SpawnPosSound(PosSoundObj* obj) {
         if (sound == 0) {
             return;
         }
-        CObListSub* arr = (CObListSub*)((char*)g_gameReg->m_inputState + 8);
+        CObList* arr = (CObList*)((char*)g_gameReg->m_inputState + 8);
         if (sound->m_mgr != 0) {
             sound->m_mgr->StopAndRewind();
             sound->m_isPlaying = 0;
         }
         if (sound->m_spatialNode != 0) {
-            arr->RemoveAt(sound->m_spatialNode);
+            arr->RemoveAt((POSITION)sound->m_spatialNode);
             delete sound;
         }
         aux->m_voice = 0;
