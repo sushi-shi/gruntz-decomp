@@ -334,13 +334,9 @@ public:
     void* GetByIndex(i32 idx, i32 z); // thunk 0x4165 -> FUN_004e23c0
 };
 SIZE_UNKNOWN(CSbFactory);
-class CSbIconSet {
-public:
-    i32 Probe(i32 a);        // thunk 0x1582 -> FUN_00479b30
-    void SetA(i32 v);        // thunk 0x11e5 -> FUN_004eb830
-    void SetB(i32 a, i32 b); // thunk 0x23dd -> FUN_004eb740
-    void AddRef(i32 v);      // thunk 0x3b98 -> FUN_004ea170
-};
+// The m_cmdGrid probed here is a CTriggerMgr; Probe @0x79b30 is CTriggerMgr::ByteTableHas.
+// (SetA/SetB/AddRef were unused facet decls -> deleted.) Cast at each Probe call.
+class CSbIconSet {};
 SIZE_UNKNOWN(CSbIconSet);
 
 // CStatusBarMgr layout (placeholder fields; only offsets are load-bearing).

@@ -35,6 +35,13 @@
 #define CSBCONFIGITEM_OUTOFLINE_CTOR
 #include <Gruntz/StatusBarMgrBuilders.h> // CSbConfigItem builder-facet + SBI leaves + CStatusBarMgr
 
+// The cmd-grid probed by the warlord-head builders is a CTriggerMgr; ByteTableHas @0x79b30.
+// TU-local decl, cast at each call.
+class CTriggerMgr {
+public:
+    i32 ByteTableHas(i32 a);
+};
+
 // ---------------------------------------------------------------------------
 // The builder-facet base CSbConfigItem, its concrete SBI leaves (CSBI_Image /
 // CSBI_ImageSet / CSBI_WellGoo), the icon/factory helpers (CSbItemHelp / CSbFactory
@@ -964,7 +971,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_b8.AddTail(it);
-            if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(1)) {
+            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(1)) {
                 it = (CSbConfigItem*)new CSBI_ImageSet;
                 r.left = bx + 0x17;
                 r.top = by + 0xe;
@@ -986,7 +993,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     return 0;
                 }
                 m_b8.AddTail(it);
-                if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(2)) {
+                if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(2)) {
                     it = (CSbConfigItem*)new CSBI_ImageSet;
                     r.left = bx + 0x4c;
                     r.top = by + 0xf;
@@ -1008,7 +1015,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_b8.AddTail(it);
-                    if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(3)) {
+                    if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(3)) {
                         it = (CSbConfigItem*)new CSBI_ImageSet;
                         r.left = bx + 0x1b;
                         r.top = by + 0x3b;
@@ -1030,7 +1037,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             return 0;
                         }
                         m_b8.AddTail(it);
-                        if (((CSbIconSet*)g_gameReg->m_cmdGrid)->Probe(4)) {
+                        if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(4)) {
                             it = (CSbConfigItem*)new CSBI_ImageSet;
                             r.left = bx + 0x4a;
                             r.top = by + 0x35;
