@@ -151,7 +151,6 @@ public:
     i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
-    void* MapSmallScalarDtor(i32 flag);
     void ResetSlots();
 };
 
@@ -315,15 +314,7 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
 // 0x157610: scalar-deleting destructor of the sibling CDDrawChildGroupDtorHost (vtable
 // 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-teardown
 // ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
-SYMBOL(??_GCDDrawChildGroupDtorHost @@UAEPAXI@Z)
-RVA(0x00157610, 0x1e)
-void* CDDrawWorkerMapSmall::MapSmallScalarDtor(i32 flag) {
-    ((CDDrawChildGroupDtorHost*)this)->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawChildGroupDtorHost@@UAEPAXI@Z 0x00157610 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
 // Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
 RVA(0x00156db0, 0x6)

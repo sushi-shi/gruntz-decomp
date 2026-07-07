@@ -179,17 +179,9 @@ struct CScalarDtor855a0 {
     virtual ~CScalarDtor855a0() {
         Base13ddb0();
     }
-    void* ScalarDtor(u32 flags);
 };
 SIZE_UNKNOWN(CScalarDtor855a0);
-RVA(0x000855a0, 0x24)
-void* CScalarDtor855a0::ScalarDtor(u32 flags) {
-    this->CScalarDtor855a0::~CScalarDtor855a0();
-    if (flags & 1) {
-        RezFree(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCScalarDtor855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================
 // 0x094c10 - CGameWnd base destructor: cl's implicit vptr-restore stamps

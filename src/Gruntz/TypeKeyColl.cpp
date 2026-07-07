@@ -327,18 +327,7 @@ void DynInitTypeColl() {
 // vtables, run the member + base teardown, and free the object when bit0 of the
 // flag is set. Returns `this`.
 // ===========================================================================
-RVA(0x0016e9c0, 0x45)
-void* CButeTree::ScalarDtor(u32 flags) {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    ClearRecursive(0);
-    ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
-    BaseDtor();
-    if (flags & 1) {
-        RezFree(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and

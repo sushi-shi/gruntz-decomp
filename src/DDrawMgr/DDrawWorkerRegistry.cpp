@@ -610,15 +610,7 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
 // ---------------------------------------------------------------------------
 // 0x156df0: ??_G scalar-deleting destructor - run the real member-teardown ~
 // (0x156e10, CDDrawSubMgr.cpp as CDDrawRegistryDtorHost::~) then operator delete.
-SYMBOL(??_GCDDrawRegistryDtorHost @@UAEPAXI@Z)
-RVA(0x00156df0, 0x1e)
-void* CDDrawWorkerRegistry::RegScalarDtor(i32 flag) {
-    ((CDDrawRegistryDtorHost*)this)->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawRegistryDtorHost@@UAEPAXI@Z 0x00156df0 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
 // ---------------------------------------------------------------------------
 // 0x156e80: probe `arg1` through 0x13b900(arg2) -> object, deref via 0x13a230; if

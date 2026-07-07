@@ -329,15 +329,7 @@ i32 CDDrawSubMgrLeafScan::IsReady() {
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (??_G of CDDrawSubMgrLeafScan at 0x157550): run the real
 // member-teardown ~CDDrawSubMgrLeafScan (0x157570) then operator delete under the flag.
-SYMBOL(??_GCDDrawSubMgrLeafScan @@UAEPAXI@Z)
-RVA(0x00157550, 0x1e)
-void* CDDrawSubMgrLeafScan::ScalarDtor(i32 flag) {
-    this->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z 0x00157550 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
 // ---------------------------------------------------------------------------
 // 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying

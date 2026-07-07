@@ -68,7 +68,6 @@ public:
     virtual StateId GetStateId(); // 0x157790 (state predicate, returns 1)
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
-    void* SubMgrScalarDtor(i32 flag);
 
     i32 m_field08;                   // +0x08
     CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
@@ -255,14 +254,7 @@ i32 CDDrawSubMgr::OnDestroy() {
 // reloc-masked cross-module dtor name: the ~ target (0xd5d70) is a distinct
 // engine class in another module; its label won't match the ??1CDDrawSubMgrFar
 // reference. The scalar-dtor code bytes (call ~ / test flag / operator delete) match.
-RVA(0x00155720, 0x1e)
-void* CDDrawSubMgr::SubMgrScalarDtor(i32 flag) {
-    ((CDDrawSubMgrFar*)this)->CDDrawSubMgrFar::~CDDrawSubMgrFar();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawSubMgr@@UAEPAXI@Z 0x00155720 0x1e  (cl-auto-gen scalar-deleting dtor)
 
 // ---------------------------------------------------------------------------
 // 0x157630: member-teardown ~ of the 3-map sibling CDDrawChildGroupDtorHost (vtable 0x5efdc0).
