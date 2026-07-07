@@ -267,9 +267,12 @@ struct Tile {
 // __thiscall on m_board (facet of CBrickzGrid) taking a RECT* (null here). Kept as its own
 // view: the 0x2b340 stub carries a distinct delinker symbol, so folding Clip into
 // CBrickzGrid perturbs a neighbour (-0.09% on Method_0358a0). External, reloc-masked.
-struct ClipHost {
-    void Clip(const RECT*); // 0x02b340
-};
+namespace ApiMisc {
+    class ClipHost_02b340 { // 0x2b340 Clip(const RECT*)
+    public:
+        void Clip(const RECT* r);
+    };
+} // namespace ApiMisc
 
 // A GridUnit __thiscall helper (RVA 0x029a50, thunk 0x036c0) that copies the
 // unit's level geometry (m_level->m_5c, m_level->m_60) into an out coord pair.
@@ -1567,7 +1570,7 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     board->m_gridW = board->m_boundRight - board->m_originX;
     board->m_gridH = board->m_boundBottom - board->m_originY;
     Method_0300c0(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
-    ((ClipHost*)board)->Clip((const RECT*)0);
+    ((ApiMisc::ClipHost_02b340*)board)->Clip((const RECT*)0);
     return 1;
 }
 
@@ -2090,7 +2093,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             }
         }
     }
-    ((ClipHost*)board)->Clip((const RECT*)0);
+    ((ApiMisc::ClipHost_02b340*)board)->Clip((const RECT*)0);
     return 0;
 }
 
@@ -5052,7 +5055,6 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
 }
 SIZE_UNKNOWN(AnimNameResolver);
 SIZE_UNKNOWN(Candidate);
-SIZE_UNKNOWN(ClipHost);
 SIZE_UNKNOWN(GruntSpawnCtx);
 SIZE_UNKNOWN(SceneColl);
 SIZE_UNKNOWN(SceneNode);
