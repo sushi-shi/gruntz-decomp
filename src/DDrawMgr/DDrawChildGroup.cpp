@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wap32/Object.h>
 // DDrawChildGroup.cpp - six leaf methods of the tomalla-named ddrawmgr
 // sub-manager CDDrawChildGroup (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" family; see docs/ddraw-family-names.md).
@@ -33,7 +34,7 @@
 // The object reached via m_parent->+0x24->+0x5c is a CImageSet3 (the WWD image-set
 // collection, defined in src/Image/ImageSet3.cpp); its Prune_1628d0 (0x1628d0)
 // forwards to the spatial grid's Prune. Run by the ClearAll cleanup (0x1591f0).
-class CImageSet3 {
+class CImageSet3 : public Wap::CObject {
 public:
     i32 Prune_1628d0(); // 0x1628d0 (__thiscall)
 };
