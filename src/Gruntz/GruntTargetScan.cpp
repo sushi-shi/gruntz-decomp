@@ -119,8 +119,13 @@ struct CScanTileMgr {
 // The board grid (g_gameReg->m_tileGrid): dims at +0xc/+0x10.
 
 // The on-screen cue mgr (g_gameReg->m_cueSink): fires the grunt entrance cue (0x4039f4).
+// CScanCueMgr::PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver (header-less); local decl.
+class CGruntSpawnConfig {
+public:
+    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+};
 struct CScanCueMgr {
-    void PlayCue(CGruntScan* g, i32 code, i32 a, i32 b, i32 c, i32 d); // 0x4039f4
+    // PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver; cast at the call.
 };
 struct CScanSub24 {
     char m_pad0[0x5c];
@@ -343,7 +348,8 @@ i32 CGruntScan::ScanNearestTarget() {
                         F(P(this, 0x10), 0x60)
                     )
                     != 0) {
-                    mgr->m_cueSink->PlayCue(this, 0x366, -1, 0, -1, -1);
+                    ((CGruntSpawnConfig*)mgr->m_cueSink)
+                        ->SpawnVoiceDriver((i32)this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:

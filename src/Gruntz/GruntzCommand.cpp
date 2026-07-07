@@ -25,6 +25,12 @@
 #include <Gruntz/WwdGameReg.h>    // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 
+// CGruntzCmdTarget::Exec IS CCmdHandler::Dispatch @0xd1b60 (7 args); local decl.
+class CCmdHandler {
+public:
+    i32 Dispatch(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g);
+};
+
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). Save/Load no-op
 // unless its +0x30 active-game gate (m_world) is non-null (same gate the cmd-mgr
 // taps); this TU only null-tests it, so the m_world facet type is irrelevant here.
@@ -169,7 +175,7 @@ i32 CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
     if (!p) {
         return 0;
     }
-    return p->Exec(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
+    return ((CCmdHandler*)p)->Dispatch(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
 }
 
 // ---------------------------------------------------------------------------
@@ -185,7 +191,7 @@ i32 CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *(u16*)&m_10) {
-            if (!p->Exec(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
+            if (!((CCmdHandler*)p)->Dispatch(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
         }
