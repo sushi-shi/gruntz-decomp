@@ -20,6 +20,10 @@
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
 #include <rva.h>
+class CTriggerMgr {
+public:
+    i32 ResetGroup(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h);
+}; // 0x79520
 class CPlay {
 public:
     i32 ResetGoals(i32 a, i32 b);
@@ -104,7 +108,7 @@ struct LfxMgr {
 // A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
 // engine entry FUN_00479520 is reloc-masked (no body).
 struct LfxBlitTarget {
-    void Blit(i32 px, i32 py, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7); // FUN_00479520
+    // Blit @0x79520 IS CTriggerMgr::ResetGroup (8th arg reloc-masked, 0); cast at the call.
 };
 
 // g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view; only the
@@ -1651,8 +1655,8 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    ((LfxBlitTarget*)g_gameReg->m_cmdGrid)
-        ->Blit(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
+    ((CTriggerMgr*)g_gameReg->m_cmdGrid)
+        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1, 0);
     return 1;
 }
 
