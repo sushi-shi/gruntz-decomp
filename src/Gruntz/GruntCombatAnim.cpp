@@ -28,6 +28,7 @@
 // constant-hoist choices structured C++ can't force; the switch tail-merge + FP octant
 // block layout compound it. Same family as LoadGruntDeathAnimations. Final-sweep candidate.
 #include <Gruntz/SoundCueMgr.h>
+#include <Wap32/ZVec.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Bute/ButeMgr.h>  // canonical CButeMgr (one shape)
 #include <Bute/ButeTree.h> // canonical CButeTree (one shape)
@@ -113,7 +114,7 @@ struct CombatConvCue {
 };
 extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl, 1 arg)
 
-// The active-anim-set type-name registry: g_typeColl.IndexToPtr(node) -> record whose
+// The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeNodes[0..g_typeCount) each get Reset.
 struct CombatTypeNode {
     void Reset(); // 0x1b9b93 (__thiscall, 0 args)
@@ -469,7 +470,8 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     }
 
     // Rebuild the active-anim-set type-name registry free list.
-    char** typeRec = g_typeColl.IndexToPtr((i32)(*(void**)(P(this, 0x14) + 0x1c)));
+    char** typeRec =
+        (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(*(void**)(P(this, 0x14) + 0x1c)));
     if (g_typeCount != 0) {
         char* p = g_typeNodes;
         i32 n = g_typeCount;

@@ -6,6 +6,7 @@
 // runs a 2nd unit-type switch) and fires the on-screen entrance cue. Class-split
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/Grunt.h>
+#include <Wap32/ZVec.h>
 extern WwdGameReg* g_gameReg;   // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
@@ -82,9 +83,12 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         if (m_entranceActive != 0) {
             return 0;
         }
-        if (strcmp(*(const char**)g_typeColl.Resolve(m_14->m_1c), s_codeA) != 0
-            && strcmp(*(const char**)g_typeColl.Resolve(m_14->m_1c), s_codeD) != 0
-            && strcmp(*(const char**)g_typeColl.Resolve(m_14->m_1c), s_codeE) != 0) {
+        if (strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeA)
+                != 0
+            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeD)
+                   != 0
+            && strcmp(*(const char**)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c), s_codeE)
+                   != 0) {
             return 0;
         }
     }

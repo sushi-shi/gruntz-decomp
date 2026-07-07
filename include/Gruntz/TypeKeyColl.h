@@ -67,8 +67,6 @@ public:
     void Construct(i32 lo, i32 hi);          // 0x408710 (reloc-masked; build registry)
     void RegisterRange(i32 lo, i32 hi);      // 0x408710 (same slot, alt view name)
     void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)
-    char** IndexToPtr(i32 idx);              // thunk 0x403864 -> node (*node == name)
-    void* Resolve(void* id);                 // thunk 0x437c (__thiscall ret 4)
     void* m_cursor;                          // +0x1c  (== m_buf)
     i32 m_count;                             // +0x20  (== m_hi - m_lo + 1)
 };

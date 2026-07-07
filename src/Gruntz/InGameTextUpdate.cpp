@@ -11,6 +11,7 @@
 // Only offsets / code bytes are load-bearing; the engine sub-object helpers below
 // (hit-test result chain, sound chain, type-key cache) are reloc-masked externals.
 #include <Gruntz/InGameText.h> // the canonical CInGameText : CUserLogic model
+#include <Wap32/ZVec.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
@@ -130,7 +131,7 @@ i32 CInGameText::Update() {
         return 0;
     }
 
-    char** node = g_typeColl.IndexToPtr((i32)found->m_14->m_1c);
+    char** node = (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)found->m_14->m_1c);
     EngStr4* p = g_typeNodes;
     i32 n = g_typeCount;
     while (n-- != 0) {

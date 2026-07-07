@@ -170,7 +170,7 @@ extern "C" void Act_F(); // 0x402725
         if (id_ == 0) {                                                                            \
             g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
             id_ = g_typeCounter;                                                                   \
-            CString* slot_ = (CString*)g_typeColl.IndexToPtr(id_);                                 \
+            CString* slot_ = (CString*)((_zvec*)&g_typeColl)->IndexToPtr(id_);                     \
             CString* p_ = (CString*)g_typeColl.m_cursor;                                           \
             for (i32 n_ = g_typeColl.m_count; n_--; p_++) {                                        \
                 ::new ((void*)p_) CString;                                                         \

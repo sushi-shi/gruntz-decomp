@@ -14,6 +14,7 @@
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
 #include <rva.h>
+#include <Wap32/ZVec.h>
 #include <Gruntz/AssetNamespaceLoader.h>
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -127,7 +128,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
         ResetGate136b(0, 0, 1);
     }
 
-    CTubeTypeNode* node = (CTubeTypeNode*)g_typeColl.IndexToPtr((i32)m_14->m_1c);
+    CTubeTypeNode* node = (CTubeTypeNode*)((_zvec*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c);
     void* p = g_typeNodes;
     i32 count = g_typeCount;
     for (i32 i = count; i != 0; i--) {
