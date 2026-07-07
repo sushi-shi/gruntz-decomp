@@ -892,7 +892,12 @@ def cmd_audit(aud):
                                  % (source_base or "(none)", truth, via, note), loc))
         if src != "manual-stamp" and col and col != name:
             F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
-        if n_inh and n_virt > own:
+        # REDECLARE means declaring MORE virtuals than the class's own slots. But if the
+        # class declares MORE than the SCANNED vtable even has (n_virt > len(slots)), the
+        # vtable_scan UNDER-CUT it (fragmented an RTTI vtable at an interior COL/code-ref -
+        # CDDrawSubMgrPages: RTTI 23 slots, scanned 10), so the low `own` is a scan artifact,
+        # not a source redeclaration - don't flag.
+        if n_inh and own < n_virt <= len(slots):
             F["REDECLARE"].append((name, "%d virtual decls, only %d own (ovr+new): drop ~%d inherited parent virtuals" % (n_virt, own, n_virt - own), loc))
         # OVERRIDE is meaningful only for a FULLY-declared class: if the class under-
         # declares its own slots (MISSING, below), some "override slots" aren't declared
