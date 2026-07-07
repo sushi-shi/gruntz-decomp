@@ -13,7 +13,9 @@
 // modeled here as external shells so their calls reloc-mask.
 #ifndef SRC_GRUNTZ_GAMELEVEL_H
 #define SRC_GRUNTZ_GAMELEVEL_H
-#include <rva.h> // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <rva.h>
+#include <Wap32/WapObj.h> // CWapObj (recognized CObject chain) // OVERRIDE macro (override under clang, no-op under MSVC 5.0)
+#include <Wap32/Object.h>
 
 #include <Wwd/WwdFile.h> // CPlane, WwdHeader, operator new, uncompress
 
@@ -167,16 +169,10 @@ enum LoadableClassId {
 // (m_04/m_08/m_0c) mirror the canonical CLoadable header.
 // ---------------------------------------------------------------------------
 
-struct CLoadable {
-    virtual void v00();                  // [0] +0x00  engine thunk (0x1bef01)
-    virtual void* ScalarDtor(u32 flags); // [1] +0x04  scalar-deleting dtor (CGameLevel overrides)
-    virtual void v08();                  // [2] +0x08  engine thunk (0x0028ec)
-    virtual void v0c();                  // [3] +0x0c  engine thunk (0x00106e)
-    virtual void v10();                  // [4] +0x10  engine thunk (0x004034)
-    virtual i32 IsLoaded();              // [5] +0x14  CGameLevel overrides (0x161190)
-    virtual void v18();                  // [6] +0x18  engine thunk (0x001c08)
-    virtual i32 Unload();                // [7] +0x1c  CGameLevel overrides (0x15d1f0)
-    virtual i32 GetClassId();            // [8] +0x20  CGameLevel overrides (0x1611b0)
+class CLoadable : public CWapObj {
+public:
+    virtual i32 Unload();     // [7] +0x1c  CGameLevel overrides (0x15d1f0)
+    virtual i32 GetClassId(); // [8] +0x20  CGameLevel overrides (0x1611b0)
 
     CLoadable(i32 a1, i32 a2, i32 a3) {
         m_04 = a2;
@@ -187,7 +183,7 @@ struct CLoadable {
     // grand-base teardown vftable. INLINE (in the header) so it folds into
     // ~CGameLevel after the member array dtors, exactly as the retail compiler
     // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
-    ~CLoadable() {
+    virtual ~CLoadable() {
         m_04 = -1;
         m_08 = 0;
         m_0c = 0;
@@ -226,8 +222,9 @@ struct CLoadable {
 struct CGameObject;
 struct CGameObjChain;
 
-class CGameLevel : public CLoadable {
+class CGameLevel : public Wap::CObject {
 public:
+    i32 m_04, m_08, m_0c; // +0x04..0x0f (merged from CLoadable base)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is
     // the real method (RVA-bound in GameLevel.cpp), so cl emits ??_7CGameLevel@@6B@
     // with those slots pointing at the matched functions; the engine-thunk base
@@ -239,10 +236,11 @@ public:
     // default-extents block, then dispatch the corresponding load virtual (slot
     // +0x38/+0x3c/+0x40 = LoadWwd/LoadFromSource/LoadFromFile); on a 0 result they
     // run Unload (slot +0x1c, the fail/reset hook).
-    void* ScalarDtor(u32 flags) OVERRIDE; // [1]  +0x04  0x1611c0
-    i32 IsLoaded() OVERRIDE;              // [5]  +0x14  0x161190  sentinel+owner+m_04 predicate
-    i32 Unload() OVERRIDE;                // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
-    i32 GetClassId() OVERRIDE;            // [8]  +0x20  0x1611b0  class type tag (0x19)
+    virtual ~CGameLevel() OVERRIDE; // [1] +0x04 (dtor 0x1611e0; ??_G 0x1611c0 pinned in .cpp)
+    virtual i32 IsLoaded();         // [5]  +0x14  0x161190 (own; was CWapObj slot)
+    virtual i32 IsReady();          // [6]  +0x18  0x001c08 (own; was CWapObj slot, declared-only)
+    virtual i32 Unload();           // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
+    virtual i32 GetClassId();       // [8]  +0x20  0x1611b0  class type tag (0x19)
     virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
     virtual i32
     SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords); // [10] +0x28  0x15ceb0
@@ -365,9 +363,7 @@ public:
     // Destructor (the ~CGameLevel @0x1611e0). cl auto-stamps the derived vftable at
     // dtor entry (polymorphic), runs the level cleanup (Unload), then the three array
     // members destruct and ~CLoadable restores the base subobject. Non-virtual;
-    // ScalarDtor (vtable slot 1) calls it. Declared so the member dtors + EH frame
-    // fall out.
-    ~CGameLevel();
+    // (~CGameLevel is the slot-1 virtual dtor, declared above; its ??_G is pinned in the .cpp.)
 
 private:
     // The per-plane reader (WwdFile::ReadPlane). Same body as the one in

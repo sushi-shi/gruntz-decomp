@@ -156,7 +156,10 @@ static inline void StampParamBlock(CGameLevel* o) {
 // independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
 // CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) : CLoadable(a1, a2, a3) {
+CGameLevel::CGameLevel(i32 a1, i32 a2, i32 a3) {
+    m_04 = a2;
+    m_08 = a3;
+    m_0c = a1; // (merged CLoadable ctor)
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
     m_b4 = 250;
@@ -443,14 +446,9 @@ i32 CGameLevel::LoadFromSource(CParseSource* arg) {
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (vtable slot 1): run the destructor, then free the
 // object when bit0 of the flag is set; returns `this`. The compiler-standard thunk.
-RVA(0x001611c0, 0x1e)
-void* CGameLevel::ScalarDtor(u32 flags) {
-    this->~CGameLevel(); // call ??1CGameLevel
-    if (flags & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// The scalar-deleting dtor is the compiler-generated ??_G (folded from ~CGameLevel);
+// pin it by mangled name since it has no source body.
+// @rva-symbol: ??_GCGameLevel@@UAEPAXI@Z 0x001611c0 0x1e
 
 // ---------------------------------------------------------------------------
 // Destructor: cl auto-stamps the derived vftable @0x5f0150 at dtor entry
