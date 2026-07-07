@@ -266,7 +266,8 @@ VTBL(CTileTriggerSwitch, 0x1e7f6c);
 // ---------------------------------------------------------------------------
 class CGruntSelectedSprite : public CUserLogic {
 public:
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     TILE_LOGIC_TAIL
 public:
     CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0

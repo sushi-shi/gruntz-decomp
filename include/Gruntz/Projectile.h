@@ -110,8 +110,11 @@ struct CProjSample {};
 SIZE_UNKNOWN(CProjectile);
 class CProjectile : public CMovingLogic {
 public:
-    CProjectile();                   // 0x126e0 (no-arg)
-    CProjectile(CGameObject* owner); // 0xdec60 (1-arg spawn ctor)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    CProjectile();                                                     // 0x126e0 (no-arg)
+    CProjectile(CGameObject* owner);                                   // 0xdec60 (1-arg spawn ctor)
     virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
     // slot 17 (+0x44) - the ONE added virtual (anchors the new vftable; retail slot
     // holds thunk 0x13bb -> 0xdf050, and 0xdf050's only direct caller IS that thunk,
@@ -174,5 +177,6 @@ public:
     double m_phase;               // +0x250  trajectory parameter (sin/cos arg; phase gate)
     i32 m_launched;               // +0x258  launched flag
 };
+VTBL(CProjectile, 0x1e798c);
 
 #endif // GRUNTZ_PROJECTILE_H
