@@ -1092,13 +1092,18 @@ inline WwdBMid::~WwdBMid() {
 
 // Level-2 (vtable 0x5f00a8): clears the m_18c block + runs SubB, then its embedded
 // WwdSub command object folds, then ~WwdBMid.
+// SubB @0x15b5d0 is CWwdFactoryObject::ReleaseSubs_15b5d0 (header-less ddrawsubmgr class); local decl.
+class CWwdFactoryObject {
+public:
+    void ReleaseSubs_15b5d0();
+};
 struct WwdBLevel2 : public WwdBMid {
     ~WwdBLevel2() OVERRIDE;
-    void SubB(); // 0x15b5d0
-    i32 m_18c;   // +0x18c
-    i32 m_190;   // +0x190
-    i32 m_194;   // +0x194
-    i32 m_198;   // +0x198
+    // SubB @0x15b5d0 IS CWwdFactoryObject::ReleaseSubs_15b5d0; cast at the call.
+    i32 m_18c; // +0x18c
+    i32 m_190; // +0x190
+    i32 m_194; // +0x194
+    i32 m_198; // +0x198
     char _p19c[0x1a0 - 0x19c];
     WwdSub m_1a0;              // +0x1a0
     char _p1b0[0x1dc - 0x1b0]; // pad so CWwdGameObjectB's m_1dc lands at +0x1dc
@@ -1108,7 +1113,7 @@ inline WwdBLevel2::~WwdBLevel2() {
     m_190 = -1;
     m_198 = 0;
     m_194 = 0;
-    SubB();
+    ((CWwdFactoryObject*)this)->ReleaseSubs_15b5d0();
     // m_1a0 (WwdSub) auto-destroyed, then ~WwdBMid folds.
 }
 
