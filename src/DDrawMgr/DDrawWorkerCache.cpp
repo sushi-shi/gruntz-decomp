@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Wap32/Object.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 // CDDrawWorkerCache.cpp - leaf methods of the tomalla-named class CDDrawWorkerCache
@@ -82,27 +83,6 @@ void operator delete(void*);
 // vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 SIZE_UNKNOWN(CDDrawWorkerCacheBase);
-class CDDrawWorkerCacheBase {
-public:
-    virtual void GetRuntimeClass();     // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual void* ScalarDtor(i32 flag); // [1] scalar-deleting dtor (regular virtual)
-    virtual void Serialize();           // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void AssertValid();         // [3] 0x00106e (shared thunk, declared-only)
-    virtual void Dump();                // [4] 0x004034 (shared thunk, declared-only)
-    ~CDDrawWorkerCacheBase();
-
-    i32 m_04; // +0x04  -1 when inactive
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c  parent/root handle
-    CDDrawWorkerCacheBase() {}
-};
-
-inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
-
 // ---------------------------------------------------------------------------
 // CDDrawWorkerCache - the CMapStringToOb at +0x10, and the parent fields copied
 // into the worker (m_0c, m_1c from inside the map's internal area).
@@ -112,18 +92,16 @@ inline CDDrawWorkerCacheBase::~CDDrawWorkerCacheBase() {
 // thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
 // leaf virtuals (declared-only, reloc-masked), slot 8 = GetStateId
 // (0x1576f0) and slot 9 = CreateWorker (0x1652c0). cl auto-emits the vtable.
-class CDDrawWorkerCache : public CDDrawWorkerCacheBase {
+class CDDrawWorkerCache : public Wap::CObject {
 public:
-    virtual void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting dtor (0x157700)
+    i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
+    virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned below)
     virtual void IsReady(); // [5] 0x1576d0 (= CDDrawWorkerRegistry::IsReady, declared-only)
     virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
     virtual void
     DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)
     virtual StateId GetStateId();                                // [8] 0x1576f0
     virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
-
-    // The real member-teardown destructor (0x157720); the ??_G scalar dtor calls it.
-    ~CDDrawWorkerCache();
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerCacheBase.
     CMapStringToOb m_10; // +0x10  map (internal field at +0x1c seeds worker->m_04)
@@ -180,7 +158,7 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
 
     if (w->Vfunc24(a1, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -194,15 +172,7 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
 // SYMBOL() pins the ??_G mangling; it overrides CDDrawWorkerCacheBase's slot-1 regular
 // virtual so the leaf vtable carries it at slot 1 WITHOUT cl auto-generating a
 // clashing ??_G. Same idiom as CDDrawSubMgrLeaf::ScalarDtor.
-SYMBOL(??_GCDDrawWorkerCache @@UAEPAXI@Z)
-RVA(0x00157700, 0x1e)
-void* CDDrawWorkerCache::ScalarDtor(i32 flag) {
-    this->~CDDrawWorkerCache();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawWorkerCache@@UAEPAXI@Z 0x00157700 0x1e
 
 // ---------------------------------------------------------------------------
 // The real member-teardown destructor (0x157720, /GX): cl stamps ??_7CDDrawWorkerCache
