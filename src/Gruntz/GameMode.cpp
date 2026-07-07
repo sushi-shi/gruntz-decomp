@@ -32,6 +32,11 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+class DirectSoundMgr {
+public:
+    i32 IsPlaying();
+    i32 CloneAndPlay(i32 a, i32 b, i32 c);
+}; // 0x1353f0/0x135660
 class CBattlezData {
 public:
     i32 InBounds(i32 z);
@@ -1670,7 +1675,7 @@ i32 CMultiBootyState::CheckPerfectBonus() {
                 CBootyFound* p = (CBootyFound*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                     p->m_14 = g_6bf3c0;
-                    p->m_10->ConfigureItem(item, 0, 0, 0);
+                    ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 0);
                 }
             }
         }
@@ -1747,7 +1752,7 @@ i32 CMultiBootyState::Vslot09(i32) {
             CBootyFound* p = (CBootyFound*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
-                p->m_10->ConfigureItem(item, 0, 0, 1);
+                ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 1);
             }
         }
     }
@@ -1793,10 +1798,10 @@ CMultiBootyState::~CMultiBootyState() {
 // The menu music controller (CMenuState+0x1bc): a player @+0x10 with a draw-clock
 // gate (last @+0x14, interval @+0x18). The player has IsPlaying / Stop /
 // ConfigureItem __thiscall slots (reloc-masked externs).
-struct CMenuMusicPlayer {                           // m_1bc->m_10
-    i32 IsPlaying();                                // FUN_001353f0, ret value
-    void Stop(i32 a, i32 b, i32 c);                 // FUN_00135660, ret 0xc
-    void ConfigureItem(i32 a, i32 b, i32 c, i32 d); // FUN_001360d0, ret 0x10
+struct CMenuMusicPlayer { // m_1bc->m_10
+    // IsPlaying @0x1353f0 IS DirectSoundMgr::IsPlaying; cast at each call.
+    // Stop @0x135660 IS DirectSoundMgr::CloneAndPlay; cast at the call.
+    // ConfigureItem @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at each call.
 };
 struct CMenuMusic {
     char m_pad00[0x10];
@@ -1942,7 +1947,7 @@ void CMenuState::StartMusic() {
         u32 clk = g_6bf3c0;
         if (clk - mus->m_14 >= (u32)mus->m_18) {
             mus->m_14 = clk;
-            mus->m_10->ConfigureItem(item, 0, 0, 1);
+            ((CSoundCueMgr*)mus->m_10)->ConfigureItem(item, 0, 0, 1);
         }
     }
     if (!saved) {
@@ -1958,11 +1963,11 @@ void CMenuState::StopMusicChain() {
         return;
     }
     CMenuMusic* mus = m_1bc;
-    if (!mus->m_10->IsPlaying()) {
+    if (!((DirectSoundMgr*)mus->m_10)->IsPlaying()) {
         return;
     }
-    m_1bc->m_10->Stop(0, 0x1f4, 1);
-    if (!m_1bc->m_10->IsPlaying()) {
+    ((DirectSoundMgr*)m_1bc->m_10)->CloneAndPlay(0, 0x1f4, 1);
+    if (!((DirectSoundMgr*)m_1bc->m_10)->IsPlaying()) {
         return;
     }
     do {
@@ -1970,7 +1975,7 @@ void CMenuState::StopMusicChain() {
         if (r) {
             r->TickAnim(-1);
         }
-    } while (m_1bc->m_10->IsPlaying());
+    } while (((DirectSoundMgr*)m_1bc->m_10)->IsPlaying());
 }
 
 // CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu
