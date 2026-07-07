@@ -35,6 +35,11 @@ class CDebugConfig {
 public:
     CDebugConfig* InitFromEnv();
 };
+// The 0x13c210 leaf is CSymParser::AddNode (header-less symparser class); local decl.
+class CSymParser {
+public:
+    void AddNode(void* p);
+};
 extern CHashTail g_hash184b70; // 0x6bf848
 RVA(0x00184b70, 0xa)
 void ClearHash_184b70() {
@@ -422,7 +427,7 @@ i32 CSymTab::Remove(SymEntry1* a1, SymEntry2* a2) {
     m_size -= a2->m_span;
     a1->m_24.Unlink(&a2->m_1c);
     a2->Teardown();
-    m_list->Drop(a2);
+    ((CSymParser*)m_list)->AddNode(a2);
     m_list->m_count = 0;
     return 1;
 }

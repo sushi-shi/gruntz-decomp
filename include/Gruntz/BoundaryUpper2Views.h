@@ -269,8 +269,8 @@ struct SymEntry1 {
 SIZE_UNKNOWN(SymEntry1);
 struct SymList18 {
     i32 _0[2];
-    i32 m_count;        // +0x08
-    void Drop(void* p); // 0x13c210
+    i32 m_count; // +0x08
+    // Drop @0x13c210 IS CSymParser::AddNode; cast at the call.
 };
 SIZE_UNKNOWN(SymList18);
 struct CSymTab {
