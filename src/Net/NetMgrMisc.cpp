@@ -47,7 +47,7 @@ DATA(0x0024be90)
 extern CZDArrayDerived g_netBe90; // VA 0x64be90
 
 struct CNetSingletonE25c {
-    i32 Poll(); // 0x1b9b93
+    // Poll @0x1b9b93 IS CString::~CString; cast at the call.
 };
 SIZE_UNKNOWN(CNetSingletonE25c); // method-only singleton view; retail size TBD
 DATA(0x0024e25c)
@@ -73,7 +73,8 @@ void CNetSlotAux::ClearRange() {
 // ---------------------------------------------------------------------------
 RVA(0x000f9710, 0xa)
 i32 NetPollE25c() {
-    return g_netE25c.Poll();
+    ((CString*)&g_netE25c)->~CString();
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
