@@ -25,6 +25,12 @@
 #include <Globals.h>
 #include <Gruntz/ResMgr.h> // canonical CImageRegistry (the +0x10 image registrar)
 
+// BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath; minimal decl (completes the fwd decl).
+class CSymParser {
+public:
+    void* ResolvePath(const char* p);
+};
+
 // The global CButeMgr instance the cheat table reads from (0x6453d8).
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
@@ -44,8 +50,8 @@ extern i32 g_645588;
 // The registered namespace object (Register result): FindSub resolves a named
 // child set, ResolvePath resolves a namespaced path (both reloc-masked
 // __thiscall, no body).
-struct BcRegSet {                  // this->m_8
-    CSymTab* Register(char* name); // FUN_0053c030
+struct BcRegSet { // this->m_8
+    // Register @0x13c030 IS CSymParser::ResolvePath; cast at each call.
 };
 struct BcSoundRegistry {                            // this->m_c->m_28
     void Install(void* set, char* name, char* sep); // FUN_00557ee0
@@ -144,15 +150,15 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 
     m_4->Reset(0);
 
-    m_2c = m_8->Register("STATEZ_BOOTY");
+    m_2c = (CSymTab*)((CSymParser*)m_8)->ResolvePath("STATEZ_BOOTY");
     if (!m_2c) {
         goto fail;
     }
-    m_34 = m_8->Register("GAME");
+    m_34 = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GAME");
     if (!m_34) {
         goto fail;
     }
-    m_30 = m_8->Register("GRUNTZ");
+    m_30 = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GRUNTZ");
     if (!m_30) {
         goto fail;
     }

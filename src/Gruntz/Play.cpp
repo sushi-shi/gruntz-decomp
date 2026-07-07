@@ -3085,7 +3085,7 @@ struct CMusicSet {
 };
 // A music source (level m_levelBank / game m_gameBank).
 struct CMusicSource {
-    CMusicSet* LookupSet(char* name); // 0x53bae0 (thiscall)
+    // LookupSet @0x13bae0 IS CSymTab::ResolvePath; cast at the call.
 };
 // The destination category table (the sound manager at m_4->m_48).
 struct CMusicCatTable {
@@ -3146,7 +3146,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     }
 
     CMusicSource* gameSrc = self->m_gameBank;
-    CMusicSet* gameSet = gameSrc->LookupSet("MIDIZ");
+    CMusicSet* gameSet = (CMusicSet*)((CSymTab*)gameSrc)->ResolvePath("MIDIZ");
     if (gameSet) {
         CMusicEntry* e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
         if (e) {
