@@ -13,6 +13,13 @@
 #include <rva.h>
 #include <string.h>
 
+// ImgHolder2::Release1c6a5c @0x1c6a5c IS MFC CImageList::DeleteImageList; minimal local decl.
+SIZE_UNKNOWN(CImageList);
+class CImageList {
+public:
+    void DeleteImageList();
+};
+
 namespace m4 {
 
     // Cached measured text width (0x0062b434), read by the caller after measure.
@@ -27,9 +34,9 @@ namespace m4 {
         virtual ~SevWorker2() {}
     };
     struct ImgHolder2 : SevWorker2 {
-        void Release1c6a5c();
+        // Release1c6a5c @0x1c6a5c IS CImageList::DeleteImageList; cast in the dtor.
         virtual ~ImgHolder2() OVERRIDE {
-            Release1c6a5c();
+            ((CImageList*)this)->DeleteImageList();
         }
     };
     struct DrawScratch : ImgHolder2 {

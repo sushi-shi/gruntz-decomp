@@ -983,7 +983,7 @@ struct CCreditzSubEntry { // a music sub-entry ("PLAY"/"MONOLITH")
 };
 struct CCreditzMusicSet { // the looked-up "MIDIZ" set (m_2c->FindSet)
     // FUN_0053a000 __thiscall: resolve a named sub-entry under a packed tag.
-    CCreditzSubEntry* Resolve(char* szName, i32 tag);
+    // Resolve @0x13a000 IS CSymTab::Insert; cast at each call.
 };
 struct CCreditzRegObj {               // the registered STATEZ_CREDITZ object (m_2c)
     void* FindSoundSet(char* szName); // FUN_0053a230 __thiscall, ret set ptr
@@ -1078,7 +1078,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 
     CCreditzMusicSet* midiz = (CCreditzMusicSet*)self->m_2c->FindMusicSet("MIDIZ");
     if (midiz) {
-        CCreditzSubEntry* e = midiz->Resolve("PLAY", 0x584d49);
+        CCreditzSubEntry* e = (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("PLAY", (void*)0x584d49);
         if (e) {
             i32 val = e->IsLoaded();
             if (val) {
@@ -1090,7 +1090,8 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     // MONOLITH block, pinning midiz in edi across the PLAY calls
     // (docs/patterns/redundant-sibling-guard-retest.md).
     if (midiz) {
-        CCreditzSubEntry* e2 = midiz->Resolve("MONOLITH", 0x584d49);
+        CCreditzSubEntry* e2 =
+            (CCreditzSubEntry*)((CSymTab*)midiz)->Insert("MONOLITH", (void*)0x584d49);
         if (e2) {
             i32 val = e2->IsLoaded();
             if (val) {
