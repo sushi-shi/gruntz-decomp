@@ -194,10 +194,7 @@ public:
 };
 // The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
 // resolves a worker-label string to its worker pointer.  0x1b8438, reloc-masked.
-class CBlitLabelMap {
-public:
-    i32 Lookup(const char* key, void** out); // 0x1b8438
-};
+class CBlitLabelMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 class CDDrawBlitLabelSource {
 public:
     CString GetLabel_152d30(CDDrawBlitParamSrc* a);
@@ -754,7 +751,7 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
         m_srcRef = 0;
     } else {
         void* out = 0;
-        m_worker->m_labelSource->m_labelMap.Lookup(buf, &out);
+        ((CMapStringToOb*)&m_worker->m_labelSource->m_labelMap)->Lookup(buf, (CObject*&)out);
         m_srcRef = (CDDrawBlitParamSrc*)out;
     }
     CDDrawBlitParamSrc* w = m_srcRef;
