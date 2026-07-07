@@ -12,6 +12,13 @@
 
 #include <Bute/SymParser.h>
 
+// CParseSlot::Init @0x1396f0 IS CParseSource::Init (header-less here); minimal local decl.
+SIZE_UNKNOWN(CParseSource);
+class CParseSource {
+public:
+    CParseSource* Init();
+};
+
 // The +0x80 hash member's construction (0x184960) is CSymList::Construct; TU-local decl
 // (the real array-backed list container lives in the symtab unit).
 class CSymList {
@@ -527,7 +534,7 @@ struct CParseSlot {
     char m_pad00[0x1c];
     CHashElement m_node; // +0x1c  hash-node prefix (m_node.m_record @0x30 = self)
     char m_pad34[0x3c - 0x34];
-    void Init(); // 0x1396f0
+    // Init @0x1396f0 IS CParseSource::Init; cast at the call.
 };
 SIZE(CParseSlot, 0x3c); // parse-slot record (RezAlloc n*0x3c)
 
@@ -565,7 +572,7 @@ void* CSymParser::PopParseSlot() {
             if (i >= 0) {
                 i++;
                 do {
-                    p->Init();
+                    ((CParseSource*)p)->Init();
                     p++;
                     i--;
                 } while (i);

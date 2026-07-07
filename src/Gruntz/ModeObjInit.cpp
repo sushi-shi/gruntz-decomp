@@ -13,6 +13,13 @@
 #include <rva.h>
 #include <string.h>
 
+// Rec50::Init286f @0x286f IS CTimer::Init (header-less here); minimal local decl.
+SIZE_UNKNOWN(CTimer);
+class CTimer {
+public:
+    CTimer* Init();
+};
+
 namespace modeinit {
 
     // Compiler array-ctor helpers (reloc-masked) + their element ctor/dtor thunks.
@@ -58,7 +65,7 @@ namespace modeinit {
 
     // The 0x50 record owned at this->m_3f4.
     struct Rec50 {
-        void Init286f(); // 0x0000286f
+        // Init286f @0x286f IS CTimer::Init; cast at the call.
     };
 
     // The owner's parent object (this->m_4).
@@ -391,7 +398,7 @@ namespace modeinit {
 
         Rec50* r50 = (Rec50*)RezAlloc(0x50);
         if (r50) {
-            r50->Init286f();
+            ((CTimer*)r50)->Init();
         } else {
             r50 = 0;
         }
