@@ -43,7 +43,7 @@ static inline void UserLogicVfunc9() {
     void** list = g_nameRegCurList;
     while (n-- != 0) {
         if (list != 0) {
-            ((CActName*)list)->Free();
+            ((CString*)list)->CString::~CString();
         }
         list++;
     }
@@ -97,7 +97,7 @@ void RegisterLogic_6445e8() {
         id = g_nextActId;
         char* slot = ActNameLookup(id);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id) = (void*)&Handler_4021f8;
@@ -108,7 +108,7 @@ void RegisterLogic_6445e8() {
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id2) = (void*)&Handler_403418;
@@ -128,7 +128,7 @@ void RegisterActs_646188() {
         id = g_nextActId;
         char* slot = ActNameLookup(id);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     *(void**)g_actReg_646188.ResolveEntry(id) = (void*)&Handler_4025db;
@@ -139,7 +139,7 @@ void RegisterActs_646188() {
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     *(void**)g_actReg_646188.ResolveEntry(id2) = (void*)&Handler_402414;
@@ -159,7 +159,7 @@ void RegisterActs_646250() {
         id = g_nextActId;
         char* slot = ActNameLookup(id);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     *(void**)g_actReg_646250.ResolveEntry(id) = (void*)&Handler_4021d5;
@@ -170,7 +170,7 @@ void RegisterActs_646250() {
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     *(void**)g_actReg_646250.ResolveEntry(id2) = (void*)&Handler_402252;
@@ -190,7 +190,7 @@ void RegisterActs_6514d8() {
         id = g_nextActId;
         char* slot = ActNameLookup(id);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     *(void**)g_actReg_6514d8.ResolveEntry(id) = (void*)&Handler_4037bf;
@@ -201,7 +201,7 @@ void RegisterActs_6514d8() {
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     *(void**)g_actReg_6514d8.ResolveEntry(id2) = (void*)&Handler_402dd8;
@@ -222,7 +222,7 @@ void CTeleporter_RegisterActs() {
         id = g_nextActId;
         char* slot = ActNameLookup(id);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id) = (void*)&Handler_40187a;
@@ -233,7 +233,7 @@ void CTeleporter_RegisterActs() {
         id2 = g_nextActId;
         char* slot = ActNameLookup(id2);
         UserLogicVfunc9();
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id2) = (void*)&Handler_403846;
@@ -301,11 +301,11 @@ extern "C" void H_4036f2();
             void** list = g_nameRegCurList;                                                        \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    ((CActName*)list)->Free();                                                     \
+                    ((CString*)list)->CString::~CString();                                         \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \
-            ((CActName*)slot)->Assign(key);                                                        \
+            ((CString*)slot)->operator=(key);                                                      \
             g_nextActId++;                                                                         \
         }                                                                                          \
         *(void**)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id) = (void*)(handler);                \

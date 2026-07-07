@@ -9,9 +9,6 @@
 
 #include <rva.h>
 
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Mfc.h> // real CString (CActName was a fake view over it)
 
 #endif // GRUNTZ_GRUNTZ_CACTNAME_H

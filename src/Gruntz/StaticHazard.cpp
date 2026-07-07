@@ -304,11 +304,11 @@ void CStaticHazard::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CHaznEntry2*)HaznLookup(id))->m_fn = &CStaticHazard::LoadAttributes2;
@@ -322,11 +322,11 @@ void CStaticHazard::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     ((CHaznEntry2*)HaznLookup(id2))->m_fn = &CStaticHazard::LoadAttributes;

@@ -802,11 +802,11 @@ void CSecretTeleporterTrigger::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
@@ -1192,11 +1192,11 @@ void CSingleAnimation::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn =
@@ -1264,11 +1264,11 @@ void CWarpStonePad::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
@@ -1322,11 +1322,11 @@ void CTileTriggerSwitch::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
@@ -1378,11 +1378,11 @@ void CTileTrigger::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
@@ -1421,11 +1421,11 @@ void CTileSecretTrigger::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
@@ -1440,11 +1440,11 @@ void CTileSecretTrigger::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyB);
+        ((CString*)slot)->operator=(s_actKeyB);
         g_nextActId++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =

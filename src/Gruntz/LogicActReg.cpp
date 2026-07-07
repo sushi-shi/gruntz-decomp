@@ -43,12 +43,12 @@ static inline i32 RegisterActionName() {
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
-                    ((CActName*)nodes)->Free();
+                    ((CString*)nodes)->CString::~CString();
                 }
                 nodes++;
             } while (--cnt);
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     return id;

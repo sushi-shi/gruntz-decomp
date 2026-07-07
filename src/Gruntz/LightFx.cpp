@@ -137,11 +137,11 @@ void CLightFx::RegisterActs() {
         void** list = g_nameRegCurList;
         while (n-- != 0) {
             if (list != 0) {
-                ((CActName*)list)->Free();
+                ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CLightFxActEntry*)g_lightFxActReg.ResolveEntry(id))->m_fn = &CLightFx::AdvanceAnim;

@@ -59,12 +59,12 @@ void CSiblingActorA_RegisterActs() {
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CActName*)list)->Free();
+                    ((CString*)list)->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CSiblingActorAEntry*)g_netBe90.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
@@ -87,12 +87,12 @@ void CSiblingActorB_RegisterActs() {
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CActName*)list)->Free();
+                    ((CString*)list)->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CSiblingActorBEntry*)g_64bf00.ResolveEntry(id))->m_fn = &CSiblingActorB::Advance;
@@ -123,12 +123,12 @@ void CCheckpointTrigger::RegisterActs() {
         if (cnt != 0) {
             do {
                 if (list != 0) {
-                    ((CActName*)list)->Free();
+                    ((CString*)list)->CString::~CString();
                 }
                 list++;
             } while (--cnt);
         }
-        ((CActName*)slot)->Assign(s_actKeyA);
+        ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
     ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =

@@ -80,10 +80,7 @@ extern i32 g_nameRegScratch; // 0x6bf670 (zeroed first; doubles as the list coun
 
 // A CString in the resolved name slot: ~CString (0x1b9b93) frees the old entries,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
-struct CActName {
-    void Free();                  // 0x1b9b93 (~CString)
-    void Assign(const char* key); // 0x1b9e74 (CString::operator=(char const*))
-};
+#include <Mfc.h> // real CString (CActName was a fake view over it)
 
 // The id->name-slot resolve (the fast range path + the slow Find/GetRetAddr/Insert
 // rebuild), then free the old name list and assign the key. Folded inline by
