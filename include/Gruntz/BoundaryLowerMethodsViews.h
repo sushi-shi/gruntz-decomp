@@ -118,7 +118,7 @@ SIZE_UNKNOWN(C77dc0);
 
 // 0x09cab0 - out-param wrapper over the +0x10 sub's method (0x1b8008).
 struct CSub9cab0 {
-    void Get(i32 a, i32* out); // 0x1b8008
+    // Get @0x1b8008 IS CMapStringToPtr::Lookup; cast at the call.
 };
 SIZE_UNKNOWN(CSub9cab0);
 struct C9cab0 {

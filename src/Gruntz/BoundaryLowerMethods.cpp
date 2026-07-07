@@ -151,7 +151,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
 RVA(0x0009cab0, 0x23)
 i32 C9cab0::M(i32 arg) {
     i32 local = 0;
-    m_10.Get(arg, &local);
+    ((CMapStringToPtr*)&m_10)->Lookup((const char*)arg, (void*&)local);
     return local;
 }
 
