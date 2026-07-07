@@ -61,6 +61,10 @@
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
 #include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>      // placement new (QuadIntRecord in-place ctor)
+class CTileTriggerContainer {
+public:
+    void* FindInLists12(i32 a, i32 b);
+}; // 0x116f20
 
 // The coord-list walk step @0x29a30 is the free __stdcall ListNodeAdvance(void**).
 void* __stdcall ListNodeAdvance(void** pos);
@@ -366,9 +370,9 @@ struct GruntSpawnCtx {
     char m_pad34[0x68 - 0x34];
     CTriggerMgr* m_triggerMgr; // +0x68  the level's CTriggerMgr (cell probe / trigger applier)
     char m_pad6c[0x70 - 0x6c];
-    char* m_cellTable;                  // +0x70  the direct cell table (0x67-marker fast path)
-    void* QueryA(i32 packed, i32 flag); // 0x0516f20
-    void* QueryB(void* node, i32 flag); // 0x0516ee0
+    char* m_cellTable; // +0x70  the direct cell table (0x67-marker fast path)
+    // QueryA @0x116f20 IS CTileTriggerContainer::FindInLists12; cast at the call.
+    // QueryB @0x116ee0 IS CTileTriggerSwitchLogic::FindChild; cast at each call.
 };
 
 // ---- Reloc-masked engine globals --------------------------------------------
@@ -4594,7 +4598,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     if (*(i32*)((char*)tile + 0x10) == 0x67) {
         cell = m_ctx->m_cellTable;
     } else {
-        cell = (char*)m_ctx->QueryA((col << 8) + row, 0);
+        cell = (char*)((CTileTriggerContainer*)m_ctx)->FindInLists12((col << 8) + row, 0);
     }
     i32 bestX = col;
     i32 bestY = col;
@@ -4605,7 +4609,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while ((i32)(((char*)scan - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan;
             if (node != 0) {
-                void* rec = m_ctx->QueryB(node, 0);
+                void* rec = ((CTileTriggerSwitchLogic*)m_ctx)->FindChild((i32)node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4621,7 +4625,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while ((i32)(((char*)scan2 - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
-                void* rec = m_ctx->QueryB(node, 0);
+                void* rec = ((CTileTriggerSwitchLogic*)m_ctx)->FindChild((i32)node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
