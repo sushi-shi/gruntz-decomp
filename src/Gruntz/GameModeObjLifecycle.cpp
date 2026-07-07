@@ -50,10 +50,8 @@ public:
     CPlacedObj** m_pData; // +0x00  the element pointer table
     i32 m_nSize;          // +0x04  live element count
 };
-class CCellMap {
-public:
-    i32 Lookup(void* key, void** out); // 0x1b8760  (this = grid->m_30->m_8 + 0x48)
-};
+// The +0x48 cell table is an MFC CMapPtrToPtr (Lookup @0x1b8760); the map var is retyped
+// to CMapPtrToPtr directly.
 
 // The placed map object: m_0/m_4 are its grid (x,y) cell coordinates.
 struct CPlacedObj {
@@ -181,9 +179,9 @@ i32 CGameModeObj::ClearPlacedObjects() {
                 break;
             }
             void* out = 0;
-            CCellMap* map = (CCellMap*)(gmReg()->m_world->m_8 + 0x48);
+            CMapPtrToPtr* map = (CMapPtrToPtr*)(gmReg()->m_world->m_8 + 0x48);
             i32* result = cellObj;
-            if (map->Lookup(cellObj, &out)) {
+            if (map->Lookup(cellObj, out)) {
                 result = (i32*)out;
             }
             if (result == 0) {
@@ -261,7 +259,6 @@ i32 CGameModeObj::FlushPendingOps() {
 }
 
 SIZE_UNKNOWN(CPlacedArray);
-SIZE_UNKNOWN(CCellMap);
 SIZE_UNKNOWN(CPlacedObj);
 SIZE_UNKNOWN(CMapGrid);
 SIZE_UNKNOWN(GmReg);
