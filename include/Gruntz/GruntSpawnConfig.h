@@ -145,8 +145,7 @@ public:
 // (Remove), and the spawn driver opens a voice stream through it (OpenStream). One
 // collection, both methods (was split across CSpawnRemoveColl/CSpawnStreamFactory).
 struct CSpawnRemoveColl {
-    void Remove(void* item);                                              // 0x1379d0
-    CSpawnStream* OpenStream(i32 src, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
+    // Remove @0x1379d0 = SoundStream::DestroyVoice, OpenStream @0x137900 = SoundStream::OpenStream; cast at calls.
 };
 // The one config tree stashed in m_04 (= owner->m_30): its +0x08 is the sprite
 // factory LoadGruntVoices builds voices through, its +0x20 the remove/stream

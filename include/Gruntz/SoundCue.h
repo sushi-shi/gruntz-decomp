@@ -32,9 +32,13 @@ SIZE_UNKNOWN(LeafCue);
 // The DirectSound stream hung off CSndHost+0x2c; Stop() halts it. Its base
 // SoundDevice sub-object supplies PurgeVoiceList (0x136e20, the per-tick voice
 // reaper the level-preview audio-kill path calls). Both reloc-masked __thiscall.
+struct StreamVoice; // fwd (DestroyVoice/OpenStream arg+ret)
+class CParseSource;
 struct SoundStream {
-    void Stop();                   // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
-    void PurgeVoiceList(i32 time); // 0x136e20 (SoundDevice base method; voice reap)
+    void Stop();                       // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
+    void PurgeVoiceList(i32 time);     // 0x136e20 (SoundDevice base method; voice reap)
+    void DestroyVoice(StreamVoice* v); // 0x1379d0
+    StreamVoice* OpenStream(CParseSource* p, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
 };
 SIZE_UNKNOWN(SoundStream);
 

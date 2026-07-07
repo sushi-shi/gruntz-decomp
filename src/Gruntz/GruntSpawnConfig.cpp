@@ -88,7 +88,7 @@ void CGruntSpawnConfig::Clear() {
         void** p = (void**)&m_10;
         for (i32 k = 0; k < 2; k++) {
             if (p[0] != 0) {
-                m_04->m_20->Remove(p[0]);
+                ((SoundStream*)m_04->m_20)->DestroyVoice((StreamVoice*)p[0]);
                 p[0] = 0;
             }
             p++;
@@ -268,7 +268,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         }
     }
     if (streams[chosen] == 0) {
-        streams[chosen] = m_04->m_20->OpenStream(src, 0x5000, 0x1400, 0x100e0, 0, 0);
+        streams[chosen] = (CSpawnStream*)((SoundStream*)m_04->m_20)
+                              ->OpenStream((CParseSource*)src, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (streams[chosen] == 0) {
             return 0;
         }
