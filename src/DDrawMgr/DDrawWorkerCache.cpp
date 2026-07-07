@@ -35,13 +35,9 @@ class CObject;
 
 // The worker virtual interface. Slots laid out so the dispatched method lands
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
-class AnimWorker {
+class AnimWorker : public CObject {
 public:
-    virtual void GetRuntimeClass();      // [0] 0x1bef01
-    virtual ~AnimWorker(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();            // [2] 0x0028ec
-    virtual void AssertValid();          // [3] 0x00106e
-    virtual void Dump();                 // [4] 0x004034
+    virtual ~AnimWorker() OVERRIDE; // slot 1 (deleting dtor); slots 0/2/3/4 inherited from CObject
     virtual void Slot05_151d60();        // [5] 0x151d60
     virtual void IsValidImage();         // [6] 0x001c08
     virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)

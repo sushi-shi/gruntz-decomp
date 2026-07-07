@@ -37,13 +37,9 @@ class CSymTab;         // probe chain (foreign, other TU)
 // the view, only reached by direct name-mangled calls to the registry's own methods).
 // Unifies the two former per-TU views (the 23-slot vtable view + RegView48).
 // ---------------------------------------------------------------------------
-class CWorkerVtableView {
+class CWorkerVtableView : public CObject {
 public:
-    virtual void Slot00_1bef01();                         // [ 0] +0x00 0x1bef01 (CObject thunk)
-    virtual ~CWorkerVtableView(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Slot08_28ec();                           // [ 2] +0x08 0x0028ec (CObject thunk)
-    virtual void Slot0C_106e();                           // [ 3] +0x0c 0x00106e (CObject thunk)
-    virtual void Slot10_4034();                           // [ 4] +0x10 0x004034 (CObject thunk)
+    virtual ~CWorkerVtableView() OVERRIDE; // slot 1; slots 0/2/3/4 inherited from CObject
     virtual void Slot14_156dc0();                         // [ 5] +0x14 0x156dc0
     virtual void ResetScratch_154aa0();                   // [ 6] +0x18 0x154aa0
     virtual void Shutdown_154ac0();                       // [ 7] +0x1c 0x154ac0
