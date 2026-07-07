@@ -24,6 +24,10 @@
 #include <Gruntz/WwdWorker.h> // the shared per-object worker class
 #include <Globals.h>
 
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement (factory sub-object ctors)
+
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
@@ -60,30 +64,24 @@ class CWwdGameObject;
 // models (no fabricated class names) pending a matcher that models `new T`.
 // Base "CResolveNode" 3-arg ctor (root, a, flags). 0x15b2c0 for the 159250/159440
 // objects, 0x15b390 for the 1598d0 object.
-class CWwdResolveBaseA {
-public:
-    void Ctor(int root, int a, int flags); // 0x15b2c0
+SIZE_UNKNOWN(CResolveNode);
+struct CResolveNode {
+    CResolveNode(int root, int a, int flags); // 0x15b2c0
 };
 class CWwdResolveBaseB {
 public:
     void Ctor(int root, int a, int flags); // 0x15b390
 };
 // The +0x9c sub-object (159250/159440): ctor 0x15b2a0, then its +0x18 is zeroed.
-class CWwdSub9c {
-public:
-    void Ctor(); // 0x15b2a0
+struct CWwdSlot9c {
+    CWwdSlot9c(); // 0x15b2a0
     char m_pad00[0x18];
     int m_18; // +0x18  -> obj+0xb4
 };
 // The +0xb8 sub-object ctor. 0x15b270.
-class CWwdSubB8 {
-public:
-    void Ctor(); // 0x15b270
-};
-// The CString label ctor at +0xdc. 0x1b9b93.
-class CWwdLabel {
-public:
-    void Ctor(); // 0x1b9b93
+SIZE_UNKNOWN(Obj15b270);
+struct Obj15b270 {
+    Obj15b270(); // 0x15b270
 };
 // The +0x7c sprite-animation worker (0x17c bytes): ctor 0x15b300, kick at +0x10.
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
@@ -161,12 +159,12 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a7);
-        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
-        s9c->Ctor();
+        new (obj) CResolveNode(root, a1, a7);
+        CWwdSlot9c* s9c = (CWwdSlot9c*)(obj + 0x9c);
+        new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        new (obj + 0xb8) Obj15b270();
+        new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
@@ -213,12 +211,12 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     CWwdGameObject* result;
     if (obj != 0) {
         int root = (int)m_0c;
-        ((CWwdResolveBaseA*)obj)->Ctor(root, a1, a4);
-        CWwdSub9c* s9c = (CWwdSub9c*)(obj + 0x9c);
-        s9c->Ctor();
+        new (obj) CResolveNode(root, a1, a4);
+        CWwdSlot9c* s9c = (CWwdSlot9c*)(obj + 0x9c);
+        new (s9c) CWwdSlot9c();
         s9c->m_18 = 0;
-        ((CWwdSubB8*)(obj + 0xb8))->Ctor();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        new (obj + 0xb8) Obj15b270();
+        new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x5c) = (int)0x80000000;
         *(int*)(obj + 0x78) = 0;
@@ -486,10 +484,8 @@ SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
 SIZE_UNKNOWN(CWwdList1dc);
 SIZE_UNKNOWN(CWwdObjMgrL);
-SIZE_UNKNOWN(CWwdResolveBaseA);
 SIZE_UNKNOWN(CWwdResolveBaseB);
-SIZE_UNKNOWN(CWwdSub9c);
-SIZE_UNKNOWN(CWwdSubB8);
+SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)
 SIZE(WwdAnimWorker, 0x17c);      // the +0x7c anim worker
