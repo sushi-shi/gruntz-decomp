@@ -605,6 +605,7 @@ extern "C" void RezFree(void* p);    // 0x1b9b82
 // padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18. Slot RVAs
 // (from retail 0x5f0198/01e0/0228) noted per class.
 struct CImageSet1 : Wap::CObject {
+    virtual ~CImageSet1() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor; cl auto-
     // stamps this vptr in the inline ctor, the base stamp dead-store-elides).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
@@ -636,6 +637,7 @@ struct CImageSet1 : Wap::CObject {
     i32 m_0c;        // +0x0c
 };
 struct CImageSet2 : Wap::CObject {
+    virtual ~CImageSet2() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
     virtual void s18();              // [6]  0x161420
@@ -670,6 +672,7 @@ struct CImageSet2 : Wap::CObject {
     i32 m_20; // +0x20
 };
 struct CImageSet3 : Wap::CObject {
+    virtual ~CImageSet3() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void s18();              // [6]  0x1614b0
