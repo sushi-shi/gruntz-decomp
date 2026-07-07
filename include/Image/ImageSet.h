@@ -23,7 +23,8 @@
 // only SetType + m_resolvedFormat are evidenced for the resolved format word.
 class CImageFormat {
 public:
-    void SetType(i32 type, i32 noResolve); // 0x14dd90 (__thiscall, ret 8)
+    // (SetType @0x14dd90 IS ShadeSelector::Select; the field-view stays for m_resolvedFormat
+    //  etc., the call casts to ShadeSelector in ImageSet.cpp.)
 
     char m_pad00[0x10];
     i32 m_decodedByteCount; // +0x10  decoded byte count (read by GetMemoryUsage)

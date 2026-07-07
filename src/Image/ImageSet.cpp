@@ -21,6 +21,14 @@
 // Global operator new (NAFXCW new-handler loop).
 extern void* operator new(u32 size);
 
+// The image format/state helper (CImageFrame::m_format) is a ShadeSelector; its Select
+// @0x14dd90 resolves the shade table for a format. TU-local decl (shadedescrtable unit).
+struct ShadeDescr;
+class ShadeSelector {
+public:
+    void Select(i32 type, ShadeDescr* desc);
+};
+
 // CImageFrame is now real-polymorphic (its 13 slots are declared on the class in
 // ImageSet.h; the foreign CImage @0x5eaa2c virtuals stay unmatched -> declared-
 // only, reloc-masked). cl auto-stamps the vptr (??_7CImageFrame@@6B@) in the
@@ -161,7 +169,7 @@ i32 CImageSet::SetAllTypes(i32 type) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImageFrame* frame = GetAt(i);
         if (frame && frame->m_format) {
-            frame->m_format->SetType(type, 0);
+            ((ShadeSelector*)frame->m_format)->Select(type, 0);
             count++;
         }
     }
