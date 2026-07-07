@@ -12,6 +12,10 @@
 
 #include <rva.h>
 #include <Globals.h>
+class LeafCue {
+public:
+    i32 PlayIfElapsed_01f940(i32 a, i32 b, i32 c, i32 d);
+};
 class CGrunt {
 public:
     void SetEntrancePos(i32 a, i32 b);
@@ -77,7 +81,7 @@ extern CButeMgr g_buteMgr;
 
 // Cue-tag holder (g_sndCueTag @0x61ab24): the missed-select complaint cue.
 struct CCueTag {
-    void Complain(i32 a, i32 b, i32 c); // 0x4025fe (__thiscall on the tag)
+    // Complain @0x25fe IS LeafCue::PlayIfElapsed_01f940 (4th arg reloc-masked); cast at the call.
 };
 DATA(0x0061ab24)
 extern CCueTag g_sndCueTag;
@@ -139,7 +143,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             }
             if (F(F(P(this, 0xc), 0x28), 0x30) == 0) {
                 if (BadSelect(s_gameBadSelect) != 0) {
-                    g_sndCueTag.Complain(0, 0, 0);
+                    ((LeafCue*)&g_sndCueTag)->PlayIfElapsed_01f940(0, 0, 0, 0);
                 }
             }
             return 0;

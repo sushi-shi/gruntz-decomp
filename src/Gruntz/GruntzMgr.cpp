@@ -509,8 +509,8 @@ struct OptionsSlot {
     char m_pad1c[0x20 - 0x1c];
     i32 m_20; // +0x20  loaded flag
     char m_pad24[0x38 - 0x24];
-    CBattlezMapConfig m_38;                  // +0x38
-    i32 Command(i32 a, i32 b, i32 c, i32 d); // (this, a..d) reloc-masked
+    CBattlezMapConfig m_38; // +0x38
+    // Command @0x4250 IS CTriggerMgr::RebuildOverlay; cast at the call.
 };
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
@@ -2235,7 +2235,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 
     OptionsSlot* slot = (OptionsSlot*)m_options;
     for (i32 i = 0; i < 4; i++) {
-        if (slot == 0 || slot->Command(a0, cmd, a2, a3) == 0) {
+        if (slot == 0 || ((CTriggerMgr*)slot)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
             return 0;
         }
         slot = (OptionsSlot*)((char*)slot + 0x238);

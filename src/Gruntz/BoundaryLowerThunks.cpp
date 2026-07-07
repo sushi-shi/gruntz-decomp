@@ -112,14 +112,14 @@ CGameApp::~CGameApp() {
 // to a manager singleton (0x6451a8) method (0x1d38c5, __thiscall(void*)). __cdecl.
 // ===========================================================================
 struct CMgr6451a8 {
-    void Register(void* desc); // 0x1d38c5 (reloc-masked)
+    // Register @0x3742 IS CZDArrayDerived::Construct (2nd arg reloc-masked); cast at the call.
 };
 SIZE_UNKNOWN(CMgr6451a8);
 DATA(0x002451a8)
 extern CMgr6451a8 g_mgr6451a8;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
-    g_mgr6451a8.Register((void*)&g_desc60aac8);
+    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
 }
 
 // ===========================================================================

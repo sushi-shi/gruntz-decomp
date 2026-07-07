@@ -2084,7 +2084,7 @@ i32 CPlay::winapi_0cdb10_PostMessageA(i32, i32, i32) {
 // a pointer (Render null-checks it as a gate), whose click probe consumes the event.
 SIZE_UNKNOWN(COverlayClick);
 struct COverlayClick {
-    i32 Probe(i32 a, i32 x, i32 y); // reloc-masked thiscall
+    // Probe @0x12da IS CPlay::BuildGruntTypeNameTable (4th arg reloc-masked); cast at the call.
 };
 // @early-stop
 // regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): the whole
@@ -2131,7 +2131,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_overlayActive != 0 && m_guts->m_state != 2 && m_guts->m_mode != 5) {
-        if (((COverlayClick*)(void*)m_overlayActive)->Probe(a, x, y)) {
+        if (((CPlay*)(void*)m_overlayActive)->BuildGruntTypeNameTable(a, x, y, 0)) {
             return 1;
         }
     }

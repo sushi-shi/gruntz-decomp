@@ -60,7 +60,7 @@ SIZE_UNKNOWN(TgcRedraw);
 // A pixel-region dirty helper (g_gameReg->m_68): MarkRect flags a screen rect for
 // repaint.  __thiscall engine callee, reloc-masked.
 struct TgcRegion {
-    void MarkRect(i32 a1, i32 x, i32 y, i32 span, i32 a5, i32 a6); // 0x152d
+    // MarkRect @0x152d IS EngineLabelBacklog::LoadPowerupIconSprites; cast at the call.
 };
 SIZE_UNKNOWN(TgcRegion);
 

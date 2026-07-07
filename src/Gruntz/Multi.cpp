@@ -33,6 +33,10 @@
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
+class CTriggerMgr {
+public:
+    i32 OverlayRelease();
+}; // 0x2b85
 
 // CLobbyObjA::Teardown @0xb6220 IS ~CLobbyObjB; minimal local decl.
 SIZE_UNKNOWN(CLobbyObjB);
@@ -743,7 +747,7 @@ void CMulti::PumpB() {
 // The m_view->m_4 view-reset target (thiscall). FUN_00558dc0.
 class CMultiViewReset {
 public:
-    void Reset(); // 0x00558dc0
+    // Reset @0x2b85 IS CTriggerMgr::OverlayRelease; cast at the call.
 };
 
 // ===========================================================================
@@ -781,7 +785,7 @@ i32 CMulti::StartTitle() {
         m_curState = saved;
         return 0;
     }
-    ((CMultiViewReset*)((char*)m_view + 4))->Reset(); // (m_view->m_4)->Reset()
+    ((CTriggerMgr*)((char*)m_view + 4))->OverlayRelease(); // (m_view->m_4)->Reset()
     void* vobj = *(void**)(*(void**)((char*)m_view + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
     m_curState = saved;
