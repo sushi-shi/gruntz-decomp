@@ -36,6 +36,19 @@
 #include <Gruntz/GameLevel.h>
 #include <Mfc.h>
 #include <Globals.h>
+class CFileMemBase {
+public:
+    virtual i32 SetName(const char* n, i32 a, i32 b);
+};
+class CFileMem {
+public:
+    virtual void Reset();
+    virtual ~CFileMem();
+    virtual i32 Open();
+    virtual i32 Read(void* b, i32 l);
+    virtual i32 Write(const void* b, i32 l);
+    virtual i32 Ready();
+};
 struct CSerialArchive;
 class CWwdObjMgr {
 public:
@@ -87,15 +100,15 @@ struct SnapStream {
 // the vtbl; the embedded stream @+0x10 is then built by a separate Init() call.
 class Serializer {
 public:
-    Serializer();                          // 0x157850 own ctor (vtbl + name CString)
-    ~Serializer();                         // 0x1578b0 non-deleting dtor (failure teardown)
-    void Reset();                          // 0x157a50 init/reset (vtbl=live, empty name)
-    void Close();                          // 0x157980 close stream + destroy (success teardown)
-    i32 SetSink(void* sink, i32 a, i32 b); // 0x165e30
-    i32 Begin();                           // 0x165e60  open the stream
-    void Read(void* buf, i32 len);         // 0x165f00  (load path)
-    i32 Write(void* buf, i32 len);         // 0x165f50
-    i32 End();                             // 0x165ef0  flush the stream
+    Serializer();  // 0x157850 own ctor (vtbl + name CString)
+    ~Serializer(); // 0x1578b0 non-deleting dtor (failure teardown)
+    // Reset @0x157a50 IS CFileMem::Reset; cast at each call.
+    // Close @0x157980 IS CFileMem::~CFileMem; cast at each call.
+    // SetSink @0x165e30 IS CFileMemBase::SetName; cast at each call.
+    // Begin @0x165e60 IS CFileMem::Open; cast at each call.
+    // Read @0x165f00 IS CFileMem::Read; cast at each call.
+    // Write @0x165f50 IS CFileMem::Write; cast at each call.
+    // End @0x165ef0 IS CFileMem::Ready; cast at each call.
 
     char m_pad00[0x10];  // +0x00..+0x0f (vtbl, ints, name CString)
     SnapStream m_stream; // +0x10..+0x1f
@@ -131,12 +144,12 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
 
     Serializer S;
     S.m_stream.Init();
-    S.Reset();
+    ((CFileMem*)&S)->Reset();
 
-    if (S.SetSink((void*)cb, 0, 0) == 0) {
+    if (((CFileMemBase*)&S)->SetName((const char*)(void*)cb, 0, 0) == 0) {
         return 0;
     }
-    if (S.Begin() == 0) {
+    if (((CFileMem*)&S)->Open() == 0) {
         return 0;
     }
 
@@ -152,7 +165,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     i32 probe = ((CWwdObjMgr*)m_08)->CountActive_15abc0();
     *(u32*)(header + 0x114) = g_61ab14;
     *(i32*)(header + 0x118) = probe;
-    S.Write(header, 0x120);
+    ((CFileMem*)&S)->Write((const void*)header, 0x120);
 
     // ---- dispatch the five blit modes over the children ----
     if (m_3c && cb(this, &S, 1, 0, 0) == 0) {
@@ -189,8 +202,8 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
         return 0;
     }
 
-    S.End();
-    S.Close();
+    ((CFileMem*)&S)->Ready();
+    ((CFileMem*)&S)->~CFileMem();
     return 1;
 }
 
@@ -225,17 +238,17 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
 
     Serializer S;
     S.m_stream.Init();
-    S.Reset();
+    ((CFileMem*)&S)->Reset();
 
-    if (S.SetSink(name, 1, 0) == 0) {
+    if (((CFileMemBase*)&S)->SetName((const char*)name, 1, 0) == 0) {
         return 0;
     }
-    if (S.Begin() == 0) {
+    if (((CFileMem*)&S)->Open() == 0) {
         return 0;
     }
 
     char header[0x120];
-    S.Read(header, 0x120);
+    ((CFileMem*)&S)->Read(header, 0x120);
 
     if (m_3c == 0 || m_3c(this, &S, 2, arg3, (i32)header) == 0) {
         return 0;
@@ -277,9 +290,9 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
         return 0;
     }
 
-    S.End();
+    ((CFileMem*)&S)->Ready();
     m_24->MainPlaneQueryB();
-    S.Close();
+    ((CFileMem*)&S)->~CFileMem();
     return 1;
 }
 
