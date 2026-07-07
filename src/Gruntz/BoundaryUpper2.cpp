@@ -31,6 +31,10 @@ extern void* g_wapObjectDtorVtbl;
 // ---------------------------------------------------------------------------
 DATA(0x002bf848)
 // The 0x185000 leaf is CDebugConfig::InitFromEnv (header-less DebugPrintf class); local decl.
+class Obj1397a0 { // SymEntry2::Teardown @0x1397a0
+public:
+    void Teardown();
+};
 class CDebugConfig {
 public:
     CDebugConfig* InitFromEnv();
@@ -426,7 +430,7 @@ RVA(0x0013a530, 0x47)
 i32 CSymTab::Remove(SymEntry1* a1, SymEntry2* a2) {
     m_size -= a2->m_span;
     a1->m_24.Unlink(&a2->m_1c);
-    a2->Teardown();
+    ((Obj1397a0*)a2)->Teardown();
     ((CSymParser*)m_list)->AddNode(a2);
     m_list->m_count = 0;
     return 1;

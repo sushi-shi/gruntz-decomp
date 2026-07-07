@@ -258,8 +258,8 @@ struct SymEntry2 {
     i32 _0[0xc / 4];
     i32 m_span; // +0x0c
     i32 _10[(0x1c - 0x10) / 4];
-    i32 m_1c;        // +0x1c
-    void Teardown(); // 0x1397a0
+    i32 m_1c; // +0x1c
+    // Teardown @0x1397a0 IS Obj1397a0::Teardown; cast at the call.
 };
 SIZE_UNKNOWN(SymEntry2);
 struct SymEntry1 {
