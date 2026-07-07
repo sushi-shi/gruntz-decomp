@@ -766,9 +766,7 @@ struct CNetCueRec {
     i32 m_20; // +0x20
 };
 // The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
-struct CRegBute {
-    i32 Lookup(const char* key, CNetCueRec** out);
-};
+struct CRegBute {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 struct CNetCfgSub { // m_c->m_28
     char m_pad0[0x10];
     CRegBute m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
@@ -828,7 +826,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
     } else {
         if (m_c->m_28->m_30 == 0) {
             CNetCueRec* rec = 0;
-            m_c->m_28->m_10.Lookup(s_GameKey, &rec);
+            ((CMapStringToOb*)&m_c->m_28->m_10)->Lookup(s_GameKey, (CObject*&)rec);
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
