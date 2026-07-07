@@ -34,7 +34,6 @@ struct CLookObj;
 struct CObj7c;
 struct CGrunt;
 struct CSoundHandle;
-struct CActivatable;
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
@@ -103,8 +102,10 @@ struct CGameObj2c {
 };
 
 // A per-player overlay the tail re-activates (g_gameReg->m_68->m_overlay).
-struct CActivatable {
-    void Activate(i32); // 0x9300
+// The +0x25c overlay is a CActionOptionsMenuBar (Activate @0x9300); TU-local decl.
+class CActionOptionsMenuBar {
+public:
+    i32 Activate(i32);
 };
 
 // The battlez score tracker (g_gameReg->m_7c).
@@ -136,7 +137,7 @@ struct CGooWellMgr {
     char _0[0x10c];
     i32 m_playerFlag[4]; // +0x10c per-player flag
     char _11c[0x25c - 0x11c];
-    CActivatable* m_overlay; // +0x25c
+    CActionOptionsMenuBar* m_overlay; // +0x25c
     char _260[0x288 - 0x260];
     i32 m_phase; // +0x288 phase
     char _28c[0x290 - 0x28c];
@@ -369,6 +370,6 @@ SIZE_UNKNOWN(CResHolder2);
 SIZE_UNKNOWN(CMgrHolderX);
 SIZE_UNKNOWN(CGaugeObj);
 SIZE_UNKNOWN(CGameObj2c);
-SIZE_UNKNOWN(CActivatable);
+SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CBzData);
 SIZE_UNKNOWN(CGooWellMgr);
