@@ -93,7 +93,7 @@ void CMapLogic::FreeNodes() {
             g_freeList = node;
         }
     }
-    m_arr.SetSize(0, -1);
+    ((CObArray*)&m_arr)->SetSize(0, -1);
     Reset();
 }
 
@@ -132,8 +132,8 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                     g_freeList = node;
                 }
             }
-            m_arr.SetSize(0, -1);
-            m_arr.SetSize(count, -1);
+            ((CObArray*)&m_arr)->SetSize(0, -1);
+            ((CObArray*)&m_arr)->SetSize(count, -1);
             for (u32 ri = 0; ri < (u32)count; ri++) {
                 void** node = (void**)g_freeList;
                 void* elem = 0;
