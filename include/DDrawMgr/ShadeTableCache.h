@@ -64,10 +64,13 @@ struct CShadeTableArray : Wap::CObject {
     i32 m_nGrowBy;         // +0x10 (cache +0x14)
 
     CShadeTableArray();
-    virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides Wap::CObject dtor slot 1
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CShadeTableArray() OVERRIDE;    // 0x150020  overrides Wap::CObject dtor slot 1
     virtual void Serialize()
         OVERRIDE; // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
-    void SetSizeGrow(i32 n, i32 grow); // 0x150040
+    virtual void AssertValid() OVERRIDE; // slot 3
+    virtual void Dump() OVERRIDE;        // slot 4
+    void SetSizeGrow(i32 n, i32 grow);   // 0x150040
 };
 // SIZE/VTBL for CShadeTableArray are kept in ShadeTableCache.cpp (out of this
 // windows.h-adjacent header, whose includers pull the Win32 SIZE struct type).
