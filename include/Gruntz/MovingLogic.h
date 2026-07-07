@@ -64,6 +64,9 @@ struct CProjBoundCfg {
 SIZE_UNKNOWN(CMovingLogic);
 class CMovingLogic : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc3() OVERRIDE;                            // slot 5
     TILE_LOGIC_TAIL
 public:
     CMovingLogic();                   // 0x13940 (standalone) / inlined into leaves
@@ -104,6 +107,7 @@ public:
     // +0x140..+0x14c: four trailing ints (Update / Serialize round-trip).
     i32 m_140, m_144, m_148, m_14c;
 };
+VTBL(CMovingLogic, 0x1e87ac);
 
 // Inline no-arg CMovingLogic init - folds into every leaf. Zeroes the +0x38..+0x10c
 // motion ints and seeds the twelve coordinate-bound doubles to the default [MIN,MAX]

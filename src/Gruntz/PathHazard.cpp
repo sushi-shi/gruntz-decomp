@@ -57,6 +57,9 @@ public:
 // vtable/layout only at the byte level (Tick reads the vtable raw).
 class CLightningHazard : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     TILE_LOGIC_TAIL
 public:
     // Real virtuals at CUserLogic slots 16..20 (+0x40..+0x50), mirroring CPathHazard;
