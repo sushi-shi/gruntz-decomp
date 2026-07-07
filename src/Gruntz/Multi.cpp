@@ -771,9 +771,9 @@ i32 CMulti::StartTitle() {
     if (!m_netGate) {
         return 0;
     }
-    i32 saved = (i32)m_2c;
-    void* st = RegistryFind(m_8, "STATEZ_ATTRACT");
-    m_2c = (CResSource*)((i32)st);
+    CResSource* saved = m_2c;
+    CResSource* st = (CResSource*)RegistryFind(m_8, "STATEZ_ATTRACT");
+    m_2c = st;
     if (!st) {
         return 0;
     }
@@ -781,13 +781,13 @@ i32 CMulti::StartTitle() {
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
-        m_2c = (CResSource*)(saved);
+        m_2c = saved;
         return 0;
     }
     ((CMultiViewReset*)((char*)m_c + 4))->Reset(); // (m_c->m_4)->Reset()
     void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
-    m_2c = (CResSource*)(saved);
+    m_2c = saved;
     while (g_ShowCursor(1) < 0) {
     }
     if (!((CMultiMgr*)m_4)->m_c0) {
