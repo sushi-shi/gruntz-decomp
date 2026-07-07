@@ -580,7 +580,7 @@ struct LvWorld {
 };
 // The bridge-toggle UI sub-object (this->m_2e0): Toggle(mode) sets its state.
 struct LvBridgeUi {
-    void Toggle(i32 mode); // 0x... (thiscall, 1 arg)  reloc-masked
+    // Toggle @0xd5b20 IS CLevelValidator::PositionBridgeToggle; cast at each call.
 };
 // The {x,y} screen point the toggle position is written to (this->m_3f4).
 struct LvBridgePoint {
@@ -611,21 +611,21 @@ i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
     i32 ey = w->m_90;
     LvBridgePoint* pt;
     if (mode == 1) {
-        m_2e0->Toggle(2);
+        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(2, 0);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0x37;
     } else if (mode == 0) {
-        m_2e0->Toggle(1);
+        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(1, 0);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0xd7;
     } else {
-        m_2e0->Toggle(3);
+        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(3, 0);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;

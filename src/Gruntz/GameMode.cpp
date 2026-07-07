@@ -375,7 +375,7 @@ i32 CCreditsState::Render() {
 
     if (m_1c4) {
         i32 s = ((CGMOwner*)m_4)->m_48->Find(g_60ce74);
-        if (s && !((CGMSoundEntry*)s)->Query()) {
+        if (s && !((CMultiBootyState*)s)->QueryGruntSlots()) {
             Sub3();
         }
     }
