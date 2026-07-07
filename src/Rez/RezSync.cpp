@@ -164,9 +164,7 @@ struct DecodeObj {
     void* M1698c0(void*, i32, i32, i32); // 0x1698c0
 };
 SIZE_UNKNOWN(MovieLookup);
-struct MovieLookup {
-    void M1b8438(const char*, void*); // 0x1b8438 (m_28 + 0x10)
-};
+struct MovieLookup {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
 
 SIZE_UNKNOWN(RezSync);
 struct RezSync {
@@ -723,7 +721,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     }
     {
         void* mv = 0;
-        ((MovieLookup*)((char*)m_30->m_28 + 0x10))->M1b8438("GAME_MOVIE", &mv);
+        ((CMapStringToOb*)((char*)m_30->m_28 + 0x10))->Lookup("GAME_MOVIE", (CObject*&)mv);
         m_30->m_28->MatchSub_1584f0((LeafScanSoundArg*)mv, 0);
     }
     Fn1ed8();
