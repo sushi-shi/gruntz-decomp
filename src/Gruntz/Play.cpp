@@ -2354,7 +2354,7 @@ struct CursorSelf {
     char m_pad4e8[0x504 - 0x4e8];
     i32 m_504; // +0x504 loaded flag
     // The named-cursor-set loader (thunk 0x39ea, __thiscall, reloc-masked).
-    i32 LoadCursor(const char* name, i32 a, i32 b, i32 c, i32 d);
+    // LoadCursor @0x39ea IS CPlay::BeginGridWalk; cast at each call (self == (CPlay*)this).
 };
 
 // @confidence: med
@@ -2375,7 +2375,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         return 1;
     }
     if (frame >= 1 && frame <= 0x26) {
-        if (self->LoadCursor("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
+        if (((CPlay*)self)->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
             return 0;
         }
         if (self->m_4e4 != 0) {
@@ -2389,7 +2389,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         return 1;
     }
     if (frame == 0) {
-        if (self->LoadCursor("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
+        if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
             return 0;
         }
         if (self->m_4e4 != 0) {
@@ -2402,7 +2402,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
         return 1;
     }
     if (frame == 0x66) {
-        if (self->LoadCursor("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
+        if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
             return 0;
         }
         if (self->m_4e4 != 0) {
@@ -2422,167 +2422,168 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     }
     switch (frame) {
         case 0xc8:
-            if (self->LoadCursor("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
                 return 0;
             }
             break;
         case 0xc9:
-            if (self->LoadCursor("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xca:
-            if (self->LoadCursor("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcb:
-            if (self->LoadCursor("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcc:
-            if (self->LoadCursor("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcd:
-            if (self->LoadCursor("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xce:
-            if (self->LoadCursor("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcf:
-            if (self->LoadCursor("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd0:
-            if (self->LoadCursor("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd1:
-            if (self->LoadCursor("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd2:
-            if (self->LoadCursor("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd3:
-            if (self->LoadCursor("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd4:
-            if (self->LoadCursor("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd5:
-            if (self->LoadCursor("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd6:
-            if (self->LoadCursor("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd7:
-            if (self->LoadCursor("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd8:
-            if (self->LoadCursor("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd9:
-            if (self->LoadCursor("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xda:
-            if (self->LoadCursor("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdb:
-            if (self->LoadCursor("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdc:
-            if (self->LoadCursor("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdd:
-            if (self->LoadCursor("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xde:
-            if (self->LoadCursor("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdf:
-            if (self->LoadCursor("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe0:
-            if (self->LoadCursor("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe1:
-            if (self->LoadCursor("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe2:
-            if (self->LoadCursor("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe3:
-            if (self->LoadCursor("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0)
+                == 0) {
                 return 0;
             }
             break;
         case 0xe4:
-            if (self->LoadCursor("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe5:
-            if (self->LoadCursor("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe6:
-            if (self->LoadCursor("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe7:
-            if (self->LoadCursor("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe8:
-            if (self->LoadCursor("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
+            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
