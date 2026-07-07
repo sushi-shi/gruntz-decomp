@@ -12,6 +12,14 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
+class CTileTriggerContainer {
+public:
+    ~CTileTriggerContainer();
+};
+class CTileTriggerSwitchLogic {
+public:
+    i32 GetFlag74();
+};
 
 // Rec50::Init286f @0x286f IS CTimer::Init (header-less here); minimal local decl.
 SIZE_UNKNOWN(CTimer);
@@ -59,8 +67,8 @@ namespace modeinit {
 
     // The 0x78 four-CString record owned at this->m_2e4.
     struct Rec78 {
-        i32 Init403e();  // 0x0000403e
-        void Dtor1cad(); // 0x00001cad
+        // Init403e @0x403e IS CTileTriggerSwitchLogic::GetFlag74; cast at the call.
+        // Dtor1cad @0x1cad IS ~CTileTriggerContainer; cast at the call.
     };
 
     // The 0x50 record owned at this->m_3f4.
@@ -387,9 +395,9 @@ namespace modeinit {
             r78 = 0;
         }
         m_2e4 = r78;
-        if (m_2e4->Init403e() == 0) {
+        if (((CTileTriggerSwitchLogic*)m_2e4)->GetFlag74() == 0) {
             if (m_2e4) {
-                m_2e4->Dtor1cad();
+                ((CTileTriggerContainer*)m_2e4)->~CTileTriggerContainer();
                 RezFree(m_2e4);
             }
             m_2e4 = 0;

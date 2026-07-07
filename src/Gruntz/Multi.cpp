@@ -33,6 +33,10 @@
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
 #include <Globals.h>
+class CSnd788d0 {
+public:
+    i32 PositionUpdate();
+};
 class CTriggerMgr {
 public:
     i32 OverlayRelease();
@@ -640,9 +644,9 @@ public:
 class PBSub68 {
 public:
     char m_pad00_230[0x230];
-    i32 m_armed;      // +0x230  armed gate
-    void Fire1398();  // 0x00001398
-    void Reset2b85(); // 0x00002b85
+    i32 m_armed; // +0x230  armed gate
+    // Fire1398 @0x1398 IS CSnd788d0::PositionUpdate; cast at the call.
+    // Reset2b85 @0x2b85 IS CTriggerMgr::OverlayRelease; cast at the call.
 };
 // The compositor refresh helper (__cdecl free fn). 0x00002356
 extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
@@ -680,7 +684,7 @@ void CMulti::PumpB() {
     }
     if (m_paletteActive == 0) {
         if (((PBSub68*)m_logic->m_68)->m_armed != 0) {
-            ((PBSub68*)m_logic->m_68)->Fire1398();
+            ((CSnd788d0*)m_logic->m_68)->PositionUpdate();
         } else {
             LoadScrollSpeedOptions();
         }
@@ -721,7 +725,7 @@ void CMulti::PumpB() {
     }
     m_2e0->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    ((PBSub68*)m_logic->m_68)->Reset2b85();
+    ((CTriggerMgr*)m_logic->m_68)->OverlayRelease();
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_paletteActive != 0) {
