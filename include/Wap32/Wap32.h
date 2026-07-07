@@ -228,9 +228,11 @@ public:
     virtual void VirtualUnknownMethod06() {}                // +0x14
     virtual i32 RunMessageLoop();                           // +0x18
     virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
-    virtual void OnIdle();                   // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
-    virtual void FreeGameManager();          // +0x24
-    virtual void VirtualUnknownMethod11() {} // +0x28
+    virtual void OnIdle();          // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
+    virtual void FreeGameManager(); // +0x24
+    virtual i32 VirtualUnknownMethod11(i32, i32, i32) {
+        return 0;
+    }                                                    // +0x28 slot 10
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34

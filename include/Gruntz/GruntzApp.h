@@ -17,6 +17,10 @@ class CGruntzApp : public CGameApp {
 public:
     CGruntzApp();                   // ctor
     virtual ~CGruntzApp() OVERRIDE; // vtbl +0x00
+    virtual i32 InitInstance(GameInfo*, WNDCLASSA*, CREATESTRUCTA*)
+        OVERRIDE;                                      // slot 1 (declared-only)
+    virtual void CloseResources() OVERRIDE;            // slot 4 (declared-only)
+    virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (declared-only)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7
     // launch args to CGameApp::Init and normalises the result
     // to a bool. WinMain calls this as the app "Init".
@@ -31,10 +35,10 @@ public:
     ) OVERRIDE;                        // vtbl +0x08
     virtual void ShowError() OVERRIDE; // vtbl +0x30
     // Another base-init virtual override; just returns 0.
-    virtual i32 VirtualUnknownMethod04(i32 a, i32 b, i32 c);
+    virtual i32 VirtualUnknownMethod11(i32 a, i32 b, i32 c) OVERRIDE; // slot 10
     // Shows the MESSAGE dialog with an arbitrary message string.
     void ShowMessage(char* msg, HWND hParent);
-    WAP32::CGameMgr* InitializeGameManager() OVERRIDE;
+    virtual WAP32::CGameMgr* InitializeGameManager() OVERRIDE;
     static INT_PTR CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     // Boolified forward: calls the switch-down-sprite loader on `this` (thiscall,

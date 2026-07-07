@@ -194,7 +194,7 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 // CGruntzApp::VirtualUnknownMethod04
 // Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
 RVA(0x00080aa0, 0x5)
-i32 CGruntzApp::VirtualUnknownMethod04(i32 a, i32 b, i32 c) {
+i32 CGruntzApp::VirtualUnknownMethod11(i32 a, i32 b, i32 c) {
     return 0;
 }
 
