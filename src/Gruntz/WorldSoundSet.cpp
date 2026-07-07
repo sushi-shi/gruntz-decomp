@@ -55,8 +55,9 @@ struct CAmbientSound : public CUserBase {
 // RTTI: CAmbientPosSound : CAmbientSound (vftable 0x1e7124). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CAmbientPosSound : CAmbientSound {
-    virtual ~CAmbientPosSound() OVERRIDE;          // slot 0
-    void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
+    virtual ~CAmbientPosSound() OVERRIDE;                              // slot 0
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    void Update(i32 x, i32 y, i32 force) OVERRIDE;                     // slot 3 override
     CAmbientPosSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
@@ -66,8 +67,9 @@ struct CAmbientPosSound : CAmbientSound {
 // RTTI: CRandomAmbientSound : CAmbientSound (vftable 0x1e713c). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CRandomAmbientSound : CAmbientSound {
-    virtual ~CRandomAmbientSound() OVERRIDE;       // slot 0
-    void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
+    virtual ~CRandomAmbientSound() OVERRIDE;                           // slot 0
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    void Update(i32 x, i32 y, i32 force) OVERRIDE;                     // slot 3 override
     CRandomAmbientSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
