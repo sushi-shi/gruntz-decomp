@@ -20,7 +20,7 @@ void RezFree(void* p);
 // stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
 
 // The worker: a +0x4 heap buffer freed on teardown.
-struct CRezBufferObject : Wap::CObject {
+struct CRezBufferObject : public Wap::CObject {
     char* m_4; // +0x04  heap buffer
     virtual ~CRezBufferObject() OVERRIDE;
 };

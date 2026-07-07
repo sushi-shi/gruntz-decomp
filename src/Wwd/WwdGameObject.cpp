@@ -963,7 +963,16 @@ inline CWwdGameObjectE::~CWwdGameObjectE() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectA : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectA() OVERRIDE; // 0x15b790
+    virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f00a8 table).
+    virtual void ReleaseSubs() OVERRIDE; // slot 7  @0x15b980
+    virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
+    virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
+    virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
+    virtual void Slot30() OVERRIDE;      // slot 12 @0x150660
+    virtual void Slot34() OVERRIDE;      // slot 13 @0x1506b0
+    virtual void Slot38() OVERRIDE;      // slot 14 @0x1508a0
+    virtual i32 Play3C() OVERRIDE;       // slot 15 @0x150a70 (Dispatch)
 
     char _pe0[0x18c - 0xe0];
     i32 m_18c; // 0x18c
@@ -1002,7 +1011,16 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectF : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectF() OVERRIDE; // 0x15bad0
+    virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f0060 table).
+    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15ba40
+    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15bc50
+    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15ba60
+    virtual void Slot2C() OVERRIDE;        // slot 11 @0x15ba70
+    virtual void Slot30() OVERRIDE;        // slot 12 @0x15ba80
+    virtual void Slot34() OVERRIDE;        // slot 13 @0x15ba90
+    virtual void Slot38() OVERRIDE;        // slot 14 @0x15baa0
+    virtual void SetupDeferredV();         // slot 16 @0x15bc30 (new)
 };
 
 // @early-stop
@@ -1178,7 +1196,15 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectC : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectC() OVERRIDE; // 0x15c070
+    virtual ~CWwdGameObjectC() OVERRIDE; // slot 1  0x15c070
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5effd0 table).
+    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15c000
+    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15c200
+    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15c020
+    virtual void Slot2C() OVERRIDE;        // slot 11 @0x1660f0 (RenderDot)
+    virtual void Slot30() OVERRIDE;        // slot 12 @0x1661d0
+    virtual void Slot34() OVERRIDE;        // slot 13 @0x1662a0
+    virtual void Slot38() OVERRIDE;        // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
     virtual void Slot44();        // slot 17 @0x15c030

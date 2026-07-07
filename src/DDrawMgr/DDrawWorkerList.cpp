@@ -79,8 +79,23 @@ struct WorkNode {
 // methods occupy lower vtable slots (their slot numbers are not load-bearing;
 // only their bodies are matched), so they are placed last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerList {
+// 14-slot vtable 0x5efd88: slots 0-4 are the shared Wap::CObject base thunks
+// (0x1bef01 / 0x0028ec / 0x00106e / 0x004034), slot 1 the scalar-deleting dtor,
+// slots 5-13 the list's own virtuals (declared-only, reloc-masked).
+class CDDrawWorkerList : public Wap::CObject {
 public:
+    virtual ~CDDrawWorkerList() OVERRIDE; // slot 1 (dtor 0x163bc0 / ??_G 0x156f30)
+    virtual i32 VIsReady();       // slot 5  @0x156f00
+    virtual i32 VReadyPred();     // slot 6  @0x156fc0
+    virtual void VDtor7();        // slot 7  @0x163bc0
+    virtual void VGetState();     // slot 8  @0x156f20
+    virtual void VCreateA();      // slot 9  @0x156fd0
+    virtual void VCreateB28();    // slot 10 @0x1573e0
+    virtual void VCreateB2C();    // slot 11 @0x157330
+    virtual void VCreateB30();    // slot 12 @0x157150
+    virtual void VPrune();        // slot 13 @0x163bf0
+
+    // Matched method bodies (non-virtual; direct-called + reached via the slots above).
     i32 IsReady();
     void ClearWorkers();
     StateId GetStateId();
@@ -89,32 +104,12 @@ public:
     void* CreateWorkerB2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
     void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void PruneWorkers(i32 a1, i32 a2);
+    i32 IsReadyPredicate();
 
-    virtual void
-    VSlot0(); // +0x00 (vptr; not stamped by these methods)  // real polymorphic vptr @+0x00 (was m_vptr)
-    // Slots 1-13 completing the 14-slot 0x5efd88 table (declared-only, reloc-masked).
-    virtual void VSlot1();  // slot 1  scalar-deleting dtor (0x156f30)
-    virtual void VSlot2();  // slot 2  @0x0028ec (base thunk)
-    virtual void VSlot3();  // slot 3  @0x00106e (base thunk)
-    virtual void VSlot4();  // slot 4  @0x004034 (base thunk)
-    virtual i32 VIsReady(); // slot 5  @0x156f00
-    virtual i32 VReadyPred();// slot 6 @0x156fc0
-    virtual void VDtor7();  // slot 7  @0x163bc0
-    virtual void VGetState();// slot 8 @0x156f20
-    virtual void VCreateA();// slot 9  @0x156fd0
-    virtual void VCreateB28();// slot 10 @0x1573e0
-    virtual void VCreateB2C();// slot 11 @0x157330
-    virtual void VCreateB30();// slot 12 @0x157150
-    virtual void VPrune();  // slot 13 @0x163bf0
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b
     CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  (CDDrawSubMgr+0xc; copied into worker m_ctx)
     CObList m_workers;              // +0x10  worker list (CObList)
-
-    ~CDDrawWorkerList(); // 0x163bc0 (walk+destroy children, then ~CObList(m_workers))
-
-    // Engine-label backlog stub (state predicate).
-    i32 IsReadyPredicate();
 };
 
 // operator delete + the sibling manager (vtable 0x5efd88) whose real member-teardown
@@ -218,7 +213,7 @@ void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
         }
         return 0;
     }
-    m_workers.AddTail((CObject*)w);
+    m_workers.AddTail((::CObject*)w);
     return w;
 }
 
@@ -235,9 +230,9 @@ void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((CObject*)w);
+        m_workers.AddHead((::CObject*)w);
     } else {
-        m_workers.AddTail((CObject*)w);
+        m_workers.AddTail((::CObject*)w);
     }
     return w;
 }
@@ -261,9 +256,9 @@ void* CDDrawWorkerList::CreateWorkerB2C(
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((CObject*)w);
+        m_workers.AddHead((::CObject*)w);
     } else {
-        m_workers.AddTail((CObject*)w);
+        m_workers.AddTail((::CObject*)w);
     }
     return w;
 }
@@ -280,9 +275,9 @@ void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addH
         return 0;
     }
     if (addHead & 1) {
-        m_workers.AddHead((CObject*)w);
+        m_workers.AddHead((::CObject*)w);
     } else {
-        m_workers.AddTail((CObject*)w);
+        m_workers.AddTail((::CObject*)w);
     }
     return w;
 }
