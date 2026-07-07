@@ -1081,7 +1081,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     if (!sounds) {
         return 0;
     }
-    self->m_c->m_28->Install(sounds, "CREDITZ", "_");
+    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "CREDITZ", "_");
 
     CCreditzMusicSet* midiz = (CCreditzMusicSet*)self->m_2c->FindMusicSet("MIDIZ");
     if (midiz) {

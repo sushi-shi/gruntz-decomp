@@ -24,6 +24,11 @@
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <Globals.h>
 #include <Gruntz/ResMgr.h> // canonical CImageRegistry (the +0x10 image registrar)
+class DirNode;
+class CDDrawSubMgrLeafScan {
+public:
+    i32 ScanTree_157ee0(DirNode* n, const char* a, const char* b);
+}; // 0x157ee0
 class CDDrawSubMgrPages {
 public:
     void Method_159ef0();
@@ -57,8 +62,8 @@ extern i32 g_645588;
 struct BcRegSet { // this->m_8
     // Register @0x13c030 IS CSymParser::ResolvePath; cast at each call.
 };
-struct BcSoundRegistry {                            // this->m_c->m_28
-    void Install(void* set, char* name, char* sep); // FUN_00557ee0
+struct BcSoundRegistry { // this->m_c->m_28
+    // Install @0x157ee0 IS CDDrawSubMgrLeafScan::ScanTree_157ee0; cast at each call.
 };
 // The image registrar reached via m_c->m_10 is the canonical CImageRegistry
 // (ResMgr.h): Install is its slot-18 (+0x48) virtual. Uses the real class - no local
@@ -174,13 +179,14 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         if (!soundz) {
             goto fail;
         }
-        m_c->m_28->Install(soundz, "BOOTY", "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, "BOOTY", "_");
 
         void* wand = m_30->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
-        m_c->m_28->Install(wand, "GRUNTZ_WANDGRUNT", "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)
+            ->ScanTree_157ee0((DirNode*)wand, "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = m_2c->FindSub("IMAGEZ");
         if (!imagez) {
