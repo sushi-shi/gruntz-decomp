@@ -3181,9 +3181,13 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 // ===========================================================================
 // The per-namespace load-notify sink (arg): OnLoaded() probes its ready flags and
 // posts a progress message. External/reloc-masked.
-struct CLoadNotify {
-    void OnLoaded(); // 0x4bc420 (thiscall, no arg)
+// The load-notify sink IS a CMulti; OnLoaded @0xbc420 = CMulti::AckJoinFailure. Minimal local decl.
+SIZE_UNKNOWN(CMulti);
+class CMulti {
+public:
+    void AckJoinFailure();
 };
+struct CLoadNotify {};
 
 RVA(0x000dd830, 0x1e3)
 i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
@@ -3220,7 +3224,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_GRUNTPUDDLE")) {
@@ -3230,7 +3234,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_PICKUPS")) {
@@ -3240,7 +3244,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_BOMBGRUNT")) {
@@ -3250,7 +3254,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     return 1;
@@ -3277,7 +3281,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_DEATHZ")) {
@@ -3287,7 +3291,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_ENTRANCEZ")) {
@@ -3297,7 +3301,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_EXITZ")) {
@@ -3307,7 +3311,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_GRUNTPUDDLE")) {
@@ -3317,7 +3321,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_PICKUPS")) {
@@ -3327,7 +3331,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_10->Has("GRUNTZ_BOMBGRUNT")) {
@@ -3337,7 +3341,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_10->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     g_resourceInstallActive = 0;
@@ -3363,7 +3367,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_DEATHZ")) {
@@ -3373,7 +3377,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_ENTRANCEZ")) {
@@ -3383,7 +3387,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_EXITZ")) {
@@ -3393,7 +3397,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_GRUNTPUDDLE")) {
@@ -3403,7 +3407,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_PICKUPS")) {
@@ -3413,7 +3417,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     if (!self->m_c->m_animRegistry->Has("GRUNTZ_BOMBGRUNT")) {
@@ -3423,7 +3427,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         }
         self->m_c->m_animRegistry->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            notify->OnLoaded();
+            ((CMulti*)notify)->AckJoinFailure();
         }
     }
     return 1;
