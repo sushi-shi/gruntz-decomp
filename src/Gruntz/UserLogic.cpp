@@ -170,6 +170,7 @@ public:
 };
 
 class CGruntHealthSprite : public CUserLogic {
+    virtual i32 Vslot16();                     // slot 16 (new)
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1

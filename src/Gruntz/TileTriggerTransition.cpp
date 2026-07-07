@@ -52,7 +52,7 @@ public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     virtual ~CTileTriggerTransition() OVERRIDE;
 
-    LogicTypeId GetTypeTag();                     // 0x011730
+    virtual LogicTypeId GetTypeTag() OVERRIDE;    // 0x011730
     void Register_10fc90();                       // 0x10fc90
     void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070

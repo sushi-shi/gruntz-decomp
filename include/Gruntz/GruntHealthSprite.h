@@ -39,6 +39,7 @@ public:
 
     void HealthUpdate(); // 0x07f180 (the registered per-frame handler; defined elsewhere)
     i32 SetHealthGlyph(i32 x, i32 y, i32 health); // 0x07f0d0
+    virtual i32 Vslot16();                        // slot 16 (new)
     virtual ~CGruntHealthSprite() OVERRIDE;       // 0x011fb0 (folds the CUserLogic teardown)
 
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the
@@ -48,6 +49,7 @@ public:
     i32 m_cellY;  // +0x58  stashed grunt cell y
     i32 m_health; // +0x5c  stashed health value
 };
+VTBL(CGruntHealthSprite, 0x001e7ba4);
 
 // The class registry entry: its first dword receives the handler PMF (a 4-byte
 // code pointer on this complete single-inheritance class). CGruntHealthSprite is
