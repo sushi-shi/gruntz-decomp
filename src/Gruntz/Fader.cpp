@@ -333,13 +333,27 @@ struct FxPoint {
 
 // A typed view of the growable buffer sub-object embedded at CFaderMesh::m_58
 // (the CRezBufferObject / MFC CArray<FxPoint>): vptr + pData/size/max/growby.
+struct E40 {
+    char m_b[40];
+};
+// CArray layout: a CObject-style 4-byte head (+0x00, untouched by SetSize), then
+// m_pData/m_nSize/m_nMaxSize/m_nGrowBy.
+struct CArrayE40 {
+    void* m_head;   // +0x00
+    E40* m_pData;   // +0x04
+    i32 m_nSize;    // +0x08
+    i32 m_nMaxSize; // +0x0c
+    i32 m_nGrowBy;  // +0x10
+    void SetSize(i32 nNewSize, i32 nGrowBy);
+};
+
+// The fade mesh buffer IS a CArrayE40 (Init @0x17f390 = CArrayE40::SetSize); cast at the call.
 struct FxMeshBuffer {
-    void* m_vtbl;            // +0x00 (+0x58)
-    FxPoint* m_pData;        // +0x04 (+0x5c)
-    i32 m_nSize;             // +0x08 (+0x60)
-    i32 m_nMaxSize;          // +0x0c (+0x64)
-    i32 m_nGrowBy;           // +0x10 (+0x68)
-    void Init(i32 a, i32 b); // 0x17f390 (external, reloc-masked)
+    void* m_vtbl;     // +0x00 (+0x58)
+    FxPoint* m_pData; // +0x04 (+0x5c)
+    i32 m_nSize;      // +0x08 (+0x60)
+    i32 m_nMaxSize;   // +0x0c (+0x64)
+    i32 m_nGrowBy;    // +0x10 (+0x68)
 };
 
 // The OffsetRect import (reached via the global function pointer at 0x6c4490) and
@@ -391,7 +405,7 @@ i32 CFaderMesh::ApplyInit(CFaderInit* descOpaque) {
     m_50 = cfg->m_columns;
     m_54 = cfg->m_rows;
 
-    mesh->Init(0, -1);
+    ((CArrayE40*)mesh)->SetSize(0, -1);
 
     i32 halfW = ((FxBox*)m_3c)->m_width / 2;
     i32 halfH = ((FxBox*)m_3c)->m_height / 2;
@@ -524,20 +538,6 @@ i32 CFaderMesh::ApplyInit(CFaderInit* descOpaque) {
 // lived "0"/null register choice - retail pins it in esi (then reloads esi as the
 // memcpy src), cl pins it in edi, which cascades into the edx/ecx scratch picks in
 // the realloc lea chains. Not source-steerable. Deferred to the final sweep.
-struct E40 {
-    char m_b[40];
-};
-// CArray layout: a CObject-style 4-byte head (+0x00, untouched by SetSize), then
-// m_pData/m_nSize/m_nMaxSize/m_nGrowBy.
-struct CArrayE40 {
-    void* m_head;   // +0x00
-    E40* m_pData;   // +0x04
-    i32 m_nSize;    // +0x08
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
-    void SetSize(i32 nNewSize, i32 nGrowBy);
-};
-
 RVA(0x0017f390, 0x164)
 void CArrayE40::SetSize(i32 nNewSize, i32 nGrowBy) {
     if (nGrowBy != -1) {
