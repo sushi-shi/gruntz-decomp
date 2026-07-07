@@ -23,6 +23,19 @@
 #include <Win32.h>  // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock)
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
+class CDDSurface;
+class CDDrawPtrCollections {
+public:
+    void RemoveItemA(CDDSurface* i);
+    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);
+    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);
+    CDDSurface* Createab8_24_3(i32 m);
+};
+class CDirectDrawMgr {
+public:
+    void* CreatePoolItem(void* a, void* b);
+    i32 CreateDevice(void* a, void* b, i32 w, i32 h, i32 bpp, unsigned int m);
+};
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and
@@ -38,12 +51,12 @@
 SIZE_UNKNOWN(CDDrawSurfacePool);
 class CDDrawSurfacePool {
 public:
-    void RemoveItemA(CDDSurface* item);                                      // 0x142160
-    CDDSurface* AcquireA(i32 a, i32 b);                                      // 0x143630
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e);              // 0x142e60
-    CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);                  // 0x1423c0
-    i32 CreateModeSurface(i32 fmt, i32 fs, i32 w, i32 h, i32 bpp, i32 mode); // 0x141dc0
-    CDDSurface* AttachMode(i32 mode);                                        // 0x142b70
+    // RemoveItemA @0x142160 IS CDDrawPtrCollections::RemoveItemA; cast at the call.
+    // AcquireA @0x143630 IS CDirectDrawMgr::CreatePoolItem; cast at the call.
+    // MakeAndAddB @0x142e60 IS CDDrawPtrCollections::MakeAndAddB; cast at the call.
+    // CreateB @0x1423c0 IS CDDrawPtrCollections::CreateB; cast at the call.
+    // CreateModeSurface @0x141dc0 IS CDirectDrawMgr::CreateDevice; cast at the call.
+    // AttachMode @0x142b70 IS CDDrawPtrCollections::Createab8_24_3; cast at the call.
     char _pad0[0x944];
     i32 m_lastError; // +0x944  last DirectDraw error stash
 };
@@ -144,7 +157,8 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     rect[3] = h;
     if (m_status == 1) {
         CDDrawSurfaceMgr* mgr = m_mgr;
-        m_surface = mgr->m_pool->AcquireA(mgr->m_fmtChain->m_next->m_pixelFormat, 4);
+        m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
+                        ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
         if (m_surface == 0) {
             if ((m_mgr)->m_lastError == 0) {
                 (m_mgr)->m_lastError = 0xfa3;
@@ -154,9 +168,9 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
     }
     if (m_status != 1) {
         if (m_flags & 0x10000) {
-            m_surface = (m_mgr)->m_pool->MakeAndAddB(w, h, 0, 0, -1);
+            m_surface = ((CDDrawPtrCollections*)(m_mgr)->m_pool)->MakeAndAddB(w, h, 0, 0, -1);
         } else {
-            m_surface = (m_mgr)->m_pool->CreateB(w, h, 0, 0, -1);
+            m_surface = ((CDDrawPtrCollections*)(m_mgr)->m_pool)->CreateB(w, h, 0, 0, -1);
         }
         if (m_surface == 0) {
             if ((m_mgr)->m_lastError == 0) {
@@ -177,7 +191,7 @@ RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::TeardownSurface() {
     if (m_surface != 0 && m_ownsSurface != 0) {
         CDDrawSurfacePool* pool = m_mgr->m_pool;
-        pool->RemoveItemA(m_surface);
+        ((CDDrawPtrCollections*)pool)->RemoveItemA(m_surface);
         m_surface = 0;
     }
     m_width = 0;
@@ -384,9 +398,9 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
     }
     i32 hr;
     if (mgr->m_capsFlags & 0x10) {
-        hr = pool->CreateModeSurface(mgr->m_device, 2, w, h, bpp, mode);
+        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_device, (void*)2, w, h, bpp, mode);
     } else {
-        hr = pool->CreateModeSurface(mgr->m_device, 0, w, h, bpp, mode);
+        hr = ((CDirectDrawMgr*)pool)->CreateDevice((void*)mgr->m_device, (void*)0, w, h, bpp, mode);
     }
     if (hr == 0) {
         i32 err = pool->m_lastError;
@@ -445,7 +459,7 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
     if (m2->m_capsFlags & 2) {
         amode = 2;
     }
-    CDDSurface* surf = pool->AttachMode(amode);
+    CDDSurface* surf = ((CDDrawPtrCollections*)pool)->Createab8_24_3(amode);
     m_surface = surf;
     if (surf != 0 && surf->IsValid()) {
         return 1;
