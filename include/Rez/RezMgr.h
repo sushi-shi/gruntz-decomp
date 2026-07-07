@@ -150,17 +150,17 @@ public:
 
     // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
     // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
-    void* m_fp;                 // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
-    void* m_readBuf;            // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
-    i32 m_18;                   // +0x18  (set by the virtual load, not this TU; role unproven)
-    i32 m_1c;                   // +0x1c  (set by the virtual load, not this TU; role unproven)
-    i32 m_pos;                  // +0x20  position cursor (= -1)
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
+    void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
+    i32 m_18;        // +0x18  (set by the virtual load, not this TU; role unproven)
+    i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
+    i32 m_pos;       // +0x20  position cursor (= -1)
+    virtual void VtSlotFill0() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5() OVERRIDE; // vtable-slot filler (real slot; declared-only)
 };
 
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
