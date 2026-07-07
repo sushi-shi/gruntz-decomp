@@ -72,9 +72,8 @@ struct CChatAnim {
 // The key->record map (CMapWordToOb-style Lookup at 0x1b8008 / 0x1b8438). The
 // value type differs per instance (CChatAnim for the rows, CChatTimer for scroll),
 // so the out-param is generic. __thiscall.
-struct CChatMap {
-    i32 Lookup(void* key, void** out); // BOOL Lookup(key, value&)
-};
+// The key->node map is an MFC CMapStringToOb (Lookup @0x1b8438); cast at each call.
+struct CChatMap {};
 
 // The on-screen catalog reached through CChatPage::m_10; the key->node map lives
 // at +0x10 inside it (the `add ecx,0x10` in the row-advance lookups).
@@ -363,7 +362,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
         return 0;
     }
     CChatAnim* a = 0;
-    m_page->m_10->m_10map.Lookup(key, (void**)&a);
+    ((CMapStringToOb*)&m_page->m_10->m_10map)->Lookup((const char*)key, (CObject*&)a);
     m_row0Anim = a;
     if (!a) {
         return 0;
@@ -386,7 +385,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
         return 0;
     }
     CChatAnim* a = 0;
-    m_page->m_10->m_10map.Lookup(key, (void**)&a);
+    ((CMapStringToOb*)&m_page->m_10->m_10map)->Lookup((const char*)key, (CObject*&)a);
     m_row1Anim = a;
     if (!a) {
         return 0;
@@ -497,7 +496,7 @@ i32 CChatBox::ScrollRow0() {
         return 0;
     }
     CChatTimer* t = 0;
-    roster->m_10.Lookup((void*)(const char*)m_row0Key, (void**)&t);
+    ((CMapStringToOb*)&roster->m_10)->Lookup((const char*)m_row0Key, (CObject*&)t);
     if (!t) {
         return 0;
     }
@@ -529,7 +528,7 @@ i32 CChatBox::ScrollRow1() {
         return 0;
     }
     CChatTimer* t = 0;
-    roster->m_10.Lookup((void*)(const char*)m_row1Key, (void**)&t);
+    ((CMapStringToOb*)&roster->m_10)->Lookup((const char*)m_row1Key, (CObject*&)t);
     if (!t) {
         return 0;
     }
