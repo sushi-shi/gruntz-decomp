@@ -4007,7 +4007,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     g_serialCounter++;
     char buf512[0x200];
     ar->Read(buf512, 0x200);
-    ((GruntLoadStr*)(&m_410))->Assign(buf512);
+    ((CString*)(&m_410))->operator=(buf512);
     ar->Read((char*)&m_408 + 4, 4);
     ar->Read(&g_load612618, 4);
 

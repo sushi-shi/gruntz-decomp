@@ -863,7 +863,7 @@ struct GruntLoadColl {
 // operator=(const char*) is external (0x1b9e74, reloc-masked).
 SIZE_UNKNOWN(GruntLoadStr);
 struct GruntLoadStr {
-    void Assign(const char* s); // operator= 0x1b9e74
+    // Assign @0x1b9e74 IS CString::operator=; cast at the call.
 };
 
 // The anim-name id table entry resolved through res->m_10's CMapStringToOb (+0x10,

@@ -24,13 +24,13 @@ void ButeMgrFlush82b20() {
 // (_g_profSink @ VA 0x645524). __cdecl, no args.
 // ===========================================================================
 struct CProfSink {
-    void Tick1b9b93(); // 0x1b9b93 (reloc-masked)
+    // Tick1b9b93 @0x1b9b93 IS CString::~CString; cast at each call.
 };
 SIZE_UNKNOWN(CProfSink);
 extern "C" CProfSink g_profSink;
 RVA(0x00082ba0, 0xa)
 void ProfSinkTick82ba0() {
-    g_profSink.Tick1b9b93();
+    ((CString*)&g_profSink)->~CString();
 }
 
 // ===========================================================================
@@ -56,31 +56,31 @@ extern "C" CProfSink g_obj645530;
 
 RVA(0x00082c20, 0xa)
 void ProfSinkTick82c20() {
-    g_obj645528.Tick1b9b93();
+    ((CString*)&g_obj645528)->~CString();
 }
 RVA(0x00082ca0, 0xa)
 void ProfSinkTick82ca0() {
-    g_obj64552c.Tick1b9b93();
+    ((CString*)&g_obj64552c)->~CString();
 }
 RVA(0x00082d20, 0xa)
 void ProfSinkTick82d20() {
-    g_obj645530.Tick1b9b93();
+    ((CString*)&g_obj645530)->~CString();
 }
 RVA(0x00082da0, 0xa)
 void ProfSinkTick82da0() {
-    g_obj645514.Tick1b9b93();
+    ((CString*)&g_obj645514)->~CString();
 }
 RVA(0x00082e20, 0xa)
 void ProfSinkTick82e20() {
-    g_obj645518.Tick1b9b93();
+    ((CString*)&g_obj645518)->~CString();
 }
 RVA(0x00082ea0, 0xa)
 void ProfSinkTick82ea0() {
-    g_obj64551c.Tick1b9b93();
+    ((CString*)&g_obj64551c)->~CString();
 }
 RVA(0x00082f20, 0xa)
 void ProfSinkTick82f20() {
-    g_obj645520.Tick1b9b93();
+    ((CString*)&g_obj645520)->~CString();
 }
 
 // ===========================================================================

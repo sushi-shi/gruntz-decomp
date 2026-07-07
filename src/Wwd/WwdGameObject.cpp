@@ -834,9 +834,9 @@ public:
 
 // The CString name at +0xdc (NAFXCW dtor 0x1b9cde, reloc-masked).
 struct WwdName {
-    void DtorImpl(); // 0x1b9cde  __thiscall ~CString
+    // DtorImpl @0x1b9cde IS a CString teardown (~CString family); cast at the call.
     ~WwdName() {
-        DtorImpl();
+        ((CString*)this)->~CString();
     }
     char* m_data;
 };
@@ -1031,7 +1031,7 @@ CWwdGameObjectF::~CWwdGameObjectF() {
 struct WwdObList {
     void DtorImpl(); // 0x1b5a2b
     ~WwdObList() {
-        DtorImpl();
+        ((CString*)this)->~CString();
     }
     i32 m_head; // +0x1dc
 };
