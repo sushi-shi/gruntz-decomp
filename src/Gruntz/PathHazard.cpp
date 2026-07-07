@@ -21,6 +21,19 @@
 
 #include <math.h> // sqrt - inlines to fsqrt at /O2; the (int)double casts lower to __ftol
 
+namespace m4 {
+    struct HitGrunt;
+    struct HitTileRect;
+    class GruntHitMgr {
+    public:
+        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
+    };
+} // namespace m4
+class CTriggerMgr {
+public:
+    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d, i32 e);
+};
+
 // CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
 // (`this->Tick/Arrive/BeginLeg/HitTest()`): CUserLogic is modeled at its full 16
 // slots (UserLogic.h), so CPathHazard's five added virtuals land at their true
@@ -270,9 +283,15 @@ i32 CPathHazard::Tick() {
     CGameRegistry* reg = g_pathGameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
-        CPathEntity* ent =
-            (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
-                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_areaL, &outA, &outB, rect);
+        CPathEntity* ent = (CPathEntity*)((m4::GruntHitMgr*)reg->m_cmdGrid)
+                               ->FindGruntAt(
+                                   obj->m_screenX,
+                                   obj->m_screenY,
+                                   (m4::HitTileRect*)&obj->m_areaL,
+                                   &outA,
+                                   &outB,
+                                   (tagRECT*)rect
+                               );
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_pathGameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
@@ -384,9 +403,15 @@ i32 CLightningHazard::SiblingTick() {
         // window mode, skip the query
     } else {
         i32 outA, outB;
-        CPathEntity* ent =
-            (CPathEntity*)((CPathCueGate*)reg->m_cmdGrid)
-                ->QueryAt(obj->m_screenX, obj->m_screenY, &obj->m_areaL, &outA, &outB, rect);
+        CPathEntity* ent = (CPathEntity*)((m4::GruntHitMgr*)reg->m_cmdGrid)
+                               ->FindGruntAt(
+                                   obj->m_screenX,
+                                   obj->m_screenY,
+                                   (m4::HitTileRect*)&obj->m_areaL,
+                                   &outA,
+                                   &outB,
+                                   (tagRECT*)rect
+                               );
         if (ent != 0 && ent->m_258 != 0x38) {
             if (g_lightGameReg->m_134 != 1 || outA != 0) {
                 CLightVtbl* vt = *(CLightVtbl**)this;
@@ -426,7 +451,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_strikeDeadline = (i64)(u32)g_strikeClock;
-    ((CPathCueGate*)g_lightGameReg->m_cmdGrid)->Strike(a, b, 9, -1);
+    ((CTriggerMgr*)g_lightGameReg->m_cmdGrid)->CellDispatch(a, b, 9, -1, 0);
 
     CGameObject* obj = m_object;
     CGameRegistry* reg = g_lightGameReg;

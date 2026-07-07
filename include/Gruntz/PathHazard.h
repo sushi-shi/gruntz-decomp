@@ -44,8 +44,8 @@ struct CPathEntity {
 // entity under a screen rect. Same shared engine fn (0x75c60) KitchenSlime uses;
 // modeled NO-body so the call reloc-masks.
 struct CPathCueGate {
-    void* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32* outC); // 0x75c60
-    void Strike(i32 a, i32 b, i32 c, i32 d); // 0x402e96 (the strike cue, __thiscall)
+    // QueryAt @0x75c60 IS m4::GruntHitMgr::FindGruntAt; cast at each call.
+    // Strike @0x2e96 IS CTriggerMgr::CellDispatch (padded); cast at the call.
 };
 
 DATA(0x0024556c)
