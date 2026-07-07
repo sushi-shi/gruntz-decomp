@@ -14,7 +14,9 @@ public:
     CAniAdvanceCursor(i32 owner, i32 field04, i32 field08);
     virtual ~CAniAdvanceCursor() OVERRIDE;    // slot 1 (scalar-deleting dtor 0x15b6b0)
     virtual i32 IsLoaded() OVERRIDE;          // slot 5  0x15b6a0
+    virtual i32 IsReady() OVERRIDE;           // slot 6  0x001c08 (CWapObj default)
     virtual i32 Unload() OVERRIDE;            // slot 7  0x15c2c0
+    virtual i32 GetClassId() OVERRIDE;        // slot 8  0x154a00 (CLoadable default)
     i32 Advance_15c360(u32 ctx);           // 0x15c360 (advance / set-geo-source)
 
     i32 m_10; // +0x10

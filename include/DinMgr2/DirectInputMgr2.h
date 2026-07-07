@@ -271,6 +271,8 @@ public:
     virtual ~CInputDevBase() OVERRIDE {
         CInputDevRoot::ReleaseDevices();
     } // slot 0 (inline: base cleanup)
+    virtual i32 Create(IDirectInputA* di, const void* guid, void* hwnd) OVERRIDE; // slot 1 0x134260 (CreateDeviceWrap)
+    virtual void ReleaseDevices() OVERRIDE;                                        // slot 2 0x1342b0
     // The two poll slots. Poll (slot 4) is the per-frame device poll: the base body
     // (0x133410) is a stub; the keyboard leaf overrides it (CInputDevice::Poll,
     // 0x133d00), the mouse/joystick leaf slots reloc-mask to their own poll. ResetState
