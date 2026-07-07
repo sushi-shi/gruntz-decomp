@@ -1,3 +1,4 @@
+#include <Mfc.h> // real MFC CByteArray (the registry tab-state array's SetAtGrow @0x1b5485)
 #include <rva.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Image/CImage.h>
@@ -16,11 +17,11 @@
 //   m_68 + 0x260 is a CByteArray (the registry tab-state array); its
 //   m_index dword is the index passed to SetAtGrow. m_30->m_drawable->m_context
 //   is the draw surface context.
+// The registry tab-state array is an MFC CByteArray; SetAtGrow @0x1b5485 is
+// CByteArray::SetAtGrow. Field-view kept (MFC hides m_pData); the call casts to CByteArray.
 struct CWsfTabArray {
     char m_pad0[0x8];
     i32 m_index; // +0x08  array index
-    // CByteArray::SetAtGrow(index, value) - __thiscall ret 8 (reloc-masked).
-    void SetAtGrow(i32 index, i32 value); // 0x1b5485
 };
 struct CWsfDrawable {
     char m_pad0[0x14];
@@ -61,7 +62,7 @@ RVA(0x0010a0f0, 0x184)
 i32 CWarpStoneFly::Tick(i32 dt) {
     if ((i32)m_currentX == m_targetX && (i32)m_currentY == m_targetY) {
         CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
-        arr->SetAtGrow(arr->m_index, m_arrivalMode);
+        ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
         m_owner->m_busy = 0;
         if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
             ((CSBI_RectOnly*)m_owner)->ResetWidgets(0);
