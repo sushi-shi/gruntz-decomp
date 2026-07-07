@@ -15,12 +15,17 @@
 
 #include <Win32.h> // timeGetTime
 
+// The cel-map holder's +0x10 map is an MFC CMapStringToPtr (Lookup @0x1b8008); minimal local
+// decl (Win32 TU, no <Mfc.h>); const to match the MFC QBE mangling; links from MFC.
+SIZE_UNKNOWN(CMapStringToPtr);
+class CMapStringToPtr {
+public:
+    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
+};
+
 // The CMap embedded at (seq->m_10 + 0x10); Lookup(key, &out) -> bool, writing
 // the AniCelTable* into out. __thiscall on the map; reloc-masked.
-class AniCelMap {
-public:
-    i32 Lookup(i32 key, AniCelTable** out); // 0x1b8008
-};
+class AniCelMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 
 // The cel renders itself onto the active surface context via AniCel::RenderFrame
 // (0x153790, the shared frame-worker blit reached by SBI_MenuItem/SBI_SideTab/etc.);
@@ -72,7 +77,8 @@ i32 CAniPlayer::Init(
         m_0c = a2;
         if (key != 0) {
             AniCelTable* tbl = 0;
-            ((AniCelMap*)((char*)seq2->m_celMapHolder + 0x10))->Lookup(key, &tbl);
+            ((CMapStringToPtr*)((char*)seq2->m_celMapHolder + 0x10))
+                ->Lookup((const char*)key, (void*&)tbl);
             m_celTable = tbl;
             if (tbl != 0) {
                 m_interval = b2;
