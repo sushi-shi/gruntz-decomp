@@ -26,9 +26,8 @@ struct CChatBoxFrame {
 };
 // The name->sprite hash embedded at the registry's +0x10 (Lookup 0x1b8008,
 // __thiscall; writes the found set to *out).
-struct CChatBoxHash {
-    void Lookup(char* szName, void** out); // 0x1b8008
-};
+// MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call.
+struct CChatBoxHash {};
 struct CChatBoxRegistry { // m_18->m_10 points here
     char m_pad00[0x10];
     CChatBoxHash m_10; // +0x10
@@ -224,7 +223,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     void* spr = 0;
-    self->m_18->m_10->m_10.Lookup("GAME_CHATBOX", &spr);
+    ((CMapStringToPtr*)&self->m_18->m_10->m_10)->Lookup("GAME_CHATBOX", (void*&)spr);
     if (!spr) {
         return 0;
     }
