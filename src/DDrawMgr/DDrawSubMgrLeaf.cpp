@@ -90,11 +90,11 @@ public:
     // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by ScalarDtor_1577c0),
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
-    void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
-    virtual i32 IsReady();               // [5] 0x1577a0
-    virtual i32 Slot06_152640();         // [6] 0x152640 (state predicate, returns 1)
-    virtual void Cleanup();              // [7] 0x152650
-    virtual void Slot08_154a00();        // [8] 0x154a00 (shared, declared-only)
+    virtual void* ScalarDtor(i32 flag) OVERRIDE; // [1] ??_G scalar-deleting destructor (0x1577c0)
+    virtual i32 IsReady();                       // [5] 0x1577a0
+    virtual i32 Slot06_152640();                 // [6] 0x152640 (state predicate, returns 1)
+    virtual void Cleanup();                      // [7] 0x152650
+    virtual void Slot08_154a00();                // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
     void ClearContext(); // 0x157ae0 (not a vtable slot)
