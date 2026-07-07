@@ -79,6 +79,11 @@ void operator delete(void*);
 // ---- Mis-homed family member-teardown destructors (from the vtable scan) --------
 #include <Gruntz/MapStringToOb.h>
 
+// The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2.
+namespace Rng {
+    i32 Next2();
+}
+
 // The CObject-like family grand-base: 5-slot vtable (masks 0x5e8cb4), header fields
 // +0x04..+0x0c, non-virtual ~ = the field resets + the implicit base ??_7 re-stamp.
 // Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
@@ -1394,7 +1399,7 @@ public:
 // per-frame trigger.  Rand_15cbe0 is the engine LCG (reloc-masked __thiscall view).
 class CAniDesc {
 public:
-    i32 Rand_15cbe0(); // 0x15cbe0  engine random (reloc-masked)
+    // Rand_15cbe0 @0x15cbe0 IS the free fn Rng::Next2 (receiver dropped); see decl above.
     char m_pad00[0x04];
     unsigned char
         m_flags; // +0x04  byte flags (bit1 = no-decrement, bit2 = pos-sub, bit3 = trigger-blit, bit8 = anchor)
@@ -1726,7 +1731,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                     entry = 0;
                 } else {
                     tbl = dd->m_randTable;
-                    entry = tbl[dd->Rand_15cbe0() % dd->m_randMod];
+                    entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
                     ((CAniBlitTrigger*)this)->TriggerBlit_1587f0(cue, 0, 0, 0);
@@ -1738,7 +1743,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                     entry = 0;
                 } else {
                     tbl = dd->m_randTable;
-                    entry = tbl[dd->Rand_15cbe0() % dd->m_randMod];
+                    entry = tbl[Rng::Next2() % dd->m_randMod];
                 }
                 if (entry != 0) {
                     ((LeafCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);

@@ -61,6 +61,9 @@
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
 #include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 
+// The coord-list walk step @0x29a30 is the free __stdcall ListNodeAdvance(void**).
+void* __stdcall ListNodeAdvance(void** pos);
+
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). It
 // fronts an array of per-level records (0x238-byte stride = the
 // CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
@@ -290,7 +293,7 @@ extern FreeNodePool g_coordPool;
 // recycle loops iterate through it (`coord = *(void**)Advance(&pos)`). External,
 // reloc-masked (no body).
 struct CoordListWalk {
-    void* Advance(void** pos); // 0x029a30
+    // Advance @0x29a30 IS the free __stdcall ListNodeAdvance (receiver dropped); see decl above.
 };
 
 // The shared rect-init helper (RVA 0x029ac0, thunk 0x034a4): a __thiscall that
@@ -3328,7 +3331,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                 if (unit->m_coordCount != 0) {
                     void* pos = unit->m_coordHead;
                     while (pos != 0) {
-                        void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
+                        void* coord = *(void**)ListNodeAdvance(&pos);
                         if (coord != 0) {
                             g_coordPool.Push(coord);
                         }
@@ -3404,7 +3407,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
     if (unit->m_coordCount != 0) {
         void* pos = unit->m_coordHead;
         while (pos != 0) {
-            void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
+            void* coord = *(void**)ListNodeAdvance(&pos);
             if (coord != 0) {
                 g_coordPool.Push(coord);
             }
@@ -3472,7 +3475,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 void* pos = unit->m_coordHead;
                 if (pos != 0) {
                     do {
-                        void* coord = *(void**)((CoordListWalk*)&unit->m_coordList)->Advance(&pos);
+                        void* coord = *(void**)ListNodeAdvance(&pos);
                         if (coord != 0) {
                             g_coordPool.Push(coord);
                         }
