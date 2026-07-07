@@ -79,9 +79,9 @@ SIZE_UNKNOWN(CMenuState8d000);
 // (dtor 0x16da60 == ~CContainerErr; its vtable 0x5e94ac == ??_7zPTree, RTTI-confirmed). Two
 // distinct derived classes share the base vtables (kept standalone to avoid dup base vtables).
 struct CButeBase1_21 {
-    virtual ~CButeBase1_21();   // +0x00 vptr (0x5e94ac), dtor 0x16da60
-    void Teardown16e070(i32 z); // 0x16e070
-    i32 m_4;                    // +0x04 (pads first base to 8 so the second base lands at +0x08)
+    virtual ~CButeBase1_21(); // +0x00 vptr (0x5e94ac), dtor 0x16da60
+    // Teardown16e070 @0x16e070 IS CButeStore::ClearRecursive; cast at the call.
+    i32 m_4; // +0x04 (pads first base to 8 so the second base lands at +0x08)
 };
 SIZE_UNKNOWN(CButeBase1_21);
 struct CButeBase2_21 {

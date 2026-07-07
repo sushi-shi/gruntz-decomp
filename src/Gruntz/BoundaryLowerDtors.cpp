@@ -11,6 +11,14 @@
 #include <rva.h>
 #include <Gruntz/BoundaryLowerDtorsViews.h> // placeholder /GX dtor classes
 
+// The 0x16e070 leaf is CButeStore::ClearRecursive (header-less butestoreclear class); local decl
+// (the CButeStoreNode* arg is load-bearing for the mangled name).
+struct CButeStoreNode;
+class CButeStore {
+public:
+    void ClearRecursive(CButeStoreNode* node);
+};
+
 // The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
 // treats it as potentially-throwing and keeps the /GX base-subobject unwind frame.
 void RezFree(void* p); // 0x1b9b82
@@ -72,9 +80,9 @@ CMenuState8d000::~CMenuState8d000() {
 // ===========================================================================
 RVA(0x00021310, 0x70)
 CButeTree21a::~CButeTree21a() {
-    Teardown16e070(0);
+    ((CButeStore*)this)->ClearRecursive(0);
 }
 RVA(0x00021570, 0x70)
 CButeTree21b::~CButeTree21b() {
-    Teardown16e070(0);
+    ((CButeStore*)this)->ClearRecursive(0);
 }
