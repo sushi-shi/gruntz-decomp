@@ -100,8 +100,16 @@ struct DropperFound {
 // dropper facet): picks a random reachable destination tile in the wander box and
 // returns the object it lands on. FindDest @0x475c60, __thiscall (0x32ce ILT thunk).
 SIZE_UNKNOWN(DropperMap);
+namespace m4 {
+    struct HitGrunt;
+    struct HitTileRect;
+    class GruntHitMgr {
+    public:
+        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
+    };
+} // namespace m4
 struct DropperMap {
-    DropperFound* FindDest(i32 x, i32 y, i32* rect, i32* outTx, i32* outTy, DropperBox* box);
+    // FindDest IS m4::GruntHitMgr::FindGruntAt; cast at the call.
 };
 // One terrain-plane cell of the registry's tile grid (g_gameReg->m_tileGrid, the
 // canonical CTileGrid): a 0x1c-byte (7-dword) record; dword 0 holds the flags.
@@ -260,9 +268,15 @@ i32 CObjectDropper::Update() {
             box.bottom = o->m_screenY + o->m_footprint->m_halfHeight - 7;
             i32 tx;
             i32 ty;
-            DropperFound* found =
-                ((DropperMap*)g_gameReg->m_cmdGrid)
-                    ->FindDest(o->m_screenX, o->m_screenY, &o->m_144, &tx, &ty, &box);
+            DropperFound* found = (DropperFound*)((m4::GruntHitMgr*)g_gameReg->m_cmdGrid)
+                                      ->FindGruntAt(
+                                          o->m_screenX,
+                                          o->m_screenY,
+                                          (m4::HitTileRect*)&o->m_144,
+                                          &tx,
+                                          &ty,
+                                          (struct tagRECT*)&box
+                                      );
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {
