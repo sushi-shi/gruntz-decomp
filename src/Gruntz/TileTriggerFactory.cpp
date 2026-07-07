@@ -17,6 +17,7 @@
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the serialized reader is the shared CSerialArchive (Read @ +0x2c)
 #include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82, both __cdecl)
+i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem::Reg* view)
 
 // The serialized type id is read off the shared CSerialArchive stream (Read @
 // vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
@@ -197,7 +198,7 @@ static void* Reg277fTail(
     i32 a3,
     i32 id
 ) {
-    if (obj->Reg277f(reader, 7, a2, a3) == 0) {
+    if (Gate113860((void*)reader, 7, a2, a3) == 0) {
         return 0;
     }
     obj->m_24 = self;
@@ -214,7 +215,7 @@ static void* Reg1abeTail(
     i32 a3,
     i32 id
 ) {
-    if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
+    if (Gate113860((void*)reader, 7, a2, a3) == 0) {
         return 0;
     }
     obj->m_20 = self;
@@ -269,7 +270,7 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
         }
         case 21: {
             CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTriggerLogicTag());
-            if (obj->Reg1abe(reader, 7, a2, a3) == 0) {
+            if (Gate113860((void*)reader, 7, a2, a3) == 0) {
                 return 0;
             }
             obj->m_20 = this;
@@ -305,7 +306,7 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
         }
         case 22: {
             CTrigLogic* obj = new CTrigLogicC8(CTrigLogic::GiantRockLogicTag());
-            if (obj->Reg1d39(reader, 7, a2, a3) == 0) {
+            if (Gate113860((void*)reader, 7, a2, a3) == 0) {
                 return 0;
             }
             obj->m_20 = this;

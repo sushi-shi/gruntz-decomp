@@ -138,10 +138,10 @@ extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked
 // a mis-attribution).  Correctness-not-artifacts: an honest placeholder named for its
 // true CTrigLogic identity beats a wrong class name.
 struct TtcTrigElem {
-    i32 Reg277f(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x277f (SerializeApplyA)
-    i32 Reg1d39(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1d39 (SerializeApplyB tag 0x16)
-    i32 Reg1abe(CSerialArchive* s, i32 a2, i32 a3, i32 a4); // 0x1abe (SerializeApplyB else)
-    i32 m_00;                                               // +0x00
+    // Reg277f @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
+    // Reg1d39 @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
+    // Reg1abe @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
+    i32 m_00; // +0x00
     i32 m_04; // +0x04  serialized type tag (the factory's switch id)
 };
 SIZE_UNKNOWN(TtcTrigElem);

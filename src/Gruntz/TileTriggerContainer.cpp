@@ -20,6 +20,7 @@
 #include <Gruntz/TileGridCommand.h>
 #include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
+i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem::Reg* view)
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
@@ -594,9 +595,9 @@ i32 __stdcall SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrig
         case 5:
         case 6:
         case 7:
-            return o->Reg277f(s, a2, a3, a4) != 0;
+            return Gate113860((void*)s, a2, a3, a4) != 0;
         case 8:
-            return o->Reg277f(s, a2, a3, a4) != 0;
+            return Gate113860((void*)s, a2, a3, a4) != 0;
         default:
             return 0;
     }
@@ -621,14 +622,14 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrig
     s->Write(&tag, 4);
     switch (tag) {
         case 0x16:
-            return o->Reg1d39(s, a2, a3, a4) != 0;
+            return Gate113860((void*)s, a2, a3, a4) != 0;
         case 0x15:
         case 0x17:
         case 0x18:
         case 0x19:
-            return o->Reg1abe(s, a2, a3, a4) != 0;
+            return Gate113860((void*)s, a2, a3, a4) != 0;
         case 0x1a:
-            return o->Reg1abe(s, a2, a3, a4) != 0;
+            return Gate113860((void*)s, a2, a3, a4) != 0;
         default:
             return 0;
     }
