@@ -61,27 +61,20 @@ public:
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names.
 #include <Gruntz/MapStringToOb.h>
+#include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
 
-// Real polymorphic two-level model (ALL-VTABLES mandate): CLoadable carries
-// the 9-slot base vtable (masks 0x5efc30), CDDrawWorker adds slots 9..14 and
-// carries the 15-slot derived vtable (masks 0x5efbe8). `new CDDrawWorker` makes
-// cl auto-emit ??_7CLoadable + ??_7CDDrawWorker and stamp the base vptr
-// (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
-class CLoadable {
-public:
-    virtual void GetRuntimeClass();   // [0] 0x1bef01
-    virtual ~CLoadable(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();         // [2] 0x0028ec
-    virtual void AssertValid();       // [3] 0x00106e
-    virtual void Dump();              // [4] 0x004034
-    virtual void Slot05_155750();     // [5] 0x155750
-    virtual void IsValidImage();      // [6] 0x001c08
-    virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
-    virtual void Slot08_155770();     // [8] 0x155770
-    CLoadable() {}
-};
-
+// Real polymorphic two-level model (ALL-VTABLES mandate). CDDrawWorker derives the ONE
+// canonical CLoadable (<Gruntz/Loadable.h>) - the former base-less "CLoadable" here was a
+// FAKE base that baked CDDrawWorker's own slot-5/7/8 OVERRIDES into it. Ground truth: the
+// real CLoadable vtable @0x1efc30 has [5] 0x155700 / [7] 0x155740 / [8] 0x154a00; CDDrawWorker's
+// own vtable @0x1efbe8 OVERRIDES them (IsLoaded->0x155750, Unload->DeleteAll 0x151eb0,
+// GetClassId->0x155770 = CLASSID_WORKER) and adds slots 9..16. `new CDDrawWorker` makes cl
+// auto-emit ??_7CLoadable + ??_7CDDrawWorker and the two-phase vptr stamps.
 struct CDDrawWorker : public CLoadable {
+    virtual ~CDDrawWorker() OVERRIDE;                    // [1] cl-auto-gen ??_G @0x155780
+    virtual i32 IsLoaded() OVERRIDE;                     // [5] 0x155750
+    virtual i32 Unload() OVERRIDE;                       // [7] 0x151eb0 (CDDrawWorker::DeleteAll)
+    virtual i32 GetClassId() OVERRIDE;                   // [8] 0x155770 -> CLASSID_WORKER
     virtual i32 Vfunc24(const char* key);                // [9]  0x155810
     virtual void Slot10_1521f0();                        // [10] 0x1521f0
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
@@ -92,10 +85,7 @@ struct CDDrawWorker : public CLoadable {
     virtual void Slot16_1523b0();                        // [16] 0x1523b0
     CDDrawWorker() {}
 
-    i32 m_04;        // +0x04  parent+0x1c
-    i32 m_08;        // +0x08  0
-    i32 m_0c;        // +0x0c  parent+0x0c
-    CByteArray m_10; // +0x10
+    CByteArray m_10; // +0x10  (m_04/m_08/m_0c inherited from CLoadable)
     char m_pad24[0x64 - 0x24];
     i32 m_64; // +0x64  0x1869f
     i32 m_68; // +0x68  0
