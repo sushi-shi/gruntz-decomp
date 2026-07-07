@@ -53,7 +53,7 @@ struct CGruntPtAcc {
     void Ctor();                 // 0x1b4b43
     void Add(i32 count, i32 pt); // 0x1b4d7c
     void RemoveAt(i32 i, i32 f); // 0x1b4e38
-    void Dtor();                 // 0x1b4b76
+    // Dtor @0x1b4b76 IS CByteArray::~CByteArray; cast at the call.
 };
 SIZE_UNKNOWN(CGruntPtAcc);
 
@@ -225,7 +225,7 @@ state2: {
 build_tail: {
     CScanGrid* pl2 = (CScanGrid*)g_pGameRegistry->m_tileGrid;
     GRID_BOUNDS(pl2);
-    acc.Dtor();
+    ((CByteArray*)&acc)->~CByteArray();
     goto common;
 }
 }
