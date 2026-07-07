@@ -4056,7 +4056,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
     if (strlen(buf80b) == 0) {
         *(i32*)((char*)&m_cells[0].m_stepY + 4) = 0;
     } else {
-        ((GruntNameIdMap*)(res->m_10 + 0x10))->LookupNode(buf80b, &entry2);
+        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup(buf80b, entry2);
         *(i32*)((char*)&m_cells[0].m_stepY + 4) = (i32)entry2;
     }
 

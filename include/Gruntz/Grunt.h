@@ -870,10 +870,6 @@ struct GruntIdEntry {
     i32 m_68; // +0x68  hi index
 };
 SIZE_UNKNOWN(GruntNameIdMap);
-struct GruntNameIdMap { // res->m_10 + 0x10
-    // Lookup @0x1b8008 IS CMapStringToPtr::Lookup; cast at the call.
-    i32 LookupNode(const char* key, void** out); // 0x1b8008 (2nd block: raw entry)
-};
 // GruntObjEntry / GruntObjMap moved above CSpriteFactory (the map is its +0x48
 // embedded member); the declarations stay canonical there.
 // The resource manager (g_gameReg->m_world): m_8 owns the object map, m_10 the
