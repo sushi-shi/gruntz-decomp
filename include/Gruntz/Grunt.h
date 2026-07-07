@@ -349,7 +349,7 @@ public:
 SIZE_UNKNOWN(CGruntCell);
 class CGruntCell {
 public:
-    const char* GetName(i32 flag);
+    // GetName @0x310f0 IS zDArray::IndexToPtr; cast at each call.
 };
 
 SIZE_UNKNOWN(CEntranceAnimPlayer);

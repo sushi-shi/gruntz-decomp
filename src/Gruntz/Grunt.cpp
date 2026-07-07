@@ -148,6 +148,11 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 // local decl (the full ButeMgr.h redefines CString, already pulled in by this
 // TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
+SIZE_UNKNOWN(zDArray);
+class zDArray {
+public:
+    i32 IndexToPtr(i32 i);
+};
 class CDDrawBlitParamSrc;
 class CDDrawBlitParam {
 public:
@@ -173,7 +178,7 @@ public:
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
 //     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - ((CGruntCell*)((char*)this + (3*col+row+0xb)*0x68)),
+//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
 //     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
 //     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
@@ -2151,7 +2156,7 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             i32 col = m_entranceCell[0];
             i32 row = m_entranceCell[1];
             i32 index = 3 * col + row;
-            const char* nm = ((CGruntCell*)&m_cells[index])->GetName(0);
+            const char* nm = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
             ((CGruntSprite*)m_154)->CacheFrame(nm, frame);
         }
         goto store;
@@ -2188,7 +2193,7 @@ idle:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = ((CGruntCell*)&m_cells[index].m_idle)->GetName(0);
+        const char* nm = (const char*)((zDArray*)&m_cells[index].m_idle)->IndexToPtr(0);
         ((CGruntSprite*)m_154)->CacheFrame(nm, frame);
     }
     goto store;
@@ -2202,7 +2207,7 @@ walk:
         i32 col = rec.m_0;
         i32 row = rec.m_4;
         i32 index = 3 * col + row;
-        const char* nm = ((CGruntCell*)&m_cells[index].m_walk)->GetName(0);
+        const char* nm = (const char*)((zDArray*)&m_cells[index].m_walk)->IndexToPtr(0);
         ((CGruntSprite*)m_154)->CacheFirstFrame(nm);
     }
 
@@ -4155,7 +4160,7 @@ i32 CGrunt::ResetGeometry() {
     i32 col = m_entranceCell[0];
     i32 row = m_entranceCell[1];
     i32 index = 3 * col + row;
-    const char* name = ((CGruntCell*)&m_cells[index])->GetName(0);
+    const char* name = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
     ((CGruntSprite*)m_154)->CacheFrame(name, frame);
 
     m_prevAnimSetNode = m_14->m_1c;
@@ -4359,7 +4364,8 @@ void CGrunt::RearmEntranceDrop() {
         // (3col+row+0xb)*0x68 == &m_cells[3col+row].m_item (0xb*0x68 == 0x478). Kept
         // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
         // into idx*0x68 + 0x478 and diverge.
-        const char* name = ((CGruntCell*)((char*)this + (3 * col + row + 0xb) * 0x68))->GetName(0);
+        const char* name =
+            (const char*)((zDArray*)((char*)this + (3 * col + row + 0xb) * 0x68))->IndexToPtr(0);
         ((CGruntSprite*)m_154)->CacheFrame(name, frame);
     }
 
@@ -5835,7 +5841,8 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         i32 col = cell[1] + cell[0] * 2;
         i32 row = (cell[0] + col) * 3;
         i32 idx = (cell[0] + col) + row * 4;
-        const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
+        const char* nm =
+            (const char*)((zDArray*)((char*)this + idx * 8 + 0x470))->IndexToPtr(cell[2]);
         ((CGruntSprite*)m_154)->CacheFrame(nm, 0);
         goto modeDispatch;
     } else {
@@ -6021,7 +6028,8 @@ i32 CGrunt::StepAnimDispatchB() {
         i32 col = cell[1] + cell[0] * 2;
         i32 row = (cell[0] + col) * 3;
         i32 idx = (cell[0] + col) + row * 4;
-        const char* nm = ((CGruntCell*)((char*)this + idx * 8 + 0x470))->GetName(cell[2]);
+        const char* nm =
+            (const char*)((zDArray*)((char*)this + idx * 8 + 0x470))->IndexToPtr(cell[2]);
         ((CGruntSprite*)m_154)->CacheFrame(nm, 0);
         goto modeDispatch;
     } else {
