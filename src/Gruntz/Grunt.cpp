@@ -3180,7 +3180,7 @@ RVA(0x00057c10, 0x1e)
 void CGrunt::ClearSubA() {
     CGruntSub* p = m_424;
     if (p) {
-        p->Free();
+        ((CGrunt*)p)->LoadFreezeSpellAssets();
         m_424 = 0;
     }
 }
@@ -3226,7 +3226,7 @@ RVA(0x00057ce0, 0x1e)
 void CGrunt::ClearSubB() {
     CGruntSub* p = m_428;
     if (p) {
-        p->Free();
+        ((CGrunt*)p)->LoadFreezeSpellAssets();
         m_428 = 0;
     }
 }

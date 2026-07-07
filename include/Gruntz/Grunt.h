@@ -893,7 +893,7 @@ extern i32 g_load612618;
 SIZE_UNKNOWN(CGruntSub);
 class CGruntSub {
 public:
-    void Free();
+    // Free @0x69d60 IS CGrunt::LoadFreezeSpellAssets; cast at each call.
 };
 
 // ---------------------------------------------------------------------------
