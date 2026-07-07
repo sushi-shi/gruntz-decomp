@@ -33,6 +33,15 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Gruntz/ParseSource.h>           // canonical CParseSource (BeginParse/EndParse)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan + LeafScanBase
+class CSymTab {
+public:
+    void* FirstSub();
+    void* NextSub(void* n);
+    void* FirstSym();
+    void* NextSym(void* n);
+    void* NextSym2(void* n);
+    void* NextSym3(void* n);
+}; // DirNode views
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -
@@ -172,13 +181,13 @@ inline LeafElementObj::LeafElementObj(i32 count, i32 handle) {
 // iterators are __thiscall externals. All reloc-masked.
 class DirNode {
 public:
-    DirNode* FirstSubdir();          // 0x13a260
-    DirNode* NextSubdir(DirNode* n); // 0x13a280
-    void* FirstFile();               // 0x13a2b0
-    void* NextFile(void* f);         // 0x13a2d0
-    DirNode* FirstEntry(void* f);    // 0x13a2f0
-    DirNode* NextEntry(DirNode* n);  // 0x13a310
-    i32 GetTag();                    // 0x139800
+    // FirstSub @0x13a260 IS CSymTab::FirstSub; cast at each call.
+    // NextSubdir @0x13a280 IS CSymTab::NextSub; cast at each call.
+    // FirstFile @0x13a2b0 IS CSymTab::FirstSym; cast at each call.
+    // NextFile @0x13a2d0 IS CSymTab::NextSym; cast at each call.
+    // FirstEntry @0x13a2f0 IS CSymTab::NextSym2; cast at each call.
+    // NextEntry @0x13a310 IS CSymTab::NextSym3; cast at each call.
+    // GetTag @0x139800 IS CParseSource::GetEntryTag; cast at each call.
 
     const char* m_name; // +0x00
 };
@@ -477,7 +486,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
         return 0;
     }
     buf[0] = 0;
-    DirNode* node = tree->FirstSubdir();
+    DirNode* node = (DirNode*)((CSymTab*)tree)->FirstSub();
     while (node != 0) {
         if (prefix != 0 && *prefix != 0) {
             sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
@@ -485,14 +494,14 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
             strcpy(buf, node->m_name);
         }
         count += ScanTree_157ee0(node, buf, suffix);
-        node = tree->NextSubdir(node);
+        node = (DirNode*)((CSymTab*)tree)->NextSub(node);
     }
-    void* file = tree->FirstFile();
+    void* file = ((CSymTab*)tree)->FirstSym();
     if (file != 0) {
         do {
-            DirNode* fn = tree->FirstEntry(file);
+            DirNode* fn = (DirNode*)((CSymTab*)tree)->NextSym2(file);
             while (fn != 0) {
-                if (fn->GetTag() == 0x574156) {
+                if (((CParseSource*)fn)->GetEntryTag() == 0x574156) {
                     if (prefix != 0 && *prefix != 0) {
                         sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
                     } else {
@@ -506,9 +515,9 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
                         }
                     }
                 }
-                fn = tree->NextEntry(fn);
+                fn = (DirNode*)((CSymTab*)tree)->NextSym3(fn);
             }
-            file = tree->NextFile(file);
+            file = ((CSymTab*)tree)->NextSym(file);
         } while (file != 0);
     }
     RezFree(buf);
