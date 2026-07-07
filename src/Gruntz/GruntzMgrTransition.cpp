@@ -130,16 +130,6 @@ struct MfcBytes {
 // the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
 // are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
 // stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
-struct CTsBaseA {
-    char _vft0[4];            // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    CTsBaseA();               // 0x8c750
-    char m_cstate[0x1b4 - 4]; // +0x04..+0x1b4
-};
-struct CTsBaseB {
-    char _vft0[4];           // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    CTsBaseB();              // 0x8c9d0 (CPlay layout, 0x520)
-    char m_cplay[0x520 - 4]; // +0x04..+0x520
-};
 
 // Two extra member sub-objects the credits state (param 8) builds (a small ctor
 // @0x8c3b0 and the two 4-arg Set @0x8c380 initializers).
@@ -159,7 +149,7 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 
 // ---- the CState-derived state objects (reduced local layouts of the real classes;
 // the retail vtable is stamped by hand from the externals above) ----------------
-struct CAttract : CTsBaseA { // param 2, 0x1c0
+struct CAttract : CState { // param 2, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
     CAttract() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
@@ -171,37 +161,37 @@ struct CAttract : CTsBaseA { // param 2, 0x1c0
 // vtable RVA 0x5e9e84 that gamemode already owns. This non-poly shell + manual g_st*
 // stamp is the deliberate whole-family pattern (see file header); the loader-view fold
 // happened in MenuStateAssets.cpp, which does not construct the class.
-struct CMenuState : CTsBaseA { // param 5, 0x1c0
-    i32 m_1b4;                 // +0x1b4
+struct CMenuState : CState { // param 5, 0x1c0
+    i32 m_1b4;               // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];
     CMenuState() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
 };
-struct CHelpState : CTsBaseA { // param 9, 0x1b8
+struct CHelpState : CState { // param 9, 0x1b8
     char m_pad[0x1b8 - 0x1b4];
     CHelpState() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
 };
-struct CSplashState : CTsBaseA { // param 14, 0x1bc
-    i32 m_1b4;                   // +0x1b4
+struct CSplashState : CState { // param 14, 0x1bc
+    i32 m_1b4;                 // +0x1b4
     char m_pad1b8[0x1bc - 0x1b8];
     CSplashState() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
 };
-struct CDemo : CTsBaseB { // param 7, 0x528
+struct CDemo : CPlay { // param 7, 0x528
     char m_pad[0x528 - 0x520];
     CDemo() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
 };
-struct CMultiBootyState : CTsBaseA { // param 18, 0x244
-    i32 m_1b4;                       // +0x1b4
-    i32 m_1b8;                       // +0x1b8
+struct CMultiBootyState : CState { // param 18, 0x244
+    i32 m_1b4;                     // +0x1b4
+    i32 m_1b8;                     // +0x1b8
     char m_pad1bc[0x244 - 0x1bc];
     CMultiBootyState() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
@@ -209,16 +199,16 @@ struct CMultiBootyState : CTsBaseA { // param 18, 0x244
         m_1b8 = 0x64;
     }
 };
-struct CBootyState : CTsBaseA { // param 10, 0x320
-    i32 m_1b4;                  // +0x1b4
-    i32 m_1b8;                  // +0x1b8
-    i32 m_1bc;                  // +0x1bc
-    i32 m_1c0;                  // +0x1c0
-    i32 m_1c4;                  // +0x1c4
-    i32 m_1c8;                  // +0x1c8
-    i32 m_1cc;                  // +0x1cc
-    i32 m_1d0;                  // +0x1d0
-    i32 m_1d4;                  // +0x1d4
+struct CBootyState : CState { // param 10, 0x320
+    i32 m_1b4;                // +0x1b4
+    i32 m_1b8;                // +0x1b8
+    i32 m_1bc;                // +0x1bc
+    i32 m_1c0;                // +0x1c0
+    i32 m_1c4;                // +0x1c4
+    i32 m_1c8;                // +0x1c8
+    i32 m_1cc;                // +0x1cc
+    i32 m_1d0;                // +0x1d0
+    i32 m_1d4;                // +0x1d4
     char m_pad1d8[0x1ec - 0x1d8];
     i32 m_1ec; // +0x1ec
     i32 m_1f0; // +0x1f0
@@ -246,24 +236,24 @@ struct CBootyState : CTsBaseA { // param 10, 0x320
 // canonical (m_1c8/m_1d8 rect subs; m_1e8's CTsSub45 ctor 0x8c3b0 is the canonical
 // CCreditsImageList's; m_1f0 == m_caption; m_208/m_210 == m_videoPlaying/
 // m_videoHandle - offsets agree, no conflation).
-struct CCreditsState : CTsBaseA { // param 8, 0x218
-    i32 m_1b4;                    // +0x1b4
-    i32 m_1b8;                    // +0x1b8
-    i32 m_1bc;                    // +0x1bc
-    i32 m_1c0;                    // +0x1c0
-    i32 m_1c4;                    // +0x1c4
-    char m_1c8[0x10];             // +0x1c8  Set-initialized rect sub-object
-    char m_1d8[0x10];             // +0x1d8  Set-initialized rect sub-object
-    CTsSub45 m_1e8;               // +0x1e8
-    MfcStr m_1f0;                 // +0x1f0
-    i32 m_1f4;                    // +0x1f4
-    i32 m_1f8;                    // +0x1f8
-    i32 m_1fc;                    // +0x1fc
-    i32 m_200;                    // +0x200
-    i32 m_204;                    // +0x204
-    i32 m_208;                    // +0x208
-    i32 m_20c;                    // +0x20c
-    i32 m_210;                    // +0x210
+struct CCreditsState : CState { // param 8, 0x218
+    i32 m_1b4;                  // +0x1b4
+    i32 m_1b8;                  // +0x1b8
+    i32 m_1bc;                  // +0x1bc
+    i32 m_1c0;                  // +0x1c0
+    i32 m_1c4;                  // +0x1c4
+    char m_1c8[0x10];           // +0x1c8  Set-initialized rect sub-object
+    char m_1d8[0x10];           // +0x1d8  Set-initialized rect sub-object
+    CTsSub45 m_1e8;             // +0x1e8
+    MfcStr m_1f0;               // +0x1f0
+    i32 m_1f4;                  // +0x1f4
+    i32 m_1f8;                  // +0x1f8
+    i32 m_1fc;                  // +0x1fc
+    i32 m_200;                  // +0x200
+    i32 m_204;                  // +0x204
+    i32 m_208;                  // +0x208
+    i32 m_20c;                  // +0x20c
+    i32 m_210;                  // +0x210
     char m_pad214[0x218 - 0x214];
     CCreditsState();
 };
@@ -271,9 +261,9 @@ struct CCreditsState : CTsBaseA { // param 8, 0x218
 // <Gruntz/Play.h>; its five destructible MFC members + CState base give the same
 // inline-construction shape the factory needs, and its ctor (defined below) stamps
 // ??_7CPlay via cl (no manual g_stCPlayVtbl stamp).
-struct CMulti : CTsBaseB { // param 17, 0x660
-    i32 m_520;             // +0x520
-    i32 m_524;             // +0x524
+struct CMulti : CPlay { // param 17, 0x660
+    i32 m_520;          // +0x520
+    i32 m_524;          // +0x524
     char m_pad528[0x590 - 0x528];
     i32 m_590; // +0x590
     char m_pad594[0x598 - 0x594];
@@ -513,8 +503,8 @@ SIZE_UNKNOWN(CMenuState);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiBootyState);
 SIZE_UNKNOWN(CSplashState);
-SIZE_UNKNOWN(CTsBaseA);
-SIZE_UNKNOWN(CTsBaseB);
+SIZE_UNKNOWN(CState);
+SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
 SIZE_UNKNOWN(MfcBytes);
