@@ -3069,14 +3069,19 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // its name. The arg (force flag) is unused. __thiscall, ret 4.
 // ===========================================================================
 // A resolved music-category entry (Resolve result): +0xc field + a Load() accessor.
+// CMusicEntry::Load @0x139960 IS CParseSource::BeginParse (header-less); local decl.
+class CParseSource {
+public:
+    i32 BeginParse();
+};
 struct CMusicEntry {
-    void* Load(); // 0x539960 (thiscall) -> resource ptr (null if absent)
+    // Load @0x139960 IS CParseSource::BeginParse; cast at each call.
     char p0[0xc];
     void* m_c; // +0xc  install key
 };
 // A named MIDIZ category set (LookupSet result).
 struct CMusicSet {
-    CMusicEntry* Resolve(char* name, i32 tag); // 0x53a000 (thiscall)
+    // Resolve @0x13a000 IS CSymTab::Insert; cast at each call.
 };
 // A music source (level m_levelBank / game m_gameBank).
 struct CMusicSource {
@@ -3109,30 +3114,31 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CMusicSet* levelSet = (CMusicSet*)((CSymTab*)self->m_levelBank)->ResolvePath("MIDIZ");
     if (levelSet) {
-        CMusicEntry* e = levelSet->Resolve("AMBIENT0", MUSIC_TAG_XMI);
+        CMusicEntry* e =
+            (CMusicEntry*)((CSymTab*)levelSet)->Insert("AMBIENT0", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "AMBIENT0");
             }
         }
-        e = levelSet->Resolve("AMBIENT1", MUSIC_TAG_XMI);
+        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "AMBIENT1");
             }
         }
-        e = levelSet->Resolve("INTRO0", MUSIC_TAG_XMI);
+        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "INTRO0");
             }
         }
-        e = levelSet->Resolve("INTRO1", MUSIC_TAG_XMI);
+        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "INTRO1");
             }
@@ -3142,23 +3148,23 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     CMusicSource* gameSrc = self->m_gameBank;
     CMusicSet* gameSet = gameSrc->LookupSet("MIDIZ");
     if (gameSet) {
-        CMusicEntry* e = gameSet->Resolve("POWERUP", MUSIC_TAG_XMI);
+        CMusicEntry* e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "POWERUP");
             }
         }
-        e = gameSet->Resolve("CURSE", MUSIC_TAG_XMI);
+        e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("CURSE", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "CURSE");
             }
         }
-        e = gameSet->Resolve("MONOLITH", MUSIC_TAG_XMI);
+        e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = e->Load();
+            void* res = (void*)((CParseSource*)e)->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "MONOLITH");
             }
