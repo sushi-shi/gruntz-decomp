@@ -59,6 +59,12 @@
 #endif
 #include <afxwin.h>
 
+// The renderer's DisposeWorkers @0x163c60 IS CDDrawWorkerList::ClearWorkers; local decl.
+class CDDrawWorkerList {
+public:
+    void ClearWorkers();
+};
+
 // ===========================================================================
 // CState - the base game-state class.
 // ===========================================================================
@@ -1367,7 +1373,7 @@ void CMenuState::ReleaseResources() {
         if (r) {
             r->Free();
         }
-        m_c->m_rendererB->DisposeWorkers();
+        ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
     CGMMenuUI* ui = m_1b4;

@@ -76,11 +76,8 @@ struct CRenderer {
     virtual void v11();
     virtual void v12();
     virtual void Present(void* a, void* b); // slot 13 (+0x34)
-    // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
-    void Refresh(); // 0x159ef0 (thiscall, no arg)
-    // Renderer B (+0x0c) is also the resource-facet worker holder the leaf-state
-    // dispose path tears down (CMenuState::ReleaseResources); reloc-masked leaf.
-    void DisposeWorkers(); // 0x163c60 (thiscall, no arg)
+    // Refresh @0x159ef0 = CDDrawSubMgrPages::Method_159ef0, DisposeWorkers @0x163c60 =
+    // CDDrawWorkerList::ClearWorkers; cast at each call.
     // Renderer A owns the placed-object display list at +0x10 (LoadWarlordSprites
     // walks it in-level; the implicit vptr is at +0x00, so data starts at +0x04).
     char p04[0x10 - 0x4];

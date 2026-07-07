@@ -657,7 +657,7 @@ void CPlay::OnExit() {
     ForwardReady();
     Vslot21();
     if (m_c) {
-        ((CRenderer*)m_c->m_8)->Refresh();
+        ((CDDrawSubMgrPages*)m_c->m_8)->Method_159ef0();
     }
     ((CRegExit*)g_64556c)->m_128 = 0;
     if (((CRegExit*)g_64556c)->m_134 == 3) {
