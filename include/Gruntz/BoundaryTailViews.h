@@ -122,7 +122,7 @@ struct Entry_bdd0 {
 };
 SIZE_UNKNOWN(Entry_bdd0);
 struct Map_bdd0 {
-    i32 Lookup(const char* key, Entry_bdd0** out); // 0x1b8438 (ret 8)
+    // Lookup @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
 };
 SIZE_UNKNOWN(Map_bdd0);
 struct Arg1_bdd0 {

@@ -26,14 +26,14 @@ struct BmpFile {
         void Write(const void* buf, i32 len); // 0x1bf362
     };
     struct Opener {
-        i32 Open(const char* path, i32 mode, i32 share); // 0x1bf200
+        // Open @0x1bf200 IS CFile::Open; cast at the call.
     };
     BmpFile();  // 0x1befd7
     ~BmpFile(); // 0x1bf121
     char p0[0x8];
     Stream m_8; // +0x08
     char p9[0xc - 0x9];
-    Opener m_c; // +0x0c
+    Opener m_c;           // +0x0c
     char pad[0x10 - 0xd]; // file object is 0x10 B on the frame (info sits at file+0x10)
 };
 
@@ -94,7 +94,7 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     *(i32*)(fileHdr + 0xa) = 0x436;                    // bfOffBits
 
     BmpFile file;
-    if (file.m_c.Open(filename, 0x1001, 0) == 0) {
+    if (((CFile*)&file.m_c)->Open(filename, 0x1001, 0) == 0) {
         return 0;
     }
     file.m_8.Write(fileHdr, 0xe);

@@ -162,7 +162,7 @@ void CObj23d90::Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
 RVA(0x0000bdd0, 0x53)
 void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
     Entry_bdd0* out = 0;
-    a1->m_10.Lookup(key, &out);
+    ((CMapStringToOb*)&a1->m_10)->Lookup(key, (CObject*&)out);
     if (out == 0) {
         return (void*)out;
     }
