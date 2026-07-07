@@ -8,12 +8,6 @@
 #include <rva.h>
 #include <Wap32/Object.h>
 
-struct CEngObj_1e94ac { // 1 slots (first=`scalar_deleting_destructor')
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1e94ac);
-VTBL(CEngObj_1e94ac, 0x001e94ac);
-
 struct CMultiHelpDlg { // 54 slots (first=sub_1d2fab)
     virtual void Slot00();
     virtual void Slot01();

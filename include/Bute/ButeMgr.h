@@ -249,6 +249,8 @@ SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 // (measured: gruntcombatanim / grunt / cplay fuzzy-% regressed). The vtable_hierarchy
 // INHERIT audit therefore still flags this stand-in decl; the substantive fix lives
 // in ButeNode.cpp's real model.
+SIZE_UNKNOWN(zPTree);
+VTBL(zPTree, 0x001e94ac);
 class zPTree : public zErrHandling {
 public:
     zPTree(void* desc, i32 n);
