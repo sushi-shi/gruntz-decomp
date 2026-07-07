@@ -23,6 +23,14 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Globals.h>
 
+// The cmd-grid cells are CGrunts; LoadPickupSprites @0x3c6a / LoadGruntTypeTable @0x3bd9 are
+// CGrunt methods. TU-local method-decl (Grunt.h is heavy; not pulled here), cast at each call.
+class CGrunt {
+public:
+    i32 LoadPickupSprites(i32 a, i32 b, i32 c, i32 d, i32 e);
+    i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
+};
+
 // The global bute store the icon Setup queries (g_buteTree.Find). Owned by
 // another TU; declared extern so `ecx=&g_buteTree; call Find` reloc-masks.
 extern CButeTree g_buteTree;
@@ -740,9 +748,9 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
         if (cell == 0 || cell->m_1fc == 0) {
             ok = 0;
         } else if (matchActive) {
-            ok = cell->LoadPickupSprites(param, flag, 0, sub, 0);
+            ok = ((CGrunt*)cell)->LoadPickupSprites(param, flag, 0, sub, 0);
         } else {
-            ok = cell->LoadGruntTypeTable(param, flag, sub, 0);
+            ok = ((CGrunt*)cell)->LoadGruntTypeTable(param, flag, sub, 0);
         }
         reg = g_gameReg;
         if (ok == 0) {
@@ -771,7 +779,7 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     if (cell == 0 || cell->m_1fc == 0) {
         ok = 0;
     } else {
-        ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
+        ok = ((CGrunt*)cell)->LoadPickupSprites(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
     if (ok == 0) {

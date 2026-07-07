@@ -87,9 +87,8 @@ void __stdcall Eng_PostCmd(i32 ctx, i32 a, i32 b, i32 c); // 0x41f940
 // __thiscall LoadPickupSprites / LoadGruntTypeTable bind the icon's sprite set;
 // +0x1fc is a "configured" gate, +0x38c a posted-id slot the place handler stamps.
 // Both engine methods are external (reloc-masked, no body).
+// CIconRecord's LoadPickupSprites/LoadGruntTypeTable ARE CGrunt's; cast at the calls.
 struct CIconRecord {
-    i32 LoadPickupSprites(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x3c6a
-    i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);       // 0x3bd9
     char m_pad00[0x1fc];
     i32 m_1fc; // +0x1fc  configured flag
     char m_pad200[0x38c - 0x200];
