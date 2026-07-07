@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <DDrawMgr/DDrawPtrCollections.h>
+#include <Wap32/Object.h>
 // AniRecord.cpp - the 0x34-byte 'ANI' animation FRAME RECORD cataloged by
 // CAniElement (src/Gruntz/AniElement.cpp) into a CObArray of these. The
 // orchestrator placeholders tomalla-39 / _40 / _41 are ALL this ONE class
@@ -147,7 +147,8 @@ inline CAniRecordObjBase::~CAniRecordObjBase() {}
 // the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
 // are declared-only (reloc-masked); the buffer (de)allocation virtuals live as the regular
 // CAniRecord methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/Alloc168f60).
-struct CAniRecordBase2 : CAniRecordObjBase {
+struct CAniRecordBase2 : public Wap::CObject { // was : CAniRecordObjBase (merged intermediate)
+    i32 m_04, m_08, m_0c; // +0x04..0x0f CObject-header fields (from merged CAniRecordObjBase)
     virtual ~CAniRecordBase2() OVERRIDE; // [1] overrides; UAE
     virtual void Slot05_165d90();        // [5] 0x165d90
     virtual void IsValidImage();         // [6] 0x001c08
