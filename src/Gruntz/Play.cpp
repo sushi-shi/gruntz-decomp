@@ -3782,9 +3782,9 @@ struct CRtArr { // an MFC CObArray (m_data @+4, m_count @+8); 0x14 stride
     i32 m_count;   // +0x8
     char pc[0x14 - 0xc];
 };
-struct CRtArr2 {                   // the m_68+0x260 array variant
-    void SetSize(i32 n, i32 grow); // 0x1b52e8 __thiscall(n, grow)
-};
+// the m_68+0x260 array variant: an MFC CPtrArray (SetSize @0x1b52e8 = CPtrArray::SetSize,
+// reached via a CPtrArray cast at the call).
+struct CRtArr2 {};
 struct CRtTimeline { // m_4->m_68 (also g_64556c->m_68)
     char p0[0x260];
     CRtArr2 m_260; // +0x260
@@ -3903,7 +3903,7 @@ void CPlay::FreeListTeardown() {
     self->m_4e4 = 0;
     ((CTriggerMgr*)self->m_4->m_68)->OverlayTick();
     CRtTimeline* tl68 = self->m_4->m_68;
-    tl68->m_260.SetSize(0, -1);
+    ((CPtrArray*)&tl68->m_260)->SetSize(0, -1);
     tl68->m_284 = 0;
     ((CTriggerMgr*)self->m_4->m_68)->Reset1b48a6();
     self->m_4->m_68->m_2a0 = 0;
