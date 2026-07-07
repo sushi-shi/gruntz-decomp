@@ -129,6 +129,11 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 // base is CSBI_Image. Formerly a per-TU redef in SBI_MenuItemEh.cpp; folded here.
 struct CSBI_MenuItem : CSBI_Image {
     virtual ~CSBI_MenuItem() OVERRIDE;
+    virtual void Sf1() OVERRIDE;
+    virtual void Sf3() OVERRIDE;
+    virtual void Sf4() OVERRIDE;
+    virtual void Sf5() OVERRIDE;
+    virtual void Imf1() OVERRIDE;
     void DtorMenu(); // 0xe81a0  most-derived member teardown (reloc-masked)
 };
 #ifndef SBI_OWN_MENUITEM_DTOR
