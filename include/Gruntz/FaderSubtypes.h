@@ -135,6 +135,8 @@ SIZE(CFaderLight, 0x206c);
 VTBL(CFaderLight, 0x001f0870);
 class CFaderLight : public CFader {
 public:
+    virtual void v3() OVERRIDE; // slot 3
+    virtual void v4() OVERRIDE; // slot 4
     virtual ~CFaderLight() OVERRIDE;
     CFaderLight();                   // 0x180410
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x180640 (overrides CFader pure)
