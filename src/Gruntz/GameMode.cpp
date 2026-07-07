@@ -32,6 +32,10 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+class SoundDevice {
+public:
+    i32 PurgeVoiceList(i32 a);
+};
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
@@ -278,7 +282,7 @@ void CBootyState::ReleaseResources() {
     // The view (m_c) is re-read for every access (retail does not cache it).
     CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
     if (r) {
-        r->Free();
+        ((SoundStream*)r)->Stop();
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
@@ -1273,7 +1277,7 @@ void CCreditsState::ReleaseResources() {
     if (m_c) {
         CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
-            r->Free();
+            ((SoundStream*)r)->Stop();
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("CREDITZ", "_");
         m_c->m_10->Release("CREDITZ", "_");
@@ -1393,7 +1397,7 @@ void CMenuState::ReleaseResources() {
         // worker-list dispose re-reads m_c fresh (retail does not cache it).
         CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
-            r->Free();
+            ((SoundStream*)r)->Stop();
         }
         ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     }
@@ -1721,7 +1725,7 @@ RVA(0x0001e520, 0x3e)
 void CMultiBootyState::ReleaseResources() {
     CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
     if (r) {
-        r->Free();
+        ((SoundStream*)r)->Stop();
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
     ((CMoviePlayer*)((CBootyOwnerView*)m_4)->m_60)->~CMoviePlayer();
@@ -1978,7 +1982,7 @@ void CMenuState::StopMusicChain() {
     do {
         CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
         if (r) {
-            r->TickAnim(-1);
+            ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
     } while (((DirectSoundMgr*)m_1bc->m_10)->IsPlaying());
 }

@@ -27,8 +27,8 @@ class CDDSurface;    // CDrawTarget::SurfaceB::m_2c (the real DDraw view surface
 // (m_28->m_2c). Reloc-masked __thiscall. (Was View.h's CViewPooledRes.)
 SIZE_UNKNOWN(CViewPooledRes);
 struct CViewPooledRes {
-    void Free();          // FUN_00137a80, no-arg
-    void TickAnim(i32 z); // FUN_00136e20, ret 4
+    // Free @? IS SoundStream::Stop; cast at each call.
+    // TickAnim @? IS SoundDevice::PurgeVoiceList; cast at the call.
 };
 
 // The active draw surface / render-flip pump at CResMgr+0x04. The loaders read its
