@@ -74,7 +74,7 @@ SIZE_UNKNOWN(CWhRect);
 // CSBI_ImageSet (see top comment); kept FLAT (frameless method-view) because the
 // render/serialize methods read base-region storage (m_14/m_18/m_28/m_30/m_34/m_38)
 // under head-specific names spanning all four base levels.
-class CSBI_WarlordHead {
+class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     // vtable slot 1 (0xe7cd0): serialize the head's six persistent ints
     // (m_3c..m_50), then chain to the CSBI_ImageSet base serialize (0xe74f0).
@@ -109,22 +109,15 @@ public:
     // ret 8). Modeled as a free function so `push 0; push arg; call` falls out with
     // no this.
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    char m_pad0[0x14];
-    i32 m_14; // +0x14  base rect x (draw origin)
-    i32 m_18; // +0x18  base rect y (draw origin)
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_28; // +0x28  frame countdown (Render decrements; <=0 => idle)
-    char m_pad2c[0x30 - 0x2c];
-    CImage* m_30;    // +0x30  latched current frame record
-    CWhConfig* m_34; // +0x34  resolved config record (frame table host)
-    i32 m_38;        // +0x38  state/index (SetState writes 1 or 2; Render indexes by it)
-    i32 m_3c;        // +0x3c  direction (SetState writes the raw dir; Render compares vs 1)
-    i32 m_40;        // +0x40  persistent serialized ints (Serialize save/load block)
-    i32 m_44;        // +0x44
-    i32 m_48;        // +0x48
-    i32 m_4c;        // +0x4c
-    i32 m_50;        // +0x50
+    // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
+    // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
+    // m_34 (config, base-typed CSprite* -> cast to CWhConfig*), m_38 (state index).
+    i32 m_3c; // +0x3c  direction (SetState writes the raw dir; Render compares vs 1)
+    i32 m_40; // +0x40  persistent serialized ints (Serialize save/load block)
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
 };
 SIZE_UNKNOWN(CSBI_WarlordHead);
 

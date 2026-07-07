@@ -106,7 +106,7 @@ i32 CSBI_WarlordHead::SetupImage(
 // symbol (docs/patterns/reloc-typing-vptr-global.md). Exact once it co-names.
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(i32 show, ShadeDescr* palDescr) {
-    CWhConfig* cfg = m_34;
+    CWhConfig* cfg = (CWhConfig*)m_34;
     if (cfg == 0) {
         return 0;
     }
@@ -152,7 +152,7 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 // countdown is non-positive; otherwise tick it down, pull the surface context from
 // the active drawable, and blit two frames: the direction frame (table slot 3 or 4
 // per m_3c) and the indexed frame (table slot m_38, latched into m_30). Each draws
-// at the base origin plus the frame record's own m_18/m_1c offset.
+// at the base origin plus the frame record's own m_rect14.m_4/m_1c offset.
 // @early-stop
 // ~87.4% (reloc-residual plateau): code bytes byte-identical to retail; the two
 // `call RenderFrame` (0x153790) rel32 + the g_gameReg DIR32 are reloc-masked against
@@ -166,7 +166,7 @@ i32 CSBI_WarlordHead::Render(i32 z) {
     m_28--;
     i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
 
-    CWhConfig* cfg = m_34;
+    CWhConfig* cfg = (CWhConfig*)m_34;
     CImage* f;
     if (m_3c == 1) {
         f = (cfg->m_64 > 3 || cfg->m_68 < 3) ? 0 : cfg->m_14[3];
@@ -174,15 +174,25 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         f = (cfg->m_64 > 4 || cfg->m_68 < 4) ? 0 : cfg->m_14[4];
     }
     if (f) {
-        f->RenderFrame((void*)ctx, (void*)(m_14 + f->m_anchorX), (void*)(m_18 + f->m_anchorY), 0);
+        f->RenderFrame(
+            (void*)ctx,
+            (void*)(m_rect14.m_0 + f->m_anchorX),
+            (void*)(m_rect14.m_4 + f->m_anchorY),
+            0
+        );
     }
 
-    cfg = m_34;
+    cfg = (CWhConfig*)m_34;
     i32 idx = m_38;
     CImage* g = (idx < cfg->m_64 || idx > cfg->m_68) ? 0 : cfg->m_14[idx];
-    m_30 = g;
+    m_30 = (i32)g;
     if (g) {
-        g->RenderFrame((void*)ctx, (void*)(m_14 + g->m_anchorX), (void*)(m_18 + g->m_anchorY), 0);
+        g->RenderFrame(
+            (void*)ctx,
+            (void*)(m_rect14.m_0 + g->m_anchorX),
+            (void*)(m_rect14.m_4 + g->m_anchorY),
+            0
+        );
     }
     return 1;
 }
