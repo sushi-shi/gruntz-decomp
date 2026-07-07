@@ -36,7 +36,7 @@ struct HbSub1a0 {         // the per-leaf anim sub-object embedded at CGameObjec
 // The shared sound chain (the CBootyState ambient-cue idiom, reused here).
 SIZE_UNKNOWN(HbSndPlayer);
 struct HbSndPlayer {
-    void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
+    // Play @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
 };
 SIZE_UNKNOWN(HbSndEntry);
 struct HbSndEntry {
@@ -165,7 +165,7 @@ i32 CInGameText::Update() {
                     u32 now = g_6bf3c0;
                     if (now - res->m_14 >= res->m_18) {
                         res->m_14 = now;
-                        res->m_10->Play(token, 0, 0, 0);
+                        ((CSoundCueMgr*)res->m_10)->ConfigureItem(token, 0, 0, 0);
                     }
                 }
             }
