@@ -13,6 +13,10 @@
 // `this` once to a typed activation facet (the +0xc resource root, +0x28/+0x30
 // bank sources, +0x2dc guts, the region gates), keeping the sub-object views local.
 #include <Mfc.h> // ShowCursor (afx-first)
+class CSymTab {
+public:
+    void* ResolvePath(const char* p);
+}; // 0x13bae0
 
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
@@ -27,8 +31,8 @@ extern "C" char g_emptyString[];
 // The +0x10 image registrar is the canonical CImageRegistry (ResMgr.h): the
 // namespace-register op here is its LoadNamespace slot-19 (+0x4c) virtual. Uses the
 // real class - no local registrar view.
-struct GLSNamespace {           // m_28 / m_30
-    void* Lookup(char* szName); // FUN_0013bae0 __thiscall (resolved namespace tree)
+struct GLSNamespace { // m_28 / m_30
+    // Lookup @0x13bae0 IS CSymTab::ResolvePath; cast at each call.
 };
 struct GLSSub2c {
     void Step(i32); // FUN_0013e760 __thiscall
@@ -104,7 +108,7 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    void* h = p->m_28->Lookup("TILEZ");
+    void* h = ((CSymTab*)p->m_28)->ResolvePath("TILEZ");
     if (!h) {
         return 0;
     }
@@ -112,7 +116,7 @@ i32 CPlay::OnActivate() {
         return 0;
     }
 
-    h = p->m_28->Lookup("IMAGEZ");
+    h = ((CSymTab*)p->m_28)->ResolvePath("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -120,7 +124,7 @@ i32 CPlay::OnActivate() {
         return 0;
     }
 
-    h = p->m_30->Lookup("IMAGEZ");
+    h = ((CSymTab*)p->m_30)->ResolvePath("IMAGEZ");
     if (!h) {
         return 0;
     }

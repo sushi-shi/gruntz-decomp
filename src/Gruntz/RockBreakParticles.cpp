@@ -15,6 +15,10 @@
 // accessed by raw this+offset; strings are $SG literals reloc-masked against the
 // matched symbols. Only offsets / code bytes are load-bearing.
 #include <Gruntz/Brickz.h>
+class CSoundCueMgr {
+public:
+    i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d);
+}; // 0x1360d0
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>   // MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde)
 #include <Win32.h> // PtInRect / RECT / POINT
@@ -32,7 +36,7 @@ void FormatStr(CString* out, const char* fmt, ...);
 
 // The rate-limited sound cue (the shared Booty* sound-chain idiom).
 struct RockSndPlayer {
-    void Play(i32 token, i32, i32, i32); // FUN_001360d0 __thiscall
+    // Play @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
 };
 struct RockSndEntry {
     char m_pad00[0x10];
@@ -253,7 +257,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     u32 now = g_killCueClock;
                     if (now - e->m_14 >= e->m_18) {
                         e->m_14 = now;
-                        e->m_10->Play(g_sndCueTag, 0, 0, 0);
+                        ((CSoundCueMgr*)e->m_10)->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }

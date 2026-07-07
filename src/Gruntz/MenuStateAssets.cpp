@@ -1,4 +1,12 @@
 #include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
+class CSymTab {
+public:
+    void* ResolvePath(const char* p);
+}; // 0x13bae0
+class CSymParser {
+public:
+    void* ResolvePath(const char* p);
+}; // 0x13c030
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
@@ -46,11 +54,11 @@ struct MenuAssetMgr { // this->m_c  (the CResMgr resource/level manager)
     char m_pad14[0x28 - 0x14];
     CDDrawSubMgrLeafScan* m_28; // +0x28  sound registry (cue map)
 };
-struct MenuRegObj {              // the registered STATEZ_MENU object (m_2c)
-    void* LookupSet(char* name); // FUN_0053bae0 __thiscall, ret set ptr
+struct MenuRegObj { // the registered STATEZ_MENU object (m_2c)
+    // LookupSet @0x13bae0 IS CSymTab::ResolvePath; cast at the call.
 };
-struct MenuRegSet {                   // this->m_8
-    MenuRegObj* Register(char* name); // FUN_0053c030 __thiscall (CHelpState idiom)
+struct MenuRegSet { // this->m_8
+    // Register @0x13c030 IS CSymParser::ResolvePath; cast at the call.
 };
 struct MenuCursorSub { // this->m_4->m_4
     char m_pad00[0x4];
@@ -123,13 +131,13 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     ((MenuRoot*)m_4)->Hide(0);
-    m_2c = (CResSource*)((MenuRegSet*)m_8)->Register("STATEZ_MENU");
+    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_MENU");
     if (m_2c == 0) {
         return 0;
     }
 
     if (!((MenuAssetMgr*)m_c)->m_10->Has("MENU")) {
-        void* set = ((MenuRegObj*)m_2c)->LookupSet("IMAGEZ");
+        void* set = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
         }
@@ -139,7 +147,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     if (!((MenuAssetMgr*)m_c)->m_28->HasKeyEqual_1583c0("MENU")) {
-        void* set = ((MenuRegObj*)m_2c)->LookupSet("SOUNDZ");
+        void* set = ((CSymTab*)m_2c)->ResolvePath("SOUNDZ");
         if (set == 0) {
             return 0;
         }

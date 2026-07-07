@@ -32,6 +32,11 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+class CMoviePlayer {
+public:
+    ~CMoviePlayer();
+}; // 0x38fc0
+SIZE_UNKNOWN(CMoviePlayer);
 #include <Gruntz/SoundCueMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -1209,8 +1214,8 @@ i32 CCreditsState::InitAttractTitle() {
 // The video-handle (m_videoHandle) sub-object: its EH-framed destructor (0x38fc0) is a
 // __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
 struct CCreditsVideo {
-    void Teardown(); // FUN_00438fc0 __thiscall, no-arg (the /GX dtor)
-    void Close();    // FUN_0057c9b0 __thiscall, no-arg (SmackClose wrapper)
+    // Teardown @0x38fc0 IS CMoviePlayer::~CMoviePlayer; cast at each call.
+    void Close(); // FUN_0057c9b0 __thiscall, no-arg (SmackClose wrapper)
 };
 
 // The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret
@@ -1263,7 +1268,7 @@ void CCreditsState::ReleaseResources() {
     // Teardown call (retail reuses the same register for the RezFree push).
     CCreditsVideo* vh = m_videoHandle;
     if (vh) {
-        vh->Teardown();
+        ((CMoviePlayer*)vh)->~CMoviePlayer();
         RezFree(vh);
         m_videoHandle = 0;
     }
@@ -1704,7 +1709,7 @@ void CMultiBootyState::ReleaseResources() {
         r->Free();
     }
     ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
-    ((CBootyOwnerView*)m_4)->m_60->Teardown();
+    ((CMoviePlayer*)((CBootyOwnerView*)m_4)->m_60)->~CMoviePlayer();
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
