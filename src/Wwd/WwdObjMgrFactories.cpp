@@ -85,16 +85,11 @@ struct Obj15b270 {
 };
 // The +0x7c sprite-animation worker (0x17c bytes): ctor 0x15b300, kick at +0x10.
 // CWwdWorker is the shared <Gruntz/WwdWorker.h> class (the per-object worker at +0x7c).
-// The +0x1a0 command sub-object ctor (1598d0). 0x156cb0.
 class CWwdCmd1a0 {
 public:
     void Ctor(int root, int a, int flags); // 0x156cb0
 };
 // The +0x1dc list sub-object ctor (1598d0), 1 arg (block size 0xa). 0x1b59cc.
-class CWwdList1dc {
-public:
-    void Ctor(int blockSize); // 0x1b59cc
-};
 
 // The wide objects' polymorphic interfaces (cast-only; declared-only virtuals so
 // cl emits no ??_7). Each factory's object has a distinct vtable, so the Build
@@ -274,7 +269,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
         *(int*)(obj + 0x198) = 0;
         *(int*)(obj + 0x194) = 0;
         *(int*)(obj + 0x19c) = 0;
-        ((CWwdList1dc*)(obj + 0x1dc))->Ctor(0xa);
+        new (obj + 0x1dc) CObList(0xa);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(int*)(obj + 0x1f8) = 0;
         result = (CWwdGameObject*)obj;
@@ -482,7 +477,6 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
 SIZE_UNKNOWN(CWwdCmd1a0);
 SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
-SIZE_UNKNOWN(CWwdList1dc);
 SIZE_UNKNOWN(CWwdObjMgrL);
 SIZE_UNKNOWN(CWwdResolveBaseB);
 SIZE_UNKNOWN(CWwdSlot9c);
