@@ -32,6 +32,10 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
+class CBattlezData {
+public:
+    i32 InBounds(i32 z);
+}; // 0xfcd70
 class CMoviePlayer {
 public:
     ~CMoviePlayer();
@@ -1444,7 +1448,7 @@ struct CBootyBonusState {
 // item @+0x11c. Read through CBootyGameReg below (an extended WwdGameReg view).
 // The draw object (g_gameReg+0x7c) the frame-ready gate runs on (__thiscall, ret 4).
 struct CBootyDrawObj {
-    i32 FrameReady(i32 z); // FUN_004fcd70
+    // FrameReady @0xfcd70 IS CBattlezData::InBounds; cast at the call.
 };
 struct CBootyMusicHost; // the g_gameReg+0x30 music host (defined below)
 struct CBootyGameReg {
@@ -1649,7 +1653,7 @@ void CMultiBootyState::MoveLettersByDir() {
 // (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
 RVA(0x0001c0f0, 0xd5)
 i32 CMultiBootyState::CheckPerfectBonus() {
-    if (!BOOTY_REG->m_7c->FrameReady(-1)) {
+    if (!((CBattlezData*)BOOTY_REG->m_7c)->InBounds(-1)) {
         return 1;
     }
     CBootyBonusState* st = m_bonusState;
