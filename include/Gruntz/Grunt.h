@@ -85,8 +85,7 @@ struct CHudSprite {
     // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
     // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
     // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
-    void ApplyName(const char* key);                      // 0x150540
-    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
+    // ApplyName @0x150540 / ApplyLookupGeometry @0x1505b0 ARE CGruntSprite's; cast at each call.
 
     char m_pad0[0x8];
     i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)

@@ -23,6 +23,12 @@ class CDDrawSubMgrLeaf {
 public:
     CObject* LookupValue_06b2a0(const char* key); // 0x6b2a0
 };
+// The HUD/rollingball sprites' ApplyName/ApplyLookupGeometry ARE CGruntSprite's; local decl.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);               // 0x150540
+    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
+};
 
 extern CButeMgr g_buteMgr; // ?g_buteMgr@@3VCButeMgr@@A
 
@@ -399,7 +405,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
+            ((CGruntSprite*)n)->CacheFirstFrame("LEVEL_ROLLINGBALL_NORTH");
             CSpriteInner* ni = n->m_7c;
             ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             n->m_124 = 0;
@@ -413,7 +419,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            e->ApplyName("LEVEL_ROLLINGBALL_EAST");
+            ((CGruntSprite*)e)->CacheFirstFrame("LEVEL_ROLLINGBALL_EAST");
             CSpriteInner* ei = e->m_7c;
             ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             e->m_124 = 0;
@@ -427,7 +433,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
+            ((CGruntSprite*)s)->CacheFirstFrame("LEVEL_ROLLINGBALL_SOUTH");
             CSpriteInner* si = s->m_7c;
             si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             s->m_124 = 0;
@@ -441,7 +447,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            w->ApplyName("LEVEL_ROLLINGBALL_WEST");
+            ((CGruntSprite*)w)->CacheFirstFrame("LEVEL_ROLLINGBALL_WEST");
             CSpriteInner* wi = w->m_7c;
             wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             w->m_124 = 0;

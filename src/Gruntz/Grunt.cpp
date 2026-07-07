@@ -149,6 +149,13 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 // TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
 
+// The lose-item HUD sprite (spr) ApplyName/ApplyLookupGeometry ARE CGruntSprite's; local decl.
+class CGruntSprite {
+public:
+    void CacheFirstFrame(const char* name);
+    void ApplyLookupGeometry(const char* key, i32 frame);
+};
+
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
 //     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
@@ -2524,8 +2531,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     CHudSprite* spr =
         (CHudSprite*)(CHudSprite*)g_pGameRegistry->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
-    spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
-    spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
+    ((CGruntSprite*)spr)->CacheFirstFrame(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
+    ((CGruntSprite*)spr)->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
     CGameRegistry* g = g_pGameRegistry;
     i32 x = m_10->m_5c;
