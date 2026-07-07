@@ -19,6 +19,7 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
+#include <Wap32/Object.h> // Wap::CObject (recognized 5-slot MFC base)
 #include <rva.h>
 #include <Ints.h>
 
@@ -36,20 +37,67 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h
 // is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
+// MFC vtable hierarchy on Wap::CObject (the recognized 5-slot MFC CObject:
+// GetRuntimeClass@0, ~@1, Serialize@2, AssertValid@3, Dump@4). Declared-only
+// virtuals anchor the slot order (NAFXCW bodies reloc-mask).
+SIZE_UNKNOWN(CCmdTarget);
+class CCmdTarget : public Wap::CObject {
+public:
+    virtual void CtVsl5();               // slot 5
+    virtual void CtVsl6();               // slot 6
+    virtual void CtVsl7();               // slot 7
+    virtual void CtVsl8();               // slot 8
+    virtual void CtVsl9();               // slot 9
+    virtual void CtVsl10();              // slot 10
+    virtual void CtVsl11();              // slot 11
+    virtual const void* GetMessageMap(); // slot 12
+    virtual void CtVsl13();              // slot 13
+    virtual void CtVsl14();              // slot 14
+    virtual void CtVsl15();              // slot 15
+    virtual void CtVsl16();              // slot 16
+    virtual void CtVsl17();              // slot 17
+    virtual void CtVsl18();              // slot 18
+    virtual void CtVsl19();              // slot 19
+    virtual void CtVsl20();              // slot 20
+    virtual void CtVsl21();              // slot 21
+};
+
 SIZE_UNKNOWN(CWnd);
 VTBL(CWnd, 0x001eb5c4);
-class CWnd {
+class CWnd : public CCmdTarget {
 public:
+    virtual void WndVsl22(); // slot 22
+    virtual void WndVsl23(); // slot 23
+    virtual void WndVsl24(); // slot 24
+    virtual void WndVsl25(); // slot 25
+    virtual void WndVsl26(); // slot 26
+    virtual void WndVsl27(); // slot 27
+    virtual void WndVsl28(); // slot 28
+    virtual void WndVsl29(); // slot 29
+    virtual void WndVsl30(); // slot 30
+    virtual void WndVsl31(); // slot 31
+    virtual void WndVsl32(); // slot 32
+    virtual void WndVsl33(); // slot 33
+    virtual void WndVsl34(); // slot 34
+    virtual void WndVsl35(); // slot 35
+    virtual void WndVsl36(); // slot 36
+    virtual void WndVsl37(); // slot 37
+    virtual void WndVsl38(); // slot 38
+    virtual void WndVsl39(); // slot 39
+    virtual void WndVsl40(); // slot 40
+    virtual void WndVsl41(); // slot 41
+    virtual void WndVsl42(); // slot 42
+    virtual void WndVsl43(); // slot 43
+    virtual void WndVsl44(); // slot 44
+    virtual void WndVsl45(); // slot 45
+    virtual void WndVsl46(); // slot 46
+    virtual void WndVsl47(); // slot 47
     void SetWindowTextA(const char* lpszString);
-    void EnableWindow(i32 bEnable);        // NAFXCW __thiscall (reloc-masked)
-    void GetWindowTextA(CString& rString); // NAFXCW __thiscall (reloc-masked)
-                                           // (GetWindowText macro-expands to this)
-    // CComboBox::GetLBText(int, CString&) (0x1ce7db) - reloc-masked __thiscall.
+    void EnableWindow(i32 bEnable);
+    void GetWindowTextA(CString& rString);
     void GetLBText1ce7db(i32 nIndex, CString& rString);
-    // NAFXCW static (HWND -> CWnd*), reached by call-rel32 (reloc-masks). MFC
-    // declares it PASCAL (__stdcall).
     static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
-    char m_pad00[0x1c];                              // +0x00
+    char m_pad04[0x1c - 4];                          // +0x04 (vptr @+0x00)
     HWND__* m_hWnd;                                  // +0x1c  wrapped window handle
 };
 
@@ -70,20 +118,18 @@ public:
 // the offsets the disasm pins (+0x5c upward).
 SIZE_UNKNOWN(CDialog);
 VTBL(CDialog, 0x001eb174);
-class CDialog {
+class CDialog : public CWnd {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
-    virtual ~CDialog(); // (gives CDialog its vptr @+0x00)
-    // GetDlgItem - the NAFXCW __thiscall resolver (control ID -> child CWnd*),
-    // reached by call-rel32 (external/no-body so it reloc-masks). Inherited by the
-    // dialog subclasses; their accessors tail-call it on `this`.
+    virtual ~CDialog() OVERRIDE; // slot 1
+    virtual void DlgVsl48();
+    virtual void DlgVsl49();
+    virtual void DlgVsl50();
+    virtual void DlgVsl51();
+    virtual void DlgVsl52();
+    virtual void DlgVsl53();
     CWnd* GetDlgItem(i32 nID) const;
-    // DoModal - the NAFXCW modal loop (reloc-masked). Modeled non-virtual: retail
-    // calls it directly on a known-type local (devirtualized), so a plain method
-    // reproduces the `call rel32`.
     i32 DoModal();             // 0x1ba9d2
-    char m_pad04[0x1c - 4];    // +0x04 (vptr occupies +0x00)
-    HWND__* m_hWnd;            // +0x1c  wrapped window handle (the CWnd-base field)
     char m_pad20[0x5c - 0x20]; // +0x20  pad to 0x5c (subclass members land at +0x5c)
 };
 
