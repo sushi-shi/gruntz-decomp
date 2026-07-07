@@ -109,6 +109,12 @@ public:
 };
 
 SIZE_UNKNOWN(CWorkerVtableView);
+// The 23-slot registry vtable (0x5efd28). Its ??_G/dtor is stamped in the dtor-facet
+// CDDrawRegistryDtorHost (DDrawSubMgr.cpp) - a compiler-model wall (the vtable realizes
+// only in a real ctor/dtor, which lives on the dtor-facet, not this method-holder), so
+// this real 23-virtual class is the load-bearing dispatch model (ProbeWorkerKey casts
+// `this` to it to force the exact indirect [vtbl+0x48] dispatch retail uses).
+VTBL(CWorkerVtableView, 0x001efd28);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
