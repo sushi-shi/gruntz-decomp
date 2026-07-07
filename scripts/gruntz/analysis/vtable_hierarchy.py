@@ -890,7 +890,11 @@ def cmd_audit(aud):
                 via == "intermediate" or (ci.is_rtti and meta["base_inferred"])) else ""
             F["INHERIT"].append((name, "source=%s -> derive %s (%s)%s"
                                  % (source_base or "(none)", truth, via, note), loc))
-        if src != "manual-stamp" and col and col != name:
+        # RENAME wants the src class named as its RTTI type-descriptor. Skip when the RTTI
+        # name is a TEMPLATE instantiation (?$) or a library-namespaced type (e.g. a PAU1
+        # sound-lib ?$CArray): those are statically-linked library/templated classes we model
+        # under a game-facing name deliberately, not a rename we should make.
+        if src != "manual-stamp" and col and col != name and "?$" not in col:
             F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
         # REDECLARE means declaring MORE virtuals than the class's own slots. But if the
         # class declares MORE than the SCANNED vtable even has (n_virt > len(slots)), the
