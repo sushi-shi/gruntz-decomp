@@ -683,8 +683,8 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = &host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
                     i32 gate = g_61ab20;
                     i32 item = g_61ab24;
@@ -719,8 +719,8 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = &host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
                     i32 gate = g_61ab20;
                     i32 item = g_61ab24;
@@ -754,8 +754,8 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = &host->m_map10;
-                map->Lookup("GAME_TABHIGHLIGHT1", &found);
+                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+                map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
                     i32 gate = g_61ab20;
                     i32 item = g_61ab24;
@@ -1632,8 +1632,8 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = &host->m_map10;
-            map->Lookup("GAME_TABHIGHLIGHT1", &found);
+            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+            map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
             if (found) {
                 i32 gate = g_61ab20;
                 i32 item = g_61ab24;
@@ -1667,8 +1667,8 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
-                CSbiLookupMap* map = &host->m_map10;
-                map->Lookup("GAME_STATZTABTOGGLE", &found);
+                CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+                map->Lookup("GAME_STATZTABTOGGLE", (CObject*&)found);
                 if (found) {
                     i32 gate = g_61ab20;
                     i32 item = g_61ab24;
@@ -1755,8 +1755,8 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = &host->m_map10;
-            map->Lookup("GAME_TABHIGHLIGHT1", &found);
+            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+            map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
             if (found) {
                 i32 gate = g_61ab20;
                 i32 item = g_61ab24;
@@ -1785,8 +1785,8 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
-        CSbiLookupMap* map = &host->m_map10;
-        map->Lookup("GAME_TABHIGHLIGHT1", &found);
+        CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+        map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
         if (found) {
             i32 gate = g_61ab20;
             i32 item = g_61ab24;
@@ -2439,8 +2439,8 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             }
             char* mc = *(char**)((char*)this + 0xc);
             void* found = 0;
-            CSbiLookupMap* map = (CSbiLookupMap*)(*(char**)(mc + 0x10) + 0x10);
-            map->Lookup("GAME_STATUSBAR_MAINBAR", &found);
+            CMapStringToOb* map = (CMapStringToOb*)(*(char**)(mc + 0x10) + 0x10);
+            map->Lookup("GAME_STATUSBAR_MAINBAR", (CObject*&)found);
             if (found) {
                 CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
                 CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
@@ -2512,7 +2512,7 @@ static __inline void HiCueLookup() {
     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* out = 0;
-        (&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", &out);
+        ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
         if (out) {
             ((LeafCue*)out)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
         }
@@ -2524,7 +2524,7 @@ static __inline void HiCueTimed() {
     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
-        (&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", &found);
+        ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
         if (found && g_61ab20 != 0) {
             i32 item = g_61ab24;
             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -2812,7 +2812,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
             if (m_destructButton == 0) {
                 CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                 void* found = 0;
-                (&host->m_map10)->Lookup("GAME_DESTRUCT", &found);
+                ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_DESTRUCT", (CObject*&)found);
                 if (found) {
                     CSbiSpriteFactory* f = ((CSbiSpriteCfg*)found)->m_10;
                     if (f) {
@@ -2935,8 +2935,8 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
-            CSbiLookupMap* map = &host->m_map10;
-            map->Lookup("GAME_GOOCOOKING1", &found);
+            CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
+            map->Lookup("GAME_GOOCOOKING1", (CObject*&)found);
             if (found) {
                 i32 gate = g_61ab20;
                 i32 item = g_61ab24;
@@ -3024,7 +3024,8 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            (&host->m_map10)->Lookup("GAME_REZBELTRETURN", &found);
+                            ((CMapStringToOb*)&host->m_map10)
+                                ->Lookup("GAME_REZBELTRETURN", (CObject*&)found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3044,7 +3045,8 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            (&host->m_map10)->Lookup("GAME_REZBELTBACKUP", &found);
+                            ((CMapStringToOb*)&host->m_map10)
+                                ->Lookup("GAME_REZBELTBACKUP", (CObject*&)found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3149,7 +3151,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
-                            (&host->m_map10)->Lookup("GAME_REZMACHINE", &found);
+                            ((CMapStringToOb*)&host->m_map10)
+                                ->Lookup("GAME_REZMACHINE", (CObject*&)found);
                             if (found && g_61ab20 != 0) {
                                 i32 item = g_61ab24;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3206,7 +3209,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                (&host->m_map10)->Lookup("GAME_REZBELTRETRACT", &fnd);
+                                ((CMapStringToOb*)&host->m_map10)
+                                    ->Lookup("GAME_REZBELTRETRACT", (CObject*&)fnd);
                                 if (fnd && g_61ab20 != 0) {
                                     i32 item = g_61ab24;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
@@ -3224,7 +3228,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
-                                (&host->m_map10)->Lookup("GAME_REZBELTDROP", &fnd);
+                                ((CMapStringToOb*)&host->m_map10)
+                                    ->Lookup("GAME_REZBELTDROP", (CObject*&)fnd);
                                 if (fnd && g_61ab20 != 0) {
                                     i32 item = g_61ab24;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
@@ -3325,7 +3330,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        (&host->m_map10)->Lookup("GAME_CHIPFALLOUT", &found);
+                        ((CMapStringToOb*)&host->m_map10)
+                            ->Lookup("GAME_CHIPFALLOUT", (CObject*&)found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3355,7 +3361,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        (&host->m_map10)->Lookup("GAME_CHIPLAND", &found);
+                        ((CMapStringToOb*)&host->m_map10)
+                            ->Lookup("GAME_CHIPLAND", (CObject*&)found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
@@ -3425,7 +3432,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
-                        (&host->m_map10)->Lookup("GAME_CHIPLAND", &found);
+                        ((CMapStringToOb*)&host->m_map10)
+                            ->Lookup("GAME_CHIPLAND", (CObject*&)found);
                         if (found && g_61ab20 != 0) {
                             i32 item = g_61ab24;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;

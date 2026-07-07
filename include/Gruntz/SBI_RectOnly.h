@@ -558,9 +558,7 @@ public:
 };
 
 // The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
-struct CSbiLookupMap {
-    i32 Lookup(char* key, void** out); // CMapStringToOb::Lookup (ret 8)
-};
+struct CSbiLookupMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
 SIZE_UNKNOWN(CSbiLookupMap);
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
