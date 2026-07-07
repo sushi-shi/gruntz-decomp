@@ -47,7 +47,7 @@ static void GruntScratchTeardown() {
     i32 cnt = g_animScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;

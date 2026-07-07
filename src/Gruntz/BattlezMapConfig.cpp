@@ -2510,7 +2510,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -2525,7 +2525,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -2540,7 +2540,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -2555,7 +2555,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -2570,7 +2570,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -2585,7 +2585,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -3785,7 +3785,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -3800,7 +3800,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -3815,7 +3815,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;
@@ -3843,7 +3843,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            slot->Release();
+            ((CString*)slot)->~CString();
         }
         slot++;
         cnt--;

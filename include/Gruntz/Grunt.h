@@ -503,8 +503,8 @@ extern double g_dirConstN1; // DAT_005e9a38 = -1.0
 // non-null slot, count times). Reloc-masked DATA.
 SIZE_UNKNOWN(CAnimScratchString);
 struct CAnimScratchString {
-    char* m_str;    // +0x00  (4-byte stride for the teardown walk)
-    void Release(); // FUN_001b9b93 (engine CString release)
+    char* m_str; // +0x00  (4-byte stride)
+    // Release @0x1b9b93 IS CString::~CString; cast at each call.
 };
 extern CAnimScratchString* g_animScratch; // DAT_006bf66c
 extern i32 g_animScratchCount;            // DAT_006bf670
