@@ -36,6 +36,20 @@
 #include <Gruntz/GameLevel.h>
 #include <Mfc.h>
 #include <Globals.h>
+struct CSerialArchive;
+class CWwdObjMgr {
+public:
+    i32 CountActive_15abc0();
+    i32 ForEachProbe_15acb0(i32 a, i32 b);
+    i32 ForEachDispatch_15ac20(i32 a, i32 b, i32 c);
+    i32 ForEachSerialize_15b020(CSerialArchive* a, i32 b);
+    i32 LoadObjects(CSerialArchive* a, unsigned int b, i32 c);
+    i32 Deserialize_15b0e0(CSerialArchive* a, unsigned int b, i32 c);
+};
+class CDDrawSubMgrPages {
+public:
+    void Method_159ef0();
+};
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr (partial view): only the members these two methods touch.
@@ -92,13 +106,13 @@ public:
 // 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (CGameLevel) carries 0x160f70.
 SIZE_UNKNOWN(CDDrawChildGroupOps);
 struct CDDrawChildGroupOps {
-    i32 Probe();                                 // 0x15abc0  (__thiscall, no arg)
-    i32 BlitA(Serializer* s, i32 arg);           // 0x15acb0
-    i32 BlitB(Serializer* s, i32 mode, i32 arg); // 0x15ac20
-    i32 BlitC(Serializer* s, i32 arg);           // 0x15b020
-    void Refresh();                              // 0x159ef0  (load path, no arg)
-    i32 LoadA(Serializer* s, i32 n, i32 arg);    // 0x15ad30  (load path)
-    i32 LoadB(Serializer* s, i32 n, i32 arg);    // 0x15b0e0  (load path)
+    // Probe @0x15abc0 IS CWwdObjMgr::CountActive_15abc0; cast at the call.
+    // BlitA @0x15acb0 IS CWwdObjMgr::ForEachProbe_15acb0; cast at the call.
+    // BlitB @0x15ac20 IS CWwdObjMgr::ForEachDispatch_15ac20; cast at the call.
+    // BlitC @0x15b020 IS CWwdObjMgr::ForEachSerialize_15b020; cast at the call.
+    // Refresh @0x159ef0 IS CDDrawSubMgrPages::Method_159ef0; cast at the call.
+    // LoadA @0x15ad30 IS CWwdObjMgr::LoadObjects; cast at the call.
+    // LoadB @0x15b0e0 IS CWwdObjMgr::Deserialize_15b0e0; cast at the call.
 };
 
 // CTime helpers come from MFC (<Mfc.h>): CTime::CTime() (0x1b30b1) and
@@ -135,7 +149,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = m_08->Probe();
+    i32 probe = ((CWwdObjMgr*)m_08)->CountActive_15abc0();
     *(u32*)(header + 0x114) = g_61ab14;
     *(i32*)(header + 0x118) = probe;
     S.Write(header, 0x120);
@@ -144,13 +158,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (m_08->BlitA(&S, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (m_08->BlitB(&S, 3, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 3, 0, 0) == 0) {
@@ -159,7 +173,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (m_08->BlitC(&S, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachSerialize_15b020((CSerialArchive*)&S, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 4, 0, 0) == 0) {
@@ -168,7 +182,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (m_08->BlitB(&S, 5, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 5, 0, 0) == 0) {
@@ -227,14 +241,16 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
         return 0;
     }
     g_61ab14 = *(u32*)(header + 0x114);
-    m_08->Refresh();
-    if (m_08->LoadA(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    ((CDDrawSubMgrPages*)m_08)->Method_159ef0();
+    if (((CWwdObjMgr*)m_08)
+            ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+        == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 6, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (m_08->BlitB(&S, 6, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 6, 0, 0) == 0) {
@@ -243,7 +259,9 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (m_08->LoadB(&S, *(i32*)(header + 0x110), arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)
+            ->Deserialize_15b0e0((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+        == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 7, 0, 0) == 0) {
@@ -252,7 +270,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (m_08->BlitB(&S, 8, arg3) == 0) {
+    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 8, 0, 0) == 0) {
