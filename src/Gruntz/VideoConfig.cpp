@@ -54,6 +54,8 @@ extern i32 g_videoResolutionMode;
 VTBL(CSliderCtrl, 0x001ecb24);
 class CSliderCtrl : public CWnd {
 public:
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CSliderCtrl() OVERRIDE;         // slot 1
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
 };
 
