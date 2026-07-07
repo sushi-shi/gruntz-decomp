@@ -55,12 +55,10 @@ struct CDirObj {
 
 // The two engine lookup maps (external __thiscall, reloc-masked). The serial map
 // keys on the 4-byte id; the name map keys on the text name.
-struct CSerialMap {
-    i32 Lookup(i32 key, void** out); // 0x1b8760
-};
-struct CNameMap {
-    i32 Lookup(const char* key, void** out); // 0x1b8438
-};
+// serial-map @0x1b8760 = MFC CMapPtrToPtr::Lookup (int key); name-map @0x1b8438 =
+// CMapStringToOb::Lookup (string key). Both cast at the call.
+struct CSerialMap {};
+struct CNameMap {};
 
 // The engine object directory (g_mgrSettings->m_world): the serial-map host at +8
 // (map at +0x48), the name-map host at +0x2c (map at +0x10).
@@ -117,7 +115,8 @@ public:
         ar->Read(&id, 4);                                                                          \
         obj = 0;                                                                                   \
         void* r;                                                                                   \
-        if (((CSerialMap*)(dir->m_serialHost + 0x48))->Lookup(id, &obj) != 0 && obj != 0) {        \
+        if (((CMapPtrToPtr*)(dir->m_serialHost + 0x48))->Lookup((void*)id, obj) != 0               \
+            && obj != 0) {                                                                         \
             r = (((CDirObj*)obj)->GetTag() == 5) ? obj : 0;                                        \
         } else {                                                                                   \
             r = 0;                                                                                 \
@@ -141,7 +140,7 @@ public:
         ar->Read(buf, 0x80);                                                                       \
         if (strlen(buf) != 0) {                                                                    \
             obj = 0;                                                                               \
-            ((CNameMap*)(dir->m_nameHost + 0x10))->Lookup(buf, &obj);                              \
+            ((CMapStringToOb*)(dir->m_nameHost + 0x10))->Lookup(buf, (CObject*&)obj);              \
             *(void**)(p + (off)) = obj;                                                            \
         } else {                                                                                   \
             *(void**)(p + (off)) = 0;                                                              \
