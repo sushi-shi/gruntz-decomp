@@ -881,12 +881,9 @@ namespace ApiCallerStubs {
 
     // The blit target reached through the layer node (node->m_2c); Blit13ef90 paints
     // a rect-source into a destination rect with the given mode flags.
-    struct BlitTarget_115300 {
-        void Blit13ef90(i32 dx, i32 dy, void* src, RECT* rc, i32 flags); // thiscall RVA 0x13ef90
-    };
     struct LayerNode_115300 {
         char m_pad0[0x2c];
-        BlitTarget_115300* m_2c; // +0x2c
+        CDDSurface* m_2c; // +0x2c  the blit target (BltFast @0x13ef90)
     };
     struct LayerSet_115300 {
         char m_pad0[0x10];
@@ -934,7 +931,7 @@ namespace ApiCallerStubs {
                 return 0;
             }
         }
-        BlitTarget_115300* dst = node->m_2c;
+        CDDSurface* dst = node->m_2c;
         if (!dst) {
             return 0;
         }
@@ -951,7 +948,7 @@ namespace ApiCallerStubs {
         if (mode) {
             flags = 0x11;
         }
-        dst->Blit13ef90(dx, dy, srcHandle, &rc2, flags);
+        dst->BltFast(dx, dy, (CDDSurface*)srcHandle, &rc2, flags);
         return 1;
     }
 
