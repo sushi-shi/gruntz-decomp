@@ -3550,7 +3550,7 @@ void __stdcall Prep_12fd(i32 mode); // 0x12fd (free __stdcall region-prep helper
 // The live game-state sub-call (g_gameReg->m_curState->Sub3d55, 0x3d55) both
 // methods make; reloc-masked thiscall (the state's concrete method not recovered).
 struct ScreenCurState {
-    void Sub3d55();
+    // Sub3d55 @0xfe460 IS ScreenRegionMgr::Open; cast at each call.
 };
 struct ScreenRegionMgr {
     i32 m_0; // +0x00  state (1 == open, 2 == reset)
@@ -3574,7 +3574,7 @@ i32 ScreenRegionMgr::Open() {
         Prep_12fd(1);
         SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
         Sub194c(1);
-        ((ScreenCurState*)g_gameReg->m_curState)->Sub3d55();
+        ((ScreenRegionMgr*)g_gameReg->m_curState)->Open();
         if (!Validate()) {
             g_gameReg->ReportError(0x80e4, 0x448);
             return 0;
@@ -3589,7 +3589,7 @@ i32 ScreenRegionMgr::Reset() {
         Prep_12fd(1);
         SetRect(&m_10, -1, -1, -1, -1);
         Sub194c(2);
-        ((ScreenCurState*)g_gameReg->m_curState)->Sub3d55();
+        ((ScreenRegionMgr*)g_gameReg->m_curState)->Open();
     }
     return 1;
 }

@@ -24,6 +24,10 @@ public:
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
 #include <Globals.h> // g_glsResetMgr (DAT_00645570)
+class CDDSurface {
+public:
+    i32 Fill(unsigned int c);
+}; // 0x13e760
 
 // The global empty C string (0x6293f4).
 extern "C" char g_emptyString[];
@@ -35,7 +39,7 @@ struct GLSNamespace { // m_28 / m_30
     // Lookup @0x13bae0 IS CSymTab::ResolvePath; cast at each call.
 };
 struct GLSSub2c {
-    void Step(i32); // FUN_0013e760 __thiscall
+    // Step @0x13e760 IS CDDSurface::Fill; cast at the call.
 };
 struct GLSSub14 {
     char m_pad00[0x2c];
@@ -136,7 +140,7 @@ i32 CPlay::OnActivate() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    p->m_c->m_4->m_14->m_2c->Step(0);
+    ((CDDSurface*)p->m_c->m_4->m_14->m_2c)->Fill(0);
     LevelInit2356(g_gameReg, p->m_2dc, p->m_470);
 
     if (p->m_474 != 0) {

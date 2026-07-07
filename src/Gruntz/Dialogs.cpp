@@ -760,7 +760,7 @@ extern i32 g_killCueClock; // _g_killCueClock
 
 // The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
 struct CCueEmitter {
-    void Trigger(i32 cue, i32 a, i32 b, i32 c);
+    // Trigger @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
 };
 // The FindRec / registry-lookup record. Only the touched fields are named.
 struct CNetCueRec {
@@ -842,7 +842,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
                     i32 clk = g_killCueClock;
                     if ((u32)(clk - rec->m_14) >= (u32)rec->m_18) {
                         rec->m_14 = clk;
-                        rec->m_10->Trigger(cue, 0, 0, 0);
+                        ((CSoundCueMgr*)rec->m_10)->ConfigureItem(cue, 0, 0, 0);
                     }
                 }
             }

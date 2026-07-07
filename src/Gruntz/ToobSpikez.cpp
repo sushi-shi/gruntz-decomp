@@ -102,8 +102,8 @@ i32 ToobSpikezLogic(CGameObject* obj) {
 // re-declared here, address-pinned).
 struct CToobEntry; // an entry: first dword is the registered handler
 struct CToobColl {
-    i32 Find(i32 coord, i32 z);       // 0x16da80 (__thiscall ret 8)
-    void Reserve8710(i32 lo, i32 hi); // 0x008710 (__thiscall ret 8)
+    i32 Find(i32 coord, i32 z); // 0x16da80 (__thiscall ret 8)
+    // Reserve8710 @0x8710 IS CZDArrayDerived::Construct; cast at the call.
 };
 extern void* GetRetAddr(); // 0x16d990
 
@@ -205,7 +205,7 @@ extern i32 ToobLogic_114bc0();
 // forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.
 RVA(0x001147e0, 0x15)
 void CToobSpikez::Register_1147e0() {
-    g_toobColl.Reserve8710(0x7d0, 0x7da);
+    ((CZDArrayDerived*)&g_toobColl)->Construct(0x7d0, 0x7da);
 }
 
 // CToobSpikez::GetTypeTag @0x012ba0 - vtable slot 2: the class's logic-type id
