@@ -116,5 +116,6 @@ public:
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
+VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

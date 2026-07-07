@@ -69,6 +69,7 @@ struct BucketHead {
 // the 0x5f0328 target); VTBL pairs the emitted ??_7CWwdGrid with the delinked
 // datum (0x1f0328 was unbound). Exact size 0x44 (grid-setup RezAlloc(0x44) x3).
 SIZE(CWwdGrid, 0x44);
+VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
 class CWwdGrid : public Wap::CObject {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.

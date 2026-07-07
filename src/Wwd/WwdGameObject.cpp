@@ -906,7 +906,21 @@ inline WwdSubA::~WwdSubA() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectE : public Wap::CObject {
 public:
-    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0
+    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0 (slot 1 scalar-deleting dtor)
+    // Derived game-object slots 5-15 (the shared CWwdGameObject interface; slot RVAs
+    // are the 0x5f0020 table's ground truth). Declared-only so A/F/C inherit the full
+    // 16-slot shape and cl emits the sized ??_7; reloc-masked, matching-neutral.
+    virtual void Slot14_15b370();   // slot 5  @0x15b370
+    virtual void IsValidImage();    // slot 6  @0x001c08 (shared base thunk)
+    virtual void ReleaseSubs();     // slot 7  @0x15b5d0
+    virtual i32 Vfunc20();          // slot 8  @0x154a00
+    virtual i32 Slot24_164790();    // slot 9  @0x164790
+    virtual i32 Setup28();          // slot 10 @0x150d60
+    virtual void Slot2C();          // slot 11 @0x11fec0 (__purecall)
+    virtual void Slot30();          // slot 12 @0x11fec0 (__purecall)
+    virtual void Slot34();          // slot 13 @0x11fec0 (__purecall)
+    virtual void Slot38();          // slot 14 @0x11fec0 (__purecall)
+    virtual i32 Play3C();           // slot 15 @0x151150
 
     WwdEdgeB m_04; // 0x04
     char _p10[0x20 - 0x10];
@@ -1123,6 +1137,9 @@ inline WwdBLevel2::~WwdBLevel2() {
 class CWwdGameObjectB : public WwdBLevel2 {
 public:
     virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
+    // Slots 14-15 completing the 16-slot 0x5f00e8 table (chain models 0-13).
+    virtual i32 Play3C();  // slot 15 @0x151150
+    virtual void Slot38(); // slot 14 @0x11fec0 (__purecall)
     WwdObList m_1dc;                     // +0x1dc  CObList
     char _p1e0[0x1f8 - 0x1e0];
     i32 m_1f8; // +0x1f8
@@ -1162,6 +1179,10 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 class CWwdGameObjectC : public CWwdGameObjectE {
 public:
     virtual ~CWwdGameObjectC() OVERRIDE; // 0x15c070
+    // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
+    virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
+    virtual void Slot44();        // slot 17 @0x15c030
+    virtual void Slot48();        // slot 18 @0x15c040
 
     char _pe0[0x18c - 0xe0];
     u8 m_18c; // 0x18c (byte flag)
@@ -1192,6 +1213,12 @@ SIZE(CWwdGameObjectB, 0x1fc);
 SIZE(CWwdGameObjectC, 0x190);
 SIZE_UNKNOWN(CWwdGameObjectE);
 SIZE(CWwdGameObjectF, 0x18c);
+// Per-variant game-object vtables (slot RVAs = each table's ground truth).
+VTBL(CWwdGameObjectE, 0x001f0020); // ??_7 (Mid base, 16 slots)
+VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (Level2, 16 slots)
+VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
+VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
+VTBL(CWwdGameObjectB, 0x001f00e8); // ??_7 (16 slots, 4-level MI chain)
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);

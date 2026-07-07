@@ -394,3 +394,4 @@ SIZE_UNKNOWN(CAniRecordPool);
 SIZE_UNKNOWN(CAniRecordPrimary);
 SIZE_UNKNOWN(CAniRecordObjBase);
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
+VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)

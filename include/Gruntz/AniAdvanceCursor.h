@@ -26,5 +26,6 @@ public:
     i32 m_28; // +0x28
     i32 m_2c; // +0x2c
 };
+VTBL(CAniAdvanceCursor, 0x001f0128); // ??_7CAniAdvanceCursor@@6B@ (9-slot CLoadable-derived)
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H

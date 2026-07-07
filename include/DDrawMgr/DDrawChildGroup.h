@@ -92,6 +92,7 @@ public:
     virtual void Slot34();                       // +0x34
     virtual void ResetChildD8();                 // +0x38
     virtual void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
+    virtual void Slot40();                       // +0x40  0x159f00 (17th slot)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -108,6 +109,7 @@ public:
 
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(CDDrawGroupChild);
+VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 SIZE_UNKNOWN(CDDrawGroupNode);
 
 // --- vtable catalog ---

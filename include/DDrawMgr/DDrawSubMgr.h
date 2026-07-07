@@ -25,10 +25,15 @@
 
 class CDDrawSubMgr : public Wap::CObject {
 public:
-    virtual i32 IsReady(); // [5] readiness predicate (declared-only, reloc-masked)
+    virtual ~CDDrawSubMgr() OVERRIDE; // slot 1 (SubMgrScalarDtor 0x155720)
+    virtual i32 IsReady();            // slot 5 readiness predicate (declared-only, reloc-masked)
+    virtual void IsValidImage();      // slot 6 @0x001c08 (shared base thunk)
+    virtual void Slot07_155740();     // slot 7 @0x155740
+    virtual void Slot08_154a00();     // slot 8 @0x154a00 (CResolveNode)
 };
 SIZE_UNKNOWN(CDDrawSubMgr);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CDDrawSubMgr, 0x001efc30); // ??_7CDDrawSubMgr@@6B@ (9-slot CObject-derived vtable)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGR_H

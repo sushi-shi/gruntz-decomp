@@ -605,6 +605,7 @@ public:
     i32 Init(CNetSessionDesc* desc);        // 0x1795a0  copy + trim the descriptor
 };
 SIZE(CNetPlayerListNode, 0x58); // AddPlayerNode (NetMgr.cpp 0x1786d0) RezAlloc(0x58)
+VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot CObject-derived)
 
 // ---------------------------------------------------------------------------
 // The session-list node the +0x54 list holds: AddSessionNode (0x178b30,

@@ -92,6 +92,20 @@ public:
 
     virtual void
     VSlot0(); // +0x00 (vptr; not stamped by these methods)  // real polymorphic vptr @+0x00 (was m_vptr)
+    // Slots 1-13 completing the 14-slot 0x5efd88 table (declared-only, reloc-masked).
+    virtual void VSlot1();  // slot 1  scalar-deleting dtor (0x156f30)
+    virtual void VSlot2();  // slot 2  @0x0028ec (base thunk)
+    virtual void VSlot3();  // slot 3  @0x00106e (base thunk)
+    virtual void VSlot4();  // slot 4  @0x004034 (base thunk)
+    virtual i32 VIsReady(); // slot 5  @0x156f00
+    virtual i32 VReadyPred();// slot 6 @0x156fc0
+    virtual void VDtor7();  // slot 7  @0x163bc0
+    virtual void VGetState();// slot 8 @0x156f20
+    virtual void VCreateA();// slot 9  @0x156fd0
+    virtual void VCreateB28();// slot 10 @0x1573e0
+    virtual void VCreateB2C();// slot 11 @0x157330
+    virtual void VCreateB30();// slot 12 @0x157150
+    virtual void VPrune();  // slot 13 @0x163bf0
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b
     CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  (CDDrawSubMgr+0xc; copied into worker m_ctx)
@@ -370,6 +384,7 @@ i32 CDDrawWorkerList::IsReadyPredicate() {
 }
 
 SIZE_UNKNOWN(CDDrawWorkerList);
+VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
 SIZE_UNKNOWN(CDDrawWorkerListSib);
 SIZE_UNKNOWN(WorkerListSibBase);
 SIZE_UNKNOWN(CDDrawWorkerItem);

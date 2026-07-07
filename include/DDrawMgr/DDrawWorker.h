@@ -67,6 +67,7 @@ public:
     i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
     i32 m_68;                  // +0x68
 };
+VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

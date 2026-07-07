@@ -92,6 +92,7 @@ public:
     void BaseDtor();                  // 0x16da60
     void* ScalarDtor(u32 flags);      // 0x16e9c0
 };
+VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 
 // --- vtable catalog ---
 

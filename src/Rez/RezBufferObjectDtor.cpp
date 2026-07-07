@@ -38,6 +38,7 @@ CRezBufferObject::~CRezBufferObject() {
     }
 }
 SIZE_UNKNOWN(CRezBufferObject);
+VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
 SIZE_UNKNOWN(Wap::CObject);
 // ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, vtbl-cluster
 // entry). cl auto-emits it from the real-polymorphic CRezBufferObject; retail's
