@@ -32,6 +32,14 @@
 // arg1 at esp+0x28, never touches ecx), NOT a method on the m_levelInfoSrc receiver.
 i32 __stdcall WwdFile_IsValidWwd(const char* path, void* out);
 
+// The combat-scan grunts are CGrunts; Method_243c @0x243c is CGrunt::CreateHealthSprite.
+// TU-local method-decl (Grunt.h is heavy), cast at the call.
+SIZE_UNKNOWN(CGrunt);
+class CGrunt {
+public:
+    i32 CreateHealthSprite();
+};
+
 namespace m4 {
 
     // -------------------------------------------------------------------------
@@ -124,7 +132,6 @@ namespace m4 {
         i32 m_884;           // +0x884
         i32 m_combatTimeout; // +0x888
         i32 m_88c;           // +0x88c
-        void Method_243c();  // RVA 0x243c
     };
     // Canonical CButeMgr (::CButeMgr); GetDwordDef (0x1721e0) is reloc-masked.
     extern CButeMgr g_buteMgr; // 0x6453d8
@@ -170,7 +177,7 @@ namespace m4 {
                             }
                             Method_29cd(g_644c54, j, 1, 1);
                         } else {
-                            g->Method_243c();
+                            ((::CGrunt*)g)->CreateHealthSprite();
                             g->m_combatTimeout =
                                 g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
                             g->m_88c = 0;
