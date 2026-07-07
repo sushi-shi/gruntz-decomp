@@ -60,6 +60,10 @@ extern "C" void RezFree_call(void* p);
 // Abort @0x17b570). Both views are folded onto the canonical class (the union of
 // field knowledge migrated into MoviePlayer.h).
 #include <Io/MoviePlayer.h>
+class CPageStore17b510 {
+public:
+    void Close();
+};
 
 // @early-stop
 // Complete + correct (~98%). Residual is two documented walls: (1) the /GX EH
@@ -281,7 +285,7 @@ i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
     }
-    m_540.Abort();
+    ((CPageStore17b510*)&m_540)->Close();
     if (!m_smackHandle) {
         return 0;
     }

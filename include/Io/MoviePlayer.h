@@ -67,10 +67,10 @@ struct CMovieDecodeStore {
     CMovieByteArray m_138; // +0x138  decode CByteArray
     char m_pad139[0x200 - 0x139];
 
-    i32 Begin();      // 0x17b510  prepare/probe (returns nonzero on ready)
-    i32 OpenA(i32 a); // 0x17b5f0  open low-res source
-    void Abort();     // 0x17b570  tear down the active decode
-    i32 OpenB(i32 a); // 0x17b840  open high-res source
+    // Begin @0x17b510 IS CPageStore17b510::Init; cast at the call.
+    // OpenA @0x17b5f0 IS CFecFile::ReadArchive; cast at the call.
+    // Abort @0x17b570 IS CPageStore17b510::Close; cast at each call.
+    // OpenB @0x17b840 IS CPageStore17b510::Lookup; cast at the call.
     ~CMovieDecodeStore();
 };
 

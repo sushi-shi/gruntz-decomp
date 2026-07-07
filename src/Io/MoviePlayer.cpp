@@ -1,6 +1,16 @@
 #include <rva.h>
 #include <Io/MoviePlayer.h>
 #include <Mfc.h> // /GX EH-frame helpers
+class CPageStore17b510 {
+public:
+    i32 Init();
+    void Close();
+    i32 Lookup(unsigned int i);
+};
+class CFecFile {
+public:
+    i32 ReadArchive(const char* n);
+};
 // MoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
 // movie/stream decode object (placeholder name; see include/Io/MoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
@@ -20,20 +30,20 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (m_active == 0) {
         return 0;
     }
-    if (!m_540.Begin()) {
+    if (!((CPageStore17b510*)&m_540)->Init()) {
         return 0;
     }
-    if (!m_540.OpenA(a1)) {
-        m_540.Abort();
+    if (!((CFecFile*)&m_540)->ReadArchive((const char*)a1)) {
+        ((CPageStore17b510*)&m_540)->Close();
         return 0;
     }
-    i32 hi = m_540.OpenB(a2);
+    i32 hi = ((CPageStore17b510*)&m_540)->Lookup((unsigned int)a2);
     if (!hi) {
-        m_540.Abort();
+        ((CPageStore17b510*)&m_540)->Close();
         return 0;
     }
     if (!OpenHi(hi, a3, a4, a5, a6)) {
-        m_540.Abort();
+        ((CPageStore17b510*)&m_540)->Close();
         return 0;
     }
     return 1;
@@ -78,7 +88,7 @@ inline CMovieScratch::~CMovieScratch() {
 // CFile/CByteArray members destruct (reverse declaration order). Inline so the
 // worker dtor folds it.
 inline CMovieDecodeStore::~CMovieDecodeStore() {
-    Abort();
+    ((CPageStore17b510*)this)->Close();
 }
 
 // ===========================================================================
