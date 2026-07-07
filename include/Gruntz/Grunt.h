@@ -1847,6 +1847,9 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 // CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
 // that scales the first two args to tile pixel coords (*0x20+0x10) and forwards
 // all six to an engine helper. External callee reloc-masks.
+void GruntRecycleCoords(
+    CGrunt* g
+); // 0x343f0 coord-recycle (GridUnit::RecycleCoords is the matched view-named twin)
 i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 // The engine tile-switch helper TileSwitch forwards to (__stdcall ret 0x18).
 i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);

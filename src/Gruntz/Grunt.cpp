@@ -5174,7 +5174,7 @@ static i32 GruntTileFlags(i32 tx, i32 ty) {
 
 // Recycle a grunt's occupied-coord list onto the shared freelist, then empty the
 // CObList in place. Head = unit+0x320, count gate = unit+0x328.
-static void GruntRecycleCoords(CGrunt* g) {
+void GruntRecycleCoords(CGrunt* g) {
     GruntCoordNode* n = g->m_320;
     while (n != 0) {
         GruntCoordNode* cur = n;
