@@ -9,7 +9,7 @@
 // +0x00 are plain DATA flags (Abort `cmp [this],0 / mov [this],0` - compared and
 // zeroed, never dispatched; the /GX dtor 0x38fc0 stamps NO whole-object vptr).
 // Only the +0x868c scratch embed is genuinely polymorphic (real dtor stamps
-// 0x5e971c/0x5e8cb4) - realized below as CMovieScratch : Wap::CObject.
+// 0x5e971c/0x5e8cb4) - realized below as CMovieScratch : CObject.
 // Offsets + emitted bytes are the load-bearing fact; field names are placeholders.
 //
 // Reconstructed across two units (separate retail TUs):
@@ -26,7 +26,7 @@
 #include <Mfc.h> // MFC CFile/CByteArray (the movie file + decode-buffer dtors)
 #include <Ints.h>
 #include <rva.h>          // OVERRIDE / VTBL / SIZE macros
-#include <Wap32/Object.h> // Wap::CObject - the scratch embed's polymorphic grand-base
+#include <Wap32/Object.h> // CObject - the scratch embed's polymorphic grand-base
 
 struct SmackTag;           // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
 struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
@@ -75,16 +75,15 @@ struct CMovieDecodeStore {
 };
 
 // The Rez-owned scratch embed at worker+0x868c: REAL polymorphic (ALL-VTABLES).
-// Retail vtable 0x5e971c is the 5-slot Wap::CObject shape with two own slots -
+// Retail vtable 0x5e971c is the 5-slot CObject shape with two own slots -
 // slot 1 dtor (thunk 0x4040f7) + slot 2 override (thunk 0x401e56); slots 0/3/4
 // inherited (0x5bef01/0x40106e/0x404034, == the grand-base's). Deriving
-// Wap::CObject makes cl emit the dtor's own-vtable stamp at entry and the
+// CObject makes cl emit the dtor's own-vtable stamp at entry and the
 // grand-base restamp (masks 0x5e8cb4) at exit - the exact retail stamp pair the
 // old manual `m_vptr = &g_*Vtbl` stores hand-rolled. Slot 2 is declared-only
 // (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
-struct CMovieScratch : public Wap::CObject {
+struct CMovieScratch : public CObject {
     virtual ~CMovieScratch();          // slot 1 override (retail thunk 0x4040f7)
-    virtual void Serialize() OVERRIDE; // slot 2 override (retail thunk 0x401e56; declared-only)
 
     void* m_4; // +0x04 (worker+0x8690)  Rez-owned buffer
 };

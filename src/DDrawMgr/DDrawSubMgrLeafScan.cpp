@@ -122,7 +122,7 @@ struct LeafRootHandle {
 // element cleanup edge). Same shape as LeafScanBase / CResolveNode.
 // NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
+// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 struct LeafElementBase {
     virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
@@ -149,7 +149,7 @@ inline LeafElementBase::~LeafElementBase() {
 // auto-fires (reset +0x04/+0x08/+0x0c + implicit grand-base re-stamp). Configure
 // (0x158760) loads + acquires the element's buffer; Release (0x1587c0) frees it (both
 // non-virtual __thiscall members reached only from the element).
-struct LeafElementObj : public Wap::CObject { // was : LeafElementBase (merged intermediate)
+struct LeafElementObj : public CObject { // was : LeafElementBase (merged intermediate)
     i32 m_04, m_08, m_0c;                     // +0x04..0x0f (from merged LeafElementBase)
     virtual void LeafSlot5_158650();          // [5] 0x158650 (declared-only)
     virtual void IsValidImage();              // [6] 0x001c08 (shared thunk, declared-only)

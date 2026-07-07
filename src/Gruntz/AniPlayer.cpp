@@ -15,13 +15,8 @@
 
 #include <Win32.h> // timeGetTime
 
-// The cel-map holder's +0x10 map is an MFC CMapStringToPtr (Lookup @0x1b8008); minimal local
-// decl (Win32 TU, no <Mfc.h>); const to match the MFC QBE mangling; links from MFC.
-SIZE_UNKNOWN(CMapStringToPtr);
-class CMapStringToPtr {
-public:
-    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
-};
+// The cel-map holder's +0x10 map is the real MFC CMapStringToPtr (Lookup @0x1b8008,
+// brought in via <Mfc.h>); no local view.
 
 // The CMap embedded at (seq->m_10 + 0x10); Lookup(key, &out) -> bool, writing
 // the AniCelTable* into out. __thiscall on the map; reloc-masked.

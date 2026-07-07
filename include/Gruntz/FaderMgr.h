@@ -19,23 +19,22 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared CObject-like grand-base
+#include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
 #include <Gruntz/Fader.h> // the real polymorphic CFader element base (virtual ~CFader)
 
-// The growable element-array subobject (lives at manager +0x10). A Wap::CObject-derived
+// The growable element-array subobject (lives at manager +0x10). A CObject-derived
 // polymorphic node: its own vftable (@0x5f0790, uncatalogued -> unpaired ??_7CFaderArray)
 // overrides the grand-base dtor (slot 1, retail 0x17e430) and slot 2 (retail 0x17e2a0);
-// slots 0/3/4 come from Wap::CObject via inheritance. cl stamps ??_7CFaderArray vptr-first
-// in the ctor and folds the ~Wap::CObject grand-base restamp (masks 0x5e8cb4) into the
+// slots 0/3/4 come from CObject via inheritance. cl stamps ??_7CFaderArray vptr-first
+// in the ctor and folds the ~CObject grand-base restamp (masks 0x5e8cb4) into the
 // dtor - no manual stamp. Layout mirrors a CPtrArray: m_pData(+0x04), m_nSize(+0x08),
 // m_nMaxSize(+0x0c), m_nGrowBy(+0x10). Both ctor/dtor are inlined - as member subobject
 // ctor/dtor - into CFaderMgr's ctor/dtor (the dtor's /GX EH frame comes from the
 // member teardown). The grow logic (SetAtGrow) is inlined by Add.
 SIZE_UNKNOWN(CFaderArray);
 VTBL(CFaderArray, 0x001f0790); // own vftable @0x5f0790 (uncatalogued -> ??_7CFaderArray)
-struct CFaderArray : public Wap::CObject {
+struct CFaderArray : public CObject {
     virtual ~CFaderArray() OVERRIDE;   // slot 1 (retail dtor 0x17e430)
-    virtual void Serialize() OVERRIDE; // slot 2 (retail 0x17e2a0)
 
     CFader** m_pData; // +0x04 (manager +0x14)
     i32 m_nSize;      // +0x08 (manager +0x18)
@@ -54,7 +53,7 @@ inline CFaderArray::CFaderArray() {
     m_nSize = 0;
 }
 
-// Free m_pData; cl folds the own vptr stamp (entry) + the ~Wap::CObject grand-base
+// Free m_pData; cl folds the own vptr stamp (entry) + the ~CObject grand-base
 // restamp (masks 0x5e8cb4) around it.
 inline CFaderArray::~CFaderArray() {
     if (m_pData) {

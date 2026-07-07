@@ -1,4 +1,4 @@
-// WapObj.h - the WAP engine's abstract intermediate base between Wap::CObject
+// WapObj.h - the WAP engine's abstract intermediate base between CObject
 // (the 5-slot grand-base, vtable @0x5e8cb4) and the surface/image/loadable game
 // objects. vtable_hierarchy --tree/--audit proves it: EVERY object in the
 // CImage / CLoadable / CDDrawWorker / CDrawSubWorker / CResolveNode /
@@ -18,14 +18,14 @@
 //
 // ABSTRACT - never instantiated, so cl emits NO ??_7CWapObj. As a middle class in
 // single inheritance its subobject-dtor vptr re-stamp (to a would-be ??_7CWapObj)
-// is a DEAD STORE - immediately overwritten by ~Wap::CObject's grand-base stamp
+// is a DEAD STORE - immediately overwritten by ~CObject's grand-base stamp
 // (0x5e8cb4) with no intervening vptr read - so MSVC5 /O2 dead-store-eliminates it.
 // Net: a CWapObj-derived dtor keeps retail's exact TWO vptr stamps (own ??_7 then
 // the grand-base 0x5e8cb4), and no CWapObj vtable is ever materialised. Deriving
 // classes declare ONLY their own further virtuals + overrides; slots 0..4 come from
-// Wap::CObject and slots 5/6 from here, never re-declared.
+// CObject and slots 5/6 from here, never re-declared.
 //
-// CWapObj adds no data members of its own: sizeof == sizeof(Wap::CObject) == 4
+// CWapObj adds no data members of its own: sizeof == sizeof(CObject) == 4
 // (the shared vptr). A derived class's own fields therefore begin at +0x04 (the
 // three-word +0x04/+0x08/+0x0c header some siblings reset in their dtors is owned
 // by the derived class / a further intermediate, not here). Field names elsewhere
@@ -35,11 +35,11 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/Object.h> // Wap::CObject - the 5-slot engine grand-base (vtbl 0x5e8cb4)
+#include <Wap32/Object.h> // CObject - the 5-slot engine grand-base (vtbl 0x5e8cb4)
 
 // Abstract intermediate: sizeof == 4 (inherited vptr only, no own fields).
 SIZE(CWapObj, 0x04);
-class CWapObj : public Wap::CObject {
+class CWapObj : public CObject {
 public:
     // slot 5 (@+0x14) default @0x0013b6: `return m_10 > 0`. Derived classes
     // (CLoadable::IsLoaded, CGameLevel::IsLoaded, ...) override; CImage keeps it.

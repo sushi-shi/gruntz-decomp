@@ -79,10 +79,10 @@ struct WorkNode {
 // methods occupy lower vtable slots (their slot numbers are not load-bearing;
 // only their bodies are matched), so they are placed last.
 // ---------------------------------------------------------------------------
-// 14-slot vtable 0x5efd88: slots 0-4 are the shared Wap::CObject base thunks
+// 14-slot vtable 0x5efd88: slots 0-4 are the shared CObject base thunks
 // (0x1bef01 / 0x0028ec / 0x00106e / 0x004034), slot 1 the scalar-deleting dtor,
 // slots 5-13 the list's own virtuals (declared-only, reloc-masked).
-class CDDrawWorkerList : public Wap::CObject {
+class CDDrawWorkerList : public CObject {
 public:
     virtual ~CDDrawWorkerList() OVERRIDE; // slot 1 (dtor 0x163bc0 / ??_G 0x156f30)
     virtual i32 VIsReady();       // slot 5  @0x156f00

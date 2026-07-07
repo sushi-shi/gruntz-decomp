@@ -136,7 +136,7 @@ void CDDWorkerFlatA::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 // @early-stop
 // redundant-store + scheduling wall (~90%): mirror of CDDWorkerFlatA::Reset (m_78 here
@@ -154,7 +154,7 @@ void CDDWorkerFlatB::Reset() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // ---------------------------------------------------------------------------

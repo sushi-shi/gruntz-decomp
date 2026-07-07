@@ -2,7 +2,7 @@
 // class is the "tomalla-64" cluster the matched CWwdSpatialMgr holds three
 // of). Abstract base: vtable @ 0x5f0328, scalar-deleting dtor @ vtbl+4, a pure
 // virtual callback @ vtbl+0x14 invoked per object found inside a query rect.
-// Derives from the engine Wap::CObject base (g_wapObjectDtorVtbl @ 0x5e8cb4).
+// Derives from the engine CObject base (g_wapObjectDtorVtbl @ 0x5e8cb4).
 //
 // The grid covers a world rectangle [minX,minY]..[maxX,maxY] split into cells of
 // 2^shift size; each cell is an 8-byte intrusive doubly-linked list head
@@ -15,7 +15,7 @@
 #define GRUNTZ_WWDGRID_H
 
 #include <Ints.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h> // CObject - the shared engine grand-base
 #include <rva.h>
 
 struct BucketHead;
@@ -51,18 +51,18 @@ struct BucketHead {
     void Unlink_1391e0(WwdRegion* node);
 };
 
-// The Wap::CObject engine base (CObject-like, vtable @0x5e8cb4): the implicit vptr
+// The CObject engine base (CObject-like, vtable @0x5e8cb4): the implicit vptr
 // @+0x00 + the 5-slot CObject-style interface (GetRuntimeClass/dtor/Serialize/
 // AssertValid/Dump -> the shared sub_1bef01/scalar-dtor/sub_0028ec/sub_00106e/
 // sub_004034). Real polymorphic: the empty inline virtual dtor makes cl emit the
-// implicit ??_7Wap::CObject grand-base re-stamp (reloc-masks 0x5e8cb4) folded into
+// implicit ??_7CObject grand-base re-stamp (reloc-masks 0x5e8cb4) folded into
 // every leaf dtor, and the destructible base subobject gives ~CWwdGrid its /GX
 // frame. The 4 non-dtor virtuals live in sibling TUs (declared, reloc-masked).
 // NO VTBL: ??_7Wap@@CObject masks the SHARED CObject vtable @0x5e8cb4 (already
 // bound as g_wapObjectDtorVtbl in reconbatch2) - a per-class VTBL would dup-DATA.
-// The grand-base is Wap::CObject (Wap32/Object.h).
+// The grand-base is CObject (Wap32/Object.h).
 
-// CWwdGrid derives from Wap::CObject. Real polymorphic now: the ctor gets the
+// CWwdGrid derives from CObject. Real polymorphic now: the ctor gets the
 // implicit ??_7CWwdGrid vptr stamp, ~CWwdGrid the implicit stamp-first re-stamp,
 // and the per-object query callback is the pure virtual OnFound at slot 5 (vtbl
 // +0x14, == retail's __purecall slot). cl emits ??_7CWwdGrid (slot relocs mask
@@ -70,7 +70,7 @@ struct BucketHead {
 // datum (0x1f0328 was unbound). Exact size 0x44 (grid-setup RezAlloc(0x44) x3).
 SIZE(CWwdGrid, 0x44);
 VTBL(CWwdGrid, 0x001f0328); // ??_7CWwdGrid@@6B@ (6-slot CObject-derived vtable)
-class CWwdGrid : public Wap::CObject {
+class CWwdGrid : public CObject {
 public:
     // ctor: build the grid over rect (x0,y0,x1,y1) with cell sizes cellW/cellH.
     CWwdGrid(i32 x0, i32 y0, i32 x1, i32 y1, i32 cellW, i32 cellH);

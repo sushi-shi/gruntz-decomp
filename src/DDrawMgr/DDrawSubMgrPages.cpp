@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - real base for the "A" spawned child
+#include <Wap32/WapObj.h> // CWapObj : CObject - real base for the "A" spawned child
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
 #include <DDrawMgr/DDrawSubMgrPages.h> // THE single-source CDDrawSubMgrPages shape (23-slot vtable)
@@ -109,7 +109,7 @@ CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    // implicit ~CWapObj -> ~Wap::CObject folds the grand-base re-stamp (0x5e8cb4) last.
+    // implicit ~CWapObj -> ~CObject folds the grand-base re-stamp (0x5e8cb4) last.
 }
 
 // ---------------------------------------------------------------------------

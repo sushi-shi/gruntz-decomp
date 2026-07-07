@@ -34,7 +34,7 @@ inline CWwdSpatialMgr::~CWwdSpatialMgr() {
     // +0x70 secondary-base vptr restamp dropped (MI; manual stamp removed, % ok)
 }
 
-class CDDrawWorkerHost : public Wap::CObject {
+class CDDrawWorkerHost : public CObject {
 public:
     CDDrawWorkerHost(i32 owner, i32 field04, i32 field08); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE;                  // slot 1 (scalar-deleting dtor)

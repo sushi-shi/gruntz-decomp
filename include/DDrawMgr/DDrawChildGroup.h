@@ -70,13 +70,13 @@ struct CDDrawGroupNode {
 // they are placed first; the slot sequence from +0x1c through +0x3c is
 // padded around the real virtuals so each lands at the correct offset.
 // ---------------------------------------------------------------------------
-class CDDrawChildGroup : public Wap::CObject { // slots 0/2/3/4 = CObject base thunks
+class CDDrawChildGroup : public CObject { // slots 0/2/3/4 = CObject base thunks
 public:
     i32 IsReady();
     void WalkDispatch34(i32 a1, i32 a2, i32 a3);
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
-    // Slots 0/2/3/4 inherited from Wap::CObject (base thunks). Own slots below:
+    // Slots 0/2/3/4 inherited from CObject (base thunks). Own slots below:
     virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
     virtual void Slot14();                       // +0x14  slot 5
     virtual void Slot18();                       // +0x18

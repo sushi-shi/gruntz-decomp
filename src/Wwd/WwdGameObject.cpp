@@ -7,7 +7,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <Wap32/Object.h>                 // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>                 // CObject - the shared engine grand-base
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
 // WwdGameObject.cpp - leaf methods of CWwdGameObject, a runtime "plane object"
 // deserialized from WWD level data (constructed by WwdFile::ReadPlaneObjects,
@@ -805,16 +805,16 @@ SIZE_UNKNOWN(WwdSurface);
 // (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md): a base CWwdGameObject
 // "Mid" level (vtable 0x5f0020) owns the four polymorphic worker pointers, a CString
 // name (+0xdc), and two RAII sentinel-handle members (EdgeA/EdgeB) whose call-free
-// dtors clear the base fields; its grand-base Wap::CObject (vtable 0x5e8cb4) just
+// dtors clear the base fields; its grand-base CObject (vtable 0x5e8cb4) just
 // re-stamps. The thin factory variants A/C/F derive from Mid (each with its own
 // most-derived vtable) and re-run the worker pass before folding Mid. cl emits the
 // per-level vptr re-stamps + /GX trylevel chain; the stamps reloc-mask against the
 // retail engine vtables. Field names are placeholders; only offsets + code bytes
 // are load-bearing.
 
-// The teardown grand-base is Wap::CObject (the SAME class as the flat model's MFC
+// The teardown grand-base is CObject (the SAME class as the flat model's MFC
 // CObject - one ??_7CObject@0x1e8cb4, VA 0x5e8cb4). The EH dtors intentionally use
-// the Wap::CObject reconstruction rather than the real <Mfc.h> CObject because its
+// the CObject reconstruction rather than the real <Mfc.h> CObject because its
 // INLINE empty dtor folds into each derived dtor's vptr re-stamp (call-free); the
 // real MFC ~CObject is out-of-line in NAFXCW, so cl would emit a CALL and break the
 // fold. (The non-dtor flat CWwdGameObject has no dtor to fold, so it uses real MFC
@@ -838,9 +838,9 @@ struct WwdName {
 };
 
 // The embedded +0x1a0 command sub-object (B variant). Real polymorphic base
-// (Wap::CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
+// (CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
 // teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
-struct WwdSub : public Wap::CObject {
+struct WwdSub : public CObject {
     virtual ~WwdSub() OVERRIDE {
         ((CDDrawBlitParam*)this)->Reset_15c2c0();
     }
@@ -891,7 +891,7 @@ inline WwdEdgeA::~WwdEdgeA() {
 // A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
 // 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
 // base re-stamp folded in.
-struct WwdSubA : public Wap::CObject {
+struct WwdSubA : public CObject {
     virtual ~WwdSubA() OVERRIDE;
     WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
 };
@@ -904,7 +904,7 @@ inline WwdSubA::~WwdSubA() {
 // workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
 // dtor, then folds EdgeA, EdgeB and the wap-object grand base (groupY + base-vtable stamp).
 // ---------------------------------------------------------------------------
-class CWwdGameObjectE : public Wap::CObject {
+class CWwdGameObjectE : public CObject {
 public:
     virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0 (slot 1 scalar-deleting dtor)
     // Derived game-object slots 5-15 (the shared CWwdGameObject interface; slot RVAs
@@ -1067,7 +1067,7 @@ struct WwdObList {
 // Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
 // CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
-struct WwdBResolve : public Wap::CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
+struct WwdBResolve : public CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
     virtual ~WwdBResolve() OVERRIDE;       // slot 1
     void DtorBase();                       // 0x429b
     i32 m_04;                              // +0x04
@@ -1248,7 +1248,7 @@ VTBL(CWwdGameObjectB, 0x001f00e8); // ??_7 (16 slots, 4-level MI chain)
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);
-SIZE_UNKNOWN(Wap::CObject);
+SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(WwdSub);
 SIZE_UNKNOWN(WwdSubA);
 SIZE_UNKNOWN(WwdWorker);

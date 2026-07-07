@@ -10,7 +10,7 @@
 //   0x152e30  ~CAniElement (stamp own vtbl, DeleteAll, ~CObArray member, base)
 //   0x165730  DeleteAll        (delete every owned element, free m_buf, RemoveAll)
 //
-// The Wap::CObject base subobject + the destructible CObArray member (m_records)
+// The CObject base subobject + the destructible CObArray member (m_records)
 // give the dtor its /GX EH frame (the manual-vptr siblings can only reach the
 // no-frame plateau; the real base/member model recovers the frame - cf.
 // CWwdGrid::~CWwdGrid @0x1682a0).
@@ -43,22 +43,22 @@ void CAniElement::DeleteAll() {
 
 // ===========================================================================
 // 0x152e30 - ~CAniElement: stamp own vtable, run DeleteAll (the most-derived
-// teardown), then the CObArray member destructs and ~Wap::CObject folds in to
+// teardown), then the CObArray member destructs and ~CObject folds in to
 // restore the grand-base vtable. /GX frame from the destructible base+member.
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CAniElement own-vptr stamp in
 // the ENTRY state (stamp-first, == retail), then DeleteAll, then the member
-// ~CAniRecordArray (trylevel 0) and ~Wap::CObject grand-base re-stamp fold in. /GX frame
+// ~CAniRecordArray (trylevel 0) and ~CObject grand-base re-stamp fold in. /GX frame
 // from the destructible base + member. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00152e30, 0x53)
 CAniElement::~CAniElement() {
     DeleteAll();
-    // m_items.~CAniRecordArray() (trylevel 0) + ~Wap::CObject() (grand-base restore) fold here.
+    // m_items.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(Wap::CObject);
+SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(CAniElement);
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);

@@ -36,7 +36,7 @@ class CParseSource;     // the element's draw-source (BeginParse/EndParse)
 // g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
 // (masks 0x5e8cb4) at the derived dtor's tail - no manual `*(void**)this = &g_*Vtbl`.
 // NAME-AUDIT: maps to RTTI CObject @0x1e8cb4, but KEPT as a real intermediate (carries
-// the m_04/m_08/m_0c header past the bare vptr) - NOT a bare-Wap::CObject fold.
+// the m_04/m_08/m_0c header past the bare vptr) - NOT a bare-CObject fold.
 // ---------------------------------------------------------------------------
 class LeafScanBase {
 public:

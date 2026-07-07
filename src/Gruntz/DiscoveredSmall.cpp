@@ -5,7 +5,7 @@
 // ctors / inits / free-list ops / a key-compare helper.
 #include <Mfc.h> // real MFC CString (embedded name member; ~CString @0x1b9cde)
 #include <Ints.h>
-#include <Wap32/Object.h> // Wap::CObject grand-base (real virtual dtor)
+#include <Wap32/Object.h> // CObject grand-base (real virtual dtor)
 #include <rva.h>
 #include <Gruntz/FreeNodePool.h> // canonical FreeNodePool (Push + fields)
 
@@ -124,12 +124,12 @@ void DualBufferOwner::FreeBuffers() {
 // WapObjBase @0x1591b0 - wap-object base init: seed m_4=-1, zero m_8/m_c/m_10,
 // stamp the grand-base dtor vptr. A void METHOD (keeps this in ecx, eax=0; no
 // mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
-// TERMINAL manual stamp (not convertible to `: public Wap::CObject`): this is a
+// TERMINAL manual stamp (not convertible to `: public CObject`): this is a
 // standalone void re-init method, not a ctor, so the store IS retail's own body -
 // cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(WapObjBase);
-class WapObjBase : public Wap::CObject {
+class WapObjBase : public CObject {
 public:
     void BaseInit();
     i32 m_4;
@@ -143,7 +143,7 @@ void WapObjBase::BaseInit() {
     m_10 = 0;
     m_8 = 0;
     m_c = 0;
-    // base vptr auto-stamped via Wap::CObject (retail's manual stamp dropped, % ok)
+    // base vptr auto-stamped via CObject (retail's manual stamp dropped, % ok)
 }
 
 // ---------------------------------------------------------------------------

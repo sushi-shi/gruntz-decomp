@@ -1,4 +1,4 @@
-#include <Wap32/Object.h> // Wap::CObject grand-base (real virtual dtor)
+#include <Wap32/Object.h> // CObject grand-base (real virtual dtor)
 #include <rva.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameModeBase.h>
@@ -321,10 +321,10 @@ void Forward_115630() {
 // ===========================================================================
 // 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
 // (g_wapObjectDtorVtbl) into [this]. TERMINAL manual stamp (not convertible to
-// `: public Wap::CObject`): this 7-byte fn IS the entire retail restamp - there is
+// `: public CObject`): this 7-byte fn IS the entire retail restamp - there is
 // no ctor for cl to fold an auto-stamp into, and Obj_11e8dc is a placeholder.
 // ===========================================================================
-struct Obj_11e8dc : Wap::CObject {};
+struct Obj_11e8dc : CObject {};
 RVA(0x0011e8dc, 0x7)
 // ===========================================================================
 // 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit

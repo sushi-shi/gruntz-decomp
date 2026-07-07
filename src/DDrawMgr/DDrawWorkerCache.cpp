@@ -80,7 +80,7 @@ void operator delete(void*);
 // cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrGrandBase.
 // NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
+// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 // ---------------------------------------------------------------------------
@@ -92,7 +92,7 @@ SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 // thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
 // leaf virtuals (declared-only, reloc-masked), slot 8 = GetStateId
 // (0x1576f0) and slot 9 = CreateWorker (0x1652c0). cl auto-emits the vtable.
-class CDDrawWorkerCache : public Wap::CObject {
+class CDDrawWorkerCache : public CObject {
 public:
     i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned below)

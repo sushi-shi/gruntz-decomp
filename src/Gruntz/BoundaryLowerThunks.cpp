@@ -284,7 +284,7 @@ void StrFreebd7f0() {
 // 0x0d5d70 - init/restamp: seed members (+0x04 = -1, +0x08/+0x0c = 0) then stamp
 // the worker-dtor vtable (0x5e8cb4, reuse the pinned name). __thiscall.
 // ===========================================================================
-struct CInitd5d70 : Wap::CObject {
+struct CInitd5d70 : CObject {
     i32 m_4; // +0x04
     i32 m_8; // +0x08
     i32 m_c; // +0x0c
@@ -296,7 +296,7 @@ void CInitd5d70::Init() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
+    // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
 RVA(0x000e17b0, 0x15)

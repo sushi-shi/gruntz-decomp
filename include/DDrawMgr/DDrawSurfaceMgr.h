@@ -5,7 +5,7 @@
 // of the tomalla-named DDraw surface/page-manager family. It is owned off
 // CGruntzMgr+0x30 (RezSync news it), holds one child sub-manager per slot, a foreign
 // Dsndmgr sound stream at +0x20, the surface pool at +0x1c, and a run/config
-// callback at +0x3c. A polymorphic Wap::CObject (implicit vptr @+0x00; the ctor
+// callback at +0x3c. A polymorphic CObject (implicit vptr @+0x00; the ctor
 // 0x155840 stamps ??_7CDDrawSurfaceMgr, the dtor 0x1558b0 restamps the grand base).
 //
 // Field/offset provenance (union of the six former per-TU views, name-preserving):
@@ -45,7 +45,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h> // CObject - the shared engine grand-base
 
 // HWND for the +0x30 window handle. When windows.h has NOT been pulled in (the lean
 // consumers, e.g. GameSave), provide the STRICT (afx-default) incomplete-handle form
@@ -70,7 +70,7 @@ struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 SIZE(CDDrawSurfaceMgr, 0x40);
-class CDDrawSurfaceMgr : public Wap::CObject {
+class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
     virtual ~CDDrawSurfaceMgr() OVERRIDE;

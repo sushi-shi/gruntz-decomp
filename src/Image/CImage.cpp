@@ -386,17 +386,17 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 // ---------------------------------------------------------------------------
 // The virtual destructor. MSVC stamps this class's own vtable
 // (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
-// then the Wap::CObject base subobject dtor folds in (sets m_status=-1, zeroes
+// then the CObject base subobject dtor folds in (sets m_status=-1, zeroes
 // m_08/m_parent, stamps the grand-base dtor vtable). Both vptr stamps are
 // compiler-implicit now, so they land in the retail "stamp-first" order. The /GX EH
-// frame falls out of the non-trivial Wap::CObject subobject.
+// frame falls out of the non-trivial CObject subobject.
 RVA(0x000d5e80, 0x5b)
 CImage::~CImage() {
     FreeAll();
-    m_status = -1; // base-field resets (precede the folded ~Wap::CObject grand stamp)
+    m_status = -1; // base-field resets (precede the folded ~CObject grand stamp)
     m_08 = 0;
     m_parent = 0;
-    // ~Wap::CObject() folds here: emits only the grand-base vptr re-stamp.
+    // ~CObject() folds here: emits only the grand-base vptr re-stamp.
 }
 
 // ---------------------------------------------------------------------------
@@ -458,7 +458,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted: CImage.h is included by several /O2
 // Image TUs whose leaf decoders are byte-exact-sensitive, so keep the completeness
-// typedefs after the last function). VTBL skips (logged): the Wap::CObject base
+// typedefs after the last function). VTBL skips (logged): the CObject base
 // vtable is the shared grand-base 0x5e8cb4 (the CObject dtor vtable); CParseSource is
 // flagged [virtual] only via its polymorphic Gruntz def, not this view. The held surface
 // (CDDSurface) and owned sprite (CDDrawShadeBlit) are annotated in their own headers.

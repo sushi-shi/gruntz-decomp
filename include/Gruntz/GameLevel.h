@@ -155,7 +155,7 @@ enum LoadableClassId {
 // models slot 1 as a REGULAR-virtual `ScalarDtor(u32)` so CGameLevel can OVERRIDE
 // it with an explicit `void* ScalarDtor(u32) OVERRIDE` whose ??_G body is RVA-
 // pinned at 0x1611c0 (100% exact). The canonical CLoadable derives from
-// CWapObj : Wap::CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
+// CWapObj : CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
 // cannot be overridden by a non-dtor `ScalarDtor` in C++; switching CGameLevel to
 // the canonical (A) form would force cl to AUTO-generate the ??_G, which rva.h
 // cannot RVA-pin (it needs a source definition for the @llvm.global.annotations
@@ -189,7 +189,7 @@ public:
         m_04 = -1;
         m_08 = 0;
         m_0c = 0;
-        // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+        // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
     }
     i32 m_04; // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
     i32 m_08; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
@@ -224,7 +224,7 @@ public:
 struct CGameObject;
 struct CGameObjChain;
 
-class CGameLevel : public Wap::CObject {
+class CGameLevel : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged from CLoadable base)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is

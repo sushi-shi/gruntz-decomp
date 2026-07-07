@@ -19,7 +19,7 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
-#include <Wap32/Object.h> // Wap::CObject (recognized 5-slot MFC base)
+#include <Wap32/Object.h> // CObject (recognized 5-slot MFC base)
 #include <rva.h>
 #include <Ints.h>
 
@@ -37,13 +37,12 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h
 // is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
-// MFC vtable hierarchy on Wap::CObject (the recognized 5-slot MFC CObject:
+// MFC vtable hierarchy on CObject (the recognized 5-slot MFC CObject:
 // GetRuntimeClass@0, ~@1, Serialize@2, AssertValid@3, Dump@4). Declared-only
 // virtuals anchor the slot order (NAFXCW bodies reloc-mask).
 SIZE_UNKNOWN(CCmdTarget);
-class CCmdTarget : public Wap::CObject {
+class CCmdTarget : public CObject {
 public:
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
     virtual ~CCmdTarget() OVERRIDE;          // slot 1
     virtual void CtVsl5();                   // slot 5
     virtual void CtVsl6();                   // slot 6
@@ -68,7 +67,6 @@ SIZE_UNKNOWN(CWnd);
 VTBL(CWnd, 0x001eb5c4);
 class CWnd : public CCmdTarget {
 public:
-    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
     virtual ~CWnd() OVERRIDE;                     // slot 1
     virtual void CtVsl6() OVERRIDE;               // slot 6
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
@@ -128,7 +126,6 @@ class CDialog : public CWnd {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
     virtual ~CDialog() OVERRIDE;                  // slot 1
-    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
     virtual void CtVsl5() OVERRIDE;               // slot 5
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl38() OVERRIDE;             // slot 38

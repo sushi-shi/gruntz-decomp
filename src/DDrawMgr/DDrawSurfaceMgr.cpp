@@ -17,7 +17,7 @@
 // e.g. CMapStringToOb in the leaf-scan child). The old "pure-Win32, C1189 wall"
 // note was wrong - afx.h pulls windows.h the afx-first way, so no C1189.
 #include <Mfc.h>
-#include <Wap32/Object.h>             // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>             // CObject - the shared engine grand-base
 #include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
 #include <DDrawMgr/DDrawSubMgr.h>     // generic child base (slot-1 scalar-delete, slot-5 IsReady)
 #include <DDrawMgr/DDrawResolveSubMgr.h>  // real +0x24 child type (SetCoords)
@@ -61,7 +61,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
 // CDDrawSurfaceMgr::~CDDrawSurfaceMgr() (0x1558b0, __thiscall, /GX)
 // Real polymorphic with the CObject base subobject now: cl emits the implicit
 // ??_7CDDrawSurfaceMgr own-vptr stamp in the ENTRY state (stamp-first), runs the
-// owned-child teardown (Cleanup_155e20), then the empty ~Wap::CObject base
+// owned-child teardown (Cleanup_155e20), then the empty ~CObject base
 // folds the implicit grand-base re-stamp last. The destructible base subobject
 // supplies the /GX EH frame. (eh-dtor-implicit-vptr-stamp-first.md /
 // eh-dtor-needs-base-subobject.md.)
@@ -275,12 +275,12 @@ i32 CDDrawSurfaceMgr::Slot34(i32, i32, i32, i32, void*) {
 //     m_pages = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
 //     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
 //     m_workerList = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
-//     m_surfaceDesc = new(0x2c)  Wap::CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
-//     m_workerCache = new(0x2c)  Wap::CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
+//     m_surfaceDesc = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
+//     m_workerCache = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
 //     m_workerMap = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
 //     m_resolveSubMgr = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
-//     m_leafScan = new(0x38)  Wap::CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
-//     m_leaf = new(0x2c)  Wap::CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
+//     m_leafScan = new(0x38)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
+//     m_leaf = new(0x2c)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
 //     m_ptrColl = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
 //     m_soundStream = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
 //   Validate phase: for m_childGroup,m_workerList,m_surfaceDesc,m_workerCache,m_workerMap,m_leaf call child->vslot0x18(); on

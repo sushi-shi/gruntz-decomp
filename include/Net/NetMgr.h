@@ -10,7 +10,7 @@
 //   1. The REAL CNetMgr (RTTI `CNetMgr : CObject`, ??_7 @0x1ea42c, ??1
 //      @0x0b6000): the small DirectPlay wrapper - the +0x14/+0x18 COM
 //      interfaces, the +0x1c/+0x38/+0x54 managed CObLists (exactly what
-//      ~CNetMgr @0xb6000 tears down before the Wap::CObject restamp; it never
+//      ~CNetMgr @0xb6000 tears down before the CObject restamp; it never
 //      touches anything past +0x54), the +0x28/+0x44 counts, the +0x70..+0x84
 //      selection latches, and the 0x178xxx method cluster (Init/Destroy/
 //      Clear*List/Enum*/Add*Node/FindPlayerById/SetData.../Populate*List).
@@ -47,7 +47,7 @@
 
 #include <Ints.h>
 #include <rva.h>          // SIZE_UNKNOWN/VTBL class-metadata macros used below
-#include <Wap32/Object.h> // Wap::CObject - the shared CObject-like grand-base
+#include <Wap32/Object.h> // CObject - the shared CObject-like grand-base
 
 // <Mfc.h> brings <windows.h> USER32 (PostMessageA / Sleep / GetAsyncKeyState - the
 // connect wait polls VK_ESCAPE to abort; HWND / UINT / ...) and the central WINMM
@@ -522,7 +522,7 @@ SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object
 // emitted in this TU.
 //
 // The concrete payloads (CNetPlayerListNode @0x5f0760, CNetSessionNode @0x5f0778,
-// InterfaceObject) are all Wap::CObject-derived, so this base view's two used slots
+// InterfaceObject) are all CObject-derived, so this base view's two used slots
 // carry the CObject-interface identities: slot 0 is CObject::GetRuntimeClass (the
 // shared grand-base slot-0 thunk 0x1bef01, undispatched here) and slot 1 is the
 // per-payload scalar-deleting destructor (the flag-arg self-destruct). SelfDestruct
@@ -555,7 +555,7 @@ struct CNetListNode {
 SIZE_UNKNOWN(CNetListNode); // CObList node walk-view; retail size TBD
 
 // ---------------------------------------------------------------------------
-// Both node types derive from the shared engine grand-base Wap::CObject (RTTI
+// Both node types derive from the shared engine grand-base CObject (RTTI
 // "CObject", 5-slot interface, grand-base vtable @0x5e8cb4). vtable_hierarchy
 // confirms each node's own vtable (0x5f0760 / 0x5f0778) is the CObject interface
 // (slots 0/2/3/4 inherited, slot 1 the destructor override) with no new virtual.
@@ -587,7 +587,7 @@ SIZE(CNetSessionDesc, 0x50); // the 0x50-byte DPSESSIONDESC2
 // trims its name), and AddTail's it onto the +0x38 CObList, caching the returned
 // __POSITION at +0x54.
 // ---------------------------------------------------------------------------
-class CNetPlayerListNode : public Wap::CObject {
+class CNetPlayerListNode : public CObject {
 public:
     CNetSessionDesc m_desc; // +0x04  the deep-copied 0x50-byte DPSESSIONDESC2
                             //        (name/password strdup'd in place at +0x34/+0x38)
@@ -615,7 +615,7 @@ VTBL(CNetPlayerListNode, 0x001f0760); // ??_7CNetPlayerListNode@@6B@ (5-slot COb
 // +0x20, then GetData5's (slot 0x74) the session blob and AddTail's the node onto
 // the +0x54 list.
 // ---------------------------------------------------------------------------
-class CNetSessionNode : public Wap::CObject {
+class CNetSessionNode : public CObject {
 public:
     i32 m_sessionId;      // +0x04
     CString m_8;          // +0x08  name CString
@@ -648,7 +648,7 @@ public:
 SIZE(CNetSessionNode, 0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x24)
 
 // (The shared CObject grand-base dtor vptr @0x5e8cb4 that ~CNetMgr re-installs is no
-// longer a manual stamp: CNetMgr derives from Wap::CObject, whose inline dtor cl folds
+// longer a manual stamp: CNetMgr derives from CObject, whose inline dtor cl folds
 // into ~CNetMgr as the grand-base restamp - see Wap32/Object.h.)
 // PTR_LAB_005f0588 - the QueryInterface riid pointer the Init wrapper (0x178170)
 // hands to slot 0 (a static GUID blob; DIR32 reloc-masked). 0x5f0588.
@@ -812,12 +812,12 @@ struct CNetCreateCtx {
 SIZE_UNKNOWN(CNetCreateCtx);        // create-context view (only +0x74 pinned); retail size TBD
 extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
 
-// CNetMgr derives from the shared Wap::CObject grand-base (Wap32/Object.h): its own
+// CNetMgr derives from the shared CObject grand-base (Wap32/Object.h): its own
 // vtable (??_7CNetMgr@@6B@, 0x1ea42c) overrides only slot 1 (the dtor); slots 0/2/3/4
 // come from inheritance. cl auto-emits the own vptr stamp at ~CNetMgr entry AND folds
-// the Wap::CObject grand-base restamp (masks 0x5e8cb4) at the dtor tail - no manual
+// the CObject grand-base restamp (masks 0x5e8cb4) at the dtor tail - no manual
 // stamp.
-class CNetMgr : public Wap::CObject {
+class CNetMgr : public CObject {
 public:
     virtual ~CNetMgr() OVERRIDE; // slot 1  (dtor; ??1 @0xb6000, ??_G @0x260d thunk)
 

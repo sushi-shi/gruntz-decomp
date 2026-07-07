@@ -13,13 +13,13 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h> // Wap::CObject - the real grand-base these placeholders modelled
+#include <Wap32/Object.h> // CObject - the real grand-base these placeholders modelled
 #include <Gruntz/State.h> // real CState (the state base @0x5ea21c)
 
 // 0x039f20 - ~CWorker39f20 (/GX): derived vtable stamp, RezFree the +0x04 heap
 // buffer, then fold the CObject base subobject. Byte-shape == ~CRezBufferObject.
 struct CWorker39f20
-    : Wap::CObject { // was : WorkerBase39f20 (fake base view; folded to real Wap::CObject)
+    : CObject { // was : WorkerBase39f20 (fake base view; folded to real CObject)
     char* m_4;       // +0x04  heap buffer
     virtual ~CWorker39f20() OVERRIDE;
 };
@@ -28,7 +28,7 @@ SIZE_UNKNOWN(CWorker39f20);
 // 0x08c400 - /GX dtor: derived vtable stamp, run the +0x00 teardown (0x1c6a5c ==
 // CImageList::DeleteImageList, MFC) -> owns an MFC CImageList; then fold the CObject base.
 struct CHolder8c400
-    : Wap::CObject {       // was : WorkerBase8c400 (fake base view; folded to real Wap::CObject)
+    : CObject {       // was : WorkerBase8c400 (fake base view; folded to real CObject)
     void Teardown1c6a5c(); // 0x1c6a5c
     virtual ~CHolder8c400() OVERRIDE;
 };

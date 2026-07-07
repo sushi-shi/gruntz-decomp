@@ -9,12 +9,12 @@
 #include <Ints.h>
 #include <Win32.h>
 #include <rva.h>
-#include <Wap32/Object.h> // Wap::CObject (recognized MFC base)
+#include <Wap32/Object.h> // CObject (recognized MFC base)
 
 struct HWND__; // the strong HWND tag MFC's FromHandle signature mangles in
 
 SIZE_UNKNOWN(CCmdTarget);
-class CCmdTarget : public Wap::CObject {
+class CCmdTarget : public CObject {
 public:
     virtual void CtVsl5();               // slot 5
     virtual void CtVsl6();               // slot 6

@@ -1,5 +1,5 @@
 #include <rva.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (sub-widget CObject prefix)
+#include <Wap32/Object.h> // CObject - the shared engine grand-base (sub-widget CObject prefix)
 // ApiHiCallers.cpp - reconstructed game API-caller methods, the HIGH-RVA half
 // (RVA >= 0x0e0000). Each was classified as GAME (not CRT/MFC-library) and
 // reconstructed against a best-guess
@@ -144,10 +144,10 @@ struct Pt_168080 {
 // is now cl-emitted (??_7SubWidget_168080@@6B@, bound via VTBL below); the INLINE
 // ctor AUTO-stamps the vptr, so `new SubWidget_168080` keeps the retail
 // `operator new(0x44); if (p) { stamp vptr; m_4=0 }` shape. Slots 0/2/3/4
-// (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) come from the Wap::CObject grand-
+// (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) come from the CObject grand-
 // base; slot 1 is the class's own 0x168280 scalar dtor, slot 5 the 0x168060 new
 // virtual - all declared-only -> reloc-masked.
-struct SubWidget_168080 : public Wap::CObject {
+struct SubWidget_168080 : public CObject {
     virtual ~SubWidget_168080() OVERRIDE; // [1] +0x04 0x168280 scalar-deleting dtor
     virtual void s14();                   // [5] 0x168060
     i32 m_4;                              // +0x04

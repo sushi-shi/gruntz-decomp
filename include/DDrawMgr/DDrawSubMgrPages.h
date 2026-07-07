@@ -24,10 +24,10 @@
 // @+0x34); the "m_worker: CDDrawWorkerNode" naming was a mis-derived view (the
 // pointed-to object is the parent, not a standalone worker node) - not migrated.
 //
-// Polymorphic CWapObj (Wap::CObject grand-base): the ctor stamps ??_7CDDrawSubMgrPages
+// Polymorphic CWapObj (CObject grand-base): the ctor stamps ??_7CDDrawSubMgrPages
 // vptr-first and ~CDDrawSubMgrPages folds the grand-base re-stamp (0x5e8cb4) last, cl-
 // emitted - no manual `*(void**)this = &g_*Vtbl` store. The 23-slot own vtable
-// @0x5efe08 (slots 0..4 the Wap::CObject thunks + the auto-generated scalar-deleting
+// @0x5efe08 (slots 0..4 the CObject thunks + the auto-generated scalar-deleting
 // dtor ??_G @0x1574b0, slots 5/6 from CWapObj):
 //   slot 1  (@0x04)  ??_GCDDrawSubMgrPages  0x1574b0  (cl auto-gen; ~dtor is 0x1574d0)
 //   slot 5  (@0x14)  IsLoaded         0x157480  (CWapObj slot-5 override)
@@ -58,7 +58,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-#include <Wap32/WapObj.h>   // CWapObj : Wap::CObject - the real 7-slot grand-base
+#include <Wap32/WapObj.h>   // CWapObj : CObject - the real 7-slot grand-base
 
 class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements

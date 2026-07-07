@@ -5,7 +5,7 @@
 // the shared RGB-format shift globals come from <Gruntz/SpriteRefTable.h> /
 // <DDrawMgr/ShadeTableCache.h>; CShadeTableCache::FindRemove is modeled NO-body so
 // Free()'s `call` reloc-masks.
-#include <Win32.h>
+#include <Mfc.h> // afx-first (superset of Win32.h; the includes below pull MFC collections)
 
 #include <Gruntz/SpriteRefTable.h>
 #include <DDrawMgr/ShadeTableCache.h> // canonical CShadeTableCache (FindRemove @0x14fb80)

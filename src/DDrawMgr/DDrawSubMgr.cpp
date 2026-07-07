@@ -22,7 +22,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (+0x0c parent of the pages child)
 #include <DDrawMgr/DDrawSubMgrPages.h> // single-source CDDrawSubMgrPages (0x158xxx surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (parent's +0x08 broadcast dispatcher)
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - real base for the surface-pair view
+#include <Wap32/WapObj.h> // CWapObj : CObject - real base for the surface-pair view
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
@@ -1296,11 +1296,11 @@ public:
     CQueueProbeData* m_data; // +0x08 -> probed object
 };
 
-// CObject-derived (slots 0..4 the shared thunks + scalar dtor via Wap::CObject);
+// CObject-derived (slots 0..4 the shared thunks + scalar dtor via CObject);
 // slots 5..7 are the object's own - its concrete vtable is not yet identified (the
 // queue producer is unmatched), so they stay placeholders. Probe20 at slot 8 (+0x20)
 // is the only dispatched op (the status probe, 5 == "ready").
-class CQueueProbeData : public Wap::CObject {
+class CQueueProbeData : public CObject {
 public:
     virtual void Slot14();
     virtual void Slot18();
@@ -2269,7 +2269,7 @@ DATA(0x001e8cb4)
 // Real-polymorphic now: the single virtual forces cl to emit ??_7CDrawSubWorker +
 // auto-stamp the vptr in the ctor prologue (was a manual g_drawSubWorkerVtbl store,
 // vptr-middle -> vptr-first regression accepted per the all-vtables mandate).
-struct CDrawSubWorker : public Wap::CObject { // CObject slots 0-4 inherited
+struct CDrawSubWorker : public CObject { // CObject slots 0-4 inherited
     virtual ~CDrawSubWorker() OVERRIDE;       // slot 1 (own dtor override; reloc-masked)
     i32 m_04;                                 // +0x04
     i32 m_08;                                 // +0x08
@@ -2294,7 +2294,7 @@ VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl
 
 // 0x158fb0: DDraw worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
-class CDrawSubWorkerBase : public Wap::CObject {
+class CDrawSubWorkerBase : public CObject {
 public:
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -2308,7 +2308,7 @@ void CDrawSubWorkerBase::Init_158fb0() {
     m_10 = 0;
     m_08 = 0;
     m_0c = 0;
-    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
+    // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
 // 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,

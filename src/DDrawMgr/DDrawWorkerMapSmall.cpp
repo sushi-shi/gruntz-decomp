@@ -113,7 +113,7 @@ public:
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
 // NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
+// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 
 // ---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ public:
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerMapSmall : public Wap::CObject {
+class CDDrawWorkerMapSmall : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
 public:

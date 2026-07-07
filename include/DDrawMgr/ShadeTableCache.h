@@ -20,7 +20,7 @@
 #define GRUNTZ_DDRAWMGR_SHADETABLECACHE_H
 
 #include <rva.h>          // Ints + the OVERRIDE/SIZE/VTBL label macros
-#include <Wap32/Object.h> // Wap::CObject - the MFC-free WAP grand-base (no windows.h dep)
+#include <Wap32/Object.h> // CObject - the MFC-free WAP grand-base (no windows.h dep)
 
 // A 0x10-byte memory-buffer wrapper (the array element). The ctor zeros
 // m_alloc/m_size/m_data; 0x1501a0 Alloc(size,key) frees+reallocs m_data; 0x1503c0
@@ -43,7 +43,7 @@ struct CShadeTable {
 
 // The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a
 // real RTTI class (??_7CShadeTableArray @0x5efb28) that derives from the shared WAP
-// grand-base Wap::CObject (RTTI "CObject", grand-base vtable @0x5e8cb4). Its 5-slot
+// grand-base CObject (RTTI "CObject", grand-base vtable @0x5e8cb4). Its 5-slot
 // vtable is CObject's prefix (GetRuntimeClass / dtor / Serialize / AssertValid / Dump):
 // slots 0/3/4 are inherited, and it overrides slot 1 (dtor 0x150020) + slot 2
 // (Serialize 0x14fe90 = Serialize). dump_target proves the classic 2-level CObject
@@ -51,26 +51,22 @@ struct CShadeTable {
 // elided), the dtor (0x14de50) stamps 0x5efb28 then the CObject-destruction base
 // (0x5e8cb4).
 //
-// Wap::CObject is the MFC-free engine CObject (namespace Wap, no windows.h dependency) -
+// CObject is the MFC-free engine CObject (namespace Wap, no windows.h dependency) -
 // the same grand-base the Net nodes / CGruntzSoundInnerZ derive from - so this header
 // compiles in the PURE-WIN32 includers (LightEffectSetup.cpp pulls <Win32.h> = windows.h
 // FIRST, where <Mfc.h>'s real CObject HARD-ERRORS) as well as the MFC ones. cl inherits
 // the 5 base slots, auto-emits both vtables + auto-stamps/resets the vptr, reproducing
 // retail's exact stamp schedule (the cache ctor/dtor are already 100%).
-struct CShadeTableArray : Wap::CObject {
+struct CShadeTableArray : CObject {
     CShadeTable** m_pData; // +0x04 (cache +0x08)
     i32 m_nSize;           // +0x08 (cache +0x0c)
     i32 m_nMaxSize;        // +0x0c (cache +0x10)
     i32 m_nGrowBy;         // +0x10 (cache +0x14)
 
     CShadeTableArray();
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
-    virtual ~CShadeTableArray() OVERRIDE;    // 0x150020  overrides Wap::CObject dtor slot 1
-    virtual void Serialize()
-        OVERRIDE; // 0x14fe90  overrides CObject Serialize slot 2 (declared-only)
-    virtual void AssertValid() OVERRIDE; // slot 3
-    virtual void Dump() OVERRIDE;        // slot 4
-    void SetSizeGrow(i32 n, i32 grow);   // 0x150040
+    virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides CObject dtor slot 1
+    // slots 0/2/3/4 (GetRuntimeClass/Serialize/AssertValid/Dump) inherited from MFC CObject
+    void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };
 // SIZE/VTBL for CShadeTableArray are kept in ShadeTableCache.cpp (out of this
 // windows.h-adjacent header, whose includers pull the Win32 SIZE struct type).

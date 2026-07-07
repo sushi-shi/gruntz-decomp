@@ -13,9 +13,8 @@
 // Real-polymorphic: cl auto-stamps the vptr (??_7CImageList@@6B@) and emits the
 // 5-slot vtable (retail 0x5ed0e4; declared-only slots reloc-mask). The manual
 // vptr-stamp of the retail vtable was removed per the all-vtables mandate.
-struct CImageList : public Wap::CObject {
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
-    virtual ~CImageList() OVERRIDE;          // slot 1 (slots 2-4 inherit Wap::CObject defaults)
+struct CImageList : public CObject {
+    virtual ~CImageList() OVERRIDE;          // slot 1 (slots 2-4 inherit CObject defaults)
     i32 m_4;                                 // +0x04
     CImageList();
 };
@@ -36,15 +35,12 @@ CImageList::CImageList() {
 // cl 5.0 pointer-bias: `add eax,0x10; inc [eax]` vs retail `inc [eax+0x10]`,
 // not source-steerable (6 spellings x 2 opt levels).
 // ===========================================================================
-// A REAL MFC symbol (AFX_MODULE_THREAD_STATE* AFXAPI AfxGetModuleThreadState(),
-// declared in the internal <afxstat_.h>; AFXAPI == __cdecl on x86, so the 0-arg
-// call bytes are identical). Hand-declared here rather than via <Mfc.h> because
-// this is a lean non-MFC TU (includes only <rva.h>) of tiny @early-stop leaves;
-// pulling the whole MFC/windows.h umbrella in would perturb their fragile codegen.
-extern "C" i32* AfxGetModuleThreadState();
+// The REAL MFC AfxGetModuleThreadState() (AFX_MODULE_THREAD_STATE* AFXAPI, from
+// <Mfc.h> via <Wap32/Object.h>); AFXAPI == __cdecl on x86 so the 0-arg call bytes
+// match. Cast the returned state to i32* to reach the +0x10 counter.
 RVA(0x001c0fa8, 0x9)
 void Bump_1c0fa8() {
-    AfxGetModuleThreadState()[4]++; // [eax + 4*4] = retail inc [eax+0x10]
+    ((i32*)AfxGetModuleThreadState())[4]++; // [eax + 4*4] = retail inc [eax+0x10]
 }
 
 // ===========================================================================

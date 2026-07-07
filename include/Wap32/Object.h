@@ -1,48 +1,24 @@
-// Object.h - Wap::CObject, the WAP engine's CObject grand-base (RTTI name
-// "CObject", vtable RVA 0x1e8cb4 / VA 0x5e8cb4, COL type-descriptor `CObject`).
+// Object.h - the WAP grand-base is MFC's ::CObject (RTTI name "CObject", vtable
+// RVA 0x1e8cb4 / VA 0x5e8cb4, COL type-descriptor `CObject`).
 //
-// This is the ONE authoritative WAP grand-base. The reconstruction previously
-// spread it under ten local aliases - CWapObject plus nine `*Base` shims - which
-// the vtable_hierarchy --name-audit flagged as all mapping to the same RTTI
-// CObject @0x1e8cb4. Every WAP game/engine object derives (directly or through an
-// intermediate base) from this 5-slot interface; its virtual table is the shared
-// grand-base dtor vtable @0x5e8cb4 (named g_wapObjectDtorVtbl elsewhere). Deriving
-// classes specify ONLY their own new virtuals + overrides - the five shared slots
-// come from inheritance, never re-declared. cl auto-emits the derived ??_7 (the
-// ctors stamp it vptr-first) and folds the grand-base vptr re-stamp (masks
-// 0x5e8cb4) into the derived destructor, so no class needs a manual
-// `*(void**)this = &g_*Vtbl` store.
+// The game statically links MFC, so the retail "CObject" @0x1e8cb4 IS MFC's
+// CObject. The reconstruction used to model that one class TWICE - MFC's ::CObject
+// in MFC-including TUs, and a lean 5-slot `Wap::CObject` stand-in in the pure-Win32
+// TUs that avoided the heavy <Mfc.h> umbrella. They were the same class, so the
+// duality is now UNIFIED: there is a single global `CObject` (MFC's), every engine
+// class derives it directly (`: public CObject`), and every TU that needs the
+// grand-base brings <Mfc.h> - which is all this header now does.
 //
-// NAMESPACE: the game statically links MFC, whose global ::CObject would clash
-// (C2011/C2872) with an unqualified engine CObject in the many MFC-including TUs.
-// The engine grand-base therefore lives in `namespace Wap`. The Wap:: qualifier
-// re-mangles the (declared-only, reloc-masked) vtable/method symbols but is
-// matching-neutral: the class is used only as a base, its methods are external,
-// and its emitted ??_7 is an unpaired COMDAT (0x1e8cb4 is named g_wapObjectDtorVtbl
-// in the reconbatch2 unit - no VTBL() here).
-//
-// Slots 0/2/3/4 are the shared CObject-interface ILT jmp-thunks (0x1bef01 /
-// 0x0028ec / 0x00106e / 0x004034); they stay declared-only so the emitted vtable's
-// slot relocs reloc-mask against the retail addresses. Slot 1 is the scalar-
-// deleting destructor. The FUN_<VA> slot names are the usual convention
-// (cf. src/Gruntz/FinalVtables.cpp).
+// COST (accepted - clean-room mandate targets MAX %, not current %): the ~51
+// formerly-lean classes had the inline-empty Wap::~CObject folded into their
+// derived dtors (an inlined grand-base vptr re-stamp); they now inherit MFC's
+// out-of-line ~CObject (NAFXCW), so the folded teardown emits `call ??1CObject`
+// where it used to inline the stamp - a measured % drop, recoverable later (a PCH
+// that brings MFC uniformly may help). This also dissolves every `(::CObject*)`
+// cast that existed only because the two were distinct source types.
 #ifndef WAP32_COBJECT_H
 #define WAP32_COBJECT_H
 
-namespace Wap {
-
-    struct CObject {
-        virtual void GetRuntimeClass(); // slot 0  (0x1bef01)
-        virtual ~CObject();             // slot 1  (base scalar-deleting dtor, 0x17f3 thunk)
-        virtual void Serialize();       // slot 2  (0x0028ec)
-        virtual void AssertValid();     // slot 3  (0x00106e)
-        virtual void Dump();            // slot 4  (0x004034)
-        CObject() {}
-    };
-    // Empty body -> cl emits ONLY the implicit grand-base vptr re-stamp (masks 0x5e8cb4);
-    // folded into a derived dtor it supplies the tail `mov [ecx],offset ??_7CObject`.
-    inline CObject::~CObject() {}
-
-} // namespace Wap
+#include <Mfc.h> // the single ::CObject (MFC, statically linked; RTTI @0x1e8cb4)
 
 #endif // WAP32_COBJECT_H

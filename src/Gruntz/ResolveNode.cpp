@@ -1,7 +1,7 @@
-#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
+#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 #include <rva.h>
 // ResolveNode.cpp - a leaf node in the CDirectDrawMgr surface/page-manager
-// CDDrawSubMgr family (the Wap::CObject base dtor vtable lineage; the base subobject
+// CDDrawSubMgr family (the CObject base dtor vtable lineage; the base subobject
 // vftable g_wapObjectDtorVtbl @0x5e8cb4 is restamped at ~CResolveNode exit). The
 // node's own primary vftable is at RVA 0x1efbc0 (g_resolveNodeVtbl). The node's
 // virtuals are not yet matched, so the vftable is referenced as a reloc-masked
@@ -17,7 +17,7 @@
 //   0x1647e0  Init(a1..a6): seeds fields, dispatches virtual slot 9, returns 1
 
 // ALL-VTABLES mandate: the node is now a REAL polymorphic two-level class. The
-// CObject grand-base (Wap::CObject, 5-slot interface @0x5e8cb4) and the
+// CObject grand-base (CObject, 5-slot interface @0x5e8cb4) and the
 // node's own primary vtable (10-slot @0x5efbc0, mapped ??_7CResolveNode in
 // config/vtable_names.csv) are cl-auto-emitted: the ctors stamp ??_7CResolveNode
 // (vptr-first) and ~CResolveNode folds the ??_7Wap@@CObject grand-base re-stamp
@@ -89,7 +89,7 @@ CResolveNode::~CResolveNode() {
     m_20 = (i32)0x80000000;
     m_38 = -1;
     // ~CLoadable folds here: m_04=-1, m_08=0, m_0c=0, then the grand-base vptr
-    // re-stamp (masks 0x5e8cb4) via ~CWapObj -> ~Wap::CObject.
+    // re-stamp (masks 0x5e8cb4) via ~CWapObj -> ~CObject.
 }
 
 // @early-stop
@@ -136,4 +136,4 @@ i32 CResolveNode::Init(
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CResolveNode);
-SIZE_UNKNOWN(Wap::CObject);
+SIZE_UNKNOWN(CObject);

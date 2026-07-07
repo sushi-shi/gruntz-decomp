@@ -12,7 +12,7 @@
 // placeholders; only offsets + code bytes are load-bearing.
 #include <rva.h>
 
-#include <Win32.h>
+#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 
 #include <DDrawMgr/ShadeTableCache.h>
 

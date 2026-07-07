@@ -5,13 +5,13 @@
 //
 // ONE class, ONE header (folded from the former CAniElement.h + CAniElementCollection.h
 // dual-def). vtable_hierarchy confirms CAniElementObj : CObject vtbl@0x1efba8 (5 slots,
-// slot1 dtor override 0x152e10) - a REAL polymorphic Wap::CObject-derived class. The
+// slot1 dtor override 0x152e10) - a REAL polymorphic CObject-derived class. The
 // frameless-leaf methods (AtChecked/Build/Configure) live in CAniElement.cpp, the /GX
 // LoadFile in CAniElementEh.cpp, and the /GX teardown (~CAniElement/DeleteAll) in
 // CAniElementCollection.cpp - a deliberate frameless/EH TU split, not two objects.
 //
 // Layout (offsets/sizes load-bearing; field NAMES are placeholders):
-//   +0x00  vptr (Wap::CObject grand-base; auto-stamped by cl in the ctor/dtor)
+//   +0x00  vptr (CObject grand-base; auto-stamped by cl in the ctor/dtor)
 //   +0x04  m_flags   i32 flags/tag word
 //   +0x08  m_records CObArray of CObject* frame records (0x14 bytes, +0x08..+0x1b)
 //   +0x1c  m_name    char* name buffer (RezAlloc'd len+2, RezFree'd on teardown)
@@ -23,7 +23,7 @@
 
 #include <Ints.h>
 #include <Mfc.h>                  // CObject / CObArray (real NAFXCW layout)
-#include <Wap32/Object.h>         // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>         // CObject - the shared engine grand-base
 #include <Gruntz/AniRecordView.h> // shared minimal frame-record view (real: CAniRecord)
 #include <rva.h>                  // OVERRIDE
 
@@ -53,7 +53,7 @@ struct CAniSource {
 // CAniRecord (src/Gruntz/AniRecord.cpp); callers dispatch through the shared minimal
 // polymorphic CAniRecordView (include/Gruntz/AniRecordView.h).
 
-class CAniElement : public Wap::CObject {
+class CAniElement : public CObject {
 public:
     virtual ~CAniElement() OVERRIDE;          // 0x152e30 (CAniElementCollection.cpp)
     ::CObject* AtChecked_06b270(i32 i) const; // 0x06b270 (MFC ::CObject array element)

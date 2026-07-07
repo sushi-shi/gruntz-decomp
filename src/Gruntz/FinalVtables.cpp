@@ -57,10 +57,10 @@ VTBL(CVtEmit_1ef7d0, 0x001ef7d0);
 
 // ---------------------------------------------------------------------------
 // 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-derived (slots 0/2/3/4 are the shared
-// Wap::CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
+// CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
 // IsReady/Init/Cleanup -> this is CDDrawSurfaceMgr's own vtable.
 // ---------------------------------------------------------------------------
-struct CVtEmit_1efc58 : Wap::CObject {
+struct CVtEmit_1efc58 : CObject {
     virtual ~CVtEmit_1efc58()
         OVERRIDE;                  // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();        // [5] 0x155f00 = CDDrawSurfaceMgr::IsReady
@@ -86,7 +86,7 @@ VTBL(CVtEmit_1efc58, 0x001efc58);
 // redefined here). CObject-style base thunks at 0/2/3/4. Slots carry the matched
 // CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
 // ---------------------------------------------------------------------------
-struct CVtEmit_1efd28 : Wap::CObject {
+struct CVtEmit_1efd28 : CObject {
     virtual ~CVtEmit_1efd28()
         OVERRIDE;                   // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void Slot05_156dc0();   // [5] 0x156dc0
@@ -124,7 +124,7 @@ SIZE_UNKNOWN(CVtEmit_1efd28);
 // 0x5efd88 (RVA 0x1efd88) - 14 slots. CObject-style, slot 1 dtor 0x156f30.
 // Slots carry the matched CDDrawWorkerList leaf names.
 // ---------------------------------------------------------------------------
-struct CVtEmit_1efd88 : Wap::CObject {
+struct CVtEmit_1efd88 : CObject {
     virtual ~CVtEmit_1efd88()
         OVERRIDE;                    // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();          // [5] 0x156f00 = CDDrawWorkerList::IsReady
@@ -158,7 +158,7 @@ SIZE_UNKNOWN(CVtEmit_1efd88);
 // would need the +offset construction-vtable machinery). CObject-style thunks.
 // Slots carry the matched CDDrawChildGroup/CDDrawSubMgr/CWwdObjMgr leaf names.
 // ---------------------------------------------------------------------------
-struct CVtEmit_1efdc0 : Wap::CObject {
+struct CVtEmit_1efdc0 : CObject {
     virtual ~CVtEmit_1efdc0()
         OVERRIDE;               // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();     // [5] 0x1575e0 = CDDrawChildGroup::IsReady

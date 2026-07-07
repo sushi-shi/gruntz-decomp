@@ -4,7 +4,7 @@
 // DDrawSubMgr.h - the polymorphic child-sub-manager base the CDDrawSurfaceMgr owner
 // stores in its generically-typed slots (m_workerList/m_surfaceDesc/m_workerCache/
 // m_workerMap/m_leaf, +0x0c..+0x18/+0x2c). Every child in retail carries the shared
-// Wap::CObject grand-base 5-slot interface (scalar-deleting dtor at slot 1: the owner
+// CObject grand-base 5-slot interface (scalar-deleting dtor at slot 1: the owner
 // teardown 0x155e20 does `push 1; call [eax+4]` per child) plus a readiness predicate
 // at slot 5 (`call [eax+0x14]`, dispatched by the owner's Init validate phase).
 //
@@ -23,7 +23,7 @@
 #include <Wap32/Object.h> // the 5-slot grand-base (vtable 0x5e8cb4 family)
 #include <rva.h>
 
-class CDDrawSubMgr : public Wap::CObject {
+class CDDrawSubMgr : public CObject {
 public:
     virtual ~CDDrawSubMgr() OVERRIDE; // slot 1 (SubMgrScalarDtor 0x155720)
     virtual i32 IsReady();            // slot 5 readiness predicate (declared-only, reloc-masked)
