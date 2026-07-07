@@ -163,7 +163,9 @@ SIZE(CGruntzMgr, 0xa30);
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();
-    virtual ~CGruntzMgr() OVERRIDE; // vtbl slot 0 (own vftable 0x5e9b64)
+    virtual ~CGruntzMgr() OVERRIDE;             // vtbl slot 0 (own vftable 0x5e9b64)
+    virtual i32 Run(CGameWnd*, char*) OVERRIDE; // slot 1 (declared-only)
+    virtual i32 Wap32GameMgrVfunc3() OVERRIDE;  // slot 3
     // The ??_G scalar-deleting destructor (vtable slot 0 entry the retail vtable
     // holds): run the dtor body, then operator delete when the low flag bit is set;
     // returns this. Modeled by hand (MSVC's own ??_G mangling differs from the retail
@@ -171,11 +173,11 @@ public:
     void* ScalarDeletingDtor(u32 flags); // @0x083330
 
     // Manager-owned methods reconstructed in GruntzMgr.cpp.
-    void Close() OVERRIDE;      // @0x0855e0 (member teardown)
-    void AccrueScoreTime();     // @0x0861e0 (per-state HUD time/score accrual + state push)
-    void OnCheckpointReached(); // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
-    void DelayedQuit();         // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
-    i32 SaveGameAs();           // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
+    virtual void Close() OVERRIDE; // @0x0855e0 (member teardown)
+    void AccrueScoreTime();        // @0x0861e0 (per-state HUD time/score accrual + state push)
+    void OnCheckpointReached();    // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
+    void DelayedQuit();            // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
+    i32 SaveGameAs();              // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
@@ -185,7 +187,7 @@ public:
     i32 CaptureWorldFile();
     i32 InitializeLobbyConnectionSettings();   // @0x08eca0 (DirectPlay lobby connect)
     CString BuildMoviePath(i32 movie);         // @0x08ff30 (per-movie path on the CD)
-    void PerFrameTick();                       // @0x08f620 (per-frame draw-clock tick)
+    virtual void PerFrameTick() OVERRIDE;      // @0x08f620 slot 4 (per-frame draw-clock tick)
     void AdvanceFrame(i32 doDraw, i32 unused); // @0x08f6a0 (the per-frame advance gate)
     i32 CheckPlayState();                      // @0x08ec50 (m_curState->Update()==3||==0x11)
     i32 RestoreVideoMode(i32 save);            // @0x08ddd0 (re-assert 640x480; save on hit)
@@ -320,7 +322,7 @@ public:
 
     // The WM_COMMAND / accelerator + cheat-code dispatcher (the binary's single
     // largest function; body in GruntzMgrCmd.cpp).
-    i32 HandleCommand(i32 p1, i32 nID, i32 p3); // @0x0862f0
+    virtual i32 HandleCommand(i32 p1, i32 nID, i32 p3) OVERRIDE; // @0x0862f0 slot 5
     // Shell-launch the given URL in the default browser (0x8038 handler sibling).
     void LaunchWebBrowser(const char* url); // @0x08f120 (thunk 0x235b)
 

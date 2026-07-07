@@ -126,8 +126,8 @@ namespace WAP32 {
         virtual i32 Run(CGameWnd* pGameWnd, char* szCmdLine); // +0x04 idx1
         virtual void Close();                                 // +0x08 idx2
         virtual i32 Wap32GameMgrVfunc3();                     // +0x0c idx3 (active? gate)
-        virtual void Tick();                                  // +0x10 idx4  per-frame tick
-        virtual void Wap32GameMgrVfunc5();                    // +0x14 idx5
+        virtual void PerFrameTick();                          // +0x10 idx4  per-frame tick
+        virtual i32 HandleCommand(i32, i32, i32);             // +0x14 idx5
 
         // Non-virtual ctor helpers (called directly from the ctor / Run).
         void InitTimeFields(i32 reset); // @0x13de70

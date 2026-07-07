@@ -378,7 +378,7 @@ Fail:
 RVA(0x0013dc70, 0x1d)
 void CGameApp::OnIdle() {
     if (m_appActive && m_running) {
-        m_gameMgr->Tick();
+        m_gameMgr->PerFrameTick();
     }
 }
 
@@ -403,8 +403,10 @@ void CGameApp::FreeGameManager() {
 i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
     return 0;
 }
-void WAP32::CGameMgr::Tick() {}
-void WAP32::CGameMgr::Wap32GameMgrVfunc5() {}
+void WAP32::CGameMgr::PerFrameTick() {}
+i32 WAP32::CGameMgr::HandleCommand(i32, i32, i32) {
+    return 0;
+}
 
 // -------------------------------------------------------------------------
 // CGameMgr::CGameMgr()  (__thiscall, returns this in EAX; vftable @0x5e9b8c)
