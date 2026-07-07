@@ -122,11 +122,23 @@ extern i32 VTrigLogic_11a700();
 // (0x11b3b0, via the 0x39f4 thunk) fires the voice cue on it. Both __thiscall,
 // modeled NO-body so the calls reloc-mask.
 struct CVoiceHit; // the entity QueryAt returns
+namespace m4 {
+    struct HitGrunt;
+    struct HitTileRect;
+    class GruntHitMgr {
+    public:
+        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
+    };
+} // namespace m4
+class CGruntSpawnConfig {
+public:
+    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);
+};
 struct CVoiceSink {
     // QueryAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
-    CVoiceHit* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32* z); // 0x75c60
+    // QueryAt IS m4::GruntHitMgr::FindGruntAt; cast at the call.
     // CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
-    i32 CueA(CVoiceHit* hit, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x11b3b0
+    // CueA IS CGruntSpawnConfig::SpawnVoiceDriver (padded); cast at the call.
 };
 SIZE_UNKNOWN(CVoiceSink);
 
@@ -247,14 +259,14 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = ((CVoiceSink*)g_gameReg->m_cmdGrid)
-                         ->QueryAt(
+    CVoiceHit* hit = (CVoiceHit*)((m4::GruntHitMgr*)g_gameReg->m_cmdGrid)
+                         ->FindGruntAt(
                              m_object->m_screenX,
                              m_object->m_screenY,
-                             &m_object->m_extentL,
+                             (m4::HitTileRect*)&m_object->m_extentL,
                              &outA,
                              &outB,
-                             &m_object->m_areaL
+                             (struct tagRECT*)&m_object->m_areaL
                          );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_sprite;
@@ -262,8 +274,16 @@ i32 CVoiceTrigger::Tick() {
         i32 hx = hs->m_screenX;
         if (hx < g_gameReg->m_viewOriginR && hx >= g_gameReg->m_viewOriginL
             && hy < g_gameReg->m_viewOriginB && hy >= g_gameReg->m_viewOriginT) {
-            if (((CVoiceSink*)g_gameReg->m_cueSink)
-                    ->CueA(hit, m_object->m_124, m_object->m_placeMode, 0, -1, -1)) {
+            if (((CGruntSpawnConfig*)g_gameReg->m_cueSink)
+                    ->SpawnVoiceDriver(
+                        (i32)hit,
+                        m_object->m_124,
+                        m_object->m_placeMode,
+                        0,
+                        -1,
+                        -1,
+                        0
+                    )) {
                 m_38->m_flags |= 0x10000;
             }
         }

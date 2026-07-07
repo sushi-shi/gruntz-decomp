@@ -92,10 +92,22 @@ struct CSlimeLevel {
 // The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
 // QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a
 // scroll; modeled NO-body so both calls reloc-mask.
+namespace m4 {
+    struct HitGrunt;
+    struct HitTileRect;
+    class GruntHitMgr {
+    public:
+        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
+    };
+} // namespace m4
+class CTriggerMgr {
+public:
+    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d);
+};
 struct CSlimeCueGate {
     // QueryAt(level->m_5c, level->m_60, &level->m_144, &outA, &outB, 0) -> entity*.
-    void* QueryAt(i32 x, i32 y, i32* rect, i32* outA, i32* outB, i32 z); // 0x75c60
-    void ScrollTo(i32 a, i32 b, i32 mode, i32 flags);                    // 0x6bcb0
+    // QueryAt IS m4::GruntHitMgr::FindGruntAt; cast at the call.
+    // ScrollTo IS CTriggerMgr::CellDispatch; cast at the call.
 };
 
 // The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
@@ -471,10 +483,17 @@ i32 CKitchenSlime::Tick() {
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = Level();
         i32 outX, outY;
-        CSlimeEntity* ent = (CSlimeEntity*)((CSlimeCueGate*)reg->m_cmdGrid)
-                                ->QueryAt(lvl->m_5c, lvl->m_60, &lvl->m_144, &outY, &outX, 0);
+        CSlimeEntity* ent = (CSlimeEntity*)((m4::GruntHitMgr*)reg->m_cmdGrid)
+                                ->FindGruntAt(
+                                    lvl->m_5c,
+                                    lvl->m_60,
+                                    (m4::HitTileRect*)&lvl->m_144,
+                                    &outY,
+                                    &outX,
+                                    (struct tagRECT*)0
+                                );
         if (ent && ent->m_258 != 0x38) {
-            ((CSlimeCueGate*)g_gameReg->m_cmdGrid)->ScrollTo(outY, outX, 5, -1);
+            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(outY, outX, 5, -1);
         }
     }
 
