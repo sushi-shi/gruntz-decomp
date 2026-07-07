@@ -50,6 +50,7 @@ Usage:
 import argparse
 import csv
 import re
+import sys
 
 from gruntz.analysis import vtable_scan as vs
 from gruntz.match import class_meta, class_vtables
@@ -927,6 +928,14 @@ def cmd_audit(aud):
         print("\n## %s - %s" % (k, hdr))
         for name, detail, loc in sorted(F[k]):
             print("  %-9s %-30s %s  %s" % (k.lower() + ":", name, detail, loc))
+    total = sum(len(F[k]) for k in F)
+    if total:
+        print("\nERROR: vtable-audit FATAL - %d unresolved vtable-modelling flag(s); the source "
+              "vtable hierarchy must match the binary (drive INHERIT/RENAME/REDECLARE/OVERRIDE/"
+              "MISSING to 0)." % total)
+    else:
+        print("\nvtable-audit: OK - 0 flags (source vtable hierarchy matches the binary-proven one).")
+    return total
 
 
 def cmd_tree(aud, focus=None):
@@ -1067,14 +1076,17 @@ def main():
             if args.coverage:
                 print()
             cmd_name_audit(aud)
+        audit_rc = 0
         if args.audit:
             if args.coverage or args.name_audit:
                 print()
-            cmd_audit(aud)
+            audit_rc = cmd_audit(aud)  # FATAL: nonzero exit when any vtable-modelling flag remains
         if args.tree:
             if args.coverage or args.name_audit or args.audit:
                 print()
             cmd_tree(aud, focus=args.klass)
+        if audit_rc:
+            sys.exit(1)
         return
 
     reg, _ = build_registry()

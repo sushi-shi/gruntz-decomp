@@ -256,6 +256,20 @@ def cmd_build(args) -> None:
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
     run([sys.executable, "-m", "gruntz.match.vtable_bans"])
+    # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
+    # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
+    # vtable modelling can never drift from the binary. `python -m gruntz.analysis.vtable_hierarchy --audit`.
+    ra = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", "--audit"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if ra.returncode != 0:
+        for ln in (ra.stdout + ra.stderr).splitlines():
+            if (ln.startswith("#") or "ERROR" in ln
+                    or ln.strip().split(":", 1)[0].strip() in
+                    ("inherit", "rename", "redeclare", "override", "missing")):
+                print(ln, file=sys.stderr)
+        die("vtable-audit: source vtable hierarchy does not match the binary - drive "
+            "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
+            "(python -m gruntz.analysis.vtable_hierarchy --audit)")
     # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
     # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
     r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
