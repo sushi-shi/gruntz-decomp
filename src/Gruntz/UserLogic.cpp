@@ -184,7 +184,8 @@ public:
     i32 m_5c;                  // +0x5c
     i32 m_60;                  // +0x60
 };
-VTBL(CGruntHealthSprite, 0x1e7ba4);
+// VTBL(CGruntHealthSprite, 0x1e7ba4) is bound canonically in <Gruntz/GruntHealthSprite.h>
+// (scanned tree-wide); this TU keeps a local class view for the ctor/dtor bodies below.
 
 // CVoiceTrigger is the canonical <Gruntz/VoiceTrigger.h> class (its no-arg ctor +
 // GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).

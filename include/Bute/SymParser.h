@@ -242,7 +242,4 @@ public:
 };
 SIZE(CSymParser, 0x94); // fields through m_parseSlotBlockCount @0x90
 
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CSymParser, 0x001ef750); // ??_7CSymParser@@6B@ (3-slot primary vtable)
-
 #endif // SRC_BUTE_SYMPARSER_H

@@ -270,8 +270,14 @@ def cmd_build(args) -> None:
         die("vtable-audit: source vtable hierarchy does not match the binary - drive "
             "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
             "(python -m gruntz.analysis.vtable_hierarchy --audit)")
-    # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
-    # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
+    # VTBL(name, rva) UNIQUENESS - a HARD bijection assert (its own gate, run() raises on
+    # nonzero): every vtable rva is bound by exactly one VTBL() annotation. A vtable datum has
+    # one ??_7 name, so a multiply-bound rva is either a redundant duplicate (delete one) or a
+    # mis-catalog aliasing one vtable under many names (collapse the fake views). It must never
+    # regress, independent of the catalog-completeness backlog below.
+    run([sys.executable, "-m", "gruntz.match.class_vtables", "--assert-unique"])
+    # Catalog completeness: VTBL still has a backlog (view-scaffolding + terminal manual
+    # stamps); REPORT until it too reaches 0, then flip to a fatal run(...).
     r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     out_vt = r.stdout + r.stderr
@@ -279,18 +285,6 @@ def cmd_build(args) -> None:
             if re.match(r"\s*\S+:\d+:", ln))
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
-            f"(python -m gruntz.match.class_vtables for the list)")
-    # rva->name uniqueness: a vtable datum has exactly ONE ??_7 name, so an rva bound
-    # by multiple VTBL() is a mis-catalog (shared-base/fallback aliasing) that the delink
-    # name-injectivity guard cannot see (it only checks name->rva). FATAL gate: collapse
-    # same-rva vtables to a single one (remove the fake views) - it must never regress.
-    mc = re.search(r"vtable-rva collisions: (\d+) rva\(s\)", out_vt)
-    if mc and int(mc.group(1)) > 0:
-        for ln in out_vt.splitlines():
-            if ln.strip().startswith("0x") or "vtable-rva collisions:" in ln:
-                print(ln, file=sys.stderr)
-        die(f"VTBL: {mc.group(1)} rva(s) bound by >1 class (multiply-bound) - a vtable "
-            f"datum has one ??_7 name; collapse to a single vtable / remove the fake views "
             f"(python -m gruntz.match.class_vtables for the list)")
     # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
     # function pointers) finds must be bound in source (symbol_names) or catalogued as

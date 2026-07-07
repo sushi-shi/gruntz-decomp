@@ -97,19 +97,17 @@ def library_vtable_rvas():
 
 
 def vtbl_rva_collisions():
-    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE
-    distinct class via VTBL(). A vtable datum has exactly one ??_7 name in retail, so
-    any such rva is a mis-catalog (aliasing one vtable under many names) - it slips
-    past the delink name-injectivity guard, which only enforces name->rva, not
-    rva->name."""
+    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE VTBL()
+    annotation - the bijection assert. VTBL(name, rva) must be UNIQUE in both directions:
+    a vtable datum has exactly one ??_7 name in retail (rva->name), and one canonical
+    binding site. Two DIFFERENT names on one rva = a mis-catalog (aliasing one vtable under
+    many names - collapse the fake views); the SAME name twice = a redundant duplicate
+    binding (delete one). Either slips past the delink name-injectivity guard, which only
+    enforces name->rva, not rva->one-annotation."""
     by_rva = defaultdict(list)
     for name, rva, path, lineno in vtbl_annotations():
         by_rva[rva].append((name, path, lineno))
-    return {
-        rva: sites
-        for rva, sites in by_rva.items()
-        if len({n for n, _p, _l in sites}) > 1
-    }
+    return {rva: sites for rva, sites in by_rva.items() if len(sites) > 1}
 
 
 def main() -> int:
@@ -178,5 +176,33 @@ def main() -> int:
     return 0
 
 
+def assert_unique_vtbls() -> int:
+    """Hard bijection assert (its own build gate): every VTBL(name, rva) is UNIQUE - each
+    rva bound by exactly one annotation. Exits nonzero on ANY multiply-bound rva, whether the
+    duplicate names match (redundant binding - delete one) or differ (mis-catalog aliasing one
+    vtable under several names - collapse the fake views). Independent of the catalog-
+    completeness worklist, so a new duplicate fails the build even while violators remain."""
+    collisions = vtbl_rva_collisions()
+    if not collisions:
+        print("vtbl-uniqueness: OK - every VTBL() rva is bound by exactly one annotation")
+        return 0
+    dup = sum(len(s) for s in collisions.values())
+    print(f"vtbl-uniqueness: FATAL - {len(collisions)} rva(s) bound by >1 VTBL() "
+          f"({dup} annotations); VTBL(name, rva) must be unique:", file=sys.stderr)
+    for rva, sites in sorted(collisions.items(), key=lambda kv: -len(kv[1])):
+        names = sorted({n for n, _p, _l in sites})
+        kind = ("SAME name, redundant - delete the extra binding" if len(names) == 1
+                else "DIFFERENT names, mis-catalog - collapse the fake views to one class")
+        print(f"  0x{rva:08x} <- {len(sites)} bindings ({kind}):", file=sys.stderr)
+        for n, p, l in sites:
+            print(f"      {n}  {rel(p)}:{l}", file=sys.stderr)
+    return 1
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--assert-unique", action="store_true",
+                    help="only run the VTBL-rva bijection assert (fatal on any duplicate)")
+    args = ap.parse_args()
+    raise SystemExit(assert_unique_vtbls() if args.assert_unique else main())
