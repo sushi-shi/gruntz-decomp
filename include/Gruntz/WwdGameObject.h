@@ -9,7 +9,7 @@
 // WwdFile::ReadPlaneObjects (0x162af0) constructs one per record via the ctor
 // at 0x15b390 (NOT reconstructed here - it lives in the eh-frame ctor TU). The
 // object owns a sprite-animation worker at +0x7c (0x17c-byte, the same family
-// as CDDrawWorkerCache's AnimWorker, foreign vtable g_*Vtbl), a small
+// as CDDrawWorkerCache's WwdAnimWorker, foreign vtable g_*Vtbl), a small
 // command-dispatch sub-object at +0x1a0, and a back-pointer to its owning
 // manager at +0x0c.
 //
@@ -22,7 +22,7 @@
 // lowers to the exact `mov eax,[mgr+slot]; call` with no cast.
 struct WwdMgr;
 
-// Forward of the AnimWorker+0x18 sub-object interface (defined in the .cpp); the
+// Forward of the WwdAnimWorker+0x18 sub-object interface (defined in the .cpp); the
 // worker's m_18 slot is typed as this so the [m_18][+0x8] dispatch needs no cast.
 class WorkerSub;
 
@@ -31,8 +31,8 @@ class WorkerSub;
 // vtable is the engine datum the ctor stamps. Declared as a polymorphic class
 // so the virtual dispatch lowers to the exact `mov ecx,worker; call [vtbl+off]`
 // __thiscall sequence (virtuals are __thiscall by default in MSVC 5.0).
-SIZE_UNKNOWN(AnimWorker);
-class AnimWorker {
+SIZE_UNKNOWN(WwdAnimWorker);
+class WwdAnimWorker {
 public:
     virtual void Slot00();             // +0x00
     virtual void Slot04();             // +0x04
@@ -161,7 +161,7 @@ public:
     i32 m_clipBottom; // +0x70
     i32 m_74;         // +0x74
     char m_pad78[0x7c - 0x78];
-    AnimWorker* m_worker; // +0x7c  sprite-animation worker
+    WwdAnimWorker* m_worker; // +0x7c  sprite-animation worker
     void* m_80;           // +0x80  object ref (serialized by name)
     i32 m_84;             // +0x84
     void* m_88;           // +0x88  object ref

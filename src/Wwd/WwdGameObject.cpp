@@ -13,7 +13,7 @@
 // deserialized from WWD level data (constructed by WwdFile::ReadPlaneObjects,
 // 0x162af0, via the EH-frame ctor at 0x15b390 which is NOT reconstructed here).
 //
-// The object owns a sprite-animation worker at +0x7c (AnimWorker, foreign
+// The object owns a sprite-animation worker at +0x7c (WwdAnimWorker, foreign
 // vtable - virtuals dispatched, never defined), a command-dispatch sub-object
 // at +0x1a0 (CmdMap), and a back-pointer to its owning manager at +0x0c.
 //
@@ -116,7 +116,7 @@ struct WwdSnapshot {
 struct WwdRenderCtx;
 struct WwdSurface;
 
-// The sub-object hung off the worker at AnimWorker+0x18 (own vtable; its +0x8
+// The sub-object hung off the worker at WwdAnimWorker+0x18 (own vtable; its +0x8
 // virtual is read in WriteSnapshot).
 class WorkerSub {
 public:
@@ -280,7 +280,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_posY = a2;
     m_74 = a3;
     m_104 = a1;
-    AnimWorker* w = m_worker;
+    WwdAnimWorker* w = m_worker;
     m_108 = a2;
     m_10c = a3;
     m_f8 = 10;
@@ -343,7 +343,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    AnimWorker* w;
+    WwdAnimWorker* w;
     i32 saved;
     i32 node;
     switch (type) {
@@ -622,7 +622,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
     if (ar == 0) {
         return 0;
     }
-    AnimWorker* w = m_worker;
+    WwdAnimWorker* w = m_worker;
     if (w == 0) {
         return 0;
     }
