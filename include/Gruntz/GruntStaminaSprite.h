@@ -24,6 +24,7 @@
 #ifndef GRUNTZ_CGRUNTSTAMINASPRITE_H
 #define GRUNTZ_CGRUNTSTAMINASPRITE_H
 
+#include <Gruntz/GruntHealthSprite.h>
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>       // CUserLogic base + CGrunt (the accessor's bound grunt)
@@ -31,12 +32,13 @@
 
 // Grunt.h-world class (includes Grunt.h for CGrunt); NOT part of the canonical-world
 // CTileLogic reparent - stays `: CUserLogic` (Grunt.h's true-0x30) until stage 5.
-class CGruntStaminaSprite : public CUserLogic {
+class CGruntStaminaSprite : public CGruntHealthSprite {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
-    LogicTypeId GetTypeTag();
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
+    virtual i32 Vslot16() OVERRIDE;          // slot 16 (stat-time getter)
 };
 
 // GetStaminaTime (0x07fbb0): free __stdcall accessor (ret 4) reading the bound

@@ -17,14 +17,16 @@
 
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/GruntHealthSprite.h>
 
-class CGruntToyTimeSprite : public CUserLogic {
+class CGruntToyTimeSprite : public CGruntHealthSprite {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     TILE_LOGIC_TAIL
 public:
     virtual ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
+    virtual i32 Vslot16() OVERRIDE;          // slot 16 (stat-time getter)
     char m_pad40[0x54 - 0x40];
 };
 VTBL(CGruntToyTimeSprite, 0x1e79ec);

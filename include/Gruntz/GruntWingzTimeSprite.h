@@ -25,6 +25,7 @@
 #ifndef GRUNTZ_CGRUNTWINGZTIMESPRITE_H
 #define GRUNTZ_CGRUNTWINGZTIMESPRITE_H
 
+#include <Gruntz/GruntHealthSprite.h>
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>       // CUserLogic base + CGrunt (the accessor's bound grunt)
@@ -35,12 +36,13 @@
 // UserLogic.h cannot coexist with Grunt.h in one TU). Stays `: CUserLogic` until the
 // stage-5 CGrunt/canonical ODR merge. Adds no members + tail, so 0x30-vs-0x40 is a
 // no-op for its GetTypeTag + link-teardown dtor.
-class CGruntWingzTimeSprite : public CUserLogic {
+class CGruntWingzTimeSprite : public CGruntHealthSprite {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
-    LogicTypeId GetTypeTag();
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     virtual ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
+    virtual i32 Vslot16() OVERRIDE;            // slot 16 (stat-time getter)
 };
 
 // GetWingzTime (0x07fd90): free __stdcall accessor (ret 4) reading the bound
