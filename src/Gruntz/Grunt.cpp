@@ -4427,19 +4427,22 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_ONE);
+        found =
+            (CSprite*)((CDDrawSubMgrLeaf*)m_154->m_c->m_2c)->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_TWO);
+        found =
+            (CSprite*)((CDDrawSubMgrLeaf*)m_154->m_c->m_2c)->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = m_154->m_c->m_2c->LookupValue(s_GRUNTZ_EXITZ_THREE);
+        found = (CSprite*)((CDDrawSubMgrLeaf*)m_154->m_c->m_2c)
+                    ->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x386, -1, 0, -1, -1);

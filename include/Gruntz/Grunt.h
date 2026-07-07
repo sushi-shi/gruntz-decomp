@@ -313,7 +313,7 @@ SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {
     // 1-arg lookup returning the resolved sprite directly (the EXIT/RUN loaders
     // use this form; the 2-arg m_10map.Lookup writes through an out-param instead).
-    CSprite* LookupValue(const char* name); // 0x6b2a0
+    // LookupValue @0x6b2a0 IS CDDrawSubMgrLeaf::LookupValue_06b2a0; cast at each call.
 
     char m_pad0[0x10];
     CEntranceHashTable m_10map; // +0x10
