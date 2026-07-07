@@ -4025,7 +4025,7 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         *(i32*)&m_cells[1].m_attack = 0;
     } else {
         GruntIdEntry* entry = 0;
-        ((GruntNameIdMap*)(res->m_10 + 0x10))->Lookup(buf80a, &entry);
+        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup((const char*)buf80a, (void*&)entry);
         if (entry == 0 || idx < entry->m_64 || idx > entry->m_68) {
             *(i32*)&m_cells[1].m_attack = 0;
         } else {
