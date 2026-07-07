@@ -80,32 +80,6 @@ void operator delete(void*);
 // ---- Mis-homed family member-teardown destructors (from the vtable scan) --------
 #include <Gruntz/MapStringToOb.h>
 
-// ctor-view cluster (main-mapping-3 model; the factory placement-constructs these sub-objects)
-SIZE_UNKNOWN(CWwdSubCtorA);
-class CWwdSubCtorA {
-public:
-    void Ctor();
-}; // 0x15b2b0
-SIZE_UNKNOWN(CWwdSubCtorB);
-class CWwdSubCtorB {
-public:
-    void Ctor();
-}; // 0x15b270
-SIZE_UNKNOWN(CWwdResolveBase);
-class CWwdResolveBase {
-public:
-    void Ctor(i32 root, i32 a2, i32 a3);
-}; // 0x15b2c0
-class CWwdLabel {
-public:
-    void Ctor();
-}; // 0x1b9b93
-SIZE_UNKNOWN(CWwdCmdMap);
-class CWwdCmdMap {
-public:
-    void Ctor(i32 a, i32 b, i32 c);
-}; // 0x15b730
-
 // The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2.
 namespace Rng {
     i32 Next2();
@@ -2426,10 +2400,10 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     CWwdGameObject* result;
     if (obj != 0) {
         i32 root = (i32)m_0c;
-        ((CWwdResolveBase*)obj)->Ctor(root, a1, flags);
-        ((CWwdSubCtorA*)(obj + 0x9c))->Ctor();
-        ((CWwdSubCtorB*)(obj + 0xb8))->Ctor();
-        ((CWwdLabel*)(obj + 0xdc))->Ctor();
+        new (obj) CResolveNode(root, a1, flags);
+        new (obj + 0x9c) Obj15b2b0();
+        new (obj + 0xb8) Obj15b270();
+        new (obj + 0xdc) CString();
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x5c) = (i32)0x80000000;
         *(i32*)(obj + 0x78) = 0;
@@ -2446,7 +2420,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
         *(i32*)(obj + 0x90) = 0;
         *(i32*)(obj + 0x188) = g_wwdObjIdCounter;
         g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
-        ((CWwdCmdMap*)(obj + 0x1a0))->Ctor(root, a1, flags);
+        new (obj + 0x1a0) CAniAdvanceCursor(root, a1, flags);
         // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
         *(i32*)(obj + 0x18c) = -1;
         *(i32*)(obj + 0x190) = -1;
