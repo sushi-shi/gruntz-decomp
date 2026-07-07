@@ -1663,7 +1663,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
         *(i32*)((char*)r + 0x44) = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            m_statObj[idx]->Notify2(*(i32*)this, 1);
+            ((CSBI_RectOnly*)m_statObj[idx])->ResetGroupA();
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;

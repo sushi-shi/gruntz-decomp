@@ -187,7 +187,7 @@ struct CRegSink {
 };
 // PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState {
-    i32 Probe(i32 wParam);
+    // Probe @0x12da IS CPlay::BuildGruntTypeNameTable (extra args reloc-masked); cast at the call.
 };
 
 // Per-frame timer intervals (the game clock g_645588 is in ms).
@@ -1364,7 +1364,7 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
     RECT rect;
 
     if (cueId != m_lastCueId) {
-        if (((CCueState*)&m_cueText)->Probe(cueId) == 0) {
+        if (((CPlay*)&m_cueText)->BuildGruntTypeNameTable(cueId, 0, 0, 0) == 0) {
             return; // still-live other cue -> skip
         }
         m_lastCueId = cueId;
@@ -2912,6 +2912,10 @@ extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 // in-place (declaration order preserved) rather than at the top so the fold stays
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
+class Cfa150 {
+public:
+    void Cleanup();
+};
 // The loader family reaches its resource state directly through `this` (a CPlay):
 // the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
 // m_gruntzBank/m_gameBank) and the shared CSpriteFactoryHolder resource registries (CState::m_c->m_10/m_28/m_2c).
@@ -4000,7 +4004,7 @@ struct CDtorThisVtbl;
 struct CDtorThis {
     CDtorThisVtbl* m_vtbl; // +0x00
     void CallVfunc80();    // slot 32 (+0x80)
-    void BaseDtor();       // 0x3f53 thunk  (base CState dtor)
+    // BaseDtor @0x3f53 IS Cfa150::Cleanup; cast at the call.
 
     char p0[0x4];
     DtorWorld* m_4; // +0x04
@@ -4108,7 +4112,7 @@ void CPlay::CPlayDtorBody() {
     }
     self->m_49c = -1;
     ((CObArray*)&self->m_488)->SetSize(0, -1);
-    self->BaseDtor();
+    ((Cfa150*)self)->Cleanup();
 }
 
 // ---------------------------------------------------------------------------

@@ -116,7 +116,7 @@ SIZE_UNKNOWN(CSbiRect);
 // A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
 // notifier; the call is reloc-masked, so only the arg shape is load-bearing.
 struct CSbiStatObj {
-    void Notify2(i32 tag, i32 on); // __thiscall, 2 args (sibling thunk)
+    // Notify2 @0x27f7 IS CSBI_RectOnly::ResetGroupA (args reloc-masked); cast at the call.
 };
 SIZE_UNKNOWN(CSbiStatObj);
 
