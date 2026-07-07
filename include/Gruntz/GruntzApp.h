@@ -18,8 +18,6 @@ class CGruntzApp : public CGameApp {
 public:
     CGruntzApp();                   // ctor
     virtual ~CGruntzApp() OVERRIDE; // vtbl +0x00
-    virtual i32 InitInstance(GameInfo*, WNDCLASSA*, CREATESTRUCTA*)
-        OVERRIDE;                                      // slot 1 (declared-only)
     virtual void CloseResources() OVERRIDE;            // slot 4 (declared-only)
     virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (declared-only)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7

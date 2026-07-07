@@ -35,7 +35,6 @@ struct CSbiConfigHost;
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
-    virtual i32 SbiVfunc0() OVERRIDE;  // slot 1
     virtual void SbiSlot2() OVERRIDE;  // slot 2
     virtual void SbiSlot3() OVERRIDE;  // slot 3
     virtual void SbiSlot4() OVERRIDE;  // slot 4

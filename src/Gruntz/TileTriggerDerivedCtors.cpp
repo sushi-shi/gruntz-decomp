@@ -19,7 +19,6 @@
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals) --------------------
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
-    virtual void Vf1() OVERRIDE; // slot 1
     CTileMultiTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CTileMultiTriggerSwitchLogic);
@@ -29,7 +28,6 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
 public:
     CTileExclusiveTriggerSwitchLogic();
@@ -80,7 +78,6 @@ CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals), upper RVAs --------
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
 public:
     CTileSecretTriggerSwitchLogic();
@@ -92,7 +89,6 @@ CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:
@@ -104,7 +100,6 @@ RVA(0x001127c0, 0x12)
 CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:

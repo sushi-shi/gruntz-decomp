@@ -55,7 +55,6 @@ struct CAmbientSound : public CUserBase {
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CAmbientPosSound : CAmbientSound {
     virtual ~CAmbientPosSound() OVERRIDE;                              // slot 0
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;             // slot 3 override
     CAmbientPosSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
@@ -67,7 +66,6 @@ struct CAmbientPosSound : CAmbientSound {
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CRandomAmbientSound : CAmbientSound {
     virtual ~CRandomAmbientSound() OVERRIDE;                           // slot 0
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;             // slot 3 override
     CRandomAmbientSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
