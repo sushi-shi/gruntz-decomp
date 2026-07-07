@@ -1014,10 +1014,7 @@ public:
 // at +0x31c and +0x338). External engine collections; only the called methods
 // are modeled (reloc-masked).
 SIZE_UNKNOWN(CGruntColl);
-class CGruntColl {
-public:
-    void Reset(); // empty the collection in place
-};
+// CGruntColl was a view of the m_31c CObList; Reset = CObList::RemoveAll (cast at each call).
 SIZE_UNKNOWN(CGruntList);
 class CGruntList {
 public:

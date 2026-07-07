@@ -3260,7 +3260,7 @@ i32 CGrunt::UserLogicVfunc9() {
                 node = (void**)next;
             } while (node);
         }
-        ((CGruntColl*)(&m_31c))->Reset();
+        ((CObList*)(&m_31c))->RemoveAll();
     }
 
     while (1) {
@@ -3435,7 +3435,7 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
                 node = (void**)next;
             } while (node);
         }
-        ((CGruntColl*)(&m_31c))->Reset();
+        ((CObList*)(&m_31c))->RemoveAll();
     }
 }
 
@@ -6376,7 +6376,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 }
                 node = (void**)next;
             }
-            ((CGruntColl*)(&m_31c))->Reset();
+            ((CObList*)(&m_31c))->RemoveAll();
         }
 
         m_entranceStamped = 0;
