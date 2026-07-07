@@ -216,6 +216,7 @@ struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 lett
 SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
     virtual i32 Vslot07() OVERRIDE;              // slot 7
     virtual i32 InputVirtual() OVERRIDE;         // slot 8
