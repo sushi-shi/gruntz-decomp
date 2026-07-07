@@ -972,7 +972,8 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CSprite* _out = 0;                                                                         \
-        m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_" + m_animSetName + (sfx), &_out);                \
+        ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)                                              \
+            ->Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);                          \
         (dst) = (int)_out;                                                                         \
     } while (0)
 
@@ -1521,29 +1522,34 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     if (mode == 1) {
         i32 r = GruntRand() % 0x1e1;
         if (r > 0x140) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_ONE, &found);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+                ->Lookup(s_GRUNTZ_ENTRANCEZ_ONE, (CObject*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37a, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_TWO, &found);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+                ->Lookup(s_GRUNTZ_ENTRANCEZ_TWO, (CObject*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37b, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_THREE, &found);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+                ->Lookup(s_GRUNTZ_ENTRANCEZ_THREE, (CObject*&)found);
             if (onScreen) {
                 g->m_cueSink->CueA(this, 0x37c, -1, 0, -1, -1);
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, &found);
+        ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+            ->Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (CObject*&)found);
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        m_154->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, &found);
+        ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+            ->Lookup(s_GRUNTZ_ENTRANCEZ_RESSURECT, (CObject*&)found);
         base = s_GRUNTZ_DEATHZ_MELT;
     }
 
@@ -1652,7 +1658,8 @@ void CGrunt::LoadEntranceConfig() {
         CEntranceAnimPlayer* p = m_154;
         CSprite* found = 0;
         void* cached = p->m_1b4;
-        p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, &found);
+        ((CMapStringToOb*)&p->m_c->m_2c->m_10map)
+            ->Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (CObject*&)found);
         if ((void*)found == cached) {
             if (m_tileOwnerHi == g_focusedGruntSentinel) {
                 g_pGameRegistry->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);

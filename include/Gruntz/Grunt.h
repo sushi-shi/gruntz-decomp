@@ -307,10 +307,7 @@ i32 CueVisible(i32 viewport, i32 x, i32 y);
 struct CSprite; // opaque looked-up sprite
 
 SIZE_UNKNOWN(CEntranceHashTable);
-class CEntranceHashTable {
-public:
-    i32 Lookup(const char* szName, CSprite** ppOut); // (ret 8)
-};
+class CEntranceHashTable {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
 
 SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {

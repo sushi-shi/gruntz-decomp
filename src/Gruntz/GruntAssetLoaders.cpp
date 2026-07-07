@@ -76,7 +76,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // The entrance-cell record's WALK/IDLE anim-name CStrings (m_cells[k] at +0x08/+0x0c).
 #define CELL_WALK(k) (m_cells[(k)].m_walk)
 #define CELL_IDLE(k) (m_cells[(k)].m_idle)
-#define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), &_out))
+#define WLOOKUP(key) (((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup((key), (CObject*&)_out))
 
 // ---------------------------------------------------------------------------
 // CGrunt::LoadWingzGruntSprites(int enable)   @0x68880   (ret 4)
@@ -700,7 +700,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
             } else {
                 CSprite* out = 0;
-                m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, &out);
+                ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+                    ->Lookup(s_DEATHZ_FALL2, (CObject*&)out);
                 m_poseDeath = (i32)out;
             }
             m_prevEntranceDesc = m_154->m_1b4;
@@ -714,7 +715,8 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_ELECTROCUTE: { // GRUNTZ_DEATHZ_ELECTROCUTE
             CSprite* out = 0;
-            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, &out);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
+                ->Lookup(s_DEATHZ_ELECTROCUTE, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -726,7 +728,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         case DEATH_MELT: {     // GRUNTZ_DEATHZ_MELT
             ApplySetState1(1); // 0x4322
             CSprite* out = 0;
-            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, &out);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_MELT, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -737,7 +739,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_KAROKE: { // GRUNTZ_DEATHZ_KAROKE
             CSprite* out = 0;
-            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, &out);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_KAROKE, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->SetGeometryEx(m_poseDeath, 0);
@@ -753,7 +755,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 goto pathA;
             }
             CSprite* out = 0;
-            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, &out);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_EXPLODE, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
@@ -764,7 +766,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_DRAIN: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
             CSprite* out = 0;
-            m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, &out);
+            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_EXITZ_DRAIN, (CObject*&)out);
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);

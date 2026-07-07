@@ -125,7 +125,8 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CSprite* spr = 0;
 
     m_active = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", &spr);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
+        ->Lookup("GAME_ACTIONOPTIONZMENUBAR", (CObject*&)spr);
     m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
                   ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
                   : 0;
@@ -134,21 +135,24 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", &spr);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
+        ->Lookup("GAME_INGAMEICONZ_NORMCHIPZ", (CObject*&)spr);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", &spr);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
+        ->Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", (CObject*&)spr);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", &spr);
+    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
+        ->Lookup("GAME_INGAMEICONZ_GREYCHIPZ", (CObject*&)spr);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
