@@ -841,7 +841,7 @@ struct WwdName {
 // (Wap::CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
 // teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
 struct WwdSub : public Wap::CObject {
-    ~WwdSub() OVERRIDE {
+    virtual ~WwdSub() OVERRIDE {
         ((CDDrawBlitParam*)this)->Reset_15c2c0();
     }
     i32 m_04; // 0x1a4
@@ -892,7 +892,7 @@ inline WwdEdgeA::~WwdEdgeA() {
 // 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
 // base re-stamp folded in.
 struct WwdSubA : public Wap::CObject {
-    ~WwdSubA() OVERRIDE;
+    virtual ~WwdSubA() OVERRIDE;
     WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
 };
 inline WwdSubA::~WwdSubA() {
@@ -906,7 +906,7 @@ inline WwdSubA::~WwdSubA() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectE : public Wap::CObject {
 public:
-    ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0
+    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0
 
     WwdEdgeB m_04; // 0x04
     char _p10[0x20 - 0x10];
@@ -949,7 +949,7 @@ inline CWwdGameObjectE::~CWwdGameObjectE() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectA : public CWwdGameObjectE {
 public:
-    ~CWwdGameObjectA() OVERRIDE; // 0x15b790
+    virtual ~CWwdGameObjectA() OVERRIDE; // 0x15b790
 
     char _pe0[0x18c - 0xe0];
     i32 m_18c; // 0x18c
@@ -988,7 +988,7 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectF : public CWwdGameObjectE {
 public:
-    ~CWwdGameObjectF() OVERRIDE; // 0x15bad0
+    virtual ~CWwdGameObjectF() OVERRIDE; // 0x15bad0
 };
 
 // @early-stop
@@ -1064,7 +1064,7 @@ inline WwdBResolve::~WwdBResolve() {
 // Mid level (vtable 0x5f0020): frees the four workers, clears m_c0/m_d8 + the
 // inherited edge fields, then its CString member folds, then ~WwdBResolve.
 struct WwdBMid : public WwdBResolve {
-    ~WwdBMid() OVERRIDE;
+    virtual ~WwdBMid() OVERRIDE;
     WwdWorker* m_7c; // +0x7c
     WwdWorker* m_80; // +0x80
     char _p84[0x88 - 0x84];
@@ -1099,12 +1099,12 @@ public:
     void ReleaseSubs_15b5d0();
 };
 struct WwdBLevel2 : public WwdBMid {
-    ~WwdBLevel2() OVERRIDE;
-    // SubB @0x15b5d0 IS CWwdFactoryObject::ReleaseSubs_15b5d0; cast at the call.
-    i32 m_18c; // +0x18c
-    i32 m_190; // +0x190
-    i32 m_194; // +0x194
-    i32 m_198; // +0x198
+    virtual ~WwdBLevel2() OVERRIDE;
+    void SubB(); // 0x15b5d0
+    i32 m_18c;   // +0x18c
+    i32 m_190;   // +0x190
+    i32 m_194;   // +0x194
+    i32 m_198;   // +0x198
     char _p19c[0x1a0 - 0x19c];
     WwdSub m_1a0;              // +0x1a0
     char _p1b0[0x1dc - 0x1b0]; // pad so CWwdGameObjectB's m_1dc lands at +0x1dc
@@ -1122,8 +1122,8 @@ inline WwdBLevel2::~WwdBLevel2() {
 // its CObList member folds (DtorList), then ~WwdBLevel2.
 class CWwdGameObjectB : public WwdBLevel2 {
 public:
-    ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
-    WwdObList m_1dc;             // +0x1dc  CObList
+    virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
+    WwdObList m_1dc;                     // +0x1dc  CObList
     char _p1e0[0x1f8 - 0x1e0];
     i32 m_1f8; // +0x1f8
 };
@@ -1161,7 +1161,7 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectC : public CWwdGameObjectE {
 public:
-    ~CWwdGameObjectC() OVERRIDE; // 0x15c070
+    virtual ~CWwdGameObjectC() OVERRIDE; // 0x15c070
 
     char _pe0[0x18c - 0xe0];
     u8 m_18c; // 0x18c (byte flag)

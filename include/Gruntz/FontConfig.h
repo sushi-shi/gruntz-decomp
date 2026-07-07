@@ -18,7 +18,7 @@ public:
     void Scroll(i32 delta);
     i32 TypeChar(i32 ch, i32 a2);
     void EndInput();
-    ~CFontConfig() OVERRIDE;
+    virtual ~CFontConfig() OVERRIDE;
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
     CString m_inputText;       // +0x1c  scratch input string

@@ -23,7 +23,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     TILE_LOGIC_TAIL
 public:
-    ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
+    virtual ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40];
 };
 VTBL(CGruntToyTimeSprite, 0x1e79ec);

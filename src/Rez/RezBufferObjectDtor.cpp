@@ -22,7 +22,7 @@ void RezFree(void* p);
 // The worker: a +0x4 heap buffer freed on teardown.
 struct CRezBufferObject : Wap::CObject {
     char* m_4; // +0x04  heap buffer
-    ~CRezBufferObject() OVERRIDE;
+    virtual ~CRezBufferObject() OVERRIDE;
 };
 
 // ---------------------------------------------------------------------------

@@ -21,8 +21,8 @@ class CBrickz : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CBrickz(CGameObject* obj); // 0x10e800 (1-arg ctor)
-    ~CBrickz() OVERRIDE;       // (folds the CUserLogic teardown; vtable anchor)
+    CBrickz(CGameObject* obj);   // 0x10e800 (1-arg ctor)
+    virtual ~CBrickz() OVERRIDE; // (folds the CUserLogic teardown; vtable anchor)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
     virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x11300 (vtable slot 2: per-class logic-type id)

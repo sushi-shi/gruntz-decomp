@@ -20,28 +20,28 @@ class L_8860 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_8860() OVERRIDE;
+    virtual ~L_8860() OVERRIDE;
 };
 SIZE_UNKNOWN(L_8860);
 class L_f510 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_f510() OVERRIDE;
+    virtual ~L_f510() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f510);
 class L_f640 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_f640() OVERRIDE;
+    virtual ~L_f640() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f640);
 class L_fb00 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_fb00() OVERRIDE;
+    virtual ~L_fb00() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fb00);
 
@@ -58,21 +58,21 @@ class L_fe90 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_fe90() OVERRIDE;
+    virtual ~L_fe90() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fe90);
 class L_ffc0 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_ffc0() OVERRIDE;
+    virtual ~L_ffc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_ffc0);
 class L_101b0 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_101b0() OVERRIDE;
+    virtual ~L_101b0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_101b0);
 
@@ -95,35 +95,35 @@ class L_10fc0 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_10fc0() OVERRIDE;
+    virtual ~L_10fc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_10fc0);
 class L_11b80 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_11b80() OVERRIDE;
+    virtual ~L_11b80() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11b80);
 class L_11c40 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_11c40() OVERRIDE;
+    virtual ~L_11c40() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11c40);
 class L_13040 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_13040() OVERRIDE;
+    virtual ~L_13040() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13040);
 class L_13400 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~L_13400() OVERRIDE;
+    virtual ~L_13400() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13400);
 

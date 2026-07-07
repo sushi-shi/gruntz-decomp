@@ -39,7 +39,7 @@ struct CRezDir13c9b0 : RezDirBase {
     i32 _18;           // +0x18
     void* m_1c;        // +0x1c
     RezListNode* m_20; // +0x20
-    ~CRezDir13c9b0() OVERRIDE;
+    virtual ~CRezDir13c9b0() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13c9b0);
 RVA(0x0013c9b0, 0x7f)
@@ -69,7 +69,7 @@ struct CRezDir13cb80 : RezDirBase {
     void* m_10;       // +0x10
     i32 m_14;         // +0x14
     RezOwner18* m_18; // +0x18
-    ~CRezDir13cb80() OVERRIDE;
+    virtual ~CRezDir13cb80() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13cb80);
 RVA(0x0013cb80, 0x72)

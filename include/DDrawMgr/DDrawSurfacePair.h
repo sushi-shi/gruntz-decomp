@@ -57,8 +57,8 @@ class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 SIZE_UNKNOWN(CSurfacePairBase);
 class CSurfacePairBase : public CWapObj {
 public:
-    ~CSurfacePairBase() OVERRIDE; // slot 1 (scalar-deleting dtor)
-    i32 IsLoaded() OVERRIDE;      // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
+    virtual ~CSurfacePairBase() OVERRIDE; // slot 1 (scalar-deleting dtor)
+    i32 IsLoaded() OVERRIDE; // slot 5 (@0x14) 0x159090 - the "surface ready?" predicate
 
     // vptr @+0x00 (implicit, polymorphic)
     i32 m_status;            // +0x04  status word (-1 inactive, 0x63 active)
@@ -91,7 +91,7 @@ public:
     virtual i32 LoadImage_163e50(i32 a);               // slot 13 (@0x34) 0x163e50
     virtual i32 ResolveImage_163ee0();                 // slot 14 (@0x38) 0x163ee0
 
-    ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
+    virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
 
     // --- non-virtual helpers (reconstructed in the owner TU) ------------------
     void BltSelf(CDDrawSurfacePair* src); // 0x03a1d0

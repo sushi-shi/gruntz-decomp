@@ -39,7 +39,7 @@ class CGruntWingzTimeSprite : public CUserLogic {
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
     LogicTypeId GetTypeTag();
-    ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
+    virtual ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
 };
 
 // GetWingzTime (0x07fd90): free __stdcall accessor (ret 4) reading the bound

@@ -25,7 +25,7 @@
 // retail). cl auto-emits ??_7CDemo (masks 0x5e9f0c).
 struct CDemo : CPlay {
     void DerivedCleanup(); // 0x3c010
-    ~CDemo() OVERRIDE;
+    virtual ~CDemo() OVERRIDE;
 };
 
 // 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run CPlayDtorBody

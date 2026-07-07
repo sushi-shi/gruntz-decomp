@@ -28,7 +28,7 @@ SIZE_UNKNOWN(Sev17e240);
 inline Sev17e240::~Sev17e240() {}
 struct C17e240 : Sev17e240 {
     char* m_4; // +0x4
-    ~C17e240() OVERRIDE;
+    virtual ~C17e240() OVERRIDE;
 };
 SIZE_UNKNOWN(C17e240);
 RVA(0x0017e240, 0x51)
@@ -56,7 +56,7 @@ SIZE_UNKNOWN(Sev14fe30);
 inline Sev14fe30::~Sev14fe30() {}
 struct C14fe30 : Sev14fe30 {
     char* m_4; // +0x4
-    ~C14fe30() OVERRIDE;
+    virtual ~C14fe30() OVERRIDE;
 };
 SIZE_UNKNOWN(C14fe30);
 RVA(0x0014fe30, 0x51)
@@ -78,7 +78,7 @@ inline Sev161500::~Sev161500() {}
 struct C161500 : Sev161500 {
     char _4[0x14 - 0x4];
     char* m_14; // +0x14
-    ~C161500() OVERRIDE;
+    virtual ~C161500() OVERRIDE;
 };
 SIZE_UNKNOWN(C161500);
 RVA(0x00161500, 0x58)
@@ -106,7 +106,7 @@ struct Sev168c10 {
 SIZE_UNKNOWN(Sev168c10);
 inline Sev168c10::~Sev168c10() {}
 struct C168c10 : Sev168c10 {
-    ~C168c10() OVERRIDE;
+    virtual ~C168c10() OVERRIDE;
 };
 SIZE_UNKNOWN(C168c10);
 RVA(0x00168c10, 0x46)
@@ -128,7 +128,7 @@ struct C15b6d0 : Sev15b6d0 {
     i32 m_4; // +0x4
     i32 m_8; // +0x8
     i32 m_c; // +0xc
-    ~C15b6d0() OVERRIDE;
+    virtual ~C15b6d0() OVERRIDE;
 };
 SIZE_UNKNOWN(C15b6d0);
 RVA(0x0015b6d0, 0x5b)
@@ -149,7 +149,7 @@ struct FaderBase {
 };
 SIZE_UNKNOWN(FaderBase);
 struct C17f9f0 : FaderBase {
-    ~C17f9f0() OVERRIDE;
+    virtual ~C17f9f0() OVERRIDE;
 };
 SIZE_UNKNOWN(C17f9f0);
 RVA(0x0017f9f0, 0x4f)
@@ -157,7 +157,7 @@ C17f9f0::~C17f9f0() {
     ((B_17fc40*)this)->Free();
 }
 struct C180450 : FaderBase {
-    ~C180450() OVERRIDE;
+    virtual ~C180450() OVERRIDE;
     void SubFree(); // 0x180630
 };
 SIZE_UNKNOWN(C180450);
@@ -179,7 +179,7 @@ SIZE_UNKNOWN(EmbedBase17e990);
 inline EmbedBase17e990::~EmbedBase17e990() {}
 struct EmbedSub17e990 : EmbedBase17e990 {
     char* m_4; // +0x4 (outer +0x5c)
-    ~EmbedSub17e990() OVERRIDE;
+    virtual ~EmbedSub17e990() OVERRIDE;
 };
 SIZE_UNKNOWN(EmbedSub17e990);
 inline EmbedSub17e990::~EmbedSub17e990() {
@@ -190,7 +190,7 @@ inline EmbedSub17e990::~EmbedSub17e990() {
 struct C17e990 : FaderBase {
     char _4[0x58 - 0x4];
     EmbedSub17e990 m_58; // +0x58
-    ~C17e990() OVERRIDE;
+    virtual ~C17e990() OVERRIDE;
 };
 SIZE_UNKNOWN(C17e990);
 RVA(0x0017e990, 0x6b)

@@ -16,7 +16,7 @@ class CGruntToySprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~CGruntToySprite() OVERRIDE; // 0x0122b0 (folds the CUserLogic teardown)
+    virtual ~CGruntToySprite() OVERRIDE; // 0x0122b0 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07f540 (construct g_toyActReg over [2000,2010])
     static void RegisterActs(); // 0x07f720 (register the class's activation handlers)

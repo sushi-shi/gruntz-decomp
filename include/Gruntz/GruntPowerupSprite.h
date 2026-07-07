@@ -16,7 +16,7 @@ class CGruntPowerupSprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
+    virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
     static void RegisterActs(); // 0x080180 (register the class's activation handlers)

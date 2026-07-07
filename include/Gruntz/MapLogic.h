@@ -65,8 +65,8 @@ class CMapLogic : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CMapLogic();           // no-arg shape (only the teardown is here)
-    ~CMapLogic() OVERRIDE; // 0x0113c0 (bare CUserLogic teardown, /GX frame)
+    CMapLogic();                   // no-arg shape (only the teardown is here)
+    virtual ~CMapLogic() OVERRIDE; // 0x0113c0 (bare CUserLogic teardown, /GX frame)
 
     // The +0x7c pointer-array serializer (0x082430) + its tear-down helper
     // (0x085480). __thiscall; both free the array's nodes back to g_freeList,

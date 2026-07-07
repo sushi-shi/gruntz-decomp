@@ -153,7 +153,7 @@ struct LeafElementObj : public LeafElementBase {
     virtual void IsValidImage();             // [6] 0x001c08 (shared thunk, declared-only)
     virtual void LeafSlot7_1587c0();         // [7] 0x1587c0 (declared-only; == Release addr)
     virtual void LeafSlot8_154a00();         // [8] 0x154a00 (declared-only)
-    ~LeafElementObj() OVERRIDE;              // overrides slot [1]
+    virtual ~LeafElementObj() OVERRIDE;      // overrides slot [1]
     LeafElementObj(i32 count, i32 handle);   // inline; folded into the factory
     i32 Configure_158760(CParseSource* src); // 0x158760 __thiscall element configure
     i32 Configure2_158720(void* riff);       // 0x158720 raw-RIFF configure variant

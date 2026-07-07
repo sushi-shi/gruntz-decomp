@@ -59,8 +59,8 @@ struct CWorkerObArray {
 // vptr schedule + the destructible-base /GX frame.
 class CDDrawWorker : public CLoadable {
 public:
-    ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
-    void DeleteAll();         // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
+    virtual ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
+    void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
 
     CWorkerObArray m_items;    // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
     char m_pad24[0x64 - 0x24]; // +0x24..+0x63 (the family's per-node scratch block)

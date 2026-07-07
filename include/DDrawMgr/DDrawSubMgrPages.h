@@ -71,8 +71,8 @@ class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface element
 SIZE(CDDrawSubMgrPages, 0x1c);
 class CDDrawSubMgrPages : public CWapObj {
 public:
-    ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0; ??_G auto-gen 0x1574b0)
-    i32 IsLoaded() OVERRIDE;       // slot 5 (@0x14) 0x157480 ("all children present?")
+    virtual ~CDDrawSubMgrPages() OVERRIDE; // slot 1 (real dtor 0x1574d0; ??_G auto-gen 0x1574b0)
+    i32 IsLoaded() OVERRIDE;               // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 (@0x18) IsReady 0x001c08 inherited from CWapObj (not re-declared).
     virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
     virtual StateId GetStateId();   // slot 8 (@0x20) 0x1574a0 (state id)

@@ -21,7 +21,7 @@
 struct CWorker39f20
     : Wap::CObject { // was : WorkerBase39f20 (fake base view; folded to real Wap::CObject)
     char* m_4;       // +0x04  heap buffer
-    ~CWorker39f20() OVERRIDE;
+    virtual ~CWorker39f20() OVERRIDE;
 };
 SIZE_UNKNOWN(CWorker39f20);
 
@@ -30,7 +30,7 @@ SIZE_UNKNOWN(CWorker39f20);
 struct CHolder8c400
     : Wap::CObject {       // was : WorkerBase8c400 (fake base view; folded to real Wap::CObject)
     void Teardown1c6a5c(); // 0x1c6a5c
-    ~CHolder8c400() OVERRIDE;
+    virtual ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
 
@@ -60,7 +60,7 @@ SIZE_UNKNOWN(CCredits390a0);
 // then fold the CState base subobject (base dtor 0x3f53).
 struct CMenuState8d000
     : CState { // was : CStateBase8d000 (fake base view; folded to real CState @0x5ea21c)
-    ~CMenuState8d000() OVERRIDE;
+    virtual ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
 
@@ -80,11 +80,11 @@ struct CButeBase2_21 {
 };
 SIZE_UNKNOWN(CButeBase2_21);
 struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
-    ~CButeTree21a() OVERRIDE;
+    virtual ~CButeTree21a() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21a);
 struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
-    ~CButeTree21b() OVERRIDE;
+    virtual ~CButeTree21b() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21b);
 

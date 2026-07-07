@@ -16,7 +16,7 @@ class CGruntSelectedSprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
+    virtual ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
     static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)

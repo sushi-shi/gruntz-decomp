@@ -47,7 +47,7 @@ struct ButeFileStream : virtual ButeIos {
     int m_d8;                                                       // +0x08
     ButeFileStream(const char* fileName, int mode, void* defaults); // 0x169fb0
     void Sync();                                                    // 0x16a3b0
-    ~ButeFileStream() OVERRIDE; // external; the delete runs the vbase vtable's slot-0
+    virtual ~ButeFileStream() OVERRIDE; // external; the delete runs the vbase vtable's slot-0
 };
 SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
 

@@ -62,7 +62,7 @@ extern CGameRegistry* g_gameReg;
 VTBL(CAmbientSound, 0x001e710c);
 class CAmbientSound : public CUserBase {
 public:
-    ~CAmbientSound() OVERRIDE;
+    virtual ~CAmbientSound() OVERRIDE;
 
     // The non-virtual level setter (0xc200): scale `value` through m_0c/m_10,
     // clamp to 0..100, then drive the voice (mode 0 -> SetVolumeByIndex, else

@@ -35,7 +35,7 @@ class CGruntStaminaSprite : public CUserLogic {
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
     LogicTypeId GetTypeTag();
-    ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
+    virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
 };
 
 // GetStaminaTime (0x07fbb0): free __stdcall accessor (ret 4) reading the bound

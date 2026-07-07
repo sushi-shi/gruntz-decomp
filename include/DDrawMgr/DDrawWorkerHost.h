@@ -36,7 +36,7 @@ inline CWwdSpatialMgr::~CWwdSpatialMgr() {
 class CDDrawWorkerHost : public CLoadable {
 public:
     CDDrawWorkerHost(i32 owner, i32 field04, i32 field08); // 0x1615a0
-    ~CDDrawWorkerHost() OVERRIDE;                          // slot 1 (scalar-deleting dtor)
+    virtual ~CDDrawWorkerHost() OVERRIDE;                  // slot 1 (scalar-deleting dtor)
 
     char m_pad10[0x18 - 0x10];       // +0x10..+0x17
     float m_18;                      // +0x18  (=1.0f)
