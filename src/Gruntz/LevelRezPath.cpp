@@ -26,14 +26,10 @@
 
 #include <rva.h>
 
-#include <Bute/SymParser.h> // the shared CSymParser (ResolvePath 0x13c030)
+#include <Bute/SymParser.h>     // the shared CSymParser (ResolvePath 0x13c030)
+#include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse (0x139960/0x1399d0)
 
 // The ButeMgr symbol tree the rez data is resolved/parsed through.
-struct CSymNode {
-    CSymNode* Insert(const char* key, i32 flags); // 0x13a000 (2nd arg is a non-reloc literal)
-    void* BeginParse();                           // 0x139960  returns the 0x5f4-byte block
-    void EndParse();                              // 0x1399d0
-};
 
 // The 0x5f4-byte rez descriptor read/parsed into a stack buffer; only its +0x2ec
 // field is returned.
@@ -88,7 +84,7 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     // inline per sub-path (no factoring), so it is duplicated here to match.
     if (a1 != 0) {
         sprintf(scratch, "AREA%i_WORLDZ", ((a4 - 1) % 0x24) / 4 + 1);
-        CSymNode* node = (CSymNode*)m_34->ResolvePath(scratch);
+        CSymTab* node = (CSymTab*)m_34->ResolvePath(scratch);
         if (node == 0) {
             return 0;
         }
@@ -97,11 +93,13 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         } else {
             sprintf(scratch, "LEVEL%i", a4);
         }
-        CSymNode* sub = node->Insert(scratch, 0x575744);
+        CParseSource* sub = reinterpret_cast<CParseSource*>(
+            node->Insert(scratch, reinterpret_cast<void*>(0x575744))
+        );
         if (sub == 0) {
             return 0;
         }
-        void* parsed = sub->BeginParse();
+        void* parsed = reinterpret_cast<void*>(sub->BeginParse());
         if (parsed == 0) {
             return 0;
         }
@@ -110,15 +108,16 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         return buf.m_2ec;
     }
     if (a2 == 0) {
-        CSymNode* node = (CSymNode*)m_34->ResolvePath("GAME_MULTI");
+        CSymTab* node = (CSymTab*)m_34->ResolvePath("GAME_MULTI");
         if (node == 0) {
             return 0;
         }
-        CSymNode* sub = node->Insert(name, 0x575744);
+        CParseSource* sub =
+            reinterpret_cast<CParseSource*>(node->Insert(name, reinterpret_cast<void*>(0x575744)));
         if (sub == 0) {
             return 0;
         }
-        void* parsed = sub->BeginParse();
+        void* parsed = reinterpret_cast<void*>(sub->BeginParse());
         if (parsed == 0) {
             return 0;
         }
@@ -126,15 +125,16 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
         sub->EndParse();
         return buf.m_2ec;
     }
-    CSymNode* node = (CSymNode*)m_34->ResolvePath("GAME_BATTLEZ");
+    CSymTab* node = (CSymTab*)m_34->ResolvePath("GAME_BATTLEZ");
     if (node == 0) {
         return 0;
     }
-    CSymNode* sub = node->Insert(name, 0x575744);
+    CParseSource* sub =
+        reinterpret_cast<CParseSource*>(node->Insert(name, reinterpret_cast<void*>(0x575744)));
     if (sub == 0) {
         return 0;
     }
-    void* parsed = sub->BeginParse();
+    void* parsed = reinterpret_cast<void*>(sub->BeginParse());
     if (parsed == 0) {
         return 0;
     }
@@ -143,6 +143,5 @@ i32 LevelRezLoader::BuildLevelRezPath(i32 a1, i32 a2, i32 a3, i32 a4, CString na
     return buf.m_2ec;
 }
 
-SIZE_UNKNOWN(CSymNode);
 SIZE_UNKNOWN(LevelRezData);
 SIZE_UNKNOWN(LevelRezLoader);
