@@ -24,7 +24,7 @@ extern CGooGameReg* g_gameReg;
 // vtable slot 5 (0xe6380): the per-frame goo Tick. Idle (return 1) while the
 // countdown is non-positive; then tick it down and idle again if no fill scale is
 // set; otherwise draw the base anim frame, compute the goo fill height as a
-// fraction of the (m_fillTop - m_fillBase) progress (FLOORED to 1.0, then ftol'd
+// fraction of the (m_rect14.m_c - m_rect14.m_4) progress (FLOORED to 1.0, then ftol'd
 // into m_fgTop), shade-blit + BltEx the goo source for that height, and finally draw
 // the foreground anim frame whose top sits at m_fgTop - 2. The m_drawGuard/m_blitGuard
 // inc-around-dec is a draw-depth re-entrancy guard spanning the BltEx.
@@ -41,26 +41,26 @@ extern CGooGameReg* g_gameReg;
 // receiver), all matching retail's byte stream.
 RVA(0x000e6380, 0xf9)
 i32 CSBI_WellGoo::Tick() {
-    if (m_countdown <= 0) {
+    if (m_28 <= 0) {
         return 1;
     }
-    m_countdown--; // retail decrements between the two guards (before the m_fillScale gate)
+    m_28--; // retail decrements between the two guards (before the m_fillScale gate)
     if (m_fillScale == 0) {
         return 1;
     }
 
     CGooRenderCtx* ctx = g_gameReg->m_30->m_4->m_14;
-    m_baseFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_fillTop + 3), 0);
+    m_baseFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_rect14.m_c + 3), 0);
 
-    // Goo fill height: a fraction of the (m_fillTop - m_fillBase) progress,
+    // Goo fill height: a fraction of the (m_rect14.m_c - m_rect14.m_4) progress,
     // ceiling-clamped to 1.0, subtracted off the current water line and rounded to an
     // int. The (float) cast keeps the 0.01f/3.0f factors single-precision (fmuls/fsubs,
     // the 32-bit float constant pool) while the 1.0 clamp stays double (fcoml).
-    double fill = (float)(m_fillTop - m_fillBase) * m_fillScale * 0.01f - 3.0f;
+    double fill = (float)(m_rect14.m_c - m_rect14.m_4) * m_fillScale * 0.01f - 3.0f;
     if (fill <= 1.0) {
         fill = 1.0;
     }
-    m_fgTop = (i32)((double)m_fillTop - fill);
+    m_fgTop = (i32)((double)m_rect14.m_c - fill);
 
     m_blitter->Blit((ShadeRect*)&m_srcRect, m_gooSrc, (ShadeRect*)&m_srcRect, 0, 0);
 

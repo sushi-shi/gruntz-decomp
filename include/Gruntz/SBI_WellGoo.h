@@ -19,6 +19,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/SBI_Image.h> // CSBI_Image base
 
 // ---------------------------------------------------------------------------
 // The per-frame draw handles (m_40/m_3c) ARE the RTTI CImage (CImage::RenderFrame
@@ -70,19 +71,13 @@ SIZE_UNKNOWN(CGooGameReg);
 // storage (m_fillBase/m_fillTop/m_countdown) under goo-specific names that
 // CStatusBarItem models as the m_rect14 aggregate - deriving it would erase those
 // recovered semantics.
-class CSBI_WellGoo {
+class CSBI_WellGoo : public CSBI_Image {
 public:
-    // vtable slot 5 (0xe6380): the per-frame goo Tick.
+    // vtable slot 5 (0xe6380): the per-frame goo Tick. Goo state reuses the base
+    // region: fillBase=m_rect14.m_4 (@0x18), fillTop=m_rect14.m_c (@0x20), countdown=m_28.
     i32 Tick();
 
-    // ----- layout (offsets are the load-bearing fact) -----
-    char m_pad0[0x18];
-    i32 m_fillBase; // +0x18  goo fill base (low water line)
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_fillTop; // +0x20  goo fill top (current water line; Render origin)
-    char m_pad24[0x28 - 0x24];
-    i32 m_countdown; // +0x28  countdown (Tick decrements; <=0 => idle)
-    char m_pad2c[0x34 - 0x2c];
+    // ----- own fields (after CSBI_Image @0x34) -----
     CDDSurface* m_gooSrc;       // +0x34  goo source surface (Blit + BltEx `src`)
     CDDrawShadeBlit* m_blitter; // +0x38  owned shaded-sprite blitter (Blit `this`)
     CImage* m_fgFrame;          // +0x3c  foreground frame record (final RenderFrame `this`)
@@ -94,7 +89,7 @@ public:
     i32 m_drawGuard; // +0x54  draw-depth guard counter (inc around BltEx, dec after)
     i32 m_blitGuard; // +0x58  draw-depth guard counter (inc around BltEx, dec after)
     i32 m_dstRect;   // +0x5c  dest-rect base (lea &m_dstRect: BltEx dstRect)
-    i32 m_fgTop;     // +0x60  ftol(m_fillTop - clampedFill); foreground y top (m_fgTop - 2)
+    i32 m_fgTop;     // +0x60  ftol(fillTop - clampedFill); foreground y top (m_fgTop - 2)
 };
 SIZE_UNKNOWN(CSBI_WellGoo);
 
