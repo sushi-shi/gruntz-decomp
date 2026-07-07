@@ -302,6 +302,8 @@ struct CSpotLightSetup { // sl->m_7c->m_18 (per-class setup; downcast at the sit
 
 class CRainCloud : public CPathHazard {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CRainCloud(CGameObject* obj);
     // The slots CRainCloud overrides over CPathHazard's vtable (declared only;
     // reloc-masked). slots 1/2 (origin CUserBase) stay inherited-attributed.
@@ -312,6 +314,8 @@ public:
 
 class CUFO : public CPathHazard {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     CUFO(CGameObject* obj);
     virtual ~CUFO() OVERRIDE;    // slot 0
     virtual i32 Tick() OVERRIDE; // slot 16
