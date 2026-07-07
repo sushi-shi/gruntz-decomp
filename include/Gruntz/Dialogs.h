@@ -43,23 +43,25 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h
 SIZE_UNKNOWN(CCmdTarget);
 class CCmdTarget : public Wap::CObject {
 public:
-    virtual void CtVsl5();               // slot 5
-    virtual void CtVsl6();               // slot 6
-    virtual void CtVsl7();               // slot 7
-    virtual void CtVsl8();               // slot 8
-    virtual void CtVsl9();               // slot 9
-    virtual void CtVsl10();              // slot 10
-    virtual void CtVsl11();              // slot 11
-    virtual const void* GetMessageMap(); // slot 12
-    virtual void CtVsl13();              // slot 13
-    virtual void CtVsl14();              // slot 14
-    virtual void CtVsl15();              // slot 15
-    virtual void CtVsl16();              // slot 16
-    virtual void CtVsl17();              // slot 17
-    virtual void CtVsl18();              // slot 18
-    virtual void CtVsl19();              // slot 19
-    virtual void CtVsl20();              // slot 20
-    virtual void CtVsl21();              // slot 21
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CCmdTarget() OVERRIDE;          // slot 1
+    virtual void CtVsl5();                   // slot 5
+    virtual void CtVsl6();                   // slot 6
+    virtual void CtVsl7();                   // slot 7
+    virtual void CtVsl8();                   // slot 8
+    virtual void CtVsl9();                   // slot 9
+    virtual void CtVsl10();                  // slot 10
+    virtual void CtVsl11();                  // slot 11
+    virtual const void* GetMessageMap();     // slot 12
+    virtual void CtVsl13();                  // slot 13
+    virtual void CtVsl14();                  // slot 14
+    virtual void CtVsl15();                  // slot 15
+    virtual void CtVsl16();                  // slot 16
+    virtual void CtVsl17();                  // slot 17
+    virtual void CtVsl18();                  // slot 18
+    virtual void CtVsl19();                  // slot 19
+    virtual void CtVsl20();                  // slot 20
+    virtual void CtVsl21();                  // slot 21
 };
 
 SIZE_UNKNOWN(CWnd);
@@ -251,6 +253,7 @@ SIZE_UNKNOWN(CBattlezDlgColors);
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
+    virtual ~CBattlezDlgColors() OVERRIDE; // slot 1
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
@@ -387,6 +390,7 @@ SIZE_UNKNOWN(CCheckpointDlg);
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
+    virtual ~CCheckpointDlg() OVERRIDE; // slot 1
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
