@@ -29,60 +29,9 @@
 //
 // Field names are placeholders; only OFFSETS + code bytes are load-bearing.
 
-// zErrHandling - the container-library exception base (vptr@0, msg@4), RTTI-real
-// name (zPTree's RTTI base-class-array names its primary base `zErrHandling`). Its
-// ctor (RVA 0x16d9c0, real body in GameText) is __thiscall(this, msg); declared
-// no-body here so the `push msg; call` shape is reloc-masked. The same engine class
-// is modeled per-TU elsewhere under placeholder names (EngStr/GameText/ProjActCache);
-// this unit carries its own self-contained decl. REAL POLYMORPHIC (ALL-VTABLES phase):
-// the vtbl@0 field is the implicit vptr (virtual dtor); the derived zPTree ctor
-// auto-stamps ??_7zPTree @+0 after the external base ctor returns (== the old manual
-// whole-object restamp). The base stays destructible so the derived ctor keeps its
-// /GX unwind frame.
-extern void* g_buteNodeErrMsg; // DAT_006bf480 - the node's error-message global
-
-class zErrHandling {
-public:
-    zErrHandling(void* msg);
-    virtual ~zErrHandling(); // +0x00 vptr; external no-body dtor (real body in GameText)
-
-    void* m_msg; // +0x04
-};
-
-// The node subobject at zPTree+0x8 (a small keyed-store entry): the SECOND
-// polymorphic base of zPTree. REAL POLYMORPHIC: its ctor (0x16df70) auto-
-// stamps ??_7CButeNodeEntry (retail 0x5f04d8) at +0x0, then stores desc@+4,
-// (WORD)n@+8, 0@+0xc. As zPTree's second base it lands at +0x08 and its vptr
-// is promoted to the second-base-in-derived vtable (0x5e949c) automatically by cl
-// (== the old manual raw sub-vtable write).
-class CButeNodeEntry {
-public:
-    CButeNodeEntry(i32 n, void* desc);
-    virtual ~CButeNodeEntry(); // +0x00 vptr; external no-body scalar-deleting dtor
-
-    void* m_desc; // +0x04  kind descriptor (opaque; a tag pointer)
-    i16 m_kind;   // +0x08  (WORD)n
-    char m_pada[2];
-    i32 m_0c; // +0x0c  zero-init
-};
-SIZE(CButeNodeEntry, 0x10);       // { vptr, desc, kind, 0 }
-VTBL(CButeNodeEntry, 0x001f04d8); // the entry member's own (base) vtable
-
-// zPTree layout (multiply-derived, two vptrs):
-//   +0x00  zErrHandling base    (vptr, msg)
-//   +0x08  CButeNodeEntry base  (vptr, desc, kind, 0) - spans +0x08..+0x18
-//   +0x18  m_child18 : child link, zeroed
-//   +0x28  m_child28 : child link, zeroed
-class zPTree : public zErrHandling, public CButeNodeEntry {
-public:
-    zPTree(void* desc, i32 n);
-
-    // CButeNodeEntry base occupies +0x08..+0x18
-    i32 m_child18; // +0x18  child link (zeroed)
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_child28; // +0x28  child link (zeroed)
-};
-SIZE(zPTree, 0x2c); // measured: new(0x2c) -> ctor 0x16dff0; matches the layout above
+// The zErrHandling / CButeNodeEntry / zPTree family shapes are the shared
+// <Bute/PTreeNode.h> (so sibling TUs derive zPTree too); ctor bodies below.
+#include <Bute/PTreeNode.h>
 
 // CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the
 // ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8, 0@+0xc. Clean leaf

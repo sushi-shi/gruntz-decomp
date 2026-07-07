@@ -34,11 +34,7 @@ struct CEngObj_1f04e4 { // 1 slots (first=ConstructTail_ea20)
 SIZE_UNKNOWN(CEngObj_1f04e4);
 VTBL(CEngObj_1f04e4, 0x001f04e4);
 
-struct CEngObj_1f0510 { // 1 slots (first=`scalar_deleting_destructor')
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1f0510);
-VTBL(CEngObj_1f0510, 0x001f0510);
+// 0x1f0510 REHOMED -> CBSecStream primary vtable (zPTree-derived, src/Bute/ButeSectionCtor.cpp).
 
 // 0x1f0518 REHOMED -> CButeCfgNode174d's +0x08 MI-secondary vtable
 // (??_7CButeCfgNode174d@@6BCButeNodeEntry@@), bound via @data-symbol in src/Bute/ButeNode.cpp.

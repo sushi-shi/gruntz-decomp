@@ -117,8 +117,6 @@ DATA(0x001f04f8)
 extern const double g_motionNegHalf;
 DATA(0x001f0508)
 extern const double g_motionNegTwo;
-DATA(0x001f0514)
-extern void* g_streamData; // 0x5f0514
 DATA(0x001f07ec)
 extern float g_fxBias; // 0x5f07ec
 DATA(0x001f07f4)
