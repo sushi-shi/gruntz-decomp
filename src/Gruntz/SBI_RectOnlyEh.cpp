@@ -24,17 +24,6 @@
 // `count` elements of `stride` from `base`, descending. Reloc-masked rel32 callee.
 void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 
-// The CByteArray member at +0x530: a real destructor (reloc-masked ~CByteArray @0x5b4f3e)
-// so its teardown drives a /GX trylevel level in the member-teardown dtor.
-struct CSbiByteArray {
-    void Dtor(); // 0x5b4f3e  ~CByteArray
-    ~CSbiByteArray() {
-        Dtor();
-    }
-    char m_pad[0x14];
-};
-SIZE_UNKNOWN(CSbiByteArray);
-
 // The per-element list dtor (~CPtrList, aliased ~CInternetSession @0x5b48c6) passed to
 // the vector-destroy iterator for the eight +0x2c notify lists.
 void SbiList_Dtor(); // 0x5b48c6
@@ -56,7 +45,8 @@ void SbiList_Dtor(); // 0x5b48c6
 RVA(0x000c8980, 0x64)
 void CSBI_RectOnly::DtorMembers() {
     Teardown();
-    ((CSbiByteArray*)((char*)this + 0x530))->Dtor();
+    ((CByteArray*)((char*)this + 0x530))
+        ->CByteArray::~CByteArray(); // +0x530 real CByteArray teardown
     Tm_DestroyArray((char*)this + 0x2c, 0x1c, 8, (void*)&SbiList_Dtor);
 }
 
