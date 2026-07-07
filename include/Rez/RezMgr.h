@@ -209,18 +209,18 @@ public:
     // here actually belong to CRezDirNode (a distinct class walked by Load/OpenSub -
     // see the RezMgr.cpp note); this TU only touches the ctor-set members below.
     // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
-    CRezDirList m_listA;        // +0x10  {vptr,head,tail}
-    CRezDirList m_listB;        // +0x1c  {vptr,head,tail}
-    i32 m_28;                   // +0x28  (= 0; role unproven)
-    void* m_rezMgr;             // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
-    i32 m_30;                   // +0x30  (= 1; "valid"/initialized flag)
-    i32 m_34;                   // +0x34  (= 0; role unproven)
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    CRezDirList m_listA; // +0x10  {vptr,head,tail}
+    CRezDirList m_listB; // +0x1c  {vptr,head,tail}
+    i32 m_28;            // +0x28  (= 0; role unproven)
+    void* m_rezMgr;      // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
+    i32 m_30;            // +0x30  (= 1; "valid"/initialized flag)
+    i32 m_34;            // +0x34  (= 0; role unproven)
+    virtual void VtSlotFill0() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill1() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill2() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill3() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill5() OVERRIDE; // vtable-slot filler (real slot; declared-only)
 };
 
 // ---------------------------------------------------------------------------
