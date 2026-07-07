@@ -126,6 +126,11 @@ zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEn
 extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
 
 VTBL(CButeCfgNode174d, 0x001f051c); // node primary (most-derived) vtable @+0x00
+// The +0x08 second-base-in-derived vtable @0x5f0518 (stamped by the ctor's
+// `mov [esi+0x8],0x5f0518`). Being zPTree-MI-derived, cl emits this secondary itself
+// as ??_7CButeCfgNode174d@@6BCButeNodeEntry@@ (verified in butenode.obj); bind the
+// retail datum to that real emitted symbol instead of an AnalysisVtables placeholder.
+// @data-symbol: ??_7CButeCfgNode174d@@6BCButeNodeEntry@@@ 0x001f0518 0x4
 class CButeCfgNode174d : public zPTree {
 public:
     CButeCfgNode174d(i32 kind);           // 0x174d00

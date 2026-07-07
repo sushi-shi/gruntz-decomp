@@ -62,9 +62,6 @@ struct CEngObj_1f0510 { // 1 slots (first=`scalar_deleting_destructor')
 SIZE_UNKNOWN(CEngObj_1f0510);
 VTBL(CEngObj_1f0510, 0x001f0510);
 
-struct CEngObj_1f0518 { // 1 slots (first=sub_174e70)
-    virtual void Slot00();
-};
-SIZE_UNKNOWN(CEngObj_1f0518);
-VTBL(CEngObj_1f0518, 0x001f0518);
+// 0x1f0518 REHOMED -> CButeCfgNode174d's +0x08 MI-secondary vtable
+// (??_7CButeCfgNode174d@@6BCButeNodeEntry@@), bound via @data-symbol in src/Bute/ButeNode.cpp.
 
