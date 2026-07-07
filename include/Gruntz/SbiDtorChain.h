@@ -109,6 +109,9 @@ inline CSBI_ImageSet::~CSBI_ImageSet() {
 SIZE_UNKNOWN(CSBI_ImageSetAni);
 struct CSBI_ImageSetAni : CSBI_ImageSet {
     virtual ~CSBI_ImageSetAni() OVERRIDE;
+    virtual void Sf1() OVERRIDE; // slot 1
+    virtual void Sf4() OVERRIDE; // slot 4
+    virtual void Sf5() OVERRIDE; // slot 5
     virtual void Ianf1();
     virtual void Ianf2();
     void DtorImageSetAni(); // CSBI_ImageSetAni member teardown (reloc-masked)
