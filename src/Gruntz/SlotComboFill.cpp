@@ -13,6 +13,12 @@
 #include <Net/LatencyList.h> // CLatencyList / CLatencyItem (+ <Mfc.h>: CObList/CString/windows.h)
 #include <rva.h>
 
+// CLatencyItem::GetName @0x38120 IS Obj38120::GetName (header-less); local decl.
+class Obj38120 {
+public:
+    class CString GetName();
+};
+
 // @early-stop
 // regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): the prologue,
 // m_nCount gate, GetDlgItem, CB_RESETCONTENT, node walk, MAKELONG pack, GetName CString
@@ -39,7 +45,7 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
         i32 data = ((rec->m_param & 0xffff) << 16) | (rec->m_id & 0xffff);
         i32 idx;
         {
-            CString name = rec->GetName();
+            CString name = ((Obj38120*)rec)->GetName();
             idx = SendMessageA(combo, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
         }
         if (idx != -1) {

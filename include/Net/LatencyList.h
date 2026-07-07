@@ -28,10 +28,10 @@
 // GetName (0x38120) returns m_text by value; FillCombo packs (m_param<<16)|m_id as
 // the combo item-data.
 struct CLatencyItem {
-    CString m_text;    // +0x00  row label ("Very Low Latency [ping < 50]", ...)
-    i32 m_id;          // +0x04  row id / ping column
-    i32 m_param;       // +0x08  row param column
-    CString GetName(); // 0x38120 __thiscall, returns m_text by value (reloc-masked)
+    CString m_text; // +0x00  row label ("Very Low Latency [ping < 50]", ...)
+    i32 m_id;       // +0x04  row id / ping column
+    i32 m_param;    // +0x08  row param column
+    // GetName @0x38120 IS Obj38120::GetName; cast at the call.
 };
 SIZE_UNKNOWN(CLatencyItem);
 
