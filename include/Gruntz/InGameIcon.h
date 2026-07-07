@@ -34,9 +34,9 @@
 // hashes the key and writes the found value through out; the call (0x1b8438,
 // __thiscall) reloc-masks. The table is embedded at +0x10 of its holder, so
 // `add ecx,0x10; call Lookup` falls out.
-struct CIconMap {
-    i32 Lookup(void* key, void** out);
-};
+// The +0x10 table is an MFC CMapStringToOb; Lookup @0x1b8438 is CMapStringToOb::Lookup
+// (reached via a CMapStringToOb cast at the call in InGameIcon.cpp).
+struct CIconMap {};
 struct CIconMapHolder {
     char m_pad00[0x10];
     CIconMap m_10map; // +0x10  the lookup table

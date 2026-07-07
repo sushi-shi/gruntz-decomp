@@ -9,6 +9,7 @@
 // CUserLogic / CUserBase / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
+#include <Mfc.h> // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 
@@ -849,7 +850,8 @@ void CInGameIcon::SetField54(i32 v) {
     void* found = 0;
     if (v != 0) {
         found = 0;
-        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup((void*)v, &found);
+        ((CMapStringToOb*)&((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map)
+            ->Lookup((const char*)v, (CObject*&)found);
     }
     m_cmapId = (i32)found;
 }
