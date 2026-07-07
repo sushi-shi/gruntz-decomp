@@ -25,6 +25,10 @@
 // window via PostMessageA when the dispatch result matches. ApplyCmdDelayDefaults
 // persists the command-timing config (m_cmdDelay/m_resend) to the game's RegistryHelper.
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
+class Cdb200 {
+public:
+    i32 M(void* p);
+}; // 0xdb200
 #include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -1837,7 +1841,7 @@ void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 // (returns 1 when accepted). External __thiscall -> reloc-masked.
 SIZE_UNKNOWN(CNetColorHolder);
 struct CNetColorHolder {
-    i32 SwapColor(i32 c); // 0xdb200
+    // SwapColor @0xdb200 IS Cdb200::M; cast at the call.
 };
 
 // LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the positional sound cue when
@@ -2039,7 +2043,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 0;
             }
-            if (((CNetColorHolder*)player)->SwapColor((u8)msg->m_c[1]) == 0) {
+            if (((Cdb200*)player)->M((void*)(u8)msg->m_c[1]) == 0) {
                 msg->m_c[1] = (char)player->m_008;
                 SendStatTo(pd, 0x419, 1);
             }
