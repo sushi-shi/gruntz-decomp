@@ -95,15 +95,30 @@ struct EngineLabelBacklog {
 struct CChatBoxOwner {
     void ProcessCheatInput(i32 a, i32 b);
 };
+SIZE_UNKNOWN(CObject);
+class CObject {
+public:
+    virtual void GetRuntimeClass(); // slot 0
+    virtual ~CObject();             // slot 1
+    virtual void Serialize();       // slot 2
+    virtual void AssertValid();     // slot 3
+    virtual void Dump();            // slot 4
+};
 SIZE_UNKNOWN(CObArray);
-struct CObArray {
+struct CObArray : public CObject {
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CObArray() OVERRIDE;            // slot 1
+    virtual void Serialize() OVERRIDE;       // slot 2
     void Fn1b5144(i32 a, void* b);
     void Fn1b516b(i32 a, void* b, i32 c);
     void* Fn1b5200(i32 a, i32 b);
 };
 SIZE_UNKNOWN(CMapStringToOb);
 VTBL(CMapStringToOb, 0x001eafd4);
-struct CMapStringToOb {
+struct CMapStringToOb : public CObject {
+    virtual void GetRuntimeClass() OVERRIDE; // slot 0
+    virtual ~CMapStringToOb() OVERRIDE;      // slot 1
+    virtual void Serialize() OVERRIDE;       // slot 2
     void Lookup(const char* name, void** out);
 };
 
