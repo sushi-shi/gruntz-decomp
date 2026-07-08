@@ -89,9 +89,26 @@ public:
     // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
     // slots 6/8 are declared-only -> reloc-masked references).
     // slot 1 is the virtual dtor below (cl auto-generates the ??_G from it).
-    virtual i32 IsReady();        // [5] 0x1577a0
-    virtual i32 Slot06_152640();  // [6] 0x152640 (state predicate, returns 1)
-    virtual void Cleanup();       // [7] 0x152650
+    RVA(0x001577a0, 0x16)
+    virtual i32 IsReady() {
+        if (m_0c == 0) {
+        goto fail;
+        }
+        if (m_04 != -1) {
+        return 1;
+        }
+        
+        fail:
+        return 0;
+    }
+    RVA(0x00152640, 0x6)
+    virtual i32 Slot06_152640() {
+        return 1;
+    }
+    RVA(0x00152650, 0x5)
+    virtual void Cleanup() {
+        FreeAll_152720();
+    }
     virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
@@ -107,21 +124,8 @@ public:
     CMapStringToOb m_10; // +0x10  m_map
 };
 
-// ---------------------------------------------------------------------------
-// Ready when the parent handle is present and the status word is not -1.
-// ---------------------------------------------------------------------------
-RVA(0x001577a0, 0x16)
-i32 CDDrawSubMgrLeaf::IsReady() {
-    if (m_0c == 0) {
-        goto fail;
-    }
-    if (m_04 != -1) {
-        return 1;
-    }
+// CDDrawSubMgrLeaf::IsReady (0x001577a0) is now an inline member in the header.
 
-fail:
-    return 0;
-}
 
 // ---------------------------------------------------------------------------
 // Clears the parent map then zeroes a member field.
@@ -132,12 +136,8 @@ void CDDrawSubMgrLeaf::ClearContext() {
     m_0c = 0;
 }
 
-// ---------------------------------------------------------------------------
-// Cleanup virtual: tail-calls FreeAll (frees every value + RemoveAll the map).
-RVA(0x00152650, 0x5)
-void CDDrawSubMgrLeaf::Cleanup() {
-    FreeAll_152720();
-}
+// CDDrawSubMgrLeaf::Cleanup (0x00152650) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // Look up `key` in the map; return the found value (or null), ignoring the bool.
@@ -306,24 +306,11 @@ void operator delete(void*);
 
 // Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
 
-// Leaf vtable slot [6] (0x152640): constant state predicate returning 1.
-RVA(0x00152640, 0x6)
-i32 CDDrawSubMgrLeaf::Slot06_152640() {
-    return 1;
-}
+// CDDrawSubMgrLeaf::Slot06_152640 (0x00152640) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// Readiness predicate: ready when either flag field (+0x2c / +0x30) is set.
-RVA(0x00157530, 0x17)
-i32 CDDrawSubMgrLeafScan::IsReady() {
-    if (m_2c != 0) {
-        return 1;
-    }
-    if (m_30 != 0) {
-        return 1;
-    }
-    return 0;
-}
+
+// CDDrawSubMgrLeafScan::IsReady (0x00157530) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // Scalar-deleting destructor (??_G of CDDrawSubMgrLeafScan at 0x157550): run the real

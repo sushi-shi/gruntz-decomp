@@ -64,8 +64,14 @@ public:
     virtual ~CDDrawSubMgr() OVERRIDE {}
     virtual void IsReady();
     virtual i32 Init();
-    virtual i32 OnDestroy();      // 0x1576c0 (state predicate, returns 1)
-    virtual StateId GetStateId(); // 0x157790 (state predicate, returns 1)
+    RVA(0x001576c0, 0x6)
+    virtual i32 OnDestroy() {
+        return 1;
+    }
+    RVA(0x00157790, 0x6)
+    virtual StateId GetStateId() {
+        return STATE_SUBMGR; // 1
+    }
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
 
@@ -233,19 +239,11 @@ i32 CDDrawSubMgr::Init() {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// Constant state predicate returning 1.
-RVA(0x00157790, 0x6)
-StateId CDDrawSubMgr::GetStateId() {
-    return STATE_SUBMGR; // 1
-}
+// CDDrawSubMgr::GetStateId (0x00157790) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// Constant state predicate returning 1 (0x1576c0).
-RVA(0x001576c0, 0x6)
-i32 CDDrawSubMgr::OnDestroy() {
-    return 1;
-}
+
+// CDDrawSubMgr::OnDestroy (0x001576c0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // 0x155720: scalar-deleting destructor of a far sibling class (real member-teardown

@@ -75,7 +75,10 @@ public:
     i32 IsLoaded() OVERRIDE;               // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 (@0x18) IsReady 0x001c08 inherited from CWapObj (not re-declared).
     virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
-    virtual StateId GetStateId();   // slot 8 (@0x20) 0x1574a0 (state id)
+    RVA(0x001574a0, 0x6)
+    virtual StateId GetStateId() {
+        return STATE_SUBMGRPAGES; // 0xf
+    }
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- slots 10..22: declared-only (no RVA); shape the emitted vtable only ---

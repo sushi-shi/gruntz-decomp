@@ -54,12 +54,8 @@ fail:
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// Thunk: tail-calls the object's own virtual at vtable slot +0x3c.
-RVA(0x001591e0, 0x5)
-void CDDrawChildGroup::ForwardTo3C() {
-    this->Slot3C();
-}
+// CDDrawChildGroup::ForwardTo3C (0x001591e0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // Walk the +0x14 list dispatching child->Slot2C(a1) per node. No post-loop

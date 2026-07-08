@@ -102,7 +102,10 @@ public:
     virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
     virtual void
     DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)
-    virtual StateId GetStateId();                                // [8] 0x1576f0
+    RVA(0x001576f0, 0x6)
+    virtual StateId GetStateId() {
+        return STATE_WORKERCACHE; // 0x13
+    }
     virtual void* CreateWorker(i32 a1, const char* key, i32 a3); // [9] 0x1652c0
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerCacheBase.
@@ -115,13 +118,8 @@ static inline i32 ReadWorkerCacheField1c(const CDDrawWorkerCache* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
-// ---------------------------------------------------------------------------
-// Constant state ID: returns 0x13 (19).
-// ---------------------------------------------------------------------------
-RVA(0x001576f0, 0x6)
-StateId CDDrawWorkerCache::GetStateId() {
-    return STATE_WORKERCACHE; // 0x13
-}
+// CDDrawWorkerCache::GetStateId (0x001576f0) is now an inline member in the header.
+
 
 // Inline worker constructor. Real `new AnimWorkerObj`: the ctor stamps the vptr
 // (cl-implicit, vptr-first) and cl auto-emits ??_7AnimWorkerObj; then seed the

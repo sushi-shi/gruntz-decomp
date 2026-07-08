@@ -91,12 +91,8 @@ void CDDrawSubMgrPages::DestroyChildren() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// slot 8 (GetStateId, 0x1574a0): constant state id.
-RVA(0x001574a0, 0x6)
-StateId CDDrawSubMgrPages::GetStateId() {
-    return STATE_SUBMGRPAGES; // 0xf
-}
+// CDDrawSubMgrPages::GetStateId (0x001574a0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // Member-teardown destructor (0x1574d0; retail ~CDDrawSubMgrDraco). cl stamps the

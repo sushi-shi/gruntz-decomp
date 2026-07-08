@@ -80,7 +80,10 @@ public:
     virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
     virtual void Slot14();                       // +0x14  slot 5
     virtual void Slot18();                       // +0x18
-    virtual void ForwardTo3C();                  // +0x1c  thunk -> +0x3c
+    RVA(0x001591e0, 0x5)
+    virtual void ForwardTo3C() {
+        this->Slot3C();
+    }
     virtual void Slot20();                       // +0x20
     virtual void Slot24();                       // +0x24
     virtual void WalkDispatch2C(i32 a1);         // +0x28

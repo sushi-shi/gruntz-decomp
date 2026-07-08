@@ -134,8 +134,22 @@ public:
     // CObject slots from CDDrawWorkerMapBase, then 8 leaf virtuals at slots 5..12. They are
     // declared here in slot order so cl lays the emitted vtable out byte-for-byte
     // (the unreconstructed slots 6/8 are declared-only -> reloc-masked references).
-    virtual i32 IsReady();        // [5]  0x156cd0
-    virtual i32 Slot06_156db0();  // [6]  0x156db0 (state predicate, returns 1)
+    RVA(0x00156cd0, 0x16)
+    virtual i32 IsReady() {
+        if (m_0c == 0) {
+        goto fail;
+        }
+        if (m_04 != -1) {
+        return 1;
+        }
+        
+        fail:
+        return 0;
+    }
+    RVA(0x00156db0, 0x6)
+    virtual i32 Slot06_156db0() {
+        return 1;
+    }
     virtual void DestroyAll();    // [7]  0x165810
     virtual void Slot08_156cf0(); // [8]  0x156cf0 (shared, declared-only)
     virtual void* Factory_1658c0(CDDrawSurfaceSource* a1, const char* key, i32 a3); // [9] 0x1658c0
@@ -163,21 +177,8 @@ static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
     return *(const i32*)((const char*)p + 0x1c);
 }
 
-// ---------------------------------------------------------------------------
-// Reports ready when the parent/root handle is present and the base status word
-// is no longer the inactive -1 sentinel.
-RVA(0x00156cd0, 0x16)
-i32 CDDrawWorkerMapSmall::IsReady() {
-    if (m_0c == 0) {
-        goto fail;
-    }
-    if (m_04 != -1) {
-        return 1;
-    }
+// CDDrawWorkerMapSmall::IsReady (0x00156cd0) is now an inline member in the header.
 
-fail:
-    return 0;
-}
 
 // ---------------------------------------------------------------------------
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): now a REAL virtual dtor. cl
@@ -319,11 +320,8 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
 // ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
 // @rva-symbol: ??_GCDDrawChildGroupDtorHost@@UAEPAXI@Z 0x00157610 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
-// Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
-RVA(0x00156db0, 0x6)
-i32 CDDrawWorkerMapSmall::Slot06_156db0() {
-    return 1;
-}
+// CDDrawWorkerMapSmall::Slot06_156db0 (0x00156db0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // 0x1658c0: lock the surface arg (Lock_139960 -> data); on 0 bail. Build a worker,
