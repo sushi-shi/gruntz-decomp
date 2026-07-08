@@ -295,6 +295,14 @@ SECOND, divergent lie about a class whose one true shape already lives (or belon
 The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`class` in headers.**
 
 - The scoreboard tracks this as **`.cpp-local views`** (printed by `gruntz build`); drive it to ~0.
+- **HOMING RATCHET.** Views inside `src/Stub/` and `*Views.h` scaffolding cost **0** on the metric —
+  they're the acknowledged backlog. But the metric COUNTS every placeholder in a real main-tree TU,
+  so the instant you home a function OUT of `src/Stub/` into its real class file, any hex-named view
+  it dragged along (`Obj15b270`, `CVtEmit_1ef7d0`, `ResLoad_144270`) becomes a scored regression.
+  Homing is therefore the forcing point: land the function as a proper method of its real class and
+  give every type it touches a real identity **before** you commit. Never move a placeholder from
+  stub into the main tree — that trades a free backlog view for a counted one. `placeholder classes`
+  in the build scoreboard must not go UP when you home; it only ratchets down.
 - When a fn dereferences a real class, `#include` that class's header and use the real type — never
   a local shadow. If the real class isn't modeled yet, define it **in `include/<Module>/`** (a real
   header other TUs share), not inline in your `.cpp`.
