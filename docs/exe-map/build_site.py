@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+"""Regenerate the exe-map website: scatter -> flags -> charts -> dashboard.
+
+    nix develop --command python docs/exe-map/build_site.py
+
+Runs each generator in order (they read the retail data via gruntz.analysis.exe_map,
+so they need scripts/ on PYTHONPATH - the nix dev shell provides it). Every step
+writes its output (JSON + HTML) next to these scripts, i.e. into docs/exe-map/."""
+import os
+import subprocess
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STEPS = ["scatter.py",        # scatter.json + scatter_methods.json (+ printed summary)
+         "flag_outliers.py",  # flags.json (+ printed misplacement worklist)
+         "make_chart.py",     # scatter.html + scatter_methods.html
+         "make_dashboard.py"] # misplacement.html
+
+for step in STEPS:
+    print(f"\n=== {step} ===")
+    subprocess.run([sys.executable, os.path.join(HERE, step)], check=True, cwd=HERE)
+
+print("\nbuilt: docs/exe-map/{scatter,scatter_methods,misplacement}.html")
