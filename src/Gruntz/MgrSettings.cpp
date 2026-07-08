@@ -86,6 +86,7 @@ i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 SIZE_UNKNOWN(CDDrawWorkerRegistry);
+RELOC_VTBL(CDDrawWorkerRegistry, 0x001efd28); // its own vtable, currently bound by CWorkerVtableView (dtor-stamp/view-model verified)
 SIZE_UNKNOWN(CMgrActiveHolder);
 SIZE_UNKNOWN(CMgrLookupRec);
 SIZE_UNKNOWN(CMgrSettings);

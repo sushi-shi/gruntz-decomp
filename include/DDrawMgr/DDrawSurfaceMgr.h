@@ -70,6 +70,7 @@ struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
 typedef i32(__cdecl* HP_Callback)(void*, void*, i32, i32, i32);
 
 SIZE(CDDrawSurfaceMgr, 0x40);
+RELOC_VTBL(CDDrawSurfaceMgr, 0x001efc58); // its own vtable, currently bound by CVtEmit_1efc58 shim (dtor-stamp/view-model verified)
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
