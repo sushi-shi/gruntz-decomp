@@ -13,19 +13,6 @@
   "spread": 33.004936138705496
  },
  {
-  "file": "src/DDrawMgr/DDrawSubMgr.cpp",
-  "n": 56,
-  "bytes": 7435,
-  "lo": 201296,
-  "hi": 1428680,
-  "span": 1227384,
-  "frags": 23,
-  "avg_cluster": 2.4347826086956523,
-  "frag_ratio": 0.4107142857142857,
-  "occupancy": 0.006057598925845538,
-  "spread": 165.08190988567586
- },
- {
   "file": "src/Gruntz/Grunt.cpp",
   "n": 84,
   "bytes": 61302,
@@ -37,6 +24,19 @@
   "frag_ratio": 0.2619047619047619,
   "occupancy": 0.0641464458482489,
   "spread": 15.589328243776713
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgr.cpp",
+  "n": 56,
+  "bytes": 7435,
+  "lo": 201296,
+  "hi": 1428680,
+  "span": 1227384,
+  "frags": 22,
+  "avg_cluster": 2.5454545454545454,
+  "frag_ratio": 0.39285714285714285,
+  "occupancy": 0.006057598925845538,
+  "spread": 165.08190988567586
  },
  {
   "file": "src/Image/Image.cpp",
@@ -206,19 +206,6 @@
   "frag_ratio": 0.5789473684210527,
   "occupancy": 0.37829228056203423,
   "spread": 2.6434586466165415
- },
- {
-  "file": "src/Gruntz/DiscoveredSmall.cpp",
-  "n": 10,
-  "bytes": 318,
-  "lo": 138304,
-  "hi": 1500350,
-  "span": 1362046,
-  "frags": 10,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.0002334722909505259,
-  "spread": 4283.163522012579
  },
  {
   "file": "src/Wwd/WwdFile.cpp",
@@ -1066,19 +1053,6 @@
   "spread": 197.34747446083995
  },
  {
-  "file": "src/Gruntz/FontConfig.cpp",
-  "n": 9,
-  "bytes": 2014,
-  "lo": 137440,
-  "hi": 548758,
-  "span": 411318,
-  "frags": 4,
-  "avg_cluster": 2.25,
-  "frag_ratio": 0.4444444444444444,
-  "occupancy": 0.004896454811119377,
-  "spread": 204.2293942403178
- },
- {
   "file": "src/Gruntz/GruntzCommand.cpp",
   "n": 15,
   "bytes": 1705,
@@ -1638,6 +1612,19 @@
   "spread": 1.3078408651989184
  },
  {
+  "file": "src/Gruntz/FontConfig.cpp",
+  "n": 9,
+  "bytes": 2014,
+  "lo": 137440,
+  "hi": 548758,
+  "span": 411318,
+  "frags": 3,
+  "avg_cluster": 3.0,
+  "frag_ratio": 0.3333333333333333,
+  "occupancy": 0.004896454811119377,
+  "spread": 204.2293942403178
+ },
+ {
   "file": "src/Gruntz/DrawText.cpp",
   "n": 3,
   "bytes": 1306,
@@ -1896,19 +1883,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.0005881722410186923,
   "spread": 1700.1822429906542
- },
- {
-  "file": "src/Image/ImageOwned.cpp",
-  "n": 5,
-  "bytes": 1445,
-  "lo": 1346784,
-  "hi": 1348781,
-  "span": 1997,
-  "frags": 3,
-  "avg_cluster": 1.6666666666666667,
-  "frag_ratio": 0.6,
-  "occupancy": 0.7235853780671007,
-  "spread": 1.382006920415225
  },
  {
   "file": "src/Gruntz/UserBaseLink.cpp",
@@ -2949,6 +2923,19 @@
   "frag_ratio": 0.6666666666666666,
   "occupancy": 0.3533201189296333,
   "spread": 2.8302945301542777
+ },
+ {
+  "file": "src/Image/ImageOwned.cpp",
+  "n": 5,
+  "bytes": 1445,
+  "lo": 1346784,
+  "hi": 1348781,
+  "span": 1997,
+  "frags": 2,
+  "avg_cluster": 2.5,
+  "frag_ratio": 0.4,
+  "occupancy": 0.7235853780671007,
+  "spread": 1.382006920415225
  },
  {
   "file": "src/DDrawMgr/ShadeTableCache.cpp",

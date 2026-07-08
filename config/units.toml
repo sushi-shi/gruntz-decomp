@@ -2518,7 +2518,7 @@ flags = "eh"
 
 [[unit]]
 unit = "discoveredsmall"
-source = "src/Gruntz/DiscoveredSmall.cpp"
+source = "src/Stub/DiscoveredSmall.cpp"
 flags = "base"
 
 # trace-discovered /GX leaf dtors re-homed from src/Stub/Discovered.cpp (need eh):

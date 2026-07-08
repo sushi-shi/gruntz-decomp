@@ -58,9 +58,9 @@
   "lo": 201296,
   "hi": 1428680,
   "span": 1227384,
-  "frags": 19,
-  "avg_cluster": 2.789473684210526,
-  "frag_ratio": 0.3584905660377358,
+  "frags": 18,
+  "avg_cluster": 2.9444444444444446,
+  "frag_ratio": 0.33962264150943394,
   "occupancy": 0.005842507316373686,
   "spread": 171.1593919955376
  },
@@ -167,19 +167,6 @@
   "frag_ratio": 0.6875,
   "occupancy": 0.0842776878392534,
   "spread": 11.865536723163842
- },
- {
-  "file": "src/Gruntz/DiscoveredSmall.cpp",
-  "n": 10,
-  "bytes": 318,
-  "lo": 138304,
-  "hi": 1500350,
-  "span": 1362046,
-  "frags": 10,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.0002334722909505259,
-  "spread": 4283.163522012579
  },
  {
   "file": "src/Wwd/WwdFile.cpp",
@@ -1222,19 +1209,6 @@
   "spread": 1.3078408651989184
  },
  {
-  "file": "src/Gruntz/FontConfig.cpp",
-  "n": 8,
-  "bytes": 1928,
-  "lo": 137440,
-  "hi": 140884,
-  "span": 3444,
-  "frags": 3,
-  "avg_cluster": 2.6666666666666665,
-  "frag_ratio": 0.375,
-  "occupancy": 0.5598141695702671,
-  "spread": 1.7863070539419088
- },
- {
   "file": "src/Gruntz/VideoConfig.cpp",
   "n": 4,
   "bytes": 646,
@@ -1547,19 +1521,6 @@
   "spread": 1.44234404536862
  },
  {
-  "file": "src/Image/ImageOwned.cpp",
-  "n": 5,
-  "bytes": 1445,
-  "lo": 1346784,
-  "hi": 1348781,
-  "span": 1997,
-  "frags": 3,
-  "avg_cluster": 1.6666666666666667,
-  "frag_ratio": 0.6,
-  "occupancy": 0.7235853780671007,
-  "spread": 1.382006920415225
- },
- {
   "file": "src/Gruntz/LogicRecord.cpp",
   "n": 5,
   "bytes": 2431,
@@ -1818,6 +1779,19 @@
   "frag_ratio": 1.0,
   "occupancy": 9.642211736748957e-05,
   "spread": 10371.064516129032
+ },
+ {
+  "file": "src/Gruntz/FontConfig.cpp",
+  "n": 8,
+  "bytes": 1928,
+  "lo": 137440,
+  "hi": 140884,
+  "span": 3444,
+  "frags": 2,
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.5598141695702671,
+  "spread": 1.7863070539419088
  },
  {
   "file": "src/Gruntz/DrawText.cpp",
@@ -2585,6 +2559,19 @@
   "frag_ratio": 0.6666666666666666,
   "occupancy": 0.3533201189296333,
   "spread": 2.8302945301542777
+ },
+ {
+  "file": "src/Image/ImageOwned.cpp",
+  "n": 5,
+  "bytes": 1445,
+  "lo": 1346784,
+  "hi": 1348781,
+  "span": 1997,
+  "frags": 2,
+  "avg_cluster": 2.5,
+  "frag_ratio": 0.4,
+  "occupancy": 0.7235853780671007,
+  "spread": 1.382006920415225
  },
  {
   "file": "src/DDrawMgr/ShadeTableCache.cpp",

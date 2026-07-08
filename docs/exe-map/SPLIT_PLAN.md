@@ -39,7 +39,7 @@ be COMDAT scatter or a mis-group. Confirm before splitting.
 - `src/Gruntz/GameMode.cpp` — 4 blocks: 14@0x018c90(game)  9@0x038d20(game)  5@0x08c750(game)  6@0x0a02c0(game)
 - `src/Gruntz/Attract.cpp` — 2 blocks: 8@0x013fb0(game)  4@0x0fa1f0(game)
 
-## C. RE-HOME HINTS — unknown-class / bucket functions (64) · low confidence
+## C. RE-HOME HINTS — unknown-class / bucket functions (61) · low confidence
 
 What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
 `CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
@@ -50,7 +50,6 @@ improves — **not** a confident semantic move. Do not apply blindly.
 
 | function | currently in | → hint | distance |
 |---|---|---|---|
-| `?ListNodeAdvance@@YGPAXPAPAX@Z` | DiscoveredSmall.cpp | **BattlezMapConfig.cpp** (7 fns) | 1213.7 KB |
 | `?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z` | DDrawSurfacePair.cpp | **GameMode.cpp** (9 fns) | 1190.7 KB |
 | `?ActiveWait@WinAPI@Utils@@YAXI@Z` | WinAPI.cpp | **GameApp.cpp** (18 fns) | 1143.6 KB |
 | `?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObje` | DDrawSubMgrLeafScan.cpp | **Grunt.cpp** (4 fns) | 1007.3 KB |
@@ -80,8 +79,9 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?ReadyGate@CMenuState@@QAEHXZ` | MenuState.cpp | **Brickz.cpp** (9 fns) | 422.8 KB |
 | `_$E1` | GameText.cpp | **GruntzApp.cpp** (6 fns) | 399.2 KB |
 | `?BuildBootyPerfectAnimation@EngineLabelBacklog@@` | IconLoaders.cpp | **GameMode.cpp** (8 fns) | 359.8 KB |
+| `?BuildPowerupIconKeys@@YGXPAVPowerupKeyRegistry@` | IconLoaders.cpp | **GameMode.cpp** (8 fns) | 359.8 KB |
 
-_(+34 more — see the generator output.)_
+_(+31 more — see the generator output.)_
 
 ## D. HEADER-INLINE — reconstruct in the header (69) · not a move
 
