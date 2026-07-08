@@ -116,5 +116,6 @@ public:
     i32 m_enabled;                  // +0x28
 };
 SIZE(CGruntzSoundZ, 0x2c); // 0x1c CMapStringToOb base + 4 dwords
+RELOC_VTBL(CGruntzSoundZ, 0x001ef700); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

@@ -24,6 +24,7 @@ struct CWorker39f20
     virtual ~CWorker39f20() OVERRIDE;
 };
 SIZE_UNKNOWN(CWorker39f20);
+RELOC_VTBL(CWorker39f20, 0x001e971c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // 0x08c400 - /GX dtor: derived vtable stamp, run the +0x00 teardown (0x1c6a5c ==
 // CImageList::DeleteImageList, MFC) -> owns an MFC CImageList; then fold the CObject base.
@@ -33,6 +34,7 @@ struct CHolder8c400
     virtual ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
+RELOC_VTBL(CHolder8c400, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // 0x0390a0 - /GX dtor: explicit cleanup (0x17b570 == CPageStore17b510::Close), then fold the
 // two owned members at +0x138 (dtor 0x1b4b76 == ~CByteArray, MFC) and +0x124 (dtor 0x1bf121 ==

@@ -114,6 +114,7 @@ struct CStateSub8c470 {
     virtual ~CStateSub8c470();
 };
 SIZE_UNKNOWN(CStateSub8c470);
+RELOC_VTBL(CStateSub8c470, 0x001ea21c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0008c470, 0xb)
 CStateSub8c470::~CStateSub8c470() {
     ((Cfa150*)this)->Cleanup();
@@ -140,6 +141,7 @@ struct CAbstract137330 {
     virtual ~CAbstract137330();
 };
 SIZE_UNKNOWN(CAbstract137330);
+RELOC_VTBL(CAbstract137330, 0x001ef6c8); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00137330, 0x7)
 CAbstract137330::~CAbstract137330() {}
 
@@ -147,6 +149,7 @@ struct CAbstract13aaf0 {
     virtual ~CAbstract13aaf0();
 };
 SIZE_UNKNOWN(CAbstract13aaf0);
+RELOC_VTBL(CAbstract13aaf0, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0013aaf0, 0x7)
 CAbstract13aaf0::~CAbstract13aaf0() {}
 
@@ -154,6 +157,7 @@ struct CAbstract13ca30 {
     virtual ~CAbstract13ca30();
 };
 SIZE_UNKNOWN(CAbstract13ca30);
+RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0013ca30, 0x7)
 CAbstract13ca30::~CAbstract13ca30() {}
 

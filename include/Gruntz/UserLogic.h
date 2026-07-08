@@ -118,6 +118,7 @@ class CLogicHandlerMap {
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
 SIZE(CGameObject, 0x1dc);
+RELOC_VTBL(CGameObject, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
 struct CGameObject {
     void Construct(void* owner, i32 id, i32 z);        // 0x15b390  the engine ctor (base subobject)
     void AddLogicHit(char* key);                       // 0x150f50

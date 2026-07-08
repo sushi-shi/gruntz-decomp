@@ -72,6 +72,7 @@ CButeStore::~CButeStore() {
 
 SIZE_UNKNOWN(CU55Base);
 SIZE_UNKNOWN(CU55);
+RELOC_VTBL(CU55, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CObj50);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

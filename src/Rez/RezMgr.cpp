@@ -644,6 +644,7 @@ VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
 SIZE(CRezDirList, 0xc);        // embedded child-collection list {vptr,head,tail}
 SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
 SIZE(CRezParseNode, 0x1c);     // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
+RELOC_VTBL(CRezParseNode, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
 SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
 SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node

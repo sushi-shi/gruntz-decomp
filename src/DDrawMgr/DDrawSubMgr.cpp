@@ -2469,6 +2469,7 @@ SIZE_UNKNOWN(CWwdProbeObject);
 SIZE_UNKNOWN(Obj15b2b0);
 SIZE_UNKNOWN(Obj15b270);
 SIZE_UNKNOWN(CResolveNode);
+RELOC_VTBL(CResolveNode, 0x001efbc0); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdWorker);
 

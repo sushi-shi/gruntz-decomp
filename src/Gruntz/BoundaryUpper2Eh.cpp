@@ -72,6 +72,7 @@ struct CRezDir13cb80 : RezDirBase {
     virtual ~CRezDir13cb80() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13cb80);
+RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0013cb80, 0x72)
 CRezDir13cb80::~CRezDir13cb80() {
     if (m_14) {

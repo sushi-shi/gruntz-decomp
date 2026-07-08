@@ -336,6 +336,7 @@ struct CStatusBaseSub100780 {
     virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(CStatusBaseSub100780);
+RELOC_VTBL(CStatusBaseSub100780, 0x001eabcc); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00100780, 0xb)
 CStatusBaseSub100780::~CStatusBaseSub100780() {
     Base1d6b();

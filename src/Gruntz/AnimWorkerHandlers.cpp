@@ -246,5 +246,6 @@ WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_178 = 0;
 }
 SIZE_UNKNOWN(WorkerFull);
+RELOC_VTBL(WorkerFull, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

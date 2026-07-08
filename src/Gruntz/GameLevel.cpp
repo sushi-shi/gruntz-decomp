@@ -2832,6 +2832,7 @@ SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
 SIZE_UNKNOWN(CGameLevel);
 SIZE_UNKNOWN(CImageSet);
+RELOC_VTBL(CImageSet, 0x001eaa2c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // tile-collision code names (file-local; see the block near the top of this TU).
 #undef kTilePassable

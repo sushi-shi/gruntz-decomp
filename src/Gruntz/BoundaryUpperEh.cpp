@@ -31,6 +31,7 @@ struct C17e240 : Sev17e240 {
     virtual ~C17e240() OVERRIDE;
 };
 SIZE_UNKNOWN(C17e240);
+RELOC_VTBL(C17e240, 0x001f0790); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0017e240, 0x51)
 C17e240::~C17e240() {
     if (m_4) {
@@ -59,6 +60,7 @@ struct C14fe30 : Sev14fe30 {
     virtual ~C14fe30() OVERRIDE;
 };
 SIZE_UNKNOWN(C14fe30);
+RELOC_VTBL(C14fe30, 0x001efb28); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0014fe30, 0x51)
 C14fe30::~C14fe30() {
     if (m_4) {
@@ -81,6 +83,7 @@ struct C161500 : Sev161500 {
     virtual ~C161500() OVERRIDE;
 };
 SIZE_UNKNOWN(C161500);
+RELOC_VTBL(C161500, 0x001f0228); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00161500, 0x58)
 C161500::~C161500() {
     if (m_14) {
@@ -109,6 +112,7 @@ struct C168c10 : Sev168c10 {
     virtual ~C168c10() OVERRIDE;
 };
 SIZE_UNKNOWN(C168c10);
+RELOC_VTBL(C168c10, 0x001f0328); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00168c10, 0x46)
 C168c10::~C168c10() {
     ((CWwdGrid*)this)->FreeBuckets();
@@ -131,6 +135,7 @@ struct C15b6d0 : Sev15b6d0 {
     virtual ~C15b6d0() OVERRIDE;
 };
 SIZE_UNKNOWN(C15b6d0);
+RELOC_VTBL(C15b6d0, 0x001f0128); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0015b6d0, 0x5b)
 C15b6d0::~C15b6d0() {
     ((CDDrawBlitParam*)this)->Reset_15c2c0();
@@ -152,6 +157,7 @@ struct C17f9f0 : FaderBase {
     virtual ~C17f9f0() OVERRIDE;
 };
 SIZE_UNKNOWN(C17f9f0);
+RELOC_VTBL(C17f9f0, 0x001f0810); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0017f9f0, 0x4f)
 C17f9f0::~C17f9f0() {
     ((B_17fc40*)this)->Free();
@@ -161,6 +167,7 @@ struct C180450 : FaderBase {
     void SubFree(); // 0x180630
 };
 SIZE_UNKNOWN(C180450);
+RELOC_VTBL(C180450, 0x001f0870); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00180450, 0x4f)
 C180450::~C180450() {
     SubFree();

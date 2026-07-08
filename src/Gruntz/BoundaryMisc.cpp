@@ -86,6 +86,7 @@ struct CUserBaseSubB940 {
     virtual ~CUserBaseSubB940();
 };
 SIZE_UNKNOWN(CUserBaseSubB940);
+RELOC_VTBL(CUserBaseSubB940, 0x001e70b4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0000b940, 0xf)
 CUserBaseSubB940::~CUserBaseSubB940() {
     m_4 = 0;

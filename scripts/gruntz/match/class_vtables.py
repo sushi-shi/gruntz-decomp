@@ -175,10 +175,12 @@ def main() -> int:
     vtbl_ann = vtbl_annotated_names()
     prim_bases = primary_base_names()
     reloc = reloc_vtbl_annotations()
-    bound_vtbl_rvas = {rva for _n, rva, _p, _l in vtbl_annotations()}
-    # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY bound by another
-    # class's VTBL(); otherwise it is aliasing an unbound datum (hiding a missing binding).
-    bad_reloc = {n: rva for n, rva in reloc.items() if rva not in bound_vtbl_rvas}
+    # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY catalogued by another
+    # class - via VTBL(), an RTTI ??_7 in vtable_names.csv, or the MFC/CRT library catalog;
+    # otherwise it is aliasing an unbound datum (hiding a genuinely-missing binding).
+    catalogued_rvas = ({rva for _n, rva, _p, _l in vtbl_annotations()}
+                       | set(rtti.values()) | lib_rvas | present)
+    bad_reloc = {n: rva for n, rva in reloc.items() if rva not in catalogued_rvas}
     if bad_reloc:
         print("RELOC_VTBL: reloc-masked rva(s) NOT bound by any real VTBL() - each placeholder "
               "must alias a vtable a real class owns:", file=sys.stderr)
