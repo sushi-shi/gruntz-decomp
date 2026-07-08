@@ -50,6 +50,7 @@ struct ButeFileStream : virtual ButeIos {
     virtual ~ButeFileStream() OVERRIDE; // external; the delete runs the vbase vtable's slot-0
 };
 SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
+RELOC_VTBL(ButeFileStream, 0x001f03c4); // IS CRT ifstream (FID-labeled iostream methods)
 
 // ---------------------------------------------------------------------------
 // CButeMgr::Parse(CString, int)
