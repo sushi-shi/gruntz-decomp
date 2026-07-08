@@ -57,16 +57,16 @@ public:
     // the vtable is the shared ??_7CImage (already at 0x1eaa2c); a per-class VTBL
     // would collide/misname the datum. The manual image-frame vptr stamp is removed
     // per the all-vtables mandate (cl auto-stamps the implicit vptr at ctor entry).
-    virtual void* GetRuntimeClass();                      // [0]  +0x00
-    virtual void* ImgScalarDtor(i32 flags);               // [1]  +0x04  scalar-deleting dtor (ILT)
-    virtual void* Serialize();                            // [2]  +0x08 (ILT)
-    virtual void* AssertValid();                          // [3]  +0x0c (ILT)
-    virtual void* Dump();                                 // [4]  +0x10 (ILT)
-    virtual void* HasFrames();                            // [5]  +0x14 (ILT)
-    virtual void* IsValidImage();                         // [6]  +0x18 (ILT)
-    virtual void* FreeAll();                              // [7]  +0x1c  CImage::FreeAll
-    virtual void* GetImageCategory();                     // [8]  +0x20 (ILT)
-    virtual i32 Create24(i32 a, i32 b, i32 c);            // [9]  +0x24  CImage::Create24
+    virtual void* GetRuntimeClass();           // [0]  +0x00
+    virtual ~CImageFrame();                    // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual void* Serialize();                 // [2]  +0x08 (ILT)
+    virtual void* AssertValid();               // [3]  +0x0c (ILT)
+    virtual void* Dump();                      // [4]  +0x10 (ILT)
+    virtual void* HasFrames();                 // [5]  +0x14 (ILT)
+    virtual void* IsValidImage();              // [6]  +0x18 (ILT)
+    virtual void* FreeAll();                   // [7]  +0x1c  CImage::FreeAll
+    virtual void* GetImageCategory();          // [8]  +0x20 (ILT)
+    virtual i32 Create24(i32 a, i32 b, i32 c); // [9]  +0x24  CImage::Create24
     virtual i32 LoadDispatch(i32 a, i32 b, i32 c, i32 d); // [10] +0x28  CImage::LoadDispatch
     virtual void* Resolve();                              // [11] +0x2c  CImage::Resolve
     virtual i32 Create(i32 a, i32 b);                     // [12] +0x30  CImage::Create

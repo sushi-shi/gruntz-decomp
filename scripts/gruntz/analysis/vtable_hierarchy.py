@@ -50,6 +50,7 @@ Usage:
 import argparse
 import csv
 import re
+import sys
 
 from gruntz.analysis import vtable_scan as vs
 from gruntz.match import class_meta, class_vtables
@@ -782,14 +783,14 @@ def _source_base(bodies):
 
 
 def _body_counts(bodies):
-    """(virtual-decl count, OVERRIDE-macro count) from the class's MOST-complete
-    shim body (max virtuals), so multiple per-TU views don't double-count."""
-    best = (0, 0)
-    for b in bodies:
-        nv = len(re.findall(r"\bvirtual\b", b))
-        if nv >= best[0]:
-            best = (nv, len(re.findall(r"\bOVERRIDE\b", b)))
-    return best
+    """(max virtual-decl count, max OVERRIDE-macro count) across the class's per-TU
+    bodies. Take each maximum INDEPENDENTLY: a class can be declared fully in one TU
+    (most virtuals) but carry the OVERRIDE marks in another (e.g. the canonical header
+    vs a lean cast-view), so pinning the macro count to the single max-virtual body
+    under-counts and yields phantom 'unmarked override' flags."""
+    nv = max((len(re.findall(r"\bvirtual\b", b)) for b in bodies), default=0)
+    mac = max((len(re.findall(r"\bOVERRIDE\b", b)) for b in bodies), default=0)
+    return (nv, mac)
 
 
 def cmd_audit(aud):
@@ -805,11 +806,26 @@ def cmd_audit(aud):
     clang -Wsuggest-override for the precise per-method missing-override list)."""
     known = known_base_vtables(aud)
     inter = reconstruct_intermediates(aud)
+    # MFC/CRT library classes (config/library_vtables.csv) are statically linked, NOT
+    # reconstructed - we model them as minimal views to reach their methods, so their
+    # "missing" slots / unmarked overrides vs the FULL library vtable are not our bug.
+    # The audit judges only GAME/engine classes, so exclude the library catalog.
+    lib_rvas = set()
+    _libcsv = REPO / "config/library_vtables.csv"
+    if _libcsv.exists():
+        for _r in csv.reader(_libcsv.open()):
+            if len(_r) >= 2:
+                try:
+                    lib_rvas.add(int(_r[1], 16))
+                except ValueError:
+                    pass
     F = {k: [] for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING")}
     for name in aud.vtable_bearing():
         rva, src, col = aud.resolve(name)
         if rva is None:
             continue
+        if rva in lib_rvas:
+            continue  # MFC/CRT library class - modeled minimally, not reconstructed
         ci = aud.reg.get(name)
         if not (ci and ci.primary()):
             continue
@@ -826,32 +842,76 @@ def cmd_audit(aud):
             if db:
                 truth, via = db[0], ("intermediate" if db[0] in inter else "slot-prefix")
         source_base = aud.src_base.get(name)
-        bslots = inter.get(truth) or (aud.reg[truth].primary()[2]
-                                      if aud.reg.get(truth) and aud.reg[truth].primary() else [])
-        nB = len(bslots)
-        if nB:
-            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != 1 and slots[i] == bslots[i])
-            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == 1 or slots[i] != bslots[i])
-            n_new = max(0, len(slots) - nB)
+        # COHERENT SLOT CLASSIFICATION. diff_primary's rows (idx, fn, name, origin, disp)
+        # align each slot against the nearest ANCESTOR-WITH-A-VTABLE via the RTTI/src
+        # spine, so they locate the dtor slot correctly (slot 0 for CDDSurface-derived,
+        # slot 1 for CObject-derived) - unlike a fixed `i==1`. Two corrections on top:
+        #  (a) DTOR OWNERSHIP: if the class DECLARES its own ~ but its ??_G COMDAT-folds to
+        #      byte-match the base dtor (diff_primary then reads "inherited"), re-tag that
+        #      slot "override" so a legit declared ~ is not mis-counted (would false-REDECLARE).
+        #  (b) BASE MISS: if the spine found no base at all (all slots new/unknown - a
+        #      registry direct-base miss: base on the header decl, VTBL/SIZE in a .cpp),
+        #      fall back to a raw compare against the SOURCE-declared base's slots.
+        disp = {r[0]: r[4] for r in rows}
+        dtor_i = next((r[0] for r in rows
+                       if re.search(r"destructor|[Dd]tor|~|\?\?_[GE]", r[2] or "")), None)
+        declares_dtor = any(("~" + name) in b for b in aud.bodies.get(name, []))
+        if dtor_i is not None and declares_dtor and disp.get(dtor_i) == "inherited":
+            disp[dtor_i] = "override"
+        if any(d in ("inherited", "override") for d in disp.values()):
+            n_inh = sum(1 for d in disp.values() if d == "inherited")
+            n_ovr = sum(1 for d in disp.values() if d == "override")
+            n_new = sum(1 for d in disp.values() if d in ("new", "unknown"))
         else:
-            n_inh = sum(1 for r in rows if r[4] == "inherited")
-            n_ovr = sum(1 for r in rows if r[4] == "override")
-            n_new = sum(1 for r in rows if r[4] == "new")
+            bslots = inter.get(source_base) or (aud.reg[source_base].primary()[2]
+                                                if aud.reg.get(source_base) and aud.reg[source_base].primary() else [])
+            nB = len(bslots)
+            di = dtor_i if dtor_i is not None else 1
+            n_inh = sum(1 for i in range(min(nB, len(slots))) if i != di and slots[i] == bslots[i])
+            n_ovr = sum(1 for i in range(min(nB, len(slots))) if i == di or slots[i] != bslots[i])
+            n_new = max(0, len(slots) - nB)
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
         loc = "%s:%d" % aud.where[name]
-        # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base
-        if truth and source_base != truth:
+        # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base.
+        # A deeper `truth` (e.g. CObject) does NOT make source wrong when source derives a
+        # VALID INTERMEDIATE that transitively reaches truth (CDDrawWorker -> CLoadable ->
+        # CWapObj -> CObject): intermediates are correct, only a base OFF the true spine is
+        # a real error. Walk the source hierarchy; flag only if source_base never reaches truth.
+        def _reaches(b, target, sb=aud.src_base, seen=None):
+            seen = seen or set()
+            while b and b not in seen:
+                if b == target:
+                    return True
+                seen.add(b)
+                b = sb.get(b)
+            return False
+        if truth and source_base != truth and not _reaches(source_base, truth):
             note = " [uncataloged intermediate - model it]" if (
                 via == "intermediate" or (ci.is_rtti and meta["base_inferred"])) else ""
             F["INHERIT"].append((name, "source=%s -> derive %s (%s)%s"
                                  % (source_base or "(none)", truth, via, note), loc))
-        if src != "manual-stamp" and col and col != name:
+        # RENAME wants the src class named as its RTTI type-descriptor. Skip when the RTTI
+        # name is a TEMPLATE instantiation (?$) or a library-namespaced type (e.g. a PAU1
+        # sound-lib ?$CArray): those are statically-linked library/templated classes we model
+        # under a game-facing name deliberately, not a rename we should make.
+        if src != "manual-stamp" and col and col != name and "?$" not in col:
             F["RENAME"].append((name, "-> RTTI name %s" % col, loc))
-        if n_inh and n_virt > own:
+        # REDECLARE means declaring MORE virtuals than the class's own slots. But if the
+        # class declares MORE than the SCANNED vtable even has (n_virt > len(slots)), the
+        # vtable_scan UNDER-CUT it (fragmented an RTTI vtable at an interior COL/code-ref -
+        # CDDrawSubMgrPages: RTTI 23 slots, scanned 10), so the low `own` is a scan artifact,
+        # not a source redeclaration - don't flag.
+        if n_inh and own < n_virt <= len(slots):
             F["REDECLARE"].append((name, "%d virtual decls, only %d own (ovr+new): drop ~%d inherited parent virtuals" % (n_virt, own, n_virt - own), loc))
-        if n_ovr and n_macro < n_ovr:
-            F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr, n_macro, n_ovr - n_macro), loc))
+        # OVERRIDE is meaningful only for a FULLY-declared class: if the class under-
+        # declares its own slots (MISSING, below), some "override slots" aren't declared
+        # yet, so they can't carry the macro - that's a MISSING problem, not an OVERRIDE
+        # one. Count only the DECLARED overrides (min of override-slots and decls-minus-new)
+        # against the macros so the two flags don't double-count the same undeclared slots.
+        n_ovr_declared = min(n_ovr, max(0, n_virt - n_new))
+        if n_ovr_declared and n_macro < n_ovr_declared:
+            F["OVERRIDE"].append((name, "%d override slots, %d OVERRIDE macros: %d unmarked" % (n_ovr_declared, n_macro, n_ovr_declared - n_macro), loc))
         if own and n_virt < own:
             F["MISSING"].append((name, "%d own virtuals (ovr+new), source declares %d" % (own, n_virt), loc))
     print("# INHERITANCE / OVERRIDE AUDIT - our source vs the binary-proven vtable (one report)")
@@ -868,6 +928,14 @@ def cmd_audit(aud):
         print("\n## %s - %s" % (k, hdr))
         for name, detail, loc in sorted(F[k]):
             print("  %-9s %-30s %s  %s" % (k.lower() + ":", name, detail, loc))
+    total = sum(len(F[k]) for k in F)
+    if total:
+        print("\nERROR: vtable-audit FATAL - %d unresolved vtable-modelling flag(s); the source "
+              "vtable hierarchy must match the binary (drive INHERIT/RENAME/REDECLARE/OVERRIDE/"
+              "MISSING to 0)." % total)
+    else:
+        print("\nvtable-audit: OK - 0 flags (source vtable hierarchy matches the binary-proven one).")
+    return total
 
 
 def cmd_tree(aud, focus=None):
@@ -1008,14 +1076,17 @@ def main():
             if args.coverage:
                 print()
             cmd_name_audit(aud)
+        audit_rc = 0
         if args.audit:
             if args.coverage or args.name_audit:
                 print()
-            cmd_audit(aud)
+            audit_rc = cmd_audit(aud)  # FATAL: nonzero exit when any vtable-modelling flag remains
         if args.tree:
             if args.coverage or args.name_audit or args.audit:
                 print()
             cmd_tree(aud, focus=args.klass)
+        if audit_rc:
+            sys.exit(1)
         return
 
     reg, _ = build_registry()

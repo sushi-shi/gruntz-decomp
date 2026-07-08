@@ -9,7 +9,7 @@ class CDDrawPtrCollections; // folded CImageSurfacePool
 // CImage type-descriptor in the binary; primary vftable @0x5eaa2c). It is a
 // surface-backed image element in the DDrawMgr image family and a SIBLING
 // of CDDrawSurfacePair (include/DDrawMgr/DDrawSurfacePair.h): both derive from the
-// same polymorphic Wap::CObject base (grand-base dtor vtable @0x5e8cb4) and share
+// same polymorphic CObject base (grand-base dtor vtable @0x5e8cb4) and share
 // the +0x04/+0x08/+0x0c base header and the +0x0c parent /
 // +0x2c held-surface (CPoolItemA) / +0x30 owned-object layout.
 //
@@ -35,7 +35,7 @@ class CDDrawPtrCollections; // folded CImageSurfacePool
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - the abstract intermediate (slots 5/6)
+#include <Wap32/WapObj.h> // CWapObj : CObject - the abstract intermediate (slots 5/6)
 
 class CString;   // real MFC CString (4-byte ptr); completed via <Mfc.h> in the .cpp
                  // (forward-decl here so includers needn't choose <Mfc.h> vs <Win32.h>)
@@ -139,7 +139,7 @@ void __stdcall ImageNotify(i32 a, i32 b); // 0x14dd90
 class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defined in the .cpp
 
 // CImage - the RTTI polymorphic surface-backed image. REAL-POLYMORPHIC: it derives
-// from the shared engine grand-base Wap::CObject (5-slot interface, grand-base dtor
+// from the shared engine grand-base CObject (5-slot interface, grand-base dtor
 // vtable @0x5e8cb4). vtable_hierarchy confirms slots 0/2/3/4 are the inherited
 // CObject ILT thunks (0x1bef01/0x0028ec/0x00106e/0x004034), slot 1 the destructor
 // override, and slots 5..17 are 13 new virtuals CImage adds. Its own vtable
@@ -152,7 +152,7 @@ class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defi
 //
 // NOTE (correct-form churn): this header is included by several /O2 blit/status-bar
 // TUs (CImageSpriteBlit.cpp, SBI_GruntMachine, ...). Replacing the fabricated
-// CImageBase intermediate with the real Wap::CObject base (the ground-truth
+// CImageBase intermediate with the real CObject base (the ground-truth
 // vtable_hierarchy shape) is neutral for every CImage method itself, but the
 // class-structure change perturbs those includers' /O2 register allocation - an
 // uncontrollable butterfly (CImageSpriteBlit::BlitShadeNorm 100->99.94 one esi/edi
@@ -160,7 +160,7 @@ class CResolveNode; // the shared clip/resolve singleton (RenderImage arg); defi
 // cleanliness mandate; final-sweep candidates in their own TUs.
 class CImage : public CWapObj {
 public:
-    // vptr @+0x00 (inherited from Wap::CObject via CWapObj); the base subobject
+    // vptr @+0x00 (inherited from CObject via CWapObj); the base subobject
     // re-stamp (masks 0x5e8cb4) folds into ~CImage as its last store. CImage keeps
     // CWapObj's slot 5 (IsLoaded @0x0013b6) and slot 6 (IsReady @0x001c08) defaults
     // unchanged - it is the only member of the family that overrides neither.

@@ -13,7 +13,7 @@
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
 
-#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject
+#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
 // header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.

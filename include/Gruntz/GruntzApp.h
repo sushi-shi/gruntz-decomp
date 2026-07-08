@@ -13,12 +13,11 @@
 #include <Wap32/Wap32.h>
 
 SIZE(CGruntzApp, 0x254);
+VTBL(CGruntzApp, 0x001e9ab4); // vtable_names -> code (RTTI game class)
 class CGruntzApp : public CGameApp {
 public:
-    CGruntzApp();                   // ctor
-    virtual ~CGruntzApp() OVERRIDE; // vtbl +0x00
-    virtual i32 InitInstance(GameInfo*, WNDCLASSA*, CREATESTRUCTA*)
-        OVERRIDE;                                      // slot 1 (declared-only)
+    CGruntzApp();                                      // ctor
+    virtual ~CGruntzApp() OVERRIDE;                    // vtbl +0x00
     virtual void CloseResources() OVERRIDE;            // slot 4 (declared-only)
     virtual CGameWnd* InitializeGameWindow() OVERRIDE; // slot 13 (declared-only)
     // Override of the base init virtual (CGameApp slot +0x08): forwards all 7

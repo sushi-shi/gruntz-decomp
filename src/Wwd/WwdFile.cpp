@@ -563,7 +563,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
         WwdPlaneRender* w = WLOADER(WwdPlaneRender*, 0xb0);
         if (w) {
             w->DtorBody();
-            // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+            // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
             ::operator delete(w);
         }
         worker = 0;

@@ -45,7 +45,7 @@ struct CDDrawFrameSource;
 class CDDrawWorkerBase {
 public:
     virtual void GetRuntimeClass();              // [0]  0x1bef01
-    virtual i32 ScalarDtor(i32 flag);            // [1]  scalar-deleting destructor
+    virtual ~CDDrawWorkerBase();                 // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();                    // [2]  0x0028ec
     virtual void AssertValid();                  // [3]  0x00106e
     virtual void Dump();                         // [4]  0x004034
@@ -84,11 +84,15 @@ public:
     i32 m_74; // +0x74  state
 };
 SIZE(CDDrawWorkerBase, 0x78);
+RELOC_VTBL(
+    CDDrawWorkerBase,
+    0x001efed0
+); // reduced/derived view aliases CDDrawWorkerB (slot-RVA verified)
 
 // BYTE-frame worker (12-slot vtable 0x1efea0). Overrides only Vfunc2C in source;
 // its other retail overrides (slots 1/5/7/8/10) stay inherited (reloc-masked).
-struct CDDrawWorkerA : public Wap::CObject {
-    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+struct CDDrawWorkerA : public CObject {
+    virtual ~CDDrawWorkerA() OVERRIDE; // slot 1 (was scalar-dtor -> compiler ??_G)
     virtual void Slot05_157200();      // [5]  0x157200 (B)
     virtual void IsValidImage();       // [6]  0x001c08
     virtual void Slot07_157310();      // [7]  0x157310 (B)
@@ -126,11 +130,12 @@ struct CDDrawWorkerA : public Wap::CObject {
     char _pad79[0x7c - 0x79];
 };
 SIZE(CDDrawWorkerA, 0x7c);
+VTBL(CDDrawWorkerA, 0x001efea0); // vtable_names -> code (RTTI game class)
 
 // int-frame worker (14-slot vtable 0x1efed0): adds Vfunc30 (slot 12) / Vfunc34
 // (slot 13) plus the non-virtual named-object frame fetch Helper_166040 (0x166040).
-struct CDDrawWorkerB : public Wap::CObject {
-    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (was ScalarDtor -> compiler ??_G)
+struct CDDrawWorkerB : public CObject {
+    virtual ~CDDrawWorkerB() OVERRIDE; // slot 1 (was scalar-dtor -> compiler ??_G)
     virtual void Slot05_157200();      // [5]  0x157200 (B)
     virtual void IsValidImage();       // [6]  0x001c08
     virtual void Slot07_157310();      // [7]  0x157310 (B)

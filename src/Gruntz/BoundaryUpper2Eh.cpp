@@ -42,6 +42,7 @@ struct CRezDir13c9b0 : RezDirBase {
     virtual ~CRezDir13c9b0() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13c9b0);
+RELOC_VTBL(CRezDir13c9b0, 0x001ef760); // aliases CObjListBase (dtor-stamp verified)
 RVA(0x0013c9b0, 0x7f)
 CRezDir13c9b0::~CRezDir13c9b0() {
     while (m_14) {
@@ -72,6 +73,7 @@ struct CRezDir13cb80 : RezDirBase {
     virtual ~CRezDir13cb80() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13cb80);
+RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0013cb80, 0x72)
 CRezDir13cb80::~CRezDir13cb80() {
     if (m_14) {

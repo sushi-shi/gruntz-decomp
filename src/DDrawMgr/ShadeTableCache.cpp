@@ -31,7 +31,7 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // ALL-VTABLES phase: the array vtable (0x5efb28) + the CObject grand-base dtor
-// vtable (0x5e8cb4) are now cl-emitted from the real Wap::CObject/CShadeTableArray
+// vtable (0x5e8cb4) are now cl-emitted from the real CObject/CShadeTableArray
 // polymorphic hierarchy - the manual g_shadeArrayVtbl / g_wapObjectDtorVtbl stamps
 // are gone (cl auto-stamps in the array ctor + auto-resets in the array dtor).
 
@@ -73,7 +73,7 @@ struct CStr {
 // ===========================================================================
 // CShadeTableArray - the embedded element-array subobject. Its inline ctor/dtor
 // fold into the cache ctor/dtor: stamp the array vtable, zero/free m_pData.
-// (The empty grand-base dtor Wap::CObject::~CObject - defined inline in
+// (The empty grand-base dtor CObject::~CObject - defined inline in
 // Wap32/Object.h - supplies the tail CObject vptr reset masking 0x5e8cb4.)
 // ===========================================================================
 inline CShadeTableArray::CShadeTableArray() {
@@ -86,7 +86,7 @@ inline CShadeTableArray::CShadeTableArray() {
 
 inline CShadeTableArray::~CShadeTableArray() {
     // cl resets the vptr to 0x5efb28 (entry), runs the free, then chains
-    // ~Wap::CObject which resets the CObject vtable (0x5e8cb4) - was the two
+    // ~CObject which resets the CObject vtable (0x5e8cb4) - was the two
     // manual m_vtbl stamps. This inline copy folds into ~CShadeTableCache
     // (0x14de50, 100%); the standalone out-of-line ??1 (0x14fe30, called by the
     // scalar-deleting dtor 0x150020) CANNOT also be homed here - defining the dtor
@@ -97,10 +97,10 @@ inline CShadeTableArray::~CShadeTableArray() {
     }
 }
 // Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
-// rva.h and pulls windows.h's SIZE type). Wap::CObject's grand-base vtable masks
+// rva.h and pulls windows.h's SIZE type). CObject's grand-base vtable masks
 // ??_7CObject@@6B@ (0x1e8cb4, already cataloged), so only CShadeTableArray gets a
 // VTBL.
-SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the Wap::CObject base
+SIZE(CShadeTableArray, 0x14);       // vptr + 4 array fields over the CObject base
 VTBL(CShadeTableArray, 0x001efb28); // cl-emitted ??_7CShadeTableArray@@6B@
 
 // ===========================================================================

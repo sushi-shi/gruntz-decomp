@@ -22,6 +22,7 @@
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
 SIZE_UNKNOWN(CDoNothing);
+VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
 class CDoNothing : public CUserLogic {
 public:
     TILE_LOGIC_TAIL

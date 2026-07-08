@@ -41,6 +41,7 @@ i32 __stdcall WwdFile_IsValidWwd(const char* path, void* out);
 // The combat-scan grunts are CGrunts; Method_243c @0x243c is CGrunt::CreateHealthSprite.
 // TU-local method-decl (Grunt.h is heavy), cast at the call.
 SIZE_UNKNOWN(CGrunt);
+VTBL(CGrunt, 0x001e8754); // vtable_names -> code (RTTI game class)
 class CGrunt {
 public:
     i32 CreateHealthSprite();

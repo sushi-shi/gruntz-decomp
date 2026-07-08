@@ -160,6 +160,7 @@ class CmdSinkV;  // +0x70 polymorphic command sink (slot 1) + cell-height notify
 struct ScoreHud; // +0x7c HUD/score accumulator + command sink
 
 SIZE(CGruntzMgr, 0xa30);
+VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
 class CGruntzMgr : public WAP32::CGameMgr {
 public:
     CGruntzMgr();

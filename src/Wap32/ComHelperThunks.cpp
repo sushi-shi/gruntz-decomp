@@ -65,6 +65,7 @@ void ComActivate2f00() {
 }
 
 // Class metadata (hosted at .cpp EOF).
-SIZE_UNKNOWN(ComSingleton2f00); // opaque MFC-framework global (unidentified, see above)
-SIZE_UNKNOWN(AUX_DATA);         // MFC afxData / AUX_DATA (opaque forward view)
-SIZE(CNoTrackObject, 0x4);      // real MFC CNoTrackObject: vptr only (??_7 at 0x1ec26c)
+SIZE_UNKNOWN(ComSingleton2f00);   // opaque MFC-framework global (unidentified, see above)
+SIZE_UNKNOWN(AUX_DATA);           // MFC afxData / AUX_DATA (opaque forward view)
+SIZE(CNoTrackObject, 0x4);        // real MFC CNoTrackObject: vptr only (??_7 at 0x1ec26c)
+VTBL(CNoTrackObject, 0x001ec26c); // vtable_names -> code (RTTI game class)

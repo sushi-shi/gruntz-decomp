@@ -12,6 +12,7 @@
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 
 SIZE_UNKNOWN(CGruntToySprite);
+VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)
 class CGruntToySprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL

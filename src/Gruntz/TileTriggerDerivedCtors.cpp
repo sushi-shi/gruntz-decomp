@@ -19,21 +19,21 @@
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals) --------------------
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
-    virtual void Vf1() OVERRIDE; // slot 1
     CTileMultiTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CTileMultiTriggerSwitchLogic);
+VTBL(CTileMultiTriggerSwitchLogic, 0x001eaeb4); // vtable_names -> code (RTTI game class)
 RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
 public:
     CTileExclusiveTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CTileExclusiveTriggerSwitchLogic);
+VTBL(CTileExclusiveTriggerSwitchLogic, 0x001eaecc); // vtable_names -> code (RTTI game class)
 RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 
@@ -43,6 +43,7 @@ public:
     CGiantRockLogic();
 };
 SIZE_UNKNOWN(CGiantRockLogic);
+VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)
 RVA(0x00112210, 0x12)
 CGiantRockLogic::CGiantRockLogic() {}
 
@@ -51,6 +52,7 @@ public:
     CCoveredPowerupLogic();
 };
 SIZE_UNKNOWN(CCoveredPowerupLogic);
+VTBL(CCoveredPowerupLogic, 0x001eaef4); // vtable_names -> code (RTTI game class)
 RVA(0x00112240, 0x12)
 CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 
@@ -59,6 +61,7 @@ public:
     CTileTimeTriggerLogic();
 };
 SIZE_UNKNOWN(CTileTimeTriggerLogic);
+VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
@@ -68,40 +71,41 @@ public:
     CTileSecretTriggerLogic();
 };
 SIZE_UNKNOWN(CTileSecretTriggerLogic);
+VTBL(CTileSecretTriggerLogic, 0x001eaf14); // vtable_names -> code (RTTI game class)
 RVA(0x00112760, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals), upper RVAs --------
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
 public:
     CTileSecretTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CTileSecretTriggerSwitchLogic);
+VTBL(CTileSecretTriggerSwitchLogic, 0x001eaf24); // vtable_names -> code (RTTI game class)
 RVA(0x00112790, 0x12)
 CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:
     CTileTimeTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CTileTimeTriggerSwitchLogic);
+VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c); // vtable_names -> code (RTTI game class)
 RVA(0x001127c0, 0x12)
 CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual void Vf1() OVERRIDE; // slot 1
     virtual void Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:
     CCheckpointTriggerSwitchLogic();
 };
 SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
+VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54); // vtable_names -> code (RTTI game class)
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}

@@ -988,8 +988,8 @@ public:
 SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
 class CRezSurfaceItem {
 public:
-    virtual void* ImgItemScalarDtor(u32 flags); // slot 0 @+0x00  scalar-deleting dtor
-    virtual i32 ImgItemLoad(void* src);         // slot 1 @+0x04  Load
+    virtual ~CRezSurfaceItem();         // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual i32 ImgItemLoad(void* src); // slot 1 @+0x04  Load
     inline CRezSurfaceItem() {
         m_08 = 0;
         m_0c = 0;
@@ -1047,7 +1047,7 @@ i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
         if (item->ImgItemLoad(payload)) { // slot 1 @+0x04  Load
             g_imageCache.SetAtGrow(g_imageCacheIndex, item);
         } else if (item) {
-            item->ImgItemScalarDtor(1); // slot 0 @+0x00  scalar-deleting dtor
+            delete item; // slot 0 @+0x00  scalar-deleting dtor
         }
     }
     return 1;

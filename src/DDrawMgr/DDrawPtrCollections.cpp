@@ -145,6 +145,10 @@ public:
     virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
 };
 SIZE(CPoolItemA, 0xc0);
+RELOC_VTBL(
+    CPoolItemA,
+    0x001efa58
+); // reduced/derived view aliases CFileImageSurface (slot-RVA verified)
 
 // vtable 0x5efa88: overrides the dtor (??_G 0x142800 / ~ 0x142820) and slot 6 (0x143cb0);
 // adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).  Its ~ (0x142820) is emitted

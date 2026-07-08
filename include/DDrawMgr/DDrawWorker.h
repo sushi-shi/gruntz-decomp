@@ -18,7 +18,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : Wap::CObject (9-slot base)
+#include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 
 // An owned CObject element: a real polymorphic object whose scalar-deleting
 // destructor is at vtable slot 1 (byte +0x04), __thiscall (flags arg). Declared-
@@ -55,7 +55,7 @@ struct CWorkerObArray {
 
 // The "DDraw worker" base subobject is the canonical CLoadable (m_04/m_08/m_0c +
 // the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
-// ~Wap::CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
+// ~CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
 // vptr schedule + the destructible-base /GX frame.
 class CDDrawWorker : public CLoadable {
 public:
@@ -67,6 +67,7 @@ public:
     i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
     i32 m_68;                  // +0x68
 };
+VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

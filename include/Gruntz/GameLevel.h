@@ -145,56 +145,11 @@ enum LoadableClassId {
     CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
 };
 
-// ---------------------------------------------------------------------------
-// CLoadable - the engine base CGameLevel derives from. Its 9-slot base vftable
-// is @0x5efc30 (the SAME class the canonical <Gruntz/Loadable.h> models; slots
-// verified against the retail vtable: [1] 0x155720 ??_G, [5] 0x155700 IsLoaded,
-// [7] 0x155740 Unload, [8] 0x154a00 GetClassId).
-//
-// (B)-FORM DEFERRAL (why this local struct, not the canonical CLoadable): this
-// models slot 1 as a REGULAR-virtual `ScalarDtor(u32)` so CGameLevel can OVERRIDE
-// it with an explicit `void* ScalarDtor(u32) OVERRIDE` whose ??_G body is RVA-
-// pinned at 0x1611c0 (100% exact). The canonical CLoadable derives from
-// CWapObj : Wap::CObject whose slot 1 is a REAL `virtual ~()`. A real-dtor slot 1
-// cannot be overridden by a non-dtor `ScalarDtor` in C++; switching CGameLevel to
-// the canonical (A) form would force cl to AUTO-generate the ??_G, which rva.h
-// cannot RVA-pin (it needs a source definition for the @llvm.global.annotations
-// carrier) -> the currently-100% ??_G would drop out of the matched set. So the
-// (B) leaf keeps its local base (documented deferral; a final-sweep item that
-// needs the whole CLoadable family flipped to the (B) explicit-ScalarDtor form).
-//
-// The INLINE ctor stores the three args (cl AUTO-stamps the base vptr
-// &??_7CLoadable - an orphan reloc-masked against retail 0x5efc30); the INLINE
-// dtor resets the fields then restamps the grand-base teardown vftable
-// (g_wapObjectDtorVtbl @0x5e8cb4). Both fold into the derived CGameLevel
-// ctor/dtor, giving retail's classic two-phase vptr-store schedule. Field names
-// (m_04/m_08/m_0c) mirror the canonical CLoadable header.
-// ---------------------------------------------------------------------------
-
-class CLoadable : public CWapObj {
-public:
-    virtual i32 Unload();     // [7] +0x1c  CGameLevel overrides (0x15d1f0)
-    virtual i32 GetClassId(); // [8] +0x20  CGameLevel overrides (0x1611b0)
-
-    CLoadable(i32 a1, i32 a2, i32 a3) {
-        m_04 = a2;
-        m_08 = a3;
-        m_0c = a1;
-    }
-    // The base-subobject destructor: resets the three base fields and restores the
-    // grand-base teardown vftable. INLINE (in the header) so it folds into
-    // ~CGameLevel after the member array dtors, exactly as the retail compiler
-    // emitted the base-dtor tail (a different table from the ctor's @0x5efc30).
-    virtual ~CLoadable() {
-        m_04 = -1;
-        m_08 = 0;
-        m_0c = 0;
-        // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
-    }
-    i32 m_04; // +0x04  (ctor arg2; reset to -1 on dtor, checked ==-1 by IsLoaded)
-    i32 m_08; // +0x08  (== WwdHeader::flags after LoadWwd; arg3 at ctor)
-    i32 m_0c; // +0x0c  (ctor arg1; the owning context, checked nonzero by IsLoaded)
-};
+// CGameLevel's CLoadable base (fields m_04/m_08/m_0c + the two-phase vptr schedule)
+// is MERGED INLINE into CGameLevel below (it derives CObject directly and carries the
+// three base words itself), so there is no local `class CLoadable` here - the former
+// (B)-form duplicate was dead (never derived) and is removed. The canonical CLoadable
+// lives in <Gruntz/Loadable.h>.
 
 // ---------------------------------------------------------------------------
 // CGameLevel - the level container. Member offsets pinned from LoadWwd:
@@ -224,7 +179,7 @@ public:
 struct CGameObject;
 struct CGameObjChain;
 
-class CGameLevel : public Wap::CObject {
+class CGameLevel : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged from CLoadable base)
     // The 18-slot derived vtable @0x5f0150. REAL-POLYMORPHIC: each matched slot is

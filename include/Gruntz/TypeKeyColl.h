@@ -30,6 +30,10 @@ struct CZErrSink {};
 // The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
 // from the data tag and one-time-inits the global tables.
 SIZE_UNKNOWN(CZArrayRoot);
+RELOC_VTBL(
+    CZArrayRoot,
+    0x001f04d4
+); // zDArray-family base (CZArray2D ctor stamps this base vtable = zDArray, RVA-verified)
 class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
@@ -41,6 +45,10 @@ public:
 // allocates the element buffer (+ a scratch element) and reports a fatal failure
 // through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
 SIZE_UNKNOWN(CZArray2D);
+RELOC_VTBL(
+    CZArray2D,
+    0x001f04d4
+); // zDArray-family container, shares zDArray vtable (ctor vptr-stamp verified)
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30

@@ -37,26 +37,22 @@ class CSymTab;         // probe chain (foreign, other TU)
 // the view, only reached by direct name-mangled calls to the registry's own methods).
 // Unifies the two former per-TU views (the 23-slot vtable view + RegView48).
 // ---------------------------------------------------------------------------
-class CWorkerVtableView {
+class CWorkerVtableView : public CObject {
 public:
-    virtual void Slot00_1bef01();                         // [ 0] +0x00 0x1bef01 (CObject thunk)
-    virtual void ScalarDtor_156df0();                     // [ 1] +0x04 0x156df0
-    virtual void Slot08_28ec();                           // [ 2] +0x08 0x0028ec (CObject thunk)
-    virtual void Slot0C_106e();                           // [ 3] +0x0c 0x00106e (CObject thunk)
-    virtual void Slot10_4034();                           // [ 4] +0x10 0x004034 (CObject thunk)
-    virtual void Slot14_156dc0();                         // [ 5] +0x14 0x156dc0
-    virtual void ResetScratch_154aa0();                   // [ 6] +0x18 0x154aa0
-    virtual void Shutdown_154ac0();                       // [ 7] +0x1c 0x154ac0
-    virtual void GetStateId_156de0();                     // [ 8] +0x20 0x156de0
-    virtual void DispatchKeyed2C_154df0();                // [ 9] +0x24 0x154df0
-    virtual void Forward2C_154f60();                      // [10] +0x28 0x154f60
-    virtual void Forward30_154f40();                      // [11] +0x2c 0x154f40
-    virtual void DispatchKeyed30_154ce0();                // [12] +0x30 0x154ce0
-    virtual void Forward38_154f20();                      // [13] +0x34 0x154f20
-    virtual void DispatchKeyed38_154ae0();                // [14] +0x38 0x154ae0
-    virtual void Forward34_154f00();                      // [15] +0x3c 0x154f00
-    virtual void DispatchKeyed34_154be0();                // [16] +0x40 0x154be0
-    virtual void Probe_156e80();                          // [17] +0x44 0x156e80
+    virtual ~CWorkerVtableView() OVERRIDE; // slot 1; slots 0/2/3/4 inherited from CObject
+    virtual void Slot14_156dc0();          // [ 5] +0x14 0x156dc0
+    virtual void ResetScratch_154aa0();    // [ 6] +0x18 0x154aa0
+    virtual void Shutdown_154ac0();        // [ 7] +0x1c 0x154ac0
+    virtual void GetStateId_156de0();      // [ 8] +0x20 0x156de0
+    virtual void DispatchKeyed2C_154df0(); // [ 9] +0x24 0x154df0
+    virtual void Forward2C_154f60();       // [10] +0x28 0x154f60
+    virtual void Forward30_154f40();       // [11] +0x2c 0x154f40
+    virtual void DispatchKeyed30_154ce0(); // [12] +0x30 0x154ce0
+    virtual void Forward38_154f20();       // [13] +0x34 0x154f20
+    virtual void DispatchKeyed38_154ae0(); // [14] +0x38 0x154ae0
+    virtual void Forward34_154f00();       // [15] +0x3c 0x154f00
+    virtual void DispatchKeyed34_154be0(); // [16] +0x40 0x154be0
+    virtual void Probe_156e80();           // [17] +0x44 0x156e80
     virtual i32 Vfunc48(void* a, const char* b, void* c); // [18] +0x48 0x154f80 (tree LoadTree)
     virtual i32 Vfunc4C(void* a, const char* b, void* c); // [19] +0x4c 0x155160
     virtual void RemoveWorker_155280();                   // [20] +0x50 0x155280
@@ -104,11 +100,16 @@ public:
     // Engine-label backlog stubs.
     i32 InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
     i32 LookupWorkerKey(CSymTab* dir, const char* sub, const char* prefix);
-    void* RegScalarDtor(i32 flag);
     i32 ProbeWorkerKey(CSymTab* a1, i32 a2);
 };
 
 SIZE_UNKNOWN(CWorkerVtableView);
+// The 23-slot registry vtable (0x5efd28). Its ??_G/dtor is stamped in the dtor-facet
+// CDDrawRegistryDtorHost (DDrawSubMgr.cpp) - a compiler-model wall (the vtable realizes
+// only in a real ctor/dtor, which lives on the dtor-facet, not this method-holder), so
+// this real 23-virtual class is the load-bearing dispatch model (ProbeWorkerKey casts
+// `this` to it to force the exact indirect [vtbl+0x48] dispatch retail uses).
+VTBL(CWorkerVtableView, 0x001efd28);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

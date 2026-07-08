@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - real base for the "A" spawned child
+#include <Wap32/WapObj.h>              // CWapObj : CObject - real base for the "A" spawned child
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
 #include <DDrawMgr/DDrawSubMgrPages.h> // THE single-source CDDrawSubMgrPages shape (23-slot vtable)
@@ -39,15 +39,19 @@ inline void* operator new(u32, void* p) {
 // CDDrawSurfacePair (own vtable 0x5eff30, from <DDrawMgr/DDrawSurfacePair.h>).
 class CDDrawSurfaceChildA : public CWapObj {
 public:
-    i32 IsLoaded() OVERRIDE;                                      // slot 5 (@0x14) 0x159150
-    virtual void Slot07_1591d0();                                 // slot 7 (@0x1c) 0x1591d0
-    virtual void Slot08_159180();                                 // slot 8 (@0x20) 0x159180
+    virtual ~CDDrawSurfaceChildA() OVERRIDE; // slot 1 (dtor 0x159190)
+    virtual i32 IsLoaded() OVERRIDE;         // slot 5 (@0x14) 0x159150
+    virtual i32 IsReady() OVERRIDE;          // slot 6 (@0x18) 0x001c08 (CWapObj default)
+    virtual void Slot07_1591d0();            // slot 7 (@0x1c) 0x1591d0
+    virtual void Slot08_159180();            // slot 8 (@0x20) 0x159180
     virtual i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
+    virtual void Slot10_1646b0();                                 // slot 10 (@0x28) 0x1646b0
     CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);              // 0x158f30
     char m_pad04[0x2c - 0x04];
     i32 m_2c; // +0x2c
 }; // 0x30
 SIZE(CDDrawSurfaceChildA, 0x30);
+VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11-slot CWapObj-derived)
 
 // ---------------------------------------------------------------------------
 // slot 5 (IsLoaded, 0x157480): ready when all three owned child pointers are populated.
@@ -107,7 +111,7 @@ CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
-    // implicit ~CWapObj -> ~Wap::CObject folds the grand-base re-stamp (0x5e8cb4) last.
+    // implicit ~CWapObj -> ~CObject folds the grand-base re-stamp (0x5e8cb4) last.
 }
 
 // ---------------------------------------------------------------------------

@@ -161,11 +161,25 @@ public:
 // without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`
 // (0x142340): destroy + conditional RezFree.
 SIZE_UNKNOWN(CFileImageSurface);
+VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot surface vtable)
 class CFileImageSurface {
 public:
     void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
-    virtual ~CFileImageSurface();  // 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
-    void FreeSurfaces();           // 0x13e4d0 (shared teardown, external/no-body)
+    virtual ~CFileImageSurface(); // slot 0 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
+    // The 12-slot 0x5efa58 table (CDDSurface-family surface interface). Slots 1-11
+    // declared-only (reloc-masked, matching-neutral) so ??_7CFileImageSurface is sized.
+    virtual i32 Refresh();        // slot 1  @0x13e140
+    virtual i32 Apply();          // slot 2  @0x13e0a0
+    virtual i32 BlitSurf();       // slot 3  @0x13e0d0
+    virtual void FreeSurfaces2(); // slot 4  @0x13e4d0
+    virtual i32 Slot05();         // slot 5  @0x1412d0
+    virtual void ConfigureSurf(); // slot 6 @0x143cc0
+    virtual i32 Slot07();         // slot 7  @0x13f960
+    virtual void Slot08();        // slot 8  @0x13e2e0
+    virtual i32 ResolveEx();      // slot 9  @0x148890
+    virtual i32 LoadByExt();      // slot 10 @0x148940
+    virtual i32 LoadKeyed();      // slot 11 @0x148840
+    void FreeSurfaces();          // 0x13e4d0 (shared teardown, external/no-body)
 
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
     char m_pad04[0x94 - 0x04]; // +0x04

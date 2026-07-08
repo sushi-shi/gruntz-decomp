@@ -3,7 +3,7 @@
 // region). This is the whole 0x138490-0x139030 method band: the outer manager
 // CGruntzSoundZ (a CMapStringToOb keyed by each bank's inline name buffer) and the
 // inner AIL/XMIDI sequence object CGruntzSoundInnerZ (the real polymorphic
-// Wap::CObject-derived class whose 16-slot vtable @ 0x1ef700 cl auto-emits from the
+// CObject-derived class whose 16-slot vtable @ 0x1ef700 cl auto-emits from the
 // inline ctor here). It also carries the two __thiscall XMIDI master-volume helpers
 // (0x138950/0x1389c0), reached as m_sound-> methods off CGruntzMgr +0x48.
 //
@@ -355,7 +355,7 @@ i32 CGruntzSoundZ::GetXMidiVolume() {
 // ~CGruntzSoundInnerZ (0x138a50, base-object ??1 dtor, re-homed from
 // BoundaryUpperEh): cl stamps ??_7CGruntzSoundInnerZ (0x5ef700), runs
 // ReleaseHandle (slot 7, devirtualized inside the dtor -> direct call 0x138dd0),
-// then chains the empty ~Wap::CObject base (restamp 0x5e8cb4). ReleaseHandle can
+// then chains the empty ~CObject base (restamp 0x5e8cb4). ReleaseHandle can
 // throw (operator delete), so the base subobject carries the /GX unwind frame. The
 // vtable-slot scalar-deleting dtor 0x138a30 is an (external) LIBCMT carve-out.
 // ---------------------------------------------------------------------------

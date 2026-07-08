@@ -3,7 +3,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - the shared grand-base (slots 0..6)
+#include <Wap32/WapObj.h> // CWapObj : CObject - the shared grand-base (slots 0..6)
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr image
@@ -18,7 +18,7 @@
 // SoundFxEmitter) touch only its +0x2c channel surface. Every consumer includes
 // this header instead of re-declaring a per-TU view.
 //
-// The 15-slot own vtable @0x5eff30 (base slots 0..6 from Wap::CObject + CWapObj):
+// The 15-slot own vtable @0x5eff30 (base slots 0..6 from CObject + CWapObj):
 //   slot 1  (@0x04)  ~scalar-deleting dtor  (0x1590d0/0x1590f0)
 //   slot 5  (@0x14)  IsLoaded               (0x159090)  "surface ready?" predicate
 //   slot 6  (@0x18)  IsReady                (0x001c08)  inherited CWapObj default
@@ -46,7 +46,7 @@ class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 
 // ---------------------------------------------------------------------------
 // CSurfacePairBase - the polymorphic CWapObj-derived base. Slots 0..4 come from
-// Wap::CObject (the 5-slot grand-base thunks + scalar-deleting dtor), slot 6
+// CObject (the 5-slot grand-base thunks + scalar-deleting dtor), slot 6
 // (IsReady default @0x001c08) from CWapObj; the base declares only its slot-5
 // override (IsLoaded @0x159090). The base subobject dtor is EMPTY so cl folds the
 // implicit grand-base re-stamp (masks 0x5e8cb4) LAST into the leaf ~CDDrawSurfacePair;
@@ -73,7 +73,7 @@ inline CSurfacePairBase::~CSurfacePairBase() {}
 SIZE(CDDrawSurfacePair, 0x34); // new-size from CDDrawSubMgrPages::CreateChildren
 VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair
-    : public Wap::CObject { // was : CSurfacePairBase:CWapObj (merged, CWapObj slots as own)
+    : public CObject { // was : CSurfacePairBase:CWapObj (merged, CWapObj slots as own)
 public:
     virtual i32 IsLoaded();  // slot 5 (was CWapObj)
     virtual i32 IsReady();   // slot 6 (was CWapObj)

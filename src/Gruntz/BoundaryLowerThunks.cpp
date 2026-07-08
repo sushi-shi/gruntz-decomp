@@ -102,6 +102,7 @@ struct CGameApp {
     virtual void s16();            // +0x40
 };
 SIZE_UNKNOWN(CGameApp);
+VTBL(CGameApp, 0x001e9b0c); // vtable_names -> code (RTTI game class)
 RVA(0x00080cf0, 0x12)
 CGameApp::~CGameApp() {
     CloseResources();
@@ -167,28 +168,24 @@ CGameMgr::~CGameMgr() {
 // the base-vptr-restore dtor (stamp + 0x13ddb0 teardown) folded into the delete-flag
 // tail, then (flags&1) RezFree(this) and return this. Retail labelled it
 // CGameMgrDerived::`scalar deleting destructor'. Real polymorphic: the inline
-// vptr-restore dtor supplies the stamp + teardown call; ScalarDtor folds it. RezFree
+// vptr-restore dtor supplies the stamp + teardown call; scalar-dtor folds it. RezFree
 // (0x1b9b82, _RezFree) is the engine's allocator free for this Rez-managed object.
 // ===========================================================================
 extern "C" void RezFree(void* p); // 0x1b9b82 (_RezFree)
-struct CScalarDtor855a0 {
+struct CObj855a0 {
     void Base13ddb0(); // 0x13ddb0 (reloc-masked)
     // inline base-vptr-restore dtor: `mov [ecx],offset ??_7 + call 0x13ddb0`. Inline
-    // so ScalarDtor's explicit dtor call folds the stamp (like the ??_G thunk).
-    virtual ~CScalarDtor855a0() {
+    // so scalar-dtor's explicit dtor call folds the stamp (like the ??_G thunk).
+    virtual ~CObj855a0() {
         Base13ddb0();
     }
-    void* ScalarDtor(u32 flags);
 };
-SIZE_UNKNOWN(CScalarDtor855a0);
-RVA(0x000855a0, 0x24)
-void* CScalarDtor855a0::ScalarDtor(u32 flags) {
-    this->CScalarDtor855a0::~CScalarDtor855a0();
-    if (flags & 1) {
-        RezFree(this);
-    }
-    return this;
-}
+SIZE_UNKNOWN(CObj855a0);
+RELOC_VTBL(
+    CObj855a0,
+    0x001e9b8c
+); // aliases CGameMgr (slot-fn RVAs match its vtable, 100% majority)
+// @rva-symbol: ??_GCObj855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================
 // 0x094c10 - CGameWnd base destructor: cl's implicit vptr-restore stamps
@@ -222,6 +219,7 @@ struct CGameWnd {
     void Destroy(); // 0x13cfb0 (non-virtual reloc-masked call)
 };
 SIZE_UNKNOWN(CGameWnd);
+VTBL(CGameWnd, 0x001ea344); // vtable_names -> code (RTTI game class)
 RVA(0x00094c10, 0x16)
 CGameWnd::~CGameWnd() {
     Destroy();
@@ -282,7 +280,7 @@ void StrFreebd7f0() {
 // 0x0d5d70 - init/restamp: seed members (+0x04 = -1, +0x08/+0x0c = 0) then stamp
 // the worker-dtor vtable (0x5e8cb4, reuse the pinned name). __thiscall.
 // ===========================================================================
-struct CInitd5d70 : Wap::CObject {
+struct CInitd5d70 : CObject {
     i32 m_4; // +0x04
     i32 m_8; // +0x08
     i32 m_c; // +0x0c
@@ -294,7 +292,7 @@ void CInitd5d70::Init() {
     m_4 = -1;
     m_8 = 0;
     m_c = 0;
-    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
+    // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
 RVA(0x000e17b0, 0x15)
@@ -342,6 +340,10 @@ struct CStatusBaseSub100780 {
     virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(CStatusBaseSub100780);
+RELOC_VTBL(
+    CStatusBaseSub100780,
+    0x001eabcc
+); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x00100780, 0xb)
 CStatusBaseSub100780::~CStatusBaseSub100780() {
     Base1d6b();

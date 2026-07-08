@@ -58,6 +58,9 @@ class CDDrawChildGroupDtorHost {
 public:
     virtual ~CDDrawChildGroupDtorHost();
 };
+// Its ??_7 reloc-masks 0x1efdc0 = CDDrawChildGroup's OWN vtable (a /GX member-teardown twin
+// that shares that vtable); can't be VTBL'd (would collide) - documented as an alias.
+RELOC_VTBL(CDDrawChildGroupDtorHost, 0x001efdc0);
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
@@ -65,7 +68,7 @@ public:
 class CDDrawMapWorker {
 public:
     virtual void GetRuntimeClass();              // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag);            // [1] 0x165db0 scalar-deleting destructor
+    virtual ~CDDrawMapWorker();                  // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();                    // [2] 0x0028ec
     virtual void AssertValid();                  // [3] 0x00106e
     virtual void Dump();                         // [4] 0x004034
@@ -113,7 +116,7 @@ public:
 // members gives ~CDDrawWorkerMapSmall its /GX frame.
 // NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
+// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 
 // ---------------------------------------------------------------------------
@@ -123,7 +126,7 @@ public:
 // occupy lower vtable slots (slot numbers not load-bearing, only bodies), placed
 // last.
 // ---------------------------------------------------------------------------
-class CDDrawWorkerMapSmall : public Wap::CObject {
+class CDDrawWorkerMapSmall : public CObject {
 public:
     i32 m_04, m_08, m_0c; // +0x04..0x0f (merged CDDrawWorkerMapBase)
 public:
@@ -151,7 +154,6 @@ public:
     i32 m_64;              // +0x64  entry counter cleared by the teardown
 
     // Engine-label backlog stubs (non-vtable).
-    void* MapSmallScalarDtor(i32 flag);
     void ResetSlots();
 };
 
@@ -260,7 +262,7 @@ void CDDrawWorkerMapSmall::DestroyAll() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CDDrawMapWorker*)val)->ScalarDtor(1);
+                delete ((CDDrawMapWorker*)val);
             }
         } while (pos != 0);
     }
@@ -277,7 +279,7 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc28(a1, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -292,7 +294,7 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
     CDDrawMapWorkerObj* w = MakeMapWorker(this);
     if (w->Vfunc2C(a1, a3) == 0) {
         if (w != 0) {
-            w->ScalarDtor(1);
+            delete w;
         }
         return 0;
     }
@@ -315,15 +317,7 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
 // 0x157610: scalar-deleting destructor of the sibling CDDrawChildGroupDtorHost (vtable
 // 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-teardown
 // ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
-SYMBOL(??_GCDDrawChildGroupDtorHost @@UAEPAXI@Z)
-RVA(0x00157610, 0x1e)
-void* CDDrawWorkerMapSmall::MapSmallScalarDtor(i32 flag) {
-    ((CDDrawChildGroupDtorHost*)this)->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawChildGroupDtorHost@@UAEPAXI@Z 0x00157610 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
 // Leaf vtable slot [6] (0x156db0): constant state predicate returning 1.
 RVA(0x00156db0, 0x6)
@@ -356,7 +350,7 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
     if (((CDDrawMapWorker*)w)->Vfunc28(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
-            ((CDDrawMapWorker*)w)->ScalarDtor(1);
+            delete ((CDDrawMapWorker*)w);
         }
         return 0;
     }
@@ -396,7 +390,7 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
     }
     if (((CDDrawMapWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
         if (w != 0) {
-            ((CDDrawMapWorker*)w)->ScalarDtor(1);
+            delete ((CDDrawMapWorker*)w);
         }
         return 0;
     }
@@ -426,7 +420,7 @@ void CDDrawWorkerMapSmall::ResetSlots() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CDDrawMapWorker*)val)->ScalarDtor(1);
+                delete ((CDDrawMapWorker*)val);
             }
         } while (pos != 0);
     }
@@ -471,7 +465,7 @@ typedef i32 POSITION;
 class CDDrawMapValue {
 public:
     virtual void Dummy();               // +0x00
-    virtual i32  ScalarDtor(i32 flag);  // +0x04
+    virtual ~CDDrawMapValue(); // slot 1 (deleting dtor -> cl-emitted ??_G)
 };
 
 // CDDrawWorkerMapSmall surface used by the teardown - same load-bearing offsets as the
@@ -510,7 +504,7 @@ void CDDrawWorkerMapSmallTeardown::DestroyAll()
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0)
-                ((CDDrawMapValue *)val)->ScalarDtor(1);
+                delete ((CDDrawMapValue *)val);
         } while (*(volatile i32 *)&pos != 0);
     }
     m_map1.RemoveAll();
@@ -525,6 +519,10 @@ SIZE_UNKNOWN(CDDrawWorkerMapSmallTeardown);
 
 SIZE_UNKNOWN(CDDrawWorkerMapBase);
 SIZE_UNKNOWN(CDDrawMapWorker);
+RELOC_VTBL(
+    CDDrawMapWorker,
+    0x001f02d8
+); // shares CAniRecordBase2 vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 SIZE(CDDrawMapWorkerObj, 0x14);
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawSurfaceSource);

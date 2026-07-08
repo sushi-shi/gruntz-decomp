@@ -57,7 +57,7 @@ extern void* operator new(u32 size);
 // ---------------------------------------------------------------------------
 struct CFrameWorker {
     virtual void GetRuntimeClass();          // [0]  +0x00
-    virtual void ImgScalarDtor(i32 flag);    // [1]  +0x04  scalar-deleting dtor (ILT)
+    virtual ~CFrameWorker();                 // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Serialize();                // [2]  +0x08 (ILT)
     virtual void AssertValid();              // [3]  +0x0c (ILT)
     virtual void Dump();                     // [4]  +0x10 (ILT)
@@ -442,7 +442,7 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     CFrameWorker* worker = new CFrameWorker(n, m_c);
     if (!worker->Resolve(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
-            worker->ImgScalarDtor(1); // slot 1 @+0x04  scalar-deleting dtor
+            delete worker; // slot 1 @+0x04  scalar-deleting dtor
         }
         return 0;
     }

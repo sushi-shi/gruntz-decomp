@@ -474,6 +474,8 @@ SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(CButeStore, 0x001e949c);
+// (g_buteTree's runtime +0x08 secondary @0x5f04dc is bound to this same class's
+// emitted ??_7CButeStore@@6BCButeStoreSecond@@ via @data-symbol in ButeMgr.cpp.)
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

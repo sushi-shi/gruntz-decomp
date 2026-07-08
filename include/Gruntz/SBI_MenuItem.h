@@ -159,6 +159,7 @@ public:
     void* m_38; // +0x38  resolved cue/config record (config-record | sprite)
 };
 SIZE_UNKNOWN(CSBI_MenuItem);
+VTBL(CSBI_MenuItem, 0x001eab4c); // vtable_names -> code (RTTI game class)
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

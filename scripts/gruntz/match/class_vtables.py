@@ -36,6 +36,7 @@ from gruntz.match.class_meta import (
     REPO,
     iter_class_defs,
     rel,
+    source_files,
     vtbl_annotated_names,
     vtbl_annotations,
 )
@@ -79,20 +80,52 @@ def present_rvas():
     return out
 
 
+_RELOC_RE = re.compile(r"\bRELOC_VTBL\s*\(\s*([\w:]+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
+
+
+def reloc_vtbl_annotations():
+    """{class_name: rva} for every RELOC_VTBL(type, addr) - a matching-required placeholder
+    whose ??_7 reloc-masks the retail vtable `addr` (bound by a DIFFERENT real class). Text-
+    scanned tree-wide like VTBL()."""
+    out = {}
+    for path in source_files():
+        for m in _RELOC_RE.finditer(path.read_text(errors="ignore")):
+            try:
+                out[m.group(1).split("::")[-1]] = int(m.group(2), 16)
+            except ValueError:
+                pass
+    return out
+
+
+def library_vtable_rvas():
+    """RVAs of MFC/CRT library vtables (config/library_vtables.csv). Statically linked, so
+    present_rvas() (our emitted base objs) misses them; a class whose RTTI vtable is here IS
+    catalogued - we model it as a minimal view, never reconstruct the library class."""
+    out = set()
+    path = REPO / "config" / "library_vtables.csv"
+    if not path.exists():
+        return out
+    for r in csv.reader(path.open()):
+        if len(r) >= 2:
+            try:
+                out.add(int(r[1], 16))
+            except ValueError:
+                pass
+    return out
+
+
 def vtbl_rva_collisions():
-    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE
-    distinct class via VTBL(). A vtable datum has exactly one ??_7 name in retail, so
-    any such rva is a mis-catalog (aliasing one vtable under many names) - it slips
-    past the delink name-injectivity guard, which only enforces name->rva, not
-    rva->name."""
+    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE VTBL()
+    annotation - the bijection assert. VTBL(name, rva) must be UNIQUE in both directions:
+    a vtable datum has exactly one ??_7 name in retail (rva->name), and one canonical
+    binding site. Two DIFFERENT names on one rva = a mis-catalog (aliasing one vtable under
+    many names - collapse the fake views); the SAME name twice = a redundant duplicate
+    binding (delete one). Either slips past the delink name-injectivity guard, which only
+    enforces name->rva, not rva->one-annotation."""
     by_rva = defaultdict(list)
     for name, rva, path, lineno in vtbl_annotations():
         by_rva[rva].append((name, path, lineno))
-    return {
-        rva: sites
-        for rva, sites in by_rva.items()
-        if len({n for n, _p, _l in sites}) > 1
-    }
+    return {rva: sites for rva, sites in by_rva.items() if len(sites) > 1}
 
 
 def main() -> int:
@@ -113,7 +146,21 @@ def main() -> int:
     rtti = rtti_vtables()
     have_csv = (REPO / "build" / "gen" / "symbol_names.csv").exists()
     present = present_rvas()
+    lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
+    reloc = reloc_vtbl_annotations()
+    # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY bound by another class -
+    # via VTBL(), an RTTI ??_7 in vtable_names.csv, or the MFC/CRT library catalog. NOT merely
+    # `present` (symbol_names has non-vtable data too): the alias must point at an actual vtable
+    # binding, so it can never hide a genuinely-missing binding or alias a non-vtable datum.
+    catalogued_rvas = ({rva for _n, rva, _p, _l in vtbl_annotations()}
+                       | set(rtti.values()) | lib_rvas)
+    bad_reloc = {n: rva for n, rva in reloc.items() if rva not in catalogued_rvas}
+    if bad_reloc:
+        print("RELOC_VTBL: reloc-masked rva(s) NOT bound by any real VTBL() - each placeholder "
+              "must alias a vtable a real class owns:", file=sys.stderr)
+        for n, rva in sorted(bad_reloc.items()):
+            print(f"  {n} -> 0x{rva:08x} (no VTBL() binds this rva)", file=sys.stderr)
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -136,7 +183,8 @@ def main() -> int:
         catalogued = (
             name in vtbl_ann
             or manual[name]
-            or (name in rtti and rtti[name] in present))
+            or name in reloc
+            or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"
             violators.append((name, path, lineno, reason))
@@ -147,9 +195,11 @@ def main() -> int:
               "first for an accurate count).", file=sys.stderr)
     if violators:
         print(f"class-vtable completeness: {have_vtable} vtable-bearing class "
-              f"name(s); {len(violators)} NOT catalogued (need VTBL):", file=sys.stderr)
+              f"name(s); {len(violators)} NOT catalogued (need VTBL or RELOC_VTBL):", file=sys.stderr)
         for name, path, lineno, reason in violators:
             print(f"  {rel(path)}:{lineno}: {name}  [{reason}]", file=sys.stderr)
+        return 1
+    if bad_reloc:
         return 1
     if collisions:
         print(f"class-vtable completeness: all {have_vtable} names catalogued, but "
@@ -160,5 +210,33 @@ def main() -> int:
     return 0
 
 
+def assert_unique_vtbls() -> int:
+    """Hard bijection assert (its own build gate): every VTBL(name, rva) is UNIQUE - each
+    rva bound by exactly one annotation. Exits nonzero on ANY multiply-bound rva, whether the
+    duplicate names match (redundant binding - delete one) or differ (mis-catalog aliasing one
+    vtable under several names - collapse the fake views). Independent of the catalog-
+    completeness worklist, so a new duplicate fails the build even while violators remain."""
+    collisions = vtbl_rva_collisions()
+    if not collisions:
+        print("vtbl-uniqueness: OK - every VTBL() rva is bound by exactly one annotation")
+        return 0
+    dup = sum(len(s) for s in collisions.values())
+    print(f"vtbl-uniqueness: FATAL - {len(collisions)} rva(s) bound by >1 VTBL() "
+          f"({dup} annotations); VTBL(name, rva) must be unique:", file=sys.stderr)
+    for rva, sites in sorted(collisions.items(), key=lambda kv: -len(kv[1])):
+        names = sorted({n for n, _p, _l in sites})
+        kind = ("SAME name, redundant - delete the extra binding" if len(names) == 1
+                else "DIFFERENT names, mis-catalog - collapse the fake views to one class")
+        print(f"  0x{rva:08x} <- {len(sites)} bindings ({kind}):", file=sys.stderr)
+        for n, p, l in sites:
+            print(f"      {n}  {rel(p)}:{l}", file=sys.stderr)
+    return 1
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--assert-unique", action="store_true",
+                    help="only run the VTBL-rva bijection assert (fatal on any duplicate)")
+    args = ap.parse_args()
+    raise SystemExit(assert_unique_vtbls() if args.assert_unique else main())

@@ -286,6 +286,20 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
+// g_typeColl's RUNTIME-PHASE type. After DynInitTypeColl builds g_typeColl through
+// the CTypeKeyColl ctor (construction vtable ??_7CTypeKeyColl @0x5f04d0), retail
+// re-stamps this live 1-slot runtime vtable @0x5f04e4 over it - slot 0 is 0x16ea20,
+// the CContainerErr error-drain tail the collection shares by COMDAT fold. Because
+// CTypeKeyColl is single-inheritance, cl emits NO ??_7 for this phase (no secondary),
+// so the runtime type is modeled as its own minimal real class and its vtable named
+// directly with VTBL - the only binding mechanism available for a symbol-less datum
+// (chosen over a DATA() manual-vtbl or leaving it in AnalysisVtables).
+struct CTypeCollRuntime {
+    virtual void Slot00_16ea20(); // [0] 0x16ea20 (shared CContainerErr drain tail)
+};
+SIZE_UNKNOWN(CTypeCollRuntime);
+VTBL(CTypeCollRuntime, 0x001f04e4); // g_typeColl runtime-phase vtable @0x5f04e4
+
 // ===========================================================================
 // `dynamic initializer for g_typeColl' (0x16e730) - construct the shared key
 // collection with the [0x7d0, 0x7da] id range, stamp its runtime vtable, then
@@ -327,18 +341,7 @@ void DynInitTypeColl() {
 // vtables, run the member + base teardown, and free the object when bit0 of the
 // flag is set. Returns `this`.
 // ===========================================================================
-RVA(0x0016e9c0, 0x45)
-void* CButeTree::ScalarDtor(u32 flags) {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    ClearRecursive(0);
-    ((CButeTreeBase2*)(this != 0 ? (char*)this + 8 : 0))->Dtor();
-    BaseDtor();
-    if (flags & 1) {
-        RezFree(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and

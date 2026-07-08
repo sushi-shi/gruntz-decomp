@@ -25,7 +25,7 @@
 // ??_7CAmbientSound / ??_7CAmbientPosSound / ??_7CRandomAmbientSound (mapped in
 // config/vtable_names.csv at 0x1e710c / 0x1e7124 / 0x1e713c) and inlines the vptr
 // stamp in the ctor. Slot 0 is retail's compiler-gen scalar deleting destructor,
-// slot 3 is Update; see the ScalarDtor note below for why slot 0 is hand-named.
+// slot 3 is Update; see the scalar-dtor note below for why slot 0 is hand-named.
 inline void* operator new(u32, void* p) {
     return p;
 }
@@ -36,10 +36,9 @@ struct CAmbientSound : public CUserBase {
     // makes MSVC5 emit the placement-`new` ctor OUT-OF-LINE (a `call ??0CAmbient*`)
     // instead of the inlined vptr-stamp retail schedules at each CreateXxx site,
     // regressing CreatePos6/CreatePos5/CreateRandom ~96%->~87%. So the direct slot-0
-    // call (delete-obj shape) stays `obj->ScalarDtor(1)`, an exact match.
-    virtual ~CAmbientSound() OVERRIDE;                                 // slot 0 (compiler-gen ??_G)
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual void Update(i32 x, i32 y, i32 force);                      // slot 3 (retail 0xc090)
+    // call (delete-obj shape) stays `delete obj`, an exact match.
+    virtual ~CAmbientSound() OVERRIDE;            // slot 0 (compiler-gen ??_G)
+    virtual void Update(i32 x, i32 y, i32 force); // slot 3 (retail 0xc090)
     CAmbientSound() {}
     // +0x00 vptr (??_7CAmbientSound)
     i32 m_voice; // +0x04
@@ -55,9 +54,8 @@ struct CAmbientSound : public CUserBase {
 // RTTI: CAmbientPosSound : CAmbientSound (vftable 0x1e7124). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CAmbientPosSound : CAmbientSound {
-    virtual ~CAmbientPosSound() OVERRIDE;                              // slot 0
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;             // slot 3 override
+    virtual ~CAmbientPosSound() OVERRIDE;                  // slot 0
+    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CAmbientPosSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
@@ -67,9 +65,8 @@ struct CAmbientPosSound : CAmbientSound {
 // RTTI: CRandomAmbientSound : CAmbientSound (vftable 0x1e713c). Overrides slot 0
 // (scalar dtor) + slot 3; slots 1/2 inherit CUserBase's.
 struct CRandomAmbientSound : CAmbientSound {
-    virtual ~CRandomAmbientSound() OVERRIDE;                           // slot 0
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE;             // slot 3 override
+    virtual ~CRandomAmbientSound() OVERRIDE;               // slot 0
+    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
     CRandomAmbientSound() {}
     // m_voice/m_level/m_14/m_listNode inherited from CAmbientSound
     i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
@@ -395,10 +392,15 @@ SoundChannelNew* CWorldSoundSet::
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CAmbientSound);
 SIZE_UNKNOWN(CAmbientPosSound);
+VTBL(CAmbientPosSound, 0x001e7124); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CRandomAmbientSound);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 SIZE_UNKNOWN(CSoundChannel);
 SIZE_UNKNOWN(CSoundChannelList);
+RELOC_VTBL(
+    CSoundChannelList,
+    0x001ed4b4
+); // IS MFC CObList (its methods are FID-labeled CObList members)
 SIZE_UNKNOWN(CSoundNode);
 SIZE_UNKNOWN(CWorldSoundSet);
 SIZE_UNKNOWN(SoundChannelNew);

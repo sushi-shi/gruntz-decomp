@@ -192,7 +192,7 @@ SIZE_UNKNOWN(CMultiPlayerInfo);
 
 // The join/report gate at CMulti+0x524 - IDENTITY RESOLVED (netmgr-vs-cmulti):
 // this IS the real CNetMgr (RTTI CNetMgr : CObject, ??_7 @0x1ea42c, virtual dtor
-// ??1 @0xb6000 = the ScalarDtor slot below; <Net/NetMgr.h> models it in full,
+// ??1 @0xb6000 = the scalar-dtor slot below; <Net/NetMgr.h> models it in full,
 // conflated with CMulti's own fields - see its header verdict). The methods here
 // are CNetMgr's 0x178xxx wrappers viewed with divergent signatures (Bind ==
 // Init@0x178170, Activate == 0x178750, OpenPlayer == AddPlayerNode@0x1786d0,
@@ -210,7 +210,7 @@ SIZE_UNKNOWN(CMultiPlayerInfo);
 class CMultiReportGate {
 public:
     virtual void Slot00();                // +0x00
-    virtual i32 ScalarDtor(i32 flag);     // +0x04  scalar-deleting destructor
+    virtual ~CMultiReportGate();          // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Bind(i32* tmpl);                  // 0x578170  bind to host template -> nonzero ok
     void Activate();                      // 0x578750
     CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)

@@ -65,6 +65,7 @@ struct ClipRect16 {
 // (the throwing CPtrArray member ctor is what gives each factory `new` its /GX frame).
 // ---------------------------------------------------------------------------
 SIZE(CDDSurface, 0xc0);
+VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
 class CDDSurface {
 public:
     // The pool factories (CDDrawPtrCollections::Create*) construct this via `new`; the

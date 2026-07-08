@@ -5,9 +5,9 @@
 // NO-body so their rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
-#include <stdlib.h>              // rand (CRT PRNG, reloc-masked)
-#include <string.h>              // inline strlen / memset intrinsics
-#include <Win32.h>               // WINAPI (windows.h) for the g_p* import-pointer types
+#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
+#include <string.h> // inline strlen / memset intrinsics
+#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)               // WINAPI (windows.h) for the g_p* import-pointer types
 #include <Gruntz/GameRegistry.h> // canonical Win32-safe game-manager singleton view
 #include <Globals.h>
 
@@ -24,6 +24,7 @@ struct CUserBase {
     virtual void s2();
 };
 SIZE_UNKNOWN(CUserBase);
+VTBL(CUserBase, 0x001e70b4); // vtable_names -> code (RTTI game class)
 RVA(0x000087b0, 0x7)
 
 // ===========================================================================
@@ -85,6 +86,7 @@ struct CUserBaseSubB940 {
     virtual ~CUserBaseSubB940();
 };
 SIZE_UNKNOWN(CUserBaseSubB940);
+RELOC_VTBL(CUserBaseSubB940, 0x001e70b4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0000b940, 0xf)
 CUserBaseSubB940::~CUserBaseSubB940() {
     m_4 = 0;
@@ -236,26 +238,19 @@ void CButeStore::Reset() {
 // 0x018430 - tail-call wrapper: end the wait cursor on the current MFC thread
 // (((CWinThread*)AfxGetModuleState()->m_thread)->EndWaitCursor()). __cdecl, no args.
 // ===========================================================================
-// The module thread's EndWaitCursor @0x1beb10 IS CWinThread::EndWaitCursor; minimal local decl
-// (links from MFC).
-SIZE_UNKNOWN(CWinThread);
+// Real MFC AfxGetModuleState() (@0x1d3631) from <Mfc.h>; its +0x04 word is the current
+// CWinThread*. CWinThread's full definition lives in the GUI-heavy <afxwin.h> (NOT pulled
+// in by <Mfc.h>, which is VC_EXTRALEAN), so complete MFC's forward decl with just the one
+// method we call - CWinThread::EndWaitCursor @0x1beb10 (raw +0x04 offset load-bearing).
 class CWinThread {
 public:
     void EndWaitCursor();
 };
-struct AfxThread18430 {
-    // EndWaitCursor @0x1beb10 IS CWinThread::EndWaitCursor; cast at the call.
-};
-SIZE_UNKNOWN(AfxThread18430);
-struct AfxModuleState18430 {
-    void* m_pad0;             // +0x00
-    AfxThread18430* m_thread; // +0x04
-};
-SIZE_UNKNOWN(AfxModuleState18430);
-extern AfxModuleState18430* AfxGetModuleState(); // 0x1d3631 (reloc-masked)
+SIZE_UNKNOWN(CWinThread); // real size is MFC's (afxwin.h not pulled in)
 RVA(0x00018430, 0xd)
 void EndWaitCursor18430() {
-    ((CWinThread*)AfxGetModuleState()->m_thread)->EndWaitCursor();
+    CWinThread* thread = *(CWinThread**)((char*)AfxGetModuleState() + 4);
+    thread->EndWaitCursor();
 }
 
 // ===========================================================================

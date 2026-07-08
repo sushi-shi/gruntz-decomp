@@ -7,13 +7,13 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <Wap32/Object.h>                 // Wap::CObject - the shared engine grand-base
+#include <Wap32/Object.h>                 // CObject - the shared engine grand-base
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
 // WwdGameObject.cpp - leaf methods of CWwdGameObject, a runtime "plane object"
 // deserialized from WWD level data (constructed by WwdFile::ReadPlaneObjects,
 // 0x162af0, via the EH-frame ctor at 0x15b390 which is NOT reconstructed here).
 //
-// The object owns a sprite-animation worker at +0x7c (AnimWorker, foreign
+// The object owns a sprite-animation worker at +0x7c (WwdAnimWorker, foreign
 // vtable - virtuals dispatched, never defined), a command-dispatch sub-object
 // at +0x1a0 (CmdMap), and a back-pointer to its owning manager at +0x0c.
 //
@@ -116,7 +116,7 @@ struct WwdSnapshot {
 struct WwdRenderCtx;
 struct WwdSurface;
 
-// The sub-object hung off the worker at AnimWorker+0x18 (own vtable; its +0x8
+// The sub-object hung off the worker at WwdAnimWorker+0x18 (own vtable; its +0x8
 // virtual is read in WriteSnapshot).
 class WorkerSub {
 public:
@@ -280,7 +280,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_posY = a2;
     m_74 = a3;
     m_104 = a1;
-    AnimWorker* w = m_worker;
+    WwdAnimWorker* w = m_worker;
     m_108 = a2;
     m_10c = a3;
     m_f8 = 10;
@@ -343,7 +343,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    AnimWorker* w;
+    WwdAnimWorker* w;
     i32 saved;
     i32 node;
     switch (type) {
@@ -622,7 +622,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
     if (ar == 0) {
         return 0;
     }
-    AnimWorker* w = m_worker;
+    WwdAnimWorker* w = m_worker;
     if (w == 0) {
         return 0;
     }
@@ -805,16 +805,16 @@ SIZE_UNKNOWN(WwdSurface);
 // (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md): a base CWwdGameObject
 // "Mid" level (vtable 0x5f0020) owns the four polymorphic worker pointers, a CString
 // name (+0xdc), and two RAII sentinel-handle members (EdgeA/EdgeB) whose call-free
-// dtors clear the base fields; its grand-base Wap::CObject (vtable 0x5e8cb4) just
+// dtors clear the base fields; its grand-base CObject (vtable 0x5e8cb4) just
 // re-stamps. The thin factory variants A/C/F derive from Mid (each with its own
 // most-derived vtable) and re-run the worker pass before folding Mid. cl emits the
 // per-level vptr re-stamps + /GX trylevel chain; the stamps reloc-mask against the
 // retail engine vtables. Field names are placeholders; only offsets + code bytes
 // are load-bearing.
 
-// The teardown grand-base is Wap::CObject (the SAME class as the flat model's MFC
+// The teardown grand-base is CObject (the SAME class as the flat model's MFC
 // CObject - one ??_7CObject@0x1e8cb4, VA 0x5e8cb4). The EH dtors intentionally use
-// the Wap::CObject reconstruction rather than the real <Mfc.h> CObject because its
+// the CObject reconstruction rather than the real <Mfc.h> CObject because its
 // INLINE empty dtor folds into each derived dtor's vptr re-stamp (call-free); the
 // real MFC ~CObject is out-of-line in NAFXCW, so cl would emit a CALL and break the
 // fold. (The non-dtor flat CWwdGameObject has no dtor to fold, so it uses real MFC
@@ -838,9 +838,9 @@ struct WwdName {
 };
 
 // The embedded +0x1a0 command sub-object (B variant). Real polymorphic base
-// (Wap::CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
+// (CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
 // teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
-struct WwdSub : public Wap::CObject {
+struct WwdSub : public CObject {
     virtual ~WwdSub() OVERRIDE {
         ((CDDrawBlitParam*)this)->Reset_15c2c0();
     }
@@ -891,7 +891,7 @@ inline WwdEdgeA::~WwdEdgeA() {
 // A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
 // 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
 // base re-stamp folded in.
-struct WwdSubA : public Wap::CObject {
+struct WwdSubA : public CObject {
     virtual ~WwdSubA() OVERRIDE;
     WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
 };
@@ -904,9 +904,23 @@ inline WwdSubA::~WwdSubA() {
 // workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
 // dtor, then folds EdgeA, EdgeB and the wap-object grand base (groupY + base-vtable stamp).
 // ---------------------------------------------------------------------------
-class CWwdGameObjectE : public Wap::CObject {
+class CWwdGameObjectE : public CObject {
 public:
-    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0
+    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0 (slot 1 scalar-deleting dtor)
+    // Derived game-object slots 5-15 (the shared CWwdGameObject interface; slot RVAs
+    // are the 0x5f0020 table's ground truth). Declared-only so A/F/C inherit the full
+    // 16-slot shape and cl emits the sized ??_7; reloc-masked, matching-neutral.
+    virtual void Slot14_15b370(); // slot 5  @0x15b370
+    virtual void IsValidImage();  // slot 6  @0x001c08 (shared base thunk)
+    virtual void ReleaseSubs();   // slot 7  @0x15b5d0
+    virtual i32 Vfunc20();        // slot 8  @0x154a00
+    virtual i32 Slot24_164790();  // slot 9  @0x164790
+    virtual i32 Setup28();        // slot 10 @0x150d60
+    virtual void Slot2C();        // slot 11 @0x11fec0 (__purecall)
+    virtual void Slot30();        // slot 12 @0x11fec0 (__purecall)
+    virtual void Slot34();        // slot 13 @0x11fec0 (__purecall)
+    virtual void Slot38();        // slot 14 @0x11fec0 (__purecall)
+    virtual i32 Play3C();         // slot 15 @0x151150
 
     WwdEdgeB m_04; // 0x04
     char _p10[0x20 - 0x10];
@@ -949,7 +963,16 @@ inline CWwdGameObjectE::~CWwdGameObjectE() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectA : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectA() OVERRIDE; // 0x15b790
+    virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f00a8 table).
+    virtual void ReleaseSubs() OVERRIDE; // slot 7  @0x15b980
+    virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
+    virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
+    virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
+    virtual void Slot30() OVERRIDE;      // slot 12 @0x150660
+    virtual void Slot34() OVERRIDE;      // slot 13 @0x1506b0
+    virtual void Slot38() OVERRIDE;      // slot 14 @0x1508a0
+    virtual i32 Play3C() OVERRIDE;       // slot 15 @0x150a70 (Dispatch)
 
     char _pe0[0x18c - 0xe0];
     i32 m_18c; // 0x18c
@@ -988,7 +1011,16 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectF : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectF() OVERRIDE; // 0x15bad0
+    virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f0060 table).
+    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15ba40
+    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15bc50
+    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15ba60
+    virtual void Slot2C() OVERRIDE;        // slot 11 @0x15ba70
+    virtual void Slot30() OVERRIDE;        // slot 12 @0x15ba80
+    virtual void Slot34() OVERRIDE;        // slot 13 @0x15ba90
+    virtual void Slot38() OVERRIDE;        // slot 14 @0x15baa0
+    virtual void SetupDeferredV();         // slot 16 @0x15bc30 (new)
 };
 
 // @early-stop
@@ -1035,12 +1067,12 @@ struct WwdObList {
 // Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
 // CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
-struct WwdBResolve : public Wap::CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
-    virtual ~WwdBResolve() OVERRIDE;       // slot 1
-    void DtorBase();                       // 0x429b
-    i32 m_04;                              // +0x04
-    i32 m_08;                              // +0x08
-    i32 m_0c;                              // +0x0c
+struct WwdBResolve : public CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
+    virtual ~WwdBResolve() OVERRIDE;  // slot 1
+    void DtorBase();                  // 0x429b
+    i32 m_04;                         // +0x04
+    i32 m_08;                         // +0x08
+    i32 m_0c;                         // +0x0c
     char _p10[0x20 - 0x10];
     i32 m_20; // +0x20
     char _p24[0x38 - 0x24];
@@ -1123,6 +1155,16 @@ inline WwdBLevel2::~WwdBLevel2() {
 class CWwdGameObjectB : public WwdBLevel2 {
 public:
     virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
+    // Own vtable @0x5f00e8: overrides WwdBResolve's slots 5/7/8 + adds 10..15 (binary RVAs).
+    virtual void VtSlotFill0() OVERRIDE; // slot 5  0x15bcd0
+    virtual void VtSlotFill2() OVERRIDE; // slot 7  0x15bf00
+    virtual void VtSlotFill3() OVERRIDE; // slot 8  0x15bce0
+    virtual void Slot10_1665e0();        // slot 10 0x1665e0
+    virtual void Slot11_1668b0();        // slot 11 0x1668b0
+    virtual void Slot12_1668e0();        // slot 12 0x1668e0
+    virtual void Slot13_166910();        // slot 13 0x166910
+    virtual void Slot14_166950();        // slot 14 0x166950
+    virtual void Slot15_150a70();        // slot 15 0x150a70
     WwdObList m_1dc;                     // +0x1dc  CObList
     char _p1e0[0x1f8 - 0x1e0];
     i32 m_1f8; // +0x1f8
@@ -1161,7 +1203,19 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 // ---------------------------------------------------------------------------
 class CWwdGameObjectC : public CWwdGameObjectE {
 public:
-    virtual ~CWwdGameObjectC() OVERRIDE; // 0x15c070
+    virtual ~CWwdGameObjectC() OVERRIDE; // slot 1  0x15c070
+    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5effd0 table).
+    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15c000
+    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15c200
+    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15c020
+    virtual void Slot2C() OVERRIDE;        // slot 11 @0x1660f0 (RenderDot)
+    virtual void Slot30() OVERRIDE;        // slot 12 @0x1661d0
+    virtual void Slot34() OVERRIDE;        // slot 13 @0x1662a0
+    virtual void Slot38() OVERRIDE;        // slot 14 @0x1664a0
+    // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
+    virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
+    virtual void Slot44();        // slot 17 @0x15c030
+    virtual void Slot48();        // slot 18 @0x15c040
 
     char _pe0[0x18c - 0xe0];
     u8 m_18c; // 0x18c (byte flag)
@@ -1192,10 +1246,16 @@ SIZE(CWwdGameObjectB, 0x1fc);
 SIZE(CWwdGameObjectC, 0x190);
 SIZE_UNKNOWN(CWwdGameObjectE);
 SIZE(CWwdGameObjectF, 0x18c);
+// Per-variant game-object vtables (slot RVAs = each table's ground truth).
+VTBL(CWwdGameObjectE, 0x001f0020); // ??_7 (Mid base, 16 slots)
+VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (Level2, 16 slots)
+VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
+VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
+VTBL(CWwdGameObjectB, 0x001f00e8); // ??_7 (16 slots, 4-level MI chain)
 SIZE_UNKNOWN(WwdEdgeA);
 SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);
-SIZE_UNKNOWN(Wap::CObject);
+SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(WwdSub);
 SIZE_UNKNOWN(WwdSubA);
 SIZE_UNKNOWN(WwdWorker);

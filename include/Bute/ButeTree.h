@@ -60,8 +60,8 @@ SIZE(CButeTreeBase2, 0x24); // receiver view of the +0x08 second base (spans +0x
 // casts; making the class polymorphic keeps the fields flat but drops the manual vptr
 // field names.
 struct CButeTreePrimary {
-    virtual void P0();         // +0x00  primary vptr
-    CVariantSlot* m_errorSink; // +0x04
+    virtual ~CButeTreePrimary(); // +0x00 slot 0 (primary vptr dtor)
+    CVariantSlot* m_errorSink;   // +0x04
 };
 SIZE(CButeTreePrimary, 0x8); // { vptr, error-sink }
 struct CButeTreeSecond {
@@ -78,6 +78,7 @@ SIZE(CButeTreeSecond, 0x20); // second base (spans +0x08..+0x28 of CButeTree)
 
 class CButeTree : public CButeTreePrimary, public CButeTreeSecond {
 public:
+    virtual ~CButeTree() OVERRIDE;              // slot 0 (scalar-dtor 0x16e9c0)
     void* Find(const char* key);                // 0x16d190
     void* Insert(const char* key, void* value); // 0x16db90
     // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
@@ -86,12 +87,12 @@ public:
 
     // g_buteTree ctor/dtor (TypeKeyColl.cpp). Construct runs the deeper base ctor;
     // ClearRecursive frees the keyed nodes; BaseDtor is the primary-base teardown;
-    // ScalarDtor is the `scalar deleting destructor'. All reloc-masked __thiscall.
+    // scalar-dtor is the `scalar deleting destructor'. All reloc-masked __thiscall.
     void Construct(void* arg, i32 b); // 0x16dff0
     void ClearRecursive(i32 recurse); // 0x16e070
     void BaseDtor();                  // 0x16da60
-    void* ScalarDtor(u32 flags);      // 0x16e9c0
 };
+VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 
 // --- vtable catalog ---
 

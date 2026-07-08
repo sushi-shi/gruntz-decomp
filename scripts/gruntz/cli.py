@@ -256,8 +256,28 @@ def cmd_build(args) -> None:
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
     run([sys.executable, "-m", "gruntz.match.vtable_bans"])
-    # VTBL still has a backlog (view-scaffolding + terminal manual stamps); REPORT
-    # until it too reaches 0, then flip to a fatal run(...). See gruntz.match.class_vtables.
+    # The vtable-hierarchy AUDIT (every class's SOURCE vtable diffed against the binary-proven
+    # one: INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING) reached 0 - now a FATAL gate so the source
+    # vtable modelling can never drift from the binary. `python -m gruntz.analysis.vtable_hierarchy --audit`.
+    ra = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_hierarchy", "--audit"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if ra.returncode != 0:
+        for ln in (ra.stdout + ra.stderr).splitlines():
+            if (ln.startswith("#") or "ERROR" in ln
+                    or ln.strip().split(":", 1)[0].strip() in
+                    ("inherit", "rename", "redeclare", "override", "missing")):
+                print(ln, file=sys.stderr)
+        die("vtable-audit: source vtable hierarchy does not match the binary - drive "
+            "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
+            "(python -m gruntz.analysis.vtable_hierarchy --audit)")
+    # VTBL(name, rva) UNIQUENESS - a HARD bijection assert (its own gate, run() raises on
+    # nonzero): every vtable rva is bound by exactly one VTBL() annotation. A vtable datum has
+    # one ??_7 name, so a multiply-bound rva is either a redundant duplicate (delete one) or a
+    # mis-catalog aliasing one vtable under many names (collapse the fake views). It must never
+    # regress, independent of the catalog-completeness backlog below.
+    run([sys.executable, "-m", "gruntz.match.class_vtables", "--assert-unique"])
+    # Catalog completeness: VTBL still has a backlog (view-scaffolding + terminal manual
+    # stamps); REPORT until it too reaches 0, then flip to a fatal run(...).
     r = subprocess.run([sys.executable, "-m", "gruntz.match.class_vtables"],
                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
     out_vt = r.stdout + r.stderr
@@ -265,18 +285,6 @@ def cmd_build(args) -> None:
             if re.match(r"\s*\S+:\d+:", ln))
     if n:
         log(f"VTBL: {n} class(es) missing VTBL() "
-            f"(python -m gruntz.match.class_vtables for the list)")
-    # rva->name uniqueness: a vtable datum has exactly ONE ??_7 name, so an rva bound
-    # by multiple VTBL() is a mis-catalog (shared-base/fallback aliasing) that the delink
-    # name-injectivity guard cannot see (it only checks name->rva). FATAL gate: collapse
-    # same-rva vtables to a single one (remove the fake views) - it must never regress.
-    mc = re.search(r"vtable-rva collisions: (\d+) rva\(s\)", out_vt)
-    if mc and int(mc.group(1)) > 0:
-        for ln in out_vt.splitlines():
-            if ln.strip().startswith("0x") or "vtable-rva collisions:" in ln:
-                print(ln, file=sys.stderr)
-        die(f"VTBL: {mc.group(1)} rva(s) bound by >1 class (multiply-bound) - a vtable "
-            f"datum has one ??_7 name; collapse to a single vtable / remove the fake views "
             f"(python -m gruntz.match.class_vtables for the list)")
     # Vtable COVERAGE: every vtable OUR analysis (vtable_scan: stride-4 runs of .text
     # function pointers) finds must be bound in source (symbol_names) or catalogued as

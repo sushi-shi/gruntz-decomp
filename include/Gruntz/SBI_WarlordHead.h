@@ -120,6 +120,7 @@ public:
     i32 m_50; // +0x50
 };
 SIZE_UNKNOWN(CSBI_WarlordHead);
+VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)
 
 // The frame sprite show/hide notifier (0x14dd90, __stdcall, ret 8).
 void WhShowItem(i32 handle, i32 flag);

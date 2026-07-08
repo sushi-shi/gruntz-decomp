@@ -118,6 +118,7 @@ class CLogicHandlerMap {
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
 SIZE(CGameObject, 0x1dc);
+RELOC_VTBL(CGameObject, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
 struct CGameObject {
     void Construct(void* owner, i32 id, i32 z);        // 0x15b390  the engine ctor (base subobject)
     void AddLogicHit(char* key);                       // 0x150f50
@@ -478,8 +479,9 @@ public:
     i32 m_28;             // +0x28
     i32 m_2c;             // +0x2c  (base ctor 0x58cd0's highest write: `mov [esi+0x2c],2`)
 };
-SIZE(CUserLogic, 0x30); // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
-                        // 0x30..0x3c tail lives on CTileLogic (below).
+SIZE(CUserLogic, 0x30);       // TRUE base size: 0x30 (see the NOTE). The tile-logic leaves'
+VTBL(CUserLogic, 0x001e705c); // vtable_names -> code (RTTI game class)
+                              // 0x30..0x3c tail lives on CTileLogic (below).
 // NOTE - the ONE TRUE CUserLogic size is 0x30, NOT 0x40. Evidence (retail):
 //   * The base ctor CUserLogic(CGameObject*) @0x58cd0 initializes fields only
 //     through m_2c (the highest write is `mov [esi+0x2c],2`), then returns. It

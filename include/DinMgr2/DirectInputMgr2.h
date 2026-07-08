@@ -59,6 +59,10 @@ typedef CInputDevice CDeviceConfigA;
 // thiscall). Elements are the polymorphic device bases.
 // ---------------------------------------------------------------------------
 SIZE(CDevicePtrArray, 0x14); // MFC CPtrArray layout (vptr + 4 dwords)
+RELOC_VTBL(
+    CDevicePtrArray,
+    0x001ec2dc
+); // IS MFC CPtrArray (non-CObject CInputDevBase* elems; array-family FID labels, 0x14 size)
 struct CDevicePtrArray {
     virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
@@ -95,7 +99,8 @@ struct CDeviceListNode {
 // MFC-derived intrusive list (CObList shape: head@+4, tail@+8). Methods are
 // reloc-masked thiscall.
 // ---------------------------------------------------------------------------
-SIZE(CDeviceList, 0x18); // MFC CObList layout (vptr + head/tail + count/free/block)
+SIZE(CDeviceList, 0x18);             // MFC CObList layout (vptr + head/tail + count/free/block)
+RELOC_VTBL(CDeviceList, 0x001ed4b4); // IS MFC CObList (Add=CObList::AddTail@0x1b4991, FID-verified)
 struct CDeviceList {
     virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
     void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)
@@ -271,6 +276,9 @@ public:
     virtual ~CInputDevBase() OVERRIDE {
         CInputDevRoot::ReleaseDevices();
     } // slot 0 (inline: base cleanup)
+    virtual i32 Create(IDirectInputA* di, const void* guid, void* hwnd)
+        OVERRIDE;                           // slot 1 0x134260 (CreateDeviceWrap)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2 0x1342b0
     // The two poll slots. Poll (slot 4) is the per-frame device poll: the base body
     // (0x133410) is a stub; the keyboard leaf overrides it (CInputDevice::Poll,
     // 0x133d00), the mouse/joystick leaf slots reloc-mask to their own poll. ResetState
@@ -289,7 +297,8 @@ SIZE(CInputDevice, 0x338);
 class CInputDevice : public CInputDevBase {
 public:
     CInputDevice();
-    virtual ~CInputDevice() OVERRIDE; // 0x133300 (the /GX multilevel deleting-dtor)
+    virtual ~CInputDevice() OVERRIDE;       // 0x133300 (the /GX multilevel deleting-dtor)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x133bf0 (Teardown)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x133b50
     void Teardown();                                                           // 0x133bf0
@@ -312,7 +321,9 @@ SIZE(CDeviceConfigB, 0x2c8);
 class CDeviceConfigB : public CInputDevBase {
 public:
     CDeviceConfigB();
-    virtual ~CDeviceConfigB() OVERRIDE; // 0x1334f0 (the /GX multilevel deleting-dtor)
+    virtual ~CDeviceConfigB() OVERRIDE;     // 0x1334f0 (the /GX multilevel deleting-dtor)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x134360 (Free360)
+    virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (PollMouse)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
     i32 IsReady();                                                                     // 0x1343a0
@@ -331,7 +342,9 @@ public:
 SIZE_UNKNOWN(CDeviceConfigC);
 class CDeviceConfigC : public CInputDevBase {
 public:
-    virtual ~CDeviceConfigC() OVERRIDE; // 0x133460 (the /GX multilevel deleting-dtor)
+    virtual ~CDeviceConfigC() OVERRIDE;     // 0x133460 (the /GX multilevel deleting-dtor)
+    virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (Free6d0)
+    virtual i32 Poll() OVERRIDE;            // slot 4  (joystick poll override)
     void Free6d0(); // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
 };
 

@@ -145,6 +145,8 @@ extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 VTBL(CInputDevice, 0x001ef628);   // keyboard-device vtable
 VTBL(CDeviceConfigB, 0x001ef640); // mouse-device vtable
 VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
+VTBL(CInputDevRoot, 0x001ef670);  // grand-base subobject vtable (4 slots)
+VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
 
 // Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
 // `new CInputDevice` / InitB's `new CDeviceConfigB`; cl auto-stamps the implicit

@@ -19,9 +19,9 @@ extern "C" void RezFree(void* p);
 // 7-byte `mov [this],&g_wapObjectDtorVtbl; ret` leaf. Three distinct leaf
 // classes share the identical shape (each called from its own scalar-deleting
 // dtor - e.g. 0x161460 <- ??_G @0x161440, confirmed by xref).
-// TERMINAL manual stamps (not convertible to `: public Wap::CObject`): retail
+// TERMINAL manual stamps (not convertible to `: public CObject`): retail
 // keeps these as THREE separate un-COMDAT-folded copies at 0x161460/0x161560/
-// 0x163a10; letting cl emit ~Wap::CObject would fold them to ONE COMDAT and
+// 0x163a10; letting cl emit ~CObject would fold them to ONE COMDAT and
 // drop two of the three RVA pins. The reloc-masked stamp is already byte-exact.
 // ---------------------------------------------------------------------------
 

@@ -4,7 +4,7 @@
 //
 // Ground truth (retail vtable ??_7CLoadable @0x5efc30 / RVA 0x1efc30, 9 slots):
 //   [0] 0x1bef01   CObject slot 0 thunk            }
-//   [1] 0x155720   scalar-deleting dtor (??_G)     } from Wap::CObject (grand-base 0x5e8cb4)
+//   [1] 0x155720   scalar-deleting dtor (??_G)     } from CObject (grand-base 0x5e8cb4)
 //   [2] 0x0028ec   CObject slot 2 thunk            }
 //   [3] 0x00106e   CObject slot 3 thunk            }
 //   [4] 0x004034   CObject slot 4 thunk            }
@@ -13,7 +13,7 @@
 //   [7] 0x155740   Unload / reset-hook (new in CLoadable)
 //   [8] 0x154a00   GetClassId default: `xor eax,eax; ret` == return CLASSID_NONE (0)
 //
-// CLoadable : public CWapObj : public Wap::CObject. It owns the three-word header
+// CLoadable : public CWapObj : public CObject. It owns the three-word header
 // (m_04/m_08/m_0c) reset by its dtor, and adds the two new virtuals (Unload @[7],
 // GetClassId @[8]) directly after CWapObj's IsLoaded/IsReady. ABSTRACT - never
 // instantiated on its own, so its intermediate vptr stamps are DEAD-STORED by
@@ -22,9 +22,9 @@
 // retail 0x5efc30 / grand-base 0x5e8cb4 stamp).
 //
 // SLOT-1 CONVENTION (why the (B) leaves stay off this base - MECHANISM): this
-// canonical uses the (A) real-`virtual ~Dtor()` form via Wap::CObject, so cl auto-
+// canonical uses the (A) real-`virtual ~Dtor()` form via CObject, so cl auto-
 // generates each leaf's ??_G scalar-deleting dtor. The (B) leaves instead hand-write
-// an explicit `ScalarDtor(i32) OVERRIDE` on a REGULAR-virtual slot-1 to pin ??_G by RVA:
+// an explicit `scalar-dtor(i32) OVERRIDE` on a REGULAR-virtual slot-1 to pin ??_G by RVA:
 //   CGameLevel          ??_G @0x1611c0  (its own local (B) CLoadable, GameLevel.h)
 //   CDDrawSubMgrPages   ??_G @0x1574b0  (: CDDrawSubMgrPagesBase; the retail
 //                       ??_7CDDrawSubMgrDraco @0x5efe08 - CDDrawSubMgrDraco IS Pages,
@@ -33,14 +33,14 @@
 //   CDDrawSubMgrLeaf    ??_G @0x1577c0  (: CDDrawSubMgrGrandBase)
 // These CANNOT derive from this (A) base without losing the pinned ??_G, for two
 // hard C++/tooling reasons: (1) a real virtual-dtor slot-1 cannot be OVERRIDDEN by a
-// non-dtor `ScalarDtor` method, so the leaf can't place its explicit ??_G at slot 1;
+// non-dtor `scalar-dtor` method, so the leaf can't place its explicit ??_G at slot 1;
 // (2) switching them to (A) makes cl AUTO-generate the ??_G, which rva.h cannot RVA-pin
 // (it binds a symbol only through a source function def / @llvm.global.annotations
 // carrier) -> the currently-100% ??_G drops out of the matched set. So the (B) leaves
-// keep a local (B)-form grand-base (regular-virtual slot-1 ScalarDtor:
+// keep a local (B)-form grand-base (regular-virtual slot-1 scalar-dtor:
 // CDDrawSubMgrGrandBase / CDDrawSubMgrPagesBase / GameLevel's CLoadable). Full
 // unification is a final-sweep item that must flip the ENTIRE CLoadable family (incl.
-// matcher-6's (A) leaves) to the (B) explicit-ScalarDtor form.
+// matcher-6's (A) leaves) to the (B) explicit-scalar-dtor form.
 //
 // Field names are placeholders; only offsets + emitted bytes are load-bearing.
 #ifndef GRUNTZ_CLOADABLE_H
@@ -48,7 +48,7 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - slots 0..6 (IsLoaded/IsReady)
+#include <Wap32/WapObj.h> // CWapObj : CObject - slots 0..6 (IsLoaded/IsReady)
 
 // GetClassId (slot 8) return values are class-type tags. Named here so every
 // GetClassId body (base default + each override) returns the named constant, not a
@@ -61,6 +61,10 @@ enum LoadableClassId {
 };
 
 SIZE(CLoadable, 0x10);
+RELOC_VTBL(
+    CLoadable,
+    0x001efc30
+); // shares CDDrawSubMgr vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's
@@ -86,7 +90,7 @@ public:
         m_0c = owner;
     }
     // Field-reset base-subobject dtor: resets the three header fields; the grand-
-    // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~Wap::CObject
+    // base 0x5e8cb4 re-stamp folds in automatically via ~CWapObj -> ~CObject
     // (no manual `*(void**)this = &g_*Vtbl`).
     virtual ~CLoadable() OVERRIDE {
         m_04 = -1;

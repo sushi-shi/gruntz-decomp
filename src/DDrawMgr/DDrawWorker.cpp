@@ -44,7 +44,7 @@ void CDDrawWorker::DeleteAll() {
 // (resets m_04/m_08/m_0c, restores the grand-base vtable). /GX frame from the
 // destructible base+member.
 // ===========================================================================
-// 100%: re-basing onto the canonical CLoadable : CWapObj : Wap::CObject resolved the
+// 100%: re-basing onto the canonical CLoadable : CWapObj : CObject resolved the
 // grand-base vptr-stamp-position wall - the real CObject grand-base sinks the 0x5e8cb4
 // re-stamp after the m_04/m_08/m_0c resets exactly as retail (was ~95% on the 1-slot
 // CLoadable stand-in that stamped the vptr before the field writes).

@@ -122,6 +122,15 @@
 // future sweep could read VTBL from @llvm.global.annotations; the text scan is
 // retained because it is tree-wide / include-independent - see labels.py.)
 #define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
+// RELOC_VTBL(type, addr) - the class is a matching-REQUIRED polymorphic placeholder/sibling
+// (an out-of-line orphan dtor host, a /GX member-teardown twin, a reduced call-site view)
+// whose cl-emitted ??_7 RELOC-MASKS the retail vtable at `addr` - which is the OWN vtable of a
+// DIFFERENT real class already bound by VTBL(). So this class has NO distinct catalogable datum
+// of its own: it must stay `virtual` (the vptr stamp needs a polymorphic class) but must NOT be
+// VTBL'd (that would collide on `addr`). This annotation records that fact so class_vtables
+// counts it catalogued; the completeness gate VERIFIES `addr` is really bound by another class's
+// VTBL (so it can never hide a genuinely-missing binding). Matching-neutral (label only).
+#define RELOC_VTBL(type, addr) GRUNTZ_META("relocvtbl:" #addr " class:" #type)
 
 #else // MSVC 5.0 (and any other non-clang compiler): compile the labels out.
 
@@ -142,6 +151,7 @@
 #define SIZE(type, bytes)
 #define SIZE_UNKNOWN(type)
 #define VTBL(type, addr)
+#define RELOC_VTBL(type, addr)
 
 #endif
 

@@ -22,7 +22,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (+0x0c parent of the pages child)
 #include <DDrawMgr/DDrawSubMgrPages.h> // single-source CDDrawSubMgrPages (0x158xxx surface ops)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (parent's +0x08 broadcast dispatcher)
-#include <Wap32/WapObj.h> // CWapObj : Wap::CObject - real base for the surface-pair view
+#include <Wap32/WapObj.h>              // CWapObj : CObject - real base for the surface-pair view
 #include <Globals.h>
 // CDDrawSubMgr.cpp - tomalla-named DDraw surface/page-manager shared base
 // (CDDrawSubMgr). The ctor 0x156cb0 (??0CDDrawSubMgr) constructs the CLoadable base
@@ -31,7 +31,7 @@
 // subobject. The matching-mis-model that put a DERIVED dtor here (0x1574d0, which
 // stamps 0x5efe08 = ??_7CDDrawSubMgrDraco and calls DestroyChildren) has been SPLIT
 // out to CDDrawSubMgrPages.cpp as ~CDDrawSubMgrPages (that IS the CDDrawSubMgrDraco
-// class - vtable dump: 0x5efe08 slot 1 = 0x1574b0 = CDDrawSubMgrPages::ScalarDtor).
+// class - vtable dump: 0x5efe08 slot 1 = 0x1574b0 = CDDrawSubMgrPages::scalar-dtor).
 //
 // Field names are tomalla placeholders; only the OFFSETS + the emitted code
 // bytes are load-bearing (campaign doctrine).
@@ -68,7 +68,6 @@ public:
     virtual StateId GetStateId(); // 0x157790 (state predicate, returns 1)
 
     // Engine-label backlog stub (scalar-deleting dtor of a far sibling class).
-    void* SubMgrScalarDtor(i32 flag);
 
     i32 m_field08;                   // +0x08
     CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
@@ -90,15 +89,14 @@ namespace Rng {
 // Slot 1 is the (declared-only) ??_G scalar-deleting dtor. Same shape as
 // CDDrawSubMgrGrandBase / CDDrawWorkerCacheBase.
 struct FamilyMapBase {
-    virtual void s0();                  // [0]
-    virtual void* ScalarDtor(i32 flag); // [1]
-    virtual void s2();                  // [2]
-    virtual void s3();                  // [3]
-    virtual void s4();                  // [4]
-    ~FamilyMapBase();
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
+    virtual void s0();        // [0]
+    virtual ~FamilyMapBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual void s2();        // [2]
+    virtual void s3();        // [3]
+    virtual void s4();        // [4]
+    i32 m_04;                 // +0x04
+    i32 m_08;                 // +0x08
+    i32 m_0c;                 // +0x0c
     FamilyMapBase() {}
 };
 inline FamilyMapBase::~FamilyMapBase() {
@@ -256,14 +254,7 @@ i32 CDDrawSubMgr::OnDestroy() {
 // reloc-masked cross-module dtor name: the ~ target (0xd5d70) is a distinct
 // engine class in another module; its label won't match the ??1CDDrawSubMgrFar
 // reference. The scalar-dtor code bytes (call ~ / test flag / operator delete) match.
-RVA(0x00155720, 0x1e)
-void* CDDrawSubMgr::SubMgrScalarDtor(i32 flag) {
-    ((CDDrawSubMgrFar*)this)->CDDrawSubMgrFar::~CDDrawSubMgrFar();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawSubMgr@@UAEPAXI@Z 0x00155720 0x1e  (cl-auto-gen scalar-deleting dtor)
 
 // ---------------------------------------------------------------------------
 // 0x157630: member-teardown ~ of the 3-map sibling CDDrawChildGroupDtorHost (vtable 0x5efdc0).
@@ -807,7 +798,7 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
 class CWwdObject {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual ~CWwdObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08();
     virtual void Slot0C();
     virtual i32 Slot10(void* a); // +0x10 (1-arg op, called from 159600)
@@ -902,7 +893,7 @@ void CWwdObjMgr::PruneList_15aa90() {
             m_10.RemoveAt((POSITION)cur);
             m_2c.RemoveKey(obj->m_key);
             m_48.RemoveKey(obj->m_key);
-            obj->ScalarDtor(1);
+            delete obj;
         }
     }
 }
@@ -1067,7 +1058,7 @@ i32 CWwdObjMgr::PruneOrphans_15b1d0() {
                 if (found == 0) {
                     m_48.RemoveKey(val->m_key);
                     if (val != 0) {
-                        val->ScalarDtor(1);
+                        delete val;
                     }
                     ++n;
                 }
@@ -1158,14 +1149,14 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         }
         if (obj->m_flags & 0x800) {
             if (obj != 0) {
-                obj->ScalarDtor(1);
+                delete obj;
             }
         } else {
             m_10.RemoveAt((POSITION)obj->m_posCache);
             m_48.RemoveKey(obj->m_key);
             m_2c.RemoveKey(obj->m_key);
             if (obj != 0) {
-                obj->ScalarDtor(1);
+                delete obj;
             }
         }
     }
@@ -1296,11 +1287,11 @@ public:
     CQueueProbeData* m_data; // +0x08 -> probed object
 };
 
-// CObject-derived (slots 0..4 the shared thunks + scalar dtor via Wap::CObject);
+// CObject-derived (slots 0..4 the shared thunks + scalar dtor via CObject);
 // slots 5..7 are the object's own - its concrete vtable is not yet identified (the
 // queue producer is unmatched), so they stay placeholders. Probe20 at slot 8 (+0x20)
 // is the only dispatched op (the status probe, 5 == "ready").
-class CQueueProbeData : public Wap::CObject {
+class CQueueProbeData : public CObject {
 public:
     virtual void Slot14();
     virtual void Slot18();
@@ -2010,7 +2001,7 @@ public:
 class CWwdFactoryObject {
 public:
     virtual void Vs00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04 scalar-deleting destructor
+    virtual ~CWwdFactoryObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Vs08();
     virtual void Vs0C();
     virtual void Vs10();
@@ -2060,19 +2051,19 @@ void CWwdFactoryObject::Reset_15b980() {
     *(i32*)(o + 0x194) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xd8) = -1;
@@ -2097,19 +2088,19 @@ void CWwdFactoryObject::Reset_15bf00() {
     *(i32*)(o + 0x194) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xd8) = -1;
@@ -2128,19 +2119,19 @@ void CWwdFactoryObject::ReleaseSubs_15b5d0() {
     char* o = (char*)this;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2157,19 +2148,19 @@ void CWwdFactoryObject::ReleaseSubs_15bc50() {
     char* o = (char*)this;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2188,19 +2179,19 @@ void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
     *(char*)(o + 0x18c) = 0;
     CWwdFactoryObject* s;
     if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x7c) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x80) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x88) = 0;
     }
     if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        s->ScalarDtor(1);
+        delete s;
         *(i32*)(o + 0x90) = 0;
     }
     *(i32*)(o + 0xc0) = (i32)0x80000000;
@@ -2269,12 +2260,12 @@ DATA(0x001e8cb4)
 // Real-polymorphic now: the single virtual forces cl to emit ??_7CDrawSubWorker +
 // auto-stamp the vptr in the ctor prologue (was a manual g_drawSubWorkerVtbl store,
 // vptr-middle -> vptr-first regression accepted per the all-vtables mandate).
-struct CDrawSubWorker : public Wap::CObject { // CObject slots 0-4 inherited
-    virtual ~CDrawSubWorker() OVERRIDE;       // slot 1 (own dtor override; reloc-masked)
-    i32 m_04;                                 // +0x04
-    i32 m_08;                                 // +0x08
-    i32 m_0c;                                 // +0x0c
-    i32 m_10;                                 // +0x10
+struct CDrawSubWorker : public CObject { // CObject slots 0-4 inherited
+    virtual ~CDrawSubWorker() OVERRIDE;  // slot 1 (own dtor override; reloc-masked)
+    i32 m_04;                            // +0x04
+    i32 m_08;                            // +0x08
+    i32 m_0c;                            // +0x0c
+    i32 m_10;                            // +0x10
     CDrawSubWorker(i32 a1, i32 a2, i32 a3);
     virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
@@ -2294,7 +2285,7 @@ VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl
 
 // 0x158fb0: DDraw worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.
-class CDrawSubWorkerBase : public Wap::CObject {
+class CDrawSubWorkerBase : public CObject {
 public:
     i32 m_04; // +0x04
     i32 m_08; // +0x08
@@ -2308,7 +2299,7 @@ void CDrawSubWorkerBase::Init_158fb0() {
     m_10 = 0;
     m_08 = 0;
     m_0c = 0;
-    // base vptr auto-stamped via Wap::CObject (manual stamp dropped, % ok)
+    // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
 // 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
@@ -2433,7 +2424,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159600(i32 a1, i32 a2, i32 a3, i32 a4, 
     }
     if (((CWwdFactoryObject*)result)->Build(a2, a3, a4, a5) == 0) {
         if (result != 0) {
-            ((CWwdFactoryObject*)result)->ScalarDtor(1);
+            delete ((CWwdFactoryObject*)result);
         }
         return 0;
     }
@@ -2478,6 +2469,7 @@ SIZE_UNKNOWN(CWwdProbeObject);
 SIZE_UNKNOWN(Obj15b2b0);
 SIZE_UNKNOWN(Obj15b270);
 SIZE_UNKNOWN(CResolveNode);
+RELOC_VTBL(CResolveNode, 0x001efbc0); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdWorker);
 

@@ -6,7 +6,7 @@
 //             stamp three fields of the +0x10 child from the global settings.
 //  0xbe030  - enable/disable a pair of dialog controls (0x4cc/0x4cd) from a flag.
 #include <rva.h>
-#include <Win32.h>
+#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 
 #include <Gruntz/GameRegistry.h> // canonical *0x64556c game-manager singleton
 #include <Gruntz/LightFxMgr.h>   // CLightFxMgr (m_logicPump @+0x78; m_tables[])

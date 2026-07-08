@@ -52,6 +52,12 @@
 #include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h> // atoi (0x11ffb0)
 
+// g_buteTree (TypeKeyColl.cpp) is a global static of this same CButeStore/CButeTree
+// class whose dynamic-init manually stamps a SEPARATE runtime copy of the +0x08
+// second-base vtable at 0x5f04dc. butemgr.obj emits ??_7CButeStore@@6BCButeStoreSecond@@
+// for the class's second base; bind the retail runtime datum to it.
+// @data-symbol: ??_7CButeStore@@6BCButeStoreSecond@@@ 0x001f04dc 0x4
+
 // Global operator new (engine NAFXCW) is declared by <Mfc.h> (via ButeMgr.h);
 // the `push 0x2c; call ??2; add esp,4` shape falls out reloc-masked.
 

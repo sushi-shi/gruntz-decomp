@@ -84,7 +84,6 @@ extern u32 g_zvecErrSentinel;
 extern const double g_5f04f0;
 extern const double g_motionNegHalf;
 extern const double g_motionNegTwo;
-extern void* g_streamData;
 extern float g_fxBias;
 extern float g_fxEps;
 extern char g_teleporterSpawnKey[];

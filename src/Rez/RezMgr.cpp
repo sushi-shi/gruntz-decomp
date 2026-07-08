@@ -635,18 +635,19 @@ CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItm
 // RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
 // (verified). Placed after all function bodies so this TU is unperturbed too.
 // ===========================================================================
-SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
-SIZE_UNKNOWN(CRezItmOwner);    // abstract Retry-gate interface (no storage/vtable here)
-SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
-VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
-SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
-VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
-SIZE(CRezDirList, 0xc);        // embedded child-collection list {vptr,head,tail}
-SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
-SIZE(CRezParseNode, 0x1c);     // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
-SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
-SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
-SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node
-SIZE_UNKNOWN(CGameMode);       // abstract per-frame mode interface (no storage here)
-SIZE_UNKNOWN(RezMgrOwner);     // partial view of the owning-window holder (+0x04 HWND)
-SIZE(RezMgr, 0xa30);           // the CGruntzMgr (WAP32::CGameMgr); alloc 0xa30, modeled to +0xfc
+SIZE(RezFindRec, 0x24);                // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner);            // abstract Retry-gate interface (no storage/vtable here)
+SIZE(CRezItmBase, 0x10);               // "16 bytes" base (derived fields start at +0x10)
+VTBL(CRezItmBase, 0x001ef768);         // base vtable stamp from ctor 0x13c4e0
+SIZE(CRezItm, 0x24);                   // operator new leaf size 0x24
+VTBL(CRezItm, 0x001ef788);             // derived vtable stamp from ctor 0x13c540
+SIZE(CRezDirList, 0xc);                // embedded child-collection list {vptr,head,tail}
+SIZE(CRezDir, 0x38);                   // verified: ParseBuffer `push 0x38; new; call 0x13c940`
+SIZE(CRezParseNode, 0x1c);             // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
+RELOC_VTBL(CRezParseNode, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
+SIZE_UNKNOWN(RezStream);               // abstract slot-view (pure virtuals, no vtable)
+SIZE_UNKNOWN(RezSrc);                  // partial view of the foreign archive-source object
+SIZE_UNKNOWN(CRezDirNode);             // partial view of the loader's recursive dir node
+SIZE_UNKNOWN(CGameMode);               // abstract per-frame mode interface (no storage here)
+SIZE_UNKNOWN(RezMgrOwner);             // partial view of the owning-window holder (+0x04 HWND)
+SIZE(RezMgr, 0xa30); // the CGruntzMgr (WAP32::CGameMgr); alloc 0xa30, modeled to +0xfc

@@ -36,15 +36,12 @@ class CParseSource;     // the element's draw-source (BeginParse/EndParse)
 // g_wapObjectDtorVtbl @0x5e8cb4) so cl emits the implicit grand-base vptr re-stamp
 // (masks 0x5e8cb4) at the derived dtor's tail - no manual `*(void**)this = &g_*Vtbl`.
 // NAME-AUDIT: maps to RTTI CObject @0x1e8cb4, but KEPT as a real intermediate (carries
-// the m_04/m_08/m_0c header past the bare vptr) - NOT a bare-Wap::CObject fold.
+// the m_04/m_08/m_0c header past the bare vptr) - NOT a bare-CObject fold.
 // ---------------------------------------------------------------------------
-class LeafScanBase {
+class LeafScanBase : public CObject {
 public:
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~LeafScanBase();        // [1] scalar-deleting dtor
-    virtual void Serialize();       // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void AssertValid();     // [3] 0x00106e (shared thunk, declared-only)
-    virtual void Dump();            // [4] 0x004034 (shared thunk, declared-only)
+    virtual ~LeafScanBase()
+        OVERRIDE; // [1] scalar-deleting dtor; slots 0/2/3/4 inherited from CObject
 
     i32 m_04;                  // +0x04  -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -88,8 +85,7 @@ public:
     i32 MatchSub_1584f0(LeafScanSoundArg* arg1, i32 arg2);
 
     // These two landed in the SIBLING CDDrawSubMgrLeaf.cpp (name-preserving union):
-    void ClearMap();            // 0x157bc0 (non-virtual map teardown)
-    void* ScalarDtor(i32 flag); // 0x157550 (??_G scalar-deleting dtor, SYMBOL-pinned there)
+    void ClearMap(); // 0x157bc0 (non-virtual map teardown)
 
     virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
 
@@ -103,5 +99,9 @@ SIZE_UNKNOWN(LeafScanBase);
 SIZE_UNKNOWN(CDDrawSubMgrLeafScan);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(
+    CDDrawSubMgrLeafScan,
+    0x001efca0
+); // ??_7CDDrawSubMgrLeafScan@@6B@ (9-slot LeafScanBase-derived)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

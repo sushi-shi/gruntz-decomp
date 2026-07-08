@@ -13,26 +13,26 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Wap32/Object.h> // Wap::CObject - the real grand-base these placeholders modelled
+#include <Wap32/Object.h> // CObject - the real grand-base these placeholders modelled
 #include <Gruntz/State.h> // real CState (the state base @0x5ea21c)
 
 // 0x039f20 - ~CWorker39f20 (/GX): derived vtable stamp, RezFree the +0x04 heap
 // buffer, then fold the CObject base subobject. Byte-shape == ~CRezBufferObject.
-struct CWorker39f20
-    : Wap::CObject { // was : WorkerBase39f20 (fake base view; folded to real Wap::CObject)
-    char* m_4;       // +0x04  heap buffer
+struct CWorker39f20 : CObject { // was : WorkerBase39f20 (fake base view; folded to real CObject)
+    char* m_4;                  // +0x04  heap buffer
     virtual ~CWorker39f20() OVERRIDE;
 };
 SIZE_UNKNOWN(CWorker39f20);
+RELOC_VTBL(CWorker39f20, 0x001e971c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // 0x08c400 - /GX dtor: derived vtable stamp, run the +0x00 teardown (0x1c6a5c ==
 // CImageList::DeleteImageList, MFC) -> owns an MFC CImageList; then fold the CObject base.
-struct CHolder8c400
-    : Wap::CObject {       // was : WorkerBase8c400 (fake base view; folded to real Wap::CObject)
-    void Teardown1c6a5c(); // 0x1c6a5c
+struct CHolder8c400 : CObject { // was : WorkerBase8c400 (fake base view; folded to real CObject)
+    void Teardown1c6a5c();      // 0x1c6a5c
     virtual ~CHolder8c400() OVERRIDE;
 };
 SIZE_UNKNOWN(CHolder8c400);
+RELOC_VTBL(CHolder8c400, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // 0x0390a0 - /GX dtor: explicit cleanup (0x17b570 == CPageStore17b510::Close), then fold the
 // two owned members at +0x138 (dtor 0x1b4b76 == ~CByteArray, MFC) and +0x124 (dtor 0x1bf121 ==
@@ -63,6 +63,7 @@ struct CMenuState8d000
     virtual ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
+RELOC_VTBL(CMenuState8d000, 0x001ea21c); // aliases CState (dtor-stamp verified)
 
 // 0x021310 / 0x021570 - CButeStore-family dtors (/GX, multiple inheritance): stamp both
 // base vtables, run the body teardown (0x16e070 == CButeStore::ClearRecursive), then fold
@@ -83,10 +84,12 @@ struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
     virtual ~CButeTree21a() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21a);
+RELOC_VTBL(CButeTree21a, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
 struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
     virtual ~CButeTree21b() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21b);
+RELOC_VTBL(CButeTree21b, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

@@ -17,7 +17,7 @@
 //
 // Field names are placeholders; only the OFFSETS + emitted code bytes are load-
 // bearing (campaign doctrine). The looked-up value is modeled as a polymorphic
-// stub (virtuals at the right slots) ONLY so `val->ScalarDtor(1)` lowers to the
+// stub (virtuals at the right slots) ONLY so `delete val` lowers to the
 // exact `mov eax,[val]; push 1; call [eax+4]` __thiscall dispatch; its virtuals are
 // never defined, so no vtable is emitted in this TU.
 //
@@ -47,8 +47,8 @@ inline void* operator new(u32, void* p) {
 // bearing. Declarations only - never defined, so no ??_7 is emitted here.
 class CWorkerValue {
 public:
-    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual i32 ScalarDtor(i32 flag); // +0x04  scalar-deleting destructor
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~CWorkerValue();        // slot 1 (deleting dtor -> cl-emitted ??_G)
 };
 
 // A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
@@ -61,29 +61,23 @@ public:
 // NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
 // so clang mangles them to the MFC-canonical names.
 #include <Gruntz/MapStringToOb.h>
+#include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
 
-// Real polymorphic two-level model (ALL-VTABLES mandate): CLoadable carries
-// the 9-slot base vtable (masks 0x5efc30), CDDrawWorker adds slots 9..14 and
-// carries the 15-slot derived vtable (masks 0x5efbe8). `new CDDrawWorker` makes
-// cl auto-emit ??_7CLoadable + ??_7CDDrawWorker and stamp the base vptr
-// (base ctor) then the derived vptr (Obj ctor) - no manual `*(void**)w=&g_*Vtbl`.
-class CLoadable {
-public:
-    virtual void GetRuntimeClass();   // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag); // [1] 0x155780 scalar-deleting dtor
-    virtual void Serialize();         // [2] 0x0028ec
-    virtual void AssertValid();       // [3] 0x00106e
-    virtual void Dump();              // [4] 0x004034
-    virtual void Slot05_155750();     // [5] 0x155750
-    virtual void IsValidImage();      // [6] 0x001c08
-    virtual void DeleteAll();         // [7] 0x151eb0 (= CDDrawWorker::DeleteAll, other TU)
-    virtual void Slot08_155770();     // [8] 0x155770
-    CLoadable() {}
-};
-
+// Real polymorphic two-level model (ALL-VTABLES mandate). CDDrawWorker derives the ONE
+// canonical CLoadable (<Gruntz/Loadable.h>) - the former base-less "CLoadable" here was a
+// FAKE base that baked CDDrawWorker's own slot-5/7/8 OVERRIDES into it. Ground truth: the
+// real CLoadable vtable @0x1efc30 has [5] 0x155700 / [7] 0x155740 / [8] 0x154a00; CDDrawWorker's
+// own vtable @0x1efbe8 OVERRIDES them (IsLoaded->0x155750, Unload->DeleteAll 0x151eb0,
+// GetClassId->0x155770 = CLASSID_WORKER) and adds slots 9..16. `new CDDrawWorker` makes cl
+// auto-emit ??_7CLoadable + ??_7CDDrawWorker and the two-phase vptr stamps.
 struct CDDrawWorker : public CLoadable {
-    virtual i32 Vfunc24(const char* key);                // [9]  0x155810
-    virtual void Slot10_1521f0();                        // [10] 0x1521f0
+    virtual ~CDDrawWorker() OVERRIDE;     // [1] cl-auto-gen ??_G @0x155780
+    virtual i32 IsLoaded() OVERRIDE;      // [5] 0x155750
+    virtual i32 IsReady() OVERRIDE;       // [6] 0x001c08 (CWapObj default, inherited-shape)
+    virtual i32 Unload() OVERRIDE;        // [7] 0x151eb0 (CDDrawWorker::DeleteAll)
+    virtual i32 GetClassId() OVERRIDE;    // [8] 0x155770 -> CLASSID_WORKER
+    virtual i32 Vfunc24(const char* key); // [9]  0x155810
+    virtual void Slot10_1521f0();         // [10] 0x1521f0
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a4, i32 a5); // [11] 0x152110
     virtual i32 Vfunc30(i32 a1, i32 a2, i32 a4, i32 a5); // [12] 0x152060
     virtual i32 Vfunc34(i32 a1, i32 a3, i32 a4);         // [13] 0x151fb0
@@ -92,10 +86,7 @@ struct CDDrawWorker : public CLoadable {
     virtual void Slot16_1523b0();                        // [16] 0x1523b0
     CDDrawWorker() {}
 
-    i32 m_04;        // +0x04  parent+0x1c
-    i32 m_08;        // +0x08  0
-    i32 m_0c;        // +0x0c  parent+0x0c
-    CByteArray m_10; // +0x10
+    CByteArray m_10; // +0x10  (m_04/m_08/m_0c inherited from CLoadable)
     char m_pad24[0x64 - 0x24];
     i32 m_64; // +0x64  0x1869f
     i32 m_68; // +0x68  0
@@ -132,7 +123,7 @@ public:
 class RegWorkerValue {
 public:
     virtual void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
-    virtual void Slot04_155780();        // slot 1  0x155780 (ScalarDtor)
+    virtual void Slot04_155780();        // slot 1  0x155780 (scalar-dtor)
     virtual void Slot08_28ec();          // slot 2  0x0028ec (CObject thunk)
     virtual void Slot0C_106e();          // slot 3  0x00106e (CObject thunk)
     virtual void Slot10_4034();          // slot 4  0x004034 (CObject thunk)
@@ -178,7 +169,7 @@ static inline CDDrawWorker* FindOrCreateWorker(CDDrawWorkerRegistry* parent, con
         CDDrawWorker* worker = MakeWorker(parent);
         if (worker->Vfunc24(key) == 0) {
             if (worker != 0) {
-                worker->ScalarDtor(1);
+                delete worker;
             }
             return 0;
         }
@@ -286,7 +277,7 @@ RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != 0) {
         m_map.RemoveKey((const char*)((char*)worker + 0x24));
-        worker->ScalarDtor(1);
+        delete worker;
     }
 }
 
@@ -333,7 +324,7 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     if (m_map.Lookup(key, val)) {
         m_map.RemoveKey(key);
-        ((CWorkerValue*)val)->ScalarDtor(1);
+        delete ((CWorkerValue*)val);
     }
 }
 
@@ -354,7 +345,7 @@ void CDDrawWorkerRegistry::DestroyAll() {
         do {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
         } while (pos != 0);
     }
@@ -374,7 +365,7 @@ void CDDrawWorkerRegistry::MapTeardown_1552b0() {
         do {
             m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
         } while (pos != 0);
     }
@@ -410,7 +401,7 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* s
         if (strncmp(key, match, len) == 0) {
             m_map.RemoveKey(key);
             if (val != 0) {
-                ((CWorkerValue*)val)->ScalarDtor(1);
+                delete ((CWorkerValue*)val);
             }
             ++n;
         }
@@ -610,15 +601,7 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
 // ---------------------------------------------------------------------------
 // 0x156df0: ??_G scalar-deleting destructor - run the real member-teardown ~
 // (0x156e10, CDDrawSubMgr.cpp as CDDrawRegistryDtorHost::~) then operator delete.
-SYMBOL(??_GCDDrawRegistryDtorHost @@UAEPAXI@Z)
-RVA(0x00156df0, 0x1e)
-void* CDDrawWorkerRegistry::RegScalarDtor(i32 flag) {
-    ((CDDrawRegistryDtorHost*)this)->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
-    if (flag & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// @rva-symbol: ??_GCDDrawRegistryDtorHost@@UAEPAXI@Z 0x00156df0 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
 
 // ---------------------------------------------------------------------------
 // 0x156e80: probe `arg1` through 0x13b900(arg2) -> object, deref via 0x13a230; if
@@ -638,6 +621,10 @@ SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 SIZE_UNKNOWN(RegDirEntry);
 SIZE_UNKNOWN(RegDirHandle);
 SIZE_UNKNOWN(RegWorkerValue);
+RELOC_VTBL(
+    RegWorkerValue,
+    0x001efbe8
+); // reduced/derived view aliases CDDrawWorker (slot-RVA verified)
 SIZE_UNKNOWN(CWorkerMapValue);
 SIZE_UNKNOWN(CWorkerValue);
 SIZE(CDDrawWorker, 0x6c);

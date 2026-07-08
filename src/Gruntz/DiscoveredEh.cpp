@@ -4,7 +4,7 @@
 // bytes are load-bearing.
 //
 // Item-7 owner audit (sema xref):
-//  - ~CU55 (0x16460): its only caller is its own scalar_deleting_destructor
+//  - ~CU55 (0x16460): its only caller is its own deleting-dtor
 //    (0x16430, vtable slot); RTTI name unrecovered (Ghidra ClassUnknown_55_016460).
 //    It is a byte-identical twin of ~CImgHolder (0x16500, Dialogs.cpp) - a dialog
 //    image-holder freeing an embedded CImageList - so it belongs to the dialog
@@ -72,6 +72,7 @@ CButeStore::~CButeStore() {
 
 SIZE_UNKNOWN(CU55Base);
 SIZE_UNKNOWN(CU55);
+RELOC_VTBL(CU55, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CObj50);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

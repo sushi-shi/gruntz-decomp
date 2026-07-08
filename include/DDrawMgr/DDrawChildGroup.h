@@ -26,7 +26,8 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h> // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
+#include <Mfc.h>          // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
+#include <Wap32/Object.h> // the shared WAP CObject grand-base (slots 0/2/3/4 base thunks)
 
 // The child object dispatched per list node. Slots laid out so the broadcast
 // virtuals land at +0x34 / +0x38, with +0x2c and +0x30 used by other methods.
@@ -34,7 +35,7 @@
 class CDDrawGroupChild {
 public:
     virtual void Slot00();                        // +0x00
-    virtual i32 ScalarDtor(i32 flag);             // +0x04  scalar-deleting destructor
+    virtual ~CDDrawGroupChild();                  // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Slot08();                        // +0x08
     virtual void Slot0C();                        // +0x0c
     virtual void Slot10();                        // +0x10
@@ -69,19 +70,15 @@ struct CDDrawGroupNode {
 // they are placed first; the slot sequence from +0x1c through +0x3c is
 // padded around the real virtuals so each lands at the correct offset.
 // ---------------------------------------------------------------------------
-class CDDrawChildGroup {
+class CDDrawChildGroup : public CObject { // slots 0/2/3/4 = CObject base thunks
 public:
     i32 IsReady();
     void WalkDispatch34(i32 a1, i32 a2, i32 a3);
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
-    // --- vtable padding so the leaf virtuals land at their target slots ---
-    virtual void Slot00();                       // +0x00
-    virtual ~CDDrawChildGroup();                 // +0x04  slot 1 scalar-deleting dtor
-    virtual void Slot08();                       // +0x08
-    virtual void Slot0C();                       // +0x0c
-    virtual void Slot10();                       // +0x10
-    virtual void Slot14();                       // +0x14
+    // Slots 0/2/3/4 inherited from CObject (base thunks). Own slots below:
+    virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
+    virtual void Slot14();                       // +0x14  slot 5
     virtual void Slot18();                       // +0x18
     virtual void ForwardTo3C();                  // +0x1c  thunk -> +0x3c
     virtual void Slot20();                       // +0x20
@@ -92,6 +89,7 @@ public:
     virtual void Slot34();                       // +0x34
     virtual void ResetChildD8();                 // +0x38
     virtual void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
+    virtual void Slot40();                       // +0x40  0x159f00 (17th slot)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08]; // +0x08..0x0b
@@ -108,6 +106,7 @@ public:
 
 SIZE_UNKNOWN(CDDrawChildGroup);
 SIZE_UNKNOWN(CDDrawGroupChild);
+VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 SIZE_UNKNOWN(CDDrawGroupNode);
 
 // --- vtable catalog ---

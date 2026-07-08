@@ -29,7 +29,7 @@
 #include <Rez/RezMgr.h> // RezAlloc/RezFree (_RezAlloc 0x1b9b46 / _RezFree 0x1b9b82)
 #include <string.h>     // strlen/memcpy (inlined repne scas / rep movs)
 
-// Both node types derive from the shared engine grand-base Wap::CObject (RTTI
+// Both node types derive from the shared engine grand-base CObject (RTTI
 // "CObject", 5-slot interface, grand-base dtor vtable @0x5e8cb4). vtable_hierarchy
 // confirms each node's 5 slots are exactly the CObject interface (slots 0/2/3/4 the
 // inherited ILT thunks 0x1bef01/0x0028ec/0x00106e/0x004034, slot 1 the destructor
@@ -50,7 +50,7 @@ VTBL(CNetSessionNode, 0x001f0778); // own (final) vtable
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CNetPlayerListNode own-vptr
 // stamp in the ENTRY state (stamp-first, == retail), then FreeStrings, then the
-// empty ~Wap::CObject folds the grand-base re-stamp last. /GX frame from the
+// empty ~CObject folds the grand-base re-stamp last. /GX frame from the
 // destructible base subobject. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x001793b0, 0x46)
 CNetPlayerListNode::~CNetPlayerListNode() {
@@ -64,7 +64,7 @@ CNetPlayerListNode::~CNetPlayerListNode() {
 // ===========================================================================
 // Real polymorphic now: cl emits the implicit ??_7CNetSessionNode own-vptr stamp
 // in the ENTRY state, clears m_04/m_20, frees the two raw buffers, then the two
-// CString members + the empty ~Wap::CObject (grand-base re-stamp) fold in last.
+// CString members + the empty ~CObject (grand-base re-stamp) fold in last.
 // /GX frame from the destructible CString members + base subobject.
 // @early-stop
 // 97.6% (was 90.6%): own-vptr stamp now compiler-emitted stamp-first; residual is

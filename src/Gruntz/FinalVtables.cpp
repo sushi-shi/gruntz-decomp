@@ -57,10 +57,10 @@ VTBL(CVtEmit_1ef7d0, 0x001ef7d0);
 
 // ---------------------------------------------------------------------------
 // 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-derived (slots 0/2/3/4 are the shared
-// Wap::CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
+// CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
 // IsReady/Init/Cleanup -> this is CDDrawSurfaceMgr's own vtable.
 // ---------------------------------------------------------------------------
-struct CVtEmit_1efc58 : Wap::CObject {
+struct CVtEmit_1efc58 : CObject {
     virtual ~CVtEmit_1efc58()
         OVERRIDE;                  // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
     virtual void IsReady();        // [5] 0x155f00 = CDDrawSurfaceMgr::IsReady
@@ -80,137 +80,10 @@ CVtEmit_1efc58::~CVtEmit_1efc58() {
 SIZE_UNKNOWN(CVtEmit_1efc58);
 VTBL(CVtEmit_1efc58, 0x001efc58);
 
-// ---------------------------------------------------------------------------
-// 0x5efd28 (RVA 0x1efd28) - 23 slots. CDDrawWorkerRegistry's OWN vtable
-// (slot 1 = 0x156df0 = CDDrawWorkerRegistry::RegScalarDtor, already matched -> NOT
-// redefined here). CObject-style base thunks at 0/2/3/4. Slots carry the matched
-// CDDrawWorkerRegistry leaf names (Stub_<rva> slots stay on the worklist).
-// ---------------------------------------------------------------------------
-struct CVtEmit_1efd28 : Wap::CObject {
-    virtual ~CVtEmit_1efd28()
-        OVERRIDE;                   // [1] 0x156df0 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void Slot05_156dc0();   // [5] 0x156dc0
-    virtual void ResetScratch();    // [6] 0x154aa0 = CDDrawWorkerRegistry::ResetScratch
-    virtual void Shutdown();        // [7] 0x154ac0 = CDDrawWorkerRegistry::Shutdown
-    virtual void GetStateId();      // [8] 0x156de0 = CDDrawWorkerRegistry::GetStateId
-    virtual void DispatchKeyed2C(); // [9] 0x154df0
-    virtual void Forward2C();       // [10] 0x154f60
-    virtual void Forward30();       // [11] 0x154f40
-    virtual void DispatchKeyed30(); // [12] 0x154ce0
-    virtual void Forward38();       // [13] 0x154f20
-    virtual void DispatchKeyed38(); // [14] 0x154ae0
-    virtual void Forward34();       // [15] 0x154f00
-    virtual void DispatchKeyed34(); // [16] 0x154be0
-    virtual void ProbeWorkerKey();  // [17] 0x156e80 = ProbeWorkerKey (worklist)
-    virtual void InsertWorkerKey(); // [18] 0x154f80 = InsertWorkerKey (worklist)
-    virtual void LookupWorkerKey(); // [19] 0x155160 = LookupWorkerKey (worklist)
-    virtual void RemoveWorker();    // [20] 0x155280 = CDDrawWorkerRegistry::RemoveWorker
-    virtual void RemoveByKey();     // [21] 0x156ec0 = CDDrawWorkerRegistry::RemoveByKey
-    virtual void MapTeardown_1552b0(); // [22] 0x1552b0
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1efd28::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1efd28::~CVtEmit_1efd28() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1efd28);
-
-// ---------------------------------------------------------------------------
-// 0x5efd88 (RVA 0x1efd88) - 14 slots. CObject-style, slot 1 dtor 0x156f30.
-// Slots carry the matched CDDrawWorkerList leaf names.
-// ---------------------------------------------------------------------------
-struct CVtEmit_1efd88 : Wap::CObject {
-    virtual ~CVtEmit_1efd88()
-        OVERRIDE;                    // [1] 0x156f30 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void IsReady();          // [5] 0x156f00 = CDDrawWorkerList::IsReady
-    virtual void IsReadyPredicate(); // [6] 0x156fc0 = IsReadyPredicate (worklist)
-    virtual void Dtor_163bc0();      // [7] 0x163bc0 = CDDrawWorkerList::~CDDrawWorkerList
-    virtual void GetStateId();       // [8] 0x156f20 = CDDrawWorkerList::GetStateId
-    virtual void CreateWorkerA();    // [9] 0x156fd0 = CDDrawWorkerList::CreateWorkerA
-    virtual void CreateWorkerB28();  // [10] 0x1573e0
-    virtual void CreateWorkerB2C();  // [11] 0x157330
-    virtual void CreateWorkerB30();  // [12] 0x157150
-    virtual void PruneWorkers();     // [13] 0x163bf0 = CDDrawWorkerList::PruneWorkers
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1efd88::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1efd88::~CVtEmit_1efd88() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1efd88);
-
-// ---------------------------------------------------------------------------
-// 0x5efdc0 (RVA 0x1efdc0) - 17 slots. A SECOND vtable whose slot-1 dtor
-// (0x157610 = CDDrawWorkerMapSmall::MapSmallScalarDtor, already matched -> NOT redefined)
-// is owned by CDDrawWorkerMapSmall (its primary is ??_7CDDrawWorkerMapSmall
-// @0x1efcc8). Modeled here as a standalone tracking class (a per-class ??_7CVtbl_
-// primary names the datum; realizing it AS the MI-secondary of CDDrawWorkerMapSmall
-// would need the +offset construction-vtable machinery). CObject-style thunks.
-// Slots carry the matched CDDrawChildGroup/CDDrawSubMgr/CWwdObjMgr leaf names.
-// ---------------------------------------------------------------------------
-struct CVtEmit_1efdc0 : Wap::CObject {
-    virtual ~CVtEmit_1efdc0()
-        OVERRIDE;               // [1] 0x157610 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void IsReady();     // [5] 0x1575e0 = CDDrawChildGroup::IsReady
-    virtual void OnDestroy();   // [6] 0x1576c0 = CDDrawSubMgr::OnDestroy
-    virtual void ForwardTo3C(); // [7] 0x1591e0 = CDDrawChildGroup::ForwardTo3C
-    virtual void GetStateId();  // [8] 0x157600 = CDDrawWorkerMapSmall::GetStateId
-    virtual void TickKillCues_159a70(); // [9] 0x159a70 = CWwdObjMgr::TickKillCues_159a70
-    virtual void WalkDispatch2C();      // [10] 0x159c90 = CDDrawChildGroup::WalkDispatch2C
-    virtual void WalkDispatch30();      // [11] 0x159cc0
-    virtual void WalkDispatch34();      // [12] 0x159cf0
-    virtual void WalkDispatch38();      // [13] 0x159d40
-    virtual void ResetChildD8();        // [14] 0x159d90 = CDDrawChildGroup::ResetChildD8
-    virtual void DestroyChildren();     // [15] 0x1591f0 = DestroyChildren (worklist)
-    virtual void Slot16_159f00();       // [16] 0x159f00
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1efdc0::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1efdc0::~CVtEmit_1efdc0() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1efdc0);
-
-// ---------------------------------------------------------------------------
-// 0x5eff70 (RVA 0x1eff70) - 11 slots. A CWapObj-derived worker: slots 0-4 are the
-// CObject grand-base thunks, slot 5 overrides IsLoaded (0x159150), slot 6 is the
-// inherited IsReady default (0x001c08 - the CWapObj binary fingerprint), and slots
-// 7-10 are its own virtuals. Slot 9 (0x1644a0) points at a CDDrawSurfacePair method
-// (declared-only), so this is a surface-pair-adjacent worker vtable.
-// ---------------------------------------------------------------------------
-struct CVtEmit_1eff70 : CWapObj {
-    virtual ~CVtEmit_1eff70()
-        OVERRIDE;                    // [1] 0x159190 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual i32 IsLoaded() OVERRIDE; // [5] 0x159150
-    virtual void Slot07_1591d0();    // [7] 0x1591d0
-    virtual void Slot08_159180();    // [8] 0x159180
-    virtual void
-    directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(); // [9] 0x1644a0 = CDDrawSurfacePair
-    virtual void Slot10_1646b0();                                          // [10] 0x1646b0
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1eff70::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1eff70::~CVtEmit_1eff70() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1eff70);
+// NOTE: the other four residual vtables (0x1efd28/0x1efd88/0x1efdc0/0x1eff70) are now
+// bound by their REAL classes and no longer need a CVtEmit_ tracking shim:
+//   0x1efd28 -> CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>, all 23 slots)
+//   0x1efd88 -> CDDrawWorkerList  (DDrawWorkerList.cpp)
+//   0x1efdc0 -> CDDrawChildGroup  (<DDrawMgr/DDrawChildGroup.h>)
+//   0x1eff70 -> CDDrawSurfaceChildA (DDrawSubMgrPages.cpp, CWapObj-derived)
+// Their slot->function detail lives on those classes; the shims were redundant duplicates.

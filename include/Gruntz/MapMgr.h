@@ -86,6 +86,7 @@ public:
 // the vptr lands at +0x00 and the two-phase vtable store falls out.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapMgr);
+VTBL(CMapMgr, 0x001ea3b4); // vtable_names -> code (RTTI game class)
 class CMapMgr {
 public:
     CMapMgr();

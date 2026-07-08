@@ -19,7 +19,7 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
-#include <Wap32/Object.h> // Wap::CObject (recognized 5-slot MFC base)
+#include <Wap32/Object.h> // CObject (recognized 5-slot MFC base)
 #include <rva.h>
 #include <Ints.h>
 
@@ -37,38 +37,36 @@ struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h
 // is a NAFXCW __thiscall method reached by call-rel32 (external/no-body so the
 // displacement reloc-masks in objdiff); only the __thiscall arg shape is load-
 // bearing here.
-// MFC vtable hierarchy on Wap::CObject (the recognized 5-slot MFC CObject:
+// MFC vtable hierarchy on CObject (the recognized 5-slot MFC CObject:
 // GetRuntimeClass@0, ~@1, Serialize@2, AssertValid@3, Dump@4). Declared-only
 // virtuals anchor the slot order (NAFXCW bodies reloc-mask).
 SIZE_UNKNOWN(CCmdTarget);
-class CCmdTarget : public Wap::CObject {
+class CCmdTarget : public CObject {
 public:
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
-    virtual ~CCmdTarget() OVERRIDE;          // slot 1
-    virtual void CtVsl5();                   // slot 5
-    virtual void CtVsl6();                   // slot 6
-    virtual void CtVsl7();                   // slot 7
-    virtual void CtVsl8();                   // slot 8
-    virtual void CtVsl9();                   // slot 9
-    virtual void CtVsl10();                  // slot 10
-    virtual void CtVsl11();                  // slot 11
-    virtual const void* GetMessageMap();     // slot 12
-    virtual void CtVsl13();                  // slot 13
-    virtual void CtVsl14();                  // slot 14
-    virtual void CtVsl15();                  // slot 15
-    virtual void CtVsl16();                  // slot 16
-    virtual void CtVsl17();                  // slot 17
-    virtual void CtVsl18();                  // slot 18
-    virtual void CtVsl19();                  // slot 19
-    virtual void CtVsl20();                  // slot 20
-    virtual void CtVsl21();                  // slot 21
+    virtual ~CCmdTarget() OVERRIDE;      // slot 1
+    virtual void CtVsl5();               // slot 5
+    virtual void CtVsl6();               // slot 6
+    virtual void CtVsl7();               // slot 7
+    virtual void CtVsl8();               // slot 8
+    virtual void CtVsl9();               // slot 9
+    virtual void CtVsl10();              // slot 10
+    virtual void CtVsl11();              // slot 11
+    virtual const void* GetMessageMap(); // slot 12
+    virtual void CtVsl13();              // slot 13
+    virtual void CtVsl14();              // slot 14
+    virtual void CtVsl15();              // slot 15
+    virtual void CtVsl16();              // slot 16
+    virtual void CtVsl17();              // slot 17
+    virtual void CtVsl18();              // slot 18
+    virtual void CtVsl19();              // slot 19
+    virtual void CtVsl20();              // slot 20
+    virtual void CtVsl21();              // slot 21
 };
 
 SIZE_UNKNOWN(CWnd);
 VTBL(CWnd, 0x001eb5c4);
 class CWnd : public CCmdTarget {
 public:
-    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
     virtual ~CWnd() OVERRIDE;                     // slot 1
     virtual void CtVsl6() OVERRIDE;               // slot 6
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
@@ -128,7 +126,6 @@ class CDialog : public CWnd {
 public:
     CDialog(u32 nIDTemplate, CWnd* pParent);
     virtual ~CDialog() OVERRIDE;                  // slot 1
-    virtual void GetRuntimeClass() OVERRIDE;      // slot 0
     virtual void CtVsl5() OVERRIDE;               // slot 5
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl38() OVERRIDE;             // slot 38
@@ -164,6 +161,7 @@ struct CBattlezSlot {
 class CLatencyList;
 
 SIZE_UNKNOWN(CBattlezDlg);
+VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
@@ -235,6 +233,7 @@ public:
 //   base CDialog(0xc3, pParent); CString @+0x5c.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgCustom);
+VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
@@ -250,6 +249,7 @@ public:
 //   base CDialog(0xc2, pParent); m_slots = a0; m_slotIndex = a1; m_pickedColor = 0; m_68 = a2.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CBattlezDlgColors);
+VTBL(CBattlezDlgColors, 0x001e8d94); // vtable_names -> code (RTTI game class)
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent);
@@ -273,6 +273,7 @@ public:
 //   CString @+0x70; CObList(0xa) @+0x74; then g_64bd5c = g_gameReg->m_curState.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMultiStartDlg);
+VTBL(CMultiStartDlg, 0x001ea8ec); // vtable_names -> code (RTTI game class)
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
@@ -387,6 +388,7 @@ public:
 
 // CCheckpointDlg - trivial CDialog (resource 0xcd); ctor only.
 SIZE_UNKNOWN(CCheckpointDlg);
+VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
@@ -395,5 +397,16 @@ public:
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
 };
+
+// CMultiHelpDlg - the multiplayer help/info CDialog (vtable 0x5ea474, 54 slots =
+// CDialog); ctor reached via EnableButtons_be820 (reconbatch2). Same 3-override shape.
+SIZE_UNKNOWN(CMultiHelpDlg);
+class CMultiHelpDlg : public CDialog {
+public:
+    virtual ~CMultiHelpDlg() OVERRIDE;            // slot 1
+    virtual const void* GetMessageMap() OVERRIDE; // slot 12
+    virtual void WndVsl35() OVERRIDE;             // slot 35
+};
+VTBL(CMultiHelpDlg, 0x001ea474);
 
 #endif // SRC_GRUNTZ_DIALOGS_H

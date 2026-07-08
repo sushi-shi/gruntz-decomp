@@ -248,6 +248,10 @@ struct CWwdGameObject {
     i32 Test();
 };
 SIZE_UNKNOWN(CWwdGameObject);
+RELOC_VTBL(
+    CWwdGameObject,
+    0x001f0020
+); // reduced/derived view aliases CWwdGameObjectE (slot-RVA verified)
 
 // 0x13a530 - CSymTab remove-entry.
 struct CHashBase {

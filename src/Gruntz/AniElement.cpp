@@ -92,12 +92,12 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
 
 fail:
     if (rec != 0) {
-        rec->ScalarDtor(1);
+        delete rec;
     }
     for (i = 0; i < m_records.m_nSize; i++) {
         ::CObject* p = m_records.m_pData[i];
         if (p != 0) {
-            ((CAniRecordView*)p)->ScalarDtor(1);
+            delete ((CAniRecordView*)p);
         }
     }
     if (m_name != 0) {
@@ -127,6 +127,7 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
 }
 
 SIZE_UNKNOWN(CAniElement);
+RELOC_VTBL(CAniElement, 0x001efba8); // aliases CAniElementObj (dtor-stamp verified)
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);

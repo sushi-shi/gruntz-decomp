@@ -26,7 +26,7 @@
 // ctor 0x1005d0 / CSBI_RectOnly ctor 0x101fa0 just zero four fields + stamp a vtable)
 // and retail CALLS them OUT OF LINE (call 0x1e88). That opaque may-throw call is what
 // makes cl register the `new`-expression operator-delete-on-ctor-throw cleanup and
-// raise the frame. Declaring CSbMenuItem's ctor out-of-line (below) emits that exact
+// raise the frame. Declaring CSBI_Image's ctor out-of-line (below) emits that exact
 // `call ??0CSbMenuItem; stamp derived vtable+tag` shape and the frame with this->esi/
 // Order-A. The briefing branch is also now the sunk (`!=` fall-through) block matching
 // retail's `je` layout. RESIDUAL WALLS (deep MSVC lowering, not steerable from source):
@@ -48,10 +48,10 @@
 #include <Gruntz/GameRegistry.h>
 
 #include <Gruntz/SbRect.h> // the by-value geometry rect each Configure takes (slot 0x2c)
-#include <Gruntz/GameMenuMgrBuilders.h> // CSbMenuItem builder-facet + SBI leaves + CGameMenuMgr
+#include <Gruntz/GameMenuMgrBuilders.h> // CSBI_Image builder-facet + SBI leaves + CGameMenuMgr
 
 // ---------------------------------------------------------------------------
-// The builder-facet base CSbMenuItem, its concrete SBI leaves (CSBI_ImageSet /
+// The builder-facet base CSBI_Image, its concrete SBI leaves (CSBI_ImageSet /
 // CSBI_MenuItem), the registry factory view CGmFactory and the CGameMenuMgr class
 // moved to <Gruntz/GameMenuMgrBuilders.h>.
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ void CGameMenuMgr::BuildGameMenu() {
     i32 code = m_code;
     i32 bx = m_baseX;
     i32 by = m_baseY;
-    CSbMenuItem* it;
+    CSBI_Image* it;
     SbRect r;
 
     // Non-briefing path is the fall-through (retail `je` sinks the briefing block to

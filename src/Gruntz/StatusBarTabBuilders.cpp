@@ -8,18 +8,13 @@
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + code bytes are
 // load-bearing. The engine callees / globals are reloc-masked (modeled with NO
 // body / by-address DATA externs).
-#include <Win32.h>
+#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Ints.h>
 #include <rva.h>
 
-// MFC CMapStringToPtr (Lookup @0x1b8008); minimal local decl (Win32 TU, no <Mfc.h>); links from MFC.
-SIZE_UNKNOWN(CMapStringToPtr);
-class CMapStringToPtr {
-public:
-    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
-};
+// The name maps are the real MFC CMapStringToPtr (Lookup @0x1b8008, from <Mfc.h>); no local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
 
 // The image-set nodes' SetAllTypes/SetAllFormats ARE CImageSet's (@0x152480/0x152520); local decl.

@@ -12,14 +12,8 @@
 
 #include <rva.h>
 
-// The sprite-ref / palette hash tables are MFC CMapStringToPtr; Lookup @0x1b8008 is
-// CMapStringToPtr::Lookup. Minimal local decl (library class, links from MFC) so this Win32
-// TU ties the call without the <Mfc.h> windows.h-order conflict.
-SIZE_UNKNOWN(CMapStringToPtr);
-class CMapStringToPtr {
-public:
-    i32 Lookup(const char* key, void*& rValue) const; // 0x1b8008
-};
+// The sprite-ref / palette hash tables are the real MFC CMapStringToPtr
+// (Lookup @0x1b8008, brought in via <Mfc.h>); no local view.
 #include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
 // Engine CRT/resource helpers reached by Add()/Clear(); reloc-masked DIR32/REL32.

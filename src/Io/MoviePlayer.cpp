@@ -68,12 +68,12 @@ SIZE_UNKNOWN(CMovieFile);
 //
 //   0x038fc0  ~CMoviePlayer
 
-// The scratch embed is REAL polymorphic (CMovieScratch : Wap::CObject, header):
+// The scratch embed is REAL polymorphic (CMovieScratch : CObject, header):
 // cl now emits the dtor's own-vtable stamp at entry (??_7CMovieScratch, bound to
 // the retail datum below) and the grand-base restamp (masks 0x5e8cb4, via the
-// inline ~Wap::CObject) at exit - the exact pair the deleted manual
+// inline ~CObject) at exit - the exact pair the deleted manual
 // g_movieScratchVtbl / g_wapObjectDtorVtbl stores hand-rolled.
-VTBL(CMovieScratch, 0x001e971c); // retail 0x5e971c (5-slot Wap::CObject shape)
+VTBL(CMovieScratch, 0x001e971c); // retail 0x5e971c (5-slot CObject shape)
 
 // The scratch embed (worker+0x868c) teardown: RezFree the owned buffer if present.
 // Marked inline so the worker dtor folds it (the embed is not a standalone retail

@@ -24,10 +24,10 @@
 // @+0x34); the "m_worker: CDDrawWorkerNode" naming was a mis-derived view (the
 // pointed-to object is the parent, not a standalone worker node) - not migrated.
 //
-// Polymorphic CWapObj (Wap::CObject grand-base): the ctor stamps ??_7CDDrawSubMgrPages
+// Polymorphic CWapObj (CObject grand-base): the ctor stamps ??_7CDDrawSubMgrPages
 // vptr-first and ~CDDrawSubMgrPages folds the grand-base re-stamp (0x5e8cb4) last, cl-
 // emitted - no manual `*(void**)this = &g_*Vtbl` store. The 23-slot own vtable
-// @0x5efe08 (slots 0..4 the Wap::CObject thunks + the auto-generated scalar-deleting
+// @0x5efe08 (slots 0..4 the CObject thunks + the auto-generated scalar-deleting
 // dtor ??_G @0x1574b0, slots 5/6 from CWapObj):
 //   slot 1  (@0x04)  ??_GCDDrawSubMgrPages  0x1574b0  (cl auto-gen; ~dtor is 0x1574d0)
 //   slot 5  (@0x14)  IsLoaded         0x157480  (CWapObj slot-5 override)
@@ -35,7 +35,7 @@
 //   slot 7  (@0x1c)  DestroyChildren  0x158ac0
 //   slot 8  (@0x20)  GetStateId       0x1574a0
 //   slot 9  (@0x24)  CreateChildren   0x1588f0
-//   slot 10 (@0x28)  0x157a20  (a 30-B `scalar_deleting_destructor' variant)
+//   slot 10 (@0x28)  0x157a20  (a 30-B deleting dtor (??_G) variant)
 //   slot 11 (@0x2c)  0x165e30  (COMDAT-folded with CFileMemBase::SetName, filemem)
 //   slot 12 (@0x30)  0x157a70
 //   slot 13 (@0x34)  0x157a50  (COMDAT-folded with CFileMem::Reset, filemem)
@@ -58,7 +58,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-#include <Wap32/WapObj.h>   // CWapObj : Wap::CObject - the real 7-slot grand-base
+#include <Wap32/WapObj.h>   // CWapObj : CObject - the real 7-slot grand-base
 
 class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
@@ -79,7 +79,7 @@ public:
     virtual i32 CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4); // slot 9 (@0x24) 0x1588f0
 
     // --- slots 10..22: declared-only (no RVA); shape the emitted vtable only ---
-    virtual void Slot0A_157a20(); // [10] 0x157a20 (scalar_deleting_destructor variant)
+    virtual void Slot0A_157a20(); // [10] 0x157a20 (deleting-dtor variant)
     virtual void Slot0B_165e30(); // [11] 0x165e30 (COMDAT CFileMemBase::SetName)
     virtual void Slot0C_157a70(); // [12] 0x157a70
     virtual void Slot0D_157a50(); // [13] 0x157a50 (COMDAT CFileMem::Reset)
@@ -116,5 +116,6 @@ public:
     CDDrawSurfacePair* m_backPair;    // +0x14  back (Fill/geometry source)
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
+VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

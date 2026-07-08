@@ -18,7 +18,7 @@
 #include <rva.h>
 
 #include <Mfc.h>          // real MFC CMapStringToOb / CObject / CString / POSITION
-#include <Wap32/Object.h> // Wap::CObject grand-base (slots 0/2/3/4 = 0x1bef01/0x28ec/0x106e/0x4034)
+#include <Wap32/Object.h> // CObject grand-base (slots 0/2/3/4 = 0x1bef01/0x28ec/0x106e/0x4034)
 
 // The Miles Sound System XMIDI sequence handle: <mss.h>'s opaque HSEQUENCE. Forward-
 // declared here so this ~light header need not pull the 4200-line <mss.h> into every
@@ -26,14 +26,14 @@
 typedef struct _SEQUENCE* HSEQUENCE;
 
 // The inner per-bank sound object (0x60 bytes, vtable @ 0x5ef700). Derives from the
-// shared Wap::CObject grand-base: cl inherits its 5 base slots (0 GetRuntimeClass /
+// shared CObject grand-base: cl inherits its 5 base slots (0 GetRuntimeClass /
 // 1 dtor / 2 Serialize / 3 AssertValid / 4 Dump) and this class overrides the dtor
 // (slot 1) and adds 11 new virtuals (slots 5..15). cl auto-emits ??_7CGruntzSoundInnerZ
 // @@6B@ (0x5ef700) and stamps the vptr in the inline ctor; `new` in the create helpers
 // lowers to operator-new + the null-guarded inline ctor.
-class CGruntzSoundInnerZ : public Wap::CObject {
+class CGruntzSoundInnerZ : public CObject {
 public:
-    // Only the dtor overrides a base (Wap::CObject slot 1); slots 5..15 are new virtuals
+    // Only the dtor overrides a base (CObject slot 1); slots 5..15 are new virtuals
     // (CObject has just 5 slots, so there is nothing above slot 4 to override).
     // [1] 0x138a30 overrides ~CObject (scalar-deleting dtor, defined externally).
     virtual ~CGruntzSoundInnerZ() OVERRIDE;
@@ -115,6 +115,7 @@ public:
     i32 m_mdiHandle;                // +0x24
     i32 m_enabled;                  // +0x28
 };
-SIZE(CGruntzSoundZ, 0x2c); // 0x1c CMapStringToOb base + 4 dwords
+SIZE(CGruntzSoundZ, 0x2c);             // 0x1c CMapStringToOb base + 4 dwords
+RELOC_VTBL(CGruntzSoundZ, 0x001ef700); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

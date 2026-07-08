@@ -170,7 +170,14 @@ for s in REL:
     v = u32(s)
     if v is None: continue
     t = v-IMAGEBASE
-    if t in MEMBERS: CODE_REF[t] = CODE_REF.get(t, 0)+1
+    if t not in MEMBERS: continue
+    # Exclude `call/jmp ds:[slot]` (FF15/FF25): MSVC5 devirtualizes a virtual call
+    # to a fixed instance as an indirect call THROUGH an interior vtable-slot address
+    # (e.g. `call ds:[&vtable+0xC]`). That reloc points mid-vtable, not at a ctor/dtor
+    # vptr stamp - counting it fabricates a phantom vtable starting at that slot.
+    o = off(s-2)
+    if o is not None and d[o] == 0xFF and d[o+1] in (0x15, 0x25): continue
+    CODE_REF[t] = CODE_REF.get(t, 0)+1
 
 # COL-confirmed vtable starts: a run member whose slot[-1] is a COL pointer
 COL_START = {}      # start_rva -> (name, base_off)

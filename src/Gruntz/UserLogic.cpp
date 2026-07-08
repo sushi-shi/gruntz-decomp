@@ -139,11 +139,11 @@ i32 CUserLogic::UserLogicVfuncD() {
 // CCoveredPowerup}.cpp; modeled polymorphically here so the /GX EH-frame dtor folds
 // (a manual-vptr model is frameless - see docs/patterns/eh-dtor-needs-base-subobject.md).
 SIZE_UNKNOWN(CTileSecretTrigger);
+VTBL(CTileSecretTrigger, 0x001e7e64); // vtable_names -> code (RTTI game class)
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    CTileSecretTrigger(CGameObject* obj);                              // 0x10fa60
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
+    CTileSecretTrigger(CGameObject* obj);      // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
     static void InitActReg();   // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
     static void RegisterActs(); // 0x10f340 (binds "A"/"B" handlers)
@@ -152,20 +152,20 @@ public:
 };
 
 SIZE_UNKNOWN(CGiantRock);
+VTBL(CGiantRock, 0x001e7d5c); // vtable_names -> code (RTTI game class)
 class CGiantRock : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    CGiantRock(CGameObject* obj);                                      // 0x10fa90
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
+    CGiantRock(CGameObject* obj);              // 0x10fa90
     virtual ~CGiantRock() OVERRIDE;
 };
 
 SIZE_UNKNOWN(CCoveredPowerup);
+VTBL(CCoveredPowerup, 0x001e7e0c); // vtable_names -> code (RTTI game class)
 class CCoveredPowerup : public CTileTrigger {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    CCoveredPowerup(CGameObject* obj);                                 // 0x10fac0
+    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
+    CCoveredPowerup(CGameObject* obj);         // 0x10fac0
     virtual ~CCoveredPowerup() OVERRIDE;
 };
 
@@ -184,7 +184,8 @@ public:
     i32 m_5c;                  // +0x5c
     i32 m_60;                  // +0x60
 };
-VTBL(CGruntHealthSprite, 0x1e7ba4);
+// VTBL(CGruntHealthSprite, 0x1e7ba4) is bound canonically in <Gruntz/GruntHealthSprite.h>
+// (scanned tree-wide); this TU keeps a local class view for the ctor/dtor bodies below.
 
 // CVoiceTrigger is the canonical <Gruntz/VoiceTrigger.h> class (its no-arg ctor +
 // GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).
@@ -230,6 +231,7 @@ public:
 VTBL(CSecretTeleporterTrigger, 0x1e7564);
 
 SIZE_UNKNOWN(CWarpStonePad);
+VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 class CWarpStonePad : public CUserLogic {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2

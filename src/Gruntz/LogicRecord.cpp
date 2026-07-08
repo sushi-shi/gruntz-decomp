@@ -63,7 +63,7 @@ CLogicRecord::~CLogicRecord() {
     m_08 = 0;
     m_0c = 0;
     m_04 = -1;
-    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // ---------------------------------------------------------------------------

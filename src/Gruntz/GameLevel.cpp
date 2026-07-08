@@ -34,7 +34,7 @@
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
-#include <Wap32/Object.h>       // Wap::CObject grand-base (slots 0-4) for the CImageSetN variants
+#include <Wap32/Object.h>       // CObject grand-base (slots 0-4) for the CImageSetN variants
 #include <Gruntz/ParseSource.h> // canonical CParseSource (BeginParse/EndParse)
 #include <Gruntz/UserLogic.h>   // canonical CGameObject (the movement target) + world chain types
 #include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
@@ -593,7 +593,7 @@ extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
 // The three CImageSet variants the factory allocates. REAL-POLYMORPHIC: each is an
-// 18-slot class deriving the Wap::CObject grand-base (slots 0-4 inherited, slot 1 =
+// 18-slot class deriving the CObject grand-base (slots 0-4 inherited, slot 1 =
 // its virtual dtor), so cl emits its ??_7CImageSetN@@6B@ (bound below via VTBL to the
 // retail vtable) and AUTO-stamps the vptr in the INLINE ctor - the base-subobject
 // stamp dead-store-elides, lowering `new CImageSetN` to exactly the retail
@@ -602,9 +602,9 @@ extern "C" void RezFree(void* p);    // 0x1b9b82
 // only (their vtable entries reloc-mask). The vptr sits at +0x00 (implicit); the
 // padding pins each size: kind 1 = 0x10, kind 2 = 0x24, kind 3 = 0x18. Slot RVAs
 // (from retail 0x5f0198/01e0/0228) noted per class.
-struct CImageSet1 : Wap::CObject {
+struct CImageSet1 : CObject {
     virtual ~CImageSet1() OVERRIDE; // slot 1 (CObject dtor)
-    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor; cl auto-
+    // slots 0-4 inherited from CObject (slot 1 = its virtual dtor; cl auto-
     // stamps this vptr in the inline ctor, the base stamp dead-store-elides).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d40
     virtual void s18();              // [6]  0x161330
@@ -634,9 +634,9 @@ struct CImageSet1 : Wap::CObject {
     i32 m_08;        // +0x08
     i32 m_0c;        // +0x0c
 };
-struct CImageSet2 : Wap::CObject {
+struct CImageSet2 : CObject {
     virtual ~CImageSet2() OVERRIDE; // slot 1 (CObject dtor)
-    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
+    // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166990
     virtual void s18();              // [6]  0x161420
     virtual void s1c();              // [7]  0x161430
@@ -669,9 +669,9 @@ struct CImageSet2 : Wap::CObject {
     i32 m_1c; // +0x1c
     i32 m_20; // +0x20
 };
-struct CImageSet3 : Wap::CObject {
+struct CImageSet3 : CObject {
     virtual ~CImageSet3() OVERRIDE; // slot 1 (CObject dtor)
-    // slots 0-4 inherited from Wap::CObject (slot 1 = its virtual dtor).
+    // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
     virtual void s18();              // [6]  0x1614b0
     virtual void s1c();              // [7]  0x1614d0
@@ -738,7 +738,7 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 // vftable @0x5e8cb4 - the same table the level family's ~CLoadable restores.
 RVA(0x00161370, 0x7)
 void CImageSet1::DtorBase() {
-    // base-subobject vptr restore is compiler-managed via the Wap::CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
 }
 
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
@@ -2832,6 +2832,7 @@ SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
 SIZE_UNKNOWN(CGameLevel);
 SIZE_UNKNOWN(CImageSet);
+RELOC_VTBL(CImageSet, 0x001eaa2c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // tile-collision code names (file-local; see the block near the top of this TU).
 #undef kTilePassable

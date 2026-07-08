@@ -37,7 +37,6 @@
 // stage-5 CGrunt/canonical ODR merge. Adds no members + tail, so 0x30-vs-0x40 is a
 // no-op for its GetTypeTag + link-teardown dtor.
 class CGruntWingzTimeSprite : public CGruntHealthSprite {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
 public:
     // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
     virtual LogicTypeId GetTypeTag() OVERRIDE;

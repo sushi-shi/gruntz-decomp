@@ -35,17 +35,13 @@ class CObject;
 
 // The worker virtual interface. Slots laid out so the dispatched method lands
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
-class AnimWorker {
+class AnimWorker : public CObject {
 public:
-    virtual void GetRuntimeClass();      // [0] 0x1bef01
-    virtual i32 ScalarDtor(i32 flag);    // [1] 0x151d80 scalar-deleting destructor
-    virtual void Serialize();            // [2] 0x0028ec
-    virtual void AssertValid();          // [3] 0x00106e
-    virtual void Dump();                 // [4] 0x004034
-    virtual void Slot05_151d60();        // [5] 0x151d60
-    virtual void IsValidImage();         // [6] 0x001c08
-    virtual void Clear();                // [7] 0x151e70 = Clear (B_151e70)
-    virtual void Slot08_151d70();        // [8] 0x151d70
+    virtual ~AnimWorker() OVERRIDE; // slot 1 (deleting dtor); slots 0/2/3/4 inherited from CObject
+    virtual void Slot05_151d60();   // [5] 0x151d60
+    virtual void IsValidImage();    // [6] 0x001c08
+    virtual void Clear();           // [7] 0x151e70 = Clear (B_151e70)
+    virtual void Slot08_151d70();   // [8] 0x151d70
     virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
 };
 
@@ -54,6 +50,12 @@ public:
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
 // `*(void**)w = &g_animWorkerVtbl` store (ALL-VTABLES mandate).
 struct AnimWorkerObj : public AnimWorker {
+    virtual ~AnimWorkerObj() OVERRIDE;            // slot 1  0x151d80
+    virtual void Slot05_151d60() OVERRIDE;        // slot 5  0x151d60
+    virtual void IsValidImage() OVERRIDE;         // slot 6  0x001c08
+    virtual void Clear() OVERRIDE;                // slot 7  0x151e70
+    virtual void Slot08_151d70() OVERRIDE;        // slot 8  0x151d70
+    virtual i32 Vfunc24(i32 a1, i32 a3) OVERRIDE; // slot 9  0x151e20
     AnimWorkerObj() {}
     i32 m_04; // +0x04  = parent->m_1c
     i32 m_08; // +0x08  = 0
@@ -80,7 +82,7 @@ void operator delete(void*);
 // cl auto-generating a clashing ??_G. Same shape as CDDrawSubMgrGrandBase.
 // NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-Wap::CObject fold (Wap32/Object.h). Do not rename to
+// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
 SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 // ---------------------------------------------------------------------------
@@ -92,7 +94,7 @@ SIZE_UNKNOWN(CDDrawWorkerCacheBase);
 // thunks, slot 1 the ??_G scalar-deleting dtor (0x157700), slots 5/6/7 unreconstructed
 // leaf virtuals (declared-only, reloc-masked), slot 8 = GetStateId
 // (0x1576f0) and slot 9 = CreateWorker (0x1652c0). cl auto-emits the vtable.
-class CDDrawWorkerCache : public Wap::CObject {
+class CDDrawWorkerCache : public CObject {
 public:
     i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned below)
@@ -162,7 +164,7 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
         }
         return 0;
     }
-    m_10[key] = (CObject*)w;
+    m_10[key] = (::CObject*)w;
     return w;
 }
 
@@ -171,7 +173,7 @@ void* CDDrawWorkerCache::CreateWorker(i32 a1, const char* key, i32 a3) {
 // the real member-teardown ~, then operator delete this if the low flag bit is set.
 // SYMBOL() pins the ??_G mangling; it overrides CDDrawWorkerCacheBase's slot-1 regular
 // virtual so the leaf vtable carries it at slot 1 WITHOUT cl auto-generating a
-// clashing ??_G. Same idiom as CDDrawSubMgrLeaf::ScalarDtor.
+// clashing ??_G. Same idiom as CDDrawSubMgrLeaf::scalar-dtor.
 // @rva-symbol: ??_GCDDrawWorkerCache@@UAEPAXI@Z 0x00157700 0x1e
 
 // ---------------------------------------------------------------------------
@@ -194,7 +196,15 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(AnimWorker);
+RELOC_VTBL(
+    AnimWorker,
+    0x001efb80
+); // shares AnimWorkerObj vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 SIZE(AnimWorkerObj, 0x17c);
+VTBL(
+    AnimWorkerObj,
+    0x001efb80
+); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c/LogicRecord worker)
 // ??_7CDDrawWorkerCache (was Vtbl_1efd00 / the CDDrawWorkerCache vtable; 10 slots). cl
 // auto-emits it from the real-polymorphic class; retail datum is reloc-masked ->
 // matching-neutral catalog tracking.

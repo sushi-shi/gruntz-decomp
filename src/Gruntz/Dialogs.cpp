@@ -865,6 +865,7 @@ CMultiStartDlg::~CMultiStartDlg() {}
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(CImgHolderBase);
 SIZE_UNKNOWN(CImgHolder);
+RELOC_VTBL(CImgHolder, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CCueEmitter);
 SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CRegBute);

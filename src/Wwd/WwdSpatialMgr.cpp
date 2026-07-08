@@ -4,7 +4,7 @@
 // reloc-masked engine externs (no bodies here).
 #include <Gruntz/WwdObjMgr.h> // the shared object-collection manager class
 #include <Mfc.h>
-#include <Wap32/Object.h> // Wap::CObject - the shared engine grand-base (iterator's CObject prefix)
+#include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
 
 // ===========================================================================
 // CWwdSpatialMgr - the per-level object-bucket manager held at WwdFile+0xb0.
@@ -47,7 +47,7 @@ struct CWwdObjWorker {
 class CWwdObject {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // +0x04
+    virtual ~CWwdObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     char m_pad04[0x08 - 0x04];
     i32 m_flags; // +0x08  plane/active flag word
     char m_pad0c[0x7c - 0x0c];
@@ -74,10 +74,10 @@ struct WwdBucketHead {
 };
 
 // CWwdGrid (tomalla-64) - one plane's spatial bucket index. The CANONICAL
-// polymorphic model (Wap::CObject base, real ~CWwdGrid OVERRIDE at vtbl slot 1,
+// polymorphic model (CObject base, real ~CWwdGrid OVERRIDE at vtbl slot 1,
 // pure-virtual OnFound at slot 5) lives in <Gruntz/WwdGrid.h>; this is the
 // spatial-mgr's reduced local view. It intentionally models slot 1 as an
-// explicit ScalarDtor(i32) method rather than the real destructor because
+// explicit scalar-dtor(i32) method rather than the real destructor because
 // FreeGrids/CountInRect invoke the engine's scalar-DELETING-dtor thunk directly
 // (`mov eax,[ecx]; push 1; call [eax+4]`); a C++ `delete grid` cannot reproduce
 // that (it adds its own null-check + nulls the pointer unconditionally, where
@@ -89,7 +89,7 @@ struct WwdBucketHead {
 class CWwdGrid {
 public:
     virtual void Slot00();
-    virtual i32 ScalarDtor(i32 flag); // slot 1 (+0x04) scalar-deleting-dtor thunk
+    virtual ~CWwdGrid(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Scroll_1918c0(WwdRect r, i32 flag);
     i32 Add_191840(void* region);
     i32 Remove_191890(WwdGridNode* region);
@@ -115,8 +115,8 @@ public:
 // (optionally unlinking it). REAL POLYMORPHIC now: the retail object's vtable @
 // 0x5f02a8 is the 5-slot CObject-style interface (slot0 sub_1bef01, slot1 the
 // scalar-deleting dtor 0x163a20, slots 2/3/4 the shared sub_0028ec/sub_00106e/
-// sub_004034) - i.e. the shared engine grand-base Wap::CObject. Deriving from
-// Wap::CObject supplies slots 0/2/3/4 by inheritance and slot 1 is the class's own
+// sub_004034) - i.e. the shared engine grand-base CObject. Deriving from
+// CObject supplies slots 0/2/3/4 by inheritance and slot 1 is the class's own
 // dtor override; cl auto-emits ??_7CWwdGridIter + the implicit vptr-FIRST ctor
 // stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-store shape). This TU OWNS
 // the 0x5f02a8 vtable catalog name via VTBL below:
@@ -132,10 +132,10 @@ public:
 // the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
 SIZE(CWwdGridIter, 0x44);
 VTBL(CWwdGridIter, 0x001f02a8);
-class CWwdGridIter : public Wap::CObject {
+class CWwdGridIter : public CObject {
 public:
     // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from
-    // Wap::CObject; slot 1 is the class's own scalar-deleting dtor.
+    // CObject; slot 1 is the class's own scalar-deleting dtor.
     virtual ~CWwdGridIter() OVERRIDE; // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
 
     CWwdGridIter();
@@ -200,15 +200,15 @@ struct CWwdSpatialMgr {
 RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
     if (m_grid0) {
-        m_grid0->ScalarDtor(1);
+        delete m_grid0;
         m_grid0 = 0;
     }
     if (m_grid1) {
-        m_grid1->ScalarDtor(1);
+        delete m_grid1;
         m_grid1 = 0;
     }
     if (m_grid2) {
-        m_grid2->ScalarDtor(1);
+        delete m_grid2;
         m_grid2 = 0;
     }
     m_mgr = 0;

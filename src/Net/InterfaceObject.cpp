@@ -8,7 +8,7 @@
 #include <Net/InterfaceObject.h> // the ONE canonical InterfaceObject class (layout +
                                  // GetName/~dtor/IsInterface1-5); shared with NetMgr.cpp
 
-// The base is the shared engine grand-base Wap::CObject (RTTI "CObject", 5-slot
+// The base is the shared engine grand-base CObject (RTTI "CObject", 5-slot
 // interface, grand-base dtor vtable @0x5e8cb4). vtable_hierarchy confirms this node's
 // slots 0/2/3/4 are the inherited CObject ILT thunks (0x1bef01/0x0028ec/0x00106e/
 // 0x004034) and slot 1 the destructor override - so InterfaceObject adds no new
@@ -34,7 +34,7 @@ CString InterfaceObject::GetName() {
 // InterfaceObject::~InterfaceObject (0x179340) - real polymorphic now: cl emits
 // the implicit ??_7InterfaceObject own-vptr stamp in the ENTRY state (stamp-first,
 // == retail), zeroes m_4/m_c, then the +0x8 CString member dtor and the empty
-// ~Wap::CObject (grand-base re-stamp) fold in last. The CString member's
+// ~CObject (grand-base re-stamp) fold in last. The CString member's
 // non-trivial dtor forces the /GX EH frame.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00179340, 0x48)

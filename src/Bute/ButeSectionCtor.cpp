@@ -20,36 +20,24 @@
 #include <rva.h>
 #include <Mfc.h> // real CString (ctor 0x1b9b93 / Empty 0x1b9c69 / ~CString 0x1b9cde)
 #include <Ints.h>
-#include <Globals.h> // g_streamTag (0x574de0), g_streamData (0x5f0514)
+#include <Globals.h>        // g_streamTag (0x574de0)
+#include <Bute/PTreeNode.h> // the shared zPTree config-tree node family
 
-// The node's two most-derived vftables, re-stamped over the tables the base ctor
-// laid down (reloc-masked DIR32 data). g_streamData @0x5f0514 is NOT data: it is
-// &g_streamVtbl+4 -- the vptr carried by the node's +0x08 sub-object (the family's
-// "sub vftable", cf. g_buteNodeSubVtbl / g_buteTreeSubVtbl).
-//
-// These stamps target the embedded NODES' own vftables, not CButeSection's vptr
-// (CButeSection is non-polymorphic: +0x00 is the zeroed scalar below). They stay
-// manual stamps rather than C++ virtuals: the node lives in unmatched TUs and the
-// whole zPTree family (zPTree/CButeTree/CButeNode) is deliberately manual-vtbl-
-// modeled -- a real +0x00 vptr breaks its matched ctor layout (src/Bute/ButeNode.cpp).
-// Foreign sub-object re-stamps stay manual.
-
-// The embedded CButeNode-family config-tree node (+0x18/+0x48/+0x74). An inline
-// ctor that base-constructs (CButeNodeBase 0x16dff0) then re-stamps its two most-
-// derived vftables; an external non-trivial dtor so the enclosing ctor's /GX frame
-// tracks it as a destructible member (its teardown fires only from the unwind
-// funclet, reloc-masked). Size 0x2c = the +0x48..+0x74 slot; the +0x44 gap word is
-// a CButeSection scalar the ctor leaves untouched.
-struct CBSecStream {
-    char m_pad[0x2c];
-    void NodeBaseCtor(void* tag, i32 n); // 0x16dff0  CButeNodeBase base ctor
-    CBSecStream() {
-        NodeBaseCtor(&g_streamTag, 2);
-        // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-        *((void**)this + 2) = &g_streamData;
-    }
-    ~CBSecStream(); // external (reloc-masked in the /GX unwind funclet)
+// The embedded CButeNode-family config-tree node (+0x18/+0x48/+0x74). REAL
+// POLYMORPHIC (ALL-VTABLES): a zPTree-derived node (the SAME family + base ctor
+// 0x16dff0 as CButeCfgNode174d, src/Bute/ButeNode.cpp), so cl auto-stamps its two
+// most-derived vftables (primary @0x5f0510 at +0x00, second-base-in-derived
+// @0x5f0514 at +0x08) in the ctor - the old manual double stamp (was
+// g_streamVtbl / g_streamData) is gone. External non-trivial dtor so the enclosing
+// CButeSection ctor's /GX frame tracks it as a destructible member.
+struct CBSecStream : zPTree {
+    CBSecStream() : zPTree(&g_streamTag, 2) {}
+    virtual ~CBSecStream() OVERRIDE; // slot 0 zPTree dtor; external (reloc-masked /GX unwind)
 };
+VTBL(CBSecStream, 0x001f0510); // node primary (most-derived) vtable @+0x00
+// The +0x08 second-base-in-derived vtable @0x5f0514 (cl-emitted from the CButeNodeEntry
+// base); bind the retail datum to that real symbol (was the manual g_streamData pin).
+// @data-symbol: ??_7CBSecStream@@6BCButeNodeEntry@@@ 0x001f0514 0x4
 
 // The small +0x10f sub-object: an out-of-line (external) ctor 0x16f680 that just
 // returns this (mov eax,ecx; ret) plus a non-trivial external dtor, so it is the 8th

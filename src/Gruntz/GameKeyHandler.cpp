@@ -26,8 +26,7 @@
 // reloc-masked rel32); the data globals are named so their DIR32 operands
 // reloc-mask too. Only the offsets / code bytes are load-bearing.
 
-#include <Win32.h> // PostMessageA (reloc-masked); the in-game host window post
-#include <Wap32/Object.h>
+#include <Wap32/Object.h> // CObject (MFC) + windows.h/PostMessageA via <Mfc.h> (afx first)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -96,23 +95,10 @@ struct EngineLabelBacklog {
 struct CChatBoxOwner {
     void ProcessCheatInput(i32 a, i32 b);
 };
-SIZE_UNKNOWN(CObArray);
-struct CObArray : public Wap::CObject {
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
-    virtual ~CObArray() OVERRIDE;            // slot 1
-    virtual void Serialize() OVERRIDE;       // slot 2
-    void Fn1b5144(i32 a, void* b);
-    void Fn1b516b(i32 a, void* b, i32 c);
-    void* Fn1b5200(i32 a, i32 b);
-};
-SIZE_UNKNOWN(CMapStringToOb);
-VTBL(CMapStringToOb, 0x001eafd4);
-struct CMapStringToOb : public Wap::CObject {
-    virtual void GetRuntimeClass() OVERRIDE; // slot 0
-    virtual ~CMapStringToOb() OVERRIDE;      // slot 1
-    virtual void Serialize() OVERRIDE;       // slot 2
-    void Lookup(const char* name, void** out);
-};
+// The +0x488 ring buffer is a real MFC CDWordArray (SetAtGrow @0x1b5144, InsertAt
+// @0x1b516b, RemoveAt @0x1b5200) and the +0x10 name map a real CMapStringToOb
+// (Lookup @0x1b8008 -> CObject*&); both from <Mfc.h>, no local views. (??_7CMapStringToOb
+// @0x1eafd4 is in the library vtable catalog.)
 
 // Free-standing engine helpers (no `this`, reloc-masked, callee-cleanup).
 void __stdcall FreeHintSprite(i32 tag, i32 a, i32 b, i32 c); // 0x25fe
@@ -137,8 +123,8 @@ struct RegArea {
     do {                                                                                           \
         void* _s = P(P(base, 0x30), 0x28);                                                         \
         if (M(_s, 0x30) == 0) {                                                                    \
-            void* found = 0;                                                                       \
-            ((CMapStringToOb*)((char*)_s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &found);           \
+            CObject* found = 0;                                                                    \
+            ((CMapStringToOb*)((char*)_s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", found);            \
             if (found != 0)                                                                        \
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);                                              \
         }                                                                                          \
@@ -381,8 +367,8 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         }
         void* s = P(P(P(self, 0x4), 0x30), 0x28);
         if (M(s, 0x30) == 0) {
-            void* found = 0;
-            ((CMapStringToOb*)((char*)s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", &found);
+            CObject* found = 0;
+            ((CMapStringToOb*)((char*)s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", found);
             if (found != 0) {
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);
             }
@@ -429,7 +415,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
                 }
             } else {
                 slot = (i32*)P(P(self, 0x48c), 0);
-                ((CObArray*)((char*)self + 0x488))->Fn1b5200(0, 1);
+                ((CDWordArray*)((char*)self + 0x488))->RemoveAt(0, 1);
                 i32 c = M(self, 0x49c) - 1;
                 M(self, 0x49c) = c;
                 if (c < 0) {
@@ -439,11 +425,11 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             slot[0] = v0;
             slot[1] = v1;
             if (M(self, 0x49c) != M(self, 0x490) - 1) {
-                ((CObArray*)((char*)self + 0x488))->Fn1b516b(M(self, 0x49c) + 1, slot, 1);
+                ((CDWordArray*)((char*)self + 0x488))->InsertAt(M(self, 0x49c) + 1, (DWORD)slot, 1);
                 M(self, 0x49c) = M(self, 0x49c) + 1;
                 return 1;
             }
-            ((CObArray*)((char*)self + 0x488))->Fn1b5144(M(self, 0x490), slot);
+            ((CDWordArray*)((char*)self + 0x488))->SetAtGrow(M(self, 0x490), (DWORD)slot);
             M(self, 0x49c) = M(self, 0x49c) + 1;
             return 1;
         }
@@ -477,7 +463,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         void* node = P(P(self, 0x48c), cur * 4);
-        ((CObArray*)((char*)self + 0x488))->Fn1b5200(cur, 1);
+        ((CDWordArray*)((char*)self + 0x488))->RemoveAt(cur, 1);
         node = (char*)node - g_freeListNodeBias;
         P(node, 0) = g_freeList;
         g_freeList = node;

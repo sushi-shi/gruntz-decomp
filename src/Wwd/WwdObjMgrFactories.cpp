@@ -151,7 +151,7 @@ struct Obj15b270 {
 class CWwdFactoryA { // 159250 (+0x40, 5 args) and 1598d0 (+0x28, 4 args)
 public:
     virtual void Vs00();
-    virtual int ScalarDtor(int flag); // +0x04
+    virtual ~CWwdFactoryA(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Vs08();
     virtual void Vs0C();
     virtual void Vs10();
@@ -171,7 +171,7 @@ public:
 class CWwdFactoryB { // 159440 (+0x40, 2 args)
 public:
     virtual void Vs00();
-    virtual int ScalarDtor(int flag); // +0x04
+    virtual ~CWwdFactoryB(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     virtual void Vs08();
     virtual void Vs0C();
     virtual void Vs10();
@@ -237,7 +237,7 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
     }
     if (((CWwdFactoryA*)result)->Build5(a2, a3, a4, a5, a6) == 0) {
         if (result != 0) {
-            ((CWwdFactoryA*)result)->ScalarDtor(1);
+            delete ((CWwdFactoryA*)result);
         }
         return 0;
     }
@@ -288,7 +288,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
     }
     if (((CWwdFactoryB*)result)->Build2(a2, a3) == 0) {
         if (result != 0) {
-            ((CWwdFactoryB*)result)->ScalarDtor(1);
+            delete ((CWwdFactoryB*)result);
         }
         return 0;
     }
@@ -331,7 +331,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     }
     if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
         if (result != 0) {
-            ((CWwdFactoryA*)result)->ScalarDtor(1);
+            delete ((CWwdFactoryA*)result);
         }
         return 0;
     }
@@ -392,12 +392,12 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         return 0;
     }
     if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
-        ((CWwdFactoryA*)result)->ScalarDtor(1);
+        delete ((CWwdFactoryA*)result);
         return 0;
     }
     void* node = m_1dc.AddTail((CObject*)result);
     if (node == 0) {
-        ((CWwdFactoryA*)result)->ScalarDtor(1);
+        delete ((CWwdFactoryA*)result);
         return 0;
     }
     *(void**)(obj + 0x78) = node;

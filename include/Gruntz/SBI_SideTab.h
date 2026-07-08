@@ -89,5 +89,6 @@ public:
     i32 m_58; // +0x58  draw gate (0 => not built)
 };
 SIZE_UNKNOWN(CSBI_SideTab);
+VTBL(CSBI_SideTab, 0x001eae3c); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_SBI_SIDETAB_H

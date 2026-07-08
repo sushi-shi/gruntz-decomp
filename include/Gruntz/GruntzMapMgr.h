@@ -39,6 +39,7 @@ struct CMapMgr {
 };
 
 SIZE_UNKNOWN(CGruntzMapMgr);
+VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 class CGruntzMapMgr : public CMapMgr {
 public:
     virtual ~CGruntzMapMgr() OVERRIDE; // 0x85d10 slot 0

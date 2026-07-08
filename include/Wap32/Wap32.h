@@ -232,7 +232,7 @@ public:
     virtual void FreeGameManager(); // +0x24
     virtual i32 VirtualUnknownMethod11(i32, i32, i32) {
         return 0;
-    }                                                    // +0x28 slot 10
+    } // +0x28 slot 10
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34
@@ -261,7 +261,6 @@ public:
 
     // The CGameApp scalar-deleting destructor (0x080dd0): stamp the vtable, run
     // CloseResources, decrement the live-instance counter, then the delete-flag tail.
-    void* GameAppScalarDtor(unsigned int flags);
 };
 
 #endif // WAP32_H

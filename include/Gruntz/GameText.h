@@ -55,6 +55,7 @@
 // ---------------------------------------------------------------------------
 
 SIZE_UNKNOWN(CContainerErr);
+VTBL(CContainerErr, 0x001f04cc); // ??_7CContainerErr@@6B@ (1-slot deleting-dtor vtable)
 class CContainerErr {
 public:
     CContainerErr(const char* msg);
