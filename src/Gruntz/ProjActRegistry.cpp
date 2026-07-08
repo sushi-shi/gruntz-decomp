@@ -186,6 +186,7 @@ void CProjActObj::RegisterType() {
 }
 SIZE_UNKNOWN(CProjActObj);
 SIZE_UNKNOWN(CProjActOwner);
+RELOC_VTBL(CProjActOwner, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 SIZE_UNKNOWN(CProjReg);
 SIZE_UNKNOWN(R3Entry);
 

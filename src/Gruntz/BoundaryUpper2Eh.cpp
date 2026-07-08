@@ -42,6 +42,7 @@ struct CRezDir13c9b0 : RezDirBase {
     virtual ~CRezDir13c9b0() OVERRIDE;
 };
 SIZE_UNKNOWN(CRezDir13c9b0);
+RELOC_VTBL(CRezDir13c9b0, 0x001ef760); // aliases CObjListBase (dtor-stamp verified)
 RVA(0x0013c9b0, 0x7f)
 CRezDir13c9b0::~CRezDir13c9b0() {
     while (m_14) {

@@ -127,6 +127,7 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
 }
 
 SIZE_UNKNOWN(CAniElement);
+RELOC_VTBL(CAniElement, 0x001efba8); // aliases CAniElementObj (dtor-stamp verified)
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);

@@ -65,6 +65,7 @@ struct CMenuState8d000
     virtual ~CMenuState8d000() OVERRIDE;
 };
 SIZE_UNKNOWN(CMenuState8d000);
+RELOC_VTBL(CMenuState8d000, 0x001ea21c); // aliases CState (dtor-stamp verified)
 
 // 0x021310 / 0x021570 - CButeStore-family dtors (/GX, multiple inheritance): stamp both
 // base vtables, run the body teardown (0x16e070 == CButeStore::ClearRecursive), then fold
@@ -85,10 +86,12 @@ struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
     virtual ~CButeTree21a() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21a);
+RELOC_VTBL(CButeTree21a, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
 struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
     virtual ~CButeTree21b() OVERRIDE;
 };
 SIZE_UNKNOWN(CButeTree21b);
+RELOC_VTBL(CButeTree21b, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

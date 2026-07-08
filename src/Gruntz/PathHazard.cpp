@@ -541,6 +541,7 @@ void CPathHazard::ForwardTick() {
 #include <rva.h>
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CLightningHazard);
+RELOC_VTBL(CLightningHazard, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathCueGate);

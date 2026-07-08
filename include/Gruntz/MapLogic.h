@@ -61,6 +61,7 @@ struct CMapPtrArray {
 // past it.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapLogic);
+RELOC_VTBL(CMapLogic, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class CMapLogic : public CUserLogic {
 public:
     TILE_LOGIC_TAIL

@@ -23,6 +23,7 @@ public:
     virtual ~L_8860() OVERRIDE;
 };
 SIZE_UNKNOWN(L_8860);
+RELOC_VTBL(L_8860, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_f510 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -30,6 +31,7 @@ public:
     virtual ~L_f510() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f510);
+RELOC_VTBL(L_f510, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_f640 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -37,6 +39,7 @@ public:
     virtual ~L_f640() OVERRIDE;
 };
 SIZE_UNKNOWN(L_f640);
+RELOC_VTBL(L_f640, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_fb00 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -44,6 +47,7 @@ public:
     virtual ~L_fb00() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fb00);
+RELOC_VTBL(L_fb00, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 
 // Serialize override (the two-chain archetype).
 class S_fdf0 : public CUserLogic {
@@ -61,6 +65,7 @@ public:
     virtual ~L_fe90() OVERRIDE;
 };
 SIZE_UNKNOWN(L_fe90);
+RELOC_VTBL(L_fe90, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_ffc0 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -68,6 +73,7 @@ public:
     virtual ~L_ffc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_ffc0);
+RELOC_VTBL(L_ffc0, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_101b0 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -75,6 +81,7 @@ public:
     virtual ~L_101b0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_101b0);
+RELOC_VTBL(L_101b0, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 
 class S_104a0 : public CUserLogic {
 public:
@@ -98,6 +105,7 @@ public:
     virtual ~L_10fc0() OVERRIDE;
 };
 SIZE_UNKNOWN(L_10fc0);
+RELOC_VTBL(L_10fc0, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_11b80 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -105,6 +113,7 @@ public:
     virtual ~L_11b80() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11b80);
+RELOC_VTBL(L_11b80, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_11c40 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -112,6 +121,7 @@ public:
     virtual ~L_11c40() OVERRIDE;
 };
 SIZE_UNKNOWN(L_11c40);
+RELOC_VTBL(L_11c40, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_13040 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -119,6 +129,7 @@ public:
     virtual ~L_13040() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13040);
+RELOC_VTBL(L_13040, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 class L_13400 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -126,5 +137,6 @@ public:
     virtual ~L_13400() OVERRIDE;
 };
 SIZE_UNKNOWN(L_13400);
+RELOC_VTBL(L_13400, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 
 #endif // GRUNTZ_BOUNDARYLEAFLOGICVIEWS_H

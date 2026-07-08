@@ -200,6 +200,7 @@ struct C17e990 : FaderBase {
     virtual ~C17e990() OVERRIDE;
 };
 SIZE_UNKNOWN(C17e990);
+RELOC_VTBL(C17e990, 0x001f07c0); // aliases CFaderMesh (dtor-stamp verified)
 RVA(0x0017e990, 0x6b)
 C17e990::~C17e990() {}
 
