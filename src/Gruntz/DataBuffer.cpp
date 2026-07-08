@@ -19,13 +19,8 @@ CDataBuffer::CDataBuffer() {
     m_data = 0;
 }
 
-// Reset: free the blob only if currently valid (tail-jmp to Free).
-RVA(0x00150190, 0xb)
-void CDataBuffer::Reset() {
-    if (m_loaded != 0) {
-        Free();
-    }
-}
+// CDataBuffer::Reset (0x00150190) is now an inline member in the header.
+
 
 // Set: (re)allocate a `size`-byte blob; record id on success.
 RVA(0x001501a0, 0x44)

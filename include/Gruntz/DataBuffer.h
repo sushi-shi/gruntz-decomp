@@ -25,7 +25,12 @@ SIZE_UNKNOWN(CDataBuffer);
 class CDataBuffer {
 public:
     CDataBuffer();             // 0x150180
-    void Reset();              // 0x150190 (if m_00 -> Free)
+    RVA(0x00150190, 0xb)
+    void Reset() {
+        if (m_loaded != 0) {
+        Free();
+        }
+    }
     i32 Set(u32 size, i32 id); // 0x1501a0
     void Free();               // 0x1503c0
 

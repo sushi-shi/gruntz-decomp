@@ -391,7 +391,10 @@ public:
     i32 BuildHelpReveal();           // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();     // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
-    i32 ForwardReady(); // 0x0cee70
+    RVA(0x000cee70, 0x5)
+    i32 ForwardReady() {
+        return Vfunc3();
+    }
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
     // PauseGame saves the game clock into m_savedClock + freezes the world; ResumeGame
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).

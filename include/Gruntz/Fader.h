@@ -46,8 +46,15 @@ public:
     virtual void v4();          // slot 4 (0x17e7a0, sibling TU) - end
 
     void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
-    void SetTimers(i32 a, i32 b); // 0x17e760 - store m_timerA/m_timerB
-    void Set2c(i32 v);            // 0x17e780 - store m_set2cArg
+    RVA(0x0017e760, 0x11)
+    void SetTimers(i32 a, i32 b) {
+        m_timerA = a;
+        m_timerB = b;
+    }
+    RVA(0x0017e780, 0xa)
+    void Set2c(i32 v) {
+        m_set2cArg = v;
+    }
     // 0x17e620 - drive the whole timed fade: prime frame 0, busy-wait the lead-in,
     // then map elapsed/duration onto the [0..v2()] frame index, poking the m_set2cArg
     // fade sink + v1(frame) per newly-reached frame; records the achieved frame rate

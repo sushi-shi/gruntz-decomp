@@ -990,10 +990,19 @@ public:
     i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0xb9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
     // The two config-name accessors: return the m_5b4 / m_5b8 CStrings by value.
-    CString GetConfigNameA(); // 0xb6090  return the m_5b4 CString by value
-    CString GetConfigNameB(); // 0xb60d0  return the m_5b8 CString by value
+    RVA(0x000b6090, 0x23)
+    CString GetConfigNameA() {
+        return m_5b4;
+    }
+    RVA(0x000b60d0, 0x23)
+    CString GetConfigNameB() {
+        return m_5b8;
+    }
     // The control-message dispatch + the player-left handler.
-    CString GetName();                                // 0xba170  return the m_8 CString by value
+    RVA(0x000ba170, 0x20)
+    CString GetName() {
+        return m_8;
+    }
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2); // 0xba1a0  switch on msg->m_0 (arg2 unused)
     i32 OnPlayerLeft(i32 playerId); // 0xba3b0  (/GX) report + tear down a leaving player
     // The sprite/menu-message handler (case 3 of HandleControlMsg); its body lives

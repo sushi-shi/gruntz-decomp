@@ -21,7 +21,12 @@ public:
     static void InitActReg();   // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
     static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)
 
-    i32 SetCell(i32 x, i32 y); // 0x07e9c0
+    RVA(0x0007e9c0, 0x16)
+    i32 SetCell(i32 x, i32 y) {
+        m_cellX = x;
+        m_cellY = y;
+        return 1;
+    }
     i32 Update();              // 0x07e9f0
 
     i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)

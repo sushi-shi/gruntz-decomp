@@ -982,12 +982,8 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u
     return IsReady() != 0;
 }
 
-// CDeviceConfigB::IsReady (__thiscall, no args). The CreateDev success check: the QI'd
-// device interface (m_device2) is non-null.
-RVA(0x001343a0, 0xb)
-i32 CDeviceConfigB::IsReady() {
-    return m_device2 != 0;
-}
+// CDeviceConfigB::IsReady (0x001343a0) is now an inline member in the header.
+
 
 // The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
 // button-down bits (low nibble) + the four direction bits (the top nibble).

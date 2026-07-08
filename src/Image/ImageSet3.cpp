@@ -37,7 +37,13 @@ public:
 class CImageSet3 {
 public:
     i32 Prune_1628d0();    // 0x1628d0
-    i32 GetSize_1633e0();  // 0x1633e0
+    RVA(0x001633e0, 0x12)
+    i32 GetSize_1633e0() {
+        if (m_b0 == 0) {
+        return 0;
+        }
+        return m_b0->GetSize_168430();
+    }
     void Cleanup_161bf0(); // 0x161bf0
 
     char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + CLoadable base + ...)
@@ -57,15 +63,8 @@ i32 CImageSet3::Prune_1628d0() {
     return m_b0->Prune_1688b0();
 }
 
-// ---------------------------------------------------------------------------
-// 0x1633e0: forward the grid's GetSize when present (else 0).  __thiscall tail call.
-RVA(0x001633e0, 0x12)
-i32 CImageSet3::GetSize_1633e0() {
-    if (m_b0 == 0) {
-        return 0;
-    }
-    return m_b0->GetSize_168430();
-}
+// CImageSet3::GetSize_1633e0 (0x001633e0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // 0x161bf0: tear down the owned resources.  Prune the grid, then destroy + free

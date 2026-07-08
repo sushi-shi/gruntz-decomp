@@ -109,7 +109,10 @@ public:
     i32 Method_158e40();                       // 0x158e40
     i32 Method_158e90();                       // 0x158e90
     i32 Method_158ee0();                       // 0x158ee0
-    void Method_159ef0();                      // 0x159ef0 (tail-call vtable slot 15)
+    RVA(0x00159ef0, 0x5)
+    void Method_159ef0() {
+        this->Slot0F_157a00();
+    }
 
     // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
     i32 m_04;                         // +0x04  (reset to -1 on teardown)

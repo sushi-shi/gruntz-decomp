@@ -437,12 +437,27 @@ public:
         i32 x;
         i32 y;
     };
-    void GetScreenPos(ScreenPoint* out); // 0x29a50
+    RVA(0x00029a50, 0x15)
+    void GetScreenPos(ScreenPoint* out) {
+        CGameObject* o = m_object;
+        i32 y = o->m_screenY;
+        i32 x = o->m_screenX;
+        out->x = x;
+        out->y = y;
+    }
 
     // True when the bound object's current screen pos (m_object->m_5c/m_60) still
     // equals the saved pos at this+0x17c/+0x180 (leaf-class fields beyond
     // CUserLogic's 0x40 - read via offset since the leaf isn't modeled). 0x29a80.
-    i32 IsAtSavedScreenPos(); // 0x29a80
+    RVA(0x00029a80, 0x29)
+    i32 IsAtSavedScreenPos() {
+        CGameObject* o = m_object;
+        i32 sx = *(i32*)((char*)this + 0x17c);
+        if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
+        return 1;
+        }
+        return 0;
+    }
 
     // Inline one-shot wrapper: registers the built-in logic types the first time
     // any tile-logic object is built. Inlined into the 1-arg ctor; its `this`

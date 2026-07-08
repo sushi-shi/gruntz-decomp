@@ -16,7 +16,12 @@ public:
     // and as the owning CWwdGameObject from the game-object path, so it is modeled
     // as void* (reinterpreted internally) to keep one mangled symbol across both.
     void Construct(void* src);
-    void Reset_15c2c0();
+    RVA(0x0015c2c0, 0xc)
+    void Reset_15c2c0() {
+        m_10 = 0;
+        m_srcRef = 0;
+        m_element = 0;
+    }
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
     void Recompute_15c320(i32 a1);
     i32 SelectCue_157a80(void* force);

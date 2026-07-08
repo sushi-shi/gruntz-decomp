@@ -67,10 +67,20 @@ class CFaderMgr {
 public:
     CFaderMgr();                                // 0x17d8f0
     ~CFaderMgr();                               // 0x17d910
-    i32 SetConfig(i32 a, i32 b, i32 c);         // 0x17d980
+    RVA(0x0017d980, 0x1f)
+    i32 SetConfig(i32 a, i32 b, i32 c) {
+        m_timerArgA = a;
+        m_timerArgB = b;
+        m_sharedSet2cArg = c;
+        m_active = 1;
+        return 1;
+    }
     void FreeAll();                             // 0x17d9a0
     CFader* Add(i32 nFaderType, CFader* pInit); // 0x17d9c0
-    i32 Flush();                                // 0x17e160
+    RVA(0x0017e160, 0x8)
+    i32 Flush() {
+        return ((CFaderMgr*)&m_sharedSet2cArg)->Flush();
+    }
     void Remove(CFader* pFader);                // 0x17e170
     void DeleteAll();                           // 0x17e1d0
 

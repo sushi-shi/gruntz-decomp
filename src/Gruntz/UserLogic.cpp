@@ -692,27 +692,11 @@ CVoiceTrigger::~CVoiceTrigger() {}
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
-// --- CUserLogic::GetScreenPos (0x029a50) ---
-// Copies the bound object's screen position into the out point.
-RVA(0x00029a50, 0x15)
-void CUserLogic::GetScreenPos(ScreenPoint* out) {
-    CGameObject* o = m_object;
-    i32 y = o->m_screenY;
-    i32 x = o->m_screenX;
-    out->x = x;
-    out->y = y;
-}
+// CUserLogic::GetScreenPos (0x00029a50) is now an inline member in the header.
 
-// --- CUserLogic::IsAtSavedScreenPos (0x029a80) ---
-RVA(0x00029a80, 0x29)
-i32 CUserLogic::IsAtSavedScreenPos() {
-    CGameObject* o = m_object;
-    i32 sx = *(i32*)((char*)this + 0x17c);
-    if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
-        return 1;
-    }
-    return 0;
-}
+
+// CUserLogic::IsAtSavedScreenPos (0x00029a80) is now an inline member in the header.
+
 
 // --- CTeleporter (0x041020), vptr 0x5e80cc ---
 CTeleporter::~CTeleporter() {}

@@ -521,13 +521,8 @@ i32 CPathHazard::BeginLeg() {
     return 1;
 }
 
-// CPathHazard::ForwardTick @0x0b5070 - a thin non-virtual forwarder that
-// tail-jumps to the hazard's own virtual slot 16 (Tick): `mov eax,[ecx]; jmp
-// [eax+0x40]`. The tail-call through the typed vtable emits the jmp directly.
-RVA(0x000b5070, 0x5)
-void CPathHazard::ForwardTick() {
-    Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
-}
+// CPathHazard::ForwardTick (0x000b5070) is now an inline member in the header.
+
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.

@@ -72,12 +72,18 @@ public:
     ~CBattlezMapConfig();
     void FreeArrays();
     i32 Method_025c20();
-    void Clear_02ade0();
+    RVA(0x0002ade0, 0x7)
+    void Clear_02ade0() {
+        m_active = 0;
+    }
     i32 Method_02c0a0(i32, i32);
     i32 Method_030530(i32);
     i32 Method_0305b0(i32, i32, i32);
     i32 Method_02bfc0(i32, void*, i32, i32);
-    i32 Method_02ed90(i32);
+    RVA(0x0002ed90, 0x5)
+    i32 Method_02ed90(i32) {
+        return 0;
+    }
     i32 Serialize_02b420(void*);
     i32 Deserialize_02b950(void*);
     i32 Method_030730(i32, i32, i32, i32);
@@ -95,7 +101,10 @@ public:
     i32 Method_02edb0(i32, i32, i32, i32);
     i32 Method_030b20(i32, i32, i32);
     void* Method_02ad40(i32); // 0x02ad40  pick a random idle (m_busy==0) unit from a band row
-    i32 Method_02c080(i32);   // 0x02c080  trivial: return 1
+    RVA(0x0002c080, 0x8)
+    i32 Method_02c080(i32) {
+        return 1;
+    }
     i32 Method_034c70(i32);   // 0x034c70  board-tile spawn check for a queued unit
     i32 Method_0358a0(i32);   // 0x0358a0  idle-unit retarget / despawn / near-band keep
     i32 winapi_0267c0_IntersectRect_PtInRect();

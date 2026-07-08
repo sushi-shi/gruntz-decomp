@@ -38,10 +38,17 @@ public:
     // Ghidra placeholder-named these two "CParseSource::BeginParse/EndParse"
     // (0x139960 / 0x1399d0); same 0x139xxx class + identical layout as SetPos/Read.
     // 0x139800: return the first dword of the keyed-store entry (*(int*)m_entry).
-    i32 GetEntryTag();
+    RVA(0x00139800, 0x6)
+    i32 GetEntryTag() {
+        return *(i32*)m_entry;
+    }
     i32 BeginParse();
     i32 EndParse();
-    i32 SetPos(i32 pos);
+    RVA(0x00139ae0, 0xf)
+    i32 SetPos(i32 pos) {
+        m_cursor = pos;
+        return 1;
+    }
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 

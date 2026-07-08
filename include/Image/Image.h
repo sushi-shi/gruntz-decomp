@@ -91,7 +91,11 @@ public:
     i32 EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, void* flag); // 0x175ce0
     void Fill(i32 value);                                             // 0x175d50
     void Free();                                                      // 0x175c90 (pool: Cleanup)
-    void SetPalette(void* paletteNode, i32 scalar);                   // 0x176ad0
+    RVA(0x00176ad0, 0x17)
+    void SetPalette(void* paletteNode, i32 scalar) {
+        m_paletteNode = paletteNode;
+        m_paletteScalar = scalar;
+    }
     i32 SaveBmp(const char* filename, void* paletteObj);              // 0x176b30
 
     // Layout. The object opens with a BITMAPINFOHEADER (this+0,

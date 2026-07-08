@@ -922,14 +922,8 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
     return 0;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_02c080  @0x02c080
-// Trivial: ignore the one arg, return 1. (mov eax,1; ret 4)
-// ===========================================================================
-RVA(0x0002c080, 0x8)
-i32 CBattlezMapConfig::Method_02c080(i32) {
-    return 1;
-}
+// CBattlezMapConfig::Method_02c080 (0x0002c080) is now an inline member in the header.
+
 
 // ===========================================================================
 // CBattlezMapConfig::Method_025d90  @0x025d90
@@ -1469,14 +1463,8 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
     return (i32)best;
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Clear_02ade0  @0x02ade0
-// Single-store setter: zero the first dword. (mov [ecx],0; ret)
-// ===========================================================================
-RVA(0x0002ade0, 0x7)
-void CBattlezMapConfig::Clear_02ade0() {
-    m_active = 0;
-}
+// CBattlezMapConfig::Clear_02ade0 (0x0002ade0) is now an inline member in the header.
+
 
 // The gated point-in-rect test on a unit (RVA 0x051a20, RectContainsGated): a
 // __thiscall taking the other unit's level coord. External, reloc-masked.
@@ -2822,14 +2810,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 }
 
-// ===========================================================================
-// CBattlezMapConfig::Method_02ed90  @0x02ed90
-// One-arg predicate that always returns 0. (xor eax,eax; ret 4)
-// ===========================================================================
-RVA(0x0002ed90, 0x5)
-i32 CBattlezMapConfig::Method_02ed90(i32) {
-    return 0;
-}
+// CBattlezMapConfig::Method_02ed90 (0x0002ed90) is now an inline member in the header.
+
 
 // ===========================================================================
 // CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)

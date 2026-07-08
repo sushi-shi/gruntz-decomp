@@ -85,33 +85,14 @@ void CSpriteRefTable::Clear() {
     }
 }
 
-RVA(0x000e2360, 0x15)
-CSpriteRef* CSpriteRefTable::GetA(i32 i) {
-    if ((u32)i >= 0x11) {
-        return 0;
-    }
-    return m_refA[i];
-}
+// CSpriteRefTable::GetA (0x000e2360) is now an inline member in the header.
 
-RVA(0x000e2390, 0x15)
-CSpriteRef* CSpriteRefTable::GetB(i32 i) {
-    if ((u32)i >= 0x11) {
-        return 0;
-    }
-    return m_refB[i];
-}
 
-RVA(0x000e23c0, 0x2d)
-i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
-    if ((u32)i >= 0x11) {
-        return 0;
-    }
-    CSpriteRef* node = bAlt ? m_refB[i] : m_refA[i];
-    if (!node) {
-        return 0;
-    }
-    return node->m_alphaKey;
-}
+// CSpriteRefTable::GetB (0x000e2390) is now an inline member in the header.
+
+
+// CSpriteRefTable::GetSel (0x000e23c0) is now an inline member in the header.
+
 
 // @early-stop
 // out-param zero-init scheduling wall: retail SINKS `mov [&out],0` past both arg

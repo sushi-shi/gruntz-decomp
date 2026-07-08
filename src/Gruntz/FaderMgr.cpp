@@ -79,21 +79,8 @@ CFaderMgr::~CFaderMgr() {
     FreeAll();
 }
 
-// ===========================================================================
-// 0x17d980 - SetConfig(a, b, c): latch the shared timer fields (m_timerArgA = a,
-// m_timerArgB = b, m_sharedSet2cArg = c) and mark the manager active (m_active = 1). Returns 1.
-// __thiscall, three args. Assignment order is load-bearing: timerArgA/timerArgB/sharedSet2cArg
-// makes cl hold `b` in edx across the sharedSet2cArg store (retail's schedule); swapping
-// sharedSet2cArg ahead of timerArgB holds `c` instead and reorders the two stores.
-// ===========================================================================
-RVA(0x0017d980, 0x1f)
-i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
-    m_timerArgA = a;
-    m_timerArgB = b;
-    m_sharedSet2cArg = c;
-    m_active = 1;
-    return 1;
-}
+// CFaderMgr::SetConfig (0x0017d980) is now an inline member in the header.
+
 
 // ===========================================================================
 // 0x17d9a0 - FreeAll: DeleteAll, then clear m_active.
@@ -316,10 +303,8 @@ SIZE_UNKNOWN(CFaderTail);
 struct CFaderTail {
     // Flush @0x17e160 IS CFaderMgr::Flush; cast at the call.
 };
-RVA(0x0017e160, 0x8)
-i32 CFaderMgr::Flush() {
-    return ((CFaderMgr*)&m_sharedSet2cArg)->Flush();
-}
+// CFaderMgr::Flush (0x0017e160) is now an inline member in the header.
+
 
 // ===========================================================================
 // 0x17e170 - Remove(pFader): find pFader in the array; on hit, memmove the tail

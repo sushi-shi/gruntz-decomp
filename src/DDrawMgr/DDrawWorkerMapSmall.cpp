@@ -159,7 +159,10 @@ public:
     virtual ~CDDrawWorkerMapSmall() OVERRIDE; // overrides slot [1]
 
     // GetStateId (0x157600) is NOT a vtable slot - a plain method.
-    StateId GetStateId();
+    RVA(0x00157600, 0x6)
+    StateId GetStateId() {
+        return STATE_WORKERMAPSMALL; // 0x10
+    }
 
     // m_04/m_08/m_0c (and the implicit vptr) are inherited from CDDrawWorkerMapBase.
     CMapStringToOb m_map1; // +0x10  worker-by-key map 1 (0x10..0x2b)
@@ -303,13 +306,8 @@ void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
     return w;
 }
 
-// ---------------------------------------------------------------------------
-// Constant state id.
-// ---------------------------------------------------------------------------
-RVA(0x00157600, 0x6)
-StateId CDDrawWorkerMapSmall::GetStateId() {
-    return STATE_WORKERMAPSMALL; // 0x10
-}
+// CDDrawWorkerMapSmall::GetStateId (0x00157600) is now an inline member in the header.
+
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.

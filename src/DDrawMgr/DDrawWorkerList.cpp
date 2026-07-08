@@ -96,15 +96,32 @@ public:
     virtual void VPrune();                // slot 13 @0x163bf0
 
     // Matched method bodies (non-virtual; direct-called + reached via the slots above).
-    i32 IsReady();
+    RVA(0x00156f00, 0x16)
+    i32 IsReady() {
+        if (m_pSurfaceMgr == 0) {
+        goto fail;
+        }
+        if (m_status != -1) {
+        return 1;
+        }
+        
+        fail:
+        return 0;
+    }
     void ClearWorkers();
-    StateId GetStateId();
+    RVA(0x00156f20, 0x6)
+    StateId GetStateId() {
+        return STATE_WORKERLIST; // 0x11
+    }
     void* CreateWorkerA(i32 a1, i32 a2, i32 a3);
     void* CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead);
     void* CreateWorkerB2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
     void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void PruneWorkers(i32 a1, i32 a2);
-    i32 IsReadyPredicate();
+    RVA(0x00156fc0, 0x6)
+    i32 IsReadyPredicate() {
+        return 1;
+    }
 
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b
@@ -142,20 +159,8 @@ public:
     CObList m_10;           // +0x10
 };
 
-// ---------------------------------------------------------------------------
-// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
-RVA(0x00156f00, 0x16)
-i32 CDDrawWorkerList::IsReady() {
-    if (m_pSurfaceMgr == 0) {
-        goto fail;
-    }
-    if (m_status != -1) {
-        return 1;
-    }
+// CDDrawWorkerList::IsReady (0x00156f00) is now an inline member in the header.
 
-fail:
-    return 0;
-}
 
 // Inline worker constructors. Each new's the raw block, and on success seeds the
 // fields THROUGH the allocation register and returns it; the null path returns 0.
@@ -302,12 +307,8 @@ void CDDrawWorkerList::ClearWorkers() {
     m_workers.RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// Returns constant 0x11 (17).
-RVA(0x00156f20, 0x6)
-StateId CDDrawWorkerList::GetStateId() {
-    return STATE_WORKERLIST; // 0x11
-}
+// CDDrawWorkerList::GetStateId (0x00156f20) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // ~CDDrawWorkerList: walk the work-node list (head @ this+0x14), destroy every
@@ -370,12 +371,8 @@ CDDrawWorkerListSib::~CDDrawWorkerListSib() {
     // implicit: ~m_10 (CObList) then ~WorkerListSibBase (field resets + base restamp).
 }
 
-// ---------------------------------------------------------------------------
-// Constant state predicate returning 1.
-RVA(0x00156fc0, 0x6)
-i32 CDDrawWorkerList::IsReadyPredicate() {
-    return 1;
-}
+// CDDrawWorkerList::IsReadyPredicate (0x00156fc0) is now an inline member in the header.
+
 
 SIZE_UNKNOWN(CDDrawWorkerList);
 VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)

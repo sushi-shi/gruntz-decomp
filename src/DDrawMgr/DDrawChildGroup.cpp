@@ -39,20 +39,8 @@ public:
     i32 Prune_1628d0(); // 0x1628d0 (__thiscall)
 };
 
-// ---------------------------------------------------------------------------
-// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
-RVA(0x001575e0, 0x16)
-i32 CDDrawChildGroup::IsReady() {
-    if (m_parent == 0) {
-        goto fail;
-    }
-    if (m_status != -1) {
-        return 1;
-    }
+// CDDrawChildGroup::IsReady (0x001575e0) is now an inline member in the header.
 
-fail:
-    return 0;
-}
 
 // CDDrawChildGroup::ForwardTo3C (0x001591e0) is now an inline member in the header.
 

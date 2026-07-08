@@ -1286,13 +1286,8 @@ void CButeMgr::Init() {
     m_str104 = g_emptyString;
 }
 
-// ---------------------------------------------------------------------------
-// CButeMgr::SetErrCallback
-// Store the optional error callback at +0x14.
-RVA(0x00170380, 0xa)
-void CButeMgr::SetErrCallback(ErrCallback cb) {
-    m_errCallback = cb;
-}
+// CButeMgr::SetErrCallback (0x00170380) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CButeMgr::NextChar

@@ -34,35 +34,20 @@ VTBL(CMenuItem2, 0x001f08f8);
 
 // ===========================================================================
 
-// return the item name (m_name) by value.
-RVA(0x001845b0, 0x20)
-CString CMenuItem::GetName() {
-    return m_name;
-}
+// CMenuItem::GetName (0x001845b0) is now an inline member in the header.
 
-// return the forward-nav target name (m_navFwdName) by value.
-RVA(0x001845d0, 0x20)
-CString CMenuItem::GetNavFwdName() {
-    return m_navFwdName;
-}
 
-// return the backward-nav target name (m_navBackName) by value.
-RVA(0x001845f0, 0x20)
-CString CMenuItem::GetNavBackName() {
-    return m_navBackName;
-}
+// CMenuItem::GetNavFwdName (0x001845d0) is now an inline member in the header.
 
-// return m_54 by value.
-RVA(0x00184610, 0x20)
-CString CMenuItem::GetField54() {
-    return m_54;
-}
 
-// return m_58 by value.
-RVA(0x00184630, 0x20)
-CString CMenuItem::GetField58() {
-    return m_58;
-}
+// CMenuItem::GetNavBackName (0x001845f0) is now an inline member in the header.
+
+
+// CMenuItem::GetField54 (0x00184610) is now an inline member in the header.
+
+
+// CMenuItem::GetField58 (0x00184630) is now an inline member in the header.
+
 
 // destructor (100%): the compiler re-stamps the vptr (mov [this],&??_7CMenuItem@@6B@),
 // then we run the slot-0xc teardown hook, then the six CString members are

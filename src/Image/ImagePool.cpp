@@ -551,15 +551,8 @@ void CImagePool::B(CRezImage* node, i32 a, i32 b) {
     node->SetPalette((void*)a, b);
 }
 
-// ===========================================================================
-// CRezImage::SetPalette (ret 8) - latch the palette node ptr
-// (+0x458) and the associated scalar (+0x454).
-// ===========================================================================
-RVA(0x00176ad0, 0x17)
-void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
-    m_paletteNode = paletteNode;
-    m_paletteScalar = scalar;
-}
+// CRezImage::SetPalette (0x00176ad0) is now an inline member in the header.
+
 
 // ===========================================================================
 // CImagePaletteNode::ProcessPal (ret 8) - expand a packed RGB-triple

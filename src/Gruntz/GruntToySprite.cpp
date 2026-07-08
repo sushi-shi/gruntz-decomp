@@ -54,15 +54,8 @@ void CGruntToySprite::RegisterActs() {
     ((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn = &CGruntToySprite::Update;
 }
 
-// SetCell @0x07f920 - stash the (x,y) grunt cell, clear bit 0 of the +0x38 game
-// object's +0x40 flags, return 1.
-RVA(0x0007f920, 0x21)
-i32 CGruntToySprite::SetCell(i32 x, i32 y) {
-    m_cellX = x;
-    m_cellY = y;
-    m_38->m_stateFlags &= ~1;
-    return 1;
-}
+// CGruntToySprite::SetCell (0x0007f920) is now an inline member in the header.
+
 
 // Update @0x07f960 - resolve the grunt for cell (m_cellX,m_cellY); when present, if its
 // layer index changed re-clamp it through the level layer table into the bound

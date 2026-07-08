@@ -8,10 +8,11 @@
 SIZE_UNKNOWN(CTriggerSound);
 struct CTriggerSound {
     i32 CheckCue();    // 0x1106b0 (external worker, reloc-masked)
-    i32 IsCueActive(); // 0x112860
+    RVA(0x00112860, 0xc)
+    i32 IsCueActive() {
+        return CheckCue() != 0;
+    }
 };
 
-RVA(0x00112860, 0xc)
-i32 CTriggerSound::IsCueActive() {
-    return CheckCue() != 0;
-}
+// CTriggerSound::IsCueActive (0x00112860) is now an inline member in the header.
+

@@ -76,8 +76,39 @@ public:
     i32 Decode(u8* buf);                                      // 0x000e5460
     SaveSlot* GetSlot(i32 i);                                 // 0x000e54b0
     i32 FillSlotByIndex(i32 idx, i32 name, void* src);        // 0x000e54e0
-    void SetMaxLevel(i32 v);                                  // 0x000e5620
-    void SetCurLevel(i32 v);                                  // 0x000e5660
+    RVA(0x000e5620, 0x27)
+    void SetMaxLevel(i32 v) {
+        if (v < 0x21) {
+        if ((u32)v > m_maxLevel) {
+        m_maxLevel = v;
+        return;
+        }
+        if (m_maxLevel > 0x24) {
+        m_maxLevel = v;
+        return;
+        }
+        }
+        if (m_maxLevel <= 0x24) {
+        return;
+        }
+        if ((u32)v <= m_maxLevel) {
+        return;
+        }
+        m_maxLevel = v;
+    }
+    RVA(0x000e5660, 0x1e)
+    void SetCurLevel(i32 v) {
+        if (v >= 0x21) {
+        return;
+        }
+        if (v <= m_curLevel) {
+        return;
+        }
+        m_curLevel = v;
+        if (v == 0x20) {
+        Init();
+        }
+    }
     i32 CheckMagic();                                         // 0x000e5690
 
     CString m_str0; // +0x00  the directory CString

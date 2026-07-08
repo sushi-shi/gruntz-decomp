@@ -316,19 +316,8 @@ i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialArchive* s) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::GetFlag74
-// Try-acquire on the +0x74 flag (== m_block[18]): returns 0 if already set,
-// otherwise sets it to 1 and returns 1.
-// ---------------------------------------------------------------------------
-RVA(0x00115f00, 0x13)
-i32 CTileTriggerSwitchLogic::GetFlag74() {
-    if (m_block[18] != 0) {
-        return 0;
-    }
-    m_block[18] = 1;
-    return 1;
-}
+// CTileTriggerSwitchLogic::GetFlag74 (0x00115f00) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::RemoveByKeys

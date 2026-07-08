@@ -27,14 +27,20 @@ public:
     // Latch the source registry root + text host and raise the active flag.
     void Attach(void* reg, CChatBoxTextHost* host);
     // Lower the active flag.
-    void Deactivate();
+    RVA(0x00020510, 0x8)
+    void Deactivate() {
+        m_c = 0;
+    }
     // Configure the box origin from the current viewport for the given mode and
     // mark the text host dirty.
     void Configure(i32 mode);
     // Hit-test a screen point against the box rectangle for the current mode.
     i32 HitTest(i32 x, i32 y);
     // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
-    CString GetField1c();
+    RVA(0x00020ef0, 0x20)
+    CString GetField1c() {
+        return m_1c;
+    }
     // The chat-box cheat-code processor ("Enable Cheatzfile" command).
     void ProcessCheatInput(i32 a, i32 b);
     // Render the chat-box sprite + stamp its text for the current mode.

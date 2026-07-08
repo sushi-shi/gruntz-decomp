@@ -132,9 +132,23 @@ SIZE(CHashBase, 0x8);
 // ---------------------------------------------------------------------------
 class CHash : public CHashBase {
 public:
-    u32 HashStr(const char* s);           // 0x13c240
+    RVA(0x0013c240, 0x29)
+    u32 HashStr(const char* s) {
+        if (!s) {
+        return 0;
+        }
+        u32 len = 0;
+        while (*s) {
+        ++len;
+        ++s;
+        }
+        return len % m_count;
+    }
     void* Walk(const char* name, i32 ci); // 0x13c270
-    u32 HashInt(u32 key);                 // 0x13c350
+    RVA(0x0013c350, 0xd)
+    u32 HashInt(u32 key) {
+        return key % m_count;
+    }
     void* FindInt(u32 key);               // 0x13c360
 };
 SIZE(CHash, 0x8);
@@ -145,7 +159,18 @@ SIZE(CHash, 0x8);
 // ---------------------------------------------------------------------------
 class CHashB : public CHashBase {
 public:
-    u32 HashStr(const char* s);           // 0x13c3c0
+    RVA(0x0013c3c0, 0x29)
+    u32 HashStr(const char* s) {
+        if (!s) {
+        return 0;
+        }
+        u32 len = 0;
+        while (*s) {
+        ++len;
+        ++s;
+        }
+        return len % m_count;
+    }
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };
 SIZE(CHashB, 0x8);

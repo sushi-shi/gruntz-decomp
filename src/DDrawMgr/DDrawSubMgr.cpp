@@ -519,11 +519,8 @@ i32 CDDrawSubMgrPages::Method_158ee0() {
     return 1;
 }
 
-// 0x159ef0: tail-call this vtable slot 0x3c.
-RVA(0x00159ef0, 0x5)
-void CDDrawSubMgrPages::Method_159ef0() {
-    this->Slot0F_157a00();
-}
+// CDDrawSubMgrPages::Method_159ef0 (0x00159ef0) is now an inline member in the header.
+
 
 // 0x15c290: blit-param init.
 // @early-stop
@@ -541,13 +538,8 @@ void CDDrawBlitParam::Construct(void* srcv) {
     m_2c = *(i32*)((char*)src->m_elements + 0x34) & 0x40;
 }
 
-// 0x15c2c0: blit-param zero-reset (vtable slot 6 of the element class).
-RVA(0x0015c2c0, 0xc)
-void CDDrawBlitParam::Reset_15c2c0() {
-    m_10 = 0;
-    m_srcRef = 0;
-    m_element = 0;
-}
+// CDDrawBlitParam::Reset_15c2c0 (0x0015c2c0) is now an inline member in the header.
+
 
 // 0x15c2d0: blit-param setup from a worker source.
 RVA(0x0015c2d0, 0x45)

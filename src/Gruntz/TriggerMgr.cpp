@@ -347,21 +347,8 @@ struct CTmLevel {
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
 
-// 0x6b640: SetLevel(lvl) - stash the level back-ptr, clear companion state.
-// @early-stop
-// 1-instr phase shift: retail floats `mov eax,1` up between the stores; we emit it
-// at the epilogue. Structure + offsets byte-exact. docs/patterns/zero-register-pinning.md
-RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
-    if (lvl == 0) {
-        return 0;
-    }
-    m_level = lvl;
-    m_230 = 0;
-    m_pendingFx = 0;
-    m_2a4 = 0;
-    return 1;
-}
+// CTriggerMgr::SetLevel (0x0006b640) is now an inline member in the header.
+
 
 // 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present, then
 // drain the record and selection lists. The overlay's Clear runs the in-place dtor,
@@ -1365,16 +1352,8 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     return 1;
 }
 
-// 0x759e0: GetOriginXY(out) - copy the cached origin pair (+0x174,+0x178) into the
-// caller's slot and return it. `out` (loaded into eax as the store base) is the
-// return value; `ret 4` -> callee cleans the out-ptr.
-RVA(0x000759e0, 0x18)
-CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
-    // the cached origin pair lives in the parallel flag grid at +0x58/+0x5c (== +0x174/+0x178)
-    out->x = m_cellFlag[0x16];
-    out->y = m_cellFlag[0x17];
-    return out;
-}
+// CTriggerMgr::GetOriginXY (0x000759e0) is now an inline member in the header.
+
 
 // 0x75a90: TmFlagsAllow(a, b, c) - a __cdecl trigger-flag compatibility test on the
 // shared bits m = a & b: bit 0x20000000 vetoes outright; with no shared bits, allow;

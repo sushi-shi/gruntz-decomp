@@ -46,7 +46,10 @@ struct CMenuRenderHost;
 class CMenuPage {
 public:
     ~CMenuPage();     // 0x183250  /GX member teardown
-    CString GetKey(); // 0x1832d0  returns m_key by value
+    RVA(0x001832d0, 0x20)
+    CString GetKey() {
+        return m_key;
+    }
     i32 Configure(
         CMenuItem* tmpl,
         const char* label,

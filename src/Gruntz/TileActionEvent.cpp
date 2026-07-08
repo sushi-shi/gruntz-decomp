@@ -118,15 +118,8 @@ SIZE_UNKNOWN(CImpactSound);
 // The sound-bank lookup by name (thunk_FUN_0045b7e0, __cdecl). External no-body.
 extern CImpactSound* Eng_FindSound(const char* name);
 
-// ===========================================================================
-// CTileActionEvent::ResetFlag  (0x112d80) - __thiscall
-// ===========================================================================
-// Zero the m_10 flag word and return this (MSVC moves ecx->eax for the return).
-RVA(0x00112d80, 0xa)
-CTileActionEvent* CTileActionEvent::ResetFlag() {
-    m_10 = 0;
-    return this;
-}
+// CTileActionEvent::ResetFlag (0x00112d80) is now an inline member in the header.
+
 
 // ===========================================================================
 // CTileActionEvent::SetActionCode  (0x112da0) - __thiscall, ret 4

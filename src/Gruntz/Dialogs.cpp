@@ -702,14 +702,8 @@ void CBattlezDlg::CopyComboSelToChild() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// SetSlotValue - store `val` into the 0x158 field of slot `index` in the slot
-// array based at m_slots (0x238 bytes/slot). Returns TRUE.
-RVA(0x00017460, 0x22)
-i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
-    ((CBattlezSlot*)m_slots)[index].m_158 = val;
-    return 1;
-}
+// CBattlezDlg::SetSlotValue (0x00017460) is now an inline member in the header.
+
 
 // ReadCtrlBText (0x17340): read the `index` control's text into a local CString via
 // GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH

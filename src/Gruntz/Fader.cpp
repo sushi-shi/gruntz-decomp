@@ -85,22 +85,11 @@ void CFader::Wait(i32 delay) {
     }
 }
 
-// ===========================================================================
-// 0x17e760 - CFader::SetTimers(a, b): store the manager's shared timing pair.
-// ===========================================================================
-RVA(0x0017e760, 0x11)
-void CFader::SetTimers(i32 a, i32 b) {
-    m_timerA = a;
-    m_timerB = b;
-}
+// CFader::SetTimers (0x0017e760) is now an inline member in the header.
 
-// ===========================================================================
-// 0x17e780 - CFader::Set2c(v): store the manager's shared Set2c value.
-// ===========================================================================
-RVA(0x0017e780, 0xa)
-void CFader::Set2c(i32 v) {
-    m_set2cArg = v;
-}
+
+// CFader::Set2c (0x0017e780) is now an inline member in the header.
+
 
 // ===========================================================================
 // CFaderMesh - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested

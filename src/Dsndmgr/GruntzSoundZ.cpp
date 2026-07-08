@@ -291,15 +291,8 @@ i32 CGruntzSoundZ::StopBank(i32 bank) {
     return m_pCurrent->StopBank(bank);
 }
 
-// ---------------------------------------------------------------------------
-// IsPlaying: forward to the current bank's status query (Stop, +0x30); 0 if none.
-RVA(0x00138920, 0xf)
-i32 CGruntzSoundZ::IsPlaying() {
-    if (m_pCurrent == 0) {
-        return 0;
-    }
-    return m_pCurrent->Stop();
-}
+// CGruntzSoundZ::IsPlaying (0x00138920) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // SetXMidiVolume: scale a 0..100 volume to 0..127 and push it to the AIL XMIDI

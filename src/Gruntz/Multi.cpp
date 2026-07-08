@@ -835,21 +835,11 @@ CString& CMulti::ClearString5a0(CString& s) {
     return s;
 }
 
-// ===========================================================================
-// CMulti::GetString59c  @ 0x0b7a90  - return m_groupName by value (NRVO copy).
-// ===========================================================================
-RVA(0x000b7a90, 0x23)
-CString CMulti::GetString59c() {
-    return m_groupName;
-}
+// CMulti::GetString59c (0x000b7a90) is now an inline member in the header.
 
-// ===========================================================================
-// CMulti::GetString5a0  @ 0x0b7ad0  - return m_hostName by value (NRVO copy).
-// ===========================================================================
-RVA(0x000b7ad0, 0x23)
-CString CMulti::GetString5a0() {
-    return m_hostName;
-}
+
+// CMulti::GetString5a0 (0x000b7ad0) is now an inline member in the header.
+
 
 // ===========================================================================
 // CMulti::ReportVersionMsg  @ 0x0b7e30  - log a message line to the logic object

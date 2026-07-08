@@ -249,31 +249,14 @@ void CWapNodeB::FreeStrings() {
     m_type = 0;
 }
 
-// =========================================================================
-// Font::GetSurface
-//
-RVA(0x00179b60, 0x12)
-void** Font::GetSurface(u8 c) {
-    return &m_surfaces[c];
-}
+// Font::GetSurface (0x00179b60) is now an inline member in the header.
 
-// =========================================================================
-// Font::GetGlyph
-// Returns the out reference: retail callers (DrawGlyphRun) read the copied
-// metric pair back through eax (`call GetGlyph; mov ebp,[eax]`).
-RVA(0x00179b80, 0x22)
-Glyph& Font::GetGlyph(Glyph& out, u8 c) {
-    out = m_glyphs[c];
-    return out;
-}
 
-// =========================================================================
-// Font::GetMaxHeight
-//
-RVA(0x00179bd0, 0x4)
-i32 Font::GetMaxHeight() {
-    return m_maxHeight;
-}
+// Font::GetGlyph (0x00179b80) is now an inline member in the header.
+
+
+// Font::GetMaxHeight (0x00179bd0) is now an inline member in the header.
+
 
 // =========================================================================
 // FontRenderer::FontRenderer
@@ -286,31 +269,14 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
-// =========================================================================
-// FontRenderer::SetColor
-// Internal helper: stores the color argument into m_color.
-//
-RVA(0x00179c20, 0xa)
-void FontRenderer::SetColor(i32 color) {
-    m_color = color;
-}
+// FontRenderer::SetColor (0x00179c20) is now an inline member in the header.
 
-// =========================================================================
-// FontRenderer::GetChar
-//
-RVA(0x0017b4f0, 0xc)
-u8 CharCursor::GetChar(i32 i) {
-    return m_str[i];
-}
 
-// =========================================================================
-// TextRange::Span
-// Byte distance between the range's end and begin markers (a signed length).
-//
-RVA(0x0017b500, 0x8)
-i32 TextRange::Span() {
-    return m_end - m_begin;
-}
+// CharCursor::GetChar (0x0017b4f0) is now an inline member in the header.
+
+
+// TextRange::Span (0x0017b500) is now an inline member in the header.
+
 
 // =========================================================================
 // FontRenderer::MeasureText

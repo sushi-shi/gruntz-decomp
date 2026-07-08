@@ -52,7 +52,14 @@ public:
     // Trace-discovered child-list accessors (list head @ +0x04; nodes
     // next@+0x00, data@+0x08; data objects are sibling CTileTriggerSwitchLogic
     // with keys at +0x04 / +0x10).
-    i32 GetFlag74();                                         // 0x115f00
+    RVA(0x00115f00, 0x13)
+    i32 GetFlag74() {
+        if (m_block[18] != 0) {
+        return 0;
+        }
+        m_block[18] = 1;
+        return 1;
+    }
     i32 RemoveByKeys(i32 k1, i32 k2);                        // 0x116320
     CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);      // 0x116ee0
     CTileTriggerSwitchLogic* FindByField0C(i32 key);         // 0x1171d0

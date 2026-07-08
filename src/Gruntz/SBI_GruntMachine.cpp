@@ -20,15 +20,8 @@ extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 
-// vtable slot 3 (0xe8c70): drop the standalone frame handle (m_30 config? no -
-// m_30 is reused as the config record) and the two resolved frame records. Reached
-// by the destructor as the member teardown. Zeroes m_34, m_3c, m_30.
-RVA(0x000e8c70, 0xc)
-void CSBI_GruntMachine::Reset() {
-    m_34 = 0;
-    m_3c = 0;
-    m_30 = 0;
-}
+// CSBI_GruntMachine::Reset (0x000e8c70) is now an inline member in the header.
+
 
 // vtable slot 5 (0xe8cb0): the per-frame render. Idle (return 1) while the frame
 // countdown is non-positive; otherwise tick it down, resolve the two indexed frame
@@ -87,17 +80,5 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     return 1;
 }
 
-// 0xe8dc0 (__thiscall, ret 8): prime the two frame indices and arm the countdown.
-// Each index is only written when it differs from -1 (a "keep current" sentinel);
-// the countdown is unconditionally set to 2 so the next two Render ticks play the
-// frames.
-RVA(0x000e8dc0, 0x22)
-void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
-    if (idxA != -1) {
-        m_38 = idxA;
-    }
-    if (idxB != -1) {
-        m_40 = idxB;
-    }
-    m_28 = 2;
-}
+// CSBI_GruntMachine::SetFrames (0x000e8dc0) is now an inline member in the header.
+

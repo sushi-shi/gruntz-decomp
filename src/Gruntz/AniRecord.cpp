@@ -241,28 +241,8 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x168e50: byte-size of the resolved frames. If the frame count m_18 is positive,
-// return m_18*22 when the "scaled" flag (bit 0x1) is set, else m_18; otherwise the
-// 0x16 empty-record constant. Frameless leaf.
-// @early-stop
-// scheduling: body shape (count guard / scaled lea*22 / plain count / 0x16 default)
-// byte-correct; retail pins the count in edx and materializes the `mov eax,0x16`
-// default right after the count load, while cl keeps the count in eax and schedules
-// the constant on the fall-through ret (~87%). All 4 spellings tried (early-return,
-// 0x16-default-temp, n<=0-first, n>0-first) flip the regalloc but none reproduce the
-// edx-pin + eager-default. Not source-steerable - documented scheduling wall.
-RVA(0x00168e50, 0x1e)
-i32 CAniRecordView::GetSize_168e50() {
-    i32 n = m_frameCount;
-    if (n > 0) {
-        if (m_flags & 0x1) {
-            return n * 22;
-        }
-        return n;
-    }
-    return 0x16;
-}
+// CAniRecordView::GetSize_168e50 (0x00168e50) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // 0x168ea0: (re)allocate the +0x10 work buffer from the owner's pool with size
@@ -337,13 +317,14 @@ void CAniRecordView::FreeBuf_168fb0() {
 struct CAniStrArray {
     char m_00[4];             // +0x00
     CString* m_data;          // +0x04  CString array base (4-byte elements)
-    CString GetAt(int index); // 0x168e70
+    RVA(0x00168e70, 0x27)
+    CString GetAt(int index) {
+        return m_data[index];
+    }
 };
 SIZE_UNKNOWN(CAniStrArray);
-RVA(0x00168e70, 0x27)
-CString CAniStrArray::GetAt(int index) {
-    return m_data[index];
-}
+// CAniStrArray::GetAt (0x00168e70) is now an inline member in the header.
+
 
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordBase2);

@@ -22,7 +22,13 @@ public:
     static void InitActReg();   // 0x07f540 (construct g_toyActReg over [2000,2010])
     static void RegisterActs(); // 0x07f720 (register the class's activation handlers)
 
-    i32 SetCell(i32 x, i32 y); // 0x07f920
+    RVA(0x0007f920, 0x21)
+    i32 SetCell(i32 x, i32 y) {
+        m_cellX = x;
+        m_cellY = y;
+        m_38->m_stateFlags &= ~1;
+        return 1;
+    }
     i32 Update();              // 0x07f960
 
     i32 m_geoId; // +0x40  geometry-id cache slot (indicator-sprite family; unset by this leaf's ApplyLookupSprite ctor)

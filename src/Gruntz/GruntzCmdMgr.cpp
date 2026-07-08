@@ -26,24 +26,11 @@ extern "C" MgrSettings30* g_mgrSettings;
 // twin of IsActive at 0x024a90; same body). External to this TU, reloc-masked.
 i32 IsActive2(i32 enable);
 
-// ---------------------------------------------------------------------------
-// SetMgr: install the state-providing manager pointer; return 1.
-// ---------------------------------------------------------------------------
-RVA(0x000239d0, 0xf)
-i32 CGruntzCmdMgr::SetMgr(GzMgr* mgr) {
-    m_38 = mgr;
-    return 1;
-}
+// CGruntzCmdMgr::SetMgr (0x000239d0) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// ClearAndReset: null the manager pointer, then drain everything
-// (tail-call Clear). MSVC emits the tail-call as a jmp to Clear's body.
-// ---------------------------------------------------------------------------
-RVA(0x000239f0, 0xc)
-void CGruntzCmdMgr::ClearAndReset() {
-    m_38 = 0;
-    Clear();
-}
+
+// CGruntzCmdMgr::ClearAndReset (0x000239f0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // ScanTargets: walk the base queue (by index, removing each as it is

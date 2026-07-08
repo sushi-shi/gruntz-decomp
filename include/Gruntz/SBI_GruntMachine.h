@@ -59,10 +59,24 @@ class CSBI_GruntMachine : public CStatusBarItem {
 public:
     // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved
     // frame records (also reached by the destructor as the member teardown).
-    void Reset();
+    RVA(0x000e8c70, 0xc)
+    void Reset() {
+        m_34 = 0;
+        m_3c = 0;
+        m_30 = 0;
+    }
     // 0xe8dc0 (__thiscall, ret 8): prime the two frame indices (each gated by != -1)
     // and arm the countdown (m_28 = 2).
-    void SetFrames(i32 idxA, i32 idxB);
+    RVA(0x000e8dc0, 0x22)
+    void SetFrames(i32 idxA, i32 idxB) {
+        if (idxA != -1) {
+        m_38 = idxA;
+        }
+        if (idxB != -1) {
+        m_40 = idxB;
+        }
+        m_28 = 2;
+    }
     // vtable slot 5 (0xe8cb0): the per-frame render of the machine's frames.
     i32 Render(i32 z);
 

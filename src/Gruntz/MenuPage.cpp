@@ -82,11 +82,8 @@ CMenuPage::~CMenuPage() {
     Clear();
 }
 
-// return the page/item key (m_key) by value.
-RVA(0x001832d0, 0x20)
-CString CMenuPage::GetKey() {
-    return m_key;
-}
+// CMenuPage::GetKey (0x001832d0) is now an inline member in the header.
+
 
 // configure this page from a template item, then resolve its catalog
 // slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup. The string args are

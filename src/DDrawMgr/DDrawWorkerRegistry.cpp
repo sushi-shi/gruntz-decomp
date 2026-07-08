@@ -281,27 +281,11 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Constant state id.
-RVA(0x00156de0, 0x6)
-StateId CDDrawWorkerRegistry::GetStateId() {
-    return STATE_WORKERREGISTRY; // 0x12
-}
+// CDDrawWorkerRegistry::GetStateId (0x00156de0) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// Same base readiness predicate used by several CDDrawSubMgr-derived managers.
-RVA(0x001576d0, 0x16)
-i32 CDDrawWorkerRegistry::IsReady() {
-    if (m_0c == 0) {
-        goto fail;
-    }
-    if (m_status != -1) {
-        return 1;
-    }
 
-fail:
-    return 0;
-}
+// CDDrawWorkerRegistry::IsReady (0x001576d0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // Lookup `key` in the map; if found, RemoveKey it and run the value's scalar-

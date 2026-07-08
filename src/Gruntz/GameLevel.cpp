@@ -624,7 +624,10 @@ struct CImageSet1 : CObject {
     void operator delete(void* p) {
         RezFree(p);
     }
-    void DtorBase(); // 0x161370  base-subobject dtor (vtable restamp)
+    RVA(0x00161370, 0x7)
+    void DtorBase() {
+        // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
+    }
     i32 m_04;        // +0x04
     i32 m_08;        // +0x08
     i32 m_0c;        // +0x0c
@@ -727,14 +730,8 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
     return set;
 }
 
-// CImageSet1::DtorBase (0x161370) - the base-subobject destructor invoked by the
-// scalar-deleting-destructor (g_imageSet1Vtbl slot +0x04, unmatched). The base
-// has no members, so it only restamps the base-subobject (CObject-like) dtor
-// vftable @0x5e8cb4 - the same table the level family's ~CLoadable restores.
-RVA(0x00161370, 0x7)
-void CImageSet1::DtorBase() {
-    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
-}
+// CImageSet1::DtorBase (0x00161370) is now an inline member in the header.
+
 
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
 // from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source

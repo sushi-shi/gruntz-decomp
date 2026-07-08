@@ -760,18 +760,8 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     return AppendChatMessage(g_msgScratch);
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::IsInPlayState  (__thiscall; retail FUN_0048fa40; ret). A bool-
-// normalized predicate: 0 when no live state, else CheckPlayState() != 0 (true
-// for the PLAY (3) / paused (0x11) states). The CheckPlayState() result lands in
-// eax and the neg/sbb/neg idiom normalizes it to 0/1.
-RVA(0x0008fa40, 0x16)
-i32 CGruntzMgr::IsInPlayState() {
-    if (m_curState == 0) {
-        return 0;
-    }
-    return CheckPlayState() != 0;
-}
+// CGruntzMgr::IsInPlayState (0x0008fa40) is now an inline member in the header.
+
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
@@ -1246,13 +1236,8 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_6bf3bc = delta;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::RunFromState (0x090200; ret, no arg cleanup). Thin forwarder:
-// ChangeState_8fab0(1).
-RVA(0x00090200, 0x8)
-i32 CGruntzMgr::RunFromState() {
-    return ChangeState_8fab0(1);
-}
+// CGruntzMgr::RunFromState (0x00090200) is now an inline member in the header.
+
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::TopState (0x090980). Returns the last pushed state (or 0 when the
@@ -1906,12 +1891,8 @@ CState* CGruntzMgr::FindStateById(i32 id) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::PickPlayOrPausedState (0x092990; ret). FindStateById(3).
-RVA(0x00092990, 0x8)
-CState* CGruntzMgr::PickPlayOrPausedState() {
-    return FindStateById(3);
-}
+// CGruntzMgr::PickPlayOrPausedState (0x00092990) is now an inline member in the header.
+
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::PickPausedThenPlayState (0x0929b0; ret). Prefers the paused/hold
@@ -2747,14 +2728,8 @@ void CGruntzMgr::ClearOptionsSlots() {
     }
 }
 
-// -------------------------------------------------------------------------
-// CGruntzMgr::GetWorldFileName (0x0928c0; returns CString by value; ret 4).
-// Returns a copy of the world-file CString at +0xc8 (the copy-ctor is reloc-
-// masked; the dest pointer comes in as the hidden NRVO arg).
-RVA(0x000928c0, 0x23)
-CString CGruntzMgr::GetWorldFileName() {
-    return m_strWorldFile;
-}
+// CGruntzMgr::GetWorldFileName (0x000928c0) is now an inline member in the header.
+
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::AdvanceOptionsCycle (0x0933e0; ret). Bumps the global round-robin

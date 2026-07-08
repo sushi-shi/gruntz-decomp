@@ -2052,16 +2052,8 @@ i32 CPlay::BuildHelpReveal() {
 RVA(0x0008c9d0, 0x2bd)
 void CPlay::PlayBacklog08c9d0() {}
 
-// =========================================================================
-// CState::SetBeginClearParams
-// Stores the two BeginFrameClear arguments and returns 1.
-//
-RVA(0x0008c970, 0x1c)
-i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
-    m_cursorX = arg2;
-    m_cursorY = arg3;
-    return 1;
-}
+// CState::SetBeginClearParams (0x0008c970) is now an inline member in the header.
+
 
 // @confidence: low
 // @source: winapi:PostMessageA
@@ -2291,12 +2283,8 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     return 1;
 }
 
-// CPlay::ForwardReady (0x0cee70) - a 5-byte vtable forwarder: tail-call the
-// slot-3 ready gate (CState::Vfunc3) -> `mov eax,[ecx]; jmp [eax+0xc]`.
-RVA(0x000cee70, 0x5)
-i32 CPlay::ForwardReady() {
-    return Vfunc3();
-}
+// CPlay::ForwardReady (0x000cee70) is now an inline member in the header.
+
 
 // CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
 // the pending mode ops, freeze the guts subsystem (passing whether we were

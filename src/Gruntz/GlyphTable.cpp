@@ -11,21 +11,20 @@ struct GlyphTable {
     int m_10; // +0x10 setter bias
     char pad14[0x1b0 - 0x14];
     int m_1b0[128]; // +0x1b0
-    int Get(int c);
-    void Set(int v, int c);
+    RVA(0x000c0430, 0x1f)
+    int Get(int c) {
+        return m_1b0[(c & 0xff) % 128];
+    }
+    RVA(0x000c03f0, 0x29)
+    void Set(int v, int c) {
+        m_1b0[(m_10 + (c & 0xff)) % 128] = v;
+    }
 };
 
-// Get: m_1b0[ (c & 0xff) % 128 ].  MSVC5 lowers signed `% 128` to the
-// abs-then-restore-sign idiom (one cdq, two xor/sub pairs around `& 0x7f`).
-RVA(0x000c0430, 0x1f)
-int GlyphTable::Get(int c) {
-    return m_1b0[(c & 0xff) % 128];
-}
+// GlyphTable::Get (0x000c0430) is now an inline member in the header.
 
-// Set: m_1b0[ (m_10 + (c & 0xff)) % 128 ] = v.
-RVA(0x000c03f0, 0x29)
-void GlyphTable::Set(int v, int c) {
-    m_1b0[(m_10 + (c & 0xff)) % 128] = v;
-}
+
+// GlyphTable::Set (0x000c03f0) is now an inline member in the header.
+
 
 SIZE_UNKNOWN(GlyphTable);

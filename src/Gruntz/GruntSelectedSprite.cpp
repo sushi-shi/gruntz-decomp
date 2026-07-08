@@ -60,13 +60,8 @@ void CGruntSelectedSprite::RegisterActs() {
     ((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn = &CGruntSelectedSprite::Update;
 }
 
-// SetCell @0x07e9c0 - stash the (x,y) grunt cell into m_cellX/m_cellY, return 1.
-RVA(0x0007e9c0, 0x16)
-i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
-    m_cellX = x;
-    m_cellY = y;
-    return 1;
-}
+// CGruntSelectedSprite::SetCell (0x0007e9c0) is now an inline member in the header.
+
 
 // Update @0x07e9f0 - resolve the grunt for cell (m_cellX,m_cellY) from the registry's
 // grunt table; if that grunt is drawn (entry->m_drawn), sync the +0x38 object's

@@ -135,21 +135,8 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     return 1;
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::ClearSprites  (0x11af90)
-// ===========================================================================
-// Zero the sprite-pair (m_08/m_0c).
-//
-// @early-stop
-// addressing-mode wall: retail emits `add ecx,8; mov [ecx]; mov [ecx+4]` (a
-// this-repositioned store-pair) for these two zeros; every C++ spelling
-// (m_08=0;m_0c=0 / *p++=0 / a 2-iter loop) folds to the shorter `mov [ecx+8];
-// mov [ecx+c]`. 11-byte fn, <1% unit weight; not source-steerable. Deferred.
-RVA(0x0011af90, 0xb)
-void CGruntSpawnConfig::ClearSprites() {
-    m_08 = 0;
-    m_0c = 0;
-}
+// CGruntSpawnConfig::ClearSprites (0x0011af90) is now an inline member in the header.
+
 
 // The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
 // bute TU, declared extern here so the `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
@@ -534,14 +521,8 @@ void CGruntSpawnConfig::ResetPicks() {
     }
 }
 
-// ===========================================================================
-// CGruntSpawnConfig::IsReady  (0x11c830)
-// ===========================================================================
-// Return whether the owner is ready (owner->m_100 != 0).
-RVA(0x0011c830, 0x12)
-BOOL CGruntSpawnConfig::IsReady() {
-    return m_00->m_100 != 0;
-}
+// CGruntSpawnConfig::IsReady (0x0011c830) is now an inline member in the header.
+
 
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);

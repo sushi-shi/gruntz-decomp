@@ -213,18 +213,8 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSpawnEntry::GetName  (0x09a260)
-// Return the record name by value (NRVO into the hidden return slot): a single
-// CString copy-ctor (0x1b9ba3) from m_name into *retptr. Re-homed from the
-// Obj09a260 placeholder TU - and 66.7% -> 100% here: the "dead 4-byte stack
-// local" residual was the /GX EH machinery this retail TU compiles with (the
-// old obj09a260 unit was flags=base), not a codegen artifact.
-// ---------------------------------------------------------------------------
-RVA(0x0009a260, 0x1d)
-CString CSpawnEntry::GetName() {
-    return m_name;
-}
+// CSpawnEntry::GetName (0x0009a260) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CSpawnList::FindByName (0x09a290) - like FindEntry but the search key arrives

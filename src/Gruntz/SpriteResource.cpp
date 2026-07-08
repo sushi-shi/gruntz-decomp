@@ -456,20 +456,8 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     return worker;
 }
 
-// ===========================================================================
-// CSprite::GetFrame  @0x15cc30
-// ===========================================================================
-//
-// Bounds-checked frame read: if `n` is in the inclusive valid range
-// [m_64..m_68], return the frame pointer m_pData[n] (as an int); else 0. The
-// same shape as CacheFirstFrame's lookup, but as a standalone __thiscall (ret 4).
-RVA(0x0015cc30, 0x1e)
-i32 CSprite::GetFrame(i32 n) {
-    if (n >= m_firstFrame && n <= m_lastFrame) {
-        return (i32)m_frames.m_pData[n];
-    }
-    return 0;
-}
+// CSprite::GetFrame (0x0015cc30) is now an inline member in the header.
+
 // CFrameWorker is real-polymorphic (cl emits ??_7CFrameWorker). Its vtable is the
 // SHARED ??_7CImage@@6B@ (0x1eaa2c) - no per-class VTBL (would collide/misname). Exact
 // size 0x34: the insert allocates the 0x34-byte raw CImage (ctor writes to m_30+0x30).

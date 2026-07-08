@@ -39,7 +39,10 @@
 class CSpawnEntry {
 public:
     CSpawnEntry(CString name, i32 data); // 0x11c630 (__thiscall ret 8; /GX by-value temp)
-    CString GetName();                   // 0x9a260  the full name by value (NRV)
+    RVA(0x0009a260, 0x1d)
+    CString GetName() {
+        return m_name;
+    }
     CString GetTail();                   // 0x9a830  the name past its 8-char group prefix
 
     CString m_name; // +0x00  the record name

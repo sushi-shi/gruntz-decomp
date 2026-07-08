@@ -1605,7 +1605,15 @@ public:
     void DestroyAnims();                    // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
-    struct GruntTilePos* GetTilePos(struct GruntTilePos* out);
+    struct RVA(0x00031c70, 0x1d)
+ GruntTilePos* GetTilePos(struct GruntTilePos* out) {
+     CGruntHud* h = m_10;
+     i32 x = h->m_5c >> 5;
+     i32 y = h->m_60 >> 5;
+     out->m_x = x;
+     out->m_y = y;
+     return out;
+ }
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
@@ -1626,7 +1634,10 @@ public:
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     i32 ResetGeometry();               // @0x616e0
-    void DispatchVtbl24();             // @0x6b260 (jmp [vtbl+0x24])
+    RVA(0x0006b260, 0x5)
+    void DispatchVtbl24() {
+        ((CVtSlot9*)this)->Slot9();
+    }
 
     void PlayMoveSound(i32 x, i32 y);              // @0x511b0 (ret 8)
     void PlaySound(i32 range, CGruntVoiceRec rec); // @0x4ac10 (ret 0x10) external

@@ -191,7 +191,11 @@ public:
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
     void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
-    i32 SetSlotValue(i32 index, i32 val);
+    RVA(0x00017460, 0x22)
+    i32 SetSlotValue(i32 index, i32 val) {
+        ((CBattlezSlot*)m_slots)[index].m_158 = val;
+        return 1;
+    }
 
     // ReadCtrlBText (0x17340): read control `index`'s text into a local CString
     // (GetCtrlB(index)->GetWindowText), then measure it. /GX EH frame unwinds the

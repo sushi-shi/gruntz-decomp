@@ -439,47 +439,11 @@ int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSaveGame::SetMaxLevel  (0x000e5620)
-// @early-stop
-// regalloc wall (~96%): logic + all (unsigned) comparisons exact; retail holds
-// the param in edx and m_maxLevel in eax, recompile swaps them (eax<->edx). 1-2 bytes.
-RVA(0x000e5620, 0x27)
-void CSaveGame::SetMaxLevel(i32 v) {
-    if (v < 0x21) {
-        if ((u32)v > m_maxLevel) {
-            m_maxLevel = v;
-            return;
-        }
-        if (m_maxLevel > 0x24) {
-            m_maxLevel = v;
-            return;
-        }
-    }
-    if (m_maxLevel <= 0x24) {
-        return;
-    }
-    if ((u32)v <= m_maxLevel) {
-        return;
-    }
-    m_maxLevel = v;
-}
+// CSaveGame::SetMaxLevel (0x000e5620) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// CSaveGame::SetCurLevel  (0x000e5660)
-RVA(0x000e5660, 0x1e)
-void CSaveGame::SetCurLevel(i32 v) {
-    if (v >= 0x21) {
-        return;
-    }
-    if (v <= m_curLevel) {
-        return;
-    }
-    m_curLevel = v;
-    if (v == 0x20) {
-        Init();
-    }
-}
+
+// CSaveGame::SetCurLevel (0x000e5660) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CSaveGame::CheckMagic  (0x000e5690)

@@ -473,7 +473,10 @@ public:
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.
     i32 ReadyAndPaint();                // 0x1ce30
-    i32 ForwardIdleAnim(i32 a, i32 b);  // 0x1d420 -> BuildBootyGruntIdleAnimation
+    RVA(0x0001d420, 0x8)
+    i32 ForwardIdleAnim(i32 a, i32 b) {
+        return BuildBootyGruntIdleAnimation();
+    }
     i32 Paint();                        // 0xfac70 (reloc-masked engine paint)
     i32 BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked, own method;
                                         // shares the forwarder's arg frame)

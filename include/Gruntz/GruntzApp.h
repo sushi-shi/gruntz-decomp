@@ -45,7 +45,10 @@ public:
     // reloc-masked) and normalises the int result to a bool (neg/sbb/neg).
     i32 LoadSwitchDownSprite();
     // The forwarded thiscall callee (retail 0x110570); no body -> reloc-masked.
-    i32 TryLoadSwitchDownSprite();
+    RVA(0x00112820, 0xc)
+    i32 TryLoadSwitchDownSprite() {
+        return LoadSwitchDownSprite() != 0;
+    }
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

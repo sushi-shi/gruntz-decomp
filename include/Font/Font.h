@@ -73,9 +73,19 @@ public:
     // Accessors matched in this module cluster. GetGlyph returns the out
     // reference (retail callers read the metric pair back through eax:
     // DrawGlyphRun does `call GetGlyph; mov ebp,[eax]`).
-    void** GetSurface(u8 c);
-    Glyph& GetGlyph(Glyph& out, u8 c);
-    i32 GetMaxHeight();
+    RVA(0x00179b60, 0x12)
+    void** GetSurface(u8 c) {
+        return &m_surfaces[c];
+    }
+    RVA(0x00179b80, 0x22)
+    Glyph& GetGlyph(Glyph& out, u8 c) {
+        out = m_glyphs[c];
+        return out;
+    }
+    RVA(0x00179bd0, 0x4)
+    i32 GetMaxHeight() {
+        return m_maxHeight;
+    }
 
     i32 m_ready;       // +0x00
     i32 m_count;       // +0x04
@@ -127,7 +137,10 @@ class CDDSurface; // <DDrawMgr/DDSurface.h> in the dereferencing TUs
 class FontRenderer {
 public:
     FontRenderer();
-    void SetColor(i32 color);
+    RVA(0x00179c20, 0xa)
+    void SetColor(i32 color) {
+        m_color = color;
+    }
 
     // Text geometry + drawing (the ClassUnknown_52 cluster).
     TextExtent MeasureText(CString text); // 0x17ac50
@@ -195,7 +208,10 @@ struct TextRange {
     char* m_begin; // +0x00
     char* m_pad04; // +0x04
     char* m_end;   // +0x08
-    i32 Span();    // 0x17b500
+    RVA(0x0017b500, 0x8)
+    i32 Span() {
+        return m_end - m_begin;
+    }
 };
 SIZE_UNKNOWN(TextRange); // {begin..end} view built on three adjacent stack CStrings
 
@@ -209,7 +225,10 @@ SIZE_UNKNOWN(TextRange); // {begin..end} view built on three adjacent stack CStr
 // ---------------------------------------------------------------------------
 struct CharCursor {
     u8* m_str;         // +0x00  (aliases CString::m_pchData)
-    u8 GetChar(i32 i); // 0x17b4f0
+    RVA(0x0017b4f0, 0xc)
+    u8 GetChar(i32 i) {
+        return m_str[i];
+    }
 };
 SIZE_UNKNOWN(CharCursor); // reinterpret view over a CString's m_pchData
 

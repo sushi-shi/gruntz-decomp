@@ -94,11 +94,26 @@ public:
     virtual i32 OnInit();                           // 0x184660  slot 13 (declared-only)
 
     // Non-virtual __thiscall helpers/accessors (bodies in MenuItem.cpp):
-    CString GetName();        // 0x1845b0  return m_name
-    CString GetNavFwdName();  // 0x1845d0  return m_navFwdName
-    CString GetNavBackName(); // 0x1845f0  return m_navBackName
-    CString GetField54();     // 0x184610  return m_54
-    CString GetField58();     // 0x184630  return m_58
+    RVA(0x001845b0, 0x20)
+    CString GetName() {
+        return m_name;
+    }
+    RVA(0x001845d0, 0x20)
+    CString GetNavFwdName() {
+        return m_navFwdName;
+    }
+    RVA(0x001845f0, 0x20)
+    CString GetNavBackName() {
+        return m_navBackName;
+    }
+    RVA(0x00184610, 0x20)
+    CString GetField54() {
+        return m_54;
+    }
+    RVA(0x00184630, 0x20)
+    CString GetField58() {
+        return m_58;
+    }
     i32 NotifyCmd();          // 0x185580  PostMessage WM_COMMAND (called by Trigger)
     i32 Hit(i32 x, i32 y);    // 0x185700  bounds test
 

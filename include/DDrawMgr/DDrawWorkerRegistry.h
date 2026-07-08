@@ -66,10 +66,24 @@ public:
 // ---------------------------------------------------------------------------
 class CDDrawWorkerRegistry {
 public:
-    i32 IsReady();
+    RVA(0x001576d0, 0x16)
+    i32 IsReady() {
+        if (m_0c == 0) {
+        goto fail;
+        }
+        if (m_status != -1) {
+        return 1;
+        }
+        
+        fail:
+        return 0;
+    }
     i32 ResetScratch();
     void Shutdown();
-    StateId GetStateId();
+    RVA(0x00156de0, 0x6)
+    StateId GetStateId() {
+        return STATE_WORKERREGISTRY; // 0x12
+    }
     i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
     i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
     i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);

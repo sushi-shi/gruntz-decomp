@@ -221,15 +221,8 @@ void* CreateU10O() {
     return p;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// Boolified forward to the switch-down-sprite loader (thiscall on `this`, retail
-// 0x110570). `!= 0` lowers to the int->bool neg/sbb/neg normalize.
-RVA(0x00112820, 0xc)
-i32 CGruntzApp::TryLoadSwitchDownSprite() {
-    return LoadSwitchDownSprite() != 0;
-}
+// CGruntzApp::TryLoadSwitchDownSprite (0x00112820) is now an inline member in the header.
+
 
 // size 0x254 recovered from operator-new sites (gruntz.analysis.news)
 

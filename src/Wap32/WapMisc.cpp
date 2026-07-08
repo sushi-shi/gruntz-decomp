@@ -21,12 +21,13 @@
 extern void* const Vtbl_5ec26c; // ??_7CNoTrackObject@@6B@
 struct CNoTrackObjectStamp {
     void* vptr;
-    void Stamp();
+    RVA(0x0011d100, 0x7)
+    void Stamp() {
+        vptr = (void*)&Vtbl_5ec26c;
+    }
 };
-RVA(0x0011d100, 0x7)
-void CNoTrackObjectStamp::Stamp() {
-    vptr = (void*)&Vtbl_5ec26c;
-}
+// CNoTrackObjectStamp::Stamp (0x0011d100) is now an inline member in the header.
+
 
 // --- 0x1155b0 : construct the g_largeFont global -----------------------------
 // A dynamic-initializer thunk that constructs the global font in place via the

@@ -50,16 +50,8 @@ public:
     i32 Method_02bfc0(i32 a1, void* a2, i32 a3, i32 a4);
 };
 
-// ===========================================================================
-// GruntzPlayer::GetName  @0x01f450
-// Return the name CString by value (NRV-construct the return slot as a copy of
-// m_name). The dead `[esp+4]=0` store is the MSVC5 NRV bookkeeping artifact that
-// `return m_name;` reproduces.
-// ===========================================================================
-RVA(0x0001f450, 0x20)
-CString GruntzPlayer::GetName() {
-    return m_name;
-}
+// GruntzPlayer::GetName (0x0001f450) is now an inline member in the header.
+
 
 // ===========================================================================
 // GruntzPlayer::GruntzPlayer(i32)  @0x0da870  (/GX EH frame)

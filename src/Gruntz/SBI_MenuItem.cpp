@@ -78,20 +78,11 @@ extern i32 g_serialCounter;
 // The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,
 // <Gruntz/ResMgr.h>); the former CMiNameReg view is gone. The archive is CSerialArchive.
 
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::ClearFrame() - zero the resolved frame handle.
-// Shared by two vtable slots (0xe6d90 base-subobject teardown A, 0xe81a0 D).
-RVA(0x000e6d90, 0x8)
-void CSBI_MenuItem::ClearFrame() {
-    m_30 = 0;
-}
+// CSBI_MenuItem::ClearFrame (0x000e6d90) is now an inline member in the header.
 
-// CSBI_MenuItem::ClearFrame2() - the sibling subobject teardown (0xe81a0); the
-// same single store, a distinct vtable slot.
-RVA(0x000e81a0, 0x8)
-void CSBI_MenuItem::ClearFrame2() {
-    m_30 = 0;
-}
+
+// CSBI_MenuItem::ClearFrame2 (0x000e81a0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::SerializeChain - the CSBI_Image-subobject leg of Serialize:
@@ -397,12 +388,8 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     return SerializeChain(ar, kind, a, b) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::SetSubtype - tag the entry as the subtype-2 menu cursor.
-RVA(0x001005b0, 0x8)
-void CSBI_MenuItem::SetSubtype() {
-    m_28 = 2;
-}
+// CSBI_MenuItem::SetSubtype (0x001005b0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::SerializeFields - the CSBI_RectOnly leg: transfer the six

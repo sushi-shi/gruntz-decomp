@@ -93,11 +93,27 @@ public:
     // --- the small reconstructed leaf interface (retail-RVA order) -------------
     // 0x759e0: copy the cached origin pair (+0x174,+0x178) into the caller's
     // out-slot and return it (ret 4 -> callee cleans the out-ptr arg).
-    CTrigPoint* GetOriginXY(CTrigPoint* out);
+    RVA(0x000759e0, 0x18)
+    CTrigPoint* GetOriginXY(CTrigPoint* out) {
+        // the cached origin pair lives in the parallel flag grid at +0x58/+0x5c (== +0x174/+0x178)
+        out->x = m_cellFlag[0x16];
+        out->y = m_cellFlag[0x17];
+        return out;
+    }
 
     // 0x6b640: store the supplied object at +0x22c and clear three companion
     // state words; returns 1 (0 when arg is null).
-    i32 SetLevel(CTmLevel* lvl);
+    RVA(0x0006b640, 0x2f)
+    i32 SetLevel(CTmLevel* lvl) {
+        if (lvl == 0) {
+        return 0;
+        }
+        m_level = lvl;
+        m_230 = 0;
+        m_pendingFx = 0;
+        m_2a4 = 0;
+        return 1;
+    }
 
     // 0x78a30: forward to the overlay sub-object's helper when present, else ret.
     void OverlayTick();

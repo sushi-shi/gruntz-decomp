@@ -266,7 +266,10 @@ public:
     i32 Load(CWwdStream* s);                // 0x1638c0  serialize in
     // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
     //   m_tileGrid[m_colOffsets[col] + row].
-    i32 GetTileHandle(i32 row, i32 col);
+    RVA(0x000d53a0, 0x19)
+    i32 GetTileHandle(i32 row, i32 col) {
+        return m_tileGrid[m_colOffsets[col] + row];
+    }
     // 0x0311e0 (__thiscall, ret 0xc): snap a world (x,y) to its tile centre:
     //   out = (floor-to-tile) + half a tile, per-axis.
     void SnapToTileCenter(i32* out, i32 x, i32 y);

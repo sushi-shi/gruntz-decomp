@@ -229,29 +229,8 @@ extern i32 g_defaultGeo;
 // methods (StepEntranceReinit / RunEntranceMove) defined earlier in RVA order.
 static void GruntScratchTeardown();
 
-// ---------------------------------------------------------------------------
-// CGrunt::GetTilePos(out)  @0x31c70 - write the grunt's current tile coordinates
-// (its HUD pixel position m_10->m_5c/m_60 each >> 5) into the caller's {x,y} out
-// slot, and return that pointer. __thiscall, ret 4.
-//
-// @early-stop
-// leaf-accessor regalloc/schedule coin-flip (the tiny-accessor family of
-// docs/patterns/pin-local-for-callee-saved-reg.md): instruction multiset is
-// byte-identical (same 10 ops, same mem operands, same `sar 5`), logic/offsets
-// exact. Residue = retail pins `out` in edx (so a trailing `mov eax,edx`
-// materializes the return) and field-loads m_5c before m_60; cl keeps `out` in
-// eax (no closing mov) and loads m_60 before m_5c. Source-invariant on a 29-byte
-// leaf: direct-store / explicit-temps / aliased-ptr all normalize to one of the
-// two valid schedules; no lever flips the register choice. ~85%.
-RVA(0x00031c70, 0x1d)
-GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
-    CGruntHud* h = m_10;
-    i32 x = h->m_5c >> 5;
-    i32 y = h->m_60 >> 5;
-    out->m_x = x;
-    out->m_y = y;
-    return out;
-}
+// CGrunt::GetTilePos (0x00031c70) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveMovingAnimation()
@@ -3239,13 +3218,8 @@ void CGrunt::DestroyAnims() {
     AnimTeardownB();
 }
 
-// CGrunt::DispatchVtbl24() @0x6b260 - a one-instruction virtual tail-call thunk
-// (mov eax,[ecx]; jmp [eax+0x24] = vtable slot 9). Modeled by reinterpreting
-// this as a 10-virtual interface and calling its 10th slot in tail position.
-RVA(0x0006b260, 0x5)
-void CGrunt::DispatchVtbl24() {
-    ((CVtSlot9*)this)->Slot9();
-}
+// CGrunt::DispatchVtbl24 (0x0006b260) is now an inline member in the header.
+
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified

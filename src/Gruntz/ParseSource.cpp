@@ -14,13 +14,8 @@
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
-// ===========================================================================
-// 0x139800 - GetEntryTag: return the first dword of the keyed-store entry m_entry.
-// ===========================================================================
-RVA(0x00139800, 0x6)
-i32 CParseSource::GetEntryTag() {
-    return *(i32*)m_entry;
-}
+// CParseSource::GetEntryTag (0x00139800) is now an inline member in the header.
+
 
 // ===========================================================================
 // 0x139960 - BeginParse: resolve the live source pointer for a parse pass. If
@@ -82,14 +77,8 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
     return m_reader->Read(m_base, pos, len, dst) == (i32)len;
 }
 
-// ===========================================================================
-// 0x139ae0 - SetPos(pos): move the read cursor; returns 1.
-// ===========================================================================
-RVA(0x00139ae0, 0xf)
-i32 CParseSource::SetPos(i32 pos) {
-    m_cursor = pos;
-    return 1;
-}
+// CParseSource::SetPos (0x00139ae0) is now an inline member in the header.
+
 
 // ===========================================================================
 // 0x139af0 - Read(dst, len, seekPos): optionally seek (seekPos != -1), clamp the

@@ -70,15 +70,37 @@ public:
     void Clear();
 
     // Return bucket-A node for slot i (null if i out of [0,17)). 0xe2360.
-    CSpriteRef* GetA(i32 i);
+    RVA(0x000e2360, 0x15)
+    CSpriteRef* GetA(i32 i) {
+        if ((u32)i >= 0x11) {
+        return 0;
+        }
+        return m_refA[i];
+    }
 
     // Return bucket-B node for slot i (null if i out of [0,17)). 0xe2390.
-    CSpriteRef* GetB(i32 i);
+    RVA(0x000e2390, 0x15)
+    CSpriteRef* GetB(i32 i) {
+        if ((u32)i >= 0x11) {
+        return 0;
+        }
+        return m_refB[i];
+    }
 
     // Resolve slot i: pick bucket B when bAlt else bucket A, return its node's m_alphaKey
     // (the sprite/frame pointer), or null. 0xe23c0. (CPlay's BeginGridWalk names this
     // LoadSprite for its role and InGameIcon names it GetByIndex - all the same 0xe23c0.)
-    i32 GetSel(i32 i, i32 bAlt);
+    RVA(0x000e23c0, 0x2d)
+    i32 GetSel(i32 i, i32 bAlt) {
+        if ((u32)i >= 0x11) {
+        return 0;
+        }
+        CSpriteRef* node = bAlt ? m_refB[i] : m_refA[i];
+        if (!node) {
+        return 0;
+        }
+        return node->m_alphaKey;
+    }
 
     // Load a sprite by descriptor (the CPlay grid-walk facet on this same +0x74 object):
     // desc is the per-grunt-type descriptor from the world config array, flag the variant.

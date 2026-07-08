@@ -80,15 +80,16 @@ void Register6446d8Range() {
 struct CPairXY {
     i32 m_0;
     i32 m_4;
-    CPairXY* Set(i32 a, i32 b); // 0x75a10
+    RVA(0x00075a10, 0x12)
+    CPairXY* Set(i32 a, i32 b) {
+        m_0 = a;
+        m_4 = b;
+        return this;
+    }
 };
 
-RVA(0x00075a10, 0x12)
-CPairXY* CPairXY::Set(i32 a, i32 b) {
-    m_0 = a;
-    m_4 = b;
-    return this;
-}
+// CPairXY::Set (0x00075a10) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // 0xb4330: run a one-shot helper (ILT 0x2914) and return 0.

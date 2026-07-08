@@ -181,7 +181,13 @@ public:
     i32 SaveGameAs();              // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
-    i32 IsInPlayState();                            // @0x08fa40  (m_curState && CheckPlayState())
+    RVA(0x0008fa40, 0x16)
+    i32 IsInPlayState() {
+        if (m_curState == 0) {
+        return 0;
+        }
+        return CheckPlayState() != 0;
+    }
     // @0x08f340 (/GX): when the live state is playable (Update() in {5,2,3,7}),
     // capture the current world-file name from the game window into m_strWorldFile,
     // clear the score/state slots (m_128/m_12c), and PostMessageA WM_COMMAND 0x8005.
@@ -260,7 +266,10 @@ public:
     void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
     void UnloadSoundChain();    // @0x08f740 (m_world->m_28->m_2c teardown + StopBank2)
     void ClearOptionsSlots();   // @0x092ec0 (zero the 4 options slots' +0x20/+0x24)
-    CString GetWorldFileName(); // @0x0928c0 (return a copy of m_strWorldFile)
+    RVA(0x000928c0, 0x23)
+    CString GetWorldFileName() {
+        return m_strWorldFile;
+    }
     i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
     i32 SyncOptionsState();     // @0x093170 (reload each options slot's config; dual-slot)
     void SetCellHeight(i32 r, i32 c, i32 v);          // @0x111ec0 (write the world height grid)
@@ -312,8 +321,14 @@ public:
     void SetRunState(i32 v);           // @0x092340 (set base m_10 run-state + side-effects)
     i32 CheckSavedMode();              // @0x08de70 (saved==live mode test)
     i32 IsLobbyHostReady();            // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
-    i32 RunFromState();                // @0x090200 (thin wrapper -> ChangeState_8fab0(1))
-    CState* PickPlayOrPausedState();   // @0x092990 (FindStateById(3))
+    RVA(0x00090200, 0x8)
+    i32 RunFromState() {
+        return ChangeState_8fab0(1);
+    }
+    RVA(0x00092990, 0x8)
+    CState* PickPlayOrPausedState() {
+        return FindStateById(3);
+    }
     CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
 
     // The modal-dialog runner sibling (a __thiscall (template, dlgProc, flag) ->

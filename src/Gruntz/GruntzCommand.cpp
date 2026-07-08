@@ -220,11 +220,8 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 // masks against the base vftable via this DATA-named extern (re-homed from
 // src/Stub/CGruntzCommand.cpp).
 
-// CGruntzCommand::CGruntzCommand_0242f0() - out-of-line base-vftable stamp.
-RVA(0x000242f0, 0x7)
-void CGruntzCommand::CGruntzCommand_0242f0() {
-    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-}
+// CGruntzCommand::CGruntzCommand_0242f0 (0x000242f0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.
@@ -237,11 +234,8 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     return new CGruntzMultiCommand;
 }
 
-// CGruntzCommand::CGruntzCommand_024430() - out-of-line base-vftable stamp.
-RVA(0x00024430, 0x7)
-void CGruntzCommand::CGruntzCommand_024430() {
-    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-}
+// CGruntzCommand::CGruntzCommand_024430 (0x00024430) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand::FreeAll() - 0x024450. Drain the per-class recycle list

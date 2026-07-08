@@ -486,28 +486,14 @@ i32 CNetMgr::PollSession() {
     return dispatched;
 }
 
-// ---------------------------------------------------------------------------
-// CNetMgr::GetConfigNameA / GetConfigNameB  (__thiscall).
-// Return the +0x5b4 / +0x5b8 config-name CString members by value (same NRV
-// copy-construct shape as GetName).
-RVA(0x000b6090, 0x23)
-CString CNetMgr::GetConfigNameA() {
-    return m_5b4;
-}
+// CNetMgr::GetConfigNameA (0x000b6090) is now an inline member in the header.
 
-RVA(0x000b60d0, 0x23)
-CString CNetMgr::GetConfigNameB() {
-    return m_5b8;
-}
 
-// ---------------------------------------------------------------------------
-// CNetMgr::GetName  (__thiscall).
-// Returns the +0x8 CString member by value (NRV-construct the return slot as a
-// copy of m_8).
-RVA(0x000ba170, 0x20)
-CString CNetMgr::GetName() {
-    return m_8;
-}
+// CNetMgr::GetConfigNameB (0x000b60d0) is now an inline member in the header.
+
+
+// CNetMgr::GetName (0x000ba170) is now an inline member in the header.
+
 
 // CNetPlayerEntry::GetName - identical +0x8 read; COMDAT-folds with CNetMgr::GetName @0xba170
 // in retail (one address). Defined (not RVA-annotated: cannot dup the RVA).

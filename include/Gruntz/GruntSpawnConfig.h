@@ -91,7 +91,11 @@ public:
     BOOL Init(CSpawnOwner* owner);                           // 0x11adc0
     void Clear();                                            // 0x11ae30
     BOOL LoadGruntVoices();                                  // 0x11af00
-    void ClearSprites();                                     // 0x11af90
+    RVA(0x0011af90, 0xb)
+    void ClearSprites() {
+        m_08 = 0;
+        m_0c = 0;
+    }
     void* GetButeSlot(CSpawnButeConfig*, CSpawnButeTarget*); // 0x11bba0
     i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
     BOOL BuildVoiceList();                                   // 0x11c1a0
@@ -111,7 +115,10 @@ public:
     void Tick();            // reloc-masked (BroadcastCmd 4/7)
     void Teardown();        // reloc-masked (Close)
     void ResetPicks();      // 0x11c7f0 (DtorBody + reset entry m_20s)
-    BOOL IsReady();         // 0x11c830
+    RVA(0x0011c830, 0x12)
+    BOOL IsReady() {
+        return m_00->m_100 != 0;
+    }
     ~CGruntSpawnConfig();   // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---

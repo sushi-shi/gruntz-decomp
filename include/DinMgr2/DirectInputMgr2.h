@@ -328,7 +328,10 @@ public:
     virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (PollMouse)
 
     i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
-    i32 IsReady();                                                                     // 0x1343a0
+    RVA(0x001343a0, 0xb)
+    i32 IsReady() {
+        return m_device2 != 0;
+    }
     i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
     i32 SetupAxes();                                                                   // 0x134710
     void Free360(); // 0x134360 (mouse leaf teardown; body in BoundaryUpper.cpp)

@@ -127,7 +127,10 @@ public:
     virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
-    void ForwardTick();
+    RVA(0x000b5070, 0x5)
+    void ForwardTick() {
+        Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
+    }
     virtual ~CPathHazard() OVERRIDE; // 0x13340 (folds the CUserLogic teardown; slot 0)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)

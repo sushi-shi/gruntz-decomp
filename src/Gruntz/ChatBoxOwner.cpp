@@ -72,19 +72,11 @@ void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
     m_c = 1;
 }
 
-// Deactivate - lower the active flag.
-RVA(0x00020510, 0x8)
-void CChatBoxOwner::Deactivate() {
-    m_c = 0;
-}
+// CChatBoxOwner::Deactivate (0x00020510) is now an inline member in the header.
 
-// GetField1c - return the box's caption/key CString (m_1c) by value
-// (copy-construct it into the caller's sret slot; the return slot pointer flows
-// back in eax). The CString copy ctor is NAFXCW (reloc-masked).
-RVA(0x00020ef0, 0x20)
-CString CChatBoxOwner::GetField1c() {
-    return m_1c;
-}
+
+// CChatBoxOwner::GetField1c (0x00020ef0) is now an inline member in the header.
+
 
 // Configure - origin from the viewport for the given mode; mark dirty.
 // @early-stop

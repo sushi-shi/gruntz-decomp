@@ -85,7 +85,11 @@ class CShadeTableCache {
 public:
     CShadeTableCache();  // 0x14de30
     ~CShadeTableCache(); // 0x14de50
-    i32 Init();          // 0x14dec0
+    RVA(0x0014dec0, 0xc)
+    i32 Init() {
+        m_initialized = 1;
+        return 1;
+    }
     void FreeNodes();    // 0x14ded0
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.

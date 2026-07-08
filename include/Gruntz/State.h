@@ -84,7 +84,12 @@ public:
     virtual void Vslot19();
 
     // Non-virtual leaf (matched): seeds the begin-clear params.
-    i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3);
+    RVA(0x0008c970, 0x1c)
+    i32 SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
+        m_cursorX = arg2;
+        m_cursorY = arg3;
+        return 1;
+    }
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
     void NotifyExit(i32 code);
 

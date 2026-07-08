@@ -114,8 +114,14 @@ public:
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
     // `mov [this],&vftable; ret` (void, no eax-return, no null guard) - an
     // out-of-line materialization of the inlined base-vftable store.
-    void CGruntzCommand_0242f0();
-    void CGruntzCommand_024430();
+    RVA(0x000242f0, 0x7)
+    void CGruntzCommand_0242f0() {
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
+    }
+    RVA(0x00024430, 0x7)
+    void CGruntzCommand_024430() {
+        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
+    }
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.

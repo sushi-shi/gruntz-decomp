@@ -1688,12 +1688,8 @@ i32 CMultiBootyState::ReadyAndPaint() {
     return Paint() != 0;
 }
 
-// CMultiBootyState::ForwardIdleAnim(a, b) (0x1d420): trivial forwarder to the own
-// BuildBootyGruntIdleAnimation (0x1ce60), passing this/args straight through.
-RVA(0x0001d420, 0x8)
-i32 CMultiBootyState::ForwardIdleAnim(i32 a, i32 b) {
-    return BuildBootyGruntIdleAnimation();
-}
+// CMultiBootyState::ForwardIdleAnim (0x0001d420) is now an inline member in the header.
+
 
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown

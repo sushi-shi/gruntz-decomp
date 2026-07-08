@@ -72,7 +72,18 @@ struct CDDrawGroupNode {
 // ---------------------------------------------------------------------------
 class CDDrawChildGroup : public CObject { // slots 0/2/3/4 = CObject base thunks
 public:
-    i32 IsReady();
+    RVA(0x001575e0, 0x16)
+    i32 IsReady() {
+        if (m_parent == 0) {
+        goto fail;
+        }
+        if (m_status != -1) {
+        return 1;
+        }
+        
+        fail:
+        return 0;
+    }
     void WalkDispatch34(i32 a1, i32 a2, i32 a3);
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
