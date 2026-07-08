@@ -16,7 +16,8 @@ STEPS = ["scatter.py",         # scatter.json + scatter_methods.json (+ printed 
          "make_chart.py",      # scatter.html + scatter_methods.html
          "make_dashboard.py",  # misplacement.html
          "homm2_baseline.py",  # homm2_va.csv snapshot (reads homm2-decomp, read-only)
-         "make_homm2.py"]      # homm2.html (ground-truth baseline vs Gruntz)
+         "make_homm2.py",      # homm2.html (ground-truth baseline vs Gruntz)
+         "split_plan.py"]      # SPLIT_PLAN.md (actionable split/move worklist)
 
 for step in STEPS:
     print(f"\n=== {step} ===")
