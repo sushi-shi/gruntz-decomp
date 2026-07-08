@@ -41,6 +41,7 @@ public:
 // allocates the element buffer (+ a scratch element) and reports a fatal failure
 // through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
 SIZE_UNKNOWN(CZArray2D);
+RELOC_VTBL(CZArray2D, 0x001f04d4); // zDArray-family container, shares zDArray vtable (ctor vptr-stamp verified)
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
