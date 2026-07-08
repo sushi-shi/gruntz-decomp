@@ -214,6 +214,7 @@ struct Base163a40 {
     virtual ~Base163a40();
 };
 SIZE_UNKNOWN(Base163a40);
+RELOC_VTBL(Base163a40, 0x001f07c0); // aliases CFaderMesh (doc-comment vtable, in-family)
 inline Base163a40::~Base163a40() {}
 struct C163a40 {
     char _0[0x70];

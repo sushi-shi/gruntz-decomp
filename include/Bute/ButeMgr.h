@@ -264,6 +264,7 @@ public:
     virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
 };
 SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
+RELOC_VTBL(CButeNodeSub, 0x001e94ac); // aliases zPTree (doc-comment vtable, in-family)
 
 // CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
 // engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's

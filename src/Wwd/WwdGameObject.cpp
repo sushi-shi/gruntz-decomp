@@ -1257,7 +1257,9 @@ SIZE_UNKNOWN(WwdEdgeB);
 SIZE_UNKNOWN(WwdName);
 SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(WwdSub);
+RELOC_VTBL(WwdSub, 0x001f0020); // Mid CWwdGameObject vtable (comment-confirmed)
 SIZE_UNKNOWN(WwdSubA);
+RELOC_VTBL(WwdSubA, 0x001f0020); // Mid CWwdGameObject vtable (comment-confirmed)
 SIZE_UNKNOWN(WwdWorker);
 SIZE_UNKNOWN(WwdBResolve);
 SIZE_UNKNOWN(WwdBMid);
