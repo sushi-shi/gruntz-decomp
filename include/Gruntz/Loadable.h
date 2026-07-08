@@ -61,6 +61,7 @@ enum LoadableClassId {
 };
 
 SIZE(CLoadable, 0x10);
+RELOC_VTBL(CLoadable, 0x001efc30); // shares CDDrawSubMgr vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's

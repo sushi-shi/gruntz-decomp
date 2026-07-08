@@ -519,6 +519,7 @@ SIZE_UNKNOWN(CDDrawWorkerMapSmallTeardown);
 
 SIZE_UNKNOWN(CDDrawWorkerMapBase);
 SIZE_UNKNOWN(CDDrawMapWorker);
+RELOC_VTBL(CDDrawMapWorker, 0x001f02d8); // shares CAniRecordBase2 vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 SIZE(CDDrawMapWorkerObj, 0x14);
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 SIZE_UNKNOWN(CDDrawSurfaceSource);

@@ -196,6 +196,7 @@ CDDrawWorkerCache::~CDDrawWorkerCache() {
 
 SIZE_UNKNOWN(CDDrawWorkerCache);
 SIZE_UNKNOWN(AnimWorker);
+RELOC_VTBL(AnimWorker, 0x001efb80); // shares AnimWorkerObj vtable, COMDAT-folded (slot-fn RVAs match its vtable)
 SIZE(AnimWorkerObj, 0x17c);
 VTBL(AnimWorkerObj, 0x001efb80); // ??_7AnimWorkerObj@@6B@ (10-slot vtable; the +0x7c/LogicRecord worker)
 // ??_7CDDrawWorkerCache (was Vtbl_1efd00 / the CDDrawWorkerCache vtable; 10 slots). cl
