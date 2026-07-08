@@ -43,8 +43,9 @@ Subcommands
                 for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
   sema <cmd>    Semantic navigation (one entrypoint; `gruntz sema -h` lists all):
                 xref/symbol/def/refs/hover/rename (clangd LSP), rva/class/match
-                dossiers, disasm, strings. Thin wrappers over gruntz.analysis /
-                gruntz.match - SEMANTIC questions go here, grep is lexical-only.
+                dossiers, disasm, strings, map (.text layout). Thin wrappers over
+                gruntz.analysis / gruntz.match - SEMANTIC questions go here, grep
+                is lexical-only.
 """
 
 import argparse
@@ -1053,6 +1054,12 @@ def cmd_sema_strings(args) -> None:
     sys.exit(_sema_tool("gruntz.analysis.string_xref", ["--rva", args.rva]))
 
 
+def cmd_sema_map(args) -> None:
+    """Retail .text space map: forward straight to gruntz.analysis.exe_map (which owns
+    the overview / range / at / gaps / units / find subcommands + --json)."""
+    sys.exit(_sema_tool("gruntz.analysis.exe_map", args.rest))
+
+
 def _sema_class_of_fn(query: str) -> int:
     """FUNCTION -> vtable topology: which class(es) hold this fn in which slot,
     tagged new/override/inherited with the origin class; then the owner's table."""
@@ -1281,6 +1288,9 @@ def _add_sema(sub) -> None:
         "  gruntz sema hover src/X.cpp 42         type/decl at point\n"
         "  gruntz sema rename include/X.h 40 m_new --dry-run   tree-wide rename preview\n"
         "  gruntz sema rva   0x00080850           address dossier (claim/src loc/lib/ghidra/%; chases ILT thunks)\n"
+        "  gruntz sema map                        whole-.text layout: categories + gaps overview\n"
+        "  gruntz sema map range 0x80000 0x81000  functions + gaps in an RVA window (owner: TU/MFC/CRT/...)\n"
+        "  gruntz sema map file GruntzMgr.cpp     a file's functions + how many foreign fns interleave them\n"
         "  gruntz sema class CImage               vtable slots + hierarchy tags\n"
         "  gruntz sema match cplay                per-fn % of a unit (or an RVA)\n"
         "  gruntz sema disasm 0x00080850          retail disasm + relocs\n"
@@ -1374,6 +1384,16 @@ def _add_sema(sub) -> None:
     st.add_argument("rva", nargs="?", help="RVA (0x..) whose string set to print")
     st.add_argument("--find", metavar="TEXT", help="reverse: fns referencing TEXT")
     st.set_defaults(func=cmd_sema_strings)
+
+    smap = ss.add_parser("map",
+                         help="retail .text space map: layout overview / RVA-range "
+                              "listing / gaps / per-file breakdown (owner: TU / MFC / "
+                              "CRT / EH / thunk / unknown)")
+    smap.add_argument("rest", nargs=argparse.REMAINDER,
+                      help="a gruntz.analysis.exe_map command: [overview] | "
+                           "range <lo> <hi>[-|+len] | file <path> [--gaps] | at <rva> | "
+                           "gaps | units | find <regex>   (append --json for machine output)")
+    smap.set_defaults(func=cmd_sema_map)
 
 
 def _clang() -> str:
