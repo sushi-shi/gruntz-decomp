@@ -181,6 +181,7 @@ struct CObj855a0 {
     }
 };
 SIZE_UNKNOWN(CObj855a0);
+RELOC_VTBL(CObj855a0, 0x001e9b8c); // aliases CGameMgr (slot-fn RVAs match its vtable, 100% majority)
 // @rva-symbol: ??_GCObj855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
 
 // ===========================================================================

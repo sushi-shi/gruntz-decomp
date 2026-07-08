@@ -30,6 +30,7 @@ class DirectInputMgr2; // folded SbzInputManager
 // from CInputDevice's real ??_7 (declared-only, foreign -> reloc-masked, no ??_7
 // emitted here); ResetState (slot 5, +0x14) is the per-device clear StateMgrBZ calls.
 SIZE_UNKNOWN(SbzInputDevice);
+RELOC_VTBL(SbzInputDevice, 0x001ef628); // aliases CInputDevice (slot-fn RVAs match its vtable, 100% majority)
 class SbzInputDevice {
 public:
     virtual ~SbzInputDevice(); // slot 1 (deleting dtor -> cl-emitted ??_G)
