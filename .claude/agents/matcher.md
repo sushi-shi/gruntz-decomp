@@ -39,6 +39,19 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 batch's size to fit your budget. So budget is never a reason to stop short of the
 mandate above: complete every assigned function (to 100% or a byte-proven `@early-stop`).**
 
+**JUDGE BY MAX %, NOT THE GENERAL %.** The build's *overall/current* % can DIP while
+structural work lands elsewhere in the tree — e.g. the inline-header migration moves
+inline/virtual one-liners (`GetTypeTag`, `Update`, small accessors) into their class
+headers, which TRANSIENTLY drops `symbol_names` rows for any class whose vtable-emitting
+`.cpp` isn't reconstructed yet; that coverage backfills automatically as the campaign
+fills those TUs in. **A lower general % is NOT your regression and NOT a reason to
+revert.** What matters is the **MAX / best-% high-water mark**: `status.py` tracks a
+per-function `best%`, and `gruntz build` reports whether MAX held. Keep every function
+at or above its high-water, push your target toward its own max — and ignore a lower
+general % caused by other agents' structural churn. When `gruntz build` says **"MAX %
+unchanged"**, nothing you own got worse; do not get spooked. Only a *drop in your own
+function's best%* (or a build failure) is a real regression to fix.
+
 **Two work modes (know which your brief is):** the mandate above is RECONSTRUCTION mode —
 maximize %. A CLEANUP brief (folds/merges/de-hack/typing per the orchestrator) follows the
 clean-room mandate instead (docs/cleanup-plan.md): the binary-proven correct shape wins,
