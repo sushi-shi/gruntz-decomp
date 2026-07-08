@@ -51,19 +51,19 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 :root{
   --surface-1:#fcfcfb;--plane:#f9f9f7;--text-primary:#0b0b0b;--text-secondary:#52514e;
   --muted:#898781;--grid:#e1e0d9;--baseline:#c3c2b7;
-  --blue:#2a78d6;--green:#1baf7a;--orange:#eb6834;--red:#e34948;--seq:#256abf;
+  --blue:#2a78d6;--green:#1baf7a;--orange:#eb6834;--red:#e34948;--seq:#256abf;--yellow:#eda100;--violet:#4a3aa7;
   --ring:rgba(11,11,11,0.10);
 }
 :root[data-theme=dark]{
   --surface-1:#1a1a19;--plane:#0d0d0d;--text-primary:#fff;--text-secondary:#c3c2b7;
   --muted:#898781;--grid:#2c2c2a;--baseline:#383835;
-  --blue:#3987e5;--green:#199e70;--orange:#d95926;--red:#e66767;--seq:#184f95;
+  --blue:#3987e5;--green:#199e70;--orange:#d95926;--red:#e66767;--seq:#184f95;--yellow:#c98500;--violet:#9085e9;
   --ring:rgba(255,255,255,0.10);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
   --surface-1:#1a1a19;--plane:#0d0d0d;--text-primary:#fff;--text-secondary:#c3c2b7;
   --muted:#898781;--grid:#2c2c2a;--baseline:#383835;
-  --blue:#3987e5;--green:#199e70;--orange:#d95926;--red:#e66767;--seq:#184f95;
+  --blue:#3987e5;--green:#199e70;--orange:#d95926;--red:#e66767;--seq:#184f95;--yellow:#c98500;--violet:#9085e9;
   --ring:rgba(255,255,255,0.10);
 }}
 *{box-sizing:border-box}
@@ -125,8 +125,9 @@ TUs). __FLAGGED__ files flagged, __MISPLACED__ functions, __CONFLATED__ conflate
 <div class="card">
   <h2>Where each flagged file's functions actually sit &nbsp;<span style="font-weight:400;color:var(--text-secondary)">(RVA &ldquo;genome&rdquo;, top 16 by severity)</span></h2>
   <p class="cap">Each row is one file across the whole <code>.text</code>. <b style="color:var(--blue)">Blue</b> ticks are in the file's main block (shaded);
-  <b style="color:var(--red)">red</b> ticks are outliers stranded elsewhere. The arrow names where those outliers' RVA neighbourhood says they belong.</p>
-  <svg id="genome" viewBox="0 0 1000 430"></svg>
+  <b style="color:var(--red)">red</b> ticks are outliers stranded elsewhere. The arrow names where those outliers' RVA neighbourhood says they belong.
+  The band along the bottom names the <b>region</b> of <code>.text</code> (game / engine / library / …) each column falls in — so you can see which territory an outlier landed in.</p>
+  <svg id="genome" viewBox="0 0 1000 455"></svg>
 </div>
 
 <div class="card">
@@ -155,7 +156,7 @@ function's suggested home is the file owning the methods within 0x2000 of it. Da
 <div id="tip"></div>
 <script>
 const SCATTER=__SCATTER__, GENOME=__GENOME__, CONFLATED=__CONFDATA__, LOLLI=__LOLLI__,
-      SHARES=__SHARES__, TLO=__TLO__, THI=__THI__;
+      SHARES=__SHARES__, REGIONS=__REGIONS__, TLO=__TLO__, THI=__THI__;
 const CS={0:'var(--blue)',1:'var(--orange)',2:'var(--red)'};
 const tip=document.getElementById('tip');
 function showTip(e,h){tip.innerHTML=h;tip.style.opacity=1;let x=e.clientX+14,y=e.clientY+14;
@@ -185,21 +186,33 @@ const hx=v=>'0x'+v.toString(16);
     c.addEventListener('mouseleave',hideTip);s.appendChild(c);}
 })();
 
-// 2) genome strips
-(function(){const s=genome,W=1000,L=150,RN=132,T=6,rowH=23,n=GENOME.length,ph=n*rowH,B=26;
+// 2) genome strips + named .text regions
+(function(){const s=genome,W=1000,L=150,RN=132,T=6,rowH=23,n=GENOME.length,ph=n*rowH;
   const sx=v=>L+(v-TLO)/(THI-TLO)*(W-L-RN);
+  const RC={game:'--blue',engine:'--green',CRT:'--yellow',MFC:'--violet',zlib:'--orange',
+            'EH':'--muted','ILT thunks':'--muted',asm:'--orange',unknown:'--muted','dtor pool':'--red'};
+  const col=f=>'var('+(RC[f]||'--muted')+')';
+  // faint region backgrounds behind the rows
+  for(const rg of REGIONS){s.appendChild(mk('rect',{x:sx(rg[0]),y:T,width:Math.max(0,sx(rg[1])-sx(rg[0])),height:ph,fill:col(rg[2]),'fill-opacity':.07}));}
   for(let g=0;g<=THI;g+=0x40000){s.appendChild(mk('line',{x1:sx(g),y1:T,x2:sx(g),y2:T+ph,class:'gridln'}));
-    let t=mk('text',{x:sx(g),y:T+ph+15,class:'tick x'});t.textContent=hx(g);s.appendChild(t);}
+    let t=mk('text',{x:sx(g),y:T+ph+14,class:'tick x'});t.textContent=hx(g);s.appendChild(t);}
   GENOME.forEach((f,i)=>{const y=T+i*rowH,mid=y+rowH/2;
-    s.appendChild(mk('rect',{x:sx(f.lo),y:y+3,width:Math.max(1,sx(f.hi)-sx(f.lo)),height:rowH-8,rx:2,fill:'var(--blue)','fill-opacity':.14}));
+    s.appendChild(mk('rect',{x:sx(f.lo),y:y+3,width:Math.max(1,sx(f.hi)-sx(f.lo)),height:rowH-8,rx:2,fill:'var(--blue)','fill-opacity':.16}));
     let lb=mk('text',{x:8,y:mid+3,class:'lblv'});lb.textContent=f.file;
     if(f.conf)lb.setAttribute('fill','var(--red)');s.appendChild(lb);
     for(const rv of f.rvas){const inm=rv>=f.lo&&rv<=f.hi;
-      s.appendChild(mk('line',{x1:sx(rv),y1:y+3,x2:sx(rv),y2:y+rowH-5,stroke:inm?'var(--blue)':'var(--red)','stroke-width':inm?1.3:2,'stroke-opacity':inm?.55:.95}));}
+      s.appendChild(mk('line',{x1:sx(rv),y1:y+3,x2:sx(rv),y2:y+rowH-5,stroke:inm?'var(--blue)':'var(--red)','stroke-width':inm?1.3:2,'stroke-opacity':inm?.5:.95}));}
     let nt=mk('text',{x:W-RN+8,y:mid+3,class:'lbl'});nt.textContent='→ '+(f.home||'?')+' ('+f.nout+')';s.appendChild(nt);
     const hit=mk('rect',{x:0,y:y,width:W,height:rowH,fill:'transparent'});
     hit.addEventListener('mousemove',e=>showTip(e,`<b>${f.file}</b><br><span class="m">main block ${hx(f.lo)}–${hx(f.hi)}; ${f.nout} outlier method(s)</span><br>outliers cluster near <b>${f.home||'?'}</b>`));
     hit.addEventListener('mouseleave',hideTip);s.appendChild(hit);});
+  // named-region strip along the bottom (the "where is engine / game / library" key)
+  const ry=T+ph+20;
+  for(const rg of REGIONS){const x=sx(rg[0]),w=sx(rg[1])-sx(rg[0]);
+    const r=mk('rect',{x:x,y:ry,width:Math.max(0,w),height:13,rx:2,fill:col(rg[2]),'fill-opacity':.85});
+    r.addEventListener('mousemove',e=>showTip(e,`<b>${rg[2]}</b><br><span class="m">${hx(rg[0])}–${hx(rg[1])} &middot; ${kb(rg[1]-rg[0])}</span>`));
+    r.addEventListener('mouseleave',hideTip);s.appendChild(r);
+    if(w>48){let t=mk('text',{x:x+w/2,y:ry+26,class:'tick x'});t.textContent=rg[2];s.appendChild(t);}}
 })();
 
 // 3) conflated segmented bars
@@ -258,6 +271,7 @@ for k, v in {"__SCATTER__": json.dumps(SCATTER, separators=(",", ":")),
              "__CONFDATA__": json.dumps(CONFLATED, separators=(",", ":")),
              "__LOLLI__": json.dumps(LOLLI, separators=(",", ":")),
              "__SHARES__": json.dumps([round(x, 3) for x in SHARES]),
+             "__REGIONS__": json.dumps(flags["regions"], separators=(",", ":")),
              "__TLO__": str(flags["text_lo"]), "__THI__": str(flags["text_hi"]),
              "__NFILES__": str(len(methods)),
              "__FLAGGED__": str(tiles["flagged"]), "__MISPLACED__": str(tiles["misplaced"]),

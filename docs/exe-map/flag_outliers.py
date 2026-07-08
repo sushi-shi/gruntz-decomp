@@ -26,6 +26,54 @@ def is_dtor(name):
     return name.startswith(("??1", "??_G", "??_E")) or "DeletingDtor" in name
 
 
+def _family(r):
+    """Which named .text region a function belongs to (game / engine / library / ...)."""
+    c = r["category"]
+    if c in ("mfc", "crt", "zlib", "eh", "asm", "thunk"):
+        return {"thunk": "ILT thunks", "mfc": "MFC", "crt": "CRT", "zlib": "zlib",
+                "eh": "EH", "asm": "asm"}[c]
+    if c == "unit":
+        return "game" if r["source"].startswith("src/Gruntz/") else "engine"
+    return "unknown"
+
+
+def named_regions(funcs, lo, hi, binsz=0x2000, minseg=0x5000):
+    """Coalesced [lo, hi, family] bands: the dominant family per bin, short bands
+    absorbed into a neighbour so labels stay readable. src/Gruntz/ = game, other
+    src/ modules = engine; plus MFC / CRT / zlib / EH / ILT thunks / unknown."""
+    nb = (hi - lo) // binsz + 1
+    acc = [dict() for _ in range(nb)]
+    for r in funcs:
+        b = (r["rva"] - lo) // binsz
+        if 0 <= b < nb:
+            f = _family(r)
+            acc[b][f] = acc[b].get(f, 0) + r["size"]
+    dom = [max(a, key=a.get) if a else None for a in acc]
+    for i in range(nb):
+        if dom[i] is None:
+            dom[i] = dom[i - 1] if i else "unknown"
+    segs = []
+    for i, f in enumerate(dom):
+        rv = lo + i * binsz
+        if segs and segs[-1][2] == f:
+            segs[-1][1] = rv + binsz
+        else:
+            segs.append([rv, rv + binsz, f])
+    out = []
+    for s in segs:
+        if out and (s[1] - s[0] < minseg or out[-1][2] == s[2]):
+            out[-1][1] = s[1]
+        else:
+            out.append(list(s))
+    final = []
+    for s in out:
+        if final and final[-1][2] == s[2]:
+            final[-1][1] = s[1]
+        else:
+            final.append(list(s))
+    return final
+
+
 def clusters(recs):
     rs = sorted(recs, key=lambda r: r["rva"])
     out, cur = [], [rs[0]]
@@ -97,8 +145,10 @@ def main():
         return (f["conflated"], len(f["outliers"]), max(o["dist"] for o in f["outliers"]))
     flagged.sort(key=sev, reverse=True)
 
+    regions = named_regions(funcs, meta["text_lo"], meta["text_hi"])
     json.dump({"text_lo": meta["text_lo"], "text_hi": meta["text_hi"],
-               "flagged": flagged}, open(DIR + "/flags.json", "w"), indent=1)
+               "regions": regions, "flagged": flagged},
+              open(DIR + "/flags.json", "w"), indent=1)
 
     tot_out = sum(len(f["outliers"]) for f in flagged)
     conf = [f for f in flagged if f["conflated"]]
