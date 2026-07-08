@@ -150,11 +150,8 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     return 1;
 }
 
-// tail-dispatch through vtable slot +0x0c (mov eax,[ecx]; jmp [eax+0xc]).
-RVA(0x00185510, 0x5)
-void CMenuItem::Dispatch0c() {
-    Reset();
-}
+// CMenuItem::Dispatch0c (0x00185510) is now an inline member in the header.
+
 
 // notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
 // (Non-virtual internal helper called by Trigger; NOT the slot-8 virtual Notify.)

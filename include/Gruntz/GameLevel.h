@@ -197,7 +197,8 @@ public:
     virtual i32 IsLoaded();         // [5]  +0x14  0x161190 (own; was CWapObj slot)
     virtual i32 IsReady();          // [6]  +0x18  0x001c08 (own; was CWapObj slot, declared-only)
     virtual i32 Unload();           // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
-    virtual i32 GetClassId();       // [8]  +0x20  0x1611b0  class type tag (0x19)
+    RVA(0x001611b0, 0x6)
+    virtual i32 GetClassId() { return CLASSID_GAMELEVEL; }
     virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
     virtual i32
     SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords); // [10] +0x28  0x15ceb0

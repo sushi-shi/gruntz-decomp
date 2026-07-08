@@ -79,7 +79,8 @@ public:
     CMenuItem();          // inlined leaf ctor (CStrings + implicit vptr + sentinels)
     virtual ~CMenuItem(); // 0x184690  slot 0 (scalar-deleting-dtor thunk @0x184670)
     virtual i32 Init(i32, i32, i32, i32, i32, i32); // 0x185460  slot 1
-    virtual void Dispatch0c();                      // 0x185510  slot 2  (tail -> Reset)
+    RVA(0x00185510, 0x5)
+    virtual void Dispatch0c() { Reset(); }
     virtual void Reset();                           // 0x184730  slot 3
     virtual i32 GetWidth();                         // 0x185550  slot 4  (declared-only)
     virtual void Vf5();                             // 0x185520  slot 5  (declared-only)

@@ -171,17 +171,10 @@ inline CDeviceConfigB::CDeviceConfigB() {
     m_flags = 0;
 }
 
-// The root/base virtual-slot bodies. IsValid (slot 3, 0x1332b0) reports whether the
-// device came up; Poll (slot 4, 0x133410) is the base per-frame poll stub the leaves
-// override; ResetState (slot 5, 0x1332c0) clears the press-edge latch.
-RVA(0x001332b0, 0xb)
-i32 CInputDevRoot::IsValid() {
-    return m_device2 != 0;
-}
-RVA(0x00133410, 0x3)
-i32 CInputDevBase::Poll() {
-    return 0;
-}
+// CInputDevRoot::IsValid (0x001332b0) is now an inline member in the header.
+
+// CInputDevBase::Poll (0x00133410) is now an inline member in the header.
+
 RVA(0x001332c0, 0x1e)
 i32 CInputDevBase::ResetState() {
     m_latchedKeys = -1;

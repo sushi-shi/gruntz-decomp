@@ -241,7 +241,8 @@ public:
     // to keep the byte-exact direct `call rel32`.
     virtual i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
     virtual void ReleaseDevices();                                             // slot 2  0x134d50
-    virtual i32 IsValid();                                                     // slot 3  0x1332b0
+    RVA(0x001332b0, 0xb)
+    virtual i32 IsValid() { return m_device2 != 0; }
 
     // Shared non-virtual COM helpers.
     i32 Unacquire(); // 0x134fe0
@@ -283,7 +284,8 @@ public:
     // (0x133410) is a stub; the keyboard leaf overrides it (CInputDevice::Poll,
     // 0x133d00), the mouse/joystick leaf slots reloc-mask to their own poll. ResetState
     // (slot 5, 0x1332c0) clears the edge-latch; CreateDeviceWrap dispatches it.
-    virtual i32 Poll();       // +0x10  slot 4  per-frame device poll
+    RVA(0x00133410, 0x3)
+    virtual i32 Poll() { return 0; }
     virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
 
     // CreateDeviceWrap (0x134260): validates (di, hwnd), runs Create, then dispatches

@@ -42,7 +42,10 @@ public:
     virtual ~CFileMemBase();                             // slot 0  (0x157960 ??_G)
     virtual i32 SetName(const char* name, i32 a, i32 b); // slot 1  0x00165e30
     virtual void Slot2();                                // slot 2  (0x157910)
-    virtual void Reset();                                // slot 3  0x00157a40 (base Close/Reset)
+    RVA(0x00157a40, 0x10)
+    virtual void Reset() { m_4 = 0;
+    m_8 = 0;
+    m_name.Empty(); }
     virtual void Slot4();                                // slot 4  (0x157920)
     virtual void Slot5() = 0;                            // slot 5  __purecall
     virtual void Slot6() = 0;                            // slot 6  __purecall
@@ -70,7 +73,12 @@ class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE;                // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
     virtual void Slot2() OVERRIDE;               // slot 2  (0x157a70)
-    virtual void Reset() OVERRIDE;               // slot 3  0x00157a50 (derived Reset)
+    RVA(0x00157a50, 0x16)
+    virtual void Reset() OVERRIDE { m_length = 0;
+    m_offset = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_name.Empty(); }
     virtual void Slot5() OVERRIDE;               // slot 5  (0x157a00)
     virtual void Slot6() OVERRIDE;               // slot 6  (0x157a10)
     virtual i32 Open() OVERRIDE;                 // slot 9  0x00165e60

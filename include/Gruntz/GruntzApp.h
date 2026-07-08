@@ -34,7 +34,8 @@ public:
     ) OVERRIDE;                        // vtbl +0x08
     virtual void ShowError() OVERRIDE; // vtbl +0x30
     // Another base-init virtual override; just returns 0.
-    virtual i32 VirtualUnknownMethod11(i32 a, i32 b, i32 c) OVERRIDE; // slot 10
+    RVA(0x00080aa0, 0x5)
+    virtual i32 VirtualUnknownMethod11(i32 a, i32 b, i32 c) OVERRIDE { return 0; }
     // Shows the MESSAGE dialog with an arbitrary message string.
     void ShowMessage(char* msg, HWND hParent);
     virtual WAP32::CGameMgr* InitializeGameManager() OVERRIDE;

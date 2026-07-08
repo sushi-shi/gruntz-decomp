@@ -48,27 +48,11 @@ CFileMem::~CFileMem() {
     CFileMemBase::Reset();
 }
 
-// ---------------------------------------------------------------------------
-// CFileMemBase::Reset  (0x00157a40)  (base vtable slot +0xc / slot 3)
-// Zero the two scalar fields, tail-jump CString::Empty.
-RVA(0x00157a40, 0x10)
-void CFileMemBase::Reset() {
-    m_4 = 0;
-    m_8 = 0;
-    m_name.Empty();
-}
+// CFileMemBase::Reset (0x00157a40) is now an inline member in the header.
 
-// ---------------------------------------------------------------------------
-// CFileMem::Reset  (0x00157a50)  (derived vtable slot +0xc / slot 3)
-// Zero the position pair + the two base scalars, tail-jump CString::Empty.
-RVA(0x00157a50, 0x16)
-void CFileMem::Reset() {
-    m_length = 0;
-    m_offset = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_name.Empty();
-}
+
+// CFileMem::Reset (0x00157a50) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CFileMemBase::SetName  (0x00165e30)  (slot 1, shared by both vtables)

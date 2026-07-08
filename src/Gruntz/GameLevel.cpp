@@ -515,13 +515,8 @@ void CGameLevel::ReleaseChildren() {
     m_mainIndex = -1;
 }
 
-// ---------------------------------------------------------------------------
-// GetClassId: returns the class type tag (constant 0x19 / 25).
-// ---------------------------------------------------------------------------
-RVA(0x001611b0, 0x6)
-i32 CGameLevel::GetClassId() {
-    return CLASSID_GAMELEVEL;
-}
+// CGameLevel::GetClassId (0x001611b0) is now an inline member in the header.
+
 
 // --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
 // ---------------------------------------------------------------------------

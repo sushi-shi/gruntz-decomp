@@ -190,13 +190,8 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CGruntzApp::VirtualUnknownMethod04
-// Another base-init virtual override; the body just returns 0 (`xor eax,eax`).
-RVA(0x00080aa0, 0x5)
-i32 CGruntzApp::VirtualUnknownMethod11(i32 a, i32 b, i32 c) {
-    return 0;
-}
+// CGruntzApp::VirtualUnknownMethod11 (0x00080aa0) is now an inline member in the header.
+
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::ShowMessage
