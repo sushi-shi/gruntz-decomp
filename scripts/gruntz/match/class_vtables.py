@@ -58,7 +58,10 @@ def instantiated_or_based_names():
     blob = "\n".join(p.read_text(errors="ignore") for p in source_files())
     names = set(re.findall(r'\bnew\s+([A-Z]\w+)', blob))
     names |= set(re.findall(r'\bnew\s*\([^)\n]*\)\s*([A-Z]\w+)', blob))   # placement new
-    names |= set(re.findall(r'\b([A-Z]\w+)::', blob))                      # out-of-line member
+    names |= set(re.findall(r'\b([A-Z]\w+)::~', blob))                     # out-of-line DTOR (only
+    # instantiated/based classes emit a dtor; a plain X::method is a non-virtual helper on a
+    # cast-interface view - e.g. RezDir::Check on a pointer-only interface - and does NOT imply
+    # an emitted ??_7, so a generic X:: is not counted here).
     names |= set(re.findall(r'\b([A-Z]\w+)\s+(?!\*)[a-z]\w*\s*[;,)=\[]', blob))  # by-value decl
     for m in re.finditer(r'\b(?:class|struct)\s+\w+\s*:\s*([^{;]+)\{', blob):
         names |= set(re.findall(r'\b([A-Z]\w+)\b', m.group(1)))            # any base
