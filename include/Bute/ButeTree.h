@@ -75,7 +75,6 @@ struct CButeTreeSecond {
     i32 m_lookupPending;            // +0x1c (+0x28)
 };
 SIZE(CButeTreeSecond, 0x20); // second base (spans +0x08..+0x28 of CButeTree)
-RELOC_VTBL(CButeTreeSecond, 0x001f04e0); // aliases CButeTree (vtable-comment verified)
 
 class CButeTree : public CButeTreePrimary, public CButeTreeSecond {
 public:

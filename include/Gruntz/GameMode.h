@@ -285,7 +285,6 @@ struct CCreditsImgBase {
     virtual ~CCreditsImgBase() {}
 };
 SIZE_UNKNOWN(CCreditsImageList);
-RELOC_VTBL(CCreditsImageList, 0x001e9c64); // aliases CCreditsState (vtable-comment verified)
 struct CCreditsImageList : CCreditsImgBase {
     void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown

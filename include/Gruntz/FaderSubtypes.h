@@ -38,7 +38,6 @@ struct CFaderInit;
 // at +0x58 (own vftable 0x5f07d8). See CFader.cpp for the ctor/member-order notes.
 // ===========================================================================
 SIZE_UNKNOWN(CFaderMeshSub);
-RELOC_VTBL(CFaderMeshSub, 0x001f07d8); // aliases CRezBufferObject (doc-comment vtable, in-family)
 struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
     virtual void v0(); // one virtual -> its own vtable (reloc-masks 0x5f07d8)
     i32 m_04;          // +0x5c

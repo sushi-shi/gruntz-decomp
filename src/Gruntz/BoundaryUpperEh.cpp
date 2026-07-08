@@ -189,7 +189,6 @@ struct EmbedSub17e990 : EmbedBase17e990 {
     virtual ~EmbedSub17e990() OVERRIDE;
 };
 SIZE_UNKNOWN(EmbedSub17e990);
-RELOC_VTBL(EmbedSub17e990, 0x001f07c0); // aliases CFaderMesh (vtable-comment verified)
 inline EmbedSub17e990::~EmbedSub17e990() {
     if (m_4) {
         RezFree(m_4);
@@ -214,7 +213,6 @@ struct Base163a40 {
     virtual ~Base163a40();
 };
 SIZE_UNKNOWN(Base163a40);
-RELOC_VTBL(Base163a40, 0x001f07c0); // aliases CFaderMesh (doc-comment vtable, in-family)
 inline Base163a40::~Base163a40() {}
 struct C163a40 {
     char _0[0x70];

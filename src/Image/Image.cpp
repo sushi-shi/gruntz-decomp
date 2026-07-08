@@ -986,7 +986,6 @@ public:
 // former CImageSurfaceItemInit "init view" was the same physical object; folded here
 // so Build_13e9a0 carries no cross-cast.
 SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
-RELOC_VTBL(CRezSurfaceItem, 0x001ef7f0); // aliases CDDSurface (doc-comment vtable, in-family)
 class CRezSurfaceItem {
 public:
     virtual ~CRezSurfaceItem(); // slot 1 (deleting dtor -> cl-emitted ??_G)

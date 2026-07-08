@@ -474,7 +474,6 @@ i32 CSprite::GetFrame(i32 n) {
 // SHARED ??_7CImage@@6B@ (0x1eaa2c) - no per-class VTBL (would collide/misname). Exact
 // size 0x34: the insert allocates the 0x34-byte raw CImage (ctor writes to m_30+0x30).
 SIZE(CFrameWorker, 0x34);
-RELOC_VTBL(CFrameWorker, 0x001eaa2c); // aliases CImage (vtable-comment verified)
 SIZE_UNKNOWN(CGruntAnimPlayer);
 SIZE_UNKNOWN(CGruntAnimSub2);
 SIZE_UNKNOWN(CGruntSprite);

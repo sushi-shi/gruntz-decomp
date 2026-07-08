@@ -173,7 +173,6 @@ def main() -> int:
     present = present_rvas()
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
-    prim_bases = primary_base_names()
     reloc = reloc_vtbl_annotations()
     # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY bound by another class -
     # via VTBL(), an RTTI ??_7 in vtable_names.csv, or the MFC/CRT library catalog. NOT merely
@@ -204,11 +203,6 @@ def main() -> int:
     for name, (path, lineno) in sorted(where.items()):
         has_vtable = name in rtti or virtual[name] or manual[name]
         if not has_vtable:
-            continue
-        # A class that is only ever a PRIMARY base (never VTBL'd/RTTI-bound itself) has no
-        # distinct vtable of its own - the concrete leaf that instantiates it carries the
-        # binding (coverage=100% guarantees the shared vtable IS bound). Not a violator.
-        if name not in rtti and name in prim_bases:
             continue
         have_vtable += 1
         catalogued = (

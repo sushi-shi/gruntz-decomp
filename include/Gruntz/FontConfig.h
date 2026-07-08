@@ -9,7 +9,6 @@
 #include <rva.h>
 
 SIZE(CFontConfig, 0x44);
-RELOC_VTBL(CFontConfig, 0x001eafd4); // aliases None (vtable-comment verified)
 class CFontConfig : public CPtrList {
 public:
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);

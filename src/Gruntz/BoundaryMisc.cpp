@@ -107,7 +107,6 @@ struct CGuardedDispatch1f870 {
     i32 Run();
 };
 SIZE_UNKNOWN(CGuardedDispatch1f870);
-RELOC_VTBL(CGuardedDispatch1f870, 0x001e70b4); // aliases CUserBase (doc-comment vtable, in-family)
 RVA(0x0001f870, 0x1d)
 i32 CGuardedDispatch1f870::Run() {
     if (!IsActive()) {

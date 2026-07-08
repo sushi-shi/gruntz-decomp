@@ -2834,7 +2834,6 @@ inline void* operator new(u32, void* p) {
 // emits here are orphans (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by
 // InterfaceObject.cpp's VTBL, so no VTBL is attached here -> no dup-DATA).
 SIZE_UNKNOWN(CNetGroupNode);
-RELOC_VTBL(CNetGroupNode, 0x001f0748); // aliases InterfaceObject (vtable-comment verified)
 struct CNetGroupNode : public CObject {
     i32 m_4;        // +0x04  the service-provider GUID (stored raw)
     CString m_name; // +0x08  the provider name

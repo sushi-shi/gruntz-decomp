@@ -2460,7 +2460,6 @@ SIZE_UNKNOWN(CDrawSubWorker);
 SIZE_UNKNOWN(CDrawSubWorkerBase);
 SIZE_UNKNOWN(CWwdBox);
 SIZE_UNKNOWN(CWwdFactoryObject);
-RELOC_VTBL(CWwdFactoryObject, 0x001f00a8); // aliases CWwdGameObjectA (doc-comment vtable, in-family)
 SIZE_UNKNOWN(CWwdLabel);
 SIZE_UNKNOWN(CWwdNode);
 SIZE_UNKNOWN(CWwdNotifier);
