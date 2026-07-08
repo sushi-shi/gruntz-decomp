@@ -679,6 +679,7 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
 SIZE_UNKNOWN(DirNode);
 SIZE_UNKNOWN(LeafCuePlayer);
 SIZE_UNKNOWN(LeafElementBase);
+RELOC_VTBL(LeafElementBase, 0x001eff08); // aliases LeafElementObj (vtable-comment verified)
 SIZE(LeafElementObj, 0x1c);
 SIZE_UNKNOWN(LeafRootHandle);
 // LeafScanBase / CDDrawSubMgrLeafScan SIZE_UNKNOWN now live in the shared header.

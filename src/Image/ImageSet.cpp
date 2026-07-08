@@ -238,3 +238,4 @@ i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
 SIZE_UNKNOWN(CImageFormat);
 SIZE_UNKNOWN(CImageFrameSurface);
 SIZE(CImageFrame, 0x34);
+RELOC_VTBL(CImageFrame, 0x001eaa2c); // aliases CImage (vtable-comment verified)
