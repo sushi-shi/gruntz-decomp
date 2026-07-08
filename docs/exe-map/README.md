@@ -57,8 +57,16 @@ Each step writes its output (JSON + HTML) into this directory. Intermediate data
 ## Baseline finding
 
 With **ground-truth grouping** (HoMM2), the MSVC linker produces **100% contiguous
-per-TU blocks** — zero scatter — because that build uses no `/Gy` (no per-function
-COMDATs to reorder). Gruntz, on our *reconstructed* grouping, is only ~16%
-contiguous. So Gruntz's measured "scatter" is dominated by grouping errors
-(conflated TUs, mis-attributions) plus its COMDAT/destructor build behaviour — not
-the linker mixing up correctly-grouped code. See `homm2.html`.
+per-TU blocks** — zero scatter. Gruntz, on our *reconstructed* grouping, is only
+~16% contiguous.
+
+The difference is partly the **toolchain**: HoMM2 is **MSVC 4.2** (whose `/O2` does
+NOT force per-function COMDATs — 39% of its functions are 16-byte aligned, i.e.
+whole-TU blocks), while Gruntz is **MSVC 5.0** (whose `/O2` *forces* `/Gy`/COMDAT on
+— 100% of its functions are 16-byte aligned in their own section; proven by
+byte-exact zlib COMDATs, see `../zlib-matching.md`). So Gruntz's functions are
+individually orderable and its destructors get pooled, whereas HoMM2's can't move.
+
+Net: Gruntz's measured "scatter" is **our grouping errors** (conflated TUs,
+mis-attributions) **plus** its COMDAT/destructor build behaviour — not the linker
+mixing up correctly-grouped code. HoMM2 is the no-COMDAT floor. See `homm2.html`.

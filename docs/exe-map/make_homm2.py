@@ -134,12 +134,16 @@ grouping (destructors removed). The gap between the two is what our grouping sti
   <svg id="hist" viewBox="0 0 1000 320"></svg>
 </div>
 
-<p class="note">Not a perfectly matched pair — <b>caveats:</b> HoMM2 is a different game and its build is mostly
-<code>/Od</code> and uses <b>no <code>/Gy</code></b> (function-level linking), so it never emits per-function
-COMDATs to reorder; retail Gruntz does pool COMDATs (see <code>../link-order-investigation.md</code>). So HoMM2
-is the <i>floor</i> — proof the linker doesn't scatter correctly-grouped whole-TU code — not an exact model of
-Gruntz's build. The Gruntz series has destructors removed to isolate grouping quality. Data:
-<code>homm2_va.csv</code> (snapshot, read-only from homm2-decomp) + <code>scatter_methods.json</code>.</p>
+<p class="note">Not a perfectly matched pair, and the reason is the <b>toolchain</b>. HoMM2 was built with <b>MSVC 4.2</b>,
+whose <code>/O2</code> does <b>not</b> force function-level COMDATs, so each TU is one whole-<code>.text</code>
+block the linker can't split (measured: only <b>39%</b> of its functions sit on a 16-byte boundary). Retail
+Gruntz was built with <b>MSVC 5.0</b>, whose <code>/O2</code> <b>forces per-function COMDATs on</b> — proven by
+byte-exact zlib COMDATs (<code>../zlib-matching.md</code>) and confirmed here: <b>100%</b> of Gruntz functions are
+16-byte aligned, each in its own section. So Gruntz's functions are independently orderable and its special
+members (destructors) get pooled away from their TU, whereas HoMM2's can't move at all. HoMM2 is therefore the
+<i>no-COMDAT floor</i> — proof the linker doesn't scatter whole-TU code — not an exact model of Gruntz's build.
+The Gruntz series has destructors removed to isolate grouping quality; the residual gap above HoMM2 is our
+grouping errors. Data: <code>homm2_va.csv</code> (read-only snapshot) + <code>scatter_methods.json</code>.</p>
 </div>
 
 <div id="tip"></div>
