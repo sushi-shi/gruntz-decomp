@@ -48,6 +48,23 @@ _BASE_RE = re.compile(
     r"([\w:]+)")
 
 
+def instantiated_or_based_names():
+    """Class NAMES for which a vtable (??_7) is actually EMITTED: the class is INSTANTIATED
+    (``new X`` / a by-value declaration), defines an out-of-line member (``X::``), or is used
+    as a BASE. A polymorphic class used ONLY through a pointer - a cast-interface / declared-
+    only view (AttractActor, CExitV44) - is NEVER instantiated, so cl emits NO vtable for it:
+    it is not "missing a VTBL", it has none. (Coverage=100% is independent of this list, so
+    excluding such a class can never hide a genuinely-unbound vtable.)"""
+    blob = "\n".join(p.read_text(errors="ignore") for p in source_files())
+    names = set(re.findall(r'\bnew\s+([A-Z]\w+)', blob))
+    names |= set(re.findall(r'\bnew\s*\([^)\n]*\)\s*([A-Z]\w+)', blob))   # placement new
+    names |= set(re.findall(r'\b([A-Z]\w+)::', blob))                      # out-of-line member
+    names |= set(re.findall(r'\b([A-Z]\w+)\s+(?!\*)[a-z]\w*\s*[;,)=\[]', blob))  # by-value decl
+    for m in re.finditer(r'\b(?:class|struct)\s+\w+\s*:\s*([^{;]+)\{', blob):
+        names |= set(re.findall(r'\b([A-Z]\w+)\b', m.group(1)))            # any base
+    return names
+
+
 def primary_base_names():
     """Names that appear as the PRIMARY (first) base of some class. A primary base's vtable
     is structurally the derived's primary-vtable PREFIX - it emits no distinct ``??_7`` of its
@@ -174,6 +191,7 @@ def main() -> int:
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
     prim_bases = primary_base_names()
+    emitted = instantiated_or_based_names()
     reloc = reloc_vtbl_annotations()
     # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY catalogued by another
     # class - via VTBL(), an RTTI ??_7 in vtable_names.csv, or the MFC/CRT library catalog;
@@ -201,7 +219,11 @@ def main() -> int:
     violators = []
     have_vtable = 0
     for name, (path, lineno) in sorted(where.items()):
-        has_vtable = name in rtti or virtual[name] or manual[name]
+        # A ??_7 is emitted only for a class that is RTTI-typed, manually stamped, or
+        # (polymorphic AND actually instantiated / defines out-of-line members / is a base).
+        # A pointer-only declared-only view is never instantiated -> it has no vtable at all.
+        has_vtable = (name in rtti or manual[name]
+                      or (virtual[name] and name in emitted))
         if not has_vtable:
             continue
         # A class that is only ever a PRIMARY base (never VTBL'd/RTTI-bound itself) has no
