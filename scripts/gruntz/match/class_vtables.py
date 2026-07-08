@@ -36,12 +36,38 @@ from gruntz.match.class_meta import (
     REPO,
     iter_class_defs,
     rel,
+    source_files,
     vtbl_annotated_names,
     vtbl_annotations,
 )
 
 _RTTI_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
 _MANUAL_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
+_BASE_RE = re.compile(
+    r"^(?:class|struct)\s+\w+\s*:\s*(?:public\s+|protected\s+|private\s+|virtual\s+)*"
+    r"([\w:]+)")
+
+
+def primary_base_names():
+    """Names that appear as the PRIMARY (first) base of some class. A primary base's vtable
+    is structurally the derived's primary-vtable PREFIX - it emits no distinct ``??_7`` of its
+    own unless the base is itself instantiated standalone (which, with vtable-coverage at 100%
+    and no rva-collisions, would already have bound it, so it would not be a violator). So a
+    virtual-carrying class that is un-VTBL'd yet is only ever a primary base has NO vtable of
+    its own to catalog - it is an abstract/intermediate base (CLoadable, AnimWorker), not a
+    class 'missing a VTBL'. The concrete leaf that instantiates the chain carries the binding.
+    (The head may wrap; join the decl line with the next two so ``X :\\n  public Base`` parses.)"""
+    bases = set()
+    for path in source_files():
+        lines = path.read_text(errors="ignore").splitlines()
+        for i, ln in enumerate(lines):
+            s = ln.lstrip()
+            if s.startswith(("class ", "struct ")) and ":" in " ".join(lines[i:i + 3]).split("{", 1)[0]:
+                decl = " ".join(lines[i:i + 3]).split("{", 1)[0]
+                m = _BASE_RE.match(decl.strip())
+                if m:
+                    bases.add(m.group(1).split("::")[-1])
+    return bases
 
 
 def rtti_vtables():
@@ -130,6 +156,7 @@ def main() -> int:
     present = present_rvas()
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
+    prim_bases = primary_base_names()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -147,6 +174,11 @@ def main() -> int:
     for name, (path, lineno) in sorted(where.items()):
         has_vtable = name in rtti or virtual[name] or manual[name]
         if not has_vtable:
+            continue
+        # A class that is only ever a PRIMARY base (never VTBL'd/RTTI-bound itself) has no
+        # distinct vtable of its own - the concrete leaf that instantiates it carries the
+        # binding (coverage=100% guarantees the shared vtable IS bound). Not a violator.
+        if name not in rtti and name in prim_bases:
             continue
         have_vtable += 1
         catalogued = (
