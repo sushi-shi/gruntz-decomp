@@ -6,13 +6,7 @@
 #include <Gruntz/GruntStaminaSprite.h>
 #include <Gruntz/LogicTypeId.h>
 
-// CGruntStaminaSprite::GetTypeTag @0x00012020 - return the class's logic-type id.
-// The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
-// (0x00fb70); precedes the [scalar @0x12040, plain @0x12070] dtor pair.
-RVA(0x00012020, 0x6)
-LogicTypeId CGruntStaminaSprite::GetTypeTag() {
-    return LOGIC_GRUNTSTAMINASPRITE; // 0x410
-}
+// CGruntStaminaSprite::GetTypeTag (0x00012020) is now an inline member in the class header.
 
 // CGruntStaminaSprite::~CGruntStaminaSprite @0x00012070 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic

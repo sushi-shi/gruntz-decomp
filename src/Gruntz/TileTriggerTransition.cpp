@@ -52,7 +52,9 @@ public:
     CTileTriggerTransition(CGameObject* obj); // 0x10faf0
     virtual ~CTileTriggerTransition() OVERRIDE;
 
-    virtual LogicTypeId GetTypeTag() OVERRIDE;    // 0x011730
+    // 0x011730 - per-class logic-type id (0x405), inline (one deduped COMDAT copy).
+    RVA(0x00011730, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TILETRIGGERTRANSITION; }
     void Register_10fc90();                       // 0x10fc90
     void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
@@ -82,13 +84,8 @@ SIZE_UNKNOWN(TileActEntry);
 // ---------------------------------------------------------------------------
 CTileTriggerTransition::~CTileTriggerTransition() {}
 
-// ---------------------------------------------------------------------------
-// GetTypeTag (0x011730) - returns the class's logic-type id.
-// ---------------------------------------------------------------------------
-RVA(0x00011730, 0x6)
-LogicTypeId CTileTriggerTransition::GetTypeTag() {
-    return LOGIC_TILETRIGGERTRANSITION; // 0x405
-}
+// CTileTriggerTransition::GetTypeTag (0x011730) is now an inline member in the
+// class declaration above.
 
 // ---------------------------------------------------------------------------
 // ~CUserLogic (0x0117f0) - the out-of-line base destructor COMDAT: store the

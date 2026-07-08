@@ -134,8 +134,10 @@ public:
 class CGruntToyTimeSprite : public CGruntHealthSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
-    // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411).
-    LogicTypeId GetTypeTag();
+    // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411),
+    // defined inline (retail keeps one deduped COMDAT copy).
+    RVA(0x000120e0, 0x6)
+    LogicTypeId GetTypeTag() { return LOGIC_GRUNTTOYTIMESPRITE; }
     char m_pad3c[0x5c - 0x3c];
     i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
     i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
@@ -163,13 +165,8 @@ public:
 // Leaf vftables (??_7CGrunt{Stamina,ToyTime,WingzTime}Sprite@@6B@) are now
 // emitted by cl and named on the target automatically (RTTI auto-namer).
 
-// CGruntToyTimeSprite::GetTypeTag @0x000120e0 - the class's logic-type id (0x411),
-// the 6-byte `mov eax,<id>; ret` archetype. RVA-lowest method in this TU; the
-// plain dtor (@0x12130) lives in the engine_discovered stub unit.
-RVA(0x000120e0, 0x6)
-LogicTypeId CGruntToyTimeSprite::GetTypeTag() {
-    return LOGIC_GRUNTTOYTIMESPRITE; // 0x411
-}
+// CGruntToyTimeSprite::GetTypeTag (0x000120e0) is now an inline member in the class
+// declaration above (the 6-byte `mov eax,<id>; ret` archetype).
 
 // @confidence: high
 // @source: rtti-vptr

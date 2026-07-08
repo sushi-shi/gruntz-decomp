@@ -35,7 +35,10 @@
 class CGruntStaminaSprite : public CGruntHealthSprite {
 public:
     // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    // 0x00012020 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00012020, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTSTAMINASPRITE; }
     virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
     virtual i32 Vslot16() OVERRIDE;          // slot 16 (stat-time getter)
 };

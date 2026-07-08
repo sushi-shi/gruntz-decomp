@@ -16,7 +16,10 @@ public:
 public:
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models these slots with placeholder signatures; see the .cpp).
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x10220 (vtable slot 2: per-class logic-type id)
+    // 0x00010220 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00010220, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_WAYPOINT; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x10240 (vtable slot 1: serialize chain)
     CWayPoint(CGameObject* obj);               // 0xae3f0

@@ -11,13 +11,7 @@
 #include <Gruntz/GruntWingzTimeSprite.h>
 #include <Gruntz/LogicTypeId.h>
 
-// CGruntWingzTimeSprite::GetTypeTag @0x0121a0 - return the class's logic-type id.
-// The same 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
-// (0x00fb70); precedes the [scalar @0x121c0, plain @0x121f0] dtor pair.
-RVA(0x000121a0, 0x6)
-LogicTypeId CGruntWingzTimeSprite::GetTypeTag() {
-    return LOGIC_GRUNTWINGZTIMESPRITE; // 0x417
-}
+// CGruntWingzTimeSprite::GetTypeTag (0x000121a0) is now an inline member in the class header.
 
 // CGruntWingzTimeSprite::~CGruntWingzTimeSprite @0x0121f0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic

@@ -27,12 +27,7 @@ struct CAniCycleActReg : public CActReg {};
 DATA(0x00246088)
 extern CAniCycleActReg g_aniCycleActReg; // 0x646088
 
-// CAniCycle::GetTypeTag @0x00f450 - the vtable slot-2 logic-type id accessor
-// (the 6-byte `mov eax,<id>; ret` archetype).
-RVA(0x0000f450, 0x6)
-LogicTypeId CAniCycle::GetTypeTag() {
-    return LOGIC_ANICYCLE; // 0x3ea
-}
+// CAniCycle::GetTypeTag (0x0000f450) is now an inline member in the class header.
 
 // CAniCycle::Serialize @0x00f470 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's

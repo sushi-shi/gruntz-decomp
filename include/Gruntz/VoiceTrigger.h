@@ -22,7 +22,10 @@ public:
 public:
     CVoiceTrigger();                 // 0x013470 (no-arg ctor; body in UserLogic.cpp)
     CVoiceTrigger(CGameObject* obj); // 0x119b50 (1-arg leaf ctor; body in VoiceTrigger.cpp)
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x0133b0 (per-class logic-type id, 0x426)
+    // 0x000133b0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x000133b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_VOICETRIGGER; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)

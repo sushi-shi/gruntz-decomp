@@ -151,14 +151,7 @@ extern "C" u32 g_6bf3bc; // 0x6bf3bc
 
 // 1000.0 (the per-tile-time -> per-frame-speed reciprocal numerator), VA 0x5ea9f0.
 
-// CObjectDropper::GetTypeTag (0x124a0) - vtable slot 2: the class's logic-type id
-// (0x40f), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
-// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x000124a0, 0x6)
-LogicTypeId CObjectDropper::GetTypeTag() {
-    return LOGIC_OBJECTDROPPER; // 0x40f
-}
+// CObjectDropper::GetTypeTag (0x000124a0) is now an inline member in the class header.
 
 // CObjectDropper::~CObjectDropper (0x124f0) - the /GX leaf dtor folds the bare
 // CUserLogic teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the

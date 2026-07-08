@@ -16,7 +16,10 @@ public:
 public:
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x124a0
+    // 0x000124a0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x000124a0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_OBJECTDROPPER; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)

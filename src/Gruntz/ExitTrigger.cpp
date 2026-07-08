@@ -12,13 +12,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 
-// CExitTrigger::GetTypeTag @0x010870 - return the class's logic-type id. The same
-// 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
-// GetTypeTag (0x011730).
-RVA(0x00010870, 0x6)
-LogicTypeId CExitTrigger::GetTypeTag() {
-    return LOGIC_EXITTRIGGER; // 0x3f7
-}
+// CExitTrigger::GetTypeTag (0x00010870) is now an inline member in the class header.
 
 // CExitTrigger::~CExitTrigger @0x0108c0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

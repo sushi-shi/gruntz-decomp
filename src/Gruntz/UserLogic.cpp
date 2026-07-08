@@ -688,12 +688,7 @@ CPathHazard::CPathHazard() {
 }
 
 CVoiceTrigger::~CVoiceTrigger() {}
-// CVoiceTrigger::GetTypeTag @0x133b0 - the per-class logic-type id (0x426), the
-// 6-byte `mov eax,<id>; ret` archetype (plain dtor @0x13400 still a Boundary stub).
-RVA(0x000133b0, 0x6)
-LogicTypeId CVoiceTrigger::GetTypeTag() {
-    return LOGIC_VOICETRIGGER; // 0x426
-}
+// CVoiceTrigger::GetTypeTag (0x000133b0) is now an inline member in the class header.
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() {}
 
@@ -884,12 +879,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
 
 // --- CParticlez (0x046ad0), vptr 0x5e7614 ---
 CParticlez::~CParticlez() {}
-// CParticlez::GetTypeTag @0x12cd0 - the per-class logic-type id (0x41c), the
-// 6-byte `mov eax,<id>; ret` archetype.
-RVA(0x00012cd0, 0x6)
-LogicTypeId CParticlez::GetTypeTag() {
-    return LOGIC_PARTICLEZ; // 0x41c
-}
+// CParticlez::GetTypeTag (0x00012cd0) is now an inline member in the class header.
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);

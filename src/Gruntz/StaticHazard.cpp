@@ -182,15 +182,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     return g_haznCur;
 }
 
-// ---------------------------------------------------------------------------
-// CStaticHazard::GetTypeTag @0x012ae0 - vtable slot 2: the class's logic-type id
-// (0x416), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
-// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x00012ae0, 0x6)
-LogicTypeId CStaticHazard::GetTypeTag() {
-    return LOGIC_STATICHAZARD; // 0x416
-}
+// CStaticHazard::GetTypeTag (0x00012ae0) is now an inline member in the class header.
 
 // ---------------------------------------------------------------------------
 // CStaticHazard::~CStaticHazard @0x012b30 - the leaf adds no destructible members

@@ -35,12 +35,7 @@ struct CEyeCandyActEntry {
     EyeCandyHandler m_fn;
 };
 
-// CEyeCandyAni::GetTypeTag @0x00ff00 - the vtable slot-2 logic-type id accessor
-// (the 6-byte `mov eax,<id>; ret` archetype).
-RVA(0x0000ff00, 0x6)
-LogicTypeId CEyeCandyAni::GetTypeTag() {
-    return LOGIC_EYECANDYANI; // 0x3f4
-}
+// CEyeCandyAni::GetTypeTag (0x0000ff00) is now an inline member in the class header.
 
 // CEyeCandyAni::Serialize @0x00ff20 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's

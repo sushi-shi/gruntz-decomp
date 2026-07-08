@@ -208,15 +208,7 @@ void CToobSpikez::Register_1147e0() {
     ((CZDArrayDerived*)&g_toobColl)->Construct(0x7d0, 0x7da);
 }
 
-// CToobSpikez::GetTypeTag @0x012ba0 - vtable slot 2: the class's logic-type id
-// (0x418), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slots 1/2 carry placeholder signatures the leaf overrides
-// cannot match without editing that shared base; the leaf vtable is not a diffed
-// symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x00012ba0, 0x6)
-LogicTypeId CToobSpikez::GetTypeTag() {
-    return LOGIC_TOOBSPIKEZ; // 0x418
-}
+// CToobSpikez::GetTypeTag (0x00012ba0) is now an inline member in the class header.
 
 // CToobSpikez::Serialize @0x012bc0 - vtable slot 1: chain the shared CUserLogic
 // serialize helper on `this`, then (on success) the +0x34 sub-object's chain,

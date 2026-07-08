@@ -118,14 +118,7 @@ extern CButeTree g_buteTree;
 RVA(0x00013280, 0x44)
 CLightningHazard::~CLightningHazard() {}
 
-// CPathHazard::GetTypeTag @0x0132f0 - return the class's logic-type id. The same
-// 6-byte `mov eax,<id>; ret` virtual archetype as CBehindCandy::GetTypeTag
-// (0x00fb70); sits between CLightningHazard::~ and the [scalar,plain] CPathHazard
-// dtor pair, the canonical [GetTypeTag][scalar-dtor][plain-dtor] per-class layout.
-RVA(0x000132f0, 0x6)
-LogicTypeId CPathHazard::GetTypeTag() {
-    return LOGIC_PATHHAZARD; // 0x425
-}
+// CPathHazard::GetTypeTag (0x000132f0) is now an inline member in the class header.
 
 // CPathHazard::~CPathHazard @0x013340 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

@@ -687,14 +687,19 @@ def write_symbol_names(rows, addr_sites, out, misses=None):
     """Finalize + write symbol_names.csv: the cross-TU duplicate-RVA guard, the
     DATA dedup (keep last per rva, matching synth_pdb), sort, header. Shared by the
     per-TU emit and the --merge step so both apply the same checks."""
-    # A function address identifies exactly one function: the same rva labeled
-    # twice (within or across units) is always a mistake - fail loudly.
-    dup_addrs = {rva: sites for rva, sites in addr_sites.items() if len(sites) > 1}
+    # A function address identifies exactly one function. The SAME symbol at one rva
+    # in several units is LEGITIMATE - an inline HEADER member is emitted (as one
+    # deduped COMDAT) by every TU that includes the header, so labels.py sees it in
+    # each includer's IR. Only DISTINCT names at one rva are a real mistake (two
+    # different functions, or a mislabeled rva). Same-name duplicates are collapsed
+    # to a single row by the per-rva dedup below.
+    dup_addrs = {rva: sites for rva, sites in addr_sites.items()
+                 if len({n for _u, n in sites}) > 1}
     if dup_addrs:
         for rva, sites in sorted(dup_addrs.items()):
             where = ", ".join(f"{a} ({b})" for a, b in sites)
             log(f"ERROR duplicate RVA 0x{rva:06x}: {where}")
-        log(f"{len(dup_addrs)} duplicate RVA label(s); refusing to write {out}")
+        log(f"{len(dup_addrs)} conflicting RVA label(s); refusing to write {out}")
         return 1
     # RE-PROLIFERATION GUARD (data): a global consolidated into the trusted
     # `globals` unit (src/Globals.cpp, by gruntz.analysis.consolidate_globals) is
@@ -718,20 +723,23 @@ def write_symbol_names(rows, addr_sites, out, misses=None):
         log(f"{len(reprol)} re-proliferated global(s); refusing to write {out}")
         return 1
     rows.sort()
-    # DATA dedup: the same `extern` declared in N TUs emits N rows for one rva.
-    # synth_pdb keys by rva (last wins), so collapse to one data row per rva. If
-    # two declarations give one rva DIFFERENT mangled names, surface the conflict.
-    last_data, data_names, out_rows = {}, {}, []
+    # Per-rva dedup (keep last; rows are sorted -> deterministic).
+    #  DATA: the same `extern` declared in N TUs emits N rows for one rva.
+    #  FUNC: an inline HEADER member emitted as one deduped COMDAT by N includer TUs
+    #        yields N identical rows -> collapse to one. Distinct func names at one
+    #        rva were already rejected above, so this only folds true same-symbol
+    #        duplicates. synth_pdb also keys by rva, so one row per rva is required.
+    last_data, data_names, last_func = {}, {}, {}
     for row in rows:
         if row[4] == "data":
             data_names.setdefault(row[0], set()).add(row[1])
-            last_data[row[0]] = row     # rows are sorted -> keeps the last per rva
+            last_data[row[0]] = row
         else:
-            out_rows.append(row)
+            last_func[row[0]] = row
     for rva, names in sorted(data_names.items()):
         if len(names) > 1:
             log(f"WARN data 0x{rva:06x}: conflicting names {sorted(names)} - kept the last")
-    out_rows.extend(last_data.values())
+    out_rows = list(last_func.values()) + list(last_data.values())
     out_rows.sort()
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)

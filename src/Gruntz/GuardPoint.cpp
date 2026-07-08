@@ -4,18 +4,7 @@
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
 
-// CGuardPoint::GetTypeTag (0x10350) - vtable slot 2: return the class's logic-type
-// id (0x42a). The 6-byte `mov eax,<id>; ret` accessor archetype (cf.
-// CBehindCandy::GetTypeTag). Modeled as a regular method: the fat CUserLogic view
-// in <Gruntz/UserLogic.h> declares this slot as UserBaseVfunc2 with a placeholder
-// signature, and its two later slots (Serialize/FireActivation) take args the base
-// placeholders lack, so the leaf overrides cannot be spelled OVERRIDE without
-// editing that shared base - the leaf vtable is not a diffed symbol, so a plain
-// method reproduces the slot function's bytes exactly.
-RVA(0x00010350, 0x6)
-LogicTypeId CGuardPoint::GetTypeTag() {
-    return LOGIC_GUARDPOINT; // 0x42a
-}
+// CGuardPoint::GetTypeTag (0x00010350) is now an inline member in the class header.
 
 // CGuardPoint::Serialize (0x10370) - vtable slot 1: chain the shared CUserLogic
 // serialize helper on `this`, then (only on success) the +0x34 sub-object's chain,

@@ -10,15 +10,7 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// CWayPoint::GetTypeTag (0x10220) - vtable slot 2: the class's logic-type id
-// (0x420), the 6-byte `mov eax,<id>; ret` accessor archetype. Modeled as a regular
-// method (the fat CUserLogic base slots 1/2 carry placeholder signatures the leaf
-// overrides cannot match without editing that shared base; the leaf vtable is not a
-// diffed symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x00010220, 0x6)
-LogicTypeId CWayPoint::GetTypeTag() {
-    return LOGIC_WAYPOINT; // 0x420
-}
+// CWayPoint::GetTypeTag (0x00010220) is now an inline member in the class header.
 
 // CWayPoint::Serialize (0x10240) - vtable slot 1: chain the shared CUserLogic
 // serialize helper on `this`, then (on success) the +0x34 sub-object's chain,

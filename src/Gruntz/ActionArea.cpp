@@ -33,14 +33,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_stateFlags |= 1;
 }
 
-// CActionArea::GetTypeTag (0x7f80) - vtable slot 2: the class's logic-type id
-// (0x423), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
-// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x00007f80, 0x6)
-LogicTypeId CActionArea::GetTypeTag() {
-    return LOGIC_ACTIONAREA; // 0x423
-}
+// CActionArea::GetTypeTag (0x00007f80) is now an inline member in the class header.
 
 // CActionArea::~CActionArea (0x7fd0) - the leaf adds no destructible members beyond
 // CUserLogic (its own +0x54.. state is plain ints), so its dtor folds the bare

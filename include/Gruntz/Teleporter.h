@@ -82,7 +82,10 @@ public:
     i32 Update();
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    LogicTypeId GetTypeTag();        // 0x10d80
+    // 0x00010d80 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00010d80, 0x6)
+    LogicTypeId GetTypeTag() { return LOGIC_TELEPORTER; }
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId

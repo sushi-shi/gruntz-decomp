@@ -25,7 +25,10 @@ public:
     TILE_LOGIC_TAIL
 public:
     CParticlez(CGameObject* obj);              // 0x046ad0 (ctor body in UserLogic.cpp)
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x012cd0 (per-class logic-type id, 0x41c)
+    // 0x00012cd0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00012cd0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_PARTICLEZ; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();       // 0x046cb0 (construct g_partColl over [2000,2010])

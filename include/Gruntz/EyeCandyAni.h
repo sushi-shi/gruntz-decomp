@@ -18,8 +18,10 @@ public:
 public:
     virtual ~CEyeCandyAni() OVERRIDE; // slot 0
     CEyeCandyAni(CGameObject* obj);   // 0xac870
-    virtual LogicTypeId GetTypeTag()
-        OVERRIDE; // 0x00ff00 (vtable slot 2: returns the logic-type id 0x3f4)
+    // 0x0000ff00 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x0000ff00, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_EYECANDYANI; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)

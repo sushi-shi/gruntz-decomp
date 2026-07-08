@@ -36,8 +36,10 @@ public:
     // shared name registry (the same archetype as CSecretLevelTrigger::RegisterActs).
     static void RegisterActs(); // 0x0ad9b0
     i32 AdvanceAnim();          // 0x0adbb0 (re-target bound anim to the draw-delta; ret 0)
-    virtual LogicTypeId GetTypeTag()
-        OVERRIDE; // 0x010030 (vtable slot 2: returns the logic-type id 0x3f3)
+    // 0x00010030 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00010030, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_BEHINDCANDYANI; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)

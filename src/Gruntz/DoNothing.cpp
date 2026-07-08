@@ -123,14 +123,7 @@ inline DnnRec::DnnRec(Owner* owner) : CUserLogicOOL(owner) {
     m_38->m_08 |= 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDoNothing::GetTypeTag @0x00f6b0 - return the class's logic-type id. The same
-// 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
-// GetTypeTag (0x011730).
-RVA(0x0000f6b0, 0x6)
-LogicTypeId CDoNothing::GetTypeTag() {
-    return LOGIC_DONOTHING; // 0x3ec
-}
+// CDoNothing::GetTypeTag (0x0000f6b0) is now an inline member in the class header.
 
 // CDoNothing::~CDoNothing @0x00f770 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the CUserLogic

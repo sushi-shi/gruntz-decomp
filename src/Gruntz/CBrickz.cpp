@@ -42,14 +42,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
-// CBrickz::GetTypeTag @0x011300 - vtable slot 2: the class's logic-type id (0x409),
-// the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the fat
-// CUserLogic base slots 1/2 carry placeholder signatures the leaf overrides cannot
-// match without editing that shared base; the leaf vtable is not a diffed symbol).
-RVA(0x00011300, 0x6)
-LogicTypeId CBrickz::GetTypeTag() {
-    return LOGIC_BRICKZ; // 0x409
-}
+// CBrickz::GetTypeTag (0x00011300) is now an inline member in the class header.
 
 // CBrickz::Serialize @0x011320 - vtable slot 1: chain the shared CUserLogic
 // serialize helper on `this`, then (on success) the +0x34 sub-object's chain,

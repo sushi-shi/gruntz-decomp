@@ -26,7 +26,10 @@ public:
     TILE_LOGIC_TAIL
 public:
     CExitTrigger(CGameObject* obj);            // 0x03ecf0 (1-arg leaf ctor)
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x010870 (returns the class logic-type id 0x3f7)
+    // 0x00010870 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00010870, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_EXITTRIGGER; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)

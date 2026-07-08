@@ -30,7 +30,10 @@ public:
     CToobSpikez(CGameObject* obj); // 0x1145c0 (ctor body in UserLogic.cpp)
     // The class's own CUserLogic slot overrides, reconstructed as regular methods
     // (the fat base models slots 1/2 with placeholder signatures; see the .cpp).
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // 0x012ba0 (vtable slot 2: per-class logic-type id)
+    // 0x00012ba0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x00012ba0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TOOBSPIKEZ; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x012bc0 (vtable slot 1: serialize chain)

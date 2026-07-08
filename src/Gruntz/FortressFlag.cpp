@@ -66,14 +66,7 @@ struct WwdRefSlot {
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
-// CFortressFlag::GetTypeTag @0x010e40 - vtable slot 2: the class's logic-type id
-// (0x427), the 6-byte `mov eax,<id>; ret` accessor archetype. Regular method (the
-// fat CUserLogic base slot 2 carries a placeholder signature; the leaf vtable is
-// not a diffed symbol, so a plain method reproduces the slot bytes exactly).
-RVA(0x00010e40, 0x6)
-LogicTypeId CFortressFlag::GetTypeTag() {
-    return LOGIC_FORTRESSFLAG; // 0x427
-}
+// CFortressFlag::GetTypeTag (0x00010e40) is now an inline member in the class header.
 
 // CFortressFlag::~CFortressFlag @0x010e90 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

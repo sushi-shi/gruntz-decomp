@@ -111,7 +111,10 @@ public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    // 0x000132f0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x000132f0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_PATHHAZARD; }
     // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
     // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).

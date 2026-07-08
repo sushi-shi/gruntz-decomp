@@ -28,7 +28,10 @@ public:
     TILE_LOGIC_TAIL
 public:
     CDoNothing(CGameObject* obj);                                      // 0xac1d0
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // 0x00f6b0 slot 2
+    // 0x0000f6b0 vtable slot 2: per-class logic-type id, inline (one
+    // deduped COMDAT copy in retail; see docs on header-inline members).
+    RVA(0x0000f6b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_DONOTHING; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x2b26)
     virtual ~CDoNothing() OVERRIDE; // 0x00f770 (folds the CUserLogic teardown)
 };

@@ -11,13 +11,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
 
-// CEyeCandy::GetTypeTag @0x00fca0 - return the class's logic-type id. The same
-// 6-byte `mov eax,<id>; ret` virtual archetype as CTileTriggerTransition::
-// GetTypeTag (0x011730).
-RVA(0x0000fca0, 0x6)
-LogicTypeId CEyeCandy::GetTypeTag() {
-    return LOGIC_EYECANDY; // 0x3f1
-}
+// CEyeCandy::GetTypeTag (0x0000fca0) is now an inline member in the class header.
 
 // CEyeCandy::Serialize @0x00fcc0 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 sub-object's
