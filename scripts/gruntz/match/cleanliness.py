@@ -91,6 +91,19 @@ METRICS = (
 )
 
 
+# The stub backlog (src/Stub/ TUs) and their *Views.h view-scaffolding are reconstruction
+# machinery, NOT main-tree code - their fake-view/placeholder shells are EXPECTED, so they
+# don't count toward the VIEW metrics below. A view only counts once a matcher HOMES it into
+# a real main-tree TU, where it must become a proper class (the ratchet: the main-tree view
+# count can only go down). Non-view metrics (casts, m_<hex>, ...) still count everywhere.
+_VIEW_METRICS = {"placeholder classes", "placeholder vtable slots", "*Vtbl structs",
+                 "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members"}
+
+
+def _is_scaffolding(path) -> bool:
+    return "/Stub/" in path.as_posix() or path.name.endswith("Views.h")
+
+
 def count() -> list[tuple[str, int]]:
     totals = {label: 0 for label, _, _ in METRICS}
     for root in ROOTS:
@@ -101,12 +114,15 @@ def count() -> list[tuple[str, int]]:
             if path.suffix not in EXTS or not path.is_file():
                 continue
             is_cpp = path.suffix in _CPP
+            scaffold = _is_scaffolding(path)   # stub/Views: excluded from the VIEW metrics
             try:
                 code = _strip(path.read_text(errors="ignore"))
             except OSError:
                 continue
             for label, matcher, cpp_only in METRICS:
                 if cpp_only and not is_cpp:
+                    continue
+                if scaffold and label in _VIEW_METRICS:
                     continue
                 totals[label] += matcher(code) if callable(matcher) else len(matcher.findall(code))
     return [(label, totals[label]) for label, _, _ in METRICS]
