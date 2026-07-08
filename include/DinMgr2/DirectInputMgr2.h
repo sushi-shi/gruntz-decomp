@@ -59,6 +59,7 @@ typedef CInputDevice CDeviceConfigA;
 // thiscall). Elements are the polymorphic device bases.
 // ---------------------------------------------------------------------------
 SIZE(CDevicePtrArray, 0x14); // MFC CPtrArray layout (vptr + 4 dwords)
+RELOC_VTBL(CDevicePtrArray, 0x001ec2dc); // IS MFC CPtrArray (non-CObject CInputDevBase* elems; array-family FID labels, 0x14 size)
 struct CDevicePtrArray {
     virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
     void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
@@ -96,6 +97,7 @@ struct CDeviceListNode {
 // reloc-masked thiscall.
 // ---------------------------------------------------------------------------
 SIZE(CDeviceList, 0x18); // MFC CObList layout (vptr + head/tail + count/free/block)
+RELOC_VTBL(CDeviceList, 0x001ed4b4); // IS MFC CObList (Add=CObList::AddTail@0x1b4991, FID-verified)
 struct CDeviceList {
     virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
     void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)
