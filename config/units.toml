@@ -790,7 +790,7 @@ flags = "base"
 # (0x2b340/0x8c380/0x115b30/0x118930/0x1192d0/0x137e30/0x1380d0/0x161e80/
 # 0x1bf577/0x1c09de), re-homed from ApiCallers. No destructible locals -> /base.
 unit = "apimischelpers"
-source = "src/Gruntz/ApiMiscHelpers.cpp"
+source = "src/Stub/ApiMiscHelpers.cpp"
 flags = "base"
 
 [[unit]]
@@ -1917,62 +1917,62 @@ flags = "eh"
 
 [[unit]]
 unit = "boundaryleaflogic"
-source = "src/Gruntz/BoundaryLeafLogic.cpp"
+source = "src/Stub/BoundaryLeafLogic.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "boundarymisc"
-source = "src/Gruntz/BoundaryMisc.cpp"
+source = "src/Stub/BoundaryMisc.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundarythunks"
-source = "src/Gruntz/BoundaryThunks.cpp"
+source = "src/Stub/BoundaryThunks.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundaryupper"
-source = "src/Gruntz/BoundaryUpper.cpp"
+source = "src/Stub/BoundaryUpper.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundaryuppereh"
-source = "src/Gruntz/BoundaryUpperEh.cpp"
+source = "src/Stub/BoundaryUpperEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "boundarylowerthunks"
-source = "src/Gruntz/BoundaryLowerThunks.cpp"
+source = "src/Stub/BoundaryLowerThunks.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundarylowermethods"
-source = "src/Gruntz/BoundaryLowerMethods.cpp"
+source = "src/Stub/BoundaryLowerMethods.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundarylowerdtors"
-source = "src/Gruntz/BoundaryLowerDtors.cpp"
+source = "src/Stub/BoundaryLowerDtors.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "boundaryupper2"
-source = "src/Gruntz/BoundaryUpper2.cpp"
+source = "src/Stub/BoundaryUpper2.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundaryupper2eh"
-source = "src/Gruntz/BoundaryUpper2Eh.cpp"
+source = "src/Stub/BoundaryUpper2Eh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "boundarytail"
-source = "src/Gruntz/BoundaryTail.cpp"
+source = "src/Stub/BoundaryTail.cpp"
 flags = "base"
 
 [[unit]]
 unit = "boundarytaileh"
-source = "src/Gruntz/BoundaryTailEh.cpp"
+source = "src/Stub/BoundaryTailEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2295,7 +2295,7 @@ source = "src/Gruntz/GlyphTable.cpp"
 flags = "base"
 [[unit]]
 unit = "cluster0c"
-source = "src/Gruntz/Cluster0c.cpp"
+source = "src/Stub/Cluster0c.cpp"
 flags = "base"
 [[unit]]
 unit = "apphelpers"
@@ -2353,12 +2353,12 @@ flags = "eh"
 
 [[unit]]
 unit = "reconbatch2"
-source = "src/Gruntz/ReconBatch2.cpp"
+source = "src/Stub/ReconBatch2.cpp"
 flags = "base"
 
 [[unit]]
 unit = "reconbatch2o1"
-source = "src/Gruntz/ReconBatch2O1.cpp"
+source = "src/Stub/ReconBatch2O1.cpp"
 flags = "o1"
 
 
@@ -2550,14 +2550,14 @@ flags = "eh"
 
 [[unit]]
 unit = "apihicallers"
-source = "src/Gruntz/ApiHiCallers.cpp"
+source = "src/Stub/ApiHiCallers.cpp"
 flags = "base"
 
 [[unit]]
 # matcher-4: game API-wrapper helpers re-homed from src/Stub/ApiCallers.cpp
 # (low-RVA half). base+/GX mirrors the original stub-unit environment.
 unit = "apiwrappers"
-source = "src/Gruntz/ApiWrappers.cpp"
+source = "src/Stub/ApiWrappers.cpp"
 flags = "eh"
 
 [[unit]]
