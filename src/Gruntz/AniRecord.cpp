@@ -109,17 +109,6 @@ struct CAniMapOwner {
 // directly). Left on this fabricated grand-base pending CWapObj modeling; do NOT flatten
 // to `: public CObject` (that would steal CWapObj's slots 5/6). Only CAniRecordPrimary
 // (pure 5-slot, no CWapObj) was re-based to the real CObject.
-struct CAniRecordObjBase {
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared GetRuntimeClass thunk)
-    virtual ~CAniRecordObjBase();   // [1] scalar-deleting dtor
-    virtual void Serialize();       // [2] 0x0028ec
-    virtual void AssertValid();     // [3] 0x00106e
-    virtual void Dump();            // [4] 0x004034
-
-    i32 m_04, m_08, m_0c; // +0x04..+0x0f (CObject header)
-};
-// Empty body => folds as JUST the grand-base re-stamp at the derived dtor's tail.
-inline CAniRecordObjBase::~CAniRecordObjBase() {}
 
 // ---------------------------------------------------------------------------
 // 0x165dd0: the SECONDARY base (CAniRecordBase2 @0x5f02d8, 14 slots) destructor.
@@ -362,6 +351,5 @@ SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPool);
 
-SIZE_UNKNOWN(CAniRecordObjBase);
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 VTBL(CAniRecordView, 0x001f02c0);  // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
