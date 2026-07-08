@@ -1156,740 +1156,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/BoundaryLowerMethods.cpp",
-   "n": 28,
-   "bytes": 1928,
-   "main_lo": 1125360,
-   "main_hi": 1147587,
-   "main_n": 7,
-   "main_share": 0.25,
-   "clusters": 16,
-   "conflated": true,
-   "cluster_list": [
-    {
-     "lo": 136096,
-     "hi": 136106,
-     "n": 1
-    },
-    {
-     "lo": 287968,
-     "hi": 288084,
-     "n": 1
-    },
-    {
-     "lo": 330912,
-     "hi": 330955,
-     "n": 1
-    },
-    {
-     "lo": 490944,
-     "hi": 490973,
-     "n": 1
-    },
-    {
-     "lo": 583808,
-     "hi": 595551,
-     "n": 3
-    },
-    {
-     "lo": 641712,
-     "hi": 641747,
-     "n": 1
-    },
-    {
-     "lo": 740416,
-     "hi": 740491,
-     "n": 1
-    },
-    {
-     "lo": 775248,
-     "hi": 775270,
-     "n": 1
-    },
-    {
-     "lo": 847696,
-     "hi": 847766,
-     "n": 1
-    },
-    {
-     "lo": 876064,
-     "hi": 876091,
-     "n": 1
-    },
-    {
-     "lo": 897536,
-     "hi": 899008,
-     "n": 3
-    },
-    {
-     "lo": 958832,
-     "hi": 965090,
-     "n": 2
-    },
-    {
-     "lo": 1024336,
-     "hi": 1024452,
-     "n": 1
-    },
-    {
-     "lo": 1068160,
-     "hi": 1068603,
-     "n": 2
-    },
-    {
-     "lo": 1096672,
-     "hi": 1096724,
-     "n": 1
-    },
-    {
-     "lo": 1125360,
-     "hi": 1147587,
-     "n": 7
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 136096,
-     "name": "?Get@C213a0@@QAEHXZ",
-     "dist": 989254,
-     "cluster_n": 1,
-     "home": "src/Gruntz/FontConfig.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 287968,
-     "name": "?Resolve@CTypeColl464@@QAEPAXH@Z",
-     "dist": 837276,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Grunt.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 330912,
-     "name": "?M@C50ca0@@QAEXH@Z",
-     "dist": 794405,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Grunt.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 490944,
-     "name": "?Set@C77dc0@@QAEXHHH@Z",
-     "dist": 634387,
-     "cluster_n": 1,
-     "home": "src/Gruntz/TriggerMgr.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 583808,
-     "name": "?RegisterSetSkillDebugCmd@CGruntzMgr@@QAEHXZ",
-     "dist": 529809,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 85
-    },
-    {
-     "rva": 595408,
-     "name": "?MuteMusicIfActive@CGruntzMgr@@QAEXH@Z",
-     "dist": 529809,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 85
-    },
-    {
-     "rva": 595488,
-     "name": "?RestoreMusicVolumeIfActive@CGruntzMgr@@QAEXH@Z",
-     "dist": 529809,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 85
-    },
-    {
-     "rva": 641712,
-     "name": "?M@C9cab0@@QAEHH@Z",
-     "dist": 483613,
-     "cluster_n": 1,
-     "home": "src/Gruntz/SpriteLoaders.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 740416,
-     "name": "?Handle@C0b4c40@@QAEHHHHH@Z",
-     "dist": 384869,
-     "cluster_n": 1,
-     "home": "src/Gruntz/PathHazard.cpp",
-     "home_n": 6
-    },
-    {
-     "rva": 775248,
-     "name": "?Init@Cbd450@@QAEXXZ",
-     "dist": 350090,
-     "cluster_n": 1,
-     "home": "src/Net/NetMgr.cpp",
-     "home_n": 17
-    },
-    {
-     "rva": 847696,
-     "name": "?M@Ccef50@@QAEHXZ",
-     "dist": 277594,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 13
-    },
-    {
-     "rva": 876064,
-     "name": "?M@Cd5e20@@QAEXPAX@Z",
-     "dist": 249269,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 897536,
-     "name": "?M@Cdb200@@QAEHPAX@Z",
-     "dist": 226352,
-     "cluster_n": 3,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 897776,
-     "name": "?M@Cdb2f0@@QAEHXZ",
-     "dist": 226352,
-     "cluster_n": 3,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 898896,
-     "name": "?M@Cdb750@@QAEHPAX@Z",
-     "dist": 226352,
-     "cluster_n": 3,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 958832,
-     "name": "?M@Cea170@@QAEXHH@Z",
-     "dist": 160270,
-     "cluster_n": 2,
-     "home": "src/Gruntz/SBI_MenuItem.cpp",
-     "home_n": 7
-    },
-    {
-     "rva": 964976,
-     "name": "?Serialize@Ceb970@@QAEHPAUCSerialArchive@@HHH@Z",
-     "dist": 160270,
-     "cluster_n": 2,
-     "home": "src/Gruntz/SBI_MenuItem.cpp",
-     "home_n": 7
-    },
-    {
-     "rva": 1024336,
-     "name": "?Cleanup@Cfa150@@QAEXXZ",
-     "dist": 100908,
-     "cluster_n": 1,
-     "home": "src/Gruntz/SoundFxEmitter.cpp",
-     "home_n": 5
-    },
-    {
-     "rva": 1068160,
-     "name": "?Free@C104c80@@QAEXXZ",
-     "dist": 56757,
-     "cluster_n": 2,
-     "home": "src/Gruntz/SBI_RectOnly.cpp",
-     "home_n": 26
-    },
-    {
-     "rva": 1068496,
-     "name": "?Create@C104dd0@@QAEHXZ",
-     "dist": 56757,
-     "cluster_n": 2,
-     "home": "src/Gruntz/SBI_RectOnly.cpp",
-     "home_n": 26
-    },
-    {
-     "rva": 1096672,
-     "name": "?M@C10bbe0@@QAEHXZ",
-     "dist": 28636,
-     "cluster_n": 1,
-     "home": "src/Gruntz/SBI_RectOnly.cpp",
-     "home_n": 8
-    }
-   ],
-   "rvas": [
-    136096,
-    287968,
-    330912,
-    490944,
-    583808,
-    595408,
-    595488,
-    641712,
-    740416,
-    775248,
-    847696,
-    876064,
-    897536,
-    897776,
-    898896,
-    958832,
-    964976,
-    1024336,
-    1068160,
-    1068496,
-    1096672,
-    1125360,
-    1128544,
-    1130096,
-    1134272,
-    1134336,
-    1147344,
-    1147488
-   ]
-  },
-  {
-   "file": "src/Gruntz/BoundaryUpper2.cpp",
-   "n": 24,
-   "bytes": 1652,
-   "main_lo": 1283824,
-   "main_hi": 1304643,
-   "main_n": 6,
-   "main_share": 0.25,
-   "clusters": 9,
-   "conflated": true,
-   "cluster_list": [
-    {
-     "lo": 1258352,
-     "hi": 1258363,
-     "n": 1
-    },
-    {
-     "lo": 1283824,
-     "hi": 1304643,
-     "n": 6
-    },
-    {
-     "lo": 1323072,
-     "hi": 1325478,
-     "n": 4
-    },
-    {
-     "lo": 1346128,
-     "hi": 1346741,
-     "n": 3
-    },
-    {
-     "lo": 1378752,
-     "hi": 1378923,
-     "n": 1
-    },
-    {
-     "lo": 1405136,
-     "hi": 1405564,
-     "n": 2
-    },
-    {
-     "lo": 1455888,
-     "hi": 1455954,
-     "n": 1
-    },
-    {
-     "lo": 1553680,
-     "hi": 1565244,
-     "n": 5
-    },
-    {
-     "lo": 1592176,
-     "hi": 1592186,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1258352,
-     "name": "?DtorC@DICfgC@@QAEXXZ",
-     "dist": 25461,
-     "cluster_n": 1,
-     "home": "src/DinMgr2/DirectInputMgr2.cpp",
-     "home_n": 37
-    },
-    {
-     "rva": 1323072,
-     "name": "?Create@CDDrawPtrCollections@@QAEPAUCDDPalette@@HH@Z",
-     "dist": 18429,
-     "cluster_n": 4,
-     "home": "src/DDrawMgr/DDrawPtrCollections.cpp",
-     "home_n": 28
-    },
-    {
-     "rva": 1325024,
-     "name": "?RelayHwnd@@YAXP6AHXZ@Z",
-     "dist": 18429,
-     "cluster_n": 4,
-     "home": "src/DDrawMgr/DDrawPtrCollections.cpp",
-     "home_n": 28
-    },
-    {
-     "rva": 1325040,
-     "name": "?RestoreLostSurfaces_1437f0@@YAHXZ",
-     "dist": 18429,
-     "cluster_n": 4,
-     "home": "src/DDrawMgr/DDrawPtrCollections.cpp",
-     "home_n": 28
-    },
-    {
-     "rva": 1325392,
-     "name": "?SetPalette@CPalObj143950@@QAEHPBEH@Z",
-     "dist": 18429,
-     "cluster_n": 4,
-     "home": "src/DDrawMgr/DDrawPtrCollections.cpp",
-     "home_n": 28
-    },
-    {
-     "rva": 1346128,
-     "name": "?Blit7@ImgOwnedY@@QAEHHHHH@Z",
-     "dist": 41485,
-     "cluster_n": 3,
-     "home": "src/DDrawMgr/DirectDrawMgr.cpp",
-     "home_n": 13
-    },
-    {
-     "rva": 1346288,
-     "name": "?Setup@ImgOwnedX@@QAEHHHHH@Z",
-     "dist": 41485,
-     "cluster_n": 3,
-     "home": "src/DDrawMgr/DirectDrawMgr.cpp",
-     "home_n": 13
-    },
-    {
-     "rva": 1346624,
-     "name": "?Blit47@ImgOwnedY@@QAEHHHHHHHH@Z",
-     "dist": 41485,
-     "cluster_n": 3,
-     "home": "src/DDrawMgr/DirectDrawMgr.cpp",
-     "home_n": 13
-    },
-    {
-     "rva": 1378752,
-     "name": "?Test@CWwdGameObject@@QAEHXZ",
-     "dist": 74109,
-     "cluster_n": 1,
-     "home": "src/DDrawMgr/ShadeTableCache.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 1405136,
-     "name": "?Reset@CDDWorkerFlatA@@QAEXXZ",
-     "dist": 100493,
-     "cluster_n": 2,
-     "home": "src/DDrawMgr/DDrawSubMgr.cpp",
-     "home_n": 19
-    },
-    {
-     "rva": 1405504,
-     "name": "?Reset@CDDWorkerFlatB@@QAEXXZ",
-     "dist": 100493,
-     "cluster_n": 2,
-     "home": "src/DDrawMgr/DDrawSubMgr.cpp",
-     "home_n": 19
-    },
-    {
-     "rva": 1455888,
-     "name": "?Dispatch163710@@YGHPAXHHH@Z",
-     "dist": 151245,
-     "cluster_n": 1,
-     "home": "src/Wwd/WwdFile.cpp",
-     "home_n": 11
-    },
-    {
-     "rva": 1553680,
-     "name": "?Init@CPageStore17b510@@QAEHXZ",
-     "dist": 249037,
-     "cluster_n": 5,
-     "home": "src/Font/Font.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 1553776,
-     "name": "?Close@CPageStore17b510@@QAEXXZ",
-     "dist": 249037,
-     "cluster_n": 5,
-     "home": "src/Font/Font.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 1553824,
-     "name": "?Free@CPageStore17b510@@QAEHXZ",
-     "dist": 249037,
-     "cluster_n": 5,
-     "home": "src/Font/Font.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 1554496,
-     "name": "?Lookup@CPageStore17b510@@QAEHI@Z",
-     "dist": 249037,
-     "cluster_n": 5,
-     "home": "src/Font/Font.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 1565232,
-     "name": "?Destroy17e230@@YGXUDBuf17e230@@@Z",
-     "dist": 249037,
-     "cluster_n": 5,
-     "home": "src/Font/Font.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 1592176,
-     "name": "?ClearHash_184b70@@YAXXZ",
-     "dist": 287533,
-     "cluster_n": 1,
-     "home": "src/Gruntz/MenuPage.cpp",
-     "home_n": 30
-    }
-   ],
-   "rvas": [
-    1258352,
-    1283824,
-    1287472,
-    1292560,
-    1292656,
-    1292912,
-    1304528,
-    1323072,
-    1325024,
-    1325040,
-    1325392,
-    1346128,
-    1346288,
-    1346624,
-    1378752,
-    1405136,
-    1405504,
-    1455888,
-    1553680,
-    1553776,
-    1553824,
-    1554496,
-    1565232,
-    1592176
-   ]
-  },
-  {
-   "file": "src/Gruntz/BoundaryLowerThunks.cpp",
-   "n": 21,
-   "bytes": 320,
-   "main_lo": 712160,
-   "main_hi": 742410,
-   "main_n": 5,
-   "main_share": 0.23809523809523808,
-   "clusters": 9,
-   "conflated": true,
-   "cluster_list": [
-    {
-     "lo": 238896,
-     "hi": 240954,
-     "n": 3
-    },
-    {
-     "lo": 375888,
-     "hi": 375909,
-     "n": 1
-    },
-    {
-     "lo": 535200,
-     "hi": 536503,
-     "n": 2
-    },
-    {
-     "lo": 712160,
-     "hi": 742410,
-     "n": 5
-    },
-    {
-     "lo": 775216,
-     "hi": 776186,
-     "n": 2
-    },
-    {
-     "lo": 875888,
-     "hi": 875910,
-     "n": 1
-    },
-    {
-     "lo": 923568,
-     "hi": 939704,
-     "n": 2
-    },
-    {
-     "lo": 1031024,
-     "hi": 1031045,
-     "n": 1
-    },
-    {
-     "lo": 1136432,
-     "hi": 1147676,
-     "n": 4
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 238896,
-     "name": "?RegRange3a530@@YAXXZ",
-     "dist": 471206,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GameMode.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 240816,
-     "name": "?StrFree3acb0@@YAXXZ",
-     "dist": 471206,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GameMode.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 240944,
-     "name": "?StrFree3ad30@@YAXXZ",
-     "dist": 471206,
-     "cluster_n": 3,
-     "home": "src/Gruntz/GameMode.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 375888,
-     "name": "?RegRange5bc50@@YAXXZ",
-     "dist": 336251,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Grunt.cpp",
-     "home_n": 4
-    },
-    {
-     "rva": 535200,
-     "name": "?Register82aa0@@YAXXZ",
-     "dist": 175657,
-     "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 536480,
-     "name": "?ResetCoordPool82fa0@@YAXXZ",
-     "dist": 175657,
-     "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 775216,
-     "name": "?Forwardbd430@@YAXXZ",
-     "dist": 32806,
-     "cluster_n": 2,
-     "home": "src/Net/NetMgr.cpp",
-     "home_n": 17
-    },
-    {
-     "rva": 776176,
-     "name": "?StrFreebd7f0@@YAXXZ",
-     "dist": 32806,
-     "cluster_n": 2,
-     "home": "src/Net/NetMgr.cpp",
-     "home_n": 17
-    },
-    {
-     "rva": 875888,
-     "name": "?Init@CInitd5d70@@QAEXXZ",
-     "dist": 133478,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 923568,
-     "name": "?RegRangee17b0@@YAXXZ",
-     "dist": 181158,
-     "cluster_n": 2,
-     "home": "src/Io/SaveGame.cpp",
-     "home_n": 23
-    },
-    {
-     "rva": 939696,
-     "name": "?Set@CSettere56b0@@QAEXXZ",
-     "dist": 181158,
-     "cluster_n": 2,
-     "home": "src/Io/SaveGame.cpp",
-     "home_n": 23
-    },
-    {
-     "rva": 1031024,
-     "name": "?RegRangefbb70@@YAXXZ",
-     "dist": 288614,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BattlezData.cpp",
-     "home_n": 30
-    },
-    {
-     "rva": 1136432,
-     "name": "?FontForward115730@@YAXXZ",
-     "dist": 394022,
-     "cluster_n": 4,
-     "home": "src/Gruntz/TileTriggerContainer.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1136560,
-     "name": "?FontForward1157b0@@YAXXZ",
-     "dist": 394022,
-     "cluster_n": 4,
-     "home": "src/Gruntz/TileTriggerContainer.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1147632,
-     "name": "?IsOne@CPred1182f0@@QAEHXZ",
-     "dist": 394022,
-     "cluster_n": 4,
-     "home": "src/Gruntz/TileTriggerContainer.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1147664,
-     "name": "?NotNull118310@@YAHPAX@Z",
-     "dist": 394022,
-     "cluster_n": 4,
-     "home": "src/Gruntz/TileTriggerContainer.cpp",
-     "home_n": 14
-    }
-   ],
-   "rvas": [
-    238896,
-    240816,
-    240944,
-    375888,
-    535200,
-    536480,
-    712160,
-    726448,
-    735968,
-    742272,
-    742400,
-    775216,
-    776176,
-    875888,
-    923568,
-    939696,
-    1031024,
-    1136432,
-    1136560,
-    1147632,
-    1147664
-   ]
-  },
-  {
    "file": "src/Image/Image.cpp",
    "n": 39,
    "bytes": 9899,
@@ -2328,8 +1594,8 @@
      "name": "?LookupTile@CGameLevel@@QAEHHH@Z",
      "dist": 894557,
      "cluster_n": 1,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
      "rva": 847344,
@@ -2487,185 +1753,6 @@
     1472064,
     1472560,
     1474208
-   ]
-  },
-  {
-   "file": "src/Gruntz/ReconBatch2.cpp",
-   "n": 18,
-   "bytes": 940,
-   "main_lo": 780320,
-   "main_hi": 805711,
-   "main_n": 5,
-   "main_share": 0.2777777777777778,
-   "clusters": 8,
-   "conflated": true,
-   "cluster_list": [
-    {
-     "lo": 780320,
-     "hi": 805711,
-     "n": 5
-    },
-    {
-     "lo": 909632,
-     "hi": 909683,
-     "n": 1
-    },
-    {
-     "lo": 1019584,
-     "hi": 1028059,
-     "n": 4
-    },
-    {
-     "lo": 1115376,
-     "hi": 1136186,
-     "n": 3
-    },
-    {
-     "lo": 1504992,
-     "hi": 1505110,
-     "n": 1
-    },
-    {
-     "lo": 1578592,
-     "hi": 1578684,
-     "n": 2
-    },
-    {
-     "lo": 1651520,
-     "hi": 1651617,
-     "n": 1
-    },
-    {
-     "lo": 1809293,
-     "hi": 1809299,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 909632,
-     "name": "?ResetPreview@CGameModeBase@@QAEXXZ",
-     "dist": 103921,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 6
-    },
-    {
-     "rva": 1019584,
-     "name": "?SfDeviceInitKeys@@YAHXZ",
-     "dist": 213873,
-     "cluster_n": 4,
-     "home": "src/Gruntz/BattlezData.cpp",
-     "home_n": 18
-    },
-    {
-     "rva": 1022016,
-     "name": "?Reset@CGameModeBase@@QAEXXZ",
-     "dist": 213873,
-     "cluster_n": 4,
-     "home": "src/Gruntz/BattlezData.cpp",
-     "home_n": 18
-    },
-    {
-     "rva": 1027776,
-     "name": "?Present@PresentHost_faec0@@QAEXH@Z",
-     "dist": 213873,
-     "cluster_n": 4,
-     "home": "src/Gruntz/BattlezData.cpp",
-     "home_n": 18
-    },
-    {
-     "rva": 1028000,
-     "name": "?Validate_fafa0@@YGHHHHH@Z",
-     "dist": 213873,
-     "cluster_n": 4,
-     "home": "src/Gruntz/BattlezData.cpp",
-     "home_n": 18
-    },
-    {
-     "rva": 1115376,
-     "name": "?Init@Init8_1104f0@@QAEHHHHHHHHH@Z",
-     "dist": 309665,
-     "cluster_n": 3,
-     "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1124416,
-     "name": "?Probe_112840@@YAHXZ",
-     "dist": 309665,
-     "cluster_n": 3,
-     "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1136176,
-     "name": "?Forward_115630@@YAXXZ",
-     "dist": 309665,
-     "cluster_n": 3,
-     "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1504992,
-     "name": "?Copy_16f6e0@@YGXPAUSrc_16f6e0@@PAUDst_16f6e0@@@Z",
-     "dist": 699281,
-     "cluster_n": 1,
-     "home": "src/Bute/ButeMgr.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 1578592,
-     "name": "?AddItem@Worker181x_181x@@QAEXXZ",
-     "dist": 772881,
-     "cluster_n": 2,
-     "home": "src/Gruntz/ChatBox.cpp",
-     "home_n": 26
-    },
-    {
-     "rva": 1578656,
-     "name": "?DropItem@Worker181x_181x@@QAEXXZ",
-     "dist": 772881,
-     "cluster_n": 2,
-     "home": "src/Gruntz/ChatBox.cpp",
-     "home_n": 26
-    },
-    {
-     "rva": 1651520,
-     "name": "?Walk@Tree_193340@@QAEXP6AXHHH@ZHPAUTNode_193340@@@Z",
-     "dist": 845809,
-     "cluster_n": 1,
-     "home": "src/Wwd/WwdGrid.cpp",
-     "home_n": 6
-    },
-    {
-     "rva": 1809293,
-     "name": "?Get_1b9b8d@@YAPAPAXXZ",
-     "dist": 1003582,
-     "cluster_n": 1,
-     "home": "src/Rez/RezUtil.cpp",
-     "home_n": 1
-    }
-   ],
-   "rvas": [
-    780320,
-    783744,
-    787552,
-    797312,
-    805680,
-    909632,
-    1019584,
-    1022016,
-    1027776,
-    1028000,
-    1115376,
-    1124416,
-    1136176,
-    1504992,
-    1578592,
-    1578656,
-    1651520,
-    1809293
    ]
   },
   {
@@ -3012,32 +2099,32 @@
      "name": "??0CGruntzMgr@@QAE@XZ",
      "dist": 29691,
      "cluster_n": 4,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 10
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 2
     },
     {
      "rva": 546272,
      "name": "?Close@CGruntzMgr@@UAEXXZ",
      "dist": 29691,
      "cluster_n": 4,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 10
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 2
     },
     {
      "rva": 549040,
      "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
      "dist": 29691,
      "cluster_n": 4,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 10
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 2
     },
     {
      "rva": 549344,
      "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
      "dist": 29691,
      "cluster_n": 4,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 10
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 2
     },
     {
      "rva": 1041504,
@@ -3159,107 +2246,6 @@
     1041504,
     1041920,
     1121984
-   ]
-  },
-  {
-   "file": "src/Gruntz/BoundaryMisc.cpp",
-   "n": 11,
-   "bytes": 428,
-   "main_lo": 129136,
-   "main_hi": 150240,
-   "main_n": 5,
-   "main_share": 0.45454545454545453,
-   "clusters": 5,
-   "conflated": true,
-   "cluster_list": [
-    {
-     "lo": 35728,
-     "hi": 53877,
-     "n": 3
-    },
-    {
-     "lo": 99376,
-     "hi": 99389,
-     "n": 1
-    },
-    {
-     "lo": 129136,
-     "hi": 150240,
-     "n": 5
-    },
-    {
-     "lo": 170736,
-     "hi": 170795,
-     "n": 1
-    },
-    {
-     "lo": 227440,
-     "hi": 227500,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 35728,
-     "name": "?Finalize@CFinalize8b90@@QAEXH@Z",
-     "dist": 75259,
-     "cluster_n": 3,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 44880,
-     "name": "?ResetDat6295d8@@YAXXZ",
-     "dist": 75259,
-     "cluster_n": 3,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 53776,
-     "name": "?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z",
-     "dist": 75259,
-     "cluster_n": 3,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 99376,
-     "name": "?EndWaitCursor18430@@YAXXZ",
-     "dist": 29747,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 11
-    },
-    {
-     "rva": 170736,
-     "name": "?TileSwitch29af0@@YGXHHHHHH@Z",
-     "dist": 20496,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 227440,
-     "name": "?DialogInit37870@@YAXPAX@Z",
-     "dist": 77200,
-     "cluster_n": 1,
-     "home": "src/Gruntz/MenuState.cpp",
-     "home_n": 8
-    }
-   ],
-   "rvas": [
-    35728,
-    44880,
-    53776,
-    99376,
-    129136,
-    135840,
-    145616,
-    145760,
-    150208,
-    170736,
-    227440
    ]
   },
   {
@@ -4294,152 +3280,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/BoundaryUpper.cpp",
-   "n": 30,
-   "bytes": 1363,
-   "main_lo": 1262432,
-   "main_hi": 1346776,
-   "main_n": 22,
-   "main_share": 0.7333333333333333,
-   "clusters": 7,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 1262432,
-     "hi": 1346776,
-     "n": 22
-    },
-    {
-     "lo": 1383712,
-     "hi": 1384107,
-     "n": 2
-    },
-    {
-     "lo": 1447088,
-     "hi": 1447116,
-     "n": 1
-    },
-    {
-     "lo": 1468432,
-     "hi": 1468482,
-     "n": 1
-    },
-    {
-     "lo": 1490528,
-     "hi": 1490570,
-     "n": 1
-    },
-    {
-     "lo": 1571904,
-     "hi": 1571921,
-     "n": 1
-    },
-    {
-     "lo": 1591200,
-     "hi": 1593285,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1383712,
-     "name": "?Notify@B_151d20@@QAEHPAX@Z",
-     "dist": 36936,
-     "cluster_n": 2,
-     "home": "src/Image/CImage.cpp",
-     "home_n": 10
-    },
-    {
-     "rva": 1384048,
-     "name": "?Clear@B_151e70@@QAEXXZ",
-     "dist": 36936,
-     "cluster_n": 2,
-     "home": "src/Image/CImage.cpp",
-     "home_n": 10
-    },
-    {
-     "rva": 1447088,
-     "name": "?Release@B_1614b0@@QAEXXZ",
-     "dist": 100312,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GameLevel.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 1468432,
-     "name": "?Clear@B_166810@@QAEXXZ",
-     "dist": 121656,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GameLevel.cpp",
-     "home_n": 10
-    },
-    {
-     "rva": 1490528,
-     "name": "?Append@C16be60@@QAEPAU1@H@Z",
-     "dist": 143752,
-     "cluster_n": 1,
-     "home": "src/Gruntz/TypeKeyColl.cpp",
-     "home_n": 4
-    },
-    {
-     "rva": 1571904,
-     "name": "?Free@B_17fc40@@QAEXXZ",
-     "dist": 225128,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Fader.cpp",
-     "home_n": 16
-    },
-    {
-     "rva": 1591200,
-     "name": "?Set@B_1847a0@@QAEXH@Z",
-     "dist": 244424,
-     "cluster_n": 2,
-     "home": "src/Gruntz/MenuPage.cpp",
-     "home_n": 30
-    },
-    {
-     "rva": 1593264,
-     "name": "?Fwd_184fb0@@YAXHH@Z",
-     "dist": 244424,
-     "cluster_n": 2,
-     "home": "src/Gruntz/MenuPage.cpp",
-     "home_n": 30
-    }
-   ],
-   "rvas": [
-    1262432,
-    1263312,
-    1274624,
-    1281824,
-    1296544,
-    1296624,
-    1302208,
-    1302240,
-    1302640,
-    1302688,
-    1306160,
-    1315760,
-    1315776,
-    1318016,
-    1323984,
-    1324144,
-    1324224,
-    1324304,
-    1324432,
-    1334784,
-    1346384,
-    1346752,
-    1383712,
-    1384048,
-    1447088,
-    1468432,
-    1490528,
-    1571904,
-    1591200,
-    1593264
-   ]
-  },
-  {
    "file": "src/Gruntz/DiscoveredSmall.cpp",
    "n": 10,
    "bytes": 318,
@@ -4555,240 +3395,6 @@
     1421936,
     1422000,
     1500288
-   ]
-  },
-  {
-   "file": "src/Gruntz/BoundaryTail.cpp",
-   "n": 8,
-   "bytes": 722,
-   "main_lo": 1302320,
-   "main_hi": 1302495,
-   "main_n": 1,
-   "main_share": 0.125,
-   "clusters": 8,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 48592,
-     "hi": 48675,
-     "n": 1
-    },
-    {
-     "lo": 146832,
-     "hi": 146932,
-     "n": 1
-    },
-    {
-     "lo": 229664,
-     "hi": 229693,
-     "n": 1
-    },
-    {
-     "lo": 493776,
-     "hi": 493876,
-     "n": 1
-    },
-    {
-     "lo": 546048,
-     "hi": 546083,
-     "n": 1
-    },
-    {
-     "lo": 1147696,
-     "hi": 1147783,
-     "n": 1
-    },
-    {
-     "lo": 1302320,
-     "hi": 1302495,
-     "n": 1
-    },
-    {
-     "lo": 1535264,
-     "hi": 1535377,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 48592,
-     "name": "?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH@Z",
-     "dist": 1253645,
-     "cluster_n": 1,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 146832,
-     "name": "?Blit@CObj23d90@@QAEXHHHHH@Z",
-     "dist": 1155388,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzCommand.cpp",
-     "home_n": 16
-    },
-    {
-     "rva": 229664,
-     "name": "?GetName@Obj38120@@QAE?AVCString@@XZ",
-     "dist": 1072627,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GameMode.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 493776,
-     "name": "?PositionUpdate@CSnd788d0@@QAEHXZ",
-     "dist": 808444,
-     "cluster_n": 1,
-     "home": "src/Gruntz/TriggerMgr.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 546048,
-     "name": "?GetName@Obj85500@@QAE?AVCString@@XZ",
-     "dist": 756237,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 3
-    },
-    {
-     "rva": 1147696,
-     "name": "?BuildRecord118330@@YAHPAUOut118330@@@Z",
-     "dist": 154537,
-     "cluster_n": 1,
-     "home": "src/Gruntz/TileTriggerContainer.cpp",
-     "home_n": 13
-    },
-    {
-     "rva": 1535264,
-     "name": "?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z",
-     "dist": 232769,
-     "cluster_n": 1,
-     "home": "src/Image/ImagePool.cpp",
-     "home_n": 26
-    }
-   ],
-   "rvas": [
-    48592,
-    146832,
-    229664,
-    493776,
-    546048,
-    1147696,
-    1302320,
-    1535264
-   ]
-  },
-  {
-   "file": "src/Gruntz/ApiMiscHelpers.cpp",
-   "n": 10,
-   "bytes": 678,
-   "main_lo": 1137456,
-   "main_hi": 1151753,
-   "main_n": 3,
-   "main_share": 0.3,
-   "clusters": 6,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 176960,
-     "hi": 177130,
-     "n": 1
-    },
-    {
-     "lo": 574336,
-     "hi": 574366,
-     "n": 1
-    },
-    {
-     "lo": 1137456,
-     "hi": 1151753,
-     "n": 3
-    },
-    {
-     "lo": 1277488,
-     "hi": 1278238,
-     "n": 2
-    },
-    {
-     "lo": 1449600,
-     "hi": 1449721,
-     "n": 1
-    },
-    {
-     "lo": 1832311,
-     "hi": 1837548,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 176960,
-     "name": "?Clip@ClipHost_02b340@ApiMisc@@QAEXPBUtagRECT@@@Z",
-     "dist": 960326,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 12
-    },
-    {
-     "rva": 574336,
-     "name": "?Set@RectHost_08c380@ApiMisc@@QAEXHHHH@Z",
-     "dist": 563090,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 20
-    },
-    {
-     "rva": 1277488,
-     "name": "?Tick@Throttle_137e30@ApiMisc@@QAEHH@Z",
-     "dist": 125735,
-     "cluster_n": 2,
-     "home": "src/Dsndmgr/GruntzSoundZ.cpp",
-     "home_n": 27
-    },
-    {
-     "rva": 1278160,
-     "name": "?Tick@Timer_1380d0@ApiMisc@@QAEHH@Z",
-     "dist": 125735,
-     "cluster_n": 2,
-     "home": "src/Dsndmgr/GruntzSoundZ.cpp",
-     "home_n": 27
-    },
-    {
-     "rva": 1449600,
-     "name": "?Build@GeoHost_161e80@ApiMisc@@QAEXPAUtagRECT@@@Z",
-     "dist": 297847,
-     "cluster_n": 1,
-     "home": "src/Wwd/WwdFile.cpp",
-     "home_n": 14
-    },
-    {
-     "rva": 1832311,
-     "name": "?Run@LibHost_1bf577@ApiMisc@@QAEXXZ",
-     "dist": 680558,
-     "cluster_n": 2,
-     "home": "src/Gruntz/ReconBatch2O1.cpp",
-     "home_n": 1
-    },
-    {
-     "rva": 1837534,
-     "name": "?Free@GlobalOwner_1c09de@ApiMisc@@QAEXXZ",
-     "dist": 680558,
-     "cluster_n": 2,
-     "home": "src/Gruntz/ReconBatch2O1.cpp",
-     "home_n": 1
-    }
-   ],
-   "rvas": [
-    176960,
-    574336,
-    1137456,
-    1149232,
-    1151696,
-    1277488,
-    1278160,
-    1449600,
-    1832311,
-    1837534
    ]
   },
   {
@@ -5403,82 +4009,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/ApiWrappers.cpp",
-   "n": 7,
-   "bytes": 2944,
-   "main_lo": 225888,
-   "main_hi": 242360,
-   "main_n": 3,
-   "main_share": 0.42857142857142855,
-   "clusters": 4,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 225888,
-     "hi": 242360,
-     "n": 3
-    },
-    {
-     "lo": 482400,
-     "hi": 492013,
-     "n": 2
-    },
-    {
-     "lo": 586016,
-     "hi": 586376,
-     "n": 1
-    },
-    {
-     "lo": 648080,
-     "hi": 648659,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 482400,
-     "name": "?FindGruntAt@GruntHitMgr@m4@@QAEPAUHitGrunt@2@HHPAUHitTileRect@2@PAH1PAUtagRECT@@@Z",
-     "dist": 240040,
-     "cluster_n": 2,
-     "home": "src/Gruntz/TriggerMgr.cpp",
-     "home_n": 21
-    },
-    {
-     "rva": 491616,
-     "name": "?CheckCombatRegion@GruntCombatMgr@m4@@QAEXHHHHH@Z",
-     "dist": 240040,
-     "cluster_n": 2,
-     "home": "src/Gruntz/TriggerMgr.cpp",
-     "home_n": 21
-    },
-    {
-     "rva": 586016,
-     "name": "?LaunchWebBrowser@m4@@YGHPAD@Z",
-     "dist": 343656,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 56
-    },
-    {
-     "rva": 648080,
-     "name": "?SetupDlgCommand@m4@@YAHPAUHWND__@@HPAUSetupDlg@1@@Z",
-     "dist": 405720,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Brickz.cpp",
-     "home_n": 11
-    }
-   ],
-   "rvas": [
-    225888,
-    236128,
-    242080,
-    482400,
-    491616,
-    586016,
-    648080
-   ]
-  },
-  {
    "file": "src/Gruntz/Brickz.cpp",
    "n": 15,
    "bytes": 4273,
@@ -5524,16 +4054,16 @@
      "name": "?SearchEdge@CBrickzGrid@@QAEHHHHHPAXHHH@Z",
      "dist": 116879,
      "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
      "rva": 532528,
      "name": "?UpdateDiagonals@CBrickzGrid@@QAEHH@Z",
      "dist": 116879,
      "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
      "rva": 603500,
@@ -5736,8 +4266,8 @@
      "name": "_$E1",
      "dist": 408803,
      "cluster_n": 1,
-     "home": "src/Gruntz/BoundaryThunks.cpp",
-     "home_n": 9
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 6
     },
     {
      "rva": 1497536,
@@ -6027,72 +4557,6 @@
     912160,
     1029728,
     1102800
-   ]
-  },
-  {
-   "file": "src/Gruntz/ReconBatch2O1.cpp",
-   "n": 5,
-   "bytes": 59,
-   "main_lo": 1913276,
-   "main_hi": 1919949,
-   "main_n": 2,
-   "main_share": 0.4,
-   "clusters": 4,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 1172688,
-     "hi": 1172701,
-     "n": 1
-    },
-    {
-     "lo": 1814171,
-     "hi": 1814184,
-     "n": 1
-    },
-    {
-     "lo": 1839016,
-     "hi": 1839025,
-     "n": 1
-    },
-    {
-     "lo": 1913276,
-     "hi": 1919949,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1172688,
-     "name": "??0CImageList@@QAE@XZ",
-     "dist": 740575,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntSpawnConfig.cpp",
-     "home_n": 5
-    },
-    {
-     "rva": 1814171,
-     "name": "?Call_1bae9b@@YAXXZ",
-     "dist": 99092,
-     "cluster_n": 1,
-     "home": "src/Rez/RezUtil.cpp",
-     "home_n": 1
-    },
-    {
-     "rva": 1839016,
-     "name": "?Bump_1c0fa8@@YAXXZ",
-     "dist": 74251,
-     "cluster_n": 1,
-     "home": "src/Gruntz/ApiMiscHelpers.cpp",
-     "home_n": 2
-    }
-   ],
-   "rvas": [
-    1172688,
-    1814171,
-    1839016,
-    1913276,
-    1919937
    ]
   },
   {
@@ -6587,7 +5051,7 @@
      "name": "?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@XZ",
      "dist": 637513,
      "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryLeafLogic.cpp",
+     "home": "src/Gruntz/UserLogic.cpp",
      "home_n": 3
     },
     {
@@ -6595,7 +5059,7 @@
      "name": "?Serialize@CAniCycle@@QAEHHHHH@Z",
      "dist": 637513,
      "cluster_n": 2,
-     "home": "src/Gruntz/BoundaryLeafLogic.cpp",
+     "home": "src/Gruntz/UserLogic.cpp",
      "home_n": 3
     }
    ],
@@ -8165,7 +6629,7 @@
      "name": "?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ",
      "dist": 632650,
      "cluster_n": 1,
-     "home": "src/Gruntz/BoundaryLeafLogic.cpp",
+     "home": "src/Gruntz/UserLogic.cpp",
      "home_n": 3
     }
    ],
@@ -8587,43 +7051,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/BoundaryUpper2Eh.cpp",
-   "n": 2,
-   "bytes": 207,
-   "main_lo": 1566656,
-   "main_hi": 1566778,
-   "main_n": 1,
-   "main_share": 0.5,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 1258416,
-     "hi": 1258501,
-     "n": 1
-    },
-    {
-     "lo": 1566656,
-     "hi": 1566778,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1258416,
-     "name": "?DtorD1@DevCfgChain@@QAEXXZ",
-     "dist": 308155,
-     "cluster_n": 1,
-     "home": "src/DinMgr2/DirectInputMgr2.cpp",
-     "home_n": 37
-    }
-   ],
-   "rvas": [
-    1258416,
-    1566656
-   ]
-  },
-  {
    "file": "src/Bute/SymParser.cpp",
    "n": 12,
    "bytes": 3924,
@@ -8762,6 +7189,43 @@
     811232,
     817328,
     1108960
+   ]
+  },
+  {
+   "file": "src/Gruntz/UserLogicCtorEmit.cpp",
+   "n": 2,
+   "bytes": 480,
+   "main_lo": 363728,
+   "main_hi": 364133,
+   "main_n": 1,
+   "main_share": 0.5,
+   "clusters": 2,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 80080,
+     "hi": 80155,
+     "n": 1
+    },
+    {
+     "lo": 363728,
+     "hi": 364133,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 80080,
+     "name": "??0CUserLogic@@QAE@XZ",
+     "dist": 283573,
+     "cluster_n": 1,
+     "home": "src/Gruntz/Attract.cpp",
+     "home_n": 8
+    }
+   ],
+   "rvas": [
+    80080,
+    363728
    ]
   },
   {
@@ -9300,8 +7764,8 @@
      "name": "?ComPump3210@@YAXXZ",
      "dist": 105952,
      "cluster_n": 1,
-     "home": "src/Gruntz/ReconBatch2O1.cpp",
-     "home_n": 2
+     "home": "",
+     "home_n": 0
     }
    ],
    "rvas": [
@@ -9382,90 +7846,6 @@
     612176,
     612496,
     698080
-   ]
-  },
-  {
-   "file": "src/Gruntz/BoundaryThunks.cpp",
-   "n": 11,
-   "bytes": 116,
-   "main_lo": 535328,
-   "main_hi": 545760,
-   "main_n": 10,
-   "main_share": 0.9090909090909091,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 535328,
-     "hi": 545760,
-     "n": 10
-    },
-    {
-     "lo": 629632,
-     "hi": 629642,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 629632,
-     "name": "?TokenMgrReset99b80@@YAXXZ",
-     "dist": 83872,
-     "cluster_n": 1,
-     "home": "src/Gruntz/AreaMgr.cpp",
-     "home_n": 10
-    }
-   ],
-   "rvas": [
-    535328,
-    535456,
-    535584,
-    535712,
-    535840,
-    535968,
-    536096,
-    536224,
-    536352,
-    545744,
-    629632
-   ]
-  },
-  {
-   "file": "src/Gruntz/ApiHiCallers.cpp",
-   "n": 3,
-   "bytes": 1090,
-   "main_lo": 1557488,
-   "main_hi": 1572653,
-   "main_n": 2,
-   "main_share": 0.6666666666666666,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 1474688,
-     "hi": 1475190,
-     "n": 1
-    },
-    {
-     "lo": 1557488,
-     "hi": 1572653,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1474688,
-     "name": "?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z",
-     "dist": 82298,
-     "cluster_n": 1,
-     "home": "src/Wwd/WwdSpatialMgr.cpp",
-     "home_n": 12
-    }
-   ],
-   "rvas": [
-    1474688,
-    1557488,
-    1572352
    ]
   },
   {

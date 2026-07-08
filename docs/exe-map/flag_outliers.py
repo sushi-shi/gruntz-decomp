@@ -125,7 +125,7 @@ def main():
                 outliers.append({
                     "rva": x["rva"], "name": x["name"], "dist": dist,
                     "cluster_n": len(c),
-                    "home": terr[0][0] if terr else "", "home_n": terr[0][0] and terr[0][1],
+                    "home": terr[0][0] if terr else "", "home_n": terr[0][1] if terr else 0,
                 })
         files_out.append({
             "file": src, "n": len(recs), "bytes": sum(x["size"] for x in recs),
