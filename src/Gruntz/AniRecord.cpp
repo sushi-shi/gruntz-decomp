@@ -97,32 +97,6 @@ struct CAniMapOwner {
 // The 0x34-byte record. Layout recovered from Parse + the dtors + CAniElement's
 // new-site. Modeled with NO virtuals (manual-vtable, dual-base), so the offsets
 // stay exactly where retail puts them.
-class CAniRecord {
-public:
-    i32 Parse_168c60(void* ctx, const i16* src);                      // 0x168c60
-    i32 GetSize_168e50();                                             // 0x168e50
-    void ResolveIndices_168d00(CAniMapOwner* owner, const char* str); // 0x168d00
-    void* Alloc168ee0(i32 size, i32 flag);                            // 0x168ee0
-    void* Alloc168ea0(i32 size, i32 flag);                            // 0x168ea0
-    void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
-    void FreeBuf_168fb0();                                            // 0x168fb0
-
-    char _vft0[4];            // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    u16 m_flags;              // +0x04  status word (bit 1 scaled, bit 2 has-name)
-    u16 m_06;                 // +0x06  (high half of the +0x04 dword)
-    i32 m_08;                 // +0x08
-    CAniRecordOwner* m_owner; // +0x0c  owner node (also seeded 0xffff at alloc)
-    i32 m_buf;                // +0x10  pool work buffer (i32 here; ptr in the virtuals)
-    i32 m_14;                 // +0x14
-    i32 m_frameCount;         // +0x18  frame count (GetSize)
-    i32 m_1c;                 // +0x1c
-    i32 m_20;                 // +0x20
-    i32 m_24;                 // +0x24
-    u16 m_28;                 // +0x28
-    u16 m_2a;                 // +0x2a
-    i32 m_count;              // +0x2c  resolved-index array length
-    i32* m_indices;           // +0x30  resolved-index array
-};
 
 // ---------------------------------------------------------------------------
 // The shared WAP grand-base (vftable @0x5e8cb4, 5 slots: 0x1bef01 / scalar-dtor /
@@ -162,13 +136,13 @@ struct CAniRecordBase2 : public CObject { // was : CAniRecordObjBase (merged int
     virtual void Slot07_168fb0(); // [7] 0x168fb0 (FreeBuf, bound as CAniRecord method - other slot)
     virtual void Slot08_165da0(); // [8] 0x165da0
     virtual void Slot09_168f20(); // [9] 0x168f20
-    virtual void Alloc168ee0();   // [10] 0x168ee0 (= CAniRecord::Alloc168ee0)
-    virtual void Alloc168ea0();   // [11] 0x168ea0 (= CAniRecord::Alloc168ea0)
-    virtual void Alloc168f60();   // [12] 0x168f60 (= CAniRecord::Alloc168f60)
+    virtual void Alloc168ee0();   // [10] 0x168ee0 (= CAniRecordView::Alloc168ee0)
+    virtual void Alloc168ea0();   // [11] 0x168ea0 (= CAniRecordView::Alloc168ea0)
+    virtual void Alloc168f60();   // [12] 0x168f60 (= CAniRecordView::Alloc168f60)
     virtual void Slot13_168fd0(); // [13] 0x168fd0
 
     void FreeBuf_168fb0() {
-        ((CAniRecord*)this)->FreeBuf_168fb0();
+        ((CAniRecordView*)this)->FreeBuf_168fb0();
     }
 };
 
@@ -188,7 +162,7 @@ CAniRecordBase2::~CAniRecordBase2() {
 // sentinel (0xffff) / count / array, then the implicit grand-base re-stamp folds LAST.
 RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
-    CAniRecord* r = (CAniRecord*)this;
+    CAniRecordView* r = this;
     if (r->m_indices != 0) {
         RezFree(r->m_indices);
     }
@@ -205,7 +179,7 @@ CAniRecordView::~CAniRecordView() {
 // the "has name" bit (0x2) strlen the trailing name -> g_aniParsedNameLen and
 // resolve the indices from it. Returns 1. Frameless leaf.
 RVA(0x00168c60, 0xa0)
-i32 CAniRecord::Parse_168c60(void* ctx, const i16* src) {
+i32 CAniRecordView::Parse_168c60(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = (u16)*p++;
     m_08 = *p++;
@@ -241,7 +215,7 @@ i32 CAniRecord::Parse_168c60(void* ctx, const i16* src) {
 // cl flips them - not decl-order-steerable) + reloc operand names. Documented
 // regalloc/slot wall - parked for the final sweep.
 RVA(0x00168d00, 0x14c)
-void CAniRecord::ResolveIndices_168d00(CAniMapOwner* owner, const char* str) {
+void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str) {
     if (owner == 0 || str == 0) {
         return;
     }
@@ -290,7 +264,7 @@ void CAniRecord::ResolveIndices_168d00(CAniMapOwner* owner, const char* str) {
 // 0x16-default-temp, n<=0-first, n>0-first) flip the regalloc but none reproduce the
 // edx-pin + eager-default. Not source-steerable - documented scheduling wall.
 RVA(0x00168e50, 0x1e)
-i32 CAniRecord::GetSize_168e50() {
+i32 CAniRecordView::GetSize_168e50() {
     i32 n = m_frameCount;
     if (n > 0) {
         if (m_flags & 0x1) {
@@ -307,7 +281,7 @@ i32 CAniRecord::GetSize_168e50() {
 // owner's +0x08 flags and run the buffer's second-stage init. Returns 1.
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
-void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
+void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
     DirPal* buf = (DirPal*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -324,7 +298,7 @@ void* CAniRecord::Alloc168ea0(i32 size, i32 flag) {
 // 0x168ee0: as 0x168ea0 but through Alloc1_142fc0 (the canonical 0x44 allocator).
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
-void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
+void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
     DirPal* buf = (DirPal*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -340,7 +314,7 @@ void* CAniRecord::Alloc168ee0(i32 size, i32 flag) {
 // ---------------------------------------------------------------------------
 // 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
-void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
+void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
     DirPal* buf = (DirPal*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
@@ -357,7 +331,7 @@ void* CAniRecord::Alloc168f60(i32 a, i32 size, i32 flag) {
 // 0x168fb0: free the +0x10 work buffer back to the owner's pool (Free_142f10) and
 // clear it. Frameless leaf.
 RVA(0x00168fb0, 0x1f)
-void CAniRecord::FreeBuf_168fb0() {
+void CAniRecordView::FreeBuf_168fb0() {
     i32 buf = m_buf;
     if (buf != 0) {
         m_owner->m_pool->Free_142f10((void*)buf);
@@ -369,7 +343,7 @@ void CAniRecord::FreeBuf_168fb0() {
 // CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
 // re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
 // copy of the CString at this->m_data[index] (`lea &m_data[i]; CString::CString`
-// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecord::ResolveIndices
+// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
 // (0x168d00). Modeled as the small string-array view CAniRecord indexes.
 struct CAniStrArray {
     char m_00[4];             // +0x00
@@ -383,7 +357,6 @@ CString CAniStrArray::GetAt(int index) {
 }
 
 SIZE_UNKNOWN(CAniMapOwner);
-SIZE_UNKNOWN(CAniRecord);
 SIZE_UNKNOWN(CAniRecordBase2);
 SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);

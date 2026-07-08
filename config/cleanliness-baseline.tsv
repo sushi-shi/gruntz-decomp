@@ -8,7 +8,7 @@ placeholder vtable slots	1135
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
-)this casts	291
+)this casts	290
 )m_ casts	1308
 (char*) casts	884
 (const char*) casts	150

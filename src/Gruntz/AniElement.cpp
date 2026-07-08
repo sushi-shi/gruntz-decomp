@@ -81,7 +81,7 @@ i32 CAniElement::Build_165460(void* ctx, CAniSource* src, i32 flags) {
     i32 i;
     for (i = 0; i < src->m_count; i++) {
         rec = new CAniRecordView;
-        if (rec->Parse_168c60(ctx, cursor) == 0) {
+        if (rec->Parse_168c60(ctx, (const i16*)cursor) == 0) {
             goto fail;
         }
         m_records.SetAtGrow(m_records.m_nSize, (::CObject*)rec);
