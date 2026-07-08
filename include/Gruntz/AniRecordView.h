@@ -27,13 +27,14 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Mfc.h> // real MFC CObject (the primary-facet base)
 
-struct CAniRecordView {
-    virtual void GetRuntimeClass(); // [0] 0x1bef01
-    virtual ~CAniRecordView();      // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();       // [2] 0x0028ec
-    virtual void AssertValid();     // [3] 0x00106e
-    virtual void Dump();            // [4] 0x004034
+// The primary 5-slot CObject facet of the ANI record: cl inherits GetRuntimeClass/
+// Serialize/AssertValid/Dump (the shared CObject defaults) and OVERRIDES only slot 1
+// (the real teardown dtor 0x1657a0 that frees m_indices). This is the single owning
+// class of the ??_7 @0x5f02c0 (VTBL is on this class in AniRecord.cpp).
+struct CAniRecordView : public CObject {
+    virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor
 
     i32 Parse_168c60(void* ctx, const char* cursor); // 0x168c60 __thiscall
     i32 GetSize_168e50();                            // 0x168e50 __thiscall

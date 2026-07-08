@@ -30,8 +30,9 @@
 // base-2 destructor have SEH frames for their destructible locals; the leaves
 // (Parse / GetSize / the two buffer virtuals) stay frameless and byte-exact.
 // ---------------------------------------------------------------------------
-#include <Mfc.h>    // real MFC CStringArray / CMapStringToPtr / CString / CObject
-#include <string.h> // strlen (inline repnz scas)
+#include <Mfc.h>                  // real MFC CStringArray / CMapStringToPtr / CString / CObject
+#include <Gruntz/AniRecordView.h> // the primary-facet class (CAniRecordView : CObject)
+#include <string.h>               // strlen (inline repnz scas)
 #include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared
@@ -185,12 +186,8 @@ CAniRecordBase2::~CAniRecordBase2() {
 // layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
 // at ENTRY (stamp-first), frees the +0x30 resolved-index array (RezFree), clears the owner
 // sentinel (0xffff) / count / array, then the implicit grand-base re-stamp folds LAST.
-struct CAniRecordPrimary : public CObject {
-    virtual ~CAniRecordPrimary() OVERRIDE; // [1] scalar-deleting dtor
-};
-
 RVA(0x001657a0, 0x66)
-CAniRecordPrimary::~CAniRecordPrimary() {
+CAniRecordView::~CAniRecordView() {
     CAniRecord* r = (CAniRecord*)this;
     if (r->m_indices != 0) {
         RezFree(r->m_indices);
@@ -391,7 +388,7 @@ SIZE_UNKNOWN(CAniRecordBase2);
 SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPool);
-SIZE_UNKNOWN(CAniRecordPrimary);
+
 SIZE_UNKNOWN(CAniRecordObjBase);
-VTBL(CAniRecordBase2, 0x001f02d8);   // ??_7 (14 slots)
-VTBL(CAniRecordPrimary, 0x001f02c0); // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
+VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
+VTBL(CAniRecordView, 0x001f02c0);  // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
