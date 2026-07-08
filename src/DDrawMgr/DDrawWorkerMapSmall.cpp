@@ -58,6 +58,9 @@ class CDDrawChildGroupDtorHost {
 public:
     virtual ~CDDrawChildGroupDtorHost();
 };
+// Its ??_7 reloc-masks 0x1efdc0 = CDDrawChildGroup's OWN vtable (a /GX member-teardown twin
+// that shares that vtable); can't be VTBL'd (would collide) - documented as an alias.
+RELOC_VTBL(CDDrawChildGroupDtorHost, 0x001efdc0);
 
 // The worker virtual interface. Slots laid out so the dispatched methods land at
 // the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the

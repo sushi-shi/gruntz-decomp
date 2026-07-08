@@ -105,6 +105,23 @@ def present_rvas():
     return out
 
 
+_RELOC_RE = re.compile(r"\bRELOC_VTBL\s*\(\s*([\w:]+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
+
+
+def reloc_vtbl_annotations():
+    """{class_name: rva} for every RELOC_VTBL(type, addr) - a matching-required placeholder
+    whose ??_7 reloc-masks the retail vtable `addr` (bound by a DIFFERENT real class). Text-
+    scanned tree-wide like VTBL()."""
+    out = {}
+    for path in source_files():
+        for m in _RELOC_RE.finditer(path.read_text(errors="ignore")):
+            try:
+                out[m.group(1).split("::")[-1]] = int(m.group(2), 16)
+            except ValueError:
+                pass
+    return out
+
+
 def library_vtable_rvas():
     """RVAs of MFC/CRT library vtables (config/library_vtables.csv). Statically linked, so
     present_rvas() (our emitted base objs) misses them; a class whose RTTI vtable is here IS
@@ -157,6 +174,16 @@ def main() -> int:
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
     prim_bases = primary_base_names()
+    reloc = reloc_vtbl_annotations()
+    bound_vtbl_rvas = {rva for _n, rva, _p, _l in vtbl_annotations()}
+    # A RELOC_VTBL(cls, addr) placeholder MUST reloc-mask a vtable REALLY bound by another
+    # class's VTBL(); otherwise it is aliasing an unbound datum (hiding a missing binding).
+    bad_reloc = {n: rva for n, rva in reloc.items() if rva not in bound_vtbl_rvas}
+    if bad_reloc:
+        print("RELOC_VTBL: reloc-masked rva(s) NOT bound by any real VTBL() - each placeholder "
+              "must alias a vtable a real class owns:", file=sys.stderr)
+        for n, rva in sorted(bad_reloc.items()):
+            print(f"  {n} -> 0x{rva:08x} (no VTBL() binds this rva)", file=sys.stderr)
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -184,6 +211,7 @@ def main() -> int:
         catalogued = (
             name in vtbl_ann
             or manual[name]
+            or name in reloc
             or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"
@@ -195,9 +223,11 @@ def main() -> int:
               "first for an accurate count).", file=sys.stderr)
     if violators:
         print(f"class-vtable completeness: {have_vtable} vtable-bearing class "
-              f"name(s); {len(violators)} NOT catalogued (need VTBL):", file=sys.stderr)
+              f"name(s); {len(violators)} NOT catalogued (need VTBL or RELOC_VTBL):", file=sys.stderr)
         for name, path, lineno, reason in violators:
             print(f"  {rel(path)}:{lineno}: {name}  [{reason}]", file=sys.stderr)
+        return 1
+    if bad_reloc:
         return 1
     if collisions:
         print(f"class-vtable completeness: all {have_vtable} names catalogued, but "
