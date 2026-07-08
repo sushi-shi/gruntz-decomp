@@ -397,6 +397,7 @@ SIZE_UNKNOWN(CRandomAmbientSound);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 SIZE_UNKNOWN(CSoundChannel);
 SIZE_UNKNOWN(CSoundChannelList);
+RELOC_VTBL(CSoundChannelList, 0x001ed4b4); // IS MFC CObList (its methods are FID-labeled CObList members)
 SIZE_UNKNOWN(CSoundNode);
 SIZE_UNKNOWN(CWorldSoundSet);
 SIZE_UNKNOWN(SoundChannelNew);

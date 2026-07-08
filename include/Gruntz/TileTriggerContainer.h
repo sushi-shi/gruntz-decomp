@@ -73,6 +73,7 @@ public:
     char _pad10[0x1c - 0x10]; // +0x10..0x1b
 };
 SIZE_UNKNOWN(TtcObList);
+RELOC_VTBL(TtcObList, 0x001ed4b4); // IS MFC CObList (its methods are FID-labeled CObList members)
 
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
