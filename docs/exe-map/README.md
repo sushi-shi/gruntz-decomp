@@ -11,7 +11,8 @@ the matching pipeline produces (`gruntz build`), read through
 |---|---|
 | `scatter.html` | **all functions** — one dot per source file: functions vs contiguous *fragments* (log–log), plus the fragmentation-ratio distribution. Overview of how the linker laid TUs out. |
 | `scatter_methods.html` | **destructors removed** — same, but the base `??1` + deleting `??_G`/`??_E` destructors (which MSVC COMDAT-pools away from the TU block) are dropped. Shows the *true* per-TU layout; constructors are kept (they cluster with the methods). |
-| `misplacement.html` | **the misplacement finder** — with destructors removed, functions far from their file's main block are flagged as either a **mis-attribution** (belongs in another file) or a **conflated TU** (one `src/` name covering two real TUs). Five graphs incl. an RVA "genome" of where each file's functions actually sit and a suggested-home lollipop. |
+| `misplacement.html` | **the misplacement finder** — with destructors removed, functions far from their file's main block are flagged as either a **mis-attribution** (belongs in another file) or a **conflated TU** (one `src/` name covering two real TUs). Five graphs incl. an RVA "genome" (with named game/engine/library **regions**) of where each file's functions actually sit and a suggested-home lollipop. |
+| `homm2.html` | **ground-truth baseline** — HoMM2 (HEROES2W) ships a real CodeView debug stream, so its function→file grouping is *truth*. Every one of its 94 TUs is a single contiguous block (the linker scatters nothing for correctly-grouped, non-`/Gy` code). Overlaid against Gruntz to show how much of Gruntz's "scatter" is our grouping vs the linker. Reads a read-only VA snapshot from the `homm2-decomp` project. |
 
 ## Concepts
 
@@ -46,5 +47,18 @@ Each step writes its output (JSON + HTML) into this directory. Intermediate data
 - `flag_outliers.py` — cluster/outlier/conflated detection → `flags.json`.
 - `make_chart.py` — builds the two scatter pages.
 - `make_dashboard.py` — builds the misplacement dashboard.
+- `homm2_baseline.py` — **read-only** extract of the HoMM2 ground-truth VAs from
+  `/home/sheep/Projects/homm2/homm2-decomp` (its CodeView-derived `symbol_names.csv`
+  + `units.toml`) into `homm2_va.csv`; skips cleanly if that project is absent.
+- `make_homm2.py` — builds `homm2.html` from the snapshot + Gruntz's data.
 - `probe.py` — ad-hoc layout probe (e.g. per-file cluster breakdown); handy when
   investigating a specific unit.
+
+## Baseline finding
+
+With **ground-truth grouping** (HoMM2), the MSVC linker produces **100% contiguous
+per-TU blocks** — zero scatter — because that build uses no `/Gy` (no per-function
+COMDATs to reorder). Gruntz, on our *reconstructed* grouping, is only ~16%
+contiguous. So Gruntz's measured "scatter" is dominated by grouping errors
+(conflated TUs, mis-attributions) plus its COMDAT/destructor build behaviour — not
+the linker mixing up correctly-grouped code. See `homm2.html`.

@@ -11,10 +11,12 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-STEPS = ["scatter.py",        # scatter.json + scatter_methods.json (+ printed summary)
-         "flag_outliers.py",  # flags.json (+ printed misplacement worklist)
-         "make_chart.py",     # scatter.html + scatter_methods.html
-         "make_dashboard.py"] # misplacement.html
+STEPS = ["scatter.py",         # scatter.json + scatter_methods.json (+ printed summary)
+         "flag_outliers.py",   # flags.json (+ printed misplacement worklist)
+         "make_chart.py",      # scatter.html + scatter_methods.html
+         "make_dashboard.py",  # misplacement.html
+         "homm2_baseline.py",  # homm2_va.csv snapshot (reads homm2-decomp, read-only)
+         "make_homm2.py"]      # homm2.html (ground-truth baseline vs Gruntz)
 
 for step in STEPS:
     print(f"\n=== {step} ===")

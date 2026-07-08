@@ -98,6 +98,7 @@ svg{width:100%;height:auto;display:block;overflow:visible}
   <span class="badge">misplacement finder</span>
   <a class="xlink" href="scatter_methods.html">↔ scatter (no dtors)</a>
   <a class="xlink" href="scatter.html">↔ scatter (all fns)</a>
+  <a class="xlink" href="homm2.html">↔ HoMM2 baseline</a>
   <button class="toggle" onclick="tog()">◐ theme</button>
 </div>
 <h1>GRUNTZ.EXE &mdash; functions that might be in the wrong <code style="font-size:.9em">src/</code> file</h1>

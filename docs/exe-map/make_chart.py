@@ -64,6 +64,7 @@ svg{width:100%;height:auto;display:block;overflow:visible}
   <span class="badge">__BADGE__</span>
   <a class="xlink" href="__OTHER_HREF__">↔ __OTHER_LABEL__</a>
   <a class="xlink" href="misplacement.html">↔ misplacement finder</a>
+  <a class="xlink" href="homm2.html">↔ HoMM2 baseline</a>
   <button class="toggle" onclick="tog()">◐ theme</button>
 </div>
 <h1>GRUNTZ.EXE &mdash; how scattered is each source file across <code style="font-size:.9em">.text</code>?</h1>
