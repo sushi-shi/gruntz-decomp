@@ -63,13 +63,12 @@ public:
 // KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
 // vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
 // CObject (would ODR-clash + collapse the /GX dtor teardown level).
-class CDDrawSubMgrGrandBase {
+// The CObject grand-base carries the m_04/m_08/m_0c header; cl inherits the 5 shared
+// CObject slots (GetRuntimeClass/Serialize/AssertValid/Dump + the dtor) and this class
+// OVERRIDEs only slot 1 with the real teardown dtor. No flat slot redeclarations.
+class CDDrawSubMgrGrandBase : public CObject {
 public:
-    virtual void GetRuntimeClass();   // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CDDrawSubMgrGrandBase(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();         // [2] 0x0028ec (shared thunk, declared-only)
-    virtual void AssertValid();       // [3] 0x00106e (shared thunk, declared-only)
-    virtual void Dump();              // [4] 0x004034 (shared thunk, declared-only)
+    virtual ~CDDrawSubMgrGrandBase() OVERRIDE; // [1] real teardown dtor
 
     i32 m_04; // +0x04  -1 when inactive
     i32 m_08; // +0x08
