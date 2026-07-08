@@ -78,6 +78,17 @@ def main():
                 t[r["source"]] = t.get(r["source"], 0) + 1
         return sorted(t.items(), key=lambda kv: -kv[1])
 
+    # class -> methods, and class -> {src files it lives in}. A real class that is
+    # entirely in ONE file is correctly grouped: a method of it scattered in RVA is a
+    # header-inline (deduped COMDAT copy), NOT a misplacement. Only a class spread over
+    # >1 file, or an unknown/placeholder/free function, is a genuine MOVE candidate.
+    by_class, class_files = {}, {}
+    for r in owned:
+        c = classof(r["name"])
+        if c and not placeholder_cls(c):
+            by_class.setdefault(c, []).append(r)
+            class_files.setdefault(c, set()).add(r["source"])
+
     by_file = {}
     for r in owned:
         by_file.setdefault(r["source"], []).append(r)
@@ -109,24 +120,26 @@ def main():
             if not terr or terr[0][1] < HOME_MIN:
                 continue
             for x in c:
-                # small/virtual = a header-inline's deduped copy (handled below), not a move
-                if benign(x["name"]) or is_virtual(x["name"]) or x["size"] <= 64:
+                if benign(x["name"]) or is_virtual(x["name"]):   # virtual = header-inline
+                    continue
+                cn = classof(x["name"])
+                # a scattered method of a class that is otherwise all in ONE file is a
+                # header-inline (handled below), NOT a move. What's left is a function whose
+                # class we can't pin: an unknown/placeholder-class or free function in a
+                # reconstruction bucket -> the RVA neighbour is a re-home HINT, low confidence.
+                if cn and not placeholder_cls(cn) and len(class_files.get(cn, ())) <= 1:
                     continue
                 moves.append({"file": src, "name": x["name"], "rva": x["rva"],
                               "dist": dist, "home": terr[0][0], "home_n": terr[0][1]})
 
-    # ---- HEADER-INLINE: methods scattered from their own CLASS body that are virtual
-    # (a vtable slot forces an out-of-line COMDAT) or small (an inline accessor the
-    # compiler didn't fully inline). Their scattered RVA is the linker's deduped copy,
-    # so they belong INLINE in the class header, not moved to any .cpp. ----
-    by_class = {}
-    for r in owned:
-        c = classof(r["name"])
-        if c and not placeholder_cls(c):
-            by_class.setdefault(c, []).append(r)
+    # ---- HEADER-INLINE: any method scattered from its own CLASS body, when the class
+    # is otherwise all in ONE file (correctly grouped). The scattered RVA is the linker's
+    # deduped copy of an inline/template/static member defined in a header -> reconstruct
+    # it INLINE in the class header, not moved to any .cpp. (No size gate: WrapCoord 172B,
+    # _zvec::GrowTo 267B and the WwdFile statics are inline too, just larger.) ----
     inline = []
     for c, ms in by_class.items():
-        if len(ms) < 3:
+        if len(ms) < 2 or len(class_files.get(c, ())) != 1:   # multi-file class -> SPLIT/MOVE, not here
             continue
         cl = fo.clusters(ms)
         if sum(1 for x in cl if len(x) >= BIG) >= 2:   # a genuine two-TU class -> SPLIT, not inline
@@ -139,11 +152,9 @@ def main():
             d = m["rva"] - mhi if m["rva"] > mhi else mlo - m["rva"]
             if d < fo.GAP:
                 continue
-            v = is_virtual(m["name"])
-            if v or m["size"] <= 64:
-                inline.append({"cls": c, "name": m["name"], "size": m["size"],
-                               "dist": d, "virtual": v,
-                               "file": m["source"].rsplit("/", 1)[-1]})
+            inline.append({"cls": c, "name": m["name"], "size": m["size"], "dist": d,
+                           "virtual": is_virtual(m["name"]),
+                           "file": m["source"].rsplit("/", 1)[-1]})
     inline.sort(key=lambda x: (not x["virtual"], -x["dist"]))
     from collections import Counter
     inline_by_cls = Counter(x["cls"] for x in inline)
@@ -165,9 +176,10 @@ def main():
          "",
          "- **A. SPLIT cross-module** — one class compiled in two module TUs (`CNetMgr`); split the file.",
          "- **B. SPLIT same-module** — two+ TU blocks in one region; review, then split.",
-         "- **C. MOVE** — an out-of-line method genuinely in the wrong file; re-home it.",
-         "- **D. HEADER-INLINE** — a small/virtual method scattered as a deduped COMDAT copy; it",
-         "  belongs *inline in the header*, NOT moved to a `.cpp`.",
+         "- **C. RE-HOME HINTS** — unknown-class / bucket / namespace functions where the RVA",
+         "  neighbour is a low-confidence home hint (named classes are already filed correctly).",
+         "- **D. HEADER-INLINE** — a method scattered as a deduped COMDAT copy of an inline/",
+         "  template/static header member; it belongs *inline in the header*, NOT moved to a `.cpp`.",
          "",
          "Regenerate: `python docs/exe-map/split_plan.py`.", ""]
 
@@ -195,11 +207,15 @@ def main():
         L.append(f"- `{e['file']}` — {e['nblk']} blocks: {blk}")
     L.append("")
 
-    L += [f"## C. MOVE — lone mis-attributions ({len(moves)}) · per-function",
+    L += [f"## C. RE-HOME HINTS — unknown-class / bucket functions ({len(moves)}) · low confidence",
           "",
-          "A single function stranded far from its file, sitting amid another file's methods.",
-          "`Serialize` / boundary-thunk / special-member names are excluded (benign COMDAT pools).", "",
-          "| function | currently in | → move to | distance |",
+          "What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12",
+          "`CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines",
+          "(category D). So these rows are functions whose *class we can't pin*: placeholder-named",
+          "bucket functions (`CObj_bdd0`, `Obj38120`, `C213a0`) and namespace utilities",
+          "(`WinAPI::Utils::…`). The neighbour is a **re-home hint** to apply as naming/coverage",
+          "improves — **not** a confident semantic move. Do not apply blindly.", "",
+          "| function | currently in | → hint | distance |",
           "|---|---|---|---|"]
     for m in moves[:30]:
         L.append(f"| `{m['name'][:48]}` | {base(m['file'])} | **{base(m['home'])}** "
@@ -222,13 +238,7 @@ def main():
           "| function | class | size | virtual |", "|---|---|---:|:--:|"]
     for x in inline[:25]:
         L.append(f"| `{x['name'][:44]}` | {x['cls']} | {x['size']} B | {'✓' if x['virtual'] else ''} |")
-    L += ["",
-          "> Many MOVE rows are placeholder-named functions in reconstruction *bucket* files",
-          "> (`DiscoveredSmall`, `BoundaryTail`, `ReconBatch*`, `DDrawSubMgr*Scan`). For those the",
-          "> neighbour-home is a re-homing *hint* to apply as naming/coverage improves — lower",
-          "> priority than the class splits above.", ""]
-
-    L += ["## How to execute a split (NetMgr worked example)", "",
+    L += ["", "## How to execute a split (NetMgr worked example)", "",
           "1. **Keep the class declaration in one shared header** (`NetMgr.h`) — it is NOT split",
           "   (ODR: every TU sees one identical class). Only the *method definitions* move.",
           "2. **Create the new `.cpp`** (e.g. `src/Net/NetMgrEngine.cpp`) and move the engine-block",

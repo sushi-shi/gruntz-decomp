@@ -5,9 +5,10 @@ categories, most-confident first:
 
 - **A. SPLIT cross-module** — one class compiled in two module TUs (`CNetMgr`); split the file.
 - **B. SPLIT same-module** — two+ TU blocks in one region; review, then split.
-- **C. MOVE** — an out-of-line method genuinely in the wrong file; re-home it.
-- **D. HEADER-INLINE** — a small/virtual method scattered as a deduped COMDAT copy; it
-  belongs *inline in the header*, NOT moved to a `.cpp`.
+- **C. RE-HOME HINTS** — unknown-class / bucket / namespace functions where the RVA
+  neighbour is a low-confidence home hint (named classes are already filed correctly).
+- **D. HEADER-INLINE** — a method scattered as a deduped COMDAT copy of an inline/
+  template/static header member; it belongs *inline in the header*, NOT moved to a `.cpp`.
 
 Regenerate: `python docs/exe-map/split_plan.py`.
 
@@ -46,47 +47,51 @@ be COMDAT scatter or a mis-group. Confirm before splitting.
 - `src/Bute/Hash.cpp` — 2 blocks: 6@0x13c240(engine)  4@0x184a40(engine)
 - `src/Gruntz/BoundaryLowerThunks.cpp` — 2 blocks: 5@0x0adde0(game)  4@0x115730(game)
 
-## C. MOVE — lone mis-attributions (117) · per-function
+## C. RE-HOME HINTS — unknown-class / bucket functions (113) · low confidence
 
-A single function stranded far from its file, sitting amid another file's methods.
-`Serialize` / boundary-thunk / special-member names are excluded (benign COMDAT pools).
+What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
+`CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
+(category D). So these rows are functions whose *class we can't pin*: placeholder-named
+bucket functions (`CObj_bdd0`, `Obj38120`, `C213a0`) and namespace utilities
+(`WinAPI::Utils::…`). The neighbour is a **re-home hint** to apply as naming/coverage
+improves — **not** a confident semantic move. Do not apply blindly.
 
-| function | currently in | → move to | distance |
+| function | currently in | → hint | distance |
 |---|---|---|---|
-| `?WrapCoord@CPlaneRender@@QAEXPAH0@Z` | WwdFile.cpp | **WorldSoundSet.cpp** (12 fns) | 1358.0 KB |
-| `?Next2@Rng@@YAHXZ` | Random.cpp | **GameLevel.cpp** (27 fns) | 1343.4 KB |
-| `?GrowTo@_zvec@@QAEPAXHH@Z` | ZVec.cpp | **TypeKeyColl.cpp** (9 fns) | 1265.9 KB |
-| `?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z` | DDrawSubMgrLeafScan.cpp | **ChatBoxOwner.cpp** (7 fns) | 1248.7 KB |
 | `?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH` | BoundaryTail.cpp | **WorldSoundSet.cpp** (12 fns) | 1224.3 KB |
-| `?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z` | WwdFile.cpp | **BattlezMapConfig.cpp** (11 fns) | 1201.7 KB |
-| `?ValidateMainBlock@WwdFile@@SAHVCString@@@Z` | WwdFile.cpp | **GameMode.cpp** (5 fns) | 1159.1 KB |
-| `?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z` | WwdFile.cpp | **GameMode.cpp** (5 fns) | 1159.1 KB |
+| `?ListNodeAdvance@@YGPAXPAPAX@Z` | DiscoveredSmall.cpp | **BattlezMapConfig.cpp** (8 fns) | 1213.7 KB |
+| `?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z` | DDrawSurfacePair.cpp | **GameMode.cpp** (9 fns) | 1190.7 KB |
+| `?ActiveWait@WinAPI@Utils@@YAXI@Z` | WinAPI.cpp | **GameApp.cpp** (18 fns) | 1143.6 KB |
 | `?Blit@CObj23d90@@QAEXHHHHH@Z` | BoundaryTail.cpp | **GruntzCommand.cpp** (16 fns) | 1128.3 KB |
-| `?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z` | MotionState.cpp | **Grunt.cpp** (12 fns) | 1112.0 KB |
+| `?GetName@Obj38120@@QAE?AVCString@@XZ` | BoundaryTail.cpp | **GameMode.cpp** (9 fns) | 1047.5 KB |
+| `?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObje` | DDrawSubMgrLeafScan.cpp | **Grunt.cpp** (4 fns) | 1009.1 KB |
+| `?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@` | AniElement.cpp | **TriggerMgr.cpp** (8 fns) | 1000.5 KB |
 | `?FileExists@WinAPI@Utils@@YAHPAD@Z` | WinAPI.cpp | **TileTriggerContainer.cpp** (13 fns) | 994.1 KB |
 | `?FindProcessByName@WinAPI@Utils@@YAHPBDHPAPAX@Z` | WinAPI.cpp | **TileTriggerContainer.cpp** (13 fns) | 994.1 KB |
+| `?Get@C213a0@@QAEHXZ` | BoundaryLowerMethods.cpp | **FontConfig.cpp** (8 fns) | 966.1 KB |
 | `?Clip@ClipHost_02b340@ApiMisc@@QAEXPBUtagRECT@@@` | ApiMiscHelpers.cpp | **BattlezMapConfig.cpp** (12 fns) | 937.8 KB |
-| `?Init@TileRegion@@QAEHPAUTileSrcHost@@HPAUtagREC` | MenuStateAssets.cpp | **MenuPage.cpp** (30 fns) | 906.3 KB |
-| `?Load@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z` | StreamRecordLoaders.cpp | **WorldSoundSet.cpp** (12 fns) | 898.6 KB |
-| `?LookupTile@CGameLevel@@QAEHHH@Z` | GameLevel.cpp | **BoundaryThunks.cpp** (9 fns) | 873.6 KB |
 | `?FileExistsCopyF90F0@WinAPI@Utils@@YAHPAD@Z` | WinAPI.cpp | **SoundFxEmitter.cpp** (5 fns) | 867.9 KB |
 | `?RegisterActs_6514d8@@YAXXZ` | LogicActRegistrars.cpp | **GruntSpawnConfig.cpp** (10 fns) | 865.6 KB |
 | `?Walk@Tree_193340@@QAEXP6AXHHH@ZHPAUTNode_193340` | ReconBatch2.cpp | **WwdGrid.cpp** (6 fns) | 826.0 KB |
-| `?Flip@CoinFlip@Rng@@QAEHXZ` | Random.cpp | **Play.cpp** (23 fns) | 820.9 KB |
-| `?Resolve@CTypeColl464@@QAEPAXH@Z` | BoundaryLowerMethods.cpp | **Grunt.cpp** (9 fns) | 817.7 KB |
-| `?ReleaseDeferred@CProjectile@@QAEXH@Z` | Projectile.cpp | **UserLogic.cpp** (8 fns) | 811.9 KB |
 | `?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z` | LogicRecordDispatch.cpp | **UserLogic.cpp** (12 fns) | 794.6 KB |
 | `?PositionUpdate@CSnd788d0@@QAEHXZ` | BoundaryTail.cpp | **TriggerMgr.cpp** (22 fns) | 789.5 KB |
-| `?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHH` | UserLogic.cpp | **Grunt.cpp** (16 fns) | 757.6 KB |
-| `?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z` | UserLogic.cpp | **Grunt.cpp** (16 fns) | 757.6 KB |
+| `?M@C50ca0@@QAEXH@Z` | BoundaryLowerMethods.cpp | **Grunt.cpp** (8 fns) | 775.8 KB |
+| `?GetName@Obj85500@@QAE?AVCString@@XZ` | BoundaryTail.cpp | **GruntzMgr.cpp** (3 fns) | 738.5 KB |
 | `?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z` | LogicRecordDispatch.cpp | **BattlezData.cpp** (30 fns) | 723.3 KB |
-| `?FlashRectC2e20@FlashHost@m4@@QAEHXZ` | FlashRect.cpp | **NetCmdSlot.cpp** (13 fns) | 690.7 KB |
 | `?Copy_16f6e0@@YGXPAUSrc_16f6e0@@PAUDst_16f6e0@@@` | ReconBatch2.cpp | **ButeMgr.cpp** (15 fns) | 682.9 KB |
-| `?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ` | Dialogs.cpp | **NetMgr.cpp** (24 fns) | 641.6 KB |
+| `?Set@C77dc0@@QAEXHHH@Z` | BoundaryLowerMethods.cpp | **TriggerMgr.cpp** (15 fns) | 619.5 KB |
+| `?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z` | LogicRecordDispatch.cpp | **Projectile.cpp** (8 fns) | 608.5 KB |
+| `?ApplyGameOptions@CPlay@@QAEXXZ` | Play.cpp | **MenuState.cpp** (8 fns) | 582.6 KB |
+| `?StepArrivalDefenseLean@CGrunt@@QAEHXZ` | Grunt.cpp | **Attract.cpp** (3 fns) | 564.0 KB |
+| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **GameMode.cpp** (9 fns) | 553.7 KB |
+| `?Set@RectHost_08c380@ApiMisc@@QAEXHHHH@Z` | ApiMiscHelpers.cpp | **GruntzMgr.cpp** (20 fns) | 549.9 KB |
+| `?MakeButeSectionKey@@YAHPADPBD1@Z` | FxModeDesc.cpp | **SoundFxEmitter.cpp** (5 fns) | 533.1 KB |
+| `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | Grunt.cpp | **SBI_WarlordHead.cpp** (4 fns) | 517.0 KB |
+| `?SetCellHeight@CGruntzMgr@@QAEXHHH@Z` | GruntzMgr.cpp | **TileTriggerSwitchLogic.cpp** (9 fns) | 504.5 KB |
 
-_(+87 more — see the generator output.)_
+_(+83 more — see the generator output.)_
 
-## D. HEADER-INLINE — reconstruct in the header (55) · not a move
+## D. HEADER-INLINE — reconstruct in the header (80) · not a move
 
 Small or virtual member functions sitting **scattered from their own class body**.
 They were defined **inline in a header**: MSVC still emits one out-of-line COMDAT copy
@@ -97,61 +102,56 @@ not in any `.cpp`; the compiler reproduces the same COMDAT + dedup for free.
 
 Top classes by inline-scattered method count:
 
+- `CAttract` — 7
+- `CUserLogic` — 5
+- `CBrickzGrid` — 4
 - `CDDrawWorkerMapSmall` — 3
 - `CDDrawSubMgrLeaf` — 3
-- `CWwdGameObject` — 3
-- `CAttract` — 2
-- `CUserLogic` — 2
+- `CMotionState` — 3
+- `CPlaneRender` — 3
+- `CEyeCandyAni` — 2
+- `CFortressFlag` — 2
+- `Rng` — 2
+- `WwdFile` — 2
+- `CProjectile` — 2
+- `CSBI_MenuItem` — 2
+- `CLogicRecord` — 2
 - `CResolveNode` — 2
-- `CVoiceTrigger` — 1
-- `CToobSpikez` — 1
+- `CDDrawWorkerRegistry` — 2
+- `CDDrawWorkerList` — 2
 - `CTileTriggerTransition` — 1
 - `CStaticHazard` — 1
 - `CObjectDropper` — 1
-- `CPathHazard` — 1
-- `CBehindCandyAni` — 1
-- `CEyeCandyAni` — 1
-- `CAniCycle` — 1
-- `CBootyState` — 1
-- `CMultiBootyState` — 1
-- `CCreditsState` — 1
-- `CPlay` — 1
-- `CFortressFlag` — 1
 
 Examples (virtual first):
 
 | function | class | size | virtual |
 |---|---|---:|:--:|
-| `?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeI` | CVoiceTrigger | 6 B | ✓ |
-| `?GetTypeTag@CToobSpikez@@UAE?AW4LogicTypeId@` | CToobSpikez | 6 B | ✓ |
 | `?GetTypeTag@CTileTriggerTransition@@UAE?AW4L` | CTileTriggerTransition | 6 B | ✓ |
 | `?GetTypeTag@CStaticHazard@@UAE?AW4LogicTypeI` | CStaticHazard | 6 B | ✓ |
 | `?GetTypeTag@CObjectDropper@@UAE?AW4LogicType` | CObjectDropper | 6 B | ✓ |
-| `?GetTypeTag@CPathHazard@@UAE?AW4LogicTypeId@` | CPathHazard | 6 B | ✓ |
-| `?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTyp` | CBehindCandyAni | 6 B | ✓ |
+| `?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@` | CDoNothing | 6 B | ✓ |
 | `?GetTypeTag@CEyeCandyAni@@UAE?AW4LogicTypeId` | CEyeCandyAni | 6 B | ✓ |
-| `?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@X` | CAniCycle | 6 B | ✓ |
 | `?Update@CAttract@@UAE?AW4GameStateId@@XZ` | CAttract | 6 B | ✓ |
-| `?Update@CBootyState@@UAE?AW4GameStateId@@XZ` | CBootyState | 6 B | ✓ |
-| `?Update@CMultiBootyState@@UAE?AW4GameStateId` | CMultiBootyState | 6 B | ✓ |
-| `?Update@CCreditsState@@UAE?AW4GameStateId@@X` | CCreditsState | 6 B | ✓ |
-| `?Update@CPlay@@UAE?AW4GameStateId@@XZ` | CPlay | 6 B | ✓ |
 | `?GetTypeTag@CFortressFlag@@UAE?AW4LogicTypeI` | CFortressFlag | 6 B | ✓ |
-| `?GetTypeTag@CParticlez@@UAE?AW4LogicTypeId@@` | CParticlez | 6 B | ✓ |
-| `?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@` | CTeleporter | 6 B | ✓ |
-| `?Update@CMenuState@@UAE?AW4GameStateId@@XZ` | CMenuState | 6 B | ✓ |
+| `?GetTypeTag@CExitTrigger@@UAE?AW4LogicTypeId` | CExitTrigger | 6 B | ✓ |
 | `?IsReady@CDDrawWorkerMapSmall@@UAEHXZ` | CDDrawWorkerMapSmall | 22 B | ✓ |
 | `?Slot06_156db0@CDDrawWorkerMapSmall@@UAEHXZ` | CDDrawWorkerMapSmall | 6 B | ✓ |
 | `?Reset@CFileMem@@UAEXXZ` | CFileMem | 22 B | ✓ |
 | `?SetName@CFileMemBase@@UAEHPBDHH@Z` | CFileMemBase | 39 B | ✓ |
+| `?GetStateId@CDDrawWorkerCache@@UAE?AW4StateI` | CDDrawWorkerCache | 6 B | ✓ |
 | `?IsReady@CDDrawSubMgrLeaf@@UAEHXZ` | CDDrawSubMgrLeaf | 22 B | ✓ |
-| `?ActiveWait@WinAPI@Utils@@YAXI@Z` | WinAPI | 33 B |  |
+| `??0CMotionState@@QAE@XZ` | CMotionState | 388 B |  |
+| `??0CMovingLogic@@QAE@XZ` | CMovingLogic | 481 B |  |
+| `?WrapCoord@CPlaneRender@@QAEXPAH0@Z` | CPlaneRender | 172 B |  |
+| `?Next2@Rng@@YAHXZ` | Rng | 70 B |  |
+| `?IndexToPtr@_zvec@@QAEHH@Z` | _zvec | 116 B |  |
+| `?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z` | CPlaneRender | 76 B |  |
+| `?ValidateMainBlock@WwdFile@@SAHVCString@@@Z` | WwdFile | 314 B |  |
+| `?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z` | WwdFile | 296 B |  |
+| `?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z` | CMotionState | 161 B |  |
 | `?SetZ@CMotionState@@QAEXN@Z` | CMotionState | 25 B |  |
-
-> Many MOVE rows are placeholder-named functions in reconstruction *bucket* files
-> (`DiscoveredSmall`, `BoundaryTail`, `ReconBatch*`, `DDrawSubMgr*Scan`). For those the
-> neighbour-home is a re-homing *hint* to apply as naming/coverage improves — lower
-> priority than the class splits above.
+| `??0CTileTrigger@@QAE@XZ` | CTileTrigger | 75 B |  |
 
 ## How to execute a split (NetMgr worked example)
 
