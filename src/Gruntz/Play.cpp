@@ -287,11 +287,8 @@ void CPlay::ApplyGameOptions() {
     g_mgrSettings->m_scrollSpeed = g_opt_22bd68;
 }
 
-// CPlay::Update() (slot 4): the PLAY state's ID = 3.
-RVA(0x0008c910, 0x6)
-GameStateId CPlay::Update() {
-    return GAMESTATE_PLAY;
-}
+// CPlay::Update (0x0008c910) is now an inline member in the header.
+
 
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)

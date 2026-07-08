@@ -362,11 +362,8 @@ i32 CAttract::Vslot07() {
     return 1;
 }
 
-// CAttract::Update() (slot 4 / +0x10, 0x08cd40): the attract state's ID tag = 2.
-RVA(0x0008cd40, 0x6)
-GameStateId CAttract::Update() {
-    return GAMESTATE_ATTRACT;
-}
+// CAttract::Update (0x0008cd40) is now an inline member in the header.
+
 
 // CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
 // (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.

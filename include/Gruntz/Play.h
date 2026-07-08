@@ -239,7 +239,8 @@ public:
     CPlay();
     virtual ~CPlay() OVERRIDE; // slot 0 (0x8c830)
 
-    virtual GameStateId Update() OVERRIDE;       // GAMESTATE_PLAY (3);  (slot 4)
+    RVA(0x0008c910, 0x6)
+    virtual GameStateId Update() OVERRIDE { return GAMESTATE_PLAY; }
     virtual i32 Render() OVERRIDE;               // THE per-frame heart (this TU)
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1 (CState override)
     virtual void ReleaseResources() OVERRIDE;    // slot 2 (CState override)

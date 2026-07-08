@@ -141,17 +141,11 @@ CState::CState() {
 // carry an RVA() attribute - pin the deleting-dtor symbol by mangled name here.
 // @rva-symbol: ??_GCState@@UAEPAXI@Z 0x0008c710 0x24
 
-// CState::Update()  (slot 4 / +0x10): the base default = return 1.
-RVA(0x0008c4b0, 0x6)
-GameStateId CState::Update() {
-    return GAMESTATE_BASE;
-}
+// CState::Update (0x0008c4b0) is now an inline member in the header.
 
-// CState::Render()  (slot 5 / +0x14): the base default = return 1.
-RVA(0x0008c4d0, 0x6)
-i32 CState::Render() {
-    return 1;
-}
+
+// CState::Render (0x0008c4d0) is now an inline member in the header.
+
 
 // The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable
 // order so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
@@ -160,18 +154,11 @@ i32 CState::Vfunc1(i32, i32, i32) {
 }
 void CState::ReleaseResources() {}
 
-// CState::Vfunc3() (slot 3 / +0xc): the active/ready gate - returns m_ready.
-RVA(0x0008c490, 0x4)
-i32 CState::Vfunc3() {
-    return m_ready;
-}
+// CState::Vfunc3 (0x0008c490) is now an inline member in the header.
 
-// CState::Vslot11() (slot 17 / +0x44): a 3-arg base default returning 0 (the
-// derived states that care override it; CAttract inherits this body unchanged).
-RVA(0x0008c610, 0x5)
-i32 CState::Vslot11(i32, i32, i32) {
-    return 0;
-}
+
+// CState::Vslot11 (0x0008c610) is now an inline member in the header.
+
 
 // ===========================================================================
 // CState-derived leaf teardown / per-frame poll methods (trace-discovered).
@@ -299,23 +286,14 @@ void CBootyState::ReleaseResources() {
 
 // (CPlay::Update lives with the rest of CPlay in src/Gruntz/Play.cpp.)
 
-// CMenuState::Update(): the MENU state's ID = 5.
-RVA(0x0008ce10, 0x6)
-GameStateId CMenuState::Update() {
-    return GAMESTATE_MENU;
-}
+// CMenuState::Update (0x0008ce10) is now an inline member in the header.
 
-// CCreditsState::Update(): the CREDITS state's ID = 8.
-RVA(0x0008d590, 0x6)
-GameStateId CCreditsState::Update() {
-    return GAMESTATE_CREDITS;
-}
 
-// CBootyState::Update(): the BOOTY state's ID = 0xa.
-RVA(0x0008d3f0, 0x6)
-GameStateId CBootyState::Update() {
-    return GAMESTATE_BOOTY;
-}
+// CCreditsState::Update (0x0008d590) is now an inline member in the header.
+
+
+// CBootyState::Update (0x0008d3f0) is now an inline member in the header.
+
 
 // ===========================================================================
 // The concrete Render overrides (vtable slot +0x14) - the real per-frame
@@ -1734,11 +1712,8 @@ void CMultiBootyState::ReleaseResources() {
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
-// CMultiBootyState::Update() (slot 4 / +0x10, 0x08d4c0): the multi-booty state's ID = 0x12.
-RVA(0x0008d4c0, 0x6)
-GameStateId CMultiBootyState::Update() {
-    return GAMESTATE_MULTIBOOTY;
-}
+// CMultiBootyState::Update (0x0008d4c0) is now an inline member in the header.
+
 
 // CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
 // title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the

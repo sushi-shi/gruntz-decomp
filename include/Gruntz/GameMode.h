@@ -231,7 +231,8 @@ public:
     // the base cleanup. Defined out-of-line (GameMode.cpp) so MSVC emits a
     // distinct `??1` the `??_G` deleting dtor dispatches to.
     virtual ~CMenuState() OVERRIDE;
-    virtual GameStateId Update() OVERRIDE;     // GAMESTATE_MENU (5);  (slot 4)
+    RVA(0x0008ce10, 0x6)
+    virtual GameStateId Update() OVERRIDE { return GAMESTATE_MENU; }
     virtual i32 Render() OVERRIDE;             // the per-frame menu draw (this TU)
     virtual void ReleaseResources() OVERRIDE;  // slot 2 (+0x8) - menu teardown
     virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) - per-frame poll
@@ -311,7 +312,8 @@ public:
     // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
     virtual ~CCreditsState() OVERRIDE;        // slot 0  0x08d5e0 (??1) / 0x08d5b0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x038f00 credits teardown
-    virtual GameStateId Update() OVERRIDE;    // slot 4  (+0x10) 0x08d590 GAMESTATE_CREDITS (8)
+    RVA(0x0008d590, 0x6)
+    virtual GameStateId Update() OVERRIDE { return GAMESTATE_CREDITS; }
     virtual i32 Render() OVERRIDE;            // slot 5  (+0x14) 0x0391d0 per-frame credits draw
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x039400 (declared-only: Vfunc3-gated roll)
     virtual i32 InputVirtual()
@@ -381,7 +383,8 @@ public:
     // release (statically bound), re-stamps CState, chains base cleanup.
     virtual ~CBootyState() OVERRIDE;          // slot 0  0x08d440 (??1) / 0x08d410 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x018c90 booty teardown
-    virtual GameStateId Update() OVERRIDE;    // slot 4  (+0x10) 0x08d3f0 GAMESTATE_BOOTY (0xa)
+    RVA(0x0008d3f0, 0x6)
+    virtual GameStateId Update() OVERRIDE { return GAMESTATE_BOOTY; }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x01c210 per-frame booty draw (stub)
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x01ce10 (declared-only)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (declared-only; sib ReadyAndPaint)
@@ -437,7 +440,8 @@ public:
     // declared-only (the vtable references them reloc-masked; the vtable isn't diffed).
     virtual ~CMultiBootyState() OVERRIDE;     // slot 0  0x08d510 (??1) / 0x08d4e0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x01e520 booty teardown
-    virtual GameStateId Update() OVERRIDE; // slot 4  (+0x10) 0x08d4c0 GAMESTATE_MULTIBOOTY (0x12)
+    RVA(0x0008d4c0, 0x6)
+    virtual GameStateId Update() OVERRIDE { return GAMESTATE_MULTIBOOTY; }
     virtual i32 Render() OVERRIDE;       // slot 5  (+0x14) 0x01f480 (declared-only; per-frame draw)
     virtual i32 Vslot06() OVERRIDE;      // slot 6  (+0x18) 0x01f850 (declared-only)
     virtual i32 Vslot07() OVERRIDE;      // slot 7  (+0x1c) 0x01f870 (declared-only)

@@ -50,9 +50,12 @@ public:
     } // slot 0
     virtual i32 Vfunc1(i32, i32, i32); // slot 1 (asset/state load; leaf-overridden)
     virtual void ReleaseResources();   // slot 2  (+0x8)  resource teardown (leaf override)
-    virtual i32 Vfunc3();              // slot 3  (+0xc)  active/ready gate (return m_ready)
-    virtual GameStateId Update();      // slot 4  (+0x10)  base default = GAMESTATE_BASE (1)
-    virtual i32 Render();              // slot 5  (+0x14)  base default = return 1;
+    RVA(0x0008c490, 0x4)
+    virtual i32 Vfunc3() { return m_ready; }
+    RVA(0x0008c4b0, 0x6)
+    virtual GameStateId Update() { return GAMESTATE_BASE; }
+    RVA(0x0008c4d0, 0x6)
+    virtual i32 Render() { return 1; }
     virtual i32 Vslot06();             // slot 6  (+0x18)  activation-ready poll
     virtual i32 Vslot07();             // slot 7  (+0x1c)  lobby-host-ready poll
     virtual i32 InputVirtual();        // slot 8  (+0x20)  per-frame input poll
@@ -67,7 +70,8 @@ public:
     virtual i32 Vslot0e(i32, i32, i32); // slot 14 (+0x38)
     virtual i32 Vslot0f(i32, i32, i32); // slot 15 (+0x3c)
     virtual i32 Vslot10(i32, i32, i32); // slot 16 (+0x40)
-    virtual i32 Vslot11(i32, i32, i32); // slot 17 (+0x44)
+    RVA(0x0008c610, 0x5)
+    virtual i32 Vslot11(i32, i32, i32) { return 0; }
     virtual i32 Vslot12(i32, i32, i32); // slot 18 (+0x48)
     virtual i32 Vslot13(i32, i32, i32); // slot 19 (+0x4c)
     virtual i32 Vslot14(i32, i32, i32); // slot 20 (+0x50)
