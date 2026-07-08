@@ -2249,19 +2249,6 @@
   "spread": 631.3983957219251
  },
  {
-  "file": "src/Gruntz/DiscoveredEh.cpp",
-  "n": 2,
-  "bytes": 182,
-  "lo": 91232,
-  "hi": 1527264,
-  "span": 1436032,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.00012673812282734646,
-  "spread": 7890.285714285715
- },
- {
   "file": "src/Gruntz/BootyStateActivate.cpp",
   "n": 2,
   "bytes": 472,
@@ -5544,19 +5531,6 @@
   "lo": 1375424,
   "hi": 1375789,
   "span": 365,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/DiscoveredArray.cpp",
-  "n": 1,
-  "bytes": 310,
-  "lo": 1376320,
-  "hi": 1376630,
-  "span": 310,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,

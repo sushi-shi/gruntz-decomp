@@ -5226,19 +5226,6 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/DiscoveredArray.cpp",
-  "n": 1,
-  "bytes": 310,
-  "lo": 1376320,
-  "hi": 1376630,
-  "span": 310,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
   "file": "src/DDrawMgr/DDrawWorker.cpp",
   "n": 1,
   "bytes": 67,

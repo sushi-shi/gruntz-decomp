@@ -2524,13 +2524,13 @@ flags = "base"
 # trace-discovered /GX leaf dtors re-homed from src/Stub/Discovered.cpp (need eh):
 [[unit]]
 unit = "discoveredeh"
-source = "src/Gruntz/DiscoveredEh.cpp"
+source = "src/Stub/DiscoveredEh.cpp"
 flags = "eh"
 
 # trace-discovered MFC CArray::SetSize re-homed from src/Stub/Discovered.cpp:
 [[unit]]
 unit = "discoveredarray"
-source = "src/Gruntz/DiscoveredArray.cpp"
+source = "src/Stub/DiscoveredArray.cpp"
 flags = "base"
 
 [[unit]]
