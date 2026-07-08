@@ -84,6 +84,7 @@ public:
     i32 m_74; // +0x74  state
 };
 SIZE(CDDrawWorkerBase, 0x78);
+RELOC_VTBL(CDDrawWorkerBase, 0x001efed0); // reduced/derived view aliases CDDrawWorkerB (slot-RVA verified)
 
 // BYTE-frame worker (12-slot vtable 0x1efea0). Overrides only Vfunc2C in source;
 // its other retail overrides (slots 1/5/7/8/10) stay inherited (reloc-masked).

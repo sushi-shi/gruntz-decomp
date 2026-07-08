@@ -621,6 +621,7 @@ SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 SIZE_UNKNOWN(RegDirEntry);
 SIZE_UNKNOWN(RegDirHandle);
 SIZE_UNKNOWN(RegWorkerValue);
+RELOC_VTBL(RegWorkerValue, 0x001efbe8); // reduced/derived view aliases CDDrawWorker (slot-RVA verified)
 SIZE_UNKNOWN(CWorkerMapValue);
 SIZE_UNKNOWN(CWorkerValue);
 SIZE(CDDrawWorker, 0x6c);
