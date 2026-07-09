@@ -70,8 +70,9 @@ struct CMapStringToObLite {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at th
 // mgr+0x14: the real CDDrawWorkerRegistry (full def in DDrawMgr units) -
 // FindKeyOfValue_165360 reverse-looks-up a key CString by CWorkerMapValue through
 // its +0x10 map. Reloc-masked reader view onto the real class.
+class CImageSet; // real FindKeyOfValue_165360 arg (worker map value); cast at the WwdWorker* call sites
 struct CDDrawWorkerRegistry {
-    CString FindKeyOfValue_165360(void* obj); // 0x165360  __thiscall -> CString (by value)
+    CString FindKeyOfValue_165360(CImageSet* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
     MapLookupA m_map; // +0x10  name -> object (0x1b8008)
 };
@@ -498,21 +499,21 @@ i32 CWwdGameObject::Serialize(i32 arParam) {
 
     memset(tmp, 0, sizeof(tmp));
     if (m_80 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_80);
+        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_80);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_88 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_88);
+        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_88);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
 
     memset(tmp, 0, sizeof(tmp));
     if (m_90 != 0) {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_90);
+        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_90);
         strcpy(tmp, str);
     }
     ar->Write(tmp, 0x80);
@@ -657,7 +658,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
     rec.m_10 = edi;
 
     {
-        CString str = m_mgr->m_14->FindKeyOfValue_165360(m_worker);
+        CString str = m_mgr->m_14->FindKeyOfValue_165360((CImageSet*)m_worker);
         strcpy(rec.m_name, str);
     }
     ar->Write(&rec, 0xa0);

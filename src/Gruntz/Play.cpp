@@ -71,9 +71,10 @@ public:
     i32 HasKeyEqual_155550(const char* k);
     i32 RemoveKeysEqual_155360(const char* a, const char* b);
 }; // 0x155550/0x155360
+class CSymTab; // ScanTree_152ad0's real 1st arg (the anim namespace tree); cast at the void* call sites
 class CDDrawSubMgrAni {
 public:
-    void ScanTree_152ad0(void* n, const char* a, const char* b);
+    i32 ScanTree_152ad0(CSymTab* n, const char* a, const char* b); // 0x152ad0 (real: i32 ret, CSymTab* arg)
 }; // 0x152ad0
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
@@ -3060,7 +3061,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!anims) {
         return 0;
     }
-    ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(anims, "GAME", "_");
+    ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)anims, "GAME", "_");
     return 1;
 }
 
@@ -3371,7 +3372,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
-            ->ScanTree_152ad0(s, "GRUNTZ_NORMALGRUNT", "_");
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3381,7 +3382,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_DEATHZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3392,7 +3393,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_ENTRANCEZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3402,7 +3403,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_EXITZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3414,7 +3415,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
-            ->ScanTree_152ad0(s, "GRUNTZ_GRUNTPUDDLE", "_");
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3424,7 +3425,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_PICKUPS", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }
@@ -3435,7 +3436,7 @@ i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0(s, "GRUNTZ_BOMBGRUNT", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             ((CMulti*)notify)->AckJoinFailure();
         }

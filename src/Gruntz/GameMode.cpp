@@ -1853,16 +1853,12 @@ CMultiBootyState::~CMultiBootyState() {
 // The menu music controller (CMenuState+0x1bc): a player @+0x10 with a draw-clock
 // gate (last @+0x14, interval @+0x18). The player has IsPlaying / Stop /
 // ConfigureItem __thiscall slots (reloc-masked externs).
-struct CMenuMusicPlayer { // m_1bc->m_10
-    // IsPlaying @0x1353f0 IS DirectSoundMgr::IsPlaying; cast at each call.
-    // Stop @0x135660 IS DirectSoundMgr::CloneAndPlay; cast at the call.
-    // ConfigureItem @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at each call.
-};
+class DirectSoundMgr; // m_1bc->m_10 IS a DirectSoundMgr (IsPlaying 0x1353f0 / CloneAndPlay 0x135660)
 struct CMenuMusic {
     char m_pad00[0x10];
-    CMenuMusicPlayer* m_10; // +0x10  player
-    i32 m_14;               // +0x14  last draw-clock
-    i32 m_18;               // +0x18  interval
+    DirectSoundMgr* m_10; // +0x10  player (real DirectSoundMgr)
+    i32 m_14;             // +0x14  last draw-clock
+    i32 m_18;             // +0x18  interval
 };
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
@@ -2021,8 +2017,8 @@ void CMenuState::StopMusicChain() {
     if (!((DirectSoundMgr*)mus->m_10)->IsPlaying()) {
         return;
     }
-    ((DirectSoundMgr*)m_1bc->m_10)->CloneAndPlay(0, 0x1f4, 1);
-    if (!((DirectSoundMgr*)m_1bc->m_10)->IsPlaying()) {
+    m_1bc->m_10->CloneAndPlay(0, 0x1f4, 1);
+    if (!m_1bc->m_10->IsPlaying()) {
         return;
     }
     do {
@@ -2030,7 +2026,7 @@ void CMenuState::StopMusicChain() {
         if (r) {
             ((SoundDevice*)r)->PurgeVoiceList(-1);
         }
-    } while (((DirectSoundMgr*)m_1bc->m_10)->IsPlaying());
+    } while (m_1bc->m_10->IsPlaying());
 }
 
 // CMenuState::FrameSlot28(int) (slot 10 / +0x28, 0xa06d0): flush + flip the menu

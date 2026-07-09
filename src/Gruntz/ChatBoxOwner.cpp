@@ -14,7 +14,7 @@
 namespace m4 {
     class PwdHost {
     public:
-        i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect);
+        i32 Render22160(void* hdc, i32 maxWidth, RECT* rect); // real @0x22160 arg is void* (Ghidra sym PAX)
     };
 } // namespace m4
 
