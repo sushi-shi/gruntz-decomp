@@ -380,6 +380,9 @@ public:
 public:
     CMenuSparkle(CGameObject* obj); // 0x0adbe0
     virtual ~CMenuSparkle() OVERRIDE;
+    // The per-frame handler (@0x0ae2a0): tick the aux flicker countdown, advance the
+    // +0x1a0 anim on expiry, then re-arm the random flicker delay.
+    i32 AdvanceAnim();
     i32 m_40; // +0x40
 };
 VTBL(CMenuSparkle, 0x1e82dc);
@@ -1125,6 +1128,53 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
     m_objAux->m_130 = rand() % 0xfa1 + 0x3e8;
+}
+
+// The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
+// g_645584 in Attract.cpp, g_6bf3bc below); declared extern so the loads reloc-mask.
+extern u32 g_645584;     // 0x645584  per-frame time delta
+extern "C" i32 g_6bf3bc; // 0x6bf3bc  frame tick (also declared at the pump cluster below)
+
+// The +0x1a0 anim sub-object's blit-param facet (Recompute @0x15c320, __thiscall) -
+// the SAME embedded object CAniAdvanceCursor advances, viewed as CDDrawBlitParam for
+// the recompute call (the documented per-leaf +0x1a0 dual-view; call reloc-masks).
+class CDDrawBlitParam {
+public:
+    void Recompute_15c320(i32 x); // 0x15c320
+};
+
+// CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
+// the aux flicker countdown (m_objAux->m_130, seeded random in the ctor); when it
+// reaches 0 advance the +0x1a0 anim; then, while the object is active (m_38->m_1c8)
+// and the anim is idle (m_20 == 0), recompute the blit param and re-arm the random
+// flicker delay (rand()%0xfa1 + 0x3e8, the same range the ctor seeds).
+// @early-stop
+// scheduling/regalloc coin-flip (~95%, topic:scheduling): logic byte-faithful (the
+// countdown, the conditional Advance, the m_1c8/m_20 gate, the Recompute + rand
+// re-arm all match retail). Sole residual: retail schedules `lea ecx,[m_38+0x1a0]`
+// (anim) BEFORE `mov eax,[m_38+0x1c8]` (m_1c8, reusing eax), whereas MSVC5 loads
+// m_1c8 into edx first (keeping m_38 in eax) then the lea - a 2-instruction reorder
+// + reg choice not steerable from C (tried o-local, active-local, direct m_38).
+RVA(0x000ae2a0, 0x8e)
+i32 CMenuSparkle::AdvanceAnim() {
+    u32 delta = g_645584;
+    if (delta >= m_objAux->m_130) {
+        m_objAux->m_130 = 0;
+    } else {
+        m_objAux->m_130 -= delta;
+    }
+    if (m_objAux->m_130 == 0) {
+        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    }
+    CAniAdvanceCursor* anim = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
+    i32 active = m_38->m_1c8;
+    if (active != 0 && anim->m_20 == 0) {
+        if (anim != 0) {
+            ((CDDrawBlitParam*)anim)->Recompute_15c320(1);
+        }
+        *(i32*)((char*)m_3c + 0x20) = rand() % 0xfa1 + 0x3e8;
+    }
+    return 0;
 }
 
 // --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---

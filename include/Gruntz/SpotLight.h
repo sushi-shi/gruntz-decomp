@@ -22,6 +22,8 @@ public:
     // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b1630);
     // a plain method - the base placeholder blocks the int-arg OVERRIDE spelling.
     i32 RunAct(i32 id);
+    // The per-tick laser/rotation update (0x0b1af0).
+    i32 Tick_0b1af0();
 
     char m_pad40[0x58 - 0x40];
     double m_58; // +0x58  per-tick rate

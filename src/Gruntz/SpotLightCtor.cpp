@@ -15,8 +15,11 @@
 #include <Mfc.h>
 #include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
-#include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
-#include <Gruntz/ActReg.h>       // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/GameRegistry.h>  // canonical *0x24556c singleton (color table via m_78)
+#include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <math.h>                 // sin / cos (the Tick rotation)
 #include <rva.h>
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
@@ -141,7 +144,241 @@ i32 CSpotLight::RunAct(i32 id) {
     return (i32)e;
 }
 
+// SerializeMove's +0x98 focus slot is a serialized object reference. The referent
+// carries its id at +0x188 and a type tag via vtable slot 8 (+0x20). The Read path
+// resolves the id through the resource mgr's (g_gameReg->m_30) id->object map at
+// m_8 +0x48 (an MFC CMapPtrToPtr, Lookup @0x1b8760), keeping the object only when its
+// type tag is 5. The per-serialize round counter g_serialCounter bumps each pass.
+extern i32 g_serialCounter; // 0x629ad0
+struct CSpotFocus {
+    virtual i32 s0();
+    virtual i32 s1();
+    virtual i32 s2();
+    virtual i32 s3();
+    virtual i32 s4();
+    virtual i32 s5();
+    virtual i32 s6();
+    virtual i32 s7();
+    virtual i32 GetType(); // slot 8 (+0x20): the type tag (5 == a valid focus)
+    char m_pad04[0x188 - 0x04];
+    i32 m_188; // +0x188  the serialized id
+};
+// The resource mgr (g_gameReg->m_30) holds its id->object map at m_8 + 0x48.
+struct CSpotResMgr {
+    char m_pad00[0x8];
+    char* m_8; // +0x08  the map holder (its +0x48 is the CMapPtrToPtr)
+};
+
+// CSpotLight::SerializeMove @0x0b2050 (vtable slot 1) - chain the base + the +0x34
+// object-reference, then transfer the light's own state through the archive keyed on
+// the serialize mode: 4 = Write / 7 = Read the eight rotation/offset doubles
+// (m_58..m_90) + the +0x98 focus reference (serialize/resolve its id) + the three
+// tail ints (m_9c/m_a0/m_a4); 8 = re-apply the level's draw-fill color.
+// @early-stop
+// 99.96% - entropy-tail regalloc coin-flip (topic:regalloc): the whole body (the two
+// chains, the mode switch, all sixteen 8-byte double transfers, the g_serialCounter
+// bump, the mode-8 draw-fill, the Write serialize-id, and the Read MFC CMapPtrToPtr
+// Lookup + branchless `(GetType()==5)?obj:0` resolve) is byte-faithful. Sole residual:
+// the Write-id load `id = m_98->m_188` uses ecx here vs eax in retail (a 1-byte
+// callee-saved reg choice), not source-steerable under MSVC5 /O2.
+RVA(0x000b2050, 0x295)
+i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
+    if (SerializeChain((i32)arc, mode, c, d) == 0) {
+        return 0;
+    }
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)arc, mode, c, (CSerialObj*)d) == 0) {
+        return 0;
+    }
+    CGameRegistry* reg = g_gameReg;
+    CSpotResMgr* mgr = (CSpotResMgr*)reg->m_world;
+    CSerialArchive* s = (CSerialArchive*)arc;
+    switch (mode) {
+        case 4: // Write
+            s->Write(&m_58, 8);
+            s->Write(&m_60, 8);
+            s->Write(&m_68, 8);
+            s->Write(&m_70, 8);
+            s->Write(&m_78, 8);
+            s->Write(&m_80, 8);
+            s->Write(&m_88, 8);
+            s->Write(&m_90, 8);
+            g_serialCounter++;
+            {
+                i32 id = 0;
+                if (m_98 != 0) {
+                    id = ((CSpotFocus*)m_98)->m_188;
+                }
+                s->Write(&id, 4);
+            }
+            s->Write(&m_9c, 4);
+            s->Write(&m_a0, 4);
+            s->Write(&m_a4, 4);
+            break;
+        case 7: // Read
+            s->Read(&m_58, 8);
+            s->Read(&m_60, 8);
+            s->Read(&m_68, 8);
+            s->Read(&m_70, 8);
+            s->Read(&m_78, 8);
+            s->Read(&m_80, 8);
+            s->Read(&m_88, 8);
+            s->Read(&m_90, 8);
+            g_serialCounter++;
+            {
+                i32 id;
+                s->Read(&id, 4);
+                CSpotFocus* out = 0;
+                i32 resolved = ((CMapPtrToPtr*)(mgr->m_8 + 0x48))->Lookup((void*)id, (void*&)out);
+                if (resolved != 0) {
+                    if (out == 0) {
+                        resolved = 0;
+                    } else {
+                        resolved = (out->GetType() == 5) ? (i32)out : 0;
+                    }
+                }
+                m_98 = resolved;
+                if (m_98 == 0 && id != 0) {
+                    return 0;
+                }
+            }
+            s->Read(&m_9c, 4);
+            s->Read(&m_a0, 4);
+            s->Read(&m_a4, 4);
+            break;
+        case 8: { // re-apply the level draw-fill color
+            CGameObject* o = m_object;
+            i32 fill = ((CSpotMgrTable*)reg->m_logicPump)->m_arr[o->m_11c];
+            o->m_drawActive = 1;
+            o->m_drawFillArg = fill;
+            o->m_drawFillCmd = 7;
+            break;
+        }
+    }
+    return 1;
+}
+
+// The per-tick laser-update externs (all reloc-masked): the hit/spawn probe (0x32ce),
+// the per-cell sound-cue emitter (0x2e96, __thiscall on g_gameReg->m_68), the target's
+// activate (0x4322, __thiscall on the probed object), and the sound-play (0x1360d0).
+extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
+extern "C" void Activate_4322(void* target, i32 f);
+extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
+// The per-cell sound-cue emitter, a __thiscall method on the cue subsystem
+// (g_gameReg->m_68); modeled on a tiny host so `mov ecx,mgr; ...; call` falls out.
+struct CSpotSoundMgr {
+    i32 EmitCue_2e96(i32 col, i32 row, i32 tag, i32 z); // 0x2e96
+};
+// The seeded PRNG (inline LCG) the laser id draws from: seed once from timeGetTime.
+extern "C" unsigned char g_randSeeded; // 0x6c127d
+extern "C" i32 g_randSeed;             // 0x6c1288
+extern u32 (*g_pTimeGetTime)();        // 0x6c4650
+DATA(0x00245584)
+extern u32 g_645584; // frame-time delta
+// The activation-key "B" the update re-resolves through the bute tree.
+extern char s_actKeyB[]; // 0x60d1bc "B"
+// The laser-sound format string + the sound-play gate globals.
+extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
+extern i32 g_sndEnabled;              // 0x61ab20
+extern i32 g_sndCueTag;               // 0x61ab24
+// The probed hit-target: its +0x258 is a type tag (0x38 == self), +0x10 its object.
+struct CSpotTarget {
+    char m_pad00[0x10];
+    CGameObject* m_10; // +0x10  the target's bound object (coords at +0x5c/+0x60)
+    char m_pad14[0x258 - 0x14];
+    i32 m_258; // +0x258  type tag
+};
+// The looked-up laser sound record: the update reads its move-delta at +0x5c/+0x60.
+struct CSpotLaser {
+    char m_pad00[0x5c];
+    i32 m_5c; // +0x5c
+    i32 m_60; // +0x60
+};
+
+// CSpotLight::Tick_0b1af0 @0x0b1af0 - the per-tick laser update. Unless the game is
+// in the easy-mode gate, probe the cell under the light (Probe_32ce) for a live
+// non-self target; if found, re-resolve the "B" bute node, copy the target's coords,
+// and either (m_object->m_114 == 1) emit the cell sound-cue + spawn a numbered
+// "LEVEL_UFOHAZARDLASER%d" laser sound (inline-seeded rand id) + play it, or else
+// activate the target and emit the alternate cue. Otherwise fall through to the 2D
+// rotation of the light offset (angle m_90 advanced by g_645584 * rate m_58).
+// @early-stop
+// ~52% - megafunction frame/regalloc + x87 fp-stack-schedule wall
+// (docs/patterns/x87-fp-stack-schedule.md, topic:wall topic:regalloc): the control
+// flow (mode gate, probe, target/type checks, "B" bute re-resolve, coord copy, the
+// m_114 laser-vs-activate branch, and the 2D rotation) is a complete reconstruction,
+// but retail's frame reserves 0x18 (the CString name + the fp scratch temps
+// [esp+0x10..0x20]) vs our 0xc, and it hoists g_gameReg->m_68 into the prologue - so
+// every [esp+N] slot + register assignment shifts, cascading through the whole body.
+// Compounded by the inlined seed*0x343fd+0x269ec3 rand LCG (lea-chain) and the
+// fld/fsin/fcos/fxch rotation stack-scheduling (the SAME wall the CSpotLight ctor +
+// Update_0b1ee0 carry). Logic complete; the frame/regalloc/fp codegen is the wall.
+RVA(0x000b1af0, 0x318)
+i32 CSpotLight::Tick_0b1af0() {
+    CGameRegistry* reg = g_gameReg;
+    if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
+        char* o = (char*)m_object;
+        CSpotTarget* tgt = (CSpotTarget*)Probe_32ce(
+            *(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
+        if (tgt != 0 && tgt->m_258 != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
+            m_prevAnimSetNode = m_objAux->m_1c;
+            m_objAux->m_1c = g_buteTree.Find(s_actKeyB);
+            char* t = (char*)tgt->m_10;
+            *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);
+            *(i32*)(o + 0x60) = *(i32*)(t + 0x60);
+            if (*(i32*)(o + 0x114) == 1) {
+                ((CSpotSoundMgr*)*(void**)((char*)reg + 0x68))->EmitCue_2e96(m_9c, m_a0, 5, -1);
+                i32 seed;
+                if ((g_randSeeded & 1) == 0) {
+                    g_randSeeded |= 1;
+                    seed = (i32)g_pTimeGetTime();
+                } else {
+                    seed = g_randSeed;
+                }
+                g_randSeed = seed * 0x343fd + 0x269ec3;
+                i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
+                CString name;
+                name.Format(s_LEVEL_UFOHAZARDLASER, laser);
+                char* w = (char*)reg->m_world;   // g_gameReg->m_30 resource holder
+                char* obj = *(char**)(w + 0x28); // world->m_28 (the name->sound map host)
+                if (*(i32*)(obj + 0x30) == 0) {
+                    CObject* out = 0;
+                    if (((CMapStringToOb*)(obj + 0x10))->Lookup(name, out) && out != 0
+                        && g_sndEnabled != 0) {
+                        SoundPlay_1360d0((i32)out, 0, 0, g_sndCueTag);
+                    }
+                }
+            } else {
+                Activate_4322(tgt, 1);
+                ((CSpotSoundMgr*)*(void**)((char*)reg + 0x68))->EmitCue_2e96(m_9c, m_a0, 0xa, -1);
+            }
+            return 0;
+        }
+    }
+    // 2D rotation of the light offset (the fp-stack-schedule wall)
+    double s = sin(m_90);
+    double c = cos(m_90);
+    double dt = (double)(i32)g_645584;
+    CSpotLaser* mv = (CSpotLaser*)m_98;
+    double rx = m_80 * c - m_88 * s;
+    double ry = m_80 * s + m_88 * c;
+    if (mv != 0) {
+        m_70 = (double)mv->m_5c;
+        m_78 = (double)mv->m_60;
+    }
+    m_60 = m_70 + rx;
+    m_68 = m_78 + ry;
+    m_90 = m_90 + dt * m_58;
+    *(i32*)((char*)m_object + 0x5c) = (i32)m_60;
+    *(i32*)((char*)m_object + 0x60) = (i32)m_68;
+    return 0;
+}
+
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotMgrTable);
 SIZE_UNKNOWN(CSpotActEntry);
+SIZE_UNKNOWN(CSpotFocus);
+SIZE_UNKNOWN(CSpotResMgr);
+SIZE_UNKNOWN(CSpotSoundMgr);
+SIZE_UNKNOWN(CSpotTarget);
+SIZE_UNKNOWN(CSpotLaser);
