@@ -102,6 +102,8 @@ struct CGameObjLayer {
     i32 m_zClampHi; // +0x14  z-clamp bound (eyecandy)
     i32 m_baseX;    // +0x18  layer base X (path/dropper screen-rect origin)
     i32 m_1c;       // +0x1c  layer base Y / base offset
+    i32 m_20;       // +0x20  layer screen-offset X (CGruntVoice::Update bubble placement)
+    i32 m_24;       // +0x24  layer screen-offset Y (CGruntVoice::Update bubble placement)
 };
 
 // The logic-handler name map reached through the object's world context

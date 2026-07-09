@@ -114,6 +114,7 @@ public:
     void Dispatch(i32 coord); // 0x119e40
     i32 Setup(i32 a0, void* sample, i32 a2, i32 a3); // 0x11a7e0
     void Reset();                                    // 0x11a870
+    i32 Update();                                    // 0x11a8e0 (per-frame: elapse + reposition)
 
     // --- CGruntVoice own fields (offsets load-bearing; roles from Setup/Reset) ---
     char m_pad40[0x54 - 0x40];

@@ -10,13 +10,23 @@
 // g_buteTree from <Gruntz/InGameIcon.h> / this header. Engine callees are
 // reloc-masked (no body). Confirmed CGruntVoice by its CUserLogic teardown
 // shape and the FireActivation-twin dispatch (see the header).
+#include <Mfc.h>                          // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/GameRegistry.h>          // g_mgrSettings->m_world->m_8 (sprite/object factory)
 #include <Dsndmgr/StreamVoice.h>
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+
+// The global running game clock (DAT_00645588); the value-load reloc-masks.
+DATA(0x00245588)
+extern "C" u32 g_645588;
+
+// The global game/manager registry singleton (*0x64556c; _g_mgrSettings).
+DATA(0x0024556c)
+extern "C" CGameRegistry* g_mgrSettings;
 
 // GruntVoiceStep @0x119620 - the CGruntVoice worker-pump (free __cdecl, /GX): the
 // controller lives at obj->m_7c; dispatch on its state id, building the CGruntVoice
@@ -194,4 +204,83 @@ void CGruntVoice::Reset() {
     m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
     m_playFlags = 0;
     m_source = 0;
+}
+
+// ===========================================================================
+// CGruntVoice::Update  (0x11a8e0)
+// ===========================================================================
+// The per-frame voice-bubble handler. If the voice is inactive (m_sample == 0) or
+// its timed-play window has elapsed (game clock - the i64 start @+0x58 >= the i64
+// duration @+0x60), reset to the idle "A" pose (the inlined Reset). Otherwise resolve
+// the play's source object by its cookie (m_source) through the object factory's
+// id->object map (g_mgrSettings->m_world->m_8 + 0x48, an MFC CMapPtrToPtr, keeping it
+// only when its type tag == 5) and reposition the bound bubble object over it: when a
+// carrier (m_owner) is set, follow the resolved object's bound logic leaf's object;
+// otherwise offset by the resolved object's layer scroll. On a miss/wrong-type, mark
+// the bubble object visible (stalled this frame). Always returns 0. The map-lookup +
+// branchless `(GetTypeId()==5)?obj:0` resolve is the SAME idiom as
+// CSpotLight::SerializeMove's Read path.
+RVA(0x0011a8e0, 0x198)
+i32 CGruntVoice::Update() {
+    if (m_sample == 0
+        || (i64)g_645588 - *(i64*)&m_icon >= *(i64*)&m_durationMs) {
+        m_sample = 0;
+        m_source = 0;
+        m_object->m_stateFlags |= 1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
+        m_playFlags = 0;
+        return 0;
+    }
+    if (m_owner == 0) {
+        CGameObject* out = 0;
+        i32 src = m_source;
+        i32 resolved = ((CMapPtrToPtr*)((char*)g_mgrSettings->m_world->m_8 + 0x48))
+                           ->Lookup((void*)src, (void*&)out);
+        if (resolved != 0) {
+            if (out == 0) {
+                resolved = 0;
+            } else {
+                resolved = (out->GetTypeId() == 5) ? (i32)out : 0;
+            }
+        }
+        if (resolved == 0) {
+            m_object->m_stateFlags |= 1;
+            return 0;
+        }
+        CUserLogic* logic = ((CGameObject*)resolved)->m_7c->m_logic;
+        if (logic == 0) {
+            m_object->m_stateFlags |= 1;
+            return 0;
+        }
+        m_object->m_stateFlags &= ~1;
+        m_object->m_screenX = logic->m_object->m_screenX;
+        m_object->m_screenY = logic->m_object->m_screenY - 0x32;
+    } else {
+        CGameObject* out = 0;
+        i32 src = m_source;
+        i32 resolved = ((CMapPtrToPtr*)((char*)g_mgrSettings->m_world->m_8 + 0x48))
+                           ->Lookup((void*)src, (void*&)out);
+        if (resolved != 0) {
+            if (out == 0) {
+                resolved = 0;
+            } else {
+                resolved = (out->GetTypeId() == 5) ? (i32)out : 0;
+            }
+        }
+        if (resolved == 0) {
+            m_object->m_stateFlags |= 1;
+            return 0;
+        }
+        m_object->m_stateFlags &= ~1;
+        i32 dx = 0, dy = 0;
+        CGameObjLayer* layer = ((CGameObject*)resolved)->m_layer;
+        if (layer != 0) {
+            dx = layer->m_20;
+            dy = layer->m_24;
+        }
+        m_object->m_screenX = ((CGameObject*)resolved)->m_screenX + dx;
+        m_object->m_screenY = ((CGameObject*)resolved)->m_screenY + dy - 0x32;
+    }
+    return 0;
 }
