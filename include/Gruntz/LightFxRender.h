@@ -73,6 +73,10 @@ public:
     // the chosen scale (m_44), blit the work surface to it, then draw the border
     // framing the live world rect through `ctx`.
     i32 ComputeRect(LfxBorderCtx* ctx, LfxRect* src);
+    // 0x0a3a20  DrawBorderRaw - fill the 4 rect edges of `r` with a 16-bit color
+    // directly into an already-locked buffer `base`, on this->m_surface's geometry
+    // (m_pitch per row, m_b0 per column). No lock/unlock (the caller holds them).
+    void DrawBorderRaw(LfxRect* r, void* base, i32 color);
     // 0x0a3b50  DrawBorder - lock the ctx surface, fill the 4 rect edges with a
     // 16-bit color, unlock. `this`/ecx is unused; ctx supplies the surface.
     void DrawBorder(LfxRect* r, LfxBorderCtx* ctx, i32 color);

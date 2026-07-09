@@ -124,7 +124,9 @@ public:
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
     virtual i32 Tick();        // slot 16 (body 0xb4020): the per-frame driver.
     virtual i32 SiblingTick(); // slot 17 (body 0xb43f0, ?SiblingTick@CLightningHazard@@QAEHXZ)
-    virtual void Arrive();     // slot 18 (declared-only; the "arrived" handler)
+    // Arrive (slot 18, body 0xb47a0): advance to the next waypoint, wrapping the
+    // index back to 0 once the path is exhausted. Returns 1.
+    virtual i32 Arrive(); // slot 18
     // BeginLeg (slot 19, body 0xb47e0): compute the unit vector toward the current
     // waypoint (m_f8) and seed the movement state. Returns 1.
     virtual i32 BeginLeg();        // slot 19

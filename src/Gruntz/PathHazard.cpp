@@ -498,6 +498,19 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     return 1;
 }
 
+// CPathHazard::Arrive @0x0b47a0 (virtual slot 18) - advance to the next waypoint,
+// wrapping the index back to 0 once the path length (m_wpCount) is reached.
+// Returns 1.
+RVA(0x000b47a0, 0x27)
+i32 CPathHazard::Arrive() {
+    i32 next = m_wpIndex + 1;
+    m_wpIndex = next;
+    if (next >= m_wpCount) {
+        m_wpIndex = 0;
+    }
+    return 1;
+}
+
 // CPathHazard::BeginLeg @0x0b47e0 (virtual slot 19) - compute the unit vector
 // toward the current waypoint (m_f8) and seed the per-leg movement state: the
 // per-frame speed (m_58 = 1 / (m_7c->m_bc / 32)), the doubled current position

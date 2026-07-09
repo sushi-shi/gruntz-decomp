@@ -1193,6 +1193,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (0xf2a0)
     virtual i32 UserLogicVfunc1() OVERRIDE;    // slot 3  (0x5d210)
     virtual i32 UserLogicVfunc2() OVERRIDE;    // slot 4  (0x5bcd0)
+    // RunAct (0x5bcd0): the class's vtable slot-4 (UserLogicVfunc2) activation
+    // dispatcher body - a plain method (the no-arg UserLogicVfunc2() base placeholder
+    // blocks the int-arg OVERRIDE spelling). Resolves `id`'s handler in the per-class
+    // registry g_reg_644af0 and dispatches it as a PMF on `this`; else returns the
+    // entry pointer. Same archetype as CPathHazard::RunAct.
+    i32 RunAct(i32 id);
     virtual i32 UserLogicVfunc3() OVERRIDE;    // slot 5  (0x5ecd0)
     virtual i32 Activate() OVERRIDE;           // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE;    // slot 8  (0x62b40)
@@ -1857,6 +1863,14 @@ public:
 };
 // No VTBL(CGrunt): its RTTI vtable 0x1e8754 is referenced by scored CGrunt/CSpotLight
 // code, so cataloguing it (renaming the delinked datum) shifts their fuzzy %.
+
+// The per-class activation-registry entry (g_reg_644af0 slot): a 4-byte PMF handler
+// on this complete single-inheritance class. RunAct dispatches it on `this`.
+typedef i32 (CGrunt::*GruntActHandler)();
+struct CGruntActEntry {
+    GruntActHandler m_fn;
+};
+SIZE(CGruntActEntry, 0x4);
 
 // CGrunt segment-vs-box overlap test @0x62b70 - a free (__stdcall, ret 0xc) helper:
 // does the directed segment e1->e2 cross into the axis-aligned box `p`

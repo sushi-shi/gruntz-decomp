@@ -33,9 +33,15 @@
 // trylevel-slot threading can be reproduced, then re-attack.
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Win32.h>               // RECT (the menu credits-text rectangle @0x645d88)
 #include <rva.h>
 
 typedef u32 u32;
+
+// The main-menu credits/version text rectangle (BSS @0x645d88, contiguous RECT).
+// SetMenuTextRect (0x0a1190) seeds it each time the main-menu page opens.
+DATA(0x00245d88)
+extern RECT g_menuTextRect;
 
 // The embedded CString/CObList sub-objects, declared with real (no-body, reloc-
 // masked) ctors/dtors so the page ctor/dtor emit the EH-tracked construct/destruct
@@ -224,6 +230,16 @@ static char s_MENU_AREAS_AREA5TITLE[] = "MENU_AREAS_AREA5TITLE";
 static char s_MENU_AREAS_AREA6TITLE[] = "MENU_AREAS_AREA6TITLE";
 static char s_MENU_AREAS_AREA7TITLE[] = "MENU_AREAS_AREA7TITLE";
 static char s_MENU_AREAS_AREA8TITLE[] = "MENU_AREAS_AREA8TITLE";
+
+// SetMenuTextRect (0x0a1190): seed the main-menu credits/version text RECT to its
+// fixed screen position {left=5, top=453, right=635, bottom=478}.
+RVA(0x000a1190, 0x29)
+void SetMenuTextRect() {
+    g_menuTextRect.left = 5;
+    g_menuTextRect.top = 453;
+    g_menuTextRect.right = 635;
+    g_menuTextRect.bottom = 478;
+}
 
 // ===========================================================================
 // BuildMainMenuTree  (0x0a11d0)

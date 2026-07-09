@@ -71,6 +71,7 @@
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
+#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry (g_reg_644af0 dispatch, RunAct)
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
@@ -4315,6 +4316,21 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 
     m_neighborValid = 0;
     return 0;
+}
+
+// CGrunt::RunAct @0x05bcd0 - vtable slot-4 activation dispatcher. Resolve `id`'s
+// handler in the per-class registry g_reg_644af0 (the ResolveEntry fast [lo,hi]
+// range + slow GrowTo/GetRetAddr/Insert rebuild, inlined twice - side-effecting, so
+// cl re-evaluates it for the guarded call); when a handler is bound, dispatch it as
+// a PMF on `this`, else return the entry pointer. Same archetype as CPathHazard::RunAct.
+extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation registry)
+RVA(0x0005bcd0, 0x102)
+i32 CGrunt::RunAct(i32 id) {
+    CGruntActEntry* e = (CGruntActEntry*)g_reg_644af0.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CGruntActEntry*)g_reg_644af0.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
 }
 
 // ---------------------------------------------------------------------------

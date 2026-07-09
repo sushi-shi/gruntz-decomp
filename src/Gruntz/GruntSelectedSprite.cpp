@@ -10,6 +10,8 @@
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -97,4 +99,27 @@ i32 CGruntSelectedSprite::Update() {
         m_object->m_screenY = e->m_renderable->m_screenY;
     }
     return 0;
+}
+
+// SerializeMove @0x07ea70 (vtable slot 1) - round-trip the {m_cellX,m_cellY} 8-byte
+// grunt-cell pair through the archive stream (mode 4 = Write @+0x30, mode 7 = Read
+// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeChain, 0x16e7f0)
+// and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). The two-chain archetype
+// (CTimeBomb::SerializeMove / CGruntPuddle::Serialize).
+RVA(0x0007ea70, 0x6f)
+i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
+    CSerialArchive* sa = (CSerialArchive*)arc;
+    // Retail lays the mode==4 Write block out-of-line (cmp 4; je) with the mode==7
+    // Read inline; this (mode != 4 ? maybe-Read : Write) form reproduces that layout.
+    if (mode != 4) {
+        if (mode == 7) {
+            sa->Read(&m_cellX, 8);
+        }
+    } else {
+        sa->Write(&m_cellX, 8);
+    }
+    if (!SerializeChain((i32)arc, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
 }

@@ -170,6 +170,7 @@ struct CGMMenuUI {
     void PreDelete();     // FUN_004a0360 - pre-delete release (ReleaseResources teardown)
     // Arrow-key navigation handlers (Vslot0c keydown dispatch); the same RVAs as
     // CChatBox::HitTest1..4 (the m_1b4 object IS a CChatBox - fold deferred).
+    i32 HitTest0(i32 x, i32 y); // 0x1831a0  (mouse hit test - Vslot0e/Vslot10 forward)
     i32 HitTest1(); // 0x183210  VK_UP
     i32 HitTest2(); // 0x183230  VK_DOWN
     i32 HitTest3(); // 0x1831d0  VK_LEFT

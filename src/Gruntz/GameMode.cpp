@@ -465,6 +465,24 @@ i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
     return 1;
 }
 
+// CMenuState slot 14 (+0x38) / slot 16 (+0x40): the two mouse hit-test forwarders -
+// each passes (arg2, arg3) to the menu UI object's HitTest0 (== CChatBox::HitTest0),
+// discards its result, and returns 1. arg1 (the message/event id) is unused.
+RVA(0x000a0ca0, 0x21)
+i32 CMenuState::Vslot0e(i32 arg1, i32 arg2, i32 arg3) {
+    if (m_1b4) {
+        m_1b4->HitTest0(arg2, arg3);
+    }
+    return 1;
+}
+RVA(0x000a0ce0, 0x21)
+i32 CMenuState::Vslot10(i32 arg1, i32 arg2, i32 arg3) {
+    if (m_1b4) {
+        m_1b4->HitTest0(arg2, arg3);
+    }
+    return 1;
+}
+
 // (CCreditsState::InputVirtual is slot 8 / +0x20 == ShowAttractTitle @0x393b0, the
 // per-frame input poll the Render dispatches via `this->vtbl[+0x20]()`; its body is
 // defined below at its real RVA. Slot 6 is CCreditsState's own Vslot06 override,

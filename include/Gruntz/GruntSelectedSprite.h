@@ -16,6 +16,7 @@ class CGruntSelectedSprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x07ea70)
     virtual ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07e5e0 (construct g_selectedActReg over [2000,2010])

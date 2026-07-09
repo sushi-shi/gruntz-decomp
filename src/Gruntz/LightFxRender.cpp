@@ -456,6 +456,47 @@ i32 CLightFxRender::ComputeRect(LfxBorderCtx* ctx, LfxRect* src) {
 }
 
 // ===========================================================================
+// CLightFxRender::DrawBorderRaw  (0x0a3a20)  - paint the four edges of `r` with a
+// 16-bit color straight into the caller-locked buffer `base`, using this->m_surface's
+// geometry (m_pitch per row, m_b0 per column). Top/bottom are contiguous word runs
+// (the u16-memset idiom -> rep stos); left/right step a column down each row. No
+// lock/unlock (the caller owns them). Returns void.
+// ===========================================================================
+// @early-stop
+// ~71% - same regalloc/frame wall as its twin DrawBorder (docs/patterns/zero-register-
+// pinning.md, topic:wall topic:regalloc). Instruction SEQUENCE is byte-identical
+// (verified sema disasm --diff), incl. the u16-memset rep-stos idiom + the edge-step
+// loops; permuter confirmed no operand-order spelling closes it (70.644 -> 70.644).
+// Residual: retail spills `this` (push ecx / mov [esp+0x10],ecx) and colors the
+// color-dword into ebx, where cl keeps `this` in a callee-saved reg - a register-
+// coloring choice not source-steerable. Logic byte-for-byte correct.
+RVA(0x000a3a20, 0xe2)
+void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
+    i32 w = r->right - r->left + 1;
+    // Top edge (m_surface reloaded per block, matching the retail spill of `this`).
+    u16* tp = (u16*)((char*)base + r->top * m_surface->m_pitch + r->left * m_surface->m_b0);
+    for (i32 t = 0; t < w; t++) {
+        tp[t] = (u16)color;
+    }
+    // Bottom edge.
+    u16* bp =
+        (u16*)((char*)base + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
+    for (i32 b = 0; b < w; b++) {
+        bp[b] = (u16)color;
+    }
+    // Left / right edges (column step = m_pitch per row).
+    i32 h = r->bottom - r->top + 1;
+    char* lp = (char*)base + r->left * m_surface->m_b0 + r->top * m_surface->m_pitch;
+    char* rp = (char*)base + r->right * m_surface->m_b0 + r->top * m_surface->m_pitch;
+    for (i32 v = 0; v < h; v++) {
+        *(u16*)lp = (u16)color;
+        *(u16*)rp = (u16)color;
+        lp += m_surface->m_pitch;
+        rp += m_surface->m_pitch;
+    }
+}
+
+// ===========================================================================
 // CLightFxRender::DrawBorder  (0x0a3b50)  - lock the ctx work surface, paint the
 // four edges of `r` with `color`, unlock. `this`/ecx is unused. The top/bottom
 // edges are contiguous word runs (left..right); the left/right edges step a

@@ -16,6 +16,11 @@ public:
     TILE_LOGIC_TAIL
 public:
     CActionArea(CGameObject* obj); // 0x7da0
+    // ApplyColor (0x8580): re-name the bound object's sprite for the owning team
+    // (owner 1 -> "GAME_ACTIONAREA_BLUE", owner 2 -> "GAME_ACTIONAREA_RED"), reset
+    // its image set's pixel-format types (SetAllTypes 8), clear the object's
+    // active bit. owner outside {1,2} is rejected (returns 0).
+    i32 ApplyColor(i32 owner);
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
     // base models this slot with a placeholder signature (see CGuardPoint.cpp).
     // 0x00007f80 vtable slot 2: per-class logic-type id, inline (one
