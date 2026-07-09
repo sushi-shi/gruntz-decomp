@@ -641,14 +641,18 @@ struct CImageSet2 : CObject {
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161470  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x1614a0  record byte length (cursor advance)
-    virtual void s28();           // [10] 0x1669e0
-    virtual void s2c();           // [11] 0x166a40
-    virtual void s30();           // [12] 0x166b90
-    virtual void s34();           // [13] 0x166bf0
-    virtual void s38();           // [14] 0x166ab0
-    virtual void s3c();           // [15] 0x166b20
-    virtual void s40();           // [16] 0x166c60
-    virtual void s44();           // [17] 0x166cd0
+    // [10] 0x1669e0: bounds-clamp query - if (a,b) is inside the {m_14..m_1c}x{m_18..m_20}
+    // box, report the near x-edge coord + its paired value in *outA/*outB (1), else 0.
+    virtual i32 Query_1669e0(i32 a, i32 b, i32* outA, i32* outB);
+    // slots 11-17: directional edge-finder variants (near/far x/y edge; the value-check
+    // forms take an i32 to match against the paired cell before reporting).
+    virtual i32 Query_166a40(i32 a, i32 b, i32 val, i32* out);    // [11] 0x166a40
+    virtual i32 Query_166b90(i32 a, i32 b, i32* outA, i32* outB); // [12] 0x166b90
+    virtual i32 Query_166bf0(i32 a, i32 b, i32 val, i32* out);    // [13] 0x166bf0
+    virtual i32 Query_166ab0(i32 a, i32 b, i32* outA, i32* outB); // [14] 0x166ab0
+    virtual i32 Query_166b20(i32 a, i32 b, i32 val, i32* out);    // [15] 0x166b20
+    virtual i32 Query_166c60(i32 a, i32 b, i32* outA, i32* outB); // [16] 0x166c60
+    virtual i32 Query_166cd0(i32 a, i32 b, i32 val, i32* out);    // [17] 0x166cd0
     CImageSet2() {
         m_04 = 0; // cl auto-stamps &??_7CImageSet2 first
     }
@@ -676,14 +680,18 @@ struct CImageSet3 : CObject {
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
     virtual i32 GetStride();      // [9]  +0x24  0x161590  record byte length (cursor advance)
-    virtual void s28();           // [10] 0x166e00
-    virtual void s2c();           // [11] 0x166e60
-    virtual void s30();           // [12] 0x166eb0
-    virtual void s34();           // [13] 0x166f20
-    virtual void s38();           // [14] 0x166f80
-    virtual void s3c();           // [15] 0x166ff0
-    virtual void s40();           // [16] 0x167050
-    virtual void s44();           // [17] 0x1670d0
+    virtual void s28();           // [10] 0x166e00 (ScanRunLeft, in ImageSet3.cpp's model)
+    virtual void s2c();           // [11] 0x166e60 (recovery gap, not a stub)
+    // [12] 0x166eb0: vertical run-scan UP from (x,y) - walk to the first row whose pixel
+    // at column x differs from (x,y)'s; report that row + its value.
+    virtual i32 ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal);
+    // [13-17]: the directional scan family - UP/RIGHT/DOWN run scans (the *Gate forms
+    // walk to the first pixel that EQUALS `val`, reporting only the coord).
+    virtual i32 ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY);        // [13] 0x166f20
+    virtual i32 ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal);     // [14] 0x166f80
+    virtual i32 ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX);     // [15] 0x166ff0
+    virtual i32 ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal);      // [16] 0x167050
+    virtual i32 ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY);      // [17] 0x1670d0
     CImageSet3() {
         m_width = 0; // cl auto-stamps &??_7CImageSet3 first
         m_pixels = 0;
@@ -771,6 +779,179 @@ i32 CImageSet2::Parse(void* record) {
     return 1;
 }
 
+// CImageSet2::Query_1669e0 (0x1669e0, slot 10): reject when (a,b) is outside the
+// {m_14..m_1c} x {m_18..m_20} box; otherwise, past the far x-edge (a>m_1c) report the
+// x-edge m_1c + its value m_10, else the near edge (m_14-1, needing m_14>0) + m_0c.
+// __thiscall, 4 args (ret 0x10).
+RVA(0x001669e0, 0x5e)
+i32 CImageSet2::Query_1669e0(i32 a, i32 b, i32* outA, i32* outB) {
+    if (b < m_18 || b > m_20 || a < m_14) {
+        return 0;
+    }
+    if (a > m_1c) {
+        *outA = m_1c;
+        *outB = m_10;
+        return 1;
+    }
+    if (m_14 <= 0) {
+        return 0;
+    }
+    *outA = m_14 - 1;
+    *outB = m_0c;
+    return 1;
+}
+
+// 0x166a40 (slot 11): x-edge query with a value gate - like Query_1669e0 but the paired
+// cell (m_10 far / m_0c near) must equal `val`, and it reports only the near x coord.
+RVA(0x00166a40, 0x62)
+i32 CImageSet2::Query_166a40(i32 a, i32 b, i32 val, i32* out) {
+    if (b < m_18 || b > m_20 || a < m_14) {
+        return 0;
+    }
+    if (a > m_1c) {
+        if (m_10 != val) {
+            return 0;
+        }
+        *out = m_1c;
+        return 1;
+    }
+    if (m_14 <= 0) {
+        return 0;
+    }
+    if (m_0c != val) {
+        return 0;
+    }
+    *out = m_14 - 1;
+    return 1;
+}
+
+// 0x166b90 (slot 12): the y-axis twin of Query_1669e0 - clamp on the {m_18..m_20} row.
+RVA(0x00166b90, 0x5e)
+i32 CImageSet2::Query_166b90(i32 a, i32 b, i32* outA, i32* outB) {
+    if (a < m_14 || a > m_1c || b < m_18) {
+        return 0;
+    }
+    if (b > m_20) {
+        *outA = m_20;
+        *outB = m_10;
+        return 1;
+    }
+    if (m_18 <= 0) {
+        return 0;
+    }
+    *outA = m_18 - 1;
+    *outB = m_0c;
+    return 1;
+}
+
+// 0x166bf0 (slot 13): y-edge query with a value gate (twin of Query_166a40).
+RVA(0x00166bf0, 0x62)
+i32 CImageSet2::Query_166bf0(i32 a, i32 b, i32 val, i32* out) {
+    if (a < m_14 || a > m_1c || b < m_18) {
+        return 0;
+    }
+    if (b > m_20) {
+        if (m_10 != val) {
+            return 0;
+        }
+        *out = m_20;
+        return 1;
+    }
+    if (m_18 <= 0) {
+        return 0;
+    }
+    if (m_0c != val) {
+        return 0;
+    }
+    *out = m_18 - 1;
+    return 1;
+}
+
+// 0x166ab0 (slot 14): the far-x-edge query - reject past m_1c, clamp below m_14 (report
+// m_14/m_10) else report the next cell (m_1c+1/m_0c) unless it hits the m_04-1 wall.
+RVA(0x00166ab0, 0x62)
+i32 CImageSet2::Query_166ab0(i32 a, i32 b, i32* outA, i32* outB) {
+    if (b < m_18 || b > m_20 || a > m_1c) {
+        return 0;
+    }
+    if (a < m_14) {
+        *outA = m_14;
+        *outB = m_10;
+        return 1;
+    }
+    if (m_1c >= m_04 - 1) {
+        return 0;
+    }
+    *outA = m_1c + 1;
+    *outB = m_0c;
+    return 1;
+}
+
+// 0x166b20 (slot 15): far-x-edge query with a value gate (twin of Query_166ab0).
+RVA(0x00166b20, 0x66)
+i32 CImageSet2::Query_166b20(i32 a, i32 b, i32 val, i32* out) {
+    if (b < m_18 || b > m_20 || a > m_1c) {
+        return 0;
+    }
+    if (a < m_14) {
+        if (m_10 != val) {
+            return 0;
+        }
+        *out = m_14;
+        return 1;
+    }
+    if (m_1c >= m_04 - 1) {
+        return 0;
+    }
+    if (m_0c != val) {
+        return 0;
+    }
+    *out = m_1c + 1;
+    return 1;
+}
+
+// 0x166c60 (slot 16): the far-y-edge query (twin of Query_166ab0 on the m_18/m_20/m_08 row).
+RVA(0x00166c60, 0x62)
+i32 CImageSet2::Query_166c60(i32 a, i32 b, i32* outA, i32* outB) {
+    if (a < m_14 || a > m_1c || b > m_20) {
+        return 0;
+    }
+    if (b < m_18) {
+        *outA = m_18;
+        *outB = m_10;
+        return 1;
+    }
+    if (m_20 >= m_08 - 1) {
+        return 0;
+    }
+    *outA = m_20 + 1;
+    *outB = m_0c;
+    return 1;
+}
+
+// 0x166cd0 (slot 17): far-y-edge query with a value gate (twin of Query_166c60).
+RVA(0x00166cd0, 0x66)
+i32 CImageSet2::Query_166cd0(i32 a, i32 b, i32 val, i32* out) {
+    if (a < m_14 || a > m_1c || b > m_20) {
+        return 0;
+    }
+    if (b < m_18) {
+        if (m_10 != val) {
+            return 0;
+        }
+        *out = m_18;
+        return 1;
+    }
+    if (m_20 >= m_08 - 1) {
+        return 0;
+    }
+    if (m_0c != val) {
+        return 0;
+    }
+    *out = m_20 + 1;
+    return 1;
+}
+
 // CImageSet3::Parse (0x166d70, g_imageSet3Vtbl slot +0x14). Reads tile width/height
 // from the record at +0x08/+0x0c, derives the height log2 shift and the byte size,
 // and - only when the width is the matching power of two - allocates and copies the
@@ -801,6 +982,135 @@ i32 CImageSet3::Parse(void* record) {
     }
     memcpy(dst, p, m_byteSize);
     return 1;
+}
+
+// 0x166eb0 (slot 12): from the pixel at (x,y), walk UP the column (row -= 1, offset
+// -= m_width) while the pixel value stays equal to the start pixel. On the first
+// differing row, report it in *outY and its value in *outVal (1); if the top edge
+// (y reaches 0) is hit first, return 0. The vertical twin of ScanRunLeft_166e00.
+// Accessing m_pixels directly (not via a cached base) makes cl re-read it at the cold
+// found block through `this` (kept in ebx), matching retail's register schedule.
+RVA(0x00166eb0, 0x6a)
+i32 CImageSet3::ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal) {
+    i32 off = (y << m_heightLog2) + x;
+    i32 target = ((u8*)m_pixels)[off];
+    while (y > 0) {
+        off -= m_width;
+        --y;
+        if (((u8*)m_pixels)[off] != target) {
+            *outY = y;
+            *outVal = ((u8*)m_pixels)[off];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// 0x166f20 (slot 13): scan UP for the first row whose column-x pixel EQUALS `val`;
+// report the row in *outY. Pointer walk (the value gate uses the free register).
+// @early-stop
+// ~82% regalloc wall (same-instruction-count; the value gate + coord out compete
+// for the callee-saved reg, flipping the this/base spill vs retail). docs/patterns/zero-register-pinning.md.
+// @early-stop
+// ~82% regalloc wall (same instr count; value gate + coord out compete for the
+// callee-saved reg, flipping this/base spill). docs/patterns/zero-register-pinning.md.
+RVA(0x00166f20, 0x52)
+i32 CImageSet3::ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY) {
+    u8* p = (u8*)m_pixels + ((y << m_heightLog2) + x);
+    while (y > 0) {
+        p -= m_width;
+        --y;
+        if (*p == val) {
+            *outY = y;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// 0x166f80 (slot 14): scan RIGHT for the first column whose pixel differs from (x,y)'s;
+// report it + its value. Stops at the m_width-1 edge.
+// @early-stop
+// ~78% regalloc wall: the lim (m_width-1) local competes with `this` for a
+// callee-saved reg (the lim-free ScanUp is 100%); same instrs, swapped operands.
+// @early-stop
+// ~78% regalloc wall: the lim (m_width-1) local competes with `this` for a callee-
+// saved reg (the lim-free ScanUp is 100%); same instrs, swapped operands.
+RVA(0x00166f80, 0x68)
+i32 CImageSet3::ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal) {
+    i32 off = (y << m_heightLog2) + x;
+    i32 target = ((u8*)m_pixels)[off];
+    i32 lim = m_width - 1;
+    while (x < lim) {
+        ++x;
+        ++off;
+        if (((u8*)m_pixels)[off] != target) {
+            *outX = x;
+            *outVal = ((u8*)m_pixels)[off];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// 0x166ff0 (slot 15): scan RIGHT for the first column whose pixel EQUALS `val`; report
+// the column in *outX. Pointer walk, stops at the m_width-1 edge.
+// @early-stop
+// ~72% regalloc wall (lim + pointer-walk + value-gate pressure). Logic byte-faithful.
+RVA(0x00166ff0, 0x52)
+i32 CImageSet3::ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX) {
+    i32 lim = m_width - 1;
+    u8* p = (u8*)m_pixels + ((y << m_heightLog2) + x);
+    while (x < lim) {
+        ++x;
+        ++p;
+        if (*p == val) {
+            *outX = x;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// 0x167050 (slot 16): scan DOWN for the first row whose column-x pixel differs from
+// (x,y)'s; report it + its value. Stops at the m_height-1 edge.
+// @early-stop
+// ~70% regalloc wall: retail keeps this in ebp (found-block m_pixels re-read) + spills
+// lim; our cl spills this + keeps lim. Same instrs. docs/patterns/zero-register-pinning.md.
+RVA(0x00167050, 0x74)
+i32 CImageSet3::ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal) {
+    i32 off = (y << m_heightLog2) + x;
+    i32 target = ((u8*)m_pixels)[off];
+    i32 lim = m_height - 1;
+    while (y < lim) {
+        off += m_width;
+        ++y;
+        if (((u8*)m_pixels)[off] != target) {
+            *outY = y;
+            *outVal = ((u8*)m_pixels)[off];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// 0x1670d0 (slot 17): scan DOWN for the first row whose column-x pixel EQUALS `val`;
+// report the row in *outY. Offset form, stops at the m_height-1 edge.
+// @early-stop
+// ~94% regalloc coin-flip (lim vs this callee-saved coloring). Logic byte-faithful.
+RVA(0x001670d0, 0x5d)
+i32 CImageSet3::ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY) {
+    i32 off = (y << m_heightLog2) + x;
+    i32 lim = m_height - 1;
+    while (y < lim) {
+        off += m_width;
+        ++y;
+        if (((u8*)m_pixels)[off] == val) {
+            *outY = y;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

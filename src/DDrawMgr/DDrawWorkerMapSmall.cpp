@@ -172,6 +172,8 @@ public:
 
     // Engine-label backlog stubs (non-vtable).
     void ResetSlots();
+    // 0x165c40: scan m_map1 for the entry whose value == obj; remove + delete it.
+    i32 RemoveByValue(CObject* obj);
 };
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
@@ -272,6 +274,34 @@ void CDDrawWorkerMapSmall::DestroyAll() {
     }
     m_map1.RemoveAll();
     m_64 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x165c40 (__thiscall, /GX): remove a specific worker `obj` from m_map1 by value.
+// First drop the +0x64 cache if it points at `obj`, then iterate m_map1 via
+// GetNextAssoc; on the entry whose value == obj, RemoveKey it, run obj's scalar-
+// deleting destructor, and return 1. Return 0 if not found. The local CString key
+// (reused each GetNextAssoc) carries the /GX EH frame. Same iteration shape as
+// DestroyAll.
+RVA(0x00165c40, 0xe7)
+i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
+    if (m_64 == (i32)obj) {
+        m_64 = 0;
+    }
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_map1.GetCount() != 0 ? -1 : 0);
+    CString key;
+    while (*(volatile i32*)&pos != 0) {
+        m_map1.GetNextAssoc(pos, key, val);
+        if (val == obj) {
+            m_map1.RemoveKey(key);
+            if (obj != 0) {
+                delete ((CDDrawMapWorker*)obj);
+            }
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

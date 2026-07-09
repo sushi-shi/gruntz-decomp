@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
+#include <stdlib.h>               // abs() (cdq/xor/sub) for the Slot34/38 dirty-rect deltas
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
@@ -864,11 +865,18 @@ inline WwdEdgeB::~WwdEdgeB() {
     b = 0;
     c = 0;
 }
+// WwdEdgeA doubles as the tail of the live dirty-rect record (0x18-block): its `a`
+// (0x20) / `b` (0x38 == the record's flag) fields are the sentinel words the /GX dtor
+// resets, and it also carries the record's size corner m_w/m_h (0x30/0x34) that the
+// Slot34/38 blit-dispatch reads. Kept as one struct so the dtor RAII tail is unchanged;
+// the extra size fields are matching-neutral (the dtor never touches them).
 struct WwdEdgeA { // 0x20..0x5c
     ~WwdEdgeA();
     i32 a; // 0x20
-    char _p[0x38 - 0x24];
-    i32 b; // 0x38
+    char _p24[0x30 - 0x24];
+    i32 m_w; // 0x30  live dirty-rect size x (the "second corner" the blit uses)
+    i32 m_h; // 0x34  live dirty-rect size y
+    i32 b;   // 0x38  == the record's flag word (-1 == disarmed)
     char _p2[0x5c - 0x3c];
     i32 c; // 0x5c
 };
@@ -928,9 +936,11 @@ public:
     char _p94[0xb8 - 0x94];
     i32 m_b8; // 0xb8  shadow position x (the previous-frame copy of the 0x18 block)
     i32 m_bc; // 0xbc  shadow position y
-    i32 m_c0; // 0xc0
-    char _pc4[0xd8 - 0xc4];
-    i32 m_d8;     // 0xd8
+    i32 m_c0; // 0xc0  shadow record's f2 word (dtor sentinel)
+    char _pc4[0xd0 - 0xc4];
+    i32 m_d0; // 0xd0  shadow dirty-rect size x
+    i32 m_d4; // 0xd4  shadow dirty-rect size y
+    i32 m_d8;     // 0xd8  shadow record's flag word (-1 == disarmed)
     WwdName m_dc; // 0xdc  CString name
 };
 
@@ -1271,6 +1281,104 @@ void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             sa->m_8->Unlock(0);
         }
         m_20.b = -1; // m_38
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1662a0 (vtable slot 13): blit the object's dirty region(s) from the back pair
+// `b`'s surface onto the front pair `a`'s (CDDSurface::BltEx, same rect for src+dst).
+// When both the live (m_38) and shadow (m_d8) records are armed, cover them with ONE
+// BltEx over the union rect if their corners are within 32 px in both axes, else two
+// BltEx (one per record). Only one armed -> just that record's rect. Each rect is
+// {x, y, x+w, y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
+// @early-stop
+// ~76% tail-merge + regalloc wall (twin of Slot38 which hits 99.7%). Logic/CFG/the
+// abs+min bbox/the four BltEx sites + their {x,y,x+w,y+h} rect builds all reproduced,
+// AND the single reused rect buffer gives retail's `sub esp,0x14` frame. Residual:
+// because every region calls the IDENTICAL `BltEx(rc, b->m_surface, rc, ...)` on the
+// one shared `rc` buffer, our cl CROSS-JUMPS (tail-merges) block-C's BltEx to a shared
+// copy (a `jmp`) where retail keeps each inline; plus a callee-saved m_b8/m_1c coloring
+// swap cascading from the extra BltEx register pressure. Slot38's twin avoids this
+// because its four dispatch calls take DIFFERENT pointer args (no merge). Not source-
+// steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
+// no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
+RVA(0x001662a0, 0x1fa)
+void CWwdGameObjectC::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    i32 rc[4]; // one reused src+dst rect buffer
+    if (m_20.b != -1 && m_d8 != -1) { // both armed
+        i32 dx = abs(m_18 - m_b8) + 1;
+        i32 dy = abs(m_1c - m_bc) + 1;
+        if (dx > 0x20 || dy > 0x20) {
+            rc[0] = m_18;
+            rc[1] = m_1c;
+            rc[2] = m_18 + m_20.m_w;
+            rc[3] = m_1c + m_20.m_h;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+            rc[0] = m_b8;
+            rc[1] = m_bc;
+            rc[2] = m_b8 + m_d0;
+            rc[3] = m_bc + m_d4;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        } else {
+            i32 left = m_18 < m_b8 ? m_18 : m_b8;
+            i32 top = m_1c < m_bc ? m_1c : m_bc;
+            rc[0] = left;
+            rc[1] = top;
+            rc[2] = left + dx;
+            rc[3] = top + dy;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        }
+    } else if (m_20.b != -1) {
+        rc[0] = m_18;
+        rc[1] = m_1c;
+        rc[2] = m_18 + m_20.m_w;
+        rc[3] = m_1c + m_20.m_h;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    } else if (m_d8 != -1) {
+        rc[0] = m_b8;
+        rc[1] = m_bc;
+        rc[2] = m_b8 + m_d0;
+        rc[3] = m_bc + m_d4;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1664a0 (vtable slot 14): dispatch the front pair `a`'s empty dirty-rect blit
+// hook (0x164650) over the object's dirty region(s). When both the live (m_38) and
+// shadow (m_d8) records are armed, cover them with ONE combined region if their
+// corners are within 32 px in both axes (the union {min pos, |delta|+1 size}), else
+// emit both records separately. Only one armed -> just that record. Arg `c` unused.
+// __thiscall, 3 args (ret 0xc).
+// @early-stop
+// 99.70% - logic/CFG/block-layout/the abs+min bbox/all four dispatch sites byte-exact.
+// The lone residual is a callee-saved coin-flip: the two hoisted record base addresses
+// (&m_18, &m_b8) land in retail's edi/ebx but our cl's ebx/edi (swapped), which cascades
+// only the two push operands in the large-delta path. Same addresses. The permuter found
+// no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
+RVA(0x001664a0, 0x133)
+void CWwdGameObjectC::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    if (m_20.b != -1 && m_d8 != -1) { // both armed -> combined region
+        i32 dx = abs(m_18 - m_b8) + 1;
+        i32 dy = abs(m_1c - m_bc) + 1;
+        if (dx > 0x20 || dy > 0x20) {
+            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
+            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
+        } else {
+            i32 left = m_18 < m_b8 ? m_18 : m_b8; // min x
+            i32 top = m_1c < m_bc ? m_1c : m_bc;  // min y
+            i32 pos[2];
+            i32 size[2];
+            size[1] = dy;
+            size[0] = dx;
+            pos[1] = top;
+            pos[0] = left;
+            a->BlitDirtyRect_164650(b, pos, size);
+        }
+    } else if (m_20.b != -1) {
+        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
+    } else if (m_d8 != -1) {
+        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
     }
 }
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:

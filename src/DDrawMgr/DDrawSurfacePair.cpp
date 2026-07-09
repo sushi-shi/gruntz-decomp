@@ -571,6 +571,13 @@ i32 CDDrawSurfacePair::directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDraw
 }
 
 // ---------------------------------------------------------------------------
+// 0x164650: the dirty-rect blit hook - an empty (retail `ret 0xc`) no-op. The
+// CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region; the
+// retail build left the body empty. __thiscall, 3 args (ret 0xc).
+RVA(0x00164650, 0x3)
+void CDDrawSurfacePair::BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos, i32* size) {}
+
+// ---------------------------------------------------------------------------
 // 0x164660: surface-lost probe (the RestoreIfLost twin).  With no surface, report
 // "needs work" (1).  Otherwise, if the held IDirectDrawSurface is present and not
 // lost (IsLost @+0x60 == DD_OK), report 1; else attempt Restore (@+0x6c) twice,

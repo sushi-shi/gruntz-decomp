@@ -111,6 +111,10 @@ public:
     // from mgr->m_capsFlags), then attach + validate it; on any failure stash a
     // 0x80e9..ed / 0xbb9 / 0xbba error in mgr->m_lastError.
     i32 directx_wrapper_caller_1644a0_DirectDrawCreate_DirectDrawEnumerateA(i32 w, i32 h, i32 bpp);
+    // 0x164650 - empty dirty-rect blit hook (retail `ret 0xc` no-op): the
+    // CWwdGameObjectC blit dispatch (Slot34/38) calls it per (pos,size) region on
+    // the front pair. Reconstructed as an empty body so the 3-byte stub matches.
+    void BlitDirtyRect_164650(CDDrawSurfacePair* other, i32* pos, i32* size);
     i32 Probe_164660(); // 0x164660  (surface-lost probe)
 
     // --- layout (continues the base; base ends at +0x10) ----------------------
