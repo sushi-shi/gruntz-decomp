@@ -38,6 +38,15 @@ void __stdcall NetCmdIdClear(i32* arr, i32 v);
 
 // ProcessCmd's memcpy is forced intrinsic (reloc-masked / inline).
 #pragma intrinsic(memcpy)
+#pragma intrinsic(strcat)
+
+// The two file-scope debug buffers NetCmdIdToString formats through: a 16-byte
+// per-id wsprintfA scratch (0x64b6a0) and the comma-joined accumulator (0x64b6b0).
+// BSS; address-pinned so the DIR32 loads reloc-mask.
+DATA(0x0024b6a0)
+extern char g_idScratch[0x10];
+DATA(0x0024b6b0)
+extern char g_idListBuf[0x40];
 
 // The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from
 // the global packet pool. Modeled by its delinker name so the call is named.
@@ -309,6 +318,33 @@ void CNetCmdSlot::ResetTriple(i32* p) {
     p[0] = -1;
     p[1] = -1;
     p[2] = -1;
+}
+
+// ---------------------------------------------------------------------------
+// NetCmdIdToString (0x0c10d0, __stdcall) - format the three-int player-id set as a
+// "%d,"-joined debug string in the shared g_idListBuf accumulator (skipping -1 free
+// slots); each id is rendered through the g_idScratch scratch and strcat'd on.
+// ---------------------------------------------------------------------------
+// @early-stop
+// frame-slot-selection wall (95.36%): the whole body is byte-faithful (the IAT-ptr
+// hoist into ebx, the "%d," wsprintfA + inline strcat, the walking-pointer countdown
+// loop). The only real residue is where the spilled 3->0 counter lives: retail
+// REUSES the dead arg1 home slot ([esp+0x14]) with a zero-extra frame, while cl
+// allocates a fresh local (`push ecx`/`pop ecx`, counter at [esp+0x10]) - a
+// build-8034 frame-allocator coin-flip on a fn whose 4 callee-saved regs are all
+// live across the calls. Not source-steerable (do-while/for/permute identical).
+RVA(0x000c10d0, 0x7c)
+char* __stdcall NetCmdIdToString(i32* arr) {
+    g_idListBuf[0] = 0;
+    i32 n = 3;
+    do {
+        if (*arr != -1) {
+            wsprintfA(g_idScratch, "%d,", *arr);
+            strcat(g_idListBuf, g_idScratch);
+        }
+        arr++;
+    } while (--n != 0);
+    return g_idListBuf;
 }
 
 // ---------------------------------------------------------------------------

@@ -38,6 +38,7 @@
 // Entropy-class; left per the campaign doctrine (the strides + link layout, the
 // deliverable here, are fully recovered).
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <rva.h>
 
 // ===========================================================================
@@ -227,12 +228,80 @@ void CMapMgr::Reset() {
     m_1c = 0;
 }
 
+// CMapMgr::Save (slot 2, 0x09f840): stream the scalar bookkeeping members out, then
+// the whole cell grid (m_4[j*m_c + i], 0x1c bytes each) row-major over m_c x m_10.
+// @early-stop
+// commutative-imul operand-materialization coin-flip (99.92%, docs/patterns/
+// commutative-imul-operand-in-eax.md): the whole body is byte-faithful (null gate,
+// the 12 field Write()s, ebp=&m_c base-pointer, the doubly-nested grid loop). The
+// sole residue is the inner index `j*m_c`: retail loads j (`mov eax,edi`) then
+// `imul eax,[ebp](m_c)`; cl loads m_c (`mov eax,[ebp]`) then `imul eax,edi` - both
+// re-read m_c from memory, same 6 bytes, only which operand lands in eax differs.
+// MSVC5 canonicalizes the commutative multiply regardless of source form (tried
+// `j*m_c`, `m_c*j`, `i+m_c*j`, compound `idx=j;idx*=m_c` + permute - all identical).
+// Not source-steerable; parked for the final sweep.
+RVA(0x0009f840, 0x110)
+i32 CMapMgr::Save(CSerialArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Write(&m_c, 4);
+    ar->Write(&m_10, 4);
+    ar->Write(&m_14, 4);
+    ar->Write(&m_20, 8);
+    ar->Write(&m_28, 8);
+    ar->Write(&m_50, 4);
+    ar->Write(&m_54, 4);
+    ar->Write(&m_58, 4);
+    ar->Write(&m_5c, 4);
+    ar->Write(&m_60, 0x10);
+    ar->Write(&m_70, 4);
+    ar->Write(&m_74, 4);
+    for (u32 i = 0; i < m_c; i++) {
+        for (u32 j = 0; j < m_10; j++) {
+            ar->Write(&m_4[j * m_c + i], 0x1c);
+        }
+    }
+    return 1;
+}
+
+// CMapMgr::Load (slot 3, 0x09f9a0): the read counterpart of Save; after reading each
+// cell, zero its +0x18 runtime field (not a persisted value).
+// @early-stop
+// same commutative-imul operand pick as Save (99.85%, docs/patterns/
+// commutative-imul-operand-in-eax.md) - two occurrences here (the read index and the
+// zero-cell index), each a `mov eax,edi;imul eax,[ebp]` vs `mov eax,[ebp];imul eax,edi`
+// byte-swap. Logic byte-faithful; not source-steerable. Parked for the final sweep.
+RVA(0x0009f9a0, 0x12e)
+i32 CMapMgr::Load(CSerialArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Read(&m_c, 4);
+    ar->Read(&m_10, 4);
+    ar->Read(&m_14, 4);
+    ar->Read(&m_20, 8);
+    ar->Read(&m_28, 8);
+    ar->Read(&m_50, 4);
+    ar->Read(&m_54, 4);
+    ar->Read(&m_58, 4);
+    ar->Read(&m_5c, 4);
+    ar->Read(&m_60, 0x10);
+    ar->Read(&m_70, 4);
+    ar->Read(&m_74, 4);
+    for (u32 i = 0; i < m_c; i++) {
+        for (u32 j = 0; j < m_10; j++) {
+            ar->Read(&m_4[j * m_c + i], 0x1c);
+            m_4[j * m_c + i].m_18 = 0;
+        }
+    }
+    return 1;
+}
+
 // Out-of-line stubs so the vftable is emitted in this TU.
 // Not matched / not in symbol_names.csv; present only to anchor the vftable
 // relocation that the ctor stores (the CGameWnd vftable-in-TU idiom).
 void CMapMgr::Vfunc1() {}
-void CMapMgr::Vfunc2() {}
-void CMapMgr::Vfunc3() {}
 void CMapMgr::Vfunc4() {}
 void CMapMgr::Vfunc5() {}
 

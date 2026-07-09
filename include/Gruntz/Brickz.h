@@ -162,6 +162,7 @@ public:
     BrickzNode* PopFront();                                           // 0x09f430
     void CellPush(BrickzNode* node);                                  // 0x09f470
     BrickzNode* Find(i32 key1, i32 key2);                             // 0x09f500
+    BrickzNode* FindCellNode(i32 col, i32 row);                       // 0x09f540
     void Drain();                                                     // 0x09f590
     void Unlink(BrickzNode* node);                                    // 0x09f690
     void CellPop(BrickzNode* node, i32 flag);                         // 0x09f710

@@ -11,6 +11,15 @@
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/ActReg.h>            // the shared activation-registrar archetype (CSiblingActReg)
 #include <Gruntz/CheckpointTrigger.h> // real CCheckpointTrigger : CUserLogic (was Stub/)
+#include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor (m_38+0x1a0 anim sub-mgr; Advance)
+#include <Gruntz/GameRegistry.h>      // g_gameReg->m_world->m_8 (CSpriteFactory)
+#include <Gruntz/SpriteFactory.h>     // CSpriteFactory::CreateSprite (0x1597b0)
+
+// The +0x1a0 anim sub-mgr's per-frame delta scalar (g_6bf3bc, u32) and the game-
+// registry singleton (0x64556c); address-pinned so the loads reloc-mask.
+extern "C" u32 g_6bf3bc;
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
 // The per-class activation-coordinate registry (CSiblingActReg) is the shared
 // <Gruntz/ActReg.h> CActReg-derived alias: same range/cache shape as the shared name
@@ -30,8 +39,26 @@ struct CNetSingletonBf00;
 DATA(0x0024bf00)
 extern CNetSingletonBf00 g_64bf00; // 0x64bf00
 struct CNetSingletonBf00 : CSiblingActReg {};
+// The anim-owning sprite (m_38) viewed through its +0x1a0 anim sub-mgr: a
+// CAniAdvanceCursor typed value member (its m_20/m_28 are the idle/active flags),
+// plus the redraw flags at +0x08. Same cast-free anim-view shape as CWarpM154 /
+// CDecayMgr in UserLogic.cpp.
+SIZE_UNKNOWN(CDropAnimObj);
+struct CDropAnimObj {
+    char m_pad0[0x8];
+    i32 m_flags; // +0x08  redraw/state flags
+    char m_pad0c[0x1a0 - 0xc];
+    CAniAdvanceCursor m_1a0; // +0x1a0  per-object anim sub-mgr (m_20 idle, m_28 active)
+};
+
+// A CUserLogic-leaf actor (identity best-guess): Advance reads the bound object at
+// +0x10 and the anim-owning sprite at +0x38 exactly like CObjectDropper's leaf tail.
 struct CSiblingActorB {
-    i32 Advance();          // 0xc7ab0
+    char m_pad0[0x10];
+    CGameObject* m_object;    // +0x10  bound object (CUserLogic::m_object)
+    char m_pad14[0x38 - 0x14];
+    CDropAnimObj* m_38;       // +0x38  the anim-owning sprite (TILE_LOGIC tail)
+    i32 Advance();            // 0xc7ab0
     void Activate(i32 actId); // 0xc7750 (fire the registered act handler)
 };
 struct CSiblingActorBEntry {
@@ -89,6 +116,33 @@ void CSiblingActorB::Activate(i32 actId) {
     if (((CSiblingActorBEntry*)g_64bf00.ResolveEntry(actId))->m_fn != 0) {
         (this->*(((CSiblingActorBEntry*)g_64bf00.ResolveEntry(actId))->m_fn))();
     }
+}
+
+// CSiblingActorB::Advance (0xc7ab0): the per-frame act handler - advance the bound
+// object's +0x1a0 anim sub-mgr, and on the drop frame (Advance == 2) spawn a
+// "DroppedObject" sprite at the bound object's screen position; then raise the
+// object's redraw bit if the anim latched active while idle-clear (same idle tail
+// as CDroppedObject::UserLogicVfunc5).
+// @early-stop
+// tail regalloc coin-flip (98.48%): the whole body is byte-faithful (the Advance
+// call, the ==2 gate, the CreateSprite spawn, the idle check). The sole residue is
+// the m_38 reload in the idle tail: with the CreateSprite branch in front, `this`
+// is dead there and retail REUSES esi (`mov esi,[esi+0x38]`), while cl keeps `this`
+// in esi and loads m_38 into eax. The identical tail matched EXACT in
+// CDroppedObject::UserLogicVfunc5 (no preceding branch); not source-steerable here
+// (local/inline m_object + permute all identical). Parked for the final sweep.
+RVA(0x000c7ab0, 0x67)
+i32 CSiblingActorB::Advance() {
+    if (m_38->m_1a0.Advance_15c360(g_6bf3bc) == 2) {
+        CGameObject* o = m_object;
+        g_gameReg->m_world->m_8->CreateSprite(
+            0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003
+        );
+    }
+    if (m_38->m_1a0.m_28 != 0 && m_38->m_1a0.m_20 == 0) {
+        m_38->m_flags |= 0x10000;
+    }
+    return 0;
 }
 
 // CSiblingActorB::RegisterActs: same archetype, registry @0x64bf00.

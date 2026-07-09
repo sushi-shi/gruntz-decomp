@@ -992,6 +992,23 @@ BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
 }
 
 // ---------------------------------------------------------------------------
+// CBrickzGrid::FindCellNode - look up the (col,row) search-record threaded through
+// grid cell m_rows[row][col]'s bucket list (each bucket node's m_0 is the child
+// record; walk the bucket via m_8). Return the matching child record, else 0.
+RVA(0x0009f540, 0x40)
+BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
+    BrickzNode* n = m_rows[row][col].m_head;
+    while (n != 0) {
+        BrickzNode* child = (BrickzNode*)n->m_0;
+        if (child->m_0 == col && child->m_4 == row) {
+            return (BrickzNode*)n->m_0;
+        }
+        n = n->m_8;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CBrickzGrid::Drain - move every node off the m_18 list onto the front of the m_30
 // list (re-threaded via m_14/m_18), then clear the m_18 head.
 // @early-stop

@@ -407,6 +407,32 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     return result;
 }
 
+// GetCtrlE (0xc2640): the fifth per-index combo getter (control IDs 0x500/0x50e/
+// 0x50f/0x510 on the shared multiplayer-setup dialog). A free __stdcall helper;
+// declared-only here (owned as a data mislabel in globals), so the call reloc-masks.
+extern CWnd* __stdcall GetCtrlE(i32 index);
+
+// SetComboSelE (0xc28c0, __stdcall): set the GetCtrlE combo's current selection
+// (CB_SETCURSEL 0x14e), if the control exists.
+RVA(0x000c28c0, 0x27)
+void __stdcall SetComboSelE(i32 index, i32 sel) {
+    CWnd* c = GetCtrlE(index);
+    if (c != 0) {
+        SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+    }
+}
+
+// GetComboSelE (0xc2900, __stdcall): the GetCtrlE combo's current selection
+// (CB_GETCURSEL 0x147), or -1 when the control is missing.
+RVA(0x000c2900, 0x2a)
+i32 __stdcall GetComboSelE(i32 index) {
+    CWnd* c = GetCtrlE(index);
+    if (c == 0) {
+        return -1;
+    }
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0);
+}
+
 // GetComboSelC (0xc2940): the GetCtrlC combo's cur-sel + 1 (CB_GETCURSEL 0x147), or
 // -1 when the control is missing. The GetCtrlC sibling of CBattlezDlg::Query015d30
 // (which lacks the null guard).
