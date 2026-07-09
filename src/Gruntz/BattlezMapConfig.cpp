@@ -434,10 +434,6 @@ extern void* g_defaultRec;
 // CString::Release-style teardown (RVA 0x1b9b93), a __thiscall on a CString slot.
 // A CString is a single char* (4 B), so the scratch walk strides by 4. External,
 // reloc-masked.
-struct ScratchString {
-    char* m_str;    // +0x00  (4-byte stride for the teardown loop)
-    void Release(); // 0x1b9b93
-};
 
 // The per-tick advance delta added to the bundle's timers each step
 // (DAT_00645584 @ VA 0x645584). Reloc-masked DATA.
@@ -925,7 +921,6 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
 }
 
 // CBattlezMapConfig::Method_02c080 (0x0002c080) is now an inline member in the header.
-
 
 // ===========================================================================
 // CBattlezMapConfig::Method_025d90  @0x025d90
@@ -1466,7 +1461,6 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
 }
 
 // CBattlezMapConfig::Clear_02ade0 (0x0002ade0) is now an inline member in the header.
-
 
 // The gated point-in-rect test on a unit (RVA 0x051a20, RectContainsGated): a
 // __thiscall taking the other unit's level coord. External, reloc-masked.
@@ -2511,15 +2505,15 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
     // G / L / P / J / C / R (each via GetRecords, with the scratch CString teardown).
     CAnimNameRecord* recs;
-    ScratchString* slot;
+    CString* slot;
     i32 cnt;
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2530,11 +2524,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2545,11 +2539,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2560,11 +2554,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2575,11 +2569,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2590,11 +2584,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -2813,7 +2807,6 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 }
 
 // CBattlezMapConfig::Method_02ed90 (0x0002ed90) is now an inline member in the header.
-
 
 // ===========================================================================
 // CBattlezMapConfig::Method_0300c0  @0x0300c0  (/GX EH frame)
@@ -3780,15 +3773,15 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     // The remaining codes resolve through GetRecords (which fills the scratch
     // CString array torn down after each call): P / J / C.
     CAnimNameRecord* recs;
-    ScratchString* slot;
+    CString* slot;
     i32 cnt;
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -3799,11 +3792,11 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -3814,11 +3807,11 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -3842,11 +3835,11 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     // Tear down the scratch again, then compare the selected name to "R".
-    slot = (ScratchString*)g_nameScratch;
+    slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
         if (slot != 0) {
-            ((CString*)slot)->~CString();
+            slot->~CString();
         }
         slot++;
         cnt--;
@@ -5112,7 +5105,6 @@ SIZE_UNKNOWN(Kind4Validator);
 SIZE_UNKNOWN(CAnimNameRecord);
 SIZE_UNKNOWN(ProbePair);
 SIZE_UNKNOWN(RectInit);
-SIZE_UNKNOWN(ScratchString);
 SIZE_UNKNOWN(Tile);
 SIZE_UNKNOWN(UnitLevel);
 SIZE_UNKNOWN(UnitMutator2);

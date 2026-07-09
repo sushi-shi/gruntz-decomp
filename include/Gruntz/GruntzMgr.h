@@ -155,9 +155,9 @@ struct TimerObj; // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
 // +0x288 scored flag == m_288).
 class CTriggerMgr;
-struct CmdSink;  // +0x6c command sub-manager sink (Command)
-class CmdSinkV;  // +0x70 polymorphic command sink (slot 1) + cell-height notify
-struct ScoreHud; // +0x7c HUD/score accumulator + command sink
+struct CmdSink;     // +0x6c command sub-manager sink (Command)
+class CmdSinkV;     // +0x70 polymorphic command sink (slot 1) + cell-height notify
+class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
 SIZE(CGruntzMgr, 0xa30);
 VTBL(CGruntzMgr, 0x001e9b64); // vtable_names -> code (RTTI game class)
@@ -184,7 +184,7 @@ public:
     RVA(0x0008fa40, 0x16)
     i32 IsInPlayState() {
         if (m_curState == 0) {
-        return 0;
+            return 0;
         }
         return CheckPlayState() != 0;
     }
@@ -280,8 +280,8 @@ public:
     CString GetWorldFileName() {
         return m_strWorldFile;
     }
-    i32 AdvanceOptionsCycle();  // @0x0933e0 (round-robin tick of the options slots)
-    i32 SyncOptionsState();     // @0x093170 (reload each options slot's config; dual-slot)
+    i32 AdvanceOptionsCycle(); // @0x0933e0 (round-robin tick of the options slots)
+    i32 SyncOptionsState();    // @0x093170 (reload each options slot's config; dual-slot)
     void SetCellHeight(i32 r, i32 c, i32 v);          // @0x111ec0 (write the world height grid)
     i32 PassClickToPlayState(i32 a0, i32 a1, i32 a2); // @0x08d780
     i32 SwitchToNextState();                          // @0x08d6a0
@@ -328,9 +328,9 @@ public:
     void SetGameClock(i32 now, i32 delta, i32 abs); // @0x08f7b0 (mirror the 5 clock globals)
     void ResetClockGlobals();                       // @0x08f4f0 (zero the 7 clock globals)
     i32 TickStateMgrs();                            // @0x0920b0 (drive two engine singletons)
-    void SetRunState(i32 v);           // @0x092340 (set base m_10 run-state + side-effects)
-    i32 CheckSavedMode();              // @0x08de70 (saved==live mode test)
-    i32 IsLobbyHostReady();            // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
+    void SetRunState(i32 v); // @0x092340 (set base m_10 run-state + side-effects)
+    i32 CheckSavedMode();    // @0x08de70 (saved==live mode test)
+    i32 IsLobbyHostReady();  // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
     RVA(0x00090200, 0x8)
     i32 RunFromState() {
         return ChangeState_8fab0(1);
@@ -408,7 +408,7 @@ public:
     //         GetByIndex consumers; Close tears it down via Reset)
     CLightFxMgr* m_logicPump; // +0x78  light-FX/shade-table pump (Push + m_tables[10]@+0x14
                               //         consumers; Close tears it down via Reset @0x9dc80)
-    ScoreHud* m_scoreHud;     // +0x7c  HUD/score accumulator + command sink
+    CBattlezData* m_scoreHud; // +0x7c  HUD/score accumulator + command sink (real CBattlezData)
     i32 m_numRuns;            // +0x80  "Num_Runs"   (launch counter; Close WriteInt)
     i32 m_numMovies;          // +0x84  "Num_Movies" (movie-playback counter)
     i32 m_colorDepth;         // +0x88  live color depth (bpp): 8/16(=HiColor)/24 (=0x10 in ctor)

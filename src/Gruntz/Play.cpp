@@ -290,7 +290,6 @@ void CPlay::ApplyGameOptions() {
 
 // CPlay::Update (0x0008c910) is now an inline member in the header.
 
-
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
@@ -309,8 +308,8 @@ i32 CPlay::Render() {
         // =================================================================
         // ---- MAIN in-game frame ----
         // =================================================================
-        StepInputA();                          // poll/sim sub-step A
-        StepWorldB();                          // world/camera sub-step B
+        StepInputA();         // poll/sim sub-step A
+        StepWorldB();         // world/camera sub-step B
         m_c->m_24->PreStep(); // on m_c->m_24 (view pre-step)
 
         g_6bf3c0 = g_645580; // mirror the draw clock
@@ -318,11 +317,8 @@ i32 CPlay::Render() {
 
         // --- shared world-draw block #1 ---
         ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
-        m_c->m_24
-            ->PushView(
-                m_c->m_drawTarget->m_14,
-                m_c->m_8
-            ); // (thiscall on m_24)
+        m_c->m_24->PushView(m_c->m_drawTarget->m_14,
+                            m_c->m_8); // (thiscall on m_24)
         m_c->m_rendererB->Present(m_c->m_drawTarget->m_14,
                                   m_c->m_drawTarget->m_18); // vtbl[+0x34]
         m_4w()->m_54->Blit(
@@ -361,9 +357,9 @@ i32 CPlay::Render() {
         Eng_SurfaceFlush(m_c->m_drawTarget->m_10->m_2c, 0); // surface flush
         // GutsStepX(m_region0Gate, m_guts, reg) -> the post-draw step (modeled via
         // the same external; here as the marker/guts step):
-        GutsStep();                             // (post-draw guts)
+        GutsStep();            // (post-draw guts)
         m_c->m_24->PostStep(); // on m_c->m_24
-        return 1;                               // -> draw tail
+        return 1;              // -> draw tail
     }
 
     // m_inGame == 0
@@ -591,8 +587,7 @@ alt2:
             // ---- the active short frame: entity step + cues ----
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_c->m_24
-                    ->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
+                m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
                 m_c->m_rendererB->Present(
                     m_c->m_drawTarget->m_14,
                     m_c->m_drawTarget->m_18
@@ -2055,7 +2050,6 @@ void CPlay::PlayBacklog08c9d0() {}
 
 // CState::SetBeginClearParams (0x0008c970) is now an inline member in the header.
 
-
 // @confidence: low
 // @source: winapi:PostMessageA
 // @stub
@@ -2286,7 +2280,6 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
 
 // CPlay::ForwardReady (0x000cee70) is now an inline member in the header.
 
-
 // CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
 // the pending mode ops, freeze the guts subsystem (passing whether we were
 // running), clear the world-ready / drag-snap gates, and save the running game
@@ -2324,36 +2317,9 @@ i32 CPlay::ResumeGame() {
 // Frame 1..0x26 = the numeric chip cursor; 0 = the plain pointer; 0x66 = the flailing-grunt
 // cursor (which also fires a booty cue + arms the +0x328 one-shot timer); 0xc8..0xe8 = the
 // per-tool cursor table (a dense switch, one GAME_CURSORZ_* per tool). Each path loads via
-// the reloc-masked LoadCursor helper (0x39ea) and, on success, stamps the m_2fc/m_300/m_504/
-// m_2f8 cursor state. Fields beyond CPlay's modeled layout are reached by a typed self-view.
-SIZE_UNKNOWN(CursorFxObj);
-struct CursorFxObj { // the held cursor-anim object at m_4e4 (its +0x40 flag word toggles)
-    char m_pad00[0x40];
-    i32 m_40; // +0x40 flag word (bit0)
-};
-// The on-screen cue sink (g_64556c->m_cueSink); the flailing-grunt path fires a 6-arg cue.
-SIZE_UNKNOWN(CursorSelf);
-struct CursorSelf {
-    char m_pad00[0x2f8];
-    i32 m_2f8; // +0x2f8 loaded frame id
-    i32 m_2fc; // +0x2fc
-    i32 m_300; // +0x300
-    char m_pad304[0x328 - 0x304];
-    i32 m_328; // +0x328 one-shot timer stamp
-    i32 m_32c; // +0x32c
-    i32 m_330; // +0x330 one-shot interval
-    i32 m_334; // +0x334
-    char m_pad338[0x368 - 0x338];
-    i32 m_368; // +0x368 flailing-grunt gate
-    i32 m_36c; // +0x36c chip-cursor gate
-    char m_pad370[0x4e4 - 0x370];
-    CursorFxObj* m_4e4; // +0x4e4 held cursor-anim object
-    char m_pad4e8[0x504 - 0x4e8];
-    i32 m_504; // +0x504 loaded flag
-    // The named-cursor-set loader (thunk 0x39ea, __thiscall, reloc-masked).
-    // LoadCursor @0x39ea IS CPlay::BeginGridWalk; cast at each call (self == (CPlay*)this).
-};
-
+// the reloc-masked LoadCursor helper (0x39ea, == CPlay::BeginGridWalk) and, on success,
+// stamps the cursor state on CPlay's real members (m_dragClampMaxX/Y, m_dragEndNotify,
+// m_levelId; the flailing-grunt one-shot reuses the booty-timer block at +0x328).
 // @confidence: med
 // @source: string-xref
 // @early-stop
@@ -2367,233 +2333,231 @@ struct CursorSelf {
 // the trailing m_2f8 store. All logic + externs/strings named.
 RVA(0x000d0120, 0x5d8)
 i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
-    CursorSelf* self = (CursorSelf*)this;
-    if (self->m_2f8 == frame && flag == self->m_504) {
+    if (this->m_levelId == frame && flag == this->m_dragEndNotify) {
         return 1;
     }
     if (frame >= 1 && frame <= 0x26) {
-        if (((CPlay*)self)->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
+        if (this->BeginGridWalk("GAME_INGAMEICONZ_NORMCHIPZ", frame, 0, 0x64, 0) == 0) {
             return 0;
         }
-        if (self->m_4e4 != 0) {
-            self->m_4e4->m_40 |= 1;
+        if (this->m_scrollSink != 0) {
+            this->m_scrollSink->m_flags |= 1;
         }
-        self->m_2fc = 0;
-        self->m_300 = 0;
-        self->m_36c = 1;
-        self->m_504 = 0;
-        self->m_2f8 = frame;
+        this->m_dragClampMaxX = 0;
+        this->m_dragClampMaxY = 0;
+        this->m_dragInhibit2 = 1;
+        this->m_dragEndNotify = 0;
+        this->m_levelId = frame;
         return 1;
     }
     if (frame == 0) {
-        if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
+        if (this->BeginGridWalk("GAME_CURSORZ_POINTER", 1, 1, 0x64, 0) == 0) {
             return 0;
         }
-        if (self->m_4e4 != 0) {
-            self->m_4e4->m_40 &= ~1;
+        if (this->m_scrollSink != 0) {
+            this->m_scrollSink->m_flags &= ~1;
         }
-        self->m_2fc = 0x10;
-        self->m_300 = 0x10;
-        self->m_504 = 0;
-        self->m_2f8 = frame;
+        this->m_dragClampMaxX = 0x10;
+        this->m_dragClampMaxY = 0x10;
+        this->m_dragEndNotify = 0;
+        this->m_levelId = frame;
         return 1;
     }
     if (frame == 0x66) {
-        if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
+        if (this->BeginGridWalk("GAME_CURSORZ_FLAILINGGRUNT", 1, 1, 0x64, 1) == 0) {
             return 0;
         }
-        if (self->m_4e4 != 0) {
-            self->m_4e4->m_40 |= 1;
+        if (this->m_scrollSink != 0) {
+            this->m_scrollSink->m_flags |= 1;
         }
-        self->m_2fc = 0;
-        self->m_300 = 0;
-        self->m_368 = 1;
-        self->m_504 = 0;
+        this->m_dragClampMaxX = 0;
+        this->m_dragClampMaxY = 0;
+        this->m_dragInhibit1 = 1;
+        this->m_dragEndNotify = 0;
         ((CGruntSpawnConfig*)g_64556c->m_cueSink)->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
-        self->m_330 = 0x2710;
-        self->m_334 = 0;
-        self->m_328 = g_645588;
-        self->m_32c = 0;
-        self->m_2f8 = frame;
+        this->m_bootyInterval = 0x2710;
+        this->m_bootyIntervalHi = 0;
+        this->m_bootyTimerLo = g_645588;
+        this->m_bootyTimerHi = 0;
+        this->m_levelId = frame;
         return 1;
     }
     switch (frame) {
         case 0xc8:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_HANDZ", 1, flag, 0x64, 1) == 0) {
                 return 0;
             }
             break;
         case 0xc9:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xca:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BOOMERANGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcb:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BRICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcc:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_CLUBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcd:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GAUNTLETZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xce:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GLOVEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xcf:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GOOBERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd0:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GRAVITYBOOTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd1:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GUNHATZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd2:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_NERFGUNZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd3:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_ROCKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd4:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SHIELDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd5:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SHOVELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd6:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SPRINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd7:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SPYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd8:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SWORDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xd9:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_TIMEBOMBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xda:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_TOOBZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdb:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_WANDZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdc:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_WARPSTONEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdd:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_WELDERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xde:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_WINGZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xdf:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BABYWALKERZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe0:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BEACHBALLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe1:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_BIGWHEELZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe2:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_GOKARTZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe3:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0)
-                == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_JACKINTHEBOXZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe4:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_JUMPROPEZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe5:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_POGOSTICKZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe6:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SCROLLZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe7:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_SQUEAKTOYZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         case 0xe8:
-            if (((CPlay*)self)->BeginGridWalk("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
+            if (this->BeginGridWalk("GAME_CURSORZ_YOYOZ", 1, flag, 0x64, 0) == 0) {
                 return 0;
             }
             break;
         default:
             return 0;
     }
-    if (self->m_4e4 != 0) {
-        self->m_4e4->m_40 |= 1;
+    if (this->m_scrollSink != 0) {
+        this->m_scrollSink->m_flags |= 1;
     }
-    self->m_2fc = 0;
-    self->m_300 = 0;
-    self->m_504 = flag;
-    self->m_2f8 = frame;
+    this->m_dragClampMaxX = 0;
+    this->m_dragClampMaxY = 0;
+    this->m_dragEndNotify = flag;
+    this->m_levelId = frame;
     return 1;
 }
 
@@ -2649,7 +2613,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
                              - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     }
 
-    CPlay* self = (CPlay*)this;
+    CPlay* self = this;
     ScrollWorld* w = (ScrollWorld*)self->m_4;
     i32 changed = 0;
     i32 speed =
@@ -2920,11 +2884,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_8) {
         return 0;
     }
-    self->m_gruntzBank = (CResSource*)((CSymParser*)self->m_8)->ResolvePath("GRUNTZ");
+    self->m_gruntzBank = (CSymTab*)((CSymParser*)self->m_8)->ResolvePath("GRUNTZ");
     if (!self->m_gruntzBank) {
         return 0;
     }
-    self->m_gameBank = (CResSource*)((CSymParser*)self->m_8)->ResolvePath("GAME");
+    self->m_gameBank = (CSymTab*)((CSymParser*)self->m_8)->ResolvePath("GAME");
     return self->m_gameBank != 0;
 }
 
@@ -2946,7 +2910,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     ((CDDrawWorkerRegistry*)self->m_c->m_10)->RemoveKeysEqual_155360("BACK", g_emptyString);
     g_resourceInstallActive = 0;
 
-    void* tiles = ((CSymTab*)self->m_levelBank)->ResolvePath("TILEZ");
+    void* tiles = (self->m_levelBank)->ResolvePath("TILEZ");
     if (!tiles) {
         return 0;
     }
@@ -2969,7 +2933,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 
     ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->RemoveKeysEqual_157c70("LEVEL", "_");
 
-    void* sounds = ((CSymTab*)self->m_levelBank)->ResolvePath("SOUNDZ");
+    void* sounds = (self->m_levelBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -2993,7 +2957,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     ((CDDrawWorkerRegistry*)self->m_c->m_10)->RemoveKeysEqual_155360("LEVEL", "_");
     g_resourceInstallActive = 0;
 
-    void* images = ((CSymTab*)self->m_levelBank)->ResolvePath("IMAGEZ");
+    void* images = (self->m_levelBank)->ResolvePath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -3016,7 +2980,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     }
 
     g_resourceInstallActive = 1;
-    void* images = ((CSymTab*)self->m_gameBank)->ResolvePath("IMAGEZ");
+    void* images = (self->m_gameBank)->ResolvePath("IMAGEZ");
     if (!images) {
         return 0;
     }
@@ -3037,7 +3001,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
         return 1;
     }
 
-    void* sounds = ((CSymTab*)self->m_gameBank)->ResolvePath("SOUNDZ");
+    void* sounds = (self->m_gameBank)->ResolvePath("SOUNDZ");
     if (!sounds) {
         return 0;
     }
@@ -3057,7 +3021,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
         return 1;
     }
 
-    void* anims = ((CSymTab*)self->m_gameBank)->ResolvePath("ANIZ");
+    void* anims = (self->m_gameBank)->ResolvePath("ANIZ");
     if (!anims) {
         return 0;
     }
@@ -3073,41 +3037,27 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // the game) as 'XMI' resources and, if the resolved entry loads, installs it under
 // its name. The arg (force flag) is unused. __thiscall, ret 4.
 // ===========================================================================
-// A resolved music-category entry (Resolve result): +0xc field + a Load() accessor.
-// CMusicEntry::Load @0x139960 IS CParseSource::BeginParse (header-less); local decl.
-class CParseSource {
-public:
-    i32 BeginParse();
-};
-struct CMusicEntry {
-    // Load @0x139960 IS CParseSource::BeginParse; cast at each call.
+// A resolved music-category entry (CSymTab::Insert result): +0xc install key + a
+// BeginParse() loader. CParseSource::BeginParse @0x139960 loads the entry (the entry
+// IS the parse source); header-less local decl. The level/game MIDIZ banks are the
+// real CState::m_levelBank/m_gameBank CSymTab members (read directly, no view).
+struct CParseSource {
     char p0[0xc];
-    void* m_c; // +0xc  install key
-};
-// A named MIDIZ category set (LookupSet result).
-struct CMusicSet {
-    // Resolve @0x13a000 IS CSymTab::Insert; cast at each call.
-};
-// A music source (level m_levelBank / game m_gameBank).
-struct CMusicSource {
-    // LookupSet @0x13bae0 IS CSymTab::ResolvePath; cast at the call.
+    void* m_c;        // +0xc  install key
+    i32 BeginParse(); // 0x139960
 };
 // The destination category table (the sound manager at m_4->m_48).
 struct CMusicCatTable {
     void Clear();                                   // 0x538530 (thiscall, no arg)
     void Install(void* res, void* key, char* name); // 0x538670 (thiscall)
 };
-// Typed view of `this` for this builder: m_4->m_48 = sound manager, m_28/m_34 sources.
+// Typed view of `this` for the m_4->m_48 sound category table.
 struct CMusicOwner {
     char p0[0x4];
     struct SndHolder {
         char p0[0x48];
         CMusicCatTable* m_48; // +0x48
     }* m_4;                   // +0x04
-    char p8[0x28 - 0x8];
-    CMusicSource* m_levelBank; // +0x28  level MIDIZ bank (== CState::m_levelBank)
-    char p2c[0x34 - 0x2c];
-    CMusicSource* m_gameBank; // +0x34  game MIDIZ bank (== CState::m_gameBank)
 };
 
 #define MUSIC_TAG_XMI 0x584d49 // 'XMI'
@@ -3117,59 +3067,57 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     CMusicOwner* self = (CMusicOwner*)this;
     self->m_4->m_48->Clear();
 
-    CMusicSet* levelSet = (CMusicSet*)((CSymTab*)self->m_levelBank)->ResolvePath("MIDIZ");
+    CSymTab* levelSet = (CSymTab*)m_levelBank->ResolvePath("MIDIZ");
     if (levelSet) {
-        CMusicEntry* e =
-            (CMusicEntry*)((CSymTab*)levelSet)->Insert("AMBIENT0", (void*)MUSIC_TAG_XMI);
+        CParseSource* e = (CParseSource*)levelSet->Insert("AMBIENT0", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "AMBIENT0");
             }
         }
-        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
+        e = (CParseSource*)levelSet->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "AMBIENT1");
             }
         }
-        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
+        e = (CParseSource*)levelSet->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "INTRO0");
             }
         }
-        e = (CMusicEntry*)((CSymTab*)levelSet)->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
+        e = (CParseSource*)levelSet->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "INTRO1");
             }
         }
     }
 
-    CMusicSource* gameSrc = self->m_gameBank;
-    CMusicSet* gameSet = (CMusicSet*)((CSymTab*)gameSrc)->ResolvePath("MIDIZ");
+    CSymTab* gameSet = (CSymTab*)m_gameBank->ResolvePath("MIDIZ");
     if (gameSet) {
-        CMusicEntry* e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
+        CParseSource* e = (CParseSource*)gameSet->Insert("POWERUP", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "POWERUP");
             }
         }
-        e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("CURSE", (void*)MUSIC_TAG_XMI);
+        e = (CParseSource*)gameSet->Insert("CURSE", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "CURSE");
             }
         }
-        e = (CMusicEntry*)((CSymTab*)gameSet)->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
+        e = (CParseSource*)gameSet->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
         if (e) {
-            void* res = (void*)((CParseSource*)e)->BeginParse();
+            void* res = (void*)e->BeginParse();
             if (res) {
                 self->m_4->m_48->Install(res, e->m_c, "MONOLITH");
             }
@@ -3192,74 +3140,73 @@ class CMulti {
 public:
     void AckJoinFailure();
 };
-struct CLoadNotify {};
 
 RVA(0x000dd830, 0x1e3)
-i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
+i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
 
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_NORMALGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_ENTRANCEZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_PICKUPS")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_BOMBGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
                 ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     return 1;
@@ -3273,80 +3220,80 @@ i32 CPlay::LoadGruntSoundNamespaces(CLoadNotify* notify) {
 // set aborts (return 0, install-active flag left set). __thiscall.
 // ===========================================================================
 RVA(0x000dd540, 0x241)
-i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
+i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
     g_resourceInstallActive = 1;
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_DEATHZ");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_EXITZ");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_PICKUPS");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_10)->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("IMAGEZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
         self->m_c->m_10->Install(s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     g_resourceInstallActive = 0;
@@ -3360,85 +3307,85 @@ i32 CPlay::BuildSpriteImageKeyTable(CLoadNotify* notify) {
 // set aborts (return 0). __thiscall.
 // ===========================================================================
 RVA(0x000ddaa0, 0x228)
-i32 CPlay::BuildAnizKeyTable(CLoadNotify* notify) {
+i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_c) {
         return 0;
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
              ->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
              ->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
              ->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
             ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
              ->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
-        void* s = ((CSymTab*)self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
+        void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
         }
         ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
-            ((CMulti*)notify)->AckJoinFailure();
+            notify->AckJoinFailure();
         }
     }
     return 1;
@@ -4985,7 +4932,6 @@ SIZE_UNKNOWN(CExitWorld);
 SIZE_UNKNOWN(CHitMarker);
 SIZE_UNKNOWN(CImageRegistry);
 SIZE_UNKNOWN(CInputDispatch);
-SIZE_UNKNOWN(CLoadNotify);
 SIZE_UNKNOWN(CMusicCatTable);
 SIZE_UNKNOWN(CMusicEntry);
 SIZE_UNKNOWN(CMusicOwner);

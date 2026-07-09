@@ -37,7 +37,7 @@ class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs includ
 
 // The per-namespace load-notify sink passed to the GRUNTZ_* installers; its
 // OnLoaded() (0x4bc420 thiscall) posts a load-progress tick. Full def in CPlay.cpp.
-struct CLoadNotify;
+class CMulti; // notify sink (Multi.h; AckJoinFailure 0xbc420); reloc-masked
 
 // ===========================================================================
 // Sub-object layouts CPlay::Render walks through (only the offsets it reads).
@@ -248,7 +248,9 @@ public:
     virtual ~CPlay() OVERRIDE; // slot 0 (0x8c830)
 
     RVA(0x0008c910, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_PLAY; }
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_PLAY;
+    }
     virtual i32 Render() OVERRIDE;               // THE per-frame heart (this TU)
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1 (CState override)
     virtual void ReleaseResources() OVERRIDE;    // slot 2 (CState override)
@@ -440,17 +442,17 @@ public:
     // sources are reached through offset-specific sub-types that Render models
     // differently, so a single struct-view cast at entry keeps Render's matched
     // member typing untouched.
-    i32 LoadImageBanks();                              // 0x0cffe0  (the GRUNTZ/GAME bank cache)
-    i32 LoadActionTileSprites(i32 force);              // 0x0db600
-    i32 LoadLevelSounds(i32 force);                    // 0x0db6c0
-    i32 LoadLevelImages(i32 force);                    // 0x0db7e0
-    i32 LoadGameImages(i32 force);                     // 0x0db8a0
-    i32 LoadGameSounds(i32 force);                     // 0x0db930
-    i32 LoadGameAnims(i32 force);                      // 0x0db9b0
-    i32 BuildMusicCategoryTable(i32);                  // 0x0dba30  (the MIDIZ category installer)
-    i32 LoadGruntSoundNamespaces(CLoadNotify* notify); // 0x0dd830 (GRUNTZ_* sound installer)
-    i32 BuildSpriteImageKeyTable(CLoadNotify* notify); // 0x0dd540 (GRUNTZ_* image installer)
-    i32 BuildAnizKeyTable(CLoadNotify* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)
+    i32 LoadImageBanks();                         // 0x0cffe0  (the GRUNTZ/GAME bank cache)
+    i32 LoadActionTileSprites(i32 force);         // 0x0db600
+    i32 LoadLevelSounds(i32 force);               // 0x0db6c0
+    i32 LoadLevelImages(i32 force);               // 0x0db7e0
+    i32 LoadGameImages(i32 force);                // 0x0db8a0
+    i32 LoadGameSounds(i32 force);                // 0x0db930
+    i32 LoadGameAnims(i32 force);                 // 0x0db9b0
+    i32 BuildMusicCategoryTable(i32);             // 0x0dba30  (the MIDIZ category installer)
+    i32 LoadGruntSoundNamespaces(CMulti* notify); // 0x0dd830 (GRUNTZ_* sound installer)
+    i32 BuildSpriteImageKeyTable(CMulti* notify); // 0x0dd540 (GRUNTZ_* image installer)
+    i32 BuildAnizKeyTable(CMulti* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)
 
     // ---- the keyboard/UI command dispatcher (THIS TU) ----
     i32 OnKeyCommand(i32 key, i32 flag); // 0x0cbaf0

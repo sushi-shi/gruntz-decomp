@@ -52,16 +52,22 @@ public:
     virtual i32 Vfunc1(i32, i32, i32); // slot 1 (asset/state load; leaf-overridden)
     virtual void ReleaseResources();   // slot 2  (+0x8)  resource teardown (leaf override)
     RVA(0x0008c490, 0x4)
-    virtual i32 Vfunc3() { return m_ready; }
+    virtual i32 Vfunc3() {
+        return m_ready;
+    }
     RVA(0x0008c4b0, 0x6)
-    virtual GameStateId Update() { return GAMESTATE_BASE; }
+    virtual GameStateId Update() {
+        return GAMESTATE_BASE;
+    }
     RVA(0x0008c4d0, 0x6)
-    virtual i32 Render() { return 1; }
-    virtual i32 Vslot06();             // slot 6  (+0x18)  activation-ready poll
-    virtual i32 Vslot07();             // slot 7  (+0x1c)  lobby-host-ready poll
-    virtual i32 InputVirtual();        // slot 8  (+0x20)  per-frame input poll
-    virtual i32 Vslot09(i32);          // slot 9  (+0x24)  notify w/ state id
-    virtual i32 FrameSlot28(i32);      // slot 10 (+0x28)  per-frame poll (leaf override)
+    virtual i32 Render() {
+        return 1;
+    }
+    virtual i32 Vslot06();        // slot 6  (+0x18)  activation-ready poll
+    virtual i32 Vslot07();        // slot 7  (+0x1c)  lobby-host-ready poll
+    virtual i32 InputVirtual();   // slot 8  (+0x20)  per-frame input poll
+    virtual i32 Vslot09(i32);     // slot 9  (+0x24)  notify w/ state id
+    virtual i32 FrameSlot28(i32); // slot 10 (+0x28)  per-frame poll (leaf override)
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
     // those forwarders' push/ret-N codegen needs (vtables not diffed).
@@ -72,7 +78,9 @@ public:
     virtual i32 Vslot0f(i32, i32, i32); // slot 15 (+0x3c)
     virtual i32 Vslot10(i32, i32, i32); // slot 16 (+0x40)
     RVA(0x0008c610, 0x5)
-    virtual i32 Vslot11(i32, i32, i32) { return 0; }
+    virtual i32 Vslot11(i32, i32, i32) {
+        return 0;
+    }
     virtual i32 Vslot12(i32, i32, i32); // slot 18 (+0x48)
     virtual i32 Vslot13(i32, i32, i32); // slot 19 (+0x4c)
     virtual i32 Vslot14(i32, i32, i32); // slot 20 (+0x50)
@@ -118,23 +126,25 @@ public:
                       //         switches on it (4/5/8 land-death, 6 no-death) to pick the
                       //         level death effect
     i32 m_24;         // +0x24
-    CResSource* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
+    // +0x28  level asset bank; a Bute CSymTab (LookupSet == CSymTab::ResolvePath
+    // 0x13bae0), so every user reaches it as CSymTab* -> typed here (kills the casts).
+    CSymTab* m_levelBank; // +0x28  level asset bank (TILEZ/IMAGEZ/SOUNDZ/MIDIZ source)
     // +0x2c  the resolved asset source a state loader caches (CBankMgr::Lookup
     // result): CSplashState/CHelpState store the "STATEZ_*" namespace here and
     // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
     // TITLE state here. A 4-byte pointer slot (was modeled i32 + per-site casts).
-    CResSource* m_2c;         // +0x2c
+    CResSource* m_2c; // +0x2c
     // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
     // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
     CSymTab* SymTab2c() {
         return (CSymTab*)m_2c;
     }
-    CResSource* m_gruntzBank; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
-    CResSource* m_gameBank;   // +0x34  GAME asset bank (GAME-namespace loaders' source)
-    i32 m_38;                 // +0x38
-    i32 m_ready;              // +0x3c  active/ready gate (Vfunc3 returns it)
-    i32 m_40;                 // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
-                              //         menu transition)
+    CSymTab* m_gruntzBank; // +0x30  GRUNTZ asset bank (CSymTab; LoadImageBanks caches here)
+    CSymTab* m_gameBank;   // +0x34  GAME asset bank (CSymTab; GAME-namespace loaders' source)
+    i32 m_38;              // +0x38
+    i32 m_ready;           // +0x3c  active/ready gate (Vfunc3 returns it)
+    i32 m_40;              // +0x40  notify latch (HandleCommand 0x8006 sets 1 before the
+                           //         menu transition)
     char m_pad44[0x4c - 0x44];
     char m_4c; // +0x4c (byte)
     char m_pad4d[0x150 - 0x4d];

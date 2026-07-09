@@ -283,14 +283,6 @@ extern CGameRegistry* g_gameReg;
 // The +0x7c HUD/score accumulator object (CGruntzMgr::m_scoreHud). One object: the
 // score/refresh fields + Refresh/Seed (UpdateScoreHud/AccrueScoreTime), the 4-arg
 // command sink (BroadcastCmd), and the shared Teardown (Close).
-struct ScoreHud {
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  refresh flag
-    char m_padc[0x1c - 0xc];
-    i32 m_1c; // +0x1c  accumulator A
-    i32 m_20; // +0x20  accumulator B
-};
-
 // HudGuard44 (+0x44 one-shot guard) now comes from <Gruntz/SaveInfo.h> (via
 // GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
 
@@ -768,7 +760,6 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
 
 // CGruntzMgr::IsInPlayState (0x0008fa40) is now an inline member in the header.
 
-
 // -------------------------------------------------------------------------
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
 // Returns the CD-ROM drive letter holding the Gruntz disc, memoised in the
@@ -1243,7 +1234,6 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
 }
 
 // CGruntzMgr::RunFromState (0x00090200) is now an inline member in the header.
-
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::TopState (0x090980). Returns the last pushed state (or 0 when the
@@ -2238,7 +2228,6 @@ CState* CGruntzMgr::FindStateById(i32 id) {
 
 // CGruntzMgr::PickPlayOrPausedState (0x00092990) is now an inline member in the header.
 
-
 // -------------------------------------------------------------------------
 // CGruntzMgr::PickPausedThenPlayState (0x0929b0; ret). Prefers the paused/hold
 // state (id 0x11), falling back to PLAY (id 3).
@@ -2588,7 +2577,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (CmdHook(a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    return ((CBattlezData*)m_scoreHud)->Command(a0, cmd, a2, a3) != 0;
+    return m_scoreHud->Command(a0, cmd, a2, a3) != 0;
 }
 
 // -------------------------------------------------------------------------
@@ -2600,6 +2589,12 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
 // otherwise, on the first frame (m_hudGuard->m_124 == 0) it seeds the HUD from the
 // registry's cumulative score and fires the score-bump / tick / notify chain,
 // then refreshes the HUD with the live score and clears the dirty flag.
+// @early-stop
+// inline-budget ripple (was 100%): folding the m_scoreHud ScoreHud view onto the
+// real CBattlezData member (correct model - methods + fields match) removed the
+// per-call (CBattlezData*) casts, lightening this fn's IR enough that MSVC now
+// inlines the (unchanged) CSaveGame::SetCurLevel/SetMaxLevel calls retail keeps
+// out-of-line. Diffuse codegen artifact, not a wrong shape; deferred to the sweep.
 RVA(0x000860b0, 0xe8)
 void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_134 != 1) {
@@ -2611,19 +2606,19 @@ void CGruntzMgr::UpdateScoreHud() {
     m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_644c54];
 
     if (m_strWorldFile.GetLength() != 0) {
-        ((CBattlezData*)m_scoreHud)->SetCount(1);
-        m_scoreHud->m_8 = 1;
+        m_scoreHud->SetCount(1);
+        m_scoreHud->m_08 = 1;
         return;
     }
 
     if (m_hudGuard->m_124 == 0) {
-        ((CBattlezData*)m_scoreHud)->FillRecord(sub->m_1c, 0);
+        m_scoreHud->FillRecord(sub->m_1c, 0);
         ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_1c);
         ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_1c % 0x28) + 1);
         ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
     }
-    ((CBattlezData*)m_scoreHud)->SetCount(sub->m_1c);
-    m_scoreHud->m_8 = 0;
+    m_scoreHud->SetCount(sub->m_1c);
+    m_scoreHud->m_08 = 0;
 }
 
 // -------------------------------------------------------------------------
@@ -3075,7 +3070,6 @@ void CGruntzMgr::ClearOptionsSlots() {
 
 // CGruntzMgr::GetWorldFileName (0x000928c0) is now an inline member in the header.
 
-
 // -------------------------------------------------------------------------
 // CGruntzMgr::AdvanceOptionsCycle (0x0933e0; ret). Bumps the global round-robin
 // cursor g_6455fc (mod 4); for the options slot whose index matches the cursor,
@@ -3261,7 +3255,7 @@ void CGruntzMgr::Close() {
         m_cmdNotify = 0;
     }
     if (m_scoreHud) {
-        ((CBattlezData*)m_scoreHud)->Teardown();
+        m_scoreHud->Teardown();
         operator delete(m_scoreHud);
         m_scoreHud = 0;
     }
@@ -3953,7 +3947,6 @@ SIZE_UNKNOWN(LevelClock);
 SIZE_UNKNOWN(OptionsSlot);
 SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);
-SIZE_UNKNOWN(ScoreHud);
 SIZE_UNKNOWN(ScoreNotifier);
 SIZE_UNKNOWN(ScoreSub2c);
 SIZE_UNKNOWN(StateMgrBZ);
