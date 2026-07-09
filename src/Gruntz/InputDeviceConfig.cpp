@@ -25,6 +25,11 @@
 // call displacements reloc-mask against the matched NAFXCW routines.
 // ---------------------------------------------------------------------------
 #include <Gruntz/String.h>
+#include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2 (g_645570; controller count @ m_devices.m_size)
+
+// The DirectInput manager singleton (DAT_00645570, owned by GruntzMgrTransition.cpp);
+// its m_devices array element count is the enumerated game-controller/joystick count.
+extern DirectInputMgr2* g_645570;
 
 // ---------------------------------------------------------------------------
 // CInputConfig - the input-device option holder. Only the device-id discriminator
@@ -63,6 +68,36 @@ CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
             break;
     }
     return name;
+}
+
+// ---------------------------------------------------------------------------
+// PopulateInputDeviceCombo (0x388e0) - fill an input-device combo/list: reset it,
+// add the "None" and "Keyboard" entries, then one "Joystick <n>" per enumerated
+// game controller (g_645570->m_devices count), and select selIndex when >= 0. The
+// per-iteration "Joystick %i" CString drives the /GX EH frame. A free __cdecl helper.
+RVA(0x000388e0, 0x112)
+i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
+    if (!hDlg) {
+        return 0;
+    }
+    HWND ctrl = GetDlgItem(hDlg, ctrlId);
+    if (!ctrl) {
+        return 0;
+    }
+    SendMessageA(ctrl, 0x14b, 0, 0);                  // CB_RESETCONTENT
+    SendMessageA(ctrl, 0x143, 0, (LPARAM) "None");     // CB_ADDSTRING
+    SendMessageA(ctrl, 0x143, 0, (LPARAM) "Keyboard"); // CB_ADDSTRING
+    i32 i = 0;
+    while (i < g_645570->m_devices.m_size) {
+        CString s;
+        i++;
+        s.Format("Joystick %i", i);
+        SendMessageA(ctrl, 0x143, 0, (LPARAM)(LPCTSTR)s);
+    }
+    if (selIndex >= 0) {
+        SendMessageA(ctrl, 0x14e, selIndex, 0); // CB_SETCURSEL
+    }
+    return 1;
 }
 
 SIZE_UNKNOWN(CInputConfig);

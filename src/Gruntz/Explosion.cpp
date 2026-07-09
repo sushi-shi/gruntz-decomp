@@ -38,3 +38,20 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
     }
     m_object->m_38 = 0;
 }
+
+// The class dispatch table filled by RegisterXLogic_6447f8 (LogicActReg.cpp);
+// referenced here for the slot-4 lookup.
+extern CLogicActTable g_logicActReg_6447f8;
+
+// CExplosion::FireActivation @0x047350 - slot-4 (UserLogicVfunc2) override: resolve
+// `id` in the class dispatch table; if the entry carries a handler, re-resolve and
+// dispatch it __thiscall on `this`. Same archetype as CTeleporter::FireActivation
+// (the ResolveEntry inline expands twice).
+RVA(0x00047350, 0x102)
+void CExplosion::FireActivation(i32 id) {
+    CExplosionActEntry* e = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        CExplosionActEntry* e2 = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+        (this->*(e2->m_fn))();
+    }
+}

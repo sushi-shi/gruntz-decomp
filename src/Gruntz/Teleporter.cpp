@@ -16,6 +16,7 @@
 #include <Gruntz/ActReg.h> // shared activation-registrar archetype (CTeleporterActReg)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/SerialObjRef.h>  // CSerialObjRef (+0x34 chain) + CSerialArchive (Read/Write)
 #include <Globals.h>
 
 // The bound / spawned visual object the tick reads + re-seeds IS the engine
@@ -81,6 +82,50 @@ extern i32 g_curPlayer;
 // (0x010d10) / ~CTimeBomb (0x012a70); the empty body is enough for cl.
 RVA(0x00010dd0, 0x44)
 CTeleporter::~CTeleporter() {}
+
+// CTeleporter::Serialize @0x041350 - slot-1 (SerializeMove) override. Chain the
+// shared CUserLogic serialize helper + the +0x34 sub-object's chain (either bailing
+// out on failure), then round-trip the leaf state: the two i64 arm-clock/interval
+// snapshots (+0x58/+0x60, walked through one hoisted base ptr; read-inline/write-else
+// block layout) then the two i32 fields m_armed/+0x54 + m_tickHandled/+0x68 (a
+// switch), and on the post-load tag 8 re-apply the config through LoadColors (its
+// body is COMDAT-ICF-folded with CWormhole::LoadColors at 0x411f0). Same archetype
+// as CGruntPuddle::Serialize. Byte-exact.
+RVA(0x00041350, 0xee)
+i32 CTeleporter::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain((i32)ar, tag, c, d)) {
+        return 0;
+    }
+    if (!((CSerialObjRef*)((char*)this + 0x34))->Chain(ar, tag, c, (CSerialObj*)d)) {
+        return 0;
+    }
+    // The two i64 snapshots (+0x58 arm-clock, +0x60 interval) round-trip through one
+    // hoisted base pointer that walks +8 (retail: lea ebx,[this+0x58] then add ebx,8).
+    i32* p = &m_armClockLo;
+    if (tag != 4) {
+        if (tag == 7) {
+            ar->Read(p, 8);
+            ar->Read(p + 2, 8);
+        }
+    } else {
+        ar->Write(p, 8);
+        ar->Write(p + 2, 8);
+    }
+    switch (tag) {
+        case 4:
+            ar->Write(&m_armed, 4);
+            ar->Write(&m_tickHandled, 4);
+            break;
+        case 7:
+            ar->Read(&m_armed, 4);
+            ar->Read(&m_tickHandled, 4);
+            break;
+        case 8:
+            LoadColors();
+            break;
+    }
+    return 1;
+}
 
 // The class's activation-coordinate registry singleton (@0x6446b0), built over the
 // fixed [2000, 2010] range by the shared registry ctor (0x408710). CTeleporterActReg

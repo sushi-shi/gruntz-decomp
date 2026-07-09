@@ -56,6 +56,23 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // ===========================================================================
+// CGruntPuddle::FireActivation  (0x040750)  - slot-4 (UserLogicVfunc2) override
+// ===========================================================================
+// Resolve `id` in the class dispatch table g_logicDispatch_6445e8; if the resolved
+// entry carries a registered handler, re-resolve and dispatch it __thiscall on
+// `this`. Same archetype as CTeleporter::FireActivation (the ResolveEntry inline
+// expands twice, side-effecting so it isn't CSE'd).
+extern CLogicActTable g_logicDispatch_6445e8;
+RVA(0x00040750, 0x102)
+void CGruntPuddle::FireActivation(i32 id) {
+    CPuddleActEntry* e = (CPuddleActEntry*)g_logicDispatch_6445e8.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        CPuddleActEntry* e2 = (CPuddleActEntry*)g_logicDispatch_6445e8.ResolveEntry(id);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// ===========================================================================
 // CGruntPuddle::Place  (0x040c30)
 // ===========================================================================
 // Seed the puddle into a tile cell. Snapshot the owning object's tile (x,y) from

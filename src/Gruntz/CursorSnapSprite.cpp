@@ -58,4 +58,21 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_stateFlags |= 1;
 }
 
+// The class dispatch table filled by RegisterXLogic_62bfa0 (LogicActReg.cpp);
+// referenced here for the slot-4 lookup.
+extern CLogicActTable g_logicActReg_62bfa0;
+
+// CCursorSnapSprite::FireActivation @0x03a5b0 - slot-4 (UserLogicVfunc2) override:
+// resolve `id` in the class dispatch table; if the entry carries a handler,
+// re-resolve and dispatch it __thiscall on `this`. Same archetype as
+// CTeleporter::FireActivation (the ResolveEntry inline expands twice).
+RVA(0x0003a5b0, 0x102)
+void CCursorSnapSprite::FireActivation(i32 id) {
+    CSnapActEntry* e = (CSnapActEntry*)g_logicActReg_62bfa0.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        CSnapActEntry* e2 = (CSnapActEntry*)g_logicActReg_62bfa0.ResolveEntry(id);
+        (this->*(e2->m_fn))();
+    }
+}
+
 #include <rva.h>

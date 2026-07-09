@@ -10,9 +10,25 @@
 #include <Ints.h>
 #include <Globals.h>
 
-// The CUSTOM_WORLDINFO dialog procedure handed to RunModalDialog (pushed code
-// address, reloc-masked DIR32 against the named LAB_ symbol).
-extern "C" void CustomWorldInfoDlgProc(); // LAB_0040357b
+// The CUSTOM_WORLD picker dialog procedure (0x3ae60, defined below) handed to
+// RunModalDialog as a pushed code address (reloc-masked DIR32).
+extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
+
+// The active modeless dialog HWND, cached on entry (shared NetLobby global @0x64557c).
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
+// The picker's level listbox (id 0x3fc) cached at WM_INITDIALOG (DAT_0062c274); the
+// dialog proc owns this cluster-local global.
+DATA(0x0022c274)
+extern HWND g_customLevelList; // 0x62c274
+
+// The dialog proc's command dispatchers (reloc-masked externals): fill the level
+// list / info pane, load the picked world's info popup, commit the selection.
+i32 FillCustomLevelList(HWND hDlg);  // 0x3af90 (CustomLevelList.cpp)
+i32 LoadCustomWorldInfo(HWND hDlg);  // 0x3b7c0 (CustomWorldInfoDlg.cpp)
+i32 FillLevelInfoDialog(HWND hDlg);  // 0x3b1a0
+i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310 (below)
 
 // The custom-world exchange block (separate engine globals; each reloc-masks to its
 // own DAT_ symbol). 0x62c25c holds the selected-world name returned by value;
@@ -74,7 +90,7 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_dat62c26c = v;
     g_dat62c268 = (i32)g_mgrSettings->m_world;
     g_dat62c270 = ((GmInner8*)g_mgrSettings->m_owner)->m_c;
-    if (g_mgrSettings->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldInfoDlgProc, 0) == 0) {
+    if (g_mgrSettings->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
         g_str62c25c.Empty();
     }
     g_dat62c268 = 0;
@@ -84,6 +100,53 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
         *outSource = g_str62c264;
     }
     return g_str62c25c;
+}
+
+// ===========================================================================
+// CustomWorldDlgProc @0x03ae60 - the CUSTOM_WORLD level-picker dialog proc.
+// ===========================================================================
+// WM_INITDIALOG caches the level listbox (id 0x3fc) and fills it. WM_COMMAND: the
+// Cancel button (2) ends the dialog; button 0x42a pops the world-info popup; the OK
+// button (1) commits the selection and ends the dialog; a notification from the
+// listbox re-fills the info pane on select-change (LBN_SELCHANGE=1) or simulates OK
+// on double-click (LBN_DBLCLK=2 -> PostMessage WM_COMMAND/1).
+RVA(0x0003ae60, 0xec)
+extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    NetLobby::g_curDlg_64557c = hDlg;
+    switch (msg) {
+        case 0x110: // WM_INITDIALOG
+            g_customLevelList = GetDlgItem(hDlg, 0x3fc);
+            if (g_customLevelList) {
+                FillCustomLevelList(hDlg);
+            }
+            return 1;
+        case 0x111: // WM_COMMAND
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 0x42a) {
+                LoadCustomWorldInfo(hDlg);
+                return 1;
+            }
+            if (wParam == 1) {
+                LoadCustomWorldSelection(hDlg);
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            if (g_customLevelList != 0 && lParam == (LPARAM)g_customLevelList) {
+                if (HIWORD(wParam) == 1) {
+                    FillLevelInfoDialog(hDlg);
+                    return 1;
+                }
+                if (HIWORD(wParam) == 2) {
+                    PostMessageA(hDlg, 0x111, 1, 0);
+                    return 1;
+                }
+            }
+            break;
+    }
+    return 0;
 }
 
 // The game-root-dir resolver + the OpenFile(OF_EXIST) probe RunCustomWorldSelection

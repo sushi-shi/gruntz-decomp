@@ -293,6 +293,44 @@ i32 CWarlord::LoadAttributes2() {
 }
 
 // ===========================================================================
+// CWarlord::AdvanceMovingAnim  (0x044e70)  - per-frame moving-state handler
+// ===========================================================================
+// Advance the +0x1a0 anim sub-mgr off the global geo source; bail while it is
+// still animating (m_28==0 || m_20!=0). Once idle, if the fort battle-cue is armed
+// (h->m_288) and this warlord belongs to the local player, re-stamp the cue timer
+// (clear m_2a0, window m_298=0x3e8, start-stamp m_290=g_645588, zero the hi/window-
+// hi halves), then re-resolve the moving animation. Returns 0. The registry cue
+// helper is g_gameReg->m_cmdGrid viewed as the warlord threat/cue helper (the same
+// +0x68 multi-view slot LoadAttributes casts). Reached only through the action table.
+//
+// @early-stop
+// regalloc/scheduling wall (~90%, topic:regalloc topic:scoring-artifact): structure/
+// offsets/values/control-flow are byte-faithful (the cue store ORDER now matches with
+// the i64 stamp/window model). Two residuals, neither source-steerable: (a) retail
+// shrink-wraps `push edi` past the m_28/m_20 gate (edi = g_curPlayer, live only in the
+// inner block) where cl saves it at entry; (b) retail rebases `add eax,0x290` to reach
+// the cue stores with disp8 while cl keeps disp32 absolute [eax+0x29c/0x290/0x294] -
+// same instruction count, an MSVC5 addressing-mode scheduling coin-flip.
+extern i32 g_curPlayer; // 0x644c54 (current local player index)
+RVA(0x00044e70, 0x87)
+i32 CWarlord::AdvanceMovingAnim() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
+    if (sub->m_28 == 0 || sub->m_20 != 0) {
+        return 0;
+    }
+    CRegThreatHelper* h = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
+    if (h->m_288 != 0 && m_object->m_124 == g_curPlayer) {
+        h->m_2a0 = 0;
+        CRegThreatHelper* h2 = (CRegThreatHelper*)g_gameReg->m_cmdGrid;
+        h2->m_window = 0x3e8;
+        h2->m_stamp = (u32)g_645588;
+    }
+    ResolveMovingAnimation();
+    return 0;
+}
+
+// ===========================================================================
 // CWarlord::BuildFortSplashParticles  (0x044f80)
 // ===========================================================================
 // Re-arm the geo sub-player, and when ready-to-move, spawn the fort splash

@@ -20,6 +20,7 @@
 
 #include <Mfc.h> // CObject base + <windows.h>
 
+#include <Gruntz/ActReg.h>     // CLogicActTable (the slot-4 activation-dispatch table)
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/InGameIcon.h> // CGameReg / g_gameReg / CIconFactory / CIconTileGrid
 
@@ -84,6 +85,11 @@ public:
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
     i32 Remove();                              // 0x040d20
     void SetBute(char* key);                   // 0x07d810
+    // FireActivation (0x40750): slot-4 (UserLogicVfunc2) override - resolve `id` in
+    // the class dispatch table g_logicDispatch_6445e8; if the resolved entry holds a
+    // handler, re-resolve and dispatch it __thiscall on `this`. Same archetype as
+    // CTeleporter::FireActivation.
+    void FireActivation(i32 id);
     // Serialize (0x40e50): two-chain (CUserLogic base + the +0x34 sub-object) then a
     // tag-dispatched field round-trip - tag 4 writes / tag 7 reads the 7 own i32
     // fields via the archive vtable, tag 8 re-resolves the placed sprite from the
@@ -102,5 +108,20 @@ public:
     i32 m_placeIndex; // +0x6c  Place() arg1 snapshot (icon-factory index)
 };
 VTBL(CGruntPuddle, 0x1e8124);
+
+// The class's activation-dispatch table (CLogicActTable @0x6445e8); filled by
+// RegisterLogic_6445e8 (LogicActRegistrars.cpp), read by FireActivation. Owner
+// (DATA binding) is LogicActRegistrars.cpp; declared extern here so the loads
+// reloc-mask.
+extern CLogicActTable g_logicDispatch_6445e8;
+
+// A dispatch-table entry: its first dword is the class activation handler, stored
+// by the registrar as a free-fn ptr but dispatched __thiscall on `this` - a 4-byte
+// single-inheritance PMF gives the plain `mov ecx,this; call [entry]` code.
+typedef i32 (CGruntPuddle::*PuddleActHandler)();
+struct CPuddleActEntry {
+    PuddleActHandler m_fn;
+};
+SIZE_UNKNOWN(CPuddleActEntry); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

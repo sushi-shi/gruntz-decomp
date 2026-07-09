@@ -45,12 +45,21 @@ extern "C" u32 g_645588;
 
 // ---------------------------------------------------------------------------
 // The game-registry singleton's threat/spatial helper (g_gameReg->m_68): nearest
-// squared distance from (x, y) over the warlord's owner index. Engine
-// FUN_0047d1d0, __thiscall ret 0xc. External/no-body so the call reloc-masks.
+// squared distance from (x, y) over the warlord's owner index (NearestEnemyDist =
+// engine FUN_0047d1d0, __thiscall ret 0xc, external/no-body). It also carries the
+// fort battle-cue timer sub-block (armed on the per-frame moving tick): m_288 the
+// cue-armed gate, m_290/m_294 the 64-bit start stamp (g_645588), m_298/m_29c the
+// window (0x3e8 ms), m_2a0 the cue-active flag.
 // ---------------------------------------------------------------------------
 class CRegThreatHelper {
 public:
     i32 NearestEnemyDist(i32 owner, i32 x, i32 y);
+    char m_pad00[0x288];
+    i32 m_288; // +0x288  cue-armed gate
+    char m_pad28c[0x290 - 0x28c];
+    i64 m_stamp;  // +0x290  cue start-stamp (lo=g_645588, hi=0)
+    i64 m_window; // +0x298  cue window (lo=0x3e8, hi=0)
+    i32 m_2a0;    // +0x2a0  cue-active flag
 };
 
 // The registry's battle-event sink (g_gameReg->m_cueSink): fires a fort battle-cry /
@@ -101,6 +110,12 @@ public:
 
     // re-arm the moving animation off the global geo source (0x44bb0).
     i32 RearmMoving(); // 0x44bb0
+
+    // per-frame moving-state action handler (0x44e70): advance the +0x1a0 anim
+    // sub-mgr, and once it goes idle (m_28!=0 && m_20==0), when the fort cue is
+    // armed for the current player re-stamp the battle-cue timer (m_290 clock,
+    // m_298=0x3e8 window, m_2a0/m_29c/m_294=0), then re-resolve the moving anim.
+    i32 AdvanceMovingAnim(); // 0x44e70
 
     // per-tick warlord threat/attribute updates (0x44c00 / 0x44d10).
     i32 LoadAttributes();

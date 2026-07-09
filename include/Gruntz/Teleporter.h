@@ -23,6 +23,8 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
 
+struct CSerialArchive; // <Gruntz/SerialArchive.h> (Serialize's archive param)
+
 // The +0x1a0 animation sub-mgr the bring-up advances once each frame (Advance
 // 0x15c360, __thiscall ret 4, takes the g_6bf3bc draw-delta). Its +0x20/+0x28
 // int fields gate the one-shot finalize (run once, when +0x28==0 && +0x20!=0).
@@ -76,6 +78,17 @@ public:
     // in g_teleporterActReg; if the entry has a registered handler, dispatch it on
     // `this`. Same archetype as CParticlez::FireActivation (double ResolveEntry).
     void FireActivation(i32 coord);
+    // Serialize (0x41350): slot-1 (SerializeMove) override - chain the shared
+    // CUserLogic serialize helper + the +0x34 sub-object's chain, then tag-dispatch
+    // the leaf state: tag 4 writes / tag 7 reads the two i64 arm/interval snapshots
+    // (+0x58/+0x60) then the two i32 fields (m_armed/+0x54, m_tickHandled/+0x68);
+    // tag 8 (post-load) re-applies the config via LoadColors. Same archetype as
+    // CGruntPuddle::Serialize / CWormhole::Serialize.
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
+    // LoadColors (0x411f0): the tag-8 post-load config-reapply handler. Its body is
+    // byte-identical to (and COMDAT-ICF-folded with) CWormhole::LoadColors, so retail
+    // dispatches the folded survivor; declared no-body here so the call reloc-masks.
+    void LoadColors();
     // Begin (0x419e0): advance the anim sub-mgr; on its first idle frame, snapshot
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.
