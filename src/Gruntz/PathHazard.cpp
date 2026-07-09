@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/ActReg.h> // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
@@ -247,6 +248,30 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
         m_savedGeoId = m_38->m_geoId;
         m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
+}
+
+// CPathHazard's activation-dispatch registry (the untyped .data CActReg @0x646250,
+// declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask).
+extern CActReg g_actReg_646250; // 0x646250
+struct CPathHazardActEntry {
+    i32 (CPathHazard::*m_fn)();
+};
+
+// CPathHazard::RunAct @0x0b3b60 - the class's vtable slot-4 (UserLogicVfunc2) body
+// (shared by CUFO / CRainCloud via inheritance): resolve the registry entry for id
+// and, if a handler is bound, re-resolve and run it as a PMF on this, else return
+// the entry pointer. Same archetype as CAniCycle::RunAct (ResolveEntry inlined
+// twice). NOTE: this IS CPathHazard's real slot-4 override (data-ref
+// ??_7CPathHazard@@6B@+0x10 / CUFO / CRainCloud), but the fat base models slot 4
+// with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
+// spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
+RVA(0x000b3b60, 0x102)
+i32 CPathHazard::RunAct(i32 id) {
+    CPathHazardActEntry* e = (CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
 }
 
 // CPathHazard::Tick @0x0b4020 (virtual slot 16) - the per-frame driver. Advance
@@ -536,5 +561,6 @@ SIZE_UNKNOWN(CPathCueGate);
 SIZE_UNKNOWN(CPathEntity);
 SIZE_UNKNOWN(CPathSubMgr);
 SIZE_UNKNOWN(CPathWaypoint);
+SIZE_UNKNOWN(CPathHazardActEntry);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

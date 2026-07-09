@@ -87,6 +87,19 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
+// CEyeCandyAni::RunAct @0x0acbb0 - resolve the registry entry for id; if a handler
+// is bound, re-resolve and invoke it as a PMF on this, else return the entry
+// pointer. Same archetype as CAniCycle::RunAct (the g_eyeCandyActReg / 0x646060
+// registry is the CEyeCandyAni facet of the LogicFnTable-shaped global).
+RVA(0x000acbb0, 0x102)
+i32 CEyeCandyAni::RunAct(i32 id) {
+    CEyeCandyActEntry* e = (CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler
 // (AdvanceAnim @0x0acf10) to the activation key "A" via the shared name registry,
 // then bind id->entry in the class's coordinate registry (g_eyeCandyActReg

@@ -131,6 +131,25 @@ void InitSimpleAnimDispatch() {
     ((CZDArrayDerived*)&g_simpleAnimDispatch)->Construct(0x7d0, 0x7da);
 }
 
+// The stored handler is a CUserLogic member-fn-ptr (the same shape the whole
+// LogicFnTable family dispatches; see CInGameText::Dispatch).
+typedef i32 (CUserLogic::*LogicFn)();
+
+// ===========================================================================
+// CSimpleAnimation::Dispatch  (0x0abc10)
+// Index g_simpleAnimDispatch by idx; if the resolved slot holds a non-null member
+// function, invoke it on this. The bounds-check + grow of the table accessor is
+// inlined (ResolveSlot), computed once for the null-test and once for the call.
+// Same archetype as CInGameText::Dispatch.
+// ===========================================================================
+RVA(0x000abc10, 0x102)
+void CSimpleAnimation::Dispatch(i32 idx) {
+    if (*(void**)ResolveSlot(&g_simpleAnimDispatch, idx) != 0) {
+        LogicFn fn = *(LogicFn*)ResolveSlot(&g_simpleAnimDispatch, idx);
+        (this->*fn)();
+    }
+}
+
 // ===========================================================================
 // RegisterSimpleAnimLogic  (0x0abd70)
 // Register the logic handler into g_simpleAnimDispatch: look the key up in the
@@ -173,4 +192,3 @@ i32 CSimpleAnimation::AdvanceAnim() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h>
-SIZE_UNKNOWN(CSimpleAnimation);

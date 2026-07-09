@@ -34,6 +34,18 @@ void CSingleFrameMessage::InitActReg() {
     ((CZDArrayDerived*)&g_singleFrameActReg)->Construct(2000, 2010);
 }
 
+// CSingleFrameMessage::RunAct @0x0ab5b0 - resolve the registry entry for id; if a
+// handler is bound, re-resolve and invoke it as a PMF on this, else return the
+// entry pointer. Same archetype as CAniCycle::RunAct.
+RVA(0x000ab5b0, 0x102)
+i32 CSingleFrameMessage::RunAct(i32 id) {
+    CSingleFrameActEntry* e = (CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CSingleFrameActEntry*)g_singleFrameActReg.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // CSingleFrameMessage::RegisterActs @0x0ab710 - bind the class's per-frame handler
 // (AdvanceAnim @0x0ab910) to the activation key "A" via the shared name registry.
 // The SAME archetype as CBehindCandyAni::RegisterActs.
@@ -73,4 +85,3 @@ void CSingleFrameMessage::RegisterActs() {
 #include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CSingleFrameActEntry);
 SIZE_UNKNOWN(CSingleFrameActReg);
-SIZE_UNKNOWN(CSingleFrameMessage);

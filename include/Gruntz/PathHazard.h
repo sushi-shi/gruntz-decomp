@@ -106,6 +106,10 @@ class CPathHazard : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // The vtable slot-4 (UserLogicVfunc2) activation dispatcher body (0x0b3b60;
+    // shared by CUFO/CRainCloud); a plain method - the base placeholder blocks the
+    // int-arg OVERRIDE spelling.
+    i32 RunAct(i32 id);
     TILE_LOGIC_TAIL
 public:
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)

@@ -21,7 +21,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CDoNothing : CUserLogic)
 
-SIZE_UNKNOWN(CDoNothing);
 VTBL(CDoNothing, 0x001e85f4); // vtable_names -> code (RTTI game class)
 class CDoNothing : public CUserLogic {
 public:
@@ -34,6 +33,8 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_DONOTHING; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x2b26)
     virtual ~CDoNothing() OVERRIDE; // 0x00f770 (folds the CUserLogic teardown)
+    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CDoNothing` @0xa9cc0)
 };
+SIZE(CDoNothing, 0x54);
 
 #endif // GRUNTZ_CDONOTHING_H

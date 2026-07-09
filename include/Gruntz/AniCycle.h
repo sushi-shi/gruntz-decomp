@@ -32,6 +32,10 @@ public:
     // Construct the class's activation-coordinate registry singleton over the
     // fixed [2000, 2010] range via the shared registry ctor (0x408710).
     static void InitActReg(); // 0x0aaf00
+    // Look up the activation-registry entry for id and, if a handler is bound, run
+    // it as a PMF on this (the same ResolveEntry archetype inlined twice, once for
+    // the null-check, once for the dispatch). 0x0aaf80.
+    i32 RunAct(i32 id);
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab0e0
@@ -41,8 +45,10 @@ public:
     i32 AdvanceAnim();
     virtual ~CAniCycle() OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40 (geometry-id cache; written by the ctor)
+    i32 m_40;                  // +0x40 (geometry-id cache; written by the ctor)
+    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CAniCycle` @0xa9a40)
 };
 VTBL(CAniCycle, 0x001e86a4);
+SIZE(CAniCycle, 0x54);
 
 #endif // GRUNTZ_CANICYCLE_H

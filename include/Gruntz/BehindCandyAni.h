@@ -29,6 +29,9 @@ public:
     TILE_LOGIC_TAIL
 public:
     CBehindCandyAni(CGameObject* obj); // 0x0ad540 (ctor body in UserLogic.cpp)
+    // Resolve the registry entry for id; run its bound handler as a PMF on this
+    // (ResolveEntry inlined twice). 0x0ad850.
+    i32 RunAct(i32 id);
     // Construct the class's activation-coordinate registry (g_behindCandyActReg
     // @0x645f98) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad7d0
@@ -45,8 +48,10 @@ public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010050 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandyAni() OVERRIDE;          // 0x0100f0 (folds the CUserLogic teardown)
 
-    i32 m_40; // +0x40 (geoId latch; written by the ctor)
+    i32 m_40;                  // +0x40 (geoId latch; written by the ctor)
+    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CBehindCandyAni` @0xaa5a0)
 };
 VTBL(CBehindCandyAni, 0x001e838c);
+SIZE(CBehindCandyAni, 0x54);
 
 #endif // GRUNTZ_CBEHINDCANDYANI_H

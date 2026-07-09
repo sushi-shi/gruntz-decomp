@@ -11,7 +11,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic, CGameObject, g_buteMgr
 
-SIZE_UNKNOWN(CEyeCandyAni);
 class CEyeCandyAni : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -25,6 +24,9 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00ff20 (vtable slot 1: two-chain Serialize)
+    // Resolve the registry entry for id; run its bound handler as a PMF on this
+    // (ResolveEntry inlined twice). 0x0acbb0.
+    i32 RunAct(i32 id);
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry + the class's coordinate registry (g_eyeCandyActReg
     // @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
@@ -33,8 +35,10 @@ public:
     // current draw-delta (g_6bf3bc) and return 0.
     i32 AdvanceAnim(); // 0x0acf10
 
-    i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
+    i32 m_savedGeoId;          // +0x40  geometry id (m_38->m_geoId snapshot)
+    char m_pad44[0x54 - 0x44]; // +0x44..0x53 (leaf tail; sizeof from `new CEyeCandyAni` @0xaa820)
 };
 VTBL(CEyeCandyAni, 0x001e8334);
+SIZE(CEyeCandyAni, 0x54);
 
 #endif // GRUNTZ_CEYECANDYANI_H

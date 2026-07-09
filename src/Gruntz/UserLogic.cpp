@@ -1146,6 +1146,19 @@ void CSingleAnimation::InitActReg() {
     ((CZDArrayDerived*)&g_singleAnimActReg)->Construct(2000, 2010);
 }
 
+// --- CSingleAnimation::RunAct (0x0aea20) ---
+// Resolve the registry entry for id; if a handler is bound, re-resolve and invoke
+// it as a PMF on this, else return the entry pointer. Same archetype as
+// CAniCycle::RunAct (ResolveEntry inlined twice; no CSE).
+RVA(0x000aea20, 0x102)
+i32 CSingleAnimation::RunAct(i32 id) {
+    CSingleAnimActEntry* e = (CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // --- CSingleAnimation::RegisterActs (0x0aeb80) ---
 // Bind the per-frame handler (AdvanceAnim @0x0aed80) to the activation key "A"
 // via the shared name registry + the class's coordinate registry

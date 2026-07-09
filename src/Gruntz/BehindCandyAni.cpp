@@ -73,6 +73,18 @@ void CBehindCandyAni::InitActReg() {
     ((CZDArrayDerived*)&g_behindCandyActReg)->Construct(2000, 2010);
 }
 
+// CBehindCandyAni::RunAct @0x0ad850 - resolve the registry entry for id; if a
+// handler is bound, re-resolve and invoke it as a PMF on this, else return the
+// entry pointer. Same archetype as CAniCycle::RunAct.
+RVA(0x000ad850, 0x102)
+i32 CBehindCandyAni::RunAct(i32 id) {
+    CBehindCandyActEntry* e = (CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CBehindCandyActEntry*)g_behindCandyActReg.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // CBehindCandyAni::RegisterActs @0x0ad9b0 - bind the class's per-frame handler
 // (AdvanceAnim @0x0adbb0) to the activation key "A" via the shared name registry.
 // The SAME archetype as CSecretLevelTrigger::RegisterActs.
@@ -120,4 +132,3 @@ i32 CBehindCandyAni::AdvanceAnim() {
 #include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CBehindCandyActEntry);
 SIZE_UNKNOWN(CBehindCandyActReg);
-SIZE_UNKNOWN(CBehindCandyAni);

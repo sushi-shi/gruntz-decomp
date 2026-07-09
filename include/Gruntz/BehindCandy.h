@@ -21,7 +21,6 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CBehindCandy : CUserLogic)
 
-SIZE_UNKNOWN(CBehindCandy);
 class CBehindCandy : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -34,7 +33,9 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fb90 (vtable slot 1: two-chain Serialize)
     virtual ~CBehindCandy() OVERRIDE;             // 0x00fc30 (folds the CUserLogic teardown)
+    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CBehindCandy` @0xaa320)
 };
 VTBL(CBehindCandy, 0x001e8494);
+SIZE(CBehindCandy, 0x54);
 
 #endif // GRUNTZ_CBEHINDCANDY_H

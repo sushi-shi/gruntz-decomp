@@ -23,6 +23,9 @@ public:
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
     static void InitActReg(); // 0x0ab530
+    // Resolve the registry entry for id; run its bound handler as a PMF on this
+    // (ResolveEntry inlined twice). 0x0ab5b0.
+    i32 RunAct(i32 id);
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry; the same archetype as CBehindCandyAni::RegisterActs.
     static void RegisterActs(); // 0x0ab710
@@ -32,7 +35,9 @@ public:
     i32 AdvanceAnim();
     virtual ~CSingleFrameMessage()
         OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
+    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleFrameMessage` @0xa9b80)
 };
 VTBL(CSingleFrameMessage, 0x1e864c);
+SIZE(CSingleFrameMessage, 0x54);
 
 #endif // GRUNTZ_CSINGLEFRAMEMESSAGE_H

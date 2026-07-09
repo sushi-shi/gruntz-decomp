@@ -636,54 +636,6 @@ RVA(0x000a3a20, 0xe2)
 i32 Gap_0a3a20(void) {
     return 0;
 } // @stub
-RVA(0x000a9a40, 0xf1)
-i32 Gap_0a9a40(void) {
-    return 0;
-} // @stub
-RVA(0x000a9b80, 0xf1)
-i32 Gap_0a9b80(void) {
-    return 0;
-} // @stub
-RVA(0x000a9f60, 0xf1)
-i32 Gap_0a9f60(void) {
-    return 0;
-} // @stub
-RVA(0x000aa320, 0xf1)
-i32 Gap_0aa320(void) {
-    return 0;
-} // @stub
-RVA(0x000aa820, 0xf1)
-i32 Gap_0aa820(void) {
-    return 0;
-} // @stub
-RVA(0x000aaaa0, 0xf1)
-i32 Gap_0aaaa0(void) {
-    return 0;
-} // @stub
-RVA(0x000aabe0, 0xf1)
-i32 Gap_0aabe0(void) {
-    return 0;
-} // @stub
-RVA(0x000aaf80, 0x102)
-i32 Gap_0aaf80(void) {
-    return 0;
-} // @stub
-RVA(0x000ab5b0, 0x102)
-i32 Gap_0ab5b0(void) {
-    return 0;
-} // @stub
-RVA(0x000abc10, 0x102)
-i32 Gap_0abc10(void) {
-    return 0;
-} // @stub
-RVA(0x000acbb0, 0x102)
-i32 Gap_0acbb0(void) {
-    return 0;
-} // @stub
-RVA(0x000ad850, 0x102)
-i32 Gap_0ad850(void) {
-    return 0;
-} // @stub
 RVA(0x000ae2a0, 0x8e)
 i32 Gap_0ae2a0(void) {
     return 0;
@@ -692,40 +644,8 @@ RVA(0x000ae360, 0x6f)
 i32 Gap_0ae360(void) {
     return 0;
 } // @stub
-RVA(0x000aea20, 0x102)
-i32 Gap_0aea20(void) {
-    return 0;
-} // @stub
 RVA(0x000aed80, 0x39)
 i32 Gap_0aed80(void) {
-    return 0;
-} // @stub
-RVA(0x000af1e0, 0xf4)
-i32 Gap_0af1e0(void) {
-    return 0;
-} // @stub
-RVA(0x000af320, 0xf4)
-i32 Gap_0af320(void) {
-    return 0;
-} // @stub
-RVA(0x000af460, 0xf4)
-i32 Gap_0af460(void) {
-    return 0;
-} // @stub
-RVA(0x000af5a0, 0xf4)
-i32 Gap_0af5a0(void) {
-    return 0;
-} // @stub
-RVA(0x000af6e0, 0xf4)
-i32 Gap_0af6e0(void) {
-    return 0;
-} // @stub
-RVA(0x000afde0, 0x102)
-i32 Gap_0afde0(void) {
-    return 0;
-} // @stub
-RVA(0x000b1630, 0x102)
-i32 Gap_0b1630(void) {
     return 0;
 } // @stub
 RVA(0x000b1af0, 0x318)
@@ -734,10 +654,6 @@ i32 Gap_0b1af0(void) {
 } // @stub
 RVA(0x000b2050, 0x295)
 i32 Gap_0b2050(void) {
-    return 0;
-} // @stub
-RVA(0x000b3b60, 0x102)
-i32 Gap_0b3b60(void) {
     return 0;
 } // @stub
 RVA(0x000b47a0, 0x27)

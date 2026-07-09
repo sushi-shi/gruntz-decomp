@@ -47,6 +47,9 @@ public:
     // Construct the class's activation-coordinate registry (g_rollingBallActReg
     // @0x6461b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0afd60
+    // Resolve the registry entry for id; run its bound handler as a PMF on this
+    // (ResolveEntry inlined twice). 0x0afde0.
+    i32 RunAct(i32 id);
     // Bind the per-frame handler (Update) to the activation key "A" via the shared
     // name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0aff40

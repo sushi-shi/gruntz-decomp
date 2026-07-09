@@ -16,6 +16,7 @@
 #include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (color table via m_78)
+#include <Gruntz/ActReg.h>       // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <rva.h>
 
 // The bute store the "A" activation node is resolved through (g_buteTree @0x6bf620,
@@ -39,34 +40,10 @@ struct CSpotMgrTable {
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
-// ---------------------------------------------------------------------------
-// CSpotLight : CUserLogic - the light eyecandy logic. Own fields begin past the
-// CUserLogic base (+0x40): the rotation/offset doubles + the per-tick state ints.
-class CSpotLight : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CSpotLight(CGameObject* obj); // 0xb1200
-    virtual ~CSpotLight() OVERRIDE;
-
-    char m_pad40[0x58 - 0x40];
-    double m_58; // +0x58  per-tick rate
-    double m_60; // +0x60
-    double m_68; // +0x68
-    double m_70; // +0x70
-    double m_78; // +0x78
-    double m_80; // +0x80
-    double m_88; // +0x88
-    double m_90; // +0x90  pi or 0
-    i32 m_98;    // +0x98
-    i32 m_9c;    // +0x9c
-    i32 m_a0;    // +0xa0
-    i32 m_a4;    // +0xa4
-};
-VTBL(CSpotLight, 0x1e75bc);
+// CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
+// included below). The light eyecandy logic: own fields begin past the CUserLogic
+// base (+0x40) - the rotation/offset doubles + the per-tick state ints.
+#include <Gruntz/SpotLight.h>
 
 // Out-of-line vtable anchor (gives CSpotLight a real vftable so the ctor's vptr
 // store falls out). Body not matched.
@@ -140,6 +117,31 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
+// CSpotLight's activation-dispatch registry (the untyped .data CActReg @0x646188,
+// declared in LogicActRegistrars.cpp; extern here so the loads reloc-mask). Its
+// entries hold the per-id handler (a code ptr dispatched __thiscall on this).
+extern CActReg g_actReg_646188; // 0x646188
+struct CSpotActEntry {
+    i32 (CSpotLight::*m_fn)();
+};
+
+// CSpotLight::RunAct @0x0b1630 - the class's vtable slot-4 (UserLogicVfunc2) body:
+// resolve the registry entry for id and, if a handler is bound, re-resolve and run
+// it as a PMF on this, else return the entry pointer. Same archetype as
+// CAniCycle::RunAct (ResolveEntry inlined twice). NOTE: this IS CSpotLight's real
+// slot-4 override (data-ref ??_7CSpotLight@@6B@+0x10), but the fat base models slot
+// 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
+// spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
+RVA(0x000b1630, 0x102)
+i32 CSpotLight::RunAct(i32 id) {
+    CSpotActEntry* e = (CSpotActEntry*)g_actReg_646188.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CSpotActEntry*)g_actReg_646188.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CSpotMgrTable);
+SIZE_UNKNOWN(CSpotActEntry);

@@ -274,6 +274,18 @@ void CRollingBall::InitActReg() {
     ((CZDArrayDerived*)&g_rollingBallActReg)->Construct(2000, 2010);
 }
 
+// CRollingBall::RunAct @0x0afde0 - resolve the registry entry for id; if a handler
+// is bound, re-resolve and invoke it as a PMF on this, else return the entry
+// pointer. Same archetype as CAniCycle::RunAct.
+RVA(0x000afde0, 0x102)
+i32 CRollingBall::RunAct(i32 id) {
+    CRollingBallActEntry* e = (CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        return (this->*((CRollingBallActEntry*)g_rollingBallActReg.ResolveEntry(id))->m_fn)();
+    }
+    return (i32)e;
+}
+
 // CRollingBall::RegisterActs @0x0aff40 - bind the per-frame handler (Update
 // @0x0b0140) to the activation key "A" via the shared name registry. The SAME
 // archetype as CBehindCandyAni::RegisterActs.

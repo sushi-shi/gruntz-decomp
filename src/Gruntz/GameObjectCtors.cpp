@@ -25,6 +25,8 @@
 #include <Bute/ButeTree.h> // canonical CButeTree (one shape)
 #include <Gruntz/SerialObjRef.h>
 #include <Gruntz/PathHazard.h> // real CPathHazard base (: CUserLogic) for CRainCloud/CUFO
+#include <Gruntz/RainCloud.h>  // CRainCloud : CPathHazard (canonical header)
+#include <Gruntz/Ufo.h>        // CUFO : CPathHazard (canonical header)
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -297,34 +299,9 @@ struct CSpotLightSetup { // sl->m_7c->m_18 (per-class setup; downcast at the sit
 // vptr stamp; the inherited m_10/m_38 (CUserLogic, == obj) and m_savedGeoId (+0x40)
 // are read directly. Replaces the old fabricated `CPathHazardBase` stand-in.
 
-class CRainCloud : public CPathHazard {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    CRainCloud(CGameObject* obj);
-    // The slots CRainCloud overrides over CPathHazard's vtable (declared only;
-    // reloc-masked). slots 1/2 (origin CUserBase) stay inherited-attributed.
-    virtual ~CRainCloud() OVERRIDE;         // slot 0
-    virtual i32 Tick() OVERRIDE;            // slot 16
-    virtual i32 HitTest(i32, i32) OVERRIDE; // slot 20
-};
-
-class CUFO : public CPathHazard {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    CUFO(CGameObject* obj);
-    virtual ~CUFO() OVERRIDE;    // slot 0
-    virtual i32 Tick() OVERRIDE; // slot 16
-    // CUFO's serialize (slot 1 in retail): kept a plain reconstructed method - its
-    // 4-arg shape can't override the base's placeholder slot-1 signature; the
-    // vtable slot stays inherited-attributed (reloc-masked).
-    i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
-    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
-};
-
-// Leaf vftables (??_7CRainCloud@@6B@ / ??_7CUFO@@6B@) are emitted by cl and
-// named on the target automatically (RTTI auto-namer).
+// CRainCloud / CUFO : CPathHazard are modeled in <Gruntz/RainCloud.h> / <Gruntz/Ufo.h>
+// (canonical headers, included above). Leaf vftables (??_7CRainCloud@@6B@ /
+// ??_7CUFO@@6B@) are emitted by cl and named on the target automatically.
 
 // @confidence: high
 // @source: rtti-vptr
@@ -494,14 +471,10 @@ SIZE_UNKNOWN(CHazardReg);
 SIZE_UNKNOWN(CHazardRegInner);
 SIZE_UNKNOWN(CHazardRegSub);
 SIZE_UNKNOWN(CHazardSerialSub);
-SIZE_UNKNOWN(CRainCloud);
-VTBL(CRainCloud, 0x001e7324); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CSpotLightSetup);
 SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSpriteObj);
 SIZE_UNKNOWN(CSpriteObjAux);
 SIZE_UNKNOWN(CToyTimeHost);
-SIZE_UNKNOWN(CUFO);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CUFO, 0x001e72b4);
