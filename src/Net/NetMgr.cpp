@@ -45,14 +45,8 @@ public:
 #include <Gruntz/GruntzPlayer.h> // OnPlayerLeft derefs the leaving player's slot
 #include <Gruntz/GruntzCmdMgr.h> // CNetGameMgr::m_6c command manager (ResetPlayerCommands Dispatch)
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
-class CGruntzMgr {
-public:
-    void ClearOptionsSlots();
-    i32 CountReadyOptionsSlots(i32 a);
-    CString GetWorldFileName();
-    i32 InitializeLobbyConnectionSettings();
-    void ResetClockGlobals();
-};
+// (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
+// directly on CNetGameMgr in <Net/NetMgr.h>, so m_4->Method() needs no cross-cast.)
 struct AssetMgr;
 class CAssetLoader {
 public:
@@ -748,7 +742,7 @@ i32 CNetMgr::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // eh-state-numbering-base.md. Deferred to the final sweep.
 RVA(0x000baac0, 0x12e)
 i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
-    if (((CGruntzMgr*)m_4)->CountReadyOptionsSlots(1) >= 4) {
+    if (m_4->CountReadyOptionsSlots(1) >= 4) {
         return 0;
     }
 
@@ -1343,8 +1337,8 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     MF(0x114) = 0;
-    ((CGruntzMgr*)m_4)->ResetClockGlobals();
-    ((CGruntzMgr*)m_4)->ClearOptionsSlots();
+    m_4->ResetClockGlobals();
+    m_4->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
     // (1) peer CNetMgr
@@ -1353,7 +1347,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_groupEnumMgr = (CNetMgr*)peer;
 
     MF(0xac) = 1;
-    if (((CGruntzMgr*)m_4)->InitializeLobbyConnectionSettings() != 0) {
+    if (m_4->InitializeLobbyConnectionSettings() != 0) {
         if (((CMulti*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
             (this->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
@@ -1406,7 +1400,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         MF(0x12c) = 1;
         *(CString*)((char*)m_4 + 0xc8) = GetConfigNameA();
     }
-    if (((CGruntzMgr*)m_4)->GetWorldFileName().GetLength() == 0) {
+    if (m_4->GetWorldFileName().GetLength() == 0) {
         return 0;
     }
 
@@ -2033,7 +2027,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            if (((CGruntzMgr*)m_4)->CountReadyOptionsSlots(1) >= 4) {
+            if (m_4->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
             if (ChannelSlots_Get(((u8*)&msg->m_8)[1]) == 0) {

@@ -97,7 +97,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = (i32)((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
+        i32 transformedPlayerId = (i32)((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }

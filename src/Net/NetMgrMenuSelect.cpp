@@ -8,14 +8,10 @@
 // a direct 2-arg CNetMgr method - a genuine RE ambiguity at the same RVA. So the
 // +0x524 sub-object keeps its own PlayerMgr type here; the shared CNetMgr is used for
 // everything else (m_peer @+0x524 is cast to PlayerMgr for the 4-arg calls).
-#include <Net/NetMgr.h> // the single shared CNetMgr
+#include <Net/NetMgr.h> // the single shared CNetMgr (m_4 game-mgr methods declared on CNetGameMgr)
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SoundCue.h> // the shared positional-sound cue subsystem
 #include <rva.h>
-class CGruntzMgr {
-public:
-    i32 CountReadyOptionsSlots(i32 a);
-};
 
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
 // +0x8 the player/slot id, +0x20/+0x24 the session-add params.
@@ -81,7 +77,7 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     }
     if (m_530 == 0 && m_connected == 0) {
         if (m_useChannelLatency != 0) {
-            if (((CGruntzMgr*)m_4)->CountReadyOptionsSlots(1) >= 4) {
+            if (m_4->CountReadyOptionsSlots(1) >= 4) {
                 SendStat3(ev->m_id, 0x3fe, 1);
                 return 0;
             }

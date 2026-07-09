@@ -730,16 +730,19 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // The +0x38 registry/config store (SetValueDword/SetValueString/GetValueDword);
 // Utils::RegistryHelper (from <Utils/RegistryHelper.h>, included above) is the real
 // class, exposed as a named typed member instead of a raw m_4+0x38 cast.
+// CNetGameMgr IS *g_64556c, the same object <Gruntz/GruntzMgr.h> models as CGruntzMgr
+// (Net-side named view; the MFC-wall "required split" is dead - see NetMgrMenuSelect).
+// These are that object's own CGruntzMgr methods, declared here (reloc-masked to the
+// same RVAs) so the Net code calls them DIRECTLY instead of cross-casting m_4 to an
+// unrelated CGruntzMgr* - the no-sane-dev cross-cast is gone. (FindPlayer IS
+// CNetMgr::ResolveLocalPlayer; cast at that call. The full type-identity merge of the
+// sub-object fields into CGruntzMgr is a separate reconciliation - see the report.)
 struct CNetGameMgr {
-    // FindPlayer IS CNetMgr::ResolveLocalPlayer; cast at the call.
-    // CountActiveChannels IS CGruntzMgr::CountReadyOptionsSlots; cast at the call.
-    //              menu-select "ready options" gate)
-    // The connect-driver lobby helpers (external, incremental-link thunked -> the
-    // call rel32 reloc-masks). Formerly the per-TU CNetGameMgrView shadow.
-    // ResetClockGlobals IS CGruntzMgr::ResetClockGlobals; cast at the call.
-    // ClearOptionsSlots IS CGruntzMgr::ClearOptionsSlots; cast at the call.
-    // InitLobbySettings IS CGruntzMgr::InitializeLobbyConnectionSettings; cast at the call.
-    // GetWorldFileName IS CGruntzMgr::GetWorldFileName; cast at the call.
+    i32 CountReadyOptionsSlots(i32 anyState);  // 0x092e30 (== CGruntzMgr::CountReadyOptionsSlots)
+    void ResetClockGlobals();                  // 0x08f4f0
+    void ClearOptionsSlots();                  // 0x092ec0
+    i32 InitializeLobbyConnectionSettings();   // 0x08eca0
+    CString GetWorldFileName();                // 0x0928c0
     char m_pad0[4];     // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];

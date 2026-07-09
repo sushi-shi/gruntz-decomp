@@ -247,6 +247,16 @@ struct CGameRegistry {
     void AccrueScoreTime();            // 0x0861e0 (== CGruntzMgr::AccrueScoreTime)
     i32 FinishLevel(i32 a, i32 b);     // 0x08e980 (== CGruntzMgr::FinishLevel)
     void ReportError(i32 id, i32 tag); // status-bar activation-fail report (i32,i32 overload)
+    // Same-object methods (== CGruntzMgr's, reloc-masked to the shared RVAs): declared on
+    // the canonical view so a TU whose local singleton-view is folded here calls
+    // g_gameReg->M() directly instead of cross-casting to an unrelated CGruntzMgr* (the
+    // no-sane-dev cross-cast; 0x24556c convergence). Consumers still carrying a per-TU
+    // g_gameReg/g_mgrSettings view (CTmGameReg/RockMgr/LevelSettings/...) must fold onto
+    // this canonical first - see the matcher report's CGameRegistry-side worklist.
+    CState* PickPausedThenPlayState();        // 0x0929b0
+    void EnterModalUI(i32 arg);               // 0x08ef10
+    i32 IsBattlezMapFile(class CString path); // (== CGruntzMgr::IsBattlezMapFile)
+    i32 ChangeState_8fab0(i32 arg);           // 0x08fab0
 
     // Slot NAMES agree with <Gruntz/GruntzMgr.h> (the RTTI-true MFC owner) - one field,
     // one name across the dual view (0x24556c convergence, step 1). Named: the base
