@@ -187,17 +187,11 @@ extern i32 g_644c54;
 
 // The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
 // the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
-// The CSBI_RectOnly status-bar item at world->m_2dc: SetMode is the reloc-masked engine
-// body @0x10bb90; the reset path also reads its mode (m_0), sub-state (m_10c) and frees
-// its pending buffer (m_54c).
-struct CTmStatusItem {
-    i32 m_0; // +0x00  mode
-    char p4[0x10c - 0x4];
-    i32 m_10c; // +0x10c  sub-state
-    char p110[0x548 - 0x110];
-    i32 m_548;   // +0x548
-    void* m_54c; // +0x54c  pending buffer to free
-};
+// The status-bar item at world->m_2dc is the real CSBI_RectOnly (<Gruntz/SBI_RectOnly.h>,
+// included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
+// offset-0 subtype tag (*(i32*)), sub-state (m_activeTab @0x10c), busy flag (m_hlBusy @0x548)
+// and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
+// gone - m_2dc is typed CSBI_RectOnly* so the method calls need no per-site cast.
 
 // The booty/score sub-object at world->m_3f4 (booty & trigger modes): a running i64 score
 // tally (m_38) plus the per-column status counters HitTestApply zeroes.
@@ -224,7 +218,7 @@ struct CTmWorld {
     i32 OnRegion4(i32 z);                       // 0xd8bc0
     void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
     char p0[0x2dc];
-    CTmStatusItem* m_2dc; // +0x2dc  status-bar item
+    CSBI_RectOnly* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
     char p2e0[0x384 - 0x2e0];
     struct Anchor {
         i32 m_x;
@@ -972,7 +966,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     CTmWorld* world = g_gameReg->m_curState;
     world->Refresh();
     world->SetStat(0, 0xbb7);
-    ((CSBI_RectOnly*)world->m_2dc)->SetMode(1);
+    world->m_2dc->SetMode(1);
     return 1;
 }
 
@@ -1255,7 +1249,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_48 = 0;
     sub->m_4c = 0;
     world->SetStat(0, 0xbb7);
-    ((CSBI_RectOnly*)world->m_2dc)->SetMode(1);
+    world->m_2dc->SetMode(1);
     this->ClearMagic(g_644c54);
 }
 
@@ -2101,18 +2095,18 @@ void CTriggerMgr::ResetSpawnState() {
         return;
     }
     CTmWorld* world = g_gameReg->m_curState;
-    CTmStatusItem* st = world->m_2dc;
-    if (st->m_54c != 0) {
-        operator delete(st->m_54c);
-        st->m_54c = 0;
+    CSBI_RectOnly* st = world->m_2dc;
+    if (st->m_retabNotify != 0) {
+        operator delete(st->m_retabNotify);
+        st->m_retabNotify = 0;
     }
-    (world->m_2dc)->m_548 = 0;
+    world->m_2dc->m_hlBusy = 0;
     if (m_byteArr.m_count > 0) {
         m_byteArr.RemoveAt(m_byteArr.m_count - 1, 1);
-        CTmStatusItem* ctx = world->m_2dc;
-        if (ctx->m_0 != 2 && ctx->m_10c == 5) {
+        CSBI_RectOnly* ctx = world->m_2dc;
+        if (*(i32*)ctx != 2 && ctx->m_activeTab == 5) {
             Eng_BuildNotifyA(0);
-            ((CSBI_RectOnly*)world->m_2dc)->TryActivate();
+            world->m_2dc->TryActivate();
         }
     }
     if (g_gameReg->m_134 == 1) {
@@ -2426,7 +2420,6 @@ SIZE_UNKNOWN(CTmDisplay);
 SIZE_UNKNOWN(CTmCellConfig);
 SIZE_UNKNOWN(CTmOverlay);
 SIZE_UNKNOWN(CTmGoal);
-SIZE_UNKNOWN(CTmStatusItem);
 SIZE_UNKNOWN(CTmWorld);
 SIZE_UNKNOWN(CTmScoreSub);
 SIZE_UNKNOWN(CTmGridHolder);
@@ -2813,19 +2806,19 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 outR = col;
     i32 outC = row;
     plane->Snap(&outR, &outC);
-    CTmStatusItem* sbi = (CTmStatusItem*)*(char**)((char*)lvl + 0x2dc);
-    if (sbi->m_548 == 0) {
-        if (sbi->m_0 == 2) {
-            ((CSBI_RectOnly*)sbi)->Reset();
+    CSBI_RectOnly* sbi = (CSBI_RectOnly*)*(char**)((char*)lvl + 0x2dc);
+    if (sbi->m_hlBusy == 0) {
+        if (*(i32*)sbi == 2) {
+            sbi->Reset();
         }
-        if (sbi->m_10c != 5) {
-            ((CSBI_RectOnly*)sbi)->Place(5, 3, 0);
+        if (sbi->m_activeTab != 5) {
+            sbi->Place(5, 3, 0);
         }
-        ((CSBI_RectOnly*)sbi)->Place(5, 1, 0);
-        ((CSBI_RectOnly*)sbi)->Run();
+        sbi->Place(5, 1, 0);
+        sbi->Run();
     }
-    if (((CSBI_RectOnly*)sbi)->Place(color, outR, outC) != 0) {
-        sbi->m_548 = 1;
+    if (sbi->Place(color, outR, outC) != 0) {
+        sbi->m_hlBusy = 1;
     } else {
         m_byteArr.Place(m_byteArr.m_count, 0, 0);
     }

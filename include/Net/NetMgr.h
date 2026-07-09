@@ -743,6 +743,16 @@ struct CNetGameMgr {
     void ClearOptionsSlots();                  // 0x092ec0
     i32 InitializeLobbyConnectionSettings();   // 0x08eca0
     CString GetWorldFileName();                // 0x0928c0
+    // Resolve the local player slot on the game mgr (looks the local id up in the peer
+    // list, returns the GruntzPlayer). Declared here so callers use m_4->FindPlayer()
+    // instead of the (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer() cross-cast;
+    // reloc-masked (same routine as CNetMgr::ResolveLocalPlayer at that call site).
+    GruntzPlayer* FindPlayer();
+    // Level-name / rez-path builder and the modal reporter this same *0x64556c object
+    // exposes (the former per-TU CGameSettings view, now folded here): the net verify
+    // path calls g_mgrSettings->BuildRezPath / ->ShowModal. Reloc-masked externs.
+    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
+    void ShowModal(const char* msg);                                  // 0x8ef10
     char m_pad0[4];     // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];

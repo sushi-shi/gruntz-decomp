@@ -181,17 +181,16 @@ void CSBI_RectOnly::SetGauge(i32 value) {
 RVA(0x00105800, 0x9e)
 i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_644c54;
-    if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ResetCell(col, row, 0, 0) == 0) {
+    if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    CSbiTileEntry* entry =
-        (CSbiTileEntry*)((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_grid[row + col * 15];
+    CSbiTileEntry* entry = (CSbiTileEntry*)g_gameReg->m_cmdGrid->m_grid[row + col * 15];
     if (entry == 0) {
         return 0;
     }
     ((CPlay*)g_gameReg->m_curState)->ResetGoals(entry->m_10->m_5c, entry->m_10->m_60);
     if (commit != 0) {
-        CTriggerMgr* obj = (CTriggerMgr*)g_gameReg->m_cmdGrid;
+        CTriggerMgr* obj = g_gameReg->m_cmdGrid;
         if (obj->RecordListHas(col, row)) {
             obj->m_recX = col;
             obj->m_recY = row;
@@ -1640,8 +1639,8 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
     }
     r->Click1c(a, x, y);
     i32 cmd = r->m_cmd;
-    if (r->m_tab == 1 && m_hitTestDisabled == 0
-        && ((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag != 0 && cmd >= 0x13b && cmd <= 0x149) {
+    if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
+        && cmd >= 0x13b && cmd <= 0x149) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
@@ -2583,7 +2582,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd > 0x259) {
@@ -2615,7 +2614,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x12c || cmd > 0x149) {
@@ -2634,7 +2633,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x64 || cmd > 0x68) {
@@ -2647,7 +2646,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0xd3 || cmd > 0xde) {
@@ -2666,7 +2665,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x190 || cmd > 0x193) {
@@ -2759,7 +2758,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
         case 6:
             switch (cmd) {
                 case 0x324:
-                    if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_288 == 1) {
+                    if (g_gameReg->m_cmdGrid->m_288 == 1) {
                         HiCueLookup();
                         g_gameReg->AccrueScoreTime();
                     } else if (g_gameReg->m_134 == 1) {
@@ -2772,7 +2771,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x325:
                     if (g_gameReg->m_134 == 1) {
-                        if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_288 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
                         HiCueLookup();
@@ -2784,7 +2783,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x327:
                     if (g_gameReg->m_134 == 1) {
-                        if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->m_288 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
                             g_gameReg->UpdateScoreHud();
                         }
                         HiCueTimed();

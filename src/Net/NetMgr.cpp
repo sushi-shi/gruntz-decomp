@@ -186,8 +186,7 @@ extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
 extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
 extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
-struct CGameSettings;
-extern "C" CGameSettings* g_mgrSettings; // 0x64556c
+extern "C" CNetGameMgr* g_mgrSettings; // 0x64556c (the same *0x64556c object as m_4)
 // (The g_mgrSettings +0x38 config store is the SAME Utils::RegistryHelper the CNetGameMgr
 // exposes as m_configStore - GetString lives on that one class now; the former
 // CGameCfgStore method-only shadow is folded away.)
@@ -555,7 +554,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     }
 
     CNetGameMgr* gm = m_4;
-    GruntzPlayer* slot = (GruntzPlayer*)((CNetMgr*)gm)->ResolveLocalPlayer();
+    GruntzPlayer* slot = gm->FindPlayer();
     if (slot == 0) {
         return 0;
     }
@@ -659,7 +658,7 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
             rec[5] = (char)ch->m_flag;
             rec[4] = (char)ch->m_228;
             *(i32*)(rec + 7) = ch->m_playerId;
-            CString name = ((CNetMgr*)ch)->GetName();
+            CString name = ch->GetName();
             strcpy(rec + 0xb, (const char*)name);
         }
         rec += 0x20;
@@ -861,7 +860,7 @@ i32 CNetMgr::BroadcastOneChannel(CNetChannel* ch) {
     packet[0x11] = ch->m_228;
     {
         i32 id = ch->m_playerId;
-        CString name = ((CNetMgr*)ch)->GetName();
+        CString name = ch->GetName();
         *(i32*)(packet + 0x18) = id;
         strcpy(packet + 0x18, (const char*)name);
     }
@@ -973,7 +972,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+        GruntzPlayer* player = m_4->FindPlayer();
         CString name = ((CNetMgr*)player)->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
@@ -984,7 +983,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
         if (hWnd != 0) {
             ShowChatLine(hWnd, line);
         } else {
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+            GruntzPlayer* player = m_4->FindPlayer();
             if (player != 0) {
                 ((CFontConfig*)m_4->m_5c)->AddItem(line, 0x30, player->m_008);
             }
@@ -1753,7 +1752,7 @@ i32 CNetMgr::JoinAndRegisterChannel() {
     m_localPlayerId = *(i32*)((char*)lp + 4);
     CNetChannel* ch0 = m_4->m_channels;
     i32 chField = ch0->m_slotId;
-    CString name = ((CNetMgr*)ch0)->GetName();
+    CString name = ch0->GetName();
     i32 ok = RegisterChannelFrom(name, chField, -1, m_localPlayerId);
     return ok != 0 ? enumResult : 0;
 }
@@ -1932,7 +1931,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+            GruntzPlayer* player = m_4->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -1948,7 +1947,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+            GruntzPlayer* player = m_4->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -1968,7 +1967,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+            GruntzPlayer* player = m_4->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2047,7 +2046,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer();
+            GruntzPlayer* player = m_4->FindPlayer();
             if (player == 0) {
                 return 0;
             }
@@ -2097,7 +2096,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             i32 stamp = msg->m_8;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
+            GruntzPlayer* player = g_mgrSettings->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2112,7 +2111,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_useChannelLatency == 0) {
                 break;
             }
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
+            GruntzPlayer* player = g_mgrSettings->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2131,7 +2130,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x41c: {
-            GruntzPlayer* player = (GruntzPlayer*)((CNetMgr*)g_mgrSettings)->ResolveLocalPlayer();
+            GruntzPlayer* player = g_mgrSettings->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2194,7 +2193,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case 0x418: {
             CString result;
             if (pd != 0) {
-                CString name = ((CNetMgr*)pd)->GetName();
+                CString name = pd->GetName();
                 result.Format("*** %s has a different version of the game.", (const char*)name);
             } else {
                 result.Format("*** A player had a different version of the game.");
@@ -2330,7 +2329,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
 
     void* lp;
     {
-        CString cn = ((CNetMgr*)ch0)->GetName();
+        CString cn = ch0->GetName();
         lp = (void*)m_peer->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
     }
     m_localPlayer = (CNetPlayerEntry*)lp;
@@ -2341,7 +2340,7 @@ i32 CNetMgr::SetupTcpIpConfig() {
 
     m_localPlayerId = *(i32*)((char*)lp + 4);
     i32 chField = ch0->m_slotId;
-    CString cn2 = ((CNetMgr*)ch0)->GetName();
+    CString cn2 = ch0->GetName();
     i32 ok = RegisterChannelFrom(cn2, chField, -1, m_localPlayerId);
     return ok != 0;
 }
@@ -3322,7 +3321,7 @@ void CNetMgr::PopulateSessionList(void* hList) {
     }
 
     while (payload != 0) {
-        CString name = ((CNetMgr*)payload)->GetName();
+        CString name = payload->GetName();
         i32 r = (i32)SendMessageA((HWND)hList, LB_ADDSTRING, 0, (LPARAM)(const char*)name);
         if (r != -1) {
             SendMessageA((HWND)hList, LB_SETITEMDATA, r, (LPARAM)payload);
@@ -3540,14 +3539,9 @@ i32 CNetSessionNode::InitSession(i32 id, const char* nameA, const char* nameB, i
     return 1;
 }
 
-// The game-settings singleton (_g_mgrSettings @0x64556c) - only the level-name
-// rez-path builder and the modal reporter are reached here. External; the
-// `call rel32` reloc-masks.
-struct CGameSettings {
-    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
-    void ShowModal(const char* msg);                                  // 0x8ef10
-};
-extern "C" CGameSettings* g_mgrSettings; // 0x64556c
+// The game-settings singleton (_g_mgrSettings @0x64556c) - the same *0x64556c object
+// modeled as CNetGameMgr (BuildRezPath/ShowModal/FindPlayer folded onto it; the former
+// local CGameSettings view is gone). External; the `call rel32` reloc-masks.
 
 // The active net session the verify path polls (DAT_00648cf8, a CNetMgr*).
 extern "C" CNetMgr* g_connectRptMgr; // 0x648cf8
