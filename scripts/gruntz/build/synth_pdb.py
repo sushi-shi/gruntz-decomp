@@ -163,10 +163,22 @@ def read_functions(path, names_map=None):
                 # curated @size disagrees, one of the two is wrong - surface it so
                 # a bad boundary isn't silently delinked.
                 if at_size and at_size != size:
-                    print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
-                          "functions.csv=%d B, @size=%d B; using functions.csv "
-                          "(Ghidra wins). Check the @size or the recovered boundary."
-                          % (rva, name, size, at_size), file=sys.stderr)
+                    # Ghidra usually wins (keeps the working set byte-identical). BUT a
+                    # tiny Ghidra boundary (<= 8 B) where the src annotates a much larger
+                    # @size is a MIS-CARVE - Ghidra failed to recover the function (e.g. a
+                    # spurious 1-byte carve blocks the delinker from extracting the target
+                    # bytes, so the fn scores 0%). The curated @size (matcher-verified) is
+                    # then authoritative: use it and delink the real extent. Durable across
+                    # ghidra reimports (functions.csv is regenerated, this logic is not).
+                    if size <= 8 and at_size > size:
+                        print("[synth_pdb] 0x%x %r: Ghidra mis-carve %d B -> @size %d B"
+                              % (rva, name, size, at_size), file=sys.stderr)
+                        size = at_size
+                    else:
+                        print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
+                              "functions.csv=%d B, @size=%d B; using functions.csv "
+                              "(Ghidra wins). Check the @size or the recovered boundary."
+                              % (rva, name, size, at_size), file=sys.stderr)
             out.append((rva, size, name))
             seen.add(rva)
 
