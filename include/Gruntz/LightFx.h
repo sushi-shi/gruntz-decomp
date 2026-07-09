@@ -21,10 +21,17 @@ class CLightFx : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4 (declared-only slot)
     TILE_LOGIC_TAIL
 public:
     CLightFx(CGameObject* obj); // 0x9cf00
+    // 0x9d1c0  RunAct - the slot-4 impl: resolve the class registry entry for id and,
+    // if a handler PMF is bound, re-resolve + dispatch it on this (double inline
+    // ResolveEntry), else return the entry pointer. Same archetype as CEyeCandyAni::RunAct.
+    i32 RunAct(i32 id);
+    // 0x9d660  SerializeMove (slot 1): chain the base serialize + the +0x34 object
+    // reference, then per mode read/write the (anchorA, anchorB) pair or (mode 8) re-push
+    // the effect into the logic pump. (definition uses the slot-1 virtual below)
     // 0x9d140  InitActReg - construct the class's coordinate registry singleton
     // (g_lightFxActReg @0x645ad0) over the fixed [2000, 2010] range. Static.
     static void InitActReg();

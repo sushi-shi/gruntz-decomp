@@ -45,6 +45,9 @@ extern CString g_clientStatus;
 // CString-data ptr (DAT_00649618): the pending drop-in player's name; its CString
 // length lives 8 bytes before the data. Homed in BoundaryLowerThunks.cpp.
 extern char* g_playerName_649618;
+// DAT_00648cec: the "connection established / abort" latch the join-wait timer polls
+// (nonzero = keep waiting, skip the timeout EndDialog). Home elsewhere; extern-only pin.
+extern "C" i32 g_648cec;
 
 namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
@@ -72,6 +75,12 @@ namespace NetLobby {
     void OnLobbyTimerB_154b(HWND, CMulti*);          // RVA 0x154b
     void OnLobbyTimerC_2185(HWND, CMulti*);          // RVA 0x2185 -> 0xbe3e0
     void OnLobbyCancel_2ae0(HWND, CMulti*);          // RVA 0x2ae0
+    // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
+    // sibling wait/drop DlgProcs below can call them before their definitions).
+    void NetDlgInit_bda00(HWND hWnd, void* ctx);  // 0xbda00
+    void NetDlgInit_bdb90(HWND hWnd, void* ctx);  // 0xbdb90
+    void NetDlgInit_bdfe0(HWND hWnd, void* ctx);  // 0xbdfe0
+    void NetDlgInitDropIn(HWND hWnd, void* ctx);  // 0xbe760
 } // namespace NetLobby
 
 // __thiscall(id, dest): load string `strId` from the app instance
@@ -113,6 +122,46 @@ namespace NetLobby {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
+    // __stdcall DlgProc: the host-wait dialog. WM_TIMER polls the PAUSE key
+    // (GetAsyncKeyState(VK_PAUSE) & down|pressed) and re-posts the 0x4d2 abort;
+    // WM_COMMAND ends on 0x4d2 / 2 (pushing the abort stat) or cancels on 0x4c6.
+    RVA(0x000bd850, 0x141)
+    i32 CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                NetDlgInit_bda00(hWnd, g_curMulti);
+                GetAsyncKeyState(0x13);
+                return 1;
+            case 0x111:
+                if (wParam == 0x4d2 || wParam == 2) {
+                    KillTimer(hWnd, 1);
+                    g_curMulti->SendNetStat(0x402, 0x4d2, 1);
+                    EndDialog(hWnd, 0x4d2);
+                    return 1;
+                }
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                if (GetAsyncKeyState(0x13) & 0x80000001) {
+                    PostMessageA(hWnd, 0x111, 0x4d2, 0);
+                    return 1;
+                }
+                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                Init_42b4(hWnd, g_curMulti);
+                return 1;
+        }
+        return 0;
+    }
+
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache the 0x4b6 child control.
     RVA(0x000bda00, 0x3e)
     void NetDlgInit_bda00(HWND hWnd, void* ctx) {
@@ -121,6 +170,40 @@ namespace NetLobby {
             SetTimer(hWnd, 1, 0x1f4, 0);
             g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
         }
+    }
+
+    // __stdcall DlgProc: the join-wait dialog. WM_TIMER services the session then, if
+    // the connection latch (g_648cec) has cleared, kills the timer and ends with 0x4d2;
+    // WM_COMMAND cancels on 0x4c6.
+    RVA(0x000bda70, 0xda)
+    i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                NetDlgInit_bdb90(hWnd, g_curMulti);
+                return 1;
+            case 0x111:
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                Init_1924(hWnd, g_curMulti);
+                if (g_648cec) {
+                    return 1;
+                }
+                KillTimer(hWnd, 1);
+                EndDialog(hWnd, 0x4d2);
+                return 1;
+        }
+        return 0;
     }
 
     // __cdecl(hWnd, ctx): init, arm a 500 ms timer, cache the 0x4b6 child control.
@@ -178,6 +261,59 @@ namespace NetLobby {
             SetTimer(hWnd, 1, 0x1f4, 0);
             g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
         }
+    }
+
+    // __stdcall DlgProc: an in-game session-wait dialog (sibling of NetGameDlgProc).
+    // WM_COMMAND ends on 0x4cc/0x4cd/0x4ce - each kills the timer, and (when host)
+    // ships the command as a 0x402 stat before EndDialog - or cancels on 0x4c6.
+    RVA(0x000bddd0, 0x193)
+    i32 CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                NetDlgInit_bdfe0(hWnd, g_curMulti);
+                return 1;
+            case 0x111:
+                if (wParam == 0x4cc) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4cc);
+                    return 1;
+                }
+                if (wParam == 0x4cd) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4cd);
+                    return 1;
+                }
+                if (wParam == 0x4ce) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4ce);
+                    return 1;
+                }
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                Init_2522(hWnd, g_curMulti);
+                return 1;
+        }
+        return 0;
     }
 
     // __cdecl(hWnd, ctx): init, arm a 750 ms timer, cache the 0x4b6 child control.
@@ -292,6 +428,59 @@ namespace NetLobby {
                 g_sessionFlag = 0;
             }
         }
+    }
+
+    // __stdcall DlgProc: the drop-in-request dialog (WM_INITDIALOG shows the drop-in
+    // prompt). WM_COMMAND ends on 0x4d0/0x4d1/0x4ce - each kills the timer, ships the
+    // command as a 0x402 stat when host, then EndDialog - or cancels on 0x4c6.
+    RVA(0x000be550, 0x193)
+    i32 CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+        g_curDlg_64557c = hWnd;
+        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+            return 1;
+        }
+        switch (msg) {
+            case 0x110:
+                g_curDlg_64557c = hWnd;
+                g_curMulti = (CMulti*)g_gameReg->m_curState;
+                NetDlgInitDropIn(hWnd, g_curMulti);
+                return 1;
+            case 0x111:
+                if (wParam == 0x4d0) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4d0);
+                    return 1;
+                }
+                if (wParam == 0x4d1) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4d1);
+                    return 1;
+                }
+                if (wParam == 0x4ce) {
+                    KillTimer(hWnd, 1);
+                    if (g_curMulti->m_isHost) {
+                        g_curMulti->SendNetStat(0x402, wParam, 1);
+                    }
+                    EndDialog(hWnd, 0x4ce);
+                    return 1;
+                }
+                if (wParam == 0x4c6) {
+                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    return 1;
+                }
+                break;
+            case 0x113:
+                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                Init_2ed7(hWnd, g_curMulti);
+                return 1;
+        }
+        return 0;
     }
 
     // __cdecl(hWnd, ctx): show a drop-in prompt, init, arm a timer, cache a child.

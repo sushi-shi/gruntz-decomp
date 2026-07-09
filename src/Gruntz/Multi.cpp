@@ -860,15 +860,15 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
 
 // ===========================================================================
 // CMulti::ReportNetError  @ 0x0b7f60  - format the last DirectPlay error
-// ("Error: <code-name> - <code>") and report it, unless the user cancelled
-// (DPERR_USERCANCEL == 0x118).
+// ("Error: <code-name> - <code>") and report it at the given `level`, unless the
+// user cancelled (DPERR_USERCANCEL == 0x118).
 // ===========================================================================
 RVA(0x000b7f60, 0x52)
-void CMulti::ReportNetError() {
+void CMulti::ReportNetError(i32 level) {
     char buf[512];
     if (((CMultiMgr*)m_4) && g_code != 0x118) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
-        ReportVersionMsg(buf, g_code);
+        ReportVersionMsg(buf, level);
     }
 }
 
@@ -945,6 +945,36 @@ void CMulti::AckJoinFailure() {
     if (m_netGate && m_5bc && m_connected) {
         SendStatFlag(0x3f6, 1);
     }
+}
+
+// The shared MFC empty-string literal (0x6293f4); the empty group name handed to
+// CreatePlayer. Home elsewhere; extern-only pin.
+extern "C" char g_emptyString[];
+
+// ===========================================================================
+// CMulti::OpenHostChannel  @ 0x0bc910  - /GX: latch the session params (m_5a4 /
+// m_drainReload / m_levelIndex=1 / m_rngSeed=timeGetTime), create the session player
+// from the host name (m_hostName via GetString5a0) through the +0x524 net gate, and -
+// on success - register the channel from the resolved host record (m_hostIndex =
+// player+0x4). A failed create reports the net error and returns 0. Returns whether
+// the channel registered.
+// ===========================================================================
+RVA(0x000bc910, 0xf6)
+i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    if (a0 == 0) {
+        return 0;
+    }
+    m_5a4 = a3;
+    m_drainReload = a4;
+    m_levelIndex = 1;
+    m_rngSeed = timeGetTime();
+    m_5bc = m_netGate->CreatePlayer((void*)(const char*)GetString5a0(), (i32)g_emptyString, 0);
+    if (m_5bc == 0) {
+        ReportNetError(m_5bc);
+        return 0;
+    }
+    m_hostIndex = ((i32*)m_5bc)[1];
+    return RegisterChannelFrom(a1, a2, -1, m_hostIndex) != 0;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

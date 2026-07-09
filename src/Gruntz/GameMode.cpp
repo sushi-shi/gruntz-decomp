@@ -448,6 +448,31 @@ tail:
     return 1;
 }
 
+// CMenuState::Vslot0c @0xa0b90 (slot 12) - the front-end keydown dispatcher: the
+// arrow keys drive the menu UI object's HitTest nav, RETURN/SPACE its Activate, and
+// ESCAPE its page Switch(1); when ESCAPE's Switch returns 0 (top page) it clears the
+// fade duration and posts WM_COMMAND(0x8027) to the app window. Always returns 1.
+RVA(0x000a0b90, 0xc7)
+i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
+    if (key == 0x28) {
+        m_1b4->HitTest2();
+    } else if (key == 0x26) {
+        m_1b4->HitTest1();
+    } else if (key == 0x27) {
+        m_1b4->HitTest4();
+    } else if (key == 0x25) {
+        m_1b4->HitTest3();
+    } else if (key == 0xd || key == 0x20) {
+        m_1b4->OnFlag00000003();
+    } else if (key == 0x1b) {
+        if (m_1b4->OnFlag00000100() == 0) {
+            m_1b8 = 0;
+            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8027, 0);
+        }
+    }
+    return 1;
+}
+
 // (CCreditsState::InputVirtual is slot 8 / +0x20 == ShowAttractTitle @0x393b0, the
 // per-frame input poll the Render dispatches via `this->vtbl[+0x20]()`; its body is
 // defined below at its real RVA. Slot 6 is CCreditsState's own Vslot06 override,

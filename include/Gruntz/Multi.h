@@ -215,6 +215,9 @@ public:
     void Activate();                      // 0x578750
     CMultiPlayer* OpenPlayer(char* name); // 0x5786d0 -> the opened player (0 fail)
     void M178a80(void* h, i32 a);         // 0x578a80  watchdog re-probe (EnumGroupsRange)
+    // Create a session player from `name` (the CNetMgr wrapper method, RVA 0x178cb0);
+    // returns the player record pointer (0 = fail). Reloc-masked.
+    i32 CreatePlayer(void* name, i32 b, i32 c); // 0x178cb0
     char m_pad04[0x70 - 0x4];
     CMultiPlayerInfo* m_70; // +0x70  per-slot player-info sub-object (start-dialog probes)
     CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
@@ -331,7 +334,7 @@ public:
     // m_logic->m_owner->m_hInstance then ReportVersionMsg. Defined in
     // Net/LobbyDialogs.cpp (its RVA-order home).
     void ReportStatusId(u32 strId, i32 level);                 // 0x0b7ec0
-    void ReportNetError();                                     // 0x0b7f60
+    void ReportNetError(i32 level);                            // 0x0b7f60
     i32 JoinSession();                                         // 0x0b7fe0
     i32 RunErrorDialog(char* tmpl, void* handler, i32 lparam); // 0x0bc250 (_MultiDispatch)
     void AckJoinFailure();                                     // 0x0bc420
@@ -343,6 +346,8 @@ public:
     i32 Tick();                             // 0x0b6890  per-frame lobby pump
     i32 StartTitle();                       // 0x0b72c0  /GX: build "TITLE%d" + bind the net host
     void DropTimeout();                     // 0x0bc2d0  /GX: drop a timed-out player
+    // 0x0bc910  /GX: latch session params, create the host player, register the channel.
+    i32 OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     // External CMulti methods this TU calls but does not define (reloc-masked).
     void SendStatFlag(i32 code, i32 flag); // 0x0b9240 (__thiscall, reads m_5bc)
@@ -368,6 +373,9 @@ public:
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
     i32 BroadcastChannelTable(i32 entry); // 0x0ba810
     i32 BroadcastOneChannel(i32 chan);    // 0x0baf00
+    // Register a channel from a host template (CNetMgr-shared, RVA 0x0baa90); the
+    // host-open path calls it on `this`. Reloc-masked.
+    i32 RegisterChannelFrom(i32 a, i32 b, i32 c, i32 d); // 0x0baa90
     // Assemble + broadcast one chat line (stat 0x3f0), optionally appending it
     // to the hWnd chat edit (the lobby DlgProcs' chat submit path).
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd); // 0x0bb190

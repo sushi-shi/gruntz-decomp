@@ -168,6 +168,12 @@ struct CGMMenuUI {
     void Pre();           // (no arg)
     void Post();          // (no arg)
     void PreDelete();     // FUN_004a0360 - pre-delete release (ReleaseResources teardown)
+    // Arrow-key navigation handlers (Vslot0c keydown dispatch); the same RVAs as
+    // CChatBox::HitTest1..4 (the m_1b4 object IS a CChatBox - fold deferred).
+    i32 HitTest1(); // 0x183210  VK_UP
+    i32 HitTest2(); // 0x183230  VK_DOWN
+    i32 HitTest3(); // 0x1831d0  VK_LEFT
+    i32 HitTest4(); // 0x1831f0  VK_RIGHT
 };
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
 SIZE_UNKNOWN(CGMVerRect);
