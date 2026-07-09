@@ -533,6 +533,26 @@ void CProjectile::RegisterRange() {
     ((CZDArrayDerived*)&g_projActColl)->Construct(0x7d0, 0x7da);
 }
 
+// The projectile activation entry's leading slot is a __thiscall handler run on the
+// projectile (CProjectile is single-inheritance -> a 4-byte code-pointer PMF).
+struct CProjActEntry {
+    i32 (CProjectile::*m_fn)();
+};
+SIZE_UNKNOWN(CProjActEntry);
+
+// CProjectile::RunAct @0x0df9a0 - the class's vtable slot-4 (UserLogicVfunc2) body:
+// resolve the activation entry for `coord` (R2 lookup, inlined twice); if a handler
+// is bound, re-resolve and invoke it __thiscall on this, else return the entry
+// pointer. Same archetype as CProjActDispatcher::Dispatch / CPathHazard::RunAct.
+RVA(0x000df9a0, 0x102)
+i32 CProjectile::RunAct(i32 coord) {
+    CProjActEntry* e = ProjActLookup(coord);
+    if (e->m_fn != 0) {
+        return (this->*(ProjActLookup(coord)->m_fn))();
+    }
+    return (i32)e;
+}
+
 // CProjectile::RegisterType @0x0dfb00 - the level-load class registrar (same
 // archetype as CKitchenSlime::RegisterType): assign the class a type-id via the
 // global bute-tree, record the name into the shared type-name table, then store

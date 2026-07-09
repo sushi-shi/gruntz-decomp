@@ -10,6 +10,7 @@
 // reloc-masked. Field names are placeholders (only offsets/code bytes matter).
 #include <Gruntz/AniPlayer.h>
 #include <Image/CImage.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 
 #include <rva.h>
 
@@ -31,6 +32,78 @@ class AniCelMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call
 // active draw surface and whose +0x14 (m_drawContext) is the surface context handed to
 // RenderFrame - the same chain SBI_SideTab / SBI_MenuItem walk. Previously modeled as a
 // per-TU AniGameMgr/AniRenderHolder view; now consolidated onto CResMgr (no cast).
+
+// The running game clock the timed-play start is stamped from (DAT_00645588).
+DATA(0x00245588)
+extern "C" u32 g_645588;
+
+// ===========================================================================
+// CAniPlayer::Start (0x0e5ad0) - seed the player (forward all 14 args to Init);
+// on success record the timed-play window (start clock @+0x58 = g_645588, duration
+// @+0x60 = the play interval m_interval), then return 1. Returns 0 if Init fails.
+// @early-stop
+// ~77%: logic byte-correct (the 14-arg forward, the timer stamp). Residue is the
+// arg-marshaling idiom: retail groups the four rect args (r0..r3) into a 16-byte
+// stack block (`sub esp,0x10; mov [eax+N]`), which strongly implies Init/Start's
+// real signature takes a by-VALUE 4-int rect struct there rather than four scalars -
+// but Init (0xe7980) is modeled + banked with four scalar r-args, so changing it is a
+// cross-function re-model deferred to the final sweep. Plus a swapped ecx/edx in the
+// timer-stamp tail (regalloc). Not steerable without the Init re-model.
+RVA(0x000e5ad0, 0x84)
+i32 CAniPlayer::Start(
+    AniSeq* seq,
+    AniSeq* seq2,
+    i32 a2,
+    i32 a3,
+    i32 r0,
+    i32 r1,
+    i32 r2,
+    i32 r3,
+    i32 key,
+    i32 b0,
+    i32 b1,
+    i32 b2,
+    i32 b3,
+    i32 b4
+) {
+    if (Init(seq, seq2, a2, a3, r0, r1, r2, r3, key, b0, b1, b2, b3, b4) == 0) {
+        return 0;
+    }
+    m_durationLo = m_interval;
+    m_durationHi = 0;
+    m_startTimeLo = g_645588;
+    m_startTimeHi = 0;
+    return 1;
+}
+
+// ===========================================================================
+// CAniPlayer::Serialize (0x0e5c90) - bail on a null archive; chain the folded base-
+// state serialize (0xe7cd0); then round-trip the timed-play window (start clock +
+// duration, +0x58/+0x60) through the archive (mode 4 = Write @+0x30, mode 7 = Read
+// @+0x2c). Returns 1.
+// @early-stop
+// ~88%: logic byte-correct. Residue is the base-serialize call reloc (the folded
+// 0xe7cd0 body the delinker names CSBI_WarlordHead::Serialize, so my SerializeBase
+// name is fuzzy against it) + minor field-address regalloc - the reloc-scoring
+// artifact + regalloc family shared by the serialize cluster.
+// ===========================================================================
+RVA(0x000e5c90, 0x87)
+i32 CAniPlayer::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+    if (arc == 0) {
+        return 0;
+    }
+    if (SerializeBase(arc, mode, a3, a4) == 0) {
+        return 0;
+    }
+    if (mode == 4) {
+        arc->Write(&m_startTimeLo, 8);
+        arc->Write(&m_durationLo, 8);
+    } else if (mode == 7) {
+        arc->Read(&m_startTimeLo, 8);
+        arc->Read(&m_durationLo, 8);
+    }
+    return 1;
+}
 
 // ===========================================================================
 // CAniPlayer::Init  (0x0e7980)

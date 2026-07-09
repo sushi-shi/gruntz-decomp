@@ -15,6 +15,9 @@
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
+#include <Bute/SymParser.h>                // CSymParser::ResolvePath (0x13c030) on m_8
+#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // CDDrawSubMgrLeafScan::ScanTree_157ee0 (0x157ee0)
+#include <Wap32/Wap32.h>                   // CGameWnd::PumpMessages (0x13d4e0)
 #include <Gruntz/State.h>    // the CState base this screen state derives (real vtable)
 #include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / LeafCue)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
@@ -60,6 +63,12 @@ extern "C" {
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
+    i32 Enter(void* mgr, i32 a1, i32 a2);                           // 0x0de030
+    // The state-entry asset loader run on `this` (0x43a9 -> CAssetLoader::
+    // LoadGameAssetNamespaces @0xf9ea0; the CState/CGameModeBase family share the base
+    // state layout - the codegen-neutral cross-view State.h already uses). Declared-
+    // only so the __thiscall call reloc-masks.
+    i32 LoadAssetNamespaces(void* mgr, i32 a, i32 b);              // 0x0f9ea0
     i32 Tick();                                                     // 0x0de200
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0 (CState base method)
     void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0 (CState base method)
@@ -73,6 +82,42 @@ public:
     CString m_1bc; // +0x1bc  scratch screen-name string (PREVIEW%i / \SCREENZ\%s)
     i32 m_1c0;     // +0x1c0  preview counter
 };
+
+// The first menu-mode gate global the enter path polls (g_gate_2455bc + g_dat60b588
+// are consolidated in Globals.h; 0x2455b4 is not, so it is pinned here).
+extern "C" {
+    DATA(0x002455b4)
+    extern i32 g_gate_2455b4;
+}
+
+// CPreviewState::Enter (0x0de030) - the level-preview screen's command-entry: load
+// the game asset namespaces (bail on failure), hide the mouse cursor fully, resolve
+// the STATEZ_PREVIEW namespace into the cached asset source (bail if absent); when
+// neither menu-mode gate is set, install the screen's SOUNDZ leaf tree; then reset
+// the PREVIEW scratch string + counter and pump one window message. Returns 1.
+RVA(0x000de030, 0xc2)
+i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
+    if (LoadAssetNamespaces(mgr, a1, a2) == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_PREVIEW");
+    if (m_2c == 0) {
+        return 0;
+    }
+    if (g_gate_2455b4 == 0 && g_gate_2455bc == 0) {
+        void* set = ((CSymTab*)m_2c)->FindSub("SOUNDZ");
+        if (set != 0) {
+            ((CDDrawSubMgrLeafScan*)((CRegHolder*)m_c)->m_statusBar)
+                ->ScanTree_157ee0((DirNode*)set, "PREVIEW", (const char*)&g_dat60b588);
+        }
+    }
+    m_1bc = "PREVIEW0";
+    m_1c0 = 0;
+    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    return 1;
+}
 
 // CPreviewState::Tick (0x0de200) - the per-frame advance: if the live back surface
 // is present and NOT lost, or the screen's Advance virtual fails, report the error

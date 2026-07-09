@@ -1,16 +1,16 @@
-m_<hex> fields	14791
+m_<hex> fields	14804
 Unknown ids	4
-g_<hex> globals	1234
+g_<hex> globals	1238
 Method/Stub/FUN	0
 placeholder classes	47
-.cpp-local views	1530
+.cpp-local views	1531
 placeholder vtable slots	952
 *Vtbl structs	0
 ->vtbl accesses	0
 g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 )this casts	300
-)m_ casts	1369
-(char*) casts	917
-(const char*) casts	154
+)m_ casts	1375
+(char*) casts	919
+(const char*) casts	155
 void* m_ members	318

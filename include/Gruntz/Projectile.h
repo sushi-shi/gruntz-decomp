@@ -128,6 +128,10 @@ public:
     LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
 
     static void RegisterRange();   // 0xdf920 (seed the activation-table fast range)
+    // slot-4 (UserLogicVfunc2) per-coordinate activation dispatch @0xdf9a0. The fat
+    // base models slot 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg
+    // real shape is a plain method (the leaf vtable slot stays base-attributed).
+    i32 RunAct(i32 coord);         // 0xdf9a0
     static void RegisterType();    // 0xdfb00 (level-load class registrar)
     void ReleaseDeferred(i32 arg); // 0x13c70 (fire/release the two queued callbacks; arg ignored)
     i32 DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
@@ -171,7 +175,7 @@ public:
     CProjSample* m_sound;         // +0x200  launch sound sample
     CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
-    char m_pad228[0x230 - 0x228]; //
+    i32 m_launchX, m_launchY;     // +0x228/+0x22c  owner launch screen pos (boomerang return origin)
     double m_dirX, m_dirY;        // +0x230/+0x238  trajectory direction basis
     double m_originX, m_originY;  // +0x240/+0x248  trajectory origin (base position)
     double m_phase;               // +0x250  trajectory parameter (sin/cos arg; phase gate)

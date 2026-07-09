@@ -15,6 +15,8 @@
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
 #include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
 #include <Gruntz/TimeBomb.h>
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -338,4 +340,42 @@ i32 CTimeBomb::LoadAttributes() {
     ((EngineLabelBacklog*)g_gameReg->m_cmdGrid)
         ->LoadExplosionSprites(m_object->m_screenX, m_object->m_screenY, m_object->m_124, 1);
     return 0;
+}
+
+// CTimeBomb::SerializeMove @0xe2080 - vtable slot 1. Bail unless the resource
+// manager is loaded (g_gameReg->m_world); round-trip the 64-bit phase-start clock
+// (m_startTime) + the phase duration (m_duration) + the fast/slow phase flag
+// (m_fastPhase) through the archive stream (mode 4 = Write @+0x30, mode 7 = Read
+// @+0x2c), then chain the shared CUserLogic serialize helper (SerializeChain,
+// 0x16e7f0) and the +0x34 CSerialObjRef sub-object's Chain (0x8c00). Same two-chain
+// archetype as CGruntPuddle::Serialize.
+// @early-stop
+// regalloc/hoist wall (~79%, docs/patterns/zero-register-pinning.md): logic is
+// byte-correct (the m_world gate, the m_58/m_60/m_54 round-trip, the SerializeChain
+// + CSerialObjRef Chain tail). Residue: retail pins `this` in ebx and hoists
+// `lea edi,[this+0x58]` above the mode branches (reusing edi via `add edi,8` for the
+// consecutive 8-byte fields), where cl keeps `this` in edi and recomputes each
+// field address - a callee-saved-register coloring choice not steerable from C.
+RVA(0x000e2080, 0xc1)
+i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
+    if (g_gameReg->m_world == 0) {
+        return 0;
+    }
+    CSerialArchive* sa = (CSerialArchive*)arc;
+    if (mode == 4) {
+        sa->Write(&m_startTimeLo, 8);
+        sa->Write(&m_durationLo, 8);
+    } else if (mode == 7) {
+        sa->Read(&m_startTimeLo, 8);
+        sa->Read(&m_durationLo, 8);
+    }
+    if (mode == 4) {
+        sa->Write(&m_fastPhase, 4);
+    } else if (mode == 7) {
+        sa->Read(&m_fastPhase, 4);
+    }
+    if (!SerializeChain((i32)arc, mode, a3, a4)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
 }

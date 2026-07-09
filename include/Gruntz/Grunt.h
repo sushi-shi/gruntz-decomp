@@ -785,8 +785,10 @@ i32 __stdcall GruntDropReady029b40(CGrunt* g);
 // emitted); Write's body is reloc-masked.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGruntArchive);
-class CGruntArchive {
-public:
+// `struct` (not class) to match the UserLogic.h forward decl: MSVC mangles the
+// type by its first-seen tag (struct -> U), so a `class` definition here made the
+// clang label step emit V while wine cl emits U -> label MISS. Keep them uniform.
+struct CGruntArchive {
     virtual void slot00();
     virtual void slot04();
     virtual void slot08();

@@ -77,6 +77,29 @@ public:
         i32 b3,
         i32 b4
     );          // 0x0e7980
+    // 0x0e5ad0: forward the same 14 args to Init; on success record the timed-play
+    // window (start clock @+0x58, duration = m_interval @+0x60), return 1.
+    i32 Start(
+        AniSeq* seq,
+        AniSeq* seq2,
+        i32 a2,
+        i32 a3,
+        i32 r0,
+        i32 r1,
+        i32 r2,
+        i32 r3,
+        i32 key,
+        i32 b0,
+        i32 b1,
+        i32 b2,
+        i32 b3,
+        i32 b4
+    );          // 0x0e5ad0
+    // 0x0e5c90: the full serialize - chain the base-state serialize (0xe7cd0, a
+    // COMDAT-folded shared body the delinker labels CSBI_WarlordHead::Serialize), then
+    // round-trip the timed-play window (+0x58/+0x60). SerializeBase = the folded base leg.
+    i32 Serialize(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4);     // 0x0e5c90
+    i32 SerializeBase(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e7cd0 (folded)
     i32 Tick(); // 0x0e7b00
 
     i32 m_00;                // +0x00
@@ -97,6 +120,11 @@ public:
     i32 m_step;              // +0x48  per-advance frame delta (signed)
     i32 m_endFrame;          // +0x4c  clamp/stop frame
     i32 m_startFrame;        // +0x50  start / loop-reset frame
+    i32 m_54;                // +0x54
+    i32 m_startTimeLo;       // +0x58  timed-play start clock (i64 lo; Start stamps g_645588)
+    i32 m_startTimeHi;       // +0x5c  (hi)
+    i32 m_durationLo;        // +0x60  timed-play window = m_interval (i64 lo)
+    i32 m_durationHi;        // +0x64  (hi)
 };
 
 #endif
