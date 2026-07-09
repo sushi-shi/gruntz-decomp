@@ -57,101 +57,11 @@ namespace m4 {
     // __stdcall helper RVA-contiguous with the CGruntzMgr methods (gruntzmgr .obj),
     // called by CGruntzMgr::HandleCommand @0x862f0. func_2e6e moved with it.)
 
-    // -------------------------------------------------------------------------
-    // GruntCombatMgr::CheckCombatRegion (0x00078060) - transform a world rect to
-    // screen space, then scan the manager's grunt slots: any grunt whose 30x30
-    // screen box intersects the rect gets combat state (re)armed. thiscall,
-    // likely a CGruntzMgr method.
-
-    struct GruntCombatMgr;
-
-    struct CombatViewport { // CombatView::m_viewport points here (a CRect at +0x40)
-        char m_pad0[0x40];
-        RECT m_rect; // +0x40
-    };
-    struct CombatView { // (this->m_viewHost)->m_view
-        char m_pad0[0x10];
-        i32 m_originX; // +0x10  view origin x
-        i32 m_originY; // +0x14  view origin y
-        char m_pad18[0x5c - 0x18];
-        CombatViewport* m_viewport; // +0x5c
-    };
-    struct CombatViewHost { // this->m_viewHost
-        char m_pad0[0x24];
-        CombatView* m_view; // +0x24
-    };
-    struct GruntPos { // CombatGrunt::m_pos
-        char m_pad0[0x5c];
-        i32 m_screenX; // +0x5c (screen x)
-        i32 m_screenY; // +0x60 (screen y)
-    };
-    struct CombatGrunt { // element of GruntCombatMgr::m_grunts
-        char m_pad0[0x10];
-        GruntPos* m_pos; // +0x10
-        char m_pad14[0x1fc - 0x14];
-        i32 m_1fc; // +0x1fc
-        char m_pad200[0x880 - 0x200];
-        i32 m_880;           // +0x880
-        i32 m_884;           // +0x884
-        i32 m_combatTimeout; // +0x888
-        i32 m_88c;           // +0x88c
-    };
-    // Canonical CButeMgr (::CButeMgr); GetDwordDef (0x1721e0) is reloc-masked.
-    extern CButeMgr g_buteMgr; // 0x6453d8
-    extern "C" i32 g_644c54;   // 0x644c54
-    extern "C" i32 g_645588;   // 0x645588
-
-    struct GruntCombatMgr {
-        char m_pad0[0x1c];
-        CombatGrunt* m_grunts[16]; // +0x1c
-        char m_pad5c[0x22c - 0x5c];
-        CombatViewHost* m_viewHost;                   // +0x22c
-        void Method_36ed();                           // RVA 0x36ed
-        void Method_29cd(i32 a, i32 j, i32 c, i32 d); // RVA 0x29cd
-        void CheckCombatRegion(i32 a, i32 b, i32 c, i32 d, i32 flag);
-    };
-
-    // @early-stop
-    // regalloc/CSE wall: identical logic + instruction selection, but MSVC5 pins
-    // `this`->ebx (retail: ebp) and `view` is dropped from eax after the m_view
-    // load; that pressure lets cl CSE (view->m_viewport->rect.left - m_originX) once whereas
-    // retail reloads view->m_viewport per rect pair. Consistent ebx<->ebp swap + the
-    // reload-vs-CSE shape are the only residuals (llvm-objdump -dr). ~80%.
-    RVA(0x00078060, 0x18d)
-    void GruntCombatMgr::CheckCombatRegion(i32 a, i32 b, i32 c, i32 d, i32 flag) {
-        CombatView* view = m_viewHost->m_view;
-        a += view->m_viewport->m_rect.left - view->m_originX;
-        b += view->m_viewport->m_rect.top - view->m_originY;
-        c += view->m_viewport->m_rect.left - view->m_originX;
-        d += view->m_viewport->m_rect.top - view->m_originY;
-        for (i32 i = 0; i < 4; i++) {
-            for (i32 j = 0; j < 15; j++) {
-                CombatGrunt* g = m_grunts[j];
-                if (g) {
-                    i32 cx = g->m_pos->m_screenX;
-                    i32 cy = g->m_pos->m_screenY;
-                    RECT box;
-                    SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
-                    if (a <= box.right && c >= box.left && b <= box.bottom && d >= box.top) {
-                        if (i == g_644c54) {
-                            if (flag == 0 && g->m_1fc != 0) {
-                                Method_36ed();
-                                flag = 1;
-                            }
-                            Method_29cd(g_644c54, j, 1, 1);
-                        } else {
-                            ((::CGrunt*)g)->CreateHealthSprite();
-                            g->m_combatTimeout =
-                                g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
-                            g->m_88c = 0;
-                            g->m_880 = g_645588;
-                            g->m_884 = 0;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // (0x78060 CheckCombatRegion re-homed to src/Gruntz/Play.cpp as CWorld::WorldTimeline
+    // ::HudRect - the combat-region scan CPlay::DispatchHudClick/PostHudRect drive on
+    // m_4w()->m_68 (WorldTimeline); Play.h already stubbed 0x78060 as HudRect. The
+    // GruntCombatMgr view + its 5 combat sub-views folded onto CWorld::WorldTimeline's
+    // nested combat structs; g_644c54 renamed to its canonical g_curPlayer.)
 
     // -------------------------------------------------------------------------
     // CreditzScreen::BuildText (0x00039a60) - pull the "CREDITZ" TXT blob from the

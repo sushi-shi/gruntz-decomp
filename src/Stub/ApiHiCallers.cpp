@@ -247,6 +247,10 @@ i32 Builder_168080::Init(
 // abort; 0x10 = validate), then commit the command block + hide the cursor. `src`
 // / `dst` carry hand-rolled __stdcall function tables (object passed explicitly);
 // the callee cleans, so they are modeled as __stdcall fn-ptr vtables.
+// @orphan: `this` is a STACK-LOCAL command block - CGruntzMgr::ChangeState_8fab0
+// (0x8fab0) builds it on its own stack and Init()s it (`lea ecx,[esp+0x94]; call
+// 0x17c3f0`), so there is no persistent owning class to home it onto; the 0x520-byte
+// command-block layout + its ObjA2/ObjA3 interfaces are the transient's own shape.
 // ===========================================================================
 struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
     virtual void Slot0();

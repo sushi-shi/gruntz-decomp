@@ -1726,6 +1726,57 @@ i32 CPlay::PostHudRect() {
     return 1;
 }
 
+// -------------------------------------------------------------------------
+// CWorld::WorldTimeline::HudRect (0x78060) - the combat-region scan PostHudRect (above)
+// and CPlay::DispatchHudClick invoke on m_4w()->m_68. Re-homed from src/Stub/ApiWrappers
+// .cpp (was GruntCombatMgr::CheckCombatRegion): screen-transform the world rect via the
+// active viewport, then for each occupied grunt slot whose 30x30 screen box hits the rect,
+// either re-arm the local player's grunt (Method_36ed/Method_29cd on g_curPlayer) or arm a
+// foe's combat state (health sprite + CombatTimeout clock). The GruntCombatMgr placeholder
+// view folded onto CWorld::WorldTimeline; its sub-objects are the nested combat structs.
+DATA(0x00244c54)
+extern i32 g_curPlayer; // 0x644c54  local-player index
+// @early-stop
+// regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
+// logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
+// view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
+RVA(0x00078060, 0x18d)
+void CWorld::WorldTimeline::HudRect(RECT r, i32 flag) {
+    CombatView* view = m_viewHost->m_view;
+    r.left += view->m_viewport->m_rect.left - view->m_originX;
+    r.top += view->m_viewport->m_rect.top - view->m_originY;
+    r.right += view->m_viewport->m_rect.left - view->m_originX;
+    r.bottom += view->m_viewport->m_rect.top - view->m_originY;
+    for (i32 i = 0; i < 4; i++) {
+        for (i32 j = 0; j < 15; j++) {
+            CombatGrunt* g = m_grunts[j];
+            if (g) {
+                i32 cx = g->m_pos->m_screenX;
+                i32 cy = g->m_pos->m_screenY;
+                RECT box;
+                SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
+                if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
+                    && r.bottom >= box.top) {
+                    if (i == g_curPlayer) {
+                        if (flag == 0 && g->m_1fc != 0) {
+                            Method_36ed();
+                            flag = 1;
+                        }
+                        Method_29cd(g_curPlayer, j, 1, 1);
+                    } else {
+                        g->CreateHealthSprite();
+                        g->m_combatTimeout =
+                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+                        g->m_88c = 0;
+                        g->m_880 = g_645588;
+                        g->m_884 = 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ===========================================================================
 // CPlay::StepGridWalk (0x0d0a60) - the per-frame frame-grid advance. If the walk
 // is inactive (m_gridWalkActive==0) bail. Decrement the delay countdown (m_gridDelayCount) by dt; while

@@ -145,16 +145,57 @@ struct CWorld {
         void Step(i32 now);
         // 0x48f7b0: the fixed-sub-step variant (thiscall(now, delta, accum)).
         void StepFull(i32 now, i32 delta, i32 accum);
-        // 0x78060: post a by-value HUD rect + flag (DispatchHudClick). reloc-masked.
+        // 0x78060: the combat-region scan CPlay::DispatchHudClick/PostHudRect drive
+        // (the old GruntCombatMgr::CheckCombatRegion view, folded here). Screen-transform
+        // a world rect via m_viewHost's viewport, then (re)arm combat state on every grunt
+        // slot whose 30x30 box hits it. Body in Play.cpp. reloc-masked.
         void HudRect(RECT r, i32 flag);
+        void Method_36ed();                           // 0x36ed (thunk) combat sub-step
+        void Method_29cd(i32 a, i32 j, i32 c, i32 d); // 0x29cd (thunk) re-arm own grunt
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
         void Reset(); // 0x15c3 thunk (reloc-masked) per-frame/teardown reset
         // HandleTileClick marker place/cancel (thiscall, reloc-masked):
         void PlaceMarker(i32 sx, i32 sy, i32 rx, i32 ry, i32 a, i32 b, i32 c);
         void CancelMarker();
-        char p0[0x230];
-        i32 m_230; // +0x230  substep gate (cleared by ResetGoals)
+        // HudRect's screen-transform + grunt-slot sub-objects (folded GruntCombatMgr view):
+        struct CombatViewport { // CombatView::m_viewport (a CRect at +0x40)
+            char p0[0x40];
+            RECT m_rect; // +0x40
+        };
+        struct CombatView { // m_viewHost->m_view
+            char p0[0x10];
+            i32 m_originX; // +0x10  view origin x
+            i32 m_originY; // +0x14  view origin y
+            char p18[0x5c - 0x18];
+            CombatViewport* m_viewport; // +0x5c
+        };
+        struct CombatViewHost { // m_viewHost
+            char p0[0x24];
+            CombatView* m_view; // +0x24
+        };
+        struct GruntPos { // CombatGrunt::m_pos (screen coords)
+            char p0[0x5c];
+            i32 m_screenX; // +0x5c
+            i32 m_screenY; // +0x60
+        };
+        struct CombatGrunt {          // m_grunts[] element (a CGrunt combat facet)
+            i32 CreateHealthSprite(); // 0x243c thunk -> CGrunt::CreateHealthSprite
+            char p0[0x10];
+            GruntPos* m_pos; // +0x10
+            char p14[0x1fc - 0x14];
+            i32 m_1fc; // +0x1fc  live flag
+            char p200[0x880 - 0x200];
+            i32 m_880;           // +0x880
+            i32 m_884;           // +0x884
+            i32 m_combatTimeout; // +0x888
+            i32 m_88c;           // +0x88c
+        };
+        char p0[0x1c];
+        CombatGrunt* m_grunts[16]; // +0x1c  grunt combat slots (indexed 0..14)
+        char p5c[0x22c - 0x5c];
+        CombatViewHost* m_viewHost; // +0x22c  active viewport host
+        i32 m_230;                  // +0x230  substep gate (cleared by ResetGoals)
         char p234[0x23c - 0x234];
         struct GoalObject {
             char p0[0x8];
