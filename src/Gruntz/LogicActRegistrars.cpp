@@ -22,6 +22,7 @@
 // all carry (slot-vs-id callee-saved coloring -> free-loop count materialization).
 // Logic + offsets + every call/immediate/branch/store are byte-faithful.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 #include <Wap32/ZVec.h>
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
@@ -66,6 +67,18 @@ DATA(0x00246188)
 extern CActReg g_actReg_646188; // 0x646188
 DATA(0x00246250)
 extern CActReg g_actReg_646250; // 0x646250
+
+// The static initializers that build each registry's fast [0x7d0, 0x7da] id range
+// (CZDArrayDerived::Construct). Re-homed from src/Stub/BoundaryLowerThunks.cpp
+// (were RegRangeb15b0 / RegRangeb3ae0).
+RVA(0x000b15b0, 0x15)
+void ConstructActRange_646188() {
+    ((CZDArrayDerived*)&g_actReg_646188)->Construct(0x7d0, 0x7da);
+}
+RVA(0x000b3ae0, 0x15)
+void ConstructActRange_646250() {
+    ((CZDArrayDerived*)&g_actReg_646250)->Construct(0x7d0, 0x7da);
+}
 DATA(0x002514d8)
 extern CActReg g_actReg_6514d8; // 0x6514d8
 
@@ -256,6 +269,13 @@ DATA(0x002bf650)
 extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry, == g_nameReg)
 DATA(0x00244af0)
 extern CLookupColl g_reg_644af0; // 0x644af0  (per-class table)
+
+// The static initializer that builds registry 0x644af0's fast [0x7d0, 0x7da] id range.
+// Re-homed from src/Stub/BoundaryLowerThunks.cpp (was RegRange5bc50).
+RVA(0x0005bc50, 0x15)
+void ConstructActRange_644af0() {
+    ((CZDArrayDerived*)&g_reg_644af0)->Construct(0x7d0, 0x7da);
+}
 
 // The 19 action-key strings (s_actKeyA/B come from above; the rest are .rdata
 // string constants named by address). Referenced so the `push key` reloc-masks.

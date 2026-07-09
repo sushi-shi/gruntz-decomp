@@ -57,6 +57,14 @@ extern "C" i32 g_645534; // 0x645534  title-index modulus
 DATA(0x002473d8)
 extern CString g_6473d8; // 0x6473d8
 
+// InitStr6473d8 @0x0b5380 - the dynamic initializer that default-constructs the global
+// CString g_6473d8 in place (explicit-ctor-call tail-jmp). Re-homed from
+// src/Stub/BoundaryLowerThunks.cpp (was StrFreeb5380).
+RVA(0x000b5380, 0xa)
+void InitStr6473d8() {
+    g_6473d8.CString::CString();
+}
+
 // ShowCursor Win32 import slot (PTR_ShowCursor_006c44c4) - typed pointer so the
 // indirect `call [0x6c44c4]` reloc-masks.
 typedef i32(WINAPI* ShowCursorFn)(i32);

@@ -42,6 +42,16 @@ DATA(0x0022c25c)
 extern CString g_str62c25c; // 0x62c25c
 DATA(0x0022c264)
 extern CString g_str62c264; // 0x62c264
+
+// InitStr62c264 @0x03acb0 - the dynamic initializer that default-constructs the global
+// CString g_str62c264 in place (explicit-ctor-call tail-jmp; see
+// docs/patterns/explicit-ctor-call-inplace-tail-jmp.md). Re-homed from
+// src/Stub/BoundaryLowerThunks.cpp (was StrFree3acb0).
+RVA(0x0003acb0, 0xa)
+void InitStr62c264() {
+    g_str62c264.CString::CString();
+}
+
 DATA(0x0022c26c)
 extern i32 g_dat62c26c; // 0x62c26c
 DATA(0x0022c270)

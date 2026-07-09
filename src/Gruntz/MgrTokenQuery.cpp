@@ -16,6 +16,14 @@
 DATA(0x002459b0)
 extern CTokenMgr g_tokenMgr;
 
+// TokenMgrReset99b80 @0x099b80 - the standalone reset thunk that clears the token
+// manager singleton (CAreaMgr::Reset @0x9a0b0, reloc-masked via ILT 0x3bac). __cdecl.
+// Re-homed from src/Stub/BoundaryThunks.cpp (was TokenMgrReset99b80).
+RVA(0x00099b80, 0xa)
+void TokenMgrReset99b80() {
+    ((CAreaMgr*)&g_tokenMgr)->Reset();
+}
+
 // __cdecl free helper: reset, dispatch(arg), return result != 0.
 RVA(0x00099d10, 0x20)
 i32 QueryToken(i32 arg) {

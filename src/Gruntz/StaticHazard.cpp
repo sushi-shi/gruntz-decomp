@@ -101,6 +101,14 @@ extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
 extern CHaznColl g_haznColl;
+
+// ConstructHaznRange @0x0fbb70 - the static initializer that builds g_haznColl's fast
+// [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
+// src/Stub/BoundaryLowerThunks.cpp (was RegRangefbb70).
+RVA(0x000fbb70, 0x15)
+void ConstructHaznRange() {
+    ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
+}
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;

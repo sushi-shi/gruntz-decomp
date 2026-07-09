@@ -3,16 +3,21 @@
 // COMDAT-folded one-liners, so the owning class names are placeholders; only the
 // OFFSETS + code bytes are load-bearing. Unmodeled engine callees/globals are
 // declared NO-body so their rel32/DIR32 operands reloc-mask.
-#include <Bute/ButeMgr.h>       // canonical CButeMgr (one shape)
-#include <Gruntz/TokenMgr.h>    // canonical CTokenMgr (g_tokenMgr; Reset)
+//
+// RE-HOME STATUS (matcher-1 verify pass): NONE are ILT/incremental-link artifacts (all
+// real bodies above the 0x1000-0x7c20 ILT band). HOMED: g_tokenMgr reset (0x99b80 ->
+// MgrTokenQuery.cpp). REMAINING (no clean home):
+//   * ButeMgrFlush82b20 (g_buteMgr.Term): g_buteMgr is DATA-pinned in ~12 TUs (a shared
+//     singleton) - no single defining owner for the atexit thunk. DEFER.
+//   * ProfSinkTick82ba0..82f20 (8 CString atexit dtors over the 0x645514-0x645530 band):
+//     the whole global band is DATA-pinned HERE (no external owner TU).
+//   * base-vptr-restore dtors 0x8c470 (CStateSub8c470) / 0x137330+0x13aaf0+0x13ca30
+//     (CAbstract*, a documented REQUIRED-SPLIT vs PureSoundElem): placeholder identities.
+//   * Forward853d0 (__stdcall RezFree wrapper): a standalone forwarder, no owning class.
+#include <Bute/ButeMgr.h>        // canonical CButeMgr (one shape)
 #include <Gruntz/GameModeBase.h> // CGameModeBase::BaseCleanup (0xfa150, the state teardown)
 #include <Ints.h>
 #include <rva.h>
-class CAreaMgr {
-public:
-    void Reset();
-    i32 Dispatch(i32 a);
-}; // 0x9a0b0/0x99d40
 
 // ===========================================================================
 // 0x082b20 - tail-forward a no-arg call to the bute-manager singleton
@@ -89,16 +94,9 @@ void ProfSinkTick82f20() {
     ((CString*)&g_obj645520)->~CString();
 }
 
-// ===========================================================================
-// 0x099b80 - tail-forward a no-arg call to the token-manager singleton
-// (?g_tokenMgr@@3UCTokenMgr@@A @ VA 0x6459b0). __cdecl, no args.
-// ===========================================================================
-extern CTokenMgr g_tokenMgr;
-RVA(0x00099b80, 0xa)
-void TokenMgrReset99b80() {
-    ((CAreaMgr*)&g_tokenMgr)
-        ->Reset(); // reaches Reset (0x49a0b0) via the ILT thunk 0x3bac (reloc-masked)
-}
+// (0x099b80 TokenMgrReset99b80 re-homed to src/Gruntz/MgrTokenQuery.cpp - the
+// token-manager singleton g_tokenMgr is single-owner DATA-pinned there, next to
+// QueryToken which uses the same CAreaMgr::Reset call.)
 
 // ===========================================================================
 // 0x08c470 - a CState-base vptr restore: cl's implicit vptr-restore stamps the CState

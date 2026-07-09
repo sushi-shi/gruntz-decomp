@@ -38,6 +38,14 @@ extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
 extern CTBombColl g_tbombColl;
+
+// ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
+// [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
+// src/Stub/BoundaryLowerThunks.cpp (was RegRangee17b0).
+RVA(0x000e17b0, 0x15)
+void ConstructTBombRange() {
+    ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);
+}
 DATA(0x002bf464)
 extern void* g_actCache;
 extern void* g_retAddrBreadcrumb;

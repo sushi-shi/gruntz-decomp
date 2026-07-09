@@ -22,6 +22,14 @@ DATA(0x0022c25c)
 extern GameKeyStr g_pathStr; // 0x62c25c  full path builder
 DATA(0x0022c260)
 extern GameKeyStr g_levelStr; // 0x62c260  level name
+
+// FreeLevelStr @0x03ad30 - the atexit/teardown thunk that tears down the global
+// g_levelStr key-string (GameKeyStr::Free1b9b93 == the inner CString ~ctor, 0x1b9b93,
+// reloc-masked). Re-homed from src/Stub/BoundaryLowerThunks.cpp (was StrFree3ad30).
+RVA(0x0003ad30, 0xa)
+void FreeLevelStr() {
+    g_levelStr.Free1b9b93();
+}
 DATA(0x0022c26c)
 extern HWND g_customWorldParent; // 0x62c26c
 DATA(0x0022c270)

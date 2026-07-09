@@ -44,6 +44,13 @@ void Forward_115630() {
     g_mediumFont.Font::Font();
 }
 
+// The sibling dynamic initializer for the g_tinyFont global (same explicit-ctor-call
+// tail-jmp). Re-homed from src/Stub/BoundaryLowerThunks.cpp (was FontForward115730).
+RVA(0x00115730, 0xa)
+void Forward_115730() {
+    g_tinyFont.Font::Font();
+}
+
 // ---------------------------------------------------------------------------
 // One-shot load of the four bitmap fonts. Each Font::LoadFont takes a CString by
 // value (a stack temp constructed from the literal); a 0 return aborts the load

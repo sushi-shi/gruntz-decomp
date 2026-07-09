@@ -19,6 +19,7 @@
 //   0x0adfc0 -> table 0x646010, handler 0xad2a0 (thunk 0x403c10)
 #include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
+#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
 
 // The per-logic-class activation dispatch table (a zDArray<handler> in .data) is
 // the shared <Gruntz/ActReg.h> CLogicActTable alias: same fast-[lo,hi] / slow-Find /
@@ -68,6 +69,14 @@ extern "C" void LogicHandler_039910(); // thunk 0x401717 -> 0x39910
 extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 extern "C" void LogicHandler_0ad2a0(); // thunk 0x403c10 -> 0xad2a0
 
+// ConstructLogicActRange_62bfa0 @0x03a530 - the static initializer that builds
+// dispatch table 0x62bfa0's fast [0x7d0, 0x7da] id range (CZDArrayDerived::Construct).
+// Re-homed from src/Stub/BoundaryLowerThunks.cpp (was RegRange3a530).
+RVA(0x0003a530, 0x15)
+void ConstructLogicActRange_62bfa0() {
+    ((CZDArrayDerived*)&g_logicActReg_62bfa0)->Construct(0x7d0, 0x7da);
+}
+
 // RegisterXLogic @0x03a710 - bind the logic class behind dispatch table 0x62bfa0
 // to its activation handler under the shared action name "A".
 // @early-stop
@@ -93,6 +102,14 @@ RVA(0x000474b0, 0x18d)
 void RegisterXLogic_6447f8() {
     i32 id = RegisterActionName();
     *(void**)g_logicActReg_6447f8.ResolveEntry(id) = (void*)&LogicHandler_0466b0;
+}
+
+// ConstructLogicActRange_646010 @0x0adde0 - the static initializer that builds
+// dispatch table 0x646010's fast [0x7d0, 0x7da] id range. Re-homed from
+// src/Stub/BoundaryLowerThunks.cpp (was RegRangeadde0).
+RVA(0x000adde0, 0x15)
+void ConstructLogicActRange_646010() {
+    ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
 }
 
 // RegisterXLogic @0x0adfc0 - bind the logic class behind dispatch table 0x646010 to

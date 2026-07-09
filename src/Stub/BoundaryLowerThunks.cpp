@@ -4,6 +4,22 @@
 // owning class names are placeholders; only the OFFSETS + code bytes are
 // load-bearing. Unmodeled engine callees/globals are declared NO-body so their
 // rel32/DIR32 operands reloc-mask in objdiff. Defined in retail-RVA order.
+//
+// RE-HOME STATUS (matcher-1 verify pass): NONE of these are ILT/incremental-link
+// artifacts (every RVA is a real body well above the 0x1000-0x7c20 ILT band). HOMED
+// (byte-neutral, next to the owning global's single DATA pin): the 7 range-register
+// static-inits (-> LogicActReg/LogicActRegistrars/TimeBomb/StaticHazard), the g_str62c264
+// /g_6473d8/g_levelStr/g_tinyFont init thunks (-> CustomWorldDialog/Multi/CustomWorldInfoDlg
+// /Fonts). REMAINING (no clean home):
+//   * class dtors 0x80cf0 (~CGameApp) / 0x85540+0x855a0 (~CGameMgr+scalar) / 0x94c10
+//     (~CGameWnd): the bodies match Wap32.h's INLINE dtors exactly, but their real home
+//     is the out-of-line vtable-anchor emission in GameApp/GruntzMgr/GameWnd.cpp - which
+//     needs the compiler-emitted-vtable + @rva-symbol labeling (vtable-gate risk). DEFER.
+//   * g_obj646778 (CFileIO) / g_str649618 / g_font64ead8 / g_mgr6451a8: DATA-pinned HERE
+//     (no external owner TU) - the thunk + its global stay together.
+//   * placeholder-identity leaves (CInitd5d70 / CSettere56b0 / CStatusBaseSub100780 /
+//     CPred1182f0 / NotNull118310 / ResetCoordPool82fa0 / Register82aa0): COMDAT-folded
+//     one-liners whose owning class is unrecovered.
 #include <Mfc.h> // real MFC CString (globals typed VCString, matching the target relocs)
 #include <Ints.h>
 #include <Wap32/Object.h>
@@ -30,50 +46,24 @@
 // g_levelStr is a genuinely distinct type (?g_levelStr@@3UGameKeyStr@@A, NOT
 // VCString): the canonical GameKeyStr (<Gruntz/GameKeyStr.h>).
 // ===========================================================================
-extern CString g_str62c264;   // 0x62c264 (pinned in CustomWorldDialog.cpp)
-extern GameKeyStr g_levelStr; // 0x62c260 (pinned in Backlog.cpp)
-extern CString g_6473d8;      // 0x6473d8 (pinned in CMulti.cpp)
+// (Global-object init/teardown thunks re-homed next to their single-owner DATA pin:
+// g_str62c264 (0x3acb0) -> CustomWorldDialog.cpp; g_6473d8 (0xb5380) -> Multi.cpp;
+// g_levelStr (0x3ad30) -> CustomWorldInfoDlg.cpp.)
 
-// ===========================================================================
-// Range-register thunks: hand the fixed [0x7d0, 0x7da] id range to a managed
-// collection's register method (0x3742, __thiscall(int,int)). Each global keeps
-// its owning TU's type/name; the method reloc-masks by address.
-// ===========================================================================
-// CLogicActTable / CLookupColl / CActReg are the shared <Gruntz/ActReg.h> archetype
-// + aliases (RegisterRange 0x3742 seeds the [lo,hi] range); their SIZE annotations
-// stay here (the single tree-wide tag for each).
+// The registrar-collection archetypes' single tree-wide SIZE anchors stay here (the
+// classes live in <Gruntz/ActReg.h> / TBombColl.h / HaznColl.h; used across many TUs).
 SIZE_UNKNOWN(CLogicActTable);
 SIZE_UNKNOWN(CLookupColl);
 SIZE_UNKNOWN(CActReg);
-SIZE_UNKNOWN(CTBombColl);                   // CTBombColl defined in <Gruntz/TBombColl.h> (shared)
-SIZE_UNKNOWN(CHaznColl);                    // CHaznColl defined in <Gruntz/HaznColl.h> (shared)
-extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0 (LogicActReg.cpp)
-extern CLookupColl g_reg_644af0;            // 0x644af0 (LogicActRegistrars.cpp)
-extern CLogicActTable g_logicActReg_646010; // 0x646010 (LogicActReg.cpp)
-extern CActReg g_actReg_646188;             // 0x646188 (LogicActRegistrars.cpp)
-extern CActReg g_actReg_646250;             // 0x646250 (LogicActRegistrars.cpp)
-extern CTBombColl g_tbombColl;              // 0x64c780 (CTimeBomb.cpp)
-extern CHaznColl g_haznColl;                // 0x64e3d0 (CStaticHazard.cpp)
+SIZE_UNKNOWN(CTBombColl); // CTBombColl defined in <Gruntz/TBombColl.h> (shared)
+SIZE_UNKNOWN(CHaznColl);  // CHaznColl defined in <Gruntz/HaznColl.h> (shared)
 
-RVA(0x0003a530, 0x15)
-void RegRange3a530() {
-    ((CZDArrayDerived*)&g_logicActReg_62bfa0)->Construct(0x7d0, 0x7da);
-}
-
-RVA(0x0003acb0, 0xa)
-void StrFree3acb0() {
-    g_str62c264.CString::CString();
-}
-
-RVA(0x0003ad30, 0xa)
-void StrFree3ad30() {
-    g_levelStr.Free1b9b93();
-}
-
-RVA(0x0005bc50, 0x15)
-void RegRange5bc50() {
-    ((CZDArrayDerived*)&g_reg_644af0)->Construct(0x7d0, 0x7da);
-}
+// (The 7 range-register static-initializers [0x3a530/0x5bc50/0xadde0/0xb15b0/0xb3ae0/
+// 0xe17b0/0xfbb70] were re-homed next to their owning registrar globals:
+// LogicActReg.cpp (62bfa0/646010), LogicActRegistrars.cpp (644af0/646188/646250),
+// TimeBomb.cpp (g_tbombColl), StaticHazard.cpp (g_haznColl). Each is the
+// `(CZDArrayDerived*)&g_X)->Construct(0x7d0,0x7da)` static init - same pattern as
+// Projectile.cpp/KitchenSlime.cpp.)
 
 // ===========================================================================
 // 0x080cf0 - CGameApp base destructor: cl's implicit vptr-restore stamps
@@ -226,26 +216,6 @@ CGameWnd::~CGameWnd() {
     g_singleton653c68 = 0;
 }
 
-RVA(0x000adde0, 0x15)
-void RegRangeadde0() {
-    ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
-}
-
-RVA(0x000b15b0, 0x15)
-void RegRangeb15b0() {
-    ((CZDArrayDerived*)&g_actReg_646188)->Construct(0x7d0, 0x7da);
-}
-
-RVA(0x000b3ae0, 0x15)
-void RegRangeb3ae0() {
-    ((CZDArrayDerived*)&g_actReg_646250)->Construct(0x7d0, 0x7da);
-}
-
-RVA(0x000b5380, 0xa)
-void StrFreeb5380() {
-    g_6473d8.CString::CString();
-}
-
 // ===========================================================================
 // 0x0b5400 / 0x0bd430 - construct / Close the engine's ONE static MFC CFile global
 // at 0x646778. Its real type is CFileIO (RTTI 0x1ed15c == CFile; class in
@@ -295,11 +265,6 @@ void CInitd5d70::Init() {
     // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
-RVA(0x000e17b0, 0x15)
-void RegRangee17b0() {
-    ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);
-}
-
 // ===========================================================================
 // 0x0e56b0 - setter: store the constant 0x42a at +0x20. __thiscall.
 // ===========================================================================
@@ -312,11 +277,6 @@ SIZE_UNKNOWN(CSettere56b0);
 RVA(0x000e56b0, 0x8)
 void CSettere56b0::Set() {
     m_20 = 0x42a;
-}
-
-RVA(0x000fbb70, 0x15)
-void RegRangefbb70() {
-    ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
 }
 
 // ===========================================================================
@@ -350,20 +310,15 @@ CStatusBaseSub100780::~CStatusBaseSub100780() {
 }
 
 // ===========================================================================
-// 0x115730 / 0x1157b0 - construct two DISTINCT global font objects in place via
-// the explicit-ctor-call tail-jmp (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md;
-// mov ecx,&g; jmp ctor - no placement-new null-guard). g_tinyFont @0x64ea58 is a Font
-// (ctor 0x179700, ??0Font@@QAE@XZ); g_font64ead8 @0x64ead8 is a FontRenderer (ctor
-// 0x179be0, ??0FontRenderer@@QAE@XZ) - a DIFFERENT type from the four bitmap Font
-// globals, split out here. Both from <Font/Font.h>.
+// 0x1157b0 - construct the global g_font64ead8 (a FontRenderer, ctor 0x179be0,
+// ??0FontRenderer@@QAE@XZ; DIFFERENT type from the bitmap Font globals) in place via
+// the explicit-ctor-call tail-jmp (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md).
+// Its DATA symbol is owned here (no external pin). From <Font/Font.h>.
+// (The sibling g_tinyFont ctor thunk 0x115730 re-homed to Fonts.cpp, next to the
+// g_mediumFont one, where g_tinyFont's DATA pin lives.)
 // ===========================================================================
-extern Font g_tinyFont; // 0x64ea58 (pinned in Fonts.cpp)
 DATA(0x0024ead8)
 extern FontRenderer g_font64ead8;
-RVA(0x00115730, 0xa)
-void FontForward115730() {
-    g_tinyFont.Font::Font();
-}
 RVA(0x001157b0, 0xa)
 void FontForward1157b0() {
     g_font64ead8.FontRenderer::FontRenderer();
