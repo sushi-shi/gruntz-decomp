@@ -3188,6 +3188,30 @@ i32 CGameLevel::RemovePlane(i32 index) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x15dbe0: MovePlane - move the plane at index `from` to index `to` in the plane
+// array (RemoveAt then InsertAt). Rejects a negative `from` or an out-of-range `to`;
+// a no-op move (from==to) or missing element returns without touching the array. When
+// the moved plane is the MAIN plane, retarget m_mainIndex to `to`. 2 args (ret 8).
+RVA(0x0015dbe0, 0xa3)
+i32 CGameLevel::MovePlane(i32 from, i32 to) {
+    if (from >= 0 && to < m_planes.GetSize()) {
+        if (from == to) {
+            return 1;
+        }
+        CLevelPlane* el = (from < m_planes.GetSize()) ? (CLevelPlane*)m_planes[from] : 0;
+        if (el != 0) {
+            m_planes.RemoveAt(from, 1);
+            m_planes.InsertAt(to, (DWORD)el, 1);
+            if (el == m_mainPlane) {
+                m_mainIndex = to;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // ScanSpanTop (@0x15e9c0): scan the object's top-edge span [extentL+x, extentR+x]
 // at row (extentT+y), stepping the column by m_strideX (always hitting the far
 // column). A soft (1) tile means blocked -> return the object's current m_screenY;

@@ -136,6 +136,17 @@ void CDDSurface::
 }
 
 // ---------------------------------------------------------------------------
+// 0x1412d0 (slot 5): IsValid - a held DirectDraw surface present and a positive
+// cached width/height. __thiscall, no args.
+RVA(0x001412d0, 0x24)
+i32 CDDSurface::IsValid() {
+    if (m_8 != 0 && m_88 > 0 && m_8c > 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // DecodeRun - decode a run-length image (`src`, the DecodeSrc shape) into
 // `info`. The source format is its +0x1c word (8/0x18); a convert pass runs when it
 // differs from info's current format (+0x538): an 8-bit source builds an RGB-reversed

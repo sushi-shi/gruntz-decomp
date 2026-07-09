@@ -95,6 +95,44 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x158fd0 (slot 9): SetGeometry - cache the {w,h,bpp} pixel geometry and a
+// {0,0,w,h} src rect. Reject non-positive w/h. __thiscall, 3 args (ret 0xc).
+// Shared body (ICF) with CDrawSubWorker slot 9.
+// @early-stop
+// 83.86% - logic/CFG/offsets/store-order all byte-exact. Residual is a regalloc
+// coin-flip: retail materializes bpp up-front into the callee-saved edi (push/pop
+// edi) alongside w/h; the /O2 scheduler on this identical source keeps bpp in eax
+// and loads it lazily at its single m_bpp store (fewer bytes). Same values, same
+// store order. Not source-steerable (permuter 200-iter no-change); the sibling
+// CDrawSubWorker::SetGeom_159020 pins bpp only because its bpp-validation reads it
+// early - this variant has no such read. docs/patterns/zero-register-pinning.md family.
+RVA(0x00158fd0, 0x41)
+i32 CDDrawSurfacePair::SetGeometry_158fd0(i32 w, i32 h, i32 bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    m_height = h;
+    m_srcRect[3] = h;
+    m_width = w;
+    m_bpp = bpp;
+    m_srcRect[0] = 0;
+    m_srcRect[1] = 0;
+    m_srcRect[2] = w;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x159090 (slot 5): IsLoaded - the surface-ready predicate: a held surface,
+// a positive width, a parent manager, and an active status word. __thiscall.
+RVA(0x00159090, 0x24)
+i32 CDDrawSurfacePair::IsLoaded() {
+    if (m_surface != 0 && m_width > 0 && m_mgr != 0 && m_status != -1) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x1590f0: the (non-deleting) destructor. Real polymorphic now: cl emits the
 // implicit ??_7CDDrawSurfacePair own-vptr stamp in the ENTRY state (stamp-first),
 // runs TeardownSurface (remove the surface from the pool), zeroes the width and

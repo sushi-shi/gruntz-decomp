@@ -39,6 +39,40 @@ void CDDrawWorker::DeleteAll() {
 }
 
 // ===========================================================================
+// 0x1521c0: store `elem` at frame index `index` (CObArray::SetAtGrow) and widen the
+// cached sentinel window [m_64, m_68] to include it. __thiscall, 2 args (ret 8).
+// ===========================================================================
+RVA(0x001521c0, 0x2b)
+void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
+    m_items.SetAtGrow(index, elem);
+    if (index < m_64) {
+        m_64 = index;
+    }
+    if (index > m_68) {
+        m_68 = index;
+    }
+}
+
+// ===========================================================================
+// 0x1523b0 (slot 16): range-query dispatch - if the frame index `n` is within the
+// cached sentinel window [m_64, m_68], fetch element m_items[n] and dispatch its
+// slot-13 query (rec, flag), returning it as a bool; otherwise 0. __thiscall, ret 0xc.
+// ===========================================================================
+RVA(0x001523b0, 0x3b)
+i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
+    CWorkerElement* el;
+    if (n >= m_64 && n <= m_68) {
+        el = m_items.m_pData[n];
+    } else {
+        el = 0;
+    }
+    if (el == 0) {
+        return 0;
+    }
+    return el->Query34(rec, flag) != 0;
+}
+
+// ===========================================================================
 // 0x1557a0 - ~CDDrawWorker: stamp own vtable, run DeleteAll (most-derived
 // teardown), then the CObArray member destructs and ~CLoadable folds in
 // (resets m_04/m_08/m_0c, restores the grand-base vtable). /GX frame from the

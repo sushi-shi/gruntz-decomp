@@ -872,8 +872,9 @@ inline WwdEdgeB::~WwdEdgeB() {
 // the extra size fields are matching-neutral (the dtor never touches them).
 struct WwdEdgeA { // 0x20..0x5c
     ~WwdEdgeA();
-    i32 a; // 0x20
-    char _p24[0x30 - 0x24];
+    i32 a;     // 0x20  live dirty-rect left (RECT.left)
+    i32 top24; // 0x24  live dirty-rect top  (RECT.top)
+    char _p28[0x30 - 0x28];
     i32 m_w; // 0x30  live dirty-rect size x (the "second corner" the blit uses)
     i32 m_h; // 0x34  live dirty-rect size y
     i32 b;   // 0x38  == the record's flag word (-1 == disarmed)
@@ -1008,6 +1009,22 @@ CWwdGameObjectA::~CWwdGameObjectA() {
     m_20.b = -1;              // 0x38
     m_20.a = (i32)0x80000000; // 0x20
     // m_1a0 (WwdSubA) member destroyed; then Mid (E) folds.
+}
+
+// ---------------------------------------------------------------------------
+// 0x150660 (vtable slot 12): snapshot the live 9-dword dirty-rect record (0x18..0x3c)
+// into the shadow block (0xb8..0xdc); then, if the live record is armed (m_20.b !=
+// -1), BltFast the source pair's surface onto the target pair's at the record's
+// (left, top) with the record as the source rect + colorkey/wait, and disarm the
+// record. __thiscall, 2 args (ret 8).
+RVA(0x00150660, 0x49)
+void CWwdGameObjectA::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+    memcpy(&m_b8, &m_18, 36);
+    if (m_20.b != -1) {
+        RECT* r = (RECT*)&m_20;
+        a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
+        m_20.b = -1;
+    }
 }
 
 // ---------------------------------------------------------------------------

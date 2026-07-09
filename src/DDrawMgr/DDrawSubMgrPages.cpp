@@ -51,7 +51,8 @@ public:
     CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);              // 0x158f30
     // Same field layout as CDDrawSurfacePair (SetGeom_1646b0/CreateModeSurface share
     // the offsets): parent mgr @+0x0c, pixel geometry @+0x10..0x18, src rect @+0x1c.
-    char m_pad04[0x0c - 0x04];
+    i32 m_status;            // +0x04  status word (-1 inactive)
+    char m_pad08[0x0c - 0x08];
     CDDrawSurfaceMgr* m_mgr; // +0x0c  parent surface manager (its pool at +0x1c)
     i32 m_width;             // +0x10
     i32 m_height;            // +0x14
@@ -190,6 +191,18 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
         }
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x159150 (slot 5): IsLoaded - ready when the child holds a surface, has a
+// positive width, a parent manager, and an active status word. __thiscall.
+// Same-shape twin of CDDrawSurfacePair::IsLoaded (identical field offsets).
+RVA(0x00159150, 0x24)
+i32 CDDrawSurfaceChildA::IsLoaded() {
+    if (m_surface != 0 && m_width > 0 && m_mgr != 0 && m_status != -1) {
+        return 1;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

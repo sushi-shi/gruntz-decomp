@@ -28,6 +28,18 @@
 struct CWorkerElement {
     virtual void s0();               // +0x00
     virtual void* Delete(u32 flags); // +0x04  scalar-deleting dtor
+    virtual void s2();               // +0x08  (declared-only fillers to slot 13)
+    virtual void s3();               // +0x0c
+    virtual void s4();               // +0x10
+    virtual void s5();               // +0x14
+    virtual void s6();               // +0x18
+    virtual void s7();               // +0x1c
+    virtual void s8();               // +0x20
+    virtual void s9();               // +0x24
+    virtual void s10();              // +0x28
+    virtual void s11();              // +0x2c
+    virtual void s12();              // +0x30
+    virtual i32 Query34(i32 a, i32 b); // +0x34  slot 13 (range-query predicate)
 };
 
 // The owned-pointer array embedded at +0x10 (engine CObArray; vtbl 0x5ed494).
@@ -48,6 +60,8 @@ struct CWorkerObArray {
     // CObArray::SetSize(newSize, growBy) (reloc-masked rel32 callee 0x1b5653);
     // RemoveAll() is inlined by retail as SetSize(0, -1), so call it directly.
     void SetSize(i32 newSize, i32 growBy);
+    // CObArray::SetAtGrow(index, element) (reloc-masked rel32 callee 0x1b5822).
+    void SetAtGrow(i32 index, void* element);
 };
 
 // The grand-base (CObject-like) dtor vtable, restamped manually by CWwdSpatialMgr's
@@ -76,8 +90,9 @@ public:
     virtual i32 CreateFrame30(i32 a, i32 b, i32 c);        // slot 13 @0x151fb0
     virtual i32 InsertFrame(void* rec, i32 n, i32 flag);   // slot 14 @0x151f00
     virtual i32 ValidateFramesFromSymTab(CSymTab* tab);    // slot 15 @0x1522b0
-    virtual i32 Slot40_1523b0(void* rec, i32 n, i32 flag); // slot 16 @0x1523b0
+    virtual i32 Slot40_1523b0(i32 rec, i32 n, i32 flag); // slot 16 @0x1523b0
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
+    void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
     CWorkerObArray m_items;    // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
     char m_pad24[0x64 - 0x24]; // +0x24..+0x63 (the family's per-node scratch block)

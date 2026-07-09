@@ -364,6 +364,9 @@ private:
     // plane, promote the last remaining plane (clear every plane's MAIN bit, set the
     // last one). 0 on an invalid index, else 1. (@0x15db30)
     i32 RemovePlane(i32 index);
+    // MovePlane: reorder the plane at `from` to index `to` (RemoveAt+InsertAt);
+    // retargets m_mainIndex when the moved plane is the MAIN plane. (@0x15dbe0)
+    i32 MovePlane(i32 from, i32 to);
 
     // The tile-scan collision resolvers (this=level, the moving CGameObject passed
     // explicitly). Each drives the inlined tile probe (PROBE_TILE == AxisProbe) over

@@ -70,6 +70,12 @@ public:
     CDDPalette* LoadPaletteMakeB(const char* path, i32 z);   // 0x143150
     CDDPalette* LoadPaletteMake950(const char* path, i32 z); // 0x143a30
     CDDPalette* Make950(void* buf, i32 z);                   // 0x143950 (external sibling of MakeB)
+    // Install a 256-entry RGBQ display palette into m_palette (+0x53c) then mark
+    // it present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache
+    // held by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a
+    // caller-supplied RGBQ array.
+    void SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag); // 0x143900
+    void SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag);     // 0x1439b0
     // Derive the R/G/B low-bit shift + 8-minus-count tables from the cached surface's
     // pixel format, then apply (Func13f740). __thiscall, no stack args (0x143b20).
     i32 ComputeColorMasks(); // 0x143b20

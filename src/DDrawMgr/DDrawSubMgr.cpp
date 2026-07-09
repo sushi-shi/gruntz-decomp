@@ -1160,6 +1160,34 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x159db0: retire `obj` - when it is transient (flag 0x800) just delete it;
+// otherwise unlink it from the list (its cached POSITION) and both maps, then
+// delete it. `delete` on the polymorphic obj lowers to the slot-1 deleting dtor
+// with the null guard retail emits inline. __thiscall, 1 arg (ret 4).
+RVA(0x00159db0, 0x5e)
+void CWwdObjMgr::RemoveAndDelete_159db0(CWwdObject* obj) {
+    if (obj->m_flags & 0x800) {
+        delete obj;
+        return;
+    }
+    m_10.RemoveAt((POSITION)obj->m_posCache);
+    m_48.RemoveKey(obj->m_key);
+    m_2c.RemoveKey(obj->m_key);
+    delete obj;
+}
+
+// ---------------------------------------------------------------------------
+// 0x159e10: clear obj's re-sort flag (0x20000), unlink it from the list at its
+// cached POSITION, then re-insert it in sorted order (without touching the maps).
+// __thiscall, 1 arg (ret 4).
+RVA(0x00159e10, 0x2e)
+void CWwdObjMgr::ReinsertUnflagged_159e10(CWwdObject* obj) {
+    obj->m_flags &= 0xfffdffff;
+    m_10.RemoveAt((POSITION)obj->m_posCache);
+    InsertSorted_159e40(obj, 0);
+}
+
+// ---------------------------------------------------------------------------
 // 0x159e40: register `obj` — if its flag 0x800 is set, clear its POSITION cache
 // and bail; otherwise (when addToMaps) record it in both maps, then insert it
 // into the sorted list before the first node whose object has a larger sort key
@@ -2353,23 +2381,46 @@ struct CDrawSubWorker : public CObject { // CObject slots 0-4 inherited
     i32 m_04;                            // +0x04
     i32 m_08;                            // +0x08
     i32 m_0c;                            // +0x0c
-    i32 m_10;                            // +0x10
+    i32 m_width;                         // +0x10 (zeroed in ctor)
+    i32 m_height;                        // +0x14
+    i32 m_bpp;                           // +0x18
+    i32 m_srcRect[4];                    // +0x1c..+0x28
     CDrawSubWorker(i32 a1, i32 a2, i32 a3);
     virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
     virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
+    virtual void VtSlotFill4(); // slot 9 (0x158fd0, ICF w/ CDDrawSurfacePair; declared-only)
+    virtual i32 SetGeom_159020(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x159020
 };
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(i32 a1, i32 a2, i32 a3) {
     m_04 = a2;
     m_08 = a3;
     m_0c = a1;
-    m_10 = 0;
+    m_width = 0;
 }
 VTBL(CDrawSubWorker, 0x001effa0); // ??_7CDrawSubWorker (was g_drawSubWorkerVtbl)
+
+// 0x159020 (slot 10): SetGeom with bpp validation - cache {w,h,bpp} + a {0,0,w,h}
+// src rect; reject non-positive w/h and bpp not in {8,16,24,32}. __thiscall, ret 0xc.
+RVA(0x00159020, 0x55)
+i32 CDrawSubWorker::SetGeom_159020(i32 w, i32 h, i32 bpp) {
+    if (w <= 0 || h <= 0) {
+        return 0;
+    }
+    if (bpp != 8 && bpp != 16 && bpp != 24 && bpp != 32) {
+        return 0;
+    }
+    m_height = h;
+    m_srcRect[3] = h;
+    m_width = w;
+    m_bpp = bpp;
+    m_srcRect[0] = 0;
+    m_srcRect[1] = 0;
+    m_srcRect[2] = w;
+    return 1;
+}
 
 // 0x158fb0: DDraw worker base re-init — +0x4 = -1, +0x8/+0xc/+0x10 = 0, stamp
 // the base vtable.  A void method (keeps `this` in ecx; not a ctor).  ret 0.

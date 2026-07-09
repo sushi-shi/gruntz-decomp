@@ -865,6 +865,56 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x143900 - install the display palette from a CDDPalette wrapper's PALETTEENTRY
+// cache (+0x0c): straight 256-dword copy into m_palette, then flag present + tag.
+// __thiscall, 2 args (ret 0x8). No return value used.
+// @early-stop
+// ~65% - logic/offsets/CFG byte-faithful; the residual is the mirror-register wall
+// (same as the sibling Make950 @0x143950): retail keeps the source cursor in eax and
+// the dst in edx and pushes esi/edi in the prologue (bail paths pop), where MSVC on
+// this identical source mirrors the src/dst registers and defers the pushes past both
+// null checks. Not source-steerable (permuter 150-iter marginal). Regalloc-coloring
+// residue; see the 0x143950 note. docs/patterns/zero-register-pinning.md family.
+RVA(0x00143900, 0x4d)
+void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag) {
+    if (pal == 0) {
+        return;
+    }
+    i32* src = (i32*)pal->m_cacheA;
+    if (src == 0) {
+        return;
+    }
+    i32* dst = m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        *dst++ = *src++;
+    }
+    m_940 = tag;
+    m_hasPalette = 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1439b0 - install the display palette directly from a caller RGBQ array:
+// straight 256-dword copy into m_palette, then flag present + latch tag.
+// __thiscall, 2 args (ret 0x8). No return value used.
+// @early-stop
+// ~83% - logic/offsets/CFG byte-faithful; residual is the same mirror-register wall
+// as 0x143900/0x143950: retail keeps src in eax + dst in edx, materializes the m_hasPalette
+// 1 into a reused reg; MSVC on this source mirrors src/dst and stores the immediate.
+// Not source-steerable (permuter 150-iter marginal). docs/patterns/zero-register-pinning.md.
+RVA(0x001439b0, 0x3d)
+void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
+    if (rgbq == 0) {
+        return;
+    }
+    i32* dst = m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        *dst++ = *rgbq++;
+    }
+    m_940 = tag;
+    m_hasPalette = 1;
+}
+
+// ---------------------------------------------------------------------------
 // LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
 // palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
 // ---------------------------------------------------------------------------

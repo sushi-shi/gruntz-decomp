@@ -46,6 +46,8 @@ public:
     i32 ForEachSerialize_15b020(CSerialArchive* ar, i32 a2);
     i32 Deserialize_15b0e0(CSerialArchive* ar, u32 count, i32 flag);
     i32 PruneOrphans_15b1d0();
+    void RemoveAndDelete_159db0(CWwdObject* obj);   // 0x159db0
+    void ReinsertUnflagged_159e10(CWwdObject* obj); // 0x159e10
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
     void TickKillCues_159a70(i32 advance); // vtable slot 9 (per-frame kill-cue tick)
     i32 CheckSortOrder_15a780();

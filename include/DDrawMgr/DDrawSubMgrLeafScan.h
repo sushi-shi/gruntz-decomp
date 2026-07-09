@@ -82,6 +82,8 @@ public:
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
     LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
+    LeafElementObj* AddFromSource_157e90(CParseSource* src); // 0x157e90
+    void AddEntry_157ec0(LeafElementObj* elem, const char* key); // 0x157ec0
     i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
 
     CObject* Lookup_05b7e0(const char* key);

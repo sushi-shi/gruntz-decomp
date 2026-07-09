@@ -395,6 +395,30 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void*
 }
 
 // ---------------------------------------------------------------------------
+// 0x157e90: create a cache element from a parse source, keyed by its name. While
+// not loading (m_30==0) and the source is non-null, run CreateEntry keyed by
+// src->m_name with src as the parse-source arg. 1 stack arg (ret 4).
+RVA(0x00157e90, 0x23)
+LeafElementObj* CDDrawSubMgrLeafScan::AddFromSource_157e90(CParseSource* src) {
+    if (m_30 != 0) {
+        return 0;
+    }
+    if (src == 0) {
+        return 0;
+    }
+    return CreateEntry_157d70(src->m_name, src);
+}
+
+// ---------------------------------------------------------------------------
+// 0x157ec0: insert a pre-built element into the map under `key` (CMapStringToOb::
+// operator[]) and stamp its redraw arg (elem->m_18 = m_34). 2 stack args (ret 8).
+RVA(0x00157ec0, 0x20)
+void CDDrawSubMgrLeafScan::AddEntry_157ec0(LeafElementObj* elem, const char* key) {
+    m_10[key] = (CObject*)elem;
+    elem->m_18 = m_34;
+}
+
+// ---------------------------------------------------------------------------
 // 0x158680: ~LeafElementObj (the non-deleting destructor). cl auto-stamps the
 // element's own vtable (??_7LeafElementObj) at entry, runs Release (frees the
 // acquired buffer), then chains the base teardown: reset +0x04/+0x08/+0x0c and the
