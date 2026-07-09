@@ -149,6 +149,21 @@ void CMenuPage::Clear() {
     m_items.RemoveAll();
 }
 
+// ResolveSubPage: look `key` up in the owner's catalog map, cache the resolved
+// entry in m_subPage, and return whether it was found.
+// @early-stop
+// ~90.5% - schedule coin-flip (topic:scheduling): body byte-exact and identical in
+// shape to CMenuPage::Configure's catalog Lookup; the sole residual is MSVC5
+// emitting the `mov [slot],0` init AFTER both call-arg pushes (retail) vs between
+// them (cl). Permuter confirmed no source spelling reorders it (90.238 -> 90.238).
+RVA(0x001833f0, 0x38)
+i32 CMenuPage::ResolveSubPage(const char* key) {
+    void* slot = 0;
+    ((CMapStringToOb*)&m_owner->m_catalog->m_map)->Lookup(key, (CObject*&)slot);
+    m_subPage = (CMenuPage*)slot;
+    return slot != 0;
+}
+
 // append an item to the list; cache its POSITION at item+0x2c.
 RVA(0x00183430, 0x24)
 void* CMenuPage::Append(CMenuItem* item) {

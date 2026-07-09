@@ -59,6 +59,7 @@ public:
     );                                                   // 0x1832f0
     void InitDefaults();                                 // 0x1833a0  Clear + zero scalars
     void Clear();                                        // 0x1833c0  free child items + RemoveAll
+    i32 ResolveSubPage(const char* key);                 // 0x1833f0  catalog Lookup -> cache m_subPage
     void* Append(CMenuItem* item);                       // 0x183430  AddTail(item) -> item->m_2c
     CMenuItem* AddItem(i32, i32, i32, i32, i32, i32);    // 0x183460
     CMenuItem* AddSubItem(i32, i32, i32, i32, i32, i32); // 0x1835a0

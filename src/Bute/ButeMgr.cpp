@@ -448,6 +448,28 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 }
 
 // ---------------------------------------------------------------------------
+// CButeMgr::GetFloatDef
+// type-3 (float) getter with a caller default: Find(tag).Find(key); type 0 -> (float)int,
+// type 3 -> float, on type mismatch report + fall through, on any miss return def.
+RVA(0x001726c0, 0x6b)
+float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            switch (rec->type) {
+                case kButeInt:
+                    return (float)*(i32*)rec->pValue;
+                case kButeFloat:
+                    return *(float*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
+// ---------------------------------------------------------------------------
 // CButeMgr::GetFloat
 // type-3 (float) getter, no default. Accepts type 0 (int) too: `fild` the int
 // when type==0, `fld` the float when type==3, else report + return 0.0f. Returns
@@ -472,6 +494,28 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return s_floatZero;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::GetDoubleDef
+// type-2 (double) getter with a caller default: type 0 -> (double)int, type 2 -> double,
+// on type mismatch report + fall through, on any miss return def.
+RVA(0x00172bd0, 0x6c)
+double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            switch (rec->type) {
+                case kButeInt:
+                    return (double)*(i32*)rec->pValue;
+                case kButeDouble:
+                    return *(double*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
 }
 
 // ---------------------------------------------------------------------------
@@ -548,6 +592,71 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return (char*)&s_empty;
+}
+
+// ---------------------------------------------------------------------------
+// CButeMgr::GetRef5..8 - the typed-reference getters (value type-tags 5/6/7/8).
+// Each mirrors GetStringDef: resolve tag.key, return the stored ref payload pointer
+// (rec->pValue) on a type match, report a type mismatch otherwise, return def on any
+// miss. Defined in ascending RVA order (they interleave with other ButeMgr methods).
+RVA(0x00173720, 0x4e)
+CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key, CButeRef5* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            if (rec->type == kButeRef5) {
+                return (CButeRef5*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
+RVA(0x00173cb0, 0x4e)
+CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            if (rec->type == kButeRef6) {
+                return (CButeRef6*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
+RVA(0x001741f0, 0x4e)
+CButeRef7* CButeMgr::GetRef7(const char* tag, const char* key, CButeRef7* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            if (rec->type == kButeRef7) {
+                return (CButeRef7*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
+}
+
+RVA(0x00174770, 0x4e)
+CButeRef8* CButeMgr::GetRef8(const char* tag, const char* key, CButeRef8* def) {
+    void* grp = Tree()->Find(tag);
+    if (grp) {
+        CButeValue* rec = (CButeValue*)((CButeTree*)grp)->Find(key);
+        if (rec) {
+            if (rec->type == kButeRef8) {
+                return (CButeRef8*)rec->pValue;
+            }
+            ReportError(s_fmtTypeMismatch, tag, key);
+        }
+    }
+    return def;
 }
 
 // ---------------------------------------------------------------------------

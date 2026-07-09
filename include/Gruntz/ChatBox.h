@@ -53,6 +53,7 @@ public:
     i32 Draw(i32 a0, i32 sprite, i32 arg2, i32 arg3); // 0x182f90
     i32 ScrollRow0();                                 // 0x183030
     i32 ScrollRow1();                                 // 0x1830b0
+    i32 FocusSelect(i32 x, i32 y);                    // 0x183170 (page FocusAndSelect(x,y))
     i32 HitTest0(i32 x, i32 y);                       // 0x1831a0
     i32 HitTest1();                                   // 0x183210
     i32 HitTest2();                                   // 0x183230

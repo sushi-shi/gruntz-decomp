@@ -351,10 +351,18 @@ public:
     i32 GetInt(const char* tag, const char* key);
     DWORD GetDwordDef(const char* tag, const char* key, DWORD def);
     DWORD GetDword(const char* tag, const char* key);
+    float GetFloatDef(const char* tag, const char* key, float def);
     float GetFloat(const char* tag, const char* key);
+    double GetDoubleDef(const char* tag, const char* key, double def);
     double GetDouble(const char* tag, const char* key);
     CString* GetStringDef(const char* tag, const char* key, CString* def);
     char* GetString(const char* tag, const char* key);
+    // The typed-reference getters (value type-tags 5..8): return the stored ref
+    // payload pointer on a type match, else report (type mismatch) and return def.
+    struct CButeRef5* GetRef5(const char* tag, const char* key, struct CButeRef5* def);
+    struct CButeRef6* GetRef6(const char* tag, const char* key, struct CButeRef6* def);
+    struct CButeRef7* GetRef7(const char* tag, const char* key, struct CButeRef7* def);
+    struct CButeRef8* GetRef8(const char* tag, const char* key, struct CButeRef8* def);
 
     bool ScanToken(i32 expectType);
     bool ParseTagLine();

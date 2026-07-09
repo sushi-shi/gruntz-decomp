@@ -334,6 +334,15 @@ i32 CChatBox::OnFlag20000000() {
     return m_activeNode->FocusForwardN() != 0;
 }
 
+// mouse focus+select -> forward (x,y) to the owned menu page's FocusAndSelect.
+RVA(0x00183170, 0x24)
+i32 CChatBox::FocusSelect(i32 x, i32 y) {
+    if (!m_activeNode) {
+        return 0;
+    }
+    return m_activeNode->FocusAndSelect(x, y) != 0;
+}
+
 // make `n` the active node (detach + rebuild it).
 RVA(0x00182da0, 0x2a)
 i32 CChatBox::AttachNode(void* n) {
