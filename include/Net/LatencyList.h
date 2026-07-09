@@ -31,7 +31,7 @@ struct CLatencyItem {
     CString m_text; // +0x00  row label ("Very Low Latency [ping < 50]", ...)
     i32 m_id;       // +0x04  row id / ping column
     i32 m_param;    // +0x08  row param column
-    // GetName @0x38120 IS Obj38120::GetName; cast at the call.
+    CString GetName(); // 0x38120  returns m_text by value
 };
 SIZE_UNKNOWN(CLatencyItem);
 

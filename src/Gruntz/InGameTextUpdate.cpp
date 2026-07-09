@@ -29,14 +29,13 @@ struct HbCellMgr { // g_mgrSettings->m_68
     // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
     // its (areaId, subId) out-params.
 };
-SIZE_UNKNOWN(HbSub1a0);
-// HbSub1a0::Tick @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
+// The per-leaf anim sub-object embedded at CGameObject+0x1a0: its Advance @0x15c360 is
+// CAniAdvanceCursor::Advance_15c360 (header-less; the canonical class is a CLoadable,
+// see <Gruntz/AniAdvanceCursor.h>). Local minimal decl - only the non-virtual advance
+// call is reached here (via a cast), no fields/vtable.
 class CAniAdvanceCursor {
 public:
     i32 Advance_15c360(i32 clock);
-};
-struct HbSub1a0 { // the per-leaf anim sub-object embedded at CGameObject+0x1a0
-    // Tick @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
 };
 // The shared sound chain (the CBootyState ambient-cue idiom, reused here).
 SIZE_UNKNOWN(HbSndPlayer);
@@ -96,7 +95,7 @@ extern EngStr4* g_typeNodes;
 DATA(0x002bf670)
 extern i32 g_typeCount;
 DATA(0x002bf3bc)
-extern "C" i32 g_6bf3bc; // sub-logic clock fed to HbSub1a0::Tick
+extern "C" i32 g_6bf3bc; // sub-logic clock fed to CAniAdvanceCursor::Advance_15c360
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // wrap-safe draw clock
 DATA(0x00244c54)
