@@ -102,6 +102,12 @@ public:
     i32 SerializeBase(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e7cd0 (folded)
     i32 Tick(); // 0x0e7b00
 
+    i32 TickToggle_0e5b90(i32 param);                                            // 0x0e5b90
+    i32 RenderCel_0e5c10();                                                      // 0x0e5c10
+    i32 TickRenderCurrent_0e6dd0();                                              // 0x0e6dd0
+    i32 TickRenderFrame_0e7440();                                                // 0x0e7440
+    void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval);  // 0x0e7c30
+
     i32 m_00;                // +0x00
     i32 m_active;            // +0x04  active flag
     char _pad08[4];          // +0x08

@@ -150,6 +150,81 @@ i32 GruntzPlayer::Reset() {
 }
 
 // ===========================================================================
+// GruntzPlayer::ClearRoundState  @0x0daa60
+// Frameless: mark the slot active (m_020 = 1) and clear the per-round scalar
+// counters (m_01c / m_02c / m_030 / m_22c / m_230). Returns 1.
+// ===========================================================================
+RVA(0x000daa60, 0x24)
+i32 GruntzPlayer::ClearRoundState_0daa60() {
+    m_020 = 1;
+    m_01c = 0;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+    return 1;
+}
+
+// The dialog-combobox fillers below are __cdecl FREE functions physically in this TU;
+// they call the same-TU CString accessors (defined further down, so forward-declared
+// here) and reach USER32 through the game's cached fn-ptr globals.
+CString GetColorName(i32 colorIdx, i32 upper);
+CString GetDifficultyName(i32 diffIdx, i32 upper);
+extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND, i32);           // 0x6c4564
+extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32); // 0x6c44a4
+
+// ===========================================================================
+// FillColorCombo  @0x0daaa0  (/GX EH frame, free fn)
+// Reset the combobox (dialog item `nID` on `hDlg`) and fill it with all 17 color
+// names; select `curSel` when non-negative. Returns 0 if the dialog/item is missing,
+// else 1.
+// ===========================================================================
+RVA(0x000daaa0, 0xd3)
+i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
+    if (hDlg == 0) {
+        return 0;
+    }
+    HWND cb = g_pGetDlgItem(hDlg, nID);
+    if (cb == 0) {
+        return 0;
+    }
+    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+    pSend(cb, 0x14b, 0, 0);
+    for (i32 i = 0; i < 0x11; i++) {
+        CString s = GetColorName(i, 0);
+        pSend(cb, 0x143, 0, (i32)(const char*)s);
+    }
+    if (curSel >= 0) {
+        pSend(cb, 0x14e, curSel, 0);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// FillDifficultyCombo  @0x0dabc0  - twin of FillColorCombo over the 3 difficulty names.
+// ===========================================================================
+RVA(0x000dabc0, 0xd3)
+i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
+    if (hDlg == 0) {
+        return 0;
+    }
+    HWND cb = g_pGetDlgItem(hDlg, nID);
+    if (cb == 0) {
+        return 0;
+    }
+    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+    pSend(cb, 0x14b, 0, 0);
+    for (i32 i = 0; i < 3; i++) {
+        CString s = GetDifficultyName(i, 0);
+        pSend(cb, 0x143, 0, (i32)(const char*)s);
+    }
+    if (curSel >= 0) {
+        pSend(cb, 0x14e, curSel, 0);
+    }
+    return 1;
+}
+
+// ===========================================================================
 // GruntzPlayer::Serialize  @0x0dace0
 // Stream every field through the archive order object. kind 7 = Load (read each
 // scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_name),

@@ -28,6 +28,7 @@ public:
     GruntzPlayer();          // 0x0da960 (default)
     GruntzPlayer(i32 index); // 0x0da870 (/GX, seeds the name with "Player")
     i32 Reset();             // 0x0da9e0 (frameless re-init; empties name, returns 1)
+    i32 ClearRoundState_0daa60(); // 0x0daa60 (marks active, clears per-round scalars)
     RVA(0x0001f450, 0x20)
     CString GetName() {
         return m_name;

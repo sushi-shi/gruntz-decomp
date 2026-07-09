@@ -75,6 +75,10 @@ public:
     void Cancel();                                                  // 0x0de590
     void LoadLevelPreviewScreen();                                  // 0x0de420
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3);         // 0x0fab90
+    i32 NextScreenCmd_0de190(i32 param);                            // 0x0de190
+    i32 Refade_0de2c0();                                            // 0x0de2c0
+    i32 RefadeVirtual_0de340();                                     // 0x0de340
+    i32 OnKey_0de3c0(i32 key, i32 param);                           // 0x0de3c0
 
     // CPreviewState-specific fields, past the CState base (which ends at +0x1a8):
     char m_pad1a8[0x1b8 - 0x1a8];
@@ -119,6 +123,18 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     return 1;
 }
 
+// CPreviewState::NextScreenCmd (0x0de190) - the command-router "advance" entry: hide
+// the mouse cursor fully, load the next preview screen, and re-arm the +0x1b8 countdown
+// timer (60000). Returns 1. The command param is ignored.
+RVA(0x000de190, 0x35)
+i32 CPreviewState::NextScreenCmd_0de190(i32 param) {
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    LoadLevelPreviewScreen();
+    m_1b8 = 60000;
+    return 1;
+}
+
 // CPreviewState::Tick (0x0de200) - the per-frame advance: if the live back surface
 // is present and NOT lost, or the screen's Advance virtual fails, report the error
 // and bail (returns 0); otherwise tick the audio cue and count the +0x1b8 timer
@@ -146,6 +162,49 @@ i32 CPreviewState::Tick() {
         m_1b8 = 0;
     } else {
         m_1b8 = m_1b8 - g_wap32FrameDelta;
+    }
+    return 1;
+}
+
+// CPreviewState::Refade (0x0de2c0) - gated re-fade: only when the preview page
+// manager (m_c->m_04) reports ready (Method_158bc0), hide the cursor and re-run the
+// title fade-in of the current screen name, then retire the scene. Returns the fade
+// result (0 when the page gate fails).
+RVA(0x000de2c0, 0x5c)
+i32 CPreviewState::Refade_0de2c0() {
+    if (((CRegHolder*)m_c)->m_04->Method_158bc0() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    i32 r = FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1);
+    return r;
+}
+
+// CPreviewState::RefadeVirtual (0x0de340) - twin of Refade_0de2c0, but gated on the
+// state's own readiness virtual (CState slot 3, Vfunc3) instead of the page manager.
+RVA(0x000de340, 0x56)
+i32 CPreviewState::RefadeVirtual_0de340() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    i32 r = FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1);
+    return r;
+}
+
+// CPreviewState::OnKey (0x0de3c0) - the preview screen's key handler: ESC cancels,
+// SPACE or ENTER loads the next preview screen. Returns 1. The second arg is ignored.
+RVA(0x000de3c0, 0x2d)
+i32 CPreviewState::OnKey_0de3c0(i32 key, i32 param) {
+    if (key == 0x1b) {
+        Cancel();
+    }
+    if (key == 0x20 || key == 0xd) {
+        LoadLevelPreviewScreen();
     }
     return 1;
 }

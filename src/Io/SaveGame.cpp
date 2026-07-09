@@ -408,6 +408,12 @@ i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
     return FillSlot2(GetSlot(idx), name, src);
 }
 
+// CSaveGame::StoreSlot  (0x000e5520) - copy `src` into the slot at index `idx`.
+RVA(0x000e5520, 0x20)
+i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
+    return CopySlot(GetSlot(idx), src);
+}
+
 // A save-slot record probed by the two temp-file helpers below: an int/flag at
 // +0x00 (bit0 = "has a temp file"; cleared to 0 by the closer) and the temp-file
 // path string at +0x35. Only these two offsets are touched.

@@ -77,6 +77,122 @@ i32 CAniPlayer::Start(
 }
 
 // ===========================================================================
+// CAniPlayer::TickToggle (0x0e5b90) - a timed frame flip: when the timed-play window
+// (start clock @+0x58, i64) has elapsed against the running clock g_645588, flip the
+// frame between the two range endpoints, restamp the window (duration = m_interval,
+// start = now). Returns 1. The command param is ignored.
+// @early-stop
+// 92% - logic + control flow byte-exact; residual is the i64 window compare's
+// register/store scheduling (m_frame/m_duration/m_startTime restamp) - the codegen
+// entropy tail shared by the CAniPlayer timed-play family. Final sweep.
+// ===========================================================================
+RVA(0x000e5b90, 0x51)
+i32 CAniPlayer::TickToggle_0e5b90(i32 param) {
+    if ((__int64)g_645588 - *(__int64*)&m_startTimeLo >= *(__int64*)&m_durationLo) {
+        m_frame = (m_frame == m_startFrame) ? m_endFrame : m_startFrame;
+        m_durationLo = m_interval;
+        m_durationHi = 0;
+        m_startTimeLo = g_645588;
+        m_startTimeHi = 0;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CAniPlayer::RenderCel (0x0e5c10) - the render half of Tick: resolve the current cel
+// from the cel table by frame (0 when out of range), record it, and - when present -
+// blit it onto the active surface context at the rect base + cel offset. Returns 1.
+// @early-stop
+// 98.1% - logic + externs byte-exact; residual is the m_celTable/m_frame register
+// pairing in the range test (same regalloc entropy tail as CAniPlayer::Tick). Final sweep.
+// ===========================================================================
+RVA(0x000e5c10, 0x54)
+i32 CAniPlayer::RenderCel_0e5c10() {
+    AniCelTable* tbl = m_celTable;
+    AniCel* cel;
+    if (m_frame >= tbl->m_firstFrame && m_frame <= tbl->m_lastFrame) {
+        cel = (AniCel*)tbl->m_cels[m_frame];
+    } else {
+        cel = 0;
+    }
+    m_cel = cel;
+    if (cel != 0) {
+        i32 surfaceCtx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
+        ((CImage*)cel)
+            ->RenderFrame(
+                (void*)surfaceCtx,
+                (void*)(cel->m_offsetX + m_rect[0]),
+                (void*)(cel->m_offsetY + m_rect[1]),
+                (void*)0
+            );
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CAniPlayer::TickRenderCurrent (0x0e6dd0) - one play step that renders the CURRENT cel
+// (no table re-lookup): while cycles remain, consume one and blit m_cel at the rect
+// base + cel offset. Returns 1.
+// @early-stop
+// 74% - all operations byte-exact (verified via --diff); residual is pure register
+// scheduling: retail keeps `this` in eax to load both m_rect halves up front and defers
+// the g_gameReg->m_world->m_drawTarget surface-context chain to last, where cl loads the
+// global mid-sequence. Neither local nor inlined surfaceCtx flips it (RenderFrame
+// arg-eval-order/regalloc wall shared by the whole CAniPlayer render family). Final sweep.
+// ===========================================================================
+RVA(0x000e6dd0, 0x45)
+i32 CAniPlayer::TickRenderCurrent_0e6dd0() {
+    if (m_repeatCount > 0) {
+        m_repeatCount--;
+        AniCel* cel = m_cel;
+        if (cel != 0) {
+            ((CImage*)cel)
+                ->RenderFrame(
+                    (void*)(i32)g_gameReg->m_world->m_drawTarget->m_14,
+                    (void*)(m_rect[0] + cel->m_offsetX),
+                    (void*)(m_rect[1] + cel->m_offsetY),
+                    (void*)0
+                );
+        }
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CAniPlayer::TickRenderFrame (0x0e7440) - one play step that re-resolves the cel from
+// the table by frame and renders it: while cycles remain, consume one, look up the cel
+// (0 when out of range), record it, and - when present - blit it. Returns 1.
+// @early-stop
+// 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
+// chain regalloc as TickRenderCurrent_0e6dd0 plus the cel-table range-test register
+// pairing. Final sweep.
+// ===========================================================================
+RVA(0x000e7440, 0x5e)
+i32 CAniPlayer::TickRenderFrame_0e7440() {
+    if (m_repeatCount > 0) {
+        m_repeatCount--;
+        AniCelTable* tbl = m_celTable;
+        AniCel* cel;
+        if (m_frame >= tbl->m_firstFrame && m_frame <= tbl->m_lastFrame) {
+            cel = (AniCel*)tbl->m_cels[m_frame];
+        } else {
+            cel = 0;
+        }
+        m_cel = cel;
+        if (cel != 0) {
+            ((CImage*)cel)
+                ->RenderFrame(
+                    (void*)(i32)g_gameReg->m_world->m_drawTarget->m_14,
+                    (void*)(cel->m_offsetX + m_rect[0]),
+                    (void*)(cel->m_offsetY + m_rect[1]),
+                    (void*)0
+                );
+        }
+    }
+    return 1;
+}
+
+// ===========================================================================
 // CAniPlayer::Serialize (0x0e5c90) - bail on a null archive; chain the folded base-
 // state serialize (0xe7cd0); then round-trip the timed-play window (start clock +
 // duration, +0x58/+0x60) through the archive (mode 4 = Write @+0x30, mode 7 = Read
@@ -226,6 +342,40 @@ i32 CAniPlayer::Tick() {
         }
     }
     return 1;
+}
+
+// ===========================================================================
+// CAniPlayer::SetRange (0x0e7c30) - re-arm the player with a new frame window without
+// re-resolving the sequence: set start/end frames (a -1 means "derive from the cel
+// table's first/last, ordered by the step sign"), the step, loop flag and interval
+// (interval -1 = keep), reset the frame to the start, re-arm 2 play cycles and stamp
+// the last-tick clock (via the cached g_pTimeGetTime, not the direct import).
+// @early-stop
+// 88.2% - logic byte-exact; residual is the -1/celTable branch shape: retail hoists the
+// m_celTable load per else-arm and stores in each branch, cl computes the value into a
+// register and does one store at the merge (explicit if/else made it worse). Final sweep.
+// ===========================================================================
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650  cached timeGetTime fn ptr
+RVA(0x000e7c30, 0x7d)
+void CAniPlayer::SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
+    if (start != -1) {
+        m_startFrame = start;
+    } else {
+        m_startFrame = (step >= 0) ? m_celTable->m_firstFrame : m_celTable->m_lastFrame;
+    }
+    if (end != -1) {
+        m_endFrame = end;
+    } else {
+        m_endFrame = (step >= 0) ? m_celTable->m_lastFrame : m_celTable->m_firstFrame;
+    }
+    if (interval != -1) {
+        m_interval = interval;
+    }
+    m_step = step;
+    m_loop = loop;
+    m_frame = m_startFrame;
+    m_repeatCount = 2;
+    m_lastTime = g_pTimeGetTime();
 }
 
 SIZE_UNKNOWN(AniCel);

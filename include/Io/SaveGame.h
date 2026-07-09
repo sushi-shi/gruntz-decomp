@@ -76,6 +76,7 @@ public:
     i32 Decode(u8* buf);                                      // 0x000e5460
     SaveSlot* GetSlot(i32 i);                                 // 0x000e54b0
     i32 FillSlotByIndex(i32 idx, i32 name, void* src);        // 0x000e54e0
+    i32 StoreSlot(i32 idx, const SaveSlot* src);              // 0x000e5520
     RVA(0x000e5620, 0x27)
     void SetMaxLevel(i32 v) {
         if (v < 0x21) {
