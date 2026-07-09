@@ -82,6 +82,9 @@ struct BrickzGridDesc {
     i32* m_24; // +0x24  per-row base-offset table
     i32 m_28;  // +0x28  width  (x clamp)
     i32 m_2c;  // +0x2c  height (y clamp)
+    // 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id. __thiscall(x, y, id).
+    // CTerrainTileLoader::Load reaches it via loader->m_24 (BrickzAttrMgr)->m_5c.
+    void SetCell(i32 x, i32 y, i32 id);
 };
 
 // The attribute/bute-type manager reached as this->m_78->m_24. Holds the grid

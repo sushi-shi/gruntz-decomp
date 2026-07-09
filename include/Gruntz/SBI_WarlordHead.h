@@ -76,8 +76,10 @@ SIZE_UNKNOWN(CWhRect);
 // under head-specific names spanning all four base levels.
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
-    // vtable slot 1 (0xe7cd0): serialize the head's six persistent ints
-    // (m_3c..m_50), then chain to the CSBI_ImageSet base serialize (0xe74f0).
+    // vtable slot 1 (0xeb970): serialize the head's single direction (m_3c), then
+    // chain to the CSBI_ImageSet base serialize (0xe74f0). (The six-int slot-1
+    // serialize formerly claimed here at 0xe7cd0 was CSBI_ImageSetAni's - re-homed
+    // to SBI_ImageSetAni.cpp; warlord's own slot 1 is 0xeb970, thunk 0x3cd8.)
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
     // vtable slot 11 (0xeb6b0): forward all 11 args to the ImageSet base setup; on
     // success latch the initial state (SetState(0)) and report 1.
@@ -112,12 +114,7 @@ public:
     // ----- own fields (after CSBI_ImageSet @0x3c); base region reuses inherited
     // m_rect14.m_0/m_4 (draw origin), m_28 (countdown), m_30 (frame, base-typed i32),
     // m_34 (config, base-typed CSprite* -> cast to CWhConfig*), m_38 (state index).
-    i32 m_3c; // +0x3c  direction (SetState writes the raw dir; Render compares vs 1)
-    i32 m_40; // +0x40  persistent serialized ints (Serialize save/load block)
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
-    i32 m_4c; // +0x4c
-    i32 m_50; // +0x50
+    i32 m_3c; // +0x3c  direction (SetState writes the raw dir; Serialize + Render read it)
 };
 SIZE_UNKNOWN(CSBI_WarlordHead);
 VTBL(CSBI_WarlordHead, 0x001ead24); // vtable_names -> code (RTTI game class)

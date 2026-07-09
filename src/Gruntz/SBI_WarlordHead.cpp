@@ -22,39 +22,12 @@ extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 
-// vtable slot 1 (0xe7cd0): save/load the head's six persistent ints (m_3c..m_50)
-// through the stream's Read/WriteBytes, then chain to the CSBI_ImageSet base
-// serialize and normalize its result to a bool. mode 7 = load, mode 4 = save;
-// any other mode just chains to the base. Bails early when the stream is null or
-// the active game manager (g_gameReg->m_world) is gone.
-RVA(0x000e7cd0, 0xf8)
-i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
-    if (s == 0) {
-        return 0;
-    }
-    if (g_gameReg->m_world == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case 7:
-            s->ReadBytes(&m_3c, 4);
-            s->ReadBytes(&m_40, 4);
-            s->ReadBytes(&m_44, 4);
-            s->ReadBytes(&m_48, 4);
-            s->ReadBytes(&m_4c, 4);
-            s->ReadBytes(&m_50, 4);
-            break;
-        case 4:
-            s->WriteBytes(&m_3c, 4);
-            s->WriteBytes(&m_40, 4);
-            s->WriteBytes(&m_44, 4);
-            s->WriteBytes(&m_48, 4);
-            s->WriteBytes(&m_4c, 4);
-            s->WriteBytes(&m_50, 4);
-            break;
-    }
-    return ((CSBI_ImageSet*)this)->Serialize(s, mode, a3, a4) != 0;
-}
+// (0xe7cd0 re-attributed: the six-int slot-1 serialize was MIS-NAMED here as
+// CSBI_WarlordHead::Serialize. Vtable proof (gruntz sema class): CSBI_WarlordHead
+// slot 1 = thunk 0x3cd8 -> 0xeb970 (the REAL warlord Serialize, defined at the tail
+// of this file), while 0xe7cd0 (thunk 0x2829) is CSBI_ImageSetAni/CSBI_StatzTabArrow
+// slot 1 -> moved to src/Gruntz/SBI_ImageSetAni.cpp. Warlord keeps only its single
+// m_3c direction; the six ints m_3c..m_50 belonged to the ANI conveyor leaf.)
 
 // vtable slot 11 (0xeb6b0): forward all 11 setup args to the ImageSet base setup
 // (the four rect ints fold into one by-value aggregate so MSVC stages the 0x10 temp
@@ -195,4 +168,30 @@ i32 CSBI_WarlordHead::Render(i32 z) {
         );
     }
     return 1;
+}
+
+// vtable slot 1 (0xeb970): save/load the head's single persistent direction (m_3c)
+// through the stream's Write/ReadBytes, then chain the CSBI_ImageSet base serialize
+// (0xe74f0) and normalize its result to a bool. mode 4 = save, mode 7 = load; any
+// other mode just chains. Bails early when the stream is null or the active game
+// manager (g_gameReg->m_world) is gone. Re-homed from src/Stub/BoundaryLowerMethods.cpp
+// (was the Ceb970 placeholder view); vtable slot 1 (thunk 0x3cd8) proves the owner.
+// @early-stop
+// block-layout wall: the mode==4 Write branch lands inline (jne-skip) but retail
+// floats it to the tail (forward je). The m_3c transfer, the base-chain call and the
+// neg/sbb/neg bool are byte-faithful.
+RVA(0x000eb970, 0x72)
+i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_world == 0) {
+        return 0;
+    }
+    if (mode == 4) {
+        s->WriteBytes(&m_3c, 4);
+    } else if (mode == 7) {
+        s->ReadBytes(&m_3c, 4);
+    }
+    return ((CSBI_ImageSet*)this)->Serialize(s, mode, a3, a4) != 0;
 }

@@ -209,6 +209,13 @@ source = "src/Gruntz/SBI_ImageEh.cpp"
 flags = "eh"
 
 [[unit]]
+# CSBI_ImageSetAni::Serialize (0xe7cd0), the frameless slot-1 serialize re-attributed
+# from SBI_WarlordHead.cpp (vtable proof: slot 1 = thunk 0x2829, shared w/ StatzTabArrow).
+unit = "sbi_imagesetani"
+source = "src/Gruntz/SBI_ImageSetAni.cpp"
+flags = "base"
+
+[[unit]]
 unit = "sbi_imagesetani_eh"
 source = "src/Gruntz/SBI_ImageSetAniEh.cpp"
 flags = "eh"
@@ -1044,6 +1051,13 @@ flags = "eh"
 unit = "gamemode"
 source = "src/Gruntz/GameMode.cpp"
 flags = "eh"
+
+[[unit]]
+# CGameModeBase::BaseCleanup (0x0fa150), the base cleanup all game-state
+# ReleaseResources chain to. Its own retail .obj (re-homed from Stub).
+unit = "gamemodebase"
+source = "src/Gruntz/GameModeBase.cpp"
+flags = "base"
 
 [[unit]]
 # CAttract (attract/title CState leaf); the `??1` carries the /GX SEH frame.

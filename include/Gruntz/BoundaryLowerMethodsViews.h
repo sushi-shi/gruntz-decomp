@@ -12,54 +12,64 @@
 // dissolved onto its real class). Folded so far: C99ba0/C9a420 -> CAreaMgr/
 // CSpawnList, C8e880/C915d0 -> CGruntzMgr.
 //
-// HOMED (matcher-1 re-home pass, raw-vtable/thunk-verified):
+// HOMED (matcher-1 re-home passes, raw-vtable/thunk-verified):
 //   Cd5e20   -> CImage::Slot17 (src/Image/CImage.cpp): vtbl slot 17 (+0x44) thunk
 //                0x1d1b jmps to 0xd5e20; forwards arg to Slot15/Slot16.
 //   Gate113860 -> src/Gruntz/TileTriggerContainer.cpp (the __stdcall mode-gate).
 //   Fwd114ec0 -> src/Gruntz/GruntzMgrCmd.cpp (the __cdecl 6-arg toolbar forwarder).
-//   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (the READ mirror of
-//                SerializeMatrix; ApplyByType's ApplyType7 target, thunk 0x3cd3).
-//   (C104c80 -> CSBI_WellGoo::Free and ParseSerial/0xd210 -> GruntzMgrCmd.cpp also
-//    homed; their views/bodies already removed from this TU.)
+//   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (thunk 0x3cd3).
+//   C104c80  -> CSBI_WellGoo::Free; ParseSerial/0xd210 -> GruntzMgrCmd.cpp.
+//   C77dc0   -> BrickzGridDesc::SetCell (src/Gruntz/Brickz.cpp): the flat grid-cell
+//                setter; CTerrainTileLoader::Load reaches it via loader->m_24
+//                (BrickzAttrMgr) -> m_5c. Same grid as C112bf0.
+//   Cfa150   -> CGameModeBase::BaseCleanup (src/Gruntz/GameModeBase.cpp, own .obj):
+//                caller graph = every state ReleaseResources; +0x1c allocator is the
+//                real CDDrawPtrCollections::RemoveItemA. 94.5% (cmp-order wall).
+//   Ceb970   -> CSBI_WarlordHead::Serialize (SBI_WarlordHead.cpp): vtbl slot 1
+//                (thunk 0x3cd8 -> 0xeb970) is authoritative. CONFLICT RESOLVED - the
+//                0xe7cd0 formerly mis-named CSBI_WarlordHead::Serialize is actually
+//                CSBI_ImageSetAni::Serialize (slot 1, thunk 0x2829, shared with
+//                CSBI_StatzTabArrow) -> re-homed to src/Gruntz/SBI_ImageSetAni.cpp.
+//   C50ca0   -> CGrunt::LoadTypeTableClearMove (src/Gruntz/Grunt.cpp): this==CGrunt
+//                (RunEntranceMove mov ecx,esi), m_1a0==CGrunt::m_moveMode, Method@0x3bd9
+//                == inherited CUserLogic::LoadGruntTypeTable.
 //
-// VERIFIED-BUT-BLOCKED (raw-vtable/this proof gathered; home needs a base-model or
-// conflict resolution the re-home pass left to a follow-up):
-//   Ceb970   IS CSBI_WarlordHead::Serialize (vtbl slot 1, thunk 0x3cd8 -> 0xeb970);
-//                CONFLICT: SBI_WarlordHead.cpp claims that name at 0xe7cd0 (EXACT,
-//                thunk 0x2829, NOT in the vtable). Reconcile with that TU's owner.
-//   C0b4c40  IS CUFO::SerializeMove (vtbl slot 1, thunk 0x3fb7 -> 0xb4c40); BLOCKED:
-//                its 4-arg shape can't override the CPathHazard/CUserBase placeholder
-//                slot-1 sig (Ufo.h note) - needs the base slot-1 re-signature first.
-//   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc ->
-//                0x112bf0); BLOCKED: CheckpointSwitchBuild.cpp holds a g_statzGameReg
-//                dual-view at DATA 0x24556c that would collide with M's g_mgrSettings.
-//   C104dd0  this == CSBI_RectOnly::m_2c (a sub-object; SetState calls it via
-//                `mov ecx,[ecx+0x2c]; call 0x3f8a`), NOT CSBI_RectOnly itself - its
-//                real owner is the +0x2c status-bar-sprite holder's class (unmodeled).
+// BLOCKED - vtable-attributed but the home needs a base-model/conflict fix a follow-up
+// must do (each stays @early-stop in place):
+//   C0b4c40  IS CUFO::SerializeMove (vtbl slot 1, thunk 0x3fb7 -> 0xb4c40); its 4-arg
+//                shape can't override the CPathHazard/CUserBase placeholder slot-1 sig
+//                (Ufo.h) - needs the base slot-1 re-signature first.
+//   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc); home
+//                needs the grid-access chain (g_reg->m_world->m_24->m_5c ==
+//                BrickzAttrMgr->BrickzGridDesc, C77dc0's grid) modeled on the
+//                CheckpointSwitchBuild g_statzGameReg view + 0x24556c dual-view fold.
+//   C104dd0  this == an unmodeled +0x2c status-bar-sprite holder (CSBI_RectOnly's m_2c;
+//                SetState calls `mov ecx,[ecx+0x2c]; call 0x3f8a`) - owner class unrecovered.
 //
-// CALLER-GATHERED (this-verification still needed before homing; each lands in an
-// incomplete TU so a home would drop its % until that TU is complete):
-//   C213a0   <- CChatBoxOwner::ProcessCheatInput (vbtable getter; cheat family)
-//   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (act/logic type coll;
-//                sibling of CTypeKeyColl : CZArray2D)
-//   C50ca0   <- CGrunt::RunEntranceMove (grunt-sized owner, +0x1a0/1a4 pair)
-//   C77dc0   <- CTerrainTileLoader::Load (tile-plane cell setter)
+// ORPHAN - caller known but `this`'s CLASS genuinely unrecovered (a sub-object reached
+// by an offset/return, no RTTI, no named owner); cannot home as a method of a class:
+//   C10bbe0  this == [[0x24556c+0x2c]+0x2dc] - a game-registry sub-object getter
+//                (LoadPickupSprites: mov eax,ds:0x64556c; mov ebp,[eax+0x2c];
+//                mov ecx,[ebp+0x2dc]). NOT CGrunt (the +0x528 table lives on reg->m_2c's
+//                +0x2dc member, identity unrecovered).
+//   C213a0   <- CChatBoxOwner::ProcessCheatInput (virtual-base field getter; owner is
+//                the class holding that vbase - unmodeled).
+//   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (a CZArray2D-derived act/proj
+//                type collection; the exact sibling class of CTypeKeyColl unrecovered).
 //   C9cab0   registry Lookup (m_10 sub's Get @0x1b8008 = CMapStringToPtr::Lookup);
-//                callers CLevelTime/CLightFx/CWayPoint/CGuardPoint ctors - the
-//                registry class identity is still unrecovered (NOT the CMapStringToOb
-//                LogicTypeTable registry, which uses 0x1b8438).
-//   Cbd450   <- RegisterGameObjectTypes (no direct caller; c:\gruntz.log opener init)
-//   Ccef50   <- Gap_0b63f0/Gap_0c8b80 (unresolved gaps; ~CLobbySlot/CPlay teardown)
-//   Cdb200   <- CNetMgr::DispatchRecvMsg (net holder swap; this= unverified)
-//   Cdb2f0   no direct caller (custom-level map-file object per the thunk label)
-//   Cdb750   <- CPlayLevelLoad::LoadByMode (LEVEL config sync)
-//   Cea170   <- CStatusBarMgr::LoadTabSprites (2-bit selector over a +0x38 virtual)
-//   Cfa150   IS CGameModeBase::BaseCleanup (GameModeBase.h declares it; callers
-//                CAttract/CBootyState/CMultiBootyState/CCreditsState ReleaseResources
-//                - all cross-module, so it lives in its own retail .obj; a home must
-//                keep it cross-.obj (not gamemode) to preserve those reloc-masked calls)
-//   C10bbe0  <- CGrunt::LoadPickupSprites (+0x528 table getter)
-//   C1181d0 / C118260  no direct caller (bounds-grow updaters; orphans)
+//                the registry class identity is unrecovered (NOT the 0x1b8438 one).
+//   Cbd450   no direct caller (c:\gruntz.log opener init; owner unrecovered).
+//   Ccef50   <- Gap_0b63f0/Gap_0c8b80 (~CLobbySlot/CPlay teardown; owner unrecovered).
+//   Cdb200   <- CNetMgr::DispatchRecvMsg but this==eax (a returned net sub-object, NOT
+//                CNetMgr); the returned holder's class is unrecovered.
+//   Cdb2f0   no direct caller (custom-level map-file object; owner unrecovered).
+//   Cdb750   <- CPlayLevelLoad::LoadByMode (this==CPlayLevelLoad, mov ecx,esi) BUT
+//                CPlayLevelLoad is a 3-way-CONFLATED placeholder (LoadLevelByMode /
+//                BridgeMoveSprites / PyramidBridgeSprites views disagree on +0xc's
+//                type) - the conflation must be split before a clean home.
+//   Cea170   <- CStatusBarMgr::LoadTabSprites but this==ebp (a sub-object, NOT
+//                CStatusBarMgr); the +0x38-virtual dispatch object's class is unrecovered.
+//   C1181d0 / C118260  no direct caller (bounds-grow updaters; orphans).
 #ifndef GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 #define GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 
@@ -95,24 +105,11 @@ struct CTypeColl464 {
 };
 SIZE_UNKNOWN(CTypeColl464);
 
-// 0x050ca0 - dispatch then reset the +0x1a0/+0x1a4 pair.
-struct C50ca0 {
-    char pad0[0x1a0];
-    i32 m_1a0;                               // +0x1a0
-    i32 m_1a4;                               // +0x1a4
-    void Method(i32 a, i32 b, i32 c, i32 d); // 0x3bd9
-    void M(i32 arg);
-};
-SIZE_UNKNOWN(C50ca0);
+// (0x050ca0 C50ca0::M re-homed to src/Gruntz/Grunt.cpp as
+// CGrunt::LoadTypeTableClearMove - this==CGrunt, m_1a0==m_moveMode.)
 
-// 0x077dc0 - cell setter: m_20[ m_24[idx] + base ] = value.
-struct C77dc0 {
-    char pad0[0x20];
-    i32* m_20; // +0x20
-    i32* m_24; // +0x24
-    void Set(i32 base, i32 idx, i32 value);
-};
-SIZE_UNKNOWN(C77dc0);
+// (0x077dc0 C77dc0::Set re-homed to src/Gruntz/Brickz.cpp as BrickzGridDesc::SetCell
+// - the flat grid-cell setter; reached via loader->m_24 (BrickzAttrMgr) -> m_5c.)
 
 // (C8e880/CState8e [0x8e880] and C915d0/CMid915 + the duplicate CGruntzSoundInnerZ
 // [0x915d0/0x91620] were views of CGruntzMgr - m_2c == m_curState (slot +0x10 ==
@@ -259,40 +256,13 @@ struct Cea170 {
 };
 SIZE_UNKNOWN(Cea170);
 
-// 0x0eb970 - Serialize: transfer +0x3c via the archive Write (mode 4) / Read (mode 7),
-// then chain the base serializer.
-struct Ceb970 {
-    char pad0[0x3c];
-    i32 m_3c;                                                 // +0x3c
-    i32 Base3ca1(CSerialArchive* ar, i32 a2, i32 a3, i32 a4); // 0x3ca1
-    i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4);
-};
-SIZE_UNKNOWN(Ceb970);
+// (0x0eb970 Ceb970::Serialize re-homed to src/Gruntz/SBI_WarlordHead.cpp as the REAL
+// CSBI_WarlordHead::Serialize (vtable slot 1, thunk 0x3cd8). The conflicting 0xe7cd0
+// is CSBI_ImageSetAni::Serialize -> src/Gruntz/SBI_ImageSetAni.cpp. Conflict RESOLVED.)
 
-// 0x0fa150 - release the four owned blits through the +0x0c owner's +0x1c allocator.
-struct CDDrawPtrCollections {
-    void Free(void* p); // 0x142160
-};
-SIZE_UNKNOWN(CDDrawPtrCollections);
-struct CMidFa {
-    char pad0[0x1c];
-    CDDrawPtrCollections* m_1c; // +0x1c
-};
-SIZE_UNKNOWN(CMidFa);
-struct Cfa150 {
-    char pad0[0xc];
-    CMidFa* m_c; // +0x0c
-    char pad10[0x14 - 0x10];
-    void* m_14; // +0x14
-    void* m_18; // +0x18
-    char pad1c[0x3c - 0x1c];
-    i32 m_3c; // +0x3c
-    char pad40[0x160 - 0x40];
-    void* m_160; // +0x160
-    void* m_164; // +0x164
-    void Cleanup();
-};
-SIZE_UNKNOWN(Cfa150);
+// (0x0fa150 Cfa150::Cleanup re-homed to src/Gruntz/GameModeBase.cpp as
+// CGameModeBase::BaseCleanup - the mode-holder's +0x1c allocator is the real
+// CDDrawPtrCollections (RemoveItemA @0x142160). See <Gruntz/GameModeBase.h>.)
 
 // (0x104c80 C104c80 re-homed to src/Gruntz/SBI_WellGoo.cpp as CSBI_WellGoo::Free -
 // vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See <Gruntz/SBI_WellGoo.h>.)

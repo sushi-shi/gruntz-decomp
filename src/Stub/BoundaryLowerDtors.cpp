@@ -5,6 +5,26 @@
 // owning class names are placeholders (declared in <Gruntz/BoundaryLowerDtorsViews.h>);
 // only OFFSETS + code bytes are load-bearing. Vtable stamps + member-dtor callees
 // reloc-mask. (See RezBufferObjectDtor.cpp.)
+//
+// ATTRIBUTION STATUS (matcher-1 re-home pass): all 6 are @orphan - genuinely
+// unrecovered placeholder identities. Each is reached ONLY via an ILT jmp thunk from a
+// `scalar_deleting_destructor' whose own class is also unrecovered; RTTI cannot
+// attribute the COMDAT-folded body, so there is no named class TU to home them into.
+// Evidence gathered (for a later identity-recovery pass):
+//   CWorker39f20 (0x39f20)   <- ??_G @0x3a1a0 + CGruntzMgr::ChangeState_8fab0 (a state
+//                               object ChangeState tears down; ~CRezBufferObject shape).
+//   CCredits390a0 (0x390a0)  <- CGruntzMgr::ChangeState_8fab0 (a page/credits STORE that
+//                               owns an MFC CFile+CByteArray; NOT CCreditsState, whose
+//                               real dtor is 0x8d5e0).
+//   CMenuState8d000 (0x8d000) <- ??_G @0x8cfd0; a CState state whose dtor runs
+//                               Reset(0xf9840) then chains BaseCleanup(0xfa150). NOT the
+//                               real CMenuState (whose ??1 is 0x8ce60) - a different,
+//                               unrecovered state class.
+//   CHolder8c400 (0x8c400)   <- ??_G @0x8c3d0 (owns an MFC CImageList).
+//   CButeTree21a (0x21310)   <- ??_G @0x212e0; MI: base ~CContainerErr (0x16da60, vtable
+//   CButeTree21b (0x21570)   <- ??_G @0x174d30; 0x1e94ac) + a zPTree base; body calls
+//                               CButeStore::ClearRecursive (0x16e070). Two distinct
+//                               derived classes sharing the base vtables - names unrecovered.
 #include <Ints.h>
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/BoundaryUpper2Views.h>

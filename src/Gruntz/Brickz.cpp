@@ -1031,6 +1031,14 @@ void CBrickzGrid::Drain() {
     m_openList = 0;
 }
 
+// 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id (re-homed from
+// src/Stub/BoundaryLowerMethods.cpp; CTerrainTileLoader::Load reaches this via
+// loader->m_24 (BrickzAttrMgr) -> m_5c). __thiscall(x, y, id).
+RVA(0x00077dc0, 0x1d)
+void BrickzGridDesc::SetCell(i32 x, i32 y, i32 id) {
+    m_20[m_24[y] + x] = id;
+}
+
 SIZE_UNKNOWN(BrickzAttrMgr);
 SIZE_UNKNOWN(BrickzButeObj);
 SIZE_UNKNOWN(BrickzCell);

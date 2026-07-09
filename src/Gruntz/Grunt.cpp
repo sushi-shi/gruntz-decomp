@@ -2225,6 +2225,21 @@ i32 g_voiceNW[3];
 i32 g_voiceNE[3];
 i32 g_voiceSW[3];
 
+// CGrunt::LoadTypeTableClearMove(typeId) @0x50ca0 - reload the grunt type table for
+// `typeId` (the inherited CUserLogic driver, thunk 0x3bd9 -> 0x4dd50) then reset the
+// move-mode pair at +0x1a0/+0x1a4. Called at RunEntranceMove's tail. __thiscall.
+// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was C50ca0::M).
+// NOTE: the named CGrunt::m_moveMode (+0x1a0 per Grunt.h) currently compiles to +0x2c0
+// (the modeled base chain is ~0x120 oversized before it) - so this reset uses explicit
+// this+offset access to hit retail's real +0x1a0/+0x1a4 (documented naming-independent
+// codegen; see the layout-gap TODO on CGrunt::m_moveMode).
+RVA(0x00050ca0, 0x2b)
+void CGrunt::LoadTypeTableClearMove(i32 typeId) {
+    LoadGruntTypeTable(typeId, 0, 0, 0);
+    *(i32*)((char*)this + 0x1a0) = -1;
+    *(i32*)((char*)this + 0x1a4) = 0;
+}
+
 // CGrunt::PlayMoveSound(x, y) @0x511b0 - directional grunt-voice dispatcher.
 // Bucketize the screen vector (x,y) - (m_10->m_5c, m_10->m_60) into one of 8
 // compass directions by the slope dy/dx vs {+-2.0f, +-0.5} and fire the matching

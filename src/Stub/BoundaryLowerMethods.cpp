@@ -17,6 +17,9 @@
 #include <Gruntz/BoundaryLowerMethodsViews.h> // owner/referent views for this TU
 #include <Globals.h>
 
+// The game-manager singleton (0x24556c) as the remaining C104dd0/C112bf0 leaves see it.
+extern "C" CGameRegistry* g_mgrSettings;
+
 // ===========================================================================
 // 0x0213a0 - virtual-base field getter: read the field at +0x04 of the virtual
 // base whose displacement lives in the vbtable's second slot. __thiscall.
@@ -54,24 +57,13 @@ void* CTypeColl464::Resolve(i32 key) {
     return (void*)m_buf2;
 }
 
-// ===========================================================================
-// 0x050ca0 - dispatch then reset the +0x1a0/+0x1a4 pair. __thiscall(arg).
-// ===========================================================================
-RVA(0x00050ca0, 0x2b)
-void C50ca0::M(i32 arg) {
-    Method(arg, 0, 0, 0);
-    m_1a0 = -1;
-    m_1a4 = 0;
-}
+// (0x050ca0 C50ca0::M re-homed to src/Gruntz/Grunt.cpp as
+// CGrunt::LoadTypeTableClearMove - this==CGrunt (RunEntranceMove: mov ecx,esi),
+// m_1a0==CGrunt::m_moveMode, Method@0x3bd9 == inherited CUserLogic::LoadGruntTypeTable.)
 
-// ===========================================================================
-// 0x077dc0 - cell setter: m_20[ m_24[idx] + base ] = value. __thiscall(3 args).
-// ===========================================================================
-RVA(0x00077dc0, 0x1d)
-void C77dc0::Set(i32 base, i32 idx, i32 value) {
-    m_20[m_24[idx] + base] = value;
-}
-
+// (0x077dc0 C77dc0::Set re-homed to src/Gruntz/Brickz.cpp as BrickzGridDesc::SetCell
+// - the flat grid-cell setter m_20[m_24[y]+x]=id; CTerrainTileLoader::Load reaches
+// it via loader->m_24 (BrickzAttrMgr) -> m_5c. Same grid as C112bf0. See <Gruntz/Brickz.h>.)
 
 // (0x099ba0 C99ba0::Ctor re-homed to src/Gruntz/AreaMgr.cpp as the real
 // CAreaMgr::CAreaMgr - C99ba0 was a view of CAreaMgr {index, CSpawnList@+4};
@@ -223,71 +215,17 @@ void Cea170::M(i32 a1, i32 a2) {
     }
 }
 
-// ===========================================================================
-// 0x0eb970 - Serialize: when the manager is live, transfer +0x3c via arg1's
-// vtbl +0x30 (mode 4) or +0x2c (mode 7), then chain the base serializer (0x3ca1)
-// normalized to a bool. __thiscall(ar, mode, a3, a4). ret 0x10.
-//
-// @flag: ATTRIBUTION-CONFLICT (defer to the SBI_WarlordHead owner). Raw-vtable proof:
-// ??_7CSBI_WarlordHead@@6B@ slot 1 (+0x04) holds thunk 0x3cd8 which jmps to THIS
-// (0xeb970) - so 0xeb970 IS the real CSBI_WarlordHead::Serialize (slot-1 override of
-// CStatusBarItem::Serialize). BUT src/Gruntz/SBI_WarlordHead.cpp already claims the
-// name ?Serialize@CSBI_WarlordHead@@... at a DIFFERENT rva (0xe7cd0, reached via thunk
-// 0x2829, NOT in the vtable) and it is EXACT there. One of the two is mis-attributed;
-// homing 0xeb970 as CSBI_WarlordHead::Serialize would collide with that exact match.
-// Reconciling requires re-attributing 0xe7cd0 (its real owner is whatever class's
-// vtable slot 1 = thunk 0x2829) - an SBI_WarlordHead-owner task, out of this slice.
-// ===========================================================================
-extern "C" CGameRegistry* g_mgrSettings;
-// @early-stop
-// block-layout wall: the mode==4 Write branch lands inline (jne-skip) but retail
-// floats it to the tail (forward je). All transfers, the base-chain call and the
-// neg/sbb/neg bool are byte-faithful.
-RVA(0x000eb970, 0x72)
-i32 Ceb970::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (ar == 0) {
-        return 0;
-    }
-    if (g_mgrSettings->m_world == 0) {
-        return 0;
-    }
-    if (mode == 4) {
-        ar->Write(&m_3c, 4);
-    } else if (mode == 7) {
-        ar->Read(&m_3c, 4);
-    }
-    return Base3ca1(ar, mode, a3, a4) != 0;
-}
+// (0x0eb970 Ceb970::Serialize re-homed to src/Gruntz/SBI_WarlordHead.cpp as the REAL
+// CSBI_WarlordHead::Serialize - vtable slot 1 (thunk 0x3cd8 -> 0xeb970) is authoritative.
+// The attribution-conflict is RESOLVED: 0xe7cd0 (thunk 0x2829, was mis-named
+// CSBI_WarlordHead::Serialize) is CSBI_ImageSetAni::Serialize -> re-homed to
+// src/Gruntz/SBI_ImageSetAni.cpp. See gruntz sema class CSBI_WarlordHead / CSBI_ImageSetAni.)
 
-// ===========================================================================
-// 0x0fa150 - release the four owned blits (+0x160/+0x164/+0x14/+0x18) through the
-// +0x0c owner's +0x1c allocator (0x142160), then clear +0x3c. __thiscall.
-// ===========================================================================
-// @early-stop
-// cmp-operand-order wall: retail emits cmp val,edi (val vs the zeroed edi); cl emits
-// cmp edi,val. Same semantics, 1 byte per guard. All four frees + offsets byte-faithful.
-RVA(0x000fa150, 0x74)
-void Cfa150::Cleanup() {
-    if (m_c != 0) {
-        if (m_160 != 0) {
-            m_c->m_1c->Free(m_160);
-            m_160 = 0;
-        }
-        if (m_164 != 0) {
-            m_c->m_1c->Free(m_164);
-            m_164 = 0;
-        }
-        if (m_14 != 0) {
-            m_c->m_1c->Free(m_14);
-            m_14 = 0;
-        }
-        if (m_18 != 0) {
-            m_c->m_1c->Free(m_18);
-            m_18 = 0;
-        }
-    }
-    m_3c = 0;
-}
+// (0x0fa150 Cfa150::Cleanup re-homed to src/Gruntz/GameModeBase.cpp as
+// CGameModeBase::BaseCleanup - the base cleanup all game-state ReleaseResources chain
+// to (caller graph: CAttract/CBootyState/CMultiBootyState/CCreditsState). The +0x1c
+// allocator is CDDrawPtrCollections::RemoveItemA (0x142160); the four blits are
+// CDDSurface*. See <Gruntz/GameModeBase.h>.)
 
 // (0x104c80 C104c80::Free re-homed to src/Gruntz/SBI_WellGoo.cpp as
 // CSBI_WellGoo::Free - vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See

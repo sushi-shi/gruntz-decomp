@@ -2965,10 +2965,8 @@ class CSoundFxEmitter {
 public:
     i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d);
 };
-class Cfa150 {
-public:
-    void Cleanup();
-};
+// (0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
+// reinterpret at offset 0, the same pattern CState.h uses; no local view needed.)
 // The loader family reaches its resource state directly through `this` (a CPlay):
 // the bank manager (CState::m_8), the level/GRUNTZ/GAME banks (CState::m_levelBank/
 // m_gruntzBank/m_gameBank) and the shared CSpriteFactoryHolder resource registries (CState::m_c->m_10/m_28/m_2c).
@@ -4190,7 +4188,7 @@ void CPlay::CPlayDtorBody() {
     }
     self->m_49c = -1;
     ((CObArray*)&self->m_488)->SetSize(0, -1);
-    ((Cfa150*)self)->Cleanup();
+    ((CGameModeBase*)self)->BaseCleanup();
 }
 
 // ---------------------------------------------------------------------------

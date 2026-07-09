@@ -1278,6 +1278,9 @@ public:
     // (LoadGruntTypeTable / SelfImpact); external/reloc-masked here. Returns i32
     // (InGameIcon reads the result; return type is mangling-neutral).
     i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
+    // @0x50ca0 (RunEntranceMove tail): reload the type table for `typeId` then reset
+    // the move-mode pair (m_moveMode=-1, m_1a4=0). Re-homed from Stub.
+    void LoadTypeTableClearMove(i32 typeId);
 
     // --- arrival / move-step helper cluster (proximity-attributed targets) ---
     void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound

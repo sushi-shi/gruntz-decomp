@@ -3,14 +3,11 @@
 // COMDAT-folded one-liners, so the owning class names are placeholders; only the
 // OFFSETS + code bytes are load-bearing. Unmodeled engine callees/globals are
 // declared NO-body so their rel32/DIR32 operands reloc-mask.
-#include <Bute/ButeMgr.h>    // canonical CButeMgr (one shape)
-#include <Gruntz/TokenMgr.h> // canonical CTokenMgr (g_tokenMgr; Reset)
+#include <Bute/ButeMgr.h>       // canonical CButeMgr (one shape)
+#include <Gruntz/TokenMgr.h>    // canonical CTokenMgr (g_tokenMgr; Reset)
+#include <Gruntz/GameModeBase.h> // CGameModeBase::BaseCleanup (0xfa150, the state teardown)
 #include <Ints.h>
 #include <rva.h>
-class Cfa150 {
-public:
-    void Cleanup();
-};
 class CAreaMgr {
 public:
     void Reset();
@@ -117,7 +114,8 @@ SIZE_UNKNOWN(CStateSub8c470);
 RELOC_VTBL(CStateSub8c470, 0x001ea21c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 RVA(0x0008c470, 0xb)
 CStateSub8c470::~CStateSub8c470() {
-    ((Cfa150*)this)->Cleanup();
+    // 0xfa150 == CGameModeBase::BaseCleanup (this aliases CState at offset 0).
+    ((CGameModeBase*)this)->BaseCleanup();
 }
 
 // ===========================================================================

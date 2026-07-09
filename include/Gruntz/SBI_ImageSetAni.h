@@ -1,0 +1,33 @@
+// SBI_ImageSetAni.h - CSBI_ImageSetAni (frameless method view), the "Resource
+// SHREDDER conveyor" SBI leaf. RTTI .?AVCSBI_ImageSetAni@@; chain
+//   CSBI_ImageSetAni : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
+// Vtable @0x5eae3c; slot 1 Serialize (0xe7cd0, thunk 0x2829, inherited by
+// CSBI_StatzTabArrow) saves/loads six persistent ints (m_3c..m_50) then chains the
+// CSBI_ImageSet base serialize (0xe74f0).
+//
+// This is the FRAMELESS method view (parallel to <Gruntz/SBI_WarlordHead.h>); the
+// builder-facet view (CSbConfigItem base) lives in <Gruntz/StatusBarMgrBuilders.h> -
+// the SBI two-view split (deliberately-incompatible, never co-included).
+#ifndef GRUNTZ_SBI_IMAGESETANI_H
+#define GRUNTZ_SBI_IMAGESETANI_H
+
+#include <Ints.h>
+#include <rva.h>
+#include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet (base Serialize) + CImageSetStream
+
+class CSBI_ImageSetAni : public CSBI_ImageSet {
+public:
+    // vtable slot 1 (0xe7cd0): serialize the six persistent ints (m_3c..m_50) through
+    // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
+    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
+
+    i32 m_3c; // +0x3c  persistent serialized ints (Serialize save/load block)
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+    i32 m_50; // +0x50
+};
+SIZE_UNKNOWN(CSBI_ImageSetAni);
+
+#endif // GRUNTZ_SBI_IMAGESETANI_H
