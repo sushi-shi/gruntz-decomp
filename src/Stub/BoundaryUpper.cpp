@@ -25,6 +25,9 @@ extern "C" void RezFree(void* p);
 // drop two of the three RVA pins. The reloc-masked stamp is already byte-exact.
 // ---------------------------------------------------------------------------
 
+// @orphan: COMDAT-folded 1-line __thiscall leaf (m_20*n); RTTI cannot attribute, no
+// caller xref (data-referenced/inlined), owning class unrecovered ("CDirectDrawMgr-area"
+// is a proximity guess, not evidence). Identity-recovery TODO for the final sweep.
 // ---------------------------------------------------------------------------
 // 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper). __thiscall,
 // one stack arg.
@@ -37,6 +40,7 @@ i32 B_1413c0::Scale(i32 n) {
 // ---------------------------------------------------------------------------
 // 0x1614b0 - `if(m_14) RezFree(m_14); m_14 = 0;` (CImageSet1-area buffer release).
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded buffer-release leaf (RezFree(m_14)); RTTI cannot attribute, no caller xref, owning class unrecovered.
 RVA(0x001614b0, 0x1c)
 void B_1614b0::Release() {
     if (m_14) {
@@ -45,26 +49,14 @@ void B_1614b0::Release() {
     m_14 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x137300 - SoundDevice getter: `if(!m_78) return 0; if(!Probe()) return 0;
-// return m_84;`. Probe (0x137260) is a __thiscall member, modeled no-body
-// (reloc-masked rel32).
-// ---------------------------------------------------------------------------
-RVA(0x00137300, 0x23)
-i32 SoundDevice::Get() {
-    if (!m_78) {
-        return 0;
-    }
-    if (!Probe()) {
-        return 0;
-    }
-    return m_84;
-}
+// (0x137300 SoundDevice::GetPrimary re-homed to src/Dsndmgr/DirectSoundMgr.cpp, next
+// to its CreatePrimaryBuffer @0x137260 / StartPrimary siblings.)
 
 // ---------------------------------------------------------------------------
 // 0x1433d0 - CDdObArray ordered compare: unsigned m_c then m_8, then m_54 as a
 // 0/1 result. __stdcall (callee-cleanup, 2 ptr args), no `this`.
 // ---------------------------------------------------------------------------
+// @orphan: __stdcall free compare predicate (no this); the sorted CDdObArray owner is unrecovered.
 RVA(0x001433d0, 0x4f)
 i32 __stdcall Compare_1433d0(DdOb_1433d0* a, DdOb_1433d0* b) {
     if (a->m_c > b->m_c) {
@@ -85,6 +77,7 @@ i32 __stdcall Compare_1433d0(DdOb_1433d0* a, DdOb_1433d0* b) {
 // ---------------------------------------------------------------------------
 // 0x1847a0 - trivial setter `m_70 = arg;`. __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded 1-line setter (m_70=v); no caller xref, owning class unrecovered.
 RVA(0x001847a0, 0xa)
 void B_1847a0::Set(i32 v) {
     m_70 = v;
@@ -93,6 +86,7 @@ void B_1847a0::Set(i32 v) {
 // ---------------------------------------------------------------------------
 // 0x17fc40 - `if(m_50) RezFree(m_50);` (no zero-out). __thiscall, 0 args.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded buffer-free leaf (RezFree(m_50)); owning class unrecovered.
 RVA(0x0017fc40, 0x11)
 void B_17fc40::Free() {
     if (m_50) {
@@ -104,6 +98,7 @@ void B_17fc40::Free() {
 // 0x184fb0 - __cdecl forward `G(0, a, b);` to 0x184fd0.
 // ---------------------------------------------------------------------------
 void Sub_184fd0(i32, i32, i32); // 0x184fd0, no body
+// @orphan: __cdecl 3-arg forward thunk to 0x184fd0; free function, no owning class.
 RVA(0x00184fb0, 0x15)
 void Fwd_184fb0(i32 a, i32 b) {
     Sub_184fd0(0, a, b);
@@ -113,6 +108,7 @@ void Fwd_184fb0(i32 a, i32 b) {
 // 0x134360 / 0x1346d0 - DirectInput device-config teardown: free the +0x2a0
 // buffer, then chain the base ReleaseDevices (0x1342b0). Two identical leaves.
 // ---------------------------------------------------------------------------
+// @deferred: attributed to a DirectInput device-config class (sibling of CDeviceConfigC::Free6d0 @0x1346d0); home needs +0x2a0/+0x2a4 + ReleaseBase(0x1342b0) modeled in DirectInputMgr2.h (and 0x134360 owner confirmed).
 RVA(0x00134360, 0x33)
 void DevCfg::Free360() {
     if (m_2a0) {
@@ -122,6 +118,7 @@ void DevCfg::Free360() {
     }
     ReleaseBase();
 }
+// @deferred: CDeviceConfigC::Free6d0 (DirectInputMgr2.cpp already decl-refs it); home needs +0x2a0/+0x2a4 + ReleaseBase(0x1342b0) modeled on the real class.
 RVA(0x001346d0, 0x33)
 void DevCfg::Free6d0() {
     if (m_2a0) {
@@ -135,6 +132,7 @@ void DevCfg::Free6d0() {
 // ---------------------------------------------------------------------------
 // 0x145e00 - parity test: returns (popcount(x) == 1). __cdecl, 1 arg.
 // ---------------------------------------------------------------------------
+// @orphan: __cdecl free popcount==1 helper; no owning class.
 RVA(0x00145e00, 0x26)
 i32 PopcountIsOne_145e00(i32 x) {
     i32 c = 0;
@@ -151,6 +149,7 @@ i32 PopcountIsOne_145e00(i32 x) {
 // ---------------------------------------------------------------------------
 // 0x1413b0 - manual-vtable dispatch `(*m_8->vtbl[0x80])(m_8, 0)`. __thiscall.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded manual-vtable dispatch leaf; owning class unrecovered.
 RVA(0x001413b0, 0xf)
 void Owner1413::Thunk() {
     m_8->Op(0);
@@ -160,6 +159,7 @@ void Owner1413::Thunk() {
 // CDdObArray mode-table search (m_4b8 = Entry*[], m_4bc = count).
 // 0x1434c0 FindIndex (exact 3-key match), 0x143470 FindLast (>= range match).
 // ---------------------------------------------------------------------------
+// @orphan: CDdObArray mode-table search; the array owner class is unrecovered (placeholder ModeArr).
 RVA(0x001434c0, 0x45)
 i32 ModeArr::FindIndex(i32 k0, i32 k1, i32 k2) {
     for (i32 i = 0; i < m_4bc; i++) {
@@ -170,6 +170,7 @@ i32 ModeArr::FindIndex(i32 k0, i32 k1, i32 k2) {
     }
     return -1;
 }
+// @orphan: CDdObArray mode-table range search; owner class unrecovered (placeholder ModeArr).
 RVA(0x00143470, 0x47)
 i32 ModeArr::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
@@ -186,6 +187,7 @@ i32 ModeArr::FindLast(u32 k0, u32 k1, i32 k2) {
 // 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` (CFileImage frame timing).
 // __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded frame-timing setter; owning class unrecovered (CFileImage-area is a proximity guess).
 RVA(0x0013dee0, 0x1b)
 void B_13dee0::Set(i32 v) {
     m_1c = v;
@@ -198,6 +200,7 @@ void B_13dee0::Set(i32 v) {
 // 0x13ee30 - COM wait-flip loop: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`.
 // IDirectDrawSurface-style manual vtable, slot 0x48. __thiscall.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded COM flip-wait leaf; owning surface-wrapper class unrecovered.
 RVA(0x0013ee30, 0x29)
 void B_13ee30::WaitFlip() {
     while (m_8->Flip(2) == 0x8876021c) {
@@ -208,6 +211,7 @@ void B_13ee30::WaitFlip() {
 // 0x151e70 - clear: zero m_10, release the +0x14 buffer (+ m_178), scalar-delete
 // the +0x18 object (vtbl slot 0, arg 1), zero m_170. __thiscall.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded clear leaf; owning class unrecovered.
 RVA(0x00151e70, 0x3b)
 void B_151e70::Clear() {
     m_10 = 0;
@@ -228,6 +232,7 @@ void B_151e70::Clear() {
 // scalar-deleted via vtbl slot 1 arg 1), then RemoveAll the +0x1dc array (0x1b5a0b).
 // __thiscall.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded list-clear leaf; owning class unrecovered.
 RVA(0x00166810, 0x32)
 void B_166810::Clear() {
     Node166810* n = m_head;
@@ -242,38 +247,21 @@ void B_166810::Clear() {
 }
 
 // ---------------------------------------------------------------------------
-// External rez helpers (reloc-masked rel32).
+// External rez helpers (reloc-masked rel32). (0x13c8a0 CRezItm::Scan re-homed to
+// src/Rez/RezMgr.cpp as a CRezItm method - vtable slot 6, confirmed by RTTI.)
 // ---------------------------------------------------------------------------
-extern "C" i32 RezItmProbe(void* h);  // 0x125b50
 extern "C" i32 RezDirLookup(void* h); // 0x18ccd0
 
 // ---------------------------------------------------------------------------
-// 0x13c8a0 - CRezItm scan retry loop: probe m_handle; if it yields, ask the
-// +0xc owner's vtbl[2] whether to keep retrying. __thiscall.
-// ---------------------------------------------------------------------------
-RVA(0x0013c8a0, 0x45)
-i32 RezItm::Scan() {
-    m_20 = -1;
-    if (m_handle) {
-        i32 found;
-        do {
-            if (RezItmProbe(m_handle) == 0) {
-                found = 1;
-            } else {
-                found = 0;
-                if (m_owner->v2() == 0) {
-                    return 0;
-                }
-            }
-        } while (!found);
-        return found;
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// 0x13c8f0 - CRezDir check: lookup m_10; if found return 1; else dispatch the
-// virtual slot 4 (m_14, m_18, 0) and normalize to bool. __thiscall.
+// 0x13c8f0 - CRezItm::Check (vtable slot 7, RTTI-confirmed: ~??_7CRezItm@@6B@+0x1c):
+// reset m_pos(+0x20), lookup m_fp(+0x10); if found return 1; else virtual-dispatch
+// this->Open (slot 4, +0x10 = readBuf/+0x14, readonly/+0x18, 0) and normalize to bool.
+// DEFERRED (not orphan): confirmed CRezItm slot-7 member, but its slot-4 self-virtual
+// call requires CRezItm's stream methods (Read/Write/Open/Close) to be real virtuals
+// in retail slot order (Slot00,dtor,Read,Write,Open,Close,Scan,Check) - a class-wide
+// vtable conversion of the matched rezmgr unit, larger than a leaf move. Home it when
+// CRezItm is converted to real virtuals (with Scan @0x13c8a0, already homed). Kept as
+// the RezDir view here so the slot-4 dispatch stays reproducible until then.
 // ---------------------------------------------------------------------------
 RVA(0x0013c8f0, 0x41)
 i32 RezDir::Check() {
@@ -298,6 +286,7 @@ i32 RezDir::Check() {
 // entry in ecx, while MSVC5 here swaps them (entry in edx), cascading into the
 // found-path field reads. No source spelling (index, hoisted-base, explicit
 // pointer-walk) flips the pair; logic complete.
+// @orphan: CDdObArray neighbour lookup (fwd); owner class unrecovered (placeholder ModeArr).
 RVA(0x00143510, 0x71)
 void ModeArr::FindFwd(Pair2* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
@@ -320,6 +309,7 @@ void ModeArr::FindFwd(Pair2* out, i32 k0, i32 k1, i32 k2) {
 // @early-stop
 // ~72.8% regalloc wall: same iterator/entry register swap as FindFwd (mirror,
 // descending scan). Logic complete.
+// @orphan: CDdObArray neighbour lookup (back); owner class unrecovered (placeholder ModeArr).
 RVA(0x00143590, 0x7e)
 void ModeArr::FindBack(Pair2* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
@@ -344,6 +334,7 @@ void ModeArr::FindBack(Pair2* out, i32 k0, i32 k1, i32 k2) {
 // 0x138f20 - DSound voice gate: if vtbl[8]() and !Helper(0x138f60), clear m_44
 // and dispatch vtbl[9](m_4c, m_48); return success. __thiscall.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded DSound voice-gate leaf; owning voice class unrecovered.
 RVA(0x00138f20, 0x3a)
 i32 Snd138f20::Gate() {
     if (!v8()) {
@@ -362,6 +353,7 @@ i32 Snd138f20::Gate() {
 // Flush(); return this. __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
+// @orphan: COMDAT-folded ButeMgr append leaf; owning class unrecovered.
 RVA(0x0016be60, 0x2a)
 C16be60* C16be60::Append(i32 arg) {
     if (Ready()) {
@@ -375,6 +367,7 @@ C16be60* C16be60::Append(i32 arg) {
 // 0x151d20 - notify a hooked callback: stash/replace m_7c->m_1c with arg, invoke
 // the +0x10 callback(this), restore m_1c if unchanged. __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
+// @orphan: COMDAT-folded callback-notify leaf; owning class unrecovered.
 RVA(0x00151d20, 0x3a)
 i32 B_151d20::Notify(void* arg) {
     Cb151d20* p = m_7c;
@@ -396,12 +389,14 @@ i32 B_151d20::Notify(void* arg) {
 // callee is reloc-masked.
 // ---------------------------------------------------------------------------
 extern CImageCache g_imageCache; // 0x653c88
+// @orphan: __cdecl global-teardown tail-forward (g_imageCache.RemoveAll); free fn, no owning class.
 RVA(0x0013e070, 0xa)
 void ClearImageCache_13e070() {
     g_imageCache.RemoveAll();
 }
 
 extern CDdObArray g_modeArray; // 0x683ec8
+// @orphan: __cdecl global-teardown tail-forward (g_modeArray.RemoveAll); free fn, no owning class.
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
     g_modeArray.RemoveAll();
@@ -412,6 +407,7 @@ void ClearModeArray_141c80() {
 // commit). 0x13e0a0 Apply copies the 0x6c-byte source block into m_10 then runs
 // the transform; 0x148cc0 / 0x148b50 forward into it.
 // ---------------------------------------------------------------------------
+// @orphan: AMBIGUOUS identity: DDSurface.h declares this RVA as CDDSurface::Init1 (slot 2) but the body models a Blk6c-transform Apply on a distinct object; the conflict is unresolved - do not force a guess.
 RVA(0x0013e0a0, 0x27)
 i32 ImgOwned::Apply(i32 mode, const void* src) {
     if (src) {
@@ -419,10 +415,12 @@ i32 ImgOwned::Apply(i32 mode, const void* src) {
     }
     return v8(mode);
 }
+// @orphan: forwards into 0x13e0a0 (ambiguous identity above); orphaned pending 0x13e0a0 resolution.
 RVA(0x00148cc0, 0x18)
 i32 ImgOwned::Forward(i32 a0, const void* a1) {
     return Apply(a0, a1) != 0;
 }
+// @orphan: forwards into 0x13e0a0 (ambiguous identity above); orphaned pending 0x13e0a0 resolution.
 RVA(0x00148b50, 0x2c)
 i32 ImgOwned::Commit(i32 a0, const void* a1) {
     if (Apply(a0, a1) == 0) {
@@ -432,32 +430,5 @@ i32 ImgOwned::Commit(i32 a0, const void* a1) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x13dec0 - millisecond frame-pacing busy-wait via the timeGetTime function
-// pointer global: spin until now passes start+ms (unsigned, overflow-guarded).
-// Reached __thiscall from RezMgr::UpdateClock (`mov ecx,esi(this); call`), NOT the
-// __stdcall free function Ghidra mislabeled (Delay_13dec0@@YG). Relabeled to the
-// __thiscall member (RezMgr::SpinWaitUntil) so UpdateClock's SpinWaitUntil call
-// reloc pairs with this definition (folds the placeholder symbol). `this` is unused
-// by the body (ecx ignored), so the emitted bytes are identical to the stdcall form;
-// the fn-ptr is cached in a callee-saved reg across the loop. Only a minimal RezMgr
-// view is declared here - the full RezMgr.h is /O2-sensitive when pulled into other
-// TUs, so it is not included.
-// ---------------------------------------------------------------------------
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // _g_pTimeGetTime @0x6c4650
-// @early-stop
-// ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
-// and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
-// them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
-// flips the esi/edi pair; logic complete.
-RVA(0x0013dec0, 0x20)
-void RezMgr::SpinWaitUntil(i32 ms) {
-    u32(WINAPI * fn)() = g_pTimeGetTime;
-    u32 now = fn();
-    u32 end = now + (u32)ms;
-    if (now <= end) {
-        do {
-            now = fn();
-        } while (now <= end);
-    }
-}
+// (0x13dec0 RezMgr::SpinWaitUntil re-homed to src/Rez/RezMgr.cpp, right after its sole
+// caller RezMgr::UpdateClock @0x13ddc0 - the ms frame-pacing busy-wait.)

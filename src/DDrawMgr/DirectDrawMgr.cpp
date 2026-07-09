@@ -135,6 +135,26 @@ i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
     return 0;
 }
 
+// CDDSurface::Restore (__thiscall, 0x13e7d0, re-homed from src/Stub/BoundaryUpper2.cpp):
+// color-fill the dstRect region with `fillColor` via a DDBLT_COLORFILL Blt (BltEx). The
+// stack DDBLTFX is zeroed (dwSize=0x64, dwFillColor=fillColor); reports a non-zero
+// HRESULT through GetErrorString. Guarded on a non-null rect; returns 1 on success.
+RVA(0x0013e7d0, 0x73)
+i32 CDDSurface::Restore(void* dstRect, i32 fillColor) {
+    if (dstRect == 0) {
+        return 0;
+    }
+    DDBLTFX fx;
+    memset(&fx, 0, sizeof(fx));
+    fx.dwSize = sizeof(DDBLTFX);
+    fx.dwFillColor = fillColor;
+    i32 hr = BltEx(dstRect, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
+    if (hr) {
+        CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x26d, hr);
+    }
+    return hr == 0;
+}
+
 // CDDSurface::Flip (__thiscall). Flip(target->m_8, 1); SURFACELOST retry.
 RVA(0x0013e850, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
@@ -438,12 +458,24 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     if (detailed == 0) {
         i32 depth = 0;
         switch (desc->ddpfPixelFormat.dwRGBBitCount) {
-            case DDBD_32: depth = 32; break;
-            case DDBD_16: depth = 16; break;
-            case DDBD_8: depth = 8; break;
-            case DDBD_4: depth = 4; break;
-            case DDBD_2: depth = 2; break;
-            case DDBD_1: depth = 1; break;
+            case DDBD_32:
+                depth = 32;
+                break;
+            case DDBD_16:
+                depth = 16;
+                break;
+            case DDBD_8:
+                depth = 8;
+                break;
+            case DDBD_4:
+                depth = 4;
+                break;
+            case DDBD_2:
+                depth = 2;
+                break;
+            case DDBD_1:
+                depth = 1;
+                break;
         }
         DDrawLogLine(
             "Surface: width = %i, height = %i, depth = %i, pitch = %i\n",
@@ -459,12 +491,24 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 colorKey = GetColorKey();
     i32 depth = 0;
     switch (desc->ddpfPixelFormat.dwRGBBitCount) {
-        case DDBD_32: depth = 32; break;
-        case DDBD_16: depth = 16; break;
-        case DDBD_8: depth = 8; break;
-        case DDBD_4: depth = 4; break;
-        case DDBD_2: depth = 2; break;
-        case DDBD_1: depth = 1; break;
+        case DDBD_32:
+            depth = 32;
+            break;
+        case DDBD_16:
+            depth = 16;
+            break;
+        case DDBD_8:
+            depth = 8;
+            break;
+        case DDBD_4:
+            depth = 4;
+            break;
+        case DDBD_2:
+            depth = 2;
+            break;
+        case DDBD_1:
+            depth = 1;
+            break;
     }
     DDrawLogLine("Surface Information for surface pointer %p:\n", this);
     DDrawLogLine(
@@ -489,13 +533,27 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     if (zbuf != 0) {
         char* name;
         switch (desc->dwZBufferBitDepth) {
-            case DDBD_32: name = "DDBD_32"; break;
-            case DDBD_16: name = "DDBD_16"; break;
-            case DDBD_8: name = "DDBD_8"; break;
-            case DDBD_4: name = "DDBD_4"; break;
-            case DDBD_2: name = "DDBD_2"; break;
-            case DDBD_1: name = "DDBD_1"; break;
-            default: name = "Unknown"; break;
+            case DDBD_32:
+                name = "DDBD_32";
+                break;
+            case DDBD_16:
+                name = "DDBD_16";
+                break;
+            case DDBD_8:
+                name = "DDBD_8";
+                break;
+            case DDBD_4:
+                name = "DDBD_4";
+                break;
+            case DDBD_2:
+                name = "DDBD_2";
+                break;
+            case DDBD_1:
+                name = "DDBD_1";
+                break;
+            default:
+                name = "Unknown";
+                break;
         }
         char buf[32];
         strcpy(buf, name);
@@ -561,8 +619,12 @@ extern "C" void RezFree(void* p);             // 0x1b9b82
 // call edi`) REGRESSED it 65->62 - proving the cascade is not source-steerable. Banked
 // for the final sweep.
 RVA(0x0013f020, 0x43f)
-i32 CDDSurface::ShadeBlt(struct tagRECT* dstRect, CDDSurface* src, struct tagRECT* srcRect,
-                         i32 shade) {
+i32 CDDSurface::ShadeBlt(
+    struct tagRECT* dstRect,
+    CDDSurface* src,
+    struct tagRECT* srcRect,
+    i32 shade
+) {
     RECT dr, sr;
     g_pCopyRect(&dr, dstRect);
     g_pCopyRect(&sr, srcRect);
@@ -1157,8 +1219,8 @@ i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
 // on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
 // on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).
 RVA(0x00143880, 0x3b)
-i32 __stdcall CreateDirectDrawVia(void* ctx, i32 a1, i32 a2,
-                                  IDirectDraw2*(__cdecl* factory)(void*, i32, i32)) {
+i32 __stdcall
+CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32)) {
     if (factory != 0) {
         IDirectDraw2* dd = factory(ctx, a1, a2);
         if (dd != 0) {

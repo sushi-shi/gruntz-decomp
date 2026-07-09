@@ -848,6 +848,21 @@ i32 SoundDevice::CreatePrimaryBuffer() {
 }
 
 // ---------------------------------------------------------------------------
+// GetPrimary (0x137300, re-homed from src/Stub/BoundaryUpper.cpp): gated on init,
+// lazily (re)create the primary buffer, then return it. The device-getter sibling of
+// StartPrimary/CreatePrimaryBuffer.
+RVA(0x00137300, 0x23)
+IDirectSoundBuffer* SoundDevice::GetPrimary() {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (CreatePrimaryBuffer() == 0) {
+        return 0;
+    }
+    return m_primaryBuffer;
+}
+
+// ---------------------------------------------------------------------------
 // 0x138120 - set the four GetErrorString reporting-mode flags (log / message-box /
 // beep / third) from the four args. __cdecl free helper (sibling of DDraw's / DInput's).
 RVA(0x00138120, 0x27)

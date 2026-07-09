@@ -57,12 +57,13 @@ public:
     void Shutdown();        // 0x136690  release every owned buffer, primary, device
     void RemoveBuffer(DirectSoundMgr* node); // 0x136d80  reap voices + release + unlink one buffer
     void StopAll();                          // 0x136de0  StopAndRewind+StopAllClones over the list
-    i32 FreeSamples();               // 0x136ed0  free + unlink every cached voice (+0x0c list)
-    i32 SetPrimaryFormat(void* fmt); // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
-                                     // fmt is an opaque WAVEFORMATEX buffer (callers pass their
-                                     // own pointer type), so it stays void*.
-    i32 StartPrimary();              // 0x137200  (extern) reads +0x78/+0x84, primary
-    i32 CreatePrimaryBuffer();       // 0x137260  (extern, defined elsewhere)
+    i32 FreeSamples();                // 0x136ed0  free + unlink every cached voice (+0x0c list)
+    i32 SetPrimaryFormat(void* fmt);  // 0x1371a0  CreatePrimaryBuffer + primary SetFormat; the
+                                      // fmt is an opaque WAVEFORMATEX buffer (callers pass their
+                                      // own pointer type), so it stays void*.
+    i32 StartPrimary();               // 0x137200  (extern) reads +0x78/+0x84, primary
+    i32 CreatePrimaryBuffer();        // 0x137260  (extern, defined elsewhere)
+    IDirectSoundBuffer* GetPrimary(); // 0x137300  ensure (lazily create) + return primary
     DirectSoundMgr* CreateBuffer(
         WaveFormatX* fmt,
         u32 bytes,

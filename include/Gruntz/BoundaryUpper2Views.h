@@ -149,19 +149,9 @@ SIZE_UNKNOWN(CPageStore17b510);
 // 0x137200 - SoundDevice::StartPrimary: RE-HOMED to the directsoundmgr unit
 // (src/Dsndmgr/DirectSoundMgr.cpp, real SoundDevice in SoundDevice.h).
 
-// 0x13e7d0 - CDDSurface restore (build a 0x64-byte descriptor + restore helper).
-struct RestoreDesc {
-    i32 size; // +0x00
-    i32 _4[(0x50 - 0x4) / 4];
-    i32 m_50; // +0x50
-    i32 _54[(0x64 - 0x54) / 4];
-};
-SIZE_UNKNOWN(RestoreDesc);
-struct CDDSurface {
-    i32 Restore(void* arg1, i32 arg2);
-    i32 H(void* a, i32 b, i32 c, i32 flags, RestoreDesc* d); // 0x13eef0
-};
-SIZE_UNKNOWN(CDDSurface);
+// (0x13e7d0 CDDSurface::Restore re-homed to src/DDrawMgr/DirectDrawMgr.cpp; the
+// RestoreDesc/CDDSurface views dissolved onto the real CDDSurface (DDSurface.h) +
+// the real DDBLTFX.)
 
 // (CDDPalette / CDDrawPtrCollections factory views dissolved: Create @0x143040
 // re-homed to src/DDrawMgr/DDrawPtrCollections.cpp onto the canonical classes.)

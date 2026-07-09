@@ -148,6 +148,12 @@ public:
     // (vtable slot 5)
     i32 Close();
 
+    // Poll the FILE* for a readable byte, retrying through the owner's Retry() gate
+    // (0x13c8a0, vtable slot 6). Resets the position cursor first; returns 1 once a
+    // byte is available, 0 if no FILE* or the gate gave up. Non-virtual here (the real
+    // slot is filled by the reloc-masked cl vtable; the body dispatches through it).
+    i32 Scan();
+
     // (Re)open the FILE* with an fopen mode picked from the readonly/write flags
     // (write+readonly is rejected), recovering through the owner's Retry() gate;
     // stashes the readonly flag in m_18 and a RezAlloc'd copy of the filename in

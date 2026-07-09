@@ -40,16 +40,8 @@ struct B_1614b0 {
 };
 SIZE_UNKNOWN(B_1614b0);
 
-// 0x137300 - SoundDevice getter (Probe @0x137260, reloc-masked).
-struct SoundDevice {
-    char _0[0x78];
-    void* m_78; // 0x78
-    char _7c[0x84 - 0x7c];
-    i32 m_84;    // 0x84
-    i32 Probe(); // 0x137260
-    i32 Get();
-};
-SIZE_UNKNOWN(SoundDevice);
+// (0x137300 SoundDevice::GetPrimary re-homed to src/Dsndmgr/DirectSoundMgr.cpp;
+// SoundDevice view dissolved onto the canonical <Dsndmgr/SoundDevice.h>.)
 
 // 0x1433d0 - CDdObArray ordered compare (unsigned m_c then m_8, then m_54 0/1).
 struct DdOb_1433d0 {
@@ -233,22 +225,8 @@ struct B_166810 {
 };
 SIZE_UNKNOWN(B_166810);
 
-// 0x13c8a0 - CRezItm scan retry loop.
-struct RezOwner {
-    virtual void v0();
-    virtual void v1();
-    virtual i32 v2(); // slot 2 (+8)
-};
-SIZE_UNKNOWN(RezOwner);
-struct RezItm {
-    char _0[0xc];
-    RezOwner* m_owner; // 0xc
-    void* m_handle;    // 0x10  resource handle (RezItmProbe)
-    char _14[0x20 - 0x14];
-    i32 m_20; // 0x20
-    i32 Scan();
-};
-SIZE_UNKNOWN(RezItm);
+// (0x13c8a0 CRezItm::Scan re-homed to src/Rez/RezMgr.cpp; RezItm/RezOwner views
+// dissolved onto CRezItm/CRezItmOwner.)
 
 // 0x13c8f0 - CRezDir check (lookup m_10, else dispatch virtual slot 4).
 struct RezDir {
@@ -350,12 +328,7 @@ struct ImgOwned {
 };
 SIZE_UNKNOWN(ImgOwned);
 
-// 0x13dec0 - millisecond frame-pacing busy-wait via the timeGetTime fn-ptr global.
-// Minimal RezMgr view (the full RezMgr.h is /O2-sensitive in other TUs).
-class RezMgr {
-public:
-    void SpinWaitUntil(i32 ms); // 0x13dec0
-};
+// (0x13dec0 RezMgr::SpinWaitUntil re-homed to src/Rez/RezMgr.cpp; RezMgr view dissolved.)
 
 // --- vtable catalog ---
 

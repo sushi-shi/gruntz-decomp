@@ -243,6 +243,36 @@ i32 CRezItm::Close() {
     return ok;
 }
 
+// The FILE*-readable probe (0x125b50): returns 0 when a byte is available (the loop
+// keeps retrying while it reports "not ready"). Statically-linked CRT helper; external
+// no-body so the `call rel32` displacement is reloc-masked. __cdecl, arg on the stack.
+extern "C" i32 RezItmProbe(void* fp); // 0x125b50
+
+// ---------------------------------------------------------------------------
+// CRezItm::Scan()  (vtable slot 6; re-homed from src/Stub/BoundaryUpper.cpp)
+// Reset the position cursor, then (if a FILE* is open) poll the stream until a byte
+// is readable, retrying through the owner's Retry() gate. Returns 1 once ready, 0 if
+// no FILE* or the gate gave up.
+RVA(0x0013c8a0, 0x45)
+i32 CRezItm::Scan() {
+    m_pos = -1;
+    if (m_fp) {
+        i32 found;
+        do {
+            if (RezItmProbe(m_fp) == 0) {
+                found = 1;
+            } else {
+                found = 0;
+                if (m_parent->Retry() == 0) {
+                    return 0;
+                }
+            }
+        } while (!found);
+        return found;
+    }
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // CRezDir::CRezDir(parent, rezMgr)
 // Base ctor, then the two embedded child-collection list members auto-construct
@@ -645,6 +675,28 @@ i32 RezMgr::UpdateClock() {
         InitTimeFields(0);
     }
     return 1;
+}
+
+// -------------------------------------------------------------------------
+// RezMgr::SpinWaitUntil(ms) (0x13dec0; re-homed from src/Stub/BoundaryUpper.cpp) -
+// the ms frame-pacing busy-wait UpdateClock calls: sample timeGetTime through the
+// game-owned fn-ptr and spin until `now` passes `start + ms` (unsigned, overflow-
+// guarded). `this` is unused (ecx ignored); the fn-ptr is cached in a callee-save.
+// @early-stop
+// ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
+// and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
+// them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
+// flips the esi/edi pair; logic complete.
+RVA(0x0013dec0, 0x20)
+void RezMgr::SpinWaitUntil(i32 ms) {
+    u32(WINAPI * fn)() = g_pTimeGetTime;
+    u32 now = fn();
+    u32 end = now + (u32)ms;
+    if (now <= end) {
+        do {
+            now = fn();
+        } while (now <= end);
+    }
 }
 
 // -------------------------------------------------------------------------
