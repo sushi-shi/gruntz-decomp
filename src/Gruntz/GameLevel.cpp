@@ -2812,6 +2812,457 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     return 1;
 }
 
+// ===========================================================================
+// Level-management + tile-scan cluster (reconstructed from the CGameLevel .text
+// block; RVA-adjacent to the LoadWwd/plane methods above). All are __thiscall
+// (this=level), indirect-dispatch helpers (no rel32 caller). The tile-scan
+// members drive the same inlined PROBE_TILE tile probe as the move steppers.
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// ReadImageSets (@0x15d790): the image-set descriptor loop (LoadWwd step 7). For
+// each of the dir[2] records, ReadImageSet(cursor) builds a CImageSet variant,
+// SetAtGrow it into m_imageSets, and advance the cursor by the record's GetStride.
+// Returns the count read; -1 on a null cursor/dir or a failed record.
+RVA(0x0015d790, 0x8b)
+i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
+    if (cursor == 0) {
+        return -1;
+    }
+    if (dir == 0) {
+        return -1;
+    }
+    i32 n = 0;
+    for (i32 i = 0; (u32)i < dir[2]; i++) {
+        CImageSet* set = ReadImageSet(cursor);
+        if (set == 0) {
+            return -1;
+        }
+        n++;
+        cursor += set->GetStride();
+        m_imageSets.SetAtGrow(i, (DWORD)set);
+    }
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// RemovePlane (@0x15db30): delete the plane at `index` (scalar-deleting dtor +
+// CDWordArray::RemoveAt). If it was the MAIN plane, promote the last remaining
+// plane: clear every plane's MAIN bit, then set m_mainIndex/m_mainPlane to the
+// last plane and stamp its MAIN bit. 0 on an invalid index/null plane, else 1.
+RVA(0x0015db30, 0xae)
+i32 CGameLevel::RemovePlane(i32 index) {
+    CLevelPlane* p = (index >= 0 && index < m_planes.GetSize()) ? (CLevelPlane*)m_planes[index] : 0;
+    if (p == 0) {
+        return 0;
+    }
+    i32 wasMain = p->m_flags & 1;
+    p->dtor(1);
+    m_planes.RemoveAt(index, 1);
+    if (wasMain) {
+        i32 last = m_planes.GetSize() - 1;
+        CLevelPlane* lp =
+            (last >= 0 && last < m_planes.GetSize()) ? (CLevelPlane*)m_planes[last] : 0;
+        if (lp != 0) {
+            m_mainIndex = -1;
+            m_mainPlane = 0;
+            for (i32 i = 0; i < m_planes.GetSize(); i++) {
+                ((CLevelPlane*)m_planes[i])->m_flags &= ~1;
+            }
+            m_mainIndex = last;
+            m_mainPlane = lp;
+            lp->m_flags |= 1;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ScanSpanTop (@0x15e9c0): scan the object's top-edge span [extentL+x, extentR+x]
+// at row (extentT+y), stepping the column by m_strideX (always hitting the far
+// column). A soft (1) tile means blocked -> return the object's current m_screenY;
+// a clear span returns the proposed row y. (4th arg unused.)
+//
+// @early-stop
+// register-scheduling wall: same 4-saved-reg PROBE_TILE-shape entropy as the
+// StepAxis siblings (the spilled this/fixedY/hiX slots and the strided step); logic
+// + offsets + CFG + the probe dispatch are exact. Deferred to the final sweep.
+RVA(0x0015e9c0, 0x139)
+i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
+    i32 fixedY = t->m_extentT + y;
+    i32 hiX = t->m_extentR + x;
+    i32 col = t->m_extentL + x;
+    if (col > hiX) {
+        return y;
+    }
+    do {
+        i32 result;
+        PROBE_TILE(this, col, fixedY, result);
+        if (result == kTileSoft) {
+            return t->m_screenY;
+        }
+        if (col == hiX) {
+            col++;
+        } else {
+            col += t->m_strideX;
+        }
+    } while (col <= hiX);
+    return y;
+}
+
+// ---------------------------------------------------------------------------
+// SnapFloorDown (@0x15f090): scan the tile column at x downward from y to
+// (m_screenY + m_extentB) while the tiles stay soft (1/2); the first non-soft
+// tile commits *out = row - m_extentB and returns 1. An exhausted scan returns 0.
+//
+// @early-stop
+// register-scheduling wall: PROBE_TILE-shape spill/register entropy (this/limit/row
+// slots); logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015f090, 0x127)
+i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
+    i32 limit = t->m_screenY + t->m_extentB;
+    for (i32 row = y; row >= limit; row--) {
+        i32 result;
+        PROBE_TILE(this, x, row, result);
+        if (result != kTileSoft && result != kTileSoft2) {
+            *out = row - t->m_extentB;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// SnapCeilUp (@0x15f340): the mirror of SnapFloorDown scanning upward from y to
+// (m_screenY + m_extentT - 1) while tiles stay soft (1); the first non-soft tile
+// commits *out = row - m_extentT and returns 1. An exhausted scan returns 0.
+//
+// @early-stop
+// register-scheduling wall: PROBE_TILE-shape spill/register entropy; logic +
+// offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015f340, 0x124)
+i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
+    i32 limit = t->m_screenY + t->m_extentT - 1;
+    for (i32 row = y; row <= limit; row++) {
+        i32 result;
+        PROBE_TILE(this, x, row, result);
+        if (result != kTileSoft) {
+            *out = row - t->m_extentT;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ResolveMoveDown (@0x15f610): AdvanceA the cursor, gate the head/foot rows via
+// AxisProbe, then run a downward SpanCheck-style scan (from m_screenY+m_extentB+1
+// down to headRow) for the first non-hard tile; on a hit past the cursor it turns
+// the object mode 1 and re-bases the cursor. Returns the resolved cursor.
+//
+// @early-stop
+// register-scheduling wall: AdvanceA + two AxisProbe calls + the inlined span scan
+// pin the saved regs / spilled cursor & bound slots in an order MSVC reproduces only
+// for one allocation; logic + offsets + CFG + conventions exact. Deferred.
+RVA(0x0015f610, 0x191)
+i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
+    i32 cursor = AdvanceA(t, x, y, flags);
+    i32 headRow = t->m_extentB + cursor + 1;
+    i32 footRow = t->m_extentT + cursor - 1;
+    if (AxisProbe(x, footRow) == kTileHard) {
+        return cursor;
+    }
+    if (AxisProbe(x, headRow) == kTileHard) {
+        return cursor;
+    }
+    i32 b = t->m_screenY + t->m_extentB + 1;
+    if (b > headRow) {
+        i32 cur = b - 1;
+        if (cur >= headRow) {
+            do {
+                i32 result;
+                PROBE_TILE(this, x, cur, result);
+                if (result != kTileHard) {
+                    if (cur + 1 > cursor) {
+                        t->m_moveMode = 1;
+                        cursor = cur + 1 - t->m_extentB - 1;
+                    }
+                    return cursor;
+                }
+                --cur;
+            } while (cur >= headRow);
+        }
+    }
+    return cursor;
+}
+
+// ---------------------------------------------------------------------------
+// ResolveMoveUp (@0x15f7b0): AdvanceB the cursor; unless the object already turned
+// mode 1, if neither the foot row (inlined probe) nor the head row (AxisProbe) is
+// hard, turn the object mode 4. Returns the cursor.
+//
+// @early-stop
+// register-scheduling wall: the conditional ebp-push (mode-1 fast path) + mixed
+// inline-probe/AxisProbe-call schedule pins the spill slots in an order MSVC only
+// reproduces for one allocation; logic + offsets + CFG exact. Deferred.
+RVA(0x0015f7b0, 0x11f)
+i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
+    i32 cursor = AdvanceB(t, x, y, flags);
+    if (t->m_moveMode != 1) {
+        i32 headRow = t->m_extentB + cursor + 1;
+        i32 footRow = t->m_extentT + cursor - 1;
+        i32 result;
+        PROBE_TILE(this, x, footRow, result);
+        if (result != kTileHard) {
+            if (AxisProbe(x, headRow) != kTileHard) {
+                t->m_moveMode = 4;
+            }
+        }
+    }
+    return cursor;
+}
+
+// ---------------------------------------------------------------------------
+// StepGroundDown (@0x15f9f0): probe the foot row (m_extentB+y+2) at x; a hard tile
+// returns 1 (with, when arg flags bit4 set, a ClampSpan re-bracket writing the span
+// midpoint into *out). A non-hard tile returns 0.
+//
+// @early-stop
+// register-scheduling wall: the inlined PROBE_TILE + ClampSpan bracket + signed-halve
+// pin the spill slots; logic + offsets + CFG + the ClampSpan convention exact. Deferred.
+RVA(0x0015f9f0, 0x11a)
+i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
+    i32 probeY = t->m_extentB + y + 2;
+    i32 result;
+    PROBE_TILE(this, x, probeY, result);
+    if (result != kTileHard) {
+        return 0;
+    }
+    if (flags & 0x10) {
+        i32 lo = x, hi = x;
+        *out = x;
+        if (ClampSpan(x, probeY, &lo, &hi) != 0) {
+            *out = (lo + hi) / 2;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StepGroundUp (@0x15fb10): the mirror of StepGroundDown, probing the head row
+// (m_extentT+y-1) at x. Same hard-tile / ClampSpan-midpoint behaviour.
+//
+// @early-stop
+// register-scheduling wall: same PROBE_TILE + ClampSpan shape as StepGroundDown;
+// logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015fb10, 0x119)
+i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
+    i32 probeY = t->m_extentT + y - 1;
+    i32 result;
+    PROBE_TILE(this, x, probeY, result);
+    if (result != kTileHard) {
+        return 0;
+    }
+    if (flags & 0x10) {
+        i32 lo = x, hi = x;
+        *out = x;
+        if (ClampSpan(x, probeY, &lo, &hi) != 0) {
+            *out = (lo + hi) / 2;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ProbeStepEdge (@0x15fc30): returns 1 iff the tile at (x, y) is hard AND the tile
+// one row above (x, y-1) is NOT hard - a wall with clear space above it (a step edge).
+//
+// @early-stop
+// register-scheduling wall: two inlined PROBE_TILE copies pin the spilled this/x/y
+// slots; logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x0015fc30, 0x17f)
+i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
+    i32 r1;
+    PROBE_TILE(this, x, y, r1);
+    if (r1 != kTileHard) {
+        return 0;
+    }
+    i32 r2;
+    PROBE_TILE(this, x, y - 1, r2);
+    return r2 != kTileHard;
+}
+
+// ---------------------------------------------------------------------------
+// ProbeFootSoft (@0x160080): probe the tile at the object's foot (m_screenX+dx,
+// m_screenY+m_extentB+1); returns 1 if it is soft (1 or 2), else 0. (The retail
+// re-probes the same tile per compare - two inlined copies.)
+//
+// @early-stop
+// register-scheduling wall: the twin inlined PROBE_TILE copies pin the spill slots;
+// logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x00160080, 0x187)
+i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
+    i32 row = t->m_screenY + t->m_extentB + 1;
+    i32 r1;
+    PROBE_TILE(this, dx + t->m_screenX, row, r1);
+    if (r1 == kTileSoft) {
+        return 1;
+    }
+    i32 r2;
+    PROBE_TILE(this, dx + t->m_screenX, row, r2);
+    if (r2 == kTileSoft2) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ProbeFootBlocked (@0x160210): like ProbeFootSoft but returns 1 if the foot tile
+// is any blocking kind (soft 1, soft2 2, or hard 3), else 0. Three inlined probes.
+//
+// @early-stop
+// register-scheduling wall: three inlined PROBE_TILE copies pin the spill slots;
+// logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x00160210, 0x234)
+i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
+    i32 row = t->m_screenY + t->m_extentB + 1;
+    i32 r1;
+    PROBE_TILE(this, dx + t->m_screenX, row, r1);
+    if (r1 == kTileSoft) {
+        return 1;
+    }
+    i32 r2;
+    PROBE_TILE(this, dx + t->m_screenX, row, r2);
+    if (r2 == kTileSoft2) {
+        return 1;
+    }
+    i32 r3;
+    PROBE_TILE(this, dx + t->m_screenX, row, r3);
+    if (r3 == kTileHard) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ScanRowSpan (@0x160c50): scan the tile row y from column x0 toward x1 (stepping
+// +/- step by direction) - any soft (1) tile returns 0; then probe the end column
+// x1 and return whether it is non-soft. A pure tile-line clearance test.
+//
+// @early-stop
+// register-scheduling wall: the bidirectional scan + final probe pin the PROBE_TILE
+// spill slots; logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x00160c50, 0x289)
+i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
+    if (x1 > x0) {
+        for (i32 col = x0; col <= x1; col += step) {
+            i32 r;
+            PROBE_TILE(this, col, y, r);
+            if (r == kTileSoft) {
+                return 0;
+            }
+        }
+    } else {
+        for (i32 col = x0; col >= x1; col -= step) {
+            i32 r;
+            PROBE_TILE(this, col, y, r);
+            if (r == kTileSoft) {
+                return 0;
+            }
+        }
+    }
+    i32 rf;
+    PROBE_TILE(this, x1, y, rf);
+    return rf != kTileSoft;
+}
+
+// ===========================================================================
+// The four wall-slide coordinate resolvers (@0x167a20..0x167d80). Each scans one
+// axis in one direction from a desired coord toward the object's per-side extent
+// limit for the nearest passable (0) tile, returning that tile's coord converted
+// back to the object's screen space (coord - extent) - or the object's current
+// screen coord when no passable tile is found before the limit. A tight single
+// inlined-PROBE_TILE loop.
+// ===========================================================================
+
+// @early-stop
+// register-scheduling wall: the single inlined PROBE_TILE per iteration pins the
+// spilled this/limit/col slots (same PROBE_TILE-shape entropy as ProbeColumn);
+// logic + offsets + CFG exact. Deferred to the final sweep.
+RVA(0x00167a20, 0x11b)
+i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
+    i32 limit = t->m_screenX + t->m_extentR;
+    i32 col = x - 1;
+    if (col > limit) {
+        do {
+            i32 result;
+            PROBE_TILE(this, col, y, result);
+            if (result == kTilePassable) {
+                return col - t->m_extentR;
+            }
+            col--;
+        } while (col > limit);
+    }
+    return t->m_screenX;
+}
+
+// @early-stop
+// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+RVA(0x00167b40, 0x11b)
+i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
+    i32 limit = t->m_screenX + t->m_extentL;
+    i32 col = x + 1;
+    if (col < limit) {
+        do {
+            i32 result;
+            PROBE_TILE(this, col, y, result);
+            if (result == kTilePassable) {
+                return col - t->m_extentL;
+            }
+            col++;
+        } while (col < limit);
+    }
+    return t->m_screenX;
+}
+
+// @early-stop
+// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+RVA(0x00167c60, 0x11b)
+i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
+    i32 limit = t->m_screenY + t->m_extentB;
+    i32 row = y - 1;
+    if (row > limit) {
+        do {
+            i32 result;
+            PROBE_TILE(this, x, row, result);
+            if (result == kTilePassable) {
+                return row - t->m_extentB;
+            }
+            row--;
+        } while (row > limit);
+    }
+    return t->m_screenY;
+}
+
+// @early-stop
+// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+RVA(0x00167d80, 0x11b)
+i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
+    i32 limit = t->m_screenY + t->m_extentT;
+    i32 row = y + 1;
+    if (row < limit) {
+        do {
+            i32 result;
+            PROBE_TILE(this, x, row, result);
+            if (result == kTilePassable) {
+                return row - t->m_extentT;
+            }
+            row++;
+        } while (row < limit);
+    }
+    return t->m_screenY;
+}
+
 // --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /
 // g_imageSet1/2/3Vtbl manual stamps + vtbl-placeholders placeholders). cl now emits
 // each ??_7 (18 slots), matched slots pointing at the real methods (RVA-bound), the

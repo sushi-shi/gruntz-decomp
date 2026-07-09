@@ -348,6 +348,38 @@ private:
     // (@0x15fe40). Matched in GameLevel.cpp.
     i32 AltStepValidate(CGameObject* t, CGameObject* payload, i32 a1, i32 a2, i32* outY, i32 a3);
 
+    // --- the level-management + tile-scan cluster (all reconstructed from the
+    // CGameLevel .text block; indirect-dispatch helpers, no rel32 callers). ------
+    // ReadImageSets: append `dir[2]` image-set records from the WWD tile-description
+    // cursor into m_imageSets (ReadImageSet per record, advancing by GetStride);
+    // returns the count read, or -1 on a null arg / a failed record. (@0x15d790)
+    i32 ReadImageSets(const u32* dir, char* cursor);
+    // RemovePlane: delete + array-remove the plane at `index`; when it was the MAIN
+    // plane, promote the last remaining plane (clear every plane's MAIN bit, set the
+    // last one). 0 on an invalid index, else 1. (@0x15db30)
+    i32 RemovePlane(i32 index);
+
+    // The tile-scan collision resolvers (this=level, the moving CGameObject passed
+    // explicitly). Each drives the inlined tile probe (PROBE_TILE == AxisProbe) over
+    // a span/column of the main plane; roles named from how the scan branches.
+    i32 ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused);             // @0x15e9c0
+    i32 SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out);             // @0x15f090
+    i32 SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out);                // @0x15f340
+    i32 ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags);          // @0x15f610
+    i32 ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags);            // @0x15f7b0
+    i32 StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags); // @0x15f9f0
+    i32 StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags);   // @0x15fb10
+    i32 ProbeStepEdge(i32 x, i32 y);                                       // @0x15fc30
+    i32 ProbeFootSoft(CGameObject* t, i32 dx);                             // @0x160080
+    i32 ProbeFootBlocked(CGameObject* t, i32 dx);                          // @0x160210
+    i32 ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step);                      // @0x160c50
+    // The four wall-slide coordinate resolvers: scan one direction from a desired
+    // coord toward the object's per-side extent limit for the nearest passable tile.
+    i32 ResolveRightX(CGameObject* t, i32 x, i32 y);  // @0x167a20  (extentR, X down)
+    i32 ResolveLeftX(CGameObject* t, i32 x, i32 y);   // @0x167b40  (extentL, X up)
+    i32 ResolveBottomY(CGameObject* t, i32 x, i32 y); // @0x167c60  (extentB, Y down)
+    i32 ResolveTopY(CGameObject* t, i32 x, i32 y);    // @0x167d80  (extentT, Y up)
+
 public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
     // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
