@@ -8,8 +8,12 @@
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialArchive.h>        // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>         // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/AniAdvanceCursor.h>     // CAniAdvanceCursor (m_38+0x1a0 sink; Advance_15c360)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+
+// The per-frame draw-delta mirror (_g_6bf3bc @0x6bf3bc) AdvanceAnim hands the anim sink.
+extern "C" u32 g_6bf3bc;
 // LightFx.cpp - the "LightFx" tile-logic game object (C:\Proj\Gruntz), a
 // CUserLogic leaf (ctor 0x9cf00; RTTI .?AVCUserLogic@@). Two leaf methods are
 // reconstructed here, in ascending retail-RVA order:
@@ -255,6 +259,22 @@ RVA(0x0009d770, 0x25)
 i32 CLightFx::RebindNode() {
     m_prevAnimSetNode = m_objAux->m_1c;
     m_objAux->m_1c = g_buteTree.Find("A");
+    return 0;
+}
+
+// ===========================================================================
+// CLightFx::AdvanceAnim  (0x9d7b0)  - the per-frame handler PMF: advance the bound
+// object's animation sink (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc), then -
+// if the sink is active (m_1c8) but idle (!m_1c0) and anchorB is latched - set the
+// bound object's "advance" flag (m_flags |= 0x10000). Returns 0. Same sink archetype as
+// CEyeCandyAni::AdvanceAnim.
+// ===========================================================================
+RVA(0x0009d7b0, 0x40)
+i32 CLightFx::AdvanceAnim() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    if (m_38->m_1c8 && !m_38->m_1c0 && m_anchorB) {
+        m_38->m_flags |= 0x10000;
+    }
     return 0;
 }
 

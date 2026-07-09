@@ -17,6 +17,7 @@ public:
     i32 AddItem(const char* str, i32 type, i32 data);
     void Scroll(i32 delta);
     i32 TypeChar(i32 ch, i32 a2);
+    CString GetInputText(); // 0x12a3 (via thunk) - returns m_inputText (+0x1c) by value
     void EndInput();
     virtual ~CFontConfig() OVERRIDE;
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);

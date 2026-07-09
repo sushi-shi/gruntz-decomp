@@ -977,6 +977,34 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     return RegisterChannelFrom(a1, a2, -1, m_hostIndex) != 0;
 }
 
+// ===========================================================================
+// CMulti::Vslot0b  @ 0x0bd210 (slot 11)  - /GX: the chat-input key handler. With the
+// chat box up (m_hitTest->m_10) and connected, feed the key to the font-config input
+// line (TypeChar); on a completed line longer than the 9-char command prefix, strip the
+// prefix (Right(len-9)), broadcast the remainder as a chat line, and clear the input.
+// With no chat box, forward to the base CPlay key handler (OnKeyCommand). Returns 1.
+// ===========================================================================
+RVA(0x000bd210, 0x14d)
+i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
+    if (m_hitTest && ((CChatBoxOwner*)m_hitTest)->m_10) {
+        if (m_connected) {
+            if (((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->TypeChar(arg0, arg1)) {
+                CString line = ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->GetInputText();
+                i32 n = line.GetLength();
+                if (n > 9) {
+                    CString text = line.Right(n - 9);
+                    char buf[0x100];
+                    strcpy(buf, text);
+                    BroadcastChatLine(buf, 1, 1, 0);
+                    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->m_inputText.Empty();
+                }
+            }
+        }
+        return 1;
+    }
+    return OnKeyCommand(arg0, arg1);
+}
+
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLobbyObjA);

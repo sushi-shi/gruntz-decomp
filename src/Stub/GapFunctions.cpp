@@ -436,10 +436,6 @@ RVA(0x0009a4c0, 0x3e)
 i32 Gap_09a4c0(void) {
     return 0;
 } // @stub
-RVA(0x0009d7b0, 0x40)
-i32 Gap_09d7b0(void) {
-    return 0;
-} // @stub
 RVA(0x0009f540, 0x40)
 i32 Gap_09f540(void) {
     return 0;
@@ -502,10 +498,6 @@ i32 Gap_0b9180(void) {
 } // @stub
 RVA(0x000b9490, 0x42)
 i32 Gap_0b9490(void) {
-    return 0;
-} // @stub
-RVA(0x000bd210, 0x14d)
-i32 Gap_0bd210(void) {
     return 0;
 } // @stub
 RVA(0x000c0320, 0x37)
