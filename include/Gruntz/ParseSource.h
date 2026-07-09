@@ -33,8 +33,21 @@ public:
     virtual i32 Read(i32 base, i32 pos, u32 len, void* dst);
 };
 
-class CParseSource {
-public:
+// The intrusive hash-node prefix embedded at CParseSource+0x1c (its own vptr @0x5ef740):
+// the parse-slot table hashes on this node. Init placement-constructs it (stamping the
+// vptr); its data slots are otherwise untouched. Real polymorphic (2 declared-only slots,
+// reloc-masked); VTBL binds the cl-emitted ??_7 to the delinked datum.
+SIZE_UNKNOWN(HashNode1396f0);
+struct HashNode1396f0 {
+    virtual void v0(); // slot 0
+    virtual void v1(); // slot 1
+    i32 m_data[4];     // node payload (+0x04..+0x13); untouched by Init
+};
+VTBL(HashNode1396f0, 0x001ef740);
+
+// struct (not class): the retail Init return mangles PAU (?Init@CParseSource@@QAEPAU1@XZ),
+// i.e. CParseSource is a struct, so the SymParser call site pairs by name.
+struct CParseSource {
     // Ghidra placeholder-named these two "CParseSource::BeginParse/EndParse"
     // (0x139960 / 0x1399d0); same 0x139xxx class + identical layout as SetPos/Read.
     // 0x139800: return the first dword of the keyed-store entry (*(int*)m_entry).
@@ -44,6 +57,9 @@ public:
     i32 GetEntryTag();
     i32 BeginParse();
     i32 EndParse();
+    // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
+    // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
+    CParseSource* Init();
     RVA(0x00139ae0, 0xf)
     i32 SetPos(i32 pos) {
         m_cursor = pos;
@@ -52,16 +68,18 @@ public:
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 
-    char* m_name;                // +0x00 source name
-    void* m_entry;               // +0x04 keyed-store entry (first dword = tag)
-    i32 m_08;                    // +0x08 (role unproven)
-    u32 m_length;                // +0x0c total byte length / limit
-    ParseMappedSource* m_mapped; // +0x10 mapped source
-    i32 m_base;                  // +0x14 source base ptr
-    i32 m_cursor;                // +0x18 read cursor
-    char pad_1c[0x34 - 0x1c];
-    ParseVReader* m_reader; // +0x34 virtual reader
-    i32 m_buffer;           // +0x38 lazily-allocated inline byte buffer (as int address)
+    char* m_name;                      // +0x00 source name
+    void* m_entry;                     // +0x04 keyed-store entry (first dword = tag)
+    i32 m_08;                          // +0x08 (role unproven)
+    u32 m_length;                      // +0x0c total byte length / limit
+    ParseMappedSource* m_mapped;       // +0x10 mapped source
+    i32 m_base;                        // +0x14 source base ptr
+    i32 m_cursor;                      // +0x18 read cursor
+    HashNode1396f0 m_node1c;           // +0x1c embedded parse-slot hash-node (vptr @0x5ef740)
+    CParseSource* volatile m_selfLink; // +0x30 self back-pointer (Init: 0 then this; volatile
+                                       // pins the dead store the retail store-order depends on)
+    ParseVReader* m_reader;            // +0x34 virtual reader
+    i32 m_buffer;                      // +0x38 lazily-allocated inline byte buffer (as int address)
 };
 
 // --- vtable catalog ---

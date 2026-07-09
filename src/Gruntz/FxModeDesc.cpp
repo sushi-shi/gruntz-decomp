@@ -9,6 +9,7 @@
 //   - CFxModeT3::CFxModeT3 (0x17e880): base + (type=3, defaults).
 //
 // Names are placeholders; offsets + code bytes are load-bearing.
+#include <Gruntz/FxModeT1.h> // Mfc.h (afx-first) + FxModeDesc.h + the CString-bearing CFxModeT1
 #include <Gruntz/FxModeDesc.h>
 
 #include <rva.h>
@@ -37,6 +38,28 @@ i32 MakeButeSectionKey(char* dst, const char* section, const char* key) {
 RVA(0x0017e7b0, 0x9)
 CFxModeDesc::CFxModeDesc() {
     m_type = 0;
+}
+
+// ===========================================================================
+// 0x17e7c0 - CFxModeT1() (re-homed from src/Stub/BoundaryUpper2Eh.cpp): the type-1
+// variant ctor. Runs the CFxModeDesc base ctor + the CString member ctor, stamps the
+// type-1 record (type=1, m_10=0x32, m_14=1, m_18=1), then assigns the empty string to
+// the +0x24 CString. The destructible CString member forces the /GX frame. __thiscall.
+// ===========================================================================
+extern "C" char g_emptyString[]; // 0x6293f4
+RVA(0x0017e7c0, 0x7a)
+CFxModeT1::CFxModeT1() {
+    m_type = 1;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_10 = 0x32;
+    m_14 = 1;
+    m_18 = 1;
+    m_1c = 0;
+    m_20 = 0;
+    m_24 = g_emptyString;
+    m_28 = 0;
 }
 
 // ===========================================================================

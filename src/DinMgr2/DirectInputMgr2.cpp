@@ -35,12 +35,8 @@
 // MB_ICONEXCLAMATION (0x30).
 #include <Win32.h>
 
-// CDeviceConfigC::Free6d0 @0x1346d0 IS DevCfg::Free6d0; minimal local decl (links from static impl).
-SIZE_UNKNOWN(DevCfg);
-class DevCfg {
-public:
-    void Free6d0();
-};
+// (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
+// below; the DevCfg placeholder view is dissolved.)
 
 // CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; minimal local decl.
 SIZE_UNKNOWN(CObArray);
@@ -489,11 +485,52 @@ CInputDevice::~CInputDevice() {
 // stamps that were @early-stop in BoundaryUpper2Eh.cpp.
 RVA(0x00133460, 0x6a)
 CDeviceConfigC::~CDeviceConfigC() {
-    ((DevCfg*)this)->Free6d0();
+    Free6d0();
 }
 RVA(0x001334f0, 0x6a)
 CDeviceConfigB::~CDeviceConfigB() {
     Free360();
+}
+
+// CDeviceConfigB::Free360 (0x134360) / CDeviceConfigC::Free6d0 (0x1346d0), re-homed from
+// src/Stub/BoundaryUpper.cpp: the two byte-identical device-leaf teardowns (each the
+// class's ReleaseDevices slot-2 override) - free the inherited GetDeviceState snapshot
+// buffer (m_stateBuffer/+0x2a0), then run the shared base cleanup (CInputDevBase::
+// ReleaseDevices @0x1342b0, qualified direct call). __thiscall.
+extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete; reloc-masked)
+RVA(0x00134360, 0x33)
+void CDeviceConfigB::Free360() {
+    if (m_stateBuffer) {
+        RezFree(m_stateBuffer);
+        m_stateBuffer = 0;
+        m_stateBufferSize = 0;
+    }
+    CInputDevBase::ReleaseDevices();
+}
+RVA(0x001346d0, 0x33)
+void CDeviceConfigC::Free6d0() {
+    if (m_stateBuffer) {
+        RezFree(m_stateBuffer);
+        m_stateBuffer = 0;
+        m_stateBufferSize = 0;
+    }
+    CInputDevBase::ReleaseDevices();
+}
+
+// 0x133370 (re-homed from src/Stub/BoundaryUpper2.cpp): the out-of-line grand-base
+// ~CInputDevRoot copy - stamp 0x5ef670 then tail-call the base teardown (ReleaseDevices
+// @0x134d50). Co-located next to CInputDevRoot; kept a distinct placeholder identity
+// (DICfgC::DtorC) because CInputDevRoot's dtor is INLINE (the keyboard/mouse/joystick
+// leaf dtors inline this base unwind) - it cannot also be the real out-of-line
+// ~CInputDevRoot without regressing them (inline XOR out-of-line). The most-derived vptr
+// stamp is compiler-managed; ~50% (the dropped stamp is the residual).
+struct DICfgC {
+    void DtorC(); // 0x133370
+};
+SIZE_UNKNOWN(DICfgC);
+RVA(0x00133370, 0xb)
+void DICfgC::DtorC() {
+    ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
 }
 
 // ---------------------------------------------------------------------------
@@ -994,7 +1031,6 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u
 }
 
 // CDeviceConfigB::IsReady (0x001343a0) is now an inline member in the header.
-
 
 // The packed mouse-flag bits PollMouse computes into m_currentKeys: the four
 // button-down bits (low nibble) + the four direction bits (the top nibble).

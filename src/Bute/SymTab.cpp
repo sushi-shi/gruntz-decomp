@@ -457,6 +457,30 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     return (i32)slot;
 }
 
+// The removed value-entry's teardown (0x1397a0 = Obj1397a0::Teardown, a header-less
+// placeholder class already matched in DiscoveredSmall.cpp; SymRec.cpp uses the same
+// local decl). `found`'s exact class is unrecovered - identity-recovery TODO.
+class Obj1397a0 {
+public:
+    void Teardown(); // 0x1397a0
+};
+
+// CSymTab::AddNodeSubEntry (0x13a530, re-homed from src/Stub/BoundaryUpper2.cpp): the
+// leaf-merge helper ApplyRange calls when a value key already exists in a leaf record's
+// +0x24 value sub-table. Subtract the stale entry's span from this scope's running total
+// (m_10), unlink it from the parent record's value sub-table, tear it down, and return it
+// to the parser's free list (clearing the parser's re-scan flag m_08). __thiscall(rec,
+// found), ret 8; matches the SymTab.h declaration (both params void*, as ApplyRange passes).
+RVA(0x0013a530, 0x47)
+i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
+    m_10 -= *(i32*)((char*)found + 0xc);
+    ((CSymRec*)rec)->m_valTable.Remove((CHashTableEntry*)((char*)found + 0x1c));
+    ((Obj1397a0*)found)->Teardown();
+    m_owner->AddNode(found);
+    m_owner->m_08 = 0;
+    return 1;
+}
+
 // ApplyRecursive (0x13a580): a2 == 0 is a no-op returning 1. Otherwise null each
 // child scope's m_04, run the big range pass (ApplyRange, 0x13a640) over this scope,
 // then recurse into every child whose m_04 the pass set, ANDing the results.

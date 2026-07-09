@@ -69,16 +69,8 @@ struct B_17fc40 {
 };
 SIZE_UNKNOWN(B_17fc40);
 
-// 0x134360 / 0x1346d0 - DirectInput device-config teardown. Two identical leaves.
-struct DevCfg {
-    char _0[0x2a0];
-    void* m_2a0;        // 0x2a0
-    void* m_2a4;        // 0x2a4
-    void ReleaseBase(); // 0x1342b0
-    void Free360();
-    void Free6d0();
-};
-SIZE_UNKNOWN(DevCfg);
+// (0x134360/0x1346d0 device-config teardowns re-homed to DirectInputMgr2.cpp onto
+// CDeviceConfigB/CDeviceConfigC; the DevCfg view is dissolved.)
 
 // 0x1413b0 - manual-vtable dispatch `(*m_8->vtbl[0x80])(m_8, 0)`.
 struct Obj1413 { // real polymorphic; Op is slot 32 (+0x80)
@@ -228,22 +220,8 @@ SIZE_UNKNOWN(B_166810);
 // (0x13c8a0 CRezItm::Scan re-homed to src/Rez/RezMgr.cpp; RezItm/RezOwner views
 // dissolved onto CRezItm/CRezItmOwner.)
 
-// 0x13c8f0 - CRezDir check (lookup m_10, else dispatch virtual slot 4).
-struct RezDir {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual i32 v4(i32, i32, i32); // slot 4 (+0x10)
-    char _4[0x10 - 0x4];
-    void* m_10; // 0x10
-    i32 m_14;   // 0x14
-    i32 m_18;   // 0x18
-    char _1c[0x20 - 0x1c];
-    i32 m_20; // 0x20
-    i32 Check();
-};
-SIZE_UNKNOWN(RezDir);
+// (0x13c8f0 CRezItm::Check re-homed to src/Rez/RezMgr.cpp; RezDir view dissolved onto
+// the canonical CRezItm.)
 
 // CDdObArray neighbour lookup out pair (0x143510 fwd / 0x143590 back).
 struct Pair2 {

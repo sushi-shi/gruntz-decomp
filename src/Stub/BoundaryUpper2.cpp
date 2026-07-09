@@ -50,44 +50,16 @@ void ClearHash_184b70() {
     ((CDebugConfig*)&g_hash184b70)->InitFromEnv();
 }
 
-// ---------------------------------------------------------------------------
-// 0x133370 - DirectInput device-config grand-base dtor: stamp the C-level vftable
-// (@0x5ef670) then tail-jump the base subobject teardown (0x134d50). __thiscall.
-// ---------------------------------------------------------------------------
-// @deferred: CInputDevRoot grand-base dtor (stamps 0x5ef670); binding ~CInputDevRoot here dups DinMgr2s inline base dtor - deferred to the DirectInput chain-reunify sweep.
-RVA(0x00133370, 0xb)
-void DICfgC::DtorC() {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    BaseTeardown();
-}
+// (0x133370 DICfgC::DtorC re-homed to src/DinMgr2/DirectInputMgr2.cpp next to
+// CInputDevRoot - the out-of-line grand-base ~CInputDevRoot copy; kept a placeholder
+// identity since CInputDevRoot's dtor is inline for the leaf dtors. The DICfgC view is
+// dissolved.)
 
-// ---------------------------------------------------------------------------
-// 0x1396f0 - CParseSource-area init: stamp the +0x1c vftable (@0x5ef740), zero
-// the bookkeeping fields, self-link +0x30. Returns `this`. __thiscall.
-//
-// NOTE: the 0x5ef740 vtable is a SECONDARY / embedded intrusive-hash-node vtable
-// (stamped at +0x1c, NOT a class's primary +0 vptr) in the CSymParser/CParseSource
-// subsystem. Realized as a cl-emitted ??_7HashNode1396f0 (an embedded polymorphic node
-// member at +0x1c, placement-constructed so its implicit vptr stamp supplies the
-// `mov [ecx+0x1c],offset ??_7` store) - the mandated real-polymorphic form.
-// @early-stop
-// vptr-middle re-install wall: the node ctor's implicit vptr stamp reschedules
-// relative to the `volatile`-pinned +0x30 dead-store sequence this init depends on, so
-// the store order diverges from retail (documented compiler-model wall, accepted per
-// the manual-vtable-removal mandate). Logic (the stamp + all field inits) complete;
-// ??_7 named via VTBL so the stamp operand still reloc-masks.
-// ---------------------------------------------------------------------------
-// @deferred: CParseSource::Init (caller CSymParser::PopParseSlot confirmed); field layout conflicts with ParseSource.h CParseSource (+0x1c embedded hash-node vptr wall) - reconcile the two CParseSource views before homing.
-RVA(0x001396f0, 0x1a)
-CParseSource* CParseSource::Init() {
-    new (&m_1c) HashNode1396f0;
-    m_30 = 0;
-    m_34 = 0;
-    m_10 = 0;
-    m_0 = 0;
-    m_30 = this;
-    return this;
-}
+// (0x1396f0 CParseSource::Init re-homed to src/Gruntz/ParseSource.cpp onto the real
+// CParseSource - the embedded +0x1c hash-node (HashNode1396f0) + self-link (+0x30) are
+// now modeled in ParseSource.h (which became a struct so Init's PAU return mangling pairs
+// with the CSymParser::PopParseSlot call site). The HashNode1396f0/CParseSource views
+// are dissolved.)
 
 // ---------------------------------------------------------------------------
 // 0x1437e0 - install the DDraw "restore lost surfaces" handler (re-homed from
@@ -324,49 +296,10 @@ void __stdcall UnpackTag_13b970(u32 tag, char* dst) {
 // then bounds-check against either the camera rect (+0x40 of m_ctx->m_camera->m_5c,
 // flag 0x40000 set) or the grid extents (m_ctx->m_grid->m_limits). __thiscall, 0 args.
 // ---------------------------------------------------------------------------
-// @early-stop
-// regalloc wall (~73%): the four derived edges (right/left/top/bottom) +
-// m_extent/m_ctx/m_flags need 4 callee-saved regs in this reconstruction where retail
-// packs them into 3 (ebx/esi/edi) by keeping m_extent in edi and testing m_flags
-// directly from memory. No source spelling reproduces retail's exact edge-register assignment;
-// logic (both the camera-rect and grid-extent bounds checks) complete.
-// @deferred: CWwdGameObject::Test (real class in WwdGameObject.h); home needs the m_ctx->m_camera/m_grid view chain (WwdCtx/WwdCamHolder/WwdGridLim) modeled as real classes - regalloc wall, deep view chain.
-RVA(0x001509c0, 0xab)
-i32 CWwdGameObject::Test() {
-    WwdExtent* e = m_extent;
-    if (!e) {
-        return 0;
-    }
-    i32 right = m_centerX + e->m_halfW;
-    i32 left = m_centerX - e->m_halfW;
-    i32 top = m_centerY - e->m_halfH;
-    i32 bottom = m_centerY + e->m_halfH;
-    if (m_flags & 0x40000) {
-        WwdCamRect* r = (WwdCamRect*)(m_ctx->m_camera->m_5c + 0x40);
-        if (right < r->a) {
-            return 0;
-        }
-        if (left > r->c) {
-            return 0;
-        }
-        if (bottom < r->b) {
-            return 0;
-        }
-        return top <= r->d;
-    } else {
-        WwdGridLim* g = m_ctx->m_grid->m_limits;
-        if (right < 0) {
-            return 0;
-        }
-        if (left >= g->m_width) {
-            return 0;
-        }
-        if (bottom < 0) {
-            return 0;
-        }
-        return top < g->m_height;
-    }
-}
+// (0x1509c0 CWwdGameObject::Test re-homed to src/Wwd/WwdGameObject.cpp onto the real
+// CWwdGameObject, next to its Dispatch/ReadState/Setup siblings - the m_ctx/m_extent
+// chain now uses the real m_mgr + WwdExtent/WwdGridHolder/WwdCamHolder sub-objects
+// modeled in that TU. The CWwdGameObject/WwdCtx/WwdExtent/... views are dissolved.)
 
 // ---------------------------------------------------------------------------
 // 0x163710 - CDDrawWorkerList dispatch: switch on the kind (3..8); kind 4 probes
@@ -401,22 +334,9 @@ i32 __stdcall Dispatch163710(void* p, i32 kind, i32, i32) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x13a530 - CSymTab remove-entry: shrink the running size (m_size) by the entry's
-// span (m_span), unlink it via the +0x24 helper (0x184ab0), run the entry's own
-// teardown (0x1397a0), drop it from the list (0x13c210) and clear the list's count.
-// __thiscall, 2 args.
-// ---------------------------------------------------------------------------
-// @deferred: CSymTab::AddNodeSubEntry (already declared in SymTab.h; caller ApplyRange confirmed); home needs CSymRec (a1/a2, +0xc span/+0x1c node roles) + CSymParser(m_owner) field reconciliation.
-RVA(0x0013a530, 0x47)
-i32 CSymTab::Remove(SymEntry1* a1, SymEntry2* a2) {
-    m_size -= a2->m_span;
-    a1->m_24.Unlink(&a2->m_1c);
-    ((Obj1397a0*)a2)->Teardown();
-    ((CSymParser*)m_list)->AddNode(a2);
-    m_list->m_count = 0;
-    return 1;
-}
+// (0x13a530 CSymTab::AddNodeSubEntry re-homed to src/Bute/SymTab.cpp, next to its sole
+// caller ApplyRange and the declaration already in SymTab.h. SymEntry1/SymEntry2/CSymTab/
+// CHashBase/SymList18 views dissolved onto CSymTab/CSymRec/CHashTable/CSymParser.)
 
 // ---------------------------------------------------------------------------
 // 0x17e230 - destroy a by-value CDataBuffer-like parameter: the only work is the
@@ -428,35 +348,11 @@ void __stdcall Destroy17e230(DBuf17e230 b) {
     (void)b;
 }
 
-// ---------------------------------------------------------------------------
-// 0x143950 - CDDrawPtrCollections palette upload: copy a 256-entry RGB triplet
-// table into the object's BGRA0 palette at +0x53c, then mark dirty (+0x93c) and
-// store the tag (+0x940). __thiscall, 2 args.
-// ---------------------------------------------------------------------------
-// @early-stop
-// strength-reduction/regalloc wall (~78%): retail walks the dst palette via a
-// pre-incremented edx (dst+1, -1/-4/-3/-2 displacements) with src in eax and inc;
-// MSVC here keeps src in edx (advance by 3) and dst in eax (advance by 4) - the
-// mirror register assignment. Loop logic complete.
-// @deferred: palette-upload (attributed CDDrawPtrCollections-area); placeholder CPalObj143950 - confirm the owner and model the +0x53c BGRA palette before homing (@early-stop strength-reduction wall).
-RVA(0x00143950, 0x56)
-i32 CPalObj143950::SetPalette(const u8* src, i32 tag) {
-    if (!src) {
-        return 0;
-    }
-    u8* dst = m_pal[0];
-    for (i32 i = 0; i < 256; i++) {
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst[3] = 0;
-        dst += 4;
-        src += 3;
-    }
-    m_dirty = 1;
-    m_tag = tag;
-    return 1;
-}
+// (0x143950 CDDrawPtrCollections::Make950 re-homed to src/DDrawMgr/DDrawPtrCollections.cpp
+// onto the real class - m_pal/m_dirty/m_tag are m_palette(+0x53c)/m_hasPalette(+0x93c)/
+// m_940(+0x940). The disasm proved this RVA is the RGB-triplet palette-install (its
+// caller LoadPaletteMake950 tail-returns it), NOT a separate builder. CPalObj143950
+// view dissolved.)
 
 // ---------------------------------------------------------------------------
 // 0x148af0 - CImageOwned setup: zero the 0x6c-byte transform descriptor at +0x10,

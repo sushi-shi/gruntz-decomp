@@ -78,7 +78,8 @@ struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
 // mgr+0x14: the real CDDrawWorkerRegistry (full def in DDrawMgr units) -
 // FindKeyOfValue_165360 reverse-looks-up a key CString by CWorkerMapValue through
 // its +0x10 map. Reloc-masked reader view onto the real class.
-class CImageSet; // real FindKeyOfValue_165360 arg (worker map value); cast at the WwdWorker* call sites
+class
+    CImageSet; // real FindKeyOfValue_165360 arg (worker map value); cast at the WwdWorker* call sites
 struct CDDrawWorkerRegistry {
     CString FindKeyOfValue_165360(CImageSet* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
@@ -95,14 +96,49 @@ struct WwdMgrSub10 {
     char m_pad00[0x10];
     MapLookupA m_map; // +0x10  (0x1b8008)
 };
-// CWwdGameObject+0x0c owning manager: four typed reader/map sub-objects.
+// The visibility-test chain (CWwdGameObject::Test @0x1509c0): the object's sprite
+// extent (from m_198) plus the manager's spatial-grid limits (+0x04) and camera rect
+// (+0x24). Engine sub-objects reached by offset; only offsets are load-bearing.
+struct WwdExtent {
+    char m_pad00[0x18];
+    i32 m_halfW; // +0x18  half-width
+    i32 m_halfH; // +0x1c  half-height
+};
+SIZE_UNKNOWN(WwdExtent);
+struct WwdGridLim {
+    char m_pad00[0x10];
+    i32 m_width;  // +0x10
+    i32 m_height; // +0x14
+};
+SIZE_UNKNOWN(WwdGridLim);
+struct WwdGridHolder {
+    char m_pad00[0x10];
+    WwdGridLim* m_limits; // +0x10  grid extents
+};
+SIZE_UNKNOWN(WwdGridHolder);
+struct WwdCamRect {
+    i32 a; // left
+    i32 b; // top
+    i32 c; // right
+    i32 d; // bottom
+};
+SIZE_UNKNOWN(WwdCamRect);
+struct WwdCamHolder {
+    char m_pad00[0x5c];
+    char* m_5c; // +0x5c  the camera object; its rect sits at +0x40
+};
+SIZE_UNKNOWN(WwdCamHolder);
+
+// CWwdGameObject+0x0c owning manager: typed reader/map + visibility sub-objects.
 struct WwdMgr {
-    char m_pad00[0x08];
-    WwdMgrSub08* m_08; // +0x08  kill-cue map holder
+    char m_pad00[0x04];
+    WwdGridHolder* m_grid; // +0x04  spatial grid (Test off-screen cull)
+    WwdMgrSub08* m_08;     // +0x08  kill-cue map holder
     char m_pad0c[0x10 - 0x0c];
     WwdMgrSub10* m_10;          // +0x10  name resolver
     CDDrawWorkerRegistry* m_14; // +0x14  worker registry (FindKeyOfValue_165360)
-    char m_pad18[0x28 - 0x18];
+    char m_pad18[0x24 - 0x18];
+    WwdCamHolder* m_camera;     // +0x24  camera-rect holder (Test off-screen cull)
     CDDrawSubMgrLeafScan* m_28; // +0x28  leaf-scan registry (FindKeyOfValue_158570)
 };
 
@@ -166,6 +202,52 @@ struct WwdRenderCtx {
 // Dispatch (0x150a70): look the request up in the +0x1a0 command map; on a hit,
 // route by `type`: 4 -> ReadState, 7 -> Sub150c30 (abort on failure), then play.
 // ---------------------------------------------------------------------------
+// CWwdGameObject::Test (0x1509c0, re-homed from src/Stub/BoundaryUpper2.cpp): on-screen
+// visibility cull. Derive the object's four edges from its centre (m_posX/m_posY) and the
+// sprite half-extents (m_198), then bounds-check against either the camera rect (when the
+// 0x40000 flag is set) or the plane grid limits. __thiscall, 0 args.
+// @early-stop
+// regalloc wall (~73%): the four derived edges + m_198/m_mgr/m_flags want 4 callee-saved
+// regs where retail packs them into 3 (ebx/esi/edi, m_198 kept in edi, m_flags tested from
+// memory). No source spelling reproduces retail's exact edge-register assignment; both the
+// camera-rect and grid-extent bounds checks are byte-faithful.
+RVA(0x001509c0, 0xab)
+i32 CWwdGameObject::Test() {
+    WwdExtent* e = (WwdExtent*)m_198;
+    if (!e) {
+        return 0;
+    }
+    i32 right = m_posX + e->m_halfW;
+    i32 left = m_posX - e->m_halfW;
+    i32 top = m_posY - e->m_halfH;
+    i32 bottom = m_posY + e->m_halfH;
+    if (m_flags & 0x40000) {
+        WwdCamRect* r = (WwdCamRect*)(m_mgr->m_camera->m_5c + 0x40);
+        if (right < r->a) {
+            return 0;
+        }
+        if (left > r->c) {
+            return 0;
+        }
+        if (bottom < r->b) {
+            return 0;
+        }
+        return top <= r->d;
+    } else {
+        WwdGridLim* g = m_mgr->m_grid->m_limits;
+        if (right < 0) {
+            return 0;
+        }
+        if (left >= g->m_width) {
+            return 0;
+        }
+        if (bottom < 0) {
+            return 0;
+        }
+        return top < g->m_height;
+    }
+}
+
 RVA(0x00150a70, 0x89)
 i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
@@ -705,9 +787,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 
 // CWwdGameObject::SetupFlagged (0x0015c1d0) is now an inline member in the header.
 
-
 // CWwdGameObject::SetupDeferred (0x0015bc30) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single
@@ -926,15 +1006,18 @@ public:
     virtual i32 Setup28();        // slot 10 @0x150d60
     virtual void Slot2C();        // slot 11 @0x11fec0 (__purecall)
     // slots 12-14: dirty-rect blit ops on the two render surface-pairs (front/back).
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b);        // slot 12 @0x11fec0 (__purecall)
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14 @0x11fec0 (__purecall)
-    virtual i32 Play3C();         // slot 15 @0x151150
+    virtual void
+    Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b); // slot 12 @0x11fec0 (__purecall)
+    virtual void
+    Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
+    virtual void
+    Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14 @0x11fec0 (__purecall)
+    virtual i32 Play3C();                                      // slot 15 @0x151150
 
     WwdEdgeB m_04; // 0x04
     char _p10[0x18 - 0x10];
-    i32 m_18; // 0x18  live position x (start of the 9-dword state block copied to m_b8)
-    i32 m_1c; // 0x1c  live position y
+    i32 m_18;      // 0x18  live position x (start of the 9-dword state block copied to m_b8)
+    i32 m_1c;      // 0x1c  live position y
     WwdEdgeA m_20; // 0x20
     char _p60[0x7c - 0x60];
     WwdWorker* m_7c; // 0x7c
@@ -948,8 +1031,8 @@ public:
     i32 m_bc; // 0xbc  shadow position y
     i32 m_c0; // 0xc0  shadow record's f2 word (dtor sentinel)
     char _pc4[0xd0 - 0xc4];
-    i32 m_d0; // 0xd0  shadow dirty-rect size x
-    i32 m_d4; // 0xd4  shadow dirty-rect size y
+    i32 m_d0;     // 0xd0  shadow dirty-rect size x
+    i32 m_d4;     // 0xd4  shadow dirty-rect size y
     i32 m_d8;     // 0xd8  shadow record's flag word (-1 == disarmed)
     WwdName m_dc; // 0xdc  CString name
 };
@@ -984,10 +1067,12 @@ public:
     virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
     virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
     virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;      // slot 12 @0x150660
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x1506b0
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x1508a0
-    virtual i32 Play3C() OVERRIDE;       // slot 15 @0x150a70 (Dispatch)
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE; // slot 13 @0x1506b0
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE;                  // slot 14 @0x1508a0
+    virtual i32 Play3C() OVERRIDE; // slot 15 @0x150a70 (Dispatch)
 
     char _pe0[0x18c - 0xe0];
     i32 m_18c; // 0x18c
@@ -1135,14 +1220,16 @@ class CWwdGameObjectF : public CWwdGameObjectE {
 public:
     virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0
     // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f0060 table).
-    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15ba40
-    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15bc50
-    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15ba60
-    virtual void Slot2C() OVERRIDE;        // slot 11 @0x15ba70
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;        // slot 12 @0x15ba80
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x15ba90
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x15baa0
-    virtual void SetupDeferredV();         // slot 16 @0x15bc30 (new)
+    virtual void Slot14_15b370() OVERRIDE;                                    // slot 5  @0x15ba40
+    virtual void ReleaseSubs() OVERRIDE;                                      // slot 7  @0x15bc50
+    virtual i32 Vfunc20() OVERRIDE;                                           // slot 8  @0x15ba60
+    virtual void Slot2C() OVERRIDE;                                           // slot 11 @0x15ba70
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x15ba80
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE; // slot 13 @0x15ba90
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE;                  // slot 14 @0x15baa0
+    virtual void SetupDeferredV(); // slot 16 @0x15bc30 (new)
 };
 
 // @early-stop
@@ -1276,20 +1363,20 @@ class CWwdGameObjectB : public WwdBLevel2 {
 public:
     virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
     // Own vtable @0x5f00e8: overrides WwdBResolve's slots 5/7/8 + adds 10..15 (binary RVAs).
-    virtual void VtSlotFill0() OVERRIDE; // slot 5  0x15bcd0
-    virtual void VtSlotFill2() OVERRIDE; // slot 7  0x15bf00
-    virtual void VtSlotFill3() OVERRIDE; // slot 8  0x15bce0
-    virtual void Slot10_1665e0();                     // slot 10 0x1665e0
-    virtual void Slot11_1668b0(i32 a1);               // slot 11 0x1668b0 (broadcast Slot2C)
-    virtual void Slot12_1668e0(i32 a1, i32 a2);       // slot 12 0x1668e0 (broadcast Slot30)
+    virtual void VtSlotFill0() OVERRIDE;                // slot 5  0x15bcd0
+    virtual void VtSlotFill2() OVERRIDE;                // slot 7  0x15bf00
+    virtual void VtSlotFill3() OVERRIDE;                // slot 8  0x15bce0
+    virtual void Slot10_1665e0();                       // slot 10 0x1665e0
+    virtual void Slot11_1668b0(i32 a1);                 // slot 11 0x1668b0 (broadcast Slot2C)
+    virtual void Slot12_1668e0(i32 a1, i32 a2);         // slot 12 0x1668e0 (broadcast Slot30)
     virtual void Slot13_166910(i32 a1, i32 a2, i32 a3); // slot 13 0x166910 (broadcast Vfunc34)
     virtual void Slot14_166950(i32 a1, i32 a2, i32 a3); // slot 14 0x166950 (broadcast Vfunc38)
-    virtual void Slot15_150a70();                     // slot 15 0x150a70
-    void Clear_166810();                              // 0x166810 (destroy m_1dc list + RemoveAll)
-    i32 AddChild_1667e0(CDDrawGroupChild* child);     // 0x1667e0
-    i32 RemoveChild_166850(CDDrawGroupChild* child);  // 0x166850
-    WwdObList m_1dc;                                  // +0x1dc  CObList (vptr only in view)
-    CDDrawGroupNode* m_listHead;                      // +0x1e0  CObList m_pNodeHead (broadcast list)
+    virtual void Slot15_150a70();                       // slot 15 0x150a70
+    void Clear_166810();                                // 0x166810 (destroy m_1dc list + RemoveAll)
+    i32 AddChild_1667e0(CDDrawGroupChild* child);       // 0x1667e0
+    i32 RemoveChild_166850(CDDrawGroupChild* child);    // 0x166850
+    WwdObList m_1dc;                                    // +0x1dc  CObList (vptr only in view)
+    CDDrawGroupNode* m_listHead; // +0x1e0  CObList m_pNodeHead (broadcast list)
     char _p1e4[0x1f8 - 0x1e4];
     i32 m_1f8; // +0x1f8
 };
@@ -1333,9 +1420,11 @@ public:
     virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15c200
     virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15c020
     virtual void Slot2C() OVERRIDE;        // slot 11 @0x1660f0 (RenderDot)
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;        // slot 12 @0x1661d0
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x1662a0
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x1664a0
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x1661d0
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE; // slot 13 @0x1662a0
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
+        OVERRIDE; // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
     virtual void Slot44();        // slot 17 @0x15c030
@@ -1423,7 +1512,7 @@ void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    i32 rc[4]; // one reused src+dst rect buffer
+    i32 rc[4];                        // one reused src+dst rect buffer
     if (m_20.b != -1 && m_d8 != -1) { // both armed
         i32 dx = abs(m_18 - m_b8) + 1;
         i32 dy = abs(m_1c - m_bc) + 1;

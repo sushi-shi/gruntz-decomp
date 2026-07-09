@@ -14,6 +14,31 @@
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
+// Placement new (construct-in-place; no allocation) for the embedded hash-node ctor.
+inline void* operator new(u32, void* p) {
+    return p;
+}
+
+// ===========================================================================
+// 0x1396f0 - Init (re-homed from src/Stub/BoundaryUpper2.cpp): initialize a fresh parse
+// slot - placement-construct the embedded hash-node (stamping its vptr @0x5ef740), null
+// the name/mapped/reader bookkeeping, self-link +0x30. Returns this. __thiscall.
+// @early-stop
+// vptr-middle re-install wall: the embedded node ctor's implicit vptr stamp reschedules
+// relative to the volatile-pinned +0x30 dead-store sequence, so the store order diverges
+// from retail (documented compiler-model wall). Logic complete; ??_7 named via VTBL.
+// ===========================================================================
+RVA(0x001396f0, 0x1a)
+CParseSource* CParseSource::Init() {
+    new (&m_node1c) HashNode1396f0;
+    m_selfLink = 0;
+    m_reader = 0;
+    m_mapped = 0;
+    m_name = 0;
+    m_selfLink = this;
+    return this;
+}
+
 // ===========================================================================
 // 0x139800 - GetEntryTag: return the first dword of the keyed-store entry (the
 // packed 4-char format tag). Out-of-line (retail keeps a real body here that
@@ -23,7 +48,6 @@ RVA(0x00139800, 0x6)
 i32 CParseSource::GetEntryTag() {
     return *(i32*)m_entry;
 }
-
 
 // ===========================================================================
 // 0x139960 - BeginParse: resolve the live source pointer for a parse pass. If
@@ -86,7 +110,6 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
 }
 
 // CParseSource::SetPos (0x00139ae0) is now an inline member in the header.
-
 
 // ===========================================================================
 // 0x139af0 - Read(dst, len, seekPos): optionally seek (seekPos != -1), clamp the

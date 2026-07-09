@@ -104,30 +104,10 @@ void Fwd_184fb0(i32 a, i32 b) {
     Sub_184fd0(0, a, b);
 }
 
-// ---------------------------------------------------------------------------
-// 0x134360 / 0x1346d0 - DirectInput device-config teardown: free the +0x2a0
-// buffer, then chain the base ReleaseDevices (0x1342b0). Two identical leaves.
-// ---------------------------------------------------------------------------
-// @deferred: attributed to a DirectInput device-config class (sibling of CDeviceConfigC::Free6d0 @0x1346d0); home needs +0x2a0/+0x2a4 + ReleaseBase(0x1342b0) modeled in DirectInputMgr2.h (and 0x134360 owner confirmed).
-RVA(0x00134360, 0x33)
-void DevCfg::Free360() {
-    if (m_2a0) {
-        RezFree(m_2a0);
-        m_2a0 = 0;
-        m_2a4 = 0;
-    }
-    ReleaseBase();
-}
-// @deferred: CDeviceConfigC::Free6d0 (DirectInputMgr2.cpp already decl-refs it); home needs +0x2a0/+0x2a4 + ReleaseBase(0x1342b0) modeled on the real class.
-RVA(0x001346d0, 0x33)
-void DevCfg::Free6d0() {
-    if (m_2a0) {
-        RezFree(m_2a0);
-        m_2a0 = 0;
-        m_2a4 = 0;
-    }
-    ReleaseBase();
-}
+// (0x134360 CDeviceConfigB::Free360 + 0x1346d0 CDeviceConfigC::Free6d0 re-homed to
+// src/DinMgr2/DirectInputMgr2.cpp onto the real device-config classes - m_2a0/m_2a4 are
+// the inherited CInputDevRoot::m_stateBuffer/m_stateBufferSize, ReleaseBase is
+// CInputDevBase::ReleaseDevices. The DevCfg view is dissolved.)
 
 // ---------------------------------------------------------------------------
 // 0x145e00 - parity test: returns (popcount(x) == 1). __cdecl, 1 arg.
@@ -246,34 +226,9 @@ void B_166810::Clear() {
     ((CObArray*)&m_1dc)->RemoveAll();
 }
 
-// ---------------------------------------------------------------------------
-// External rez helpers (reloc-masked rel32). (0x13c8a0 CRezItm::Scan re-homed to
-// src/Rez/RezMgr.cpp as a CRezItm method - vtable slot 6, confirmed by RTTI.)
-// ---------------------------------------------------------------------------
-extern "C" i32 RezDirLookup(void* h); // 0x18ccd0
-
-// ---------------------------------------------------------------------------
-// 0x13c8f0 - CRezItm::Check (vtable slot 7, RTTI-confirmed: ~??_7CRezItm@@6B@+0x1c):
-// reset m_pos(+0x20), lookup m_fp(+0x10); if found return 1; else virtual-dispatch
-// this->Open (slot 4, +0x10 = readBuf/+0x14, readonly/+0x18, 0) and normalize to bool.
-// DEFERRED (not orphan): confirmed CRezItm slot-7 member, but its slot-4 self-virtual
-// call requires CRezItm's stream methods (Read/Write/Open/Close) to be real virtuals
-// in retail slot order (Slot00,dtor,Read,Write,Open,Close,Scan,Check) - a class-wide
-// vtable conversion of the matched rezmgr unit, larger than a leaf move. Home it when
-// CRezItm is converted to real virtuals (with Scan @0x13c8a0, already homed). Kept as
-// the RezDir view here so the slot-4 dispatch stays reproducible until then.
-// ---------------------------------------------------------------------------
-RVA(0x0013c8f0, 0x41)
-i32 RezDir::Check() {
-    m_20 = -1;
-    if (!m_10) {
-        return 0;
-    }
-    if (RezDirLookup(m_10) != -1) {
-        return 1;
-    }
-    return v4(m_14, m_18, 0) != 0;
-}
+// (0x13c8a0 CRezItm::Scan + 0x13c8f0 CRezItm::Check re-homed to src/Rez/RezMgr.cpp as
+// CRezItm methods - vtable slots 6/7, RTTI-confirmed. RezDir view + RezDirLookup extern
+// dissolved onto the canonical CRezItm.)
 
 // ---------------------------------------------------------------------------
 // CDdObArray neighbour lookup: 0x143510 forward, 0x143590 backward. Both run

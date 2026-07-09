@@ -154,6 +154,13 @@ public:
     // slot is filled by the reloc-masked cl vtable; the body dispatches through it).
     i32 Scan();
 
+    // Re-acquire check (0x13c8f0, vtable slot 7): reset the cursor, look the FILE* up in
+    // the open-file registry (RezDirLookup); if absent, re-Open from the stored filename
+    // (m_readBuf) + readonly flag (m_18). Returns 1 if open/reopened, else 0. Retail
+    // dispatches the Open self-call through slot 4; modeled as a direct call here until
+    // CRezItm's stream methods are converted to real virtuals.
+    i32 Check();
+
     // (Re)open the FILE* with an fopen mode picked from the readonly/write flags
     // (write+readonly is rejected), recovering through the owner's Retry() gate;
     // stashes the readonly flag in m_18 and a RezAlloc'd copy of the filename in

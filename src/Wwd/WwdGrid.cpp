@@ -32,6 +32,25 @@ CWwdGrid::~CWwdGrid() {
     FreeBuckets();
 }
 
+// 0x168c10 - a SECOND, un-COMDAT-folded copy of ~CWwdGrid (byte-identical to 0x1682a0:
+// stamp 0x5f0328, FreeBuckets, fold CObject) that retail emitted from a different TU
+// (MSVC5 has no ICF). Co-located with CWwdGrid; kept a distinct placeholder identity
+// (C168c10) because name-injectivity forbids two CWwdGrid::~CWwdGrid at two RVAs.
+struct Sev168c10 {
+    virtual ~Sev168c10();
+};
+SIZE_UNKNOWN(Sev168c10);
+inline Sev168c10::~Sev168c10() {}
+struct C168c10 : Sev168c10 {
+    virtual ~C168c10() OVERRIDE;
+};
+SIZE_UNKNOWN(C168c10);
+RELOC_VTBL(C168c10, 0x001f0328); // duplicate ~CWwdGrid copy; stamp reloc-masks 0x1f0328
+RVA(0x00168c10, 0x46)
+C168c10::~C168c10() {
+    ((CWwdGrid*)this)->FreeBuckets();
+}
+
 // ===========================================================================
 // 0x191800 - FreeBuckets: if allocated, run the vector dtor over the node array
 // and release the backing block; then clear the alloc-OK flag.

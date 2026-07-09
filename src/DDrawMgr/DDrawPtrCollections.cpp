@@ -172,7 +172,7 @@ public:
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
-    virtual i32 InstallColorFormat();                               // slot 10 0x148b80
+    virtual i32 InstallColorFormat();                                // slot 10 0x148b80
 };
 SIZE(CPoolItemAB8, 0xc0);
 VTBL(CPoolItemAB8, 0x001efab8);
@@ -912,6 +912,36 @@ void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag
     }
     m_940 = tag;
     m_hasPalette = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Make950 (0x143950, re-homed from src/Stub/BoundaryUpper2.cpp): install a 256-entry
+// palette from a caller-supplied packed RGB-triplet buffer (buf) - expand each 3-byte
+// RGB into the 4-byte display palette entry (4th byte zeroed), then flag present +
+// latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
+// install sibling of SetDisplayPaletteFrom/Direct; LoadPaletteMake950 tail-returns it.
+// @early-stop
+// ~78% mirror-register wall (same family as 0x143900/0x1439b0): retail keeps src in eax
+// and pre-increments dst in edx (-1/-4/-3/-2 displacements); MSVC mirrors the src/dst
+// registers here. Not source-steerable (permuter marginal). docs/patterns/zero-register-pinning.md.
+RVA(0x00143950, 0x56)
+CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
+    if (buf == 0) {
+        return 0;
+    }
+    const u8* src = (const u8*)buf;
+    u8* dst = (u8*)m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = 0;
+        dst += 4;
+        src += 3;
+    }
+    m_hasPalette = 1;
+    m_940 = z;
+    return (CDDPalette*)1; // retail returns the success flag as the CDDPalette* result
 }
 
 // ---------------------------------------------------------------------------

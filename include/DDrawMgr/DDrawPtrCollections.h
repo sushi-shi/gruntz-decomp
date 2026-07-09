@@ -50,19 +50,26 @@ public:
     // is given, ".." + suffix, or base-name + suffix when the suffix itself starts with
     // '.'), Createa58_3 it, and collect the non-null results into `out`. Returns the
     // number created (stops at the first failure).
-    i32 CreateRange(CDDSurface** out, i32 start, i32 count, char* baseName, char* suffix,
-                    i32 a6, i32 a7); // 0x142630
-    CDDSurface* Createa88_3(i32 a, i32 b, i32 c);           // 0x142730 (vtbl a88, slot 9)
-    CDDSurface* Createa88_1(i32 a);                         // 0x142880 (vtbl a88, slot 2)
-    CDDSurface* Createab8_3(i32 a, i32 b, i32 c);           // 0x142940 (vtbl ab8, slot 9, +538)
-    CDDSurface* Createab8_1(i32 a);                         // 0x142aa0 (vtbl ab8, slot 2, +538)
-    CDDSurface* Createab8_24_3(i32 a); // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
+    i32 CreateRange(
+        CDDSurface** out,
+        i32 start,
+        i32 count,
+        char* baseName,
+        char* suffix,
+        i32 a6,
+        i32 a7
+    );                                            // 0x142630
+    CDDSurface* Createa88_3(i32 a, i32 b, i32 c); // 0x142730 (vtbl a88, slot 9)
+    CDDSurface* Createa88_1(i32 a);               // 0x142880 (vtbl a88, slot 2)
+    CDDSurface* Createab8_3(i32 a, i32 b, i32 c); // 0x142940 (vtbl ab8, slot 9, +538)
+    CDDSurface* Createab8_1(i32 a);               // 0x142aa0 (vtbl ab8, slot 2, +538)
+    CDDSurface* Createab8_24_3(i32 a);            // 0x142b70 (vtbl ab8, slot 9 3-arg, +538)
     CDDSurface*
     Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);      // 0x142c40 (vtbl ae8, slot 9 6-arg)
     CDDSurface* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot 2)
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
-    CDDPalette* Create(i32 a, i32 b);                          // 0x143040 (init via 0x147390)
+    CDDPalette* Create(i32 a, i32 b);                           // 0x143040 (init via 0x147390)
     CDDPalette* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
     CDDPalette* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
 
@@ -70,7 +77,10 @@ public:
     // from it (0x143150 -> MakeB; 0x143a30 -> Make950, the sibling builder).
     CDDPalette* LoadPaletteMakeB(const char* path, i32 z);   // 0x143150
     CDDPalette* LoadPaletteMake950(const char* path, i32 z); // 0x143a30
-    CDDPalette* Make950(void* buf, i32 z);                   // 0x143950 (external sibling of MakeB)
+    CDDPalette* Make950(
+        void* buf,
+        i32 z
+    ); // 0x143950 install a 256-entry palette from a packed RGB-triplet buffer (DDrawPtrCollections.cpp)
     // Install a 256-entry RGBQ display palette into m_palette (+0x53c) then mark
     // it present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache
     // held by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a

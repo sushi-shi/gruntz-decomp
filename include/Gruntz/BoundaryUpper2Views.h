@@ -22,37 +22,12 @@
 struct CHashTail {}; // Clear @0x185000 IS CDebugConfig::InitFromEnv; cast at the call
 SIZE_UNKNOWN(CHashTail);
 
-// 0x133370 - CInputDevRoot grand-base dtor (stamps its C-level vftable 0x5ef670 ==
-// ??_7CInputDevRoot, cl-emitted via VTBL in DirectInputMgr2.cpp). BaseTeardown 0x134d50 ==
-// CInputDevRoot::ReleaseDevices. Kept standalone (binding ~CInputDevRoot here would dup
-// DinMgr2's inline base dtor - deferred to the DirectInput chain-reunify sweep).
-struct DICfgC {
-    void BaseTeardown(); // 0x134d50 == CInputDevRoot::ReleaseDevices
-    void DtorC();
-};
-SIZE_UNKNOWN(DICfgC);
+// (0x133370 DICfgC::DtorC re-homed to src/DinMgr2/DirectInputMgr2.cpp next to
+// CInputDevRoot; the DICfgC view is dissolved.)
 
-// 0x1396f0 - CParseSource-area init. The 0x5ef740 vtable is a SECONDARY / embedded
-// intrusive-hash-node vtable (stamped at +0x1c). Realized as an embedded polymorphic
-// node member (placement-constructed so its implicit vptr stamp supplies the store).
-struct HashNode1396f0 {
-    virtual void v0();
-    virtual void v1();
-};
-VTBL(HashNode1396f0, 0x001ef740); // ??_7HashNode1396f0 @ 0x5ef740 (reloc-masked)
-SIZE_UNKNOWN(HashNode1396f0);
-struct CParseSource {
-    void* m_0; // +0x00
-    i32 _4[(0x10 - 0x4) / 4];
-    i32 m_10; // +0x10
-    i32 _14[(0x1c - 0x14) / 4];
-    HashNode1396f0 m_1c; // +0x1c (embedded polymorphic node; ctor stamps its vptr)
-    i32 _20[(0x30 - 0x20) / 4];
-    void* volatile m_30; // +0x30 (0 then self; volatile pins the dead store + order)
-    i32 m_34;            // +0x34
-    CParseSource* Init();
-};
-SIZE_UNKNOWN(CParseSource);
+// (0x1396f0 CParseSource::Init re-homed to src/Gruntz/ParseSource.cpp; the HashNode1396f0
+// + CParseSource views dissolved onto the real CParseSource (ParseSource.h), which now
+// models the embedded hash-node + self-link and carries VTBL(HashNode1396f0, 0x1ef740).)
 
 // 0x1570d0 / 0x157240 - flat volatile-tuned worker reset (redundant-store shape). This
 // is NOT the polymorphic CDDrawWorkerA/B in CDDrawWorkerNode.h - renamed to avoid the
@@ -156,92 +131,14 @@ SIZE_UNKNOWN(CPageStore17b510);
 // (CDDPalette / CDDrawPtrCollections factory views dissolved: Create @0x143040
 // re-homed to src/DDrawMgr/DDrawPtrCollections.cpp onto the canonical classes.)
 
-// 0x1509c0 - CWwdGameObject visibility test.
-struct WwdExtent {
-    i32 _0[0x18 / 4];
-    i32 m_halfW; // +0x18  half-width
-    i32 m_halfH; // +0x1c  half-height
-};
-SIZE_UNKNOWN(WwdExtent);
-struct WwdCamRect {
-    i32 a; // +0x40 (left)
-    i32 b; // +0x44 (top)
-    i32 c; // +0x48 (right)
-    i32 d; // +0x4c (bottom)
-};
-SIZE_UNKNOWN(WwdCamRect);
-struct WwdCamHolder {
-    i32 _0[0x5c / 4];
-    char* m_5c; // +0x5c -> &m_40 rect via +0x40
-};
-SIZE_UNKNOWN(WwdCamHolder);
-struct WwdGridLim {
-    i32 _0[0x10 / 4];
-    i32 m_width;  // +0x10
-    i32 m_height; // +0x14
-};
-SIZE_UNKNOWN(WwdGridLim);
-struct WwdGridHolder {
-    i32 _0[0x10 / 4];
-    WwdGridLim* m_limits; // +0x10
-};
-SIZE_UNKNOWN(WwdGridHolder);
-struct WwdCtx {
-    i32 _0[1];             // +0x00
-    WwdGridHolder* m_grid; // +0x04
-    i32 _8[(0x24 - 0x8) / 4];
-    WwdCamHolder* m_camera; // +0x24
-};
-SIZE_UNKNOWN(WwdCtx);
-struct CWwdGameObject {
-    i32 _0[2];     // +0x00
-    u32 m_flags;   // +0x08
-    WwdCtx* m_ctx; // +0x0c
-    i32 _10[(0x5c - 0x10) / 4];
-    i32 m_centerX; // +0x5c
-    i32 m_centerY; // +0x60
-    i32 _64[(0x198 - 0x64) / 4];
-    WwdExtent* m_extent; // +0x198
-    i32 Test();
-};
-SIZE_UNKNOWN(CWwdGameObject);
-RELOC_VTBL(
-    CWwdGameObject,
-    0x001f0020
-); // reduced/derived view aliases CWwdGameObjectE (slot-RVA verified)
+// (0x1509c0 CWwdGameObject::Test re-homed to src/Wwd/WwdGameObject.cpp onto the real
+// CWwdGameObject; the WwdExtent/WwdCamRect/WwdCamHolder/WwdGridLim/WwdGridHolder/WwdCtx/
+// CWwdGameObject views dissolved - the 0x1f0020 vtable is bound by the real
+// VTBL(CWwdGameObjectE) in WwdGameObject.cpp, so the RELOC_VTBL alias here is redundant.)
 
-// 0x13a530 - CSymTab remove-entry.
-struct CHashBase {
-    void Unlink(void* p); // 0x184ab0
-};
-SIZE_UNKNOWN(CHashBase);
-struct SymEntry2 {
-    i32 _0[0xc / 4];
-    i32 m_span; // +0x0c
-    i32 _10[(0x1c - 0x10) / 4];
-    i32 m_1c; // +0x1c
-    // Teardown @0x1397a0 IS Obj1397a0::Teardown; cast at the call.
-};
-SIZE_UNKNOWN(SymEntry2);
-struct SymEntry1 {
-    i32 _0[0x24 / 4];
-    CHashBase m_24; // +0x24
-};
-SIZE_UNKNOWN(SymEntry1);
-struct SymList18 {
-    i32 _0[2];
-    i32 m_count; // +0x08
-    // Drop @0x13c210 IS CSymParser::AddNode; cast at the call.
-};
-SIZE_UNKNOWN(SymList18);
-struct CSymTab {
-    i32 _0[4];
-    i32 m_size;        // +0x10  running total span
-    i32 _14;           // +0x14
-    SymList18* m_list; // +0x18
-    i32 Remove(SymEntry1* a1, SymEntry2* a2);
-};
-SIZE_UNKNOWN(CSymTab);
+// (0x13a530 CSymTab::AddNodeSubEntry re-homed to src/Bute/SymTab.cpp; the CHashBase/
+// SymEntry1/SymEntry2/SymList18/CSymTab views dissolved onto the canonical CSymTab/
+// CSymRec/CHashTable/CSymParser.)
 
 // 0x17e230 - destroy a by-value CDataBuffer-like parameter.
 struct DBuf17e230 {
@@ -250,15 +147,8 @@ struct DBuf17e230 {
 };
 SIZE_UNKNOWN(DBuf17e230);
 
-// 0x143950 - CDDrawPtrCollections palette upload.
-struct CPalObj143950 {
-    i32 _0[0x53c / 4];
-    u8 m_pal[256][4]; // +0x53c
-    i32 m_dirty;      // +0x93c
-    i32 m_tag;        // +0x940
-    i32 SetPalette(const u8* src, i32 tag);
-};
-SIZE_UNKNOWN(CPalObj143950);
+// (0x143950 CDDrawPtrCollections::Make950 re-homed to DDrawPtrCollections.cpp; the
+// CPalObj143950 view dissolved onto the real CDDrawPtrCollections palette fields.)
 
 // 0x148af0 - CImageOwned setup (zero the 0x6c-byte transform, fill, Apply, commit).
 struct ImgOwnedX {

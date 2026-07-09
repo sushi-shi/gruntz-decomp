@@ -14,6 +14,7 @@
 // - so the three "CRezDir"-labeled functions are actually three different classes).
 // The container layouts it would confirm are already pinned by the two ctors below.
 #include <Rez/RezMgr.h>
+#include <Rez/RezFile.h> // CRezFile::Close (the 0x13cb80 /GX dtor's child cleanup)
 #include <rva.h>
 
 // The owner's embedded child list a CRezParseNode enrolls itself into is the
@@ -273,6 +274,34 @@ i32 CRezItm::Scan() {
     return 0;
 }
 
+// The open-file registry lookup (0x18ccd0): returns the FILE*'s slot or -1 if the
+// handle is no longer registered. Statically-linked CRT-ish helper; external no-body
+// (reloc-masked). __cdecl, arg on the stack.
+extern "C" i32 RezDirLookup(void* fp); // 0x18ccd0
+
+// ---------------------------------------------------------------------------
+// CRezItm::Check()  (vtable slot 7; re-homed from src/Stub/BoundaryUpper.cpp)
+// Reset the cursor, look the FILE* up in the open-file registry; if still registered
+// return 1, else re-Open from the stored filename/flags and normalize to bool.
+// @early-stop
+// slot-4-devirt wall: the retail slot-7 body dispatches the Open self-call VIRTUALLY
+// (`mov eax,[this]; call [eax+0x10]` = vtable slot 4). CRezItm still models its stream
+// methods non-virtual, so Open resolves here as a direct `call 0x13c760` - byte-exact
+// everywhere except that one call encoding. Closes fully once CRezItm/CRezItmBase are
+// converted to real virtuals in retail slot order (Slot00,dtor,Read,Write,Open,Close,
+// Scan,Check) - a shared-base vtable conversion larger than this leaf move.
+RVA(0x0013c8f0, 0x41)
+i32 CRezItm::Check() {
+    m_pos = -1;
+    if (!m_fp) {
+        return 0;
+    }
+    if (RezDirLookup(m_fp) != -1) {
+        return 1;
+    }
+    return Open((char*)m_readBuf, m_18, 0) != 0;
+}
+
 // ---------------------------------------------------------------------------
 // CRezDir::CRezDir(parent, rezMgr)
 // Base ctor, then the two embedded child-collection list members auto-construct
@@ -290,6 +319,67 @@ CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
     m_34 = 0;
     m_rezMgr = rezMgr;
     m_30 = 1;
+}
+
+// ---------------------------------------------------------------------------
+// The two CRezDir-family /GX destructors (re-homed from src/Stub/BoundaryUpper2Eh.cpp),
+// co-located next to CRezDir. Their derived vtables (0x1ef760/0x1ef7d0) are CObjListBase-
+// family; the shared out-of-line base subobject dtor is 0x13c520 (== CRezItmBase's).
+// Kept distinct placeholder identities (CRezDir13c9b0/CRezDir13cb80) since they are not
+// the same symbol as CRezDir's inline dtor.
+// ---------------------------------------------------------------------------
+struct RezDirBase {
+    virtual ~RezDirBase(); // 0x13c520 (shared base-subobject dtor)
+};
+SIZE_UNKNOWN(RezDirBase);
+struct RezListNode {
+    virtual void v0();
+    virtual void Delete(i32); // slot 1 (+0x4)
+};
+SIZE_UNKNOWN(RezListNode);
+struct CRezDir13c9b0 : RezDirBase {
+    i32 _4[(0x10 - 0x4) / 4];
+    void* m_10;        // +0x10
+    RezListNode* m_14; // +0x14
+    i32 _18;           // +0x18
+    void* m_1c;        // +0x1c
+    RezListNode* m_20; // +0x20
+    virtual ~CRezDir13c9b0() OVERRIDE;
+};
+SIZE_UNKNOWN(CRezDir13c9b0);
+RELOC_VTBL(CRezDir13c9b0, 0x001ef760); // aliases CObjListBase (dtor-stamp verified)
+RVA(0x0013c9b0, 0x7f)
+CRezDir13c9b0::~CRezDir13c9b0() {
+    while (m_14) {
+        m_14->Delete(1);
+    }
+    while (m_20) {
+        m_20->Delete(1);
+    }
+}
+struct RezOwner18 {
+    i32 _0[0x1c / 4];
+    CObjList m_1c; // +0x1c
+};
+SIZE_UNKNOWN(RezOwner18);
+struct CRezDir13cb80 : RezDirBase {
+    i32 _4[(0x10 - 0x4) / 4];
+    void* m_10;       // +0x10
+    i32 m_14;         // +0x14
+    RezOwner18* m_18; // +0x18
+    virtual ~CRezDir13cb80() OVERRIDE;
+};
+SIZE_UNKNOWN(CRezDir13cb80);
+RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
+RVA(0x0013cb80, 0x72)
+CRezDir13cb80::~CRezDir13cb80() {
+    if (m_14) {
+        ((CRezFile*)this)->Close();
+    }
+    if (m_10) {
+        RezFree(m_10);
+    }
+    m_18->m_1c.Remove((CObjNode*)this);
 }
 
 // ---------------------------------------------------------------------------

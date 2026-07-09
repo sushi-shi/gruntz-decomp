@@ -98,25 +98,10 @@ C161500::~C161500() {
 // class + its VTBL already live. See that TU.
 // ---------------------------------------------------------------------------
 
-// ---------------------------------------------------------------------------
-// 0x168c10 - leaf dtor (stamp derived 0x5f0328, fold base ??_7CObject 0x5e8cb4). Member
-// teardown 0x191800 == CWwdGrid::FreeBuckets (called on this) -> owns/is a CWwdGrid
-// (0x5f0328 has no RTTI name; exact class unconfirmed).
-// ---------------------------------------------------------------------------
-struct Sev168c10 {
-    virtual ~Sev168c10();
-};
-SIZE_UNKNOWN(Sev168c10);
-inline Sev168c10::~Sev168c10() {}
-struct C168c10 : Sev168c10 {
-    virtual ~C168c10() OVERRIDE;
-};
-SIZE_UNKNOWN(C168c10);
-RELOC_VTBL(C168c10, 0x001f0328); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00168c10, 0x46)
-C168c10::~C168c10() {
-    ((CWwdGrid*)this)->FreeBuckets();
-}
+// (0x168c10 re-homed to src/Wwd/WwdGrid.cpp next to CWwdGrid - it is a second,
+// un-COMDAT-folded copy of ~CWwdGrid @0x1682a0 (byte-identical, stamps 0x5f0328 +
+// FreeBuckets); kept the distinct placeholder identity C168c10 since name-injectivity
+// forbids two ~CWwdGrid. Both dtors + FreeBuckets stay 100% in that TU.)
 
 // ---------------------------------------------------------------------------
 // 0x15b6d0 - leaf dtor (stamp derived 0x5f0128, fold base ??_7CObject 0x5e8cb4). Member
@@ -204,26 +189,9 @@ RELOC_VTBL(C17e990, 0x001f07c0); // aliases CFaderMesh (dtor-stamp verified)
 RVA(0x0017e990, 0x6b)
 C17e990::~C17e990() {}
 
-// ---------------------------------------------------------------------------
-// 0x163a40 - dtor whose destructible base subobject lives at +0x70 (folds ??_7CObject
-// 0x5e8cb4). Member teardown 0x1682f0 == CWwdSpatialMgr::FreeGrids -> owns a CWwdSpatialMgr.
-// No most-derived vptr at offset 0.
-// ---------------------------------------------------------------------------
-struct Base163a40 {
-    virtual ~Base163a40();
-};
-SIZE_UNKNOWN(Base163a40);
-inline Base163a40::~Base163a40() {}
-struct C163a40 {
-    char _0[0x70];
-    Base163a40 m_70; // +0x70
-    ~C163a40();
-};
-SIZE_UNKNOWN(C163a40);
-RVA(0x00163a40, 0x41)
-C163a40::~C163a40() {
-    ((CWwdSpatialMgr*)this)->FreeGrids();
-}
+// (0x163a40 re-homed to src/Wwd/WwdSpatialMgr.cpp next to CWwdSpatialMgr::FreeGrids -
+// it destructs a CWwdSpatialMgr (base subobject at +0x70, FreeGrids on this); kept the
+// distinct placeholder identity C163a40 (most-derived vptr not at offset 0).)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

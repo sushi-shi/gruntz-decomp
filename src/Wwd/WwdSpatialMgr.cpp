@@ -221,6 +221,27 @@ void CWwdSpatialMgr::FreeGrids() {
     m_mgr = 0;
 }
 
+// 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX dtor whose destructible
+// CObject base subobject lives at +0x70 and whose member teardown is CWwdSpatialMgr::
+// FreeGrids on `this` - i.e. it destructs a CWwdSpatialMgr. Co-located here next to
+// FreeGrids; kept a distinct placeholder identity (C163a40, most-derived vptr not at
+// offset 0) since it is not the same symbol as the class's inline dtor.
+struct Base163a40 {
+    virtual ~Base163a40();
+};
+SIZE_UNKNOWN(Base163a40);
+inline Base163a40::~Base163a40() {}
+struct C163a40 {
+    char _0[0x70];
+    Base163a40 m_70; // +0x70  destructible CObject base subobject
+    ~C163a40();
+};
+SIZE_UNKNOWN(C163a40);
+RVA(0x00163a40, 0x41)
+C163a40::~C163a40() {
+    ((CWwdSpatialMgr*)this)->FreeGrids();
+}
+
 // ===========================================================================
 // 0x168340 - ScrollTo(dx, dy): if unchanged, return 0; else cache the new
 // position and re-bucket every grid by the (origin -> new) delta, accumulating
@@ -265,7 +286,6 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
 }
 
 // CWwdSpatialMgr::GetSize (0x00168430) is now an inline member in the header.
-
 
 // ===========================================================================
 // 0x168460 - CountInRect(grid): walk the grid; for each object whose worker is
