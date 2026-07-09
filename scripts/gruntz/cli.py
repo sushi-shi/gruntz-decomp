@@ -177,15 +177,16 @@ def summarize(report: dict) -> None:
     # placeholder / view deltas (vs the committed baseline) immediately alongside
     # the match %, and steer on their own change. See docs/cleanliness-metrics.md.
     try:
-        from gruntz.match.cleanliness import count, report_lines, save_baseline
+        from gruntz.match.cleanliness import count, report_lines, save_baseline, merge_baseline_downonly
         rows = count()
         for line in report_lines(rows):
             print(f"  {line}")
-        # Roll the baseline forward as part of the build: the delta printed above is
-        # 'change since the last committed build', and the refreshed baseline is a
-        # tracked build artifact (committed with the work, like the README score
-        # block / match baseline). Keeps it from silently freezing.
-        save_baseline(rows)
+        # Roll the baseline forward as part of the build, but DOWN-ONLY for the
+        # ratcheted view/cast metrics: a regression is held at the floor (shown as
+        # persistent debt), never blessed away, so the fake-view ratchet can't creep
+        # up silently across builds; other tracked metrics roll forward. Blessing a
+        # LOWER floor stays a deliberate act (`cleanliness --update`).
+        save_baseline(merge_baseline_downonly(rows))
     except Exception as exc:  # never let the scoreboard break a build report
         print(f"  cleanliness: (unavailable: {exc})")
     # Vtable-health scoreboard (from the BINARY-PROVEN vtables, not text): the

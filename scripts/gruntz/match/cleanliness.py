@@ -176,6 +176,23 @@ def save_baseline(rows: list[tuple[str, int]]) -> None:
     BASELINE.write_text("".join(f"{lbl}\t{n}\n" for lbl, n in rows))
 
 
+def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]]:
+    """Rows to persist during a build's baseline roll: the RATCHETED metrics
+    (_VIEW_METRICS - views + the fake-view-propagating casts) never RISE. Keep
+    min(new count, committed floor) so a regression stays visible as debt on every
+    later build instead of being silently blessed into the floor; other (tracked,
+    non-ratcheted) metrics roll forward as before. Manual ``--update`` still writes
+    the true counts (the one deliberate way to bless a floor - only ever lower)."""
+    base = load_baseline()
+    out = []
+    for label, n in rows:
+        if label in _VIEW_METRICS and label in base:
+            out.append((label, min(n, base[label])))
+        else:
+            out.append((label, n))
+    return out
+
+
 def _cell(label: str, n: int, base: dict[str, int], width: int) -> str:
     """`label   NNN (+d)` - delta vs baseline (down = good). Blank delta if 0/new."""
     d = n - base[label] if label in base else 0
