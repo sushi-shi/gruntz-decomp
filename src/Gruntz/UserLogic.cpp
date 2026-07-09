@@ -146,7 +146,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     CTileSecretTrigger(CGameObject* obj);      // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
-    static void InitActReg();       // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
+    static void InitActReg(); // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
     void FireActivation(i32 coord); // 0x10f1e0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs();     // 0x10f340 (binds "A"/"B" handlers)
     i32 Act_10f6a0();               // 0x10f6a0 ("A" handler)
@@ -223,12 +223,12 @@ public:
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
-    static void InitActReg();  // 0x10d840
-    void FireWarp(i32 coord);  // 0x10d8c0 (vtable slot 4)
-    static void RegisterActs();// 0x10da20
-    i32 AdvanceAnim();         // 0x10dc20
-    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled leaf tail; size 0x54 proven from
-                               //         the state pump's `new CWarpStonePad` = new(0x54))
+    static void InitActReg();   // 0x10d840
+    void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
+    static void RegisterActs(); // 0x10da20
+    i32 AdvanceAnim();          // 0x10dc20
+    char m_pad40[0x54 - 0x40];  // +0x40  (unmodeled leaf tail; size 0x54 proven from
+                                //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
 SIZE(CTileTriggerSwitch, 0x54);
@@ -246,7 +246,7 @@ public:
     static void RegisterActs();     // 0x10e000
     i32 AdvanceAnim();              // 0x10e200
     char m_pad40[0x54 - 0x40];      // +0x40  (unmodeled leaf tail; size 0x54 proven from
-                                    //         the state pump's `new CTileTriggerSwitch` = new(0x54))
+    //         the state pump's `new CTileTriggerSwitch` = new(0x54))
 };
 VTBL(CTileTriggerSwitch, 0x1e7f6c);
 
@@ -623,8 +623,7 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
-    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d)
-           != 0;
+    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
 }
 
 // --- CSecretTeleporterTrigger::~CSecretTeleporterTrigger (0x010ab0) ---
@@ -684,9 +683,7 @@ CVoiceTrigger::CVoiceTrigger() {}
 
 // CUserLogic::GetScreenPos (0x00029a50) is now an inline member in the header.
 
-
 // CUserLogic::IsAtSavedScreenPos (0x00029a80) is now an inline member in the header.
-
 
 // --- CTeleporter (0x041020), vptr 0x5e80cc ---
 CTeleporter::~CTeleporter() {}
@@ -1251,59 +1248,59 @@ i32 CSingleAnimation::AdvanceAnim() {
 // the state object's vtable slots otherwise. Shared via a macro; only the leaf +
 // its `new`-size differ. In ascending retail-RVA order.
 // ---------------------------------------------------------------------------
-#define TILE_LOGIC_WORKER_PUMP(LEAF)                                                                \
-    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;                          \
-    switch (ctl->m_stateId) {                                                                       \
-        case 0: {                                                                                   \
-            ctl->m_stateId = 0x3e8;                                                                  \
-            LEAF* t = new LEAF(obj);                                                                 \
-            ((CTileTransitionState*)t)->Activate();                                                  \
-            ctl->m_state = (CTileTransitionState*)t;                                                 \
-            break;                                                                                   \
-        }                                                                                           \
-        case 0x1d:                                                                                   \
-            ctl->m_state->Vfunc2C();                                                                 \
-            break;                                                                                   \
-        case 0x1e:                                                                                   \
-            ctl->m_state->Vfunc28();                                                                 \
-            break;                                                                                   \
-        case 0x50:                                                                                   \
-            ctl->m_state->Vfunc38();                                                                 \
-            break;                                                                                   \
-        case 0x51:                                                                                   \
-            ctl->m_state->Vfunc34();                                                                 \
-            break;                                                                                   \
-        case 0x52:                                                                                   \
-            ctl->m_state->Vfunc30();                                                                 \
-            break;                                                                                   \
-        case 0x53:                                                                                   \
-            ctl->m_state->Vfunc3C();                                                                 \
-            break;                                                                                   \
-        case 0x3e8:                                                                                  \
-            break;                                                                                   \
-        default:                                                                                     \
-            TileTransitionDefaultStep(ctl->m_state);                                                 \
-            break;                                                                                   \
-    }                                                                                               \
+#define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;                        \
+    switch (ctl->m_stateId) {                                                                      \
+        case 0: {                                                                                  \
+            ctl->m_stateId = 0x3e8;                                                                \
+            LEAF* t = new LEAF(obj);                                                               \
+            ((CTileTransitionState*)t)->Activate();                                                \
+            ctl->m_state = (CTileTransitionState*)t;                                               \
+            break;                                                                                 \
+        }                                                                                          \
+        case 0x1d:                                                                                 \
+            ctl->m_state->Vfunc2C();                                                               \
+            break;                                                                                 \
+        case 0x1e:                                                                                 \
+            ctl->m_state->Vfunc28();                                                               \
+            break;                                                                                 \
+        case 0x50:                                                                                 \
+            ctl->m_state->Vfunc38();                                                               \
+            break;                                                                                 \
+        case 0x51:                                                                                 \
+            ctl->m_state->Vfunc34();                                                               \
+            break;                                                                                 \
+        case 0x52:                                                                                 \
+            ctl->m_state->Vfunc30();                                                               \
+            break;                                                                                 \
+        case 0x53:                                                                                 \
+            ctl->m_state->Vfunc3C();                                                               \
+            break;                                                                                 \
+        case 0x3e8:                                                                                \
+            break;                                                                                 \
+        default:                                                                                   \
+            TileTransitionDefaultStep(ctl->m_state);                                               \
+            break;                                                                                 \
+    }                                                                                              \
     return 1;
 
 RVA(0x0010cb10, 0xf1)
-i32 TileTriggerStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileTrigger) }
+i32 TileTriggerStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTrigger)}
 
 RVA(0x0010cc50, 0xf1)
-i32 TileTriggerSwitchStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch) }
+i32 TileTriggerSwitchStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch)}
 
 RVA(0x0010cd90, 0xf1)
-i32 TileSecretTriggerStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger) }
+i32 TileSecretTriggerStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger)}
 
 RVA(0x0010ced0, 0xf1)
-i32 GiantRockStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CGiantRock) }
+i32 GiantRockStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CGiantRock)}
 
 RVA(0x0010d010, 0xf1)
-i32 CoveredPowerupStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CCoveredPowerup) }
+i32 CoveredPowerupStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
 
 RVA(0x0010d510, 0xf1)
-i32 WarpStonePadStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CWarpStonePad) }
+i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
 CWarpStonePad::~CWarpStonePad() {}
@@ -1375,6 +1372,18 @@ void CWarpStonePad::RegisterActs() {
     }
     ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
         &CWarpStonePad::AdvanceAnim;
+}
+
+// --- CWarpStonePad::SerializeMove (0x10f20), vtable slot 1 ---
+// The CSecretTeleporterTrigger::Serialize archetype: chain the shared serialize
+// helper on `this`, then (only on success) the +0x34 CSerialObjRef sub-object;
+// normalize the result to a strict bool. Adds no leaf fields.
+RVA(0x00010f20, 0x47)
+i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
 }
 
 // --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
@@ -1450,6 +1459,15 @@ void CTileTriggerSwitch::RegisterActs() {
         &CTileTriggerSwitch::AdvanceAnim;
 }
 
+// --- CTileTriggerSwitch::SerializeMove (0x11050), vtable slot 1 ---
+RVA(0x00011050, 0x47)
+i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+}
+
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj) {
@@ -1517,6 +1535,17 @@ void CTileTrigger::RegisterActs() {
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
         &CTileTrigger::AdvanceAnim;
+}
+
+// --- CTileTrigger::SerializeMove (0x111f0), vtable slot 1 ---
+// Base impl shared (inherited) by CGiantRock/CCoveredPowerup/CTileSecretTrigger
+// (their slot-1 vtable entries all point here - no leaf override).
+RVA(0x000111f0, 0x47)
+i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
 }
 
 // --- CTileSecretTrigger::InitActReg (0x10f160) ---

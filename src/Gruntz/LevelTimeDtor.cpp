@@ -4,6 +4,7 @@
 // prologue) against the matched <Gruntz/UserLogic.h> teardown.
 #include <Gruntz/LevelTimeDtor.h>
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
+#include <Gruntz/SerialObjRef.h>         // CSerialObjRef::Chain (0x8c00) for SerializeMove
 
 // CLevelTime::~CLevelTime @0x00011a50 - folds the bare CUserLogic teardown: store
 // the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
@@ -11,6 +12,16 @@
 // link forces the /GX EH frame.
 RVA(0x00011a50, 0x44)
 CLevelTime::~CLevelTime() {}
+
+// CLevelTime::SerializeMove (0x119b0), vtable slot 1 - the
+// CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
+RVA(0x000119b0, 0x47)
+i32 CLevelTime::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+}
 
 // CLevelTime::CLevelTime @0x9b8b0 - fold the shared CUserLogic(obj) init (with the
 // built-in logic types inlined-registered), then flag the sub-object (+0x08 bit 1).

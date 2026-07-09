@@ -25,19 +25,21 @@ class CExitTrigger : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
-    CExitTrigger(CGameObject* obj);            // 0x03ecf0 (1-arg leaf ctor)
+    CExitTrigger(CGameObject* obj); // 0x03ecf0 (1-arg leaf ctor)
     // 0x00010870 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00010870, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_EXITTRIGGER; }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_EXITTRIGGER;
+    }
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x3f040)
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CExitTrigger() OVERRIDE; // 0x0108c0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id
     char m_pad44[0x54 - 0x44];
-    i32 m_warlordId; // +0x54  resolved warlord id
-    i32 m_resolved;  // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
+    CUserLogic* m_warlordLogic; // +0x54  the resolved warlord's bound logic (obj->m_7c->m_logic)
+    i32 m_resolved;             // +0x58  resolved gate (1 = warlord bound, 0 = inactive slot)
 };
 VTBL(CExitTrigger, 0x001e822c);
 SIZE(CExitTrigger, 0x5c);

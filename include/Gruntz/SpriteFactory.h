@@ -68,7 +68,12 @@ public:
     virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
 };
 SIZE_UNKNOWN(GruntObjMap);
-struct GruntObjMap {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
+// MFC CMapPtrToPtr (the serialize-time key->object map). Lookup @0x1b8760 is
+// declared-only (external, no body) so the __thiscall `lea ecx,[&map]; call` falls
+// out reloc-masked - the MFC-free consumers reach it without pulling <afx.h>.
+struct GruntObjMap {
+    i32 Lookup(void* key, void*& out); // 0x1b8760 (CMapPtrToPtr::Lookup)
+};
 class CSpriteFactory {
 public:
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,

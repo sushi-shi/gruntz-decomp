@@ -10,7 +10,13 @@
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0; +0x48 GruntObjMap)
+#include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00) + CSerialArchive Read/Write
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+
+// The per-serialize round counter the archive helpers bump (DAT_00629ad0); the
+// DATA label is owned by spriteloaders - reference-only here.
+extern i32 g_serialCounter; // 0x629ad0
 
 // CExitTrigger::GetTypeTag (0x00010870) is now an inline member in the class header.
 
@@ -95,7 +101,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_object->m_areaB = 1;
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    m_warlordId = 0;
+    m_warlordLogic = 0;
     CFocusSlot* slot = &g_exitGameReg->m_focusSlots[m_object->m_124];
     if (slot->m_20 == 0) {
         m_resolved = 0;
@@ -109,10 +115,11 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
     if (e != 0) {
         e->m_124 = m_object->m_124;
         e->m_7c->Init(e);
-        // pointer-as-id snapshot of the aux setup slot (authentic DWORD storage)
-        m_warlordId = (i32)e->m_7c->m_logic;
+        // snapshot the warlord's bound logic (obj->m_7c->m_logic); the cue sink keeps
+        // it as a raw DWORD (authentic pointer-as-dword storage)
+        m_warlordLogic = e->m_7c->m_logic;
         if (m_object->m_124 == g_644c54) {
-            ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = m_warlordId;
+            ((CExitCueSink*)g_exitGameReg->m_cmdGrid)->m_2a0 = (i32)m_warlordLogic;
         }
         CFocusSlot* slot2 = &g_exitGameReg->m_focusSlots[m_object->m_124];
         if (slot2 != 0) {
@@ -120,4 +127,68 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
         }
     }
     m_resolved = 1;
+}
+
+// CExitTrigger::SerializeMove (0x3f040), vtable slot 1 - chain the shared serialize
+// helper + the +0x34 CSerialObjRef (both gate), then stream the exit state: the
+// resolved gate (m_resolved) directly, and the warlord as a persistent id that
+// round-trips through the sprite factory's key->object map. Write persists the
+// bound warlord's object id (0 if unbound); Read resolves the id back to a live
+// object and re-binds its logic. g_serialCounter is bumped each id write.
+//
+// @early-stop
+// ~93.7%: body byte-faithful (both chain gates, the mode-4/7 switch layout, the
+// m_resolved stream, the write-side id/counter path, the read-side Lookup + aux
+// deref + m_54 store). Residual is MSVC's branchless lowering of the read-side
+// `Lookup(key,found) ? found : 0` ternary (retail spells it branchy: test/je/
+// mov eax,found) + the mirrored key/found stack-slot assignment (esp+0x1c<->0x20).
+// A branch-vs-branchless codegen coin-flip - the permuter found no operand-order
+// spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
+RVA(0x0003f040, 0x147)
+i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    CSerialArchive* arc = (CSerialArchive*)ar;
+    if (!SerialRef34()->Chain(arc, mode, a3, (CSerialObj*)a4)) {
+        return 0;
+    }
+
+    CSpriteFactoryHolder* holder = g_exitGameReg->m_world;
+    switch (mode) {
+        case 7: {
+            arc->Read(&m_resolved, 4);
+            i32 key = 0;
+            arc->Read(&key, 4);
+            if (key != 0) {
+                void* found = 0;
+                CGameObject* obj =
+                    (CGameObject*)(holder->m_8->m_objMap.Lookup((void*)key, found) ? found : 0);
+                m_warlordLogic = obj->m_7c->m_logic;
+                if (m_warlordLogic == 0) {
+                    return 0;
+                }
+            } else {
+                m_warlordLogic = 0;
+            }
+            break;
+        }
+        case 4: {
+            arc->Write(&m_resolved, 4);
+            if (m_warlordLogic == 0) {
+                g_serialCounter++;
+                i32 id = 0;
+                arc->Write(&id, 4);
+            } else {
+                g_serialCounter++;
+                i32 id = 0;
+                if (m_warlordLogic->m_object != 0) {
+                    id = m_warlordLogic->m_object->m_188;
+                }
+                arc->Write(&id, 4);
+            }
+            break;
+        }
+    }
+    return 1;
 }

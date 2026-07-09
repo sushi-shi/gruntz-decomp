@@ -114,6 +114,20 @@ struct ObjSpawnEntry {
 // The resolution source (arg2): ResolvePath looks a namespaced key up, returning a
 // handle (0 if absent).
 
+// CAreaMgr::LoadObjectResources (0x9a4c0) - the composite entry that reconciles all
+// three asset namespaces for one spawn entry: gate on a null entry, then chain the
+// image/sound/anim reconcilers on `this`.
+RVA(0x0009a4c0, 0x3e)
+i32 CAreaMgr::LoadObjectResources(ObjSpawnEntry* entry, CSymTab* src) {
+    if (entry == 0) {
+        return 0;
+    }
+    LoadObjectImageResources(entry, src);
+    LoadObjectSoundResources(entry, src);
+    LoadObjectAnimResources(entry, src);
+    return 1;
+}
+
 // @source: decomp-xref
 // @early-stop
 // ~88.7%: complete + correct (the OBJECTZ_ GetNextAssoc scan, FindAdd reconcile,

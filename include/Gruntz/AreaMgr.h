@@ -55,6 +55,7 @@ public:
     // The OBJECTZ_ namespace asset reconcilers (LoadObjectResources.cpp): walk
     // the entry's registry map, reconcile against m_spawnEntryList, install the
     // still-unwanted assets through the registry.
+    i32 LoadObjectResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a4c0 (drives the 3 below)
     i32 LoadObjectImageResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a510
     i32 LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src); // 0x09a910
     i32 LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src);  // 0x09ac20

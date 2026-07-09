@@ -9,10 +9,11 @@
 // this lives in a dedicated TU so it can pull the shared
 // <Gruntz/ActNameRegistry.h> view of the registry globals without colliding with
 // the stub TU's class model.
-#include <Gruntz/ActNameRegistry.h>      // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>               // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActNameRegistry.h>       // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>                // the shared CActReg coordinate-registry archetype
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) for SerializeMove
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
@@ -34,7 +35,7 @@ public:
 
     i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled leaf tail; size 0x54 proven from
-                               //         the state pump's `new CStatusBarSprite` = operator new(0x54))
+    //         the state pump's `new CStatusBarSprite` = operator new(0x54))
 };
 VTBL(CStatusBarSprite, 0x1e7fc4);
 SIZE(CStatusBarSprite, 0x54);
@@ -175,4 +176,14 @@ void CStatusBarSprite::RegisterActs() {
     }
     ((CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(id))->m_fn =
         &CStatusBarSprite::AdvanceAnim;
+}
+
+// CStatusBarSprite::SerializeMove (0x11ae0), vtable slot 1 - the
+// CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
+RVA(0x00011ae0, 0x47)
+i32 CStatusBarSprite::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
 }

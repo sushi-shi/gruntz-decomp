@@ -17,6 +17,7 @@ public:
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30
     virtual ~CGruntStartingPoint() OVERRIDE; // 0x10670 (folds the CUserLogic teardown)
+    void FireActivation(i32 coord); // 0x3e1a0 (vtable slot 4: per-coord PMF dispatch, R4 registry)
     char m_pad40[0x54 - 0x40];
 };
 VTBL(CGruntStartingPoint, 0x1e8284);

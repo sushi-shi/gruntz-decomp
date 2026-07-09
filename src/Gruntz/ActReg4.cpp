@@ -16,6 +16,7 @@
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/GruntStartingPoint.h> // the R4 registry's owning class (FireActivation dispatch)
 
 // The shared type-name registry (R1 @0x6bf650) - identical to the other registrars.
 // CTypeColl2 (the Insert facet) is the shared def in <Gruntz/TypeColl2.h>.
@@ -71,6 +72,14 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     return g_typeCur;
 }
 
+// The R4 dispatch entry carries the per-coord handler PMF (a 4-byte code pointer on
+// the complete single-inheritance CGruntStartingPoint). Same shape as R4Entry.
+typedef i32 (CGruntStartingPoint::*StartActHandler)();
+struct StartActEntry {
+    StartActHandler m_fn;
+};
+SIZE_UNKNOWN(StartActEntry);
+
 static inline R4Entry* R4Lookup(i32 coord) {
     g_actReg4Scratch = 0;
     if (coord >= g_actReg4Lo && coord <= g_actReg4Hi) {
@@ -112,6 +121,20 @@ void ActReg4RegisterType() {
         g_typeCounter++;
     }
     *(void**)R4Lookup(id) = (void*)&ActReg4Handler;
+}
+
+// CGruntStartingPoint::UserLogicVfunc2 / FireActivation (0x3e1a0), vtable slot 4 -
+// look the activation coordinate up in this class's R4 registry (g_actReg4); if the
+// resolved entry carries a registered handler PMF, resolve it again and dispatch it
+// __thiscall on `this`. The SAME double-ResolveEntry + PMF-fire archetype as
+// CTileTriggerTransition::FireActivation, driving the R4 (g_actReg4) table.
+RVA(0x0003e1a0, 0x102)
+void CGruntStartingPoint::FireActivation(i32 coord) {
+    StartActEntry* e = (StartActEntry*)R4Lookup(coord);
+    if (e->m_fn != 0) {
+        StartActEntry* e2 = (StartActEntry*)R4Lookup(coord);
+        (this->*(e2->m_fn))();
+    }
 }
 
 SIZE_UNKNOWN(CActReg4);

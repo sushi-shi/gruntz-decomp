@@ -20,9 +20,10 @@
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the m_38+0x1a0 anim sub-object)
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) for SerializeMove
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
@@ -59,10 +60,12 @@ public:
 
     // 0x011730 - per-class logic-type id (0x405), inline (one deduped COMDAT copy).
     RVA(0x00011730, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TILETRIGGERTRANSITION; }
-    void Register_10fc90();                       // 0x10fc90
-    void FireActivation(i32 coord);               // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
-    void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TILETRIGGERTRANSITION;
+    }
+    void Register_10fc90();         // 0x10fc90
+    void FireActivation(i32 coord); // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
+    void RegisterActs();            // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
     i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
 
@@ -89,6 +92,16 @@ SIZE_UNKNOWN(TileActEntry);
 // CUserLogic base teardown (the 0x117f0 ~CUserLogic COMDAT).
 // ---------------------------------------------------------------------------
 CTileTriggerTransition::~CTileTriggerTransition() {}
+
+// CTileTriggerTransition::SerializeMove (0x11750), vtable slot 1 - the
+// CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
+RVA(0x00011750, 0x47)
+i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+}
 
 // CTileTriggerTransition::GetTypeTag (0x011730) is now an inline member in the
 // class declaration above.
