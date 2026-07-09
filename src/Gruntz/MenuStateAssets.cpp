@@ -12,7 +12,7 @@
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
-    void RemoveKeysEqual_155360(const char* a, const char* b);
+    i32 RemoveKeysEqual_155360(const char* a, const char* b);
     void Method_155630(i32 h, char* t, i32* o);
 }; // 0x155550/0x155360/0x155630
 // MenuStateAssets.cpp - CMenuState::LoadAssets (0x09fe50, 835 B), the MENU game-

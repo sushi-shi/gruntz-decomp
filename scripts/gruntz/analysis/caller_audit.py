@@ -292,7 +292,7 @@ class Audit:
         self.r2f = build_rva2file()
         self.in_header, self.header_blob = build_decl_index()
         d, secs = xref._load()
-        _names, _byname, fstarts = xref._names()
+        _names, _byname, fstarts, _fsize = xref._names()
         self.names = _names
         func_rvas = [r for r, (_, _, _, k) in self.syms.items() if k == "func"]
         self.tgt = target_edges(func_rvas, d, secs, fstarts)

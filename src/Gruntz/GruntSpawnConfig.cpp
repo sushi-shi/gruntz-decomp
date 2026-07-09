@@ -17,7 +17,7 @@ public:
 };
 class DirectSoundMgr {
 public:
-    void SetVolumeByIndex(i32 v);
+    i32 SetVolumeByIndex(i32 v); // DirectSoundMgr::SetVolumeByIndex (i32 ret; call ignores it)
 };
 #include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>

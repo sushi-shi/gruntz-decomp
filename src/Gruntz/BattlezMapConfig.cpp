@@ -220,7 +220,7 @@ public:
     GridCandNode* m_objListHead; // +0x04  base object-list head (the candidate list)
     char m_pad08[0x1c - 0x08];
     GridUnit* m_grid[0x3c]; // +0x1c  the 4x15 placed-cell grid (stride 4), indexed [band*15 + k]
-    void ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120
+    i32 ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120 (CTriggerMgr::ApplyTriggerB, i32 ret)
     i32 Probe(
         i32 cell,
         i32 sx,

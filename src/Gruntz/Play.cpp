@@ -69,7 +69,7 @@
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
-    void RemoveKeysEqual_155360(const char* a, const char* b);
+    i32 RemoveKeysEqual_155360(const char* a, const char* b);
 }; // 0x155550/0x155360
 class CDDrawSubMgrAni {
 public:

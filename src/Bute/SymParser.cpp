@@ -14,15 +14,13 @@
 
 // CParseSlot::Init @0x1396f0 IS CParseSource::Init (header-less here); minimal local decl.
 SIZE_UNKNOWN(CParseSource);
-class CParseSource {
-public:
+struct CParseSource { // struct (not class): retail mangles Init's return PAU (?Init@CParseSource@@QAEPAU1@XZ)
     CParseSource* Init();
 };
 
 // The +0x80 hash member's construction (0x184960) is CSymList::Construct; TU-local decl
 // (the real array-backed list container lives in the symtab unit).
-class CSymList {
-public:
+struct CSymList { // struct (not class): retail mangles Construct's return PAU (?Construct@CSymList@@QAEPAU1@H@Z)
     CSymList* Construct(i32 count);
 };
 
