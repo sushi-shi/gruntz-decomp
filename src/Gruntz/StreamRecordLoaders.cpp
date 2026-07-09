@@ -71,7 +71,7 @@ extern i32 g_serialCounter;
 // the stream / registry is absent.
 // ===========================================================================
 struct CTriggerLoadRec {
-    i32 Load(CSerialArchive* s);
+    i32 Deserialize(CSerialArchive* s);
 
     i32 m_0, m_4, m_8, m_c; // +0x00..+0x0c  raw
     void* m_10;             // +0x10  indexed type ref
@@ -95,7 +95,7 @@ struct CTriggerLoadRec {
 // this-expression and a map-receiver temp (regressed to 89%); the store position
 // is the MSVC5 scheduler coin-flip, source-invariant.
 RVA(0x00009bb0, 0x367)
-i32 CTriggerLoadRec::Load(CSerialArchive* s) {
+i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }

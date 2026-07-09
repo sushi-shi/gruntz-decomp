@@ -49,6 +49,7 @@ struct CTmRecNode;
 struct CTmOverlay;   // the allocated overlay sub-object (+0x25c); completed in each TU
 struct CTmGoal;      // the goal object (+0x23c); completed in each TU
 struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
+class CActionOptionsMenuBar;
 
 // The embedded MFC containers, modeled as REAL typed members (not this+offset casts):
 // the base/record/selection lists are CObList (0x1c B: vptr + head/tail/count + free/
@@ -430,7 +431,7 @@ public:
     i32 m_recY;                   // +0x238  active-record y
     CTmGoal* m_goal;              // +0x23c  the goal object
     CTmObList m_recList;          // +0x240  record list (per-cell undo/record nodes)
-    CTmOverlay* m_overlay;        // +0x25c  the allocated overlay sub-object (0x40 B)
+    CActionOptionsMenuBar* m_overlay;        // +0x25c  the allocated overlay sub-object (0x40 B)
     CTmByteArray m_byteArr;       // +0x260  byte-table array
     char m_274[0x10];             // +0x274  serialized 16-byte region
     i32 m_284;                    // +0x284  build/reinit gate flag

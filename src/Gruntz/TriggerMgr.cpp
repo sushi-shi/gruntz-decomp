@@ -1,4 +1,6 @@
 #include <Gruntz/TriggerMgr.h>
+
+#include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/GruntzMgr.h>
@@ -10,6 +12,7 @@
 #include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
+
 // TriggerMgr.cpp - CTriggerMgr, the playfield tile-object / switch-trigger grid
 // manager (trace placeholder tomalla-23, C:\Proj\Gruntz). See TriggerMgr.h.
 //
@@ -148,27 +151,6 @@ struct CTmCell {
     i32 m_884; // +0x884
     i32 m_888; // +0x888  combat timeout config
     i32 m_88c; // +0x88c
-};
-
-// The small overlay sub-object allocated at CTriggerMgr+0x25c (0x40 bytes). Only its
-// reloc-masked __thiscall hooks are dispatched from the reconstructed leaves. The Load
-// deserializer new+Loads a fresh one (former CTmSerOverlay folded in).
-struct CTmOverlay {
-    CTmOverlay();                 // 0x9090  (ctor via new, reloc-masked)
-    void Tick();                  // 0x97f0  (reloc-masked)
-    i32 Release();                // 0x94c0  (reloc-masked) - ret used by OverlayRelease
-    void Clear();                 // 0x92e0  (reloc-masked) - destruct without freeing
-    void Forward(i32 a, i32 b);   // 0x49b86 (reloc-masked) - forward (x,y) to the overlay
-    i32 Load(CSerialArchive* ar); // 0x9bb0  (reloc-masked) - the overlay deserializer
-    void Dtor();                  // in-place dtor (DestroyGroup teardown, reloc-masked)
-    inline void* operator new(u32) {
-        return ::operator new(0x40);
-    }
-    i32 m_0; // +0x00  owned x
-    i32 m_4; // +0x04  owned y
-    char p8[0x2c - 0x8];
-    i32 m_2c; // +0x2c  active flag gating the per-frame OverlayTick
-    char p30[0x40 - 0x30];
 };
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
@@ -356,7 +338,7 @@ struct CTmLevel {
 // then __cdecl operator delete frees it.
 RVA(0x0006b680, 0x39)
 void CTriggerMgr::Cleanup() {
-    CTmOverlay* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_overlay;
     if (ov != 0) {
         ov->Clear();
         operator delete(ov);
@@ -597,8 +579,8 @@ found:
         }
         m_230 = 0;
     }
-    CTmOverlay* ov = m_overlay;
-    if (ov != 0 && ov->m_0 == p[0] && ov->m_4 == p[1]) {
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov != 0 && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
         OverlayTick();
     }
     void** slot = (void**)((char*)p - g_freeListNodeBias);
@@ -695,18 +677,18 @@ void CTriggerMgr::ClearRecords() {
 // 0x78a30: OverlayTick - dispatch the overlay sub-object's Tick when present.
 RVA(0x00078a30, 0x10)
 void CTriggerMgr::OverlayTick() {
-    CTmOverlay* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
-        ov->Tick();
+        ov->Deactivate();
     }
 }
 
 // 0x79b00: OverlayRelease - release the overlay sub-object when present; ret 1.
 RVA(0x00079b00, 0x15)
 i32 CTriggerMgr::OverlayRelease() {
-    CTmOverlay* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
-        return ov->Release();
+        return ov->Render();
     }
     return 1;
 }
@@ -1263,9 +1245,9 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
 // (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
 RVA(0x0007b1b0, 0x12b)
 i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
-    CTmOverlay* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_overlay;
     m_pendingFxKind = 0;
-    if (ov == 0 || ov->m_2c == 0) {
+    if (ov == 0 || ov->m_active == 0) {
         return 0;
     }
     CTmCell* cell;
@@ -1892,8 +1874,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (cell == 0 || cell->m_1ec != g_644c54) {
         return 0;
     }
-    CTmOverlay* ov = m_overlay;
-    if (ov != 0 && ov->m_2c != 0) {
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov != 0 && ov->m_active != 0) {
         ov->Forward(x, y);
         return 1;
     }
@@ -2216,8 +2198,8 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
 RVA(0x0007cd40, 0x18f)
 i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
-    CTmOverlay* ov = m_overlay;
-    if (ov != 0 && ov->m_2c != 0) {
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov != 0 && ov->m_active != 0) {
         OverlayTick();
     }
     CTmNode* n = m_selLists[slot].m_head;
@@ -2641,7 +2623,7 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     }
 
     // the overlay sub-object (+0x25c): tear down the old, rebuild + Load the new
-    CTmOverlay* old = m_overlay;
+    CActionOptionsMenuBar* old = m_overlay;
     if (old != 0) {
         old->Clear();
         RezFree(old);
@@ -2650,9 +2632,9 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     i32 hasOverlay;
     ar->Read(&hasOverlay, 4);
     if (hasOverlay != 0) {
-        CTmOverlay* ov = new CTmOverlay;
+        CActionOptionsMenuBar* ov = new CActionOptionsMenuBar;
         m_overlay = ov;
-        if (ov->Load(ar) == 0) {
+        if (ov->Deserialize(ar) == 0) {
             return 0;
         }
     }
@@ -2744,11 +2726,11 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
     (void)force;
-    CTmOverlay* ov = m_overlay;
+    CActionOptionsMenuBar* ov = m_overlay;
     if (ov == 0) {
-        m_overlay = new CTmOverlay;
+        m_overlay = new CActionOptionsMenuBar;
         if (this->Probe() == 0) {
-            CTmOverlay* o2 = m_overlay;
+            CActionOptionsMenuBar* o2 = m_overlay;
             if (o2 != 0) {
                 o2->Dtor();
                 operator delete(o2);
@@ -2758,7 +2740,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
         }
         return 0;
     }
-    if (ov->m_2c != 0 || m_recList.m_count != 1) {
+    if (ov->m_active != 0 || m_recList.m_count != 1) {
         return 0;
     }
     i32* rec = m_recList.m_head->m_payload;
