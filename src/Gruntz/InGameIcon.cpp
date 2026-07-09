@@ -14,6 +14,20 @@
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (the +0x1a0 sub-object sync)
+
+// The per-frame draw-delta the anim-cursor sync carries (0x6bf3bc, BSS; the same view
+// the indicator sprites use). External/no-body so the load reloc-masks.
+extern "C" u32 g_6bf3bc;
+
+// The MS-CRT-style LCG rand PeekCycle inlines to roll a random peek sprite (the same
+// generator src/Globals.cpp binds + BootyWalkAnim inlines): lazy-seed from timeGetTime,
+// advance the 214013/2531011 recurrence, take the top 15 bits.
+extern u8 g_randSeeded; // 0x6c127d (bit 0 = seeded)
+extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
+extern "C" {
+    extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650 (PTR_timeGetTime)
+}
 
 #include <rva.h>
 
@@ -757,6 +771,77 @@ i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return 1;
 }
 
+// ===========================================================================
+// CInGameIcon::PeekCycle  (0x0984b0)
+// ===========================================================================
+// Per-frame peek update: advance the +0x1a0 anim cursor, then dispatch on the icon's
+// command id. For the 0x55 (cursor) command, if the icon's tile cell carries any
+// action/occupancy flag (& 0x939 or & 2) it clears that cell's occupancy and flags the
+// +0x38 object dirty. For the 0x13/0x1e (peek) commands, once the peek timer
+// ({m_68} vs {m_70}) elapses it rolls a random pickup sprite (the inline LCG rand()%17
+// -> GetSel), publishes it into the bound object's draw fields, and re-arms the timer
+// ({m_70}=0xfa, {m_68}=g_iconDefault). Returns 0.
+//
+// @early-stop
+// regalloc/scheduling wall (zero-register-pinning class): the command dispatch, the
+// tile-cell flag test + occupancy clear, the i64 peek-timer compare, the inline
+// timeGetTime-seeded 214013/2531011 rand()%0x11, the GetSel + draw-field publish and the
+// timer re-arm are all reconstructed byte-faithfully; cl's exact ebx/edi/esi pin across
+// this 390-byte body differs from retail's and is not source-steerable. Deferred.
+RVA(0x000984b0, 0x186)
+i32 CInGameIcon::PeekCycle() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    CGameObject* obj = m_object;
+    i32 cmd = obj->m_124;
+    if (cmd == 0x55) {
+        CGameRegistry* reg = g_gameReg;
+        i32 tileY = obj->m_screenY >> 5;
+        CTileGrid* grid = reg->m_tileGrid;
+        i32 tileX = obj->m_screenX >> 5;
+        i32 cell;
+        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+            cell = grid->m_8[tileY][tileX * 7];
+        } else {
+            cell = 1;
+        }
+        if ((cell & 0x939) != 0 || (cell & 2) != 0) {
+            if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+                grid->m_8[tileY][tileX * 7 + 2] = 0;
+                grid->m_8[tileY][tileX * 7] &= ~0x40000;
+            }
+            m_38->m_flags |= 0x10000;
+        }
+        return 0;
+    }
+    if (cmd != 0x13 && cmd != 0x1e) {
+        return 0;
+    }
+    if (obj->m_130 != 0) {
+        return 0;
+    }
+    if ((i64)(u32)g_iconDefault - *(i64*)&m_68 >= *(i64*)&m_70) {
+        u32 x;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            x = g_pTimeGetTime();
+        } else {
+            x = g_randSeed;
+        }
+        g_randSeed = x * 214013 + 2531011;
+        i32 rec =
+            g_gameReg->m_spriteFactory->GetSel((((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 0);
+        CGameObject* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = 0xa;
+        o->m_drawFillArg = rec;
+        m_70 = 0xfa;
+        m_74 = 0;
+        m_68 = g_iconDefault;
+        m_6c = 0;
+    }
+    return 0;
+}
+
 // Clear the "occupied" bit (0x40000) in the tile cell the owning object stands
 // on. The grid is g_gameReg->m_tileGrid: m_8[tileY] is a row base (each row a flat
 // array of 0x1c-byte cells = 7 dwords), the cell for tileX sits at offset
@@ -889,6 +974,76 @@ i32 CInGameIcon::PlaceAt(i32 arg0, i32 arg1) {
     CGameObject* r = m_38;
     r->m_flags |= 0x10000;
     return 1;
+}
+
+// ===========================================================================
+// CInGameIcon::Reposition  (0x098a90)
+// ===========================================================================
+// Per-frame drift re-place: advance the +0x1a0 anim cursor, and once the drift
+// timer ({m_driftPos} vs {m_driftThresh}) has elapsed, re-seat the icon:
+//   - clear the +0x38 object's active bit (m_stateFlags &= ~1),
+//   - swap the aux bute node to "A" (saving the old into m_prevAnimSetNode),
+//   - resolve the tile the icon currently occupies; if that cell carries a bound
+//     object id, look it up in the world sprite factory's +0x48 map and flag it,
+//   - clear that cell's occupancy, then re-mark the owner's tile cell with its
+//     object id (m_188) - occupied (|=0x40000) when non-zero, cleared otherwise.
+// Returns 0.
+//
+// @early-stop
+// regalloc/scheduling wall (zero-register-pinning class): the logic, the i64 drift
+// compare, the bute-node swap, both tile-cell index computations, the +0x48 map
+// Lookup + flag, and the occupancy set/clear are all reconstructed byte-faithfully;
+// cl's exact reload/pin of g_gameReg + the grid across the three tile-cell blocks of
+// this 397-byte body differs from retail's and is not source-steerable. Deferred.
+RVA(0x00098a90, 0x18d)
+i32 CInGameIcon::Reposition() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    i64 delta = (i64)(u32)g_iconDefault - *(i64*)&m_driftPos;
+    if (delta >= *(i64*)&m_driftThresh) {
+        CGameObject* r = m_38;
+        r->m_stateFlags &= ~1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find(s_iconKeyA);
+
+        CGameRegistry* reg = g_gameReg;
+        CGameObject* obj = m_object;
+        i32 tileX = obj->m_screenX >> 5;
+        i32 tileY = obj->m_screenY >> 5;
+        CTileGrid* grid = reg->m_tileGrid;
+        i32 cellVal;
+        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+            cellVal = grid->m_8[tileY][tileX * 7 + 2];
+        } else {
+            cellVal = 0;
+        }
+        if (cellVal != 0) {
+            void* found = 0;
+            if (((CMapPtrToPtr*)((char*)reg->m_world->m_8 + 0x48))->Lookup((void*)cellVal, found)
+                && found != 0) {
+                ((CGameObject*)found)->m_flags |= 0x10000;
+            }
+        }
+        reg = g_gameReg;
+        grid = reg->m_tileGrid;
+        if ((u32)tileX < (u32)grid->m_c && (u32)tileY < (u32)grid->m_10) {
+            grid->m_8[tileY][tileX * 7 + 2] = 0;
+            grid->m_8[tileY][tileX * 7] &= ~0x40000;
+        }
+        obj = m_object;
+        grid = g_gameReg->m_tileGrid;
+        i32 tileX2 = obj->m_screenX >> 5;
+        i32 tileY2 = obj->m_screenY >> 5;
+        i32 mv = obj->m_188;
+        if ((u32)tileX2 < (u32)grid->m_c && (u32)tileY2 < (u32)grid->m_10) {
+            grid->m_8[tileY2][tileX2 * 7 + 2] = mv;
+            if (mv != 0) {
+                grid->m_8[tileY2][tileX2 * 7] |= 0x40000;
+            } else {
+                grid->m_8[tileY2][tileX2 * 7] &= ~0x40000;
+            }
+        }
+    }
+    return 0;
 }
 
 // ===========================================================================
