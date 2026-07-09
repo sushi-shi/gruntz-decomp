@@ -976,10 +976,6 @@ RVA(0x0013eb80, 0x21)
 i32 Gap_13eb80(void) {
     return 0;
 } // @stub
-RVA(0x0013f020, 0x43f)
-i32 Gap_13f020(void) {
-    return 0;
-} // @stub
 RVA(0x0013f960, 0x22)
 i32 Gap_13f960(void) {
     return 0;

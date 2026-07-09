@@ -483,6 +483,153 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     }
 }
 
+// The engine RECT-copier fn-ptr (0x6c44bc) + the Rez heap (0x1b9b46 / 0x1b9b82).
+DATA(0x002c44bc)
+extern void(__stdcall* g_pCopyRect)(struct tagRECT*, const struct tagRECT*);
+extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
+extern "C" void RezFree(void* p);             // 0x1b9b82
+
+// CDDSurface::ShadeBlt (__thiscall, ret 0x10 => 4 args). 16bpp shaded-blend blit:
+// copy the two RECTs, validate (m_b0==2 + equal dims + in-bounds), Lock this + src,
+// per row copy the old dst pixels into a temp then blend temp+src through the three
+// shade-level colour LUTs (bank = ((shade&0xff)>>3)<<0xb), selected by the live
+// pixel-format globals (565 vs 555). Unlock both + free the temp; 0 on any reject.
+// @early-stop
+// regalloc-cascade wall (~65%): complete + correct - both the 565 and 555 three-LUT
+// blend loops, the 10-check validation, the Lock/Unlock (slot 0x80) and RezAlloc temp
+// are all reconstructed with the right operations. The residual is an MSVC5
+// register-allocation coin-flip seeded in the setup (validation keeps dstW/srcW in regs
+// + recomputes dstRowAdv from the rect fields where cl reuses the validation locals),
+// which cascades a register-name shift through the whole body. The permuter finds no
+// operand-order fix, and caching g_pCopyRect in a local (to match retail's `mov edi;
+// call edi`) REGRESSED it 65->62 - proving the cascade is not source-steerable. Banked
+// for the final sweep.
+RVA(0x0013f020, 0x43f)
+i32 CDDSurface::ShadeBlt(struct tagRECT* dstRect, CDDSurface* src, struct tagRECT* srcRect,
+                         i32 shade) {
+    RECT dr, sr;
+    g_pCopyRect(&dr, dstRect);
+    g_pCopyRect(&sr, srcRect);
+    if (m_b0 != 2) {
+        return 0;
+    }
+    i32 srcW = sr.right - sr.left;
+    i32 dstW;
+    dstW = dr.right - dr.left;
+    if (srcW != dstW) {
+        return 0;
+    }
+    i32 srcH = sr.bottom - sr.top;
+    i32 dstH = dr.bottom - dr.top;
+    if (srcH != dstH) {
+        return 0;
+    }
+    if (dr.left < 0) {
+        return 0;
+    }
+    if (dr.top < 0) {
+        return 0;
+    }
+    if (dr.right > m_width) {
+        return 0;
+    }
+    if (dr.bottom > m_height) {
+        return 0;
+    }
+    if (sr.left < 0) {
+        return 0;
+    }
+    if (sr.top < 0) {
+        return 0;
+    }
+    if (sr.right > srcW) {
+        return 0;
+    }
+    if (sr.bottom > srcH) {
+        return 0;
+    }
+
+    u16* dstBits = (u16*)Lock(0);
+    u16* srcBits = (u16*)src->Lock(0);
+    i32 dstStride = m_pitch / 2;
+    u16* dstPtr = dstBits + (dr.top * dstStride + dr.left);
+    i32 srcStride = src->m_pitch / 2;
+    u16* srcPtr = srcBits + (sr.top * srcStride + sr.left);
+    i32 dstRowAdv = dstStride - dstW;
+    i32 srcRowAdv = srcStride - srcW;
+    u16* temp = (u16*)RezAlloc(dstW * 4);
+    i32 bank = ((shade & 0xff) >> 3) << 0xb;
+
+    if (g_pfRedSize == 3 && g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa
+        && g_pfGreenSize == 5) {
+        // 565
+        i32 rows = dstH;
+        if (rows > 0) {
+            do {
+                memcpy(temp, dstPtr, dstW * 2);
+                i32 n = dstW;
+                if (n > 0) {
+                    u16* t = temp;
+                    do {
+                        u32 tp = *t;
+                        u32 sp = *srcPtr;
+                        u16 v = *(u16*)(g_lutBank2_663ca0 + bank
+                                        + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                        v |= *(u16*)(g_lutBank0_673ca0 + bank
+                                     + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
+                        v |= *(u16*)(g_lutBank1_653ca0 + bank
+                                     + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
+                        *dstPtr = v;
+                        dstPtr++;
+                        srcPtr++;
+                        t++;
+                    } while (--n != 0);
+                }
+                dstPtr += dstRowAdv;
+                srcPtr += srcRowAdv;
+            } while (--rows != 0);
+        }
+    } else if (g_pfRedSize == 3 && g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb
+               && g_pfGreenSize == 5) {
+        // 555
+        i32 rows = dstH;
+        if (rows > 0) {
+            do {
+                memcpy(temp, dstPtr, dstW * 2);
+                i32 n = dstW;
+                if (n > 0) {
+                    u16* t = temp;
+                    do {
+                        u32 tp = *t;
+                        u32 sp = *srcPtr;
+                        u16 v = *(u16*)(g_lutBank2_663ca0 + bank
+                                        + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                        v |= *(u16*)(g_lutBank0_673ca0 + bank
+                                     + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
+                        v |= *(u16*)(g_lutBank1_653ca0 + bank
+                                     + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
+                        *dstPtr = v;
+                        dstPtr++;
+                        srcPtr++;
+                        t++;
+                    } while (--n != 0);
+                }
+                dstPtr += dstRowAdv;
+                srcPtr += srcRowAdv;
+            } while (--rows != 0);
+        }
+    } else {
+        RezFree(temp);
+        m_8->Unlock(0);
+        src->m_8->Unlock(0);
+        return 0;
+    }
+    m_8->Unlock(0);
+    src->m_8->Unlock(0);
+    RezFree(temp);
+    return 1;
+}
+
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
 // scratch desc, then derive the row/pixel geometry by a bit-depth switch. The
 // desc geometry is read through the named DDSURFACEDESC fields (m_descSize/
