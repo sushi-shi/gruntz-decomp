@@ -34,7 +34,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from gruntz.analysis.tu_layout import RVA_RE, RVAU_RE, SIG_RE, _psize
+from gruntz.analysis.tu_layout import RVA_RE, RVAU_RE, SIG_RE, _psize, pooled
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -52,8 +52,13 @@ class Entry:
         return self.rva + self.size
 
 
-def load_in_file_order(src: Path, include_stub: bool):
-    """Every RVA()/RVAU() function per .cpp, in FILE (source) order (NOT rva-sorted)."""
+def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
+    """Every RVA()/RVAU() function per .cpp, in FILE (source) order (NOT rva-sorted).
+
+    exclude_pools drops functions living in the COMDAT dtor/ctor pools (tu_layout
+    POOLS) - the linker places those away from their class's main run, so they are
+    the direct analogue of the inline/FOLDED functions isle's reccmp linter skips
+    in its own order check. Excluding them measures the ordinary out-of-line gate."""
     tus: dict[str, list[Entry]] = {}
     for path in sorted(src.rglob("*.cpp")):
         if not include_stub and "Stub" in path.parts[len(src.parts):]:
@@ -71,6 +76,8 @@ def load_in_file_order(src: Path, include_stub: bool):
                 if not mu:
                     continue
                 rva, size = int(mu.group(1), 16), 0  # unsized thunk: order-check only
+            if exclude_pools and pooled(rva):
+                continue
             name = None
             for j in range(i, min(i + 4, len(lines))):
                 sm = SIG_RE.search(lines[j])
@@ -130,13 +137,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--include-stub", action="store_true",
                     help="include src/Stub/ (expected to interleave until drained)")
+    ap.add_argument("--exclude-pools", action="store_true",
+                    help="drop COMDAT dtor/ctor-pool fns (isle-style FOLDED/inline skip)")
     ap.add_argument("--tu", help="show one TU's functions in file order")
     ap.add_argument("--inter-only", action="store_true")
     ap.add_argument("--intra-only", action="store_true")
     ap.add_argument("--csv", help="write per-TU span + violation counts")
     args = ap.parse_args()
 
-    tus = load_in_file_order(SRC, args.include_stub)
+    tus = load_in_file_order(SRC, args.include_stub, args.exclude_pools)
 
     if args.tu:
         seq = tus.get(args.tu)
