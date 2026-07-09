@@ -312,6 +312,44 @@ i32 CDDrawShadeBlit::Rebuild(CString name, i32 a1, i32 a2) {
     return DecodeFrame(name, desc);
 }
 
+// CDDrawShadeBlit::Decompress (0x1494b0, __thiscall, ret 4). Expand the internal
+// high-bit RLE sprite stream (m_rleData) into the flat 8-bit destination buffer,
+// one scanline at a time. Only valid for an 8-bit source (m_srcBpp==1). Each run
+// control byte: bit7 set => fill (byte-0x80) pixels with the transparent/color-key
+// fill value (m_colorKey, or 0 when unset); else copy `byte` literal pixels from
+// the stream. When the accumulated x reaches m_width the row advances. Returns 1.
+RVA(0x001494b0, 0x11a)
+i32 CDDrawShadeBlit::Decompress(void* dest) {
+    if (m_srcBpp != 1) {
+        return 0;
+    }
+    if (dest == 0) {
+        return 0;
+    }
+    i32 fill = m_colorKey;
+    if (fill == -1) {
+        fill = 0;
+    }
+    i32 x = 0;
+    i32 cursor = 0;
+    for (i32 y = 0; y < m_height;) {
+        if (m_rleData[cursor] & 0x80) {
+            memset((u8*)dest + y * m_width + x, fill, m_rleData[cursor] - 0x80);
+            x += m_rleData[cursor] - 0x80;
+            cursor += 1;
+        } else {
+            memcpy((u8*)dest + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
+            x += m_rleData[cursor];
+            cursor += m_rleData[cursor] + 1;
+        }
+        if (x >= m_width) {
+            y++;
+            x = 0;
+        }
+    }
+    return 1;
+}
+
 SIZE_UNKNOWN(CRleByteArray);
 SIZE_UNKNOWN(CImageBuildDesc);
 SIZE(CImageFrameRebuildDesc, 0x20); // 8-dword by-value frame descriptor

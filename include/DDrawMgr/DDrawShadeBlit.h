@@ -102,6 +102,7 @@ public:
     void Teardown();                                    // 0x148d10
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (external)
     i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
+    i32 Decompress(void* dest);                                // 0x1494b0 (RLE expand)
 
     // --- blit side (src/DDrawMgr/DDrawShadeBlit.cpp) -----------------------------
     i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0

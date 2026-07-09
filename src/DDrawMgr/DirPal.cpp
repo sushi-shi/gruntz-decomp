@@ -179,6 +179,59 @@ i32 DirPal::CaptureSystemPalette() {
     return 1;
 }
 
+// The engine's cached GDI/USER fn-ptr table (0x6c3e18..0x6c4408): the palette
+// blackout reaches GDI through these globals (`call ds:[0x6c44xx]`), not through
+// the import thunks. DATA arg = retail VA - image base (0x400000).
+DATA(0x002c4404)
+extern HDC(WINAPI* g_pGetDC)(HWND); // 0x6c4404
+DATA(0x002c4408)
+extern int(WINAPI* g_pReleaseDC)(HWND, HDC); // 0x6c4408
+DATA(0x002c3e18)
+extern HPALETTE(WINAPI* g_pCreatePalette)(const LOGPALETTE*); // 0x6c3e18
+DATA(0x002c3f04)
+extern HPALETTE(WINAPI* g_pSelectPalette)(HDC, HPALETTE, BOOL); // 0x6c3f04
+DATA(0x002c3e1c)
+extern UINT(WINAPI* g_pRealizePalette)(HDC); // 0x6c3e1c
+DATA(0x002c3ec0)
+extern BOOL(WINAPI* g_pDeleteObject)(HGDIOBJ); // 0x6c3ec0
+
+// BlackoutSystemPalette (0x148720, __cdecl) - build an all-black 256-entry
+// PC_NOCOLLAPSE logical palette, select+realize it into the screen DC (driving
+// the hardware DAC to black), then restore the previous palette and delete the
+// black one. Returns 1 on success, 0 if the DC or palette could not be obtained.
+// @early-stop
+// reloc-typing scoring artifact (~99%): the CODE BYTES are byte-exact (register/stack
+// layout, the palette-build loop, the cached-SelectPalette `call edi`, the tail-merged
+// failure paths all match). Residual is only that objdiff scores the ~7 `ff 15` GDI
+// calls fuzzy - they route through the cached fn-ptr globals (g_pGetDC etc.) vs retail's
+// differently-classed reloc target. Same family as DirPal::CaptureSystemPalette.
+RVA(0x00148720, 0x117)
+i32 BlackoutSystemPalette() {
+    HDC hdc = g_pGetDC(0);
+    if (hdc != 0) {
+        LogPal256 lp;
+        lp.palVersion = 0x300;
+        lp.palNumEntries = 0x100;
+        for (i32 i = 0; i < 0x100; i++) {
+            lp.palPalEntry[i].peRed = 0;
+            lp.palPalEntry[i].peGreen = 0;
+            lp.palPalEntry[i].peBlue = 0;
+            lp.palPalEntry[i].peFlags = 4; // PC_NOCOLLAPSE
+        }
+        HPALETTE hpal = g_pCreatePalette((LOGPALETTE*)&lp);
+        if (hpal != 0) {
+            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = g_pSelectPalette;
+            HPALETTE old = pSelect(hdc, hpal, 0);
+            g_pRealizePalette(hdc);
+            g_pDeleteObject(pSelect(hdc, old, 0));
+            g_pReleaseDC(0, hdc);
+            return 1;
+        }
+        g_pReleaseDC(0, hdc);
+    }
+    return 0;
+}
+
 SIZE_UNKNOWN(LogPal256);
 SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(PalCtx);

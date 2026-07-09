@@ -142,7 +142,20 @@ public:
     i32 LoadDefault(IDirectDraw2* dd, char* filename, u32 flags); // 0x1479e0
     void Destroy();                                               // 0x147530
     i32 GetEntries();                                             // 0x147c30
-    void SetAndNotify(i32 start, i32 count, i32* data, i32 a4);   // 0x147aa0
+    i32 SetAndNotify(i32 start, i32 count, i32* data, i32 a4);    // 0x147aa0
+    // Expand a dynamically-allocated block of source entries into PALETTEENTRYs
+    // then SetAndNotify. Quad: 4-byte RGBQUAD source (R/B swapped). RGB: packed
+    // 3-byte RGB source (straight). Both return the SetAndNotify HRESULT.
+    i32 SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4);  // 0x147b10
+    i32 SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4);     // 0x147ba0
+    // Linear time-based fade of the [start,start+count) range toward the solid
+    // color (r,g,b) over durationMs milliseconds; finalizes with SetRange.
+    void FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b,
+                   i32 durationMs); // 0x147d50
+    // Blend the range pct% (0..100) toward the solid color (r,g,b) once and
+    // push it to the DirectDraw palette (no cache/notify).
+    void BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g,
+                    i32 b);                                      // 0x1482c0
     void Apply(i32 a1);                                           // 0x147c80 (a1 unused)
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b,
                  u32 flags); // 0x147cd0

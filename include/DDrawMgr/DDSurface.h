@@ -234,7 +234,10 @@ public:
                                //         used as the pixel buffer by Fill/BlitDirect)
     char m_pad38[0x64 - 0x38]; // +0x38
     i32 m_64;                  // +0x64  pixel-format bit depth / colour-key colour
-    char m_pad68[0x7c - 0x68]; // +0x68
+    i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
+    i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
+    i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask
+    char m_pad74[0x7c - 0x74]; // +0x74
     i32 m_dontOwn;             // +0x7c  don't-own flag (bit0 => surfaces not released)
     i32 m_80[2];               // +0x80  RECT left/top (cleared)
     i32 m_88;                  // +0x88  width

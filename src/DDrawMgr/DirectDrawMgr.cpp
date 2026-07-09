@@ -44,6 +44,14 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
 extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
 
+// The Rez heap allocator/free (also re-declared near CreatePoolItem below).
+extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
+extern "C" void RezFree(void* p);        // 0x1b9b82
+
+// The cached frame-clock fn-ptr (retail _g_pTimeGetTime @ 0x6c4650); the palette
+// fade times through `call ds:[0x6c4650]`, NOT the WINMM import.
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+
 // The DDERR_NAME line numbers all reference these source-path $SG constants.
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
@@ -1150,7 +1158,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
 // picks a different induction-var/SIB form + arg-register assignment than retail.
 // Same family as Create's copy-loop plateau. docs/patterns/zero-register-pinning.md.
 RVA(0x00147aa0, 0x6a)
-void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
+i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
     i32* cache = (i32*)m_cacheA;
     for (i32 i = 0; i < count; i++) {
         cache[start + i] = data[i];
@@ -1159,7 +1167,121 @@ void CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
         IDirectDraw2* dd = g_DirectDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, 0);
     }
-    m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)data);
+    return m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)data);
+}
+
+// CDDPalette::SetEntriesQuad (0x147b10, __thiscall, ret 0x10 => 4 args). Allocate
+// a count*4 working buffer, expand `count` RGBQUAD entries (R/B swapped, as in
+// LoadBmp) into PALETTEENTRY, SetAndNotify the range, free, return the HRESULT.
+RVA(0x00147b10, 0x8b)
+i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
+    u8* buf = (u8*)RezAlloc(count * 4);
+    if (buf == 0) {
+        return 0x80070057;
+    }
+    for (i32 i = 0; i < count; i++) {
+        buf[i * 4 + 0] = quads[i * 4 + 2];
+        buf[i * 4 + 1] = quads[i * 4 + 1];
+        buf[i * 4 + 2] = quads[i * 4 + 0];
+        buf[i * 4 + 3] = 0;
+    }
+    i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
+    RezFree(buf);
+    return hr;
+}
+
+// CDDPalette::SetEntriesRGB (0x147ba0, __thiscall, ret 0x10 => 4 args). As above
+// but from a packed 3-byte RGB source (straight copy, as in CreateRGB).
+// @early-stop
+// store-scheduling tail (~93%; permuter confirms no source-steerable gain): body/
+// alloc/SetAndNotify/free are byte-exact. Retail schedules the last entry's peBlue
+// store before the peFlags=0 store (my cl emits them reversed) + the trailing src++.
+// Twin SetEntriesQuad (stride-4 read) IS exact; the stride-3 read reshuffles the tail.
+RVA(0x00147ba0, 0x82)
+i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
+    u8* buf = (u8*)RezAlloc(count * 4);
+    if (buf == 0) {
+        return 0x80070057;
+    }
+    u8* src = rgb;
+    u8* d = buf;
+    for (i32 i = 0; i < count; i++) {
+        d[0] = *src++;
+        d[1] = *src++;
+        d[2] = *src++;
+        d[3] = 0;
+        d += 4;
+    }
+    i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
+    RezFree(buf);
+    return hr;
+}
+
+// CDDPalette::FadeRange (0x147d50, __thiscall, ret 0x18 => 6 args). Snapshot the
+// current palette (GetEntries into m_cacheA), then over durationMs interpolate
+// each entry in [start,start+count) linearly from its snapshot value toward the
+// solid color (r,g,b), pushing SetEntries once per changed millisecond. Finally
+// SetRange to the exact target. RezAlloc snapshot copy freed at the end. The
+// frame clock is the cached g_pTimeGetTime fn-ptr.
+// @early-stop
+// timing-loop scheduling tail (~97%; permuter no gain): the snapshot copy, the
+// per-channel (target-cur)*t/duration lerp, the recompute-only-on-tick guard, the
+// SetEntries/SetRange calls and the final RezFree are all byte-faithful. Residual is
+// MSVC5's exact [esp+N] slot choices + register schedule across the rotated timing
+// loop (the elapsed/prev/t0 live-range packing). Not source-steerable.
+RVA(0x00147d50, 0x1d2)
+void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
+    i32 hr = m_palette->GetEntries(0, 0, 0x100, (LPPALETTEENTRY)m_cacheA);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
+    }
+    u8* snapshot = (u8*)RezAlloc(0x400);
+    for (i32 i = 0; i < 0x400; i += 4) {
+        *(i32*)(snapshot + i) = *(i32*)(m_cacheA + i);
+    }
+    i32 t0 = g_pTimeGetTime();
+    i32 prev = 9;
+    for (i32 t = 10; t < durationMs; t = g_pTimeGetTime() - t0) {
+        if (t != prev) {
+            for (i32 j = start; j < start + count; j++) {
+                m_cacheA[j * 4 + 0] =
+                    (u8)(((r & 0xff) - snapshot[j * 4 + 0]) * t / durationMs + snapshot[j * 4 + 0]);
+                m_cacheA[j * 4 + 1] =
+                    (u8)(((g & 0xff) - snapshot[j * 4 + 1]) * t / durationMs + snapshot[j * 4 + 1]);
+                m_cacheA[j * 4 + 2] =
+                    (u8)(((b & 0xff) - snapshot[j * 4 + 2]) * t / durationMs + snapshot[j * 4 + 2]);
+            }
+            m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
+        }
+        prev = t;
+    }
+    SetRange(start, count, r, g, b, 0);
+    RezFree(snapshot);
+}
+
+// CDDPalette::BlendRange (0x1482c0, __thiscall, ret 0x18 => 6 args). Blend each
+// entry in [start,start+count) pct% (0..100) toward the solid color (r,g,b) in a
+// single pass and push it straight to the DirectDraw palette via SetEntries.
+// @early-stop
+// regalloc / arg-slot wall (~94%): logic/CFG/the (target-cur)*pct/100 magic-divide
+// blend/the SetEntries+assert tail are byte-faithful. Retail masks r,g,b in place into
+// their arg stack slots (reused) after the loop guard + keeps the cache byte in bl;
+// this C spelling hoists the masks into fresh temps (sub esp,0xc) + spills the byte.
+// The in-place-mask / do-while restructurings scored strictly lower. Not steerable.
+RVA(0x001482c0, 0x2e9)
+void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, i32 r, i32 g, i32 b) {
+    for (i32 i = start; i < start + count; i++) {
+        u8 cr = m_cacheA[i * 4 + 0];
+        m_cacheA[i * 4 + 0] = (u8)(((r & 0xff) - cr) * pct / 100 + cr);
+        u8 cg = m_cacheA[i * 4 + 1];
+        m_cacheA[i * 4 + 1] = (u8)(((g & 0xff) - cg) * pct / 100 + cg);
+        u8 cb = m_cacheA[i * 4 + 2];
+        m_cacheA[i * 4 + 2] = (u8)(((b & 0xff) - cb) * pct / 100 + cb);
+    }
+    i32 hr = m_palette->SetEntries(0, start, count, (LPPALETTEENTRY)(m_cacheA + start * 4));
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x406, hr);
+    }
 }
 
 // CDDPalette::GetEntries (__thiscall, ret 0 => no args). Lazily allocates the

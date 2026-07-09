@@ -172,7 +172,7 @@ public:
     virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
     virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
-    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148b80
+    virtual i32 InstallColorFormat();                               // slot 10 0x148b80
 };
 SIZE(CPoolItemAB8, 0xc0);
 VTBL(CPoolItemAB8, 0x001efab8);
@@ -582,6 +582,70 @@ CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
 // ---------------------------------------------------------------------------
 RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
+
+// ---------------------------------------------------------------------------
+// CPoolItemAB8::InstallColorFormat (0x148b80, slot 10, __thiscall, no args).
+// The sibling of ComputeColorMasks (0x143b20) below: derives the live screen
+// RGB-format shift/loss globals, but reads the channel bitmasks straight from
+// this surface's already-cached DDPIXELFORMAT fields (m_rMask/m_gMask/m_bMask)
+// rather than a GetSurfaceDesc. The "up" shift is the channel's lowest set-bit
+// index; the "down" loss is 8 - popcount. Then re-applies (Boundary_13f740).
+// ---------------------------------------------------------------------------
+// @early-stop
+// entropy tail (~99.7%, permuter-maximized): structurally identical to the EXACT
+// ComputeColorMasks; residual is one 8-count register/materialization slot in the
+// last channel's store that cl schedules a hair differently. Not source-steerable.
+RVA(0x00148b80, 0xb5)
+i32 CPoolItemAB8::InstallColorFormat() {
+    u32 m = m_rMask;
+    i32 count = 0;
+    i32 shift;
+    shift = -1;
+    for (i32 b = 0; b < 0x20; b++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea0 = shift;
+    g_683eac = 8 - count;
+
+    shift = -1;
+    m = m_gMask;
+    count = 0;
+    for (i32 b2 = 0; b2 < 0x20; b2++) {
+        if ((1 & m) == 1) {
+            if (shift == -1) {
+                shift = b2;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683eb0 = 8 - count;
+    g_683ea4 = shift;
+
+    count = 0;
+    m = m_bMask;
+    shift = -1;
+    for (i32 b3 = 0; b3 < 0x20; b3++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b3;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683eb4 = 8 - count;
+    g_683ea8 = shift;
+
+    Boundary_13f740();
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]
