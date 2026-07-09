@@ -105,6 +105,78 @@ RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
 // ===========================================================================
+// 0x17ef00 - CFaderMesh::v1(frame): the mesh-warp blit. Prime the dest surface
+// (m_3c): Blt the m_40 source if set, else Clear it. Then for each of the m_58
+// buffer's records (40 bytes = {srcRectA[4], dstRectB[4], _, _}): interpolate the
+// A->B rect by t = frame/v2(), clip it to the dest surface, and BltEx from the m_38
+// source (srcRect = m_4c ? rectA : the clipped rectB). Finally Flip m_44.
+// ===========================================================================
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md; sibling of
+// ApplyInit @0x17ea00): the per-record t=frame/v2() divide, the four
+// A + (int)((B-A)*t) rect interpolations (fild/fmul/__ftol), the surface clip and the
+// BltEx/Flip dispatch are byte-faithful in operation/offset, but retail keeps t on the
+// x87 stack across the four __ftol calls and colours the record temporaries into a
+// dense frame-slot layout cl doesn't reproduce; the frame/count int64->float loads
+// also differ (fild qword vs dword). Not source-steerable.
+RVA(0x0017ef00, 0x21c)
+void CFaderMesh::v1(i32 frame) {
+    CDDSurface* dst = (CDDSurface*)m_3c;
+    if (m_40 != 0) {
+        dst->Blt((CDDSurface*)m_40);
+    } else {
+        dst->Clear(0);
+    }
+    if (m_58.m_08 > 0) {
+        float ff = (float)frame;
+        char* pData = (char*)m_58.m_04;
+        for (i32 i = 0; i < m_58.m_08; i++) {
+            i32* rec = (i32*)(pData + i * 0x28);
+            i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
+            i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];
+            float t = ff / (float)v2();
+
+            i32 x0 = r0 + (i32)((float)(r4 - r0) * t);
+            i32 y0 = r1 + (i32)((float)(r5 - r1) * t);
+            i32 x1 = r2 + (i32)((float)(r6 - r2) * t);
+            i32 y1 = r3 + (i32)((float)(r7 - r3) * t);
+
+            i32 bx0 = r4, by0 = r5, bx1 = r6, by1 = r7;
+            if (x0 < 0 && x1 > 0) {
+                bx0 = r4 - x0;
+                x0 = 0;
+            } else if (x1 <= dst->m_width && x0 > dst->m_width) {
+                bx1 = r6 - x1 + dst->m_width;
+                x1 = dst->m_width - 1;
+            }
+            if (y0 < 0 && y1 > 0) {
+                by0 = r5 - y0;
+                y0 = 0;
+            } else if (y1 <= dst->m_height && y0 > dst->m_height) {
+                by1 = r7 - y1 + dst->m_height;
+                y1 = dst->m_height - 1;
+            }
+
+            i32 dstRect[4] = {x0, y0, x1, y1};
+            i32 srcRect[4];
+            if (m_4c != 0) {
+                srcRect[0] = r0;
+                srcRect[1] = r1;
+                srcRect[2] = r2;
+                srcRect[3] = r3;
+            } else {
+                srcRect[0] = bx0;
+                srcRect[1] = by0;
+                srcRect[2] = bx1;
+                srcRect[3] = by1;
+            }
+            dst->BltEx(dstRect, (CDDSurface*)m_38, srcRect, 0x1000000, 0);
+        }
+    }
+    ((CDDSurface*)m_44)->Flip(0);
+}
+
+// ===========================================================================
 // CFaderSine - the case-"3" / jump-index-2 fader subtype (CFaderMgr::Add allocates
 // 0x7d5c bytes for it). Its motion virtuals (0x17ff30 / 0x180400) override the two
 // CFader pure virtuals (slots 1/2); slots 3/4 are inherited. Real polymorphic now:
@@ -724,6 +796,8 @@ DATA(0x005f0838)
 extern const double g_faderBiasR; // -1.0  (r - K == r + 1.0)
 DATA(0x005f0840)
 extern const float g_faderBiasFade; // -1.0  (fade - K == fade + 1.0)
+DATA(0x005f0844)
+extern const float g_faderOne; // 1.0  (per-cell render threshold: fade - frame > 1.0)
 
 // The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle
 // at +0x0c that seeds BuildSurface.
@@ -851,6 +925,61 @@ i32 CFaderRadialApply::Build(FrConfig* cfg) {
         }
     }
     return 1;
+}
+
+// ===========================================================================
+// 0x17fc60 - CFaderRadial::v1(frame) (the vtable slot-1 render, hosted on the
+// CFaderRadialApply flat view): plot the precomputed radial-fade cells whose fade
+// threshold still exceeds `frame` into the m_3c dest surface. Alloc a per-width Rez
+// scratch (retail allocates it but leaves it unused, freed at the end), Clear + Lock
+// the dest, Lock the source (its base unused; the cells were precomputed by Build),
+// then per cell: if (fade - frame) > 1.0, displace the cell (centerX + vx/scaledFade,
+// centerY - vy/scaledFade) and, if in bounds, write the cell pixel into the locked
+// dest at [py*pitch + px]. Unlock both COM surfaces (inlined m_8->vtbl[0x80]).
+// ===========================================================================
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md; same family as
+// the sibling Build @0x17fa40): the per-cell (fade-frame)/divisor + vx/sf, vy/sf
+// __ftol chain, the fcoms threshold and the bounds test + plot are byte-faithful, but
+// cl schedules the frame-float on the x87 stack and colours edi/ebx/ebp differently
+// than retail (which pins this->esi/cellptr->ebx/index->ebp). The cells hold FLOAT
+// vx/vy/fade (Build's (i32) casts are the mismatch that parks Build); read here as
+// floats. Not source-steerable. Defined as CFaderRadial::v1 (not a second
+// CFaderRadialApply method) so the delinker doesn't pack it with Build @0x17fa40.
+RVA(0x0017fc60, 0x136)
+void CFaderRadial::v1(i32 frame) {
+    CFaderRadialApply* self = (CFaderRadialApply*)this;
+    CDDSurface* dst = (CDDSurface*)self->m_palette; // +0x3c (dest surface in the v1 path)
+    void* scratch = RezAlloc(dst->m_width);         // per-width scratch (alloc'd, unused)
+    dst->Clear(0);
+    self->m_srcSurface->Lock(0);                     // lock source (base unused here)
+    i32 base = dst->Lock(0);                          // locked dest pixel base
+    if (((CDDSurface*)self->m_workSurface)->m_8 == 0) { // gate: work-surface COM present?
+        return;                                       // retail bails w/o unlock/free (matched)
+    }
+
+    i32 total = self->m_srcSurface->m_width * self->m_srcSurface->m_height;
+    float ff = (float)frame;
+    for (i32 i = 0; i < total; i++) {
+        float* c = (float*)&self->m_cells[i]; // vx=c[0], vy=c[1], fade=c[2]
+        float d = c[2] - ff;
+        if (d > g_faderOne) {
+            float sf = d / self->m_fadeDivisor - g_faderBiasFade;
+            i32 px = self->m_centerX + (i32)(c[0] / sf);
+            i32 py = self->m_centerY - (i32)(c[1] / sf);
+            if (px > 0 && px < dst->m_width && py > 0 && py < dst->m_height) {
+                ((u8*)base)[py * dst->m_pitch + px] = ((u8*)&self->m_cells[i])[0xc];
+            }
+        }
+    }
+
+    // Inlined UnlockThunk: m_8->vtbl[0x80](m_8, 0) on both surfaces (no ddraw.h needed
+    // in this unit; forward-declared IDirectDrawSurface* dispatched by slot).
+    void* s8 = self->m_srcSurface->m_8;
+    (*(void(__stdcall**)(void*, i32))(*(void***)s8 + 0x20))(s8, 0);
+    void* d8 = dst->m_8;
+    (*(void(__stdcall**)(void*, i32))(*(void***)d8 + 0x20))(d8, 0);
+    RezFree(scratch);
 }
 
 SIZE_UNKNOWN(FrImageSrc);

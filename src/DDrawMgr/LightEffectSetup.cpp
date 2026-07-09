@@ -15,6 +15,13 @@
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/FaderSubtypes.h> // CFaderLight (v2 vtable slot decl)
+#include <math.h>                 // sqrt + pow (__CIpow) for v2's corner distances
+
+// The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
+// __CIpow intrinsic so the squarings emit `fild x; fld K; call pow` (not fmul).
+DATA(0x005f0888)
+extern const double g_faderPowK; // 2.0
 
 // SIZE annotations for the ShadeTableCache.h classes are hosted here rather than
 // in the header: shadetablecache.cpp is a /O2-sensitive TU whose CompareHue/
@@ -73,7 +80,8 @@ public:
     i32 m_48;                   // +0x48
     i32 m_centerX;              // +0x4c centre x
     i32 m_centerY;              // +0x50 centre y
-    char m_pad54[0x60 - 0x54];
+    char m_pad54[0x5c - 0x54];
+    i32 m_5c; // +0x5c  frame count = max light->corner distance (v2 output)
     i32 m_spanStarts[1024]; // +0x60   span starts
     i32 m_spanEnds[1024];   // +0x1060 span ends
     i32 m_spanCount;        // +0x2060 span count
@@ -158,4 +166,54 @@ i32 CFaderLightApply::Setup(LightDesc* d) {
         m_shadeTable = d->m_overrideTable;
     }
     return 1;
+}
+
+// ===========================================================================
+// 0x1814f0 - CFaderLight::v2 (vtable slot 2, hosted via the CFaderLightApply flat
+// view): the fade frame count = the maximum distance from the light centre
+// (m_centerX,m_centerY) to any of the four active-surface corners. Each squaring is
+// pow(x, 2.0) (the __CIpow intrinsic, per retail); the four corner distances are the
+// hypotenuses, and the largest is __ftol'd into m_5c (also the return). Defined as
+// CFaderLight::v2 (not a second CFaderLightApply method) so the delinker packs it at
+// its own RVA.
+// ===========================================================================
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md): the four
+// pow/sqrt corner distances + the running-max selection are byte-faithful in operation
+// and operand, but retail interleaves the pow calls with a dense fxch/fld stack-slot
+// juggle and open-codes the max as an fcomp tree over st(1..3); cl serialises the four
+// distances and lowers the running max as fcom/branch pairs. The exponent const, the
+// __ftol store and the surface-dim subtractions match; the fp schedule is not
+// source-steerable.
+RVA(0x001814f0, 0x16d)
+i32 CFaderLight::v2() {
+    CFaderLightApply* self = (CFaderLightApply*)this;
+    i32 cx = self->m_centerX;
+    i32 cy = self->m_centerY;
+    i32 w = self->m_activeSurface->m_width;
+    i32 h = self->m_activeSurface->m_height;
+
+    double pA = pow((double)cx, g_faderPowK);
+    double pB = pow((double)cy, g_faderPowK);
+    double pH = pow((double)(h - cy), g_faderPowK);
+    double pW = pow((double)(w - cx), g_faderPowK);
+
+    double d0 = sqrt(pA + pB);
+    double d1 = sqrt(pW + pB);
+    double d2 = sqrt(pA + pH);
+    double d3 = sqrt(pW + pH);
+
+    double m = d0;
+    if (d1 > m) {
+        m = d1;
+    }
+    if (d2 > m) {
+        m = d2;
+    }
+    if (d3 > m) {
+        m = d3;
+    }
+    i32 r = (i32)m;
+    self->m_5c = r;
+    return r;
 }
