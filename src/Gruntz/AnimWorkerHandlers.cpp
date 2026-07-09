@@ -28,6 +28,19 @@
 #include <rva.h>
 #include <Gruntz/Wormhole.h>
 
+// The real CUserLogic game-object leaves each contiguous handler (0x3d2b0..0x3ddf0,
+// 0x46990) builds in its state-0 case. Sizes are proven from the `new` immediates.
+#include <Gruntz/Explosion.h>
+#include <Gruntz/ExitTrigger.h>
+#include <Gruntz/FortressFlag.h>
+#include <Gruntz/GruntCreationPoint.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntStartingPoint.h>
+#include <Gruntz/SecretLevelTrigger.h>
+#include <Gruntz/SecretTeleporterTrigger.h>
+#include <Gruntz/Teleporter.h>
+#include <Gruntz/Warlord.h>
+
 // The dispatched sub-records are real CUserLogic leaves (vftable 0x5e705c, 16
 // slots); the worker pump calls their inherited slots (slot 6 activate @+0x18,
 // slots 10..15 @+0x28..+0x3c) directly - no fabricated view class.
@@ -126,6 +139,125 @@ extern "C" void Worker_DefaultPump(CUserLogic* sub);
             break;                                                                                   \
     }                                                                                                \
     return 1;
+// The state-0 anim-worker dispatch family (0x3d2b0..0x3ddf0, 0x46990). Each is a
+// __cdecl free function byte-identical to Handler03d670 bar the CUserLogic leaf it
+// `new`s in state 0 (hence the `new` size immediate + ctor symbol). Every switch
+// key rec->m_1c is UNSIGNED (u32) so MSVC5 emits the range checks as unsigned
+// ja/jbe, matching retail byte-for-byte (a signed i32 key emits jg/jle and caps
+// each at 97.86%; see docs/patterns/switch-key-unsigned-ja-vs-jg.md).
+RVA(0x0003d2b0, 0xf1)
+i32 Handler03d2b0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CGruntStartingPoint((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003d3f0, 0xf1)
+i32 Handler03d3f0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CExitTrigger((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003d530, 0xf1)
+i32 Handler03d530(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CGruntCreationPoint((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
 
 RVA(0x0003d670, 0xf1)
 i32 Handler03d670(Owner* owner) {
@@ -155,6 +287,236 @@ i32 Handler03d670(Owner* owner) {
             break;
         case 0x51:
             rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003d7b0, 0xf1)
+i32 Handler03d7b0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CGruntPuddle((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003d8f0, 0xf1)
+i32 Handler03d8f0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CTeleporter((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003da30, 0xf1)
+i32 Handler03da30(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CSecretTeleporterTrigger((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// CWarlord's ctor is the odd one out: it takes an int (??0CWarlord@@QAE@H@Z), so
+// the owner pointer is passed as (i32)owner (retail `push edi`); size 0xb0.
+RVA(0x0003db70, 0xf4)
+i32 Handler03db70(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CWarlord((i32)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003dcb0, 0xf1)
+i32 Handler03dcb0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CFortressFlag((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+RVA(0x0003ddf0, 0xf1)
+i32 Handler03ddf0(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CSecretLevelTrigger((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
             break;
         case 0x3e8:
             break;
@@ -255,6 +617,43 @@ i32 Handler07e160(Owner* owner) { ANIM_WORKER_PUMP(CGruntWingzTimeSprite) } // n
 
 RVA(0x0007e2a0, 0xf1)
 i32 Handler07e2a0(Owner* owner) { ANIM_WORKER_PUMP(CGruntPowerupSprite) } // new 0x60, ctor 0x07fdb0
+RVA(0x00046990, 0xf1)
+i32 Handler046990(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CExplosion((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // AnimWorker 3-arg ctor (0x15b300, __thiscall, ret 0xc). Real-polymorphic: cl

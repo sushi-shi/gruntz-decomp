@@ -133,6 +133,20 @@ void CGruntCreationPoint::InitActReg() {
     ((CZDArrayDerived*)&g_creationPointActReg)->Construct(2000, 2010);
 }
 
+// CGruntCreationPoint::FireActivation @0x03e960 - look the activation coordinate
+// up in the class registry (g_creationPointActReg); if the resolved entry carries a
+// registered handler PMF, resolve it again and dispatch it __thiscall on `this`.
+// The SAME archetype as CParticlez::FireActivation (0x046d30) - the double
+// ResolveEntry + PMF dispatch.
+RVA(0x0003e960, 0x102)
+void CGruntCreationPoint::FireActivation(i32 coord) {
+    CCreationPointActEntry* e = (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CCreationPointActEntry* e2 = (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CGruntCreationPoint::RegisterActs @0x03eac0 - bind the per-frame handler
 // (AdvanceAnim @0x03ecc0) to the activation key "A" via the shared name registry.
 // The SAME archetype as CBehindCandyAni::RegisterActs.
@@ -178,6 +192,5 @@ SIZE_UNKNOWN(CAnimSink);
 SIZE_UNKNOWN(CCreationPointActEntry);
 SIZE_UNKNOWN(CCreationPointActReg);
 SIZE_UNKNOWN(CCreationSpriteRefTable);
-SIZE_UNKNOWN(CGruntCreationPoint);
 SIZE_UNKNOWN(CreationGameReg);
 SIZE_UNKNOWN(CreationRefSlot);

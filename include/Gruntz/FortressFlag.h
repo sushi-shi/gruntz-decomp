@@ -35,6 +35,7 @@ public:
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x0461e0
+    void FireActivation(i32 coord); // 0x046080 (per-coord PMF dispatcher)
     i32 AdvanceAnim();          // 0x0463e0 (re-target bound anim to the draw-delta; ret 0)
     void HandleFortConquered(); // 0x03f5f0 (per-frame fort-conquest check)
     // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
@@ -49,7 +50,10 @@ public:
     virtual ~CFortressFlag() OVERRIDE; // 0x010e90 (folds the CUserLogic teardown)
 
     i32 m_prevAnimNode; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from
+                               //         AnimWorkerHandlers `new CFortressFlag`)
 };
 VTBL(CFortressFlag, 0x001e725c);
+SIZE(CFortressFlag, 0x54);
 
 #endif // GRUNTZ_CFORTRESSFLAG_H

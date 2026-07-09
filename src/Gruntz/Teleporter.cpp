@@ -268,6 +268,5 @@ SIZE_UNKNOWN(CTeleIconTable);
 SIZE_UNKNOWN(CTeleMgrSub);
 SIZE_UNKNOWN(CTeleScroller);
 SIZE_UNKNOWN(CTeleSelHolder);
-SIZE_UNKNOWN(CTeleporter);
 VTBL(CTeleporter, 0x001e80cc); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CTeleporterActReg);

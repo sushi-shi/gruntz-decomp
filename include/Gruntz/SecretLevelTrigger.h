@@ -14,7 +14,7 @@
 
 #include <Gruntz/UserLogic.h> // CUserLogic base (CSecretLevelTrigger : CUserLogic)
 
-SIZE_UNKNOWN(CSecretLevelTrigger);
+SIZE(CSecretLevelTrigger, 0x54);
 class CSecretLevelTrigger : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -26,8 +26,12 @@ public:
     CSecretLevelTrigger(CGameObject* obj);   // 0x0424b0 (1-arg ctor; body in UserLogic.cpp)
     static void InitActReg();                // 0x0426e0 (construct g_secretActReg over [2000,2010])
     static void RegisterActs();              // 0x0428c0 (register the class's activation handlers)
+    void FireActivation(i32 coord);          // 0x042760 (per-coord PMF dispatcher)
     i32 Tick();                              // 0x042ac0
     virtual ~CSecretLevelTrigger() OVERRIDE; // 0x010c50 (folds the CUserLogic teardown)
+
+    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled tail; size proven 0x54 from
+                               //         AnimWorkerHandlers `new CSecretLevelTrigger`)
 };
 VTBL(CSecretLevelTrigger, 0x1e8804);
 

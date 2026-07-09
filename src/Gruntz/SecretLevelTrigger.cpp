@@ -81,6 +81,19 @@ void CSecretLevelTrigger::InitActReg() {
     ((CZDArrayDerived*)&g_secretActReg)->Construct(2000, 2010);
 }
 
+// CSecretLevelTrigger::FireActivation @0x042760 - look the activation coordinate up
+// in the class registry (g_secretActReg); if the resolved entry carries a registered
+// handler PMF, resolve it again and dispatch it __thiscall on `this`. Same archetype
+// as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
+RVA(0x00042760, 0x102)
+void CSecretLevelTrigger::FireActivation(i32 coord) {
+    CSecretActEntry* e = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CSecretActEntry* e2 = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CSecretLevelTrigger::RegisterActs @0x0428c0 - bind the class's per-frame handler
 // (Tick @0x042ac0) to the activation key "A" (the SAME activation-name-intern
 // archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).

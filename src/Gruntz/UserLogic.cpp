@@ -205,30 +205,10 @@ public:
     void EnterField2();         // 0x27d9 (this-method, no body)
 };
 
-SIZE_UNKNOWN(CSecretTeleporterTrigger);
-class CSecretTeleporterTrigger : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CSecretTeleporterTrigger(CGameObject* obj); // 0x041e90
-    virtual ~CSecretTeleporterTrigger() OVERRIDE;
-    // Construct the class's activation-coordinate registry (g_actColl @0x644688)
-    // over the fixed [2000,2010] range; a free init thunk, reloc-masked.
-    static void InitActReg(); // 0x0420d0
-    // Bind SpawnTeleporter to the activation key "A" via the shared name registry
-    // (the same archetype as CSecretLevelTrigger::RegisterActs).
-    static void RegisterActs(); // 0x0422b0
-    // The two overridden CUserLogic virtuals reconstructed below.
-    i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x010a10 (vtable slot 1)
-    void FireActivation(i32 coord);            // 0x042150 (vtable slot 4)
-    // The registered point-activation callback 0x042b80 stamped into the
-    // coordinate registry by FireActivation. __thiscall, no args, returns int.
-    i32 SpawnTeleporter(); // 0x042b80
-};
-VTBL(CSecretTeleporterTrigger, 0x1e7564);
+// CSecretTeleporterTrigger is the canonical <Gruntz/SecretTeleporterTrigger.h>
+// class (extracted so the anim-worker dispatch handler can `new` it); its
+// out-of-line bodies (ctor/Serialize/FireActivation/SpawnTeleporter) stay here.
+#include <Gruntz/SecretTeleporterTrigger.h>
 
 SIZE_UNKNOWN(CWarpStonePad);
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)

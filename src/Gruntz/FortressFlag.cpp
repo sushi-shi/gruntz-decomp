@@ -156,6 +156,19 @@ void CFortressFlag::InitActReg() {
     ((CZDArrayDerived*)&g_fortressFlagActReg)->Construct(2000, 2010);
 }
 
+// CFortressFlag::FireActivation @0x046080 - look the activation coordinate up in the
+// class registry (g_fortressFlagActReg); if the resolved entry carries a registered
+// handler PMF, resolve it again and dispatch it __thiscall on `this`. Same archetype
+// as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
+RVA(0x00046080, 0x102)
+void CFortressFlag::FireActivation(i32 coord) {
+    CFortressFlagActEntry* e = (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CFortressFlagActEntry* e2 = (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CFortressFlag::RegisterActs @0x0461e0 - bind the per-frame handler (AdvanceAnim
 // @0x0463e0) to the activation key "A" via the shared name registry. The SAME
 // archetype as CBehindCandyAni::RegisterActs.
@@ -227,7 +240,6 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
-SIZE_UNKNOWN(CFortressFlag);
 SIZE_UNKNOWN(CFortressFlagActEntry);
 SIZE_UNKNOWN(CFortressFlagActReg);
 SIZE_UNKNOWN(WwdRefSlot);

@@ -131,7 +131,10 @@ public:
     i32 m_cooldownStampHi;  // +0x8c
     i32 m_cooldownWindowLo; // +0x90
     i32 m_cooldownWindowHi; // +0x94
+    char m_pad98[0xb0 - 0x98]; // +0x98  (unmodeled tail; size proven 0xb0 from
+                               //         AnimWorkerHandlers `new CWarlord`)
 };
 VTBL(CWarlord, 0x1e7404);
+SIZE(CWarlord, 0xb0);
 
 #endif // GRUNTZ_CWARLORD_H

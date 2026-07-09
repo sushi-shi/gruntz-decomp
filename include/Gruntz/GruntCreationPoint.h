@@ -35,11 +35,18 @@ public:
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x03eac0
+    // Per-coordinate activation dispatcher: look the coordinate up in the class
+    // registry (g_creationPointActReg) and, if it has a registered handler PMF,
+    // dispatch it on `this`. Same archetype as CParticlez::FireActivation.
+    void FireActivation(i32 coord); // 0x03e960
     i32 AdvanceAnim();          // 0x03ecc0 (re-target bound anim to the draw-delta; ret 0)
     virtual ~CGruntCreationPoint() OVERRIDE; // 0x010730 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)
+    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from
+                               //         AnimWorkerHandlers `new CGruntCreationPoint`)
 };
 VTBL(CGruntCreationPoint, 0x1e81d4);
+SIZE(CGruntCreationPoint, 0x54);
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

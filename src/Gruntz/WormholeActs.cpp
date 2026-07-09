@@ -49,6 +49,19 @@ void CWormhole::InitActReg() {
     ((CZDArrayDerived*)&g_wormholeActReg)->Construct(2000, 2010);
 }
 
+// CWormhole::FireActivation @0x03f290 - look the activation coordinate up in the
+// class registry (g_wormholeActReg); if the resolved entry carries a registered
+// handler PMF, resolve it again and dispatch it __thiscall on `this`. Same
+// archetype as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
+RVA(0x0003f290, 0x102)
+void CWormhole::FireActivation(i32 coord) {
+    CWormholeActEntry* e = (CWormholeActEntry*)g_wormholeActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CWormholeActEntry* e2 = (CWormholeActEntry*)g_wormholeActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CWormhole::RegisterActs @0x03f3f0 - bind the per-frame handler (AdvanceAnim
 // @0x03f5f0) to the activation key "A" via the shared name registry. The SAME
 // archetype as CGruntCreationPoint::RegisterActs.

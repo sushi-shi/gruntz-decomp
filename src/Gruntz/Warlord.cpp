@@ -332,7 +332,6 @@ void CWarlord::NotifyFortUnderAttack() {}
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CRegBattleEvent);
 SIZE_UNKNOWN(CRegThreatHelper);
-SIZE_UNKNOWN(CWarlord);
 SIZE_UNKNOWN(CWarlordAnimSub);
 SIZE_UNKNOWN(CWarlordMission);
 SIZE_UNKNOWN(CWarlordObjective);

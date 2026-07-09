@@ -68,6 +68,7 @@ class CTeleporter : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
+    CTeleporter(CGameObject* obj); // 0x41020 (base init + name/state setup; body in UserLogic.cpp)
     // InitActReg (0x414a0): construct the class's activation-coordinate registry
     // singleton (g_teleporterActReg @0x6446b0) over the fixed [2000, 2010] range.
     static void InitActReg();
@@ -100,6 +101,9 @@ public:
     i32 m_intervalLo;  // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
     i32 m_intervalHi;  // +0x64
     i32 m_tickHandled; // +0x68  "tick handled" latch
+    char m_pad6c[0x70 - 0x6c]; // +0x6c  (unmodeled tail; size proven 0x70 from
+                               //         AnimWorkerHandlers `new CTeleporter`)
 };
+SIZE(CTeleporter, 0x70);
 
 #endif // GRUNTZ_CTELEPORTER_H
